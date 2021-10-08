@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-09-26 16:48
+-- merge date  : 2021-10-08 20:05
 
 do -- begin closure to overcome local limits and interference
 
@@ -12633,6 +12633,7 @@ local function getinfo(maindata,sub,platformnames,rawfamilynames,metricstoo,inst
    pfmwidth=metrics.widthclass or 5,
    panosewidth=metrics.panosewidth,
    panoseweight=metrics.panoseweight,
+   fstype=metrics.fstype or 0,
    italicangle=postscript.italicangle or 0,
    units=fontheader.units or 0,
    designsize=fontdata.designsize,

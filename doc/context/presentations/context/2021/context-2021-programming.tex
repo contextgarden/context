@@ -1,0 +1,325 @@
+% language=us
+
+\usemodule[present-boring,abbreviations-logos]
+
+\definehighlight[nb][style=bold,color=middlegray,define=no]
+
+\startdocument
+  [title={PROGRAMMING},
+   banner={the way \CONTEXT\ is set up},
+   location={context\enspace {\bf 2021}\enspace meeting}]
+
+\starttitle[title=Levels]
+
+When you look at \CONTEXT\ bottom|--|up (engine|--|interface) you will notice: \blank[2*big]
+
+\startnarrower
+
+\startitemize[n]
+
+\startitem
+    \highlight[nb]{primitives:} this is what the engine comes with
+\stopitem
+\startitem
+    \highlight[nb]{infrastructure:} basic management of data structures
+\stopitem
+\startitem
+    \highlight[nb]{helpers:} macros that hide complexity
+\stopitem
+\startitem
+    \highlight[nb]{subsystems:} collections of macros that implement functionality
+\stopitem
+\startitem
+    \highlight[nb]{mechanisms:} these combine various subsystems
+\stopitem
+\startitem
+    \highlight[nb]{modules:} extra functionality (uses 1--5)
+\stopitem
+\startitem
+    \highlight[nb]{styles:} handling sources and layout (uses 4--6)
+\stopitem
+
+\stopitemize
+
+\stopnarrower
+
+\blank[2*big] Users normally see \CONTEXT\ top|--|down (usage|--|hacking).
+
+\stoptitle
+
+% % %
+
+\starttitle[title=Styles]
+
+\startitemize
+
+\startitem
+    These are prebuilt solutions for common as well as rare situations.
+\stopitem
+
+\startitem
+    The system comes with some styles: the \type {s-*} files.
+\stopitem
+
+\startitem
+    Right from the start the idea was that you get some reasonable default.
+\stopitem
+
+\startitem
+    And if you want more you stepwise define your style as you go.
+\stopitem
+
+\startitem
+    It really is part of the game: exploration.
+\stopitem
+
+\startitem
+    Solving your problem is a nice challenge.
+\stopitem
+
+\startitem
+    If you want a completely predefined setup, shop somewhere else.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+% % %
+
+\starttitle[title=Modules]
+
+\startitemize
+
+\startitem
+    A lot of functionality is built in.
+\stopitem
+
+\startitem
+    This helps to keep the system consistent.
+\stopitem
+
+\startitem
+    We could cheat and ship thousands of few|--|liner styles but don't do that.
+\stopitem
+
+\startitem
+    There are a few mechanisms that don't really fit into the core, so these are
+    implemented as modules that do fit into the interface: the \type {m-*} and
+    \type {x-*} files.
+\stopitem
+
+\startitem
+    Users can build and share their solutions which has resulted in some
+    third party modules: the \type {t-*} files.
+\stopitem
+
+\startitem
+    For (a few, often old) private files I use \type {p-*} name scheme.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+% % %
+
+\starttitle[title=Mechanisms]
+
+\startitemize
+
+\startitem
+    These are combinations of subsystems but often they cannot really be distinguished.
+\stopitem
+
+\startitem
+    Examples are notes, that combine notations, lists, references, descriptions etc.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+% % %
+
+\starttitle[title=Subsystems]
+
+\startitemize
+
+\startitem
+    This is what users see and can configure
+\stopitem
+
+\startitem
+    Most are (conceptually) rather old but evolved over time. There are no
+    fundamental differences between \MKIV\ and \LMTX, but the later is hopefully
+    a bit cleaner.
+\stopitem
+
+\startitem
+    Examples are fonts, languages, color, structure (sectioning, lists,
+    constructions, itemgroups, references), spacing, graphics, bibliographies,
+    positioning, numbering and layout.
+\stopitem
+
+\startitem
+    More hidden are the backend, export and \XML\ interfaces.
+\stopitem
+
+\startitem
+    Some have subsystems themselves, like widgets that relate to a specific
+    backend.
+\stopitem
+
+\startitem
+    There are often dependencies between subsystems which makes that it's not really a
+    hierarchy. A more strict separation would demand much more overhead.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+% % %
+
+\starttitle[title=Helpers]
+
+\startitemize
+
+\startitem
+    These provide basic programming help.
+\stopitem
+
+\startitem
+    Examples are macros for comparing things, loops, list processing,
+    argument handling.
+\stopitem
+
+\startitem
+    But more abstract box manipulations also fits in here.
+\stopitem
+
+\startitem
+    Some subsystems, like \XML\ and bibliographies provide more specific low
+    level helpers.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+% % %
+
+\starttitle[title=Infrastructure]
+
+\startitemize
+
+\startitem
+    The engine provides counters, dimension and other registers that need
+    to be managed in order to avoid clashes in usage.
+\stopitem
+
+\startitem
+    Many of the helpers, subsystems and mechanisms fall back on common rather
+    low level functions (\LUA) and macros (using primitives).
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+% % %
+
+\starttitle[title=Primitives]
+
+\startitemize
+
+\startitem
+    This is what the engine provides: the built|-|in commands and features.
+\stopitem
+
+\startitem
+    In addition to the visible primitives there are \LUA\ interfaces and these
+    permit adding extra primitives.
+\stopitem
+
+\startitem
+    In \LUAMETATEX\ we have the core \TEX\ set but a few were dropped because we
+    don't have a backend and a different \IO\ subsystem (so they have to be
+    emulated).
+\stopitem
+
+\startitem
+    We also have some of the \ETEX\ primitives and very few of the \PDFTEX\ ones
+    but I now consider for instance expansion and protrusion extensions to be
+    kind of \ETEX.
+\stopitem
+
+\startitem
+    There are additional \LUATEX\ primitives but some were dropped, again because
+    of the backend, so we emulate some, and also because some were experimental.
+\stopitem
+
+\startitem
+    There are quite some new primitives and existing mechanisms have been extended,
+    cleaned up and (hopefully) improved.
+\stopitem
+
+\stopitemize
+
+% % %
+
+\starttitle[title=The shift]
+
+\startitemize
+
+\startitem
+    There have always been complaints about \TEX\ as a language (what makes me
+    wonder why those who complain use it.)
+\stopitem
+
+\startitem
+    Although there are some extensions to the language in \ETEX, follow|-|ups have
+    not really succeeded in this area.
+\stopitem
+
+\startitem
+    At some point I decided that code in the categories 1|--|4 cold benefit from
+    extensions.
+\stopitem
+
+\startitem
+    That also meant that we use less of the low helpers. It makes the code look a
+    bit more \TEX.
+\stopitem
+
+\startitem
+    It also means less clutter, in code as well in tracing. Often the code
+    becomes simpler too.
+\stopitem
+
+\startitem
+    The idea is that \TEX\ becomes a bit more a programming language.
+\stopitem
+
+\startitem
+    Of course it takes away the \quotation {Watch me, I can do real dirty \TEX\
+    hacking!} brawling.
+\stopitem
+
+\startitem
+    It also can take away some of the complaints.
+\stopitem
+
+\startitem
+    And it definitely adds some fun.
+\stopitem
+
+\stopitemize
+
+{\em During the week we show some of the implementation (in Visual Studio) and
+examples of applications. We also write a small extension (the {\tttf dk} unit)}
+
+\stoptitle
+
+\stopdocument

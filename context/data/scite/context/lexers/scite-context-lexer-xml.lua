@@ -17,20 +17,19 @@ local P, R, S, C, Cmt, Cp = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cmt, lpeg.Cp
 local type = type
 local match, find = string.match, string.find
 
-local lexer            = require("scite-context-lexer")
-local context          = lexer.context
-local patterns         = context.patterns
+local lexers           = require("scite-context-lexer")
 
-local token            = lexer.token
-local exact_match      = lexer.exact_match
+local patterns         = lexers.patterns
+local token            = lexers.token
 
-local xmllexer         = lexer.new("xml","scite-context-lexer-xml")
-local whitespace       = xmllexer.whitespace
+local xmllexer         = lexers.new("xml","scite-context-lexer-xml")
+local xmlwhitespace    = xmllexer.whitespace
 
-local xmlcommentlexer  = lexer.load("scite-context-lexer-xml-comment")
-local xmlcdatalexer    = lexer.load("scite-context-lexer-xml-cdata")
-local xmlscriptlexer   = lexer.load("scite-context-lexer-xml-script")
-local lualexer         = lexer.load("scite-context-lexer-lua")
+local xmlcommentlexer  = lexers.load("scite-context-lexer-xml-comment")
+local xmlcdatalexer    = lexers.load("scite-context-lexer-xml-cdata")
+local xmlscriptlexer   = lexers.load("scite-context-lexer-xml-script")
+local lualexer         = lexers.load("scite-context-lexer-lua")
+
 
 local space            = patterns.space
 local any              = patterns.any
@@ -70,15 +69,14 @@ local closelua         = "?>"
 
 local entity           = ampersand * (1-semicolon)^1 * semicolon
 
-local utfchar          = context.utfchar
-local wordtoken        = context.patterns.wordtoken
-local iwordtoken       = context.patterns.iwordtoken
-local wordpattern      = context.patterns.wordpattern
-local iwordpattern     = context.patterns.iwordpattern
-local invisibles       = context.patterns.invisibles
-local checkedword      = context.checkedword
-local styleofword      = context.styleofword
-local setwordlist      = context.setwordlist
+local utfchar          = lexers.helpers.utfchar
+local wordtoken        = patterns.wordtoken
+local iwordtoken       = patterns.iwordtoken
+local wordpattern      = patterns.wordpattern
+local iwordpattern     = patterns.iwordpattern
+local invisibles       = patterns.invisibles
+local styleofword      = lexers.styleofword
+local setwordlist      = lexers.setwordlist
 local validwords       = false
 local validminimum     = 3
 
@@ -86,23 +84,18 @@ local validminimum     = 3
 --
 -- <?context-directive editor language us ?>
 
-local t_preamble = Cmt(P("<?xml "), function(input,i,_) -- todo: utf bomb, no longer #
-    if i < 200 then
-        validwords, validminimum = false, 3
-        local language = match(input,"^<%?xml[^>]*%?>%s*<%?context%-directive%s+editor%s+language%s+(..)%s+%?>")
-     -- if not language then
-     --     language = match(input,"^<%?xml[^>]*language=[\"\'](..)[\"\'][^>]*%?>",i)
-     -- end
-        if language then
-            validwords, validminimum = setwordlist(language)
-        end
+xmllexer.preamble = Cmt(P("<?xml " + P(true)), function(input,i) -- todo: utf bomb, no longer #
+    validwords   = false
+    validminimum = 3
+    local language = match(input,"^<%?xml[^>]*%?>%s*<%?context%-directive%s+editor%s+language%s+(..)%s+%?>")
+    if language then
+        validwords, validminimum = setwordlist(language)
     end
-    return false
+    return false -- so we go back and now handle the line as processing instruction
 end)
 
 local t_word =
---     Ct( iwordpattern / function(s) return styleofword(validwords,validminimum,s) end * Cp() ) -- the function can be inlined
-    iwordpattern / function(s) return styleofword(validwords,validminimum,s) end * Cp() -- the function can be inlined
+    C(iwordpattern) * Cp() / function(s,p) return styleofword(validwords,validminimum,s,p) end  -- a bit of a hack
 
 local t_rest =
     token("default", any)
@@ -111,7 +104,7 @@ local t_text =
     token("default", (1-S("<>&")-space)^1)
 
 local t_spacing =
-    token(whitespace, space^1)
+    token(xmlwhitespace, space^1)
 
 local t_optionalwhitespace =
     token("default", space^1)^0
@@ -227,10 +220,10 @@ local t_doctype = token("command",P("<!DOCTYPE"))
                 * t_optionalwhitespace
                 * token("command",P(">"))
 
-lexer.embed_lexer(xmllexer, lualexer,        token("command", openlua),     token("command", closelua))
-lexer.embed_lexer(xmllexer, xmlcommentlexer, token("command", opencomment), token("command", closecomment))
-lexer.embed_lexer(xmllexer, xmlcdatalexer,   token("command", opencdata),   token("command", closecdata))
-lexer.embed_lexer(xmllexer, xmlscriptlexer,  token("command", openscript),  token("command", closescript))
+lexers.embed(xmllexer, lualexer,        token("command", openlua),     token("command", closelua))
+lexers.embed(xmllexer, xmlcommentlexer, token("command", opencomment), token("command", closecomment))
+lexers.embed(xmllexer, xmlcdatalexer,   token("command", opencdata),   token("command", closecdata))
+lexers.embed(xmllexer, xmlscriptlexer,  token("command", openscript),  token("command", closescript))
 
 -- local t_name =
 --     token("plain",name)
@@ -303,12 +296,8 @@ local t_instruction =
 local t_invisible =
     token("invisible",invisibles^1)
 
--- local t_preamble =
---     token("preamble",  t_preamble   )
-
-xmllexer._rules = {
+xmllexer.rules = {
     { "whitespace",  t_spacing     },
-    { "preamble",    t_preamble    },
     { "word",        t_word        },
  -- { "text",        t_text        },
  -- { "comment",     t_comment     },
@@ -322,29 +311,15 @@ xmllexer._rules = {
     { "rest",        t_rest        },
 }
 
-xmllexer._tokenstyles = context.styleset
-
-xmllexer._foldpattern = P("</") + P("<") + P("/>") -- separate entry else interference
-+ P("<!--") + P("-->")
-
-xmllexer._foldsymbols = {
-    _patterns = {
-        "</",
-        "/>",
-        "<",
-    },
-    ["keyword"] = {
-        ["</"] = -1,
-        ["/>"] = -1,
-        ["<"]  =  1,
-    },
-    ["command"] = {
-        ["</"]   = -1,
-        ["/>"]   = -1,
-        ["<!--"] =  1,
-        ["-->"]  = -1,
-        ["<"]    =  1,
-    },
+xmllexer.folding = {
+    ["</"]   = { ["keyword"] = -1 },
+    ["/>"]   = { ["keyword"] = -1 },
+    ["<"]    = { ["keyword"] =  1 },
+    ["<?"]   = { ["command"] =  1 },
+    ["<!--"] = { ["command"] =  1 },
+    ["?>"]   = { ["command"] = -1 },
+    ["-->"]  = { ["command"] = -1 },
+    [">"]    = { ["command"] = -1 },
 }
 
 return xmllexer

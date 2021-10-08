@@ -6,19 +6,16 @@ local info = {
     license   = "see context related readme files",
 }
 
-local global, string, table, lpeg = _G, string, table, lpeg
-local P, R, S, V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
-local type = type
+local lpeg = lpeg
+local P, R, S = lpeg.P, lpeg.R, lpeg.S
 
-local lexer       = require("scite-context-lexer")
-local context     = lexer.context
-local patterns    = context.patterns
+local lexers         = require("scite-context-lexer")
 
-local token       = lexer.token
-local exact_match = lexer.exact_match
+local patterns       = lexers.patterns
+local token          = lexers.token
 
-local jsonlexer   = lexer.new("json","scite-context-lexer-json")
-local whitespace  = jsonlexer.whitespace
+local jsonlexer      = lexers.new("json","scite-context-lexer-json")
+local jsonwhitespace = jsonlexer.whitespace
 
 local anything     = patterns.anything
 local comma        = P(",")
@@ -48,31 +45,31 @@ local reserved     = P("true")
 local integer      = P("-")^-1 * (patterns.hexadecimal + patterns.decimal)
 local float        = patterns.float
 
-local t_number     = token("number", float + integer)
-                   * (token("error",R("AZ","az","__")^1))^0
+local t_number     = token("number",     float + integer)
+                   * (token("error",     R("AZ","az","__")^1))^0
 
-local t_spacing    = token(whitespace, space^1)
-local t_optionalws = token("default", space^1)^0
+local t_spacing    = token("whitespace", space^1)
+local t_optionalws = token("default",    space^1)^0
 
-local t_operator   = token("special", operator)
+local t_operator   = token("special",    operator)
 
-local t_string     = token("operator",double)
-                   * token("string",content)
-                   * token("operator",double)
+local t_string     = token("operator",   double)
+                   * token("string",     content)
+                   * token("operator",   double)
 
-local t_key        = token("operator",double)
-                   * token("text",content)
-                   * token("operator",double)
+local t_key        = token("operator",   double)
+                   * token("text",       content)
+                   * token("operator",   double)
                    * t_optionalws
-                   * token("operator",colon)
+                   * token("operator",   colon)
 
-local t_fences     = token("operator",fence) -- grouping
+local t_fences     = token("operator",   fence) -- grouping
 
-local t_reserved   = token("primitive",reserved)
+local t_reserved   = token("primitive",  reserved)
 
-local t_rest       = token("default",anything)
+local t_rest       = token("default",    anything)
 
-jsonlexer._rules = {
+jsonlexer.rules = {
     { "whitespace", t_spacing  },
     { "reserved",   t_reserved },
     { "key",        t_key      },
@@ -83,19 +80,11 @@ jsonlexer._rules = {
     { "rest",       t_rest     },
 }
 
-jsonlexer._tokenstyles = context.styleset
-
-jsonlexer._foldpattern = fence
-
-jsonlexer._foldsymbols = {
-    _patterns = {
-        "{", "}",
-        "[", "]",
-    },
-    ["grouping"] = {
-        ["{"] = 1, ["}"] = -1,
-        ["["] = 1, ["]"] = -1,
-    },
+jsonlexer.folding = {
+    ["{"] = { ["grouping"] =  1 },
+    ["}"] = { ["grouping"] = -1 },
+    ["["] = { ["grouping"] =  1 },
+    ["]"] = { ["grouping"] = -1 },
 }
 
 return jsonlexer

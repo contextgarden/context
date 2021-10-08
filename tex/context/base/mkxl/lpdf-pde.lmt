@@ -85,6 +85,7 @@ local arraytotable      = pdfe.arraytotable
 local pagestotable      = pdfe.pagestotable
 local readwholestream   = pdfe.readwholestream
 local getfromreference  = pdfe.getfromreference
+local getfromobject     = pdfe.getfromobject
 
 local report_epdf       = logs.reporter("epdf")
 
@@ -119,6 +120,8 @@ encryptioncodes              = allocate(swapped(encryptioncodes,encryptioncodes)
 pdfe.objectcodes             = objectcodes
 pdfe.encryptioncodes         = encryptioncodes
 
+-- lpdf_epdf.objectcodes     = objectcodes
+
 local null_object_code       = objectcodes.null
 local reference_object_code  = objectcodes.reference
 
@@ -133,47 +136,6 @@ local array_object_code      = objectcodes.array
 local dictionary_object_code = objectcodes.dictionary
 local stream_object_code     = objectcodes.stream
 local reference_object_code  = objectcodes.reference
-
-local checked_access
-local get_flagged     -- from pdfe -> lpdf
-
-if lpdf.dictionary then
-
-    -- we're in context
-
-    local pdfdictionary = lpdf.dictionary
-    local pdfarray      = lpdf.array
-    local pdfconstant   = lpdf.constant
-    local pdfstring     = lpdf.string
-    local pdfunicode    = lpdf.unicode
-
-    get_flagged = function(t,f,k)
-        local tk = t[k] -- triggers resolve
-        local fk = f[k]
-        if not fk then
-            return tk
-        elseif fk == "name" then
-            return pdfconstant(tk)
-        elseif fk == "array" then
-            return pdfarray(tk)
-        elseif fk == "dictionary" then
-            return pdfarray(tk)
-        elseif fk == "rawtext" then
-            return pdfstring(tk)
-        elseif fk == "unicode" then
-            return pdfunicode(tk)
-        else
-            return tk
-        end
-    end
-
-else
-
-    get_flagged = function(t,f,k)
-        return t[k]
-    end
-
-end
 
 -- We need to convert the string from utf16 although there is no way to
 -- check if we have a regular string starting with a bom. So, we have
@@ -195,6 +157,13 @@ local some_stream
 local some_reference
 
 local some_string = lpdf.frombytes
+
+function lpdf_epdf.objecttype(object)
+    if type(object) == "table" then
+        local kind = object.__type__
+        return kind and objectcodes[kind]
+    end
+end
 
 local function get_value(document,t,key)
     if not key then
@@ -218,22 +187,131 @@ local function get_value(document,t,key)
     elseif kind == dictionary_object_code then
         return some_dictionary(value[2],document)
     elseif kind == stream_object_code then
-        return some_stream(value,document)
+        return some_stream(value,value[2],document) -- needs checking
     elseif kind == reference_object_code then
         return some_reference(value,document)
     end
     return value
 end
 
+local checked_access
+local get_flagged     -- from pdfe -> lpdf
+
+if lpdf.dictionary then
+
+    -- these are used in mtx-pdf.lua
+
+    local pdfdictionary = lpdf.dictionary
+    local pdfarray      = lpdf.array
+    local pdfconstant   = lpdf.constant
+    local pdfreference  = lpdf.reference
+    local pdfliteral    = lpdf.literal
+
+    local copy_array, copy_dictionary
+
+    local function copyobject(object,key,value)
+        if not value then
+            value = object.__raw__[key]
+        end
+        local t = type(value)
+        if t == "string" then
+            return pdfconstant(value)
+        elseif t ~= "table" then
+            return value
+        end
+        local kind = value[1]
+        if kind == name_object_code then
+            return pdfconstant(value[2])
+        elseif kind == string_object_code then
+            return pdfliteral(value[2],value[3])
+        elseif kind == array_object_code then
+            return copyarray(object[key])
+        elseif kind == dictionary_object_code then
+            return copydictionary(object[key])
+        elseif kind == null_object_code then
+            return pdfnull()
+        elseif kind == reference_object_code then
+            return pdfreference(value[3])
+        else
+         -- report("weird: %s", objecttypes[kind] or "?")
+        end
+    end
+
+    copyarray = function(object)
+        local target = pdfarray()
+        local source = object.__raw__
+        for i=1,#source do
+            target[i] = copyobject(object,i,source[i])
+        end
+        return target
+    end
+
+    copydictionary = function(object)
+        local target = pdfdictionary()
+        local source = object.__raw__
+        for key, value in sortedhash(source) do
+            target[key] = copyobject(object,key,value)
+        end
+        return target
+    end
+
+    get_flagged = function(t,f)
+        local kind = t.__type__
+        if kind == name_object_code then
+            return pdfconstant(f)
+        elseif kind == array_object_code then
+            return copyarray(t)
+        elseif kind == dictionary_object_code then
+            return copydictionary(t)
+        elseif kind == stream_object_code then
+            return copydictionary(t)
+        elseif kind == string_object_code then
+            return pdfunicode(f)
+        elseif kind == null_object_code then
+            return pdfnull()
+        elseif kind == reference_object_code then
+            return pdfreference(t[3])
+        else
+            return f
+        end
+    end
+
+    function lpdf_epdf.verboseobject(document,n)
+        if document and n then
+            local object = document.objects[n]
+            if object then
+                local t = { n .. " 0 obj" }
+                if lpdf.epdf.objecttype(object) == "stream" then
+                    t[#t+1] = object("dictionary")()
+                    t[#t+1] = "stream"
+                    t[#t+1] = tostring(object(true))
+                    t[#t+1] = "endstream"
+                else
+                    t[#t+1] = tostring(object())
+                end
+                t[#t+1] = "endobj"
+                return concat(t,"\n")
+            end
+        end
+    end
+
+else
+
+    get_flagged = function(t,f)
+        return t[k] -- hm
+    end
+
+end
+
 some_dictionary = function (d,document)
     local f = dictionarytotable(d,true)
     local t = setmetatable({ __raw__ = f, __type__ = dictionary_object_code }, {
-       __index = function(t,k)
-           return get_value(document,f,k)
-       end,
-       __call = function(t,k)
-           return get_flagged(t,f,k)
-       end,
+        __index = function(t,k)
+            return get_value(document,f,k)
+        end,
+        __call = function(t)
+            return get_flagged(t,f)
+        end,
     } )
     return t, "dictionary"
 end
@@ -245,8 +323,8 @@ some_array = function (a,document)
         __index = function(t,k)
             return get_value(document,f,k)
         end,
-        __call = function(t,k)
-            return get_flagged(t,f,k)
+        __call = function(t)
+            return get_flagged(t,f)
         end,
         __len = function(t,k)
             return n
@@ -261,8 +339,10 @@ some_stream = function(s,d,document)
         __index = function(t,k)
             return get_value(document,f,k)
         end,
-        __call = function(t,raw)
-            if raw == false then
+        __call = function(t,how)
+            if how == "dictionary" then
+                return get_flagged(t,f)
+            elseif how == false then
                 return readwholestream(s,false) -- original
             else
                 return readwholestream(s,true)  -- uncompressed
@@ -291,6 +371,20 @@ some_reference = function(r,document)
         document.__xrefs__[cached] = objnum
     end
     return cached
+end
+
+local function some_object(document,n)
+    local kind, object, b, c = getfromobject(document.__data__,n)
+    if kind == dictionary_object_code then
+        return some_dictionary(object,document)
+    elseif kind == array_object_code then
+        return some_array(object,document)
+    elseif kind == stream_object_code then
+        return some_stream(object,b,document)
+    else
+        -- really cache this?
+        return { kind, object, b, c }
+    end
 end
 
 local resolvers     = { }
@@ -460,12 +554,14 @@ function lpdf_epdf.load(filename,userpassword,ownerpassword,fromstring)
                 __data__ = false
             end
             if __data__ then
+                local __cache__ = { }
+                local __xrefs__ = { }
                 document = {
                     filename   = filename,
                     nofcopied  = 0,
                     copied     = { },
-                    __cache__  = { },
-                    __xrefs__  = { },
+                    __cache__  = __cache__,
+                    __xrefs__  = __xrefs__,
                     __fonts__  = { },
                     __copied__ = { },
                     __data__   = __data__,
@@ -479,6 +575,17 @@ function lpdf_epdf.load(filename,userpassword,ownerpassword,fromstring)
                 document.majorversion, document.minorversion = getversion(__data__)
                 --
                 document.nofpages = getnofpages(__data__)
+                -- we could also use cached but this proxy hides it
+                -- setmetatableindex(__cache__,function(t,objnum)
+                document.objects = setmetatableindex(function(t,objnum)
+                    local cached = __cache__[objnum]
+                    if not cached then
+                        cached = some_object(document,objnum)
+                        __cache__[objnum] = cached
+                        __xrefs__[cached] = objnum
+                    end
+                    return cached
+                end)
             else
                 document = false
             end
@@ -1173,11 +1280,11 @@ if images then do
     end
 
     lpdf_epdf.image = {
-        open  = openpdf,
-        close = closepdf,
-        new   = newpdf,
-        query = querypdf,
-        copy  = copypage,
+        open   = openpdf,
+        close  = closepdf,
+        new    = newpdf,
+        query  = querypdf,
+        copy   = copypage,
     }
 
 --     lpdf.injectors.pdf = function(specification)

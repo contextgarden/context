@@ -191,6 +191,7 @@
 		<cd:variable name='enumeration' value='vycet'/>
 		<cd:variable name='environment' value='prostredi'/>
 		<cd:variable name='even' value='sude'/>
+		<cd:variable name='explicit' value='explicit'/>
 		<cd:variable name='export' value='export'/>
 		<cd:variable name='external' value='externi'/>
 		<cd:variable name='extremestretch' value='extremestretch'/>

@@ -1,0 +1,369 @@
+% language=us
+
+% TAKE FROM LOWLEVEL-EXPANSION.TEX
+
+\usemodule[system-tokens]
+
+\usemodule[present-boring,abbreviations-logos]
+
+\definehighlight[nb][style=bold,color=middlegray,define=no]
+
+\startdocument
+  [title={PROGRAMMING},
+   banner={local control},
+   location={context\enspace {\bf 2021}\enspace meeting}]
+
+\starttitle[title=Expansion]
+
+\TEX\ can be in several so called input reading modes:
+
+Users mostly see it reading from the source file(s). Characters are picked up and
+interpreted. Depending on what token it becomes some action takes place.
+
+\starttyping
+1 \setbox0\hbox to 10pt{2} \count0=3 \the\count0 \multiply\count0 by 4
+\stoptyping
+
+\startitemize
+
+\startitem
+    The \type {1} gets typeset because characters like that are seen as text.
+\stopitem
+
+\startitem
+    The \type {\setbox} primitive triggers picking up a register number, then
+    goes on scanning for a box specification and that itself will typeset a
+    sequence of whatever until the group ends.
+\stopitem
+
+\startitem
+    The \type {count} primitive triggers scanning for a register number (or
+    reference) and then scans for a number; the equal sign is optional.
+\stopitem
+
+\startitem
+    The \type {the} primitive injects some value into the current input stream
+    (it does so by entering a new input level).
+\stopitem
+
+\startitem
+    The \type {multiply} primitive picks up a register specification and
+    multiplies that by the next scanned number. The \type {by} is optional.
+\stopitem
+
+\startitem
+    Printing from \LUA\ and scanning tokens with e.g.\ \type {\scantokens} is like
+    reading (pseudo) files.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Expansion]
+
+\startbuffer[def]
+\def\TestA {1 \setbox0\hbox{2} \count0=3 \the\count0}
+\stopbuffer
+
+\startbuffer[edef]
+\edef\TestB{1 \setbox0\hbox{2} \count0=3 \the\count0}
+\stopbuffer
+
+\typebuffer[def]
+\typebuffer[edef]
+
+\getbuffer[def]
+\getbuffer[edef]
+
+\blank[2*big]
+
+\startcolumns[n=2] \switchtobodyfont[8pt]
+\luatokentable\TestA
+\column
+\luatokentable\TestB
+\stopcolumns
+
+\stoptitle
+
+\starttitle[title=Local control]
+
+\startbuffer[edef]
+\edef\TestB{1 \setbox0\hbox{2} \count0=3 \the\count0}
+\stopbuffer
+
+\startbuffer[ldef]
+\edef\TestC{1 \setbox0\hbox{2} \localcontrolled{\count0=3} \the\count0}
+\stopbuffer
+
+\typebuffer[edef]
+\typebuffer[ldef]
+
+\getbuffer[edef]
+\getbuffer[ldef]
+
+\blank[2*big]
+
+\startcolumns[n=2] \switchtobodyfont[8pt]
+\luatokentable\TestB
+\column
+\luatokentable\TestC
+\stopcolumns
+
+\stoptitle
+
+\starttitle[title=Side effects]
+
+\startbuffer[edef]
+\edef\TestB{1 \setbox0\hbox{2} \count0=3 \the\count0}
+\stopbuffer
+
+\startbuffer[ldef]
+\edef\TestD{\localcontrolled{1 \setbox0\hbox{2} \count0=3 \the\count0}}
+\stopbuffer
+
+\typebuffer[edef]
+\typebuffer[ldef]
+
+\getbuffer[edef]\getbuffer[ldef]\quad{\darkgray\leftarrow\space Watch how the results end up here!}
+
+\blank[2*big]
+
+\startcolumns[n=2] \switchtobodyfont[8pt]
+\luatokentable\TestB
+\column
+\luatokentable\TestD
+\stopcolumns
+
+\stoptitle
+
+\starttitle[title=Usage]
+
+\startbuffer[def]
+\def\WidthOf#1%
+  {\beginlocalcontrol
+   \setbox0\hbox{#1}%
+   \endlocalcontrol
+   \wd0 }
+\stopbuffer
+
+\startbuffer[use]
+\scratchdimen\WidthOf{The Rite Of Spring}
+
+\the\scratchdimen
+\stopbuffer
+
+\typebuffer[def]
+\typebuffer[use]
+
+\getbuffer[def]\getbuffer[use]
+
+\stoptitle
+
+\starttitle[title=Not always pretty]
+
+\startbuffer[def]
+\def\WidthOf#1%
+  {\dimexpr
+      \beginlocalcontrol
+        \begingroup
+          \setbox0\hbox{#1}%
+          \expandafter
+        \endgroup
+      \expandafter
+      \endlocalcontrol
+      \the\wd0
+   \relax}
+\stopbuffer
+
+\startbuffer[use]
+\scratchdimen\WidthOf{The Rite Of Spring}
+
+\the\scratchdimen
+\stopbuffer
+
+\typebuffer[def]
+\typebuffer[use]
+
+\getbuffer[def]\getbuffer[use]
+
+\stoptitle
+
+\starttitle[title=The \LUA\ end]
+
+Right from the start the way to get something into \TEX\ from \LUA\ has been the
+print functions. But we can also go local (immediate). There are several methods:
+
+\startitemize
+\startitem via a set token register \stopitem
+\startitem via a defined macro \stopitem
+\startitem via a string \stopitem
+\stopitemize
+
+Among the things to keep in mind are catcodes, scope and expansion (especially in
+when the result itself ends up in macros).
+
+\stoptitle
+
+\starttitle[title=Via a token register]
+
+% runlocal : macro|toks expand group
+
+\startbuffer[set]
+\toks0={\setbox0\hbox{The Rite Of Spring (Igor Stravinsky)}}
+\toks2={\setbox0\hbox{The Rite Of Spring (Joe Parrish)}}
+\stopbuffer
+
+\typebuffer[set]
+
+\startbuffer[run]
+\startluacode
+tex.runlocal(0) context("[1: %p]",tex.box[0].width)
+tex.runlocal(2) context("[2: %p]",tex.box[0].width)
+\stopluacode
+\stopbuffer
+
+\typebuffer[run]
+
+\start \getbuffer[set,run] \stop
+
+\stoptitle
+
+\starttitle[title=Via a token macro]
+
+\startbuffer[set]
+\def\TestA{\setbox0\hbox{The Rite Of Spring (Igor Stravinsky)}}
+\def\TestB{\setbox0\hbox{The Rite Of Spring (Joe Parrish)}}
+\stopbuffer
+
+\typebuffer[set]
+
+\startbuffer[run]
+\startluacode
+tex.runlocal("TestA") context("[3: %p]",tex.box[0].width)
+tex.runlocal("TestB") context("[4: %p]",tex.box[0].width)
+\stopluacode
+\stopbuffer
+
+\typebuffer[run]
+
+\start \getbuffer[set,run] \stop
+
+\stoptitle
+
+\starttitle[title=Via a string]
+
+\startbuffer[run]
+\startluacode
+tex.runstring([[\setbox0\hbox{The Rite Of Spring (Igor Stravinsky)}]])
+
+context("[5: %p]",tex.box[0].width)
+
+tex.runstring([[\setbox0\hbox{The Rite Of Spring (Joe Parrish)}]])
+
+context("[6: %p]",tex.box[0].width)
+\stopluacode
+\stopbuffer
+
+\typebuffer[run]
+
+\start \getbuffer[run] \stop
+
+\blank[2*big]
+
+A bit more high level:
+
+\starttyping
+context.runstring([[\setbox0\hbox{(Here \bf 1.2345)}]])
+context.runstring([[\setbox0\hbox{(Here \bf   %.3f)}]],1.2345)
+\stoptyping
+
+\stoptitle
+
+\starttitle[title=Locked in \LUA]
+
+\startbuffer[run]
+\startluacode
+token.setmacro("TestX",[[\setbox0\hbox{The Rite Of Spring (Igor)}]])
+tex.runlocal("TestX")
+context("[7: %p]",tex.box[0].width)
+\stopluacode
+\stopbuffer
+
+\typebuffer[run]
+
+\start \getbuffer[run] \stop
+
+\startbuffer[run]
+\startluacode
+tex.scantoks(0,tex.ctxcatcodes,[[\setbox0\hbox{The Rite Of Spring (Joe)}]])
+tex.runlocal(0)
+context("[8: %p]",tex.box[0].width)
+\stopluacode
+\stopbuffer
+
+\typebuffer[run]
+
+\start \getbuffer[run] \stop
+
+\stoptitle
+
+\starttitle[title=Order matters]
+
+A lot this relates to pushing stuff into the input which is stacked. Compare:
+
+\startbuffer[run]
+\startluacode
+context("[HERE 1]")
+context("[HERE 2]")
+\stopluacode
+\stopbuffer
+
+\typebuffer[run]
+
+\start \getbuffer[run] \stop
+
+with this:
+
+\startbuffer[run]
+\startluacode
+tex.pushlocal() context("[HERE 1]") tex.poplocal()
+tex.pushlocal() context("[HERE 2]") tex.poplocal()
+\stopluacode
+\stopbuffer
+
+\typebuffer[run]
+
+\start \getbuffer[run] \stop
+
+% \startluacode
+% tex.runlocal(function() context("[Here 1]") end)
+% context("[Here 12]")
+% tex.runlocal(function() context("[Here 2]") end)
+% \stopluacode
+
+% tex.pushlocal % swaps order
+% tex.poplocal
+% tex.quitlocal
+
+% token.expandmacro
+
+% str   : serialized
+% true  : wrap next {}
+% table : {serialzed} {serialzed} {serialzed}
+% token : inject
+% number: catcode table
+
+% tex.expandasvalue:
+%     (kind, like expand_macro)
+
+% tex.runstring:
+%  [catcode] string expand grouped
+
+% tex.runlocal
+%     function|number(register)|string(macro)|userdata(token) / expand / grouped
+
+% mplib.expandtex
+%     mpx, kind, macro, arguments
+
+\stopdocument

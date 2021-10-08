@@ -102,9 +102,9 @@ local function exportcolors()
         local function black(f)
             return (f[1] == f[2]) and (f[2] == f[3]) and (f[3] == 0)
         end
---         local result, r = { f_mapping }, 1
-local result, r = { }, 0
-        for k, v in table.sortedhash(lexer.context.styles) do
+     -- local result, r = { f_mapping }, 1
+        local result, r = { }, 0
+        for k, v in table.sortedhash(lexers.styles) do
             local fore = v.fore
             if fore and not black(fore) then
                 r = r + 1
@@ -113,7 +113,7 @@ local result, r = { }, 0
         end
         r = r + 1
         result[r] = "%"
-        for k, v in table.sortedhash(lexer.context.styles) do
+        for k, v in table.sortedhash(lexers.styles) do
             local bold = v.bold
             local fore = v.fore
             r = r + 1
@@ -145,7 +145,7 @@ local function exportwhites()
 end
 
 local function exportstyled(lexer,text)
-    local result = lexer.lex(lexer,text,0)
+    local result = lexers.lex(lexer,text,0)
     local start = 1
     local whites = exportwhites()
     local buffer = { }

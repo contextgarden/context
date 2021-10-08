@@ -6,31 +6,6 @@ local info = {
     license   = "see context related readme files",
 }
 
--- context_path = string.split(os.resultof("mtxrun --find-file context.mkiv"))[1] or ""
-
--- What used to be proper Lua definitions are in 3.42 SciTE properties although
--- integration is still somewhat half. Also, the indexed style specification is
--- now a hash (which indeed makes more sense). However, the question is: am I
--- going to rewrite the style bit? It anyway makes more sense to keep this file
--- somewhat neutral as we no longer need to be compatible. However, we cannot be
--- sure of helpers being present yet when this file is loaded, so we are somewhat
--- crippled. On the other hand, I don't see other schemes being used with the
--- context lexers.
-
--- The next kludge is no longer needed which is good!
---
--- if GTK then -- WIN32 GTK OSX CURSES
---     font_name = '!' .. font_name
--- end
-
--- I need to play with these, some work ok:
---
--- eolfilled noteolfilled
--- characterset:u|l
--- visible notvisible
--- changeable notchangeable (this way we can protect styles, e.g. preamble?)
--- hotspot nothotspot
-
 if not lexers or not lexers.initialized then
 
     local font_name = 'Dejavu Sans Mono'
@@ -63,11 +38,11 @@ if not lexers or not lexers.initialized then
 
     local styles = {
 
+        ["mainspace"]    = { },
         ["whitespace"]   = { },
      -- ["default"]      = { font = font_name, size = font_size, fore = colors.black, back = colors.textpanel },
      -- ["default"]      = { font = font_name, size = font_size, fore = colors.black },
-        ["default"]      = { font = font_name, size = font_size, fore = colors.black,
-                             back = textadept and colors.textpanel or nil },
+        ["default"]      = { font = font_name, size = font_size, fore = colors.black },
         ["number"]       = { fore = colors.cyan },
         ["comment"]      = { fore = colors.yellow },
         ["keyword"]      = { fore = colors.blue, bold = true },
@@ -122,38 +97,6 @@ if not lexers or not lexers.initialized then
 
     }
 
-    local properties = {
-        ["fold.by.parsing"]        = 1,
-        ["fold.by.indentation"]    = 0,
-        ["fold.by.line"]           = 0,
-        ["fold.line.comments"]     = 0,
-        --
-        ["lexer.context.log"]      = 1, -- log errors and warnings
-        ["lexer.context.trace"]    = 0, -- show loading, initializations etc
-        ["lexer.context.detail"]   = 0, -- show more detail when tracing
-        ["lexer.context.show"]     = 0, -- show result of lexing
-        ["lexer.context.collapse"] = 0, -- make lexing results somewhat more efficient
-        ["lexer.context.inspect"]  = 0, -- show some info about lexer (styles and so)
-        --
-     -- ["lexer.context.log"]      = 1, -- log errors and warnings
-     -- ["lexer.context.trace"]    = 1, -- show loading, initializations etc
-    }
-
-    ----- lexers  = require("lexer")
-    local lexer   = require("scite-context-lexer")
-    local context = lexer.context
-
-    if context then
-        context.inform("loading context (style) properties")
-        if context.registerstyles then
-            context.registerstyles(styles)
-        end
-        if context.registercolors then
-            context.registercolors(colors)
-        end
-        if context.registerproperties then
-            context.registerproperties(properties)
-        end
-    end
+    return styles
 
 end

@@ -10,15 +10,13 @@ local info = {
 
 local P, R, S = lpeg.P, lpeg.R, lpeg.S
 
-local lexer       = require("scite-context-lexer")
-local context     = lexer.context
-local patterns    = context.patterns
+local lexers        = require("scite-context-lexer")
 
-local token       = lexer.token
-local exact_match = lexer.exact_match
+local patterns      = lexers.patterns
+local token         = lexers.token
 
-local cpplexer    = lexer.new("cpp","scite-context-lexer-cpp")
-local whitespace  = cpplexer.whitespace
+local cpplexer      = lexers.new("cpp","scite-context-lexer-cpp")
+local cppwhitespace = cpplexer.whitespace
 
 local keywords = { -- copied from cpp.lua
     -- c
@@ -56,6 +54,7 @@ local space         = patterns.space -- S(" \n\r\t\f\v")
 local any           = patterns.any
 local restofline    = patterns.restofline
 local startofline   = patterns.startofline
+local exactmatch    = patterns.exactmatch
 
 local squote        = P("'")
 local dquote        = P('"')
@@ -71,7 +70,7 @@ local decimal       = patterns.decimal
 local float         = patterns.float
 local integer       = P("-")^-1 * (hexadecimal + decimal) -- also in patterns ?
 
-local spacing       = token(whitespace, space^1)
+local spacing       = token(cppwhitespace, space^1)
 local rest          = token("default", any)
 
 local shortcomment  = token("comment", slashes * restofline^0)
@@ -93,10 +92,10 @@ local operator      = token("special", S("+-*/%^!=<>;:{}[]().&|?~"))
 
 ----- optionalspace = spacing^0
 
-local p_keywords    = exact_match(keywords)
-local p_datatypes   = exact_match(datatypes)
-local p_macros      = exact_match(macros)
-local p_luatexs     = exact_match(luatexs)
+local p_keywords    = exactmatch(keywords)
+local p_datatypes   = exactmatch(datatypes)
+local p_macros      = exactmatch(macros)
+local p_luatexs     = exactmatch(luatexs)
 
 local keyword       = token("keyword", p_keywords)
 local datatype      = token("keyword", p_datatypes)
@@ -105,7 +104,7 @@ local luatex        = token("command", p_luatexs)
 
 local macro         = token("data", #P("#") * startofline * P("#") * S("\t ")^0 * p_macros)
 
-cpplexer._rules = {
+cpplexer.rules = {
     { "whitespace",   spacing      },
     { "keyword",      keyword      },
     { "type",         datatype     },
@@ -120,13 +119,13 @@ cpplexer._rules = {
     { "rest",         rest         },
 }
 
-local web = lexer.loadluafile("scite-context-lexer-web-snippets")
+local web = lexers.loadluafile("scite-context-lexer-web-snippets")
 
 if web then
 
-    lexer.inform("supporting web snippets in cpp lexer")
+ -- lexers.report("supporting web snippets in cpp lexer")
 
-    cpplexer._rules_web = {
+    cpplexer.rules_web = {
         { "whitespace",   spacing      },
         { "keyword",      keyword      },
         { "type",         datatype     },
@@ -144,9 +143,9 @@ if web then
 
 else
 
-    lexer.report("not supporting web snippets in cpp lexer")
+ -- lexers.report("not supporting web snippets in cpp lexer")
 
-    cpplexer._rules_web = {
+    cpplexer.rules_web = {
         { "whitespace",   spacing      },
         { "keyword",      keyword      },
         { "type",         datatype     },
@@ -163,37 +162,17 @@ else
 
 end
 
-cpplexer._tokenstyles = context.styleset
-
-cpplexer._foldpattern = P("/*") + P("*/") + S("{}") -- separate entry else interference (singular?)
-
-cpplexer._foldsymbols = {
-    _patterns = {
-        "[{}]",
-        "/%*",
-        "%*/",
-    },
- -- ["data"] = { -- macro
- --     ["region"]    =  1,
- --     ["endregion"] = -1,
- --     ["if"]        =  1,
- --     ["ifdef"]     =  1,
- --     ["ifndef"]    =  1,
- --     ["endif"]     = -1,
- -- },
-    ["special"] = { -- operator
-        ["{"] =  1,
-        ["}"] = -1,
-    },
-    ["comment"] = {
-        ["/*"] =  1,
-        ["*/"] = -1,
-    }
+cpplexer.folding = {
+ -- ["region"]    = { ["data"]    =  1 },
+ -- ["endregion"] = { ["data"]    = -1 },
+ -- ["if"]        = { ["data"]    =  1 },
+ -- ["ifdef"]     = { ["data"]    =  1 },
+ -- ["ifndef"]    = { ["data"]    =  1 },
+ -- ["endif"]     = { ["data"]    = -1 },
+    ["{"]         = { ["special"] =  1 },
+    ["}"]         = { ["special"] = -1 },
+    ["/*"]        = { ["comment"] =  1 },
+    ["*/"]        = { ["comment"] = -1 },
 }
-
--- -- by indentation:
-
-cpplexer._foldpatterns = nil
-cpplexer._foldsymbols  = nil
 
 return cpplexer

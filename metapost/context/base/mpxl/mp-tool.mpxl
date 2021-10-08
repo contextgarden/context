@@ -545,21 +545,30 @@ def mfun_tool_striped_number_action text extra =
 enddef ;
 
 def mfun_tool_striped_set_options(expr option) =
-    save isinner, swapped ;
-    boolean isinner, swapped ;
-    if option = 1 :
+    save isinner, swapped, isdrawn ;
+    boolean isinner, swapped, isdrawn ;
+    if option = 0 :
+        isdrawn := true;
+        isinner := true ;
+        swapped := false ;
+    elseif option = 1 :
+        isdrawn := false ;
         isinner := false ;
         swapped := false ;
     elseif option = 2 :
+        isdrawn := false ;
         isinner := true ;
         swapped := false ;
     elseif option = 3 :
+        isdrawn := false ;
         isinner := false ;
         swapped := true ;
     elseif option = 4 :
+        isdrawn := false ;
         isinner := true ;
         swapped := true ;
     else :
+        isdrawn := false ;
         isinner := false ;
         swapped := false ;
     fi ;
@@ -595,7 +604,9 @@ vardef mfun_tool_striped_number(expr option, p, asked_n, asked_slot) text extra 
                 endfor ;
             fi ;
         ) ;
-        if swapped :
+        if isdrawn :
+            addto currentpicture also pattern ;
+        elseif swapped :
             addto currentpicture also shape ;
             addto currentpicture also pattern ;
         else :
@@ -606,10 +617,18 @@ vardef mfun_tool_striped_number(expr option, p, asked_n, asked_slot) text extra 
     )
 enddef ;
 
+% def mfun_tool_striped_angle_action text extra =
+%     for i = minimum -.5used_gap step used_gap until maximum :
+%         draw (minimum,i) -- (maximum,i) extra ;
+%     endfor ;
+%     currentpicture := currentpicture rotated used_angle ;
+% enddef ;
+
 def mfun_tool_striped_angle_action text extra =
     for i = minimum -.5used_gap step used_gap until maximum :
-        draw (minimum,i) -- (maximum,i) extra ;
+        nodraw (minimum,i) -- (maximum,i) extra ;
     endfor ;
+    dodraw origin ;
     currentpicture := currentpicture rotated used_angle ;
 enddef ;
 
@@ -622,7 +641,8 @@ vardef mfun_tool_striped_angle(expr option, p, asked_angle, asked_gap) text extr
         used_angle := if asked_angle = 0 : stripe_angle else : asked_angle fi ;
         used_gap := if asked_gap = 0 : stripe_gap else : asked_gap fi ;
         shape := image(draw p) ;
-        centrum := center shape ;
+      % centrum := center shape ;
+        centrum := llcorner shape ;
         shape := shape shifted - centrum ;
         mask := shape rotated used_angle ;
         maximum := max (xpart llcorner mask, xpart urcorner mask, ypart llcorner mask, ypart urcorner mask) ;
@@ -646,7 +666,9 @@ vardef mfun_tool_striped_angle(expr option, p, asked_angle, asked_gap) text extr
                 endfor ;
             fi ;
         ) ;
-        if swapped :
+        if isdrawn :
+            addto currentpicture also pattern ;
+        elseif swapped :
             addto currentpicture also shape ;
             addto currentpicture also pattern ;
         else :

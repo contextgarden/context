@@ -32,6 +32,7 @@ local popcommand        = helpers.commands.pop
 local pushcommand       = helpers.commands.push
 
 local virtualcharacters = { }
+local virtualforced     = { }
 
 local hashes            = fonts.hashes
 local identifiers       = hashes.identifiers
@@ -136,7 +137,7 @@ function fallbacks.apply(target,original)
     local fullname = trace_fallbacks and target.properties.fullname
     --
     for k, v in sortedhash(virtualcharacters) do
-        if not characters[k] then
+        if not characters[k] or virtualforced[k] then
             local tv = type(v)
             local cd = nil
             if tv == "table" then
@@ -698,3 +699,30 @@ virtualcharacters[0x305] = function(data)
     }
 end
 
+local function threedots(data,shift)
+    local characters = data.target.characters
+    local parameters = data.target.parameters
+    local periodchar = characters[0x002E]
+    local pluschar   = characters[0x002B]
+    local period     = charcommand[0x002E]
+    local periodwd   = periodchar.width  or 0
+    local periodht   = periodchar.height or 0
+    local perioddp   = periodchar.depth or 0
+    local offset     = 0
+    if shift then
+        local plusht = pluschar.height or 0
+        local plusdp = pluschar.depth or 0
+        local axis   = (plusdp + plusht)//2 - plusdp
+        offset   = axis - periodht//2
+        periodht = axis + periodht//2
+    end
+    return {
+        width    = 3*periodwd,
+        height   = periodht,
+        depth    = 0,
+        commands = { upcommand[offset], period, period, period }
+    }
+end
+
+virtualcharacters[0x2026] = function(data) return threedots(data,false) end virtualforced[0x2026] = true
+virtualcharacters[0x22EF] = function(data) return threedots(data, true) end virtualforced[0x22EF] = true

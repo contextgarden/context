@@ -93,14 +93,20 @@
   {}
 
 \tolerant\def\strc_markings_get_yes[#1]#*[#2]#*[#3]%
-  {\ifcstok{\namedmarkingparameter{#1}\c!state}\v!start
+  {\ifarguments\orelse\ifcstok{\namedmarkingparameter{#1}\c!state}\v!start
      \begingroup
      \setsystemmode\v!marking
      \the\everymarking
      \ifparameter#3\or
-       \clf_getmarking{#1}{#2}{#3}%
+       \ifcstok{#2}\v!page
+         \markingcommand{#1}{\csname\??markingfilter#3\endcsname{#1}}%
+       \else
+         \markingcommand{#1}{\clf_getsynchronizedmarking\begincsname\??markingclass#1\endcsname{#2}{#3}}%
+       \fi
+     \orelse\ifparameter#2\or
+       \markingcommand{#1}{\csname\??markingfilter#2\endcsname{#1}}%
      \else
-       \clf_getmarking{#1}{\v!page}{#2}%
+       \markingcommand{#1}{\csname\??markingfilter\v!default\endcsname{#1}}%
      \fi
      \endgroup
   \fi}

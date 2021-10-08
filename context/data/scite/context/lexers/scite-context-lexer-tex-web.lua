@@ -6,18 +6,17 @@ local info = {
     license   = "see context related readme files",
 }
 
-local lexer       = require("scite-context-lexer")
-local context     = lexer.context
-local patterns    = context.patterns
+local lexers      = require("scite-context-lexer")
 
-local texweblexer = lexer.new("tex-web","scite-context-lexer-tex")
-local texlexer    = lexer.load("scite-context-lexer-tex")
+local texweblexer = lexers.new("tex-web","scite-context-lexer-tex")
+local texlexer    = lexers.load("scite-context-lexer-tex")
 
 -- can probably be done nicer now, a bit of a hack
 
-texweblexer._rules       = texlexer._rules_web
-texweblexer._tokenstyles = texlexer._tokenstyles
-texweblexer._foldsymbols = texlexer._foldsymbols
-texweblexer._directives  = texlexer._directives
+texweblexer.rules      = texlexer.rules_web
+texweblexer.embedded   = texlexer.embedded
+-- texweblexer.whitespace = texlexer.whitespace
+texweblexer.folding    = texlexer.folding
+texweblexer.directives = texlexer.directives
 
 return texweblexer

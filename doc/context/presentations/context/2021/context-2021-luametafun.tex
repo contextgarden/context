@@ -1,0 +1,362 @@
+% language=us
+
+\usemodule[present-boring,abbreviations-logos]
+
+\setuptolerance[verytolerant,stretch]
+
+\startdocument
+  [title={LUAMETAFUN},
+   banner={the new interfaces},
+   location={context\enspace {\bf 2021}\enspace meeting}]
+
+\starttitle[title=Three subsystems]
+
+\startitemize
+
+\startitem
+    The core of the engine in still \TEX. It all starts there.
+\stopitem
+
+\startitem
+    The \TEX\ internals are opened up via \LUA. We can call out to \LUA\ from
+    \TEX\ and to some extend from \LUA\ to \TEX. Quite often we push back
+    something via the input channels.
+\stopitem
+
+\startitem
+    The \METAPOST\ library is accessed from \LUA. So from within \TEX\ there is
+    always \LUA\ in between. Results go back via \LUA. The library can also call
+    out to \LUA\ and from there to \TEX.
+\stopitem
+
+\startitem
+    This means that all three major components of \LUAMETATEX\ can talk to each
+    other and use each others capabilities.
+\stopitem
+
+\startitem
+    With \LUA\ in the center, we also have access to other mechanism, for instance
+    fonts, graphics and libraries.
+\stopitem
+
+\startitem
+    In \CONTEXT\ the \LUA\ language also permits using \XML, \JSON, \CSV, \SQL\
+    databases and other input that can be dealt with programmatically.
+\stopitem
+
+\startitem
+    All has been reasonably optimized for efficiency and performance.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=The (\LUATEX) library]
+
+\startitemize
+
+\startitem
+    Turning \METAPOST\ into a library has been a subproject of the \LUATEX\ project. The
+    semi|-|official team (Taco, Jacko, Hans, Luigi) got John Hobbies blessing.
+\stopitem
+
+\startitem
+    This was a rather massive (and impressive) operation by Taco because multiple
+    number models were to be supported and the internals had to be made such that
+    different backends were possible. All with remaining perfect (DEK) compatibility.
+\stopitem
+
+\startitem
+    The \METAPOST\ library serves both the stand alone program and \LUATEX.
+\stopitem
+
+\startitem
+    That means the \POSTSCRIPT\ backend is built in plus some basic (\TYPEONE)
+    font handling. We support \PDF\ output via the \METAPOST\ \LUA\ backend (in
+    \MKII\ that is done by parsing the \POSTSCRIPT\ and specials).
+\stopitem
+
+\startitem
+    In addition there is \PNG\ and \SVG\ output. It helps that \METAPOST\ output is
+    rather simple.
+\stopitem
+
+\startitem
+    The \LUATEX\ engine uses the \LUA\ backend which represents the result in \LUA\ tables
+    resembling the \METAPOST\ internal representation.
+\stopitem
+
+\startitem
+    The library supports scaled and double (internal) but also binary and decimal
+    number models that use (linked in) libraries.
+\stopitem
+
+% this would force a page
+%
+% \startitem
+%     The library is quite stable and Taco transferred maintenance to Luigi.
+% \stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=The (\LUAMETATEX) library]
+
+\startitemize
+
+\startitem
+    We don't need the \POSTSCRIPT\ backend (which only does \TYPEONE\ anyway).
+\stopitem
+
+\startitem
+    We also have no use for \SVG\ and \PNG\ output.
+\stopitem
+
+\startitem
+    The binary number model has no advantages over the decimal one but brings
+    quite some dependency with it (library code).
+\stopitem
+
+\startitem
+    The \TYPEONE\ font support is not used in \CONTEXT\ because we handle text
+    differently.
+\stopitem
+
+\startitem
+    All this means that we can do with a smaller (simplified) \METAPOST\ library.
+\stopitem
+
+\startitem
+    The codebase has been overhauled. We still have \type {.w} files (\CWEB) but
+    use a \LUA\ script to convert that to \CCODE\ which means that we have better
+    control over how it comes out.
+\stopitem
+
+\startitem
+    As with \LUATEX\ the file \IO, message handling etc.\ now largely goes via \LUA;
+    it is more integrated.
+\stopitem
+
+\startitem
+    The same is true for scanning interfaces and return values (injectors). That also
+    made for more symbolic coding.
+\stopitem
+
+\startitem
+    Memory management (allocation) is under engine control (as with \TEX\ and \LUA);
+    we use a common high performance allocator library.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=The (\LUAMETATEX) library]
+
+\startitemize
+
+\startitem
+    Some already present mechanism have been extended, for instance clips have
+    pre- and postscripts.
+\stopitem
+
+\startitem
+    A grouping wrapper has been added (handy for some graphic trickery supported in the
+    backend.)
+\stopitem
+
+\startitem
+    The \type {runscript} primitive supports symbolic references to functions (of course to
+    be provided at the \LUA\ end).
+\stopitem
+
+\startitem
+    The \type {runscript} return values can be more native, in addition to the already
+    present (default) \type {scantokens} support.
+\stopitem
+
+\startitem
+    Internals are extended with booleans and strings.
+\stopitem
+
+\startitem
+    Output (paths, clips etc) can be stacked in a different order.
+\stopitem
+
+\startitem
+    There are additional statistics available.
+\stopitem
+
+\startitem
+    In some places performance could be improved.
+\stopitem
+
+\startitem
+    In the meantime it can be considered a major upgrade and (for various
+    reasons) backporting to \LUATEX\ makes no sense. And yes, all errors are
+    mine.
+\stopitem
+
+\stopitemize
+
+\starttitle[title=The \LUA fication]
+
+    {\em See Taco's presentation where he gives some examples.}
+
+\stoptitle
+
+\starttitle[title=Callbacks]
+
+We need to hook in some functions: \blank[2*big]
+
+\starttabulate[|T|T|T|p|]
+    \HL
+    \NC   \NC find_file    \NC (name,mode,kind)           \NC locate a file (usually within the \TDS\ setup) \NC \NR
+    \NC f \NC open_file    \NC (name,mode,kind)           \NC open given file \NC \NR
+    \NC   \NC close_file   \NC (handle)                   \NC close opened file \NC \NR
+    \NC s \NC read_file    \NC (handle,size)              \NC read from file \NC \NR
+    \NC   \NC write_file   \NC (handle,str)               \NC write to file \NC \NR
+    \HL
+    \NC s \NC run_script   \NC (code,size,index)          \NC run the given string as \LUA\ script \NC \NR
+    \NC s \NC make_text    \NC (str,size,mode)            \NC process btex/etex \NC \NR
+    \HL
+    \NC   \NC run_internal \NC (action,index,kind,name)   \NC act on internal definition \NC \NR
+    \HL
+    \NC n \NC run_overload \NC (property,name,mode)       \NC process overload check \NC \NR
+    \HL
+    \NC   \NC run_logger   \NC (target,str,size)          \NC process log message \NC \NR
+    \NC   \NC run_error    \NC (message,help,interaction) \NC handle error (message) \NC \NR
+    \NC   \NC run_warning  \NC (message)                  \NC handle warning \NC \NR
+    \HL
+\stoptabulate
+
+% check_overload shipout_backend
+
+\stoptitle
+
+\starttitle[title=Two calling methods]
+
+The runner can be called as:
+
+\starttyping
+runscript("mp.MyFunction()")
+\stoptyping
+
+which implies at the \LUA\ end:
+
+\starttyping
+function mp.MyFunction()
+    ...
+end
+\stoptyping
+
+Here the callback function is responsible for loading the string and executing it.
+
+Alternatively one can say:
+
+\starttyping
+runscript <number>
+\stoptyping
+
+The number can be intercepted at the \LUA\ end to do some associated action.
+
+\stoptitle
+
+\starttitle[title=Variables]
+
+We can do:
+
+\starttyping
+lua.mp.MyFunction("foo",123,true)
+\stoptyping
+
+which in the end is equivalent to:
+
+\starttyping
+runscript("mp.MyFunction('foo',123,true)")
+\stoptyping
+
+Alternatively one can pick up values by scanning: like \type {scannext}, \type
+{scanexpression}, \type {scantoken}, \type {scansymbol}, \type {scannumeric},
+\type {scaninteger}, \type {scanboolean}, \type {scanstring}, \type {scanpair},
+\type {scancolor}, \type {scancmykcolor}, \type {scantransform}, \type
+{scanpath}, \type {scanpen}, etc.
+
+\stoptitle
+
+\starttitle[title=Return values]
+
+The runner can return:
+
+\startitemize
+
+\startitem
+    a string that gets fed into the \type {scantokens} primitive
+\stopitem
+
+\startitem
+    a numeric or boolean that gets injected as native \METAPOST\ object
+\stopitem
+
+\startitem
+    a table that gets concatenated and fed into the \type {scantokens} primitive
+\stopitem
+
+\startitem
+    \type {true} and a second argument that gets converted into a native \METAPOST\ object
+\stopitem
+
+\startitem
+    in the last case the number of table elements determines the object
+\stopitem
+
+\stopitemize
+
+Instead of returning a value one can inject: \type {injectnumeric}, \type
+{injectinteger}, \type {injectboolean}, \type {injectstring}, \type {injectpair},
+\type {injectcolor}, \type {injectcmykcolor}, \type {injecttransform}, \type
+{injectpath}, \type {injectwhatever}, etc.\ and these accept one or more values
+and|/|or tables.
+
+These mechanisms might evolve a bit over time. Lots of examples can be found in
+the \type {mlib-*.lmt} files.
+
+\stoptitle
+
+\starttitle[title=Parameters]
+
+\startitemize
+    \startitem
+        The new interfaces permit us to program quite robust parameter driven
+        interfaces that (sort of) match the way we do things at the \TEX\ end.
+    \stopitem
+    \startitem
+        The distribution has several examples of usage and more will be added.
+    \stopitem
+    \startitem
+        Macros that use the new mechanisms can be recognized by the \type {lmt_}
+        prefix.
+    \stopitem
+\stopitemize
+
+\starttyping
+lmt_mytrick [
+    somestring  = "test",
+    somenumeric = 123,
+    someboolean = true,
+    somecolor   = (1, 0, 1),
+    somepath    = fullsquare scaled 10cm,
+    somelist    = { (0, 0), (1, 3), (8, 9) },
+    sometable   = [
+        somenumeric = 321,
+   ],
+] ;
+\stoptyping
+
+{\em Show the pattern of defining these at the \LUA\ end and in \METAPOST\ files.}
+
+\stoptitle
+
+\stopdocument

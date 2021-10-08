@@ -69,7 +69,7 @@ local report_objects    = logs.reporter("backend","objects")
 local report_finalizing = logs.reporter("backend","finalizing")
 local report_blocked    = logs.reporter("backend","blocked")
 
-local implement         = interfaces.implement
+local implement         = interfaces and interfaces.implement
 
 local context           = context
 
@@ -83,7 +83,7 @@ local factor            = number.dimenfactors.bp
 local codeinjections    = { }
 local nodeinjections    = { }
 
-local backends          = backends
+local backends          = backends or { }
 
 local pdfbackend        = {
     comment        = "backend for directly generating pdf output",
@@ -241,8 +241,8 @@ do
         end
     end
 
-    local toregime   = regimes.toregime
-    local fromregime = regimes.fromregime
+    local toregime   = regimes and regimes.toregime
+    local fromregime = regimes and regimes.fromregime
     local escaped    = Cs(Cc("(") * (S("\\()\n\r\t\b\f")/"\\%0" + P(1))^0 * Cc(")"))
 
     topdfdoc = function(str,default)
@@ -745,6 +745,8 @@ lpdf.boolean     = pdfboolean
 lpdf.reference   = pdfreference
 lpdf.verbose     = pdfverbose
 lpdf.literal     = pdfliteral
+
+if not callbacks then return lpdf end
 
 -- three priority levels, default=2
 

@@ -111,8 +111,10 @@ local engine_new = filenameonly(getargument("engine") or directives.value("syste
 local engine_old = filenameonly(environment.ownmain) or filenameonly(environment.ownbin)
 
 local function restart(engine_old,engine_new)
-    local ownname = filejoinname(filepathpart(environment.ownname),"mtxrun.lua")
-    local command = format("%s --luaonly %q %s --redirected",engine_new,ownname,environment.reconstructcommandline())
+    local generate  = environment.arguments.generate and (engine_new == "luatex" or engine_new == "luajittex")
+    local arguments = generate and  "--generate" or environment.reconstructcommandline()
+    local ownname   = filejoinname(filepathpart(environment.ownname),"mtxrun.lua")
+    local command   = format("%s --luaonly %q %s --redirected",engine_new,ownname,arguments)
     report(format("redirect %s -> %s: %s",engine_old,engine_new,command))
     local result = os.execute(command)
     os.exit(result == 0 and 0 or 1)
@@ -1719,6 +1721,12 @@ function scripts.context.timed(action)
 end
 
 -- getting it done
+
+if getargument("pdftex") then
+    setargument("engine","pdftex")
+elseif getargument("xetex") then
+    setargument("engine","xetex")
+end
 
 if getargument("timedlog") then
     logs.settimedlog()

@@ -6,55 +6,34 @@ local info = {
     license   = "see context related readme files",
 }
 
--- maybe: _LINEBYLINE variant for large files (no nesting)
--- maybe: protected_macros
-
---[[
-
-  experiment dd 2009/10/28 .. todo:
-
-  -- figure out if tabs instead of splits are possible
-  -- locate an option to enter name in file dialogue (like windows permits)
-  -- figure out why loading a file fails
-  -- we cannot print to the log pane
-  -- we cannot access props["keywordclass.macros.context.en"]
-  -- lexer.get_property only handles integers
-  -- we cannot run a command to get the location of mult-def.lua
-
-  -- local interface = props["keywordclass.macros.context.en"]
-  -- local interface = lexer.get_property("keywordclass.macros.context.en","")
-
-]]--
-
-local global, string, table, lpeg = _G, string, table, lpeg
+local string, table, lpeg = string, table, lpeg
 local P, R, S, V, C, Cmt, Cp, Cc, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cmt, lpeg.Cp, lpeg.Cc, lpeg.Ct
 local type, next = type, next
 local find, match, lower, upper = string.find, string.match, string.lower, string.upper
 
-local lexer        = require("scite-context-lexer")
-local context      = lexer.context
-local patterns     = context.patterns
-local inform       = context.inform
+local lexers        = require("scite-context-lexer")
 
-local token        = lexer.token
-local exact_match  = lexer.exact_match
+local patterns      = lexers.patterns
+local token         = lexers.token
+local report        = lexers.report
 
-local contextlexer = lexer.new("tex","scite-context-lexer-tex")
-local whitespace   = contextlexer.whitespace
+local contextlexer  = lexers.new("tex","scite-context-lexer-tex")
+local texwhitespace = contextlexer.whitespace
 
-local cldlexer     = lexer.load("scite-context-lexer-cld")
-local mpslexer     = lexer.load("scite-context-lexer-mps")
+local cldlexer      = lexers.load("scite-context-lexer-cld")
+-- local cldlexer      = lexers.load("scite-context-lexer-lua")
+local mpslexer      = lexers.load("scite-context-lexer-mps")
 
-local commands     = { en = { } }
-local primitives   = { }
-local helpers      = { }
-local constants    = { }
+local commands      = { en = { } }
+local primitives    = { }
+local helpers       = { }
+local constants     = { }
 
 do -- todo: only once, store in global
 
     -- commands helpers primitives
 
-    local definitions = context.loaddefinitions("scite-context-data-interfaces")
+    local definitions = lexers.loaddefinitions("scite-context-data-interfaces")
 
     if definitions then
         local used = { }
@@ -86,10 +65,10 @@ do -- todo: only once, store in global
             end
         end
         table.sort(used)
-        inform("context user interfaces '%s' supported",table.concat(used," "))
+        report("context user interfaces '%s' supported",table.concat(used," "))
     end
 
-    local definitions = context.loaddefinitions("scite-context-data-context")
+    local definitions = lexers.loaddefinitions("scite-context-data-context")
     local overloaded  = { }
 
     if definitions then
@@ -103,7 +82,7 @@ do -- todo: only once, store in global
         end
     end
 
-    local definitions = context.loaddefinitions("scite-context-data-tex")
+    local definitions = lexers.loaddefinitions("scite-context-data-tex")
 
     if definitions then
         local function add(data,normal)
@@ -140,87 +119,48 @@ local knowncommand = Cmt(cstoken^1, function(_,i,s)
     return currentcommands[s] and i
 end)
 
-local utfchar      = context.utfchar
-local wordtoken    = context.patterns.wordtoken
-local iwordtoken   = context.patterns.iwordtoken
-local wordpattern  = context.patterns.wordpattern
-local iwordpattern = context.patterns.iwordpattern
-local invisibles   = context.patterns.invisibles
-local checkedword  = context.checkedword
-local styleofword  = context.styleofword
-local setwordlist  = context.setwordlist
+local utfchar      = lexers.helpers.utfchar
+local wordtoken    = lexers.patterns.wordtoken
+local iwordtoken   = lexers.patterns.iwordtoken
+local wordpattern  = lexers.patterns.wordpattern
+local iwordpattern = lexers.patterns.iwordpattern
+local invisibles   = lexers.patterns.invisibles
+local styleofword  = lexers.styleofword
+local setwordlist  = lexers.setwordlist
+
 local validwords   = false
 local validminimum = 3
 
--- % language=uk
+-- % language=uk (space before key is mandate)
 
--- fails (empty loop message) ... latest lpeg issue?
-
--- todo: Make sure we only do this at the beginning .. a pitty that we
--- can't store a state .. now is done too often.
-
-local knownpreamble = Cmt(P("% "), function(input,i,_) -- todo : utfbomb, was #P("% ")
-    if i < 10 then
-        validwords, validminimum = false, 3
-        local s, e, word = find(input,"^(.-)[\n\r]",i) -- combine with match
-        if word then
-            local interface = match(word,"interface=([a-z][a-z]+)")
-            if interface and #interface == 2 then
-                inform("enabling context user interface '%s'",interface)
-                currentcommands  = commands[interface] or commands.en or { }
-            end
-            local language = match(word,"language=([a-z][a-z]+)")
+contextlexer.preamble = Cmt(P("% ") + P(true), function(input,i)
+    currentcommands = false
+    validwords      = false
+    validminimum    = 3
+    local s, e, line = find(input,"^(.-)[\n\r]",1) -- combine with match
+    if line then
+        local interface = match(line," interface=([a-z][a-z]+)")
+        local language  = match(line," language=([a-z][a-z]+)")
+        if interface and #interface == 2 then
+         -- report("enabling context user interface '%s'",interface)
+            currentcommands  = commands[interface]
+        end
+        if language then
             validwords, validminimum = setwordlist(language)
         end
     end
-    return false
+    if not currentcommands then
+        currentcommands = commands.en or { }
+    end
+    return false -- so we go back and now handle the line as comment
 end)
-
--- -- the token list contains { "style", endpos } entries
--- --
--- -- in principle this is faster but it is also crash sensitive for large files
-
--- local constants_hash  = { } for i=1,#constants  do constants_hash [constants [i]] = true end
--- local helpers_hash    = { } for i=1,#helpers    do helpers_hash   [helpers   [i]] = true end
--- local primitives_hash = { } for i=1,#primitives do primitives_hash[primitives[i]] = true end
-
--- local specialword = Ct( P("\\") * Cmt( C(cstoken^1), function(input,i,s)
---     if currentcommands[s] then
---         return true, "command", i
---     elseif constants_hash[s] then
---         return true, "data", i
---     elseif helpers_hash[s] then
---         return true, "plain", i
---     elseif primitives_hash[s] then
---         return true, "primitive", i
---     else -- if starts with if then primitive
---         return true, "user", i
---     end
--- end) )
-
--- local specialword = P("\\") * Cmt( C(cstoken^1), function(input,i,s)
---     if currentcommands[s] then
---         return true, { "command", i }
---     elseif constants_hash[s] then
---         return true, { "data", i }
---     elseif helpers_hash[s] then
---         return true, { "plain", i }
---     elseif primitives_hash[s] then
---         return true, { "primitive", i }
---     else -- if starts with if then primitive
---         return true, { "user", i }
---     end
--- end)
-
--- experiment: keep space with whatever ... less tables
-
--- 10pt
 
 local commentline            = P("%") * (1-S("\n\r"))^0
 local endline                = S("\n\r")^1
 
 local space                  = patterns.space -- S(" \n\r\t\f\v")
 local any                    = patterns.any
+local exactmatch             = patterns.exactmatch
 local backslash              = P("\\")
 local hspace                 = S(" \t")
 
@@ -230,16 +170,16 @@ local p_rest                 = any
 local p_preamble             = knownpreamble
 local p_comment              = commentline
 ----- p_command              = backslash * knowncommand
------ p_constant             = backslash * exact_match(constants)
------ p_helper               = backslash * exact_match(helpers)
------ p_primitive            = backslash * exact_match(primitives)
+----- p_constant             = backslash * exactmatch(constants)
+----- p_helper               = backslash * exactmatch(helpers)
+----- p_primitive            = backslash * exactmatch(primitives)
 
 local p_csdone               = #(1-cstoken) + P(-1)
 
-local p_command              = backslash * lexer.helpers.utfchartabletopattern(currentcommands) * p_csdone
-local p_constant             = backslash * lexer.helpers.utfchartabletopattern(constants)       * p_csdone
-local p_helper               = backslash * lexer.helpers.utfchartabletopattern(helpers)         * p_csdone
-local p_primitive            = backslash * lexer.helpers.utfchartabletopattern(primitives)      * p_csdone
+local p_command              = backslash * lexers.helpers.utfchartabletopattern(currentcommands) * p_csdone
+local p_constant             = backslash * lexers.helpers.utfchartabletopattern(constants)       * p_csdone
+local p_helper               = backslash * lexers.helpers.utfchartabletopattern(helpers)         * p_csdone
+local p_primitive            = backslash * lexers.helpers.utfchartabletopattern(primitives)      * p_csdone
 
 local p_ifprimitive          = P("\\if") * cstoken^1
 local p_csname               = backslash * (cstoken^1 + P(1))
@@ -252,28 +192,15 @@ local p_reserved             = backslash * (
                                     P("??") + R("az") * P("!")
                                ) * cstoken^1
 
-local p_number               = context.patterns.real
-local p_unit                 = P("pt") + P("bp") + P("sp") + P("mm") + P("cm") + P("cc") + P("dd")
+local p_number               = lexers.patterns.real
+----- p_unit                 = P("pt") + P("bp") + P("sp") + P("mm") + P("cm") + P("cc") + P("dd") + P("dk")
+local p_unit                 = lexers.helpers.utfchartabletopattern { "pt", "bp", "sp", "mm", "cm", "cc", "dd", "dk" }
 
 -- no looking back           = #(1-S("[=")) * cstoken^3 * #(1-S("=]"))
 
--- This one gives stack overflows:
---
--- local p_word = Cmt(iwordpattern, function(_,i,s)
---     if validwords then
---         return checkedword(validwords,validminimum,s,i)
---     else
---      -- return true, { "text", i }
---         return true, "text", i
---     end
--- end)
---
--- So we use this one instead:
+local p_word                 = C(iwordpattern) * Cp() / function(s,p) return styleofword(validwords,validminimum,s,p) end -- a bit of a hack
 
------ p_word = Ct( iwordpattern / function(s) return styleofword(validwords,validminimum,s) end * Cp() ) -- the function can be inlined
-local p_word =  iwordpattern / function(s) return styleofword(validwords,validminimum,s) end * Cp() -- the function can be inlined
-
------ p_text = (1 - p_grouping - p_special - p_extra - backslash - space + hspace)^1
+----- p_text                 = (1 - p_grouping - p_special - p_extra - backslash - space + hspace)^1
 
 -- keep key pressed at end-of syst-aux.mkiv:
 --
@@ -319,30 +246,29 @@ end
 
 local p_invisible = invisibles^1
 
-local spacing                = token(whitespace,  p_spacing    )
+local spacing                = token(texwhitespace, p_spacing    )
 
-local rest                   = token("default",   p_rest       )
-local preamble               = token("preamble",  p_preamble   )
-local comment                = token("comment",   p_comment    )
-local command                = token("command",   p_command    )
-local constant               = token("data",      p_constant   )
-local helper                 = token("plain",     p_helper     )
-local primitive              = token("primitive", p_primitive  )
-local ifprimitive            = token("primitive", p_ifprimitive)
-local reserved               = token("reserved",  p_reserved   )
-local csname                 = token("user",      p_csname     )
-local grouping               = token("grouping",  p_grouping   )
-local number                 = token("number",    p_number     )
-                             * token("constant",  p_unit       )
-local special                = token("special",   p_special    )
-local reserved               = token("reserved",  p_reserved   ) -- reserved internal preproc
-local extra                  = token("extra",     p_extra      )
-local invisible              = token("invisible", p_invisible  )
-local text                   = token("default",   p_text       )
+local rest                   = token("default",     p_rest       )
+local comment                = token("comment",     p_comment    )
+local command                = token("command",     p_command    )
+local constant               = token("data",        p_constant   )
+local helper                 = token("plain",       p_helper     )
+local primitive              = token("primitive",   p_primitive  )
+local ifprimitive            = token("primitive",   p_ifprimitive)
+local reserved               = token("reserved",    p_reserved   )
+local csname                 = token("user",        p_csname     )
+local grouping               = token("grouping",    p_grouping   )
+local number                 = token("number",      p_number     )
+                             * token("constant",    p_unit       )
+local special                = token("special",     p_special    )
+local reserved               = token("reserved",    p_reserved   ) -- reserved internal preproc
+local extra                  = token("extra",       p_extra      )
+local invisible              = token("invisible",   p_invisible  )
+local text                   = token("default",     p_text       )
 local word                   = p_word
 
------ startluacode           = token("grouping", P("\\startluacode"))
------ stopluacode            = token("grouping", P("\\stopluacode"))
+----- startluacode           = token("grouping",    P("\\startluacode"))
+----- stopluacode            = token("grouping",    P("\\stopluacode"))
 
 local luastatus = false
 local luatag    = nil
@@ -351,14 +277,14 @@ local lualevel  = 0
 local function startdisplaylua(_,i,s)
     luatag = s
     luastatus = "display"
-    cldlexer._directives.cld_inline = false
+    cldlexer.directives.cld_inline = false
     return true
 end
 
 local function stopdisplaylua(_,i,s)
     local ok = luatag == s
     if ok then
-        cldlexer._directives.cld_inline = false
+        cldlexer.directives.cld_inline = false
         luastatus = false
     end
     return ok
@@ -369,7 +295,7 @@ local function startinlinelua(_,i,s)
         return false
     elseif not luastatus then
         luastatus = "inline"
-        cldlexer._directives.cld_inline = true
+        cldlexer.directives.cld_inline = true
         lualevel = 1
         return true
     else-- if luastatus == "inline" then
@@ -396,7 +322,7 @@ local function stopinlinelua_e(_,i,s) -- }
         lualevel = lualevel - 1
         local ok = lualevel <= 0 -- was 0
         if ok then
-            cldlexer._directives.cld_inline = false
+            cldlexer.directives.cld_inline = false
             luastatus = false
         end
         return ok
@@ -405,7 +331,7 @@ local function stopinlinelua_e(_,i,s) -- }
     end
 end
 
-contextlexer._reset_parser = function()
+contextlexer.resetparser = function()
     luastatus = false
     luatag    = nil
     lualevel  = 0
@@ -462,17 +388,11 @@ local stopmetafuncode        = token("embedded", stopmetafun)
 local callers                = token("embedded", P("\\") * metafuncall) * metafunarguments
                              + token("embedded", P("\\") * luacall)
 
-lexer.embed_lexer(contextlexer, mpslexer, startmetafuncode, stopmetafuncode)
-lexer.embed_lexer(contextlexer, cldlexer, startluacode,     stopluacode)
+lexers.embed(contextlexer, mpslexer, startmetafuncode, stopmetafuncode)
+lexers.embed(contextlexer, cldlexer, startluacode,     stopluacode)
 
--- preamble is inefficient as it probably gets called each time (so some day I really need to
--- patch the plugin)
-
-contextlexer._preamble = preamble
-
-contextlexer._rules = {
+contextlexer.rules = {
     { "whitespace",  spacing     },
- -- { "preamble",    preamble    },
     { "word",        word        },
     { "text",        text        }, -- non words
     { "comment",     comment     },
@@ -499,13 +419,11 @@ contextlexer._rules = {
 -- Watch the text grabber, after all, we're talking mostly of text (beware,
 -- no punctuation here as it can be special). We might go for utf here.
 
-local web = lexer.loadluafile("scite-context-lexer-web-snippets")
+local web = lexers.loadluafile("scite-context-lexer-web-snippets")
 
 if web then
 
-    lexer.inform("supporting web snippets in tex lexer")
-
-    contextlexer._rules_web = {
+    contextlexer.rules_web = {
         { "whitespace",  spacing     },
         { "text",        text        }, -- non words
         { "comment",     comment     },
@@ -527,9 +445,7 @@ if web then
 
 else
 
-    lexer.report("not supporting web snippets in tex lexer")
-
-    contextlexer._rules_web = {
+    contextlexer.rules_web = {
         { "whitespace",  spacing     },
         { "text",        text        }, -- non words
         { "comment",     comment     },
@@ -550,39 +466,31 @@ else
 
 end
 
-contextlexer._tokenstyles = context.styleset
-
-local environment = {
-    ["\\start"] = 1, ["\\stop"] = -1,
- -- ["\\begin"] = 1, ["\\end" ] = -1,
-}
-
--- local block = {
---     ["\\begin"] = 1, ["\\end" ] = -1,
--- }
-
-local group = {
-    ["{"] = 1, ["}"] = -1,
-}
-
-contextlexer._foldpattern = P("\\" ) * (P("start") + P("stop")) + S("{}") -- separate entry else interference
-
-contextlexer._foldsymbols = { -- these need to be style references .. todo: multiple styles
-    _patterns    = {
-        "\\start", "\\stop", -- regular environments
-     -- "\\begin", "\\end",  -- (moveable) blocks
-        "[{}]",
+contextlexer.folding = {
+    ["\\start"] = {
+        ["command"]  = 1,
+        ["constant"] = 1,
+        ["data"]     = 1,
+        ["user"]     = 1,
+        ["embedded"] = 1,
+     -- ["helper"]   = 1,
+        ["plain"]    = 1,
     },
-    ["command"]  = environment,
-    ["constant"] = environment,
-    ["data"]     = environment,
-    ["user"]     = environment,
-    ["embedded"] = environment,
-    ["helper"]   = environment,
-    ["plain"]    = environment,
-    ["grouping"] = group,
+    ["\\stop"] = {
+        ["command"]  = -1,
+        ["constant"] = -1,
+        ["data"]     = -1,
+        ["user"]     = -1,
+        ["embedded"] = -1,
+     -- ["helper"]   = -1,
+        ["plain"]    = -1,
+    },
+    ["{"] = {
+        ["grouping"] = 1,
+    },
+    ["}"] = {
+        ["grouping"] = -1,
+    },
 }
-
--- context.inspect(contextlexer)
 
 return contextlexer

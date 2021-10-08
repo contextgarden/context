@@ -1,0 +1,609 @@
+% language=us
+
+\usemodule[present-boring,abbreviations-logos]
+
+
+\definehighlight[nb][style=bold,color=middlegray,define=no]
+
+\definecolor[maincolor][g=.3]
+
+\startdocument
+  [title={COMPACT FONTS},
+   banner={a different approach to scaling},
+   location={context\enspace {\bf 2021}\enspace meeting}]
+
+\starttitle[title=How \TEX\ uses fonts]
+
+\startitemize
+    \startitem
+        In a \TEX\ engine there is a 1-to-1 mapping from characters in the input
+        to a slot in a font.
+    \stopitem
+    \startitem
+        Combinations of characters can be mapped onto one shape: ligatures.
+    \stopitem
+    \startitem
+        Hyphenation is (also) controlled by the input encoding of a font which
+        imposes some limitations.
+    \stopitem
+    \startitem
+        In the typeset result characters (glyphs) can be (re)positioned relatively: kerns.
+    \stopitem
+    \startitem
+        This all happens in a very interwoven way (e.g. inside the par builder).
+    \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=How traditional \TEX\ sees fonts]
+
+\startitemize
+    \startitem
+        A font is just a (binary) blob of data with information where characters
+        have a width, height, depth and italic correction.
+    \stopitem
+    \startitem
+        The engine only needs the dimensions and when the same font is used with a
+        different scale a copy with scaled dimensions is used.
+    \stopitem
+    \startitem
+        There can be recipes for ligatures and (more complex) so called math extensible
+        shapes (like arrows, wide accents, fences and radicals)
+    \stopitem
+    \startitem
+        There are pairwise specification for kerning.
+    \stopitem
+    \startitem
+        A handful of font parameters is provided in order to control for instance spacing.
+    \stopitem
+    \startitem
+        Virtual fonts are just normal fonts but they have recipes for the backend to
+        construct shapes: \TEX\ uses the normal metric file, the backend also the virtual
+        specification file.
+    \stopitem
+\stopitemize
+
+\blank[2*big]
+
+An example of a definition and usage:
+
+\starttyping
+\font\cs somename [somescale]  test {\cs test} test
+\stoptyping
+
+\stoptitle
+
+\starttitle[title=\UNICODE\ engines]
+
+\startitemize
+    \startitem
+        There are no fundamental differences between a traditional engine and an
+        \UNICODE\ aware one with respect to what \TEX\ needs from fonts:
+        dimensions.
+    \stopitem
+    \startitem
+        There can be more than 256 characters in a font.
+    \stopitem
+    \startitem
+        Some mechanisms have to be present for applying font features (like ligaturing and
+        kerning).
+    \stopitem
+    \startitem
+        In \LUATEX\ hyphenation, ligaturing and kerning are clearly separate steps.
+    \stopitem
+    \startitem
+        In \LUATEX\ callbacks can do lots of things with fonts and characters.
+    \stopitem
+    \startitem
+        Math fonts are handled differently and there is more info that comes from the font.
+    \stopitem
+    \startitem
+        In \LUATEX\ features like expansion are implemented differently, i.e.\ no
+        copies of fonts are made and applied expansion travels with the glyphs.
+    \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Overhead]
+
+\startitemize
+    \startitem
+        In all engines scales copies are used. For traditional \TEX\ a copy is cheap, but a
+        font that supports more of \UNICODE\ cna be quite large.
+    \stopitem
+    \startitem
+        Different feature sets in principle make for a different font (this can be different
+        per macro package).
+    \stopitem
+    \startitem
+        Every math scale needs three font instances: text, script and scriptscript.
+    \stopitem
+    \startitem
+        In \CONTEXT\ lots of sharing takes place and a lot of low level
+        optimizations happens (memory, performance). We always made sure (already
+        in \MKII) that the font system was not the bottleneck.
+    \stopitem
+    \startitem
+        In most cases font definitions are dynamic, and we delay initialization
+        as much as possible.
+    \stopitem
+    \startitem
+        In \MKIV\ font features can be dynamic which saves a lot of memory at the
+        cost of some extra processing overhead.
+    \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Design sizes]
+
+\startitemize
+    \startitem
+        A macro package's font handling is complicated by design sizes. The low level
+        code can look complex too.
+    \stopitem
+    \startitem
+        There are hardly any fonts that come in design sizes (basically only Computer
+        Modern) so we need to support that.
+    \stopitem
+    \startitem
+        Design sizes make sense for math fonts where very small characters and
+        symbols are used in scripts.
+    \stopitem
+    \startitem
+        In \OPENTYPE\ fonts smaller math design sizes are part of the font (that
+        then gets loaded three times with different \type {ssty} settings).
+    \stopitem
+\stopitemize
+
+\startlinecorrection
+\dontleavehmode\scale[frame=on,height=5ex]{$\textstyle         2$}\quad
+\dontleavehmode\scale[frame=on,height=5ex]{$\scriptstyle       2$}\quad
+\dontleavehmode\scale[frame=on,height=5ex]{$\scriptscriptstyle 2$}\quad\quad
+\dontleavehmode\scale[frame=on,height=2ex]{$\textstyle         2$}\quad
+\dontleavehmode\scale[frame=on,height=2ex]{$\scriptstyle       2$}\quad
+\dontleavehmode\scale[frame=on,height=2ex]{$\scriptscriptstyle 2$}\quad\quad
+\dontleavehmode\scale[frame=on,width=4em]{\colored[r=.6,a=1,t=.5]{$\textstyle         2$}}\hskip-4em
+\dontleavehmode\scale[frame=on,width=4em]{\colored[g=.6,a=1,t=.5]{$\scriptstyle       2$}}\hskip-4em
+\dontleavehmode\scale[frame=on,width=4em]{\colored[b=.6,a=1,t=.5]{$\scriptscriptstyle 2$}}\quad\quad
+\dontleavehmode{$\textstyle         2$}\quad
+\dontleavehmode{$\scriptstyle       2$}\quad
+\dontleavehmode{$\scriptscriptstyle 2$}\quad
+\stoplinecorrection
+
+\stoptitle
+
+\starttitle[title=The system]
+
+\startitemize
+    \startitem
+        Each bodyfont size (often a few are defined) has regular, bold, italic,
+        bold italic, slanted, bold slanted, etc. There can be unscaled instances
+        (design size) or scaled ones.
+    \stopitem
+    \startitem
+        Within a bodyfont size we have size variants: smaller {\tx x} and {\tx xx},
+        larger {\tfa a}, {\tfb b}, {\tfc c} and {\tfd d}.
+    \stopitem
+    \startitem
+        In \MKII\ we inherit smallcap and oldstyle setups but in \MKIV\ one can either
+        do that dynamic or define an additional bodyfont instance.
+    \stopitem
+    \startitem
+        A document can use a mix of fonts mixed setup, so there is a namespace
+        used per family.
+    \stopitem
+    \startitem
+        In \OPENTYPE\ symbols are more naturally part of a font, as are emoji and
+        colored shapes.
+    \stopitem
+    \startitem
+        Lack of variants can result in artificially slanted of boldened fonts (more
+        advanced in \MKIV). Variable fonts are not special, but demand some work
+        when loading and embedding.
+    \stopitem
+    \startitem
+        Runtime virtual fonts are part of \MKIV\ as are fallback shapes.
+    \stopitem
+    \startitem
+        Languages and scripts can introduce an extra dimension to operate on.
+    \stopitem
+    \startitem
+        Math is greatly simplified by the fact that families are part of a font.
+    \stopitem
+    \startitem
+        Bold math fonts are provided by the boldening feature.
+    \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title={Practice}]
+
+\startitemize
+    \startitem
+        Due to optimizations the actual number of loaded instances is normally
+        small but there are exceptions.
+    \stopitem
+    \startitem
+        The \LUAMETATEX\ manual has 158 instances most of which are math (six per
+        used bodyfont for math plus a regular: Lucida, Pagella, Latin Modern,
+        Dejavu, Cambria).
+    \stopitem
+    \startitem
+        The final \PDF\ file has 21 embedded fonts (subsets).
+    \stopitem
+    \startitem
+        The fact that different sizes each have an instance and that for math
+        we need three per size plus one for r2l, while the only difference
+        is scale, makes one think of other solutions.
+    \stopitem
+    \startitem
+        Using duplicates of huge \CJK\ fonts makes it even more noticeable.
+    \stopitem
+\stopitemize
+
+But there is a way out!
+
+\stoptitle
+
+\starttitle[title=Glyph scaling]
+
+We can scale glyphs in three ways:
+
+\startbuffer
+\definedfont[lmroman10-regular*default]%
+test {\glyphxscale 2500 test} test
+test {\glyphyscale 2500 test} test
+test {\glyphscale  2500 test} test
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+We do need to honor grouping:
+
+\startbuffer
+\definedfont[lmroman10-regular*default]%
+e{\glyphxscale 2500 ff}icient
+ef{\glyphxscale 2500 f}icient
+ef{\glyphxscale 2500 fi}cient
+e{\glyphxscale 2500 ffi}cient
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+These scales can also be part of a font definition so we can do with less
+instances.
+
+\stoptitle
+
+\starttitle[title=Implications]
+
+\startitemize
+    \startitem
+        The text processing part of the engine has to scale on the fly (e.g.\
+        when dimensions are needed in paragraph building and (box) packing.
+    \stopitem
+    \startitem
+        Font processing (features) already distinguishes per instance but now also
+        has to differentiate by (upto three) scales (we use the same font id
+        for scaled instances).
+    \stopitem
+    \startitem
+        The math machinery has to check for smaller sizes and also scale
+        dimensions on the fly.
+    \stopitem
+    \startitem
+        For math that means two times scaling: the main scale (like glyph scale) plus
+        the relative scaling of script and scriptscript.
+    \stopitem
+    \startitem
+        When they are used font dimensions and math parameters are to be scaled as are
+        rules in some math extensibles.
+    \stopitem
+    \startitem
+        This all has to be done efficiently so that there is no significant drop in
+        performance.
+    \stopitem
+    \startitem
+        But quite a bit less memory is used and loading time has become less too.
+    \stopitem
+\stopitemize
+
+Some day this will become default (which means a sentimental process of dropping
+ancient code):
+
+\starttyping
+\enableexperiments[fonts.compact]
+\stoptyping
+
+\stoptitle
+
+\starttitle[title=Details]
+
+The tricks shown on this page and following pages have been in place and tested
+for a while now. Because \TEX\ uses integers a scale value of 1000 means 1.000,
+as in other mechanisms:
+
+\startbuffer
+\definedfont[lmroman10-regular*default]%
+test {\glyphscale 2500 test} test
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+% \glyphtextscale
+% \glyphscriptscale
+% \glyphscriptscriptscale
+
+\page
+
+The font definition mechanism supports horizontal and vertical scaling:
+
+\startbuffer
+\definefont[FooA][Serif*default @ 12pt 1800 500]
+\definefont[FooB][Serif*default @ 12pt 0.85 0.4]
+\definefont[FooC][Serif*default @ 12pt]
+
+There is also a new command:
+
+\definetweakedfont[runwider] [xscale=1.5]
+\definetweakedfont[runtaller][yscale=2.5,xscale=.8,yoffset=-.2ex]
+
+{\FooA test test \runwider test test \runtaller test test}\par
+{\FooB test test \runwider test test \runtaller test test}\par
+{\FooC test test \runwider test test \runtaller test test}\par
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\page
+
+Tweaking also works in math:
+
+\startbuffer
+\definetweakedfont[squeezed][xscale=0.9]
+\definetweakedfont[squoozed][xscale=0.7]
+
+\startlines
+$a = b^2 + \sqrt{c}$
+{\squeezed $a = b^2 + \sqrt{c}$}
+{\squoozed $a = b^2 + \sqrt{c}$}
+{$\squoozed a = b^2 + \sqrt{c}$}
+{$\scriptstyle a = b^2 + \sqrt{c}$}
+\stoplines
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\page
+
+\startbuffer
+\startcombination[3*1]
+    {\bTABLE
+        \bTR \bTD foo \eTD \bTD[style=\squeezed] $x = 1$ \eTD \eTR
+        \bTR \bTD oof \eTD \bTD[style=\squeezed] $x = 2$ \eTD \eTR
+     \eTABLE} {local}
+    {\bTABLE[style=\squeezed]
+        \bTR \bTD $x = 1$ \eTD \bTD  $x = 3$ \eTD \eTR
+        \bTR \bTD $x = 2$ \eTD \bTD  $x = 4$ \eTD \eTR
+     \eTABLE} {global}
+    {\bTABLE[style=\squeezed\squeezed\squeezed\squeezed]
+        \bTR \bTD $x = 1$ \eTD \bTD  $x = 3$ \eTD \eTR
+        \bTR \bTD $x = 2$ \eTD \bTD  $x = 4$ \eTD \eTR
+     \eTABLE} {multiple}
+\stopcombination
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+\page
+
+Tweaking can be combined with styles:
+
+\startbuffer
+\definetweakedfont[MyLargerFontA][scale=2000,style=bold]
+test {\MyLargerFontA test} test
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\page
+
+We can use negative scale values:
+
+\startbuffer
+\bTABLE[align=middle]
+  \bTR
+    \bTD a{\glyphxscale  1000 \glyphyscale  1000 bc}d \eTD
+    \bTD a{\glyphxscale  1000 \glyphyscale -1000 bc}d \eTD
+    \bTD a{\glyphxscale -1000 \glyphyscale -1000 bc}d \eTD
+    \bTD a{\glyphxscale -1000 \glyphyscale  1000 bc}d \eTD
+  \eTR
+  \bTR
+    \bTD \tttf +1000 +1000 \eTD
+    \bTD \tttf +1000 -1000 \eTD
+    \bTD \tttf -1000 -1000 \eTD
+    \bTD \tttf -1000 +1000 \eTD
+  \eTR
+\eTABLE
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+\page
+
+There are more glyph properties:
+
+\startbuffer
+\ruledhbox{
+    \ruledhbox{\glyph yoffset 1ex options 0 123} % left curly brace
+    \ruledhbox{\glyph xoffset .5em yoffset 1ex options "C0 123}
+    \ruledhbox{oeps{\glyphyoffset 1ex \glyphxscale 800
+                    \glyphyscale\glyphxscale oeps}oeps}
+}
+\stopbuffer
+
+\typebuffer \scale[width=\textwidth]{\getbuffer}
+
+\page
+
+Glyph scales are internal counter values, like any other:
+
+\startbuffer
+\samplefile{jojomayer}
+{\glyphyoffset .8ex
+ \glyphxscale 700 \glyphyscale\glyphxscale
+ \samplefile{jojomayer}}
+{\glyphyscale\numexpr3*\glyphxscale/2\relax
+ \samplefile{jojomayer}}
+{\glyphyoffset -.2ex
+ \glyphxscale 500 \glyphyscale\glyphxscale
+ \samplefile{jojomayer}}
+\samplefile{jojomayer}
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\page
+
+There is a helper for real (float) scales:
+
+\startbuffer
+1200 : \the\numericscale1200
+1.20 : \the\numericscale1.200
+\stopbuffer
+
+\typebuffer
+
+These lines produce the same integer:
+
+\startlines\tttf
+\getbuffer
+\stoplines
+
+\page
+
+You can do this but it's not always predictable (depends on outer scales too):
+
+\startbuffer[definition]
+\def\UnKernedTeX
+  {T%
+   {\glyph xoffset -.2ex yoffset -.4ex `E}%
+   {\glyph xoffset -.4ex options "60 `X}}
+\stopbuffer
+
+\startbuffer[example]
+We use \UnKernedTeX\ and {\bf \UnKernedTeX} and {\bs \UnKernedTeX}:
+the slanted version could use some more left shifting of the E.
+\stopbuffer
+
+\typebuffer[definition,example]
+
+\startnarrower
+    \getbuffer[definition,example]
+\stopnarrower
+
+Marks and cursive features can interfere, so this is an alternative:
+
+\startbuffer[definition]
+\def\UnKernedTeX
+  {T\glyph left .2ex raise -.4ex `E\glyph left .2ex `X\relax}
+\stopbuffer
+
+\typebuffer[definition]
+
+\startnarrower
+    \getbuffer[definition,example]
+\stopnarrower
+
+\page
+
+Yet another glyph option:
+
+\starttyping
+\multiply\glyphscale by 2 <{\darkgray \glyph                      `M}>
+\multiply\glyphscale by 2 <{\darkgray \glyph raise 3pt            `M}>
+\multiply\glyphscale by 2 <{\darkgray \glyph raise -3pt           `M}>
+\multiply\glyphscale by 2 <{\darkgray \glyph left  3pt            `M}>
+\multiply\glyphscale by 2 <{\darkgray \glyph           right  2pt `M}>
+\multiply\glyphscale by 2 <{\darkgray \glyph left  3pt right  2pt `M}>
+\multiply\glyphscale by 2 <{\darkgray \glyph left -3pt            `M}>
+\multiply\glyphscale by 2 <{\darkgray \glyph           right -2pt `M}>
+\multiply\glyphscale by 2 <{\darkgray \glyph left -3pt right -2pt `M}>
+\stoptyping
+
+\startlinecorrection
+\bTABLE[align=middle,width=.33\textwidth]
+    \bTR
+        \bTD \showglyphs \multiply\glyphscale by 2 <{\darkgray \glyph                      `M}>\eTD
+        \bTD \showglyphs \multiply\glyphscale by 2 <{\darkgray \glyph raise 3pt            `M}>\eTD
+        \bTD \showglyphs \multiply\glyphscale by 2 <{\darkgray \glyph raise -3pt           `M}>\eTD
+    \eTR
+    \bTR[frame=off]
+        \bTD \tttf            \eTD
+        \bTD \tttf raise  3pt \eTD
+        \bTD \tttf raise -3pt \eTD
+    \eTR
+    \bTR
+        \bTD \showglyphs \multiply\glyphscale by 2 <{\darkgray \glyph left  3pt            `M}>\eTD
+        \bTD \showglyphs \multiply\glyphscale by 2 <{\darkgray \glyph           right  2pt `M}>\eTD
+        \bTD \showglyphs \multiply\glyphscale by 2 <{\darkgray \glyph left  3pt right  2pt `M}>\eTD
+    \eTR
+    \bTR[frame=off]
+        \bTD \tttf left  3pt           \eTD
+        \bTD \tttf           right  2pt\eTD
+        \bTD \tttf left  3pt right  2pt\eTD
+    \eTR
+    \bTR
+        \bTD \showglyphs \multiply\glyphscale by 2 <{\darkgray \glyph left -3pt            `M}>\eTD
+        \bTD \showglyphs \multiply\glyphscale by 2 <{\darkgray \glyph           right -2pt `M}>\eTD
+        \bTD \showglyphs \multiply\glyphscale by 2 <{\darkgray \glyph left -3pt right -2pt `M}>\eTD
+    \eTR
+    \bTR[frame=off]
+        \bTD \tttf left -3pt            \eTD
+        \bTD \tttf           right -2pt \eTD
+        \bTD \tttf left -3pt right -2pt \eTD
+    \eTR
+\eTABLE
+\stoplinecorrection
+
+\page
+
+A larger example:
+
+\startbuffer
+\glyphscale 4000
+\vl\glyph                        `M\vl\quad
+\vl\glyph raise  .2em            `M\vl\quad
+\vl\glyph left   .3em            `M\vl\quad
+\vl\glyph             right  .2em`M\vl\quad
+\vl\glyph left  -.2em right -.2em`M\vl\quad
+\vl\glyph raise -.2em right  .4em`M\vl
+\stopbuffer
+
+\typebuffer
+
+{\getbuffer}
+
+\stoptitle
+
+\stopdocument

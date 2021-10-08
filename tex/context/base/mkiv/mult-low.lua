@@ -175,7 +175,7 @@ return {
         "wildcardsymbol",
         --
         "normalhyphenationcode", "automatichyphenationcode", "explicithyphenationcode", "syllablehyphenationcode", "uppercasehyphenationcode",
-        "collapsehyphenationmcode", "compoundhyphenationcode", "strictstarthyphenationcode", "strictendhyphenationcode",
+        "collapsehyphenationcode", "compoundhyphenationcode", "strictstarthyphenationcode", "strictendhyphenationcode",
         "automaticpenaltyhyphenationcode", "explicitpenaltyhyphenationcode", "permitgluehyphenationcode", "permitallhyphenationcode",
         "permitmathreplacehyphenationcode", "forcecheckhyphenationcode", "lazyligatureshyphenationcode", "forcehandlerhyphenationcode",
         "feedbackcompoundhyphenationcode", "ignoreboundshyphenationcode", "partialhyphenationcode", "completehyphenationcode",

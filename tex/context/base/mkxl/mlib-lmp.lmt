@@ -403,6 +403,21 @@ do
     registerdirect("mode",       function() injectboolean(modes      [scanstring()] and true or false) end)
     registerdirect("systemmode", function() injectboolean(systemmodes[scanstring()] and true or false) end)
 
+    -- for compatibility reasons we keep this (metafun manual):
+
+    local modes       = tex.modes
+    local systemmodes = tex.systemmodes
+
+    function mp.mode(s)
+        injectboolean(modes[s] and true or false)
+    end
+
+    function mp.systemmode(s)
+        injectboolean(systemmodes[s] and true or false)
+    end
+
+    mp.processingmode = mp.mode
+
 end
 
 -- for alan's nodes:

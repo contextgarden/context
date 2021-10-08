@@ -266,8 +266,8 @@ newscriptindex mfid_utfsub ; mfid_utfsub := scriptindex "utfsub" ;
 % def utflen = runscript mfid_utflen enddef ;
 % def utfsub = runscript mfid_utfsub enddef ;
 
-vardef utfnum expr s  = runscript mfid_utfnum s enddef ; % str
-vardef utflen expr s  = runscript mfid_utflen s enddef ; % str
+vardef utfnum(expr s) = runscript mfid_utfnum s enddef ; % str
+vardef utflen(expr s) = runscript mfid_utflen s enddef ; % str
 vardef utfsub(text t) = runscript mfid_utfsub t enddef ; % str, first, (optional) last
 
 permanent utfnum, utflen, utfsub ;

@@ -17327,6 +17327,9 @@ return {
    ["pe"]="بدون‌آویزان‌کردن",
    ["ro"]="nothanging",
   },
+  ["explicit"]={
+   ["en"]="explicit",
+  },
   ["notcollapsed"]={
    ["en"]="notcollapsed",
   },

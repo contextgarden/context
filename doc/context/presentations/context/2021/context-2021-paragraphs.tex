@@ -1,0 +1,162 @@
+% language=us
+
+\usemodule[present-boring,abbreviations-logos]
+
+\definecolor[maincolor] [r=.4,g=.4]
+\definecolor[extracolor][s=.1]
+
+\startdocument
+  [title={PARAGRAPHS},
+   banner={a bit of an upgrade},
+   location={context\enspace {\bf 2021}\enspace meeting}]
+
+\starttitle[title=Note]
+
+\startitemize
+
+\startitem
+    Some of the following already is present for a while and has been discussed
+    at previous meetings.
+\stopitem
+
+\startitem
+    But \unknown\ occasionally some minor tweak gets added so consider this to be
+    an update.
+\stopitem
+
+\stopitemize
+
+\starttitle[title=Spacing]
+
+\startitemize
+
+\startitem
+    Spaces in \TEX\ become glue nodes (with optional stretch and shrink).
+\stopitem
+
+\startitem
+    In traditional \TEX\ these glue nodes are ref counted copies of the current
+    spacing related variables.
+\stopitem
+
+\startitem
+    In \LUATEX\ we make real copies so that when we mess with the node list
+    changes to glue don't affect other instances.
+\stopitem
+
+\stopitemize
+
+\starttitle[title=Parameters]
+
+\startitemize
+
+\startitem
+    In traditional \TEX\ the paragraphs bound properties that are in effect
+    when \type {\par} happens are used when breaking into lines.
+\stopitem
+
+\startitem
+    In \LUAMETATEX\ the paragraphs bound properties are stored with the
+    paragraph and can be frozen when they are set.
+\stopitem
+
+\startitem
+    This gives a more predictable (and robust) way of manipulating a
+    paragraph.
+\stopitem
+
+\startitem
+    We can for instance get rid of grouping side effects that interfere with
+    \type {\everypar}.
+\stopitem
+
+\startitem
+    Currently three dozen parameters are tracked but they are grouped in
+    categories.
+\stopitem
+
+\blank[2*big] {\em (show code and examples)}
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Wrapping]
+
+\startitemize
+
+\startitem
+    Doing something in front of a paragraph is taken care of by good old
+    \type {\everypar}.
+\stopitem
+
+\startitem
+    In \LUAMETATEX\ we also have \type {\everybeforepar} but so far in \CONTEXT\
+    we haven't used that.
+\stopitem
+
+\startitem
+    Adding something to the end of a paragraph can be tricky so we have
+    a wrapper mechanism: \type {\wrapuppar}.
+\stopitem
+
+\startitem
+    The \type {\wrapuppar} primitive is similar to \type {\atendofgroup} in the
+    sense that it accumulates tokens (so no \type {\endofpar}).
+\stopitem
+
+\startitem
+    Normally these primitives are not used directly but managed by a more general
+    system of handling paragraphs.
+\stopitem
+
+\stopitemize
+
+\blank[2*big] {\em (show code and examples)}
+
+\stoptitle
+
+\starttitle[title=Normalizing]
+
+\startitemize
+
+\startitem
+    In order to see consistent paragraphs at the \LUA\ end in \LUAMETATEX\
+    we can normalize the lines that come from the paragraph builder.
+\stopitem
+
+\startitem
+    Normalization results in:
+
+    \startitemize
+        \startitem
+            the first line having: indent skip
+        \stopitem
+        \startitem
+            each line having: left hang, left skip, right skip, right hang
+        \stopitem
+        \startitem
+            the last line having: left parfill skip, right parfill skip
+        \stopitem
+    \stopitemize
+\stopitem
+
+\startitem
+    It is controlled by \type {\normalizelinemode} which has additional flags for
+    swapping hanging indentation and par shapes, breaking after dir nodes,
+    removing margin kerns and clipping the line width.
+\stopitem
+
+\startitem
+    The clipping options avoids the side effects of \TEX\ using shifts which has
+    the side effect of unreal dimensions. This is one of the tricks|/|properties
+    of the traditional engine that is perfectly fine until we open up things.
+\stopitem
+
+\stopitemize
+
+\blank[2*big] {\em (show code and examples)}
+
+\stoptitle
+
+\stopdocument

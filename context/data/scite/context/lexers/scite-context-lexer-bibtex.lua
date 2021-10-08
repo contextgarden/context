@@ -10,15 +10,13 @@ local global, string, table, lpeg = _G, string, table, lpeg
 local P, R, S, V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
 local type = type
 
-local lexer       = require("scite-context-lexer")
-local context     = lexer.context
-local patterns    = context.patterns
+local lexers           = require("scite-context-lexer")
 
-local token       = lexer.token
-local exact_match = lexer.exact_match
+local patterns         = lexers.patterns
+local token            = lexers.token
 
-local bibtexlexer = lexer.new("bib","scite-context-lexer-bibtex")
-local whitespace  = bibtexlexer.whitespace
+local bibtexlexer      = lexers.new("bib","scite-context-lexer-bibtex")
+local bibtexwhitespace = bibtexlexer.whitespace
 
 local escape, left, right = P("\\"), P('{'), P('}')
 
@@ -52,8 +50,8 @@ local d_quoted     = ((escape*double) + (1-double))^0
 
 local balanced     = patterns.balanced
 
-local t_spacing    = token(whitespace, space^1)
-local t_optionalws = token("default", space^1)^0
+local t_spacing    = token(bibtexwhitespace,space^1)
+local t_optionalws = token("default",space^1)^0
 
 local t_equal      = token("operator",equal)
 local t_left       = token("grouping",left)
@@ -127,18 +125,18 @@ local t_rest       = token("default",anything)
 -- to some extend but not in all cases (e.g. editing inside line fails) .. maybe i need to
 -- patch the dll ... (better not)
 
-local dummylexer = lexer.load("scite-context-lexer-dummy","bib-dum")
+local dummylexer = lexers.load("scite-context-lexer-dummy","bib-dum")
 
 local dummystart = token("embedded",P("\001")) -- an unlikely to be used character
 local dummystop  = token("embedded",P("\002")) -- an unlikely to be used character
 
-lexer.embed_lexer(bibtexlexer,dummylexer,dummystart,dummystop)
+lexers.embed(bibtexlexer,dummylexer,dummystart,dummystop)
 
 -- maybe we need to define each functional block as lexer (some 4) so i'll do that when
 -- this issue is persistent ... maybe consider making a local lexer options (not load,
--- just lexer.new or so) .. or maybe do the reverse, embed the main one in a dummy child
+-- just lexers.new or so) .. or maybe do the reverse, embed the main one in a dummy child
 
-bibtexlexer._rules = {
+bibtexlexer.rules = {
     { "whitespace",  t_spacing    },
     { "forget",      t_forget     },
     { "shortcut",    t_shortcut   },
@@ -165,7 +163,7 @@ bibtexlexer._rules = {
 --                    * t_optionalws
 --                    * t_comma
 --
--- bibtexlexer._rules = {
+-- bibtexlexer.rules = {
 --     { "whitespace",  t_spacing    },
 --     { "assignment",  t_assignment },
 --     { "definition",  t_definition },
@@ -177,19 +175,9 @@ bibtexlexer._rules = {
 --     { "rest",        t_rest       },
 -- }
 
-bibtexlexer._tokenstyles = context.styleset
-
-bibtexlexer._foldpattern = P("{") + P("}")
-
-bibtexlexer._foldsymbols = {
-    _patterns = {
-        "{",
-        "}",
-    },
-    ["grouping"] = {
-        ["{"] =  1,
-        ["}"] = -1,
-    },
+bibtexlexer.folding = {
+    ["{"] = { ["grouping"] =  1 },
+    ["}"] = { ["grouping"] = -1 },
 }
 
 return bibtexlexer

@@ -509,9 +509,9 @@ local function check_spacing(index,slot)
     local pt = pn + pi
     local mt = mn + mi
     if trace_insert then
-        report_insert("%s %i: %p plus %p minus %p","always   ",n,gn,pn,mn)
-        report_insert("%s %i: %p plus %p minus %p",i > 1 and "inbetween" or "before   ",n,gi,pi,mi)
-        report_insert("%s %i: %p plus %p minus %p","effective",n,gt,pt,mt)
+        report_insert("%s %i: %p plus %p minus %p","always   ",index,gn,pn,mn)
+        report_insert("%s %i: %p plus %p minus %p",slot > 1 and "inbetween" or "before   ",index,gi,pi,mi)
+        report_insert("%s %i: %p plus %p minus %p","effective",index,gt,pt,mt)
     end
     return gt, pt, mt
 end

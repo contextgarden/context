@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['mtx-pdf'] = {
 }
 
 local tonumber = tonumber
-local format, gmatch, gsub = string.format, string.gmatch, string.gsub
+local format, gmatch, gsub, match, find = string.format, string.gmatch, string.gsub, string.match, string.find
 local utfchar = utf.char
 local concat = table.concat
 local setmetatableindex, sortedhash, sortedkeys = table.setmetatableindex, table.sortedhash, table.sortedkeys
@@ -27,11 +27,13 @@ local helpinfo = [[
     <flag name="metadata"><short>show metadata xml blob</short></flag>
     <flag name="pretty"><short>replace newlines in metadata</short></flag>
     <flag name="fonts"><short>show used fonts (<ref name="detail)"/></short></flag>
+    <flag name="object"><short>show object"/></short></flag>
    </subcategory>
    <subcategory>
     <example><command>mtxrun --script pdf --info foo.pdf</command></example>
     <example><command>mtxrun --script pdf --metadata foo.pdf</command></example>
     <example><command>mtxrun --script pdf --metadata --pretty foo.pdf</command></example>
+    <example><command>mtxrun --script pdf --stream=4 foo.pdf</command></example>
    </subcategory>
   </category>
  </flags>
@@ -46,10 +48,14 @@ local application = logs.application {
 
 local report = application.report
 
-if pdfe then
-    dofile(resolvers.findfile("lpdf-pde.lua","tex"))
-else
+if not pdfe then
     dofile(resolvers.findfile("lpdf-epd.lua","tex"))
+elseif CONTEXTLMTXMODE then
+    dofile(resolvers.findfile("util-dim.lua","tex"))
+    dofile(resolvers.findfile("lpdf-ini.lmt","tex"))
+    dofile(resolvers.findfile("lpdf-pde.lmt","tex"))
+else
+    dofile(resolvers.findfile("lpdf-pde.lua","tex"))
 end
 
 scripts     = scripts     or { }
@@ -349,6 +355,15 @@ function scripts.pdf.fonts(filename)
     end
 end
 
+function scripts.pdf.object(filename,n)
+    if n then
+        local pdffile = loadpdffile(filename)
+        if pdffile then
+            print(lpdf.epdf.verboseobject(pdffile,n) or "no object with number " .. n)
+        end
+    end
+end
+
 -- scripts.pdf.info("e:/tmp/oeps.pdf")
 -- scripts.pdf.metadata("e:/tmp/oeps.pdf")
 -- scripts.pdf.fonts("e:/tmp/oeps.pdf")
@@ -364,6 +379,8 @@ elseif environment.argument("metadata") then
     scripts.pdf.metadata(filename,environment.argument("pretty"))
 elseif environment.argument("fonts") then
     scripts.pdf.fonts(filename)
+elseif environment.argument("object") then
+    scripts.pdf.object(filename,tonumber(environment.argument("object")))
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),filename)
 else

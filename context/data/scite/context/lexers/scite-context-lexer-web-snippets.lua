@@ -8,11 +8,10 @@ local info = {
 
 local P, R, S, C, Cg, Cb, Cs, Cmt, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cg, lpeg.Cb, lpeg.Cs, lpeg.Cmt, lpeg.match
 
-local lexer        = require("scite-context-lexer")
-local context      = lexer.context
-local patterns     = context.patterns
+local lexers       = require("scite-context-lexer")
 
-local token        = lexer.token
+local patterns     = lexers.patterns
+local token        = lexers.token
 
 local websnippets  = { }
 
@@ -25,9 +24,9 @@ local squote       = P("'")
 local dquote       = P('"')
 local period       = P(".")
 
-local t_whitespace = token(whitespace, space^1)
-local t_spacing    = token("default", space^1)
-local t_rest       = token("default", any)
+local t_whitespace = token("whitespace", space^1)
+local t_spacing    = token("default",    space^1)
+local t_rest       = token("default",    any)
 
 -- the web subset
 

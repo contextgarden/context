@@ -580,6 +580,7 @@
    \d_page_mix_max_width\dimexpr\d_page_mix_max_width-\leftskip-\rightskip\relax
    \d_page_mix_leftskip \leftskip
    \d_page_mix_rightskip\rightskip
+   % \frozen ?
    \leftskip \zeropoint
    \rightskip\zeropoint
    %

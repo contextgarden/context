@@ -205,7 +205,8 @@ So let's summarize what happens:
     pending cell spans
 \stopitem
 \startitem
-    flush the result to the current list
+    flush the result to the current list, unless packages in a box a \type
+    {\halign} is seen as paragraph and rows as lines (such a table can split)
 \stopitem
 \stopitemize
 
@@ -214,28 +215,31 @@ look ahead for a \type {\noalign}, \type {\cr}, \type {\omit} or \type {\span}
 and when doing that it has to expand what comes. This can give side effects and
 often results in obscure error messages. When for instance an \type {\if} is seen
 and expanded, the wrong branch can be entered. And when you use protected macros
-embedded alignment commands are not seen at all. Also, nesting \type {\noalign}
-is not permitted.
+embedded alignment commands are not seen at all; of course they still need to
+produce valid operations in the current context.
 
 All these side effects are to be handled in a macro package when it wraps
 alignments in a high level interface and \CONTEXT\ does that for you. But because
 the code doesn't always look pretty then, in \LUAMETATEX\ the alignment mechanism
 has been extended a bit over time.
 
-The first extension was to permit nested usage of \type {\noalign}. This has
-resulted of a little reorganization of the code. A next extension showed up when
-overload protection was introduced and extra prefixes were added. We can signal
-the scanner that a macro is actually a \type {\noalign} variant: \footnote {A
-better prefix would have been \type {\peekaligned} because in the meantime other
-alignment primitives also can use this property.}
+Nesting \type {\noalign} is normally not permitted (but one can redefine this
+primitive such that a macro package nevertheless handles it). The first extension
+permits nested usage of \type {\noalign}. This has resulted of a little
+reorganization of the code. A next extension showed up when overload protection
+was introduced and extra prefixes were added. We can signal the scanner that a
+macro is actually a \type {\noalign} variant: \footnote {One can argue for using
+the name \type {\peekaligned} because in the meantime other alignment primitives
+also can use this property.}
 
 \starttyping[option=TEX]
 \noaligned\protected\def\InBetween{\noalign{...}}
 \stoptyping
 
-This extension resulted in a second bit of reorganization (think of internal
-command codes and such) but still the original processing of alignments was
-there.
+Here the \type {\InBetween} macro will get the same treatment as \type {\noalign}
+and it will not trigger an error. This extension resulted in a second bit of
+reorganization (think of internal command codes and such) but still the original
+processing of alignments was there.
 
 A third overhaul of the code actually did lead to some adaptations in the way
 alignments are constructed so let's move on to that.
@@ -307,10 +311,13 @@ a test document where you want to show font properties in a table and that font
 supports a script with some ten thousand glyphs, you can imagine that it
 accumulates and in \LUATEX\ (and \LUAMETATEX) nodes are larger so it is one of
 these cases where in \CONTEXT\ we get messages on the console that node memory is
-bumped.
+bumped. \footnote {I suppose it was a coincidence that a few weeks after these
+features came available a user consulted the mailing list about a few thousand
+page table that made the engine run out of memory, something that could be cured
+by enabling these new features.}
 
 After playing a bit with stripping zero tab skips I found that the code would not
-really benefit from such a feature: lots of extra tests made if quite ugly. As a
+really benefit from such a feature: lots of extra tests made it quite ugly. As a
 result a first alternative was to just strip zero skips before an alignment got
 flushed. At least we're then a bit leaner in the processes that come after it.
 This feature is now available as one of the normalizer bits.
@@ -403,7 +410,7 @@ which renders as:
 A reason to have boxes here is that it enforces a cell width but that is done at
 the cost of an extra wrapper. In \LUAMETATEX\ the \type {hlist} nodes are rather
 large because we have more options than in original \TEX, for instance offsets
-and orientation. So, in a table with 10K rows of 4 cells yet get 40K extra \type
+and orientation. In a table with 10K rows of 4 cells yet get 40K extra \type
 {hlist} nodes allocated. Now, one can argue that we have plenty of memory but
 being lazy is not really a sign of proper programming.
 
@@ -501,7 +508,8 @@ In this example we specify the characters in the cells. We still need to add a
 specifier in the preamble definition because that will trigger the plugin.
 
 \startbuffer
-\starttabulate[|lG{}|lG{}|]
+\starttabulate[|lG{}|rG{}|]
+\NC left                                         \NC right                            \NC\NR
 \NC \showglyphs \setalignmentcharacter{.}1.1     \NC \setalignmentcharacter{.}1.1     \NC\NR
 \NC \showglyphs \setalignmentcharacter{,}11,11   \NC \setalignmentcharacter{,}11,11   \NC\NR
 \NC \showglyphs \setalignmentcharacter{=}111=111 \NC \setalignmentcharacter{=}111=111 \NC\NR
@@ -513,7 +521,8 @@ specifier in the preamble definition because that will trigger the plugin.
 You can mix these approaches:
 
 \startbuffer
-\starttabulate[|lG{.}|lG{}|]
+\starttabulate[|lG{.}|rG{}|]
+\NC left    \NC right                            \NC\NR
 \NC 1.1     \NC \setalignmentcharacter{.}1.1     \NC\NR
 \NC 11.11   \NC \setalignmentcharacter{.}11.11   \NC\NR
 \NC 111.111 \NC \setalignmentcharacter{.}111.111 \NC\NR

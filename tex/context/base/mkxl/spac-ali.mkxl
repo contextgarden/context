@@ -718,6 +718,7 @@
 \defcsname\??aligncommand\v!nothyphenated  \endcsname{\toksapp\t_spac_align_collected{\nohyphens}}
 \defcsname\??aligncommand\v!collapsed      \endcsname{\toksapp\t_spac_align_collected{\dohyphencollapsing}}
 \defcsname\??aligncommand\v!notcollapsed   \endcsname{\toksapp\t_spac_align_collected{\nohyphencollapsing}}
+\defcsname\??aligncommand\v!explicit       \endcsname{\toksapp\t_spac_align_collected{\nohyphens\doexplicithyphens}}
 
 \defcsname\??aligncommand\v!tolerant       \endcsname{\toksapp\t_spac_align_collected{\spac_align_set_tolerant}}
 \defcsname\??aligncommand\v!verytolerant   \endcsname{\toksapp\t_spac_align_collected{\spac_align_set_very_tolerant}}
@@ -872,7 +873,7 @@
 \defcsname\??alignhorizontal\v!flushright\endcsname{\enforced\let\raggedbox\spac_align_horizontal_flushright}
 \defcsname\??alignhorizontal\v!center    \endcsname{\enforced\let\raggedbox\spac_align_horizontal_center}
 
-% The next one can be in use so we keep it around but oen should
+% The next one can be in use so we keep it around but one should
 % be aware of possible interference.
 
 \permanent\protected\def\setraggedskips#1#2#3#4#5#6#7% never change this name (todo: inline this one .. less tracingall)

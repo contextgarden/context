@@ -8,26 +8,22 @@ local info = {
 
 local P = lpeg.P
 
-local lexer           = require("scite-context-lexer")
-local context         = lexer.context
-local patterns        = context.patterns
+local lexers          = require("scite-context-lexer")
 
-local token           = lexer.token
+local patterns        = lexers.patterns
+local token           = lexers.token
 
-local xmlcommentlexer = lexer.new("xml-comment","scite-context-lexer-xml-comment")
-local whitespace      = xmlcommentlexer.whitespace
+local xmlcommentlexer = lexers.new("xml-comment","scite-context-lexer-xml-comment")
 
 local space           = patterns.space
 local nospace         = 1 - space - P("-->")
 
-local t_spaces        = token(whitespace, space  ^1)
-local t_comment       = token("comment",  nospace^1)
+local t_spaces        = token("whitespace", space^1)
+local t_comment       = token("comment",    nospace^1)
 
-xmlcommentlexer._rules = {
+xmlcommentlexer.rules = {
     { "whitespace", t_spaces  },
     { "comment",    t_comment },
 }
-
-xmlcommentlexer._tokenstyles = context.styleset
 
 return xmlcommentlexer

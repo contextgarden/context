@@ -8,18 +8,16 @@ local info = {
 
 -- will replace the one in metafun
 
-local global, lpeg = _G, lpeg
+local lpeg = lpeg
 local P, R, S = lpeg.P, lpeg.R, lpeg.S
 
-local lexer       = require("scite-context-lexer")
-local context     = lexer.context
-local patterns    = context.patterns
+local lexers        = require("scite-context-lexer")
 
-local token       = lexer.token
-local exact_match = lexer.exact_match
+local patterns      = lexers.patterns
+local token         = lexers.token
 
-local bnflexer    = lexer.new("bnf","scite-context-lexer-bnf")
-local whitespace  = bnflexer.whitespace
+local bnflexer      = lexers.new("bnf","scite-context-lexer-bnf")
+local bnfwhitespace = bnflexer.whitespace
 
 -- from wikipedia:
 --
@@ -58,7 +56,7 @@ local extra     = P("|")
 local single    = P("'")
 local double    = P('"')
 
-local t_spacing = token(whitespace,space^1)
+local t_spacing = token(bnfwhitespace,space^1)
 local t_term    = token("command",left)
                 * token("text",name)
                 * token("command",right)
@@ -72,7 +70,7 @@ local t_becomes = token("operator",becomes)
 local t_extra   = token("extra",extra)
 local t_rest    = token("default",anything)
 
-bnflexer._rules = {
+bnflexer.rules = {
     { "whitespace", t_spacing },
     { "term",       t_term    },
     { "text",       t_text    },
@@ -81,19 +79,9 @@ bnflexer._rules = {
     { "rest",       t_rest    },
 }
 
-bnflexer._tokenstyles = context.styleset
-
-bnflexer._foldpattern = left + right
-
-bnflexer._foldsymbols = {
-    _patterns = {
-        "<",
-        ">",
-    },
-    ["grouping"] = {
-        ["<"] =  1,
-        [">"] = -1,
-    },
+bnflexer.folding = {
+    ["<"] = { ["grouping"] =  1 },
+    [">"] = { ["grouping"] = -1 },
 }
 
 return bnflexer

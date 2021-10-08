@@ -23,6 +23,7 @@ do
         lexerroot = file.dirname(resolvers.findfile("scite-context-lexer.lua"))
 --     end
     if lfs.isdir(lexerroot) then
+    -- pushluapath
         package.extraluapath(lexerroot)
         package.extraluapath(lexerroot.."/themes")
         package.extraluapath(lexerroot.."/data")
@@ -58,14 +59,14 @@ local knownlexers  = {
  -- todo: pat/hyp ori
 }
 
-lexer = nil -- main lexer, global (for the moment needed for themes)
+lexers = nil -- main lexer, global (for the moment needed for themes)
 
 local function loadscitelexer()
-    if not lexer then
-        lexer = require("scite-context-lexer")
-        require("scite-context-theme") -- uses lexer
-        if lexer then
-            lexer.context.disablewordcheck()
+    if not lexers then
+        lexers = require("scite-context-lexer")
+        lexers.styles = require("scite-context-theme") -- uses lexer
+        if lexers then
+            (lexers.disablewordcheck or lexers.context.disablewordcheck)()
         end
     end
     return lexer
@@ -74,7 +75,7 @@ end
 local loadedlexers = setmetatableindex(function(t,k)
     local l = knownlexers[k] or k
     loadscitelexer()
-    local v = lexer.load(formatters["scite-context-lexer-%s"](l))
+    local v = lexers.load(formatters["scite-context-lexer-%s"](l))
     t[l] = v
     t[k] = v
     return v
@@ -124,7 +125,7 @@ local function exportcsslexing()
             return (#f == 0 and f[1] == 0) or ((f[1] == f[2]) and (f[2] == f[3]) and (f[3] == 0))
         end
         local result, r = { }, 0
-        for k, v in table.sortedhash(lexer.context.styles) do
+        for k, v in table.sortedhash(lexers.context.styles) do
             local bold = v.bold
             local fore = v.fore
             r = r + 1
@@ -149,7 +150,7 @@ local function exportwhites()
 end
 
 local function exportstyled(lexer,text,numbered)
-    local result = lexer.lex(lexer,text,0)
+    local result = lexers.lex(lexer,text,0)
     local start  = 1
     local whites = exportwhites()
     local buffer = { }

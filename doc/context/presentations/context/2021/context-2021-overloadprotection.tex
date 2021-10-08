@@ -1,0 +1,298 @@
+% language=us
+
+\usemodule[present-boring,abbreviations-logos]
+
+
+\definehighlight[nb][style=bold,color=middlegray,define=no]
+
+\setuptolerance[verytolerant,stretch]
+
+\definecolor[maincolor][r=.3,b=.3]
+
+\startdocument
+  [title={OVERLOAD PROTECTION},
+   banner={the downside of macros},
+   location={context\enspace {\bf 2021}\enspace meeting}]
+
+% TEX MP
+
+\starttitle[title=Primitives]
+
+A \TEX\ engine comes with a whole set of primitive operations for:
+
+\startitemize[packed]
+    \startitem
+        accessing internal variables
+    \stopitem
+    \startitem
+        defining macros
+    \stopitem
+    \startitem
+        controlling expansion
+    \stopitem
+    \startitem
+        constructing boxes
+    \stopitem
+    \startitem
+        finalizing pages
+    \stopitem
+    \startitem
+        defining characters (text and math)
+    \stopitem
+    \startitem
+        inserting kerns, glue and penalties
+    \stopitem
+    \startitem
+        defining fonts
+    \stopitem
+    \startitem
+        dealing with languages (hyphenation)
+    \stopitem
+    \startitem
+        testing properties
+    \stopitem
+    \startitem
+        manipulating tokens
+    \stopitem
+    \startitem
+        managing inserts
+    \stopitem
+    \startitem
+        handling marks
+    \stopitem
+    \startitem
+        grouping
+    \stopitem
+    \startitem
+        mathematics
+    \stopitem
+    \startitem
+        tracing
+    \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Macros]
+
+\startitemize
+    \startitem
+        Macros are commands defined by the user and/or a macro package.
+    \stopitem
+    \startitem
+        They can overload a primitive which then can confuse the whole machinery.
+    \stopitem
+    \startitem
+        A macro package can alias primitives for instance \type {\relax} can be
+        replaced by \type {\foo_relax} after \typ {\let \foo_relax \relax}.
+    \stopitem
+    \startitem
+        That only when (at definition time) the \type {_} is a letter. By using such
+        a character some protection against overload is provided.
+    \stopitem
+    \startitem
+        In \CONTEXT\ we often use(d) aliases like \type {\normalrelax} but of course
+        these can also be overloaded.
+    \stopitem
+    \startitem
+        We only overload a very few primitives, for instance \type {\language}.
+    \stopitem
+    \startitem
+        Users who overload primitives are \quote {on their own} and \quote {without
+        support}.
+    \stopitem
+    \startitem
+        An easy way to protect yourself is using \type {\CamelCase} names.
+    \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Overload protection]
+
+\startitemize
+    \startitem
+        The \LUAMETATEX\ engine has overload protection built in for the \TEX\ engine
+        as well as provides means to do that for \METAPOST.
+    \stopitem
+    \startitem
+        In \LMTX\ all commands have been tagged accordingly (which was quite some work).
+    \stopitem
+    \startitem
+        Processing \type {s-system-macros.mkxl} gives an overview.
+    \stopitem
+    \startitem
+        Overload protection is off by default but can be turned on:
+
+\starttyping
+\enabledirectives[overloadmode=warning]
+\enabledirectives[overloadmode=error]
+\stoptyping
+
+    \stopitem
+    \startitem
+        I myself always run with the error variant and make sure that the manuals obey
+        the rules.
+    \stopitem
+    \startitem
+        Modules and/or styles (and in a few cases the core code) can cheat and use:
+
+\starttyping
+\pushoverloadmode
+    ........................
+    ........................
+\popoverloadmode
+\stoptyping
+
+    \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Details]
+
+\startitemize
+    \startitem
+        Traditional \TEX\ has a few so called prefixes: \type {\global}, \type {\outer},
+        \type {\long}, and type \type {\immediate}.
+    \stopitem
+    \startitem
+        The \ETEX\ engine adds \type {\protected} (because we already had that in
+        \CONTEXT\ we use what we (also already) had: \type {\unexpanded}).
+    \stopitem
+    \startitem
+        In \LUATEX\ we can force macros to be always long, something that we do
+        in \MKIV\ (as in \MKII).
+    \stopitem
+    \startitem
+        In \LUAMETATEX\ the \type {\outer} and \type {\long} prefixes have been
+        dropped (they are ignored).
+    \stopitem
+    \startitem
+        In \LUAMETATEX\ the \type {\protected} prefix acts like in other engines
+        but protection is implemented more naturally.
+    \stopitem
+    \startitem
+        In addition \LUAMETATEX\ has new prefixes: \type {\frozen}, \type
+        {\permanent}, \type {\immutable}, \type {\mutable}, \type {\noaligned},
+        \type {\instance}, \type {\untraced}, \type {\tolerant}, \type
+        {\overloaded}, \type {\aliased}, \type {\immediate} and an experimental
+        \type {\semiprotected},
+    \stopitem
+    \startitem
+        Some prefixes end up as properties of macros, some influence scanning (for instance
+        in alignments and when calling \LUA\ functions). There is no noticeable runtime
+        overhead.
+    \stopitem
+    \startitem
+        The \type {\meaningfull} primitive is like \type {\meaning} but also reports
+        properties set by prefixes; there is also \type {\meaningless}.
+    \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Prefixes]
+
+Regular definitions:
+
+\startitemize
+    \startitem
+        \type {\global}: defines a macro or sets a register value out of scope.
+    \stopitem
+    \startitem
+        \type {\outer}: is used to issue a warning when a macro defined as such was
+        used nested (just ignored in \LUAMETATEX).
+    \stopitem
+    \startitem
+        \type {\long}: triggers a warning when an argument of a macro contains a
+        \type {\par} equivalent (just ignored in \LUAMETATEX).
+    \stopitem
+    \startitem
+        \type {\protected}: makes a macro unexpandable (being itself) in an \type
+        {\edef} equivalent situation (where it can get out of hands).
+    \stopitem
+    \startitem
+        \type {\semiprotected}: is like \type {\protected} but the property is
+        ignored when \type {\semiexpanded} is applied.
+    \stopitem
+\stopitemize
+
+Special case:
+
+\startitemize
+    \startitem
+        \type {\immediate}: tells a backend primitive to come into action
+        immediately instead of creating a delayed action (via a whatsit node). In
+        \LUAMETATEX\ we have no built|-|in backend so there is signals a \LUA\
+        interface function this property.
+    \stopitem
+\stopitemize
+
+\page
+
+Scanning related:
+
+\startitemize
+    \startitem
+        \type {\noaligned}: tags a macro as valid peek ahead macro when scanning
+        alignments; normally that only makes sense for \type {\protected} macros.
+        This permits cleaner macros in for instance table mechanisms (no
+        unexpected expansion side effects).
+    \stopitem
+    \startitem
+        \type {\untraced}: this flag makes a macro report itself as primitive in
+        traces which is sometimes nicer that presenting a user with some
+        confusing meaning.
+    \stopitem
+    \startitem
+        \type {\tolerant}: a prefix that makes the macro argument parser accept
+        all kind of new argument parsing options and continue when delimited
+        arguments fail. This makes macros with optional arguments produce less
+        noise when they are traced but more important, it makes for cleaner low
+        level interfaces.
+    \stopitem
+\stopitemize
+
+
+\page
+
+Overload protection (primitives are protected against overloads by default):
+
+\startitemize
+    \startitem
+        \type {\aliased}: create a reference (using \type {\let}) that also inherits the
+        properties.
+    \stopitem
+    \startitem
+        \type {\permanent}: sets a flag that makes a macro (or definition) immune for
+        redefinition.
+    \stopitem
+    \startitem
+        \type {\frozen}: prevents overloading but one can bypass that with some
+        more effort.
+    \stopitem
+    \startitem
+        \type {\immutable}: makes a (normally variable definition) fixed, for instance
+        constants.
+    \stopitem
+    \startitem
+        \type {\mutable}: a flag showing that this macro or definition can be used for
+        anything (so the macro package also has to assume that).
+    \stopitem
+    \startitem
+        \type {\instance}: just a flag that can be used to signal that a macro (or definition)
+        is an instance of a more general concept.
+    \stopitem
+    \startitem
+        \type {\overloaded}: bypass a frozen flag (property).
+    \stopitem
+\stopitemize
+
+\blank[2*big]
+
+{\em Show some examples in the source code and editor.}
+
+\stoptitle
+
+\stopdocument

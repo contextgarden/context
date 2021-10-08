@@ -8,15 +8,13 @@ local info = {
 
 local P, R, S = lpeg.P, lpeg.R, lpeg.S
 
-local lexer       = require("scite-context-lexer")
-local context     = lexer.context
-local patterns    = context.patterns
+local lexers        = require("scite-context-lexer")
 
-local token       = lexer.token
-local exact_match = lexer.exact_match
+local patterns      = lexers.patterns
+local token         = lexers.token
 
-local sqllexer    = lexer.new("sql","scite-context-lexer-sql")
-local whitespace  = sqllexer.whitespace
+local sqllexer      = lexers.new("sql","scite-context-lexer-sql")
+local sqlwhitespace = sqllexer.whitespace
 
 -- ANSI SQL 92 | 99 | 2003
 
@@ -167,6 +165,7 @@ local space         = patterns.space -- S(" \n\r\t\f\v")
 local any           = patterns.any
 local restofline    = patterns.restofline
 local startofline   = patterns.startofline
+local exactmatch    = patterns.exactmatch
 
 local squote        = P("'")
 local dquote        = P('"')
@@ -180,7 +179,7 @@ local decimal       = patterns.decimal
 local float         = patterns.float
 local integer       = P("-")^-1 * decimal
 
-local spacing       = token(whitespace, space^1)
+local spacing       = token(sqlwhitespace, space^1)
 local rest          = token("default", any)
 
 local shortcomment  = token("comment", (P("#") + P("--")) * restofline^0)
@@ -189,40 +188,32 @@ local longcomment   = token("comment", begincomment * (1-endcomment)^0 * endcomm
 local p_validword   = R("AZ","az","__") * R("AZ","az","__","09")^0
 local identifier    = token("default",p_validword)
 
-local shortstring   = token("quote",  dquote) -- can be shared
+local shortstring   = token("quote", dquote) -- can be shared
                     * token("string", (escaped + (1-dquote))^0)
-                    * token("quote",  dquote)
-                    + token("quote",  squote)
+                    * token("quote", dquote)
+                    + token("quote", squote)
                     * token("string", (escaped + (1-squote))^0)
-                    * token("quote",  squote)
-                    + token("quote",  bquote)
+                    * token("quote", squote)
+                    + token("quote", bquote)
                     * token("string", (escaped + (1-bquote))^0)
-                    * token("quote",  bquote)
+                    * token("quote", bquote)
 
-local p_keywords_s  = exact_match(keywords_standard,nil,true)
-local p_keywords_d  = exact_match(keywords_dialects,nil,true)
+local p_keywords_s  = exactmatch(keywords_standard,true)
+local p_keywords_d  = exactmatch(keywords_dialects,true)
 local keyword_s     = token("keyword", p_keywords_s)
 local keyword_d     = token("command", p_keywords_d)
 
 local number        = token("number", float + integer)
 local operator      = token("special", S("+-*/%^!=<>;:{}[]().&|?~"))
 
-sqllexer._tokenstyles = context.styleset
-
-sqllexer._foldpattern = P("/*") + P("*/") + S("{}") -- separate entry else interference
-
-sqllexer._foldsymbols = {
-    _patterns = {
-        "/%*",
-        "%*/",
-    },
-    ["comment"] = {
-        ["/*"] =  1,
-        ["*/"] = -1,
-    }
+sqllexer.folding = {
+    ["/*"] = { ["comment"]  =  1 },
+    ["*/"] = { ["comment"]  = -1 },
+ -- ["{"]  = { ["operator"] =  1 },
+ -- ["}"]  = { ["operator"] = -1 },
 }
 
-sqllexer._rules = {
+sqllexer.rules = {
     { "whitespace",   spacing      },
     { "keyword-s",    keyword_s    },
     { "keyword-d",    keyword_d    },

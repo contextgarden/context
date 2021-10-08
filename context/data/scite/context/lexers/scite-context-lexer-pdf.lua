@@ -11,17 +11,16 @@ local info = {
 
 local P, R, S, V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
 
-local lexer             = require("scite-context-lexer")
-local context           = lexer.context
-local patterns          = context.patterns
+local lexers            = require("scite-context-lexer")
 
-local token             = lexer.token
+local patterns          = lexers.patterns
+local token             = lexers.token
 
-local pdflexer          = lexer.new("pdf","scite-context-lexer-pdf")
-local whitespace        = pdflexer.whitespace
+local pdflexer          = lexers.new("pdf","scite-context-lexer-pdf")
+local pdfwhitespace     = pdflexer.whitespace
 
------ pdfobjectlexer    = lexer.load("scite-context-lexer-pdf-object")
------ pdfxreflexer      = lexer.load("scite-context-lexer-pdf-xref")
+----- pdfobjectlexer    = lexers.load("scite-context-lexer-pdf-object")
+----- pdfxreflexer      = lexers.load("scite-context-lexer-pdf-xref")
 
 local anything          = patterns.anything
 local space             = patterns.space
@@ -30,10 +29,10 @@ local nospacing         = patterns.nospacing
 local anything          = patterns.anything
 local restofline        = patterns.restofline
 
-local t_whitespace      = token(whitespace, spacing)
-local t_spacing         = token("default",  spacing)
------ t_rest            = token("default",  nospacing)
-local t_rest            = token("default",  anything)
+local t_whitespace      = token(pdfwhitespace, spacing)
+local t_spacing         = token("default", spacing)
+----- t_rest            = token("default", nospacing)
+local t_rest            = token("default", anything)
 
 local p_comment         = P("%") * restofline
 local t_comment         = token("comment", p_comment)
@@ -187,7 +186,7 @@ local t_number          = token("number", cardinal)
 --    t_number          = token("number", cardinal * spacing * cardinal * spacing)
 --                      * token("keyword", S("fn"))
 
-pdflexer._rules = {
+pdflexer.rules = {
     { "whitespace", t_whitespace },
     { "object",     t_object     },
     { "comment",    t_comment    },
@@ -198,21 +197,15 @@ pdflexer._rules = {
     { "rest",       t_rest       },
 }
 
-pdflexer._tokenstyles = context.styleset
-
 -- lexer.inspect(pdflexer)
 
 -- collapser: obj endobj stream endstream
 
-pdflexer._foldpattern = p_obj + p_endobj + p_stream + p_endstream
-
-pdflexer._foldsymbols = {
-    ["keyword"] = {
-        ["obj"]       =  1,
-        ["endobj"]    = -1,
-        ["stream"]    =  1,
-        ["endstream"] = -1,
-    },
+pdflexer.folding = {
+    ["obj"]       = { ["keyword"] =  1 },
+    ["endobj"]    = { ["keyword"] = -1 },
+    ["stream"]    = { ["keyword"] =  1 },
+    ["endstream"] = { ["keyword"] = -1 },
 }
 
 return pdflexer

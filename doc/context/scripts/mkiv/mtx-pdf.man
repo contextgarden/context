@@ -22,6 +22,9 @@ replace newlines in metadata
 .TP
 .B --fonts
 show used fonts (--detail)
+.TP
+.B --object
+show object"/>
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

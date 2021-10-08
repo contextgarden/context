@@ -10,26 +10,23 @@ local info = {
 -- we need to trigger that, for instance in the bibtex lexer, but still
 -- we get failed lexing
 
-local lexer        = require("scite-context-lexer")
-local context      = lexer.context
-local patterns     = context.patterns
+local lexers          = require("scite-context-lexer")
 
-local token        = lexer.token
+local patterns        = lexers.patterns
+local token           = lexers.token
 
-local dummylexer   = lexer.new("dummy","scite-context-lexer-dummy")
-local whitespace   = dummylexer.whitespace
+local dummylexer      = lexers.new("dummy","scite-context-lexer-dummy")
+local dummywhitespace = dummylexer.whitespace
 
-local space        = patterns.space
-local nospace      = (1-space)
+local space      = patterns.space
+local nospace    = (1-space)
 
-local t_spacing    = token(whitespace, space  ^1)
-local t_rest       = token("default",  nospace^1)
+local t_spacing  = token(dummywhitespace, space^1)
+local t_rest     = token("default",       nospace^1)
 
-dummylexer._rules = {
+dummylexer.rules = {
     { "whitespace", t_spacing },
     { "rest",       t_rest    },
 }
-
-dummylexer._tokenstyles = context.styleset
 
 return dummylexer

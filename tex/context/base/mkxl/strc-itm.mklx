@@ -966,12 +966,12 @@
 \let\startcollectitems\relax
 \let\stopcollectitems \relax
 
-\letvalue{\??itemgroupalign\v!flushleft }\relax
-\letvalue{\??itemgroupalign\v!right     }\relax
-\letvalue{\??itemgroupalign\v!flushright}\hfill
-\letvalue{\??itemgroupalign\v!left      }\hfill
-\letvalue{\??itemgroupalign\v!middle    }\hfil
-\letvalue{\??itemgroupalign\v!center    }\hfil
+\letcsname\??itemgroupalign\v!flushleft \endcsname\relax
+\letcsname\??itemgroupalign\v!right     \endcsname\relax
+\letcsname\??itemgroupalign\v!flushright\endcsname\hfill
+\letcsname\??itemgroupalign\v!left      \endcsname\hfill
+\letcsname\??itemgroupalign\v!middle    \endcsname\hfil
+\letcsname\??itemgroupalign\v!center    \endcsname\hfil
 
 \def\strc_itemgroups_left_sym_filler
   {\csname\??itemgroupalign\itemgroupparameter\c!symalign\endcsname}
@@ -979,10 +979,10 @@
 % symbols + states
 
 \def\strc_itemgroups_store_global_symbol#symbol%
-  {\letgvalue{\??itemgroupglobal\currentitemgroup:\currentitemlevel}#symbol}
+  {\gletcsname\??itemgroupglobal\currentitemgroup:\currentitemlevel\endcsname#symbol}
 
 \def\strc_itemgroups_store_local_symbol#symbol%
-  {\letgvalue{\??itemgrouplocal\currentitemgroup:\currentitemlevel}#symbol}
+  {\gletcsname\??itemgrouplocal\currentitemgroup:\currentitemlevel\endcsname#symbol}
 
 \def\strc_itemgroups_fetch_global_symbol
   {\csname\??itemgroupglobal\currentitemgroup:\currentitemlevel\endcsname}
@@ -1336,13 +1336,13 @@
 \protected\permanent\def\stopspecialitemgroupitem % todo: frozen
   {\stopitemgroupitem}
 
-\letvalue{\??itemgroupstart\v!item}\strc_itemgroups_start_do_item
-\letvalue{\??itemgroupstart\v!sub }\strc_itemgroups_start_subitem
-\letvalue{\??itemgroupstart\v!sym }\strc_itemgroups_start_symbol
-\letvalue{\??itemgroupstart\v!ran }\strc_itemgroups_start_edge
-\letvalue{\??itemgroupstart\v!its }\strc_itemgroups_start_items
-\letvalue{\??itemgroupstart\v!mar }\strc_itemgroups_start_margin
-\letvalue{\??itemgroupstart\v!txt }\strc_itemgroups_start_text
+\letcsname\??itemgroupstart\v!item\endcsname\strc_itemgroups_start_do_item
+\letcsname\??itemgroupstart\v!sub \endcsname\strc_itemgroups_start_subitem
+\letcsname\??itemgroupstart\v!sym \endcsname\strc_itemgroups_start_symbol
+\letcsname\??itemgroupstart\v!ran \endcsname\strc_itemgroups_start_edge
+\letcsname\??itemgroupstart\v!its \endcsname\strc_itemgroups_start_items
+\letcsname\??itemgroupstart\v!mar \endcsname\strc_itemgroups_start_margin
+\letcsname\??itemgroupstart\v!txt \endcsname\strc_itemgroups_start_text
 
 \def\strc_itemgroups_optimize_breaks
   {\ifcase\c_strc_itemgroups_column_depth

@@ -99,8 +99,8 @@ At the \TEX\ the builder is triggered automatically in the mentioned cases but a
 the \LUA\ end you can use \type {tex.triggerbuildpage()} to flush the pending
 contributions.
 
-The properties that relate to the page look like counter and dimension registers ut
-they are not. These variables are global and managed differently.
+The properties that relate to the page look like counter and dimension registers
+but they are not. These variables are global and managed differently.
 
 \starttabulate
 \NC \type {\pagegoal}         \NC the available space \NC \NR
@@ -198,6 +198,12 @@ processing.
 The page builder can triggered by (for instance) a penalty but you can also use
 type {\pageboundary}. This will trigger the page builder but not leave anything
 behind. (This is experimental.)
+
+\stopsectionlevel
+
+\startsectionlevel[title=Migration]
+
+{\em Todo, nothing new there, so no hurry.}
 
 \stopsectionlevel
 

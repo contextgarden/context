@@ -31,7 +31,7 @@ local report = logs.reporter("openstreetmap")
 --
 -- https://github.com/openstreetmap/osm2pgsql/blob/master/docs/lua.md
 --
--- I'm not sure where the script is used, and there are dead linsk on these pages but some
+-- I'm not sure where the script is used, and there are dead links on these pages but some
 -- information can be found in that file so I could combine our findings with these. There
 -- is a whole infrastructure out there with impressive machinery, style sheet generation
 -- etc. but we don't need that here. Also, we don't need to play routes.
@@ -181,27 +181,71 @@ local colors = {
     -- these concern details:
 
     amenity = {
-        arts_centre      = true,
-        bar              = true,
-        bicycle_parking  = true,
-        college          = true,
-        courthouse       = true,
-        fountain         = true,
-        hospital         = true,
-        kindergarten     = true,
-        marketplace      = true,
-        parking          = true,
-        parking_space    = true,
-        pharmacy         = true,
-        place_of_worship = true,
-        police           = true,
-        restaurant       = true,
-        school           = true,
-        shower           = true,
-        social_facility  = true,
-        toilets          = true,
-        townhall         = true,
-        university       = true,
+        arts_centre               = true,
+        bar                       = true,
+        bicycle_parking           = true,
+        college                   = true,
+        courthouse                = true,
+        fountain                  = true,
+        hospital                  = true,
+        kindergarten              = true,
+        marketplace               = true,
+        parking                   = true,
+        parking_space             = true,
+        pharmacy                  = true,
+        place_of_worship          = true,
+        police                    = true,
+        restaurant                = true,
+        school                    = true,
+        shower                    = true,
+        social_facility           = true,
+        toilets                   = true,
+        townhall                  = true,
+
+     -- university                = true, -- no, it will mark all red .. maybe some other color so we need stacking
+
+     -- atm                       = true,
+        bank                      = true,
+     -- bbq                       = true,
+        bicycle_parking           = true,
+        bicycle_repair_station    = true,
+        cafe                      = true,
+     -- car_sharing               = true,
+        car_wash                  = true,
+     -- charging_station          = true,
+        childcare                 = true,
+        clinic                    = true,
+     -- clock                     = true,
+        clubhouse                 = true,
+        college                   = true,
+        community_centre          = true,
+     -- compressed_air            = true,
+        computer_lab              = true,
+     -- drinking_water            = true,
+        events_venue              = true,
+        fast_food                 = true,
+        fire_station              = true,
+        fountain                  = true,
+        fuel                      = true,
+     -- ice_cream                 = true,
+        library                   = true,
+        mailroom                  = true,
+     -- microwave                 = true,
+     -- parking_entrance          = true,
+     -- parking_space             = true,
+        pharmacy                  = true,
+        place_of_worship          = true,
+     -- post_box                  = true,
+        post_office               = true,
+        recycling                 = true,
+        research_institute        = true,
+     -- social_facility           = true,
+        theatre                   = true,
+     -- vending_machine           = true,
+     -- waste_basket              = true,
+     -- waste_disposal            = true,
+        wellness_centre           = true,
+
     },
 
     -- these are basic:
@@ -235,6 +279,21 @@ local colors = {
         shed             = true,
         townhall         = true,
         yes              = true,
+
+        university       = true,
+        dormitory        = true,
+        barn             = true,
+        bridge           = true,
+        detached         = true,
+        farm_auxiliary   = true,
+        grandstand       = true,
+        greenhouse       = true,
+        kindergarten     = true,
+        parking          = true,
+        stable           = true,
+        stadium          = true,
+        toilets          = true,
+
     },
     emergency = {
         designated       = true,
@@ -501,7 +560,8 @@ local f_nodraw_s    = formatters['ND %--t;']
 local f_nofill_s    = formatters['NF %--t--C;']
 
 local f_background  = formatters['F %--t -- C W "osm:background";']
-local f_bounds      = formatters['setbounds currentpicture to %--t--C ;']
+local f_bounds      = formatters['setbounds currentpicture to %--t--C withstacking (0,250);']
+local f_clipped     = formatters['clip currentpicture to %--t--C withstacking (0,250);']
 
 -- For now no labels are printed, also because that's now what we use this for. At
 -- some point I will provide some hooks to put text at coordinates.
@@ -622,8 +682,14 @@ function openstreetmap.convert(specification)
     local deg_to_rad = math.pi / 180.0
     local scale      = 3600 -- vertical scale: 1" = 1cm
 
+ -- local function f_pair(lon, lat)
+ --     return formatters("(%.3Ncm,%.3Ncm)", (lon - minlon) * scale * cos(midlat * deg_to_rad), (lat-minlat) * scale)
+ -- end
+
+    local f_f_pair = formatters["(%.3Ncm,%.3Ncm)"]
+
     local function f_pair(lon, lat)
-        return formatters("(%.3Ncm,%.3Ncm)", (lon - minlon) * scale * cos(midlat * deg_to_rad), (lat-minlat) * scale)
+        return f_f_pair((lon - minlon) * scale * cos(midlat * deg_to_rad), (lat-minlat) * scale)
     end
 
     local rendering   = table.tohash(order)
@@ -748,7 +814,7 @@ function openstreetmap.convert(specification)
                 end
             end
 
-        -- There are ways and relations. Relations can have members that poitn to
+        -- There are ways and relations. Relations can have members that point to
         -- ways but also relations. My impression is that we can stick to way members
         -- but I'll deal with that when needed.
 
@@ -834,7 +900,7 @@ function openstreetmap.convert(specification)
 
     -- We add a background first and clip later. Beware: There can be substantial bits
     -- outside the clip path (like rivers) but because paths are not that detailed we
-    -- don't wast time on building a cycle. We could check if points are ouside the
+    -- don't waste time on building a cycle. We could check if points are outside the
     -- boundingbox and then use the metapost buildpath macro .. some day.
 
     local boundary = {
@@ -864,6 +930,8 @@ function openstreetmap.convert(specification)
 
     if collected then
 
+        local f_flush = formatters[') W "%s" L %s;']
+
         for stacking, colors in sortedhash(collected) do
             for color, bunch in next, colors do
                 local draw = bunch.draw
@@ -872,20 +940,21 @@ function openstreetmap.convert(specification)
                     r = r + 1 result[r] = "draw image ("
                     r = r + 1 result[r] = concat(fill)
                     r = r + 1 result[r] = 'DF origin--cycle;'
-                    r = r + 1 result[r] = formatters[') W "%s" L %s;'](color,stacking) ;
+                    r = r + 1 result[r] = f_flush(color,stacking) ;
                 end
                 if draw and #draw > 0 then
                     r = r + 1 result[r] = "draw image ("
                     r = r + 1 result[r] = concat(draw)
                     r = r + 1 result[r] = 'DD origin;'
-                    r = r + 1 result[r] = formatters[') W "%s" L %s;'](color,stacking+1) ;
+                    r = r + 1 result[r] = f_flush(color,stacking+1) ;
                 end
             end
         end
 
     end
 
-    r = r + 1 result[r] = f_bounds(boundary)
+--     r = r + 1 result[r] = f_bounds(boundary)
+    r = r + 1 result[r] = f_clipped(boundary)
     r = r + 1 result[r] = endmp
 
     if missing then

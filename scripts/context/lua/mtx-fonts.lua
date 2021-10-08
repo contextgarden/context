@@ -295,7 +295,7 @@ local function showfeatures(tag,specification)
                         else
                             done = true
                         end
-                        report("  % -8s % -8s % -8s",f,s,concat(table.sortedkeys(ss), " ")) -- todo: padd 4
+                        report("  %-8s %-8s %-8s",f,s,concat(table.sortedkeys(ss), " ")) -- todo: padd 4
                     end
                 end
             end
@@ -317,7 +317,7 @@ local function showfeatures(tag,specification)
             report("  method   feature         formats")
             report()
             for k, v in table.sortedhash(methods) do
-                report("  % -8s % -14s  %s",k,v.feature,v.format)
+                report("  %-8s %-14s  %s",k,v.feature,v.format)
             end
         end
     end

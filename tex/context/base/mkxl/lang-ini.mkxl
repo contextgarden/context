@@ -481,6 +481,9 @@
 \permanent\protected\def\dohyphencollapsing{\hyphenationmode\bitwiseflip\hyphenationmode \collapsehyphenationcode}
 \permanent\protected\def\nohyphencollapsing{\hyphenationmode\bitwiseflip\hyphenationmode-\collapsehyphenationcode}
 
+\permanent\protected\def\doexplicithyphens{\hyphenationmode\bitwiseflip\hyphenationmode \explicithyphenationcode}
+\permanent\protected\def\noexplicithyphens{\hyphenationmode\bitwiseflip\hyphenationmode-\explicithyphenationcode}
+
 \permanent\protected\def\usehyphensparameter#1%
   {\edef\p_hyphens{#1\c!hyphens}%
    \ifx\p_hyphens\v!no

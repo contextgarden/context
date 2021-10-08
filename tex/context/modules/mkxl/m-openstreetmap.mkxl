@@ -37,6 +37,8 @@
 \definecolor [osm:residential]      [s=.75]
 \definecolor [osm:cemetery]         [s=.50]
 
+\definecolor [osm:university]       [s=.85]
+
 \definecolor [osm:boat]             [b=.25]
 
 \definecolor [osm:water]            [b=.75]
@@ -93,7 +95,34 @@
 \definecolor[osm:amenity:social_facility]   [osm:building:special]
 \definecolor[osm:amenity:toilets]           [osm:building:special]
 \definecolor[osm:amenity:townhall]          [osm:building:special]
-\definecolor[osm:amenity:university]        [osm:building:special]
+
+\definecolor[osm:amenity:university]        [osm:university] % what color ... (obscures buildings)
+
+\definecolor[osm-amenity:bank]                   [osm:building:special]
+\definecolor[osm-amenity:bicycle_parking]        [osm:building:special]
+\definecolor[osm-amenity:bicycle_repair_station] [osm:building:special]
+\definecolor[osm-amenity:cafe]                   [osm:building:special]
+\definecolor[osm-amenity:car_wash]               [osm:building:special]
+\definecolor[osm-amenity:childcare]              [osm:building:special]
+\definecolor[osm-amenity:clinic]                 [osm:building:special]
+\definecolor[osm-amenity:clubhouse]              [osm:building:special]
+\definecolor[osm-amenity:college]                [osm:building:special]
+\definecolor[osm-amenity:community_centre]       [osm:building:special]
+\definecolor[osm-amenity:computer_lab]           [osm:building:special]
+\definecolor[osm-amenity:events_venue]           [osm:building:special]
+\definecolor[osm-amenity:fast_food]              [osm:building:special]
+\definecolor[osm-amenity:fire_station]           [osm:building:special]
+\definecolor[osm-amenity:fountain]               [osm:building:special]
+\definecolor[osm-amenity:fuel]                   [osm:building:special]
+\definecolor[osm-amenity:library]                [osm:building:special]
+\definecolor[osm-amenity:mailroom]               [osm:building:special]
+\definecolor[osm-amenity:pharmacy]               [osm:building:special]
+\definecolor[osm-amenity:place_of_worship]       [osm:building:special]
+\definecolor[osm-amenity:post_office]            [osm:building:special]
+\definecolor[osm-amenity:recycling]              [osm:building:special]
+\definecolor[osm-amenity:research_institute]     [osm:building:special]
+\definecolor[osm-amenity:theatre]                [osm:building:special]
+\definecolor[osm-amenity:wellness_centre]        [osm:building:special]
 
 \definecolor[osm:area:yes]                  [osm:unknown]
 
@@ -142,6 +171,20 @@
 \definecolor[osm:building:shed]             [osm:building]
 \definecolor[osm:building:townhall]         [osm:building]
 \definecolor[osm:building:yes]              [osm:building]
+
+\definecolor[osm:building:university]       [osm:building]
+\definecolor[osm:building:dormitory]        [osm:building]
+\definecolor[osm:building:barn]             [osm:building]
+\definecolor[osm:building:bridge]           [osm:building:special]
+\definecolor[osm:building:detached]         [osm:building]
+\definecolor[osm:building:farm_auxiliary]   [osm:building]
+\definecolor[osm:building:grandstand]       [osm:building]
+\definecolor[osm:building:greenhouse]       [osm:building:special]
+\definecolor[osm:building:kindergarten]     [osm:building]
+\definecolor[osm:building:parking]          [osm:building:special]
+\definecolor[osm:building:stable]           [osm:building]
+\definecolor[osm:building:stadium]          [osm:building:special]
+\definecolor[osm:building:toilets]          [osm:building:special]
 
 \definecolor[osm:emergency:designated]      [osm:unknown]
 \definecolor[osm:emergency:destination]     [osm:unknown]
@@ -287,9 +330,10 @@
 
 \startMPpage
     draw lmt_openstreetmap [
-        filename = "hasselt.osm"
+%         filename = "hasselt.osm"
+        filename = "e:/tmp/map.osm"
         used     = [
-             boundary     = false,
+            university = false,
         ],
     ] ;
 \stopMPpage

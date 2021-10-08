@@ -102,7 +102,8 @@
    frame=off,
    foregroundcolor=gray]
   {\definedfont[SerifBold sa 10]SciTE\endgraf
-   \definedfont[SerifBold sa 2.48]IN CONTEXT MkIV\kern.25\bodyfontsize}
+%  \definedfont[SerifBold sa 2.48]IN CONTEXT MkIV\kern.25\bodyfontsize}
+   \definedfont[SerifBold sa 1.60]IN CONTEXT MkIV & LMTX\kern.25\bodyfontsize}
 
 \startTEXpage
     \tightlayer[TitlePage]
@@ -110,21 +111,14 @@
 
 % main text
 
-\startsubject[title={Warning}]
-
-\SCITE\ version 3.61 works ok but 3.62 crashes. It'a a real pity that \SCITE\
-doesn't have the scintillua lexer built in, which would also make integration a
-bit nicer by sharing the \LUA\ instance. The \CONTEXT\ lexing discussed here is
-the lexing I assume when using \CONTEXT\ \MKIV, but alas it's not easy to get it
-running on \UNIX\ and on \MACOSX\ there is no \LUA\ lexing available.
-
 \startsubject[title={About \SCITE}]
 
 For a long time at \PRAGMA\ we used \TEXEDIT, an editor we'd written in \MODULA.
 It had some project management features and recognized the project structure in
 \CONTEXT\ documents. Later we rewrote this to a platform independent
 reimplementation called \TEXWORK\ written in \PERLTK\ (not to be confused with
-the editor with the plural name).
+the editor with the plural name) that when I checked last still works okay, which
+is proof that \PERLTK\ has been stable for decades.
 
 In the beginning of the century I can into \SCITE, written by Neil Hodgson.
 Although the mentioned editors provide some functionality not present in \SCITE\
@@ -142,8 +136,15 @@ a \TEX/\LUA\ hybrid, it made sense to look into this. The result is a couple of
 lexers that suit \TEX, \METAPOST\ and \LUA\ usage in \CONTEXT\ \MKIV. As we also
 use \XML\ as input and output format a lexer for \XML\ is also provided. And
 because \PDF\ is one of the backend formats lexing of \PDF\ is also implemented.
-\footnote {In the process some of the general lexing framework was adapted to
-suit our demands for speed. We ship these files as well.}
+In the process some of the general lexing framework were adapted to suit our
+demands for speed. For a long time we shipped these files as well but at point I
+decided that it made no sense to keep adapting to the relatively frequent changes
+in the \API. The last version in the 3.* series worked okay, in the 4.* series
+things failed but we didn't adapt, and when series 5.* showed up I decided to
+drop the old lexer compatibility. I assume that a version of \SCITE\ is run that
+has \LPEG\ available in the main \LUA\ instance and that also supports copying
+text fragments using the editor object. (Till that is the case, we provide binaries
+with the \CONTEXT\ distribution.)
 
 In the \CONTEXT\ (standalone) distribution you will find the relevant files
 under:
@@ -227,57 +228,43 @@ Where the second path is the path we will put more files.
 
 \stopsubject
 
-\startsubject[title={Installing \type {scintillua}}]
+\startsubject[title={Binaries}]
 
-Next you need to install the lpeg lexers. \footnote {Versions later than 2.11
-will not run on \MSWINDOWS\ 2K. In that case you need to comment the external
-lexer import.} The library is part of the \type {textadept} editor by Mitchell
-(\hyphenatedurl {mitchell.att.foicica.com}) which is also based on scintilla:
-The archive can be fetched from:
+When you compile binaries yourself or get them from somewhere you need to make
+sure that they en dup in te right place (see previous section): When you're on
+\MSWINDOWS\ they fly to:
 
 \starttyping
-http://foicica.com/scintillua/
+wscite/scite.exe
+wscite/scilexer.dll
 \stoptyping
 
-On \MSWINDOWS\ you need to copy the files to the \type {wscite} folder (so we end
-up with a \type {lexers} subfolder there). For \LINUX\ the place depends on the
-distribution, for instance \type {/usr/share/scite}; this is the place where the
-regular properties files live. \footnote {If you update, don't do so without
-testing first. Sometimes there are changes in \SCITE\ that influence the lexers
-in which case you have to wait till we have update them to suit those changes.}
-
-So, you end up, on \MSWINDOWS\ with:
+And on \LINUX\ then end up in:
 
 \starttyping
-c:\data\system\scite\wscite\lexers
+/usr/bin/SciTE
+/usr/bin/libscintilla.so
+/usr/bin/liblexilla.so
 \stoptyping
 
-And on \LINUX:
-
-\starttyping
-/usr/share/scite/lexers
-\stoptyping
-
-Beware: if you're on a 64 bit system, you need to rename the 64 bit \type {so}
-library into one without a number. Unfortunately the 64 bit library is now always
-available which can give surprises when the operating system gets updates. In such
-a case you should downgrade or use \type {wine} with the \MSWINDOWS\ binaries
-instead. After installation you need to restart \SCITE\ in order to see if things
-work out as expected.
+Because we only use the official \LUA\ interface methods the lexers should just work,
+assuming that you have imported the \typ {context/scite-context-user} properties file.
 
 \stopsubject
 
 \startsubject[title={Installing the \CONTEXT\ lexers}]
 
-When we started using this nice extension, we ran into issues and as a
-consequence shipped a patched \LUA\ code. We also needed some more control as we
-wanted to provide more features and complex nested lexers. Because the library
-\API\ changed a couple of times, we now have our own variant which will be
-cleaned up over time to be more consistent with our other \LUA\ code (so that we
-can also use it in \CONTEXT\ as variant verbatim lexer). We hope to be able to
-use the \type {scintillua} library as it does the job.
+% When we started using this nice extension, we ran into issues and as a
+% consequence shipped a patched \LUA\ code. We also needed some more control as we
+% wanted to provide more features and complex nested lexers. Because the library
+% \API\ changed a couple of times, we now have our own variant which will be
+% cleaned up over time to be more consistent with our other \LUA\ code (so that we
+% can also use it in \CONTEXT\ as variant verbatim lexer). We hope to be able to
+% use the \type {scintillua} library as it does the job.
+%
+% Anyway, if you want to use \CONTEXT, you need to copy the relevant files from
 
-Anyway, if you want to use \CONTEXT, you need to copy the relevant files from
+If you want to use \CONTEXT, you need to copy the relevant files from
 
 \starttyping
 <texroot>/tex/texmf-context/context/data/scite

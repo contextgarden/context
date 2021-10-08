@@ -1,0 +1,236 @@
+% language=us
+
+\usemodule[present-boring,abbreviations-logos]
+
+\definecolor[maincolor] [r=.4]
+\definecolor[extracolor][s=.1]
+
+\startdocument
+  [title={MATH},
+   banner={complete control},
+   location={context\enspace {\bf 2021}\enspace meeting}]
+
+\starttitle[title=The benchmark]
+
+\startitemize
+
+\startitem
+    Traditional \TEX\ has set the benchmark for typesetting math.
+\stopitem
+
+\startitem
+    It uses three categories of fonts: alphabet, symbol, extensible.
+\stopitem
+
+\startitem
+    Limitations in fonts have lead to some curious handling of dimensions.
+\stopitem
+
+\startitem
+    The fact that there is \type {\over} makes for multipass scanning and
+    processing.
+\stopitem
+
+\startitem
+    The last family counts (when entering the second pass) so one has to use very
+    controlled font switching.
+\stopitem
+
+\startitem
+    Some features (limits, integrals, primes) rely on special macros and parsing.
+\stopitem
+
+\startitem
+    One can end up in tricky font switching. Also, quite some fonts are loaded in
+    order to set up the machinery.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Todays reality]
+
+\startitemize
+
+\startitem
+    We now use \OPENTYPE\ math fonts. In fact, in \MKIV\ we always used only one
+    font instance (unless we mix font families).
+\stopitem
+
+\startitem
+    We operate in the \UNICODE\ domain, so in the end there was no need to bump the
+    number of families in \LUATEX.
+\stopitem
+
+\startitem
+    In \CONTEXT\ we use only a few font families: regular, regular r2l, bold, bold r2l.
+\stopitem
+
+\startitem
+    All the tricky stuff is done with the help of \LUA. This already started very
+    early in the \LUATEX\ project and has not changed.
+\stopitem
+
+\startitem
+    But we still run into issues because the available fonts are inconsistent,
+    incompatible, have issues and that is unlikely to change.
+\stopitem
+
+\startitem
+    We have a virtual font system in place that was used during the transition (when no
+    fonts were available).
+\stopitem
+
+\startitem
+    In \CONTEXT\ there are various ways to deal with shortcomings in or extensions to fonts.
+\stopitem
+
+\startitem
+    At some point we need to make up our minds, accept the issues with fonts, and
+    just fix things runtime.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=The engine]
+
+\startitemize
+
+\startitem
+    In \LUATEX\ we started with a hybrid approach but eventually ended up with
+    more split code paths.
+\stopitem
+
+\startitem
+    In \LUAMETATEX\ nearly all aspects of the engine had made configurable and are under
+    user control.
+\stopitem
+
+\startitem
+    This permits experiments where we can apply old methods onto new fonts.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=The tricky things]
+
+\startitemize
+
+\startitem
+    Spacing in traditional math is a combination of widths and italic correction:
+    we need to add them and sometimes afterwards subtract the italic correction.
+    In \OPENTYPE\ math we don't lie about dimensions and apply italic correction
+    selectively (as we have staircase kerns).
+\stopitem
+
+\startitem
+    Special symbols like primes are quite inconsistent wrt dimensions and positioning
+    and we need to catch that. We also need robust ways to collapse them to the proper
+    \UNICODE\ symbol.
+\stopitem
+
+\startitem
+    Larger variants (these \type {\bigg} things) needs some attention too.
+\stopitem
+
+\startitem
+    We need to map characters onto the right shaped (alphabets) because hardly
+    anyone will enter the \UNICODE\ math characters directly.
+\stopitem
+
+\startitem
+    We might want to fix scripts, italics, kern pairs etc.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Implementation]
+
+Among the new features (introduced over a period of time) are:
+
+\startitemize
+
+\startitem
+    All kind of inter|-|class spacing parameters (in addition to what \LUATEX\
+    already provides).
+\stopitem
+
+\startitem
+    Dozens of \OPENTYPE\ font related spacing parameters (more that traditional
+    \TEX).
+\stopitem
+
+\startitem
+    Opened up additional font (and taste) related parameters (hard coded in
+    traditional \TEX).
+\stopitem
+
+\startitem
+    Opened up style related parameters (hard coded in traditional \TEX).
+\stopitem
+
+\startitem
+    Control codes that make the engine follow a different (the traditional) code
+    path (which can come in handy when testing or writing manuals).
+\stopitem
+
+\startitem
+    The ability to simplify the result a bit wrt characters (the engine loves to
+    box a lot).
+\stopitem
+
+\startitem
+    Efficient font, style and parameter scaling by reusing fonts and thereby
+    limiting the number of instances.
+\stopitem
+
+\startitem
+    More options to special (constructed) symbols.
+\stopitem
+
+\startitem
+    Let math related nodes carry around more control properties and states.
+\stopitem
+
+\startitem
+    Support of local changes to math parameters.
+\stopitem
+
+\stopitemize
+
+\stoptitle
+
+\stopdocument
+
+% mml
+% vf chars for extensibles
+
+% noads.handlers.showtree
+% noads.handlers.unscript
+% noads.handlers.unstack
+% noads.handlers.variants
+% noads.handlers.relocate
+% noads.handlers.families
+% noads.handlers.render
+% noads.handlers.collapse
+% noads.handlers.fixscripts
+% noads.handlers.domains
+% noads.handlers.autofences
+% noads.handlers.resize
+% noads.handlers.respace
+% noads.handlers.alternates
+% noads.handlers.tags
+% noads.handlers.italics
+% noads.handlers.kernpairs
+% noads.handlers.classes
+
+% builders.kernel.mlisttohlist
+% noads.handlers.makeup
+% noads.handlers.align

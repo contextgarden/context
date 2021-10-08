@@ -73,6 +73,7 @@ local v_default         = variables.default
 local v_margin          = variables.margin
 local v_auto            = variables.auto
 local v_first           = variables.first
+local v_keep            = variables.keep
 local v_last            = variables.last
 
 local texget            = tex.get
@@ -133,6 +134,7 @@ interfaces.implement {
 -- a page so this has a low priority
 
 actions[v_default] = function(head,setting)
+    local skip = false
     -- begin of par
     local first  = getnext(head)
     local indent = false
@@ -196,6 +198,9 @@ actions[v_default] = function(head,setting)
                 else
                     -- keep quote etc with initial
                     local next = getnext(first)
+                    if next and method[v_keep] then
+                        skip = first
+                    end
                     if not next then
                         -- don't start with a quote or so
                         return head
@@ -245,7 +250,7 @@ actions[v_default] = function(head,setting)
             local id = getid(current)
             if id == kern_code then
                 setkern(current,0)
-            elseif id == glyph_code then
+            elseif id == glyph_code and skip ~= current then
                 local next = getnext(current)
                 if font then
                     setfont(current,font)
@@ -301,7 +306,11 @@ actions[v_default] = function(head,setting)
         --
         local hoffset = width + hoffset + distance + (indent and parindent or 0)
         for current in nextglyph, first do
-            setoffsets(current,-hoffset,-voffset) -- no longer - height here
+            if skip == current then
+                setoffsets(current,-hoffset,0)
+            else
+                setoffsets(current,-hoffset,-voffset) -- no longer - height here
+            end
             if current == last then
                 break
             end

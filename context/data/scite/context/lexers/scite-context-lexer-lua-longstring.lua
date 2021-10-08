@@ -6,26 +6,25 @@ local info = {
     license   = "see context related readme files",
 }
 
-local lexer       = require("scite-context-lexer")
-local context     = lexer.context
-local patterns    = context.patterns
+-- This one is needed because we have spaces in strings and partial lexing depends
+-- on them being different.
 
-local token       = lexer.token
+local lexers      = require("scite-context-lexer")
 
-local stringlexer = lexer.new("lua-longstring","scite-context-lexer-lua-longstring")
-local whitespace  = stringlexer.whitespace
+local patterns    = lexers.patterns
+local token       = lexers.token
+
+local stringlexer = lexers.new("lua-longstring","scite-context-lexer-lua-longstring")
 
 local space       = patterns.space
 local nospace     = 1 - space
 
-local p_spaces    = token(whitespace, space  ^1)
-local p_string    = token("string",   nospace^1)
+local p_spaces    = token("whitespace", space^1)
+local p_string    = token("string",     nospace^1)
 
-stringlexer._rules = {
+stringlexer.rules = {
     { "whitespace", p_spaces },
     { "string",     p_string },
 }
-
-stringlexer._tokenstyles = context.styleset
 
 return stringlexer
