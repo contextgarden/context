@@ -805,9 +805,13 @@
 \permanent\protected\def\btxdoifelsecombiinlist#1#2%
   {\clf_btxdoifelsecombiinlist{#1}{#2}}
 
+\permanent\protected\def\btxdoifelsecitedone#1#2%
+  {\clf_btxdoifelsecitedone{#1}{#2}}
+
 \aliased\let\btxdoifsameaspreviouscheckedelse\btxdoifelsesameaspreviouschecked
 \aliased\let\btxdoifsameaspreviouselse       \btxdoifelsesameasprevious
 \aliased\let\btxdoifcombiinlistelse          \btxdoifelsecombiinlist
+\aliased\let\btxdoifcitedoneelse             \btxdoifelsecitedone
 
 \tolerant\def\publ_place_list_indeed#1#2#*[#3]#*[#4]%
   {\begingroup
@@ -1303,12 +1307,12 @@
 
 \installcorenamespace{btxinteraction}
 
-\setvalue{\??btxinteraction\v!number}{\settrue\btxinteractivenumber}
-\setvalue{\??btxinteraction\v!text  }{\settrue\btxinteractivetext}
-\setvalue{\??btxinteraction\v!page  }{\settrue\btxinteractivepage}
-\setvalue{\??btxinteraction\v!all   }{\settrue\btxinteractivenumber
-                                      \settrue\btxinteractivetext
-                                      \settrue\btxinteractivepage}
+\defcsname\??btxinteraction\v!number\endcsname{\settrue\btxinteractivenumber}
+\defcsname\??btxinteraction\v!text  \endcsname{\settrue\btxinteractivetext}
+\defcsname\??btxinteraction\v!page  \endcsname{\settrue\btxinteractivepage}
+\defcsname\??btxinteraction\v!all   \endcsname{\settrue\btxinteractivenumber
+                                               \settrue\btxinteractivetext
+                                               \settrue\btxinteractivepage}
 
 % \setupbtx[interaction=page] % or text or number or all
 % \setupbtxrendering[pagestate=start]
@@ -1557,7 +1561,7 @@
 %D Setup helpers, beware, we need to wrap this .. now we need to know
 %D how setups are implemented.
 
-\setvalue{\??setup:\s!btx:\s!unknown}#1{\inframed{\tttf#1}}
+\defcsname\??setup:\s!btx:\s!unknown\endcsname#1{\inframed{\tttf#1}}
 
 \def\publ_fast_setup_yes#1#2%
   {\csname\??setup:\s!btx:%

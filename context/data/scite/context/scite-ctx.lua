@@ -415,8 +415,9 @@ do
     print("\n-  recognized first lines:\n")
     print("xml   <?xml version='1.0' language='..'")
     print("tex   % language=..")
-    print("")
+    print(" ")
     print("(lexing is currently being upgraded / improved / made more native to scite)")
+    print(" ")
 
 end
 
@@ -1797,4 +1798,29 @@ do
         check_output_pane()
     end
 
+    function OnChar()
+        if not editor:AutoCActive() then
+            local syntax = loadedlexers[props.Language]
+            if syntax and syntax.completion then
+                local stop   = editor.CurrentPos
+                local start  = editor:WordStartPosition(stop,true)
+                local length = stop - start
+                if length >= 2 then
+                    local snippet = editor:textrange(start,stop)
+                    local list    = syntax.completion(snippet)
+                    if list then
+                        editor.AutoCMaxHeight = 30
+                        editor.AutoCSeparator = 32
+                        editor:AutoCShow(length,list)
+                    end
+                end
+            end
+        end
+    end
+
 end
+
+-- function OnKey(a,b,c)
+--     print("key",a,b,c)
+-- end
+

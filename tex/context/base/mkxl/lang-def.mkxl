@@ -554,7 +554,7 @@
 % Artificial Languages: Esperanto
 
 \installlanguage
-  [\s!esperanto]
+  [\s!eo]
   [\c!spacing=\v!packed,
    \c!leftsentence=\endash,
    \c!rightsentence=\endash,
@@ -569,7 +569,7 @@
    \s!lefthyphenmin=2,
    \s!righthyphenmin=2]
 
-\installlanguage[\s!eo][\c!default=\s!esperanto]
+\installlanguage[\s!esperanto][\c!default=\s!eo]
 
 % Baltic Languages: Lettish/Latvian, Lietuvių/Lithuanian
 

@@ -55,28 +55,45 @@
 \permanent\protected\def\emphasistypeface{\font_emphasis_checked_typeface\sl\it}
 \permanent\protected\def\emphasisboldface{\font_emphasis_checked_typeface\bs\bi}
 
-\permanent\protected\def\normalboldface % public
+\permanent\protected\def\normalboldface % public, upgraded from mkvi / WS
   {\relax
+   \ifx\fontalternative\s!tf\bf\orelse
    \ifx\fontalternative\s!it\bi\orelse
-   \ifx\fontalternative\s!sl\bs\else
+   \ifx\fontalternative\s!sl\bs\orelse
+   \ifx\fontalternative\s!bf   \orelse
+   \ifx\fontalternative\s!bi   \orelse
+   \ifx\fontalternative\s!bs   \else
                             \bf\fi}
 
-\permanent\protected\def\normalitalicface % public
+\permanent\protected\def\normalitalicface % public, upgraded from mkvi
   {\relax
    \ifx\fontalternative\s!tf\it\orelse
-   \ifx\fontalternative\s!bf\bi\else
-                            \tf\fi}
+   \ifx\fontalternative\s!it   \orelse
+   \ifx\fontalternative\s!sl\it\orelse
+   \ifx\fontalternative\s!bf\bi\orelse
+   \ifx\fontalternative\s!bi\bi\orelse
+   \ifx\fontalternative\s!bs\bi\else
+                            \it\fi}
 
-\permanent\protected\def\normalslantedface % public
-  {\relax \ifx\fontalternative\s!tf\sl
-   \orelse\ifx\fontalternative\s!bf\bs
-   \else                           \tf\fi}
-
-\permanent\protected\def\normaltypeface % public
+\permanent\protected\def\normalslantedface % public, upgraded from mkvi
   {\relax
-   \ifx\fontalternative\s!bi \it \orelse
-   \ifx\fontalternative\s!bs \sl \else
-                             \tf \fi}
+   \ifx\fontalternative\s!tf\sl\orelse
+   \ifx\fontalternative\s!it\sl\orelse
+   \ifx\fontalternative\s!sl   \orelse
+   \ifx\fontalternative\s!bf\bs\orelse
+   \ifx\fontalternative\s!bi\bs\orelse
+   \ifx\fontalternative\s!bs\bs\else
+                            \sl\fi}
+
+\permanent\protected\def\normaltypeface % public, upgraded from mkvi
+  {\relax
+   \ifx\fontalternative\s!tf   \orelse
+   \ifx\fontalternative\s!it\tf\orelse
+   \ifx\fontalternative\s!sl\tf\orelse
+   \ifx\fontalternative\s!bf   \orelse
+   \ifx\fontalternative\s!bi\bf\orelse
+   \ifx\fontalternative\s!bs\bf\else
+                            \tf\fi}
 
 \permanent\protected\def\swaptypeface % public
   {\relax
@@ -92,6 +109,43 @@
 \aliased\let\slantedface\normalslantedface % public
 \aliased\let\italicface \normalitalicface  % public
 \aliased\let\swapface   \swaptypeface      % public
+
+%D \startbuffer[demo]
+%D \starttabulate[|l|c|c|c|c|c|c|c|]
+%D \NC                   \NC \tex{tf}             \NC \tex{it}             \NC \tex{sl}             \NC \tex{bf}
+%D                       \NC \tex{bi}             \NC \tex{bs}             \NC \tex{sc}             \NC \NR
+%D \NC                   \NC \tf              txt \NC \it              txt \NC \sl              txt \NC \bf              txt
+%D                       \NC \bi              txt \NC \bs              txt \NC \sc              txt \NC \NR
+%D \NC \tex{typeface}    \NC \tf \typeface    txt \NC \it \typeface    txt \NC \sl \typeface    txt \NC \bf \typeface    txt
+%D                       \NC \bi \typeface    txt \NC \bs \typeface    txt \NC \sc \typeface    txt \NC \NR
+%D \NC \tex{boldface}    \NC \tf \boldface    txt \NC \it \boldface    txt \NC \sl \boldface    txt \NC \bf \boldface    txt
+%D                       \NC \bi \boldface    txt \NC \bs \boldface    txt \NC \sc \boldface    txt \NC \NR
+%D \NC \tex{slantedface} \NC \tf \slantedface txt \NC \it \slantedface txt \NC \sl \slantedface txt \NC \bf \slantedface txt
+%D                       \NC \bi \slantedface txt \NC \bs \slantedface txt \NC \sc \slantedface txt \NC \NR
+%D \NC \tex{italicface}  \NC \tf \italicface  txt \NC \it \italicface  txt \NC \sl \italicface  txt \NC \bf \italicface  txt
+%D                       \NC \bi \italicface  txt \NC \bs \italicface  txt \NC \sc \italicface  txt \NC \NR
+%D \NC \tex{swapface}    \NC \tf \swapface    txt \NC \it \swapface    txt \NC \sl \swapface    txt \NC \bf \swapface    txt
+%D                       \NC \bi \swapface    txt \NC \bs \swapface    txt \NC \sc \swapface    txt \NC \NR
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D {\small \typebuffer[demo]}
+%D
+%D This gives:
+%D
+%D \getbuffer[demo]
+%D
+%D But with:
+%D
+%D \startbuffer
+%D \setupbodyfontenvironment [default] [em=blue] % affects \swapface
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D We get:
+%D
+%D {\getbuffer\getbuffer[demo]}
 
 %D To be set with the default body font environment: \type {em} being \type
 %D {slanted} or \type {italic}.

@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2021.10.08 20:05}
+\immutable\edef\contextversion{2021.10.10 23:40}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -249,8 +249,7 @@
 \loadmkxlfile{strc-tag}
 \loadmkxlfile{strc-doc}
 \loadmkxlfile{strc-num}
-%loadmkxlfile{strc-mar}
-\doiffileelse{strc-mar-new.mkxl}{\loadmkxlfile{strc-mar-new}}{\loadmkxlfile{strc-mar}}
+\loadmkxlfile{strc-mar}
 \loadmkxlfile{strc-sbe}
 \loadmklxfile{strc-lst}
 \loadmkxlfile{strc-sec}

@@ -148,7 +148,7 @@
                     <short>never initializes synctex (for production runs)</short>
                 </flag>
                 <flag name="synctex">
-                    <short>run with synctex enabled (better use \setupsynctex[state=start]</short>
+                    <short>run with synctex enabled (better use \setupsynctex[state=start])</short>
                 </flag>
             </subcategory>
             <subcategory>

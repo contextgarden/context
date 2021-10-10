@@ -9,7 +9,8 @@ local info = {
 local string, table, lpeg = string, table, lpeg
 local P, R, S, V, C, Cmt, Cp, Cc, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cmt, lpeg.Cp, lpeg.Cc, lpeg.Ct
 local type, next = type, next
-local find, match, lower, upper = string.find, string.match, string.lower, string.upper
+local concat = table.concat
+local find, match, lower, upper, gsub = string.find, string.match, string.lower, string.upper, string.gsub
 
 local lexers        = require("scite-context-lexer")
 
@@ -32,6 +33,8 @@ local constants     = { }
 do -- todo: only once, store in global
 
     -- commands helpers primitives
+
+    local collected   = { }
 
     local definitions = lexers.loaddefinitions("scite-context-data-interfaces")
 
@@ -65,7 +68,7 @@ do -- todo: only once, store in global
             end
         end
         table.sort(used)
-        report("context user interfaces '%s' supported",table.concat(used," "))
+        report("context user interfaces '%s' supported",concat(used," "))
     end
 
     local definitions = lexers.loaddefinitions("scite-context-data-context")
@@ -103,8 +106,8 @@ do -- todo: only once, store in global
         add(definitions.tex,true)
         add(definitions.etex,true)
         add(definitions.pdftex,true)
-        add(definitions.aleph,true)
-        add(definitions.omega,true)
+     -- add(definitions.aleph,true)
+     -- add(definitions.omega,true)
         add(definitions.luatex,true)
         add(definitions.xetex,true)
     end
@@ -169,14 +172,14 @@ local p_rest                 = any
 
 local p_preamble             = knownpreamble
 local p_comment              = commentline
------ p_command              = backslash * knowncommand
+local p_command              = backslash * knowncommand
 ----- p_constant             = backslash * exactmatch(constants)
 ----- p_helper               = backslash * exactmatch(helpers)
 ----- p_primitive            = backslash * exactmatch(primitives)
 
 local p_csdone               = #(1-cstoken) + P(-1)
 
-local p_command              = backslash * lexers.helpers.utfchartabletopattern(currentcommands) * p_csdone
+----- p_command              = backslash * lexers.helpers.utfchartabletopattern(currentcommands) * p_csdone
 local p_constant             = backslash * lexers.helpers.utfchartabletopattern(constants)       * p_csdone
 local p_helper               = backslash * lexers.helpers.utfchartabletopattern(helpers)         * p_csdone
 local p_primitive            = backslash * lexers.helpers.utfchartabletopattern(primitives)      * p_csdone
@@ -209,40 +212,41 @@ local p_word                 = C(iwordpattern) * Cp() / function(s,p) return sty
 -- 2 : 10 sec
 --
 -- the problem is that quite some style subtables get generated so collapsing ranges helps
+-- although in the new scite approach this is less an issue (no lua tables)
 
-local option = 1
+local option = 0 -- otherwise we get e.g. \btx... and \xml... in commands colors ...
 
-if option == 1 then
+-- if option == 1 then
+--
+--     p_comment                = p_comment^1
+--     p_grouping               = p_grouping^1
+--     p_special                = p_special^1
+--     p_extra                  = p_extra^1
+--
+--     p_command                = p_command^1
+--     p_constant               = p_constant^1
+--     p_helper                 = p_helper^1
+--     p_primitive              = p_primitive^1
+--     p_ifprimitive            = p_ifprimitive^1
+--     p_reserved               = p_reserved^1
+--
+-- elseif option == 2 then
+--
+--     local included           = space^0
+--
+--     p_comment                = (p_comment     * included)^1
+--     p_grouping               = (p_grouping    * included)^1
+--     p_special                = (p_special     * included)^1
+--     p_extra                  = (p_extra       * included)^1
 
-    p_comment                = p_comment^1
-    p_grouping               = p_grouping^1
-    p_special                = p_special^1
-    p_extra                  = p_extra^1
-
-    p_command                = p_command^1
-    p_constant               = p_constant^1
-    p_helper                 = p_helper^1
-    p_primitive              = p_primitive^1
-    p_ifprimitive            = p_ifprimitive^1
-    p_reserved               = p_reserved^1
-
-elseif option == 2 then
-
-    local included           = space^0
-
-    p_comment                = (p_comment     * included)^1
-    p_grouping               = (p_grouping    * included)^1
-    p_special                = (p_special     * included)^1
-    p_extra                  = (p_extra       * included)^1
-
-    p_command                = (p_command     * included)^1
-    p_constant               = (p_constant    * included)^1
-    p_helper                 = (p_helper      * included)^1
-    p_primitive              = (p_primitive   * included)^1
-    p_ifprimitive            = (p_ifprimitive * included)^1
-    p_reserved               = (p_reserved    * included)^1
-
-end
+--     p_command                = (p_command     * included)^1
+--     p_constant               = (p_constant    * included)^1
+--     p_helper                 = (p_helper      * included)^1
+--     p_primitive              = (p_primitive   * included)^1
+--     p_ifprimitive            = (p_ifprimitive * included)^1
+--     p_reserved               = (p_reserved    * included)^1
+--
+-- end
 
 local p_invisible = invisibles^1
 
@@ -492,5 +496,48 @@ contextlexer.folding = {
         ["grouping"] = -1,
     },
 }
+
+do
+
+    local lastcurrent = nil
+    local allcommands = { }
+
+    function contextlexer.completion(str)
+        if currentcommands then
+            if lastcurrent ~= currentcommands then
+                allcommands = { }
+                for k, v in next, currentcommands do
+                    allcommands[#allcommands+1] = "\\" .. k
+                end
+                for k, v in next, helpers do
+                    allcommands[#allcommands+1] = "\\" .. k
+                end
+                for k, v in next, primitives do
+                    allcommands[#allcommands+1] = "\\" .. k
+                end
+             -- for k, v in next, constants do
+             --     allcommands[#constants+1] = "\\" .. k
+             -- end
+                lastcurrent = currentcommands
+                table.sort(allcommands)
+            end
+            if find(str,"^\\") then
+                local str  = "^" .. str
+                local list = { }
+                local n    = 0
+                for i=1,#allcommands do
+                    local c = allcommands[i]
+                    if find(c,str) then
+                        n = n + 1 ; list[n] = c
+                    end
+                end
+                if n > 0 then
+                    return list and concat(list," ")
+                end
+            end
+        end
+    end
+
+end
 
 return contextlexer

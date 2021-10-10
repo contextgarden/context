@@ -2168,18 +2168,18 @@ do
 
     function lists.combiinlist(dataset,tag)
         local rendering = renderings[dataset]
-        local list      = rendering.list
+     -- local list      = rendering.list
         local toindex   = rendering.tagtolistindex
         return toindex and toindex[tag]
     end
 
     function lists.flushcombi(dataset,tag)
         local rendering = renderings[dataset]
-        local list      = rendering.list
         local toindex   = rendering.tagtolistindex
         local listindex = toindex and toindex[tag]
         if listindex then
-            local li = list[listindex]
+            local list = rendering.list
+            local li   = list[listindex]
             if li then
                 local data      = datasets[dataset]
                 local luadata   = data.luadata
@@ -3505,5 +3505,32 @@ do
         tex.runlocal("t_btx_cmd")
         return nodes.toutf(tex.getbox("b_btx_cmd").list) or str
     end
+
+end
+
+do
+
+    -- no caching for now
+
+    interfaces.implement { -- shared with mkiv so no public
+        name      = "btxdoifelsecitedone",
+        protected = true,
+     -- public    = true,
+     -- arguments = "2 arguments",
+        arguments = "2 strings",
+        actions   = function(dataset,tag)
+            -- dataset ignored
+            local list = structures.lists.tobesaved
+            local done = false
+            for i=1,#list do
+                local u = list[i].userdata
+                if u.btxref == tag then
+                    done = true
+                    break
+                end
+            end
+            ctx_doifelse(done)
+        end
+    }
 
 end
