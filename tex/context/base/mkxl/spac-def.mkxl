@@ -56,12 +56,13 @@
 
 \setupinterlinespace
   [\c!minheight=\zeropoint, % only special purpose
-   \c!mindepth=\zeropoint, % only special purpose
+   \c!mindepth=\zeropoint,  % only special purpose
    \c!height=.72,
    \c!depth=.28,
    \c!top=1.0,
+   \c!ntop=\minusone,       % >= 0 : times lineheight
    \c!bottom=0.4,
-   \c!distance=\onepoint, % \dimexpr\openlineheight/10\relax
+   \c!distance=\onepoint,   % \dimexpr\openlineheight/10\relax
    \c!line=2.8\exheight,
    \c!stretch=\zerocount,
    \c!shrink=\zerocount]

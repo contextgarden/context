@@ -502,6 +502,8 @@ return {
   "semiexpanded",
   "semiprotected",
   "setfontid",
+  "shapingpenaltiesmode",
+  "shapingpenalty",
   "snapshotpar",
   "supmarkmode",
   "swapcsvalues",

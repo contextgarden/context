@@ -871,6 +871,56 @@ discretionaries.
 
 \stopsection
 
+\startsection[title=Neat tricks]
+
+The following two examples are for users to test. The first one shows all hyphenation
+points in a paragraph:
+
+\starttyping
+\bgroup
+    \setupalign[flushright]
+    \hyphenpenalty-100000
+    \input tufte
+    \par % force hyphenation
+\egroup
+\stoptyping
+
+The second one shows the cases where a hyphenated word ends a page:
+
+\starttyping
+\bgroup
+    \page
+    \interlinepenalty10000
+    \brokenpenalty-10000
+    \input tufte
+    \page
+\egroup
+\stoptyping
+
+A less space consuming variant of that one is:
+
+\starttyping
+\bgroup
+    \setbox\scratchboxone\vbox \bgroup
+        \interlinepenalty10000
+        \brokenpenalty-10000
+        \input tufte
+    \egroup
+    \doloop {
+        \ifvoid\scratchboxone
+            \hrule
+            \exitloop
+        \else
+            \setbox\scratchboxtwo\vsplit\scratchboxone to 1pt
+            \hrule
+            \unvbox\scratchboxtwo
+        \fi
+    }
+\egroup
+\stoptyping
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent

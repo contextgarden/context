@@ -97,6 +97,7 @@
    \edef\minimumlinedistance  {\interlinespaceparameter\c!distance }%
    \edef\normallineheight     {\interlinespaceparameter\c!line     }%
    \edef\topskipfactor        {\interlinespaceparameter\c!top      }%
+   \edef\ntopskipfactor       {\interlinespaceparameter\c!ntop     }%
    \edef\maxdepthfactor       {\interlinespaceparameter\c!bottom   }%
    \edef\m_spac_vertical_baseline_stretch_factor{\interlinespaceparameter\c!stretch}%
    \edef\m_spac_vertical_baseline_shrink_factor {\interlinespaceparameter\c!shrink }%
@@ -659,6 +660,7 @@
 \mutable\def\baselinefactor      {2.8}
 \mutable\def\topskipfactor       {1.0}
 \mutable\def\maxdepthfactor      {0.5}
+\mutable\let\ntopskipfactor      \minusone
 
 \mutable\def\minimumstrutheight  {\zeropoint}
 \mutable\def\minimumstrutdepth   {\zeropoint}
@@ -699,7 +701,12 @@
      \else
        \systemtopskipfactor\globalbodyfontsize
        \ifcase\bottomraggednessmode % ragged bottom
-         \s!plus5\globalbodyfontsize
+         \s!plus
+         \ifnum\ntopskipfactor<\zerocount
+           5\globalbodyfontsize % old hard coded value
+         \else
+            \ntopskipfactor\openlineheight
+         \fi
        \fi
    \fi
    %\relax

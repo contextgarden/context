@@ -44,7 +44,7 @@ local formatters = string.formatters
 local floor, div = math.floor, math.div
 local resultof, ostime, osdate, ossleep = os.resultof, os.time, os.date, os.sleep
 local jsontolua, jsontostring = json.tolua, json.tostring
-local savetable, loadtable, sortedkeys = table.save, table.load, table.sortedkeys
+local savetable, loadtable, sortedkeys, sortedhash = table.save, table.load, table.sortedkeys, table.sortedhash
 local setmetatableindex, setmetatablenewindex = table.setmetatableindex, table.setmetatablenewindex
 local replacer = utilities.templates.replacer
 local lower = string.lower -- no utf support yet (encoding needs checking in evohome)
@@ -172,9 +172,11 @@ local function loadedtable(filename)
     return { }
 end
 
-local function savedtable(filename,data)
+local function savedtable(filename,data,trace)
     savetable(filename,data)
-    report("file %a saved",filename)
+    if trace then
+        report("file %a saved",filename)
+    end
 end
 
 local function loadpresets(filename)
@@ -823,11 +825,12 @@ local function settask(presets,when,tag,action)
                 done     = false,
                 category = category,
                 action   = action,
+                tag      = tag,
             }
         else
             list[tag] = nil
         end
-        savedtable(presets.files.schedules,list)
+        savedtable(presets.files.schedules,list,false)
     end
 end
 
@@ -990,6 +993,15 @@ local function poller(presets)
     return step, process, presets
 end
 
+local function alloff(presets)
+    local zones = getzonenames(presets)
+    if zones then
+        for i=1,#zones do
+            setzonestate(presets,zones[i],5,true)
+        end
+    end
+end
+
 --
 
 evohome = {
@@ -1022,6 +1034,8 @@ evohome = {
         on                 = on,                 -- presets, name
         schedule           = schedule,           -- presets, name
         permanent          = permanent,          -- presets, name
+        --
+        alloff             = alloff,             -- presets
         --
         settomorrow        = settomorrow,        -- presets, tag, function
         resettomorrow      = resettomorrow,      -- presets, tag

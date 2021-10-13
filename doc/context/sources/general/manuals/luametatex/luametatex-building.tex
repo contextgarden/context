@@ -1,0 +1,148 @@
+% language=us runpath=texruns:manuals/luametatex
+
+\environment luametatex-style
+
+\startcomponent luametatex-building
+
+\startchapter[reference=building,title={Building paragraphs and pages}]
+
+\startsection[title={Introduction}]
+
+\topicindex {building}
+\topicindex {pages}
+\topicindex {paragraphs}
+\topicindex {marks}
+\topicindex {inserts}
+
+There are some enhancements that relate to the way paragraphs and pages are
+built. In this chapter we will cover those. There can be a bit of overlap with
+other chapters. These enhancements are still somewhat experimental.
+
+\stopsection
+
+\startsection[title={Paragraphs}]
+
+{\em This section will describe \prm {autoparagraphmode}, \prm
+{shapingpenaltiesmode}, \prm {shapingpenaltymode}, \prm {everybeforepar}, \prm
+{snapshotpar}, \prm {wrapuppar}, enz. For the moment the manuals that come with
+\CONTEXT\ have to do.}
+
+\stopsection
+
+\startsection[title={Inserts}]
+
+Inserts are tightly integrated into the page builder. Depending on penalties and
+available space they end up on the same page as were they got injected or they
+move to following pages, either or not split.
+
+In traditional \TEX\ inserts are controlled by registers. A quadruple of box,
+skip, dimen and count registers with the same number acts as an insert class.
+Details can be found in the \TEX book. A side effect of this is that we only have
+these four properties bound to class, other properties of inserts are driven by
+shared parameters. Another side effect is that register management has to make
+sure that these foursome get \quote {allocates} as set and not clashes with other
+register allocations.
+
+In \LUAMETATEX\ you can set the \prm {insertmode} to a non zero value in which case
+inserts are not using the register pool but have their own (global) resources. For
+now this is mode driven (for compatibility reasons) and once set or when an
+insert has been accessed, this mode is frozen, so  this parameter can be set
+very early in the macro package loading process.
+
+
+\starttabulate[|l|l|p|]
+\DB primitive               \BC traditional           \BC explanation \NC \NR
+\TB
+\NC \prm {insertdistance}   \NC skip                  \NC the space before the first instance (on a page) \NC \NR
+\NC \prm {insertmultiplier} \NC count                 \NC a factor that is used to calculate the height used \NC \NR
+\NC \prm {insertlimit}      \NC dimen                 \NC the maximum amount of space on a page to be taken \NC \NR
+\NC \prm {insertpenalty}    \NC \prm{insertpenalties} \NC the floating penalty (used when set) \NC \NR
+\NC \prm {insertmaxdepth}   \NC \prm{maxdepth}        \NC the maximum split depth (used when set) \NC \NR
+\NC \prm {insertstorage}    \NC                       \NC signals that the insert has to be stored for later \NC \NR
+\NC \prm {insertheight}     \NC \prm {ht} box         \NC the accumulated height of the inserts so far \NC \NR
+\NC \prm {insertdepth}      \NC \prm {dp} box         \NC the current depth of the inserts so far \NC \NR
+\NC \prm {insertwidth}      \NC \prm {wd} box         \NC the width of the inserts \NC \NR
+\LL
+\stoptabulate
+
+These primitives takes an insert class number. The \prm {insertpenalties}
+primitives is unchanged, as is the \LUATEX\ \prm {insertheights} one. When \prm
+{insertstoring} is set 1, all inserts that have their storage flag set will be
+saved. Think of a multi column setup where inserts have to end up in the last
+column. If there are three columns, the first two will store inserts. Then when
+the last column is dealt with \prm {insertstoring} can be set to 2 and that will
+signal the builder that we will inject the inserts. In both cases, the value of
+this register will be set to zero so that it doesn't influence further
+processing. More details about these (probably experimental for a while) features
+can be found in documents that come with \CONTEXT.
+
+A limitation of inserts is that when they are buried too deep, a property they
+share with inserts, they become invisible This can be dealt with by the migration
+feature described in an upcoming section.
+
+The \LUAMETATEX\ engine has some tracing built in that is enabled by setting \prm
+{tracinginserts} to a positive value.
+
+\stopsection
+
+\startsection[title={Marks}]
+
+Marks are kind of signal nodes in the list that refer to stored token lists. When
+a page has been split off and is handed over to the output routine these signals
+are resolved into first, top and bottom mark references that can (for instance)
+be used for running headers.
+
+In \ETEX\ the standard \TEX\ primitives \prm {mark}, \prm {firstmark}, \prm
+{topmark}, \prm {botmark}, \prm {splitfirstmark} and \prm {splitbotmark} have
+been extended with plural forms that accent a number before the token list. That
+number indicates a mark class.
+
+A problem with marks is that one cannot really reset them. Mark states are kept
+in the node lists and only periodically the state is snapshot into the global
+state variables. The \LUATEX\ engine can reset these global states with \prm
+{clearmarks} but that's only half a solution. In \LUAMETATEX\ we have
+\prm{flushmarks} which, like \prm {marks}, puts a node in the list that does a
+reset. This permits implementing controlled resets of specific marks at the cost
+of a possible interfering mode, but that can normally be dealt with rather well.
+
+Another problem with marks is that when they are buried too deep, a property they
+share with inserts, they become invisible. This can be dealt with by the
+migration feature described in the next section.
+
+The \LUAMETATEX\ engine has some tracing built in that is enabled by setting \prm
+{tracingmarks} to a positive value.
+
+\stopsection
+
+\startsection[title={Migration}]
+
+A new primitive \prm {automigrationmode} can be used to let deeply burried marks
+and inserts bubble up to the outer level.
+
+\starttabulate[|c|p|]
+\DB value \BC explanation \NC \NR
+\TB
+\NC \the\markautomigrationcode   \NC migrate marks in the par builder \NC \NR
+\NC \the\insertautomigrationcode \NC migrate inserts in the par builder  \NC \NR
+\NC \the\preautomigrationcode    \NC migrate prebox material in the page builder \NC \NR
+\NC \the\postautomigrationcode   \NC migrate postbox material in the page builder \NC \NR
+\LL
+\stoptabulate
+
+If you want to migrate marks and inserts you need to set al these flags. Migrated
+marks and inserts end up as post|-|box properties and will be handled in the page
+builder as such. At the \LUA\ end you can add pre- and post|-|box material too.
+
+\stopsection
+
+\startsection[title={Pages}]
+
+The page builder can triggered by (for instance) a penalty but you can also use
+\prm {pageboundary}. This will trigger the page builder but not leave anything
+behind.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

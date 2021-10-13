@@ -158,18 +158,19 @@ local function getthem(getter,post)
     return utilities.storage.allocate(table.swapped(codes,codes))
 end
 
-tex.discoptioncodes  = getthem(tex.getdiscoptionvalues,  "discoptioncode")
-tex.flagcodes        = getthem(tex.getflagvalues,        "flagcode" )
-tex.frozenparcodes   = getthem(tex.getfrozenparvalues,   "frozenparcode")
-tex.glyphoptioncodes = getthem(tex.getglyphoptionvalues, "glyphoptioncode")
-tex.groupcodes       = getthem(tex.getgroupvalues,       "groupcode")
-tex.hyphenationcodes = getthem(tex.gethyphenationvalues, "hyphenationcode")
-tex.mathcontrolcodes = getthem(tex.getmathcontrolvalues, "mathcontrolcode")
-tex.mathflattencodes = getthem(tex.getmathflattenvalues, "mathflattencode")
-tex.mathoptioncodes  = getthem(tex.getmathoptionvalues,  "") -- only at lua end
-tex.normalizecodes   = getthem(tex.getnormalizevalues,   "normalizecode")
-tex.parcontextcodes  = getthem(tex.getparcontextvalues,  "parcontextcode")
-tex.textcontrolcodes = getthem(tex.gettextcontrolvalues, "") -- only at lua end
+tex.discoptioncodes    = getthem(tex.getdiscoptionvalues,    "discoptioncode")
+tex.flagcodes          = getthem(tex.getflagvalues,          "flagcode" )
+tex.frozenparcodes     = getthem(tex.getfrozenparvalues,     "frozenparcode")
+tex.glyphoptioncodes   = getthem(tex.getglyphoptionvalues,   "glyphoptioncode")
+tex.groupcodes         = getthem(tex.getgroupvalues,         "groupcode")
+tex.hyphenationcodes   = getthem(tex.gethyphenationvalues,   "hyphenationcode")
+tex.mathcontrolcodes   = getthem(tex.getmathcontrolvalues,   "mathcontrolcode")
+tex.mathflattencodes   = getthem(tex.getmathflattenvalues,   "mathflattencode")
+tex.mathoptioncodes    = getthem(tex.getmathoptionvalues,    "") -- only at lua end
+tex.normalizecodes     = getthem(tex.getnormalizevalues,     "normalizecode")
+tex.automigrationcodes = getthem(tex.getautomigrationvalues, "automigrationcode") -- only at lua end
+tex.parcontextcodes    = getthem(tex.getparcontextvalues,    "parcontextcode")
+tex.textcontrolcodes   = getthem(tex.gettextcontrolvalues,   "") -- only at lua end
 
 function tex.stringtocodesbitmap(str,codes)
     local bitmap = 0

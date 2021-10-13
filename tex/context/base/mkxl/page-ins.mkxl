@@ -126,10 +126,14 @@
     \protected\def\page_inserts_set_limit     {\insertlimit}
     \protected\def\page_inserts_set_distance  {\insertdistance}
     \protected\def\page_inserts_set_multiplier{\insertmultiplier}
+    \protected\def\page_inserts_set_penalty   {\insertpenalty}
+    \protected\def\page_inserts_set_maxdepth  {\insertmaxdepth}
 
     \protected\def\page_inserts_get_limit     {\insertlimit}
     \protected\def\page_inserts_get_distance  {\insertdistance}
     \protected\def\page_inserts_get_multiplier{\insertmultiplier}
+    \protected\def\page_inserts_get_penalty   {\insertpenalty}
+    \protected\def\page_inserts_get_maxdepth  {\insertmaxdepth}
 
     \protected\def\page_inserts_get_boxed     {\insertbox}
     \protected\def\page_inserts_get_copied    {\insertcopy}

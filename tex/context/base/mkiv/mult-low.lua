@@ -76,7 +76,7 @@ return {
         "loosenessfrozenparcode", "lastlinefrozenparcode", "linepenaltyfrozenparcode", "clubpenaltyfrozenparcode",
         "widowpenaltyfrozenparcode", "displaypenaltyfrozenparcode", "brokenpenaltyfrozenparcode",
         "demeritsfrozenparcode", "shapefrozenparcode", "linefrozenparcode", "hyphenationfrozenparcode",
-        "allfrozenparcode",
+        "shapingpenaltiesfrozenparcode", "allfrozenparcode",
         --
         "activemathcharcode",
         --
@@ -90,6 +90,8 @@ return {
         "mathchoicegroupcode", "alsosimplegroupcode", "semisimplegroupcode", "mathshiftgroupcode", "mathleftgroupcode",
         "localboxgroupcode", "splitoffgroupcode", "splitkeepgroupcode", "preamblegroupcode",
         "alignsetgroupcode", "finrowgroupcode", "discretionarygroupcode",
+        --
+        "markautomigrationcode",  "insertautomigrationcode", "preautomigrationcode", "postautomigrationcode",
         --
         "charnodecode", "hlistnodecode", "vlistnodecode", "rulenodecode", "insertnodecode", "marknodecode",
         "adjustnodecode", "ligaturenodecode", "discretionarynodecode", "whatsitnodecode", "mathnodecode",

@@ -110,7 +110,7 @@ local function check()
         if not enabled then
             enableaction("mvlbuilders", "nodes.handlers.migrate")
             enabled = true
-            texsetcount("automigrationmode",3)
+            texsetcount("automigrationmode",0xFFFF) -- just all of it
         end
     else
         if enabled then

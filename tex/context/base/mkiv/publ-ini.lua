@@ -3523,10 +3523,14 @@ do
             local list = structures.lists.tobesaved
             local done = false
             for i=1,#list do
-                local u = list[i].userdata
-                if u.btxref == tag then
-                    done = true
-                    break
+                local l = list[i]
+                local m = l.metadata
+                if m and m.kind == "btx" then
+                    local u = l.userdata
+                    if u and u.btxref == tag then
+                        done = true
+                        break
+                    end
                 end
             end
             ctx_doifelse(done)

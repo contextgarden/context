@@ -67,6 +67,8 @@
 % We can define them global, in which case we can check for actually
 % used colors.
 
+\startbuffer[osm:colors]
+
 \definecolor[osm:aerialway:station]         [osm:unknown]
 
 \definecolor[osm:aeroway:runway]            [osm:unknown]
@@ -305,6 +307,10 @@
 \definecolor[osm:waterway:tidal_channel]    [osm:waterway]
 \definecolor[osm:waterway:wadi]             [osm:waterway]
 \definecolor[osm:waterway:weir]             [osm:waterway]
+
+\stopbuffer
+
+\getbuffer[osm:colors]
 
 \registerctxluafile{m-openstreetmap}{autosuffix}
 

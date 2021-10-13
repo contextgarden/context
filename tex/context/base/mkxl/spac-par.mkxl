@@ -38,6 +38,7 @@
   + \widowpenaltyfrozenparcode
   + \clubpenaltyfrozenparcode
   + \brokenpenaltyfrozenparcode
+  + \shapingpenaltiesfrozenparcode
 \relax
 
 \setnewconstant\paragraphdemeritcodes\numexpr
@@ -60,26 +61,27 @@
 \relax
 
 \setnewconstant\frozenparagraphdefault\numexpr
-   \hsizefrozenparcode          % \hsize
- + \skipfrozenparcode           % \leftskip \rightskip
- + \hangfrozenparcode           % \hangindent \hangafter
- + \indentfrozenparcode         % \parindent
- + \parfillfrozenparcode        % \parfillskip \parfillleftskip
- + \adjustfrozenparcode         % \adjustspacing
- + \protrudefrozenparcode       % \protrudechars
- + \tolerancefrozenparcode      % \tolerance \pretolerance
- + \stretchfrozenparcode        % \emergcystretch
- + \loosenessfrozenparcode      % \looseness
- + \lastlinefrozenparcode       % \lastlinefit
- + \linepenaltyfrozenparcode    % \linepenalty \interlinepenalty \interlinepenalties
- + \clubpenaltyfrozenparcode    % \clubpenalty \clubpenalties
- + \widowpenaltyfrozenparcode   % \widowpenalty \widowpenalties
- + \displaypenaltyfrozenparcode % \displaypenalty \displaypenalties
- + \brokenpenaltyfrozenparcode  % \brokenpenalty
- + \demeritsfrozenparcode       % \doublehyphendemerits \finalhyphendemerits \adjdemerits
- + \shapefrozenparcode          % \parshape
- % \linefrozenparcode           % \baselineskip \lineskip \lineskiplimit
- + \hyphenationfrozenparcode    % \hyphenationmode
+   \hsizefrozenparcode            % \hsize
+ + \skipfrozenparcode             % \leftskip \rightskip
+ + \hangfrozenparcode             % \hangindent \hangafter
+ + \indentfrozenparcode           % \parindent
+ + \parfillfrozenparcode          % \parfillskip \parfillleftskip
+ + \adjustfrozenparcode           % \adjustspacing
+ + \protrudefrozenparcode         % \protrudechars
+ + \tolerancefrozenparcode        % \tolerance \pretolerance
+ + \stretchfrozenparcode          % \emergcystretch
+ + \loosenessfrozenparcode        % \looseness
+ + \lastlinefrozenparcode         % \lastlinefit
+ + \linepenaltyfrozenparcode      % \linepenalty \interlinepenalty \interlinepenalties
+ + \clubpenaltyfrozenparcode      % \clubpenalty \clubpenalties
+ + \widowpenaltyfrozenparcode     % \widowpenalty \widowpenalties
+ + \displaypenaltyfrozenparcode   % \displaypenalty \displaypenalties
+ + \brokenpenaltyfrozenparcode    % \brokenpenalty
+ + \demeritsfrozenparcode         % \doublehyphendemerits \finalhyphendemerits \adjdemerits
+ + \shapefrozenparcode            % \parshape
+ % \linefrozenparcode             % \baselineskip \lineskip \lineskiplimit
+ + \hyphenationfrozenparcode      % \hyphenationmode
+ + \shapingpenaltiesfrozenparcode % \shapingpenaltiesmode
 \relax
 
 \permanent\protected\def\freezeparagraphproperties {\snapshotpar\frozenparagraphdefault}

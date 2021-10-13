@@ -122,14 +122,25 @@
      \expandafter\secondoftwoarguments
    \fi}
 
+% \permanent\protected\tolerant\def\setmarking[#1]#:#2%
+%   {\ifarguments\orelse\ifconditional\inhibitsetmarking\else
+%      % probably best: \dontleavehmode
+%      \the\csname\??markingsyncs#1\endcsname
+%      \ifcstok{\namedmarkingparameter{#1}\c!expansion}\v!yes
+%        \marks\csname\??markingclass#1\endcsname{#2}%
+%      \else
+%        \marks\csname\??markingclass#1\endcsname{\detokenize{#2}}%
+%      \fi
+%    \fi}
+
 \permanent\protected\tolerant\def\setmarking[#1]#:#2%
   {\ifarguments\orelse\ifconditional\inhibitsetmarking\else
      % probably best: \dontleavehmode
      \the\csname\??markingsyncs#1\endcsname
      \ifcstok{\namedmarkingparameter{#1}\c!expansion}\v!yes
-       \marks\csname\??markingclass#1\endcsname{#2}%
+       \normalexpanded{\marks\csname\??markingclass#1\endcsname{#2}}%
      \else
-       \marks\csname\??markingclass#1\endcsname{\detokenize{#2}}%
+       \marks\csname\??markingclass#1\endcsname{#2}%
      \fi
    \fi}
 

@@ -65,6 +65,13 @@ function evohome.server(specification)
     local port = specification.port or (presets.server and presets.server.port) or 8068
     local host = specification.host or (presets.server and presets.server.host) or "*"
 
+    if presets.initial == "alloff" then
+        report("turning all zones off")
+        evohome.actions.alloff(presets)
+    else
+        report("using default initial state")
+    end
+
     package.extraluapath(presets.filepath)
 
     local socket = socket or require("socket")

@@ -479,9 +479,9 @@
 
 \installcorenamespace{mathfractiondistance}
 
-\letvalue{\??mathfractiondistance\v!none   }\nomathfractiongaps
-\letvalue{\??mathfractiondistance\v!no     }\nomathfractiongaps
-\letvalue{\??mathfractiondistance\v!overlay}\overlaymathfractiongaps
+\letcsname\??mathfractiondistance\v!none   \endcsname\nomathfractiongaps
+\letcsname\??mathfractiondistance\v!no     \endcsname\nomathfractiongaps
+\letcsname\??mathfractiondistance\v!overlay\endcsname\overlaymathfractiongaps
 
 \setupmathfractions
   [\c!distance=\v!none]

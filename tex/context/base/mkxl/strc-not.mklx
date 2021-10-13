@@ -1340,7 +1340,18 @@
 
 \def\strc_notes_set_penalties
   {% stored in insert node
-   \floatingpenalty \currentnotepenalty
+   \floatingpenalty \currentnotepenalty % now per note
+   % used when typesetting
+   \interlinepenalty\plushundred % plain value
+   % used when we need to split in columns
+   \ifnum\noteparameter\c!n>\plusone
+     \penalty\zerocount % otherwise no split in columns, maybe just always (tex just adds it to accumulated)
+   \fi}
+
+\def\strc_notes_set_penalties
+  {% stored in insert node
+   \floatingpenalty \currentnotepenalty % now per note
+   \page_inserts_set_penalty   \currentnoteinsertionnumber\currentnotepenalty
    % used when typesetting
    \interlinepenalty\plushundred % plain value
    % used when we need to split in columns
@@ -1355,6 +1366,7 @@
     \redoconvertfont % to undo \undo calls in in headings etc
     \splittopskip\strutht  % not actually needed here
     \splitmaxdepth\strutdp % not actually needed here
+\page_inserts_set_maxdepth  \currentnoteinsertionnumber\strutdp
     %
     % not:
     %

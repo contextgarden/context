@@ -191,6 +191,7 @@
 		<cd:variable name='enumeration' value='شماره‌بندی'/>
 		<cd:variable name='environment' value='محیط'/>
 		<cd:variable name='even' value='زوج'/>
+		<cd:variable name='explicit' value='explicit'/>
 		<cd:variable name='export' value='export'/>
 		<cd:variable name='external' value='خارجی'/>
 		<cd:variable name='extremestretch' value='extremestretch'/>
