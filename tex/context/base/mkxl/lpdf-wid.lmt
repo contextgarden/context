@@ -25,7 +25,8 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
 -- html5 media in pdf then.
 --
 -- See mail by Michal Vlasák to the mailing list that discusses current support in
--- viewers and also mentions (and submitted) a few fixes wrt embedding media.
+-- viewers and also mentions (and submitted) a few fixes wrt embedding media. The
+-- old sound and movie features are gone.
 
 local tonumber, next = tonumber, next
 local gmatch, gsub, find, lower = string.gmatch, string.gsub, string.find, string.lower

@@ -172,7 +172,7 @@ local nodepool            = nuts.pool
 
 local new_penalty         = nodepool.penalty
 local new_kern            = nodepool.kern
-local new_glue            = nodepool.glue
+----- new_glue            = nodepool.glue
 local new_rule            = nodepool.rule
 
 local nodecodes           = nodes.nodecodes

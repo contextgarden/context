@@ -35,7 +35,7 @@
 \registerctxluafile{lpdf-grp}{autosuffix}
 \registerctxluafile{lpdf-wid}{autosuffix}
 \registerctxluafile{lpdf-fld}{autosuffix}
-\registerctxluafile{lpdf-mov}{autosuffix}
+%registerctxluafile{lpdf-mov}{autosuffix}
 \registerctxluafile{lpdf-u3d}{autosuffix} % this will become a module
 %registerctxluafile{lpdf-swf}{} % this will become a module
 \registerctxluafile{lpdf-tag}{autosuffix}

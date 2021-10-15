@@ -2662,7 +2662,6 @@ end
 implement { name = "referenceposx", actions = function() context("%p",referencepos("x")) end }
 implement { name = "referenceposy", actions = function() context("%p",referencepos("y")) end }
 
-
 implement {
     name    = "referencecolumn",
     actions = function()

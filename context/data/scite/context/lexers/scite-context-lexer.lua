@@ -1248,7 +1248,7 @@ if usage == "scite" then
             --
             foldpattern = Cp() * (foldpattern/foldmapping) / function(s,match)
                 if match then
-                    local l = match[thestyleat[s + foldoffset]]
+                    local l = match[thestyleat[s + foldoffset - 1]]
                     if l then
                         current = current + l
                     end

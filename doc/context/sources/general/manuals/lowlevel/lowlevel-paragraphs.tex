@@ -1045,3 +1045,81 @@ examples are visualized in \in {figure} [fig:flow].
 % \par[newgraf][16=1,17=1], .... pretolerance 6000, ....
 
 % \parfillleftskip
+
+% todo:
+
+% \starttext
+%
+% \showframe
+%
+% % this is the current default behaviour; we have a topskip with quite some stretch
+% % and that stretch is taken into account when tex calculates the badness; watch
+% % the next page
+%
+% \dorecurse{4}{
+%     \bgroup
+%         \shapingpenaltiesmode\zerocount
+%         \showmakeup[penalty]
+%         \placefigure[left]{}{}
+%         \input tufte \par
+%     \egroup
+% }
+%
+% \page EMPTY \page
+%
+% % the ntop is new and when >= 0 it is a multiplier for the number of lines
+% % stretch, here we have one line; watch the next page
+%
+% \dorecurse{4}{
+%     \bgroup
+%         \shapingpenaltiesmode\zerocount
+%         \setupinterlinespace[ntop=1]
+%         \showmakeup[penalty]
+%         \placefigure[left]{}{}
+%         \input tufte \par
+%     \egroup
+% }
+%
+% \page EMPTY \page
+%
+% % these shaping parameters will discourage a linebreak within a shape;
+% % the placement macro checked available space but that doesn't mean that
+% % there can be no linebreak
+%
+% \dorecurse{4}{
+%     \bgroup
+%         \showmakeup[penalty]
+%         \shapingpenalty\plushundred
+%         \shapingpenaltiesmode"FF\relax
+%         \placefigure[left]{}{}
+%         \input tufte \par
+%     \egroup
+% }
+%
+% \page EMPTY \page
+%
+% % the next pages show the effect of changed topskip on page breaks with
+% % footnotes
+%
+% \dorecurse{10}{
+%     [#1] \input tufte \footnote{\input{tufte}} \par
+% }
+%
+% \page EMPTY \page
+%
+% \setupinterlinespace[ntop=2]
+%
+% \dorecurse{10}{
+%     [#1] \input tufte \footnote{\input{tufte}} \par
+% }
+%
+% \page EMPTY \page
+%
+% \setupinterlinespace[ntop=0]
+%
+% \dorecurse{10}{
+%     [#1] \input tufte \footnote{\input{tufte}} \par
+% }
+%
+% \stoptext
+

@@ -11,7 +11,7 @@ local format, concat = string.format, table.concat
 local utfchar, utfbyte, char = utf.char, utf.byte, string.char
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local P, C, R, S, Cc, Cs, V = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs, lpeg.V
-local rshift = bit32.rshift
+----- rshift = bit32.rshift
 
 lpdf = lpdf or { }
 
@@ -23,7 +23,8 @@ local cache = table.setmetatableindex(function(t,k) -- can be made weak
         v = format("%04x",v)
     else
         v = v - 0x10000
-        v = format("%04x%04x",rshift(v,10)+0xD800,v%1024+0xDC00) -- will become >> when we drop luajittex
+     -- v = format("%04x%04x",rshift(v,10)+0xD800,v%1024+0xDC00)
+        v = format("%04x%04x",(v >> 10) + 0xD800,v%1024+0xDC00)
     end
     t[k] = v
     return v

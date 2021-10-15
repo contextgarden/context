@@ -1340,6 +1340,10 @@
     \finalizeautostructurelevels
 \to \everystoptext
 
+%D Defined at the \LUA\ end:
+
+% \doifelsefirstsectionpage{chapter}{do this}{or that} % in pagebody building
+
 \stopcontextdefinitioncode
 
 \protect \endinput

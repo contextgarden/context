@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Interaction Macros / Widgets}
 
-\registerctxluafile{scrn-wid}{}
+\registerctxluafile{scrn-wid}{autosuffix}
 
 % todo: expansion in comments (default is expanded)
 % todo: check renderings ... acrobat crashes too easily on missing one
@@ -559,52 +559,10 @@
 %     \definecomment[\v!comment]
 % \fi
 
-%D Soundclips:
+%D Conform Michals recommendations support for the old movie (and sound) annotations
+%D has been removed. This also means that movies are no longer a valid external figure
+%D format. So be it.
 %D
-%D Defining sound tracks:
-%D
-%D \starttyping
-%D \useexternalsoundtrack[label][file]
-%D \stoptyping
-%D
-%D associated actions: StartSound StopSound PauseSound ResumeSound
-%D
-%D Todo: like external figures, also search on path, although, they need to be
-%D present at viewing time, so ...
-%D
-%D A soundtrack needs to be embedded explicitly with \type {\checksoundtrack}
-%D although we could hook it into the first goto.
-%D
-%D \starttyping
-%D \useexternalsoundtrack[myaudio][hastobe.wav] % surprise ... no longer mp3
-%D
-%D \starttext
-%D     \checksoundtrack{myaudio}
-%D     \goto{play sound}[StartSound{myaudio}]
-%D \stoptext
-%D \starttyping
-
-\installcorenamespace{externalsoundtracks}
-
-\installsetuponlycommandhandler \??externalsoundtracks {externalsoundtracks}
-
-\setupexternalsoundtracks
-  [\c!option=]
-
-\permanent\tolerant\protected\def\useexternalsoundtrack[#tag]#spacer[#filename]%
-  {\clf_registersoundclip
-     tag  {#tag}%
-     file {#filename}%
-   \relax}
-
-\permanent\def\checksoundtrack#tag% yet untested in mkiv (also move management to lua)
-  {\iflocation
-     \clf_insertsoundclip
-       tag    {#tag}%
-       repeat {\directexternalsoundtracksparameter\c!option}%
-     \relax
-   \fi}
-
 %D Renderings (adapted to \MKIV\ by Michal Vlasák). We no longer have the \MKII\ internal
 %D and external rendering because over time all this widget stuff changed in \PDF\ and
 %D Acrobat.

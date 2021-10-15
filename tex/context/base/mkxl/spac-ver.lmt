@@ -1014,7 +1014,7 @@ do
         end
         b_done   = false
         b_packed = false
-        b_grid   = grid
+        b_grid   = grid == true or grid == 1
         before()
         lpegmatch(pattern,str)
         after()

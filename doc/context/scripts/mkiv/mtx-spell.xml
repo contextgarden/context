@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-spell</entry>
+  <entry name="detail">ConTeXt Word Filtering</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="expand"><short>expand hunspell dics and aff files</short></flag>
+    <flag name="dictionary"><short>word file (.dics)</short></flag>
+    <flag name="specification"><short>affix specification file (.aff)</short></flag>
+    <flag name="result"><short>destination file</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Examples</title>
+   <subcategory>
+    <example><command>mtxrun --script spell --expand --dictionary="en_US.dic" --specification="en_US.txt" --result="data-us.txt"</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>

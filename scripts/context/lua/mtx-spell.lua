@@ -326,15 +326,15 @@ end
 -- }
 
 -- spell.dicaff {
---     dictionary  = "e:/context/spell/lo/en_GB.dic.txt",
+--     dictionary    = "e:/context/spell/lo/en_GB.dic.txt",
 --     specification = "e:/context/spell/lo/en_GB.aff.txt",
---     result      = "e:/context/spell/lo/data-uk.txt",
+--     result        = "e:/context/spell/lo/data-uk.txt",
 -- }
 
 -- spell.dicaff {
---     dictionary  = "e:/context/spell/lo/nl_NL.dic.txt",
+--     dictionary    = "e:/context/spell/lo/nl_NL.dic.txt",
 --     specification = "e:/context/spell/lo/nl_NL.aff.txt",
---     result      = "e:/context/spell/lo/data-nl.txt",
+--     result        = "e:/context/spell/lo/data-nl.txt",
 -- }
 
 if environment.argument("expand") then

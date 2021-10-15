@@ -1739,7 +1739,7 @@ do
 
     local lexers     = nil
     local properties = props
---     local partial    = false
+    local partial    = false
     local partial    = true
     local trace      = false
 --     local trace      = true
@@ -1784,14 +1784,18 @@ do
     end
 
     function OnOpen(filename)
-     -- report("opening '%s' of %i bytes",filename,editor.TextLength)
+        if trace then
+            report("opening '%s' of %i bytes, language '%s'",filename,editor.TextLength,props.Language)
+        end
         update(props.Language,editor.TextLength,0,editor.TextLength)
         check_output_pane()
     end
 
     function OnSwitchFile(filename)
         if dirty[props.FileNameExt] then
-         -- report("switching '%s' of %i bytes",filename,editor.TextLength)
+            if trace then
+                report("switching '%s' of %i bytes, language '%s'",filename,editor.TextLength,props.Language)
+            end
             update(props.Language,editor.TextLength,0,editor.TextLength)
             dirty[props.FileNameExt] = false
         end

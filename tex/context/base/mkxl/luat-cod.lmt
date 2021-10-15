@@ -138,9 +138,7 @@ if LUATEXFORMATID == nil then
     LUATEXFORMATID = status.format_id or 0
 end
 
-if JITSUPPORTED == nil then
-    JITSUPPORTED = false
-end
+JITSUPPORTED = false
 
 if INITEXMODE == nil then
     INITEXMODE = status.run_state == 0 -- initializing updating production

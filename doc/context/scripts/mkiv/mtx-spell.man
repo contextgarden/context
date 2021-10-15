@@ -1,0 +1,36 @@
+.TH "mtx-spell" "1" "01-01-2021" "version 0.10" "ConTeXt Word Filtering"
+.SH NAME
+ mtx-spell - ConTeXt Word Filtering
+.SH SYNOPSIS
+.B mtxrun --script spell [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B ConTeXt Word Filtering
+.SH OPTIONS
+.TP
+.B --expand
+expand hunspell dics and aff files
+.TP
+.B --dictionary
+word file (.dics)
+.TP
+.B --specification
+affix specification file (.aff)
+.TP
+.B --result
+destination file
+.SH AUTHOR
+More information about ConTeXt and the tools that come with it can be found at:
+
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

@@ -40,6 +40,8 @@ local v_all               = variables.all
 local v_positive          = variables.positive
 local v_current           = variables.current
 
+local texgetcount         = tex.getcount
+
 local trace_sectioning    = false  trackers.register("structures.sectioning", function(v) trace_sectioning = v end)
 local trace_details       = false  trackers.register("structures.details",    function(v) trace_details    = v end)
 
@@ -48,6 +50,7 @@ local report_used         = logs.reporter("structure")
 
 local context             = context
 local commands            = commands
+local ctx_doifelse        = commands.doifelse
 
 local structures          = structures
 local helpers             = structures.helpers
@@ -1211,3 +1214,80 @@ implement {
     name      = "popsectionblock",
     actions   = sections.popblock,
 }
+
+interfaces.implement {
+    name      = "doifelsefirstsectionpage",
+    arguments = "1 argument",
+    public    = true,
+    protected = true,
+    actions   = function(name)
+        local found = false
+     -- local list  = structures.lists.collected
+        local list  = lists.collected
+        if list then
+            local realpage = texgetcount("realpageno")
+            for i=1,#list do
+                local listdata = list[i]
+                local metadata = listdata.metadata
+                if metadata and metadata.kind == "section" and metadata.name == name then
+                 -- local current = structures.documents.data.status[metadata.level]
+                    local current = data.status[metadata.level]
+                    if current and current.references.internal == listdata.references.internal then
+                        found = listdata.references.realpage == realpage
+                        break
+                    end
+                end
+            end
+        end
+        ctx_doifelse(found)
+    end,
+}
+
+-- could be faster (in huge lists)
+
+-- local firstpages = table.setmetatableindex(function(t,name)
+--  -- local list  = structures.lists.collected
+--     local list  = lists.collected
+--     local pages = { }
+--     if list then
+--         for i=1,#list do
+--             local listdata = list[i]
+--             local metadata = listdata.metadata
+--             if metadata and metadata.kind == "section" and metadata.name == name then
+--                 local references = listdata.references
+--                 if references then
+--                     pages[references.internal] = listdata
+--                 end
+--             end
+--         end
+--     end
+--     t[name] = pages
+--     return pages
+-- end)
+--
+-- interfaces.implement {
+--     name      = "doifelsefirstsectionpage",
+--     arguments = "1 argument",
+--     public    = true,
+--     protected = true,
+--     actions   = function(name)
+--         local found = firstpages[name]
+--         if found then
+--             local level = structures.sections.levelmap[name]
+--             if level then
+--              -- local current = structures.documents.data.status[level]
+--                 local current = data.status[level]
+--                 if current then
+--                     local realpage = texgetcount("realpageno")
+--                     found = found[current.references.internal]
+--                     found = found and found.references.realpage == realpage
+--                 else
+--                     found = false
+--                 end
+--             else
+--                 found = false
+--             end
+--         end
+--         ctx_doifelse(found)
+--     end,
+-- }

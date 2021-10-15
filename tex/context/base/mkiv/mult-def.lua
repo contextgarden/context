@@ -7,7 +7,11 @@ if not modules then modules = { } end modules ['mult-def'] = {
     dataonly  = true,
 }
 
--- we can remove some commands, like inleftmargin and so (see typo-mar.mkiv)
+-- We can remove some commands, like inleftmargin and so (see typo-mar.mkiv). Also,
+-- some keywords are unique for mkiv or lmtx so at some point we might split this
+-- file. On the other hand, it's a way to standardize.
+
+-- StartMovie and StartSound etc can go.
 
 return {
  ["commands"]={

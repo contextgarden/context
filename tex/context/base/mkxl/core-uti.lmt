@@ -289,7 +289,6 @@ function job.save(filename) -- we could return a table but it can get pretty lar
         f:write("local utilitydata = { }\n\n")
         f:write(serialize(comment,"utilitydata.comment",true),"\n\n")
         for l=1,#savelist do
-         -- f:write("do\n\n") -- no solution for the jit limitatione either
             local list       = savelist[l]
             local target     = format("utilitydata.%s",list[1])
             local data       = list[2]
@@ -310,14 +309,11 @@ function job.save(filename) -- we could return a table but it can get pretty lar
             else
                 f:write(definer,"\n\n",serialize(data,name,true),"\n\n")
             end
-         -- f:write("end\n\n")
         end
         if job.pack then
             packers.strip(jobpacker)
-packnumberdata(jobpacker.index)
-         -- f:write("do\n\n")
+            packnumberdata(jobpacker.index)
             f:write(serialize(jobpacker,"utilitydata.job.packed",true),"\n\n")
-         -- f:write("end\n\n")
         end
         f:write("return utilitydata")
         f:close()
@@ -346,9 +342,8 @@ local function load(filename)
                 return data
             end
         else
-            os.remove(filename) -- probably a bad file (or luajit overflow as it cannot handle large tables well)
-            report_passes("removing stale job data file %a, restart job, message: %s%s",filename,tostring(data),
-                jit and " (try luatex instead of luajittex)" or "")
+            os.remove(filename)
+            report_passes("removing stale job data file %a, restart job, message: %s",filename,tostring(data))
             os.exit(true) -- trigger second run
         end
     end

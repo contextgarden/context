@@ -322,7 +322,8 @@ local figure_paths = allocate(table.copy(figures.localpaths))
 figures.paths      = figure_paths
 
 local figures_order =  allocate {
-    "pdf", "mps", "jpg", "png", "jp2", "jbig", "svg", "eps", "tif", "gif", "mov", "buffer", "tex", "cld", "auto",
+    -- "mov" is gone
+    "pdf", "mps", "jpg", "png", "jp2", "jbig", "svg", "eps", "tif", "gif", "buffer", "tex", "cld", "auto",
 }
 
 local figures_formats = allocate { -- magic and order will move here
@@ -336,7 +337,7 @@ local figures_formats = allocate { -- magic and order will move here
     ["eps"]    = { list = { "eps", "ai" } },
     ["gif"]    = { list = { "gif" } },
     ["tif"]    = { list = { "tif", "tiff" } },
-    ["mov"]    = { list = { "mov", "flv", "mp4" } }, -- "avi" is not supported
+ -- ["mov"]    = { list = { "mov", "flv", "mp4" } }, -- "avi" is not supported
     ["buffer"] = { list = { "tmp", "buffer", "buf" } },
     ["tex"]    = { list = { "tex" } },
     ["cld"]    = { list = { "cld" } },
@@ -1690,35 +1691,35 @@ includers.nongeneric = includers_nongeneric
 
 -- -- -- mov -- -- --
 
-function checkers.mov(data)
-    local dr, du, ds = data.request, data.used, data.status
-    local width = todimen(dr.width or figures.defaultwidth)
-    local height = todimen(dr.height or figures.defaultheight)
-    local foundname = du.fullname
-    dr.width, dr.height = width, height
-    du.width, du.height, du.foundname = width, height, foundname
-    if trace_inclusion then
-        report_inclusion("including movie %a, width %p, height %p",foundname,width,height)
-    end
-    -- we need to push the node.write in between ... we could make a shared helper for this
-    ctx_startfoundexternalfigure(width .. "sp",height .. "sp")
-    context(function()
-        nodeinjections.insertmovie {
-            width      = width,
-            height     = height,
-            factor     = bpfactor,
-            ["repeat"] = dr["repeat"],
-            controls   = dr.controls,
-            preview    = dr.preview,
-            label      = dr.label,
-            foundname  = foundname,
-        }
-    end)
-    ctx_stopfoundexternalfigure()
-    return data
-end
-
-includers.mov = includers.nongeneric
+-- function checkers.mov(data)
+--     local dr, du, ds = data.request, data.used, data.status
+--     local width = todimen(dr.width or figures.defaultwidth)
+--     local height = todimen(dr.height or figures.defaultheight)
+--     local foundname = du.fullname
+--     dr.width, dr.height = width, height
+--     du.width, du.height, du.foundname = width, height, foundname
+--     if trace_inclusion then
+--         report_inclusion("including movie %a, width %p, height %p",foundname,width,height)
+--     end
+--     -- we need to push the node.write in between ... we could make a shared helper for this
+--     ctx_startfoundexternalfigure(width .. "sp",height .. "sp")
+--     context(function()
+--         nodeinjections.insertmovie {
+--             width      = width,
+--             height     = height,
+--             factor     = bpfactor,
+--             ["repeat"] = dr["repeat"],
+--             controls   = dr.controls,
+--             preview    = dr.preview,
+--             label      = dr.label,
+--             foundname  = foundname,
+--         }
+--     end)
+--     ctx_stopfoundexternalfigure()
+--     return data
+-- end
+--
+-- includers.mov = includers.nongeneric
 
 -- -- -- mps -- -- --
 

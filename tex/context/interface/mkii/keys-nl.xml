@@ -191,6 +191,7 @@
 		<cd:variable name='enumeration' value='doornummering'/>
 		<cd:variable name='environment' value='omgeving'/>
 		<cd:variable name='even' value='even'/>
+		<cd:variable name='explicit' value='explicit'/>
 		<cd:variable name='export' value='export'/>
 		<cd:variable name='external' value='extern'/>
 		<cd:variable name='extremestretch' value='extremestretch'/>
