@@ -19,10 +19,11 @@ local trace_info = false  trackers.register("backend.info", function(v) trace_in
 local report_xmp  = logs.reporter("backend","xmp")
 local report_info = logs.reporter("backend","info")
 
-local backends, lpdf = backends, lpdf
+local backends             = backends
+local pdfbackend           = backends.registered.pdf
+local codeinjections       = pdfbackend.codeinjections
 
-local codeinjections       = backends.pdf.codeinjections -- normally it is registered
-
+local lpdf                 = lpdf
 local pdfdictionary        = lpdf.dictionary
 local pdfconstant          = lpdf.constant
 local pdfreference         = lpdf.reference

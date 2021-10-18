@@ -20,15 +20,15 @@ local format, gsub, formatters = string.format, string.gsub, string.formatters
 local concat, flattened = table.concat, table.flattened
 local settings_to_array = utilities.parsers.settings_to_array
 
-local backends, lpdf, nodes = backends, lpdf, nodes
-
-local nodeinjections       = backends.pdf.nodeinjections
-local codeinjections       = backends.pdf.codeinjections
-local registrations        = backends.pdf.registrations
+local pdfbackend           = backends.registered.pdf
+local nodeinjections       = pdfbackend.nodeinjections
+local codeinjections       = pdfbackend.codeinjections
+local registrations        = pdfbackend.registrations
 
 local getpagedimensions    = layouts.getpagedimensions
 local getcanvas            = layouts.getcanvas
 
+local nodes                = nodes
 local nuts                 = nodes.nuts
 local copy_node            = nuts.copy
 
@@ -36,6 +36,7 @@ local nodepool             = nuts.pool
 local setstate             = nodepool.setstate
 local register             = nodepool.register
 
+local lpdf                 = lpdf
 local pdfdictionary        = lpdf.dictionary
 local pdfarray             = lpdf.array
 local pdfconstant          = lpdf.constant

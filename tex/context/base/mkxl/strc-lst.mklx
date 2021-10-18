@@ -1538,7 +1538,7 @@
 
 %D A helper:
 
-\def\strc_lists_limitated_text#text%
+\protected\def\strc_lists_limitated_text#text%
   {\edef\p_maxwidth{\listparameter\c!maxwidth}%
    \ifempty\p_maxwidth
      \listparameter\c!textcommand{#text}%

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=back-pdf,
+%D   [       file=back-imp-pdf,
 %D        version=2009.04.15,
 %D          title=\CONTEXT\ Backend Macros,
 %D       subtitle=\PDF,
@@ -24,20 +24,18 @@
 
 \writestatus{loading}{ConTeXt Backend Macros / PDF}
 
+% \registerctxluafile{back-imp-pdf}{autosuffix} % some code will move to lpdf-*
+
 \registerctxluafile{lpdf-ini}{autosuffix}
 \registerctxluafile{lpdf-lmt}{autosuffix}
 \registerctxluafile{lpdf-col}{autosuffix}
 \registerctxluafile{lpdf-xmp}{autosuffix}
 \registerctxluafile{lpdf-ano}{autosuffix}
-\registerctxluafile{lpdf-res}{autosuffix}
 \registerctxluafile{lpdf-mis}{autosuffix}
 \registerctxluafile{lpdf-ren}{autosuffix}
 \registerctxluafile{lpdf-grp}{autosuffix}
 \registerctxluafile{lpdf-wid}{autosuffix}
 \registerctxluafile{lpdf-fld}{autosuffix}
-%registerctxluafile{lpdf-mov}{autosuffix}
-\registerctxluafile{lpdf-u3d}{autosuffix} % this will become a module
-%registerctxluafile{lpdf-swf}{} % this will become a module
 \registerctxluafile{lpdf-tag}{autosuffix}
 \registerctxluafile{lpdf-fmt}{autosuffix}
 \registerctxluafile{lpdf-pde}{autosuffix}
@@ -47,11 +45,12 @@
 \registerctxluafile{lpdf-fnt}{autosuffix}
 \registerctxluafile{lpdf-rul}{autosuffix}
 
-\registerctxluafile{back-pdp}{autosuffix}
-\registerctxluafile{back-pdf}{autosuffix} % some code will move to lpdf-*
+\registerctxluafile{back-imp-pdf}{autosuffix} % some code will move to lpdf-*
+\registerctxluafile{back-imp-pdp}{autosuffix}
 
-\loadmkxlfile{back-u3d} % this will become a module
-%loadmkxlfile{back-swf} % this will become a module
+% \registerctxluafile{lpdf-u3d}{autosuffix}
+
+\loadmkxlfile{back-imp-u3d}
 
 \unprotect
 

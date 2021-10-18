@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{grph-epd}{}
+\registerctxluafile{grph-epd}{autosuffix}
 
 % hm, this one is globally overloaded
 

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=back-u3d,
+%D   [       file=back-imp-u3d,
 %D        version=2009.04.15,
 %D          title=\CONTEXT\ Backend Macros,
 %D       subtitle=U3D Experiment,
@@ -14,6 +14,8 @@
 %D This is only a placeholder that demonstrates the usage of u3d resources. The
 %D user interface is rather messy an might be improved. The files and setup is
 %D derived from an example by Michael Vidiassov.
+
+\registerctxluafile{lpdf-u3d}{autosuffix}
 
 \endinput
 

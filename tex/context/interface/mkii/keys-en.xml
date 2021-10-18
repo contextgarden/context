@@ -82,6 +82,7 @@
 		<cd:variable name='anchor' value='anchor'/>
 		<cd:variable name='and' value='and'/>
 		<cd:variable name='answerarea' value='answerarea'/>
+		<cd:variable name='append' value='append'/>
 		<cd:variable name='appendices' value='appendices'/>
 		<cd:variable name='appendix' value='appendix'/>
 		<cd:variable name='april' value='april'/>
@@ -153,6 +154,7 @@
 		<cd:variable name='commands' value='commands'/>
 		<cd:variable name='comment' value='comment'/>
 		<cd:variable name='component' value='component'/>
+		<cd:variable name='compress' value='compress'/>
 		<cd:variable name='compressseparator' value='compressseparator'/>
 		<cd:variable name='compressstopper' value='compressstopper'/>
 		<cd:variable name='concept' value='concept'/>
@@ -189,6 +191,7 @@
 		<cd:variable name='enumeration' value='enumeration'/>
 		<cd:variable name='environment' value='environment'/>
 		<cd:variable name='even' value='even'/>
+		<cd:variable name='explicit' value='explicit'/>
 		<cd:variable name='export' value='export'/>
 		<cd:variable name='external' value='external'/>
 		<cd:variable name='extremestretch' value='extremestretch'/>
@@ -439,6 +442,7 @@
 		<cd:variable name='postscript' value='postscript'/>
 		<cd:variable name='precedingpage' value='precedingpage'/>
 		<cd:variable name='preference' value='preference'/>
+		<cd:variable name='prepend' value='prepend'/>
 		<cd:variable name='preview' value='preview'/>
 		<cd:variable name='previous' value='previous'/>
 		<cd:variable name='previousevenpage' value='previousevenpage'/>
@@ -1376,6 +1380,7 @@
 		<cd:element name='load' value='load'/>
 		<cd:element name='local' value='local'/>
 		<cd:element name='makeup' value='makeup'/>
+		<cd:element name='namednotation' value='namednotation'/>
 		<cd:element name='namedtyping' value='namedtyping'/>
 		<cd:element name='next' value='next'/>
 		<cd:element name='place' value='place'/>
@@ -1548,6 +1553,7 @@
 		<cd:command name='definereferencelist' value='definereferencelist'/>
 		<cd:command name='defineregister' value='defineregister'/>
 		<cd:command name='definerule' value='definerule'/>
+		<cd:command name='definesavebuffer' value='startsavebuffer'/>
 		<cd:command name='definesection' value='definesection'/>
 		<cd:command name='definesectionblock' value='definesectionblock'/>
 		<cd:command name='definesorting' value='definesorting'/>
@@ -1724,6 +1730,9 @@
 		<cd:command name='moveformula' value='moveformula'/>
 		<cd:command name='moveongrid' value='moveongrid'/>
 		<cd:command name='movesidefloat' value='movesidefloat'/>
+		<cd:command name='namedconstruction' value='namedconstruction'/>
+		<cd:command name='nameddescription' value='nameddescription'/>
+		<cd:command name='namedenumeration' value='namedenumeration'/>
 		<cd:command name='navigating' value='navigating'/>
 		<cd:command name='nodimension' value='nodimension'/>
 		<cd:command name='noheaderandfooterlines' value='noheaderandfooterlines'/>
@@ -2095,6 +2104,13 @@
 		<cd:command name='startmakeup' value='startmakeup'/>
 		<cd:command name='startmarginblock' value='startmarginblock'/>
 		<cd:command name='startmarginrule' value='startmarginrule'/>
+		<cd:command name='startnamedconstruction' value='startnamedconstruction'/>
+		<cd:command name='startnameddescription' value='startnameddescription'/>
+		<cd:command name='startnamedenumeration' value='startnamedenumeration'/>
+		<cd:command name='startnamedmatrix' value='startnamedmatrix'/>
+		<cd:command name='startnamedsection' value='startnamedsection'/>
+		<cd:command name='startnamedsubformulas' value='startnamedsubformulas'/>
+		<cd:command name='startnamedtyping' value='startnamedtyping'/>
 		<cd:command name='startnarrower' value='startnarrower'/>
 		<cd:command name='startopposite' value='startopposite'/>
 		<cd:command name='startoverlay' value='startoverlay'/>
@@ -2138,6 +2154,13 @@
 		<cd:command name='stopmakeup' value='stopmakeup'/>
 		<cd:command name='stopmarginblock' value='stopmarginblock'/>
 		<cd:command name='stopmarginrule' value='stopmarginrule'/>
+		<cd:command name='stopnamedconstruction' value='stopnamedconstruction'/>
+		<cd:command name='stopnameddescription' value='stopnameddescription'/>
+		<cd:command name='stopnamedenumeration' value='stopnamedenumeration'/>
+		<cd:command name='stopnamedmatrix' value='stopnamedmatrix'/>
+		<cd:command name='stopnamedsection' value='stopnamedsection'/>
+		<cd:command name='stopnamedsubformulas' value='stopnamedsubformulas'/>
+		<cd:command name='stopnamedtyping' value='stopnamedtyping'/>
 		<cd:command name='stopnarrower' value='stopnarrower'/>
 		<cd:command name='stopopposite' value='stopopposite'/>
 		<cd:command name='stopoverlay' value='stopoverlay'/>

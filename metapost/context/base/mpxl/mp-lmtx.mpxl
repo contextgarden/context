@@ -2269,7 +2269,9 @@ permanent registercomposeglyph, composeglyph ;
 
 % Again an experiment (todo: the faster method):
 
-newscriptindex mfid_remaptext ; mfid_remaptext := scriptindex "remaptext" ; def lmt_remaptext = runscript mfid_remaptext enddef ;
+% watch the ; that we scan!
+
+newscriptindex mfid_remaptext ; mfid_remaptext := scriptindex "remaptext" ; def lmt_remaptext = runscript mfid_remaptext ; enddef ;
 
 triplet mfun_tt_s ;
 

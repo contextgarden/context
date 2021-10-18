@@ -1,7 +1,7 @@
-if not modules then modules = { } end modules ['back-lua'] = {
+if not modules then modules = { } end modules ['back-imp-lua'] = {
     version   = 1.001,
     optimize  = true,
-    comment   = "companion to lpdf-ini.mkiv",
+    comment   = "companion to back-imp-lua.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -93,6 +93,9 @@ end
 
 local function prepare(driver)
     converter = drivers.converters.lmtx
+ -- if not environment.initex then
+        backends.initialize("lua")
+ -- end
     luatex.registerstopactions(1,function()
         save()
     end)
@@ -344,6 +347,9 @@ end
 
 local function prepare(driver)
     converter = drivers.converters.lmtx
+ -- if not environment.initex then
+        backends.initialize("js")
+ -- end
     luatex.registerstopactions(1,function()
         save()
     end)

@@ -19,15 +19,16 @@ local trace_variables = false  trackers.register("backend.variables", function(v
 
 local report_backend = logs.reporter("backend","profiles")
 
-local backends, lpdf = backends, lpdf
-
-local codeinjections           = backends.pdf.codeinjections
+local pdfbackend               = backends.registered.pdf
+----- nodeinjections           = pdfbackend.nodeinjections
+local codeinjections           = pdfbackend.codeinjections
 
 local variables                = interfaces.variables
 local viewerlayers             = attributes.viewerlayers
 local colors                   = attributes.colors
 local transparencies           = attributes.transparencies
 
+local lpdf                     = lpdf
 local pdfdictionary            = lpdf.dictionary
 local pdfarray                 = lpdf.array
 local pdfconstant              = lpdf.constant

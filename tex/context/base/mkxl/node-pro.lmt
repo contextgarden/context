@@ -51,6 +51,7 @@ do
     local prependaction = tasks.prependaction
     local appendaction  = tasks.appendaction
     local enableaction  = tasks.enableaction
+    local disableaction = tasks.disableaction
 
     trackers.register("nodes.callbacks", function(v)
         if not v then

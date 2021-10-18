@@ -21,10 +21,9 @@ local tonumber = tonumber
 local formatters, find = string.formatters, string.find
 local cos, sin, sqrt, pi, atan2, abs = math.cos, math.sin, math.sqrt, math.pi, math.atan2, math.abs
 
-local backends, lpdf = backends, lpdf
+local nodeinjections           = backends.registered.pdf.nodeinjections
 
-local nodeinjections           = backends.pdf.nodeinjections
-
+local lpdf                     = lpdf
 local pdfconstant              = lpdf.constant
 local pdfboolean               = lpdf.boolean
 local pdfunicode               = lpdf.unicode

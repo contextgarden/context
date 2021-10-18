@@ -731,8 +731,10 @@ end
 --     return false
 -- end
 
-function metapost.scanparameters()
---     scantoken() -- we scan the semicolon
+function metapost.scanparameters(gobblesemicolon)
+    if gobblesemicolon then
+        scantoken() -- we scan the semicolon
+    end
     return get_parameters()
 end
 

@@ -14,11 +14,11 @@ local formatters = string.formatters
 local settings_to_array = utilities.parsers.settings_to_array
 local getrandom = utilities.randomizer.get
 
-local backends, lpdf, nodes, node = backends, lpdf, nodes, node
+local pdfbackend          = backends.registered.pdf
+local nodeinjections      = pdfbackend.nodeinjections
+local codeinjections      = pdfbackend.codeinjections
+local registrations       = pdfbackend.registrations
 
-local nodeinjections      = backends.pdf.nodeinjections
-local codeinjections      = backends.pdf.codeinjections
-local registrations       = backends.pdf.registrations
 local viewerlayers        = attributes.viewerlayers
 
 local references          = structures.references
@@ -36,6 +36,7 @@ local v_reset             = variables.reset
 local v_auto              = variables.auto
 local v_random            = variables.random
 
+local lpdf                = lpdf
 local pdfconstant         = lpdf.constant
 local pdfdictionary       = lpdf.dictionary
 local pdfarray            = lpdf.array
@@ -48,7 +49,9 @@ local addtocatalog        = lpdf.addtocatalog
 
 local escaped             = lpdf.escaped
 
+local nodes               = nodes
 local nuts                = nodes.nuts
+
 local copy_node           = nuts.copy
 
 local nodepool            = nuts.pool

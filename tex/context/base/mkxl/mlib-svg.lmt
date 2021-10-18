@@ -1327,6 +1327,26 @@ local handletransform, handleviewbox  do
         )
     )^1
 
+    -- indeed, we need to reverse the order ... not that pretty and counter intuitive too
+
+    local function combined()
+        if noftransforms == 1 then
+            return transforms[1]
+        elseif noftransforms == 2 then
+            return transforms[2] .. transforms[1]
+        elseif noftransforms == 3 then
+            return transforms[3] .. transforms[2] .. transforms[1]
+        else
+            -- the rare case (but anything can happen in svg and it gets worse)
+            local m = noftransforms + 1
+            for i=1,noftransforms//2 do
+                local j = m - i
+                transforms[i], transforms[j] = transforms[j], transforms[i]
+            end
+            return concat(transforms,"",1,noftransforms)
+        end
+    end
+
     handletransform = function(at)
         local t = at.transform
         if t then
@@ -1334,7 +1354,7 @@ local handletransform, handleviewbox  do
             lpegmatch(p_transform,t)
             if noftransforms > 0 then
                 -- currentpicture
-                return s_transform_start, f_transform_stop(concat(transforms,"",1,noftransforms)), t
+                return s_transform_start, f_transform_stop(combined()), t
             end
         end
     end
@@ -1343,7 +1363,7 @@ local handletransform, handleviewbox  do
         if t then
             noftransforms = 0
             lpegmatch(p_transform,t)
-            return noftransforms > 0 and concat(transforms,"",1,noftransforms)
+            return noftransforms > 0 and combined()
         end
     end
 

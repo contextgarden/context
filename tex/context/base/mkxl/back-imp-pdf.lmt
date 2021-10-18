@@ -1,0 +1,49 @@
+if not modules then modules = { } end modules ['back-imp-pdf'] = {
+    version   = 1.001,
+    comment   = "companion to back-imp-pdf.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- We hide the pdf table from users so that we can guarantee no interference with
+-- the way we manage resources, info, etc. Users should use the \type {lpdf}
+-- interface instead. For now we have a little for tikz. If really needed some more
+-- can be made accessible but it has to happen in a controlled way then, for
+-- instance by first loading or enabling some compatibility layer so that we can
+-- trace possible interferences.
+
+updaters.register("backends.pdf.latebindings",function()
+    --
+    local dummy  = function() end
+    local report = logs.reporter("backend")
+    --
+    -- For now we keep this for tikz. If really needed some more can be made
+    -- accessible but it has to happen in a controlled way then, for instance
+    -- by first loading or enabling some compatibility layer so that we can
+    -- trace possible interferences.
+    --
+    pdf = {
+        immediateobj = lpdf.immediateobject
+    }
+
+    table.setmetatableindex(pdf,function(t,k)
+        report("calling unavailable pdf.%s function",k)
+        t[k] = dummy
+        return dummy
+    end)
+
+end)
+
+-- The compression setter is defined here because it's probably the only macro
+-- that is used independent of a driver being chosen. It's easier this way than
+-- checking in other ways unless we add some generic compression setting to
+-- all drivers.
+
+interfaces.implement {
+    name      = "setpdfcompression",
+    arguments = { "integer", "integer" },
+    actions   = lpdf.setcompression,
+}
+
+-- The pdf driver itself is installed in lpdf-lmt.lmt!

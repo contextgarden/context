@@ -18,16 +18,14 @@ local trace_info = false  trackers.register("structures.tags.info", function(v) 
 
 local report_tags = logs.reporter("backend","tags")
 
-local backends            = backends
-local lpdf                = lpdf
-local nodes               = nodes
-
-local nodeinjections      = backends.pdf.nodeinjections
-local codeinjections      = backends.pdf.codeinjections
+local pdfbackend          = backends.registered.pdf
+local nodeinjections      = pdfbackend.nodeinjections
+local codeinjections      = pdfbackend.codeinjections
 
 local enableaction        = nodes.tasks.enableaction
 local disableaction       = nodes.tasks.disableaction
 
+local lpdf                = lpdf
 local pdfdictionary       = lpdf.dictionary
 local pdfarray            = lpdf.array
 local pdfboolean          = lpdf.boolean
@@ -45,6 +43,7 @@ local pdfpagereference    = lpdf.pagereference
 
 local texgetcount         = tex.getcount
 
+local nodes               = nodes
 local nodecodes           = nodes.nodecodes
 
 local hlist_code          = nodecodes.hlist

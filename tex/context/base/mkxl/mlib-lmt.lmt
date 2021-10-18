@@ -136,7 +136,7 @@ function mp.lmt_svg_include()
 end
 
 registerscript("remaptext", function()
-    local parameters = metapost.scanparameters()
+    local parameters = metapost.scanparameters(true) -- gobble the semi colon (avoid lookahead)
     if parameters and parameters.label then
         metapost.remaptext(parameters)
     end

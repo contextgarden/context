@@ -326,6 +326,7 @@ local colors = {
         water            = true,
         wetland          = true,
         wood             = true,
+        fault            = true,
     },
     barrier = {
         chain            = true,
@@ -483,7 +484,7 @@ local forcedlines = {
     historic  = { "citywalls" },
     leisure   = { "track", "slipway" },
     man_made  = { "breakwater", "cutline", "embankment", "groyne", "pipeline" },
-    natural   = { "cliff", "earth_bank", "tree_row", "ridge", "arete" },
+    natural   = { "cliff", "earth_bank", "tree_row", "ridge", "arete", "fault" },
     power     = { "cable", "line", "minor_line" },
     tourism   = { "yes"},
     waterway  = { "canal", "derelict_canal", "ditch", "drain", "river", "stream", "tidal_channel", "wadi", "weir" },

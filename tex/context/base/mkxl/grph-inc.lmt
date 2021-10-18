@@ -175,8 +175,8 @@ local imagekeys  = {
 }
 
 local imagesizes = {
-    art   = true, bleed = true,  crop = true,
-    media = true, none  = true,  trim = true,
+    art   = true, bleed = true, crop = true,
+    media = true, none  = true, trim = true,
 }
 
 local imagetypes = { [0] =
@@ -191,26 +191,28 @@ images.keys  = imagekeys
 images.types = imagetypes
 images.sizes = imagesizes
 
+local codeinjections = backends.codeinjections
+
 local function createimage(specification)
-    return backends.codeinjections.newimage(specification)
+    return codeinjections.newimage(specification)
 end
 
 local function copyimage(specification)
-    return backends.codeinjections.copyimage(specification)
+    return codeinjections.copyimage(specification)
 end
 
 local function scanimage(specification)
-    return backends.codeinjections.scanimage(specification)
+    return codeinjections.scanimage(specification)
 end
 
 local function embedimage(specification)
-    -- write the image to file
-    return backends.codeinjections.embedimage(specification)
+   -- write the image to file
+    return codeinjections.embedimage(specification)
 end
 
 local function wrapimage(specification)
     -- create an image rule
-    return backends.codeinjections.wrapimage(specification)
+    return codeinjections.wrapimage(specification)
 end
 
 images.create = createimage
@@ -1002,7 +1004,6 @@ local function locate(request) -- name, format, cache
         return foundname
     end
     --
-    --
     local askedformat = request.format
     if not askedformat or askedformat == "" or askedformat == "unknown" then
         askedformat = file.suffix(askedname) or ""
@@ -1315,7 +1316,6 @@ function figures.identify(data)
         for i=1,#list do
             local identifier = list[i]
             local data = identifier(data)
---             if data and (not data.status and data.status.status > 0) then
             if data and (not data.status and data.status.status > 0) then
                 break
             end

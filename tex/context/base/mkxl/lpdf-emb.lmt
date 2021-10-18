@@ -2040,7 +2040,7 @@ local loadstreamdata = fonts.handlers.otf.loadstreamdata
 
 -- we can actually now number upwards (so not use fontid in /F)
 
-local objects = setmetatableindex(function(t,k)
+local objects = setmetatableindex(lpdf.usedfontobjects,function(t,k) -- defined in lpdf-lmt.lmt
     local v
     if type(k) == "number" then
         local h = getstreamhash(k)
@@ -2063,7 +2063,7 @@ end)
 
 local n = 0
 
-local names = setmetatableindex(function(t,k)
+local names = setmetatableindex(lpdf.usedfontnames,function(t,k) -- defined in lpdf-lmt.lmt
     local v
     if type(k) == "number" then
         local h = getstreamhash(k)

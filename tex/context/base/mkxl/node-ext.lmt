@@ -619,7 +619,7 @@ do
         end,
     }
 
-    -- why ...
+    -- so we have them defined and can use them at the tex end .. still needed?
 
     local open_command  = get(token.create("openout"))
     local write_command = get(token.create("write"))

@@ -23,12 +23,12 @@
 % todo: public implementors (we can update the lua code anyway)
 
 \permanent\protected\def\saveboxresource            {\clf_saveboxresource}
-\permanent\protected\def\lastsavedboxresourceindex  {\numexpr\clf_lastsavedboxresourceindex\relax}
+%permanent\protected\def\lastsavedboxresourceindex  {\numexpr\clf_lastsavedboxresourceindex\relax}
 \permanent\protected\def\useboxresource             {\clf_useboxresource}
 
 \permanent\protected\def\saveimageresource          {\clf_saveimageresource}
-\permanent\protected\def\lastsavedimageresourceindex{\numexpr\clf_lastsavedimageresourceindex\relax}
-\permanent\protected\def\lastsavedimageresourcepages{\numexpr\clf_lastsavedimageresourcepages\relax}
+%permanent\protected\def\lastsavedimageresourceindex{\numexpr\clf_lastsavedimageresourceindex\relax}
+%permanent\protected\def\lastsavedimageresourcepages{\numexpr\clf_lastsavedimageresourcepages\relax}
 \permanent\protected\def\useimageresource           {\clf_useimageresource}
 
 \protect \endinput

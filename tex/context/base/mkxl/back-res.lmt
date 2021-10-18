@@ -6,43 +6,49 @@ if not modules then modules = { } end modules ['back-res'] = {
     license   = "see context related readme files"
 }
 
-local context       = context
+local context         = context
 
-local trace         = false  trackers.register("backend", function(v) trace = v end)
-local report        = logs.reporter("backend")
+local trace           = false  trackers.register("backend", function(v) trace = v end)
+local report          = logs.reporter("backend")
 
-local scanners      = tokens.scanners
-local scankeyword   = scanners.keyword
-local scaninteger   = scanners.integer
-local scanstring    = scanners.string
-local scandimension = scanners.dimension
-local scanword      = scanners.word
-local scanwhd       = scanners.whd
+local scanners        = tokens.scanners
+local scankeyword     = scanners.keyword
+local scaninteger     = scanners.integer
+local scanstring      = scanners.string
+local scandimension   = scanners.dimension
+local scanword        = scanners.word
+local scanwhd         = scanners.whd
 
-local implement     = interfaces.implement
-local constants     = interfaces.constants
-local variables     = interfaces.variables
+local implement       = interfaces.implement
+local constants       = interfaces.constants
+local variables       = interfaces.variables
+
+local values          = tokens.values
+----- dimension_value = values.dimension
+local cardinal_value  = values.cardinal
+----- direct_value    = values.direct
 
 -- A box resource has an index. This happens to be an object number due to the pdf
 -- backend but in fact it's an abstraction. This is why we have explicit fetchers.
 -- The internal number (as in \Fm123) is yet another number.
 
-local tex_saveboxresource          = tex.saveboxresource
-local tex_useboxresource           = tex.useboxresource
-local tex_getboxresourcebox        = tex.getboxresourcebox
-local tex_getboxresourcedimensions = tex.getboxresourcedimensions
+-- this will change:
+--
+-- tex.*            : arglist, as in luatex
+-- tex.boxresources : table
 
-updaters.register("backend.update",function()
-    tex_saveboxresource          = tex.saveboxresource
-    tex_useboxresource           = tex.useboxresource
-    tex_getboxresourcebox        = tex.getboxresourcebox
-    tex_getboxresourcedimensions = tex.getboxresourcedimensions
-end)
+local codeinjections = backends.codeinjections
+local nodeinjections = backends.nodeinjections
 
-local savebox = function(...) return tex_saveboxresource(...) end
-local usebox  = function(...) return tex_useboxresource(...) end
-local getbox  = function(...) return tex_getboxresourcebox(...) end
-local getwhd  = function(...) return tex_getboxresourcedimensions(...) end
+local savebox = function(...) return codeinjections.saveboxresource(...) end
+local usebox  = function(...) return nodeinjections.useboxresource(...) end
+local getbox  = function(...) return nodeinjections.getboxresourcebox(...) end
+local getwhd  = function(...) return codeinjections.getboxresourcedimensions(...) end
+
+tex.saveboxresource          = savebox
+tex.useboxresource           = usebox
+tex.getboxresourcebox        = getbox
+tex.getboxresourcedimensions = getwhd
 
 local boxresources = {
     save          = savebox,
@@ -71,9 +77,10 @@ end
 
 local function lastsavedboxresourceindex()
     if trace then
-        report("\\lastsaveboxresource: index %i",lastindex)
+        report("\\lastsaveboxresourceindex: index %i",lastindex)
     end
-    context("%i",lastindex)
+ -- context("%i",lastindex)
+    return cardinal_value, lastindex or 0
 end
 
 local function useboxresource()
@@ -86,9 +93,47 @@ local function useboxresource()
     context(node)
 end
 
-implement { name = "saveboxresource",           actions = saveboxresource }
-implement { name = "lastsavedboxresourceindex", actions = lastsavedboxresourceindex }
-implement { name = "useboxresource",            actions = useboxresource }
+implement {
+    name    = "saveboxresource",
+    actions = saveboxresource,
+}
+implement {
+    name    = "lastsavedboxresourceindex",
+    public  = true,
+    usage   = "value",
+    actions = lastsavedboxresourceindex,
+}
+implement {
+    name    = "useboxresource",
+    actions = useboxresource,
+}
+
+-- used in pack
+
+do
+
+    local nuts                     = nodes.nuts
+    local tonut                    = nodes.tonut
+
+    local setwhd                   = nuts.setwhd
+    local setlist                  = nuts.setlist
+
+    local new_hlist                = nuts.pool.hlist
+
+    function codeinjections.restoreboxresource(index)
+        local hbox = new_hlist()
+        local list, wd, ht, dp = usebox(index)
+        setlist(hbox,tonut(list))
+        setwhd(hbox,wd,ht,dp)
+        return hbox -- so we return a nut !
+    end
+
+    function codeinjections.registerboxresource(n,offset) -- usecollected (arg 3) is a bit of a hack
+        local r = savebox(n,nil,true,true,0,offset or 0) -- direct, todo: accept functions as attr/resources
+        return r
+    end
+
+end
 
 -- image resources
 
@@ -136,11 +181,13 @@ local function saveimageresource()
 end
 
 local function lastsavedimageresourceindex()
-    context("%i",lastindex or 0)
+--     context("%i",lastindex or 0)
+    return cardinal_value, lastindex or 0
 end
 
 local function lastsavedimageresourcepages()
-    context("%i",lastpages or 0) -- todo
+--     context("%i",lastpages or 0) -- todo
+    return cardinal_value, lastpages or 0
 end
 
 local function useimageresource()
@@ -171,7 +218,26 @@ local function useimageresource()
     end
 end
 
-implement { name = "saveimageresource",           actions = saveimageresource }
-implement { name = "lastsavedimageresourceindex", actions = lastsavedimageresourceindex }
-implement { name = "lastsavedimageresourcepages", actions = lastsavedimageresourcepages }
-implement { name = "useimageresource",            actions = useimageresource }
+implement {
+    name    = "saveimageresource",
+    actions = saveimageresource,
+}
+
+implement {
+    name    = "lastsavedimageresourceindex",
+    public  = true,
+    usage   = "value",
+    actions = lastsavedimageresourceindex,
+}
+
+implement {
+    name    = "lastsavedimageresourcepages",
+    public  = true,
+    usage   = "value",
+    actions = lastsavedimageresourcepages,
+}
+
+implement {
+    name    = "useimageresource",
+    actions = useimageresource,
+}

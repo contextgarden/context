@@ -11,17 +11,15 @@ local formatters, gsub = string.formatters, string.gsub
 local concat = table.concat
 local round = math.round
 
-local backends, lpdf = backends, lpdf
-
-local nodeinjections = backends.pdf.nodeinjections
-
 local colors         = attributes.colors
 local basepoints     = number.dimenfactors.bp
 
-local nodeinjections = backends.pdf.nodeinjections
-local codeinjections = backends.pdf.codeinjections
-local registrations  = backends.pdf.registrations
+local pdfbackend     = backends.registered.pdf
+local nodeinjections = pdfbackend.nodeinjections
+local codeinjections = pdfbackend.codeinjections
+local registrations  = pdfbackend.registrations
 
+local lpdf           = lpdf
 local pdfdictionary  = lpdf.dictionary
 local pdfarray       = lpdf.array
 local pdfconstant    = lpdf.constant
@@ -295,4 +293,4 @@ function lpdf.patternstream(n,width,height)
     return f_pattern("Pt" .. n,width*basepoints,height*basepoints)
 end
 
-backends.pdf.codeinjections.registerpattern = lpdf.registerpattern
+codeinjections.registerpattern = lpdf.registerpattern

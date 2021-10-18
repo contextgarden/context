@@ -20,11 +20,11 @@
 \appendtoks
     \doifsomething{\interactionparameter\c!calculate}%
         {\clf_setfieldcalculationset{\interactionparameter\c!calculate}}%
-    \doifelse{\interactionparameter\c!click  }\v!yes
+    \doifelse{\interactionparameter\c!click}\v!yes
         \settrue\setfalse\highlighthyperlinks
     \doifelse{\interactionparameter\c!display}\v!new
         \settrue\setfalse\gotonewwindow
-    \doifnot {\interactionparameter\c!page}\v!no
+    \doifnot{\interactionparameter\c!page}\v!no
         \scrn_reference_enable_page_destinations
 \to \everysetupinteraction
 

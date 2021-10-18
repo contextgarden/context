@@ -62,22 +62,20 @@ local trace_fields = false  trackers.register("backends.fields", function(v) tra
 
 local report_fields = logs.reporter("backend","fields")
 
-local backends, lpdf = backends, lpdf
-
 local variables               = interfaces.variables
 local context                 = context
 
 local references              = structures.references
 local settings_to_array       = utilities.parsers.settings_to_array
 
-local pdfbackend              = backends.pdf
-
+local pdfbackend              = backends.registered.pdf
 local nodeinjections          = pdfbackend.nodeinjections
 local codeinjections          = pdfbackend.codeinjections
 local registrations           = pdfbackend.registrations
 
 local registeredsymbol        = codeinjections.registeredsymbol
 
+local lpdf                    = lpdf
 local pdfstream               = lpdf.stream
 local pdfdictionary           = lpdf.dictionary
 local pdfarray                = lpdf.array

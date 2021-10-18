@@ -29,17 +29,14 @@ local a_colormodel     = attributes.private('colormodel')
 local floor            = math.floor
 local getrandom        = utilities.randomizer.get
 
-do
-
-    local function unsupported() end
-
-    ruleactions.mp     = unsupported
-    ruleactions.fill   = unsupported
-    ruleactions.draw   = unsupported
-    ruleactions.stroke = unsupported
-    ruleactions.box    = unsupported
-
-end
+updaters.register("backends.injections.latebindings",function()
+    local codeinjections = backends.codeinjections
+    ruleactions.mp       = codeinjections.ruleactionmp
+    ruleactions.fill     = codeinjections.ruleactionfill
+    ruleactions.draw     = codeinjections.ruleactiondraw
+    ruleactions.stroke   = codeinjections.ruleactionstroke
+    ruleactions.box      = codeinjections.ruleactionbox
+end)
 
 interfaces.implement {
     name      = "frule",

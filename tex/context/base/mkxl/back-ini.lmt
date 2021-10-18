@@ -53,7 +53,7 @@ local defaults = {
     tables         = tables,
 }
 
-backends.defaults = defaults
+backends.defaults = defaults -- so, when not in the specific namespace we need to register here (to be checked)
 
 backends.nodeinjections = { }  setmetatableindex(backends.nodeinjections, nodeinjections)
 backends.codeinjections = { }  setmetatableindex(backends.codeinjections, codeinjections)
@@ -62,24 +62,42 @@ backends.tables         = { }  setmetatableindex(backends.tables,         tables
 
 backends.current = "unknown"
 
-function backends.install(what)
+local registered = table.setmetatableindex(function(t,k)
+    local v = {
+        name           = k,
+        nodeinjections = { },
+        codeinjections = { },
+        registrations  = { },
+        tables         = { },
+    }
+    t[k] = v
+    return v
+end)
+
+backends.registered = registered
+
+-- The binding feature is mostly there to prevent side effects of overloading
+-- not so much for performance because there are not that many calls.
+
+function backends.initialize(what)
     if type(what) == "string" then
-        local backend = backends[what]
+        local backend = registered[what]
         if backend then
             if trace then
-                if backend.comment then
-                    report("initializing backend %a, %a",what,backend.comment)
-                else
-                    report("initializing backend %a",what)
-                end
+                report("initializing backend %a",what)
             end
-            backends.current = what
             for category, default in next, defaults do
                 local target = backends[category]
                 local plugin = backend [category]
                 setmetatableindex(plugin, default)
                 setmetatableindex(target, plugin)
             end
+            --
+            backends.current = what
+            -- delayed / out-of-order locals: like lpdf.* (a few forward references)
+            updaters.apply("backends." .. what .. ".latebindings")
+            -- delayed / out-of-order locals: backends.[c|n]odeinjections.* (not all, only critical ones)
+            updaters.apply("backends.injections.latebindings")
         elseif trace then
             report("no backend named %a",what)
         end
@@ -88,11 +106,7 @@ end
 
 statistics.register("used backend", function()
     local bc = backends.current
-    if bc ~= "unknown" then
-        return format("%s (%s)",bc,backends[bc].comment or "no comment")
-    else
-        return nil
-    end
+    return bc ~= "unknown" and bc or nil
 end)
 
 -- can best be here

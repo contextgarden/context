@@ -40,9 +40,6 @@ local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 local report_media             = logs.reporter("backend","media")
 local report_attachment        = logs.reporter("backend","attachment")
 
-local backends                 = backends
-local lpdf                     = lpdf
-local nodes                    = nodes
 local context                  = context
 
 local texgetcount              = tex.getcount
@@ -50,9 +47,10 @@ local getmacro                 = tokens.getters.macro
 
 local hpacknode                = nodes.hpack
 
-local nodeinjections           = backends.pdf.nodeinjections
-local codeinjections           = backends.pdf.codeinjections
-local registrations            = backends.pdf.registrations
+local pdfbackend               = backends.registered.pdf
+local nodeinjections           = pdfbackend.nodeinjections
+local codeinjections           = pdfbackend.codeinjections
+local registrations            = pdfbackend.registrations
 
 local executers                = structures.references.executers
 local variables                = interfaces.variables
@@ -66,6 +64,8 @@ local v_no                     = variables.no
 local v_compress               = variables.compress
 local v_list                   = variables.list
 local v_title                  = variables.title
+
+local lpdf                     = lpdf
 
 local pdfconstant              = lpdf.constant
 local pdfnull                  = lpdf.null

@@ -81,9 +81,25 @@ helpers.commands = utilities.storage.allocate {
     dummy = dummy,
 }
 
+local codeinjections = backends.codeinjections
+local vfstartcolor   = codeinjections.vfstartcolor
+local vfstopcolor    = codeinjections.vfstopcolor
+----- vfliteral      = codeinjections.vfliteral
+
 helpers.vfinjectors = {
-    -- backend specific: startcolor, stopcolor etc
+ -- startcolor = function(h,v,packet) codeinjections.vfstartcolor(h,v,packet) end,
+ -- stopcolor  = function(h,v,packet) codeinjections.vfstartcolor(h,v,packet) end,
+ -- literal    = function(h,v,packet) codeinjections.vfliteral   (h,v,packer) end,
+    startcolor = function(h,v,packet) vfstartcolor(h,v,packet) end,
+    stopcolor  = function(h,v,packet) vfstartcolor(h,v,packet) end,
+ -- literal    = function(h,v,packet) vfliteral   (h,v,packer) end,
 }
+
+updaters.register("backends.injections.latebindings",function()
+    vfstartcolor = backends.codeinjections.vfstartcolor
+    vfstopcolor  = backends.codeinjections.vfstopcolor
+ -- vfliteral    = backends.codeinjections.vfliteral
+end)
 
 -- maybe round()
 

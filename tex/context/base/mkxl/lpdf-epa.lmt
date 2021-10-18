@@ -29,14 +29,16 @@ local report_comment    = logs.reporter("backend","comment")
 local report_field      = logs.reporter("backend","field")
 local report_outline    = logs.reporter("backend","outline")
 
-local lpdf              = lpdf
-local backends          = backends
 local context           = context
 
-local nodeinjections    = backends.pdf.nodeinjections
+local pdfbackend        = backends.registered.pdf
+local nodeinjections    = pdfbackend.nodeinjections
+local codeinjections    = pdfbackend.codeinjections
+----- registrations     = pdfbackend.registrations
 
 local setmacro          = tokens.setters.macro
 
+local lpdf              = lpdf
 local pdfarray          = lpdf.array
 local pdfdictionary     = lpdf.dictionary
 local pdfconstant       = lpdf.constant
@@ -62,7 +64,6 @@ local loadpdffile       = lpdf.epdf.load
 local nameonly          = file.nameonly
 
 local variables         = interfaces.variables
-local codeinjections    = backends.pdf.codeinjections
 ----- urlescaper        = lpegpatterns.urlescaper
 ----- utftohigh         = lpegpatterns.utftohigh
 local escapetex         = characters.filters.utf.private.escape
@@ -77,7 +78,7 @@ local layerspec = {
     "epdfcontent"
 }
 
-local getpos = function() getpos = backends.codeinjections.getpos return getpos() end
+local getpos = function() getpos = codeinjections.getpos return getpos() end
 
 local collected = allocate()
 local tobesaved = allocate()
@@ -1013,7 +1014,7 @@ function codeinjections.mergebookmarks(specification)
     end
     if specification then
         local fullname  = specification.fullname
-        local bookmarks = backends.codeinjections.getbookmarks(fullname)
+        local bookmarks = codeinjections.getbookmarks(fullname)
         local realpage  = tonumber(specification.page) or 1
         for i=1,#bookmarks do
             local b = bookmarks[i]

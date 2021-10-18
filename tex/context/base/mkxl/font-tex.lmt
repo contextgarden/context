@@ -34,7 +34,7 @@ local function makeglyphbox(char,spec)
         width  = b.width,
         height = b.height,
         depth  = b.depth,
-        objnum = tex.saveboxresource(b,nil,nil,true),
+        objnum = tex.boxresources.save(b,nil,nil,true),
     }
 end
 
@@ -95,7 +95,7 @@ function fonts.helpers.setboxdirectly(font,unicode,box) -- hash based on wd/ht/d
             height  = box.height or 0,
             depth   = box.depth  or 0,
             unicode = unicode,
-            objnum  = tex.saveboxresource(box,nil,nil,true),
+            objnum  = tex.boxresources.save(box,nil,nil,true),
         }
         local specification = {
             code = newdata

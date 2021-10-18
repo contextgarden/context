@@ -42,7 +42,6 @@ local loaddata = io.loaddata
 local bpfactor               = number.dimenfactors.bp
 
 local osuuid                 = os.uuid
-local zlibcompress           = xzip.compress
 local zlibcompresssize       = xzip.compresssize
 
 local nuts                   = nodes.nuts
@@ -66,14 +65,6 @@ local pdfimmediateobject     -- forward reference
 
 local pdfincludeimage        -- forward reference
 
-local pdfgetfontname         -- elsewhere
-local pdfgetfontobjectnumber -- elsewhere
-
-updaters.register("backend.update.lpdf",function()
-    pdfgetfontname         = lpdf.getfontname
-    pdfgetfontobjectnumber = lpdf.getfontobjectnumber
-end)
-
 local pdf_pages      = pdfconstant("Pages")
 local pdf_page       = pdfconstant("Page")
 local pdf_xobject    = pdfconstant("XObject")
@@ -93,6 +84,14 @@ local report_fonts   = logs.reporter("backend","fonts")
 local trace_objects  = false  trackers.register("backend.objects",       function(v) trace_objects = v end)
 local trace_details  = false  trackers.register("backend.details",       function(v) trace_details = v end)
 local trace_indices  = false  trackers.register("backend.fonts.details", function(v) trace_indices = v end)
+
+-- These two tables used a font id as index and will be metatabled in lpdf-emb.lmt:
+
+local usedfontnames   = { }
+local usedfontobjects = { }
+
+lpdf.usedfontnames    = usedfontnames
+lpdf.usedfontobjects  = usedfontobjects
 
 -- experiment:
 
@@ -131,7 +130,8 @@ local cmrx, cmry, cmsx, cmsy, cmtx, cmty
 local tmef
 
 local function usefont(t,k) -- a bit redundant hash
-    local v = pdfgetfontname(k)
+ -- local v = pdfgetfontname(k)
+    local v = usedfontnames[k]
     t[k] = v
     return v
 end
@@ -987,6 +987,10 @@ local localconverter = nil -- will be set
 
 local flushimage  do
 
+    local pdfbackend        = backends.registered.pdf
+    local nodeinjections    = pdfbackend.nodeinjections
+    local codeinjections    = pdfbackend.codeinjections
+
     local newimagerule      = nuts.pool.imagerule
     local newboxrule        = nuts.pool.boxrule
 
@@ -1045,12 +1049,18 @@ local flushimage  do
 
     lpdf.getxformname = getxformname
 
-    local function saveboxresource(box,attributes,resources,immediate,kind,margin)
+    local pdfcollectedresources = lpdf.collectedresources
+
+    function codeinjections.saveboxresource(box,attributes,resources,immediate,kind,margin)
         n = n + 1
         local immediate = true
         local margin    = margin or 0 -- or dimension
         local objnum    = pdfreserveobject()
         local list      = tonut(type(box) == "number" and tex.takebox(box) or box)
+        --
+        if resources == true then
+            resources = pdfcollectedresources()
+        end
         --
         local width, height, depth = getwhd(list)
         --
@@ -1078,7 +1088,7 @@ local flushimage  do
         return objnum
     end
 
-    local function useboxresource(index,wd,ht,dp)
+    function nodeinjections.useboxresource(index,wd,ht,dp)
         local l = boxresources[index]
         if l then
             if wd or ht or dp then
@@ -1104,19 +1114,14 @@ local flushimage  do
         end
     end
 
-    local function getboxresourcebox(index)
+    nodeinjections.getboxresourcedimensions = getboxresourcedimensions
+
+    function codeinjections.getboxresourcebox(index)
         local l = boxresources[index]
         if l then
             return l.list
         end
     end
-
-    updaters.register("backend.update.lpdf",function()
-        tex.saveboxresource          = saveboxresource
-        tex.useboxresource           = useboxresource
-        tex.getboxresourcedimensions = getboxresourcedimensions
-        tex.getboxresourcebox        = getboxresourcebox
-    end)
 
     -- a bit of a mess: index is now objnum but that has to change to a proper index
     -- ... an engine inheritance
@@ -1475,7 +1480,7 @@ end
 
 --- basics
 
-local wrapup, registerpage  do
+local wrapupdocument, registerpage  do
 
     local pages    = { }
     local maxkids  = 10
@@ -1550,7 +1555,7 @@ local wrapup, registerpage  do
  --     lpdf.setpageorder(t)
  -- end
 
-    wrapup = function(driver)
+    wrapupdocument = function(driver)
 
         -- hook (to reshuffle pages)
         local pagetree = { }
@@ -1730,7 +1735,8 @@ local finalize  do
         if next(usedfonts) then
             fonts = pdfdictionary { }
             for k, v in next, usedfonts do
-                fonts[f_font(v)] = pdfreference(pdfgetfontobjectnumber(k)) -- we can overload for testing
+--                 fonts[f_font(v)] = pdfreference(pdfgetfontobjectnumber(k)) -- we can overload for testing
+                fonts[f_font(v)] = pdfreference(usedfontobjects[k]) -- we can overload for testing
             end
         end
 
@@ -1889,17 +1895,6 @@ local finalize  do
     end
 
 end
-
-updaters.register("backend.update",function()
-    local saveboxresource = tex.boxresources.save
-    --
-    -- also in lpdf-res .. brrr .. needs fixing
-    --
-    backends.codeinjections.registerboxresource = function(n,offset)
-        local r = saveboxresource(n,nil,nil,false,0,offset or 0)
-        return r
-    end
-end)
 
 -- now comes the pdf file handling
 
@@ -2429,7 +2424,6 @@ pdfimmediateobject = function(a,b,c,d)
     end
     -- todo: immediate
     if kind == "stream" then
---         flushstreamobj(data,objnum,attr,compresslevel and compresslevel > 0 or nil,nolength) -- nil == auto
         flushstreamobj(data,objnum,attr,compresslevel,nolength) -- nil == auto
     elseif objectstream and objcompression ~= false then
         addtocache(objnum,data)
@@ -2747,7 +2741,9 @@ do
     -- reimplement what we need in context. This will change completely i.e.
     -- we will drop the low level interface!
 
-    local codeinjections = backends.pdf.codeinjections
+    local pdfbackend     = backends.registered.pdf
+    local nodeinjections = pdfbackend.nodeinjections
+    local codeinjections = pdfbackend.codeinjections
 
     local imagetypes     = images.types -- pdf png jpg jp2 jbig2 stream
     local img_none       = imagetypes.none
@@ -2828,7 +2824,6 @@ do
                 specification.type = kind
                 specification.kind = kind
             end
---             flushstreamobj(stream,objnum,dict,compresslevel and compresslevel > 0 or nil,nolength)
             flushstreamobj(stream,objnum,dict,compresslevel,nolength)
             specification.objnum      = objnum
             specification.rotation    = specification.rotation or 0
@@ -2885,108 +2880,7 @@ do
 
     lpdf.includeimage = pdfincludeimage
 
-end -- )
-
-do
-
-    -- todo: an md5 or sha2 hash can save space
-    -- todo: make a type 3 font instead
-    -- todo: move to lpdf namespace
-
-    local pdfimage
-    local newpdf
-    local openpdf
-    local closepdf
-    local copypage
-
-    updaters.register("backend.update.lpdf",function()
-        pdfimage = lpdf.epdf.image
-        newpdf   = pdfimage.new
-        openpdf  = pdfimage.open
-        closepdf = pdfimage.close
-        copypage = pdfimage.copy
-    end)
-
-    local embedimage = images.embed
-
-    local nofstreams = 0
-    local topdf      = { }
-    local toidx      = { }
-
-    local function storedata_s(pdf)
-        local idx = toidx[pdf]
-        if not idx then
-            nofstreams = nofstreams + 1
-            idx = nofstreams
-            toidx[pdf] = nofstreams
-            topdf[idx] = pdf
-        end
-        return idx
-    end
-
-    local function vfimage_s(id,wd,ht,dp,pos_h,pos_v)
-        local index = topdf[id]
-        if type(index) == "string" then
-            local pdfdoc  = newpdf(index,#index)
-            local image   = copypage(pdfdoc)
-            local bbox    = image.bbox
-            image.width   = bbox[3] - bbox[1]
-            image.height  = bbox[4] - bbox[2]
-            embedimage(image)
-            index = image.index
-            topdf[id] = index
-        end
-        flushimage(index,wd,ht,dp,pos_h,pos_v)
-    end
-
-    local function storedata_n(name,page)
-        local idx = toidx[pdf]
-        if not idx then
-            nofstreams = nofstreams + 1
-            idx = nofstreams
-            toidx[pdf] = nofstreams
-            topdf[idx] = pdf
-        end
-        return idx
-    end
-
-    -- We need to have a way to close such a pdf ... esp for fonts.
-
-    local pdfdocs = { }
-
-    local function vfimage_n(name,page,wd,ht,dp,pos_h,pos_v)
-        local d = pdfdocs[name]
-        if not d then
-            d = { doc = openpdf(name), pages = { } }
-            pdfdocs[name] = d
-        end
-        local index = d.pages[page]
-        if not index then
-            local image  = copypage(d.doc,page)
-            local bbox   = image.bbox
-            image.width  = bbox[3] - bbox[1]
-            image.height = bbox[4] - bbox[2]
-            embedimage(image)
-            index = image.index
-            d.pages[page] = index
-        end
-        flushimage(index,wd,ht,dp,pos_h,pos_v)
-    end
-
-    function lpdf.pdfvfimage(wd,ht,dp,data,name)
-        if type(data) == "number" then
-            return { "lua", function(font,char,pos_h,pos_v)
-                vfimage_n(name,data,wd,ht,dp,pos_h,pos_v)
-            end }
-        else
-            return { "lua", function(font,char,pos_h,pos_v)
-                local id = storedata_s(data)
-                vfimage_s(id,wd,ht,dp,pos_h,pos_v)
-            end }
-        end
-    end
-
-end -- )
+end
 
 -- The driver.
 
@@ -3003,12 +2897,24 @@ do
         return pdfname
     end
 
+-- local outputfilename ; do -- old todo usedname in ^^
+--     local filename = nil
+--     outputfilename = function(driver,usedname)
+--         if usedname and usedname ~= "" then
+--             filename = addsuffix(usedname,"pdf")
+--         elseif not filename or filename == "" then
+--             filename = addsuffix(tex.jobname,"pdf")
+--         end
+--         return filename
+--     end
+-- end
+
     -- todo: prevent twice
 
     local function prepare(driver)
         if not environment.initex then
-            updaters.apply("backend.update.lpdf")
-            updaters.apply("backend.update")
+            --
+            backends.initialize("pdf") -- also does bindings
             --
             pdfname = tex.jobname .. ".pdf"
             openfile(pdfname)
@@ -3017,6 +2923,7 @@ do
                 if pdfname then
                     lpdf.finalizedocument()
                     closefile()
+                    pdfname = nil
                 end
             end)
             --
@@ -3026,7 +2933,7 @@ do
                 end
             end)
             --
-            lpdf.registerdocumentfinalizer(wrapup,nil,"wrapping up")
+            lpdf.registerdocumentfinalizer(wrapupdocument,nil,"wrapping up")
             --
             statistics.register("result saved in file", function()
                 local outputfilename = environment.outputfilename or environment.jobname or tex.jobname or "<unset>"

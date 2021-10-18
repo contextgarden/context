@@ -13,18 +13,19 @@ local concat = table.concat
 local round = math.round
 local formatters = string.formatters
 
-local backends, lpdf, nodes = backends, lpdf, nodes
-
 local allocate                = utilities.storage.allocate
 
-local nodeinjections          = backends.pdf.nodeinjections
-local codeinjections          = backends.pdf.codeinjections
-local registrations           = backends.pdf.registrations
+local pdfbackend              = backends.registered.pdf
+local nodeinjections          = pdfbackend.nodeinjections
+local codeinjections          = pdfbackend.codeinjections
+local registrations           = pdfbackend.registrations
 
+local nodes                   = nodes
 local nodepool                = nodes.nuts.pool
 local register                = nodepool.register
 local setstate                = nodepool.setstate
 
+local lpdf                    = lpdf
 local pdfconstant             = lpdf.constant
 local pdfdictionary           = lpdf.dictionary
 local pdfarray                = lpdf.array
@@ -580,7 +581,7 @@ function lpdf.pdfcolor(attribute) -- bonus, for pgf and friends
     return lpdfcolor(1,attribute)
 end
 
-function lpdf.transparency(ct,default) -- kind of overlaps with transparencycode
+local function lpdftransparency(ct,default) -- kind of overlaps with transparencycode
     -- beware, we need this hack because normally transparencies are not
     -- yet registered and therefore the number is not not known ... we
     -- might use the attribute number itself in the future
@@ -595,6 +596,8 @@ function lpdf.transparency(ct,default) -- kind of overlaps with transparencycode
         return ""
     end
 end
+
+lpdf.transparency = lpdftransparency
 
 function lpdf.colorvalue(model,ca,default)
     local cv = colorsvalue(ca)
@@ -668,11 +671,10 @@ end
 -- by registering we getconversion for free (ok, at the cost of overhead)
 
 local intransparency = false
-local pdfcolor       = lpdf.color
 
 function lpdf.rgbcode(model,r,g,b)
     if colors.supported then
-        return pdfcolor(model,registercolor(nil,'rgb',r,g,b))
+        return lpdfcolor(model,registercolor(nil,'rgb',r,g,b))
     else
         return ""
     end
@@ -680,7 +682,7 @@ end
 
 function lpdf.cmykcode(model,c,m,y,k)
     if colors.supported then
-        return pdfcolor(model,registercolor(nil,'cmyk',c,m,y,k))
+        return lpdfcolor(model,registercolor(nil,'cmyk',c,m,y,k))
     else
         return ""
     end
@@ -688,7 +690,7 @@ end
 
 function lpdf.graycode(model,s)
     if colors.supported then
-        return pdfcolor(model,registercolor(nil,'gray',s))
+        return lpdfcolor(model,registercolor(nil,'gray',s))
     else
         return ""
     end
@@ -696,7 +698,7 @@ end
 
 function lpdf.spotcode(model,n,f,d,p)
     if colors.supported then
-        return pdfcolor(model,registercolor(nil,'spot',n,f,d,p)) -- incorrect
+        return lpdfcolor(model,registercolor(nil,'spot',n,f,d,p)) -- incorrect
     else
         return ""
     end
@@ -722,18 +724,12 @@ end
 
 do
 
-    local pdfprint, pdfcolor, pdftransparency
-
-    updaters.register("backend.update.lpdf",function()
-        pdfprint        = lpdf.print
-        pdfcolor        = lpdf.color
-        pdftransparency = lpdf.transparency
-    end)
+    local lpdfprint = lpdf.print
 
     local c_cache = setmetatableindex(function(t,m)
         -- We inherit the outer transparency.
         local v = setmetatableindex(function(t,c)
-            local p = "q " .. pdfcolor(m,c)
+            local p = "q " .. lpdfcolor(m,c)
             t[c] = p
             return p
         end)
@@ -742,10 +738,10 @@ do
     end)
 
     local t_cache = setmetatableindex(function(t,transparency)
-        local p = pdftransparency(transparency)
+        local p = lpdftransparency(transparency)
         local v = setmetatableindex(function(t,colormodel)
             local v = setmetatableindex(function(t,color)
-                local v = "q " .. pdfcolor(colormodel,color) .. " " .. p
+                local v = "q " .. lpdfcolor(colormodel,color) .. " " .. p
                 t[color] = v
                 return v
             end)
@@ -756,35 +752,29 @@ do
         return v
     end)
 
-    updaters.register("backend.update.lpdf",function()
+ -- function codeinjections.vfliteral(pos_h,pos_v,packet)
+ --     lpdfprint(packet[2],packet[3])
+ -- end
 
-        local vfinjectors = fonts.helpers.vfinjectors
-
-        vfinjectors.pdf = function(pos_h,pos_v,packet)
-            pdfprint(packet[2],packet[3])
-        end
-
-        vfinjectors.startcolor = function(pos_h,pos_v,packet)
-            local color = type(packet) == "table" and packet[2] or packet
-            if color then
-                local m, c = colortoattributes(color)
-                local t = transparencytoattribute(color)
-                if t and t ~= unsetvalue then
-                    pdfprint("page", t_cache[t][m][c]) -- "q " .. pdfcolor(m,c) .. " " .. pdftransparency(t)
-                else
-                    pdfprint("page", c_cache[m][c])    -- "q " .. pdfcolor(m,c))
-                end
+    function codeinjections.vfstartcolor(pos_h,pos_v,packet)
+        local color = type(packet) == "table" and packet[2] or packet
+        if color then
+            local m, c = colortoattributes(color)
+            local t = transparencytoattribute(color)
+            if t and t ~= unsetvalue then
+                lpdfprint("page", t_cache[t][m][c]) -- "q " .. lpdfcolor(m,c) .. " " .. lpdftransparency(t)
             else
-                pdfprint("page", "q")
+                lpdfprint("page", c_cache[m][c])    -- "q " .. lpdfcolor(m,c))
             end
+        else
+            lpdfprint("page", "q")
         end
+    end
 
-        vfinjectors.stopcolor = function()
-         -- pdfprint("text", "Q")
-            pdfprint("page", "Q")
-        end
-
-    end)
+    function codeinjections.vfstopcolor()
+     -- lpdfprint("text", "Q")
+        lpdfprint("page", "Q")
+    end
 
 end
 
@@ -792,19 +782,16 @@ end
 
 do
 
-    local color        = lpdf.color
-    local transparency = lpdf.transparency
-
     local fonts = { }
     lpdf.fonts  = fonts
 
     fonts.color_indirect = function(c,t)
         if c and t then
-            return color(1,c) .. " " .. transparency(t)
+            return lpdfcolor(1,c) .. " " .. lpdftransparency(t)
         elseif c then
-            return color(1,c)
+            return lpdfcolor(1,c)
         elseif t then
-            return transparency(t)
+            return lpdftransparency(t)
         else
             return false
         end

@@ -7,15 +7,11 @@ if not modules then modules = { } end modules ['node-ref'] = {
     license   = "see context related readme files"
 }
 
--- We supported pdf right from the start and in mkii this has resulted in
--- extensive control over the links. Nowadays pdftex provides a lot more
--- control over margins but as mkii supports multiple backends we stuck to
--- our own mechanisms. In mkiv again we implement our own handling. Eventually
--- we will even disable the pdf primitives.
-
--- helper, will end up in luatex
-
--- is grouplevel still used?
+-- We supported pdf right from the start and in mkii this has resulted in extensive
+-- control over the links. Nowadays pdftex provides a lot more control over margins
+-- but as mkii supports multiple backends we stuck to our own mechanisms. In mkiv
+-- again we implement our own handling. Eventually we will even disable the pdf
+-- primitives.
 
 local tonumber = tonumber
 local concat = table.concat
@@ -48,6 +44,16 @@ local report_area          = logs.reporter("backend","areas")
 
 local texsetcount          = tex.setcount
 ----- texsetattribute      = tex.setattribute
+
+local injectreference      = backends.nodeinjections.reference
+local injectdestination    = backends.nodeinjections.destination
+local prerollreference     = backends.codeinjections.prerollreference
+
+updaters.register("backends.injections.latebindings",function()
+    injectreference   = backends.nodeinjections.reference
+    injectdestination = backends.nodeinjections.destination
+    prerollreference  = backends.codeinjections.prerollreference
+end)
 
 local nuts                 = nodes.nuts
 local nodepool             = nuts.pool
@@ -566,7 +572,7 @@ do
                 if depth  < dp then depth  = dp end
             end
          -- logs.report("temp","used: ht=%p dp=%p",height,depth)
-            local annot = nodeinjections.reference(reference,width,height,depth,set,resolved.mesh)
+            local annot = injectreference(reference,width,height,depth,set,resolved.mesh)
             if annot then
                 annot = tonut(annot) -- todo
                 nofreferences = nofreferences + 1
@@ -745,7 +751,7 @@ do
                 end
             end
             nofdestinations = nofdestinations + 1
-            local annot = nodeinjections.destination(width,height,depth,name,view)
+            local annot = injectdestination(width,height,depth,name,view)
             if annot then
                 annot = tonut(annot) -- obsolete soon
                 if result then

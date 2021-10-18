@@ -33,6 +33,8 @@ local floor            = math.floor
 local getrandom        = utilities.randomizer.get
 local formatters       = string.formatters
 
+local codeinjections   = backends.registered.pdf.codeinjections
+
 -- This is very pdf specific. Maybe move some to lpdf-rul.lua some day.
 
 local pdfprint ; pdfprint = function(...) pdfprint = lpdf.print return pdfprint(...) end
@@ -97,7 +99,7 @@ def RuleColor = %color% enddef ;
 
     local initialized = false ;
 
-    local rule_mp = function(p,h,v,i,n)
+    local function rule_mp(p,h,v,i,n)
         local name = p.name or "fake:rest"
         local code = (predefined[name] or predefined["fake:rest"]) {
             data      = p.data or "",
@@ -129,9 +131,7 @@ def RuleColor = %color% enddef ;
         end
     end
 
-    updaters.register("backend.update.lpdf",function()
-        ruleactions.mp = rule_mp
-    end)
+    codeinjections.ruleactionmp = rule_mp
 
 end
 
@@ -373,12 +373,10 @@ h %s]]
         end
     end
 
-    updaters.register("backend.update.lpdf",function()
-        ruleactions.fill   = rule_any
-        ruleactions.draw   = rule_any
-        ruleactions.stroke = rule_any
-        ruleactions.box    = rule_box
-    end)
+    codeinjections.ruleactionfill   = rule_any
+    codeinjections.ruleactiondraw   = rule_any
+    codeinjections.ruleactionstroke = rule_any
+    codeinjections.ruleactionbox    = rule_box
 
 end
 

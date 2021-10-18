@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2021.10.15 13:57}
+\immutable\edef\contextversion{2021.10.18 23:11}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -151,6 +151,8 @@
 \loadmkxlfile{layo-ini}
 
 \loadmkxlfile{node-ini}
+\loadmkxlfile{node-ext}
+\loadmkxlfile{node-syn}
 
 % \loadmkxlfile{cldf-bas} % basics / depends on nodes
 
@@ -158,11 +160,10 @@
 \loadmkxlfile{node-mig}
 %loadmkxlfile{node-pag}
 
-\loadmkxlfile{driv-ini}
+\loadmkxlfile{driv-ini} % after node-ini (ext)
 
 \loadmkxlfile{back-ini}
 \loadmkxlfile{back-res}
-\loadmkxlfile{back-ext}
 
 \loadmkxlfile{cldf-bas} % basics / depends on nodes
 
@@ -563,9 +564,10 @@
 \loadmkxlfile{anch-loc} % for now here (after driver)
 
 \loadmkxlfile{back-exp}
-\loadmkxlfile{back-pdf}
-\loadmkxlfile{back-mps}
-\loadmkxlfile{back-lua}
+
+\loadmkxlfile{back-imp-pdf}
+\loadmkxlfile{back-imp-mps}
+\loadmkxlfile{back-imp-lua}
 
 \loadmkxlfile{mlib-pdf}
 \loadmkxlfile{mlib-pps}

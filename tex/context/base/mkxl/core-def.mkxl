@@ -112,6 +112,7 @@
     \syst_files_load
     % for the moment here (before doc env)
     \setupoutput[pdf]%
+%     \setupoutput[lua]%
     %
     \clf_setdocumentcommandline
     \clf_setdocumentctxfile

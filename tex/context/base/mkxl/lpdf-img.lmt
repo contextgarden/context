@@ -59,6 +59,8 @@ local pdfflushstreamobject = lpdf.flushstreamobject
 local pdfmajorversion      = lpdf.majorversion
 local pdfminorversion      = lpdf.minorversion
 
+local codeinjections       = backends.registered.pdf.codeinjections
+
 local createimage          = images.create
 
 local zlibcompress         = xzip.compress
@@ -1363,7 +1365,7 @@ do
         }
     end
 
-    backends.pdf.codeinjections.bitmap = injectors.bitmap
+    codeinjections.bitmap = injectors.bitmap
 
 end
 
@@ -1390,6 +1392,6 @@ end
 --     return true
 -- end
 
-backends.pdf.codeinjections.jpg = lpdf.injectors.jpg
-backends.pdf.codeinjections.jp2 = lpdf.injectors.jp2
-backends.pdf.codeinjections.png = lpdf.injectors.png
+codeinjections.jpg = lpdf.injectors.jpg
+codeinjections.jp2 = lpdf.injectors.jp2
+codeinjections.png = lpdf.injectors.png

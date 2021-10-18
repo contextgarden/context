@@ -75,25 +75,14 @@ local context           = context
 
 -- In ConTeXt MkIV we use utf8 exclusively so all strings get mapped onto a hex
 -- encoded utf16 string type between <>. We could probably save some bytes by using
--- strings between () but then we end up with escaped ()\ too.
+-- strings between () but then we end up with escaped ()\ characters too.
 
 pdf                     = type(pdf) == "table" and pdf or { }
 local factor            = number.dimenfactors.bp
 
-local codeinjections    = { }
-local nodeinjections    = { }
-
-local backends          = backends or { }
-
-local pdfbackend        = {
-    comment        = "backend for directly generating pdf output",
-    nodeinjections = nodeinjections,
-    codeinjections = codeinjections,
-    registrations  = { },
-    tables         = { },
-}
-
-backends.pdf = pdfbackend
+local pdfbackend        = backends.registered.pdf
+local codeinjections    = pdfbackend.codeinjections
+local nodeinjections    = pdfbackend.nodeinjections
 
 lpdf       = lpdf or { }
 local lpdf = lpdf
@@ -107,10 +96,29 @@ end)
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
 
+do
+
+    -- This is for a future feature (still under investigation and consideration). So,
+    -- it is work in progress (and brings a harmless overhead for now).
+
+    local initializers = { }
+
+    function lpdf.registerinitializer(initialize)
+        initializers[#initializers+1] = initialize
+    end
+
+    function lpdf.initialize(f)
+        for i=1,#initializers do
+            initializers[i]()
+        end
+    end
+
+end
+
 local pdfreserveobject
 local pdfimmediateobject
 
-updaters.register("backend.update.lpdf",function()
+updaters.register("backends.pdf.latebindings",function()
     pdfreserveobject   = lpdf.reserveobject
     pdfimmediateobject = lpdf.immediateobject
 end)
@@ -119,7 +127,7 @@ do
 
     local pdfgetmatrix, pdfhasmatrix, pdfgetpos
 
-    updaters.register("backend.update.lpdf",function()
+    updaters.register("backends.pdf.latebindings",function()
         job.positions.registerhandlers {
             getpos  = drivers.getpos,
             getrpos = drivers.getrpos,
@@ -771,6 +779,8 @@ end
 
 resetpageproperties()
 
+lpdf.registerinitializer(resetpageproperties)
+
 local function addtopageresources  (k,v) pageresources  [k] = v end
 local function addtopageattributes (k,v) pageattributes [k] = v end
 local function addtopagesattributes(k,v) pagesattributes[k] = v end
@@ -830,13 +840,12 @@ function lpdf.finalizepage(shipout)
     end
 end
 
+local finalized = false
+
 function lpdf.finalizedocument()
-    if not environment.initex then
+    if not environment.initex and not finalized then
         run(documentfinalizers,"document")
-        function lpdf.finalizedocument()
-         -- report_finalizing("serious error: the document is finalized multiple times")
-            function lpdf.finalizedocument() end
-        end
+        finalized = true
     end
 end
 
@@ -891,7 +900,6 @@ do
     local function flushcatalog()
         if checkcatalog() then
             catalog.Type = nil
---             pdfsetcatalog(catalog())
         end
     end
 
@@ -951,6 +959,12 @@ do
     local d_extgstates, d_colorspaces, d_patterns, d_shades
     local p_extgstates, p_colorspaces, p_patterns, p_shades
 
+    lpdf.registerinitializer(function()
+        r_extgstates = nil ; r_colorspaces = nil ; r_patterns = nil ; r_shades = nil ;
+        d_extgstates = nil ; d_colorspaces = nil ; d_patterns = nil ; d_shades = nil ;
+        p_extgstates = nil ; p_colorspaces = nil ; p_patterns = nil ; p_shades = nil ;
+    end)
+
     local function checkextgstates () if d_extgstates  then addtopageresources("ExtGState", p_extgstates ) end end
     local function checkcolorspaces() if d_colorspaces then addtopageresources("ColorSpace",p_colorspaces) end end
     local function checkpatterns   () if d_patterns    then addtopageresources("Pattern",   p_patterns   ) end end
@@ -969,7 +983,7 @@ do
 
     local pdfgetfontobjectnumber
 
-    updaters.register("backend.update.lpdf",function()
+    updaters.register("backends.pdf.latebindings",function()
         pdfgetfontobjectnumber = lpdf.getfontobjectnumber
     end)
 
@@ -1356,10 +1370,15 @@ end
 
 do
 
-    -- This is obsolete but old viewers might still use it as directive
-    -- for what to send to a postscript printer.
+    -- This is obsolete but old viewers might still use it as directive for what to
+    -- send to a postscript printer.
 
     local a_procset, d_procset
+
+    lpdf.registerinitializer(function()
+        a_procset = nil
+        d_procset = nil
+    end)
 
     function lpdf.procset(dict)
         if not a_procset then
