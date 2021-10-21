@@ -1,6 +1,6 @@
 local kern_V   = { bottomright = { { kern = -200 } } }
 local kern_W   = { bottomright = { { kern = -100 } } }
-local offset_f = { xoffset = "llx" }
+-- local offset_f = { xoffset = "llx" }
 
 -- Beware of updates in ssty slots!
 
@@ -16,7 +16,7 @@ return {
              -- [0x1D453]     = offset_f, -- 𝑓
              -- ["1:0x1D453"] = offset_f, -- needed for compact
              -- ["2:0x1D453"] = offset_f, -- needed for compact
-                ["*:0x1D453"] = offset_f, -- 𝑓
+--                 ["*:0x1D453"] = offset_f, -- 𝑓
             },
         },
         kerns = {

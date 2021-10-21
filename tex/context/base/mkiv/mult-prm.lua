@@ -472,6 +472,7 @@ return {
   "numericscale",
   "numexpression",
   "orelse",
+  "orphanpenalties",
   "orunless",
   "outputbox",
   "overloaded",

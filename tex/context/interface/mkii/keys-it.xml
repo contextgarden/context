@@ -191,6 +191,7 @@
 		<cd:variable name='enumeration' value='enumerazione'/>
 		<cd:variable name='environment' value='ambiente'/>
 		<cd:variable name='even' value='pari'/>
+		<cd:variable name='explicit' value='explicit'/>
 		<cd:variable name='export' value='export'/>
 		<cd:variable name='external' value='esterno'/>
 		<cd:variable name='extremestretch' value='extremestretch'/>

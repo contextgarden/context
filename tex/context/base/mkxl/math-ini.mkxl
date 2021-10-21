@@ -74,7 +74,7 @@
 \registerctxluafile{math-ren}{}
 \registerctxluafile{math-noa}{autosuffix}
 \registerctxluafile{math-tag}{autosuffix}
-\registerctxluafile{math-fbk}{}
+\registerctxluafile{math-fbk}{autosuffix}
 \registerctxluafile{math-dir}{}
 \registerctxluafile{math-spa}{}
 \registerctxluafile{math-fnt}{autosuffix}

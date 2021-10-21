@@ -1991,7 +1991,7 @@ function converters.totime(s)
     end
     local n = tonumber(s)
     if n and n >= 0 then
-        return date("*t",n)
+        return osdate("*t",n)
     end
 end
 

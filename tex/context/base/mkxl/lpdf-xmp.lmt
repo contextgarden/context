@@ -8,10 +8,13 @@ if not modules then modules = { } end modules ['lpdf-xmp'] = {
 }
 
 local tostring, type = tostring, type
-local format, gsub = string.format, string.gsub
+local format, gsub, match = string.format, string.gsub, string.match
+local concat = table.concat
+local settings_to_array = utilities.parsers.settings_to_array
 local utfchar = utf.char
 local xmlfillin = xml.fillin
 local md5HEX = md5.HEX
+local osdate, ostime, ostimezone, osuuid = os.date, os.time, os.timezone, os.uuid
 
 local trace_xmp  = false  trackers.register("backend.xmp",  function(v) trace_xmp  = v end)
 local trace_info = false  trackers.register("backend.info", function(v) trace_info = v end)
@@ -26,8 +29,9 @@ local codeinjections       = pdfbackend.codeinjections
 local lpdf                 = lpdf
 local pdfdictionary        = lpdf.dictionary
 local pdfconstant          = lpdf.constant
+local pdfunicode           = lpdf.unicode
+local pdfstring            = lpdf.string
 local pdfreference         = lpdf.reference
-local pdfgetmetadata       = lpdf.getmetadata
 local pdfflushstreamobject = lpdf.flushstreamobject
 
 -- The XMP packet wrapper is kind of fixed, see page 10 of XMPSpecificationsPart1.pdf from
@@ -40,7 +44,8 @@ local xpacket = format ( [[
 
 <?xpacket end="w"?>]], utfchar(0xFEFF) )
 
-local mapping = {
+local unknown = { false, false }
+local mapping = table.setmetatableindex ( {
     -- user defined keys (pdfx:)
     ["ConTeXt.Jobname"]      = { "context", "rdf:Description/pdfx:ConTeXt.Jobname" },
     ["ConTeXt.Time"]         = { "date",    "rdf:Description/pdfx:ConTeXt.Time" },
@@ -89,72 +94,113 @@ local mapping = {
     ["AuthorsPosition"]      = { "metadata", "rdf:Description/photoshop:AuthorsPosition" },
     ["Copyright"]            = { "metadata", "rdf:Description/photoshop:Copyright" },
     ["CaptionWriter"]        = { "metadata", "rdf:Description/photoshop:CaptionWriter" },
-}
+}, function() return unknown end )
 
-local included = backends.included
-local lpdfid   = lpdf.id
 
-function lpdf.id() -- overload of ini
-    return lpdfid(included.date)
+local metadata         = nil
+local trailerid        = true
+local creationdate     = false
+local modificationdate = false
+
+local function pdftimestamp(str)
+    local t = type(str)
+    if t == "string" then
+        local Y, M, D, h, m, s, Zs, Zh, Zm = match(str,"^(%d%d%d%d)%-(%d%d)%-(%d%d)T(%d%d):(%d%d):(%d%d)([%+%-])(%d%d):(%d%d)$")
+        return Y and format("D:%s%s%s%s%s%s%s%s'%s'",Y,M,D,h,m,s,Zs,Zh,Zm)
+    else
+        return osdate("D:%Y%m%d%H%M%S",t == "number" and str or ostime()) -- maybe "!D..." : universal time
+    end
 end
 
-local trailerid = nil
-local dates     = nil
-
-local function update()
-    if trailer_id then
-        local b = toboolean(trailer_id) or trailer_id == ""
-        if b then
-            trailer_id = "This file is processed by ConTeXt and LuaTeX."
-        else
-            trailer_id = tostring(trailer_id)
-        end
-        local h = md5HEX(trailer_id)
-        if b then
-            report_info("using frozen trailer id")
-        else
-            report_info("using hashed trailer id %a (%a)",trailer_id,h)
-        end
-        trailerid = format("[<%s> <%s>]",h,h)
+local function pdfgetmetadata()
+    if not metadata then
+        local contextversion      = environment.version
+        local luatexversion       = format("%1.2f",LUATEXVERSION)
+        local luatexfunctionality = tostring(LUATEXFUNCTIONALITY)
+        local jobname             = environment.jobname or tex.jobname or "unknown"
+        local documentid          = trailerid and ("uuid:" .. osuuid()) or "no unique document id here"
+        local instanceid          = trailerid and ("uuid:" .. osuuid()) or "no unique instance id here"
+        metadata = creationdate and {
+            producer            = format("LuaMetaTeX-%s",luatexversion),
+            creator             = format("LuaMetaTeX %s %s + ConTeXt LMTX %s",luatexversion,luatexfunctionality,contextversion),
+            luatexversion       = luatexversion,
+            contextversion      = contextversion,
+            luatexfunctionality = luatexfunctionality,
+            luaversion          = tostring(LUAVERSION),
+            platform            = os.platform,
+            creationdate        = creationdate,
+            modificationdate    = modificationdate,
+            id                  = format("%s | %s",jobname,creationdate),
+            documentid          = documentid,
+            instanceid          = instanceid,
+            jobname             = jobname,
+        } or {
+            producer            = "LuaMetaTeX",
+            creator             = "LuaMetaTeX + ConTeXt LMTX",
+            id                  = jobname,
+            documentid          = documentid,
+            instanceid          = instanceid,
+            jobname             = jobname,
+        }
+     -- inspect(metadata)
     end
-    --
-    local t = type(dates)
-    if t == "number" or t == "string" then
-        local d = converters.totime(dates)
-        if d then
-            included.date = true
-            included.id   = "fake"
-            report_info("forced date/time information %a will be used",lpdf.settime(d))
-            trailerid = false
-        elseif t == "string" then
-            dates = toboolean(dates)
-            included.date = dates
-            if dates ~= false then
-                included.id = true
-            else
-                report_info("no date/time but fake id information will be added")
-                trailerid = true
-                included.id = "fake"
+    return metadata
+end
+
+local function pdfsetmetadate(n,both)
+    if n then
+        n = converters.totime(n)
+        if n then
+            creationdate = osdate("%Y-%m-%dT%X",ostime(n)) .. ostimezone(true)
+            if both then
+                modificationdate = creationdate
             end
         end
     end
+    return creationdate
 end
 
-lpdf.registerdocumentfinalizer(update,"trailer id and dates",1)
+lpdf.pdftimestamp = pdftimestamp
 
-directives.register("backend.trailerid", function(v) trailerid = v end)
-directives.register("backend.date",      function(v) dates     = v end)
-
-local function permitdetail(what)
-    local m = mapping[what]
-    if m then
-        return included[m[1]] and m[2]
+function lpdf.gettrailerid()
+    if trailerid == true then
+        return md5.HEX(osuuid())
+    elseif type(trailerid) == "string" then
+        return md5.HEX(trailerid)
     else
-        return included[what] and true or false
+        return false
     end
 end
 
-lpdf.permitdetail = permitdetail
+-- string: use that, true: uuid, false: nothing
+
+directives.register("backend.trailerid", function(v)
+    trailerid = type(v) and v or toboolean(v)
+end)
+
+-- year-mm-dd : use that for creation and modification
+
+local function setdates(v)
+    local t = type(v)
+    if t == "number" or t == "string" then
+        local d = converters.totime(v)
+        if d then
+            report_info("forced date/time information %a will be used",pdfsetmetadate(d,true))
+            return
+        end
+    end
+    if toboolean(v) then
+        creationdate     = osdate("%Y-%m-%dT%X") .. ostimezone(true)
+        modificationdate = creationdate
+    else
+        creationdate     = false
+        modificationdate = false
+    end
+end
+
+setdates(true)
+
+directives.register("backend.date", setdates)
 
 -- maybe some day we will load the xmp file at runtime
 
@@ -195,7 +241,7 @@ local function valid_xmp()
 end
 
 function lpdf.addxmpinfo(tag,value,check)
-    local pattern = permitdetail(tag)
+    local pattern = mapping[tag][2]
     if type(pattern) == "string" then
         xmlfillin(xmp or valid_xmp(),pattern,value,check)
     end
@@ -207,7 +253,7 @@ local pdfaddtoinfo  = lpdf.addtoinfo
 local pdfaddxmpinfo = lpdf.addxmpinfo
 
 function lpdf.addtoinfo(tag,pdfvalue,strvalue)
-    local pattern = permitdetail(tag)
+    local pattern = mapping[tag][2]
     if pattern then
         pdfaddtoinfo(tag,pdfvalue)
     end
@@ -234,24 +280,91 @@ end
 
 -- flushing
 
-local add_xmp_blob = true  directives.register("backend.xmp",function(v) add_xmp_blob = v end)
+local add_xmp_blob   = true
+local indentity_done = false  -- using "setupidentity = function() end" fails as the meaning is frozen in register
+
+local function setupidentity()
+    if not done then
+        --
+        local identity = interactions.general.getidentity()
+        local title    = identity.title
+        local subtitle = identity.subtitle
+        local author   = identity.author
+        local date     = identity.date
+        local keywords = identity.keywords
+        --
+        if date and date ~= "" then
+            pdfsetmetadate(date)
+        end
+        if keywords then
+            keywords = concat(settings_to_array(keywords), " ")
+        end
+        --
+        local metadata       = pdfgetmetadata()
+        local creator        = metadata.creator
+        local contextversion = metadata.contextversion
+        local id             = metadata.id
+        local jobname        = metadata.jobname
+        local creator        = metadata.creator
+        local creation       = metadata.creationdate
+        local modification   = metadata.modificationdate
+        --
+        if creator then
+            pdfaddtoinfo("Creator",pdfunicode(creator),creator)
+        end
+        if creation then
+            pdfaddtoinfo("CreationDate",pdfstring(pdftimestamp(creation)),creation)
+        end
+        if modification then
+            pdfaddtoinfo("ModDate",pdfstring(pdftimestamp(modification)),modification)
+        end
+        if id then
+            pdfaddtoinfo("ID",pdfstring(id),id) -- needed for pdf/x
+        end
+        --
+        if title ~= "" then
+            pdfaddtoinfo("Title",pdfunicode(title),title)
+        end
+        if subtitle ~= "" then
+            pdfaddtoinfo("Subject",pdfunicode(subtitle),subtitle)
+        end
+        if author ~= "" then
+            pdfaddtoinfo("Author",pdfunicode(author),author) -- '/Author' in /Info, 'Creator' in XMP
+        end
+        if keywords and keywords ~= "" then
+            pdfaddtoinfo("Keywords",pdfunicode(keywords),keywords)
+        end
+        --
+        if contextversion then
+            pdfaddtoinfo("ConTeXt.Version",contextversion)
+        end
+        if creation then
+            pdfaddtoinfo("ConTeXt.Time",creation)
+        end
+        if jobname then
+            pdfaddtoinfo("ConTeXt.Jobname",jobname)
+        end
+        --
+        pdfaddtoinfo("ConTeXt.Url","www.pragma-ade.com")
+        pdfaddtoinfo("ConTeXt.Support","contextgarden.net")
+        pdfaddtoinfo("TeX.Support","tug.org")
+        --
+        done = true
+    else
+        -- no need for a message
+    end
+end
 
 local function flushxmpinfo()
     commands.pushrandomseed()
-    commands.setrandomseed(os.time())
+    commands.setrandomseed(ostime())
 
-    local documentid = "no unique document id here"
-    local instanceid = "no unique instance id here"
-
-    local metadata = pdfgetmetadata()
-    local time     = metadata.time
-    local producer = metadata.producer
-    local creator  = metadata.creator
-
-    if included.id ~= "fake" then
-        documentid = "uuid:" .. os.uuid()
-        instanceid = "uuid:" .. os.uuid()
-    end
+    local metadata   = pdfgetmetadata()
+    local time       = metadata.time
+    local producer   = metadata.producer
+    local creator    = metadata.creator
+    local documentid = metadata.documentid
+    local instanceid = metadata.instanceid
 
     pdfaddtoinfo("Producer",producer)
     pdfaddtoinfo("Creator",creator)
@@ -293,15 +406,14 @@ local function flushxmpinfo()
         end
         local r = pdfflushstreamobject(blob,md,false) -- uncompressed
         lpdf.addtocatalog("Metadata",pdfreference(r))
+
     end
 
     commands.poprandomseed() -- hack
 end
 
---  this will be enabled when we can inhibit compression for a stream at the lua end
-
+lpdf.registerpagefinalizer(setupidentity,"identity")
 lpdf.registerdocumentfinalizer(flushxmpinfo,1,"metadata")
 
-directives.register("backend.verbosexmp", function(v)
-    verbose = v
-end)
+directives.register("backend.xmp",        function(v) add_xmp_blob = v end)
+directives.register("backend.verbosexmp", function(v) verbose = v end)

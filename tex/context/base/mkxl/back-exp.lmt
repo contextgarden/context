@@ -74,8 +74,6 @@ local v_hidden          = variables.hidden
 
 local implement         = interfaces.implement
 
-local included          = backends.included
-
 local tasks             = nodes.tasks
 local fontchar          = fonts.hashes.characters
 local fontquads         = fonts.hashes.quads
@@ -560,9 +558,7 @@ do
         setattribute(di,"language",languagenames[texgetcount("mainlanguagenumber")])
         if not less_state then
             setattribute(di,"file",tex.jobname)
-            if included.date then
-                setattribute(di,"date",os.fulltime())
-            end
+            setattribute(di,"date",os.fulltime())
             setattribute(di,"context",environment.version)
             setattribute(di,"version",exportversion)
             setattribute(di,"xmlns:m",mathmlns)
@@ -1946,7 +1942,7 @@ local xmlpreamble_yes = [[
         return replacetemplate(nocomment and xmlpreamble_nop or xmlpreamble_yes, {
             standalone     = standalone and "yes" or "no",
             filename       = tex.jobname,
-            date           = included.date and os.fulltime(),
+            date           = os.fulltime(),
             contextversion = environment.version,
             exportversion  = exportversion,
         })

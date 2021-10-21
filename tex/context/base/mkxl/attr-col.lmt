@@ -47,6 +47,7 @@ local report_transparencies = logs.reporter("transparencies","support")
 -- nb. too many "0 g"s
 
 local states          = attributes.states
+local registrations   = backends.registrations
 local nodeinjections  = backends.nodeinjections
 local unsetvalue      = attributes.unsetvalue
 
@@ -520,13 +521,12 @@ local f_transparency      = formatters["%s:%s"]
 registerstorage("attributes/transparencies/registered", registered, "attributes.transparencies.registered")
 registerstorage("attributes/transparencies/values",     values,     "attributes.transparencies.values")
 
-local register_transparency = nodeinjections.registertransparency
-local inject_transparency   = nodeinjections.injecttransparency
+local register_transparency = registrations.transparency
+local inject_transparency   = nodeinjections.transparency
 
 updaters.register("backends.injections.latebindings",function()
-    local nodeinjections = backends.nodeinjections
-    register_transparency = nodeinjections.registertransparency
-    inject_transparency   = nodeinjections.injecttransparency
+    register_transparency = backends.registrations.transparency
+    inject_transparency   = backends.nodeinjections.transparency
 end)
 
 function transparencies.register(name,a,t,force) -- name is irrelevant here (can even be nil)

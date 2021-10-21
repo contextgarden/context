@@ -791,6 +791,14 @@ function constructors.scale(tfmdata,specification)
         if vc then
             chr.commands = scalecommands(vc,hdelta,vdelta)
         end
+        local vx = characters.xoffset
+        if vx then
+            chr.vx = vx*hdelta
+        end
+        local vy = characters.yoffset
+        if vy then
+            chr.vy = vy*hdelta
+        end
         targetcharacters[unicode] = chr
     end
     --

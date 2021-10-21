@@ -135,7 +135,7 @@ local function finalize(tfmdata,feature,value)
                             yoffset = nil
                         end
                         if xoffset or yoffset then
-                            local commands = characters.commands
+                            local commands = character.commands
                             if commands then
                                 prependcommands(commands,yoffset,xoffset)
                             else

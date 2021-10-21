@@ -1,0 +1,55 @@
+-- Well, here we have yet another math font that does things differently: a huge prime in the ssty1
+-- slot (not an alternate but a single) and a small one in the normal location. Actually, only primes
+-- have an ssty feature. Now, because we have some magic with primes in ConTeXt we cannot use some
+-- fix-feature or just disable ssty, but we have to revert to a runtime fix. Lucky me that I didn't
+-- remove that hardly needed 'tweaks' mechanism yet.
+
+return {
+    name = "libertinus-math",
+    version = "1.00",
+    comment = "Goodies that complement libertinus.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        tweaks = {
+            aftercopying = {
+                function(target,original)
+                    local okay = 983068
+                    local crap = {
+                        ["minute"] = "minute.ssty1",
+                        ["second"] = "second.ssty1",
+                     -- [8242] = 983068,
+                     -- [8243] = 983069,
+                        [8244] = 983070,
+                        [8245] = 983071,
+                        [8246] = 983072,
+                        [8247] = 983073,
+                    }
+                    local characters   = target.characters
+                    local descriptions = target.descriptions
+                    local unicodes     = original.resources.unicodes
+                    if unicodes["minute.ssty1"] == okay then
+                        for old, new in next, crap do
+                            if type(old) == "string" then
+                                old = unicodes[old]
+                            end
+                            if type(new) == "string" then
+                                new = unicodes[new]
+                            end
+                            if old and new and characters[old] then
+                                local c = characters[new]
+                                if c then
+                                    characters[old] = c
+                                    c.commands = { { "up", .1 * c.height }, { "slot", 0, new, .7 } }
+                                end
+                            end
+                        end
+                    else
+                        logs.report("fonts","the libertinus tweaks need to be checked")
+                    end
+                end,
+            },
+        },
+    },
+}
+

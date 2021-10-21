@@ -163,8 +163,8 @@ local function reset_variables(specification)
     f_x_scale     = 1.0
     f_y_scale     = 1.0
     cur_factor    = 0
-    cur_f         = false
-    cur_e         = false
+    cur_f         = false -- todo: check for nil vs false
+    cur_e         = false -- todo: check for nil vs false
     tj_delta      = 0.0
     cw            = 0.0
     usedfonts     = setmetatableindex(usefont)
@@ -624,7 +624,12 @@ do
             pdf_goto_textmode()
             setup_fontparameters(font,factor,f,e,sx,sy)
             set_font()
-        elseif cur_tmrx ~= tmrx or cur_factor ~= factor or cur_f ~= f or cur_e ~= e then
+        elseif cur_f ~= f then -- when ok move up
+            pdf_goto_textmode()
+            setup_fontparameters(font,factor,f,e,sx,sy)
+            set_font()
+--         elseif cur_tmrx ~= tmrx or cur_factor ~= factor or cur_f ~= f or cur_e ~= e then
+        elseif cur_tmrx ~= tmrx or cur_factor ~= factor or cur_e ~= e then
             setup_fontparameters(font,factor,f,e,sx,sy)
             need_tm = true
         end
@@ -1913,7 +1918,6 @@ local catalog       = ""
 local lastdeferred  = false
 local majorversion  = 1
 local minorversion  = 7
-local trailerid     = true
 
 directives.register("backend.pdf.threshold",function(v)
     if v then
@@ -2466,6 +2470,7 @@ local openfile, closefile  do
  -- local banner <const> = "%\xCC\xD5\xC1\xD4\xC5\xD8\xD0\xC4\xC6\010"     -- LUATEXPDF  (+128)
     local banner <const> = "%\xC3\xCF\xCE\xD4\xC5\xD8\xD4\xD0\xC4\xC6\010" -- CONTEXTPDF (+128)
 
+
  -- local removefile = os.remove
 
     openfile = function(filename)
@@ -2543,13 +2548,7 @@ local openfile, closefile  do
             local noffree    = 0
             local catalog    = lpdf.getcatalog()
             local info       = lpdf.getinfo()
-                if trailerid == true then
-                trailerid = md5.HEX(osuuid())
-            elseif trailerid and #trailerid > 32 then
-                trailerid = md5.HEX(trailerid)
-            else
-                trailerid = false
-            end
+            local trailerid  = lpdf.gettrailerid()
             if objectstream then
                 flushdeferred()
                 flushcache()

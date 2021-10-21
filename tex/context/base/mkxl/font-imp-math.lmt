@@ -89,6 +89,7 @@ function fonts.helpers.mathscriptslots(tfmdata,textcode)
                         if coverage then
                             local okay = coverage[textcode]
                             if okay then
+                                -- can be single or table
                                 return okay
                             end
                         end
@@ -120,15 +121,26 @@ local function manipulate(tfmdata,value)
                             for textcode, v in next, coverage do
                                 local textdata = characters[textcode]
                                 if textdata then
-                                    local scriptcode       = v[1]
-                                    local scriptscriptcode = v[2]
-                                    local scriptdata       = characters[scriptcode]
-                                    local scriptscriptdata = characters[scriptscriptcode]
-                                    if scriptdata then
-                                        textdata.smaller = scriptcode
+                                    local scriptcode, scriptscriptcode
+                                    local sstykind = type(v)
+                                    if sstykind == "table" then
+                                        scriptcode       = v[1]
+                                        scriptscriptcode = v[2]
+                                    elseif sstykind == "number" then
+                                        scriptcode       = v
+                                        scriptscriptcode = v
+                                    else
+                                        -- weird
                                     end
-                                    if scriptscriptdata then
-                                        scriptdata.smaller = scriptscriptcode
+                                    if scriptcode then
+                                        local scriptdata       = characters[scriptcode]
+                                        local scriptscriptdata = characters[scriptscriptcode]
+                                        if scriptdata and scriptdata ~= textdata then
+                                            textdata.smaller = scriptcode
+                                            if scriptscriptdata and scriptdata ~= scriptscriptdata then
+                                                scriptdata.smaller = scriptscriptcode
+                                            end
+                                        end
                                     end
                                 end
                             end
@@ -154,16 +166,25 @@ local function initialize(tfmdata,value)
     end
 end
 
+-- local specification = {
+--     name         = "compactmath",
+--     description  = "use one math font",
+--     manipulators = {
+--         base = manipulate,
+--         node = manipulate,
+--     },
+--     initializers = {
+--         base = initialize,
+--         node = initialize,
+--     }
+-- }
+
 local specification = {
     name         = "compactmath",
     description  = "use one math font",
-    manipulators = {
-        base = manipulate,
-        node = manipulate,
-    },
     initializers = {
-        base = initialize,
-        node = initialize,
+        base = function(...) manipulate(...) initialize(...) end,
+        node = function(...) manipulate(...) initialize(...) end,
     }
 }
 

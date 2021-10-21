@@ -48,13 +48,12 @@ local pdfaction            = lpdf.action
 local pdfflushobject       = lpdf.flushobject
 local pdfflushstreamobject = lpdf.flushstreamobject
 local pdfminorversion      = lpdf.minorversion
-local formattedtimestamp   = lpdf.pdftimestamp
+
 local adddocumentextgstate = lpdf.adddocumentextgstate
 local addtocatalog         = lpdf.addtocatalog
 local addtoinfo            = lpdf.addtoinfo
 local addtopageattributes  = lpdf.addtopageattributes
 local addtonames           = lpdf.addtonames
-local pdfgetmetadata       = lpdf.getmetadata
 
 local texset               = tex.set
 
@@ -189,63 +188,7 @@ lpdf.registerdocumentfinalizer(flushdocumentactions,"document actions")
 
 -- the code above will move to scrn-ini
 
-local done = false  -- using "setupidentity = function() end" fails as the meaning is frozen in register
-
-local function setupidentity()
-    if not done then
-        local metadata = pdfgetmetadata()
-        local creator  = metadata.creator
-        local version  = metadata.contextversion
-        local time     = metadata.time
-        local jobname  = environment.jobname or tex.jobname or "unknown"
-        --
-        local identity = interactions.general.getidentity()
-        --
-        local title = identity.title
-        addtoinfo("Title", pdfunicode(title), title)
-        local subtitle = identity.subtitle
-        if subtitle ~= "" then
-            addtoinfo("Subject", pdfunicode(subtitle), subtitle)
-        end
-        local author = identity.author
-        if author ~= "" then
-            addtoinfo("Author",  pdfunicode(author), author) -- '/Author' in /Info, 'Creator' in XMP
-        end
-        addtoinfo("Creator", pdfunicode(creator), creator)
-        addtoinfo("CreationDate", pdfstring(formattedtimestamp(time)))
-        local date = identity.date
-        local pdfdate = date and formattedtimestamp(date)
-        if pdfdate then
-            addtoinfo("ModDate", pdfstring(pdfdate), date)
-        else
-            -- users should enter the date in 2010-01-19T23:27:50+01:00 format
-            -- and if not provided that way we use the creation time instead
-            addtoinfo("ModDate", pdfstring(formattedtimestamp(time)),time)
-        end
-        local keywords = identity.keywords
-        if keywords ~= "" then
-            keywords = concat(settings_to_array(keywords), " ")
-            addtoinfo("Keywords", pdfunicode(keywords), keywords)
-        end
-        local id = lpdf.id()
-        addtoinfo("ID", pdfstring(id), id) -- needed for pdf/x
-        --
-        addtoinfo("ConTeXt.Version",version)
-        addtoinfo("ConTeXt.Time",os.date("%Y-%m-%d %H:%M"))
-        addtoinfo("ConTeXt.Jobname",jobname)
-        addtoinfo("ConTeXt.Url","www.pragma-ade.com")
-        addtoinfo("ConTeXt.Support","contextgarden.net")
-        addtoinfo("TeX.Support","tug.org")
-        --
-        done = true
-    else
-        -- no need for a message
-    end
-end
-
-lpdf.registerpagefinalizer(setupidentity,"identity")
-
--- or when we want to be able to set things after pag e1:
+-- or when we want to be able to set things after page 1:
 --
 -- lpdf.registerdocumentfinalizer(setupidentity,1,"identity")
 

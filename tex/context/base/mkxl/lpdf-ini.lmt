@@ -56,7 +56,8 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 -- Comment: beware of "too many locals" problem here.
 
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
-local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub, string.gmatch
+local concat = table.concat
+local char, byte, format, sub = string.char, string.byte, string.format, string.sub
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, utf.values
 local sind, cosd, max, min = math.sind, math.cosd, math.max, math.min
 local sort, sortedhash = table.sort, table.sortedhash
@@ -1086,73 +1087,6 @@ function lpdf.rotationcm(a)
     local s = sind(a)
     local c = cosd(a)
     return format("%.6F %.6F %.6F %.6F 0 0 cm",c,s,-s,c)
-end
-
--- ! -> universaltime
-
-do
-
-    -- It's a bit of a historical mess here.
-
-    local osdate, ostime, ostimezone = os.date, os.time, os.timezone
-
-    local metadata  = nil
-    local timestamp = osdate("%Y-%m-%dT%X") .. ostimezone(true)
-
-    function lpdf.getmetadata()
-        if not metadata then
-            local contextversion      = environment.version
-            local luatexversion       = format("%1.2f",LUATEXVERSION)
-            local luatexfunctionality = tostring(LUATEXFUNCTIONALITY)
-            metadata = {
-                producer            = format("LuaMetaTeX-%s",luatexversion),
-                creator             = format("LuaMetaTeX %s %s + ConTeXt LMTX %s",luatexversion,luatexfunctionality,contextversion),
-                luatexversion       = luatexversion,
-                contextversion      = contextversion,
-                luatexfunctionality = luatexfunctionality,
-                luaversion          = tostring(LUAVERSION),
-                platform            = os.platform,
-                time                = timestamp,
-            }
-        end
-        return metadata
-    end
-
-    function lpdf.settime(n)
-        if n then
-            n = converters.totime(n)
-            if n then
-                converters.settime(n)
-                timestamp = osdate("%Y-%m-%dT%X") .. ostimezone(true) -- probably not ok
-            end
-        end
-        if metadata then
-            metadata.time = timestamp
-        end
-        return timestamp
-    end
-
-    lpdf.settime(tonumber(resolvers.variable("start_time")) or tonumber(resolvers.variable("SOURCE_DATE_EPOCH"))) -- bah
-
-    function lpdf.pdftimestamp(str)
-        local t = type(str)
-        if t == "string" then
-            local Y, M, D, h, m, s, Zs, Zh, Zm = match(str,"^(%d%d%d%d)%-(%d%d)%-(%d%d)T(%d%d):(%d%d):(%d%d)([%+%-])(%d%d):(%d%d)$")
-            return Y and format("D:%s%s%s%s%s%s%s%s'%s'",Y,M,D,h,m,s,Zs,Zh,Zm)
-        else
-            return osdate("D:%Y%m%d%H%M%S",t == "number" and str or ostime()) -- maybe "!D..." : universal time
-        end
-    end
-
-    function lpdf.id(date)
-        local banner = environment.jobname or tex.jobname or "unknown"
-        if not date then
-            return banner
-        else
-            return format("%s | %s",banner,timestamp)
-        end
-    end
-
 end
 
 -- return nil is nicer in test prints

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-10-18 23:11
+-- merge date  : 2021-10-21 19:53
 
 do -- begin closure to overcome local limits and interference
 
@@ -21941,7 +21941,7 @@ local function gref(descriptions,n)
  end
 end
 local function cref(feature,sequence)
- return formatters["feature %a, type %a, chain lookup %a"](feature,sequence.type,sequence.name)
+ return formatters["feature %a, type %a, (chain) lookup %a"](feature,sequence.type,sequence.name)
 end
 local function report_substitution(feature,sequence,descriptions,unicode,substitution)
  if unicode==substitution then

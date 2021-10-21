@@ -57,13 +57,21 @@ local function withscriptcode(tfmdata,unicode,data,action)
                 if slots then
                     if p == "*" then
                         action(u,data)
-                        for i=1,#slots do
-                            action(slots[i],data)
+                        if type(slots) == "number" then
+                            action(slots,data)
+                        else
+                            for i=1,#slots do
+                                action(slots[i],data)
+                            end
                         end
                     else
                         p = tonumber(p)
                         if p then
-                            action(slots[p],data)
+                            if type(slots) == "number" then
+                                action(slots,data)
+                            else
+                                action(slots[p],data)
+                            end
                         end
                     end
                 end
@@ -139,12 +147,11 @@ local function finalize(tfmdata,feature,value,...)
                             yoffset = nil
                         end
                         if xoffset or yoffset then
-                            local commands = characters.commands
+                            local commands = character.commands
                             if commands then
                                 prependcommands(commands,yoffset,xoffset)
                             else
--- character.commands = { { "offset", xoffset, yoffset, unicode } }
--- print(unicode,character.width)
+-- character.commands = { { "offset", xoffset or 0, yoffset or 0, unicode } }
                                 local slot = charcommand[unicode]
                                 if xoffset and yoffset then
                                     character.commands = { xoffset, yoffset, slot }

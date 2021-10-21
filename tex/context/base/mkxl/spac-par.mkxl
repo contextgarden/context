@@ -31,6 +31,7 @@
   + \clubpenaltyfrozenparcode
   + \brokenpenaltyfrozenparcode
   + \demeritsfrozenparcode
+  + \orphanpenaltyfrozenparcode
 \relax
 
 \setnewconstant\paragraphpenaltycodes\numexpr
@@ -39,6 +40,7 @@
   + \clubpenaltyfrozenparcode
   + \brokenpenaltyfrozenparcode
   + \shapingpenaltiesfrozenparcode
+  + \orphanpenaltyfrozenparcode
 \relax
 
 \setnewconstant\paragraphdemeritcodes\numexpr
@@ -82,6 +84,7 @@
  % \linefrozenparcode             % \baselineskip \lineskip \lineskiplimit
  + \hyphenationfrozenparcode      % \hyphenationmode
  + \shapingpenaltiesfrozenparcode % \shapingpenaltiesmode
+ + \orphanpenaltyfrozenparcode
 \relax
 
 \permanent\protected\def\freezeparagraphproperties {\snapshotpar\frozenparagraphdefault}

@@ -76,7 +76,7 @@ return {
         "loosenessfrozenparcode", "lastlinefrozenparcode", "linepenaltyfrozenparcode", "clubpenaltyfrozenparcode",
         "widowpenaltyfrozenparcode", "displaypenaltyfrozenparcode", "brokenpenaltyfrozenparcode",
         "demeritsfrozenparcode", "shapefrozenparcode", "linefrozenparcode", "hyphenationfrozenparcode",
-        "shapingpenaltiesfrozenparcode", "allfrozenparcode",
+        "shapingpenaltiesfrozenparcode", "orphanpenaltyfrozenparcode", "allfrozenparcode",
         --
         "activemathcharcode",
         --
