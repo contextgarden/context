@@ -599,6 +599,8 @@ local endmp = [[
 ]]
 
 local p_strip = lpeg.Cs( (
+--  (P([[<tag k="TMC:]]) * (1 - P("/>"))^1 * P("/>") * S("\n\r\t\f ")^0) / ""
+-- +
     (
           ( P("version") + P("changeset") + P("timestamp") + P("user") + P("uid") )
           * P('="') * (1-P('"'))^0 * P('"')
@@ -638,7 +640,6 @@ function openstreetmap.convert(specification)
     else
         report("xml data loaded")
     end
-
     local bounds = xmlfirst(root,"/osm/bounds")
     if not bounds then
         return

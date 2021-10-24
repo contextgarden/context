@@ -1,0 +1,33 @@
+%D \module
+%D   [       file=type-imp-almfixed,
+%D        version=2021.10.24,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=ALM Fixed,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\starttypescriptcollection [almfixed]
+
+    \starttypescript [\s!mono] [almfixed]
+        \definefontsynonym [ALMFixed-Regular] [\s!file:almfixed] [\s!features=\s!none]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [almfixed]
+        \setups[\s!font:\s!fallback:\s!mono]
+        \definefontsynonym [\s!Mono] [ALMFixed-Regular]
+    \stoptypescript
+
+    \starttypescript [almfixed]
+        \definetypeface [almfixed] [\s!tt] [\s!mono]  [almfixed] [\s!default]
+        \definetypeface [almfixed] [\s!rm] [\s!serif] [modern]   [\s!default] [\s!rscale=0.92]
+        \definetypeface [almfixed] [\s!ss] [\s!sans]  [modern]   [\s!default] [\s!rscale=0.92]
+        \definetypeface [almfixed] [\s!mm] [\s!math]  [modern]   [\s!default] [\s!rscale=0.92]
+        \quittypescriptscanning
+    \stoptypescript
+
+\stoptypescriptcollection

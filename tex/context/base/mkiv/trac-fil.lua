@@ -45,7 +45,7 @@ patterns.timestamp  = timestamp
 
 loggers = loggers or { }
 
-local timeformat = format("[%%s%s]",os.timezone(true))
+local timeformat = format("[%%s%s]",os.timezone())
 local dateformat = "!%Y-%m-%d %H:%M:%S"
 
 function loggers.makeline(t)

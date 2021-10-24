@@ -3219,6 +3219,31 @@
      #2\expandafter\doexpandedrecurse\expandafter{\the\numexpr#1-\plusone\relax}{#2}%
    \fi}
 
+%D The next one might replace the above and provides the current step in \type {#1}
+%D like \type {\dorecurse} do, but it comes with a tiny performance hit.
+
+\installsystemnamespace{expandedrecurse}
+
+\mutable\let\m_expanded_recursed\gobbleoneargument
+
+\permanent\def\doexpandedrecursed#1#2% this might replace: \doexpandedrecurse
+  {\beginlocalcontrol
+   \localpushmacro\m_expanded_recursed
+   \def\m_expanded_recursed##1{#2}%
+   \endlocalcontrol
+   \syst_do_expanded_recursed{1}{#1}{#2}% no \plusone !
+   \beginlocalcontrol
+   \localpopmacro\m_expanded_recursed
+   \endlocalcontrol}
+
+\def\syst_do_expanded_recursed#1#2#3%
+  {\ifnum#1>#2\norelax
+     \expandafter\gobblethreearguments
+   \else
+     \m_expanded_recursed{#1}\doubleexpandafter\syst_do_expanded_recursed
+   \fi
+   {\the\numexpr#1+\plusone\relax}{#2}{#3}}
+
 %D As we can see here, the simple command \type{\dorecurse} is a special case of the
 %D more general:
 %D

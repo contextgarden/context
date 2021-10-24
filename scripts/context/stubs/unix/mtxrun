@@ -3840,7 +3840,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 19687, stripped down to: 10516
+-- original size: 20575, stripped down to: 10700
 
 if not modules then modules={} end modules ['l-os']={
  version=1.001,
@@ -3850,10 +3850,10 @@ if not modules then modules={} end modules ['l-os']={
  license="see context related readme files"
 }
 local os=os
-local date,time=os.date,os.time
+local date,time,difftime=os.date,os.time,os.difftime
 local find,format,gsub,upper,gmatch=string.find,string.format,string.gsub,string.upper,string.gmatch
 local concat=table.concat
-local random,ceil,randomseed=math.random,math.ceil,math.randomseed
+local random,ceil,randomseed,modf=math.random,math.ceil,math.randomseed,math.modf
 local type,setmetatable,tonumber,tostring=type,setmetatable,tonumber,tostring
 do
  local selfdir=os.selfdir
@@ -4115,21 +4115,25 @@ do
  end
 end
 do
- local d
- function os.timezone(delta)
-  d=d or ((tonumber(date("%H")) or 0)-(tonumber(date("!%H")) or 0))
-  if delta then
-   if d>0 then
-    return format("+%02i:00",d)
-   else
-    return format("-%02i:00",-d)
-   end
+ local hour,min
+ function os.timezone(difference)
+  if not hour then
+   local current=time()
+   local utcdate=date("!*t",current)
+   local localdate=date("*t",current)
+   localdate.isdst=false
+   local timediff=difftime(time(localdate),time(utcdate))
+   hour,min=modf(timediff/3600)
+   min=min*60
+  end
+  if difference then
+   return hour,min
   else
-   return 1
+   return format("%+03d:%02d",hour,min) 
   end
  end
- local timeformat=format("%%s%s",os.timezone(true))
- local dateformat="!%Y-%m-%d %H:%M:%S"
+ local timeformat=format("%%s%s",os.timezone())
+ local dateformat="%Y-%m-%d %H:%M:%S"
  local lasttime=nil
  local lastdate=nil
  function os.fulltime(t,default)
@@ -4172,10 +4176,10 @@ do
   end
  end
  function os.today()
-  return date("!*t") 
+  return date("!*t")
  end
  function os.now()
-  return date("!%Y-%m-%d %H:%M:%S") 
+  return date("!%Y-%m-%d %H:%M:%S")
  end
 end
 do
@@ -16268,7 +16272,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 61809, stripped down to: 36228
+-- original size: 62809, stripped down to: 36225
 
 if not modules then modules={} end modules ['lxml-tab']={
  version=1.001,
@@ -16502,8 +16506,7 @@ end
 local function add_text(text)
  if text=="" then
   return
- end
- if cleanup then
+ elseif cleanup then
   if nt>0 then
    local s=dt[nt]
    if type(s)=="string" then
@@ -17073,7 +17076,7 @@ local function install(spacenewline,spacing,anything)
  local attributes=(attribute+somespace^-1*(((anything-endofattributes)^1)/attribute_specification_error))^0
  local parsedtext=text_parsed   
  local unparsedtext=text_unparsed/add_text
- local balanced=P { "["*((anything-S"[]")+V(1))^0*"]" } 
+ local balanced=P { "["*((anything-S"[]")+V(1))^0*"]" }
  local emptyelement=(spacing*open*name*attributes*optionalspace*slash*close)/add_empty
  local beginelement=(spacing*open*name*attributes*optionalspace*close)/add_begin
  local endelement=(spacing*open*slash*name*optionalspace*close)/add_end
@@ -17115,8 +17118,7 @@ local function install(spacenewline,spacing,anything)
  local publicdoctype=doctypename*somespace*P("PUBLIC")*somespace*value*somespace*value*somespace*doctypeset
  local systemdoctype=doctypename*somespace*P("SYSTEM")*somespace*value*somespace*doctypeset
  local simpledoctype=(anything-close)^1 
- local somedoctype=C((somespace*(
-publicentityfile+publicdoctype+systemdoctype+definitiondoctype+simpledoctype)*optionalspace)^0)
+ local somedoctype=C((somespace*(publicentityfile+publicdoctype+systemdoctype+definitiondoctype+simpledoctype)*optionalspace)^0)
  local instruction=(spacing*begininstruction*someinstruction*endinstruction)/function(...) add_special("@pi@",...) end
  local comment=(spacing*begincomment*somecomment*endcomment )/function(...) add_special("@cm@",...) end
  local cdata=(spacing*begincdata*somecdata*endcdata   )/function(...) add_special("@cd@",...) end
@@ -25946,8 +25948,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1027893
--- stripped bytes    : 403930
+-- original bytes    : 1029781
+-- stripped bytes    : 405637
 
 -- end library merge
 

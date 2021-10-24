@@ -636,7 +636,7 @@ local colorcomponents, withcolor, thecolor, usedcolors  do
                         tonumber(t[2]) or 0,
                         tonumber(t[3]) or 0,
                         tonumber(t[4]) or 0,
-                        tonumber(t[4]) or false
+                        tonumber(t[5]) or false
                 elseif what == "cmyk" then
                     return
                         what,

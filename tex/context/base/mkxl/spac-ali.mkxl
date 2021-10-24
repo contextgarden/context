@@ -1081,6 +1081,28 @@
      {\normalexpanded{\spac_word_right_indeed{#1}{\hpack{\thebox\nextbox}}}}
      \hbox}
 
+% \protected\def\spac_word_right_indeed#1#2%
+%   {\registerparwrapper
+%      {\v!word:\v!right}
+%      {\begingroup
+%       \frozen\parfillskip        \zeropoint
+%       \frozen\finalhyphendemerits\zerocount
+%       \endgroup}
+%      {\doifelseparwrapper{\v!word:\v!right}%
+%         {\doifelse{#1}\v!right{\kern-\rightskip}{\doifsomething{#1}{\kern-#1}}%
+%          \strut \removeunwantedspaces
+%          \hfill
+%          \allowbreak % changed back from \hskip\zeropoint
+%          \quad}%
+%         {\allowbreak % changed back from \hskip\zeropoint
+%          \break}%
+%       \unregisterparwrapper{\v!word:\v!right}%
+%       \strut
+%       \hfill
+%       \nobreak
+%       #2%
+%       \allowbreak}}
+
 \protected\def\spac_word_right_indeed#1#2%
   {\registerparwrapper
      {\v!word:\v!right}
@@ -1088,20 +1110,14 @@
       \frozen\parfillskip        \zeropoint
       \frozen\finalhyphendemerits\zerocount
       \endgroup}
-     {\doifelseparwrapper{\v!word:\v!right}%
-        {\doifelse{#1}\v!right{\kern-\rightskip}{\doifsomething{#1}{\kern-#1}}%
-         \strut \removeunwantedspaces
-         \hfill
-         \allowbreak % changed back from \hskip\zeropoint
-         \quad}%
-        {\allowbreak % changed back from \hskip\zeropoint
-         \break}%
-      \unregisterparwrapper{\v!word:\v!right}%
-      \strut
-      \hfill
-      \nobreak
-      #2%
-      \allowbreak}}
+     {\doifelseparwrapper{\v!word:\v!right}{\unregisterparwrapper{\v!word:\v!right}}\donothing
+      \removeunwantedspaces
+      \doifelse{#1}\v!right{\kern-\rightskip}{\doifsomething{#1}{\kern-#1}}%
+      \hfilll
+      \discretionary{\strut}{\strut}{\strut}% \allowbreak % changed back from \hskip\zeropoint
+      \hfilll
+      \quad % decent spacing
+      #2}}
 
 % \dorecurse{5}{something} \wordright{--someone} \endgraf
 % \dorecurse{6}{something} \wordright{--someone} \endgraf

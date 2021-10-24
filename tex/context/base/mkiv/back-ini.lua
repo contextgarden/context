@@ -132,7 +132,7 @@ end)
 backends.included = included
 
 function backends.timestamp()
-    return os.date("%Y-%m-%dT%X") .. os.timezone(true)
+    return os.date("%Y-%m-%dT%X") .. os.timezone()
 end
 
 -- Also here:

@@ -17,7 +17,7 @@ slower but look nicer this way.</p>
 --ldx]]--
 
 local floor = math.floor
-local osdate, ostime = os.date, os.time
+local osdate, ostime, ostimezone = os.date, os.time, os.timezone
 local concat, insert, reverse = table.concat, table.insert, table.reverse
 local lower, upper, rep, match, gsub = string.lower, string.upper, string.rep, string.match, string.gsub
 local utfchar, utfbyte = utf.char, utf.byte
@@ -1971,14 +1971,37 @@ implement {
     actions   = { formatters["U+%05X"], context },
 }
 
-local n = R("09")^1 / tonumber
+-- totime might move to utilities.parsers as more general helper
+
+local n = R("09")^1 / tonumber -- lpegpatterns.digit
 
 local p = Cf( Ct("")
-    * Cg(Cc("year")  * (n           )) * P("-")^-1
-    * Cg(Cc("month") * (n + Cc(   1))) * P("-")^-1
-    * Cg(Cc("day")   * (n + Cc(   1))) * whitespace^-1
-    * Cg(Cc("hour")  * (n + Cc(   0))) * P(":")^-1
-    * Cg(Cc("min")   * (n + Cc(   0)))
+    -- year is mandate, month and day are optional
+    * Cg(Cc("year") * n)
+    * S("-/")^-1
+    * Cg(Cc("month") * (n + Cc(1)))
+    * S("-/")^-1
+    * Cg(Cc("day") * (n + Cc(1)))
+    -- time is optional, hour and minuta are mandate, seconds are optional
+    * (
+          whitespace^0
+        * P("T")^-1
+        * whitespace^0
+        * Cg(Cc("hour") * n)
+        * P(":")^-1
+        * Cg(Cc("min") * n)
+        * P(":")^-1
+        * Cg(Cc("sec") * (n + Cc(0)))
+    )^-1
+    -- zone is optional, hour is mandate, minutes are optional
+    * (
+          whitespace^0
+        * Cg(Cc("tzs") * (P("+") * Cc(1) + P("-") * Cc(-1) + Cc(1)))
+        * whitespace^0
+        * Cg(Cc("tzh") * n)
+        * P(":")^-1
+        * Cg(Cc("tzm") * (n + Cc(0)))
+    )^-1
     , rawset)
 
 function converters.totime(s)
@@ -1987,7 +2010,13 @@ function converters.totime(s)
     elseif type(s) == "table" then
         return s
     elseif type(s) == "string" then
-        return lpegmatch(p,s)
+        local t = lpegmatch(p,s)
+        if t.tzh then
+            local localtzh, localtzm = ostimezone(true)
+            t.hour = t.hour + localtzh - t.tzs * t.tzh
+            t.min  = t.min  + localtzm - t.tzs * t.tzm
+        end
+        return t
     end
     local n = tonumber(s)
     if n and n >= 0 then

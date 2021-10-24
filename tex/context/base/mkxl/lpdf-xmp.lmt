@@ -151,7 +151,7 @@ local function pdfsetmetadate(n,both)
     if n then
         n = converters.totime(n)
         if n then
-            creationdate = osdate("%Y-%m-%dT%X",ostime(n)) .. ostimezone(true)
+            creationdate = osdate("%Y-%m-%dT%H:%M:%S",ostime(n)) .. ostimezone()
             if both then
                 modificationdate = creationdate
             end
@@ -190,7 +190,7 @@ local function setdates(v)
         end
     end
     if toboolean(v) then
-        creationdate     = osdate("%Y-%m-%dT%X") .. ostimezone(true)
+        creationdate     = osdate("%Y-%m-%dT%H:%M:%S") .. ostimezone()
         modificationdate = creationdate
     else
         creationdate     = false

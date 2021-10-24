@@ -25,9 +25,8 @@ return {
                         [8246] = 983072,
                         [8247] = 983073,
                     }
-                    local characters   = target.characters
-                    local descriptions = target.descriptions
-                    local unicodes     = original.resources.unicodes
+                    local characters = target.characters
+                    local unicodes   = original.resources.unicodes
                     if unicodes["minute.ssty1"] == okay then
                         for old, new in next, crap do
                             if type(old) == "string" then
@@ -40,9 +39,25 @@ return {
                                 local c = characters[new]
                                 if c then
                                     characters[old] = c
-                                    c.commands = { { "up", .1 * c.height }, { "slot", 0, new, .7 } }
+                                    c.commands = { { "up", .06 * c.height }, { "slot", 0, new, .7 } }
                                 end
                             end
+                        end
+                        local four = characters[0x2057]
+                        if four then
+                            local one = characters[okay]
+                            local owd = .75*one.width
+                            local off = .6*one.height
+                            four.width = 4*owd
+                            four.commands = {
+                                { "offset",     0, off, okay },
+                                { "offset",   owd, off, okay },
+                                { "offset", 2*owd, off, okay },
+                                { "offset", 3*owd, off, okay },
+                            }
+                        else
+                            -- we don't add (but we could), just patch, and there's no
+                            -- reverse quad either
                         end
                     else
                         logs.report("fonts","the libertinus tweaks need to be checked")

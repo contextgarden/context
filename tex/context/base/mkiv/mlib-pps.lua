@@ -377,7 +377,7 @@ function models.rgb(cr)
     elseif metapost.reducetogray then
         if n == 1 then
             local s = cr[1]
-            checked_color_pair(f_gray,s,s)
+            return checked_color_pair(f_gray,s,s)
         elseif n == 3 then
             local r = cr[1]
             local g = cr[2]

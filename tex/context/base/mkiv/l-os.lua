@@ -26,10 +26,10 @@ if not modules then modules = { } end modules ['l-os'] = {
 -- math.randomseed(tonumber(string.sub(string.reverse(tostring(math.floor(socket.gettime()*10000))),1,6)))
 
 local os = os
-local date, time = os.date, os.time
+local date, time, difftime = os.date, os.time, os.difftime
 local find, format, gsub, upper, gmatch = string.find, string.format, string.gsub, string.upper, string.gmatch
 local concat = table.concat
-local random, ceil, randomseed = math.random, math.ceil, math.randomseed
+local random, ceil, randomseed, modf = math.random, math.ceil, math.randomseed, math.modf
 local type, setmetatable, tonumber, tostring = type, setmetatable, tonumber, tostring
 
 -- This check needs to happen real early on. Todo: we can pick it up from the commandline
@@ -434,23 +434,44 @@ end
 
 do
 
-    local d
+    -- this is fragile because it depends on time and so we only check once during
+    -- a run (the computer doesn't move zones) .. Michal Vlasák made a better one
 
-    function os.timezone(delta)
-        d = d or ((tonumber(date("%H")) or 0) - (tonumber(date("!%H")) or 0))
-        if delta then
-            if d > 0 then
-                return format("+%02i:00",d)
-            else
-                return format("-%02i:00",-d)
-            end
+ -- local d
+ --
+ -- function os.timezone()
+ --     d = d or ((tonumber(date("%H")) or 0) - (tonumber(date("!%H")) or 0))
+ --     if d > 0 then
+ --         return format("+%02i:00",d)
+ --     else
+ --         return format("-%02i:00",-d)
+ --     end
+ -- end
+
+    local hour, min
+
+    function os.timezone(difference)
+        if not hour then
+            -- somehow looks too complex:
+            local current   = time()
+            local utcdate   = date("!*t", current)
+            local localdate = date("*t", current)
+            localdate.isdst = false
+            local timediff  = difftime(time(localdate), time(utcdate))
+            hour, min = modf(timediff / 3600)
+            min = min * 60
+        end
+        if difference then
+            return hour, min
         else
-            return 1
+            return format("%+03d:%02d",hour,min) -- %+ means: always show sign
         end
     end
 
-    local timeformat = format("%%s%s",os.timezone(true))
-    local dateformat = "!%Y-%m-%d %H:%M:%S"
+    -- localtime with timezone: 2021-10-22 10:22:54+02:00
+
+    local timeformat = format("%%s%s",os.timezone())
+    local dateformat = "%Y-%m-%d %H:%M:%S"
     local lasttime   = nil
     local lastdate   = nil
 
@@ -469,6 +490,8 @@ do
         end
         return lastdate
     end
+
+    -- localtime without timezone: 2021-10-22 10:22:54
 
     local dateformat = "%Y-%m-%d %H:%M:%S"
     local lasttime   = nil
@@ -499,12 +522,16 @@ do
         end
     end
 
+    -- table with values
+
     function os.today()
-        return date("!*t") -- table with values
+        return date("!*t")
     end
 
+    -- utc time without timezone: 2021-10-22 08:22:54
+
     function os.now()
-        return date("!%Y-%m-%d %H:%M:%S") -- 2011-12-04 14:59:12
+        return date("!%Y-%m-%d %H:%M:%S")
     end
 
 end
