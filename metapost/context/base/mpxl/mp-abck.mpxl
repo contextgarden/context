@@ -55,8 +55,30 @@ def boxdashtype     = (runscript mfid_mpvarn "dashtype") enddef ;
 
 def boxalternative  = (runscript mfid_mpvarn "alternative") enddef;
 def boxdistance     = (runscript mfid_mpvard "distance") enddef;
+def boxlocation     = (runscript mfid_mpvarn "location") enddef ;
 def boxtopoffset    = (runscript mfid_mpvard "topoffset") enddef;
 def boxbottomoffset = (runscript mfid_mpvard "bottomoffset") enddef;
+
+vardef boxatright  =
+    save b ; b := boxlocation ;
+    if b = 1 :
+        false
+    elseif b = 2 :
+        true
+    elseif OnRightPage :
+        if b = 4 : % outer
+            true
+        else : % inner
+            false
+        fi
+    else :
+        if b = 4 : % inner
+            false
+        else : % inner
+            true
+        fi
+    fi
+enddef ;
 
 def boxgridoptions  = withcolor boxgridcolor enddef ;
 def boxlineoptions  = withcolor boxlinecolor enddef ;

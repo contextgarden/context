@@ -1,0 +1,229 @@
+%D \module
+%D   [       file=typo-dig,
+%D        version=2010.01.18,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Digits,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Local Boxes}
+
+% musical timestamp: New Scary Goldings ft. John Scofield MonoNeon & Louis Cole (late
+% October 2021)
+
+% maybe: \iflocalleftbox
+
+\registerctxluafile{typo-lbx}{autosuffix}
+
+%D The advantage is that it's deal with in the par builder which has some advantages
+%D but when used in complex situation there can be side effects. Therefore is should
+%D be considered a somewhat low level mechanism on top of which one can write more
+%D mechanisms that provide more rendering control. Also, keep in mind that combining
+%D many instances at the same time add some complizity. Therefore, for the moment it's
+%D a playground.
+
+
+\unprotect
+
+\def\v!lefttext {lefttext}
+\def\v!righttext{righttext}
+
+\appendtoks
+    \localleftbox {}% \nolocalboxes : we don't have a nice command category for it
+    \localrightbox{}%
+\to\everyforgetall
+
+\definesystemattribute[localboxes][public]
+
+%D We used to pass arguments but there might be many so ...
+
+\newbox\localboxcontentbox
+
+\installcorenamespace{localboxes}
+\installcorenamespace{localboxesattribute}
+\installcorenamespace{localboxesnamespace}
+\installcorenamespace{localboxeslocations}
+
+\installcommandhandler \??localboxes {localboxes} \??localboxes
+
+\setuplocalboxes
+  [\c!location=\v!left]
+
+\newcount\c_typo_localboxes
+
+\appendtoks
+    \global\advance\c_typo_localboxes\plusone
+    \global\expandafter\integerdef\csname\??localboxesattribute\currentlocalboxes\endcsname\c_typo_localboxes
+    \gletcsname\??localboxesnamespace\number\c_typo_localboxes\endcsname\currentlocalboxes
+\to \everydefinelocalboxes
+
+%D The optional argument forces seting the \quote {whole} paragraph properties (which is needed
+%D when the assignment happens after e.g.\ \type {\everypar} but is also meant for the first
+%D line.
+
+\def\typo_paragraphs_l#1{\localleftbox \ifcstok{#1}\v!global par\fi}
+\def\typo_paragraphs_r#1{\localrightbox\ifcstok{#1}\v!global par\fi}
+
+\permanent\tolerant\protected\def\leftparbox        [#1]{\typo_paragraphs_l{#1}\bgroup\enforced\let\leftparbox \relax\let\next}
+\permanent\tolerant\protected\def\rightparbox       [#1]{\typo_paragraphs_r{#1}\bgroup\enforced\let\rightparbox\relax\let\next}
+
+\permanent\tolerant\protected\def\appendleftparbox  [#1]{\dowithnextbox{\leftparbox [#1]{\the\localleftbox \unhbox\nextbox}}\hbox}
+\permanent\tolerant\protected\def\appendrightparbox [#1]{\dowithnextbox{\rightparbox[#1]{\the\localrightbox\unhbox\nextbox}}\hbox}
+
+\permanent\tolerant\protected\def\prependleftparbox [#1]{\dowithnextbox{\leftparbox [#1]{\unhbox\nextbox\the\localleftbox }}\hbox}
+\permanent\tolerant\protected\def\prependrightparbox[#1]{\dowithnextbox{\rightparbox[#1]{\unhbox\nextbox\the\localrightbox}}\hbox}
+
+\permanent\tolerant\protected\def\resetleftparbox   [#1]{\typo_paragraphs_l{#1}{}}
+\permanent\tolerant\protected\def\resetrightparbox  [#1]{\typo_paragraphs_r{#1}{}}
+
+% called back:
+
+\permanent\protected\def\localboxcommand
+  {\ifcsname\??localboxesnamespace\number\localboxattribute\endcsname
+    %\edef\currentlocalboxes{\lastnamedcs}%
+     \expandafter\let\expandafter\currentlocalboxes\lastnamedcs
+     \setbox\localboxcontentbox\hbox
+       {\uselocalboxesstyleandcolor\c!style\c!color
+        \localboxesparameter\c!command}%
+   \fi}
+
+%D We don't group because we set the local boxes. Also, watch out: by injecting the
+%D existing local box we create nested ones. This is handled in the callback but if
+%D really needed one can do something like (do we need a primitive?):
+
+% \localrightbox{%
+%   \the\localrightbox
+%   \setbox\scratchbox\lastbox
+%   \unhbox\scratchbox
+%   additional}%
+
+\def\typo_localboxes_zero#1#2%
+  {\ifcsname\??localboxesattribute#1\endcsname
+     \hpack attr \localboxesattribute \lastnamedcs to \zeropoint \bgroup
+        \edef\currentlocalboxes{#1}%
+        #2%
+     \egroup
+   \fi}
+
+\def\typo_localboxes_asis#1#2%
+  {\hpack \bgroup  % todo: use width if dimension, use distance if given
+     \edef\currentlocalboxes{#1}%
+     \localboxesparameter\c!command{#2}%
+   \egroup}
+
+\defcsname\??localboxeslocations\v!left\endcsname#1#2%
+  {\leftparbox \bgroup
+     \typo_localboxes_zero{#1}{#2}%
+     \the\localleftbox
+   \egroup}
+
+\defcsname\??localboxeslocations\v!right\endcsname#1#2%
+  {\rightparbox \bgroup
+     \the\localrightbox
+     \typo_localboxes_zero{#1}{#2}%
+   \egroup}
+
+\defcsname\??localboxeslocations\v!lefttext\endcsname#1#2%
+  {\leftparbox \bgroup
+     \typo_localboxes_asis{#1}{#2}%
+     \the\localleftbox
+   \egroup}
+
+\defcsname\??localboxeslocations\v!righttext\endcsname#1#2%
+  {\rightparbox \bgroup
+     \the\localrightbox
+     \typo_localboxes_asis{#1}{#2}%
+   \egroup}
+
+\permanent\tolerant\protected\def\localbox[#1]%
+  {\dowithnextboxcontent
+     {\edef\currentlocalboxes{#1}%
+      \uselocalboxesstyleandcolor\c!style\c!color}
+     {\ifcsname\??localboxeslocations\namedlocalboxesparameter{#1}\c!location\endcsname
+        \expandafter\lastnamedcs
+      \else
+        \csname\??localboxeslocations\v!left\expandafter\endcsname
+      \fi{#1}{\unhbox\nextbox}}%
+     \hbox}
+
+\permanent\tolerant\protected\def\startlocalbox[#1]%
+  {\dowithnextbox
+     {\ifcsname\??localboxeslocations\namedlocalboxesparameter{#1}\c!location\endcsname
+         \expandafter\lastnamedcs
+       \else
+         \csname\??localboxeslocations\v!left\expandafter\endcsname
+       \fi{#1}{\unhbox\nextbox}}%
+     \hbox\bgroup
+     \edef\currentlocalboxes{#1}%
+     \uselocalboxesstyleandcolor\c!style\c!color
+     \enforced\def\stoplocalbox{\removeunwantedspaces\egroup}%
+     \ignorespaces}
+
+\aliased\let\stoplocalbox\donothing
+
+%D Here is an example of usage:
+
+%D \starttyping
+%D \definelocalboxes
+%D   [linenumber]
+%D   [command=\LeftNumber,location=left,width=3em,style=\bs,color=darkred]
+%D
+%D \definelocalboxes
+%D   [linenumbertwo] [linenumber]
+%D   [command=\RightNumber,location=right,width=6em,style=\bf,color=darkgreen]
+%D
+%D \definelocalboxes
+%D   [linetext]
+%D   [command=\LeftText,location=lefttext,style=\bs,color=darkblue]
+%D
+%D \definelocalboxes
+%D   [linetexttwo] [linetext]
+%D   [command=\RightText,location=righttext,style=\bf,color=darkgray]
+%D
+%D % \def\LineNumberL{\the\localboxlinenumber}
+%D % \def\LineNumberR{\the\localboxlinenumber}
+%D
+%D % \newcount\MyLineNumberL
+%D % \newcount\MyLineNumberR
+%D % \def\LineNumberL{\global\advance\MyLineNumberL\plusone\the\MyLineNumberL}
+%D % \def\LineNumberR{\global\advance\MyLineNumberR\plusone\the\MyLineNumberR}
+%D
+%D \definecounter[MyLineNumberL]
+%D \definecounter[MyLineNumberR]
+%D
+%D \setupcounter[MyLineNumberL][numberconversion=characters]
+%D \setupcounter[MyLineNumberR][numberconversion=romannumerals]
+%D
+%D \def\LineNumberL{\incrementcounter[MyLineNumberL]\convertedcounter[MyLineNumberL]}
+%D \def\LineNumberR{\incrementcounter[MyLineNumberR]\convertedcounter[MyLineNumberR]}
+%D
+%D \protected\def\LeftNumber {\hbox to \localboxesparameter{width}{\strut(\LineNumberL\hss)}}
+%D \protected\def\RightNumber{\hbox to \localboxesparameter{width}{\strut(\hss\LineNumberR)}}
+%D
+%D % \protected\def\LeftNumber {\hbox to \localboxesparameter{width}{\strut\box\localboxcontentbox\hss)}}
+%D % \protected\def\RightNumber{\hbox to \localboxesparameter{width}{\strut(\hss\box\localboxcontentbox)}}
+%D
+%D \protected\def\LeftText #1{#1\quad}
+%D \protected\def\RightText#1{\quad#1}
+%D
+%D \start
+%D     \localbox[linenumber]{}%
+%D     \localbox[linenumbertwo]{}%
+%D     \localbox[linetext]{L}%
+%D     \startlocalbox[linetexttwo]
+%D         R
+%D     \stoplocalbox
+%D     \dorecurse{100}{
+%D         \samplefile{tufte}
+%D         \par
+%D     }
+%D \stop
+%D \stoptyping
+
+\protect \endinput
+

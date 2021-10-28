@@ -121,9 +121,7 @@ def anch_sidebars_draw(expr b_self, e_self, t_anchor) = % even these three can b
         else :
             a := (xpart a, min(ypart a + boxtopoffset,getposheight(t_anchor))) ;
             b := (xpart b, max(ypart b - boxbottomoffset,0)) ;
-            % DoubleSided should come from an option of \setupsidebar
-            save DoubleSided ; boolean DoubleSided ; DoubleSided := true ;
-            if OnOddPage and DoubleSided :
+            if boxatright :
                 a := (xpart a + HSize + 2 * boxdistance,ypart a) ;
                 b := (xpart b + HSize + 2 * boxdistance,ypart b) ;
             fi ;

@@ -91,7 +91,7 @@ return {
         "localboxgroupcode", "splitoffgroupcode", "splitkeepgroupcode", "preamblegroupcode",
         "alignsetgroupcode", "finrowgroupcode", "discretionarygroupcode",
         --
-        "markautomigrationcode",  "insertautomigrationcode", "preautomigrationcode", "postautomigrationcode",
+        "markautomigrationcode", "insertautomigrationcode", "adjustautomigrationcode", "preautomigrationcode", "postautomigrationcode",
         --
         "charnodecode", "hlistnodecode", "vlistnodecode", "rulenodecode", "insertnodecode", "marknodecode",
         "adjustnodecode", "ligaturenodecode", "discretionarynodecode", "whatsitnodecode", "mathnodecode",

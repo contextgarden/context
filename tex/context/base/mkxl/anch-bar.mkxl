@@ -78,6 +78,7 @@
    \c!bottomoffset=\zeropoint,
    \c!distance=.5\bodyfontsize,
    \c!level=,
+   \c!location=\v!left,
    \c!leftmargindistance=\zeropoint]
 
 \aliased\let\setupsidebars\setupsidebar
@@ -124,6 +125,7 @@
        {e:sidebar:\the\c_anch_sidebars_n}%
        {mpos:sidebar}%
        {self=sidebar:\the\c_anch_sidebars_n,
+        location=\mplocation{\sidebarparameter\c!location},
         linewidth=\sidebarparameter\c!rulethickness,
         linecolor=\sidebarparameter\c!rulecolor,
         alternative=\sidebarparameter\c!alternative,

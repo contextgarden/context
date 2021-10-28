@@ -1217,4 +1217,16 @@
 \permanent\protected\def\interwordspacesafter #1{\dofastloopcs{#1}\interwordspaceafter}
 \permanent\protected\def\interwordspaces      #1{\wordboundary\zwnj\dofastloopcs{\numexpr#1+\minusone}\interwordspaceafter}
 
+%D For mp:
+
+\installcorenamespace{mplocation}
+
+\defcsname\??mplocation\v!left \endcsname{1}
+\defcsname\??mplocation\v!right\endcsname{2}
+\defcsname\??mplocation\v!inner\endcsname{3}
+\defcsname\??mplocation\v!outer\endcsname{4}
+
+\permanent\def\mplocation#1{\ifcsname\??mplocation#1\endcsname\lastnamedcs\else0\fi}
+%permanent\def\mplocation#1{\csname\??mplocation\ifcsname\??mplocation#1\endcsname#1\else\v!left\fi\endcsname}
+
 \protect \endinput

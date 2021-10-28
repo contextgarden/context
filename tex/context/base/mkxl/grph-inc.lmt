@@ -1316,7 +1316,7 @@ function figures.identify(data)
         for i=1,#list do
             local identifier = list[i]
             local data = identifier(data)
-            if data and (not data.status and data.status.status > 0) then
+            if data and data.status and (not data.status and data.status.status > 0) then
                 break
             end
         end

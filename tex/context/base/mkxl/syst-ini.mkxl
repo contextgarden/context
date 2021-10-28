@@ -1414,4 +1414,9 @@
 \autoparagraphmode\plusone  % we need at least 1 in order to be able to switch to 2
 %autoparagraphmode\plustwo  % because we define two \par delimited macros
 
+%D The same values apply as \type {\shownodedetails}. When set the box is shown in
+%D the the log file but that is pretty slow when we have much detail.
+
+\tracingfullboxes\zerocount
+
 \protect \endinput

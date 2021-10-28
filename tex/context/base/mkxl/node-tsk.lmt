@@ -952,3 +952,55 @@ nonut = [[
 --
 --     }
 -- }
+
+-- -- localboxes -- --
+
+tasks.new {
+    name      = "localboxes",
+    processor = nodeprocessor,
+    sequence  = {
+        "before",      -- for users
+        "lists",
+        "after",       -- for users
+    },
+    templates = {
+
+default = [[
+return function(head)
+end
+]],
+
+process = [[
+local tonut  = nodes.tonut
+local tonode = nodes.nuts.tonode
+
+%localize%
+
+-- line,leftbox,rightbox,linenumber,leftskip,rightskip,lefthang,righthang,indent,parfillleftskip,parfillrightskip
+
+return function(line,leftbox,rightbox,...)
+    nutline     = tonut(line)
+    nutleftbox  = leftbox  and tonut(leftbox)
+    nutrightbox = rightbox and tonut(rightbox)
+%actions%
+end
+]],
+
+step = [[
+    tonut((%action%(line,leftbox,rightbox,...)))
+]],
+
+nut  = [[
+    %action%(nutline,nutleftbox,nutrightbox,...)
+]],
+
+nohead = [[
+    %action%(line,leftbox,rightbox,...)
+]],
+
+nonut = [[
+    %action%(nutline,nutleftbox,nutrightbox,...)
+]],
+
+    }
+}

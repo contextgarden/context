@@ -178,9 +178,9 @@ update.platforms = {
     --
     ["linux-armhf"]    = "linux-armhf",
     --
-    ["openbsd"]        = "openbsd6.9",
-    ["openbsd-i386"]   = "openbsd6.9",
-    ["openbsd-amd64"]  = "openbsd6.9-amd64",
+    ["openbsd"]        = "openbsd7.0",
+    ["openbsd-i386"]   = "openbsd7.0",
+    ["openbsd-amd64"]  = "openbsd7.0-amd64",
     --
     ["freebsd"]        = "freebsd",
     ["freebsd-i386"]   = "freebsd",

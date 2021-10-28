@@ -2011,7 +2011,9 @@ function converters.totime(s)
         return s
     elseif type(s) == "string" then
         local t = lpegmatch(p,s)
-        if t.tzh then
+        if not t then
+            logs.report("system","invalid time specification %a",s)
+        elseif t.tzh then
             local localtzh, localtzm = ostimezone(true)
             t.hour = t.hour + localtzh - t.tzs * t.tzh
             t.min  = t.min  + localtzm - t.tzs * t.tzm

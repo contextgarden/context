@@ -1,0 +1,179 @@
+if not modules then modules = { } end modules ['typo-lbx'] = {
+    version   = 1.001,
+    optimize  = true,
+    comment   = "companion to typo-lbx.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local tostring = tostring
+
+local nuts             = nodes.nuts
+
+local left_box_code    = nodes.listcodes.left
+local right_box_code   = nodes.listcodes.right
+local hlist_code       = nodes.nodecodes.hlist
+
+local getlist          = nuts.getlist
+local getprev          = nuts.getprev
+local getnext          = nuts.getnext
+local getattribute     = nuts.getattribute
+local gettail          = nuts.tail
+local getwidth         = nuts.getwidth
+local setlist          = nuts.setlist
+local setoffsets       = nuts.setoffsets
+local flushlist        = nuts.flushlist
+local takebox          = nuts.takebox
+local setbox           = nuts.setbox
+local copynode         = nuts.copynode
+local rangedimensions  = nuts.rangedimensions
+local traverse_list    = nuts.traversers.list
+
+local expandmacro      = token.expandmacro
+
+local dimension_value  = tokens.values.dimension
+local integer_value    = tokens.values.integer
+
+local implement        = interfaces.implement
+
+typesetters            = typesetters or { }
+local typesetters      = typesetters
+
+typesetters.localboxes = typesetters.localboxes or { }
+local localboxes       = typesetters.localboxes
+
+local a_localboxes     = attributes.private("localboxes")
+
+local starttiming      = statistics.starttiming
+local stoptiming       = statistics.stoptiming
+
+do
+
+    local lb_attribute        = 0
+    local lb_linenumber       = 0
+    local lb_width            = 0
+    local lb_offset           = 0
+    local lb_leftskip         = 0
+    local lb_rightskip        = 0
+    local lb_lefthang         = 0
+    local lb_righthang        = 0
+    local lb_indent           = 0
+    local lb_parfillleftskip  = 0
+    local lb_parfillrightskip = 0
+    local lb_overshoot        = 0
+
+    implement { name = "localboxattribute",        public = true, usage = "value", actions = function() return integer_value,   lb_attribute        end }
+    implement { name = "localboxlinenumber",       public = true, usage = "value", actions = function() return integer_value,   lb_linenumber       end }
+    implement { name = "localboxwidth",            public = true, usage = "value", actions = function() return dimension_value, lb_width            end }
+    implement { name = "localboxoffset",           public = true, usage = "value", actions = function() return dimension_value, lb_offset           end }
+    implement { name = "localboxleftskip",         public = true, usage = "value", actions = function() return dimension_value, lb_leftskip         end }
+    implement { name = "localboxrightskip",        public = true, usage = "value", actions = function() return dimension_value, lb_rightskip        end }
+    implement { name = "localboxlefthang",         public = true, usage = "value", actions = function() return dimension_value, lb_lefthang         end }
+    implement { name = "localboxrighthang",        public = true, usage = "value", actions = function() return dimension_value, lb_righthang        end }
+    implement { name = "localboxindent",           public = true, usage = "value", actions = function() return dimension_value, lb_indent           end }
+    implement { name = "localboxparfillleftskip",  public = true, usage = "value", actions = function() return dimension_value, lb_parfillleftskip  end }
+    implement { name = "localboxparfillrightskip", public = true, usage = "value", actions = function() return dimension_value, lb_parfillrightskip end }
+    implement { name = "localboxovershoot",        public = true, usage = "value", actions = function() return dimension_value, lb_overshoot        end }
+
+    local function action(current,where)
+        -- We can have nested leftboxes!
+        local l = getlist(current)
+        setlist(current)
+        local h = copynode(current)
+        setlist(h,l)
+        setbox("localboxcontentbox",h)
+        expandmacro("localboxcommand") -- no longer pass arguments
+        local b = takebox("localboxcontentbox")
+        setlist(current,b)
+        if where == "left" then
+            local w = getwidth(b)
+            setoffsets(b,lb_width - lb_offset - w)
+        else
+            setoffsets(b,lb_offset - lb_width)
+        end
+    end
+
+    local function processleftbox(box,width)
+        local list = getlist(box)
+        if not width then
+            width = 0
+        end
+        for current, id, subtype in traverse_list, list do
+            if id == hlist_code then
+                local a = getattribute(current,a_localboxes)
+                if a then
+                    lb_attribute = a
+                    lb_width     = width + rangedimensions(box,list,getprev(current))
+                    action(current,"left")
+                end
+                if subtype == left_box_code then
+                    processleftbox(current,width + rangedimensions(box,list,getprev(current)))
+                end
+            end
+        end
+    end
+
+    local function processrightbox(box,width)
+        local list = getlist(box)
+        local tail = gettail(list)
+        if not width then
+            width = 0
+        end
+        for current, id, subtype in traverse_list, list do
+            if id == hlist_code then
+                local a = getattribute(current,a_localboxes)
+                if a then
+                    lb_attribute = a
+                    lb_width     = width + rangedimensions(box,list,getnext(current),tail)
+                    action(current,"right")
+                end
+                if subtype == right_box_code then
+                    processrightbox(current,width + rangedimensions(box,getnext(current),tail))
+                end
+            end
+        end
+    end
+
+    local function processlocalboxes(line, leftbox, rightbox, linenumber, leftskip, rightskip, lefthang, righthang, indent, parfillleftskip, parfillrightskip, overshoot)
+        --
+        lb_attribute        = 0
+        lb_linenumber       = linenumber
+        lb_width            = 0
+     -- lb_offset           = 0
+        lb_leftskip         = leftskip
+        lb_rightskip        = rightskip
+        lb_lefthang         = lefthang
+        lb_righthang        = righthang
+        lb_indent           = indent
+        lb_parfillleftskip  = parfillleftskip
+        lb_parfillrightskip = parfillrightskip
+        lb_overshoot        = overshoot
+        --
+        -- for now we always anchor
+        --
+        if leftbox then
+            lb_offset = leftskip + lefthang + indent + parfillleftskip + getwidth(leftbox)
+            processleftbox(leftbox)
+        end
+        if rightbox then
+            lb_offset = rightskip + righthang + parfillrightskip + getwidth(rightbox) - overshoot
+            processrightbox(rightbox)
+        end
+    end
+
+    typesetters.localboxes.handler = processlocalboxes
+
+end
+
+local localboxactions = nodes.tasks.actions("localboxes")
+
+function builders.local_box_filter(...)
+    starttiming(builders)
+    localboxactions(...)
+    stoptiming(builders)
+end
+
+-- we register the function elsewhere
+
+callbacks.register("local_box_filter", builders.local_box_filter, "process local boxes")

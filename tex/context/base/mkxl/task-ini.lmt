@@ -151,6 +151,8 @@ appendaction("everypar",     "normalizers", "nodes.handlers.checkparcounter",   
 
 appendaction("alignments",   "normalizers", "nodes.handlers.aligncharacter",                    nil, "nut",    "disabled"  )
 
+appendaction("localboxes",   "lists",       "typesetters.localboxes.handler",                   nil, "nut",    "enabled"   )
+
 -- some protection
 
 freezecallbacks("find_.*_file", "find file using resolver")
@@ -188,6 +190,8 @@ freezegroup("math",         "builders")
 freezegroup("everypar",     "normalizers")
 
 freezegroup("alignments",   "normalizers")
+
+freezegroup("localboxes",   "lists")
 
 -- new: disabled here
 
