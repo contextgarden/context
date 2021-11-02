@@ -101,13 +101,13 @@ function fonts.helpers.mathscriptslots(tfmdata,textcode)
 end
 
 local function manipulate(tfmdata,value)
-    if texconditionals["c_font_compact"] then
+ -- if texconditionals["c_font_compact"] then
+    if value then -- so basically always
         local rawdata           = tfmdata.shared.rawdata
         local rawresources      = rawdata and rawdata.resources
         local rawfeatures       = rawresources and rawresources.features
         local basesubstitutions = rawfeatures and rawfeatures.gsub
         local sequences         = basesubstitutions and tfmdata.resources.sequences
-
         if sequences then
             local characters = tfmdata.characters
             for s=1,#sequences do
@@ -153,6 +153,7 @@ local function manipulate(tfmdata,value)
 end
 
 local function initialize(tfmdata,value)
+    -- Here it really gets enabled as the scales are used.
     if texconditionals["c_font_compact"] then
         local rawdata       = tfmdata.shared.rawdata
         local rawresources  = rawdata and rawdata.resources

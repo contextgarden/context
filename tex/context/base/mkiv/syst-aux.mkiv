@@ -1470,10 +1470,20 @@
 
 % replaces prev
 
+% \protected\def\syst_helpers_do_if_in_string_else#1#2% ##2 can be {abc}
+%   {\expandafter\def\expandafter\syst_helpers_do_do_if_in_string_else
+%      \expandafter##\expandafter1#1##2##3^^^^0004{\unless\if##2@}% expand #1 here
+%    \expandafter\syst_helpers_do_do_if_in_string_else\normalexpanded{#2#1}@@^^^^0004} % expand #2 here
+
 \protected\def\syst_helpers_do_if_in_string_else#1#2% ##2 can be {abc}
   {\expandafter\def\expandafter\syst_helpers_do_do_if_in_string_else
-     \expandafter##\expandafter1#1##2##3^^^^0004{\unless\if##2@}% expand #1 here
-   \expandafter\syst_helpers_do_do_if_in_string_else\normalexpanded{#2#1}@@^^^^0004} % expand #2 here
+     \expandafter##\expandafter1#1##2##3^^^^0004{\unless\ifx##2^^^^0003}% expand #1 here
+   \expandafter\syst_helpers_do_do_if_in_string_else\normalexpanded{#2#1}^^^^0003^^^^0003^^^^0004} % expand #2 here
+
+% \protected\def\syst_helpers_do_if_in_string_else#1#2% ##2 can be {abc}
+%   {\normalexpanded{\def\noexpand\syst_helpers_do_do_if_in_string_else
+%      ##1#1##2##3}^^^^0004{\unless\ifx##2^^^^0003}% expand #1 here
+%    \normalexpanded{\noexpand\syst_helpers_do_do_if_in_string_else#2#1}^^^^0003^^^^0003^^^^0004} % expand #2 here
 
 %D The next alternative proved to be upto twice as fast on tasks like checking
 %D reserved words in pretty verbatim typesetting! This is mainly due to the fact
@@ -1486,10 +1496,15 @@
 %D Where \type {\doifinstringelse} does as much expansion as possible, the latter
 %D alternative does minimal (one level) expansion.
 
+% \protected\def\syst_helpers_do_if_in_csname_else#1#2%
+%   {\def\syst_helpers_do_do_if_in_csname_else##1#1##2##3^^^^0004%
+%      {\unless\if##2@}%
+%    \expandafter\syst_helpers_do_do_if_in_csname_else#2#1@@^^^^0004}
+
 \protected\def\syst_helpers_do_if_in_csname_else#1#2%
   {\def\syst_helpers_do_do_if_in_csname_else##1#1##2##3^^^^0004%
-     {\unless\if##2@}%
-   \expandafter\syst_helpers_do_do_if_in_csname_else#2#1@@^^^^0004}
+     {\unless\ifx##2^^^^3}%
+   \expandafter\syst_helpers_do_do_if_in_csname_else#2#1^^^^3^^^^3^^^^0004}
 
 \protected\def\doifelseincsname#1#2%
   {\normalexpanded{\syst_helpers_do_if_in_csname_else{#1}}{#2}%

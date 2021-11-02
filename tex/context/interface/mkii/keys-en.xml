@@ -318,6 +318,7 @@
 		<cd:variable name='lefthanging' value='lefthanging'/>
 		<cd:variable name='leftmargin' value='leftmargin'/>
 		<cd:variable name='leftpage' value='leftpage'/>
+		<cd:variable name='lefttext' value='lefttext'/>
 		<cd:variable name='lefttoright' value='lefttoright'/>
 		<cd:variable name='legend' value='legend'/>
 		<cd:variable name='less' value='less'/>
@@ -479,6 +480,7 @@
 		<cd:variable name='righthanging' value='righthanging'/>
 		<cd:variable name='rightmargin' value='rightmargin'/>
 		<cd:variable name='rightpage' value='rightpage'/>
+		<cd:variable name='righttext' value='righttext'/>
 		<cd:variable name='righttoleft' value='righttoleft'/>
 		<cd:variable name='roman' value='roman'/>
 		<cd:variable name='romannumerals' value='romannumerals'/>

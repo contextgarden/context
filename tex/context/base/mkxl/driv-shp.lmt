@@ -9,87 +9,89 @@ if not modules then modules = { } end modules ['driv-shp'] = {
 
 local type, next = type, next
 
-local setmetatableindex = table.setmetatableindex
-local formatters        = string.formatters
-local concat            = table.concat
-local keys              = table.keys
-local sortedhash        = table.sortedhash
-local find              = string.find
-local stripstring       = string.strip
-local sequenced         = table.sequenced
-local round             = math.round
-local nuts              = nodes.nuts
+local setmetatableindex  = table.setmetatableindex
+local formatters         = string.formatters
+local concat             = table.concat
+local keys               = table.keys
+local sortedhash         = table.sortedhash
+local find               = string.find
+local stripstring        = string.strip
+local sequenced          = table.sequenced
+local round              = math.round
+local nuts               = nodes.nuts
 
-local tonut             = nodes.tonut
-local tonode            = nodes.tonode
+local tonut              = nodes.tonut
+local tonode             = nodes.tonode
 
-local getdirection      = nuts.getdirection
-local getlist           = nuts.getlist
-local getoffsets        = nuts.getoffsets
-local getorientation    = nuts.getorientation
-local getwhd            = nuts.getwhd
-local getkern           = nuts.getkern
-local getheight         = nuts.getheight
-local getdepth          = nuts.getdepth
------ getwidth          = nuts.getwidth
-local getnext           = nuts.getnext
-local getsubtype        = nuts.getsubtype
-local getid             = nuts.getid
-local getleader         = nuts.getleader
------ getglue           = nuts.getglue
-local getshift          = nuts.getshift
-local getreplace        = nuts.getreplace
-local setreplace        = nuts.setreplace
-local getfont           = nuts.getfont
-local getkerndimension  = nuts.getkerndimension
+local getdirection       = nuts.getdirection
+local getlist            = nuts.getlist
+local getoffsets         = nuts.getoffsets
+local getorientation     = nuts.getorientation
+local getxyscales        = nuts.getxyscales
+local getwhd             = nuts.getwhd
+local getkern            = nuts.getkern
+local getheight          = nuts.getheight
+local getdepth           = nuts.getdepth
+----- getwidth           = nuts.getwidth
+local getnext            = nuts.getnext
+local getsubtype         = nuts.getsubtype
+local getid              = nuts.getid
+local getleader          = nuts.getleader
+----- getglue            = nuts.getglue
+local getshift           = nuts.getshift
+local getreplace         = nuts.getreplace
+local setreplace         = nuts.setreplace
+local getfont            = nuts.getfont
+local getkerndimension   = nuts.getkerndimension
+local getglyphdimensions = nuts.getglyphdimensions
 
-local setdirection      = nuts.setdirection
-local setlink           = nuts.setlink
+local setdirection       = nuts.setdirection
+local setlink            = nuts.setlink
 
-local isglyph           = nuts.isglyph
------ nextdir           = nuts.traversers.dir
-local nextnode          = nuts.traversers.node
+local isglyph            = nuts.isglyph
+----- nextdir            = nuts.traversers.dir
+local nextnode           = nuts.traversers.node
 
-local effectiveglue     = nuts.effectiveglue
-local dirdimensions     = nuts.dirdimensions
+local effectiveglue      = nuts.effectiveglue
+local dirdimensions      = nuts.dirdimensions
 
-local fonthashes        = fonts.hashes
-local fontdata          = fonthashes.identifiers
-local characters        = fonthashes.characters
-local parameters        = fonthashes.parameters
+local fonthashes         = fonts.hashes
+local fontdata           = fonthashes.identifiers
+local characters         = fonthashes.characters
+local parameters         = fonthashes.parameters
 
-local nodecodes         = nodes.nodecodes
-local whatsitcodes      = nodes.whatsitcodes
-local gluecodes         = nodes.gluecodes
-local dirvalues         = nodes.dirvalues
-local subtypes          = nodes.subtypes
+local nodecodes          = nodes.nodecodes
+local whatsitcodes       = nodes.whatsitcodes
+local gluecodes          = nodes.gluecodes
+local dirvalues          = nodes.dirvalues
+local subtypes           = nodes.subtypes
 
-local lefttoright_code  = dirvalues.lefttoright
-local righttoleft_code  = dirvalues.righttoleft
+local lefttoright_code   = dirvalues.lefttoright
+local righttoleft_code   = dirvalues.righttoleft
 
-local glyph_code        = nodecodes.glyph
-local kern_code         = nodecodes.kern
-local glue_code         = nodecodes.glue
-local hlist_code        = nodecodes.hlist
-local vlist_code        = nodecodes.vlist
-local dir_code          = nodecodes.dir
-local disc_code         = nodecodes.disc
-local math_code         = nodecodes.math
-local rule_code         = nodecodes.rule
-local whatsit_code      = nodecodes.whatsit
+local glyph_code         = nodecodes.glyph
+local kern_code          = nodecodes.kern
+local glue_code          = nodecodes.glue
+local hlist_code         = nodecodes.hlist
+local vlist_code         = nodecodes.vlist
+local dir_code           = nodecodes.dir
+local disc_code          = nodecodes.disc
+local math_code          = nodecodes.math
+local rule_code          = nodecodes.rule
+local whatsit_code       = nodecodes.whatsit
 
-local leaders_code      = gluecodes.leaders
-local cleaders_code     = gluecodes.cleaders
-local xleaders_code     = gluecodes.xleaders
-local gleaders_code     = gluecodes.gleaders
+local leaders_code       = gluecodes.leaders
+local cleaders_code      = gluecodes.cleaders
+local xleaders_code      = gluecodes.xleaders
+local gleaders_code      = gluecodes.gleaders
 
-local spaceskip_code    = gluecodes.spaceskip
+local spaceskip_code     = gluecodes.spaceskip
 
-local getpagedimensions = layouts.getpagedimensions
+local getpagedimensions  = layouts.getpagedimensions
 
-local drivers           = drivers
+local drivers            = drivers
 
-local report            = logs.reporter("drivers")
+local report             = logs.reporter("drivers")
 
 ---------------------------------------------------------------------------------------
 
@@ -291,7 +293,7 @@ local flush_character do
                     pos_v = pos_v + v * sy
                 end
                 if c then
-                    flushchar(fnt,c)
+                    flushchar(fnt,c) -- todo: e f !
                     pos_h = ph
                     pos_v = pv
                 end
@@ -466,8 +468,6 @@ local flush_character do
 
     local onetimemessage -- could be defined later (todo: make plug for this)
 
-    local getxyscales = nuts.getxyscales
-
     flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r,f,e)
 
         if font ~= lastfont then
@@ -492,14 +492,19 @@ local flush_character do
         end
         local width, height, depth, naturalwidth, sx, sy
         if current then
-            naturalwidth, height, depth, factor = getwhd(current,true) -- also get corrected width
-            sx, sy = getxyscales(current) -- maybe: getwhdfs
-            if factor == 0 then
-                width = naturalwidth
+            -- height and depth not needed
+            if true then
+                width, height, depth, factor, sx, sy = getglyphdimensions(current)
             else
-             -- width = (1.0 + factor/1000000.0) * naturalwidth
-                width = naturalwidth + naturalwidth * factor/1000000.0
-             -- width = naturalwidth + naturalwidth * 0.000001 * factor
+                naturalwidth, height, depth, factor = getwhd(current,true) -- also get corrected width
+                sx, sy = getxyscales(current)
+                if factor == 0 then
+                    width = naturalwidth
+                else
+                 -- width = (1.0 + factor/1000000.0) * naturalwidth
+                    width = naturalwidth + naturalwidth * factor/1000000.0
+                 -- width = naturalwidth + naturalwidth * 0.000001 * factor
+                end
             end
         else
             width  = data.width or 0
@@ -537,7 +542,6 @@ local flush_character do
                 flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor,sx,sy) -- ,naturalwidth,width)
             end
         end
-
         return width, height, depth
     end
 
@@ -627,28 +631,6 @@ local hlist_out, vlist_out  do
 
     -- to be checked: begin- or enddir kan nil zijn, weird
 
- -- local function calculate_width_to_enddir(this_box,begindir) -- can be a helper
- --     local dir_nest = 1
- --     local enddir   = begindir
- --     for current, subtype in nextdir, getnext(begindir) do
- --         if subtype == normaldir_code then -- todo
- --             dir_nest = dir_nest + 1
- --         else
- --             dir_nest = dir_nest - 1
- --         end
- --         if dir_nest == 0 then -- does the type matter
- --             enddir = current
- --             local width = rangedimensions(this_box,begindir,enddir)
- --             return enddir, width
- --         end
- --     end
- --     if enddir == begindir then
- --         local width = rangedimensions(this_box,begindir) -- ,enddir)
- --         return enddir, width
- --     end
- --     return enddir, 0
- -- end
-
     -- check frequencies of nodes
 
     hlist_out = function(this_box,current)
@@ -686,8 +668,8 @@ local hlist_out, vlist_out  do
                 pos_v = pos_v + raise
                 pos_h = pos_h - left
                 local wd = flush_character(current,font,char,false,true,pos_h,pos_v,pos_r)
---                 cur_h = cur_h + wd - right -- hm, no left here?
-cur_h = cur_h + wd -- see new tabulate alignment code
+             -- cur_h = cur_h + wd - right -- hm, no left here?
+                cur_h = cur_h + wd -- see new tabulate alignment code
             elseif id == glue_code then
                 local gluewidth = effectiveglue(current,this_box)
                 if gluewidth ~= 0 then
@@ -781,8 +763,8 @@ cur_h = cur_h + wd -- see new tabulate alignment code
                         end
                     else
                         if tospace and subtype == spaceskip_code then
-                            -- todo: flush_space
-                            flush_character(false,getfont(current),32,false,true,pos_h,pos_v,pos_r) -- we need tp pass current for scale?
+                         -- kind of tricky because because we can have a different sx sy
+                            flush_character(false,getfont(current),32,false,true,pos_h,pos_v,pos_r) -- we need to pass current for scale?
                         end
                         cur_h = cur_h + gluewidth
                     end
@@ -861,15 +843,21 @@ cur_h = cur_h + wd -- see new tabulate alignment code
                 end
                 cur_h = cur_h + width
             elseif id == kern_code then
-                -- we can use getkerndimension(current) but then we get rounded values so for
-                -- now we calculate ourselves
-                local kern, factor = getkern(current,true)
-                if kern ~= 0 then
-                    if factor ~= 0 then
-                        cur_h = cur_h + (1.0 + factor/1000000.0) * kern
-                    else
+                -- when we use getkerndimension we get rounded values
+                if true then
+                    local kern = getkerndimension(current)
+                    if kern ~= 0 then
                         cur_h = cur_h + kern
                     end
+                else
+                   local kern, factor = getkern(current,true)
+                   if kern ~= 0 then
+                       if factor ~= 0 then
+                           cur_h = cur_h + (1.0 + factor/1000000.0) * kern
+                       else
+                           cur_h = cur_h + kern
+                       end
+                   end
                 end
             elseif id == rule_code then
                 local width, height, depth = getwhd(current)
@@ -1412,3 +1400,25 @@ do
     end)
 
 end
+
+-- local function calculate_width_to_enddir(this_box,begindir) -- can be a helper
+--     local dir_nest = 1
+--     local enddir   = begindir
+--     for current, subtype in nextdir, getnext(begindir) do
+--         if subtype == normaldir_code then -- todo
+--             dir_nest = dir_nest + 1
+--         else
+--             dir_nest = dir_nest - 1
+--         end
+--         if dir_nest == 0 then -- does the type matter
+--             enddir = current
+--             local width = rangedimensions(this_box,begindir,enddir)
+--             return enddir, width
+--         end
+--     end
+--     if enddir == begindir then
+--         local width = rangedimensions(this_box,begindir) -- ,enddir)
+--         return enddir, width
+--     end
+--     return enddir, 0
+-- end

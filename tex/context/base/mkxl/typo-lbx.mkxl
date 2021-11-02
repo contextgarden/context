@@ -13,10 +13,11 @@
 
 \writestatus{loading}{ConTeXt Typesetting Macros / Local Boxes}
 
-% musical timestamp: New Scary Goldings ft. John Scofield MonoNeon & Louis Cole (late
-% October 2021)
+% This time the usual musical timestamp is: New Scary Goldings ft. John Scofield
+% MonoNeon & Louis Cole (late October 2021) (plus the playlist in loop mode) and
+% further improved after watching Cory Wong's LIVE IN MPLS (9 FEB 2019) concert.
 
-% maybe: \iflocalleftbox
+% maybe: \iflocalbox 0/1/2
 
 \registerctxluafile{typo-lbx}{autosuffix}
 
@@ -27,18 +28,18 @@
 %D many instances at the same time add some complizity. Therefore, for the moment it's
 %D a playground.
 
-
 \unprotect
 
-\def\v!lefttext {lefttext}
-\def\v!righttext{righttext}
+\def\typo_localboxes_reset
+  {\localleftbox  {}% no class here, works grouped
+   \localrightbox {}%
+   \localmiddlebox{}}
 
 \appendtoks
-    \localleftbox {}% \nolocalboxes : we don't have a nice command category for it
-    \localrightbox{}%
+    \typo_localboxes_reset
 \to\everyforgetall
 
-\definesystemattribute[localboxes][public]
+\definesystemattribute[localboxesmark][public]
 
 %D We used to pass arguments but there might be many so ...
 
@@ -48,13 +49,18 @@
 \installcorenamespace{localboxesattribute}
 \installcorenamespace{localboxesnamespace}
 \installcorenamespace{localboxeslocations}
+\installcorenamespace{localboxesresetters}
 
 \installcommandhandler \??localboxes {localboxes} \??localboxes
 
 \setuplocalboxes
-  [\c!location=\v!left]
+  [\c!command=\localboxcontent,
+   \c!width=\zeropoint,
+   \c!location=\v!left,
+   \c!distance=\zeropoint]
 
 \newcount\c_typo_localboxes
+\newcount\c_typo_localboxes_class
 
 \appendtoks
     \global\advance\c_typo_localboxes\plusone
@@ -62,33 +68,29 @@
     \gletcsname\??localboxesnamespace\number\c_typo_localboxes\endcsname\currentlocalboxes
 \to \everydefinelocalboxes
 
-%D The optional argument forces seting the \quote {whole} paragraph properties (which is needed
+%D The optional argument forces setting the \quote {whole} paragraph properties (which is needed
 %D when the assignment happens after e.g.\ \type {\everypar} but is also meant for the first
 %D line.
+
+%D Todo: reserve class 1 for this:
 
 \def\typo_paragraphs_l#1{\localleftbox \ifcstok{#1}\v!global par\fi}
 \def\typo_paragraphs_r#1{\localrightbox\ifcstok{#1}\v!global par\fi}
 
-\permanent\tolerant\protected\def\leftparbox        [#1]{\typo_paragraphs_l{#1}\bgroup\enforced\let\leftparbox \relax\let\next}
-\permanent\tolerant\protected\def\rightparbox       [#1]{\typo_paragraphs_r{#1}\bgroup\enforced\let\rightparbox\relax\let\next}
-
-\permanent\tolerant\protected\def\appendleftparbox  [#1]{\dowithnextbox{\leftparbox [#1]{\the\localleftbox \unhbox\nextbox}}\hbox}
-\permanent\tolerant\protected\def\appendrightparbox [#1]{\dowithnextbox{\rightparbox[#1]{\the\localrightbox\unhbox\nextbox}}\hbox}
-
-\permanent\tolerant\protected\def\prependleftparbox [#1]{\dowithnextbox{\leftparbox [#1]{\unhbox\nextbox\the\localleftbox }}\hbox}
-\permanent\tolerant\protected\def\prependrightparbox[#1]{\dowithnextbox{\rightparbox[#1]{\unhbox\nextbox\the\localrightbox}}\hbox}
-
-\permanent\tolerant\protected\def\resetleftparbox   [#1]{\typo_paragraphs_l{#1}{}}
-\permanent\tolerant\protected\def\resetrightparbox  [#1]{\typo_paragraphs_r{#1}{}}
+\permanent\tolerant\protected\def\leftparbox [#1]{\typo_paragraphs_l{#1}\bgroup\enforced\let\leftparbox \relax\let\next}
+\permanent\tolerant\protected\def\rightparbox[#1]{\typo_paragraphs_r{#1}\bgroup\enforced\let\rightparbox\relax\let\next}
 
 % called back:
 
+\permanent\protected\def\localboxcontent
+  {\box\localboxcontentbox}
+
 \permanent\protected\def\localboxcommand
-  {\ifcsname\??localboxesnamespace\number\localboxattribute\endcsname
+  {\ifcsname\??localboxesnamespace\number\localboxclass\endcsname
     %\edef\currentlocalboxes{\lastnamedcs}%
      \expandafter\let\expandafter\currentlocalboxes\lastnamedcs
      \setbox\localboxcontentbox\hbox
-       {\uselocalboxesstyleandcolor\c!style\c!color
+       {\uselocalboxesstyleandcolor\c!style\c!color % sometimes redundant
         \localboxesparameter\c!command}%
    \fi}
 
@@ -96,51 +98,79 @@
 %D existing local box we create nested ones. This is handled in the callback but if
 %D really needed one can do something like (do we need a primitive?):
 
-% \localrightbox{%
-%   \the\localrightbox
-%   \setbox\scratchbox\lastbox
-%   \unhbox\scratchbox
-%   additional}%
-
-\def\typo_localboxes_zero#1#2%
-  {\ifcsname\??localboxesattribute#1\endcsname
-     \hpack attr \localboxesattribute \lastnamedcs to \zeropoint \bgroup
-        \edef\currentlocalboxes{#1}%
-        #2%
-     \egroup
+\def\typo_localboxes_localbox
+  {\ifx\currentlocalboxeslocation\v!right
+     \localrightbox
+   \orelse\ifx\currentlocalboxeslocation\v!left
+     \localleftbox
+   \else
+     \localmiddlebox
    \fi}
 
-\def\typo_localboxes_asis#1#2%
-  {\hpack \bgroup  % todo: use width if dimension, use distance if given
+\def\typo_localboxes_zero#1#2#3%
+  {\ifcsname\??localboxesattribute#2\endcsname
+     \c_typo_localboxes_class\lastnamedcs
+     \edef\currentlocalboxes{#2}%
+     \edef\currentlocalboxeslocation{#1}%
+     \typo_localboxes_localbox
+        class \c_typo_localboxes_class
+        \bgroup
+          \hpack
+            \ifcstok{\localboxesparameter\c!repeat}\v!no
+              attr \localboxesmarkattribute \localboxmarkonce\c_typo_localboxes_class\relax
+            \fi
+            to \zeropoint
+          \bgroup
+            \uselocalboxesstyleandcolor\c!style\c!color
+            \hbox{#3}%
+            \hss
+          \egroup
+        \egroup
+   \fi}
+
+\def\typo_localboxes_asis#1#2#3%
+  {\ifcsname\??localboxesattribute#2\endcsname
+     \c_typo_localboxes_class\lastnamedcs
+     \edef\currentlocalboxes{#2}%
+     \edef\currentlocalboxeslocation{#1}%
+     \typo_localboxes_localbox
+        class \c_typo_localboxes_class
+        \bgroup
+          \hpack
+            \ifcstok{\localboxesparameter\c!repeat}\v!no
+              attr \localboxesmarkattribute \localboxmarkonce\c_typo_localboxes_class\relax
+            \fi
+            % todo: use width if dimension, use distance if given
+          \bgroup
+            \uselocalboxesstyleandcolor\c!style\c!color
+            \hbox{#3}% no \hss
+          \egroup
+        \egroup
+   \fi}
+
+\defcsname\??localboxeslocations\v!left     \endcsname{\typo_localboxes_zero\v!left  }
+\defcsname\??localboxeslocations\v!right    \endcsname{\typo_localboxes_zero\v!right }
+\defcsname\??localboxeslocations\v!lefttext \endcsname{\typo_localboxes_asis\v!left  }
+\defcsname\??localboxeslocations\v!righttext\endcsname{\typo_localboxes_asis\v!right }
+\defcsname\??localboxeslocations\v!middle   \endcsname{\typo_localboxes_asis\v!middle}
+
+\letcsname\??localboxesresetters\v!left     \endcsname\v!left
+\letcsname\??localboxesresetters\v!right    \endcsname\v!right
+\letcsname\??localboxesresetters\v!lefttext \endcsname\v!left
+\letcsname\??localboxesresetters\v!righttext\endcsname\v!right
+\letcsname\??localboxesresetters\v!middle   \endcsname\v!middle
+
+\permanent\tolerant\protected\def\resetlocalbox[#1]%
+  {\ifcsname\??localboxesattribute#1\endcsname
+     \c_typo_localboxes_class\lastnamedcs
      \edef\currentlocalboxes{#1}%
-     \localboxesparameter\c!command{#2}%
-   \egroup}
+     \ifcsname\??localboxesresetters\localboxesparameter\c!location\endcsname
+       \edef\currentlocalboxeslocation{\lastnamedcs}%
+       \typo_localboxes_localbox class \c_typo_localboxes_class {}%
+     \fi
+   \fi}
 
-\defcsname\??localboxeslocations\v!left\endcsname#1#2%
-  {\leftparbox \bgroup
-     \typo_localboxes_zero{#1}{#2}%
-     \the\localleftbox
-   \egroup}
-
-\defcsname\??localboxeslocations\v!right\endcsname#1#2%
-  {\rightparbox \bgroup
-     \the\localrightbox
-     \typo_localboxes_zero{#1}{#2}%
-   \egroup}
-
-\defcsname\??localboxeslocations\v!lefttext\endcsname#1#2%
-  {\leftparbox \bgroup
-     \typo_localboxes_asis{#1}{#2}%
-     \the\localleftbox
-   \egroup}
-
-\defcsname\??localboxeslocations\v!righttext\endcsname#1#2%
-  {\rightparbox \bgroup
-     \the\localrightbox
-     \typo_localboxes_asis{#1}{#2}%
-   \egroup}
-
-\permanent\tolerant\protected\def\localbox[#1]%
+\def\typo_localboxes_box#1%
   {\dowithnextboxcontent
      {\edef\currentlocalboxes{#1}%
       \uselocalboxesstyleandcolor\c!style\c!color}
@@ -148,8 +178,11 @@
         \expandafter\lastnamedcs
       \else
         \csname\??localboxeslocations\v!left\expandafter\endcsname
-      \fi{#1}{\unhbox\nextbox}}%
-     \hbox}
+      \fi{#1}{\unhbox\nextbox}}}
+
+
+\permanent\tolerant\protected\def\localbox[#1]%
+  {\typo_localboxes_box{#1}\hbox}
 
 \permanent\tolerant\protected\def\startlocalbox[#1]%
   {\dowithnextbox
@@ -165,6 +198,120 @@
      \ignorespaces}
 
 \aliased\let\stoplocalbox\donothing
+
+\permanent\tolerant\protected\def\startlocalboxrange[#1]%
+  {\globalpushmacro\stoplocalboxrange
+   \ifcsname\??localboxeslocations\namedlocalboxesparameter{#1}\c!location\endcsname
+     \lastnamedcs{#1}{}%
+   \fi}
+
+\permanent\protected\def\stoplocalboxrange
+  {\globalpopmacro\stoplocalboxrange}%
+
+% using left and right with left lagging behind:
+%
+% \permanent\protected\def\localmarginlefttext#1%
+%   {\setbox\localboxcontentbox\hpack
+%      {\unhbox\localboxcontentbox
+%       \setbox\localboxcontentbox\lastbox
+%       \unhbox\localboxcontentbox}%
+%    \hpack xoffset -\dimexpr
+%       #1
+%      +\localboxprogress
+%      +\localboxleftoffset
+%      +\wd\localboxcontentbox
+%      +\localboxesparameter\c!distance
+%    \relax{\box\localboxcontentbox}}
+%
+% \permanent\protected\def\localmarginrighttext#1%
+%   {\hpack xoffset \dimexpr
+%       #1
+%      +\localboxrightoffset
+%      +\localboxlocalwidth
+%      -\localboxprogress
+%      +\localboxesparameter\c!distance
+%    \relax{\box\localboxcontentbox}}
+
+% using middle:
+
+\permanent\protected\def\localmarginlefttext#1%
+  {\ifzeropt\localboxesparameter\c!width\relax
+     % a but ugly hack ... for now
+     \setbox\localboxcontentbox\hpack
+       {\unhbox\localboxcontentbox
+        \setbox\localboxcontentbox\lastbox
+        \unhbox\localboxcontentbox}%
+   \fi
+   \hpack xoffset \dimexpr
+     -#1
+     -\localboxprogress
+     -\wd\localboxcontentbox
+     -\localboxesparameter\c!distance
+   \relax{\box\localboxcontentbox}}
+
+\permanent\protected\def\localmarginrighttext#1%
+  {\hpack xoffset \dimexpr
+      #1
+     +\localboxlinewidth
+     -\localboxprogress
+     +\localboxesparameter\c!distance
+   \relax{\box\localboxcontentbox}}
+
+% todo: use generic one above
+
+\permanent\protected\def\localmargintext[#1]#2%
+  {\dontleavehmode
+   \ifcsname\??localboxesattribute#1\endcsname
+     \c_typo_localboxes_class\lastnamedcs
+     \edef\currentlocalboxes{#1}%
+     \edef\currentlocalboxeslocation{\localboxesparameter\c!location}%
+     \ifx\currentlocalboxeslocation\v!right\localrightbox\orelse\ifx\currentlocalboxeslocation\v!left\localleftbox\else\localmiddlebox\fi
+        class \c_typo_localboxes_class
+        \bgroup
+          \hpack
+            \ifcstok{\localboxesparameter\c!repeat}\v!no
+              attr \localboxesmarkattribute \localboxmarkonce\c_typo_localboxes_class\relax
+            \fi
+            to \zeropoint
+          \bgroup
+            \uselocalboxesstyleandcolor\c!style\c!color
+            \hbox{#2}%
+            \hss
+          \egroup
+        \egroup
+   \fi}
+
+\definelocalboxes
+  [\v!leftmargin]
+  [\c!command=\localmarginlefttext\zeropoint,
+   \c!repeat=\v!no,
+   \c!distance=\leftmargindistance,
+ % \c!location=\v!left]
+   \c!location=\v!middle]
+
+\definelocalboxes
+  [\v!rightmargin]
+  [\c!command=\localmarginrighttext\zeropoint,
+   \c!repeat=\v!no,
+   \c!distance=\rightmargindistance,
+ % \c!location=\v!right]
+   \c!location=\v!middle]
+
+\definelocalboxes
+  [\v!leftedge]
+  [\c!command=\localmarginlefttext\leftmargintotal,
+   \c!repeat=\v!no,
+   \c!distance=\leftedgedistance,
+ % \c!location=\v!left]
+   \c!location=\v!middle]
+
+\definelocalboxes
+  [\v!rightedge]
+  [\c!command=\localmarginrighttext\rightmargintotal,
+   \c!repeat=\v!no,
+   \c!distance=\rightedgedistance,
+ % \c!location=\v!right]
+   \c!location=\v!middle]
 
 %D Here is an example of usage:
 

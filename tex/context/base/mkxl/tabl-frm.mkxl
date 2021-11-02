@@ -115,6 +115,7 @@
      \setupframed[\??framedtable][#2]%
    \fi
    \edef\currentframed{\??framedtable\currentframedtable}%
+   \pack_framed_initialize
    \c_tabl_framed_r\zerocount
    \d_tabl_framed_d\framedparameter\c!distance
    \framedparameter\c!before}
@@ -126,7 +127,7 @@
 % a two pass variant that deals with the height .. so no catcode changes here
 
 \tolerant\protected\def\pack_framed_start_framed_whatever[#1]%
-  {\pack_framed_initialize
+  {\pack_framed_initialize % moved up
    \bgroup
    \setupcurrentframed[#1]% here !
    \pack_framed_process_indeed

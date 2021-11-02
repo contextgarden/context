@@ -976,30 +976,31 @@ local tonode = nodes.nuts.tonode
 
 %localize%
 
--- line,leftbox,rightbox,linenumber,leftskip,rightskip,lefthang,righthang,indent,parfillleftskip,parfillrightskip
+-- line,leftbox,rightbox,middlebox,linenumber,leftskip,rightskip,lefthang,righthang,indent,parfillleftskip,parfillrightskip
 
-return function(line,leftbox,rightbox,...)
-    nutline     = tonut(line)
-    nutleftbox  = leftbox  and tonut(leftbox)
-    nutrightbox = rightbox and tonut(rightbox)
+return function(line,leftbox,rightbox,middlebox,...)
+    nutline      = tonut(line)
+    nutleftbox   = leftbox  and tonut(leftbox)
+    nutrightbox  = rightbox and tonut(rightbox)
+    nutmiddlebox = middlebox and tonut(middlebox)
 %actions%
 end
 ]],
 
 step = [[
-    tonut((%action%(line,leftbox,rightbox,...)))
+    tonut((%action%(line,leftbox,rightbox,middlebox,...)))
 ]],
 
 nut  = [[
-    %action%(nutline,nutleftbox,nutrightbox,...)
+    %action%(nutline,nutleftbox,nutrightbox,nutmiddlebox,...)
 ]],
 
 nohead = [[
-    %action%(line,leftbox,rightbox,...)
+    %action%(line,leftbox,rightbox,middlebox,...)
 ]],
 
 nonut = [[
-    %action%(nutline,nutleftbox,nutrightbox,...)
+    %action%(nutline,nutleftbox,nutrightbox,nutmiddlebox,...)
 ]],
 
     }

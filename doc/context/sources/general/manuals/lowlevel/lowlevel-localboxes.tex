@@ -1,0 +1,408 @@
+% language=us runpath=texruns:manuals/lowlevel
+
+% \unprotect \pushoverloadmode
+% \popoverloadmode \protect
+
+\environment lowlevel-style
+
+\startdocument
+  [title=localboxes,
+   color=middlered]
+
+\startsectionlevel[title=Introduction]
+
+The \LUATEX\ engine inherited a few features from other engines and adding local
+boxes to paragraphs is one of them. This concept comes from \OMEGA\ but over time
+it has been made a bit more robust, also by using native par nodes instead of
+whatsit nodes that are used to support \TEX's extensions. In another low level
+manual we discuss paragraph properties and these local boxes are also part of
+that so you might want to catch up on that. Local boxes are stored in an initial
+par node with an adequate subtype but users wont' notice this (unless they mess
+around in \LUA). The inline par nodes have a different subtype and are injected
+with the \typ {\localinterlinepenalty}, \typ {\localbrokenpenalty}, \typ
+{\localleftbox}, \typ {\localrightbox} and \LUAMETATEX\ specific \typ
+{\localmiddlebox} primitives. WHen these primitives are used in vertical mode
+they just set registers.
+
+The original (\OMEGA) idea was that local boxes are used for repetitive
+punctuation (like quotes) at the left and|/|or right end of the lines that make
+up a paragraph. That means that when these primitives inject nodes they actually
+introduce states so that a stretch of text can be marked.
+
+When this mechanism was cleaned up in \LUAMETATEX\ I decided to investigate if
+other usage made sense. After all, it is a feature that introduces some extra
+code and it then pays of to use it when possible. Among the extensions are a
+callback that is triggered when the left and right boxes get added and
+experiments with that showed some potential but in order to retain performance as
+well as limit extensive node memory usage (par nodes are large) a system of
+classes was added. All this will be illustrated below. Warning: the mechanism in
+\LUAMETATEX\ is not compatible with \LUATEX.
+
+{\em This is a preliminary, uncorrected manual.}
+
+\stopsectionlevel
+
+\startsectionlevel[title=The basics]
+
+This mechanism uses a mix of setting (pseudo horizontal) box registers that get
+associated with (positions in a) paragraph. When the lines resulting from
+breaking the list gets packaged into an horizontal (line) box, the local left and
+right boxes get prepended and appended to the textual part (inside the left,
+right and parfills kips and left or right hanging margins). When assigning the
+current local boxes to the paragraph node(s) references to the pseudo registers
+are used and the packaging actually copies them. This mix of referencing and
+copying is somewhat tricky but the engine does it best to hide this for the user.
+
+This mechanism is rather useless when not wrapped into some high level mechanism
+because by default setting these boxes wipes the existing value. In \LUAMETATEX\
+you can actually access the boxes so prepending and appending is possible but
+experiments showed that this could come with a huge performance hit when the
+lists are not cleaned up during a run. This is why we have introduced classes:
+when you assign local boxes using the class option that specific class will be
+replaced and therefore we have a more sparse solution. So, contrary to \LUATEX,
+in \LUAMETATEX\ the local box registers have a linked lists of local boxes tagged
+by class. Unless you manipulate in \LUA, this is hidden from the user. One can
+access the boxes from the \TEX\ the but there can be no confusion with \LUATEX\
+here because there we don't have access. This is why usage as in \LUATEX\ will
+also work in \LUAMETATEX.
+
+This mechanism obeys grouping as is demonstrated in the next three examples. The
+first example is:
+
+\startbuffer[example-1]
+\start
+    \dorecurse{10}{test #1.1 }
+    \localleftbox{\blackrule[width=2em,color=darkred] }
+    \dorecurse{20}{test #1.2 }
+    \removeunwantedspaces
+    \localrightbox{ \blackrule[width=3em,color=darkblue]}
+    \dorecurse{20}{test #1.3 }
+\stop
+    \dorecurse{20}{test #1.4 }
+    % par ends here
+\stopbuffer
+
+\typebuffer[example-1][option=TEX]
+
+The next example differs in a subtle way: watch the \type {keep} keyword,
+it makes the setting retain after the group ends.
+
+\startbuffer[example-2]
+\start
+    \start
+        \dorecurse{10}{test #1.1 }
+        \localleftbox keep {\blackrule[width=2em,color=darkred] }
+        \dorecurse{20}{test #1.2 }
+        \removeunwantedspaces
+        \localrightbox { \blackrule[width=3em,color=darkblue]}
+        \dorecurse{20}{test #1.3 }
+    \stop
+        \dorecurse{20}{test #1.4 }
+\stop
+% par ends here
+\stopbuffer
+
+\typebuffer[example-2][option=TEX]
+
+The third example has two times \type {keep}. This option is \LUAMETATEX\
+specific.
+
+\startbuffer[example-3]
+\start
+    \start
+        \dorecurse{10}{test #1.1 }
+        \localleftbox keep {\blackrule[width=2em,color=darkred] }
+        \dorecurse{20}{test #1.2 }
+        \removeunwantedspaces
+        \localrightbox keep { \blackrule[width=3em,color=darkblue]}
+        \dorecurse{20}{test #1.3 }
+    \stop
+        \dorecurse{20}{test #1.4 }
+\stop
+% par ends here
+\stopbuffer
+
+\typebuffer[example-3][option=TEX]
+
+\startplacefigure % [location=page]
+    \startcombination[nx=1,ny=3]
+        {\vbox{\hsize\textwidth\getbuffer[example-1]}} {\bf Example 1}
+        {\vbox{\hsize\textwidth\getbuffer[example-2]}} {\bf Example 2}
+        {\vbox{\hsize\textwidth\getbuffer[example-3]}} {\bf Example 3}
+    \stopcombination
+\stopplacefigure
+
+One (nasty) side effect is that when you set these boxes ungrouped they are
+applied to whatever follows, which is why resetting them is built in the relevant
+parts of \CONTEXT. The next examples are typeset grouped an demonstrate the use
+of classes:
+
+\startbuffer
+\dorecurse{20}{before #1 }
+\localleftbox{\bf \darkred L 1 }%
+\localleftbox{\bf \darkred L 2 }%
+\dorecurse{20}{after #1 }
+\stopbuffer
+
+\typebuffer[option=TEX] \start \getbuffer \par \stop
+
+Classes can be set for both sides:
+
+\startbuffer
+\dorecurse{5}{\localrightbox class #1{ \bf \darkgreen R #1}}%
+\dorecurse{20}{before #1 }
+\dorecurse{5}{\localleftbox class #1{\bf \darkred L #1 }}%
+\dorecurse{20}{after #1 }
+\stopbuffer
+
+\typebuffer[option=TEX] \start \getbuffer \par \stop
+
+We can instruct this mechanism to hook the local box into the main
+par node by using the \type {par} keyword. Keep in mind that these
+local boxes only come into play when the lines are broken, so till
+then changing them is possible.
+
+\startbuffer
+\dorecurse{3}{\localrightbox class #1{ \bf \darkgreen R #1}}%
+\dorecurse{20}{before #1 }
+\dorecurse{2}{\localleftbox par class #1{\bf \darkred L #1 }}%
+\dorecurse{20}{after #1 }
+\stopbuffer
+
+\typebuffer[option=TEX] \start \getbuffer \par \stop
+
+\stopsectionlevel
+
+\startsectionlevel[title=The interface]
+
+{\em The interface described here is experimental.}
+
+Because it is hard to foresee if this mechanism will be used at all the \CONTEXT\
+interface is somewhat low level: one can build functionality on top of it. In the
+previous section we saw examples of local boxes being part of the text but one
+reason for extending the interface was to see if we can also use this engine
+feature for efficiently placing marginal content.
+
+\startbuffer[definition]
+\definelocalboxes
+  [lefttext]
+  [location=lefttext,width=3em,color=darkblue]
+\definelocalboxes
+  [lefttextx]
+  [location=lefttext,width=3em,color=darkblue]
+
+\definelocalboxes
+  [righttext]
+  [location=righttext,width=3em,color=darkyellow]
+\definelocalboxes
+  [righttextx]
+  [location=righttext,width=3em,color=darkyellow]
+\stopbuffer
+
+\typebuffer[definition][option=TEX]
+
+\getbuffer[definition]
+
+The order of definition matters! Here the \type {x} variants have a larger class
+number. There can (currently) be at most 256 classes. The defined local boxes
+are triggered with \type {\localbox}:
+
+\startbuffer[example]
+\startnarrower
+\dorecurse{20}{before #1 }%
+\localbox[lefttext]{[L] }%
+\localbox[lefttextx]{[LL] }%
+\localbox[righttext]{ [RR]}%
+\localbox[righttextx]{ [R]}%
+\dorecurse{20}{ after #1}%
+\stopnarrower
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+Watch how we obey the margins:
+
+\getbuffer[example]
+
+Here these local boxes have dimensions. The predefined margin variants are
+virtual. Here we set up the style and color:
+
+\startbuffer[definition]
+\setuplocalboxes
+  [leftmargin]
+  [style=\bs,
+   color=darkgreen]
+\setuplocalboxes
+  [rightmargin]
+  [style=\bs,
+   color=darkred]
+\stopbuffer
+
+\typebuffer[definition][option=TEX]
+
+\startbuffer[example]
+\dorecurse{2}{
+    \dorecurse{10}{some text #1.##1 }%
+    KEY#1.1%
+    \localmargintext[leftmargin]{L #1.1}%
+    \localmargintext[rightmargin]{R #1.1}%
+    \dorecurse{10}{some text #1.##1 }%
+    KEY#1.2%
+    \localmargintext[leftmargin]{L #1.2}%
+    \localmargintext[rightmargin]{R #1.2}%
+    \dorecurse{10}{some text #1.##1 }%
+    \blank
+}
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+You can also use \type {leftedge} and \type {rightedge} but using them here would
+put them outside the page.
+
+{\getbuffer[definition,example]}
+
+In previous examples you can see that setting something at the left will lag behind
+so deep down we use another trick here: \type {\localmiddlebox}. When these boxes
+get placed a callback can be triggered and in \CONTEXT\ we use that to move these
+middle boxes to the margins.
+
+Next we implement line numbers. Watch out: this will not replace the existing
+mechanisms, it's just an alternative as we have alternative table mechanisms. We
+have a repertoire of helpers for constructing the result:
+
+\startbuffer[definition]
+\definelocalboxes
+  [linenumberleft]
+  [command=\LeftNumber,
+   location=middle,
+   distance=\leftmargindistance,
+   width=3em,
+   style=\bs,
+   color=darkred]
+
+\definelocalboxes
+  [linenumberright] % [linenumberleft]
+  [command=\RightNumber,
+   location=middle,
+   distance=\rightmargindistance,
+   width=3em,
+   style=\bf,
+   color=darkgreen]
+
+\definecounter[MyLineNumberL]
+\definecounter[MyLineNumberR]
+
+\setupcounter
+  [MyLineNumberL]
+  [numberconversion=characters]
+
+\setupcounter
+  [MyLineNumberR]
+  [numberconversion=romannumerals]
+
+\def\LineNumberL
+  {\incrementcounter[MyLineNumberL]%
+   \convertedcounter[MyLineNumberL]}
+
+\def\LineNumberR
+  {\incrementcounter[MyLineNumberR]%
+   \convertedcounter[MyLineNumberR]}
+
+\protected\def\LeftNumber
+  {\setbox\localboxcontentbox\hbox
+     to \localboxesparameter{width}
+     {(\LineNumberL\hss\strut)}%
+   \localmarginlefttext\zeropoint}
+
+\protected\def\RightNumber
+  {\setbox\localboxcontentbox\hbox
+     to \localboxesparameter{width}
+     {(\strut\hss\LineNumberR)}%
+   \localmarginrighttext\zeropoint}
+\stopbuffer
+
+\typebuffer[definition][option=TEX]
+
+\startbuffer[example]
+\localbox[linenumberleft]{}%
+\localbox[linenumberright]{}%
+\dorecurse{2}{
+    \samplefile{tufte}
+    \par
+}
+\resetlocalbox[linenumberleft]%
+\resetlocalbox[linenumberright]%
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+We use our tufte example to illustrate the usage:
+
+\getbuffer[definition]
+
+{\getbuffer[example]}
+
+For convenience we support ranges like this (we've reset the line number counters
+here):
+
+\resetcounter[MyLineNumberL]
+\resetcounter[MyLineNumberR]
+
+\startbuffer[example]
+\startlocalboxrange[linenumberleft]%
+\startlocalboxrange[linenumberright]%
+\dorecurse{2}{
+    \samplefile{tufte}
+    \par
+}
+\stoplocalboxrange
+\stoplocalboxrange
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+{\getbuffer[example]}
+
+\stopsectionlevel
+
+\startsectionlevel[title=The helpers]
+
+For the moment we have these helpers:
+
+\starttabulate[|l|;|]
+\NC \type {\localboxclass}            \NC integer   \NC \NR
+\NC \type {\localboxlinenumber}       \NC integer   \NC \NR
+\NC
+\NC \type {\localboxlinewidth}        \NC dimension \NC \NR
+\NC \type {\localboxlocalwidth}       \NC dimension \NC \NR
+\NC \type {\localboxprogress}         \NC dimension \NC \NR
+\NC \type {\localboxleftoffset}       \NC dimension \NC \NR
+\NC \type {\localboxrightoffset}      \NC dimension \NC \NR
+\NC
+\NC \type {\localboxleftskip}         \NC dimension \NC \NR
+\NC \type {\localboxrightskip}        \NC dimension \NC \NR
+\NC \type {\localboxlefthang}         \NC dimension \NC \NR
+\NC \type {\localboxrighthang}        \NC dimension \NC \NR
+\NC
+\NC \type {\localboxindent}           \NC dimension \NC \NR
+\NC \type {\localboxparfillleftskip}  \NC dimension \NC \NR
+\NC \type {\localboxparfillrightskip} \NC dimension \NC \NR
+\NC \type {\localboxovershoot}        \NC dimension \NC \NR
+\NC
+\stoptabulate
+
+The progress and offsets are accumulated values of the normalized indent, hangs,
+skips etc. The line number is the position in the paragraph. In the callback we
+set the box register \type {\localboxcontentbox} and use it after the command has
+been applied. In the line number example you can see how we set its final
+content, so these boxes are sort of dynamic. Normally in the middle case no
+content is passed and in the par builder a middle is not taken into account when
+calculating the line width.
+
+\stopsectionlevel
+
+\stopdocument
+
+
+%     implement { name = "localboxmarkonce",

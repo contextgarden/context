@@ -4,6 +4,44 @@ return {
     comment = "Goodies that complement eb garamond.",
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
+    mathematics = {
+        tweaks = {
+            aftercopying = {
+                function(target,original,...)
+                    local crap = {
+                        [0x1D453] = { .20, 1.20 },
+                        [0x1D454] = { .15, 1.15 },
+                    }
+                    local characters = target.characters
+                    local function adapt(k,v)
+                        local character = characters[k]
+                        local width     = character.width
+                        character.width = v[2]*width
+                     -- character.commands = { { "offset", v[1]*width, 0, k } }
+                        character.xoffset = v[1]*width
+                        local smaller = original.characters[k].smaller
+                        if smaller and smaller ~= k then
+                            adapt(smaller,v)
+                        end
+                    end
+                    for k, v in next, crap do
+                        adapt(k,v)
+                    end
+                end,
+            },
+        },
+
+        alternates = {
+            partial        = { feature = 'ss02', value = 1, comment = "Curved partial" },
+            semibold       = { feature = 'ss04', value = 1, comment = "Semibold" },
+            extrabold      = { feature = 'ss05', value = 1, comment = "Extrabold" },
+            hbar           = { feature = 'ss06', value = 1, comment = "Horizontal bar for h-bar" },
+            integral       = { feature = 'ss07', value = 1, comment = "A more slanted integral sign" },
+            tilde          = { feature = 'ss09', value = 1, comment = "A tilde variant" },
+            outbendingh    = { feature = 'ss10', value = 1, comment = "Out-bending h" },
+            largeoperators = { feature = 'ss11', value = 1, comment = "Larger operators" },
+        },
+    },
     designsizes = {
         ["EBGaramond-Italic"] = {
             ["8pt"]   = "file:EBGaramond08-Italic",

@@ -75,6 +75,7 @@
       \bgroup
       \inheritedfittingpageframed
       \bgroup
+      \pack_framed_initialize
       \gobblespacetokens}
 
 \protected\def\page_fitting_stop_normal % todo: figure out why a small mp image gets shifted

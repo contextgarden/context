@@ -16590,6 +16590,16 @@ return {
    ["pe"]="حاشیه‌چپ",
    ["ro"]="marginestanga",
   },
+  ["lefttext"]={
+   ["cs"]="textvlevo",
+   ["de"]="linkertext",
+   ["en"]="lefttext",
+   ["fr"]="textegauche",
+   ["it"]="testosinistro",
+   ["nl"]="linkertekst",
+   ["pe"]="متن‌چپ",
+   ["ro"]="textstanga",
+  },
   ["leftpage"]={
    ["cs"]="levastranka",
    ["de"]="linkerseite",
@@ -18039,6 +18049,16 @@ return {
    ["nl"]="rechterpagina",
    ["pe"]="صفحه‌راست",
    ["ro"]="paginadreapta",
+  },
+  ["righttext"]={
+   ["cs"]="textvpravo",
+   ["de"]="rechtertext",
+   ["en"]="righttext",
+   ["fr"]="textedroite",
+   ["it"]="testodestro",
+   ["nl"]="rechtertekst",
+   ["pe"]="متن‌راست",
+   ["ro"]="textdreapta",
   },
   ["righttoleft"]={
    ["cs"]="righttoleft",

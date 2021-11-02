@@ -191,9 +191,11 @@ function tracers.printerror(specification)
             report_str(tracers.showlines(filename,linenumber,offset,tonumber(luaerrorline)))
             report_nl()
         end
-        local errname = file.addsuffix(tex.jobname .. "-error","log")
         if quitonerror then
-            table.save(errname,specification)
+            local name = tex.jobname or ""
+            if name ~= "" then
+                table.save(name .. "-error.log",specification)
+            end
             local help = specification.lasttexhelp
             if help and #help > 0 then
                 report_nl()
