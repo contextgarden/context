@@ -1,0 +1,62 @@
+%D \module
+%D   [       file=typo-adj,
+%D        version=2021.11.02,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Adjusters,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% This is preliminary (mostly test) code ... for it to be useful we also need to
+% add some spacing options as well as penalty control. So far I never needed this
+% but who knows.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Adjusters}
+
+\registerctxluafile{typo-adj}{autosuffix}
+
+% \definesystemattribute[adjuster][public]
+
+\unprotect
+
+%D \starttyping
+%D \start \showboxes
+%D     \dorecurse{20}{test #1 }
+%D     \insertlinebefore{BEFORE 1}
+%D     \insertlineafter {AFTER  1}
+%D     \dorecurse{20}{test #1 }
+%D     \dorecurse{20}{test #1 }
+%D     \insertlinebefore{BEFORE 2}
+%D     \insertlineafter {AFTER  2}
+%D     \dorecurse{20}{test #1 }
+%D \stop
+%D \stoptyping
+
+\def\typo_adjusters_line#1% no need for speed
+  {\begingroup
+   \dowithnextbox
+      {\ht\nextbox\strutht
+       \dp\nextbox\strutdp
+      %\boxattribute\nextbox \adjusterattribute \plusone
+       \vadjust #1 index \plusone {\box\nextbox}%
+       \endgroup}%
+      \hbox}
+
+\tolerant\def\typo_adjusters_blank#1[#2]% no need for speed
+  {\begingroup
+ % \setbox\scratchbox\vbox{\ifcstok{#2}\emptytoks\blank\else\blank[#2]\fi}%
+   \setbox\scratchbox\vbox{\blank[#2]}%
+   \vadjust #1 index \plustwo {\vskip\htdp\scratchbox}%
+   \endgroup}
+
+\permanent\protected\def\insertlinebefore{\typo_adjusters_line{pre}}
+\permanent\protected\def\insertlineafter {\typo_adjusters_line{post}}
+
+\permanent\protected\def\insertblankbefore{\typo_adjusters_blank{pre}}
+\permanent\protected\def\insertblankafter {\typo_adjusters_blank{post}}
+
+\protect \endinput

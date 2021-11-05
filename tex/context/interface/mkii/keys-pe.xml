@@ -318,6 +318,7 @@
 		<cd:variable name='lefthanging' value='آویزان‌چپ'/>
 		<cd:variable name='leftmargin' value='حاشیه‌چپ'/>
 		<cd:variable name='leftpage' value='صفحه‌چپ'/>
+		<cd:variable name='lefttext' value='متن‌چپ'/>
 		<cd:variable name='lefttoright' value='lefttoright'/>
 		<cd:variable name='legend' value='راهنما'/>
 		<cd:variable name='less' value='less'/>
@@ -479,6 +480,7 @@
 		<cd:variable name='righthanging' value='آویزان‌کردن‌راست'/>
 		<cd:variable name='rightmargin' value='حاشیه‌راست'/>
 		<cd:variable name='rightpage' value='صفحه‌راست'/>
+		<cd:variable name='righttext' value='متن‌راست'/>
 		<cd:variable name='righttoleft' value='righttoleft'/>
 		<cd:variable name='roman' value='رومن'/>
 		<cd:variable name='romannumerals' value='شماره‌لاتین'/>

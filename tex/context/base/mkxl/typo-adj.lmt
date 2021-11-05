@@ -1,0 +1,90 @@
+if not modules then modules = { } end modules ['typo-adj'] = {
+    version   = 1.001,
+    optimize  = true,
+    comment   = "companion to typo-adj.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local nodecodes    = nodes.nodecodes
+local hlist_code   = nodecodes.hlist
+local penalty_code = nodecodes.penalty
+
+local nuts         = nodes.nuts
+local getprev      = nuts.getprev
+local getid        = nuts.getid
+----- getattr      = nuts.getattribute
+local getdepth     = nuts.getdepth
+local newglue      = nuts.pool.glue
+local insertafter  = nuts.insert_after
+
+----- a_adjuster   = attributes.system("adjuster")
+
+local function correct_depth(head,tail)
+    local prev = getprev(tail)
+    if getid(prev) == penalty_code then -- linebreakpenalty
+        prev = getprev(prev)
+    end
+    if getid(prev) == hlist_code then -- line
+        local delta = getdepth(tail) - getdepth(prev)
+        if delta > 0 then
+            head = insertafter(head,prev,newglue(delta))
+        end
+        tex.prevdepth = getdepth(tail)
+    end
+    return head
+end
+
+local function block_baselineskip(head,tail)
+    tex.prevdepth = -1000 * 65536 -- ignoredepth
+    return head
+end
+
+local preactions = {
+    [1] = correct_depth,
+    [2] = block_baselineskip,
+}
+
+local postactions = {
+    [1] = correct_depth,
+    [2] = block_baselineskip,
+}
+
+-- function nodes.handlers.adjusters(head,where,tail)
+--     if where == "pre_adjust" then
+--         local a = getattr(tail,a_adjuster)
+--         if a then
+--             a = preactions[a]
+--             if a then
+--                 head = a(head,tail)
+--             end
+--         end
+--     elseif where == "post_adjust" then
+--         local a = getattr(tail,a_adjuster)
+--         if a then
+--             a = postactions[a]
+--             if a then
+--                 head = a(head,tail)
+--             end
+--         end
+--     else
+--         -- can't happen
+--     end
+--     return head
+-- end
+
+function nodes.handlers.adjusters(head,where,tail,index)
+    if where == "pre_adjust" then
+        local a = preactions[index]
+        if a then
+            head = a(head,tail)
+        end
+    else -- if where == "post_adjust" then
+        local a = postactions[index]
+        if a then
+            head = a(head,tail)
+        end
+    end
+    return head
+end
