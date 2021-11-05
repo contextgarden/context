@@ -1,8 +1,8 @@
 %D \module
-%D   [       file=typo-dig,
-%D        version=2010.01.18,
+%D   [       file=typo-lbx,
+%D        version=2021.10.10,
 %D          title=\CONTEXT\ Typesetting Macros,
-%D       subtitle=Digits,
+%D       subtitle=Local Boxes,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -31,7 +31,7 @@
 \unprotect
 
 \def\typo_localboxes_reset
-  {\localleftbox  {}% no class here, works grouped
+  {\localleftbox  {}% no index here, works grouped
    \localrightbox {}%
    \localmiddlebox{}}
 
@@ -60,7 +60,7 @@
    \c!distance=\zeropoint]
 
 \newcount\c_typo_localboxes
-\newcount\c_typo_localboxes_class
+\newcount\c_typo_localboxes_index
 
 \appendtoks
     \global\advance\c_typo_localboxes\plusone
@@ -72,7 +72,7 @@
 %D when the assignment happens after e.g.\ \type {\everypar} but is also meant for the first
 %D line.
 
-%D Todo: reserve class 1 for this:
+%D Todo: reserve index 1 for this:
 
 \def\typo_paragraphs_l#1{\localleftbox \ifcstok{#1}\v!global par\fi}
 \def\typo_paragraphs_r#1{\localrightbox\ifcstok{#1}\v!global par\fi}
@@ -86,7 +86,7 @@
   {\box\localboxcontentbox}
 
 \permanent\protected\def\localboxcommand
-  {\ifcsname\??localboxesnamespace\number\localboxclass\endcsname
+  {\ifcsname\??localboxesnamespace\number\localboxindex\endcsname
     %\edef\currentlocalboxes{\lastnamedcs}%
      \expandafter\let\expandafter\currentlocalboxes\lastnamedcs
      \setbox\localboxcontentbox\hbox
@@ -109,15 +109,15 @@
 
 \def\typo_localboxes_zero#1#2#3%
   {\ifcsname\??localboxesattribute#2\endcsname
-     \c_typo_localboxes_class\lastnamedcs
+     \c_typo_localboxes_index\lastnamedcs
      \edef\currentlocalboxes{#2}%
      \edef\currentlocalboxeslocation{#1}%
      \typo_localboxes_localbox
-        class \c_typo_localboxes_class
+        index \c_typo_localboxes_index
         \bgroup
           \hpack
             \ifcstok{\localboxesparameter\c!repeat}\v!no
-              attr \localboxesmarkattribute \localboxmarkonce\c_typo_localboxes_class\relax
+              attr \localboxesmarkattribute \localboxmarkonce\c_typo_localboxes_index\relax
             \fi
             to \zeropoint
           \bgroup
@@ -130,15 +130,15 @@
 
 \def\typo_localboxes_asis#1#2#3%
   {\ifcsname\??localboxesattribute#2\endcsname
-     \c_typo_localboxes_class\lastnamedcs
+     \c_typo_localboxes_index\lastnamedcs
      \edef\currentlocalboxes{#2}%
      \edef\currentlocalboxeslocation{#1}%
      \typo_localboxes_localbox
-        class \c_typo_localboxes_class
+        index \c_typo_localboxes_index
         \bgroup
           \hpack
             \ifcstok{\localboxesparameter\c!repeat}\v!no
-              attr \localboxesmarkattribute \localboxmarkonce\c_typo_localboxes_class\relax
+              attr \localboxesmarkattribute \localboxmarkonce\c_typo_localboxes_index\relax
             \fi
             % todo: use width if dimension, use distance if given
           \bgroup
@@ -162,11 +162,11 @@
 
 \permanent\tolerant\protected\def\resetlocalbox[#1]%
   {\ifcsname\??localboxesattribute#1\endcsname
-     \c_typo_localboxes_class\lastnamedcs
+     \c_typo_localboxes_index\lastnamedcs
      \edef\currentlocalboxes{#1}%
      \ifcsname\??localboxesresetters\localboxesparameter\c!location\endcsname
        \edef\currentlocalboxeslocation{\lastnamedcs}%
-       \typo_localboxes_localbox class \c_typo_localboxes_class {}%
+       \typo_localboxes_localbox index \c_typo_localboxes_index {}%
      \fi
    \fi}
 
@@ -262,15 +262,15 @@
 \permanent\protected\def\localmargintext[#1]#2%
   {\dontleavehmode
    \ifcsname\??localboxesattribute#1\endcsname
-     \c_typo_localboxes_class\lastnamedcs
+     \c_typo_localboxes_index\lastnamedcs
      \edef\currentlocalboxes{#1}%
      \edef\currentlocalboxeslocation{\localboxesparameter\c!location}%
      \ifx\currentlocalboxeslocation\v!right\localrightbox\orelse\ifx\currentlocalboxeslocation\v!left\localleftbox\else\localmiddlebox\fi
-        class \c_typo_localboxes_class
+        index \c_typo_localboxes_index
         \bgroup
           \hpack
             \ifcstok{\localboxesparameter\c!repeat}\v!no
-              attr \localboxesmarkattribute \localboxmarkonce\c_typo_localboxes_class\relax
+              attr \localboxesmarkattribute \localboxmarkonce\c_typo_localboxes_index\relax
             \fi
             to \zeropoint
           \bgroup

@@ -53,6 +53,7 @@ registerotffeature {
     }
 }
 
+
 -- this will become a mode in the engine
 
 local function initialize(tfmdata,value)
@@ -180,7 +181,7 @@ end
 --     }
 -- }
 
-local specification = {
+registerotffeature {
     name         = "compactmath",
     description  = "use one math font",
     initializers = {
@@ -188,8 +189,6 @@ local specification = {
         node = function(...) manipulate(...) initialize(...) end,
     }
 }
-
-registerotffeature(specification)
 
 -- The problem is that the traditional code path doesn't add an italic to the subscript,
 -- simply because it assumes that the width has that already subtracted. So, we cannot
@@ -232,7 +231,7 @@ local function initialize(tfmdata,value)
     end
 end
 
-local specification = {
+registerotffeature {
     name         = "oldmath",
     description  = "deal with fake opentype fonts",
  -- manipulators = {
@@ -244,8 +243,6 @@ local specification = {
         node = initialize,
     }
 }
-
-registerotffeature(specification)
 
 local function initialize(tfmdata,value)
     if type(value) == "string" then
@@ -260,7 +257,7 @@ local function initialize(tfmdata,value)
     end
 end
 
-local specification = {
+registerotffeature {
     name         = "mathcontrol",
     description  = "control specific old/new math handling",
     initializers = {
@@ -268,5 +265,3 @@ local specification = {
         node = initialize,
     }
 }
-
-registerotffeature(specification)

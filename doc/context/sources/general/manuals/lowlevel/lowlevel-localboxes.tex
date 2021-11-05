@@ -35,7 +35,7 @@ code and it then pays of to use it when possible. Among the extensions are a
 callback that is triggered when the left and right boxes get added and
 experiments with that showed some potential but in order to retain performance as
 well as limit extensive node memory usage (par nodes are large) a system of
-classes was added. All this will be illustrated below. Warning: the mechanism in
+indices was added. All this will be illustrated below. Warning: the mechanism in
 \LUAMETATEX\ is not compatible with \LUATEX.
 
 {\em This is a preliminary, uncorrected manual.}
@@ -57,11 +57,11 @@ This mechanism is rather useless when not wrapped into some high level mechanism
 because by default setting these boxes wipes the existing value. In \LUAMETATEX\
 you can actually access the boxes so prepending and appending is possible but
 experiments showed that this could come with a huge performance hit when the
-lists are not cleaned up during a run. This is why we have introduced classes:
-when you assign local boxes using the class option that specific class will be
+lists are not cleaned up during a run. This is why we have introduced indices:
+when you assign local boxes using the index option that specific index will be
 replaced and therefore we have a more sparse solution. So, contrary to \LUATEX,
 in \LUAMETATEX\ the local box registers have a linked lists of local boxes tagged
-by class. Unless you manipulate in \LUA, this is hidden from the user. One can
+by index. Unless you manipulate in \LUA, this is hidden from the user. One can
 access the boxes from the \TEX\ the but there can be no confusion with \LUATEX\
 here because there we don't have access. This is why usage as in \LUATEX\ will
 also work in \LUAMETATEX.
@@ -135,7 +135,7 @@ specific.
 One (nasty) side effect is that when you set these boxes ungrouped they are
 applied to whatever follows, which is why resetting them is built in the relevant
 parts of \CONTEXT. The next examples are typeset grouped an demonstrate the use
-of classes:
+of indices:
 
 \startbuffer
 \dorecurse{20}{before #1 }
@@ -146,12 +146,12 @@ of classes:
 
 \typebuffer[option=TEX] \start \getbuffer \par \stop
 
-Classes can be set for both sides:
+Indices can be set for both sides:
 
 \startbuffer
-\dorecurse{5}{\localrightbox class #1{ \bf \darkgreen R #1}}%
+\dorecurse{5}{\localrightbox index #1{ \bf \darkgreen R #1}}%
 \dorecurse{20}{before #1 }
-\dorecurse{5}{\localleftbox class #1{\bf \darkred L #1 }}%
+\dorecurse{5}{\localleftbox index #1{\bf \darkred L #1 }}%
 \dorecurse{20}{after #1 }
 \stopbuffer
 
@@ -163,9 +163,9 @@ local boxes only come into play when the lines are broken, so till
 then changing them is possible.
 
 \startbuffer
-\dorecurse{3}{\localrightbox class #1{ \bf \darkgreen R #1}}%
+\dorecurse{3}{\localrightbox index #1{ \bf \darkgreen R #1}}%
 \dorecurse{20}{before #1 }
-\dorecurse{2}{\localleftbox par class #1{\bf \darkred L #1 }}%
+\dorecurse{2}{\localleftbox par index #1{\bf \darkred L #1 }}%
 \dorecurse{20}{after #1 }
 \stopbuffer
 
@@ -203,8 +203,8 @@ feature for efficiently placing marginal content.
 
 \getbuffer[definition]
 
-The order of definition matters! Here the \type {x} variants have a larger class
-number. There can (currently) be at most 256 classes. The defined local boxes
+The order of definition matters! Here the \type {x} variants have a larger index
+number. There can (currently) be at most 256 indices. The defined local boxes
 are triggered with \type {\localbox}:
 
 \startbuffer[example]
@@ -371,7 +371,7 @@ here):
 For the moment we have these helpers:
 
 \starttabulate[|l|;|]
-\NC \type {\localboxclass}            \NC integer   \NC \NR
+\NC \type {\localboxindex}            \NC integer   \NC \NR
 \NC \type {\localboxlinenumber}       \NC integer   \NC \NR
 \NC
 \NC \type {\localboxlinewidth}        \NC dimension \NC \NR

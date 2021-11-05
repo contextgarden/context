@@ -710,6 +710,7 @@ nonut = [[
 ]],
 
     }
+
 }
 
 tasks.new {
@@ -762,6 +763,8 @@ nonut = [[
 
 }
 
+-- these operate on the content on a line, so no injections
+
 tasks.new {
     name      = "contributers",
     processor = nodeprocessor,
@@ -784,31 +787,93 @@ local tonode = nodes.nuts.tonode
 
 %localize%
 
--- we operate exclusively on nuts
+-- we operate exclusively on nuts (no index yet)
 
-return function(nuthead,groupcode,nutline)
+return function(head,where,tail)
+    local nuthead = tonut(head)
+    local nuttail = tonut(tail)
+
 %actions%
-    return nuthead
+    return tonode(nuthead)
 end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead),groupcode,line)))
+    nuthead = tonut((%action%(tonode(nuthead),where,tonode(nuttail))))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead,groupcode,nutline)
+    nuthead = %action%(nuthead,where,nuttail)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead),groupcode,line)
+    %action%(tonode(nuthead),where,tonode(nuttail))
 ]],
 
 nonut = [[
-    %action%(nuthead,groupcode,nutline)
+    %action%(nuthead,where,nuttail)
 ]],
 
     }
+
+}
+
+    tasks.new {
+        name      = "adjusters",
+        processor = nodeprocessor,
+        sequence  = {
+            "before",      -- for users
+            "normalizers",
+            "after",       -- for users
+        },
+        templates = {
+
+default = [[
+return function(head)
+    return head
+end
+]],
+
+process = [[
+local tonut    = nodes.tonut
+local tonode   = nodes.nuts.tonode
+local nodetail = nodes.nuts.tail
+
+%localize%
+
+-- we operate exclusively on nuts
+
+return function(head,where,tail,index)
+    local nuthead = tonut(head)
+    local nuttail = tonut(tail)
+
+%actions%
+    return tonode(nuthead)
+end
+]],
+
+step = [[
+    nuthead = tonut((%action%(tonode(nuthead),where,tonode(nuttail),index)))
+    nuttail = nodetail(nuthead)
+]],
+
+nut  = [[
+    nuthead = %action%(nuthead,where,nuttail,index)
+    nuttail = nodetail(nuthead)
+]],
+
+nohead = [[
+    %action%(tonode(nuthead),where,tonode(nuttail),index)
+    nuttail = nodetail(nuthead)
+]],
+
+nonut = [[
+    %action%(nuthead,where,nuttail,index)
+    nuttail = nodetail(nuthead)
+]],
+
+    }
+
 }
 
 -- -- math -- --

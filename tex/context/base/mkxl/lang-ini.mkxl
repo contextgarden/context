@@ -273,6 +273,8 @@
    \s!righthyphenmin=2,
    \s!lefthyphenchar=-1,
    \s!righthyphenchar=45,
+   \s!explicitlefthyphenchar=\languageparameter\s!lefthyphenchar,
+   \s!explicitrighthyphenchar=\languageparameter\s!righthyphenchar,
    % used in compound i.e. interfaced with c! and can be anything so no numbers
    \c!lefthyphen=,
    \c!righthyphen=-,
@@ -509,17 +511,28 @@
    \fi
    \lang_basics_synchronize_min_max}
 
+% \protected\def\lang_basics_synchronize_min_max % maybe store this at the lua end
+%   {% these values are stored along with glyph nodes
+%    \lefthyphenmin \numexpr0\languageparameter\s!lefthyphenmin +\hyphenminoffset\relax
+%    \righthyphenmin\numexpr0\languageparameter\s!righthyphenmin+\hyphenminoffset\relax
+%    \hyphenationmin\numexpr0\languageparameter\s!hyphenmin\relax
+%    % these values are stored with the language (global!)
+%    \prehyphenchar \languageparameter\s!righthyphenchar\relax
+%    \posthyphenchar\languageparameter\s!lefthyphenchar \relax}
+
 \protected\def\lang_basics_synchronize_min_max % maybe store this at the lua end
   {% these values are stored along with glyph nodes
    \lefthyphenmin \numexpr0\languageparameter\s!lefthyphenmin +\hyphenminoffset\relax
    \righthyphenmin\numexpr0\languageparameter\s!righthyphenmin+\hyphenminoffset\relax
    \hyphenationmin\numexpr0\languageparameter\s!hyphenmin\relax
    % these values are stored with the language (global!)
-   \prehyphenchar \languageparameter\s!righthyphenchar\relax
-   \posthyphenchar\languageparameter\s!lefthyphenchar \relax}
+   \prehyphenchar   \languageparameter\s!righthyphenchar\relax
+   \posthyphenchar  \languageparameter\s!lefthyphenchar \relax
+   \preexhyphenchar \languageparameter\s!explicitrighthyphenchar\relax
+   \postexhyphenchar\languageparameter\s!explicitlefthyphenchar \relax}
 
 \appendtoks
-    \lang_basics_synchronize_min_max
+    \lang_basics_synchronize_min_max % todo: also sync when already in language
 \to \everylanguage
 
 \permanent\protected\def\unhyphenated

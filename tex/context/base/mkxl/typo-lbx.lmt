@@ -61,7 +61,7 @@ local stoptiming        = statistics.stoptiming
 
 do
     local lb_found            = nil
-    local lb_class            = 0
+    local lb_index            = 0
     local lb_linenumber       = 0
     local lb_linewidth        = 0
     local lb_localwidth       = 0
@@ -77,7 +77,7 @@ do
     local lb_parfillrightskip = 0
     local lb_overshoot        = 0
 
-    implement { name = "localboxclass",            public = true, usage = "value", actions = function() return integer_value,   lb_class            end }
+    implement { name = "localboxindex",            public = true, usage = "value", actions = function() return integer_value,   lb_index            end }
     implement { name = "localboxlinenumber",       public = true, usage = "value", actions = function() return integer_value,   lb_linenumber       end }
     implement { name = "localboxlinewidth",        public = true, usage = "value", actions = function() return dimension_value, lb_linewidth        end }
     implement { name = "localboxlocalwidth",       public = true, usage = "value", actions = function() return dimension_value, lb_localwidth       end }
@@ -128,7 +128,7 @@ do
         local list = getlist(current)
         if list then
             local attr = getattribute(list,a_localboxesmark) or 0
-            local cach = attr and cache[lb_class]
+            local cach = attr and cache[lb_index]
             local once = cach and cach[attr]
             if once == false then
                 setlist(current)
@@ -155,10 +155,10 @@ do
         local list = getlist(box)
         for current, id, subtype in traverse_list, list do
             if subtype == local_box_code and getwidth(current) == 0 then
-                local class = getindex(current)
-                if class then
+                local index = getindex(current)
+                if index then
                     lb_found    = current
-                    lb_class    = class
+                    lb_index    = index
                     lb_progress = rangedimensions(box,list,current)
                     action(current)
                 end
@@ -170,10 +170,10 @@ do
         local list = getlist(box)
         for current, id, subtype in traverse_list, list do
             if subtype == local_box_code and getwidth(current) == 0 then
-                local class = getindex(current)
-                if class then
+                local index = getindex(current)
+                if index then
                     lb_found    = current
-                    lb_class    = class
+                    lb_index    = index
                     lb_progress = rangedimensions(box,list,current)
                     action(current)
                 end
@@ -185,10 +185,10 @@ do
         local list = getlist(box)
         for current, id, subtype in traverse_list, list do
             if subtype == local_box_code and getwidth(current) == 0 then
-                local class = getindex(current)
-                if class then
+                local index = getindex(current)
+                if index then
                     lb_found    = current
-                    lb_class    = class
+                    lb_index    = index
                     lb_progress = rangedimensions(line,getlist(line),box)
                     action(current)
                 end
@@ -199,7 +199,7 @@ do
     local function processlocalboxes(line,leftbox,rightbox,middlebox,linenumber,leftskip,rightskip,lefthang,righthang,indent,parfillleftskip,parfillrightskip,overshoot)
         --
         lb_found            = nil
-        lb_class            = 0
+        lb_index            = 0
         lb_linenumber       = linenumber
         lb_progress         = 0
         lb_leftskip         = leftskip

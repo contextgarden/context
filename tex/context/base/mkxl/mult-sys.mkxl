@@ -181,6 +181,8 @@
 \definesystemconstant {empty}
 \definesystemconstant {em}
 \definesystemconstant {environment}
+\definesystemconstant {explicitlefthyphenchar}
+\definesystemconstant {explicitrighthyphenchar}
 \definesystemconstant {extensions}
 \definesystemconstant {external}
 \definesystemconstant {ex}

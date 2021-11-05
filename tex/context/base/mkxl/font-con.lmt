@@ -740,6 +740,10 @@ function constructors.scale(tfmdata,specification)
                     chr.italic = vi*hdelta
                 end
             end
+            local ft = character.options
+            if ft then
+                chr.options = ft
+            end
         elseif autoitalicamount then -- itlc feature
             local vi = description.italic
             if not vi then

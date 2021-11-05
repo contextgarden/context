@@ -1008,7 +1008,7 @@ implement {
     protected = true,
     arguments = { "optional", "string" },
     actions   = function(filler, digits)
-        digits = gsub(digits,"(%d)","%1\\digitsbreak")
+        digits = gsub(digits,"(%d)","%1\\digitsbreak ") -- space needed for following letters
         digits = gsub(digits,"\\-$",filler)
         context(digits)
     end

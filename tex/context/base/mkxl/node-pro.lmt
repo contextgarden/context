@@ -15,6 +15,7 @@ local nodes        = nodes
 local tasks        = nodes.tasks
 local nuts         = nodes.nuts
 local tonut        = nodes.tonut
+local tonode       = nodes.tonode
 
 nodes.processors   = nodes.processors or { }
 local processors   = nodes.processors
@@ -99,7 +100,7 @@ end
 do
 
     ----- texnest       = tex.nest
-    local getnest       = tex.getnest
+    ----- getnest       = tex.getnest
 
     local getlist       = nuts.getlist
     local setlist       = nuts.setlist
@@ -107,30 +108,39 @@ do
 
     local linelist_code = nodes.listcodes.line
 
-    local actions       = tasks.actions("contributers")
+    local lineactions   = tasks.actions("contributers")
+    local adjustactions = tasks.actions("adjusters")
 
-    function processors.contribute_filter(groupcode)
-        if groupcode == "box" then -- "pre_box"
-            local whatever = getnest()
-            if whatever then
-                local line = whatever.tail
-                if line then
-                    line = tonut(line)
-                    if getsubtype(line) == linelist_code then
-                        local head = getlist(line)
-                        if head then
-                            local result = actions(head,groupcode,line)
-                            if result and result ~= head then
-                                setlist(line,result)
-                            end
+    -- contribute_head  : pre_box
+    -- pre_adjust_head  : pre_adjust
+    -- just_box         : box
+    -- post_adjust_head : adjust
+
+    -- this was the "contributers" callback but we changed the interface
+
+    -- historically we use a different order than the callback
+
+    function processors.append_line_filter(head,tail,where,index)
+        if tail then
+            if where == "box" then
+                -- here we don't return something, we operate on the line (content)
+                if getsubtype(tail) == linelist_code then -- always
+                    local list = getlist(tail)
+                    if list then
+                        local result = lineactions(list,where,tail,index) -- tail is parent of list
+                        if result and result ~= list then
+                            setlist(tail,result)
                         end
                     end
                 end
+            elseif where == "post_adjust" or where == "pre_adjust" then
+                -- we use the same order as for lines
+                return adjustactions(head,where,tail,index)
             end
         end
     end
 
-    callbacks.register("contribute_filter", processors.contribute_filter, "things done with lines")
+    callbacks.register("append_line_filter", processors.append_line_filter, "things done with lines")
 
 end
 
