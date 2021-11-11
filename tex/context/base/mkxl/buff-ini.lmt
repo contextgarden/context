@@ -678,7 +678,7 @@ implement {
         if doundent or (autoundent and doundent == nil) then
             data = undent(data)
         end
-        buffers.assign(name,data,catcodes)
+        assign(name,data,catcodes)
         context[finish]()
     end
 }
@@ -954,3 +954,79 @@ implement {
     actions   = buffers.samplefile,
     arguments = "string"
 }
+
+-- A somewhat strange place (for now) so the *.log definitions might move someplace
+-- else (if useful at all).
+
+-- Handy for the math test suite that Mikael Sundqvist and I are making where we
+-- need to track box content as well as some low level math tracing features, so
+-- we can pipe to buffers (via a temporary file).
+
+do
+
+    local insert, remove = table.insert, table.remove
+    local setlogfile = texio.setlogfile
+    local openfile   = io.open
+
+    local stack = { }
+    local files = { }
+
+    local function resetlogfile(name)
+        files[name] = false
+    end
+
+    local function pushlogfile(name)
+        local f = openfile(name,files[name] and "ab" or "wb")
+        insert(stack,f)
+        files[name] = true
+        setlogfile(f)
+    end
+
+    local function poplogfile()
+        remove(stack)
+        setlogfile(stack[#stack])
+    end
+
+    logs.pushlogfile  = pushlogfile
+    logs.poplogfile   = poplogfile
+    logs.resetlogfile = resetlogfile
+
+    implement {
+        name      = "resetlogfile",
+        arguments = "argument",
+        public    = true,
+        protected = true,
+        actions   = resetlogfile,
+    }
+
+    implement {
+        name      = "pushlogfile",
+        arguments = "argument",
+        public    = true,
+        protected = true,
+        actions   = pushlogfile,
+    }
+
+    implement {
+        name      = "poplogfile",
+        public    = true,
+        protected = true,
+        actions   = poplogfile,
+    }
+
+    -- In the end we went for a somewhat hidden low level one (see low level math tests
+    -- for usage):
+
+    local showbox = tex.showbox
+
+    implement {
+        name      = "showboxinbuffer",
+        public    = true,
+        protected = true,
+        arguments = { "argument", "integer", "integer" },
+        actions   = function(buffer, box, detail)
+            assign(buffer or "",showbox(box, detail))
+        end,
+    }
+
+end

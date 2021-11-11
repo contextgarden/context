@@ -1,35 +1,35 @@
 return {
-    name = "eb garamond",
+    name = "ebgaramond",
     version = "1.00",
-    comment = "Goodies that complement eb garamond.",
+    comment = "Goodies that complement ebgaramond.",
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     mathematics = {
-        tweaks = {
-            aftercopying = {
-                function(target,original,...)
-                    local crap = {
-                        [0x1D453] = { .20, 1.20 },
-                        [0x1D454] = { .15, 1.15 },
-                    }
-                    local characters = target.characters
-                    local function adapt(k,v)
-                        local character = characters[k]
-                        local width     = character.width
-                        character.width = v[2]*width
-                     -- character.commands = { { "offset", v[1]*width, 0, k } }
-                        character.xoffset = v[1]*width
-                        local smaller = original.characters[k].smaller
-                        if smaller and smaller ~= k then
-                            adapt(smaller,v)
-                        end
-                    end
-                    for k, v in next, crap do
-                        adapt(k,v)
-                    end
-                end,
-            },
-        },
+--         tweaks = {
+--             aftercopying = {
+--                 function(target,original,...)
+--                     local crap = {
+--                         [0x1D453] = { .20, 1.20 },
+--                         [0x1D454] = { .15, 1.15 },
+--                     }
+--                     local characters = target.characters
+--                     local function adapt(k,v)
+--                         local character = characters[k]
+--                         local width     = character.width
+--                         character.width = v[2]*width
+--                      -- character.commands = { { "offset", v[1]*width, 0, k } }
+--                         character.xoffset = v[1]*width
+--                         local smaller = original.characters[k].smaller
+--                         if smaller and smaller ~= k then
+--                             adapt(smaller,v)
+--                         end
+--                     end
+--                     for k, v in next, crap do
+--                         adapt(k,v)
+--                     end
+--                 end,
+--             },
+--         },
 
         alternates = {
             partial        = { feature = 'ss02', value = 1, comment = "Curved partial" },

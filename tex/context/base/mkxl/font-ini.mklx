@@ -777,24 +777,6 @@
    \fi
    \font_helpers_update_font_parameters
    \font_helpers_update_font_class_parameters
-  %\writestatus{fonts}{low level define: #csname/\somefontfile/\number\d_font_scaled_font_size/\fontface/\number\d_font_scaled_text_face}%
-%    \clf_definefont_two
-%       \ifempty\fontclass\s!false\else\s!true\fi
-%       {#csname}%
-%       {\somefontfile}%
-%       \d_font_scaled_font_size
-%       \c_font_feature_inheritance_mode
-%       {\m_font_class_features}%
-%       {\m_font_features}%
-%       {\m_font_class_fallbacks}%
-%       {\m_font_fallbacks}%
-%       \fontface
-%       \d_font_scaled_text_face
-%       {\m_font_class_goodies}%
-%       {\m_font_goodies}%
-%       {\m_font_class_designsize}%
-%       {\m_font_designsize}%
-%       \scaledfontmode
    \clf_definefont_two
       \ifempty\fontclass\s!false\else\s!true\fi
       {#csname}%

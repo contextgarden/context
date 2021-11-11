@@ -872,35 +872,35 @@ shifts to the left. A \prm {mathnolimitsmode} larger that 15 is considered to
 be a factor for the subscript correction. This feature can be handy when
 experimenting.
 
-\subsection {Controlling math italic mess with \prm {mathitalicsmode}}
-
-\topicindex {math+italics}
-
-The \prm {mathitalicsmode} parameter can be set to~1 to force italic correction
-before noads that represent some more complex structure (read: everything
-that is not an ord, bin, rel, open, close, punct or inner). We show a Cambria
-example.
-
-\starttexdefinition Whatever #1
-    \NC \type{\mathitalicsmode = #1}
-    \NC \mathitalicsmode#1\ruledhbox{$\left|T^1\right|$}
-    \NC \mathitalicsmode#1\ruledhbox{$\left|T\right|$}
-    \NC \mathitalicsmode#1\ruledhbox{$T+1$}
-    \NC \mathitalicsmode#1\ruledhbox{$T{1\over2}$}
-    \NC \mathitalicsmode#1\ruledhbox{$T\sqrt{1}$}
-    \NC \NR
-\stoptexdefinition
-
-\start
-    \switchtobodyfont[cambria]
-    \starttabulate[|c|c|c|c|c|c|]
-        \Whatever{0}%
-        \Whatever{1}%
-    \stoptabulate
-\stop
-
-This kind of parameters relate to the fact that italic correction in \OPENTYPE\
-math is bound to fuzzy rules. So, control is the solution.
+% \subsection {Controlling math italic mess with \prm {mathitalicsmode}}
+%
+% \topicindex {math+italics}
+%
+% The \prm {mathitalicsmode} parameter can be set to~1 to force italic correction
+% before noads that represent some more complex structure (read: everything
+% that is not an ord, bin, rel, open, close, punct or inner). We show a Cambria
+% example.
+%
+% \starttexdefinition Whatever #1
+%     \NC \type{\mathitalicsmode = #1}
+%     \NC \mathitalicsmode#1\ruledhbox{$\left|T^1\right|$}
+%     \NC \mathitalicsmode#1\ruledhbox{$\left|T\right|$}
+%     \NC \mathitalicsmode#1\ruledhbox{$T+1$}
+%     \NC \mathitalicsmode#1\ruledhbox{$T{1\over2}$}
+%     \NC \mathitalicsmode#1\ruledhbox{$T\sqrt{1}$}
+%     \NC \NR
+% \stoptexdefinition
+%
+% \start
+%     \switchtobodyfont[cambria]
+%     \starttabulate[|c|c|c|c|c|c|]
+%         \Whatever{0}%
+%         \Whatever{1}%
+%     \stoptabulate
+% \stop
+%
+% This kind of parameters relate to the fact that italic correction in \OPENTYPE\
+% math is bound to fuzzy rules. So, control is the solution.
 
 \subsection {Influencing script kerning with \prm {mathscriptboxmode}}
 
@@ -1078,13 +1078,12 @@ following (potential) problems. Three bits can be set. The first bit prevents an
 unwanted shift when the fence symbol is not scaled (a cambria side effect). The
 second bit forces italic correction between a preceding character ordinal and the
 fenced subformula, while the third bit turns that subformula into an ordinary so
-that the same spacing applies as with unfenced variants. Here we show Cambria
-(with \prm {mathitalicsmode} enabled).
+that the same spacing applies as with unfenced variants.
 
 \starttexdefinition Whatever #1
     \NC \type{\mathdelimitersmode = #1}
-    \NC \mathitalicsmode1\mathdelimitersmode#1\ruledhbox{\showglyphs\showfontkerns\showfontitalics$f(x)$}
-    \NC \mathitalicsmode1\mathdelimitersmode#1\ruledhbox{\showglyphs\showfontkerns\showfontitalics$f\left(x\right)$}
+    \NC \mathdelimitersmode#1\ruledhbox{\showglyphs\showfontkerns\showfontitalics$f(x)$}
+    \NC \mathdelimitersmode#1\ruledhbox{\showglyphs\showfontkerns\showfontitalics$f\left(x\right)$}
     \NC \NR
 \stoptexdefinition
 

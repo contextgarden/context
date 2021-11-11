@@ -419,9 +419,6 @@
     \mathnolimitsmode\plusone % font driven (only opentype)
 \fi
 
-\mathitalicsmode\plusone    % 1 : add to simple noad
-%mathitalicsmode\plusthree  % 2 : add italic kerns for diagnostics
-
 % \adaptfontfeature[*math*][mathnolimitsmode=1000] % only subscript
 
 \definefontfeature

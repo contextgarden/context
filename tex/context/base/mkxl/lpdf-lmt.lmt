@@ -117,7 +117,7 @@ local flushers = { }
 -- used variables
 
 local pdf_h, pdf_v
-local need_tm, need_tf, cur_tmrx, cur_factor, cur_f, cur_e
+local need_tm, need_tf, need_font, cur_tmrx, cur_factor, cur_f, cur_e
 local need_width, need_mode, done_width, done_mode
 local mode
 local f_pdf_cur, f_pdf, fs_cur, fs, f_cur, f_x_scale, f_y_scale
@@ -147,6 +147,7 @@ local function reset_variables(specification)
     tmef          = 1.0
     need_tm       = false
     need_tf       = false
+    need_font     = true
     need_width    = 0
     need_mode     = 0
     done_width    = false
@@ -272,6 +273,7 @@ local function begin_text()
     saved_text_pos_v = pdf_v
     b = b + 1 ; buffer[b] = "BT"
     need_tf    = true
+    need_font  = true
     need_width = 0
     need_mode  = 0
     mode       = "text"
@@ -458,9 +460,10 @@ do
     -- as fontparameters already has checked / set it we can also have a variable
     -- for it so
 
-    local naturalwidth = nil
-    local hshift       = false
-    local vshift       = false
+    local characterwidth   = nil
+ -- local descriptionwidth = nil
+    local hshift           = false
+    local vshift           = false
 
     -- The width array uses the original dimensions! This is different from e.g.
     -- luatex where we have more widths arrays and these reflect the cheated
@@ -468,55 +471,27 @@ do
 
     -- when changing this, check math: compact-001.tex (rule width)
 
---     local naturalwidths = setmetatableindex(function(t,font)
---         local d = descriptions[font]
---         local c = characters[font]
---         local f = parameters[font].hfactor or parameters[font].factor
---         local v = setmetatableindex(function(t,char)
---             local w
---             local e = c and c[char]
---             if e then
---                 w = e.width or 0
---             end
---             if not w then
---                 e = d and d[char]
---                 if e then
---                     w = e.width
---                     if w then
---                         w =  w * f
---                     end
---                 end
---             end
---             if not w then
---                 w = 0
---             end
---             t[char] = w
---             return w
---         end)
---         t[font] = v
---         return v
---     end)
-
-    -- we need to use descriptions ... otherwise we get wrong dimensions when we use
-    -- characters[n].xoffset or virtual stuff
-
-    local naturalwidths = setmetatableindex(function(t,font)
+    local characterwidths = setmetatableindex(function(t,font)
         local d = descriptions[font]
         local c = characters[font]
         local f = parameters[font].hfactor or parameters[font].factor
         local v = setmetatableindex(function(t,char)
             local w
-            local e = d and d[char]
+            local e = c and c[char]
             if e then
-                w = e.width
-                if w then
-                    w =  w * f
+                w = e.width or 0
+                local a = e.advance
+                if a then
+                    w = a
                 end
             end
             if not w then
-                e = c and c[char]
+                e = d and d[char]
                 if e then
-                    w = e.width or 0
+                    w = e.width
+                    if w then
+                        w =  w * f
+                    end
                 end
             end
             if not w then
@@ -529,7 +504,50 @@ do
         return v
     end)
 
-    local function setup_fontparameters(font,factor,f,e,sx,sy)
+    -- we need to use descriptions ... otherwise we get wrong dimensions when we use
+    -- characters[n].xoffset or virtual stuff
+
+ -- local descriptionwidths = setmetatableindex(function(t,font)
+ --     local d = descriptions[font]
+ --     local c = characters[font]
+ --     local f = parameters[font].hfactor or parameters[font].factor
+ --     local v = setmetatableindex(function(t,char)
+ --         local w
+ --         local e = d and d[char]
+ --         if e then
+ --             w = e.width
+ --             if w then
+ --                 w =  w * f
+ --             end
+ --         end
+ --         if not w then
+ --             e = c and c[char]
+ --             if e then
+ --                 w = e.width or 0
+ --             end
+ --         end
+ --         if not w then
+ --             w = 0
+ --         end
+ --         t[char] = w
+ --         return w
+ --     end)
+ --     t[font] = v
+ --     return v
+ -- end)
+
+    -- it's about time to get rid of the pdftex based model but i'll wait with that till after
+    -- the first release so that we have some test period ... when we go compact even less
+
+    -- the descriptions are used for the width array
+
+    local collapse = true
+
+    experiments.register("backend.pdf.collapsefonts",function(v)
+        collapse = v
+    end)
+
+    local function setup_fontparameters(where,font,factor,f,e,sx,sy)
         local slant   = fontparameters.slantfactor   or 0
         local extend  = fontparameters.extendfactor  or 1
         local squeeze = fontparameters.squeezefactor or 1
@@ -551,15 +569,30 @@ do
         cur_e      = e
         tj_delta   = 0
         cw         = 0
-        f_x_scale  = 1.0
-        f_y_scale  = 1.0
-        fs         = fontparameters.size * bpfactor
-        if f then
-            fs = fs * f
-        end
-        -- kind of special:
-        if format == "opentype" or format == "type1" then
-            fs = fs * 1000 / fontparameters.units -- can we avoid this ?
+        --
+        fs = fontparameters.size * bpfactor
+        if collapse then
+            local sc = fs / 10
+            if f then
+                sc = sc * f
+            end
+            -- kind of special:
+            if format == "opentype" or format == "type1" then
+                sc = sc * 1000 / fontparameters.units -- can we avoid this ?
+            end
+            --
+            fs = 10
+            --
+            tmrx = tmrx * sc
+            tmry = tmry * sc
+        else
+            if f then
+                fs = fs * f
+            end
+            -- kind of special:
+            if format == "opentype" or format == "type1" then
+                fs = fs * 1000 / fontparameters.units -- can we avoid this ?
+            end
         end
         --
         f_x_scale = sx
@@ -571,7 +604,8 @@ do
             tmry = tmry * f_y_scale
         end
         --
-        naturalwidth = naturalwidths[font]
+        characterwidth   = characterwidths[font]
+     -- descriptionwidth = descriptionwidths[font]
         --
         hshift = fontparameters.hshift
         vshift = fontparameters.vshift
@@ -585,6 +619,9 @@ do
     local s_mode  = "0 Tr"
 
     local width_factor = 72.27 / 72000.0
+
+    local last_fs
+    local last_fpdf
 
     local function set_font()
      -- if need_width and need_width ~= 0 then
@@ -603,7 +640,13 @@ do
             b = b + 1 ; buffer[b] = s_mode
             done_mode = false
         end
-        b = b + 1 ; buffer[b] = f_font(f_pdf,fs)
+        -- no need when the same
+        if need_font or last_fs ~= fs or last_pdf ~= f_pdf then
+            b = b + 1 ; buffer[b] = f_font(f_pdf,fs)
+            last_fs   = fs
+            last_pdf  = f_pdf
+            need_font = false
+        end
         f_pdf_cur = f_pdf
         fs_cur    = fs
         need_tf   = false
@@ -653,24 +696,42 @@ do
 
     flushers.character = function(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor,sx,sy) -- ,naturalwidth,width)
         if sx ~= f_x_scale or sy ~= f_y_scale or need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur or mode == "page" then
+--         if sx ~= f_x_scale or sy ~= f_y_scale or need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur then
+-- print("f",1)
             pdf_goto_textmode()
-            setup_fontparameters(font,factor,f,e,sx,sy)
+            setup_fontparameters(1,font,factor,f,e,sx,sy) -- too often due to page
+            set_font()
+--         elseif mode == "page" then
+-- print("f",4)
+--             pdf_goto_textmode()
             set_font()
         elseif cur_f ~= f then -- when ok move up (maybe no longer needed)
+-- print("f",2)
             pdf_goto_textmode()
-            setup_fontparameters(font,factor,f,e,sx,sy)
+            setup_fontparameters(2,font,factor,f,e,sx,sy)
             set_font()
      -- elseif cur_tmrx ~= tmrx or cur_factor ~= factor or cur_f ~= f or cur_e ~= e then
         elseif cur_tmrx ~= tmrx or cur_factor ~= factor or cur_e ~= e then
-            setup_fontparameters(font,factor,f,e,sx,sy)
+-- print("f",3)
+            setup_fontparameters(3,font,factor,f,e,sx,sy)
             need_tm = true
         end
+
+        local x = data.xoffset
+        local y = data.yoffset
+        if x then
+            pos_h = pos_h + x * tmef * f_x_scale
+        end
+        if y then
+            pos_v = pos_v + y * f_y_scale
+        end
+
         local move = calc_pdfpos(pos_h,pos_v)
 
         if trace_threshold then
             report_fonts(
                 "before: font %i, char %C, factor %i, naturalwidth %p, move %l, tm %l, hpos %p, delta %p, threshold %p, cw %p",
-                font,char,factor,naturalwidth[char],move,need_tm,pos_h,tj_delta,threshold,cw
+                font,char,factor,characterwidth[char],move,need_tm,pos_h,tj_delta,threshold,cw
             )
         end
 
@@ -693,7 +754,6 @@ do
 
             if hshift then pos_h = pos_h + hshift end
             if vshift then pos_v = pos_v - vshift end
-
             if need_tm then
                 pdf_goto_textmode()
                 set_textmatrix(pos_h,pos_v)
@@ -715,14 +775,15 @@ do
         if trace_threshold then
             report_fonts(
                  "after : font %i, char %C, factor %i, naturalwidth %p, move %l, tm %l, hpos %p, delta %p, threshold %p, cw %p",
-                 font,char,factor,naturalwidth[char],move,need_tm,pos_h,tj_delta,threshold,cw
+                 font,char,factor,characterwidth[char],move,need_tm,pos_h,tj_delta,threshold,cw
              )
         end
 
         if mode == "chararray" then
             begin_charmode()
         end
-        cw = cw + naturalwidth[char] * tmef * f_x_scale
+
+        cw = cw + characterwidth[char] * tmef * f_x_scale
 
         local slot = pdfcharacters[data.index or char] -- registers usage
 

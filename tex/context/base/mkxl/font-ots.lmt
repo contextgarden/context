@@ -2055,19 +2055,23 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck)
             local chainlookup = chainlookups[1]
             for j=1,#chainlookup do
                 local chainstep = chainlookup[j]
-                local chainkind = chainstep.type
-                local chainproc = chainprocs[chainkind]
-                if chainproc then
-                    local ok
-                 -- HH: chainindex 1 added here (for KAI to check too), there are weird ligatures e.g.
-                 -- char + mark -> char where mark has to disappear
-                 -- head, start, ok = chainproc(head,start,last,dataset,sequence,chainstep,rlmode,skiphash,1)
-                    head, start, ok = chainproc(head,start,last,dataset,sequence,chainstep,rlmode,skiphash)
-                    if ok then
-                        done = true
+                if chainstep then
+                    local chainkind = chainstep.type
+                    local chainproc = chainprocs[chainkind]
+                    if chainproc then
+                        local ok
+                     -- HH: chainindex 1 added here (for KAI to check too), there are weird ligatures e.g.
+                     -- char + mark -> char where mark has to disappear
+                     -- head, start, ok = chainproc(head,start,last,dataset,sequence,chainstep,rlmode,skiphash,1)
+                        head, start, ok = chainproc(head,start,last,dataset,sequence,chainstep,rlmode,skiphash)
+                        if ok then
+                            done = true
+                        end
+                    else
+                        logprocess("%s: %s is not yet supported (1)",cref(dataset,sequence),chainkind)
                     end
                 else
-                    logprocess("%s: %s is not yet supported (1)",cref(dataset,sequence),chainkind)
+                    logprocess("%s: has an issue (1)",cref(dataset,sequence))
                 end
             end
 
@@ -2109,23 +2113,28 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck)
                 if chainlookup then
                     for j=1,#chainlookup do
                         local chainstep = chainlookup[j]
-                        local chainkind = chainstep.type
-                        local chainproc = chainprocs[chainkind]
-                        if chainproc then
-                            local ok, n
-                            head, start, ok, n = chainproc(head,start,last,dataset,sequence,chainstep,rlmode,skiphash,i)
-                            -- messy since last can be changed !
-                            if ok then
-                                done = true
-                                if n and n > 1 and i + n > nofchainlookups then
-                                    -- this is a safeguard, we just ignore the rest of the lookups
-                                    i = size -- prevents an advance
-                                    break
+                        if chainstep then
+                            local chainkind = chainstep.type
+                            local chainproc = chainprocs[chainkind]
+                            if chainproc then
+                                local ok, n
+                                head, start, ok, n = chainproc(head,start,last,dataset,sequence,chainstep,rlmode,skiphash,i)
+                                -- messy since last can be changed !
+                                if ok then
+                                    done = true
+                                    if n and n > 1 and i + n > nofchainlookups then
+                                        -- this is a safeguard, we just ignore the rest of the lookups
+                                        i = size -- prevents an advance
+                                        break
+                                    end
                                 end
+                            else
+                                -- actually an error
+                                logprocess("%s: %s is not yet supported (2)",cref(dataset,sequence),chainkind)
                             end
                         else
                             -- actually an error
-                            logprocess("%s: %s is not yet supported (2)",cref(dataset,sequence),chainkind)
+                            logprocess("%s: has an issue (2)",cref(dataset,sequence))
                         end
                     end
                 else

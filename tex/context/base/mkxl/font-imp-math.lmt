@@ -161,9 +161,11 @@ local function initialize(tfmdata,value)
         local mathconstants = rawresources.mathconstants
         if mathconstants then
             local parameters = tfmdata.parameters
+            local properties = tfmdata.properties
             parameters.textscale         = 1000
             parameters.scriptscale       = mathconstants.ScriptPercentScaleDown * 10
             parameters.scriptscriptscale = mathconstants.ScriptScriptPercentScaleDown * 10
+            properties.compactmath       = true
         end
     end
 end

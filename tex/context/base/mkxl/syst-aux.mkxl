@@ -1788,6 +1788,18 @@
 \permanent\protected\def\getcommacommandsize[#1]%
   {\normalexpanded{\getcommalistsize[#1]}}
 
+\permanent\def\getcommalistcount[#1]%
+  {\beginlocalcontrol
+   \getcommalistsize[#1]%
+   \endlocalcontrol
+   \the\commalistcounter}
+
+\permanent\def\getcommacommandcount[#1]%
+  {\beginlocalcontrol
+   \getcommacommandsize[#1]%
+   \endlocalcontrol
+   \the\commalistcounter}
+
 %D Filters:
 
 % \def\syst_helpers_gobble_comma_list#0\ignorearguments{}

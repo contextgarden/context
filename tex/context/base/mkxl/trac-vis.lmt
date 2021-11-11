@@ -1566,7 +1566,7 @@ do
                 if trace_mathkern then
                     head, current = mathkern(head,current)
                 elseif trace_kern then
-                    head, current = ruledmarginkern(head,current,subtype)
+                    head, current = ruledmathkern(head,current,subtype)
                 end
             else
                 if trace_kern then

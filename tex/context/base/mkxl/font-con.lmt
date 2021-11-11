@@ -486,12 +486,14 @@ function constructors.scale(tfmdata,specification)
     if hasmath then
         constructors.assignmathparameters(target,tfmdata) -- does scaling and whatever is needed
 
-        properties.hasmath   = true
-        target.nomath        = false
+        properties.hasmath   = true  -- to be sure
+        target.nomath        = false -- hm
         target.MathConstants = target.mathparameters
 
-        properties.compactmath = true
-        target.compactmath     = true
+        local compactmath    = properties.compactmath
+
+        targetproperties.compactmath = compactmath
+        target.compactmath           = compactmath
 
         local textscale         = parameters.textscale         -- or 1000
         local scriptscale       = parameters.scriptscale       -- or  700
@@ -744,6 +746,10 @@ function constructors.scale(tfmdata,specification)
             if ft then
                 chr.options = ft
             end
+            local sm = character.smaller
+            if sm then
+                chr.smaller = sm
+            end
         elseif autoitalicamount then -- itlc feature
             local vi = description.italic
             if not vi then
@@ -795,14 +801,20 @@ function constructors.scale(tfmdata,specification)
         if vc then
             chr.commands = scalecommands(vc,hdelta,vdelta)
         end
-        local vx = characters.xoffset
-        if vx then
-            chr.vx = vx*hdelta
-        end
-        local vy = characters.yoffset
-        if vy then
-            chr.vy = vy*hdelta
-        end
+        -- we assume that these are done in a manipulator afterwards
+        -- as it makes no sense otherwise
+     -- local vx = character.xoffset
+     -- if vx then
+     --     chr.xoffset = vx*hdelta
+     -- end
+     -- local vy = character.yoffset
+     -- if vy then
+     --     chr.yoffset = vy*vdelta
+     -- end
+     -- local va = character.advance
+     -- if va then
+     --     chr.advance = va*vdelta
+     -- end
         targetcharacters[unicode] = chr
     end
     --

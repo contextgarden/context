@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-11-05 15:54
+-- merge date  : 2021-11-11 19:18
 
 do -- begin closure to overcome local limits and interference
 
@@ -26465,7 +26465,7 @@ function readers.expand(data)
    end
   end
  end
- local function expandlookups(sequences)
+ local function expandlookups(sequences,whatever)
   if sequences then
    for i=1,#sequences do
     local sequence=sequences[i]
@@ -26538,6 +26538,9 @@ function readers.expand(data)
           if lookups then
            for k,v in next,lookups do 
             local lookup=sublookups[v]
+if not lookup and whatever then
+ lookup=whatever[v]
+end
             if lookup then
              lookups[k]=lookup
              if not subtype then
@@ -26596,7 +26599,7 @@ function readers.expand(data)
   end
  end
  expandlookups(sequences)
- expandlookups(sublookups)
+ expandlookups(sublookups,sequences)
 end
 
 end -- closure

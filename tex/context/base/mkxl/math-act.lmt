@@ -181,6 +181,69 @@ function mathematics.overloadparameters(target,original)
     end
 end
 
+-- a couple of predefined tweaks:
+
+local mathtweaks   = { }
+mathematics.tweaks = mathtweaks
+
+local function adapt(targetcharacters,originalcharacters,k,v,compact,n)
+    local character = targetcharacters[k]
+    if character then
+        local width     = character.width
+        local italic    = character.italic
+        local offsetfactor = v[1] or 1
+        local widthfactor  = v[2] or 1
+        local italicfactor = v[3] or 1
+        if width then
+            character.advance = width -- so advance is oldwidth
+            character.xoffset = offsetfactor * width
+            character.width   = widthfactor  * width
+        end
+        if italic then
+            character.italic  = italicfactor * italic
+        end
+        local smaller = originalcharacters[k].smaller
+        if compact and smaller and smaller ~= k then
+            adapt(targetcharacters,originalcharacters,smaller,v,compact,n+1)
+        end
+    else
+        report_math("no character %U",k)
+    end
+end
+
+function mathtweaks.dimensions(target,original,list)
+    local targetcharacters   = target.characters
+    local originalcharacters = original.characters
+    local compact = target.parameters.textscale and true or false
+    for k, v in next, list do
+        adapt(targetcharacters,originalcharacters,k,v,compact,1)
+    end
+end
+
+function mathtweaks.action(target,original,action,...)
+    if type(action) == "function" then
+        action(target,original,...)
+    end
+end
+
+
+local reported = { }
+
+function mathtweaks.version(target,original,expected)
+    local metadata = original.shared.rawdata.metadata
+    if metadata then
+        local version = metadata.version
+        if version then
+            local fontname = metadata.fontname
+         -- version = tonumber(string.match(version,"%d+.%d+"))
+            if not reported[fontname] and version ~= expected then
+                report_math("tweaking %a, version %a found, version %a expected",fontname,version,expected)
+                reported[fontname] = true
+            end
+        end
+    end
+end
+
 local function applytweaks(when,target,original)
     local goodies = original.goodies
     if goodies then
@@ -195,10 +258,19 @@ local function applytweaks(when,target,original)
                         report_math("tweaking math of %a @ %p (%s)",target.properties.fullname,target.parameters.size,when)
                     end
                     for i=1,#tweaks do
-                        local tweak= tweaks[i]
+                        local tweak  = tweaks[i]
                         local tvalue = type(tweak)
                         if tvalue == "function" then
+                            -- old
                             tweak(target,original)
+                        elseif tvalue == "table" then
+                            local command = tweak[1]
+                            if type(command) == "string" then
+                                local action = mathtweaks[command]
+                                if action then
+                                    action(target,original,table.unpack(tweak,2))
+                                end
+                            end
                         end
                     end
                 end
@@ -232,11 +304,6 @@ sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweakaft
 -- no, it's a feature now (see good-mth):
 --
 -- sequencers.appendaction("aftercopyingcharacters", "system","mathematics.overloaddimensions")
-
--- a couple of predefined tweaks:
-
-local tweaks       = { }
-mathematics.tweaks = tweaks
 
 -- helpers
 

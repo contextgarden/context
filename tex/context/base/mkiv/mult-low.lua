@@ -103,9 +103,9 @@ return {
         --
         "overrulemathcontrolcode", "underrulemathcontrolcode", "radicalrulemathcontrolcode",  "fractionrulemathcontrolcode",
         "accentskewhalfmathcontrolcode", "accentskewapplymathcontrolcode", "accentitalickernmathcontrolcode",
-        "delimiteritalickernmathcontrolcode", "orditalickernmathcontrolcode", "charitalicwidthmathcontrolcode",
+        "delimiteritalickernmathcontrolcode", "noorditalickernmathcontrolcode", "charitalicwidthmathcontrolcode",
         "charitalicnoreboxmathcontrolcode", "boxednoitalickernmathcontrolcode", "nostaircasekernmathcontrolcode",
-        "textitalickernmathcontrolcode",
+        "textitalickernmathcontrolcode", "noscriptitalickernmathcontrolcode",
         --
         "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noexpansionglyphoptioncode", "noprotrusionglyphoptioncode",
         "noleftkerningglyphoptioncode", "noleftligaturingglyphoptioncode", "norightkerningglyphoptioncode", "norightligaturingglyphoptioncode",

@@ -283,4 +283,38 @@
 
 \permanent\def\getbufferdata[#1]{\buff_get_stored_indeed{#1}}
 
+% low level helper (for math manual):
+
+% \showboxinbuffer{temp}<boxnumber><detail> % defined in lua, detail cf \shownodedetails 0|1|2
+
+%D \starttyping
+%D \setbox\scratchbox\hbox{$fff$}
+%D \showboxinbuffer{temp}\scratchbox\plusone
+%D \typebuffer[temp][option=TEX]
+%D \stoptyping
+%D
+%D More extensive multistep cases can do this:
+%D
+%D \starttyping
+%D \pushlogfile{oeps-1.txt}
+%D \setbox0\hbox{A}\showbox0
+%D \pushlogfile{oeps-2.txt}
+%D \setbox0\hbox{B}\showbox0
+%D \poplogfile
+%D \setbox0\hbox{C}\showbox0
+%D \poplogfile
+%D
+%D % \resetlogfile{oeps-1.txt}
+%D \pushlogfile{oeps-1.txt}
+%D \setbox0\hbox{A}\showbox0
+%D \pushlogfile{oeps-2.txt}
+%D \setbox0\hbox{B}\showbox0
+%D \poplogfile
+%D \setbox0\hbox{C}\showbox0
+%D \poplogfile
+%D \stoptyping
+%D
+%D But in the end that was overkill and we don't really need a stepwise verbatim
+%D because we need to add comments in between anyway.
+
 \protect \endinput

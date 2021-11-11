@@ -688,7 +688,7 @@ local runner = sandbox.registerrunner {
     name     = "run buffer",
     program  = "context",
     method   = "execute",
-    template = (jit and "--jit " or "") .. "--purgeall %?path: --path=%path% ?% %filename%",
+    template = (jit and "--jit --engine=luajittex" or "--engine=luatex") .. " --purgeall %?path: --path=%path% ?% %filename%",
     reporter = report_typeset,
     checkers = {
         filename = "readable",
