@@ -29,6 +29,12 @@ local splitter     = sorters.splitters.utf
 synonyms.collected = collected
 synonyms.tobesaved = tobesaved
 
+local progressions = { } -- false=not_yet_shown  true=shown
+
+local variables    = interfaces.variables
+local v_all        = variables.all
+local v_current    = variables.current
+
 local function initializer()
     collected = synonyms.collected
     tobesaved = synonyms.tobesaved
@@ -86,12 +92,6 @@ function synonyms.register(class,kind,spec)
     local tag        = definition.tag or ""
     data.metadata.kind = kind -- runtime, not saved in format (yet)
     if not hash[tag] then
---         if definition.used == nil then
---             definition.used = false
---         end
---         if definition.shown == nil then
---             definition.shown = false
---         end
         local entries = data.entries
         entries[#entries+1] = spec
         hash[tag] = spec
@@ -130,17 +130,49 @@ function synonyms.isshown(class,tag)
     return okay and okay.definition.shown or false
 end
 
-function synonyms.resetused(class)
+local function resetused(class)
     for tag, data in next, tobesaved[class].hash do
---         data.definition.used = false
         data.definition.used = nil
     end
 end
 
-function synonyms.resetshown(class)
+local function resetshown(class)
     for tag, data in next, tobesaved[class].hash do
---         data.definition.shown = false
         data.definition.shown = nil
+    end
+end
+
+local function resetlist(class)
+    for tag, data in next, tobesaved[class].hash do
+        data.definition.list = nil
+    end
+end
+
+local function resetall(class)
+    for tag, data in next, tobesaved[class].hash do
+        local definition = data.definition
+        definition.used  = nil
+        definition.shown = nil
+        definition.list  = nil
+    end
+end
+
+synonyms.resetused  = resetused
+synonyms.resetshown = resetshown
+synonyms.resetlist  = resetlist
+synonyms.resetall   = resetall
+
+function synonyms.reset(class,what)
+    if what == "progress" then
+        progressions = { }
+    elseif what == "used" then
+        resetused(class)
+    elseif what == "shown" then
+        resetshown(class)
+    elseif what == "list" then
+        resetlist(class)
+    else
+        resetall(class)
     end
 end
 
@@ -152,6 +184,9 @@ function synonyms.synonym(class,tag)
         definition.used = true
         definition.list = true
         context(definition.synonym)
+    end
+    if progressions[tag] == nil then
+        progressions[tag] = false -- not yet shown
     end
 end
 
@@ -169,10 +204,10 @@ end
 synonyms.compare = sorters.comparers.basic -- (a,b)
 
 function synonyms.filter(data,options)
-    local result  = { }
-    local entries = data.entries
-    local all     = options and options.criterium == interfaces.variables.all
-    if all then
+    local result    = { }
+    local entries   = data.entries
+    local criterium = options and options.criterium
+    if criterium == v_all then
         for i=1,#entries do
             result[i] = entries[i]
         end
@@ -181,8 +216,16 @@ function synonyms.filter(data,options)
             local entry      = entries[i]
             local definition = entry.definition
             if definition.list then
-                result[#result+1] = entry
+                local tag  = definition.tag
+                local done = progressions[tag]
+                if done == false then
+                    result[#result+1] = entry
+                    progressions[tag] = true
+                end
             end
+        end
+        if criterium == v_current then
+            progressions = { }
         end
     end
     data.result = result
@@ -282,8 +325,10 @@ implement { name = "registerusedsynonym",  actions = synonyms.registerused,  arg
 implement { name = "registershownsynonym", actions = synonyms.registershown, arguments = "2 strings" }
 implement { name = "synonymmeaning",       actions = synonyms.meaning,       arguments = "2 strings" }
 implement { name = "synonymname",          actions = synonyms.synonym,       arguments = "2 strings" }
-implement { name = "resetusedsynonyms",    actions = synonyms.resetused,     arguments = "string" }
-implement { name = "resetshownsynonyms",   actions = synonyms.resetshown,    arguments = "string" }
+--        { name = "resetusedsynonyms",    actions = resetused,              arguments = "string" }
+--        { name = "resetshownsynonyms",   actions = resetshown,             arguments = "string" }
+--        { name = "resetlistsynonyms",    actions = resetlist,              arguments = "string" }
+implement { name = "resetsynonyms",        actions = synonyms.reset,         arguments = "2 strings" }
 
 implement {
     name      = "doifelsesynonymused",

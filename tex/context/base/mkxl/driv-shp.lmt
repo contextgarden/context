@@ -165,10 +165,13 @@ local flush_character do
         local saved_r = pos_r
                 pos_r = lefttoright_code
 
-        local data  = fontdata[font] -- hm, so why pass data
-        local fnt   = font
-        local fonts = data.fonts
-        local siz   = (data.parameters.factor or 1)/65536
+        local xoffset = data.xoffset
+        local yoffset = data.yoffset
+
+        local data    = fontdata[font] -- offsets etc
+        local fnt     = font
+        local fonts   = data.fonts
+        local siz     = (data.parameters.factor or 1)/65536
 
         -- An alternative where we (here) locally define handlers like this:
         --
@@ -181,6 +184,16 @@ local flush_character do
         -- doesn't work because accessing the parameters passed to the outer function doesn't
         -- work as expected (so we end up in a nesting loop). I remember hitting this somewhat
         -- unexpected feature before.
+
+if xoffset and xoffset ~= 0 then
+    if factor ~= 0 then
+        xoffset = xoffset + xoffset * factor / refactored -- expansion
+    end
+    pos_h = pos_h + xoffset * sx
+end
+if yoffset and yoffset ~= 0 then
+    pos_v = pos_v + yoffset * sy
+end
 
         -- we assume resolved fonts: id mandate but maybe also size
 
@@ -528,14 +541,6 @@ local flush_character do
         else
             -- kind of messy that we do orientation here and offsets elsewhere .. this might change
             local orientation = data.orientation -- 0 (none), 1, 2, 3 or 4 (none)
---             local x = data.xoffset
---             local y = data.yoffset
---             if x then
---                 pos_h = pos_h + x * sx
---             end
---             if y then
---                 pos_v = pos_v + y * sy
---             end
             if orientation and (orientation == 1 or orientation == 3) then
                 -- we can get weird charactersbox tracing here
                 pushorientation(orientation,pos_h,pos_v)

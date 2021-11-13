@@ -6,6 +6,32 @@
 -- added to the patch list. No goodies setting is needed with
 -- the filename.
 
+local dimensions, kerns, kernpairs  if CONTEXTLMTXMODE == 0 then
+
+    kernpairs = { -- \setupmathematics[kernpairs=yes]
+        [0x1D44E] = {
+            [0x1D44F] = 1000, -- 𝑎𝑏 demo
+        }
+    }
+
+    kerns = {
+        [0x1D453] = {
+            force = true,
+            topright = {
+                {
+                    kern = 1000,
+                },
+            },
+            bottomright = {
+                {
+                    kern = 1000,
+                },
+            },
+        },
+    }
+
+end
+
 local patches = fonts.handlers.otf.enhancers.patches
 
 local function patch(data,filename,threshold)
@@ -42,28 +68,34 @@ return {
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     mathematics = {
+        tweaks = {
+            aftercopying = {
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        -- nothing yet
+                    },
+                },
+                {
+                    tweak  = "fixprimes",
+                    factor = 0.85,
+                },
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "addscripts",
+                },
+            },
+        },
         parameters = {
             DisplayOperatorMinHeight = FixDisplayOperatorMinHeight,
         },
-     -- kernpairs = { -- \setupmathematics[kernpairs=yes]
-     --     [0x1D44E] = {
-     --         [0x1D44F] = 1000, -- 𝑎𝑏 demo
-     --     }
-     -- },
-     -- kerns = {
-     --     [0x1D453] = {
-     --         force = true,
-     --         topright = {
-     --             {
-     --                 kern = 1000,
-     --             },
-     --         },
-     --         bottomright = {
-     --             {
-     --                 kern = 1000,
-     --             },
-     --         },
-     --     },
-     -- },
+        --
+        -- experimental fixes for mkiv:
+        --
+        dimensions = dimensions,
+        kerns = kerns,
+        kernpairs = kernpairs,
     },
 }

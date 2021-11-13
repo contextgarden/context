@@ -101,6 +101,31 @@
 %D
 %D The lists are constructions (like descriptions are) and can be set up
 %D likewise.
+%D
+%D You can show the currently accessed entries as follows:
+%D
+%D \starttyping
+%D \startchapter[title=One]
+%D     test \FIRST\ test test \THIRD\ test \blank
+%D     \placelistofsynonyms[myabbreviation]
+%D     \resetsynonymsprogress[myabbreviation] % reset state
+%D \stopchapter
+%D
+%D \startchapter[title=Two]
+%D     test \FIRST\ test test \SECOND\ test \blank
+%D     \placelistofsynonyms[myabbreviation][criterium=current]
+%D     \resetsynonymsprogress[myabbreviation] % reset state
+%D \stopchapter
+%D
+%D \startchapter[title=Three]
+%D     test test test test test test \blank
+%D     \placelistofsynonyms[myabbreviation][criterium=current] % also reset state
+%D \stopchapter
+%D
+%D \startchapter[title=All]
+%D     \placelistofsynonyms[myabbreviation][criterium=all]
+%D \stopchapter
+%D \stoptyping
 
 % todo: add 'define only' option to descriptions, then add sorting (also based on key)
 % and call to definition -> replaces this module
@@ -339,8 +364,11 @@
 \permanent         \protected\def\currentsynonymmeaning      {\clf_synonymmeaning{\currentsimplelist}{\currentsynonymtag}}
 \permanent         \protected\def\doifelsecurrentsynonymused {\clf_doifelsesynonymused{\currentsimplelist}{\currentsynonymtag}}
 \permanent         \protected\def\doifelsecurrentsynonymshown{\clf_doifelsesynonymshown{\currentsimplelist}{\currentsynonymtag}}
-\permanent         \protected\def\resetusedsynonyms      [#1]{\clf_resetusedsynonyms{#1}}
-\permanent         \protected\def\resetshownsynonyms     [#1]{\clf_resetshownsynonyms{#1}}
+\permanent         \protected\def\resetusedsynonyms      [#1]{\clf_resetsynonyms{#1}{used}}
+\permanent         \protected\def\resetshownsynonyms     [#1]{\clf_resetsynonyms{#1}{shown}}
+\permanent         \protected\def\resetlistsynonyms      [#1]{\clf_resetsynonyms{#1}{list}}
+\permanent         \protected\def\resetsynonyms          [#1]{\clf_resetsynonyms{#1}{all}}
+\permanent         \protected\def\resetsynonymsprogress  [#1]{\clf_resetsynonyms{#1}{progress}}
 
 \aliased\let\rawsynonymname   \clf_synonymname
 \aliased\let\rawsynonymmeaning\clf_synonymmeaning

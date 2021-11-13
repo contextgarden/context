@@ -1,5 +1,14 @@
-local kern_W = { bottomright = { { kern = -150 } } }
-local kern_V = { bottomright = { { kern = -200 } } }
+local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
+
+    local kern_W = { bottomright = { { kern = -150 } } }
+    local kern_V = { bottomright = { { kern = -200 } } }
+
+    kerns = {
+        [0x1D449] = kern_V, -- 𝑉
+        [0x1D44A] = kern_W, -- 𝑊
+    }
+
+end
 
 return {
     name = "minion-math",
@@ -21,10 +30,28 @@ return {
         },
     },
     mathematics = {
-        kerns = {
-            [0x1D449] = kern_V, -- 𝑉
-            [0x1D44A] = kern_W, -- 𝑊
-            -- todo: ssty 1/2
+        tweaks = {
+            aftercopying = {
+                {
+                    tweak = "dimensions",
+                    list  = dimensions,
+                },
+                {
+                    tweak  = "fixprimes",
+                    factor = 0.85,
+                },
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "addscripts",
+                },
+            },
         },
+        --
+        -- experimental fixes for mkiv:
+        --
+        dimensions = dimensions,
+        kerns = kerns,
     },
 }

@@ -147,7 +147,7 @@ local modes = {
 visualizers.modes = modes
 
 local usedfont, exheight, emwidth
-local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_marginkern, l_mathkern, l_italic, l_origin, l_discretionary, l_expansion, l_line, l_space, l_depth,
+local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_marginkern, l_mathkern, l_mathshape, l_italic, l_origin, l_discretionary, l_expansion, l_line, l_space, l_depth,
     l_dir, l_whatsit, l_mark, l_insert
 
 local enabled = false
@@ -207,6 +207,7 @@ local function initialize()
     l_italic        = layers.italic
     l_marginkern    = layers.marginkern
     l_mathkern      = layers.mathkern
+    l_mathshapekern = layers.mathshapekern
     l_origin        = layers.origin
     l_discretionary = layers.discretionary
     l_expansion     = layers.expansion
@@ -432,6 +433,7 @@ local fontkern, italickern, marginkern, mathkern do
 
     local f_cache = caches["fontkern"]
     local i_cache = caches["italickern"]
+    local s_cache = caches["shapekern"]
     local m_cache = caches["marginkern"]
     local l_cache = caches["mathkern"]
 
@@ -469,6 +471,10 @@ local fontkern, italickern, marginkern, mathkern do
 
     italickern = function(head,current)
         return somekern(head,current,i_cache,"trace:do",l_italic)
+    end
+
+    mathshapekern = function(head,current)
+        return somekern(head,current,s_cache,"trace:do",l_mathshapekern)
     end
 
     marginkern = function(head,current)
@@ -1214,11 +1220,10 @@ local ruledmathkern do
     local h_cache = caches["horizontalmathkern"]
     local v_cache = caches["verticalmathkern"]
 
-    ruledmathkern = function(head,current,subtype)
-        local kern     = getkern(current)
-        local vertical = subtype == verticalmathkern_code
-        local cache    = vertical and v_cache or h_cache
-        local info     = cache[kern]
+    ruledmathkern = function(head,current,vertical)
+        local kern  = getkern(current)
+        local cache = vertical and v_cache or h_cache
+        local info  = cache[kern]
         if not info then
             local amount = formatters["%s:%0.3f"](vertical and "MV" or "MH",kern*pt_factor)
             if kern > 0 then
@@ -1321,6 +1326,7 @@ do
     local italickern_code         = kerncodes.italiccorrection
     local leftmarginkern_code     = kerncodes.leftmarginkern
     local rightmarginkern_code    = kerncodes.rightmarginkern
+    local mathshapekern_code      = kerncodes.mathshapekern
     local horizontalmathkern_code = kerncodes.horizontalmathkern
     local verticalmathkern_code   = kerncodes.verticalmathkern
     ----- userkern_code           = kerncodes.userkern
@@ -1560,13 +1566,19 @@ do
                 end
             elseif subtype == verticalmathkern_code then
                 if trace_mathkern or trace_kern then
-                    head, current = ruledmathkern(head,current,subtype)
+                    head, current = ruledmathkern(head,current,true)
                 end
             elseif subtype == horizontalmathkern_code then
                 if trace_mathkern then
                     head, current = mathkern(head,current)
                 elseif trace_kern then
-                    head, current = ruledmathkern(head,current,subtype)
+                    head, current = ruledmathkern(head,current,false)
+                end
+            elseif subtype == mathshapekern_code then
+                if trace_mathkern or trace_italic then
+                    head, current = mathshapekern(head,current)
+                elseif trace_kern then
+                    head, current = ruledmathkern(head,current,false)
                 end
             else
                 if trace_kern then

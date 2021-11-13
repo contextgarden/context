@@ -30,7 +30,6 @@ local function more(value,target,original)
     end
 end
 
-
 return {
     name = "asana-math",
     version = "1.00",
@@ -38,6 +37,27 @@ return {
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     mathematics = {
+        tweaks = {
+            aftercopying = {
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        -- nothing yet
+                    }
+                },
+                {
+                    tweak  = "fixprimes",
+                    factor = 1.05,
+                    scale  = 0.65,
+                },
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "addscripts",
+                },
+            },
+        },
         parameters = {
          -- DisplayOperatorMinHeight         = 0, -- more
          -- StackBottomDisplayStyleShiftDown = 0,

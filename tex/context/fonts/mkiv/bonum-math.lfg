@@ -1,8 +1,21 @@
-local kern_V   = { bottomright = { { kern = -200 } } }
-local kern_W   = { bottomright = { { kern = -100 } } }
-local offset_f = { xoffset = "llx" }
+local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
 
--- Beware of updates in ssty slots!
+    local kern_V   = { bottomright = { { kern = -200 } } }
+    local kern_W   = { bottomright = { { kern = -100 } } }
+    local offset_f = { xoffset = "llx" }
+
+    dimensions = {
+        default = {
+            [0x1D453] = offset_f, -- 𝑓
+        },
+    }
+
+    kerns = {
+        [0x1D449] = kern_V, -- 𝑉
+        [0x1D44A] = kern_W, -- 𝑊
+    }
+
+end
 
 return {
     name = "bonum-math",
@@ -11,26 +24,30 @@ return {
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     mathematics = {
-        dimensions = {
-            default = {
-             -- [0x1D453]     = offset_f, -- 𝑓
-             -- ["1:0x1D453"] = offset_f, -- needed for compact
-             -- ["2:0x1D453"] = offset_f, -- needed for compact
-                ["*:0x1D453"] = offset_f, -- 𝑓
+        tweaks = {
+            aftercopying = {
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        [0x1D453] = { .40, 1.60, .5 }, -- offset width italic
+                    },
+                },
+                {
+                    tweak  = "fixprimes",
+                    factor = 0.85,
+                },
+                {
+                    tweak = "addscripts",
+                },
             },
-        },
-        kerns = {
-         -- [0x1D449]     = kern_V, -- 𝑉
-         -- ["1:0x1D449"] = kern_V, -- needed for compact
-         -- ["2:0x1D449"] = kern_V, -- needed for compact
-         -- [0x1D44A]     = kern_W, -- 𝑊
-         -- ["1:0x1D44A"] = kern_W, -- needed for compact
-         -- ["2:0x1D44A"] = kern_W, -- needed for compact
-            ["*:0x1D449"] = kern_V, -- 𝑉
-            ["*:0x1D44A"] = kern_W, -- 𝑊
         },
         alternates = {
             dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
         },
+        --
+        -- experimental fixes for mkiv:
+        --
+        dimensions = dimensions,
+        kerns = kerns,
     },
 }

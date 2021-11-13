@@ -1927,19 +1927,31 @@ do
     -- inner under over vcenter
 
     local fixscripts = { }
+--     local movesub    = {
+--         -- primes
+--         [0x2032] = 0xFE932,
+--         [0x2033] = 0xFE933,
+--         [0x2034] = 0xFE934,
+--         [0x2057] = 0xFE957,
+--         -- reverse primes
+--         [0x2035] = 0xFE935,
+--         [0x2036] = 0xFE936,
+--         [0x2037] = 0xFE937,
+--     }
+--
+--     mathematics.virtualize(movesub)
+
     local movesub    = {
         -- primes
-        [0x2032] = 0xFE932,
-        [0x2033] = 0xFE933,
-        [0x2034] = 0xFE934,
-        [0x2057] = 0xFE957,
+        [0x2032] = 0x2032,
+        [0x2033] = 0x2033,
+        [0x2034] = 0x2034,
+        [0x2057] = 0x2057,
         -- reverse primes
-        [0x2035] = 0xFE935,
-        [0x2036] = 0xFE936,
-        [0x2037] = 0xFE937,
+        [0x2035] = 0x2035,
+        [0x2036] = 0x2036,
+        [0x2037] = 0x2037,
     }
-
-    mathematics.virtualize(movesub)
 
     local nosuperscript_code = tex.mathoptioncodes.nosuperscript
 

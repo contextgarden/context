@@ -105,7 +105,7 @@ return {
         "accentskewhalfmathcontrolcode", "accentskewapplymathcontrolcode", "accentitalickernmathcontrolcode",
         "delimiteritalickernmathcontrolcode", "noorditalickernmathcontrolcode", "charitalicwidthmathcontrolcode",
         "charitalicnoreboxmathcontrolcode", "boxednoitalickernmathcontrolcode", "nostaircasekernmathcontrolcode",
-        "textitalickernmathcontrolcode", "noscriptitalickernmathcontrolcode",
+        "textitalickernmathcontrolcode", "noscriptitalickernmathcontrolcode", "italicshapekernmathcontrolcode",
         --
         "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noexpansionglyphoptioncode", "noprotrusionglyphoptioncode",
         "noleftkerningglyphoptioncode", "noleftligaturingglyphoptioncode", "norightkerningglyphoptioncode", "norightligaturingglyphoptioncode",

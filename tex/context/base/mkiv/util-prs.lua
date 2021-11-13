@@ -643,7 +643,7 @@ local function ranger(first,last,n,action)
     end
 end
 
-local cardinal    = lpegpatterns.cardinal / tonumber
+local cardinal    = (lpegpatterns.hexadecimal + lpegpatterns.cardinal) / tonumber
 local spacers     = lpegpatterns.spacer^0
 local endofstring = lpegpatterns.endofstring
 

@@ -1,8 +1,52 @@
 -- In order to be able to use beta math fonts, we use our own file name and
 -- always remap.
 
-local kern_150 = { bottomright = { { kern = -150 } } }
-local kern_200 = { bottomright = { { kern = -200 } } }
+local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
+
+    local kern_150 = { bottomright = { { kern = -150 } } }
+    local kern_200 = { bottomright = { { kern = -200 } } }
+
+    kerns = {
+        [0x1D449] = kern_150, --
+        [0x1D44A] = kern_200, -- 𝑊
+    }
+
+    dimensions = {
+        -- always applied
+     -- default = {
+     -- },
+        -- driven by 'mathdimensions' feature
+        default = {
+            -- the root is quite displaced
+            [0x221A] = {
+                -- 73, -960, 853, 40
+                yoffset = 960 - 40,
+                height  = 960,
+                depth   =  40,
+            },
+        -- [0xFE932] = { xoffset = 50, width = 290 }, -- used prime
+        -- [0x2032]  = { xoffset = 50, width = 290 }, -- prime
+        },
+    -- -- seems ok now --
+    -- signs   = {
+    --  -- [0x00B1] = { -- ±
+    --  --     height = 500, depth = 0,
+    --  -- },
+    --  -- [0x2213] = { -- ∓
+    --  --     height = 500, depth = 0,
+    --  -- },
+    --     -- move in boundingbox
+    --     [0x00B1] = { -- ±
+    --         yoffset =  100,
+    --     },
+    --     [0x2213] = { -- ∓
+    --         yoffset = -100,
+    --     },
+    -- },
+    }
+
+end
+
 
 return {
     name = "latin modern",
@@ -13,58 +57,43 @@ return {
     mathematics = {
         tweaks = {
             aftercopying = {
-                mathematics.tweaks.fixbadprime, -- prime is too low
-            --  mathematics.tweaks.fixoverline,
-            },
-        },
-        kerns = {
-            [0x1D449] = kern_150, --
-            [0x1D44A] = kern_200, -- 𝑊
-        },
-        dimensions = {
-            -- always applied
-         -- default = {
-         -- },
-            -- driven by 'mathdimensions' feature
-            default = {
-                -- the root is quite displaced
-                [0x221A] = {
-                    -- 73, -960, 853, 40
-                    yoffset = 960 - 40,
-                    height  = 960,
-                    depth   =  40,
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        -- nothing yet
+                    },
                 },
-            -- [0xFE932] = { xoffset = 50, width = 290 }, -- used prime
-            -- [0x2032]  = { xoffset = 50, width = 290 }, -- prime
-            },
-            signs   = {
-                -- set dimensions
-             -- [0x00B1] = { -- ±
-             --     height = 500, depth = 0,
-             -- },
-             -- [0x2213] = { -- ∓
-             --     height = 500, depth = 0,
-             -- },
-                -- move in boundingbox
-                [0x00B1] = { -- ±
-                    yoffset =  100,
+                {
+                    tweak  = "fixprimes",
+                    factor = 0.85,
                 },
-                [0x2213] = { -- ∓
-                    yoffset = -100,
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "fixradicals",
+                },
+                {
+                    tweak = "addscripts",
                 },
             },
         },
---         parameters = {
---             FractionNumeratorDisplayStyleShiftUp = function(value,target,original)
---                 local o = original.mathparameters.FractionNumeratorDisplayStyleShiftUp
---                 if o > 675 then
---                     o = 600
---                 else
---                     -- probably tuned
---                 end
---                 return o * target.parameters.factor
---             end,
---         }
+        parameters = {
+            FractionNumeratorDisplayStyleShiftUp = function(value,target,original)
+                local o = original.mathparameters.FractionNumeratorDisplayStyleShiftUp
+                if o > 675 then
+                    o = 600
+                else
+                    -- probably tuned
+                end
+                return o * target.parameters.factor
+            end,
+        },
+        --
+        -- experimental fixes for mkiv:
+        --
+        dimensions = dimensions,
+        kerns = kerns,
     },
     filenames = {
         ["latinmodern-math-regular.otf"] = {

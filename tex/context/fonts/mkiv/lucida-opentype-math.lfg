@@ -1,4 +1,29 @@
------ kern_250 = { bottomright = { { kern = -250 } }, force = true }
+local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
+
+ -- local kern_250 = { bottomright = { { kern = -250 } }, force = true }
+
+
+ -- kerns = {
+ --     [0x1D449] = kern_250, --
+ --     [0x1D44A] = kern_250, -- 𝑊
+ -- }
+
+    dimensions = {
+        default = { -- experimental values
+            [0x02044] = { xoffset = 275, width = 600 },
+            -- primes
+            [0xFE932] = { width =  200 },
+            [0xFE933] = { width =  500 },
+            [0xFE934] = { width =  800 },
+            [0xFE935] = { width = 1100 },
+            -- reverse primes
+            [0xFE935] = { width =  200 },
+            [0xFE936] = { width =  500 },
+            [0xFE937] = { width =  800 },
+        },
+    }
+
+end
 
 -- RadicalVerticalGap             =  50
 -- RadicalDisplayStyleVerticalGap = 175
@@ -18,6 +43,30 @@ return {
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     mathematics = {
+        tweaks = {
+            aftercopying = {
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        -- nothing yet
+                    },
+                },
+                {
+                    tweak  = "fixprimes",
+                    factor = 0.85,
+                },
+                {
+                    tweak  = "fakeprimes",
+                    factor = 0.75,
+                },
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "addscripts",
+                },
+            },
+        },
         parameters = {
             RadicalDisplayStyleVerticalGap = FixRadicalDisplayStyleVerticalGap,
         },
@@ -29,23 +78,10 @@ return {
             zero         = { feature = 'ss05', value = 1, comment = "Mathematical Alternative Zero" },
             partial      = { feature = 'ss20', value = 1, comment = "Mathematical Alternative Upright Partial Differential" },
         },
-     -- kerns = {
-     --     [0x1D449] = kern_250, --
-     --     [0x1D44A] = kern_250, -- 𝑊
-     -- },
-        dimensions = {
-            default = { -- experimental values
-                [0x02044] = { xoffset = 275, width = 600 },
-                -- primes
-                [0xFE932] = { width =  200 },
-                [0xFE933] = { width =  500 },
-                [0xFE934] = { width =  800 },
-                [0xFE935] = { width = 1100 },
-                -- reverse primes
-                [0xFE935] = { width =  200 },
-                [0xFE936] = { width =  500 },
-                [0xFE937] = { width =  800 },
-            },
-        },
+        --
+        -- experimental fixes for mkiv:
+        --
+        dimensions = dimensions,
+        kerns = kerns,
     },
 }

@@ -442,6 +442,8 @@ do
         utfchar(0x200B), -- zerowidthspace
         utfchar(0x202F), -- narrownobreakspace
         utfchar(0x205F), -- math thinspace
+        utfchar(0x200C), -- zwnj
+        utfchar(0x200D), -- zwj
     }
 
     -- now we can make:

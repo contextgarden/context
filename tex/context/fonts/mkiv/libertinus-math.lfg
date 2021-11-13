@@ -13,89 +13,22 @@ return {
     mathematics = {
         tweaks = {
             aftercopying = {
-             -- function(target,original)
-             --     local okay = 983068
-             --     local crap = {
-             --         ["minute"] = "minute.ssty1",
-             --         ["second"] = "second.ssty1",
-             --      -- [8242] = 983068,
-             --      -- [8243] = 983069,
-             --         [8244] = 983070,
-             --         [8245] = 983071,
-             --         [8246] = 983072,
-             --         [8247] = 983073,
-             --     }
-             --     local characters = target.characters
-             --     local unicodes   = original.resources.unicodes
-             --     if unicodes["minute.ssty1"] == okay then
-             --         for old, new in next, crap do
-             --             if type(old) == "string" then
-             --                 old = unicodes[old]
-             --             end
-             --             if type(new) == "string" then
-             --                 new = unicodes[new]
-             --             end
-             --             if old and new and characters[old] then
-             --                 local c = characters[new]
-             --                 if c then
-             --                     characters[old] = c
-             --                     c.commands = { { "up", .06 * c.height }, { "slot", 0, new, .7 } }
-             --                 end
-             --             end
-             --         end
-             --         local four = characters[0x2057]
-             --         if four then
-             --             local one = characters[okay]
-             --             local owd = .75*one.width
-             --             local off = .6*one.height
-             --             four.width = 4*owd
-             --             four.commands = {
-             --                 { "offset",     0, off, okay },
-             --                 { "offset",   owd, off, okay },
-             --                 { "offset", 2*owd, off, okay },
-             --                 { "offset", 3*owd, off, okay },
-             --             }
-             --         else
-             --             -- we don't add (but we could), just patch, and there's no
-             --             -- reverse quad either
-             --         end
-             --     else
-             --         logs.report("fonts","the libertinus tweaks need to be checked")
-             --     end
-             -- end,
-                function(target,original)
-                    local crap = { 0x2032, 0x2033, 0x2034, 0x2036, 0x2037, 0x2038 } -- 0x2057
-                    local characters = target.characters
-                    local originals  = original.characters
-                    local unicodes   = original.resources.unicodes
-                    for i=1,#crap do
-                        local old = crap[i]
-                        local chr = characters[slot]
-                        if chr then
-                            local new = chr.smaller
-                            if new then
-                                local c = characters[new]
-                                if c then
-                                    characters[old] = c
-                                    c.commands = { { "up", .06 * c.height }, { "slot", 0, new, .7 } }
-                                end
-                            end
-                        end
-                    end
-                    local four = characters[0x2057]
-                    if four then
-                        local one = characters[0x2032]
-                        local owd = .75*one.width
-                        local off = .6*one.height
-                        four.width = 4*owd
-                        four.commands = {
-                            { "offset",     0, off, okay },
-                            { "offset",   owd, off, okay },
-                            { "offset", 2*owd, off, okay },
-                            { "offset", 3*owd, off, okay },
-                        }
-                    end
-                end,
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        -- nothing yet
+                    },
+                },
+                {
+                    tweak  = "fixprimes",
+                    factor = 0.85,
+                },
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "addscripts",
+                },
             },
         },
     },

@@ -260,7 +260,7 @@ function flushers.updatefontstate(font)
     end
 end
 
--- helpers
+-- helpers (maybe in collapse mode we have to go %.9N)
 
 local f_cm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N cm"]
 local f_tm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N Tm"]
@@ -570,11 +570,15 @@ do
         tj_delta   = 0
         cw         = 0
         --
+        -- print("setup font",where)
+        --
         fs = fontparameters.size * bpfactor
         if collapse then
             local sc = fs / 10
             if f then
-                sc = sc * f
+--                 sc = sc * f
+sx = sx * f
+sy = sy * f
             end
             -- kind of special:
             if format == "opentype" or format == "type1" then
@@ -587,7 +591,9 @@ do
             tmry = tmry * sc
         else
             if f then
-                fs = fs * f
+--                 fs = fs * f
+sx = sx * f
+sy = sy * f
             end
             -- kind of special:
             if format == "opentype" or format == "type1" then
@@ -697,22 +703,18 @@ do
     flushers.character = function(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor,sx,sy) -- ,naturalwidth,width)
         if sx ~= f_x_scale or sy ~= f_y_scale or need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur or mode == "page" then
 --         if sx ~= f_x_scale or sy ~= f_y_scale or need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur then
--- print("f",1)
             pdf_goto_textmode()
             setup_fontparameters(1,font,factor,f,e,sx,sy) -- too often due to page
             set_font()
 --         elseif mode == "page" then
--- print("f",4)
 --             pdf_goto_textmode()
             set_font()
         elseif cur_f ~= f then -- when ok move up (maybe no longer needed)
--- print("f",2)
             pdf_goto_textmode()
             setup_fontparameters(2,font,factor,f,e,sx,sy)
             set_font()
      -- elseif cur_tmrx ~= tmrx or cur_factor ~= factor or cur_f ~= f or cur_e ~= e then
         elseif cur_tmrx ~= tmrx or cur_factor ~= factor or cur_e ~= e then
--- print("f",3)
             setup_fontparameters(3,font,factor,f,e,sx,sy)
             need_tm = true
         end

@@ -1,7 +1,14 @@
-local kern_V = { bottomright = { { kern = -200 } }, topright = { { kern = 50 } } }
-local kern_W = { bottomright = { { kern = -100 } }, topright = { { kern = 50 } } }
+local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
 
--- Beware of updates in ssty slots!
+    local kern_V = { bottomright = { { kern = -200 } }, topright = { { kern = 50 } } }
+    local kern_W = { bottomright = { { kern = -100 } }, topright = { { kern = 50 } } }
+
+    kerns = {
+        [0x1D449] = kern_V, -- 𝑉
+        [0x1D44A] = kern_W, -- 𝑊
+    }
+
+end
 
 return {
     name = "schola-math",
@@ -10,18 +17,33 @@ return {
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     mathematics = {
-        kerns = {
-         -- [0x1D449]     = kern_V, -- 𝑉
-         -- ["1:0x1D449"] = kern_V, -- needed for compact
-         -- ["2:0x1D449"] = kern_V, -- needed for compact
-         -- [0x1D44A]     = kern_W, -- 𝑊
-         -- ["1:0x1D44A"] = kern_W, -- needed for compact
-         -- ["2:0x1D44A"] = kern_W, -- needed for compact
-            ["*:0x1D449"] = kern_V, -- 𝑉
-            ["*:0x1D44A"] = kern_W, -- 𝑊
+        tweaks = {
+            aftercopying = {
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        -- nothing yet
+                    }
+                },
+                {
+                    tweak  = "fixprimes",
+                    factor = 0.85,
+                },
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "addscripts",
+                },
+            },
         },
         alternates = {
             dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
         },
+        --
+        -- experimental fixes for mkiv:
+        --
+        dimensions = dimensions,
+        kerns = kerns,
     },
 }

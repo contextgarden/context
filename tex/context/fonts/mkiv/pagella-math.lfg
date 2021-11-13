@@ -1,7 +1,31 @@
-local dimensions = {
-    [0x1D453] = { .40, 1.60, .5 }, -- offset width italic
---     [0x1D453] = { .0, 2, 0 }, -- offset width italic
-}
+local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
+
+    local kern_V   = { bottomright = { { kern = -200 } } }
+    local kern_W   = { bottomright = { { kern = -100 } } }
+
+    dimensions = {
+        default = {
+         -- [0x1D453]     = { xoffset = 162, width = 278 + 162 },-- 𝑓
+         -- [0x1D453]     = offset_f, -- 𝑓
+         -- ["1:0x1D453"] = offset_f, -- needed for compact
+         -- ["2:0x1D453"] = offset_f, -- needed for compact
+--                 ["*:0x1D453"] = offset_f, -- 𝑓
+        },
+    }
+
+    kerns = {
+     -- [0x1D449]     = kern_V, -- 𝑉
+     -- ["1:0x1D449"] = kern_V, -- needed for compact
+     -- ["2:0x1D449"] = kern_V, -- needed for compact
+     -- [0x1D44A]     = kern_W, -- 𝑊
+     -- ["1:0x1D44A"] = kern_W, -- needed for compact
+     -- ["2:0x1D44A"] = kern_W, -- needed for compact
+     -- ["*:0x1D453"] = kern_f,
+        ["*:0x1D449"] = kern_V, -- 𝑉
+        ["*:0x1D44A"] = kern_W, -- 𝑊
+    }
+
+end
 
 return {
     name = "pagella-math",
@@ -12,54 +36,47 @@ return {
     mathematics = {
         tweaks = {
             aftercopying = {
-                { "version",    "Version 1.632" },
-             -- { "action",     function(target,original) mathematics.tweaks.fixdimensions(target, original, fixes) },
-             -- { "action",     mathematics.tweaks.fixdimensions, fixes },
-                { "dimensions", dimensions },
+             -- {
+             --     tweak    = "version",
+             --     expected = "Version 1.632",
+             -- },
+             -- {
+             --     comment = "example"
+             --     tweak   = "action",
+             --     action  = function(target,original,parameters) mathematics.tweaks.fixdimensions(target, original, parameters)
+             --     list    = fixes, -- one of the parameters
+             -- },
+             -- {
+             --     comment = "example"
+             --     tweak   = "action",
+             --     action  = mathematics.tweaks.fixdimensions,
+             --     list    = fixes, -- one of the parameters
+             -- },
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        [0x1D453] = { .40, 1.60, .5 }, -- offset width italic
+                    },
+                },
+                {
+                    tweak  = "fixprimes",
+                    factor = 0.85,
+                },
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "addscripts",
+                },
             },
         },
         alternates = {
             dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
         },
+        --
+        -- experimental fixes for mkiv:
+        --
+        dimensions = dimensions,
+        kerns = kerns,
     },
 }
-
--- local kern_V   = { bottomright = { { kern = -200 } } }
--- local kern_W   = { bottomright = { { kern = -100 } } }
--- ----- kern_f   = { bottomright = { { kern = -100 } } }
--- -- local offset_f = { xoffset = "llx" }
---
--- -- Beware of updates in ssty slots!
---
--- return {
---     name = "pagella-math",
---     version = "1.00",
---     comment = "Goodies that complement pagella.",
---     author = "Hans Hagen",
---     copyright = "ConTeXt development team",
---     mathematics = {
---         dimensions = {
---             default = {
---              -- [0x1D453]     = { xoffset = 162, width = 278 + 162 },-- 𝑓
---              -- [0x1D453]     = offset_f, -- 𝑓
---              -- ["1:0x1D453"] = offset_f, -- needed for compact
---              -- ["2:0x1D453"] = offset_f, -- needed for compact
--- --                 ["*:0x1D453"] = offset_f, -- 𝑓
---             },
---         },
---         kerns = {
---          -- [0x1D449]     = kern_V, -- 𝑉
---          -- ["1:0x1D449"] = kern_V, -- needed for compact
---          -- ["2:0x1D449"] = kern_V, -- needed for compact
---          -- [0x1D44A]     = kern_W, -- 𝑊
---          -- ["1:0x1D44A"] = kern_W, -- needed for compact
---          -- ["2:0x1D44A"] = kern_W, -- needed for compact
--- --             ["*:0x1D453"] = kern_f,
---             ["*:0x1D449"] = kern_V, -- 𝑉
---             ["*:0x1D44A"] = kern_W, -- 𝑊
---         },
---         alternates = {
---             dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
---         },
---     },
--- }

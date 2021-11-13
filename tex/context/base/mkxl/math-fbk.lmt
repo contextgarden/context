@@ -7,7 +7,8 @@ if not modules then modules = { } end modules ['math-fbk'] = {
 }
 
 -- This will partly be redone and go via definitions in goodies where we can share
--- some across fonts.
+-- some across fonts. That makes most sense for those patches that might need some
+-- finetuning depending on the font.
 
 local next, type = next, type
 
@@ -169,71 +170,6 @@ end
 
 -- a few examples:
 
-local function reference(index,char)
-    if index then
-        return { "slot", index, char }
-    else
-        return charcommand[char]
-    end
-end
-
-local function raised(data,replacement,down)
-    local character = data.scriptdata.characters[replacement]
-    if character then
-        local size = data.size
-        return {
-            width    = character.width,
-            height   = character.height,
-            depth    = character.depth,
-            commands = {
-                down and downcommand[size/4] or upcommand[size/2],
-                reference(data.scriptindex,replacement)
-            }
-        }
-    end
-end
-
--- virtualcharacters[0x207A] = 0x2212
--- virtualcharacters[0x207B] = 0x002B
--- virtualcharacters[0x208A] = 0x2212
--- virtualcharacters[0x208B] = 0x002B
-
-virtualcharacters[0x207A] = function(data) return raised(data,0x002B)      end
-virtualcharacters[0x207B] = function(data) return raised(data,0x2212)      end
-virtualcharacters[0x208A] = function(data) return raised(data,0x002B,true) end
-virtualcharacters[0x208B] = function(data) return raised(data,0x2212,true) end
-
--- local function repeated(data,char,n,fraction)
---     local character = data.characters[char]
---     if character then
---         local width = character.width
---         local delta = width - character.italic -- width * fraction
---         local c = charcommand[char]
---         local r = rightcommand[right]
---         local commands = { }
---         for i=1,n-1 do
---             width = width + delta
---             commands[#commands+1] = c
---             commands[#commands+1] = -delta
---         end
---         commands[#commands+1] = c
---         return {
---             width    = width,
---             height   = character.height,
---             depth    = character.depth,
---             commands = commands,
---         }
---     end
--- end
-
--- virtualcharacters[0x222C] = function(data)
---     return repeated(data,0x222B,2,1/8)
--- end
-
--- virtualcharacters[0x222D] = function(data)
---     return repeated(data,0x222B,3,1/8)
--- end
-
 local addextra = mathematics.extras.add
 
 addextra(0xFE350) -- MATHEMATICAL DOUBLE ARROW LEFT END
@@ -309,8 +245,6 @@ virtualcharacters[0xFE352] = function(data)
         }
     end
 end
-
--- we could move the defs from math-act here
 
 local function accent_to_extensible(target,newchr,original,oldchr,height,depth,swap,offset,unicode)
     local characters = target.characters
@@ -422,53 +356,6 @@ virtualcharacters[0xFE33F] = function(data)
     return accent_to_extensible(target,0xFE33F,data.original,0x0305,height,depth,nil,nil,0x203E)
 end
 
--- spacing (no need for a cache of widths)
-
-local c_zero   = byte('0')
-local c_period = byte('.')
-
-local function spacefraction(data,fraction)
-    local width = fraction * data.target.parameters.space
-    return {
-        width    = width,
-        commands = { rightcommand[width] }
-    }
-end
-
-local function charfraction(data,char)
-    local width = data.target.characters[char].width
-    return {
-        width    = width,
-        commands = { rightcommand[width] }
-    }
-end
-
-local function quadfraction(data,fraction)
-    local width = fraction * data.target.parameters.quad
-    return {
-        width    = width,
-        commands = { rightcommand[width] }
-    }
-end
-
-virtualcharacters[0x00A0] = function(data) return spacefraction(data,1)        end -- nbsp
-virtualcharacters[0x2000] = function(data) return quadfraction (data,1/2)      end -- enquad
-virtualcharacters[0x2001] = function(data) return quadfraction (data,1)        end -- emquad
-virtualcharacters[0x2002] = function(data) return quadfraction (data,1/2)      end -- enspace
-virtualcharacters[0x2003] = function(data) return quadfraction (data,1)        end -- emspace
-virtualcharacters[0x2004] = function(data) return quadfraction (data,1/3)      end -- threeperemspace
-virtualcharacters[0x2005] = function(data) return quadfraction (data,1/4)      end -- fourperemspace
-virtualcharacters[0x2006] = function(data) return quadfraction (data,1/6)      end -- sixperemspace
-virtualcharacters[0x2007] = function(data) return charfraction (data,c_zero)   end -- figurespace
-virtualcharacters[0x2008] = function(data) return charfraction (data,c_period) end -- punctuationspace
-virtualcharacters[0x2009] = function(data) return quadfraction (data,1/8)      end -- breakablethinspace
-virtualcharacters[0x200A] = function(data) return quadfraction (data,1/8)      end -- hairspace
-virtualcharacters[0x200B] = function(data) return quadfraction (data,0)        end -- zerowidthspace
-virtualcharacters[0x202F] = function(data) return quadfraction (data,1/8)      end -- narrownobreakspace
-virtualcharacters[0x205F] = function(data) return spacefraction(data,1/2)      end -- math thinspace
-
---
-
 local function smashed(data,unicode,swap,private)
     local target   = data.target
     local original = data.original
@@ -514,73 +401,250 @@ end
 virtualcharacters[0xFE302] = function(data) return smashed(data,0x0302,0xFE302) end
 virtualcharacters[0xFE303] = function(data) return smashed(data,0x0303,0xFE303) end
 
--- another crazy hack .. doesn't work as we define scrscr first .. we now have smaller
--- primes so we have smaller primes for the moment, big ones will become an option ..
--- these primes in fonts are a real mess .. kind of a dead end, so don't wonder about
--- the values below
+---------------------------------------------------------------------------------
+-- these are moved to math-act.lmt
+---------------------------------------------------------------------------------
 
-local function smashed(data,unicode,optional)
-    local oldchar = data.characters[unicode]
-    if oldchar then
-        local height  = 0.85 * data.target.mathparameters.AccentBaseHeight
-        local newchar = table.copy(oldchar)
-        newchar.yoffset = height - oldchar.height
-        newchar.height  = height
-        return newchar
-    elseif not optional then
-        report_fallbacks("missing %U prime in font %a",unicode,data.target.properties.fullname)
-    end
-end
+-- local function reference(index,char)
+--     if index then
+--         return { "slot", index, char }
+--     else
+--         return charcommand[char]
+--     end
+-- end
+--
+-- local function raised(data,replacement,down)
+--     local character = data.scriptdata.characters[replacement]
+--     if character then
+--         local size = data.size
+--         return {
+--             width    = character.width,
+--             height   = character.height,
+--             depth    = character.depth,
+--             commands = {
+--                 down and downcommand[size/4] or upcommand[size/2],
+--                 reference(data.scriptindex,replacement)
+--             }
+--         }
+--     end
+-- end
+--
+-- virtualcharacters[0x207A] = function(data) return raised(data,0x002B)      end
+-- virtualcharacters[0x207B] = function(data) return raised(data,0x2212)      end
+-- virtualcharacters[0x208A] = function(data) return raised(data,0x002B,true) end
+-- virtualcharacters[0x208B] = function(data) return raised(data,0x2212,true) end
 
-addextra(0xFE932) -- SMASHED PRIME 0x02032
-addextra(0xFE933) -- SMASHED PRIME 0x02033
-addextra(0xFE934) -- SMASHED PRIME 0x02034
-addextra(0xFE957) -- SMASHED PRIME 0x02057
+---------------------------------------------------------------------------------
+-- these are moved to math-act.lmt
+---------------------------------------------------------------------------------
 
-addextra(0xFE935) -- SMASHED BACKWARD PRIME 0x02035
-addextra(0xFE936) -- SMASHED BACKWARD PRIME 0x02036
-addextra(0xFE937) -- SMASHED BACKWARD PRIME 0x02037
+-- local function repeated(data,char,n,fraction)
+--     local character = data.characters[char]
+--     if character then
+--         local width = character.width
+--         local delta = width - character.italic -- width * fraction
+--         local c = charcommand[char]
+--         local r = rightcommand[right]
+--         local commands = { }
+--         for i=1,n-1 do
+--             width = width + delta
+--             commands[#commands+1] = c
+--             commands[#commands+1] = -delta
+--         end
+--         commands[#commands+1] = c
+--         return {
+--             width    = width,
+--             height   = character.height,
+--             depth    = character.depth,
+--             commands = commands,
+--         }
+--     end
+-- end
+--
+-- virtualcharacters[0x222C] = function(data)
+--     return repeated(data,0x222B,2,1/8)
+-- end
+--
+-- virtualcharacters[0x222D] = function(data)
+--     return repeated(data,0x222B,3,1/8)
+-- end
 
-virtualcharacters[0xFE932] = function(data) return smashed(data,0x02032) end
-virtualcharacters[0xFE933] = function(data) return smashed(data,0x02033) end
-virtualcharacters[0xFE934] = function(data) return smashed(data,0x02034) end
-virtualcharacters[0xFE957] = function(data) return smashed(data,0x02057) end
+---------------------------------------------------------------------------------
+-- these are moved to math-act.lmt
+---------------------------------------------------------------------------------
 
-virtualcharacters[0xFE935] = function(data) return smashed(data,0x02035,true) end
-virtualcharacters[0xFE936] = function(data) return smashed(data,0x02036,true) end
-virtualcharacters[0xFE937] = function(data) return smashed(data,0x02037,true) end
+-- -- spacing (no need for a cache of widths)
+--
+-- local c_zero   = byte('0')
+-- local c_period = byte('.')
+--
+-- local function spacefraction(data,fraction)
+--     local width = fraction * data.target.parameters.space
+--     return {
+--         width    = width,
+--      -- commands = { rightcommand[width] }
+--     }
+-- end
+--
+-- local function charfraction(data,char)
+--     local width = data.target.characters[char].width
+--     return {
+--         width    = width,
+--      -- commands = { rightcommand[width] }
+--     }
+-- end
+--
+-- local function quadfraction(data,fraction)
+--     local width = fraction * data.target.parameters.quad
+--     return {
+--         width  = width,
+--      -- commands = { rightcommand[width] }
+--     }
+-- end
+--
+-- virtualcharacters[0x00A0] = function(data) return spacefraction(data,1)        end -- nbsp
+-- virtualcharacters[0x2000] = function(data) return quadfraction (data,1/2)      end -- enquad
+-- virtualcharacters[0x2001] = function(data) return quadfraction (data,1)        end -- emquad
+-- virtualcharacters[0x2002] = function(data) return quadfraction (data,1/2)      end -- enspace
+-- virtualcharacters[0x2003] = function(data) return quadfraction (data,1)        end -- emspace
+-- virtualcharacters[0x2004] = function(data) return quadfraction (data,1/3)      end -- threeperemspace
+-- virtualcharacters[0x2005] = function(data) return quadfraction (data,1/4)      end -- fourperemspace
+-- virtualcharacters[0x2006] = function(data) return quadfraction (data,1/6)      end -- sixperemspace
+-- virtualcharacters[0x2007] = function(data) return charfraction (data,c_zero)   end -- figurespace
+-- virtualcharacters[0x2008] = function(data) return charfraction (data,c_period) end -- punctuationspace
+-- virtualcharacters[0x2009] = function(data) return quadfraction (data,1/8)      end -- breakablethinspace
+-- virtualcharacters[0x200A] = function(data) return quadfraction (data,1/8)      end -- hairspace
+-- virtualcharacters[0x200B] = function(data) return quadfraction (data,0)        end -- zerowidthspace
+-- virtualcharacters[0x202F] = function(data) return quadfraction (data,1/8)      end -- narrownobreakspace
+-- virtualcharacters[0x205F] = function(data) return spacefraction(data,1/2)      end -- math thinspace
 
-local hack = nil
+-- -- another crazy hack .. doesn't work as we define scrscr first .. we now have smaller
+-- -- primes so we have smaller primes for the moment, big ones will become an option ..
+-- -- these primes in fonts are a real mess .. kind of a dead end, so don't wonder about
+-- -- the values below
+--
+-- local function smashed(data,unicode,optional)
+--     local oldchar = data.characters[unicode]
+--     if oldchar then
+--         local height  = 0.85 * data.target.mathparameters.AccentBaseHeight
+--         local newchar = table.copy(oldchar)
+--         newchar.yoffset = height - oldchar.height
+--         newchar.height  = height
+--         return newchar
+--     elseif not optional then
+--         report_fallbacks("missing %U prime in font %a",unicode,data.target.properties.fullname)
+--     end
+-- end
+--
+-- addextra(0xFE932) -- SMASHED PRIME 0x02032
+-- addextra(0xFE933) -- SMASHED PRIME 0x02033
+-- addextra(0xFE934) -- SMASHED PRIME 0x02034
+-- addextra(0xFE957) -- SMASHED PRIME 0x02057
+--
+-- addextra(0xFE935) -- SMASHED BACKWARD PRIME 0x02035
+-- addextra(0xFE936) -- SMASHED BACKWARD PRIME 0x02036
+-- addextra(0xFE937) -- SMASHED BACKWARD PRIME 0x02037
+--
+-- virtualcharacters[0xFE932] = function(data) return smashed(data,0x02032) end
+-- virtualcharacters[0xFE933] = function(data) return smashed(data,0x02033) end
+-- virtualcharacters[0xFE934] = function(data) return smashed(data,0x02034) end
+-- virtualcharacters[0xFE957] = function(data) return smashed(data,0x02057) end
+--
+-- virtualcharacters[0xFE935] = function(data) return smashed(data,0x02035,true) end
+-- virtualcharacters[0xFE936] = function(data) return smashed(data,0x02036,true) end
+-- virtualcharacters[0xFE937] = function(data) return smashed(data,0x02037,true) end
+--
+-- local hack = nil
+--
+-- function mathematics.getridofprime(target,original)
+--     local mathparameters = original.mathparameters
+--     if mathparameters and next(mathparameters) then
+--         local changed = original.changed
+--         if changed then
+--             hack = changed[0x02032]
+--             changed[0x02032] = nil
+--             changed[0x02033] = nil
+--             changed[0x02034] = nil
+--             changed[0x02057] = nil
+--             changed[0x02035] = nil
+--             changed[0x02036] = nil
+--             changed[0x02037] = nil
+--         end
+--     end
+-- end
+--
+-- function mathematics.setridofprime(target,original)
+--     local mathparameters = original.mathparameters
+--     if mathparameters and next(mathparameters) and original.changed then
+--         target.characters[0xFE931] = target.characters[hack or 0x2032]
+--         hack = nil
+--     end
+-- end
+--
+-- utilities.sequencers.appendaction("beforecopyingcharacters","system","mathematics.getridofprime")
+-- utilities.sequencers.appendaction("aftercopyingcharacters", "system","mathematics.setridofprime")
 
-function mathematics.getridofprime(target,original)
---     local mathsize = specification.mathsize
---     if mathsize == 1 or mathsize == 2 or mathsize == 3) then
-    local mathparameters = original.mathparameters
-    if mathparameters and next(mathparameters) then
-        local changed = original.changed
-        if changed then
-            hack = changed[0x02032]
-            changed[0x02032] = nil
-            changed[0x02033] = nil
-            changed[0x02034] = nil
-            changed[0x02057] = nil
-            changed[0x02035] = nil
-            changed[0x02036] = nil
-            changed[0x02037] = nil
-        end
-    end
-end
+-- local list = {
+--     { 0x02032, true  },
+--     { 0x02033, true  },
+--     { 0x02034, true  },
+--     { 0x02057, true  },
+--     { 0x02035, false },
+--     { 0x02036, false },
+--     { 0x02037, false },
+-- }
+--
+-- function mathematics.fixprimes(target,original)
+--     local mathparameters = original.mathparameters
+--     if mathparameters and next(mathparameters) then
+--         for i=1,#list do
+--             local entry = list[i]
+--             local char  = original.characters[entry[1]]
+--             if char then
+--                 local height  = 0.85 * orginal.mathparameters.AccentBaseHeight
+--                 char.yoffset = height - char.height
+--                 char.height  = height
+--                 return char
+--             elseif entry[1] then
+--                 report_fallbacks("missing %U prime in font %a",unicode,original.properties.fullname)
+--             end
+--         end
+--     end
+-- end
+--
+-- utilities.sequencers.appendaction("beforecopyingcharacters","system","mathematics.fixprimes")
 
-function mathematics.setridofprime(target,original)
-    local mathparameters = original.mathparameters
-    if mathparameters and next(mathparameters) and original.changed then
-        target.characters[0xFE931] = target.characters[hack or 0x2032]
-        hack = nil
-    end
-end
+---------------------------------------------------------------------------------
+-- this one is not used
+---------------------------------------------------------------------------------
 
-utilities.sequencers.appendaction("beforecopyingcharacters","system","mathematics.getridofprime")
-utilities.sequencers.appendaction("aftercopyingcharacters", "system","mathematics.setridofprime")
+-- addextra(0xFE941) -- EXTREMELY IDENTICAL TO
+--
+-- virtualcharacters[0xFE941] = function(data) -- this character is only needed for mathpairs
+--     local characters = data.target.characters
+--     local parameters = data.target.parameters
+--     local basechar   = characters[0x003D]
+--     local width      = basechar.width or 0
+--     local height     = basechar.height or 0
+--     local depth      = basechar.depth or 0
+--     return {
+--         unicode   = 0xFE941,
+--         width     = width,
+--         height    = height,         -- we cheat (no time now)
+--         depth     = depth,          -- we cheat (no time now)
+--         commands  = {
+--             upcommand[height/2], -- sort of works
+--             charcommand[0x003D],
+--             leftcommand[width],
+--             downcommand[height],     -- sort of works
+--             charcommand[0x003D],
+--         },
+--     }
+-- end
+
+---------------------------------------------------------------------------------
+-- these might move to math-act.lmt
+---------------------------------------------------------------------------------
 
 -- actuarian (beware: xits has an ugly one)
 
@@ -638,31 +702,9 @@ virtualcharacters[0x2A75] = function(data) return equals(data,0x2A75,0x003D, 1/5
 virtualcharacters[0x2A76] = function(data) return equals(data,0x2A76,0x003D, 1/5,3) end -- ===
 virtualcharacters[0x2980] = function(data) return equals(data,0x2980,0x007C,-1/8,3) end -- |||
 
--- addextra(0xFE941) -- EXTREMELY IDENTICAL TO
---
--- virtualcharacters[0xFE941] = function(data) -- this character is only needed for mathpairs
---     local characters = data.target.characters
---     local parameters = data.target.parameters
---     local basechar   = characters[0x003D]
---     local width      = basechar.width or 0
---     local height     = basechar.height or 0
---     local depth      = basechar.depth or 0
---     return {
---         unicode   = 0xFE941,
---         width     = width,
---         height    = height,         -- we cheat (no time now)
---         depth     = depth,          -- we cheat (no time now)
---         commands  = {
---             upcommand[height/2], -- sort of works
---             charcommand[0x003D],
---             leftcommand[width],
---             downcommand[height],     -- sort of works
---             charcommand[0x003D],
---         },
---     }
--- end
-
--- lucida needs this
+---------------------------------------------------------------------------------
+-- these might move to math-act.lmt -- lucida needs this
+---------------------------------------------------------------------------------
 
 virtualcharacters[0x305] = function(data)
     local target = data.target
@@ -692,6 +734,10 @@ virtualcharacters[0x305] = function(data)
         }
     }
 end
+
+---------------------------------------------------------------------------------
+-- these might move to math-act.lmt
+---------------------------------------------------------------------------------
 
 local function threedots(data,shift)
     local characters = data.target.characters
