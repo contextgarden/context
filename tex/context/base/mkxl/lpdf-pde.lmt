@@ -362,10 +362,14 @@ some_reference = function(r,document)
         elseif kind == array_object_code then
             cached = some_array(object,document)
         elseif kind == stream_object_code then
+            -- optionally not cached
             cached = some_stream(object,b,document)
-        else
-            cached = { kind, object, b, c }
-            -- really cache this?
+        else -- if kind == string_object_code then
+            return object
+--             return some_string(object[2],object[3])
+--         else
+--             cached = { kind, object, b, c }
+--             -- really cache this?
         end
         document.__cache__[objnum] = cached
         document.__xrefs__[cached] = objnum

@@ -34,6 +34,7 @@ return {
             aftercopying = {
                 {
                     tweak = "dimensions",
+                 -- smaller = true,
                     list  = dimensions,
                 },
                 {

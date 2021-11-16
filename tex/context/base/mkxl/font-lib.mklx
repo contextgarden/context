@@ -88,7 +88,7 @@
 \registerctxluafile{font-enh}{autosuffix}
 
 \registerctxluafile{good-ini}{}
-\registerctxluafile{good-gen}{}
+\registerctxluafile{good-gen}{autosuffix}
 \registerctxluafile{good-ctx}{}
 \registerctxluafile{good-mth}{autosuffix}
 
@@ -112,12 +112,7 @@
 \registerctxluafile{font-imp-spacekerns}{}
 \registerctxluafile{font-imp-tweaks}{}
 \registerctxluafile{font-imp-combining}{}
-
-\doifelsefileexists{font-imp-scripts.lua} {
-    \registerctxluafile{font-imp-scripts}{}
-} {
-    % not yet, lmtx feature
-}
+\registerctxluafile{font-imp-scripts}{autosuffix}
 
 \registerctxluafile{font-imp-tracing}{autosuffix} % comes last!
 

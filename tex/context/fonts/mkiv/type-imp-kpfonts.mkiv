@@ -1,0 +1,101 @@
+%D \module
+%D   [       file=type-kepler,
+%D        version=2021.11.16,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Kepler  Opentype,
+%D         author=Mikael Sundqvist & Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% NOTA BENE: class features and goodies get expanded!
+
+\starttypescriptcollection[kpfonts-opentype]
+
+    \doifunknownfontfeature {kp-sans-bold} {\definefontfeature[kp-sans-bold][boldened]}
+
+    \starttypescript [kpfonts,kpfonts-light,kpfonts-bold,kpfonts-sans]
+        \loadfontgoodies[kpfonts-math]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif]       [\typescriptone] [\s!default] [\s!features=\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]        [\typescriptone] [\s!default] [\s!features=\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]        [\typescriptone] [\s!default] [\s!features=\s!none]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]        [\typescriptone] [\s!default]
+        % for the moment here:
+        % \setupmathrendering[\typescriptone][\s!it=\s!italic]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [\s!serif] [kpfonts,kpfonts-sans]
+        \definefontsynonym [\s!Serif]            [\s!file:KpRoman-Regular.otf]
+        \definefontsynonym [\s!SerifBold]        [\s!file:KpRoman-SemiBold.otf]
+        \definefontsynonym [\s!SerifItalic]      [\s!file:KpRoman-Italic.otf]
+        \definefontsynonym [\s!SerifBoldItalic]  [\s!file:KpRoman-SemiboldItalic.otf]
+        \definefontsynonym [\s!SerifSlanted]     [\s!SerifItalic]
+        \definefontsynonym [\s!SerifBoldSlanted] [\s!SerifBoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [kpfonts-light]
+        \definefontsynonym [\s!Serif]            [\s!file:KpRoman-Light.otf]
+        \definefontsynonym [\s!SerifBold]        [\s!file:KpRoman-Semibold.otf]
+        \definefontsynonym [\s!SerifItalic]      [\s!file:KpRoman-LightItalic.otf]
+        \definefontsynonym [\s!SerifBoldItalic]  [\s!file:KpRoman-SemiboldItalic.otf]
+        \definefontsynonym [\s!SerifSlanted]     [\s!SerifItalic]
+        \definefontsynonym [\s!SerifBoldSlanted] [\s!SerifBoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [kpfonts-bold]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]            [\s!file:KpRoman-Regular.otf]
+        \definefontsynonym [\s!SerifBold]        [\s!file:KpRoman-Bold.otf]
+        \definefontsynonym [\s!SerifItalic]      [\s!file:KpRoman-Italic.otf]
+        \definefontsynonym [\s!SerifBoldItalic]  [\s!file:KpRoman-BoldItalic.otf]
+      % \definefontsynonym [\s!SerifSlanted]     [\s!SerifItalic]
+      % \definefontsynonym [\s!SerifBoldSlanted] [\s!SerifBoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [kpfonts,kpfonts-sans,kpfonts-light,kpfonts-bold]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]            [\s!file:KpSans-Regular.otf]
+        \definefontsynonym [\s!SansBold]        [\s!file:KpSans-Bold.otf]
+        \definefontsynonym [\s!SansItalic]      [\s!file:KpSans-Italic.otf]
+        \definefontsynonym [\s!SansBoldItalic]  [\s!file:KpSans-BoldItalic.otf]
+      % \definefontsynonym [\s!SansSlanted]     [\s!SansItalic]
+      % \definefontsynonym [\s!SansBoldSlanted] [\s!SansBoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [kpfonts,kpfonts-sans,kpfonts-light,kpfonts-bold]
+        \setups[\s!font:\s!fallback:\s!mono]
+        \definefontsynonym [\s!Mono]            [\s!file:KpMono-Regular.otf]
+        \definefontsynonym [\s!MonoBold]        [\s!file:KpMono-Bold.otf]
+        \definefontsynonym [\s!MonoItalic]      [\s!file:KpMono-Italic.otf]
+        \definefontsynonym [\s!MonoBoldItalic]  [\s!file:KpMono-BoldItalic.otf]
+      % \definefontsynonym [\s!MonoSlanted]     [\s!MonoItalic]
+      % \definefontsynonym [\s!MonoBoldSlanted] [\s!MonoBoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!math] [kpfonts,kpfonts-bold]
+        \definefontsynonym [\s!MathRoman]     [\s!file:KpMath-Regular.otf]  [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=kpfonts-math]
+        \definefontsynonym [\s!MathRomanBold] [\s!file:KpMath-Semibold.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=kpfonts-math]
+    \stoptypescript
+
+    \starttypescript [\s!math] [kpfonts-bold]
+        \definefontsynonym [\s!MathRoman]     [\s!file:KpMath-Regular.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=kpfonts-math]
+        \definefontsynonym [\s!MathRomanBold] [\s!file:KpMath-Bold.otf]    [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=kpfonts-math]
+    \stoptypescript
+
+    \starttypescript [\s!math] [kpfonts-light]
+        \definefontsynonym [\s!MathRoman]     [\s!file:KpMath-Light.otf]   [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=kpfonts-math]
+        \definefontsynonym [\s!MathRomanBold] [\s!file:KpMath-Regular.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=kpfonts-math]
+    \stoptypescript
+
+    \starttypescript [\s!math] [kpfonts-sans]
+        \definefontsynonym [\s!MathRoman]     [\s!file:KpMath-Sans.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=kpfonts-math]
+        \definefontsynonym [\s!MathRomanBold] [\s!file:KpMath-Sans.otf] [\s!features={\s!math\mathsizesuffix,lm-math-bold,mathextra},\s!goodies=kpfonts-math]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\endinput

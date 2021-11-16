@@ -1140,10 +1140,12 @@ end)
 
 -- The cmd names were synchronized with the normal call cmd names.
 
-local luacalls = {              --  luatex     luametatex
-    lua_expandable_call = true, --  normal
-    lua_call            = true, --  protected  normal
-    lua_protected_call  = true, --             protected
+local luacalls = {
+    lua_function_call  = true,
+    lua_protected_call = true,
+    lua_value          = true,
+    lua_local_call     = true,
+    lua_call           = true,
 }
 
 local function userdata(argument)
@@ -1155,7 +1157,7 @@ local function userdata(argument)
          -- return formatters["<<\\%s>>"](csname)
             return formatters["\\%s"](csname)
         end
-        if luacall[argument.cmdname] then
+        if luacalls[argument.cmdname] then
             return "<<function>>" -- argument.mode
         end
         return "<<token>>"

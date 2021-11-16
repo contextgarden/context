@@ -872,7 +872,8 @@
      \scaledfontmode\zerocount
    \fi
    \c_font_future_glyph_scale\numexpr\plushundred*\d_font_scaled_font_size/\maxcard\relax
-   \glyphscale\numexpr\plushundred*\d_font_scaled_font_size/\maxcard\relax % needed ? for math i guess
+ % \glyphscale\numexpr\plushundred*\d_font_scaled_font_size/\maxcard\relax % needed ? for math i guess
+   \glyphscale\numexpr\c_font_future_glyph_scale % needed ? for math i guess
  % \d_font_scaled_font_size\d_font_scaled_default
  % \d_font_scaled_text_face\d_font_scaled_default
    %
@@ -924,15 +925,24 @@
      \ifempty\somefontsizey\else
         \edef\somefontsizey{\glyphyscale\somefontsizey\relax}%
      \fi
-     \ifempty\fontclass\else\global\fi
-     \mutable\protected\edefcsname#csname\endcsname
-       {\setfontid\the\fontid\csname#csname\endcsname\relax
-        \glyphscale\the\glyphscale\relax
-        \somefontsizex
-        \somefontsizey}%
-     %
      \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
-     \the\everydefinefont
+     \ifrelax\lastrawfontcall
+      \let\somefontspec\empty
+     \else
+%        \ifempty\fontclass\else\global\fi
+%        \mutable\protected\edefcsname#csname\endcsname
+%          {\setfontid\the\fontid\csname#csname\endcsname\relax
+%           \glyphscale\the\glyphscale\relax
+%           \somefontsizex
+%           \somefontsizey}%
+%        \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
+       \mutable\protected\edef\lastrawfontcall
+         {\setfontid\the\fontid\csname#csname\endcsname\relax
+          \glyphscale\the\glyphscale\relax
+          \somefontsizex
+          \somefontsizey}%
+       \ifempty\fontclass\letcsname\else\gletcsname\fi#csname\endcsname\lastrawfontcall
+     \fi
    \fi
    \c_font_feature_inheritance_mode\c_font_feature_inheritance_default}
 

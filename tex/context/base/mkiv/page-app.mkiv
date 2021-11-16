@@ -204,7 +204,7 @@
   {\bgroup
    \setupexternalfigure[\v!page:\v!figure][\c!offset=\v!overlay,#2]%
    \startTEXpage[\c!offset=\namedexternalfigureparameter{\v!page:\v!figure}\c!offset]%
-     \externalfigure[#1]\ignorespaces} % so we can put some text below the graphic
+     \externalfigure[#1][\v!page:\v!figure]\ignorespaces} % so we can put some text below the graphic
 
 \unexpanded\def\stoppagefigure
   {\stopTEXpage

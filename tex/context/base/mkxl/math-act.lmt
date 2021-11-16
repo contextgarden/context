@@ -256,83 +256,143 @@ end
 
 do
 
+    -- see changed hack in math-fbk
+
+    local copytable = table.copy
+    local nps = fonts.helpers.newprivateslot
+
     local list = {
-        { 0x2032, true,            },
-        { 0x2033, true,  0x2032, 2 },
-        { 0x2034, true,  0x2032, 3 },
-        { 0x2057, true,  0x2032, 4 },
-        { 0x2035, false,           },
-        { 0x2036, false, 0x2035, 2 },
-        { 0x2037, false, 0x2035, 3 },
+        { 0x2032, { nps("prime 0x2032 1"), nps("prime 0x2032 2"), nps("prime 0x2032 3") }, 1 },
+        { 0x2033, { nps("prime 0x2033 1"), nps("prime 0x2033 2"), nps("prime 0x2033 3") }, 2 },
+        { 0x2034, { nps("prime 0x2034 1"), nps("prime 0x2034 2"), nps("prime 0x2034 3") }, 3 },
+        { 0x2057, { nps("prime 0x2057 1"), nps("prime 0x2057 2"), nps("prime 0x2057 3") }, 4 },
+        { 0x2035, { nps("prime 0x2035 1"), nps("prime 0x2035 2"), nps("prime 0x2035 3") }, 1 },
+        { 0x2036, { nps("prime 0x2036 1"), nps("prime 0x2036 2"), nps("prime 0x2036 3") }, 2 },
+        { 0x2037, { nps("prime 0x2037 1"), nps("prime 0x2037 2"), nps("prime 0x2037 3") }, 3 },
     }
 
-    local function fix(target,original,characters,factor,scale,newheight,code,mandate)
-        local char  = characters[code]
-        if char then
-            local oldheight = scale * char.height
-            char.yoffset = newheight - oldheight
-            char.height  = newheight
-            if scale ~= 1 then
-                char.width    = scale * char.width
-                char.commands = {
-                    { "slot", 0, code, scale }
-                }
-            end
+    local function copytable(t)
+        return {
+            width   = t.width,
+            height  = t.height,
+            depth   = t.depth,
+            index   = t.index,
+            unicode = t.unicode,
+        }
+    end
+
+    local lastprivate
+
+    local function use(target,original,targetcharacters,charcode,private,newheight,scale,fake,keep,count,smaller)
+        if count == 1 then
+            lastprivate = private
+        end
+        local olddata = targetcharacters[lastprivate]
+        if keep then
             if trace_tweaking then
-                report_tweak("fixing prime %U ",target,original,code)
+                report_tweak("keeping primt %U",target,original,charcode)
             end
-            local small = char.smaller
-            if small then
-                fix(target,original,characters,factor,scale,newheight,small,false)
+        elseif olddata then
+            local oldheight = scale * olddata.height
+            local oldwidth  = scale * olddata.width
+            local yoffset   = (newheight - oldheight) / scale
+            local unicode   = olddata.unicode
+            local newwidth  = oldwidth
+            if fake and count > 1 then
+                -- todo: when keep
+                local xoffset  = fake * oldwidth
+                local newwidth = newwidth + (count - 1) * xoffset
+                targetcharacters[charcode] = {
+                    yoffset  = yoffset,
+                    width    = newwidth,
+                    height   = newheight,
+                    smaller  = smaller,
+                    unicode  = unicode,
+                    commands = {
+                                      { "offset",           0, 0, lastprivate, scale, scale },
+                                      { "offset",     xoffset, 0, lastprivate, scale, scale },
+                        count > 2 and { "offset", 2 * xoffset, 0, lastprivate, scale, scale } or nil,
+                        count > 3 and { "offset", 3 * xoffset, 0, lastprivate, scale, scale } or nil,
+                    },
+                }
+                if trace_tweaking then
+                    report_tweak("faking %U with %i primes",target,original,charcode,count)
+                end
+            else
+                targetcharacters[charcode] = {
+                    yoffset  = yoffset,
+                    width    = newwidth,
+                    height   = newheight,
+                    smaller  = smaller,
+                    unicode  = unicode,
+                    commands = {
+                        { "offset", 0, 0, lastprivate, scale, scale }
+                    },
+                }
+                if trace_tweaking then
+                    report_tweak("fixing prime %U",target,original,charcode)
+                end
             end
-        elseif mandate then
-            report_math("missing %U prime in font %a",code,original.properties.fullname)
+        elseif trace_tweaking then
+            report_tweak("unable to fix prime %U",target,original,charcode)
         end
     end
 
     function mathtweaks.fixprimes(target,original,parameters)
-        local characters = target.characters
-        local factor     = parameters.factor or 0.85
-        local scale      = parameters.scale  or 1
-        local newheight  = factor * target.mathparameters.AccentBaseHeight
+        local targetcharacters   = target.characters
+        local targetparameters   = target.parameters
+        local originalcharacters = original.characters
+        local factor    = parameters.factor or 0.85
+        local scale     = parameters.scale or 1
+        local smaller   = parameters.smaller
+        local fake      = parameters.fake
+        local keep      = parameters.keep and targetparameters.mathsize == 1
+        local newheight = factor * target.mathparameters.AccentBaseHeight
+        local compact   = targetparameters.textscale and true or false
+        --
+        lastprivate = false
+        -- make virtual copies (just all of them, also for tracing)
         for i=1,#list do
             local entry = list[i]
-            fix(target,original,characters,factor,scale,newheight,entry[1],entry[2])
+            local count = entry[3]
+            if not fake or count == 1 then
+                local c1 = entry[1]
+                local d1 = targetcharacters[c1]
+                if d1 then
+                    local pc = entry[2]
+                    local c2 = d1.smaller or c1
+                    local d2 = targetcharacters[c2]
+                    local c3 = d2.smaller or c2
+                    local d3 = targetcharacters[c3]
+                    if smaller then
+                        d1 = d2
+                        d2 = d3
+                    end
+                    targetcharacters[pc[1]] = copytable(d1)
+                    targetcharacters[pc[2]] = copytable(d2)
+                    targetcharacters[pc[3]] = copytable(d3)
+                end
+            end
         end
-    end
-
-    local function fake(target,original,characters,factor,n,single,multiple)
-        local csingle   = characters[single]
-        local cmultiple = characters[multiple]
-        local width     = csingle.width
-        local hoffset   = factor * width
-        cmultiple.width    = width + (n - 1) * hoffset
-        cmultiple.commands = {
-                      { "offset",           0, 0, single },
-                      { "offset",     hoffset, 0, single },
-            n > 2 and { "offset", 2 * hoffset, 0, single } or nil,
-            n > 3 and { "offset", 3 * hoffset, 0, single } or nil,
-        }
-        if trace_tweaking then
-            report_tweak("faking %U with %i primes",target,original,multiple,n)
-        end
-        local ssingle   = csingle.smaller
-        local smultiple = cmultiple.smaller
-        if ssingle and smultiple then
-            fake(target,original,characters,factor,n,ssingle,smultiple)
-        else
-            --weird font
-        end
-    end
-
-    function mathtweaks.fakeprimes(target,original,parameters)
-        local characters = target.characters
-        local factor     = parameters.factor or .75
+        -- replace
         for i=1,#list do
             local entry = list[i]
-            local n     = entry[4]
-            if n then
-                fake(target,original,characters,factor,n,entry[3],entry[1])
+            local count = entry[3]
+            local c1    = entry[1]
+            local pc    = entry[2]
+            local s1    = pc[1]
+            local d1    = targetcharacters[c1]
+            if compact and d1 then
+                local c2 = d1.smaller or c1
+                local d2 = targetcharacters[c2]
+                local c3 = d2.smaller or c2
+                local s2 = pc[2]
+                local s3 = pc[3]
+                use(target,original,targetcharacters,c1,s1,newheight,scale,fake,keep, count,c2)
+                use(target,original,targetcharacters,c2,s2,newheight,scale,fake,false,count,c3)
+                use(target,original,targetcharacters,c3,s3,newheight,scale,fake,false,count)
+            else
+                use(target,original,targetcharacters,c1,s1,newheight,scale,fake,keep,count)
             end
         end
     end
@@ -455,13 +515,9 @@ do
                     width    = width,
                     height   = height + offset,
                     depth    = depth  - offset,
-                    yoffset  = offset,
                     unicode  = unicode,
-                 -- index    = origdata.index,
-                 -- scale    = scale,
                     commands = {
-                     -- { "up", yoffset },
-                        { "slot", 0, template, scale }
+                        { "offset", 0, offset, template, scale, scale }
                     },
                 }
                 if trace_tweaking then
@@ -723,6 +779,7 @@ function mathematics.resolvefallbacks(target,specification,fallbacks)
             local name       = definition.font
             local features   = definition.features or ""
             local size       = size * (definition.rscale or 1)
+-- compact: size = 655360
             context.font_fallbacks_register_math(i,name,features,size)
             if trace_collecting then
                 report_math("registering fallback font %i, name %a, size %a, features %a",i,name,size,features)
@@ -745,6 +802,7 @@ function mathematics.finishfallbacks(target,specification,fallbacks)
             local fonts       = target.fonts
             local size        = specification.size -- target.size
             local characters  = target.characters
+-- compact: size = 655360
             if not fonts then
                 fonts = { }
                 target.fonts = fonts

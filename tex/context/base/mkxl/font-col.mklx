@@ -97,9 +97,13 @@
 
 \def\font_fallbacks_register_math#1#2#3#4%
   {\doifelsenothing{#3}%
-      {\definedfont[#2 at #4sp]}%
+      {\definedfont[#2 at #4\scaledpoint]}%
       {\definedfont[#2*#3\space at #4\scaledpoint]}%
    \clf_registerfontfallbackid#1\space\fontid\font\space{#2}}
+
+% \def\font_fallbacks_register_math#1#2#3#4%
+%   {\definedfont[#2\iftok{#3}\emptytoks\else*#3 \fi at #4\scaledpoint]%
+%    \clf_registerfontfallbackid#1\space\fontid\font\space{#2}}
 
 % \def\font_fallbacks_finish_math
 %   {\ctxlua{mathematics.finishfallbacks()}}

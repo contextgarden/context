@@ -74,11 +74,13 @@
 
 %D Todo: reserve index 1 for this:
 
-\def\typo_paragraphs_l#1{\localleftbox \ifcstok{#1}\v!global par\fi}
-\def\typo_paragraphs_r#1{\localrightbox\ifcstok{#1}\v!global par\fi}
+\def\typo_paragraphs_l#1{\localleftbox  \ifcstok{#1}\v!global par\fi}
+\def\typo_paragraphs_r#1{\localrightbox \ifcstok{#1}\v!global par\fi}
+\def\typo_paragraphs_m#1{\localmiddlebox\ifcstok{#1}\v!global par\fi}
 
-\permanent\tolerant\protected\def\leftparbox [#1]{\typo_paragraphs_l{#1}\bgroup\enforced\let\leftparbox \relax\let\next}
-\permanent\tolerant\protected\def\rightparbox[#1]{\typo_paragraphs_r{#1}\bgroup\enforced\let\rightparbox\relax\let\next}
+\permanent\tolerant\protected\def\leftparbox  [#1]{\typo_paragraphs_l{#1}\bgroup\enforced\let\leftparbox \relax\let\next}
+\permanent\tolerant\protected\def\rightparbox [#1]{\typo_paragraphs_r{#1}\bgroup\enforced\let\rightparbox\relax\let\next}
+\permanent\tolerant\protected\def\middleparbox[#1]{\typo_paragraphs_m{#1}\bgroup\enforced\let\rightparbox\relax\let\next}
 
 % called back:
 

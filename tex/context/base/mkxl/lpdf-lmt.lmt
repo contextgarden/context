@@ -117,7 +117,7 @@ local flushers = { }
 -- used variables
 
 local pdf_h, pdf_v
-local need_tm, need_tf, need_font, cur_tmrx, cur_factor, cur_f, cur_e
+local need_tm, need_tf, need_font, cur_tmrx, cur_factor
 local need_width, need_mode, done_width, done_mode
 local mode
 local f_pdf_cur, f_pdf, fs_cur, fs, f_cur, f_x_scale, f_y_scale
@@ -164,8 +164,6 @@ local function reset_variables(specification)
     f_x_scale     = 1.0
     f_y_scale     = 1.0
     cur_factor    = 0
-    cur_f         = false -- todo: check for nil vs false
-    cur_e         = false -- todo: check for nil vs false
     tj_delta      = 0.0
     cw            = 0.0
     usedfonts     = setmetatableindex(usefont)
@@ -547,15 +545,12 @@ do
         collapse = v
     end)
 
-    local function setup_fontparameters(where,font,factor,f,e,sx,sy)
+    local function setup_fontparameters(font,factor,sx,sy)
         local slant   = fontparameters.slantfactor   or 0
         local extend  = fontparameters.extendfactor  or 1
         local squeeze = fontparameters.squeezefactor or 1
         local expand  = 1 + factor / 1000000
         local format  = fontproperties.format
-        if e then
-            extend = extend * e
-        end
         tmef       = expand
         tmrx       = expand * extend
         tmsy       = slant
@@ -565,21 +560,12 @@ do
         f_cur      = font
         f_pdf      = usedfonts[font] -- cache
         cur_factor = factor
-        cur_f      = f
-        cur_e      = e
         tj_delta   = 0
         cw         = 0
-        --
-        -- print("setup font",where)
         --
         fs = fontparameters.size * bpfactor
         if collapse then
             local sc = fs / 10
-            if f then
---                 sc = sc * f
-sx = sx * f
-sy = sy * f
-            end
             -- kind of special:
             if format == "opentype" or format == "type1" then
                 sc = sc * 1000 / fontparameters.units -- can we avoid this ?
@@ -590,11 +576,6 @@ sy = sy * f
             tmrx = tmrx * sc
             tmry = tmry * sc
         else
-            if f then
---                 fs = fs * f
-sx = sx * f
-sy = sy * f
-            end
             -- kind of special:
             if format == "opentype" or format == "type1" then
                 fs = fs * 1000 / fontparameters.units -- can we avoid this ?
@@ -700,27 +681,40 @@ sy = sy * f
     -- luatex (a precursor to lmtx and also for comparison) but only in lmtx now so ...
     -- time to move on I guess.
 
-    flushers.character = function(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor,sx,sy) -- ,naturalwidth,width)
+    -- factor is for hz
+
+    flushers.character = function(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,sx,sy) -- ,naturalwidth,width)
+
+        local s = data.scale
+        local x = data.xoffset
+        local y = data.yoffset
+
+        if s then
+            sx = s * sx
+            sy = s * sy
+        end
+        if csx then
+            sx = sx * csx
+            csx = 1
+        end
+        if csy then
+            sy = sy * csy
+            csy = 1
+        end
+
+     -- if sx ~= f_x_scale or sy ~= f_y_scale or need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur then
         if sx ~= f_x_scale or sy ~= f_y_scale or need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur or mode == "page" then
---         if sx ~= f_x_scale or sy ~= f_y_scale or need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur then
             pdf_goto_textmode()
-            setup_fontparameters(1,font,factor,f,e,sx,sy) -- too often due to page
+            setup_fontparameters(font,factor,sx,sy) -- too often due to page
             set_font()
---         elseif mode == "page" then
---             pdf_goto_textmode()
-            set_font()
-        elseif cur_f ~= f then -- when ok move up (maybe no longer needed)
-            pdf_goto_textmode()
-            setup_fontparameters(2,font,factor,f,e,sx,sy)
-            set_font()
-     -- elseif cur_tmrx ~= tmrx or cur_factor ~= factor or cur_f ~= f or cur_e ~= e then
-        elseif cur_tmrx ~= tmrx or cur_factor ~= factor or cur_e ~= e then
-            setup_fontparameters(3,font,factor,f,e,sx,sy)
+     -- elseif mode == "page" then
+     --     pdf_goto_textmode()
+     --     set_font()
+        elseif cur_tmrx ~= tmrx or cur_factor ~= factor then
+            setup_fontparameters(font,factor,sx,sy)
             need_tm = true
         end
 
-        local x = data.xoffset
-        local y = data.yoffset
         if x then
             pos_h = pos_h + x * tmef * f_x_scale
         end

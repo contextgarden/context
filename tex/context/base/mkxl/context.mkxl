@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2021.11.13 20:33}
+\immutable\edef\contextversion{2021.11.16 22:33}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -305,6 +305,8 @@
 \loadmkxlfile{page-lay}
 \loadmklxfile{page-box}
 \loadmklxfile{page-txt}
+
+\loadmkxlfile{typo-lbx}
 \loadmkxlfile{page-sid}
 
 \loadmklxfile{strc-flt}
@@ -387,7 +389,7 @@
 
 \loadmkxlfile{typo-tal}
 \loadmkxlfile{typo-par} % par builders (uses fonts)
-\loadmkxlfile{typo-lbx}
+%loadmkxlfile{typo-lbx}
 \loadmkxlfile{typo-adj}
 
 \loadmkxlfile{tabl-com}

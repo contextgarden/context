@@ -29,6 +29,7 @@ return {
                 },
                 {
                     tweak  = "fixprimes",
+                 -- smaller = true,
                     factor = 0.85,
                 },
                 {

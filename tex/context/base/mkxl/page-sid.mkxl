@@ -40,6 +40,7 @@
 \newdimen       \d_page_sides_vsize_reset
 \newdimen       \d_page_sides_progress
 \newdimen       \d_page_sides_page_total
+\newdimen       \d_page_sides_shape_down_shift
 
 \newdimen       \d_page_sides_leftoffset
 \newdimen       \d_page_sides_rightoffset
@@ -55,6 +56,7 @@
 
 \newconditional \c_page_sides_short
 \newconditional \c_page_sides_flag
+\newconditional \c_page_sides_shape_down
 
 \newdimen       \d_page_sides_shift
 \newdimen       \d_page_sides_extrashift
@@ -331,6 +333,7 @@
      \page_sides_force_depth
      \ht\floatbox\privatescratchdimen
      \dp\floatbox\zeropoint
+   \else
    \fi
    \ifcase\c_page_sides_align \else
      \global\d_page_sides_toptotal\zeropoint
@@ -360,7 +363,16 @@
    \fi
    % new
    \global\c_page_sides_lines_done\zerocount
-   \ifnum\c_page_sides_n_of_lines>\zerocount
+   \ifconditional\c_page_sides_shape_down
+     \global\d_page_sides_shape_down_shift\dimexpr
+        \privatescratchdimen
+       +\htdp\floatbox
+%        -\lineheight
+     \relax
+     \advance\privatescratchdimen\c_page_sides_n_of_lines\lineheight
+\advance\privatescratchdimen2\lineheight
+   \else
+     \global\d_page_sides_shape_down_shift\zeropoint
      \advance\privatescratchdimen\c_page_sides_n_of_lines\lineheight
    \fi
    \iftracesidefloats
@@ -374,6 +386,7 @@
      \global\d_page_sides_toptotal\zeropoint
    \fi
    \global\d_page_sides_downshift\zeropoint}
+
 
 %D We have a few virtual dimensions. I'm not sure what to do with \type
 %D {\pagedepth} and \type {\pageshrink} in the next two. If we ever need
@@ -429,7 +442,9 @@
    \page_otr_command_set_vsize} % new, no longer really needed
 
 \def\page_sides_flush_floats
-  {\par
+  {\ifconditional\c_page_sides_shape_down\else
+     \par
+   \fi
    \ifdim\d_page_sides_flush_criterium>\zeropoint
      \page_sides_flush_floats_progress
      \page_sides_flush_floats_after_next
@@ -635,15 +650,19 @@
 \def\page_sides_place_float
   {\ifnum\c_page_sides_float_type=\plusfour \kern\d_page_sides_toptotal \fi
    \ifnum\c_page_sides_float_type=\plusfive \kern\d_page_sides_toptotal \fi
-   \ifgridsnapping
-     \page_sides_place_float_grid
-   \else
+   \ifconditional\c_page_sides_shape_down
      \page_sides_place_float_normal
-   \fi
-   \par
-   \kern-\d_page_sides_height
-   \penalty10001 % oeps, this will change
-   \normalbaselines}
+   \else
+     \ifgridsnapping
+       \page_sides_place_float_grid
+     \else
+       \page_sides_place_float_normal
+     \fi
+     \par
+     \kern-\d_page_sides_height
+     \penalty10001 % oeps, this will change
+     \normalbaselines
+   \fi}
 
 \def\page_sides_place_float_normal
   {\page_sides_push_float_inline\firstofoneargument}
@@ -665,17 +684,39 @@
 
 \let\strc_floats_mark_par_as_free\relax
 
-\def\page_sides_push_float_inline#1%
-  {\begingroup
-   \reseteverypar % needed !
-   \parskip\zeropoint  % needed !
-   \nointerlineskip
-   \page_sides_set_skips
-   \page_floats_report_total
-   \relax
-  %\lefttoright % not needed in lmtx
-   \strc_floats_mark_par_as_free
-   \ifcase\c_page_sides_float_type
+% \def\page_sides_push_float_inline#1%
+%   {\begingroup
+%    \reseteverypar % needed !
+%    \parskip\zeropoint  % needed !
+%    \nointerlineskip
+%    \page_sides_set_skips
+%    \page_floats_report_total
+%    \relax
+%   %\lefttoright % not needed in lmtx
+%    \strc_floats_mark_par_as_free
+%    \ifcase\c_page_sides_float_type
+%      % invalid
+%    \or % backspace
+%      \noindent#1{\llap{\rlap{\box\floatbox}\kern\d_page_sides_leftskip}}\hfill
+%    \or % leftedge
+%      \noindent#1{\llap{\box\floatbox\kern\d_page_sides_leftskip}}\hfill
+%    \or % leftmargin
+%      \noindent#1{\llap{\box\floatbox\kern\d_page_sides_leftskip}}\hfill
+%    \or % leftside
+%      \noindent#1{\box\floatbox}\hfill
+%    \or % rightside
+%      \hfill#1{\box\floatbox}%
+%    \or % rightmargin
+%      \hfill#1{\rlap{\kern\d_page_sides_rightskip\box\floatbox}}%
+%    \or % rightedge
+%      \hfill#1{\rlap{\kern\d_page_sides_rightskip\box\floatbox}}%
+%    \or % cutspace
+%      \hfill#1{\rlap{\kern\d_page_sides_rightskip\llap{\box\floatbox}}}%
+%    \fi
+%    \endgroup}
+
+\def\page_sides_push_float_inline_indeed#1%
+  {\ifcase\c_page_sides_float_type
      % invalid
    \or % backspace
      \noindent#1{\llap{\rlap{\box\floatbox}\kern\d_page_sides_leftskip}}\hfill
@@ -693,8 +734,28 @@
      \hfill#1{\rlap{\kern\d_page_sides_rightskip\box\floatbox}}%
    \or % cutspace
      \hfill#1{\rlap{\kern\d_page_sides_rightskip\llap{\box\floatbox}}}%
-   \fi
-   \endgroup}
+   \fi}
+
+\def\page_sides_push_float_inline#1%
+  {\ifconditional\c_page_sides_shape_down
+     \page_sides_set_skips
+     \page_floats_report_total
+     \global\setbox\floatbox\hbox to \hsize\bgroup
+       \page_sides_push_float_inline_indeed#1%
+     \egroup
+   \else
+     \begingroup
+     \reseteverypar % needed !
+     \parskip\zeropoint  % needed !
+     \nointerlineskip
+     \page_sides_set_skips
+     \page_floats_report_total
+     \relax
+    %\lefttoright % not needed in lmtx
+     \strc_floats_mark_par_as_free
+     \page_sides_push_float_inline_indeed#1%
+     \endgroup
+   \fi}
 
 % \def\page_sides_analyse_progress
 %   {\d_page_sides_progress\d_page_sides_vsize
@@ -793,19 +854,22 @@
 
 \def\page_sides_analyse_space
   {\page_sides_analyse_space_stage_one
- % \ifconditional\c_page_sides_check_same_page
- %   \ifdim\d_spac_prevcontent>\zeropoint
- %     \ifdim\dimexpr\scratchdimenone+\d_spac_prevcontent>\scratchdimentwo
- %       \clf_pushatsame
- %       \setbox\scratchbox\vpack{\clf_popatsame}%
- %       \page
- %       \box\scratchbox
- %       \vskip-\lineskip
- %       \page_sides_analyse_space_stage_one
- %     \fi
- %   \fi
- % \fi
-   \page_sides_analyse_space_stage_two}
+%    \ifconditional\c_page_sides_check_same_page
+%      \ifdim\d_spac_prevcontent>\zeropoint
+%        \ifdim\dimexpr\scratchdimenone+\d_spac_prevcontent>\scratchdimentwo
+%          \clf_pushatsame
+%          \setbox\scratchbox\vpack{\clf_popatsame}%
+%          \page
+%          \box\scratchbox
+%          \vskip-\lineskip
+%          \page_sides_analyse_space_stage_one
+%        \fi
+%      \fi
+%    \fi
+   \page_sides_analyse_space_stage_two
+   \ifconditional\c_page_sides_shape_down
+     \global\settrue\c_page_floats_room
+   \fi}
 
 %D As we have no clear end of one or more paragraphs we only have pre float
 %D skips.
@@ -857,7 +921,39 @@
   {% we need to do this aftergroup
    \aftergroup\par
    \aftergroup\ignoreparskip
-   \aftergroup\ignorespaces}
+   \aftergroup\ignorespaces
+   \aftergroup\page_sizes_delay_float}%
+
+\def\page_sides_local_float_flush
+  {\ifconditional\c_page_sides_shape_down
+     \ifnum\localboxlinenumber=\c_page_sides_n_of_lines\relax
+       \hpack to \localboxlinewidth
+         xoffset -\the\localboxlinewidth
+         yoffset -\d_page_sides_shape_down_shift
+       {\box\floatbox}%
+     \fi
+   \fi}
+
+%D Experimental and tricky:
+%D
+%D \starttext
+%D     \samplefile{lorem} \blank[20*line]
+%D     \startplacefigure[location={right,15*hang,force}]
+%D    %\startplacefigure[location={right,15*hang}]
+%D         \framed[width=30mm,height=20mm]{!!}
+%D     \stopplacefigure
+%D     \dorecurse{10}{\samplefile{lorem}}
+%D \stoptext
+
+\definelocalboxes
+  [\v!left:\v!float]
+  [\c!command=\page_sides_local_float_flush,
+   \c!location=\v!middle]
+
+\def\page_sizes_delay_float
+  {\ifconditional\c_page_sides_shape_down
+     \localbox[\v!left:\v!float]{}%
+   \fi}%
 
 \def\page_sides_check_floats_indeed
   {\page_sides_analyse_progress

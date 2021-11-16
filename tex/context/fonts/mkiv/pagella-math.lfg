@@ -59,8 +59,10 @@ return {
                     },
                 },
                 {
-                    tweak  = "fixprimes",
-                    factor = 0.85,
+                    tweak   = "fixprimes",
+                    factor  = 0.85,
+                    smaller = true,
+                    scale   = 0.70,
                 },
                 {
                     tweak = "checkspacing",

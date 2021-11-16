@@ -151,7 +151,7 @@ local flush_character do
 
     -- current can go
 
-    local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,vfcommands,sx,sy)
+    local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,sx,sy,vfcommands)
         if nesting > 100 then
             return
         elseif nesting == 0 then
@@ -165,13 +165,10 @@ local flush_character do
         local saved_r = pos_r
                 pos_r = lefttoright_code
 
-        local xoffset = data.xoffset
-        local yoffset = data.yoffset
-
-        local data    = fontdata[font] -- offsets etc
+        local fdata   = fontdata[font] -- offsets etc
         local fnt     = font
-        local fonts   = data.fonts
-        local siz     = (data.parameters.factor or 1)/65536
+        local fonts   = fdata.fonts
+        local siz     = (fdata.parameters.factor or 1)/65536
 
         -- An alternative where we (here) locally define handlers like this:
         --
@@ -185,26 +182,53 @@ local flush_character do
         -- work as expected (so we end up in a nesting loop). I remember hitting this somewhat
         -- unexpected feature before.
 
-if xoffset and xoffset ~= 0 then
-    if factor ~= 0 then
-        xoffset = xoffset + xoffset * factor / refactored -- expansion
-    end
-    pos_h = pos_h + xoffset * sx
-end
-if yoffset and yoffset ~= 0 then
-    pos_v = pos_v + yoffset * sy
-end
+        local scale   = data.scale
+        local xoffset = data.xoffset
+        local yoffset = data.yoffset
+
+        if scale then
+            sx = scale * sx
+            sy = scale * sy
+        end
+
+     -- -- example of usage needed (nested vf)
+
+        if csx then
+            sx = sx * csx
+            csx = 1
+        end
+        if csy then
+            sy = sy * csy
+            csy = 1
+        end
+
+        if xoffset and xoffset ~= 0 then
+            if factor ~= 0 then
+                xoffset = xoffset + xoffset * factor / refactored -- expansion
+            end
+            pos_h = pos_h + xoffset * sx
+        end
+
+        if yoffset and yoffset ~= 0 then
+            pos_v = pos_v + yoffset * sy
+        end
 
         -- we assume resolved fonts: id mandate but maybe also size
 
-        local function flushchar(fnt,chr,f,e) -- can't be moved out of the function due to binding locals
-            if fnt then                       -- to the function variables etc etc ... kind of messy
+        local function flushchar(fnt,chr,csx,csy) -- can't be moved out of the function due to binding locals
+            if fnt then                           -- to the function variables etc etc ... kind of messy
                 local nest = char ~= chr or font ~= fnt
                 if fnt == 0 then
                     fnt = main
                 end
+                if csx then
+                    csx = csx * sx
+                end
+                if csy then
+                    csy = csy * sy
+                end
                 -- here no current!
-                return flush_character(false,fnt,chr,factor,nest,pos_h,pos_v,pos_r,f,e)
+                return flush_character(false,fnt,chr,factor,nest,pos_h,pos_v,pos_r,csx,csy)
             else
                 return 0
             end
@@ -216,26 +240,26 @@ end
             local command = packet[1]
             if command == "char" then
                 local chr = packet[2]
-                local f   = packet[3]
-                local e   = packet[4]
-                pos_h = pos_h + flushchar(fnt,chr,f,e)
+                local csx = packet[3]
+                local csy = packet[4] or csx
+                pos_h = pos_h + flushchar(fnt,chr,csx,csy)
             elseif command == "slot" then
                 local index = packet[2]
                 local chr   = packet[3]
-                local f     = packet[4]
-                local e     = packet[5]
+                local csx   = packet[4]
+                local csy   = packet[5] or csx
                 if index == 0 then
-                    pos_h = pos_h + flushchar(font,chr,f,e)
+                    pos_h = pos_h + flushchar(font,chr,csx,csy)
                 else
                     local okay = fonts and fonts[index]
                     if okay then
                         local fnt = okay.id
                         if fnt then
-                            pos_h = pos_h + flushchar(fnt,chr,f,e)
+                            pos_h = pos_h + flushchar(fnt,chr,csx,csy)
                         end
                     else
                         -- safeguard, we assume the font itself (often index 1)
-                        pos_h = pos_h + flushchar(font,chr,f,e)
+                        pos_h = pos_h + flushchar(font,chr,csx,csy)
                     end
                 end
             elseif command == "use" then
@@ -291,22 +315,24 @@ end
                     pos_v = pos_v + v * sy
                 end
             elseif command == "offset" then
-                local ph = pos_h
-                local pv = pos_v
-                local h = packet[2] or 0
-                local v = packet[3] or 0
                 local c = packet[4]
-                if h ~= 0 then
-                    if factor ~= 0 then
-                        h = h + h * factor / refactored -- expansion
-                    end
-                    pos_h = pos_h + h * sx
-                end
-                if v and v ~= 0 then
-                    pos_v = pos_v + v * sy
-                end
                 if c then
-                    flushchar(fnt,c) -- todo: e f !
+                    local ph  = pos_h
+                    local pv  = pos_v
+                    local csx = packet[5]
+                    local csy = packet[6] or csx
+                    local h   = packet[2]
+                    local v   = packet[3]
+                    if h and h ~= 0 then
+                        if factor ~= 0 then
+                            h = h + h * factor / refactored -- expansion
+                        end
+                        pos_h = pos_h + h * sx
+                    end
+                    if v and v ~= 0 then
+                        pos_v = pos_v + v * sy
+                    end
+                    flushchar(fnt,c,csx,csy)
                     pos_h = ph
                     pos_v = pv
                 end
@@ -483,7 +509,7 @@ end
 
     local onetimemessage -- could be defined later (todo: make plug for this)
 
-    flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r,f,e)
+    flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r,csx,csy)
 
         if font ~= lastfont then
             lastfont       = font
@@ -532,24 +558,21 @@ end
             sx = 1
             sy = 1
         end
--- print(width, height, depth, factor, sx, sy)
         if pos_r == righttoleft_code then
             pos_h = pos_h - width -- here ?
         end
         if vfcommands then
-            flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,factor,vfcommands,sx,sy) -- also f ?
+            flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,sx,sy,vfcommands)
         else
-            -- kind of messy that we do orientation here and offsets elsewhere .. this might change
             local orientation = data.orientation -- 0 (none), 1, 2, 3 or 4 (none)
             if orientation and (orientation == 1 or orientation == 3) then
                 -- we can get weird charactersbox tracing here
                 pushorientation(orientation,pos_h,pos_v)
-                flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor,sx,sy) -- ,naturalwidth,width)
+                flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,sx,sy)
                 poporientation(orientation,pos_h,pos_v)
             else
-                flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor,sx,sy) -- ,naturalwidth,width)
+                flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,sx,sy)
             end
-            -- we use the real width so we have to go back again
         end
         return width, height, depth
     end

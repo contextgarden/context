@@ -838,7 +838,8 @@
    \endgroup}
 
 \permanent\tolerant\protected\def\fillinline[#1]%
-  {\registerparwrapper
+  {\dontleavehmode
+   \registerparwrapper
      {fillinline}%
      {\pack_fillinline_before{#1}}%
      {\pack_fillinline_after {#1}%

@@ -931,6 +931,7 @@
    \global\c_page_floats_n_of_top   \rootfloatparameter\c!ntop
    \global\c_page_floats_n_of_bottom\rootfloatparameter\c!nbottom
    \global\d_strc_floats_overflow   \zeropoint
+   \global\setfalse\c_page_sides_shape_down
    \ifconditional\c_strc_floats_par_float
      \global\d_strc_floats_top        \zeropoint
      \global\d_strc_floats_bottom     \zeropoint
@@ -973,6 +974,9 @@
         180=>\global\c_strc_floats_rotation\commalistelement\relax,%
         270=>\global\c_strc_floats_rotation\commalistelement\relax]%
    \fi
+   \doifelseinset\v!force\floatlocation
+     {\global\settrue\c_page_sides_shape_down}
+     {\global\setfalse\c_page_sides_shape_down}%
    \doifelseinset\v!nonumber\floatlocation
      {\global\nofloatnumbertrue}%
      {\doifelse{\floatcaptionparameter\c!number}\v!yes
