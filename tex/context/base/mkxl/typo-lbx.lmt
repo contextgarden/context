@@ -239,6 +239,4 @@ function builders.local_box_filter(...)
     stoptiming(builders)
 end
 
--- we register the function elsewhere
-
 callbacks.register("local_box_filter", builders.local_box_filter, "process local boxes")

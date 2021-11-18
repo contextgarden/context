@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2021-11-16 22:33
+-- merge date  : 2021-11-18 16:33
 
 do -- begin closure to overcome local limits and interference
 
@@ -3102,7 +3102,7 @@ if not math.tointeger then
 end
 if not math.ult then
  local floor=math.floor
- function math.tointeger(m,n)
+ function math.ult(m,n)
   return floor(m)<floor(n) 
  end
 end

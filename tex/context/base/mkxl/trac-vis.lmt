@@ -376,6 +376,18 @@ directives.register("visualizers.fraction", function(v) fraction = (v and tonumb
 
 -- we can just paste verbatim together .. no typesetting needed
 
+-- experiment ... we can move the font definition away too
+
+    local expandmacro = token.expand_macro
+    local takebox     = tex.takebox
+
+    local function hpack_string(str)
+        expandmacro("syst_v_p",true,str)
+        return tonut(takebox("scratchbox"))
+    end
+
+-- ... if okay it will replace the current hpack_string in node_typ
+
 local function sometext(str,layer,color,textcolor,lap,variant)
     local text = hpack_string(str,usedfont)
     local size = getwidth(text)

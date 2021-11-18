@@ -919,29 +919,42 @@
        \else
          \c_font_future_glyph_scale
        \fi
-     \ifempty\somefontsizex\else
-        \edef\somefontsizex{\glyphxscale\somefontsizex\relax}% todo: inserts relax
-     \fi
-     \ifempty\somefontsizey\else
-        \edef\somefontsizey{\glyphyscale\somefontsizey\relax}%
-     \fi
+%      \ifempty\somefontsizex\else
+%         \edef\somefontsizex{\glyphxscale\somefontsizex\relax}% todo: inserts relax
+%      \fi
+%      \ifempty\somefontsizey\else
+%         \edef\somefontsizey{\glyphyscale\somefontsizey\relax}%
+%      \fi
      \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
      \ifrelax\lastrawfontcall
-      \let\somefontspec\empty
+       \let\somefontspec\empty
      \else
-%        \ifempty\fontclass\else\global\fi
-%        \mutable\protected\edefcsname#csname\endcsname
-%          {\setfontid\the\fontid\csname#csname\endcsname\relax
-%           \glyphscale\the\glyphscale\relax
-%           \somefontsizex
-%           \somefontsizey}%
-%        \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
-       \mutable\protected\edef\lastrawfontcall
-         {\setfontid\the\fontid\csname#csname\endcsname\relax
-          \glyphscale\the\glyphscale\relax
-          \somefontsizex
-          \somefontsizey}%
-       \ifempty\fontclass\letcsname\else\gletcsname\fi#csname\endcsname\lastrawfontcall
+     %
+     % \ifempty\fontclass\else\global\fi
+     % \mutable\protected\edefcsname#csname\endcsname
+     %   {\setfontid\the\fontid\csname#csname\endcsname\relax
+     %    \glyphscale\the\glyphscale\relax
+     %    \somefontsizex
+     %    \somefontsizey}%
+     % \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
+     %
+     % \mutable\protected\edef\lastrawfontcall
+     %   {\setfontid\the\fontid\csname#csname\endcsname\relax
+     %    \glyphscale\the\glyphscale\relax
+     %    \somefontsizex
+     %    \somefontsizey}%
+     % \mutable\ifempty\fontclass\letcsname\else\gletcsname\fi#csname\endcsname\lastrawfontcall
+     %
+       \mutable\fontspecdef\lastrawfontcall
+            \lastnamedcs
+          % scale  \glyphscale
+          % xscale \glyphxscale
+          % yscale \glyphyscale
+            all \glyphscale \glyphxscale \glyphyscale
+       \relax
+       \mutable\ifempty\fontclass\letcsname\else\gletcsname\fi#csname\endcsname\lastrawfontcall
+      %
+       \the\everydefinefont
      \fi
    \fi
    \c_font_feature_inheritance_mode\c_font_feature_inheritance_default}
@@ -2151,7 +2164,7 @@
 
 \newconditional\c_font_inherit_scale
 
-\def\font_scale_inherit#1%
+\def\font_scale_inherit_normal#1%
   {\begingroup
    \scratchcounterone\fontid\font\relax
    \currentxfontsize\plusone
@@ -2162,32 +2175,91 @@
    \scratchcounterthree\fontid\font\relax
    % parent -> x -> xx
    % parent -> xx
-   %
-   % this can become \integerdef
-   %
-   \global\expandafter\chardef\csname\??fontscalex \number\scratchcounterone\endcsname\scratchcountertwo
-   \global\expandafter\chardef\csname\??fontscalexx\number\scratchcounterone\endcsname\scratchcounterthree
-   \global\expandafter\chardef\csname\??fontscalex \number\scratchcountertwo\endcsname\scratchcounterthree
-   \global\expandafter\chardef\csname\??fontscalexx\number\scratchcountertwo\endcsname\scratchcounterthree
+   \global\expandafter\integerdef\csname\??fontscalex \number\scratchcounterone\endcsname\scratchcountertwo
+   \global\expandafter\integerdef\csname\??fontscalexx\number\scratchcounterone\endcsname\scratchcounterthree
+   \global\expandafter\integerdef\csname\??fontscalex \number\scratchcountertwo\endcsname\scratchcounterthree
+   \global\expandafter\integerdef\csname\??fontscalexx\number\scratchcountertwo\endcsname\scratchcounterthree
    \endgroup
    \setfontid\csname#1\number\fontid\font\endcsname}
 
-\def\font_scale_inherit_x
+\def\font_scale_inherit_normal_x
   {\ifcsname\??fontscalex\number\fontid\font\endcsname
      \setfontid\lastnamedcs
    \else
-     \font_scale_inherit\??fontscalex
+     \font_scale_inherit_normal\??fontscalex
    \fi
    \ifskipfontcharacteristics
      \the\everyfont % \setfontcharacteristics
      \the\everyfontswitch
    \fi}
 
-\def\font_scale_inherit_xx
+\def\font_scale_inherit_normal_xx
   {\ifcsname\??fontscalexx\number\fontid\font\endcsname
      \setfontid\lastnamedcs
    \else
-     \font_scale_inherit\??fontscalexx
+     \font_scale_inherit_normal\??fontscalexx
+   \fi
+   \ifskipfontcharacteristics
+     \the\everyfont % \setfontcharacteristics
+     \the\everyfontswitch
+   \fi}
+
+\def\font_scale_inherit_compact#1%
+  {\begingroup
+   \scratchcounterone\fontid\font\relax
+   \currentxfontsize\plusone
+   \scratchcountertwo\numericscale\font_currentfontscale
+   \currentxfontsize\plustwo
+   \scratchcounterthree\numericscale\font_currentfontscale
+   % parent -> x -> xx
+   % parent -> xx
+   \global\expandafter\fontspecdef\csname\??fontscalex \number\scratchcounterone:\number\glyphscale\endcsname
+     \scratchcounterone
+     scale  \numexpr\glyphscale*\scratchcountertwo/1000\relax
+   % scale  \glyphscale
+   % xscale \scratchcountertwo
+   % yscale \scratchcountertwo
+   \relax
+   \global\expandafter\fontspecdef\csname\??fontscalexx\number\scratchcounterone:\number\glyphscale\endcsname
+     \scratchcounterone
+     scale  \numexpr\glyphscale*\scratchcounterthree/1000\relax
+   % scale  \glyphscale
+   % xscale \scratchcounterthree
+   % yscale \scratchcounterthree
+   \relax
+   \global\expandafter\fontspecdef\csname\??fontscalex \number\scratchcountertwo:\number\glyphscale\endcsname
+     \scratchcounterone
+     scale  \numexpr\glyphscale*\scratchcounterthree/1000\relax
+   % scale  \glyphscale
+   % xscale \scratchcounterthree
+   % yscale \scratchcounterthree
+   \relax
+   \global\expandafter\fontspecdef\csname\??fontscalexx\number\scratchcountertwo:\number\glyphscale\endcsname
+     \scratchcounterone
+     scale  \numexpr\glyphscale*\scratchcounterthree/1000\relax
+   % scale  \glyphscale
+   % xscale \scratchcounterthree
+   % yscale \scratchcounterthree
+   \relax
+   \endgroup
+   \csname#1\number\fontid\font:\number\glyphscale\endcsname}
+
+\def\font_scale_inherit_compact_x
+  {\ifcsname\??fontscalex\number\fontid\font:\number\glyphscale\endcsname
+     \lastnamedcs
+   \else
+     \font_scale_inherit_compact\??fontscalex
+   \fi
+   \ifskipfontcharacteristics
+     \the\everyfont % \setfontcharacteristics
+     \the\everyfontswitch
+   \fi}
+
+\def\font_scale_inherit_compact_xx
+  {\ifcsname\??fontscalexx\number\fontid\font:\number\glyphscale\endcsname
+     \lastnamedcs
+   \else
+     \font_scale_inherit_compact\??fontscalexx
    \fi
    \ifskipfontcharacteristics
      \the\everyfont % \setfontcharacteristics
@@ -2211,7 +2283,11 @@
    \ifmmode
      \scriptstyle
    \orelse\ifconditional\c_font_inherit_scale
-     \font_scale_inherit_x
+     \ifconditional\c_font_compact
+       \font_scale_inherit_compact_x
+     \else
+       \font_scale_inherit_normal_x
+     \fi
    \else
      \font_scale_defined_x
    \fi
@@ -2222,7 +2298,11 @@
    \ifmmode
      \scriptscriptstyle
    \orelse\ifconditional\c_font_inherit_scale
-     \font_scale_inherit_xx
+     \ifconditional\c_font_compact
+       \font_scale_inherit_compact_xx
+     \else
+       \font_scale_inherit_normal_xx
+     \fi
    \else
      \font_scale_defined_xx
    \fi
@@ -2234,7 +2314,11 @@
    \ifmmode
      \scriptstyle
    \else
-     \font_scale_inherit_x
+     \ifconditional\c_font_compact
+       \font_scale_inherit_compact_x
+     \else
+       \font_scale_inherit_normal_x
+     \fi
    \fi
    \enforced\let\tx\txx
    \enforced\let\sx\sxx}
@@ -2244,7 +2328,11 @@
    \ifmmode
      \scriptscriptstyle
    \else
-     \font_scale_inherit_xx
+     \ifconditional\c_font_compact
+       \font_scale_inherit_compact_xx
+     \else
+       \font_scale_inherit_normal_xx
+     \fi
    \fi
    \enforced\let\tx \empty
    \enforced\let\txx\empty
@@ -2606,23 +2694,28 @@
 \protected\def\font_basics_predefined#1%
   {\font_basics_predefine{\??predefinedfont#1}{#1}}
 
-%D Handy helper:
-
-\permanent\protected\def\savedefinedfont[#1]% hm, how about scales
-  {\bgroup
-   \definedfont[#1]%
-   \xdef\saveddefinedfontid  {\number\fontid\font}%
-   \xdef\saveddefinedfontname{\fontname\font}%
-   \egroup}
-
-\mutable\def\saveddefinedfontid  {\number\fontid\font}
-\mutable\def\saveddefinedfontname{\fontname\font}
+% %D Handy helper:
+%
+% % not used and also not okay wrt scales
+%
+% \permanent\protected\def\savedefinedfont[#1]% hm, how about scales
+%   {\bgroup
+%    \definedfont[#1]%
+%    \xdef\saveddefinedfontid  {\number\fontid\font}%
+%    \xdef\saveddefinedfontname{\fontname\font}%
+%    \egroup}
+%
+% \mutable\def\saveddefinedfontid  {\number\fontid\font}
+% \mutable\def\saveddefinedfontname{\fontname\font}
 
 %D Ugly helper:
 
 \permanent\protected\def\saverunningstyleandcolor
   {\enforced\permanent\protected\edef\restorerunningstyleandcolor
      {\setfontid          \number\fontid\font
+      \glyphscale         \the\glyphscale
+      \glyphxscale        \the\glyphxscale
+      \glyphyscale        \the\glyphyscale
       \c_attr_colormodel  \the\c_attr_colormodel
       \c_attr_color       \the\c_attr_color
       \c_attr_transparency\the\c_attr_transparency

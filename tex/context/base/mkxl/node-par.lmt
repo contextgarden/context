@@ -98,19 +98,19 @@ end
 -- These are node handlers but fit it the overall paragraph handling so we
 -- hook it into the callback here.
 
-do
+-- do
 
-    local localboxactions = nodes.tasks.actions("localboxes")
+--     local localboxactions = nodes.tasks.actions("localboxes")
 
-    function localboxfilter(...)
-        starttiming(builders)
-        localboxactions(...)
-        stoptiming(builders)
-    end
+--     function localboxfilter(...)
+--         starttiming(builders)
+--         localboxactions(...)
+--         stoptiming(builders)
+--     end
 
-    callbacks.register("local_box_filter",localboxfilter,"process local boxes")
+--     callbacks.register("local_box_filter",localboxfilter,"process local boxes")
 
-end
+-- end
 
 -- This means that we now have most callbacks in use, even the ones that I'm not sure
 -- about. It also means that with the above enabled we might have performance now at

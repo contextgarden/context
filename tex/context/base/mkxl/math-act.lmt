@@ -287,27 +287,27 @@ do
         if count == 1 then
             lastprivate = private
         end
-        local olddata = targetcharacters[lastprivate]
         if keep then
             if trace_tweaking then
-                report_tweak("keeping primt %U",target,original,charcode)
+                report_tweak("keeping prime %U",target,original,charcode)
             end
-        elseif olddata then
-            local oldheight = scale * olddata.height
-            local oldwidth  = scale * olddata.width
-            local yoffset   = (newheight - oldheight) / scale
-            local unicode   = olddata.unicode
-            local newwidth  = oldwidth
-            if fake and count > 1 then
+            return
+        end
+        if fake and count > 1 then
+            local olddata = targetcharacters[lastprivate]
+            if olddata then
                 -- todo: when keep
-                local xoffset  = fake * oldwidth
-                local newwidth = newwidth + (count - 1) * xoffset
+                local oldheight = scale * olddata.height
+                local oldwidth  = scale * olddata.width
+                local yoffset   = (newheight - oldheight) / scale
+                local xoffset   = fake * oldwidth
+                local newwidth  = oldwidth + (count - 1) * xoffset
                 targetcharacters[charcode] = {
                     yoffset  = yoffset,
                     width    = newwidth,
                     height   = newheight,
                     smaller  = smaller,
-                    unicode  = unicode,
+                    unicode  = olddata.unicode,
                     commands = {
                                       { "offset",           0, 0, lastprivate, scale, scale },
                                       { "offset",     xoffset, 0, lastprivate, scale, scale },
@@ -318,22 +318,30 @@ do
                 if trace_tweaking then
                     report_tweak("faking %U with %i primes",target,original,charcode,count)
                 end
-            else
-                targetcharacters[charcode] = {
-                    yoffset  = yoffset,
-                    width    = newwidth,
-                    height   = newheight,
-                    smaller  = smaller,
-                    unicode  = unicode,
-                    commands = {
-                        { "offset", 0, 0, lastprivate, scale, scale }
-                    },
-                }
-                if trace_tweaking then
-                    report_tweak("fixing prime %U",target,original,charcode)
-                end
+                return
             end
-        elseif trace_tweaking then
+        end
+        local olddata = targetcharacters[private]
+        if olddata then
+            local oldheight = scale * olddata.height
+            local oldwidth  = scale * olddata.width
+            local yoffset   = (newheight - oldheight) / scale
+            targetcharacters[charcode] = {
+                yoffset  = yoffset,
+                width    = oldwidth,
+                height   = newheight,
+                smaller  = smaller,
+                unicode  = olddata.unicode,
+                commands = {
+                    { "offset", 0, 0, private, scale, scale }
+                },
+            }
+            if trace_tweaking then
+                report_tweak("fixing prime %U",target,original,charcode)
+            end
+            return
+        end
+        if trace_tweaking then
             report_tweak("unable to fix prime %U",target,original,charcode)
         end
     end
@@ -541,6 +549,41 @@ do
     end
 
 end
+
+-- do
+--
+--     local list = {
+--         { 0x00AF, 1 },
+--     }
+--
+--     local minint = -2147483647 - 1
+--
+--     local function fix(target,original,targetcharacters,unicode,factor)
+--         local chardata = targetcharacters[unicode]
+--         if chardata and factor then
+--             local accent = chardata.top_accent
+--             if not accent then
+--                 local width  = chardata.width or 0
+--                 local accent = (tonumber(factor) and factor * width) or (factor and minint)
+--                 chardata.top_accent = accent
+--                 if trace_tweaking then
+--                     report_tweak("fixing accent %U",target,original,unicode)
+--                 end
+--             end
+--         end
+--     end
+--
+--     function mathtweaks.fixaccents(target,original,parameters)
+--         local targetcharacters = target.characters
+--         for i=1,#list do
+--             local entry = list[i]
+--             if entry then
+--                 fix(target,original,targetcharacters,entry[1],entry[2])
+--             end
+--         end
+--     end
+--
+-- end
 
 do
 

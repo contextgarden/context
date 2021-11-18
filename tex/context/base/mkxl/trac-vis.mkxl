@@ -105,6 +105,8 @@
 \permanent\protected\def\showglyphdata    {\showglyphs\showfontkerns\showfontitalics}
 \permanent\protected\def\showfontexpansion{\clf_setvisual{expansion}}
 
+% lmmonoltcond10regular 4pt
+
 \permanent\tolerant\protected\def\setvisualizerfont[#1]% somename at 4pt
   {\begingroup
    \iftok{#1}\emptytoks
@@ -114,6 +116,14 @@
    \fi
    \clf_setvisualfont\fontid\font
    \endgroup}
+
+\def\syst_v_p_indeed#1%
+  {\setbox\scratchbox\hpack{\visualizerfont#1}}
+
+\def\syst_v_p
+  {\definefrozenfont[visualizerfont][lmmonoltcond10regular @ 4pt]%
+   \let\syst_v_p\syst_v_p_indeed
+   \syst_v_p_indeed}
 
 \permanent\protected\def\resetvisualizers
   {\c_attr_visual\attributeunsetvalue}

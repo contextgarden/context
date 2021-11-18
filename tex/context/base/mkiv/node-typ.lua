@@ -37,6 +37,8 @@ local fontparameters    = fonts.hashes.parameters
 
 -- when attrid == true then take from glyph or current else use the given value
 
+-- todo: glyphscale etc
+
 local function tonodes(str,fontid,spacing,templateglyph,attrid) -- quick and dirty
     local head, prev = nil, nil
     if not fontid then
