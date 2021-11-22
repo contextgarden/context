@@ -526,6 +526,7 @@ return {
   "tokspre",
   "tolerant",
   "tpack",
+  "tracingadjusts",
   "tracingalignments",
   "tracingexpressions",
   "tracingfonts",

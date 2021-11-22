@@ -2,7 +2,7 @@ return {
     name = "stix-two-math",
     version = "1.00",
     comment = "Goodies that complement stix two opentype.",
-    author = "Hans Hagen",
+    author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
         alternates = {
@@ -23,15 +23,20 @@ return {
         tweaks = {
             aftercopying = {
                 {
+                    tweak    = "version",
+                    expected = "Version 2.12 b168",
+                },
+                {
                     tweak = "dimensions",
                     list  = {
                         -- nothing yet
                     },
                 },
                 {
-                    tweak  = "fixprimes",
-                 -- smaller = true,
-                    factor = 0.85,
+                    tweak   = "fixprimes",
+                    scale   = 0.7,
+                    smaller = true,
+                    factor  = 0.85,
                 },
                 {
                     tweak = "checkspacing",

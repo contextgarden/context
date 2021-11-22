@@ -484,24 +484,41 @@
 %D When we were developing the scientific units module, we encountered different
 %D behavior in text and math mode, which was due to this grouping subtilities. We
 %D therefore decided to use \type {\begingroup} instead of \type {\bgroup}.
-
-\permanent\protected\def\doifelsealldefined#1%
-  {\begingroup
-   \donetrue % we could use a reserved one and avoid the group
-   \processcommalist[#1]\syst_helpers_do_if_all_defined_else
-   \ifdone
-     \endgroup\expandafter\firstoftwoarguments
-   \else
-     \endgroup\expandafter\secondoftwoarguments
-   \fi}
-
-\aliased\let\doifalldefinedelse\doifelsealldefined
+%D
+%D \stoptyping
+%D \doifelsealldefined  {foo,ofo}  {YES}{NOP}
+%D \doifelseallundefined{foo,ofo}  {YES}{NOP}
+%D \doifelsealldefined  {relax,ofo}{YES}{NOP}
+%D \doifelseallundefined{foo,relax}{YES}{NOP}
+%D \stoptyping
 
 \def\syst_helpers_do_if_all_defined_else#1%
   {\ifcsname#1\endcsname\else
      \donefalse
      \expandafter\quitcommalist % added
    \fi}
+
+\def\syst_helpers_do_if_all_undefined_else#1%
+  {\ifcsname#1\endcsname
+     \donefalse
+     \expandafter\quitcommalist
+   \fi}
+
+\permanent\protected\def\syst_helpers_do_if_all_else#1#2%
+  {\begingroup
+   \donetrue % we could use a reserved one and avoid the group
+   \processcommalist[#2]#1%
+   \ifdone
+     \endgroup\expandafter\firstoftwoarguments
+   \else
+     \endgroup\expandafter\secondoftwoarguments
+   \fi}
+
+\permanent\protected\def\doifelsealldefined  {\syst_helpers_do_if_all_else\syst_helpers_do_if_all_defined_else}
+\permanent\protected\def\doifelseallundefined{\syst_helpers_do_if_all_else\syst_helpers_do_if_all_undefined_else}
+
+\aliased\let\doifalldefinedelse  \doifelsealldefined
+\aliased\let\doifallundefinedelse\doifelseallundefined
 
 %D \macros
 %D   {doif,doifelse,doifnot}

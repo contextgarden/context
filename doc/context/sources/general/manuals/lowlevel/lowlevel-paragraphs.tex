@@ -342,6 +342,20 @@ question is: where do we apply it in old mechanisms and where not.
 % $$x = \vcenter{vcenter : \wrapuppar{1}test\par x\wrapuppar{2}test}$$\blank
 % x\vadjust{vadjust : \wrapuppar{1}test\par x\wrapuppar{2}test}x\blank
 
+% \starttext
+% \starttabulate[|||]
+%     \NC test \NC test \NC \NR
+%     \NC test \NC \hbox{\hbox{\hbox{\vadjust pre {\kern-12pt}}}}test \NC \NR
+%     \NC test \NC \hbox{\hbox{\hbox{\vadjust     {\kern-12pt}}}}test \NC \NR
+%     \NC test \NC test \NC \NR
+% \stoptabulate
+% \starttabulate[||p|]
+%     \NC test \NC test \NC \NR
+%     \NC test \NC \hbox{\vadjust{\kern-22pt}}test \NC \NR
+%     \NC test \NC test \NC \NR
+% \stoptabulate
+% \stoptext
+
 \stopsectionlevel
 
 \startsectionlevel[title=Hanging]

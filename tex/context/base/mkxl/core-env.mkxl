@@ -580,11 +580,11 @@
 
 \permanent\def\systemsetups#1{\syst_setups{\systemsetupsprefix#1}}
 
-\permanent\protected\def\resetsetups[#1]% see x-fo for usage
-  {\ifcsname\??setup\ifgridsnapping\v!grid\fi:#1\endcsname
-     \dodoglobal\undefinevalue{\??setup\ifgridsnapping\v!grid\fi:#1}%
+\permanent\tolerant\protected\def\resetsetups[#1]#;#2%
+  {\ifcsname\??setup\ifgridsnapping\v!grid\fi:#1#2\endcsname
+     \dodoglobal\undefinevalue{\??setup\ifgridsnapping\v!grid\fi:#1#2}%
    \else
-     \dodoglobal\undefinevalue{\??setup:#1}%
+     \dodoglobal\undefinevalue{\??setup:#1#2}%
    \fi}
 
 \permanent\tolerant\protected\def\copysetups[#1]#*[#2]%

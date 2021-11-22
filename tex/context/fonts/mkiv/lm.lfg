@@ -52,11 +52,15 @@ return {
     name = "latin modern",
     version = "1.00",
     comment = "Goodies that complement latin modern.",
-    author = "Hans Hagen",
+    author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
         tweaks = {
             aftercopying = {
+                {
+                    tweak    = "version",
+                    expected = "Version 1.958",
+                },
                 {
                     tweak = "dimensions",
                     list  = {
@@ -67,7 +71,8 @@ return {
                     tweak   = "fixprimes",
                     factor  = 0.85,
                     smaller = true,
-                 -- scale   = 0.70,
+                    scale   = 0.70,
+                    fake    = 0.6,
                 },
                 {
                     tweak = "checkspacing",

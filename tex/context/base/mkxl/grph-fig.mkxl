@@ -102,8 +102,16 @@
    \endgroup}
 
 %D Whatever ... hardly used ... but historic ... needs checking ... will probably
-%D become m-fig-nn.mkiv .. or I will extend it cq. clean it up when I needed it.
-%D After all, it's documented in old manuals.
+%D become m-fig-nn.mkiv .. or I will extend it cq. clean it up when I needed it;
+%D after all, it's documented in old manuals.
+%D
+%D \stoptyping
+%D \startfigure[mycow][t:/sources/cow.pdf][width=4cm]
+%D   % one can also use layers
+%D \stopfigure
+%D
+%D \externalfigure[mycow]
+%D \stoptyping
 
 \newcount\c_grph_steps_reference
 \newdimen\d_grph_steps_x
@@ -115,32 +123,36 @@
 \ifdefined\remark   \else \mutable\let\remark   \relax \fi
 \ifdefined\colorbar \else \mutable\let\colorbar \relax \fi
 
-\tolerant\protected\def\grph_steps_place_figure#1#2#3#4[#5]%
-  {\hpack
-     {\setbox\scratchbox\hpack
-        {\useexternalfigure[\s!dummy][#2][#3,#5]%
-         \externalfigure[\s!dummy]}%
-      \grph_steps_calculate
-      \startpositioning
-        \enforced\let\referring\grph_steps_one_referring
-        \enforced\let\marking  \grph_steps_one_marking
-        \enforced\let\remark   \grph_steps_one_remark
-        \enforced\let\colorbar \grph_steps_one_colorbar
-        \position(0,0){\box\scratchbox}%
-        \linewidth\onepoint
-        \setuppositioning
-          [\c!unit=pt,%
-           \c!xscale=\withoutpt\the\d_grph_steps_x,%
-           \c!yscale=\withoutpt\the\d_grph_steps_y,%
-           \c!factor=1]%
-        \ignorespaces#4%
-        \enforced\let\referring\grph_steps_two_referring
-        \enforced\let\marking  \grph_steps_two_marking
-        \enforced\let\remark   \grph_steps_two_remark
-        \enforced\let\colorbar \grph_steps_two_colorbar
-        \ignorespaces#4\removeunwantedspaces % or just grab #4 unspaced
-      \stoppositioning
-      \ifvoid\b_grph_steps_colorbar\else\box\b_grph_steps_colorbar\fi}} % not really needed
+\tolerant\protected\def\grph_steps_place_figure#1#2#3#4#5%
+  {\hbox\bgroup
+     \setbox\scratchbox\hbox % somehow a space creeps in
+       {% we can use \nospaces\plusone
+        \useexternalfigure[\s!dummy][#2][#3,#5]%
+        \externalfigure[\s!dummy]}%
+     \setbox\scratchbox\hbox
+       {\externalfigure[#2][#3,#5]}%
+     \grph_steps_calculate
+     \startpositioning
+       \enforced\let\referring\grph_steps_one_referring
+       \enforced\let\marking  \grph_steps_one_marking
+       \enforced\let\remark   \grph_steps_one_remark
+       \enforced\let\colorbar \grph_steps_one_colorbar
+       \position(0,0){\box\scratchbox}%
+       \linewidth\onepoint
+       \setuppositioning
+         [\c!unit=pt,%
+          \c!xscale=\withoutpt\the\d_grph_steps_x,%
+          \c!yscale=\withoutpt\the\d_grph_steps_y,%
+          \c!factor=1]%
+       \ignorespaces#4%
+       \enforced\let\referring\grph_steps_two_referring
+       \enforced\let\marking  \grph_steps_two_marking
+       \enforced\let\remark   \grph_steps_two_remark
+       \enforced\let\colorbar \grph_steps_two_colorbar
+       \ignorespaces#4\removeunwantedspaces % or just grab #4 unspaced
+     \stoppositioning
+     \ifvoid\b_grph_steps_colorbar\else\box\b_grph_steps_colorbar\fi
+   \egroup}
 
 \protected\def\grph_steps_one_referring(#1,#2)#*(#3,#4)#*[#5]%
   {\position(#1,#2){\grph_steps_goto(#3,#4){\externalfigureparameter\c!frames}[#5]}}
@@ -176,8 +188,10 @@
      {\grph_steps_test_figure{#1}{#2}{#3}{#4}%
       \letexternalfigureparameter\c!frames\v!on}%
      {\letexternalfigureparameter\c!frames\v!off}%
-   \setvalue{\??externalfigureinstance#1}%
-     {\grph_steps_place_figure{#1}{#2}{#3}{#4}}}
+   \tolerant\defcsname\??externalfigureinstance#1\endcsname[##1]%
+     {\grph_steps_place_figure{#1}{#2}{#3}{#4}{##1}%
+     % this is a dirty hack but ok for an old macro
+     \enforced\let\figurestatus\plusone}}
 
 \permanent\protected\lettonothing\stopfigure
 

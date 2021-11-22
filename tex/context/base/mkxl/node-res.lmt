@@ -392,7 +392,7 @@ function nutpool.boxrule(width,height,depth) -- w/h/d == nil will let them adapt
     return n
 end
 
-function nutpool.leader(width,list)
+local function new_leader(width,list)
     local n = copy_nut(cleader)
     if width then
         setwidth(n,width)
@@ -401,6 +401,12 @@ function nutpool.leader(width,list)
         setleader(n,list)
     end
     return n
+end
+
+nutpool.leader = new_leader
+
+function nodepool.leader(width,list)
+    return tonode(new_leader(width,list and tonut(list)))
 end
 
 function nutpool.leftmarginkern(glyph,width)

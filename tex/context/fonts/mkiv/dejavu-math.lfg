@@ -14,11 +14,15 @@ return {
     name = "dejavu-math",
     version = "1.00",
     comment = "Goodies that complement dejavu.",
-    author = "Hans Hagen",
+    author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
         tweaks = {
             aftercopying = {
+                {
+                    tweak    = "version",
+                    expected = "Version 1.106",
+                },
                 {
                     tweak = "dimensions",
                     list  = {
@@ -28,9 +32,10 @@ return {
                     }
                 },
                 {
-                    tweak  = "fixprimes",
-                 -- smaller = true,
-                    factor = 0.85,
+                    tweak   = "fixprimes",
+                    scale   = 0.9,
+                    smaller = true,
+                    factor  = 0.8,
                 },
                 {
                     tweak = "checkspacing",

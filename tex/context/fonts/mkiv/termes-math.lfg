@@ -22,11 +22,15 @@ return {
     name = "termes-math",
     version = "1.00",
     comment = "Goodies that complement termes.",
-    author = "Hans Hagen",
+    author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
         tweaks = {
             aftercopying = {
+                {
+                    tweak    = "version",
+                    expected = "Version 1.543",
+                },
                 {
                     tweak = "dimensions",
                     list  = {
@@ -34,9 +38,10 @@ return {
                     },
                 },
                 {
-                    tweak  = "fixprimes",
-                 -- smaller = true,
-                    factor = 0.85,
+                    tweak   = "fixprimes",
+                    scale   = 0.7,
+                    smaller = true,
+                    factor  = 0.9,
                 },
                 {
                     tweak = "checkspacing",

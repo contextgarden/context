@@ -31,15 +31,15 @@ return {
     name = "pagella-math",
     version = "1.00",
     comment = "Goodies that complement pagella.",
-    author = "Hans Hagen",
+    author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
         tweaks = {
             aftercopying = {
-             -- {
-             --     tweak    = "version",
-             --     expected = "Version 1.632",
-             -- },
+                {
+                    tweak    = "version",
+                    expected = "Version 1.632",
+                },
              -- {
              --     comment = "example"
              --     tweak   = "action",
@@ -54,15 +54,20 @@ return {
              -- },
                 {
                     tweak = "dimensions",
-                    list  = {
-                        [0x1D453] = { .40, 1.60, .5 }, -- offset width italic
-                    },
+                    list  = {      -- offset width italic
+                        [0x1D453] = { 0.50,  1.70, 0.6 }, -- f
+                        [0x1D454] = { 0.10,  1.15, 0.2 }, -- g
+                        [0x1D70F] = { -.10,  1,    0   }, -- \tau
+                        [0x1D712] = { 0.1,   1.2,  0.1 }, -- \chi
+                        [0x1D713] = { -0.05, 0.95, 0.1 }, -- \psi
+                        },
                 },
                 {
                     tweak   = "fixprimes",
                     factor  = 0.85,
                     smaller = true,
                     scale   = 0.70,
+                    fake    = 0.65,
                 },
                 {
                     tweak = "checkspacing",

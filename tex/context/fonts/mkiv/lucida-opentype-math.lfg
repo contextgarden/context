@@ -40,11 +40,15 @@ return {
     name = "lucida-opentype-math",
     version = "1.00",
     comment = "Goodies that complement lucida opentype.",
-    author = "Hans Hagen",
+    author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
         tweaks = {
             aftercopying = {
+                {
+                    tweak    = "version",
+                    expected = "Version 1.802",
+                },
                 {
                     tweak = "dimensions",
                     list  = {
@@ -53,10 +57,10 @@ return {
                 },
                 {
                     tweak   = "fixprimes",
-                    factor  = 0.85, -- accent base height
+                    factor  = 0.8, -- accent base height
                     smaller = true, -- replace multiples
                     scale   = 0.75, -- glyph scale
-                    fake    = 0.75, -- replace multiples with this width proportion
+                    fake    = 0.65, -- replace multiples with this width proportion
                  -- keep    = true, -- keep the text size prime (aka minute)
                 },
                 {

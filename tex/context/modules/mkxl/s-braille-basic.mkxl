@@ -1,0 +1,178 @@
+%D \module
+%D   [      file=s-braille-basic,
+%D        version=2021.11.17,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Playground for spacing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This style is triggered by the 2021 blog by Murray Sargent (from Microsoft)
+%D about nemeth sequences:
+%D
+%D \starttyping
+%D https://devblogs.microsoft.com/math-in-office/unicode-math-braille-sequences/
+%D \stoptyping
+%D
+%D I ran into it when Mikael Sundqvist and I were working on an upgrade of the lfg
+%D (goodie) files for math. Being sort of monospaces a braille font is a good
+%D candidate for exploring al these math spacing parameters.
+%D
+%D More settings might show up and existing ones might change so it's mostly an
+%D example style. Fell free to contribute. We use color so that we can see what
+%D we're dealing with. Braille looks kind of interesting anyway although it was
+%D never meant to be seen but felt.
+%D
+%D Musical timestamp: Nothing but the truth (PT with GH drum cam 5.1 bluray) ...
+%D ... I'm always amazed of the power of music and wonder how that evolved with
+%D and in humans.
+
+\startmodule[braille-basic]
+
+\unprotect
+
+\definemeasure [braille:margin]  [\paperheight/15]
+
+\definelayout
+  [braille]
+  [\c!topspace=\measure{braille:margin},
+   \c!bottomspace=\measure{braille:margin},
+   \c!backspace=\measure{braille:margin},
+   \c!header=\measure{braille:margin},
+   \c!footer=\zeropoint,
+   \c!width=\v!middle,
+   \c!height=\v!middle]
+
+\setuplayout
+  [braille]
+
+\enableexperiments[fonts.compact]
+
+\setupbodyfont
+  [braille,11pt]
+
+\setupwhitespace
+  [\v!big]
+
+\setuphead
+  [\v!chapter]
+  [\c!style=\bfd,
+   \c!color=darkblue,
+   \c!headerstate=\v!high,
+   \c!interaction=\v!all]
+
+\setuphead
+  [\v!section]
+  [\c!style=\bfc,
+   \c!color=darkblue]
+
+\setuphead
+  [\v!subsection]
+  [\c!style=\bfb]
+
+\setuphead
+  [\v!subsubsection]
+  [\c!style=\bfa,
+   \c!after=]
+
+\setuplist
+  [\c!interaction=\v!all]
+
+\setupdocument
+  [\c!before=\directsetup{document:titlepage}]
+
+\setupalign
+  [\v!verytolerant,\v!flushleft]
+
+\setupitemgroup[\v!itemize][1][\c!width=4em,\c!style=\s!bold,\c!color=darkred]
+\setupitemgroup[\v!itemize][2][\c!width=5em,\c!style=\s!bold,\c!color=darkred]
+\setupitemgroup[\v!itemize][3][\c!width=6em,\c!style=\s!bold,\c!color=darkred]
+
+\setuptyping
+  [\c!color=darkyellow]
+
+\setuptype
+  [\c!color=darkyellow]
+
+\setupformulas
+  [\c!color=darkgreen]
+
+\protect
+
+\stopmodule
+
+\continueifinputfile{s-braille-basic.mkxl}
+
+\starttext
+
+\showframe \showglyphs \showboxes \dontcomplain
+
+\startchapter[title=The first]
+
+\startsection[title=Tufte] {\tf \samplefile{tufte}\par} \stopsection
+\startsection[title=Ward]  {\bf \samplefile{ward} \par} \stopsection
+\startsection[title=Davis] {\bi \samplefile{davis}\par} \stopsection
+
+\startsection[title=Four]
+
+    Here is some simple inline math: \formula {$x_2 = 10 \neq \alpha$} and here is
+    some (quick and dirty) display:
+
+    \startformula
+        y = \sqrt[2]{\frac{1+x^2}{2x+x^2+4}}
+    \stopformula
+
+    but there are rules for that. So we need to look into those so that:
+
+    \startformula
+        y = \frac{1+x^2}{2x+x^2+4}
+    \stopformula
+
+    and
+
+    \startformula
+        y = \overline{2x+x^2+4} + \underline{2x+x^2+4}
+      % y = \overbar{2x+x^2+4}
+    \stopformula
+
+    come out right.
+
+\stopsection
+
+\stopchapter
+
+\startchapter[title=The second]
+
+The monospaced font has no braille but actually all is kind of monospace apart
+from spacing:
+
+\starttyping
+Let's show some {\bf fancy tex} code,
+assuming that mono has gotten the
+braille glyphs.
+\stoptyping
+
+And some itemize:
+
+\startitemize[n]
+    \startitem first one \stopitem
+    \startitem second one \stopitem
+\stopitemize
+
+\startitemize
+    \startitem first one \stopitem
+    \startitem second one \stopitem
+\stopitemize
+
+\startitemize[a]
+    \startitem first one \stopitem
+    \startitem second one \stopitem
+\stopitemize
+
+\stopchapter
+
+\stoptext

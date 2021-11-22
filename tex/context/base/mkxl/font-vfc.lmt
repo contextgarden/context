@@ -169,22 +169,27 @@ local scaled = {
     -- additional ones are never scaled (color etc)
 }
 
+-- normally we don't have these, and if so, only in old school fonts
+-- in which case we don't have extensions so ...
+
 function helpers.scalecommands(list,hdelta,vdelta)
     local n = #list
     for i=1,n do
-        local key = list[i][1]
-        if scaled[list[i][1]] then
+        local cmd = list[i]
+        if scaled[cmd[1]] then
             local result = { }
             for i=1,n do
                 local cmd = list[i]
-                local key = ivc[1]
+                local key = cmd[1]
                 if key == "right" or key == "left" then
                     result[i] = { key, cmd[2]*hdelta }
                 elseif key == "down" or key == "up" then
                     result[i] = { key, cmd[2]*vdelta }
-                elseif key == "offset" or key == "rule" then -- or key == "compose"
+                elseif key == "offset" then
+                    result[i] = { key, cmd[2]*hdelta, cmd[3]*vdelta, cmd[4], cmd[5], cmd[6] }
+                elseif key == "rule" then
                     result[i] = { key, cmd[2]*hdelta, cmd[3]*vdelta }
-                elseif key == "line" then -- or key == "compose"
+                elseif key == "line" then
                     result[i] = { key, cmd[2]*hdelta, cmd[3]*vdelta, cmd[4]*vdelta, cmd[5] }
              -- elseif key == "frame" then
              --     result[i] = cmd -- already scaled, for now

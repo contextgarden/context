@@ -2,11 +2,15 @@ return {
     name = "kpfonts-math",
     version = "1.00",
     comment = "KP Fonts.",
-    author = "Hans Hagen",
+    author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
         tweaks = {
             aftercopying = {
+                {
+                    tweak    = "version",
+                    expected = "Version 0.40",
+                },
                 {
                     tweak = "dimensions",
                     list  = {

@@ -1,0 +1,130 @@
+if not modules then modules = { } end modules ['font-imp-braille'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA ADE",
+    copyright = "ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+if not context then return end
+
+-- require("char-brl.lmt")         -- we delay this one
+
+-- we can omit spaces and tweak the math parameters instead
+
+-- callback.register("math_rule", function(kind,font,width,height,attr)
+--     return nodes.tonode(nodes.nuts.pool.rule(width,5*height,5*height))
+-- end)
+
+local braille = characters.braille -- so this one is nil
+
+local braille_math_rule  do
+
+    local nuts         = nodes.nuts
+    local tonut        = nodes.tonut
+    local tonode       = nodes.tonode
+    local nodepool     = nuts.pool
+    local setattrlist  = nuts.setattrlist
+    local hpack        = nuts.hpack
+ -- local getwhd       = nuts.getwhd
+ -- local setwhd       = nuts.setwhd
+ -- local setoffsets   = nuts.setoffsets
+    local newmathglyph = nuts.newmathglyph
+    local newleader    = nodepool.leader
+
+    local braillerule
+
+    braille_math_rule = function(kind,font,width,height,attr)
+        if not braillerule then
+            braillerule = braille.special("rule")
+        end
+        local attlst = tonut(attr)
+        local glyph  = newmathglyph(font,braillerule,attlst)
+        local box    = hpack(glyph)
+        --
+     -- local w, h, d = getwhd(box)
+     -- local t = (h + d) / 2
+     -- setwhd(box,w,t,t)
+     -- setoffsets(glyph,0,-t) -- setting the offset of the box messes up (visual) things
+        --
+        local leader = newleader(width,box)
+        local result = hpack(leader,width,"exactly")
+        setattrlist(leader,attlst)
+        return tonode(result)
+    end
+
+end
+
+local setmetatableindex = table.setmetatableindex
+
+local cache = table.setmetatableindex(function(t,w)
+    local v =  table.setmetatableindex(function(t,u)
+        local v = { "offset", w, 0, u }
+        t[u] = v
+        return v
+    end)
+    t[w] = v
+    return v
+end)
+
+local function initialize(tfmdata,value)
+    if value then
+        if not braille then
+            require("char-brl.lmt")
+            braille = characters.braille
+        end
+        callback.register("math_rule", braille_math_rule)
+        local characters = tfmdata.characters
+        local numberdata = characters[braille.special("number")]
+        if numberdata then
+            local ismath  = value ~= "text" and (value == "math" or tfmdata.mathparameters)
+            local list    = ismath and braille.mathlist()  or braille.textlist()
+            local unicode = ismath and braille.mathunicode or braille.textunicode
+            local width   = numberdata.width
+            local height  = numberdata.height
+            local depth   = numberdata.depth
+            for i=1,#list do
+                local u = list[i]
+                local t = unicode(u)
+                local d = characters[u]
+                local w = 0
+                local c = { }
+                local n = #t
+                for i=1,n do
+                    local ub = t[i]
+                    local db = characters[ub]
+                    if db then
+                        c[i] = cache[w][ub]
+                        w = w + width
+                    end
+                end
+                if d then
+                    d.width    = n * width
+                    d.height   = height
+                    d.depth    = depth
+                    d.commands = c
+                else
+                    characters[u] = {
+                        width    = n * width,
+                        height   = height,
+                        depth    = depth,
+                        commands = c,
+                        unicode  = u,
+                    }
+                end
+            end
+            characters[0xAD] = characters[45]
+        end
+    end
+end
+
+local specification = {
+    name        = "braille",
+    description = "braille",
+    manipulators = {
+        base = initialize,
+        node = initialize,
+    }
+}
+
+fonts.handlers.otf.features.register(specification)

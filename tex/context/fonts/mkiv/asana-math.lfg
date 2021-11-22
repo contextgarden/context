@@ -34,11 +34,15 @@ return {
     name = "asana-math",
     version = "1.00",
     comment = "Goodies that complement asana.",
-    author = "Hans Hagen",
+    author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
         tweaks = {
             aftercopying = {
+                {
+                    tweak    = "version",
+                    expected = "Version 000.958",
+                },
                 {
                     tweak = "dimensions",
                     list  = {
@@ -46,9 +50,10 @@ return {
                     }
                 },
                 {
-                    tweak  = "fixprimes",
-                    factor = 1.05,
-                    scale  = 0.65,
+                    tweak   = "fixprimes",
+                    factor  = 0.85,
+                    scale   = 0.65,
+                    smaller = true,
                 },
                 {
                     tweak = "checkspacing",

@@ -15,7 +15,8 @@ local vlist_code = nodes.nodecodes.vlist
 
 local new_hlist  = nodepool.hlist
 local new_vlist  = nodepool.vlist
-local new_glyph  = nodepool.glyph
+----- new_glyph  = nodepool.glyph
+local new_glyph  = nuts.newmathglyph
 
 local getattrlst = nuts.getattributelist
 local setattrlst = nuts.setattributelist
@@ -25,6 +26,8 @@ local getid      = nuts.getid
 
 local chardata   = fonts.hashes.characters
 
+-- not yet ok for compact fonts .. needs checking .. or just make this non-compact only
+
 local function register_extensible(font,char,style,box)
     local bx = tonut(box)
     nodes.handlers.finalizelist(bx)
@@ -32,8 +35,9 @@ local function register_extensible(font,char,style,box)
     local al = getattrlst(bx)
     local wd, ht, dp = getwhd(bx)
     local private = fonts.helpers.setboxdirectly(font,chardata[font][char].unicode or char,box)
-    local g = new_glyph(font,private)
-    setattrlst(g,al)
+ -- local g = new_glyph(font,private)
+ -- setattrlst(g,al)
+    local g = new_glyph(font,private,al)
     local n = new_hlist(g)
     setwhd(n,wd,ht,dp)
     setattrlst(n,al)

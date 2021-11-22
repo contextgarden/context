@@ -587,17 +587,22 @@ end
 
 do
 
+    local reported = { }
+
     function mathtweaks.version(target,original,parameters)
         local metadata = original.shared.rawdata.metadata
         if metadata then
-            local version = metadata.version
+            local version = string.strip(metadata.version or "") -- some have trailing spaces
             if version then
                 local expected = parameters.expected
+                local fontname = metadata.fontname or false
              -- version = tonumber(string.match(version,"%d+.%d+"))
-                if version ~= expected then
+                if version ~= expected and not reported[fontname] then
                     report_tweak("version %a found, version %a expected",target,original,version,expected)
-                    reported[fontname] = true
+                elseif trace_tweaking then
+                    report_tweak("version %a found",target,original,version)
                 end
+                reported[fontname] = true
             end
         end
     end

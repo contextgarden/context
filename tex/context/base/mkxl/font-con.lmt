@@ -797,6 +797,7 @@ function constructors.scale(tfmdata,specification)
                 end
             end
         end
+        -- only in old school fonts (otherwise we set commands later in context)
         local vc = character.commands
         if vc then
             chr.commands = scalecommands(vc,hdelta,vdelta)

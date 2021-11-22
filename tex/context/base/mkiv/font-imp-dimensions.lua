@@ -103,6 +103,7 @@ local function initialize(tfmdata,key,value)
                     character.height = height
                     character.depth  = depth
                     if oldwidth ~= width then
+                        -- todo: xoffset
                         local commands = character.commands
                         local hshift   = rightcommand[newshift or ((width - oldwidth) / 2)]
                         if commands then

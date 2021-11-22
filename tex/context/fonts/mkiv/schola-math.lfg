@@ -14,11 +14,15 @@ return {
     name = "schola-math",
     version = "1.00",
     comment = "Goodies that complement schola.",
-    author = "Hans Hagen",
+    author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
         tweaks = {
             aftercopying = {
+                {
+                    tweak    = "version",
+                    expected = "Version 1.533",
+                },
                 {
                     tweak = "dimensions",
                     list  = {
@@ -26,9 +30,10 @@ return {
                     }
                 },
                 {
-                    tweak  = "fixprimes",
-                 -- smaller = true,
-                    factor = 0.85,
+                    tweak   = "fixprimes",
+                    scale   = 0.8,
+                    smaller = true,
+                    factor  = 0.9,
                 },
                 {
                     tweak = "checkspacing",

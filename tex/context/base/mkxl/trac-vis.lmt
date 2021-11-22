@@ -791,7 +791,9 @@ local ruledbox do
     local b_cache = caches["box"]
     local o_cache = caches["origin"]
 
-    local getshift = nuts.getshift
+    local getshift       = nuts.getshift
+    local getorientation = nuts.getorientation
+    local setorientation = nuts.setorientation
 
     setmetatableindex(o_cache,function(t,size)
         local rule   = new_rule(2*size,size,size)
@@ -807,6 +809,7 @@ local ruledbox do
         local wd, ht, dp = getwhd(current)
         local force_origin = wd == 0 or (dp + ht) == 0
             local shift = getshift(current)
+local orientation, xoffset, yoffset = getorientation(current)
             local next = getnext(current)
             local prev = previous
             setboth(current)
@@ -882,6 +885,7 @@ local ruledbox do
                 end
                 info = new_hlist(info,wd,ht,dp,shift)
             end
+-- setorientation(info,orientation,xoffset,yoffset)
             if next then
                 setlink(info,next)
             end
@@ -1359,6 +1363,7 @@ do
 
     local setleader               = nuts.setleader
     local setdisc                 = nuts.setdisc
+    local hpack                   = nuts.hpack
 
  -- local cache
 
@@ -1539,6 +1544,7 @@ do
             ::glue::
             content = getleader(current)
             if content then
+             -- setleader(current,hpack(visualize(content,false,nil,parent)))
                 setleader(current,visualize(content,false,nil,parent))
             elseif trace_glue then
                 head, current = ruledglue(head,current,vertical,parent)

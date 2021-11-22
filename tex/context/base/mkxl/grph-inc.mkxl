@@ -211,7 +211,7 @@
    \fi}
 
 \def\grph_include_use_indeed#1#2#3#4%
-  {\dodoglobal\setvalue{\??externalfigureinstance#1}{\grph_include_setup{#2}{#3}{#4}}%
+  {\dodoglobal\defcsname\??externalfigureinstance#1\endcsname{\grph_include_setup{#2}{#3}{#4}}%
    \grph_include_analyze_collection[#2][#4]}
 
 % inclusion
@@ -717,11 +717,8 @@
 
 \mutable\let\feedbackexternalfigure\relax % hook
 
-\permanent\protected\def\getfiguredimensions
-  {\dodoubleempty\grph_include_get_dimensions}
-
-\def\grph_include_get_dimensions[#1][#2]%
-  {\startnointerference
+\permanent\tolerant\protected\def\getfiguredimensions[#1]#*[#2]%
+  {\startnointerference % we can use \nospaces\plusone
      \settrue\c_grph_include_test_only
      \externalfigure[#1][#2,\c!display=,\c!mask=,\c!object=\v!no]%
    \stopnointerference}

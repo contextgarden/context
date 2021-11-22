@@ -1,0 +1,123 @@
+if not modules then modules = { } end modules ['math-pre'] = {
+    version   = 1.001,
+    optimize  = true,
+    comment   = "companion to math-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local type = type
+local gmatch = string.gmatch
+
+local h1 = table.swapped(tex.getmathparametervalues())
+local h2 = table.swapped(tex.getmathstylenamevalues())
+
+local axis = h1.axis
+
+local getmath = tex.getmath
+local setmath = tex.setmath
+
+function setmathparameters(t)
+    if t then
+        for i=1,#t do
+            local ti     = t[i]
+            local list   = ti.list
+            local factor = ti.factor or 1
+            local styles = ti.styles
+            local value  = ti.value
+            local unit   = ti.unit
+
+            local function set(li,si,value)
+                if value then
+                    setmath(li,si,value)
+                elseif factor == 0 then
+                    setmath(li,si,0)
+                elseif unit == "axis" then
+                    setmath(li,si,factor * getmath(axis,i))
+                else
+                    setmath(li,si,factor * getmath(li,i))
+                end
+            end
+
+            for i=1,#list do
+                local li = h1[list[i]]
+                if li then
+                    if styles == "all" then
+                        for si=0,7 do
+                            set(li,si,value)
+                        end
+                    elseif type(styles) == "string" then
+                        local si = h2[styles]
+                        if si then
+                            set(li,si,value)
+                        end
+                    else
+                        for s=1,#styles do
+                            local si = h2[styles[s]]
+                            if si then
+                                set(li,si,value)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+local stacklist = {
+    "fractionnumvgap",
+    "fractiondenomvgap",
+    "fractionnumup",
+    "fractiondenomdown",
+    "stackdenomdown",
+    "stacknumup",
+    "stackvgap",
+}
+
+local presets = {
+    less = {
+        {
+            factor = .5,
+         -- factor = 0,
+         -- value  = 655360,
+         -- unit   = "axis",
+            list   = stacklist,
+         -- styles = { "display" },
+         -- styles = "display",
+            styles = "all"
+        },
+    },
+    more = {
+        {
+            factor = 2,
+            list   = stacklist,
+            styles = "all"
+        },
+    },
+    zero = {
+        {
+            factor = 0,
+            list   = stacklist,
+            styles = "all"
+        },
+    },
+}
+
+mathematics.presets = presets
+
+function mathematics.preset(list)
+    for s in gmatch(list,"[%S,]+") do
+        setmathparameters(presets[s])
+    end
+end
+
+interfaces.implement {
+    name      = "presetmathematics",
+    public    = true,
+    protected = true,
+    arguments = "optional",
+    actions   = mathematics.preset,
+}
+

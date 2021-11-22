@@ -1134,7 +1134,7 @@
 
 \def\strc_references_handle_page_state_yes
   {\markreferencepage
-   \ifcase\referencepagedetail
+   \ifcase\referencepagedetail\relax
      \expandafter\sixthofsixarguments \or
      \expandafter\thirdofsixarguments \or
      \expandafter\firstofsixarguments \or

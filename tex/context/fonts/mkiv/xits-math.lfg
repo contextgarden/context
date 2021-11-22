@@ -2,7 +2,7 @@ return {
     name = "xits-math",
     version = "1.00",
     comment = "Goodies that complement xits (by Khaled Hosny).",
-    author = "Hans Hagen",
+    author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     filenames = {
         ["xitsmath-regular.otf"] = {
@@ -17,6 +17,10 @@ return {
     mathematics = {
         tweaks = {
             aftercopying = {
+                {
+                    tweak    = "version",
+                    expected = "Version 1.302",
+                },
                 {
                     tweak = "dimensions",
                     list  = {

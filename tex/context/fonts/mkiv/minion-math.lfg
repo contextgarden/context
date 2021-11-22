@@ -14,7 +14,7 @@ return {
     name = "minion-math",
     version = "1.00",
     comment = "Goodies that complement minion math.",
-    author = "Hans Hagen",
+    author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     designsizes = {
         ["Minion-Math"] = {
@@ -32,6 +32,10 @@ return {
     mathematics = {
         tweaks = {
             aftercopying = {
+             -- {
+             --     tweak    = "version",
+             --     expected = "unknown",
+             -- },
                 {
                     tweak = "dimensions",
                  -- smaller = true,

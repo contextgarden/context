@@ -172,6 +172,7 @@ local nuts = {
     naturalhsize            = direct.naturalhsize,
     naturalwidth            = direct.naturalwidth,
     new                     = direct.new,
+    newmathglyph            = direct.newmathglyph,
     protectglyph            = direct.protectglyph,
     protectglyphs           = direct.protectglyphs,
     protrusionskippable     = direct.protrusionskippable,

@@ -29,8 +29,9 @@
 \definefontfeature
   [eb-garamond-normal]
   [default]
-  [mode=node,ccmp=yes,calt=yes,
-   liga=yes,dlig=yes,hlig=yes,
+  [mode=node,ccmp=yes,
+   calt=yes,liga=yes,
+   dlig=yes,hlig=yes,
    kern=yes,mark=yes,mkmk=yes,
    onum=yes,pnum=yes,salt=yes,
    script=latn]
@@ -40,22 +41,20 @@
   [eb-garamond-normal]
   [smcp=yes,c2sc=yes]
 
+% \loadtypescriptfile[ebgaramond]
+%
+% \definefontfeature
+%   [eb-garamond-normal]
+%   [eb-garamond-normal]
+%   [dlig=no,hlig=no]
+%
+% \setupbodyfont[ebgaramond]
+%
+% \starttext
+%     No weird over the top ligatures.
+% \stoptext
+
 \starttypescriptcollection[ebgaramond]
-
-  % \starttypescript [serif] [ebgaramond]
-  %     \loadfontgoodies[ebgaramond]
-  %     \setups[font:fallback:serif]
-  %     \definefontsynonym [Serif]       [file:ebgaramond-regular] [features=eb-garamond-normal]
-  %     \definefontsynonym [SerifItalic] [file:ebgaramond-italic]  [features=eb-garamond-normal]
-  %     \definefontsynonym [SerifBold]   [file:ebgaramond-regular] [features=eb-garamond-normal] % there is no bold
-  %     \definefontsynonym [SerifCaps]   [Serif]                   [features=eb-garamond-smallcaps]
-  % \stoptypescript
-
-  % \starttypescript[ebgaramond]
-  %     \definetypeface [ebgaramond] [rm] [serif] [ebgaramond] [default] [designsize=auto]
-  %     \definetypeface [ebgaramond] [tt] [mono]  [dejavu]     [default] [rscale=0.8] % rather arbitrary but seldom mixed anyway
-  %     \definetypeface [ebgaramond] [mm] [math]  [bonum]      [default] [rscale=0.8] % rather arbitrary but seldom mixed anyway
-  % \stoptypescript
 
     \starttypescript [\s!serif] [ebgaramond]
         \setups[font:fallback:serif]

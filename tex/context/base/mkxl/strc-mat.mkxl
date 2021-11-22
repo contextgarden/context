@@ -978,11 +978,12 @@
 % \protected\def\switchtoformulabodyfont
 %   {\switchtobodyfont}
 
-\tolerant\permanent\protected\def\formula[#1];#2% todo: tagged
+\tolerant\permanent\protected\def\formula[#1]#;#2% todo: tagged
   {\begingroup
    \ifparameters#1\else
      \rawprocesscommacommand[#1]\strc_formulas_option
    \fi
+   \useformulastyleandcolor\c!style\c!color
    \mathematics{#2}%
    \endgroup}
 

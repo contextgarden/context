@@ -1,0 +1,405 @@
+if not modules then modules = { } end modules ['char-bri'] = {
+    version   = 1.001,
+    comment   = "companion to char-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- We use a somewhat indirect approach because we generated the database and
+-- have to do that again probably. At some point we can move some to char-def
+-- so the interfaces here are kind of private and can change.
+--
+-- This is just an experiment. The data is taken from Wikipedia and the nemeth
+-- sequences come from a 2021 blog by Murray Sargent (from Microsoft):
+--
+-- https://devblogs.microsoft.com/math-in-office/unicode-math-braille-sequences/
+
+local next = next
+local gsub = string.gsub
+local utfbyte, utfsplit = utf.byte, string.utfvaluetable
+local sortedkeys = table.sortedkeys
+
+local braille      = { }
+characters.braille = braille
+
+local codepoints = {
+    digits = {
+        [48] = "⠚",
+        [49] = "⠁",
+        [50] = "⠃",
+        [51] = "⠉",
+        [52] = "⠙",
+        [53] = "⠑",
+        [54] = "⠋",
+        [55] = "⠛",
+        [56] = "⠓",
+        [57] = "⠊",
+    },
+    letters = {
+        [97] = "⠁",
+        [98] = "⠃",
+        [99] = "⠉",
+       [100] = "⠙",
+       [101] = "⠑",
+       [102] = "⠋",
+       [103] = "⠛",
+       [104] = "⠓",
+       [105] = "⠊",
+       [106] = "⠚",
+       [107] = "⠅",
+       [108] = "⠇",
+       [109] = "⠍",
+       [110] = "⠝",
+       [111] = "⠕",
+       [112] = "⠏",
+       [113] = "⠟",
+       [114] = "⠗",
+       [115] = "⠎",
+       [116] = "⠞",
+       [117] = "⠥",
+       [118] = "⠧",
+       [119] = "⠺",
+       [120] = "⠭",
+       [121] = "⠽",
+       [122] = "⠵",
+    },
+    punctuation = {
+        [33] = "⠖",
+        [34] = "⠸⠡",
+        [40] = "⠐⠣",
+        [41] = "⠐⠜",
+        [44] = "⠂",
+        [45] = "⠤",
+        [46] = "⠲",
+        [47] = "⠸⠌",
+        [58] = "⠒",
+        [59] = "⠆",
+        [63] = "⠦",
+      [8211] = "⠠⠤",
+      [8212] = "⠐⠠⠤",
+      [8216] = "⠄⠦",
+      [8217] = "⠄⠴",
+      [8220] = "⠘⠦",
+      [8221] = "⠘⠴",
+    },
+    ueb = {
+        [33] = "⠖",
+        [34] = "⠠⠶",
+        [35] = "⠸⠹",
+        [36] = "⠈⠎",
+        [37] = "⠨⠴",
+        [38] = "⠈⠯",
+        [39] = "⠄",
+        [40] = "⠐⠣",
+        [41] = "⠐⠜",
+        [42] = "⠐⠔",
+        [43] = "⠐⠖",
+        [44] = "⠂",
+        [45] = "⠤",
+        [46] = "⠼⠲",
+        [47] = "⠸⠌",
+        [58] = "⠒",
+        [59] = "⠆",
+        [60] = "⠈⠣",
+        [61] = "⠐⠶",
+        [62] = "⠈⠜",
+        [63] = "⠦",
+        [64] = "⠈⠁",
+        [91] = "⠨⠣",
+        [92] = "⠸⠡",
+        [93] = "⠨⠜",
+        [94] = "⠈⠢",
+        [95] = "⠨⠤",
+       [123] = "⠸⠣",
+       [124] = "⠸⠳",
+       [125] = "⠸⠜",
+       [126] = "⠈⠔",
+       [162] = "⠈⠉",
+       [163] = "⠈⠇",
+       [167] = "⠘⠎",
+       [169] = "⠘⠉",
+       [172] = "⠈⠹",
+       [174] = "⠘⠗",
+       [176] = "⠘⠚",
+       [177] = "⠸⠖",
+       [182] = "⠘⠏",
+       [215] = "⠐⠦",
+       [247] = "⠐⠌",
+       [913] = "⠠⠨⠁",
+       [914] = "⠠⠨⠃",
+       [915] = "⠠⠨⠛",
+       [916] = "⠠⠨⠙",
+       [917] = "⠠⠨⠑",
+       [918] = "⠠⠨⠵",
+       [919] = "⠠⠨⠱",
+       [920] = "⠠⠨⠹",
+       [921] = "⠠⠨⠊",
+       [922] = "⠠⠨⠅",
+       [923] = "⠠⠨⠇",
+       [924] = "⠠⠨⠍",
+       [925] = "⠠⠨⠝",
+       [926] = "⠠⠨⠭",
+       [927] = "⠠⠨⠕",
+       [928] = "⠠⠨⠏",
+       [929] = "⠠⠨⠗",
+       [931] = "⠠⠨⠎",
+       [932] = "⠠⠨⠞",
+       [933] = "⠠⠨⠥",
+       [934] = "⠠⠨⠋",
+       [935] = "⠠⠨⠯",
+       [936] = "⠠⠨⠽",
+       [937] = "⠠⠨⠺",
+       [945] = "⠨⠁",
+       [946] = "⠨⠃",
+       [947] = "⠨⠛",
+       [948] = "⠨⠙",
+       [949] = "⠨⠑",
+       [950] = "⠨⠵",
+       [951] = "⠨⠱",
+       [952] = "⠨⠹",
+       [953] = "⠨⠊",
+       [954] = "⠨⠅",
+       [955] = "⠨⠇",
+       [956] = "⠨⠍",
+       [957] = "⠨⠝",
+       [958] = "⠨⠭",
+       [959] = "⠨⠕",
+       [960] = "⠨⠏",
+       [961] = "⠨⠗",
+       [962] = "⠨⠎",
+       [963] = "⠨⠎",
+       [964] = "⠨⠞",
+       [965] = "⠨⠥",
+       [966] = "⠨⠋",
+       [967] = "⠨⠯",
+       [968] = "⠨⠽",
+       [969] = "⠨⠺",
+      [8212] = "⠠⠤",
+      [8213] = "⠐⠠⠤",
+      [8216] = "⠠⠦",
+      [8217] = "⠠⠴",
+      [8220] = "⠘⠦",
+      [8221] = "⠘⠴",
+      [8224] = "⠈⠠⠹",
+      [8225] = "⠈⠠⠻",
+      [8226] = "⠸⠲",
+      [8242] = "⠶",
+      [8243] = "⠶⠶",
+      [8592] = "⠳⠪",
+      [8593] = "⠳⠬",
+      [8594] = "⠳⠕",
+      [8595] = "⠳⠩",
+      [8596] = "⠰⠳⠺⠗⠕",
+      [8598] = "⠳⠱",
+      [8599] = "⠳⠎",
+      [8600] = "⠳⠣",
+      [8601] = "⠳⠜",
+      [8656] = "⠰⠳⠶⠶⠪",
+      [8657] = "⠰⠳⠶⠶⠬",
+      [8658] = "⠰⠳⠶⠶⠕",
+      [8659] = "⠰⠳⠶⠶⠩",
+      [8704] = "⠘⠁",
+      [8706] = "⠈⠙",
+      [8707] = "⠘⠢",
+      [8709] = "⠈⠚",
+      [8711] = "⠘⠙",
+      [8712] = "⠘⠑",
+      [8715] = "⠈⠘⠑",
+      [8722] = "⠐⠤",
+      [8723] = "⠸⠤",
+      [8728] = "⠐⠴",
+      [8730] = "⠐⠩",
+      [8733] = "⠸⠐⠶",
+      [8734] = "⠼⠿",
+      [8736] = "⠸⠪",
+      [8737] = "⠨⠸⠪",
+      [8741] = "⠼⠇",
+      [8743] = "⠈⠦",
+      [8744] = "⠈⠖",
+      [8745] = "⠨⠦",
+      [8746] = "⠨⠖",
+      [8747] = "⠮",
+      [8748] = "⠮⠮",
+      [8749] = "⠮⠮⠮",
+      [8750] = "⠈⠮",
+      [8756] = "⠠⠡",
+      [8757] = "⠈⠌",
+      [8758] = "⠒",
+      [8759] = "⠒⠒",
+      [8771] = "⠸⠔",
+      [8773] = "⠐⠸⠔",
+      [8776] = "⠘⠔",
+      [8783] = "⠘⠐⠶",
+      [8785] = "⠨⠐⠶",
+      [8800] = "⠐⠶⠈⠱",
+      [8801] = "⠸⠿",
+      [8804] = "⠸⠈⠣",
+      [8805] = "⠸⠈⠜",
+      [8810] = "⠨⠈⠣",
+      [8811] = "⠨⠈⠜",
+      [8834] = "⠘⠣",
+      [8835] = "⠘⠜",
+      [8838] = "⠸⠘⠣",
+      [8839] = "⠸⠘⠜",
+      [8842] = "⠨⠘⠣",
+      [8843] = "⠨⠘⠜",
+      [8853] = "⠰⠫⠿⠪⠐⠖⠱",
+      [8867] = "⠈⠸⠒",
+      [8869] = "⠼⠤",
+      [8870] = "⠸⠒",
+      [8872] = "⠘⠸⠒",
+      [8882] = "⠈⠸⠣",
+      [8883] = "⠈⠸⠜",
+      [8884] = "⠸⠸⠣",
+      [8885] = "⠸⠸⠜",
+      [8894] = "⠼⠸⠪",
+      [8901] = "⠐⠲",
+      [9675] = "⠿",
+     [10764] = "⠮⠮⠮⠮",
+    },
+    specials = {
+        uppercase = "⠠",
+        space     = "⠀",
+        number    = "⠼",
+        rule      = "⠒",
+    },
+    alphabets = {
+        ["lowercasenormal"]                    = "⠰",
+        ["lowercasegreeknormal"]               = "⠨",
+        ["lowercasegreekitalic"]               = "⠨⠨",
+        ["lowercaseitalic"]                    = "⠨",
+        ["lowercasebold"]                      = "⠸",
+        ["lowercasebolditalic"]                = "⠸⠨",
+        ["lowercasefraktur"]                   = "⠸",
+        ["lowercaseboldfraktur"]               = "⠸⠸",
+        ["lowercasescript"]                    = "⠈",
+        ["lowercaseboldscript"]                = "⠸⠈",
+        ["lowercasesansserifnormal"]           = "⠠⠨",
+        ["lowercasesansserifitalic"]           = "⠠⠨⠨",
+        ["lowercasesansserifbold"]             = "⠠⠨⠸",
+        ["lowercasesansserifbolditalic"]       = "⠠⠨⠸⠨",
+
+        ["uppercase"]                          = "⠠",
+
+     -- ["russian"]                            = "⠈⠈",
+     -- ["hebrew"]                             = "⠠⠠",
+     -- ["altgreek"]                           = "⠨⠈",
+
+     -- ["lowercasedoublestruck"]              = ""
+     -- ["lowercasegreekbold"]                 = ""
+     -- ["lowercasegreekbolditalic"]           = ""
+     -- ["lowercasegreeksansserifbold"]        = ""
+     -- ["lowercasegreeksansserifbolditalic"]  = ""
+     -- ["lowercasemonospace"]                 = ""
+    },
+}
+
+braille.codepoints = codepoints
+
+local textunicodes, mathunicodes, textstrings, mathstrings, textlist, mathlist, specials
+
+local function prepare()
+
+    local charblocks  = characters.blocks
+    local uccodes     = characters.uccodes
+
+    local letters     = codepoints.letters
+    local cspecials   = codepoints.specials
+    local uppercase   = cspecials.uppercase
+    local number      = cspecials.number
+    local space       = cspecials.space
+    local rule        = cspecials.rule
+
+    -- filtered from the mentioned blog webpage:
+
+    local nemeth      = table.load(resolvers.find_file("math-brl.lua")).nemeth
+    codepoints.nemeth = nemeth
+
+    -- we let the tex math engine do the spacing but it can become an option:
+
+    for k, v in next, nemeth do
+        nemeth[k] = gsub(v,space,"")
+    end
+
+    textstrings  = { }
+    mathstrings  = { }
+    textunicodes = { }
+    mathunicodes = { }
+
+    for k, v in next, codepoints.letters do
+        textstrings[k] = v
+        mathstrings[k] = v
+        local K = uccodes[k]
+        if K then
+            local V = uppercase .. v
+            textstrings[K] = V
+            mathstrings[K] = V
+        end
+    end
+
+    for k, v in next, codepoints.digits do
+        local d = number .. v
+        textstrings[k] = v
+        mathstrings[k] = v
+    end
+
+    for k, v in next, codepoints.punctuation do
+        textstrings[k] = v
+        mathstrings[k] = v
+    end
+    -- overlaps with the above
+
+    for k, v in next, codepoints.ueb do
+        textstrings[k] = v
+        mathstrings[k] = v
+    end
+
+    for k, v in next, codepoints.nemeth do
+        mathstrings[k] = v
+        if not textstrings[k] then
+            textstrings[k] = v
+        end
+    end
+
+    for k, v in next, codepoints.alphabets do
+        local block = charblocks[k]
+        if block then
+            local c = utfbyte('a')
+            for i=block.first,block.last do
+                mathstrings[i] = v..letters[c]
+                if not textstrings[i] then
+                    textstrings[i] = v .. letters[c]
+                end
+                c = c + 1
+            end
+        end
+    end
+
+    for k, v in next, textstrings do
+        textunicodes[k] = utfsplit(v)
+    end
+    for k, v in next, mathstrings do
+        mathunicodes[k] = utfsplit(v)
+    end
+
+    textlist = sortedkeys(textstrings)
+    mathlist = sortedkeys(mathstrings)
+
+    specials = {
+        uppercase = utfbyte(uppercase),
+        number    = utfbyte(number),
+        space     = utfbyte(space),
+        rule      = utfbyte(rule)
+    }
+end
+
+-- maybe an iterator
+
+function braille.textlist   ()  if not textlist     then prepare() end return textlist        end
+function braille.mathlist   ()  if not mathlist     then prepare() end return mathlist        end
+function braille.textunicode(n) if not textunicodes then prepare() end return textunicodes[n] end
+function braille.mathunicode(n) if not mathunicodes then prepare() end return mathunicodes[n] end
+function braille.textstring (n) if not textstrings  then prepare() end return textstrings [n] end
+function braille.mathstring (n) if not mathstrings  then prepare() end return mathstrings [n] end
+function braille.special    (n) if not specials     then prepare() end return specials    [n] end

@@ -73,12 +73,14 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {
-                        -- nothing yet
+                        [0x1D43D] = { 0.25, 1.15, 0.2}, -- J
                     },
                 },
                 {
-                    tweak  = "fixprimes",
-                    factor = 0.85,
+                    tweak   = "fixprimes",
+                    scale   = 0.7,
+                    smaller = true,
+                    factor  = 0.8,
                 },
                 {
                     tweak = "checkspacing",
