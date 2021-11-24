@@ -1,0 +1,83 @@
+\starttexdefinition OneMathSample #1#2
+    \startcontent
+        \switchtobodyfont[#1]
+        \framed[align=middle,offset=2ex,corner=round,rulethickness=1pt,framecolor=darkred] \bgroup
+            \getbuffer[#2]%
+            \blank[back]
+        \egroup
+    \stopcontent
+    \startcaption
+        \tt\tfb\color[darkred]{#1}
+    \stopcaption
+\stoptexdefinition
+
+\startluacode
+    local default = {
+        "cambria",
+        "modern",
+     -- "modernlatin",
+        "dejavu",
+        "pagella",
+        "termes",
+        "bonum",
+        "schola",
+        "lucidadk",
+     -- "xits",
+        "stixtwo",
+        "libertinus",
+        "ebgaramond",
+        "kpfonts",
+     -- "minion",
+     -- "asana"
+    }
+
+    function document.MathSamples(list,samples)
+        list    = string.strip(list)
+        samples = string.strip(samples)
+        local s = list ~= "" and utilities.parsers.settings_to_array(list) or default
+        local n = #s
+        if s[n] == "" then
+            n = n - 1
+        end
+        local m = n % 4
+        local x = 4
+        local y = n // 4
+        if m > 0 then
+            x = x + 1
+        end
+     -- for i=1,n do
+     --     context.usebodyfont { s[i] }
+     -- end
+--        context.startTEXpage { offset = "2ex" }
+            context.startcombination { nx = x, ny = y, location = "top", distance = "2ex", after = "\\blank[2*big]" }
+                for i=1,n do
+                    context.OneMathSample(s[i],samples)
+                end
+            context.stopcombination()
+--        context.stopTEXpage()
+    end
+\stopluacode
+
+\protected\def\MathSamples[#1]#*[#2]%
+  {\ctxlua{document.MathSamples("#1","#2")}}
+
+\def\DoShowNextBox
+  {\begingroup
+   \dowithnextbox
+     {\showboxinbuffer{mathbox}\nextbox\plusone
+      \midaligned{\framed{\box\nextbox}}%
+      \switchtobodyfont[4pt]
+      \typebuffer[mathbox][option=TEX]%
+      \endgroup
+      \endgroup}%
+    \hbox}
+
+\protected\def\StartShowBox
+  {\begingroup
+   \protected\def\StopShowBox{\removeunwantedspaces\egroup}%
+   \DoShowNextBox
+   \bgroup\ignorespaces}
+
+\protected\def\ShowBox
+  {\begingroup
+   \DoShowNextBox}

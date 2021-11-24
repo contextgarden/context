@@ -238,6 +238,8 @@ return {
   "Umathunderlinevariant",
   "Umathvextensiblevariant",
   "Umathvoid",
+  "Umathxscale",
+  "Umathyscale",
   "Umiddle",
   "Unosubprescript",
   "Unosubscript",

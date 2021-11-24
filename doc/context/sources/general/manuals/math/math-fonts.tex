@@ -1,0 +1,263 @@
+% language=us runpath=texruns:manuals/math
+
+\environment math-layout
+\environment math-fonts-helpers
+
+% todo: use "keep-latin-modern-math.otf" and "keep-texgyre-pagella-math.otf"
+
+\startcomponent math-fonts
+
+\startchapter[title=Fonts]
+
+\startsection[title=Introduction]
+
+In this document we will discuss how we deal with \OPENTYPE\ math fonts. There is
+a set of samples that are used for testing. One problem is that these fonts
+evolve so what we discuss and fix today might not be applicable tomorrow in which
+case this document can also be seen from a historic perspective. We will mostly
+use \CONTEXT\ speak.
+
+The examples that we show use test files and normally they should render okay. If
+not, we need to fix something. They are part of a set of test files by Mikael
+Sundqvist and Hans Hagen made in the perspective of defining proper goodie files
+and this chapter summarizes our journey.
+
+{\em This chapter is uncorrected work in progress.}
+
+\stopsection
+
+\startsection[title=Italics]
+
+First of all we need to mention some fundamental differences between a
+traditional setup and one for \OPENTYPE\ \UNICODE\ fonts. When \TEX\ showed up,
+fonts had at most 256 characters. Sets of characters are organized in so called
+families of which there are 16: family zero is the one used for what is called
+roman (upright), family one for so called math italic characters, family two for
+all kind of symbols and family three for extensible characters. The \TEX\
+distribution comes with matching fonts. Now, when one enters a formula like this:
+
+\starttyping
+y = \sqrt{x^2 + 4}
+\stoptyping
+
+the \type {x} and \type {y} are math italics (family 1), \type {1} and \type {2}
+are upright (family 0), the \type {+} is a symbol (family 2) and the radical
+comes from family 3 as it can differ in size. The letters are actually from the
+math {\it italic} alphabet and there can be other alphabets: bold, bold italic,
+blackboard, script, etc. For these one defines additional families or when one
+runs out of families symbolic names can be used to map to the non alphabetic
+\ASCII\ slots.
+
+In \CONTEXT\ right from when we started with \LUATEX\ the multiple families were
+dropped in favor of just one. \footnote {This is not entirely true because we
+also have one for bold, and two for r2l regular and bold, but these are dealt
+with in a special way: all definitions use family zero.} Because \UNICODE\ has a
+concept of math alphabets (unfortunately with holes) we use \UNICODE\ \OPENTYPE\
+fonts as well as (certainly before there was anything else than Cambria) virtual
+(runtime) assemblies of traditional \TYPEONE\ fonts.
+
+In this and following chapters we only discuss the \OPENTYPE\ fonts because that
+is what we normally deal with. One complication there is that, although Cambria
+set a clear standard, the fonts that evolved in the \TEX\ ecosystem are to a
+large extend modelled after the traditional \TEX\ fonts. Fonts that originate
+from elsewhere are a mix of both models. And it is this curious mix of approaches
+that forces us to adapt the machinery and|/|or the fonts to our needs. For a long
+time \CONTEXT\ assumed some consistency and although there were mechanisms in
+place to deal with these (often not) subtle differences, in the long run that was
+not what we wanted. So, when these fonts became more and more frozen we decided
+to go for a more individual long term \quote {fix them runtime} solution.
+
+A result is that in \LMTX\ we use a similar approach as in \MKIV\ but instead of
+trying to fix the fonts automatically (driven by pseudo features), we now
+delegate that to the font goodie mechanism where we can also fine tune more
+easily per font: runtime tweaks. The basics are the same but it is a bit easier
+that way, also because in the worst case one can program a specific tweak without
+side effects for the rest.
+
+\startplacefigure[title={Italics Sample 2}]
+    \externalfigure
+        [math-fonts-italics-002.tex]
+        [width=\textwidth]
+\stopplacefigure
+
+The tweak that deals with italics (and other shapes) is:
+
+\starttabulate[|T|||]
+\NC tweak \NC \type {dimensions} \NC \NC \NR
+\NC list  \NC table \NC a hash with treatments \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title={Primes}]
+
+% \ctxlua{nodes.tasks.disableaction("math","noads.handlers.fixscripts")}
+% \ctxlua{nodes.tasks.enableaction("math","noads.handlers.fixscripts")}
+
+Primes are implemented in a curious way. In traditional \TEX\ they are treated as
+superscripts which is often achieved by making the single quote into an active
+character (in math mode) that takes care of this. The dimensions of a prime are
+such that it comes at the right spot (according to the designers wish). However,
+in \UNICODE\ the same symbol is used for minutes in text mode and because there
+are no duplicates in \UNICODE, it is that already superscripted symbol that we
+see show up in fonts. There is (for some reason) no dedicated single prime slot
+(and one can argue that minutes and primes are really different things and if
+not, why then does greek and latin don't share more).
+
+In \CONTEXT\ we don't want to mess with active characters and even more, we want
+proper symbols for the multiple primes. At the same time we need to handle
+following superscripts as well as cases where a subscript is used as index to a
+nucleus where the whole is then primed. This is implemented in a combination of
+\TEX, \LUA\ and normalized prime symbols.
+
+\startplacefigure[title={Primes Sample 1}]
+    \externalfigure
+        [math-fonts-primes-001.tex]
+        [width=\textwidth]
+\stopplacefigure
+
+Fixing primes boils down to fixing dimensions and repositioning the shape.
+Optionally the multiples can be emulated and a smaller size can be chosen. It's
+also a matter of taste and primes are often not the best designed symbols.
+
+The specification is:
+
+\starttabulate[|T|||]
+\NC tweak   \NC \type {fixprimes} \NC \NC \NR
+\NC factor  \NC number  \NC fraction of the accent base height that the prime shifts up \NC \NR
+\NC smaller \NC boolean \NC when \type {true}, replace multiples \NC \NR
+\NC scale   \NC number  \NC the glyph scale \NC \NR
+\NC fake    \NC number  \NC when set, fake multiples and use this width 0.75 \NC \NR
+\NC keep    \NC boolean \NC keep text size prime as it is \NC \NR
+\stoptabulate
+
+In \MKIV\ we remap primes but in \LMTX\ we adapt the regular slots. As a
+consequence we sacrifice the text size minutes. The \type {keep} option will
+leave the text size variant as it is.
+
+Keep in mind that primes are processed depending on what precedes and follows so
+you cannot really test a character by just calling it: when there is something in
+front it will become a superscripted prime.
+
+\stopsection
+
+\startsection[title={Scripts}]
+
+This tweak will add superscript characters for plus and minus. The main reason
+for them being supplied is that we need them to indicate an explicit (minus)
+sign in calculator math examples.
+
+\startplacefigure[title={Scripts Sample 1}]
+    \externalfigure
+        [math-fonts-scripts-001.tex]
+        [width=\textwidth]
+\stopplacefigure
+
+The specification is:
+
+\starttabulate[|T|||]
+\NC tweak \NC \type {addscripts} \NC \NC \NR
+\NC scale \NC number \NC the scale of the scripted character \NC \NR
+\stoptabulate
+
+Keep in mind that these scripts are processed depending on what precedes so you
+cannot really test a character by just calling it.
+
+\stopsection
+
+\startsection[title={Radicals}]
+
+The traditional \TEX\ engine is made in conjunction with the Computer Modern
+Fonts and there the radical symbol sits below the baseline so that the height
+indicates the rule thickness. In \OPENTYPE\ fonts this is a variable. The Latin
+Modern Math font inherits this somewhat strange position property but we can fix
+that with this tweak:
+
+\startplacefigure[title={Radicals Sample 1}]
+    \externalfigure
+        [math-fonts-radicals-001.tex]
+        [width=\textwidth]
+\stopplacefigure
+
+There are no options:
+
+\starttabulate[|T|||]
+\NC tweak \NC \type {fixradicals} \NC \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title={Accents}]
+
+We cannot yet tweak accents, but here is an example:
+
+\startplacefigure[title={Accents Sample 1}]
+    \externalfigure
+        [math-fonts-accents-001.tex]
+        [width=\textwidth]
+\stopplacefigure
+
+\stopsection
+
+\startsection[title={Spacing}]
+
+There are \UNICODE\ characters for various spaces and this option defines them
+when they are not present. It is up to the macro package to make sure that the
+non breakable spaces are treated as such. In this document we get:
+
+\def\ShowSpacing#1#2%
+  {\NC \ruledhbox{\showmakeup[glue]\showstruts\strut\char"#1\strut}\NC#2\NC\NR}
+
+\starttabulate[|w(1.5em)|T|]
+    \ShowSpacing{00A0}{nbsp}
+    \ShowSpacing{2000}{enquad}
+    \ShowSpacing{2001}{emquad}
+    \ShowSpacing{2002}{enspace}
+    \ShowSpacing{2003}{emspace}
+    \ShowSpacing{2004}{threeperemspace}
+    \ShowSpacing{2005}{fourperemspace}
+    \ShowSpacing{2006}{sixperemspace}
+    \ShowSpacing{2007}{figurespace}
+    \ShowSpacing{2008}{punctuationspace}
+    \ShowSpacing{2009}{breakablethinspace}
+    \ShowSpacing{200A}{hairspace}
+    \ShowSpacing{200B}{zerowidthspace}
+    \ShowSpacing{202F}{narrownobreakspace}
+    \ShowSpacing{205F}{maththinspace}
+\stoptabulate
+
+There are no options:
+
+\starttabulate[|T|||]
+\NC tweak \NC \type {checkspacing} \NC \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Parameters]
+
+An \OPENTYPE\ math fonts has a lot of parameters and because the engine let you
+set them for every style (regular and cramped) you can exercise a lot of control.
+A difference with traditional math is that we only have one cramped parameter:
+\typ {SuperscriptShiftUpCramped}.
+
+\startbuffer
+\startoverlay
+    {\ruledhbox{$\strut \red  \displaystyle        x^2_1 x^2 x_1$}}
+    {\ruledhbox{$\strut \blue \crampeddisplaystyle x^2_1 x^2 x_1$}}
+\stopoverlay
+\stopbuffer
+
+\typebuffer
+
+Only the superscript is affected (in some miraculous way):
+
+\startlinecorrection
+    \scale[height=3cm]{\switchtobodyfont[pagella]\getbuffer}
+\stoplinecorrection
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

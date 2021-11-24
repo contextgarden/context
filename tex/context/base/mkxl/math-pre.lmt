@@ -7,16 +7,42 @@ if not modules then modules = { } end modules ['math-pre'] = {
     license   = "see context related readme files"
 }
 
-local type = type
-local gmatch = string.gmatch
+local type, tonumber = type, tonumber
+local gmatch, find, topattern = string.gmatch, string.find, string.topattern
 
-local h1 = table.swapped(tex.getmathparametervalues())
-local h2 = table.swapped(tex.getmathstylenamevalues())
+local parameterlist = tex.getmathparametervalues()
+local mathstylelist = tex.getmathstylenamevalues()
+local parameterhash = table.swapped(parameterlist)
+local mathstylehash = table.swapped(mathstylelist)
 
-local axis = h1.axis
+local axis = parameterhash.axis
 
 local getmath = tex.getmath
 local setmath = tex.setmath
+
+local function expandparameters(t)
+    local result = { }
+    local kind   = type(t)
+    local function expand(s)
+        s = topattern(s)
+        for i=1,#parameterlist do
+            local p = parameterlist[i]
+            if find(p,s) then
+                result[#result+1] = p
+            end
+        end
+    end
+    if kind == "string" then
+        for s in gmatch(t,"[^%s,]+") do
+            expand(s)
+        end
+    elseif kind == "table" then
+        for i=1,#t do
+            expand(t[i])
+        end
+    end
+    return result
+end
 
 function setmathparameters(t)
     if t then
@@ -24,7 +50,7 @@ function setmathparameters(t)
             local ti     = t[i]
             local list   = ti.list
             local factor = ti.factor or 1
-            local styles = ti.styles
+            local style  = ti.style
             local value  = ti.value
             local unit   = ti.unit
 
@@ -41,20 +67,20 @@ function setmathparameters(t)
             end
 
             for i=1,#list do
-                local li = h1[list[i]]
+                local li = parameterhash[list[i]]
                 if li then
-                    if styles == "all" then
+                    if style == "all" then
                         for si=0,7 do
                             set(li,si,value)
                         end
-                    elseif type(styles) == "string" then
-                        local si = h2[styles]
+                    elseif type(style) == "string" then
+                        local si = mathstylehash[style]
                         if si then
                             set(li,si,value)
                         end
                     else
-                        for s=1,#styles do
-                            local si = h2[styles[s]]
+                        for s=1,#style do
+                            local si = mathstylehash[style[s]]
                             if si then
                                 set(li,si,value)
                             end
@@ -65,6 +91,8 @@ function setmathparameters(t)
         end
     end
 end
+
+-- example
 
 local stacklist = {
     "fractionnumvgap",
@@ -84,34 +112,73 @@ local presets = {
          -- value  = 655360,
          -- unit   = "axis",
             list   = stacklist,
-         -- styles = { "display" },
-         -- styles = "display",
-            styles = "all"
+         -- style  = { "display" },
+         -- style  = "display",
+            style = "all"
         },
     },
     more = {
         {
             factor = 2,
             list   = stacklist,
-            styles = "all"
+            style  = "all"
         },
     },
     zero = {
         {
             factor = 0,
             list   = stacklist,
-            styles = "all"
+            style  = "all"
         },
     },
 }
 
-mathematics.presets = presets
+mathematics.presets = presets -- we might need to store these in the format file
 
 function mathematics.preset(list)
-    for s in gmatch(list,"[%S,]+") do
+    for s in gmatch(list,"[^%s,]+") do
         setmathparameters(presets[s])
     end
 end
+
+-- todo: append, prepend, inherit
+
+interfaces.implement {
+    name      = "definemathpreset",
+    public    = true,
+    protected = true,
+    arguments = { "optional", "hash" },
+    actions   = function(name,t)
+        if next(t) then
+            local factor = t.factor
+            local style  = t.style
+            local list   = t.list
+            local unit   = t.unit
+            if factor then
+                t.factor = tonumber(factor)
+            end
+            if style and style ~= "all" then
+                t.style = utilities.parsers.settings_to_array(style)
+            end
+            if list then
+             -- t.list = utilities.parsers.settings_to_array(list)
+                t.list = expandparameters(list)
+            end
+            if unit and unit ~= "axis" then
+                t.unit = nil
+            end
+            -- todo: value
+            local p = presets[name]
+            if p then
+                p[#p+1] = t
+            else
+                presets[name] = t
+            end
+        else
+            presets[name] = nil
+        end
+    end,
+}
 
 interfaces.implement {
     name      = "presetmathematics",
@@ -120,4 +187,3 @@ interfaces.implement {
     arguments = "optional",
     actions   = mathematics.preset,
 }
-

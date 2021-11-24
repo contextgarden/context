@@ -42,6 +42,7 @@ return {
                 {
                     tweak    = "version",
                     expected = "Version 000.958",
+                    message  = "this font is not supported",
                 },
                 {
                     tweak = "dimensions",

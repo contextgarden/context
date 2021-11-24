@@ -1,0 +1,28 @@
+% \enableexperiments[fonts.compact]
+% \enabletrackers[fonts.defining]
+
+\environment math-fonts-helpers
+
+\startbuffer[primes]
+    $\textstyle f' f'(x) $
+    $\textstyle f'' f''(x) $
+    $\textstyle f''' f'''(x) $
+    \blank
+    $\scriptstyle f' f'(x) $
+    $\scriptstyle f'' f''(x) $
+    $\scriptstyle f''' f'''(x) $
+    \blank
+    $\scriptscriptstyle f' f'(x) $
+    $\scriptscriptstyle f'' f''(x) $
+    $\scriptscriptstyle f''' f'''(x) $
+\stopbuffer
+
+\setupmathematics[stylealternative={calligraphic}]
+
+\starttext
+    \MathSamples [
+    ] [
+        primes
+    ]
+
+\stoptext

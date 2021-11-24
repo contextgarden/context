@@ -1,0 +1,28 @@
+\environment math-fonts-helpers
+
+\startbuffer[italic-1]
+    $\showglyphs \showfontitalics V^1_2 + V^1 + V_2$
+    \blank
+    $\showglyphs \showfontitalics f^1_2 + g^1_2 + v^1_2 + w^1_2$
+    \blank
+    $\showglyphs \showfontitalics A^1_2 + B^1_2 + V^1_2 + W^1_2$
+    \blank
+\stopbuffer
+
+\startbuffer[italic-2]
+    \mathfontcontrol \italicshapekernmathcontrolcode
+    \mathcontrolmode \plusone
+    \getbuffer[italic-1]%
+\stopbuffer
+
+% \continueifinputfile{italics-002}
+
+\starttext
+
+    \MathSamples [
+    ] [
+        italic-1,
+        italic-2
+    ]
+
+\stoptext

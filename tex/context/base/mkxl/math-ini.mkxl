@@ -3044,6 +3044,56 @@
 
 \def\math_relax_limits{\enforced\let\limits\relax}
 
+%D Something new:
+%D
+%D \starttyping
+%D \definemathpreset[whatever][factor=.5,style=all,list={fraction*gap}]
+%D % \presetmathematics[whatever] % less more zero
+%D \stoptyping
+%D
+%D as well as:
+%D
+%D \starttyping
+%D \setupmathspacing[narrow]
+%D \stoptyping
+
+\installcorenamespace{mathspacing}
+
+\protected\def\math_spacing_set#1#2% maybe some day \allmathstyles
+  {\relax
+   #1\displaystyle       #2%
+   #1\crampeddisplaystyle#2%
+   #1\textstyle          #2%
+   #1\scriptstyle        #2%
+   #1\crampedscriptstyle #2%
+   #1\scriptstyle        #2%
+   #1\crampedscriptstyle #2%
+   \relax}
+
+\permanent\tolerant\protected\def\definemathspacing[#1]#*[#2]#*[#3]%
+  {\ifcstok{#2}\v!horizontal
+     \edefcsname\??mathspacing#1\endcsname
+       {\math_spacing_set\Umathxscale{\ifchknum#3\or#3\else\plusthousand\fi\relax}}%
+   \orelse\ifcstok{#2}\v!vertical
+     \edefcsname\??mathspacing#1\endcsname
+       {\math_spacing_set\Umathyscale{\ifchknum#3\or#3\else\plusthousand\fi\relax}}%
+   \else
+     \edefcsname\??mathspacing#1\endcsname
+       {\math_spacing_set\Umathxscale{\ifchknum#2\or\number#2\else\plusthousand\fi\relax}%
+        \math_spacing_set\Umathyscale{\ifchknum#3\or\number#3\orelse\ifchknum#2\or\number#2\else\plusthousand\fi\relax}}%
+   \fi}
+
+\definemathspacing[\v!normal]                [1000] [1000]
+\definemathspacing[\v!tight] [\c!vertical]    [900]
+\definemathspacing[\v!loose] [\c!vertical]   [1100]
+\definemathspacing[\v!narrow][\c!horizontal]  [900]
+\definemathspacing[\v!wide]  [\c!horizontal] [1100]
+\definemathspacing[\v!less]                   [900]  [900]
+\definemathspacing[\v!more]                  [1100] [1100]
+
+\permanent\protected\def\setupmathspacing[#1]%
+  {\begincsname\??mathspacing#1\endcsname}
+
 \protect \endinput
 
 % % not used (yet)

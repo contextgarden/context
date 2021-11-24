@@ -190,15 +190,19 @@ local mathtweaks   = { }
 mathematics.tweaks = mathtweaks
 
 local function report_tweak(fmt,target,original,...)
-    local metadata   = original.shared.rawdata.metadata
-    local parameters = target.parameters
-    report_mathtweak(
-        "%a, size %p, math size %i, %s",
-        metadata and metadata.fontname or "unknown",
-        parameters.size or 655360,
-        parameters.mathsize or 1,
-        string.formatters[fmt](...)
-    )
+    if fmt then
+        local metadata   = original.shared.rawdata.metadata
+        local parameters = target.parameters
+        report_mathtweak(
+            "%a, size %p, math size %i, %s",
+            metadata and metadata.fontname or "unknown",
+            parameters.size or 655360,
+            parameters.mathsize or 1,
+            string.formatters[fmt](...)
+        )
+    else
+        report_mathtweak("")
+    end
 end
 
 do
@@ -596,11 +600,17 @@ do
             if version then
                 local expected = parameters.expected
                 local fontname = metadata.fontname or false
+                local message  = parameters.message
              -- version = tonumber(string.match(version,"%d+.%d+"))
                 if version ~= expected and not reported[fontname] then
                     report_tweak("version %a found, version %a expected",target,original,version,expected)
                 elseif trace_tweaking then
                     report_tweak("version %a found",target,original,version)
+                end
+                if message and message ~= "" and not reported[fontname] then
+                    report_tweak()
+                    report_tweak("%s",target,original,message)
+                    report_tweak()
                 end
                 reported[fontname] = true
             end

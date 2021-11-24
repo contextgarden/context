@@ -26,7 +26,7 @@
 
 %D This module is reimplemented in \MKIV\ style.
 
-\registerctxluafile{math-frc}{}
+\registerctxluafile{math-frc}{autosuffix}
 
 %D \macros
 %D   {frac, xfrac, xxfrac}

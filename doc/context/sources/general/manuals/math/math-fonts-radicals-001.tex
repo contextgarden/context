@@ -1,0 +1,18 @@
+\environment math-fonts-helpers
+
+\startbuffer[scripts]
+    \ruledhbox{$\textstyle         \char"221A \sqrt{x} \sqrt[3]{x} \sqrt{\frac{1}{x}}$}
+    \blank
+    \ruledhbox{$\scriptstyle       \char"221A \sqrt{x} \sqrt[3]{x} \sqrt{\frac{1}{x}}$}
+    \blank
+    \ruledhbox{$\scriptscriptstyle \char"221A \sqrt{x} \sqrt[3]{x} \sqrt{\frac{1}{x}}$}
+\stopbuffer
+
+\starttext
+
+    \MathSamples [
+    ] [
+        scripts
+    ]
+
+\stoptext

@@ -1,0 +1,18 @@
+\environment math-fonts-helpers
+
+\startbuffer[scripts]
+    \ruledhbox{$\textstyle         x\char"207A x\char"207B x\char"208A x\char"208B$}
+    \blank
+    \ruledhbox{$\scriptstyle       x\char"207A x\char"207B x\char"208A x\char"208B$}
+    \blank
+    \ruledhbox{$\scriptscriptstyle x\char"207A x\char"207B x\char"208A x\char"208B$}
+\stopbuffer
+
+\starttext
+
+    \MathSamples [
+    ] [
+        scripts
+    ]
+
+\stoptext
