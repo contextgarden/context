@@ -11,14 +11,25 @@
 \topicindex {math}
 
 At this point there is no difference between \LUAMETATEX\ and \LUATEX\ with
-respect to math. The handling of mathematics in \LUATEX\ differs quite a bit from
-how \TEX82 (and therefore \PDFTEX) handles math. First, \LUATEX\ adds primitives
-and extends some others so that \UNICODE\ input can be used easily. Second, all
-of \TEX82's internal special values (for example for operator spacing) have been
-made accessible and changeable via control sequences. Third, there are extensions
-that make it easier to use \OPENTYPE\ math fonts. And finally, there are some
+respect to math. \footnote {This might no longer be true because we have more
+control options that define default behavior and also have a more extensive
+scaling model. Anyway, it should not look worse, and maybe even a bit better.}
+The handling of mathematics in \LUATEX\ differs quite a bit from how \TEX82 (and
+therefore \PDFTEX) handles math. First, \LUATEX\ adds primitives and extends some
+others so that \UNICODE\ input can be used easily. Second, all of \TEX82's
+internal special values (for example for operator spacing) have been made
+accessible and changeable via control sequences. Third, there are extensions that
+make it easier to use \OPENTYPE\ math fonts. And finally, there are some
 extensions that have been proposed or considered in the past that are now added
 to the engine.
+
+You might be surprised that we don't use all these new control features in
+\CONTEXT\ \LMTX\ but who knows what might happen because users drive it. The main
+reason for adding so much is that I decided it made more sense to be complete now
+than gradually add more and more. At some point we should be able to say \quote
+{This is it}. Also, when looking at these features, you need to keep in mind that
+when it comes to math \LATEX\ is the dominant macro package and it never needed
+these engine features, so most are probably just here for exploration purposes.
 
 \stopsection
 
@@ -135,7 +146,7 @@ sections:
 
 \startsection[title={Math styles}]
 
-\subsection{\prm {mathstyle}}
+\startsubsection[title={\prm {mathstyle}}]
 
 \topicindex {math+styles}
 
@@ -250,7 +261,9 @@ gets converted in the second pass. It all makes sense and it illustrates the
 importance of grouping. In fact, the math choice style being effective afterwards
 has advantages. It would be hard to get it otherwise.
 
-\subsection{\prm {Ustack}}
+\stopsubsection
+
+\startsubsection[title={\prm {Ustack}}]
 
 \topicindex {math+stacks}
 
@@ -267,7 +280,9 @@ $\Ustack {a \over b}$
 The \prm {Ustack} command will scan the next brace and start a new math group
 with the correct (numerator) math style.
 
-\subsection{The new \type {\cramped...style} commands}
+\stopsubsection
+
+\startsubsection[title={The new \type {\cramped...style} commands}]
 
 \topicindex {math+styles}
 \topicindex {math+spacing}
@@ -356,11 +371,13 @@ Now we get:
 
 \start\getbuffer[setup,demo]\stop
 
+\stopsubsection
+
 \stopsection
 
 \startsection[title={Math parameter settings}]
 
-\subsection {Many new \tex {Umath*} primitives}
+\startsubsection[title={Many new \tex {Umath*} primitives}]
 
 \topicindex {math+parameters}
 
@@ -439,7 +456,9 @@ Each of the parameters in this section can be set by a command like this:
 they obey grouping, and you can use \type {\the\Umathquad\displaystyle} if
 needed.
 
-\subsection{Font|-|based math parameters}
+\stopsubsection
+
+\startsubsection[title={Font|-|based math parameters}]
 
 \topicindex {math+parameters}
 
@@ -577,11 +596,13 @@ Note 9: \type {FractionDelimiterDisplayStyleSize} and \type
 {FractionDelimiterSize} do not actually exist in the \quote {standard} \OPENTYPE\
 math font Cambria, but were useful enough to be added.
 
+\stopsubsection
+
 \stopsection
 
 \startsection[title={Math spacing}]
 
-\subsection{Setting inline surrounding space with \prm {mathsurround} and \prm {mathsurroundskip}}
+\startsubsection[title={Setting inline surrounding space with \prm {mathsurround} and \prm {mathsurroundskip}}]
 
 \topicindex {math+spacing}
 
@@ -637,7 +658,9 @@ node and not always treated as normal glue: it travels with the begin and end
 math nodes. Also, method 6 and 7 will zero the skip related fields in a node when
 applicable in the first occasion that checks them (linebreaking or packaging).
 
-\subsection{Pairwise spacing and \tex {Umath...spacing} commands}
+\stopsubsection
+
+\startsubsection[title={Pairwise spacing and \tex {Umath...spacing} commands}]
 
 \topicindex {math+spacing}
 
@@ -736,7 +759,9 @@ marked \type {*} in the \TEX book. These will not actually be used as those
 combinations of atoms cannot actually happen, but it seemed better not to break
 orthogonality. They are initialized to zero.
 
-\subsection{Local \prm {frozen} settings with}
+\stopsubsection
+
+\startsubsection[title={Local \prm {frozen} settings with}]
 
 Math is processed in two passes. The first pass is needed to intercept for
 instance \type {\over}, one of the few \TEX\ commands that actually has a
@@ -777,7 +802,9 @@ unprocessed math list. The result looks as follows:
 
 \blank \getbuffer \blank
 
-\subsection{Checking a state with \prm {ifmathparameter}}
+\stopsubsection
+
+\startsubsection[title={Checking a state with \prm {ifmathparameter}}]
 
 When you adapt math parameters it might make sense to see if they are set at all.
 When a parameter is unset its value has the maximum dimension value and you might
@@ -794,7 +821,9 @@ unexpected side effects. For that reason there is a convenient checker: \prm
 \LL
 \stoptabulate
 
-\subsection{Skips around display math and \prm {mathdisplayskipmode}}
+\stopsubsection
+
+\startsubsection[title={Skips around display math and \prm {mathdisplayskipmode}}]
 
 \topicindex {math+spacing}
 
@@ -814,7 +843,9 @@ to fully control spacing. Therefore \LUATEX\ comes with a new directive: \prm
 \LL
 \stoptabulate
 
-\subsection {Nolimit correction with \prm {mathnolimitsmode}}
+\stopsubsection
+
+\startsubsection[title={Nolimit correction with \prm {mathnolimitsmode}}]
 
 \topicindex {math+limits}
 
@@ -872,7 +903,7 @@ shifts to the left. A \prm {mathnolimitsmode} larger that 15 is considered to
 be a factor for the subscript correction. This feature can be handy when
 experimenting.
 
-% \subsection {Controlling math italic mess with \prm {mathitalicsmode}}
+% \startsubsection[title={Controlling math italic mess with \prm {mathitalicsmode}}]
 %
 % \topicindex {math+italics}
 %
@@ -901,8 +932,12 @@ experimenting.
 %
 % This kind of parameters relate to the fact that italic correction in \OPENTYPE\
 % math is bound to fuzzy rules. So, control is the solution.
+%
+% \stopsubsection
 
-\subsection {Influencing script kerning with \prm {mathscriptboxmode}}
+\stopsubsection
+
+\startsubsection[title={Influencing script kerning with \prm {mathscriptboxmode}}]
 
 \topicindex {math+kerning}
 \topicindex {math+scripts}
@@ -990,7 +1025,9 @@ control over what one can turn on and off.
     \LL
 \stoptabulate
 
-\subsection{Forcing fixed scripts with \prm {mathscriptsmode}}
+\stopsubsection
+
+\startsubsection[title={Forcing fixed scripts with \prm {mathscriptsmode}}]
 
 We have three parameters that are used for this fixed anchoring:
 
@@ -1027,7 +1064,9 @@ formula.
 
 % if needed we can put the value in stylenodes but maybe more should go there
 
-\subsection{Penalties: \prm {mathpenaltiesmode}}
+\stopsubsection
+
+\startsubsection[title={Penalties: \prm {mathpenaltiesmode}}]
 
 \topicindex {math+penalties}
 
@@ -1051,7 +1090,9 @@ makes sense. As a bonus we also provide two extra penalties:
 They default to inifinite which signals that they don't need to be inserted. When
 set they are injected before a binop or rel noad. This is an experimental feature.
 
-\subsection{Equation spacing: \prm {matheqnogapstep}}
+\stopsubsection
+
+\startsubsection[title={Equation spacing: \prm {matheqnogapstep}}]
 
 By default \TEX\ will add one quad between the equation and the number. This is
 hard coded. A new primitive can control this:
@@ -1065,11 +1106,13 @@ use a step to control the size. A value of zero will suppress the gap. The step
 is divided by 1000 which is the usual way to mimmick floating point factors in
 \TEX.
 
+\stopsubsection
+
 \stopsection
 
 \startsection[title={Math constructs}]
 
-\subsection {Unscaled fences and \prm{mathdelimitersmode}}
+\startsubsection[title={Unscaled fences and \prm{mathdelimitersmode}}]
 
 \topicindex {math+fences}
 
@@ -1141,7 +1184,9 @@ In typeset form this looks like:
 
 \getbuffer
 
-\subsection[mathacc]{Accent handling with \prm {Umathaccent}}
+\stopsubsection
+
+\startsubsection[title={Accent handling with \prm {Umathaccent}},reference=mathacc]
 
 \topicindex {math+accents}
 
@@ -1190,7 +1235,9 @@ fraction only applies to the stepwise selected shapes and is mostly meant for th
 \type {overlay} location. It also works for the other locations but then it
 concerns the width.
 
-\subsection{Building radicals with \prm {Uradical} and \prm {Uroot}}
+\stopsubsection
+
+\startsubsection[title={Building radicals with \prm {Uradical} and \prm {Uroot}}]
 
 \topicindex {math+radicals}
 
@@ -1207,7 +1254,9 @@ The placement of the degree is controlled by the math parameters \prm
 {Umathradicaldegreeraise}. The degree will be typeset in \prm
 {scriptscriptstyle}.
 
-\subsection{Super- and subscripts}
+\stopsubsection
+
+\startsubsection[title={Super- and subscripts}]
 
 The character fields in a \LUA|-|loaded \OPENTYPE\ math font can have a \quote
 {mathkern} table. The format of this table is the same as the \quote {mathkern}
@@ -1266,8 +1315,10 @@ next higher height and kern pair, or the highest one in the character (if there 
 value high enough in the character), or simply zero (if the character has no math kern
 pairs at all).
 
-\subsection{Scripts on extensibles: \prm {Uunderdelimiter}, \prm {Uoverdelimiter},
-\prm {Udelimiterover}, \prm {Udelimiterunder} and \prm {Uhextensible}}
+\stopsubsection
+
+\startsubsection[title={Scripts on extensibles: \prm {Uunderdelimiter}, \prm {Uoverdelimiter},
+\prm {Udelimiterover}, \prm {Udelimiterunder} and \prm {Uhextensible}}]
 
 \topicindex {math+scripts}
 \topicindex {math+delimiters}
@@ -1329,7 +1380,9 @@ $\Uhextensible width 1pt middle 0 "2194$
 font metrics are involved we have a different code path for traditional fonts end
 \OPENTYPE\ fonts.
 
-\subsection{Fractions and the new \prm {Uskewed} and \prm {Uskewedwithdelims}}
+\stopsubsection
+
+\startsubsection[title={Fractions and the new \prm {Uskewed} and \prm {Uskewedwithdelims}}]
 
 \topicindex {math+fractions}
 
@@ -1436,7 +1489,9 @@ $\Uover style \scriptscriptstyle {1234} {5678} $\blank
 
 These render as: \getbuffer
 
-\subsection {Math styles: \prm {Ustyle}}
+\stopsubsection
+
+\startsubsection[title={Math styles: \prm {Ustyle}}]
 
 This primitive accepts a style identifier:
 
@@ -1466,7 +1521,9 @@ Like: \inlinebuffer . Values outside the valid range are ignored.
 There is an extra option \type {norule} that can be used to suppress the rule while
 keeping the spacing compatible.
 
-\subsection {Delimiters: \type{\Uleft}, \prm {Umiddle} and \prm {Uright}}
+\stopsubsection
+
+\startsubsection[title={Delimiters: \type{\Uleft}, \prm {Umiddle} and \prm {Uright}}]
 
 \topicindex {math+delimiters}
 
@@ -1507,7 +1564,9 @@ given the \type {noaxis} command can be used to prevent shifting over the axis.
 You can influence the final class with the keyword \type {class} which will
 influence the spacing. The numbers are the same as for character classes.
 
-\subsection {Accents: \type{\mathlimitsmode}}
+\stopsubsection
+
+\startsubsection[title={Accents: \type{\mathlimitsmode}}]
 
 \topicindex {math+accents}
 
@@ -1515,12 +1574,14 @@ When you use \type {\limits} or \type {\nolimits} without scripts spacing might
 get messed up. This can be prevented by setting \type {\mathlimitsmode} to a
 non|-|zero value.
 
+\stopsubsection
+
 \stopsection
 
 \startsection[title={Extracting values}]
 
-\subsection{Codes and using \prm {Umathcode}, \prm {Umathcharclass}, \prm
-{Umathcharfam} and \prm {Umathcharslot}}
+\startsubsection[title={Codes and using \prm {Umathcode}, \prm {Umathcharclass}, \prm
+{Umathcharfam} and \prm {Umathcharslot}}]
 
 \topicindex {math+codes}
 
@@ -1557,7 +1618,9 @@ do the following:
 \relax}
 \stoptyping
 
-\subsection {Last lines and \prm{predisplaygapfactor}}
+\stopsubsection
+
+\startsubsection[title={Last lines and \prm{predisplaygapfactor}}]
 
 \topicindex {math+last line}
 
@@ -1581,12 +1644,14 @@ get the length of the last line, the following will often work too:
 \relax}
 \stoptyping
 
+\stopsubsection
+
 \stopsection
 
 \startsection[title={Math mode}]
 
-\subsection {Verbose versions of single|-|character math commands like \prm {Usuperscript}
-and \prm {Usubscript}}
+\startsubsection[title={Verbose versions of single|-|character math commands like \prm {Usuperscript}
+and \prm {Usubscript}}]
 
 \topicindex {math+styles}
 
@@ -1613,7 +1678,9 @@ The \prm {Ustopmath} and \prm {Ustopdisplaymath} primitives check if the current
 math mode is the correct one (inline vs.\ displayed), but you can freely intermix
 the four mathon|/|mathoff commands with explicit dollar sign(s).
 
-\subsection{Script commands \prm {Unosuperscript} and \prm {Unosubscript}}
+\stopsubsection
+
+\startsubsection[title={Script commands \prm {Unosuperscript} and \prm {Unosubscript}}]
 
 \topicindex {math+styles}
 \topicindex {math+scripts}
@@ -1634,7 +1701,9 @@ $
 
 results in \inlinebuffer[script].
 
-\subsection{Allowed math commands in non|-|math modes}
+\stopsubsection
+
+\startsubsection[title={Allowed math commands in non|-|math modes}]
 
 \topicindex {math+text}
 \topicindex {text+math}
@@ -1644,11 +1713,13 @@ the result of \prm {mathchardef} or \prm {Umathchardef} are also acceptable in
 the horizontal and vertical modes. In those cases, the \prm {textfont} from the
 requested math family is used.
 
+\stopsubsection
+
 \stopsection
 
 \startsection[title={Goodies}]
 
-\subsection {Flattening: \prm {mathflattenmode}}
+\startsubsection[title={Flattening: \prm {mathflattenmode}}]
 
 \topicindex {math+flattening}
 
@@ -1691,14 +1762,17 @@ mode parameter. The default value is~1.
 \LL
 \stoptabulate
 
+\stopsubsection
 
-\subsection {Less Tracing}
+\startsubsection[title={Less Tracing}]
 
 \topicindex {math+tracing}
 
 Because there are quite some math related parameters and values, it is possible
 to limit tracing. Only when \type {tracingassigns} and|/|or \type
 {tracingrestores} are set to~2 or more they will be traced.
+
+\stopsubsection
 
 \stopsection
 
@@ -1708,7 +1782,7 @@ There are a couple of experimental features. They will stay but details might
 change, for instance more control over spacing. We just show some examples and
 let your imagination work it out. First we have prescripts:
 
-\subsection {Prescripts with \prm {Usuperprescript} and {Usubprescript}}
+\startsubsection[title={Prescripts with \prm {Usuperprescript} and {Usubprescript}}]
 
 \startbuffer
 \hbox{$
@@ -1753,7 +1827,9 @@ These more verbose triggers can be used to build interfaces:
 
 \blank \getbuffer \blank
 
-\subsection {Prescripts with \prm {Usuperprescript} and {Usubprescript}}
+\stopsubsection
+
+\startsubsection[title={Forcing classes with \prm {Umathclass}}]
 
 You can change the class of a math character on the fly:
 
@@ -1772,6 +1848,32 @@ Watch how the spacing changes:
 \startlines
 \getbuffer
 \stoplines
+
+\stopsubsection
+
+\startsubsection[title={Scaling spacing with \prm {Umathxscale} and  \prm {Umathyscale}}]
+
+These two primitives scale the horizontal and vertical scaling related
+parameters. They are set by style. There is no combined scaling primitive.
+
+\startbuffer
+$\Umathxscale\textstyle  800 a + b + x + d + e = f $\par
+$\Umathxscale\textstyle 1000 a + b + x + d + e = f $\par
+$\Umathxscale\textstyle 1200 a + b + x + d + e = f $\blank
+
+$\Umathyscale\textstyle  800 \sqrt[2]{x+1}$\quad
+$\Umathyscale\textstyle 1000 \sqrt[2]{x+1}$\quad
+$\Umathyscale\textstyle 1200 \sqrt[2]{x+1}$\blank
+\stopbuffer
+
+\typebuffer
+
+Normally only small deviations from 1000 make sense but here we want to show the
+effect and use a 20\percent\ scaling:
+
+\getbuffer
+
+\stopsubsection
 
 \stopsection
 

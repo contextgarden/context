@@ -527,6 +527,50 @@ query a font dimensions with \prm {fontdimen} you get the raw value but with \pr
 
 \stopsubsection
 
+\startsubsection[title={\prm {fontspecdef}, \prm {fontspecid}, \prm {fontspecscale}, , \prm {fontspecxscale}, \prm {fontspecyscale}}]
+
+Because we have three scale related primitives \prm {glyphscale}, \prm
+{glyphxscale} and \prm {glyphyscale}, we also have a way to quickly set them all.
+
+\starttyping
+\fontspecdef \MyFontA 2 all 1000
+\fontspecdef \MyFontB \MyFontA xscale 1200
+\stoptyping
+
+The defined control sequence will set the font id (which is 2 in the case of
+\type {\MyFontA}) as well as the scale(s). Possible keywords are \type {scale},
+\type {xscale}, \type {yscale} and \type {all}. By default the values are 1000.
+Instead of an id an already defined specification can be given in which case we
+start from a copy. This mechanism is still somewhat experimental and might
+evolve. The main reason for introducing it is that it gives less tracing.
+
+Say that we have:
+
+\startbuffer
+\fontspecdef\MyFoo\font xscale 1200 \relax
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The four properties of such a specification can then be queried as follows:
+
+\startbuffer
+[\the\fontspecid    \MyFoo]
+[\the\fontspecscale \MyFoo]
+[\the\fontspecxscale\MyFoo]
+[\the\fontspecyscale\MyFoo]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+A font specification obeys grouping but is not a register. Like \prm {integerdef}
+and \prm {dimendef} it is just a control sequence with a special meaning.
+
+% \the\fontspecifiedsize\font
+%     \fontspecifiedname\font
+
+\stopsubsection
+
 \startsubsection[title={\prm {glyphxoffset}, \prm {glyphyoffset}}]
 
 These two parameters control the horizontal and vertical shift of glyphs with,

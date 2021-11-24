@@ -24,8 +24,8 @@ other chapters. These enhancements are still somewhat experimental.
 
 {\em This section will describe \prm {autoparagraphmode}, \prm
 {shapingpenaltiesmode}, \prm {shapingpenaltymode}, \prm {everybeforepar}, \prm
-{snapshotpar}, \prm {wrapuppar}, enz. For the moment the manuals that come with
-\CONTEXT\ have to do.}
+{snapshotpar}, \prm {wrapuppar}, \prm {orphanpenalties}, \prm {orphanpenalty},
+enz. For the moment the manuals that come with \CONTEXT\ have to do.}
 
 \stopsection
 
@@ -51,17 +51,17 @@ very early in the macro package loading process.
 
 
 \starttabulate[|l|l|p|]
-\DB primitive               \BC traditional           \BC explanation \NC \NR
+\DB primitive               \BC traditional            \BC explanation \NC \NR
 \TB
-\NC \prm {insertdistance}   \NC skip                  \NC the space before the first instance (on a page) \NC \NR
-\NC \prm {insertmultiplier} \NC count                 \NC a factor that is used to calculate the height used \NC \NR
-\NC \prm {insertlimit}      \NC dimen                 \NC the maximum amount of space on a page to be taken \NC \NR
-\NC \prm {insertpenalty}    \NC \prm{insertpenalties} \NC the floating penalty (used when set) \NC \NR
-\NC \prm {insertmaxdepth}   \NC \prm{maxdepth}        \NC the maximum split depth (used when set) \NC \NR
-\NC \prm {insertstorage}    \NC                       \NC signals that the insert has to be stored for later \NC \NR
-\NC \prm {insertheight}     \NC \prm {ht} box         \NC the accumulated height of the inserts so far \NC \NR
-\NC \prm {insertdepth}      \NC \prm {dp} box         \NC the current depth of the inserts so far \NC \NR
-\NC \prm {insertwidth}      \NC \prm {wd} box         \NC the width of the inserts \NC \NR
+\NC \prm {insertdistance}   \NC skip                   \NC the space before the first instance (on a page) \NC \NR
+\NC \prm {insertmultiplier} \NC count                  \NC a factor that is used to calculate the height used \NC \NR
+\NC \prm {insertlimit}      \NC dimen                  \NC the maximum amount of space on a page to be taken \NC \NR
+\NC \prm {insertpenalty}    \NC \prm {insertpenalties} \NC the floating penalty (used when set) \NC \NR
+\NC \prm {insertmaxdepth}   \NC \prm {maxdepth}        \NC the maximum split depth (used when set) \NC \NR
+\NC \prm {insertstorage}    \NC                        \NC signals that the insert has to be stored for later \NC \NR
+\NC \prm {insertheight}     \NC \prm {ht} box          \NC the accumulated height of the inserts so far \NC \NR
+\NC \prm {insertdepth}      \NC \prm {dp} box          \NC the current depth of the inserts so far \NC \NR
+\NC \prm {insertwidth}      \NC \prm {wd} box          \NC the width of the inserts \NC \NR
 \LL
 \stoptabulate
 
@@ -73,8 +73,9 @@ column. If there are three columns, the first two will store inserts. Then when
 the last column is dealt with \prm {insertstoring} can be set to 2 and that will
 signal the builder that we will inject the inserts. In both cases, the value of
 this register will be set to zero so that it doesn't influence further
-processing. More details about these (probably experimental for a while) features
-can be found in documents that come with \CONTEXT.
+processing. You can use \prm {ifinsert} to check if am insert box is void. More
+details about these (probably experimental for a while) features can be found in
+documents that come with \CONTEXT.
 
 A limitation of inserts is that when they are buried too deep, a property they
 share with inserts, they become invisible This can be dealt with by the migration
@@ -100,10 +101,10 @@ number indicates a mark class.
 A problem with marks is that one cannot really reset them. Mark states are kept
 in the node lists and only periodically the state is snapshot into the global
 state variables. The \LUATEX\ engine can reset these global states with \prm
-{clearmarks} but that's only half a solution. In \LUAMETATEX\ we have
-\prm{flushmarks} which, like \prm {marks}, puts a node in the list that does a
-reset. This permits implementing controlled resets of specific marks at the cost
-of a possible interfering mode, but that can normally be dealt with rather well.
+{clearmarks} but that's only half a solution. In \LUAMETATEX\ we have \prm
+{flushmarks} which, like \prm {marks}, puts a node in the list that does a reset.
+This permits implementing controlled resets of specific marks at the cost of a
+possible interfering mode, but that can normally be dealt with rather well.
 
 Another problem with marks is that when they are buried too deep, a property they
 share with inserts, they become invisible. This can be dealt with by the
@@ -111,6 +112,33 @@ migration feature described in the next section.
 
 The \LUAMETATEX\ engine has some tracing built in that is enabled by setting \prm
 {tracingmarks} to a positive value.
+
+\stopsection
+
+\startsection[title={Adjusts}]
+
+The \prm {vadjust} primitive injects something in the vertical list after the
+lien where it ends up. In \PDFTEX\ the \type {pre} keyword was added so that one
+could force something before a previous line (actually this was something that we
+needed in \CONTEXT\ \MKII). The \LUAMETATEX\ engine also supports the \type {post}
+keyword.
+
+We support a few more keywords: \type {before} will prepend the adjustment to the
+already given one, and \type {after} will append it. The \type {index} keyword
+expects an integer and relate that to the current adjustment. This index is
+passed to an (optional) callback when the adjustment is finally moved to the
+vertical list. That move is actually delayed because like inserts and marks these
+(vertical) adjustments can migrate to the \quote {outer} vertical level.
+
+The main reason for the index having no influence on the order is that this
+primitive already could be used multiple times and order is determined by usage.
+\footnote {Under consideration is to let the callback mess with the flushing
+order.}
+
+The \LUAMETATEX\ engine has some tracing built in that is enabled by setting \prm
+{tracingadjusts} to a positive value. Currently there is not that much tracing
+which is why the value has to be at least 2 in order to be compatible with other
+(detailed) tracers.
 
 \stopsection
 
@@ -124,6 +152,7 @@ and inserts bubble up to the outer level.
 \TB
 \NC \the\markautomigrationcode   \NC migrate marks in the par builder \NC \NR
 \NC \the\insertautomigrationcode \NC migrate inserts in the par builder  \NC \NR
+\NC \the\adjustautomigrationcode \NC migrate adjusts in the par builder  \NC \NR
 \NC \the\preautomigrationcode    \NC migrate prebox material in the page builder \NC \NR
 \NC \the\postautomigrationcode   \NC migrate postbox material in the page builder \NC \NR
 \LL
@@ -140,6 +169,41 @@ builder as such. At the \LUA\ end you can add pre- and post|-|box material too.
 The page builder can triggered by (for instance) a penalty but you can also use
 \prm {pageboundary}. This will trigger the page builder but not leave anything
 behind.
+
+\stopsection
+
+\startsection[title={Local boxes}]
+
+As far as I know the \OMEGA/\ALEPH\ local box mechanism is mostly in those
+engines in order to support repetitive quotes. In \LUATEX\ this mechanism has
+been made more robust and in \LUAMETATEX\ it became more tightly integrated in
+the paragraph properties. In order for it to be a more generic useful feature it
+got more features. For instance it is a bit painful to manage with respect to
+grouping (which is a reason why it's not that much used). The most interesting
+property is that the dimensions are taking into account when a paragraph is
+broken into lines.
+
+There are three commands: \prm {localleftbox}, \prm {localrightbox} and the
+\LUAMETATEX\ specific \prm {localmiddlebox} which is basically a right box but
+when we pass these boxes to a callback they can be distinguished (we could have
+used the index but this was a cheap extra signal so we keep it).
+
+These commands take optional keywords. The \type {index} keyword has to be
+followed by an integer. This index determines the order which doesn't introduce a
+significant compatibility issue: local boxes are hardly used and originally have
+only one instance.
+
+The \type {par} keyword forces the box to be added to the current paragraph head.
+This permits setting them when a paragraph has already started. The
+implementation of these boxes is done via so called (local) paragraph nodes and
+there is one at the start of each paragraph.
+
+The \type {local} keyword tells this mechanism not to update the registers that
+keep these boxes. In that case a next paragraph will start fresh. The \type
+{keep} option will do the opposite and retain the box after a group ends.
+
+There commands: \prm {localleftboxbox}, \prm {localrightboxbox} and \prm
+{localmiddleboxbox} return a copy of the current related register content.
 
 \stopsection
 

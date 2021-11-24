@@ -26,8 +26,8 @@ clone (a selection of) primitives with a different prefix, like this:
 \stoptyping
 
 The \type {extraprimitives} function returns the whole list or a subset,
-specified by one or more keywords \type {core}, \type {tex}, \type {etex} or
-\type {luatex}. When you clone all primitives you can also do this:
+specified by one or more keywords \type {tex}, \type {etex} or \type {luatex}.
+When you clone all primitives you can also do this:
 
 \starttyping
 \directlua { tex.enableprimitives('normal',true) }
@@ -89,6 +89,10 @@ still going for this new engine are:
     more access from the \LUA\ end to \TEX\ internals: a few more callbacks, more
     options, more robust interfaces, etc
 \stopitem
+\startitem
+    some mechanisms are very specific but can be made more generic (and powerful),
+    like inserts, marks, adjusts and local boxes
+\stopitem
 \stopitemize
 
 I realize that new primitives also can make some \TEX\ code look less threatening
@@ -110,7 +114,20 @@ in a certain way. In fact, I want users to be able to look at the code and
 understand it (apart from maybe a few real dirty low level helpers that are also
 dirty because of performance reasons). Just take this into account when reading on.
 
-And yes, there are still a few possibilities I want to explore \unknown
+And yes, there are still a few possibilities I want to explore \unknown\ some might
+show up temporary so don't be surprises. I'm also aware that some new features can
+have bugs or side effects that didn't show up in \CONTEXT, which after all is the
+benchmark and environment in which all this evolves.
+
+Over time, the other \TEX\ engines might have an occasional feature (primitive)
+added and it is very unlikely that \LUAMETATEX\ will follow up on that. First of
+all we have different internals but most of all because plenty of time went into
+considering what got added and what not, apart from the fact that we have
+callbacks. Decades of \TEX\ development never really have lead to an extensive
+wish list so there is no real need why there should be a demand on anything other
+than we offer here. If \TEX\ worked well for ages, it can as well do for more, so
+there is no need to cripple the code base simply in order to be compatible with
+other engines; \LUAMETATEX\ is already quite different anyway.
 
 \stopsubsection
 
@@ -299,8 +316,10 @@ as well as save and restore housekeeping). In \LUATEX\ the number was bumped to
 memory footprint reasonable, in \LUAMETATEX\ the number of languages, fonts and
 marks is limited. The size of some tables can be limited by configuration
 settings, so they can start out small and grow till configured maximum which is
-smaller than the absolute maximum. The following table shows all kind of defaults
-as reported by \typ {status.getconstants()}.
+smaller than the absolute maximum.
+
+The following table shows all kind of defaults as reported by \typ
+{status.getconstants()}.
 
 \startluacode
     context.starttabulate { "|T|r|" }
@@ -789,7 +808,7 @@ the currently active table, an error is raised.
 
 \startsection[title={Tokens, commands and strings}]
 
-\startsubsection[title={\prm {scantextokens} and \prm {tokenized}}]
+\startsubsection[title={\prm {scantextokens}, \prm {tokenized} and \prm {retokenized}}]
 
 \topicindex {tokens+scanning}
 
@@ -820,6 +839,9 @@ commands we also have this expandable command:
 \tokenized {...}
 \tokenized catcodetable <number> {...}
 \stopsyntax
+
+The \prm {retokenized} variant differs in that it doesn't check for a keyword and
+just used the current catcode regime.
 
 The \ETEX\ command \type {\tracingscantokens} has been dropped in the process as
 that was interwoven with the old code.
@@ -909,7 +931,7 @@ them are shown.
 
 \stopsubsection
 
-\startsubsection[title={\prm {alignmark}, \prm {aligntab}, \prm {aligncontent} and \prm {tabsize}}]
+\startsubsection[title={\prm {alignmark}, \prm {aligntab}, \prm {aligncontent}, \prm {tabsize} and \prm {everytab}}]
 
 The primitive \prm {alignmark} duplicates the functionality of \type {#} inside
 alignment preambles, while \prm {aligntab} duplicates the functionality of \type
@@ -938,6 +960,9 @@ In the preamble the \prm {tabsize} primitive can be used to set the width of a
 column. By doing so one can avoid using a box in the preamble which, combined
 with the sparse tabskip features, is a bit easier on memory when you produce
 tables that span hundreds of pages and have a dozen columns.
+
+The \prm {everytab} complements the \prm {everycr} token register but is sort of
+experimental as it might become more selective and powerful some day.
 
 \stopsubsection
 
@@ -1766,18 +1791,19 @@ tracing lines in the log and when bit~2 is set the input level is prepended. You
 can set both bits and get both numbers prepended. In \CONTEXT\ we default to
 the value~3, so you get prefixes like \type {3:4:} followed by a space.
 
-When \type {\tracingcommands} is larger than 3 the mode switch will be not be
+When \prm {tracingcommands} is larger than 3 the mode switch will be not be
 prefixed to the \type {{command}} but get its own \type {[line]}.
 
-When \type {\tracinglevels} variable is set to 3 the group and input level are
+When \prm {tracinglevels} variable is set to 3 the group and input level are
 shown, a value of 1 or 2 shows only one of them (in \CONTEXT\ we default to 3).
 
-When \type {\tracinghyphenation} is set to 1 duplicate patterns are reported (in
+When \prm {tracinghyphenation} is set to 1 duplicate patterns are reported (in
 \CONTEXT\ we default to that) and higher values will also show details about the
 \LUA\ hyphenation (exception) feedback loop discussed elsewhere.
 
-When set to 1 the \type {\tracingmath} variable triggers the reporting of the
-mode (inline or display) an mlist is processed.
+When set to 1 the \prm {tracingmath} variable triggers the reporting of the mode
+(inline or display) an mlist is processed. Other new tracing commands are
+discussed where the mechanisms that they relate to are introduced.
 
 Because in \LUATEX\ the saving and restoring of locally redefined macros and set
 variables is optimized a bit in order to prevent redundant stack usage, there
@@ -1786,8 +1812,9 @@ will be less tracing visible.
 Also, because we have a more extensive macro argument parser, a fast path (and
 less storage demands) for macros with no arguments, and flags that can be set for
 macros the way macros are traced can be different in details (we therefore have
-for instance \type {\meaningfull} and \type {\meaningless} as variants of \type
-{\meaning}).
+for instance \prm {meaningfull} (double l's indeed) and \prm {meaningless} as
+variants of \prm {meaning} as well as \prm {meaningasis} for more literal
+alternative).
 
 \stopsubsection
 
@@ -2527,6 +2554,90 @@ when a value is stored in a macro. Using \type {\the} could fail there while:
 \stoptyping
 
 is often overkill and gives more noise in a trace.
+
+\stopsection
+
+\startsection[title=Expressions with \prm {numexpression}, \prm {dimexpression}]
+
+The \ETEX\ expression primitives are handy but have some limitations. Although
+the parsers have been rewritten in \LUAMETATEX\ and somewhat more efficient the
+only extension we have is support for an integer division with \type {:}. After
+experimenting for a while and pondering how to make \prm {dimexpr} and \prm
+{numexpr} more powerful I decided to come up with alternatives in order not to
+introduce incompatibilities.
+
+The \prm {numexpression} and \prm {dimexpression} primitives are equivalent but
+offer more. The first one operates in the integer domain and the second one
+assumes scaled values. Often the second one can act like the first when one
+serialized with \prm {number} in front. This is because when \TEX\ sees a
+symbolic reference to an integer or dimension it can treat them as it likes.
+
+The set of operators that we have to support is the following. Most have
+alternatives so that we can get around catcode issues.
+
+\starttabulate[||cT|cT|]
+\DB action    \BC symbol               \BC keyword \NC \NR
+\TB
+\NC add       \NC +                    \NC         \NC \NR
+\NC subtract  \NC -                    \NC         \NC \NR
+\NC multiply  \NC *                    \NC         \NC \NR
+\NC divide    \NC / :                  \NC         \NC \NR
+\NC mod       \NC \letterpercent       \NC mod     \NC \NR
+\NC band      \NC &                    \NC band    \NC \NR
+\NC bxor      \NC ^                    \NC bxor    \NC \NR
+\NC bor       \NC \letterbar \space v  \NC bor     \NC \NR
+\NC and       \NC &&                   \NC and     \NC \NR
+\NC or        \NC \letterbar\letterbar \NC or      \NC \NR
+\NC setbit    \NC <undecided>          \NC bset    \NC \NR
+\NC resetbit  \NC <undecided>          \NC breset  \NC \NR
+\NC left      \NC <<                   \NC         \NC \NR
+\NC right     \NC >>                   \NC         \NC \NR
+\NC less      \NC <                    \NC         \NC \NR
+\NC lessequal \NC <=                   \NC         \NC \NR
+\NC equal     \NC = ==                 \NC         \NC \NR
+\NC moreequal \NC >=                   \NC         \NC \NR
+\NC more      \NC >                    \NC         \NC \NR
+\NC unequal   \NC <> != \lettertilde = \NC         \NC \NR
+\NC not       \NC ! \lettertilde       \NC not     \NC \NR
+\LL
+\stoptabulate
+
+Here are some things that \prm {numexpr} is not suitable:
+
+\starttyping
+\scratchcounter = \numexpression
+    "00000 bor "00001 bor "00020 bor "00400 bor "08000 bor "F0000
+\relax
+
+\ifcase \numexpression
+    (\scratchcounterone > 5) && (\scratchcountertwo > 5)
+\relax yes\else nop\fi
+\stoptyping
+
+You can get an idea what the engines sees by setting \prm {tracingexpressions}
+to a value larger than zero. It shows the expression in rpn form.
+
+\starttyping
+\dimexpression 4pt * 2   + 6pt   \relax
+\dimexpression 2   * 4pt + 6pt   \relax
+\dimexpression 4pt * 2.5 + 6pt   \relax
+\dimexpression 2.5 * 4pt + 6pt   \relax
+\numexpression 2 * 4 + 6         \relax
+\numexpression (1 + 2) * (3 + 4) \relax
+\stoptyping
+
+The \prm {relax} is mandate simply because there are keywords involved so the
+parser needs to know where to stop scanning. It made no sense to be more clever
+and introduce fuzziness (so there is no room for exposing in|-|depth \TEX\
+insight and expertise here). In case you wonder: the difference in performance
+between the \ETEX\ expression mechanism and the more extended variant will
+normally not be noticed, probably because they both use a different approach and
+because the \ETEX\ variant also has been optimized. \footnote {I might add some
+features in the future.}
+
+The if|-|test shown before can be done using the new primitives \prm
+{ifdimexpression} and \prm {ifnumexpression} which are boolean tests with zero
+being \type {false}.
 
 \stopsection
 

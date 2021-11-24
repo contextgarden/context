@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['page-flt'] = {
 local next = next
 local tostring = tostring
 local insert, remove = table.insert, table.remove
-local find = string.find
+local find, topattern = string.find, string.topattern
 local abs = math.abs
 
 local trace_floats     = false  trackers.register("floats.caching",    function(v) trace_floats     = v end)
@@ -21,7 +21,7 @@ local trace_collecting = false  trackers.register("floats.collecting", function(
 local report_floats     = logs.reporter("floats","caching")
 local report_collecting = logs.reporter("floats","collecting")
 
-local C, S, P, lpegmatch = lpeg.C, lpeg.S, lpeg.P, lpeg.match
+local C, Cc, S, P, lpegmatch = lpeg.C, lpeg.Cc, lpeg.S, lpeg.P, lpeg.match
 
 -- we use floatbox, floatwidth, floatheight
 -- text page leftpage rightpage (todo: top, bottom, margin, order)
@@ -119,7 +119,7 @@ local function get(stack,n,bylabel)
     if bylabel then
         for i=1,#stack do
             local s = stack[i]
-            local n = string.topattern(tostring(n)) -- to be sure
+            local n = topattern(tostring(n)) -- to be sure
             if find(s.data.label,n) then
                 return s, s.box, i
             end
@@ -326,16 +326,18 @@ end
 
 -- todo: check for digits !
 
+local digits   = lpeg.patterns.digits
+local nothing  = Cc("")
 local method   = C((1-S(", :"))^1)
-local position = P(":") * C((1-S("*,"))^1) * (P("*") * C((1-S(","))^1))^0
+local position = P(":") * C(digits^1) * (P("*") * C(digits^1) + nothing)
 local label    = P(":") * C((1-S(",*: "))^0)
 
 local pattern = method * (
-    label * position * C("")
-  + C("") * position * C("")
-  + label * C("") * C("")
-  + C("") * C("") * C("")
-) + C("") * C("") * C("") * C("")
+    label * position
+  + nothing * position
+  + label * nothing * nothing
+  + nothing * nothing * nothing
+) + nothing * nothing * nothing * nothing
 
 -- inspect { lpegmatch(pattern,"somewhere:blabla,crap") }
 -- inspect { lpegmatch(pattern,"somewhere:1*2") }
