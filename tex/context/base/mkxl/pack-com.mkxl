@@ -559,7 +559,7 @@
         {\pack_combinations_float_hack_b{\recurselevel}}%
       \to\scratchtoks}% brrr
    \let\pack_combinations_check_x_y\pack_combinations_float_check_x_y
-   \expanded{\startcombination[#1]\the\scratchtoks}\stopcombination
+   \normalexpanded{\startcombination[#1]\the\scratchtoks}\stopcombination
    \resetlocalfloats
    \egroup}
 

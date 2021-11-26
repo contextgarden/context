@@ -490,21 +490,22 @@
 
 \permanent\protected\def\mathupright   {\setmathattribute\s!regular\s!tf\setmathfontstylealternate\s!tf}
 \permanent\protected\def\mathitalic    {\setmathattribute\s!regular\s!it\setmathfontstylealternate\s!it}
-\permanent\protected\def\mathscript    {\setmathalphabet \s!script      \setmathfontstylealternate\s!script}
-\permanent\protected\def\mathfraktur   {\setmathalphabet \s!fraktur     \setmathfontstylealternate\s!fraktur}
-\permanent\protected\def\mathblackboard{\setmathalphabet \s!blackboard  \setmathfontstylealternate\s!blackboard}
 
-\permanent\protected\def\mathrm        {\setmathattribute\s!rm\s!tf     \setmathfontstylealternate\s!tf}
-\permanent\protected\def\mathss        {\setmathattribute\s!ss\s!tf     \setmathfontstylealternate\s!tf}
-\permanent\protected\def\mathtt        {\setmathattribute\s!tt\s!tf     \setmathfontstylealternate\s!tf}
+\permanent\protected\def\mathscript    {\setmathalphabet \s!script    \setmathfontstylealternate\s!script}
+\permanent\protected\def\mathfraktur   {\setmathalphabet \s!fraktur   \setmathfontstylealternate\s!fraktur}
+\permanent\protected\def\mathblackboard{\setmathalphabet \s!blackboard\setmathfontstylealternate\s!blackboard}
 
-\permanent\protected\def\mathtf        {\setmathfontstyle\s!tf         \setmathfontstylealternate\s!tf}
-\permanent\protected\def\mathsl        {\setmathfontstyle\s!it         \setmathfontstylealternate\s!it} % no sl
-\permanent\protected\def\mathit        {\setmathfontstyle\s!it         \setmathfontstylealternate\s!it}
+\permanent\protected\def\mathrm        {\setmathattribute\s!rm\s!tf\setmathfontstylealternate\s!tf}
+\permanent\protected\def\mathss        {\setmathattribute\s!ss\s!tf\setmathfontstylealternate\s!tf}
+\permanent\protected\def\mathtt        {\setmathattribute\s!tt\s!tf\setmathfontstylealternate\s!tf}
 
-\permanent\protected\def\mathbf        {\setmathfontstyle\s!bf         \setmathfontstylealternate\s!bf}
-\permanent\protected\def\mathbs        {\setmathfontstyle\s!bi         \setmathfontstylealternate\s!bi} % no sl
-\permanent\protected\def\mathbi        {\setmathfontstyle\s!bi         \setmathfontstylealternate\s!bi}
+\permanent\protected\def\mathtf        {\setmathfontstyle\s!tf\setmathfontstylealternate\s!tf}
+\permanent\protected\def\mathsl        {\setmathfontstyle\s!it\setmathfontstylealternate\s!it} % no sl
+\permanent\protected\def\mathit        {\setmathfontstyle\s!it\setmathfontstylealternate\s!it}
+
+\permanent\protected\def\mathbf        {\setmathfontstyle\s!bf\setmathfontstylealternate\s!bf}
+\permanent\protected\def\mathbs        {\setmathfontstyle\s!bi\setmathfontstylealternate\s!bi} % no sl
+\permanent\protected\def\mathbi        {\setmathfontstyle\s!bi\setmathfontstylealternate\s!bi}
 
 \aliased\let\mathdefault\mathitalic
 

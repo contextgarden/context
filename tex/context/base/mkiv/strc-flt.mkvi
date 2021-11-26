@@ -1111,6 +1111,35 @@
 \def\strc_floats_group_index
   {\numexpr\clf_listgroupindex{\currentfloat}{\currentfloatgroup}\relax}
 
+%D A lightweight subnumber feature:
+%D
+%D \starttyping
+%D \startplacefigure [location=none]
+%D   \startsubfloatnumbering
+%D     \startfloatcombination [nx=3]
+%D       \startplacefigure [title=Left]   \externalfigure \stopplacefigure
+%D       \startplacefigure [title=Middle] \externalfigure \stopplacefigure
+%D       \startplacefigure [title=Right]  \externalfigure \stopplacefigure
+%D     \stopfloatcombination
+%D   \stopsubfloatnumbering
+%D \stopplacefigure
+%D \stoptyping
+
+\glet\currentsubfloatcounter\empty
+
+\unexpanded\def\startsubfloatnumbering
+  {\glet\currentsubfloatcounter\s!unknown}
+
+\unexpanded\def\stopsubfloatnumbering
+  {\strc_counters_reset_sub\currentsubfloatcounter\plustwo
+   \glet\currentsubfloatcounter\empty}
+
+\defineconversionset[subfloats][number,characters]
+
+\setupcaptions
+ %[figure]
+  [\c!numberconversionset=subfloats]
+
 \def\strc_floats_place_packaged_boxes
   {\expandafter\strc_floats_place_packaged_boxes_indeed\expandafter{\m_strc_floats_saved_userdata}}
 
@@ -1127,7 +1156,17 @@
        \ifx\currentfloatgroup\empty
          % independent
          \iftrialtypesetting\strc_counters_save\currentfloatcounter\fi
-         \strc_counters_increment\currentfloatcounter
+         \ifx\empty\currentsubfloatcounter
+           \strc_counters_increment\currentfloatcounter
+           \strc_counters_reset_sub\currentfloatcounter\plustwo
+         \else
+           \ifcase\strc_counters_raw_sub\currentfloatcounter\plustwo\relax
+             \strc_counters_increment\currentfloatcounter
+             \strc_counters_reset_sub\currentfloatcounter\plustwo
+           \fi
+           \strc_counters_increment_sub\currentfloatcounter\plustwo
+           \glet\currentsubfloatcounter\currentfloatcounter
+         \fi         
        \else\ifcase\strc_floats_group_index
          % first in group
          \iftrialtypesetting\strc_counters_save\currentfloatcounter\fi

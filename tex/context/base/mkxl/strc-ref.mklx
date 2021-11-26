@@ -27,8 +27,8 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Cross Referencing}
 
-\registerctxluafile{strc-rsc}{}
-\registerctxluafile{strc-ref}{}
+\registerctxluafile{strc-rsc}{autosuffix}
+\registerctxluafile{strc-ref}{autosuffix}
 \registerctxluafile{node-ref}{autosuffix,optimize}
 
 \unprotect
@@ -84,7 +84,6 @@
 %mutable\let\currentreferencetext          \empty
 %mutable\let\currentreferencetitle         \empty
 \mutable\let\currentreferenceuserdata      \empty
-
 
 \newif\ifreferencing \referencingtrue
 
@@ -163,7 +162,6 @@
    \or
      \prewordbreak % to be tested: \removeunwantedspaces\permithyphenation
    \fi}
-
 
 \protected\def\strc_references_set_named_reference
   {\ifreferencing
@@ -580,8 +578,6 @@
 \mutable\let\currentsubtextreference   \empty
 \mutable\let\currentsubsubtextreference\empty
 
-\newcount\referencehastexstate % set in backend
-
 % referencepagestate:
 %
 % 0 = no page ref, 1=same page, 2=before, 3=after
@@ -692,17 +688,8 @@
 
 \newconditional\gotonewwindow \setfalse\gotonewwindow
 
-\permanent\def\expandtexincurrentreference % will happen in lua some time
-  {\ifcase\referencehastexstate\else\clf_expandcurrentreference\fi}
-
-\permanent\def\expandreferenceoperation#tag#content{\clf_setreferenceoperation#tag{#content}}
-\permanent\def\expandreferencearguments#tag#content{\clf_setreferencearguments#tag{#content}}
-
-\permanent\def\doifelsereferencefound#label#yes#nop%
-  {\clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
-     {\expandtexincurrentreference
-      #yes}%
-     {#nop}}
+\permanent\def\doifelsereferencefound#label%
+  {\clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}}
 
 \aliased\let\doifreferencefoundelse\doifelsereferencefound
 
@@ -826,11 +813,13 @@
 \permanent\def\setnextinternalreference
   {\global\advance\locationcount\plusone}
 
-\permanent\def\setnextinternalreferences#kind#name% plural
-  {\clf_setnextinternalreference{#kind}{#name}}
-
-\permanent\def\getinternalorderreference#kind#name%
-  {\clf_currentreferenceorder{#kind}{#name}}
+% defined at the lua end
+%
+% \permanent\def\setnextinternalreferences#kind#name% plural
+%   {\clf_setnextinternalreference{#kind}{#name}}
+%
+% \permanent\def\getinternalorderreference#kind#name%
+%   {\clf_currentreferenceorder{#kind}{#name}}
 
 \permanent\def\thisissomeinternal#kind#name% only for old time sake, will go away
   {\begingroup
@@ -1543,8 +1532,7 @@
    \c_attr_reference\attributeunsetvalue
    \iflocation
      \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
-       {\expandtexincurrentreference
-        \clf_injectcurrentreferencehtdp
+       {\clf_injectcurrentreferencehtdp
           \ht\strutbox
           \dp\strutbox
         \relax
@@ -1601,8 +1589,7 @@
   {\endgroup}
 
 \protected\def\strc_references_start_goto_yes
-  {\expandtexincurrentreference
-   \clf_injectcurrentreferencehtdp
+  {\clf_injectcurrentreferencehtdp
      \ht\strutbox
      \dp\strutbox
    \relax
@@ -1624,8 +1611,7 @@
    \c_attr_reference\attributeunsetvalue
    \iflocation
      \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
-       {\expandtexincurrentreference
-        \clf_injectcurrentreferencehtdp
+       {\clf_injectcurrentreferencehtdp
           \dimexpr\interactionparameter\c!height\relax
           \dimexpr\interactionparameter\c!depth \relax
         \relax
@@ -1710,8 +1696,7 @@
    \c_attr_reference\attributeunsetvalue
    \iflocation
      \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
-       {\expandtexincurrentreference
-        \clf_injectcurrentreference
+       {\clf_injectcurrentreference
         \setlocationattributes
         \global\lastsavedreferenceattribute\lastreferenceattribute
         \dostarttagged\t!link\empty

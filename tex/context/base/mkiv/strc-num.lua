@@ -357,8 +357,9 @@ end
 local function reset(name,n)
     local cd = counterdata[name]
     if cd then
-        for i=n or 1,#cd.data do
-            local d = cd.data[i]
+        local data = cd.data
+        for i=n or 1,#data do
+            local d = data[i]
             savevalue(name,i)
             local number = d.start or 0
             d.number = number
