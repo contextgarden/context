@@ -104,6 +104,7 @@ local implement          = interfaces.implement
 local privateattributes  = attributes.private
 
 local a_ruled            = privateattributes('ruled')
+local a_ruledextra       = privateattributes('ruledextra')
 local a_runningtext      = privateattributes('runningtext')
 local a_color            = privateattributes('color')
 local a_transparency     = privateattributes('transparency')
@@ -239,6 +240,13 @@ function rules.define(settings)
     return nofdata
 end
 
+local extrarules = false
+local extra      = false
+
+function rules.enableextra()
+    extrarules = true
+end
+
 local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but acceptable for this purpose
     local font = nil
     local char, id = isglyph(f)
@@ -334,20 +342,22 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     end
 
     if mp and mp ~= "" then
-        local r = usernutrule {
-            width  = wd,
-            height = ht,
-            depth  = dp,
-            type   = "mp",
-            factor = e,
-            offset = offset,
-            line   = rulethickness,
-            data   = mp,
-            ma     = colorspace,
-            ca     = color,
-            ta     = transparency,
-        }
-        inject(r,wd,ht,dp)
+        for i=extra and level or 1,level do
+            local r = usernutrule {
+                width  = wd,
+                height = ht,
+                depth  = dp,
+                type   = "mp",
+                factor = e,
+                offset = offset - (i-1)*dy,
+                line   = rulethickness,
+                data   = mp,
+                ma     = colorspace,
+                ca     = color,
+                ta     = transparency,
+            }
+            inject(r,wd,ht,dp)
+        end
     else
         local tx = d.text
         if tx then
@@ -359,7 +369,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
             l = hpack_nodes(l,wd,"exactly")
             inject(l,wd,ht,dp)
         else
-            for i=1,level do
+            for i=extra and level or 1,level do
                 local hd = (offset+(i-1)*dy)*e - m
                 local ht =  hd + rulethickness
                 local dp = -hd + rulethickness
@@ -370,8 +380,15 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     return head
 end
 
+
 rules.handler = function(head)
-    return processwords(a_ruled,data,flush_ruled,head)
+    extra = false
+    head = processwords(a_ruled,data,flush_ruled,head)
+    if extrarules then
+        extra = true
+        head = processwords(a_ruledextra,data,flush_ruled,head)
+    end
+    return head
 end
 
 function rules.enable()
@@ -640,6 +657,12 @@ implement {
     name     = "enablerules",
     onlyonce = true,
     actions  = rules.enable
+}
+
+implement {
+    name     = "enableextrarules",
+    onlyonce = true,
+    actions  = rules.enableextra
 }
 
 implement {

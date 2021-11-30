@@ -591,6 +591,10 @@
 \immutable\integerdef\maxcard            65536 % pdftex has less mathchars
 \immutable\integerdef\maxcardminusone    65535
 
+\immutable\integerdef\binaryshiftedten          1024
+\immutable\integerdef\binaryshiftedtwenty    1048576
+\immutable\integerdef\binaryshiftedthirty 1073741824
+
 %D \macros
 %D   {doubleexpandafter,tripleexpandafter,expanded,startexpanded}
 %D

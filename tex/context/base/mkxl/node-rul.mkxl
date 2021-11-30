@@ -74,7 +74,7 @@
 \registerctxluafile{node-rul}{autosuffix,optimize}
 
 \installcorenamespace{bar}
-\installcorenamespace{barindex}
+% \installcorenamespace{barindex}
 \installcorenamespace{barattribute}
 \installcorenamespace{barstack}
 
@@ -96,11 +96,11 @@
 \to \everysetupbar
 
 \appendtoks
-    \ifcsname\??barindex\currentbar\endcsname
-        \lastnamedcs\zerocount
-    \else
-        \expandafter\newcount\csname\??barindex\currentbar\endcsname
-    \fi
+%     \ifcsname\??barindex\currentbar\endcsname
+%         \lastnamedcs\zerocount
+%     \else
+%         \expandafter\newcount\csname\??barindex\currentbar\endcsname
+%     \fi
   % \normalexpanded{\t_node_rules_checklist{\node_rules_redefine{\currentbar}\the\t_node_rules_checklist}}%
     \normalexpanded{\t_node_rules_checklist{\the\t_node_rules_checklist\relax\node_rules_redefine{\currentbar}}}%
   % \etoksapp\t_node_rules_checklist{\node_rules_redefine{\currentbar}}%
@@ -109,6 +109,8 @@
 \to \everydefinebar
 
 \newbox\b_node_rules
+
+% todo: delay mp graphic
 
 \protected\def\node_rules_define
   {\edef\p_node_rules_color{\barparameter\c!color}%
@@ -155,22 +157,56 @@
 
 % store in properties
 
+% \permanent\protected\def\node_rules_set#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
+%   {\edef\currentbar{#1}%
+%    \usebarstyleandcolor\c!foregroundstyle\c!foregroundcolor
+%    % maybe: \usebarstyleandcolor\c!textgroundstyle\c!textcolor
+%    % todo: move this to lua .. we callout anyway
+%    \expandafter\let\expandafter\c_node_rules_index\csname\??barindex#1\endcsname
+%    \advance\c_node_rules_index\plusone
+%    \clf_enablerules % will be relaxed
+%    \c_attr_ruled\numexpr
+%       \plusthousand*\c_node_rules_index
+%       % optimizing this one needs testing
+%      +\csname\??barattribute#1\ifcsname\??bar#1:\number\c_node_rules_index\s!parent\endcsname:\number\c_node_rules_index\fi\endcsname
+%    \relax}
+
+%D \underbar {\underbar {\samplefile{tufte}}}\par
+%D \underbar {\underdot {\samplefile{tufte}}}\par
+%D \underbar {\underdot {\samplefile{tufte}}}\par
+%D \underdot {\underbar {\samplefile{tufte}}}\par
+%D \underbars{\underdot {\samplefile{tufte}}}\par
+%D \underbar {\underdots{\samplefile{tufte}}}\par
+%D \underdots{\underdots{\samplefile{tufte}}}\par
+
+\newcount\c_node_rules_index % can barindex go?
+
 \permanent\protected\def\node_rules_set#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
-  {\edef\currentbar{#1}%
+  {\let\previousbar\currentbar
+   \edef\currentbar{#1}%
    \usebarstyleandcolor\c!foregroundstyle\c!foregroundcolor
    % maybe: \usebarstyleandcolor\c!textgroundstyle\c!textcolor
    % todo: move this to lua .. we callout anyway
-   \expandafter\let\expandafter\c_node_rules_index\csname\??barindex#1\endcsname
+ % \expandafter\let\expandafter\c_node_rules_index\csname\??barindex#1\endcsname
    \advance\c_node_rules_index\plusone
    \clf_enablerules % will be relaxed
-   \c_attr_ruled\numexpr
-      \plusthousand*\c_node_rules_index
-      % optimizing this one needs testing
-     +\csname\??barattribute#1\ifcsname\??bar#1:\number\c_node_rules_index\s!parent\endcsname:\number\c_node_rules_index\fi\endcsname
-   \relax}
+   \ifempty\previousbar
+     \c_attr_ruled
+   \orelse\ifx\previousbar\currentbar
+     \c_attr_ruled
+   \else
+     \clf_enableextrarules % will be relaxed
+     \c_attr_ruledextra
+   \fi
+     \numexpr
+        \plusthousand*\c_node_rules_index
+        % optimizing this one needs testing
+       +\csname\??barattribute#1\ifcsname\??bar#1:\number\c_node_rules_index\s!parent\endcsname:\number\c_node_rules_index\fi\endcsname
+     \relax}
 
 \permanent\protected\def\resetbar
-  {\c_attr_ruled\attributeunsetvalue}
+  {\c_attr_ruled     \attributeunsetvalue
+   \c_attr_ruledextra\attributeunsetvalue}
 
 \permanent\protected\def\nobar
   {\groupedcommand
@@ -193,17 +229,19 @@
 
 \aliased\let\directsetbar\node_rules_set
 
-% ungrouped
+% ungrouped % todo: use the lua based stacker
 
 \newcount\c_node_rules_nesting % todo: same as colors
 
 \permanent\protected\def\pushbar[#1]%
   {\global\advance\c_node_rules_nesting\plusone
-   \edefcsname\??barstack\number\c_node_rules_nesting\endcsname{\c_attr_ruled\the\c_attr_ruled}%
+   \edefcsname\??barstack\number\c_node_rules_nesting\endcsname
+     {\c_attr_ruled     \the\c_attr_ruled
+      \c_attr_ruledextra\the\c_attr_ruledextra}%
    \node_rules_set{#1}}
 
 \permanent\protected\def\popbar
-  {\csname\??barstack\number\c_node_rules_nesting\endcsname
+  {\csname\??barstack\number\c_node_rules_nesting\endcsname\relax
    \global\advance\c_node_rules_nesting\minusone}
 
 \setupbars
@@ -342,16 +380,18 @@
   [undergraphic]
   [\c!mp=rules:under:dash,
    \c!offset=-.2,
+   \c!dy=.4,
+   \c!continue=\v!yes,
    \c!order=\v!background]
 
-\definebar[underrandom] [undergraphic][\c!mp=rules:under:random]
-\definebar[underrandoms][underrandom] [\c!continue=\v!yes]
+\definebar[underrandom] [undergraphic][\c!mp=rules:under:random,]
+\definebar[underrandoms][underrandom] [\c!continue=\v!no]
 
 \definebar[underdash]   [undergraphic][\c!mp=rules:under:dash]
-\definebar[underdashes] [underdash]   [\c!continue=\v!yes]
+\definebar[underdashes] [underdash]   [\c!continue=\v!no]
 
 \definebar[underdot]    [undergraphic][\c!mp=rules:under:dots]
-\definebar[underdots]   [underdot]    [\c!continue=\v!yes]
+\definebar[underdots]   [underdot]    [\c!continue=\v!no]
 
 %D This will move: (a bit duplicated)
 
@@ -387,7 +427,7 @@
 \to \everydefineshift
 
 \protected\def\node_shifts_define
-  {\setevalue{\??shiftattribute\currentshift}{\number
+  {\edefcsname\??shiftattribute\currentshift\endcsname{\number
    \clf_defineshift
      continue {\shiftparameter\c!continue}%
      unit     {\shiftparameter\c!unit}%

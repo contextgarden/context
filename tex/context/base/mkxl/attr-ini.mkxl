@@ -125,6 +125,7 @@
 \definesystemattribute [layoutcomponent]     [public]
 \definesystemattribute [internal]            [public]
 \definesystemattribute [ruled]               [public]
+\definesystemattribute [ruledextra]          [public]
 \definesystemattribute [shifted]             [public]
 \definesystemattribute [checkedbreak]        [public]
 \definesystemattribute [alternate]           [public]

@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['math-fbk'] = {
 }
 
 local next, type = next, type
+local floor = math.floor
 
 local trace_fallbacks   = false  trackers.register("math.fallbacks", function(v) trace_fallbacks = v end)
 
@@ -712,9 +713,9 @@ local function threedots(data,shift)
     if shift then
         local plusht = pluschar.height or 0
         local plusdp = pluschar.depth or 0
-        local axis   = (plusdp + plusht)//2 - plusdp
-        offset   = axis - periodht//2
-        periodht = axis + periodht//2
+        local axis   = floor((plusdp + plusht)/2) - plusdp
+        offset   = axis - floor(periodht/2)
+        periodht = axis + floor(periodht/2)
     end
     return {
         width    = 3*periodwd,

@@ -21,6 +21,7 @@ return {
         "zeromuskip", "onemuskip",
         "pluscxxvii", "pluscxxviii", "pluscclv", "pluscclvi",
         "normalpagebox",
+        "binaryshiftedten", "binaryshiftedtwenty", "binaryshiftedthirty",
         --
         "directionlefttoright", "directionrighttoleft",
         --

@@ -448,7 +448,7 @@
      {\unhbox\b_spac_postponed_data
       \scratchdimen\wd\nextbox
       \unhbox\nextbox
-      \ifcase\scratchdimen\else\kern-\b_spac_postponed_data\fi}%
+      \ifcase\scratchdimen\else\kern-\scratchdimen\fi}%
    \endgroup}
 
 \def\spac_postponed_data_flush

@@ -168,6 +168,7 @@
 
 \newconditional\c_strc_registers_defining
 \setnewconstant\c_strc_registers_maxlevel \plusfive
+\newconditional\c_strc_registers_vertical \settrue\c_strc_registers_vertical
 
 \ifdefined\Word \else \protected\def\Word#1{#1} \fi
 
@@ -800,7 +801,7 @@
    \endgroup
    \blank[\v!samepage]%
    \registerparameter\c!after
-   \par
+   \endgraf
    \nobreak}
 
 % b = <goodbreak> <before> <character> <after> <nobreak>
@@ -877,6 +878,68 @@
 \newdimen\d_strc_registers_hangindent
 \newcount\c_strc_registers_hangafter
 
+% \permanent\protected\def\usenestedregisterstyleandcolor#1#2% will change
+%   {\useregisterstyleandcolor#1#2%
+%    % how about style
+%    \ifconditional\c_strc_registers_text_interaction
+%      \ifempty\currentcolorparameter \else
+%        \resetinteractionparameter\c!color
+%        \resetinteractionparameter\c!contrastcolor
+%      \fi
+%    \fi}
+%
+% \permanent\protected\def\startregisterentries#1% depth
+%   {\endgraf
+%    \begingroup
+%    \c_strc_register_level\ifnum#1>\c_strc_registers_maxlevel\c_strc_registers_maxlevel\else#1\fi\relax
+%    \dostarttagged\t!registerentries\empty
+%  % \let\savedcurrentregister\currentregister
+%    \pushmacro\currentregister
+%    \edef\currentregister{\currentregister:\number\c_strc_register_level}%
+%    \usenestedregisterstyleandcolor\c!textstyle\c!textcolor
+%    \ifnum\c_strc_register_level>\plusone
+%      \advance\leftskip\d_strc_registers_distance\relax
+%    \fi
+%    \d_strc_registers_hangindent\registerparameter\c!distance\relax
+%    \c_strc_registers_hangafter \plusone
+%    \blank[\v!samepage]%
+%  % \let\currentregister\savedcurrentregister}
+%    \popmacro\currentregister}
+%
+% \permanent\protected\def\stopregisterentries
+%   {\endgraf
+%    \dostoptagged
+%    \endgroup}
+
+%D See test suite \type {registers/horizontal-001.tex} for a more extensive example
+%D of horizontal:
+%D
+%D \stoptyping
+%D \defineregister
+%D   [demo]
+%D   [n=1,
+%D    pagenumber=no,
+%D    textalternative=horizontal,
+%D    distance=0pt]
+%D
+%D \setupregister [demo] [2] [textstyle=bold,left={, }]
+%D \setupregister [demo] [3] [textstyle=italic,left={, }]
+%D
+%D \setregisterentry [demo] [entries:1={alpha}, entries:2={one}, entries:3={first}]
+%D \setregisterentry [demo] [entries:1={beta},  entries:2={two}, entries:3={last}]
+%D
+%D \starttext
+%D     \starttitle[title=Demo]
+%D         \placeregister[demo]
+%D     \stoptitle
+%D \stoptext
+%D \stoptyping
+
+\appendtoks
+    \doifelse{\registerparameter\c!textalternative}\v!horizontal
+      \setfalse\settrue\c_strc_registers_vertical
+\to \everysetupregister
+
 \permanent\protected\def\usenestedregisterstyleandcolor#1#2% will change
   {\useregisterstyleandcolor#1#2%
    % how about style
@@ -888,21 +951,24 @@
    \fi}
 
 \permanent\protected\def\startregisterentries#1% depth
-  {\endgraf
+  {\ifconditional\c_strc_registers_vertical
+     \endgraf
+   \fi
    \begingroup
    \c_strc_register_level\ifnum#1>\c_strc_registers_maxlevel\c_strc_registers_maxlevel\else#1\fi\relax
    \dostarttagged\t!registerentries\empty
-%    \let\savedcurrentregister\currentregister
-   \pushmacro\currentregister
+   \pushmacro\currentregister % bah
    \edef\currentregister{\currentregister:\number\c_strc_register_level}%
+   \let\currentnestedregister\currentregister
    \usenestedregisterstyleandcolor\c!textstyle\c!textcolor
    \ifnum\c_strc_register_level>\plusone
      \advance\leftskip\d_strc_registers_distance\relax
    \fi
    \d_strc_registers_hangindent\registerparameter\c!distance\relax
    \c_strc_registers_hangafter \plusone
-   \blank[\v!samepage]%
-%    \let\currentregister\savedcurrentregister}
+   \ifconditional\c_strc_registers_vertical
+     \blank[\v!samepage]%
+   \fi
    \popmacro\currentregister}
 
 \permanent\protected\def\stopregisterentries
@@ -910,17 +976,40 @@
    \dostoptagged
    \endgroup}
 
+% \permanent\protected\def\startregisterentry#1% todo: level
+%   {\typo_injectors_check_register
+%    \begingroup
+%    \dostarttagged\t!registerentry\empty
+%    \global\setconstant\c_strc_registers_page_state\zerocount
+%    \hangindent\d_strc_registers_hangindent
+%    \hangafter \c_strc_registers_hangafter
+%    \typo_injectors_mark_register}
+%
+% \permanent\protected\def\stopregisterentry
+%   {\endgraf
+%    \global\setconstant\c_strc_registers_page_state\zerocount
+%    \dostoptagged
+%    \endgroup}
+
 \permanent\protected\def\startregisterentry#1% todo: level
   {\typo_injectors_check_register
    \begingroup
    \dostarttagged\t!registerentry\empty
    \global\setconstant\c_strc_registers_page_state\zerocount
-   \hangindent\d_strc_registers_hangindent
-   \hangafter \c_strc_registers_hangafter
+   \ifconditional\c_strc_registers_vertical
+     \hangindent\d_strc_registers_hangindent
+     \hangafter \c_strc_registers_hangafter
+   \else
+     \namedregisterparameter\currentnestedregister\c!left\relax
+   \fi
    \typo_injectors_mark_register}
 
 \permanent\protected\def\stopregisterentry
-  {\endgraf
+  {\ifconditional\c_strc_registers_vertical
+     \endgraf
+   \else
+     \namedregisterparameter\currentnestedregister\c!right\relax
+   \fi
    \global\setconstant\c_strc_registers_page_state\zerocount
    \dostoptagged
    \endgroup}
@@ -1292,3 +1381,190 @@
 \stopcontextdefinitioncode
 
 \protect \endinput
+
+% % maybe also more levels with [entries|keys|processors]:n
+% %
+% % \setregisterentry
+% %   [index]
+% %   [entries:1=one,
+% %    entries:2=two,
+% %    entries:3=three,
+% %    entries:4=four]
+% %
+% % test \blank \placeregister[index][balance=no]
+%
+% \def\expanddetokenizedregistervalues#1#2%
+%   {\edef\expandedregistervalue{\detokenizedregisterparameter{#1:#2}}%
+%    \ifempty\expandedregistervalue\else
+%       \letregisterparameter{#1:#2}\expandedregistervalue
+%       \expandafter\expanddetokenizedregistervalues
+%       \expandafter#1%
+%       \expandafter{\the\numexpr#2+1}%
+%    \fi}%
+%
+% \def\expandregistervalues#1#2%
+%   {\edef\expandedregistervalue{\registerparameter{#1:#2}}%
+%    \ifempty\expandedregistervalue\else
+%       \letregisterparameter{#1:#2}\expandedregistervalue
+%       \expandafter\expandregistervalues
+%       \expandafter#1%
+%       \expandafter{\the\numexpr#2+1}%
+%    \fi}%
+%
+% % \def\injectregistervalues#1#2%
+% %   {\beginlocalcontrol
+% %    \edef\expandedregistervalue{\registerparameter{#1:\the\numexpr#2}}%
+% %    \endlocalcontrol
+% %    \ifempty\expandedregistervalue\else
+% %       {\expandedregistervalue}%
+% %       \injectregistervalues#1{#2+1}%
+% %     \fi}%
+%
+% \def\injectregistervalues#1#2%
+%   {\iftok{\registerparameter{#1:\the\numexpr#2}}\emptytoks\else
+%       \expandafter{\lastnamedcs}%
+%       \injectregistervalues#1{#2+1}%
+%     \fi}%
+%
+% \def\strc_registers_register_page_expand_xml_entries
+%   {\xmlstartraw
+%      \beginlocalcontrol
+%      \expandregistervalues\c!entries1%
+%      \endlocalcontrol
+%    \xmlstopraw
+%    \glet\currentregistercoding\s!xml}
+%
+% \def\strc_registers_register_page_expand_yes_entries
+%   {\beginlocalcontrol
+%    \expandregistervalues\c!entries1%
+%    \endlocalcontrol
+%    \glet\currentregistercoding\s!tex}
+%
+% \def\strc_registers_register_page_expand_nop_entries
+%   {\beginlocalcontrol
+%    \expanddetokenizesregistervalues\c!entries1%
+%    \endlocalcontrol
+%    \glet\currentregistercoding\s!tex}
+%
+% \def\strc_registers_register_page_expand_nop_entries
+%   {\beginlocalcontrol
+%    \expandregistervalues\c!entries1%
+%    \endlocalcontrol
+%    \glet\currentregistercoding\s!tex}
+%
+% \def\strc_registers_register_page_expand_xml_keys
+%   {\xmlstartraw
+%      \beginlocalcontrol
+%      \expandregistervalues\c!keys1%
+%      \endlocalcontrol
+%    \xmlstopraw}
+%
+% \def\strc_registers_register_page_expand_yes_keys
+%   {\beginlocalcontrol
+%    \expandregistervalues\c!keys1%
+%    \endlocalcontrol}
+%
+% \def\strc_registers_register_page_expand_processors
+%   {\beginlocalcontrol
+%    \expandregistervalues\c!processors1%
+%    \endlocalcontrol}
+%
+% \def\strc_registers_register_page_entry_indeed#1#2#3% register data userdata
+%   {\begingroup
+%    \edef\currentregister{#1}%
+%    %\setupcurrentregister[\c!entries=,\c!label=,\c!keys=,\c!alternative=,#2]%
+%    \setupcurrentregister[#2]%
+%    \edef\currentregisterlabel     {\registerparameter\c!label}%
+%    \edef\currentregisterexpansion {\registerparameter\c!expansion}%
+%    \edef\currentregisterownnumber {\registerparameter\c!ownnumber}%
+%    \xdef\currentregisterkeys      {\registerparameter\c!keys}%
+%    \xdef\currentregisterentries   {\registerparameter\c!entries}%
+%    \xdef\currentregisterprocessors{\registerparameter\c!processors}%
+%    \xdef\currentregisterxmlsetup  {\registerparameter\c!xmlsetup}%
+%    \ifempty\currentregisterentries
+%      \ifx\currentregisterexpansion\s!xml
+%        \strc_registers_register_page_expand_xml_entries
+%      \orelse\ifx\currentregisterexpansion\v!yes
+%        \strc_registers_register_page_expand_yes_entries
+%      \else
+%        \strc_registers_register_page_expand_nop_entries
+%      \fi
+%    \else
+%      \ifx\currentregisterexpansion\s!xml
+%        \strc_registers_register_page_expand_xml
+%      \orelse\ifx\currentregisterexpansion\v!yes
+%        \strc_registers_register_page_expand_yes
+%      \else
+%        \strc_registers_register_page_expand_nop
+%      \fi
+%    \fi
+%    \ifempty\currentregisterkeys
+%      \ifx\currentregistercoding\s!xml
+%        \strc_registers_register_page_expand_xml_keys
+%      \else
+%        \strc_registers_register_page_expand_yes_keys
+%      \fi
+%    \fi
+%    \strc_registers_register_page_expand_processors
+%    \setnextinternalreference
+%    % we could consider storing register entries in a list which we
+%    % could then sort
+%    \glet\currentregistername\currentregister
+%    \xdef\currentregisternumber{\clf_storeregister % 'own' should not be in metadata
+%         metadata {%
+%             name     {\currentregister}%
+%             coding   {\currentregistercoding}%
+%         \ifx\currentregisterownnumber\v!yes
+%             own      {\registerparameter\c!alternative}% can be used instead of pagenumber
+%         \fi
+%         \ifx\currentreferencecoding\s!xml
+%             xmlroot  {\xmldocument} % only useful when text
+%         \fi
+%         \ifempty\currentregisterxmlsetup \else
+%             xmlsetup {\currentregisterxmlsetup}%
+%         \fi
+%         }%
+%         references {%
+%         \ifempty\currentregisterlabel \else
+%             label    {\currentregisterlabel}%
+%         \fi
+%          %  view     {\interactionparameter\c!focus}%
+%         }%
+%         entries {%
+%             % we need a special one for xml, this is just a single one
+%             \ifempty\currentregisterentries
+%                 entries {\injectregistervalues\c!entries1}%
+%             \else
+%                 entry {\currentregisterentries}%
+%             \fi
+%             \ifempty\currentregisterkeys
+%                 keys {\injectregistervalues\c!keys1}%
+%             \else
+%                 key {\currentregisterkeys}%
+%             \fi
+%             \ifempty\currentregisterprocessors
+%                 processors {\injectregistervalues\c!processors1}%
+%             \else
+%                 processor {\currentregisterprocessors}%
+%             \fi
+%         }%
+%         userdata {\detokenize\expandafter{\normalexpanded{#3}}}
+%    }%
+%    \clf_setinternalreference
+%       internal \locationcount
+%       view     {\interactionparameter\c!focus}%
+%    \relax % this will change
+%    \ifx\currentregisterownnumber\v!yes
+%      \glet\currentregistersynchronize\relax
+%    \else
+%      \xdef\currentregistersynchronize{\clf_deferredenhanceregister{\currentregister}\number\currentregisternumber}%
+%    \fi
+%    \currentregistersynchronize % here?
+%    % needs thinking ... bla\index{bla}. will break before the . but adding a
+%    % penalty is also no solution
+%    \dostarttagged\t!registerlocation\currentregister
+%    \c_attr_destination\lastdestinationattribute
+%    \signalcharacter % no \strut as it will be removed during cleanup
+%    \dotagregisterlocation
+%    \dostoptagged
+%    \endgroup}

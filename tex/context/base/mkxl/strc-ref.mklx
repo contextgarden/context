@@ -78,7 +78,7 @@
 \mutable\let\currentreferencekind          \empty
 \mutable\let\currentreferencelabels        \empty
 %mutable\let\currentreferencenumber        \empty
-\mutable\let\currentreferenceorder         \empty
+%mutable\let\currentreferenceorder         \empty
 %mutable\let\currentreferencepage          \empty
 %mutable\let\currentreferencerealpage      \empty
 %mutable\let\currentreferencetext          \empty
@@ -990,6 +990,8 @@
 \permanent\def\currentreferencetext    {\clf_filterreference{text}}
 %permanent\def\currentreferencedefault {\clf_filterreference{default}}
 \permanent\def\currentreferencerealpage{\clf_filterreference{realpage}}
+\aliased  \let\currentreferenceorder    \getinternalorderreference
+
 
 %D The most straightforward way of retrieving references is using \type {\ref}.
 

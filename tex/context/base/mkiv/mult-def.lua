@@ -12170,6 +12170,10 @@ return {
    ["en"]="textalign",
    ["fr"]="alignertexte",
   },
+  ["textalternative"]={
+   ["en"]="textalternative",
+   ["nl"]="tekstvariant",
+  },
   ["textcolor"]={
    ["cs"]="barvatextu",
    ["de"]="textfarbe",

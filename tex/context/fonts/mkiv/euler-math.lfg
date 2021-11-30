@@ -6,18 +6,22 @@ return {
     comment = "Goodies that complement euler math.",
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
-    mathematics = {
-     -- virtuals = {
-     --     ["euler-nova"] = {
-     --         { name = "texgyrepagella-math.otf", main = true, parameters = true },
-     --         { name = "euler.otf", overlay = true }, -- first = 0x1234, last = 0x1256
-     --
-     --      -- { name = "euler.otf", main = true, parameters = true },
-     --      -- { name = "texgyrepagella-math.otf", overlay = true },
-     --
-     --     },
-     -- }
-    }
+
+   mathematics = {
+        tweaks = {
+            aftercopying = {
+                {
+                    tweak   = "fixprimes",
+                    factor  = 0.9,
+                    smaller = true,
+                    scale   = 0.60,
+                    fake    = 0.75,
+                },
+            },
+        },
+    },
+
+
 }
 
 

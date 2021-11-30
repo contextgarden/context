@@ -72,6 +72,7 @@ do
     local replacer = utilities.templates.replacer
 
     -- todo: RuleColor -> just string ?
+    -- todo: fetch them instead fo push them
 
     local predefined = {
         ["fake:word"] = replacer [[

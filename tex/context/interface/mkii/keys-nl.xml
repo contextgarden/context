@@ -318,6 +318,7 @@
 		<cd:variable name='lefthanging' value='linkshangend'/>
 		<cd:variable name='leftmargin' value='linkermarge'/>
 		<cd:variable name='leftpage' value='linkerpagina'/>
+		<cd:variable name='lefttext' value='linkertekst'/>
 		<cd:variable name='lefttoright' value='lefttoright'/>
 		<cd:variable name='legend' value='legenda'/>
 		<cd:variable name='less' value='minder'/>
@@ -479,6 +480,7 @@
 		<cd:variable name='righthanging' value='rechtshangend'/>
 		<cd:variable name='rightmargin' value='rechtermarge'/>
 		<cd:variable name='rightpage' value='rechterpagina'/>
+		<cd:variable name='righttext' value='rechtertekst'/>
 		<cd:variable name='righttoleft' value='righttoleft'/>
 		<cd:variable name='roman' value='romaan'/>
 		<cd:variable name='romannumerals' value='romeins'/>
@@ -1286,6 +1288,7 @@
 		<cd:constant name='tab' value='tab'/>
 		<cd:constant name='text' value='tekst'/>
 		<cd:constant name='textalign' value='textalign'/>
+		<cd:constant name='textalternative' value='tekstvariant'/>
 		<cd:constant name='textcolor' value='tekstkleur'/>
 		<cd:constant name='textcommand' value='tekstcommando'/>
 		<cd:constant name='textdistance' value='tekstafstand'/>

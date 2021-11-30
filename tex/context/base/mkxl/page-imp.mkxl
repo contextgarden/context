@@ -169,6 +169,15 @@
    \box\scratchbox
    \endgroup}
 
+%D We just ignore \type {\shipout}.
+
+\pushoverloadmode
+
+\permanent\protected\def\shipout
+  {\begingroup\dowithnextboxcs\endgroup}
+
+\popoverloadmode
+
 %D Also in normal \MKIV\ we nos use the indirect way so that we benefit from timing
 %D and tracing.
 

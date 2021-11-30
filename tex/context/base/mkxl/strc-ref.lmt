@@ -380,7 +380,7 @@ implement {
 }
 
 implement {
-    name      = "currentreferenceorder",
+    name      = "getinternalorderreference",
     public    = true,
     protected = true,
     actions   = { currentorder, context },

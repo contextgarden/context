@@ -117,11 +117,14 @@ local function processwords(attribute,data,flush,head,parent,skip) -- we have hl
     local n = head
     if n then
         local f, l, a, d, i, class
-        local continue, leaders, done, strip, level = false, false, false, true, -1
+        local continue, leaders, strip, level = false, false, false, true, -1
         while n do
             local id = getid(n)
-            if id == glyph_code or id == rule_code or (id == hlist_code and getattr(n,a_runningtext))
-or id == disc_code or id == boundary_code
+            if id == glyph_code
+                or id == rule_code
+                or (id == hlist_code and getattr(n,a_runningtext))
+                or id == disc_code
+                or id == boundary_code
             then
                 local aa = getattr(n,attribute)
                 if aa and aa ~= skip then
@@ -136,9 +139,9 @@ or id == disc_code or id == boundary_code
                      -- strip = not continue or level == 1 -- 0
                         if f then
                             if class == newclass then -- and newlevel > level then
-                                head, done = flush(head,f,l,d,level,parent,false), true
+                                head = flush(head,f,l,d,level,parent,false), true
                             else
-                                head, done = flush(head,f,l,d,level,parent,strip), true
+                                head = flush(head,f,l,d,level,parent,strip), true
                             end
                         end
                         f, l, a = n, n, aa
@@ -154,14 +157,14 @@ or id == disc_code or id == boundary_code
                     end
                 else
                     if f then
-                        head, done = flush(head,f,l,d,level,parent,strip), true
+                        head = flush(head,f,l,d,level,parent,strip), true
                     end
                     f, l, a = nil, nil, nil
                 end
                 if id == hlist_code then
                     local list = getlist(n)
                     if list then
-                        setlist(n,(processwords(attribute,data,flush,list,n,aa))) -- watch ()
+                        setlist(n,processwords(attribute,data,flush,list,n,aa))
                     end
                 end
 --             elseif id == disc_code or id == boundary_code then
@@ -176,17 +179,17 @@ or id == disc_code or id == boundary_code
                 -- otherwise not consistent: a $b$ c vs a $b+c$ d etc
                 -- we need a special (optional) go over math variant
                 if f then
-                    head, done = flush(head,f,l,d,level,parent,strip), true
+                    head = flush(head,f,l,d,level,parent,strip), true
                     f, l, a = nil, nil, nil
                 end
             elseif id == hlist_code or id == vlist_code then
                 if f then
-                    head, done = flush(head,f,l,d,level,parent,strip), true
+                    head = flush(head,f,l,d,level,parent,strip), true
                     f, l, a = nil, nil, nil
                 end
                 local list = getlist(n)
                 if list then
-                    setlist(n,(processwords(attribute,data,flush,list,n,skip))) -- watch ()
+                    setlist(n,processwords(attribute,data,flush,list,n,skip))
                 end
             elseif id == dir_code then -- only changes in dir, we assume proper boundaries
                 if f then
@@ -204,24 +207,22 @@ or id == disc_code or id == boundary_code
                         if getattr(n,attribute) and (subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code or (leaders and subtype >= leaders_code)) then
                             l = n
                         else
-                            head, done = flush(head,f,l,d,level,parent,strip), true
+                            head = flush(head,f,l,d,level,parent,strip), true
                             f, l, a = nil, nil, nil
                         end
                     end
                 else
-                    head, done = flush(head,f,l,d,level,parent,strip), true
+                    head = flush(head,f,l,d,level,parent,strip), true
                     f, l, a = nil, nil, nil
                 end
             end
             n = getnext(n)
         end
         if f then
-            head, done = flush(head,f,l,d,level,parent,strip), true
+            head = flush(head,f,l,d,level,parent,strip), true
         end
-        return head, true -- todo: done
-    else
-        return head, false
     end
+    return head
 end
 
 nuts.processwords = function(attribute,data,flush,head,parent) -- we have hlistdir and local dir
@@ -235,7 +236,6 @@ local function processranges(attribute,flush,head,parent,depth,skip)
     local n = head
     if n then
         local f, l, a
-        local done = false
         while n do
             local id = getid(n)
             if id == glyph_code or id == rule_code then
@@ -249,13 +249,13 @@ local function processranges(attribute,flush,head,parent,depth,skip)
                         l = n
                     else
                         if f then
-                            head, done = flush(head,f,l,a,parent,depth), true
+                            head = flush(head,f,l,a,parent,depth), true
                         end
                         f, l, a = n, n, aa
                     end
                 else
                     if f then
-                        head, done = flush(head,f,l,a,parent,depth), true
+                        head = flush(head,f,l,a,parent,depth), true
                     end
                     f, l, a = nil, nil, nil
                 end
@@ -283,30 +283,28 @@ local function processranges(attribute,flush,head,parent,depth,skip)
                         l = n
                     else
                         if f then
-                            head, done = flush(head,f,l,a,parent,depth), true
+                            head = flush(head,f,l,a,parent,depth), true
                         end
                         f, l, a = n, n, aa
                     end
                 else
                     if f then
-                        head, done = flush(head,f,l,a,parent,depth), true
+                        head = flush(head,f,l,a,parent,depth), true
                     end
                     f, l, a = nil, nil, nil
                 end
                 local list = getlist(n)
                 if list then
-                    setlist(n,(processranges(attribute,flush,list,n,depth+1,aa)))
+                    setlist(n,processranges(attribute,flush,list,n,depth+1,aa))
                 end
             end
             n = getnext(n)
         end
         if f then
-            head, done = flush(head,f,l,a,parent,depth), true
+            head = flush(head,f,l,a,parent,depth), true
         end
-        return head, done
-    else
-        return head, false
     end
+    return head
 end
 
 nuts.processranges = function(attribute,flush,head,parent) -- we have hlistdir and local dir

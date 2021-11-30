@@ -917,7 +917,7 @@
 
 \let\tabl_tabulate_check_linenumbers\relax
 
-\def\tabl_tabulate_splitoff_box
+\def\tabl_tabulate_splitoff_box % maybe use the modern splitter
   {\dontcomplain
    \global\setbox\b_tabl_tabulate\vsplit\b_tabl_tabulate_current\c_tabl_tabulate_column to \lineheight % % % global ? % % %
    \setbox\b_tabl_tabulate\vbox
@@ -1808,6 +1808,7 @@
 
 %D Beware, we cannot use \type {\protected} on \type {\HL} cum suis, since \TEX's
 %D hard coded noalign lookahead fails on it! I mistakenly added this for a while.
+%D Well, this is no longer true in \LMTX.
 
 \defcsname\??tabulatealigning\v!normal\endcsname{0}
 \defcsname\??tabulatealigning\v!right \endcsname{1}
@@ -2452,6 +2453,8 @@
 % \NC test \NC \input tufte \relax \NC \NR
 % \NC test \NC \input tufte \relax \NC \NR
 % \stoptabulate
+
+% todo: use the more modern line getter
 
 \def\tabl_split_box#1% #1 <> 0/2 / derived from the one in core-ntb.tex
   {\ifinsidesplitfloat

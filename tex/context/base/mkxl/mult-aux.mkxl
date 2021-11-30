@@ -358,6 +358,8 @@
 \mutable\let\currentstyleparameter\empty
 \mutable\let\currentcolorparameter\empty
 
+% maybe we should have \names ones too
+
 \protected\def\mult_interfaces_install_style_and_color_handler#1#2#3#4%
   {\frozen\protected\def#2##1##2% style color
      {\edef\currentstyleparameter{#1{##1}}% this name is public (can also set color e.g. in underline)

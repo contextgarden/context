@@ -108,7 +108,8 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showmakeup" level="document" category="boxes" file="trc-vis.mkiv">
+    <!-- file="trc-vis.mkiv"-->
+    <cd:command name="showmakeup" level="document" category="boxes" file="trc-vis.mkxl">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="makeup" default="yes"/>
@@ -118,26 +119,30 @@
                 <cd:constant type="hbox"/>
                 <cd:constant type="vbox"/>
                 <cd:constant type="vtop"/>
+                <cd:constant type="origin"/>
                 <cd:constant type="kern"/>
                 <cd:constant type="glue"/>
                 <cd:constant type="penalty"/>
-                <cd:constant type="fontkern"/>
-                <cd:constant type="strut"/>
-                <cd:constant type="whatsit"/>
                 <cd:constant type="glyph"/>
-                <cd:constant type="simple"/>
-                <cd:constant type="simplehbox"/>
-                <cd:constant type="simplevbox"/>
-                <cd:constant type="simplevtop"/>
-                <cd:constant type="user"/>
-                <cd:constant type="math"/>
-                <cd:constant type="italic"/>
-                <cd:constant type="origin"/>
                 <cd:constant type="discretionary"/>
+                <cd:constant type="italic"/>
                 <cd:constant type="expansion"/>
+                <cd:constant type="fontkern"/>
+                <cd:constant type="marginkern"/>
+                <cd:constant type="par"/>
+                <cd:constant type="dir"/>
                 <cd:constant type="line"/>
+                <cd:constant type="strut"/>
                 <cd:constant type="space"/>
                 <cd:constant type="depth"/>
+                <cd:constant type="insert"/>
+                <cd:constant type="mark"/>
+                <cd:constant type="math"/>
+                <cd:constant type="mathglue"/>
+                <cd:constant type="mathkern"/>
+                <cd:constant type="mathshapekern"/>
+                <cd:constant type="user"/>
+                <cd:constant type="whatsit"/>
             </cd:keywords>
         </cd:arguments>
     </cd:command>

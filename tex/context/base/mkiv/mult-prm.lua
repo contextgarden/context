@@ -288,6 +288,7 @@ return {
   "boxattribute",
   "boxdirection",
   "boxorientation",
+  "boxshift",
   "boxtotal",
   "boxxmove",
   "boxxoffset",

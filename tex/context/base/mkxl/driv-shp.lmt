@@ -479,7 +479,7 @@ else
                     kind = type(code)
                 end
                 if kind == "function" then
-                    code(font,char,pos_h,pos_v,sx,sy)
+                    code(font,char,pos_h,pos_v,sx,sy) -- maybe also packet
                 end
             elseif command == "node" then
                 local h = packet[2]
@@ -497,7 +497,7 @@ else
             else
                 local injector = vfinjectors[command]
                 if injector then
-                    injector(pos_h,pos_v,packet)
+                    injector(pos_h,pos_v,packet) -- maybe also sx, sy but then we need to check usage
                 end
             end
         end
@@ -669,6 +669,8 @@ local hlist_out, vlist_out  do
 
     -- check frequencies of nodes
 
+    local eps <const> = 10
+
     hlist_out = function(this_box,current)
         local ref_h = pos_h
         local ref_v = pos_v
@@ -732,22 +734,24 @@ local hlist_out, vlist_out  do
                                     end
                                     cur_h = cur_h + gluewidth
                                 end
-                            elseif id == hlist_code or id == vlist_code and gluewidth > 0 then
+                            elseif (id == hlist_code or id == vlist_code or id == glyph_code) and gluewidth > 0 then
                                 local width, height, depth = getwhd(leader)
+                                -- no need for //
                                 if width > 0 then
-                                    local boxdir = getdirection(leader) or lefttoright_code
-                                    gluewidth = gluewidth + 10
+                                    gluewidth = gluewidth + eps
                                     local edge = cur_h + gluewidth
                                     local lx = 0
                                     if subtype == gleaders_code then
                                         local save_h = cur_h
                                         if pos_r == righttoleft_code then
                                             cur_h = ref_h - shipbox_h + cur_h
-                                            cur_h = width * (cur_h // width)
+--                                             cur_h = width * (cur_h // width)
+                                            cur_h = width * (cur_h / width)
                                             cur_h = ref_h - shipbox_h - cur_h
                                         else
                                             cur_h = ref_h - shipbox_h - cur_h
-                                            cur_h = width * (cur_h // width)
+--                                             cur_h = width * (cur_h // width)
+                                            cur_h = width * (cur_h / width)
                                             cur_h = ref_h - shipbox_h - cur_h
                                         end
                                         if cur_h < save_h then
@@ -755,7 +759,8 @@ local hlist_out, vlist_out  do
                                         end
                                     elseif subtype == leaders_code then
                                         local save_h = cur_h
-                                        cur_h = width * (cur_h // width)
+--                                         cur_h = width * (cur_h // width)
+                                        cur_h = width * (cur_h / width)
                                         if cur_h < save_h then
                                             cur_h = cur_h + width
                                         end
@@ -763,37 +768,78 @@ local hlist_out, vlist_out  do
                                         lq = gluewidth / width
                                         lr = gluewidth % width
                                         if subtype == cleaders_code then
-                                            cur_h = cur_h + lr // 2
+--                                             cur_h = cur_h + lr // 2
+                                            cur_h = cur_h + lr / 2
                                         else
-                                            lx = lr // (lq + 1)
-                                            cur_h = cur_h + (lr - (lq - 1) * lx) // 2
+--                                             lx = lr // (lq + 1)
+                                            lx = lr / (lq + 1)
+--                                             cur_h = cur_h + (lr - (lq - 1) * lx) // 2
+                                            cur_h = cur_h + (lr - (lq - 1) * lx) / 2
                                         end
                                     end
-                                    local shift = getshift(leader)
-                                    pushleaderlevel()
-                                    while cur_h + width <= edge do
+                                    if id == glyph_code then
+                                        local char, font = isglyph(leader)
+                                        local x_offset, y_offset, left, right, raise = getoffsets(leader)
+                                        local h = ref_h
+                                        local v = ref_v
+                                        if x_offset ~= 0 or y_offset ~= 0 then
+                                            if pos_r == righttoleft_code then
+                                                h = h - x_offset
+                                            else
+                                                h = h + x_offset
+                                            end
+                                            v = v + y_offset
+                                        end
+                                        v = v + raise
+                                        h = h - left
                                         local basepoint_h = 0
-                                     -- local basepoint_v = shift
                                         if boxdir ~= pos_r then
                                             basepoint_h = boxwidth
                                         end
-                                        -- synch_pos_with_cur(ref_h,ref_v,cur_h + basepoint_h,shift)
                                         if pos_r == righttoleft_code then
-                                            pos_h = ref_h - (cur_h + basepoint_h)
+                                            pos_h = h - basepoint_h
                                         else
-                                            pos_h = ref_h + (cur_h + basepoint_h)
+                                            pos_h = h + basepoint_h
                                         end
-                                        pos_v = ref_v - shift
-                                        -- synced
-                                        if getid(leader) == vlist_code then
-                                            vlist_out(leader,getlist(leader))
-                                        else
-                                            hlist_out(leader,getlist(leader))
+                                        while cur_h + width <= edge do
+                                            if pos_r == righttoleft_code then
+                                                pos_h = h - cur_h
+                                            else
+                                                pos_h = h + cur_h
+                                            end
+                                            pos_v = v
+                                            flush_character(leader,font,char,false,true,pos_h,pos_v,pos_r)
+                                            cur_h = cur_h + width + lx
                                         end
-                                        cur_h = cur_h + width + lx
+                                    else
+                                        local shift  = isglyph and 0 or getshift(leader)
+                                        local boxdir = getdirection(leader) or lefttoright_code
+                                        pushleaderlevel()
+                                        while cur_h + width <= edge do
+                                            -- todo: move some out of loop as above
+                                            local basepoint_h = 0
+                                         -- local basepoint_v = shift
+                                            if boxdir ~= pos_r then
+                                                basepoint_h = boxwidth
+                                            end
+                                            -- synch_pos_with_cur(ref_h,ref_v,cur_h + basepoint_h,shift)
+                                            if pos_r == righttoleft_code then
+                                                pos_h = ref_h - (cur_h + basepoint_h)
+                                            else
+                                                pos_h = ref_h + (cur_h + basepoint_h)
+                                            end
+                                            pos_v = ref_v - shift
+                                            -- synced
+                                            if id == vlist_code then
+                                                vlist_out(leader,getlist(leader))
+                                            else
+                                                hlist_out(leader,getlist(leader))
+                                            end
+                                            cur_h = cur_h + width + lx
+                                        end
+                                        popleaderlevel()
                                     end
-                                    popleaderlevel()
-                                    cur_h = edge - 10
+                                    cur_h = edge - eps
                                 else
                                     cur_h = cur_h + gluewidth
                                 end
