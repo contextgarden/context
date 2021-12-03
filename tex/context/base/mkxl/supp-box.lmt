@@ -757,9 +757,9 @@ end
 implement {
     name    = "lastlinewidth",
     actions = function()
-        local head = tex.lists.page_head
+        local head = tex.lists.pagehead
         -- list dimensions returns 3 value but we take the first
-        context(head and getdimensions(getlist(find_tail(tonut(tex.lists.page_head)))) or 0)
+        context(head and getdimensions(getlist(find_tail(tonut(tex.lists.pagehead)))) or 0)
     end
 }
 

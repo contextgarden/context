@@ -110,7 +110,7 @@ end
 function mathematics.checkaccentbaseheight(target,original)
     local mathparameters = target.mathparameters
     if mathparameters and mathparameters.AccentBaseHeight == 0 then
-        mathparameters.AccentBaseHeight = target.parameters.x_height -- needs checking
+        mathparameters.AccentBaseHeight = target.parameters.xheight -- needs checking
     end
 end
 
@@ -565,11 +565,11 @@ end
 --     local function fix(target,original,targetcharacters,unicode,factor)
 --         local chardata = targetcharacters[unicode]
 --         if chardata and factor then
---             local accent = chardata.top_accent
+--             local accent = chardata.topaccent
 --             if not accent then
 --                 local width  = chardata.width or 0
 --                 local accent = (tonumber(factor) and factor * width) or (factor and minint)
---                 chardata.top_accent = accent
+--                 chardata.topaccent = accent
 --                 if trace_tweaking then
 --                     report_tweak("fixing accent %U",target,original,unicode)
 --                 end
@@ -715,15 +715,15 @@ local function extensiblecode(font,unicode)
     if not char then
         return unknown
     end
-    if character.horiz_variants then
-        if character.vert_variants then
+    if character.hvariants then
+        if character.vvariants then
             return { e_mixed, code, character }
         else
             local m = char.mathextensible
             local e = m and extensibles[m]
             return e and { e, code, character } or unknown
         end
-    elseif character.vert_variants then
+    elseif character.vvariants then
         local m = char.mathextensible
         local e = m and extensibles[m]
         return e and { e, code, character } or unknown
@@ -765,19 +765,19 @@ local function horizontalcode(family,unicode)
     local loffset = 0
     local roffset = 0
     if kind == e_left then
-        local charlist = data[3].horiz_variants
+        local charlist = data[3].hvariants
         if charlist then
             local left = charlist[1]
             loffset = abs((left["start"] or 0) - (left["end"] or 0))
         end
     elseif kind == e_right then
-        local charlist = data[3].horiz_variants
+        local charlist = data[3].hvariants
         if charlist then
             local right = charlist[#charlist]
             roffset = abs((right["start"] or 0) - (right["end"] or 0))
         end
      elseif kind == e_horizontal then
-        local charlist = data[3].horiz_variants
+        local charlist = data[3].hvariants
         if charlist then
             local left  = charlist[1]
             local right = charlist[#charlist]

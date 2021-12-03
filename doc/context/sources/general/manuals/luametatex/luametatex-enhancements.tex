@@ -68,7 +68,7 @@ still going for this new engine are:
 \startitemize[packed]
 \startitem
     some new primitives make for less tracing and tracing has become rather
-    verbose over years (just try \prm {tracingall}); examples are the new macro
+    verbose over years (just try \type {tracingall}); examples are the new macro
     argument handling and some new hooks
 \stopitem
 \startitem
@@ -318,16 +318,18 @@ marks is limited. The size of some tables can be limited by configuration
 settings, so they can start out small and grow till configured maximum which is
 smaller than the absolute maximum.
 
-The following table shows all kind of defaults as reported by \typ
-{status.getconstants()}.
-
-\startluacode
-    context.starttabulate { "|T|r|" }
-    for k, v in table.sortedhash(status.getconstants()) do
-        context.NC() context(k) context.NC() context(v) context.NC() context.NR()
-    end
-    context.stoptabulate()
-\stopluacode
+% % We show this later on so not here.
+%
+% The following table shows all kind of defaults as reported by \typ
+% {status.getconstants()}.
+%
+% \startluacode
+%     context.starttabulate { "|T|r|" }
+%     for k, v in table.sortedhash(status.getconstants()) do
+%         context.NC() context(k) context.NC() context(v) context.NC() context.NR()
+%     end
+%     context.stoptabulate()
+% \stopluacode
 
 Because we have additional ways to store integers, dimensions and glue, we might
 actually decide to decrease the maximum of the registers: if 64K is not enough,

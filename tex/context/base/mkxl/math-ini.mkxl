@@ -65,7 +65,7 @@
 % test $[[\char948 \cldcontext{utf.char(948)}]]$
 
 \registerctxluafile{math-ini}{autosuffix}
-\registerctxluafile{math-dim}{}
+\registerctxluafile{math-dim}{autosuffix}
 \registerctxluafile{math-act}{autosuffix}
 \registerctxluafile{math-ext}{}
 \registerctxluafile{math-vfu}{autosuffix}

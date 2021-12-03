@@ -1410,7 +1410,8 @@ do
         return timestamp
     end
 
-    lpdf.settime(tonumber(resolvers.variable("start_time")) or tonumber(resolvers.variable("SOURCE_DATE_EPOCH"))) -- bah
+ -- lpdf.settime(tonumber(resolvers.variable("starttime")) or tonumber(resolvers.variable("SOURCE_DATE_EPOCH"))) -- bah
+    lpdf.settime(tonumber(resolvers.variable("starttime")))
 
     function lpdf.pdftimestamp(str)
         local t = type(str)

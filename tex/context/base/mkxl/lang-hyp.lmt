@@ -1645,7 +1645,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
 
     function hyphenators.handler(head,groupcode)
         if usedmethod then
-            if optimize and (groupcode == "hbox" or groupcode == "adjusted_hbox") then
+            if optimize and (groupcode == "hbox" or groupcode == "adjustedhbox") then
                 if getcount("hyphenstate") > 0 then
                     forced = false
                     return usedmethod(head)

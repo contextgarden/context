@@ -8,14 +8,15 @@
 
 \startsection[title={Introduction}]
 
-Only traditional font support is built in, anything more needs to be implemented
-in \LUA. This conforms to the \LUATEX\ philosophy. When you pass a font to the
-frontend only the dimensions matter, as these are used in typesetting, and
-optionally ligatures and kerns when you rely on the built|-|in font handler. For
-math some extra data is needed, like information about extensibles and next in
-size glyphs. You can of course put more information in your \LUA\ tables because
-when such a table is passed to \TEX\ only that what is needed is filtered from
-it.
+The traditional \TEX\ ligature and kerning routines are build in but anything
+more (like \OPENTYPE\ rendering) has to be implemented in \LUA. In \CONTEXT\ we
+call the former base mode and the later node mode (we have some more modes). This
+conforms to the \LUATEX\ philosophy. When you pass a font to the frontend only
+the dimensions matter, as these are used in typesetting, and optionally ligatures
+and kerns when you rely on the built|-|in font handler. For math some extra data
+is needed, like information about extensibles and next in size glyphs. You can of
+course put more information in your \LUA\ tables because when such a table is
+passed to \TEX\ only that what is needed is filtered from it.
 
 Because there is no built|-|in backend, virtual font information is not used. If
 you want to be compatible you'd better make sure that your tables are okay, and
@@ -81,13 +82,13 @@ The names and their internal remapping are:
 \starttabulate[|l|c|]
 \DB name                  \BC remapping \NC \NR
 \TB
-\NC \type {slant}         \NC 1 \NC \NR
-\NC \type {space}         \NC 2 \NC \NR
-\NC \type {space_stretch} \NC 3 \NC \NR
-\NC \type {space_shrink}  \NC 4 \NC \NR
-\NC \type {x_height}      \NC 5 \NC \NR
-\NC \type {quad}          \NC 6 \NC \NR
-\NC \type {extra_space}   \NC 7 \NC \NR
+\NC \type {slant}        \NC 1 \NC \NR
+\NC \type {space}        \NC 2 \NC \NR
+\NC \type {spacestretch} \NC 3 \NC \NR
+\NC \type {spaceshrink}  \NC 4 \NC \NR
+\NC \type {xheight}      \NC 5 \NC \NR
+\NC \type {quad}         \NC 6 \NC \NR
+\NC \type {extraspace}   \NC 7 \NC \NR
 \LL
 \stoptabulate
 
@@ -107,25 +108,25 @@ that uses the engine, and node mode that uses \LUA. A monospaced font normally
 has no ligatures and kerns and is normally not processed at all.
 
 \starttabulate[|l|l|pl|]
-\DB key                      \BC type    \BC description \NC\NR
+\DB key                     \BC type    \BC description \NC\NR
 \TB
-\NC \type {width}            \NC number  \NC width in sp (default 0) \NC\NR
-\NC \type {height}           \NC number  \NC height in sp (default 0) \NC\NR
-\NC \type {depth}            \NC number  \NC depth in sp (default 0) \NC\NR
-\NC \type {italic}           \NC number  \NC italic correction in sp (default 0) \NC\NR
-\NC \type {top_accent}       \NC number  \NC top accent alignment place in sp (default zero) \NC\NR
-\NC \type {bot_accent}       \NC number  \NC bottom accent alignment place, in sp (default zero) \NC\NR
-\NC \type {left_protruding}  \NC number  \NC left protruding factor (\prm {lpcode}) \NC\NR
-\NC \type {right_protruding} \NC number  \NC right protruding factor (\prm {rpcode}) \NC\NR
-\NC \type {expansion_factor} \NC number  \NC expansion factor (\prm {efcode}) \NC\NR
-\NC \type {next}             \NC number  \NC \quote {next larger} character index \NC\NR
-\NC \type {extensible}       \NC table   \NC constituent parts of an extensible recipe \NC\NR
-\NC \type {vert_variants}    \NC table   \NC constituent parts of a vertical variant set \NC \NR
-\NC \type {horiz_variants}   \NC table   \NC constituent parts of a horizontal variant set \NC \NR
-\NC \type {kerns}            \NC table   \NC kerning information \NC\NR
-\NC \type {ligatures}        \NC table   \NC ligaturing information \NC\NR
-\NC \type {mathkern}         \NC table   \NC math cut-in specifications \NC\NR
-\NC \type {smaller}          \NC number  \NC the next smaller math size character \NC\NR
+\NC \type {width}           \NC number  \NC width in sp (default 0) \NC\NR
+\NC \type {height}          \NC number  \NC height in sp (default 0) \NC\NR
+\NC \type {depth}           \NC number  \NC depth in sp (default 0) \NC\NR
+\NC \type {italic}          \NC number  \NC italic correction in sp (default 0) \NC\NR
+\NC \type {topaccent}       \NC number  \NC top accent alignment place in sp (default zero) \NC\NR
+\NC \type {botaccent}       \NC number  \NC bottom accent alignment place, in sp (default zero) \NC\NR
+\NC \type {leftprotruding}  \NC number  \NC left protruding factor (\prm {lpcode}) \NC\NR
+\NC \type {rightprotruding} \NC number  \NC right protruding factor (\prm {rpcode}) \NC\NR
+\NC \type {expansion}       \NC number  \NC expansion factor (\prm {efcode}) \NC\NR
+\NC \type {next}            \NC number  \NC \quote {next larger} character index \NC\NR
+\NC \type {extensible}      \NC table   \NC constituent parts of an extensible recipe \NC\NR
+\NC \type {vvariants}       \NC table   \NC constituent parts of a vertical variant set \NC \NR
+\NC \type {hvariants}       \NC table   \NC constituent parts of a horizontal variant set \NC \NR
+\NC \type {kerns}           \NC table   \NC kerning information \NC\NR
+\NC \type {ligatures}       \NC table   \NC ligaturing information \NC\NR
+\NC \type {mathkern}        \NC table   \NC math cut-in specifications \NC\NR
+\NC \type {smaller}         \NC number  \NC the next smaller math size character \NC\NR
 \LL
 \stoptabulate
 
@@ -153,23 +154,23 @@ For example, here is the character \quote {f} (decimal 102) in the font \type
 }
 \stoptyping
 
-Two very special string indexes can be used also: \type {left_boundary} is a
+Two very special string indexes can be used also: \type {leftboundary} is a
 virtual character whose ligatures and kerns are used to handle word boundary
-processing. \type {right_boundary} is similar but not actually used for anything
+processing. \type {rightboundary} is similar but not actually used for anything
 (yet).
 
-The values of \type {top_accent}, \type {bot_accent} and \type {mathkern} are
-used only for math accent and superscript placement, see \at {page} [math] in
-this manual for details. The values of \type {left_protruding} and \type
-{right_protruding} are used only when \prm {protrudechars} is non-zero. Whether
-or not \type {expansion_factor} is used depends on the font's global expansion
-settings, as well as on the value of \prm {adjustspacing}.
+The values of \type {topaccent}, \type {botaccent} and \type {mathkern} are used
+only for math accent and superscript placement, see \at {page} [math] in this
+manual for details. The values of \type {leftprotrusion} and \type
+{rightprotrusion} are used only when \prm {protrudechars} is non-zero. Whether or
+not \type {expansion} is used depends on the font's global expansion settings, as
+well as on the value of \prm {adjustspacing}.
 
 A math character can have a \type {next} field that points to a next larger
 shape. However, the presence of \type {extensible} will overrule \type {next}, if
 that is also present. The \type {extensible} field in turn can be overruled by
-\type {vert_variants}, the \OPENTYPE\ version. The \type {extensible} table is
-very simple:
+\type {vvariants}, the \OPENTYPE\ version. The \type {extensible} table is very
+simple:
 
 \starttabulate[|l|l|p|]
 \DB key        \BC type   \BC description                \NC\NR
@@ -181,8 +182,8 @@ very simple:
 \LL
 \stoptabulate
 
-The \type {horiz_variants} and \type {vert_variants} are arrays of components.
-Each of those components is itself a hash of up to five keys:
+The \type {hvariants} and \type {vvariants} are arrays of components. Each of
+those components is itself a hash of up to five keys:
 
 \starttabulate[|l|l|p|]
 \DB key             \BC type   \BC explanation \NC \NR
@@ -199,12 +200,12 @@ Each of those components is itself a hash of up to five keys:
 
 The \type {kerns} table is a hash indexed by character index (and \quote
 {character index} is defined as either a non|-|negative integer or the string
-value \type {right_boundary}), with the values of the kerning to be applied, in
+value \type {rightboundary}), with the values of the kerning to be applied, in
 scaled points.
 
 The \type {ligatures} table is a hash indexed by character index (and \quote
 {character index} is defined as either a non|-|negative integer or the string
-value \type {right_boundary}), with the values being yet another small hash, with
+value \type {rightboundary}), with the values being yet another small hash, with
 two fields:
 
 \starttabulate[|l|l|p|]
@@ -366,7 +367,7 @@ ever seen in the engine.
 \NC \type{lua}     \NC 1         \NC string,
                                      function  \NC execute a \LUA\ script when the glyph is embedded; in case of a
                                                    function it gets the font id and character code passed \NC \NR
-\NC \type{image}   \NC 1         \NC image     \NC output an image (the argument can be either an \type {<image>} variable or an \type {image_spec} table) \NC \NR
+\NC \type{image}   \NC 1         \NC image     \NC depends on the backend \NC \NR
 \NC \type{comment} \NC any       \NC any       \NC the arguments of this command are ignored \NC \NR
 \LL
 \stoptabulate

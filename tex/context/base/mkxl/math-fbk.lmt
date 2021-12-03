@@ -297,10 +297,10 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
                 break
             end
         end
-        local hv = olddata.horiz_variants
+        local hv = olddata.hvariants
         if hv then
             hv = fastcopy(hv)
-            newdata.horiz_variants = hv
+            newdata.hvariants = hv
             for i=1,#hv do
                 local hvi = hv[i]
                 local oldglyph = hvi.glyph
@@ -314,7 +314,7 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
                     }
                     hvi.glyph = addprivate(target,formatters["M-H-%H"](oldglyph),newdata)
                 else
-                    report_fallbacks("error in fallback: no valid horiz_variants, slot %X, index %i",oldglyph,i)
+                    report_fallbacks("error in fallback: no valid hvariants, slot %X, index %i",oldglyph,i)
                 end
             end
         end
@@ -393,7 +393,7 @@ local function smashed(data,unicode,private)
     local height = target.parameters.xheight / 2
     local c, done = accent_to_extensible(target,private,data.original,unicode,height,0,nil,-height,unicode)
     if done then
-        c.top_accent = nil -- or maybe also all the others
+        c.topaccent = nil -- or maybe also all the others
     end
     return c
 end
@@ -717,7 +717,7 @@ virtualcharacters[0x305] = function(data)
         height   = height,
         depth    = depth,
         commands = { { "rule", height, width } },
-        horiz_variants = {
+        hvariants = {
             {
               advance   = width,
               ["end"]   = used,

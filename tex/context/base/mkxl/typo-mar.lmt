@@ -806,7 +806,7 @@ local function flushed(scope,parent) -- current is hlist
     return done, continue
 end
 
--- only when group   : vbox|vmode_par
+-- only when group   : vbox|vmodepar
 -- only when subtype : line, box (no indent alignment cell)
 
 local function handler(scope,head,group)
@@ -884,9 +884,9 @@ function margins.globalhandler(head,group) -- check group
             report_margindata("ignored 1, group %a, stored %s, inhibit %a",group,nofstored,inhibit)
         end
         return head
-    elseif group == "hmode_par" then
+    elseif group == "hmodepar" then
         return handler(v_global,head,group)
-    elseif group == "vmode_par" then              -- experiment (for alignments)
+    elseif group == "vmodepar" then              -- experiment (for alignments)
         return handler(v_global,head,group)
      -- this needs checking as we then get quite some one liners to process and
      -- we cannot look ahead then:

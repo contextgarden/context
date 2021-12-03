@@ -18,7 +18,7 @@
 %D down the road (close to version 1.00 of \LUATEX). Typesetting in
 %D pure \LUA\ sometimes makes sense.
 
-\registerctxluafile{node-typ}{} % experimental
+\registerctxluafile{node-typ}{autosuffix} % experimental
 \registerctxluafile{blob-ini}{autosuffix}
 
 \unprotect

@@ -361,10 +361,10 @@ implement {
 --     usage   = "value",
 --     actions = function()
 --         local result = 0
---         if nodes.nuts.getspeciallist("contribute_head") then
+--         if nodes.nuts.getspeciallist("contributehead") then
 --             result = result | 1
 --         end
---         if nodes.nuts.getspeciallist("page_head") then
+--         if nodes.nuts.getspeciallist("pagehead") then
 --             result = result | 2
 --         end
 --         return tokens.values.integer, result

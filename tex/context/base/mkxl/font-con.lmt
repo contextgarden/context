@@ -161,17 +161,17 @@ function constructors.trytosharefont(target,tfmdata)
 end
 
 local synonyms = {
-    exheight      = "x_height",
-    xheight       = "x_height",
-    ex            = "x_height",
+    exheight      = "xheight",
+    xheight       = "xheight",
+    ex            = "xheight",
     emwidth       = "quad",
     em            = "quad",
-    spacestretch  = "space_stretch",
-    stretch       = "space_stretch",
-    spaceshrink   = "space_shrink",
-    shrink        = "space_shrink",
-    extraspace    = "extra_space",
-    xspace        = "extra_space",
+    spacestretch  = "spacestretch",
+    stretch       = "spacestretch",
+    spaceshrink   = "spaceshrink",
+    shrink        = "spaceshrink",
+    extraspace    = "extraspace",
+    xspace        = "extraspace",
     slantperpoint = "slant",
 }
 
@@ -188,9 +188,9 @@ function constructors.enhanceparameters(parameters)
         if k == "spacing" then
             return {
                 width   = t.space,
-                stretch = t.space_stretch,
-                shrink  = t.space_shrink,
-                extra   = t.extra_space,
+                stretch = t.spacestretch,
+                shrink  = t.spaceshrink,
+                extra   = t.extraspace,
             }
         end
         return mt and mt[k] or nil
@@ -205,9 +205,9 @@ function constructors.enhanceparameters(parameters)
         elseif k == "spacing" then
             if type(v) == "table" then
                 rawset(t,"space",v.width or 0)
-                rawset(t,"space_stretch",v.stretch or 0)
-                rawset(t,"space_shrink",v.shrink or 0)
-                rawset(t,"extra_space",v.extra or 0)
+                rawset(t,"spacestretch",v.stretch or 0)
+                rawset(t,"spaceshrink",v.shrink or 0)
+                rawset(t,"extraspace",v.extra or 0)
             end
         else
             rawset(t,k,v)
@@ -437,21 +437,21 @@ function constructors.scale(tfmdata,specification)
     --
     target.postprocessors = tfmdata.postprocessors
     --
-    local targetslant         = (parameters.slant         or parameters[1] or 0) * factors.pt -- per point
-    local targetspace         = (parameters.space         or parameters[2] or 0) * hdelta
-    local targetspace_stretch = (parameters.space_stretch or parameters[3] or 0) * hdelta
-    local targetspace_shrink  = (parameters.space_shrink  or parameters[4] or 0) * hdelta
-    local targetx_height      = (parameters.x_height      or parameters[5] or 0) * vdelta
-    local targetquad          = (parameters.quad          or parameters[6] or 0) * hdelta
-    local targetextra_space   = (parameters.extra_space   or parameters[7] or 0) * hdelta
+    local targetslant        = (parameters.slant        or parameters[1] or 0) * factors.pt -- per point
+    local targetspace        = (parameters.space        or parameters[2] or 0) * hdelta
+    local targetspacestretch = (parameters.spacestretch or parameters[3] or 0) * hdelta
+    local targetspaceshrink  = (parameters.spaceshrink  or parameters[4] or 0) * hdelta
+    local targetxheight      = (parameters.xheight      or parameters[5] or 0) * vdelta
+    local targetquad         = (parameters.quad         or parameters[6] or 0) * hdelta
+    local targetextraspace   = (parameters.extraspace   or parameters[7] or 0) * hdelta
     --
-    targetparameters.slant         = targetslant -- slantperpoint
-    targetparameters.space         = targetspace
-    targetparameters.space_stretch = targetspace_stretch
-    targetparameters.space_shrink  = targetspace_shrink
-    targetparameters.x_height      = targetx_height
-    targetparameters.quad          = targetquad
-    targetparameters.extra_space   = targetextra_space
+    targetparameters.slant        = targetslant -- slantperpoint
+    targetparameters.space        = targetspace
+    targetparameters.spacestretch = targetspacestretch
+    targetparameters.spaceshrink  = targetspaceshrink
+    targetparameters.xheight      = targetxheight
+    targetparameters.quad         = targetquad
+    targetparameters.extraspace   = targetextraspace
     --
     local hshift = parameters.hshift
     if hshift then
@@ -653,17 +653,17 @@ function constructors.scale(tfmdata,specification)
         end
         if hasquality then
             -- we could move these calculations elsewhere (saves calculations)
-            local ve = character.expansion_factor
+            local ve = character.expansion
             if ve then
-                chr.expansion_factor = ve*1000 -- expansionfactor, hm, can happen elsewhere
+                chr.expansion = ve*1000 -- expansionfactor, hm, can happen elsewhere
             end
-            local vl = character.left_protruding
+            local vl = character.leftprotrusion
             if vl then
-                chr.left_protruding  = width*vl
+                chr.leftprotrusion = width*vl
             end
-            local vr = character.right_protruding
+            local vr = character.rightprotrusion
             if vr then
-                chr.right_protruding  = width*vr
+                chr.rightprotrusion = width*vr
             end
         end
         --
@@ -674,7 +674,7 @@ function constructors.scale(tfmdata,specification)
             if vn then
                 chr.next = vn
             else
-                local vv = character.vert_variants
+                local vv = character.vvariants
                 if vv then
                     local t = { }
                     for i=1,#vv do
@@ -690,9 +690,9 @@ function constructors.scale(tfmdata,specification)
                             ["glyph"]    = vvi["glyph"],
                         }
                     end
-                    chr.vert_variants = t
+                    chr.vvariants = t
                 else
-                    local hv = character.horiz_variants
+                    local hv = character.hvariants
                     if hv then
                         local t = { }
                         for i=1,#hv do
@@ -708,18 +708,18 @@ function constructors.scale(tfmdata,specification)
                                 ["glyph"]    = hvi["glyph"],
                             }
                         end
-                        chr.horiz_variants = t
+                        chr.hvariants = t
                     end
                 end
                 -- todo also check mathitalics (or that one can go away)
             end
-            local vi = character.vert_italic
+            local vi = character.vitalic
             if vi and vi ~= 0 then
-                chr.vert_italic = vi*hdelta
+                chr.vitalic = vi*hdelta
             end
             local va = character.accent
             if va then
-                chr.top_accent = vdelta*va
+                chr.topaccent = vdelta*va
             end
             if stackmath then
                 local mk = character.mathkerns
@@ -729,10 +729,10 @@ function constructors.scale(tfmdata,specification)
                     local br = mk.bottomright
                     local bl = mk.bottomleft
                     chr.mathkern = { -- singular -> should be patched in luatex !
-                        top_right    = tr and mathkerns(tr,vdelta) or nil,
-                        top_left     = tl and mathkerns(tl,vdelta) or nil,
-                        bottom_right = br and mathkerns(br,vdelta) or nil,
-                        bottom_left  = bl and mathkerns(bl,vdelta) or nil,
+                        topright    = tr and mathkerns(tr,vdelta) or nil,
+                        topleft     = tl and mathkerns(tl,vdelta) or nil,
+                        bottomright = br and mathkerns(br,vdelta) or nil,
+                        bottomleft  = bl and mathkerns(bl,vdelta) or nil,
                     }
                 end
             end

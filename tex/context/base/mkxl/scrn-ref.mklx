@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Screen Macros / References}
 
-\registerctxluafile{scrn-ref}{}
+\registerctxluafile{scrn-ref}{autosuffix}
 
 \unprotect
 

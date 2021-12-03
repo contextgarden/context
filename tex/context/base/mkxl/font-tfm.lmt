@@ -1,0 +1,666 @@
+if not modules then modules = { } end modules ['font-tfm'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+if not context then return end -- use luatex-fonts-tfm.lua instead
+
+local next, type = next, type
+local match, format = string.match, string.format
+local concat, sortedhash = table.concat, table.sortedhash
+local idiv = number.idiv
+
+local trace_defining           = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
+local trace_features           = false  trackers.register("tfm.features",   function(v) trace_features = v end)
+
+local report_defining          = logs.reporter("fonts","defining")
+local report_tfm               = logs.reporter("fonts","tfm loading")
+
+local findbinfile              = resolvers.findbinfile
+local setmetatableindex        = table.setmetatableindex
+
+local fonts                    = fonts
+local handlers                 = fonts.handlers
+local helpers                  = fonts.helpers
+local readers                  = fonts.readers
+local constructors             = fonts.constructors
+local encodings                = fonts.encodings
+
+local tfm                      = constructors.handlers.tfm
+tfm.version                    = 1.000
+tfm.maxnestingdepth            = 5
+tfm.maxnestingsize             = 65536*1024
+
+local otf                      = fonts.handlers.otf
+local otfenhancers             = otf.enhancers
+
+local tfmfeatures              = constructors.features.tfm
+local registertfmfeature       = tfmfeatures.register
+
+local tfmenhancers             = constructors.enhancers.tfm
+local registertfmenhancer      = tfmenhancers.register
+
+local charcommand              = helpers.commands.char
+
+constructors.resolvevirtualtoo = false -- wil be set in font-ctx.lua
+
+fonts.formats.tfm              = "type1" -- we need to have at least a value here
+fonts.formats.ofm              = "type1" -- we need to have at least a value here
+
+--[[ldx--
+<p>The next function encapsulates the standard <l n='tfm'/> loader as
+supplied by <l n='luatex'/>.</p>
+--ldx]]--
+
+-- this might change: not scaling and then apply features and do scaling in the
+-- usual way with dummy descriptions but on the other hand .. we no longer use
+-- tfm so why bother
+
+-- ofm directive blocks local path search unless set; btw, in context we
+-- don't support ofm files anyway as this format is obsolete
+
+-- we need to deal with nested virtual fonts, but because we load in the
+-- frontend we also need to make sure we don't nest too deep (esp when sizes
+-- get large)
+--
+-- (VTITLE Example of a recursion)
+-- (MAPFONT D 0 (FONTNAME recurse)(FONTAT D 2))
+-- (CHARACTER C A (CHARWD D 1)(CHARHT D 1)(MAP (SETRULE D 1 D 1)))
+-- (CHARACTER C B (CHARWD D 2)(CHARHT D 2)(MAP (SETCHAR C A)))
+-- (CHARACTER C C (CHARWD D 4)(CHARHT D 4)(MAP (SETCHAR C B)))
+--
+-- we added the same checks as below to the luatex engine
+
+function tfm.setfeatures(tfmdata,features)
+    local okay = constructors.initializefeatures("tfm",tfmdata,features,trace_features,report_tfm)
+    if okay then
+        return constructors.collectprocessors("tfm",tfmdata,features,trace_features,report_tfm)
+    else
+        return { } -- will become false
+    end
+end
+
+local depth = { } -- table.setmetatableindex("number")
+
+-- Normally we just load the tfm data and go on. However there was some demand for
+-- loading good old tfm /pfb files where afm files were lacking and even enc files
+-- of dubious quality so we now support loading such (often messy) setups too.
+--
+-- Because such fonts also use (ugly) tweaks achieve some purpose (like swapping
+-- accents) we need to delay the unicoding actions till after the features have been
+-- applied.
+--
+-- It must be noted that in ConTeXt we don't expect this to be used at all. Here is
+-- example:
+--
+--   tfm metrics + pfb vector for index + pfb file for shapes
+--
+--   \font\foo=file:csr10.tfm:reencode=auto;mode=node;liga=yes;kern=yes
+--
+--   tfm metrics + pfb vector for index + enc file for tfm mapping + pfb file for shapes
+--
+--   \font\foo=file:csr10.tfm:reencode=csr.enc;mode=node;liga=yes;kern=yes
+--
+--   tfm metrics + enc file for mapping to tfm + bitmaps shapes
+--
+--   \font\foo=file:csr10.tfm:reencode=csr.enc;bitmap=yes;mode=node;liga=yes;kern=yes
+--
+-- One can add features:
+--
+--  fonts.handlers.otf.addfeature {
+--      name = "czechdqcheat",
+--      type = "substitution",
+--      data = {
+--          quotedblright = "csquotedblright",
+--      },
+--  }
+--
+-- So "czechdqcheat=yes" is then a valid feature. And yes, it's a cheat.
+
+local loadtfmvf = tfm.readers.loadtfmvf
+
+local function read_from_tfm(specification)
+    local filename  = specification.filename
+    local size      = specification.size
+    depth[filename] = (depth[filename] or 0) + 1
+    if trace_defining then
+        report_defining("loading tfm file %a at size %s",filename,size)
+    end
+    local tfmdata = loadtfmvf(filename,size)
+    if tfmdata then
+
+        local features = specification.features and specification.features.normal or { }
+        local features = constructors.checkedfeatures("tfm",features)
+        specification.features.normal = features
+
+        -- If reencode returns a new table, we assume that we're doing something
+        -- special. An 'auto' reencode picks up its vector from the pfb file.
+
+        local getmapentry = fonts.mappings.getentry
+
+        if getmapentry and not features.reencode then
+            -- This can happen multiple times but not that often so we don't
+            -- optimize this.
+            local encoding, pfbfile, encfile = getmapentry(filename)
+            if encoding and pfbfile then
+                features.reencode = encfile
+                features.pfbfile  = pfbfile
+            end
+        end
+        local newtfmdata = (depth[filename] == 1) and tfm.reencode(tfmdata,specification)
+        if newtfmdata then
+             tfmdata = newtfmdata
+        end
+
+        local resources  = tfmdata.resources  or { }
+        local properties = tfmdata.properties or { }
+        local parameters = tfmdata.parameters or { }
+        local shared     = tfmdata.shared     or { }
+        --
+        shared.features  = features
+        shared.resources = resources
+        --
+        properties.id         = specification.id
+        properties.name       = tfmdata.name           -- todo: fallback
+        properties.fontname   = tfmdata.fontname       -- todo: fallback
+        properties.psname     = tfmdata.psname         -- todo: fallback
+        properties.fullname   = tfmdata.fullname       -- todo: fallback
+        properties.filename   = specification.filename -- todo: fallback
+        properties.format     = tfmdata.format or fonts.formats.tfm -- better than nothing
+        properties.usedbitmap = tfmdata.usedbitmap
+        --
+        if getmapentry and newtfmdata then
+            properties.filename = features.pfbfile
+        end
+        --
+        tfmdata.properties = properties
+        tfmdata.resources  = resources
+        tfmdata.parameters = parameters
+        tfmdata.shared     = shared
+        --
+        shared.rawdata  = { resources = resources }
+        shared.features = features
+        --
+        -- The next branch is only entered when we have a proper encoded file i.e.
+        -- unicodes and such. It really nakes no sense to do feature juggling when
+        -- we have no names and unicodes.
+        --
+        if newtfmdata then
+            --
+            -- Some opentype processing assumes these to be present:
+            --
+            if not resources.marks then
+                resources.marks = { }
+            end
+            if not resources.sequences then
+                resources.sequences = { }
+            end
+            if not resources.features then
+                resources.features = {
+                    gsub = { },
+                    gpos = { },
+                }
+            end
+            if not tfmdata.changed then
+                tfmdata.changed = { }
+            end
+            if not tfmdata.descriptions then
+                tfmdata.descriptions = tfmdata.characters
+            end
+            --
+            -- It might be handy to have this:
+            --
+            otf.readers.addunicodetable(tfmdata)
+            --
+            -- We make a pseudo opentype font, e.g. kerns and ligatures etc:
+            --
+            tfmenhancers.apply(tfmdata,filename)
+            --
+            -- Now user stuff can kick in.
+            --
+            constructors.applymanipulators("tfm",tfmdata,features,trace_features,report_tfm)
+            --
+            -- As that can also mess with names and such, we are now ready for finalizing
+            -- the unicode information. This is a different order that for instance type one
+            -- (afm) files. First we try to deduce unicodes from already present information.
+            --
+            otf.readers.unifymissing(tfmdata)
+            --
+            -- Next we fill in the gaps, based on names from teh agl. Probably not much will
+            -- happen here.
+            --
+            fonts.mappings.addtounicode(tfmdata,filename)
+            --
+            -- The tounicode data is passed to the backend that constructs the vectors for us.
+            --
+if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
+           tfmdata.tounicode = 1
+end
+            local tounicode = fonts.mappings.tounicode
+            for unicode, v in next, tfmdata.characters do
+                local u = v.unicode
+                if u then
+                    v.tounicode = tounicode(u)
+                end
+            end
+            --
+            -- However, when we use a bitmap font those vectors can't be constructed because
+            -- that information is not carried with those fonts (there is no name info, nor
+            -- proper index info, nor unicodes at that end). So, we provide it ourselves.
+            --
+            if tfmdata.usedbitmap then
+                tfm.addtounicode(tfmdata)
+            end
+        end
+        --
+        shared.processes = next(features) and tfm.setfeatures(tfmdata,features) or nil
+        --
+        if size < 0 then
+            size = idiv(65536 * -size,100)
+        end
+
+        parameters.factor       = 1     -- already scaled
+        parameters.units        = 1000  -- just in case
+        parameters.size         = size
+        parameters.slant        = parameters.slant         or parameters[1] or 0
+        parameters.space        = parameters.space         or parameters[2] or 0
+        parameters.spacestretch = parameters.spacestretch  or parameters[3] or 0
+        parameters.spaceshrink  = parameters.spaceshrink   or parameters[4] or 0
+        parameters.xheight      = parameters.xheight       or parameters[5] or 0
+        parameters.quad         = parameters.quad          or parameters[6] or 0
+        parameters.extraspace   = parameters.extraspace    or parameters[7] or 0
+        --
+        constructors.enhanceparameters(parameters) -- official copies for us
+        --
+        properties.private       =  properties.private or tfmdata.private or privateoffset
+        --
+        if newtfmdata then
+            --
+            -- We do nothing as we assume flat tfm files. It would become real messy
+            -- otherwise and I don't have something for testing on my system anyway.
+            --
+        else
+            -- already loaded
+            local fonts = tfmdata.fonts
+            if fonts then
+                for i=1,#fonts do
+                    local font = fonts[i]
+                    local id   = font.id
+                    if not id then
+                        local name = font.name
+                        local size = font.size
+                        if name and size then
+                            local data, id = constructors.readanddefine(name,size)
+                            if id then
+                                font.id   = id
+                                font.name = nil
+                                font.size = nil
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        --
+        properties.haskerns     = true
+        properties.hasligatures = true
+        properties.hasitalics   = true
+        resources.unicodes      = { }
+        resources.lookuptags    = { }
+        --
+        depth[filename] = depth[filename] - 1
+        --
+        return tfmdata
+    else
+        depth[filename] = depth[filename] - 1
+    end
+end
+
+local function check_tfm(specification,fullname) -- we could split up like afm/otf
+    local foundname = findbinfile(fullname, 'tfm') or ""
+    if foundname == "" then
+        foundname = findbinfile(fullname, 'ofm') or "" -- not needed in context
+    end
+    if foundname == "" then
+        foundname = fonts.names.getfilename(fullname,"tfm") or ""
+    end
+    if foundname ~= "" then
+        specification.filename = foundname
+        specification.format   = "ofm"
+        return read_from_tfm(specification)
+    elseif trace_defining then
+        report_defining("loading tfm with name %a fails",specification.name)
+    end
+end
+
+readers.check_tfm = check_tfm
+
+function readers.tfm(specification)
+    local fullname = specification.filename or ""
+    if fullname == "" then
+        local forced = specification.forced or ""
+        if forced ~= "" then
+            fullname = specification.name .. "." .. forced
+        else
+            fullname = specification.name
+        end
+    end
+    return check_tfm(specification,fullname)
+end
+
+readers.ofm = readers.tfm
+
+-- The reencoding acts upon the 'reencode' feature which can have values 'auto' or
+-- an enc file. You can also specify a 'pfbfile' feature (but it defaults to the
+-- tfm filename) and a 'bitmap' feature. When no enc file is givven (auto) we will
+-- get the vectors from the pfb file.
+
+do
+
+    local outfiles = { }
+
+    local tfmcache = table.setmetatableindex(function(t,tfmdata)
+        local id = font.define(tfmdata)
+        t[tfmdata] = id
+        return id
+    end)
+
+    local encdone  = table.setmetatableindex("table")
+
+    function tfm.reencode(tfmdata,specification)
+
+        local features = specification.features
+
+        if not features then
+            return
+        end
+
+        local features = features.normal
+
+        if not features then
+            return
+        end
+
+        local tfmfile = file.basename(tfmdata.name)
+        local encfile = features.reencode -- or features.enc
+        local pfbfile = features.pfbfile  -- or features.pfb
+        local bitmap  = features.bitmap   -- or features.pk
+
+        if not encfile then
+            return
+        end
+
+        local pfbfile = pfbfile or outfiles[tfmfile]
+
+        if pfbfile == nil then
+            if bitmap then
+                pfbfile = false
+            elseif type(pfbfile) ~= "string" then
+                pfbfile = tfmfile
+            end
+            if type(pfbfile) == "string" then
+                pfbfile = file.addsuffix(pfbfile,"pfb")
+             -- pdf.mapline(tfmfile .. "<" .. pfbfile)
+                report_tfm("using type1 shapes from %a for %a",pfbfile,tfmfile)
+            else
+                report_tfm("using bitmap shapes for %a",tfmfile)
+                pfbfile = false -- use bitmap
+            end
+            outfiles[tfmfile] = pfbfile
+        end
+
+        local encoding = false
+        local vector   = false
+        if type(pfbfile) == "string" then
+            local pfb = constructors.handlers.pfb
+            if pfb and pfb.loadvector then
+                local v, e = pfb.loadvector(pfbfile)
+                if v then
+                    vector = v
+                end
+                if e then
+                    encoding = e
+                end
+            end
+        end
+        if type(encfile) == "string" and encfile ~= "auto" then
+            encoding = fonts.encodings.load(file.addsuffix(encfile,"enc"))
+            if encoding then
+                encoding = encoding.vector
+            end
+        end
+        if not encoding then
+            report_tfm("bad encoding for %a, quitting",tfmfile)
+            return
+        end
+
+        local unicoding  = fonts.encodings.agl and fonts.encodings.agl.unicodes
+        local virtualid  = tfmcache[tfmdata]
+        local tfmdata    = table.copy(tfmdata) -- good enough for small fonts
+        local characters = { }
+        local originals  = tfmdata.characters
+        local indices    = { }
+        local parentfont = { "font", 1 } -- can be zero (self referencing)
+        local private    = tfmdata.privateoffset or constructors.privateoffset
+        local reported   = encdone[tfmfile][encfile] -- bah, encdone for tfm or pfb ?
+        -- create characters table
+
+        -- vector   : pfbindex -> name
+        -- encoding : tfmindex -> name
+
+        -- we store the order also because some tex encodings (see math-vfu) needs
+        -- that for remapping with non standard glyphs names cq. lack of unicode
+        -- slot information
+
+        for k, v in next, originals do
+            v.order = k
+        end
+
+        local backmap = vector and table.swapped(vector)
+        local done    = { } -- prevent duplicate
+        for tfmindex, name in sortedhash(encoding) do -- predictable order
+            local original = originals[tfmindex]
+            if original then
+                local unicode = unicoding[name]
+                if unicode then
+                    original.unicode = unicode
+                else
+                    unicode = private
+                    private = private + 1
+                    if trace_defining and not reported then
+                        report_tfm("glyph %a in font %a with encoding %a gets unicode %U",name,tfmfile,encfile,unicode)
+                    end
+                end
+                characters[unicode] = original
+                indices[tfmindex]   = unicode
+                original.name       = name -- so one can lookup weird names
+                if backmap then
+                    original.index = backmap[name] -- the pfb index
+                else -- probably bitmap
+                    original.commands = { parentfont, charcommand[tfmindex] } -- or "slot"
+                    original.oindex   = tfmindex
+                end
+                done[name] = true
+            elseif not done[name] then
+                report_tfm("bad index %a in font %a with name %a",tfmindex,tfmfile,name)
+            end
+        end
+
+        encdone[tfmfile][encfile] = true
+
+        -- redo kerns and ligatures
+
+        for k, v in next, characters do
+            local kerns = v.kerns
+            if kerns then
+                local t = { }
+                for k, v in next, kerns do
+                    local i = indices[k]
+                    if i then
+                        t[i] = v
+                    end
+                end
+                v.kerns = next(t) and t or nil
+            end
+            local ligatures = v.ligatures
+            if ligatures then
+                local t = { }
+                for k, v in next, ligatures do
+                    local i = indices[k]
+                    if i then
+                        t[i] = v
+                        v.char = indices[v.char]
+                    end
+                end
+                v.ligatures = next(t) and t or nil
+            end
+        end
+
+        -- wrap up
+
+        tfmdata.fonts         = { { id = virtualid } }
+        tfmdata.characters    = characters
+        tfmdata.fullname      = tfmdata.fullname or tfmdata.name
+        tfmdata.psname        = file.nameonly(pfbfile or tfmdata.name)
+        tfmdata.filename      = pfbfile
+     -- tfmdata.format        = bitmap and "type3" or "type1"
+        tfmdata.format        = "type1"
+if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
+        tfmdata.encodingbytes = 2
+        tfmdata.tounicode     = 1
+        tfmdata.embedding     = "subset"
+end
+        tfmdata.usedbitmap    = bitmap and virtualid
+        tfmdata.private       = private
+
+        return tfmdata
+    end
+
+end
+
+-- Now we implement the regular features handlers. We need to convert the
+-- tfm specific structures to opentype structures. In basemode they are
+-- converted back so that is a bit of a waste but it's fast enough.
+
+do
+
+    local everywhere = { ["*"] = { ["*"] = true } } -- or: { ["*"] = { "*" } }
+    local noflags    = { false, false, false, false }
+
+    local function enhance_normalize_features(data)
+        local ligatures  = setmetatableindex("table")
+        local kerns      = setmetatableindex("table")
+        local characters = data.characters
+        for u, c in next, characters do
+            local l = c.ligatures
+            local k = c.kerns
+            if l then
+                ligatures[u] = l
+                for u, v in next, l do
+                    l[u] = { ligature = v.char }
+                end
+                c.ligatures = nil
+            end
+            if k then
+                kerns[u] = k
+                for u, v in next, k do
+                    k[u] = v -- { v, 0 }
+                end
+                c.kerns = nil
+            end
+        end
+
+        for u, l in next, ligatures do
+            for k, v in next, l do
+                local vl = v.ligature
+                local dl = ligatures[vl]
+                if dl then
+                    for kk, vv in next, dl do
+                        v[kk] = vv -- table.copy(vv)
+                    end
+                end
+            end
+        end
+
+        local features = {
+            gpos = { },
+            gsub = { },
+        }
+        local sequences = {
+            -- only filled ones
+        }
+        if next(ligatures) then
+            features.gsub.liga = everywhere
+            data.properties.hasligatures = true
+            sequences[#sequences+1] = {
+                features = {
+                    liga = everywhere,
+                },
+                flags    = noflags,
+                name     = "s_s_0",
+                nofsteps = 1,
+                order    = { "liga" },
+                type     = "gsub_ligature",
+                steps    = {
+                    {
+                        coverage = ligatures,
+                    },
+                },
+            }
+        end
+        if next(kerns) then
+            features.gpos.kern = everywhere
+            data.properties.haskerns = true
+            sequences[#sequences+1] = {
+                features = {
+                    kern = everywhere,
+                },
+                flags    = noflags,
+                name     = "p_s_0",
+                nofsteps = 1,
+                order    = { "kern" },
+                type     = "gpos_pair",
+                steps    = {
+                    {
+                        format   = "kern",
+                        coverage = kerns,
+                    },
+                },
+            }
+        end
+        data.resources.features  = features
+        data.resources.sequences = sequences
+        data.shared.resources = data.shared.resources or resources
+    end
+
+    registertfmenhancer("normalize features",   enhance_normalize_features)
+    registertfmenhancer("check extra features", otfenhancers.enhance)
+
+end
+
+-- As with type one (afm) loading, we just use the opentype ones:
+
+registertfmfeature {
+    name         = "mode",
+    description  = "mode",
+    initializers = {
+        base = otf.modeinitializer,
+        node = otf.modeinitializer,
+    }
+}
+
+registertfmfeature {
+    name         = "features",
+    description  = "features",
+    default      = true,
+    initializers = {
+        base     = otf.basemodeinitializer,
+        node     = otf.nodemodeinitializer,
+    },
+    processors   = {
+        node     = otf.featuresprocessor,
+    }
+}

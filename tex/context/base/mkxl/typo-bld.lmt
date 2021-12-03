@@ -231,10 +231,10 @@ end
 -- the check can go away
 
 -- Todo: contrib_head can be any head (kind of) not per se the page one so maybe I will
--- intercept that in the engine with page_contribute_head or so.
+-- intercept that in the engine with contributehead or so.
 
 function builders.buildpage_filter(groupcode)
-    local head = texlists.contribute_head
+    local head = texlists.contributehead
     if head then
         local done = false
         -- called quite often ... maybe time to remove timing
@@ -246,8 +246,8 @@ function builders.buildpage_filter(groupcode)
         stoptiming(builders)
      -- -- doesn't work here (not passed on?)
      -- texset("pagegoal,texget("vsize") - texgetdimen("d_page_floats_inserted_top") - texgetdimen("d_page_floats_inserted_bottom")
-        texlists.contribute_head = head or nil -- needs checking
-     -- tex.setlist("contribute_head",head,head and nodes.tail(head))
+        texlists.contributehead = head or nil -- needs checking
+     -- tex.setlist("contributehead",head,head and nodes.tail(head))
         return done and head or true -- no return value needed
     else
         -- happens quite often

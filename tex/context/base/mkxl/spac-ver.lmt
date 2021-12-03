@@ -1054,7 +1054,7 @@ end
 
 -- implementation
 
--- alignment box begin_of_par vmode_par hmode_par insert penalty before_display after_display
+-- alignment box begin_of_par vmodepar hmodepar insert penalty before_display after_display
 
 function vspacing.snapbox(n,how)
     local sv = snapmethods[how]
@@ -1440,7 +1440,7 @@ do
                     -- quit, we're not on the mvl
                 else
                     -- inefficient when we're at the end of a page
-                    local c = tonut(texlists.page_head)
+                    local c = tonut(texlists.pagehead)
                     while c and c ~= n do
                         local id = getid(c)
                         if id == hlist_code then
@@ -1486,7 +1486,7 @@ do
         --
         local function getpagelist()
             if not pagehead then
-                pagehead = texlists.page_head
+                pagehead = texlists.pagehead
                 if pagehead then
                     pagehead = tonut(pagehead)
                     pagetail = find_node_tail(pagehead) -- no texlists.page_tail yet-- no texlists.page_tail yet
@@ -2263,7 +2263,7 @@ do
     function vspacing.getnofpreviouslines(head)
         if enabled then
             if not thead then
-                head = texlists.page_head
+                head = texlists.pagehead
             end
             local noflines = 0
             if head then
@@ -2314,7 +2314,7 @@ do
             if trace then
                 local newdepth = outer.prevdepth
                 local olddepth = newdepth
-                if not texlists.page_head then
+                if not texlists.pagehead then
                     newdepth = ignoredepth
                     texset("prevdepth",ignoredepth)
                     outer.prevdepth = ignoredepth
@@ -2322,7 +2322,7 @@ do
                 report("page %i, prevdepth %p => %p",texgetcount("realpageno"),olddepth,newdepth)
              -- report("list %s",nodes.idsandsubtypes(head))
             else
-                if not texlists.page_head then
+                if not texlists.pagehead then
                     texset("prevdepth",ignoredepth)
                     outer.prevdepth = ignoredepth
                 end
@@ -2353,7 +2353,7 @@ do
                 end
                 nest.prevdepth = depth
             elseif id == temp_code and texgetnest("ptr") == 0 then
-                local head = texgetlist("page_head")
+                local head = texgetlist("pagehead")
                 if head then
                     tail = getnodetail(head)
                     if tail and tail.id == hlist_code then
@@ -2472,11 +2472,11 @@ do
         -- check if in mvl
         if texgetnest("ptr") == 0 then
             -- this flushes the contributions
-            while getspeciallist("contribute_head") do
+            while getspeciallist("contributehead") do
                 triggerbuildpage()
             end
             -- now we consult the last line (if present)
-            local head, tail = getspeciallist("page_head")
+            local head, tail = getspeciallist("pagehead")
             if tail then
                 for n, id, subtype in treversenode, tail do
                     if id == hlist_code then
@@ -2521,7 +2521,7 @@ do
  -- interfaces.implement {
  --     name    = "removelastline",
  --     actions = function()
- --         local h, t = getspeciallist("page_head")
+ --         local h, t = getspeciallist("pagehead")
  --         if t and getid(t) == hlist_code and getsubtype(t) == line_code then
  --             local total = gettotal(t)
  --             h = remove_node(h,t,true)
@@ -2663,10 +2663,10 @@ do
  -- interfaces.implement {
  --     name    = "fakenextstrutline",
  --     actions = function()
- --         local head = texlists.page_head
+ --         local head = texlists.pagehead
  --         if head then
  --             local head = remove_node(head,find_node_tail(head),true)
- --             texlists.page_head = head
+ --             texlists.pagehead = head
  --             buildpage()
  --         end
  --     end
@@ -2675,13 +2675,13 @@ do
     implement {
         name    = "removelastline",
         actions = function()
-            local head = texlists.page_head
+            local head = texlists.pagehead
             if head then
                 local tail = find_node_tail(head)
                 if tail then
                     -- maybe check for hlist subtype 1
                     local head = remove_node(head,tail,true)
-                    texlists.page_head = head
+                    texlists.pagehead = head
                     buildpage()
                 end
             end
@@ -2691,7 +2691,7 @@ do
     implement {
         name    = "showpagelist", -- will improve
         actions = function()
-            local head = texlists.page_head
+            local head = texlists.pagehead
             if head then
                 print("start")
                 while head do

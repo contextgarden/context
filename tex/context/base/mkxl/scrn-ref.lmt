@@ -1,0 +1,57 @@
+if not modules then modules = { } end modules ['scrn-ref'] = {
+    version   = 1.001,
+    comment   = "companion to scrn-int.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+interactions            = interactions or { }
+interactions.references = interactions.references or { }
+local references        = interactions.references
+
+local codeinjections    = backends.codeinjections
+
+local identify          = structures.references.identify
+
+local implement         = interfaces.implement
+
+local function check(what)
+    if what and what ~= "" then
+        local set, bug = identify("",what)
+        return not bug and #set > 0 and set
+    end
+end
+
+function references.setopendocumentaction(open)
+    local opendocument = check(open)
+    if opendocument then
+        codeinjections.registerdocumentopenaction(opendocument)
+    end
+end
+
+function references.setclosedocumentaction(close)
+    local closedocument = check(close)
+    if closedocument then
+        codeinjections.registerdocumentcloseaction(closedocument)
+    end
+end
+
+function references.setopenpageaction(open)
+    local openpage = check(open)
+    if openpage then
+        codeinjections.registerpageopenaction(openpage)
+    end
+end
+
+function references.setclosepageaction(close)
+    local closepage = check(close)
+    if closepage then
+        codeinjections.registerpagecloseaction(closepage)
+    end
+end
+
+implement { name = "setopendocumentaction",  arguments = "string", actions = references.setopendocumentaction }
+implement { name = "setclosedocumentaction", arguments = "string", actions = references.setclosedocumentaction }
+implement { name = "setopenpageaction",      arguments = "string", actions = references.setopenpageaction }
+implement { name = "setclosepageaction",     arguments = "string", actions = references.setclosepageaction }

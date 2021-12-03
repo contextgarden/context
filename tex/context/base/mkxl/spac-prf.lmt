@@ -269,9 +269,9 @@ end
 profiling.get = getprofile
 
 local function getpagelist()
-    local pagehead = texlists.page_head
+    local pagehead = texlists.pagehead
     if pagehead then
-        pagehead = tonut(texlists.page_head)
+        pagehead = tonut(texlists.pagehead)
         pagetail = find_node_tail(pagehead)
     else
         pagetail = nil

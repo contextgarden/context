@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Tracing Macros / Justification}
 
-\registerctxluafile{trac-jus}{}
+\registerctxluafile{trac-jus}{autosuffix}
 
 \unprotect
 

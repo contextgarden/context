@@ -205,7 +205,7 @@ local flatten = languages.flatten
 nodes.handlers.flattenline = flatten
 
 function nodes.handlers.flatten(head,where)
-    if head and (where == "box" or where == "adjusted_hbox") then
+    if head and (where == "box" or where == "adjustedhbox") then
         return flatten(head)
     end
     return head

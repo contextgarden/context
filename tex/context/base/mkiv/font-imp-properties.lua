@@ -72,10 +72,10 @@ do
                     extra = amount
                 end
             end
-            parameters.space         = amount  * emwidth
-            parameters.space_stretch = stretch * emwidth
-            parameters.space_shrink  = shrink  * emwidth
-            parameters.extra_space   = extra   * emwidth
+            parameters.space        = amount  * emwidth
+            parameters.spacestretch = stretch * emwidth
+            parameters.spaceshrink  = shrink  * emwidth
+            parameters.extraspace   = extra   * emwidth
         end
     end
 

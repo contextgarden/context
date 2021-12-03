@@ -52,9 +52,9 @@ local canbeignored = {
 }
 
 local canbechar = {
-    char       = true,
-    small_char = true,
-    large_char = true,
+    char      = true,
+    smallchar = true,
+    largechar = true,
 }
 
 local fieldtypes = table.setmetatableindex(function(t,k)
@@ -119,7 +119,7 @@ local function to_table(n,flat,verbose,noattributes,done)
             for field, fieldtype in sortedhash(fields) do
                 local value = n[field]
                 if value then
-                    if fieldtype == "attribute_list" or fieldtype == "attribute" then
+                    if fieldtype == "attributelist" or fieldtype == "attribute" or fieldtype == "attribute_list" then
                         if noattributes then
                             result[value] = canbeignored[value]
                         else

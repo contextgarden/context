@@ -221,7 +221,7 @@ local function tonodes(str,fnt,attr) -- (str,template_glyph) -- moved from blob-
                 n = copy_node(space)
             elseif fonts then -- depedency
                 local parameters = fonts.hashes.identifiers[fnt].parameters
-                space = new_glue(parameters.space,parameters.space_stretch,parameters.space_shrink)
+                space = new_glue(parameters.space,parameters.spacestretch,parameters.spaceshrink)
                 n = space
             end
         elseif template then
@@ -354,8 +354,8 @@ end
 do
 
     local parcodes      = nodes.parcodes
-    local hmodepar_code = parcodes.hmode_par
-    local vmodepar_code = parcodes.vmode_par
+    local hmodepar_code = parcodes.hmodepar
+    local vmodepar_code = parcodes.vmodepar
 
     local getnest       = tex.getnest
     local getsubtype    = nuts.getsubtype

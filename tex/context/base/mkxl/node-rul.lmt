@@ -341,8 +341,15 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
         end
     end
 
+    local first = 1
+    local last  = level
+
+    if extra then
+        first = level
+    end
+
     if mp and mp ~= "" then
-        for i=extra and level or 1,level do
+        for i=first,last do
             local r = usernutrule {
                 width  = wd,
                 height = ht,
@@ -369,7 +376,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
             l = hpack_nodes(l,wd,"exactly")
             inject(l,wd,ht,dp)
         else
-            for i=extra and level or 1,level do
+            for i=first,last do
                 local hd = (offset+(i-1)*dy)*e - m
                 local ht =  hd + rulethickness
                 local dp = -hd + rulethickness

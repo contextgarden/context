@@ -860,18 +860,20 @@ The virtual table \type {tex.lists} contains the set of internal registers that
 keep track of building page lists.
 
 \starttabulate[|l|p|]
-\DB field                      \BC explanation \NC \NR
+\DB field                    \BC explanation \NC \NR
 \TB
-\NC \type{page_ins_head}       \NC circular list of pending insertions \NC \NR
-\NC \type{contribute_head}     \NC the recent contributions \NC \NR
-\NC \type{page_head}           \NC the current page content \NC \NR
-%NC \type{temp_head}           \NC \NC \NR
-\NC \type{hold_head}           \NC used for held-over items for next page \NC \NR
-\NC \type{adjust_head}         \NC head of the current \prm {vadjust} list \NC \NR
-\NC \type{pre_adjust_head}     \NC head of the current \type {\vadjust pre} list \NC \NR
-%NC \type{align_head}          \NC \NC \NR
-\NC \type{page_discards_head}  \NC head of the discarded items of a page break \NC \NR
-\NC \type{split_discards_head} \NC head of the discarded items in a vsplit \NC \NR
+\NC \type{pageinserthead}    \NC circular list of pending insertions \NC \NR
+\NC \type{contributehead}    \NC the recent contributions \NC \NR
+\NC \type{pagehead}          \NC the current page content \NC \NR
+%NC \type{temphead}          \NC \NC \NR
+\NC \type{holdhead}          \NC used for held-over items for next page \NC \NR
+\NC \type{postadjusthead}    \NC head of the (pending) post adjustments \NC \NR
+\NC \type{preadjusthead}     \NC head of the (pending) pre adjustments \NC \NR
+\NC \type{postmigratehead}   \NC head of the (pending) post migrations \NC \NR
+\NC \type{premigratehead}    \NC head of the (pending) pre migrations \NC \NR
+%NC \type{alignhead}         \NC \NC \NR
+\NC \type{pagediscardshead}  \NC head of the discarded items of a page break \NC \NR
+\NC \type{splitdiscardshead} \NC head of the discarded items in a vsplit \NC \NR
 \LL
 \stoptabulate
 
@@ -925,7 +927,7 @@ The known fields are:
 \NC \type{direction}   \NC node    \NC hmode \NC stack used for temporary storage by the line break algorithm \NC \NR
 \NC \type{noad}        \NC node    \NC mmode \NC used for temporary storage of a pending fraction numerator,
                                                  for \prm {over} etc. \NC \NR
-\NC \type{delimptr}    \NC node    \NC mmode \NC used for temporary storage of the previous math delimiter,
+\NC \type{delimiter}   \NC node    \NC mmode \NC used for temporary storage of the previous math delimiter,
                                                  for \prm {middle} \NC \NR
 \NC \type{mathdir}     \NC boolean \NC mmode \NC true when during math processing the \prm {mathdirection} is not
                                                  the same as the surrounding \prm {textdirection} \NC \NR
@@ -1714,6 +1716,10 @@ which is a side effect of a more granular and dynamic memory management.
 \ML
 \NC \type{formatname}        \NC string       \NC          \NC \NC \NR
 \NC \type{jobname}           \NC string       \NC          \NC \NC \NR
+\ML
+\NC \type{starttime}         \NC number       \NC          \NC for testing only \NC \NR
+\NC \type{useutctime}        \NC number       \NC          \NC for testing only \NC \NR
+\NC \type{permitloadlib}     \NC number       \NC          \NC for testing only \NC \NR
 \LL
 \stoptabulate
 

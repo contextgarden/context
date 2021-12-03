@@ -871,8 +871,8 @@ do
         if lastfont ~= font then
             local pf = parameters[font]
             space    = pf.space
-            stretch  = pf.space_stretch
-            shrink   = pf.space_shrink
+            stretch  = pf.spacestretch
+            shrink   = pf.spaceshrink
             lastfont = font
         end
         return new_glue(

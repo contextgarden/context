@@ -111,11 +111,6 @@ do
     local lineactions   = tasks.actions("contributers")
     local adjustactions = tasks.actions("adjusters")
 
-    -- contribute_head  : pre_box
-    -- pre_adjust_head  : pre_adjust
-    -- just_box         : box
-    -- post_adjust_head : adjust
-
     -- this was the "contributers" callback but we changed the interface
 
     -- historically we use a different order than the callback
@@ -133,7 +128,7 @@ do
                         end
                     end
                 end
-            elseif where == "post_adjust" or where == "pre_adjust" then
+            elseif where == "postadjust" or where == "preadjust" then
                 -- we use the same order as for lines
                 return adjustactions(head,where,tail,index)
             end

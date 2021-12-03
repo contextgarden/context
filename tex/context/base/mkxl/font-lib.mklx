@@ -21,30 +21,30 @@
 %registerctxluafile{font-cft}{}
 \registerctxluafile{font-enc}{}
 \registerctxluafile{font-fmp}{autosuffix}
-\registerctxluafile{font-agl}{}         % if needed we can comment this and delay loading
-\registerctxluafile{font-cid}{}         % cid maps
+\registerctxluafile{font-agl}{}           % if needed we can comment this and delay loading
+\registerctxluafile{font-cid}{}           % cid maps
 \registerctxluafile{font-map}{optimize}
 
 % helpers
 
-\registerctxluafile{font-otr}{optimize} % opentype fontloader
-\registerctxluafile{font-web}{}         % opentype fontloader
-\registerctxluafile{font-cff}{optimize} % quadratic outlines
-\registerctxluafile{font-ttf}{optimize} % cubic outlines
-\registerctxluafile{font-dsp}{optimize} % ... for this one
-\registerctxluafile{font-hsh}{}         % hashes used by context
+\registerctxluafile{font-otr}{optimize}   % opentype fontloader
+\registerctxluafile{font-web}{}           % opentype fontloader
+\registerctxluafile{font-cff}{optimize}   % quadratic outlines
+\registerctxluafile{font-ttf}{optimize}   % cubic outlines
+\registerctxluafile{font-dsp}{optimize}   % ... for this one
+\registerctxluafile{font-hsh}{autosuffix} % hashes used by context
 \registerctxluafile{font-vir}{}
 \registerctxluafile{font-vfc}{autosuffix}
-\registerctxluafile{font-prv}{}         % needs hashes
+\registerctxluafile{font-prv}{}           % needs hashes
 \registerctxluafile{font-nod}{optimize}
-\registerctxluafile{font-oti}{}         % otf initialization
-\registerctxluafile{font-ott}{}         % otf tables (first)
-\registerctxluafile{font-otl}{}
+\registerctxluafile{font-oti}{}           % otf initialization
+\registerctxluafile{font-ott}{}           % otf tables (first)
+\registerctxluafile{font-otl}{autosuffix}
 \registerctxluafile{font-oto}{}
 \registerctxluafile{font-otj}{autosuffix,optimize}
 \registerctxluafile{font-oup}{}
 \registerctxluafile{font-ota}{autosuffix}
-% \registerctxluafile{font-ots-pre-scale}{autosuffix,optimize}
+%registerctxluafile{font-ots-pre-scale}{autosuffix,optimize}
 \registerctxluafile{font-ots}{autosuffix,optimize}
 \registerctxluafile{font-otd}{autosuffix,optimize}
 \registerctxluafile{font-otc}{}
@@ -56,15 +56,15 @@
 % we use otf code for type one
 
 \registerctxluafile{font-onr}{optimize}
-\registerctxluafile{font-one}{optimize}
+\registerctxluafile{font-one}{autosuffix,optimize}
 \registerctxluafile{font-afk}{}
 
 \registerctxluafile{font-txt}{autosuffix}
 
 % tfm
 
-\registerctxluafile{font-tpk}{optimize}
-\registerctxluafile{font-tfm}{}
+\registerctxluafile{font-tpk}{autosuffix,optimize}
+\registerctxluafile{font-tfm}{autosuffix}
 
 % name database
 
@@ -100,13 +100,13 @@
 \registerctxluafile{font-imp-ligatures}{}
 \registerctxluafile{font-imp-tex}{}
 \registerctxluafile{font-imp-reorder}{}
-\registerctxluafile{font-imp-properties}{}
+\registerctxluafile{font-imp-properties}{autosuffix}
 \registerctxluafile{font-imp-unicode}{}
 \registerctxluafile{font-imp-text}{autosuffix}
 \registerctxluafile{font-imp-math}{autosuffix}
 \registerctxluafile{font-imp-notused}{}
 \registerctxluafile{font-imp-effects}{autosuffix}
-\registerctxluafile{font-imp-quality}{}
+\registerctxluafile{font-imp-quality}{autosuffix}
 \registerctxluafile{font-imp-italics}{}
 \registerctxluafile{font-imp-dimensions}{}
 \registerctxluafile{font-imp-spacekerns}{}

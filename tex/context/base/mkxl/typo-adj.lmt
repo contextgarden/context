@@ -52,7 +52,7 @@ local postactions = {
 }
 
 -- function nodes.handlers.adjusters(head,where,tail)
---     if where == "pre_adjust" then
+--     if where == "preadjust" then
 --         local a = getattr(tail,a_adjuster)
 --         if a then
 --             a = preactions[a]
@@ -60,7 +60,7 @@ local postactions = {
 --                 head = a(head,tail)
 --             end
 --         end
---     elseif where == "post_adjust" then
+--     elseif where == "postadjust" then
 --         local a = getattr(tail,a_adjuster)
 --         if a then
 --             a = postactions[a]
@@ -75,12 +75,12 @@ local postactions = {
 -- end
 
 function nodes.handlers.adjusters(head,where,tail,index)
-    if where == "pre_adjust" then
+    if where == "preadjust" then
         local a = preactions[index]
         if a then
             head = a(head,tail)
         end
-    else -- if where == "post_adjust" then
+    else -- if where == "postadjust" then
         local a = postactions[index]
         if a then
             head = a(head,tail)

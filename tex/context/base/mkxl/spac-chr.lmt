@@ -131,7 +131,7 @@ local function nbsp(head,current)
     if attr >= 1 and attr <= 3 then -- flushright
         head, current = inject_nobreak_space(0x00A0,head,current,para.space,0,0)
     else
-        head, current = inject_nobreak_space(0x00A0,head,current,para.space,para.space_stretch,para.space_shrink)
+        head, current = inject_nobreak_space(0x00A0,head,current,para.space,para.spacestretch,para.spaceshrink)
     end
     setsubtype(current,spaceskip_code)
     return head, current
@@ -190,7 +190,7 @@ local methods = {
                 head, current = remove_node(head,current,true)
                 if not is_punctuation[char] then
                     local p = fontparameters[font]
-                    head, current = insertnodebefore(head,current,new_glue(p.space,p.space_stretch,p.space_shrink))
+                    head, current = insertnodebefore(head,current,new_glue(p.space,p.spacestretch,p.spaceshrink))
                 end
             end
         end

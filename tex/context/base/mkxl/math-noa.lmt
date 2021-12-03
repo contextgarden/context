@@ -197,19 +197,19 @@ local undernoad_code     = noadcodes.under
 local overnoad_code      = noadcodes.over
 local vcenternoad_code   = noadcodes.vcenter
 
-local noad_code          = nodecodes.noad           -- attr nucleus sub sup
-local accent_code        = nodecodes.accent         -- attr nucleus sub sup accent
-local radical_code       = nodecodes.radical        -- attr nucleus sub sup left degree
-local fraction_code      = nodecodes.fraction       -- attr nucleus sub sup left right
-local subbox_code        = nodecodes.subbox         -- attr list
-local submlist_code      = nodecodes.submlist       -- attr list
-local mathchar_code      = nodecodes.mathchar       -- attr fam char
-local mathtextchar_code  = nodecodes.mathtextchar   -- attr fam char
-local delimiter_code     = nodecodes.delimiter      -- attr small_fam small_char large_fam large_char
------ style_code         = nodecodes.style          -- attr style
------ parameter_code     = nodecodes.parameter      -- attr style
-local math_choice        = nodecodes.choice         -- attr display text script scriptscript
-local fence_code         = nodecodes.fence          -- attr subtype
+local noad_code          = nodecodes.noad
+local accent_code        = nodecodes.accent
+local radical_code       = nodecodes.radical
+local fraction_code      = nodecodes.fraction
+local subbox_code        = nodecodes.subbox
+local submlist_code      = nodecodes.submlist
+local mathchar_code      = nodecodes.mathchar
+local mathtextchar_code  = nodecodes.mathtextchar
+local delimiter_code     = nodecodes.delimiter
+----- style_code         = nodecodes.style
+----- parameter_code     = nodecodes.parameter
+local math_choice        = nodecodes.choice
+local fence_code         = nodecodes.fence
 
 local leftfence_code     = fencecodes.left
 local middlefence_code   = fencecodes.middle
@@ -316,8 +316,8 @@ local function process(start,what,n,parent)
                   noad = getsuppre (start)              if noad then process(noad,what,n,start) end -- list
                   noad = getsubpre (start)              if noad then process(noad,what,n,start) end -- list
                 end
-                  noad = getfield(start,"accent")       if noad then process(noad,what,n,start) end -- list
-                  noad = getfield(start,"bot_accent")   if noad then process(noad,what,n,start) end -- list
+                  noad = getfield(start,"topaccent")    if noad then process(noad,what,n,start) end -- list
+                  noad = getfield(start,"botaccent")    if noad then process(noad,what,n,start) end -- list
      -- elseif id == style_code then
      --     -- has a next
      -- elseif id == parameter_code then
@@ -375,8 +375,8 @@ local function processnested(current,what,n)
         noad = getsuppre (current)              if noad then process(noad,what,n,current) end -- list
         noad = getsubpre (current)              if noad then process(noad,what,n,current) end -- list
       end
-        noad = getfield(current,"accent")       if noad then process(noad,what,n,current) end -- list
-        noad = getfield(current,"bot_accent")   if noad then process(noad,what,n,current) end -- list
+        noad = getfield(current,"topaccent")    if noad then process(noad,what,n,current) end -- list
+        noad = getfield(current,"botaccent")    if noad then process(noad,what,n,current) end -- list
     end
 end
 
@@ -423,8 +423,8 @@ local function processstep(current,process,n,id)
         noad = getsuppre (current)              if noad then process(noad,n,current) end -- list
         noad = getsubpre (current)              if noad then process(noad,n,current) end -- list
       end
-        noad = getfield(current,"accent")       if noad then process(noad,n,current) end -- list
-        noad = getfield(current,"bot_accent")   if noad then process(noad,n,current) end -- list
+        noad = getfield(current,"topaccent")    if noad then process(noad,n,current) end -- list
+        noad = getfield(current,"botaccent")    if noad then process(noad,n,current) end -- list
     end
 end
 
@@ -584,7 +584,7 @@ do
         end
     end
     families[delimiter_code] = function(pointer)
-        if getfield(pointer,"small_fam") == 0 then
+        if getfield(pointer,"smallfamily") == 0 then
             local a = getattr(pointer,a_mathfamily)
             if a and a > 0 then
                 setattr(pointer,a_mathfamily,0)
@@ -593,23 +593,23 @@ do
                     a = a - 3
                 end
                 local fam  = getfontoffamily(a)
-                local char = getfield(pointer,"small_char")
+                local char = getfield(pointer,"smallchar")
                 local okay = fontcharacters[fam][char]
                 if okay then
-                    setfield(pointer,"small_fam",a)
+                    setfield(pointer,"smallfamily",a)
                 elseif a > 2 then
-                    setfield(pointer,"small_fam",a-3)
+                    setfield(pointer,"smallfamily",a-3)
                 end
-                local char = getfield(pointer,"large_char")
+                local char = getfield(pointer,"largechar")
                 local okay = fontcharacters[fam][char]
                 if okay then
-                    setfield(pointer,"large_fam",a)
+                    setfield(pointer,"largefamily",a)
                 elseif a > 2 then
-                    setfield(pointer,"large_fam",a-3)
+                    setfield(pointer,"largefamily",a-3)
                 end
             else
-                setfield(pointer,"small_fam",0)
-                setfield(pointer,"large_fam",0)
+                setfield(pointer,"smallfamily",0)
+                setfield(pointer,"largefamily",0)
             end
         end
     end
@@ -827,8 +827,8 @@ end
 -- empty and no larger next will be forced)
 --
 -- beware: we don't use \delcode but \Udelcode and as such have
--- no large_fam; also, we need to check for subtype and/or
--- small_fam not being 0 because \. sits in 0,0 by default
+-- no largefamily; also, we need to check for subtype and/or
+-- smallfamily not being 0 because \. sits in 0,0 by default
 --
 -- todo: just replace the character by an ord noad
 -- and remove the right delimiter as well

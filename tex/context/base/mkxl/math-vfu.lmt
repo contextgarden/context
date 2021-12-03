@@ -9,7 +9,9 @@ if not modules then modules = { } end modules ['math-vfu'] = {
 -- All these math vectors .. thanks to Aditya and Mojca they become better and
 -- better. If you have problems with math fonts or miss characters report it to the
 -- ConTeXt mailing list. Also thanks to Boguslaw for finding a couple of errors.
--- This mechanism will eventually disappear.
+
+-- This mechanism will eventually disappear or at least needs to be updated to the
+-- way lmtx does virtual fonts.
 
 -- 20D6 -> 2190
 -- 20D7 -> 2192
@@ -83,7 +85,7 @@ local shared            = { }
 local function brace(main,characters,id,size,unicode,first,rule,left,right,rule,last)
     if not characters[unicode] then
         characters[unicode] = {
-            horiz_variants = {
+            hvariants = {
                 { extender = 0, glyph = first },
                 { extender = 1, glyph = rule  },
                 { extender = 0, glyph = left  },
@@ -121,7 +123,7 @@ local function extension(main,characters,id,size,unicode,first,middle,last)
     if lw == 0 then
         lw = 1
     end
-    chr.horiz_variants = {
+    chr.hvariants = {
         { extender = 0, glyph = first,  ["end"] = fw/2, start = 0,    advance = fw },
         { extender = 1, glyph = middle, ["end"] = mw/2, start = mw/2, advance = mw },
         { extender = 0, glyph = last,   ["end"] = 0,    start = lw/2, advance = lw },
@@ -131,7 +133,7 @@ end
 local function parent(main,characters,id,size,unicode,first,rule,last)
     if not characters[unicode] then
         characters[unicode] = {
-            horiz_variants = {
+            hvariants = {
                 { extender = 0, glyph = first },
                 { extender = 1, glyph = rule  },
                 { extender = 0, glyph = last  },
@@ -150,7 +152,7 @@ local function make(main,characters,id,size,n,m)
         local dnslot    = 0xFF200 + n
         local uprule    = 0xFF300 + m
         local dnrule    = 0xFF400 + m
-        local xu        = main.parameters.x_height + 0.3*size
+        local xu        = main.parameters.xheight + 0.3*size
         local xd        = 0.3*size
         local w         = c.width or 0
         local h         = c.height or 0
@@ -226,7 +228,7 @@ end
 local function raise(main,characters,id,size,unicode,private,n,id_of_smaller) -- this is a real fake mess
     local raised = fonts.hashes.characters[main.fonts[id_of_smaller].id][private]  -- characters[private]
     if raised then
-        local up   = 0.85 * main.parameters.x_height
+        local up   = 0.85 * main.parameters.xheight
         local slot = { "slot", id_of_smaller, private }
         local commands = {
             push, upcommand[up], slot,
@@ -659,10 +661,10 @@ local function copy_glyph(main,target,original,unicode,slot)
                 break -- safeguard (when testing stuff)
             end
         end
-        local hv = olddata.horiz_variants
+        local hv = olddata.hvariants
         if hv then
             hv = fastcopy(hv)
-            newdata.horiz_variants = hv
+            newdata.hvariants = hv
             for i=1,#hv do
                 local hvi = hv[i]
                 local oldglyph = hvi.glyph
@@ -677,10 +679,10 @@ local function copy_glyph(main,target,original,unicode,slot)
                 hvi.glyph = addprivate(main,formatters["M-H-%H"](oldglyph),newdata)
             end
         end
-        local vv = olddata.vert_variants
+        local vv = olddata.vvariants
         if vv then
             vv = fastcopy(vv)
-            newdata.vert_variants = vv
+            newdata.vvariants = vv
             for i=1,#vv do
                 local vvi = vv[i]
                 local oldglyph = vvi.glyph
@@ -822,8 +824,8 @@ function vfmath.define(specification,set,goodies)
         properties.fullname = fullname .. "-" .. unique
     end
     --
-    if not parameters.x_height then
-        parameters.x_height = 0
+    if not parameters.xheight then
+        parameters.xheight = 0
     end
     --
     local already_reported = false
@@ -845,32 +847,33 @@ function vfmath.define(specification,set,goodies)
             elseif not newparameters then
                 report_virtual("no parameters set in font %a",name)
             elseif ss.extension then
-                mathparameters.math_x_height          = newparameters.x_height or 0        -- math_x_height          : height of x
-                mathparameters.default_rule_thickness = newparameters[ 8]      or 0        -- default_rule_thickness : thickness of \over bars
-                mathparameters.big_op_spacing1        = newparameters[ 9]      or 0        -- big_op_spacing1        : minimum clearance above a displayed op
-                mathparameters.big_op_spacing2        = newparameters[10]      or 0        -- big_op_spacing2        : minimum clearance below a displayed op
-                mathparameters.big_op_spacing3        = newparameters[11]      or 0        -- big_op_spacing3        : minimum baselineskip above displayed op
-                mathparameters.big_op_spacing4        = newparameters[12]      or 0        -- big_op_spacing4        : minimum baselineskip below displayed op
-                mathparameters.big_op_spacing5        = newparameters[13]      or 0        -- big_op_spacing5        : padding above and below displayed limits
+                mathparameters.xheight              = newparameters.xheight or 0 -- mathxheight          : height of x
+                mathparameters.defaultrulethickness = newparameters[ 8]     or 0 -- defaultrulethickness : thickness of \over bars
+                mathparameters.bigopspacing1        = newparameters[ 9]     or 0 -- bigopspacing1        : minimum clearance above a displayed op
+                mathparameters.bigopspacing2        = newparameters[10]     or 0 -- bigopspacing2        : minimum clearance below a displayed op
+                mathparameters.bigopspacing3        = newparameters[11]     or 0 -- bigopspacing3        : minimum baselineskip above displayed op
+                mathparameters.bigopspacing4        = newparameters[12]     or 0 -- bigopspacing4        : minimum baselineskip below displayed op
+                mathparameters.bigopspacing5        = newparameters[13]     or 0 -- bigopspacing5        : padding above and below displayed limits
             --  report_virtual("loading and virtualizing font %a at size %p, setting ex parameters",name,size)
             elseif ss.parameters then
-                mathparameters.x_height      = newparameters.x_height or mathparameters.x_height
-                mathparameters.x_height      = mathparameters.x_height or fp.x_height or 0 -- x_height               : height of x
-                mathparameters.num1          = newparameters[ 8] or 0                      -- num1                   : numerator shift-up in display styles
-                mathparameters.num2          = newparameters[ 9] or 0                      -- num2                   : numerator shift-up in non-display, non-\atop
-                mathparameters.num3          = newparameters[10] or 0                      -- num3                   : numerator shift-up in non-display \atop
-                mathparameters.denom1        = newparameters[11] or 0                      -- denom1                 : denominator shift-down in display styles
-                mathparameters.denom2        = newparameters[12] or 0                      -- denom2                 : denominator shift-down in non-display styles
-                mathparameters.sup1          = newparameters[13] or 0                      -- sup1                   : superscript shift-up in uncramped display style
-                mathparameters.sup2          = newparameters[14] or 0                      -- sup2                   : superscript shift-up in uncramped non-display
-                mathparameters.sup3          = newparameters[15] or 0                      -- sup3                   : superscript shift-up in cramped styles
-                mathparameters.sub1          = newparameters[16] or 0                      -- sub1                   : subscript shift-down if superscript is absent
-                mathparameters.sub2          = newparameters[17] or 0                      -- sub2                   : subscript shift-down if superscript is present
-                mathparameters.sup_drop      = newparameters[18] or 0                      -- sup_drop               : superscript baseline below top of large box
-                mathparameters.sub_drop      = newparameters[19] or 0                      -- sub_drop               : subscript baseline below bottom of large box
-                mathparameters.delim1        = newparameters[20] or 0                      -- delim1                 : size of \atopwithdelims delimiters in display styles
-                mathparameters.delim2        = newparameters[21] or 0                      -- delim2                 : size of \atopwithdelims delimiters in non-displays
-                mathparameters.axis_height   = newparameters[22] or 0                      -- axis_height            : height of fraction lines above the baseline
+                mathparameters.xheight    = newparameters.xheight
+                                         or mathparameters.xheight
+                                         or fs.xheight        or 0 -- xheight    : height of x
+                mathparameters.num1       = newparameters[ 8] or 0 -- num1       : numerator shift-up in display styles
+                mathparameters.num2       = newparameters[ 9] or 0 -- num2       : numerator shift-up in non-display, non-\atop
+                mathparameters.num3       = newparameters[10] or 0 -- num3       : numerator shift-up in non-display \atop
+                mathparameters.denom1     = newparameters[11] or 0 -- denom1     : denominator shift-down in display styles
+                mathparameters.denom2     = newparameters[12] or 0 -- denom2     : denominator shift-down in non-display styles
+                mathparameters.sup1       = newparameters[13] or 0 -- sup1       : superscript shift-up in uncramped display style
+                mathparameters.sup2       = newparameters[14] or 0 -- sup2       : superscript shift-up in uncramped non-display
+                mathparameters.sup3       = newparameters[15] or 0 -- sup3       : superscript shift-up in cramped styles
+                mathparameters.sub1       = newparameters[16] or 0 -- sub1       : subscript shift-down if superscript is absent
+                mathparameters.sub2       = newparameters[17] or 0 -- sub2       : subscript shift-down if superscript is present
+                mathparameters.sup_drop   = newparameters[18] or 0 -- sup_drop   : superscript baseline below top of large box
+                mathparameters.sub_drop   = newparameters[19] or 0 -- sub_drop   : subscript baseline below bottom of large box
+                mathparameters.delim1     = newparameters[20] or 0 -- delim1     : size of \atopwithdelims delimiters in display styles
+                mathparameters.delim2     = newparameters[21] or 0 -- delim2     : size of \atopwithdelims delimiters in non-displays
+                mathparameters.axisheight = newparameters[22] or 0 -- axisheight : height of fraction lines above the baseline
             --  report_virtual("loading and virtualizing font %a at size %p, setting sy parameters",name,size)
             end
             if ss.overlay then
@@ -941,13 +944,13 @@ function vfmath.define(specification,set,goodies)
                                 local kerns  = fci.kerns
                                 local width  = fci.width
                                 local italic = fci.italic
--- if trace_virtual then
---     report_virtual("character %C uses index %H in vector %a for font %a, %s, %s",
---         unicode,index,vectorname,fontname,
---         kerns and "adding kerns" or "no kerns",
---         kerns and "adding italic" or "no italic"
---     )
--- end
+                                -- if trace_virtual then
+                                --     report_virtual("character %C uses index %H in vector %a for font %a, %s, %s",
+                                --         unicode,index,vectorname,fontname,
+                                --         kerns and "adding kerns" or "no kerns",
+                                --         kerns and "adding italic" or "no italic"
+                                --     )
+                                -- end
                                 if italic and italic > 0 then
                                     -- int_a^b
                                     if isextension then
@@ -976,7 +979,7 @@ function vfmath.define(specification,set,goodies)
                                     if skewchar then
                                         local k = kerns[skewchar]
                                         if k then
-                                            t.top_accent = width/2 + k
+                                            t.topaccent = width/2 + k
                                         end
                                     end
                                     characters[unicode] = t
@@ -1014,30 +1017,30 @@ function vfmath.define(specification,set,goodies)
                                     if n then
                                         t.next = offset + n
                                     elseif variants_done then
-                                        local vv = fci.vert_variants
+                                        local vv = fci.vvariants
                                         if vv then
-                                            t.vert_variants = vv
+                                            t.vvariants = vv
                                         end
-                                        local hv = fci.horiz_variants
+                                        local hv = fci.hvariants
                                         if hv then
-                                            t.horiz_variants = hv
+                                            t.hvariants = hv
                                         end
                                     else
-                                        local vv = fci.vert_variants
+                                        local vv = fci.vvariants
                                         if vv then
                                             for i=1,#vv do
                                                 local vvi = vv[i]
                                                 vvi.glyph = vvi.glyph + offset
                                             end
-                                            t.vert_variants = vv
+                                            t.vvariants = vv
                                         end
-                                        local hv = fci.horiz_variants
+                                        local hv = fci.hvariants
                                         if hv then
                                             for i=1,#hv do
                                                 local hvi = hv[i]
                                                 hvi.glyph = hvi.glyph + offset
                                             end
-                                            t.horiz_variants = hv
+                                            t.hvariants = hv
                                         end
                                     end
                                     characters[offset + index] = t

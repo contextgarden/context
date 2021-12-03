@@ -43,18 +43,18 @@ local nextnode          = nuts.traversers.node
 
 local nodecodes         = nodes.nodecodes
 
-local noad_code         = nodecodes.noad           -- attr nucleus sub sup
-local accent_code       = nodecodes.accent         -- attr nucleus sub sup accent
-local radical_code      = nodecodes.radical        -- attr nucleus sub sup left degree
-local fraction_code     = nodecodes.fraction       -- attr nucleus sub sup left right
-local subbox_code       = nodecodes.subbox         -- attr list
-local submlist_code     = nodecodes.submlist       -- attr list
-local mathchar_code     = nodecodes.mathchar       -- attr fam char
-local mathtextchar_code = nodecodes.mathtextchar   -- attr fam char
-local delimiter_code    = nodecodes.delimiter      -- attr small_fam small_char large_fam large_char
-local style_code        = nodecodes.style          -- attr style
-local choice_code       = nodecodes.choice         -- attr display text script scriptscript
-local fence_code        = nodecodes.fence          -- attr subtype
+local noad_code         = nodecodes.noad
+local accent_code       = nodecodes.accent
+local radical_code      = nodecodes.radical
+local fraction_code     = nodecodes.fraction
+local subbox_code       = nodecodes.subbox
+local submlist_code     = nodecodes.submlist
+local mathchar_code     = nodecodes.mathchar
+local mathtextchar_code = nodecodes.mathtextchar
+local delimiter_code    = nodecodes.delimiter
+local style_code        = nodecodes.style
+local choice_code       = nodecodes.choice
+local fence_code        = nodecodes.fence
 
 local accentcodes       = nodes.accentcodes
 local fencecodes        = nodes.fencecodes
@@ -526,39 +526,39 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     stop_tagged()
                 end
             elseif id == accent_code then
-                local accent     = getfield(start,"accent")
-                local bot_accent = getfield(start,"bot_accent")
-                if bot_accent then
-                    if accent then
+                local topaccent = getfield(start,"topaccent")
+                local botaccent = getfield(start,"botaccent")
+                if botaccent then
+                    if topaccent then
                         setattr(start,a_tagged,start_tagged("munderover", {
                             accent      = true,
-                            top         = getunicode(accent),
-                            bottom      = getunicode(bot_accent),
+                            top         = getunicode(topaccent),
+                            bottom      = getunicode(botaccent),
                             topfixed    = subtype == fixedtopaccent_code or subtype == fixedbothaccent_code,
                             bottomfixed = subtype == fixedbottomaccent_code or subtype == fixedbothaccent_code,
                         }))
                         processsubsup(start)
-                        process(bot_accent)
-                        process(accent)
+                        process(botaccent)
+                        process(topaccent)
                         stop_tagged()
                     else
                         setattr(start,a_tagged,start_tagged("munder", {
                             accent      = true,
-                            bottom      = getunicode(bot_accent),
+                            bottom      = getunicode(botaccent),
                             bottomfixed = subtype == fixedbottomaccent_code or subtype == fixedbothaccent_code,
                         }))
                         processsubsup(start)
-                        process(bot_accent)
+                        process(botaccent)
                         stop_tagged()
                     end
-                elseif accent then
+                elseif topaccent then
                     setattr(start,a_tagged,start_tagged("mover", {
                         accent   = true,
-                        top      = getunicode(accent),
+                        top      = getunicode(topaccent),
                         topfixed = subtype == fixedtopaccent_code or subtype == fixedbothaccent_code,
                     }))
                     processsubsup(start)
-                    process(accent)
+                    process(topaccent)
                     stop_tagged()
                 else
                     processsubsup(start)

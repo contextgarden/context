@@ -24,7 +24,7 @@
 \unprotect
 
 %registerctxluafile{node-ltp}{optimize}
-\registerctxluafile{node-ltp}{}
+\registerctxluafile{node-ltp}{autosuffix} % this one has to be updated!
 \registerctxluafile{trac-par}{}
 \registerctxluafile{typo-par}{}
 

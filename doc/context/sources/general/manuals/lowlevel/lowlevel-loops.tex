@@ -1,0 +1,327 @@
+% language=us runpath=texruns:manuals/lowlevel
+
+\environment lowlevel-style
+
+\startdocument
+  [title=loops,
+   color=middleyellow]
+
+\startsectionlevel[title=Introduction]
+
+I have hesitated long before I finally decided to implement native loops in
+\LUAMETATEX. Among the reasons against such a feature is that one can define
+macros that do loops (preferably using tail recursion). When you don't need an
+expandable loop, counters can be used, otherwise there are dirty and obscure
+tricks that can be of help. This is often the area where tex programmers can show
+off but the fact remains that we're using side effects of the expansion machinery
+and specific primitives like \type {\romannumeral} magic. In \LUAMETATEX\ it is
+actually possible to use the local control mechanism to hide loop counter advance
+and checking but that comes with at a performance hit. And, no matter what tricks
+one used, tracing becomes pretty much cluttered.
+
+In the next sections we describe the new native loop primitives in \LUAMETATEX\ as
+well as the more traditional \CONTEXT\ loop helpers.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Primitives]
+
+Because \METAPOST, which is also a macro language, has native loops, it makes
+sense to also have native loops in \TEX\ and in \LUAMETATEX\ it was not that hard
+to add it. One variant uses the local control mechanism which is reflected in its
+name and two others collect expanded bodies. In the local loop content gets
+injected as we go, so this one doesn't work well in for instance an \type
+{\edef}. The macro takes the usual three loop numbers as well as a token list:
+
+\starttyping[option=TEX]
+\localcontrolledloop 1 100000 1 {%
+    % body
+}
+\stoptyping
+
+Here is an example of usage:
+
+\startbuffer
+\localcontrolledloop 1 5 1 {%
+    [\number\currentloopiterator]
+    \localcontrolledloop 1 10 1 {%
+        (\number\currentloopiterator)
+    }%
+    [\number\currentloopiterator]
+    \par
+}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The \type {\currentloopiterator} is a numeric token so you need to explicitly
+serialize it with \type {\number} or \type {\the} if you want it to be typeset:
+
+\startpacked \getbuffer \stoppacked
+
+Here is another exmaple. This time we also show the current nesting:
+
+\startbuffer
+\localcontrolledloop 1 100 1 {%
+    \ifnum\currentloopiterator>6\relax
+        \quitloop
+    \else
+        [\number\currentloopnesting:\number\currentloopiterator]
+        \localcontrolledloop 1 8 1 {%
+            (\number\currentloopnesting:\number\currentloopiterator)
+        }\par
+    \fi
+}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Watch the \type {\quitloop}: it will end the loop at the {\em next} iteration so
+any content after it will show up. Normally this one will be issued in a
+condition and we want to end that properly.
+
+\startpacked \getbuffer \stoppacked
+
+The three loop variants all perform differently:
+
+\startbuffer
+l:\testfeatureonce {1000} {\localcontrolledloop 1 2000 1 {\relax}} %
+  \elapsedtime
+e:\testfeatureonce {1000} {\expandedloop        1 2000 1 {\relax}} %
+  \elapsedtime
+u:\testfeatureonce {1000} {\unexpandedloop      1 2000 1 {\relax}} %
+  \elapsedtime
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+An unexpanded loop is (of course) the fastest because it only collects and then
+feeds back the lot. In an expanded loop each cycle does an expansion of the body
+and collects the result which is then injected afterwards, and the controlled
+loop just expands the body each iteration.
+
+\startlines\tttf \getbuffer \stoplines
+
+The different behavior is best illustrated with the following example:
+
+\startbuffer[definition]
+\edef\TestA{\localcontrolledloop 1 5 1 {A}} % out of order
+\edef\TestB{\expandedloop        1 5 1 {B}}
+\edef\TestC{\unexpandedloop      1 5 1 {C\relax}}
+\stopbuffer
+
+\typebuffer[definition][option=TEX]
+
+We can show the effective definition:
+
+\startbuffer[example]
+\meaningasis\TestA
+\meaningasis\TestB
+\meaningasis\TestC
+
+A: \TestA
+B: \TestB
+C: \TestC
+\stopbuffer
+
+\typebuffer[example][option=TEX]
+
+Watch how the first test pushes the content in the main input stream:
+
+\startlines\tttf \getbuffer[definition,example]\stoplines
+
+Here are some examples that show what gets expanded and what not:
+
+\startbuffer
+\edef\whatever
+  {\expandedloop 1 10 1
+     {(\number\currentloopiterator)
+      \scratchcounter=\number\currentloopiterator\relax}}
+
+\meaningasis\whatever
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startpacked \veryraggedright \tt\tfx \getbuffer \stoppacked
+
+A local control encapsulation hides the assignment:
+
+\startbuffer
+\edef\whatever
+  {\expandedloop 1 10 1
+     {(\number\currentloopiterator)
+      \beginlocalcontrol
+      \scratchcounter=\number\currentloopiterator\relax
+      \endlocalcontrol}}
+
+\meaningasis\whatever
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\blank \start \veryraggedright \tt\tfx \getbuffer \stop \blank
+
+Here we see the assignment being retained but with changing values:
+
+\startbuffer
+\edef\whatever
+  {\unexpandedloop 1 10 1
+     {\scratchcounter=1\relax}}
+
+\meaningasis\whatever
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\blank \start \veryraggedright \tt\tfx \getbuffer \stop \blank
+
+We get no expansion at all:
+
+\startbuffer
+\edef\whatever
+  {\unexpandedloop 1 10 1
+     {\scratchcounter=\the\currentloopiterator\relax}}
+
+\meaningasis\whatever
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\blank \start \veryraggedright \tt\tfx \getbuffer \stop \blank
+
+And here we have a mix:
+
+\startbuffer
+\edef\whatever
+  {\expandedloop 1 10 1
+     {\scratchcounter=\the\currentloopiterator\relax}}
+
+\meaningasis\whatever
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\blank \start \veryraggedright \tt\tfx \getbuffer \stop \blank
+
+There is one feature worth noting. When you feed three numbers in a row, like here,
+there is a danger of them being seen as one:
+
+\starttyping
+\expandedloop
+  \number\dimexpr1pt
+  \number\dimexpr2pt
+  \number\dimexpr1pt
+  {}
+\stoptyping
+
+This gives an error because a too large number is seen. Therefore, these loops
+permit leading equal signs, as in assigments (we could support keywords but
+it doesn't make much sense):
+
+\starttyping
+\expandedloop =\number\dimexpr1pt =\number\dimexpr2pt =\number\dimexpr1pt{}
+\stoptyping
+
+\stopsectionlevel
+
+\startsectionlevel[title=Wrappers]
+
+We always had loop helpers in \CONTEXT\ and the question is: \quotation {What we
+will gain when we replace the definitions with ones using the above?}. The answer
+is: \quotation {We have little performance but not as much as one expects!}. This
+has to do with the fact that we support \type {#1} as iterator and \type {#2} as
+(verbose) nesting values and that comes with some overhead. It is also the reason
+why these loop macros are protected (unexpandable). However, using the primitives
+might look somewhat more natural in low level \TEX\ code.
+
+Also, replacing their definitions can have side effects because the primitives are
+(and will be) still experimental so it's typically a patch that I will run on my
+machine for a while.
+
+Here is an example of two loops. The inner state variables have one hash, the outer
+one extra:
+
+\startbuffer
+\dorecurse{2}{
+    \dostepwiserecurse{1}{10}{2}{
+        (#1:#2) [##1:##2]
+    }\par
+}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We get this:
+
+\startpacked \getbuffer \stoppacked
+
+We can also use two state macro but here we would have to store the outer ones:
+
+\startbuffer
+\dorecurse {2} {
+    /\recursedepth:\recurselevel/
+    \dostepwiserecurse {1} {10} {2} {
+        <\recursedepth:\recurselevel>
+    }\par
+}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+That gives us:
+
+\startpacked \getbuffer \stoppacked
+
+An endless loop works as follows:
+
+\startbuffer
+\doloop {
+    ...
+    \ifsomeconditionismet
+        ...
+        \exitloop
+    \else
+        ...
+    \fi
+  % \exitloopnow
+    ...
+}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Because of the way we quit there will not be a new implementation in terms of
+the loop primitives. You need to make sure that you don't leave in the middle
+of an ongoing condition. The second exit is immediate.
+
+We also have a (simple) expanded variant:
+
+\startbuffer
+\edef\TestX{\doexpandedrecurse{10}{!}} \meaningasis\TestX
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This helper can be implemented in terms of the loop primitives which makes them a
+bit faster, but these are not critical:
+
+\startpacked \getbuffer \stoppacked
+
+A variant that supports \type {#1} is the following:
+
+\startbuffer
+\edef\TestX{\doexpandedrecursed{10}{#1}} \meaningasis\TestX
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+So:
+
+\startpacked \getbuffer \stoppacked
+
+% private: \dofastloopcs{#1}\cs with % \fastloopindex and \fastloopfinal
+
+\stopsectionlevel
+
+\stopdocument

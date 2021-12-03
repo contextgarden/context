@@ -601,7 +601,7 @@ function mathematics.big(tfmdata,unicode,n,method)
     local t = tfmdata.characters
     local c = t[unicode]
     if c and n > 0 then
-        local vv = c.vert_variants or c.next and t[c.next].vert_variants
+        local vv = c.vvariants or c.next and t[c.next].vvariants
         if vv then
             local vvn = vv[n]
             return vvn and vvn.glyph or vv[#vv].glyph or unicode

@@ -303,14 +303,14 @@ function definers.resetnullfont()
     -- resetting is needed because tikz misuses nullfont
     local parameters = fonts.nulldata.parameters
     --
-    parameters.slant         = 0 -- 1
-    parameters.space         = 0 -- 2
-    parameters.space_stretch = 0 -- 3
-    parameters.space_shrink  = 0 -- 4
-    parameters.x_height      = 0 -- 5
-    parameters.quad          = 0 -- 6
-    parameters.extra_space   = 0 -- 7
-    parameters.designsize    = 655360
+    parameters.slant        = 0 -- 1
+    parameters.space        = 0 -- 2
+    parameters.spacestretch = 0 -- 3
+    parameters.spaceshrink  = 0 -- 4
+    parameters.xheight      = 0 -- 5
+    parameters.quad         = 0 -- 6
+    parameters.extraspace   = 0 -- 7
+    parameters.designsize   = 655360
     --
     constructors.enhanceparameters(parameters) -- official copies for us
     --
