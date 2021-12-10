@@ -91,7 +91,7 @@
 %D as one can best stick to the defaults that also adapt to specific standards.
 
 \untraced\permanent\protected\def\nopdfcompression        {\clf_setpdfcompression\zerocount\zerocount}
-\untraced\permanent\protected\def\onlypdfobjectcompression{\clf_setpdfcompression\zerocount\plusthree}
+\untraced\permanent\protected\def\onlypdfobjectcompression{\clf_setpdfcompression\plusthree\zerocount}
 \untraced\permanent\protected\def\maximumpdfcompression   {\clf_setpdfcompression\plusnine \plusnine }
 \untraced\permanent\protected\def\normalpdfcompression    {\clf_setpdfcompression\plusthree\plusthree}
 

@@ -20,7 +20,7 @@ local format, gsub, formatters = string.format, string.gsub, string.formatters
 local concat, flattened = table.concat, table.flattened
 local settings_to_array = utilities.parsers.settings_to_array
 
-local pdfbackend           = backends.registered.pdf
+local pdfbackend           = backends and backends.registered.pdf or { }
 local nodeinjections       = pdfbackend.nodeinjections
 local codeinjections       = pdfbackend.codeinjections
 local registrations        = pdfbackend.registrations

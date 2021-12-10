@@ -22,43 +22,52 @@
     \protect
 \fi
 
+\permanent\protected\def\starttikzinput
+  {\pushoverloadmode
+   \pushcatcodetable
+   \setcatcodetable\texcatcodes
+   \unprotect
+   \catcode`\@=11
+   \catcode`\|=12
+   \catcode`\!=12
+   \autoparagraphmode\zerocount}
 
-\pushoverloadmode
+\permanent\protected\def\stoptikzinput
+  {\autoparagraphmode\plusone
+   \protect
+   \popcatcodetable
+   \popoverloadmode}
 
-    \pushcatcodetable
+\permanent\protected\def\tikzinputfile#1%
+  {\starttikzinput
+   \input{#1}\relax
+   \stoptikzinput}
 
-        \setcatcodetable\texcatcodes
-
-        \catcode`\@=11
-        \catcode`\|=12
-        \catcode`\!=12
-
-        \input t-pgf.tex
-        \input t-pgffor.tex
-        \input tikz.code.tex
-
-    \popcatcodetable
-
-\popoverloadmode
+\tikzinputfile{t-pgf.tex}
+\tikzinputfile{t-pgffor.tex}
+\tikzinputfile{tikz.code.tex}
 
 \permanent\protected\def\tikzerrormessage#1#2#3%
   {\writestatus{#1}{#2}}
 
-% For now we need this but we need to educate the user to wrap settings
-% in the wrappers. So some day the next line will go. I need to check what
-% commands are possible outside a picture.
+% For now we need this but we need to educate the user to wrap settings in the
+% wrappers. So some day the next line will go. I need to check what commands are
+% possible outside a picture.
 
 \overloadmode\zerocount
 
 \permanent\protected\def\starttikzsettings
-  {\pushoverloadmode}
+  {\pushoverloadmode
+   \autoparagraphmode\zerocount}
 
 \permanent\protected\def\stoptikzsettings
-  {\popoverloadmode}
+  {\autoparagraphmode\plusone
+   \popoverloadmode}
 
 \permanent\protected\def\starttikzpicture
   {\dontleavehmode
    \hcontainer\bgroup
+   \autoparagraphmode\zerocount
  % \pushoverloadmode
    \ifdefined\PackageError\else \let\PackageError\tikzerrormessage \fi
    \tikzpicture}
@@ -68,33 +77,18 @@
  % \popoverloadmode
    \egroup}
 
-% \input t-pgf.tex
-
 \ifx\pgfdefined\undefined
 
     \let\pgfdefined\relax
 
-   % \input t-pgfcor.tex
-
     \ifx\pgfcoredefined\undefined
 
-        \let\pgfcoredefined=\relax
+        \let\pgfcoredefined\relax
 
-        \input t-pgfsys.tex
-
-        \edef\pgfcoreatcode     {\the\catcode`\@}
-        \edef\pgfcorebarcode    {\the\catcode`\|}
-        \edef\pgfcoreexclaimcode{\the\catcode`\!}
-
-        \catcode`\@=11
-        \catcode`\|=12
-        \catcode`\!=12
-
-        \input pgfcore.code.tex
-
-        \catcode`\@=\pgfcoreatcode
-        \catcode`\|=\pgfcorebarcode
-        \catcode`\!=\pgfcoreexclaimcode
+        \tikzinputfile{pgfsys.code.tex}
+        \tikzinputfile{pgfsyssoftpath.code.tex}
+        \tikzinputfile{pgfsysprotocol.code.tex}
+        \tikzinputfile{pgfcore.code.tex}
 
         \let\startpgfpicture             \pgfpicture              \let\stoppgfpicture            \endpgfpicture
         \let\startpgfscope               \pgfscope                \let\stoppgfscope              \endpgfscope
@@ -104,6 +98,13 @@
         \let\startpgfinterruptboundingbox\pgfinterruptboundinbox  \let\stoppgfinterruptboudingbox\endpgfinterruptboundingbox
 
     \fi
+
+    \let\normalusepgfmodule\usepgfmodule
+
+    \protected\def\usepgfmodule[#1]%
+      {\starttikzinput
+       \normalusepgfmodule[#1]%
+       \stoptikzinput}
 
     \usepgfmodule[shapes,plot]
 

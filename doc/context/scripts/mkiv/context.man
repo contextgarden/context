@@ -188,6 +188,15 @@ process extra (mtx-context-... in distribution)
 .TP
 .B --extras
 show extras
+.TP
+.B --ownerpassword
+
+.TP
+.B --userpassword
+
+.TP
+.B --permissions
+
 .SH OPTIONS: SPECIAL
 .TP
 .B --pdftex

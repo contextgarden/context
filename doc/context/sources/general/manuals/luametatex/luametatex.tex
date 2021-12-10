@@ -102,6 +102,16 @@
 \enableexperiments[fonts.compact]
 % \enabledirectives[fonts.injections.method=advance] % tricky ... not all xoffsets are advance robust
 
+% This is only for testing, use the command line (or banner line) instead.
+%
+% \startluacode
+%     lpdf.setencryption {
+%         ownerpassword = "password",
+%         userpassword  = "",
+%         permissions   = "print,quality"
+%     }
+% \stopluacode
+
 \pushoverloadmode \unprotect
     % test code
 \protect \popoverloadmode

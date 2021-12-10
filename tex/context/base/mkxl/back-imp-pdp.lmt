@@ -33,7 +33,7 @@ local cardinal_value   = values.cardinal
 
 local immediate_code   = tex.flagcodes.immediate
 
-local trace            = false  trackers.register("backend", function(v) trace = v end)
+local trace            = false  trackers.register("backend.primitives", function(v) trace = v end)
 local report           = logs.reporter("backend")
 
 local nodepool         = nodes.pool
@@ -213,7 +213,7 @@ local extensions = {
 }
 
 local function pdf_extension()
-    local w = scanword()
+    local w = scanword(false)
     if w then
         local e = extensions[w]
         if e then
@@ -234,11 +234,11 @@ local feedbacks = {
 }
 
 local function pdf_feedback()
-    local w = scanword()
+    local w = scanword(false)
     if w then
         local f = feedbacks[w]
         if f then
-            f()
+            return f()
         else
             report("\\pdffeedback: unsupported %a",w)
         end
@@ -259,7 +259,7 @@ local variables = {
 }
 
 local function pdf_variable()
-    local w = scanword()
+    local w = scanword(false)
     if w then
         local f = variables[w]
         if f then
@@ -274,8 +274,8 @@ end
 
 -- kept (also because tikz needs including the pdftex primitives):
 
-implement { name = "pdfextension", actions = pdf_extension, public = true, untraced = true, protected = true }
-implement { name = "pdffeedback",  actions = pdf_feedback,  public = true, untraced = true } -- expandable / todo : value
+implement { name = "pdfextension", actions = pdf_extension, public = true, untraced = true } -- , protected = true }
+implement { name = "pdffeedback",  actions = pdf_feedback,  public = true, usage = "value", untraced = true } -- expandable / todo : value
 implement { name = "pdfvariable",  actions = pdf_variable,  public = true, untraced = true } -- expandable / todo : value
 implement { name = "pdfliteral",   actions = pdf_literal,   public = true, untraced = true, protected = true }
 implement { name = "pdfobj",       actions = pdf_obj,       public = true, usage = "value", protected = true }

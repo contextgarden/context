@@ -17,7 +17,6 @@ local find = string.find
 
 -- here we implement the resolver
 
-
 local nameonly      = file.nameonly
 local joinfile      = file.join
 local addsuffix     = file.addsuffix

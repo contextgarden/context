@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2021.12.03 15:17}
+\immutable\edef\contextversion{2021.12.10 11:29}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -398,7 +398,7 @@
 \loadmkxlfile{tabl-tab} % thrd-tab stripped and merged
 
 \loadmkxlfile{tabl-tbl}
-\loadmkxlfile{tabl-ntb}
+\doiffileelse{tabl-ntb-new.mkxl}{\loadmkxlfile{tabl-ntb-new}}{\loadmkxlfile{tabl-ntb}}
 \loadmkxlfile{tabl-nte}
 \loadmkxlfile{tabl-ltb}
 \loadmkxlfile{tabl-frm}

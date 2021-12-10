@@ -49,8 +49,8 @@
 
     \starttypescript [\s!math][newcomputermodern] [\s!name]
       % \loadfontgoodies[newcomputermodern-math] ,\s!goodies=newcomputermodern-math
-        \definefontsynonym[\s!MathRoman]    [\s!file:newcmmath-regular][\s!features={\s!math\mathsizesuffix,mathextra}]
-        \definefontsynonym[\s!MathRomanBold][\s!file:newcmmath-regular][\s!features={\s!math\mathsizesuffix,newcomputermodern-math-bold,mathextra}]
+        \definefontsynonym[\s!MathRoman]    [\s!file:newcmmath-regular][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=lm]
+        \definefontsynonym[\s!MathRomanBold][\s!file:newcmmath-regular][\s!features={\s!math\mathsizesuffix,newcomputermodern-math-bold,mathextra}\s!goodies=lm]
     \stoptypescript
 
     \starttypescript [\s!serif] [newcomputermodern-book] [\s!name]

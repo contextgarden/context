@@ -792,6 +792,10 @@ function scripts.context.run(ctxdata,filename)
             local trackers      = combine("trackers")
             local experiments   = combine("experiments")
             --
+            local ownerpassword = environment.ownerpassword or analysis.ownerpassword
+            local userpassword  = environment.userpassword  or analysis.userpassword
+            local permissions   = environment.permissions   or analysis.permissions
+            --
             if formatfile and scriptfile then
                 local suffix     = validstring(getargument("suffix"))
                 local resultname = validstring(getargument("result"))
@@ -858,6 +862,10 @@ function scripts.context.run(ctxdata,filename)
                     export         = a_export and true or nil,
                     nocompression  = a_nocompression and true or nil,
                     texmfbinpath   = os.selfdir,
+                    --
+                    ownerpassword  = ownerpassword,
+                    userpassword   = userpassword,
+                    permissions    = permissions,
                 }
                 --
                 for k, v in next, environment.arguments do

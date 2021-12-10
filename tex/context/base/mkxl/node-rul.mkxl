@@ -171,6 +171,8 @@
 %      +\csname\??barattribute#1\ifcsname\??bar#1:\number\c_node_rules_index\s!parent\endcsname:\number\c_node_rules_index\fi\endcsname
 %    \relax}
 
+%D \overbar{Über} \underbar{Unterstrich \underbar{steigt \overbar{auf} den \underbar{Unterberg}}}.
+%D
 %D \underbar {\underbar {\samplefile{tufte}}}\par
 %D \underbar {\underdot {\samplefile{tufte}}}\par
 %D \underbar {\underdot {\samplefile{tufte}}}\par
@@ -179,10 +181,12 @@
 %D \underbar {\underdots{\samplefile{tufte}}}\par
 %D \underdots{\underdots{\samplefile{tufte}}}\par
 
-\newcount\c_node_rules_index % can barindex go?
+\newcount   \c_node_rules_index
+\integerdef \c_node_rules_used        \zerocount
+\mutable\let\m_node_rules_previous_bar\empty
 
 \permanent\protected\def\node_rules_set#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
-  {\let\previousbar\currentbar
+  {\let\m_node_rules_previous_bar\currentbar
    \edef\currentbar{#1}%
    \usebarstyleandcolor\c!foregroundstyle\c!foregroundcolor
    % maybe: \usebarstyleandcolor\c!textgroundstyle\c!textcolor
@@ -190,19 +194,32 @@
  % \expandafter\let\expandafter\c_node_rules_index\csname\??barindex#1\endcsname
    \advance\c_node_rules_index\plusone
    \clf_enablerules % will be relaxed
-   \ifempty\previousbar
+   \edef\p_level{\barparameter\c!level}%
+   \ifx\p_level\v!yes
+     \integerdef\c_node_rules_used\c_node_rules_index
      \c_attr_ruled
-   \orelse\ifx\previousbar\currentbar
+   \orelse\ifx\p_level\v!auto
+     \integerdef\c_node_rules_used\c_node_rules_index
+     \ifempty\m_node_rules_previous_bar
+       \c_attr_ruled
+     \orelse\ifx\m_node_rules_previous_bar\currentbar
+       \c_attr_ruled
+     \else
+       \clf_enableextrarules % will be relaxed
+       \c_attr_ruledextra
+     \fi
+   \orelse\ifchknum\p_level\or
+     \integerdef\c_node_rules_used\p_level
      \c_attr_ruled
    \else
-     \clf_enableextrarules % will be relaxed
-     \c_attr_ruledextra
+     \integerdef\c_node_rules_used\c_node_rules_index
+     \c_attr_ruled
    \fi
-     \numexpr
-        \plusthousand*\c_node_rules_index
-        % optimizing this one needs testing
-       +\csname\??barattribute#1\ifcsname\??bar#1:\number\c_node_rules_index\s!parent\endcsname:\number\c_node_rules_index\fi\endcsname
-     \relax}
+   \numexpr
+     \plusthousand*\c_node_rules_used
+     % optimizing this one needs testing
+    +\csname\??barattribute#1\ifcsname\??bar#1:\number\c_node_rules_index\s!parent\endcsname:\number\c_node_rules_used\fi\endcsname
+   \relax}
 
 \permanent\protected\def\resetbar
   {\c_attr_ruled     \attributeunsetvalue
@@ -247,6 +264,7 @@
 \setupbars
   [\c!method=0,                 % new: 0=center nested, 1=stack nested
    \c!continue=\v!no,
+   \c!level=\v!yes,
    \c!empty=,                   % new: yes = hide text
    \c!offset=0,                 % upwards, replaces: topoffset bottomoffset
    \c!dy=0,
@@ -379,6 +397,7 @@
 \definebar
   [undergraphic]
   [\c!mp=rules:under:dash,
+   \c!level=\v!auto,
    \c!offset=-.2,
    \c!dy=.4,
    \c!continue=\v!yes,

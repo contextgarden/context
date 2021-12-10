@@ -57,7 +57,7 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local concat = table.concat
-local char, byte, format, sub = string.char, string.byte, string.format, string.sub
+local char, byte, format, sub, tohex = string.char, string.byte, string.format, string.sub, string.tohex
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, utf.values
 local sind, cosd, max, min = math.sind, math.cosd, math.max, math.min
 local sort, sortedhash = table.sort, table.sortedhash
@@ -71,7 +71,6 @@ local report_finalizing = logs.reporter("backend","finalizing")
 local report_blocked    = logs.reporter("backend","blocked")
 
 local implement         = interfaces and interfaces.implement
-
 local context           = context
 
 -- In ConTeXt MkIV we use utf8 exclusively so all strings get mapped onto a hex
@@ -81,7 +80,7 @@ local context           = context
 pdf                     = type(pdf) == "table" and pdf or { }
 local factor            = number.dimenfactors.bp
 
-local pdfbackend        = backends.registered.pdf
+local pdfbackend        = backends and backends.registered.pdf or { }
 local codeinjections    = pdfbackend.codeinjections
 local nodeinjections    = pdfbackend.nodeinjections
 
@@ -223,6 +222,8 @@ do
             return lpegmatch(unified,str)
         end
     end
+
+    -- we could make a helper for this
 
     local more = 0
 
@@ -1167,7 +1168,7 @@ end
 
 -- return formatters["BT /Span << /ActualText (CONTEXT) >> BDC [<feff>] TJ % t EMC ET"](code)
 
-do
+if implement then
 
     local f_actual_text_p     = formatters["BT /Span << /ActualText <feff%s> >> BDC %s EMC ET"]
     local f_actual_text_b     = formatters["BT /Span << /ActualText <feff%s> >> BDC"]
@@ -1232,17 +1233,21 @@ end
 -- Bah, tikz uses \immediate for some reason which is probably a bug, so the usage
 -- will deal with that. However, we will not provide the serialization.
 
-implement { name = "pdfbackendcurrentresources",                   public = true, untraced  = true,                            actions = { lpdf.collectedresources, context } }
-implement { name = "pdfbackendsetcatalog",        usage = "value", public = true, protected = true, arguments = "2 arguments", actions = lpdf.addtocatalog }
-implement { name = "pdfbackendsetinfo",           usage = "value", public = true, protected = true, arguments = "2 arguments", actions = function(a,b,c) lpdf.addtoinfo(a,b,c) end } -- gets adapted
-implement { name = "pdfbackendsetname",           usage = "value", public = true, protected = true, arguments = "2 arguments", actions = lpdf.addtonames }
-implement { name = "pdfbackendsetpageattribute",  usage = "value", public = true, protected = true, arguments = "2 arguments", actions = lpdf.addtopageattributes }
-implement { name = "pdfbackendsetpagesattribute", usage = "value", public = true, protected = true, arguments = "2 arguments", actions = lpdf.addtopagesattributes }
-implement { name = "pdfbackendsetpageresource",   usage = "value", public = true, protected = true, arguments = "2 arguments", actions = lpdf.addtopageresources }
-implement { name = "pdfbackendsetextgstate",      usage = "value", public = true, protected = true, arguments = "2 arguments", actions = function(a,b) lpdf.adddocumentextgstate (a,pdfverbose(b)) end }
-implement { name = "pdfbackendsetcolorspace",     usage = "value", public = true, protected = true, arguments = "2 arguments", actions = function(a,b) lpdf.adddocumentcolorspace(a,pdfverbose(b)) end }
-implement { name = "pdfbackendsetpattern",        usage = "value", public = true, protected = true, arguments = "2 arguments", actions = function(a,b) lpdf.adddocumentpattern   (a,pdfverbose(b)) end }
-implement { name = "pdfbackendsetshade",          usage = "value", public = true, protected = true, arguments = "2 arguments", actions = function(a,b) lpdf.adddocumentshade     (a,pdfverbose(b)) end }
+if implement then
+
+    implement { name = "pdfbackendcurrentresources",                   public = true, untraced  = true,                            actions = { lpdf.collectedresources, context } }
+    implement { name = "pdfbackendsetcatalog",        usage = "value", public = true, protected = true, arguments = "2 arguments", actions = lpdf.addtocatalog }
+    implement { name = "pdfbackendsetinfo",           usage = "value", public = true, protected = true, arguments = "2 arguments", actions = function(a,b,c) lpdf.addtoinfo(a,b,c) end } -- gets adapted
+    implement { name = "pdfbackendsetname",           usage = "value", public = true, protected = true, arguments = "2 arguments", actions = lpdf.addtonames }
+    implement { name = "pdfbackendsetpageattribute",  usage = "value", public = true, protected = true, arguments = "2 arguments", actions = lpdf.addtopageattributes }
+    implement { name = "pdfbackendsetpagesattribute", usage = "value", public = true, protected = true, arguments = "2 arguments", actions = lpdf.addtopagesattributes }
+    implement { name = "pdfbackendsetpageresource",   usage = "value", public = true, protected = true, arguments = "2 arguments", actions = lpdf.addtopageresources }
+    implement { name = "pdfbackendsetextgstate",      usage = "value", public = true, protected = true, arguments = "2 arguments", actions = function(a,b) lpdf.adddocumentextgstate (a,pdfverbose(b)) end }
+    implement { name = "pdfbackendsetcolorspace",     usage = "value", public = true, protected = true, arguments = "2 arguments", actions = function(a,b) lpdf.adddocumentcolorspace(a,pdfverbose(b)) end }
+    implement { name = "pdfbackendsetpattern",        usage = "value", public = true, protected = true, arguments = "2 arguments", actions = function(a,b) lpdf.adddocumentpattern   (a,pdfverbose(b)) end }
+    implement { name = "pdfbackendsetshade",          usage = "value", public = true, protected = true, arguments = "2 arguments", actions = function(a,b) lpdf.adddocumentshade     (a,pdfverbose(b)) end }
+
+end
 
 -- more helpers: copy from lepd to lpdf
 

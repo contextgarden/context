@@ -223,6 +223,17 @@
                     <short>show extras</short>
                 </flag>
             </subcategory>
+            <subcategory>
+                <flag name="ownerpassword">
+                    encrypt the (pdf) file using this master password
+                </flag>
+                <flag name="userpassword">
+                    use an additional password for opening the document
+                </flag>
+                <flag name="permissions">
+                    list of: print, modify, extract, add, fillin, assemble, quality
+                </flag>
+            </subcategory>
         </category>
         <category name="special">
             <subcategory>

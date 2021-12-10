@@ -79,6 +79,7 @@
 \setinterfacevariable{anchor}{anchor}
 \setinterfacevariable{and}{und}
 \setinterfacevariable{answerarea}{answerarea}
+\setinterfacevariable{append}{append}
 \setinterfacevariable{appendices}{anhaenge}
 \setinterfacevariable{appendix}{anhang}
 \setinterfacevariable{april}{april}
@@ -150,6 +151,7 @@
 \setinterfacevariable{commands}{befehle}
 \setinterfacevariable{comment}{kommentar}
 \setinterfacevariable{component}{komponente}
+\setinterfacevariable{compress}{compress}
 \setinterfacevariable{compressseparator}{compressseparator}
 \setinterfacevariable{compressstopper}{compressstopper}
 \setinterfacevariable{concept}{konzept}
@@ -186,6 +188,7 @@
 \setinterfacevariable{enumeration}{nummerierung}
 \setinterfacevariable{environment}{umgebung}
 \setinterfacevariable{even}{gerade}
+\setinterfacevariable{explicit}{explicit}
 \setinterfacevariable{export}{export}
 \setinterfacevariable{external}{extern}
 \setinterfacevariable{extremestretch}{extremestretch}
@@ -207,6 +210,8 @@
 \setinterfacevariable{fixed}{fest}
 \setinterfacevariable{flexible}{flexibel}
 \setinterfacevariable{float}{gleitobjekt}
+\setinterfacevariable{flushbackward}{flushbackward}
+\setinterfacevariable{flushforward}{flushforward}
 \setinterfacevariable{flushinner}{flushinner}
 \setinterfacevariable{flushleft}{flushleft}
 \setinterfacevariable{flushouter}{flushouter}
@@ -310,6 +315,7 @@
 \setinterfacevariable{lefthanging}{lefthanging}
 \setinterfacevariable{leftmargin}{linkerrand}
 \setinterfacevariable{leftpage}{linkerseite}
+\setinterfacevariable{lefttext}{linkertext}
 \setinterfacevariable{lefttoright}{lefttoright}
 \setinterfacevariable{legend}{legende}
 \setinterfacevariable{less}{less}
@@ -434,6 +440,7 @@
 \setinterfacevariable{postscript}{postscript}
 \setinterfacevariable{precedingpage}{precedingpage}
 \setinterfacevariable{preference}{einstellung}
+\setinterfacevariable{prepend}{prepend}
 \setinterfacevariable{preview}{vorschau}
 \setinterfacevariable{previous}{vorig}
 \setinterfacevariable{previousevenpage}{vorigegeradeseite}
@@ -470,6 +477,7 @@
 \setinterfacevariable{righthanging}{righthanging}
 \setinterfacevariable{rightmargin}{rechterrand}
 \setinterfacevariable{rightpage}{rechterseite}
+\setinterfacevariable{righttext}{rechtertext}
 \setinterfacevariable{righttoleft}{righttoleft}
 \setinterfacevariable{roman}{antiqua}
 \setinterfacevariable{romannumerals}{roemischezahlen}
@@ -1236,6 +1244,7 @@
 \setinterfaceconstant{splitoffset}{splitoffset}
 \setinterfaceconstant{spot}{spot}
 \setinterfaceconstant{stack}{stack}
+\setinterfaceconstant{stacking}{stacking}
 \setinterfaceconstant{stackname}{stackname}
 \setinterfaceconstant{start}{start}
 \setinterfaceconstant{starter}{starter}
@@ -1273,6 +1282,7 @@
 \setinterfaceconstant{tab}{tab}
 \setinterfaceconstant{text}{text}
 \setinterfaceconstant{textalign}{textalign}
+\setinterfaceconstant{textalternative}{textalternative}
 \setinterfaceconstant{textcolor}{textfarbe}
 \setinterfaceconstant{textcommand}{textbefehl}
 \setinterfaceconstant{textdistance}{textdistance}
@@ -1364,6 +1374,8 @@
 \setinterfaceelement{load}{laden}
 \setinterfaceelement{local}{lokal}
 \setinterfaceelement{makeup}{umbruch}
+\setinterfaceelement{namednotation}{namednotation}
+\setinterfaceelement{namedtyping}{namedtyping}
 \setinterfaceelement{next}{folgende}
 \setinterfaceelement{place}{platziere}
 \setinterfaceelement{previous}{vorige}
@@ -1532,6 +1544,7 @@
 \setinterfacecommand{definereferencelist}{definierereferenzliste}
 \setinterfacecommand{defineregister}{definiereregister}
 \setinterfacecommand{definerule}{definerule}
+\setinterfacecommand{definesavebuffer}{startsavebuffer}
 \setinterfacecommand{definesection}{definiereabschnitt}
 \setinterfacecommand{definesectionblock}{definiereabschnittsblock}
 \setinterfacecommand{definesorting}{definieresortieren}
@@ -1708,6 +1721,9 @@
 \setinterfacecommand{moveformula}{moveformula}
 \setinterfacecommand{moveongrid}{amgitterneuausrichten}
 \setinterfacecommand{movesidefloat}{movesidefloat}
+\setinterfacecommand{namedconstruction}{namedconstruction}
+\setinterfacecommand{nameddescription}{nameddescription}
+\setinterfacecommand{namedenumeration}{namedenumeration}
 \setinterfacecommand{navigating}{navigating}
 \setinterfacecommand{nodimension}{keindimension}
 \setinterfacecommand{noheaderandfooterlines}{keinekopfundfusszeilen}
@@ -2079,6 +2095,13 @@
 \setinterfacecommand{startmakeup}{startumbruch}
 \setinterfacecommand{startmarginblock}{startmarginalblock}
 \setinterfacecommand{startmarginrule}{startmarginallinie}
+\setinterfacecommand{startnamedconstruction}{startnamedconstruction}
+\setinterfacecommand{startnameddescription}{startnameddescription}
+\setinterfacecommand{startnamedenumeration}{startnamedenumeration}
+\setinterfacecommand{startnamedmatrix}{startnamedmatrix}
+\setinterfacecommand{startnamedsection}{startnamedsection}
+\setinterfacecommand{startnamedsubformulas}{startnamedsubformulas}
+\setinterfacecommand{startnamedtyping}{startnamedtyping}
 \setinterfacecommand{startnarrower}{startenger}
 \setinterfacecommand{startopposite}{startgegenueber}
 \setinterfacecommand{startoverlay}{startoverlay}
@@ -2122,6 +2145,13 @@
 \setinterfacecommand{stopmakeup}{stopumbruch}
 \setinterfacecommand{stopmarginblock}{stopmarginalblock}
 \setinterfacecommand{stopmarginrule}{stopmarginallinie}
+\setinterfacecommand{stopnamedconstruction}{stopnamedconstruction}
+\setinterfacecommand{stopnameddescription}{stopnameddescription}
+\setinterfacecommand{stopnamedenumeration}{stopnamedenumeration}
+\setinterfacecommand{stopnamedmatrix}{stopnamedmatrix}
+\setinterfacecommand{stopnamedsection}{stopnamedsection}
+\setinterfacecommand{stopnamedsubformulas}{stopnamedsubformulas}
+\setinterfacecommand{stopnamedtyping}{stopnamedtyping}
 \setinterfacecommand{stopnarrower}{stopenger}
 \setinterfacecommand{stopopposite}{stopgegenueber}
 \setinterfacecommand{stopoverlay}{stopoverlay}

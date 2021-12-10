@@ -65,33 +65,34 @@ local pdfimmediateobject     -- forward reference
 
 local pdfincludeimage        -- forward reference
 
-local pdf_pages      = pdfconstant("Pages")
-local pdf_page       = pdfconstant("Page")
-local pdf_xobject    = pdfconstant("XObject")
-local pdf_form       = pdfconstant("Form")
-local pdf_pattern    = pdfconstant("Pattern")
+local pdf_pages         = pdfconstant("Pages")
+local pdf_page          = pdfconstant("Page")
+local pdf_xobject       = pdfconstant("XObject")
+local pdf_form          = pdfconstant("Form")
+local pdf_pattern       = pdfconstant("Pattern")
 
-local fonthashes     = fonts.hashes
-local characters     = fonthashes.characters
-local descriptions   = fonthashes.descriptions
-local parameters     = fonthashes.parameters
-local properties     = fonthashes.properties
+local fonthashes        = fonts.hashes
+local characters        = fonthashes.characters
+local descriptions      = fonthashes.descriptions
+local parameters        = fonthashes.parameters
+local properties        = fonthashes.properties
 
-local report         = logs.reporter("backend")
-local report_objects = logs.reporter("backend","objects")
-local report_fonts   = logs.reporter("backend","fonts")
+local report            = logs.reporter("backend")
+local report_objects    = logs.reporter("backend","objects")
+local report_fonts      = logs.reporter("backend","fonts")
+local report_encryption = logs.reporter("backend","encryption")
 
-local trace_objects  = false  trackers.register("backend.objects",       function(v) trace_objects = v end)
-local trace_details  = false  trackers.register("backend.details",       function(v) trace_details = v end)
-local trace_indices  = false  trackers.register("backend.fonts.details", function(v) trace_indices = v end)
+local trace_objects     = false  trackers.register("backend.objects",       function(v) trace_objects = v end)
+local trace_details     = false  trackers.register("backend.details",       function(v) trace_details = v end)
+local trace_indices     = false  trackers.register("backend.fonts.details", function(v) trace_indices = v end)
 
 -- These two tables used a font id as index and will be metatabled in lpdf-emb.lmt:
 
-local usedfontnames   = { }
-local usedfontobjects = { }
+local usedfontnames     = { }
+local usedfontobjects   = { }
 
-lpdf.usedfontnames    = usedfontnames
-lpdf.usedfontobjects  = usedfontobjects
+lpdf.usedfontnames      = usedfontnames
+lpdf.usedfontobjects    = usedfontobjects
 
 -- experiment:
 
@@ -116,7 +117,9 @@ local flushers = { }
 
 -- used variables
 
-local pdf_h, pdf_v
+local pdf_h = 0
+local pdf_v = 0
+
 local need_tm, need_tf, need_font, cur_tmrx, cur_factor
 local need_width, need_mode, done_width, done_mode
 local mode
@@ -501,38 +504,6 @@ do
         t[font] = v
         return v
     end)
-
-    -- we need to use descriptions ... otherwise we get wrong dimensions when we use
-    -- characters[n].xoffset or virtual stuff
-
- -- local descriptionwidths = setmetatableindex(function(t,font)
- --     local d = descriptions[font]
- --     local c = characters[font]
- --     local f = parameters[font].hfactor or parameters[font].factor
- --     local v = setmetatableindex(function(t,char)
- --         local w
- --         local e = d and d[char]
- --         if e then
- --             w = e.width
- --             if w then
- --                 w =  w * f
- --             end
- --         end
- --         if not w then
- --             e = c and c[char]
- --             if e then
- --                 w = e.width or 0
- --             end
- --         end
- --         if not w then
- --             w = 0
- --         end
- --         t[char] = w
- --         return w
- --     end)
- --     t[font] = v
- --     return v
- -- end)
 
     -- it's about time to get rid of the pdftex based model but i'll wait with that till after
     -- the first release so that we have some test period ... when we go compact even less
@@ -1718,12 +1689,9 @@ local wrapupdocument, registerpage  do
             pdfflushobject(page.objnum,object)
         end
         lpdf.addtocatalog("Pages",pdfreference(parent))
-
     end
 
 end
-
-pdf_h, pdf_v  = 0, 0
 
 local function initialize(driver,details)
     reset_variables(details)
@@ -1735,7 +1703,309 @@ end
 -- todo: more clever resource management: a bit tricky as we can inject
 -- stuff in the page stream
 
-local compact = false
+local compact       = false
+local encryptstream = false
+local encryptobject = false
+local encdict       = nil
+local majorversion  = 1
+local minorversion  = 7
+
+-- Encryption
+
+-- This stuff is poorly documented so it took a while to figure out a way that made
+-- loading in a few programe working. Of course one you see the solution one can
+-- claim that it's easy and trivial. In the end we could even make acrobat accepting
+-- the file: it doesn't like the catalog to be in an object stream which to me
+-- smells like a bug.
+
+do
+
+    -- move up (some already) or better: lpdf-aes.lmt or so
+
+    local byte, sub, bytes, tohex, tobytes = string.byte, string.sub, string.bytes, string.tohex, string.tobytes
+    local P, S, V, Cs, lpegmatch, patterns = lpeg.P, lpeg.S, lpeg.V, lpeg.Cs, lpeg.match, lpeg.patterns
+
+    local digest256 = sha2.digest256
+    local digest384 = sha2.digest384
+    local digest512 = sha2.digest512
+
+    local aesencode = aes.encode
+    local aesdecode = aes.decode
+    local aesrandom = aes.random
+
+    -- random and padding functions are gone here
+
+    local function validpassword(str)
+        return #str > 127 and sub(str,1,127) or str
+    end
+
+    local encryptionkey = false
+    local objectparser  = false
+
+    do
+
+        local function ps_encrypt(str)
+            -- string is already unescaped
+            str = aesencode(str,encryptionkey,true,true,true)
+            return "<" .. tohex(str) .. ">"
+        end
+
+        local function hex_encrypt(str)
+            -- string needs to be decoded
+            str = tobytes(str)
+            str = aesencode(str,encryptionkey,true,true,true)
+            return "<" .. tohex(str) .. ">"
+        end
+
+        local whitespace  = S("\000\009\010\012\013\032")^1
+        local anything    = patterns.anything
+        local space       = patterns.space
+        local spacing     = whitespace^0
+        local newline     = patterns.eol
+        local cardinal    = patterns.cardinal
+
+        local p_psstring  = (
+                              P("(")
+                            * Cs(P { ( P("\\")/"" * anything + P("(") * V(1) * P(")") + (1 - P(")")) )^0 })
+                            * P(")")
+                          ) / ps_encrypt
+
+        local p_hexstring = (
+                              P("<")
+                            * Cs((1-P(">"))^1)
+                            * P(">")
+                          ) / hex_encrypt
+
+        local p_comment   = P("%") * (1-newline)^1 * newline^1
+        local p_name      = P("/") * (1 - whitespace - S("<>/[]()"))^1
+        local p_number    = patterns.number
+        local p_boolean   = P("true") + P("false")
+        local p_null      = P("null")
+        local p_reference = cardinal * spacing * cardinal * spacing * P("R")
+
+        local p_other     = p_name + p_reference + p_psstring + p_hexstring + p_number
+                          + p_boolean + p_null + p_comment
+
+        local p_dictionary  = { "dictionary",
+            dictionary = (
+                P("<<")
+              * (spacing * p_name * spacing * V("whatever"))^0
+              * spacing
+              * P(">>")
+            ),
+            array = (
+                P("[")
+              * (spacing * V("whatever"))^0
+              * spacing
+              * P("]")
+            ),
+            whatever = (
+                V("dictionary")
+              + V("array")
+              + p_other
+            ),
+        }
+
+        local p_object = P { "object",
+            dictionary = p_dictionary.dictionary,
+            array      = p_dictionary.array,
+            whatever   = p_dictionary.whatever,
+            object     = spacing * (V("dictionary") + V("array") + p_other)
+        }
+
+     -- local p_object = cardinal
+     --                * spacing
+     --                * cardinal
+     --                * spacing
+     --                * P("obj")
+     --                * p_object
+     --                * P(1)^0
+     --
+     -- objectparser = Cs(p_object^1)
+
+        objectparser = Cs(p_object^1)
+
+    end
+
+    local function makehash(password,salt,userkey)
+        local k = digest256(password .. salt .. (userkey or ""))
+        local n = 0
+        while true do
+            local k1 = rep(password .. k .. (userkey or ""),64)
+            local k2 = sub(k,1,16)
+            local iv = sub(k,17,32)
+            local e = aesencode(k1,k2,iv)
+            local m = 0
+            local i = 1
+            for b in bytes(e) do
+                m = m + b
+                if i == 16 then
+                    break
+                else
+                    i = i + 1
+                end
+            end
+            m = m % 3
+            if m == 0 then
+                k = digest256(e)
+            elseif m == 1 then
+                k = digest384(e)
+            else
+                k = digest512(e)
+            end
+            n = n + 1
+            if n >= 64 and byte(sub(e,-1)) <= (n - 32) then
+                break
+           end
+        end
+        return sub(k,1,32)
+    end
+
+    local options = {
+     -- unknown  = 0x0001, -- bit  1
+     -- unknown  = 0x0002, -- bit  2
+        print    = 0x0004, -- bit  3
+        modify   = 0x0008, -- bit  4
+        extract  = 0x0010, -- bit  5
+        add      = 0x0020, -- bit  6
+     -- unknown  = 0x0040, -- bit  7
+     -- unknown  = 0x0080, -- bit  8
+        fillin   = 0x0100, -- bit  9
+        access   = 0x0200, -- bit 10
+        assemble = 0x0400, -- bit 11
+        quality  = 0x0800, -- bit 12
+     -- unknown  = 0x1000, -- bit 13
+     -- unknown  = 0x2000, -- bit 14
+     -- unknown  = 0x4000, -- bit 15
+     -- unknown  = 0x8000, -- bit 16
+    }
+
+    -- 1111 0000 1100 0011
+
+    local mandate  = 0x0200
+    local defaults = options.print | options.extract | options.quality
+
+    -- majorversion = 2
+    -- minorversion = 0
+
+    function lpdf.setencryption(specification)
+        if not encryptstream then
+            local ownerpassword = specification.ownerpassword
+            local userpassword  = specification.userpassword
+            local optionlist    = specification.permissions
+            if type(ownerpassword) == "string" and ownerpassword ~= "" then
+                --
+                if type(userpassword) ~= "string" then
+                    userpassword = ""
+                end
+                userpassword  = validpassword(userpassword)
+                ownerpassword = validpassword(ownerpassword)
+                --
+                encryptionkey = aesrandom(32) -- used earlier on
+                --
+                local permissions = mandate
+                if optionlist then
+                    optionlist = utilities.parsers.settings_to_array(optionlist)
+                    for i=1,#optionlist do
+                        local p = options[optionlist[i]]
+                        if p then
+                            permissions = permissions | p
+                        end
+                    end
+                else
+                    permissions = permissions | defaults
+                end
+                --
+                permissions = permissions | 0xF0C3 -- needs work
+                --
+                optionlist = { }
+                for k, v in table.sortedhash(options) do
+                    if permissions & v == v then
+                        optionlist[#optionlist+1] = k
+                    end
+                end
+                --
+                local uservalidationsalt  = aesrandom(8)
+                local userkeysalt         = aesrandom(8)
+                local userhash            = makehash(userpassword,uservalidationsalt)
+                local userkey             = userhash .. uservalidationsalt .. userkeysalt -- U
+                local userintermediate    = makehash(userpassword,userkeysalt)
+                local useraes             = aesencode(encryptionkey,userintermediate) -- UE
+                --
+                local ownervalidationsalt = aesrandom(8)
+                local ownerkeysalt        = aesrandom(8)
+                local ownerhash           = makehash(ownerpassword,ownervalidationsalt,userkey)
+                local ownerkey            = ownerhash .. ownervalidationsalt .. ownerkeysalt -- O
+                local ownerintermediate   = makehash(ownerpassword,ownerkeysalt,userkey)
+                local owneraes            = aesencode(encryptionkey,ownerintermediate) -- OE
+                --
+                -- still not ok test in qpdf
+                --
+                local permissionsstring   = sio.tocardinal4(0xFFFFFFFF)
+                                         .. sio.tocardinal4(permissions)
+                                         .. "T" -- EncryptMetadata
+                                         .. "adb"
+                                         .. aesrandom(4)
+                local permissionsaes      = aesencode(permissionsstring,encryptionkey)
+                --
+                permissionsaes = tohex(permissionsaes)
+                userkey        = tohex(userkey)
+                ownerkey       = tohex(ownerkey)
+                useraes        = tohex(useraes)
+                owneraes       = tohex(owneraes)
+                --
+                encdict  = pdfdictionary {
+                    Filter = pdfconstant("Standard"),
+                    V      = 5,   -- variant
+                    R      = 6,   -- revision
+                    Length = 256, -- not needed
+                    StmF   = pdfconstant("StdCF"),
+                    StrF   = pdfconstant("StdCF"),
+                    P      = permissions,
+                    Perms  = pdfliteral(permissionsaes,true), -- #16
+                    U      = pdfliteral(userkey,       true), -- #48
+                    O      = pdfliteral(ownerkey,      true), -- #48
+                    UE     = pdfliteral(useraes,       true), -- #32
+                    OE     = pdfliteral(owneraes,      true), -- #32
+                    CF     = {
+                        StdCF = {
+                            AuthEvent = pdfconstant("DocOpen"),
+                            CFM       = pdfconstant("AESV3"),
+                            Length    = 32, -- #encryptionkey
+                        }
+                    },
+                    -- bonus
+                    EncryptMetadata = true,
+                }
+                --
+                encryptstream = function(str)
+                    return aesencode(str,encryptionkey,true,true,true) -- random-iv add-iv add-padding
+                end
+                encryptobject = function(obj)
+                    if obj then
+                        if type(obj) == "table" then
+                            obj = obj()
+                        end
+                        return lpegmatch(objectparser,obj) or obj
+                    end
+                end
+                --
+                report_encryption("stream objects get encrypted")
+                if not objectstream then
+                    report_encryption("strings are not encrypted, enable object streams")
+                end
+                report_encryption("permissions: % t",optionlist)
+                if userpassword == "" then
+                    report_encryption("no user password")
+                end
+                --
+            end
+        end
+    end
+
+    backends.registered.pdf.codeinjections.setencryption = lpdf.setencryption
+
+end
 
 do
 
@@ -1790,7 +2060,6 @@ do
             return string.format("old size: %i, new size %i",oldsize,newsize)
         end
     end)
-
 
 end
 
@@ -2003,8 +2272,6 @@ local cache         = false
 local info          = ""
 local catalog       = ""
 local lastdeferred  = false
-local majorversion  = 1
-local minorversion  = 7
 
 directives.register("backend.pdf.threshold",function(v)
     if v then
@@ -2142,13 +2409,17 @@ local addtocache, flushcache, cache do
             else
                 fb = f_stream_b_d_u
             end
-            local s = #data
-            local b = fb(cache,strobj(),s)
+            local size = #data
+            if encryptstream then
+                data = encryptstream(data)
+                size = #data
+            end
+            local b = fb(cache,strobj(),size)
             local e = s_stream_e
             flush(f,b)
             flush(f,data)
             flush(f,e)
-            offset = offset + #b + s + #e
+            offset = offset + #b + size + #e
             data, d = { }, 0
             list, l = { }, 0
             coffset = 0
@@ -2257,6 +2528,7 @@ do
             nolength   = true
          -- data       = string.formatters["<< %s >>stream\n%s\nendstream"](attr,data)
         end
+
         return pdfdeferredobject {
             objnum        = objnum,
             immediate     = true,
@@ -2342,6 +2614,9 @@ local function flushnormalobj(data,n)
         nofobjects = nofobjects + 1
         n = nofobjects
     end
+    if encryptobject then
+        data = encryptobject(data)
+    end
     data = f_object(n,data)
     if level == 0 then
         objects[n] = offset
@@ -2371,12 +2646,21 @@ local function flushstreamobj(data,n,dict,comp,nolength)
     if comp ~= false then
         comp = compress and size > threshold
     end
+    if encryptobject then
+        dict = encryptobject(dict)
+    end
     if level == 0 then
         local b = nil
         local e = s_stream_e
         if nolength then
+            -- probleem: we need to adapt length!
             b = f_stream_b_d_r(n,dict) -- raw object, already treated
-        else
+            if encryptstream then
+print("check length")
+                data = encryptstream(data)
+                size = #data
+            end
+       else
             if comp then
                 local compdata = compressdata(data,size)
                 if compdata then
@@ -2391,6 +2675,10 @@ local function flushstreamobj(data,n,dict,comp,nolength)
                     comp = false
                 end
             end
+            if encryptstream then
+                data = encryptstream(data)
+                size = #data
+            end
             if comp then
                 b = dict and f_stream_b_d_c(n,dict,size) or f_stream_b_n_c(n,size)
             else
@@ -2404,6 +2692,10 @@ local function flushstreamobj(data,n,dict,comp,nolength)
         offset = offset + #b + size + #e
     else
         if nolength then
+            if encryptstream then
+print("check length")
+                data = encryptstream(data)
+            end
             data = f_stream_d_r(n,dict,data) -- raw object, already treated
         else
             if comp then
@@ -2419,6 +2711,10 @@ local function flushstreamobj(data,n,dict,comp,nolength)
                 else
                     comp = false
                 end
+            end
+            if encryptstream then
+                data = encryptstream(data)
+                size = #data
             end
             if comp then
                 data = dict and f_stream_d_c(n,dict,size,data) or f_stream_n_c(n,size,data)
@@ -2555,10 +2851,17 @@ local openfile, closefile  do
  -- local banner <const> = "%\xCC\xD5\xC1\xD4\xC5\xD8\xD0\xC4\xC6\010"     -- LUATEXPDF  (+128)
     local banner <const> = "%\xC3\xCF\xCE\xD4\xC5\xD8\xD4\xD0\xC4\xC6\010" -- CONTEXTPDF (+128)
 
-
- -- local removefile = os.remove
-
     openfile = function(filename)
+        --
+        local arguments = environment.arguments
+        if arguments.ownerpassword then
+            lpdf.setencryption {
+                ownerpassword = arguments.ownerpassword,
+                userpassword  = arguments.userpassword,
+                permissions   = arguments.permissions,
+            }
+        end
+        --
         if inmemory then
             local n = 0
             f = { }
@@ -2631,9 +2934,17 @@ local openfile, closefile  do
             local xrefoffset = offset
             local lastfree   = 0
             local noffree    = 0
+            --
+            local os = objectstream
+            if encryptstream then
+                objectstream = false
+            end
             local catalog    = lpdf.getcatalog()
+            objectstream = os
+            --
             local info       = lpdf.getinfo()
             local trailerid  = lpdf.gettrailerid()
+
             if objectstream then
                 flushdeferred()
                 flushcache()
@@ -2752,38 +3063,70 @@ local openfile, closefile  do
                 local data = concat(objects,"",0,nofobjects)
                 local size = #data
                 local xref = pdfdictionary {
-                    Type  = pdfconstant("XRef"),
-                    Size  = nofobjects + 1,
-                    W     = pdfarray { 1, nofbytes, 1 },
-                    Root  = catalog,
-                    Info  = info,
-                    ID    = trailerid and pdfarray { pdfliteral(trailerid,true), pdfliteral(trailerid,true) } or nil,
+                    Type    = pdfconstant("XRef"),
+                    Size    = nofobjects + 1,
+                    W       = pdfarray { 1, nofbytes, 1 },
+                    Root    = catalog,
+                    Info    = info,
+                    ID      = trailerid and pdfarray { pdfliteral(trailerid,true), pdfliteral(trailerid,true) } or nil,
+                    Encrypt = encdict or nil,
                 }
                 local fb
-                if compress then
-                    local comp = compressdata(data,size)
-                    if comp then
-                        data = comp
-                        size = #data
-                        fb = f_stream_b_d_c
+             -- if encryptstream then
+             --     if compress then
+             --         local comp = compressdata(data,size)
+             --         if comp then
+             --             data = comp
+             --             size = #data
+             --             fb = f_stream_b_d_c
+             --             xref.Filter = pdfarray {
+             --                 pdfconstant("Crypt"), -- identity
+             --                 pdfconstant("FlateDecode")
+             --             }
+             --         else
+             --             xref.Filter = pdfconstant("Crypt") -- identity
+             --         end
+             --     else
+             --         xref.Filter = pdfconstant("Crypt") -- identity
+             --     end
+             --     fb = f_stream_b_d_u
+             -- else
+                    if compress then
+                        local comp = compressdata(data,size)
+                        if comp then
+                            data = comp
+                            size = #data
+                            fb = f_stream_b_d_c
+                        else
+                            fb = f_stream_b_d_u
+                        end
                     else
                         fb = f_stream_b_d_u
                     end
-                else
-                    fb = f_stream_b_d_u
-                end
+             -- end
+                -- no encryption of data here
                 flush(f,fb(nofobjects,xref(),size))
                 flush(f,data)
                 flush(f,s_stream_e)
                 flush(f,f_startxref(xrefoffset))
             else
                 flushdeferred()
+                --
+             -- if encryptstream then
+             --     -- unencrypted !
+             --     local eo = encryptobject
+             --     encryptobject = false
+             --     encdict = pdfreference(pdfimmediateobject(tostring(encdict)))
+             --     encryptobject = eo
+             -- end
+                --
                 xrefoffset = offset
                 flush(f,f_xref(nofobjects+1))
                 local trailer = pdfdictionary {
-                    Size = nofobjects+1,
-                    Root = catalog,
-                    Info = info,
+                    Size    = nofobjects + 1,
+                    Root    = catalog,
+                    Info    = info,
+                    Encrypt = encdict or nil,
                 }
                 for i=1,nofobjects do
                     local o = objects[i]
@@ -2994,7 +3337,6 @@ do
 -- end
 
     -- todo: prevent twice
-
     local function prepare(driver)
         if not environment.initex then
             --

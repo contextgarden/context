@@ -1,0 +1,137 @@
+%D \module
+%D   [       file=m-circuitikz,
+%D        version=2021.12.03,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=CURCUITIKZ support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D A fixed variant of the t-curcuitikz module distributed with tikz. This one
+%D is for \LMTX.
+
+\usemodule[m][tikz]
+
+\startmodule[circuitikz]
+
+\def\pgfcircversion     {1.4.4}
+\def\pgfcircversiondate {2021/10/31}
+
+\usetikzlibrary[calc]
+\usetikzlibrary[arrows.meta, bending]
+\usetikzlibrary[fpu] % may be needed for use fpu reciprocal (v1.0.1)
+
+\tikzinputfile{pgfcirc.defines.tex}
+\tikzinputfile{pgfcircutils.tex}
+\tikzinputfile{pgfcircpath.tex}
+
+\tikzinputfile{pgfcircshapes.tex}
+\tikzinputfile{pgfcircmonopoles.tex}
+\tikzinputfile{pgfcircbipoles.tex}
+\tikzinputfile{pgfcirctripoles.tex}
+\tikzinputfile{pgfcircquadpoles.tex}
+\tikzinputfile{pgfcircmultipoles.tex}
+
+\tikzinputfile{pgfcirclabel.tex}
+\tikzinputfile{pgfcircvoltage.tex}
+\tikzinputfile{pgfcirccurrent.tex}
+\tikzinputfile{pgfcircflow.tex}
+
+% defaults
+
+\setupmodule
+  [current=european,
+   voltage=european,
+   resistor=american,
+   inductor=cute,
+   logic=american,
+   siunitx=true,
+   arrowmos=false]
+
+% can be done nicer ... todo
+
+\processaction
+  [\currentmoduleparameter{voltage}]
+  [european=>\ctikzset{voltage=european},
+   american=>\ctikzset{voltage=american}]
+
+\processaction
+  [\currentmoduleparameter{current}]
+  [european=>\ctikzset{ current=european},
+   american=>\ctikzset{ current=american}]
+
+\processaction
+  [\currentmoduleparameter{label}]
+  [straight=>\ctikzset{label/align = straight},
+   align=>\ctikzset{label/align = rotate},
+   smart=>\ctikzset{label/align = smart}]
+
+\processaction
+  [\currentmoduleparameter{resistor}]
+  [european=>\ctikzset{ resistor=european},
+   american=>\ctikzset{ resistor=american}]
+
+\processaction
+  [\currentmoduleparameter{inductor}]
+  [european=>\ctikzset{ inductor=european},
+   american=>\ctikzset{ inductor=american},
+   cute=>\ctikzset{ inductor=cute}]
+
+\processaction
+  [\currentmoduleparameter{diode}]
+  [full=>\ctikzset{ diode=full},
+   empty=>\ctikzset{ diode=empty}]
+
+\processaction
+  [\currentmoduleparameter{logic}]
+  [european=>\ctikzset{ logic ports=european},
+   american=>\ctikzset{ logic ports=american}]
+
+% hm, we have units built in and in mkii one can load the units module
+% ... always been so ...
+
+\processaction
+  [\currentmoduleparameter{siunitx}]
+  [true=>\def\SI    #1#2{#1\,#2}
+         \def\ampere    {\rm{A}}
+         \def\volt      {\rm{V}}
+         \def\ohm       {\Omega}
+         \def\siemens   {\rm{S}}
+         \def\farad     {\rm{F}}
+         \def\henry     {\rm{H}}
+         \def\second    {\rm{s}}
+         \def\coulomb   {\rm{C}}
+         \def\siemens   {\rm{S}}
+         \def\radians   {\rm{rad}}
+         \def\milli     {\rm{m}}
+         \def\micro     {\mu}
+         \def\nano      {\rm{n}}
+         \def\pico      {\rm{p}}
+         \def\kilo      {\rm{k}}
+         \def\mega      {\rm{M}}
+         \def\giga      {\rm{G}}
+         \def\tera      {\rm{T}}]
+
+\unprotect
+
+\processaction
+  [\currentmoduleparameter{arrowmos}]
+  [true=>\pgf@circuit@mos@arrowstrue,
+   false=>\pgf@circuit@mos@arrowsfalse]
+
+\protect
+
+\ctikzset{tripoles/op amp/font/.initial=\switchtobodyfont[small]}
+
+\aliased\let\stopcircuitikz\relax
+
+\permanent\protected\def\startcircuitikz#1\stopcircuitikz
+  {\starttikzpicture#1\stoptikzpicture}
+
+\stopmodule
+
+\endinput
