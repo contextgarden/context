@@ -266,6 +266,7 @@ local nuts = {
  -- getxyoffsets            = direct.getxyoffsets,
     getspeciallist          = direct.getspeciallist,
     setspeciallist          = direct.setspeciallist,
+    getusedattributes       = direct.getusedattributes,
 }
 
 nodes.nuts     = nuts

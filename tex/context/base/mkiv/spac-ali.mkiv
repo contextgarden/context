@@ -184,6 +184,9 @@
 \unexpanded\def\leftorrightvbox{\ifconditional\displaylefttoright\expandafter\lefttorightvbox\else\expandafter\righttoleftvbox\fi}
 \unexpanded\def\leftorrightvtop{\ifconditional\displaylefttoright\expandafter\lefttorightvtop\else\expandafter\righttoleftvtop\fi}
 
+\unexpanded\def\rtltext{\groupedcommand{\dontleavehmode\righttoleft\ignorespaces}\removeunwantedspaces}
+\unexpanded\def\ltrtext{\groupedcommand{\dontleavehmode\lefttoright\ignorespaces}\removeunwantedspaces}
+
 % Tolerance and hyphenation
 
 \ifdefined\lesshyphens \else \let\lesshyphens\relax \fi

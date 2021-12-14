@@ -538,6 +538,7 @@ return {
         "lefttoright", "righttoleft", "checkedlefttoright", "checkedrighttoleft",
         "synchronizelayoutdirection","synchronizedisplaydirection","synchronizeinlinedirection",
         "dirlre", "dirrle", "dirlro", "dirrlo",
+        "rtltext", "ltrtext",
         --
         "lesshyphens", "morehyphens", "nohyphens", "dohyphens", "dohyphencollapsing", "nohyphencollapsing",
         "compounddiscretionary",

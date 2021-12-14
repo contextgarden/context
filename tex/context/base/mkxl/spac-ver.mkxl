@@ -1353,6 +1353,13 @@
      \frozen#1\numexpr#2+\plusone\relax\space\doexpandedrecurse{\the\numexpr#2\relax}{ #3}\zerocount\relax
    \fi}
 
+% to be tested:
+%
+% \permanent\protected\def\setpenalties#1#2#3%
+%   {\ifdefined#1% space before #3 prevents lookahead problems, needed when #3=text
+%      \frozen#1\numexpr#2+\plusone\relax\space\expandedloop\plusone\numexpr#2\relax\plusone{ #3}\zerocount\relax
+%    \fi}
+
 %D \macros
 %D   {keeplinestogether}
 %D

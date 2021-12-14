@@ -514,10 +514,11 @@
    \usedelimitedtextstyleandcolor\c!style\c!color
    %
    \begingroup
-   \edef\p_delimited_left     {\delimitedtextparameter{\c!left}}%
-   \edef\p_delimited_right    {\delimitedtextparameter{\c!right}}%
-   \edef\p_delimited_nextleft {\delimitedtextparameter{\c!nextleft}}%
-   \edef\p_delimited_nextright{\delimitedtextparameter{\c!nextright}}%
+   \usealignparameter\delimitedtextparameter
+   \edef\p_delimited_left     {\delimitedtextparameter\c!left}%
+   \edef\p_delimited_right    {\delimitedtextparameter\c!right}%
+   \edef\p_delimited_nextleft {\delimitedtextparameter\c!nextleft}%
+   \edef\p_delimited_nextright{\delimitedtextparameter\c!nextright}%
    %
    \leftdelimitedtextmark
    %

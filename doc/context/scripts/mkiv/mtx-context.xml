@@ -225,13 +225,13 @@
             </subcategory>
             <subcategory>
                 <flag name="ownerpassword">
-                    encrypt the (pdf) file using this master password
+                    <short>encrypt the (pdf) file using this master password</short>
                 </flag>
                 <flag name="userpassword">
-                    use an additional password for opening the document
+                    <short>use an additional password for opening the document</short>
                 </flag>
                 <flag name="permissions">
-                    list of: print, modify, extract, add, fillin, assemble, quality
+                    <short>list of: print, modify, extract, add, fillin, assemble, quality</short>
                 </flag>
             </subcategory>
         </category>

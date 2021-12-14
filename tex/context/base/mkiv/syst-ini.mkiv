@@ -1251,4 +1251,10 @@
     \let\partokenname\gobbleoneargument
 \fi
 
+%D In case we load \LMTX\ code.
+
+\ifdefined\autoparagraphmode \else
+    \newcount\autoparagraphmode
+\fi
+
 \protect \endinput

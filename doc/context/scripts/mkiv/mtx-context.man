@@ -190,13 +190,13 @@ process extra (mtx-context-... in distribution)
 show extras
 .TP
 .B --ownerpassword
-
+encrypt the (pdf) file using this master password
 .TP
 .B --userpassword
-
+use an additional password for opening the document
 .TP
 .B --permissions
-
+list of: print, modify, extract, add, fillin, assemble, quality
 .SH OPTIONS: SPECIAL
 .TP
 .B --pdftex

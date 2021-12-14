@@ -2472,8 +2472,18 @@ do
         -- check if in mvl
         if texgetnest("ptr") == 0 then
             -- this flushes the contributions
-            while getspeciallist("contributehead") do
-                triggerbuildpage()
+            local prev  = nil
+            local cycle = 1
+            while cycle <= 10 do
+                local head = getspeciallist("contributehead")
+                if head == prev then
+                    -- This can happen .. maybe 10 is already too much ... e.g.
+                    -- extreme side float case in m4all.
+                    cycle = cycle + 1
+                else
+                    triggerbuildpage()
+                    prev = head
+                end
             end
             -- now we consult the last line (if present)
             local head, tail = getspeciallist("pagehead")

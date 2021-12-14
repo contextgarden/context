@@ -1314,16 +1314,18 @@
    \settrue\c_strc_itemgroups_txt
    \startitemgroupitem}
 
-% \protected\def\strc_itemgroups_start_head
-%   {\settrue\c_strc_itemgroups_head
-%    \startitemgrouphead}
+% \protected\tolerant\def\strc_itemgroups_start_items_indeed[#1]%
+%   {\strc_itemgroups_start_edge
+%      {\dorecurse{0\itemgroupparameter\c!items}{\strc_itemgroups_used_symbol\hss}%
+%       \unskip}}
 
-\protected\def\strc_itemgroups_start_items
-  {\dosingleempty\strc_itemgroups_start_items_indeed}
-
-\protected\def\strc_itemgroups_start_items_indeed[#whatever]% something got lost
+\protected\tolerant\def\strc_itemgroups_start_items_indeed[#1]%
   {\strc_itemgroups_start_edge
-     {\dorecurse{0\itemgroupparameter\c!items}{\strc_itemgroups_used_symbol\hss}%
+     {\localcontrolledloop
+        \plusone
+        \ifchknum#1\or#1\else0\itemgroupparameter\c!items\fi
+        \plusone
+        {\strc_itemgroups_used_symbol\hss}%
       \unskip}}
 
 \protected\permanent\def\startspecialitemgroupitem[#name]% todo: frozen

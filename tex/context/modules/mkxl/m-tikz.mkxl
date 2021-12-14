@@ -11,9 +11,23 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D A fixed variant of the t-tikz module distributed with tikz. For
-%D practical reasons per 2021 we split the module for \MKIV\ and
-%D \LMTX. (Maybe some day I'll optimize TIKZ a bit.)
+%D A fixed variant of the t-tikz module distributed with tikz. For practical reasons
+%D per 2021 we split the module for \MKIV\ and \LMTX. (Maybe some day I'll optimize
+%D TIKZ a bit.)
+%D
+%D All these t-* modules in the tikz distribution make no sense as we can just load
+%D them here which is way cleaner. There is also some mkii filename mapping going on
+%D that is not needed on todays systems (windows has no 8.3 limitation and on unix
+%D tds finally adopted a case insensitive approach.)
+
+%D Just in case someone does a hard input ...
+
+\ifdefined\pgfdefined    \endinput \fi
+\ifdefined\pgfcoredefined\endinput \fi
+
+%D ... but normally we end up here:
+
+\startmodule[tikz]
 
 \ifdefined\pdflastxpos \else
     \unprotect
@@ -26,7 +40,6 @@
   {\pushoverloadmode
    \pushcatcodetable
    \setcatcodetable\texcatcodes
-   \unprotect
    \catcode`\@=11
    \catcode`\|=12
    \catcode`\!=12
@@ -34,7 +47,6 @@
 
 \permanent\protected\def\stoptikzinput
   {\autoparagraphmode\plusone
-   \protect
    \popcatcodetable
    \popoverloadmode}
 
@@ -42,10 +54,6 @@
   {\starttikzinput
    \input{#1}\relax
    \stoptikzinput}
-
-\tikzinputfile{t-pgf.tex}
-\tikzinputfile{t-pgffor.tex}
-\tikzinputfile{tikz.code.tex}
 
 \permanent\protected\def\tikzerrormessage#1#2#3%
   {\writestatus{#1}{#2}}
@@ -77,37 +85,44 @@
  % \popoverloadmode
    \egroup}
 
-\ifx\pgfdefined\undefined
+\let\pgfdefined    \relax
+\let\pgfcoredefined\relax
 
-    \let\pgfdefined\relax
+\tikzinputfile{pgfutil-common.tex}
+\tikzinputfile{pgfutil-context.def}
+\tikzinputfile{pgfrcs.code.tex}
+\tikzinputfile{pgfsys.code.tex}
+\tikzinputfile{pgfkeys.code.tex}
+\tikzinputfile{pgfsyssoftpath.code.tex}
+\tikzinputfile{pgfsysprotocol.code.tex}
+\tikzinputfile{pgfcore.code.tex}
+\tikzinputfile{pgffor.code.tex}
+\tikzinputfile{pgfmoduleplot.code.tex}
+\tikzinputfile{tikz.code.tex}
 
-    \ifx\pgfcoredefined\undefined
+\let\startpgfpicture             \pgfpicture              \let\stoppgfpicture            \endpgfpicture
+\let\startpgfscope               \pgfscope                \let\stoppgfscope              \endpgfscope
+\let\startpgflowlevelscope       \pgflowlevelscope        \let\stoppgflowlevelscope      \endpgflowlevelscope
+\let\startpgfinterruptpath       \pgfinterruptpath        \let\stoppgfinterruptpath      \endpgfinterruptpath
+\let\startpgfinterruptpicture    \pgfinterruptpicture     \let\stoppgfinterruptpicture   \endpgfinterruptpicture
+\let\startpgfinterruptboundingbox\pgfinterruptboundinbox  \let\stoppgfinterruptboudingbox\endpgfinterruptboundingbox
 
-        \let\pgfcoredefined\relax
+\let\normalusepgfmodule\usepgfmodule
+\let\normalusepgflibrary\usepgflibrary
 
-        \tikzinputfile{pgfsys.code.tex}
-        \tikzinputfile{pgfsyssoftpath.code.tex}
-        \tikzinputfile{pgfsysprotocol.code.tex}
-        \tikzinputfile{pgfcore.code.tex}
+\tolerant\protected\def\usepgfmodule[#1]#;#2% somehow both variants are used
+  {\starttikzinput
+   \normalusepgfmodule[#1#2]%
+   \stoptikzinput}
 
-        \let\startpgfpicture             \pgfpicture              \let\stoppgfpicture            \endpgfpicture
-        \let\startpgfscope               \pgfscope                \let\stoppgfscope              \endpgfscope
-        \let\startpgflowlevelscope       \pgflowlevelscope        \let\stoppgflowlevelscope      \endpgflowlevelscope
-        \let\startpgfinterruptpath       \pgfinterruptpath        \let\stoppgfinterruptpath      \endpgfinterruptpath
-        \let\startpgfinterruptpicture    \pgfinterruptpicture     \let\stoppgfinterruptpicture   \endpgfinterruptpicture
-        \let\startpgfinterruptboundingbox\pgfinterruptboundinbox  \let\stoppgfinterruptboudingbox\endpgfinterruptboundingbox
+\tolerant\protected\def\usepgflibrary[#1]#;#2% somehow both variants are used
+  {\starttikzinput
+   \normalusepgflibrary[#1#2]%
+   \stoptikzinput}
 
-    \fi
-
-    \let\normalusepgfmodule\usepgfmodule
-
-    \protected\def\usepgfmodule[#1]%
-      {\starttikzinput
-       \normalusepgfmodule[#1]%
-       \stoptikzinput}
-
-    \usepgfmodule[shapes,plot]
-
-\fi
+\usepgfmodule[shapes]
+\usepgfmodule[plot]
+\usepgfmodule[matrix]
+\usepgfmodule[decorations]
 
 \stopmodule

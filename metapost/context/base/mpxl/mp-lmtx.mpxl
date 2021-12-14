@@ -601,6 +601,7 @@ presetparameters "function" [
     xarrow      = "",
     yarrow      = "",
     reverse     = false,
+  % function    : metatable is parent
 ] ;
 
 def lmt_function = applyparameters "function" "lmt_do_function" enddef ;
@@ -612,8 +613,7 @@ vardef lmt_do_function_p(expr xmin, xmax, xstep, code, shape, close, fcolor, dsi
         q := (xmin,0) -- p -- (xmax,0) -- cycle ;
         fill q withcolor fcolor ;
     else :
-        draw p withpen currentpen scaled dsize withcolor dcolor
-            ;
+        draw p withpen currentpen scaled dsize withcolor dcolor ;
     fi ;
     if psize > 0 :
         if psymbol = "dot" :
@@ -641,8 +641,8 @@ vardef lmt_do_function =
         draw image (
             save xmin, xmax, xstep, xsmall, xlarge, ymin, ymax, ystep, ysmall, ylarge, p ;
             save code, option, txl, txs, tyl, tys, swap ;
-            string code, option ;
-            path txl, txs, tyl, tys ; boolean swap ;
+            string code, option, shape ;
+            path txl, txs, tyl, tys ; boolean swap, close ;
             picture p ;
 
             xmin    := getparameter "xmin" ;
@@ -657,36 +657,37 @@ vardef lmt_do_function =
             ylarge  := getparameter "ylarge" ;
             code    := getparameter "code" ;
             swap    := getparameter "reverse" ;
-
+            shape   := getparameter "shape" ;
+            close   := getparameter "close" ;
             p := image (
-
                 if (getparametercount "functions") > 0 :
                     for s = 1 upto getparametercount "functions" :
-                        pushparameters "functions" s ;
+                        % todo: pushparameters with a metatable, here parent
+                        pushparameters "functions" [s] ;
                         lmt_do_function_p (
-                            getparameter "xmin",
-                            getparameter "xmax",
-                            getparameter "xstep",
-                            getparameter "code",
-                            getparameter "shape",
-                            getparameter "close",
-                            getparameter "fillcolor",
-                            getparameter "drawsize",
-                            getparameter "drawcolor",
-                            getparameter "pointsymbol",
-                            getparameter "pointsize",
-                            getparameter "pointcolor"
+                            (getparameterdefault "xmin"        xmin),
+                            (getparameterdefault "xmax"        xmax),
+                            (getparameterdefault "xstep"       xstep),
+                            (getparameterdefault "code"        code),
+                            (getparameterdefault "shape"       shape),
+                            (getparameterdefault "close"       close),
+                            (getparameterdefault "fillcolor"   (getparameter "fillcolor")),
+                            (getparameterdefault "drawsize"    (getparameter "drawsize")),
+                            (getparameterdefault "drawcolor"   (getparameter "drawcolor")),
+                            (getparameterdefault "pointsymbol" (getparameter "pointsymbol")),
+                            (getparameterdefault "pointsize"   (getparameter "pointsize")),
+                            (getparameterdefault "pointcolor"  (getparameter "pointcolor"))
                         ) ;
                         popparameters ;
                     endfor ;
                 elseif code <> "" :
                     lmt_do_function_p (
-                        getparameter "xmin",
-                        getparameter "xmax",
-                        getparameter "xstep",
-                        getparameter "code",
-                        getparameter "shape",
-                        getparameter "close",
+                        xmin,
+                        xmax,
+                        xstep,
+                        code,
+                        shape,
+                        close,
                         getparameter "fillcolor",
                         getparameter "drawsize",
                         getparameter "drawcolor",

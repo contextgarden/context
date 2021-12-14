@@ -192,6 +192,9 @@
 \permanent\protected\def\leftorrightvbox{\ifconditional\displaylefttoright\expandafter\lefttorightvbox\else\expandafter\righttoleftvbox\fi}
 \permanent\protected\def\leftorrightvtop{\ifconditional\displaylefttoright\expandafter\lefttorightvtop\else\expandafter\righttoleftvtop\fi}
 
+\permanent\protected\def\rtltext{\groupedcommand{\dontleavehmode\righttoleft\ignorespaces}\removeunwantedspaces}
+\permanent\protected\def\ltrtext{\groupedcommand{\dontleavehmode\lefttoright\ignorespaces}\removeunwantedspaces}
+
 % Tolerance and hyphenation
 
 \ifdefined\lesshyphens \else \let\lesshyphens\relax \fi

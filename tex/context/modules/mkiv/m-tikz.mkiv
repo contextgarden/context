@@ -11,86 +11,115 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D A fixed variant of the t-tikz module distributed with tikz. For
-%D practical reasons per 2021 we split the module for \MKIV\ and
-%D \LMTX. (Maybe some day I'll optimize TIKZ a bit.)
+%D A fixed variant of the t-tikz module distributed with tikz. For practical reasons
+%D per 2021 we split the module for \MKIV\ and \LMTX. (Maybe some day I'll optimize
+%D TIKZ a bit.)
+%D
+%D All these t-* modules in the tikz distribution make no sense as we can just load
+%D them here which is way cleaner. There is also some mkii filename mapping going on
+%D that is not needed on todays systems (windows has no 8.3 limitation and on unix
+%D tds finally adopted a case insensitive approach.)
+
+%D Just in case someone does a hard input ...
+
+\ifdefined\pgfdefined    \endinput \fi
+\ifdefined\pgfcoredefined\endinput \fi
+
+%D ... but normally we end up here:
+
+\startmodule[tikz]
 
 \ifdefined\pdflastxpos \else
     \unprotect
-        \frozen\overloaded\protected\def\pdflastxpos{\numexpr\clf_lastxpos\relax}
-        \frozen\overloaded\protected\def\pdflastypos{\numexpr\clf_lastypos\relax}
+        \unexpanded\def\pdflastxpos{\numexpr\clf_lastxpos\relax}
+        \unexpanded\def\pdflastypos{\numexpr\clf_lastypos\relax}
     \protect
 \fi
 
-\pushcatcodetable
+\permanent\protected\def\starttikzinput
+  {\pushcatcodetable
+   \setcatcodetable\texcatcodes
+   \catcode`\@=11
+   \catcode`\|=12
+   \catcode`\!=12
+   \relax}
 
-    \setcatcodetable\texcatcodes
+\permanent\protected\def\stoptikzinput
+  {\relax
+   \popcatcodetable}
 
-    \catcode`\@=11
-    \catcode`\|=12
-    \catcode`\!=12
-
-    \input t-pgf.tex
-    \input t-pgffor.tex
-    \input tikz.code.tex
-
-\popcatcodetable
+\permanent\protected\def\tikzinputfile#1%
+  {\starttikzinput
+   \input{#1}\relax
+   \stoptikzinput}
 
 \permanent\protected\def\tikzerrormessage#1#2#3%
   {\writestatus{#1}{#2}}
 
-\let\starttikzsettings\relax
-\let\stoptikzsettings \relax
+% For now we need this but we need to educate the user to wrap settings in the
+% wrappers. So some day the next line will go. I need to check what commands are
+% possible outside a picture.
+
+\protected\def\starttikzsettings
+  {}
+
+\protected\def\stoptikzsettings
+  {}
 
 \protected\def\starttikzpicture
-  {% \dontleavehmode
-   \begingroup
+  {\dontleavehmode
+   \hbox\bgroup
    \ifdefined\PackageError\else \let\PackageError\tikzerrormessage \fi
    \tikzpicture}
 
-\protected\def\stoptikzpicture
+\permanent\protected\def\stoptikzpicture
   {\endtikzpicture
-   \endgroup}
+   \egroup}
 
-% \input t-pgf.tex
+\let\pgfdefined    \relax
+\let\pgfcoredefined\relax
 
-\ifx\pgfdefined\undefined
+\tikzinputfile{pgfutil-common.tex}
+\tikzinputfile{pgfutil-context.def}
+\tikzinputfile{pgfrcs.code.tex}
+\tikzinputfile{pgfsys.code.tex}
+\tikzinputfile{pgfkeys.code.tex}
+\tikzinputfile{pgfsyssoftpath.code.tex}
+\tikzinputfile{pgfsysprotocol.code.tex}
+\tikzinputfile{pgfcore.code.tex}
+\tikzinputfile{pgffor.code.tex}
+\tikzinputfile{pgfmoduleplot.code.tex}
+\tikzinputfile{tikz.code.tex}
 
-    \let\pgfdefined\relax
+\let\startpgfpicture             \pgfpicture              \let\stoppgfpicture            \endpgfpicture
+\let\startpgfscope               \pgfscope                \let\stoppgfscope              \endpgfscope
+\let\startpgflowlevelscope       \pgflowlevelscope        \let\stoppgflowlevelscope      \endpgflowlevelscope
+\let\startpgfinterruptpath       \pgfinterruptpath        \let\stoppgfinterruptpath      \endpgfinterruptpath
+\let\startpgfinterruptpicture    \pgfinterruptpicture     \let\stoppgfinterruptpicture   \endpgfinterruptpicture
+\let\startpgfinterruptboundingbox\pgfinterruptboundinbox  \let\stoppgfinterruptboudingbox\endpgfinterruptboundingbox
 
-   % \input t-pgfcor.tex
+\let\normalusepgfmodule \usepgfmodule
+\let\normalusepgflibrary\usepgflibrary
 
-    \ifx\pgfcoredefined\undefined
+\unexpanded\def\usepgfmodule {\doifelsenextoptional\dousepgfmoduleyes \dousepgfmodulenop }
+\unexpanded\def\usepgflibrary{\doifelsenextoptional\dousepgflibraryyes\dousepgflibrarynop}
 
-        \let\pgfcoredefined=\relax
+\def\dousepgfmodulenop #1{\dousepgfmoduleyes [#1]}
+\def\dousepgflibrarynop#1{\dousepgflibraryyes[#1]}
 
-        \input t-pgfsys.tex
+\def\dousepgfmoduleyes[#1]%
+  {\starttikzinput
+   \normalusepgfmodule[#1]%
+   \stoptikzinput}
 
-        \edef\pgfcoreatcode     {\the\catcode`\@}
-        \edef\pgfcorebarcode    {\the\catcode`\|}
-        \edef\pgfcoreexclaimcode{\the\catcode`\!}
+\def\dousepgflibraryyes[#1]%
+  {\starttikzinput
+   \normalusepgflibrary[#1]%
+   \stoptikzinput}
 
-        \catcode`\@=11
-        \catcode`\|=12
-        \catcode`\!=12
-
-        \input pgfcore.code.tex
-
-        \catcode`\@=\pgfcoreatcode
-        \catcode`\|=\pgfcorebarcode
-        \catcode`\!=\pgfcoreexclaimcode
-
-        \let\startpgfpicture             \pgfpicture              \let\stoppgfpicture            \endpgfpicture
-        \let\startpgfscope               \pgfscope                \let\stoppgfscope              \endpgfscope
-        \let\startpgflowlevelscope       \pgflowlevelscope        \let\stoppgflowlevelscope      \endpgflowlevelscope
-        \let\startpgfinterruptpath       \pgfinterruptpath        \let\stoppgfinterruptpath      \endpgfinterruptpath
-        \let\startpgfinterruptpicture    \pgfinterruptpicture     \let\stoppgfinterruptpicture   \endpgfinterruptpicture
-        \let\startpgfinterruptboundingbox\pgfinterruptboundinbox  \let\stoppgfinterruptboudingbox\endpgfinterruptboundingbox
-
-    \fi
-
-    \usepgfmodule[shapes,plot]
-
-\fi
+\usepgfmodule[shapes]
+\usepgfmodule[plot]
+\usepgfmodule[matrix]
+\usepgfmodule[decorations]
 
 \stopmodule

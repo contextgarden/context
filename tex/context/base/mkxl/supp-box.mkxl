@@ -2481,8 +2481,11 @@
 %D
 %D A funny (but rather stupid) one, plus a redefinition.
 
+% \permanent\protected\def\removebottomthings
+%   {\dorecurse\plusfive{\unskip\unkern\unpenalty}}
+
 \permanent\protected\def\removebottomthings
-  {\dorecurse\plusfive{\unskip\unkern\unpenalty}}
+  {\localcontrolledloop\plusone\plusfive\plusone{\unskip\unkern\unpenalty}}
 
 \permanent\protected\def\removelastskip % \ifvmode the plain tex one \fi, overloaded to \permanent in spac-ver
   {\ifvmode\ifzeropt\lastskip\else\vskip-\lastskip\fi\fi}

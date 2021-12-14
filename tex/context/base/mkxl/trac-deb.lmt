@@ -135,7 +135,7 @@ local nop = function() end
 local resetmessages = status.resetmessages or nop
 
 local function processerror(offset,errortype)
-    local readstate      = status.readstate
+    local readstate      = status.getreadstate()
     local filename       = readstate.filename
     local linenumber     = readstate.linenumber
     local skiplinenumber = readstate.skiplinenumber
@@ -317,7 +317,7 @@ local function reportback(lmxname,default,variables)
 end
 
 local function showerror(lmxname)
-    local readstate    = status.readstate()
+    local readstate    = status.getreadstate()
     local filename     = readstate.filename
     local linenumber   = tonumber(readstate.linenumber) or 0
     local errorcontext = ""
@@ -329,7 +329,7 @@ local function showerror(lmxname)
     end
     local variables = {
         ['title']                = 'ConTeXt Error Information',
-        ['errormessage']         = status.errorstatus.error or "?",
+        ['errormessage']         = status.geterrorstate().error or "?",
         ['linenumber']           = linenumber,
         ['color-background-one'] = lmx.get('color-background-yellow'),
         ['color-background-two'] = lmx.get('color-background-purple'),
@@ -347,8 +347,8 @@ function lmx.overloaderror(v)
         usescitelexer = true
     end
     callback.register('show_error_message',  function() showerror() end)
-    callback.register('intercept_lua_error', function() showerror() end)
-    callback.register('intercept_tex_error', function() showerror() end)
+--     callback.register('intercept_lua_error', function() showerror() end)
+--     callback.register('intercept_tex_error', function() showerror() end)
 end
 
 directives.register("system.showerror", lmx.overloaderror)

@@ -51,9 +51,7 @@
         </div></div>
         <div id="bottom"><div id="bottom-one"><div id="bottom-two">
             Job Name: <?lua p(environment.jobname) ?> &nbsp;&nbsp;&nbsp;
-            ConTeXt Version: <?lua p(environment.version) ?> &nbsp;&nbsp;&nbsp;
-            Real Page: <?lua p(tracers.cs('c:realpageno')) ?> &nbsp;&nbsp;&nbsp;
-            Page: <?lua p(tracers.cs('c:pageno')) ?> &nbsp;&nbsp;&nbsp;
+            ConTeXt Version: <?lua p(environment.version) ?>
         </div></div></div>
     </body>
 </html>

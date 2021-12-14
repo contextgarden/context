@@ -17,6 +17,10 @@ if not modules then modules = { } end modules ['util-jsn'] = {
 --
 -- Upgraded for handling the somewhat more fax server templates.
 
+if utilities and utilities.json then
+    return json
+end
+
 local P, V, R, S, C, Cc, Cs, Ct, Cf, Cg = lpeg.P, lpeg.V, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Cf, lpeg.Cg
 local lpegmatch = lpeg.match
 local format, gsub = string.format, string.gsub
@@ -439,5 +443,9 @@ end
 -- inspect(j)
 -- inspect(l)
 -- print(s==l.s)
+
+-- if not package.loaded.json then
+--     package.loaded.json = json
+-- end
 
 return json
