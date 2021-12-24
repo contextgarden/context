@@ -770,6 +770,7 @@
         {}%
         {\listparameter\c!extras}%
         {\listparameter\c!order}}%
+        {}%
    \ctxlua{bibtex.hacks.flush("\@@pbsorttype")}%
    \stoppacked
    \endgroup}

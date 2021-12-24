@@ -1288,6 +1288,7 @@
 		<cd:constant name='tab' value='tab'/>
 		<cd:constant name='text' value='testo'/>
 		<cd:constant name='textalign' value='textalign'/>
+		<cd:constant name='textalternative' value='textalternative'/>
 		<cd:constant name='textcolor' value='coloretesto'/>
 		<cd:constant name='textcommand' value='comandotesto'/>
 		<cd:constant name='textdistance' value='distanzatesto'/>

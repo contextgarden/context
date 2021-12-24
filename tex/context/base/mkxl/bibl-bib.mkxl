@@ -633,6 +633,7 @@
      {}%
      {\namedlistparameter\currentbibtexsession\c!extras}%
      {\namedlistparameter\currentbibtexsession\c!order}%
+     {}%
    \ctxlua{bibtex.hacks.flush("\bibtexpublicationsparameter\c!sorttype")}%
    \stoppacked
    \endgroup}

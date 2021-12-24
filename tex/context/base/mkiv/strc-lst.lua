@@ -445,7 +445,8 @@ local function filtercollected(specification)
     elseif not wantedcriterium then
         block = documents.data.block
     else
-        block, criterium = wantedblock, wantedcriterium
+        block     = wantedblock
+        criterium = wantedcriterium
     end
     if block == "" then
         block = false
@@ -468,12 +469,41 @@ local function filtercollected(specification)
     specification.block     = block
     specification.all       = all
     --
+    if specification.atmost then
+        criterium = v_text
+    end
+    --
     if trace_lists then
         report_lists("filtering names %,t, criterium %a, block %a",sortedkeys(names), criterium, block or "*")
     end
     local result = filters[criterium](specification)
     if trace_lists then
         report_lists("criterium %a, block %a, found %a",specification.criterium, specification.block or "*", #result)
+    end
+    --
+    local levels = tonumber(specification.levels)
+    if levels then
+        local minlevel  = 1000
+        local found     = result
+        local nofresult = #result
+        for i=1,nofresult do
+            local v = found[i]
+            local l = v.metadata.level or 1
+            if l < minlevel then
+                minlevel = l
+            end
+        end
+        local maxlevel = minlevel + levels - 1
+        result    = { }
+        nofresult = 0
+        for i=1,#found do
+            local v = found[i]
+            local l = v.metadata.level or 1
+            if l >= minlevel and l <= maxlevel then
+                nofresult = nofresult + 1
+                result[nofresult] = v
+            end
+        end
     end
     --
     if sortorder then -- experiment
@@ -495,7 +525,7 @@ end
 filters[v_intro] = function(specification)
     local collected = specification.collected
     local result    = { }
-    local nofresult = #result
+    local nofresult = 0
     local all       = specification.all
     local names     = specification.names
     for i=1,#collected do
@@ -515,7 +545,7 @@ end
 filters[v_reference] = function(specification)
     local collected = specification.collected
     local result    = { }
-    local nofresult = #result
+    local nofresult = 0
     local names     = specification.names
     local sections  = sections.collected
     local reference = specification.reference
@@ -554,7 +584,7 @@ end
 filters[v_all] = function(specification)
     local collected = specification.collected
     local result    = { }
-    local nofresult = #result
+    local nofresult = 0
     local block     = specification.block
     local all       = specification.all
     local forced    = specification.forced
@@ -566,7 +596,7 @@ filters[v_all] = function(specification)
         if r and (not block or not r.block or block == r.block) then
             local metadata = v.metadata
             if metadata then
-                local name = metadata.name or false
+                local name  = metadata.name  or false
                 local sectionnumber = (r.section == 0) or sections[r.section]
                 if forced[name] or (sectionnumber and not metadata.nolist and (all or names[name])) then -- and not sectionnumber.hidenumber then
                     nofresult = nofresult + 1
@@ -588,7 +618,7 @@ filters[v_current] = function(specification)
     end
     local collected = specification.collected
     local result    = { }
-    local nofresult = #result
+    local nofresult = 0
     local depth     = specification.depth
     local block     = specification.block
     local all       = specification.all
@@ -634,7 +664,7 @@ filters[v_here] = function(specification)
     end
     local collected = specification.collected
     local result    = { }
-    local nofresult = #result
+    local nofresult = 0
     local depth     = specification.depth
     local block     = specification.block
     local all       = specification.all
@@ -679,7 +709,7 @@ filters[v_previous] = function(specification)
     end
     local collected = specification.collected
     local result    = { }
-    local nofresult = #result
+    local nofresult = 0
     local block     = specification.block
     local all       = specification.all
     local names     = specification.names
@@ -740,7 +770,7 @@ filters[v_component] = function(specification)
     -- special case, no structure yet
     local collected = specification.collected
     local result    = { }
-    local nofresult = #result
+    local nofresult = 0
     local all       = specification.all
     local names     = specification.names
     local component = resolvers.jobs.currentcomponent() or ""
@@ -766,7 +796,7 @@ end
 filters[v_default] = function(specification) -- is named
     local collected = specification.collected
     local result    = { }
-    local nofresult = #result
+    local nofresult = 0
     ----- depth     = specification.depth
     local block     = specification.block
     local criterium = specification.criterium
@@ -1111,6 +1141,7 @@ implement {
             { "reference" },
             { "extras" },
             { "order" },
+            { "levels" },
         }
     }
 }

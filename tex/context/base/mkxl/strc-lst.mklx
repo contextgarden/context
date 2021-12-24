@@ -282,6 +282,7 @@
      {\listparameter\c!reference}%
      {\listparameter\c!extras}%
      {\listparameter\c!order}%
+     {\listparameter\c!levels}%
  % \stoplistreferences
    \par % todo: only when vertical list mode
    \endgroup
@@ -450,7 +451,7 @@
 
 % TODO: pass extra tag name (contents, figures, bibliography ...)
 
-\protected\def\strc_lists_place_current#list#criterium#reference#extras#order% beware, not a user command
+\protected\def\strc_lists_place_current#list#criterium#reference#extras#order#levels% beware, not a user command
   {\dostarttaggedchained\t!list\empty\??list
    \clf_processlist
         names     {#list}
@@ -458,6 +459,7 @@
         reference {#reference}
         extras    {#extras}
         order     {#order}
+        levels    {#levels}
    \relax
    \dostoptagged}
 
