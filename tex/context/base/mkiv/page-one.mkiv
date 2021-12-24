@@ -372,13 +372,13 @@
 
 \def\page_one_command_flush_bottom_insertions_indeed
   {\ifgridsnapping
-   % \floatparameter\c!bottombefore
+   % \rootfloatparameter\c!bottombefore
      \snaptogrid\hbox{\box\namedinsertionnumber\s!bottomfloat}%
-   % \floatparameter\c!bottomafter
+   % \rootfloatparameter\c!bottomafter
    \else
-     \floatparameter\c!bottombefore
+     \rootfloatparameter\c!bottombefore
      \unvbox\namedinsertionnumber\s!bottomfloat
-     \floatparameter\c!bottomafter
+     \rootfloatparameter\c!bottomafter
    \fi}
 
 \unexpanded\def\page_one_command_flush_floats

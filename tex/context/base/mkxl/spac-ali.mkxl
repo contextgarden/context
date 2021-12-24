@@ -570,27 +570,57 @@
    \c_spac_align_state_direction \zerocount % what is default ?
    \c_spac_align_state_page      \zerocount
    \c_spac_align_state_par_fill  \zerocount
-   \ifcsname\??aligncommand\m_spac_align_asked\endcsname
+   \ifcsname\??aligncommand\m_spac_align_named\endcsname
      \lastnamedcs
    \else
      \rawprocesscommacommand[\m_spac_align_asked]\spac_align_collect
    \fi
-   \normalexpanded{\t_spac_align_collected
-     {\setfalse\raggedonelinerstate % bad
-      \the\t_spac_align_collected
-      \spac_align_flush_horizontal
-      \spac_align_flush_vertical
-      \spac_align_flush_direction
-      \spac_align_flush_page
-      \spac_align_flush_parfill
-      }}% kept, nice for tracing
+ % % kept, nice for tracing
+ %
+ % \normalexpanded{\t_spac_align_collected
+ %   {\setfalse\raggedonelinerstate % bad
+ %    \the\t_spac_align_collected
+ %    \spac_align_flush_horizontal
+ %    \spac_align_flush_vertical
+ %    \spac_align_flush_direction
+ %    \spac_align_flush_page
+ %    \spac_align_flush_parfill
+ %    }}%
+ %
+ %  \etoksapp\t_spac_align_collected
+ %    {\spac_align_flush_horizontal
+ %     \spac_align_flush_vertical
+ %     \spac_align_flush_direction
+ %     \spac_align_flush_page
+ %     \spac_align_flush_parfill}%
+ %  \etokspre\t_spac_align_collected
+ %    {\setfalse\raggedonelinerstate}% bad
+ %
+    \etoks\t_spac_align_collected
+      {\setfalse\raggedonelinerstate % bad
+       \the\t_spac_align_collected
+       \spac_align_flush_horizontal
+       \spac_align_flush_vertical
+       \spac_align_flush_direction
+       \spac_align_flush_page
+       \spac_align_flush_parfill}%
+ %
    \enforced\permanent\protected\edef\raggedcommand    {\the\t_spac_align_collected }%
    \enforced\permanent\protected\edef\updateraggedskips{\spac_align_flush_horizontal}%
-   \enforced\aliased\gletcsname\??alignmentnormalcache\m_spac_align_asked\endcsname\raggedcommand
-   \enforced\aliased\gletcsname\??alignmentraggedcache\m_spac_align_asked\endcsname\updateraggedskips}
+   \enforced\aliased\gletcsname\??alignmentnormalcache\m_spac_align_named\endcsname\raggedcommand
+   \enforced\aliased\gletcsname\??alignmentraggedcache\m_spac_align_named\endcsname\updateraggedskips}
+
+\mutable\def\m_spac_align_named{\m_spac_align_asked}
 
 \def\spac_align_collect#1%
   {\csname\??aligncommand#1\endcsname}
+
+\permanent\protected\tolerant\def\definealign[#1]#*[#2]%
+  {\pushmacro\m_spac_align_named
+   \edef\m_spac_align_named{#1}%
+   \edef\m_spac_align_asked{#2}%
+   \spac_align_add_to_cache
+   \popmacro\m_spac_align_named}
 
 % The local (key driven) setter:
 
@@ -655,7 +685,7 @@
 % Maybe we need something different in columns.
 
 \permanent\protected\def\installalign#1#2% beware: commands must be unexpandable!
-  {\ifcsname\??aligncommand#1\endcsname \else
+  {\ifcsname\??aligncommand#1\endcsname \else  % : so maybe we should use \etoksapp
      \defcsname\??aligncommand#1\endcsname{\toksapp\t_spac_align_collected{#2}}%
    \fi}
 

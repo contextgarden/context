@@ -81,7 +81,6 @@ local nodecodes         = nodes.nodecodes
 local par_code          = nodecodes.par
 
 local startofpar        = nuts.startofpar
-
 local insertbefore      = nuts.insertbefore
 local insertafter       = nuts.insertafter
 
@@ -102,6 +101,7 @@ local enabled           = false
 -- many pages but for an arbitrary background shape that is not so common.
 
 local function check(specification)
+    --
     local a     = specification.attribute
     local index = specification.index
     local depth = specification.depth
@@ -207,21 +207,6 @@ local function registerbackground(name)
         texsetattribute(a_textbackground,unsetvalue)
     end
 end
-
--- local function collectbackgrounds(r,n)
---     if enabled then
---         local parent = getbox(n)
---         local head   = getlist(parent)
---         realpage     = r
---         processranges(a_textbackground,flush,head) -- ,parent)
---     end
--- end
---
--- interfaces.implement {
---     name      = "collectbackgrounds",
---     actions   = collectbackgrounds,
---     arguments = { "integer", "integer" }
--- }
 
 nodes.handlers.textbackgrounds = function(head,where,parent) -- we have hlistdir and local dir
     -- todo enable action in register
@@ -785,9 +770,7 @@ local function calculatemultipar(tag)
         for i=bindex+1,eindex-1 do
             br = f_tag_two(btag,i)
             local r = collected[br]
-            if not r then
-               report_graphics("invalid middle for %a",br)
-            else
+            if r then
                 local rp = r.p -- page
                 local pp = list[rp]
                 local mp = middlepart(b,e,p,rp,r,left,right)
@@ -796,6 +779,8 @@ local function calculatemultipar(tag)
                 else
                     list[rp] = { mp }
                 end
+            else
+                report_graphics("invalid middle for %a",br)
             end
         end
         local ep = e.p -- page

@@ -2408,6 +2408,10 @@ do
                 s = k
                 break
             end
+            -- weird
+            if type(s) == "table" then
+                return citevariants.default
+            end
         end
         if s then
             s = specifications[s]

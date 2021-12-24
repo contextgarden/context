@@ -74,75 +74,19 @@
 \registerctxluafile{node-rul}{autosuffix,optimize}
 
 \installcorenamespace{bar}
-% \installcorenamespace{barindex}
-\installcorenamespace{barattribute}
 \installcorenamespace{barstack}
 
 \installcommandhandler \??bar {bar} \??bar
 
-\newtoks\t_node_rules_checklist
-
-\mutable\let\c_node_rules_index\relax % temporary synonym (can be shared)
-\mutable\let\p_node_rules_color\empty
+\mutable\let\p_node_color \empty % of just \p_*
+\mutable\let\p_node_text  \empty
+\mutable\let\p_node_offset\empty
 
 \aliased\let\setupbars\setupbar
 
 \appendtoks
-    \ifempty\currentbar
-        \the\t_node_rules_checklist
-    \else
-        \node_rules_define
-    \fi
-\to \everysetupbar
-
-\appendtoks
-%     \ifcsname\??barindex\currentbar\endcsname
-%         \lastnamedcs\zerocount
-%     \else
-%         \expandafter\newcount\csname\??barindex\currentbar\endcsname
-%     \fi
-  % \normalexpanded{\t_node_rules_checklist{\node_rules_redefine{\currentbar}\the\t_node_rules_checklist}}%
-    \normalexpanded{\t_node_rules_checklist{\the\t_node_rules_checklist\relax\node_rules_redefine{\currentbar}}}%
-  % \etoksapp\t_node_rules_checklist{\node_rules_redefine{\currentbar}}%
-    \node_rules_define
-    \frozen\instance\setuevalue\currentbar{\node_rules_direct{\currentbar}}%
+    \frozen\protected\instance\edefcsname\currentbar\endcsname{\node_rules_direct{\currentbar}}%
 \to \everydefinebar
-
-\newbox\b_node_rules
-
-% todo: delay mp graphic
-
-\protected\def\node_rules_define
-  {\edef\p_node_rules_color{\barparameter\c!color}%
-   \edef\p_node_text{\barparameter\c!text}%
-   \ifempty\p_node_text\else
-     \setbox\b_node_rules\hbox{\p_node_text}%
-   \fi
-   \expandafter\integerdef\csname\??barattribute\currentbar\endcsname
-     \clf_definerule
-       continue      {\barparameter\c!continue}%
-       unit          {\barparameter\c!unit}%
-       order         {\barparameter\c!order}%
-       rulethickness {\barparameter\c!rulethickness}%
-       method        \barparameter\c!method
-       max           \barparameter\c!max\space % number
-       mp           {\includeMPgraphic{\barparameter\c!mp}}
-       ma            \c_attr_colormodel
-       ca            \rawcolorattribute\p_node_rules_color
-       ta            \rawtransparencyattribute\p_node_rules_color
-       offset        \barparameter\c!offset\space % number
-       dy            \barparameter\c!dy\space % number
-       empty        {\barparameter\c!empty}%
-     \ifempty\p_node_text\else
-       % not that useful and efficient, more for testing something
-       text         \b_node_rules
-       repeat       {\barparameter\c!repeat}%
-     \fi
-     \relax
-   \relax}
-
-\protected\def\node_rules_redefine#1%
-  {\def\currentbar{#1}\node_rules_define}
 
 \protected\def\node_rules_direct#1%
   {\groupedcommand
@@ -151,25 +95,6 @@
 
 \permanent\protected\def\inlinebar[#1]%
   {\node_rules_direct{#1}}
-
-% \protected\def\inlinecurrentbar
-%   {\node_rules_direct{\currentbar}}
-
-% store in properties
-
-% \permanent\protected\def\node_rules_set#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
-%   {\edef\currentbar{#1}%
-%    \usebarstyleandcolor\c!foregroundstyle\c!foregroundcolor
-%    % maybe: \usebarstyleandcolor\c!textgroundstyle\c!textcolor
-%    % todo: move this to lua .. we callout anyway
-%    \expandafter\let\expandafter\c_node_rules_index\csname\??barindex#1\endcsname
-%    \advance\c_node_rules_index\plusone
-%    \clf_enablerules % will be relaxed
-%    \c_attr_ruled\numexpr
-%       \plusthousand*\c_node_rules_index
-%       % optimizing this one needs testing
-%      +\csname\??barattribute#1\ifcsname\??bar#1:\number\c_node_rules_index\s!parent\endcsname:\number\c_node_rules_index\fi\endcsname
-%    \relax}
 
 %D \overbar{Über} \underbar{Unterstrich \underbar{steigt \overbar{auf} den \underbar{Unterberg}}}.
 %D
@@ -181,49 +106,44 @@
 %D \underbar {\underdots{\samplefile{tufte}}}\par
 %D \underdots{\underdots{\samplefile{tufte}}}\par
 
-\newcount   \c_node_rules_index
-\integerdef \c_node_rules_used        \zerocount
-\mutable\let\m_node_rules_previous_bar\empty
+\newcount\c_node_rules_nesting % todo: same as colors
+\newcount\c_node_rules_level
+\newcount\c_node_rules_up
+\newcount\c_node_rules_down
 
-\permanent\protected\def\node_rules_set#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
-  {\let\m_node_rules_previous_bar\currentbar
-   \edef\currentbar{#1}%
+\permanent\protected\def\node_rules_set#1%
+  {\edef\currentbar{#1}%
+   \advance\c_node_rules_level\plusone
    \usebarstyleandcolor\c!foregroundstyle\c!foregroundcolor
-   % maybe: \usebarstyleandcolor\c!textgroundstyle\c!textcolor
-   % todo: move this to lua .. we callout anyway
- % \expandafter\let\expandafter\c_node_rules_index\csname\??barindex#1\endcsname
-   \advance\c_node_rules_index\plusone
-   \clf_enablerules % will be relaxed
-   \edef\p_level{\barparameter\c!level}%
-   \ifx\p_level\v!yes
-     \integerdef\c_node_rules_used\c_node_rules_index
-     \c_attr_ruled
-   \orelse\ifx\p_level\v!auto
-     \integerdef\c_node_rules_used\c_node_rules_index
-     \ifempty\m_node_rules_previous_bar
-       \c_attr_ruled
-     \orelse\ifx\m_node_rules_previous_bar\currentbar
-       \c_attr_ruled
-     \else
-       \clf_enableextrarules % will be relaxed
-       \c_attr_ruledextra
+   \edef\p_node_color {\barparameter\c!color}% todo
+   \edef\p_node_text  {\barparameter\c!text}%
+   \edef\p_node_offset{\barparameter\c!offset}%
+   % better is a dedicated key: up/down .. todo
+   \advance\ifdim\p_node_offset\onepoint<\zeropoint\c_node_rules_down\else\c_node_rules_up\fi\plusone
+   \clf_setrule
+       continue      {\barparameter\c!continue}%
+       unit          {\barparameter\c!unit}%
+       order         {\barparameter\c!order}%
+       level         \c_node_rules_level
+       stack         \ifdim\p_node_offset\onepoint<\zeropoint\c_node_rules_down\else\c_node_rules_up\fi
+       rulethickness {\barparameter\c!rulethickness}%
+       method        \barparameter\c!method
+       max           \barparameter\c!max\space % number
+       mp            {\includeMPgraphic{\barparameter\c!mp}}
+       ma            \c_attr_colormodel
+       ca            \rawcolorattribute\p_node_color
+       ta            \rawtransparencyattribute\p_node_color
+       offset        \p_node_offset\space % number
+       dy            \barparameter\c!dy\space % number, also fraction
+       empty         {\barparameter\c!empty}%
+     \ifempty\p_node_text\else
+       text          \hbox{\p_node_text}%
+       repeat        {\barparameter\c!repeat}%
      \fi
-   \orelse\ifchknum\p_level\or
-     \integerdef\c_node_rules_used\p_level
-     \c_attr_ruled
-   \else
-     \integerdef\c_node_rules_used\c_node_rules_index
-     \c_attr_ruled
-   \fi
-   \numexpr
-     \plusthousand*\c_node_rules_used
-     % optimizing this one needs testing
-    +\csname\??barattribute#1\ifcsname\??bar#1:\number\c_node_rules_index\s!parent\endcsname:\number\c_node_rules_used\fi\endcsname
    \relax}
 
 \permanent\protected\def\resetbar
-  {\c_attr_ruled     \attributeunsetvalue
-   \c_attr_ruledextra\attributeunsetvalue}
+  {\c_attr_ruled\attributeunsetvalue}
 
 \permanent\protected\def\nobar
   {\groupedcommand
@@ -248,13 +168,11 @@
 
 % ungrouped % todo: use the lua based stacker
 
-\newcount\c_node_rules_nesting % todo: same as colors
-
 \permanent\protected\def\pushbar[#1]%
   {\global\advance\c_node_rules_nesting\plusone
    \edefcsname\??barstack\number\c_node_rules_nesting\endcsname
-     {\c_attr_ruled     \the\c_attr_ruled
-      \c_attr_ruledextra\the\c_attr_ruledextra}%
+     {\c_node_rules_level\the\c_node_rules_level
+      \c_attr_ruled      \the\c_attr_ruled}%
    \node_rules_set{#1}}
 
 \permanent\protected\def\popbar
@@ -415,59 +333,25 @@
 %D This will move: (a bit duplicated)
 
 \installcorenamespace{shift}
-\installcorenamespace{shiftindex}
-\installcorenamespace{shiftattribute}
 
 \installcommandhandler \??shift {shift} \??shift
-
-\newtoks\t_node_shifts_checklist
-
-\mutable\let\c_node_shifts_index\relax % temporary synonym (can be shared)
 
 \let\setupshifts\setupshift
 
 \appendtoks
-    \ifempty\currentshift
-        \the\t_node_shifts_checklist
-    \else
-        \node_shifts_define
-    \fi
-\to \everysetupshift
-
-\appendtoks
-    \ifcsname\??shiftindex\currentshift\endcsname
-        \lastnamedcs\zerocount
-    \else
-        \expandafter\newcount\csname\??shiftindex\currentshift\endcsname
-    \fi
-    \normalexpanded{\t_node_shifts_checklist{\the\t_node_shifts_checklist\node_shifts_redefine{\currentshift}}}% order ?
-    \node_shifts_define
-    \frozen\instance\setuevalue\currentshift{\node_shifts_direct{\currentshift}}%
+    \frozen\protected\instance\edefcsname\currentshift\endcsname{\node_shifts_direct{\currentshift}}%
 \to \everydefineshift
-
-\protected\def\node_shifts_define
-  {\edefcsname\??shiftattribute\currentshift\endcsname{\number
-   \clf_defineshift
-     continue {\shiftparameter\c!continue}%
-     unit     {\shiftparameter\c!unit}%
-     method    \shiftparameter\c!method
-     dy        \shiftparameter\c!dy % number
-   \relax}}
-
-\protected\def\node_shifts_redefine#1%
-  {\def\currentshift{#1}\node_shifts_define}
 
 \protected\def\node_shifts_set#1% todo: check parent ! todo: move attr etc to lua
   {\def\currentshift{#1}%
-   \expandafter\let\expandafter\c_node_shifts_index\csname\??shiftindex#1\endcsname
-   \advance\c_node_shifts_index\plusone
-   \clf_enableshifts % will be relaxed
-   \c_attr_shifted\numexpr
-      \plusthousand*\c_node_shifts_index
-     +\csname\??shiftattribute#1\ifcsname\??shift#1:\number\c_node_shifts_index\s!parent\endcsname:\number\c_node_shifts_index\fi\endcsname
-   \relax
    \useshiftstyleandcolor\c!style\c!color
-   \dosetupisolatedalign{\shiftparameter\c!align}} % weird feature that i probably needed once
+   \dosetupisolatedalign{\shiftparameter\c!align}% a weird feature that i probably needed once
+   \clf_setshift
+       continue {\shiftparameter\c!continue}%
+       unit     {\shiftparameter\c!unit}%
+       method    \shiftparameter\c!method
+       dy        \shiftparameter\c!dy % number
+   \relax}
 
 \permanent\protected\def\startshift[#1]%
   {\begingroup
@@ -497,8 +381,8 @@
 
 % we want these always so ...
 
-\expandafter\let\expandafter\shiftup   \csname\v!shiftup   \endcsname
-\expandafter\let\expandafter\shiftdown \csname\v!shiftdown \endcsname
+\expandafter\let\expandafter\shiftup  \csname\v!shiftup  \endcsname
+\expandafter\let\expandafter\shiftdown\csname\v!shiftdown\endcsname
 
 % This is a weird helper.. these might go away:
 
@@ -522,67 +406,29 @@
 % Phillips on drums). The Amsterdam concert is equally energizing.
 
 \installcorenamespace{linefiller}
-\installcorenamespace{linefillerindex}
-\installcorenamespace{linefillerattribute}
 
 \installcommandhandler \??linefiller {linefiller} \??linefiller
 
 \definesystemattribute[linefiller][public]
 
-\newtoks\t_node_linefiller_checklist
-
-\mutable\let\c_node_linefiller_index\relax % temporary synonym (can be shared)
-
 \aliased\let\setuplinefillers\setuplinefiller
 
-\appendtoks
-    \ifempty\currentlinefiller
-        \the\t_node_linefiller_checklist
-    \else
-        \node_linefiller_define
-    \fi
-\to \everysetuplinefiller
-
-\appendtoks
-    \ifcsname\??linefillerindex\currentlinefiller\endcsname
-        \lastnamedcs\zerocount
-    \else
-        \expandafter\newcount\csname\??linefillerindex\currentlinefiller\endcsname
-    \fi
-    \etoksapp\t_node_linefiller_checklist{\t_node_linefiller_checklist\node_linefiller_redefine{\currentlinefiller}}%
-    \node_linefiller_define
-\to \everydefinelinefiller
-
-\protected\def\node_linefiller_define
-  {\edef\p_node_rules_color{\linefillerparameter\c!color}%
-   \expandafter\integerdef\csname\??linefillerattribute\currentlinefiller\endcsname
-     \clf_definelinefiller
+\protected\def\node_linefiller_set#1% todo: check parent ! todo: move attr etc to lua
+  {\def\currentlinefiller{#1}%
+   \edef\p_node_color{\linefillerparameter\c!color}%
+   \clf_setlinefiller
       %method         \linefillerparameter\c!method
        location      {\linefillerparameter\c!location}%
        scope         {\linefillerparameter\c!scope}%
        mp            {\includeMPgraphic{\linefillerparameter\c!mp}}%
        ma             \c_attr_colormodel
-       ca             \rawcolorattribute\p_node_rules_color
-       ta             \rawtransparencyattribute\p_node_rules_color
+       ca             \rawcolorattribute\p_node_color
+       ta             \rawtransparencyattribute\p_node_color
        height         \dimexpr\linefillerparameter\c!height\relax
        depth          \dimexpr\linefillerparameter\c!depth\relax
        distance       \dimexpr\linefillerparameter\c!distance\relax
        threshold      \dimexpr\linefillerparameter\c!threshold\relax
        rulethickness  \dimexpr\linefillerparameter\c!rulethickness\relax
-     \relax
-   \relax}
-
-\protected\def\node_linefiller_redefine#1%
-  {\def\currentlinefiller{#1}\node_linefiller_define}
-
-\protected\def\node_linefiller_set#1% todo: check parent ! todo: move attr etc to lua
-  {\def\currentlinefiller{#1}%
-   \expandafter\let\expandafter\c_node_linefiller_index\csname\??linefillerindex#1\endcsname
-   \advance\c_node_linefiller_index\plusone
-   \clf_enablelinefillers
-   \c_attr_linefiller\numexpr
-      \plusthousand*\c_node_linefiller_index
-     +\csname\??linefillerattribute#1\ifcsname\??linefiller#1:\number\c_node_linefiller_index\s!parent\endcsname:\number\c_node_linefiller_index\fi\endcsname
    \relax}
 
 \permanent\tolerant\protected\def\startlinefiller[#1]#*[#2]%
@@ -653,7 +499,6 @@
      \node_linefiller_set{#3}% already sets the attribute
      #1%
         attr \backgroundattribute \plusone
-      % attr \linefillerattribute \the\c_attr_linefiller
        {\box\nextbox}%
      \egroup}%
    #2}
@@ -664,6 +509,6 @@
 
 %D Bonus:
 
-\permanent\protected\def\autorule{\clf_autorule} % todo: public implementor
+% \autorule : defined at the lua end
 
 \protect \endinput

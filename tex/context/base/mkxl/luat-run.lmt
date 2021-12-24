@@ -41,6 +41,8 @@ function luatex.registerstopactions (...) insert(stopactions,  ...) end
 function luatex.registerdumpactions (...) insert(dumpactions,  ...) end
 function luatex.registerpageactions (...) insert(pageactions,  ...) end
 
+local setexitcode = lua.setexitcode or status.setexitcode or function() end
+
 local function start_run()
     if logs.start_run then
         logs.start_run()
@@ -51,7 +53,7 @@ local function start_run()
     end
 end
 
-local function stop_run()
+local function stop_run(badrun)
     for i=1,#stopactions do
         stopactions[i]()
     end
@@ -68,15 +70,14 @@ local function stop_run()
         end
     end
     if quit then
-        local setexitcode = lua.setexitcode or status.setexitcode
-        if setexitcode then
-            setexitcode(1)
-            if type(quit) == "table" then
-                logs.newline()
-                report_tex("quitting due to: %, t",quit)
-                logs.newline()
-            end
+        setexitcode(1)
+        if type(quit) == "table" then
+            logs.newline()
+            report_tex("quitting due to: %, t",quit)
+            logs.newline()
         end
+    elseif badrun and badrun > 0 then
+        setexitcode(1)
     end
     if logs.stop_run then
         logs.stop_run()
@@ -147,6 +148,7 @@ end
 
 function luatex.abort()
     cleanup_run()
+    setexitcode(1)
     osexit(1)
 end
 
@@ -289,6 +291,7 @@ callback.register("handle_overload", function(fatal,overload,csname,flags)
         logs.newline()
         if fatal then
             cleanup_run()
+            setexitcode(1)
             osexit(1)
         end
     end

@@ -56,6 +56,7 @@
        \edef\currentmoduleparameters{#name}%
      \else
        \edef\currentmodulecategory  {#category}%
+       \edef\currentmodulecategory  {#category}%
        \edef\currentmodule          {#name}%
        \let \currentmoduleparameters\empty
      \fi

@@ -163,6 +163,7 @@ local function processerror(offset,errortype)
     if job and type(job.disablesave) == "function" then
         job.disablesave()
     end
+    lua.setexitcode(1)
 end
 
 directives.register("system.quitonerror",function(v)

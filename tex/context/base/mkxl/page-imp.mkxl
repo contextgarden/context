@@ -189,7 +189,8 @@
    \fi
    \clf_shipoutpage#1\relax
    \global\setbox#1\emptybox
-   \global\deadcycles\zerocount}
+   \global\deadcycles\zerocount
+   \clf_cleanupattributes}
 
 \def\page_shipouts_normal#1%
   {\global\advance\shippedoutpages\plusone

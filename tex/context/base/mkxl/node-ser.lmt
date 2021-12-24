@@ -39,12 +39,11 @@ local canbezero = {
 }
 
 local canbelist = {
-    attribute      = "<attribute>",
-    node           = "<node>",
-    token          = "<token>",
-    attribute_list = "<attributes>",
-    node_list      = "<nodes>",
-    token_list     = "<tokens>",
+    attribute  = "<attribute>",
+    node       = "<node>",
+    token      = "<token>",
+    node_list  = "<nodes>",
+    token_list = "<tokens>",
 }
 
 local canbeignored = {
@@ -68,10 +67,12 @@ nodes.fieldtypes = fieldtypes
 local function astable(n)
     n = tonode(n)
     if n then
-        local fields = fieldtypes[n.id]
+        local id     = n.id
+        local fields = fieldtypes[id]
         if fields then
-            local result = { }
-            for field, fieldtype in sortedhash(fields) do
+            local subtype = n.subtype
+            local result  = { }
+            for field, fieldtype in sortedhash(fields) do -- no need to sort
                 local value = n[field]
                 if value then
                     if canbeignored[field] then
@@ -86,16 +87,12 @@ local function astable(n)
                     end
                 end
             end
-            local id = n.id
-            if id then
-                id = nodecodes[id]
-                result.id = id
-                local subtype = n.subtype
-                if subtype then
-                    local subtypes = subtypes[id]
-                    if subtypes then
-                        result.subtype = subtypes[subtype]
-                    end
+            id = nodecodes[id]
+            result.id = id
+            if subtype then
+                local subtypes = subtypes[id]
+                if subtypes then
+                    result.subtype = subtypes[subtype]
                 end
             end
             return result
@@ -119,7 +116,7 @@ local function to_table(n,flat,verbose,noattributes,done)
             for field, fieldtype in sortedhash(fields) do
                 local value = n[field]
                 if value then
-                    if fieldtype == "attributelist" or fieldtype == "attribute" or fieldtype == "attribute_list" then
+                    if fieldtype == "attribute" then
                         if noattributes then
                             result[value] = canbeignored[value]
                         else

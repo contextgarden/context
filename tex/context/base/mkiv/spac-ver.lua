@@ -2005,10 +2005,7 @@ do
 
     function vspacing.vboxhandler(head,where)
         if head and not ignore[where] and getnext(head) then
-            if getnext(head) then -- what if a one liner and snapping?
-                head = collapser(head,"vbox",where,trace_vbox_vspacing,true,a_snapvbox) -- todo: local snapper
-                return head
-            end
+            head = collapser(head,"vbox",where,trace_vbox_vspacing,true,a_snapvbox) -- todo: local snapper
         end
         return head
     end

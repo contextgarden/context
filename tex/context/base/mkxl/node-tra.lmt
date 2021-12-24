@@ -481,6 +481,8 @@ end
 number.todimen = numbertodimen
 nodes .todimen = nodetodimen
 
+-- todo: dk
+
 function number.topoints      (n,fmt) return numbertodimen(n,"pt",fmt) end
 function number.toinches      (n,fmt) return numbertodimen(n,"in",fmt) end
 function number.tocentimeters (n,fmt) return numbertodimen(n,"cm",fmt) end

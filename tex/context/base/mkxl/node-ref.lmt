@@ -528,6 +528,8 @@ local nofreferences = 0
 
 do
 
+    -- here we can't use attributes.registervalue etc (afaiks)
+
     local stack      = { }
     local done       = { }
     local attribute  = attributes.private('reference')
@@ -666,6 +668,8 @@ end
 local nofdestinations = 0
 
 do
+
+    -- here we can use attributes.registervalue etc
 
     local stack      = { }
     local done       = { }

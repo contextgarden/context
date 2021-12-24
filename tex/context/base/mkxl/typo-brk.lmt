@@ -397,9 +397,6 @@ function breakpoints.handler(head)
              -- end
             end
         end
-        if done then
---             unsetattributes(a_breakpoints, head)
-        end
     end
     return head
 end

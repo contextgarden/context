@@ -102,7 +102,7 @@ local formatters        = string.formatters
 
 local collected         = allocate()
 local tobesaved         = allocate()
-local positionsused     = false
+local positionsused     = nil
 
 local jobpositions = {
     collected = collected,
@@ -145,7 +145,7 @@ local f_tag_two   = formatters["%s:%s"]
 -- Because positions are set with a delay we cannot yet make the tree -- so that
 -- is a finalizer step. But, we already have a dual split.
 
--- local treemode = false
+local treemode = false
 local treemode = true
 
 local function checkshapes(s)
@@ -231,12 +231,14 @@ if treemode then
     columndone = false
 
     local deltapacking = true -- so we can see the difference
+--     local deltapacking = false -- so we can see the difference
 
     local function checkcommondata(v,common)
         if common then
             local i = v.i
             local t = common[i]
             if t then
+v.i = nil
                 local m = t.mt
                 if not m then
                     setmetatable(t,default)
@@ -289,7 +291,8 @@ if treemode then
                     local v = list[one] or false
                     if v then
                         if prefix == "p" then
-                            if deltapacking and type(v) == "number" then
+                         -- if deltapacking and type(v) == "number" then
+                            if type(v) == "number" then
                                 for i=one,1,-1 do
                                     local l = list[i]
                                     if type(l) ~= "number" then
@@ -312,7 +315,7 @@ if treemode then
                                         if not getmetatable(l) then
                                             checkcommondata(l,x_y_w_h_list)
                                         end
-                                        v = setmetatable({ p = p }, { __index = l })
+                                        v = setmetatable({ p = v }, { __index = l })
                                         list[one] = v
                                         break
                                     end
@@ -433,17 +436,6 @@ if treemode then
             t[category] = tc
             return tc
         end)
-        --
-        for k, v in next, collected do
-            if k ~= "shared" and next(v) then
-                positionsused = true
-                break
-            end
-        end
-    end
-
-    function jobpositions.used()
-        return positionsused
     end
 
     local function finalizer()
@@ -820,6 +812,19 @@ else
 
     job.register('job.positions.collected', tobesaved, initializer, finalizer)
 
+end
+
+function jobpositions.used()
+    if positionsused == nil then
+        positionsused = false
+        for k, v in next, collected do
+            if k ~= "shared" and next(v) then
+                positionsused = true
+                break
+            end
+        end
+    end
+    return positionsused
 end
 
 function jobpositions.getfree(page)
@@ -1489,7 +1494,12 @@ function jobpositions.copy(target,source)
 end
 
 function jobpositions.replace(id,p,x,y,w,h,d)
-    collected[id] = { p = p, x = x, y = y, w = w, h = h, d = d } -- c g
+    local c = collected[id]
+    if c then
+        c.p = p ; c.x = x ; c.y = y ; c.w = w ; c.h = h ; c.d = d ; -- c g
+    else
+        collected[i] = { p = p, x = x, y = y, w = w, h = h, d = d } -- c g
+    end
 end
 
 local function getpage(id)
@@ -1751,14 +1761,12 @@ implement {
     public    = true,
     protected = true,
     actions   = function(name,page,x,y,w,h,d)
-        collected[name] = {
-            p = page,
-            x = x,
-            y = y,
-            w = w,
-            h = h,
-            d = d,
-        }
+        local c = collected[name]
+        if c then
+            c.p = page ; c.x = x ; c.y = y ; c.w = w ; c.h = h ; c.d = d ;
+        else
+            collected[name] = { p = page, x = x, y = y, w = w, h = h, d = d }
+        end
     end
 }
 
@@ -2249,7 +2257,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function()
-        doifelse(positionsused)
+        doifelse(jobpositions.used())
     end
 }
 

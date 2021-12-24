@@ -419,7 +419,6 @@
    \global\positioningtrue}
 
 \permanent\protected\lettonothing\disableparpositions
-
 \permanent\protected\lettonothing\registerparoptions % hooks into everypar
 
 \permanent\protected\def\doregisterparoptions
@@ -432,16 +431,22 @@
 
 \def\anch_positions_register_par_options_traced
   {\anch_positions_register_par_options_normal
-   \smashedhbox to \zeropoint
+   \begingroup
+   \setbox\scratchbox\hpack
      {\hss
       \startcolor[blue]%
-      \llap{\infofont\number\c_anch_positions_paragraph}%
+      \hpack \s!yoffset -2\onepoint to \zeropoint
+        {\hss\infofont\number\c_anch_positions_paragraph\hskip2\onepoint}%
       \vrule
         \s!width 4\onepoint
         \s!height2\onepoint
         \s!depth 2\onepoint
       \stopcolor
-      \hss}}
+      \hss}%
+   \smashbox\scratchbox
+   \boxxoffset\scratchbox-2\onepoint
+   \box\scratchbox
+   \endgroup}
 
 \let\anch_positions_register_par_options\anch_positions_register_par_options_normal
 

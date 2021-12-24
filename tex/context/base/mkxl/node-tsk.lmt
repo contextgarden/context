@@ -679,17 +679,32 @@ return function(head)
 end
 ]],
 
+-- process = [[
+-- local tonut  = nodes.tonut
+-- local tonode = nodes.nuts.tonode
+--
+-- %localize%
+--
+-- return function(head,groupcode)
+--     local nuthead = tonut(head)
+--
+-- return function(nuthead,groupcode)
+--
+-- %actions%
+--     return tonode(nuthead)
+-- end
+-- ]],
+
 process = [[
 local tonut  = nodes.tonut
 local tonode = nodes.nuts.tonode
 
 %localize%
 
-return function(head,groupcode)
-    local nuthead = tonut(head)
+return function(nuthead,groupcode)
 
 %actions%
-    return tonode(nuthead)
+    return nuthead
 end
 ]],
 

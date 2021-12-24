@@ -26,6 +26,8 @@
 % \backgroundvbox[red]   {\input knuth } \par
 % \backgroundhbox[yellow]{\rotate[rotation=45]{hello world}} \par
 
+% todo: use new register feature (but not used that much so ...)
+
 \permanent\def\colorattr#1%
   {\ifcsname\??colorattribute\currentcolorprefix#1\endcsname
      \node_backgrounds_thecolorattr{\currentcolorprefix#1}%

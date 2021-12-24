@@ -363,7 +363,7 @@
      \noffloatinserts\zerocount
      \let\totaltopinserted\!!zeropoint
      \page_one_command_set_top_insertions_indeed
-     \ifnum\rootfloatparameter\c!nbottom=\zerocount
+     \ifnum\rootfloatparameter\c!nbottom=\zerocount % \ifnum\c_page_floats_n_of_bottom=\zerocount
        \ifnum\rootfloatparameter\c!nlines>\zerocount
          \ifdim\totaltopinserted>\zeropoint\relax
            \ifdim\dimexpr\rootfloatparameter\c!nlines\lineheight+\totaltopinserted\relax>\textheight
@@ -440,7 +440,6 @@
    \page_one_command_set_bottom_insertions_indeed}
 
 \protected\def\page_one_command_flush_top_insertions
-%   {\ifvoid\namedinsertionnumber\s!topfloat\else
   {\ifzeropt\page_inserts_get_height\namedinsertionnumber\s!topfloat\else
      \page_one_command_flush_top_insertions_indeed % less tracing
    \fi
@@ -463,7 +462,6 @@
    \fi}
 
 \protected\def\page_one_command_flush_bottom_insertions
-%   {\ifvoid\namedinsertionnumber\s!bottomfloat\else
   {\ifzeropt\page_inserts_get_height\namedinsertionnumber\s!bottomfloat\else
      \page_one_command_flush_bottom_insertions_indeed
    \fi
@@ -472,13 +470,13 @@
 
 \def\page_one_command_flush_bottom_insertions_indeed
   {\ifgridsnapping
-   % \floatparameter\c!bottombefore
+   % \rootfloatparameter\c!bottombefore
      \snaptogrid\hbox{\page_inserts_get_boxed\namedinsertionnumber\s!bottomfloat}%
-   % \floatparameter\c!bottomafter
+   % \rootfloatparameter\c!bottomafter
    \else
-     \floatparameter\c!bottombefore
+     \rootfloatparameter\c!bottombefore
      \page_inserts_get_unboxed\namedinsertionnumber\s!bottomfloat
-     \floatparameter\c!bottomafter
+     \rootfloatparameter\c!bottomafter
    \fi}
 
 \protected\def\page_one_command_flush_floats

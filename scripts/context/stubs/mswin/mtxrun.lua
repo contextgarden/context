@@ -27477,6 +27477,10 @@ end
 
 if ok == false then ok = 1 elseif ok == true or ok == nil then ok = 0 end
 
+if lua and lua.getexitcode then
+    ok = lua.getexitcode()
+end
+
 -- os.exit(ok,true) -- true forces a cleanup in 5.2+
 
 os.exit(ok)         -- true forces a cleanup in 5.2+ but reports a wrong number then

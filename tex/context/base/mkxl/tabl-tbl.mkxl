@@ -183,15 +183,21 @@
 \newconditional  \c_tabl_tabulate_nopbreak
 \newconditional  \c_tabl_tabulate_firstflushed
 \newconditional  \c_tabl_tabulate_equal
-\newconditional  \c_tabl_tabulate_split             \settrue\c_tabl_tabulate_split
+\newconditional  \c_tabl_tabulate_split
 \newconditional  \c_tabl_tabulate_automode
-\newconditional  \c_tabl_tabulate_handlepbreak      \settrue\c_tabl_tabulate_handlepbreak
-\newconditional  \c_tabl_tabulate_autorulespacing   \settrue\c_tabl_tabulate_autorulespacing
+\newconditional  \c_tabl_tabulate_handlepbreak
+\newconditional  \c_tabl_tabulate_autorulespacing
 \newconditional  \c_tabl_tabulate_someamble
 \newconditional  \c_tabl_tabulate_tolerant_break
 \newconditional  \c_tabl_tabulate_splitoff_whitespace
 \newconditional  \c_tabl_tabulate_pwidth_set
 \newconditional  \c_tabl_tabulate_reshape
+\newconditional  \c_tabl_tabulate_no_blank_in_paragraphs % can become always on
+
+\settrue\c_tabl_tabulate_split
+\settrue\c_tabl_tabulate_handlepbreak
+\settrue\c_tabl_tabulate_autorulespacing
+\settrue\c_tabl_tabulate_no_blank_in_paragraphs
 
 \newdimen        \d_tabl_tabulate_width_p
 \newdimen        \d_tabl_tabulate_width_w
@@ -1993,7 +1999,11 @@
   \fi}
 
 \protected\def\tabl_tabulate_eskip_second
-  {\par\egroup
+  {\par
+   \ifconditional\c_tabl_tabulate_no_blank_in_paragraphs
+     \removelastskip
+   \fi
+   \egroup
    \tabl_tabulate_pheight_set
    \glet\tabl_tabulate_hook\tabl_tabulate_hook_yes
    \tabl_tabulate_splitoff_box}
@@ -2003,6 +2013,9 @@
      % first line
      \global\setbox\b_tabl_tabulate_current\c_tabl_tabulate_column\vbox
      \bgroup
+     \ifconditional\c_tabl_tabulate_no_blank_in_paragraphs
+       \inhibitblank
+     \fi
      \glet\tabl_tabulate_hook\tabl_tabulate_hook_nop
      \ifconditional\c_tabl_tabulate_automode\hsize\d_tabl_tabulate_width\fi
      % \begstrut % interferes with pre-\pars

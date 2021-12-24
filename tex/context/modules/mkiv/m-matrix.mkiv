@@ -729,6 +729,7 @@ $\qquad\qquad$
 \stopsubject
 
 \startsubject[title={Transpose a matrix}]
+
 \startbuffer
 \startluacode
     moduledata.matrix.typeset(document.DemoMatrixA)
@@ -752,6 +753,7 @@ $\qquad\qquad$
 
 \getbuffer[demo]
 
+\startbuffer
 \startluacode
 context("$<1,2,3> \\cdot <3,1,2, 4> \\ =\\ $ ")
 context(moduledata.matrix.inner({ 1, 2, 3 }, { 3, 1, 2, 4 }))
@@ -882,7 +884,6 @@ context(moduledata.matrix.inner({ 1, 2, 3 }, { 3, 1, 2, 4 }))
     context("$\\Rightarrow$")
     moduledata.matrix.typeset(moduledata.matrix.rowechelon(m,1))
 \stopluacode
-
 \stopbuffer
 
 \getbuffer[demo]
@@ -988,7 +989,5 @@ context(moduledata.matrix.inner({ 1, 2, 3 }, { 3, 1, 2, 4 }))
 \stopbuffer
 
 \getbuffer[demo]
-
-\stopsubject
 
 \stoptext

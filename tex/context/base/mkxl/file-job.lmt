@@ -192,7 +192,7 @@ implement {
 -- moved from tex to lua:
 
 local texpatterns = { "%s.mklx", "%s.mkxl", "%s.mkvi", "%s.mkiv", "%s.tex" }
-local luapatterns = { "%s" .. utilities.lua.suffixes.luc, "%s.lua", "%s.lmt" }
+local luapatterns = { "%s" .. utilities.lua.suffixes.luc, "%s.lmt", "%s.lua" }
 local cldpatterns = { "%s.cld" }
 local xmlpatterns = { "%s.xml" }
 

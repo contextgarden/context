@@ -18,10 +18,11 @@ local report_library  = logs.reporter("files","library")
 ----- report_files    = logs.reporter("files","readfile")
 
 local removesuffix    = file.removesuffix
+local collapsepath    = file.collapsepath
 
 local getreadfilename = resolvers.getreadfilename
 
-local loaded          = { }
+local libraries       = table.setmetatableindex("table")
 local defaultpatterns = { "%s" }
 
 local function defaultaction(name,foundname)
@@ -46,6 +47,7 @@ function resolvers.uselibrary(specification) -- todo: reporter
             local foundname = getreadfilename("any",".",somename) -- maybe some day also an option not to backtrack .. and ../.. (or block global)
             return foundname ~= "" and foundname
         end
+        local loaded = libraries[patterns]
         for i=1,#files do
             local filename = files[i]
             if not loaded[filename] then
@@ -76,17 +78,25 @@ function resolvers.uselibrary(specification) -- todo: reporter
                         end
                     end
                 end
-                if not loaded[foundname] then
-                    if foundname then
-                        action(name,foundname)
-                        if onlyonce then
-                            loaded[foundname] = true -- todo: base this on return value
+                if type(foundname) == "string" then
+                    if not loaded[foundname] then
+                        if foundname then
+                            foundname = collapsepath(foundname)
+                            -- this way we can run a module (nil when making a format):
+                            local inputname = environment.inputfilename
+                            if not inputname or collapsepath(inputname) ~= foundname then
+                                action(name,foundname)
+                            end
+                            -- afterwards:
+                            if onlyonce then
+                                loaded[foundname] = true -- todo: base this on return value
+                            end
+                        elseif failure then
+                            failure(name)
                         end
-                    elseif failure then
-                        failure(name)
-                    end
-                    if onlyonce then
-                        loaded[filename]  = true -- todo: base this on return value
+                        if onlyonce then
+                            loaded[filename] = true -- todo: base this on return value
+                        end
                     end
                 end
             end

@@ -465,7 +465,7 @@
 
 \permanent\tolerant\protected\def\ornamenttext[#1]#*[#2]% takes another argument
   {\bgroup
-   \doifelseassignment{#1}
+   \doifelseassignment{#1}%
      {\letdummyparameter\c!alternative\v!a
       \getdummyparameters[#1]%
       \doifelse{\directdummyparameter\c!alternative}\v!a

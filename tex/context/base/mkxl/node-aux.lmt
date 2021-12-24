@@ -10,72 +10,72 @@ if not modules then modules = { } end modules ['node-aux'] = {
 
 local type, tostring = type, tostring
 
-local nodes              = nodes
-local context            = context
+local nodes          = nodes
+local context        = context
 
-local utfvalues          = utf.values
+local utfvalues      = utf.values
 
-local nodecodes          = nodes.nodecodes
+local nodecodes      = nodes.nodecodes
 
-local glyph_code         = nodecodes.glyph
-local hlist_code         = nodecodes.hlist
-local vlist_code         = nodecodes.vlist
-local attributelist_code = nodecodes.attributelist -- temporary
-local par_code           = nodecodes.par
+local glyph_code     = nodecodes.glyph
+local hlist_code     = nodecodes.hlist
+local vlist_code     = nodecodes.vlist
+local attribute_code = nodecodes.attribute -- temporary
+local par_code       = nodecodes.par
 
-local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
-local vianuts            = nuts.vianuts
+local nuts           = nodes.nuts
+local tonut          = nuts.tonut
+local tonode         = nuts.tonode
+local vianuts        = nuts.vianuts
 
-local getbox             = nuts.getbox
-local getnext            = nuts.getnext
-local getid              = nuts.getid
-local getsubtype         = nuts.getsubtype
-local getlist            = nuts.getlist
-local getattr            = nuts.getattr
-local getboth            = nuts.getboth
-local getprev            = nuts.getprev
-local getwidth           = nuts.getwidth
-local setwidth           = nuts.setwidth
-local getboxglue         = nuts.getboxglue
-local setboxglue         = nuts.setboxglue
+local getbox         = nuts.getbox
+local getnext        = nuts.getnext
+local getid          = nuts.getid
+local getsubtype     = nuts.getsubtype
+local getlist        = nuts.getlist
+local getattr        = nuts.getattr
+local getboth        = nuts.getboth
+local getprev        = nuts.getprev
+local getwidth       = nuts.getwidth
+local setwidth       = nuts.setwidth
+local getboxglue     = nuts.getboxglue
+local setboxglue     = nuts.setboxglue
 
-local setfield           = nuts.setfield
-local setattr            = nuts.setattr
-local setlink            = nuts.setlink
-local setlist            = nuts.setlist
-local setnext            = nuts.setnext
-local setprev            = nuts.setprev
-local setattrlist        = nuts.setattrlist
+local setfield       = nuts.setfield
+local setattr        = nuts.setattr
+local setlink        = nuts.setlink
+local setlist        = nuts.setlist
+local setnext        = nuts.setnext
+local setprev        = nuts.setprev
+local setattrlist    = nuts.setattrlist
 
-local traversers         = nuts.traversers
-local nextnode           = traversers.node
-local nextglyph          = traversers.glyph
+local traversers     = nuts.traversers
+local nextnode       = traversers.node
+local nextglyph      = traversers.glyph
 
-local flushnode          = nuts.flush
-local flushlist          = nuts.flushlist
-local hpack_nodes        = nuts.hpack
-local vpack_nodes        = nuts.vpack
-local unsetattribute     = nuts.unsetattribute
-local firstglyph         = nuts.firstglyph
-local copy_node          = nuts.copy
-local find_tail          = nuts.tail
-local getbox             = nuts.getbox
-local count              = nuts.count
-local isglyph            = nuts.isglyph
+local flushnode      = nuts.flush
+local flushlist      = nuts.flushlist
+local hpack_nodes    = nuts.hpack
+local vpack_nodes    = nuts.vpack
+local unsetattribute = nuts.unsetattribute
+local firstglyph     = nuts.firstglyph
+local copy_node      = nuts.copy
+local find_tail      = nuts.tail
+local getbox         = nuts.getbox
+local count          = nuts.count
+local isglyph        = nuts.isglyph
 
-local nodepool           = nuts.pool
-local new_glue           = nodepool.glue
-local new_glyph          = nodepool.glyph
+local nodepool       = nuts.pool
+local new_glue       = nodepool.glue
+local new_glyph      = nodepool.glyph
 
-local unsetvalue         = attributes.unsetvalue
+local unsetvalue     = attributes.unsetvalue
 
-local current_font       = font.current
+local current_font   = font.current
 
-local texsetbox          = tex.setbox
+local texsetbox      = tex.setbox
 
-local report_error       = logs.reporter("node-aux:error")
+local report_error   = logs.reporter("node-aux:error")
 
 local function takebox(id)
     local box = getbox(id)
@@ -281,12 +281,12 @@ local function link(list,currentfont,currentattr,head,tail) -- an oldie, might b
             elseif not head then
                 head = n
                 tail = find_tail(n)
-            elseif getid(n) == attributelist_code then
+            elseif getid(n) == attribute_code then
                 -- weird case
                 report_error("weird node type in list at index %s:",i)
                 for i=1,#list do
                     local l = list[i]
-                    report_error("%3i: %s %S",i,getid(l) == attributelist_code and "!" or ">",l)
+                    report_error("%3i: %s %S",i,getid(l) == attribute_code and "!" or ">",l)
                 end
                 os.exit()
             else

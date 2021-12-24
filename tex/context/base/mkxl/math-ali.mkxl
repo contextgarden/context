@@ -15,6 +15,8 @@
 
 \unprotect
 
+\registerctxluafile{math-ali}{autosuffix}
+
 %D The code here has been moved from other files. Beware: the \MKII\ and \MKIV\ code
 %D is not gathered in files with the same name. In the meantime this code has been
 %D adapted to \MKIV\ but more is possible. The code is somewhat complicated by the
@@ -368,6 +370,14 @@
 
 % \begingroup not permitted ($$...assignments...\halign... ).. check in luametatex
 
+% \definemathmatrix
+%   [pmatrix]
+%   [matrix:parentheses]
+% % [align=1:right]
+%   [align=all:right]
+% % [align=2:right]
+% % [align={1:left,2:middle,3:right}]
+
 \permanent\tolerant\protected\def\math_alignment_start[#1]#*[#2]%
   {\edef\currentmathalignment{#1}%
    \ifarguments\or\or
@@ -399,8 +409,8 @@
 \installcommandhandler \??mathalignment {mathalignment} \??mathalignment
 
 \appendtoks
-    \frozen\instance\setuevalue{\e!start\currentmathalignment}{\math_alignment_start[\currentmathalignment]}%
-    \frozen\instance\setvalue  {\e!stop \currentmathalignment}{\math_alignment_stop}% can this be protected now?
+    \frozen\protected\instance\edefcsname\e!start\currentmathalignment\endcsname{\math_alignment_start[\currentmathalignment]}%
+    \noaligned\frozen\protected\instance \defcsname\e!stop \currentmathalignment\endcsname{\math_alignment_stop}% can this be protected now?
 \to \everydefinemathalignment
 
 % to be tested
@@ -481,13 +491,27 @@
    \dostoptagged % finish cell
    \dostarttagged\t!mtablecell\empty}
 
+% \def\math_left_of_eqalign
+%   {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
+%      \ifcase\lastnamedcs \or \relax \or \hfill \or \hfill \fi
+%    \fi}
+
+% \def\math_right_of_eqalign
+%   {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
+%      \ifcase\lastnamedcs \or \hfill \or \relax \or \hfill \fi
+%    \fi}
+
 \def\math_left_of_eqalign
   {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
+     \ifcase\lastnamedcs \or \relax \or \hfill \or \hfill \fi
+   \orelse\ifcsname\??mathalignmentvariant\number\zerocount\endcsname
      \ifcase\lastnamedcs \or \relax \or \hfill \or \hfill \fi
    \fi}
 
 \def\math_right_of_eqalign
   {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
+     \ifcase\lastnamedcs \or \hfill \or \relax \or \hfill \fi
+   \orelse\ifcsname\??mathalignmentvariant\number\zerocount\endcsname
      \ifcase\lastnamedcs \or \hfill \or \relax \or \hfill \fi
    \fi}
 
@@ -513,9 +537,29 @@
      \fi
    \fi}
 
-\def\math_eqalign_set_column#1% we could just add to the preamble (as with other alignments)
-  {\expandafter\chardef\csname\??mathalignmentvariant\number\c_math_eqalign_column\expandafter\expandafter\expandafter\endcsname
-     \ifcsname\??mathalignmentvariant#1\endcsname\lastnamedcs\else\zerocount\fi\relax}
+% \def\math_eqalign_set_column#1% we could just add to the preamble (as with other alignments)
+%   {\expandafter\chardef\csname\??mathalignmentvariant\number\c_math_eqalign_column\expandafter\expandafter\expandafter\endcsname
+%      \ifcsname\??mathalignmentvariant#1\endcsname\lastnamedcs\else\zerocount\fi\relax}
+
+% \def\math_eqalign_set_column_indeed[#1:#2:#3]% we don't really check for all (so * will do too) ... yet
+%   {\expandafter\chardef\csname\??mathalignmentvariant\number
+%      \ifcstok{#2}\emptytoks\c_math_eqalign_column\orelse\ifchknum#1\or#1\else\zerocount\fi
+%    \endcsname
+%    \ifcsname\??mathalignmentvariant#2\endcsname\lastnamedcs\else\zerocount\fi\relax}
+
+\def\math_eqalign_set_column_indeed[#1:#2:#3]% we don't really check for all (so * will do too) ... yet
+  {\ifcstok{#2}\emptytoks
+     % current counter
+   \orelse\ifchknum#1\or
+     \c_math_eqalign_column#1\relax
+   \else
+     \c_math_eqalign_column\zerocount
+   \fi
+   \chardef\csname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
+   \ifcsname\??mathalignmentvariant#2\endcsname\lastnamedcs\else\zerocount\fi\relax}
+
+\def\math_eqalign_set_column#1%
+  {\normalexpanded{\math_eqalign_set_column_indeed[#1::]}}
 
 \letcsname\??mathalignmentvariant\v!normal\endcsname\zerocount
 \letcsname\??mathalignmentvariant\v!left  \endcsname\plusone
@@ -1384,21 +1428,56 @@
 %D The following code is derived from Aditya's simplematrix prototype but adapted to
 %D regular mathmatrices:
 
-\def\math_matrix_simple_row#1%
-  {\rawprocesscommalist[#1]\math_matrix_simple_col
-   \toksapp\scratchtoks{\NR}}
+% We keep this as reference:
+%
+% \def\math_matrix_simple_row#1%
+%   {\rawprocesscommalist[#1]\math_matrix_simple_col
+%    \toksapp\scratchtoks{\NR}}
+%
+% \def\math_matrix_simple_col#1%
+%   {\toksapp\scratchtoks{\NC#1}}
+%
+% \permanent\tolerant\protected\def\math_matrix_simple[#1]#*[#2]#:#3%
+%   {\begingroup
+%    \edef\currentmathmatrix{#1}%
+%    \setupcurrentmathmatrix[#2]%
+%    \scratchtoks\emptytoks
+%    \processlist[];\math_matrix_simple_row[#3]%
+%    \math_matrix_start[\currentmathmatrix]%
+%    \the\scratchtoks
+%    \math_matrix_stop
+%    \endgroup}
 
-\def\math_matrix_simple_col#1%
-  {\toksapp\scratchtoks{\NC#1}}
+%D With a little help from \LUA\ we now have this:
+%D
+%D \startbuffer
+%D \definemathmatrix [Pmatrix] [matrix:parentheses]
+%D   [align={all:right},
+%D    simplecommand=Pmatrix]
+%D
+%D \definemathmatrix [Tmatrix] [Pmatrix]
+%D   [action=transpose,
+%D    simplecommand=Tmatrix]
+%D
+%D \definemathmatrix [Nmatrix] [Pmatrix]
+%D   [action=negate,
+%D    simplecommand=Nmatrix]
+%D
+%D \startformula
+%D     \Pmatrix{ -1, 2, 3; 4,-5, 6; 7, 8,-9 } \neq
+%D     \Tmatrix{ -1, 2, 3; 4,-5, 6; 7, 8,-9 } \neq
+%D     \Nmatrix{ -1, 2, 3; 4,-5, 6; 7, 8,-9 }
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
 
 \permanent\tolerant\protected\def\math_matrix_simple[#1]#*[#2]#:#3%
   {\begingroup
    \edef\currentmathmatrix{#1}%
    \setupcurrentmathmatrix[#2]%
-   \scratchtoks\emptytoks
-   \processlist[];\math_matrix_simple_row[#3]%
    \math_matrix_start[\currentmathmatrix]%
-   \the\scratchtoks
+   \clf_simplematrix{\mathmatrixparameter\c!action}{#3}%
    \math_matrix_stop
    \endgroup}
 
@@ -1407,7 +1486,7 @@
 \appendtoks
     \edef\p_simplecommand{\mathmatrixparameter\c!simplecommand}%
     \ifempty\p_simplecommand\else
-        \frozen\instance\setuevalue{\p_simplecommand}{\math_matrix_simple[\currentmathmatrix]}%
+        \frozen\protected\instance\edefcsname\p_simplecommand\endcsname{\math_matrix_simple[\currentmathmatrix]}%
     \fi
 \to \everydefinemathmatrix
 

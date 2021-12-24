@@ -104,13 +104,16 @@ local implement          = interfaces.implement
 local privateattributes  = attributes.private
 
 local a_ruled            = privateattributes('ruled')
-local a_ruledextra       = privateattributes('ruledextra')
 local a_runningtext      = privateattributes('runningtext')
 local a_color            = privateattributes('color')
 local a_transparency     = privateattributes('transparency')
 local a_colormodel       = privateattributes('colormodel')
 local a_linefiller       = privateattributes("linefiller")
 local a_viewerlayer      = privateattributes("viewerlayer")
+
+local registervalue      = attributes.registervalue
+local getvalue           = attributes.getvalue
+local texsetattribute    = tex.setattribute
 
 local v_both             = variables.both
 local v_left             = variables.left
@@ -134,229 +137,234 @@ local processwords       = nuts.processwords
 
 local setcoloring        = nuts.colors.set
 
-local rules              = nodes.rules or { }
-nodes.rules              = rules
-rules.data               = rules.data  or { }
+do
 
-local nutrules           = nuts.rules or { }
-nuts.rules               = nutrules -- not that many
+    local rules              = nodes.rules or { }
+    nodes.rules              = rules
+    -- rules.data               = rules.data  or { }
 
-storage.register("nodes/rules/data", rules.data, "nodes.rules.data")
+    local nutrules           = nuts.rules or { }
+    nuts.rules               = nutrules -- not that many
 
-local data = rules.data
+    -- we implement user rules here as it takes less code this way
 
--- we implement user rules here as it takes less code this way
-
-local function usernutrule(t,noattributes)
-    local r = new_userrule(t.width or 0,t.height or 0,t.depth or 0)
-    if noattributes == false or noattributes == nil then
-        -- avoid fuzzy ones
-    else
-        setattrlist(r,true)
-    end
-    properties[r] = t
-    return r
-end
-
-nutrules.userrule = usernutrule
-
-local function userrule(t,noattributes)
-    return tonode(usernutrule(t,noattributes))
-end
-
-rules.userrule       = userrule
-local ruleactions    = { }
-
-rules   .ruleactions = ruleactions
-nutrules.ruleactions = ruleactions -- convenient
-
-local function mathaction(n,h,v,what)
-    local font    = getruledata(n)
-    local actions = fontresources[font].mathruleactions
-    if actions then
-        local action = actions[what]
-        if action then
-            action(n,h,v,font)
-        end
-    end
-end
-
-local function mathradical(n,h,v)
-    mathaction(n,h,v,"radicalaction")
-end
-
-local function mathrule(n,h,v)
-    mathaction(n,h,v,"hruleaction")
-end
-
-local x
-
-local function useraction(n,h,v)
-    local p = properties[n]
-    if p then
-        local i = p.type or "draw"
-        local a = ruleactions[i]
-        if a then
-            a(p,h,v,i,n)
-        end
-    end
-end
-
-local subtypeactions = {
-    [rulecodes.user]     = useraction,
-    [rulecodes.over]     = mathrule,
-    [rulecodes.under]    = mathrule,
-    [rulecodes.fraction] = mathrule,
-    [rulecodes.radical]  = mathradical,
-}
-
-function rules.process(n,h,v)
-    local n = tonut(n) -- already a nut
-    local s = getsubtype(n)
-    local a = subtypeactions[s]
-    if a then
-        a(n,h,v)
-    end
-end
-
---
-
-local trace_ruled   = false  trackers.register("nodes.rules", function(v) trace_ruled = v end)
-local report_ruled  = logs.reporter("nodes","rules")
-
-function rules.define(settings)
-    local nofdata = #data + 1
-    data[nofdata] = settings
-    local text = settings.text
-    if text then
-        local b = nuts.takebox(text)
-        if b then
-            nodepool.register(b)
-            settings.text = getlist(b)
+    local function usernutrule(t,noattributes)
+        local r = new_userrule(t.width or 0,t.height or 0,t.depth or 0)
+        if noattributes == false or noattributes == nil then
+            -- avoid fuzzy ones
         else
-            settings.text = nil
+            setattrlist(r,true)
         end
-    end
-    return nofdata
-end
-
-local extrarules = false
-local extra      = false
-
-function rules.enableextra()
-    extrarules = true
-end
-
-local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but acceptable for this purpose
-    local font = nil
-    local char, id = isglyph(f)
-    if char then
-        font = id
-    elseif id == hlist_code then
-        font = getattr(f,a_runningtext)
-    end
-    if not font then
-        -- saveguard ... we need to deal with rules and so (math)
-        return head
-    end
-    local r, m
-    if strip then
-        if trace_ruled then
-            local before = n_tosequence(f,l,true)
-            f, l = striprange(f,l)
-            local after = n_tosequence(f,l,true)
-            report_ruled("range stripper, before %a, after %a",before,after)
-        else
-            f, l = striprange(f,l)
-        end
-    end
-    if not f then
-        return head
-    end
-    local wd, ht, dp    = getrangedimensions(parent,f,getnext(l))
-    local method        = d.method
-    local empty         = d.empty == v_yes
-    local offset        = d.offset
-    local dy            = d.dy
-    local order         = d.order
-    local max           = d.max
-    local mp            = d.mp
-    local rulethickness = d.rulethickness
-    local unit          = d.unit
-    local ma            = d.ma
-    local ca            = d.ca
-    local ta            = d.ta
-    local colorspace    = ma > 0 and ma or getattr(f,a_colormodel) or 1
-    local color         = ca > 0 and ca or getattr(f,a_color)
-    local transparency  = ta > 0 and ta or getattr(f,a_transparency)
-    local foreground    = order == v_foreground
-    local layer         = getattr(f,a_viewerlayer)
-    local e             = dimenfactor(unit,font) -- what if no glyph node
-    local rt            = tonumber(rulethickness)
-    if rt then
-        rulethickness = e * rulethickness / 2
-    else
-        local n, u = splitdimen(rulethickness)
-        if n and u then -- we need to intercept ex and em and % and ...
-            rulethickness = n * dimenfactor(u,fontdata[font]) / 2
-        else
-            rulethickness = 1/5
-        end
-    end
-    --
-    if level > max then
-        level = max
-    end
-    if method == 0 then -- center
-        offset = 2*offset
-        m = (offset+(level-1)*dy)*e/2 + rulethickness/2
-    else
-        m = 0
+        properties[r] = t
+        return r
     end
 
-    local function inject(r,wd,ht,dp)
-        if layer then
-            setattr(r,a_viewerlayer,layer)
-        end
-        if empty then
-            head = insertnodebefore(head,f,r)
-            setlink(r,getnext(l))
-            setprev(f)
-            setnext(l)
-            flushlist(f)
-        else
-            local k = new_kern(-wd)
-            if foreground then
-                insertnodeafter(head,l,k)
-                insertnodeafter(head,k,r)
-                l = r
-            else
-                head = insertnodebefore(head,f,r)
-                insertnodeafter(head,r,k)
+    nutrules.userrule = usernutrule
+
+    local function userrule(t,noattributes)
+        return tonode(usernutrule(t,noattributes))
+    end
+
+    rules.userrule       = userrule
+    local ruleactions    = { }
+
+    rules   .ruleactions = ruleactions
+    nutrules.ruleactions = ruleactions -- convenient
+
+    local function mathaction(n,h,v,what)
+        local font    = getruledata(n)
+        local actions = fontresources[font].mathruleactions
+        if actions then
+            local action = actions[what]
+            if action then
+                action(n,h,v,font)
             end
         end
-        if trace_ruled then
-            report_ruled("level %a, width %p, height %p, depth %p, nodes %a, text %a",
-                level,wd,ht,dp,n_tostring(f,l),n_tosequence(f,l,true))
+    end
+
+    local function mathradical(n,h,v)
+        mathaction(n,h,v,"radicalaction")
+    end
+
+    local function mathrule(n,h,v)
+        mathaction(n,h,v,"hruleaction")
+    end
+
+    local x
+
+    local function useraction(n,h,v)
+        local p = properties[n]
+        if p then
+            local i = p.type or "draw"
+            local a = ruleactions[i]
+            if a then
+                a(p,h,v,i,n)
+            end
         end
     end
 
-    local first = 1
-    local last  = level
+    local subtypeactions = {
+        [rulecodes.user]     = useraction,
+        [rulecodes.over]     = mathrule,
+        [rulecodes.under]    = mathrule,
+        [rulecodes.fraction] = mathrule,
+        [rulecodes.radical]  = mathradical,
+    }
 
-    if extra then
-        first = level
+    function rules.process(n,h,v)
+        local n = tonut(n) -- already a nut
+        local s = getsubtype(n)
+        local a = subtypeactions[s]
+        if a then
+            a(n,h,v)
+        end
     end
 
-    if mp and mp ~= "" then
-        for i=first,last do
+    local trace_ruled   = false  trackers.register("nodes.rules", function(v) trace_ruled = v end)
+    local report_ruled  = logs.reporter("nodes","rules")
+    local enabled       = false
+
+    local texgetattribute = tex.getattribute
+    local unsetvalue      = attributes.unsetvalue
+
+    -- The setter is now the performance bottleneck but it is no longer
+    -- limited to a certain number of cases before we cycle resources.
+
+    function rules.set(settings)
+        if not enabled then
+            enableaction("shipouts","nodes.rules.handler")
+            enabled = true
+        end
+        local text = settings.text
+        if text then
+            settings.text = tonut(text)
+         -- nodepool.register(text) -- todo: have a cleanup hook
+        end
+        -- todo: only when explicitly enabled
+        local attr = texgetattribute(a_ruled)
+        if attr ~= unsetvalue then
+            settings.nestingvalue = attr
+            settings.nestingdata  = getvalue(a_ruled,attr) -- so still accessible when we wipe
+        end
+        texsetattribute(a_ruled,registervalue(a_ruled,settings))
+    end
+
+    attributes.setcleaner(a_ruled,function(t)
+        local text = t.text
+        if text then
+            flushlist(text)
+        end
+    end)
+
+    -- we could check the passed level on the real one ... (no need to pass level)
+
+    local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but acceptable for this purpose
+        local level = d.stack or d.level or 1
+        if level > d.max then
+            -- todo: trace message
+            return head
+        end
+        local font = nil
+        local char, id = isglyph(f)
+        if char then
+            font = id
+        elseif id == hlist_code then
+            font = getattr(f,a_runningtext)
+        end
+        if not font then
+            -- saveguard ... we need to deal with rules and so (math)
+            return head
+        end
+        local r, m
+        if strip then
+            if trace_ruled then
+                local before = n_tosequence(f,l,true)
+                f, l = striprange(f,l)
+                local after = n_tosequence(f,l,true)
+                report_ruled("range stripper, before %a, after %a",before,after)
+            else
+                f, l = striprange(f,l)
+            end
+        end
+        if not f then
+            return head
+        end
+        local wd, ht, dp    = getrangedimensions(parent,f,getnext(l))
+        local method        = d.method
+        local empty         = d.empty == v_yes
+        local offset        = d.offset
+        local dy            = d.dy
+        local order         = d.order
+        local max           = d.max
+        local mp            = d.mp
+        local rulethickness = d.rulethickness
+        local unit          = d.unit
+        local ma            = d.ma
+        local ca            = d.ca
+        local ta            = d.ta
+        local colorspace    = ma > 0 and ma or getattr(f,a_colormodel) or 1
+        local color         = ca > 0 and ca or getattr(f,a_color)
+        local transparency  = ta > 0 and ta or getattr(f,a_transparency)
+        local foreground    = order == v_foreground
+        local layer         = getattr(f,a_viewerlayer)
+        local e             = dimenfactor(unit,font) -- what if no glyph node
+        local rt            = tonumber(rulethickness)
+        if rt then
+            rulethickness = e * rulethickness / 2
+        else
+            local n, u = splitdimen(rulethickness)
+            if n and u then -- we need to intercept ex and em and % and ...
+                rulethickness = n * dimenfactor(u,fontdata[font]) / 2
+            else
+                rulethickness = 1/5
+            end
+        end
+        --
+        if level > max then
+            level = max
+        end
+        if method == 0 then -- center
+            offset = 2*offset
+            m = (offset+(level-1)*dy)*e/2 + rulethickness/2
+        else
+            m = 0
+        end
+
+        local function inject(r,wd,ht,dp)
+            if layer then
+                setattr(r,a_viewerlayer,layer)
+            end
+            if empty then
+                head = insertnodebefore(head,f,r)
+                setlink(r,getnext(l))
+                setprev(f)
+                setnext(l)
+                flushlist(f)
+            else
+                local k = new_kern(-wd)
+                if foreground then
+                    insertnodeafter(head,l,k)
+                    insertnodeafter(head,k,r)
+                    l = r
+                else
+                    head = insertnodebefore(head,f,r)
+                    insertnodeafter(head,r,k)
+                end
+            end
+            if trace_ruled then
+                report_ruled("level %a, width %p, height %p, depth %p, nodes %a, text %a",
+                    level,wd,ht,dp,n_tostring(f,l),n_tosequence(f,l,true))
+            end
+        end
+
+        if mp and mp ~= "" then
             local r = usernutrule {
                 width  = wd,
                 height = ht,
                 depth  = dp,
                 type   = "mp",
                 factor = e,
-                offset = offset - (i-1)*dy,
+                offset = offset - (level-1)*dy, -- br ... different direction
                 line   = rulethickness,
                 data   = mp,
                 ma     = colorspace,
@@ -364,364 +372,332 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
                 ta     = transparency,
             }
             inject(r,wd,ht,dp)
-        end
-    else
-        local tx = d.text
-        if tx then
-            local l = copylist(tx)
-            if d["repeat"] == v_yes then
-                l = new_leader(wd,l)
-                setattrlist(l,tx)
-            end
-            l = hpack_nodes(l,wd,"exactly")
-            inject(l,wd,ht,dp)
         else
-            for i=first,last do
-                local hd = (offset+(i-1)*dy)*e - m
+            local tx = d.text
+            if tx then
+                local l = copylist(tx)
+                if d["repeat"] == v_yes then
+                    l = new_leader(wd,l)
+                    setattrlist(l,tx)
+                end
+                l = hpack_nodes(l,wd,"exactly")
+                inject(l,wd,ht,dp)
+            else
+                local hd = (offset+(level-1)*dy)*e - m
                 local ht =  hd + rulethickness
                 local dp = -hd + rulethickness
                 inject(setcoloring(new_rule(wd,ht,dp),colorspace,color,transparency),wd,ht,dp)
             end
         end
+        return head
     end
-    return head
+
+    rules.handler = function(head)
+        local data = attributes.values[a_ruled]
+        if data then
+            head = processwords(a_ruled,data,flush_ruled,head)
+
+        end
+        return head
+    end
+
+    implement {
+        name      = "setrule",
+        actions   = rules.set,
+        arguments = {
+            {
+                { "continue" },
+                { "unit" },
+                { "order" },
+                { "level", "integer" },
+                { "stack", "integer" },
+                { "method", "integer" },
+                { "offset", "number" },
+                { "rulethickness" },
+                { "dy", "number" },
+                { "max", "number" },
+                { "ma", "integer" },
+                { "ca", "integer" },
+                { "ta", "integer" },
+                { "mp" },
+                { "empty" },
+                { "text", "box" },
+                { "repeat" },
+            }
+        }
+    }
+
 end
 
+do
 
-rules.handler = function(head)
-    extra = false
-    head = processwords(a_ruled,data,flush_ruled,head)
-    if extrarules then
-        extra = true
-        head = processwords(a_ruledextra,data,flush_ruled,head)
+    local trace_shifted  = false  trackers.register("nodes.shifting", function(v) trace_shifted = v end)
+    local report_shifted = logs.reporter("nodes","shifting")
+    local a_shifted      = attributes.private('shifted')
+    local enabled        = false
+
+    local shifts         = nodes.shifts or { }
+    nodes.shifts         = shifts
+
+    function shifts.set(settings)
+        if not enabled then
+            -- we could disable when no more found
+            enableaction("shipouts","nodes.shifts.handler")
+            enabled = true
+        end
+        texsetattribute(a_shifted,registervalue(a_shifted,settings))
     end
-    return head
-end
 
-function rules.enable()
-    enableaction("shipouts","nodes.rules.handler")
-end
-
-local trace_shifted = false  trackers.register("nodes.shifting", function(v) trace_shifted = v end)
-
-local report_shifted = logs.reporter("nodes","shifting")
-
-local a_shifted = attributes.private('shifted')
-
-local shifts = nodes.shifts or { }
-nodes.shifts = shifts
-shifts.data  = shifts.data or { }
-
-storage.register("nodes/shifts/data", shifts.data, "nodes.shifts.data")
-
-local data = shifts.data
-
-function shifts.define(settings)
-    local nofdata = #data + 1
-    data[nofdata] = settings
-    return nofdata
-end
-
-local function flush_shifted(head,first,last,data,level,parent,strip) -- not that fast but acceptable for this purpose
-    if true then
-        first, last = striprange(first,last)
+    local function flush_shifted(head,first,last,data,level,parent,strip) -- not that fast but acceptable for this purpose
+        if true then
+            first, last = striprange(first,last)
+        end
+        local prev = getprev(first)
+        local next = getnext(last)
+        setprev(first)
+        setnext(last)
+        local width, height, depth = getrangedimensions(parent,first,next)
+        local list = hpack_nodes(first,width,"exactly") -- we can use a simple pack
+        if first == head then
+            head = list
+        end
+        if prev then
+            setlink(prev,list)
+        end
+        if next then
+            setlink(list,next)
+        end
+        local raise = data.dy * dimenfactor(data.unit,fontdata[getfont(first)])
+        setshift(list,raise)
+        setwhd(list,width,height,depth)
+        if trace_shifted then
+            report_shifted("width %p, nodes %a, text %a",width,n_tostring(first,last),n_tosequence(first,last,true))
+        end
+        return head
     end
-    local prev = getprev(first)
-    local next = getnext(last)
-    setprev(first)
-    setnext(last)
-    local width, height, depth = getrangedimensions(parent,first,next)
-    local list = hpack_nodes(first,width,"exactly") -- we can use a simple pack
-    if first == head then
-        head = list
-    end
-    if prev then
-        setlink(prev,list)
-    end
-    if next then
-        setlink(list,next)
-    end
-    local raise = data.dy * dimenfactor(data.unit,fontdata[getfont(first)])
-    setshift(list,raise)
-    setwhd(list,width,height,depth)
-    if trace_shifted then
-        report_shifted("width %p, nodes %a, text %a",width,n_tostring(first,last),n_tosequence(first,last,true))
-    end
-    return head
-end
 
-shifts.handler = function(head)
-    return processwords(a_shifted,data,flush_shifted,head)
-end
+    shifts.handler = function(head)
+        local data = attributes.values[a_shifted]
+        if data then
+            head = processwords(a_shifted,data,flush_shifted,head)
+        end
+        return head
+    end
 
-function shifts.enable()
-    enableaction("shipouts","nodes.shifts.handler")
+    implement {
+        name      = "setshift",
+        actions   = shifts.set,
+        arguments = {
+            {
+                { "continue" },
+                { "unit" },
+                { "method", "integer" },
+                { "dy", "number" },
+            }
+        }
+    }
+
 end
 
 -- linefillers
 
-local linefillers = nodes.linefillers or { }
-nodes.linefillers = linefillers
-linefillers.data  = linefillers.data or { }
+do
 
-storage.register("nodes/linefillers/data", linefillers.data, "nodes.linefillers.data")
+    local linefillers = nodes.linefillers or { }
+    nodes.linefillers = linefillers
+    local enabled     = false
 
-local data = linefillers.data
+    local usernutrule = nuts.rules.userrule
 
-function linefillers.define(settings)
-    local nofdata = #data + 1
-    data[nofdata] = settings
-    return nofdata
-end
-
-local function linefiller(current,data,width,location)
-    local height = data.height
-    local depth  = data.depth
-    local mp     = data.mp
-    local ma     = data.ma
-    local ca     = data.ca
-    local ta     = data.ta
-    if mp and mp ~= "" then
-        return usernutrule {
-            width     = width,
-            height    = height,
-            depth     = depth,
-            type      = "mp",
-            line      = data.rulethickness,
-            data      = mp,
-            ma        = ma,
-            ca        = ca,
-            ta        = ta,
-            option    = location,
-            direction = getdirection(current),
-        }
-    else
-        return setcoloring(new_rule(width,height,depth),ma,ca,ta)
+    function linefillers.set(settings)
+        if not enabled then
+            enableaction("finalizers","nodes.linefillers.handler")
+            enabled = true
+        end
+        texsetattribute(a_linefiller,registervalue(a_linefiller,settings))
     end
-end
 
-function linefillers.filler(current,data,width,height,depth)
-    if width and width > 0 then
-        local height = height or data.height or 0
-        local depth  = depth  or data.depth  or 0
-        if (height + depth) ~= 0 then
-            local mp = data.mp
-            local ma = data.ma
-            local ca = data.ca
-            local ta = data.ta
-            if mp and mp ~= "" then
-                return usernutrule {
-                    width     = width,
-                    height    = height,
-                    depth     = depth,
-                    type      = "mp",
-                    line      = data.rulethickness,
-                    data      = mp,
-                    ma        = ma,
-                    ca        = ca,
-                    ta        = ta,
-                    option    = location,
-                    direction = getdirection(current),
-                }
-            else
-                return setcoloring(new_rule(width,height,depth),ma,ca,ta)
-            end
+    local function linefiller(current,data,width,location)
+        local height = data.height
+        local depth  = data.depth
+        local mp     = data.mp
+        local ma     = data.ma
+        local ca     = data.ca
+        local ta     = data.ta
+        if mp and mp ~= "" then
+            return usernutrule {
+                width     = width,
+                height    = height,
+                depth     = depth,
+                type      = "mp",
+                line      = data.rulethickness,
+                data      = mp,
+                ma        = ma,
+                ca        = ca,
+                ta        = ta,
+                option    = location,
+                direction = getdirection(current),
+            }
+        else
+            return setcoloring(new_rule(width,height,depth),ma,ca,ta)
         end
     end
-end
 
-local function getskips(list) -- this could be a helper
-    local ls = nil
-    local rs = nil
-    local is = nil
-    local pl = nil
-    local pr = nil
-    local ok = false
-    for n, subtype in nextglue, list do
-        if subtype == rightskip_code then
-            rs = n
-        elseif subtype == parfillrightskip_code then
-            pr = n
-        elseif subtype == leftskip_code then
-            ls = n
-        elseif subtype == indentskip_code then
-            is = n
-        elseif subtype == parfillleftskip_code then
-            pl = n
-        end
-    end
-    return is, ls, pl, pr, rs
-end
-
-function linefillers.handler(head)
-    -- we have a normalized line ..
-    for current, id, subtype, list in nextlist, head do
-        if subtype == linelist_code and list then
-            local a = getattr(current,a_linefiller)
-            if a then
-                local class = a % 1000
-                local data  = data[class]
-                if data then
-                    local location   = data.location
-                    local scope      = data.scope
-                    local distance   = data.distance
-                    local threshold  = data.threshold
-                    local leftlocal  = false
-                    local rightlocal = false
-                    --
-                    if scope == v_right then
-                        leftlocal = true
-                    elseif scope == v_left then
-                        rightlocal = true
-                    elseif scope == v_local then
-                        leftlocal  = true
-                        rightlocal = true
-                    end
-                    --
-                    local is, ls, pl, pr, rs = getskips(list)
-                    if ls and rs then
-                        if location == v_left or location == v_both then
-                            local indentation = is and getwidth(is) or 0
-                            local leftfixed   = ls and getwidth(ls) or 0
-                            local lefttotal   = ls and effectiveglue(ls,current) or 0
-                            local width = lefttotal - (leftlocal and leftfixed or 0) + indentation - distance
-                            if width > threshold then
-                                if is then
-                                    setwidth(is,0)
-                                end
-                                setglue(ls,leftlocal and getwidth(ls) or nil)
-                                if distance > 0 then
-                                    insertnodeafter(list,ls,new_kern(distance))
-                                end
-                                insertnodeafter(list,ls,linefiller(current,data,width,"left"))
-                            end
-                        end
-                        --
-                        if location == v_right or location == v_both then
-                            local rightfixed = rs and getwidth(rs) or 0
-                            local righttotal = rs and effectiveglue(rs,current) or 0
-                            local parfixed   = pr and getwidth(pr) or 0
-                            local partotal   = pr and effectiveglue(pr,current) or 0
-                            local width = righttotal - (rightlocal and rightfixed or 0) + partotal - distance
-                            if width > threshold then
-                                if pr then
-                                    setglue(pr)
-                                end
-                                setglue(rs,rightlocal and getwidth(rs) or nil)
-                                if distance > 0 then
-                                    insertnodebefore(list,rs,new_kern(distance))
-                                end
-                                insertnodebefore(list,rs,linefiller(current,data,width,"right"))
-                            end
-                        end
-                    else
-                        -- error, not a properly normalized line
-                    end
+    function linefillers.filler(current,data,width,height,depth)
+        if width and width > 0 then
+            local height = height or data.height or 0
+            local depth  = depth  or data.depth  or 0
+            if (height + depth) ~= 0 then
+                local mp = data.mp
+                local ma = data.ma
+                local ca = data.ca
+                local ta = data.ta
+                if mp and mp ~= "" then
+                    return usernutrule {
+                        width     = width,
+                        height    = height,
+                        depth     = depth,
+                        type      = "mp",
+                        line      = data.rulethickness,
+                        data      = mp,
+                        ma        = ma,
+                        ca        = ca,
+                        ta        = ta,
+                        option    = location,
+                        direction = getdirection(current),
+                    }
+                else
+                    return setcoloring(new_rule(width,height,depth),ma,ca,ta)
                 end
             end
         end
     end
-    return head
-end
 
-local enable = false
-
-function linefillers.enable()
-    if not enable then
-    -- we could now nil it
-        enableaction("finalizers","nodes.linefillers.handler")
-        enable = true
+    local function getskips(list) -- this could be a helper
+        local ls = nil
+        local rs = nil
+        local is = nil
+        local pl = nil
+        local pr = nil
+        local ok = false
+        for n, subtype in nextglue, list do
+            if subtype == rightskip_code then
+                rs = n
+            elseif subtype == parfillrightskip_code then
+                pr = n
+            elseif subtype == leftskip_code then
+                ls = n
+            elseif subtype == indentskip_code then
+                is = n
+            elseif subtype == parfillleftskip_code then
+                pl = n
+            end
+        end
+        return is, ls, pl, pr, rs
     end
+
+    linefillers.handler = function(head)
+        local data = attributes.values[a_linefiller]
+        if data then
+            -- we have a normalized line ..
+            for current, id, subtype, list in nextlist, head do
+                if subtype == linelist_code and list then
+                    local a = getattr(current,a_linefiller)
+                    if a then
+                        local data = data[a]
+                        if data then
+                            local location   = data.location
+                            local scope      = data.scope
+                            local distance   = data.distance
+                            local threshold  = data.threshold
+                            local leftlocal  = false
+                            local rightlocal = false
+                            --
+                            if scope == v_right then
+                                leftlocal = true
+                            elseif scope == v_left then
+                                rightlocal = true
+                            elseif scope == v_local then
+                                leftlocal  = true
+                                rightlocal = true
+                            end
+                            --
+                            local is, ls, pl, pr, rs = getskips(list)
+                            if ls and rs then
+                                if location == v_left or location == v_both then
+                                    local indentation = is and getwidth(is) or 0
+                                    local leftfixed   = ls and getwidth(ls) or 0
+                                    local lefttotal   = ls and effectiveglue(ls,current) or 0
+                                    local width = lefttotal - (leftlocal and leftfixed or 0) + indentation - distance
+                                    if width > threshold then
+                                        if is then
+                                            setwidth(is,0)
+                                        end
+                                        setglue(ls,leftlocal and getwidth(ls) or nil)
+                                        if distance > 0 then
+                                            insertnodeafter(list,ls,new_kern(distance))
+                                        end
+                                        insertnodeafter(list,ls,linefiller(current,data,width,"left"))
+                                    end
+                                end
+                                --
+                                if location == v_right or location == v_both then
+                                    local rightfixed = rs and getwidth(rs) or 0
+                                    local righttotal = rs and effectiveglue(rs,current) or 0
+                                    local parfixed   = pr and getwidth(pr) or 0
+                                    local partotal   = pr and effectiveglue(pr,current) or 0
+                                    local width = righttotal - (rightlocal and rightfixed or 0) + partotal - distance
+                                    if width > threshold then
+                                        if pr then
+                                            setglue(pr)
+                                        end
+                                        setglue(rs,rightlocal and getwidth(rs) or nil)
+                                        if distance > 0 then
+                                            insertnodebefore(list,rs,new_kern(distance))
+                                        end
+                                        insertnodebefore(list,rs,linefiller(current,data,width,"right"))
+                                    end
+                                end
+                            else
+                                -- error, not a properly normalized line
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        return head
+    end
+
+    implement {
+        name      = "setlinefiller",
+        actions   = linefillers.set,
+        arguments = {
+            {
+                { "method", "integer" },
+                { "location", "string" },
+                { "scope", "string" },
+                { "mp", "string" },
+                { "ma", "integer" },
+                { "ca", "integer" },
+                { "ta", "integer" },
+                { "depth", "dimension" },
+                { "height", "dimension" },
+                { "distance", "dimension" },
+                { "threshold", "dimension" },
+                { "rulethickness", "dimension" },
+            }
+        }
+    }
+
 end
-
--- interface
-
-implement {
-    name      = "definerule",
-    actions   = { rules.define, context },
-    arguments = {
-        {
-            { "continue" },
-            { "unit" },
-            { "order" },
-            { "method", "integer" },
-            { "offset", "number" },
-            { "rulethickness" },
-            { "dy", "number" },
-            { "max", "number" },
-            { "ma", "integer" },
-            { "ca", "integer" },
-            { "ta", "integer" },
-            { "mp" },
-            { "empty" },
-            { "text", "integer" },
-            { "repeat" },
-        }
-    }
-}
-
-implement {
-    name     = "enablerules",
-    onlyonce = true,
-    actions  = rules.enable
-}
-
-implement {
-    name     = "enableextrarules",
-    onlyonce = true,
-    actions  = rules.enableextra
-}
-
-implement {
-    name      = "defineshift",
-    actions   = { shifts.define, context },
-    arguments = {
-        {
-            { "continue" },
-            { "unit" },
-            { "method", "integer" },
-            { "dy", "number" },
-        }
-    }
-}
-
-implement {
-    name     = "enableshifts",
-    onlyonce = true,
-    actions  = shifts.enable
-}
-
-implement {
-    name      = "definelinefiller",
-    actions   = { linefillers.define, context },
-    arguments = {
-        {
-            { "method", "integer" },
-            { "location", "string" },
-            { "scope", "string" },
-            { "mp", "string" },
-            { "ma", "integer" },
-            { "ca", "integer" },
-            { "ta", "integer" },
-            { "depth", "dimension" },
-            { "height", "dimension" },
-            { "distance", "dimension" },
-            { "threshold", "dimension" },
-            { "rulethickness", "dimension" },
-        }
-    }
-}
-
-implement {
-    name     = "enablelinefillers",
-    onlyonce = true,
-    actions  = linefillers.enable
-}
 
 -- We add a bonus feature here (experiment):
 
 interfaces.implement {
     name      = "autorule",
+    protected = true,
+    public    = true,
     arguments = {
         {
             { "width", "dimension" },

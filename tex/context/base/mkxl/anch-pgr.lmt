@@ -106,13 +106,12 @@ local jobpositions      = job.positions
 local getpos            = jobpositions.getpos
 local getfree           = jobpositions.getfree
 
-local data              = { }
 local realpage          = 1
-local recycle           = 1000 -- only tables can overflow this
 local enabled           = false
 
--- Freeing the data is somewhat tricky as we can have backgrounds spanning
--- many pages but for an arbitrary background shape that is not so common.
+-- Freeing the data is somewhat tricky as we can have backgrounds spanning many
+-- pages but for an arbitrary background shape that is not so common but we use
+-- a different trick anyway in lmtx.
 
 local function check(specification)
     --
@@ -170,8 +169,11 @@ end
 
 local index = 0
 
+local registervalue = attributes.registervalue
+local getvalue      = attributes.getvalue
+
 local function flush(head,f,l,a,parent,depth)
-    local d = data[a]
+    local d = getvalue(a_textbackground,a)
     if d then
         local ix = index
         local ht = getheight(parent)
@@ -193,18 +195,11 @@ local function flush(head,f,l,a,parent,depth)
 end
 
 local function registerbackground(name)
-    local n = #data + 1
-    if n > recycle then
-        -- we could also free all e: that are beyond a page but we don't always
-        -- know the page so a recycle is nicer and the s lists are kept anyway
-        -- so the amount of kept data is not that large
-        n = 1
-    end
     local b = jobpositions.tobesaved["b:"..name]
     if b then
         local s = setmetatableindex("table")
         b.s = s
-        data[n] = {
+        local t = {
             bpos   = b,
             name   = name,
             n      = n,
@@ -212,7 +207,7 @@ local function registerbackground(name)
             count  = 0,
             sindex = 0,
         }
-        texsetattribute(a_textbackground,n)
+        texsetattribute(a_textbackground,registervalue(a_textbackground,t))
         if not enabled then
             enableaction("contributers", "nodes.handlers.textbackgrounds")
             enabled = true
@@ -784,9 +779,7 @@ local function calculatemultipar(tag)
         for i=bindex+1,eindex-1 do
             br = f_tag_two(btag,i)
             local r = collected[br]
-            if not r then
-               report_graphics("invalid middle for %a",br)
-            else
+            if r then
                 local rp = r.p -- page
                 local pp = list[rp]
                 local mp = middlepart(b,e,p,rp,r,left,right)
@@ -795,6 +788,8 @@ local function calculatemultipar(tag)
                 else
                     list[rp] = { mp }
                 end
+            else
+                report_graphics("invalid middle for %a",br)
             end
         end
         local ep = e.p -- page

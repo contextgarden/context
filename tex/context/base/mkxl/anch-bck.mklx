@@ -245,7 +245,7 @@
    \carryoverpar\endgroup}
 
 \def\anch_backgrounds_text_start_txt
-  {\ifvmode \dontleavehmode \fi
+  {\ifvmode\dontleavehmode\fi
    \begingroup
    \c_anch_backgrounds_pos_state\plusone
    \usetextbackgroundstyleandcolor\c!style\c!color

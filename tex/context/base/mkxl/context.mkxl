@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2021.12.14 19:16}
+\immutable\edef\contextversion{2021.12.24 19:07}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -219,7 +219,7 @@
 \loadmkxlfile{colo-grp} % optional
 \loadmkxlfile{colo-ext}
 
-\loadmkxlfile{node-bck} % overloads anch-pgr (experimental and undocumented)
+% \loadmkxlfile{node-bck} % overloads anch-pgr (experimental and undocumented)
 
 \loadmkxlfile{pack-cut}
 
@@ -502,6 +502,8 @@
 \loadmkxlfile{phys-dim}
 
 \loadmkxlfile{node-rul} % beware, defined \underbar so after math
+\loadmkxlfile{node-bck} % overloads anch-pgr (experimental and undocumented)
+
 \loadmklxfile{font-sol} % font solutions
 
 \loadmklxfile{strc-not}

@@ -170,13 +170,14 @@ do
     local function setruby(n,m)
         nofrubies = nofrubies + 1
         local r = takebox(n)
-        rubylist[nofrubies] = setmetatableindex({
+        local t = {
             text      = r,
             width     = getwidth(r),
             basewidth = 0,
             start     = false,
             stop      = false,
-        }, shared)
+        }
+        rubylist[nofrubies] = setmetatableindex(t, shared)
         texsetattribute(a_ruby,nofrubies)
     end
 

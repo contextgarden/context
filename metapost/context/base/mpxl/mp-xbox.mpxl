@@ -241,7 +241,7 @@ newinternal circmargin; circmargin := 2bp;  % default clearance for picture corn
 
 vardef circleit@#(text tt) =
     boxes_begin("boxes_the_circle","boxes_size_circle",@#,tt);
-    boxes_generic_declare(pair) _n.n, _n.s, _n.e, _n.w;
+    boxes_declare(pair) _n.n, _n.s, _n.e, _n.w;
     @#e - @#c = @#c - @#w = (@#dx,0) + .5*(lrcorner boxes_pic@# - llcorner boxes_pic@#);
     @#n - @#c = @#c - @#s = (0,@#dy) + .5*(ulcorner boxes_pic@# - llcorner boxes_pic@#);
     boxes_end(boxes_clear_circle,@#);
@@ -310,7 +310,7 @@ newinternal rbox_radius ; rbox_radius := 8bp ;
 
 vardef rboxit@#(text tt) =
     boxes_begin("boxes_the_rounded","boxes_size",@#,tt) ;
-    boxes_generic_declare (pair) _n.sw, _n.s, _n.se, _n.e, _n.ne, _n.n, _n.nw, _n.w ;
+    boxes_declare (pair) _n.sw, _n.s, _n.se, _n.e, _n.ne, _n.n, _n.nw, _n.w ;
     0 = xpart(@#nw - @#sw) = ypart(@#se - @#sw) ;
     0 = xpart(@#ne - @#se) = ypart(@#ne - @#nw) ;
     @#w = .5[@#nw,@#sw] ;

@@ -1,0 +1,84 @@
+if not modules then modules = { } end modules ['math-ali'] = {
+    version   = 1.001,
+    comment   = "companion to math-ali.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local unpack = unpack
+local gsub = string.gsub
+local lpegmatch = lpeg.match
+local settings_to_array = utilities.parsers.settings_to_array
+
+local rows = utilities.parsers.groupedsplitat(";")
+local cols = utilities.parsers.groupedsplitat(",")
+
+local context = context
+
+local actions = {
+    transpose = function(m)
+        local t = { }
+        for j=1,#m[1] do
+            local r = { }
+            for i=1,#m do
+                r[i] = m[i][j]
+            end
+            t[j] = r
+        end
+        return t
+    end,
+    negate = function(m)
+        for i=1,#m do
+            local mi = m[i]
+            for j=1,#mi do
+                mi[j] = - mi[j]
+            end
+        end
+        return m
+    end,
+    scale = function(m,s)
+        s = tonumber(s)
+        if s then
+            for i=1,#m do
+                local mi = m[i]
+                for j=1,#mi do
+                    mi[j] = s*mi[j]
+                end
+            end
+        end
+        return m
+    end,
+}
+
+local useractions = {
+}
+
+interfaces.implement {
+    name      = "simplematrix",
+    arguments = "2 strings",
+    actions   = function(method,data)
+        local m = lpegmatch(rows,(gsub(data,"%s+"," ")))
+        for i=1,#m do
+            m[i] = lpegmatch(cols,m[i])
+        end
+        local methods = settings_to_array(method)
+        for i=1,#methods do
+            local detail = settings_to_array(methods[i])
+            local method = detail[1]
+            local action = actions[method] or useractions[method]
+            if action then
+                m = action(m,unpack(detail,2)) or m
+            end
+        end
+        for i=1,#m do
+            context("\\NC %{ \\NC }t \\NR",m[i])
+        end
+    end
+}
+
+function mathematics.registersimplematrix(name,action)
+    if type(action) == "function" then
+        useractions[name] = action
+    end
+end

@@ -2728,11 +2728,11 @@
 
 %D We can define these public in lua:
 
-\aliased\let\getnaturaldimensions\clf_getnaturaldimensions % sets three dimensions
-\aliased\let\naturalwd           \clf_naturalwd            % calculates and returns wd
+% \aliased\let\getnaturaldimensions\clf_getnaturaldimensions % sets three dimensions
+% \aliased\let\naturalwd           \clf_naturalwd            % calculates and returns wd
 
-\aliased\let\getnaturalwd\clf_getnaturalwd % no intermediate
-\aliased\let\setnaturalwd\clf_setnaturalwd % no intermediate
+% \aliased\let\getnaturalwd\clf_getnaturalwd % no intermediate
+% \aliased\let\setnaturalwd\clf_setnaturalwd % no intermediate
 
 \permanent\protected\def\doifelserighttoleftinbox{\clf_doifelserighttoleftinbox}
 

@@ -102,9 +102,9 @@ do
     ----- texnest       = tex.nest
     ----- getnest       = tex.getnest
 
-    local getlist       = nuts.getlist
-    local setlist       = nuts.setlist
-    local getsubtype    = nuts.getsubtype
+    local getlist       = nodes.getlist     -- still nodes !
+    local setlist       = nodes.setlist
+    local getsubtype    = nodes.getsubtype
 
     local linelist_code = nodes.listcodes.line
 

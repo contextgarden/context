@@ -1581,41 +1581,36 @@ dedicated functions in the \type {node} library.
 
 \stopsubsubsection
 
-\startsubsubsection[title={\nod {attribute_list} nodes}]
+\startsubsubsection[title={\nod {attribute} nodes}]
 
 \topicindex {nodes+attributes}
 
-An \type {attribute_list} item is used as a head pointer for a list of attribute
-items. It has only one user|-|visible field:
+An \type {attribute} comes in two variants, indicated by subtype. Because attributes
+are stored in a sorted linked list, and because they are shared, the first node is a
+list reference node and the following ones are value nodes. So, most attribute nodes
+are value nodes. These are forward linked lists. The reference node has fields:
+
+\starttabulate[|l|l|p|]
+\DB field        \BC type \BC explanation \NC \NR
+\TB
+\NC \type{next}  \NC node   \NC pointer to the first attribute \NC \NR
+\NC \type{count} \NC number \NC the reference count \NC \NR
+\LL
+\stoptabulate
+
+Value nodes have these:
 
 \starttabulate[|l|l|p|]
 \DB field       \BC type \BC explanation \NC \NR
 \TB
-\NC \type{next} \NC node \NC pointer to the first attribute \NC \NR
-\LL
-\stoptabulate
-
-\stopsubsubsection
-
-\startsubsubsection[title={\nod {attr} nodes}]
-
-A normal node's attribute field will point to an item of type \nod
-{attribute_list}, and the \type {next} field in that item will point to the first
-defined \quote {attribute} item, whose \type {next} will point to the second
-\quote {attribute} item, etc.
-
-\starttabulate[|l|l|p|]
-\DB field         \BC type   \BC explanation \NC \NR
-\TB
 \NC \type{next}   \NC node   \NC pointer to the next attribute \NC \NR
-\NC \type{number} \NC number \NC the attribute type id \NC \NR
+\NC \type{index}  \NC number \NC the attribute index \NC \NR
 \NC \type{value}  \NC number \NC the attribute value \NC \NR
 \LL
 \stoptabulate
 
-As mentioned it's better to use the official helpers rather than edit these
-fields directly. For instance the \type {prev} field is used for other purposes
-and there is no double linked list.
+Because there are assumptions to how these list are build you should rely on the
+helpers, also because details might change.
 
 \stopsubsubsection
 
@@ -1648,10 +1643,10 @@ x1.attr = ca
 x2.attr = ca
 \stoptyping
 
-The attribute lists are ref counted and the assignment takes care of incrementing
-the refcount. You cannot expect the value \type {ca} to be valid any more when
-you assign attributes (using \type {tex.setattribute}) or when control has been
-passed back to \TEX.
+The attribute lists are reference counted and the assignment takes care of
+incrementing the count. You cannot expect the value \type {ca} to be valid any
+more when you assign attributes (using \type {tex.setattribute}) or when control
+has been passed back to \TEX.
 
 \stopsubsubsection
 

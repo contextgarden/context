@@ -429,16 +429,28 @@
 %    \fi
 %    \page_otr_command_set_vsize} % new
 
+% test case:
+%
+% \starttext
+%     \strut\vskip180mm \input ward
+%     \subject{Test}
+%     \placefigure[right,none]{none}{\blackrule[width=4cm,height=3cm]} test
+% \stoptext
+
 \protected\def\page_sides_force_depth
   {\iftracesidefloats
      \enabletrackers[otr.forcestrutdepth]% \c_page_force_strut_depth_trace_mode\plusone
    \fi
    % flush what we have and check
    \forcestrutdepth
-   % trigger pagebuilder
- % \penalty\zerocount
-   \pageboundary
-   % catch up
+   % trigger pagebuilder, \pageboundary gives nicer tracing
+   \iffalse
+     \penalty\zerocount % works too
+   \else
+    %\tracingpages\plusone \tracingonline\plustwo
+     \pageboundary % becomes a penalty (after triggering the callback) (experimental!)
+    %\tracingpages\zerocount
+   \fi
    \page_otr_command_set_vsize} % new, no longer really needed
 
 \def\page_sides_flush_floats

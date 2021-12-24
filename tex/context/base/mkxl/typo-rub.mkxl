@@ -60,7 +60,7 @@
      comment {#2}
    \relax}
 
-\setvalue{\??rubyanalyze\v!top}#1#2%
+\defcsname\??rubyanalyze\v!top\endcsname#1#2%
   {\clf_ruby
      align   {\rubyparameter\c!align}%
      stretch {\rubyparameter\c!stretch}%
@@ -70,7 +70,7 @@
      comment {#2}
    \relax}
 
-\setvalue{\??rubyplacement\v!top}#1#2%
+\defcsname\??rubyplacement\v!top\endcsname#1#2%
   {\setbox\scratchbox\hbox\bgroup
      \userubystyleandcolor\c!style\c!color
      #2%
@@ -79,7 +79,7 @@
    \relax
    #1}
 
-\setvalue{\??rubyplacement\v!right}#1#2%
+\defcsname\??rubyplacement\v!right\endcsname#1#2%
   {#1%
    \edef\p_distance{\rubyparameter\c!distance}%
    \ifempty\p_distance\orelse\ifx\p_distance\v!none\else\hskip\p_distance\fi
@@ -88,7 +88,7 @@
    \rubyparameter\c!left#2\rubyparameter\c!right
    \endgroup}
 
-\setvalue{\??rubyplacement\v!left}#1#2%
+\defcsname\??rubyplacement\v!left\endcsname#1#2%
   {\begingroup
    \userubystyleandcolor\c!style\c!color
    \rubyparameter\c!left#2\rubyparameter\c!right

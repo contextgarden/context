@@ -98,7 +98,6 @@ local v_blines     = variables.blines
 
 local trace_vbox_vspacing    = false  trackers.register("vspacing.vbox",     function(v) trace_vbox_vspacing    = v end)
 local trace_page_vspacing    = false  trackers.register("vspacing.page",     function(v) trace_page_vspacing    = v end)
-local trace_page_builder     = false  trackers.register("builders.page",     function(v) trace_page_builder     = v end)
 local trace_collect_vspacing = false  trackers.register("vspacing.collect",  function(v) trace_collect_vspacing = v end)
 local trace_vspacing         = false  trackers.register("vspacing.spacing",  function(v) trace_vspacing         = v end)
 local trace_vsnapping        = false  trackers.register("vspacing.snapping", function(v) trace_vsnapping        = v end)
@@ -128,6 +127,8 @@ local getlist             = nuts.getlist
 local setlist             = nuts.setlist
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
+local setattrs            = nuts.setattrs
+local getattrs            = nuts.getattrs
 local getsubtype          = nuts.getsubtype
 local getbox              = nuts.getbox
 local getwhd              = nuts.getwhd
@@ -185,6 +186,7 @@ local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
 local rule_code           = nodecodes.rule
 local par_code            = nodecodes.par
+local boundary_code       = nodecodes.boundary
 
 local userskip_code       = gluecodes.userskip
 local lineskip_code       = gluecodes.lineskip
@@ -735,28 +737,57 @@ storage.register("builders/vspacing/data/skip", vspacingdata.skip, "builders.vsp
 
 local setspecification, getspecification
 
--- attributes : more overhead : feels faster than properties
--- properties : more natural  : feels slower than attributes
--- data       : more native   : is little faster than attributes
+-- 1 statepool  : 2 : more overhead : a bit slower than properties
+-- 2 attributes : 1 : more overhead : feels faster than properties
+-- 3 properties : 3 : more natural  : feels slower than attributes
+-- 4 data       : 1 : more native   : is little faster than attributes (limited penalty)
 
-if true then
--- if false then
+-- testfile: t:/bugs/bottomfloats-001.tex
 
-    -- quite okay but more memory due to attributes (not many)
+local method = 1 -- better tracing
+-- local method = 2
+-- local method = 3
+-- local method = 4
 
-    local setattrs = nuts.setattrs
-    local getattrs = nuts.getattrs
+if method == 1 then
+
+    local registervalue = attributes.registervalue
+    local getvalue      = attributes.getvalue
+    local values        = attributes.values
 
     setspecification = function(n,category,penalty,order)
-        setattrs(n,false,a_skipcategory,category,a_skippenalty,penalty,a_skiporder,order or 1)
+        local detail = { category, penalty, order or 1 }
+        local value  = registervalue(a_skipcategory,detail)
+        setattr(n,a_skipcategory,value)
     end
 
     getspecification = function(n)
-        return getattrs(n,a_skipcategory,a_skippenalty,a_skiporder)
+        local value = getattr(n,a_skipcategory)
+        if value then
+            local detail = getvalue(a_skipcategory,value)
+         -- local detail = attributes.values[a_skipcategory][value]
+         -- local detail = values[a_skipcategory][value]
+            if detail then
+                return detail[1], detail[2], detail[3]
+            end
+        end
+        return false, false, 1
     end
 
--- elseif true then
-elseif false then
+elseif method == 2 then
+
+    -- quite okay but more memory due to attributes (not many)
+
+    setspecification = function(n,category,penalty,order)
+        setattrs(n,false,a_skipcategory,category or nil,a_skippenalty,penalty or nil,a_skiporder,order or 1)
+    end
+
+    getspecification = function(n)
+        local c, p, o = getattrs(n,a_skipcategory,a_skippenalty,a_skiporder)
+        return c or false, p or false, o or 1
+    end
+
+elseif method == 3 then
 
     -- more natural as we stay in lua
 
@@ -776,7 +807,7 @@ elseif false then
         end
     end
 
-else
+elseif method == 4 then
 
     -- quite efficient but needs testing because we limit values
 
@@ -1460,7 +1491,11 @@ do
         return remove_node(head,current,true)
     end
 
+    -- where -> scope
+    -- what  -> where (original context)
+
     local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
+
         if trace then
             reset_tracing(head)
         end
@@ -1483,16 +1518,23 @@ do
         local pagetail
         --
         -- todo: keep_together: between headers
+        -- todo: make this nicer in the engine
         --
         local function getpagelist()
             if not pagehead then
-                pagehead = texlists.pagehead
+                pagehead = texlists.pagehead -- pagehead, pagetail = tex.getlist("pagehead")
                 if pagehead then
                     pagehead = tonut(pagehead)
                     pagetail = find_node_tail(pagehead) -- no texlists.page_tail yet-- no texlists.page_tail yet
                 end
             end
         end
+        --
+     -- local function getpagelist()
+     --     if not pagehead then
+     --         pagehead, pagetail = texgetlist("pagehead")
+     --     end
+     -- end
         --
         local function compensate(n)
             local g = 0
@@ -1971,7 +2013,7 @@ do
                     local next = getnext(current)
                  -- if next and getattr(next,a_skipcategory) == notopskip then
                     if next and getspecification(next) == notopskip then
-                        nuts.setglue(current) -- zero
+                        setglue(current) -- zero
                     end
                     if snap then
                         local s = getattr(current,a_snapmethod)
@@ -2084,7 +2126,7 @@ do
                 glue_data = nil
             elseif tail then
                 setlink(tail,glue_data)
-setnext(glue_data)
+                setnext(glue_data)
             else
                 head = glue_data
             end
@@ -2115,6 +2157,8 @@ setnext(glue_data)
     -- ugly code: we get partial lists (check if this stack is still okay) ... and we run
     -- into temp nodes (sigh)
 
+    -- this really need a rework
+
     local forceflush = false
 
     function vspacing.pagehandler(newhead,where)
@@ -2122,7 +2166,7 @@ setnext(glue_data)
             local newtail = find_node_tail(newhead) -- best pass that tail, known anyway
             local flush = false
             stackhack = true -- todo: only when grid snapping once enabled
-            -- todo: fast check if head = tail
+
             for n, id, subtype in nextnode, newhead do -- we could just look for glue nodes
                 if id ~= glue_code then
                     flush = true
@@ -2198,18 +2242,15 @@ setnext(glue_data)
         forceflush = true
     end
 
-    local ignore = table.tohash {
-        "split_keep",
-        "split_off",
-     -- "vbox",
+    local ignored = table.tohash {
+        "splitkeep",
+        "splitoff",
+--       "insert",
     }
 
     function vspacing.vboxhandler(head,where)
-        if head and not ignore[where] and getnext(head) then
-            if getnext(head) then -- what if a one liner and snapping?
-                head = collapser(head,"vbox",where,trace_vbox_vspacing,true,a_snapvbox) -- todo: local snapper
-                return head
-            end
+        if head and not ignored[where] and getnext(head) then
+            head = collapser(head,"vbox",where,trace_vbox_vspacing,true,a_snapvbox) -- todo: local snapper
         end
         return head
     end
