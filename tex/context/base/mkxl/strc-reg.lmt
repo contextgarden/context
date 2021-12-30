@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['strc-reg'] = {
 local next, type, tonumber, rawget = next, type, tonumber, rawget
 local char, format, gmatch = string.char, string.format, string.gmatch
 local equal, concat, remove = table.are_equal, table.concat, table.remove
-local lpegmatch, P, C, Ct = lpeg.match, lpeg.P, lpeg.C, lpeg.Ct
+local lpegmatch, lpegpatterns, P, C, Ct, Cs = lpeg.match, lpeg.patterns, lpeg.P, lpeg.C, lpeg.Ct, lpeg.Cs
 local allocate = utilities.storage.allocate
 
 local trace_registers    = false  trackers.register("structures.registers", function(v) trace_registers = v end)
@@ -442,13 +442,21 @@ implement {
     arguments = "2 strings",
 }
 
-
-local p_s = P("+")
+local p_s = P("+") -- & obsolete in mkiv
 local p_e = P("&") * (1-P(";"))^0 * P(";")
 local p_r = C((p_e + (1-p_s))^0)
 
+local p_t = Cs ( (
+    lpegpatterns.nestedbraces
+--+ lpegpatterns.nestedbrackets
+  + lpegpatterns.nestedparents
+  + P("$") * (1-P("$"))^1 * P("$")
+  + (1-p_s)
+  )^1)
+
 local entrysplitter_xml = Ct(p_r * (p_s * p_r)^0) -- bah
-local entrysplitter_tex = lpeg.tsplitat('+')      -- & obsolete in mkiv
+----- entrysplitter_tex = lpeg.tsplitat('+')
+local entrysplitter_tex = Ct((p_t * p_s^-1)^0)
 
 local tagged = { }
 

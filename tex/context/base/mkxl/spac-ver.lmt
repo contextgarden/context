@@ -33,7 +33,6 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 
 local next, type, tonumber = next, type, tonumber
 local gmatch, concat = string.gmatch, table.concat
-local ceil, floor, abs = math.ceil, math.floor, math.abs
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
 local allocate = utilities.storage.allocate
@@ -147,6 +146,7 @@ local getheight           = nuts.getheight
 local setdepth            = nuts.setdepth
 local getdepth            = nuts.getdepth
 local setnext             = nuts.setnext
+local setprev             = nuts.setprev
 
 local find_node_tail      = nuts.tail
 local flushnode           = nuts.flushnode
@@ -196,6 +196,8 @@ local topskip_code        = gluecodes.topskip
 local splittopskip_code   = gluecodes.splittopskip
 
 local linelist_code       = nodes.listcodes.line
+
+local setvisual           = function(...) setvisual = nuts.setvisual return setvisual(...) end
 
 local properties          = nodes.properties.data
 
@@ -354,6 +356,9 @@ end
 -- check variables.none etc
 
 local snap_hlist  do
+
+    local floor = math.floor
+    local ceil  = math.ceil
 
     local function fixedprofile(current)
         local profiling = builders.profiling
@@ -749,6 +754,8 @@ local method = 1 -- better tracing
 -- local method = 3
 -- local method = 4
 
+-- todo: not true but only visual a_visual,tex.getattribute(a_visual)
+
 if method == 1 then
 
     local registervalue = attributes.registervalue
@@ -939,6 +946,7 @@ do
     local function inject()
         local n = new_glue(b_amount,b_stretch,b_shrink)
         setspecification(n,b_category,b_penalty,b_order or 1)
+        setvisual(k)
         write_node(n)
     end
 
@@ -1064,6 +1072,7 @@ do
         local n = new_glue()
      -- setattrs(n,false,a_skipcategory,categories.penalty,a_skippenalty,penalty,a_skiporder,1)
         setspecification(n,categories.penalty,penalty,1)
+        setvisual(k)
         write_node(n)
     end
 
@@ -1071,6 +1080,7 @@ do
         local n = new_glue(amount)
      -- setattrs(n,false,a_skipcategory,categories.largest,a_skippenalty,false,a_skiporder,1)
         setspecification(n,categories.largest,false,1)
+        setvisual(k)
         write_node(n)
     end
 
@@ -1078,6 +1088,7 @@ do
         local n = new_glue()
      -- setattrs(n,false,a_skipcategory,categories.disable,a_skippenalty,false,a_skiporder,1)
         setspecification(n,categories.disable,false,1)
+        setvisual(k)
         write_node(n)
     end
 
@@ -1239,16 +1250,22 @@ do
         end
         if width == 0 then
             -- do nothing
-        elseif where == "after" then
-            head, current = insertnodeafter(head,current,new_rule(w,h,d))
-            head, current = insertnodeafter(head,current,new_kern(width))
-            head, current = insertnodeafter(head,current,new_rule(w,h,d))
         else
-            local c = current
-            head, current = insertnodebefore(head,current,new_rule(w,h,d))
-            head, current = insertnodebefore(head,current,new_kern(width))
-            head, current = insertnodebefore(head,current,new_rule(w,h,d))
-            current = c
+            local b = new_rule(w,h,d)
+            local k = new_kern(width)
+            local a = new_rule(w,h,d)
+            setvisual(k)
+            if where == "after" then
+                head, current = insertnodeafter(head,current,b)
+                head, current = insertnodeafter(head,current,k)
+                head, current = insertnodeafter(head,current,a)
+            else
+                local c = current
+                head, current = insertnodebefore(head,current,b)
+                head, current = insertnodebefore(head,current,k)
+                head, current = insertnodebefore(head,current,a)
+                current = c
+            end
         end
         if trace then
             report_vspacing("inserting forced skip of %p",width)
@@ -1428,9 +1445,11 @@ do
             texsetdimen("global","d_spac_overlay",-delta) -- for tracing
             -- we should adapt pagetotal ! (need a hook for that) .. now we have the wrong pagebreak
             local k = new_kern(-delta)
+            setvisual(k)
             head = insertnodebefore(head,n,k)
             if n_ht > p_ht then
                 local k = new_kern(n_ht-p_ht)
+                setvisual(k)
                 head = insertnodebefore(head,p,k)
             end
             if trace_vspacing then
@@ -1577,6 +1596,7 @@ do
                                 local d = g - t
                                 if d < -e then
                                     local penalty = new_penalty(1000000)
+                                    setvisual(penalty)
                                     setlink(penalty,head)
                                     head = penalty
                                     report_snapper("force pagebreak due to extra space at bottom: %p",e)
@@ -1605,6 +1625,7 @@ do
         local function flush(why)
             if penalty_data then
                 local p = new_penalty(penalty_data)
+                setvisual(p)
                 if trace then
                     trace_done("flushed due to " .. why,p)
                 end
@@ -2100,6 +2121,7 @@ do
         if penalty_data then
             tail = find_node_tail(head)
             local p = new_penalty(penalty_data)
+            setvisual(p)
             if trace then
                 trace_done("result",p)
             end
@@ -2372,6 +2394,7 @@ do
     end
 
     local trace       = false
+    local abs         = math.abs
  -- local last        = nil
     local vmode_code  = tex.modelevels.vertical
     local temp_code   = nodecodes.temp
@@ -2503,14 +2526,13 @@ do
 
     local trace = false  trackers.register("otr.forcestrutdepth", function(v)
         trace = v and function(n)
-            nuts.setvisual(nuts.tonut(n),nodes.visualizers.modes.depth)
+            setvisual(nuts.tonut(n),nodes.visualizers.modes.depth)
         end
     end)
 
     local treversenode = nuts.treversers.node
 
-    function vspacing.forcestrutdepth()
-        -- check if in mvl
+    local function flushcontributions()
         if texgetnest("ptr") == 0 then
             -- this flushes the contributions
             local prev  = nil
@@ -2526,6 +2548,17 @@ do
                     prev = head
                 end
             end
+            return true
+        else
+            return false
+        end
+    end
+
+    vspacing.flushcontributions = flushcontributions
+
+    function vspacing.forcestrutdepth()
+        -- check if in mvl
+        if flushcontributions() then
             -- now we consult the last line (if present)
             local head, tail = getspeciallist("pagehead")
             if tail then
@@ -2568,6 +2601,57 @@ do
          -- end
         end
     end
+
+    -- highly experimental, only for m4all now; todo: tracing
+
+    local setbox = nuts.setbox
+
+    function vspacing.interceptsamepagecontent(box)
+        if vspacing.flushcontributions() then
+            -- now we consult the last line (if present)
+            local head, tail = getspeciallist("pagehead")
+            if tail and getid(tail) == glue_code then
+                local prev = getprev(tail)
+                if prev and getid(prev) == penalty_code then
+                    if getpenalty(prev) >= 10000 then
+                        local state = nil
+                        local first = nil
+                        local last  = tail
+                        local c = getprev(prev)
+                        while c do
+                            if getid(c) == glue_code then
+                                local p = getprev(c)
+                                if p and getid(p) == penalty_code then
+                                    if getpenalty(p) < 10000 then
+                                        state = 1
+                                    end
+                                else
+                                    state = 2
+                                    break
+                                end
+                            end
+                            first = c
+                            c = getprev(c)
+                        end
+                        if first and first ~= head then
+                            setnext(getprev(first))
+                            setprev(first)
+                            local vbox = vpack_node(first)
+                            setvisual(vbox)
+                            setbox(box,vbox)
+                            report_vspacing("same page intercept, case %i")
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    interfaces.implement {
+        name      = "interceptsamepagecontent",
+        arguments = "integer",
+        actions   = vspacing.interceptsamepagecontent,
+    }
 
  -- interfaces.implement {
  --     name    = "removelastline",

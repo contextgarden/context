@@ -12796,6 +12796,12 @@ return {
    ["pe"]="گام‌وای",
    ["ro"]="ystep",
   },
+  ["source"]={
+    ["en"]="source",
+  },
+  ["target"]={
+    ["en"]="target",
+  },
  },
  ["elements"]={
   ["answerlines"]={
@@ -16459,6 +16465,10 @@ return {
    ["nl"]="handhaaf",
    ["pe"]="نگهدار",
    ["ro"]="mentine",
+  },
+  ["keeptogether"]={
+   ["en"]="keeptogether",
+   ["fr"]="conserverensemble",
   },
   ["kerncharacters"]={
    ["en"]="kerncharacters",

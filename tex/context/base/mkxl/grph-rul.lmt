@@ -22,6 +22,8 @@ local tonode           = nuts.tonode
 
 local getattribute     = tex.getattribute
 
+local direct_value     = tokens.values.direct
+
 local a_color          = attributes.private('color')
 local a_transparency   = attributes.private('transparency')
 local a_colormodel     = attributes.private('colormodel')
@@ -40,6 +42,8 @@ end)
 
 interfaces.implement {
     name      = "frule",
+    public    = true,
+    protected = true,
     arguments = { {
         { "width",  "dimension" },
         { "height", "dimension" },
@@ -52,7 +56,7 @@ interfaces.implement {
         { "radius", "dimension" },
         { "corner", "string" },
     } } ,
-    actions = function(t)
+    actions = function(t,...)
         local rule = userrule(t)
         if t.type == "mp" then
             t.ma = getattribute(a_colormodel) or 1
@@ -61,7 +65,7 @@ interfaces.implement {
         else
             setattrlist(rule,true)
         end
-        context(tonode(rule)) -- will become context.nodes.flush
+        context(nuts.tonode(rule))
     end
 }
 
@@ -78,17 +82,19 @@ interfaces.implement {
     actions = function(t)
         local rule = outlinerule(t.width,t.height,t.depth,t.line)
         setattrlist(rule,true)
-        context(tonode(rule)) -- will become context.nodes.flush
+        context(tonode(rule))
     end
 }
 
 interfaces.implement {
     name      = "framedoutline",
+ -- public    = true,
+ -- protected = true,
     arguments = { "dimension", "dimension", "dimension", "dimension" },
     actions   = function(w,h,d,l)
         local rule = outlinerule(w,h,d,l)
         setattrlist(rule,true)
-        context(tonode(rule)) -- will become context.nodes.flush
+        context(tonode(rule))
     end
 }
 

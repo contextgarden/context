@@ -495,10 +495,10 @@
    \ifempty\p_text
      \kern\leftedgewidth
    \else
-      \hbox to \leftedgewidth\bgroup
-        \hss
-        \page_layouts_process_element_indeed#style#color#width%
-      \egroup
+     \hbox to \leftedgewidth\bgroup
+       \hss
+       \page_layouts_process_element_indeed#style#color#width%
+     \egroup
    \fi}
 
 \def\page_layouts_left_edge_element#text#style#color#width%

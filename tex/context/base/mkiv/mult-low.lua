@@ -116,6 +116,14 @@ return {
         "vadjustparcontextcode", "insertparcontextcode", "outputparcontextcode", "alignparcontextcode",
         "noalignparcontextcode", "spanparcontextcode", "resetparcontextcode",
         --
+        "leftoriginlistanchorcode", "leftheightlistanchorcode", "leftdepthlistanchorcode",
+        "rightoriginlistanchorcode", "rightheightlistanchorcode", "rightdepthlistanchorcode",
+        "centeroriginlistanchorcode", "centerheightlistanchorcode", "centerdepthlistanchorcode",
+        "halfwaytotallistanchorcode", "halfwayheightlistanchorcode", "halfwaydepthlistanchorcode",
+        "halfwayleftlistanchorcode", "halfwayrightlistanchorcode",
+        --
+        "negatexlistsigncode", "negateylistsigncode", "negatelistsigncode",
+        --
         "fontslantperpoint", "fontinterwordspace", "fontinterwordstretch", "fontinterwordshrink",
         "fontexheight", "fontemwidth", "fontextraspace", "slantperpoint",
         "mathexheight", "mathemwidth",

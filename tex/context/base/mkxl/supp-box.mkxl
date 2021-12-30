@@ -17,6 +17,11 @@
 
 \registerctxluafile{supp-box}{autosuffix,optimize}
 
+\permanent\integerdef\negatelistsigncode\numexpr
+    \negatexlistsigncode
+   +\negateylistsigncode
+\relax
+
 %D And some dimensions:
 
 \newdimen\givenwidth
@@ -2892,6 +2897,15 @@
 %D \stoptyping
 
 \untraced\permanent\protected\def\showboxhere{\showbox nolevels content online }
+
+% % possible extra interface, currently disabled
+%
+% \permanent\tolerant\protected\def\registeranchorbox[#1]#*[#2]%
+%   {\dowithnextbox
+%      {\clf_registeranchorbox
+%         \namedboxanchor{#1}%
+%         \ifcstok{#2}\v!before\minusone\else\plusone\fi
+%         \box\nextbox}}
 
 \protect \endinput
 

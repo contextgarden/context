@@ -959,7 +959,7 @@ what you generate.
 \NC \type{width}  \NC number \NC the width (not used in calculations) \NC \NR
 \NC \type{height} \NC number \NC the height (not used in calculations) \NC \NR
 \NC \type{depth}  \NC number \NC the depth (not used in calculations) \NC \NR
-\NC \type{objnum} \NC number \NC the referenced \PDF\ object number \NC \NR
+\NC \type{objnum} \NC number \NC the referenced \PDF\ (structure) object number \NC \NR
 \NC \type{data}   \NC string \NC the annotation data \NC \NR
 \LL
 \stoptabulate
@@ -1016,10 +1016,16 @@ objects.
 \TB
 \NC \type{action_type} \NC number           \NC the kind of action involved \NC \NR
 \NC \type{action_id}   \NC number or string \NC token list reference or string \NC \NR
-\NC \type{named_id}    \NC number           \NC the index of the destination \NC \NR
+%NC \type{named_id}    \NC number           \NC the index of the destination \NC \NR
+% a strange key but needed for latex; a probably downward incompable patch instead of a fix
+\NC \type{named_id}    \NC number           \NC are \type {dest_id} and \type {struct_id} string values? \NC \NR
 \NC \type{file}        \NC string           \NC the target filename \NC \NR
 \NC \type{new_window}  \NC number           \NC the window state of the target \NC \NR
 \NC \type{data}        \NC string           \NC the name of the destination \NC \NR
+% needed for latex and therefore equivalent to pdftex
+\NC \type{struct_id}   \NC nil              \NC the action does not reference a structure destination \NC \NR
+\NC                    \NC number           \NC id of the referenced structure destination \NC \NR
+\NC                    \NC string           \NC name of the referenced structure destination \NC \NR
 \LL
 \stoptabulate
 

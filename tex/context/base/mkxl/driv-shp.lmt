@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['driv-shp'] = {
     license   = "see context related readme files"
 }
 
-local type, next = type, next
+local type, next, rawget, rawset = type, next, rawget, rawset
 
 local setmetatableindex  = table.setmetatableindex
 local formatters         = string.formatters
@@ -27,6 +27,8 @@ local getdirection       = nuts.getdirection
 local getlist            = nuts.getlist
 local getoffsets         = nuts.getoffsets
 local getorientation     = nuts.getorientation
+local getanchors         = nuts.getanchors
+local getgeometry        = nuts.getgeometry
 local getxyscales        = nuts.getxyscales
 local getwhd             = nuts.getwhd
 local getkern            = nuts.getkern
@@ -93,6 +95,9 @@ local drivers            = drivers
 
 local report             = logs.reporter("drivers")
 
+---------------------------------------------------------------------------------------
+-- For the moment rules need at least some height but maybe some day we let user rules
+-- fall through or have some way to force a rule via some property.
 ---------------------------------------------------------------------------------------
 
 local lastfont       = nil
@@ -609,23 +614,75 @@ end
 --
 -- local  dirstack = setmetatableindex(dirstackentry)
 --
--- local function reset_dir_stack()
+-- local function reset_directions()
 --     dirstack = setmetatableindex(dirstackentry)
 -- end
 
 local dirstack = { }
+local anchors  = { }
+----- befores  = setmetatableindex("table")
+----- afters   = setmetatableindex("table")
 
-local function reset_dir_stack()
+local function reset_directions()
     dirstack = { }
 end
 
+local function reset_anchors()
+    anchors = { }
+end
+
+-- interfaces.implement {
+--     name      = "registeranchorbox",
+--     arguments = { "integer", "integer", "box" },
+--     actions   = function(anchor,where,box)
+--         box = tonut(box)
+--         if where < 0 then
+--             table.insert(befores[anchor],box)
+--         else
+--             table.insert(afters[anchor],box)
+--         end
+--     end
+-- }
+
 local hlist_out, vlist_out  do
 
-    local function applyanchor(orientation,x,y,width,height,depth,woffset,hoffset,doffset,xoffset,yoffset)
-        local ot = (orientation>> 0) & 0x0F
-        local ay = (orientation>> 4) & 0x0F
-        local ax = (orientation>> 8) & 0x0F
-        local of = (orientation>>12) & 0x0F
+    local finalize  = nodes.handlers.finalizelist
+ -- local takebox   = nuts.takebox
+    local flushnode = nuts.flushnode
+
+ -- local function flushstored(current,source,before)
+ --     local s = nil
+ --     if before then
+ --         s = rawget(befores,source)
+ --     else
+ --         s = rawget(afters,source)
+ --     end
+ --     if s then
+ --         for i=1,#s do
+ --             local si = s[i]
+ --             if si then
+ --                 finalize(si) -- tricky: we might need to group
+ --                 if getid(si) == vlist_code then
+ --                     vlist_out(current,si)
+ --                 else
+ --                     hlist_out(current,si)
+ --                 end
+ --                 flushnode(si)
+ --                 s[i] = false
+ --             end
+ --         end
+ --         if before then
+ --             rawset(befores,source,nil)
+ --         else
+ --             rawset(afters,source,nil)
+ --         end
+ --     end
+ -- end
+
+    local function applyorientation(orientation,x,y,width,height,depth,woffset,hoffset,doffset,xoffset,yoffset)
+        local ot = (orientation >> 0) & 0x0F
+        local ay = (orientation >> 4) & 0x0F
+        local ax = (orientation >> 8) & 0x0F
         if ot == 4 then
             ot, ay = 0, 1
         elseif ot == 5 then
@@ -663,7 +720,71 @@ local hlist_out, vlist_out  do
         return ot, x + xoffset, y - yoffset
     end
 
-    drivers.applyanchor = applyanchor
+    local function applyanchor(anchor,shift,anchor_h,anchor_v,width,height,depth)
+        local h = 0
+        local v = 0
+        if shift then
+            anchor = (anchor & 0xFFFF0000) >> 16
+        else
+            anchor = (anchor & 0x0000FFFF)
+        end
+        local a = anchor & 0x00FF
+        local s = anchor & 0x0F00
+        if a == 0x02 then
+            v = height
+        elseif a == 0x03 then
+            v = - depth
+        elseif a == 0x04 then
+            h = width
+        elseif a == 0x05 then
+            h = width
+            v = height
+        elseif a == 0x06 then
+            h = width
+            v = - depth
+        elseif a == 0x07 then
+            h = width/2
+        elseif a == 0x08 then
+            h = width/2
+            v = height
+        elseif a == 0x09 then
+            h = width/2
+            v = - depth
+        elseif a == 0x0A then -- halfway_total_anchor
+            h = width/2
+            v = height/2 - depth/2
+        elseif a == 0x0B then -- halfway_height_anchor
+            h = width/2
+            v = height/2
+        elseif a == 0x0C then -- halfway_depth_anchor
+            h = width/2
+            v = - depth/2
+        elseif a == 0x0D then -- halfway_left_anchor
+            v = height/2 - depth/2
+        elseif a == 0x0E then -- halfway_right_anchor
+            h = width
+            v = height/2 - depth/2
+        end
+        if not shift then
+            h = -h
+            v = -v
+        end
+        if s == 0x100 then
+            h = -h
+        elseif s == 0x200 then
+            v = -v
+        elseif s == 0x300 then
+            h = -h
+            v = -v
+        else
+        end
+        anchor_h = anchor_h + h
+        anchor_v = anchor_v + v
+        return anchor_h, anchor_v
+    end
+
+    drivers.applyanchor      = applyanchor
+    drivers.applyorientation = applyorientation
 
     -- to be checked: begin- or enddir kan nil zijn, weird
 
@@ -745,12 +866,10 @@ local hlist_out, vlist_out  do
                                         local save_h = cur_h
                                         if pos_r == righttoleft_code then
                                             cur_h = ref_h - shipbox_h + cur_h
---                                             cur_h = width * (cur_h // width)
                                             cur_h = width * (cur_h / width)
                                             cur_h = ref_h - shipbox_h - cur_h
                                         else
                                             cur_h = ref_h - shipbox_h - cur_h
---                                             cur_h = width * (cur_h // width)
                                             cur_h = width * (cur_h / width)
                                             cur_h = ref_h - shipbox_h - cur_h
                                         end
@@ -759,7 +878,6 @@ local hlist_out, vlist_out  do
                                         end
                                     elseif subtype == leaders_code then
                                         local save_h = cur_h
---                                         cur_h = width * (cur_h // width)
                                         cur_h = width * (cur_h / width)
                                         if cur_h < save_h then
                                             cur_h = cur_h + width
@@ -768,12 +886,9 @@ local hlist_out, vlist_out  do
                                         lq = gluewidth / width
                                         lr = gluewidth % width
                                         if subtype == cleaders_code then
---                                             cur_h = cur_h + lr // 2
                                             cur_h = cur_h + lr / 2
                                         else
---                                             lx = lr // (lq + 1)
                                             lx = lr / (lq + 1)
---                                             cur_h = cur_h + (lr - (lq - 1) * lx) // 2
                                             cur_h = cur_h + (lr - (lq - 1) * lx) / 2
                                         end
                                     end
@@ -863,56 +978,41 @@ local hlist_out, vlist_out  do
                 local list = getlist(current)
                 if list then
                     local boxdir = getdirection(current) or lefttoright_code
-                    local shift, orientation = getshift(current)
-                    if not orientation then
-                        local basepoint_h = boxdir ~= pos_r and width or 0
-                     -- local basepoint_v = shift
-                        if pos_r == righttoleft_code then
-                            pos_h = ref_h - (cur_h + basepoint_h)
-                        else
-                            pos_h = ref_h + (cur_h + basepoint_h)
-                        end
-                        pos_v = ref_v - shift
-                        -- synced
-                        if id == vlist_code then
-                            vlist_out(current,list)
-                        else
-                            hlist_out(current,list)
-                        end
-                    elseif orientation == 0x1000 then
-                        local orientation, xoffset, yoffset = getorientation(current)
-                        local basepoint_h = boxdir ~= pos_r and width or 0
-                     -- local basepoint_v = shift
-                        if pos_r == righttoleft_code then
-                            pos_h = ref_h - (cur_h + basepoint_h + xoffset)
-                        else
-                            pos_h = ref_h + (cur_h + basepoint_h + xoffset)
-                        end
-                        pos_v = ref_v - (shift - yoffset)
-    --             pushorientation(orientation,pos_h,pos_v,pos_r)
-                        -- synced
-                        if id == vlist_code then
-                            vlist_out(current,list)
-                        else
-                            hlist_out(current,list)
-                        end
-    --             poporientation(orientation,pos_h,pos_v,pos_r)
-                    else
+                    local shift  = getshift(current)
+                    local geometry, hasoffset, hasorientation, hasanchor = getgeometry(current,true)
+                    local anchor, source, target, targetdata
+                    local anc_h, anc_v
+                    local usedorientation = false
+                    if hasanchor then
+                        anchor, source, target = getanchors(current)
+                    end
+                    if hasorientation then
                         local orientation, xoffset, yoffset, woffset, hoffset, doffset = getorientation(current)
-                        local orientation, basepoint_h, basepoint_v = applyanchor(orientation,0,shift,width,height,depth,woffset,hoffset,doffset,xoffset,yoffset)
+                        local orientation, basepoint_h, basepoint_v = applyorientation(orientation,0,shift,width,height,depth,woffset,hoffset,doffset,xoffset,yoffset)
                         if orientation == 1 then
                             basepoint_h = basepoint_h + doffset
                             if boxdir == pos_r then
                                 basepoint_v = basepoint_v - height
                             end
+                            usedorientation = orientation
                         elseif orientation == 2 then
                             if boxdir == pos_r then
                                 basepoint_h = basepoint_h + width
                             end
+                            usedorientation = orientation
                         elseif orientation == 3 then
                             basepoint_h = basepoint_h + hoffset
                             if boxdir ~= pos_r then
                                 basepoint_v = basepoint_v - height
+                            end
+                            usedorientation = orientation
+                        end
+                        if target then
+                            targetdata = anchors[target]
+                            if targetdata then
+                                anc_h =   basepoint_h
+                                anc_v = - basepoint_v
+                                goto posdone
                             end
                         end
                         if pos_r == righttoleft_code then
@@ -922,14 +1022,88 @@ local hlist_out, vlist_out  do
                         end
                      -- pos_v = ref_v - (cur_v + basepoint_v)
                         pos_v = ref_v - basepoint_v
-                        -- synced
-                        pushorientation(orientation,pos_h,pos_v,pos_r)
-                        if id == vlist_code then
-                            vlist_out(current,list)
-                        else
-                            hlist_out(current,list)
+                    elseif hasoffset then
+                        local orientation, xoffset, yoffset = getorientation(current)
+                        local basepoint_h = boxdir ~= pos_r and width or 0
+                        local basepoint_v = shift
+                        if target then
+                            targetdata = anchors[target]
+                            if targetdata then
+                                anc_h = xoffset + basepoint_h
+                                anc_v = yoffset - basepoint_v
+                                goto posdone
+                            end
                         end
-                        poporientation(orientation,pos_h,pos_v,pos_r)
+                        if pos_r == righttoleft_code then
+                            pos_h = ref_h - (cur_h + basepoint_h + xoffset)
+                        else
+                            pos_h = ref_h + (cur_h + basepoint_h + xoffset)
+                        end
+                        pos_v = ref_v - (basepoint_v - yoffset)
+                    elseif hasanchor then
+                        local basepoint_h = boxdir ~= pos_r and width or 0
+                        local basepoint_v = shift
+                        if target then
+                            targetdata = anchors[target]
+                            if targetdata then
+                                anc_h =   basepoint_h
+                                anc_v = - basepoint_v
+                                goto posdone
+                            end
+                        end
+                        if pos_r == righttoleft_code then
+                            pos_h = ref_h - (cur_h + basepoint_h)
+                        else
+                            pos_h = ref_h + (cur_h + basepoint_h)
+                        end
+                        pos_v = ref_v - basepoint_v
+                    else
+                        local basepoint_h = boxdir ~= pos_r and width or 0
+                        local basepoint_v = shift
+                        if pos_r == righttoleft_code then
+                            pos_h = ref_h - (cur_h + basepoint_h)
+                        else
+                            pos_h = ref_h + (cur_h + basepoint_h)
+                        end
+                        pos_v = ref_v - basepoint_v
+                    end
+                    goto process
+                  ::posdone::
+                    if pos_r == righttoleft_code then
+                        pos_h = targetdata[1] - anc_h
+                    else
+                        pos_h = targetdata[1] + anc_h
+                    end
+                    pos_v = targetdata[2] + anc_v
+                    if anchor and anchor > 0 then
+                        pos_h, pos_v = applyanchor(anchor,true,pos_h,pos_v,targetdata[3],targetdata[4],targetdata[5])
+                        pos_h, pos_v = applyanchor(anchor,false,pos_h,pos_v,width,height,depth)
+                    end
+                  ::process::
+                    if source then
+                        local anchor_h = pos_h
+                        local anchor_v = pos_v
+                        if usedorientation then
+                            if usedorientation == 1 then
+                                anchor_v = anchor_v - (width - height)
+                            elseif usedorientation == 2 then
+                                anchor_v = anchor_v - (depth - height)
+                            elseif usedorientation == 3 then -- weird
+                                anchor_v = anchor_v + (height - width)
+                            end
+                        end
+                        anchors[source] = { anchor_h, anchor_v, width, height, depth }
+                    end
+                    if usedorientation then
+                        pushorientation(usedorientation,pos_h,pos_v,pos_r)
+                    end
+                    if id == vlist_code then
+                        vlist_out(current,list)
+                    else
+                        hlist_out(current,list)
+                    end
+                    if usedorientation then
+                        poporientation(usedorientation,pos_h,pos_v,pos_r)
                     end
                 end
                 cur_h = cur_h + width
@@ -1183,8 +1357,96 @@ local hlist_out, vlist_out  do
                 local list = getlist(current)
                 if list then
                     local boxdir = getdirection(current) or lefttoright_code
-                    local shift, orientation = getshift(current)
-                    if not orientation then
+                    local shift = getshift(current)
+                    local geometry, hasoffset, hasorientation, hasanchor = getgeometry(current,true)
+                    local anchor, source, target, targetdata
+                    local usedorientation = false
+                    if hasanchor then
+                        anchor, source, target = getanchors(current)
+                    end
+                    if hasorientation then
+                        local orientation, xoffset, yoffset, woffset, hoffset, doffset = getorientation(current)
+                        local orientation, basepoint_h, basepoint_v = applyorientation(orientation,shift,height,width,height,depth,woffset,hoffset,doffset,xoffset,yoffset)
+                        if orientation == 1 then
+                            basepoint_h = basepoint_h + width - height -- hm
+                            basepoint_v = basepoint_v - height
+                            usedorientation = orientation
+                        elseif orientation == 2 then
+                            basepoint_h = basepoint_h + width
+                            basepoint_v = basepoint_v + depth - height
+                            usedorientation = orientation
+                        elseif orientation == 3 then -- weird
+                            basepoint_h = basepoint_h + height
+                            usedorientation = orientation
+                        end
+                        if target then
+                            targetdata = anchors[target]
+                            if targetdata then
+                                if pos_r == righttoleft_code then
+                                    pos_h = targetdata[1] - basepoint_h
+                                else
+                                    pos_h = targetdata[1] + basepoint_h
+                                end
+                                pos_v = targetdata[2] - basepoint_v
+                                goto posdone
+                            end
+                        end
+                        if pos_r == righttoleft_code then
+                            pos_h = ref_h - basepoint_h
+                        else
+                            pos_h = ref_h + basepoint_h
+                        end
+                        pos_v = ref_v - (cur_v + basepoint_v)
+                    elseif hasoffset then
+                        local orientation, xoffset, yoffset = getorientation(current)
+                     -- local basepoint_h = shift
+                     -- local basepoint_v = height
+                        if boxdir ~= pos_r then
+                            shift = shift + width
+                        end
+                        if target then
+                            targetdata = anchors[target]
+                            if targetdata then
+                                if pos_r == righttoleft_code then
+                                    pos_h = targetdata[1] - (shift + xoffset)
+                                else
+                                    pos_h = targetdata[1] + (shift + xoffset)
+                                end
+                                pos_v = targetdata[2] - (height - yoffset)
+                                goto posdone
+                            end
+                        end
+                        if pos_r == righttoleft_code then
+                            pos_h = ref_h - (shift + xoffset)
+                        else
+                            pos_h = ref_h + (shift + xoffset)
+                        end
+                        pos_v = ref_v - (cur_v + height - yoffset)
+                    elseif hasanchor then
+                     -- local basepoint_h = shift
+                     -- local basepoint_v = height
+                        if boxdir ~= pos_r then
+                            shift = shift + width
+                        end
+                        if target then
+                            local a = anchors[target]
+                            if a then
+                                if pos_r == righttoleft_code then
+                                    pos_h = targetdata[1] - shift
+                                else
+                                    pos_h = targetdata[1] + shift
+                                end
+                                pos_v = targetdata[2] - height
+                                goto posdone
+                            end
+                        end
+                        if pos_r == righttoleft_code then
+                            pos_h = ref_h - shift
+                        else
+                            pos_h = ref_h + shift
+                        end
+                        pos_v = ref_v - (cur_v + height)
+                    else
                      -- local basepoint_h = shift
                      -- local basepoint_v = height
                         if boxdir ~= pos_r then
@@ -1196,57 +1458,45 @@ local hlist_out, vlist_out  do
                             pos_h = ref_h + shift
                         end
                         pos_v = ref_v - (cur_v + height)
-                        -- synced
-                        if id == vlist_code then
-                            vlist_out(current,list)
-                        else
-                            hlist_out(current,list)
+                    end
+                    goto process
+                  ::posdone::
+                    if anchor and anchor > 0 then
+                        pos_h, pos_v = applyanchor(anchor,true,pos_h,pos_v,targetdata[3],targetdata[4],targetdata[5])
+                        pos_h, pos_v = applyanchor(anchor,false,pos_h,pos_v,width,height,depth)
+                    end
+                  ::process::
+                    if source then
+                        -- move this into apply_anchor
+                        local anchor_h = pos_h
+                        local anchor_v = pos_v
+                        if usedorientation then
+                            if usedorientation == 1 then
+                                anchor_v = anchor_v - (width - height)
+                            elseif usedorientation == 2 then
+                                anchor_v = anchor_v - (depth - height)
+                            elseif usedorientation == 3 then -- weird
+                                anchor_v = anchor_v + (height - width)
+                            end
                         end
-                    elseif orientation == 0x1000 then
-                        local orientation, xoffset, yoffset = getorientation(current)
-                     -- local basepoint_h = shift
-                     -- local basepoint_v = height
-                        if boxdir ~= pos_r then
-                            shift = shift + width
-                        end
-                        if pos_r == righttoleft_code then
-                            pos_h = ref_h - (shift + xoffset)
-                        else
-                            pos_h = ref_h + (shift + xoffset)
-                        end
-                        pos_v = ref_v - (cur_v + height - yoffset)
-                        -- synced
-                        if id == vlist_code then
-                            vlist_out(current,list)
-                        else
-                            hlist_out(current,list)
-                        end
+                        anchors[source] = { anchor_h, anchor_v, width, height, depth }
+                    end
+                    if usedorientation then
+                        pushorientation(usedorientation,pos_h,pos_v,pos_r)
+                    end
+                 -- if source then
+                 --     flushstored(current,source,true)
+                 -- end
+                    if id == vlist_code then
+                        vlist_out(current,list)
                     else
-                        local orientation, xoffset, yoffset, woffset, hoffset, doffset = getorientation(current)
-                        local orientation, basepoint_h, basepoint_v = applyanchor(orientation,shift,height,width,height,depth,woffset,hoffset,doffset,xoffset,yoffset)
-                        if orientation == 1 then
-                            basepoint_h = basepoint_h + width - height
-                            basepoint_v = basepoint_v - height
-                        elseif orientation == 2 then
-                            basepoint_h = basepoint_h + width
-                            basepoint_v = basepoint_v + depth - height
-                        elseif orientation == 3 then -- weird
-                            basepoint_h = basepoint_h + height
-                        end
-                        if pos_r == righttoleft_code then
-                            pos_h = ref_h - basepoint_h
-                        else
-                            pos_h = ref_h + basepoint_h
-                        end
-                        pos_v = ref_v - (cur_v + basepoint_v)
-                        -- synced
-                        pushorientation(orientation,pos_h,pos_v,pos_r)
-                        if id == vlist_code then
-                            vlist_out(current,list)
-                        else
-                            hlist_out(current,list)
-                        end
-                        poporientation(orientation,pos_h,pos_v,pos_r)
+                        hlist_out(current,list)
+                    end
+                 -- if source then
+                 --     flushstored(current,source,false)
+                 -- end
+                    if usedorientation then
+                        poporientation(usedorientation,pos_h,pos_v,pos_r)
                     end
                 end
                 cur_v = cur_v + height + depth
@@ -1332,7 +1582,8 @@ function drivers.converters.lmtx(driver,box,smode,objnum,specification)
     flushliteral      = flushers.literal
     flushwhatsit      = flushers.whatsit
 
-    reset_dir_stack()
+    reset_directions()
+    reset_anchors()
     reset_state()
 
     shippingmode = smode

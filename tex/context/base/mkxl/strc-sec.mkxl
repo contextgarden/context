@@ -1240,7 +1240,7 @@
            \spac_vspacing_same_page\currentheadlevel\zerocount
          \fi
          \headparameter\c!before\relax
-         \indent
+         \indent % hm, not a clever one?
      \else
          \page_otr_command_flush_side_floats
          \ifconditional\c_strc_sectioning_auto_break
@@ -1274,7 +1274,6 @@
   {\ifconditional\c_strc_sectioning_auto_break
      \spac_vspacing_same_page\currentheadlevel\plustwo
    \fi}
-
 
 % We do support negative numbers but it can have side effects that we won't catch:
 %

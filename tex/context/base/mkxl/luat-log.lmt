@@ -626,6 +626,11 @@ if package.helpers.report then
     package.helpers.report = logs.reporter("package loader") -- when used outside mtxrun
 end
 
+-- logs.errors=missing references,missing characters
+-- logs.errors=characters
+-- logs.errors=missing
+-- logs.errors=*
+
 do
 
     local finalactions  = { }
@@ -641,6 +646,9 @@ do
         loggingerrors = v
         if type(v) == "string" then
             fatalerrors = settings_to_hash(v)
+            for k, v in next, fatalerrors do
+                fatalerrors[k] = string.topattern(k)
+            end
         else
             fatalerrors = { }
         end
@@ -704,6 +712,13 @@ do
         end
         if fatalerrors[w] then
             possiblefatal[w] = true
+        else
+            for k, v in next, fatalerrors do
+                if find(w,v) then
+                    possiblefatal[w] = true
+                    break
+                end
+            end
         end
         return startlogging("terminal",r,w,...)
     end

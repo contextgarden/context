@@ -395,6 +395,7 @@
      \noindentation
    \else
      \ignoreparskip
+     \doindentation
    \fi}
 
 % nice testcase

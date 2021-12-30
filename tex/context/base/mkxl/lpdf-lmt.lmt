@@ -1429,15 +1429,13 @@ local flushimage  do
     -- small sizes which is needed for inaccurate viewers.
 
     flushers.rule = function(current,pos_h,pos_v,pos_r,size_h,size_v,subtype)
-
         if subtype == emptyrule_code then
             return
         elseif subtype == boxrule_code then
             return flushpdfxform(current,pos_h,pos_v,pos_r,size_h,size_v)
         elseif subtype == imagerule_code then
             return flushpdfximage(current,pos_h,pos_v,pos_r,size_h,size_v)
-        end
-        if subtype == userrule_code or subtype >= overrule_code and subtype <= radicalrule_code then
+        elseif subtype == userrule_code or (subtype >= overrule_code and subtype <= radicalrule_code) then
             pdf_goto_pagemode()
             b = b + 1 ; buffer[b] = s_b
             pdf_set_pos_temp(pos_h,pos_v)

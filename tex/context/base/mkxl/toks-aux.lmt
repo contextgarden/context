@@ -171,6 +171,8 @@ tex.normalizecodes     = getthem(tex.getnormalizevalues,     "normalizecode")
 tex.automigrationcodes = getthem(tex.getautomigrationvalues, "automigrationcode") -- only at lua end
 tex.parcontextcodes    = getthem(tex.getparcontextvalues,    "parcontextcode")
 tex.textcontrolcodes   = getthem(tex.gettextcontrolvalues,   "") -- only at lua end
+tex.listanchorcodes    = getthem(tex.getlistanchorvalues,    "listanchorcode")
+tex.listsigncodes      = getthem(tex.getlistsignvalues,      "listsigncode")
 
 function tex.stringtocodesbitmap(str,codes)
     local bitmap = 0

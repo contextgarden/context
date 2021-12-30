@@ -1,0 +1,90 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-dk
+
+\environment ontarget-style
+
+\startchapter[title={A new unit: \type {dk}}]
+
+At the \CONTEXT\ 2021 meeting I mixed my \TEX\ talks with showing some of the
+(upcoming) \LUAMETATEX\ source code. One evening we had a extension party where a
+new unit was implemented, the \type {dk}. This event was triggered by a remark
+Hraban [Ramm] made on the participants list in advance of the meeting, where he pointed
+to a Wikipedia article from which we quote:
+
+\startquotation
+In issue 33, Mad published a partial table of the \quotation {Potrzebie System of
+Weights and Measures}, developed by 19|-|year|-|old Donald~E. Knuth, later a famed
+computer scientist. According to Knuth, the basis of this new revolutionary
+system is the potrzebie, which equals the thickness of Mad issue 26, or
+2.2633484517438173216473 mm [\dots].
+\stopquotation
+
+So, as the result of that session, the source code now has this comment:
+
+\startquotation
+We support the Knuthian Potrzebie, cf.\ \typ
+{en.wikipedia.org/wiki/Potrzebie}, as the \type {dk} unit. It was added on
+2021-09-22 exactly when we crossed the season during an evening session at the
+15\high {th} \CONTEXT\ meeting in Bassenge (Boirs) Belgium. It took a few
+iterations to find the best numerator and denominator, but Taco Hoekwater, Harald
+Koenig and Mikael Sundqvist figured it out in this interactive session. The error
+messages have been adapted accordingly and the scanner in the \LUA\ \type {tex}
+library also handles it. One \type {dk} is 6.43985pt. There is no need to make
+\METAPOST\ aware of this unit because there it is just a numeric multiplier in a
+macro package.
+\stopquotation
+
+When compared to the already present units the \type {dk} nicely fills a gap:
+
+\def\TheUnit#1{
+    \NC \type {#1}
+    \NC \withoutpt\dimexpr1#1\relax
+    \NC \number\dimexpr1#1\relax
+    \NC \vrule width 1#1 height 1.5ex depth .5ex\relax
+    \NC \NR
+}
+
+\starttabulate[|c|cg{.}|r|l|]
+    \BC unit \BC points \BC scaled \BC visual \NC \NR
+    \TheUnit{sp}
+    \TheUnit{pt}
+    \TheUnit{bp}
+    \TheUnit{dd}
+    \TheUnit{mm}
+    \TheUnit{dk}
+    \TheUnit{pc}
+    \TheUnit{cc}
+    \TheUnit{cm}
+    \TheUnit{in}
+	
+   %\TheUnit{em}
+   %\TheUnit{ex}
+   %\TheUnit{mu}
+   %\TheUnit{px}
+\stoptabulate
+
+Deep down, the unit scanner uses a numerator and denominator in order
+to map the given value onto the internally used scaled points, so the
+relevant snippet of \CCODE\ is:
+
+\starttyping
+*num   = 49838; // 152940;
+*denom =  7739; //  23749;
+return normal_unit_scanned;
+\stoptyping
+
+The impact on performance of scanning an additional unit can be neglected because
+the scanning code is a bit different from the code in \LUATEX\ and (probably the)
+other engines anyway.
+
+Under consideration are a few extra units in the \type {relative_unit_scanned}
+category that we see in \CSS: \type {vw} (relative to the \type {\hsize}), \type
+{vh} (relative to the \type {\vsize}), maybe a percentage (but of what) and \type
+{ch} (width of the current zero digit character). As usual with \TEX ies,
+once it's there it will be (ab)used.
+
+\stopchapter
+
+\stopcomponent
+

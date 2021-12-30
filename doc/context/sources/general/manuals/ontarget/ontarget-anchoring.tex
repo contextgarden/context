@@ -1,0 +1,280 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-eventually
+
+\environment ontarget-style
+
+\startchapter[title={Anchoring}]
+
+\startsection[title=Introduction]
+
+It is valid to question what functionality should be in the engine and what can
+best be implemented using callbacks and postprocessing of lists (and boxes)
+relying for instance on attributes as signals. In \LUATEX\ we are rather strict
+in this and assume that the second method is used. In \LUAMETATEX\ we still
+promote this but at the same time some (lightweight) functionality has been added
+to the engine that helps implementing some features more efficiently. Reasons are
+that it can be handy to carry (fundamental) properties around that are bound to
+nodes and that we can set them using primitives, especially for glyphs and boxes.
+That way they become part of the formal functionality that one can argue should
+be present in a modern engine. Examples for glyph nodes are scales, offsets and
+hyphenation, detailed ligature and kerning control. For box nodes we have for
+instance offsets and orientation. Most of these are always taken into account by
+core mechanisms like breaking paragraphs into lines, where dimensions matter in
+which case it really makes sense for them to be part of the engine design.
+
+Some properties are just passed on to for instance a font handler or the backend
+but still they belong to the core functionality. An example of the later is a
+(new) simple mechanism for anchoring boxes. This is not really a fundamental
+feature, because one can just move content around using a combination of kerning
+and boxing, either or not with offsets. But because we already have features like
+offsets to boxes it was not that much work to add anchoring as a more fundamental
+property. The frontend is agnostic to this feature because dimensions are kind of
+virtual here: the backend however carries the real burden. Because backends are
+written in \LUA\ it might have a performance hit simply because at least we need
+to check if this feature is used. Normally that can compensated when this feature
+{\em is} used because less work and shuffling around happens in the frontend. And
+when this feature is no longer experimental (and stays) we can gain some back by
+using it in existing scenarios. It sounds worse than it is because for
+orientations we already have to do some usage checking and we can share that
+check; in most situations nothing needs to be done anyway.
+
+\stopsection
+
+\startsection[title=The low level approach]
+
+When we anchor, a box can be a source and|/|or a target. Both are represented by
+a number and can be assigned via a keyword. These numbers can be picked up by the
+backend. Here is an example:
+
+\startbuffer
+\def\TestMe#1{%
+    \setbox \scratchbox \ruledvbox
+        source 123
+        orientation #1
+        \bgroup
+            \hsize7cm
+            \samplefile{zapf}
+            \hbox to 0pt
+                source 124 target 123
+                xoffset 20pt yoffset -30pt
+                {\darkred \bfc TEST1}%
+            \hbox to 0pt
+                source 125 target 124
+                xoffset 10pt yoffset -20pt
+                {\darkblue \bfc TEST2}%
+        \egroup
+    \box \scratchbox
+}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This example also uses a few offsets. The \quote {origin} is at the left edge of
+the baseline. Now, we could have passed the source and target as attribute and
+intercepting an attribute in the backend can work pretty well. However, the code
+that deals with the final result of the typesetting and thereby flushes it to for
+instance a \PDF\ file is, at least that is the setup we use in \CONTEXT,
+attribute agnostic. Mixing in attributes at that stage, except for user nodes and
+whatsits that are effectively plugins, is counter intuitive and all is already
+pretty complex so a clear separation of functionality makes a lot of sense. Of
+course the \CONTEXT\ approach is not the only one when it comes to generic engine
+functionality. Not that many fundamental (conceptual) extensions showed up over
+the last few decades so no one will bother if in \LUAMETATEX\ we have new stuff
+that is only used by \CONTEXT. The example code shown here gives:
+
+\startbuffer[four]
+\startcombination[4*1]
+    {\scale[sx=.4,sy=.4]{\TestMe{0}}} {\type {orientation 0}}
+    {\scale[sx=.4,sy=.4]{\TestMe{1}}} {\type {orientation 1}}
+    {\scale[sx=.4,sy=.4]{\TestMe{2}}} {\type {orientation 2}}
+    {\scale[sx=.4,sy=.4]{\TestMe{3}}} {\type {orientation 3}}
+\stopcombination
+\stopbuffer
+
+\startlinecorrection
+\dontcomplain\getbuffer[four]
+\stoplinecorrection
+
+In order to avoid additional shifting around, which then might involve copying
+and injecting boxes as well as repackaging, two additional keys are available
+and these deal with the way boxes get anchored.
+
+\startbuffer
+\vbox
+    source 123
+    \bgroup
+        \offinterlineskip
+        \blackrule[width=4cm,height=2cm,depth=0cm,color=darkred]\par
+        \blackrule[width=4cm,height=0cm,depth=1cm,color=darkblue]\par
+        \setbox\scratchboxtwo\hbox
+            anchors "0004 "0001
+          % anchor "00040001
+            target 123
+            orientation 1
+            {\blackrule[width=2cm,height=1cm,depth=0cm,color=darkgreen]%
+             \hskip-2cm
+             \blackrule[width=2cm,height=0cm,depth=1cm,color=darkyellow]}%
+          %
+        \smash{\box\scratchboxtwo}%
+    \egroup
+\stopbuffer
+
+\typebuffer
+
+The anchor is just an number but with the plural keyword we can scan it as two
+because that is a bit easier on usage. The two numbers four byte numbers control
+the source to target anchoring and there is plenty room for future extensions
+because not all bits are used.
+
+\starttabulate[|lT|lT|]
+\NC 0x00\uchexnumber\leftoriginlistanchorcode    \NC left    origin \NC \NR
+\NC 0x00\uchexnumber\leftheightlistanchorcode    \NC left    height \NC \NR
+\NC 0x00\uchexnumber\leftdepthlistanchorcode     \NC left    depth  \NC \NR
+\NC 0x00\uchexnumber\rightoriginlistanchorcode   \NC right   origin \NC \NR
+\NC 0x00\uchexnumber\rightheightlistanchorcode   \NC right   height \NC \NR
+\NC 0x00\uchexnumber\rightdepthlistanchorcode    \NC right   depth  \NC \NR
+\NC 0x00\uchexnumber\centeroriginlistanchorcode  \NC center  origin \NC \NR
+\NC 0x00\uchexnumber\centerheightlistanchorcode  \NC center  height \NC \NR
+\NC 0x00\uchexnumber\centerdepthlistanchorcode   \NC center  depth  \NC \NR
+\NC 0x00\uchexnumber\halfwaytotallistanchorcode  \NC halfway total  \NC \NR
+\NC 0x00\uchexnumber\halfwayheightlistanchorcode \NC halfway height \NC \NR
+\NC 0x00\uchexnumber\halfwaydepthlistanchorcode  \NC halfway depth  \NC \NR
+\NC 0x00\uchexnumber\halfwayleftlistanchorcode   \NC halfway left   \NC \NR
+\NC 0x00\uchexnumber\halfwayrightlistanchorcode  \NC halfway right  \NC \NR
+\stoptabulate
+
+The target and source are handled in a way that sort of naturally binds them
+which involves a little juggling with dimensions in the backend. There is some
+additional control over this but usage is not advertized here because it might
+change.
+
+% \negatexlistsigncode \negateylistsigncode \negatelistsigncode
+
+One can set these anchoring related properties with keywords but there are also
+primitive box manipulators: \type {\boxanchor}, \type {\boxanchors}, \type
+{\boxsource} and \type {\boxtarget} that take a box number and value.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+There are some helpers at the \LUA\ end but I haven't completely made up my mind
+about them. Normally that evolves with usage.
+
+\stopsection
+
+\startsection[title={A first higher level interface}]
+
+Exploring this here in more detail makes no sense because it is still
+experimental and also rather \CONTEXT\ specific. As a teaser an interface that
+hooks into layers is shown:
+
+\startbuffer
+\defineanchorboxoverlay[framed]
+
+\def\DemoAnchor#1#2#3#4%
+  {\setanchorbox
+     [#1]%
+     [target={#3},source={#4}]%
+     \hbox{\backgroundline[#2]{\white\smallinfofont\setstrut\strut target=#3 source=#4}}}
+
+\def\DemoAnchorX#1#2%
+  {\DemoAnchor{#1}{darkred}   {#2}{left,top}%
+   \DemoAnchor{#1}{darkblue}  {#2}{left,bottom}%
+   \DemoAnchor{#1}{darkgreen} {#2}{right,bottom}%
+   \DemoAnchor{#1}{darkyellow}{#2}{right,top}}%
+
+\startsetups framed:demo
+    \DemoAnchorX{framed:background}{left,top}%
+    \DemoAnchorX{framed:background}{right,top}%
+    \DemoAnchorX{framed:background}{left,bottom}%
+    \DemoAnchorX{framed:background}{right,bottom}%
+    \DemoAnchorX{framed:foreground}{middle}%
+\stopsetups
+
+\midaligned\bgroup
+    \framed
+      [align=normal,
+       width=.7\textwidth,
+       backgroundcolor=gray,
+       background={color,framed:background,foreground,framed:foreground}]
+      \bgroup
+        \samplefile{zapf}\par
+        \directsetup{framed:demo}%
+        \samplefile{zapf}%
+      \egroup
+\egroup
+\stopbuffer
+
+\typebuffer
+
+Those familiar with \CONTEXT\ will recognize the approach. This one basically is
+a more low level variant of layers and a high level variant of the primitives.
+Performance wise (in terms of memory usage and runtime) it sits in a sweet spot.
+
+\startlinecorrection[2*big]
+    \getbuffer
+\stoplinecorrection
+
+I played a bit with a mechanism that can store the embedded (to be anchored)
+content in a more independent way and it actually works okay. However, I'm not
+entirely sure if that solution is the best so for now it's commented. As usual it
+is also up to users to come up with demands.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+
+% \defineanchorbox[page:background]
+% \defineanchorbox[page:foreground]
+% \defineoverlay[page:background][\overlayanchorbox{page:background}]
+% \defineoverlay[page:foreground][\overlayanchorbox{page:foreground}]
+%
+% \defineanchorboxoverlay[page]
+%
+% \setupbackgrounds[page][background={page:background,foreground,page:foreground}]
+%
+% test
+%
+% \setanchorbox[page:background]\ruledhbox
+%     xoffset 200pt
+%     yoffset 100pt
+% %     anchors  \halfwayleftlistanchorcode \halfwayrightlistanchorcode
+%     {\blue DOES IT WORK}
+%
+% \setanchorbox[page:foreground]\ruledhbox
+%     orientation 2
+% %     anchors  \halfwayleftlistanchorcode \halfwayrightlistanchorcode
+%     {\red DOES IT WORK}
+%
+
+% \registeranchorbox[demo][before]\ruledhbox
+% \registeranchorbox[demo][after]\ruledhbox
+%
+% \defineanchorbox[demo]
+%
+% \startbuffer
+% \vbox
+%     source 123
+%     \bgroup
+%         \offinterlineskip
+%         \blackrule[width=4cm,height=2cm,depth=0cm,color=darkred]\par
+%         \blackrule[width=4cm,height=0cm,depth=1cm,color=darkblue]\par
+%         \registeranchorbox[demo][before]\ruledhbox
+%       % \registeranchorbox[demo][after]\ruledhbox
+%             anchors "0004 "0001
+%           % anchor "00040001
+%             target 123
+%             orientation 1
+%             {\blackrule[width=2cm,height=1cm,depth=0cm,color=darkgreen]%
+%              \hskip-2cm
+%              \blackrule[width=2cm,height=0cm,depth=1cm,color=darkyellow]}%
+%           %
+%         \smash{\box\scratchboxtwo}%
+%     \egroup
+% \stopbuffer
+%
+% \typebuffer

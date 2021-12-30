@@ -106,6 +106,7 @@
 \definesystemconstant {action}
 \definesystemconstant {all}
 \definesystemconstant {ampersand}
+\definesystemconstant {anchor}
 \definesystemconstant {ascii}
 \definesystemconstant {attribute}
 \definesystemconstant {attr}
@@ -357,6 +358,7 @@
 \definesystemconstant {smallcaps}
 \definesystemconstant {small}
 \definesystemconstant {somewhere}
+\definesystemconstant {source}
 \definesystemconstant {special}
 \definesystemconstant {spec}
 \definesystemconstant {spot}
@@ -375,6 +377,7 @@
 \definesystemconstant {text}
 \definesystemconstant {tex}
 \definesystemconstant {tf}
+\definesystemconstant {target}
 \definesystemconstant {third}
 \definesystemconstant {topfloat}
 \definesystemconstant {top}

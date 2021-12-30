@@ -607,25 +607,25 @@ end
 
 do
 
-    local nuts                  = nodes.nuts
-    local nextglyph             = nuts.traversers.glyph
-    local setoptions            = nuts.setoptions
+    local nuts        = nodes.nuts
+    local nextglyph   = nuts.traversers.glyph
+    local setoptions  = nuts.setoptions
 
-    local getnext        = nuts.getnext
-    local getprev        = nuts.getprev
-    local setchar        = nuts.setchar
-    local setnext        = nuts.setnext
-    local setlink        = nuts.setlink
-    local setfield       = nuts.setfield
-    local setdisc        = nuts.setdisc
-    local getprop        = nuts.getprop
-    local setprop        = nuts.setprop
-    local setattrlist    = nuts.setattrlist
+    local getnext     = nuts.getnext
+    local getprev     = nuts.getprev
+    local setchar     = nuts.setchar
+    local setnext     = nuts.setnext
+    local setlink     = nuts.setlink
+    local setfield    = nuts.setfield
+    local setdisc     = nuts.setdisc
+    local getprop     = nuts.getprop
+    local setprop     = nuts.setprop
+    local setattrlist = nuts.setattrlist
 
-    local new_disc       = nuts.pool.disc
-    local new_glyph      = nuts.pool.glyph
-    local copy_node      = nuts.copy
-    local flushlist      = nuts.flushlist
+    local new_disc    = nuts.pool.disc
+    local new_glyph   = nuts.pool.glyph
+    local copy_node   = nuts.copy
+    local flushlist   = nuts.flushlist
 
     local glyphoptioncodes      = tex.glyphoptioncodes
 
@@ -794,6 +794,7 @@ do
     local sequencers    = utilities.sequencers
     local newsequencer  = sequencers.new
     local appendgroup   = sequencers.appendgroup
+    local prependaction = sequencers.prependaction
     local appendaction  = sequencers.appendaction
     local enableaction  = sequencers.enableaction
     local disableaction = sequencers.disableaction

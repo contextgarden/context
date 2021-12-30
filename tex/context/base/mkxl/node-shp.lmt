@@ -38,6 +38,10 @@ function handlers.finalizebox(box)
     actions(getbox(box)) -- nut
 end
 
+function handlers.finalizelist(list)
+    actions(list) -- nut
+end
+
 do
 
     local flattendiscretionaries = nuts.flattendiscretionaries

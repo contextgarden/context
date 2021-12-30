@@ -65,7 +65,7 @@ local linefillers        = nodes.linefillers
 local a_background       = privateattributes("background")
 local a_alignbackground  = privateattributes("alignbackground")
 local a_linefiller       = privateattributes("linefiller")
-local a_ruled            = privateattributes("ruled")
+----- a_ruled            = privateattributes("ruled")
 
 local trace_alignment    = false
 local report_alignment   = logs.reporter("backgrounds","alignment")
@@ -146,7 +146,7 @@ local function add_alignbackgrounds(head,list,data)
             for template in nexthlist, list do
                 local background = getattr(template,a_alignbackground)
                 if background then
-                    local list = colored_a(current,list,template,data)
+                    local list = colored_a(current,list,template,id,data)
                     if list then
                         setlist(current,list)
                     end
@@ -169,7 +169,7 @@ local function add_backgrounds(head,id,list,data)
     if list then
         for current, id, subtype, list in nextlist, list do
             if list then
-                if alignments and subtype == alignmentlist_code then
+                if data and alignments and subtype == alignmentlist_code then
                     local l = add_alignbackgrounds(current,list,data)
                     if l then
                         list = l
@@ -197,9 +197,9 @@ end
 
 function nodes.handlers.backgrounds(head)
     local data = attributes.values[a_linefiller]
-    if data then
+--     if data then
         add_backgrounds(head,getid(head),getlist(head),data)
-    end
+--     end
     return head
 end
 

@@ -292,7 +292,14 @@ local function setvisual(n,a,what,list) -- this will become more efficient when 
 end
 
 function nuts.setvisual(n,mode)
-    setattr(n,a_visual,setvisual(mode,getattr(n,a_visual),true))
+    if mode then
+        setattr(n,a_visual,setvisual(mode,getattr(n,a_visual),true))
+    else
+        local a = texgetattribute(a_visual)
+        if a ~= unsetvalue then
+            setattr(n,a_visual,a)
+        end
+    end
 end
 
 function nuts.setvisuals(n,mode) -- currently the same
@@ -792,7 +799,6 @@ local ruledbox do
 
     local getshift       = nuts.getshift
     local getorientation = nuts.getorientation
-    local setorientation = nuts.setorientation
 
     setmetatableindex(o_cache,function(t,size)
         local rule   = new_rule(2*size,size,size)
@@ -808,7 +814,7 @@ local ruledbox do
         local wd, ht, dp = getwhd(current)
         local force_origin = wd == 0 or (dp + ht) == 0
             local shift = getshift(current)
-local orientation, xoffset, yoffset = getorientation(current)
+            local orientation, xoffset, yoffset = getorientation(current)
             local next = getnext(current)
             local prev = previous
             setboth(current)
@@ -884,7 +890,6 @@ local orientation, xoffset, yoffset = getorientation(current)
                 end
                 info = new_hlist(info,wd,ht,dp,shift)
             end
--- setorientation(info,orientation,xoffset,yoffset)
             if next then
                 setlink(info,next)
             end

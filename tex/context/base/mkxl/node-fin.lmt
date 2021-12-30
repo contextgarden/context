@@ -23,7 +23,7 @@ local getattr          = nuts.getattr
 local getattrs         = nuts.getattrs
 local getwidth         = nuts.getwidth
 local getwhd           = nuts.getwhd
-local getorientation   = nuts.getorientation
+local hasgeometry      = nuts.hasgeometry
 local hasdimensions    = nuts.hasdimensions
 local getbox           = nuts.getbox
 
@@ -184,7 +184,7 @@ local function process(attribute,head,inheritance,default) -- one attribute
         elseif id == hlist_code or id == vlist_code then
             -- tricky checking
             local outer
-            if subtype == container_code or getorientation(stack) then
+            if subtype == container_code or hasgeometry(stack) then
                 outer = getattr(stack,attribute)
                 if outer then
                     if default and outer == inheritance then
@@ -271,7 +271,7 @@ local function simple(attribute,head)
             check  = true
             leader = content
         elseif id == hlist_code or id == vlist_code then
-            if subtype == container_code or getorientation(stack) then
+            if subtype == container_code or hasgeometry(stack) then
                 local outer = getattr(stack,attribute)
                 if outer then
                     if current ~= outer then
@@ -349,7 +349,7 @@ local function selective(attribute,head,inheritance,default) -- two attributes
             leader = content
         elseif id == hlist_code or id == vlist_code then
             local outer, s
-            if subtype == container_code or getorientation(stack) then
+            if subtype == container_code or hasgeometry(stack) then
                 outer, s = getattrs(stack,attribute,nsselector)
                 if outer then
                     if default and outer == inheritance then

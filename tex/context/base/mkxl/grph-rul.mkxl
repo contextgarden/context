@@ -17,7 +17,7 @@
 
 \unprotect
 
-\permanent\protected\def\frule{\relax\clf_frule} % will become a public implementer
+% \permanent\protected\def\frule{\relax\clf_frule} % will become a public implementer
 
 % just for fun:
 

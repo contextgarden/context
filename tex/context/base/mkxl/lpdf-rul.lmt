@@ -101,12 +101,18 @@ def RuleColor = %color% enddef ;
     local initialized = false ;
 
     local function rule_mp(p,h,v,i,n)
-        local name = p.name or "fake:rest"
-        local code = (predefined[name] or predefined["fake:rest"]) {
+        local name  = p.name or "fake:rest"
+        local ht    = p.height or 0
+        local dp    = p.depth  or 0
+        local total = ht + dp
+        local code  = (predefined[name] or predefined["fake:rest"]) {
             data      = p.data or "",
-            width     = p.width * bpfactor,
-            height    = p.height * bpfactor,
-            depth     = p.depth * bpfactor,
+         -- width     = p.width * bpfactor,
+         -- height    = p.height * bpfactor,
+         -- depth     = p.depth * bpfactor,
+            width     = h * bpfactor,
+            height    = v * bpfactor * ht / total,
+            depth     = v * bpfactor * dp / total,
             factor    = (p.factor or 0) * bpfactor, -- needs checking
             offset    = p.offset or 0,
             line      = (p.line or 65536) * bpfactor,

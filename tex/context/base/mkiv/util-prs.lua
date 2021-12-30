@@ -71,11 +71,12 @@ local spaces         = space^0
 local argument       = Cs((lbrace/"") * ((nobrace + nestedbraces)^0) * (rbrace/""))
 local content        = (1-endofstring)^0
 
-lpegpatterns.nestedbraces  = nestedbraces  -- no capture
-lpegpatterns.nestedparents = nestedparents -- no capture
-lpegpatterns.nested        = nestedbraces  -- no capture
-lpegpatterns.argument      = argument      -- argument after e.g. =
-lpegpatterns.content       = content       -- rest after e.g =
+lpegpatterns.nestedbraces   = nestedbraces   -- no capture
+lpegpatterns.nestedparents  = nestedparents  -- no capture
+lpegpatterns.nestedbrackets = nestedbrackets -- no capture
+lpegpatterns.nested         = nestedbraces   -- no capture
+lpegpatterns.argument       = argument       -- argument after e.g. =
+lpegpatterns.content        = content        -- rest after e.g =
 
 local value     = lbrace * C((nobrace + nestedbraces)^0) * rbrace
                 + C((nestedbraces + (1-comma))^0)

@@ -1118,4 +1118,130 @@
      [\c!width=\overlaywidth,\c!height=\overlayheight]
      {\overlayimage{#1}}}
 
+%D Here is an end December 2021 experimental feature: anchored boxes. This will move to
+%D pack-box.mkxl
+
+\installcorenamespace{boxanchor}
+\installcorenamespace{boxanchorid}
+\installcorenamespace{boxanchorbox}
+\installcorenamespace{boxpreset}
+
+\installparameterhandler \??boxanchor {boxanchor}
+\installsetuphandler     \??boxanchor {boxanchor}
+
+\setupboxanchor
+  [\c!xoffset=\zeropoint,
+   \c!yoffset=\zeropoint]
+
+\newcount\c_boxes_n_of_anchors
+
+\permanent\protected\def\defineanchorbox[#1]%
+  {\ifcsname\??boxanchorid#1\endcsname
+     \box\lastnamedcs\emptybox
+   \else
+     \global\advance\c_boxes_n_of_anchors\plusone
+     \expandafter\integerdef\csname\??boxanchorid #1\endcsname\c_boxes_n_of_anchors
+     \expandafter\newbox    \csname\??boxanchorbox#1\endcsname
+   \fi}
+
+\permanent\protected\def\defineanchorboxoverlay[#1]%
+  {\defineanchorbox[#1:\v!background]%
+   \defineanchorbox[#1:\v!foreground]%
+   \defineoverlay[#1:\v!background][\overlayanchorbox{#1:\v!background}]%
+   \defineoverlay[#1:\v!foreground][\overlayanchorbox{#1:\v!foreground}]}
+
+\permanent\def\namedboxanchor#1%
+  {\csname\??boxanchorid#1\endcsname} % no checking
+
+% \permanent\protected\def\overlayanchorbox#1%
+%   {\begingroup
+%    \scratchcounter\csname\??boxanchorbox#1\endcsname
+%    \ifvoid\scratchcounter\else
+%      \setbox\scratchbox\hpack \s!source \namedboxanchor{#1}\bgroup
+%    % \setbox\scratchbox\hpack\bgroup
+%        \box\scratchcounter
+%      \egroup
+%    % \boxsource\scratchbox\namedboxanchor{#1}%
+%      \wd\scratchbox\overlaywidth
+%      \ht\scratchbox\overlayheight
+%      \dp\scratchbox\overlaydepth
+%      \box\scratchbox
+%    \fi
+%    \endgroup}
+
+\permanent\protected\def\overlayanchorbox#1%
+  {\begingroup
+   \scratchcounter\csname\??boxanchorbox#1\endcsname
+   \ifvoid\scratchcounter\else
+     \boxsource\scratchcounter\namedboxanchor{#1}%
+     \wd\scratchcounter\d_overlay_width
+     \ht\scratchcounter\d_overlay_height
+     \dp\scratchcounter\d_overlay_depth
+     \box\scratchcounter
+   \fi
+   \endgroup}
+
+\permanent\tolerant\protected\def\setanchorbox[#1]#*[#2]%
+  {\begingroup
+   \dowithnextbox
+     {\def\currentanchorbox{#1}%
+      \setupboxanchor[#2]%
+      \scratchcounterone\csname\??boxanchorbox#1\endcsname\relax
+      \scratchxoffset\boxanchorparameter\c!xoffset\relax
+      \scratchyoffset\boxanchorparameter\c!yoffset\relax
+      \boxtarget\nextbox \namedboxanchor {#1}\relax
+      \boxanchors\nextbox
+        % target
+        \ifcsname\??boxpreset\boxanchorparameter\c!target\endcsname
+          \lastnamedcs
+        \else
+          \halfwaytotallistanchorcode
+        \fi
+        % source
+        \ifcsname\??boxpreset\boxanchorparameter\c!source\endcsname
+          \lastnamedcs
+        \else
+          \halfwaytotallistanchorcode
+        \fi
+      \ifdim\scratchxoffset=\zeropoint\else
+         \boxxoffset\nextbox\scratchxoffset
+      \fi
+      \ifdim\scratchyoffset=\zeropoint\else
+         \boxyoffset\nextbox\scratchyoffset
+      \fi
+      \global\setbox\scratchcounterone\hpack\bgroup
+        \unhbox\scratchcounterone
+        \hskip-\wd\nextbox
+        \box\nextbox
+      \egroup
+      \endgroup}}
+
+\expandafter\integerdef\csname\??boxpreset\v!left            \endcsname\leftoriginlistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!left,\v!height  \endcsname\leftheightlistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!left,\v!top     \endcsname\leftheightlistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!left,\v!depth   \endcsname\leftdepthlistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!left,\v!bottom  \endcsname\leftdepthlistanchorcode
+%
+\expandafter\integerdef\csname\??boxpreset\v!right           \endcsname\rightoriginlistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!right,\v!height \endcsname\rightheightlistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!right,\v!top    \endcsname\rightheightlistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!right,\v!depth  \endcsname\rightdepthlistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!right,\v!bottom \endcsname\rightdepthlistanchorcode
+
+%                                                                      \centeroriginlistanchorcode
+%                                                                      \centerheightlistanchorcode
+%                                                                      \centerdepthlistanchorcode
+
+\expandafter\integerdef\csname\??boxpreset\v!middle          \endcsname\halfwaytotallistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!middle,\v!height\endcsname\halfwayheightlistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!middle,\v!top   \endcsname\halfwayheightlistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!middle,\v!depth \endcsname\halfwaydepthlistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!middle,\v!bottom\endcsname\halfwaydepthlistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!middle,\v!left  \endcsname\halfwayleftlistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!middle,\v!right \endcsname\halfwayrightlistanchorcode
+
+% \negatexlistsigncode
+% \negateylistsigncode
+% \negatelistsigncode
+
 \protect \endinput

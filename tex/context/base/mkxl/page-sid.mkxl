@@ -46,6 +46,7 @@
 \newdimen       \d_page_sides_rightoffset
 
 %newbox         \b_page_sides_bottom
+\newbox         \b_page_sides_spill_over
 
 \newcount       \c_page_sides_lines_done
 \newcount       \c_page_sides_checks_done
@@ -57,6 +58,7 @@
 \newconditional \c_page_sides_short
 \newconditional \c_page_sides_flag
 \newconditional \c_page_sides_shape_down
+\newconditional \c_page_sides_keep_together
 
 \newdimen       \d_page_sides_shift
 \newdimen       \d_page_sides_extrashift
@@ -294,7 +296,7 @@
          \box\floatbox
          % somehow we need this \scratchbox magic, but at least it's the same as the
          % tracer now
-         \setbox\scratchbox\emptybox
+         \setbox\scratchbox\emptyhbox
          \wd\scratchbox\hsize
          \ht\scratchbox\d_page_sides_bottomtotal
          \box\scratchbox
@@ -387,7 +389,6 @@
    \fi
    \global\d_page_sides_downshift\zeropoint}
 
-
 %D We have a few virtual dimensions. I'm not sure what to do with \type
 %D {\pagedepth} and \type {\pageshrink} in the next two. If we ever need
 %D that it will become options.
@@ -448,7 +449,10 @@
      \penalty\zerocount % works too
    \else
     %\tracingpages\plusone \tracingonline\plustwo
+     \begingroup
+     \pageboundarypenalty\plustenthousand
      \pageboundary % becomes a penalty (after triggering the callback) (experimental!)
+     \endgroup
     %\tracingpages\zerocount
    \fi
    \page_otr_command_set_vsize} % new, no longer really needed
@@ -895,6 +899,40 @@
    \prevdepth\strutdp}
   %\ignoreparskip}
 
+% \def\page_sides_handle_float#1%
+%   {\page_sides_initialize_checker
+%    \page_sides_check_horizontal_skips
+%    \page_sides_check_vertical_skips
+%    \page_sides_apply_horizontal_shift
+%    \page_sides_check_previous_float
+%    \page_sides_inject_before
+%    \page_sides_inject_dummy_lines
+%    \page_sides_relocate_float{#1}%
+%    \page_sides_apply_vertical_shift
+%    \page_sides_analyse_space
+%    \ifconditional\c_page_floats_room
+%      \global\setfalse\c_page_sides_delayed
+%      % we're ok
+%    \else
+%      \global\settrue\c_page_sides_delayed
+%      \global\c_page_sides_m_of_lines\c_page_sides_n_of_lines
+%      \ifcase\c_page_sides_page_method
+%        \page_otr_fill_and_eject_page
+%      \or
+%        \page_otr_force_new_page_one
+%      \else
+%        \page_otr_fill_and_eject_page
+%      \fi
+%      \global\c_page_sides_n_of_lines\c_page_sides_m_of_lines
+%      \page_sides_analyse_space
+%     %\page_sides_inject_before
+%      \page_sides_inject_dummy_lines
+%    \fi
+%    \page_sides_place_float
+%    \global\setfalse\c_page_sides_delayed
+%    \page_sides_check_floats_reset
+%    \page_sides_wrapup}
+
 \def\page_sides_handle_float#1%
   {\page_sides_initialize_checker
    \page_sides_check_horizontal_skips
@@ -910,16 +948,21 @@
      \global\setfalse\c_page_sides_delayed
      % we're ok
    \else
+     \ifconditional\c_page_sides_keep_together
+       \clf_interceptsamepagecontent\b_page_sides_spill_over
+     \fi
      \global\settrue\c_page_sides_delayed
      \global\c_page_sides_m_of_lines\c_page_sides_n_of_lines
      \ifcase\c_page_sides_page_method
-       \page_otr_fill_and_eject_page
+     \page_otr_fill_and_eject_page
      \or
-       \page_otr_force_new_page_one
+     \page_otr_force_new_page_one
      \else
-       \page_otr_fill_and_eject_page
+     \page_otr_fill_and_eject_page
      \fi
-     \global\c_page_sides_n_of_lines\c_page_sides_m_of_lines
+     \ifvoid\b_page_sides_spill_over\else
+       \box\b_page_sides_spill_over
+     \fi
      \page_sides_analyse_space
     %\page_sides_inject_before
      \page_sides_inject_dummy_lines

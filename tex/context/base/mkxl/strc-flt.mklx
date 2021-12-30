@@ -977,6 +977,9 @@
    \doifelseinset\v!force\floatlocation
      {\global\settrue\c_page_sides_shape_down}
      {\global\setfalse\c_page_sides_shape_down}%
+   \doifelseinset\v!keeptogether\floatlocation
+     {\global\settrue\c_page_sides_keep_together}
+     {\global\setfalse\c_page_sides_keep_together}%
    \doifelseinset\v!nonumber\floatlocation
      {\global\nofloatnumbertrue}%
      {\doifelse{\floatcaptionparameter\c!number}\v!yes
