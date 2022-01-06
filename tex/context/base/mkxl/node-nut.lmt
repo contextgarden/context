@@ -244,6 +244,7 @@ local nuts = {
     setwhd                  = direct.setwhd,
     setwidth                = direct.setwidth,
     show                    = direct.show,
+    serialized              = direct.serialized,
     slide                   = d_slide,
     startofpar              = direct.startofpar,
     tail                    = d_find_tail,

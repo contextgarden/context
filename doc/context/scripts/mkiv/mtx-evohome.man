@@ -1,4 +1,4 @@
-.TH "mtx-evohome" "1" "01-01-2021" "version 1.00" "Evohome Fetcher"
+.TH "mtx-evohome" "1" "01-01-2022" "version 1.00" "Evohome Fetcher"
 .SH NAME
  mtx-evohome - Evohome Fetcher
 .SH SYNOPSIS

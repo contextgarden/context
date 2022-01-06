@@ -94,7 +94,8 @@ local pagelayers, pagelayersreference, cache = nil, nil, { }
 local alphabetic = { }
 
 local escapednames   = table.setmetatableindex(function(t,k)
-    local v = escaped(k)
+--     local v = escaped(k)
+    local v = escaped(k,true)
     t[k] = v
     return v
 end)
@@ -151,7 +152,8 @@ local function useviewerlayer(name) -- move up so that we can use it as local
             else
                 hidelayers[#hidelayers+1] = nr
             end
-            pagelayers[escapednames[tag]] = dr -- check
+         -- pagelayers[escapednames[tag]] = dr -- check
+            pagelayers[tag] = dr -- check
         else
             -- todo: message
         end
@@ -241,7 +243,8 @@ function executers.togglelayer(arguments) return setlayer(pdf_toggle,arguments) 
 
 -- injection
 
-local f_bdc = formatters["/OC /%s BDC"]
+-- local f_bdc = formatters["/OC /%s BDC"]
+local f_bdc = formatters["/OC %s BDC"]
 local s_emc = "EMC"
 
 function codeinjections.startlayer(name) -- used in mp

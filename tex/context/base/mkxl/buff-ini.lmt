@@ -1017,7 +1017,8 @@ do
     -- In the end we went for a somewhat hidden low level one (see low level math tests
     -- for usage):
 
-    local showbox = tex.showbox
+    local serialized = nodes.nuts.serialized
+    local getbox     = nodes.nuts.getbox
 
     implement {
         name      = "showboxinbuffer",
@@ -1025,7 +1026,8 @@ do
         protected = true,
         arguments = { "argument", "integer", "integer" },
         actions   = function(buffer, box, detail)
-            assign(buffer or "",showbox(box, detail))
+            local box = getbox(box)
+            assign(buffer or "",box and serialized(box,detail))
         end,
     }
 

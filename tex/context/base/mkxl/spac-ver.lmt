@@ -1194,7 +1194,7 @@ do
     end
 
     local function trace_skip(str,sc,so,sp,data)
-        trace_list[#trace_list+1] = { "skip", formatters["%s | %p | category %s | order %s | penalty %s"](str, getwidth(data), sc or "-", so or "-", sp or "-") }
+        trace_list[#trace_list+1] = { "skip", formatters["%s | %p | category %s | order %s | penalty %s | subtype %s"](str, getwidth(data), sc or "-", so or "-", sp or "-", gluecodes[getsubtype(data)]) }
         tracing_info = true
     end
 

@@ -1,0 +1,108 @@
+%D \module
+%D   [       file=typo-syn,
+%D        version=2022.01.06,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=synchronizers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% Musical timestamp: this code was written when I start relistening my whole
+% digitized cd collection with the (new) r2r soekris dac in my setup.
+
+
+%D Yet another experiment (triggered by a question / demand from Ton Otten.)
+%D
+%D \starttyping
+%D \setupsynchronize [paralleltext] [color=darkblue]
+%D % \setupsynchronize [paralleltext] [style=\tx,color=darkred]
+%D % \setupsynchronize [paralleltext] [style=\txx,color=darkgreen]
+%D
+%D \dorecurse{10}{%
+%D     \paralleltext
+%D         {[een allereerste zinnetje]}
+%D         {[een tweede      zinnetje]}%
+%D     \space
+%D     \paralleltext
+%D         {[een derde zin]}
+%D         {[een vierde zinnetje]}
+%D     \space
+%D } \removeunwantedspaces
+%D \par test line \page
+%D
+%D \paralleltext
+%D     {[\ignorespaces\samplefile{tufte}\removeunwantedspaces]}
+%D     {[\samplefile{ward}\removeunwantedspaces]}%
+%D \par test line \page
+%D
+%D \paralleltext
+%D     {[\ignorespaces\samplefile{tufte}\removeunwantedspaces]}
+%D     {[\ignorespaces\samplefile{tufte}\removeunwantedspaces]}%
+%D \par test line \page
+%D
+%D \paralleltext
+%D     {[\ignorespaces\samplefile{ward}\removeunwantedspaces]}%
+%D     {[\ignorespaces\samplefile{tufte}\removeunwantedspaces]}
+%D \par test line \page
+%D \stoptyping
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Synchronizers}
+
+\registerctxluafile{typo-syn}{autosuffix}
+
+\unprotect
+
+\definesystemattribute[synchronize][public]
+
+\installcorenamespace {synchronize}
+
+\installcommandhandler \??synchronize {synchronize} \??synchronize
+
+\tolerant\protected\def\typo_synchronize#1#*[#2]#:#3#4%
+  {\dontleavehmode
+   \begingroup
+   \def\currentsynchronize{#1}%
+   \setupcurrentsynchronize[#2]%
+   \dontcomplain
+   \setbox\scratchboxtwo\hbox\bgroup
+     \usesynchronizestyleandcolor\c!style\c!color
+     \setstrut
+     \strut
+     \ignorespaces#4\removeunwantedspaces
+   \egroup
+   \scratchdimentwo\wd\scratchboxtwo
+   \clf_registersynchronize
+     \strutht
+     \strutdp
+     \box\scratchboxtwo
+   \relax
+   \setbox\scratchboxone\hbox{#3}%
+   \scratchdimenone\wd\scratchboxone
+   \unhbox\scratchboxone
+   \advance\scratchdimentwo-\scratchdimenone
+   \ifdim\scratchdimentwo>\zeropoint
+     \wordboundary
+     \novrule
+   % \vrule
+        \s!width  \scratchdimentwo
+        \s!height \exheight
+        \s!depth  \zeropoint
+     \relax
+   \fi
+   \endgroup}
+
+\appendtoks
+    \protected\instance\edefcsname\currentsynchronize\endcsname{\typo_synchronize{\currentsynchronize}}%
+\to \everydefinesynchronize
+
+% \setupsynchronize
+%   [\c!alternative=\v!horizontal]
+
+\definesynchronize
+  [paralleltext]
+
+\protect \endinput

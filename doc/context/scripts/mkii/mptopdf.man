@@ -1,4 +1,4 @@
-.TH "mptopdf" "1" "01-01-2021" "version 1.4.1" "convert MetaPost figures to PDF"
+.TH "mptopdf" "1" "01-01-2022" "version 1.4.1" "convert MetaPost figures to PDF"
 .SH NAME
  mptopdf - convert MetaPost figures to PDF
 .SH SYNOPSIS

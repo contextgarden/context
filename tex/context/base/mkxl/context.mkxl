@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2021.12.30 19:00}
+\immutable\edef\contextversion{2022.01.06 19:47}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -533,6 +533,7 @@
 \loadmkxlfile{lang-hup}
 
 \loadmkxlfile{typo-ovl} % fuzzy project (tracing) code
+\loadmkxlfile{typo-syn} % experiment
 
 % old bibtex support: (will be m-oldbibtex.mkiv)
 

@@ -141,6 +141,7 @@ appendaction("vboxbuilders", "normalizers", "nodes.handlers.backgroundsvbox",   
 appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler",                    nil, "nut",    "enabled"   )
 appendaction("vboxbuilders", "normalizers", "builders.profiling.vboxhandler",                   nil, "nut",    "disabled"  )
 appendaction("vboxbuilders", "normalizers", "typesetters.checkers.handler",                     nil, "nut",    "disabled"  )
+appendaction("vboxbuilders", "normalizers", "typesetters.parallels.handler",                    nil, "nut",    "disabled"  )
 
 appendaction("mvlbuilders",  "normalizers", "nodes.handlers.backgroundspage",                   nil, "nut",    "disabled"  )
 appendaction("mvlbuilders",  "normalizers", "typesetters.margins.globalhandler",                nil, "nut",    "disabled"  )
@@ -148,6 +149,7 @@ appendaction("mvlbuilders",  "normalizers", "nodes.handlers.migrate",           
 appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler",                    nil, "nut",    "enabled"   )
 appendaction("mvlbuilders",  "normalizers", "builders.profiling.pagehandler",                   nil, "nut",    "disabled"  )
 appendaction("mvlbuilders",  "normalizers", "typesetters.checkers.handler",                     nil, "nut",    "disabled"  )
+appendaction("mvlbuilders",  "normalizers", "typesetters.parallels.handler",                    nil, "nut",    "disabled"  )
 
 appendaction("everypar",     "normalizers", "nodes.handlers.checkparcounter",                   nil, "nut",    "disabled"  )
 

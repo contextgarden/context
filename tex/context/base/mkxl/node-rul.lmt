@@ -394,6 +394,7 @@ do
 
     rules.handler = function(head)
         local data = attributes.values[a_ruled]
+ --or-- local data = getvalues(a_ruled)
         if data then
             head = processwords(a_ruled,data,flush_ruled,head)
 

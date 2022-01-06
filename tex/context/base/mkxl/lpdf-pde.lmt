@@ -1090,6 +1090,7 @@ if images then do
     copydictionary = function (xref,copied,object)
         local target = pdfdictionary()
         local source = object.__raw__
+        -- hm .. no need to sort here as we create a hash
      -- for key, value in next, source do
         for key, value in sortedhash(source) do
             if plugins then

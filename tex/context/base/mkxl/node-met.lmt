@@ -103,15 +103,17 @@ nodes.getpropertiestable = node.get_properties_table
 nodes.getproperty        = node.getproperty
 nodes.setproperty        = node.setproperty
 
--- nodes.usedlist",
--- nodes.inuse",
--- nodes.instock",
--- nodes.type",
--- nodes.types",
--- nodes.subtypes",
--- nodes.values",
--- nodes.id",
--- nodes.show",
+-----.show               = node.show
+nodes.serialized         = node.serialized
+
+-- nodes.usedlist
+-- nodes.inuse
+-- nodes.instock
+-- nodes.type
+-- nodes.types
+-- nodes.subtypes
+-- nodes.values
+-- nodes.id
 
 -- nodes.tonode = function(n) return n end
 -- nodes.tonut  = function(n) return n end

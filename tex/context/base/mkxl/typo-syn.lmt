@@ -1,0 +1,435 @@
+if not modules then modules = { } end modules ['typo-syn'] = {
+    version   = 1.000,
+    optimize  = true,
+    comment   = "companion to typo-syn.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local nodes             = nodes
+
+local tasks             = nodes.tasks
+local enableaction      = tasks.enableaction
+----- disableaction     = tasks.disableaction
+
+local nuts              = nodes.nuts
+local tonut             = nodes.tonut
+
+local getnext           = nuts.getnext
+local getprev           = nuts.getprev
+local getid             = nuts.getid
+local getsubtype        = nuts.getsubtype
+local getattr           = nuts.getattr
+local setattrlist       = nuts.setattrlist
+local getattrlist       = nuts.getattrlist
+
+local getprop           = nuts.getprop
+local setprop           = nuts.setprop
+
+local setlink           = nuts.setlink
+local setprev           = nuts.setprev
+local setnext           = nuts.setnext
+local setoffsets        = nuts.setoffsets
+
+local getwhd            = nuts.getwhd
+
+local getwidth          = nuts.getwidth
+local setwidth          = nuts.setwidth
+local getdepth          = nuts.getdepth
+local setdepth          = nuts.setdepth
+local getheight         = nuts.getheight
+local setheight         = nuts.setheight
+local gettotal          = nuts.gettotal
+local getlist           = nuts.getlist
+local setlist           = nuts.setlist
+local getdisc           = nuts.getdisc
+local setdisc           = nuts.setdisc
+
+local hpack             = nuts.hpack
+local rangedimensions   = nuts.rangedimensions
+local insertbefore      = nuts.insertbefore
+local removenode        = nuts.remove
+local flushnode         = nuts.flush
+
+local traverselist      = nuts.traverselist
+
+local nodecodes         = nodes.nodecodes
+local glyph_code        = nodecodes.glyph
+local rule_code         = nodecodes.rule
+local disc_code         = nodecodes.disc
+local hlist_code        = nodecodes.hlist
+local vlist_code        = nodecodes.vlist
+local glue_code         = nodecodes.glue
+local kern_code         = nodecodes.kern
+local penalty_code      = nodecodes.penalty
+
+local line_code             = nodes.listcodes.line
+local fontkern_code         = nodes.kerncodes.fontkern
+local parfillrightskip_code = nodes.gluecodes.parfillrightskip
+local baselineskip_code     = nodes.gluecodes.baselineskip
+
+-----------------
+
+local a_synchronize   = attributes.private("synchronize")
+
+local parallels       = typesetters.parallels or { }
+typesetters.parallels = parallels or { }
+
+local registervalue   = attributes.registervalue
+local getvalue        = attributes.getvalue
+local hasvalues       = attributes.hasvalues
+
+local trace  = false
+-- local trace  = true
+local report = logs.reporter("parallel")
+
+local pushsavelevel = tex.pushsavelevel -- token.expandmacro("bgroup")
+local popsavelevel  = tex.popsavelevel  -- token.expandmacro("egroup")
+local dontcomplain  = tex.dontcomplain
+
+local slack    = 6553.6
+local index    = 0
+local lastattr = nil
+local lastline = nil
+
+interfaces.implement {
+    name      = "registersynchronize",
+    arguments = { "dimen", "dimen", "box" },
+    actions   = function(ht,dp,box)
+        index = index + 1
+        box   = tonut(box)
+        local t = {
+            index      = index,
+            lineheight = ht,
+            linedepth  = dp,
+            height     = getheight(height),
+            depth      = getheight(depth),
+            box        = box,
+        }
+        local v = registervalue(a_synchronize,t)
+        tex.setattribute(a_synchronize,v)
+        if index > 0 then
+            enableaction("vboxbuilders", "typesetters.parallels.handler")
+            enableaction("mvlbuilders",  "typesetters.parallels.handler")
+        end
+    end,
+
+}
+
+local function hsplit(box,width)
+    local first    = getlist(box)
+    local last     = first
+    local current  = first
+    local previous = current
+    local sofar    = 0
+    local lastdisc = nil
+    -- todo: option
+    width = width - slack
+    --
+    while true do
+        previous = current
+        local id = getid(current)
+        if id == glyph_code then
+            local wd = getwidth(current)
+            if sofar + wd > width then
+                break
+            else
+                sofar = sofar + wd
+            end
+        elseif id == kern_code then
+            if getsubtype(current) == fontkern_code then
+                -- assume sane kerns
+                local wd = getwidth(current)
+                sofar = sofar + wd
+            else
+                last = previous
+                local wd = getwidth(current)
+                if sofar + wd > width then
+                    break
+                else
+                    sofar = sofar + wd
+                end
+                lastdisc = nil
+            end
+        elseif id == disc_code then
+            -- move on / inject post if needed
+            local pre, post, replace = getdisc(current)
+            local wdr = replace and rangedimensions(box,replace) or 0
+            if sofar + wdr > width then
+                -- handle post and pre here
+                last     = previous
+                break
+            end
+            local wdp = pre and rangedimensions(box,pre) or 0
+--            if sofar + wdp > width then
+--                last     = previous
+--lastdisc = current
+--                break
+--          end
+            sofar = sofar + wdr
+            lastdisc = current
+        elseif id == glue_code then
+            last = previous
+            local wd = getwidth(current)
+            if sofar + wd > width then
+                break
+            else
+                sofar = sofar + wd
+            end
+            lastdisc = nil
+        elseif id == hlist_code or id == vlist_code then
+            last = previous
+            local wd = getwidth(current)
+            if sofar + wd > width then
+                break
+            else
+                sofar = sofar + wd
+            end
+            lastdisc = nil
+        elseif id == rule_code then
+            last = previous
+            local wd = getwidth(current)
+            if sofar + wd > width then
+                break
+            else
+                sofar = sofar + wd
+            end
+            lastdisc = nil
+        else
+            lastdisc = nil
+        end
+        local next = getnext(current)
+        if next then
+            current = next
+        else
+            last = previous
+            break
+        end
+    end
+    local next
+    if lastdisc then
+        local pre, post, replace = getdisc(lastdisc)
+        last = getprev(lastdisc)
+        --
+        next = getnext(lastdisc)
+        if next then
+            setprev(next)
+        end
+        --
+        setlink(last,pre)
+        if post then
+            setlink(post,next)
+            next = post
+        end
+        setdisc(lastdisc,nil,nil,replace)
+        flushnode(lastdisc)
+    else
+        next = getnext(last)
+        if next then
+            setprev(next)
+        end
+        setnext(last)
+    end
+    while last do
+        local id = getid(last)
+        if id == glue_code or id == penalty_code then
+            first, last = removenode(first,last,true)
+        else
+            break
+        end
+    end
+    if first then
+        pushsavelevel()
+        dontcomplain()
+        local result, badness = hpack(first,width,"exactly")
+        if badness > 200 then
+            result = hpack(first)
+        end
+        popsavelevel()
+        setattrlist(result,getattrlist(box)) -- useattrlist(result,box)
+        setheight(result,getheight(box))
+        setdepth(result,getdepth(box))
+        setlist(box,next)
+        setwidth(box,rangedimensions(box,next))
+        return result
+    end
+end
+
+local function getproperties(parent)
+    local props = getprop(parent,"parallel")
+    if not props then
+        local w, h, d = getwhd(parent)
+        props = {
+            width  = w,
+            height = h,
+            depth  = d,
+        }
+        setprop(parent,"parallel",props)
+    end
+    return props
+end
+
+local function setproperties(parent,data,result,level,ctotal)
+    local props  = getproperties(parent)
+    local depth  = props.depth
+    local height = props.height
+    local delta  = data.linedepth - depth
+    if delta > 0 then
+        depth = data.linedepth
+        setdepth(parent,depth)
+        props.depth = depth
+        local n = getnext(parent)
+        if n and getid(n) == glue_code and getsubtype(n) == baselineskip_code then
+            setwidth(n,getwidth(n) - delta)
+        end
+    end
+--     if height < data.lineheight then
+--         height = data.lineheight
+--         setheight(parent,height)
+--         props.height = height
+--     end
+    local offset = level * ctotal
+    if props.depth + offset > depth then
+        setdepth(parent,props.depth+offset)
+    end
+    setoffsets(result,0,-offset)
+    setwidth(result,0)
+end
+
+local function flush(head,first,last,a,parent,nesting)
+    if first and nesting == 0 then
+        local data = getvalue(a_synchronize,a)
+        local upto = getnext(last)
+        if upto and getid(upto) == penalty_code then
+            upto = getnext(upto)
+        end
+        if upto and getid(upto) == glue_code and getsubtype(upto) == parfillrightskip_code then
+            upto = getnext(upto)
+        end
+        local props = getproperties(parent)
+        local width = rangedimensions(parent,first,upto)
+        if width > props.width then
+            width = props.width
+        end
+        local content = data.box
+        local index   = data.index
+        if not content then
+            if trace then
+                report("index %i, verdict %a",index,"done")
+            end
+        else
+            local result = nil
+            local cwidth = getwidth(content)
+            local ctotal = gettotal(content)
+            if cwidth <= width then -- slack
+                if trace then
+                    report("index %i, available %p, content %p, verdict %a",index,width,cwidth,"fit")
+                end
+                result   = content
+                data.box = nil
+            elseif cwidth > width then
+                if trace then
+                    report("index %i, available %p, content %p, verdict %a",index,width,cwidth,"overflow")
+                end
+                result   = hsplit(content,width)
+                lastattr = a
+                lastline = parent
+            else
+                report("index %i, verdict %a",index,"weird")
+            end
+            if result then
+                setproperties(parent,data,result,1,ctotal)
+                head = insertbefore(head,first,result)
+            end
+        end
+    end
+    return head
+end
+
+local function lastflush(lastline,lastattr)
+    local data = getvalue(a_synchronize,lastattr)
+    if not data then
+        return
+    end
+    local content = data.box
+    if not content or getwidth(content) == 0 then
+        return
+    end
+    local head = getlist(lastline)
+    if not head then
+        return
+    end
+    local first  = head
+    local last   = nil
+    local props  = getproperties(lastline)
+    local width  = props.width
+    local height = props.height
+    local depth  = props.depth
+    local level  = 1
+    if depth < data.linedepth then
+        depth = data.linedepth
+        setdepth(lastline,depth)
+    end
+    if height < data.lineheight then
+        height = data.lineheight
+        setheight(lastline,height)
+    end
+    while true do
+        local content = data.box
+        local index   = data.index
+        if content then
+            local result = nil
+            local total  = 0
+            local cwidth = getwidth(content)
+            local ctotal = gettotal(content)
+            if cwidth <= width then -- slack
+                if trace then
+                    report("index %i, available %p, content %p, verdict %a",index,width,cwidth,"fit")
+                end
+                result = content
+                data.box  = nil
+            elseif cwidth > width then
+                if trace then
+                    report("index %i, available %p, content %p, verdict %a",index,width,cwidth,"overflow")
+                end
+                result = hsplit(content,width)
+            else
+                report("index %i, verdict %a",index,"weird")
+            end
+            if result then
+                level = level + 1
+                setproperties(lastline,data,result,level,ctotal)
+                head = insertbefore(head,first,result)
+                setlist(lastline,head)
+            else
+                break
+            end
+        else
+            break
+        end
+    end
+end
+
+local processranges = nuts.processranges
+
+function parallels.handler(head,where)
+    if where == "hmodepar" and hasvalues(a_synchronize) then
+        lastattr = nil
+        lastline = nil
+        for n, id, subtype in traverselist(head) do
+            if subtype == line_code then
+                lastattr = nil
+                local list = getlist(n)
+                local head = processranges(a_synchronize,flush,list,n)
+                if head ~= list then
+                    setlist(n,head)
+                end
+            end
+        end
+        if lastattr and lastline then
+            lastflush(lastline,lastattr)
+        end
+    end
+    return head
+end

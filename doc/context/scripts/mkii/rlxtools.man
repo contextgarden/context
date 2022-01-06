@@ -1,4 +1,4 @@
-.TH "rlxtools" "1" "01-01-2021" "version 1.0.1" "RlxTools"
+.TH "rlxtools" "1" "01-01-2022" "version 1.0.1" "RlxTools"
 .SH NAME
  rlxtools - RlxTools
 .SH SYNOPSIS

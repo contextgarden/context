@@ -1023,7 +1023,8 @@ local hlist_out, vlist_out  do
                      -- pos_v = ref_v - (cur_v + basepoint_v)
                         pos_v = ref_v - basepoint_v
                     elseif hasoffset then
-                        local orientation, xoffset, yoffset = getorientation(current)
+--                         local orientation, xoffset, yoffset = getorientation(current)
+                        local xoffset, yoffset = getoffsets(current)
                         local basepoint_h = boxdir ~= pos_r and width or 0
                         local basepoint_v = shift
                         if target then
@@ -1398,7 +1399,8 @@ local hlist_out, vlist_out  do
                         end
                         pos_v = ref_v - (cur_v + basepoint_v)
                     elseif hasoffset then
-                        local orientation, xoffset, yoffset = getorientation(current)
+--                         local orientation, xoffset, yoffset = getorientation(current)
+                        local xoffset, yoffset = getoffsets(current)
                      -- local basepoint_h = shift
                      -- local basepoint_v = height
                         if boxdir ~= pos_r then
@@ -1742,25 +1744,3 @@ do
     end)
 
 end
-
--- local function calculate_width_to_enddir(this_box,begindir) -- can be a helper
---     local dir_nest = 1
---     local enddir   = begindir
---     for current, subtype in nextdir, getnext(begindir) do
---         if subtype == normaldir_code then -- todo
---             dir_nest = dir_nest + 1
---         else
---             dir_nest = dir_nest - 1
---         end
---         if dir_nest == 0 then -- does the type matter
---             enddir = current
---             local width = rangedimensions(this_box,begindir,enddir)
---             return enddir, width
---         end
---     end
---     if enddir == begindir then
---         local width = rangedimensions(this_box,begindir) -- ,enddir)
---         return enddir, width
---     end
---     return enddir, 0
--- end

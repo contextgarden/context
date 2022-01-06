@@ -27,15 +27,21 @@ function files.open(filename,zb)
 end
 
 function files.close(f)
-    zerobased[f] = nil
-    f:close()
+    if f then
+        zerobased[f] = nil
+        f:close()
+    end
 end
 
 function files.size(f)
-    local current = f:seek()
-    local size = f:seek("end")
-    f:seek("set",current)
-    return size
+    if f then
+        local current = f:seek()
+        local size = f:seek("end")
+        f:seek("set",current)
+        return size
+    else
+        return 0
+    end
 end
 
 files.getsize = files.size

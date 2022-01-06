@@ -253,6 +253,11 @@ function attributes.hasvalues(index)
     return list and next(list) and true or false
 end
 
+function attributes.getvalues(index)
+    local list = values[index]
+    return list and next(list) and list or nil
+end
+
 function attributes.setcleaner(index,cleaner)
     cleaners[index] = cleaner
 end

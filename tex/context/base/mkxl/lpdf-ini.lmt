@@ -354,22 +354,54 @@ do
 
 end
 
+local pdfescaped do
+
+    local replacer = S("\0\t\n\r\f ()[]{}/%%#\\") / {
+        ["\00"]="#00",
+        ["\09"]="#09",
+        ["\10"]="#0a",
+        ["\12"]="#0c",
+        ["\13"]="#0d",
+        [ " " ]="#20",
+        [ "#" ]="#23",
+        [ "%" ]="#25",
+        [ "(" ]="#28",
+        [ ")" ]="#29",
+        [ "/" ]="#2f",
+        [ "[" ]="#5b",
+        [ "\\"]="#5c",
+        [ "]" ]="#5d",
+        [ "{" ]="#7b",
+        [ "}" ]="#7d",
+    } + P(1)
+
+    local p_escaped_1 = Cs(Cc("/") * replacer^0)
+    local p_escaped_2 = Cs(          replacer^0)
+
+    pdfescaped = function(str,slash)
+        return lpegmatch(slash and p_escaped_1 or p_escaped_2,str) or str
+    end
+
+    lpdf.escaped = pdfescaped
+
+end
+
 local tostring_a, tostring_d
 
 do
 
-    local f_key_null       = formatters["/%s null"]
-    local f_key_value      = formatters["/%s %s"]
- -- local f_key_dictionary = formatters["/%s << % t >>"]
+    local f_key_null       = formatters["%s null"]
+    local f_key_value      = formatters["%s %s"]
+ -- local f_key_dictionary = formatters["%s << % t >>"]
  -- local f_dictionary     = formatters["<< % t >>"]
-    local f_key_dictionary = formatters["/%s << %s >>"]
+    local f_key_dictionary = formatters["%s << %s >>"]
     local f_dictionary     = formatters["<< %s >>"]
- -- local f_key_array      = formatters["/%s [ % t ]"]
+ -- local f_key_array      = formatters["%s [ % t ]"]
  -- local f_array          = formatters["[ % t ]"]
-    local f_key_array      = formatters["/%s [ %s ]"]
+    local f_key_array      = formatters["%s [ %s ]"]
     local f_array          = formatters["[ %s ]"]
-    local f_key_number     = formatters["/%s %N"]  -- always with max 9 digits and integer is possible
-    local f_tonumber       = formatters["%N"]      -- always with max 9 digits and integer is possible
+    local f_key_number     = formatters["%s %N"]  -- always with max 9 digits and integer is possible
+    local f_tonumber       = formatters["%N"]     -- always with max 9 digits and integer is possible
 
     tostring_d = function(t,contentonly,key)
         if next(t) then
@@ -394,6 +426,9 @@ do
                 local v  = t[k]
                 local tv = type(v)
                 -- mostly tables
+                --
+                k = pdfescaped(k,true)
+                --
                 if tv == "table" then
                  -- local mv = getmetatable(v)
                  -- if mv and mv.__lpdftype then
@@ -424,7 +459,7 @@ do
             if contentonly then
                 return r
             elseif key then
-                return f_key_dictionary(key,r)
+                return f_key_dictionary(pdfescaped(key,true),r)
             else
                 return f_dictionary(r)
             end
@@ -474,7 +509,7 @@ do
             if contentonly then
                 return r
             elseif key then
-                return f_key_array(key,r)
+                return f_key_array(pdfescaped(key,true),r)
             else
                 return f_array(r)
             end
@@ -651,29 +686,10 @@ do
 
     for i=-1,9 do cache[i] = pdfnumber(i) end
 
-    local replacer = S("\0\t\n\r\f ()[]{}/%%#\\") / {
-        ["\00"]="#00",
-        ["\09"]="#09",
-        ["\10"]="#0a",
-        ["\12"]="#0c",
-        ["\13"]="#0d",
-        [ " " ]="#20",
-        [ "#" ]="#23",
-        [ "%" ]="#25",
-        [ "(" ]="#28",
-        [ ")" ]="#29",
-        [ "/" ]="#2f",
-        [ "[" ]="#5b",
-        [ "\\"]="#5c",
-        [ "]" ]="#5d",
-        [ "{" ]="#7b",
-        [ "}" ]="#7d",
-    } + P(1)
-
-    local escaped = Cs(Cc("/") * replacer^0)
+    local escaped = lpdf.escaped
 
     local cache = table.setmetatableindex(function(t,k)
-        local v = setmetatable({ lpegmatch(escaped,k) }, mt_c)
+        local v = setmetatable({ escaped(k,true) }, mt_c)
         t[k] = v
         return v
     end)
@@ -683,12 +699,6 @@ do
             str = default or "none"
         end
         return cache[str]
-    end
-
-    local escaped = Cs(replacer^0)
-
-    function lpdf.escaped(str)
-        return lpegmatch(escaped,str) or str
     end
 
 end

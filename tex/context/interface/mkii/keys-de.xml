@@ -303,6 +303,7 @@
 		<cd:variable name='july' value='juli'/>
 		<cd:variable name='june' value='juni'/>
 		<cd:variable name='keep' value='behalte'/>
+		<cd:variable name='keeptogether' value='keeptogether'/>
 		<cd:variable name='kerncharacters' value='kerncharacters'/>
 		<cd:variable name='knockout' value='knockout'/>
 		<cd:variable name='label' value='label'/>
@@ -1235,7 +1236,7 @@
 		<cd:constant name='solution' value='solution'/>
 		<cd:constant name='sort' value='sort'/>
 		<cd:constant name='sorttype' value='sorttype'/>
-		<cd:constant name='source' value='quelle'/>
+		<cd:constant name='source' value='source'/>
 		<cd:constant name='space' value='spatium'/>
 		<cd:constant name='spaceafter' value='nachspatium'/>
 		<cd:constant name='spaceafterside' value='spaceafterside'/>
@@ -1286,6 +1287,7 @@
 		<cd:constant name='synonymcommand' value='synonymbefehl'/>
 		<cd:constant name='synonymstyle' value='synonymstil'/>
 		<cd:constant name='tab' value='tab'/>
+		<cd:constant name='target' value='target'/>
 		<cd:constant name='text' value='text'/>
 		<cd:constant name='textalign' value='textalign'/>
 		<cd:constant name='textalternative' value='textalternative'/>

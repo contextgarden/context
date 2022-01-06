@@ -623,7 +623,6 @@
 
 \setvalue{\??mathdisplayspacemodel\v!after:1}% old
   {\prevdepth .5\strutdp
-   \edef\p_spaceafter{\formulaparameter\c!spaceafter}%
    \ifx\p_spaceafter\v!none
      % nothing
    \else
@@ -640,7 +639,6 @@
 
 \setvalue{\??mathdisplayspacemodel\v!after:2}% old
   {\prevdepth\lineheight
-   \edef\p_spaceafter{\formulaparameter\c!spaceafter}%
    \ifx\p_spaceafter\v!none
      % nothing
    \else
@@ -671,11 +669,11 @@
      \else\ifx\p_spacebefore\empty
        \directvspacing\currentvspacing
      \else
-       \directvspacing{\p_spacebefore,\the\scratchdimen}%
+       \directvspacing\p_spacebefore
      \fi\fi
    \else
      \ifx\p_spacebefore\v!none
-       \directvspacing{\m_spacebefore}%
+       \directvspacing\m_spacebefore
      \else\ifx\p_spacebefore\empty
        \directvspacing{\m_spacebefore,\currentvspacing}%
      \else
@@ -709,7 +707,7 @@
        \else\ifx\p_spacebefore\empty
          \directvspacing\currentvspacing
        \else
-         \directvspacing{\p_spacebefore,\the\scratchdimen}%
+         \directvspacing\p_spacebefore
        \fi\fi
      \fi
   \else

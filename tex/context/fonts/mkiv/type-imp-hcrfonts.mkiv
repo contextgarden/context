@@ -1,0 +1,141 @@
+%D \module
+%D   [       file=type-imp-unfonts,
+%D        version=2012.03.11,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=UnFonts,
+%D         author=Dalyoung \& Hans,
+%D           date=\currentdate,
+%D      copyright=Dalyoung \& Hans]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% usage: \setupbodyfont[hcrfonts]
+
+\loadtypescriptfile[texgyre]
+
+\definefontfeature
+  [kr-default]
+  [mode=node,script=hang,lang=kor]
+
+\definefontfeature
+  [kr-slanted]
+  [mode=node,script=hang,lang=kor,slant=.2]
+
+\definefontfeature
+  [kr-latin-default]
+  [default]
+
+\definefontfeature
+  [kr-latin-slanted]
+  [krlatindefault]
+  [slant=.2]
+
+\definefontfeature
+  [kr-latin-slanted-mono]
+  [slant=.2]
+
+\definefontfeature
+  [kr-latin-smallcaps]
+  [krlatindefault]
+  [smcp=yes]
+
+\definefontfeature
+  [kr-latin-smallcaps-mono]
+  [cmcp=yes]
+
+\definefontfallback[kr-serif]           [texgyrepagella-regular*kr-latin-default]      [0x0000-0x0400][force=yes]
+\definefontfallback[kr-serifbold]       [texgyrepagella-bold*kr-latin-default]         [0x0000-0x0400][force=yes]
+\definefontfallback[kr-serifitalic]     [texgyrepagella-italic*kr-latin-default]       [0x0000-0x0400][force=yes]
+\definefontfallback[kr-serifbolditalic] [texgyrepagella-bolditalic*kr-latin-default]   [0x0000-0x0400][force=yes]
+\definefontfallback[kr-serifslanted]    [texgyrepagella-regular*kr-latin-slanted]      [0x0000-0x0400][force=yes]
+\definefontfallback[kr-serifboldslanted][texgyrepagella-bold*kr-latin-slanted]         [0x0000-0x0400][force=yes]
+\definefontfallback[kr-serifcaps]       [texgyrepagella-regular*kr-latin-smallcaps]    [0x0000-0x0400][force=yes]
+\definefontfallback[kr-sans]            [texgyreheros-regular*kr-latin-default]        [0x0000-0x0400][force=yes]
+\definefontfallback[kr-sansbold]        [texgyreheros-bold*kr-latin-default]           [0x0000-0x0400][force=yes]
+\definefontfallback[kr-sansitalic]      [texgyreheros-italic*kr-latin-default]         [0x0000-0x0400][force=yes]
+\definefontfallback[kr-sansbolditalic]  [texgyreheros-bolditalic*kr-latin-default]     [0x0000-0x0400][force=yes]
+\definefontfallback[kr-sansslanted]     [texgyreheros-regular*kr-latin-slanted]        [0x0000-0x0400][force=yes]
+\definefontfallback[kr-sansboldslanted] [texgyreheros-bold*kr-latin-slanted]           [0x0000-0x0400][force=yes]
+\definefontfallback[kr-sanscaps]        [texgyreheros-regular*kr-latin-smallcaps]      [0x0000-0x0400][force=yes]
+\definefontfallback[kr-mono]            [texgyrecursor-regular]                        [0x0000-0x0400][force=yes]
+\definefontfallback[kr-monobold]        [texgyrecursor-bold]                           [0x0000-0x0400][force=yes]
+\definefontfallback[kr-monoitalic]      [texgyrecursor-italic]                         [0x0000-0x0400][force=yes]
+\definefontfallback[kr-monobolditalic]  [texgyrecursor-bolditalic]                     [0x0000-0x0400][force=yes]
+\definefontfallback[kr-monoslanted]     [texgyrecursor-regular*kr-latin-slanted-mono]  [0x0000-0x0400][force=yes]
+\definefontfallback[kr-monoboldslanted] [texgyrecursor-bold*kr-latin-slanted-mono]     [0x0000-0x0400][force=yes]
+\definefontfallback[kr-monocaps]        [texgyrecursor-regular*kr-latin-smallcaps-mono][0x0000-0x0400][force=yes]
+
+\starttypescriptcollection[hcrLVT]
+
+    \starttypescript [\s!serif] [hcrBatang]
+        \definefontsynonym [hcrBatang]           [\s!file:HanBatang-LVT.ttf]    [\s!features=kr-default,\s!fallbacks=kr-serif]
+        \definefontsynonym [hcrBatangBold]       [\s!file:HanBatangB-LVT.ttf][\s!features=kr-default,\s!fallbacks=kr-serifbold]
+        \definefontsynonym [hcrBatangItalic]     [\s!file:HanBatang-LVT.ttf]    [\s!features=kr-slanted,\s!fallbacks=kr-serifitalic]
+        \definefontsynonym [hcrBatangBolditalic] [\s!file:HanBatangB-LVT.ttf][\s!features=kr-slanted,\s!fallbacks=kr-serifbolditalic]
+        \definefontsynonym [hcrBatangSlanted]    [\s!file:HanBatang-LVT.ttf]    [\s!features=kr-slanted,\s!fallbacks=kr-serifslanted]
+        \definefontsynonym [hcrBatangBoldslanted][\s!file:HanBatangB-LVT.ttf][\s!features=kr-slanted,\s!fallbacks=kr-serifboldslanted]
+        \definefontsynonym [hcrBatangCaps]       [\s!file:HanBatang-LVT.ttf]    [\s!features=kr-default,\s!fallbacks=kr-serifcaps]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [hcrDotum]
+        \definefontsynonym[hcrDotum]             [\s!file:HanDotum-LVT.ttf]     [\s!features=kr-default,\s!fallbacks=kr-sans]
+        \definefontsynonym[hcrDotumBold]         [\s!file:HanDotumB-LVT.ttf] [\s!features=kr-default,\s!fallbacks=kr-sansbold]
+        \definefontsynonym[hcrDotumItalic]       [\s!file:HanDotum-LVT.ttf]     [\s!features=kr-slanted,\s!fallbacks=kr-sansitalic]
+        \definefontsynonym[hcrDotumBolditalic]   [\s!file:HanDotumB-LVT.ttf] [\s!features=kr-slanted,\s!fallbacks=kr-sansbolditalic]
+        \definefontsynonym[hcrDotumSlanted]      [\s!file:HanDotum-LVT.ttf]     [\s!features=kr-slanted,\s!fallbacks=kr-sansslanted]
+        \definefontsynonym[hcrDotumBoldslanted]  [\s!file:HanDotumB-LVT.ttf] [\s!features=kr-slanted,\s!fallbacks=kr-sansboldslanted]
+        \definefontsynonym[hcrDotumCaps]         [\s!file:HanDotum-LVT.ttf]     [\s!features=kr-default,\s!fallbacks=kr-sanscaps]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [hcrType]
+        \definefontsynonym[hcrType]              [\s!file:UnTaza.ttf]      [\s!features=kr-default,\s!fallbacks=kr-mono]
+        \definefontsynonym[hcrTypeBold]          [\s!file:UnTaza.ttf]      [\s!features=kr-default,\s!fallbacks=kr-monobold]
+        \definefontsynonym[hcrTypeItalic]        [\s!file:UnTaza.ttf]      [\s!features=kr-slanted,\s!fallbacks=kr-monoitalic]
+        \definefontsynonym[hcrTypeBolditalic]    [\s!file:UnTaza.ttf]      [\s!features=kr-slanted,\s!fallbacks=kr-monobolditalic]
+        \definefontsynonym[hcrTypeSlanted]       [\s!file:UnTaza.ttf]      [\s!features=kr-slanted,\s!fallbacks=kr-monoslanted]
+        \definefontsynonym[hcrTypeBoldslanted]   [\s!file:UnTaza.ttf]      [\s!features=kr-slanted,\s!fallbacks=kr-monoboldslanted]
+        \definefontsynonym[hcrTypeCaps]          [\s!file:UnTaza.ttf]      [\s!features=kr-default,\s!fallbacks=kr-monocaps]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [hcrBatang] [\s!name]
+        \definefontsynonym[\s!Serif]           [hcrBatang]
+        \definefontsynonym[\s!SerifBold]       [hcrBatangBold]
+        \definefontsynonym[\s!SerifItalic]     [hcrBatangItalic]
+        \definefontsynonym[\s!SerifBoldItalic] [hcrBatangBolditalic]
+        \definefontsynonym[\s!SerifSlanted]    [hcrBatangSlanted]
+        \definefontsynonym[\s!SerifBoldSlanted][hcrBatangBoldslanted]
+        \definefontsynonym[\s!SerifCaps]       [hcrBatangCaps]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [hcrDotum] [\s!name]
+        \definefontsynonym[\s!Sans]            [hcrDotum]
+        \definefontsynonym[\s!SansBold]        [hcrDotumBold]
+        \definefontsynonym[\s!SansItalic]      [hcrDotumItalic]
+        \definefontsynonym[\s!SansBoldItalic]  [hcrDotumBolditalic]
+        \definefontsynonym[\s!SansSlanted]     [hcrDotumSlanted]
+        \definefontsynonym[\s!SansBoldSlanted] [hcrDotumBoldslanted]
+        \definefontsynonym[\s!SansCaps]        [hcrDotumCaps]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [hcrType] [\s!name]
+        \definefontsynonym[\s!Mono]            [hcrType]
+        \definefontsynonym[\s!MonoBold]        [hcrTypeBold]
+        \definefontsynonym[\s!MonoItalic]      [hcrTypeItalic]
+        \definefontsynonym[\s!MonoBoldItalic]  [hcrTypeBolditalic]
+        \definefontsynonym[\s!MonoSlanted]     [hcrTypeSlanted]
+        \definefontsynonym[\s!MonoBoldSlanted] [hcrTypeBoldslanted]
+        \definefontsynonym[\s!MonoCaps]        [hcrTypeCaps]
+    \stoptypescript
+
+    % xits might get replaced with a pagella once we have it
+
+    \starttypescript[hcrfonts]
+        \definetypeface [hcrfonts] [\s!rm] [\s!serif] [hcrBatang]
+        \definetypeface [hcrfonts] [\s!ss] [\s!sans]  [hcrDotum]
+        \definetypeface [hcrfonts] [\s!tt] [\s!mono]  [hcrType]
+        \definetypeface [hcrfonts] [\s!mm] [\s!math]  [pagella]
+    \stoptypescript
+
+\stoptypescriptcollection

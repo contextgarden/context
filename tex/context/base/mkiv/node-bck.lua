@@ -238,15 +238,6 @@ function nodes.handlers.backgroundsvbox(head,where)
     return head
 end
 
--- interfaces.implement {
---     name      = "enablebackgroundboxes",
---     onlyonce  = true,
---     actions   = enableaction,
---     arguments = { "'shipouts'", "'nodes.handlers.backgrounds'" }
--- }
---
--- doing it in the shipout works as well but this is nicer
-
 local function enable(alignmentstoo)
     if not enabled then
         enabled = true

@@ -163,7 +163,7 @@
 % compress=yes|no
 % compressmethod=separator|stopper
 
-\setvalue{\??linenotescompressmethod\v!separator}%
+\defcsname\??linenotescompressmethod\v!separator\endcsname
   {\edef\p_compressseparator{\noteparameter\c!compressseparator}%
    \scratchskip\noteparameter\c!compressdistance\relax
    \ifempty\p_compressseparator
@@ -174,7 +174,7 @@
      \hskip.5\scratchskip
    \fi}
 
-\setvalue{\??linenotescompressmethod\v!stopper}%
+\defcsname\??linenotescompressmethod\v!stopper\endcsname
   {\edef\p_compressstopper{\noteparameter\c!compressstopper}%
    \scratchskip\noteparameter\c!compressdistance\relax
    \ifempty\p_compressstopper
@@ -184,7 +184,7 @@
      \hskip.5\scratchskip
    \fi}
 
-\setvalue{\??linenotescompressmethod\v!space}%
+\defcsname\??linenotescompressmethod\v!space\endcsname
   {\hskip\noteparameter\c!compressdistance\relax}
 
 \def\strc_linenotes_check_compression
@@ -200,7 +200,10 @@
    \fi}
 
 \def\strc_linenotes_inbetween % \ifcsname\??linenote\currentnote\expandafter\endcsname
-  {\begincsname\??linenotescompressmethod\p_linenotes_compressmethod\endcsname}
+  {\begingroup
+   \strc_linenotes_check_compression
+   \begincsname\??linenotescompressmethod\p_linenotes_compressmethod\endcsname
+   \endgroup}
 
 \def\strc_notes_compress_distance{\emwidth \s!plus .5\emwidth \s!minus .25\emwidth}
 

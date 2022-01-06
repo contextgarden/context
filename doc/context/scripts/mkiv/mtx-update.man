@@ -1,4 +1,4 @@
-.TH "mtx-update" "1" "01-01-2021" "version 1.03" "ConTeXt Minimals Updater"
+.TH "mtx-update" "1" "01-01-2022" "version 1.03" "ConTeXt Minimals Updater"
 .SH NAME
  mtx-update - ConTeXt Minimals Updater
 .SH SYNOPSIS

@@ -245,3 +245,18 @@ do
 
 end
 
+-- for the moment here:
+
+do
+
+    local texset   = tex.set
+    local maxdimen = tex.magicconstants.maxdimen
+
+    function tex.dontcomplain()
+        texset("hbadness",maxdimen)
+        texset("vbadness",maxdimen)
+        texset("hfuzz",   maxdimen)
+        texset("vfuzz",   maxdimen)
+    end
+
+end

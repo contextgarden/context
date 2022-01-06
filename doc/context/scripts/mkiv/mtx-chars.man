@@ -1,4 +1,4 @@
-.TH "mtx-chars" "1" "01-01-2021" "version 0.10" "MkII Character Table Generators"
+.TH "mtx-chars" "1" "01-01-2022" "version 0.10" "MkII Character Table Generators"
 .SH NAME
  mtx-chars - MkII Character Table Generators
 .SH SYNOPSIS

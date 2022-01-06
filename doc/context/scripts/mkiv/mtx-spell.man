@@ -1,4 +1,4 @@
-.TH "mtx-spell" "1" "01-01-2021" "version 0.10" "ConTeXt Word Filtering"
+.TH "mtx-spell" "1" "01-01-2022" "version 0.10" "ConTeXt Word Filtering"
 .SH NAME
  mtx-spell - ConTeXt Word Filtering
 .SH SYNOPSIS

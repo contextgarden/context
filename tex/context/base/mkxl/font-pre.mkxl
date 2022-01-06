@@ -193,12 +193,17 @@
   [semitic-simple]
   [script=hebr]
 
-% indic
+% indic:
+%
+% conjuncts : auto | continue | quit (default)
+% movematra : auto | leftbeforebase | default
 
 \definefontfeature
   [indic-common]
   [mode=node,
    language=dflt,
+   % localized
+ % indic=auto,
    % localized
    locl=yes,
    % positioning

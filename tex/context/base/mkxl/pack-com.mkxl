@@ -174,10 +174,10 @@
     \settrue\c_strc_constructions_define_commands
 \to \everydefinecombination
 
-\setvalue{\??combinationlocation\v!left  }{\let\m_pack_combinations_leftfiller\relax}
-\setvalue{\??combinationlocation\v!right }{\let\m_pack_combinations_rightfiller\relax}
-\setvalue{\??combinationlocation\v!top   }{\let\m_pack_combinations_valigner\depthonlybox}
-\setvalue{\??combinationlocation\v!middle}{\let\m_pack_combinations_valigner\halfwaybox}
+\defcsname\??combinationlocation\v!left  \endcsname{\let\m_pack_combinations_leftfiller \relax}
+\defcsname\??combinationlocation\v!right \endcsname{\let\m_pack_combinations_rightfiller\relax}
+\defcsname\??combinationlocation\v!top   \endcsname{\let\m_pack_combinations_valigner   \depthonlybox}
+\defcsname\??combinationlocation\v!middle\endcsname{\let\m_pack_combinations_valigner   \halfwaybox}
 
 \def\pack_combinations_location_reset
   {\let\m_pack_combinations_rightfiller\hfil
@@ -360,10 +360,10 @@
    \dostarttagged\t!combinationcaption\empty
    \expandnamespacemacro\??combinationalternative\p_pack_combinations_alternative\v!text}
 
-\setvalue{\??combinationalternative\v!text}%
+\defcsname\??combinationalternative\v!text\endcsname
   {\expandafterpars\pack_combinations_alternative_text_indeed}
 
-\setvalue{\??combinationalternative\v!label}%
+\defcsname\??combinationalternative\v!label\endcsname
   {\expandafterpars\pack_combinations_alternative_label_indeed}
 
 \def\pack_combinations_alternative_text_indeed
@@ -714,10 +714,10 @@
 \newdimen\s_pack_pairedboxes_size
 
 \appendtoks
-   \frozen\instance\setuevalue{\e!setup\currentpairedbox\e!endsetup}{\setuppairedbox     [\currentpairedbox]}%
-   \frozen\instance\setuevalue{\e!place\currentpairedbox           }{\placepairedbox     [\currentpairedbox]}% one argument is mandate anyway
-   \frozen\instance\setuevalue{\e!start\e!place\currentpairedbox   }{\startplacepairedbox[\currentpairedbox]}% one argument is mandate anyway
-   \frozen\instance\setuevalue{\e!stop\e!place \currentpairedbox   }{\stopplacepairedbox                    }%
+   \frozen\protected\instance\edefcsname\e!setup\currentpairedbox\e!endsetup\endcsname{\setuppairedbox     [\currentpairedbox]}%
+   \frozen\protected\instance\edefcsname\e!place\currentpairedbox           \endcsname{\placepairedbox     [\currentpairedbox]}% one argument is mandate anyway
+   \frozen\protected\instance\edefcsname\e!start\e!place\currentpairedbox   \endcsname{\startplacepairedbox[\currentpairedbox]}% one argument is mandate anyway
+   \frozen\protected\instance\edefcsname\e!stop\e!place \currentpairedbox   \endcsname{\stopplacepairedbox                    }%
 \to \everydefinepairedbox
 
 \permanent\tolerant\protected\def\startplacepairedbox[#1]#*[#2]%
