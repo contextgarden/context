@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2022-01-06 19:47
+-- merge date  : 2022-01-10 08:33
 
 do -- begin closure to overcome local limits and interference
 
@@ -14718,7 +14718,7 @@ local result={}
      i=i+s+1
     elseif t==1 or t==3 or t==18 or operation==23 then
      p_getstem() 
-     if true then
+     if version=="cff" then
       if top>0 then
        for i=1,top do
         r=r+1;result[r]=encode[stack[i]]
@@ -14731,7 +14731,7 @@ local result={}
      end
      i=i+1
     elseif t==19 or t==20 then
-     local s=p_getmask() or 0 
+     local s=p_getmask() or 0
      if true then
       if top>0 then
        for i=1,top do
@@ -14754,7 +14754,7 @@ local result={}
      i=i+1
     elseif t==13 then
      hsbw()
-     if version=="cff" then
+     if true then
       r=r+1;result[r]=encode[lsb]
       r=r+1;result[r]=chars[22]
      else
@@ -15557,7 +15557,7 @@ local function applyaxis(glyph,shape,deltas,dowidth)
         p[2]=p[2]+y
        end
       end
-     else
+     elseif cnt>0 then
       local function find(i)
        local prv=cnt
        for j=1,cnt do
@@ -15659,6 +15659,8 @@ local function applyaxis(glyph,shape,deltas,dowidth)
         pi[2]=pi[2]+factor*fy
        end
       end
+     else
+      report("bad deltapoint data, maybe a missing hvar table")
      end
     else
      for i=1,nofpoints do
@@ -19779,6 +19781,7 @@ function readers.hvar(f,fontdata,specification)
  end
  local tableoffset=gotodatatable(f,fontdata,"hvar",specification.variable)
  if not tableoffset then
+  report("no hvar table, expect problems due to messy widths")
   return
  end
  local version=readulong(f) 
@@ -32253,16 +32256,15 @@ local function initializeconjuncts(tfmdata,value)
   local resources=tfmdata.resources
   local devanagari=resources.devanagari
   if devanagari then
-   local conjuncts="auto"
-   local conjuncts="continue"
-   local movematra="auto"
+   local conjuncts="auto" 
+   local movematra="auto" 
    if type(value)=="string" and value~="auto" then
     value=settings_to_hash(value)
     conjuncts=rawget(value,"conjuncts") or conjuncts
     movematra=rawget(value,"movematra") or movematra
    end
    if conjuncts=="auto" then
-    conjuncts="continue"
+    conjuncts="mixed" 
    end
    if movematra=="auto" and
       script=="mlym" or
@@ -32273,7 +32275,9 @@ local function initializeconjuncts(tfmdata,value)
    end
    devanagari.conjuncts=conjuncts
    devanagari.movematra=movematra
+   if trace_steps then
     report("conjuncts %a, movematra %a",conjuncts,movematra)
+   end
   end
  end
 end
@@ -33598,21 +33602,25 @@ local function analyze_next_chars_one(c,font,variant)
      already_below_mark=true
     elseif post_mark[v] and not already_post_mark then
      already_post_mark=true
-    elseif devanagarihash[font].conjuncts=="quit" then
+    elseif devanagarihash[font].conjuncts=="continue" then
+    else
      return c
     end
    end
   else
-   if devanagarihash[font].conjuncts=="quit" then
-    return c
-   elseif pre_mark[v] and not already_pre_mark then
+   if pre_mark[v] and not already_pre_mark then
     already_pre_mark=true
    elseif post_mark[v] and not already_post_mark then
-    already_post_mark=true
+    if devanagarihash[font].conjuncts=="mixed" then
+     return c
+    else
+     already_post_mark=true
+    end
    elseif below_mark[v] and not already_below_mark then
     already_below_mark=true
    elseif above_mark[v] and not already_above_mark then
     already_above_mark=true
+   elseif devanagarihash[font].conjuncts=="continue" then
    else
     return c
    end
@@ -33799,21 +33807,25 @@ local function analyze_next_chars_two(c,font)
       already_below_mark=true
      elseif post_mark[v] and not already_post_mark then
       already_post_mark=true
-     elseif devanagarihash[font].conjuncts=="quit" then
+     elseif devanagarihash[font].conjuncts=="continue" then
+     else
       return c
      end
     end
    else
-    if devanagarihash[font].conjuncts=="quit" then
-     return c
-    elseif pre_mark[v] and not already_pre_mark then
+    if pre_mark[v] and not already_pre_mark then
      already_pre_mark=true
     elseif post_mark[v] and not already_post_mark then
-     already_post_mark=true
+     if devanagarihash[font].conjuncts=="mixed" then
+      return c
+     else
+      already_post_mark=true
+     end
     elseif below_mark[v] and not already_below_mark then
      already_below_mark=true
     elseif above_mark[v] and not already_above_mark then
      already_above_mark=true
+    elseif devanagarihash[font].conjuncts=="continue" then
     else
      return c
     end

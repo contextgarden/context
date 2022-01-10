@@ -14,6 +14,9 @@
 % Musical timestamp: this code was written when I start relistening my whole
 % digitized cd collection with the (new) r2r soekris dac in my setup.
 
+\writestatus{loading}{ConTeXt Typesetting Macros / Synchronizers}
+
+\registerctxluafile{typo-syn}{autosuffix}
 
 %D Yet another experiment (triggered by a question / demand from Ton Otten.)
 %D
@@ -48,51 +51,199 @@
 %D     {[\ignorespaces\samplefile{ward}\removeunwantedspaces]}%
 %D     {[\ignorespaces\samplefile{tufte}\removeunwantedspaces]}
 %D \par test line \page
+%D
+%D \startbuffer[en]
+%D     This is an english text and
+%D     this is also something english;
+%D     as is this.
+%D     Not that there is much meaning in it.
+%D \stopbuffer
+%D
+%D \startbuffer[nl]
+%D     Dit is een nederlandse tekst
+%D     en dit is ook wat nederlands;
+%D     net als dit.
+%D     Niet dat het veel te betekenen heeft.
+%D \stopbuffer
+%D
+%D \definesynchronizecontent
+%D   [nl]
+%D   [language=nl,
+%D    color=darkred]
+%D
+%D \definesynchronizecontent
+%D   [en]
+%D   [language=en,
+%D    color=darkgreen]
+%D
+%D \definesynchronize
+%D   [parallel-en-nl]
+%D   [list={en,nl}]
+%D
+%D \placesynchronize
+%D   [parallel-en-nl]
+%D   [buffer={en,nl}]
+%D
+%D \blank
+%D
+%D \placesynchronize
+%D   [parallel-en-nl]
+%D   [split={.},
+%D    text={
+%D     {This is an english text and this is also something english; as is this. Not that there is much meaning in it.},
+%D     {Dit is een nederlandse tekst en dit is ook wat nederlands; net als dit. Niet dat het veel te betekenen heeft.}
+%D    }]
+%D
+%D \blank
+%D
+%D \placesynchronize
+%D   [parallel-en-nl]
+%D   [split={.},
+%D    text={
+%D     {
+%D         {This is an english text and this is also something english;},
+%D         {as is this.},
+%D         {Not that there is much meaning in it.}
+%D     },
+%D     {
+%D         {Dit is een nederlandse tekst en dit is ook wat nederlands;},
+%D         {net als dit.},
+%D         {Niet dat het veel te betekenen heeft.}
+%D     }
+%D    }]
+%D
+%D \setupsynchronizecontent
+%D   [nl]
+%D   [language=nl,
+%D    style=\tx,
+%D    left={[},
+%D    right={]},
+%D    color=darkblue]
+%D
+%D \placesynchronize
+%D   [parallel-en-nl]
+%D   [distance=1pt,
+%D    buffer={en,nl}]
 %D \stoptyping
-
-\writestatus{loading}{ConTeXt Typesetting Macros / Synchronizers}
-
-\registerctxluafile{typo-syn}{autosuffix}
 
 \unprotect
 
 \definesystemattribute[synchronize][public]
 
 \installcorenamespace {synchronize}
+\installcorenamespace {synchronizecontent}
 
-\installcommandhandler \??synchronize {synchronize} \??synchronize
+\installcommandhandler \??synchronize        {synchronize}        \??synchronize
+\installcommandhandler \??synchronizecontent {synchronizecontent} \??synchronizecontent
+
+\setupsynchronize
+  [\c!buffer=,
+   \c!text=,
+   \c!list=,
+   \c!split=,
+   \c!distance=\zeropoint]
+
+\let\typo_sync_rule\novrule
+
+\installtextracker
+  {synchronize}
+  {\let\typo_sync_rule\vrule}
+  {\let\typo_sync_rule\novrule}
 
 \tolerant\protected\def\typo_synchronize#1#*[#2]#:#3#4%
   {\dontleavehmode
    \begingroup
    \def\currentsynchronize{#1}%
    \setupcurrentsynchronize[#2]%
+   \scratchdistance\synchronizeparameter\c!distance
    \dontcomplain
    \setbox\scratchboxtwo\hbox\bgroup
      \usesynchronizestyleandcolor\c!style\c!color
-     \setstrut
-     \strut
+     \begstrut
      \ignorespaces#4\removeunwantedspaces
+     \endstrut
    \egroup
    \scratchdimentwo\wd\scratchboxtwo
+   \advance\scratchdimentwo\scratchdistance
    \clf_registersynchronize
      \strutht
      \strutdp
+     .1\onepoint
      \box\scratchboxtwo
    \relax
-   \setbox\scratchboxone\hbox{#3}%
+   \setbox\scratchboxone\hbox\bgroup
+     \ignorespaces#3\removeunwantedspaces
+   \egroup
    \scratchdimenone\wd\scratchboxone
    \unhbox\scratchboxone
    \advance\scratchdimentwo-\scratchdimenone
    \ifdim\scratchdimentwo>\zeropoint
      \wordboundary
-     \novrule
-   % \vrule
+     \typo_sync_rule
         \s!width  \scratchdimentwo
         \s!height \exheight
         \s!depth  \zeropoint
      \relax
    \fi
+   \endgroup}
+
+\protected\def\dosplitsynchronize#1#2#3#4%
+  {\begingroup
+   \dontcomplain
+   \setbox\scratchboxtwo\hbox\bgroup
+     \def\currentsynchronizecontent{#2}%
+     \usesynchronizecontentstyleandcolor\c!style\c!color
+     \uselanguageparameter\synchronizecontentparameter
+     \synchronizecontentparameter\c!left
+     \begstrut
+     \ignorespaces
+     #4\removeunwantedspaces
+     \endstrut
+     \synchronizecontentparameter\c!right
+   \egroup
+   \scratchdimentwo\wd\scratchboxtwo
+   \advance\scratchdimentwo\scratchdistance
+   \clf_registersynchronize
+     \strutht
+     \strutdp
+     .1\onepoint
+     \box\scratchboxtwo
+   \relax
+   \setbox\scratchboxone\hbox\bgroup
+     \def\currentsynchronizecontent{#1}%
+     \usesynchronizecontentstyleandcolor\c!style\c!color
+     \uselanguageparameter\synchronizecontentparameter
+     \synchronizecontentparameter\c!left
+     \ignorespaces#3\removeunwantedspaces
+     \synchronizecontentparameter\c!right
+   \egroup
+   \scratchdimenone\wd\scratchboxone
+   \unhbox\scratchboxone
+   \advance\scratchdimentwo-\scratchdimenone
+   \ifdim\scratchdimentwo>\zeropoint
+     \wordboundary
+     \typo_sync_rule
+        \s!width  \scratchdimentwo
+        \s!height \exheight
+        \s!depth  \zeropoint
+     \relax
+   \fi
+   \endgroup
+   \space}
+
+\tolerant\protected\def\placesynchronize[#1]#*[#2]%
+  {\dontleavehmode
+   \begingroup
+   \def\currentsynchronize{#1}%
+   \setupcurrentsynchronize[#2]%
+   \scratchdistance\synchronizeparameter\c!distance
+   \clf_synchronizesteps
+      list   {\synchronizeparameter\c!list}%
+      split  {\synchronizeparameter\c!split}%
+      buffer {\synchronizeparameter\c!buffer}%
+      text   {\synchronizeparameter\c!text}%
+   \relax
+   \removeunwantedspaces
    \endgroup}
 
 \appendtoks

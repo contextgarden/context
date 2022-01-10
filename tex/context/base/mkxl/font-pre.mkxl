@@ -203,7 +203,7 @@
   [mode=node,
    language=dflt,
    % localized
- % indic=auto,
+   indic=auto, % we need to handle fuzzy fonts
    % localized
    locl=yes,
    % positioning

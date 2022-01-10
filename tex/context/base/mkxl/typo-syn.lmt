@@ -16,39 +16,38 @@ local enableaction      = tasks.enableaction
 local nuts              = nodes.nuts
 local tonut             = nodes.tonut
 
+local getattr           = nuts.getattr
+local getattrlist       = nuts.getattrlist
+local getdepth          = nuts.getdepth
+local getdirection      = nuts.getdirection
+local getdisc           = nuts.getdisc
+local getglue           = nuts.getglue
+local getheight         = nuts.getheight
+local getid             = nuts.getid
+local getlist           = nuts.getlist
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
-local getid             = nuts.getid
-local getsubtype        = nuts.getsubtype
-local getattr           = nuts.getattr
-local setattrlist       = nuts.setattrlist
-local getattrlist       = nuts.getattrlist
-
 local getprop           = nuts.getprop
-local setprop           = nuts.setprop
-
+local getsubtype        = nuts.getsubtype
+local gettotal          = nuts.gettotal
+local getwhd            = nuts.getwhd
+local getwidth          = nuts.getwidth
+local setattrlist       = nuts.setattrlist
+local setdepth          = nuts.setdepth
+local setdisc           = nuts.setdisc
+local setheight         = nuts.setheight
 local setlink           = nuts.setlink
-local setprev           = nuts.setprev
+local setlist           = nuts.setlist
 local setnext           = nuts.setnext
 local setoffsets        = nuts.setoffsets
-
-local getwhd            = nuts.getwhd
-
-local getwidth          = nuts.getwidth
+local setprev           = nuts.setprev
+local setprop           = nuts.setprop
 local setwidth          = nuts.setwidth
-local getdepth          = nuts.getdepth
-local setdepth          = nuts.setdepth
-local getheight         = nuts.getheight
-local setheight         = nuts.setheight
-local gettotal          = nuts.gettotal
-local getlist           = nuts.getlist
-local setlist           = nuts.setlist
-local getdisc           = nuts.getdisc
-local setdisc           = nuts.setdisc
 
 local hpack             = nuts.hpack
 local rangedimensions   = nuts.rangedimensions
 local insertbefore      = nuts.insertbefore
+local insertafter       = nuts.insertafter
 local removenode        = nuts.remove
 local flushnode         = nuts.flush
 
@@ -57,28 +56,33 @@ local traverselist      = nuts.traverselist
 local nodecodes         = nodes.nodecodes
 local glyph_code        = nodecodes.glyph
 local rule_code         = nodecodes.rule
+local dir_code          = nodecodes.dir
 local disc_code         = nodecodes.disc
 local hlist_code        = nodecodes.hlist
 local vlist_code        = nodecodes.vlist
+local math_code         = nodecodes.math
 local glue_code         = nodecodes.glue
 local kern_code         = nodecodes.kern
 local penalty_code      = nodecodes.penalty
 
-local line_code             = nodes.listcodes.line
-local fontkern_code         = nodes.kerncodes.fontkern
-local parfillrightskip_code = nodes.gluecodes.parfillrightskip
-local baselineskip_code     = nodes.gluecodes.baselineskip
+local line_code         = nodes.listcodes.line
+local fontkern_code     = nodes.kerncodes.fontkern
+local parfillskip_code  = nodes.gluecodes.parfillrightskip
+local baselineskip_code = nodes.gluecodes.baselineskip
+
+local new_direction     = nuts.pool.direction
+
+local runningrule       = tex.magicconstants.runningrule
 
 -----------------
 
-local a_synchronize   = attributes.private("synchronize")
+local synchronize       = typesetters.synchronize or { }
+typesetters.synchronize = synchronize or { }
 
-local parallels       = typesetters.parallels or { }
-typesetters.parallels = parallels or { }
-
-local registervalue   = attributes.registervalue
-local getvalue        = attributes.getvalue
-local hasvalues       = attributes.hasvalues
+local a_synchronize     = attributes.private("synchronize")
+local registervalue     = attributes.registervalue
+local getvalue          = attributes.getvalue
+local hasvalues         = attributes.hasvalues
 
 local trace  = false
 -- local trace  = true
@@ -88,21 +92,21 @@ local pushsavelevel = tex.pushsavelevel -- token.expandmacro("bgroup")
 local popsavelevel  = tex.popsavelevel  -- token.expandmacro("egroup")
 local dontcomplain  = tex.dontcomplain
 
-local slack    = 6553.6
 local index    = 0
 local lastattr = nil
 local lastline = nil
 
 interfaces.implement {
     name      = "registersynchronize",
-    arguments = { "dimen", "dimen", "box" },
-    actions   = function(ht,dp,box)
+    arguments = { "dimen", "dimen", "dimen", "box" },
+    actions   = function(ht,dp,slack,box)
         index = index + 1
         box   = tonut(box)
         local t = {
             index      = index,
             lineheight = ht,
             linedepth  = dp,
+            slack      = slack,
             height     = getheight(height),
             depth      = getheight(depth),
             box        = box,
@@ -110,94 +114,147 @@ interfaces.implement {
         local v = registervalue(a_synchronize,t)
         tex.setattribute(a_synchronize,v)
         if index > 0 then
-            enableaction("vboxbuilders", "typesetters.parallels.handler")
-            enableaction("mvlbuilders",  "typesetters.parallels.handler")
+            enableaction("vboxbuilders", "typesetters.synchronize.handler")
+            enableaction("mvlbuilders",  "typesetters.synchronize.handler")
         end
     end,
-
 }
 
-local function hsplit(box,width)
-    local first    = getlist(box)
-    local last     = first
-    local current  = first
-    local previous = current
-    local sofar    = 0
-    local lastdisc = nil
-    -- todo: option
-    width = width - slack
-    --
+-- When this is stable it can become a proper helper and primitive.
+
+local function hsplit(box,targetwidth,targetheight,targetdepth,mcriterium,pcriterium,upto)
+    local first     = getlist(box)
+    local last      = first
+    local current   = first
+    local previous  = current
+    local lastdisc  = nil
+    local lastglyph = nil
+ -- local stretch   = 0
+ -- local shrink    = 0
+    local width     = 0
+    local height    = 0
+    local depth     = 0
+    local dirstack  = { } -- can move to outer
+    local dirtop    = 0
+    local minwidth  = targetwidth
+    local maxwidth  = targetwidth
+    local usedwidth = targetwidth
     while true do
         previous = current
         local id = getid(current)
         if id == glyph_code then
-            local wd = getwidth(current)
-            if sofar + wd > width then
+            local wd, ht, dp = getwhd(current)
+            -- find next break first
+            local newwidth = width + wd
+            if newwidth >= usedwidth then
+                if not lastdisc and lastglyph then
+                    last = getprev(lastglyph)
+                end
                 break
             else
-                sofar = sofar + wd
+                width = newwidth
+                if ht > height then
+                    height = ht
+                end
+                if dp > depth then
+                    depth = dp
+                end
+            end
+            if not lastglyph then
+                lastglyph = current
             end
         elseif id == kern_code then
+            local wd = getwidth(current)
+            local newwidth = width + wd
             if getsubtype(current) == fontkern_code then
                 -- assume sane kerns
-                local wd = getwidth(current)
-                sofar = sofar + wd
+                width = newwidth
             else
                 last = previous
-                local wd = getwidth(current)
-                if sofar + wd > width then
+                if newwidth >= usedwidth then
                     break
                 else
-                    sofar = sofar + wd
+                    width = newwidth
                 end
-                lastdisc = nil
+                lastdisc  = nil
+                lastglyph = nil
             end
         elseif id == disc_code then
-            -- move on / inject post if needed
             local pre, post, replace = getdisc(current)
-            local wdr = replace and rangedimensions(box,replace) or 0
-            if sofar + wdr > width then
-                -- handle post and pre here
-                last     = previous
+            local wd = replace and rangedimensions(box,replace) or 0
+            local newwidth = width + wd
+            if newwidth >= usedwidth then
                 break
             end
-            local wdp = pre and rangedimensions(box,pre) or 0
---            if sofar + wdp > width then
---                last     = previous
---lastdisc = current
---                break
---          end
-            sofar = sofar + wdr
+            local wd = pre and rangedimensions(box,pre) or 0
+            local prewidth = width + wd
+            if prewidth >= usedwidth then
+                break
+            end
+            width    = newwidth
             lastdisc = current
-        elseif id == glue_code then
-            last = previous
-            local wd = getwidth(current)
-            if sofar + wd > width then
-                break
-            else
-                sofar = sofar + wd
-            end
-            lastdisc = nil
-        elseif id == hlist_code or id == vlist_code then
-            last = previous
-            local wd = getwidth(current)
-            if sofar + wd > width then
-                break
-            else
-                sofar = sofar + wd
-            end
-            lastdisc = nil
-        elseif id == rule_code then
-            last = previous
-            local wd = getwidth(current)
-            if sofar + wd > width then
-                break
-            else
-                sofar = sofar + wd
-            end
-            lastdisc = nil
         else
-            lastdisc = nil
+            -- common code at the end
+            if id == glue_code or id == math_code then -- refactor : common code
+                -- leaders
+                last = previous
+                local wd, more, less = getglue(current)
+                local newwidth = width + wd
+                if newwidth >= usedwidth then
+                    break
+                else
+                    width   = newwidth
+                 -- stretch = stretch + more
+                 -- shrink  = shrink  + less
+                    -- also for statistics
+                    maxwidth = maxwidth + more
+                    minwidth = minwidth + less
+                    -- can become an option:
+                    usedwidth = minwidth
+                end
+            elseif id == hlist_code or id == vlist_code then
+                last = previous
+                local wd, ht, dp = getwhd(current)
+                local newwidth = width + wd
+                if newwidth >= usedwidth then
+                    break
+                else
+                    width = newwidth
+                    if ht > height then
+                        height = ht
+                    end
+                    if dp > depth then
+                        depth = dp
+                    end
+                end
+            elseif id == rule_code then
+                last = previous
+                local wd, ht, dp = getwhd(current)
+                local newwidth = width + wd
+                if newwidth >= usedwidth then
+                    break
+                else
+                    width = newwidth
+                    if ht ~= runningrule and ht > height then
+                        height = ht
+                    end
+                    if dp ~= runningrule and dp > depth then
+                        depth = dp
+                    end
+                end
+            elseif id == dir_code then
+                local dir, cancel = getdirection(current)
+                if cancel then
+                    if dirtop > 0 then
+                        dirtop = dirtop - 1
+                    end
+                else
+                    dirtop = dirtop + 1
+                    dirstack[dirtop] = dir
+                end
+            end
+            lastdisc  = nil
+            lastglyph = nil
         end
         local next = getnext(current)
         if next then
@@ -209,7 +266,7 @@ local function hsplit(box,width)
     end
     local next
     if lastdisc then
-        local pre, post, replace = getdisc(lastdisc)
+        local pre, post, replace, pretail, posttail, replacetail = getdisc(lastdisc,true)
         last = getprev(lastdisc)
         --
         next = getnext(lastdisc)
@@ -218,8 +275,9 @@ local function hsplit(box,width)
         end
         --
         setlink(last,pre)
+        last = pretail
         if post then
-            setlink(post,next)
+            setlink(posttail,next)
             next = post
         end
         setdisc(lastdisc,nil,nil,replace)
@@ -234,26 +292,138 @@ local function hsplit(box,width)
     while last do
         local id = getid(last)
         if id == glue_code or id == penalty_code then
+         -- if id == glue_code then
+         --     local wd, more, less = getglue(last)
+         --  -- stretch = stretch - more
+         --  -- shrink  = shrink  - less
+         --     width   = width   - wd
+         --     -- also for statistics
+         --     maxwidth = maxwidth - more
+         --     minwidth = minwidth - less
+         --     -- can become an option:
+         --     usedwidth = minwidth
+         -- end
             first, last = removenode(first,last,true)
         else
             break
         end
     end
-    if first then
-        pushsavelevel()
-        dontcomplain()
-        local result, badness = hpack(first,width,"exactly")
-        if badness > 200 then
-            result = hpack(first)
+    if dirtop > 0 then
+        for i=dirtop,1,-1 do
+            local d = new_direction(dirstack[i],true)
+            first, last = insertafter(first,last,d)
         end
-        popsavelevel()
+        for i=1,dirtop do
+            local d = new_direction(dirstack[i],false)
+            next = insertbefore(next,next,d)
+        end
+    end
+    if first then
+     -- pushsavelevel()
+     -- dontcomplain()
+        local result
+        if upto then
+            result = hpack(first)
+        else
+            local badness, overshoot
+            result, badness, overshoot = hpack(first,targetwidth,"exactly")
+            local pdone = pcriterium and badness > pcriterium
+            local mdone = mcriterium and badness > mcriterium
+            if overshoot > 0 then
+                if pdone then
+                    result = hpack(first)
+                end
+            elseif overshoot < 0 then
+                if mdone then
+                    result = hpack(first)
+                end
+            else
+                if pdone or mdone then
+                    result = hpack(first)
+                end
+            end
+        end
+     -- popsavelevel()
         setattrlist(result,getattrlist(box)) -- useattrlist(result,box)
-        setheight(result,getheight(box))
-        setdepth(result,getdepth(box))
+        setheight(result,targetheight or height)
+        setdepth(result,targetdepth or depth)
         setlist(box,next)
         setwidth(box,rangedimensions(box,next))
         return result
     end
+end
+
+do
+
+    local scanners     = tokens.scanners
+    local scanword     = scanners.word
+    local scaninteger  = scanners.integer
+    local scandimen    = scanners.dimen
+
+    local tonode       = nuts.tonode
+    local getbox       = nuts.getbox
+    local setbox       = nuts.setbox
+
+    local direct_value = tokens.values.direct
+    local none_value   = tokens.values.none
+
+    interfaces.implement {
+        name      = "hsplit",
+        protected = true,
+        public    = true,
+        usage     = "value",
+        actions   = function(what)
+            local n = scaninteger()
+            local w = 0
+            local h = false
+            local d = false
+            local pcriterium = false
+            local mcriterium = false
+            local upto = false
+            while true do
+                local key = scanword()
+                if key == "to" then
+                    upto = false
+                    w = scandimen()
+                elseif key == "upto" then
+                    upto = true
+                    w = scandimen()
+                elseif key == "width" then
+                    w = scandimen()
+                elseif key == "height" then
+                    h = scandimen()
+                elseif key == "depth" then
+                    d = scandimen()
+                elseif key == "criterium" then
+                    pcriterium = scaninteger()
+                    mcriterium = scaninteger()
+                elseif key == "shrinkcriterium" then
+                    mcriterium = scaninteger()
+                elseif key == "stretchcriteriun" then
+                    pcriterium = scaninteger()
+                else
+                    break
+                end
+            end
+            pushsavelevel()
+            dontcomplain()
+            local r = hsplit(getbox(n),w,h,d,mcriterium,pcriterium,upto)
+            popsavelevel()
+            if r then
+                if what == "value" then
+                    return direct_value, r
+                else
+                    context(tonode(r))
+                end
+            else
+                setbox(n)
+                if what == "value" then
+                    return none_value, nil
+                end
+            end
+        end,
+    }
+
 end
 
 local function getproperties(parent)
@@ -304,7 +474,7 @@ local function flush(head,first,last,a,parent,nesting)
         if upto and getid(upto) == penalty_code then
             upto = getnext(upto)
         end
-        if upto and getid(upto) == glue_code and getsubtype(upto) == parfillrightskip_code then
+        if upto and getid(upto) == glue_code and getsubtype(upto) == parfillskip_code then
             upto = getnext(upto)
         end
         local props = getproperties(parent)
@@ -322,7 +492,7 @@ local function flush(head,first,last,a,parent,nesting)
             local result = nil
             local cwidth = getwidth(content)
             local ctotal = gettotal(content)
-            if cwidth <= width then -- slack
+            if cwidth <= width then
                 if trace then
                     report("index %i, available %p, content %p, verdict %a",index,width,cwidth,"fit")
                 end
@@ -332,7 +502,7 @@ local function flush(head,first,last,a,parent,nesting)
                 if trace then
                     report("index %i, available %p, content %p, verdict %a",index,width,cwidth,"overflow")
                 end
-                result   = hsplit(content,width)
+                result   = hsplit(content,width-(data.slack or 0),nil,nil,200)
                 lastattr = a
                 lastline = parent
             else
@@ -383,7 +553,7 @@ local function lastflush(lastline,lastattr)
             local total  = 0
             local cwidth = getwidth(content)
             local ctotal = gettotal(content)
-            if cwidth <= width then -- slack
+            if cwidth <= width then
                 if trace then
                     report("index %i, available %p, content %p, verdict %a",index,width,cwidth,"fit")
                 end
@@ -393,7 +563,7 @@ local function lastflush(lastline,lastattr)
                 if trace then
                     report("index %i, available %p, content %p, verdict %a",index,width,cwidth,"overflow")
                 end
-                result = hsplit(content,width)
+                result = hsplit(content,width-(data.slack or 0),nil,nil,200)
             else
                 report("index %i, verdict %a",index,"weird")
             end
@@ -413,7 +583,7 @@ end
 
 local processranges = nuts.processranges
 
-function parallels.handler(head,where)
+function synchronize.handler(head,where)
     if where == "hmodepar" and hasvalues(a_synchronize) then
         lastattr = nil
         lastline = nil
@@ -433,3 +603,63 @@ function parallels.handler(head,where)
     end
     return head
 end
+
+--
+
+local settings_to_array  = utilities.parsers.settings_to_array
+local get_buffer_content = buffers.getcontent
+local splitlines         = string.splitlines
+
+interfaces.implement {
+    name      = "synchronizesteps",
+    arguments = { {
+        { "list" },
+        { "split" },
+        { "buffer" },
+        { "text" },
+    } },
+    actions   = function(t)
+        local split  = t.split -- not used yet
+        local list   = t.list
+        local buffer = t.buffer
+        local text   = t.text
+        local data   = false
+        if buffer and buffer ~= "" then
+            data = settings_to_array(buffer)
+            if #data == 2 then
+                for i=1,#data do
+                    data[i] = splitlines(get_buffer_content(data[i]) or "")
+                end
+            else
+                return
+            end
+        elseif text and text ~= "" then
+            data = settings_to_array(text)
+            if #data == 2 then
+                for i=1,#data do
+                    data[i] = settings_to_array(data[i])
+                end
+            else
+                return
+            end
+        else
+            return
+        end
+        if list and list ~= "" then
+            list = settings_to_array(list)
+        else
+            list = { }
+        end
+        local done = data[1]
+        local dtwo = data[2]
+        if #done == #dtwo then
+            local lone = list[1] or ""
+            local ltwo = list[2] or ""
+            for i=1,#done do
+                context.dosplitsynchronize(lone,ltwo,done[i],dtwo[i])
+            end
+        else
+            context.type("[different sizes in synchronize]")
+        end
+    end,
+}

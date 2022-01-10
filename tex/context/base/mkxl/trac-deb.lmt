@@ -24,6 +24,7 @@ local implement    = interfaces.implement
 
 local ioflush      = io.flush
 local ioread       = io.read
+local ossleep      = os.sleep
 local writenl      = texio.writenl
 local write        = texio.write
 
@@ -418,3 +419,23 @@ directives.register("system.profile",function(n)
     logs.report("system","profiler started")
     debugger.enable()
 end)
+
+local report = logs.reporter("[[diagnostic]]")
+
+implement {
+    name      = "diagnostic",
+    public    = true,
+ -- protected = false, -- expandable
+    arguments = { "optional", "string" },
+    actions   = function(t,s)
+        t = tonumber(t)
+        if t then
+            report("%s (sleep: %.3N)",s,t)
+            ioflush()
+            ossleep(t)
+        else
+            report(s)
+            ioflush()
+        end
+    end
+}

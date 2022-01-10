@@ -17,7 +17,7 @@ local next = next
 local trace_visualize    = false  trackers.register("fonts.composing.visualize", function(v) trace_visualize = v end)
 local trace_define       = false  trackers.register("fonts.composing.define",    function(v) trace_define    = v end)
 
-local report             = logs.reporter("fonts","combining")
+local report             = logs.reporter("fonts","composing")
 
 local allocate           = utilities.storage.allocate
 
@@ -49,6 +49,73 @@ local fraction           = 0.15  -- 30 units for lucida
 
 -- todo: we also need to update the feature hashes ... i'll do that when i'm in the mood
 -- and/or when i need it
+
+-- \starttext
+--     \definefontfeature[default][default][fakecombining=yes,compose=yes]
+--     \setupbodyfont[minion]
+--     [x][\char"2D9][x][\char"323] ṭḍṃḥ
+-- \stoptext
+
+local missing = {
+ -- [0x323] = { kind = "bottom", top = 0x307 }, -- dot below
+    [0x323] = { kind = "bottom", top = 0x2D9 }, -- dot below
+    --
+    -- TODO
+    --
+}
+
+local function fakecharacters(tfmdata,value)
+    if value then
+        local characters   = tfmdata.characters
+        local descriptions = tfmdata.descriptions
+        for unicode, detail in next, missing do
+            local c = characters[k]
+            if not c then
+                local kind = detail.kind
+                if kind == "bottom" then
+                    local u = detail.top
+                    local d = characters[u]
+                    if d then
+                        local ex = tfmdata.parameters.xheight
+                        characters[unicode] = {
+                            width    = d.width,
+                            height   = 0,
+                            depth    = ex/2,
+                            commands = { { "offset", 0, -d.height - ex/5 , u } },
+                            unicode  = unicode,
+                        }
+                        -- we need this for the composer
+                        local d = descriptions[u]
+                        local x = descriptions[0x78]
+                        if d and x then
+                            local t = table.copy(d)
+                            local x = -x.boundingbox[4]/2
+                            local b = t.boundingbox
+                            b[2] = x
+                            b[4] = x
+                            descriptions[unicode] = t
+                        end
+                        if trace then
+                            report("deriving %C from %C",unicode,u)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+local specification = {
+    name        = "fakecombining",
+    description = "add missing combining accents",
+    manipulators = {
+     -- position = 1, -- todo: just before compose
+        base     = fakecharacters,
+        node     = fakecharacters,
+    }
+}
+
+fonts.handlers.otf.features.register(specification)
 
 local function composecharacters(tfmdata)
     -- this assumes that slot 1 is self, there will be a proper self some day
@@ -110,8 +177,10 @@ local function composecharacters(tfmdata)
                                     report("composed %C, base %C, accent %C",i,chr,acc)
                                 end
                                 local acc_t = charcommand[acc]
-                                local cb = descriptions[chr].boundingbox
-                                local ab = descriptions[acc].boundingbox
+                                local cb = descriptions[chr]
+                                local ab = descriptions[acc]
+                                local cb = cb and cb.boundingbox
+                                local ab = ab and ab.boundingbox
                                 -- todo: adapt height
                                 if cb and ab then
                                     local c_llx = scale*cb[1]

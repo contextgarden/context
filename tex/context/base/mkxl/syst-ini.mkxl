@@ -381,12 +381,24 @@
 %D as all engines now provide many registers we removed all traces. If you ever run
 %D into the \MKII\ \type {mptopdf} code, you'll notice that some register magic was
 %D needed to fit into existing macro packages. The same is true for \PICTEX\ that we
-%D used in (gheneric) \PPCHTEX.
+%D used in (generic) \PPCHTEX.
 
 \ifdefined\writestatus \else
    %\protected\def\writestatus#1#2{\immediate\write\statuswrite{#1: #2}}
     \frozen\protected\def\writestatus#1#2{\message{#1: #2}}
 \fi
+
+%D The above command will normally hook into the interface commands and is a
+%D protected command. We also have an \type {\diagnostic} predefined which is an
+%D expandable command:
+%D
+%D \starttyping
+%D test \diagnostic     {here 1} test
+%D test \diagnostic[2]  {here 2} test
+%D test \diagnostic[.05]{here 3} test
+%D \stoptyping
+%D
+%D The optional argument triggers a sleep in seconds.
 
 \def\syst_basics_allocate_yes#1#2#3#4#5% last class method max name
   {\ifnum#1<#4\relax

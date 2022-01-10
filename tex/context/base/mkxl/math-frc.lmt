@@ -37,7 +37,7 @@ local function mathfraction(how,left,right,width)
             context("\\atopwithdelims%s%s",resolved[left],resolved[right])
         end
     elseif how == v_yes or how == v_hidden then
-        local norule = how == v_hidden and LUATEXFUNCTIONALITY > 7361 and " norule " or ""
+        local norule = how == v_hidden and " norule " or ""
         if left == 0x002E and right == 0x002E then
             context("\\normalabove%s%s%ssp",norule,width)
         else

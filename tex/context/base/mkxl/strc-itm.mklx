@@ -1314,12 +1314,7 @@
    \settrue\c_strc_itemgroups_txt
    \startitemgroupitem}
 
-% \protected\tolerant\def\strc_itemgroups_start_items_indeed[#1]%
-%   {\strc_itemgroups_start_edge
-%      {\dorecurse{0\itemgroupparameter\c!items}{\strc_itemgroups_used_symbol\hss}%
-%       \unskip}}
-
-\protected\tolerant\def\strc_itemgroups_start_items_indeed[#1]%
+\protected\tolerant\def\strc_itemgroups_start_items[#1]%
   {\strc_itemgroups_start_edge
      {\localcontrolledloop
         \plusone

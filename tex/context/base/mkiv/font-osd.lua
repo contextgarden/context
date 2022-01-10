@@ -877,23 +877,16 @@ local function initializeconjuncts(tfmdata,value)
         local resources  = tfmdata.resources
         local devanagari = resources.devanagari
         if devanagari then
-            local conjuncts = "auto"
-            local conjuncts = "continue"
-            local movematra = "auto"
+            -- quit was the old situation
+            local conjuncts = "auto" -- mixed|continue|quit|auto
+            local movematra = "auto" -- default|leftbeforebase|auto
             if type(value) == "string" and value ~= "auto" then
                 value     = settings_to_hash(value)
                 conjuncts = rawget(value,"conjuncts") or conjuncts
                 movematra = rawget(value,"movematra") or movematra
             end
             if conjuncts == "auto" then
-                conjuncts = "continue"
-                -- maybe some day we can figure out bad-fonts logic
-             -- if script == "mlym" or script == "mlm2" or
-             --    script == "taml" or script == "tml2" then
-             --     conjuncts = "continue"
-             -- else
-             --     conjuncts = "quit"
-             -- end
+                conjuncts = "mixed" -- for all scripts ?
             end
             if movematra == "auto" and
                   script == "mlym" or
@@ -905,9 +898,9 @@ local function initializeconjuncts(tfmdata,value)
             devanagari.conjuncts = conjuncts
             devanagari.movematra = movematra
             --
---             if trace_steps then
+            if trace_steps then
                 report("conjuncts %a, movematra %a",conjuncts,movematra)
---             end
+            end
             --
         end
     end
@@ -2470,21 +2463,28 @@ local function analyze_next_chars_one(c,font,variant) -- skip one dependent vowe
                     already_below_mark = true
                 elseif post_mark[v] and not already_post_mark then
                     already_post_mark = true
-                elseif devanagarihash[font].conjuncts == "quit" then
+                elseif devanagarihash[font].conjuncts == "continue" then
+                    -- for testing
+                else
                     return c
                 end
             end
         else
-            if devanagarihash[font].conjuncts == "quit" then
-                return c
-            elseif pre_mark[v] and not already_pre_mark then
+            if pre_mark[v] and not already_pre_mark then
                 already_pre_mark = true
             elseif post_mark[v] and not already_post_mark then
-                already_post_mark = true
+                if devanagarihash[font].conjuncts == "mixed" then
+                    -- for messy fonts
+                    return c
+                else
+                    already_post_mark = true
+                end
             elseif below_mark[v] and not already_below_mark then
                 already_below_mark = true
             elseif above_mark[v] and not already_above_mark then
                 already_above_mark = true
+            elseif devanagarihash[font].conjuncts == "continue" then
+                -- for testing
             else
                 return c
             end
@@ -2678,21 +2678,28 @@ local function analyze_next_chars_two(c,font)
                         already_below_mark = true
                     elseif post_mark[v] and not already_post_mark then
                         already_post_mark = true
-                    elseif devanagarihash[font].conjuncts == "quit" then
+                    elseif devanagarihash[font].conjuncts == "continue" then
+                        -- for testing
+                    else
                         return c
                     end
                 end
             else
-                if devanagarihash[font].conjuncts == "quit" then
-                    return c
-                elseif pre_mark[v] and not already_pre_mark then
+                if pre_mark[v] and not already_pre_mark then
                     already_pre_mark = true
                 elseif post_mark[v] and not already_post_mark then
-                    already_post_mark = true
+                    if devanagarihash[font].conjuncts == "mixed" then
+                        -- for messy fonts
+                        return c
+                    else
+                        already_post_mark = true
+                    end
                 elseif below_mark[v] and not already_below_mark then
                     already_below_mark = true
                 elseif above_mark[v] and not already_above_mark then
                     already_above_mark = true
+                elseif devanagarihash[font].conjuncts == "continue" then
+                    -- for testing
                 else
                     return c
                 end
