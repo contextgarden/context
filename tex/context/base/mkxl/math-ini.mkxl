@@ -2464,12 +2464,15 @@
    \fi}
 
 \permanent\def\expandedmathstyleparameter#1%
-  {\ifcsname\??mathstyle#1\c!mathstyle\endcsname
+  {\normalexpanded{\noexpand\math_style_set_expanded{#1\c!mathstyle}}}
+
+\def\math_style_set_expanded#1%
+  {\ifcsname\??mathstyle#1e\endcsname
      \lastnamedcs
-   \orelse\ifcsname\??mathstylecache#1\c!mathstyle\endcsname
+   \orelse\ifcsname\??mathstylecache#1\endcsname
      \lastnamedcs
    \else
-     \math_style_set_mathstyle_mathstylecache#1%
+     \math_style_set_mathstyle_mathstylecache{#1}%
    \fi}
 
 \permanent\protected\def\usemathstyleparameter#1%
@@ -2492,14 +2495,14 @@
 
 \def\math_style_set_mathstyle_mathstylecache#1%
   {\beginlocalcontrol % so we can expand
-   \edef\m_math_style_asked{#1\c!mathstyle}%
+   \edef\m_math_style_asked{#1}%
    \c_math_styles_state_style  \zerocount
    \c_math_styles_state_cramped\zerocount
    \c_math_styles_state_size   \zerocount
    \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
    \gletcsname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
    \endlocalcontrol
-   \csname\??mathstylecache#1\c!mathstyle\endcsname}
+   \csname\??mathstylecache#1\endcsname}
 
 % \letcsname\??mathstyle     \??mathstyle     \endcsname\math_style_set_mathstyle_mathstyle      % still needed?
 % \letcsname\??mathstylecache\??mathstylecache\endcsname\math_style_set_mathstyle_mathstylecache % still needed?

@@ -893,6 +893,7 @@
 		<cd:constant name='header' value='antet'/>
 		<cd:constant name='headerdistance' value='distantaantet'/>
 		<cd:constant name='headerstate' value='stareantet'/>
+		<cd:constant name='headindenting' value='headindenting'/>
 		<cd:constant name='headlabel' value='etichetatitlu'/>
 		<cd:constant name='headnumber' value='numartitlu'/>
 		<cd:constant name='headseparator' value='headseparator'/>

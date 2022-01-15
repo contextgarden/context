@@ -303,6 +303,7 @@
 		<cd:variable name='july' value='july'/>
 		<cd:variable name='june' value='june'/>
 		<cd:variable name='keep' value='keep'/>
+		<cd:variable name='keeptogether' value='keeptogether'/>
 		<cd:variable name='kerncharacters' value='kerncharacters'/>
 		<cd:variable name='knockout' value='knockout'/>
 		<cd:variable name='label' value='label'/>
@@ -892,6 +893,7 @@
 		<cd:constant name='header' value='header'/>
 		<cd:constant name='headerdistance' value='headerdistance'/>
 		<cd:constant name='headerstate' value='headerstate'/>
+		<cd:constant name='headindenting' value='headindenting'/>
 		<cd:constant name='headlabel' value='headlabel'/>
 		<cd:constant name='headnumber' value='headnumber'/>
 		<cd:constant name='headseparator' value='headseparator'/>
@@ -1286,6 +1288,7 @@
 		<cd:constant name='synonymcommand' value='synonymcommand'/>
 		<cd:constant name='synonymstyle' value='synonymstyle'/>
 		<cd:constant name='tab' value='tab'/>
+		<cd:constant name='target' value='target'/>
 		<cd:constant name='text' value='text'/>
 		<cd:constant name='textalign' value='textalign'/>
 		<cd:constant name='textalternative' value='textalternative'/>

@@ -282,7 +282,7 @@
 
 \protected\defcsname\??mathfractionalternative\v!inner\endcsname#1#2%
   {\math_frac_command_u
-{}%     {\expandedmathstyleparameter\mathfractionparameter}%
+     {}%     {\expandedmathstyleparameter\mathfractionparameter}%
      {\math_fraction_margin_kern
 \usemathstyleparameter\mathfractionparameter
       \m_fractions_strut_top#1%
@@ -322,7 +322,6 @@
       \math_fraction_margin_kern}%
    \endmathgroup
    \math_frac_wrapup}
-
 
 \nulldelimiterspace\zeropoint % was 1.2pt
 
