@@ -101,7 +101,6 @@ local getkern          = nuts.getkern
 local getwidth         = nuts.getwidth
 
 local ischar           = nuts.ischar
-local isnextchar       = nuts.isnextchar
 local isglyph          = nuts.isglyph
 local usesfont         = nuts.usesfont
 

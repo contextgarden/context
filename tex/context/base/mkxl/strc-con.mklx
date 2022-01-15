@@ -399,8 +399,12 @@
    %
    \dostarttagged\t!constructiontag\empty % todo
    \setbox\constructionheadbox\hbox
-     {\forgetall
+     {\scratchskip\parindent
+      \forgetall
       \dontcomplain
+      % new and under testing
+      \doif{\constructionparameter\c!headindenting}\v!yes{\hskip\scratchskip}%
+      %
       \ifx\currentconstructionalternative\v!serried % brrr, hack, will change
         \csname\??constructionmainhandler\currentconstructionhandler\endcsname\currentconstructiontext
       \else
@@ -410,11 +414,9 @@
    \ifx\p_strc_constructions_aligntitle\v!no
      \leftconstructionskip \leftskip
      \rightconstructionskip\rightskip
-   \else
-     \ifcase\c_strc_constructions_nested_state
-       \leftconstructionskip \leftskip
-       \rightconstructionskip\rightskip
-     \fi
+   \orelse\ifcase\c_strc_constructions_nested_state
+     \leftconstructionskip \leftskip
+     \rightconstructionskip\rightskip
    \fi
    \edef\p_strc_constructions_align{\constructionparameter\c!align}%
    \ifempty\p_strc_constructions_align \else
@@ -937,10 +939,6 @@
     \constructionparameter\c!headcommand{\flushconstructionheadbox}
     \endgroup
 \stopsetups
-
-\ifcase\contextlmtxmode \else
-    % just an empty check so that we can grep for contextlmtxmode in mkiv files
-\fi
 
 % \definedescription[whatever][alternative=right:bottom]
 %

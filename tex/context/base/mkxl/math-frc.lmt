@@ -26,60 +26,53 @@ table.setmetatableindex(resolved, function(t,k)
     return v
 end)
 
-local ctx_normalatop = context.normalatop
-local ctx_normalover = context.normalover
-
-local function mathfraction(how,left,right,width)
-    if how == v_no then
-        if left == 0x002E and right == 0x002E then
-            ctx_normalatop()
-        else
-            context("\\atopwithdelims%s%s",resolved[left],resolved[right])
-        end
-    elseif how == v_yes or how == v_hidden then
-        local norule = how == v_hidden and " norule " or ""
-        if left == 0x002E and right == 0x002E then
-            context("\\normalabove%s%s%ssp",norule,width)
-        else
-            context("\\abovewithdelims%s%s%s%s%ssp",norule,resolved[left],resolved[right],width)
-        end
-    else -- v_auto
-        if left == 0x002E and right == 0x002E then
-            ctx_normalover()
-        else
-            context("\\overwithdelims%s%s",resolved[left],resolved[right])
-        end
-    end
-end
-
-interfaces.implement {
-    name      = "mathfraction",
-    actions   = mathfraction,
-    arguments = { "string", "number", "number", "dimen" }
-}
-
 local ctx_Uatop = context.Uatop
 local ctx_Uover = context.Uover
 
-local function umathfraction(how,left,right,width)
+local function umathfraction(how,style,left,right,width)
+    style = tonumber(style) -- or nil
     if how == v_no then
         if left == 0x002E and right == 0x002E then
-            ctx_Uatop()
+            if style then
+                context("\\Uatop style %i",style)
+            else
+                ctx_Uatop()
+            end
         else
-            context("\\Uatopwithdelims%s%s",resolved[left],resolved[right])
+            if style then
+                context("\\Uatopwithdelims style %i %s%s",style,resolved[left],resolved[right])
+            else
+                context("\\Uatopwithdelims%s%s",resolved[left],resolved[right])
+            end
         end
     elseif how == v_yes or how == v_hidden then
         local norule = how == v_hidden and " norule " or ""
-        if left == 0x002E and right == 0x002E then
-            context("\\Uabove%s%ssp",norule,width)
+        if style then
+            if left == 0x002E and right == 0x002E then
+                context("\\Uabove style %i %s%ssp",style,norule,width)
+            else
+                context("\\Uabovewithdelims style %i %s%s%s%ssp",style,norule,resolved[left],resolved[right],width)
+            end
         else
-            context("\\Uabovewithdelims%s%s%s%ssp",norule,resolved[left],resolved[right],width)
+            if left == 0x002E and right == 0x002E then
+                context("\\Uabove%s%ssp",norule,width)
+            else
+                context("\\Uabovewithdelims%s%s%s%ssp",norule,resolved[left],resolved[right],width)
+            end
         end
     else -- v_auto
         if left == 0x002E and right == 0x002E then
-            ctx_Uover()
+            if style then
+                context("\\Uover style %i",style)
+            else
+                ctx_Uover()
+            end
         else
-            context("\\Uoverwithdelims%s%s",resolved[left],resolved[right])
+            if style then
+                context("\\Uoverwithdelims style %i %s%s",style,resolved[left],resolved[right])
+            else
+                context("\\Uoverwithdelims%s%s",resolved[left],resolved[right])
+            end
         end
     end
 end
@@ -87,5 +80,5 @@ end
 interfaces.implement {
     name      = "umathfraction",
     actions   = umathfraction,
-    arguments = { "string", "number", "number", "dimen" }
+    arguments = { "string", "string", "number", "number", "dimen" }
 }

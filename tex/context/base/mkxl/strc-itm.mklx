@@ -203,7 +203,7 @@
 
 % 0 = before/after
 % 1 = between unless before
-% 2 = between
+% 2 = between (auto)
 
 \newconstant   \c_strc_itemgroups_spacing_mode   \c_strc_itemgroups_spacing_mode\plustwo
 \newconditional\c_strc_itemgroups_optimize       \settrue\c_strc_itemgroups_optimize
@@ -908,6 +908,15 @@
    %
    \doadaptleftskip {\itemgroupparameter\c!leftmargindistance}%
    \doadaptrightskip{\itemgroupparameter\c!rightmargindistance}%
+   %
+   \edef\m_strc_itemgroups_spacing{\itemgroupparameter\c!spacing}%
+   \ifx\m_strc_itemgroups_spacing\v!before
+     \c_strc_itemgroups_spacing_mode\zerocount
+   \orelse\ifx\m_strc_itemgroups_spacing\v!inbetween
+     \c_strc_itemgroups_spacing_mode\plusone
+   \orelse\ifx\m_strc_itemgroups_spacing\v!auto
+     \c_strc_itemgroups_spacing_mode\plustwo
+   \fi
    %
    \usealignparameter\itemgroupparameter
    \edef\m_strc_itemgroups_indenting{\itemgroupparameter\c!indenting}%

@@ -307,16 +307,22 @@
    \endgroup}
 
 \protected\def\strc_enumerations_inject_symbol % todo check
-  {\constructionparameter\c!left
+  {\begingroup
+   \useconstructionstyleandcolor\c!numberstyle\c!numbercolor
+   \constructionparameter\c!left
    \constructionparameter\c!symbol
-   \constructionparameter\c!right}
+   \constructionparameter\c!right
+   \endgroup}
 
 \protected\def\strc_enumerations_inject_number
-  {\constructionparameter\c!left
+  {\begingroup
+   \useconstructionstyleandcolor\c!numberstyle\c!numbercolor
+   \constructionparameter\c!left
    \constructionparameter\c!starter
    \clf_savedlistprefixednumber{\currentconstructionmain}\currentconstructionlistentry\relax
    \constructionparameter\c!stopper
-   \constructionparameter\c!right}
+   \constructionparameter\c!right
+   \endgroup}
 
 \protected\def\strc_enumerations_inject_text_and_number
   {\constructionparameter\c!numbercommand

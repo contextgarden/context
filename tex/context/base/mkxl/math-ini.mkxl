@@ -722,34 +722,96 @@
 %
 % this overflows so we use this instead:
 
+% \protected\def\math_strut_htdp#1% nasty!
+%   {\s!height\dimexpr(\fontcharht#1\c_math_strut/\glyphscale)*\mathscale#1\relax
+%    \s!depth \dimexpr(\fontchardp#1\c_math_strut/\glyphscale)*\mathscale#1\relax}
+%
+% \protected\def\math_strut_normal
+%   {\vrule
+%       \s!width \zeropoint
+%       \normalexpanded{\math_strut_htdp{\mathstylefont\normalmathstyle}}%
+%    \relax}
+%
+% \protected\def\math_strut_visual
+%   {\hskip-.01\emwidth
+%    \vrule
+%       \s!width .02\emwidth
+%       \normalexpanded{\math_strut_htdp{\mathstylefont\normalmathstyle}}%
+%    \relax
+%    \hskip-.01\emwidth}
+
+\protected\def\math_strut_ht#1% nasty!
+  {\s!height\dimexpr(\fontcharht#1\c_math_strut/\glyphscale)*\mathscale#1\relax}
+
+\protected\def\math_strut_dp#1% nasty!
+  {\s!depth \dimexpr(\fontchardp#1\c_math_strut/\glyphscale)*\mathscale#1\relax}
+
 \protected\def\math_strut_htdp#1% nasty!
-  {\s!height\dimexpr(\fontcharht#1\c_math_strut/\glyphscale)*\mathscale#1\relax
-   \s!depth \dimexpr(\fontchardp#1\c_math_strut/\glyphscale)*\mathscale#1\relax}
+  {\math_strut_ht{#1}%
+   \math_strut_dp{#1}}
 
 \protected\def\math_strut_normal
   {\vrule
-      \s!width \zeropoint
-      \normalexpanded{\math_strut_htdp{\mathstylefont\normalmathstyle}}%
+     \s!width \zeropoint
+     \normalexpanded{\math_strut_htdp{\mathstylefont\normalmathstyle}}%
    \relax}
 
 \protected\def\math_strut_visual
   {\hskip-.01\emwidth
    \vrule
-      \s!width .02\emwidth
-      \normalexpanded{\math_strut_htdp{\mathstylefont\normalmathstyle}}%
+     \s!width .02\emwidth
+     \normalexpanded{\math_strut_htdp{\mathstylefont\normalmathstyle}}%
+   \relax
+   \hskip-.01\emwidth}
+
+\permanent\protected\def\math_strut_height_normal
+  {\vrule
+     \s!width \zeropoint
+     \normalexpanded{\math_strut_ht{\mathstylefont\normalmathstyle}}%
+     \s!depth \zeropoint
+   \relax}
+
+\permanent\protected\def\math_strut_height_visual
+  {\hskip-.01\emwidth
+   \vrule
+     \s!width .02\emwidth
+     \normalexpanded{\math_strut_ht{\mathstylefont\normalmathstyle}}%
+     \s!depth \zeropoint
+   \relax
+   \hskip-.01\emwidth}
+
+\permanent\protected\def\math_strut_depth_normal
+  {\vrule
+     \s!width \zeropoint
+     \s!height\zeropoint
+     \normalexpanded{\math_strut_dp{\mathstylefont\normalmathstyle}}%
+   \relax}
+
+\permanent\protected\def\math_strut_depth_visual
+  {\hskip-.01\emwidth
+   \vrule
+     \s!width .02\emwidth
+     \s!height\zeropoint
+     \normalexpanded{\math_strut_dp{\mathstylefont\normalmathstyle}}%
    \relax
    \hskip-.01\emwidth}
 
 \permanent\protected\def\showmathstruts % let's not overload \math_strut_normal
-  {\enforced\let\math_strut\math_strut_visual}
+  {\enforced\let\math_strut       \math_strut_visual
+   \enforced\let\math_strut_height\math_strut_height_visual
+   \enforced\let\math_strut_depth \math_strut_depth_visual}
 
-\let\math_strut\math_strut_normal
+\let\math_strut       \math_strut_normal
+\let\math_strut_height\math_strut_height_normal
+\let\math_strut_depth \math_strut_depth_normal
 
 % \protected\def\mathstrut{\mathcodecommand{nothing}{\math_strut}}
 
 \pushoverloadmode
 
-    \definemathcommand [mathstrut] {\math_strut}
+    \definemathcommand [mathstrut]       {\math_strut}
+    \definemathcommand [mathheightstrut] {\math_strut_height}
+    \definemathcommand [mathdepthstrut]  {\math_strut_depth}
 
 \popoverloadmode
 
@@ -2315,15 +2377,9 @@
   \fi
 }
 
-\permanent\tolerant\protected\def\setmathstyle[#1]#;#=% so we accept [] and {}
-  {\edef\m_math_style_asked{#1#2}%
-   \ifempty\m_math_style_asked \else
-     \math_style_set_indeed
-   \fi}
-
 \permanent\def\installmathstyle#1#2%
   {\ifcsname\??mathstylecommand#1\endcsname \else
-     \setvalue{\??mathstylecommand#1}{#2}%
+     \defcsname\??mathstylecommand#1\endcsname{#2}%
    \fi}
 
 \def\math_style_collect#1%
@@ -2342,17 +2398,17 @@
 \defcsname\??mathstylecommand\v!small       \endcsname{\c_math_styles_state_size   \plusone}
 \defcsname\??mathstylecommand\v!big         \endcsname{\c_math_styles_state_size   \plustwo}
 
-\permanent\protected\def\setupmathstyle[#1]%
-  {\edef\m_math_style_asked{#1}%
-   \ifempty\m_math_style_asked \else
-     \math_style_set_indeed
-   \fi}
-
-\permanent\protected\def\usemathstyleparameter#1% faster local variant
-  {\edef\m_math_style_asked{#1\c!mathstyle}%
-   \ifempty\m_math_style_asked \else
-     \math_style_set_indeed
-   \fi}
+% \permanent\protected\def\setupmathstyle[#1]%
+%   {\edef\m_math_style_asked{#1}%
+%    \ifempty\m_math_style_asked \else
+%      \math_style_set_indeed
+%    \fi}
+%
+% \permanent\protected\def\usemathstyleparameter#1% faster local variant
+%   {\edef\m_math_style_asked{#1\c!mathstyle}%
+%    \ifempty\m_math_style_asked \else
+%      \math_style_set_indeed
+%    \fi}
 
 %D \startbuffer
 %D \definemathstyle[mystyle][scriptscript]
@@ -2362,39 +2418,91 @@
 %D
 %D \typebuffer \blank \start \getbuffer \stop \blank
 
+% maybe move this to the lua end ...
+
 \installcorenamespace {mathstyle}
 
-\permanent\tolerant\protected\def\definemathstyle[#1]#*[#2]%
-  {\c_math_styles_state_style  \zerocount
-   \c_math_styles_state_cramped\zerocount
-   \c_math_styles_state_size   \zerocount
-   \rawprocesscommacommand[#2]\math_style_collect
-   \letcsname\??mathstyle#1\normalexpanded{\endcsname\math_style_add_to_cache_choice}}
+% \permanent\tolerant\protected\def\definemathstyle[#1]#*[#2]%
+%   {\c_math_styles_state_style  \zerocount
+%    \c_math_styles_state_cramped\zerocount
+%    \c_math_styles_state_size   \zerocount
+%    \rawprocesscommacommand[#2]\math_style_collect
+%    \letcsname\??mathstyle#1\normalexpanded{\endcsname\math_style_add_to_cache_choice}}
+%
+% \def\math_style_set_indeed
+%   {\ifcsname\??mathstyle\m_math_style_asked\endcsname
+%      \lastnamedcs
+%    \else
+%      \math_style_set_mathstyle_mathstyle
+%    \fi}
+%
+% \def\math_style_set_mathstyle_mathstyle
+%   {\ifcsname\??mathstylecache\m_math_style_asked\endcsname
+%      \lastnamedcs
+%    \else
+%      \math_style_set_mathstyle_mathstylecache
+%    \fi}
+%
+% \def\math_style_set_mathstyle_mathstylecache
+%   {\c_math_styles_state_style  \zerocount
+%    \c_math_styles_state_cramped\zerocount
+%    \c_math_styles_state_size   \zerocount
+%    \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
+%    \gletcsname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
+%    \csname\??mathstylecache\m_math_style_asked\endcsname}
+
+\letcsname\??mathstyle     \endcsname\empty
+\letcsname\??mathstylecache\endcsname\empty
 
 \def\math_style_set_indeed
   {\ifcsname\??mathstyle\m_math_style_asked\endcsname
      \lastnamedcs
-   \else
-     \math_style_set_mathstyle_mathstyle
-   \fi}
-
-\def\math_style_set_mathstyle_mathstyle
-  {\ifcsname\??mathstylecache\m_math_style_asked\endcsname
+   \orelse\ifcsname\??mathstylecache\m_math_style_asked\endcsname
      \lastnamedcs
    \else
-     \math_style_set_mathstyle_mathstylecache
+     \math_style_set_mathstyle_mathstylecache\m_math_style_asked
    \fi}
 
-\def\math_style_set_mathstyle_mathstylecache
-  {\c_math_styles_state_style  \zerocount
+\permanent\def\expandedmathstyleparameter#1%
+  {\ifcsname\??mathstyle#1\c!mathstyle\endcsname
+     \lastnamedcs
+   \orelse\ifcsname\??mathstylecache#1\c!mathstyle\endcsname
+     \lastnamedcs
+   \else
+     \math_style_set_mathstyle_mathstylecache#1%
+   \fi}
+
+\permanent\protected\def\usemathstyleparameter#1%
+  {\edef\m_math_style_asked{#1\c!mathstyle}%
+   \ifempty\m_math_style_asked \else
+     \math_style_set_indeed
+   \fi}
+
+\permanent\tolerant\protected\def\setmathstyle[#1]#;#=% so we accept [] and {}
+  {\edef\m_math_style_asked{#1#2}%
+   \ifempty\m_math_style_asked \else
+     \math_style_set_indeed
+   \fi}
+
+\permanent\protected\def\setupmathstyle[#1]%
+  {\edef\m_math_style_asked{#1}%
+   \ifempty\m_math_style_asked \else
+     \math_style_set_indeed
+   \fi}
+
+\def\math_style_set_mathstyle_mathstylecache#1%
+  {\beginlocalcontrol % so we can expand
+   \edef\m_math_style_asked{#1\c!mathstyle}%
+   \c_math_styles_state_style  \zerocount
    \c_math_styles_state_cramped\zerocount
    \c_math_styles_state_size   \zerocount
    \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
    \gletcsname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
-   \csname\??mathstylecache\m_math_style_asked\endcsname}
+   \endlocalcontrol
+   \csname\??mathstylecache#1\c!mathstyle\endcsname}
 
-\letcsname\??mathstyle     \??mathstyle     \endcsname\math_style_set_mathstyle_mathstyle      % still needed?
-\letcsname\??mathstylecache\??mathstylecache\endcsname\math_style_set_mathstyle_mathstylecache % still needed?
+% \letcsname\??mathstyle     \??mathstyle     \endcsname\math_style_set_mathstyle_mathstyle      % still needed?
+% \letcsname\??mathstylecache\??mathstylecache\endcsname\math_style_set_mathstyle_mathstylecache % still needed?
 
 %D \startbuffer
 %D $x\begingroup\setupmathstyle[script]x\endgroup x$
@@ -2409,9 +2517,9 @@
    \ifempty\m_math_style_asked
      \enforced\aliased\let\stopmathstyle\relax
    \else
-     \bgroup
+     \beginmathgroup % \bgroup
      \math_style_set_indeed
-     \enforced\aliased\let\stopmathstyle\egroup
+     \enforced\aliased\let\stopmathstyle\endmathgroup % \egroup
    \fi}
 
 \aliased\let\stopmathstyle\relax
@@ -2421,9 +2529,9 @@
    \ifempty\m_math_style_asked
      \enforced\let\stopusemathstyleparameter\relax
    \else
-     \bgroup
+     \beginmathgroup % \bgroup
      \math_style_set_indeed
-     \enforced\let\stopusemathstyleparameter\egroup
+     \enforced\let\stopusemathstyleparameter\endmathgroup % \egroup
    \fi}
 
 \aliased\let\stopusemathstyleparameter\relax

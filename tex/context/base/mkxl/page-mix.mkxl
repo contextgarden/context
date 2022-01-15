@@ -635,7 +635,7 @@
    \global\advance\c_page_mix_otr_nesting\plusone
    \ifcase\c_page_mix_otr_nesting\or
      \ifdim\pagetotal=\zeropoint \else
-       % make sure that whitespace an dblanks are done
+       % make sure that whitespace and blanks are done
        \strut
        \vskip-\lineheight
       % no, bad spacing: \obeydepth % we could handle this in pre material

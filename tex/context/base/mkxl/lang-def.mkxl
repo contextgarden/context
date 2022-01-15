@@ -826,7 +826,31 @@
 
 \installlanguage [\s!thai] [\s!th]
 
-%D Malayalam (needs to be checked)
+%D Indic languages (Kauśika)
+%
+%
+%D Sanskit (someone needs to define the parameters):
+%D 
+%D The file \type {lang-sa.lua} contains sanskrit hyphenation patterns for devanagari, 
+%D bengali, telugu, kannada, malayalam and roman(iast.
+
+\installlanguage
+  [\s!sa]
+  [\c!spacing=\v!broad,
+   \c!leftsentence=\endash,
+   \c!rightsentence=\endash,
+   \c!leftsubsentence=\emdash,
+   \c!rightsubsentence=\emdash,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!month,\space,\v!day,{,\space},\v!year},
+   \s!patterns=\s!sa,
+   \s!lefthyphenmin=1,
+   \s!righthyphenmin=1]
+
+%D Malayalam needs some fine-tuning
 
 \installlanguage
   [\s!ml]
@@ -844,7 +868,22 @@
    \s!lefthyphenmin=2,
    \s!righthyphenmin=3]
 
-\installlanguage [\s!malayalam] [\s!ml]
+\installlanguage   [\s!ml][\c!default=\s!sa,\s!patterns=\s!ml]
+\installlanguage   [\s!ta][\c!default=\s!sa,\s!patterns=ta]
+\installlanguage   [\s!kn][\c!default=\s!sa,\s!patterns=kn]
+\installlanguage   [\s!te][\c!default=\s!sa,\s!patterns=te]
+\installlanguage   [\s!gu][\c!default=\s!sa,\s!patterns=gu]
+\installlanguage   [\s!bn][\c!default=\s!sa,\s!patterns=bn]
+\installlanguage   [\s!hi][\c!default=\s!sa,\s!patterns=hi]
+
+\installlanguage   [\s!tamil]    [\s!ta]
+\installlanguage   [\s!kannada]  [\s!kn]
+\installlanguage   [\s!telugu]   [\s!te]
+\installlanguage   [\s!gujarati] [\s!gu]
+\installlanguage   [\s!hindi]    [\s!hi]
+\installlanguage   [\s!bengali]  [\s!bn]
+\installlanguage   [\s!sanskrit] [\s!sa]
+\installlanguage   [\s!malayalam][\s!ml]
 
 %D Todo: generate this one from languages.data
 

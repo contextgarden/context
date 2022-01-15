@@ -154,7 +154,7 @@ function mathematics.dimensions(dimens)  -- beware, dimens get spoiled
         dimens["abs(mathxheight)/4"] = abs(mathxheight) / 4
         dimens["abs(mathxheight*4)/5"] = abs(mathxheight * 4) / 5
         dimens["<not set>"] = false
-        dimens["script_space"] = false -- at macro level
+        dimens["scriptspace"] = false -- at macro level
         for variable, styles in next, defaults do
             local tt = { }
             for style, default in next, styles do

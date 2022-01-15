@@ -49,7 +49,11 @@
 \registerctxluafile{font-otd}{autosuffix,optimize}
 \registerctxluafile{font-otc}{}
 \registerctxluafile{font-oth}{}
-\registerctxluafile{font-osd}{}
+% \doifelsefileexists{font-osd-new.lmt}{
+%     \registerctxluafile{font-osd-new}{autosuffix}
+% } {
+    \registerctxluafile{font-osd}{}
+% }
 %registerctxluafile{font-osm}{}
 \registerctxluafile{font-ogr}{autosuffix}
 

@@ -9223,6 +9223,10 @@ return {
    ["fr"]="separateurtete",
    ["nl"]="kopscheider",
   },
+  ["headindenting"]={
+   ["en"]="headindenting",
+   ["nl"]="kopinspringen",
+  },
   ["headstyle"]={
    ["cs"]="stylhlavicky",
    ["de"]="kopfstil",

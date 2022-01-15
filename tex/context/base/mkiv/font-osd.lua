@@ -55,6 +55,11 @@ if not modules then modules = { } end modules ['font-osd'] = { -- script devanag
 -- By now we have yet another incremental improved version. In the end I might
 -- rewrite the code.
 --
+-- At the start of 2022 Kauśika spent a lot of time testing combinations of fonts
+-- and scripts and in the process some more tracing was added as well as a mixed
+-- conjuncts options that can deal with fuzzy fonts. The machinery does what it has
+-- to do but some fonts expect more magic to be applied.
+--
 -- Hans Hagen, PRAGMA-ADE, Hasselt NL
 
 -- Todo:
@@ -2551,11 +2556,12 @@ local function analyze_next_chars_one(c,font,variant) -- skip one dependent vowe
 end
 
 local function analyze_next_chars_two(c,font)
-    local n = getnext(c)
+    local n, v
+    n = getnext(c)
     if not n then
         return c
     end
-    local v = ischar(n,font)
+    v = ischar(n,font)
     if v and nukta[v] then
         c = n
     end
@@ -2617,11 +2623,11 @@ local function analyze_next_chars_two(c,font)
         -- This shouldn't happen I guess.
         return
     end
-    local n = getnext(c)
+    n = getnext(c)
     if not n then
         return c
     end
-    local v = ischar(n,font)
+    v = ischar(n,font)
     if not v then
         return c
     end
@@ -3098,6 +3104,10 @@ local function method_two(head,font,attr)
         end
         current = getnext(current)
     end
+
+ -- if languages.indic then
+ --     head = languages.indic.handler(head)
+ -- end
 
     return head, done
 end

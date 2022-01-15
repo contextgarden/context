@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2022-01-10 08:33
+-- merge date  : 2022-01-15 11:02
 
 do -- begin closure to overcome local limits and interference
 
@@ -33686,11 +33686,12 @@ local function analyze_next_chars_one(c,font,variant)
  end
 end
 local function analyze_next_chars_two(c,font)
- local n=getnext(c)
+ local n,v
+ n=getnext(c)
  if not n then
   return c
  end
- local v=ischar(n,font)
+ v=ischar(n,font)
  if v and nukta[v] then
   c=n
  end
@@ -33749,11 +33750,11 @@ local function analyze_next_chars_two(c,font)
  if not c then
   return
  end
- local n=getnext(c)
+ n=getnext(c)
  if not n then
   return c
  end
- local v=ischar(n,font)
+ v=ischar(n,font)
  if not v then
   return c
  end

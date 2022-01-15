@@ -185,17 +185,19 @@ local nodecodes          = nodes.nodecodes
 local noadcodes          = nodes.noadcodes
 local fencecodes         = nodes.fencecodes
 
-local ordnoad_code       = noadcodes.ord
-local opnoad_code        = noadcodes.op
-local binnoad_code       = noadcodes.bin
-local relnode_code       = noadcodes.rel
+local ordinarynoad_code  = noadcodes.ordinary
+local operatornoad_code  = noadcodes.operator
+local binarynoad_code    = noadcodes.binary
+local relationnoad_code  = noadcodes.relation
 local opennoad_code      = noadcodes.open
 local closenoad_code     = noadcodes.close
-local punctnoad_code     = noadcodes.punct
+local punctuationnoad_code = noadcodes.punctuation
 local innernoad_code     = noadcodes.inner
 local undernoad_code     = noadcodes.under
 local overnoad_code      = noadcodes.over
 local vcenternoad_code   = noadcodes.vcenter
+local fractionnoad_code  = noadcodes.fraction
+local radicalnoad_code   = noadcodes.radical
 
 local noad_code          = nodecodes.noad
 local accent_code        = nodecodes.accent
@@ -1804,17 +1806,19 @@ do
     local collapse         = { }
     local mathlists        = characters.mathlists
     local validpair        = {
-        [ordnoad_code]     = true,
-        [opnoad_code]      = true,
-        [binnoad_code]     = true, -- new
-        [relnode_code]     = true,
-        [opennoad_code]    = true, -- new
-        [closenoad_code]   = true, -- new
-        [punctnoad_code]   = true, -- new
-        [innernoad_code]   = false,
-        [undernoad_code]   = false,
-        [overnoad_code]    = false,
-        [vcenternoad_code] = false,
+        [ordinarynoad_code]    = true,
+        [operatornoad_code]    = true,
+        [binarynoad_code]      = true, -- new
+        [relationnoad_code]    = true,
+        [opennoad_code]        = true, -- new
+        [closenoad_code]       = true, -- new
+        [punctuationnoad_code] = true, -- new
+        [innernoad_code]       = false,
+        [undernoad_code]       = false,
+        [overnoad_code]        = false,
+        [vcenternoad_code]     = false,
+        [fractionnoad_code]    = false,
+        [radicalnoad_code]     = false,
     }
 
     local reported = setmetatableindex("table")
@@ -2111,17 +2115,19 @@ do
 
     local classes = { }
     local colors  = {
-        [relnode_code]     = "trace:dr",
-        [ordnoad_code]     = "trace:db",
-        [binnoad_code]     = "trace:dg",
-        [opennoad_code]    = "trace:dm",
-        [closenoad_code]   = "trace:dm",
-        [punctnoad_code]   = "trace:dc",
-     -- [opnoad_code]      = "",
-     -- [innernoad_code    = "",
-     -- [undernoad_code]   = "",
-     -- [overnoad_code]    = "",
-     -- [vcenternoad_code] = "",
+        [relationnoad_code]    = "trace:dr",
+        [ordinarynoad_code]    = "trace:db",
+        [binarynoad_code]      = "trace:dg",
+        [opennoad_code]        = "trace:dm",
+        [closenoad_code]       = "trace:dm",
+        [punctuationnoad_code] = "trace:dc",
+     -- [operatornoad_code]    = "",
+     -- [innernoad_code        = "",
+     -- [undernoad_code]       = "",
+     -- [overnoad_code]        = "",
+     -- [vcenternoad_code]     = "",
+     -- [fractionnoad_code]    = "",
+     -- [radicalnoad_code]     = "",
     }
 
     local setcolor   = colortracers.set
@@ -2165,11 +2171,13 @@ do
     local a_mathdomain  = privateattribute("mathdomain")
     mathematics.domains = categories
     local permitted     = {
-        ordinary    = ordnoad_code,
-        binary      = binnoad_code,
-        relation    = relnode_code,
-        punctuation = punctnoad_code,
+        ordinary    = ordinarynoad_code,
+        binary      = binarynoad_code,
+        relation    = relationnoad_code,
+        punctuation = punctuationnoad_code,
         inner       = innernoad_code,
+     -- fraction    = fractionnoad_code,
+     -- radical     = radicalnoad_code,
     }
 
     function mathematics.registerdomain(data)

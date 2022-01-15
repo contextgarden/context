@@ -586,6 +586,8 @@
 %D A couple of plain macros:
 
 \ifdefined\enspace \else \permanent\protected\def\enspace{\kern .5\emwidth}       \fi
+\ifdefined\emspace \else \permanent\protected\def\emspace{\kern   \emwidth}       \fi
+
 \ifdefined\quad    \else \permanent\protected\def\quad   {\hskip  \emwidth\relax} \fi
 \ifdefined\enskip  \else \permanent\protected\def\enskip {\hskip.5\emwidth\relax} \fi
 \ifdefined\qquad   \else \permanent\protected\def\qquad  {\hskip 2\emwidth\relax} \fi
@@ -593,7 +595,7 @@
 \permanent\protected\def\negenspace{\kern-.5\emwidth}
 \permanent\protected\def\negemspace{\kern-  \emwidth}
 
-\aliased\let\emspace\quad
+% \aliased\let\emspace\quad
 
 \permanent\protected\def\charspace{ } % the unexpandable \space (as space can also be delimiter for numbers)
 

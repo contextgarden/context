@@ -14,10 +14,10 @@
 \libindex {subtypes}
 \libindex {values}
 
-\TEX's nodes are represented in \LUA\ as userdata objects with a variable set of
-fields or by a numeric identifier when requested. When you print a node userdata
+\TEX's nodes are represented in \LUA\ as user data objects with a variable set of
+fields or by a numeric identifier when requested. When you print a node user data
 object you will see these numbers. In the following syntax tables the type of
-such a userdata object is represented as \syntax {<node>}.
+such a user data object is represented as \syntax {<node>}.
 
 \blank
 \dontleavehmode {\bf The return values of \type {node.types} are:} \showtypes
@@ -498,6 +498,11 @@ helpers are not always faster than separate calls but they sometimes permit
 making more readable tests. The \type {usesfont} helpers takes a node
 and font id and returns true when a glyph or disc node references that font.
 
+The \type {isnextchar} and \type {isprevchar} return a next node, a character
+code (or false) and an node id or next character code. The four \type {is}
+checkers take a node and optionally a font, data, state, scale, xscale and yscale
+value that are then checked.
+
 \stopsubsection
 
 \startsubsection[title={\nod {boundary} nodes}]
@@ -871,7 +876,7 @@ renderer and might get adapted in the process.
 The \type {node} library provides methods that facilitate dealing with (lists of)
 nodes and their values. They allow you to create, alter, copy, delete, and insert
 node, the core objects within the typesetter. Nodes are represented in \LUA\ as
-userdata. The various parts within a node can be accessed using named fields.
+user data. The various parts within a node can be accessed using named fields.
 
 Each node has at least the three fields \type {next}, \type {id}, and \type
 {subtype}. The other available fields depend on the \type {id}.
@@ -879,7 +884,7 @@ Each node has at least the three fields \type {next}, \type {id}, and \type
 \startitemize[intro]
 
 \startitem
-    The \type {next} field returns the userdata object for the next node in a
+    The \type {next} field returns the user data object for the next node in a
     linked list of nodes, or \type {nil}, if there is no next node.
 \stopitem
 
@@ -1059,7 +1064,7 @@ This function probably is not that useful but some nodes don't have a \type
 \stopfunctioncall
 
 This function returns a number (the internal index of the node) if the argument
-is a userdata object of type \type {<node>} and false when no node is passed.
+is a user data object of type \type {<node>} and false when no node is passed.
 
 \stopsubsubsection
 
@@ -2061,16 +2066,16 @@ table. In fact, this model, where \TEX\ manages memory is real fast and one of
 the reasons why plugging in callbacks that operate on nodes is quite fast too.
 Each node gets a number that is in fact an index in the memory table and that
 number often is reported when you print node related information. You go from
-userdata nodes and there numeric references and back with:
+user data nodes and there numeric references and back with:
 
 \startfunctioncall
 <integer> d = node.todirect(<node> n))
 <node> n = node.tonode(<integer> d))
 \stopfunctioncall
 
-The userdata model is rather robust as it is a virtual interface with some
+The user data model is rather robust as it is a virtual interface with some
 additional checking while the more direct access which uses the node numbers
-directly. However, even with userdata you can get into troubles when you free
+directly. However, even with user data you can get into troubles when you free
 nodes that are no longer allocated or mess up lists. if you apply \type
 {tostring} to a node you see its internal (direct) number and id.
 
@@ -2162,7 +2167,7 @@ head = node.direct.reverse(head)
 head = node.direct.exchange(head,first,[second])
 \stoptyping
 
-In \CONTEXT\ some of the not performance|-|critical userdata variants are
+In \CONTEXT\ some of the not performance|-|critical user data variants are
 emulated in \LUA\ and not in the engine, so we retain downward compatibility.
 
 \def\yes{$+$} \def\nop{$-$}

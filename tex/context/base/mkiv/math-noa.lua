@@ -185,7 +185,7 @@ local opdisplaylimitsnoad_code = noadcodes.opdisplaylimits
 local oplimitsnoad_code        = noadcodes.oplimits
 local opnolimitsnoad_code      = noadcodes.opnolimits
 local binnoad_code             = noadcodes.bin
-local relnode_code             = noadcodes.rel
+local relnoad_code             = noadcodes.rel
 local opennoad_code            = noadcodes.open
 local closenoad_code           = noadcodes.close
 local punctnoad_code           = noadcodes.punct
@@ -1795,7 +1795,7 @@ do
         [oplimitsnoad_code]        = true,
         [opnolimitsnoad_code]      = true,
         [binnoad_code]             = true, -- new
-        [relnode_code]             = true,
+        [relnoad_code]             = true,
         [opennoad_code]            = true, -- new
         [closenoad_code]           = true, -- new
         [punctnoad_code]           = true, -- new
@@ -2112,7 +2112,7 @@ do
 
     local classes = { }
     local colors  = {
-        [relnode_code]             = "trace:dr",
+        [relnoad_code]             = "trace:dr",
         [ordnoad_code]             = "trace:db",
         [binnoad_code]             = "trace:dg",
         [opennoad_code]            = "trace:dm",
@@ -2171,7 +2171,7 @@ do
     local permitted     = {
         ordinary    = ordnoad_code,
         binary      = binnoad_code,
-        relation    = relnode_code,
+        relation    = relnoad_code,
         punctuation = punctnoad_code,
         inner       = innernoad_code,
     }

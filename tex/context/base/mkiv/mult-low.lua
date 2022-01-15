@@ -467,27 +467,43 @@ return {
         --
         "ordordspacing", "ordopspacing", "ordbinspacing", "ordrelspacing",
         "ordopenspacing", "ordclosespacing", "ordpunctspacing", "ordinnerspacing",
+        "ordfracspacing", "ordradspacing",
         --
         "opordspacing", "opopspacing", "opbinspacing", "oprelspacing",
         "opopenspacing", "opclosespacing", "oppunctspacing", "opinnerspacing",
+        "opfracspacing", "opradspacing",
         --
         "binordspacing", "binopspacing", "binbinspacing", "binrelspacing",
         "binopenspacing", "binclosespacing", "binpunctspacing", "bininnerspacing",
+        "binfracspacing", "binradspacing",
         --
         "relordspacing", "relopspacing", "relbinspacing", "relrelspacing",
         "relopenspacing", "relclosespacing", "relpunctspacing", "relinnerspacing",
+        "relfracspacing", "relradspacing",
         --
         "openordspacing", "openopspacing", "openbinspacing", "openrelspacing",
         "openopenspacing", "openclosespacing", "openpunctspacing", "openinnerspacing",
+        "openfracspacing", "openradspacing",
         --
         "closeordspacing", "closeopspacing", "closebinspacing", "closerelspacing",
         "closeopenspacing", "closeclosespacing", "closepunctspacing", "closeinnerspacing",
+        "closefracspacing", "closeradspacing",
         --
         "punctordspacing", "punctopspacing", "punctbinspacing", "punctrelspacing",
         "punctopenspacing", "punctclosespacing", "punctpunctspacing", "punctinnerspacing",
+        "punctfracspacing", "punctradspacing",
         --
         "innerordspacing", "inneropspacing", "innerbinspacing", "innerrelspacing",
         "inneropenspacing", "innerclosespacing", "innerpunctspacing", "innerinnerspacing",
+        "innerfracspacing", "innerradspacing",
+        --
+        "fracordspacing", "fracopspacing", "fracbinspacing", "fracrelspacing",
+        "fracopenspacing", "fracclosespacing", "fracpunctspacing", "fracinnerspacing",
+        "fracfracspacing", "fracradspacing",
+        --
+        "radordspacing", "radopspacing", "radbinspacing", "radrelspacing",
+        "radopenspacing", "radclosespacing", "radpunctspacing", "radinnerspacing",
+        "radfracspacing", "radradspacing",
         --
         "normalreqno",
         --

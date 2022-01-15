@@ -3236,7 +3236,8 @@ local function kernrun(disc,k_run,...)
     if done and trace_testruns then
         report_disc("done",disc)
     end
-    return nextstart, done
+--     return nextstart, done
+    return nextstart
 end
 
 -- fonts like ebgaramond do ligatures this way (less efficient than e.g. dejavu which
@@ -3289,7 +3290,8 @@ local function comprun(disc,c_run,...) -- vararg faster than the whole list
         setdisc(disc,pre,post,replace)
     end
     --
-    return getnext(disc), renewed
+--     return getnext(disc), renewed
+    return getnext(disc)
 end
 
 -- if we can hyphenate in a lig then unlikely a lig so we
@@ -3417,7 +3419,8 @@ local function testrun(disc,t_run,c_run,...)
         end
     end
     -- next can have changed (copied list)
-    return getnext(disc), renewed
+--     return getnext(disc), renewed
+    return getnext(disc)
 end
 
 --  1{2{\oldstyle\discretionary{3}{4}{5}}6}7\par
@@ -3960,13 +3963,16 @@ do
                             start = nxt
                         elseif id == disc_code then
                             if not discs or discs[start] == true then
-                                local ok
+--                                 local ok
                                 if gpossing then
-                                    start, ok = kernrun(start,k_run_single,             lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
+--                                     start, ok = kernrun(start,k_run_single,             lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
+                                    start = kernrun(start,k_run_single,             lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
                                 elseif forcetestrun then
-                                    start, ok = testrun(start,t_run_single,c_run_single,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
+--                                     start, ok = testrun(start,t_run_single,c_run_single,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
+                                    start = testrun(start,t_run_single,c_run_single,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
                                 else
-                                    start, ok = comprun(start,c_run_single,             lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
+--                                     start, ok = comprun(start,c_run_single,             lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
+                                    start = comprun(start,c_run_single,             lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
                                 end
                              -- if ok then
                              --     done = true
@@ -4030,13 +4036,16 @@ do
                             start = nxt
                         elseif id == disc_code then
                             if not discs or discs[start] == true then
-                                local ok
+--                                 local ok
                                 if gpossing then
-                                    start, ok = kernrun(start,k_run_multiple,               steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
+--                                     start, ok = kernrun(start,k_run_multiple,               steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
+                                    start = kernrun(start,k_run_multiple,               steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
                                 elseif forcetestrun then
-                                    start, ok = testrun(start,t_run_multiple,c_run_multiple,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
+--                                     start, ok = testrun(start,t_run_multiple,c_run_multiple,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
+                                    start = testrun(start,t_run_multiple,c_run_multiple,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
                                 else
-                                    start, ok = comprun(start,c_run_multiple,               steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
+--                                     start, ok = comprun(start,c_run_multiple,               steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
+                                    start = comprun(start,c_run_multiple,               steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
                                 end
                             else
                                 start = nxt

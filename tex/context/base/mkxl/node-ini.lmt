@@ -142,6 +142,26 @@ nodes.mathvalues    = mathvalues
 
 nodes.nodecodes     = nodecodes
 
+-- we will transition to more verbose subtypes (after other math is done)
+
+noadcodes.ord       = noadcodes.ord   or noadcodes.ordinary
+noadcodes.operator  = noadcodes.op    or noadcodes.operator
+noadcodes.bin       = noadcodes.bin   or noadcodes.binary
+noadcodes.rel       = noadcodes.rel   or noadcodes.relation
+noadcodes.punct     = noadcodes.punct or noadcodes.punctuation
+noadcodes.rad       = noadcodes.rad   or noadcodes.radical
+noadcodes.frac      = noadcodes.frac  or noadcodes.fraction
+
+-- so for now:
+
+noadcodes.ordinary    = noadcodes.ordinary    or noadcodes.ord
+noadcodes.operator    = noadcodes.operator    or noadcodes.op
+noadcodes.binary      = noadcodes.binary      or noadcodes.bin
+noadcodes.relation    = noadcodes.relation    or noadcodes.rel
+noadcodes.punctuation = noadcodes.punctuation or noadcodes.punct
+noadcodes.radical     = noadcodes.radical     or noadcodes.rad
+noadcodes.fraction    = noadcodes.fraction    or noadcodes.frac
+
 local subtypes = allocate {
     glue      = gluecodes,
     dir       = dircodes,

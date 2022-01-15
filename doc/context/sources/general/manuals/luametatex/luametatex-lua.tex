@@ -8,6 +8,24 @@
 
 \startsection[title={Initialization},reference=init]
 
+\startsubsection[title={A bare bone engine}]
+
+Although the \LUAMETATEX\ engine will start up when you call the program it will
+not do much useful. You can compare it to computer hardware without (high level)
+operating system with a \TEX\ kernel being the bios. It can interpret \TEX\ code
+but for typesetting you need a reasonable setup. You also need to load fonts, and
+for output you need a backend, and both can be implemented in \LUA. If you don't
+like that and want to get up and running immediately, you will be more happy with
+\LUATEX, \PDFTEX\ or \XETEX, combined with your favorite macro package.
+
+If you just want to play around you can install the \CONTEXT\ distribution which
+(including manuals and some fonts) is tiny compared to a full \TEXLIVE\
+installation and can be run alongside it without problems. If there are issues
+you can go to the usual \CONTEXT\ support platforms and seek help where you can
+find the people who made \LUATEX\ and \LUAMETATEX.
+
+\stopsubsection
+
 \startsubsection[title={\LUAMETATEX\ as a \LUA\ interpreter}]
 
 \topicindex {initialization}
@@ -65,8 +83,9 @@ are understood by \LUAMETATEX\ itself:
 \stoptabulate
 
 There are less options than with \LUATEX, because one has to deal with them in
-\LUA\ anyway. There are no options to enter a safer mode or control executing
-programs. This can easily be achieved with a startup \LUA\ script.
+\LUA\ anyway. So for instance there are no options to enter a safer mode or
+control executing programs because this can easily be achieved with a startup
+\LUA\ script.
 
 Next the initialization script is loaded and executed. From within the script,
 the entire command line is available in the \LUA\ table \type {arg}, beginning

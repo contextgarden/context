@@ -7,6 +7,9 @@ if not modules then modules = { } end modules ['typo-syn'] = {
     license   = "see context related readme files"
 }
 
+-- For the moment we have the splitter here but it actually belongs
+-- in the builders namespace.
+
 local nodes             = nodes
 
 local tasks             = nodes.tasks

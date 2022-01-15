@@ -21,8 +21,8 @@
 \permanent\protected\def\topstrut{\vrule\s!width\zeropoint\s!height\strutht\s!depth\zeropoint\relax}
 \permanent\protected\def\botstrut{\vrule\s!width\zeropoint\s!height\zeropoint\s!depth\strutdp\relax}
 
-\permanent\protected\def\mathtopstrut{\setbox\scratchbox\mathstylehbox{(}\vrule\s!width\zeropoint\s!height\ht\scratchbox\s!depth\zeropoint\relax}
-\permanent\protected\def\mathbotstrut{\setbox\scratchbox\mathstylehbox{(}\vrule\s!width\zeropoint\s!height\zeropoint\s!depth\dp\scratchbox\relax}
+% \permanent\protected\def\mathtopstrut{\setbox\scratchbox\mathstylehbox{(}\vrule\s!width\zeropoint\s!height\ht\scratchbox\s!depth\zeropoint\relax}
+% \permanent\protected\def\mathbotstrut{\setbox\scratchbox\mathstylehbox{(}\vrule\s!width\zeropoint\s!height\zeropoint\s!depth\dp\scratchbox\relax}
 
 %D This module is reimplemented in \MKIV\ style.
 
@@ -184,15 +184,30 @@
 \letcsname\??mathfractionstrut\v!no\endcsname\math_frac_no_strut
 
 \defcsname\??mathfractionstrut\v!tight\endcsname
-  {\enforced\let\m_fractions_strut_top\mathbotstrut  % indeed swapped name
-   \enforced\let\m_fractions_strut_bot\mathtopstrut} % indeed swapped name
+  {\enforced\let\m_fractions_strut_top\mathdepthstrut
+   \enforced\let\m_fractions_strut_bot\mathheightstrut}
 
 \math_frac_no_strut
 
 \newdimen\d_math_fraction_margin
 
+\def\math_fraction_margin_kern_indeed{\kern\d_math_fraction_margin}
+
+\let\math_fraction_margin_kern\relax
+
+%D Because the fraction nodes uses the superscript and subscript for numerator and
+%D denomerator so we wrap in a \type {\mathfrac}. Because with \type {\over} one
+%D normally wraps the lot it goes unnoticed there.
+%D
+%D \starttyping
+%D $\Uover{2}{3} ^4$ % double script error but no longer because we use the prescripts
+%D ${\over{2}{3}}^4$ % no issue anyway because we wrap in {} (goes unnoticed)
+%D $\frac {2}{3} ^4$ % we wrap in \mathfrac so we can also use prescripts
+%D \stoptyping
+
 \protected\def\math_frac#1%
-  {\begingroup
+ %{\begingroup
+  {\mathfrac\bgroup
    \edef\currentmathfraction{#1}%
    %
    \edef\p_math_fraction_fences{\mathfractionparameter\c!fences}%
@@ -200,7 +215,12 @@
      \math_fenced_fenced_start\p_math_fraction_fences
    \fi
    %
-   \d_math_fraction_margin\mathfractionparameter\c!margin
+   \d_math_fraction_margin\mathfractionparameter\c!margin\relax
+   \ifcase\d_math_fraction_margin
+      \let\math_fraction_margin_kern\relax
+   \else
+      \let\math_fraction_margin_kern\math_fraction_margin_kern_indeed
+   \fi
    %
    \edef\p_math_fractions_color{\mathfractionparameter\c!color}%
    %
@@ -221,7 +241,8 @@
   {\ifempty\p_math_fraction_fences \else
      \math_fenced_fenced_stop\p_math_fraction_fences
    \fi
-   \endgroup}
+ % \endgroup}
+   \egroup}
 
 \protected\def\math_frac_colored#1#2%
   {\savecolor
@@ -235,128 +256,20 @@
 
 \def\math_frac_no_delim{0x2E}
 
-\def\math_frac_command
-  {\clf_mathfraction
-     {\mathfractionparameter\c!rule}%
-     \ifempty\p_math_fraction_fences
-       \mathfractionparameter\c!left \space
-       \mathfractionparameter\c!right\space
-     \else
-       \math_frac_no_delim\space
-       \math_frac_no_delim\space
-     \fi
-     \dimexpr\mathfractionparameter\c!rulethickness\relax
-   \relax}
-
 % Having a \withmarginornot{#1}{#2} makes not much sense nor do 4 tests or 4 redundant
 % kerns (longer node lists plus possible interference). A split in normal and margin
 % also makes testing easier. When left and right margins are needed we might merge the
 % variants again. After all, these are not real installers.
-
-% the denominator is in cramped!
-
-\defcsname\??mathfractionalternative\v!inner\endcsname
-  {\ifcase\d_math_fraction_margin
-      \expandafter\math_fraction_inner_normal
-   \else
-      \expandafter\math_fraction_inner_margin
-   \fi}
-
-\defcsname\??mathfractionalternative\v!outer\endcsname
-  {\ifcase\d_math_fraction_margin
-      \expandafter\math_fraction_outer_normal
-   \else
-      \expandafter\math_fraction_outer_margin
-   \fi}
-
-\defcsname\??mathfractionalternative\v!both\endcsname
-  {\ifcase\d_math_fraction_margin
-      \expandafter\math_fraction_both_normal
-   \else
-      \expandafter\math_fraction_both_margin
-   \fi}
-
-% todo: store first state and reuse second time
-
-% \def\math_fraction_inner_normal#1#2%
-%   {\Ustack{%
-%      {%
-%        {\usemathstyleparameter\mathfractionparameter{\m_fractions_strut_top#1}}%
-%        \math_frac_command
-%        {\usemathstyleparameter\mathfractionparameter{\m_fractions_strut_bot#2}}%
-%      }%
-%    }%
-%    \math_frac_wrapup}
 %
-% \def\math_fraction_outer_normal#1#2%
-%   {\Ustack{%
-%      \usemathstyleparameter\mathfractionparameter
-%      {%
-%        {\m_fractions_strut_top#1}%
-%        \math_frac_command
-%        {\m_fractions_strut_bot#2}%
-%      }%
-%    }%
-%    \math_frac_wrapup}
+% The denominator is normally in cramped mode!
 %
-% \def\math_fraction_both_normal#1#2%
-%   {\Ustack{%
-%      \usemathstyleparameter\mathfractionparameter
-%      {%
-%        {\usemathstyleparameter\mathfractionparameter\m_fractions_strut_top#1}%
-%        \math_frac_command
-%        {\usemathstyleparameter\mathfractionparameter\m_fractions_strut_bot#2}%
-%      }%
-%    }%
-%    \math_frac_wrapup}
-%
-% \def  n_inner_margin#1#2%
-%   {\Ustack{%
-%      {%
-%        {\kern\d_math_fraction_margin
-%         \usemathstyleparameter\mathfractionparameter{\m_fractions_strut_top#1}%
-%         \kern\d_math_fraction_margin}%
-%        \math_frac_command
-%        {\kern\d_math_fraction_margin
-%         \usemathstyleparameter\mathfractionparameter{\m_fractions_strut_bot#2}%
-%         \kern\d_math_fraction_margin}%
-%      }%
-%    }%
-%    \math_frac_wrapup}
-%
-% \def\math_fraction_outer_margin#1#2%
-%   {\Ustack{%
-%      \usemathstyleparameter\mathfractionparameter
-%      {%
-%        {\kern\d_math_fraction_margin
-%         \m_fractions_strut_top#1%
-%         \kern\d_math_fraction_margin}%
-%        \math_frac_command
-%        {\kern\d_math_fraction_margin
-%         \m_fractions_strut_bot#2%
-%         \kern\d_math_fraction_margin}%
-%      }%
-%    }%
-%    \math_frac_wrapup}
-%
-% \def\math_fraction_both_margin#1#2%
-%   {\Ustack{%
-%      \usemathstyleparameter\mathfractionparameter
-%      {%
-%        {\kern\d_math_fraction_margin
-%         \usemathstyleparameter\mathfractionparameter\m_fractions_strut_top#1%
-%         \kern\d_math_fraction_margin}%
-%        \math_frac_command
-%        {\kern\d_math_fraction_margin
-%         \usemathstyleparameter\mathfractionparameter\m_fractions_strut_bot#2%
-%         \kern\d_math_fraction_margin}%
-%      }%
-%    }%
-%    \math_frac_wrapup}
+% See \MKIV\ for the old (more messy) implementation where we have to fight the over
+% related syntax (we now use a lmtx primitive).
 
-\def\math_frac_command_u
+\def\math_frac_command_u#1%
   {\clf_umathfraction
      {\mathfractionparameter\c!rule}%
+     {\ifcstok{#1}\emptytoks\else\tomathstyle#1\fi}%
      \ifempty\p_math_fraction_fences
        \mathfractionparameter\c!left \space
        \mathfractionparameter\c!right\space
@@ -367,75 +280,51 @@
      \dimexpr\mathfractionparameter\c!rulethickness\relax
    \relax}
 
-\def\math_fraction_inner_normal#1#2%
-  {\Ustack{% forces num style
-     \math_frac_command_u
-       {\usemathstyleparameter\mathfractionparameter{\m_fractions_strut_top#1}}%
-       {\usemathstyleparameter\mathfractionparameter{\m_fractions_strut_bot#2}}%
-   }%
+\protected\defcsname\??mathfractionalternative\v!inner\endcsname#1#2%
+  {\math_frac_command_u
+{}%     {\expandedmathstyleparameter\mathfractionparameter}%
+     {\math_fraction_margin_kern
+\usemathstyleparameter\mathfractionparameter
+      \m_fractions_strut_top#1%
+      \math_fraction_margin_kern}%
+     {\math_fraction_margin_kern
+\usemathstyleparameter\mathfractionparameter
+      \m_fractions_strut_bot#2%
+      \math_fraction_margin_kern}%
    \math_frac_wrapup}
 
-\def\math_fraction_outer_normal#1#2%
-  {\Ustack{% forces num style
-     \usemathstyleparameter\mathfractionparameter
-     \math_frac_command_u
-       {\m_fractions_strut_top#1}%
-       {\m_fractions_strut_bot#2}%
-   }%
+\protected\defcsname\??mathfractionalternative\v!outer\endcsname#1#2%
+  {\beginmathgroup
+   \usemathstyleparameter\mathfractionparameter
+   \math_frac_command_u
+     {}%
+     {\math_fraction_margin_kern
+      \m_fractions_strut_top#1%
+      \math_fraction_margin_kern}%
+     {\math_fraction_margin_kern
+      \m_fractions_strut_bot#2%
+      \math_fraction_margin_kern}%
+   \endmathgroup
    \math_frac_wrapup}
 
-\def\math_fraction_both_normal#1#2%
-  {\Ustack{% forces num style
-     \usemathstyleparameter\mathfractionparameter
-     \math_frac_command_u
-       {\usemathstyleparameter\mathfractionparameter\m_fractions_strut_top#1}%
-       {\usemathstyleparameter\mathfractionparameter\m_fractions_strut_bot#2}%
-   }%
+\protected\defcsname\??mathfractionalternative\v!both\endcsname#1#2%
+  {\beginmathgroup
+   \usemathstyleparameter\mathfractionparameter
+   \math_frac_command_u
+{}%     {\expandedmathstyleparameter\mathfractionparameter}%
+     {\math_fraction_margin_kern
+\usemathstyleparameter\mathfractionparameter
+      \m_fractions_strut_top#1%
+      \math_fraction_margin_kern}%
+     {\math_fraction_margin_kern
+\usemathstyleparameter\mathfractionparameter
+      \m_fractions_strut_bot#2%
+      \math_fraction_margin_kern}%
+   \endmathgroup
    \math_frac_wrapup}
 
-\def\math_fraction_inner_margin#1#2%
-  {\Ustack{%
-     {%
-       \math_frac_command_u
-       {\kern\d_math_fraction_margin
-        \usemathstyleparameter\mathfractionparameter{\m_fractions_strut_top#1}%
-        \kern\d_math_fraction_margin}%
-       {\kern\d_math_fraction_margin
-        \usemathstyleparameter\mathfractionparameter{\m_fractions_strut_bot#2}%
-        \kern\d_math_fraction_margin}%
-     }%
-   }%
-   \math_frac_wrapup}
 
-\def\math_fraction_outer_margin#1#2%
-  {\Ustack{%
-     \usemathstyleparameter\mathfractionparameter
-     {%
-       \math_frac_command_u
-       {\kern\d_math_fraction_margin
-        \m_fractions_strut_top#1%
-        \kern\d_math_fraction_margin}%
-       {\kern\d_math_fraction_margin
-        \m_fractions_strut_bot#2%
-        \kern\d_math_fraction_margin}%
-     }%
-   }%
-   \math_frac_wrapup}
-
-\def\math_fraction_both_margin#1#2%
-  {\Ustack{%
-     \usemathstyleparameter\mathfractionparameter
-     {%
-       \math_frac_command_u
-       {\kern\d_math_fraction_margin
-        \usemathstyleparameter\mathfractionparameter\m_fractions_strut_top#1%
-        \kern\d_math_fraction_margin}%
-       {\kern\d_math_fraction_margin
-        \usemathstyleparameter\mathfractionparameter\m_fractions_strut_bot#2%
-        \kern\d_math_fraction_margin}%
-     }%
-   }%
-   \math_frac_wrapup}
+\nulldelimiterspace\zeropoint % was 1.2pt
 
 \definemathfraction[xfrac] [\c!alternative=\v!inner,\c!mathstyle=\s!script]
 \definemathfraction[xxfrac][\c!alternative=\v!inner,\c!mathstyle=\s!scriptscript]
@@ -557,15 +446,15 @@
 %     $$ {{a}\abovewithdelims()#1pt{b}} $$
 % }
 
-\definemathfraction[i:frac] [\c!alternative=\v!inner,\c!mathstyle=]  % was script and then small but nothing needed
-\definemathfraction[i:tfrac][\c!alternative=\v!inner,\c!mathstyle=\s!text] % was script (before luatex fix)
+\definemathfraction[i:frac] [\c!alternative=\v!inner,\c!mathstyle=\s!script]
+\definemathfraction[i:tfrac][i:frac]
 \definemathfraction[i:sfrac][\c!alternative=\v!inner,\c!mathstyle=\s!scriptscript]
 \definemathfraction[i:dfrac][\c!alternative=\v!inner,\c!mathstyle=\s!display]
 
 \definemathfraction[d:frac] [\c!alternative=\v!inner,\c!mathstyle=\s!cramped] % was cramped,text
-\definemathfraction[d:tfrac][\c!alternative=\v!both ,\c!mathstyle={\s!cramped,\s!text}] % was cramped,script (before luatex fix)
-\definemathfraction[d:sfrac][\c!alternative=\v!both ,\c!mathstyle={\s!cramped,\s!scriptscript}]
-\definemathfraction[d:dfrac][\c!alternative=\v!inner,\c!mathstyle=\s!display]
+\definemathfraction[d:tfrac][\c!alternative=\v!both, \c!mathstyle={\s!cramped,\s!text}]
+\definemathfraction[d:sfrac][\c!alternative=\v!both, \c!mathstyle={\s!cramped,\s!script}]
+\definemathfraction[d:dfrac][d:frac]
 
 %D \protected\def\ShowMathFractions#1#2%
 %D   {\dontleavehmode
@@ -670,7 +559,9 @@
       {\strut
        \ifx r#1\hfill\fi#4\ifx l#1\hfill\fi}%
       {\ifx r#2\hfill\fi#5\ifx l#2\hfill\fi}%
-    \kern-\nulldelimiterspace}}
+    \ifzeropt\nulldelimiterspace\else
+      \kern-\nulldelimiterspace
+    \fi}}
 
 %D \macros
 %D   {splitfrac, splitdfrac}

@@ -133,8 +133,6 @@ other engines; \LUAMETATEX\ is already quite different anyway.
 
 \startsubsection[title={Version information}]
 
-\startsubsubsection[title={\prm {luatexbanner}, \prm {luatexversion} and \prm {luatexrevision}}]
-
 \topicindex{version}
 \topicindex{banner}
 
@@ -186,7 +184,15 @@ A version is defined as follows:
 \stopitem
 \stopitemize
 
-\stopsubsubsection
+The \LUATEX\ binary has companions like \LUAJITTEX\ and a version that has a font
+rendering library on board. Both introduce dependencies that don't fit into the
+\LUAMETATEX\ agenda: compilation should be easy and future proof and not depend
+on code outside the source tree. It means that for instance the \CONTEXT\ runners
+don't really need to check much more than the basic name. It also means that the
+\type {context} and \type {mtxrun} stubs can be symbolic links to the main
+program that itself is about 3MB, so we can keep the binary footprint small. For
+normal \CONTEXT\ \LMTX\ processing no other binaries are needed because whatever
+support we need is done in \LUA.
 
 The \LUAMETATEX\ version number starts at~2 in order to prevent a clash with
 \LUATEX, and the version commands are the same. This is a way to indicate that
