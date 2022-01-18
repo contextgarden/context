@@ -303,6 +303,7 @@
 		<cd:variable name='july' value='luglio'/>
 		<cd:variable name='june' value='giugno'/>
 		<cd:variable name='keep' value='mantieni'/>
+		<cd:variable name='keeptogether' value='keeptogether'/>
 		<cd:variable name='kerncharacters' value='kerncharacters'/>
 		<cd:variable name='knockout' value='knockout'/>
 		<cd:variable name='label' value='etichetta'/>
@@ -892,6 +893,7 @@
 		<cd:constant name='header' value='intestazione'/>
 		<cd:constant name='headerdistance' value='distanzaintestazione'/>
 		<cd:constant name='headerstate' value='statointestazione'/>
+		<cd:constant name='headindenting' value='headindenting'/>
 		<cd:constant name='headlabel' value='etichettatesta'/>
 		<cd:constant name='headnumber' value='numerotesta'/>
 		<cd:constant name='headseparator' value='headseparator'/>
@@ -997,7 +999,9 @@
 		<cd:constant name='marstyle' value='stilemarcatura'/>
 		<cd:constant name='mask' value='mask'/>
 		<cd:constant name='mathclass' value='mathclass'/>
+		<cd:constant name='mathdenominatorstyle' value='mathdenominatorstyle'/>
 		<cd:constant name='mathlimits' value='mathlimits'/>
+		<cd:constant name='mathnumeratorstyle' value='mathnumeratorstyle'/>
 		<cd:constant name='mathstyle' value='mathstyle'/>
 		<cd:constant name='max' value='max'/>
 		<cd:constant name='maxdepth' value='maxdepth'/>
@@ -1235,7 +1239,7 @@
 		<cd:constant name='solution' value='solution'/>
 		<cd:constant name='sort' value='sort'/>
 		<cd:constant name='sorttype' value='sorttype'/>
-		<cd:constant name='source' value='origine'/>
+		<cd:constant name='source' value='source'/>
 		<cd:constant name='space' value='spazio'/>
 		<cd:constant name='spaceafter' value='spaziodopo'/>
 		<cd:constant name='spaceafterside' value='spaceafterside'/>
@@ -1286,6 +1290,7 @@
 		<cd:constant name='synonymcommand' value='synonymcommand'/>
 		<cd:constant name='synonymstyle' value='stilesinonimi'/>
 		<cd:constant name='tab' value='tab'/>
+		<cd:constant name='target' value='target'/>
 		<cd:constant name='text' value='testo'/>
 		<cd:constant name='textalign' value='textalign'/>
 		<cd:constant name='textalternative' value='textalternative'/>

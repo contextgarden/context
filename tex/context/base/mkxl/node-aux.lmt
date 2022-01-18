@@ -385,3 +385,38 @@ end
 
 function nodes.hpack(h,...) return tonode(hpack_nodes(tonut(h),...)) end
 function nodes.vpack(h,...) return tonode(vpack_nodes(tonut(h),...)) end
+
+--
+
+local report_slide = logs.reporter("nodes", "slide")
+
+function nuts.checkslide(head,banner)
+    local c = head
+    local x = nil
+    local b = false
+    while c do
+        local p, n = getboth(c)
+        if p and p ~= x then
+            b = true
+        end
+        x = c
+        c = n
+    end
+    if b then
+        report_slide("")
+        report_slide(banner or "?")
+        report_slide("")
+        c = head
+        x = nil
+        while c do
+            local p, n = getboth(c)
+            report_slide("%s %s",(p and p ~= x and "!") or " ",tostring(tonode(c)))
+            x = c
+            c = getnext(c)
+        end
+        report_slide("")
+        nuts.show(head)
+        report_slide("")
+        nuts.slide(head)
+    end
+end

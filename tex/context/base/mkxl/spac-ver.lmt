@@ -102,7 +102,7 @@ local trace_vspacing         = false  trackers.register("vspacing.spacing",  fun
 local trace_vsnapping        = false  trackers.register("vspacing.snapping", function(v) trace_vsnapping        = v end)
 local trace_specials         = false  trackers.register("vspacing.specials", function(v) trace_specials         = v end)
 
-local remove_math_skips   = true  directives.register("vspacing.removemathskips", function(v) remnove_math_skips = v end)
+local remove_math_skips      = true   directives.register("vspacing.removemathskips", function(v) remnove_math_skips = v end)
 
 local report_vspacing     = logs.reporter("vspacing","spacing")
 local report_collapser    = logs.reporter("vspacing","collapsing")
@@ -948,6 +948,7 @@ do
         setspecification(n,b_category,b_penalty,b_order or 1)
         setvisual(k)
         write_node(n)
+        -- todo: inject via value
     end
 
     local function flush()
@@ -1513,8 +1514,19 @@ do
     -- where -> scope
     -- what  -> where (original context)
 
-    local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
+    local checkslide = false
 
+    directives.register("vspacing.checkslide", function(v)
+        if v then
+            checkslide = function(head,where,what)
+                nuts.checkslide(head,where .. " : " .. what)
+            end
+        else
+            checkslide = false
+        end
+    end)
+
+    local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
         if trace then
             reset_tracing(head)
         end
@@ -1698,6 +1710,9 @@ do
         end
         if snap and where == "page" then
             removetopsnap()
+        end
+        if checkslide then
+            checkslide(head,where,what)
         end
         while current do
             local id = getid(current)
@@ -2166,6 +2181,22 @@ do
         return head
     end
 
+--     local function collapser(head,...)
+--         local current = head
+--         while current do
+--             local id = getid(current)
+--             if id == glue_code then
+--                 if getsubtype(current) == userskip_code then
+--                     local glue_data
+--                     head, current, glue_data = remove_node(head,current)
+--                     head, current = insertnodebefore(head,current,glue_data)
+--                 end
+--             end
+--             current = getnext(current)
+--         end
+--         return head
+--     end
+
     local stackhead, stacktail, stackhack = nil, nil, false
 
     local function report(message,where,lst)
@@ -2267,11 +2298,12 @@ do
     local ignored = table.tohash {
         "splitkeep",
         "splitoff",
---       "insert",
+--        "insert",
     }
 
     function vspacing.vboxhandler(head,where)
         if head and not ignored[where] and getnext(head) then
+-- if getid(head) == glue_code and getsubtype(head) == topskip_code then
             head = collapser(head,"vbox",where,trace_vbox_vspacing,true,a_snapvbox) -- todo: local snapper
         end
         return head

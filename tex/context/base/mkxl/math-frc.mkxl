@@ -108,6 +108,8 @@
 
 \setupmathfractions
   [\c!mathstyle=,
+   \c!mathnumeratorstyle=\mathfractionparameter\c!mathstyle,
+   \c!mathdenominatorstyle=\mathfractionparameter\c!mathstyle,
    \c!alternative=\v!inner,
    \c!margin=\zeropoint,
    \c!rulethickness=.25\exheight,
@@ -130,7 +132,7 @@
     \math_fraction_set_distance
 \to \everymathematics
 
-% why only displaystyle .. a bit weak
+% why only displaystyle .. a bit weak .. will become a set
 
 \protected\def\math_fraction_set_distance_top
   {\Umathfractionnumup    \displaystyle\m_math_fraction_distance_top
@@ -266,10 +268,16 @@
 % See \MKIV\ for the old (more messy) implementation where we have to fight the over
 % related syntax (we now use a lmtx primitive).
 
-\def\math_frac_command_u#1%
+% {\ifcstok{#1}\emptytoks\else\tomathstyle#1\fi}%
+%
+% {\expandedmathstyleparameter\mathfractionparameter\c!mathstyle}%
+
+% timestamp: 01/2022 : (re)watching eNerd⁴ - Time Capsule 2020 a.k.a. Farewell Party
+% for Normalcy (UHD) with the soekris/neumanns combination
+
+\def\math_frac_command_u
   {\clf_umathfraction
      {\mathfractionparameter\c!rule}%
-     {\ifcstok{#1}\emptytoks\else\tomathstyle#1\fi}%
      \ifempty\p_math_fraction_fences
        \mathfractionparameter\c!left \space
        \mathfractionparameter\c!right\space
@@ -282,22 +290,20 @@
 
 \protected\defcsname\??mathfractionalternative\v!inner\endcsname#1#2%
   {\math_frac_command_u
-     {}%     {\expandedmathstyleparameter\mathfractionparameter}%
      {\math_fraction_margin_kern
-\usemathstyleparameter\mathfractionparameter
+      \usemathstyleparameter\mathfractionparameter\c!mathnumeratorstyle
       \m_fractions_strut_top#1%
       \math_fraction_margin_kern}%
      {\math_fraction_margin_kern
-\usemathstyleparameter\mathfractionparameter
+      \usemathstyleparameter\mathfractionparameter\c!mathdenominatorstyle
       \m_fractions_strut_bot#2%
       \math_fraction_margin_kern}%
    \math_frac_wrapup}
 
 \protected\defcsname\??mathfractionalternative\v!outer\endcsname#1#2%
   {\beginmathgroup
-   \usemathstyleparameter\mathfractionparameter
+   \usemathstyleparameter\mathfractionparameter\c!mathstyle
    \math_frac_command_u
-     {}%
      {\math_fraction_margin_kern
       \m_fractions_strut_top#1%
       \math_fraction_margin_kern}%
@@ -309,15 +315,14 @@
 
 \protected\defcsname\??mathfractionalternative\v!both\endcsname#1#2%
   {\beginmathgroup
-   \usemathstyleparameter\mathfractionparameter
+   \usemathstyleparameter\mathfractionparameter\c!mathstyle
    \math_frac_command_u
-{}%     {\expandedmathstyleparameter\mathfractionparameter}%
      {\math_fraction_margin_kern
-\usemathstyleparameter\mathfractionparameter
+      \usemathstyleparameter\mathfractionparameter\c!mathnumeratorstyle
       \m_fractions_strut_top#1%
       \math_fraction_margin_kern}%
      {\math_fraction_margin_kern
-\usemathstyleparameter\mathfractionparameter
+      \usemathstyleparameter\mathfractionparameter\c!mathdenominatorstyle
       \m_fractions_strut_bot#2%
       \math_fraction_margin_kern}%
    \endmathgroup
@@ -445,15 +450,15 @@
 %     $$ {{a}\abovewithdelims()#1pt{b}} $$
 % }
 
-\definemathfraction[i:frac] [\c!alternative=\v!inner,\c!mathstyle=\s!script]
-\definemathfraction[i:tfrac][i:frac]
+\definemathfraction[i:frac] [\c!alternative=\v!inner,\c!mathstyle=\v!small]
+\definemathfraction[i:tfrac][\c!alternative=\v!inner,\c!mathstyle=\s!script]
 \definemathfraction[i:sfrac][\c!alternative=\v!inner,\c!mathstyle=\s!scriptscript]
 \definemathfraction[i:dfrac][\c!alternative=\v!inner,\c!mathstyle=\s!display]
 
-\definemathfraction[d:frac] [\c!alternative=\v!inner,\c!mathstyle=\s!cramped] % was cramped,text
-\definemathfraction[d:tfrac][\c!alternative=\v!both, \c!mathstyle={\s!cramped,\s!text}]
-\definemathfraction[d:sfrac][\c!alternative=\v!both, \c!mathstyle={\s!cramped,\s!script}]
-\definemathfraction[d:dfrac][d:frac]
+\definemathfraction[d:frac] [\c!alternative=\v!inner,\c!mathstyle=\s!cramped]
+\definemathfraction[d:tfrac][\c!alternative=\v!both,\c!mathstyle={\s!cramped,\s!script}]
+\definemathfraction[d:sfrac][\c!alternative=\v!both,\c!mathstyle={\s!cramped,\s!scriptscript}]
+\definemathfraction[d:dfrac][\c!alternative=\v!both,\c!mathstyle=\s!display]
 
 %D \protected\def\ShowMathFractions#1#2%
 %D   {\dontleavehmode

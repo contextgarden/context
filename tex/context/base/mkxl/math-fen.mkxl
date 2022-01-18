@@ -201,7 +201,7 @@
 \newcount\c_math_fenced_nesting
 
 \protected\def\math_fenced_fenced_common
-  {\startusemathstyleparameter\mathfenceparameter
+  {\startusemathstyleparameter\mathfenceparameter\c!mathstyle
    \enforced\let\fence\math_fenced_middle
    \edef\p_math_fenced_color{\mathfenceparameter\c!color}%
    \ifempty\p_math_fenced_color

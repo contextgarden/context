@@ -86,9 +86,14 @@
 \permanent\def\Alphabeticnumerals#1{\clf_Alphabetic\numexpr#1\relax{}}
 
 \permanent\def\thainumerals      #1{\clf_alphabetic\numexpr#1\relax{thai}}
-\permanent\def\devanagarinumerals#1{\clf_alphabetic\numexpr#1\relax{devanagari}}
-\permanent\def\gurmurkhinumerals #1{\clf_alphabetic\numexpr#1\relax{gurmurkhi}}
-\permanent\def\gujaratinumerals  #1{\clf_alphabetic\numexpr#1\relax{gujarati}}
+\permanent\def\devanagarinumerals#1{\clf_decimals\numexpr#1\relax{devanagari}}
+\permanent\def\malayalamnumerals #1{\clf_decimals\numexpr#1\relax{malayalam}}
+\permanent\def\tamilnumerals     #1{\clf_decimals\numexpr#1\relax{tamil}}
+\permanent\def\kannadanumerals   #1{\clf_decimals\numexpr#1\relax{kannada}}
+\permanent\def\telugunumerals    #1{\clf_decimals\numexpr#1\relax{telugu}}
+\permanent\def\bengalinumerals   #1{\clf_decimals\numexpr#1\relax{bengali}}
+\permanent\def\gujaratinumerals  #1{\clf_decimals\numexpr#1\relax{gujarati}}
+\permanent\def\gurmurkhinumerals #1{\clf_decimals\numexpr#1\relax{gurmurkhi}}
 \permanent\def\tibetannumerals   #1{\clf_alphabetic\numexpr#1\relax{tibetan}}
 \permanent\def\greeknumerals     #1{\clf_alphabetic\numexpr#1\relax{greek}}
 \permanent\def\Greeknumerals     #1{\clf_Alphabetic\numexpr#1\relax{greek}}
@@ -724,6 +729,11 @@
 
 \defineconversion [thainumerals]         [\thainumerals]
 \defineconversion [devanagarinumerals]   [\devanagarinumerals]
+\defineconversion [malayalamnumerals]    [\malayalamnumerals]
+\defineconversion [tamilnumerals]        [\tamilnumerals]
+\defineconversion [kannadanumerals]      [\kannadanumerals]
+\defineconversion [telugunumerals]       [\telugunumerals]
+\defineconversion [bengalinumerals]      [\bengalinumerals]
 \defineconversion [gurmurkhinumerals]    [\gurmurkhinumerals]
 \defineconversion [gujaratinumerals]     [\gujaratinumerals]
 \defineconversion [tibetannumerals]      [\tibetannumerals]

@@ -642,6 +642,8 @@
 \aliased\let\mathnothing\firstofoneunexpanded
 \aliased\let\mathalpha  \firstofoneunexpanded
 
+% todo 'frac' and 'rad'
+
 \setnewconstant\mathordcode     \zerocount  \letcsname\??mathcodecommand     ord\endcsname\mathord
 \setnewconstant\mathopcode      \plusone    \letcsname\??mathcodecommand      op\endcsname\mathop
 \setnewconstant\mathbincode     \plustwo    \letcsname\??mathcodecommand     bin\endcsname\mathbin
@@ -2398,18 +2400,6 @@
 \defcsname\??mathstylecommand\v!small       \endcsname{\c_math_styles_state_size   \plusone}
 \defcsname\??mathstylecommand\v!big         \endcsname{\c_math_styles_state_size   \plustwo}
 
-% \permanent\protected\def\setupmathstyle[#1]%
-%   {\edef\m_math_style_asked{#1}%
-%    \ifempty\m_math_style_asked \else
-%      \math_style_set_indeed
-%    \fi}
-%
-% \permanent\protected\def\usemathstyleparameter#1% faster local variant
-%   {\edef\m_math_style_asked{#1\c!mathstyle}%
-%    \ifempty\m_math_style_asked \else
-%      \math_style_set_indeed
-%    \fi}
-
 %D \startbuffer
 %D \definemathstyle[mystyle][scriptscript]
 %D
@@ -2421,35 +2411,6 @@
 % maybe move this to the lua end ...
 
 \installcorenamespace {mathstyle}
-
-% \permanent\tolerant\protected\def\definemathstyle[#1]#*[#2]%
-%   {\c_math_styles_state_style  \zerocount
-%    \c_math_styles_state_cramped\zerocount
-%    \c_math_styles_state_size   \zerocount
-%    \rawprocesscommacommand[#2]\math_style_collect
-%    \letcsname\??mathstyle#1\normalexpanded{\endcsname\math_style_add_to_cache_choice}}
-%
-% \def\math_style_set_indeed
-%   {\ifcsname\??mathstyle\m_math_style_asked\endcsname
-%      \lastnamedcs
-%    \else
-%      \math_style_set_mathstyle_mathstyle
-%    \fi}
-%
-% \def\math_style_set_mathstyle_mathstyle
-%   {\ifcsname\??mathstylecache\m_math_style_asked\endcsname
-%      \lastnamedcs
-%    \else
-%      \math_style_set_mathstyle_mathstylecache
-%    \fi}
-%
-% \def\math_style_set_mathstyle_mathstylecache
-%   {\c_math_styles_state_style  \zerocount
-%    \c_math_styles_state_cramped\zerocount
-%    \c_math_styles_state_size   \zerocount
-%    \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
-%    \gletcsname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
-%    \csname\??mathstylecache\m_math_style_asked\endcsname}
 
 \letcsname\??mathstyle     \endcsname\empty
 \letcsname\??mathstylecache\endcsname\empty
@@ -2463,8 +2424,8 @@
      \math_style_set_mathstyle_mathstylecache\m_math_style_asked
    \fi}
 
-\permanent\def\expandedmathstyleparameter#1%
-  {\normalexpanded{\noexpand\math_style_set_expanded{#1\c!mathstyle}}}
+\permanent\def\expandedmathstyleparameter#1#2%
+  {\normalexpanded{\noexpand\math_style_set_expanded{#1#2}}}
 
 \def\math_style_set_expanded#1%
   {\ifcsname\??mathstyle#1e\endcsname
@@ -2475,14 +2436,14 @@
      \math_style_set_mathstyle_mathstylecache{#1}%
    \fi}
 
-\permanent\protected\def\usemathstyleparameter#1%
-  {\edef\m_math_style_asked{#1\c!mathstyle}%
+\permanent\protected\def\usemathstyleparameter#1#2%
+  {\edef\m_math_style_asked{#1#2}%
    \ifempty\m_math_style_asked \else
      \math_style_set_indeed
    \fi}
 
 \permanent\tolerant\protected\def\setmathstyle[#1]#;#=% so we accept [] and {}
-  {\edef\m_math_style_asked{#1#2}%
+  {\edef\m_math_style_asked{#1\c!mathstyle}%
    \ifempty\m_math_style_asked \else
      \math_style_set_indeed
    \fi}
@@ -2527,8 +2488,8 @@
 
 \aliased\let\stopmathstyle\relax
 
-\permanent\protected\def\startusemathstyleparameter#1%
-  {\edef\m_math_style_asked{#1\c!mathstyle}%
+\permanent\protected\def\startusemathstyleparameter#1#2%
+  {\edef\m_math_style_asked{#1#2}%
    \ifempty\m_math_style_asked
      \enforced\let\stopusemathstyleparameter\relax
    \else

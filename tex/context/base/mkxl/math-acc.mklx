@@ -68,23 +68,23 @@
 
 \permanent\tolerant\protected\def\definemathtopaccent[#1]#*[#2]#*[#3]% class name top
   {\ifparameter#3\or
-     \frozen\instance\setuevalue{#2}{\math_accents_make_double                        {#1}\plusone{\number#3}\zerocount}%
+     \frozen\protected\instance\edefcsname#2\endcsname{\math_accents_make_double                        {#1}\plusone{\number#3}\zerocount}%
    \else
-     \frozen\instance\setuevalue{#1}{\math_accents_make_double\noexpand\currentmathaccents\plusone{\number#2}\zerocount}%
+     \frozen\protected\instance\edefcsname#1\endcsname{\math_accents_make_double\noexpand\currentmathaccents\plusone{\number#2}\zerocount}%
    \fi}
 
 \permanent\tolerant\protected\def\definemathbottomaccent[#1]#*[#2]#*[#3]% class name bottom
   {\ifparameter#3\or
-     \frozen\instance\setuevalue{#2}{\math_accents_make_double                        {#1}\plustwo\zerocount{\number#3}}%
+     \frozen\protected\instance\edefcsname#2\endcsname{\math_accents_make_double                        {#1}\plustwo\zerocount{\number#3}}%
    \else
-     \frozen\instance\setuevalue{#1}{\math_accents_make_double\noexpand\currentmathaccents\plustwo\zerocount{\number#2}}%
+     \frozen\protected\instance\edefcsname#1\endcsname{\math_accents_make_double\noexpand\currentmathaccents\plustwo\zerocount{\number#2}}%
    \fi}
 
 \permanent\tolerant\protected\def\definemathdoubleaccent[#1]#*[#2]#*[#3]#*[#4]% class name top bottom
   {\ifparameter#4\or
-     \frozen\instance\setuevalue{#2}{\math_accents_make_double                        {#1}\plusthree{\number#3}{\number#4}}%
+     \frozen\protected\instance\edefcsname#2\endcsname{\math_accents_make_double                        {#1}\plusthree{\number#3}{\number#4}}%
    \else
-     \frozen\instance\setuevalue{#1}{\math_accents_make_double\noexpand\currentmathaccents\plusthree{\number#2}{\number#3}}%
+     \frozen\protected\instance\edefcsname#1\endcsname{\math_accents_make_double\noexpand\currentmathaccents\plusthree{\number#2}{\number#3}}%
    \fi}
 
 \let\math_accents_color_pop\donothing
@@ -100,7 +100,7 @@
   {\begingroup
    \edef\currentmathaccents {#class}%
    \edef\p_math_accent_color{\mathaccentsparameter\c!color}%
-   \startusemathstyleparameter\mathaccentsparameter
+   \startusemathstyleparameter\mathaccentsparameter\c!mathstyle
    \ifempty\p_math_accent_color
      \math_accents_color_push_nop
    \else

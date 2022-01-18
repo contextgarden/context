@@ -10048,6 +10048,12 @@ return {
    ["en"]="mathstyle",
    ["fr"]="stylemath",
   },
+  ["mathnumeratorstyle"]={
+   ["en"]="mathnumeratorstyle",
+  },
+  ["mathdenominatorstyle"]={
+   ["en"]="mathdenominatorstyle",
+  },
   ["max"]={
    ["cs"]="max",
    ["de"]="max",
