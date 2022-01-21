@@ -25,6 +25,7 @@ local implement    = interfaces.implement
 local ioflush      = io.flush
 local ioread       = io.read
 local ossleep      = os.sleep
+local osexit       = os.exit
 local writenl      = texio.writenl
 local write        = texio.write
 
@@ -428,14 +429,19 @@ implement {
  -- protected = false, -- expandable
     arguments = { "optional", "string" },
     actions   = function(t,s)
-        t = tonumber(t)
-        if t then
-            report("%s (sleep: %.3N)",s,t)
-            ioflush()
-            ossleep(t)
-        else
+        if t == "quit" then
             report(s)
-            ioflush()
+            osexit()
+        else
+            t = tonumber(t)
+            if t then
+                report("%s (sleep: %.3N)",s,t)
+                ioflush()
+                ossleep(t)
+            else
+                report(s)
+                ioflush()
+            end
         end
     end
 }

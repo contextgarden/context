@@ -459,7 +459,14 @@ do
                 if trace_tweaking then
                     report_tweak("setting width of %U to %p",target,original,unicode,width)
                 end
-                characters[unicode] = { width = width }
+                characters[unicode] = {
+                    width    = width,
+                 -- advance  = width,
+                    unicode  = unicode,
+                    commands = {
+                     -- { "slot", 0, 32 },
+                    },
+                }
             end
         end
     end

@@ -21,7 +21,7 @@
 %D Left-overs:
 
 \ifdefined\sixperemspace \else
-    \permanent\def\sixperemspace{\normalUchar"2006}
+    \permanent\edef\sixperemspace{\normalUchar"2006}
 \fi
 
 %D In this module we deal with language dependant labels and prefixes, like in {\em

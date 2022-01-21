@@ -39,32 +39,82 @@
 \installsimplecommandhandler \??blackrules {blackrules} \??blackrules
 
 \permanent\protected\def\blackrule
-  {\hpack\bgroup
+  {% this was \hpack\bgroup\dontleavehmode but we want leader support
+   \begingroup
    \doifelsenextoptionalcs\pack_black_rule_pickup\pack_black_rule_indeed}
 
 \def\pack_black_rule_pickup[#1]%
   {\setupcurrentblackrules[#1]%
    \pack_black_rule_indeed}
 
+% \def\pack_black_rule_indeed
+%   {\edef\p_width {\directblackrulesparameter\c!width }%
+%    \edef\p_height{\directblackrulesparameter\c!height}%
+%    \edef\p_depth {\directblackrulesparameter\c!depth }%
+%    \ifx\p_height\v!max
+%      \setstrut
+%    \orelse\ifx\p_depth\v!max
+%      \setstrut
+%    \fi
+%    \useblackrulesstyleandcolor\c!style\c!color
+%    \ifcsname\??blackruletype\directblackrulesparameter\c!type\endcsname
+%      \lastnamedcs
+%    \else
+%      \vrule
+%    \fi
+%    \ifx\p_width \v!max\s!width \emwidth\orelse\ifempty\p_width \else\s!width \p_width \fi
+%    \ifx\p_height\v!max\s!height\strutht\orelse\ifempty\p_height\else\s!height\p_height\fi
+%    \ifx\p_depth \v!max\s!depth \strutdp\orelse\ifempty\p_depth \else\s!depth \p_depth \fi
+%    \egroup}
+
 \def\pack_black_rule_indeed
-  {\edef\p_width {\directblackrulesparameter\c!width }%
-   \edef\p_height{\directblackrulesparameter\c!height}%
-   \edef\p_depth {\directblackrulesparameter\c!depth }%
+  {\edef\p_width  {\directblackrulesparameter\c!width}%
+   \edef\p_height {\directblackrulesparameter\c!height}%
+   \edef\p_depth  {\directblackrulesparameter\c!depth}%
+   \edef\p_stretch{\directblackrulesparameter\c!stretch}%
+   \edef\p_shrink {\directblackrulesparameter\c!shrink}%
    \ifx\p_height\v!max
      \setstrut
+     \let\p_height\strutdp
    \orelse\ifx\p_depth\v!max
      \setstrut
    \fi
+ % \ifx\p_height\v!max
+ %   \let\p_height\strutdp
+ % \fi
+   \ifx\p_depth\v!max
+     \let\p_depth\strutdp
+   \fi
+   \ifx\p_width\v!max
+     \let\p_width\emwidth
+   \fi
    \useblackrulesstyleandcolor\c!style\c!color
+   \ifempty\p_stretch
+     \ifempty\p_shrink
+        \donefalse
+     \else
+        \donetrue
+        \leaders
+     \fi
+   \else
+      \donetrue
+      \leaders
+   \fi
    \ifcsname\??blackruletype\directblackrulesparameter\c!type\endcsname
      \lastnamedcs
    \else
      \vrule
    \fi
-   \ifx\p_width \v!max\s!width \emwidth\orelse\ifempty\p_width \else\s!width \p_width \fi
-   \ifx\p_height\v!max\s!height\strutht\orelse\ifempty\p_height\else\s!height\p_height\fi
-   \ifx\p_depth \v!max\s!depth \strutdp\orelse\ifempty\p_depth \else\s!depth \p_depth \fi
-   \egroup}
+   \ifempty\p_height\else\s!height\p_height\fi
+   \ifempty\p_depth\else\s!depth\p_depth\fi
+   \ifdone
+     \hskip\ifempty\p_width\zeropoint\else\p_width\fi
+     \ifempty\p_stretch\else\s!plus\p_stretch\fi
+     \ifempty\p_shrink\else\s!minus\p_shrink\fi
+   \else
+     \ifempty\p_width\else\s!width\p_width\fi
+   \fi
+   \endgroup}
 
 \setupblackrules
   [\c!width=\emwidth,
@@ -99,7 +149,7 @@
 %D would probably have taken more tokens.
 
 \permanent\tolerant\protected\def\blackrules[#1]% probably never used
-  {\hpack\bgroup
+  {\hpack\bgroup % we keep this because breaking into lines breaks compatibility
    \ifarguments\or\setupcurrentblackrules[#1]\fi
    \scratchwidth   \directblackrulesparameter\c!width
    \scratchheight  \directblackrulesparameter\c!height
@@ -136,15 +186,15 @@
 
 \installcorenamespace{blackruletype}
 
-\setvalue{\??blackruletype mp}%
+\defcsname\??blackruletype mp\endcsname
   {\frule
      type {mp}%
      data {\includeMPgraphic{\directblackrulesparameter\c!mp}}
      line \dimexpr\directblackrulesparameter\c!rulethickness\relax
    }
 
-\letvalue{\??blackruletype\s!no }\novrule
-%letvalue{\??blackruletype\s!yes}\vrule
+\letcsname\??blackruletype\s!no \endcsname\novrule
+%letcsname\??blackruletype\s!yes\endcsname\vrule
 
 \setupblackrules
   [\c!n=3,

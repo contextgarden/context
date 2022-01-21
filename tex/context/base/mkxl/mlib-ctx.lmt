@@ -410,3 +410,18 @@ MP = MP or { } -- user namespace
 
 table.setmetatablecall(mp,function(t,k,...) return t[k](...) end)
 table.setmetatablecall(MP,function(t,k,...) return t[k](...) end)
+
+-- A secret option:
+
+implement {
+    name      = "resetMPinstance",
+    protected = true,
+    public    = true,
+    arguments = "optional",
+    actions   = function(s)
+        if s and s ~= "" then
+            report_metapost("resetting instance %a",s)
+            metapost.reset(s)
+        end
+    end,
+}

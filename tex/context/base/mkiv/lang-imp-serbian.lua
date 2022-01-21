@@ -1,4 +1,12 @@
 return {
+
+    name      = "sebian transliterations",
+    version   = "1.00",
+    author    = "Hans Hagen",
+    comment   = "Experimental code, the name of this file might change"
+             .. "or maybe it become a llg file in the end.",
+    copyright = "ConTeXt development team & whoever made this list",
+
     transliterations = {
         ["serbian to latin"] = {
             mapping = {

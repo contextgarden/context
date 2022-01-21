@@ -1052,23 +1052,30 @@ local sizepattern, splitpattern, specialscale  do
     local withinparents  = leftparent * (1-rightparent)^0 * rightparent
     local withinbraces   = leftbrace  * (1-rightbrace )^0 * rightbrace
     local value          = C((withinparents + withinbraces + (1-space))^1)
- -- local dimension      = C((space/"" + P(1))^1)
-    local dimension      = Cs((digit+period)^1 * (spaces/"") * (P(1)-digit)^0)
---     local scaler         = C((digit+period)^1)
+    local dimension      = Cs((digit+period)^1 * (spaces/"") * (P(1)-digit-space)^0)
+ -- local dimension_x    = C((space/"" + P(1))^1)
+    local dimension_x    = C((1-space)^1)
+ -- local scaler         = C((digit+period)^1)
     local scaler         = lpeg.patterns.unsigned/function(s) return round(tonumber(s)*1000) end
                          + C(lpeg.patterns.cardinal)
     local rest           = C(P(1)^0)
     local scale_none     =                      Cc(0)
-    local scale_at       = (P("at") + P("@")) * Cc(1) * spaces * dimension -- dimension
-    local scale_sa       = P("sa")            * Cc(2) * spaces * dimension -- number
-    local scale_mo       = P("mo")            * Cc(3) * spaces * dimension -- number
-    local scale_scaled   = P("scaled")        * Cc(4) * spaces * dimension -- number
-    local scale_ht       = P("ht")            * Cc(5) * spaces * dimension -- dimension
-    local scale_cp       = P("cp")            * Cc(6) * spaces * dimension -- dimension
+    local scale_at       = (P("at") + P("@")) * Cc(1) * spaces * dimension   -- dimension
+    local scale_sa       = P("sa")            * Cc(2) * spaces * dimension_x -- number or string
+    local scale_mo       = P("mo")            * Cc(3) * spaces * dimension_x -- number or string
+    local scale_scaled   = P("scaled")        * Cc(4) * spaces * dimension   -- number
+    local scale_ht       = P("ht")            * Cc(5) * spaces * dimension   -- dimension
+    local scale_cp       = P("cp")            * Cc(6) * spaces * dimension   -- dimension
+    local scale_sx       = P("sx")                    * spaces * scaler      -- scale
+    local scale_sy       = P("sy")                    * spaces * scaler      -- scale
 
     specialscale = { [5] = "ht", [6] = "cp" }
 
-    sizepattern  = spaces * ((scale_at + scale_sa + scale_mo + scale_ht + scale_cp + scale_scaled) * (spaces * scaler)^0 + scale_none)
+ -- sizepattern  = spaces * ((scale_at + scale_sa + scale_mo + scale_ht + scale_cp + scale_scaled) * (spaces * scaler)^0 + scale_none)
+
+    scaler       = spaces * ( (scale_sx + Cc(0)) * spaces * (scale_sy + Cc(0)) )^-1
+    sizepattern  = spaces * ((scale_at + scale_sa + scale_mo + scale_ht + scale_cp + scale_scaled) * scaler + scale_none)
+
     splitpattern = spaces * value * spaces * rest
 
 end
@@ -1112,6 +1119,12 @@ do  -- else too many locals
         return v
     end)
 
+    local obey_designsize = false
+
+    experiments.register("fonts.compact.obeydesignsize",function(v)
+        obey_designsize = v
+    end)
+
     implement {
         name      = "definefont_one",
         arguments = "string",
@@ -1134,13 +1147,14 @@ do  -- else too many locals
             end
             -- we can also use a count for the size
             if size and size ~= "" then
-                local mode, size, sx, sy = lpegmatch(sizepattern,size)
-                if mode and size and size ~= "" then
+                local mode, fontsize, sx, sy = lpegmatch(sizepattern,size)
+-- print(size,mode,fontsize,sx,sy)
+                if mode and fontsize and fontsize ~= "" then
                     texsetcount("scaledfontmode",mode)
-                 -- ctx_setsomefontsize(size)
+                 -- ctx_setsomefontsize(fontsize)
                     -- We use a catcodetable, just in case it's 1.2\exheight (a corner case that showed
                     -- up in the lmtx manual: marking that changed size in the mids of some verbatim).
-                    setmacro(ctxcatcodes,"somefontsize",size)
+                    setmacro(ctxcatcodes,"somefontsize",fontsize)
                     if sx then
                         setmacro("somefontsizex",sx)
                     end
@@ -1215,7 +1229,7 @@ do  -- else too many locals
             local lookup, name, sub, method, detail = getspecification(str or "")
             -- new (todo: inheritancemode)
             local designsize = fontdesignsize ~= "" and fontdesignsize or classdesignsize or ""
-            local designname = designsizefilename(name,designsize,size)
+            local designname = designsizefilename(name,designsize,size,obey_designsize)
             if designname and designname ~= "" then
                 if trace_defining or trace_designsize then
                     report_defining("remapping name %a, specification %a, size %a, designsize %a",name,designsize,size,designname)
@@ -1624,7 +1638,7 @@ do  -- else too many locals
         return infofont
     end
 
-    -- abstract interfacing
+    -- abstract interfacing : we could actually do a runmacro or so
 
     implement { name = "tf", actions = function() setmacro("fontalternative","tf") end }
     implement { name = "bf", actions = function() setmacro("fontalternative","bf") end }

@@ -13,23 +13,49 @@
 
 \writestatus{loading}{ConTeXt Language Macros / Transliteration}
 
-\registerctxluafile{lang-tra}{}
+\registerctxluafile{lang-tra}{autosuffix}
 
 \unprotect
 
-\definesystemattribute[transliteration][public,global]
-
 \installcorenamespace {transliteration}
 
-\permanent\tolerant\protected\def\definetransliteration[#1]#*[#2]%
-  {\clf_definedtransliteration{#1}{#2}}
+\installcommandhandler \??transliteration {transliteration} \??transliteration
 
-\permanent\protected\def\settransliteration[#1]%
-  {\clf_settransliteration{#1}}
+\definesystemattribute[transliteration][public,global]
 
-\permanent\protected\def\starttransliteration[#1]%
+% define in lua: \usetransliteration[#1]
+
+% todo: define fast attribute at the tex end do we can have a proper define
+
+\def\lang_transliteration_set#1%
+  {\ifcsname\??transliteration#1\endcsname
+      \c_attr_transliteration\lastnamedcs
+      \edef\currenttransliteration{#1}%
+      \usetransliterationstyleandcolor\c!style\c!color
+      \uselanguageparameter\transliterationparameter
+   \else
+      \clf_settransliteration{#1}%
+   \fi}
+
+\permanent\tolerant\protected\def\settransliteration[#1]#;#2%
+  {\lang_transliteration_set{#1}}
+
+\permanent\tolerant\protected\def\starttransliteration[#1]#*[#2]%
   {\begingroup
-   \clf_settransliteration{#1}}
+   \ifparameter#2\or
+      \edef\currenttransliteration{#1}%
+      \setupcurrenttransliteration[#2]%
+   \fi
+   \lang_transliteration_set{#1}}
+
+\permanent\tolerant\protected\def\transliteration[#1]#;#2%
+  {\groupedcommand{\lang_transliteration_set{#1#2}}\donothing}
+
+\appendtoks
+    \expandafter\integerdef\csname\??transliteration\currenttransliteration\endcsname
+      \clf_registertransliteration{\transliterationparameter\c!vector}%
+    \relax
+\to \everydefinetransliteration
 
 \permanent\protected\def\stoptransliteration
   {\endgroup}

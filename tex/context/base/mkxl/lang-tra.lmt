@@ -1,0 +1,322 @@
+if not modules then modules = { } end modules ['lang-tra'] = {
+    version   = 1.001,
+    comment   = "companion to lang-tra.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- The indic transliterations was researched by kauśika and after some experiments
+-- we settled on the current approach (mappings and a more specific lpeg).
+
+local concat = table.concat
+local utfbyte, utfchar, utfsplit, utfvalues = utf.byte, utf.char, utf.split, utf.values
+local C, Cc, Cs, lpegmatch = lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.match
+local utfchartabletopattern = lpeg.utfchartabletopattern
+local utfcharacterpattern = lpeg.patterns.utf8character
+
+local nuts                = nodes.nuts
+
+local nextchar            = nuts.traversers.char
+
+local getattr             = nuts.getattr
+local setchar             = nuts.setchar
+local getnext             = nuts.getnext
+local isnextchar          = nuts.isnextchar
+
+local insertafter         = nuts.insertafter
+local copynode            = nuts.copy
+local removenode          = nuts.remove
+
+local texsetattribute     = tex.setattribute
+
+local transliteration     = { }
+languages.transliteration = transliteration
+
+local a_transliteration   = attributes.private("transliteration")
+local unsetvalue          = attributes.unsetvalue
+
+local implement           = interfaces.implement
+local context             = context
+
+local zwj                 = utf.char(0x200D)
+
+local lastmapping         = 0
+local loadedmappings      = { }
+local loadedlibraries     = { }
+
+local report              = logs.reporter("transliteration")
+local trace               = false  trackers.register("languages.transliteration", function(v) trace = v end)
+
+local converters = {
+--     ["iast to deva"] = function(m)
+--         local t_svara          = m.svara
+--         local p_svara          = utfchartabletopattern(t_svara)
+--         local t_vyanjana       = m.vyanjana
+--         local p_vyanjana       = utfchartabletopattern(t_vyanjana)
+--         local t_maatra         = m.maatra
+--         local p_maatra         = utfchartabletopattern(t_maatra)
+--         local t_viraama        = m.viraama
+--         local p_viraama        = utfchartabletopattern(t_viraama)
+--         local t_boundary       = m.boundary
+--         local p_boundary       = utfchartabletopattern(t_boundary)
+--         local t_yogavaaha      = m.yogavaaha
+--         local p_yogavaaha      = utfchartabletopattern(t_yogavaaha)
+--         local p_svara_boundary = 1 - p_svara - p_vyanjana - p_yogavaaha
+--         local p = Cs ( (
+--             p_svara                     / t_svara
+--           + p_vyanjana                  / t_vyanjana
+--           + p_viraama                   / t_viraama
+--           + p_yogavaaha                 / t_yogavaaha
+--           + C(utfcharacterpattern)
+--         )^0 )
+--         return function(s)
+--             -- for now
+-- --             s = zwj .. s
+--             --
+--             return lpegmatch(p,s) or s
+--         end
+--     end,
+    ["mapping"] = function(m)
+        local t_mapping = m.mapping
+        if t_mapping then
+            local p = Cs ( (
+                utfchartabletopattern(t_mapping) / t_mapping
+              + C(utfcharacterpattern)
+            )^0 )
+         -- lpeg.print(p)
+            return function(s)
+                return lpegmatch(p,s) or s
+            end
+        else
+            return false
+        end
+    end,
+    ["default"] = function(m)
+        return function(s)
+            return s
+        end
+    end,
+}
+
+function transliteration.use(library)
+    local lib = loadedlibraries[library]
+    if lib == nil then
+        -- todo: use library loader
+        local data = require("lang-imp-" .. library)
+        if data then
+            local transliterations = data.transliterations
+            if transliterations then
+                for name, d in table.sortedhash(transliterations) do
+                    local vector = d.vector
+                    if vector then
+                        report("vector %a in %a is %sloaded with index %i",name,library," already",d.attribute)
+                    else
+                        lastmapping = lastmapping + 1
+                        d.vector = (converters[name] or converters.mapping or converters.default)(d)
+                                or (converters.default)(d)
+                        report("vector %a in set %a is %sloaded with index %i",name,library,"",lastmapping)
+                    end
+                    d.attribute = lastmapping
+                    d.library   = library
+                    d.name      = name
+                    loadedmappings[name] = d
+                    loadedmappings[lastmapping] = d
+                end
+            else
+                report("library %a has no transliterations",library)
+            end
+            loadedlibraries[library] = data
+        else
+            loadedlibraries[library] = false
+        end
+    end
+end
+
+local enable = false
+
+enable = function()
+    nodes.tasks.enableaction("processors", "languages.transliteration.handler")
+    enable = false
+end
+
+function transliteration.set(vector)
+    if enable then
+        enable()
+    end
+    local m = loadedmappings[vector]
+    local a = m and m.attribute or unsetvalue
+    if trace then
+        report("setting transliteration %s",vector)
+    end
+    texsetattribute(a_transliteration,a)
+end
+
+function transliteration.register(vector)
+    if enable then
+        enable()
+    end
+    local m = loadedmappings[vector]
+    local a = m and m.attribute or unsetvalue
+    if trace then
+        report("registering transliteration %s",vector)
+    end
+    return a
+end
+
+-- When there is need I will improve the performance of the next handler.
+
+function transliteration.handler(head)
+    local aprev   = nil
+    local vector  = nil
+    local current = head
+    local first   = nil
+    local last    = nil
+    local list    = { }
+    local size    = 0
+
+    -- we need a more clever one: run over small ranges in order to keep colors etc
+
+    -- actually we can generalize the replacer elsewhere
+
+    local function flush(nxt)
+        -- we can do some optimization here by having the split as replacement
+        local old = concat(list,"",1,size)
+        local new = vector(old)
+        if old ~= new then
+            if trace then
+                report("old: %s",old)
+                report("new: %s",new)
+            end
+            local c = first
+            local x = false
+            for s in utfvalues(new) do
+                if x then
+                    head, c = insertafter(head,c,copynode(first))
+                    setchar(c,s)
+                else
+                    setchar(c,s)
+                    if c == last then
+                        x = true
+                    else
+                        c = getnext(c)
+                    end
+                end
+            end
+            if not x then
+                while c do
+                    head, c = removenode(head,c,true)
+                    if c == nxt then
+                        break
+                    end
+                end
+            end
+        end
+    end
+
+    while current do
+        local nxt, chr, more = isnextchar(current)
+        if chr then
+            local a = getattr(current,a_transliteration)
+            if a then
+                if a ~= aprev then
+                    if first then
+                        flush(nxt)
+                        first = nil
+                        size  = 0
+                    end
+                    aprev = a
+                    vector = loadedmappings[a]
+                    if vector then
+                        vector = vector.vector
+                    end
+                end
+                if not first then
+                    first = current
+                end
+                last = current
+                size = size + 1
+                list[size] = utfchar(chr)
+                if not more then
+                    flush(nxt)
+                    first = nil
+                    size  = 0
+                    -- we can go ahead one next
+                end
+            else
+                if first then
+                    flush(nxt)
+                    first = nil
+                    size  = 0
+                end
+            end
+        end
+        current = nxt
+    end
+    if first then
+       flush(nxt)
+    end
+    return head
+end
+
+interfaces.implement {
+    name      = "usetransliteration",
+    public    = true,
+    protected = true,
+    arguments = "optional",
+    actions   = transliteration.use,
+}
+
+implement {
+    name      = "settransliteration",
+    arguments = "string",
+    actions   = transliteration.set,
+}
+
+implement {
+    name      = "registertransliteration",
+    arguments = "string",
+    actions   = { transliteration.register, context },
+}
+
+nodes.tasks.prependaction("processors", "normalizers", "languages.transliteration.handler", nil, "nut", "disabled" )
+
+local function transliterate(scheme,str)
+    if str and str ~= "" then
+        local m = loadedmappings[scheme]
+        local c = m and m.vector
+        context(c and c(str) or str)
+    end
+end
+
+local getbuffer = buffers.getcontent
+
+implement {
+    name      = "transliterate",
+    public    = true,
+    protected = true,
+    arguments = { "optional", "string" },
+    actions   = transliterate,
+}
+
+implement {
+    name      = "transliteratebuffer",
+    public    = true,
+    protected = true,
+    arguments = { "optional", "string" },
+    actions   = function(scheme,name) transliterate(scheme,getbuffer(name)) end,
+}
+
+implement {
+    name      = "transliterated",
+    public    = true,
+    arguments = { "optional", "string" },
+    actions   = transliterate,
+}
+
+implement {
+    name      = "transliteratedbuffer",
+    public    = true,
+    arguments = { "optional", "string" },
+    actions   = function(scheme,name) transliterate(scheme,getbuffer(name)) end,
+}

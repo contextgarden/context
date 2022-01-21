@@ -530,52 +530,6 @@ local function collect_min(head)
     return head
 end
 
--- local function collect_min(head)
---     local first = false
---     local last  = false
---     local tag   = 0
---     local line  = 0
---     for current, id, subtype in nextnode, head do
---         if id == glyph_code then
---             local tc, lc = getsynctexfields(current)
---             if tc and tc > 0 then
---                 if tag == 0 then
---                     first = current
---                 end
---                 tag  = tc
---                 line = lc
---                 last = current
---             elseif tag > 0 then
---                 head = inject(head,first,last,tag,line)
---                 tag  = 0
---             end
---         elseif id == disc_code then
---             last = current
---         elseif id == kern_code and subtype == fontkern_code then
---             last = current
---         elseif id == hlist_code or id == vlist_code then
---             if tag > 0 then
---                 head = inject(head,first,last,tag,line)
---                 tag  = 0
---             end
---             local list = getlist(current)
---             if list then
---                 local l = collect(list)
---                 if l ~= list then
---                     setlist(current,l)
---                 end
---             end
---         elseif tag > 0 then
---             head = inject(head,first,last,tag,line)
---             tag  = 0
---         end
---     end
---     if tag > 0 then
---         head = inject(head,first,last,tag,line)
---     end
---     return head
--- end
-
 local function inject(parent,head,first,last,tag,line)
     local w, h, d = getrangedimensions(parent,first,getnext(last))
     if h < height then
@@ -630,24 +584,24 @@ local function collect_max(head,parent)
                         last = current
                     end
                 elseif id == glue_code then
-                    if tag > 0 then
-                        local tc, lc = getsynctexfields(current)
-                        if tc and tc > 0 then
-                            if tag ~= tc or line ~= lc then
-                                head = inject(parent,head,first,last,tag,line)
-                                tag  = 0
-                                break
-                            end
-                        else
-                            head = inject(parent,head,first,last,tag,line)
-                            tag  = 0
-                            break
-                        end
-                    else
-                        tag = 0
-                        break
-                    end
-                    id = nil -- so no test later on
+                 -- if tag > 0 then
+                 --     local tc, lc = getsynctexfields(current)
+                 --     if tc and tc > 0 then
+                 --         if tag ~= tc or line ~= lc then
+                 --             head = inject(parent,head,first,last,tag,line)
+                 --             tag  = 0
+                 --             break
+                 --         end
+                 --     else
+                 --         head = inject(parent,head,first,last,tag,line)
+                 --         tag  = 0
+                 --         break
+                 --     end
+                 -- else
+                 --     tag = 0
+                 --     break
+                 -- end
+                 -- id = nil -- so no test later on
                 elseif id == penalty_code then
                     -- go on (and be nice for math)
                 else

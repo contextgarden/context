@@ -999,7 +999,9 @@
 		<cd:constant name='marstyle' value='stilmarcaj'/>
 		<cd:constant name='mask' value='mask'/>
 		<cd:constant name='mathclass' value='mathclass'/>
+		<cd:constant name='mathdenominatorstyle' value='mathdenominatorstyle'/>
 		<cd:constant name='mathlimits' value='mathlimits'/>
+		<cd:constant name='mathnumeratorstyle' value='mathnumeratorstyle'/>
 		<cd:constant name='mathstyle' value='mathstyle'/>
 		<cd:constant name='max' value='max'/>
 		<cd:constant name='maxdepth' value='maxdepth'/>

@@ -63,7 +63,8 @@
 \appendtoks
     \edef\p_command{\mathfenceparameter\c!command}%
     \ifx\p_command\v!yes
-        \setuevalue\currentmathfence{\math_fenced_fenced[\currentmathfence]}%
+        % \instance
+        \protected\edefcsname\currentmathfence\endcsname{\math_fenced_fenced[\currentmathfence]}%
     \fi
 \to \everydefinemathfence
 
@@ -230,12 +231,15 @@
   {\advance\c_math_fenced_nesting\plusone
    \begingroup
    \edef\currentmathfence{#1}%
-% under test:
-\c_attr_mathsize\attributeunsetvalue
-\letmathfenceparameter\c!size\empty
-\letmathfenceparameter\c!factor\v!auto
-% so far
-   \ifparameter#2\or\setupcurrentmathfence[#2]\fi
+   % under test:
+   \c_attr_mathsize\attributeunsetvalue
+   \letmathfenceparameter\c!size\empty
+   \letmathfenceparameter\c!factor\v!auto
+   % so far
+   \ifparameter#2\or
+     \setupcurrentmathfence[#2]%
+     \bigmathdelimitervariant\mathfenceparameter\c!alternative\relax
+   \fi
    \math_fenced_fenced_common
    \edef\p_size{\mathfenceparameter\c!size}%
    \ifempty\p_size
@@ -637,7 +641,7 @@
     \bigmathdelimitervariant\mathfenceparameter\c!alternative\relax
 \to \everysetupmathfence
 
-\setupmathfence[\c!method=1,\c!alternative=2]
+\setupmathfence[\c!method=1,\c!alternative=1]
 
 % \protected\def\plainbigdelimiters % traditional method
 %   {\bigmathdelimitermethod\plustwo}
@@ -704,7 +708,7 @@
      \fi
    \fi}
 
-\permanent\protected\def\mathdelimiterstep#1#2%
+\permanent\protected\def\mathdelimiterstep#1#2% not used
   {\begingroup
    \math_fenced_force_size\plusone{#1}%
    \math_fenced_step#2\relax

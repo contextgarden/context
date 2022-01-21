@@ -10,7 +10,7 @@ local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
 
     dimensions = {
         default = { -- experimental values
-            [0x02044] = { xoffset = 275, width = 600 },
+--             [0x02044] = { xoffset = 275, width = 600 },
             -- primes
             [0xFE932] = { width =  200 },
             [0xFE933] = { width =  500 },

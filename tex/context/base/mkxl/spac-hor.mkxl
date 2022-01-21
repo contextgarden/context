@@ -1021,22 +1021,22 @@
 \overloaded\permanent\protected \def\negthickspace{\textormathspace-\thickmuskip3}
 \overloaded\permanent\protected\edef\medspace     {\textormathspacecommand+\medmuskip{\Uchar"205F}}
 
-% needed for unicode:
+% maybe
 
-% \protected\def\breakablethinspace      {\breakabletextormathspace+\thinmuskip1}
-% \protected\def\twoperemspace           {\hskip\dimexpr\emwidth/2\relax} % == \enspace
-% \protected\def\threeperemspace         {\hskip\dimexpr\emwidth/3\relax}
-% \protected\def\fourperemspace          {\hskip\dimexpr\emwidth/4\relax}
-% \protected\def\fiveperemspace          {\hskip\dimexpr\emwidth/5\relax} % goodie
-% \protected\def\sixperemspace           {\hskip\dimexpr\emwidth/6\relax}
-% \protected\def\figurespace             {\begingroup\setbox\scratchbox\hbox{0}\hskip\wd\scratchbox\endgroup} % there is a command for this
-% \protected\def\punctuationspace        {\begingroup\setbox\scratchbox\hbox{.}\hskip\wd\scratchbox\endgroup}
-% \protected\def\ideographicspace        {\hskip\dimexpr\emwidth/1\relax}
-% \protected\def\ideographichalffillspace{\hskip\dimexpr\emwidth/2\relax}
-% \protected\def\nobreakspace            {\penalty\plustenthousand\kern\interwordspace}
-% \protected\def\narrownobreakspace      {\penalty\plustenthousand\thinspace}
-% \protected\def\zerowidthnobreakspace   {\penalty\plustenthousand\kern\zeropoint}
-% \protected\def\zerowidthspace          {\hskip\zeropoint}
+% \protected\def\breakablethinskip      {\breakabletextormathspace+\thinmuskip1}
+% \protected\def\twoperemskip           {\hskip\dimexpr\emwidth/2\relax} % == \enspace
+% \protected\def\threeperemskip         {\hskip\dimexpr\emwidth/3\relax}
+% \protected\def\fourperemskip          {\hskip\dimexpr\emwidth/4\relax}
+% \protected\def\fiveperemskip          {\hskip\dimexpr\emwidth/5\relax} % goodie
+% \protected\def\sixperemskip           {\hskip\dimexpr\emwidth/6\relax}
+% \protected\def\figureskip             {\begingroup\setbox\scratchbox\hbox{0}\hskip\wd\scratchbox\endgroup} % there is a command for this
+% \protected\def\punctuationskip        {\begingroup\setbox\scratchbox\hbox{.}\hskip\wd\scratchbox\endgroup}
+% \protected\def\ideographicskip        {\hskip\dimexpr\emwidth/1\relax}
+% \protected\def\ideographichalffillskip{\hskip\dimexpr\emwidth/2\relax}
+% \protected\def\nobreakskip            {\penalty\plustenthousand\kern\interwordspace}
+% \protected\def\narrownobreakskip      {\penalty\plustenthousand\thinspace}
+% \protected\def\zerowidthnobreakskip   {\penalty\plustenthousand\kern\zeropoint}
+% \protected\def\zerowidthskip          {\hskip\zeropoint}
 
 \definehspace[.5][.1250\emwidth] % hair
 \definehspace[1] [.1667\emwidth] % thin

@@ -480,10 +480,16 @@ do
             local w
             local e = c and c[char]
             if e then
-                w = e.width or 0
+--                 w = e.width or 0
+--                 local a = e.advance
+--                 if a then
+--                     w = a
+--                 end
                 local a = e.advance
                 if a then
                     w = a
+                else
+                    w = e.width or 0
                 end
             end
             if not w then

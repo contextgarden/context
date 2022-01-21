@@ -168,8 +168,8 @@
     \t_meta_inclusions \emptytoks % in case we redefine
 \to \everydefineMPinstance
 
-\permanent\protected\def\resetMPinstance[#1]%
-  {\writestatus\m!metapost{reset will be implemented when needed}}
+% \permanent\protected\def\resetMPinstance[#1]%
+%   {\writestatus\m!metapost{reset will be implemented when needed}}
 
 \def\meta_analyze_graphicname[#1]%
   {\normalexpanded{\meta_analyze_graphicname_indeed[#1::::]}}

@@ -197,10 +197,12 @@ function fontgoodies.designsizes.register(name,size,specification)
     end
 end
 
-function fontgoodies.designsizes.filename(name,spec,size) -- returns nil of no match
+function fontgoodies.designsizes.filename(name,spec,size,force) -- returns nil of no match
     local data = designdata[lower(name)]
     if data then
-        if not spec or spec == "" or spec == "default" or texconditionals["c_font_compact"] then
+        if not spec or spec == "" or spec == "default" then
+            return data.default
+        elseif not force and texconditionals["c_font_compact"] then
             return data.default
         elseif spec == "auto" then
             local ranges = data.ranges

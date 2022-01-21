@@ -575,7 +575,7 @@ def mfun_tool_striped_set_options(expr option) =
 enddef ;
 
 vardef mfun_tool_striped_number(expr option, p, asked_n, asked_slot) text extra =
-    image (
+%     image (
         begingroup ;
         save pattern, shape, bounds, penwidth, used_n, used_slot ;
         picture pattern, shape ; path bounds ; numeric used_s, used_slot ;
@@ -614,7 +614,7 @@ vardef mfun_tool_striped_number(expr option, p, asked_n, asked_slot) text extra 
             addto currentpicture also shape ;
         fi ;
         endgroup ;
-    )
+%     )
 enddef ;
 
 % def mfun_tool_striped_angle_action text extra =
@@ -633,7 +633,7 @@ def mfun_tool_striped_angle_action text extra =
 enddef ;
 
 vardef mfun_tool_striped_angle(expr option, p, asked_angle, asked_gap) text extra =
-    image (
+%     image (
         begingroup ;
         save pattern, shape, mask, maximum, minimum, centrum, used_angle, used_gap ;
         picture pattern, shape, mask ; numeric maximum, minimum ; pair centrum ; numeric used_angle, used_gap ;
@@ -677,7 +677,7 @@ vardef mfun_tool_striped_angle(expr option, p, asked_angle, asked_gap) text extr
         fi ;
         currentpicture := currentpicture shifted centrum ;
         endgroup ;
-    )
+%     )
 enddef;
 
 newinternal striped_normal_inner  ; striped_normal_inner  := 1 ;
@@ -686,11 +686,13 @@ newinternal striped_normal_outer  ; striped_normal_outer  := 3 ;
 newinternal striped_reverse_outer ; striped_reverse_outer := 4 ;
 
 secondarydef p anglestriped s =
-    mfun_tool_striped_angle(redpart s,p,greenpart s,bluepart s)
+  % mfun_tool_striped_angle(redpart s,p,greenpart s,bluepart s)
+    image(mfun_tool_striped_angle(redpart s,p,greenpart s,bluepart s)) % for 'withcolor'
 enddef ;
 
 secondarydef p numberstriped s =
-    mfun_tool_striped_number(redpart s,p,greenpart s,bluepart s)
+  % mfun_tool_striped_number(redpart s,p,greenpart s,bluepart s)
+    image(mfun_tool_striped_number(redpart s,p,greenpart s,bluepart s)) % for 'withcolor'
 enddef ;
 
 % for old times sake:
