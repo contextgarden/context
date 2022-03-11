@@ -220,10 +220,10 @@ function mathematics.tweakaftercopyingfont(target,original)
     end
 end
 
+sequencers.appendaction("mathparameters","system","mathematics.overloadparameters")
 sequencers.appendaction("mathparameters","system","mathematics.scaleparameters")
 sequencers.appendaction("mathparameters","system","mathematics.checkaccentbaseheight")  -- should go in lfg instead
 sequencers.appendaction("mathparameters","system","mathematics.checkprivateparameters") -- after scaling !
-sequencers.appendaction("mathparameters","system","mathematics.overloadparameters")
 
 sequencers.appendaction("beforecopyingcharacters","system","mathematics.tweakbeforecopyingfont")
 sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweakaftercopyingfont")

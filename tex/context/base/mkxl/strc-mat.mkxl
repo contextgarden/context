@@ -874,8 +874,8 @@
 
 % for the moment (when testing) we use a penalty 1
 
-\protected\def\strc_math_align_here{\ifmmode\penalty\plusone\fi}%
-\protected\def\strc_math_break_here{\ifmmode\hfill\break \fi}%
+\protected\def\strc_math_align_here{\ifmmode\boundary\plusone\fi}%
+\protected\def\strc_math_break_here{\ifmmode\hfill\break\fi}%
 
 \ifdefined\alignhere \else \aliased\let\alignhere\relax \fi
 \ifdefined\breakhere \else \aliased\let\breakhere\relax \fi

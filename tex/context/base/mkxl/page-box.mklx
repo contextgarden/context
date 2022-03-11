@@ -250,11 +250,22 @@
 
 % nearly always some displacement so no speedup test needed
 
+% \def\page_boxes_apply_offsets#1%
+%   {\setbox#1\vpack to \paperheight
+%      {\hsize\paperwidth
+%       \vkern\topspace
+%       \hkern\doifbothsides\backspace\backspace{\dimexpr\paperwidth-\backspace-\makeupwidth\relax}%
+%       \box#1}%
+%    \dp#1\zeropoint}
+
 \def\page_boxes_apply_offsets#1%
   {\setbox#1\vpack to \paperheight
      {\hsize\paperwidth
       \vkern\topspace
       \hkern\doifbothsides\backspace\backspace{\dimexpr\paperwidth-\backspace-\makeupwidth\relax}%
+%       \hkern\doifbothsides\backspace\backspace\cutspace
+%       \page_layouts_swap_margins\v!page
+%       \hkern\backspace
       \box#1}%
    \dp#1\zeropoint}
 

@@ -534,7 +534,7 @@
    \egroup}}
 
 \def\page_sides_flush_floats_normal
-  {\ifdim\scratchdimen>\htdp\strutbox
+  {\ifdim\scratchdimen>\struthtdp
      \strut
    \else
      \m_pages_strut

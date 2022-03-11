@@ -120,9 +120,9 @@ has no ligatures and kerns and is normally not processed at all.
 \NC \type {rightprotruding} \NC number  \NC right protruding factor (\prm {rpcode}) \NC\NR
 \NC \type {expansion}       \NC number  \NC expansion factor (\prm {efcode}) \NC\NR
 \NC \type {next}            \NC number  \NC \quote {next larger} character index \NC\NR
-\NC \type {extensible}      \NC table   \NC constituent parts of an extensible recipe \NC\NR
-\NC \type {vvariants}       \NC table   \NC constituent parts of a vertical variant set \NC \NR
-\NC \type {hvariants}       \NC table   \NC constituent parts of a horizontal variant set \NC \NR
+\NC \type {extensible}      \NC table   \NC constituent parts of an extensible (traditional) recipe \NC\NR
+\NC \type {vparts}          \NC table   \NC constituent parts of a vertical (\OPENTYPE) recipe \NC \NR
+\NC \type {hparts}          \NC table   \NC constituent parts of a horizontal (\OPENTYPE)recipe \NC \NR
 \NC \type {kerns}           \NC table   \NC kerning information \NC\NR
 \NC \type {ligatures}       \NC table   \NC ligaturing information \NC\NR
 \NC \type {mathkern}        \NC table   \NC math cut-in specifications \NC\NR
@@ -169,7 +169,7 @@ well as on the value of \prm {adjustspacing}.
 A math character can have a \type {next} field that points to a next larger
 shape. However, the presence of \type {extensible} will overrule \type {next}, if
 that is also present. The \type {extensible} field in turn can be overruled by
-\type {vvariants}, the \OPENTYPE\ version. The \type {extensible} table is very
+\type {vparts}, the \OPENTYPE\ version. The \type {extensible} table is very
 simple:
 
 \starttabulate[|l|l|p|]
@@ -182,7 +182,7 @@ simple:
 \LL
 \stoptabulate
 
-The \type {hvariants} and \type {vvariants} are arrays of components. Each of
+The \type {hparts} and \type {vparts} are arrays of components. Each of
 those components is itself a hash of up to five keys:
 
 \starttabulate[|l|l|p|]

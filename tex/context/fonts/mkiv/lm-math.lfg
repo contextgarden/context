@@ -235,6 +235,10 @@ return {
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     mathematics = {
+        parameters = {
+            NoLimitSupFactor =   0,
+            NoLimitSubFactor = 900,
+        },
         mapfiles = {
             "lm-math.map",
             "lm-rm.map",
@@ -252,12 +256,6 @@ return {
         },
         variables = {
             joinrelfactor = 3, -- default anyway
-        },
-        parameters = { -- test values
-         -- FactorA = 123.456,
-         -- FactorB = false,
-         -- FactorC = function(value,target,original) return 7.89 * target.factor end,
-         -- FactorD = "Hi There!",
         },
     }
 }

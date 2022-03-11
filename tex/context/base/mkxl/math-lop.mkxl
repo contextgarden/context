@@ -1,0 +1,143 @@
+%D \module
+%D   [       file=math-lop,
+%D        version=2022.02.10,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Large operators,
+%D         author={Hans Hagen & Mikael Sundqvist},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Large Operators}
+
+% $\textstyle        \Uoperator          \Udelimiter "0 \fam "222B {t} {b} {x}$\blank
+% $\textstyle        \Uoperator          \Udelimiter "0 \fam "222B {t} {b} {\frac{1}{x}}$\blank
+% $\displaystyle x + \Uoperator          \Udelimiter "0 \fam "222B {t} {b} {\frac{1}{x}}$\blank
+% $              x + \Uoperator nolimits \Udelimiter "0 \fam "222B {t} {b} {\frac{1}{x}}$\blank
+% $              x + \Uoperator limits   \Udelimiter "0 \fam "222B {t} {b} {\frac{1}{x}}$\blank
+
+\unprotect
+
+\installcorenamespace{mathoperators}
+\installcorenamespace{mathoperatormethod}
+
+\installcommandhandler \??mathoperators {mathoperator} \??mathoperators
+
+\setupmathoperator
+  [\c!left=\zerocount]% so we always have something
+
+\aliased\let\setupmathoperators\setupmathoperator
+
+\appendtoks
+    % todo: only define when there's left or right
+    \protected\instance\edefcsname\currentmathoperator\endcsname{\math_operator{\currentmathoperator}}%
+    % todo: under definition control
+    \protected\instance\edefcsname\e!start\currentmathoperator\endcsname{\math_operator_start{\currentmathoperator}}%
+    \protected\instance\edefcsname\e!stop \currentmathoperator\endcsname{\math_operator_stop}%
+\to \everydefinemathoperator
+
+% more generic:
+
+\defcsname\??mathoperatormethod\v!horizontal\endcsname{nolimits }
+\defcsname\??mathoperatormethod\v!vertical  \endcsname{limits }
+
+% The ones we wlready had:
+
+\letcsname\??mathoperatormethod    \v!auto\endcsname\empty
+\letcsname\??mathoperatormethod autolimits\endcsname\empty
+\letcsname\??mathoperatormethod   nolimits\expandafter\endcsname\csname\??mathoperatormethod\v!horizontal\endcsname
+\letcsname\??mathoperatormethod     limits\expandafter\endcsname\csname\??mathoperatormethod\v!vertical  \endcsname
+
+\installlocalcurrenthandler\??mathoperators {mathoperator}
+
+\protected\def\math_operator_operator#1#2%
+  {\setlocalmathoperatorcurrent{#1}% \edef\currentmathoperator{#1}%
+   \setupcurrentmathoperator[#2]%
+   \Uoperator
+     \usedcolorparameterattributes{\mathoperatorparameter\c!color}%
+     \begincsname\??mathoperatormethod\mathoperatorparameter\c!method\endcsname
+     \ifchkdim\mathoperatorparameter\c!size\or
+       \s!depth \mathoperatorparameter\c!size
+       \s!height\mathoperatorparameter\c!size
+       \s!axis
+     \orelse\ifcstok{\mathoperatorparameter\c!size}\v!auto
+       \s!auto
+     \fi
+     \s!class \mathoperatorcode
+     % todo: find a way to pick up or pass sup/sub to here
+     \Udelimiter \zerocount \fam \mathoperatorparameter\c!left
+     {\edef\m_operator_text{\mathoperatorparameter\c!top}%
+      \ifempty\m_operator_text\else
+         \mathstrut % todo: make option
+         \dousecolorparameter{\mathoperatorparameter\c!topcolor}
+         \m_operator_text
+      \fi}%
+     {\edef\m_operator_text{\mathoperatorparameter\c!bottom}%
+      \ifempty\m_operator_text\else
+         \mathstrut % todo: make option
+         \dousecolorparameter{\mathoperatorparameter\c!bottomcolor}
+         \m_operator_text
+      \fi}}
+
+\tolerant\protected\def\math_operator#1#*[#2]#*#:#=% mandate braces
+  {\math_operator_operator{#1}{#2}#3\Uright.}
+
+\tolerant\protected\def\math_operator_start#1#*[#2]%
+  {\math_operator_operator{#1}{#2}}
+
+\protected\def\math_operator_stop
+  {\Uright.}
+% {\Uright\Udelimiter\zerocount \fam \zerocount }
+
+% \def\math_operator_default_size % is now the auto option
+%   {\ifconditional\indisplaymath\ifcase\Umathoperatorsize=\maxdimen\else
+%      \Umathoperatorsize\displaystyle
+%    \fi\fi}
+
+% TODO: Add 4 (inherited) classes and then define them automatically from char-def
+% instead.
+
+\setupmathoperators [integrals]  [\c!size=\v!auto,\c!method=\mathematicsparameter\c!integral] % cf Mikael's wish
+\setupmathoperators [summations] [\c!size=\v!auto]
+\setupmathoperators [products]   [\c!size=\v!auto]
+\setupmathoperators [operators]  [\c!size=\v!auto]
+
+\definemathoperator [integral]   [integrals]  [\c!left="222B] % these might go unless we decide
+\definemathoperator [iintegral]  [integrals]  [\c!left="222C] % to have verbose parents but who
+\definemathoperator [iiintegral] [integrals]  [\c!left="222D] % will use them
+
+\definemathoperator [int]        [integrals]  [\c!left="222B] %                          INTEGRAL
+\definemathoperator [iint]       [integrals]  [\c!left="222C] %                DOUBLE    INTEGRAL
+\definemathoperator [iiint]      [integrals]  [\c!left="222D] %                TRIPLE    INTEGRAL
+\definemathoperator [iiiint]     [integrals]  [\c!left="2A0C] %                QUADRUPLE INTEGRAL OPERATOR
+\definemathoperator [oint]       [integrals]  [\c!left="222E] %                CONTOUR   INTEGRAL
+\definemathoperator [oiint]      [integrals]  [\c!left="222F] %                SURFACE   INTEGRAL
+\definemathoperator [oiiint]     [integrals]  [\c!left="2230] %                VOLUME    INTEGRAL
+\definemathoperator [intc]       [integrals]  [\c!left="2231] %      CLOCKWISE           INTEGRAL
+\definemathoperator [ointc]      [integrals]  [\c!left="2232] %      CLOCKWISE CONTOUR   INTEGRAL
+\definemathoperator [aointc]     [integrals]  [\c!left="2233] % ANTI CLOCKWISE CONTOUR   INTEGRAL
+
+\definemathoperator [sum]        [summations] [\c!left="2211] % N-ARY SUMMATION
+
+\definemathoperator [prod]       [products]   [\c!left="220F] % N-ARY PRODUCT
+\definemathoperator [coprod]     [products]   [\c!left="2210] % N-ARY COPRODUCT
+
+% todo: middles too
+
+\definemathoperator [bigwedge]   [operators]  [\c!left="22C0] %  N-ARY LOGICAL AND
+\definemathoperator [bigvee]     [operators]  [\c!left="22C1] %  N-ARY LOGICAL OR
+\definemathoperator [bigcap]     [operators]  [\c!left="22C2] %  N-ARY LOGICAL INTERSECTION
+\definemathoperator [bigcup]     [operators]  [\c!left="22C3] %  N-ARY         UNION
+\definemathoperator [bigodot]    [operators]  [\c!left="2A00] %  N-ARY CIRCLED DOT          OPERATOR
+\definemathoperator [bigoplus]   [operators]  [\c!left="2A01] %  N-ARY CIRCLED PLUS         OPERATOR
+\definemathoperator [bigotimes]  [operators]  [\c!left="2A02] %  N-ARY CIRCLED TIMES        OPERATOR
+\definemathoperator [bigudot]    [operators]  [\c!left="2A03] %  N-ARY         UNION        OPERATOR WITH DOT
+\definemathoperator [biguplus]   [operators]  [\c!left="2A04] %  N-ARY         UNION        OPERATOR WITH PLUS
+\definemathoperator [bigsqcap]   [operators]  [\c!left="2A05] %  N-ARY SQUARE  INTERSECTION OPERATOR
+\definemathoperator [bigsqcup]   [operators]  [\c!left="2A06] %  N-ARY SQUARE  UNION        OPERATOR
+\definemathoperator [bigtimes]   [operators]  [\c!left="2A09] %  N-ARY         TIMES        OPERATOR
+
+\protect \endinput

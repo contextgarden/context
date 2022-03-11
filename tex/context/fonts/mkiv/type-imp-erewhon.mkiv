@@ -1,0 +1,45 @@
+%\loadtypescriptfile[texgyre]
+%\resetfontfallback  [erewhon-euler-fix]
+%\definefontfallback[erewhon-euler-fix][texgyrepagella-math] [0x022EE,0x022F0,0x022F1,0x02661,0x02220][force=yes]
+
+
+\starttypescriptcollection[erewhon]
+
+    %\definefontfeature[default-slanted-erewhon][default][slant=.2]
+    %\definefontfeature[none-slanted-erewhon]   [none]   [slant=.2]
+
+    \starttypescript [\s!serif] [erewhon-serif]
+        \definefontsynonym [\s!Serif]           [\s!file:Erewhon-Regular]   [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:Erewhon-Italic]   [\s!features=\s!default]
+        \definefontsynonym [\s!SerifSlanted]    [\s!file:Erewhon-RegularSlanted]   [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!file:Erewhon-Bold]   [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:Erewhon-BoldItalic]   [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldSlanted][\s!file:Erewhon-BoldSlanted]   [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [cabin-sans]
+        \definefontsynonym [\s!Sans]            [\s!file:Cabin-Regular]    [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]      [\s!file:Cabin-Italic]    [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]        [\s!file:Cabin-SemiBold]    [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic]  [\s!file:Cabin-SemiBoldItalic]    [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [inconsolata-mono]
+        \definefontsynonym [\s!Mono]            [\s!file:Inconsolatazi4-Regular]    [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBold]        [\s!file:Inconsolatazi4-Bold]    [\s!features=\s!none]
+    \stoptypescript
+
+    \starttypescript [\s!math] [erewhon-math] [\s!name]
+        \loadfontgoodies[erewhon-math]
+        \definefontsynonym[\s!MathRoman] [\s!file:Erewhon-Math.otf] [\s!features=\s!math\mathsizesuffix,\s!goodies=erewhon-math]    
+    \stoptypescript
+
+    \starttypescript [erewhon]
+        \definetypeface [erewhon] [\s!rm] [\s!serif] [erewhon-serif] [\s!default]
+        \definetypeface [erewhon] [\s!ss] [\s!sans]  [cabin-sans] [\s!default]
+        \definetypeface [erewhon] [\s!tt] [\s!mono]  [inconsolata-mono] [\s!default] [\s!rscale=1.1]
+        \definetypeface [erewhon] [\s!mm] [\s!math]  [erewhon-math] [\s!default] 
+        \quittypescriptscanning
+    \stoptypescript
+
+\stoptypescriptcollection

@@ -2196,6 +2196,25 @@
   {\afterdisplayspace
    \endgroup}
 
+%D Kind of new (February 2022):
+
+\installcorenamespace {maththreshold}
+
+\setupmathematics[\c!threshold=\zeropoint]
+
+\permanent\protected\def\installmaththreshold#1#2%
+  {\expandafter\gluespecdef\csname\??maththreshold#1\endcsname#2\relax}
+
+\installmaththreshold\v!none  {\zeropoint}
+\installmaththreshold\v!small {3\emwidth plus 0.50\emwidth minus 0.25\emwidth}
+\installmaththreshold\v!medium{4\emwidth plus 0.75\emwidth minus 0.50\emwidth}
+\installmaththreshold\v!big   {5\emwidth plus 1.00\emwidth minus 0.75\emwidth}
+
+\appendtoks
+    \edef\p_threshold{\mathematicsparameter\c!threshold}%
+    \maththreshold\ifcsname\??maththreshold\p_threshold\endcsname\lastnamedcs\else\p_threshold\fi\relax
+\to \everymath % \everyemathematics
+
 \protect \endinput
 
 % \placeformula \startformula[-] \startmatrix

@@ -25,17 +25,6 @@ local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
 
 end
 
--- RadicalVerticalGap             =  50
--- RadicalDisplayStyleVerticalGap = 175
-
--- RadicalVerticalGap             = 166
--- RadicalDisplayStyleVerticalGap = 345
-
-local function FixRadicalDisplayStyleVerticalGap(value,target,original)
-    local o = original.mathparameters.RadicalVerticalGap -- 50
-    return 2 * o * target.parameters.factor
-end
-
 return {
     name = "lucida-opentype-math",
     version = "1.00",
@@ -43,6 +32,14 @@ return {
     author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
+        parameters = {
+            RadicalDisplayStyleVerticalGap = 100,
+            NoLimitSupFactor               =   0,
+            NoLimitSubFactor               = 900,
+            FractionRuleThickness          =  55,
+            AccentBaseHeight               = 650,
+            AccentBaseDepth                = 150,
+        },
         tweaks = {
             aftercopying = {
                 {
@@ -52,27 +49,39 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {
-                        -- nothing yet
+                        -- these we fix here
+                        ["0x23DC.parts.1"]  = { xoffset = -0.075, height = .4, yoffset = -0.6 },
+                        ["0x23DC.parts.2"]  = {                   height = .4, yoffset = -0.6 },
+                        ["0x23DC.parts.3"]  = { xoffset =  0.075, height = .4, yoffset = -0.6 },
+                        ["0x23DD.parts.1"]  = { xoffset = -0.075, depth  = .8, yoffset =  0.2 },
+                        ["0x23DD.parts.2"]  = {                   depth  = .8, yoffset =  0.2 },
+                        ["0x23DD.parts.3"]  = { xoffset =  0.075, depth  = .8, yoffset =  0.2 },
+                        -- these are done later using the AccentBase* parameters
+                     -- [0x23DC]  = { height = .2, yoffset = -0.8 },
+                     -- [0x23DD]  = { depth  = .6, yoffset =  0.4 },
                     },
                 },
-                {
-                    tweak   = "fixprimes",
-                    factor  = 0.8, -- accent base height
-                    smaller = true, -- replace multiples
-                    scale   = 0.75, -- glyph scale
-                    fake    = 0.65, -- replace multiples with this width proportion
-                 -- keep    = true, -- keep the text size prime (aka minute)
-                },
+             {
+               tweak   = "fixprimes",
+               factor  = 0.9, -- accent base height
+            --    smaller = true, -- replace multiples
+               scale   = 1, -- glyph scale
+            --    fake    = 0.65, -- replace multiples with this width proportion
+            -- keep    = true, -- keep the text size prime (aka minute)
+             },
                 {
                     tweak = "checkspacing",
                 },
                 {
                     tweak = "addscripts",
                 },
+                {
+                    tweak = "accentdimensions",
+                },
+                {
+                    tweak = "addrules",
+                },
             },
-        },
-        parameters = {
-            RadicalDisplayStyleVerticalGap = FixRadicalDisplayStyleVerticalGap,
         },
         alternates = {
             italic       = { feature = 'ss01', value = 1, comment = "Mathematical Alternative Lowercase Italic" },
@@ -81,6 +90,9 @@ return {
             calligraphic = { feature = 'ss04', value = 1, comment = "Mathematical Alternative Calligraphic Characters" },
             zero         = { feature = 'ss05', value = 1, comment = "Mathematical Alternative Zero" },
             partial      = { feature = 'ss20', value = 1, comment = "Mathematical Alternative Upright Partial Differential" },
+        },
+        bigslots = {
+            1, 2, 3, 4
         },
         --
         -- experimental fixes for mkiv:

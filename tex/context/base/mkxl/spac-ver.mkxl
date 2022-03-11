@@ -825,22 +825,20 @@
 %D
 %D But we do things differently.
 
-\newbox\strutbox
+\newbox\b_strut_box
+\newbox\b_strut_tmp
 
-\setbox\strutbox\hpack{\vrule\s!height8.5pt\s!depth3.5pt\s!width\zeropoint} % just a start
-
-% \permanent\protected\def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
-%
-% \protected\def\strut
-%   {\relax
-%    \ifmmode\copy\else\dontleavehmode\unhcopy\fi\strutbox}
-%
-% \aliased\let\normalstrut\strut
+\permanent\protected\def\strutbox % not to be used but this is sort of an alias
+  {\beginlocalcontrol
+   \setbox\b_strut_tmp\hpack{\normalsrule\s!height\strutht\s!depth\strutdp}% just a start
+   \endlocalcontrol
+   \b_strut_tmp}
 
 %D The double \type {\hbox} construction enables us to backtrack boxes.
 
-\overloaded\let\strutht\undefined \newdimen\strutht
-\overloaded\let\strutdp\undefined \newdimen\strutdp
+\overloaded\let\strutht  \undefined \newdimen\strutht
+\overloaded\let\strutdp  \undefined \newdimen\strutdp
+\overloaded\let\struthtdp\undefined \newdimen\struthtdp
 
 \permanent\protected\def\setstrut
   {\ifgridsnapping
@@ -884,9 +882,9 @@
    \dosetstrut}
 
 \permanent\protected\def\setcharstrut#1%
-  {\setbox\strutbox\hbox{#1}% no \hpack, in case we have smallcaps
-   \strutht\ht\strutbox
-   \strutdp\dp\strutbox
+  {\setbox\b_strut_box\hbox{#1}% no \hpack, in case we have smallcaps
+   \strutht\ht\b_strut_box
+   \strutdp\dp\b_strut_box
    \dosetstrut}
 
 \permanent\protected\def\settightstrut
@@ -903,13 +901,17 @@
 \permanent\protected\def\charhtstrut
   {\begingroup
    \setcharstrut{GJY}%
-   \vrule\s!width\zeropoint\s!depth\zeropoint\s!height\strutht
+   \normalsrule
+     \s!depth \zeropoint
+     \s!height\strutht
    \endgroup}
 
 \permanent\protected\def\chardpstrut
   {\begingroup
    \setcharstrut{gjy}%
-   \vrule\s!width\zeropoint\s!depth\strutdp\s!height\zeropoint
+   \normalsrule
+     \s!depth \strutdp
+     \s!height\zeropoint
    \endgroup}
 
 %D Because of all the callbacks in mkiv, we avoid unnecessary boxes ... maybe use an
@@ -919,143 +921,82 @@
 
 \permanent\protected\def\dosetstrut
   {\enforced\let\strut\normalstrut
-   \ifabsnum\dimexpr\strutht+\strutdp-\lineheight\relax<\plustwo
+   \ifabsnum\dimexpr\struthtdp-\lineheight\relax<\plustwo
      % compensate rounding error /- 1sp to avoid too many
      % 1sp baselineskips in for instance verbatim
      % \strutht\dimexpr\lineheight-\strutdp\relax
      % better:
      \strutdp\dimexpr\lineheight-\strutht\relax
      \struttotal\lineheight
-   \else
-     \struttotal\dimexpr\strutht+\strutdp\relax
    \fi
+   \struthtdp\dimexpr\strutht+\strutdp\relax
    \strutheight\strutht
    \strutdepth \strutdp
-   \ifdim\strutwidth=\zeropoint
-      \spac_struts_set_hide
-   \else
-      \spac_struts_set_vide
-   \fi}
-
-\def\spac_struts_set_hide
-  {\setbox\strutbox\hpack
-     {\vrule
-        \s!width \zeropoint
-        \s!height\strutht
-        \s!depth \strutdp}}
+   \struttotal \struthtdp}
 
 \newconstant\c_strut_visual_mode
-
-\def\spac_struts_set_vide
-  {\setbox\strutbox\hpack  % at some time this extra wrapping was needed
-     {\spac_struts_vide_hbox to \zeropoint
-        {\ifcase\c_strut_visual_mode
-           \spac_struts_black
-         \or
-           \spac_struts_color
-         \else
-           \spac_struts_black
-         \fi}}}
-
-\def\spac_struts_black
-  {\vrule
-     \s!width \strutwidth
-     \s!height\strutht
-     \s!depth \strutdp
-   \hss}
-
-\def\spac_struts_color
-  {\hss % new, will be option
-   \scratchwidth.1\struthtdp
-   \begingroup
-   \directcolor[f:b:t]%
-   \vrule
-     \s!width \scratchwidth
-     \s!height\strutht
-     \s!depth \strutdp
-   \kern-\scratchwidth
-   \vrule
-     \s!width \scratchwidth
-     \s!height\zeropoint
-     \s!depth \strutdp
-   \endgroup
-   \kern-.625\scratchwidth
-   \vrule
-     \s!width .25\scratchwidth
-     \s!height\strutht
-     \s!depth \strutdp
-   \hss}
-
-\let\spac_struts_vide_hbox\hbox % overloaded in trac-vis.mkiv
 
 %D The dimen \type {\struttotal} holds the exact size of the strut; occasionally a
 %D one scaled point difference can show up with the lineheight. This is more
 %D efficient (less callbacks):
 
-\newbox\b_spac_struts_empty \setbox\b_spac_struts_empty\emptyhbox
-
-\def\spac_struts_set_hide
-  {\setbox\strutbox\copy\b_spac_struts_empty
-   \ht\strutbox\strutht
-   \dp\strutbox\strutdp}
-
 \permanent\protected\def\strut % still callbacks for \hbox{\strut}
   {\relax
    \dontleavehmode
-   \copy\strutbox}
-
-% \protected\def\strut % slightly faster
-%   {\relax
-%    \ifmmode\copy\else\dontleavehmode\unhcopy\fi\strutbox}
+   \normalsrule
+      \s!height\strutht
+      \s!depth \strutdp
+   \relax}
 
 \aliased\let\normalstrut\strut
 
 \permanent\protected\def\halfstrut
   {\relax
    \dontleavehmode
-   \begingroup
-   \setbox\scratchbox\copy\strutbox
-   \ht\scratchbox\dimexpr\strutht/\plustwo\relax
-   \dp\scratchbox\dimexpr\strutdp/\plustwo\relax
-   \box\scratchbox
-   \endgroup}
+   \normalsrule
+      \s!height.5\strutht
+      \s!depth .5\strutdp
+   \relax}
 
 \permanent\protected\def\quarterstrut
   {\relax
    \dontleavehmode
-   \begingroup
-   \setbox\scratchbox\copy\strutbox
-   \ht\scratchbox\dimexpr\strutht/\plusfour\relax
-   \dp\scratchbox\dimexpr\strutdp/\plusfour\relax
-   \box\scratchbox
-   \endgroup}
+   \normalsrule
+      \s!height.25\strutht
+      \s!depth .25\strutdp
+   \relax}
 
 \permanent\protected\def\depthstrut
   {\relax
    \dontleavehmode
-   \begingroup
-   \setbox\scratchbox\copy\strutbox
-   \ht\scratchbox\dimexpr\strutht-\struthtdp/\plustwo\relax % assumes that ht > lineheight/2
-   \box\scratchbox
-   \endgroup}
+   \normalsrule
+      \s!height\dimexpr\strutht-\struthtdp/\plustwo\relax
+      \s!depth \strutdp
+   \relax}
 
 \permanent\protected\def\halflinestrut
   {\relax
    \dontleavehmode
-   \begingroup
-   \setbox\scratchbox\copy\strutbox
-   \ht\scratchbox\dimexpr\strutht-.5\strutht-.5\strutdp\relax
-   \box\scratchbox
-   \endgroup}
+   \normalsrule
+      \s!height\dimexpr\strutht-.5\struthtdp\relax
+      \s!depth \strutdp
+   \relax}
 
 \permanent\protected\def\noheightstrut
   {\relax
    \dontleavehmode
-   \begingroup
-   \setbox\scratchbox\copy\strutbox
-   \ht\scratchbox\zeropoint
-   \box\scratchbox
-   \endgroup}
+   \normalsrule
+      \s!height\zeropoint
+      \s!depth \strutdp
+   \relax}
+
+\permanent\protected\def\nodepthstrut
+  {\relax
+   \dontleavehmode
+   \normalsrule
+      \s!height\strutht
+      \s!depth \zeropoint
+   \relax}
 
 %D Sometimes a capstrut comes in handy
 %D
@@ -1095,32 +1036,16 @@
    \fi}
 
 \permanent\protected\def\showstruts % adapts .. is wrong
-  {\c_strut_visual_mode\zerocount
-   \setteststrut
+  {\showmakeup[strut]%
    \settestcrlf}
 
-\permanent\protected\def\showcolorstruts % adapts .. is wrong
-  {\c_strut_visual_mode\plusone
-   \setteststrut
-   \settestcrlf}
-
-\permanent\protected\def\setteststrut
-  {\strutwidth.8\onepoint
-   \setstrut}
-
-\permanent\protected\def\dontshowstruts
-  {\unsetteststrut
-   \settestcrlf}
-
-\permanent\protected\def\unsetteststrut
-  {\strutwidth\zeropoint
-   \setstrut}
+\aliased\let\showcolorstruts\showstruts
 
 \mutable\def\autostrutfactor{1.1}
 
 \permanent\protected\def\setautostrut
   {\begingroup
-   \setbox\scratchbox\copy\strutbox
+   \setbox\scratchbox\copy\b_strut_box
    \setstrut
    \ifdim\strutht>\autostrutfactor\ht\scratchbox
      \endgroup \setstrut
@@ -1138,7 +1063,6 @@
   {\the\everysetnostrut}
 
 \appendtoks
-    \setbox\strutbox\copy\nostrutbox
     \enforced\let\strut   \empty
     \enforced\let\endstrut\empty
     \enforced\let\begstrut\empty
@@ -1468,10 +1392,10 @@
 
 %D To be checked:
 
-\newbox\b_spac_struts_saved
-
-\permanent\protected\def\savestrut {\setbox\b_spac_struts_saved\copy\strutbox}
-\permanent\protected\def\savedstrut{\copy  \b_spac_struts_saved}
+% \newbox\b_spac_struts_saved
+%
+% \permanent\protected\def\savestrut {\setbox\b_spac_struts_saved\copy\b_strut_box}
+% \permanent\protected\def\savedstrut{\copy  \b_spac_struts_saved}
 
 %D Good old blank redone:
 

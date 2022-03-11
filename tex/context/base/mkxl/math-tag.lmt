@@ -98,7 +98,6 @@ local chardata          = characters.data
 local getmathcodes      = tex.getmathcodes
 local mathcodes         = mathematics.codes
 local ordinary_mathcode = mathcodes.ordinary
-local variable_mathcode = mathcodes.variable
 
 local fromunicode16     = fonts.mappings.fromunicode16
 local fontcharacters    = fonts.hashes.characters
@@ -223,7 +222,8 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 local char = getchar(start)
                 local code = getmathcodes(char)
                 local tag
-                if code == ordinary_mathcode or code == variable_mathcode then
+                -- todo: we have way more now
+                if code == ordinary_mathcode then
                     local ch = chardata[char]
                     local mc = ch and ch.mathclass
                     if mc == "number" then

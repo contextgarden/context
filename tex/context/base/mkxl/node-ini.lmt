@@ -20,32 +20,16 @@ local sortedhash, sortedkeys, swapped = table.sortedhash, table.sortedkeys, tabl
 few helper functions. These functions are rather optimized.</p>
 --ldx]]--
 
-nodes               = nodes or { }
-local nodes         = nodes
-nodes.handlers      = nodes.handlers or { }
+nodes                = nodes or { }
+local nodes          = nodes
+nodes.handlers       = nodes.handlers or { }
 
-local mark          = utilities.storage.mark
-local allocate      = utilities.storage.allocate
-local formatcolumns = utilities.formatters.formatcolumns
+local mark           = utilities.storage.mark
+local allocate       = utilities.storage.allocate
+local formatcolumns  = utilities.formatters.formatcolumns
 
-local getsubtypes   = node.subtypes
-local getvalues     = node.values
-
-tex.magicconstants = { -- we use tex.constants for something else
-    running  = -1073741824, -- null_flag
-    maxdimen =  1073741823, -- max_dimen
- -- trueinch =     4736286, -- obsolete
-}
-
-do
-    local c = status.getconstants()
-    local t = { }
-    for k, v in next, c do
-        t[gsub(k,"_","")] = v
-    end
-
-    tex.magicconstants = table.setmetatableindex(t,c)
-end
+local getsubtypes    = node.subtypes
+local getvalues      = node.values
 
 local listcodes      = mark(getsubtypes("list"))
 local rulecodes      = mark(getsubtypes("rule"))
@@ -151,6 +135,7 @@ noadcodes.rel       = noadcodes.rel   or noadcodes.relation
 noadcodes.punct     = noadcodes.punct or noadcodes.punctuation
 noadcodes.rad       = noadcodes.rad   or noadcodes.radical
 noadcodes.frac      = noadcodes.frac  or noadcodes.fraction
+noadcodes.acc       = noadcodes.acc   or noadcodes.accent
 
 -- so for now:
 
@@ -161,6 +146,7 @@ noadcodes.relation    = noadcodes.relation    or noadcodes.rel
 noadcodes.punctuation = noadcodes.punctuation or noadcodes.punct
 noadcodes.radical     = noadcodes.radical     or noadcodes.rad
 noadcodes.fraction    = noadcodes.fraction    or noadcodes.frac
+noadcodes.accent      = noadcodes.accent      or noadcodes.acc
 
 local subtypes = allocate {
     glue      = gluecodes,

@@ -38,6 +38,12 @@ return {
                 {
                     tweak = "addscripts",
                 },
+                {
+                    tweak = "accentdimensions",
+                },
+                {
+                    tweak = "addrules",
+                },
             },
         },
         alternates = {

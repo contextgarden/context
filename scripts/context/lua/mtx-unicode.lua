@@ -237,6 +237,9 @@ function scripts.unicode.update()
                     end
                 end
                 --
+-- if specials and specials[1] == "font" then
+--     specials = nil
+-- end
                 if not char then
                     report("%U : adding entry %a",unicode,description)
                     char = {
@@ -354,6 +357,7 @@ function scripts.unicode.update()
                     else
                         local specials = char.specials
                         if specials then
+-- if specials and specials[1] ~= "font" then
                             local t = { } for i=2,#specials do t[i] = formatters["%U"](specials[i]) end
                             if false then
                                 char.comment = nil

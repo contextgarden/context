@@ -130,7 +130,12 @@ local function initialize(tfmdata,key,value)
                 elseif v == v_none then
                     rule[9] = false
                 else
-                    rule[9] = v
+                    local thickness = string.todimen(v)
+                    if thickness and thickness > 0 then
+                        rule[5] = thickness
+                    else
+                        rule[9] = v
+                    end
                 end
             end
         end

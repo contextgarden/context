@@ -1533,7 +1533,7 @@
    \whitespace
    \blank[\rootfloatparameter\c!spacebefore]%
    \doifnotinset\v!tall\floatlocation
-     {\dp\floatbox\openstrutdepth}% dp\strutbox}%      % toegevoegd
+     {\dp\floatbox\openstrutdepth}% \strutdp % toegevoegd
    \box\floatbox
    \dostoptagged
    \blank[\rootfloatparameter\c!spaceafter]%

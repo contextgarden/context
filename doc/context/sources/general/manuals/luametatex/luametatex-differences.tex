@@ -95,6 +95,15 @@ This chapter will discuss what is gone. We start with the primitives that were d
                 \NC \NR
 \stoptabulate
 
+The math machinery has been overhauled stepwise. In the process detailed control
+has been added but later some of that got removed or replaced. The engine now
+assumes that \OPENTYPE\ fonts are used but you do need to set up the engine
+properly, something that has to be done with respect to fonts anyway. By enabling
+and|/|disabling certain features you can emulate the traditional engine. Font
+parameters no longer are taken from the traditional parameters when they are not
+set. We just assume properly passed so called math constants and quite a few new
+ones have been added.
+
 The resources and positioning primitives are actually useful but can be defined
 as macros that (via \LUA) inject nodes in the input that suit the macro package
 and backend. The three||letter direction primitives are gone and the numeric
@@ -102,7 +111,7 @@ variants are now leading. There is no need for page and body related directions
 and they don't work well in \LUATEX\ anyway. We only have two directions left.
 Because we can hook in \LUA\ functions that get information about what is expected
 (consumer or provider) there are plenty possibilities for adding functionality
-using this scripting langauge.
+using this scripting language.
 
 The primitive related extensions were not that useful and reliable so they have
 been removed. There are some new variants that will be discussed later. The \type
@@ -368,7 +377,8 @@ back mapping if needed (just alias the functions).
 It's all part of trying to make the code base consistent but it is sometimes a
 bit annoying. However, that's why we develop this engine independent of the
 \LUATEX\ code base. It's anyway a change that has been on my todo list for quite
-a while because those inconsistencies annoyed me.
+a while because those inconsistencies annoyed me. It might take some years to
+get all done.
 
 \stopchapter
 

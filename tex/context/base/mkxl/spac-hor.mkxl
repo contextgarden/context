@@ -23,6 +23,7 @@
 \bitwiseflip \normalizelinemode \normalizelinenormalizecode
 \bitwiseflip \normalizelinemode \clipwidthnormalizecode
 \bitwiseflip \normalizelinemode \flattendiscretionariesnormalizecode
+\bitwiseflip \normalizelinemode \flattenleadersnormalizecode % neglectable overhead
 %bitwiseflip \normalizelinemode \discardzerotabskipsnormalizecode
 
 \let\v_spac_indentation_current\empty % amount/keyword
@@ -900,6 +901,8 @@
 %    \box\b_spac_indentations_a
 %    \endgroup}
 
+%D Struts are done differently now.
+%D
 %D The only complication lays in \type{\strut}. In \PLAIN\ \TEX\ a \type{\strut} is
 %D defined as:
 %D

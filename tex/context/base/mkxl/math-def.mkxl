@@ -26,8 +26,7 @@
 
 \activatemathcharacters
 
-%D The \mfunction macro is an alternative for \hbox with a controlable font
-%D switch.
+%D The \mfunction macro is an alternative for \hbox with a controlable font switch.
 
 \definemathcommand [arccos]  [nolop] {\mfunctionlabeltext{arccos}}
 \definemathcommand [arcsin]  [nolop] {\mfunctionlabeltext{arcsin}}
@@ -104,15 +103,14 @@
 %D    equalscoloncolon, coloncolonapprox, approxcoloncolon,
 %D    colonsim, simcoloncolon}
 %D
-%D The following colon related definitions are provided by Aditya
-%D Mahajan who derived them from \type {mathtools.sty} and \type
-%D {colonequals.sty}. This will be redone as part of the overhaul
-%D and font updates.
+%D The following colon related definitions are provided by Aditya Mahajan who
+%D derived them from \type {mathtools.sty} and \type {colonequals.sty}. This will be
+%D redone as part of the overhaul and font updates.
 %D
-%D In $a := b$ the colon is not vertically centered with the equal
-%D to. Also the distance between colon and equal to is a bit large.
-%D So, we define a vertically centered colon \tex {centercolon} and
-%D a few macros for colon and double colon relation symbols.
+%D In $a := b$ the colon is not vertically centered with the equal to. Also the
+%D distance between colon and equal to is a bit large. So, we define a vertically
+%D centered colon \tex {centercolon} and a few macros for colon and double colon
+%D relation symbols.
 %D
 %D \startlines
 %D \formula {A \centercolon       B}
@@ -140,8 +138,8 @@
 
 \pushoverloadmode
 
-\definemathcommand  [colonsep]        {\mkern-1.2mu}
-\definemathcommand  [doublecolonsep]  {\mkern-0.9mu}
+\definemathcommand [colonsep]               {\mkern-1.2mu}
+\definemathcommand [doublecolonsep]         {\mkern-0.9mu}
 
 \definemathcommand [centercolon]      [rel] {\mathstylevcenteredhbox\colon}
 \definemathcommand [colonminus]       [rel] {\centercolon\colonsep\mathrel{-}}

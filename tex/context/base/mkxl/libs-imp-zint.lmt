@@ -79,31 +79,56 @@ table.setmetatableindex(mapping,function(t,k)
     return v
 end)
 
+-- local options = {
+--  -- DATA_MODE      =   0 -- Binary
+--  -- UNICODE_MODE   =   1 -- UTF-8
+--  -- GS1_MODE       =   2 -- GS1
+--  -- GS1PARENS_MODE =  16 -- process parentheses as GS1 AI delimiters (instead of square brackets)
+--     square         = 100 -- DM_SQUARE : only consider square versions on automatic symbol size selection
+--  -- DMRE           = 101 -- DM_DMRE   : consider DMRE versions on automatic symbol size selection
+-- }
+
 local report  = logs.reporter("zint")
 local context = context
 local shown   = false
 
 -- Same performance as just context(fmt,...): 113pps (On 2013 i7 laptop.)
 
------ f_rectangle = formatters["%sofill unitsquare xysized (%N,%N) shifted (%N,%N);"]
-local f_hexagon   = formatters["%sofill (%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle;"]
-local f_circle    = formatters["%sofill unitcircle scaled %N shifted (%N,%N);"]
+-- ----- f_rectangle = formatters["%sofill unitsquare xysized (%N,%N) shifted (%N,%N);"]
+-- local f_hexagon   = formatters["%sofill (%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle;"]
+-- local f_circle    = formatters["%sofill unitcircle scaled %N shifted (%N,%N);"]
+
+----- f_rectangle = formatters["%nofill unitsquare xysized (%N,%N) shifted (%N,%N);"]
+local f_hexagon   = formatters["%nofill (%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle;"]
+local f_circle    = formatters["%nofill unitcircle scaled %N shifted (%N,%N);"]
+
+local s_done      = "dofill origin --cycle;"
 local f_string    = formatters['draw textext("%s") scaled (%N/10) shifted (%N,%N);']
 
 -- A bit faster: 130pps (When I see hexagons I'll do that too but MP takes way more time.)
 
+-- local s_preamble = [[
+--     save ns; def ns (expr a, b) = nofill unitsquare xyscaled a shifted b ; enddef;
+--     save ds; def ds (expr a, b) = dofill unitsquare xyscaled a shifted b ; enddef;
+-- ]]
+
 local s_preamble = [[
     save ns; def ns (expr a, b) = nofill unitsquare xyscaled a shifted b ; enddef;
-    save ds; def ds (expr a, b) = dofill unitsquare xyscaled a shifted b ; enddef;
 ]]
 
 ----- f_rectangle = formatters["%ss((%N,%N),(%N,%N));"]
-local f_rectangle = formatters["%ss((%i,%i),(%i,%i));"]
+local f_rectangle = formatters["ns((%i,%i),(%i,%i));"]
 
 local function execute(specification)
     if okay() then
-        local code = specification.code
-        local text = specification.text
+        local code   = specification.code
+        local text   = specification.text
+        local option = specification.option
+        --
+        if option then
+            option = gsub(option,"^%-+","")
+        end
+        specification.option = option
         --
         if lower(code) == "isbn" then
             specification.text = text and gsub(text,"[^%d]","") or ""
@@ -127,20 +152,24 @@ local function execute(specification)
                         for i=1,n do
                             local r = rectangles[i]
                          -- context("%sofill unitsquare xysized (%N,%N) shifted (%N,%N);",
-                            rectangles[i] = f_rectangle(
-                                i == n and "d" or "n",r[3],r[4],r[1],r[2]
-                            )
+--                             rectangles[i] = f_rectangle(
+--                                 i == n and "d" or "n",r[3],r[4],r[1],r[2]
+--                             )
+rectangles[i] = f_rectangle(r[3],r[4],r[1],r[2])
                         end
+rectangles[n+1] = s_done
                         context("% t",rectangles)
                     end
                     if hexagons then
                         local n = #hexagons
                         for i=1,n do
                          -- context("%sofill (%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle;",
-                            hexagons[i] = f_hexagon(
-                                i == n and "d" or "n",unpack(hexagons[i])
-                            )
+--                             hexagons[i] = f_hexagon(
+--                                 i == n and "d" or "n",unpack(hexagons[i])
+--                             )
+hexagons[i] = f_hexagon(unpack(hexagons[i]))
                         end
+hexagons[n+1] = s_done
                         context("% t",hexagons)
                     end
                     if circles then
@@ -148,9 +177,11 @@ local function execute(specification)
                         for i=1,n do
                             local c = circles[i]
                          -- context("%sofill unitcircle scaled %N shifted (%N,%N);",
-                            circles[i] = f_circle(
-                                i == n and "d" or "n",c[3],c[1],c[2]
-                            )
+--                             circles[i] = f_circle(
+--                                 i == n and "d" or "n",c[3],c[1],c[2]
+--                             )
+circles[i] = f_circle(c[3],c[1],c[2])
+circles[n+1] = s_done
                         end
                         context("% t",circles)
                     end
@@ -197,6 +228,7 @@ interfaces.implement {
         {
             { "code" },
             { "text" },
+            { "option" },
         }
     }
 }

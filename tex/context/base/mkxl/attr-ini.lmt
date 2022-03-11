@@ -54,10 +54,12 @@ storage.register("attributes/list",    list,    "attributes.list")
 storage.register("attributes/values",  values,  "attributes.values")
 storage.register("attributes/counts",  counts,  "attributes.counts")
 
-local report_attribute = logs.reporter("attributes")
-local report_value     = logs.reporter("attributes","values")
+local report_attribute   = logs.reporter("attributes")
+local report_value       = logs.reporter("attributes","values")
 
-local trace_values     = false
+local trace_values       = false
+
+local max_register_index = tex.magicconstants.max_attribute_register_index
 
 trackers.register("attributes.values", function(v) trace_values = v end)
 
@@ -105,7 +107,7 @@ function attributes.public(name) -- at the lua end (hidden from user)
     local number = numbers[name]
     if not number then
         local last = sharedstorage.attributes_last_public
-        if last < 65535 then
+        if last < max_register_index then
             last = last + 1
             sharedstorage.attributes_last_public = last
         else

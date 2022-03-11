@@ -23,13 +23,25 @@
 \immutable\protected\def\fontemwidth         {\scaledfontdimen\plussix  }
 \immutable\protected\def\fontextraspace      {\scaledfontdimen\plusseven}
 
-\immutable\protected\def\slantperpoint       {\scaledfontdimen\plusone  \font}
-\immutable\protected\def\interwordspace      {\scaledfontdimen\plustwo  \font}
-\immutable\protected\def\interwordstretch    {\scaledfontdimen\plusthree\font}
-\immutable\protected\def\interwordshrink     {\scaledfontdimen\plusfour \font}
-\immutable\protected\def\exheight            {\scaledfontdimen\plusfive \font}
-\immutable\protected\def\emwidth             {\scaledfontdimen\plussix  \font}
-\immutable\protected\def\extraspace          {\scaledfontdimen\plusseven\font}
+%immutable\protected\def\slantperpoint       {\scaledfontdimen\plusone  \font}
+%immutable\protected\def\interwordspace      {\scaledfontdimen\plustwo  \font}
+%immutable\protected\def\interwordstretch    {\scaledfontdimen\plusthree\font}
+%immutable\protected\def\interwordshrink     {\scaledfontdimen\plusfour \font}
+%immutable\protected\def\exheight            {\scaledfontdimen\plusfive \font}
+%immutable\protected\def\emwidth             {\scaledfontdimen\plussix  \font}
+%immutable\protected\def\extraspace          {\scaledfontdimen\plusseven\font}
+
+%D This saves a little bit of overhead but more important, it gives less tracing,
+%D and for practical reasone we keep this indirectness because we syntax highlight
+%D these pseudo constants different than primitives.
+
+\immutable\aliased\let\slantperpoint    \scaledslantperpoint
+\immutable\aliased\let\interwordspace   \scaledinterwordspace
+\immutable\aliased\let\interwordstretch \scaledinterwordstretch
+\immutable\aliased\let\interwordshrink  \scaledinterwordshrink
+\immutable\aliased\let\exheight         \scaledexheight
+\immutable\aliased\let\emwidth          \scaledemwidth
+\immutable\aliased\let\extraspace       \scaledextraspace
 
 \aliased\let\mathaxisheight\Umathaxis % takes style
 

@@ -91,7 +91,7 @@ helpers.vfinjectors = {
  -- stopcolor  = function(h,v,packet) codeinjections.vfstartcolor(h,v,packet) end,
  -- literal    = function(h,v,packet) codeinjections.vfliteral   (h,v,packer) end,
     startcolor = function(h,v,packet) vfstartcolor(h,v,packet) end,
-    stopcolor  = function(h,v,packet) vfstartcolor(h,v,packet) end,
+    stopcolor  = function(h,v,packet) vfstopcolor (h,v,packet) end,
  -- literal    = function(h,v,packet) vfliteral   (h,v,packer) end,
 }
 

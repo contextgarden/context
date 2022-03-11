@@ -279,7 +279,13 @@ do
                             -- todo: p.topfixed
                             if t then
                                 -- mover
-                                d[1].data[1].content = utfchar(t)
+                                if true then -- we don't go here any more
+                                    local dd = d[1].data
+                                    if dd then
+                                        dd[1].content = utfchar(t)
+                                    end
+                                end
+                                --
                                 di.data = { d[2], d[1] }
                             end
                         else
@@ -299,7 +305,12 @@ do
                          -- todo: p.bottomfixed
                             if b then
                                 -- munder
-                                d[2].data[1].content = utfchar(b)
+                                if true then -- we don't go here any more
+                                    local dd = d[2].data
+                                    if dd then
+                                        dd[1].content = utfchar(b)
+                                    end
+                                end
                             end
                         else
                             -- can't happen
@@ -322,8 +333,16 @@ do
                          -- todo: p.bottomfixed
                             if t and b then
                                 -- munderover
-                                d[1].data[1].content = utfchar(t)
-                                d[3].data[1].content = utfchar(b)
+                                if true then -- we don't go here any more
+                                    local dd = d[1].data
+                                    if dd then
+                                        dd[1].content = utfchar(t)
+                                    end
+                                    local dd = d[3].data
+                                    if dd then
+                                        dd[1].content = utfchar(b)
+                                    end
+                                end
                                 di.data = { d[2], d[3], d[1] }
                             else
                                 -- can't happen

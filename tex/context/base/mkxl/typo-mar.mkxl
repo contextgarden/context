@@ -174,7 +174,7 @@
    \docheckpagestate\s!margintext\nofmargintexts
   %\doifelserightpagestate\s!margintext\nofmargintexts\relax\relax
    \realpageno\realpagestateno
-   \page_layouts_swap_margins}
+   \page_layouts_swap_margins\v!margin}
 
 \permanent\protected\def\margindata
   {\iftrialtypesetting

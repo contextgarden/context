@@ -1826,7 +1826,7 @@ do
             if kind == "font" then
                 return setmetatableindex(function(t,k)
                     local h = data[k]
-                    local v = direct(h[1]/255,h[2]/255,h[3]/255)
+                    local v = h and direct(h[1]/255,h[2]/255,h[3]/255) or false
                     t[k] = v
                     return v
                 end)

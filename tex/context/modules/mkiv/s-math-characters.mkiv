@@ -20,33 +20,33 @@
 
 \startsetups s-math-characters:reset
 
-    \let\showmathcharactersstart                 \relax
-    \let\showmathcharactersstop                  \relax
-    \let\showmathcharactersreference             \gobbleoneargument
-    \let\showmathcharactersstartentry            \relax
-    \let\showmathcharactersstopentry             \relax
-    \let\showmathcharactersentryhexdectit        \gobblethreearguments
-    \let\showmathcharactersentrywdhtdpic         \gobblefourarguments
-    \let\showmathcharactersentryresource         \gobbleoneargument
-    \let\showmathcharactersstartnext             \relax
-    \let\showmathcharactersnextentry             \gobblethreearguments
-    \let\showmathcharactersnextcycle             \gobbleonearguments
-    \let\showmathcharactersstopnext              \relax
-    \let\showmathcharactersstarthvariants        \relax
-    \let\showmathcharactershvariantsentry        \gobblethreearguments
-    \let\showmathcharactersstophvariants         \relax
-    \let\showmathcharactersstartvvariants        \showmathcharactersstarthvariants
-    \let\showmathcharactersvvariantsentry        \showmathcharactershvariantsentry
-    \let\showmathcharactersstopvvariants         \showmathcharactersstophvariants
-    \let\showmathcharactersbetweennextandvariants\relax
-    \let\showmathcharactersstartentryclassspec   \relax
-    \let\showmathcharactersstopentryclassspec    \relax
-    \let\showmathcharactersentryclassname        \gobbletwoarguments
-    \let\showmathcharactersentrysymbol           \gobbletwoarguments
-    \let\showmathcharactersstartlookupvariants   \relax
-    \let\showmathcharacterslookupvariant         \gobblefourarguments
-    \let\showmathcharactersstoplookupvariants    \relax
-    \let\showmathcharacterssetrange              \gobblethreearguments
+    \let\showmathcharactersstart               \relax
+    \let\showmathcharactersstop                \relax
+    \let\showmathcharactersreference           \gobbleoneargument
+    \let\showmathcharactersstartentry          \relax
+    \let\showmathcharactersstopentry           \relax
+    \let\showmathcharactersentryhexdectit      \gobblethreearguments
+    \let\showmathcharactersentrywdhtdpic       \gobblefourarguments
+    \let\showmathcharactersentryresource       \gobbleoneargument
+    \let\showmathcharactersstartnext           \relax
+    \let\showmathcharactersnextentry           \gobblethreearguments
+    \let\showmathcharactersnextcycle           \gobbleonearguments
+    \let\showmathcharactersstopnext            \relax
+    \let\showmathcharactersstarthparts         \relax
+    \let\showmathcharactershpartsentry         \gobblethreearguments
+    \let\showmathcharactersstophparts          \relax
+    \let\showmathcharactersstartvparts         \relax
+    \let\showmathcharactersvpartsentry         \gobblethreearguments
+    \let\showmathcharactersstopvparts          \relax
+    \let\showmathcharactersbetweennextandvparts\relax
+    \let\showmathcharactersstartentryclassspec \relax
+    \let\showmathcharactersstopentryclassspec  \relax
+    \let\showmathcharactersentryclassname      \gobbletwoarguments
+    \let\showmathcharactersentrysymbol         \gobbletwoarguments
+    \let\showmathcharactersstartlookupvariants \relax
+    \let\showmathcharacterslookupvariant       \gobblefourarguments
+    \let\showmathcharactersstoplookupvariants  \relax
+    \let\showmathcharacterssetrange            \gobblethreearguments
 
 \stopsetups
 
@@ -70,7 +70,7 @@
       {virtual:\space##1\par}
 
     \def\showmathcharactersstartnext
-      {\par\begingroup\hangindent\emwidth\hangafter-\plushundred\hskip-\emwidth
+      {\par\begingroup\hangindent\emwidth\hangafter-\plushundred\hskip-\emwidth\relax
        next:\space}
 
     \def\showmathcharactersnextentry##1##2##3%
@@ -82,21 +82,25 @@
     \def\showmathcharactersstopnext
       {\par\endgroup}
 
-    \def\showmathcharactersstarthvariants
-      {\par\begingroup\hangindent\emwidth\hangafter-\plushundred\hskip-\emwidth
-       variants:\space}
+    \def\showmathcharactersstartparts
+      {\par\begingroup\hangindent\emwidth\hangafter-\plushundred\hskip-\emwidth\relax
+       parts:\space}
 
-    \def\showmathcharactershvariantsentry##1##2##3%
+    \def\showmathcharacterspartsentry##1##2##3%
       {\ifnum##1>\plusone \space=>\space\fi##2~\ruledhbox{\char##3}}
 
-    \def\showmathcharactersstophvariants
+    \def\showmathcharactersstopparts
       {\par\endgroup}
 
-    \let\showmathcharactersstartvvariants\showmathcharactersstarthvariants
-    \let\showmathcharactersvvariantsentry\showmathcharactershvariantsentry
-    \let\showmathcharactersstopvvariants \showmathcharactersstophvariants
+    \let\showmathcharactersstartvparts\showmathcharactersstartparts
+    \let\showmathcharactersvpartsentry\showmathcharacterspartsentry
+    \let\showmathcharactersstopvparts \showmathcharactersstopparts
 
-    \def\showmathcharactersbetweennextandvariants
+    \let\showmathcharactersstarthparts\showmathcharactersstartparts
+    \let\showmathcharactershpartsentry\showmathcharacterspartsentry
+    \let\showmathcharactersstophparts \showmathcharactersstopparts
+
+    \def\showmathcharactersbetweennextandparts
       {}% \space=>\space}
 
     \def\showmathcharactersentryclassname##1##2%
@@ -106,7 +110,7 @@
       {mathsymbol:\space##1~\ruledhbox{\char##2}\par}
 
     \def\showmathcharactersstartlookupvariants
-      {\par\begingroup\hangindent\emwidth\hangafter-\plushundred\hskip-\emwidth
+      {\par\begingroup\hangindent\emwidth\hangafter-\plushundred\hskip-\emwidth\relax
        lookupvariants:\space}
 
     \def\showmathcharacterslookupvariant##1##2##3##4%

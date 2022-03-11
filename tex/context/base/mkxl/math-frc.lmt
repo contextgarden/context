@@ -6,73 +6,62 @@ if not modules then modules = { } end modules ['math-frc'] = {
     license   = "see context related readme files"
 }
 
-local utfchar   = utf.char
-
-local context   = context
-local variables = interfaces.variables
-
-local v_no      = variables.no
-local v_yes     = variables.yes
-local v_hidden  = variables.hidden
-
-local resolved  = {
-    [0x007B] = "\\{",
-    [0x007D] = "\\}",
-}
-
-table.setmetatableindex(resolved, function(t,k)
-    local v = utfchar(k)
-    t[k] = v
-    return v
-end)
-
-local ctx_Uatop = context.Uatop
-local ctx_Uover = context.Uover
-
--- local function umathfraction(how,style,left,right,width)
---     style = tonumber(style) -- or nil
+-- obsolete
+--
+-- \def\math_frac_command_u
+--   {\clf_umathfraction % we can get this bakc to the tex end
+--      {\mathfractionparameter\c!rule}%
+--      \ifempty\p_math_fraction_fences
+--        \mathfractionparameter\c!left \space
+--        \mathfractionparameter\c!right\space
+--      \else
+--        \math_frac_no_delim\space
+--        \math_frac_no_delim\space
+--      \fi
+--      \dimexpr\mathfractionparameter\c!rulethickness\relax
+--      {\number\namedboxanchor{\mathfractionparameter\c!source}}%
+--    \relax}
+--
+-- local utfchar   = utf.char
+--
+-- local context   = context
+-- local variables = interfaces.variables
+--
+-- local v_no      = variables.no
+-- local v_yes     = variables.yes
+-- local v_hidden  = variables.hidden
+--
+-- local resolved  = {
+--     [0x007B] = "\\{",
+--     [0x007D] = "\\}",
+-- }
+--
+-- table.setmetatableindex(resolved, function(t,k)
+--     local v = utfchar(k)
+--     t[k] = v
+--     return v
+-- end)
+--
+-- local function umathfraction(how,left,right,width,source)
+--     source = tonumber(source) or 0
 --     if how == v_no then
 --         if left == 0x002E and right == 0x002E then
---             if style then
---                 context("\\Uatop style %i",style)
---             else
---                 ctx_Uatop()
---             end
+--             context("\\Uatop source %i ",source)
 --         else
---             if style then
---                 context("\\Uatopwithdelims style %i %s%s",style,resolved[left],resolved[right])
---             else
---                 context("\\Uatopwithdelims%s%s",resolved[left],resolved[right])
---             end
+--             context("\\Uatopwithdelims %s%s source %i ",resolved[left],resolved[right],source)
 --         end
 --     elseif how == v_yes or how == v_hidden then
---         local norule = how == v_hidden and " norule " or ""
---         if style then
---             if left == 0x002E and right == 0x002E then
---                 context("\\Uabove style %i %s%ssp",style,norule,width)
---             else
---                 context("\\Uabovewithdelims style %i %s%s%s%ssp",style,norule,resolved[left],resolved[right],width)
---             end
+--         local norule = how == v_hidden and "norule" or ""
+--         if left == 0x002E and right == 0x002E then
+--             context("\\Uabove source %i %s %ssp",source,norule,width)
 --         else
---             if left == 0x002E and right == 0x002E then
---                 context("\\Uabove%s%ssp",norule,width)
---             else
---                 context("\\Uabovewithdelims%s%s%s%ssp",norule,resolved[left],resolved[right],width)
---             end
+--             context("\\Uabovewithdelims %s%s source %i %s %ssp",resolved[left],resolved[right],source,norule,width)
 --         end
 --     else -- v_auto
 --         if left == 0x002E and right == 0x002E then
---             if style then
---                 context("\\Uover style %i",style)
---             else
---                 ctx_Uover()
---             end
+--             context("\\Uover source %i ",source)
 --         else
---             if style then
---                 context("\\Uoverwithdelims style %i %s%s",style,resolved[left],resolved[right])
---             else
---                 context("\\Uoverwithdelims%s%s",resolved[left],resolved[right])
---             end
+--             context("\\Uoverwithdelims %s%s source %i ",resolved[left],resolved[right],source)
 --         end
 --     end
 -- end
@@ -80,35 +69,6 @@ local ctx_Uover = context.Uover
 -- interfaces.implement {
 --     name      = "umathfraction",
 --     actions   = umathfraction,
---     arguments = { "string", "string", "number", "number", "dimen" }
+--     protected = true,
+--     arguments = { "string", "number", "number", "dimen", "string" }
 -- }
-
-local function umathfraction(how,left,right,width)
-    if how == v_no then
-        if left == 0x002E and right == 0x002E then
-            ctx_Uatop()
-        else
-            context("\\Uatopwithdelims%s%s",resolved[left],resolved[right])
-        end
-    elseif how == v_yes or how == v_hidden then
-        local norule = how == v_hidden and " norule " or ""
-        if left == 0x002E and right == 0x002E then
-            context("\\Uabove %s%ssp",norule,width)
-        else
-            context("\\Uabovewithdelims %s%s%s%ssp",norule,resolved[left],resolved[right],width)
-        end
-    else -- v_auto
-        if left == 0x002E and right == 0x002E then
-            ctx_Uover()
-        else
-            context("\\Uoverwithdelims%s%s",resolved[left],resolved[right])
-        end
-    end
-end
-
-interfaces.implement {
-    name      = "umathfraction",
-    actions   = umathfraction,
-    protected = true,
-    arguments = { "string", "number", "number", "dimen" }
-}

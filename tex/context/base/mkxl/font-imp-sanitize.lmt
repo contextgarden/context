@@ -1,0 +1,197 @@
+if not modules then modules = { } end modules ['font-san'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA ADE & śrīrāma",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+--     \definefontfeature[demo][sanitizer=demo]
+--     \definedfont[Serif*default,demo] test context test
+--     \definedfont[Serif*default]      test context test
+
+local keys, insert, copytable = table.keys, table.insert, table.copy
+local utfvalues, utfbyte = utf.values, utf.byte
+
+local sanitizers = { }
+
+local trace  = false
+local report = logs.reporter("fonts", "sanitizers")
+
+trackers.register("fonts.sanitizers", function(v) trace = v end)
+
+function fonts.registersanitizer(name,vector)
+    sanitizers[name] = vector
+end
+
+local function split(s)
+    local t = { }
+    for value in utfvalues(s) do
+        t[#t+1] = value
+    end
+    return t
+end
+
+local function wrap(t)
+    for i=1,#t do
+        t[i] = { t[i] }
+    end
+    return t
+end
+
+local function initializesanitizer(tfmdata,value)
+    local resources = tfmdata.resources
+    local sanitized = resources.sanitized
+    if not sanitized then
+        local sanitizer = false
+        local goodies   = tfmdata.goodies
+        if goodies then
+            for i=1,#goodies do
+                local goodie = goodies[i]
+                local sanitizers = goodie.sanitizers
+                sanitizer = sanitizers and sanitizers[value]
+                if sanitizer then
+                    report("using sanitizer %a from goodie file",value)
+                    break
+                end
+            end
+        end
+        if not sanitizer then
+            sanitizer = sanitizers[value]
+            if sanitizer then
+                report("using sanitizer %a",value)
+            end
+        end
+        resources.sanitized = true
+        if sanitizer then
+            local mapping = sanitizer.mapping
+            if mapping then
+                local keys = keys(mapping)
+                local maps = { }
+                table.sort(keys, function(a,b) return a > b end)
+                for i = 1,#keys do
+                    local k = keys[i]
+                    keys[i] = split(k)
+                    maps[i] = split(mapping[k])
+                end
+                for i=1,#maps do
+                    local k = keys[i]
+                    local m = maps[i]
+                    if trace then
+                     -- m = copytable(m)
+                     -- insert(m,1,utfbyte("["))
+                     -- insert(m,  utfbyte("]"))
+                        local t = { utfbyte("[") }
+                        t[#t+1] = 0x200D -- zwnj
+                        for i=1,#m do
+                            t[#t+1] = m[i]
+                            t[#t+1] = 0x200D -- zwnj
+                        end
+                        t[#t+1] = utfbyte("]")
+                    end
+                    maps[i] = { type = "multiple", data = { [k[1]] = m } }
+                    keys[i] = { current = wrap(k) , lookups = { i } }
+                end
+                local specification = {
+                    name    = "sanitizer",
+                    type    = "chainsubstitution",
+                    prepend = 1,
+                    nocheck = true,
+                    default = true,
+                    lookups = maps,
+                    data    = { rules = keys },
+                }
+                local s = fonts.handlers.otf.enhancers.addfeature(
+                    tfmdata,"sanitizer",specification, true
+                )
+                insert(resources.sequences,1,s)
+            end
+        end
+    end
+end
+
+-- has to come *after* devanagari because we need to push it in front
+-- ... it could be a built-in
+
+fonts.constructors.features.otf.register {
+    name         = "sanitizer",
+    description  = "inject sanitizer features",
+    initializers = {
+        node = initializesanitizer,
+    },
+}
+
+local dev2rkrf = {
+    ["के्र"] = "क्रे",
+    ["कै्र"] = "क्रै",
+    ["खे्र"] = "ख्रे",
+    ["खै्र"] = "ख्रै",
+    ["गे्र"] = "ग्रे",
+    ["गै्र"] = "ग्रै",
+    ["घे्र"] = "घ्रे",
+    ["घै्र"] = "घ्रै",
+ -- not required: placed here just to show how bad some fonts are :(
+ -- ["ङे्र"] = "ङ्रे",
+ -- ["ङै्र"] = "ङ्रै",
+    ["चे्र"] = "च्रे",
+    ["चै्र"] = "च्रै",
+    ["छे्र"] = "छ्रे",
+    ["छै्र"] = "छ्रै",
+    ["जे्र"] = "ज्रे",
+    ["जै्र"] = "ज्रै",
+    ["झे्र"] = "झ्रे",
+    ["झै्र"] = "झ्रै",
+    ["ञे्र"] = "ञ्रे",
+    ["ञै्र"] = "ञ्रै",
+    ["णे्र"] = "ण्रे",
+    ["णै्र"] = "ण्रै",
+    ["ते्र"] = "त्रे",
+    ["तै्र"] = "त्रै",
+    ["थे्र"] = "थ्रे",
+    ["थै्र"] = "थ्रै",
+    ["दे्र"] = "द्रे",
+    ["दै्र"] = "द्रै",
+    ["धे्र"] = "ध्रे",
+    ["धै्र"] = "ध्रै",
+    ["ने्र"] = "न्रे",
+    ["नै्र"] = "न्रै",
+    ["पे्र"] = "प्रे",
+    ["पै्र"] = "प्रै",
+    ["फे्र"] = "फ्रे",
+    ["फै्र"] = "फ्रै",
+    ["बे्र"] = "ब्रे",
+    ["बै्र"] = "ब्रै",
+    ["भे्र"] = "भ्रे",
+    ["भै्र"] = "भ्रै",
+    ["मे्र"] = "म्रे",
+    ["मै्र"] = "म्रै",
+    ["ये्र"] = "य्रे",
+    ["यै्र"] = "य्रै",
+ -- some fonts might need this, some might not: weird
+ -- for example: Shobhika does not need it but Noto Serif does :(
+ -- ["ले्र"] = "ल्रे",
+ -- ["लै्र"] = "ल्रै",
+    ["वे्र"] = "व्रे",
+    ["वै्र"] = "व्रै",
+    ["से्र"] = "स्रे",
+    ["सै्र"] = "स्रै",
+    ["शे्र"] = "श्रे",
+    ["शै्र"] = "श्रै",
+    ["षे्र"] = "ष्रे",
+    ["षै्र"] = "ष्रै",
+    ["हे्र"] = "ह्रे",
+    ["है्र"] = "ह्रै",
+ -- some fonts might need this, some might not: weird
+ -- ["ळे्र"] = "ळ्रे",
+ -- ["ळै्र"] = "ळ्रै",
+}
+
+local demomapping = {
+    luatex   = "LuaTeX",
+    metapost = "MetaPost",
+    context  = "ConTeXt",
+    metafun  = "MetaFun",
+}
+
+fonts.registersanitizer("dev2rkrf", { mapping = dev2rkrf })
+fonts.registersanitizer("demo",     { mapping = demomapping })

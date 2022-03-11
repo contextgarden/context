@@ -9,7 +9,11 @@ if not modules then modules = { } end modules ['lang-tra'] = {
 -- The indic transliterations was researched by kauśika and after some experiments
 -- we settled on the current approach (mappings and a more specific lpeg).
 
-local concat = table.concat
+-- Todo: initial and final in addition to mapping so that we can do hebrew and
+-- such.
+
+local concat, setmetatableindex = table.concat, table.setmetatableindex
+local nospaces = string.nospaces
 local utfbyte, utfchar, utfsplit, utfvalues = utf.byte, utf.char, utf.split, utf.values
 local C, Cc, Cs, lpegmatch = lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.match
 local utfchartabletopattern = lpeg.utfchartabletopattern
@@ -30,6 +34,9 @@ local removenode          = nuts.remove
 
 local texsetattribute     = tex.setattribute
 
+local registervalue       = attributes.registervalue
+local getvalue            = attributes.getvalue
+
 local transliteration     = { }
 languages.transliteration = transliteration
 
@@ -41,9 +48,10 @@ local context             = context
 
 local zwj                 = utf.char(0x200D)
 
-local lastmapping         = 0
+-- local lastmapping         = 0
 local loadedmappings      = { }
 local loadedlibraries     = { }
+local exceptions          = { }
 
 local report              = logs.reporter("transliteration")
 local trace               = false  trackers.register("languages.transliteration", function(v) trace = v end)
@@ -80,21 +88,23 @@ local converters = {
     ["mapping"] = function(m)
         local t_mapping = m.mapping
         if t_mapping then
+            local t_exceptions = m.exceptions
             local p = Cs ( (
                 utfchartabletopattern(t_mapping) / t_mapping
               + C(utfcharacterpattern)
             )^0 )
          -- lpeg.print(p)
-            return function(s)
-                return lpegmatch(p,s) or s
+            return function(s,e)
+                return (e and e[s]) or t_exceptions[s] or lpegmatch(p,s) or s
             end
         else
             return false
         end
     end,
     ["default"] = function(m)
-        return function(s)
-            return s
+        local t_exceptions = m.exceptions
+        return function(s,e)
+            return (e and e[s]) or t_exceptions[s] or s
         end
     end,
 }
@@ -109,19 +119,21 @@ function transliteration.use(library)
             if transliterations then
                 for name, d in table.sortedhash(transliterations) do
                     local vector = d.vector
+                    if not d.exceptions then
+                        d.exceptions = { }
+                    end
                     if vector then
-                        report("vector %a in %a is %sloaded with index %i",name,library," already",d.attribute)
+                        report("vector %a in %a is %sloaded",name,library," already")
                     else
-                        lastmapping = lastmapping + 1
                         d.vector = (converters[name] or converters.mapping or converters.default)(d)
                                 or (converters.default)(d)
-                        report("vector %a in set %a is %sloaded with index %i",name,library,"",lastmapping)
+                        report("vector %a in set %a is %sloaded",name,library,"")
                     end
-                    d.attribute = lastmapping
                     d.library   = library
                     d.name      = name
+                    d.mapping   = nil -- for now, saves memory
                     loadedmappings[name] = d
-                    loadedmappings[lastmapping] = d
+                    loadedmappings[nospaces(name)] = d
                 end
             else
                 report("library %a has no transliterations",library)
@@ -140,28 +152,47 @@ enable = function()
     enable = false
 end
 
-function transliteration.set(vector)
+function transliteration.register(parent,name)
+    local p = exceptions[parent]
+    if p then
+        if trace then
+            report("%a has exceptions that default to %a",name,parent)
+        end
+        exceptions[name] = setmetatableindex({ },p)
+    else
+        if trace then
+            report("%a has independent exceptions",name)
+        end
+        exceptions[name] = { }
+    end
+end
+
+function transliteration.set(name,vector)
     if enable then
         enable()
     end
-    local m = loadedmappings[vector]
-    local a = m and m.attribute or unsetvalue
+    local a = registervalue(a_transliteration, {
+        m = loadedmappings[vector],
+        e = exceptions[name],
+    })
     if trace then
-        report("setting transliteration %s",vector)
+        report("setting transliteration %i, name %a, vector %a",a,name,vector)
     end
     texsetattribute(a_transliteration,a)
 end
 
-function transliteration.register(vector)
-    if enable then
-        enable()
+function transliteration.exception(name,old,new)
+    local m = loadedmappings[name]
+    if m then
+        m.exceptions[old] = new
+    else
+        local e = exceptions[name]
+        if not e then
+            e = { }
+            exceptions[name] = e
+        end
+        e[old] = new
     end
-    local m = loadedmappings[vector]
-    local a = m and m.attribute or unsetvalue
-    if trace then
-        report("registering transliteration %s",vector)
-    end
-    return a
 end
 
 -- When there is need I will improve the performance of the next handler.
@@ -169,6 +200,7 @@ end
 function transliteration.handler(head)
     local aprev   = nil
     local vector  = nil
+    local except  = nil
     local current = head
     local first   = nil
     local last    = nil
@@ -180,34 +212,36 @@ function transliteration.handler(head)
     -- actually we can generalize the replacer elsewhere
 
     local function flush(nxt)
-        -- we can do some optimization here by having the split as replacement
-        local old = concat(list,"",1,size)
-        local new = vector(old)
-        if old ~= new then
-            if trace then
-                report("old: %s",old)
-                report("new: %s",new)
-            end
-            local c = first
-            local x = false
-            for s in utfvalues(new) do
-                if x then
-                    head, c = insertafter(head,c,copynode(first))
-                    setchar(c,s)
-                else
-                    setchar(c,s)
-                    if c == last then
-                        x = true
+        if vector then
+            -- we can do some optimization here by having the split as replacement
+            local old = concat(list,"",1,size)
+            local new = vector(old,except)
+            if old ~= new then
+                if trace then
+                    report("old: %s",old)
+                    report("new: %s",new)
+                end
+                local c = first
+                local x = false
+                for s in utfvalues(new) do
+                    if x then
+                        head, c = insertafter(head,c,copynode(first))
+                        setchar(c,s)
                     else
-                        c = getnext(c)
+                        setchar(c,s)
+                        if c == last then
+                            x = true
+                        else
+                            c = getnext(c)
+                        end
                     end
                 end
-            end
-            if not x then
-                while c do
-                    head, c = removenode(head,c,true)
-                    if c == nxt then
-                        break
+                if not x then
+                    while c do
+                        head, c = removenode(head,c,true)
+                        if c == nxt then
+                            break
+                        end
                     end
                 end
             end
@@ -226,9 +260,19 @@ function transliteration.handler(head)
                         size  = 0
                     end
                     aprev = a
-                    vector = loadedmappings[a]
-                    if vector then
-                        vector = vector.vector
+                    local data = getvalue(a_transliteration,a)
+                    if data then
+                        local m = data.m
+                        if m then
+                            vector = m.vector
+                            except = data.e
+                        else
+                            vector = nil
+                            except = nil
+                        end
+                    else
+                        vector = nil
+                        except = nil
                     end
                 end
                 if not first then
@@ -269,14 +313,20 @@ interfaces.implement {
 
 implement {
     name      = "settransliteration",
-    arguments = "string",
+    arguments = "2 strings",
     actions   = transliteration.set,
 }
 
 implement {
     name      = "registertransliteration",
-    arguments = "string",
-    actions   = { transliteration.register, context },
+    arguments = "3 strings",
+    actions   = transliteration.register,
+}
+
+implement {
+    name      = "transliterationexception",
+    arguments = "3 strings",
+    actions   = transliteration.exception,
 }
 
 nodes.tasks.prependaction("processors", "normalizers", "languages.transliteration.handler", nil, "nut", "disabled" )

@@ -153,7 +153,7 @@
    \let\math_stackers_skip  \hskip}
 
 \def\math_stackers_skip_indeed#amount%
-  {\filledhboxk{\unsetteststrut\strut\hskip#amount}} % \dontshowstruts
+  {\filledhboxk{\strut\hskip#amount}}
 
 \let\math_stackers_start_tagged_mid\relax
 \let\math_stackers_start_tagged_top\relax
@@ -179,7 +179,7 @@
    \c!right=,
    \c!mathclass=\s!rel,
    \c!alternative=\v!normal,
-   \c!voffset=.25\mathexheight,
+   \c!voffset=.25\mathexheight, % maybe less
    \c!hoffset=\zeropoint,
    \c!topoffset=\zeropoint, % for manual italic correction
    \c!distance=\mathstackersparameter\c!voffset, % distance between symbol and base (can be different from voffset)
@@ -492,9 +492,9 @@
 
 \permanent\tolerant\protected\def\definemathextensible[#1]#*[#2]#*[#3]% category name unicode
   {\ifarguments\or\or
-     \frozen\setuevalue{#1}{\math_stackers_auto_normal\noexpand\currentmathstackers{\number#2}}%
+     \frozen\protected\edefcsname#1\endcsname{\math_stackers_auto_normal\noexpand\currentmathstackers{\number#2}}%
    \or
-     \frozen\setuevalue{#2}{\math_stackers_auto_normal{#1}{\number#3}}%
+     \frozen\protected\edefcsname#2\endcsname{\math_stackers_auto_normal{#1}{\number#3}}%
    \fi}
 
 \tolerant\protected\def\math_stackers_auto_normal#1#2#*[#3]#:#=#*#=%
@@ -521,20 +521,6 @@
 \def\math_stackers_handle_extensible#category#codepoint#toptext#bottomtext%
   {\math_stackers_triplet\zerocount{#category}{#codepoint}{#toptext}{#bottomtext}%
    \endgroup}
-
-%D The next one deals with under and over extensibles (arrows mostly):
-
-\installcorenamespace {mathclasses}
-
-\letcsname\??mathclasses    \endcsname\mathord
-\letcsname\??mathclasses rel\endcsname\mathrel
-\letcsname\??mathclasses ord\endcsname\mathord
-
-\def\math_class_by_parameter#1%
-  {\normalexpanded{\noexpand\math_class_by_parameter_indeed{#1\c!mathclass}}}
-
-\def\math_class_by_parameter_indeed#1%
-  {\csname\??mathclasses\ifcsname\??mathclasses#1\endcsname#1\fi\endcsname}
 
 % 1 0 name n 0 | 0 1 name n 0 | 1 1 name n n
 
@@ -680,33 +666,33 @@
 
 \permanent\tolerant\protected\def\definemathoverextensible[#1]#*[#2]#*[#3]%
   {\ifparameter#3\or
-     \frozen\setuevalue{#2}{\math_stackers_make_double\plusone  \zerocount{#1}{\number#3}{0}}%
+     \frozen\protected\edefcsname#2\endcsname{\math_stackers_make_double\plusone  \zerocount{#1}{\number#3}{0}}%
    \else
-     \frozen\setuevalue{#1}{\math_stackers_make_double\plusone  \zerocount\noexpand\currentmathstackers{\number#2}{0}}%
+     \frozen\protected\edefcsname#1\endcsname{\math_stackers_make_double\plusone  \zerocount\noexpand\currentmathstackers{\number#2}{0}}%
    \fi}
 
 \permanent\tolerant\protected\def\definemathunderextensible[#1]#*[#2]#*[#3]%
   {\ifparameter#3\or
-     \frozen\setuevalue{#2}{\math_stackers_make_double\zerocount\plusone{#1}{\number#3}{0}}%
+     \frozen\protected\edefcsname#2\endcsname{\math_stackers_make_double\zerocount\plusone{#1}{\number#3}{0}}%
    \else
-     \frozen\setuevalue{#1}{\math_stackers_make_double\zerocount\plusone\noexpand\currentmathstackers{\number#2}{0}}%
+     \frozen\protected\edefcsname#1\endcsname{\math_stackers_make_double\zerocount\plusone\noexpand\currentmathstackers{\number#2}{0}}%
    \fi}
 
 \permanent\tolerant\protected\def\definemathdoubleextensible[#1]#*[#2]#*[#3]#*[#4]%
   {\ifparameter#4\or
-     \frozen\setuevalue{#2}{\math_stackers_make_double\plusone  \plusone{#1}{\number#3}{\number#4}}%
+     \frozen\protected\edefcsname#2\endcsname{\math_stackers_make_double\plusone  \plusone{#1}{\number#3}{\number#4}}%
    \else
-     \frozen\setuevalue{#1}{\math_stackers_make_double\plusone  \plusone\noexpand\currentmathstackers{\number#2}{\number#3}}%
+     \frozen\protected\edefcsname#1\endcsname{\math_stackers_make_double\plusone  \plusone\noexpand\currentmathstackers{\number#2}{\number#3}}%
    \fi}
 
 \permanent\tolerant\protected\def\definemathover[#category]#spacer[#command]#spacer[#topcode]%
-  {\frozen\setuvalue{#command}{\math_stackers_handle_direct\plusone\zerocount{#category}{#topcode}{0}}}
+  {\frozen\protected\defcsname#command\endcsname{\math_stackers_handle_direct\plusone\zerocount{#category}{#topcode}{0}}}
 
 \permanent\tolerant\protected\def\definemathunder[#category]#spacer[#command]#spacer[#bottomcode]%
-  {\frozen\setuvalue{#command}{\math_stackers_handle_direct\zerocount\plusone{#category}{#bottomcode}{0}}}
+  {\frozen\protected\defcsname#command\endcsname{\math_stackers_handle_direct\zerocount\plusone{#category}{#bottomcode}{0}}}
 
 \permanent\tolerant\protected\def\definemathdouble[#category]#spacer[#command]#spacer[#topcode]#spacer[#bottomcode]%
-  {\frozen\setuvalue{#command}{\math_stackers_handle_direct\plusone\plusone{#category}{#topcode}{#bottomcode}}}
+  {\frozen\protected\defcsname#command\endcsname{\math_stackers_handle_direct\plusone\plusone{#category}{#topcode}{#bottomcode}}}
 
 \permanent\tolerant\protected\def\mathover[#category]#spacer[#settings]#:#topcode#text%
   {\begingroup
@@ -883,16 +869,16 @@
 
 \permanent\tolerant\protected\def\definemathovertextextensible[#1]#*[#2]#*[#3]%
   {\ifparameter#3\or
-     \frozen\setuevalue{#2}{\math_stackers_make_double_text\plusone{#1}{\number#3}}%
+     \frozen\protected\edefcsname#2\endcsname{\math_stackers_make_double_text\plusone{#1}{\number#3}}%
    \else
-     \frozen\setuevalue{#1}{\math_stackers_make_double_text\plusone\noexpand\currentmathstackers{\number#2}}%
+     \frozen\protected\edefcsname#1\endcsname{\math_stackers_make_double_text\plusone\noexpand\currentmathstackers{\number#2}}%
    \fi}
 
 \permanent\tolerant\protected\def\definemathundertextextensible[#1]#*[#2]#*[#3]%
   {\ifparameter#3\or
-     \frozen\setuevalue{#2}{\math_stackers_make_double_text\zerocount{#1}{\number#3}}%
+     \frozen\protected\edefcsname#2\endcsname{\math_stackers_make_double_text\zerocount{#1}{\number#3}}%
    \else
-     \frozen\setuevalue{#1}{\math_stackers_make_double_text\zerocount\noexpand\currentmathstackers{\number#2}}%
+     \frozen\protected\edefcsname#1\endcsname{\math_stackers_make_double_text\zerocount\noexpand\currentmathstackers{\number#2}}%
    \fi}
 
 \permanent\tolerant\protected\def\mathovertext[#category]%
@@ -917,11 +903,11 @@
 
 \permanent\tolerant\protected\def\definemathtriplet[#1]#*[#2]#*[#3]% category name default
   {\ifarguments\or
-     \frozen\setuevalue{#1}{\math_stackers_auto_triplet_nop[\noexpand\currentmathstackers]}%
+     \frozen\protected\edefcsname#1\endcsname{\math_stackers_auto_triplet_nop[\noexpand\currentmathstackers]}%
    \or
-     \frozen\setuevalue{#2}{\math_stackers_auto_triplet_nop[#1]}%
+     \frozen\protected\edefcsname#2\endcsname{\math_stackers_auto_triplet_nop[#1]}%
    \or
-     \frozen\setuevalue{#2}{\math_stackers_auto_triplet_yes[#1][#3]}%
+     \frozen\protected\edefcsname#2\endcsname{\math_stackers_auto_triplet_yes[#1][#3]}%
    \fi}
 
 \tolerant\protected\def\math_stackers_auto_triplet_yes[#1][#2]#*[#3]#:#=#*#=% [#2]% #2 gobble spaces
@@ -1171,39 +1157,78 @@
 
 % alternatively we can move the original to FE*
 
-\definemathoverextensible   [\v!vfenced] [overbar]       ["FE33E]          % ["203E]
-\definemathunderextensible  [\v!vfenced] [underbar]               ["FE33F] % ["203E]
-\definemathdoubleextensible [\v!vfenced] [doublebar]     ["FE33E] ["FE33F]
+% \definemathoverextensible   [\v!vfenced] [overbar]       ["FE33E]          % ["203E]
+% \definemathunderextensible  [\v!vfenced] [underbar]               ["FE33F] % ["203E]
+% \definemathdoubleextensible [\v!vfenced] [doublebar]     ["FE33E] ["FE33F]
+%
+% \definemathoverextensible   [\v!vfenced] [overbrace]     ["FE3DE]          % ["023DE]
+% \definemathunderextensible  [\v!vfenced] [underbrace]             ["FE3DF] % ["023DF]
+% \definemathdoubleextensible [\v!vfenced] [doublebrace]   ["FE3DE] ["FE3DF]
+%
+% \definemathoverextensible   [\v!vfenced] [overparent]    ["FE3DC]          % ["023DC]
+% \definemathunderextensible  [\v!vfenced] [underparent]            ["FE3DD] % ["023DD]
+% \definemathdoubleextensible [\v!vfenced] [doubleparent]  ["FE3DC] ["FE3DD]
+%
+% \definemathoverextensible   [\v!vfenced] [overbracket]   ["FE3B4]          % ["023B4]
+% \definemathunderextensible  [\v!vfenced] [underbracket]           ["FE3B5] % ["023B5]
+% \definemathdoubleextensible [\v!vfenced] [doublebracket] ["FE3B4] ["FE3B5]
 
-\definemathoverextensible   [\v!vfenced] [overbrace]     ["FE3DE]          % ["023DE]
-\definemathunderextensible  [\v!vfenced] [underbrace]             ["FE3DF] % ["023DF]
-\definemathdoubleextensible [\v!vfenced] [doublebrace]   ["FE3DE] ["FE3DF]
+% \definemathoverextensible   [\v!vfenced] [overbar]       ["203E]
+% \definemathunderextensible  [\v!vfenced] [underbar]              ["203E]
+% \definemathdoubleextensible [\v!vfenced] [doublebar]     ["203E] ["203E]
 
-\definemathoverextensible   [\v!vfenced] [overparent]    ["FE3DC]          % ["023DC]
-\definemathunderextensible  [\v!vfenced] [underparent]            ["FE3DD] % ["023DD]
-\definemathdoubleextensible [\v!vfenced] [doubleparent]  ["FE3DC] ["FE3DD]
+\definemathoverextensible   [\v!vfenced] [overbar]       ["203E]
+\definemathunderextensible  [\v!vfenced] [underbar]              ["203E] % ["0332]
+\definemathdoubleextensible [\v!vfenced] [doublebar]     ["203E] ["203E] % ["0332]
 
-\definemathoverextensible   [\v!vfenced] [overbracket]   ["FE3B4]          % ["023B4]
-\definemathunderextensible  [\v!vfenced] [underbracket]           ["FE3B5] % ["023B5]
-\definemathdoubleextensible [\v!vfenced] [doublebracket] ["FE3B4] ["FE3B5]
+\definemathoverextensible   [\v!vfenced] [overbrace]     ["23DE]
+\definemathunderextensible  [\v!vfenced] [underbrace]            ["23DF]
+\definemathdoubleextensible [\v!vfenced] [doublebrace]   ["23DE] ["23DF]
+
+\definemathoverextensible   [\v!vfenced] [overparent]    ["23DC]
+\definemathunderextensible  [\v!vfenced] [underparent]           ["23DD]
+\definemathdoubleextensible [\v!vfenced] [doubleparent]  ["23DC] ["23DD]
+
+\definemathoverextensible   [\v!vfenced] [overbracket]   ["23B4]
+\definemathunderextensible  [\v!vfenced] [underbracket]          ["23B5]
+\definemathdoubleextensible [\v!vfenced] [doublebracket] ["23B4] ["23B5]
+
+% If we do this, we need to adapt the dimensions, so wel leave them accents:
+%
+% \definemathoverextensible[\v!vfenced][widebar]  ["0305]
+% \definemathoverextensible[\v!vfenced][widetilde]["0303]
 
 % \protected\def\mathopwithlimits#1#2{\mathop{#1{#2}}\limits}
 
 %D For mathml:
 
-\definemathdoubleextensible    [\v!both]     [overbarunderbar]         ["FE33E] ["FE33F]
-\definemathdoubleextensible    [\v!both]     [overbraceunderbrace]     ["FE3DE] ["FE3DF]
-\definemathdoubleextensible    [\v!both]     [overparentunderparent]   ["FE3DC] ["FE3DD]
-\definemathdoubleextensible    [\v!both]     [overbracketunderbracket] ["FE3B4] ["FE3B5]
+% \definemathdoubleextensible    [\v!both]     [overbarunderbar]         ["FE33E] ["FE33F]
+% \definemathdoubleextensible    [\v!both]     [overbraceunderbrace]     ["FE3DE] ["FE3DF]
+% \definemathdoubleextensible    [\v!both]     [overparentunderparent]   ["FE3DC] ["FE3DD]
+% \definemathdoubleextensible    [\v!both]     [overbracketunderbracket] ["FE3B4] ["FE3B5]
+%
+% \definemathovertextextensible  [\v!bothtext] [overbartext]             ["FE33E]
+% \definemathundertextextensible [\v!bothtext] [underbartext]                     ["FE33F]
+% \definemathovertextextensible  [\v!bothtext] [overbracetext]           ["FE3DE]
+% \definemathundertextextensible [\v!bothtext] [underbracetext]                   ["FE3DF]
+% \definemathovertextextensible  [\v!bothtext] [overparenttext]          ["FE3DC]
+% \definemathundertextextensible [\v!bothtext] [underparenttext]                  ["FE3DD]
+% \definemathovertextextensible  [\v!bothtext] [overbrackettext]         ["FE3B4]
+% \definemathundertextextensible [\v!bothtext] [underbrackettext]                 ["FE3B5]
 
-\definemathovertextextensible  [\v!bothtext] [overbartext]             ["FE33E]
-\definemathundertextextensible [\v!bothtext] [underbartext]                     ["FE33F]
-\definemathovertextextensible  [\v!bothtext] [overbracetext]           ["FE3DE]
-\definemathundertextextensible [\v!bothtext] [underbracetext]                   ["FE3DF]
-\definemathovertextextensible  [\v!bothtext] [overparenttext]          ["FE3DC]
-\definemathundertextextensible [\v!bothtext] [underparenttext]                  ["FE3DD]
-\definemathovertextextensible  [\v!bothtext] [overbrackettext]         ["FE3B4]
-\definemathundertextextensible [\v!bothtext] [underbrackettext]                 ["FE3B5]
+\definemathdoubleextensible    [\v!both]     [overbarunderbar]         ["203E] ["203E]
+\definemathdoubleextensible    [\v!both]     [overbraceunderbrace]     ["23DE] ["23DF]
+\definemathdoubleextensible    [\v!both]     [overparentunderparent]   ["23DC] ["23DD]
+\definemathdoubleextensible    [\v!both]     [overbracketunderbracket] ["23B4] ["23B5]
+
+\definemathovertextextensible  [\v!bothtext] [overbartext]             ["203E]
+\definemathundertextextensible [\v!bothtext] [underbartext]                    ["203E]
+\definemathovertextextensible  [\v!bothtext] [overbracetext]           ["23DE]
+\definemathundertextextensible [\v!bothtext] [underbracetext]                  ["23DF]
+\definemathovertextextensible  [\v!bothtext] [overparenttext]          ["23DC]
+\definemathundertextextensible [\v!bothtext] [underparenttext]                 ["23DD]
+\definemathovertextextensible  [\v!bothtext] [overbrackettext]         ["23B4]
+\definemathundertextextensible [\v!bothtext] [underbrackettext]                ["23B5]
 
 %D Some bonus ones (for the moment here):
 
@@ -1326,9 +1351,9 @@
 
 \permanent\tolerant\protected\def\definemathunstacked[#1]#*[#2]#*[#3]% category name unicode
   {\ifarguments\or\or
-     \frozen\setuevalue{#1}{\math_stackers_unstacked_normal\noexpand\currentmathstackers{\number#2}}%
+     \frozen\protected\edefcsname#1\endcsname{\math_stackers_unstacked_normal\noexpand\currentmathstackers{\number#2}}%
    \else
-     \frozen\setuevalue{#2}{\math_stackers_unstacked_normal{#1}{\number#3}}%
+     \frozen\protected\edefcsname#2\endcsname{\math_stackers_unstacked_normal{#1}{\number#3}}%
    \fi}
 
 \protected\def\math_stackers_unstacked_normal#category#codepoint%

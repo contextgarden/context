@@ -48,6 +48,11 @@ local zlibdecompress     = zlib.decompress
 local zlibdecompresssize = zlib.decompresssize
 local zlibchecksum       = zlib.crc32
 
+if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
+    local cs = zlibchecksum
+    zlibchecksum = function(str,n) return cs(n or 0, str) end
+end
+
 local decompress     = function(source)            return zlibdecompress    (source,-15)            end -- auto
 local decompresssize = function(source,targetsize) return zlibdecompresssize(source,targetsize,-15) end -- auto
 local calculatecrc   = function(buffer,initial)    return zlibchecksum      (initial or 0,buffer)   end
@@ -565,7 +570,12 @@ else
 
     local compress      = zlib.compress
     local decompress    = zlib.decompress
-    local crc32         = zlib.crc32
+    local zlibchecksum  = zlib.crc32
+
+    if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
+        local cs = zlibchecksum
+        zlibchecksum = function(str,n) return cs(n or 0, str) end
+    end
 
     local streams       = utilities.streams
     local openstream    = streams.openstring
@@ -606,16 +616,16 @@ else
 
     putcompressed = function(str,level,originalname)
         return concat {
-            identifier,              -- 2 identifier
-            tocardinal1(0x08),       -- 1 method
-            tocardinal1(0x08),       -- 1 flags
-            tocardinal4(os.time()),  -- 4 mtime
-            tocardinal1(0x02),       -- 1 compression (2 or 4)
-            tocardinal1(0xFF),       -- 1 operating
+            identifier, -- 2 identifier
+            tocardinal1(0x08), -- 1 method
+            tocardinal1(0x08), -- 1 flags
+            tocardinal4(os.time()), -- 4 mtime
+            tocardinal1(0x02), -- 1 compression (2 or 4)
+            tocardinal1(0xFF), -- 1 operating
             (originalname or "unknownname") .. "\0",
             compress(str,level,nil,gzipwindow),
-            tocardinal4(crc32(str)), -- 4
-            tocardinal4(#str),       -- 4
+            tocardinal4(zlibchecksum(str)), -- 4
+            tocardinal4(#str), -- 4
         }
     end
 
@@ -670,7 +680,5 @@ function gzip.decompress(s)
         return s
     end
 end
-
-zipfiles.gunzipfile = gzip.load
 
 return zipfiles

@@ -8,6 +8,11 @@ if not modules then modules = { } end modules ['font-ots'] = { -- sequences
 }
 
 --[[ldx--
+<p>I need to check the description at the microsoft site ... it has been improved
+so maybe there are some interesting details there. Most below is based on old and
+incomplete documentation and involved quite a bit of guesswork (checking with the
+abstract uniscribe of those days. But changing things is tricky!</p>
+
 <p>This module is a bit more split up that I'd like but since we also want to test
 with plain <l n='tex'/> it has to be so. This module is part of <l n='context'/>
 and discussion about improvements and functionality mostly happens on the

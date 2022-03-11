@@ -151,7 +151,7 @@ scripts.patterns.list = {
     { "sk",  "hyph-sk",            "slovak" },
     { "sl",  "hyph-sl",            "slovenian" },
     { "sq",  "hyph-sq",            "albanian" },
-    { "sr",  "hyph-sr",            "serbian", false, { "hyph-sr-cyrl", "hyph-sr-latn" }, },
+    { "sr",  "hyph-sr",            "serbian", false, { "hyph-sh-cyrl", "hyph-sh-latn" }, },
  -- { "sr",  "hyph-sr-cyrl",       "serbian", false },
  -- { "sr",  "hyph-sr-latn",       "serbian" },
     { "sv",  "hyph-sv",            "swedish" },

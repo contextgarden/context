@@ -133,7 +133,7 @@ setinspector("node",function(v) if isnode(v) then printtable(astable(v),tostring
 
 local function totable(n,flat,verbose,noattributes) -- nicest: n,true,true,true
     local function to_table(n,flat,verbose,noattributes) -- no need to pass
-        local f  = getfields(n)
+        local f  = getfields(n.id)
         local tt = { }
         for k=1,#f do
             local v = f[k]

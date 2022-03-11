@@ -26,7 +26,7 @@
 \permanent\protected\def\hrulefill{\leaders\hrule\hfill}
 %protected\def\dotfill  {\cleaders\hbox{\normalstartimath\mathsurround\zeropoint\mkern1.5mu.\mkern1.5mu\normalstopimath}\hfill}
 
-% will move
+% will move .. not used anyway
 
 \permanent\def\oalign#1%
   {\leavevmode % plain tex uses this
@@ -41,9 +41,9 @@
 
 % needs checking
 
-\permanent\protected\def\choose{\atopwithdelims()}
-\permanent\protected\def\brack {\atopwithdelims[]}
-\permanent\protected\def\brace {\atopwithdelims\{\}}
+\permanent\protected\def\choose{\atopwithdelims()} % used in korean test file, has to go
+%permanent\protected\def\brack {\atopwithdelims[]}
+%permanent\protected\def\brace {\atopwithdelims\{\}}
 
 % needs checking
 

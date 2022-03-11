@@ -153,18 +153,18 @@ registerdirect("OverlayRegion",        function() return getmacro("m_overlay_reg
 -- registerscript("OnRightPage",       function() return mpboolean(on_right_page     ()) end)
 -- registerscript("OnOddPage",         function() return mpboolean(is_odd_page       ()) end)
 -- registerscript("InPageBody",        function() return mpboolean(in_body_page      ()) end)
--- registerscript("LayoutHasChanged",  function() return mpboolean(layout_has_changed()) end)
 
 registerdirect("PageFraction",         function() return page_fraction     () end)
 registerdirect("OnRightPage",          function() return on_right_page     () end)
 registerdirect("OnOddPage",            function() return is_odd_page       () end)
 registerdirect("InPageBody",           function() return in_body_page      () end)
-registerdirect("LayoutHasChanged",     function() return layout_has_changed() end)
+registerdirect("LastChangedLayoutPage",function() return getcount("c_page_layouts_changed") end)
+registerdirect("SwapMarginDimensions", function() token.expandmacro("swapmargindimensions") end)
 
 registerdirect("PageFraction",         page_fraction     )
 registerdirect("OnRightPage",          on_right_page     )
 registerdirect("OnOddPage",            is_odd_page       )
 registerdirect("InPageBody",           in_body_page      )
-registerdirect("LayoutHasChanged",     layout_has_changed)
+-- registerdirect("LayoutHasChanged",     layout_has_changed)
 
 registerdirect("defaultcolormodel",    defaultcolormodel)

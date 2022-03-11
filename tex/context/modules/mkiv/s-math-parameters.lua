@@ -34,6 +34,28 @@ tables.parameters = {
     "spaceafterscript", "connectoroverlapmin",
 }
 
+if CONTEXTLMTXMODE > 0 then
+
+    tables.styleaxis = table.imerged ( tables.styleaxis, {
+        "frac", "rad",
+    } )
+
+    tables.parameters = table.imerged ( tables.parameters, {
+        "extrasupshift", "extrasubshift", "extrasuppreshift", "extrasubpreshift",
+        "extrasupspace", "extrasubspace", "extrasupprespace", "extrasubprespace",
+     -- "overlinevariant",  "underlinevariant",
+     -- "overdelimitervariant", "underdelimitervariant",
+     -- "delimiterovervariant", "delimiterundervariant",
+     -- "hextensiblevariant", "vextensiblevariant",
+     -- "fractionvariant", "radicalvariant", "degreevariant",
+     -- "accentvariant", "topaccentvariant", "botaccentvariant", "overlayaccentvariant",
+     -- "numeratorvariant", "denominatorvariant",
+     -- "superscriptvariant", "subscriptvariant",
+     -- "stackvariant",
+    } )
+
+end
+
 tables.styles = {
     "display",
     "text",

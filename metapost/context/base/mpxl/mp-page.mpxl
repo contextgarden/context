@@ -52,83 +52,109 @@ immutable % permanent
 
 % We could go for just setting them (:=):
 
-path    mfun_page_area[][] ;
-pair    mfun_page_location[][] ;
-path    mfun_page_field[][] ;
-numeric mfun_page_vsize[] ;
-numeric mfun_page_hsize[] ;
-numeric mfun_page_vstep[] ;
-numeric mfun_page_hstep[] ;
+path    mfun_page_area    [][][] ;
+pair    mfun_page_location[][][] ;
+path    mfun_page_field   [][][] ;
+numeric mfun_page_vsize   [][] ;
+numeric mfun_page_hsize   [][] ;
+numeric mfun_page_vstep   [][] ;
+numeric mfun_page_hstep   [][] ;
 
-newinternal mfun_page_done ; mfun_page_done := 0 ;
+numeric mfun_page_odd ; mfun_page_odd := 1 ;
 
 def mfun_page_check_vsize =
-    mfun_page_vsize[Top]             := TopHeight ;
-    mfun_page_vsize[TopSeparator]    := TopDistance ;
-    mfun_page_vsize[Header]          := HeaderHeight ;
-    mfun_page_vsize[HeaderSeparator] := HeaderDistance ;
-    mfun_page_vsize[Text]            := TextHeight ;
-    mfun_page_vsize[FooterSeparator] := FooterDistance ;
-    mfun_page_vsize[Footer]          := FooterHeight ;
-    mfun_page_vsize[BottomSeparator] := BottomDistance ;
-    mfun_page_vsize[Bottom]          := BottomHeight ;
+    mfun_page_vsize[mfun_page_odd][Top]             := TopHeight ;
+    mfun_page_vsize[mfun_page_odd][TopSeparator]    := TopDistance ;
+    mfun_page_vsize[mfun_page_odd][Header]          := HeaderHeight ;
+    mfun_page_vsize[mfun_page_odd][HeaderSeparator] := HeaderDistance ;
+    mfun_page_vsize[mfun_page_odd][Text]            := TextHeight ;
+    mfun_page_vsize[mfun_page_odd][FooterSeparator] := FooterDistance ;
+    mfun_page_vsize[mfun_page_odd][Footer]          := FooterHeight ;
+    mfun_page_vsize[mfun_page_odd][BottomSeparator] := BottomDistance ;
+    mfun_page_vsize[mfun_page_odd][Bottom]          := BottomHeight ;
 enddef ;
 
 def mfun_page_check_hsize =
-    mfun_page_hsize[LeftEdge]             := LeftEdgeWidth ;
-    mfun_page_hsize[LeftEdgeSeparator]    := LeftEdgeDistance ;
-    mfun_page_hsize[LeftMargin]           := LeftMarginWidth ;
-    mfun_page_hsize[LeftMarginSeparator]  := LeftMarginDistance ;
-    mfun_page_hsize[Text]                 := MakeupWidth ;
-    mfun_page_hsize[RightMarginSeparator] := RightMarginDistance ;
-    mfun_page_hsize[RightMargin]          := RightMarginWidth ;
-    mfun_page_hsize[RightEdgeSeparator]   := RightEdgeDistance ;
-    mfun_page_hsize[RightEdge]            := RightEdgeWidth ;
+    mfun_page_hsize[mfun_page_odd][LeftEdge]             := LeftEdgeWidth ;
+    mfun_page_hsize[mfun_page_odd][LeftEdgeSeparator]    := LeftEdgeDistance ;
+    mfun_page_hsize[mfun_page_odd][LeftMargin]           := LeftMarginWidth ;
+    mfun_page_hsize[mfun_page_odd][LeftMarginSeparator]  := LeftMarginDistance ;
+    mfun_page_hsize[mfun_page_odd][Text]                 := MakeupWidth ;
+    mfun_page_hsize[mfun_page_odd][RightMarginSeparator] := RightMarginDistance ;
+    mfun_page_hsize[mfun_page_odd][RightMargin]          := RightMarginWidth ;
+    mfun_page_hsize[mfun_page_odd][RightEdgeSeparator]   := RightEdgeDistance ;
+    mfun_page_hsize[mfun_page_odd][RightEdge]            := RightEdgeWidth ;
 enddef ;
 
 def mfun_page_check_vstep =
-    mfun_page_vstep[TopSeparator]    := PaperHeight-TopSpace ;
-    mfun_page_vstep[Top]             := mfun_page_vstep[TopSeparator]   +mfun_page_vsize[TopSeparator] ;
-    mfun_page_vstep[Header]          := mfun_page_vstep[TopSeparator]   -mfun_page_vsize[Header] ;
-    mfun_page_vstep[HeaderSeparator] := mfun_page_vstep[Header]         -mfun_page_vsize[HeaderSeparator] ;
-    mfun_page_vstep[Text]            := mfun_page_vstep[HeaderSeparator]-mfun_page_vsize[Text] ;
-    mfun_page_vstep[FooterSeparator] := mfun_page_vstep[Text]           -mfun_page_vsize[FooterSeparator] ;
-    mfun_page_vstep[Footer]          := mfun_page_vstep[FooterSeparator]-mfun_page_vsize[Footer] ;
-    mfun_page_vstep[BottomSeparator] := mfun_page_vstep[Footer]         -mfun_page_vsize[BottomSeparator] ;
-    mfun_page_vstep[Bottom]          := mfun_page_vstep[BottomSeparator]-mfun_page_vsize[Bottom] ;
+    mfun_page_vstep[mfun_page_odd][TopSeparator]    := PaperHeight-TopSpace ;
+    mfun_page_vstep[mfun_page_odd][Top]             := mfun_page_vstep[mfun_page_odd][TopSeparator]   +mfun_page_vsize[mfun_page_odd][TopSeparator] ;
+    mfun_page_vstep[mfun_page_odd][Header]          := mfun_page_vstep[mfun_page_odd][TopSeparator]   -mfun_page_vsize[mfun_page_odd][Header] ;
+    mfun_page_vstep[mfun_page_odd][HeaderSeparator] := mfun_page_vstep[mfun_page_odd][Header]         -mfun_page_vsize[mfun_page_odd][HeaderSeparator] ;
+    mfun_page_vstep[mfun_page_odd][Text]            := mfun_page_vstep[mfun_page_odd][HeaderSeparator]-mfun_page_vsize[mfun_page_odd][Text] ;
+    mfun_page_vstep[mfun_page_odd][FooterSeparator] := mfun_page_vstep[mfun_page_odd][Text]           -mfun_page_vsize[mfun_page_odd][FooterSeparator] ;
+    mfun_page_vstep[mfun_page_odd][Footer]          := mfun_page_vstep[mfun_page_odd][FooterSeparator]-mfun_page_vsize[mfun_page_odd][Footer] ;
+    mfun_page_vstep[mfun_page_odd][BottomSeparator] := mfun_page_vstep[mfun_page_odd][Footer]         -mfun_page_vsize[mfun_page_odd][BottomSeparator] ;
+    mfun_page_vstep[mfun_page_odd][Bottom]          := mfun_page_vstep[mfun_page_odd][BottomSeparator]-mfun_page_vsize[mfun_page_odd][Bottom] ;
 enddef ;
 
 def mfun_page_check_hstep =
-    mfun_page_hstep[Text]                 := BackSpace ;
-    mfun_page_hstep[LeftMarginSeparator]  := mfun_page_hstep[Text]                -mfun_page_hsize[LeftMarginSeparator] ;
-    mfun_page_hstep[RightMarginSeparator] := mfun_page_hstep[Text]                +mfun_page_hsize[Text] ;
-    mfun_page_hstep[LeftMargin]           := mfun_page_hstep[LeftMarginSeparator] -mfun_page_hsize[LeftMargin] ;
-    mfun_page_hstep[RightMargin]          := mfun_page_hstep[RightMarginSeparator]+mfun_page_hsize[RightMarginSeparator] ;
-    mfun_page_hstep[LeftEdgeSeparator]    := mfun_page_hstep[LeftMargin]          -mfun_page_hsize[LeftEdgeSeparator] ;
-    mfun_page_hstep[LeftEdge]             := mfun_page_hstep[LeftEdgeSeparator]   -mfun_page_hsize[LeftEdge] ;
-    mfun_page_hstep[RightEdgeSeparator]   := mfun_page_hstep[RightMargin]         +mfun_page_hsize[RightMargin] ;
-    mfun_page_hstep[RightEdge]            := mfun_page_hstep[RightEdgeSeparator]  +mfun_page_hsize[RightEdgeSeparator] ;
+    mfun_page_hstep[mfun_page_odd][Text]                 := BackSpace ;
+    mfun_page_hstep[mfun_page_odd][LeftMarginSeparator]  := mfun_page_hstep[mfun_page_odd][Text]                -mfun_page_hsize[mfun_page_odd][LeftMarginSeparator] ;
+    mfun_page_hstep[mfun_page_odd][RightMarginSeparator] := mfun_page_hstep[mfun_page_odd][Text]                +mfun_page_hsize[mfun_page_odd][Text] ;
+    mfun_page_hstep[mfun_page_odd][LeftMargin]           := mfun_page_hstep[mfun_page_odd][LeftMarginSeparator] -mfun_page_hsize[mfun_page_odd][LeftMargin] ;
+    mfun_page_hstep[mfun_page_odd][RightMargin]          := mfun_page_hstep[mfun_page_odd][RightMarginSeparator]+mfun_page_hsize[mfun_page_odd][RightMarginSeparator] ;
+    mfun_page_hstep[mfun_page_odd][LeftEdgeSeparator]    := mfun_page_hstep[mfun_page_odd][LeftMargin]          -mfun_page_hsize[mfun_page_odd][LeftEdgeSeparator] ;
+    mfun_page_hstep[mfun_page_odd][LeftEdge]             := mfun_page_hstep[mfun_page_odd][LeftEdgeSeparator]   -mfun_page_hsize[mfun_page_odd][LeftEdge] ;
+    mfun_page_hstep[mfun_page_odd][RightEdgeSeparator]   := mfun_page_hstep[mfun_page_odd][RightMargin]         +mfun_page_hsize[mfun_page_odd][RightMargin] ;
+    mfun_page_hstep[mfun_page_odd][RightEdge]            := mfun_page_hstep[mfun_page_odd][RightEdgeSeparator]  +mfun_page_hsize[mfun_page_odd][RightEdgeSeparator] ;
+enddef ;
+
+numeric mfun_last_changed_page ; mfun_last_changed_page := -1 ;
+boolean mfun_page_done_odd     ; mfun_page_done_odd     := false ;
+boolean mfun_page_done_even    ; mfun_page_done_even    := false ;
+
+def mfun_check_page_dimensions_indeed =
+    mfun_page_check_vsize ;
+    mfun_page_check_hsize ;
+    mfun_page_check_vstep ;
+    mfun_page_check_hstep ;
 enddef ;
 
 def mfun_check_page_dimensions =
-    if mfun_page_done <> RealPageNumber :
-        if LayoutHasChanged :
-            mfun_page_check_vsize ;
-            mfun_page_check_hsize ;
-            mfun_page_check_vstep ;
-            mfun_page_check_hstep ;
-        fi ;
-        mfun_page_done := RealPageNumber ;
+    begingroup ;
+    save n ; n := LastChangedLayoutPage ;
+    SwapMarginDimensions ; % always
+    if mfun_last_changed_page <> n :
+        report("page", "layout changed") ;
+        mfun_page_done_odd := false ;
+        mfun_page_done_even := false ;
+        mfun_last_changed_page := n ;
     fi ;
+    if odd RealPageNumber :
+        mfun_page_odd := 1 ;
+        if not mfun_page_done_odd :
+            report("page", "checking odd") ;
+            mfun_check_page_dimensions_indeed ;
+            mfun_page_done_odd := true ;
+        fi ;
+    else :
+        mfun_page_odd := 2 ;
+        if not mfun_page_done_even :
+            report("page", "checking even") ;
+            mfun_check_page_dimensions_indeed ;
+            mfun_page_done_even := true ;
+        fi ;
+    fi ;
+    endgroup ;
 enddef;
-
 
 def mfun_check_page_area =
     mfun_check_page_dimensions ;
     for VerPos=Top step 10 until Bottom:
         for HorPos=LeftEdge step 1 until RightEdge:
-            mfun_page_area[HorPos][VerPos] := unitsquare xscaled mfun_page_hsize[HorPos] yscaled mfun_page_vsize[VerPos] ;
-            mfun_page_area[VerPos][HorPos] := mfun_page_area[HorPos][VerPos] ;
+            mfun_page_area[mfun_page_odd][HorPos][VerPos] := unitsquare xscaled mfun_page_hsize[mfun_page_odd][HorPos] yscaled mfun_page_vsize[where][VerPos] ;
+            mfun_page_area[mfun_page_odd][VerPos][HorPos] := mfun_page_area[mfun_page_odd][HorPos][VerPos] ;
         endfor ;
     endfor ;
 enddef ;
@@ -137,8 +163,8 @@ def mfun_check_page_location =
     mfun_check_page_dimensions ;
     for VerPos=Top step 10 until Bottom:
         for HorPos=LeftEdge step 1 until RightEdge:
-            mfun_page_location[HorPos][VerPos] := (mfun_page_hstep[HorPos],mfun_page_vstep[VerPos]) ;
-            mfun_page_location[VerPos][HorPos] := mfun_page_location[HorPos][VerPos] ;
+            mfun_page_location[mfun_page_odd][HorPos][VerPos] := (mfun_page_hstep[mfun_page_odd][HorPos],mfun_page_vstep[mfun_page_odd][VerPos]) ;
+            mfun_page_location[mfun_page_odd][VerPos][HorPos] := mfun_page_location[mfun_page_odd][HorPos][VerPos] ;
         endfor ;
     endfor ;
 enddef ;
@@ -147,19 +173,19 @@ def mfun_check_page_field =
     mfun_check_page_dimensions ;
     for VerPos=Top step 10 until Bottom:
         for HorPos=LeftEdge step 1 until RightEdge:
-            mfun_page_field[HorPos][VerPos] := unitsquare xscaled mfun_page_hsize[HorPos] yscaled mfun_page_vsize[VerPos] shifted (mfun_page_hstep[HorPos],mfun_page_vstep[VerPos]) ;
-            mfun_page_field[VerPos][HorPos] := mfun_page_field[HorPos][VerPos] ;
+            mfun_page_field[mfun_page_odd][HorPos][VerPos] := unitsquare xscaled mfun_page_hsize[mfun_page_odd][HorPos] yscaled mfun_page_vsize[mfun_page_odd][VerPos] shifted (mfun_page_hstep[mfun_page_odd][HorPos],mfun_page_vstep[mfun_page_odd][VerPos]) ;
+            mfun_page_field[mfun_page_odd][VerPos][HorPos] := mfun_page_field[mfun_page_odd][HorPos][VerPos] ;
         endfor ;
     endfor ;
 enddef ;
 
-def Area     = hide(mfun_check_page_area       ;) mfun_page_area     enddef ;
-def Location = hide(mfun_check_page_location   ;) mfun_page_location enddef ;
-def Field    = hide(mfun_check_page_field      ;) mfun_page_field    enddef ;
-def Vsize    = hide(mfun_check_page_dimensions ;) mfun_page_vsize    enddef ;
-def Hsize    = hide(mfun_check_page_dimensions ;) mfun_page_hsize    enddef ;
-def Vstep    = hide(mfun_check_page_dimensions ;) mfun_page_vstep    enddef ;
-def Hstep    = hide(mfun_check_page_dimensions ;) mfun_page_hstep    enddef ;
+def Area     = hide(mfun_check_page_area       ;) mfun_page_area    [mfun_page_odd] enddef ;
+def Location = hide(mfun_check_page_location   ;) mfun_page_location[mfun_page_odd] enddef ;
+def Field    = hide(mfun_check_page_field      ;) mfun_page_field   [mfun_page_odd] enddef ;
+def Vsize    = hide(mfun_check_page_dimensions ;) mfun_page_vsize   [mfun_page_odd] enddef ;
+def Hsize    = hide(mfun_check_page_dimensions ;) mfun_page_hsize   [mfun_page_odd] enddef ;
+def Vstep    = hide(mfun_check_page_dimensions ;) mfun_page_vstep   [mfun_page_odd] enddef ;
+def Hstep    = hide(mfun_check_page_dimensions ;) mfun_page_hstep   [mfun_page_odd] enddef ;
 
 immutable % permanent
     Area, Location, Field, Vsize, Hsize, Vstep, Hstep ;

@@ -76,7 +76,7 @@
 \permanent\protected\def\backgroundline{\dontleavehmode\node_backgrounds_boxes_add\hbox}
 
 \def\node_backgrounds_boxes_add#1[#2]%
-  {\clf_enablebackgroundboxes
+  {\localcontrolled{\clf_enablebackgroundboxes}% permits assignment
    #1\backgroundcolorattr{#2}}
 
 \protect \endinput

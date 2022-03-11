@@ -64,10 +64,11 @@ local mapping = table.setmetatableindex ( {
     ["Producer"]             = { "metadata","rdf:Description/pdf:Producer" },
  -- ["Trapped"]              = { "pdf",     "rdf:Description/pdf:Trapped" },                     -- '/False' in /Info, but 'False' in XMP
     -- Dublin Core schema
-    ["Author"]               = { "metadata","rdf:Description/dc:creator/rdf:Seq/rdf:li" },
     ["Format"]               = { "metadata","rdf:Description/dc:format" },                       -- optional, but nice to have
-    ["Subject"]              = { "metadata","rdf:Description/dc:description/rdf:Alt/rdf:li" },
-    ["Title"]                = { "metadata","rdf:Description/dc:title/rdf:Alt/rdf:li" },
+    -- These were dc:.../rdf:Seq/rdf:li but there was a (invalidating) bug in the iso
+    ["Author"]               = { "metadata","rdf:Description/dc:creator" },
+    ["Subject"]              = { "metadata","rdf:Description/dc:description" },
+    ["Title"]                = { "metadata","rdf:Description/dc:title" },
     -- XMP Basic schema
     ["CreateDate"]           = { "date",    "rdf:Description/xmp:CreateDate" },
     ["CreationDate"]         = { "date",    "rdf:Description/xmp:CreationDate" },                -- dummy
@@ -254,11 +255,11 @@ local pdfaddxmpinfo = lpdf.addxmpinfo
 
 function lpdf.addtoinfo(tag,pdfvalue,strvalue)
     local pattern = mapping[tag][2]
-    if pattern then
+    if pattern or strvalue == true then
         pdfaddtoinfo(tag,pdfvalue)
     end
     if type(pattern) == "string" then
-        local value = strvalue or gsub(tostring(pdfvalue),"^%((.*)%)$","%1") -- hack
+        local value = (type(strvalue) == "string" and strvalue) or gsub(tostring(pdfvalue),"^%((.*)%)$","%1") -- hack
         if trace_info then
             report_info("set %a to %a",tag,value)
         end

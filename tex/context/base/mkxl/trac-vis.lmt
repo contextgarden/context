@@ -40,6 +40,7 @@ local setsubtype          = nuts.setsubtype
 local setattr             = nuts.setattr
 local setwidth            = nuts.setwidth
 local setshift            = nuts.setshift
+local setoffsets          = nuts.setoffsets
 
 local getid               = nuts.getid
 local getfont             = nuts.getfont
@@ -410,7 +411,7 @@ local function sometext(str,layer,color,textcolor,lap,variant)
     info = hpack_nodes(info)
     local width = getwidth(info)
     if variant then
-        nuts.setoffsets(info,0,variant*exheight)
+        setoffsets(info,0,variant*exheight)
     end
     if lap then
         info = new_hlist(setlink(new_kern(-width),info))
@@ -835,7 +836,14 @@ local ruledbox do
             local info = setlink(
                 this and copylist(this) or nil,
                 (force_origin and emptyrule(wd,ht,dp)) -- we accept some overhead
-             or (dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth))
+             or dp == 0 and userrule {
+                    width    = wd,
+                    height   = ht,
+                    line     = linewidth,
+                    type     = "box",
+                    baseline = false,
+
+                }
              or userrule {
                     width  = wd,
                     height = ht,
@@ -843,6 +851,7 @@ local ruledbox do
                     line   = linewidth,
                     type   = "box",
                     dashed = 3*size,
+
                 }
             )
             --
@@ -972,6 +981,7 @@ end
 local ruledglue, ruledmathglue do
 
     local effectiveglue         = nuts.effectiveglue
+    local iszeroglue            = nuts.iszeroglue
 
     local gluecodes             = nodes.gluecodes
 
@@ -1002,6 +1012,7 @@ local ruledglue, ruledmathglue do
     local g_cache_is = caches["indentskip"]
     local g_cache_cs = caches["correctionskip"]
     local g_cache_gn = caches["gluename"]
+    local g_cache_gz = caches["gluezero"]
 
     local tags = {
      -- [userskip_code]                   = "US",
@@ -1051,18 +1062,43 @@ local ruledglue, ruledmathglue do
 
     -- we sometimes pass previous as we can have issues in math (not watertight for all)
 
-    local f_amount   = formatters["%s:%0.3f"]
-    local mathvalues = nodes.mathvalues
+    local f_amount    = formatters["%s:%0.3f"]
+    local mathvalues  = nodes.mathvalues
 
-    local function gluename(name,layer,color)
-        local info  = g_cache_gn[name]
+    mathvalues[-1] = "left"
+    mathvalues[-2] = "right"
+
+    local morehack = setmetatableindex(function(t,k)
+        local v = mathematics.classnames[k] -- yet unknown
+--         v = v and string.sub(v,1,4) or string.formatters["x%02x"](k)
+        v = v and string.sub(v,1,3) or string.formatters["x%02x"](k)
+        t[k] = v
+        return v
+    end)
+
+    local temphack = setmetatableindex(function(t,k)
+        local v = mathvalues[k]
+        if v then
+            v = gsub(v,"spacing","") -- old
+        else
+            v = k - 256
+            v = morehack[v//64] ..morehack[v%64]
+        end
+        t[k] = v
+        return v
+    end)
+
+    local function gluename(current,layer,color)
+        local name = getfont(current)
+        local zero = iszeroglue(current)
+        local info = zero and g_cache_gz[name] or g_cache_gn[name]
         if not info then
-            local text = hpack_string((gsub(mathvalues[name],"spacing","")),usedfont)
-            local rule = new_rule(emwidth/fraction,2*exheight,2.75*exheight)
+            local text = hpack_string(temphack[name],usedfont)
+            local rule = new_rule(emwidth/fraction,2*exheight,(zero and 4.25 or 2.75)*exheight)
             local list = getlist(text)
             setlisttransparency(list,color)
             settransparency(rule,color)
-            setshift(text,2*exheight)
+            setshift(text,(zero and 3.5 or 2)*exheight)
             info = new_hlist(setlink(rule,text))
             setattr(info,a_layer,layer)
             g_cache_gn[name] = info
@@ -1071,7 +1107,7 @@ local ruledglue, ruledmathglue do
     end
 
     ruledmathglue = function(head,current)
-        return insertnodebefore(head,current,gluename(getfont(current),l_glue,"trace:m"))
+        return insertnodebefore(head,current,gluename(current,l_glue,"trace:m"))
     end
 
     ruledglue = function(head,current,vertical,parent)
@@ -1177,6 +1213,23 @@ local ruledkern do
             info = vpack_nodes(info)
         end
         head, current = insertnodebefore(head,current,info)
+        return head, getnext(current)
+    end
+
+end
+
+local ruledstrut do
+
+    local strut_size = 65536 / 2
+    local strut_code = nodes.rulecodes.strut
+
+    ruledstrut = function(head,current)
+        if getsubtype(current) == strut_code and getwidth(current) == 0 then
+            -- maybe force gray
+            setwidth(current,strut_size)
+            setattr(current,a_layer,l_strut)
+            head, current = insertnodeafter(head,current,new_kern(-strut_size))
+        end
         return head, getnext(current)
     end
 
@@ -1340,6 +1393,7 @@ do
     local par_code                = nodecodes.par
     local mark_code               = nodecodes.mark
     local insert_code             = nodecodes.insert
+    local rule_code               = nodecodes.rule
 
     local kerncodes               = nodes.kerncodes
     local fontkern_code           = kerncodes.fontkern
@@ -1481,9 +1535,10 @@ do
             elseif a == unsetvalue then
                 goto list
             end
-            if trace_strut then
-                setattr(current,a_layer,l_strut)
-            elseif id == glyph_code then
+         -- if trace_strut then
+         --     setattr(current,a_layer,l_strut)
+         -- else
+            if id == glyph_code then
                 if trace_glyph then
                     head, current = ruledglyph(head,current,previous)
                 end
@@ -1515,6 +1570,10 @@ do
                 end
             elseif id == hlist_code or id == vlist_code then
                 goto list
+            elseif id == rule_code then
+                if trace_strut then
+                    head, current = ruledstrut(head,current)
+                end
             elseif id == whatsit_code then
                 if trace_whatsit then
                     head, current = ruledwhatsit(head,current)
@@ -1766,7 +1825,7 @@ do
         actions   = { setvisual, context }
     }
 
-        implement {
+    implement {
         name      = "setvisuallayer",
         arguments = "string",
         actions   = visualizers.setlayer

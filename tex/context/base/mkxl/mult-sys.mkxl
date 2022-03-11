@@ -114,12 +114,14 @@
 \definesystemconstant {all}
 \definesystemconstant {ampersand}
 \definesystemconstant {anchor}
+\definesystemconstant {anchors}
 \definesystemconstant {ascii}
 \definesystemconstant {attribute}
 \definesystemconstant {attr}
 \definesystemconstant {author}
 \definesystemconstant {auto}
 \definesystemconstant {axis}
+\definesystemconstant {noaxis}
 \definesystemconstant {exact}
 \definesystemconstant {a}
 \definesystemconstant {bf}
@@ -151,9 +153,12 @@
 \definesystemconstant {cg}
 \definesystemconstant {chain}
 \definesystemconstant {check}
+\definesystemconstant {char}
 \definesystemconstant {child}
 \definesystemconstant {cite}
 \definesystemconstant {class}
+\definesystemconstant {leftclass}
+\definesystemconstant {rightclass}
 \definesystemconstant {clone}
 \definesystemconstant {cmyk}
 \definesystemconstant {cm}
@@ -198,6 +203,7 @@
 \definesystemconstant {fallbacks}
 \definesystemconstant {fallback}
 \definesystemconstant {false}
+\definesystemconstant {fam}
 \definesystemconstant {fax}
 \definesystemconstant {features}
 \definesystemconstant {file}
@@ -205,6 +211,7 @@
 \definesystemconstant {fill}
 \definesystemconstant {fil}
 \definesystemconstant {first}
+\definesystemconstant {fixed}
 \definesystemconstant {float}
 \definesystemconstant {font}
 \definesystemconstant {forget}
@@ -226,6 +233,7 @@
 \definesystemconstant {hastitle}
 \definesystemconstant {head}
 \definesystemconstant {height}
+\definesystemconstant {hfactor}
 \definesystemconstant {hw}
 \definesystemconstant {hyphenmin}
 \definesystemconstant {indeed}
@@ -380,7 +388,8 @@
 \definesystemconstant {Support}
 \definesystemconstant {sygreek}
 \definesystemconstant {symbol}
-\definesystemconstant {system} % not yet interfaces messages
+\definesystemconstant {system}
+\definesystemconstant {style}
 \definesystemconstant {text}
 \definesystemconstant {tex}
 \definesystemconstant {tf}
@@ -397,12 +406,14 @@
 \definesystemconstant {ucgreek}
 \definesystemconstant {uncramped}
 \definesystemconstant {unexpanded}
-\definesystemconstant {Unicode}
+\definesystemconstant {unpack}
 \definesystemconstant {unknown}
+\definesystemconstant {Unicode}
 \definesystemconstant {userdata}
 \definesystemconstant {userpage}
 \definesystemconstant {user}
 \definesystemconstant {vfrac}
+\definesystemconstant {vfactor}
 \definesystemconstant {white}
 \definesystemconstant {width}
 \definesystemconstant {xml}

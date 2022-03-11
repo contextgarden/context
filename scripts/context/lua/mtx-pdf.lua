@@ -277,6 +277,7 @@ function scripts.pdf.fonts(filename)
                         chars[i] = c
                         freqs[i] = format("U+%05X  %s  %s",k,counts[k] > 1 and "+" or " ", c)
                     else
+                        chars[i] = k == 32 and "SPACE" or format("U+%03X",k)
                         freqs[i] = format("U+%05X  %s  --",k,counts[k] > 1 and "+" or " ")
                     end
                 end

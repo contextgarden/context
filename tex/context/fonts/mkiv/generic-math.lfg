@@ -1,0 +1,74 @@
+return {
+    name = "generic-math",
+    version = "1.00",
+    comment = "A starting point.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        parameters = {
+            NoLimitSupFactor         = 0,
+            NoLimitSubFactor         = 900,
+            AccentBaseDepth          = 150,
+            PrimeRaisePercent        = 25,
+            PrimeShiftUp             = "SuperscriptShiftUp",
+            PrimeBaselineDropMax     = "SuperscriptBaselineDropMax",
+            PrimeShiftUpCramped      = "SuperscriptShiftUpCramped",
+            PrimeSpaceAfter          =  0,
+            PrimeWidthPercent        = 50,
+            SpaceBeforeScript        = "SpaceAfterScript",
+            NoLimitSupFactor         = 0,
+            NoLimitSubFactor         = 0,
+            AccentTopShiftUp         = 0,
+            AccentBottomShiftDown    = 0,
+            AccentBaseDepth          = 0,
+            AccentFlattenedBaseDepth = 0,
+        },
+        tweaks = {
+            aftercopying = {
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        -- whatever
+                    },
+                },
+                {
+                    tweak   = "fixprimes",
+                    factor  = 0.85, -- accent base height
+                    smaller = true, -- replace multiples
+                    scale   = 0.75, -- glyph scale
+                    fake    = 0.75, -- replace multiples with this width proportion
+                 -- keep    = true, -- keep the text size prime (aka minute)
+                },
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "addscripts",
+                },
+                {
+                    tweak = "accentdimensions",
+                    list  = { "over", "under" },
+                 -- list  = {
+                 --     [0x203E] = { factor = "over"  }, -- overbar
+                 --     [0x203E] = { factor = "under" }, -- underbar
+                 --     [0x23DE] = { factor = "over"  }, -- overbrace
+                 --     [0x23DF] = { factor = "under" }, -- underbrace
+                 --     [0x23DC] = { factor = "over"  }, -- overparent
+                 --     [0x23DD] = { factor = "under" }, -- underparent
+                 --     [0x23B4] = { factor = "over"  }, -- overbracket
+                 --     [0x23B5] = { factor = "under" }, -- underbracket
+                 -- }
+                },
+                {
+                    tweak = "addrules",
+                },
+            },
+        },
+        bigslots = {
+            1, 2, 3, 4
+        },
+        alternates = {
+         -- italic = { feature = 'ss01', value = 1, comment = "Mathematical Alternative Lowercase Italic" },
+        },
+    },
+}

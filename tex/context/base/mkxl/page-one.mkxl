@@ -284,6 +284,7 @@
         % baseline
         \unskip % new per 2019-06-18, otherwise weird bottom floats
         \vkern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
+      % \srule depth \dimexpr\maxdepth-\d_page_one_natural_depth\relax
         \page_otr_command_flush_bottom_insertions
       \fi
       \fakepagenotes}%

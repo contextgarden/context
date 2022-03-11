@@ -69,6 +69,12 @@
    \c!inbetween=\blank,
    \c!bottom=\vfill]
 
+\definesystemconstant{marginblock}
+
+\resetboxesincache \s!marginblock \s!marginblock
+
+\setfalse\c_page_margin_blocks_enabled
+
 \permanent\tolerant\protected\def\startmarginblock[#tag]%
   {\begingroup
    \edef\currentmarginblock{#tag}%
@@ -77,60 +83,45 @@
      \page_margin_blocks_start_block_nop}
 
 \permanent\protected\def\stopmarginblock
-  {\doifelse{\marginblockparameter\c!state}\v!start
-     \page_margin_blocks_stop_block_yes
-     \page_margin_blocks_stop_block_nop
+  {\page_margin_blocks_stop_block
    \endgroup}
 
-\def\page_margin_blocks_start_block_yes % 2 maal \vbox ivm \unvbox elders
-  {\showmessage\m!layouts4\empty
-   \global\settrue\c_page_margin_blocks_present
-   \global\setbox\b_page_margin_blocks\vtop\bgroup\vbox\bgroup
-     \hsize\marginblockparameter\c!width
-     \ifvoid\b_page_margin_blocks\else
-       \unvbox\b_page_margin_blocks
-       \marginblockparameter\c!inbetween
-     \fi
-     \usealignparameter\marginblockparameter
-     \usemarginblockstyleandcolor\c!style\c!color
-     \begstrut
-     \ignorespaces}
+\def\page_margin_blocks_start_block_yes
+  {%\showmessage\m!layouts4\empty
+   \global\settrue\c_page_margin_blocks_enabled
+   \dowithnextboxcs
+     \page_margin_blocks_start_block_save
+     \vbox\bgroup
+       \let\page_margin_blocks_stop_block\page_margin_blocks_stop_block_yes
+       \hsize\marginblockparameter\c!width
+       \usealignparameter\marginblockparameter
+       \usemarginblockstyleandcolor\c!style\c!color
+       \begstrut
+       \ignorespaces}
 
 \def\page_margin_blocks_stop_block_yes
   {\removeunwantedspaces
    \endstrut
-   \egroup
    \egroup}
 
+\def\page_margin_blocks_start_block_save
+  {\putboxincache\s!marginblock{+}\nextbox}
+
 \def\page_margin_blocks_start_block_nop
-  {\showmessage\m!layouts5\empty
+  {%\showmessage\m!layouts5\empty
    \marginblockparameter\c!before
    \bgroup
+   \let\page_margin_blocks_stop_block\page_margin_blocks_stop_block_nop
    \usemarginblockstyleandcolor\c!style\c!color}
 
 \def\page_margin_blocks_stop_block_nop
   {\egroup
    \marginblockparameter\c!after}
 
-\def\page_margin_blocks_reshape
-  {\ifdim\ht\b_page_margin_blocks_prepared>\zeropoint
-     \beginofshapebox
-     \unvbox\b_page_margin_blocks_prepared
-     \endofshapebox
-     \reshapebox
-       {\box\shapebox}%
-     \setbox\b_page_margin_blocks_prepared\vbox to \textheight
-       {\marginblockparameter\c!top
-        \flushshapebox
-        \marginblockparameter\c!bottom}%
-   \fi}
-
 \permanent\protected\def\checkmarginblocks
-  {\ifvoid\b_page_margin_blocks
-     \global\setfalse\c_page_margin_blocks_present
-   \else
-     \page_margin_blocks_check_indeed
-   \fi}
+  {\ifconditional\c_page_margin_blocks_enabled\ifcase\getboxcountfromcache\s!marginblock\else
+     \expandafter\page_margin_blocks_check_indeed
+   \fi\fi}
 
 \def\page_margin_blocks_check_indeed
   {\ifcsname\??marginblocklocation\marginblockparameter\c!location\endcsname
@@ -138,38 +129,57 @@
      \csname\??marginblocklocation\marginblockparameter\c!location\endcsname
    \else
      \global\setbox\b_page_margin_blocks\emptybox
-     \global\setfalse\c_page_margin_blocks_present
    \fi}
 
 \def\page_margin_blocks_prepare_box
-  {\setbox\b_page_margin_blocks_prepared\vbox
-     {\forgetall
-      \splittopskip\topskip
-      \ifvoid\b_page_margin_blocks\else
-        \ifdim\ht\b_page_margin_blocks>\textheight
-          \vsplit\b_page_margin_blocks to \textheight
-        \else
-          \unvbox\b_page_margin_blocks
-        \fi
+  {\begingroup
+   \scratchcounter\zerocount
+   \localcontrolledloop \plusone \getboxcountfromcache\s!marginblock \plusone
+     {\scratchcounter\currentloopiterator
+      \setbox\scratchbox\vbox\bgroup
+        \marginblockparameter\c!top
+        \localcontrolledloop \plusone \scratchcounter \plusone
+          {\ifcase\currentloopiterator\or
+             \marginblockparameter\c!before
+           \else
+             \marginblockparameter\c!inbetween
+           \fi
+           \setbox\scratchbox\emptyvbox
+           \ht\scratchbox\getboxhtfromcache\s!marginblock{\number\currentloopiterator}%
+           \dp\scratchbox\getboxdpfromcache\s!marginblock{\number\currentloopiterator}%
+           \box\scratchbox
+           \marginblockparameter\c!after}%
+       \marginblockparameter\c!bottom
+      \egroup
+      \ifdim\htdp\scratchbox>\textheight
+        \advance\scratchcounter\minusone
+       %\writestatus{quit}{\the\scratchcounter=>\the\htdp\scratchbox}
+        \quitloop
+      \else
+       %\writestatus{progress}{\the\htdp\scratchbox}
       \fi}%
-   \page_margin_blocks_reshape
-   \setbox\b_page_margin_blocks_prepared\vbox
-     {\marginblockparameter\c!before
-      \box\b_page_margin_blocks_prepared
-      \marginblockparameter\c!after}}
+   \ifcase\scratchcounter\else
+     \global\setbox\b_page_margin_blocks_prepared\vbox to \textheight\bgroup
+       \marginblockparameter\c!top
+       \localcontrolledloop \plusone \scratchcounter \plusone
+         {\ifcase\currentloopiterator\or
+            \marginblockparameter\c!before
+          \else
+            \marginblockparameter\c!inbetween
+          \fi
+          \getboxfromcache\s!marginblock{\number\currentloopiterator}\scratchbox
+          \box\scratchbox
+          \marginblockparameter\c!after}%
+       \marginblockparameter\c!bottom
+    \egroup
+    \pruneboxesincache\s!marginblock
+    \ifcase\getboxcountfromcache\s!marginblock\relax
+      \global\settrue\c_page_margin_blocks_enabled
+    \fi
+  \fi
+  \endgroup}
 
 % inner outer
-
-\setvalue{\??marginblocklocation\v!left    }{\page_margin_blocks_set_l_box}
-\setvalue{\??marginblocklocation\v!right   }{\page_margin_blocks_set_r_box}
-\setvalue{\??marginblocklocation\v!inmargin}{\doifbothsidesoverruled
-                                             \page_margin_blocks_set_r_box
-                                             \page_margin_blocks_set_r_box
-                                             \page_margin_blocks_set_l_box}
-\setvalue{\??marginblocklocation\v!middle  }{\doifbothsidesoverruled
-                                             \page_margin_blocks_set_r_box
-                                             \page_margin_blocks_set_l_box
-                                             \page_margin_blocks_set_r_box}
 
 \permanent\protected\def\page_margin_blocks_place_r_yes
   {\setbox\b_page_margin_blocks_prepared\hbox to \rightmarginwidth
@@ -196,6 +206,21 @@
 \def\page_margin_blocks_set_r_box{\enforced\aliased\let\placerightmarginblock\page_margin_blocks_place_r_yes}
 \def\page_margin_blocks_set_l_box{\enforced\aliased\let\placeleftmarginblock \page_margin_blocks_place_l_yes}
 
+\letcsname\??marginblocklocation\v!left \endcsname\page_margin_blocks_set_l_box
+\letcsname\??marginblocklocation\v!right\endcsname\page_margin_blocks_set_r_box
+
+\defcsname\??marginblocklocation\v!inmargin\endcsname
+  {\doifbothsidesoverruled
+     \page_margin_blocks_set_r_box
+     \page_margin_blocks_set_r_box
+     \page_margin_blocks_set_l_box}
+
+\defcsname\??marginblocklocation\v!middle\endcsname
+  {\doifbothsidesoverruled
+     \page_margin_blocks_set_r_box
+     \page_margin_blocks_set_l_box
+     \page_margin_blocks_set_r_box}
+
 % margin floats (keyword 'margin' in option list)
 
 \protected\def\page_margin_blocks_process_float
@@ -204,40 +229,41 @@
      \page_margin_blocks_process_float_nop}
 
 \def\page_margin_blocks_process_float_yes
-  {\global\setbox\b_page_margin_blocks\vbox
-     {\hsize\marginblockparameter\c!width
-      \unvcopy\b_page_margin_blocks
-      \ifvoid\b_page_margin_blocks\else
-        \expandafter\marginblockparameter\expandafter\c!inbetween
-      \fi
-      \box\floatbox
-      \filbreak}%
-   \ifdim\ht\b_page_margin_blocks>\textheight
-   % page_floats_report_saved % no saving done anyway
-   \else
-     \page_floats_report_total
-   \fi}
+  {\global\settrue\c_page_margin_blocks_enabled
+   \putboxincache\s!marginblock{+}\floatbox}
 
 \def\page_margin_blocks_process_float_nop
   {\handlefloatmethod\v!here}
 
-\def\page_margin_blocks_float_before
-  {\ifconditional\c_page_margin_blocks_enabled
-     \doifinset\v!margin\floatlocation\endgraf
-   \fi}
-
-\def\page_margin_blocks_float_set_hsize
-  {\ifconditional\c_page_margin_blocks_enabled
-     \doifinset\v!margin\floatlocation{\hsize\rootmarginblockparameter\c!width}%
-   \fi}
-
 \appendtoks
-   \ifvoid\b_page_margin_blocks \else
+   \ifcase\getboxcountfromcache\s!marginblock\else
      \writestatus\m!layouts{beware: there are left-over margin floats!}%
    \fi
 \to \everystoptext
 
 \permanent\protected\def\flushmarginblocks
-  {\page_otr_command_flush_margin_blocks}
+ {\ifconditional\c_page_margin_blocks_enabled
+    \page_otr_command_flush_margin_blocks
+  \fi}
+
+\permanent\tolerant\protected\def\flushallmarginblocks[#1]%
+ {\ifconditional\c_page_margin_blocks_enabled
+    \begingroup
+    \scratchcounterone\getboxcountfromcache\s!marginblock\relax
+    \ifcase\scratchcounterone\else
+      \scratchcountertwo\ifparameter#1\or\numexpr\scratchcounterone-#1+\plusone\relax\else\plusone\fi
+      \localcontrolledloop \scratchcountertwo \scratchcounterone \plusone
+        {\ifcase\currentloopiterator\or
+           \marginblockparameter\c!before
+         \else
+           \marginblockparameter\c!inbetween
+         \fi
+         \getboxfromcache\s!marginblock{\number\currentloopiterator}\scratchbox
+         \box\scratchbox
+         \marginblockparameter\c!after}%
+      \pruneboxesincache\s!marginblock
+    \fi
+    \endgroup
+  \fi}
 
 \protect \endinput

@@ -322,10 +322,6 @@ function pages.on_right(n)
     end
 end
 
-function pages.has_changed()
-    return texconditionals.layouthaschanged
-end
-
 function pages.in_body(n)
     return texgetcount("pagebodymode") > 0
 end

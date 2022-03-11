@@ -123,7 +123,7 @@
     \doifnothing{\directlayoutparameter\c!state}{\letlayoutparameter\c!state\v!start}%
 \to \everydefinelayout
 
-\newconditional \layouthaschanged \settrue\layouthaschanged % used in mp
+\newcount\c_page_layouts_changed
 
 \appendtoks
     \ifcase\layoutsetupmode
@@ -155,12 +155,8 @@
       \page_layouts_synchronize
       \page_layouts_check_next
     \fi
-    \global\settrue\layouthaschanged
+    \global\c_page_layouts_changed\realpageno
 \to \everysetuplayout
-
-\appendtoks
-    \global\setfalse\layouthaschanged
-\to \everyaftershipout
 
 \permanent\def\doifelselayoutdefined#1%
   {\ifcsname\namedlayouthash{#1}\c!state\endcsname % maybe a helper
@@ -218,11 +214,21 @@
 
 \newtoks\everyswapmargins % watch the order !
 
+\newconditional\marginsareswapped
+
 \appendtoks
+    \ifconditional\marginsareswapped
+       \setfalse\marginsareswapped
+    \else
+       \settrue\marginsareswapped
+    \fi
+    %
     \enforced\swapcsvalues\leftmargindistance\rightmargindistance
     \enforced\swapcsvalues\leftedgedistance  \rightedgedistance
     \enforced\swapcsvalues\leftmarginwidth   \rightmarginwidth
     \enforced\swapcsvalues\leftedgewidth     \rightedgewidth
+    %
+    \enforced\swapcsvalues\backspace         \cutspace
     %
     \enforced\swapcsvalues\leftmargintotal   \rightmargintotal
     \enforced\swapcsvalues\leftedgetotal     \rightedgetotal
@@ -754,9 +760,9 @@
    \ifx\p_direction\v!reverse
      \enforced\global\swapcsvalues\naturalleftedgedistance  \naturalrightedgedistance
      \enforced\global\swapcsvalues\naturalleftmargindistance\naturalrightmargindistance
-     \enforced\global\swapcsvalues\leftedgedistance         \rightedgedistance
      \enforced\global\swapcsvalues\leftmargindistance       \rightmargindistance
      \enforced\global\swapcsvalues\leftmarginwidth          \rightmarginwidth
+     \enforced\global\swapcsvalues\leftedgedistance         \rightedgedistance
      \enforced\global\swapcsvalues\leftedgewidth            \rightedgewidth
      \enforced\global\swapcsvalues\backspace                \cutspace
      \expandafter\setsystemmode
@@ -1256,12 +1262,15 @@
 \aliased\let\doifmarginswapelse\doifelsemarginswap
 
 \protected\def\page_layouts_swap_margins % name will change, frozen?
-  {\doifelsemarginswap\relax\page_layouts_swap_margins_indeed}
+  {\doifelsemarginswap\gobbleoneargument\page_layouts_swap_margins_indeed}
 
-\protected\def\page_layouts_swap_margins_indeed
-  {\let\page_layouts_swap_margins       \relax % to prevent local swapping
-   \let\page_layouts_swap_margins_indeed\relax % to prevent local swapping
+\protected\def\page_layouts_swap_margins_indeed#1%
+  {\let\page_layouts_swap_margins\gobbleoneargument % to prevent local swapping
+  %\writestatus\m!layouts{swapping margins for #1}%
    \the\everyswapmargins}
+
+\permanent\protected\def\swapmargindimensions
+  {\page_layouts_swap_margins\v!page}
 
 \permanent\def\rightorleftpageaction
   {\ifdoublesided
@@ -1352,6 +1361,15 @@
 \glet\page_grids_add_to_box\gobbleoneargument
 \glet\page_grids_add_to_one\gobbleoneargument
 \glet\page_grids_add_to_mix\gobbleoneargument
+
+%D Play safe:
+
+\appendtoks
+    \ifnum\realpageno>\plusone
+        \page[\v!odd]%
+        \setuplayout
+    \fi
+\to \everysetuppagenumbering
 
 %D The default dimensions are quite old and will not change. The funny fractions
 %D were introduced when we went from fixed dimensions to relative ones. Since

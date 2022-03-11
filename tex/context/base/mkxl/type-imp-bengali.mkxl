@@ -1,0 +1,73 @@
+%D \module
+%D   [       file=type-imp-bengali,
+%D        version=2022.02.02,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Bengali,
+%D         author=śrīrāma (Sreeram),
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\starttypescriptcollection[bengali]
+
+    \doifunknownfontfeature {bengali-bold-30} {\definefontfeature[bengali-bold-30][boldened-30]}
+
+    % Symbolic names for fonts:
+
+    \starttypescript [\s!serif] [murty-bangla]
+        \definefontsynonym [MurtyBengali-Regular] [\s!name:murtybanglaregular] [\s!features=bengali-two]
+        \definefontsynonym [MurtyBengali-Bold]    [\s!name:murtybanglaregular] [\s!features={bengali-two,bengali-bold-30}]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [baloo-da, baloo-da-extrabold]
+        \definefontsynonym [BalooDa2-Regular]   [\s!name:balooda2regular]   [\s!features=bengali-two]
+        \definefontsynonym [BalooDa2-Medium]    [\s!name:balooda2medium]    [\s!features=bengali-two]
+        \definefontsynonym [BalooDa2-Semibold]  [\s!name:balooda2semibold]  [\s!features=bengali-two]
+        \definefontsynonym [BalooDa2-Bold]      [\s!name:balooda2bold]      [\s!features=bengali-two]
+        \definefontsynonym [BalooDa2-Extrabold] [\s!name:balooda2extrabold] [\s!features=bengali-two]
+    \stoptypescript
+
+    % Grouping of styles:
+
+    \starttypescript [\s!sans] [baloo-da] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Sans]            [BalooDa2-Regular]
+        \definefontsynonym [\s!SansSlanted]     [BalooDa2-Medium]
+        \definefontsynonym [\s!SansBold]        [BalooDa2-Bold]
+        \definefontsynonym [\s!SansBoldSlanted] [BalooDa2-Semibold]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [baloo-da-extrabold] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Sans]            [BalooDa2-Medium]
+        \definefontsynonym [\s!SansSlanted]     [BalooDa2-Semibold]
+        \definefontsynonym [\s!SansBold]        [BalooDa2-Extrabold]
+        \definefontsynonym [\s!SansBoldSlanted] [BalooDa2-Bold]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [murty-bangla] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]     [MurtyBengali-Regular]
+        \definefontsynonym [\s!SerifBold] [MurtyBengali-Bold]
+    \stoptypescript
+
+    % Typefaces:
+
+    \starttypescript [baloo-da, baloo-da-extrabold]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default] [\s!rscale=1.1]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+    \stoptypescript
+
+    \starttypescript [murty-bangla]
+        \definetypeface [murty-bangla]   [\s!rm] [\s!serif] [murty-bangla] [\s!default] [\s!rscale=1.1]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu]       [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]       [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]       [\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection

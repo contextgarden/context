@@ -270,8 +270,8 @@ function margins.save(t)
     if t.number then
         local leftmargindistance  = texgetdimen("naturalleftmargindistance")
         local rightmargindistance = texgetdimen("naturalrightmargindistance")
-        local strutbox            = getbox("strutbox")
-        local _, strutht, strutdp = getwhd(strutbox)
+        local strutht = texgetdimen("strutht")
+        local strutdp = texgetdimen("strutdp")
         -- better make a new table and make t entry in t
         t.box                 = content
         t.n                   = nofsaved

@@ -40,10 +40,10 @@
 %D not, you're in trouble). These shortcuts can be used like a dimension, opposite
 %D to the core macros \type {\strutdepth} and alike, which are values.
 
-                    \def\strutdp  {\dp\strutbox} % overloaded in spac-ver
-                    \def\strutht  {\ht\strutbox} % overloaded in spac-ver
+                    \def\strutdp  {\dp\strutbox}   % overloaded in spac-ver
+                    \def\strutht  {\ht\strutbox}   % overloaded in spac-ver
 \permanent\protected\def\strutwd  {\wd\strutbox}
-\permanent\protected\def\struthtdp{\dimexpr\strutht+\strutdp\relax}
+                    \def\struthtdp{\htdp\strutbox} % overloaded in spac-ver
 \permanent\protected\def\strutgap {\dimexpr\strutht-\strutdp\relax}
 
 %D \macros
@@ -330,7 +330,7 @@
 
 %D We also define plain's \type {\mathstrut}.
 
-\permanent\protected\def\mathstrut{\vphantom(} % can be made faster by inlining
+\permanent\protected\def\mathstrut{\Ustack{\vphantom(}} % can be made faster by inlining
 
 %D \macros
 %D   {getboxheight}
@@ -2027,7 +2027,7 @@
 \permanent\protected\def\bbox{\hpack\bgroup\dowithnextboxcs\syst_boxes_bbox_finish\hbox}
 
 \def\syst_boxes_tbox_finish
-  {\scratchheight\ht\strutbox
+  {\scratchheight\strutht
    \scratchdepth\dimexpr\htdp\nextbox-\scratchheight\relax
    \ht\nextbox\scratchheight
    \dp\nextbox\scratchdepth
@@ -2036,7 +2036,7 @@
    \egroup}
 
 \def\syst_boxes_bbox_finish
-  {\scratchdepth\dp\strutbox
+  {\scratchdepth\strutdp
    \scratchheight\dimexpr\htdp\nextbox-\scratchdepth\relax
    \dp\nextbox\scratchdepth
    \ht\nextbox\scratchheight
@@ -2457,6 +2457,7 @@
 % \getboxwdfromcache      % {category} {name}
 % \getboxhtfromcache      % {category} {name}
 % \getboxdpfromcache      % {category} {name}
+% \getboxhtdpfromcache    % {category} {name}
 
 %D \macros
 %D   {removedepth, obeydepth}
@@ -2812,10 +2813,10 @@
 
 \permanent\protected\def\linebox
   {\hpack\bgroup\dowithnextbox
-     {\scratchdimen\dimexpr\dimexpr\htdp\nextbox-\lineheight\relax/2+\dp\strutbox\relax
+     {\scratchdimen\dimexpr\dimexpr\htdp\nextbox-\lineheight\relax/2+\strutdp\relax
       \setbox\nextbox\hpack{\lower\scratchdimen\box\nextbox}%
-      \ht\nextbox\ht\strutbox
-      \dp\nextbox\dp\strutbox
+      \ht\nextbox\strutht
+      \dp\nextbox\strutdp
       \box\nextbox
       \egroup}
      \hbox}

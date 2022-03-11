@@ -1,0 +1,800 @@
+%D \module
+%D   [       file=type-imp-indic,
+%D        version=2022.02.02,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=A Collection of Indic Fonts,
+%D         author=Sreeram & Hans,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This file is a compation to the other indic typescript that evolved out
+%D of a series of experiments with fonts and extensive research by Sreeram
+%D with respect to them either or not supporting level one and level two
+%D features. When there are issues, just ask on the mailing list.
+
+\definefilesynonym [type-imp-adishila.mkxl]                 [type-imp-devanagari.mkxl]
+\definefilesynonym [type-imp-adishila-semibold.mkxl]        [type-imp-devanagari.mkxl]
+\definefilesynonym [type-imp-adishila-heavy.mkxl]           [type-imp-devanagari.mkxl]
+\definefilesynonym [type-imp-adishila-dev.mkxl]             [type-imp-devanagari.mkxl]
+\definefilesynonym [type-imp-adishila-dev-guru.mkxl]        [type-imp-devanagari.mkxl]
+\definefilesynonym [type-imp-adishila-san.mkxl]             [type-imp-devanagari.mkxl]
+\definefilesynonym [type-imp-adishila-san-letterpress.mkxl] [type-imp-devanagari.mkxl]
+\definefilesynonym [type-imp-shobhika.mkxl]                 [type-imp-devanagari.mkxl]
+\definefilesynonym [type-imp-baloo-extrabold.mkxl]          [type-imp-devanagari.mkxl]
+\definefilesynonym [type-imp-baloo.mkxl]                    [type-imp-devanagari.mkxl]
+\definefilesynonym [type-imp-jaini.mkxl]                    [type-imp-devanagari.mkxl]
+\definefilesynonym [type-imp-jaini-purva.mkxl]              [type-imp-devanagari.mkxl]
+\definefilesynonym [type-imp-amita.mkxl]                    [type-imp-devanagari.mkxl]
+
+\definefilesynonym [type-imp-rit-rachana.mkxl]              [type-imp-malayalam.mkxl]
+\definefilesynonym [type-imp-panmana.mkxl]                  [type-imp-malayalam.mkxl]
+\definefilesynonym [type-imp-ezhuthu.mkxl]                  [type-imp-malayalam.mkxl]
+\definefilesynonym [type-imp-karumbi.mkxl]                  [type-imp-malayalam.mkxl]
+\definefilesynonym [type-imp-chilanka.mkxl]                 [type-imp-malayalam.mkxl]
+\definefilesynonym [type-imp-anjali-oldlipi.mkxl]           [type-imp-malayalam.mkxl]
+\definefilesynonym [type-imp-dyuthi.mkxl]                   [type-imp-malayalam.mkxl]
+\definefilesynonym [type-imp-tn-joy.mkxl]                   [type-imp-malayalam.mkxl]
+\definefilesynonym [type-imp-tn-joy-extrabold.mkxl]         [type-imp-malayalam.mkxl]
+\definefilesynonym [type-imp-gayathri.mkxl]                 [type-imp-malayalam.mkxl]
+\definefilesynonym [type-imp-gayathri-thin.mkxl]            [type-imp-malayalam.mkxl]
+\definefilesynonym [type-imp-manjari.mkxl]                  [type-imp-malayalam.mkxl]
+\definefilesynonym [type-imp-manjari-thin.mkxl]             [type-imp-malayalam.mkxl]
+\definefilesynonym [type-imp-baloo-chettan.mkxl]            [type-imp-malayalam.mkxl]
+\definefilesynonym [type-imp-baloo-chettan-extrabold.mkxl]  [type-imp-malayalam.mkxl]
+\definefilesynonym [type-imp-rit-sundar.mkxl]               [type-imp-malayalam.mkxl]
+
+\definefilesynonym [type-imp-baloo-tammudu.mkxl]            [type-imp-telugu.mkxl]
+\definefilesynonym [type-imp-baloo-tammudu-extrabold.mkxl]  [type-imp-telugu.mkxl]
+\definefilesynonym [type-imp-murty-telugu.mkxl]             [type-imp-telugu.mkxl]
+
+\definefilesynonym [type-imp-murty-kannada.mkxl]            [type-imp-kannada.mkxl]
+
+\definefilesynonym [type-imp-baloo-thambi.mkxl]             [type-imp-tamil.mkxl]
+\definefilesynonym [type-imp-baloo-thambi-extrabold.mkxl]   [type-imp-tamil.mkxl]
+
+\definefilesynonym [type-imp-baloo-bhai.mkxl]               [type-imp-gujarati.mkxl]
+\definefilesynonym [type-imp-baloo-bhai-extrabold.mkxl]     [type-imp-gujarati.mkxl]
+\definefilesynonym [type-imp-noto-serif-gujarati.mkxl]      [type-imp-gujarati.mkxl]
+
+\definefilesynonym [type-imp-baloo-da.mkxl]                 [type-imp-bengali.mkxl]
+\definefilesynonym [type-imp-baloo-da-extrabold.mkxl]       [type-imp-bengali.mkxl]
+\definefilesynonym [type-imp-murty-bangla.mkxl]             [type-imp-bengali.mkxl]
+
+\continueifinputfile{type-imp-indic.mkxl}
+
+% \usetypescriptfile[type-imp-indic]
+
+\usemodule[article-basics]
+
+\setupbodyfont
+  [pagella]
+
+\setuphead
+   [title]
+   [alternative=middle,
+    hidenumber=yes,
+    after={\blank[halfline]},
+    before={\blank[line]},
+    page=no,
+    style=\bfb]
+
+\definedescription
+  [fs]
+  [alternative=left,
+   title=yes,
+   width=3cm,
+   distance=0cm,
+   before=,
+   after=,
+   headstyle={\switchtobodyfont[pagella]}]
+
+\usetransliteration
+  [indic]
+
+\definetransliteration
+  [devatoiast]
+  [color=blue,
+   vector={deva to iast},
+   before=]
+
+\definetransliteration
+  [devatomlym]
+  [vector={deva to mlym}]
+
+\definetransliteration
+  [devatotlgu]
+  [vector={deva to tlgu}]
+
+\definetransliteration
+  [devatoknda]
+  [vector={deva to knda}]
+
+\definetransliteration
+  [devatogujr]
+  [vector={deva to gujr}]
+
+\definetransliteration
+  [devatobngl]
+  [vector={deva to bngl}]
+
+\definebuffer[words]
+\definebuffer[iastbuffer]
+
+\language[sa]
+
+\starttext
+
+\startbuffer[words]
+दंष्ट्रा श्रेयस्करी त्रेता विक्रेता तच्छ्री अङ्कित शृङ्गार क्व्य शार्ङ्ग निरृति
+क्रतुवित्त बर्हिस् प्रेप्सित अङ्घ्रि पङ्क्ति कर्त्तव्य कर्तव्य श्लाघ्यम्
+अवप्लुतम् युङ्क्ष्वा क्षेत्रज्ञ अग्निमीळे चँद्र हर्त्रे श्री आर्द्रं
+\stopbuffer
+
+\startbuffer
+\getbuffer[words]
+\stopbuffer
+
+
+% \startbuffer[iastbuffer]
+% \startdevatoiast[before=\blank,after=\blank]
+%     \getbuffer
+% \stopdevatoiast
+% \stopbuffer
+%
+% \getbuffer[iastbuffer]
+
+%
+%
+% Devanagari
+%
+%
+\starttitle[title={Adishila}]
+    \start
+        \switchtobodyfont[adishila]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+        \startfs{Italic}
+            {\it\getbuffer}
+        \stopfs
+        \startfs{Bold Italic}
+            {\bi\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Adishila Semibold}]
+    \start
+        \switchtobodyfont[adishila-semibold]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Italic}
+            {\it\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Adishila Heavy}]
+    \start
+        \switchtobodyfont[adishila-heavy]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Italic}
+            {\it\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Adishila Dev}]
+    \start
+        \switchtobodyfont[adishila-dev]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Adishila Dev}]
+    \start
+        \switchtobodyfont[adishila-dev-guru]
+        \startfs{Guru}
+            \getbuffer
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Adishila San}]
+    \start
+        \switchtobodyfont[adishila-san]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+        \startfs{Italic}
+            {\it\getbuffer}
+        \stopfs
+        \startfs{Bold Italic}
+            {\bi\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Adishila San Letterpress}]
+    \start
+        \switchtobodyfont[adishila-san-letterpress]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+        \startfs{Italic}
+            {\it\getbuffer}
+        \stopfs
+        \startfs{Bold Italic}
+            {\bi\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Shobhika}]
+    \start
+        \switchtobodyfont[shobhika]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Baloo 2 Extra Bold}]
+    \start
+        \switchtobodyfont[baloo-extrabold]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+        \startfs{Italic}
+            {\it\getbuffer}
+        \stopfs
+        \startfs{Bold Italic}
+            {\bi\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Baloo 2}]
+    \start
+        \switchtobodyfont[baloo]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+        \startfs{Italic}
+            {\it\getbuffer}
+        \stopfs
+        \startfs{Bold Italic}
+            {\bi\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Jaini}]
+    \start
+        \switchtobodyfont[jaini]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Jaini Purva}]
+    \start
+        \switchtobodyfont[jaini-purva]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Amita}]
+    \start
+        \switchtobodyfont[amita]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+%
+%
+% Malayalam
+%
+%
+\startbuffer
+\startdevatomlym
+\getbuffer[words]
+\stopdevatomlym
+\stopbuffer
+
+\starttitle[title={RIT Rachana}]
+    \start
+        \switchtobodyfont[rit-rachana]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+        \startfs{Italic}
+            {\it\getbuffer}
+        \stopfs
+        \startfs{Bold Italic}
+            {\bi\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Panmana}]
+    \start
+        \switchtobodyfont[panmana]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Ezhuthu}]
+    \start
+        \switchtobodyfont[ezhuthu]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+        \startfs{Slanted}
+            {\sl\getbuffer}
+        \stopfs
+        \startfs{Bold Slanted}
+            {\bs\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Karumbi}]
+    \start
+        \switchtobodyfont[karumbi]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Chilanka}]
+    \start
+        \switchtobodyfont[chilanka]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Anjali Old Lipi}]
+    \start
+        \switchtobodyfont[anjali-oldlipi]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Dyuthi}]
+    \start
+        \switchtobodyfont[dyuthi]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={TN Joy}]
+    \start
+        \switchtobodyfont[tn-joy]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={TN Joy Extrabold}]
+    \start
+        \switchtobodyfont[tn-joy-extrabold]
+        \startfs{Regular}
+        \getbuffer
+        \stopfs
+        \startfs{Bold}
+        {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Gayathri}]
+    \start
+        \switchtobodyfont[gayathri]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\sl\getbuffer}
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Gayathri Thin}]
+    \start
+        \switchtobodyfont[gayathri-thin]
+        \startfs{Thin (R)}
+            \getbuffer
+        \stopfs
+        \startfs{Bold*}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Manjari}]
+    \start
+        \switchtobodyfont[manjari]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Manjari Thin}]
+    \start
+        \switchtobodyfont[manjari-thin]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Baloo Chettan 2}]
+    \start
+        \switchtobodyfont[baloo-chettan]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+        \startfs{Medium \type{\sl}}
+            {\sl\getbuffer}
+        \stopfs
+        \startfs{Semibold \type{\bs}}
+            {\bs\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Baloo Chettan 2 Extrabold}]
+    \start
+        \switchtobodyfont[baloo-chettan-extrabold]
+        \startfs{Medium \type{\tf}}
+            \getbuffer
+        \stopfs
+        \startfs{Extrabold \type{\bf}}
+            {\bf\getbuffer}
+        \stopfs
+        \startfs{Semibold \type{\sl}}
+            {\sl\getbuffer}
+        \stopfs
+        \startfs{Bold \type{\bs}}
+            {\bs\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={RIT Sundar}]
+    \start
+        \switchtobodyfont[rit-sundar]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+%
+%
+% Telugu
+%
+%
+\startbuffer
+\startdevatotlgu
+\getbuffer[words]
+\stopdevatotlgu
+\stopbuffer
+
+\starttitle[title={Baloo Tammudu 2}]
+    \start
+        \switchtobodyfont[baloo-tammudu]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+        \startfs{Slanted}
+            {\sl\getbuffer}
+        \stopfs
+        \startfs{Bold Slanted}
+            {\bs\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Baloo Tammudu 2 Extrabold}]
+    \start
+        \switchtobodyfont[baloo-tammudu-extrabold]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+        \startfs{Italic}
+            {\sl\getbuffer}
+        \stopfs
+        \startfs{Bold Italic}
+            {\bs\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Murty Telugu}]
+    \start
+        \switchtobodyfont[murty-telugu]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Regular}
+            {\sl\getbuffer}
+        \stopfs
+        \startfs{Regular}
+            {\bf\getbuffer}
+        \stopfs
+        \startfs{Regular}
+            {\bs\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+%
+%
+% Kannada
+%
+%
+\startbuffer
+\startdevatoknda
+\getbuffer[words]
+\stopdevatoknda
+\stopbuffer
+
+\starttitle[title={Murty Kannada}]
+    \start
+        \switchtobodyfont[murty-kannada]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Regular}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+%
+%
+% Tamil
+%
+%
+\start
+\language[ta]
+\startbuffer
+சிற்றமபலம் புயல் காற்று முன்னர் அதே எதெ அதை ஔவையார்
+தொடர்கதை கிழால்லி அழைப்பு வாயிலாக  இயற்கை நுழைவாயில்
+இளமை காஞ்சி கச்சி இல்க்கியம் ஸ்ரீ
+\stopbuffer
+
+\starttitle[title={Baloo Thambi 2}]
+    \start
+        \switchtobodyfont[baloo-thambi]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{ஂMedium \type{\sl}}
+            {\sl\getbuffer}
+        \stopfs
+        \startfs{Semibold \type{\bs}}
+            {\bs\getbuffer}
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Baloo Thambi 2 Extrabold}]
+    \start
+        \switchtobodyfont[baloo-thambi-extrabold]
+        \startfs{Medium}
+            \getbuffer
+        \stopfs
+        \startfs{Semibold \type{\sl}}
+            {\sl\getbuffer}
+        \stopfs
+        \startfs{Bold \type{\bs}}
+            {\bs\getbuffer}
+        \stopfs
+        \startfs{Extrabold}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+\stop
+%
+%
+% Gujarati
+%
+%
+\startbuffer
+\startdevatogujr
+\getbuffer[words]
+\stopdevatogujr
+\stopbuffer
+
+\starttitle[title={Baloo Bhai 2}]
+    \start
+        \switchtobodyfont[baloo-bhai]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{ஂMedium \type{\sl}}
+            {\sl\getbuffer}
+        \stopfs
+        \startfs{Semibold \type{\bs}}
+            {\bs\getbuffer}
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Baloo Bhai 2 Extrabold}]
+    \start
+        \switchtobodyfont[baloo-bhai-extrabold]
+        \startfs{Medium}
+            \getbuffer
+        \stopfs
+        \startfs{Semibold \type{\sl}}
+            {\sl\getbuffer}
+        \stopfs
+        \startfs{Bold \type{\bs}}
+            {\bs\getbuffer}
+        \stopfs
+        \startfs{Extrabold}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Noto Serif Gujarati}]
+    \start
+        \switchtobodyfont[noto-serif-gujarati]
+        \startfs{Medium}
+            \getbuffer
+        \stopfs
+        \startfs{Extrabold}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+%
+%
+% Bengali
+%
+%
+\startbuffer
+\startdevatobngl
+\getbuffer[words]
+\stopdevatobngl
+\stopbuffer
+
+\starttitle[title={Baloo Da 2}]
+    \start
+        \switchtobodyfont[baloo-da]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Medium \type{\sl}}
+            {\sl\getbuffer}
+        \stopfs
+        \startfs{Semibold \type{\bs}}
+            {\bs\getbuffer}
+        \stopfs
+        \startfs{Bold}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Baloo Da 2 Extrabold}]
+    \start
+        \switchtobodyfont[baloo-da-extrabold]
+        \startfs{Medium}
+            \getbuffer
+        \stopfs
+        \startfs{Semibold \type{\sl}}
+            {\sl\getbuffer}
+        \stopfs
+        \startfs{Bold \type{\bs}}
+            {\bs\getbuffer}
+        \stopfs
+        \startfs{Extrabold}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\starttitle[title={Murty Bengali}]
+    \start
+        \switchtobodyfont[murty-bangla]
+        \startfs{Regular}
+            \getbuffer
+        \stopfs
+        \startfs{Regular}
+            {\bf\getbuffer}
+        \stopfs
+    \stop
+\stoptitle
+
+\stoptext

@@ -376,7 +376,29 @@ h %s]]
                 pdfprint("direct",f_baselined(l,o,o,w-l,h+d-l,0,d,w,d))
             end
         else
-            pdfprint("direct",f_rectangle(l,o,o,w-l,h+d-l))
+            pdfprint("direct",f_rectangle(l,o,o,w-l,h+d-l,"s"))
+        end
+    end
+
+    local function rule_box(p,h,v,i,n)
+        local w, h, d = getwhd(n)
+        local line = p.line or 65536
+        local l = line *bpfactor
+        local w = w * bpfactor
+        local h = h * bpfactor
+        local d = d * bpfactor
+        local o = l / 2
+        if p.baseline ~= false and ((d >= 0 and h >= 0) or (d <= 0 and h <= 0)) then
+            local dashed = tonumber(p.dashed)
+            if dashed and dashed > 5*line then
+                dashed = dashed * bpfactor
+                local delta = (w - 2*dashed*floor(w/(2*dashed)))/2
+                pdfprint("direct",f_dashlined(l,o,o,w-l,h+d-l,dashed,dashed,delta,d,w-delta,d))
+            else
+                pdfprint("direct",f_baselined(l,o,o,w-l,h+d-l,0,d,w,d))
+            end
+        else
+            pdfprint("direct",f_rectangle(l,o,o,w-l,h+d-l,"s"))
         end
     end
 

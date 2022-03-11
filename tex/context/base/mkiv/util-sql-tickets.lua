@@ -18,7 +18,7 @@ local ostime, uuid, osfulltime = os.time, os.uuid, os.fulltime
 local random = math.random
 local concat = table.concat
 
-if not utilities.sql then require("util-sql") end
+-- if not utilities.sql then require("util-sql") end
 
 local sql         = utilities.sql
 local tickets     = { }

@@ -1,0 +1,44 @@
+-- this file might go away and is for experiments only
+
+return {
+    name = "erewhon-math",
+    version = "1.00",
+    comment = "Goodies that complement erewhon math.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        parameters = {
+            NoLimitSupFactor =   0,
+            NoLimitSubFactor = 900,
+            AccentBaseHeight = 0,
+            AccentBaseDepth = 60,
+        },
+        tweaks = {
+            aftercopying = {
+                {
+                    tweak   = "fixprimes",
+                    factor  = 0.9,
+                    scale   = 0.9,
+                },
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "addscripts",
+                },
+                {
+                    tweak = "accentdimensions",
+                },
+                {
+                    tweak = "addrules",
+                },
+            },
+        },      
+        bigslots = {
+            1, 2, 3, 4
+        },
+    },
+
+}
+
+

@@ -68,9 +68,12 @@ function moduledata.zint.generate(code,data,suffix,options)
     if not lfs.isfile(name) then
         local temp = file.addsuffix(base,"tmp")
         local code = numberofcode(code)
-        logs.simple("using 'zint' to generate '%s'",base)
         io.savedata(temp,data)
-        os.execute(format('%s --barcode=%s --output="%s" --input="%s" %s',zint,code,name,temp,options or ""))
+        local command = format('%s --barcode=%s %s --output="%s" --input="%s"',zint,code,options or "",name,temp)
+        logs.simple("using 'zint' to generate '%s'",base)
+        logs.simple("command '%s'",command)
+        print(command)
+        os.execute(command)
         os.remove(temp)
     end
     return name
@@ -83,10 +86,10 @@ end
 \unexpanded\def\barcode[#1]% [alternative=,text=]
   {\bgroup
    \getdummyparameters
-     [\c!alternative=,\c!text=,#1]%
+     [\c!alternative=,\c!text=,\c!suffix=eps,\c!option=,#1]%
    \externalfigure
-     [\cldcontext{moduledata.zint.generate("\dummyparameter\c!alternative",\!!bs\dummyparameter\c!text\!!es)}]%
-     [#1,\c!alternative=,\c!text=]%
+     [\cldcontext{moduledata.zint.generate("\dummyparameter\c!alternative",\!!bs\dummyparameter\c!text\!!es,"\dummyparameter\c!suffix","\dummyparameter\c!option")}]%
+     [#1,\c!option=,\c!alternative=,\c!text=]%
    \egroup}
 
 \protect
@@ -95,15 +98,17 @@ end
 
 \starttext
 
-    \externalfigure[\cldcontext{moduledata.zint.generate("PDF417",[[Hans Hagen]])}]
-    \blank
-    \externalfigure[\cldcontext{moduledata.zint.generate("PDF417","Ton Otten")}]
-    \blank
-    \externalfigure[\cldcontext{moduledata.zint.generate("ISBN","9789490688011")}]
-    \blank
-    \barcode[text=Does It Work?,width=\textwidth]
-    \blank
-    \barcode[alternative=isbn,text=9789490688011,width=3cm]
+%     \externalfigure[\cldcontext{moduledata.zint.generate("PDF417",[[Hans Hagen]])}]
+%     \blank
+%     \externalfigure[\cldcontext{moduledata.zint.generate("PDF417","Ton Otten")}]
+%     \blank
+%     \externalfigure[\cldcontext{moduledata.zint.generate("ISBN","9789490688011")}]
+%     \blank
+%     \barcode[text=Does It Work?,width=\textwidth]
+%     \blank
+%     \barcode[alternative=isbn,text=9789490688011,width=3cm]
+%     \blank
+    \barcode[alternative=datamatrix,text=whatever,width=3cm,option=--square]
 
 \stoptext
 

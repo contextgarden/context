@@ -23,45 +23,61 @@
 
 \definesystemattribute[transliteration][public,global]
 
-% define in lua: \usetransliteration[#1]
+\newtoks\everytransliterations
 
-% todo: define fast attribute at the tex end do we can have a proper define
+\appendtoks
+    \disablediscretionaries
+    \let~=\lettertilde
+  % \let|=\letterbar
+\to \everytransliterations
 
-\def\lang_transliteration_set#1%
-  {\ifcsname\??transliteration#1\endcsname
-      \c_attr_transliteration\lastnamedcs
-      \edef\currenttransliteration{#1}%
-      \usetransliterationstyleandcolor\c!style\c!color
-      \uselanguageparameter\transliterationparameter
-   \else
-      \clf_settransliteration{#1}%
-   \fi}
+\def\lang_transliteration_common
+  {\usetransliterationstyleandcolor\c!style\c!color
+   \uselanguageparameter\transliterationparameter
+   \clf_settransliteration{\currenttransliteration}{\transliterationparameter\c!vector}%
+   \the\everytransliterations}
 
 \permanent\tolerant\protected\def\settransliteration[#1]#;#2%
-  {\lang_transliteration_set{#1}}
+  {\edef\currenttransliteration{#1#2}%
+   \lang_transliteration_common}
+
+\permanent\protected\def\transliterationexception[#1]#2#3%
+  {\clf_transliterationexception{#1}{#2}{#3}}
 
 \permanent\tolerant\protected\def\starttransliteration[#1]#*[#2]%
   {\begingroup
+   \edef\currenttransliteration{#1}%
    \ifparameter#2\or
-      \edef\currenttransliteration{#1}%
       \setupcurrenttransliteration[#2]%
    \fi
-   \lang_transliteration_set{#1}}
-
-\permanent\tolerant\protected\def\transliteration[#1]#;#2%
-  {\groupedcommand{\lang_transliteration_set{#1#2}}\donothing}
-
-\appendtoks
-    \expandafter\integerdef\csname\??transliteration\currenttransliteration\endcsname
-      \clf_registertransliteration{\transliterationparameter\c!vector}%
-    \relax
-\to \everydefinetransliteration
+   \transliterationparameter\c!before\relax
+   \lang_transliteration_common}
 
 \permanent\protected\def\stoptransliteration
-  {\endgroup}
+  {\transliterationparameter\c!after\relax
+   \endgroup}
+
+\permanent\tolerant\protected\def\transliteration[#1]#;#2%
+  {\groupedcommand
+     {\edef\currenttransliteration{#1#2}%
+      \lang_transliteration_common
+      \transliterationparameter\c!left\relax}
+     {\transliterationparameter\c!right\relax}}
+
+\appendtoks
+    \clf_registertransliteration{\currenttransliterationparent}{\currenttransliteration}%
+    \ifcstok{\transliterationparameter\c!define}\v!yes
+      \frozen\protected\instance\edefcsname\e!start\currenttransliteration\endcsname{\starttransliteration[\currenttransliteration]}%
+      \frozen\protected\instance\edefcsname\e!stop \currenttransliteration\endcsname{\stoptransliteration}%
+      \frozen\protected\instance\edefcsname        \currenttransliteration\endcsname{\transliteration[\currenttransliteration]}%
+    \fi
+\to \everydefinetransliteration
 
 \permanent\protected\def\resettransliteration
   {\c_attr_transliteration\attributeunsetvalue}
+
+\setuptransliteration
+  [\c!define=\v!yes]
 
 \appendtoks
     \resettransliteration

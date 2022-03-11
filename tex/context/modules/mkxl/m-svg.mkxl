@@ -1,0 +1,39 @@
+%D \module
+%D   [       file=m-svg,
+%D        version=2022.02.18,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=SVG Helper Macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\protected\def\showSVGcode#1#2%
+  {\ctxlua{metapost.showsvgpage{
+        filename = "#1",
+        index    = tonumber(#2),
+        method   = "code"
+    }}}
+
+\protected\def\showSVGcodeG#1#2%
+  {\ctxlua{metapost.showsvgpage{
+        filename = "#1",
+        index    = tonumber(#2),
+        method   = "code",
+        x        = 0,
+        y        = 1000,
+        width    = 1000,
+        height   = 1000,
+        noclip   = true
+    }}}
+
+\protected\def\typeSVGcode#1#2%
+  {\ctxlua{metapost.typesvgpage{
+        filename = "#1",
+        index    = tonumber(#2)
+    }}}
+
+% \continueifinputfile{m-svg.mkxl}

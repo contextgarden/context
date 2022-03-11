@@ -318,9 +318,9 @@ Of course this also works well for \CMYK\ colors.
 Gray scales work as well:
 
 \startbuffer
-\definecolor[ta][s=.9,t=.7,a=11]
-\definecolor[tb][s=.7,t=.7,a=11]
-\definecolor[tc][s=.5,t=.7,a=11]
+\definecolor[tgraya][s=.9,t=.7,a=11]
+\definecolor[tgrayb][s=.7,t=.7,a=11]
+\definecolor[tgrayc][s=.5,t=.7,a=11]
 \stopbuffer
 
 \typebuffer \getbuffer
@@ -339,9 +339,9 @@ difference in fonts.
 % \stopbuffer
 
 \startbuffer
-draw textext("\color[ta]{\tf Hello}") scaled 5 ;
-draw textext("\color[tb]{\bf Hello}") scaled 5 ;
-draw textext("\color[tc]{\sl Hello}") scaled 5 ;
+draw textext("\color[tgraya]{\tf Hello}") scaled 5 ;
+draw textext("\color[tgrayb]{\bf Hello}") scaled 5 ;
+draw textext("\color[tgrayc]{\sl Hello}") scaled 5 ;
 \stopbuffer
 
 \typebuffer

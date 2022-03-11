@@ -1,0 +1,185 @@
+%D \module
+%D   [      file=s-math-atoms.mksl,
+%D        version=2022.02.13,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Show Math Atom Spacing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is just a quick and dirty overview.
+
+\startmodule[math-tweaks]
+
+\unprotect
+
+\starttexdefinition protected showmathfonttweaks_text_accent #1
+    \bTR
+        \bTD[width=7em,align=flushleft,style=mono] #1 \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{i}  } \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{I}  } \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{x}  } \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{X}  } \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{xx} } \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{XX} } \eTD
+    \eTR
+\stoptexdefinition
+
+\starttexdefinition protected showmathfonttweaks_wide_accent #1
+    \bTR
+        \bTD[width=7em,align=flushleft,style=mono] #1 \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{i}     } \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{I}     } \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{x}     } \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{X}     } \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{xx}    } \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{XX}    } \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{xxxxx} } \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{XXXXX} } \eTD
+    \eTR
+\stoptexdefinition
+
+\starttexdefinition protected showmathfonttweaks_prime #1
+    \bTR
+        \bTD \type{#1} \eTD
+        \bTD \m {\showglyphs #1} \eTD
+    \eTR
+\stoptexdefinition
+
+\starttexdefinition protected showmathfonttweaks_bracer #1
+    \bTR
+        \bTD \type{#1} \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{x}     } \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{xxxxx} } \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{X}     } \eTD
+        \bTD \m {\showglyphs \getvalue{#1}{XXXXX} } \eTD
+    \eTR
+\stoptexdefinition
+
+\starttexdefinition protected showmathfonttweaks
+
+    \startsubject[title=text accents]
+        \startlinecorrection
+            \bTABLE[align=middle,offset=1ex]
+                \showmathfonttweaks_text_accent{grave}
+                \showmathfonttweaks_text_accent{bar}
+                \showmathfonttweaks_text_accent{acute}
+                \showmathfonttweaks_text_accent{hat}
+                \showmathfonttweaks_text_accent{check}
+                \showmathfonttweaks_text_accent{breve}
+                \showmathfonttweaks_text_accent{dot}
+                \showmathfonttweaks_text_accent{ring}
+                \showmathfonttweaks_text_accent{tilde}
+                \showmathfonttweaks_text_accent{ddot}
+                \showmathfonttweaks_text_accent{dddot}
+            \eTABLE
+        \stoplinecorrection
+    \stopsubject
+
+    \startsubject[title=wide accents]
+        \startlinecorrection
+            \bTABLE[align=middle,offset=1ex]
+                \showmathfonttweaks_wide_accent{widegrave}
+                \showmathfonttweaks_wide_accent{widebar}
+                \showmathfonttweaks_wide_accent{wideacute}
+                \showmathfonttweaks_wide_accent{widehat}
+                \showmathfonttweaks_wide_accent{widecheck}
+                \showmathfonttweaks_wide_accent{widebreve}
+                \showmathfonttweaks_wide_accent{widedot}
+                \showmathfonttweaks_wide_accent{widering}
+                \showmathfonttweaks_wide_accent{widetilde}
+                \showmathfonttweaks_wide_accent{wideddot}
+                \showmathfonttweaks_wide_accent{widedddot}
+            \eTABLE
+        \stoplinecorrection
+    \stopsubject
+
+    \startsubject[title=primes]
+        \startlinecorrection
+            \bTABLE[align=flushleft,offset=1ex]
+                \showmathfonttweaks_prime{x'}
+                \showmathfonttweaks_prime{x''}
+                \showmathfonttweaks_prime{x'''}
+                \showmathfonttweaks_prime{X'}
+                \showmathfonttweaks_prime{X''}
+                \showmathfonttweaks_prime{X'''}
+                \showmathfonttweaks_prime{x'}
+                \showmathfonttweaks_prime{x'^2}
+                \showmathfonttweaks_prime{x'_2}
+                \showmathfonttweaks_prime{x'^2_2}
+                \showmathfonttweaks_prime{x'}
+                \showmathfonttweaks_prime{x^2'}
+                \showmathfonttweaks_prime{x_2'}
+                \showmathfonttweaks_prime{x^2_2'}
+            \eTABLE
+        \stoplinecorrection
+    \stopsubject
+
+    \startsubject[title=bracers]
+        \startlinecorrection
+            \bTABLE[align=flushleft,offset=1ex]
+                \showmathfonttweaks_bracer{overbrace}
+                \showmathfonttweaks_bracer{underbrace}
+                \showmathfonttweaks_bracer{overbracket}
+                \showmathfonttweaks_bracer{underbracket}
+                \showmathfonttweaks_bracer{overparent}
+                \showmathfonttweaks_bracer{underparent}
+                \showmathfonttweaks_bracer{overbar}
+                \showmathfonttweaks_bracer{underbar}
+                \showmathfonttweaks_bracer{overline}
+                \showmathfonttweaks_bracer{underline}
+            \eTABLE
+        \stoplinecorrection
+    \stopsubject
+
+    \startsubject[title=whatever]
+        \startlinecorrection
+            \bTABLE[align=flushleft,offset=1ex]
+                \bTR
+                    \bTD \m{\mfunction{máx}}\eTD
+                \eTR
+            \eTABLE
+        \stoplinecorrection
+    \stopsubject
+\stoptexdefinition
+
+\protect
+
+\stopmodule
+
+\continueifinputfile{s-math-tweaks.mkxl}
+
+\setuplayout
+  [tight]
+
+\starttext
+
+\definefontfeature[mathextra][compose=yes]
+
+% \number"23DC
+    \doifelse {\getdocumentargument{bodyfont}} {} {
+
+%         \setupbodyfont[cambria,10pt]   \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
+%         \setupbodyfont[modern]         \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
+%         \setupbodyfont[pagella]        \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
+%         \setupbodyfont[termes]         \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
+%         \setupbodyfont[bonum]          \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
+%         \setupbodyfont[schola]         \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
+%         \setupbodyfont[lucidaot,10pt]  \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
+        \setupbodyfont[ebgaramond]       \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
+%         \setupbodyfont[stixtwo]        \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
+
+    } {
+
+        \normalexpanded{\setupbodyfont[\getdocumentargument{bodyfont},12pt]}
+        \showmathfonttweaks
+
+    }
+
+
+\stoptext
+

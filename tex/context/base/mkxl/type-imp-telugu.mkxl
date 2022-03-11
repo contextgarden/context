@@ -1,0 +1,74 @@
+%D \module
+%D   [       file=type-imp-telugu,
+%D        version=2022.01.27,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Telugu,
+%D         author=śrīrāma (Sreeram),
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\starttypescriptcollection[telugu]
+
+    \doifunknownfontfeature {telugu-bold-30} {\definefontfeature[telugu-bold-30][boldened-30]}
+    \doifunknownfontfeature {telugu-slant}   {\definefontfeature[telugu-slant][slant=0.25]}
+
+    % Symbolic names for fonts:
+
+    \starttypescript [\s!serif] [murty-telugu]
+        \definefontsynonym [MurtyTelugu-Regular] [\s!name:murtyteluguregular] [\s!features=telugu-two]
+        \definefontsynonym [MurtyTelugu-Bold]    [\s!name:murtyteluguregular] [\s!features={telugu-two,telugu-bold-30}]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [baloo-tammudu, baloo-tammudu-extrabold]
+        \definefontsynonym [BalooTammudu2-Regular]          [\s!name:balootammudu2regular]   [\s!features=telugu-two]
+        \definefontsynonym [BalooTammudu2-Medium]           [\s!name:balootammudu2medium]    [\s!features=telugu-two]
+        \definefontsynonym [BalooTammudu2-Semibold]         [\s!name:balootammudu2semibold]  [\s!features=telugu-two]
+        \definefontsynonym [BalooTammudu2-Bold]             [\s!name:balootammudu2bold]      [\s!features=telugu-two]
+        \definefontsynonym [BalooTammudu2-Extrabold]        [\s!name:balootammudu2extrabold] [\s!features=telugu-two]
+    \stoptypescript
+
+    % Grouping of styles:
+
+    \starttypescript [\s!sans] [baloo-tammudu] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Sans]            [BalooTammudu2-Regular]
+        \definefontsynonym [\s!SansSlanted]     [BalooTammudu2-Medium]
+        \definefontsynonym [\s!SansBold]        [BalooTammudu2-Bold]
+        \definefontsynonym [\s!SansBoldSlanted] [BalooTammudu2-Semibold]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [baloo-tammudu-extrabold] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Sans]            [BalooTammudu2-Medium]
+        \definefontsynonym [\s!SansSlanted]     [BalooTammudu2-Semibold]
+        \definefontsynonym [\s!SansBold]        [BalooTammudu2-Extrabold]
+        \definefontsynonym [\s!SansBoldSlanted] [BalooTammudu2-Bold]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [murty-telugu] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]     [MurtyTelugu-Regular]
+        \definefontsynonym [\s!SerifBold] [MurtyTelugu-Bold]
+    \stoptypescript
+
+    % Typefaces:
+
+    \starttypescript [baloo-tammudu, baloo-tammudu-extrabold]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+    \stoptypescript
+
+    \starttypescript [murty-telugu]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [murty-telugu]   [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection

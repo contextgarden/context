@@ -826,12 +826,12 @@
 
 \installlanguage [\s!thai] [\s!th]
 
-%D Indic languages (Kauśika)
+%D Indic languages (śrīrāman)
 %
 %
 %D Sanskit (someone needs to define the parameters):
-%D 
-%D The file \type {lang-sa.lua} contains sanskrit hyphenation patterns for devanagari, 
+%D
+%D The file \type {lang-sa.lua} contains sanskrit hyphenation patterns for devanagari,
 %D bengali, telugu, kannada, malayalam and roman(iast.
 
 \installlanguage

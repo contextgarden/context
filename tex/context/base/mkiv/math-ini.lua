@@ -31,6 +31,8 @@ local ctx_doifelsesomething = commands.doifelsesomething
 
 local trace_defining        = false  trackers.register("math.defining", function(v) trace_defining = v end)
 
+-- trace_defining = true
+
 local report_math           = logs.reporter("mathematics","initializing")
 
 mathematics                 = mathematics or { }
@@ -55,78 +57,96 @@ local families = allocate {
 --- to be checked  .. afew defaults in char-def that should be alpha
 
 local classes = allocate {
-    ord         =  0, -- mathordcomm     mathord
-    op          =  1, -- mathopcomm      mathop
-    bin         =  2, -- mathbincomm     mathbin
-    rel         =  3, -- mathrelcomm     mathrel
-    open        =  4, -- mathopencomm    mathopen
-    middle      =  4,
-    close       =  5, -- mathclosecomm   mathclose
-    punct       =  6, -- mathpunctcomm   mathpunct
-    alpha       =  7, -- mathalphacomm   firstofoneargument
-    accent      =  8, -- class 0
-    radical     =  9,
-    xaccent     = 10, -- class 3
-    topaccent   = 11, -- class 0
-    botaccent   = 12, -- class 0
-    under       = 13,
-    over        = 14,
-    delimiter   = 15,
-    inner       =  0, -- mathinnercomm   mathinner
-    nothing     =  0, -- mathnothingcomm firstofoneargument
-    choice      =  0, -- mathchoicecomm  @@mathchoicecomm
-    box         =  0, -- mathboxcomm     @@mathboxcomm
-    limop       =  1, -- mathlimopcomm   @@mathlimopcomm
-    nolop       =  1, -- mathnolopcomm   @@mathnolopcomm
+    ord          =  0, -- mathordcomm     mathord
+    op           =  1, -- mathopcomm      mathop
+    bin          =  2, -- mathbincomm     mathbin
+    rel          =  3, -- mathrelcomm     mathrel
+    open         =  4, -- mathopencomm    mathopen
+    middle       =  4,
+    close        =  5, -- mathclosecomm   mathclose
+    punct        =  6, -- mathpunctcomm   mathpunct
+    alpha        =  7, -- mathalphacomm   firstofoneargument
+    accent       =  8, -- class 0
+    radical      =  9,
+    xaccent      = 10, -- class 3
+    topaccent    = 11, -- class 0
+    botaccent    = 12, -- class 0
+    under        = 13,
+    over         = 14,
+    delimiter    = 15,
+    division     = 15,
+    inner        =  0, -- mathinnercomm   mathinner
+    choice       =  0, -- mathchoicecomm  @@mathchoicecomm
+    prime        =  0,
+    differential =  0,
+    exponential  =  0,
+    limop        =  1, -- mathlimopcomm   @@mathlimopcomm
+    nolop        =  1, -- mathnolopcomm   @@mathnolopcomm
     --
-    ordinary    =  0, -- ord
-    alphabetic  =  7, -- alpha
-    unknown     =  0, -- nothing
-    default     =  0, -- nothing
-    punctuation =  6, -- punct
-    normal      =  0, -- nothing
-    opening     =  4, -- open
-    closing     =  5, -- close
-    binary      =  2, -- bin
-    relation    =  3, -- rel
-    fence       =  0, -- unknown
-    diacritic   =  8, -- accent
-    large       =  1, -- op
-    variable    =  7, -- alphabetic
-    number      =  7, -- alphabetic
-    root        = 16, -- a private one
+    ordinary     =  0, -- ord
+    alphabetic   =  7, -- alpha
+    punctuation  =  6, -- punct
+    opening      =  4, -- open
+    closing      =  5, -- close
+    binary       =  2, -- bin
+    relation     =  3, -- rel
+    diacritic    =  8, -- accent
+    large        =  1, -- op
+    variable     =  7, -- alphabetic
+    number       =  7, -- alphabetic
+    root         = 16, -- a private one
 }
 
-local open_class      =  4
-local middle_class    =  4
-local close_class     =  5
-local accent_class    =  8
-local radical_class   =  9
-local topaccent_class = 11
-local botaccent_class = 12
-local under_class     = 13
-local over_class      = 14
-local delimiter_class = 15
-local root_class      = 16
+local engineclasses = table.setmetatableindex(function(t,k)
+    if k then
+        local c = tonumber(k) or classes[k] or 0
+        local v = c < 8 and c or 0
+        t[k] = v
+        return v
+    else
+        return 0
+    end
+end)
+
+local ordinary_class  = classes.ordinary
+local open_class      = classes.open
+local middle_class    = classes.middle
+local close_class     = classes.close
+local accent_class    = classes.accent
+local radical_class   = classes.radical
+local topaccent_class = classes.topaccent
+local botaccent_class = classes.botaccent
+local under_class     = classes.under
+local over_class      = classes.over
+local delimiter_class = classes.delimiter
+local division_class  = classes.division
+local root_class      = classes.root
 
 local accents = allocate {
     accent    = true, -- some can be both
-    topaccent = true,  [11] = true,
-    botaccent = true,  [12] = true,
-    under     = true,  [13] = true,
-    over      = true,  [14] = true,
+    topaccent = true,  [topaccent_class] = true,
+    botaccent = true,  [botaccent_class] = true,
+    under     = true,  [under_class]     = true,
+    over      = true,  [over_class]      = true,
     unknown   = false,
 }
 
+-- engine subtypes get from elsewhere
+
 local codes = allocate {
-    ordinary       = 0, [0] = "ordinary",
-    largeoperator  = 1,       "largeoperator",
-    binaryoperator = 2,       "binaryoperator",
-    relation       = 3,       "relation",
-    openingsymbol  = 4,       "openingsymbol",
-    closingsymbol  = 5,       "closingsymbol",
-    punctuation    = 6,       "punctuation",
-    variable       = 7,       "variable",
+    ordinary       = 0,  [ 0] = "ordinary",
+    largeoperator  = 1,  [ 1] = "largeoperator",
+    binaryoperator = 2,  [ 2] = "binaryoperator",
+    relation       = 3,  [ 3] = "relation",
+    openingsymbol  = 4,  [ 4] = "openingsymbol",
+    closingsymbol  = 5,  [ 5] = "closingsymbol",
+    punctuation    = 6,  [ 6] = "punctuation",
+ -- inner          = 7,  [ 7] = "inner",
+ -- undersymbol    = 8,  [ 8] = "undersymbol",
+ -- oversymbol     = 9,  [ 9] = "oversymbol",
+ -- fractionsymbol = 10, [10] = "fractionsymbol",
+ -- radicalsymbol  = 11, [11] = "radicalsymbol",
+    middlesymbol   = 12, [12] = "middlesymbol",
 }
 
 local extensibles = allocate {
@@ -176,257 +196,206 @@ mathematics.codes       = codes
 mathematics.families    = families
 mathematics.virtualized = virtualized
 
--- there will be proper functions soon (and we will move this code in-line)
--- no need for " in class and family (saves space)
-
--- local function mathchar(class,family,slot)
---     return formatters['\\Umathchar "%X "%X "%X '](class,family,slot)
--- end
---
--- local function mathaccent(class,family,slot)
---     return formatters['\\Umathaccent "%X "%X "%X '](0,family,slot) -- no class
--- end
---
--- local function delimiter(class,family,slot)
---     return formatters['\\Udelimiter "%X "%X "%X '](class,family,slot)
--- end
---
--- local function radical(family,slot)
---     return formatters['\\Uradical "%X "%X '](family,slot)
--- end
---
--- local function root(family,slot)
---     return formatters['\\Uroot "%X "%X '](family,slot)
--- end
---
--- local function mathchardef(name,class,family,slot)
---     return formatters['\\Umathchardef\\%s "%X "%X "%X '](name,class,family,slot)
--- end
---
--- local function mathcode(target,class,family,slot)
---     return formatters['\\Umathcode%s="%X "%X "%X '](target,class,family,slot)
--- end
---
--- local function mathtopaccent(class,family,slot)
---     return formatters['\\Umathaccent "%X "%X "%X '](0,family,slot) -- no class
--- end
---
--- local function mathbotaccent(class,family,slot)
---     return formatters['\\Umathaccent bottom "%X "%X "%X '](0,family,slot) -- no class
--- end
---
--- local function mathtopdelimiter(class,family,slot)
---     return formatters['\\Udelimiterover "%X "%X '](family,slot) -- no class
--- end
---
--- local function mathbotdelimiter(class,family,slot)
---     return formatters['\\Udelimiterunder "%X "%X '](family,slot) -- no class
--- end
-
 local escapes = characters.filters.utf.private.escapes
 
--- not that many so no need to reuse tables
+do
 
-local setmathcharacter = function(class,family,slot,unicode,mset,dset)
-    if mset and codes[class] then -- regular codes < 7
-        setmathcode("global",slot,class,family,unicode)
-        mset = false
+    local setmathcharacter = function(class,family,slot,unicode,mset,dset)
+        if mset and codes[class] then -- regular codes < 7
+            setmathcode("global",slot,class,family,unicode)
+            mset = false
+        end
+        if dset and (class == open_class or class == close_class or class == middle_class or class == division_class) then
+            setdelcode("global",slot,family,unicode,0,0)
+            dset = false
+        end
+        return mset, dset
     end
-    if dset and class == open_class or class == close_class or class == middle_class then
-        setdelcode("global",slot,family,unicode,0,0)
-        dset = false
+
+    local function report(class,engine,family,unicode,name)
+        local nametype = type(name)
+        if nametype == "string" then
+            report_math("class %a, engine %a, family %a, char %C, name %a",class,engine,family,unicode,name)
+        elseif nametype == "number" then
+            report_math("class %a, engine %a, family %a, char %C, number %U",class,engine,family,unicode,name)
+        else
+            report_math("class %a, engine %a, family %a, char %C",class,engine,family,unicode)
+        end
     end
-    return mset, dset
-end
 
--- todo: make nice setters for this in lua
+    local f_accent    = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
+    local f_topaccent = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
+    local f_botaccent = formatters[ [[\defUmathbotaccent \%s{%X}{%X}{%X}]] ]
+    local f_over      = formatters[ [[\defUdelimiterover \%s{%X}{%X}{%X}]] ]
+    local f_under     = formatters[ [[\defUdelimiterunder\%s{%X}{%X}{%X}]] ]
+    local f_fence     = formatters[ [[\defUdelimiter     \%s{%X}{%X}{%X}]] ]
+    local f_delimiter = formatters[ [[\defUdelimiter     \%s{%X}{%X}{%X}]] ]
+    local f_radical   = formatters[ [[\defUradical       \%s{%X}{%X}]]     ]
+    local f_root      = formatters[ [[\defUroot          \%s{%X}{%X}]]     ]
+    local f_char      = formatters[ [[\defUmathchar      \%s{%X}{%X}{%X}]] ]
 
-local f_accent    = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
-local f_topaccent = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
-local f_botaccent = formatters[ [[\defUmathbotaccent \%s{%X}{%X}{%X}]] ]
-local f_over      = formatters[ [[\defUdelimiterover \%s{%X}{%X}{%X}]] ]
-local f_under     = formatters[ [[\defUdelimiterunder\%s{%X}{%X}{%X}]] ]
-local f_fence     = formatters[ [[\defUdelimiter     \%s{%X}{%X}{%X}]] ]
-local f_delimiter = formatters[ [[\defUdelimiter     \%s{%X}{%X}{%X}]] ]
-local f_radical   = formatters[ [[\defUradical       \%s{%X}{%X}]]     ]
-local f_root      = formatters[ [[\defUroot          \%s{%X}{%X}]]     ]
-local f_char      = formatters[ [[\defUmathchar      \%s{%X}{%X}{%X}]] ]
+    local texmathchardef = tex.mathchardef
 
-local texmathchardef = tex.mathchardef
-
--- local setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
---     if class == classes.accent then
---         ctx_sprint(f_topaccent(name,0,family,slot))
---     elseif class == classes.topaccent then
---         ctx_sprint(f_topaccent(name,0,family,slot))
---     elseif class == classes.botaccent then
---         ctx_sprint(f_botaccent(name,0,family,slot))
---     elseif class == classes.over then
---         ctx_sprint(f_over(name,0,family,slot))
---     elseif class == classes.under then
---         ctx_sprint(f_under(name,0,family,slot))
---     elseif class == open_class or class == close_class or class == middle_class then
---         setdelcode("global",slot,{family,slot,0,0})
---         ctx_sprint(f_fence(name,class,family,slot))
---     elseif class == classes.delimiter then
---         setdelcode("global",slot,{family,slot,0,0})
---         ctx_sprint(f_delimiter(name,0,family,slot))
---     elseif class == classes.radical then
---         ctx_sprint(f_radical(name,family,slot))
---     elseif class == classes.root then
---         ctx_sprint(f_root(name,family,slot))
---     elseif texmathchardef then
---         texmathchardef(name,class,family,slot,"permanent")
---     else
---         -- beware, open/close and other specials should not end up here
---         ctx_sprint(f_char(name,class,family,slot))
---     end
--- end
-
-local setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
-    if class == accent_class then
-        ctx_sprint(f_topaccent(name,0,family,slot))
-    elseif class == topaccent_class then
-        ctx_sprint(f_topaccent(name,0,family,slot))
-    elseif class == botaccent_class then
-        ctx_sprint(f_botaccent(name,0,family,slot))
-    elseif class == over_class then
-        ctx_sprint(f_over(name,0,family,slot))
-    elseif class == under_class then
-        ctx_sprint(f_under(name,0,family,slot))
-    elseif class == open_class or class == close_class or class == middle_class then
-        setdelcode("global",slot,{family,slot,0,0})
-        ctx_sprint(f_fence(name,class,family,slot))
-    elseif class == delimiter_class then
-        setdelcode("global",slot,{family,slot,0,0})
-        ctx_sprint(f_delimiter(name,0,family,slot))
-    elseif class == radical_class then
-        ctx_sprint(f_radical(name,family,slot))
-    elseif class == root_class then
-        ctx_sprint(f_root(name,family,slot))
-    elseif texmathchardef then
-        texmathchardef(name,class,family,slot,"permanent")
-    else
-        -- beware, open/close and other specials should not end up here
-        ctx_sprint(f_char(name,class,family,slot))
+    local setmathsymbol = function(name,class,engine,family,slot) -- hex is nicer for tracing
+        if class == accent_class then
+            ctx_sprint(f_topaccent(name,0,family,slot))
+        elseif class == topaccent_class then
+            ctx_sprint(f_topaccent(name,0,family,slot))
+        elseif class == botaccent_class then
+            ctx_sprint(f_botaccent(name,0,family,slot))
+        elseif class == over_class then
+            ctx_sprint(f_over(name,0,family,slot))
+        elseif class == under_class then
+            ctx_sprint(f_under(name,0,family,slot))
+        elseif class == open_class or class == close_class or class == middle_class then
+            setdelcode("global",slot,{family,slot,0,0})
+            ctx_sprint(f_fence(name,engine,family,slot))
+        elseif class == delimiter_class then
+            setdelcode("global",slot,{family,slot,0,0})
+            ctx_sprint(f_delimiter(name,0,family,slot))
+        elseif class == radical_class then
+            ctx_sprint(f_radical(name,family,slot))
+        elseif class == root_class then
+            ctx_sprint(f_root(name,family,slot))
+        elseif texmathchardef then
+            texmathchardef(name,engine,family,slot,"permanent")
+        else
+            -- beware, open/close and other specials should not end up here
+            ctx_sprint(f_char(name,engine,family,slot))
+        end
     end
-end
 
-local function report(class,family,unicode,name)
-    local nametype = type(name)
-    if nametype == "string" then
-        report_math("class name %a, class %a, family %a, char %C, name %a",classname,class,family,unicode,name)
-    elseif nametype == "number" then
-        report_math("class name %a, class %a, family %a, char %C, number %U",classname,class,family,unicode,name)
-    else
-        report_math("class name %a, class %a, family %a, char %C", classname,class,family,unicode)
-    end
-end
-
--- there will be a combined \(math)chardef (tracker)
-
-function mathematics.define(family)
-    family = family or 0
-    family = families[family] or family
-    local data = characters.data
-    for unicode, character in sortedhash(data) do
-        local symbol = character.mathsymbol
-        local mset   = true
-        local dset   = true
-        if symbol then
-            local other = data[symbol]
-            local class = other.mathclass
-            if class then
-                class = classes[class] or class -- no real checks needed
-                if trace_defining then
-                    report(class,family,unicode,symbol)
-                end
-                mset, dset = setmathcharacter(class,family,unicode,symbol,mset,dset)
-            end
-            local spec = other.mathspec
-            if spec then
-                for i=1,#spec do
-                    local m = spec[i]
-                    local class = m.class
-                    if class then
-                        class = classes[class] or class -- no real checks needed
-                        mset, dset = setmathcharacter(class,family,unicode,symbol,mset,dset)
-                    end
-                end
+    function mathematics.define(family)
+        family = family or 0
+        family = families[family] or family
+        local data = characters.data
+        --
+        local function remap(first,last)
+            for unicode=utfbyte(first),utfbyte(last) do
+                setmathcode("global",unicode,ordinary_class,family,unicode)
             end
         end
-        local mathclass = character.mathclass
-        local mathspec = character.mathspec
-        if mathspec then
-            if mathclass then
-                local name = character.mathname
-                if name then
-                    report_math("fatal error, conflicting mathclass and mathspec for %C",unicode)
-                    os.exit()
-                else
-                    local class = classes[mathclass] or mathclass -- no real checks needed
-                    if not class then
-                        if trace_defining then
-                            report("unknown",family,unicode)
-                        end
-                    else
-                        if trace_defining then
-                            report(class,family,unicode)
-                        end
-                        mset, dset = setmathcharacter(class,family,unicode,unicode,mset,dset)
-                    end
-                end
-            end
-            for i=1,#mathspec do
-                local m = mathspec[i]
-                local name = m.name
-                local class = m.class
+        remap("0","9")
+        remap("A","Z")
+        remap("a","z")
+        --
+        for unicode, character in sortedhash(data) do
+            local symbol = character.mathsymbol
+            local mset   = true
+            local dset   = true
+            if symbol then
+                local other = data[symbol]
+                local class = other.mathclass
                 if class then
-                    class = classes[class] or class -- no real checks needed
-                    if name then
-                        if trace_defining then
-                            report(class,family,unicode,name)
-                        end
-                        setmathsymbol(name,class,family,unicode)
-                    else
-                        name = (class == classes.variable or class == classes.number) and character.adobename -- bad
-                        if name and trace_defining then
-                            report(class,family,unicode,name)
+                    local engine = engineclasses[class]
+                    if trace_defining then
+                        report(class,engine,family,unicode,symbol)
+                    end
+                    mset, dset = setmathcharacter(engine,family,unicode,symbol,mset,dset)
+                end
+                local spec = other.mathspec
+                if spec then
+                    for i=1,#spec do
+                        local m = spec[i]
+                        local class = m.class
+                        if class then
+                            local engine = engineclasses[class]
+                            -- todo: trace
+                            mset, dset = setmathcharacter(engine,family,unicode,symbol,mset,dset)
                         end
                     end
-                    mset, dset = setmathcharacter(class,family,unicode,m.unicode or unicode,mset,dset) -- see solidus
                 end
             end
-        elseif mathclass then
-            local name = character.mathname
-            local class = classes[mathclass] or mathclass -- no real checks needed
-            if not class then
-                if trace_defining then
-                    report("unknown",family,unicode,name)
+            local class = character.mathclass
+            local spec  = character.mathspec
+            local name  = character.mathname
+            if spec then
+                local done = false
+                if class then
+                    if name then
+                        report_math("fatal error, conflicting mathclass and mathspec for %C",unicode)
+                        os.exit()
+                    else
+                        class = classes[class] or ordinary_class
+                        local engine = engineclasses[class]
+                        if trace_defining then
+                            report(class,engine,family,unicode)
+                        end
+                        mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset)
+                        done = true
+                    end
                 end
-            elseif name == false then
-                if trace_defining then
-                    report(class,family,unicode,name)
+                for i=1,#spec do
+                    local m     = spec[i]
+                    local name  = m.name
+                    local class = m.class or class
+                    if class then
+                        class = classes[class] or ordinary_class
+                    else
+                        class = ordinary_class
+                    end
+                    if class then
+                        local engine = engineclasses[class]
+                        if name then
+                            if trace_defining then
+                                report(class,engine,family,unicode,name)
+                            end
+                            setmathsymbol(name,class,engine,family,unicode)
+                        else
+                            name = (class == classes.ordinary or class == classes.digit) and character.adobename -- bad
+                            if name and trace_defining then
+                                report(class,engine,family,unicode,name)
+                            end
+                        end
+                        if not done then
+                            mset, dset = setmathcharacter(engine,family,unicode,m.unicode or unicode,mset,dset) -- see solidus
+                            done = true
+                        end
+                    end
                 end
-                mset, dset = setmathcharacter(class,family,unicode,unicode,mset,dset)
             else
-             -- if not name then
-             --     name = character.contextname -- too dangerous, we loose textslash and a few more
-             -- end
-                if name then
-                    if trace_defining then
-                        report(class,family,unicode,name)
-                    end
-                    setmathsymbol(name,class,family,unicode)
+                if class then
+                    class = classes[class] or ordinary_class
                 else
-                    if trace_defining then
-                        report(class,family,unicode,character.adobename)
-                    end
+                    class = ordinary_class
                 end
-                mset, dset = setmathcharacter(class,family,unicode,unicode,mset,dset)
+                if name ~= nil then
+                    local engine = engineclasses[class]
+                    if name == false then
+                        if trace_defining then
+                            report(class,engine,family,unicode,name)
+                        end
+                        mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset)
+                    else
+                     -- if not name then
+                     --     name = character.contextname -- too dangerous, we loose textslash and a few more
+                     -- end
+                        if name then
+                            if trace_defining then
+                                report(class,engine,family,unicode,name)
+                            end
+                            setmathsymbol(name,class,engine,family,unicode)
+                        else
+                            if trace_defining then
+                                report(class,engine,family,unicode,character.adobename)
+                            end
+                        end
+                        mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset)
+                    end
+                elseif class ~= ordinary_class then
+                    local engine = engineclasses[class]
+                    if trace_defining then
+                        report(class,engine,family,unicode,character.adobename)
+                    end
+                    mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset)
+                end
             end
         end
+        if trace_defining then
+            logs.stopfilelogging()
+        end
     end
+
 end
 
 -- needed for mathml analysis

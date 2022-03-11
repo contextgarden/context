@@ -1,0 +1,77 @@
+%D \module
+%D   [       file=type-imp-gujarati,
+%D        version=2022.02.02,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Gujarati,
+%D         author=śrīrāma (Sreeram),
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\starttypescriptcollection[gujarati]
+
+    \definefontfeature
+        [baloobhaifeatures]
+        [gujarati-two]
+        [goodies=bhai.lfg,
+        indic={movematra=auto,conjuncts=quit},
+        sanitizer=gjr2rkrf]
+
+    % Symbolic names for fonts:
+    \starttypescript [\s!serif] [noto-serif-gujarati]
+        \definefontsynonym [NotoSerifGujarati-Regular] [\s!name:notoserifgujaratiregular] [\s!features=baloobhaifeatures]
+        \definefontsynonym [NotoSerifGujarati-Bold]    [\s!name:notoserifgujaratibold]    [\s!features=baloobhaifeatures]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [baloo-bhai, baloo-bhai-extrabold]
+        \definefontsynonym [BalooBhai2-Regular]          [\s!name:baloobhai2regular]   [\s!features=baloobhaifeatures]
+        \definefontsynonym [BalooBhai2-Medium]           [\s!name:baloobhai2medium]    [\s!features=baloobhaifeatures]
+        \definefontsynonym [BalooBhai2-Semibold]         [\s!name:baloobhai2semibold]  [\s!features=baloobhaifeatures]
+        \definefontsynonym [BalooBhai2-Bold]             [\s!name:baloobhai2bold]      [\s!features=baloobhaifeatures]
+        \definefontsynonym [BalooBhai2-Extrabold]        [\s!name:baloobhai2extrabold] [\s!features=baloobhaifeatures]
+    \stoptypescript
+
+    % Grouping of styles:
+
+    \starttypescript [\s!serif] [noto-serif-gujarati] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]     [NotoSerifGujarati-Regular]
+        \definefontsynonym [\s!SerifBold] [NotoSerifGujarati-Bold]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [baloo-bhai] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Sans]            [BalooBhai2-Regular]
+        \definefontsynonym [\s!SansSlanted]     [BalooBhai2-Medium]
+        \definefontsynonym [\s!SansBold]        [BalooBhai2-Bold]
+        \definefontsynonym [\s!SansBoldSlanted] [BalooBhai2-Semibold]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [baloo-bhai-extrabold] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Sans]            [BalooBhai2-Medium]
+        \definefontsynonym [\s!SansSlanted]     [BalooBhai2-Semibold]
+        \definefontsynonym [\s!SansBold]        [BalooBhai2-Extrabold]
+        \definefontsynonym [\s!SansBoldSlanted] [BalooBhai2-Bold]
+    \stoptypescript
+
+    % Typefaces:
+
+    \starttypescript [baloo-bhai, baloo-bhai-extrabold]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default] [\s!rscale=1.1]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+    \stoptypescript
+
+    \starttypescript [noto-serif-gujarati]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default] [\s!rscale=1.1]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection

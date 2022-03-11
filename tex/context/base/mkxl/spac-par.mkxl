@@ -39,7 +39,7 @@
   + \widowpenaltyfrozenparcode
   + \clubpenaltyfrozenparcode
   + \brokenpenaltyfrozenparcode
-  + \shapingpenaltiesfrozenparcode
+  + \shapingpenaltyfrozenparcode
   + \orphanpenaltyfrozenparcode
 \relax
 
@@ -83,7 +83,7 @@
  + \shapefrozenparcode            % \parshape
  % \linefrozenparcode             % \baselineskip \lineskip \lineskiplimit
  + \hyphenationfrozenparcode      % \hyphenationmode
- + \shapingpenaltiesfrozenparcode % \shapingpenaltiesmode
+ + \shapingpenaltyfrozenparcode   % \shapingpenaltymode
  + \orphanpenaltyfrozenparcode
 \relax
 

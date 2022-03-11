@@ -157,8 +157,8 @@ local alllookups = collectalllookups(tfmdata,"math","dflt")
                         -- skip
                     else
                         local next_sizes  = char.next
-                        local vvariants   = char.vvariants or char.vert_variants
-                        local hvariants   = char.hvariants or char.horiz_variants
+                        local vparts      = char.vparts or char.vert_variants
+                        local hparts      = char.hparts or char.horiz_variants
                         local mathclass   = info.mathclass
                         local mathspec    = info.mathspec
                         local mathsymbol  = info.mathsymbol
@@ -208,32 +208,33 @@ local alllookups = collectalllookups(tfmdata,"math","dflt")
                                     done[next_sizes] = true
                                     context.showmathcharactersnextentry(n,f_unicode(next_sizes),next_sizes)
                                     next_sizes = characters[next_sizes]
-                                    vvariants = next_sizes.vvariants or next_sizes.vert_variants  or vvariants
-                                    hvariants = next_sizes.hvariants or next_sizes.horiz_variants or hvariants
+                                    vparts = next_sizes.vparts or next_sizes.vert_variants  or vparts
+                                    hparts = next_sizes.hparts or next_sizes.horiz_variants or hparts
                                     if next_sizes then
                                         next_sizes = next_sizes.next
                                     end
                                 end
                             end
                             context.showmathcharactersstopnext()
-                            if hvariants or vvariants then
+                            if vparts or hparts then
                                 context.showmathcharactersbetweennextandvariants()
                             end
                         end
-                        if hvariants then
-                            context.showmathcharactersstarthvariants()
-                            for i=1,#hvariants do -- we might go top-down in the original
-                                local vi = hvariants[i]
-                                context.showmathcharactershvariantsentry(i,f_unicode(vi.glyph),vi.glyph)
+                        if vparts then
+                            context.showmathcharactersstartvparts()
+                            for i=1,#vparts do -- we might go top-down in the original
+                                local vi = vparts[i]
+                                context.showmathcharactersvpartsentry(i,f_unicode(vi.glyph),vi.glyph)
                             end
-                            context.showmathcharactersstophvariants()
-                        elseif vvariants then
-                            context.showmathcharactersstartvvariants()
-                            for i=1,#vvariants do
-                                local vi = vvariants[#vvariants-i+1]
-                                context.showmathcharactersvvariantsentry(i,f_unicode(vi.glyph),vi.glyph)
+                            context.showmathcharactersstopvparts()
+                        end
+                        if hparts then
+                            context.showmathcharactersstarthparts()
+                            for i=1,#hparts do
+                                local hi = hparts[#hparts-i+1]
+                                context.showmathcharactershpartsentry(i,f_unicode(hi.glyph),hi.glyph)
                             end
-                            context.showmathcharactersstopvvariants()
+                            context.showmathcharactersstophparts()
                         end
                         local lookups = alllookups[unicode]
                         if lookups then

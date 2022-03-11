@@ -555,6 +555,7 @@ local initializeoverlay  do
         manipulators = {
             base = initializeoverlay,
             node = initializeoverlay,
+            plug = initializeoverlay,
         }
     }
 
@@ -632,6 +633,7 @@ local initializesvg  do
         manipulators = {
             base = initializesvg,
             node = initializesvg,
+            plug = initializesvg,
         }
     }
 
@@ -673,6 +675,7 @@ local initializepng  do
         manipulators = {
             base = initializepng,
             node = initializepng,
+            plug = initializepng,
         }
     }
 
@@ -682,6 +685,7 @@ local initializepng  do
         manipulators = {
             base = initializepng,
             node = initializepng,
+            plug = initializepng,
         }
     }
 
@@ -715,6 +719,7 @@ do
         manipulators = {
             base = initializecolor,
             node = initializecolor,
+            plug = initializecolor,
         }
     }
 

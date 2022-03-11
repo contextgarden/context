@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2022-01-21 20:10
+-- merge date  : 2022-03-11 23:34
 
 do -- begin closure to overcome local limits and interference
 
@@ -30884,7 +30884,7 @@ local function validspecification(specification,name)
   return specification,name
  end
 end
-local function addfeature(data,feature,specifications)
+local function addfeature(data,feature,specifications,prepareonly)
  if not specifications then
   report_otf("missing specification")
   return
@@ -31183,8 +31183,6 @@ local function addfeature(data,feature,specifications)
   local rules=list.rules
   local coverage={}
   if rules then
-   local rulehash={}
-   local rulesize=0
    local lookuptype=types[featuretype]
    for nofrules=1,#rules do
     local rule=rules[nofrules]
@@ -31215,6 +31213,14 @@ local function addfeature(data,feature,specifications)
     local lookups=rule.lookups or false
     local subtype=nil
     if lookups and sublookups then
+if #lookups>0 then
+ local ns=stop-start+1
+ for i=1,ns do
+  if lookups[i]==nil then
+   lookups[i]=0
+  end
+ end
+end
      local l={}
      for k,v in sortedhash(lookups) do
       local t=type(v)
@@ -31262,8 +31268,7 @@ local function addfeature(data,feature,specifications)
        hashed[i]=t
       end
       sequence=hashed
-      rulesize=rulesize+1
-      rulehash[rulesize]={
+      local ruleset={
        nofrules,
        lookuptype,
        sequence,
@@ -31275,8 +31280,15 @@ local function addfeature(data,feature,specifications)
       }
       for unic in sortedhash(sequence[start]) do
        local cu=coverage[unic]
-       if not cu then
-        coverage[unic]=rulehash 
+       if cu then
+        local n=cu.n+1
+        cu[n]=ruleset
+        cu.n=n
+       else
+        coverage[unic]={
+         ruleset,
+         n=1,
+        }
        end
       end
       sequence.n=nofsequences
@@ -31284,7 +31296,6 @@ local function addfeature(data,feature,specifications)
      end
     end
    end
-   rulehash.n=rulesize
   end
   return coverage
  end
@@ -31507,6 +31518,9 @@ local function addfeature(data,feature,specifications)
       nofsteps=nofsteps,
       type=types[featuretype],
      }
+     if prepareonly then
+      return sequence
+     end
     end
    end
    if sequence then
@@ -31588,6 +31602,14 @@ if not modules then modules={} end modules ['font-osd']={
  copyright="TAT Zetwerk / PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
+local experiment1=false
+local experiment2=false
+local experiment2b1=false
+local experiment2b2=false
+experiments.register("fonts.indic.experiment1",function(v) experiment1=v end)
+experiments.register("fonts.indic.experiment2",function(v) experiment2=v end)
+experiments.register("fonts.indic.experiment2b1",function(v) experiment2b1=v end)
+experiments.register("fonts.indic.experiment2b2",function(v) experiment2b2=v end)
 local insert,remove,imerge,copy,tohash=table.insert,table.remove,table.imerge,table.copy,table.tohash
 local next,type,rawget=next,type,rawget
 local formatters=string.formatters
@@ -33100,7 +33122,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
  local subpos=nil
  local postpos=nil
  reorderreph.coverage={} 
- rephbase[font]={} 
+ rephbase[font]={}
  for i=1,#seqsubset do
   local subset=seqsubset[i]
   local kind=subset[1]
@@ -33277,7 +33299,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
     logprocess("reorder two, handle nbsp")
    end
   end
- else 
+ else
   local last=getnext(stop)
   while current~=last do 
    local next=getnext(current)
@@ -33340,7 +33362,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
     logprocess("reorder two, handle matra")
    end
   end
-  if not moved[current] and dependent_vowel[char] then
+  if dependent_vowel[char] then
    if pre_mark[char] then 
     moved[current]=true
     local prev,next=getboth(current)
@@ -33519,8 +33541,8 @@ local function analyze_next_chars_one(c,font,variant)
  if not n then
   return c
  end
+ local v=ischar(n,font)
  if variant==1 then
-  local v=ischar(n,font)
   if v and nukta[v] then
    n=getnext(n)
    if n then
@@ -33553,7 +33575,6 @@ local function analyze_next_chars_one(c,font,variant)
    end
   end
  elseif variant==2 then
-  local v=ischar(n,font)
   if v and nukta[v] then
    c=n
   end
@@ -33577,11 +33598,11 @@ local function analyze_next_chars_one(c,font,variant)
    end
   end
  end
- local n=getnext(c)
+ n=getnext(c)
  if not n then
   return c
  end
- local v=ischar(n,font)
+ v=ischar(n,font)
  if not v then
   return c
  end
@@ -33686,12 +33707,11 @@ local function analyze_next_chars_one(c,font,variant)
  end
 end
 local function analyze_next_chars_two(c,font)
- local n,v
- n=getnext(c)
+ local n=getnext(c)
  if not n then
   return c
  end
- v=ischar(n,font)
+ local v=ischar(n,font)
  if v and nukta[v] then
   c=n
  end

@@ -37,33 +37,6 @@ return {
     author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
-        tweaks = {
-            aftercopying = {
-                {
-                    tweak    = "version",
-                    expected = "Version 000.958",
-                    message  = "this font is not supported",
-                },
-                {
-                    tweak = "dimensions",
-                    list  = {
-                        -- nothing yet
-                    }
-                },
-                {
-                    tweak   = "fixprimes",
-                    factor  = 0.85,
-                    scale   = 0.65,
-                    smaller = true,
-                },
-                {
-                    tweak = "checkspacing",
-                },
-                {
-                    tweak = "addscripts",
-                },
-            },
-        },
         parameters = {
          -- DisplayOperatorMinHeight         = 0, -- more
          -- StackBottomDisplayStyleShiftDown = 0,
@@ -86,7 +59,46 @@ return {
             StretchStackGapAboveMin          = less,
             StretchStackGapBelowMin          = less,
             StretchStackTopShiftUp           = less,
-        }
+            NoLimitSupFactor                 =    0,
+            NoLimitSubFactor                 = 1200,
+            AccentBaseDepth                  =  300,
+        },
+        tweaks = {
+            aftercopying = {
+                {
+                    tweak    = "version",
+                    expected = "Version 000.958",
+                    message  = "this font is not supported",
+                },
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        -- nothing yet
+                    }
+                },
+                -- {
+                --     tweak   = "fixprimes",
+                --     factor  = 0.85,
+                --     scale   = 0.65,
+                --     smaller = true,
+                -- },
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "addscripts",
+                },
+                {
+                    tweak = "accentdimensions",
+                },
+                {
+                    tweak = "addrules",
+                },
+            },
+        },
+        bigslots = {
+            1, 2, 3, 4
+        },
     }
 }
 

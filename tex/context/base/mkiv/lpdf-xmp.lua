@@ -59,10 +59,11 @@ local mapping = {
     ["Producer"]             = { "metadata","rdf:Description/pdf:Producer" },
  -- ["Trapped"]              = { "pdf",     "rdf:Description/pdf:Trapped" },                     -- '/False' in /Info, but 'False' in XMP
     -- Dublin Core schema
-    ["Author"]               = { "metadata","rdf:Description/dc:creator/rdf:Seq/rdf:li" },
     ["Format"]               = { "metadata","rdf:Description/dc:format" },                       -- optional, but nice to have
-    ["Subject"]              = { "metadata","rdf:Description/dc:description/rdf:Alt/rdf:li" },
-    ["Title"]                = { "metadata","rdf:Description/dc:title/rdf:Alt/rdf:li" },
+    -- These were dc:.../rdf:Seq/rdf:li but there was a (invalidating) bug in the iso
+    ["Author"]               = { "metadata","rdf:Description/dc:creator" },
+    ["Subject"]              = { "metadata","rdf:Description/dc:description" },
+    ["Title"]                = { "metadata","rdf:Description/dc:title" },
     -- XMP Basic schema
     ["CreateDate"]           = { "date",    "rdf:Description/xmp:CreateDate" },
     ["CreationDate"]         = { "date",    "rdf:Description/xmp:CreationDate" },                -- dummy

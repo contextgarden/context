@@ -48,6 +48,14 @@ distribution, articles and presentations. It doesn't pay of to repeat that here,
 especially not in a time when users often search instead of read from cover to
 cover.
 
+Occasionally there are extensions to \PDFTEX\ and \LUATEX\ but these are unlikely
+to en dup in \LUAMETATEX. If needed one can add functionality using \LUA. Another
+reason is that because the way we handle files and generate output being
+compatible would only harm the engine. We have some fundamental extensions that
+overcome limitations anyway. One area where the are significate changes is in
+logging: at some point it no longer made sense to be compatible (with \LUATEX)
+because we carry around more information.
+
 \stopsubsection
 
 \startsubsection[title=Changes from \TEX\ 3.1415926...]
@@ -526,6 +534,17 @@ bit more convenient.
 This are just a few of the adaptations and most of this happened stepwise with
 testing in the \CONTEXT\ code base. It will be clear that \LUAMETATEX\ is a quite
 different extension to the original. You're warned.
+
+\stopsubsection
+
+\startsubsection[title=Changes in keyword scanning]
+
+\topicindex {keywords}
+
+Some primitives accept (optional) keywords and in \LUAMETATEX\ there are more
+keywords than in \LUATEX. Scanning can trigger error messages and lookahead side
+effects and in \LUAMETATEX\ these can be different. This is no big deal because
+errors are still errors.
 
 \stopsubsection
 

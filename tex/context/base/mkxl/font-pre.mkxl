@@ -404,14 +404,17 @@
   [mode=base,
  % mode=none, % better, maybe do this last
    kern=yes,
- % liga=yes, % makes no sense
-   mathnolimitsmode={0,800}, % this looks okay on the average font
+%  flac=yes,
+% liga=yes, % makes no sense
+% mode=node,
+% mathnolimitsmode={0,800}, % now in lfg files
    mathalternates=yes,
    mathitalics=yes, % we pass them
    mathdimensions=all,
  % mathkerns=yes,
  % staircase=yes,
    compactmath=yes,
+   flattenaccents=yes,
  % mathgaps=yes,
    language=dflt,
    script=math]
@@ -888,6 +891,12 @@
 \permanent\protected\def\settabular  {\doaddfeature{f:tabular}}
 \permanent\protected\def\setsuperiors{\doaddfeature{f:superiors}}
 \permanent\protected\def\setfractions{\doaddfeature{f:fractions}}
+
+\permanent\protected\def\resetsmallcaps{\dosubtractfeature{f:smallcaps}}
+\permanent\protected\def\resetoldstyle {\dosubtractfeature{f:oldstyle}}
+\permanent\protected\def\resettabular  {\dosubtractfeature{f:tabular}}
+\permanent\protected\def\resetsuperiors{\dosubtractfeature{f:superiors}}
+\permanent\protected\def\resetfractions{\dosubtractfeature{f:fractions}}
 
 % \permanent\protected\def\frc#1#2%
 %   {\dontleavehmode

@@ -10,6 +10,24 @@ local max = math.max
 local formatters, gsub, char, gmatch = string.formatters, string.gsub, string.char, string.gmatch
 local concat = table.concat
 
+do
+
+ -- tex.magicconstants = { -- we use tex.constants for something else
+ --     running  = -1073741824, -- null_flag
+ --     maxdimen =  1073741823, -- max_dimen
+ --  -- trueinch =     4736286, -- obsolete
+ -- }
+
+    local c = status.getconstants()
+    local t = { }
+    for k, v in next, c do
+        t[gsub(k,"_","")] = v
+    end
+
+    tex.magicconstants = table.setmetatableindex(t,c)
+
+end
+
 -- todo : locals from scanners
 
 local function flags(t)
@@ -165,8 +183,8 @@ tex.glyphoptioncodes   = getthem(tex.getglyphoptionvalues,   "glyphoptioncode")
 tex.groupcodes         = getthem(tex.getgroupvalues,         "groupcode")
 tex.hyphenationcodes   = getthem(tex.gethyphenationvalues,   "hyphenationcode")
 tex.mathcontrolcodes   = getthem(tex.getmathcontrolvalues,   "mathcontrolcode")
-tex.mathflattencodes   = getthem(tex.getmathflattenvalues,   "mathflattencode")
-tex.mathoptioncodes    = getthem(tex.getmathoptionvalues,    "") -- only at lua end
+---.mathflattencodes   = getthem(tex.getmathflattenvalues,   "mathflattencode")
+tex.noadoptioncodes    = getthem(tex.getnoadoptionvalues,    "") -- only at lua end
 tex.normalizecodes     = getthem(tex.getnormalizevalues,     "normalizecode")
 tex.automigrationcodes = getthem(tex.getautomigrationvalues, "automigrationcode") -- only at lua end
 tex.parcontextcodes    = getthem(tex.getparcontextvalues,    "parcontextcode")

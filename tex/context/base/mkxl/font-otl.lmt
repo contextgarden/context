@@ -311,6 +311,41 @@ end
 -- instance protruding info and loop over characters; one is not supposed
 -- to change descriptions and if one does so one should make a copy!
 
+-- local function best_done_here(tfmdata,characters,descriptions)
+--     local validlookups, lookuplist = fonts.handlers.otf.collectlookups(
+--         { resources = tfmdata.resources },"flac","math","dflt"
+--     )
+--     if validlookups then
+--         -- it's quite likely just one step
+--         for i=1,#lookuplist do
+--             local lookup   = lookuplist[i]
+--             local steps    = lookup.steps
+--             local nofsteps = lookup.nofsteps
+--             for i=1,nofsteps do
+--                 local coverage = steps[i].coverage
+--                 if coverage then
+--                     for k, v in next, coverage do
+--                         local f = characters[v]
+--                         if f then
+--                             local d = descriptions[k]
+--                             local c = characters[k]
+--                             if c then
+--                                 c.flataccent = v
+--                             end
+--                             if d then
+--                                 d.flataccent = v
+--                             end
+--                             if not f.unicode then
+--                                 f.unicode = c.unicode
+--                             end
+--                         end
+--                     end
+--                 end
+--             end
+--         end
+--     end
+-- end
+
 local function copytotfm(data,cache_id)
     if data then
         local metadata       = data.metadata
@@ -348,7 +383,6 @@ local function copytotfm(data,cache_id)
                 local d = descriptions[unicode] -- we could use parent table here
                 local m = d.math
                 if m then
-                    -- watch out: luatex uses hvariants for the parts
                     --
                     local italic   = m.italic
                     local vitalic  = m.vitalic
@@ -363,9 +397,9 @@ local function copytotfm(data,cache_id)
                             c.next = un
                             c = characters[un]
                         end -- c is now last in chain
-                        c.hvariants = parts
+                        c.hparts = parts
                     elseif parts then
-                        character.hvariants = parts
+                        character.hparts = parts
                         italic = m.hitalic
                     end
                     --
@@ -379,9 +413,9 @@ local function copytotfm(data,cache_id)
                             c.next = un
                             c = characters[un]
                         end -- c is now last in chain
-                        c.vvariants = parts
+                        c.vparts = parts
                     elseif parts then
-                        character.vvariants = parts
+                        character.vparts = parts
                     end
                     --
                     if italic and italic ~= 0 then
@@ -403,6 +437,7 @@ local function copytotfm(data,cache_id)
                     end
                 end
             end
+--             best_done_here(data,characters,descriptions)
         end
         -- we need a runtime lookup because of running from cdrom or zip, brrr (shouldn't
         -- we use the basename then?)

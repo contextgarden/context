@@ -126,7 +126,7 @@
 
 \def\font_helpers_set_math_family_set_scales_compact
   {% these are used when no font setting is there, the settings come before setting the parameters
-   % and are stored with the family
+   % and are stored with the family ... this is not really needed because the size is used otherwise
    \glyphtextscale                 \plusthousand
    \glyphscriptscale       \numexpr\plusthousand*\dimexpr\scriptface      \relax/\dimexpr\textface\relax\relax
    \glyphscriptscriptscale \numexpr\plusthousand*\dimexpr\scriptscriptface\relax/\dimexpr\textface\relax\relax}

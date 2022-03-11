@@ -30,19 +30,19 @@
 
 \protected\def\sqrt{\doifelsenextoptionalcs\rootwithdegree\rootwithoutdegree} % will be redefined
 
-\permanent\protected\def\styledrootradical#1#2% so that \text works ok ... \rootradical behaves somewhat weird
-  {\normalexpanded{\rootradical
-     {\normalunexpanded{#1}}%
-     {\noexpand\triggermathstyle{\number\normalmathstyle}%
-      \normalunexpanded{#2}}}}
+% \permanent\protected\def\styledrootradical#1#2% so that \text works ok ... \rootradical behaves somewhat weird
+%   {\normalexpanded{\math_radical_common
+%      {\normalunexpanded{#1}}%
+%      {\noexpand\triggermathstyle{\number\normalmathstyle}%
+%       \normalunexpanded{#2}}}}
 
 % experimental new keyword: (maybe keywords should come after the symbol)
 %
 % \permanent\protected\def\styledrootradical#1#2% so that \text works ok ... \rootradical behaves somewhat weird
 %   {\Uroot style \normalmathstyle "0 "221A {#1}{#2}}
 
-\permanent\protected\def\rootwithdegree[#1]{\rootradical{#1}}
-\permanent\protected\def\rootwithoutdegree {\rootradical  {}}
+\permanent\protected\def\rootwithdegree[#1]{\math_radical_common{#1}}
+\permanent\protected\def\rootwithoutdegree {\math_radical_common  {}}
 
 %D Even older stuff:
 
@@ -89,7 +89,8 @@
 
 \setupmathradical
   [\c!alternative=\v!normal,
-   \c!mpoffset=.25\exheight]
+   \c!mpoffset=.25\exheight,
+   \c!source=\zerocount]
 
 \appendtoks
     \frozen\protected\instance\edefcsname\currentmathradical\endcsname{\math_radical_handle{\currentmathradical}}
@@ -98,10 +99,17 @@
 \mutable\let\currentmathradical      \empty
 \mutable\let\currentmathradicaldegree\empty
 
-\tolerant\protected\def\math_radical_handle#tag#*[#degree]#:#body%
+\setmathignore\Umathradicaldegreebefore\plusone
+
+\tolerant\protected\def\math_radical_handle#tag#*[#settings]#*[#degree]#:#body%
   {\begingroup
    \edef\currentmathradical{#tag}%
-   \edef\currentmathradicaldegree{#degree}%
+   \ifparameter#degree\or
+     \edef\currentmathradicaldegree{#degree}%
+     \setupcurrentmathradical[#settings]%
+   \else
+     \edef\currentmathradicaldegree{#settings}%
+   \fi
    \ifempty\currentmathradicaldegree
      \let\currentmathradicaldegree\m_math_no_degree
    \fi
@@ -110,24 +118,38 @@
 
 \def\m_math_no_degree{{}}
 
+% for every font
+%
+% \appendtoks
+%    \Umathradicaldegreebefore\allmathstyles\zeropoint
+% \to \everymathematics
+
 % style width [options: left middle right]
 
 \def\math_radical_alternative{\csname\??mathradicalalternative\mathradicalparameter\c!alternative\endcsname}
 
+\integerdef\c_radical_unicode "221A
+
+\protected\def\math_radical_common
+  {\Uroot
+     \s!source\numexpr\namedboxanchor{\mathradicalparameter\c!source}\relax
+     \s!style \normalmathstyle
+     \zerocount \c_radical_unicode}
+
 \defcsname\??mathradicalalternative\v!default\endcsname %  #body%
-  {\rootradical{\currentmathradicaldegree}}   % {#body}}
+  {\math_radical_common{\currentmathradicaldegree}}   % {#body}}
 
 \defcsname\??mathradicalalternative\v!normal\endcsname#body%
   {\edef\p_color{\mathradicalparameter\c!color}%
    \ifempty\p_color
-     \styledrootradical{\currentmathradicaldegree}{#body}% {} really needed as \rootradical expands first
+     \math_radical_common{\currentmathradicaldegree}{#body}% {} really needed as \rootradical expands first
    \orelse\ifempty\currentmathradicaldegree
      \pushcolor[\p_color]%
-     \styledrootradical{\currentmathradicaldegree}%
+     \math_radical_common{\currentmathradicaldegree}%
      {\popcolor#body}%
    \else
      \pushcolor[\p_color]%
-     \styledrootradical{\popcolor\currentmathradicaldegree\pushcolor[\p_color]}%
+     \math_radical_common{\popcolor\currentmathradicaldegree\pushcolor[\p_color]}%
      {\popcolor#body}%
    \fi}
 
@@ -206,7 +228,8 @@
    \c!mpoffset=.25\exheight]
 
 \appendtoks
-    \frozen\instance\setuevalue{\currentmathornament}{\math_ornament_handle{\currentmathornament}}%
+    \frozen\protected\instance\edefcsname\currentmathornament\endcsname
+      {\math_ornament_handle{\currentmathornament}}%
 \to \everydefinemathornament
 
 \protected\def\math_ornament_handle#tag#body%

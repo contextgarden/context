@@ -4186,6 +4186,21 @@
 %D   {\groupedcommand{\raggedcenter\bf}{\par}}
 %D \stoptyping
 
+%D For math we use this:
+
+\permanent\protected\def\mathgroupedcommandcs#1%
+  {\let\m_syst_helpers_handle_group_b#1%
+   \futureexpandis\bgroup\syst_helpers_handle_math_group_normal\syst_helpers_handle_math_group_nop}
+
+\protected\def\syst_helpers_handle_math_group_normal#1%
+  {\beginmathgroup
+   \m_syst_helpers_handle_group_b
+   #1%
+   \endmathgroup}
+
+\protected\def\syst_helpers_handle_math_group_nop
+  {\m_syst_helpers_handle_group_b}
+
 % %D \macros
 % %D   {checkdefined}
 % %D
@@ -5903,7 +5918,7 @@
 %D \setdimensionwithunit\scratchdimen{10cm}{cm}
 %D \setdimensionwithunit\scratchdimen{10cm}{}
 %D \freezedimensionwithunit\SomeWidth{\textwidth}
-%D \freezedimensionwithunit\SomeDepth{\dp\strutbox}
+%D \freezedimensionwithunit\SomeDepth{\strutdp}
 %D \stoptyping
 %D
 %D As an alternative for the next macro we can use a global assignment inside a box.

@@ -1,0 +1,224 @@
+%D \module
+%D   [       file=type-imp-malayam,
+%D        version=2022.01.27,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Demalayalam,
+%D         author=śrīrāma (Sreeram),
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This collection uses rscaling so that the fonts can be used alongside.
+
+\starttypescriptcollection[malayalam]
+
+    \doifunknownfontfeature {malayalam-bold-30} {\definefontfeature[malayalam-bold-30][boldened-30]}
+
+    % Symbolic names for fonts:
+
+    \starttypescript [\s!serif] [rit-rachana]
+        \definefontsynonym [RITRachana-Regular]    [\s!name:ritrachanaregular]    [\s!features=malayalam-two]
+        \definefontsynonym [RITRachana-Bold]       [\s!name:ritrachanabold]       [\s!features=malayalam-two]
+        \definefontsynonym [RITRachana-Italic]     [\s!name:ritrachanaitalic]     [\s!features=malayalam-two]
+        \definefontsynonym [RITRachana-BoldItalic] [\s!name:ritrachanabolditalic] [\s!features=malayalam-two]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [panmana]
+        \definefontsynonym [Panmana-Regular] [\s!name:panmanaregular] [\s!features=malayalam-two]
+        \definefontsynonym [Panmana-Bold]    [\s!name:panmanaregular] [\s!features={malayalam-two,malayalam-bold-30}]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [rit-sundar]
+        \definefontsynonym [RITSundar-Regular] [\s!name:ritsundarbold] [\s!features=malayalam-two]
+        \definefontsynonym [RITSundar-Bold]    [\s!name:ritsundarbold] [\s!features={malayalam-two,malayalam-bold-30}]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [tn-joy, tn-joy-extrabold]
+        \definefontsynonym [TNJoy-Regular]   [\s!name:tnjoyregular]   [\s!features=malayalam-two]
+        \definefontsynonym [TNJoy-Bold]      [\s!name:tnjoybold]      [\s!features=malayalam-two]
+        \definefontsynonym [TNJoy-Extrabold] [\s!name:tnjoyextrabold] [\s!features=malayalam-two]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [ezhuthu]
+        \definefontsynonym [Ezhuthu-Regular] [\s!name:ezhuthuregular] [\s!features=malayalam-two]
+        \definefontsynonym [Ezhuthu-Bold]    [\s!name:ezhuthuregular] [\s!features={malayalam-two,malayalam-bold-30}]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [baloo-chettan,baloo-chettan-extrabold]
+        \definefontsynonym [BalooChettan2-Regular]   [\s!name:baloochettan2regular]   [\s!features=malayalam-two]
+        \definefontsynonym [BalooChettan2-Medium]    [\s!name:baloochettan2medium]    [\s!features=malayalam-two]
+        \definefontsynonym [BalooChettan2-Semibold]  [\s!name:baloochettan2semibold]  [\s!features=malayalam-two]
+        \definefontsynonym [BalooChettan2-Bold]      [\s!name:baloochettan2bold]      [\s!features=malayalam-two]
+        \definefontsynonym [BalooChettan2-Extrabold] [\s!name:baloochettan2extrabold] [\s!features=malayalam-two]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [gayathri, gayathri-thin]
+        \definefontsynonym [Gayathri-Regular] [\s!name:gayathriregular] [\s!features=malayalam-two]
+        \definefontsynonym [Gayathri-Bold]    [\s!name:gayathribold]    [\s!features=malayalam-two]
+        \definefontsynonym [Gayathri-Thin]    [\s!name:gayathrithin]    [\s!features=malayalam-two]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [manjari,manjari-thin]
+        \definefontsynonym [Manjari-Regular] [\s!name:manjariregular] [\s!features=malayalam-two]
+        \definefontsynonym [Manjari-Bold]    [\s!name:manjaribold]    [\s!features=malayalam-two]
+        \definefontsynonym [Manjari-Thin]    [\s!name:manjarithin]    [\s!features=malayalam-two]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [karumbi]
+        \definefontsynonym [Karumbi-Regular] [\s!name:karumbiregular] [\s!features=malayalam-two]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [chilanka]
+        \definefontsynonym [Chilanka-Regular] [\s!name:chilankaregular] [\s!features=malayalam-two]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [anjali-oldlipi]
+        \definefontsynonym [Anjali-Oldlipi-Regular] [\s!name:anjalioldlipiregular] [\s!features=malayalam-two]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [dyuthi]
+        \definefontsynonym [Dyuthi-Regular] [\s!name:dyuthiregular] [\s!features=malayalam-two]
+    \stoptypescript
+
+    % Grouping of styles:
+
+    \starttypescript [\s!serif] [rit-rachana] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [RITRachana-Regular]
+        \definefontsynonym [\s!SerifBold]       [RITRachana-Bold]
+        \definefontsynonym [\s!SerifItalic]     [RITRachana-Italic]
+        \definefontsynonym [\s!SerifBoldItalic] [RITRachana-BoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [panmana] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]     [Panmana-Regular]
+        \definefontsynonym [\s!SerifBold] [Panmana-Bold]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [rit-sundar] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]     [RITSundar-Regular]
+        \definefontsynonym [\s!SerifBold] [RITSundar-Bold]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [tn-joy] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]     [TNJoy-Regular]
+        \definefontsynonym [\s!SansBold] [TNJoy-Bold]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [tn-joy-extrabold] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]     [TNJoy-Bold]
+        \definefontsynonym [\s!SansBold] [TNJoy-Extrabold]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [ezhuthu] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]     [Ezhuthu-Regular]
+        \definefontsynonym [\s!SansBold] [Ezhuthu-Bold]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [karumbi] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]     [Karumbi-Regular]
+        \definefontsynonym [\s!SansBold] [Karumbi-Bold]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [chilanka] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans] [Chilanka-Regular]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [anjali-oldlipi] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans] [Anjali-Oldlipi-Regular]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [dyuthi] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans] [Dyuthi-Regular]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [gayathri] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]     [Gayathri-Regular]
+        \definefontsynonym [\s!SansBold] [Gayathri-Bold]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [gayathri-thin] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]     [Gayathri-Thin]
+        \definefontsynonym [\s!SansBold] [Gayathri-Regular]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [manjari] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans   ]  [Manjari-Regular]
+        \definefontsynonym [\s!SansBold] [Manjari-Bold]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [manjari-thin] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]     [Manjari-Thin]
+        \definefontsynonym [\s!SansBold] [Manjari-Regular]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [baloo-chettan] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]            [BalooChettan2-Regular]
+        \definefontsynonym [\s!SansBold]        [BalooChettan2-Bold]
+        \definefontsynonym [\s!SansSlanted]     [BalooChettan2-Medium]
+        \definefontsynonym [\s!SansBoldSlanted] [BalooChettan2-Semibold]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [baloo-chettan-extrabold] [name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]            [BalooChettan2-Medium]
+        \definefontsynonym [\s!SansSlanted]     [BalooChettan2-Semibold]
+        \definefontsynonym [\s!SansBoldSlanted] [BalooChettan2-Bold]
+        \definefontsynonym [\s!SansBold]        [BalooChettan2-Extrabold]
+    \stoptypescript
+
+    % Typefaces:
+
+    \starttypescript [rit-rachana,rit-sundar,panmana]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default] [\s!rscale=1.25]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu] [\s!default]
+    \stoptypescript
+
+    \starttypescript [ezhuthu,karumbi,tn-joy,tn-joy-extrabold]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans] [\typescriptone] [\s!default] [\s!rscale=1.25]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [dejavu] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu] [\s!default]
+    \stoptypescript
+
+    \starttypescript [chilanka,anjali-oldlipi]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+    \stoptypescript
+
+    \starttypescript [dyuthi,gayathri,gayathri-thin,manjari,manjari-thin]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default] [\s!rscale=1.1]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+    \stoptypescript
+
+    \starttypescript [baloo-chettan,baloo-chettan-extrabold]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [baloo-chettan] [\s!default]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [dejavu]        [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]        [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]        [\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection

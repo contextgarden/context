@@ -5,6 +5,12 @@ return {
     author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
+        parameters = {
+            NoLimitSupFactor =   0,
+            NoLimitSubFactor = 900,
+            -- AccentBaseHeight = 0,
+            AccentBaseDepth = 30,
+        },
         tweaks = {
             aftercopying = {
                 {
@@ -17,26 +23,33 @@ return {
                         -- whatever
                     },
                 },
-                {
-                    tweak   = "fixprimes",
-                    factor  = 0.85, -- accent base height
-                    smaller = true, -- replace multiples
-                    scale   = 0.75, -- glyph scale
-                    fake    = 0.75, -- replace multiples with this width proportion
-                 -- keep    = true, -- keep the text size prime (aka minute)
-                },
+             -- {
+             --     tweak   = "fixprimes",
+             --     factor  = 0.85, -- accent base height
+             --     smaller = true, -- replace multiples
+             --     scale   = 0.75, -- glyph scale
+             --     fake    = 0.75, -- replace multiples with this width proportion
+             --  -- keep    = true, -- keep the text size prime (aka minute)
+             -- },
                 {
                     tweak = "checkspacing",
                 },
                 {
                     tweak = "addscripts",
                 },
+                {
+                    tweak = "accentdimensions",
+                },
+                {
+                    tweak = "addrules",
+                },
             },
-        },
-        parameters = {
         },
         alternates = {
          -- italic = { feature = 'ss01', value = 1, comment = "Mathematical Alternative Lowercase Italic" },
+        },
+        bigslots = {
+            1, 2, 3, 4
         },
     },
 }

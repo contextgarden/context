@@ -444,8 +444,8 @@
         {\referenceprefix}%
         {#label}%
         {%
-            height \ht\strutbox
-            depth  \dp\strutbox
+            height \strutht
+            depth  \strutdp
             \extrareferencearguments
         }%
      \relax
@@ -1483,8 +1483,8 @@
         {\referenceprefix}%
         {#label}%
         {%
-            height \ht\strutbox
-            depth  \dp\strutbox
+            height \strutht
+            depth  \strutdp
             \extrareferencearguments
         }%
      \relax
@@ -1535,8 +1535,8 @@
    \iflocation
      \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
        {\clf_injectcurrentreferencehtdp
-          \ht\strutbox
-          \dp\strutbox
+          \strutht
+          \strutdp
         \relax
         \setlocationattributes
         \setstrut % can be option
@@ -1592,8 +1592,8 @@
 
 \protected\def\strc_references_start_goto_yes
   {\clf_injectcurrentreferencehtdp
-     \ht\strutbox
-     \dp\strutbox
+     \strutht
+     \strutdp
    \relax
    \setlocationattributes
    \setstrut % can be option

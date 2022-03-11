@@ -866,7 +866,7 @@
   {\setbox\b_page_layouts_element\vpack
      {\dontcomplain
       \calculatereducedvsizes
-      \page_layouts_swap_margins
+      \page_layouts_swap_margins\v!text
       \offinterlineskip
       \vkern\dimexpr-\topheight-\topdistance\relax
       \the\toptextcontent
@@ -896,12 +896,12 @@
      {\offinterlineskip
       \calculatereducedvsizes
       \calculatehsizes
-      \page_layouts_swap_margins
+      \page_layouts_swap_margins\v!page
       \vkern\dimexpr\headerheight+\headerdistance+\textdistance\relax
       \dontleavehmode
       \hpack to \makeupwidth
         {\begingroup
-           \page_layouts_swap_margins
+         % \page_layouts_swap_margins\v!page
            \goleftonpage
            \ifdim\leftedgewidth>\zeropoint
              \the\leftedgetextcontent

@@ -8597,7 +8597,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sac"] = package.loaded["util-sac"] or true
 
--- original size: 12905, stripped down to: 9439
+-- original size: 14071, stripped down to: 10417
 
 if not modules then modules={} end modules ['util-sac']={
  version=1.001,
@@ -9068,6 +9068,33 @@ do
      end
     } )
     return t
+   end
+  end
+ end
+end
+if bit32 and not streams.tocardinal1 then
+ local extract=bit32.extract
+ local char=string.char
+    streams.tocardinal1=char
+ function streams.tocardinal2(n)   return char(extract(8,8),extract(0,8)) end
+ function streams.tocardinal3(n)   return char(extract(16,8),extract(8,8),extract(0,8)) end
+ function streams.tocardinal4(n)   return char(extract(24,8),extract(16,8),extract(8,8),extract(0,8)) end
+    streams.tocardinal1le=char
+ function streams.tocardinal2le(n) return char(extract(0,8),extract(8,8)) end
+ function streams.tocardinal3le(n) return char(extract(0,8),extract(8,8),extract(16,8)) end
+ function streams.tocardinal4le(n) return char(extract(0,8),extract(8,8),extract(16,8),extract(24,8)) end
+end
+if not streams.readcstring then
+ local readchar=streams.readchar
+ local concat=table.concat
+ function streams.readcstring(f)
+  local t={}
+  while true do
+   local c=readchar(f)
+   if c and c~="\0" then
+    t[#t+1]=c
+   else
+    return concat(t)
    end
   end
  end
@@ -15718,7 +15745,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-zip"] = package.loaded["util-zip"] or true
 
--- original size: 23490, stripped down to: 14039
+-- original size: 23730, stripped down to: 14293
 
 if not modules then modules={} end modules ['util-zip']={
  version=1.001,
@@ -15755,6 +15782,10 @@ local lshift=bit32.lshift
 local zlibdecompress=zlib.decompress
 local zlibdecompresssize=zlib.decompresssize
 local zlibchecksum=zlib.crc32
+if not CONTEXTLMTXMODE or CONTEXTLMTXMODE==0 then
+ local cs=zlibchecksum
+ zlibchecksum=function(str,n) return cs(n or 0,str) end
+end
 local decompress=function(source)   return zlibdecompress (source,-15)   end 
 local decompresssize=function(source,targetsize) return zlibdecompresssize(source,targetsize,-15) end 
 local calculatecrc=function(buffer,initial) return zlibchecksum   (initial or 0,buffer)   end
@@ -16174,7 +16205,11 @@ else
  local identifier="\x1F\x8B"
  local compress=zlib.compress
  local decompress=zlib.decompress
- local crc32=zlib.crc32
+ local zlibchecksum=zlib.crc32
+ if not CONTEXTLMTXMODE or CONTEXTLMTXMODE==0 then
+  local cs=zlibchecksum
+  zlibchecksum=function(str,n) return cs(n or 0,str) end
+ end
  local streams=utilities.streams
  local openstream=streams.openstring
  local closestream=streams.close
@@ -16214,7 +16249,7 @@ else
    tocardinal1(0xFF),
    (originalname or "unknownname").."\0",
    compress(str,level,nil,gzipwindow),
-   tocardinal4(crc32(str)),
+   tocardinal4(zlibchecksum(str)),
    tocardinal4(#str),
   }
  end
@@ -16264,7 +16299,6 @@ function gzip.decompress(s)
   return s
  end
 end
-zipfiles.gunzipfile=gzip.load
 
 
 end -- of closure
@@ -25949,8 +25983,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1029872
--- stripped bytes    : 405661
+-- original bytes    : 1031278
+-- stripped bytes    : 405835
 
 -- end library merge
 

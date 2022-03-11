@@ -296,30 +296,44 @@
 % 255       : page
 % 256 -     : user defined
 
-%D Later on, the \type {\c_syst_max_allocated_register} variable will be halfed so
-%D that while local allocators will use the 22* range. So we have plenty of room
-%D reserved for more private ones.
+%D Later on, the \type {\c_syst_max_allocated_*} variables will be halfed so that
+%D while local allocators will use the 23* range. So we have plenty of room reserved
+%D for more private ones.
+
+\directlua {tex.magicconstants = status.getconstants()} % this will be reset later on
 
 \permanent\countdef\c_syst_min_allocated_register  = 201 \c_syst_min_allocated_register  =   256 % can change
-\permanent\countdef\c_syst_max_allocated_register  = 202 \c_syst_max_allocated_register  = 65535 % is adapted later on
+
 \permanent\countdef\c_syst_min_allocated_iohandle  = 203 \c_syst_min_allocated_iohandle  =     0
 \permanent\countdef\c_syst_max_allocated_iohandle  = 204 \c_syst_max_allocated_iohandle  =  1023
-\permanent\countdef\c_syst_min_allocated_attribute = 205 \c_syst_min_allocated_attribute =  1024 % 0-1023 : private
-\permanent\countdef\c_syst_min_allocated_mark      = 206 \c_syst_min_allocated_mark      =    16 % a few scratch ones
-\permanent\countdef\c_syst_max_allocated_mark      = 207 \c_syst_max_allocated_mark      =  1024 % max 10K in luametatex anyway
 
-\permanent\countdef\c_syst_last_allocated_count    = 211 \c_syst_last_allocated_count  = \c_syst_min_allocated_register
-\permanent\countdef\c_syst_last_allocated_dimen    = 212 \c_syst_last_allocated_dimen  = \c_syst_min_allocated_register
-\permanent\countdef\c_syst_last_allocated_skip     = 213 \c_syst_last_allocated_skip   = \c_syst_min_allocated_register
-\permanent\countdef\c_syst_last_allocated_muskip   = 214 \c_syst_last_allocated_muskip = \c_syst_min_allocated_register
-\permanent\countdef\c_syst_last_allocated_box      = 215 \c_syst_last_allocated_box    = \c_syst_min_allocated_register
-\permanent\countdef\c_syst_last_allocated_toks     = 216 \c_syst_last_allocated_toks   = \c_syst_min_allocated_register
-\permanent\countdef\c_syst_last_allocated_read     = 217 \c_syst_last_allocated_read   = \c_syst_min_allocated_iohandle
-\permanent\countdef\c_syst_last_allocated_write    = 218 \c_syst_last_allocated_write  = \c_syst_min_allocated_iohandle
-\permanent\countdef\c_syst_last_allocated_marks    = 219 \c_syst_last_allocated_marks  = \c_syst_min_allocated_mark
+\permanent\countdef\c_syst_min_allocated_mark      = 205 \c_syst_min_allocated_mark      =    16 % a few scratch ones
+\permanent\countdef\c_syst_max_allocated_mark      = 206 \c_syst_max_allocated_mark      =  1024 % max 10K in luametatex anyway
 
-\permanent\countdef\c_syst_min_counter_value       = 253 \c_syst_min_counter_value = -"7FFFFFFF
-\permanent\countdef\c_syst_max_counter_value       = 254 \c_syst_max_counter_value =  "7FFFFFFF
+\permanent\countdef\c_syst_min_allocated_attribute = 207 \c_syst_min_allocated_attribute =  1024 % 0-1023 : private
+\permanent\countdef\c_syst_max_allocated_attribute = 208 \c_syst_min_allocated_attribute = \directlua{tex.write(tex.magicconstants.max_attribute_register_index)} % 65535 % no allocator, managed differently
+
+\permanent\countdef\c_syst_max_allocated_count     = 211 \c_syst_max_allocated_count     = \directlua{tex.write(tex.magicconstants.max_int_register_index)}       % 65535 % is adapted later on
+\permanent\countdef\c_syst_max_allocated_dimen     = 212 \c_syst_max_allocated_dimen     = \directlua{tex.write(tex.magicconstants.max_dimen_register_index)}     % idem
+\permanent\countdef\c_syst_max_allocated_skip      = 213 \c_syst_max_allocated_skip      = \directlua{tex.write(tex.magicconstants.max_glue_register_index)}      % idem
+\permanent\countdef\c_syst_max_allocated_muskip    = 214 \c_syst_max_allocated_muskip    = \directlua{tex.write(tex.magicconstants.max_mu_glue_register_index)}   % idem
+\permanent\countdef\c_syst_max_allocated_box       = 215 \c_syst_max_allocated_box       = \directlua{tex.write(tex.magicconstants.max_box_register_index)}       % idem
+\permanent\countdef\c_syst_max_allocated_toks      = 216 \c_syst_max_allocated_toks      = \directlua{tex.write(tex.magicconstants.max_toks_register_index)}      % idem
+\permanent\countdef\c_syst_max_allocated_read      = 217 \c_syst_max_allocated_read      = \c_syst_max_allocated_iohandle
+\permanent\countdef\c_syst_max_allocated_write     = 218 \c_syst_max_allocated_write     = \c_syst_max_allocated_iohandle
+
+\permanent\countdef\c_syst_last_allocated_count    = 221 \c_syst_last_allocated_count    = \c_syst_min_allocated_register
+\permanent\countdef\c_syst_last_allocated_dimen    = 222 \c_syst_last_allocated_dimen    = \c_syst_min_allocated_register
+\permanent\countdef\c_syst_last_allocated_skip     = 223 \c_syst_last_allocated_skip     = \c_syst_min_allocated_register
+\permanent\countdef\c_syst_last_allocated_muskip   = 224 \c_syst_last_allocated_muskip   = \c_syst_min_allocated_register
+\permanent\countdef\c_syst_last_allocated_box      = 225 \c_syst_last_allocated_box      = \c_syst_min_allocated_register
+\permanent\countdef\c_syst_last_allocated_toks     = 226 \c_syst_last_allocated_toks     = \c_syst_min_allocated_register
+\permanent\countdef\c_syst_last_allocated_read     = 227 \c_syst_last_allocated_read     = \c_syst_min_allocated_iohandle
+\permanent\countdef\c_syst_last_allocated_write    = 228 \c_syst_last_allocated_write    = \c_syst_min_allocated_iohandle
+\permanent\countdef\c_syst_last_allocated_marks    = 229 \c_syst_last_allocated_marks    = \c_syst_min_allocated_mark
+
+\permanent\countdef\c_syst_min_counter_value       = 253 \c_syst_min_counter_value       = -"7FFFFFFF
+\permanent\countdef\c_syst_max_counter_value       = 254 \c_syst_max_counter_value       =  "7FFFFFFF
 
 \immutable\integerdef\zerocount       0
 \immutable\integerdef\plusone         1
@@ -339,15 +353,15 @@
 %D The allocators share a common helper macro. Marks might be changed to work in lower
 %D regions and we always assumes allocation.
 
-\permanent\protected\def\newcount {\syst_basics_allocate\c_syst_last_allocated_count \count \countdef  \c_syst_max_allocated_register}
-\permanent\protected\def\newdimen {\syst_basics_allocate\c_syst_last_allocated_dimen \dimen \dimendef  \c_syst_max_allocated_register}
-\permanent\protected\def\newskip  {\syst_basics_allocate\c_syst_last_allocated_skip  \skip  \skipdef   \c_syst_max_allocated_register}
-\permanent\protected\def\newmuskip{\syst_basics_allocate\c_syst_last_allocated_muskip\muskip\muskipdef \c_syst_max_allocated_register}
-\permanent\protected\def\newbox   {\syst_basics_allocate\c_syst_last_allocated_box   \box   \integerdef\c_syst_max_allocated_register}
-\permanent\protected\def\newtoks  {\syst_basics_allocate\c_syst_last_allocated_toks  \toks  \toksdef   \c_syst_max_allocated_register}
-\permanent\protected\def\newread  {\syst_basics_allocate\c_syst_last_allocated_read  \read  \integerdef\c_syst_max_allocated_iohandle}
-\permanent\protected\def\newwrite {\syst_basics_allocate\c_syst_last_allocated_write \write \integerdef\c_syst_max_allocated_iohandle}
-\permanent\protected\def\newmarks {\syst_basics_allocate\c_syst_last_allocated_marks \marks \integerdef\c_syst_max_allocated_mark    }
+\permanent\protected\def\newcount {\syst_basics_allocate\c_syst_last_allocated_count \count \countdef  \c_syst_max_allocated_count}
+\permanent\protected\def\newdimen {\syst_basics_allocate\c_syst_last_allocated_dimen \dimen \dimendef  \c_syst_max_allocated_dimen}
+\permanent\protected\def\newskip  {\syst_basics_allocate\c_syst_last_allocated_skip  \skip  \skipdef   \c_syst_max_allocated_skip}
+\permanent\protected\def\newmuskip{\syst_basics_allocate\c_syst_last_allocated_muskip\muskip\muskipdef \c_syst_max_allocated_muskip}
+\permanent\protected\def\newbox   {\syst_basics_allocate\c_syst_last_allocated_box   \box   \integerdef\c_syst_max_allocated_box}
+\permanent\protected\def\newtoks  {\syst_basics_allocate\c_syst_last_allocated_toks  \toks  \toksdef   \c_syst_max_allocated_toks}
+\permanent\protected\def\newread  {\syst_basics_allocate\c_syst_last_allocated_read  \read  \integerdef\c_syst_max_allocated_read}
+\permanent\protected\def\newwrite {\syst_basics_allocate\c_syst_last_allocated_write \write \integerdef\c_syst_max_allocated_write}
+\permanent\protected\def\newmarks {\syst_basics_allocate\c_syst_last_allocated_marks \marks \integerdef\c_syst_max_allocated_mark}
 
 \firstvalidlanguage \plusone % so zero is ignored in hyphenation, this might become the default
 
@@ -424,9 +438,6 @@
 %D Since the number of chars exceed 256 now, we can use \type {\chardef} instead of
 %D the more limited \type {\mathchardef}.
 
-% \protected\def\newbox  {\syst_basics_allocate\c_syst_last_allocated_box  \box  \chardef\c_syst_max_allocated_register}
-% \protected\def\newmarks{\syst_basics_allocate\c_syst_last_allocated_marks\marks\chardef\c_syst_max_allocated_register}
-
 %D Attributes are something very \LUATEX. In \CONTEXT\ you are not supposed to use
 %D the attributes directly but always allocate then first. For instance attribute~0
 %D is reserved for special purposes (this might change). Attributes in the range
@@ -434,7 +445,7 @@
 
 \immutable\integerdef\attributeunsetvalue\c_syst_min_counter_value % used to be \minusone
 
-% \permanent\protected\def\newattribute{\syst_basics_allocate\c_syst_last_allocated_attribute\attribute\attributedef\c_syst_max_allocated_register}
+% \permanent\protected\def\newattribute{\syst_basics_allocate\c_syst_last_allocated_attribute\attribute\attributedef\c_syst_max_allocated_attribute}
 
 % %D Not used by \CONTEXT\ but for instance \PICTEX\ needs it. It's a trick to force
 % %D strings instead of tokens that take more memory.
@@ -739,14 +750,16 @@
 
 % For now:
 
-\permanent\protected\def\defUmathtopaccent  #1#2#3#4{\global\immutable\protected\def#1{\Umathaccent     "#2 "#3 "#4 }}
-\permanent\protected\def\defUmathbotaccent  #1#2#3#4{\global\immutable\protected\def#1{\Umathbotaccent  "#2 "#3 "#4 }}
-\permanent\protected\def\defUdelimiterover  #1#2#3#4{\global\immutable\protected\def#1{\Udelimiterover  "#2 "#3     }}
-\permanent\protected\def\defUdelimiterunder #1#2#3#4{\global\immutable\protected\def#1{\Udelimiterunder "#2 "#3     }}
-\permanent\protected\def\defUdelimiter      #1#2#3#4{\global\immutable\protected\def#1{\Udelimiter      "#2 "#3 "#4 }}
-\permanent\protected\def\defUradical          #1#2#3{\global\immutable\protected\def#1{\Uradical        "#2 "#3     }}
-\permanent\protected\def\defUroot             #1#2#3{\global\immutable\protected\def#1{\Uroot           "#2 "#3     }}
-\permanent\protected\def\defUmathchar       #1#2#3#4{\global\immutable\Umathchardef #1                  "#2 "#3 "#4 }
+\permanent\protected\def\defUmathfixedtopaccent#1#2#3#4{\global\immutable\protected\def#1{\Umathtopaccent \s!fixed "#2 "#3 "#4 }}
+\permanent\protected\def\defUmathfixedbotaccent#1#2#3#4{\global\immutable\protected\def#1{\Umathbotaccent \s!fixed "#2 "#3 "#4 }}
+\permanent\protected\def\defUmathtopaccent     #1#2#3#4{\global\immutable\protected\def#1{\Umathtopaccent  "#2 "#3 "#4 }}
+\permanent\protected\def\defUmathbotaccent     #1#2#3#4{\global\immutable\protected\def#1{\Umathbotaccent  "#2 "#3 "#4 }}
+\permanent\protected\def\defUdelimiterover     #1#2#3#4{\global\immutable\protected\def#1{\Udelimiterover  "#2 "#3     }}
+\permanent\protected\def\defUdelimiterunder    #1#2#3#4{\global\immutable\protected\def#1{\Udelimiterunder "#2 "#3     }}
+\permanent\protected\def\defUdelimiter         #1#2#3#4{\global\immutable\protected\def#1{\Udelimiter      "#2 "#3 "#4 }}
+\permanent\protected\def\defUradical             #1#2#3{\global\immutable\protected\def#1{\Uradical        "#2 "#3     }}
+\permanent\protected\def\defUroot                #1#2#3{\global\immutable\protected\def#1{\Uroot           "#2 "#3     }}
+\permanent\protected\def\defUmathchar          #1#2#3#4{\global\immutable\Umathchardef #1                  "#2 "#3 "#4 }
 
 %D For a while we keep the following, as systems like tikz need it. Best not use
 %D that one \CONTEXT. It will probably move to the tikz loader.
@@ -1130,7 +1143,7 @@
 \permanent\def\hidewidth % for alignment entries that can stick out
   {\hskip\hideskip}
 
-\permanent\def\ialign % initialized \halign
+\permanent\def\ialign % initialized \halign, to be used grouped!
   {\everycr\emptytoks
    \tabskip\zeroskip
    \halign}
@@ -1308,29 +1321,28 @@
 %D
 %D There is a little extra overhead in the overload protection but not that much.
 
-\permanent\countdef\c_syst_local_count  = 221 \c_syst_local_count  = \c_syst_max_allocated_register
-\permanent\countdef\c_syst_local_dimen  = 222 \c_syst_local_dimen  = \c_syst_local_count
-\permanent\countdef\c_syst_local_skip   = 223 \c_syst_local_skip   = \c_syst_local_count
-\permanent\countdef\c_syst_local_muskip = 224 \c_syst_local_muskip = \c_syst_local_count
-\permanent\countdef\c_syst_local_box    = 225 \c_syst_local_box    = \c_syst_local_count
-\permanent\countdef\c_syst_local_toks   = 226 \c_syst_local_toks   = \c_syst_local_count
-\permanent\countdef\c_syst_local_read   = 227 \c_syst_local_read   = \c_syst_local_count
-\permanent\countdef\c_syst_local_write  = 228 \c_syst_local_write  = \c_syst_local_count
+\permanent\countdef\c_syst_local_count  = 231 \c_syst_local_count  = \c_syst_max_allocated_count
+\permanent\countdef\c_syst_local_dimen  = 232 \c_syst_local_dimen  = \c_syst_max_allocated_dimen
+\permanent\countdef\c_syst_local_skip   = 233 \c_syst_local_skip   = \c_syst_max_allocated_skip
+\permanent\countdef\c_syst_local_muskip = 234 \c_syst_local_muskip = \c_syst_max_allocated_muskip
+\permanent\countdef\c_syst_local_box    = 235 \c_syst_local_box    = \c_syst_max_allocated_box
+\permanent\countdef\c_syst_local_toks   = 236 \c_syst_local_toks   = \c_syst_max_allocated_toks
+\permanent\countdef\c_syst_local_read   = 237 \c_syst_local_read   = \c_syst_max_allocated_read
+\permanent\countdef\c_syst_local_write  = 238 \c_syst_local_write  = \c_syst_max_allocated_write
 
-\c_syst_max_allocated_register \numexpr\c_syst_max_allocated_register:2\relax % floor
+\c_syst_max_allocated_count    \numexpr\c_syst_max_allocated_count   :2\relax % floor
+\c_syst_max_allocated_dimen    \numexpr\c_syst_max_allocated_dimen   :2\relax % floor
+\c_syst_max_allocated_skip     \numexpr\c_syst_max_allocated_skip    :2\relax % floor
+\c_syst_max_allocated_muskip   \numexpr\c_syst_max_allocated_muskip  :2\relax % floor
+\c_syst_max_allocated_toks     \numexpr\c_syst_max_allocated_toks    :2\relax % floor
+\c_syst_max_allocated_box      \numexpr\c_syst_max_allocated_box     :2\relax % floor
+\c_syst_max_allocated_read     \numexpr\c_syst_max_allocated_read    :2\relax % floor
+\c_syst_max_allocated_write    \numexpr\c_syst_max_allocated_write   :2\relax % floor
 
 \permanent\protected\def\syst_local_overflow#1#2{\writestatus\m!system{no room for local #1 \string#2}\wait}
 
-\permanent\protected\def\setnewlocaldimen#1%
-  {\ifnum\c_syst_local_dimen>\c_syst_max_allocated_register
-     \advance\c_syst_local_dimen\minusone\dimendef#1\c_syst_local_dimen
-   \else
-     \syst_local_overflow_dimen#1%
-   \fi
-   #1}
-
 \permanent\protected\def\setnewlocalcount#1%
-  {\ifnum\c_syst_local_count>\c_syst_max_allocated_register
+  {\ifnum\c_syst_local_count>\c_syst_max_allocated_count
      \advance\c_syst_local_count\minusone
      \overloaded\frozen\countdef#1\c_syst_local_count
    \else
@@ -1338,8 +1350,16 @@
    \fi
    #1}
 
+\permanent\protected\def\setnewlocaldimen#1%
+  {\ifnum\c_syst_local_dimen>\c_syst_max_allocated_dimen
+     \advance\c_syst_local_dimen\minusone\dimendef#1\c_syst_local_dimen
+   \else
+     \syst_local_overflow_dimen#1%
+   \fi
+   #1}
+
 \permanent\protected\def\setnewlocalskip#1%
-  {\ifnum\c_syst_local_skip>\c_syst_max_allocated_register
+  {\ifnum\c_syst_local_skip>\c_syst_max_allocated_skip
      \advance\c_syst_local_skip\minusone
      \overloaded\frozen\skipdef#1\c_syst_local_skip
    \else
@@ -1348,7 +1368,7 @@
    #1}
 
 \permanent\protected\def\setnewlocalmuskip#1%
-  {\ifnum\c_syst_local_muskip>\c_syst_max_allocated_register
+  {\ifnum\c_syst_local_muskip>\c_syst_max_allocated_muskip
      \advance\c_syst_local_muskip\minusone
      \overloaded\frozen\muskipdef#1\c_syst_local_muskip
    \else
@@ -1357,7 +1377,7 @@
    #1}
 
 \permanent\protected\def\setnewlocaltoks#1%
-  {\ifnum\c_syst_local_toks>\c_syst_max_allocated_register
+  {\ifnum\c_syst_local_toks>\c_syst_max_allocated_toks
      \advance\c_syst_local_toks\minusone
      \overloaded\frozen\toksdef#1\c_syst_local_toks
    \else
@@ -1366,7 +1386,7 @@
    #1}
 
 \permanent\protected\def\setnewlocalbox#1%
-  {\ifnum\c_syst_local_box>\c_syst_max_allocated_register
+  {\ifnum\c_syst_local_box>\c_syst_max_allocated_box
      \advance\c_syst_local_box\minusone
      \overloaded\frozen\integerdef#1\c_syst_local_box
    \else
@@ -1375,7 +1395,7 @@
    \setbox#1}
 
 \permanent\protected\def\newlocalread#1% so no set
-  {\ifnum\c_syst_local_read>\c_syst_max_allocated_register
+  {\ifnum\c_syst_local_read>\c_syst_max_allocated_read
      \advance\c_syst_local_read\minusone
      \overloaded\frozen\integerdef#1\c_syst_local_read
    \else
@@ -1383,7 +1403,7 @@
    \fi}
 
 \permanent\protected\def\newlocalwrite#1% so no set
-  {\ifnum\c_syst_local_write>\c_syst_max_allocated_register
+  {\ifnum\c_syst_local_write>\c_syst_max_allocated_write
      \advance\c_syst_local_write\minusone
      \overloaded\frozen\integerdef#1\c_syst_local_write
    \else
@@ -1434,5 +1454,9 @@
 %D the the log file but that is pretty slow when we have much detail.
 
 \tracingfullboxes\zerocount
+
+%D We don't do this:
+
+% \setdefaultmathcodes % initializes traditional codes
 
 \protect \endinput

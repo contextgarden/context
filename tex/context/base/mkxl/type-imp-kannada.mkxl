@@ -1,0 +1,73 @@
+%D \module
+%D   [       file=type-imp-kannada,
+%D        version=2022.01.27,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Dekannada,
+%D         author=śrīrāma (Sreeram),
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\starttypescriptcollection[kannada]
+
+    \doifunknownfontfeature {kannada-bold-30} {\definefontfeature[kannada-bold-30][boldened-30]}
+
+    % Symbolic names for fonts:
+
+    \starttypescript [\s!serif] [murty-kannada]
+        \definefontsynonym [MurtyKannada-Regular] [\s!name:murtykannadaregular] [\s!features=kannada-two]
+        \definefontsynonym [MurtyKannada-Bold]    [\s!name:murtykannadaregular] [\s!features={kannada-two,kannada-bold-30}]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [baloo-tamma, baloo-tamma-extrabold]
+        \definefontsynonym [BalooTamma2-Regular]   [\s!name:balootamma2regular]   [\s!features=kannada-two]
+        \definefontsynonym [BalooTamma2-Medium]    [\s!name:balootamma2medium]    [\s!features=kannada-two]
+        \definefontsynonym [BalooTamma2-Semibold]  [\s!name:balootamma2semibold]  [\s!features=kannada-two]
+        \definefontsynonym [BalooTamma2-Bold]      [\s!name:balootamma2bold]      [\s!features=kannada-two]
+        \definefontsynonym [BalooTamma2-Extrabold] [\s!name:balootamma2extrabold] [\s!features=kannada-two]
+    \stoptypescript
+
+    % Grouping of styles:
+
+    \starttypescript [\s!sans] [baloo-tamma] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Sans]            [BalooTamma2-Regular]
+        \definefontsynonym [\s!SansSlanted]     [BalooTamma2-Medium]
+        \definefontsynonym [\s!SansBold]        [BalooTamma2-Bold]
+        \definefontsynonym [\s!SansBoldSlanted] [BalooTamma2-Semibold]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [baloo-tamma-extrabold] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Sans]            [BalooTamma2-Medium]
+        \definefontsynonym [\s!SansSlanted]     [BalooTamma2-Semibold]
+        \definefontsynonym [\s!SansBold]        [BalooTamma2-Extrabold]
+        \definefontsynonym [\s!SansBoldSlanted] [BalooTamma2-Bold]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [murty-kannada] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]     [MurtyKannada-Regular]
+        \definefontsynonym [\s!SerifBold] [MurtyKannada-Bold]
+    \stoptypescript
+
+    % Typefaces:
+
+    \starttypescript [baloo-tamma, baloo-tamma-extrabold]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+    \stoptypescript
+
+    \starttypescript [murty-kannada]
+        \definetypeface [murty-kannada]  [\s!rm] [\s!serif] [murty-kannada] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu]        [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]        [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]        [\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection

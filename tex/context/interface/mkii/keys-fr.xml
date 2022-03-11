@@ -284,7 +284,6 @@
 		<cd:variable name='inright' value='dansdroite'/>
 		<cd:variable name='inrightedge' value='dansborddroit'/>
 		<cd:variable name='inrightmargin' value='dansmargedroite'/>
-		<cd:variable name='integral' value='integrale'/>
 		<cd:variable name='interaction' value='interaction'/>
 		<cd:variable name='interactionmenu' value='menuinteraction'/>
 		<cd:variable name='interactive' value='interactif'/>
@@ -303,6 +302,7 @@
 		<cd:variable name='july' value='juillet'/>
 		<cd:variable name='june' value='juin'/>
 		<cd:variable name='keep' value='conserver'/>
+		<cd:variable name='keeptogether' value='conserverensemble'/>
 		<cd:variable name='kerncharacters' value='approchercaracteres'/>
 		<cd:variable name='knockout' value='knockout'/>
 		<cd:variable name='label' value='etiquette'/>
@@ -318,6 +318,7 @@
 		<cd:variable name='lefthanging' value='suspensiongauche'/>
 		<cd:variable name='leftmargin' value='margegauche'/>
 		<cd:variable name='leftpage' value='surpagegauche'/>
+		<cd:variable name='lefttext' value='textegauche'/>
 		<cd:variable name='lefttoright' value='gaucheadroite'/>
 		<cd:variable name='legend' value='legende'/>
 		<cd:variable name='less' value='moins'/>
@@ -479,6 +480,7 @@
 		<cd:variable name='righthanging' value='suspensiondroite'/>
 		<cd:variable name='rightmargin' value='margedroite'/>
 		<cd:variable name='rightpage' value='surpagedroite'/>
+		<cd:variable name='righttext' value='textedroite'/>
 		<cd:variable name='righttoleft' value='droiteagauche'/>
 		<cd:variable name='roman' value='romain'/>
 		<cd:variable name='romannumerals' value='chiffresromains'/>
@@ -719,6 +721,7 @@
 		<cd:constant name='bottom' value='bas'/>
 		<cd:constant name='bottomafter' value='basaprès'/>
 		<cd:constant name='bottombefore' value='basavant'/>
+		<cd:constant name='bottomcolor' value='bottomcolor'/>
 		<cd:constant name='bottomcommand' value='commandebas'/>
 		<cd:constant name='bottomdistance' value='distancebas'/>
 		<cd:constant name='bottomframe' value='cadrebas'/>
@@ -890,6 +893,7 @@
 		<cd:constant name='header' value='entête'/>
 		<cd:constant name='headerdistance' value='distanceentête'/>
 		<cd:constant name='headerstate' value='etatentête'/>
+		<cd:constant name='headindenting' value='headindenting'/>
 		<cd:constant name='headlabel' value='etiquettetete'/>
 		<cd:constant name='headnumber' value='numerotete'/>
 		<cd:constant name='headseparator' value='separateurtete'/>
@@ -921,6 +925,7 @@
 		<cd:constant name='inputfile' value='fichierentree'/>
 		<cd:constant name='insidesection' value='auseinsection'/>
 		<cd:constant name='instance' value='instance'/>
+		<cd:constant name='integral' value='integrale'/>
 		<cd:constant name='intent' value='intention'/>
 		<cd:constant name='interaction' value='interaction'/>
 		<cd:constant name='interlinespace' value='espaceinterligne'/>
@@ -963,6 +968,7 @@
 		<cd:constant name='leftquote' value='citergauche'/>
 		<cd:constant name='leftsample' value='echantillongauche'/>
 		<cd:constant name='leftsentence' value='phrasegauche'/>
+		<cd:constant name='leftsource' value='leftsource'/>
 		<cd:constant name='leftspeech' value='discoursgauche'/>
 		<cd:constant name='leftstyle' value='stylegauche'/>
 		<cd:constant name='leftsubsentence' value='sousphrasegauche'/>
@@ -995,7 +1001,9 @@
 		<cd:constant name='marstyle' value='stylerem'/>
 		<cd:constant name='mask' value='masque'/>
 		<cd:constant name='mathclass' value='classemath'/>
+		<cd:constant name='mathdenominatorstyle' value='mathdenominatorstyle'/>
 		<cd:constant name='mathlimits' value='limitesmath'/>
+		<cd:constant name='mathnumeratorstyle' value='mathnumeratorstyle'/>
 		<cd:constant name='mathstyle' value='stylemath'/>
 		<cd:constant name='max' value='max'/>
 		<cd:constant name='maxdepth' value='profondeurmax'/>
@@ -1007,6 +1015,7 @@
 		<cd:constant name='middle' value='milieu'/>
 		<cd:constant name='middlecolor' value='couleurmilieu'/>
 		<cd:constant name='middlecommand' value='commandemilieu'/>
+		<cd:constant name='middlesource' value='middlesource'/>
 		<cd:constant name='middlespeech' value='discoursmilieu'/>
 		<cd:constant name='middlestyle' value='stylemilieu'/>
 		<cd:constant name='middletext' value='textemilieu'/>
@@ -1179,6 +1188,7 @@
 		<cd:constant name='rightquote' value='citerdroite'/>
 		<cd:constant name='rightsample' value='echantillondroite'/>
 		<cd:constant name='rightsentence' value='phrasedroite'/>
+		<cd:constant name='rightsource' value='rightsource'/>
 		<cd:constant name='rightspeech' value='discoursdroite'/>
 		<cd:constant name='rightstyle' value='styledroit'/>
 		<cd:constant name='rightsubsentence' value='sousphrasedroite'/>
@@ -1284,8 +1294,10 @@
 		<cd:constant name='synonymcommand' value='commandesynonyme'/>
 		<cd:constant name='synonymstyle' value='stylesynonyme'/>
 		<cd:constant name='tab' value='tab'/>
+		<cd:constant name='target' value='target'/>
 		<cd:constant name='text' value='texte'/>
 		<cd:constant name='textalign' value='alignertexte'/>
+		<cd:constant name='textalternative' value='textalternative'/>
 		<cd:constant name='textcolor' value='couleurtexte'/>
 		<cd:constant name='textcommand' value='commandetexte'/>
 		<cd:constant name='textdistance' value='distancetexte'/>
@@ -1312,6 +1324,7 @@
 		<cd:constant name='toffset' value='decalaget'/>
 		<cd:constant name='tolerance' value='tolerance'/>
 		<cd:constant name='top' value='haut'/>
+		<cd:constant name='topcolor' value='topcolor'/>
 		<cd:constant name='topcommand' value='commandehaut'/>
 		<cd:constant name='topdistance' value='distancehaut'/>
 		<cd:constant name='topframe' value='cadrehaut'/>

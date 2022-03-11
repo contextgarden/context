@@ -6,8 +6,7 @@ return {
     comment = "Goodies that complement euler math.",
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
-
-   mathematics = {
+    mathematics = {
         tweaks = {
             aftercopying = {
                 {
@@ -18,6 +17,9 @@ return {
                     fake    = 0.75,
                 },
             },
+        },
+        bigslots = {
+            1, 3, 5, 7
         },
     },
 

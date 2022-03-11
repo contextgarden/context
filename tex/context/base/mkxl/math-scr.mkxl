@@ -28,7 +28,7 @@
      {\math_scripts_raised_symbol_indeed3\txx{#1}}}
 
 \def\math_scripts_raised_symbol_indeed#1#2#3%
-  {\mathord{{#2\raise.#1ex\hbox{#2\symbol[#3]}}}}
+  {\mathord{#2\raise.#1\exheight\hbox{#2\symbol[#3]}}} % redundant {} removed
 
 \def\math_scripts_raised_number#1%
   {\mathchoice

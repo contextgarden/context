@@ -22,6 +22,7 @@ return {
         "pluscxxvii", "pluscxxviii", "pluscclv", "pluscclvi",
         "normalpagebox",
         "binaryshiftedten", "binaryshiftedtwenty", "binaryshiftedthirty",
+        "thickermuskip",
         --
         "directionlefttoright", "directionrighttoleft",
         --
@@ -77,7 +78,8 @@ return {
         "loosenessfrozenparcode", "lastlinefrozenparcode", "linepenaltyfrozenparcode", "clubpenaltyfrozenparcode",
         "widowpenaltyfrozenparcode", "displaypenaltyfrozenparcode", "brokenpenaltyfrozenparcode",
         "demeritsfrozenparcode", "shapefrozenparcode", "linefrozenparcode", "hyphenationfrozenparcode",
-        "shapingpenaltiesfrozenparcode", "orphanpenaltyfrozenparcode", "allfrozenparcode",
+        "shapingpenaltyfrozenparcode", "orphanpenaltyfrozenparcode", "allfrozenparcode",
+        "mathpenaltyfrozenparcode",
         --
         "activemathcharcode",
         --
@@ -103,10 +105,11 @@ return {
         "trueifcode", "falseifcode", "caseifcode", "definedifcode", "csnameifcode", "fontcharifcode",
         --
         "overrulemathcontrolcode", "underrulemathcontrolcode", "radicalrulemathcontrolcode",  "fractionrulemathcontrolcode",
-        "accentskewhalfmathcontrolcode", "accentskewapplymathcontrolcode", "accentitalickernmathcontrolcode",
-        "delimiteritalickernmathcontrolcode", "noorditalickernmathcontrolcode", "charitalicwidthmathcontrolcode",
-        "charitalicnoreboxmathcontrolcode", "boxednoitalickernmathcontrolcode", "nostaircasekernmathcontrolcode",
-        "textitalickernmathcontrolcode", "noscriptitalickernmathcontrolcode", "italicshapekernmathcontrolcode",
+        "accentskewhalfmathcontrolcode", "accentskewapplymathcontrolcode", "checkligatureandkernmathcontrolcode",
+        "applyverticalitalickernmathcontrolcode", "applyordinaryitalickernmathcontrolcode", "applycharitalickernmathcontrolcode",
+        "reboxcharitalickernmathcontrolcode", "applyboxeditalickernmathcontrolcode", "staircasekernmathcontrolcode",
+        "applytextitalickernmathcontrolcode", "applyscriptitalickernmathcontrolcode", "italicshapekernmathcontrolcode",
+        "checkspaceitalickernmathcontrolcode", "checktextitalickernmathcontrolcode",
         --
         "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noexpansionglyphoptioncode", "noprotrusionglyphoptioncode",
         "noleftkerningglyphoptioncode", "noleftligaturingglyphoptioncode", "norightkerningglyphoptioncode", "norightligaturingglyphoptioncode",
@@ -157,9 +160,16 @@ return {
         --
         "typescriptone", "typescripttwo", "typescriptthree", "mathsizesuffix",
         --
-        "mathordcode", "mathopcode", "mathbincode", "mathrelcode", "mathopencode", "mathclosecode",
-        "mathpunctcode", "mathalphacode", "mathinnercode", "mathnothingcode", "mathlimopcode",
-        "mathnolopcode", "mathboxcode", "mathchoicecode", "mathaccentcode", "mathradicalcode",
+        "mathordinarycode", "mathordcode", "mathoperatorcode", "mathopcode", "mathbinarycode", "mathbincode",
+        "mathrelationcode", "mathrelcode", "mathopencode", "mathclosecode", "mathpunctuationcode",
+        "mathpunctcode", "mathovercode", "mathundercode", "mathinnercode", "mathradicalcode",
+        "mathfractioncode", "mathmiddlecode", "mathaccentcode", "mathfencedcode", "mathghostcode",
+        "mathvariablecode",  "mathactivecode", "mathvcentercode",
+        "mathbegincode", "mathendcode", "mathexplicitcode", "mathdivisioncode", "mathfactorialcode",
+        --
+        "mathimaginarycode", "mathdifferentialcode", "mathexponentialcode", "mathfunctioncode", "mathdigitcode",
+     -- "mathtopaccentcode", "mathbottomaccentcode", "mathdelimitercode", "mathrootcode", "mathprintcode",        --
+        "mathalphacode", "mathboxcode", "mathchoicecode", "mathnothingcode", "mathlimopcode", "mathnolopcode",
         --
         "constantnumber", "constantnumberargument", "constantdimen", "constantdimenargument", "constantemptyargument",
         --
@@ -193,7 +203,7 @@ return {
         --
         "normalizelinenormalizecode", "parindentskipnormalizecode", "swaphangindentnormalizecode", "swapparsshapenormalizecode",
         "breakafterdirnormalizecode", "removemarginkernsnormalizecode", "clipwidthnormalizecode", "flattendiscretionariesnormalizecode",
-        "discardzerotabskipsnormalizecode",
+        "discardzerotabskipsnormalizecode", "flattenleadersnormalizecode",
         --
         "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noleftligatureglyphoptioncode",
         "noleftkernglyphoptioncode", "norightligatureglyphoptioncode", "norightkernglyphoptioncode",
@@ -260,7 +270,8 @@ return {
         --
         "donetrue", "donefalse", "foundtrue", "foundfalse",
         --
-        "inlineordisplaymath","indisplaymath","forcedisplaymath","startforceddisplaymath","stopforceddisplaymath","startpickupmath","stoppickupmath","reqno",
+        "inlineordisplaymath", "indisplaymath", "forcedisplaymath", "startforceddisplaymath", "stopforceddisplaymath",
+        "startpickupmath", "stoppickupmath", "reqno", "forceinlinemath",
         --
         "mathortext",
         --
@@ -307,6 +318,7 @@ return {
         "triggergroupedcommand", "triggergroupedcommandcs",
         "simplegroupedcommand", "simplegroupedcommandcs",
         "pickupgroupedcommand", "pickupgroupedcommandcs",
+        "mathgroupedcommandcs",
         --
         "usedbaselineskip", "usedlineskip", "usedlineskiplimit",
         --
@@ -467,43 +479,51 @@ return {
         --
         "ordordspacing", "ordopspacing", "ordbinspacing", "ordrelspacing",
         "ordopenspacing", "ordclosespacing", "ordpunctspacing", "ordinnerspacing",
-        "ordfracspacing", "ordradspacing",
+        "ordfracspacing", "ordradspacing", "ordmiddlespacing", "ordaccentspacing",
         --
         "opordspacing", "opopspacing", "opbinspacing", "oprelspacing",
         "opopenspacing", "opclosespacing", "oppunctspacing", "opinnerspacing",
-        "opfracspacing", "opradspacing",
+        "opfracspacing", "opradspacing", "opmiddlespacing", "opaccentspacing",
         --
         "binordspacing", "binopspacing", "binbinspacing", "binrelspacing",
         "binopenspacing", "binclosespacing", "binpunctspacing", "bininnerspacing",
-        "binfracspacing", "binradspacing",
+        "binfracspacing", "binradspacing", "binmiddlespacing", "binaccentspacing",
         --
         "relordspacing", "relopspacing", "relbinspacing", "relrelspacing",
         "relopenspacing", "relclosespacing", "relpunctspacing", "relinnerspacing",
-        "relfracspacing", "relradspacing",
+        "relfracspacing", "relradspacing", "relmiddlespacing", "relaccentspacing",
         --
         "openordspacing", "openopspacing", "openbinspacing", "openrelspacing",
         "openopenspacing", "openclosespacing", "openpunctspacing", "openinnerspacing",
-        "openfracspacing", "openradspacing",
+        "openfracspacing", "openradspacing", "openmiddlespacing", "openaccentspacing",
         --
         "closeordspacing", "closeopspacing", "closebinspacing", "closerelspacing",
         "closeopenspacing", "closeclosespacing", "closepunctspacing", "closeinnerspacing",
-        "closefracspacing", "closeradspacing",
+        "closefracspacing", "closeradspacing", "closemiddlespacing", "closeaccentspacing",
         --
         "punctordspacing", "punctopspacing", "punctbinspacing", "punctrelspacing",
         "punctopenspacing", "punctclosespacing", "punctpunctspacing", "punctinnerspacing",
-        "punctfracspacing", "punctradspacing",
+        "punctfracspacing", "punctradspacing", "punctmiddlespacing", "punctaccentspacing",
         --
         "innerordspacing", "inneropspacing", "innerbinspacing", "innerrelspacing",
         "inneropenspacing", "innerclosespacing", "innerpunctspacing", "innerinnerspacing",
-        "innerfracspacing", "innerradspacing",
+        "innerfracspacing", "innerradspacing", "innermiddlespacing", "inneraccentspacing",
         --
         "fracordspacing", "fracopspacing", "fracbinspacing", "fracrelspacing",
         "fracopenspacing", "fracclosespacing", "fracpunctspacing", "fracinnerspacing",
-        "fracfracspacing", "fracradspacing",
+        "fracfracspacing", "fracradspacing", "fracmiddlespacing", "fracaccentspacing",
         --
         "radordspacing", "radopspacing", "radbinspacing", "radrelspacing",
         "radopenspacing", "radclosespacing", "radpunctspacing", "radinnerspacing",
-        "radfracspacing", "radradspacing",
+        "radfracspacing", "radradspacing", "radmiddlespacing", "radaccentspacing",
+        --
+        "middleordspacing", "middleopspacing", "middlebinspacing", "middlerelspacing",
+        "middleopenspacing", "middleclosespacing", "middlepunctspacing", "middleinnerspacing",
+        "middlefracspacing", "middleradspacing", "middlemiddlespacing", "middleaccentspacing",
+        --
+        "accentordspacing", "accentopspacing", "accentbinspacing", "accentrelspacing",
+        "accentopenspacing", "accentclosespacing", "accentpunctspacing", "accentinnerspacing",
+        "accentfracspacing", "accentradspacing", "accentmiddlespacing", "accentaccentspacing",
         --
         "normalreqno",
         --

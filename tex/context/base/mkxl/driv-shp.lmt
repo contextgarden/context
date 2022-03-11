@@ -13,6 +13,7 @@ local setmetatableindex  = table.setmetatableindex
 local formatters         = string.formatters
 local concat             = table.concat
 local keys               = table.keys
+local insert             = table.insert
 local sortedhash         = table.sortedhash
 local find               = string.find
 local stripstring        = string.strip
@@ -620,8 +621,9 @@ end
 
 local dirstack = { }
 local anchors  = { }
------ befores  = setmetatableindex("table")
------ afters   = setmetatableindex("table")
+local befores  = setmetatableindex("table")
+local afters   = setmetatableindex("table")
+local stired   = false
 
 local function reset_directions()
     dirstack = { }
@@ -631,53 +633,55 @@ local function reset_anchors()
     anchors = { }
 end
 
--- interfaces.implement {
---     name      = "registeranchorbox",
---     arguments = { "integer", "integer", "box" },
---     actions   = function(anchor,where,box)
---         box = tonut(box)
---         if where < 0 then
---             table.insert(befores[anchor],box)
---         else
---             table.insert(afters[anchor],box)
---         end
---     end
--- }
+interfaces.implement {
+    name      = "registeranchorbox",
+    public    = true,
+    protected = true,
+    arguments = { "integer", "integer", "box" },
+    actions   = function(anchor,where,box)
+        box = tonut(box)
+        if where < 0 then
+            insert(befores[anchor],box)
+        else
+            insert(afters[anchor],box)
+        end
+        stored = true
+    end
+}
 
 local hlist_out, vlist_out  do
 
     local finalize  = nodes.handlers.finalizelist
- -- local takebox   = nuts.takebox
     local flushnode = nuts.flushnode
 
- -- local function flushstored(current,source,before)
- --     local s = nil
- --     if before then
- --         s = rawget(befores,source)
- --     else
- --         s = rawget(afters,source)
- --     end
- --     if s then
- --         for i=1,#s do
- --             local si = s[i]
- --             if si then
- --                 finalize(si) -- tricky: we might need to group
- --                 if getid(si) == vlist_code then
- --                     vlist_out(current,si)
- --                 else
- --                     hlist_out(current,si)
- --                 end
- --                 flushnode(si)
- --                 s[i] = false
- --             end
- --         end
- --         if before then
- --             rawset(befores,source,nil)
- --         else
- --             rawset(afters,source,nil)
- --         end
- --     end
- -- end
+    local function flushstored(current,source,before)
+        local s = nil
+        if before then
+            s = rawget(befores,source)
+        else
+            s = rawget(afters,source)
+        end
+        if s then
+            for i=1,#s do
+                local si = s[i]
+                if si then
+                    finalize(si) -- tricky: we might need to group
+                    if getid(si) == vlist_code then
+                        vlist_out(current,si)
+                    else
+                        hlist_out(current,si)
+                    end
+                    flushnode(si)
+                    s[i] = false
+                end
+            end
+            if before then
+                rawset(befores,source,nil)
+            else
+                rawset(afters,source,nil)
+            end
+        end
+    end
 
     local function applyorientation(orientation,x,y,width,height,depth,woffset,hoffset,doffset,xoffset,yoffset)
         local ot = (orientation >> 0) & 0x0F
@@ -1098,10 +1102,16 @@ local hlist_out, vlist_out  do
                     if usedorientation then
                         pushorientation(usedorientation,pos_h,pos_v,pos_r)
                     end
+                    if source and stored then
+                        flushstored(current,source,true)
+                    end
                     if id == vlist_code then
                         vlist_out(current,list)
                     else
                         hlist_out(current,list)
+                    end
+                    if source and stored then
+                        flushstored(current,source,false)
                     end
                     if usedorientation then
                         poporientation(usedorientation,pos_h,pos_v,pos_r)
@@ -1136,18 +1146,18 @@ local hlist_out, vlist_out  do
                     end
                     local total = height + depth
                     if total > 0 then
-                        local xoffset, yoffset, left, right = getoffsets(current) -- top bottom
-                        if left ~= 0 then
-                            pos_v = pos_v + left
-                            total = total - left
-                        end
-                        if right ~= 0 then
-                            depth = depth - right
-                            total = total - right
-                        end
+                        local xoffset, yoffset, top, bottom = getoffsets(current)
                         if pos_r == righttoleft_code then
                             pos_h   = pos_h - width
                             xoffset = - xoffset
+                        end
+                        if top ~= 0 then
+                         -- height = height - top
+                            total  = total - top
+                        end
+                        if bottom ~= 0 then
+                            depth = depth - bottom
+                            total = total - bottom
                         end
                         pos_v = pos_v - depth
                         flushrule(current,pos_h + xoffset,pos_v + yoffset,pos_r,width,total,subtype)
@@ -1486,17 +1496,17 @@ local hlist_out, vlist_out  do
                     if usedorientation then
                         pushorientation(usedorientation,pos_h,pos_v,pos_r)
                     end
-                 -- if source then
-                 --     flushstored(current,source,true)
-                 -- end
+                    if source and stored then
+                        flushstored(current,source,true)
+                    end
                     if id == vlist_code then
                         vlist_out(current,list)
                     else
                         hlist_out(current,list)
                     end
-                 -- if source then
-                 --     flushstored(current,source,false)
-                 -- end
+                    if source and stored then
+                        flushstored(current,source,false)
+                    end
                     if usedorientation then
                         poporientation(usedorientation,pos_h,pos_v,pos_r)
                     end

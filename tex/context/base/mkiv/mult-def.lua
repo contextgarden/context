@@ -7881,6 +7881,10 @@ return {
    ["fr"]="commandebas",
    ["nl"]="ondercommando",
   },
+  ["bottomcolor"]={
+   ["en"]="bottomcolor",
+   ["nl"]="onderkleur",
+  },
   ["bottomdistance"]={
    ["cs"]="vzdalenostspodku",
    ["de"]="abstandunten",
@@ -9452,6 +9456,10 @@ return {
   ["instance"]={
    ["en"]="instance",
    ["fr"]="instance",
+  },
+  ["integral"]={
+   ["en"]="integral",
+   ["fr"]="integrale",
   },
   ["intent"]={
    ["en"]="intent",
@@ -12427,6 +12435,10 @@ return {
    ["fr"]="commandehaut",
    ["nl"]="bovencommando",
   },
+  ["topcolor"]={
+   ["en"]="topcolor",
+   ["nl"]="bovenkleur",
+  },
   ["topdistance"]={
    ["cs"]="vzdalenostvrsku",
    ["de"]="obenabstand",
@@ -12805,6 +12817,15 @@ return {
    ["nl"]="ystap",
    ["pe"]="گام‌وای",
    ["ro"]="ystep",
+  },
+  ["leftsource"]={
+   ["en"]="leftsource",
+  },
+  ["rightsource"]={
+   ["en"]="rightsource",
+  },
+  ["middlesource"]={
+   ["en"]="middlesource",
   },
   ["source"]={
     ["en"]="source",
@@ -16304,10 +16325,6 @@ return {
    ["nl"]="inrechtermarge",
    ["pe"]="درحاشیه‌راست",
    ["ro"]="inmargineadreapta",
-  },
-  ["integral"]={
-   ["en"]="integral",
-   ["fr"]="integrale",
   },
   ["interaction"]={
    ["cs"]="interakce",

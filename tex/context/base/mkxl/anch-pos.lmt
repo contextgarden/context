@@ -62,6 +62,7 @@ local context           = context
 local ctx_latelua       = context.latelua
 
 local tex               = tex
+local texgetdimen       = tex.getdimen
 local texgetcount       = tex.getcount
 local texgetinteger     = tex.getintegervalue or tex.getcount
 local texsetcount       = tex.setcount
@@ -1269,8 +1270,8 @@ do
             nofparagraphs = nofparagraphs + 1
             texsetcount("global","c_anch_positions_paragraph",nofparagraphs)
             local name = f_p_tag(nofparagraphs)
-            local box = getbox("strutbox")
-            local w, h, d = getwhd(box)
+            local h = texgetdimen("strutht")
+            local d = texgetdimen("strutdp")
             --
             local top = texgetnest("top","head")
             local nxt = top.next
@@ -1428,8 +1429,8 @@ do
         public    = true,
         protected = true,
         actions   = function(name)
-            local box = getbox("strutbox")
-            local w, h, d = getwhd(box)
+            local h = texgetdimen("strutht")
+            local d = texgetdimen("strutdp")
             local spec = {
                 p   = true,
                 c   = column,
@@ -1452,8 +1453,8 @@ do
         public    = true,
         protected = true,
         actions   = function(name,kind)
-            local box = getbox("strutbox")
-            local w, h, d = getwhd(box)
+            local h = texgetdimen("strutht")
+            local d = texgetdimen("strutdp")
             local spec = {
                 k   = kind,
                 p   = true,

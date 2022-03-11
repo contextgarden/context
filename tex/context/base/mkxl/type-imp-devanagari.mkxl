@@ -1,0 +1,244 @@
+%D \module
+%D   [       file=type-imp-devanagari,
+%D        version=2022.02.02,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Devanagari,
+%D         author=śrīrāma (Sreeram),
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This collection uses rscaling so that the fonts can be used alongside.
+
+\starttypescriptcollection[devanagari]
+
+    \definefontfeature
+        [shobhikafeatures]
+        [devanagari-two]
+        [goodies=shobhika.lfg,
+        indic={movematra=auto,conjuncts=quit},
+        sanitizer=dev2rkrf]
+
+    \definefontfeature
+        [baloofeatures]
+        [shobhikafeatures]
+
+    \definefontfeature
+        [amitafeatures]
+        [devanagari-two]
+        [goodies=shobhika.lfg,
+        sanitizer=dev2rkrf]
+
+    \definefontfeature
+        [jainifeatures]
+        [shobhikafeatures]
+        [\s!ss01=yes,ss05=yes]
+
+    \definefontfeature
+        [adishilafeatures]
+        [devanagari-one]
+        [indic={movematra=auto,conjuncts=quit}]
+
+    % Symbolic names for fonts:
+
+    \starttypescript [\s!serif] [adishila]
+        \definefontsynonym [Adishila-Regular]    [\s!name:adishilaregular]    [\s!features=adishilafeatures]
+        \definefontsynonym [Adishila-Bold]       [\s!name:adishilabold]       [\s!features=adishilafeatures]
+        \definefontsynonym [Adishila-Italic]     [\s!name:adishilaitalic]     [\s!features=adishilafeatures]
+        \definefontsynonym [Adishila-BoldItalic] [\s!name:adishilabolditalic] [\s!features=adishilafeatures]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [adishila-semibold]
+        \definefontsynonym [AdishilaSemibold-Regular] [\s!name:adishilasemiboldregular] [\s!features=adishilafeatures]
+        \definefontsynonym [AdishilaSemibold-Italic]  [\s!name:adishilasemibolditalic]  [\s!features=adishilafeatures]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [adishila-heavy]
+        \definefontsynonym [AdishilaHeavy-Regular] [\s!name:adishilaheavyregular] [\s!features=adishilafeatures]
+        \definefontsynonym [AdishilaHeavy-Italic]  [\s!name:adishilaheavyitalic]  [\s!features=adishilafeatures]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [adishila-dev]
+        \definefontsynonym [AdishilaDev-Regular] [\s!name:adishiladevregular] [\s!features=adishilafeatures]
+        \definefontsynonym [AdishilaDev-Bold]    [\s!name:adishiladevbold]    [\s!features=adishilafeatures]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [adishila-dev-guru]
+        \definefontsynonym [AdishilaDev-Guru] [\s!name:adishiladevguru] [\s!features=adishilafeatures]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [adishila-san]
+        \definefontsynonym [AdishilaSan-Regular]    [\s!name:adishilasanregular]    [\s!features=adishilafeatures]
+        \definefontsynonym [AdishilaSan-Bold]       [\s!name:adishilasanbold]       [\s!features=adishilafeatures]
+        \definefontsynonym [AdishilaSan-Italic]     [\s!name:adishilasanitalic]     [\s!features=adishilafeatures]
+        \definefontsynonym [AdishilaSan-BoldItalic] [\s!name:adishilasanbolditalic] [\s!features=adishilafeatures]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [adishila-san-letterpress]
+        \definefontsynonym [AdishilaSanLetterpress-Regular]    [\s!name:adishilasanletterpressregular]     [\s!features=adishilafeatures]
+        \definefontsynonym [AdishilaSanLetterpress-Bold]       [\s!name:adishilasanletterpressbold]        [\s!features=adishilafeatures]
+        \definefontsynonym [AdishilaSanLetterpress-Italic]     [\s!name:adishilasanletterpressitalic]      [\s!features=adishilafeatures]
+        \definefontsynonym [AdishilaSanLetterpress-BoldItalic] [\s!name:adishilasanletterpressbolditalic]  [\s!features=adishilafeatures]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [shobhika]
+        \definefontsynonym [Shobhika-Regular] [\s!name:shobhikaregular] [\s!features=shobhikafeatures]
+        \definefontsynonym [Shobhika-Bold]    [\s!name:shobhikabold]    [\s!features=shobhikafeatures]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [baloo,baloo-extrabold]
+        \definefontsynonym [Baloo2-Regular]   [\s!name:baloo2regular]   [\s!features=baloofeatures]
+        \definefontsynonym [Baloo2-Medium]    [\s!name:baloo2medium]    [\s!features=baloofeatures]
+        \definefontsynonym [Baloo2-Semibold]  [\s!name:baloo2semibold]  [\s!features=baloofeatures]
+        \definefontsynonym [Baloo2-Bold]      [\s!name:baloo2bold]      [\s!features=baloofeatures]
+        \definefontsynonym [Baloo2-Extrabold] [\s!name:baloo2extrabold] [\s!features=baloofeatures]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [jaini]
+        \definefontsynonym [Jaini-Regular] [\s!name:jainiregular] [\s!features=jainifeatures]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [jaini-purva]
+        \definefontsynonym [JainiPurva-Regular] [\s!name:jainipurvaregular] [\s!features=jainifeatures]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [amita]
+        \definefontsynonym [Amita-Regular] [\s!name:amitaregular] [\s!features=amitafeatures]
+        \definefontsynonym [Amita-Bold]    [\s!name:amitabold]    [\s!features=amitafeatures]
+    \stoptypescript
+
+    % Grouping of styles:
+
+    \starttypescript [\s!serif] [adishila] [\s!name]
+        \definefontsynonym [\s!Serif]           [Adishila-Regular]
+        \definefontsynonym [\s!SerifBold]       [Adishila-Bold]
+        \definefontsynonym [\s!SerifItalic]     [Adishila-Italic]
+        \definefontsynonym [\s!SerifBoldItalic] [Adishila-BoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [adishila-semibold] [\s!name]
+        \definefontsynonym [\s!Serif]       [AdishilaSemibold-Regular]
+        \definefontsynonym [\s!SerifItalic] [AdishilaSemibold-Italic]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [adishila-heavy] [\s!name]
+        \definefontsynonym [\s!Serif]       [AdishilaHeavy-Regular]
+        \definefontsynonym [\s!SerifItalic] [AdishilaHeavy-Italic]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [adishila-dev] [\s!name]
+        \definefontsynonym [\s!Serif]     [AdishilaDev-Regular]
+        \definefontsynonym [\s!SerifBold] [AdishilaDev-Bold]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [adishila-dev-guru] [\s!name]
+        \definefontsynonym [\s!Serif] [AdishilaDev-Guru]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [adishila-san] [\s!name]
+        \definefontsynonym [\s!Serif]           [AdishilaSan-Regular]
+        \definefontsynonym [\s!SerifBold]       [AdishilaSan-Bold]
+        \definefontsynonym [\s!SerifItalic]     [AdishilaSan-Italic]
+        \definefontsynonym [\s!SerifBoldItalic] [AdishilaSan-BoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [adishila-san-letterpress] [\s!name]
+        \definefontsynonym [\s!Serif]           [AdishilaSanLetterpress-Regular]
+        \definefontsynonym [\s!SerifBold]       [AdishilaSanLetterpress-Bold]
+        \definefontsynonym [\s!SerifItalic]     [AdishilaSanLetterpress-Italic]
+        \definefontsynonym [\s!SerifBoldItalic] [AdishilaSanLetterpress-BoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [shobhika] [\s!name]
+        \definefontsynonym [\s!Serif]            [Shobhika-Regular]
+        \definefontsynonym [\s!SerifBold]        [Shobhika-Bold]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [baloo] [\s!name]
+        \definefontsynonym [\s!Sans]           [Baloo2-Regular]
+        \definefontsynonym [\s!SansBold]       [Baloo2-Bold]
+        \definefontsynonym [\s!SansItalic]     [Baloo2-Medium]
+        \definefontsynonym [\s!SansBoldItalic] [Baloo2-Semibold]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [baloo-extrabold] [\s!name]
+        \definefontsynonym [\s!Sans]           [Baloo2-Medium]
+        \definefontsynonym [\s!SansItalic]     [Baloo2-Semibold]
+        \definefontsynonym [\s!SansBoldItalic] [Baloo2-Bold]
+        \definefontsynonym [\s!SansBold]       [Baloo2-Extrabold]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [jaini] [\s!name]
+        \definefontsynonym [\s!Serif] [Jaini-Regular]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [jaini-purva] [\s!name]
+        \definefontsynonym [\s!Serif] [JainiPurva-Regular]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [amita] [\s!name]
+        \definefontsynonym [\s!Serif]     [Amita-Regular]
+        \definefontsynonym [\s!SerifBold] [Amita-Bold]
+    \stoptypescript
+
+    % Typefaces:
+
+    \starttypescript [adishila]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default] [\s!rscale=1.42]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+    \stoptypescript
+    \starttypescript [adishila-semibold,adishila-heavy]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default] [\s!rscale=1.46]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+    \stoptypescript
+
+    \starttypescript [adishila-dev]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default] [\s!rscale=1.65]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+    \stoptypescript
+
+    \starttypescript [adishila-dev-guru,adishila-san,adishila-san-letterpress]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default] [\s!rscale=1.62]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+    \stoptypescript
+
+    \starttypescript [shobhika]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+    \stoptypescript
+
+    \starttypescript [baloo,baloo-extrabold]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+    \stoptypescript
+
+    \starttypescript [jaini,jaini-purva]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default] [\s!rscale=1.5]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+    \stoptypescript
+
+    \starttypescript [amita]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default] [\s!rscale=1.2]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection

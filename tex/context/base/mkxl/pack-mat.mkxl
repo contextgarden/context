@@ -1,0 +1,84 @@
+%D \module
+%D   [       file=pack-rul, % was core-rul,
+%D        version=2022.02.23,
+%D          title=\CONTEXT\ Packaging Macros,
+%D       subtitle=Ruled Math,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Packaging Macros / Ruled Math}
+
+%D This is a by product of the math improvement activity by Mikael Sundqvist and
+%D myself. More might end up here and more control might be added.
+
+\unprotect
+
+\newconditional \c_framed_math_framed
+
+\installtextracker
+  {framed.math}
+  {\settrue \c_framed_math_framed}
+  {\setfalse\c_framed_math_framed}
+
+\tolerant\protected\def\mathframed[#1]#:#2%
+  {\begingroup
+   \ifconditional\c_framed_math_framed
+     \defineboxanchor[temp]%
+   \fi
+   \setmathatomrule\mathbegincode\mathbincode\allmathstyles\mathbegincode\mathbincode
+   \normalexpanded
+     {\setbox\scratchbox\hpack
+        \ifconditional\c_framed_math_framed
+          \s!source \namedboxanchor{temp}
+        \fi
+        \s!ymove \Umathaxis\Ustyle\mathstyle
+        \bgroup
+          \framed
+            [\c!location=\v!middle,#1]
+            {\startimath
+             \Ustyle\mathstyle
+             #2%
+             \stopimath}%
+        \egroup}%
+   \scratchcounterone\lastleftclass
+   \scratchcountertwo\lastrightclass
+ % \writestatus{!!}{[\number\lastleftclass,\number\lastrightclass]}%
+   \mathatom
+     \s!class \mathexplicitcode
+     \ifnum\scratchcounterone<\zerocount\else\s!leftclass \scratchcounterone\fi
+     \ifnum\scratchcountertwo<\zerocount\else\s!rightclass\scratchcountertwo\fi
+     \bgroup
+       \ifconditional\c_framed_math_framed
+         \setboxanchor[temp][\c!corner={\v!left,\v!bottom},\c!location={\v!right,\v!height}]
+           \hpack{\smallinfofont \the\scratchcounterone}%
+         \setboxanchor[temp][\c!corner={\v!right,\v!bottom},\c!location={\v!left,\v!height}]
+           \hpack{\smallinfofont \the\scratchcountertwo}%
+       \fi
+       \box\scratchbox
+     \egroup
+   \endgroup}
+
+%D \starttyping
+%D \enabletrackers[framed.math]
+%D
+%D \startTEXpage[offset=10pt,width=40dk]
+%D     \showmakeup[mathglue]
+%D     \def\MyTest#1%
+%D       {$              x #1                          x $\quad
+%D        $              x \mathframed[offset=0pt]{#1} x $\quad
+%D        $\displaystyle x #1                          x $\quad
+%D        $\displaystyle x \mathframed[offset=0pt]{#1} x $}
+%D     \MyTest{>}\blank
+%D     \MyTest{+}\blank
+%D     \MyTest{!}\blank
+%D     \MyTest{+\frac{1}{2}+}\blank
+%D     \MyTest{\frac{1}{2}}\blank
+%D \stopTEXpage
+%D \stoptyping
+
+\protect

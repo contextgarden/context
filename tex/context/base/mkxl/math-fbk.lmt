@@ -246,160 +246,164 @@ virtualcharacters[0xFE352] = function(data)
     end
 end
 
-local function accent_to_extensible(target,newchr,original,oldchr,height,depth,swap,offset,unicode)
-    local characters = target.characters
-    local olddata = characters[oldchr]
-    -- brrr ... pagella has only next
-    if olddata and not olddata.commands then -- not: and olddata.width > 0
-        local addprivate = fonts.helpers.addprivate
-        if swap then
-            swap   = characters[swap]
-            height = swap.depth or 0
-            depth  = 0
-        else
-            height = height or 0
-            depth  = depth  or 0
-        end
-        local oldheight  = olddata.height or 0
-        local correction = swap and
-            downcommand[oldheight - height]
-         or downcommand[oldheight + (offset or 0)]
-        local newdata = {
-            commands = { correction, charcommand[oldchr] },
-            width    = olddata.width,
-            height   = height,
-            depth    = depth,
-            unicode  = unicode,
-        }
-        local glyphdata = newdata
-        local nextglyph = olddata.next
-        while nextglyph do
-            local oldnextdata = characters[nextglyph]
-            if oldnextdata then
-                local newnextdata = {
-                    commands = { correction, charcommand[nextglyph] },
-                    width    = oldnextdata.width,
-                    height   = height,
-                    depth    = depth,
-                }
-                local newnextglyph = addprivate(target,formatters["M-N-%H"](nextglyph),newnextdata)
-                newdata.next = newnextglyph
-                local nextnextglyph = oldnextdata.next
-                if nextnextglyph == nextglyph then
-                    break
-                else
-                    olddata   = oldnextdata
-                    newdata   = newnextdata
-                    nextglyph = nextnextglyph
-                end
-            else
-                report_fallbacks("error in fallback: no valid next, slot %X",nextglyph)
-                break
-            end
-        end
-        local hv = olddata.hvariants
-        if hv then
-            hv = fastcopy(hv)
-            newdata.hvariants = hv
-            for i=1,#hv do
-                local hvi = hv[i]
-                local oldglyph = hvi.glyph
-                local olddata = characters[oldglyph]
-                if olddata then
-                    local newdata = {
-                        commands = { correction, charcommand[oldglyph] },
-                        width    = olddata.width,
-                        height   = height,
-                        depth    = depth,
-                    }
-                    hvi.glyph = addprivate(target,formatters["M-H-%H"](oldglyph),newdata)
-                else
-                    report_fallbacks("error in fallback: no valid hvariants, slot %X, index %i",oldglyph,i)
-                end
-            end
-        end
-        return glyphdata, true
-    else
-        return olddata, false
-    end
-end
+---------------------------------------------------------------------------------
+-- these are moved to math-act.lmt (keep this code)
+---------------------------------------------------------------------------------
 
-virtualcharacters[0x203E] = function(data)
-    local target = data.target
-    local height = 0
-    local depth  = 0
- -- local mathparameters = target.mathparameters
- -- if mathparameters then
- --     height = mathparameters.OverbarVerticalGap
- --     depth  = mathparameters.UnderbarVerticalGap
- -- else
-        height = target.parameters.xheight/4
-        depth  = height
- -- end
-    return accent_to_extensible(target,0x203E,data.original,0x0305,height,depth,nil,nil,0x203E)
-end
-
--- virtualcharacters[0xFE33E] = virtualcharacters[0x203E] -- convenient
--- virtualcharacters[0xFE33F] = virtualcharacters[0x203E] -- convenient
-
-virtualcharacters[0xFE33E] = function(data)
-    local target = data.target
-    local height = 0
-    local depth  = target.parameters.xheight/4
-    return accent_to_extensible(target,0xFE33E,data.original,0x0305,height,depth,nil,nil,0x203E)
-end
-
-virtualcharacters[0xFE33F] = function(data)
-    local target = data.target
-    local height = target.parameters.xheight/8
-    local depth  = height
-    return accent_to_extensible(target,0xFE33F,data.original,0x0305,height,depth,nil,nil,0x203E)
-end
-
-local function smashed(data,unicode,swap,private)
-    local target   = data.target
-    local original = data.original
-    local chardata = target.characters[unicode]
-    if chardata and chardata.height > target.parameters.xheight then
-        return accent_to_extensible(target,private,original,unicode,0,0,swap,nil,unicode)
-    else
-        return original.characters[unicode]
-    end
-end
-
-addextra(0xFE3DE) -- EXTENSIBLE OF 0x03DE
-addextra(0xFE3DC) -- EXTENSIBLE OF 0x03DC
-addextra(0xFE3B4) -- EXTENSIBLE OF 0x03B4
-
-virtualcharacters[0xFE3DE] = function(data) return smashed(data,0x23DE,0x23DF,0xFE3DE) end
-virtualcharacters[0xFE3DC] = function(data) return smashed(data,0x23DC,0x23DD,0xFE3DC) end
-virtualcharacters[0xFE3B4] = function(data) return smashed(data,0x23B4,0x23B5,0xFE3B4) end
-
-addextra(0xFE3DF) -- EXTENSIBLE OF 0x03DF
-addextra(0xFE3DD) -- EXTENSIBLE OF 0x03DD
-addextra(0xFE3B5) -- EXTENSIBLE OF 0x03B5
-
-virtualcharacters[0xFE3DF] = function(data) local c = data.target.characters[0x23DF] if c then c.unicode = 0x23DF return c end end
-virtualcharacters[0xFE3DD] = function(data) local c = data.target.characters[0x23DD] if c then c.unicode = 0x23DD return c end end
-virtualcharacters[0xFE3B5] = function(data) local c = data.target.characters[0x23B5] if c then c.unicode = 0x23B5 return c end end
-
--- todo: add some more .. numbers might change
-
-addextra(0xFE302) -- EXTENSIBLE OF 0x0302
-addextra(0xFE303) -- EXTENSIBLE OF 0x0303
-
-local function smashed(data,unicode,private)
-    local target = data.target
-    local height = target.parameters.xheight / 2
-    local c, done = accent_to_extensible(target,private,data.original,unicode,height,0,nil,-height,unicode)
-    if done then
-        c.topaccent = nil -- or maybe also all the others
-    end
-    return c
-end
-
-virtualcharacters[0xFE302] = function(data) return smashed(data,0x0302,0xFE302) end
-virtualcharacters[0xFE303] = function(data) return smashed(data,0x0303,0xFE303) end
+-- local function accent_to_extensible(target,newchr,original,oldchr,height,depth,swap,offset,unicode)
+--     local characters = target.characters
+--     local olddata = characters[oldchr]
+--     -- brrr ... pagella has only next
+--     if olddata and not olddata.commands then -- not: and olddata.width > 0
+--         local addprivate = fonts.helpers.addprivate
+--         if swap then
+--             swap   = characters[swap]
+--             height = swap.depth or 0
+--             depth  = 0
+--         else
+--             height = height or 0
+--             depth  = depth  or 0
+--         end
+--         local oldheight  = olddata.height or 0
+--         local correction = swap and
+--             downcommand[oldheight - height]
+--          or downcommand[oldheight + (offset or 0)]
+--         local newdata = {
+--             commands = { correction, charcommand[oldchr] },
+--             width    = olddata.width,
+--             height   = height,
+--             depth    = depth,
+--             unicode  = unicode,
+--         }
+--         local glyphdata = newdata
+--         local nextglyph = olddata.next
+--         while nextglyph do
+--             local oldnextdata = characters[nextglyph]
+--             if oldnextdata then
+--                 local newnextdata = {
+--                     commands = { correction, charcommand[nextglyph] },
+--                     width    = oldnextdata.width,
+--                     height   = height,
+--                     depth    = depth,
+--                 }
+--                 local newnextglyph = addprivate(target,formatters["M-N-%H"](nextglyph),newnextdata)
+--                 newdata.next = newnextglyph
+--                 local nextnextglyph = oldnextdata.next
+--                 if nextnextglyph == nextglyph then
+--                     break
+--                 else
+--                     olddata   = oldnextdata
+--                     newdata   = newnextdata
+--                     nextglyph = nextnextglyph
+--                 end
+--             else
+--                 report_fallbacks("error in fallback: no valid next, slot %X",nextglyph)
+--                 break
+--             end
+--         end
+--         local hv = olddata.hparts
+--         if hv then
+--             hv = fastcopy(hv)
+--             newdata.hparts = hv
+--             for i=1,#hv do
+--                 local hvi = hv[i]
+--                 local oldglyph = hvi.glyph
+--                 local olddata = characters[oldglyph]
+--                 if olddata then
+--                     local newdata = {
+--                         commands = { correction, charcommand[oldglyph] },
+--                         width    = olddata.width,
+--                         height   = height,
+--                         depth    = depth,
+--                     }
+--                     hvi.glyph = addprivate(target,formatters["M-H-%H"](oldglyph),newdata)
+--                 else
+--                     report_fallbacks("error in fallback: no valid hparts, slot %X, index %i",oldglyph,i)
+--                 end
+--             end
+--         end
+--         return glyphdata, true
+--     else
+--         return olddata, false
+--     end
+-- end
+--
+-- virtualcharacters[0x203E] = function(data) -- overbar
+--     local target = data.target
+--     local height = 0
+--     local depth  = 0
+--  -- local mathparameters = target.mathparameters
+--  -- if mathparameters then
+--  --     height = mathparameters.OverbarVerticalGap
+--  --     depth  = mathparameters.UnderbarVerticalGap
+--  -- else
+--         height = target.parameters.xheight/4
+--         depth  = height
+--  -- end
+--     return accent_to_extensible(target,0x203E,data.original,0x0305,height,depth,nil,nil,0x203E)
+-- end
+--
+-- -- virtualcharacters[0xFE33E] = virtualcharacters[0x203E] -- convenient
+-- -- virtualcharacters[0xFE33F] = virtualcharacters[0x203E] -- convenient
+--
+-- virtualcharacters[0xFE33E] = function(data)
+--     local target = data.target
+--     local height = 0
+--     local depth  = target.parameters.xheight/4
+--     return accent_to_extensible(target,0xFE33E,data.original,0x0305,height,depth,nil,nil,0x203E)
+-- end
+--
+-- virtualcharacters[0xFE33F] = function(data)
+--     local target = data.target
+--     local height = target.parameters.xheight/8
+--     local depth  = height
+--     return accent_to_extensible(target,0xFE33F,data.original,0x0305,height,depth,nil,nil,0x203E)
+-- end
+--
+-- local function smashed(data,unicode,swap,private)
+--     local target   = data.target
+--     local original = data.original
+--     local chardata = target.characters[unicode]
+--     if chardata and chardata.height > target.parameters.xheight then
+--         return accent_to_extensible(target,private,original,unicode,0,0,swap,nil,unicode)
+--     else
+--         return original.characters[unicode]
+--     end
+-- end
+--
+-- addextra(0xFE3DE) -- EXTENSIBLE OF 0x03DE : overbrace
+-- addextra(0xFE3DC) -- EXTENSIBLE OF 0x03DC : overparent
+-- addextra(0xFE3B4) -- EXTENSIBLE OF 0x03B4 : overbracket
+--
+-- virtualcharacters[0xFE3DE] = function(data) return smashed(data,0x23DE,0x23DF,0xFE3DE) end
+-- virtualcharacters[0xFE3DC] = function(data) return smashed(data,0x23DC,0x23DD,0xFE3DC) end
+-- virtualcharacters[0xFE3B4] = function(data) return smashed(data,0x23B4,0x23B5,0xFE3B4) end
+--
+-- addextra(0xFE3DF) -- EXTENSIBLE OF 0x03DF
+-- addextra(0xFE3DD) -- EXTENSIBLE OF 0x03DD
+-- addextra(0xFE3B5) -- EXTENSIBLE OF 0x03B5
+--
+-- virtualcharacters[0xFE3DF] = function(data) local c = data.target.characters[0x23DF] if c then c.unicode = 0x23DF return c end end
+-- virtualcharacters[0xFE3DD] = function(data) local c = data.target.characters[0x23DD] if c then c.unicode = 0x23DD return c end end
+-- virtualcharacters[0xFE3B5] = function(data) local c = data.target.characters[0x23B5] if c then c.unicode = 0x23B5 return c end end
+--
+-- -- todo: add some more .. numbers might change
+--
+-- addextra(0xFE302) -- EXTENSIBLE OF 0x0302
+-- addextra(0xFE303) -- EXTENSIBLE OF 0x0303
+--
+-- local function smashed(data,unicode,private)
+--     local target = data.target
+--     local height = target.parameters.xheight / 2
+--     local c, done = accent_to_extensible(target,private,data.original,unicode,height,0,nil,-height,unicode)
+--     if done then
+--         c.topaccent = nil -- or maybe also all the others
+--     end
+--     return c
+-- end
+--
+-- virtualcharacters[0xFE302] = function(data) return smashed(data,0x0302,0xFE302) end
+-- virtualcharacters[0xFE303] = function(data) return smashed(data,0x0303,0xFE303) end
 
 ---------------------------------------------------------------------------------
 -- these are moved to math-act.lmt
@@ -717,7 +721,7 @@ virtualcharacters[0x305] = function(data)
         height   = height,
         depth    = depth,
         commands = { { "rule", height, width } },
-        hvariants = {
+        hparts   = {
             {
               advance   = width,
               ["end"]   = used,

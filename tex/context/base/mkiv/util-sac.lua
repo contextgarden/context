@@ -544,3 +544,39 @@ do
     end
 
 end
+
+if bit32 and not streams.tocardinal1 then
+
+    local extract = bit32.extract
+    local char    = string.char
+
+             streams.tocardinal1           = char
+    function streams.tocardinal2(n)   return char(extract( 8,8),extract( 0,8)) end
+    function streams.tocardinal3(n)   return char(extract(16,8),extract( 8,8),extract(0,8)) end
+    function streams.tocardinal4(n)   return char(extract(24,8),extract(16,8),extract(8,8),extract(0,8)) end
+
+             streams.tocardinal1le         = char
+    function streams.tocardinal2le(n) return char(extract(0,8),extract(8,8)) end
+    function streams.tocardinal3le(n) return char(extract(0,8),extract(8,8),extract(16,8)) end
+    function streams.tocardinal4le(n) return char(extract(0,8),extract(8,8),extract(16,8),extract(24,8)) end
+
+end
+
+if not streams.readcstring then
+
+    local readchar = streams.readchar
+    local concat   = table.concat
+
+    function streams.readcstring(f)
+        local t = { }
+        while true do
+            local c = readchar(f)
+            if c and c ~= "\0" then
+                t[#t+1] = c
+            else
+                return concat(t)
+            end
+        end
+    end
+
+end

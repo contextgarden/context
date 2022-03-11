@@ -254,6 +254,24 @@ local function fixedpsname(psname,fallback)
     return usedname, psname ~= usedname
 end
 
+local function scaleparts(parts,delta)
+    local t = { }
+    for i=1,#parts do
+        local p = parts[i]
+        local s = p["start"]   or 0
+        local e = p["end"]     or 0
+        local a = p["advance"] or 0
+        t[i] = {
+            ["start"]    = s == 0 and 0 or s * delta,
+            ["end"]      = e == 0 and 0 or e * delta,
+            ["advance"]  = a == 0 and 0 or a * delta,
+            ["extender"] = p["extender"],
+            ["glyph"]    = p["glyph"],
+        }
+    end
+    return t
+end
+
 function constructors.scale(tfmdata,specification)
     local target         = { } -- the new table
     --
@@ -567,9 +585,7 @@ function constructors.scale(tfmdata,specification)
     --
     for unicode, character in next, characters do
         local chr, description, index
-
         -- todo: add description entry to char entry instead of index ... saves elsewhere too
-
         if changed then
             local c = changed[unicode]
             if c and c ~= unicode then
@@ -670,48 +686,17 @@ function constructors.scale(tfmdata,specification)
         if hasmath then
             --
             -- todo, just operate on descriptions.math
-            local vn = character.next
-            if vn then
-                chr.next = vn
-            else
-                local vv = character.vvariants
-                if vv then
-                    local t = { }
-                    for i=1,#vv do
-                        local vvi = vv[i]
-                        local s = vvi["start"]   or 0
-                        local e = vvi["end"]     or 0
-                        local a = vvi["advance"] or 0
-                        t[i] = { -- zero check nicer for 5.3
-                            ["start"]    = s == 0 and 0 or s * vdelta,
-                            ["end"]      = e == 0 and 0 or e * vdelta,
-                            ["advance"]  = a == 0 and 0 or a * vdelta,
-                            ["extender"] = vvi["extender"],
-                            ["glyph"]    = vvi["glyph"],
-                        }
-                    end
-                    chr.vvariants = t
-                else
-                    local hv = character.hvariants
-                    if hv then
-                        local t = { }
-                        for i=1,#hv do
-                            local hvi = hv[i]
-                            local s = hvi["start"]   or 0
-                            local e = hvi["end"]     or 0
-                            local a = hvi["advance"] or 0
-                            t[i] = { -- zero check nicer for 5.3
-                                ["start"]    = s == 0 and 0 or s * hdelta,
-                                ["end"]      = e == 0 and 0 or e * hdelta,
-                                ["advance"]  = a == 0 and 0 or a * hdelta,
-                                ["extender"] = hvi["extender"],
-                                ["glyph"]    = hvi["glyph"],
-                            }
-                        end
-                        chr.hvariants = t
-                    end
-                end
-                -- todo also check mathitalics (or that one can go away)
+            local nxt = character.next
+            if nxt then
+                chr.next = nxt
+            end
+            local vparts = character.vparts
+            if vparts then
+                chr.vparts = scaleparts(vparts,vdelta)
+            end
+            local hparts = character.hparts
+            if hparts then
+                chr.hparts = scaleparts(hparts,hdelta)
             end
             local vi = character.vitalic
             if vi and vi ~= 0 then
@@ -742,13 +727,17 @@ function constructors.scale(tfmdata,specification)
                     chr.italic = vi*hdelta
                 end
             end
-            local ft = character.options
-            if ft then
-                chr.options = ft
-            end
+         -- local ft = character.options
+         -- if ft then
+         --     chr.options = ft
+         -- end
             local sm = character.smaller
             if sm then
                 chr.smaller = sm
+            end
+            local fa = character.flataccent
+            if fa then
+                chr.flataccent = fa
             end
         elseif autoitalicamount then -- itlc feature
             local vi = description.italic

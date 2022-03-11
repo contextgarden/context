@@ -46,108 +46,129 @@
 
 \installcorenamespace{mathaccents}
 
-\installcommandhandler \??mathaccents {mathaccents} \??mathaccents
+\installcommandhandler \??mathaccents {mathaccent} \??mathaccents
+
+\aliased\let\setupmathaccents\setupmathaccent
 
 \setupmathaccents
   [\c!top=,
    \c!bottom=,
    \c!mathstyle=,
    \c!color=,
+   \c!stretch=\v!no,
    \c!define=\v!yes] % not used
 
-\definemathaccents
+\definemathaccent
   [\v!both]
 
-\definemathaccents
+\definemathaccent
   [\v!top]
   [\v!both]
 
-\definemathaccents
+\definemathaccent
   [\v!bottom]
   [\v!both]
 
 \permanent\tolerant\protected\def\definemathtopaccent[#1]#*[#2]#*[#3]% class name top
   {\ifparameter#3\or
-     \frozen\protected\instance\edefcsname#2\endcsname{\math_accents_make_double                        {#1}\plusone{\number#3}\zerocount}%
+     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                        {#1}\plusone{\number#3}\zerocount}%
    \else
-     \frozen\protected\instance\edefcsname#1\endcsname{\math_accents_make_double\noexpand\currentmathaccents\plusone{\number#2}\zerocount}%
+     \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_make_double\noexpand\currentmathaccent\plusone{\number#2}\zerocount}%
    \fi}
 
 \permanent\tolerant\protected\def\definemathbottomaccent[#1]#*[#2]#*[#3]% class name bottom
   {\ifparameter#3\or
-     \frozen\protected\instance\edefcsname#2\endcsname{\math_accents_make_double                        {#1}\plustwo\zerocount{\number#3}}%
+     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                        {#1}\plustwo\zerocount{\number#3}}%
    \else
-     \frozen\protected\instance\edefcsname#1\endcsname{\math_accents_make_double\noexpand\currentmathaccents\plustwo\zerocount{\number#2}}%
+     \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_make_double\noexpand\currentmathaccent\plustwo\zerocount{\number#2}}%
    \fi}
 
 \permanent\tolerant\protected\def\definemathdoubleaccent[#1]#*[#2]#*[#3]#*[#4]% class name top bottom
   {\ifparameter#4\or
-     \frozen\protected\instance\edefcsname#2\endcsname{\math_accents_make_double                        {#1}\plusthree{\number#3}{\number#4}}%
+     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                        {#1}\plusthree{\number#3}{\number#4}}%
    \else
-     \frozen\protected\instance\edefcsname#1\endcsname{\math_accents_make_double\noexpand\currentmathaccents\plusthree{\number#2}{\number#3}}%
+     \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_make_double\noexpand\currentmathaccent\plusthree{\number#2}{\number#3}}%
    \fi}
 
-\let\math_accents_color_pop\donothing
+\installlocalcurrenthandler \??mathaccents {mathaccent}
 
-\def\math_accents_color_push_yes
-  {\pushcolor[\p_math_accent_color]%
-   \let\math_accents_color_pop\popcolor}
-
-\def\math_accents_color_push_nop
-  {\let\math_accents_color_pop\donothing}
-
-\protected\def\math_accents_make_double#class#kind#top#bottom#content%
-  {\begingroup
-   \edef\currentmathaccents {#class}%
-   \edef\p_math_accent_color{\mathaccentsparameter\c!color}%
-   \startusemathstyleparameter\mathaccentsparameter\c!mathstyle
-   \ifempty\p_math_accent_color
-     \math_accents_color_push_nop
-   \else
-     \math_accents_color_push_yes
-   \fi
+\tolerant\protected\def\math_accent_make_double#class#kind#top#bottom#*[#settings]#:#content%
+  {\beginmathgroup
+   \setlocalmathaccentcurrent{#class}% \edef\currentmathaccent{#class}%
+   \startusemathstyleparameter\mathaccentparameter\c!mathstyle
+   \setupcurrentmathaccent[#settings]%
+   \edef\m_fixed{\ifcstok{\mathaccentparameter\c!stretch}\v!yes\else\s!fixed\fi}%
+   \Umathaccent
+     \usedcolorparameterattributes{\mathaccentparameter\c!color}%
    \ifcase#kind\or
-     \Umathaccent        \fam\zerocount#top
+     top \m_fixed
+     \fam\zerocount#top
    \or
-     \Umathaccent bottom \fam\zerocount#bottom
+     bottom \m_fixed
+     \fam\zerocount#bottom
    \or
-     \Umathaccent both   \fam\zerocount#top
-                         \fam\zerocount#bottom
+     both \m_fixed
+     \fam\zerocount#top
+     \fam\zerocount#bottom
    \fi
-   {\math_accents_color_pop#content}%
+   {\ifconditional\c_math_accent_auto_dotless\mathdotless\fi#content}%
    \stopusemathstyleparameter
-   \endgroup}
+   \endmathgroup}
 
 %D Relative new:
 
-\newconditional\c_math_accents_auto_dotless \settrue\c_math_accents_auto_dotless % cf opentype math
+\newconditional\c_math_accent_auto_dotless \settrue\c_math_accent_auto_dotless % cf opentype math
 
-\aliased\let\normalgrave\grave \permanent\protected\def\dotlessgrave#1{\normalgrave{\mathdotless#1}}
-\aliased\let\normalddot \ddot  \permanent\protected\def\dotlessddot #1{\normalddot {\mathdotless#1}}
-\aliased\let\normalbar  \bar   \permanent\protected\def\dotlessbar  #1{\normalbar  {\mathdotless#1}}
-\aliased\let\normalacute\acute \permanent\protected\def\dotlessacute#1{\normalacute{\mathdotless#1}}
-\aliased\let\normalhat  \hat   \permanent\protected\def\dotlesshat  #1{\normalhat  {\mathdotless#1}}
-\aliased\let\normalcheck\check \permanent\protected\def\dotlesscheck#1{\normalcheck{\mathdotless#1}}
-\aliased\let\normalbreve\breve \permanent\protected\def\dotlessbreve#1{\normalbreve{\mathdotless#1}}
-\aliased\let\normaldot  \dot   \permanent\protected\def\dotlessdot  #1{\normaldot  {\mathdotless#1}}
-\aliased\let\normalring \ring  \permanent\protected\def\dotlessring #1{\normalring {\mathdotless#1}}
-\aliased\let\normaltilde\tilde \permanent\protected\def\dotlesstilde#1{\normaltilde{\mathdotless#1}}
-\aliased\let\normaldddot\dddot \permanent\protected\def\dotlessdddot#1{\normaldddot{\mathdotless#1}}
+\aliased\let\normalgrave\grave
+\aliased\let\normalddot \ddot
+\aliased\let\normalbar  \bar
+\aliased\let\normalacute\acute
+\aliased\let\normalhat  \hat
+\aliased\let\normalcheck\check
+\aliased\let\normalbreve\breve
+\aliased\let\normaldot  \dot
+\aliased\let\normalring \ring
+\aliased\let\normaltilde\tilde
+\aliased\let\normaldddot\dddot
 
-\def\math_accents_auto_dotless#1#2{\ifconditional\c_math_accents_auto_dotless\expandafter#2\else\expandafter#1\fi}
+\pushoverloadmode
 
-\permanent\protected\def\grave   {\math_accents_auto_dotless\normalgrave   \dotlessgrave   }
-\permanent\protected\def\ddot    {\math_accents_auto_dotless\normalddot    \dotlessddot    }
-\permanent\protected\def\bar     {\math_accents_auto_dotless\normalbar     \dotlessbar     }
-\permanent\protected\def\acute   {\math_accents_auto_dotless\normalacute   \dotlessacute   }
-\permanent\protected\def\hat     {\math_accents_auto_dotless\normalhat     \dotlesshat     }
-\permanent\protected\def\check   {\math_accents_auto_dotless\normalcheck   \dotlesscheck   }
-\permanent\protected\def\breve   {\math_accents_auto_dotless\normalbreve   \dotlessbreve   }
-\permanent\protected\def\dot     {\math_accents_auto_dotless\normaldot     \dotlessdot     }
-\permanent\protected\def\ring    {\math_accents_auto_dotless\normalring    \dotlessring    }
-\permanent\protected\def\tilde   {\math_accents_auto_dotless\normaltilde   \dotlesstilde   }
-\permanent\protected\def\dddot   {\math_accents_auto_dotless\normaldddot   \dotlessdddot   }
+% these are not stretched  ... we should adapt char-def.lua to use these:
+
+\definemathtopaccent[\v!top][grave]["60]
+\definemathtopaccent[\v!top][ddot] ["A8]
+\definemathtopaccent[\v!top][bar]  ["AF]
+\definemathtopaccent[\v!top][acute]["B4]
+\definemathtopaccent[\v!top][hat]  ["2C6]  % "302
+\definemathtopaccent[\v!top][check]["2C7]
+\definemathtopaccent[\v!top][breve]["2D8]
+\definemathtopaccent[\v!top][dot]  ["2D9]
+\definemathtopaccent[\v!top][ring] ["2DA]
+\definemathtopaccent[\v!top][tilde]["2DC]
+\definemathtopaccent[\v!top][dddot]["20DB]
+
+\definemathaccent
+  [\v!top:\v!stretch]
+  [\v!top]
+  [\c!stretch=\v!yes]
+
+%D We have a problem. We can use stackers but then we need to adapt the dimensions
+%D which is font dependent. So, for now we keep them as accents.
+
+\definemathtopaccent[\v!top:\v!stretch][widegrave]["0300] % ["060]
+\definemathtopaccent[\v!top:\v!stretch][wideddot] ["0308] % ["0A8]
+\definemathtopaccent[\v!top:\v!stretch][widebar]  ["0304] % ["0AF]
+\definemathtopaccent[\v!top:\v!stretch][wideacute]["0301] % ["0B4]
+\definemathtopaccent[\v!top:\v!stretch][widehat]  ["0302] % ["2C6]
+\definemathtopaccent[\v!top:\v!stretch][widecheck]["030C] % ["2C7]
+\definemathtopaccent[\v!top:\v!stretch][widebreve]["0306] % ["2D8]
+\definemathtopaccent[\v!top:\v!stretch][widedot]  ["0307] % ["2D9]
+\definemathtopaccent[\v!top:\v!stretch][widering] ["030A] % ["2DA]
+\definemathtopaccent[\v!top:\v!stretch][widetilde]["0303] % ["2DC]
+\definemathtopaccent[\v!top:\v!stretch][widedddot]["20DB]
 
 \aliased\let\mathring\ring % for a while
+
+\popoverloadmode
 
 \protect \endinput

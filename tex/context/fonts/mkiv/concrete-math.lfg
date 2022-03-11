@@ -1,0 +1,29 @@
+-- this file might go away and is for experiments only
+
+return {
+    name = "concrete-math",
+    version = "1.00",
+    comment = "Goodies that complement concrete math.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        parameters = {
+            NoLimitSupFactor =   0,
+            NoLimitSubFactor = 900,
+        },
+        tweaks = {
+            aftercopying = {
+             -- {
+             --     tweak   = "fixprimes",
+             --     factor  = 0.9,
+             -- },
+            },
+        },
+        bigslots = {
+            1, 2, 3, 4
+        },
+    },
+
+}
+
+

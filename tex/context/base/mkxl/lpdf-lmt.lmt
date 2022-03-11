@@ -1529,7 +1529,7 @@ local flushimage  do
             local d = -depth + half
             local w =  width - line
             local t =  total - line
-            if baseline then
+            if baseline and w > 0 then
                 rule = f_y(line,half,d,w,t,half,w)
             else
                 rule = f_x(line,half,d,w,t)
@@ -3406,8 +3406,13 @@ do
         converter(driver,texgetbox(boxnumber),"page")
     end
 
-    localconverter = function(...)
-        converter(useddriver,...)
+--     localconverter = function(...)
+--         print(...)                -- ok when we add this
+--         converter(useddriver,...) -- otherwise nil .. lua bug
+--     end
+
+    localconverter = function(a,b,c,d)
+        converter(useddriver,a,b,c,d)
     end
 
     drivers.install {

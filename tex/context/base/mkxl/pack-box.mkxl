@@ -1118,13 +1118,13 @@
      [\c!width=\overlaywidth,\c!height=\overlayheight]
      {\overlayimage{#1}}}
 
-%D Here is an end December 2021 experimental feature: anchored boxes. This will move to
-%D pack-box.mkxl
+%D Here is an end December 2021 experimental feature: anchored boxes.
 
 \installcorenamespace{boxanchor}
 \installcorenamespace{boxanchorid}
 \installcorenamespace{boxanchorbox}
 \installcorenamespace{boxpreset}
+\installcorenamespace{boxanchors}
 
 \installparameterhandler \??boxanchor {boxanchor}
 \installsetuphandler     \??boxanchor {boxanchor}
@@ -1221,16 +1221,16 @@
 \expandafter\integerdef\csname\??boxpreset\v!left,\v!top     \endcsname\leftheightlistanchorcode
 \expandafter\integerdef\csname\??boxpreset\v!left,\v!depth   \endcsname\leftdepthlistanchorcode
 \expandafter\integerdef\csname\??boxpreset\v!left,\v!bottom  \endcsname\leftdepthlistanchorcode
-%
+
 \expandafter\integerdef\csname\??boxpreset\v!right           \endcsname\rightoriginlistanchorcode
 \expandafter\integerdef\csname\??boxpreset\v!right,\v!height \endcsname\rightheightlistanchorcode
 \expandafter\integerdef\csname\??boxpreset\v!right,\v!top    \endcsname\rightheightlistanchorcode
 \expandafter\integerdef\csname\??boxpreset\v!right,\v!depth  \endcsname\rightdepthlistanchorcode
 \expandafter\integerdef\csname\??boxpreset\v!right,\v!bottom \endcsname\rightdepthlistanchorcode
 
-%                                                                      \centeroriginlistanchorcode
-%                                                                      \centerheightlistanchorcode
-%                                                                      \centerdepthlistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!line            \endcsname\centeroriginlistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!height          \endcsname\centerheightlistanchorcode
+\expandafter\integerdef\csname\??boxpreset\v!depth           \endcsname\centerdepthlistanchorcode
 
 \expandafter\integerdef\csname\??boxpreset\v!middle          \endcsname\halfwaytotallistanchorcode
 \expandafter\integerdef\csname\??boxpreset\v!middle,\v!height\endcsname\halfwayheightlistanchorcode
@@ -1239,6 +1239,67 @@
 \expandafter\integerdef\csname\??boxpreset\v!middle,\v!bottom\endcsname\halfwaydepthlistanchorcode
 \expandafter\integerdef\csname\??boxpreset\v!middle,\v!left  \endcsname\halfwayleftlistanchorcode
 \expandafter\integerdef\csname\??boxpreset\v!middle,\v!right \endcsname\halfwayrightlistanchorcode
+
+% Musical timestamp: 2022-02-07 while listening Hypneurotic from The Blurred Horizon (n times);
+% Jim Matheos with Gavin Harrison; very hypnotic indeed.
+
+\permanent\def\boxanchorpresetcode#1%
+  {\ifcsname\??boxpreset#1\endcsname\lastnamedcs\else\halfwaytotallistanchorcode\fi}
+
+\newcount\registeredboxanchor
+
+\permanent\protected\def\registerboxanchor
+  {\global\advance\registeredboxanchor\minusone}
+
+\permanent\protected\def\defineboxanchor[#1]%
+  {\registerboxanchor
+   \expandafter\integerdef\csname\??boxanchors#1\endcsname\registeredboxanchor}
+
+\permanent\def\namedboxanchor#1%
+  {\normalexpanded{\ifcsname\??boxanchors#1\endcsname\lastnamedcs\orelse\ifchknum#1\or#1\else\zerocount\fi}}
+
+\installcorenamespace{boxanchorcontent}
+
+\installparameterhandler \??boxanchorcontent {boxanchorcontent}
+\installsetuphandler     \??boxanchorcontent {boxanchorcontent}
+
+\setupboxanchorcontent
+  [\c!yoffset=\zeropoint,
+   \c!xoffset=\zeropoint,
+   \c!width=\zeropoint,
+   \c!location=\v!height,
+   \c!corner=\v!depth]
+
+\permanent\tolerant\protected\def\setboxanchor[#1]#*[#2]#*% assumes \defineboxanchor[#1]
+  {\begingroup
+   \dowithnextbox
+     {\setupcurrentboxanchorcontent[#2]%
+      \scratchxoffset\boxanchorcontentparameter\c!xoffset
+      \scratchyoffset\boxanchorcontentparameter\c!yoffset
+      \scratchcounter\namedboxanchor{#1}%
+      \registeranchorbox
+         \scratchcounter
+         \plusone % order
+         \hbox
+            \s!anchors % check order of these:
+              \boxanchorpresetcode{\boxanchorcontentparameter\c!corner}
+              \boxanchorpresetcode{\boxanchorcontentparameter\c!location}
+            \ifzeropt\scratchxoffset\else \s!xoffset \scratchxoffset\fi
+            \ifzeropt\scratchyoffset\else \s!yoffset \scratchyoffset\fi
+            \s!target \scratchcounter
+            {\box\nextbox}%
+      \endgroup}}
+
+% to be used as:
+%
+% \scratchcounter\registeredboxanchor
+%
+% \registeranchorbox
+%   \scratchcounter
+%   \plusone
+%   \ruledhbox{...}
+%
+% \hbox source \scratchcounter
 
 % \negatexlistsigncode
 % \negateylistsigncode

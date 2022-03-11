@@ -7,31 +7,7 @@
 
 % \nopdfcompression
 
-\def\showSVGcode#1#2%
-  {\ctxlua{metapost.showsvgpage{
-        filename = "#1",
-        index    = tonumber(#2),
-        method   = "code"
-    }}}
-
-\def\showSVGcodeG#1#2%
-  {\ctxlua{metapost.showsvgpage{
-        filename = "#1",
-        index    = tonumber(#2),
-        method   = "code",
-        x        = 0,
-        y        = 1000,
-        width    = 1000,
-        height   = 1000,
-        noclip   = true
-    }}}
-
-\def\typeSVGcode#1#2%
-  {\ctxlua{metapost.typesvgpage{
-        filename = "#1",
-        index    = tonumber(#2)
-    }}}
-
+\usemodule[svg]
 \usemodule[abbreviations-logos]
 \usemodule[scite]
 

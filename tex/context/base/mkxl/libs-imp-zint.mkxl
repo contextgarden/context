@@ -22,7 +22,7 @@
 %D
 %D % e:\tex-context\tex\texmf-win64\bin\lib\luametatex\zint\libzint.dll
 
-\enabletrackers[*res*]
+% \enabletrackers[*res*]
 
 \registerctxluafile{libs-imp-zint}{autosuffix}
 
@@ -34,12 +34,13 @@
   {\bgroup
    \usedzintfont
    \getdummyparameters
-     [\c!alternative=,\c!text=,#1]%
+     [\c!alternative=,\c!text=,\c!option=,#1]%
    \scale
      [#1]%
      {\clf_zint
-         code {\dummyparameter\c!alternative}
-         text {\dummyparameter\c!text}
+         code   {\dummyparameter\c!alternative}
+         text   {\dummyparameter\c!text}
+         option {\dummyparameter\c!option}
       \relax}%
    \egroup}
 
@@ -51,23 +52,76 @@
 
 \dontcomplain
 
-\dorecurse{1}{
-    \startTEXpage
-        \barcode[alternative=PDF417,text={Hans Hagen}]%
-        \blank
-        \barcode[alternative=PDF417,text={Ton Otten}]%
-        \blank
-        \barcode[alternative=ISBN,text=9789490688011]%
-        \blank
-        \barcode[alternative=isbn,text=9789490688011,width=3cm]%
-        \blank
-        \dontleavehmode
-        \barcode[alternative=qr code,text={This is ConTeXt MKIV : #1}]
-        \barcode[alternative=qr code,text={This is ConTeXt LMTX}]
-        \barcode[alternative=qr code,text={\cldloadfile{tufte}},width=3cm]
-    \stopTEXpage
-}
+% \dorecurse{1}{
+%     \startTEXpage
+%         \barcode[alternative=PDF417,text={Hans Hagen}]%
+%         \blank
+%         \barcode[alternative=PDF417,text={Ton Otten}]%
+%         \blank
+%         \barcode[alternative=ISBN,text=9789490688011]%
+%         \blank
+%         \barcode[alternative=isbn,text=9789490688011,width=3cm]%
+%         \blank
+%         \dontleavehmode
+%         \barcode[alternative=qr code,text={This is ConTeXt MKIV : #1}]
+%         \barcode[alternative=qr code,text={This is ConTeXt LMTX}]
+%         \barcode[alternative=qr code,text={\cldloadfile{tufte}},width=3cm]
+%         \blank
+%         \barcode[alternative=datamatrix,text=whatever,width=3cm,option=square]
+%         \scale[width=3cm,height=3cm]{\barcode[alternative=datamatrix,text=whatever,width=3cm,option=square]}
+%         \barcode[alternative=datamatrix,text={helloworld}]
+%         \barcode[alternative=datamatrix,text={hello world}]
+%     \stopTEXpage
+% }
 
+    \startTEXpage
+        \startluacode
+            for i=1,100 do
+                context.dontleavehmode()
+                context.barcode {
+                    alternative = "datamatrix",
+                    text        = string.rep("!",i),
+                }
+                context.space()
+                context.allowbreak()
+            end
+        \stopluacode
+    \stopTEXpage
+
+    \startTEXpage
+        \startluacode
+            for i=1,100 do
+                context.dontleavehmode()
+                context.barcode {
+                    alternative = "datamatrix",
+                    text        = string.rep("!",i),
+                    option      = "square",
+                }
+                context.space()
+                context.allowbreak()
+            end
+        \stopluacode
+    \stopTEXpage
+
+        \startluacode
+            for i=1,25 do
+                context.startTEXpage()
+                context.dontleavehmode()
+                context(i)
+                context.space()
+                context.barcode {
+                    alternative = "datamatrix",
+                    text        = string.rep("!",i),
+                }
+                context.space()
+                context.barcode {
+                    alternative = "datamatrix",
+                    text        = string.rep("!",i),
+                    option      = "square",
+                }
+                context.stopTEXpage()
+            end
+        \stopluacode
 \stoptext
 
 

@@ -258,6 +258,8 @@ end
         --
         shared.processes = next(features) and tfm.setfeatures(tfmdata,features) or nil
         --
+        fonts.loggers.register(tfmdata,'tfm',specification)
+        --
         if size < 0 then
             size = idiv(65536 * -size,100)
         end

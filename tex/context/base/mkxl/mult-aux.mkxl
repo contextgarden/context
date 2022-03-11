@@ -1073,6 +1073,22 @@
      \expandafter\noexpand\csname current#2parent\endcsname
      \expandafter\noexpand\csname inject#2parent\endcsname}}
 
+%D Cheaper (assumes grouping at some point):
+
+\permanent\protected\def\mult_interfaces_install_local_current_injector#1#2#3#4%
+  {\protected\def#4##1%
+     {\advance#2\plusone
+      \edef#3{##1:\the#2}% \currentXXX
+      \edefcsname#1#3:\s!parent\endcsname{#1##1}}}
+
+\permanent\protected\def\installlocalcurrenthandler#1#2% \??XXX {XXX}
+  {\expandafter\newcount\csname#1:\s!counter\endcsname
+   \normalexpanded{\mult_interfaces_install_local_current_injector
+     {\noexpand#1}%
+     \expandafter\noexpand\csname #1:\s!counter\endcsname
+     \expandafter\noexpand\csname current#2\endcsname
+     \expandafter\noexpand\csname setlocal#2current\endcsname}}
+
 % The \LUA\ based variant is twice as fast as the above but as said, we don't use
 % this one that often. It's more about less tracing than speed here.
 

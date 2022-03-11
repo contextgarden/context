@@ -104,14 +104,14 @@ local defaults = {
 }
 
 local styles = {
-    'cramped_display_style',
-    'cramped_script_script_style',
-    'cramped_script_style',
-    'cramped_text_style',
     'display_style',
-    'script_script_style',
-    'script_style',
+    'cramped_display_style',
     'text_style',
+    'cramped_text_style',
+    'script_style',
+    'cramped_script_style',
+    'script_script_style',
+    'cramped_script_script_style',
 }
 
 for k, v in next, defaults do

@@ -26,7 +26,7 @@ local function initialize(tfmdata,value)
     if mathparameters then
         local sup, sub
         if type(value) == "string" then
-            sup, sub = lpegmatch(splitter,value)
+            sup, sub = lpegmatch(splitter,value) -- settings_to_array
             if not sup then
                 sub, sup = 0, 0
             elseif not sub then
@@ -262,6 +262,46 @@ end
 registerotffeature {
     name         = "mathcontrol",
     description  = "control specific old/new math handling",
+    initializers = {
+        base = initialize,
+        node = initialize,
+    }
+}
+
+local function initialize(tfmdata,value)
+    if value then
+        local validlookups, lookuplist = fonts.handlers.otf.collectlookups(tfmdata.shared.rawdata,"flac","math","dflt")
+        if validlookups then
+            -- it's quite likely just one step
+            local characters = tfmdata.characters
+            local changed = tfmdata.changed
+            for i=1,#lookuplist do
+                local lookup   = lookuplist[i]
+                local steps    = lookup.steps
+                local nofsteps = lookup.nofsteps
+                for i=1,nofsteps do
+                    local coverage = steps[i].coverage
+                    if coverage then
+                        for k, v in next, coverage do
+                            local c = characters[k]
+                            local f = characters[v]
+                            if c and f then
+                                c.flataccent = v
+                                if not f.unicode then
+                                    f.unicode = c.unicode
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+registerotffeature {
+    name         = "flattenaccents",
+    description  = "mapping accents to flat ones",
     initializers = {
         base = initialize,
         node = initialize,

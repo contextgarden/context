@@ -1,0 +1,104 @@
+%D \module
+%D   [      file=s-math-atoms.mksl,
+%D        version=2022.02.13,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Show Math Atom Spacing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is just a quick and dirty overview.
+
+\startmodule[math-atoms]
+
+\setvalue{atom:\number\mathordinarycode    }{ord}%inary}
+\setvalue{atom:\number\mathoperatorcode    }{ope}%rator}
+\setvalue{atom:\number\mathbinarycode      }{bin}%ary}
+\setvalue{atom:\number\mathrelationcode    }{rel}%ation}
+\setvalue{atom:\number\mathopencode        }{ope}%n}
+\setvalue{atom:\number\mathclosecode       }{clo}%se}
+\setvalue{atom:\number\mathpunctuationcode }{pun}%ctuation}
+%setvalue{atom:\number\mathinnercode       }{inn}%er}
+%setvalue{atom:\number\mathovercode        }{ove}%r}
+%setvalue{atom:\number\mathundercode       }{und}%er}
+\setvalue{atom:\number\mathfractioncode    }{fra}%ction}
+\setvalue{atom:\number\mathradicalcode     }{rad}%ical}
+\setvalue{atom:\number\mathmiddlecode      }{mid}%dle}
+%setvalue{atom:\number\mathaccentcode      }{acc}%ent}
+%setvalue{atom:\number\mathfencedcode      }{fen}%ced}
+%setvalue{atom:\number\mathvariablecode    }{var}%iable}
+%setvalue{atom:\number\mathactivecode      }{act}%ive}
+%setvalue{atom:\number\mathvcentercode     }{vce}%nter}
+%setvalue{atom:\number\mathreservedcode    }{res}%erved}
+%setvalue{atom:\number\mathimaginarycode   }{ima}%ginary}
+%setvalue{atom:\number\mathdifferentialcode}{dif}%ferential}
+%setvalue{atom:\number\mathexponentialcode }{exp}%onential}
+\setvalue{atom:\number\mathfunctioncode    }{fun}%ction}
+\setvalue{atom:\number\mathdigitcode       }{dig}%it}
+
+\dostepwiserecurse \mathordinarycode \mathdigitcode \plusone {
+    \setmathatomrule \mathbegincode #1 \allmathstyles \mathbegincode #1
+    \setmathatomrule #1 \mathendcode \allmathstyles #1 \mathendcode
+    \dostepwiserecurse \mathordinarycode \mathdigitcode \plusone {
+        \setmathatomrule#1 ##1 \allmathstyles #1 ##1
+    }
+}
+
+\protected\def\showmathatomspacing#1{
+    \startTEXpage[offset=10pt]
+        \showmakeup[mathglue]
+        \bTABLE[align=middle,width=4em]
+            \dostepwiserecurse \mathordinarycode \mathdigitcode \plusone {%
+                \ifcsname atom:##1\endcsname
+                    \bTR
+                        \dostepwiserecurse \mathordinarycode \mathdigitcode \plusone {%
+                            \ifcsname atom:####1\endcsname
+                                \bTD
+                                    $ #1%
+                                      \mathatom class ##1   {\hpack to 1.5em{\infofont[\hss\getvalue{atom:##1}\hss]}}
+                                      \mathatom class ####1 {\hpack to 1.5em{\infofont[\hss\getvalue{atom:####1}\hss]}}
+                                    $
+                                \eTD
+                            \fi
+                        }
+                    \eTR
+                \fi
+            }
+            \bTR[frame=off]
+                \bTD[nx=12,height=6ex,align={middle,lohi}]
+                    \type{#1}
+                \eTD
+            \eTR
+            \bTR
+                \bTD[nx=12,align=middle]
+                    \infofont\hfill
+                    tiny  : \the\tinymuskip\hfill
+                    thin  : \the\thinmuskip\hfill
+                    med   : \the\medmuskip\hfill
+                    thick : \the\thickmuskip\hfill\strut
+                \eTD
+            \eTR
+        \eTABLE
+    \stopTEXpage
+}
+
+\stopmodule
+
+\continueifinputfile{s-math-atoms.mkxl}
+
+\starttext
+
+    \showmathatomspacing{\displaystyle}
+    \showmathatomspacing{\textstyle}
+    \showmathatomspacing{\scriptstyle}
+    \showmathatomspacing{\scriptscriptstyle}
+    \showmathatomspacing{\crampeddisplaystyle}
+    \showmathatomspacing{\crampedtextstyle}
+    \showmathatomspacing{\crampedscriptstyle}
+    \showmathatomspacing{\crampedscriptscriptstyle}
+
+\stoptext

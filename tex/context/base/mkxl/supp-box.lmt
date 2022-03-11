@@ -602,6 +602,20 @@ do
         setbox(box,b or nil)
     end
 
+    function boxes.prune(category)
+        -- this one assumes an indexed list
+        local c = cache[category]
+        local t = { }
+        local n = 0
+        for i=1,#c do
+            local ci = c[i]
+            if ci then
+                n = n + 1 ; t[n] = ci
+            end
+        end
+        cache[category] = t
+    end
+
     local function dimensions(category,name)
         name = tonumber(name) or name
         local b = cache[category][name]
@@ -703,6 +717,14 @@ do
     }
 
     implement {
+        name      = "pruneboxesincache",
+        public    = true,
+        protected = true,
+        arguments = "string",
+        actions   = boxes.prune,
+    }
+
+    implement {
         name      = "disposeboxesincache",
         public    = true,
         protected = true,
@@ -756,6 +778,18 @@ do
         actions   = function(category,name)
             local w, h, d = dimensions(category,name)
             return dimension_value, d
+        end,
+    }
+
+    implement {
+        name      = "getboxhtdpfromcache",
+        arguments = "2 strings",
+        public    = true,
+        protected = true,
+        usage     = "value",
+        actions   = function(category,name)
+            local w, h, d = dimensions(category,name)
+            return dimension_value, h + d
         end,
     }
 

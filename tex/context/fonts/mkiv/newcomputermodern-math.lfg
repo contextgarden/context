@@ -1,0 +1,311 @@
+-- In order to be able to use beta math fonts, we use our own file name and
+-- always remap.
+
+local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
+
+    local kern_150 = { bottomright = { { kern = -150 } } }
+    local kern_200 = { bottomright = { { kern = -200 } } }
+
+    kerns = {
+        [0x1D449] = kern_150, --
+        [0x1D44A] = kern_200, -- 𝑊
+    }
+
+    dimensions = {
+        -- always applied
+     -- default = {
+     -- },
+        -- driven by 'mathdimensions' feature
+        default = {
+            -- the root is quite displaced
+            [0x221A] = {
+                -- 73, -960, 853, 40
+                yoffset = 960 - 40,
+                height  = 960,
+                depth   =  40,
+            },
+        -- [0xFE932] = { xoffset = 50, width = 290 }, -- used prime
+        -- [0x2032]  = { xoffset = 50, width = 290 }, -- prime
+        },
+    -- -- seems ok now --
+    -- signs   = {
+    --  -- [0x00B1] = { -- ±
+    --  --     height = 500, depth = 0,
+    --  -- },
+    --  -- [0x2213] = { -- ∓
+    --  --     height = 500, depth = 0,
+    --  -- },
+    --     -- move in boundingbox
+    --     [0x00B1] = { -- ±
+    --         yoffset =  100,
+    --     },
+    --     [0x2213] = { -- ∓
+    --         yoffset = -100,
+    --     },
+    -- },
+    }
+
+end
+
+
+return {
+    name = "newcomputermodern",
+    version = "1.00",
+    comment = "Goodies that complement newcomputermodern.",
+    author = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        parameters = {
+            FractionNumeratorDisplayStyleShiftUp = function(value,target,original)
+                local o = original.mathparameters.FractionNumeratorDisplayStyleShiftUp
+                if o > 675 then
+                    o = 600
+                else
+                    -- probably tuned
+                end
+                return o * target.parameters.factor
+            end,
+            NoLimitSupFactor =   0,
+            NoLimitSubFactor = 1200,
+        },
+        tweaks = {
+            aftercopying = {
+                {
+                    tweak    = "version",
+                    expected = "Version 1.958",
+                },
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        -- nothing yet
+                    },
+                },
+             -- {
+             --     tweak   = "fixprimes",
+             --     factor  = 0.85,
+             --     smaller = true,
+             --     scale   = 0.70,
+             --     fake    = 0.6,
+             -- },
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "fixradicals",
+                },
+                {
+                    tweak = "addscripts",
+                },
+                {
+                    tweak = "accentdimensions",
+                },
+                {
+                    tweak = "addrules",
+                },
+            },
+        },
+        bigs = {
+            1, 3, 5, 7
+        },
+        --
+        -- experimental fixes for mkiv:
+        --
+        dimensions = dimensions,
+        kerns = kerns,
+    },
+    filenames = {
+        ["latinmodern-math-regular.otf"] = {
+            "latinmodern-math.otf", -- the beta
+            "lmmath-regular.otf",
+            "latinmodernmath-regular.otf",
+            "lmmath-regular.otf",
+            "lmodernmath-regular.otf",
+            "lmodern-math.otf",
+        },
+    },
+    designsizes = {
+        ["LMMathRoman-Regular"] = {
+            ["4pt"]  = "LMMath5-Regular@lmroman5-math",
+            ["5pt"]  = "LMMath5-Regular@lmroman5-math",
+            ["6pt"]  = "LMMath6-Regular@lmroman6-math",
+            ["7pt"]  = "LMMath7-Regular@lmroman7-math",
+            ["8pt"]  = "LMMath8-Regular@lmroman8-math",
+            ["9pt"]  = "LMMath9-Regular@lmroman9-math",
+            ["10pt"] = "LMMath10-Regular@lmroman10-math",
+            ["11pt"] = "LMMath10-Regular@lmroman10-math",
+            ["12pt"] = "LMMath12-Regular@lmroman12-math",
+            default  = "LMMath10-Regular@lmroman10-math"
+        },
+        ["LMMathRoman-Bold"] = { -- not yet ready
+            ["4pt"]  = "LMMath5-Regular@lmroman5-math",
+            ["5pt"]  = "LMMath5-Regular@lmroman5-math",
+            ["6pt"]  = "LMMath6-Regular@lmroman6-math",
+            ["7pt"]  = "LMMath7-Regular@lmroman7-math",
+            ["8pt"]  = "LMMath8-Regular@lmroman8-math",
+            ["9pt"]  = "LMMath9-Regular@lmroman9-math",
+            ["10pt"] = "LMMath10-Regular@lmroman10-math",
+            ["11pt"] = "LMMath10-Regular@lmroman10-math",
+            ["12pt"] = "LMMath12-Regular@lmroman12-math",
+            default  = "LMMath10-Regular@lmroman10-math"
+        },
+        ["LMRoman-Regular"] = {
+            ["4pt"]  = "file:lmroman5-regular",
+            ["5pt"]  = "file:lmroman5-regular",
+            ["6pt"]  = "file:lmroman6-regular",
+            ["7pt"]  = "file:lmroman7-regular",
+            ["8pt"]  = "file:lmroman8-regular",
+            ["9pt"]  = "file:lmroman9-regular",
+            ["10pt"] = "file:lmroman10-regular",
+            ["11pt"] = "file:lmroman10-regular",
+            ["12pt"] = "file:lmroman12-regular",
+            default  = "file:lmroman10-regular",
+        },
+        ["LMRoman-Bold"] = {
+            ["4pt"]  = "file:lmroman5-bold",
+            ["5pt"]  = "file:lmroman5-bold",
+            ["6pt"]  = "file:lmroman6-bold",
+            ["7pt"]  = "file:lmroman7-bold",
+            ["8pt"]  = "file:lmroman8-bold",
+            ["9pt"]  = "file:lmroman9-bold",
+            ["10pt"] = "file:lmroman10-bold",
+            ["11pt"] = "file:lmroman10-bold",
+            ["12pt"] = "file:lmroman12-bold",
+            default  = "file:lmroman10-bold",
+        },
+        ["LMRoman-Demi"] = {
+            default  = "file:lmromandemi10-regular",
+        },
+        ["LMRoman-Italic"] = {
+            ["4pt"]  = "file:lmroman7-italic",
+            ["5pt"]  = "file:lmroman7-italic",
+            ["6pt"]  = "file:lmroman7-italic",
+            ["7pt"]  = "file:lmroman7-italic",
+            ["8pt"]  = "file:lmroman8-italic",
+            ["9pt"]  = "file:lmroman9-italic",
+            ["10pt"] = "file:lmroman10-italic",
+            ["11pt"] = "file:lmroman10-italic",
+            ["12pt"] = "file:lmroman12-italic",
+            default  = "file:lmroman10-italic",
+        },
+        ["LMRoman-Oblique"] = {
+            ["4pt"]  = "file:lmromanslant8-regular",
+            ["5pt"]  = "file:lmromanslant8-regular",
+            ["6pt"]  = "file:lmromanslant8-regular",
+            ["7pt"]  = "file:lmromanslant8-regular",
+            ["8pt"]  = "file:lmromanslant8-regular",
+            ["9pt"]  = "file:lmromanslant9-regular",
+            ["10pt"] = "file:lmromanslant10-regular",
+            ["11pt"] = "file:lmromanslant10-regular",
+            ["12pt"] = "file:lmromanslant12-regular",
+            default  = "file:lmromanslant10-regular",
+        },
+        ["LMRoman-BoldItalic"] = {
+            default  = "file:lmroman10-bolditalic",
+        },
+        ["LMRoman-BoldOblique"] = {
+            default  = "file:lmromanslant10-bold",
+        },
+        ["LMRoman-DemiOblique"] = {
+            default  = "file:lmromandemi10-oblique",
+        },
+        ["LMRoman-CapsRegular"] = {
+            default  = "file:lmromancaps10-regular",
+        },
+        ["LMRoman-CapsOblique"] = {
+            default  = "file:lmromancaps10-oblique",
+        },
+        ["LMRoman-Dunhill"] = {
+            default  = "file:lmromandunh10-regular",
+        },
+        ["LMRoman-DunhillOblique"] = {
+            default  = "file:lmromandunh10-oblique",
+        },
+        ["LMRoman-Unslanted"] = {
+            default  = "file:lmromanunsl10-regular",
+        },
+        ["LMSans-Regular"] = {
+            ["8pt"]  = "file:lmsans8-regular",
+            ["9pt"]  = "file:lmsans9-regular",
+            ["10pt"] = "file:lmsans10-regular",
+            ["11pt"] = "file:lmsans10-regular",
+            ["12pt"] = "file:lmsans12-regular",
+            default  = "file:lmsans10-regular",
+        },
+        ["LMSans-Oblique"] = {
+            ["8pt"]  = "file:lmsans8-oblique",
+            ["9pt"]  = "file:lmsans9-oblique",
+            ["10pt"] = "file:lmsans10-oblique",
+            ["11pt"] = "file:lmsans10-oblique",
+            ["12pt"] = "file:lmsans12-oblique",
+            default  = "file:lmsans10-oblique",
+        },
+        ["LMSans-Bold"] = {
+            default  = "file:lmsans10-bold",
+        },
+        ["LMSans-BoldOblique"] = {
+            default  = "file:lmsans10-boldoblique",
+        },
+        ["LMSans-DemiCondensed"] = {
+            default  = "file:lmsansdemicond10-regular",
+        },
+        ["LMSans-DemiCondensedOblique"] = {
+            default  = "file:lmsansdemicond10-oblique",
+        },
+        ["LMTypewriter-Regular"] = {
+            ["8pt"]  = "file:lmmono8-regular",
+            ["9pt"]  = "file:lmmono9-regular",
+            ["10pt"] = "file:lmmono10-regular",
+            ["11pt"] = "file:lmmono10-regular",
+            ["12pt"] = "file:lmmono12-regular",
+            default  = "file:lmmono10-regular",
+        },
+        ["LMTypewriter-Light"] = {
+            default  = "file:lmmonolt10-regular",
+        },
+        ["LMTypewriter-Dark"] = {
+            default  = "file:lmmonolt10-bold",
+        },
+        ["LMTypewriter-Italic"] = {
+            default  = "file:lmmono10-italic",
+        },
+        ["LMTypewriter-LightOblique"] = {
+            default  = "file:lmmonolt10-oblique",
+        },
+        ["LMTypewriter-Oblique"] = {
+            default  = "file:lmmonoslant10-regular",
+        },
+        ["LMTypewriter-DarkOblique"] = {
+            default  = "file:lmmonolt10-boldoblique",
+        },
+        ["LMTypewriter-LightCondensed"] = {
+            default  = "file:lmmonoltcond10-regular",
+        },
+        ["LMTypewriter-LightCondensedOblique"] = {
+            default  = "file:lmmonoltcond10-oblique",
+        },
+        ["LMTypewriterVarWd-Regular"] = {
+            default  = "file:lmmonoproplt10-regular",
+        },
+        ["LMTypewriterVarWd-Oblique"] = {
+            default  = "file:lmmonoproplt10-oblique",
+        },
+        ["LMTypewriterVarWd-Light"] = {
+            default  = "file:lmmonoprop10-regular",
+        },
+        ["LMTypewriterVarWd-LightOblique"] = {
+            default  = "file:lmmonoprop10-oblique",
+        },
+        ["LMTypewriterVarWd-Dark"] = {
+            default  = "file:lmmonoproplt10-bold",
+        },
+        ["LMTypewriterVarWd-DarkOblique"] = {
+            default  = "file:lmmonoproplt10-boldoblique",
+        },
+        ["LMTypewriter-CapsRegular"] = {
+            default  = "file:lmmonocaps10-regular",
+        },
+        ["LMTypewriter-CapsOblique"] = {
+            default  = "file:lmmonocaps10-oblique",
+        },
+    }
+}

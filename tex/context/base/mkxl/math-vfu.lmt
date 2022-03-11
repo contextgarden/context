@@ -85,7 +85,7 @@ local shared            = { }
 local function brace(main,characters,id,size,unicode,first,rule,left,right,rule,last)
     if not characters[unicode] then
         characters[unicode] = {
-            hvariants = {
+            hparts = {
                 { extender = 0, glyph = first },
                 { extender = 1, glyph = rule  },
                 { extender = 0, glyph = left  },
@@ -123,7 +123,7 @@ local function extension(main,characters,id,size,unicode,first,middle,last)
     if lw == 0 then
         lw = 1
     end
-    chr.hvariants = {
+    chr.hparts = {
         { extender = 0, glyph = first,  ["end"] = fw/2, start = 0,    advance = fw },
         { extender = 1, glyph = middle, ["end"] = mw/2, start = mw/2, advance = mw },
         { extender = 0, glyph = last,   ["end"] = 0,    start = lw/2, advance = lw },
@@ -133,7 +133,7 @@ end
 local function parent(main,characters,id,size,unicode,first,rule,last)
     if not characters[unicode] then
         characters[unicode] = {
-            hvariants = {
+            hparts = {
                 { extender = 0, glyph = first },
                 { extender = 1, glyph = rule  },
                 { extender = 0, glyph = last  },
@@ -661,10 +661,10 @@ local function copy_glyph(main,target,original,unicode,slot)
                 break -- safeguard (when testing stuff)
             end
         end
-        local hv = olddata.hvariants
+        local hv = olddata.hparts
         if hv then
             hv = fastcopy(hv)
-            newdata.hvariants = hv
+            newdata.hparts = hv
             for i=1,#hv do
                 local hvi = hv[i]
                 local oldglyph = hvi.glyph
@@ -679,10 +679,10 @@ local function copy_glyph(main,target,original,unicode,slot)
                 hvi.glyph = addprivate(main,formatters["M-H-%H"](oldglyph),newdata)
             end
         end
-        local vv = olddata.vvariants
+        local vv = olddata.vparts
         if vv then
             vv = fastcopy(vv)
-            newdata.vvariants = vv
+            newdata.vparts = vv
             for i=1,#vv do
                 local vvi = vv[i]
                 local oldglyph = vvi.glyph
@@ -1017,30 +1017,30 @@ function vfmath.define(specification,set,goodies)
                                     if n then
                                         t.next = offset + n
                                     elseif variants_done then
-                                        local vv = fci.vvariants
+                                        local vv = fci.vparts
                                         if vv then
-                                            t.vvariants = vv
+                                            t.vparts = vv
                                         end
-                                        local hv = fci.hvariants
+                                        local hv = fci.hparts
                                         if hv then
-                                            t.hvariants = hv
+                                            t.hparts = hv
                                         end
                                     else
-                                        local vv = fci.vvariants
+                                        local vv = fci.vparts
                                         if vv then
                                             for i=1,#vv do
                                                 local vvi = vv[i]
                                                 vvi.glyph = vvi.glyph + offset
                                             end
-                                            t.vvariants = vv
+                                            t.vparts = vv
                                         end
-                                        local hv = fci.hvariants
+                                        local hv = fci.hparts
                                         if hv then
                                             for i=1,#hv do
                                                 local hvi = hv[i]
                                                 hvi.glyph = hvi.glyph + offset
                                             end
-                                            t.hvariants = hv
+                                            t.hparts = hv
                                         end
                                     end
                                     characters[offset + index] = t
@@ -1122,13 +1122,18 @@ function vfmath.define(specification,set,goodies)
     main.properties.math_is_scaled = true -- signal
     fonts.constructors.assignmathparameters(main,main)
     --
-    main.MathConstants = main.mathparameters -- we directly pass it to TeX (bypasses the scaler) so this is needed
+    main.mathconstants  = main.mathparameters -- we directly pass it to TeX (bypasses the scaler) so this is needed
     --
     if trace_virtual or trace_timings then
         report_virtual("loading and virtualizing font %a at size %p took %0.3f seconds",name,size,os.clock()-start)
     end
     --
-    main.oldmath = true
+ -- main.oldmath = true
+    --
+    -- We bypass the scaler so ...
+    --
+    main.MathConstants = main.mathconstants
+    main.nomath = false
     return main
 end
 

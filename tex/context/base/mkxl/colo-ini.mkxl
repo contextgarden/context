@@ -386,6 +386,16 @@
   {\c_attr_color       \c_colo_saved_attribute_color
    \c_attr_transparency\c_colo_saved_attribute_transparency}
 
+%D Nasty:
+
+\permanent\def\usedcolorparameterattributes#1%
+  {\beginlocalcontrol\begingroup
+   \dousecolorparameter{#1}%
+   \normalexpanded{\endgroup\noexpand\endlocalcontrol
+       \noexpand\s!attr \colorattribute        \the\c_attr_color
+       \noexpand\s!attr \colormodelattribute   \the\c_attr_colormodel
+       \noexpand\s!attr \transparencyattribute \the\c_attr_transparency}}
+
 %D In this documentation we will not go into too much details on palets. Curious
 %D users can find more information on this topic in \from[use of color].
 %D
