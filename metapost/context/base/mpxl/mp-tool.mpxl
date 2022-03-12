@@ -3913,16 +3913,16 @@ permanent hatched ;
 
 % By Mikael Sundqvist:
 
-% numeric mfun_dash_len ;
-%
-% primarydef p dashing len =
-%     hide (
-%         save l, n ;
-%         l := arclength p ;
-%         n := l div len ;
-%         if odd(n) : n := n + 1 fi ;
-%         mfun_dash_len := l / n ;
-%     )
-%     p dashed dashpattern (on mfun_dash_len off mfun_dash_len)
-% enddef ;
+numeric mfun_dash_len ;
+
+primarydef p withdashes len =
+    hide (
+        save l, n ;
+        l := arclength p ;
+        n := l div len ;
+        if odd(n) : n := n + 1 fi ;
+        mfun_dash_len := l / n ;
+    )
+    p dashed dashpattern (on mfun_dash_len off mfun_dash_len)
+enddef ;
 
