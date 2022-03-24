@@ -917,7 +917,7 @@ local tonode = nodes.nuts.tonode
 
 %localize%
 
-return function(head,style,penalties)
+return function(head,style,penalties,beginclass,endclass)
     local nuthead = tonut(head)
 
 %actions%
@@ -926,19 +926,19 @@ end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead),style,penalties)))
+    nuthead = tonut((%action%(tonode(nuthead),style,penalties,beginclass,endclass)))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead,style,penalties)
+    nuthead = %action%(nuthead,style,penalties,beginclass,endclass)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead),style,penalties)
+    %action%(tonode(nuthead),style,penalties,beginclass,endclass)
 ]],
 
 nonut = [[
-    %action%(nuthead,style,penalties)
+    %action%(nuthead,style,penalties,beginclass,endclass)
 ]],
 
     }

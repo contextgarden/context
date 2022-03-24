@@ -1799,7 +1799,8 @@ enddef ;
 
 permanent comment, report ;
 
-% This overloads a dummy:
+% This nechanism is not really promoted and more an experiment. It scales better than
+% \METAPOST\ own hash.
 
 % todo: use mfid_* cum suis
 
@@ -1809,16 +1810,18 @@ newscriptindex mfid_hash_in      ; mfid_hash_in      := scriptindex("lmt_hash_in
 newscriptindex mfid_hash_from    ; mfid_hash_from    := scriptindex("lmt_hash_from") ;
 newscriptindex mfid_hash_to      ; mfid_hash_to      := scriptindex("lmt_hash_to") ;
 
-def newhash                          = runscript mfid_hash_new                 enddef ;
+def newhash                          = runscript mfid_hash_new                 enddef ; % optional, returns index
 def disposehash (expr n)             = runscript mfid_hash_dispose n           enddef ;
 def inhash      (expr n, key)        = runscript mfid_hash_in      n key       enddef ;
 def fromhash    (expr n, key)        = runscript mfid_hash_from    n key       enddef ;
 def tohash      (expr n, key, value) = runscript mfid_hash_to      n key value enddef ;
 
+string mfun_u_l_h ; mfun_u_l_h := "mfun_u_l_h" ;
+
 vardef uniquelist(suffix list) =
     % this can be optimized by passing all values at once and returning
     % a result but for now this is ok .. we need an undef foo
-    save i, j, h ;
+    save i, j ;
     if known lis[0] :
         i := 0 ;
         j := -1 ;
@@ -1826,20 +1829,20 @@ vardef uniquelist(suffix list) =
         i := 1 ;
         j := 0 ;
     fi ;
-    h := runscript mfid_hash_new ;
+  % mfun_u_l_h := runscript mfid_hash_new ; % here mfun_u_l_h has to be a numeric
     forever :
         exitif unknown list[i] ;
-        if not (runscript mfid_hash_in h list[i]) :
+        if not (runscript mfid_hash_in (mfun_u_l_h) list[i]) :
             j := j + 1 ;
             list[j] := list[i] ;
-            runscript mfid_hash_to h list[i] ;
+            runscript mfid_hash_to (mfun_u_l_h) (j) list[i] ;
         fi ;
         i := i + 1 ;
     endfor ;
-    for n = j+1 step 1 until i-1 :
+    for n = j + 1 step 1 until i - 1 :
         dispose(list[n])
     endfor ;
-    runscript mfid_hash_dispose h ;
+    runscript mfid_hash_dispose mfun_u_l_h ;
 enddef ;
 
 permanent uniquelist ;

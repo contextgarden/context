@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2022-03-12 11:24
+-- merge date  : 2022-03-24 21:14
 
 do -- begin closure to overcome local limits and interference
 
@@ -10903,9 +10903,9 @@ function mappings.addtounicode(data,filename,checklookups,forceligatures)
  local usedmap=cidinfo and fonts.cid.getmap(cidinfo)
  local uparser=makenameparser() 
  if usedmap then
-    oparser=usedmap and makenameparser(cidinfo.ordering)
-    cidnames=usedmap.names
-    cidcodes=usedmap.unicodes
+  oparser=usedmap and makenameparser(cidinfo.ordering)
+  cidnames=usedmap.names
+  cidcodes=usedmap.unicodes
  end
  local ns=0
  local nl=0
@@ -13109,13 +13109,13 @@ function readers.getinfo(filename,specification)
   }
  end
 end
-function readers.rehash(fontdata,hashmethod)
+function readers.rehash() 
  report("the %a helper is not yet implemented","rehash")
 end
-function readers.checkhash(fontdata)
+function readers.checkhash() 
  report("the %a helper is not yet implemented","checkhash")
 end
-function readers.pack(fontdata,hashmethod)
+function readers.pack() 
  report("the %a helper is not yet implemented","pack")
 end
 function readers.unpack(fontdata)
@@ -15558,95 +15558,123 @@ local function applyaxis(glyph,shape,deltas,dowidth)
        end
       end
      elseif cnt>0 then
-      local function find(i)
-       local prv=cnt
-       for j=1,cnt do
-        local nxt=dpoints[j]
-        if nxt==i then
-         return false,j,false
-        elseif nxt>i then
-         return prv,false,j
+      local contours=shape.contours
+      local nofcontours=#contours
+      local first=1
+      local firstindex=1
+      for contour=1,nofcontours do
+       local last=contours[contour]
+       if last>=first then
+        local lastindex=cnt
+        if firstindex<cnt then
+         for currentindex=firstindex,cnt do
+          local found=dpoints[currentindex]
+          if found<=first then
+           firstindex=currentindex
+          end
+          if found==last then
+           lastindex=currentindex
+           break;
+          elseif found>last then
+           break
+          end
+         end
         end
-        prv=j
+        local function find(i)
+         local prv=lastindex
+         for j=firstindex,lastindex do
+          local nxt=dpoints[j]
+          if nxt==i then
+           return false,j,false
+          elseif nxt>i then
+           return prv,false,j
+          end
+          prv=j
+         end
+         return prv,false,firstindex
+        end
+        for point=first,last do
+         local d1,d2,d3=find(point)
+         local p2=points[point]
+         if d2 then
+          xv[point]=xvalues[d2]
+          yv[point]=yvalues[d2]
+         else
+          local n1=dpoints[d1]
+          local n3=dpoints[d3]
+          if n1>nofpoints then
+           n1=nofpoints
+          end
+          if n3>nofpoints then
+           n3=nofpoints
+          end
+          local p1=points[n1]
+          local p3=points[n3]
+          local p1x=p1[1]
+          local p2x=p2[1]
+          local p3x=p3[1]
+          local p1y=p1[2]
+          local p2y=p2[2]
+          local p3y=p3[2]
+          local x1=xvalues[d1]
+          local y1=yvalues[d1]
+          local x3=xvalues[d3]
+          local y3=yvalues[d3]
+          local fx
+          local fy
+          if p1x==p3x then
+           if x1==x3 then
+            fx=x1
+           else
+            fx=0
+           end
+          elseif p2x<=min(p1x,p3x) then
+           if p1x<p3x then
+            fx=x1
+           else
+            fx=x3
+           end
+          elseif p2x>=max(p1x,p3x) then
+           if p1x>p3x then
+            fx=x1
+           else
+            fx=x3
+           end
+          else
+           fx=(p2x-p1x)/(p3x-p1x)
+           fx=(1-fx)*x1+fx*x3
+          end
+          if p1y==p3y then
+           if y1==y3 then
+            fy=y1
+           else
+            fy=0
+           end
+          elseif p2y<=min(p1y,p3y) then
+           if p1y<p3y then
+            fy=y1
+           else
+            fy=y3
+           end
+          elseif p2y>=max(p1y,p3y) then
+           if p1y>p3y then
+            fy=y1
+           else
+            fy=y3
+           end
+          else
+           fy=(p2y-p1y)/(p3y-p1y)
+           fy=(1-fy)*y1+fy*y3
+          end
+          xv[point]=fx
+          yv[point]=fy
+         end
+        end
+        if lastindex<cnt then
+         firstindex=lastindex+1
+        end
        end
-       return prv,false,1
-      end
-      for i=1,nofpoints do
-       local d1,d2,d3=find(i)
-       local p2=points[i]
-       if d2 then
-        xv[i]=xvalues[d2]
-        yv[i]=yvalues[d2]
-       else
-        local n1=dpoints[d1]
-        local n3=dpoints[d3]
-        if n1>nofpoints then
-         n1=nofpoints
-        end
-        if n3>nofpoints then
-         n3=nofpoints
-        end
-        local p1=points[n1]
-        local p3=points[n3]
-        local p1x=p1[1]
-        local p2x=p2[1]
-        local p3x=p3[1]
-        local p1y=p1[2]
-        local p2y=p2[2]
-        local p3y=p3[2]
-        local x1=xvalues[d1]
-        local y1=yvalues[d1]
-        local x3=xvalues[d3]
-        local y3=yvalues[d3]
-        local fx
-        local fy
-        if p1x==p3x then
-         if x1==x3 then
-          fx=x1
-         else
-          fx=0
-         end
-        elseif p2x<=min(p1x,p3x) then
-         if p1x<p3x then
-          fx=x1
-         else
-          fx=x3
-         end
-        elseif p2x>=max(p1x,p3x) then
-         if p1x>p3x then
-          fx=x1
-         else
-          fx=x3
-         end
-        else
-         fx=(p2x-p1x)/(p3x-p1x)
-         fx=(1-fx)*x1+fx*x3
-        end
-        if p1y==p3y then
-         if y1==y3 then
-          fy=y1
-         else
-          fy=0
-         end
-        elseif p2y<=min(p1y,p3y) then
-         if p1y<p3y then
-          fy=y1
-         else
-          fy=y3
-         end
-        elseif p2y>=max(p1y,p3y) then
-         if p1y>p3y then
-          fy=y1
-         else
-          fy=y3
-         end
-        else
-         fy=(p2y-p1y)/(p3y-p1y)
-         fy=(1-fy)*y1+fy*y3
-        end
-        xv[i]=fx
-        yv[i]=fy
-       end
+       first=last+1
       end
       for i=1,nofpoints do
        local pi=points[i]
@@ -19793,6 +19821,7 @@ function readers.hvar(f,fontdata,specification)
  local variations={}
  local innerindex={} 
  local outerindex={} 
+ local deltas={}
  if variationoffset>0 then
   regions,deltas=readvariationdata(f,variationoffset,factors)
  end
@@ -21182,7 +21211,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.119 
+otf.version=3.120 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
@@ -23856,6 +23885,7 @@ local next,type=next,type
 local P,R,S=lpeg.P,lpeg.R,lpeg.S
 local lpegmatch=lpeg.match
 local insert,remove,copy,unpack=table.insert,table.remove,table.copy,table.unpack
+local find=string.find
 local formatters=string.formatters
 local sortedkeys=table.sortedkeys
 local sortedhash=table.sortedhash
@@ -24714,61 +24744,137 @@ local function unifyglyphs(fontdata,usenames)
  fontdata.nofglyphs=nofglyphs
  return indices,names
 end
-local p_crappyname  do
+local stripredundant  do
  local p_hex=R("af","AF","09")
  local p_digit=R("09")
  local p_done=S("._-")^0+P(-1)
+ local p_style=P(".")
  local p_alpha=R("az","AZ")
  local p_ALPHA=R("AZ")
- p_crappyname=(
+ local p_crappyname=(
   lpeg.utfchartabletopattern({ "uni","u" },true)*S("Xx_")^0*p_hex^1
 +lpeg.utfchartabletopattern({ "identity","glyph","jamo" },true)*p_hex^1
 +lpeg.utfchartabletopattern({ "index","afii" },true)*p_digit^1
 +p_digit*p_hex^3+p_alpha*p_digit^1
 +P("aj")*p_digit^1+P("eh_")*(p_digit^1+p_ALPHA*p_digit^1)+(1-P("_"))^1*P("_uni")*p_hex^1+P("_")*P(1)^1
  )*p_done
-end
-local forcekeep=false 
-directives.register("otf.keepnames",function(v)
- report_cleanup("keeping weird glyph names, expect larger files and more memory usage")
- forcekeep=v
-end)
-local function stripredundant(fontdata)
- local descriptions=fontdata.descriptions
- if descriptions then
-  local n=0
-  local c=0
-  if (not context and fonts.privateoffsets.keepnames) or forcekeep then
-   for unicode,d in next,descriptions do
-    if d.class=="base" then
-     d.class=nil
-     c=c+1
+ if context then
+  local forcekeep=false
+  directives.register("otf.keepnames",function(v)
+   report_cleanup("keeping weird glyph names, expect larger files and more memory usage")
+   forcekeep=v
+  end)
+  local function stripvariants(descriptions,list)
+   local n=list and #list or 0
+   if n>0 then
+    for i=1,n do
+     local g=list[i]
+     if g then
+      local d=descriptions[g]
+      if d and d.name then
+       d.name=nil
+       n=n+1
+      end
+     end
     end
    end
-  else
-   for unicode,d in next,descriptions do
-    local name=d.name
-    if name and lpegmatch(p_crappyname,name) then
-     d.name=nil
-     n=n+1
+   return n
+  end
+  local function stripparts(descriptions,list)
+   local n=list and #list or 0
+   if n>0 then
+    for i=1,n do
+     local g=list[i].glyph
+     if g then
+      local d=descriptions[g]
+      if d and d.name then
+       d.name=nil
+       n=n+1
+      end
+     end
     end
-    if d.class=="base" then
-     d.class=nil
-     c=c+1
+   end
+   return n
+  end
+  local function collectsimple(fontdata)
+   return nil
+  end
+  stripredundant=function(fontdata)
+   local descriptions=fontdata.descriptions
+   if descriptions then
+    local n=0
+    local c=0
+    for unicode,d in next,descriptions do
+     local m=d.math
+     if m then
+      n=n+stripvariants(descriptions,m.vvariants)
+      n=n+stripvariants(descriptions,m.hvariants)
+      n=n+stripparts   (descriptions,m.vparts)
+      n=n+stripparts   (descriptions,m.hparts)
+     end
+    end
+    if forcekeep then
+     for unicode,d in next,descriptions do
+      if d.class=="base" then
+       d.class=nil
+       c=c+1
+      end
+     end
+    else
+     local keeplist=collectsimple(fontdata)
+     for unicode,d in next,descriptions do
+      local name=d.name
+      if name then
+       if keeplist and keeplist[name] then
+       elseif lpegmatch(p_crappyname,name) then
+        d.name=nil
+        n=n+1
+       end
+      end
+      if d.class=="base" then
+       d.class=nil
+       c=c+1
+      end
+     end
+    end
+    if trace_cleanup then
+     if n>0 then
+      report_cleanup("%s bogus names removed (verbose unicode)",n)
+     end
+     if c>0 then
+      report_cleanup("%s base class tags removed (default is base)",c)
+     end
     end
    end
   end
-  if trace_cleanup then
-   if n>0 then
-    report_cleanup("%s bogus names removed (verbose unicode)",n)
-   end
-   if c>0 then
-    report_cleanup("%s base class tags removed (default is base)",c)
+ else
+  stripredundant=function(fontdata)
+   local descriptions=fontdata.descriptions
+   if descriptions then
+    if fonts.privateoffsets.keepnames then
+     for unicode,d in next,descriptions do
+      if d.class=="base" then
+       d.class=nil
+      end
+     end
+    else
+     for unicode,d in next,descriptions do
+      local name=d.name
+      if name then
+       if lpegmatch(p_crappyname,name) then
+        d.name=nil
+       end
+      end
+      if d.class=="base" then
+       d.class=nil
+      end
+     end
+    end
    end
   end
  end
+ readers.stripredundant=stripredundant
 end
-readers.stripredundant=stripredundant
 function readers.getcomponents(fontdata) 
  local resources=fontdata.resources
  if resources then
@@ -24852,8 +24958,7 @@ readers.unifymissing=unifymissing
 function readers.rehash(fontdata,hashmethod) 
  if not (fontdata and fontdata.glyphs) then
   return
- end
- if hashmethod=="indices" then
+ elseif hashmethod=="indices" then
   fontdata.hashmethod="indices"
  elseif hashmethod=="names" then
   fontdata.hashmethod="names"

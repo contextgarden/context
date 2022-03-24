@@ -921,15 +921,15 @@
 
 \permanent\protected\def\dosetstrut
   {\enforced\let\strut\normalstrut
+   \struthtdp\dimexpr\strutht+\strutdp\relax
    \ifabsnum\dimexpr\struthtdp-\lineheight\relax<\plustwo
      % compensate rounding error /- 1sp to avoid too many
      % 1sp baselineskips in for instance verbatim
      % \strutht\dimexpr\lineheight-\strutdp\relax
      % better:
      \strutdp\dimexpr\lineheight-\strutht\relax
-     \struttotal\lineheight
+     \struthtdp\lineheight
    \fi
-   \struthtdp\dimexpr\strutht+\strutdp\relax
    \strutheight\strutht
    \strutdepth \strutdp
    \struttotal \struthtdp}
@@ -1063,6 +1063,7 @@
   {\the\everysetnostrut}
 
 \appendtoks
+ %  \setbox\strutbox\copy\nostrutbox
     \enforced\let\strut   \empty
     \enforced\let\endstrut\empty
     \enforced\let\begstrut\empty

@@ -32,6 +32,20 @@ return {
                     tweak    = "version",
                     expected = "Version 2.12 b168",
                 },
+                -- 0xFEOO should be chancery style, if present
+                {
+                    tweak    = "variants",
+                    kind     = "script",
+                 -- feature  = false, -- use the saved ones (see typescript)
+                    selector = 0xFE00,
+                },
+                -- 0xFEO1 should be roundhand style, if present                
+                {
+                    tweak    = "variants",
+                    kind     = "script",
+                    feature  = "ss01",-- this changes to roundhand style for stixtwo
+                    selector = 0xFE01,
+                },
                 {
                     tweak = "dimensions",
                     list  = {

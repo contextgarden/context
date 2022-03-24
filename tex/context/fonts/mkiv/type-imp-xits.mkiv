@@ -17,18 +17,20 @@
 % scheduled for release by the end of 2010. Version 1.2, which will include Type 1
 % fonts for use with LaTeX, will follow in 2011. So, we are on our own anyway.
 
+\definefontfeature[xitsmath][copymathscripts=yes] % see lfg file
+
 \loadtypescriptfile[texgyre]
 
 \starttypescriptcollection[xits]
 
     \starttypescript [\s!math] [xits,xitsbidi] [\s!name]
         \loadfontgoodies[xits-math]
-        \definefontsynonym[\s!MathRoman        ][\s!file:xitsmath-regular.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=xits-math]
-        \definefontsynonym[\s!MathRoman     L2R][\s!file:xitsmath-regular.otf] [\s!features={\s!math\mathsizesuffix-l2r,mathextra},\s!goodies=xits-math]
-        \definefontsynonym[\s!MathRoman     R2L][\s!file:xitsmath-regular.otf] [\s!features={\s!math\mathsizesuffix-r2l,mathextra},\s!goodies=xits-math]
-        \definefontsynonym[\s!MathRomanBold    ][\s!file:xitsmath-bold.otf]    [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=xits-math]
-        \definefontsynonym[\s!MathRomanBold L2R][\s!file:xitsmath-bold.otf]    [\s!features={\s!math\mathsizesuffix-l2r,mathextra},\s!goodies=xits-math]
-        \definefontsynonym[\s!MathRomanBold R2L][\s!file:xitsmath-bold.otf]    [\s!features={\s!math\mathsizesuffix-r2l,mathextra},\s!goodies=xits-math]
+        \definefontsynonym[\s!MathRoman        ][\s!file:xitsmath-regular.otf] [\s!features={\s!math\mathsizesuffix,mathextra,xitsmath},\s!goodies=xits-math]
+        \definefontsynonym[\s!MathRoman     L2R][\s!file:xitsmath-regular.otf] [\s!features={\s!math\mathsizesuffix-l2r,mathextra,xitsmath},\s!goodies=xits-math]
+        \definefontsynonym[\s!MathRoman     R2L][\s!file:xitsmath-regular.otf] [\s!features={\s!math\mathsizesuffix-r2l,mathextra,xitsmath},\s!goodies=xits-math]
+        \definefontsynonym[\s!MathRomanBold    ][\s!file:xitsmath-bold.otf]    [\s!features={\s!math\mathsizesuffix,mathextra,xitsmath},\s!goodies=xits-math]
+        \definefontsynonym[\s!MathRomanBold L2R][\s!file:xitsmath-bold.otf]    [\s!features={\s!math\mathsizesuffix-l2r,mathextra,xitsmath},\s!goodies=xits-math]
+        \definefontsynonym[\s!MathRomanBold R2L][\s!file:xitsmath-bold.otf]    [\s!features={\s!math\mathsizesuffix-r2l,mathextra,xitsmath},\s!goodies=xits-math]
     \stoptypescript
 
     \starttypescript [\s!serif] [xits] [\s!name]

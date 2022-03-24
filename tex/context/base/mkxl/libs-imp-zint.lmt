@@ -94,16 +94,12 @@ local shown   = false
 
 -- Same performance as just context(fmt,...): 113pps (On 2013 i7 laptop.)
 
--- ----- f_rectangle = formatters["%sofill unitsquare xysized (%N,%N) shifted (%N,%N);"]
--- local f_hexagon   = formatters["%sofill (%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle;"]
--- local f_circle    = formatters["%sofill unitcircle scaled %N shifted (%N,%N);"]
-
 ----- f_rectangle = formatters["%nofill unitsquare xysized (%N,%N) shifted (%N,%N);"]
-local f_hexagon   = formatters["%nofill (%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle;"]
-local f_circle    = formatters["%nofill unitcircle scaled %N shifted (%N,%N);"]
+local f_hexagon   = formatters["%nofill (%N,-%N)--(%N,-%N)--(%N,-%N)--(%N,-%N)--(%N,-%N)--(%N,-%N)--cycle;"]
+local f_circle    = formatters["%nofill unitcircle scaled %N shifted (%N,-%N);"]
 
 local s_done      = "dofill origin --cycle;"
-local f_string    = formatters['draw textext("%s") scaled (%N/10) shifted (%N,%N);']
+local f_string    = formatters['draw textext("%s") scaled (%N/10) shifted (%N,-%N);']
 
 -- A bit faster: 130pps (When I see hexagons I'll do that too but MP takes way more time.)
 
@@ -116,8 +112,12 @@ local s_preamble = [[
     save ns; def ns (expr a, b) = nofill unitsquare xyscaled a shifted b ; enddef;
 ]]
 
------ f_rectangle = formatters["%ss((%N,%N),(%N,%N));"]
-local f_rectangle = formatters["ns((%i,%i),(%i,%i));"]
+local f_rectangle = formatters["ns((%i,-%i),(%i,-%i));"]
+
+local aliases = {
+    isbnx = "isbn",
+    ISBNX = "ISBN",
+}
 
 local function execute(specification)
     if okay() then
@@ -130,11 +130,13 @@ local function execute(specification)
         end
         specification.option = option
         --
-        if lower(code) == "isbn" then
-            specification.text = text and gsub(text,"[^%d]","") or ""
-        end
-        --
         if code then
+            code = aliases[code] or code
+            --
+            if lower(code) == "isbn" then
+                specification.text = text and gsub(text,"[^%d]","") or ""
+            end
+            --
             local id = mapping[code]
             if id then
                 specification.code = id
@@ -151,38 +153,26 @@ local function execute(specification)
                         local n = #rectangles
                         for i=1,n do
                             local r = rectangles[i]
-                         -- context("%sofill unitsquare xysized (%N,%N) shifted (%N,%N);",
---                             rectangles[i] = f_rectangle(
---                                 i == n and "d" or "n",r[3],r[4],r[1],r[2]
---                             )
-rectangles[i] = f_rectangle(r[3],r[4],r[1],r[2])
+                            rectangles[i] = f_rectangle(r[3],r[4],r[1],r[2])
                         end
-rectangles[n+1] = s_done
+                        rectangles[n+1] = s_done
                         context("% t",rectangles)
                     end
                     if hexagons then
                         local n = #hexagons
                         for i=1,n do
-                         -- context("%sofill (%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle;",
---                             hexagons[i] = f_hexagon(
---                                 i == n and "d" or "n",unpack(hexagons[i])
---                             )
-hexagons[i] = f_hexagon(unpack(hexagons[i]))
+                            hexagons[i] = f_hexagon(unpack(hexagons[i]))
                         end
-hexagons[n+1] = s_done
+                        hexagons[n+1] = s_done
                         context("% t",hexagons)
                     end
                     if circles then
                         local n = #circles
                         for i=1,n do
                             local c = circles[i]
-                         -- context("%sofill unitcircle scaled %N shifted (%N,%N);",
---                             circles[i] = f_circle(
---                                 i == n and "d" or "n",c[3],c[1],c[2]
---                             )
-circles[i] = f_circle(c[3],c[1],c[2])
-circles[n+1] = s_done
+                            circles[i] = f_circle(c[3],c[1],c[2])
                         end
+                        circles[n+1] = s_done
                         context("% t",circles)
                     end
                     if strings then
@@ -191,9 +181,7 @@ circles[n+1] = s_done
                         for i=1,n do
                             local s = strings[i]
                          -- context('draw textext("%s") scaled (%N/10) shifted (%N,%N);',
-                            strings[i] = f_string(
-                                s[4],s[3],s[1],s[2]
-                            )
+                            strings[i] = f_string(s[4],s[3],s[1],s[2])
                         end
                         context("% t",strings)
                     end

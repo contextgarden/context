@@ -13,6 +13,12 @@
 
 % NOTA BENE: class features and goodies get expanded!
 
+\definefontfeature[mathlucida][copymathscripts=yes] % see lfg file
+
+% \definefontfeature[mathlucida][mathlucida][ss04=yes] % now we swap
+
+% \definefontfeature[mathlucida][ss03=yes]
+
 \starttypescriptcollection[lucida-opentype]
 
     \starttypescript [lucidaot,lucidadk]
@@ -23,8 +29,7 @@
         \definetypeface [\typescriptone] [\s!hw] [\s!handwriting] [\typescriptone] [\s!default] [\s!features=\s!default]
         \definetypeface [\typescriptone] [\s!cg] [\s!calligraphy] [\typescriptone] [\s!default] [\s!features=\s!default]
         \definetypeface [\typescriptone] [\s!mm] [\s!math]        [\typescriptone] [\s!default]
-        % for the moment here:
-        \setupmathrendering[\typescriptone][\s!it=\s!italic]
+        % no longer: \setupmathrendering[\typescriptone][\s!it=\s!italic]
         \quittypescriptscanning
     \stoptypescript
 
@@ -65,8 +70,8 @@
     \stoptypescript
 
     \starttypescript [\s!math] [lucidaot,lucidadk]
-        \definefontsynonym [\s!MathRoman]     [\s!file:LucidaBrightMathOT.otf]      [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=lucida-opentype-math]
-        \definefontsynonym [\s!MathRomanBold] [\s!file:LucidaBrightMathOT-Demi.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=lucida-opentype-math]
+        \definefontsynonym [\s!MathRoman]     [\s!file:LucidaBrightMathOT.otf]      [\s!features={\s!math\mathsizesuffix,mathlucida,mathextra},\s!goodies=lucida-opentype-math]
+        \definefontsynonym [\s!MathRomanBold] [\s!file:LucidaBrightMathOT-Demi.otf] [\s!features={\s!math\mathsizesuffix,mathlucida,mathextra},\s!goodies=lucida-opentype-math]
     \stoptypescript
 
     \starttypescript [\s!handwriting] [lucidaot,lucidadk]

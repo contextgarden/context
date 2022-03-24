@@ -129,9 +129,13 @@ local function_class    = registerengineclass("function","fnc")
 local digit_class       = registerengineclass("digit","dig")
 local division_class    = registerengineclass("division","div")
 local factorial_class   = registerengineclass("factorial","fac")
+local wrapped_class     = registerengineclass("wrapped", "wra")
+local construct_class   = registerengineclass("construct", "con")
 
 classes["begin"] = 62  classnames[62] = "begin"
 classes["end"]   = 63  classnames[63] = "end"
+
+callback.register("get_noad_class", function(n) return classnames[n] end)
 
 local function registerprivateclass(name)
     local class = classes[name]

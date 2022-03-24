@@ -440,9 +440,19 @@
    \fi
    \page_one_command_set_bottom_insertions_indeed}
 
+% \protected\def\page_one_command_flush_top_insertions
+%   {\ifzeropt\page_inserts_get_height\namedinsertionnumber\s!topfloat\else
+%      \page_one_command_flush_top_insertions_indeed % less tracing
+%    \fi
+%    \global\d_page_floats_inserted_top\zeropoint}
+
 \protected\def\page_one_command_flush_top_insertions
   {\ifzeropt\page_inserts_get_height\namedinsertionnumber\s!topfloat\else
      \page_one_command_flush_top_insertions_indeed % less tracing
+     \ifcase\bottomraggednessmode\or\else
+       % will be an option
+       \vskip\zeropoint plus \openstrutdepth minus \openstrutdepth
+     \fi
    \fi
    \global\d_page_floats_inserted_top\zeropoint}
 

@@ -69,8 +69,8 @@ local function check(name)
     return used
 end
 
-local one = check(fileone)
-local two = check(filetwo)
+local one = check(fileone) -- can crash
+local two = check(filetwo) -- can crash
 
 if not one then
     report("invalid file %a",fileone)

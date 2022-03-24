@@ -67,6 +67,8 @@
 \newtoks \everyMPgraphic          % mp % public or not ?
 
 \appendtoks
+    \setcatcodetable\ctxcatcodes
+    % then this is not needed:
     \restoreendofline % see interferences-001.tex
 \to \everyMPgraphic
 

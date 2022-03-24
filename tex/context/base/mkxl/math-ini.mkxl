@@ -167,6 +167,8 @@
 \setnewconstant\mathexplicitcode      \mathclassvalue explicit
 \setnewconstant\mathdivisioncode      \mathclassvalue division
 \setnewconstant\mathfactorialcode     \mathclassvalue factorial
+\setnewconstant\mathwrappedcode       \mathclassvalue wrapped
+\setnewconstant\mathconstructcode     \mathclassvalue construct
 
 \setnewconstant\mathbegincode         \mathclassvalue begin
 \setnewconstant\mathendcode           \mathclassvalue end
@@ -190,6 +192,9 @@
 \copymathspacing \mathfunctioncode     \mathordinarycode
 \copymathspacing \mathdigitcode        \mathordinarycode
 
+\copymathspacing \mathconstructcode    \mathinnercode
+\copymathspacing \mathwrappedcode      \mathfractioncode
+
 \setnewconstant\mathlimopcode \plusone
 \setnewconstant\mathnolopcode \plusone
 
@@ -212,7 +217,7 @@
 % \newcount\relpenalty
 % \newcount\prerelpenalty
 
-% topaccent botaccent .. but do we ever need these
+% topaccent botaccent .. but do we ever need these so they will be inlined or we need them for all
 
 \permanent\protected\def\ordordspacing      {\setmathspacing \mathordinarycode    \mathordinarycode   }
 \permanent\protected\def\ordopspacing       {\setmathspacing \mathordinarycode    \mathoperatorcode   }
@@ -453,6 +458,7 @@
 \definesystemattribute[mathdomain]     [public]
 \definesystemattribute[mathcollapsing] [public]
 \definesystemattribute[mathunstack]    [public]
+\definesystemattribute[mathvariant]    [public]
 
 \definesystemattribute[displaymath]    [public]
 
@@ -843,7 +849,7 @@
     \inherited\punctordspacing     \allscriptstyles\tinymuskip
     \inherited\punctopspacing      \allsplitstyles \thinmuskip
     \inherited\punctopspacing      \allscriptstyles\tinymuskip
- %% \inherited\punctbinspacing     \allmathstyles  \zeromuskip
+ % \inherited\punctbinspacing     \allmathstyles  \zeromuskip
     \inherited\punctrelspacing     \allsplitstyles \thinmuskip
     \inherited\punctrelspacing     \allscriptstyles\tinymuskip
     \inherited\punctopenspacing    \allsplitstyles \thinmuskip
@@ -926,14 +932,17 @@
     \inherited\middleinnerspacing  \allscriptstyles\tinymuskip
     \inherited\middlefracspacing   \allsplitstyles \medmuskip
     \inherited\middlefracspacing   \allscriptstyles\tinymuskip
- % \inherited\middleradspacing    \allmathstyles   \zeromuskip
+  % \inherited\middleradspacing    \allmathstyles  \zeromuskip
     %
-    \inherited\setmathspacing \mathclosecode    \mathdifferentialcode \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathclosecode    \mathdifferentialcode \allscriptstyles \tinymuskip
-    \inherited\setmathspacing \mathordinarycode \mathdifferentialcode \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathordinarycode \mathdifferentialcode \allscriptstyles \tinymuskip
-    \inherited\setmathspacing \mathfactorialcode \mathordinarycode \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathfactorialcode \mathordinarycode \allscriptstyles \tinymuskip
+    \inherited\setmathspacing \mathclosecode     \mathdifferentialcode \allsplitstyles  \thinmuskip
+    \inherited\setmathspacing \mathclosecode     \mathdifferentialcode \allscriptstyles \tinymuskip
+    \inherited\setmathspacing \mathordinarycode  \mathdifferentialcode \allsplitstyles  \thinmuskip
+    \inherited\setmathspacing \mathordinarycode  \mathdifferentialcode \allscriptstyles \tinymuskip
+    \inherited\setmathspacing \mathfactorialcode \mathordinarycode     \allsplitstyles  \thinmuskip
+    \inherited\setmathspacing \mathfactorialcode \mathordinarycode     \allscriptstyles \tinymuskip
+    %
+    \inherited\setmathspacing \mathopencode      \mathconstructcode    \allmathstyles   \thinmuskip
+    \inherited\setmathspacing \mathconstructcode \mathclosecode        \allmathstyles   \thinmuskip
 \stopsetups
 
 \directsetup{math:spacing:default}
@@ -1027,35 +1036,19 @@
 \aliased\let\setmathfontstylealternative\setmathfontstylealternate
 \aliased\let\mathalternate              \setmathfontalternate
 
-% \permanent\protected\def\mathupright   {\setmathattribute\s!regular\s!tf\setmathfontstylealternate\s!tf}
-% \permanent\protected\def\mathitalic    {\setmathattribute\s!regular\s!it\setmathfontstylealternate\s!it}
-% \permanent\protected\def\mathscript    {\setmathalphabet \s!script    \setmathfontstylealternate\s!script}
-% \permanent\protected\def\mathfraktur   {\setmathalphabet \s!fraktur   \setmathfontstylealternate\s!fraktur}
-% \permanent\protected\def\mathblackboard{\setmathalphabet \s!blackboard\setmathfontstylealternate\s!blackboard}
+\permanent\protected\def\math_upright     {\setmathattribute\s!regular\s!tf\setmathfontstylealternate\s!tf}
+\permanent\protected\def\math_italic      {\setmathattribute\s!regular\s!it\setmathfontstylealternate\s!it}
+\permanent\protected\def\math_script      {\setmathalphabet \s!script    \setmathfontstylealternate\s!script\setmathvariant\s!handwriting}
+\permanent\protected\def\math_calligraphic{\setmathalphabet \s!script    \setmathfontstylealternate\s!script\setmathvariant\s!calligraphy}
+\permanent\protected\def\math_fraktur     {\setmathalphabet \s!fraktur   \setmathfontstylealternate\s!fraktur}
+\permanent\protected\def\math_blackboard  {\setmathalphabet \s!blackboard\setmathfontstylealternate\s!blackboard}
 
-\permanent\protected\def\math_upright   {\setmathattribute\s!regular\s!tf\setmathfontstylealternate\s!tf}
-\permanent\protected\def\math_italic    {\setmathattribute\s!regular\s!it\setmathfontstylealternate\s!it}
-\permanent\protected\def\math_script    {\setmathalphabet \s!script    \setmathfontstylealternate\s!script}
-\permanent\protected\def\math_fraktur   {\setmathalphabet \s!fraktur   \setmathfontstylealternate\s!fraktur}
-\permanent\protected\def\math_blackboard{\setmathalphabet \s!blackboard\setmathfontstylealternate\s!blackboard}
-
-\permanent\protected\def\mathupright   {\mathgroupedcommandcs\math_upright}
-\permanent\protected\def\mathitalic    {\mathgroupedcommandcs\math_italic}
-\permanent\protected\def\mathscript    {\mathgroupedcommandcs\math_script}
-\permanent\protected\def\mathfraktur   {\mathgroupedcommandcs\math_fraktur}
-\permanent\protected\def\mathblackboard{\mathgroupedcommandcs\math_blackboard}
-
-% \permanent\protected\def\mathrm{\setmathattribute\s!rm\s!tf\setmathfontstylealternate\s!tf}
-% \permanent\protected\def\mathss{\setmathattribute\s!ss\s!tf\setmathfontstylealternate\s!tf}
-% \permanent\protected\def\mathtt{\setmathattribute\s!tt\s!tf\setmathfontstylealternate\s!tf}
-%
-% \permanent\protected\def\mathtf{\setmathfontstyle\s!tf\setmathfontstylealternate\s!tf}
-% \permanent\protected\def\mathsl{\setmathfontstyle\s!it\setmathfontstylealternate\s!it} % no sl
-% \permanent\protected\def\mathit{\setmathfontstyle\s!it\setmathfontstylealternate\s!it}
-%
-% \permanent\protected\def\mathbf{\setmathfontstyle\s!bf\setmathfontstylealternate\s!bf}
-% \permanent\protected\def\mathbs{\setmathfontstyle\s!bi\setmathfontstylealternate\s!bi} % no sl
-% \permanent\protected\def\mathbi{\setmathfontstyle\s!bi\setmathfontstylealternate\s!bi}
+\permanent\protected\def\mathupright     {\mathgroupedcommandcs\math_upright}
+\permanent\protected\def\mathitalic      {\mathgroupedcommandcs\math_italic}
+\permanent\protected\def\mathscript      {\mathgroupedcommandcs\math_script}
+\permanent\protected\def\mathcalligraphic{\mathgroupedcommandcs\math_calligraphic}
+\permanent\protected\def\mathfraktur     {\mathgroupedcommandcs\math_fraktur}
+\permanent\protected\def\mathblackboard  {\mathgroupedcommandcs\math_blackboard}
 
 \permanent\protected\def\math_rm{\setmathattribute\s!rm\s!tf\setmathfontstylealternate\s!tf}
 \permanent\protected\def\math_ss{\setmathattribute\s!ss\s!tf\setmathfontstylealternate\s!tf}
@@ -1108,16 +1101,17 @@
 
 \aliased\let\Bbb\mathblackboard
 
-\permanent\protected\def\frak      {\ifmmode\expandafter\mathfraktur   \fi}
-\permanent\protected\def\cal       {\ifmmode\expandafter\mathscript    \fi}
-\permanent\protected\def\bbd       {\ifmmode\expandafter\mathblackboard\fi}
-\permanent\protected\def\blackboard{\ifmmode\expandafter\mathblackboard\fi}
-\permanent\protected\def\fraktur   {\ifmmode\expandafter\mathfraktur   \fi}
-\permanent\protected\def\gothic    {\ifmmode\expandafter\mathfraktur   \fi}
+\permanent\protected\def\frak      {\ifmmode\expandafter\mathfraktur     \fi}
+\permanent\protected\def\cal       {\ifmmode\expandafter\mathcalligraphic\fi}
+\permanent\protected\def\bbd       {\ifmmode\expandafter\mathblackboard  \fi}
+\permanent\protected\def\blackboard{\ifmmode\expandafter\mathblackboard  \fi}
+\permanent\protected\def\fraktur   {\ifmmode\expandafter\mathfraktur     \fi}
+\permanent\protected\def\gothic    {\ifmmode\expandafter\mathfraktur     \fi}
 
-\permanent\protected\def\mathcal {\mathgroupedcommandcs\math_script    \relax}  % for AMS compatibility
-\permanent\protected\def\mathfrak{\mathgroupedcommandcs\math_fraktur   \relax}  % for AMS compatibility
-\permanent\protected\def\mathbb  {\mathgroupedcommandcs\math_blackboard\relax}  % for AMS compatibility
+\permanent\protected\def\mathcal {\mathgroupedcommandcs\math_calligraphic\relax}  % for AMS compatibility
+\permanent\protected\def\mathscr {\mathgroupedcommandcs\math_script      \relax}  % for AMS compatibility
+\permanent\protected\def\mathfrak{\mathgroupedcommandcs\math_fraktur     \relax}  % for AMS compatibility
+\permanent\protected\def\mathbb  {\mathgroupedcommandcs\math_blackboard  \relax}  % for AMS compatibility
 
 \ifdefined\normaltf \else \permanent\let\normaltf\tf \fi \permanent\protected\def\tf{\ifmmode\expandafter\mathtf\else\expandafter\normaltf\fi}
 \ifdefined\normalbf \else \permanent\let\normalbf\bf \fi \permanent\protected\def\bf{\ifmmode\expandafter\mathbf\else\expandafter\normalbf\fi}

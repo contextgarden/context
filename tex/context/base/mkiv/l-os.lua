@@ -168,7 +168,7 @@ if not os.__getenv__ then
         end
 
         function os.getenv(k)
-            local K = upper(k)
+            local K = upper(k) -- hm utf
             local v = osenv[K] or osgetenv(K) or osgetenv(k)
             if v == "" then
                 return nil

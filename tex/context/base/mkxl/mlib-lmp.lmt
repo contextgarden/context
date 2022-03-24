@@ -213,16 +213,34 @@ do
 
     local hashes = table.setmetatableindex("table")
 
+    -- There is no need to 'new' a hash in which case one can use any reasonable
+    -- tag. The registry aproach is mkiv compatible.
+
+    local registery = { }
+
+ -- registerdirect("lmt_hash_new", function()
+ --  -- local name  = scanstring()
+ --     local name  = scanwhatever()
+ --     hashes[name] = { }
+ -- end)
+
     registerdirect("lmt_hash_new", function()
-     -- local name  = scanstring()
-        local name  = scanwhatever()
-        hashes[name] = { }
+        for i=1,#registry + 1 do
+            if not registry[i] then
+                registry[i] = { }
+                injectwhatever(i)
+            end
+        end
     end)
 
     registerdirect("lmt_hash_dispose", function()
      -- local name  = scanstring()
         local name  = scanwhatever()
         hashes[name] = nil
+        -- when new'd
+        if registry[name] then
+            registry[name] = false
+        end
     end)
 
     registerdirect("lmt_hash_in", function()
@@ -349,6 +367,8 @@ do
     local jobpositions   = job.positions
     local getwhd         = jobpositions.whd
     local getxy          = jobpositions.xy
+    local getx           = jobpositions.x
+    local gety           = jobpositions.y
     local getposition    = jobpositions.position
     local getpage        = jobpositions.page
     local getparagraph   = jobpositions.paragraph

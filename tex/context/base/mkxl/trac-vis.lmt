@@ -1220,7 +1220,7 @@ end
 
 local ruledstrut do
 
-    local strut_size = 65536 / 2
+    local strut_size = 65536 * 8 / 10
     local strut_code = nodes.rulecodes.strut
 
     ruledstrut = function(head,current)

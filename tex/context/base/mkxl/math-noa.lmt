@@ -458,7 +458,15 @@ local checked  = { } -- simple case
 local tracked  = false  trackers.register("fonts.missing", function(v) tracked = v end)
 local cached   = setmetatableindex("table") -- complex case
 
+local variantselectors = {
+    [0xFE00] = true,
+    [0xFE01] = true
+}
+
 local function errorchar(font,char)
+    if variantselectors[char] then
+        return char
+    end
     local done = unknowns[char]
     if done then
         unknowns[char] = done  + 1
@@ -1810,7 +1818,7 @@ end
 
 do
 
-    -- is validpair stil needed?
+    -- is validpair stil needed? why not always now?
 
     local a_mathcollapsing = privateattribute("mathcollapsing")
     local collapse         = { }
@@ -2011,67 +2019,111 @@ do
 
 end
 
--- variants
+-- variants (upgraded for script too)
 
 do
 
-    local variants      = { }
-    local validvariants = { -- fast check on valid
-        [0x2229] = 0xFE00, [0x222A] = 0xFE00,
-        [0x2268] = 0xFE00, [0x2269] = 0xFE00,
-        [0x2272] = 0xFE00, [0x2273] = 0xFE00,
-        [0x228A] = 0xFE00, [0x228B] = 0xFE00,
-        [0x2293] = 0xFE00, [0x2294] = 0xFE00,
-        [0x2295] = 0xFE00,
-        [0x2297] = 0xFE00,
-        [0x229C] = 0xFE00,
-        [0x22DA] = 0xFE00, [0x22DB] = 0xFE00,
-        [0x2A3C] = 0xFE00, [0x2A3D] = 0xFE00,
-        [0x2A9D] = 0xFE00, [0x2A9E] = 0xFE00,
-        [0x2AAC] = 0xFE00, [0x2AAD] = 0xFE00,
-        [0x2ACB] = 0xFE00, [0x2ACC] = 0xFE00,
-    }
+    local variants  = { }
+    local chardata  = characters.data
+    local a_variant = privateattribute("mathvariant")
 
-    variants[mathchar_code] = function(pointer,what,n,parent) -- also set export value
-        local char = getchar(pointer)
-        local selector = validvariants[char]
-        if selector then
-            local next = getnext(parent)
-            if next and getid(next) == noad_code then
-                local nucleus = getnucleus(next)
-                if nucleus and getid(nucleus) == mathchar_code and getchar(nucleus) == selector then
-                    local variant
-                    local tfmdata = fontdata[getfont(pointer)]
-                    local mathvariants = tfmdata.resources.variants -- and variantdata
-                    if mathvariants then
-                        mathvariants = mathvariants[selector]
-                        if mathvariants then
-                            variant = mathvariants[char]
-                        end
+    local function setvariant(pointer,selector,char)
+        local tfmdata      = fontdata[getfont(pointer)]
+        local mathvariants = tfmdata.resources.variants -- and variantdata / can be a hash
+        if mathvariants then
+            mathvariants = mathvariants[selector]
+            if mathvariants then
+                local variant = mathvariants[char]
+                if variant then
+                    setchar(pointer,variant)
+                    setattr(pointer,a_exportstatus,char) -- we don't export the variant as it's visual markup
+                    if trace_variants then
+                        report_variants("variant (%U,%U) replaced by %U",char,selector,variant)
                     end
-                    if variant then
-                        setchar(pointer,variant)
-                        setattr(pointer,a_exportstatus,char) -- we don't export the variant as it's visual markup
-                        if trace_variants then
-                            report_variants("variant (%U,%U) replaced by %U",char,selector,variant)
-                        end
-                    else
-                        if trace_variants then
-                            report_variants("no variant (%U,%U)",char,selector)
-                        end
+                else
+                    if trace_variants then
+                        report_variants("no variant (%U,%U)",char,selector)
                     end
-                    setprev(next,pointer)
-                    setnext(parent,getnext(next))
-                    flushnode(next)
                 end
             end
         end
+    end
+
+    variants[mathchar_code] = function(pointer,what,n,parent) -- also set export value
+        local char = getchar(pointer)
+        local data = chardata[char]
+        if data then
+            local variants = data.variants
+            if variants then
+                local next = getnext(parent)
+                if next and getid(next) == noad_code then
+                    local nucleus = getnucleus(next)
+                    if nucleus and getid(nucleus) == mathchar_code then
+                        local selector = getchar(nucleus)
+                        if variants[selector] then
+                            setvariant(pointer,selector,char)
+                            setprev(next,pointer)
+                            setnext(parent,getnext(next))
+                            flushnode(next)
+                        end
+                    end
+                end
+                local selector = getattr(pointer,a_variant)
+                if selector and variants[selector] then
+                    setvariant(pointer,selector,char)
+                end
+            end
+        end
+    end
+
+    function mathematics.addvariant(tfmdata,char,variant,selector)
+        if char and variant and selector then
+            local data = chardata[char]
+            if data then
+                local variants = data.variants
+                if variants and variants[selector] then
+                    local resources = tfmdata.resources
+                    local variants  = resources.variants -- and variantdata
+                    if not variants then
+                        variants           = { }
+                        resources.variants = variants
+                    end
+                    local selectors = variants[selector]
+                    if not selectors then
+                        selectors          = { }
+                        variants[selector] = selectors
+                    end
+                    selectors[char] = variant
+                    return true
+                end
+            end
+        end
+        return false
     end
 
     function handlers.variants(head,style,penalties)
         processnoads(head,variants,"unicode variant")
         return true -- not needed
     end
+
+    local valid = {
+        calligraphic = 0xFE00,
+        calligraphy  = 0xFE00,
+        script       = 0xFE01,
+        handwriting  = 0xFE01,
+    }
+
+    function mathematics.setvariant(s)
+        texsetattribute(a_variant,valid[s] or unsetvalue)
+    end
+
+    implement {
+        name      = "setmathvariant",
+        public    = true,
+        protected = true,
+        arguments = "string",
+        actions   = mathematics.setvariant,
+    }
 
 end
 
@@ -2335,9 +2387,9 @@ local actions = tasks.actions("math") -- head, style, penalties
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
-function processors.mlisttohlist(head,style,penalties)
+function processors.mlisttohlist(head,style,penalties,beginclass,endclass)
     starttiming(noads)
-    head = actions(head,style,penalties)
+    head = actions(head,style,penalties,beginclass,endclass)
     stoptiming(noads)
     return head
 end

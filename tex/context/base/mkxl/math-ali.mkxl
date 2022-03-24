@@ -71,36 +71,81 @@
       \etoksapp\scratchtoks{\the\t_math_align_b}}%
    \etoksapp\scratchtoks{\the\t_math_align_c}}
 
+\def\math_eqalign_set_defaults
+  {\normalbaselines % hm, spacing ?
+   \mathsurround\zeropoint
+   \tabskip\zeropoint
+   \everycr\emptytoks}
+
+% \def\math_math_in_eqalign#1%
+%   {\startforceddisplaymath
+%    \tabskip\zeropoint
+%    \everycr\emptytoks
+%    {{}#1{}}% brrr we need to replace {}
+%    \stopforceddisplaymath}
+
+% \def\math_text_in_eqalign#1%
+%   {\startimath
+%    \tabskip\zeropoint
+%    \everycr\emptytoks
+%    #1%
+%    \stopimath}
+
 \def\math_math_in_eqalign#1%
-  {\startforceddisplaymath
+  {\mathbeginclass\mathordcode
+   \mathendclass  \mathordcode
+   \startforceddisplaymath
    \tabskip\zeropoint
    \everycr\emptytoks
-   {{}#1{}}%
+   #1%
    \stopforceddisplaymath}
 
 \def\math_text_in_eqalign#1%
-  {\startimath
+  {\mathbeginclass\mathordcode
+   \mathendclass  \mathordcode
+   \startimath
    \tabskip\zeropoint
    \everycr\emptytoks
    #1%
    \stopimath}
 
-\permanent\protected\def\eqalign#1% why no halign here, probably because of displaywidth
-  {\emptyhbox % why no \dontleavehmode
-   \mskip\thinmuskip
-   \vcenter
-     {\math_openup\displayopenupvalue % was: \openup\jot
-      \mathsurround\zeropoint
-      \ialign{%
-        \strut
+% \permanent\protected\def\eqalign#1% why no halign here, probably because of displaywidth
+%   {\emptyhbox % why no \dontleavehmode
+%    \mskip\thinmuskip
+%    \vcenter
+%      {\math_openup\displayopenupvalue % was: \openup\jot
+%       \mathsurround\zeropoint
+%       \ialign{%
+%         \strut
+%         \hfil
+%         \startforceddisplaymath{\aligncontent}\stopforceddisplaymath
+%         \aligntab
+%         \startforceddisplaymath{{}\aligncontent{}}\stopforceddisplaymath
+%         \hfil\crcr
+%         #1\crcr}%
+%      }%
+%    \mskip\thinmuskip}
+
+\permanent\protected\def\eqalign#1% rather plain, is this used at all ...
+  {\dontleavehmode
+   \mskip\thinmuskip\vcenter\bgroup % \vcenter \s!class \mathwrappercode \bgroup
+     \math_openup\displayopenupvalue
+     \mathsurround\zeropoint        % \math_eqalign_set_defaults
+     \ialign
+       {\strut
         \hfil
-        \startforceddisplaymath{\aligncontent}\stopforceddisplaymath
+        \mathbeginclass\mathordcode
+        \mathendclass  \mathordcode
+        \startforceddisplaymath\aligncontent\stopforceddisplaymath
         \aligntab
-        \startforceddisplaymath{{}\aligncontent{}}\stopforceddisplaymath
-        \hfil\crcr
-        #1\crcr}%
-     }%
-   \mskip\thinmuskip}
+        \mathbeginclass\mathordcode
+        \mathendclass  \mathordcode
+        \startforceddisplaymath\aligncontent\stopforceddisplaymath
+        \hfil
+        \crcr
+        #1%
+        \crcr}%
+   \egroup\mskip\thinmuskip}        % \egroup
 
 % preamble is scanned for tabskips so we need the span to prevent an error message
 
@@ -491,16 +536,6 @@
    \dostoptagged % finish cell
    \dostarttagged\t!mtablecell\empty}
 
-% \def\math_left_of_eqalign
-%   {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
-%      \ifcase\lastnamedcs \or \relax \or \hfill \or \hfill \fi
-%    \fi}
-
-% \def\math_right_of_eqalign
-%   {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
-%      \ifcase\lastnamedcs \or \hfill \or \relax \or \hfill \fi
-%    \fi}
-
 \def\math_left_of_eqalign
   {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
      \ifcase\lastnamedcs \or \relax \or \hfill \or \hfill \fi
@@ -537,17 +572,7 @@
      \fi
    \fi}
 
-% \def\math_eqalign_set_column#1% we could just add to the preamble (as with other alignments)
-%   {\expandafter\chardef\csname\??mathalignmentvariant\number\c_math_eqalign_column\expandafter\expandafter\expandafter\endcsname
-%      \ifcsname\??mathalignmentvariant#1\endcsname\lastnamedcs\else\zerocount\fi\relax}
-
-% \def\math_eqalign_set_column_indeed[#1:#2:#3]% we don't really check for all (so * will do too) ... yet
-%   {\expandafter\chardef\csname\??mathalignmentvariant\number
-%      \ifcstok{#2}\emptytoks\c_math_eqalign_column\orelse\ifchknum#1\or#1\else\zerocount\fi
-%    \endcsname
-%    \ifcsname\??mathalignmentvariant#2\endcsname\lastnamedcs\else\zerocount\fi\relax}
-
-\def\math_eqalign_set_column_indeed[#1:#2:#3]% we don't really check for all (so * will do too) ... yet
+\protected\def\math_eqalign_set_column_indeed[#1:#2:#3]% we don't really check for all (so * will do too) ... yet
   {\ifcstok{#2}\emptytoks
      % current counter
    \orelse\ifchknum#1\or
@@ -555,11 +580,20 @@
    \else
      \c_math_eqalign_column\zerocount
    \fi
-   \chardef\csname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
-   \ifcsname\??mathalignmentvariant#2\endcsname\lastnamedcs\else\zerocount\fi\relax}
+   \expandafter\integerdef\csname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
+     \ifcsname\??mathalignmentvariant#2\endcsname\lastnamedcs\else\zerocount\fi\relax}
 
 \def\math_eqalign_set_column#1%
   {\normalexpanded{\math_eqalign_set_column_indeed[#1::]}}
+
+\def\math_eqalign_set_columns_step
+  {\advance\c_math_eqalign_column\plusone
+  %\c_math_matrix_columns\c_math_eqalign_column
+   \math_eqalign_set_column}
+
+\def\math_eqalign_set_columns#1%
+  {\c_math_eqalign_column\zerocount
+   \rawprocesscommacommand[#1]\math_eqalign_set_columns_step}
 
 \letcsname\??mathalignmentvariant\v!normal\endcsname\zerocount
 \letcsname\??mathalignmentvariant\v!left  \endcsname\plusone
@@ -713,99 +747,12 @@
   [\c!distance=\emwidth,
    \c!strut=\v!yes, % new
   %\c!numberdistance=2.5\emwidth,
-   \c!numberdistance=\zeropoint, % pending an extension wrt placement (Aditya/Hans)
-   \c!left={\left\{\mskip\thinmuskip},
-   \c!right={\right.}]
+   \c!numberdistance=\zeropoint]
 
 \appendtoks
     \frozen\instance\protected\edefcsname\e!start\currentmathcases\endcsname{\math_cases_start[\currentmathcases]}%
     \frozen\instance          \defcsname \e!stop \currentmathcases\endcsname{\math_cases_stop}%
 \to \everydefinemathcases
-
-% \permanent\protected\def\math_cases_NC_zero
-%   {\math_cases_NC}
-%
-% \permanent\protected\def\math_cases_MC_zero
-%   {\math_cases_NC
-%    \ifmmode\else
-%      \startimath
-%      \enforced\let\math_cases_end_math\stopimath
-%    \fi}
-%
-% \let\math_cases_end_math\relax
-%
-% \permanent\protected\def\math_cases_NR_zero
-%   {\unskip
-%    \math_cases_end_math
-%    \aligntab
-%    \global\enforced\let\math_cases_NC\math_cases_NC_first
-%    \dodirectdoubleempty\math_cases_NR}
-%
-% \permanent\protected\def\math_cases_NC_first
-%   {\global\enforced\let\math_cases_NC\math_cases_NC_second}
-%
-% \permanent\protected\def\math_cases_NC_second
-%   {\math_cases_end_math\aligntab}
-%
-% \let\math_cases_NR\math_align_NR_generic
-%
-% \installmacrostack\math_cases_NC
-%
-% \let\math_cases_strut\relax
-%
-% \permanent\tolerant\protected\def\math_cases_start[#1]#*[#2]%
-%   {\begingroup
-%    \edef\currentmathcases{#1}%
-%    \ifarguments\or\or
-%      \setupcurrentmathcases[#2]%
-%    \fi
-%    \edef\p_strut{\mathcasesparameter\c!strut}%
-%    \ifx\p_strut\v!yes
-%      \enforced\let\math_cases_strut\strut
-%    \else
-%      \enforced\let\math_cases_strut\relax
-%    \fi
-%    \mathcasesparameter\c!left
-%    \vcenter\bgroup
-%    \push_macro_math_cases_NC
-%    \enforced\let\MC\math_cases_MC_zero
-%    \enforced\let\NR\math_cases_NR_zero
-%    \enforced\let\TB\math_common_TB
-%    \enforced\glet\math_cases_NC\math_cases_NC_first
-%    \normalbaselines
-%    \mathsurround\zeropoint
-%    \everycr\emptytoks
-%    \tabskip\zeropoint
-%    \global\c_math_eqalign_column\plusone
-%    \halign\bgroup
-%      \startimath
-%      \mathcasesparameter\c!style
-%      \aligncontent
-%      \stopimath
-%      \hfil
-%      \aligntab
-%      \hskip\mathcasesparameter\c!distance\relax
-%      \pop_macro_math_cases_NC
-%      \math_cases_strut % looks better
-%      \aligncontent
-%      \hfil
-%      \aligntab
-%      \hskip\mathcasesparameter\c!numberdistance\relax
-%    % \let\formuladistance\!!zeropoint
-%      \span\math_text_in_eqalign{\aligncontent}%
-%      \crcr} % todo: number
-%
-% % When we have just protected we get an extra row but we can no flag
-% % this as a proper alignment related command which means that uit gets
-% % expanded.
-%
-% \noaligned\permanent\protected\def\math_cases_stop
-%   {\crcr
-%    \egroup
-%    \pop_macro_math_cases_NC
-%    \egroup
-%    \mathcasesparameter\c!right
-%    \endgroup}
 
 \let\math_cases_strut\relax
 
@@ -875,17 +822,17 @@
      \enforced\let\math_cases_strut\relax
    \fi
    \push_macro_c_math_cases_nc
+   \mathatom \s!class \mathwrappedcode \bgroup
    \mathcasesparameter\c!left
+  %\startmathfenced[\mathcasesparameter\c!somekey]%
+   \mathatom \s!class \mathconstructcode \bgroup
    \vcenter\bgroup
    \enforced\let\MC\math_cases_NC
    \enforced\let\NC\math_cases_NC
    \enforced\let\NR\math_cases_NR
    \enforced\let\TC\math_cases_TC
    \enforced\let\TB\math_common_TB
-   \normalbaselines
-   \mathsurround\zeropoint
-   \everycr\emptytoks
-   \tabskip\zeropoint
+   \math_eqalign_set_defaults
    \global\c_math_eqalign_column\plusone
    \global\c_math_eqalign_row\plusone
    \global\c_math_cases_nc\zerocount
@@ -909,18 +856,36 @@
   {\crcr
    \egroup
    \egroup
+   \egroup
+  %\stopmathfenced
    \mathcasesparameter\c!right
+   \egroup
    \pop_macro_c_math_cases_nc
    \endgroup}
+
+% \definemathfence [cases] [\c!left="007B,\c!right=\v!none]
+% \definemathfence [sesac] [\c!left=\v!none,\c!right="007D]
 
 \definemathcases[cases]
 \definemathcases[\v!mathcases]
 
+% This might become key=cases in the end:
+
+\setupmathcases
+% [cases]
+  [\c!left={\startmathfenced[cases]},
+   \c!right=\stopmathfenced]
+
+\definemathcases
+  [sesac]
+  [\c!left={\startmathfenced[sesac]},
+   \c!right=\stopmathfenced]
+
 %D \startbuffer
 %D \placeformula \startformula \startcases
-%D \NC 2 \NC $ y > 0 $ \NR
-%D \NC 7 \NC $ x = 7 $ \NR[+]
-%D \NC 4 \NC otherwise \NR
+%D \NC 2 \NC y > 0     \NR
+%D \NC 7 \NC x = 7     \NR[+]
+%D \NC 4 \TC otherwise \NR
 %D \stopcases \stopformula
 %D \stopbuffer
 %D
@@ -928,9 +893,9 @@
 %D
 %D \startbuffer
 %D \placeformula \startformula x \startcases
-%D \NC 2 \NC $ y > 0 $ \NR[+]
-%D \NC 7 \NC $ x = 7 $ \NR
-%D \NC 4 \NC otherwise \NR
+%D \NC 2 \NC y > 0     \NR[+]
+%D \NC 7 \NC x = 7     \NR
+%D \NC 4 \TC otherwise \NR
 %D \stopcases \stopformula
 %D \stopbuffer
 %D
@@ -938,9 +903,9 @@
 %D
 %D \startbuffer
 %D \placeformula \startformula \startcases
-%D \NC 2 \NC $ y > 0 $ \NR
-%D \NC 7 \NC $ x = 7 $ \NR
-%D \NC 4 \NC otherwise \NR
+%D \NC 2 \NC y > 0     \NR
+%D \NC 7 \NC x = 7     \NR
+%D \NC 4 \TC otherwise \NR
 %D \stopcases \stopformula
 %D \stopbuffer
 %D
@@ -948,9 +913,9 @@
 %D
 %D \startbuffer
 %D \placeformula \startformula x \startcases
-%D \NC 2 \NC $ y > 0 $ \NR
-%D \NC 7 \NC $ x = 7 $ \NR
-%D \NC 4 \NC otherwise \NR
+%D \NC 2 \NC y > 0     \NR
+%D \NC 7 \NC x = 7     \NR
+%D \NC 4 \TC otherwise \NR
 %D \stopcases \stopformula
 %D \stopbuffer
 %D
@@ -990,13 +955,6 @@
 \def\math_matrix_stop_table
   {\dostoptagged
    \dostoptagged}
-
-% \def\math_matrix_start_row
-%   {\noalign{\global\c_math_eqalign_column\zerocount}%
-%    \dostarttagged\t!mtablerow\empty}
-%
-% \def\math_matrix_stop_row
-%   {\dostoptagged}
 
 \def\math_matrix_start_row
   {\beginlocalcontrol
@@ -1120,12 +1078,6 @@
 \permanent\protected\def\math_matrix_NC_yes{\global\setfalse\c_math_matrix_first}
 \permanent\protected\def\math_matrix_NC_nop{\aligntab} % avoids lookahead
 
-% \def\math_matrix_stop_wrapup
-%   {\crcr
-%    \strut
-%    \crcr
-%    \noalign{\vskip-\struthtdp}}
-
 \def\math_matrix_check_rule_step#1%
   {\doifelsenumber{#1}
      {\scratchdimen#1\d_math_eqalign_rulethickness}
@@ -1170,7 +1122,11 @@
 \to \everymathmatrix
 
 \def\math_matrix_start_processing
-  {\dontleavehmode
+  {\ifmmode
+     \mathatom \s!class \mathwrappedcode
+   \else
+     \dontleavehmode
+   \fi
    \bgroup
    \tabskip\zeropoint
    \math_matrix_pickup
@@ -1193,9 +1149,9 @@
    \egroup
    \math_matrix_stop_table
    \egroup
-   \mathmatrixleft
+   \mathmatrixleft  % experimental hook
    \math_matrix_finish_nextbox
-   \mathmatrixright
+   \mathmatrixright % experimental hook
    \egroup}
 
 \let\math_matrix_strut    \strut
@@ -1216,20 +1172,6 @@
  % \edef\p_rulecolor{\mathmatrixparameter\c!rulecolor}
    \edef\math_matrix_set_style{\mathmatrixparameter\c!style}}
 
-\def\math_matrix_set_defaults
-  {\normalbaselines % hm, spacing ?
-   \mathsurround\zeropoint
-   \tabskip\zeropoint}
-
-\def\math_matrix_set_columns_step
-  {\advance\c_math_eqalign_column\plusone
-  %\c_math_matrix_columns\c_math_eqalign_column
-   \math_eqalign_set_column}
-
-\def\math_matrix_set_columns
-  {\c_math_eqalign_column\zerocount
-   \rawprocesscommacommand[\mathmatrixparameter\c!align]\math_matrix_set_columns_step}
-
 \newcount\c_math_eqalign_column_saved
 \newcount\c_math_eqalign_row_saved
 
@@ -1244,8 +1186,8 @@
    \edef\currentmathmatrix{#1}%
    \setupcurrentmathmatrix[#2]%
    \math_matrix_check_settings
-   \math_matrix_set_defaults
-   \math_matrix_set_columns
+   \math_eqalign_set_defaults
+   \math_eqalign_set_columns{\mathmatrixparameter\c!align}%
    \math_matrix_start_processing}
 
 \def\math_matrix_stop
@@ -1277,10 +1219,12 @@
 \defcsname\??mathmatrixalignlocation\v!low   \endcsname{\lower\dimexpr(\nextboxdp-\nextboxht)/2\relax}
 
 \def\math_matrix_finish_nextbox
-  {\begincsname\??mathmatrixalignlocation\mathmatrixparameter\c!location\endcsname\hbox\bgroup
+  {\scratchcounter\mathstyle\relax
+   \begincsname\??mathmatrixalignlocation\mathmatrixparameter\c!location\endcsname\hbox\bgroup
      \normalstartimath
+     \Ustyle\scratchcounter
      \mathmatrixparameter\c!left
-     \vcenter{\box\nextbox}%
+     \mathatom \s!class \mathconstructcode {\vcenter{\box\nextbox}}% \was \vcenter
      \mathmatrixparameter\c!right
      \normalstopimath
    \egroup}
@@ -1426,29 +1370,7 @@
    \endgroup}
 
 %D The following code is derived from Aditya's simplematrix prototype but adapted to
-%D regular mathmatrices:
-
-% We keep this as reference:
-%
-% \def\math_matrix_simple_row#1%
-%   {\rawprocesscommalist[#1]\math_matrix_simple_col
-%    \toksapp\scratchtoks{\NR}}
-%
-% \def\math_matrix_simple_col#1%
-%   {\toksapp\scratchtoks{\NC#1}}
-%
-% \permanent\tolerant\protected\def\math_matrix_simple[#1]#*[#2]#:#3%
-%   {\begingroup
-%    \edef\currentmathmatrix{#1}%
-%    \setupcurrentmathmatrix[#2]%
-%    \scratchtoks\emptytoks
-%    \processlist[];\math_matrix_simple_row[#3]%
-%    \math_matrix_start[\currentmathmatrix]%
-%    \the\scratchtoks
-%    \math_matrix_stop
-%    \endgroup}
-
-%D With a little help from \LUA\ we now have this:
+%D regular mathmatrices. With a little help from \LUA\ we now have this:
 %D
 %D \startbuffer
 %D \definemathmatrix [Pmatrix] [matrix:parentheses]
@@ -1492,9 +1414,33 @@
 
 %D And predefine some matrices:
 
-\definemathmatrix[matrix:parentheses][\c!left={\left(\mskip\thinmuskip},\c!right={\mskip\thinmuskip\right)},\c!align=\v!middle]
-\definemathmatrix[matrix:brackets]   [\c!left={\left[\mskip\thinmuskip},\c!right={\mskip\thinmuskip\right]},\c!align=\v!middle]
-\definemathmatrix[matrix:bars]       [\c!left={\left|\mskip\thinmuskip},\c!right={\mskip\thinmuskip\right|},\c!align=\v!middle]
+% \definemathmatrix[matrix:parentheses][\c!left={\left(\mskip\thinmuskip},\c!right={\mskip\thinmuskip\right)},\c!align=\v!middle]
+% \definemathmatrix[matrix:brackets]   [\c!left={\left[\mskip\thinmuskip},\c!right={\mskip\thinmuskip\right]},\c!align=\v!middle]
+% \definemathmatrix[matrix:bars]       [\c!left={\left|\mskip\thinmuskip},\c!right={\mskip\thinmuskip\right|},\c!align=\v!middle]
+
+\definemathmatrix
+  [matrix:brackets]
+  [\c!left={\startmathfenced[bracket]},
+   \c!right=\stopmathfenced,
+   \c!align=\v!middle]
+
+\definemathmatrix
+  [matrix:parentheses]
+  [\c!left={\startmathfenced[parenthesis]},
+   \c!right=\stopmathfenced,
+   \c!align=\v!middle]
+
+\definemathmatrix
+  [matrix:bars]
+  [\c!left={\startmathfenced[bar]},
+   \c!right=\stopmathfenced,
+   \c!align=\v!middle]
+
+\definemathmatrix
+  [matrix:braces]
+  [\c!left={\startmathfenced[brace]},
+   \c!right=\stopmathfenced,
+   \c!align=\v!middle]
 
 \definemathmatrix[thematrix][matrix:parentheses][\c!simplecommand=thematrix]
 
@@ -1679,9 +1625,6 @@
 
 \installcorenamespace{mathinnerstart}
 \installcorenamespace{mathinnerstop}
-
-% \protected\def\startinnermath{\csname\??mathinnerstart\formulaparameter\c!align\endcsname}
-% \protected\def\stopinnermath {\csname\??mathinnerstop \formulaparameter\c!align\endcsname}
 
 \permanent\protected\def\startinnermath{\expandnamespaceparameter\??mathinnerstart\formulaparameter\c!align\v!normal}
 \permanent\protected\def\stopinnermath {\expandnamespaceparameter\??mathinnerstop \formulaparameter\c!align\v!normal}
@@ -2214,6 +2157,119 @@
     \edef\p_threshold{\mathematicsparameter\c!threshold}%
     \maththreshold\ifcsname\??maththreshold\p_threshold\endcsname\lastnamedcs\else\p_threshold\fi\relax
 \to \everymath % \everyemathematics
+
+%D Here is simple alignment mechanism:
+
+\installcorenamespace{mathsimplealign}
+
+\installcommandhandler \??mathsimplealign {mathsimplealign} \??mathsimplealign
+
+\setupmathsimplealign
+  [\c!distance=\v!math,
+   \c!align=\v!all:\v!middle,
+   \c!textdistance=.25\emwidth]
+
+\appendtoks
+    \frozen\instance\protected\edefcsname\e!start\currentmathsimplealign\endcsname{\math_simplealign_start[\currentmathsimplealign]}%
+    \frozen\instance          \defcsname \e!stop \currentmathsimplealign\endcsname{\math_simplealign_stop}%
+\to \everydefinemathsimplealign
+
+\permanent\protected\def\math_simplealign_NC
+  {\aligntab}
+
+\noaligned\tolerant\permanent\protected\def\math_simplealign_NR[#1]#*[#2]%
+  {\unskip
+   \math_align_NR_generic[#1][#2]}
+
+\permanent\tolerant\protected\def\math_simplealign_start[#1]#*[#2]%
+  {\begingroup
+   \edef\currentmathsimplealign{#1}%
+   \ifarguments\or\or
+     \setupcurrentmathsimplealign[#2]%
+   \fi
+   \mathatom \s!class \mathwrappedcode \bgroup
+   \mathsimplealignparameter\c!left
+  %\startmathfenced[\mathsimplealignparameter\c!somekey]%
+   \mathatom \s!class \mathconstructcode \bgroup
+   \vcenter\bgroup
+   \enforced\let\MC\math_simplealign_NC
+   \enforced\let\NC\math_simplealign_NC
+   \enforced\let\NR\math_simplealign_NR
+   \enforced\let\TB\math_common_TB
+   \math_eqalign_set_defaults
+   \math_eqalign_set_columns{\mathsimplealignparameter\c!align}%
+   \global\c_math_eqalign_column\zerocount
+   \global\c_math_eqalign_row\plusone
+   \edef\m_simplealign_distance{\mathsimplealignparameter\c!distance}%
+   \halign\bgroup
+     \global\c_math_eqalign_column\zerocount
+     \global\advance\c_math_eqalign_row\zerocount
+     \ignorespaces
+     \aligncontent % dummy
+     \removeunwantedspaces
+     \aligntab
+     \global\advance\c_math_eqalign_column\plusone
+     \math_left_of_eqalign  % \hfil
+     \ignorespaces
+     \startimath
+     \aligncontent
+     \stopimath
+     \removeunwantedspaces
+     \math_right_of_eqalign % \hfil
+     \aligntab
+     \aligntab
+     \global\advance\c_math_eqalign_column\plusone
+     \math_left_of_eqalign  % \hfil
+     \ifx\m_simplealign_distance\v!math
+       \mathbeginclass\lastrightclass
+     \else
+       \kern\m_simplealign_distance
+     \fi
+     \ignorespaces
+     \startimath
+     \aligncontent
+     \stopimath
+     \removeunwantedspaces
+     \math_right_of_eqalign % \hfil
+     \crcr}
+
+\noaligned\permanent\protected\def\math_simplealign_stop
+  {\crcr
+   \egroup
+   \egroup
+   \egroup
+  %\stopmathfenced
+   \mathsimplealignparameter\c!right
+   \setbox\scratchbox\hbox{\mathsimplealignparameter\c!text}%
+   \ifvoid\scratchbox\else
+     \hskip\mathsimplealignparameter\c!textdistance
+     \vcenter{\box\scratchbox}%
+   \fi
+   \egroup
+   \endgroup}
+
+%D It's not that spectacular apart from spacing being proper inter atom spacing
+%D using one of the new \LUAMETATEX\ mechanisms.
+%D
+%D \starttyping
+%D \definemathsimplealign
+%D   [whatever]
+%D   [left={\startmathfenced[sesac]},
+%D    right=\stopmathfenced]
+%D
+%D  % distance=math,
+%D  % distance=\zeropoint,
+%D  % distance=1cm,
+%D  % align={all:left}]
+%D
+%D \startformula
+%D     \startwhatever[text=simple]
+%D       \NC x \NC = \NC r   \NC \cos\theta \NR
+%D       \NC y \NC = \NC \frac{1}{2}   \NC \sin\theta \NR
+%D       \NC 9 \NC = \NC 123 \NC \sin\theta \NR
+%D     \stopwhatever
+%D \stopformula
+%D \stoptyping
 
 \protect \endinput
 

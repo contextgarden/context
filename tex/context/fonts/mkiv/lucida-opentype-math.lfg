@@ -37,7 +37,7 @@ return {
             NoLimitSupFactor               =   0,
             NoLimitSubFactor               = 900,
             FractionRuleThickness          =  55,
-            AccentBaseHeight               = 650,
+         -- AccentBaseHeight               = 650,
             AccentBaseDepth                = 150,
         },
         tweaks = {
@@ -45,6 +45,29 @@ return {
                 {
                     tweak    = "version",
                     expected = "Version 1.802",
+                },
+                {
+                    tweak = "substitutes",
+                    list  = {
+                        [0x2264] = "ss03",
+                        [0x2265] = "ss03",
+                    }
+                },
+                -- \definefontfeature[mathlucida][copymathscripts=yes]
+                -- \definefontfeature[mathlucida][copymathscripts=yes,ss04=yes]
+                -- 0xFEOO should be chancery style, if present
+                {
+                    tweak    = "variants",
+                    kind     = "script",
+                    feature  = "ss04",-- this changes to chancery style for lucida
+                 -- feature  = false, -- use the saved ones (see typescript)
+                    selector = 0xFE00,
+                },
+                -- 0xFEO1 should be roundhand style, if present
+                {
+                    tweak    = "variants",
+                    kind     = "script",
+                    selector = 0xFE01,
                 },
                 {
                     tweak = "dimensions",
@@ -61,14 +84,14 @@ return {
                      -- [0x23DD]  = { depth  = .6, yoffset =  0.4 },
                     },
                 },
-             {
-               tweak   = "fixprimes",
-               factor  = 0.9, -- accent base height
-            --    smaller = true, -- replace multiples
-               scale   = 1, -- glyph scale
-            --    fake    = 0.65, -- replace multiples with this width proportion
-            -- keep    = true, -- keep the text size prime (aka minute)
-             },
+                {
+                  tweak   = "fixprimes",
+                  factor  = 0.8, -- accent base height
+               --    smaller = true, -- replace multiples
+                  scale   = 1.1, -- glyph scale
+               --    fake    = 0.65, -- replace multiples with this width proportion
+               -- keep    = true, -- keep the text size prime (aka minute)
+                },
                 {
                     tweak = "checkspacing",
                 },
@@ -84,12 +107,11 @@ return {
             },
         },
         alternates = {
-            italic       = { feature = 'ss01', value = 1, comment = "Mathematical Alternative Lowercase Italic" },
+            textitalic   = { feature = 'ss01', value = 1, comment = "Mathematical Alternative Lowercase Italic" },
             arrow        = { feature = 'ss02', value = 1, comment = "Mathematical Alternative Smaller Arrows" },
             operator     = { feature = 'ss03', value = 1, comment = "Mathematical Alternative Smaller Operators" },
             calligraphic = { feature = 'ss04', value = 1, comment = "Mathematical Alternative Calligraphic Characters" },
             zero         = { feature = 'ss05', value = 1, comment = "Mathematical Alternative Zero" },
-            partial      = { feature = 'ss20', value = 1, comment = "Mathematical Alternative Upright Partial Differential" },
         },
         bigslots = {
             1, 2, 3, 4

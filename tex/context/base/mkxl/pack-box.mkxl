@@ -1253,15 +1253,20 @@
 
 \permanent\protected\def\defineboxanchor[#1]%
   {\registerboxanchor
-   \expandafter\integerdef\csname\??boxanchors#1\endcsname\registeredboxanchor}
+   \global\expandafter\integerdef\csname\??boxanchors#1\endcsname\registeredboxanchor}
 
 \permanent\def\namedboxanchor#1%
   {\normalexpanded{\ifcsname\??boxanchors#1\endcsname\lastnamedcs\orelse\ifchknum#1\or#1\else\zerocount\fi}}
 
+\permanent\def\namespacedboxanchor#1%
+  {boxanchor:\number\namedboxanchor{#1}}
+
 \installcorenamespace{boxanchorcontent}
 
-\installparameterhandler \??boxanchorcontent {boxanchorcontent}
-\installsetuphandler     \??boxanchorcontent {boxanchorcontent}
+% \installparameterhandler \??boxanchorcontent {boxanchorcontent}
+% \installautosetuphandler \??boxanchorcontent {boxanchorcontent}
+
+\installcommandhandler \??boxanchorcontent {boxanchorcontent} \??boxanchorcontent % no real need but let's have a define too
 
 \setupboxanchorcontent
   [\c!yoffset=\zeropoint,
@@ -1270,10 +1275,15 @@
    \c!location=\v!height,
    \c!corner=\v!depth]
 
-\permanent\tolerant\protected\def\setboxanchor[#1]#*[#2]#*% assumes \defineboxanchor[#1]
+\permanent\tolerant\protected\def\setboxanchor[#1]#*[#2]#*[#3]#*% assumes \defineboxanchor[#1]
   {\begingroup
    \dowithnextbox
-     {\setupcurrentboxanchorcontent[#2]%
+     {\ifhastok={#2}%
+        \setupcurrentboxanchorcontent[#2]%
+      \else
+        \def\currentboxanchorcontent{#2}%
+        \setupcurrentboxanchorcontent[#3]%
+      \fi
       \scratchxoffset\boxanchorcontentparameter\c!xoffset
       \scratchyoffset\boxanchorcontentparameter\c!yoffset
       \scratchcounter\namedboxanchor{#1}%
@@ -1289,6 +1299,10 @@
             \s!target \scratchcounter
             {\box\nextbox}%
       \endgroup}}
+
+%D The name might change:
+
+\permanent\protected\def\mathboxanchored#1#2{#2\Umathsource\namedboxanchor{#1}\relax}
 
 % to be used as:
 %

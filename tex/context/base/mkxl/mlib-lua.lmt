@@ -109,7 +109,7 @@ inject.quadruplet = inject.cmykcolor
 
 inject.whd = function(w,h,d) injectcolor  (currentmpx,(w or 0)*bpfactor,(h or 0)*bpfactor,(d or 0)*bpfactor) end
 inject.xy  = function(x,y)   injectpair   (currentmpx,(x or 0)*bpfactor,(y or 0)*bpfactor) end
-inject.pt  = function(n)     injectnumeric(currentmpx,(x or 0)*bpfactor) end
+inject.pt  = function(n)     injectnumeric(currentmpx,(n or 0)*bpfactor) end
 
 local function same(p,n)
     local f = p[1]

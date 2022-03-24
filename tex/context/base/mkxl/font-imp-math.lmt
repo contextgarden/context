@@ -13,6 +13,8 @@ local helpers            = fonts.helpers
 local registerotffeature = fonts.handlers.otf.features.register
 
 local setmetatableindex  = table.setmetatableindex
+local sortedhash         = table.sortedhash
+local copytable          = table.copy
 
 local texconditionals    = tex.conditionals
 
@@ -307,3 +309,55 @@ registerotffeature {
         node = initialize,
     }
 }
+
+-- todo: document our privates
+
+-- This horrible hack is needed because when opentype math showed up and math was
+-- added to unicode folks had forgotten about different script shapes so we not only
+-- have a retrospective variant selector but inconsistent defaults. What a mess it
+-- is. So the quick and dirty solution is:
+--
+-- add copies in private slots
+-- use a pseudo feature to acess those
+-- and optionally afterwards replace the original slots
+
+local coverage = { }
+
+local function initialize(tfmdata,value)
+    if value then
+        if not next(coverage) then
+            for k, char in next, mathematics.alphabets.sr.tf.lcletters do
+                coverage[char] = 0xFE800 + k
+            end
+            for k, char in next, mathematics.alphabets.sr.tf.ucletters do
+                coverage[char] = 0xFE800 + k
+            end
+            fonts.handlers.otf.addfeature {
+                name = "savemathscripts",
+                type = "substitution",
+                data = coverage,
+            }
+        end
+        local characters   = tfmdata.characters
+        local descriptions = tfmdata.descriptions
+        for char, private in next, coverage do
+            local data = characters[char]
+            if data and not characters[private] then
+                -- otherwise we need a virtual
+                characters  [private] = copytable(data)
+                descriptions[private] = copytable(descriptions[char])
+            end
+        end
+    end
+end
+
+registerotffeature {
+    name         = "copymathscripts",
+    description  = "copy math script",
+    prepend      = 1,
+    initializers = {
+        base = initialize,
+        node = initialize,
+    }
+}
+

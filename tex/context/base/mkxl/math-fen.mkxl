@@ -141,7 +141,7 @@
    \s!axis
    \s!exact}
 
-\permanent\def\math_fenced_common#1#2#3#4% \Uwhatever class symbol source
+\def\math_fenced_common#1#2#3#4% \Uwhatever class symbol source
   {\ifconditional\c_math_fenced_sized
    \orelse\ifconditional\c_math_fenced_level_mode
      \ifnum#2=\mathopencode
@@ -187,10 +187,19 @@
        \math_fenced_common_factor_unknown
      \fi
      \usedcolorparameterattributes{\mathfenceparameter\c!color}%
-     \s!class\ifempty\p_mathclass#2\else\p_mathclass\fi
-     \s!source\numexpr\namedboxanchor{\mathfenceparameter#4}\relax
+     \s!class
+        \ifx\p_fence\v!none
+          \mathghostcode
+        \else
+          \ifempty\p_mathclass#2\else\p_mathclass\fi
+        \fi
+     \s!source
+        \numexpr\namedboxanchor{\mathfenceparameter#4}\relax
      \math_fenced_trace
-     \Udelimiter#2\fam\p_fence\relax
+     \Udelimiter
+        \mathghostcode
+        \fam
+        \ifx\p_fence\v!none\zerocount\else\p_fence\relax\fi
    \fi
    % we could use \s!attr \c_math_fenced_stack here
    \ifconditional\c_math_fenced_sized
@@ -310,6 +319,21 @@
 \appendtoks
     \enforced\let\fenced\math_fenced_direct
 \to \everymathematics
+
+\permanent\tolerant\protected\def\startmathfenced[#1]#*[#2]%
+  {\begingroup
+   \def\currentmathfence{#1}%
+   \setupcurrentmathfence[#2]%
+   \math_fenced_fenced_start{#1}}
+
+\permanent\protected\def\stopmathfenced
+  {\math_fenced_fenced_stop\currentmathfence
+   \endgroup}
+
+% cases are defined in math-ali:
+
+\definemathfence [cases] [\c!left="007B,\c!right=\v!none]
+\definemathfence [sesac] [\c!left=\v!none,\c!right="007D]
 
 %D This is new:
 %D

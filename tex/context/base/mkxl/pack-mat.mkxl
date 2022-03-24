@@ -30,7 +30,7 @@
    \ifconditional\c_framed_math_framed
      \defineboxanchor[temp]%
    \fi
-   \setmathatomrule\mathbegincode\mathbincode\allmathstyles\mathbegincode\mathbincode
+   \setmathatomrule\mathbegincode\mathbincode\allmathstyles\mathbegincode\mathbincode % hm
    \normalexpanded
      {\setbox\scratchbox\hpack
         \ifconditional\c_framed_math_framed

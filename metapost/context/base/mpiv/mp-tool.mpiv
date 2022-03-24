@@ -2470,6 +2470,23 @@ primarydef p cornered c =
     endfor cycle)
 enddef ;
 
+% Mikael Sundqvist came up with this one. We made it robust for points being too close
+% for smoothing.
+
+primarydef p smoothcornered c =
+    ( begingroup ;
+        save cc ;
+        if not cycle p: (point 0 of p) -- fi
+        for i=1 upto length(p) :
+            hide (cc := min(c,arclength (subpath(i-1,i) of p)/2);)
+            (point i-1 of p) shifted (cc*(unitvector(point i   of p - point i-1 of p))) --
+            (point i   of p) shifted (cc*(unitvector(point i-1 of p - point i   of p))) ..
+            controls point i of p ..
+        endfor
+        if cycle p : cycle else : point 1 along p fi
+    endgroup )
+enddef ;
+
 % cmyk color support
 
 % vardef cmyk(expr c,m,y,k) = % elsewhere
@@ -3730,3 +3747,20 @@ vardef hatched(expr o) primary c =
     clip r_ to o;
     r_
 enddef;
+
+% By Mikael Sundqvist, with a little evolution:
+
+numeric mfun_dash_on, mfun_dash_off ;
+
+primarydef p withdashes len =
+    hide (
+        save l, t, n, m ; pair t ;
+        l := arclength p ;
+        t := paired(len) ;
+        m := xpart t + ypart t ;
+        n := l / (l div m) / m ;
+        mfun_dash_on  := n * xpart t ;
+        mfun_dash_off := n * ypart t ;
+    )
+    p dashed dashpattern (on mfun_dash_on off mfun_dash_off)
+enddef ;

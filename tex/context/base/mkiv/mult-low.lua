@@ -164,7 +164,7 @@ return {
         "mathrelationcode", "mathrelcode", "mathopencode", "mathclosecode", "mathpunctuationcode",
         "mathpunctcode", "mathovercode", "mathundercode", "mathinnercode", "mathradicalcode",
         "mathfractioncode", "mathmiddlecode", "mathaccentcode", "mathfencedcode", "mathghostcode",
-        "mathvariablecode",  "mathactivecode", "mathvcentercode",
+        "mathvariablecode",  "mathactivecode", "mathvcentercode", "mathconstructcode", "mathwrappedcode",
         "mathbegincode", "mathendcode", "mathexplicitcode", "mathdivisioncode", "mathfactorialcode",
         --
         "mathimaginarycode", "mathdifferentialcode", "mathexponentialcode", "mathfunctioncode", "mathdigitcode",

@@ -1684,6 +1684,28 @@ also because you need to know a bit of \CONTEXT.
 
 \stopsubject
 
+\startsubject[title=More font tweaks]
+
+Once you start looking into the details of these fonts you are likely to notice
+more issues. For instance, in the nice looking Lucida math fonts the relations
+have inconsistent widths and even shapes. This can partially be corrected by
+using a stylistic alternate but even that forced us to come up with a mechanism
+to selectively replace \quote {bad} shapes because there is not that much
+granularity in the alternates. And once we looked at these alternates we noticed
+that the definition of of script versus calligraphic is also somewhat fuzzy and
+font dependent. That made for yet another tweak where we can swap alphabets and
+let the math machinery choose the expected shape. In \UNICODE\ this is handled by
+variant selectors which is rather cumbersome. Because these two styles are used
+mixed in the same document, a proper additional alphabet had made more sense. As
+we already support variant selectors it was no big deal to combine that mechanism
+with a variant selector features over a range of calligraphic or script
+characters, which indeed is what mathematicians use (Mikael can be very
+convincing). With this kind of tweaks the engine doesn't really play a role: we
+always could and did deal with it. It's just that upgrading the engine made us
+look again at this.
+
+\stopsubject
+
 \startsubject[title=Final words]
 
 One can argue that all these new features can make a document look better. But

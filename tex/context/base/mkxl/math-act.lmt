@@ -436,6 +436,93 @@ end
 
 do
 
+    function mathtweaks.replacements(target,original,parameters)
+        local list = parameters.list
+        if list then
+            local targetcharacters   = target.characters
+            local originalcharacters = original.characters
+            local unicodes = original.resources.unicodes
+            if unicodes then
+                local count = 0
+                for k, v in sortedhash(list) do
+                    if type(v) == "string" then
+                        v = unicodes[v]
+                    end
+                    if type(v) == "number" then
+                        targetcharacters[k] = targetcharacters[v]
+                        count = count + 1
+                    end
+                end
+                if trace_tweaking and count > 0 then
+                    report_mathtweak("%i permanent replacements",count)
+                end
+            end
+        end
+    end
+
+    function mathtweaks.substitutes(target,original,parameters)
+        local list = parameters.list
+        if list then
+            local targetcharacters   = target.characters
+            local originalcharacters = original.characters
+            local getsubstitution    = fonts.handlers.otf.getsubstitution
+            local count              = 0
+            for k, v in sortedhash(list) do
+                local sub = getsubstitution(original,k,v,true)
+                if sub then
+                    targetcharacters[k] = targetcharacters[sub]
+                    count = count + 1
+                end
+            end
+            if trace_tweaking and count > 0 then
+                report_mathtweak("%i permanent substitutions",count)
+            end
+        end
+    end
+
+    mathtweaks.replace    = mathtweaks.replacements
+    mathtweaks.substitute = mathtweaks.substitutes
+
+end
+
+do
+
+    -- What a mess ... should be a different alphabet.
+
+    local function expand(target,original,list,selector,feature)
+        if feature then
+            local getsubstitution = fonts.handlers.otf.getsubstitution
+            for _, char in next, list do
+                local variant = getsubstitution(original,char,feature,true)
+                if variant then
+                    mathematics.addvariant(target,char,variant,selector)
+                end
+            end
+        else
+            for i, char in next, list do
+                mathematics.addvariant(target,char,0xFE800+i,selector)
+            end
+        end
+    end
+
+    function mathtweaks.variants(target,original,parameters)
+        local feature  = parameters.feature
+        local selector = parameters.selector
+        local kind     = parameters.kind
+        if kind == "script" then
+            if selector then
+                expand(target,original,mathematics.alphabets.sr.tf.lcletters,selector,feature)
+                expand(target,original,mathematics.alphabets.sr.tf.ucletters,selector,feature)
+            end
+        end
+    end
+
+    mathtweaks.variant    = mathtweaks.variants
+
+end
+
+do
+
     -- see changed hack in math-fbk
 
     local copytable = table.copy
