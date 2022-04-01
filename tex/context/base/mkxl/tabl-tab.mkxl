@@ -756,7 +756,7 @@
    \!taDimenB=#2\relax
    \let\!TsSpaceFactor\empty
    \ifmmode
-     \expandafter\mathpalette
+     \expandafter\mathpalette % (*) the only place where still use this
      \expandafter\!TsEnlargeMath
    \else
      \expandafter\!TsEnlargeOther
@@ -1040,7 +1040,7 @@
 \def\tabl_table_Smash
   {\relax
    \ifmmode
-     \expandafter\mathpalette
+     \expandafter\mathpalette % (*)
      \expandafter\!thDoMathVCS
    \else
      \expandafter\!thDoVCS
@@ -1079,7 +1079,7 @@
    \fi
    \!taDimenA\!thSign\!taDimenA\relax
    \ifmmode
-     \expandafter\mathpalette
+     \expandafter\mathpalette % (*)
      \expandafter\!thDoMathRaise
    \else
      \expandafter\!thDoSimpleRaise

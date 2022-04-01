@@ -1684,6 +1684,60 @@ also because you need to know a bit of \CONTEXT.
 
 \stopsubject
 
+\startsubject[title=Tuned kerning]
+
+The \CONTEXT\ distribution has dedicated code for typesetting units that dates
+back to the mid nineties of the previous century but was (code wise) upgraded
+from \MKII\ to \MKIV\ which made it end up in the physics name space. There is
+not much reason to redo that code but when we talk new spacing classes it might
+make sense at some point to see if we can use less code for spacing by using a
+\quote {unit} class. When Mikael pointed out that, for instance in Pagella:
+
+\startlinecorrection
+\switchtobodyfont[pagella]\showglyphs
+\scale[height=1cm]{\setmathoptions\mathdivisioncode\zerocount\m{m^3/s__2}}
+\stoplinecorrection
+
+doesn't space well the obvious answer is: use the units mechanism because this
+kind of rendering was why it was made in the first place. However, the question
+is of course, can we do better anyway. The chosen solution uses a combination
+of class options and tweaked shape kerning:
+
+\startlinecorrection
+\switchtobodyfont[pagella]\showglyphs
+\scale[height=1cm]{\m{m^3/s__2}}
+\stoplinecorrection
+
+An example of a class setup in \CONTEXT\ is:
+
+\starttyping
+\setmathoptions\mathdivisioncode\numexpr
+    \nopreslackclassoptioncode     +\nopostslackclassoptioncode
+   +\lefttopkernclassoptioncode    +\righttopkernclassoptioncode
+   +\leftbottomkernclassoptioncode +\rightbottomkernclassoptioncode
+\relax
+\stoptyping
+
+and, although we don't go into the details of tweaking here, this is the kind
+if code you will find in the goodie file:
+
+\starttyping
+{
+    tweak = "kerns",
+    list  = {
+        [0x2F] = {
+            topleft     = -0.3,
+            bottomright =  0.2,
+       }
+    }
+}
+\stoptyping
+
+where the numbers are a percentage of the width. This specification translates in
+a math staircase kerning recipe.
+
+\stopsubject
+
 \startsubject[title=More font tweaks]
 
 Once you start looking into the details of these fonts you are likely to notice

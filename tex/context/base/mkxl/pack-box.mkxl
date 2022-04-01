@@ -1304,6 +1304,9 @@
 
 \permanent\protected\def\mathboxanchored#1#2{#2\Umathsource\namedboxanchor{#1}\relax}
 
+\permanent\protected\def\mathrowanchored #1{\alignmentwrapsource\namedboxanchor{#1}\relax}
+\permanent\protected\def\mathcellanchored#1{\alignmentcellsource\namedboxanchor{#1}\relax}
+
 % to be used as:
 %
 % \scratchcounter\registeredboxanchor

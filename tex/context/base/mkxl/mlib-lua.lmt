@@ -127,7 +127,37 @@ local function same(p,n)
     return false
 end
 
-function inject.path(p,close,connector)
+-- function inject.path(p,close,connector)
+--     local closed = false
+--     local curled = false
+--     local n = #p
+-- print("spec",p,close,connector)
+--     if close == nil then
+--         closed = (p.close or p.cycle or p.closed) and true or false
+--     else
+--         closed = close
+--     end
+--     if connector then
+--         if connector == "auto" then
+--             connector = #p[1] > 2
+--         end
+--         if connector == false or connector == "--" then
+--             curled = true
+--      -- elseif connector == true or connector == ".." then
+--      --     if close and not same(p,n) then
+--      --         p[n+1] = p[1]
+--      --     end
+--         end
+--     elseif p.curled then
+--         curled = true
+--     end
+--     if trace then reporti("path") end
+--     inspect(p)
+--     print(p,closed,curled)
+--     return injectpath(currentmpx,p,closed,curled)
+-- end
+
+function inject.path(p,connector,close)
     local closed = false
     local curled = false
     local n = #p
@@ -142,10 +172,6 @@ function inject.path(p,close,connector)
         end
         if connector == false or connector == "--" then
             curled = true
-     -- elseif connector == true or connector == ".." then
-     --     if close and not same(p,n) then
-     --         p[n+1] = p[1]
-     --     end
         end
     elseif p.curled then
         curled = true

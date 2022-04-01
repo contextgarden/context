@@ -675,20 +675,32 @@
 \def\syst_boxes_do_tlap{\vpack to \zeropoint{\vss\box\nextbox}\endgroup}
 \def\syst_boxes_do_blap{\vpack to \zeropoint{\box\nextbox\vss}\endgroup}
 
-\def\syst_boxes_rlap     {\begingroup\dowithnextboxcs\syst_boxes_do_rlap\hbox}
-\def\syst_boxes_llap     {\begingroup\dowithnextboxcs\syst_boxes_do_llap\hbox}
-\def\syst_boxes_clap     {\begingroup\dowithnextboxcs\syst_boxes_do_clap\hbox}
-\def\syst_boxes_math_clap{\mathpalette\syst_boxes_do_math_clap}
-\def\syst_boxes_math_llap{\mathpalette\syst_boxes_do_math_llap}
-\def\syst_boxes_math_rlap{\mathpalette\syst_boxes_do_math_rlap}
+\protected\def\syst_boxes_rlap{\begingroup\dowithnextboxcs\syst_boxes_do_rlap\hbox}
+\protected\def\syst_boxes_llap{\begingroup\dowithnextboxcs\syst_boxes_do_llap\hbox}
+\protected\def\syst_boxes_clap{\begingroup\dowithnextboxcs\syst_boxes_do_clap\hbox}
 
-\def\syst_boxes_do_math_clap#1#2{\syst_boxes_clap{\normalstartimath\mathsurround\zeropoint#1#2\normalstopimath}}
-\def\syst_boxes_do_math_llap#1#2{\syst_boxes_llap{\normalstartimath\mathsurround\zeropoint#1#2\normalstopimath}}
-\def\syst_boxes_do_math_rlap#1#2{\syst_boxes_rlap{\normalstartimath\mathsurround\zeropoint#1#2\normalstopimath}}
+% \def\syst_boxes_do_math_clap#1#2{\syst_boxes_clap{\normalstartimath\mathsurround\zeropoint#1#2\normalstopimath}}
+% \def\syst_boxes_do_math_llap#1#2{\syst_boxes_llap{\normalstartimath\mathsurround\zeropoint#1#2\normalstopimath}}
+% \def\syst_boxes_do_math_rlap#1#2{\syst_boxes_rlap{\normalstartimath\mathsurround\zeropoint#1#2\normalstopimath}}
+%
+% \def\syst_boxes_math_clap{\mathpalette\syst_boxes_do_math_clap}
+% \def\syst_boxes_math_llap{\mathpalette\syst_boxes_do_math_llap}
+% \def\syst_boxes_math_rlap{\mathpalette\syst_boxes_do_math_rlap}
+
+\def\syst_boxes_math_xlap#1#2%
+  {\normalexpanded{#1\bgroup\normalstartimath\Ustyle\the\mathstyle}%
+ %{\expandafter#1\expandafter\bgroup\expandafter\normalstartimath\expandafter\Ustyle\the\mathstyle
+     \mathsurround\zeropoint#2%
+   \normalstopimath\egroup}
+
+\def\syst_boxes_math_clap{\syst_boxes_math_xlap\syst_boxes_clap}
+\def\syst_boxes_math_llap{\syst_boxes_math_xlap\syst_boxes_llap}
+\def\syst_boxes_math_rlap{\syst_boxes_math_xlap\syst_boxes_rlap}
 
 \permanent\protected\def\rlap{\mathortext\syst_boxes_math_rlap\syst_boxes_rlap}
 \permanent\protected\def\llap{\mathortext\syst_boxes_math_llap\syst_boxes_llap}
 \permanent\protected\def\clap{\mathortext\syst_boxes_math_clap\syst_boxes_clap}
+
 \permanent\protected\def\tlap{\begingroup\dowithnextboxcs\syst_boxes_do_tlap\vbox}
 \permanent\protected\def\blap{\begingroup\dowithnextboxcs\syst_boxes_do_blap\vbox}
 

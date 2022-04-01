@@ -17,6 +17,17 @@ return {
              --     tweak   = "fixprimes",
              --     factor  = 0.9,
              -- },
+                {
+                    tweak = "kerns",
+                    list  = {
+                        [0x2F] = {
+                            topleft     = -0.2,
+                         -- bottomleft  =  0,
+                         -- topright    =  0,
+                            bottomright =  -0.2,
+                        },
+                    },
+                },
             },
         },
         bigslots = {

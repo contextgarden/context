@@ -330,10 +330,24 @@
   {\math_fenced_fenced_stop\currentmathfence
    \endgroup}
 
+\def\math_fenced_start_wrap#1%
+  {\begingroup
+   \edef\m_math_fenced_wrap{#1}%
+   \ifempty\m_math_fenced_wrap \else
+     \math_fenced_fenced_start\m_math_fenced_wrap
+   \fi}
+
+\def\math_fenced_stop_wrap
+  {\ifempty\m_math_fenced_wrap \else
+     \math_fenced_fenced_stop\m_math_fenced_wrap
+   \fi
+   \endgroup}
+
 % cases are defined in math-ali:
 
-\definemathfence [cases] [\c!left="007B,\c!right=\v!none]
-\definemathfence [sesac] [\c!left=\v!none,\c!right="007D]
+\definemathfence [cases]   [\c!left="007B,\c!right=\v!none]
+\definemathfence [sesac]   [\c!left=\v!none,\c!right="007D]
+\definemathfence [tekcarb] [\c!left="005D,\c!right="005B]   % used for xıɹʇɐɯ
 
 %D This is new:
 %D
@@ -790,18 +804,18 @@
 \definemathcommand [bigg] {\choosemathbig3}
 \definemathcommand [Bigg] {\choosemathbig4}
 
-\definemathcommand [bigl]  [open]  [one] {\big}
-\definemathcommand [bigm]  [rel]   [one] {\big}
-\definemathcommand [bigr]  [close] [one] {\big}
-\definemathcommand [Bigl]  [open]  [one] {\Big}
-\definemathcommand [Bigm]  [rel]   [one] {\Big}
-\definemathcommand [Bigr]  [close] [one] {\Big}
-\definemathcommand [biggl] [open]  [one] {\bigg}
-\definemathcommand [biggm] [rel]   [one] {\bigg}
-\definemathcommand [biggr] [close] [one] {\bigg}
-\definemathcommand [Biggl] [open]  [one] {\Bigg}
-\definemathcommand [Biggm] [rel]   [one] {\Bigg}
-\definemathcommand [Biggr] [close] [one] {\Bigg}
+\definemathcommand [bigl]  [\s!open]     [one] {\big}
+\definemathcommand [bigm]  [\s!relation] [one] {\big}
+\definemathcommand [bigr]  [\s!close]    [one] {\big}
+\definemathcommand [Bigl]  [\s!open]     [one] {\Big}
+\definemathcommand [Bigm]  [\s!relation] [one] {\Big}
+\definemathcommand [Bigr]  [\s!close]    [one] {\Big}
+\definemathcommand [biggl] [\s!open]     [one] {\bigg}
+\definemathcommand [biggm] [\s!relation] [one] {\bigg}
+\definemathcommand [biggr] [\s!close]    [one] {\bigg}
+\definemathcommand [Biggl] [\s!open]     [one] {\Bigg}
+\definemathcommand [Biggm] [\s!relation] [one] {\Bigg}
+\definemathcommand [Biggr] [\s!close]    [one] {\Bigg}
 
 % \definemathfence [integral] [\c!left="222B]
 %

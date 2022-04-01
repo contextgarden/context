@@ -190,9 +190,9 @@ local function initialize(tfmdata,key,value)
             local blcolor     = { "startcolor", "trace:3" } -- b / db
             local tlcolor     = { "startcolor", "trace:4" } -- y / dy
             for unicode, character in next, characters do
-                local mathkern = character.mathkern
-                local italic   = character.vitalic or character.italic
-                if mathkern or (italic and italic ~= 0) then
+                local mathkerns = character.mathkerns
+                local italic    = character.vitalic or character.italic
+                if mathkerns or (italic and italic ~= 0) then
                     local width  = character.width  or 0
                     local height = character.height or 0
                     local depth  = character.depth  or 0
@@ -206,11 +206,11 @@ local function initialize(tfmdata,key,value)
                         count = count + 1 list[count] = pop
                         count = count + 1 list[count] = black
                     end
-                    if mathkern then
-                        local br = mathkern.bottomright
-                        local tr = mathkern.topright
-                        local bl = mathkern.bottomleft
-                        local tl = mathkern.topleft
+                    if mathkerns then
+                        local br = mathkerns.bottomright
+                        local tr = mathkerns.topright
+                        local bl = mathkerns.bottomleft
+                        local tl = mathkerns.topleft
                         if br then
                             local done = false
                             for i=1,#br do

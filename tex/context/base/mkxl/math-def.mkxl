@@ -28,50 +28,50 @@
 
 %D The \mfunction macro is an alternative for \hbox with a controlable font switch.
 
-\definemathcommand [arccos]  [nolop] {\mfunctionlabeltext{arccos}}
-\definemathcommand [arcsin]  [nolop] {\mfunctionlabeltext{arcsin}}
-\definemathcommand [arctan]  [nolop] {\mfunctionlabeltext{arctan}}
-\definemathcommand [arccosh] [nolop] {\mfunctionlabeltext{arccosh}}
-\definemathcommand [arcsinh] [nolop] {\mfunctionlabeltext{arcsinh}}
-\definemathcommand [arctanh] [nolop] {\mfunctionlabeltext{arctanh}}
-\definemathcommand [acos]    [nolop] {\mfunctionlabeltext{acos}}
-\definemathcommand [asin]    [nolop] {\mfunctionlabeltext{asin}}
-\definemathcommand [atan]    [nolop] {\mfunctionlabeltext{atan}}
-\definemathcommand [arg]     [nolop] {\mfunctionlabeltext{arg}}
-\definemathcommand [cosh]    [nolop] {\mfunctionlabeltext{cosh}}
-\definemathcommand [cos]     [nolop] {\mfunctionlabeltext{cos}}
-\definemathcommand [coth]    [nolop] {\mfunctionlabeltext{coth}}
-\definemathcommand [cot]     [nolop] {\mfunctionlabeltext{cot}}
-\definemathcommand [csc]     [nolop] {\mfunctionlabeltext{csc}}
-\definemathcommand [deg]     [nolop] {\mfunctionlabeltext{deg}}
-\definemathcommand [det]     [limop] {\mfunctionlabeltext{det}}
-\definemathcommand [dim]     [nolop] {\mfunctionlabeltext{dim}}
-\definemathcommand [exp]     [nolop] {\mfunctionlabeltext{exp}}
-\definemathcommand [gcd]     [limop] {\mfunctionlabeltext{gcd}}
-\definemathcommand [hom]     [nolop] {\mfunctionlabeltext{hom}}
-\definemathcommand [inf]     [limop] {\mfunctionlabeltext{inf}}
-\definemathcommand [injlim]  [limop] {\mfunctionlabeltext{injlim}}
-\definemathcommand [ker]     [nolop] {\mfunctionlabeltext{ker}}
-\definemathcommand [lg]      [nolop] {\mfunctionlabeltext{lg}}
-\definemathcommand [liminf]  [limop] {\mfunctionlabeltext{liminf}}
-\definemathcommand [limsup]  [limop] {\mfunctionlabeltext{limsup}}
-\definemathcommand [lim]     [limop] {\mfunctionlabeltext{lim}}
-\definemathcommand [ln]      [nolop] {\mfunctionlabeltext{ln}}
-\definemathcommand [log]     [nolop] {\mfunctionlabeltext{log}}
-\definemathcommand [median]  [limop] {\mfunctionlabeltext{median}}
-\definemathcommand [max]     [limop] {\mfunctionlabeltext{max}}
-\definemathcommand [min]     [limop] {\mfunctionlabeltext{min}}
-\definemathcommand [mod]     [limop] {\mfunctionlabeltext{mod}}
-%definemathcommand [div]     [limop] {\mfunctionlabeltext{div}}      % overloads \div symbol
-\definemathcommand [projlim] [limop] {\mfunctionlabeltext{projlim}}
-\definemathcommand [Pr]      [limop] {\mfunctionlabeltext{Pr}}
-\definemathcommand [sec]     [nolop] {\mfunctionlabeltext{sec}}
-\definemathcommand [sinh]    [nolop] {\mfunctionlabeltext{sinh}}
-\definemathcommand [sin]     [nolop] {\mfunctionlabeltext{sin}}
-\definemathcommand [sup]     [limop] {\mfunctionlabeltext{sup}}
-\definemathcommand [tanh]    [nolop] {\mfunctionlabeltext{tanh}}
-\definemathcommand [tan]     [nolop] {\mfunctionlabeltext{tan}}
-\definemathcommand [diff]            {\mfunctionlabeltext{diff}}
+\definemathfunction [arccos]
+\definemathfunction [arcsin]
+\definemathfunction [arctan]
+\definemathfunction [arccosh]
+\definemathfunction [arcsinh]
+\definemathfunction [arctanh]
+\definemathfunction [acos]
+\definemathfunction [asin]
+\definemathfunction [atan]
+\definemathfunction [arg]
+\definemathfunction [cosh]
+\definemathfunction [cos]
+\definemathfunction [coth]
+\definemathfunction [cot]
+\definemathfunction [csc]
+\definemathfunction [deg]
+\definemathfunction [det]     [\c!mathlimits=\v!yes]
+\definemathfunction [dim]
+\definemathfunction [exp]
+\definemathfunction [gcd]     [\c!mathlimits=\v!yes]
+\definemathfunction [hom]
+\definemathfunction [inf]     [\c!mathlimits=\v!yes]
+\definemathfunction [injlim]  [\c!mathlimits=\v!yes]
+\definemathfunction [ker]
+\definemathfunction [lg]
+\definemathfunction [liminf]  [\c!mathlimits=\v!yes]
+\definemathfunction [limsup]  [\c!mathlimits=\v!yes]
+\definemathfunction [lim]     [\c!mathlimits=\v!yes]
+\definemathfunction [ln]
+\definemathfunction [log]
+\definemathfunction [median]  [\c!mathlimits=\v!yes]
+\definemathfunction [max]     [\c!mathlimits=\v!yes]
+\definemathfunction [min]     [\c!mathlimits=\v!yes]
+\definemathfunction [mod]     [\c!mathlimits=\v!yes]
+%definemathfunction [div]     [\c!mathlimits=\v!yes]
+\definemathfunction [projlim] [\c!mathlimits=\v!yes]
+\definemathfunction [Pr]      [\c!mathlimits=\v!yes]
+\definemathfunction [sec]
+\definemathfunction [sinh]
+\definemathfunction [sin]
+\definemathfunction [sup]     [\c!mathlimits=\v!yes]
+\definemathfunction [tanh]
+\definemathfunction [tan]
+\definemathfunction [diff]
 
 \aliased\let\normalmatharg\arg % todo: maybe automatically
 
@@ -138,28 +138,28 @@
 
 \pushoverloadmode
 
-\definemathcommand [colonsep]               {\mkern-1.2mu}
-\definemathcommand [doublecolonsep]         {\mkern-0.9mu}
+\definemathcommand [colonsep]                       {\mkern-1.2mu}
+\definemathcommand [doublecolonsep]                 {\mkern-0.9mu}
 
-\definemathcommand [centercolon]      [rel] {\mathstylevcenteredhbox\colon}
-\definemathcommand [colonminus]       [rel] {\centercolon\colonsep\mathrel{-}}
-%definemathcommand [minuscolon]       [rel] {\mathrel{-}\colonsep\centercolon} % native char
-%definemathcommand [colonequals]      [rel] {\centercolon\colonsep=}           % native char
-%definemathcommand [equalscolon]      [rel] {=\centercolon\colonsep}           % native char
-\definemathcommand [colonapprox]      [rel] {\centercolon\colonsep\approx}
-\definemathcommand [approxcolon]      [rel] {\approx\centercolon\colonsep}
-\definemathcommand [colonsim]         [rel] {\centercolon\colonsep\sim}
-\definemathcommand [simcolon]         [rel] {\sim\centercolon\colonsep}
+\definemathcommand [centercolon]      [\s!relation] {\mathstylevcenteredhbox\colon}
+\definemathcommand [colonminus]       [\s!relation] {\centercolon\colonsep\mathrel{-}}
+%definemathcommand [minuscolon]       [\s!relation] {\mathrel{-}\colonsep\centercolon} % native char
+%definemathcommand [colonequals]      [\s!relation] {\centercolon\colonsep=}           % native char
+%definemathcommand [equalscolon]      [\s!relation] {=\centercolon\colonsep}           % native char
+\definemathcommand [colonapprox]      [\s!relation] {\centercolon\colonsep\approx}
+\definemathcommand [approxcolon]      [\s!relation] {\approx\centercolon\colonsep}
+\definemathcommand [colonsim]         [\s!relation] {\centercolon\colonsep\sim}
+\definemathcommand [simcolon]         [\s!relation] {\sim\centercolon\colonsep}
 
-\definemathcommand [coloncolon]       [rel] {\centercolon\doublecolonsep\centercolon}
-\definemathcommand [coloncolonminus]  [rel] {\coloncolon\colonsep\mathrel{-}}
-\definemathcommand [minuscoloncolon]  [rel] {\mathrel{-}\colonsep\coloncolon}
-\definemathcommand [coloncolonequals] [rel] {\coloncolon\colonsep=}            % native char
-\definemathcommand [equalscoloncolon] [rel] {=\coloncolon\colonsep}
-\definemathcommand [coloncolonapprox] [rel] {\coloncolon\colonsep\approx}
-\definemathcommand [approxcoloncolon] [rel] {\approx\coloncolon\colonsep}
-\definemathcommand [coloncolonsim]    [rel] {\coloncolon\colonsep\sim}
-\definemathcommand [simcoloncolon]    [rel] {\sim\coloncolon\colonsep}
+\definemathcommand [coloncolon]       [\s!relation] {\centercolon\doublecolonsep\centercolon}
+\definemathcommand [coloncolonminus]  [\s!relation] {\coloncolon\colonsep\mathrel{-}}
+\definemathcommand [minuscoloncolon]  [\s!relation] {\mathrel{-}\colonsep\coloncolon}
+\definemathcommand [coloncolonequals] [\s!relation] {\coloncolon\colonsep=}            % native char
+\definemathcommand [equalscoloncolon] [\s!relation] {=\coloncolon\colonsep}
+\definemathcommand [coloncolonapprox] [\s!relation] {\coloncolon\colonsep\approx}
+\definemathcommand [approxcoloncolon] [\s!relation] {\approx\coloncolon\colonsep}
+\definemathcommand [coloncolonsim]    [\s!relation] {\coloncolon\colonsep\sim}
+\definemathcommand [simcoloncolon]    [\s!relation] {\sim\coloncolon\colonsep}
 
 \popoverloadmode
 

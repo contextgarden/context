@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2022.03.24 21:14}
+\immutable\edef\contextversion{2022.04.01 09:33}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -583,6 +583,8 @@
 \loadmkxlfile{meta-pdf}
 \loadmkxlfile{meta-blb}
 \loadmkxlfile{grph-epd}
+
+\loadmkxlfile{anch-box}
 
 \loadmkxlfile{typo-shp}
 

@@ -713,7 +713,7 @@ function constructors.scale(tfmdata,specification)
                     local tl = mk.topleft
                     local br = mk.bottomright
                     local bl = mk.bottomleft
-                    chr.mathkern = { -- singular -> should be patched in luatex !
+                    chr.mathkerns = {
                         topright    = tr and mathkerns(tr,vdelta) or nil,
                         topleft     = tl and mathkerns(tl,vdelta) or nil,
                         bottomright = br and mathkerns(br,vdelta) or nil,
@@ -726,6 +726,22 @@ function constructors.scale(tfmdata,specification)
                 if vi and vi ~= 0 then
                     chr.italic = vi*hdelta
                 end
+            end
+            local vk = character.topleft
+            if vk and vk ~= 0 then
+                chr.topleft = vk*hdelta
+            end
+            local vk = character.topright
+            if vk and vk ~= 0 then
+                chr.topright = vk*hdelta
+            end
+            local vk = character.bottomleft
+            if vk and vk ~= 0 then
+                chr.bottomleft = vk*hdelta
+            end
+            local vk = character.bottomright
+            if vk and vk ~= 0 then
+                chr.bottomright = vk*hdelta
             end
          -- local ft = character.options
          -- if ft then

@@ -16,6 +16,17 @@ return {
         tweaks = {
             aftercopying = {
                 {
+                    tweak = "kerns",
+                    list  = {
+                        [0x2F] = {
+                            topleft     = -0.15,
+                         -- bottomleft  =  0,
+                         -- topright    =  0,
+                            bottomright =  -0.15,
+                       },
+                    },
+                },
+                {
                     tweak   = "fixprimes",
                     factor  = 0.9,
                     scale   = 0.9,

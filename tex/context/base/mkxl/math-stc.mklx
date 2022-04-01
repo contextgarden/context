@@ -177,7 +177,7 @@
   [%c!alternative=\v!text,    % text | mathematics
    \c!left=,
    \c!right=,
-   \c!mathclass=\s!rel,
+   \c!mathclass=\s!relation,
    \c!alternative=\v!normal,
    \c!voffset=.25\mathexheight, % maybe less
    \c!hoffset=\zeropoint,
@@ -968,7 +968,7 @@
 \definemathstackers
   [\v!vfenced]
   [\v!both]
-  [\c!mathclass=\s!ord,
+  [\c!mathclass=\s!ordinary,
    \c!mathlimits=\v!yes]
 
 % these are needed for mathml:
@@ -1371,7 +1371,7 @@
    \fi
    \endgroup}
 
-\definemathstackers  [\v!wide] [\c!moffset=\thickmuskip,\c!mathclass=\s!rel]
+\definemathstackers  [\v!wide] [\c!moffset=\thickmuskip,\c!mathclass=\s!relation]
 
 \definemathunstacked [\v!wide] [And]       ["0026] % \mathrel{\;&\;}
 \definemathunstacked [\v!wide] [impliedby] ["27F8] % \mathrel{\;\Longleftarrow\;}

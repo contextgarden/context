@@ -160,6 +160,7 @@
 \definesystemconstant {leftclass}
 \definesystemconstant {rightclass}
 \definesystemconstant {clone}
+\definesystemconstant {close}
 \definesystemconstant {cmyk}
 \definesystemconstant {cm}
 \definesystemconstant {code}
@@ -308,8 +309,10 @@
 \definesystemconstant {nowidth}
 \definesystemconstant {numbering}
 \definesystemconstant {number}
+\definesystemconstant {open}
+\definesystemconstant {operator}
 \definesystemconstant {options}
-\definesystemconstant {ord}
+\definesystemconstant {ordinary}
 \definesystemconstant {orientation}
 \definesystemconstant {otr}
 \definesystemconstant {pagefloat}
@@ -326,7 +329,7 @@
 \definesystemconstant {register}
 \definesystemconstant {Regular}
 \definesystemconstant {regular}
-\definesystemconstant {rel}
+\definesystemconstant {relation}
 \definesystemconstant {reset}
 \definesystemconstant {reverse}
 \definesystemconstant {rgb}

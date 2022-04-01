@@ -20,16 +20,16 @@
 %D \starttyping
 %D \enabletrackers[math.toysymbol]
 %D
-%D \definemathtoysymbol[Plus] [bin][+]
-%D \definemathtoysymbol[Minus][bin][-]
-%D \definemathtoysymbol[Equal][rel][=]
+%D \definemathtoysymbol[Plus] [binary]  [+]
+%D \definemathtoysymbol[Minus][binary]  [-]
+%D \definemathtoysymbol[Equal][relation][=]
 %D
 %D $\dorecurse{199}{x_{#1} \ifodd#1\relax\Plus\else\Minus\fi} x_{200} \Equal n$ \blank
 %D \stoptyping
 
 \permanent\tolerant\protected\def\definemathtoysymbol[#1]#*[#2]#*[#3]%
   {\ifarguments\or\or\or
-     \setuevalue{#1}{\math_toy_define_symbol_indeed{\mathcodechecked{#2}}{#3}}%
+     \protected\instance\edefcsname#1\endcsname{\math_toy_define_symbol_indeed{\mathcodechecked{#2}}{#3}}%
    \fi}
 
 \protected\def\math_toy_define_symbol_traced#1#2%

@@ -50,20 +50,20 @@
 \permanent\protected\def\buildrel#1\over#2%
   {\mathrel{\mathop{\kern\zeropoint#2}\limits^{#1}}}
 
-\permanent\protected\def\bmod
-  {\nonscript
-   \mskip-\medmuskip
-   \mkern5mu
-   \mfunction{mod}%
-   \penalty900
-   \mkern5mu
-   \nonscript
-   \mskip-\medmuskip}
+    \permanent\protected\def\bmod
+      {\nonscript
+       \mskip-\medmuskip
+       \mkern5mu
+       \mfunction{mod}%
+       \penalty900
+       \mkern5mu
+       \nonscript
+       \mskip-\medmuskip}
 
-\permanent\protected\def\pmod#1%
-  {\allowbreak
-   \mkern18mu
-   (\mfunction{mod}\mskip\medmuskip#1)}
+    \permanent\protected\def\pmod#1%
+      {\allowbreak
+       \mkern18mu
+       (\mfunction{mod}\mskip\medmuskip#1)}
 
 \permanent\protected\def\cases#1%
   {\left\{%

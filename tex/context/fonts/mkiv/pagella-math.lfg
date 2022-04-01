@@ -111,7 +111,19 @@ return {
                         [0x1D712] = { 0.1,   1.2,  0.1       }, -- \chi
                         [0x1D713] = { -0.05, 0.95, 0.1       }, -- \psi
                         [0x1D71D] = { 0,     1,    0,   0.7  }, -- \varpi
-                        },
+                    },
+                },
+                {
+                    tweak = "kerns",
+                    list  = {
+                    -- ["*:0x2F"] = {
+                        [0x2F] = {
+                            topleft     = -0.2,
+                         -- bottomleft  =  0,
+                         -- topright    =  0,
+                            bottomright = -0.2,
+                       },
+                    },
                 },
                 {
                     tweak   = "fixprimes",

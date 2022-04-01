@@ -1044,7 +1044,7 @@
    \ifconditional\c_strc_itemgroups_text
      \removeunwantedspaces
      \space
-     \ignorespaces
+     \ignorepars % \ignorespaces
    \else
      \par
    \fi
@@ -1238,18 +1238,19 @@
   {\settrue\c_strc_itemgroups_head
    \dotagsetitem\s!head% % weird place
    \dostarttagged\t!itemhead\empty
-   \useitemgroupstyleandcolor\c!headstyle\c!headcolor\ignorespaces}
+   \useitemgroupstyleandcolor\c!headstyle\c!headcolor
+   \ignorepars} % \ignorespaces
 
 \protected\def\strc_itemgroups_stop_head_indeed
   {\removeunwantedspaces
    \dostoptagged
    \ifconditional\c_strc_itemgroups_inline_head
        \space
-       \ignorespaces
+       \ignorepars % \ignorespaces
    \else
      \ifconditional\c_strc_itemgroups_text
        \space
-       \ignorespaces
+       \ignorepars % \ignorespaces
      \else
        \par
      \fi
@@ -1261,7 +1262,7 @@
 \protected\def\strc_itemgroups_head_body_indeed
   {\dostarttagged\t!itembody\empty
    \noindentation
-   \ignorespaces}
+   \ignorepars} % \ignorespaces
 
 % Simple commands.
 
@@ -1274,7 +1275,7 @@
   %\advance\c_strc_itemgroups_n_of_items\plusone
    \setbox\b_strc_itemgroups\emptyhbox
    \strc_itemgroups_check_for_repeated
-   \ignorespaces}
+   \ignorepars} % \ignorespaces
 
 \protected\def\strc_itemgroups_start_button[#destination]%
   {\edef\m_strc_itemgroups_destination{#destination}%
@@ -1349,6 +1350,7 @@
 \letcsname\??itemgroupstart\v!its \endcsname\strc_itemgroups_start_items
 \letcsname\??itemgroupstart\v!mar \endcsname\strc_itemgroups_start_margin
 \letcsname\??itemgroupstart\v!txt \endcsname\strc_itemgroups_start_text
+\letcsname\??itemgroupstart\v!no  \endcsname\strc_itemgroups_start_no_item
 
 \def\strc_itemgroups_optimize_breaks
   {\ifcase\c_strc_itemgroups_column_depth
@@ -1552,7 +1554,7 @@
    \ifconditional\c_strc_itemgroups_indented_first
      \hskip\parindent
    \fi
-   \ignorespaces}
+   \ignorepars} % \ignorespaces
 
 \def\strc_itemgroups_start_item_nop
   {\let\currentitemreference\empty
@@ -1562,7 +1564,7 @@
      {\useitemgroupstyleandcolor\c!style\c!color
       \strc_itemgroups_used_symbol}%
    \strc_itemgroups_check_for_repeated
-   \ignorespaces}
+   \ignorepars} % \ignorespaces
 
 \setvalue{\??itemgroupdistance\v!none}%
   {\let\m_strc_itemgroups_text_distance\zeropoint}
@@ -1596,7 +1598,7 @@
 %    \ignorespaces}
 
 \protected\def\strc_itemgroups_default_command
-  {\ignorespaces}
+  {\ignorepars} % \ignorespaces
 
 %D Special case:
 
@@ -1818,7 +1820,7 @@
 %    \setbox\scratchbox\hbox{\settrialtypesetting#text}%
 %    \setbox\scratchbox\hbox\ifdim\wd\scratchbox<1em to 1.5\else spread 1\fi em{#text\hfil}%
 %    \normalexpanded{\box\scratchbox\endgroup\hangindent\the\wd\scratchbox}%
-%    \ignorespaces}
+%    \ignorepars} % \ignorespaces
 
 %D End of plugin.
 
@@ -1846,7 +1848,7 @@
    \ht\b_strc_itemgroups\strutheight
    \dp\b_strc_itemgroups\strutdepth
    \box\b_strc_itemgroups
-   \ignorespaces}
+   \ignorepars} % \ignorespaces
 
 %D Done again.
 

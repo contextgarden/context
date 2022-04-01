@@ -77,6 +77,17 @@ return {
                     }
                 },
                 -- {
+                --     tweak = "kerns",
+                --     list  = {
+                --         [0x2F] = {
+                            -- topleft     = -0.2,
+                            -- bottomleft  =  0,
+                            -- topright    =  0,
+                            -- bottomright =  -0.2,
+                --        },
+                --     },
+                -- },
+                -- {
                 --     tweak   = "fixprimes",
                 --     factor  = 0.85,
                 --     scale   = 0.65,

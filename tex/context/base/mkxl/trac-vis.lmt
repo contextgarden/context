@@ -1230,7 +1230,7 @@ local ruledstrut do
             setattr(current,a_layer,l_strut)
             head, current = insertnodeafter(head,current,new_kern(-strut_size))
         end
-        return head, getnext(current)
+        return head, current
     end
 
 end

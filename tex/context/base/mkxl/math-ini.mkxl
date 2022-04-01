@@ -14,10 +14,6 @@
 \writestatus{loading}{ConTeXt Math Macros / Initializations}
 
 % todo: hpack as we skip math anyway
-%
-% todo: 0x2061 : function application
-% todo: 0x2062 : invisible times
-% todo: 0x2063 : invisible comma
 
 % a bit tricky way to set ... no (pseudo) registers but math hash values:
 %
@@ -191,12 +187,24 @@
 \copymathspacing \mathexponentialcode  \mathordinarycode
 \copymathspacing \mathfunctioncode     \mathordinarycode
 \copymathspacing \mathdigitcode        \mathordinarycode
-
+\copymathspacing \mathfunctioncode     \mathoperatorcode
 \copymathspacing \mathconstructcode    \mathinnercode
 \copymathspacing \mathwrappedcode      \mathfractioncode
 
 \setnewconstant\mathlimopcode \plusone
 \setnewconstant\mathnolopcode \plusone
+
+% \m{m^2/x__3}
+
+\setmathoptions\mathdivisioncode\numexpr
+    \nopreslackclassoptioncode
+   +\nopostslackclassoptioncode
+   +\lefttopkernclassoptioncode
+ % +\righttopkernclassoptioncode
+ % +\leftbottomkernclassoptioncode
+   +\rightbottomkernclassoptioncode
+\relax
+
 
 % obsolete
 
@@ -1043,12 +1051,12 @@
 \permanent\protected\def\math_fraktur     {\setmathalphabet \s!fraktur   \setmathfontstylealternate\s!fraktur}
 \permanent\protected\def\math_blackboard  {\setmathalphabet \s!blackboard\setmathfontstylealternate\s!blackboard}
 
-\permanent\protected\def\mathupright     {\mathgroupedcommandcs\math_upright}
-\permanent\protected\def\mathitalic      {\mathgroupedcommandcs\math_italic}
-\permanent\protected\def\mathscript      {\mathgroupedcommandcs\math_script}
+\permanent\protected\def\mathupright     {\mathgroupedcommandcs\math_upright     }
+\permanent\protected\def\mathitalic      {\mathgroupedcommandcs\math_italic      }
+\permanent\protected\def\mathscript      {\mathgroupedcommandcs\math_script      }
 \permanent\protected\def\mathcalligraphic{\mathgroupedcommandcs\math_calligraphic}
-\permanent\protected\def\mathfraktur     {\mathgroupedcommandcs\math_fraktur}
-\permanent\protected\def\mathblackboard  {\mathgroupedcommandcs\math_blackboard}
+\permanent\protected\def\mathfraktur     {\mathgroupedcommandcs\math_fraktur     }
+\permanent\protected\def\mathblackboard  {\mathgroupedcommandcs\math_blackboard  }
 
 \permanent\protected\def\math_rm{\setmathattribute\s!rm\s!tf\setmathfontstylealternate\s!tf}
 \permanent\protected\def\math_ss{\setmathattribute\s!ss\s!tf\setmathfontstylealternate\s!tf}
@@ -1062,17 +1070,17 @@
 \permanent\protected\def\math_bs{\setmathfontstyle\s!bi\setmathfontstylealternate\s!bi} % no sl
 \permanent\protected\def\math_bi{\setmathfontstyle\s!bi\setmathfontstylealternate\s!bi}
 
-\permanent\protected\def\mathrm{\mathgroupedcommandcs\math_rm\relax}
-\permanent\protected\def\mathss{\mathgroupedcommandcs\math_ss\relax}
-\permanent\protected\def\mathtt{\mathgroupedcommandcs\math_tt\relax}
+\permanent\protected\def\mathrm{\mathgroupedcommandcs\math_rm} % \relax not needed
+\permanent\protected\def\mathss{\mathgroupedcommandcs\math_ss}
+\permanent\protected\def\mathtt{\mathgroupedcommandcs\math_tt}
 
-\permanent\protected\def\mathtf{\mathgroupedcommandcs\math_tf\relax}
-\permanent\protected\def\mathsl{\mathgroupedcommandcs\math_sl\relax}
-\permanent\protected\def\mathit{\mathgroupedcommandcs\math_it\relax}
+\permanent\protected\def\mathtf{\mathgroupedcommandcs\math_tf}
+\permanent\protected\def\mathsl{\mathgroupedcommandcs\math_sl}
+\permanent\protected\def\mathit{\mathgroupedcommandcs\math_it}
 
-\permanent\protected\def\mathbf{\mathgroupedcommandcs\math_bf\relax}
-\permanent\protected\def\mathbs{\mathgroupedcommandcs\math_bs\relax}
-\permanent\protected\def\mathbi{\mathgroupedcommandcs\math_bi\relax}
+\permanent\protected\def\mathbf{\mathgroupedcommandcs\math_bf}
+\permanent\protected\def\mathbs{\mathgroupedcommandcs\math_bs}
+\permanent\protected\def\mathbi{\mathgroupedcommandcs\math_bi}
 
 \aliased\let\math_default\math_italic
 \aliased\let\mathdefault \math_italic
@@ -1108,10 +1116,10 @@
 \permanent\protected\def\fraktur   {\ifmmode\expandafter\mathfraktur     \fi}
 \permanent\protected\def\gothic    {\ifmmode\expandafter\mathfraktur     \fi}
 
-\permanent\protected\def\mathcal {\mathgroupedcommandcs\math_calligraphic\relax}  % for AMS compatibility
-\permanent\protected\def\mathscr {\mathgroupedcommandcs\math_script      \relax}  % for AMS compatibility
-\permanent\protected\def\mathfrak{\mathgroupedcommandcs\math_fraktur     \relax}  % for AMS compatibility
-\permanent\protected\def\mathbb  {\mathgroupedcommandcs\math_blackboard  \relax}  % for AMS compatibility
+\aliased\let\mathcal \mathcalligraphic % for AMS compatibility
+\aliased\let\mathscr \mathscript       % for AMS compatibility
+\aliased\let\mathfrak\mathfraktur      % for AMS compatibility
+\aliased\let\mathbb  \mathblackboard   % for AMS compatibility
 
 \ifdefined\normaltf \else \permanent\let\normaltf\tf \fi \permanent\protected\def\tf{\ifmmode\expandafter\mathtf\else\expandafter\normaltf\fi}
 \ifdefined\normalbf \else \permanent\let\normalbf\bf \fi \permanent\protected\def\bf{\ifmmode\expandafter\mathbf\else\expandafter\normalbf\fi}
@@ -1204,8 +1212,6 @@
 
 %D Not used that much:
 
-\installcorenamespace{mathcodecommand}
-
 \permanent\protected\def\mathlimop#1{\normalmathop{#1}} %no \limits
 \permanent\protected\def\mathbox  #1{\dontleavehmode\hbox\Ustartmath\mathsurround\zeropoint#1\Ustopmath}
 \permanent\protected\def\mathnolop#1{\normalmathop{#1}\nolimits}
@@ -1216,30 +1222,68 @@
 \aliased\let\mathnothing\firstofoneunexpanded
 \aliased\let\mathalpha  \firstofoneunexpanded
 
-% todo 'frac' and 'rad'
+% \installcorenamespace {mathclasses}
+%
+% \letcsname\??mathclasses         ord\endcsname\normalmathord
+% \letcsname\??mathclasses          op\endcsname\normalmathop
+% \letcsname\??mathclasses         rel\endcsname\normalmathrel
+% \letcsname\??mathclasses         bin\endcsname\normalmathbin
+% \letcsname\??mathclasses       punct\endcsname\normalmathpunct
+%
+% \letcsname\??mathclasses            \endcsname\normalmathord
+% \letcsname\??mathclasses       inner\endcsname\normalmathinner
+% \letcsname\??mathclasses        open\endcsname\normalmathopen
+% \letcsname\??mathclasses       close\endcsname\normalmathclose
+% \letcsname\??mathclasses    ordinary\endcsname\normalmathord
+% \letcsname\??mathclasses    operator\endcsname\normalmathop
+% \letcsname\??mathclasses    relation\endcsname\normalmathrel
+% \letcsname\??mathclasses      binary\endcsname\normalmathbin
+% \letcsname\??mathclasses punctuation\endcsname\normalmathpunct
+% \letcsname\??mathclasses    fraction\endcsname\normalmathfrac
+% \letcsname\??mathclasses     radical\endcsname\normalmathrad
 
-% why not \aliased ?
+%D We need only a subset because many classes are sort of special.
 
-\letcsname\??mathcodecommand      ord\endcsname\mathord
-\letcsname\??mathcodecommand       op\endcsname\mathop
-\letcsname\??mathcodecommand      bin\endcsname\mathbin
-\letcsname\??mathcodecommand      rel\endcsname\mathrel
-\letcsname\??mathcodecommand     open\endcsname\mathopen
-\letcsname\??mathcodecommand    close\endcsname\mathclose
-\letcsname\??mathcodecommand    punct\endcsname\mathpunct
-\letcsname\??mathcodecommand    inner\endcsname\mathinner % hm
-%letcsname\??mathcodecommand fraction\endcsname\mathnothing
-%letcsname\??mathcodecommand  radical\endcsname\mathnothing
-%letcsname\??mathcodecommand   middle\endcsname\mathnothing
-\letcsname\??mathcodecommand    limop\endcsname\mathlimop
-\letcsname\??mathcodecommand    nolop\endcsname\mathnolop
+\installcorenamespace{mathcodecommand}
 
-% obsolete
+% short:
 
-\letcsname\??mathcodecommand      box\endcsname\mathbox
-%letcsname\??mathcodecommand   choice\endcsname\mathnothing
-\letcsname\??mathcodecommand    alpha\endcsname\mathalpha % hm
-\letcsname\??mathcodecommand  nothing\endcsname\mathnothing
+\aliased\letcsname\??mathcodecommand         ord\endcsname\mathord
+\aliased\letcsname\??mathcodecommand          op\endcsname\mathop
+\aliased\letcsname\??mathcodecommand         rel\endcsname\mathrel
+\aliased\letcsname\??mathcodecommand         bin\endcsname\mathbin
+\aliased\letcsname\??mathcodecommand       punct\endcsname\mathpunct
+
+% official:
+
+\aliased\letcsname\??mathcodecommand            \endcsname\normalmathord
+\aliased\letcsname\??mathcodecommand       inner\endcsname\normalmathinner
+\aliased\letcsname\??mathcodecommand        open\endcsname\normalmathopen
+\aliased\letcsname\??mathcodecommand       close\endcsname\normalmathclose
+\aliased\letcsname\??mathcodecommand    ordinary\endcsname\normalmathord
+\aliased\letcsname\??mathcodecommand    operator\endcsname\normalmathop
+\aliased\letcsname\??mathcodecommand    relation\endcsname\normalmathrel
+\aliased\letcsname\??mathcodecommand      binary\endcsname\normalmathbin
+\aliased\letcsname\??mathcodecommand punctuation\endcsname\normalmathpunct
+\aliased\letcsname\??mathcodecommand    fraction\endcsname\normalmathfrac
+\aliased\letcsname\??mathcodecommand     radical\endcsname\normalmathrad
+
+% special:
+
+\aliased\letcsname\??mathcodecommand       limop\endcsname\mathlimop
+\aliased\letcsname\??mathcodecommand       nolop\endcsname\mathnolop
+
+% obsolete:
+
+\aliased\letcsname\??mathcodecommand         box\endcsname\mathbox
+%aliased\letcsname\??mathcodecommand      choice\endcsname\mathnothing
+\aliased\letcsname\??mathcodecommand       alpha\endcsname\mathalpha % hm
+\aliased\letcsname\??mathcodecommand     nothing\endcsname\mathnothing
+
+% usage:
+
+\def\math_class_by_parameter       #1{\normalexpanded{\noexpand\math_class_by_parameter_indeed{#1\c!mathclass}}}
+\def\math_class_by_parameter_indeed#1{\csname\??mathcodecommand\ifcsname\??mathcodecommand#1\endcsname#1\fi\endcsname}
 
 \permanent          \def\mathcodenumber #1{\the\csname math#1code\endcsname}
 \permanent\protected\def\mathcodecommand#1{\csname\??mathcodecommand#1\endcsname}
@@ -1285,9 +1329,9 @@
 
 %D Let's define a few comands here:
 
-%definemathcommand [mathstrut]       {\vphantom{(}}
-%definemathcommand [joinrel]         {\mathrel{\mkern-3mu}}
-\definemathcommand [joinrel]   [rel] {\mkern-3mu}
+%definemathcommand [mathstrut]               {\vphantom{(}}
+%definemathcommand [joinrel]                 {\mathrel{\mkern-3mu}}
+\definemathcommand [joinrel]   [\s!relation] {\mkern-3mu}
 
 \immutable\chardef\c_math_strut"28
 
@@ -1452,6 +1496,14 @@
    \c!functionstyle=, % rm ss etc i.e. known alternatives, otherwise math
    \c!functioncolor=]
 
+% in char-def:
+%
+%
+% \Umathcode"2061 = \mathghostcode \zerocount "2061 % \applyfunction
+% \Umathcode"2062 = \mathghostcode \zerocount "2062 % \invisibletimes
+% \Umathcode"2063 = \mathghostcode \zerocount "2063 % \invisiblecomma
+% \Umathcode"2064 = \mathghostcode \zerocount "2063 % \invisibleplus
+
 % \protected\def\math_mfunction_styled
 %   {%\begingroup
 %    \usemathematicscolorparameter\c!functioncolor
@@ -1491,25 +1543,51 @@
 %      \hbox{\math_mfunction_styled{\mathlabeltext{#1}}}%
 %    \egroup}
 
-\def\math_function_handle#1#2%
-  {\begingroup
-   \usemathematicscolorparameter\c!functioncolor
-   \edef\p_functionstyle{\mathematicsparameter\c!functionstyle}%
-   \ifempty\p_functionstyle
-     \expandafter\math_upright
-   \orelse\ifcsname\??alternativestyle\p_functionstyle\endcsname
-     \expandafter\lastnamedcs
-   \else
-     \expandafter\p_functionstyle
-   \fi
-   \mathatom mathfont class \mathfunctioncode \bgroup
-     \math_tags_mfunctionlab{#2}\c_apply_function % maybe move this before mathatom
+% \def\math_function_handle#1#2%
+%   {\begingroup
+%    \usemathematicscolorparameter\c!functioncolor
+%    \edef\p_functionstyle{\mathematicsparameter\c!functionstyle}%
+%    \ifempty\p_functionstyle
+%      \expandafter\math_upright
+%    \orelse\ifcsname\??alternativestyle\p_functionstyle\endcsname
+%      \expandafter\lastnamedcs
+%    \else
+%      \expandafter\p_functionstyle
+%    \fi
+%    \mathatom mathfont class \mathfunctioncode \bgroup
+%      \math_tags_mfunctionlab{#2}\c_apply_function % maybe move this before mathatom
+%      #1{#2}% how to avoid going ord, we need something text with no spacing at all
+%    \egroup
+%    \endgroup}
+
+\protected\def\math_function_handle#1#2%
+  {\mathatom mathfont class \mathfunctioncode \bgroup % textfont
+     \math_tags_mfunctionlab{#2}\c_apply_function
+     \usemathematicscolorparameter\c!functioncolor
+     \edef\p_functionstyle{\mathematicsparameter\c!functionstyle}%
+     \ifempty\p_functionstyle
+       \expandafter\math_upright
+     \orelse\ifcsname\??alternativestyle\p_functionstyle\endcsname
+       \expandafter\lastnamedcs
+     \else
+       \expandafter\p_functionstyle
+     \fi
      #1{#2}%
-   \egroup
-   \endgroup}
+   \egroup}
 
 \permanent\protected\def\mfunction         {\math_function_handle\firstofoneargument}
 \permanent\protected\def\mfunctionlabeltext{\math_function_handle\mathlabeltext}
+
+\permanent\tolerant\protected\def\definemathfunction[#1]#*[#2]%
+  {\frozen\defcsname#1\endcsname{\math_function_handle_label{#1}{#2}}}
+
+\protected\def\math_function_handle_label#1#2% tag settings
+  {\begingroup
+   \getdummyparameters[\c!mathlimits=,#2]%
+   \math_function_handle\mathlabeltext{#1}%
+   \ifcstok{\dummyparameter\c!mathlimits}\v!yes\limits\fi
+   \endgroup}
+
 
 \let\math_tags_mfunctiontxt\gobbletwoarguments
 \let\math_tags_mfunctionlab\gobbletwoarguments
@@ -2498,6 +2576,8 @@
 %permanent\def\mathstyletrigger#1{\numexpr#1\relax}
 \permanent\let\mathstyletrigger   \firstofoneargument
 
+\def\triggeredmathstyle#1{\Ustyle\numexpr\number#1\relax} % expandable
+
 \permanent\def\triggeredmathstyleparameter#1% to bypass the relax
   {\ifcase\numexpr\normalmathstyle\relax
      #1\displaystyle             \or % 0
@@ -2688,32 +2768,38 @@
 
 % to be tested: {#1} but it could have side effects
 
-% \protected\def\mathstylehbox#1% sensitive for: a \over b => {a\over b} or \frac{a}{b}
-%   {\normalexpanded{\hbox\bgroup
-%      \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup}
-
 \permanent\protected\def\mathstylehbox#1#% sensitive for: a \over b => {a\over b} or \frac{a}{b}
   {\math_style_hbox{#1}}
 
 \protected\def\math_style_hbox#1#2% sensitive for: a \over b => {a\over b} or \frac{a}{b}
   {\normalexpanded{\hbox#1\bgroup
-     \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#2\stopimath\egroup}
+     \startimath\triggeredmathstyle\normalmathstyle}\mathsurround\zeropoint#2\stopimath\egroup}
+
+% adaptive variant:
+%
+% \protected\def\math_style_hbox#1#2% sensitive for: a \over b => {a\over b} or \frac{a}{b}
+%   {\normalexpanded{\setbox\scratchbox\hbox#1\bgroup
+%   \mathbeginclass\lastrightclass
+%   \startimath\Ustyle\the\mathstyle\relax}%
+%      \mathsurround\zeropoint#2\stopimath\egroup
+%      \box\scratchbox
+%   \mathrightclass\lastrightclass   }
 
 \permanent\protected\def\mathstylevbox#1%
   {\normalexpanded{\vbox\bgroup
-     \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup}
+     \startimath\triggeredmathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup}
 
 \permanent\protected\def\mathstylevcenter#1%
   {\normalexpanded{\vcenter\bgroup
-     \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup}
+     \startimath\triggeredmathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup}
 
 \permanent\protected\def\mathstylevcenteredhbox#1%
   {\normalexpanded{\vcenter\bgroup\hbox\bgroup
-     \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup\egroup}
+     \startimath\triggeredmathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup\egroup}
 
 \permanent\protected\def\mathstylevcenteredvbox#1%
   {\normalexpanded{\vcenter\bgroup\vbox\bgroup
-     \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup\egroup}
+     \startimath\triggeredmathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup\egroup}
 
 \permanent\protected\def\setmathsmalltextbox#1#2#%
   {\normalizebodyfontsize\m_math_text_choice_face{\mathsmallstyleface\normalmathstyle}%
@@ -3286,7 +3372,7 @@
 
 \permanent\protected\def\smallmathsymbol#1%
   {\mathematics{\mathbin{\normalexpanded{\raise.15\exheight\hbox{\normalstartimath
-     \triggermathstyle{\the\numexpr\normalmathstyle+2\relax}#1%
+     \triggeredmathstyle{\the\numexpr\normalmathstyle+2\relax}#1%
    \normalstopimath}}}}}
 
 % this should be a primitive:
@@ -3773,8 +3859,6 @@
 \permanent\protected\def\setupmathspacing[#1]%
   {\begincsname\??mathspacing#1\endcsname}
 
-\installcorenamespace {mathclasses}
-
 % \defcsname\??mathspacing +\endcsname
 %   {\expandedloop\zerocount\plusseven\plusone
 %      {\Umathxscale
@@ -3795,31 +3879,6 @@
 
 % can become a lua call that globally defined it, then we can have
 % partials
-
-% todo: fences and stackers should be done the same: number or
-% name
-
-\letcsname\??mathclasses            \endcsname\normalmathord
-\letcsname\??mathclasses         ord\endcsname\normalmathord
-\letcsname\??mathclasses    ordinary\endcsname\normalmathord
-\letcsname\??mathclasses          op\endcsname\normalmathop
-\letcsname\??mathclasses    operator\endcsname\normalmathop
-\letcsname\??mathclasses         rel\endcsname\normalmathrel
-\letcsname\??mathclasses    relation\endcsname\normalmathrel
-\letcsname\??mathclasses         bin\endcsname\normalmathbin
-\letcsname\??mathclasses      binary\endcsname\normalmathbin
-\letcsname\??mathclasses       punct\endcsname\normalmathbin
-\letcsname\??mathclasses punctuation\endcsname\normalmathbin
-\letcsname\??mathclasses        frac\endcsname\normalmathfrac
-\letcsname\??mathclasses    fraction\endcsname\normalmathfrac
-\letcsname\??mathclasses         rad\endcsname\normalmathrad
-\letcsname\??mathclasses     radical\endcsname\normalmathrad
-
-\def\math_class_by_parameter#1%
-  {\normalexpanded{\noexpand\math_class_by_parameter_indeed{#1\c!mathclass}}}
-
-\def\math_class_by_parameter_indeed#1%
-  {\csname\??mathclasses\ifcsname\??mathclasses#1\endcsname#1\fi\endcsname}
 
 %D For now we define this here:
 

@@ -823,8 +823,10 @@
    \fi
    \push_macro_c_math_cases_nc
    \mathatom \s!class \mathwrappedcode \bgroup
+   \scratchdimen\mathcasesparameter\c!leftmargin\relax
+   \ifzeropt\scratchdimen\else\kern\scratchdimen\fi
    \mathcasesparameter\c!left
-  %\startmathfenced[\mathcasesparameter\c!somekey]%
+   \math_fenced_start_wrap{\mathcasesparameter\c!fences}%
    \mathatom \s!class \mathconstructcode \bgroup
    \vcenter\bgroup
    \enforced\let\MC\math_cases_NC
@@ -857,8 +859,10 @@
    \egroup
    \egroup
    \egroup
-  %\stopmathfenced
-   \mathcasesparameter\c!right
+   \math_fenced_stop_wrap
+   \mathcasesparameter\c!right\relax
+   \scratchdimen\mathcasesparameter\c!rightmargin\relax
+   \ifzeropt\scratchdimen\else\kern\scratchdimen\fi
    \egroup
    \pop_macro_c_math_cases_nc
    \endgroup}
@@ -873,13 +877,15 @@
 
 \setupmathcases
 % [cases]
-  [\c!left={\startmathfenced[cases]},
-   \c!right=\stopmathfenced]
+  [\c!leftmargin=\zeropoint,
+   \c!rightmargin=\zeropoint,
+   \c!left=,
+   \c!right=,
+   \c!fences=cases]
 
 \definemathcases
   [sesac]
-  [\c!left={\startmathfenced[sesac]},
-   \c!right=\stopmathfenced]
+  [\c!fences=sesac]
 
 %D \startbuffer
 %D \placeformula \startformula \startcases
@@ -934,9 +940,12 @@
 
 \setupmathmatrix
   [\c!distance=\emwidth,
+   \c!fences=,
    \c!left=,
    \c!right=,
    \c!align=\v!middle,
+   \c!leftmargin=\zeropoint,
+   \c!rightmargin=\zeropoint,
    \c!rulecolor=,
    \c!rulethickness=\linewidth]
 
@@ -968,13 +977,27 @@
    \dostoptagged
    \endlocalcontrol}
 
+% \protected\def\math_matrix_start_cell
+%   {\dostarttagged\t!mtablecell\empty
+%    \hss
+%    \math_left_of_eqalign
+%    \startimath
+%    \math_matrix_set_style
+%    \tabskip\zeropoint
+%    \everycr\emptytoks}
+%
+% \protected\def\math_matrix_stop_cell
+%   {\stopimath
+%    \math_right_of_eqalign
+%    \hss
+%    \dostoptagged}
+
 \protected\def\math_matrix_start_cell
   {\dostarttagged\t!mtablecell\empty
    \hss
    \math_left_of_eqalign
    \startimath
    \math_matrix_set_style
-   \tabskip\zeropoint
    \everycr\emptytoks}
 
 \protected\def\math_matrix_stop_cell
@@ -995,73 +1018,140 @@
 
 % \c_math_matrix_anchor_mode3
 
+% this will be replaced
+
+%\permanent\protected\def\setmathmatrixanchoring[#1]%
+%  {\c_math_matrix_anchor_mode\zerocount
+%   \processaction
+%     [#1]
+%     [    \v!left=>\bitwiseflip\c_math_matrix_anchor_mode\numexpr\plusone+\plustwo\relax,
+%         \v!right=>\bitwiseflip\c_math_matrix_anchor_mode\numexpr\plusone+\plusfour\relax,
+%          \v!both=>\bitwiseflip\c_math_matrix_anchor_mode\numexpr\plusone+\plustwo+\plusfour\relax,
+%           \v!yes=>\bitwiseflip\c_math_matrix_anchor_mode\numexpr\plusone]}
+%
+%\def\math_matrix_anchor
+%  {\ifbitwiseand\c_math_matrix_anchor_mode\plusone
+%     \markanchor{matrix}{\numexpr\c_math_eqalign_column+1\relax}\c_math_eqalign_row
+%   \fi}
+%
+%\protected\def\math_matrix_distance
+%  {\relax
+%   \ifdim\d_math_eqalign_distance>\zeropoint
+%     \hskip.5\d_math_eqalign_distance
+%   \fi
+%   \math_matrix_anchor
+%   \ifdim\d_math_eqalign_distance>\zeropoint
+%     \hskip.5\d_math_eqalign_distance
+%   \fi
+%   \relax}
+%
+%\protected\def\math_matrix_distance_first
+%  {\relax
+%   \ifbitwiseand\c_math_matrix_anchor_mode\plusone
+%     \math_matrix_anchor
+%   \fi
+%   \ifdim\d_math_eqalign_distance>\zeropoint
+%     \ifbitwiseand\c_math_matrix_anchor_mode\plustwo
+%       \hskip.5\d_math_eqalign_distance
+%     \fi
+%   \fi
+%   \relax}
+%
+%\protected\def\math_matrix_distance_last
+%  {\relax
+%   \ifdim\d_math_eqalign_distance>\zeropoint
+%     \ifbitwiseand\c_math_matrix_anchor_mode\plusfour
+%       \hskip.5\d_math_eqalign_distance
+%     \fi
+%   \fi
+%   \ifbitwiseand\c_math_matrix_anchor_mode\plusone
+%     \math_matrix_anchor
+%   \fi
+%   \relax}
+%
+% \def\math_matrix_preamble
+%   {\math_matrix_strut
+%    \math_matrix_distance_first
+%    \global\advance\c_math_eqalign_column\plusone
+%    \math_matrix_start_cell
+%      \aligncontent
+%    \math_matrix_stop_cell
+%    \aligntab
+%    \aligntab
+%    \math_matrix_distance
+%    \global\advance\c_math_eqalign_column\plusone
+%    \math_matrix_start_cell
+%      \aligncontent
+%    \math_matrix_stop_cell}
+%
+% \permanent\protected\def\math_matrix_NR
+%   {\aligntab\omit
+%    \math_matrix_distance_last
+%    \math_matrix_stop_row
+%    \math_matrix_pickup
+%    \crcr
+%    \math_matrix_start_row}
+%
+% \permanent\protected\def\math_matrix_NC
+%   {\ifconditional\c_math_matrix_first
+%      \expandafter\math_matrix_NC_yes
+%    \else
+%      \expandafter\math_matrix_NC_nop
+%    \fi}
+
 \permanent\protected\def\setmathmatrixanchoring[#1]%
   {\c_math_matrix_anchor_mode\zerocount
    \processaction
-     [#1]
-     [    \v!left=>\bitwiseflip\c_math_matrix_anchor_mode\numexpr\plusone+\plustwo\relax,
-         \v!right=>\bitwiseflip\c_math_matrix_anchor_mode\numexpr\plusone+\plusfour\relax,
-          \v!both=>\bitwiseflip\c_math_matrix_anchor_mode\numexpr\plusone+\plustwo+\plusfour\relax,
-           \v!yes=>\bitwiseflip\c_math_matrix_anchor_mode\numexpr\plusone]}
+     [#1]%
+     [\v!both=>\c_math_matrix_anchor_mode\plusone,%
+       \v!yes=>\c_math_matrix_anchor_mode\plusone]}
 
 \def\math_matrix_anchor
-  {\ifbitwiseand\c_math_matrix_anchor_mode\plusone
+  {\ifcase\c_math_matrix_anchor_mode\else
      \markanchor{matrix}{\numexpr\c_math_eqalign_column+1\relax}\c_math_eqalign_row
    \fi}
 
-\protected\def\math_matrix_distance
+\protected\def\math_matrix_anchor_first
   {\relax
-   \ifdim\d_math_eqalign_distance>\zeropoint
-     \hskip.5\d_math_eqalign_distance
-   \fi
-   \math_matrix_anchor
-   \ifdim\d_math_eqalign_distance>\zeropoint
-     \hskip.5\d_math_eqalign_distance
-   \fi
-   \relax}
-
-\protected\def\math_matrix_distance_first
-  {\relax
-   \ifbitwiseand\c_math_matrix_anchor_mode\plusone
+   \ifcase\c_math_matrix_anchor_mode\else
      \math_matrix_anchor
-   \fi
-   \ifdim\d_math_eqalign_distance>\zeropoint
-     \ifbitwiseand\c_math_matrix_anchor_mode\plustwo
-       \hskip.5\d_math_eqalign_distance
-     \fi
-   \fi
-   \relax}
+   % \ifdim\d_math_eqalign_distance>\zeropoint
+   %   \ifbitwiseand\c_math_matrix_anchor_mode\plustwo
+   %      \hskip.5\d_math_eqalign_distance
+   %   \fi
+   % \fi
+   \fi}
 
-\protected\def\math_matrix_distance_last
+\protected\def\math_matrix_anchor_last
   {\relax
-   \ifdim\d_math_eqalign_distance>\zeropoint
-     \ifbitwiseand\c_math_matrix_anchor_mode\plusfour
-       \hskip.5\d_math_eqalign_distance
-     \fi
-   \fi
-   \ifbitwiseand\c_math_matrix_anchor_mode\plusone
+   \ifcase\c_math_matrix_anchor_mode\else
+   % \ifdim\d_math_eqalign_distance>\zeropoint
+   %   \ifbitwiseand\c_math_matrix_anchor_mode\plusfour
+   %     \hskip.5\d_math_eqalign_distance
+   %   \fi
+   % \fi
      \math_matrix_anchor
-   \fi
-   \relax}
+   \fi}
 
 \def\math_matrix_preamble
   {\math_matrix_strut
-   \math_matrix_distance_first
+   \math_matrix_anchor_first
    \global\advance\c_math_eqalign_column\plusone
    \math_matrix_start_cell
      \aligncontent
    \math_matrix_stop_cell
    \aligntab
    \aligntab
-   \math_matrix_distance
+   \math_matrix_anchor
+   \aligncontent
+   \aligntab
    \global\advance\c_math_eqalign_column\plusone
    \math_matrix_start_cell
      \aligncontent
    \math_matrix_stop_cell}
 
 \permanent\protected\def\math_matrix_NR
-  {\aligntab\omit
-   \math_matrix_distance_last
+  {\math_matrix_anchor_last
    \math_matrix_stop_row
    \math_matrix_pickup
    \crcr
@@ -1076,7 +1166,9 @@
 
 \permanent\protected\def\math_matrix_pickup{\global\settrue \c_math_matrix_first}
 \permanent\protected\def\math_matrix_NC_yes{\global\setfalse\c_math_matrix_first}
-\permanent\protected\def\math_matrix_NC_nop{\aligntab} % avoids lookahead
+%permanent\protected\def\math_matrix_NC_nop{\aligntab} % avoids lookahead
+\permanent\protected\def\math_matrix_NC_nop{\aligntab\aligntab} % avoids lookahead
+
 
 \def\math_matrix_check_rule_step#1%
   {\doifelsenumber{#1}
@@ -1121,6 +1213,39 @@
    \enforced\let\TB\math_common_TB
 \to \everymathmatrix
 
+% \def\math_matrix_start_processing
+%   {\ifmmode
+%      \mathatom \s!class \mathwrappedcode
+%    \else
+%      \dontleavehmode
+%    \fi
+%    \bgroup
+%    \tabskip\zeropoint
+%    \math_matrix_pickup
+%    \the\everymathmatrix
+%    %
+%  % \enforced\let\endmath\relax
+%    %
+%    \setbox\nextbox\vbox\bgroup
+%    \math_matrix_start_table
+%    \halign \bgroup
+%      % preamble
+%      \span\math_matrix_preamble
+%      % done
+%      \crcr
+%      \math_matrix_start_row}
+%
+% \def\math_matrix_stop_processing
+%   {%\math_matrix_stop_wrapup % optional
+%    \math_matrix_stop_row
+%    \egroup
+%    \math_matrix_stop_table
+%    \egroup
+%    \mathmatrixleft  % experimental hook
+%    \math_matrix_finish_nextbox
+%    \mathmatrixright % experimental hook
+%    \egroup}
+
 \def\math_matrix_start_processing
   {\ifmmode
      \mathatom \s!class \mathwrappedcode
@@ -1128,7 +1253,7 @@
      \dontleavehmode
    \fi
    \bgroup
-   \tabskip\zeropoint
+   \tabskip.5\d_math_eqalign_distance
    \math_matrix_pickup
    \the\everymathmatrix
    %
@@ -1223,9 +1348,15 @@
    \begincsname\??mathmatrixalignlocation\mathmatrixparameter\c!location\endcsname\hbox\bgroup
      \normalstartimath
      \Ustyle\scratchcounter
-     \mathmatrixparameter\c!left
+     \scratchdimen\mathmatrixparameter\c!leftmargin\relax
+     \ifzeropt\scratchdimen\else\kern\scratchdimen\fi
+     \mathmatrixparameter\c!left\relax
+     \math_fenced_start_wrap{\mathmatrixparameter\c!fences}%
      \mathatom \s!class \mathconstructcode {\vcenter{\box\nextbox}}% \was \vcenter
-     \mathmatrixparameter\c!right
+     \math_fenced_stop_wrap
+     \mathmatrixparameter\c!right\relax
+     \scratchdimen\mathmatrixparameter\c!rightmargin\relax
+     \ifzeropt\scratchdimen\else\kern\scratchdimen\fi
      \normalstopimath
    \egroup}
 
@@ -1420,29 +1551,28 @@
 
 \definemathmatrix
   [matrix:brackets]
-  [\c!left={\startmathfenced[bracket]},
-   \c!right=\stopmathfenced,
+  [\c!fences=bracket,
    \c!align=\v!middle]
 
 \definemathmatrix
   [matrix:parentheses]
-  [\c!left={\startmathfenced[parenthesis]},
-   \c!right=\stopmathfenced,
+  [\c!fences=parenthesis,
    \c!align=\v!middle]
 
 \definemathmatrix
   [matrix:bars]
-  [\c!left={\startmathfenced[bar]},
-   \c!right=\stopmathfenced,
+  [\c!fences=bar,
    \c!align=\v!middle]
 
 \definemathmatrix
   [matrix:braces]
-  [\c!left={\startmathfenced[brace]},
-   \c!right=\stopmathfenced,
+  [\c!fences=brace,
    \c!align=\v!middle]
 
-\definemathmatrix[thematrix][matrix:parentheses][\c!simplecommand=thematrix]
+\definemathmatrix
+  [thematrix]
+  [matrix:parentheses]
+  [\c!simplecommand=thematrix]
 
 %D \startbuffer
 %D \startformula
@@ -1459,6 +1589,30 @@
 %D     \NC 5\NC 6\NC 7\NC 8\NR
 %D     \NC 9\NC10\NC11\NC12\NR
 %D \stopthematrix
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+%D Mikael needed this matrix in one of his advanced math courses that ran begin april 2022
+%D where new concepts were introduced:
+
+% \definemathfence
+%   [tekcarb]
+%   [\c!left="005D,\c!right="005B]
+
+\definemathmatrix
+  [xıɹʇɐɯ]
+  [\c!fences=tekcarb]
+
+%D Fortunately we were read for it:
+%D
+%D \startbuffer
+%D \startformula
+%D \startxıɹʇɐɯ
+%D   \NC a_1 \NC b_1 \NC c_1 \NR
+%D   \NC a_2 \NC b_2 \NC c_2 \NR
+%D \stopxıɹʇɐɯ
 %D \stopformula
 %D \stopbuffer
 %D
@@ -1567,61 +1721,77 @@
 %    \endgroup
 %    \normalbordermatrix}
 
+% %D \macros{overset, underset}
+% %D
+% %D The macros \type{\overset} and \type{\underset} are provided by
+% %D \AMS\ packages in \LATEX. These macro allows you to place a symbol
+% %D above or below another symbol, irrespective of whether the other
+% %D symbol is a relation or something else, and without influencing the
+% %D spacing.  For most cases there is a better way to do such things
+% %D (declaring a math command with limop option, or using accents), but
+% %D occasionally these macros can be useful, for example:
+% %D
+% %D \startbuffer
+% %D \startformula
+% %D \overset{*}{X} \underset{*}{X}
+% %D \stopformula
+% %D \stopbuffer
+% %D \typebuffer \getbuffer
+% %D
+% %D Use these macros sparingly. Remember, \TEX\ was designed for
+% %D mathematics, so there is usually a proper method for typesetting
+% %D common math notation.
+% %D
+% %D These macros are a cleaner version of \type {\binrel@} and
+% %D \type {\binrel@@} macros in \AMSTEX\ packages.
+%
+% \def\math_binrel_apply#1%
+%   {\begingroup
+%    \setbox\scratchbox\hbox
+%      {\thinmuskip   0mu
+%       \medmuskip   -1mu
+%       \thickmuskip -1mu
+%       \setbox\scratchbox\hbox{\normalstartimath#1\mathsurround\zeropoint\normalstopimath}%
+%       \kern-\wd\scratchbox
+%       \normalstartimath{}#1{}\mathsurround\zeropoint\normalstopimath}%
+%    \ifdim\wd\scratchbox<\zeropoint
+%      \endgroup
+%      \expandafter\mathbin
+%    \orelse\ifdim\wd\scratchbox>\zeropoint
+%      \endgroup
+%      \doubleexpandafter\mathrel
+%    \else
+%      \endgroup
+%      \doubleexpandafter\firstofoneargument
+%    \fi}
+%
+% \permanent\protected\def\overset#1#2%
+%   {\math_binrel_apply{#2}{\mathop{\kern\zeropoint#2}\limits\normalsuperscript{#1}}}
+%
+% \permanent\protected\def\underset#1#2%
+%   {\math_binrel_apply{#2}{\mathop{\kern\zeropoint#2}\limits\normalsubscript  {#1}}}
+
 %D \macros{overset, underset}
 %D
-%D The macros \type{\overset} and \type{\underset} are provided by
-%D \AMS\ packages in \LATEX. These macro allows you to place a symbol
-%D above or below another symbol, irrespective of whether the other
-%D symbol is a relation or something else, and without influencing the
-%D spacing.  For most cases there is a better way to do such things
-%D (declaring a math command with limop option, or using accents), but
-%D occasionally these macros can be useful, for example:
+%D The macros \type {\overset} and \type {\underset} are provided by \AMS\ packages
+%D in \LATEX. These macro allows you to place a symbol above or below another
+%D symbol, irrespective of whether the other symbol is a relation or something else,
+%D and without influencing the spacing. Because in \LUAMETATEX\ we're less limited,
+%D we have rather simple definitions compared to \MKIV. One cna also do:
 %D
-%D \startbuffer
-%D \startformula
-%D \overset{*}{X} \underset{*}{X}
-%D \stopformula
-%D \stopbuffer
-%D \typebuffer \getbuffer
-%D
-%D Use these macros sparingly. Remember, \TEX\ was designed for
-%D mathematics, so there is usually a proper method for typesetting
-%D common math notation.
-%D
-%D These macros are a cleaner version of \type {\binrel@} and
-%D \type {\binrel@@} macros in \AMSTEX\ packages.
+%D \starttyping
+%D $b\limits^a$
+%D $<\limits^a$
+%D \stoptyping
 
-\def\math_binrel_apply#1%
-  {\begingroup
-   \setbox\scratchbox\hbox
-     {\thinmuskip   0mu
-      \medmuskip   -1mu
-      \thickmuskip -1mu
-      \setbox\scratchbox\hbox{\normalstartimath#1\mathsurround\zeropoint\normalstopimath}%
-      \kern-\wd\scratchbox
-      \normalstartimath{}#1{}\mathsurround\zeropoint\normalstopimath}%
-   \ifdim\wd\scratchbox<\zeropoint
-     \endgroup
-     \expandafter\mathbin
-   \orelse\ifdim\wd\scratchbox>\zeropoint
-     \endgroup
-     \doubleexpandafter\mathrel
-   \else
-     \endgroup
-     \doubleexpandafter\firstofoneargument
-   \fi}
-
-\permanent\protected\def\overset#1#2%
-  {\math_binrel_apply{#2}{\mathop{\kern\zeropoint#2}\limits\normalsuperscript{#1}}}
-
-\permanent\protected\def\underset#1#2%
-  {\math_binrel_apply{#2}{\mathop{\kern\zeropoint#2}\limits\normalsubscript  {#1}}}
+\permanent\protected\def\overset #1#2{#2\limits\normalsuperscript{#1}}
+\permanent\protected\def\underset#1#2{#2\limits\normalsubscript  {#1}}
 
 %D The following code comes from \type {math-str.mkiv}.
 %D
-%D Here we implement a basic math alignment mechanism. Numbers are also handled. The macros
-%D \type {\startinnermath} and \type {\stopinnermath} can be overloaded in specialized
-%D modules.
+%D Here we implement a basic math alignment mechanism. Numbers are also handled. The
+%D macros \type {\startinnermath} and \type {\stopinnermath} can be overloaded in
+%D specialized modules.
 
 \installcorenamespace{mathinnerstart}
 \installcorenamespace{mathinnerstop}
@@ -2166,6 +2336,10 @@
 
 \setupmathsimplealign
   [\c!distance=\v!math,
+   \c!leftmargin=\zeropoint,
+   \c!rightmargin=\zeropoint,
+   \c!left=,
+   \c!right=,
    \c!align=\v!all:\v!middle,
    \c!textdistance=.25\emwidth]
 
@@ -2187,9 +2361,17 @@
    \ifarguments\or\or
      \setupcurrentmathsimplealign[#2]%
    \fi
+   \edef\p_strut{\mathsimplealignparameter\c!strut}%
+   \ifx\p_strut\v!yes
+     \enforced\let\math_align_strut\strut
+   \else
+     \enforced\let\math_align_strut\relax
+   \fi
    \mathatom \s!class \mathwrappedcode \bgroup
-   \mathsimplealignparameter\c!left
-  %\startmathfenced[\mathsimplealignparameter\c!somekey]%
+   \scratchdimen\mathsimplealignparameter\c!leftmargin\relax
+   \ifzeropt\scratchdimen\else\kern\scratchdimen\fi
+   \mathsimplealignparameter\c!left\relax
+   \math_fenced_start_wrap{\mathsimplealignparameter\c!fences}%
    \mathatom \s!class \mathconstructcode \bgroup
    \vcenter\bgroup
    \enforced\let\MC\math_simplealign_NC
@@ -2211,6 +2393,7 @@
      \global\advance\c_math_eqalign_column\plusone
      \math_left_of_eqalign  % \hfil
      \ignorespaces
+     \math_align_strut
      \startimath
      \aligncontent
      \stopimath
@@ -2226,6 +2409,7 @@
        \kern\m_simplealign_distance
      \fi
      \ignorespaces
+     \math_align_strut
      \startimath
      \aligncontent
      \stopimath
@@ -2238,8 +2422,10 @@
    \egroup
    \egroup
    \egroup
-  %\stopmathfenced
-   \mathsimplealignparameter\c!right
+   \math_fenced_stop_wrap
+   \mathsimplealignparameter\c!right\relax
+   \scratchdimen\mathsimplealignparameter\c!rightmargin\relax
+   \ifzeropt\scratchdimen\else\kern\scratchdimen\fi
    \setbox\scratchbox\hbox{\mathsimplealignparameter\c!text}%
    \ifvoid\scratchbox\else
      \hskip\mathsimplealignparameter\c!textdistance

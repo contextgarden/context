@@ -134,35 +134,27 @@ function mathematics.checkaccentbaseheight(target,original)
     end
 end
 
-function mathematics.checkprivateparameters(target,original)
-    local mathparameters = target.mathparameters
-    if mathparameters then
-        local parameters = target.parameters
-        local properties = target.properties
-        if parameters then
-            local size = parameters.size
-            if size then
---                 if not mathparameters.FractionDelimiterSize then
---                     mathparameters.FractionDelimiterSize = 1.01 * size
---                 end
---                 if not mathparameters.FractionDelimiterDisplayStyleSize then
---                     mathparameters.FractionDelimiterDisplayStyleSize = 2.40 * size
---                 end
---                 if not mathparameters.PrimeSuperscriptSpace then
---                     mathparameters.PrimeSuperscriptSpace = size / 20
---                 end
-            elseif properties then
-                report_math("invalid parameters in font %a",properties.fullname or "?")
-            else
-                report_math("invalid parameters in font")
-            end
-        elseif properties then
-            report_math("no parameters in font %a",properties.fullname or "?")
-        else
-            report_math("no parameters and properties in font")
-        end
-    end
-end
+-- function mathematics.checkprivateparameters(target,original)
+--     local mathparameters = target.mathparameters
+--     if mathparameters then
+--         local parameters = target.parameters
+--         local properties = target.properties
+--         if parameters then
+--             local size = parameters.size
+--             if size then
+--                 -- gone
+--             elseif properties then
+--                 report_math("invalid parameters in font %a",properties.fullname or "?")
+--             else
+--                 report_math("invalid parameters in font")
+--             end
+--         elseif properties then
+--             report_math("no parameters in font %a",properties.fullname or "?")
+--         else
+--             report_math("no parameters and properties in font")
+--         end
+--     end
+-- end
 
 function mathematics.overloadparameters(target,original)
     local mathparameters = target.mathparameters
@@ -692,6 +684,33 @@ end
 
 do
 
+    -- musical timestamp: March 2022, Antonio Sanches (Bad Hombre), live performance in NL
+
+    function mathtweaks.kerns(target,original,parameters)
+        local kerns = parameters.list
+        if kerns then
+            local characters = target.characters
+            local function kernone(unicode,data)
+                local chardata = characters[unicode]
+                local height = chardata.height or 0
+                local depth  = chardata.depth  or 0
+                local width  = chardata.width  or 0
+                local k = data.topleft     ; if k and k ~= 0 then chardata.topleft     = k * width end
+                local k = data.topright    ; if k and k ~= 0 then chardata.topright    = k * width end
+                local k = data.bottomleft  ; if k and k ~= 0 then chardata.bottomleft  = k * width end
+                local k = data.bottomright ; if k and k ~= 0 then chardata.bottomright = k * width end
+            end
+            for unicode, data in next, kerns do
+                kernone(unicode,data) -- withscriptcode(tfmdata,unicode,data,kernone)
+                -- also smaller
+            end
+        end
+    end
+
+end
+
+do
+
  -- local list = {
  --     [0x203E] = { factor = .4 }, -- overbar
  --     [0x203E] = { factor = .7 }, -- underbar
@@ -1042,6 +1061,29 @@ end
 
 do
 
+    local list = { 0x2061, 0x2062, 0x2063, 0x2064 }
+
+    function mathtweaks.wipecues(target,original,parameters)
+        local characters = target.characters
+        local tobewiped  = parameters.list or list
+        for i=1,#tobewiped do
+            local unicode = tobewiped[i]
+            characters[unicode] = {
+                width   = 0,
+                height  = 0,
+                depth   = 0,
+                unicode = unicode,
+            }
+            if trace_tweaking then
+                report_tweak("character %U has been wiped",unicode)
+            end
+        end
+    end
+
+end
+
+do
+
     -- For Ton, who needs the high minus and plus for calculator signs in Dutch
     -- school math books.
 
@@ -1213,7 +1255,7 @@ end
 sequencers.appendaction("mathparameters","system","mathematics.overloadparameters")
 sequencers.appendaction("mathparameters","system","mathematics.scaleparameters")
 sequencers.appendaction("mathparameters","system","mathematics.checkaccentbaseheight")  -- should go in lfg instead
-sequencers.appendaction("mathparameters","system","mathematics.checkprivateparameters") -- after scaling !
+----------.appendaction("mathparameters","system","mathematics.checkprivateparameters") -- after scaling !
 
 sequencers.appendaction("beforecopyingcharacters","system","mathematics.tweakbeforecopyingfont")
 sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweakaftercopyingfont")

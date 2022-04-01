@@ -2121,7 +2121,7 @@ do
         name      = "setmathvariant",
         public    = true,
         protected = true,
-        arguments = "string",
+        arguments = "argument",
         actions   = mathematics.setvariant,
     }
 

@@ -94,6 +94,17 @@ return {
                     },
                 },
                 {
+                    tweak = "kerns",
+                    list  = {
+                        [0x2F] = {
+                            topleft     = -0.2,
+                         -- bottomleft  =  0,
+                         -- topright    =  0,
+                            bottomright =  -0.2,
+                       },
+                    },
+                },
+                {
                     tweak   = "fixprimes",
                     scale   = 0.9,
                     -- smaller = true,
@@ -121,6 +132,9 @@ return {
                 },
                 {
                     tweak = "addrules",
+                },
+                {
+                    tweak = "wipecues",
                 },
             },
         },

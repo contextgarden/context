@@ -21,6 +21,17 @@ return {
                     tweak    = "version",
                     expected = "Version 1.302",
                 },
+                {
+                    tweak = "kerns",
+                    list  = {
+                        [0x2F] = {
+                            topleft     = -0.1,
+                         -- bottomleft  =  0,
+                         -- topright    =  0,
+                            bottomright =  -0.1,
+                       },
+                    },
+                },
                 -- 0xFEOO should be chancery style, if present
                 {
                     tweak    = "variants",

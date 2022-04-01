@@ -1598,7 +1598,7 @@
    \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_columns\relax
      \expandafter\NR
    \else
-     \expandafter\ignorespaces % interferes with the more tricky hooks
+     \expandafter\ignorepars % \ignorespaces % interferes with the more tricky hooks
    \fi}
 
 \protected\def\tabl_tabulate_set_quick#1% see \startlegend \startgiven (for the moment still public)
@@ -1955,7 +1955,20 @@
     \enforced\let\AR\NR
 \to \t_tabl_tabulate_initializers_first
 
-\permanent\protected\def\tabl_tabulate_NR_common#1#2%
+% \permanent\protected\def\tabl_tabulate_NR_common#1#2%
+%   {\global\advance\c_tabl_tabulate_noflines\plusone
+%    \global\setfalse\c_tabl_tabulate_firstflushed
+%    \global\setfalse\c_tabl_tabulate_equal
+%    \global\c_tabl_tabulate_column\zerocount
+%    \ifconditional#1\relax
+%      \tabl_tabulate_break_state_reset
+%    \fi
+%    \tabl_tabulate_pheight_reset
+%    \unskip\unskip\crcr\tabl_tabulate_flush_collected
+%    % can we omit the next one in the first run? probably
+%    \noalign{\the\t_tabl_tabulate_every_after_row#2}}
+
+\permanent\protected\def\tabl_tabulate_NR_common#1#2#.#3% #. gobbles pars and spaces
   {\global\advance\c_tabl_tabulate_noflines\plusone
    \global\setfalse\c_tabl_tabulate_firstflushed
    \global\setfalse\c_tabl_tabulate_equal
@@ -1966,7 +1979,7 @@
    \tabl_tabulate_pheight_reset
    \unskip\unskip\crcr\tabl_tabulate_flush_collected
    % can we omit the next one in the first run? probably
-   \noalign{\the\t_tabl_tabulate_every_after_row#2}}
+   \noalign{\the\t_tabl_tabulate_every_after_row#2}#3}
 
 \def\tabl_tabulate_check_penalties
   {\ifconditional\c_tabl_tabulate_tolerant_break\else
@@ -2020,8 +2033,8 @@
      \ifconditional\c_tabl_tabulate_automode\hsize\d_tabl_tabulate_width\fi
      % \begstrut % interferes with pre-\pars
      % evt: \appendtoks\begstrut\to\everypar
-     \ignorespaces
      \let\tabl_tabulate_eskip\tabl_tabulate_eskip_second
+     \expandafter\ignorepars % \ignorespaces
    \else
      % successive lines
      \let\tabl_tabulate_eskip\empty
@@ -2054,7 +2067,7 @@
      \ifconditional\c_tabl_tabulate_automode\hsize\d_tabl_tabulate_width\fi
      % \begstrut % interferes with pre-\pars
      % evt: \appendtoks\begstrut\to\everypar
-     \ignorespaces}
+     \ignorepars} % \ignorespaces
 
 \protected\def\tabl_tabulate_eskip_second_split_nop % vertical strut added august 2003
   {\par\verticalstrut
@@ -2902,7 +2915,7 @@
    \ifcase\c_tabl_tabulate_column\or
      \tabl_register_row_background{#1}%
    \fi
-   \ignorespaces}
+   \ignorepars} % \ignorespaces
 
 \pushoverloadmode
 
@@ -2913,7 +2926,7 @@
        \ifcase\c_tabl_tabulate_column\or
          \tabl_register_row_background\m_table_current_row_background_default
        \fi
-       \ignorespaces}
+       \ignorepars} % \ignorespaces
 
 \popoverloadmode
 
@@ -2923,7 +2936,7 @@
      \tabl_register_row_background{#1}%
    \fi
    \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
-   \ignorespaces}
+   \ignorepars} % \ignorespaces
 
 \permanent\protected\def\tabl_tabulate_DB_first
   {\tabl_tabulate_column_normal\plusone\zerocount\relax
@@ -2932,21 +2945,21 @@
    \fi
    \enforced\let\fontstyle\globalfontstyle
    \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
-   \ignorespaces}
+   \ignorepars} % \ignorespaces
 
 \permanent\protected\def\tabl_tabulate_NF_first[#1]%
   {\tabl_tabulate_column_normal\zerocount\zerocount\relax
    \ifcase\c_tabl_tabulate_column\or
      \tabl_register_row_background_filler{#1}%
    \fi
-   \ignorespaces}
+   \ignorepars} % \ignorespaces
 
 \permanent\protected\def\tabl_tabulate_NP_first
   {\tabl_tabulate_column_normal\zerocount\zerocount\relax
    \ifcase\c_tabl_tabulate_column\or
      \tabl_register_row_background_filler\m_table_current_row_background_default_filler
    \fi
-   \ignorespaces}
+   \ignorepars} % \ignorespaces
 
 \permanent\protected\def\tabl_tabulate_FB_first[#1]%
   {\tabl_tabulate_column_normal\plusone\zerocount\relax
@@ -2954,7 +2967,7 @@
      \tabl_register_row_background_filler{#1}%
    \fi
    \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
-   \ignorespaces}
+   \ignorepars} % \ignorespaces
 
 \permanent\protected\def\tabl_tabulate_PB_first
   {\tabl_tabulate_column_normal\plusone\zerocount\relax
@@ -2963,7 +2976,7 @@
    \fi
    \enforced\let\fontstyle\globalfontstyle
    \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
-   \ignorespaces}
+   \ignorepars} % \ignorespaces
 
 \pushoverloadmode
 
@@ -2999,7 +3012,7 @@
    \iftrialtypesetting\orelse\ifcase\c_tabl_tabulate_column\or
      \tabl_tabulate_A_first
    \fi
-   \ignorespaces}
+   \ignorepars} % \ignorespaces
 
 \permanent\protected\def\tabl_tabulate_BA_first
   {\tabl_tabulate_column_normal\plusone\zerocount\relax
@@ -3007,7 +3020,7 @@
      \tabl_tabulate_A_first
    \fi
    \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
-   \ignorespaces}
+   \ignorepars} % \ignorespaces
 
 \appendtoks
     \enforced\let\NL\tabl_tabulate_NL_first % NC with Line
@@ -3065,7 +3078,7 @@
   {\NC\loopcs{#1}\tabl_tabulate_span
    \gdef\tabl_tabulate_kooh{\begincsname\??tabulatespana#2\endcsname}%
    \begincsname\??tabulatespanb#2\endcsname
-   \ignorespaces}
+   \ignorepars} % \ignorespaces
 
 \appendtoks
     \enforced\let\NS\tabl_tabulate_NS

@@ -205,6 +205,9 @@ return {
         "breakafterdirnormalizecode", "removemarginkernsnormalizecode", "clipwidthnormalizecode", "flattendiscretionariesnormalizecode",
         "discardzerotabskipsnormalizecode", "flattenleadersnormalizecode",
         --
+        "nopreslackclassoptioncode", "nopostslackclassoptioncode",
+        "lefttopkernclassoptioncode", "righttopkernclassoptioncode", "leftbottomkernclassoptioncode", "rightbottomkernclassoptioncode",
+        --
         "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noleftligatureglyphoptioncode",
         "noleftkernglyphoptioncode", "norightligatureglyphoptioncode", "norightkernglyphoptioncode",
         "noexpansionglyphoptioncode", "noprotrusionglyphoptioncode", "noitaliccorrectionglyphoptioncode",
@@ -462,6 +465,8 @@ return {
         --
         "getfirstcharacter", "doifelsefirstchar", "doiffirstcharelse",
         --
+        "mathclassvalue",
+        --
         "startnointerference", "stopnointerference",
         --
         "twodigits","threedigits",
@@ -534,7 +539,7 @@ return {
         "superprescript", "subprescript", "nosuperprescript", "nosubsprecript",
         --
         "uncramped", "cramped",
-        "mathstyletrigger", "triggermathstyle",
+        "mathstyletrigger", "triggermathstyle", "triggeredmathstyle",
         "mathstylefont", "mathsmallstylefont", "mathstyleface", "mathsmallstyleface", "mathstylecommand", "mathpalette",
         "mathstylehbox", "mathstylevbox", "mathstylevcenter", "mathstylevcenteredhbox", "mathstylevcenteredvbox",
         "mathtext", "setmathsmalltextbox", "setmathtextbox",

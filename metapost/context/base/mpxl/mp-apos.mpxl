@@ -214,3 +214,61 @@ permanent
     getposleftskip, getposrightskip, getposhsize, getposparindent, getposhangindent, getposhangafter,
     getposxy, getposupperleft, getposlowerleft, getposupperright, getposlowerright,
     getposllx, getposlly, getposurx, getposury ;
+
+def anch_box_arrows_draw =
+    begingroup ;
+        save f, t, p, alternative, delta, dashtype, edge ; pair f, t ; path p ; string alternative ;
+        dashtype := mpvarn("dashtype") ;
+        delta := mpvard("distance");
+        alternative := mpvars("alternative") ;
+        if positionx(mpvars("rightedge")) > 0 :
+            if alternative = "left" :
+                edge := positionx(mpvars("leftedge"));
+                f := (edge,positiony(mpvars("from"))) ;
+                t := (edge,positiony(mpvars("to"  ))) ;
+                p := (f  -- (f xshifted - delta) -- (t xshifted - delta) --  t) ;
+                draw thetextext.lft(mpvars("text"), (point .5 along p) xshifted -ExHeight) ;
+            elseif alternative = "right" :
+                edge := positionx(mpvars("rightedge"));
+                f := (edge,positiony(mpvars("from"))) ;
+                t := (edge,positiony(mpvars("to"  ))) ;
+                p := (f  -- (f xshifted delta) -- (t xshifted delta) --  t) ;
+                draw thetextext.rt(mpvars("text"), (point .5 along p) xshifted ExHeight) ;
+            elseif alternative = "middle" :
+                p := f  --  t ;
+                draw thetextext.rt(mpvars("text"), (point .5 along p) xshifted ExHeight) ;
+            fi ;
+        else :
+            f := positionxy(mpvars("from")) ;
+            t := positionxy(mpvars("to")) ;
+            if alternative = "bottom" :
+                f := f yshifted (- abs(ypart f - ypart t)) ;
+                p := (f  -- (f yshifted -delta) -- (t yshifted -delta) --  t) ;
+                draw thetextext.bot(mpvars("text"), (point .5 along p) yshifted -.25ExHeight) ;
+            elseif alternative = "top" :
+                f := f yshifted (abs(ypart f - ypart t)) ;
+                p := (f  -- (f yshifted delta) -- (t yshifted delta) --  t) ;
+                draw thetextext.top(mpvars("text"), (point .5 along p) yshifted .25ExHeight) ;
+            elseif alternative = "left" :
+                f := f xshifted (- abs(xpart f - xpart t)) ;
+                p := (f  -- (f xshifted - delta) -- (t xshifted - delta) --  t) ;
+                draw thetextext.lft(mpvars("text"), (point .5 along p) xshifted -ExHeight) ;
+            elseif alternative = "right" :
+                f := f xshifted (abs(xpart f - xpart t)) ;
+                p := (f  -- (f xshifted delta) -- (t xshifted delta) --  t) ;
+                draw thetextext.rt(mpvars("text"), (point .5 along p) xshifted ExHeight) ;
+            elseif alternative = "middle" :
+                p := f  --  t ;
+                draw thetextext.rt(mpvars("text"), (point .5 along p) xshifted ExHeight) ;
+            fi ;
+        fi ;
+        % 1 = dashed, 2 = dashed with background
+        drawarrow p
+            if dashtype == 1 :
+                withdashes .5ExHeight
+            fi
+            withpen pencircle scaled mpvard("rulethickness")
+            withcolor mpvars("linecolor") ;
+        positioninregion ;
+    endgroup ;
+enddef ;

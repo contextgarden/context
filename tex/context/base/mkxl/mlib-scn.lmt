@@ -641,7 +641,8 @@ local function getparameterpath()
     if type(close) == "boolean" then
         n = n - 1
     else
-        close = false
+     -- close = false
+        close = nil
     end
     local connector = list[n]
     if type(connector) == "string" and validconnectors[connector] then

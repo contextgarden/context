@@ -169,7 +169,7 @@ function mathematics.overloadparameters(target,original)
                                     report_math("overloading math parameter %a: %S => %S",name,oldvalue,newvalue)
                                 end
                             else
-                                report_math("invalid math parameter %a",name)
+                             -- report_math("invalid math parameter %a",name)
                             end
                             mathparameters[name] = newvalue
                         end

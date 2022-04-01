@@ -37,7 +37,7 @@ return {
             NoLimitSupFactor               =   0,
             NoLimitSubFactor               = 900,
             FractionRuleThickness          =  55,
-         -- AccentBaseHeight               = 650,
+            -- AccentBaseHeight               = 650,
             AccentBaseDepth                = 150,
         },
         tweaks = {
@@ -46,13 +46,13 @@ return {
                     tweak    = "version",
                     expected = "Version 1.802",
                 },
-                {
-                    tweak = "substitutes",
-                    list  = {
-                        [0x2264] = "ss03",
-                        [0x2265] = "ss03",
-                    }
-                },
+                -- {
+                --     tweak = "substitutes",
+                --     list  = {
+                --         [0x2264] = "ss03",
+                --         [0x2265] = "ss03",
+                --     }
+                -- },
                 -- \definefontfeature[mathlucida][copymathscripts=yes]
                 -- \definefontfeature[mathlucida][copymathscripts=yes,ss04=yes]
                 -- 0xFEOO should be chancery style, if present
@@ -79,9 +79,25 @@ return {
                         ["0x23DD.parts.1"]  = { xoffset = -0.075, depth  = .8, yoffset =  0.2 },
                         ["0x23DD.parts.2"]  = {                   depth  = .8, yoffset =  0.2 },
                         ["0x23DD.parts.3"]  = { xoffset =  0.075, depth  = .8, yoffset =  0.2 },
+                        -- The < and > are slightly too small. We scale them by 867/795
+                        ["0x003C"]          = { scale = 1.09057, width = 1.09057, height = 1.09057},
+                        ["0x003E"]          = { scale = 1.09057, width = 1.09057, height = 1.09057},
+                        -- The = is too big if in ss03. We scale it by 795/867 (not working like this)
+                        -- ["0x003D.ss03"]     = { scale = 0.916955, width = 0.916955, height = 0.916955},
                         -- these are done later using the AccentBase* parameters
                      -- [0x23DC]  = { height = .2, yoffset = -0.8 },
                      -- [0x23DD]  = { depth  = .6, yoffset =  0.4 },
+                    },
+                },
+                {
+                    tweak = "kerns",
+                    list  = {
+                        [0x2F] = {
+                            topleft     = -0.2,
+                         -- bottomleft  =  0,
+                         -- topright    =  0,
+                            bottomright =  -0.2,
+                       },
                     },
                 },
                 {
