@@ -170,6 +170,7 @@
 
 \aliased\let\superscript     \Usuperscript
 \aliased\let\subscript       \Usubscript
+\aliased\let\primescript     \Uprimescript
 \aliased\let\nosuperscript   \Unosuperscript
 \aliased\let\nosubscript     \Unosubscript
 \aliased\let\superprescript  \Usuperprescript

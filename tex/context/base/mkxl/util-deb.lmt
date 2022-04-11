@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['util-deb'] = {
 
 -- the <anonymous> tag is kind of generic and used for functions that are not
 -- bound to a variable, like node.new, node.copy etc (contrary to for instance
--- node.has_attribute which is bound to a has_attribute local variable in mkiv)
+-- node.hasattribute which is bound to a hasattribute local variable in mkiv)
 
 local type, next, tostring, tonumber, xpcall, print = type, next, tostring, tonumber, xpcall, print
 local format, find, sub, gsub = string.format, string.find, string.sub, string.gsub

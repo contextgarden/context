@@ -1047,6 +1047,8 @@ local ruledglue, ruledmathglue do
         [zerospaceskip_code]              = "ZS",
         [parfillleftskip_code]            = "PL",
         [parfillrightskip_code]           = "PR",
+        [gluecodes.parinitleftskip]       = "IL",
+        [gluecodes.parinitrightskip]      = "IR",
         [indentskip_code]                 = "IN",
         [correctionskip_code]             = "CS",
     }

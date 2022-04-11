@@ -3946,3 +3946,34 @@ primarydef p withdashes len =
 enddef ;
 
 permanent withdashes ;
+
+%D For Mikael:
+
+path mfun_b ;
+pair mfun_k ;
+
+tertiarydef p intersectionpath q =
+    begingroup ;
+    save mfun_b ; path mfun_b ; mfun_b := sortedpath (p intersectiontimeslist q) ;
+    save mfun_k ; pair mfun_k ; mfun_k := point 0 of mfun_b;
+    .5[point xpart mfun_k of p, point ypart mfun_k of q]
+    for i = 1 upto length(mfun_b) :
+        hide(mfun_k := point i of mfun_b;)
+        -- .5[point xpart mfun_k of p, point ypart mfun_k of q]
+    endfor
+    endgroup
+enddef ;
+
+tertiarydef p firstintersectionpath q =
+    begingroup ;
+    save mfun_b ; path mfun_b ; mfun_b := sortedpath (p intersectiontimeslist q) ;
+    point xpart (point 0 of mfun_b) of p
+    for i = 1 upto length(mfun_b) :
+        -- point xpart (point i of mfun_b) of p
+    endfor
+    endgroup
+enddef ;
+
+tertiarydef p secondintersectionpath q =
+    q firstintersectionpath p
+enddef;

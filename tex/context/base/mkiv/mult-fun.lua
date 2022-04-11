@@ -39,7 +39,7 @@ return {
         "setluaparameter",
         "definecolor",
         --
-        "record", "newrecord", "setrecord", "getrecord",
+        "record", "newrecord", "setrecord", "getrecord", "cntrecord",
         --
         "anchorxy", "anchorx", "anchory",
         "anchorht", "anchordp",

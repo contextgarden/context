@@ -38,7 +38,7 @@
 \registerctxluafile{node-scn}{autosuffix}
 \registerctxluafile{node-scn}{autosuffix}
 \registerctxluafile{node-par}{autosuffix}
-\registerctxluafile{node-bwc}{autosuffix} % for a while
+%registerctxluafile{node-bwc}{autosuffix} % no longer used
 
 %D This might go away (needs checking anyway, very old code):
 

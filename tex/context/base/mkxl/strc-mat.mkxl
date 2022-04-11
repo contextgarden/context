@@ -836,59 +836,141 @@
 % \prebinoppenalty -100
 % \prerelpenalty   -100
 
+\def\strc_math_set_split_yes
+  {% \clf_setmathpenalties\plusone
+   \mathpenaltiesmode \plusone
+   \edef\p_hang{\formulaparameter\c!hang}%
+   \ifx\p_hang\v!none
+     \global\setfalse\c_strc_math_indent
+     \clf_resetmathhang
+   \else
+     \global\settrue\c_strc_math_indent
+     \clf_setmathhang {%
+        method   {\p_hang}%
+        distance \formulaparameter\c!distance
+     }%
+   \fi}
+
+\def\strc_math_set_split_nop
+  {\mathpenaltiesmode \zerocount
+   \clf_resetmathhang}
+
 \def\strc_math_set_split
   {\edef\p_split{\formulaparameter\c!split}%
    \ifx\p_split\v!yes
      \global\c_strc_math_vertical\plusone
+     \strc_math_set_split_yes
    \orelse\ifx\p_split\v!page
      \global\c_strc_math_vertical\plustwo
+     \strc_math_set_split_yes
+   \orelse\ifx\p_split\v!text
+     \global\c_strc_math_vertical\plusthree
+     \strc_math_set_split_nop
    \else
      \global\c_strc_math_vertical\zerocount
-   \fi
-   \ifcase\c_strc_math_vertical
-   % \clf_setmathpenalties\zerocount
-     \mathpenaltiesmode \zerocount
-     \clf_resetmathhang
-   \else
-   % \clf_setmathpenalties\plusone
-     \mathpenaltiesmode \plusone
-     \edef\p_hang{\formulaparameter\c!hang}%
-     \ifx\p_hang\v!none
-       \global\setfalse\c_strc_math_indent
-       \clf_resetmathhang
-     \else
-       \global\settrue\c_strc_math_indent
-       \clf_setmathhang {%
-          method   {\p_hang}%
-          distance \formulaparameter\c!distance
-       }%
-     \fi
+     \strc_math_set_split_nop
    \fi}
 
 \setupformula
   [\c!split=\v!no,
    \c!distance=\zeropoint,
   %\c!interlinespace=1.5\lineheight,
+   \c!textmargin=2\emwidth,
    \c!interlinespace=,
    \c!hang=\v!none]
 
 % for the moment (when testing) we use a penalty 1
 
-\protected\def\strc_math_align_here{\ifmmode\boundary\plusone\fi}%
-\protected\def\strc_math_break_here{\ifmmode\hfill\break\fi}%
+\def\strc_math_pickup_again
+% {\mathatom \s!leftclass \mathendcode \s!rightclass \mathbegincode{}\noatomruling}
+  {\mathatom \s!class \mathbegincode{}\noatomruling}
+
+\protected\def\strc_math_align_here
+  {\ifmmode
+     % we can have a more dedicated value, and also maybe store the class so that we can
+     % pick it up at the engine end (second pass)
+     \boundary\plusone
+   \fi}
+
+\protected\def\strc_math_break_here
+  {\ifmmode
+     \hfill
+     \break
+     \strc_math_pickup_again
+   \fi}
+
+\tolerant\protected\def\strc_math_skip_here[#1]%
+  {% no strut as it will influence fences
+   \kern
+     \ifchkdim#1\or
+       #1%
+     \orelse\ifchknum#1\or
+       #1\dimexpr\formulaparameter\c!textmargin\relax
+     \else
+       \formulaparameter\c!textmargin
+     \fi
+   \relax
+   \strc_math_pickup_again}
 
 \ifdefined\alignhere \else \aliased\let\alignhere\relax \fi
 \ifdefined\breakhere \else \aliased\let\breakhere\relax \fi
+\ifdefined\skiphere  \else \aliased\let\skiphere \relax \fi
 
 \appendtoks
     \enforced\let\alignhere\strc_math_align_here
     \enforced\let\breakhere\strc_math_break_here
+    \enforced\let\skiphere \strc_math_skip_here
 \to \everymathematics
 
 % \protected\def\strc_formulas_start_formula#1%
 %   {\strc_formulas_start_formula_indeed[#1]}
 %
 % \tolerant\protected\def\strc_formulas_start_formula[#1]#*[#2]% setting leftskip adaption is slow !
+
+\installcorenamespace{mathtextalign}
+
+\defcsname\??mathtextalign\v!slanted\endcsname
+  {\raggedcenter
+   \parinitleftskip \zeropoint
+   \parinitrightskip\s_spac_filll
+   \parfillleftskip \s_spac_filll
+   \parfillrightskip\zeropoint
+   \updateparagraphproperties}
+
+\defcsname\??mathtextalign\v!flushleft\endcsname
+  {\raggedright
+   \updateparagraphproperties} % not needed
+
+\defcsname\??mathtextalign\v!flushright\endcsname
+  {\raggedleft
+   \updateparagraphproperties} % not needed
+
+\defcsname\??mathtextalign\v!middle\endcsname
+  {\raggedcenter
+   \updateparagraphproperties} % not needed
+
+\defcsname\??mathtextalign\v!middle:\v!start\endcsname
+  {\raggedcenter
+   \setbox\scratchbox\vbox{\unhcopy\b_strc_math_display}%
+   \scratchdimen\dimexpr\textwidth-\d_strc_math_indent-\themaxboxwidth\scratchbox\relax}
+
+\defcsname\??mathtextalign\v!middle:\v!stop\endcsname
+  {\leftskip.5\scratchdimen
+   \rightskip\leftskip}
+
+\defcsname\??mathtextalign\v!flushleft:\v!start\endcsname
+  {\csname\??mathtextalign\v!middle:\v!start\endcsname}
+
+\defcsname\??mathtextalign\v!flushleft:\v!stop\endcsname
+  {\leftskip\zeropoint
+   \rightskip\leftskip}
+
+\defcsname\??mathtextalign\v!flushright:\v!start\endcsname
+  {\csname\??mathtextalign\v!middle:\v!start\endcsname}
+
+\defcsname\??mathtextalign\v!flushright:\v!stop\endcsname
+  {\leftskip\scratchdimen
+   \rightskip\leftskip}
 
 \tolerant\protected\def\strc_formulas_start_formula#1#:#*[#2]% setting leftskip adaption is slow !
   {\ifhmode
@@ -927,6 +1009,7 @@
    \let\strc_formulas_start_formula\strc_formulas_start_formula_nested
    \strc_formulas_forget_display_skips
    \the\everybeforedisplayformula
+   \begincsname\??mathtextalign\formulaparameter\c!textalign\endcsname
    \csname\e!start\formulaparameter\c!alternative\v!formula\endcsname}
 
 \protected\def\strc_formulas_start_formula_nested#1%

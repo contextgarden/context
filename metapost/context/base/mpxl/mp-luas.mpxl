@@ -231,6 +231,14 @@ let dppart = bluepart ;
 
 permanent wdpart, htpart, dppart;
 
+newscriptindex mfid_sortedpath ; mfid_sortedpath := scriptindex "sortedpath" ;
+newscriptindex mfid_uniquepath ; mfid_uniquepath := scriptindex "uniquepath" ;
+
+def sortedpath = runscript mfid_sortedpath enddef ;
+def uniquepath = runscript mfid_uniquepath enddef ;
+
+permanent sortpath, uniquepath ;
+
 newscriptindex mfid_texvar ; mfid_texvar := scriptindex "texvar" ; vardef texvar(expr s) = runscript mfid_texvar s enddef ;
 newscriptindex mfid_texstr ; mfid_texstr := scriptindex "texstr" ; vardef texstr(expr s) = runscript mfid_texstr s enddef ;
 
@@ -313,6 +321,7 @@ permanent getparameters, presetparameters, hasparameter, hasoption, getparameter
 newscriptindex mfun_newrecord ; mfun_newrecord := scriptindex "newrecord" ;
 newscriptindex mfun_setrecord ; mfun_setrecord := scriptindex "setrecord" ;
 newscriptindex mfun_getrecord ; mfun_getrecord := scriptindex "getrecord" ;
+newscriptindex mfun_cntrecord ; mfun_cntrecord := scriptindex "cntrecord" ;
 
 % let record = runscript ; % We need to use "let" because we don't expand!
 
@@ -321,9 +330,10 @@ def record    = newinternal numeric runscript enddef ;
 def newrecord = runscript mfun_newrecord ; enddef ; % semicolon prevents lookahead
 def setrecord = runscript mfun_setrecord ; enddef ;
 def getrecord = runscript mfun_getrecord   enddef ;
+def cntrecord = runscript mfun_cntrecord   enddef ;
 
 permanent
-    record, newrecord, setrecord, getrecord ;
+    record, newrecord, setrecord, getrecord, cntrecord ;
 
 % No vardef's because we need to scan for an assignment too and we'll see
 % an endgroup otherwise.

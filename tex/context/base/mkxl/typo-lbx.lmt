@@ -75,6 +75,8 @@ do
     local lb_indent           = 0
     local lb_parfillleftskip  = 0
     local lb_parfillrightskip = 0
+    local lb_parinitleftskip  = 0
+    local lb_parinitrightskip = 0
     local lb_overshoot        = 0
 
     implement { name = "localboxindex",            public = true, usage = "value", actions = function() return integer_value,   lb_index            end }
@@ -91,6 +93,8 @@ do
     implement { name = "localboxindent",           public = true, usage = "value", actions = function() return dimension_value, lb_indent           end }
     implement { name = "localboxparfillleftskip",  public = true, usage = "value", actions = function() return dimension_value, lb_parfillleftskip  end }
     implement { name = "localboxparfillrightskip", public = true, usage = "value", actions = function() return dimension_value, lb_parfillrightskip end }
+    implement { name = "localboxparinitleftskip",  public = true, usage = "value", actions = function() return dimension_value, lb_parinitleftskip  end }
+    implement { name = "localboxparinitrightskip", public = true, usage = "value", actions = function() return dimension_value, lb_parinitrightskip end }
     implement { name = "localboxovershoot",        public = true, usage = "value", actions = function() return dimension_value, lb_overshoot        end }
 
     local cache = table.setmetatableindex(function(t,k)
@@ -196,7 +200,7 @@ do
         end
     end
 
-    local function processlocalboxes(line,leftbox,rightbox,middlebox,linenumber,leftskip,rightskip,lefthang,righthang,indent,parfillleftskip,parfillrightskip,overshoot)
+    local function processlocalboxes(line,leftbox,rightbox,middlebox,linenumber,leftskip,rightskip,lefthang,righthang,indent,parinitleftskip,parinitrightskip,parfillleftskip,parfillrightskip,overshoot)
         --
         lb_found            = nil
         lb_index            = 0
@@ -209,10 +213,14 @@ do
         lb_indent           = indent
         lb_parfillleftskip  = parfillleftskip
         lb_parfillrightskip = parfillrightskip
+        lb_parinitleftskip  = parinitleftskip
+        lb_parinitrightskip = parinitrightskip
         lb_overshoot        = overshoot
         lb_linewidth        = getwidth(line)
-        lb_leftoffset       = leftskip  + lefthang  + parfillleftskip  + indent
-        lb_rightoffset      = rightskip + righthang + parfillrightskip - overshoot
+        -- only true for soem cases
+        lb_leftoffset       = leftskip  + lefthang  + parfillleftskip  + parinitleftskip  + indent
+        lb_rightoffset      = rightskip + righthang + parfillrightskip + parinitrightskip - overshoot
+        --
         if leftbox then
             lb_localwidth = getwidth(leftbox)
             processleftbox(leftbox)

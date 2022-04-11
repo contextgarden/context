@@ -240,24 +240,34 @@ local function get_parameters(nested)
         if s == "]" then
             break;
         elseif s == "," then
-            -- continue
-        else
-            local t = scantoken(true)
-            if t == equals_code or t == colon_code then
-                -- optional equal or :
-                scantoken()
-            end
-            local kind = scantoken(true)
-            if kind == leftdelimiter_code or kind == tag_code or kind == capsule_code then
-                kind = scanexpression(true)
-                data[s] = (typescanners[kind] or scanexpression)()
-            elseif kind == leftbracket_code then
-                data[s] = get_parameters(true)
-            elseif kind == comma_code then
-                goto again
+            goto again
+        elseif s == "[" then
+--             s = scannumeric()
+            s = scaninteger()
+            if scantoken() == rightbracket_code then
+                goto assign
             else
-                data[s] = tokenscanners[kind]()
+                report("] expected")
             end
+        else
+            goto assign
+        end
+      ::assign::
+        local t = scantoken(true)
+        if t == equals_code or t == colon_code then
+            -- optional equal or :
+            scantoken()
+        end
+        local kind = scantoken(true)
+        if kind == leftdelimiter_code or kind == tag_code or kind == capsule_code then
+            kind = scanexpression(true)
+            data[s] = (typescanners[kind] or scanexpression)()
+        elseif kind == leftbracket_code then
+            data[s] = get_parameters(true)
+        elseif kind == comma_code then
+            goto again
+        else
+            data[s] = tokenscanners[kind]()
         end
       ::again::
     end
@@ -910,9 +920,7 @@ do
                 else
                     t = scaninteger()
                     v = v[t]
-                    if scansymbol(true) == "]" then
-                        scansymbol()
-                    else
+                    if scansymbol() ~= "]" then
                         report("] expected")
                     end
                 end
@@ -921,6 +929,97 @@ do
                 v = v[t]
             end
         end
+    end)
+
+--     registerdirect("getrecord", function()
+--         local n = scaninteger()
+--         local v = records[n]
+--         local l = 0
+--         while true do
+--             local t = scansymbol(true)
+--             if t == ";" or t == ":" then
+--                 return v
+--             elseif t == "(" then
+--                 scansymbol()
+--                 l = l + 1
+--             elseif t == ")" then
+--                 if l > 1 then
+--                     scansymbol()
+--                     l = l - 1
+--                 elseif l == 1 then
+--                     scansymbol()
+--                     return v
+--                 else
+--                     return v
+--                 end
+--             elseif t == "." then
+--                 scansymbol()
+--             elseif t == "#" or t == "##" then -- from tex's we get a double
+--                 scansymbol()
+--                 t = scansymbol()
+--                 v = v[t]
+--                 local tv = type(v)
+--                 return (tv == "table" or tv == "string") and #v or 0
+--             elseif t == "[" then
+--                 scansymbol()
+-- t = scansymbol(true)
+-- if t == "#" or r == "##" then
+--     scansymbol()
+--     if scansymbol() ~= "]" then
+--         report("] expected")
+--     end
+--     return #v
+-- else
+--                     t = scaninteger()
+--                     v = v[t]
+--                     if scansymbol() ~= "]" then
+--                         report("] expected")
+--                     end
+-- end
+--             else
+--                 t = scansymbol()
+--                 v = v[t]
+--             end
+--         end
+--     end)
+
+    registerdirect("cntrecord", function()
+        local n = scaninteger()
+        local v = records[n]
+        local l = 0
+        while true do
+            local t = scansymbol(true)
+            if t == ";" or t == ":" then
+                break
+            elseif t == "(" then
+                scansymbol()
+                l = l + 1
+            elseif t == ")" then
+                if l > 1 then
+                    scansymbol()
+                    l = l - 1
+                elseif l == 1 then
+                    scansymbol()
+                    break
+                else
+                    break
+                end
+            elseif t == "." then
+                scansymbol()
+            elseif t == "[" then
+                scansymbol()
+                t = scaninteger()
+                v = v[t]
+                if scansymbol() ~= "]" then
+                    report("] expected")
+                end
+            else
+                t = scansymbol()
+                v = v[t]
+            end
+        end
+        local tv = type(v)
+        return (tv == "table" or tv == "string") and #v or 0 -- integer
     end)
 
     function metapost.getrecord(name)

@@ -170,11 +170,11 @@ local new_kern           = nodepool.kern
 local getdimensions      = nuts.dimensions
 local getrangedimensions = nuts.rangedimensions
 
-local getsynctexfields   = nuts.getsynctexfields
-local forcesynctextag    = tex.forcesynctextag   or tex.force_synctex_tag
-local forcesynctexline   = tex.forcesynctexline  or tex.force_synctex_line
-local getsynctexline     = tex.getsynctexline    or tex.get_synctex_line
-local setsynctexmode     = tex.setsynctexmode    or tex.set_synctex_mode
+local getinputfields      = nuts.getinputfields
+local forceinputstatefile = tex.forceinputstatefile
+local forceinputstateline = tex.forceinputstateline
+local getinputstateline   = tex.getinputstateline
+local setinputstatemode   = tex.setinputstatemode
 
 local foundintree        = resolvers.foundintree
 
@@ -210,7 +210,7 @@ local paused  = 0
 local used    = false
 local never   = false
 
--- the file name stuff
+-- the file name stuff (called tags in synctex)
 
 local noftags            = 0
 local stnums             = { }
@@ -258,17 +258,17 @@ end
 
 function synctex.setfilename(name,line)
     if paused == 0 and name then
-        forcesynctextag(sttags[name])
+        forceinputstatefile(sttags[name])
         if line then
-            forcesynctexline(line)
+            forceinputstateline(line)
         end
     end
 end
 
 function synctex.resetfilename()
     if paused == 0 then
-        forcesynctextag(0)
-        forcesynctexline(0)
+        forceinputstatefile(0)
+        forceinputstateline(0)
     end
 end
 
@@ -280,10 +280,10 @@ do
     function synctex.pushline()
         nesting = nesting + 1
         if nesting == 1 then
-            local l = getsynctexline()
+            local l = getinputstateline()
             ignored = l and l > 0
             if not ignored then
-                forcesynctexline(texget("inputlineno"))
+                forceinputstateline(texget("inputlineno"))
             end
         end
     end
@@ -291,7 +291,7 @@ do
     function synctex.popline()
         if nesting == 1 then
             if not ignored then
-                forcesynctexline()
+                forceinputstateline()
                 ignored = false
             end
         end
@@ -335,7 +335,7 @@ local function flushpreamble()
     makenames()
     filehandle = openfile(tmpfile,"wb")
     if filehandle then
-filehandle:setvbuf("full",64*1024)
+        filehandle:setvbuf("full",64*1024)
         filehandle:write("SyncTeX Version:1",eol)
         writefiles()
         filehandle:write("Output:pdf",eol)
@@ -490,7 +490,7 @@ local function collect_min(head)
             local line  = 0
             while true do
                 if id == glyph_code then
-                    local tc, lc = getsynctexfields(current)
+                    local tc, lc = getinputfields(current)
                     if tc and tc > 0 then
                         tag  = tc
                         line = lc
@@ -557,7 +557,7 @@ local function collect_max(head,parent)
             local line  = 0
             while true do
                 if id == glyph_code then
-                    local tc, lc = getsynctexfields(current)
+                    local tc, lc = getinputfields(current)
                     if tc and tc > 0 then
                         if tag > 0 and (tag ~= tc or line ~= lc) then
                             head  = inject(parent,head,first,last,tag,line)
@@ -584,24 +584,6 @@ local function collect_max(head,parent)
                         last = current
                     end
                 elseif id == glue_code then
-                 -- if tag > 0 then
-                 --     local tc, lc = getsynctexfields(current)
-                 --     if tc and tc > 0 then
-                 --         if tag ~= tc or line ~= lc then
-                 --             head = inject(parent,head,first,last,tag,line)
-                 --             tag  = 0
-                 --             break
-                 --         end
-                 --     else
-                 --         head = inject(parent,head,first,last,tag,line)
-                 --         tag  = 0
-                 --         break
-                 --     end
-                 -- else
-                 --     tag = 0
-                 --     break
-                 -- end
-                 -- id = nil -- so no test later on
                 elseif id == penalty_code then
                     -- go on (and be nice for math)
                 else
@@ -688,7 +670,7 @@ end
 function synctex.enable()
     if not never and not enabled then
         enabled = true
-        setsynctexmode(3) -- we want details
+        setinputstatemode(3) -- we want details
         if not used then
             nodes.tasks.enableaction("shipouts","luatex.synctex.collect")
             report_system("synctex functionality is enabled, expect 5-10 pct runtime overhead!")
@@ -704,7 +686,7 @@ end
 
 function synctex.disable()
     if enabled then
-        setsynctexmode(0)
+        setinputstatemode(0)
         report_system("synctex functionality is disabled!")
         enabled = false
         for i=1,#disablers do
@@ -728,13 +710,13 @@ local filename = nil
 function synctex.pause()
     paused = paused + 1
     if enabled and paused == 1 then
-        setsynctexmode(0)
+        setinputstatemode(0)
     end
 end
 
 function synctex.resume()
     if enabled and paused == 1 then
-        setsynctexmode(3)
+        setinputstatemode(3)
     end
     paused = paused - 1
 end

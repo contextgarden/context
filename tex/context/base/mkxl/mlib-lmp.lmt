@@ -41,6 +41,7 @@ local injectboolean  = inject.boolean
 local injectnumeric  = inject.numeric
 local injectstring   = inject.string
 local injectpair     = inject.pair
+local injectpath     = inject.path
 
 local injectwhd      = inject.whd -- scaled
 local injectxy       = inject.xy
@@ -57,6 +58,52 @@ local implement      = interfaces.implement
 
 do
 
+    local function s(a,b)
+        local aa = a[1]
+        local bb = b[1]
+        if aa ~= bb then
+            return aa < bb
+        end
+        aa = a[2]
+        bb = b[2]
+        return aa < bb
+    end
+
+    registerscript("sortedpath", function()
+        local p = scanpath()
+        for i=1,#p do
+            local pi = p[i]
+            p[i] = { pi[1], pi[2] }
+        end
+        table.sort(p,s)
+        injectpath(p)
+    end)
+
+    registerscript("uniquepath", function()
+        local p = scanpath()
+        local u = { }
+        local n = 0
+        local xx = nil
+        local yy = nil
+        table.sort(p,s)
+        for i=1,#p do
+            local pi = p[i]
+            local x = pi[1]
+            local y = pi[2]
+            if x ~= xx or y ~= yy then
+                n = n + 1
+                u[n] = { x, y }
+                xx = x
+                yy = y
+            end
+        end
+        injectpath(u)
+    end)
+
+end
+
+do
+
     local p = nil
     local n = 0
 
@@ -67,11 +114,12 @@ do
 
     registerdirect("pathlengthof", function()
         p = scanpath()
-        return p and #p or 1
+        n = p and #p or 1
+        return n
     end)
 
     registerdirect("pathpointof", function()
-        local i = scannumber()
+        local i = scaninteger()
         if i > 0 and i <= n then
             local pi = p[i]
             injectpair(pi[1],pi[2])
@@ -79,7 +127,7 @@ do
     end)
 
     registerdirect("pathleftof", function()
-        local i = scannumber()
+        local i = scaninteger()
         if i > 0 and i <= n then
             local pi = p[i]
             injectpair(pi[5],pi[6])
@@ -87,7 +135,7 @@ do
     end)
 
     registerdirect("pathrightof", function()
-        local i = scannumber()
+        local i = scaninteger()
         if i > 0 and i <= n then
             local pn
             if i == 1 then

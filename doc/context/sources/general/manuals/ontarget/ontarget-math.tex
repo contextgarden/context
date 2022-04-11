@@ -98,11 +98,11 @@ pays a lot of attention to detail and that is also why it all works out so well.
 If you need to render from unseen sources (as happens in an \XML\ workflow)
 coming from several authors and have time nor money to check everything, you're
 off worse. And I'm not even talking of input where invisible \UNICODE\ spacing
-characters are injected. It is the \TEX\ book(s) that draw me to this program and
-believe it or not, in the first project I was involved in that demanded typeset
-(quantum mechanics) math the \IBM\ typewriter with changing bulbs ruled the
-scenery. In fact, our involvement was quickly cut off when we dared to show a
-chapter done in \TEX\ that looked better.
+characters are injected. It is the \TEX\ book(s) that has drawn me to this
+program and believe it or not, in the first project I was involved in that
+demanded typeset (quantum mechanics) math the \IBM\ typewriter with changing
+bulbs ruled the scenery. In fact, our involvement was quickly cut off when we
+dared to show a chapter done in \TEX\ that looked better.
 
 Apart from an occasional tweak, in \CONTEXT\ we never really used this opened up
 math atom pair spacing mechanism available in \LUATEX\ extensively. So, when I
@@ -176,7 +176,7 @@ course that also can interfere with grouping. All this is true for \TEX, \PDFTEX
 \XETEX\ and \LUATEX, but a bit different in \LUAMETATEX\ as we will see.
 
 The little spacing on both edges of the fraction is a side effect of the way they
-are build internally: fractions are actually a generalized form of \quotation
+are built internally: fractions are actually a generalized form of \quotation
 {stuff put on top of other stuff} and they can have left and|/|or right
 delimiters: this is driven by primitives that have names like \type {\atop} and
 \type {\atopwithdelims}. The way the components are placed is (especially in the
@@ -246,7 +246,7 @@ with cheating about width combined with italic correction (all plausible and
 quite clever but somewhat tricky with respect to \OPENTYPE).
 
 Because here we discuss the way \LUAMETATEX\ and \CONTEXT\ deal with this, the
-next examples show a probably unexpected outcome. Again first the non|-|zero
+following examples show a probably unexpected outcome. Again first the non|-|zero
 case:
 
 \startlinecorrection
@@ -272,7 +272,7 @@ the place where we define the additional font parameters.
 
 \startsubject[title=Atom spacing]
 
-If you are familiar with traditional \TEX\ you know that there is some build in
+If you are familiar with traditional \TEX\ you know that there is some built in
 \type {ordbin} spacing. But there is no such pair for a fraction and a relation,
 simply because there is no fraction class. However, in \LUAMETATEX\ there is one,
 and we'd better set it up if we zero the margins of a fraction.
@@ -292,7 +292,7 @@ actually can be a different kind of atom, which can have puzzling side effects
 with respect to spacing (because the remapping happens unseen).
 
 Interesting is that adapting \LUAMETATEX\ to a more extensive model was quite
-doable, also because the code base had already be made more configurable. Of
+doable, also because the code base had already been made more configurable. Of
 course it involved quite a bit of tedious editing and throwing out already nice
 and clean code that had taken some effort, but that's the way it is. Of course
 more classes also means that some storage properties had to be adapted within the
@@ -306,7 +306,7 @@ no pitfalls? Sure there were! It is worth noticing that doing all this reminded
 me of the early days of \LUATEX\ development, where Taco and I exchanged binaries
 and \TEX\ code in a more or less constant way using Skype. For \LUAMETATEX\ we
 used good old mail for files and Mojca's build farm for binaries and Mikael and I
-spent many month exchanging information and testing out alternatives on a daily
+spent many months exchanging information and testing out alternatives on a daily
 basis: it is in my opinion the only way to do this and it's fun too. It has been
 a lot of work but once we got going there was nothing that could stop us. A side
 effect was that there were no updates during this period, which was something
@@ -315,7 +315,7 @@ users noticed.
 In the spacing matrix there is \type {inner} and internally there's also some
 care to be taken of \type {vcenter}. The \type {inner} class is actually shared
 with the \type {variable} class which is not so much a real class but more a
-signal to the engine that when an alphabetic or numeric character is included that
+signal to the engine that when an alphabetic or numeric character is included
 it has to come from a specific family: upright family zero or math italic family
 one in traditional speak. But, what if we don't have that setup? Well, then one
 has to make sure that this special class number is not associated (which is no
@@ -467,7 +467,7 @@ can use the predefined. A bonus is that one can also use regular glue or
 dimensions, just in case one wants the same spacing in all styles (a muskip
 adapts to the size).
 
-When you look at all the above you might wonder how users are supposed to deal
+When you look at all of the above you might wonder how users are supposed to deal
 with math spacing. The answer is that often they can just assume that \TEX\ does
 the right thing. If something somehow doesn't feel right, looking at solutions by
 others will probably lead a new user to just copy a trick, like injecting a \type
@@ -538,9 +538,9 @@ effort was started in the first place.
 \egroup
 \stoplinecorrection
 
-Of course this kind of changes are not upward compatible but as they are tiny
-they are not that likely to change the number of lines in a paragraph. In display
-mode changes in horizontal dimensions also hav elittle effect.
+Of course these changes are not upward compatible but as they are tiny they are
+not that likely to change the number of lines in a paragraph. In display mode
+changes in horizontal dimensions also have little effect.
 
 \startsubject[title=Penalties]
 
@@ -597,8 +597,8 @@ As with spacing, when there is no known value, the parent will be consulted. An 
 penalty has a value of 10000.
 
 After discussing the implications of inline math crossing lines, Mikael and I
-decided that there can be two solutions. Both can of course be implemented in
-\LUA, but on the other hand, they make good extensions, also because it sort of
+decided there can be two solutions. Both can of course be implemented in \LUA,
+but on the other hand, they make good extensions, also because it sort of
 standardized it. The first advanced control feature tweaks penalties:
 
 \starttyping
@@ -607,7 +607,7 @@ standardized it. The first advanced control feature tweaks penalties:
 \stoptyping
 
 This will add 200 and 100 to the first two math related penalties, and 100 and 50
-to the last two (watch out: the 100 will be assigned to the last found one, the
+to the last two (watch out: the 100 will be assigned to the last one found, the
 50 to the one before it). As with all things penalty and line break related, you
 need to have some awareness of how non|-|linear the badness calculation is as
 well of the fact that the tolerance and stretch related parameters play a role
@@ -699,7 +699,7 @@ eightbitness primes are not a native \TEX\ thing but more something that is
 handled at the macro level (although not in \MKIV\ and \LMTX).
 
 In the end it was script placements on (widely) accented math characters that
-made us introduced a dedicated \type {\Umathprime} primitive that adds a prime to
+made us introduce a dedicated \type {\Umathprime} primitive that adds a prime to
 a math atom. It permits an uninterupted treatment of scripts while in the final
 assembly of the molecule the prime, superscript, subscript and maybe even
 prescripts that prime gets squeezed in. Because the concept of primes is missing
@@ -725,18 +725,18 @@ With \type {\tracingmath = 1} this nicely traces as:
 
 \starttyping
 > \inlinemath=
-\mathord
+\noad[ord][...]
 .\nucleus
-..\mathchar (fam="0,char="58)
+..\mathchar[ord] family "0, character "58
 .\superscript
-..\mathchar (fam="0,char="32)
+..\mathchar[dig] family "0, character "32
 .\subscript
-..\mathchar (fam="0,char="32)
+..\mathchar[dig] family "0, character "32
 .\primescript
-..\mathchar (fam="0,char="27)
+..\mathchar[ord] family "0, character "27
 \stoptyping
 
-Of course this feature scan also be used for other prime like ornaments and who
+Of course this feature can also be used for other prime like ornaments and who
 knows how it will evolve over time.
 
 You can influence the positioning with \type {\Umathprimesupshift} which adds
@@ -753,7 +753,7 @@ Fences can be good for headaches. Because the math that I (or actually my
 colleague) deal with is mostly school math encoded in presentation \MATHML\ (sort
 or predictable) or some form of sequential \ASCII\ based input (often rather
 messy and therefore unpredictable due to ambiguity) fences are a pain. A \TEX ie
-can make sure that left and right fenced are matched. A \TEX ie also knows when
+can make sure that left and right fences are matched. A \TEX ie also knows when
 something is an inline parenthesis or when a more high level structure is needed,
 for instance when parentheses have to scale with what they wrap. In that case the
 \type {\left} and \type {\right} mechanism is used. In arbitrary input missing
@@ -884,18 +884,18 @@ because in \CONTEXT\ it is now zero by default.
 
 In traditional \TEX\ a radical with degree is defined as macro. That macro does
 some measurements and typesets the result in four sizes for a choice. The macro
-typesets the degree in a box that contains the degree as formula. There is a
-little guesswork going on than with respect to how the radical symbol is shaped
-but as we're talking plain \TEX\ here it works out okay because the default font
-is well known.
+typesets the degree in a box that contains the degree as formula. There is a less
+guesswork going on than with respect to how the radical symbol is shaped but as
+we're talking plain \TEX\ here it works out okay because the default font is well
+known.
 
 Radicals are a nice example of a two dimensional \quote {extender} but only the
 vertical dimension uses the extension mechanism, which itself operates either
-horizontally or vertically, although in principle it could both ways. The
+horizontally or vertically, although in principle it could go both ways. The
 horizontal extension is a rule and the fact that the shape is below the baseline
 (as are other large symbols) will make the rule connect well: the radical shape
 sticks out a little, so one can think of the height reflecting the rule height.
-\footnote {When you zoom in you will notice that this is of not always optimal
+\footnote {When you zoom in you will notice that this is not always optimal
 because of the way the slope touched the rule.} In \OPENTYPE\ fonts there is a
 parameter and in \LUATEX\ we use the default rule thickness for traditional
 fonts, which is correct for Latin Modern. There are more places in the fonts
@@ -961,7 +961,7 @@ complex is that we want a clean solution for filtering fences like parenthesis b
 size, something that in the traditional happens via a fake fence pair that
 encapsulates a strut of a certain size. In \LMTX\ we use the same approach but
 have made the sequence more configurable. In practice that means that the values
-1 upto 4 are just that but for some fonts we use the sequence \type {1 3 5 7}.
+1 up to 4 are just that but for some fonts we use the sequence \type {1 3 5 7}.
 There was no need to adapt the engine as it already worked quite well.
 
 \stopsubject
@@ -1100,7 +1100,7 @@ specific classes at the edges. These options are a bitset and \type {1} means
 \stoplinecorrection
 
 Because this overall niling is not granular enough a while later we introduced a
-way to set this per class, as is demonstrated in the next example.
+way to set this per class, as is demonstrated in the following example.
 
 \startbuffer
 \def\TestSlack#1%
@@ -1268,7 +1268,7 @@ but in practice you should probably use the braced version here for clarity.
 
 \startsubject[title=The \type {vcenter} primitive]
 
-Traditionally this primitive is bound to math but it had already be adapted to also
+Traditionally this primitive is bound to math but it had already been adapted to also
 work in text mode. As part of the upgrade of math we can now also pass all the options
 that normal boxed take and we can also cheat with the axis. Here is an example:
 
@@ -1391,25 +1391,26 @@ $
 $
 \stoptyping
 
-That gives us on the console:
+That gives us on the console (the dots represent detailed attribute info that we
+omit here):
 
 \starttyping
 7:3: > \inlinemath=
-7:3: \mathord
+7:3: \noad[ord][...]
 7:3: .\nucleus
-7:3: ..\mathchar (fam="0,char="28)
-7:3: \mathord
+7:3: ..\mathchar[open] family "0, character "28
+7:3: \noad[ord][...]
 7:3: .\nucleus
 7:3: ..\mathlist
-7:3: ...\mathopen
+7:3: ...\noad[open][...]
 7:3: ....\nucleus
-7:3: .....\mathchar (fam="0,char="28)
-7:3: \mathord
+7:3: .....\mathchar[open] family "0, character "28
+7:3: \noad[ord][...]
 7:3: .\nucleus
-7:3: ..\mathchar (fam="0,char="28)
-7:3: \mathopen
+7:3: ..\mathchar[open] family "0, character "28
+7:3: \noad[open][...]
 7:3: .\nucleus
-7:3: ..\mathchar (fam="0,char="28)
+7:3: ..\mathchar[open] family "0, character "28
 \stoptyping
 
 A tracing level of 2 will spit out some information about applied spacing and
@@ -1445,7 +1446,7 @@ the actual width of glyphs to be incremented by the italic correction that then
 selectively is removed has been an issue. It made for successive attempts to
 improve spacing in \CONTEXT\ by providing pseudo features. But, when we moved
 from assembled \UNICODE\ math fonts to \quote {real} ones that became messy: what
-trick to apply when and even worse where? In the end it are only a very few
+trick to apply when and even worse where? In the end there are only a very few
 shapes that actually are affected in the sense that when we don't deal with them
 it looks bad. It also happens that one of those shapes is the italic \quote {f},
 a letter that is used frequently in math. It might even be safe to say that the
@@ -1454,7 +1455,7 @@ pretty large italic correction is the cause of many problems.
 
 In the \LMTX\ approach Mikael and I settled on patching shapes in the so called
 font goodie files, aka \type {lfg} files and only a handful of entries needed a
-treatment. This makes a good care for removing the traditional font code path
+treatment. This makes a good case for removing the traditional font code path
 from \LUAMETATEX.
 
 \startbuffer
@@ -1540,7 +1541,7 @@ There are actually three categories of extensible accents to consider: those tha
 resemble the ones used in text (like tildes and hats), those wrapping something
 (like braces and bracket but also arrows) and rules (that in traditional \TEX\
 indeed are rules). In \CONTEXT\ we have different interfaces for each of these
-and in order to have a more extensive control. The text related ones are the
+in order to have a more extensive control. The text related ones are the
 simplest and closest to what the engine supports out of the box but even there we
 use tweaked glyphs to get better spacing because (of course) fonts have different
 and inconsistent spacing in the boundingbox above and below the real shape. This
@@ -1569,7 +1570,7 @@ simply enable certain code paths, independent of the fact if a font is \OPENTYPE
 or not. It then become a bit \quotation {crap in, crap out}, but because we
 already tweak fonts in the goodie files it's quite okay. Some fonts have bad
 metrics anyway or miss characters and it makes no sense to support abandoned
-fonts either. Also, when a traditional font is assembled it one can set up the
+fonts either. Also, when a traditional font is assembled one can set up the
 engine with different flags and we can deal with it as we wish. In the end it is
 all up to the macro package to configure things right, which is what we tried to
 do for months when rooting out all the artifacts that fonts bring. \footnote {In
@@ -1619,8 +1620,9 @@ it will be tested well.
 
 After this was decided and effective I also decided to drop the mapping from
 traditional font parameters to the \OPENTYPE\ derives engine ones: we now assume
-that the later are set. After all, we already did that in \CONTEXT\ for the virtual
-assemblies that we started out with in the beginning of \LUATEX\ and \MKIV.
+that the latter ones are set. After all, we already did that in \CONTEXT\ for the
+virtual assemblies that we started out with in the beginning of \LUATEX\ and
+\MKIV.
 
 \stopsubject
 
@@ -1681,6 +1683,11 @@ also because you need to know a bit of \CONTEXT.
 \startlinecorrection
 \showmakeup[mathglue]\getbuffer
 \stoplinecorrection
+
+There are a few control options, like \type {\noatomruling} that can be used to
+prevent rules being applied to the next atom. We can use these in order to
+achieve more advanced alignment results, but discussing math alignments would
+demand many more pages than make sense here.
 
 \stopsubject
 
@@ -1750,9 +1757,9 @@ that the definition of of script versus calligraphic is also somewhat fuzzy and
 font dependent. That made for yet another tweak where we can swap alphabets and
 let the math machinery choose the expected shape. In \UNICODE\ this is handled by
 variant selectors which is rather cumbersome. Because these two styles are used
-mixed in the same document, a proper additional alphabet had made more sense. As
-we already support variant selectors it was no big deal to combine that mechanism
-with a variant selector features over a range of calligraphic or script
+mixed in the same document, a proper additional alphabet would have made more
+sense. As we already support variant selectors it was no big deal to combine that
+mechanism with a variant selector features over a range of calligraphic or script
 characters, which indeed is what mathematicians use (Mikael can be very
 convincing). With this kind of tweaks the engine doesn't really play a role: we
 always could and did deal with it. It's just that upgrading the engine made us
@@ -1765,13 +1772,13 @@ look again at this.
 One can argue that all these new features can make a document look better. But
 you only have to look at what Don Knuth produces himself to see that one always
 could do a good job with \TEX, although maybe at the cost of some extra spacing
-directives. It is the fact that \OPENTYPE\ showed up as we as many more math
+directives. It is the fact that \OPENTYPE\ showed up as well as many more math
 fonts, all with their own (sometimes surprising) special effects, that made us
 adapt the engine. Of course there are also new possibilities that permit better
 and more robust macro support. The \TEX book has a chapter on \quotation {the
 fine points of mathematics typesetting} for a reason.
 
-There has never been an excuse to produce a bad looking documents. It is all
+There has never been an excuse to produce bad looking documents. It is all
 about care. For sure there is a category of users who are forced to use \TEX, so
 they are excused. There are also those who have no eye for typography and rely on
 the macro package, so there we can to some extent blame the authors of those
@@ -1781,7 +1788,7 @@ handle math. One can also wonder in what way massive remote editing as well as
 collaborative working on documents make things better. It probably becomes less
 personal. At meetings and platforms \TEX\ users like to bash the alternatives but
 in the end they are part of the same landscape and when it comes to math they
-dominate. Maybe there is less to brawl about then we like: just do your thing and
+dominate. Maybe there is less to bragg about then we like: just do your thing and
 try to do it as good as possible. Rely on your eyes and pay attention to the
 details, which is possible because the engine provided the means. The previous
 text shows a few things to pay attention to.

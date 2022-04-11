@@ -298,3 +298,60 @@ function moduledata.fonts.features.showallligatures(specification)
         context.par()
     end
 end
+
+
+function moduledata.fonts.features.showallfeatures(specification)
+    specification   = interfaces.checkedspecification(specification)
+    local id, cs    = fonts.definers.internal(specification,"<module:fonts:features:font>")
+    local tfmdata   = fonts.hashes.identifiers[id]
+    local sequences = tfmdata.resources.sequences
+
+    context.starttabulate { "|T|T|Tc|T|T|Tp|" }
+
+    NC() context.bold("\\letterhash")
+    NC() context.bold("type")
+    NC() context.bold("\\letterhash steps")
+    NC() context.bold("feature")
+    NC() context.bold("script")
+    NC() context.bold("language")
+    NC() NR()
+    context.HL()
+
+    for i=1,#sequences do
+        local s = sequences[i]
+        local features = s.features
+        if features then
+            local done1 = false
+            NC() context(i)
+            NC() context(s.type)
+            NC() context(s.nofsteps)
+            for feature, scripts in table.sortedhash(features) do
+                NC()
+                if done1 then
+                    NC() NC() NC()
+                else
+                    context(feature)
+                    done1 = true
+                end
+                local done2 = false
+                for script, languages in table.sortedhash(scripts) do
+                    if done2 then
+                        NC() NC() NC() NC()
+                    else
+                        done2 = true
+                    end
+                    NC() context(script)
+                    NC() context("% t",table.sortedkeys(languages))
+                    NC() context.NR()
+                end
+            end
+        else
+            NC() context(i)
+            NC() context(s.type)
+            NC() context(s.nofsteps)
+            NC() NC() NC() NC() NR()
+        end
+    end
+
+    context.stoptabulate()
+end

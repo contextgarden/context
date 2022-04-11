@@ -1056,7 +1056,7 @@ local tonode = nodes.nuts.tonode
 
 %localize%
 
--- line,leftbox,rightbox,middlebox,linenumber,leftskip,rightskip,lefthang,righthang,indent,parfillleftskip,parfillrightskip
+-- line,leftbox,rightbox,middlebox,linenumber,leftskip,rightskip,lefthang,righthang,indent,parinitleftskip,parinitrightskip,parfillleftskip,parfillrightskip,overshoot
 
 return function(line,leftbox,rightbox,middlebox,...)
     nutline      = tonut(line)

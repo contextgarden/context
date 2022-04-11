@@ -602,6 +602,7 @@ presetparameters "function" [
     yarrow      = "",
     reverse     = false,
   % function    : metatable is parent
+    axis        = "both",
 ] ;
 
 def lmt_function = applyparameters "function" "lmt_do_function" enddef ;
@@ -640,8 +641,8 @@ vardef lmt_do_function =
         pickup pencircle xyscaled(lw/sx,lw/sy) ;
         draw image (
             save xmin, xmax, xstep, xsmall, xlarge, ymin, ymax, ystep, ysmall, ylarge, p ;
-            save code, option, txl, txs, tyl, tys, swap ;
-            string code, option, shape ;
+            save code, option, txl, txs, tyl, tys, swap, axis ;
+            string code, option, shape, axis ;
             path txl, txs, tyl, tys ; boolean swap, close ;
             picture p ;
 
@@ -659,6 +660,7 @@ vardef lmt_do_function =
             swap    := getparameter "reverse" ;
             shape   := getparameter "shape" ;
             close   := getparameter "close" ;
+axis   := getparameter "axis" ;
             p := image (
                 if (getparametercount "functions") > 0 :
                     for s = 1 upto getparametercount "functions" :
@@ -699,6 +701,12 @@ vardef lmt_do_function =
             ) ;
 
             if not swap : draw p fi ;
+
+if (axis = "") or (axis = "no") :
+    % nothing
+else :
+
+    % todo: x y both
 
             option := getparameter "xticks" ;
             if option = "top" :
@@ -887,6 +895,8 @@ vardef lmt_do_function =
                     shifted (xmin-tl,0)
                     shifted center leftboundary currentpicture ;
             fi ;
+
+fi ;
         )
 
         xyscaled(sx,sy) ;

@@ -676,6 +676,18 @@ data.labels={
     ["sr-latn"]="inf",
    },
   },
+  ["inv"]={
+   ["labels"]={
+    ["cs"]="inv",
+    ["en"]="inv",
+    ["eo"]="inv",
+    ["es"]="inv",
+    ["mk"]="inv",
+    ["sk"]="inv",
+    ["sr"]="inv",
+    ["sr-latn"]="inv",
+   },
+  },
   ["injlim"]={
    ["labels"]={
     ["cs"]="inj\\sixperemspace lim",

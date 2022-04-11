@@ -50,6 +50,7 @@
 \definemathfunction [gcd]     [\c!mathlimits=\v!yes]
 \definemathfunction [hom]
 \definemathfunction [inf]     [\c!mathlimits=\v!yes]
+\definemathfunction [inv]     [\c!mathlimits=\v!yes]
 \definemathfunction [injlim]  [\c!mathlimits=\v!yes]
 \definemathfunction [ker]
 \definemathfunction [lg]

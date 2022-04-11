@@ -180,7 +180,7 @@ end
 
 -- also look at first non glue/kern node e.g for a dropped caps
 
--- todo: find_attribute and unset_attributes instead of takeattr
+-- todo: findattribute and unsetattributes instead of takeattr
 
 function parbuilders.keeptogether(head)
     local done    = false -- can go

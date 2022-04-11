@@ -534,8 +534,8 @@ return {
         --
         "startimath", "stopimath", "normalstartimath", "normalstopimath",
         "startdmath", "stopdmath", "normalstartdmath", "normalstopdmath",
-        "normalsuperscript", "normalsubscript", "normalnosuperscript", "normalnosubscript",
-        "superscript", "subscript", "nosuperscript", "nosubscript",
+        "normalsuperscript", "normalsubscript", "normalnosuperscript", "normalnosubscript", "normalprimescript",
+        "superscript", "subscript", "nosuperscript", "nosubscript", "primescript",
         "superprescript", "subprescript", "nosuperprescript", "nosubsprecript",
         --
         "uncramped", "cramped",

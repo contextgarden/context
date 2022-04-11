@@ -622,7 +622,7 @@ do
                                 leftlocal  = true
                                 rightlocal = true
                             end
-                            --
+                            -- todo: initleft initright fillleft
                             local is, ls, pl, pr, rs = getskips(list)
                             if ls and rs then
                                 if location == v_left or location == v_both then

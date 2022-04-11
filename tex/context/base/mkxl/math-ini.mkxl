@@ -185,7 +185,6 @@
 \copymathspacing \mathdifferentialcode \mathordinarycode
 \copymathspacing \mathfactorialcode    \mathordinarycode
 \copymathspacing \mathexponentialcode  \mathordinarycode
-\copymathspacing \mathfunctioncode     \mathordinarycode
 \copymathspacing \mathdigitcode        \mathordinarycode
 \copymathspacing \mathfunctioncode     \mathoperatorcode
 \copymathspacing \mathconstructcode    \mathinnercode
@@ -948,6 +947,7 @@
     \inherited\setmathspacing \mathordinarycode  \mathdifferentialcode \allscriptstyles \tinymuskip
     \inherited\setmathspacing \mathfactorialcode \mathordinarycode     \allsplitstyles  \thinmuskip
     \inherited\setmathspacing \mathfactorialcode \mathordinarycode     \allscriptstyles \tinymuskip
+    \inherited\setmathspacing \mathfactorialcode \mathfactorialcode    \allmathstyles   \zeromuskip
     %
     \inherited\setmathspacing \mathopencode      \mathconstructcode    \allmathstyles   \thinmuskip
     \inherited\setmathspacing \mathconstructcode \mathclosecode        \allmathstyles   \thinmuskip

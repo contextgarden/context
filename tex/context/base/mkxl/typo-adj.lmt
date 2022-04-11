@@ -17,7 +17,7 @@ local getid        = nuts.getid
 ----- getattr      = nuts.getattribute
 local getdepth     = nuts.getdepth
 local newglue      = nuts.pool.glue
-local insertafter  = nuts.insert_after
+local insertafter  = nuts.insertafter
 
 ----- a_adjuster   = attributes.system("adjuster")
 

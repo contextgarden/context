@@ -1222,6 +1222,7 @@
 
 \aliased\let\normalsuperscript  \Usuperscript
 \aliased\let\normalsubscript    \Usubscript
+\aliased\let\normalprimescript  \Uprimescript
 \aliased\let\normalnosuperscript\Unosuperscript
 \aliased\let\normalnosubscript  \Unosubscript
 \aliased\let\normalstartimath   \Ustartmath

@@ -1299,6 +1299,8 @@ do
         ["rh"]  = function(p,l,found) return dimension_value, p.righthangskip end,
         ["lp"]  = function(p,l,found) return dimension_value, p.parfillleftskip end,
         ["rp"]  = function(p,l,found) return dimension_value, p.parfillrightskip end,
+        ["il"]  = function(p,l,found) return dimension_value, p.parinitleftskip end,
+        ["ir"]  = function(p,l,found) return dimension_value, p.parinitrightskip end,
         ["in"]  = function(p,l,found) return dimension_value, p.indent end,
 
         ["nw"]  = function(p,l,found) return dimension_value, naturaldimensions(p,l,found).naturalwidth end,
@@ -1396,6 +1398,8 @@ do
     define_one("boxlinerh",   "rh")
     define_one("boxlinelp",   "lp")
     define_one("boxlinerp",   "rp")
+    define_one("boxlineil",   "il")
+    define_one("boxlineir",   "ir")
     define_one("boxlinein",   "in")
     define_one("boxlinenw",   "nw")
     define_one("boxlinenh",   "nh")

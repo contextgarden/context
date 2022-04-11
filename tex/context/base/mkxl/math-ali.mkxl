@@ -1858,12 +1858,32 @@
 
 % mode: 0=no frame | 1=number inside frame | 2=number outside frame
 
-\def\strc_math_flush_aligned
+% \def\strc_math_flush_aligned
+%   {\ifcase\c_strc_math_vertical
+%      \ifcase\mathraggedstatus\or\hfill\or\hfill\fi
+%      \box\b_strc_math_display
+%      \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi
+%    \else
+%      \ifconditional\c_strc_math_indent
+%        \ifzeropt\d_strc_math_indent\else
+%          \hangafter\plusone
+%          \hangindent\d_strc_math_indent
+%        \fi
+%      \fi
+%      \edef\p_interlinespace{\formulaparameter\c!interlinespace}%
+%      \ifempty\p_interlinespace\else\baselineskip\p_interlinespace\fi
+%      \global\d_strc_math_indent\zeropoint
+%      \ifcase\mathraggedstatus\or\raggedleft\or\raggedcenter\or\raggedright\fi
+%      \unhbox\b_strc_math_display
+%    \fi}
+
+\protected\def\strc_math_flush_aligned
   {\ifcase\c_strc_math_vertical
      \ifcase\mathraggedstatus\or\hfill\or\hfill\fi
      \box\b_strc_math_display
      \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi
    \else
+     \begincsname\??mathtextalign\formulaparameter\c!textalign:\v!start\endcsname
      \ifconditional\c_strc_math_indent
        \ifzeropt\d_strc_math_indent\else
          \hangafter\plusone
@@ -1871,9 +1891,12 @@
        \fi
      \fi
      \edef\p_interlinespace{\formulaparameter\c!interlinespace}%
+     \edef\p_spaceinbetween{\formulaparameter\c!spaceinbetween}%
      \ifempty\p_interlinespace\else\baselineskip\p_interlinespace\fi
+     \ifempty\p_spaceinbetween\else\lineskip    \p_spaceinbetween\lineskiplimit\baselineskip\fi
      \global\d_strc_math_indent\zeropoint
      \ifcase\mathraggedstatus\or\raggedleft\or\raggedcenter\or\raggedright\fi
+     \begincsname\??mathtextalign\formulaparameter\c!textalign:\v!stop\endcsname
      \unhbox\b_strc_math_display
    \fi}
 
@@ -2216,9 +2239,11 @@
    \strc_math_traced_state
    \ifcase\c_strc_math_vertical
      \hbox to \displaywidth \bgroup
-   \or
+   \or % yes
      \vbox \bgroup \hsize\displaywidth
-   \or
+   \or % page
+     \bgroup \hsize\displaywidth
+   \or % text
      \bgroup \hsize\displaywidth
    \fi
    \ifcase\mathnumberstatus
@@ -2248,6 +2273,8 @@
    \fi
    \ifcase\c_strc_math_vertical
    \or
+   \or
+     \par
    \or
      \par
    \fi
