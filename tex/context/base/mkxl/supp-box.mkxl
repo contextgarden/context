@@ -1604,31 +1604,33 @@
         % since in practice we also use this macro for
         % funny lineheights and border cases
         \setbox0=\box\rigidcolumnbox
-        \doloop
-          {\setbox\rigidcolumnbox=\copy0
-           \setbox\scratchbox\hpack to \rigidhsize
-             {\dorecurse\rigidcolumns
-                {\setbox\scratchbox\vsplit\rigidcolumnbox to \scratchdimen
-                   \dp\scratchbox\openstrutdepth
-                   \setbox\scratchbox\vtop
-                     \ifalignrigidcolumns to
-                       \ifstretchrigidcolumns\vsize\else\scratchdimen\fi
-                     \fi
-                     {\unvbox\scratchbox}%
-                 \wd\scratchbox\hsize
-                 \box\scratchbox
-                 \hfill}%
-              \hfillneg}%
-          \ifvoid\rigidcolumnbox\exitloop\else\advance\scratchdimen\lineheight\fi}%
-       \iftightrigidcolumns
-         \setbox\scratchbox\hpack{\raise\dp\scratchbox\box\scratchbox}%
-       \else
-         \advance\scratchdimen -\openstrutdepth
-         \setbox\scratchbox\hpack{\raise\scratchdimen\box\scratchbox}%
-         \dp\scratchbox\openstrutdepth
-         \ht\scratchbox\scratchdimen
-       \fi
-       \box\scratchbox}%
+        \ifvoid0\else
+          \doloop
+            {\setbox\rigidcolumnbox=\copy0
+             \setbox\scratchbox\hpack to \rigidhsize
+               {\dorecurse\rigidcolumns
+                  {\setbox\scratchbox\vsplit\rigidcolumnbox to \scratchdimen
+                     \dp\scratchbox\openstrutdepth
+                     \setbox\scratchbox\vtop
+                       \ifalignrigidcolumns to
+                         \ifstretchrigidcolumns\vsize\else\scratchdimen\fi
+                       \fi
+                       {\unvbox\scratchbox}%
+                   \wd\scratchbox\hsize
+                   \box\scratchbox
+                   \hfill}%
+                \hfillneg}%
+            \ifvoid\rigidcolumnbox\exitloop\else\advance\scratchdimen\lineheight\fi}%
+         \iftightrigidcolumns
+           \setbox\scratchbox\hpack{\raise\dp\scratchbox\box\scratchbox}%
+         \else
+           \advance\scratchdimen -\openstrutdepth
+           \setbox\scratchbox\hpack{\raise\scratchdimen\box\scratchbox}%
+           \dp\scratchbox\openstrutdepth
+           \ht\scratchbox\scratchdimen
+         \fi
+         \box\scratchbox
+       \fi}%
    \fi}
 
 %D \macros

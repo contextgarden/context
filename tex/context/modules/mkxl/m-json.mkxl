@@ -1,0 +1,112 @@
+%D \module
+%D   [       file=m-json,
+%D        version=2022.04.11, % 2012.08.03,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Json,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is a side effect of looking into json. Currently there are
+%D only a few helpers:
+%D
+%D \starttyping
+%D moduledata.json.tolua   (str)
+%D moduledata.json.tostring(val)
+%D \stoptyping
+%D
+%D Nothing spectacular but maybe handy to have around.
+
+\startmodule [json]
+
+% check for: utilities.json
+
+\registerctxluafile{util-jsn}{}
+
+% \def\u#1#2#3#4{\cldcontext{utf.char(0x#1#2#3#4)}}
+
+\startluacode
+
+    -- when we are at the lua end we can just use the table directly but
+    -- otherwise we can use accessors at the tex end and if needed some
+    -- special formatters
+    --
+    -- we can actually map the json to xml and then use xml accessors
+    -- which has some benefits
+
+    local tonumber = tonumber
+    local context  = context
+    local gmatch   = string.gmatch
+
+    local loaded  = { }
+    local current = nil
+    local json    = utilities.json
+
+    local function loadjsonfile(namespace,filename)
+        local data = loaded[namespace]
+        if not data then
+            local fullname = resolvers.findfile(filename)
+            if fullname and fullname ~= "" then
+                data = io.loaddata(fullname)
+                if data then
+                    data = utilities.json.tolua(data)
+                end
+            end
+            if not data then
+                data = { }
+            end
+            loaded[namespace] = data
+            metapost.setparameterset(namespace,data)
+        end
+        current = data
+        return data
+    end
+
+    local function jsonfield(namespace,name,default)
+        local data = loaded[namespace] or current
+        if current then
+            for s in gmatch(name,"[^%.]+") do
+                data = data[s] or data[tonumber(s) or 0]
+                if not data then
+                    return
+                end
+            end
+            return data
+        end
+    end
+
+    json.field = jsonfield
+
+    function json.loaded(namespace)
+        return (namespace and loaded[namespace]) or current or { }
+    end
+
+    interfaces.implement {
+        name      = "loadjsonfile",
+        actions   = loadjsonfile,
+        arguments = { "optional", "optional" },
+        public    = true,
+        protected = true,
+    }
+
+    interfaces.implement {
+        name      = "jsonfield",
+        actions   = { jsonfield, context },
+        arguments = "2 arguments",
+        public    = true,
+    }
+
+    interfaces.implement {
+        name      = "jsonfielddefault",
+        actions   = { jsonfield, context },
+        arguments = "3 arguments",
+        public    = true,
+    }
+
+\stopluacode
+
+\stopmodule

@@ -1412,6 +1412,9 @@
     \permanent\protected\def\mathdepthstrut {\math_strut_depth}
 \popoverloadmode
 
+\permanent\protected\def\topstrut{\srule\s!width\zeropoint\s!height\strutht  \s!depth\zeropoint\relax}
+\permanent\protected\def\botstrut{\srule\s!width\zeropoint\s!height\zeropoint\s!depth\strutdp  \relax}
+
 %D We could have a arg variant \unknown\ but not now.
 
 \permanent\protected\def\mathopwithlimits#1#2{\mathop{#1{#2}}\limits}

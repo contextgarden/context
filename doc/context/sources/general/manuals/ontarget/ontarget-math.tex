@@ -635,6 +635,8 @@ at all, while the second has this setup:
 \setupmathematics[threshold=medium]
 \stopbuffer
 
+\typebuffer
+
 That setting set the threshold to \typ {4em plus 0.75em minus 0.50em} and when
 the formula size exceeds the four quads the line break code will use the real
 formula width but with the given stretch and shrink. Eventually the calculated
@@ -1099,8 +1101,9 @@ specific classes at the edges. These options are a bitset and \type {1} means
 \scale[width=\textwidth]{\getbuffer}
 \stoplinecorrection
 
-Because this overall niling is not granular enough a while later we introduced a
-way to set this per class, as is demonstrated in the following example.
+Because this overall removal of slack is not granular enough a while later we
+introduced a way to set this per class, as is demonstrated in the following
+example.
 
 \startbuffer
 \def\TestSlack#1%

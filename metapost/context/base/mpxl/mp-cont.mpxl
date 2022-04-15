@@ -199,3 +199,14 @@ immutable % permanent
     InnerMarginDistance, OuterEdgeWidth, InnerEdgeWidth, OuterEdgeDistance,
     InnerEdgeDistance, OuterSpaceWidth, InnerSpaceWidth, OuterMargin, InnerMargin,
     OuterEdge, InnerEdge ;
+
+% see typo-ada.*
+
+newscriptindex mfid_AdaptiveWidth     ; mfid_AdaptiveWidth     := scriptindex "AdaptiveWidth"     ; vardef AdaptiveWidth     = runscript mfid_AdaptiveWidth     enddef ;
+newscriptindex mfid_AdaptiveHeight    ; mfid_AdaptiveHeight    := scriptindex "AdaptiveHeight"    ; vardef AdaptiveHeight    = runscript mfid_AdaptiveHeight    enddef ;
+newscriptindex mfid_AdaptiveDepth     ; mfid_AdaptiveDepth     := scriptindex "AdaptiveDepth"     ; vardef AdaptiveDepth     = runscript mfid_AdaptiveDepth     enddef ;
+newscriptindex mfid_AdaptiveThickness ; mfid_AdaptiveThickness := scriptindex "AdaptiveThickness" ; vardef AdaptiveThickness = runscript mfid_AdaptiveThickness enddef ;
+newscriptindex mfid_AdaptiveColor     ; mfid_AdaptiveColor     := scriptindex "AdaptiveColor"     ; vardef AdaptiveColor     = runscript mfid_AdaptiveColor     enddef ;
+
+immutable % permanent
+    AdaptiveWidth, AdaptiveHeight, AdaptiveDepth, AdaptiveThickness, AdaptiveColor ;

@@ -1,0 +1,62 @@
+if not modules then modules = { } end modules ['font-imp-digits'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA ADE",
+    copyright = "ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+if not context then return end
+
+local equaldigits = { }
+
+-- for i=48,57 do
+--     equaldigits[i] = fonts.helpers.newprivateslot(tonumber(i)..".equaldigits")
+-- end
+
+local function initialize(tfmdata,value)
+    if value then
+        local characters = tfmdata.characters
+        local wd, ht, dp = 0, 0, 0
+        for i=48,57 do
+            if not equaldigits[i] then
+                equaldigits[i] = fonts.helpers.newprivateslot(tonumber(i)..".equaldigits")
+            end
+            local c = characters[i]
+            local w = c.width  or 0
+            local h = c.height or 0
+            local d = c.depth  or 0
+            if w > wd then wd = w end
+            if h > ht then ht = h end
+            if d > dp then dp = d end
+        end
+        for i=48,57 do
+         -- fonts.helpers.addprivate(tfmdata,tonumber(i)..".equaldigits")
+            local u = equaldigits[i]
+            local c = characters[i]
+            characters[u] = table.setmetatableindex( {
+               height  = ht,
+               depth   = dp,
+               width   = wd,
+               xoffset = (wd - (c.width  or 0)) / 2,
+           }, c)
+        end
+    end
+end
+
+fonts.handlers.otf.features.register {
+    name        = "equaldigits",
+    description = "equaldigits",
+    manipulators = {
+        base = initialize,
+        node = initialize,
+    }
+}
+
+fonts.handlers.otf.addfeature {
+ -- name    = "tnum", -- let's not waste that one
+    name    = "tabledigits",
+    type    = "substitution",
+    nocheck = true,
+    data    = equaldigits,
+}

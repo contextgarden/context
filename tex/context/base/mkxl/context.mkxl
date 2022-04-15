@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2022.04.11 19:20}
+\immutable\edef\contextversion{2022.04.15 20:13}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -391,6 +391,7 @@
 \loadmkxlfile{typo-par} % par builders (uses fonts)
 %loadmkxlfile{typo-lbx}
 \loadmkxlfile{typo-adj}
+\loadmkxlfile{typo-ada}
 
 \loadmkxlfile{tabl-com}
 %loadmarkfile{tabl-pln}

@@ -3932,15 +3932,30 @@ permanent hatched ;
 
 numeric mfun_dash_on, mfun_dash_off ;
 
+% primarydef p withdashes len =
+%     hide (
+%         save l, t, n, m ; pair t ;
+%         l := arclength p ;
+%         t := paired(len) ;
+%         m := xpart t + ypart t ;
+%         n := l / (l div m) / m ;
+%         mfun_dash_on  := n * xpart t ;
+%         mfun_dash_off := n * ypart t ;
+%     )
+%     p dashed dashpattern (on mfun_dash_on off mfun_dash_off)
+% enddef ;
+
 primarydef p withdashes len =
     hide (
-        save l, t, n, m ; pair t ;
+        save l, t, n, m, don, doff; pair t ;
         l := arclength p ;
-        t := paired(len) ;
+        t := paired (len) ;
         m := xpart t + ypart t ;
-        n := l / (l div m) / m ;
-        mfun_dash_on  := n * xpart t ;
-        mfun_dash_off := n * ypart t ;
+        n := (l if not cycle p : - xpart t fi) div m ;
+        (n if not cycle p : + 1 fi) * don + n * doff = l ;
+        don*(ypart t) = doff*(xpart t) ;
+        mfun_dash_on := don ;
+        mfun_dash_off := doff ;
     )
     p dashed dashpattern (on mfun_dash_on off mfun_dash_off)
 enddef ;
@@ -3951,6 +3966,10 @@ permanent withdashes ;
 
 path mfun_b ;
 pair mfun_k ;
+
+tertiarydef p sortedintersectiontimes q =
+    sortedpath (p intersectiontimeslist q)
+enddef ;
 
 tertiarydef p intersectionpath q =
     begingroup ;

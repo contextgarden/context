@@ -1,0 +1,175 @@
+%D \module
+%D   [       file=typo-ada,
+%D        version=2022.04.04,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Adaptive,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Adaptive}
+
+\registerctxluafile{typo-ada}{autosuffix}
+
+% Musical timestamp: the postponed by COVID concert of Gazpacho in Zwolle NL: a joy
+% to see dedicated and talented musicians perform their work in perfection and as a
+% well balanced and equiped team.
+
+\unprotect
+
+\newdimen\d_adaptive_width
+\newdimen\d_adaptive_height
+\newdimen\d_adaptive_depth
+\newdimen\d_adaptive_line
+
+\mutable\let\m_adaptive_color\empty
+
+\newbox\b_adaptive_box
+
+\aliased\let\usedadaptivewidth    \d_adaptive_width
+\aliased\let\usedadaptiveheight   \d_adaptive_height
+\aliased\let\usedadaptivedepth    \d_adaptive_depth
+\aliased\let\usedadaptivelinewidth\d_adaptive_linewidth
+\aliased\let\usedadaptivebox      \b_adaptive_box
+
+\definesystemattribute[adaptive][public]
+
+\installcorenamespace{adaptive}
+
+\installcommandhandler \??adaptive {adaptive} \??adaptive
+
+% \appendtoks
+%     %
+% \to \everydefineadaptive
+
+\setupadaptive
+  [\c!foregroundstyle=,
+   \c!foregroundcolor=,
+   \c!color=gray,
+   \c!rulethickness=\linewidth,
+   \c!method=1,
+   \c!stretch=,
+   \c!shrink=,
+  %\c!strut=\v!no,
+   \c!margin=2\emwidth]
+
+\permanent\tolerant\protected\def\adaptivebox[#1]#*[#2]%
+   {\dontleavehmode
+    \begingroup
+    \ifhastok={#1}%
+      \let\currentadaptive\empty
+      \setupcurrentadaptive[#1]%
+    \else
+      \edef\currentadaptive{#1}%
+      \setupcurrentadaptive[#2]%
+    \fi
+    \edef\p_setups{\adaptiveparameter\c!setups}%
+    \dowithnextboxcontent
+      {\useadaptivestyleandcolor\c!foregroundstyle\c!foregroundcolor
+       \ifcstok{\adaptiveparameter\c!strut}\v!yes\strut\fi % for now
+      }
+      {\ifempty\p_setups
+         % there is no need for postprocessing
+       \else
+         \clf_setadaptive {
+           method         \adaptiveparameter\c!method
+           setups        {\p_setups}%
+           color         {\adaptiveparameter\c!color}%
+           rulethickness  \adaptiveparameter\c!rulethickness
+         }%
+       \fi
+       \scratchdimen\adaptiveparameter\c!margin\relax
+       \edef\p_stretch{\adaptiveparameter\c!stretch}%
+       \edef\p_shrink {\adaptiveparameter\c!shrink}%
+       \uleaders
+         \hbox
+           \s!spread \scratchdimen
+         \bgroup
+           \hss\box\nextbox\hss
+         \egroup
+         \hskip
+           \zeropoint
+           \s!plus  \ifempty\p_stretch\scratchdimen\else\p_stretch\fi
+           \s!minus \ifempty\p_shrink \scratchdimen\else\p_shrink \fi
+         \endgroup}%
+    \hbox}
+
+%D Here is a test case, expect more:
+%D
+%D \starttyping
+%D \startMPdefinitions
+%D     def TickTock =
+%D         interim linecap := squared;
+%D         save p ; path p ; p := fullsquare xysized(AdaptiveWidth,.9(AdaptiveHeight+AdaptiveDepth)) ;
+%D         fill p withcolor AdaptiveColor ;
+%D         draw bottomboundary (p enlarged (-AdaptiveThickness) )
+%D             withdashes (3*AdaptiveThickness)
+%D             withpen pencircle scaled AdaptiveThickness
+%D             withcolor white ;
+%D     enddef ;
+%D \stopMPdefinitions
+%D
+%D \startsetups adaptive:test
+%D     \setbox\usedadaptivebox\hbox to \usedadaptivewidth yoffset -.9\usedadaptivedepth \bgroup
+%D         \hss
+%D         \startMPcode
+%D             TickTock ;
+%D         \stopMPcode
+%D         \hss
+%D    \egroup
+%D \stopsetups
+%D
+%D \definecolor[adaptive:tick][.25(blue,green)]
+%D \definecolor[adaptive:tock][.75(blue,green)]
+%D
+%D \defineadaptive
+%D   [tick]
+%D   [setups=adaptive:test,
+%D    color=adaptive:tick,
+%D    foregroundcolor=white,
+%D    foregroundstyle=\infofont,
+%D    strut=yes]
+%D
+%D \defineadaptive
+%D   [tock]
+%D   [tick]
+%D   [color=adaptive:tock]
+%D
+%D \dorecurse{5}{
+%D     \dostepwiserecurse{1}{150}{1}{%
+%D         this~#1.##1 is~#1.##1 test~#1.##1
+%D         \ifodd##1\relax
+%D             \adaptivebox[tick]{\hss tick #1.##1\hss}
+%D         \else
+%D             \adaptivebox[tock]{\hss tock #1.##1\hss}
+%D         \fi
+%D     }
+%D     \blank
+%D }
+%D
+%D \setupexternalfigures
+%D   [location={default,global}]
+%D
+%D \startsetups adaptive:test
+%D     \setbox\usedadaptivebox\hbox to \usedadaptivewidth yoffset -\usedadaptivedepth \bgroup
+%D         \externalfigure
+%D           [cow.pdf]
+%D           [width=\usedadaptivewidth,
+%D            height=\dimexpr\usedadaptiveheight+\usedadaptivedepth\relax]%
+%D    \egroup
+%D \stopsetups
+%D
+%D \dorecurse{5}{
+%D     \dostepwiserecurse{1}{150}{1}{%
+%D         this~#1.##1 is~#1.##1 test~#1.##1
+%D         {\adaptivebox[strut=yes,setups=adaptive:test]{}}
+%D     }
+%D     \blank
+%D }
+%D \stoptyping
+
+\protect

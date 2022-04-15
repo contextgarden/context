@@ -430,11 +430,11 @@
 %mutable  \edef\overlaycorner      {\framedparameter\c!backgroundcorner}
 %mutable  \edef\overlayradius      {\framedparameter\c!backgroundradius}
 
-\permanent\def\usedoverlaywidth    {\dimexpr\d_overlay_width    \relax}
-\permanent\def\usedoverlayheight   {\dimexpr\d_overlay_height   \relax}
-\permanent\def\usedoverlaydepth    {\dimexpr\d_overlay_depth    \relax}
-\permanent\def\usedoverlayoffset   {\dimexpr\d_overlay_offset   \relax}
-\permanent\def\usedoverlaylinewidth{\dimexpr\d_overlay_linewidth\relax}
+\aliased\let\usedoverlaywidth    \d_overlay_width
+\aliased\let\usedoverlayheight   \d_overlay_height
+\aliased\let\usedoverlaydepth    \d_overlay_depth
+\aliased\let\usedoverlayoffset   \d_overlay_offset
+\aliased\let\usedoverlaylinewidth\d_overlay_linewidth
 
 %D The next register is used to initialize overlays.
 

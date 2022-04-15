@@ -118,9 +118,9 @@
 \registerctxluafile{font-imp-combining}{}
 \registerctxluafile{font-imp-scripts}{autosuffix}
 \registerctxluafile{font-imp-sanitize}{autosuffix} % fixes for indic fonts
+\registerctxluafile{font-imp-digits}{autosuffix}
 
 \registerctxluafile{font-imp-tracing}{autosuffix} % comes last!
-
 
 \registerctxluafile{font-fbk}{autosuffix}
 

@@ -90,6 +90,7 @@
 \setupmathradical
   [\c!alternative=\v!normal,
    \c!mpoffset=.25\exheight,
+   \c!strut=\v!height,
    \c!source=\zerocount]
 
 \appendtoks
@@ -100,6 +101,14 @@
 \mutable\let\currentmathradicaldegree\empty
 
 \setmathignore\Umathradicaldegreebefore\plusone
+
+\installcorenamespace{mathwhateverstrut}
+
+\defcsname\??mathwhateverstrut\v!height\endcsname{\mathheightstrut}
+\defcsname\??mathwhateverstrut\v!depth \endcsname{\mathdepthstrut}
+\defcsname\??mathwhateverstrut\v!math  \endcsname{\mathstrut}
+\defcsname\??mathwhateverstrut\v!yes   \endcsname{\strut}
+%letcsname\??mathwhateverstrut\v!no    \endcsname\relax
 
 \tolerant\protected\def\math_radical_handle#tag#*[#settings]#*[#degree]#:#body%
   {\begingroup
@@ -113,7 +122,10 @@
    \ifempty\currentmathradicaldegree
      \let\currentmathradicaldegree\m_math_no_degree
    \fi
-   \math_radical_alternative{#body}%
+   \math_radical_alternative{%
+     \begincsname\??mathwhateverstrut\mathradicalparameter\c!strut\endcsname
+     #body%
+   }%
    \endgroup}
 
 \def\m_math_no_degree{{}}

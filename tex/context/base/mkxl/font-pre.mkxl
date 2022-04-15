@@ -514,6 +514,7 @@
 \definefontfeature[uppercasing][uppercasing=yes]
 \definefontfeature[lowercasing][lowercasing=yes]
 \definefontfeature[camelcasing][camelcasing=yes]
+\definefontfeature[tabledigits][tabledigits=yes,tnum=yes]
 
 %D Neat:
 

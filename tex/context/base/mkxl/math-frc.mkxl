@@ -15,12 +15,6 @@
 
 \unprotect
 
-%D I need to check it all again as there was a bug in luatex with dimensions that could
-%D resulted in side effects that made me mess with spacing.
-
-\permanent\protected\def\topstrut{\srule\s!width\zeropoint\s!height\strutht  \s!depth\zeropoint\relax}
-\permanent\protected\def\botstrut{\srule\s!width\zeropoint\s!height\zeropoint\s!depth\strutdp  \relax}
-
 %D This module is reimplemented in \MKIV\ style.
 
 \registerctxluafile{math-frc}{autosuffix}

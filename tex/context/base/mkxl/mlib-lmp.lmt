@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['mlib-lmp'] = {
 
 local type, tonumber, tostring = type, tonumber, tostring
 local find, match = string.find, string.match
-local insert, remove = table.insert, table.remove
+local insert, remove, sort = table.insert, table.remove, table.sort
 
 local aux            = mp.aux
 local mpnumeric      = aux.numeric
@@ -61,11 +61,10 @@ do
     local function s(a,b)
         local aa = a[1]
         local bb = b[1]
-        if aa ~= bb then
-            return aa < bb
+        if aa == bb then
+            aa = a[2]
+            bb = b[2]
         end
-        aa = a[2]
-        bb = b[2]
         return aa < bb
     end
 
@@ -75,7 +74,7 @@ do
             local pi = p[i]
             p[i] = { pi[1], pi[2] }
         end
-        table.sort(p,s)
+        sort(p,s)
         injectpath(p)
     end)
 
@@ -85,7 +84,7 @@ do
         local n = 0
         local xx = nil
         local yy = nil
-        table.sort(p,s)
+        sort(p,s)
         for i=1,#p do
             local pi = p[i]
             local x = pi[1]

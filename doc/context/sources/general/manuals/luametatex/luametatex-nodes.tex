@@ -319,7 +319,7 @@ The glue fields only kick in when the \type {surround} fields is zero.
 Skips are about the only type of data objects in traditional \TEX\ that are not a
 simple value. They are inserted when \TEX\ sees a space in the text flow but also
 by \prm {hskip} and \prm {vskip}. The structure that represents the glue
-components of a skip internally is called a \nod {glue_spec}. In \LUAMETATEX\ we
+components of a skip internally is called a \nod {gluespec}. In \LUAMETATEX\ we
 don't use the spec itself but just its values. A glue node has the fields:
 \showfields {glue}.
 
@@ -350,7 +350,7 @@ rounded.
 
 \stopsubsection
 
-\startsubsection[title={\nod {glue_spec} nodes}]
+\startsubsection[title={\nod {gluespec} nodes}]
 
 \topicindex {nodes+glue}
 \topicindex {gluespec}
@@ -361,7 +361,7 @@ is not seen in node lists. For instance the state of expression scanning (\type
 nodes. A glue, which has five components, is stored in a node as well, so, where
 most registers store just a number, a skip register (of internal quantity) uses a
 pointer to a glue spec node. It has similar fields as glue nodes: \showfields
-{glue_spec}, which is not surprising because in the past (and other engines than
+{gluespec}, which is not surprising because in the past (and other engines than
 \LUATEX) a glue node also has its values stored in a glue spec. This has some
 advantages because often the values are the same, so for instance spacing related
 skips were not resolved immediately but pointed to the current value of a space
@@ -610,8 +610,8 @@ into a single node type with separate subtypes for differentiation: \showfields
 {noad}.
 
 Many object fields in math mode are either simple characters in a specific family
-or math lists or node lists: \type {math_char}, \type {math_text_char}, {sub_box}
-and \type {sub_mlist} and \type {delimiter}. These are endpoints and therefore the
+or math lists or node lists: \type {mathchar}, \type {mathtextchar}, {subbox}
+and \type {submlist} and \type {delimiter}. These are endpoints and therefore the
 \type {next} and \type {prev} fields of these these subnodes are unused.
 
 Some of the more elaborate noads have an option field. The values in this bitset
@@ -637,10 +637,10 @@ are common:
 
 \stopsubsubsection
 
-\startsubsubsection[title={\nod {math_char} and \nod {math_text_char} subnodes}]
+\startsubsubsection[title={\nod {mathchar} and \nod {mathtextchar} subnodes}]
 
 These are the most common ones, as they represent characters, and they both have
-the same fields: \showfields {math_char}.
+the same fields: \showfields {mathchar}.
 
 \starttabulate[|l|l|p|]
 \DB field       \BC type   \BC explanation \NC \NR
@@ -651,20 +651,20 @@ the same fields: \showfields {math_char}.
 \LL
 \stoptabulate
 
-The \nod {math_char} is the simplest subnode field, it contains the character and
+The \nod {mathchar} is the simplest subnode field, it contains the character and
 family for a single glyph object. The family eventually resolves on a reference
-to a font. The \nod {math_text_char} is a special case that you will not normally
+to a font. The \nod {mathtextchar} is a special case that you will not normally
 encounter, it arises temporarily during math list conversion (its sole function
 is to suppress a following italic correction).
 
 \stopsubsubsection
 
-\startsubsubsection[title={\nod {sub_box} and \nod {sub_mlist} subnodes}]
+\startsubsubsection[title={\nod {subbox} and \nod {submlist} subnodes}]
 
-These two subnode types are used for subsidiary list items. For \nod {sub_box},
-the \type {list} points to a \quote {normal} vbox or hbox. For \nod {sub_mlist},
+These two subnode types are used for subsidiary list items. For \nod {subbox},
+the \type {list} points to a \quote {normal} vbox or hbox. For \nod {submlist},
 the \type {list} points to a math list that is yet to be converted. Their fields
-are: \showfields {sub_box}.
+are: \showfields {subbox}.
 
 \starttabulate[|l|l|p|]
 \DB field       \BC type \BC explanation \NC \NR

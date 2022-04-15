@@ -226,6 +226,9 @@ local function addfeature(data,feature,specifications,prepareonly)
     local stepkey      = coverup.stepkey
     local register     = coverup.register
 
+    -- todo: directly pass a coverage i.e. for privates that later will be
+    -- set
+
     local function prepare_substitution(list,featuretype,nocheck)
         local coverage = { }
         local cover    = coveractions[featuretype]
