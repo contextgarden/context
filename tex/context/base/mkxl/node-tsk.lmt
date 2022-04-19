@@ -778,6 +778,56 @@ nonut = [[
 
 }
 
+tasks.new {
+    name      = "vboxhandlers",
+    processor = nodeprocessor,
+    sequence  = {
+        "before",      -- for users
+        "normalizers",
+        "after",       -- for users
+    },
+    templates = {
+
+default = [[
+return function(head)
+    return head
+end
+]],
+
+process = [[
+local tonut  = nodes.tonut
+local tonode = nodes.nuts.tonode
+
+%localize%
+
+return function(head,groupcode)
+    local nuthead = tonut(head)
+
+%actions%
+    return tonode(nuthead)
+end
+]],
+
+step = [[
+    nuthead = tonut((%action%(tonode(nuthead),groupcode)))
+]],
+
+nut  = [[
+    nuthead = %action%(nuthead,groupcode)
+]],
+
+nohead = [[
+    %action%(tonode(nuthead),groupcode)
+]],
+
+nonut = [[
+    %action%(nuthead,groupcode)
+]],
+
+    }
+
+}
+
 -- these operate on the content on a line, so no injections
 
 tasks.new {

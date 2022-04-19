@@ -203,7 +203,9 @@ return {
         --
         "normalizelinenormalizecode", "parindentskipnormalizecode", "swaphangindentnormalizecode", "swapparsshapenormalizecode",
         "breakafterdirnormalizecode", "removemarginkernsnormalizecode", "clipwidthnormalizecode", "flattendiscretionariesnormalizecode",
-        "discardzerotabskipsnormalizecode", "flattenleadersnormalizecode",
+        "discardzerotabskipsnormalizecode", "flattenhleadersnormalizecode",
+        --
+        "normalizeparnormalizeparcode", "flattenvleadersnormalizeparcode",
         --
         "nopreslackclassoptioncode", "nopostslackclassoptioncode",
         "lefttopkernclassoptioncode", "righttopkernclassoptioncode", "leftbottomkernclassoptioncode", "rightbottomkernclassoptioncode",
@@ -269,7 +271,7 @@ return {
         --
         "doglobal", "dodoglobal", "redoglobal", "resetglobal",
         --
-        "donothing", "untraceddonothing", "dontcomplain", "lessboxtracing", "forgetall",
+        "donothing", "untraceddonothing", "dontcomplain", "moreboxtracing", "lessboxtracing", "noboxtracing", "forgetall",
         --
         "donetrue", "donefalse", "foundtrue", "foundfalse",
         --

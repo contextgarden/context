@@ -1029,6 +1029,44 @@
 %D \defineframed[test][hoffset=1cm]
 %D \stoptyping
 
+%D A byproduct of \type {\uleaders} in the 2022 math upgrade project:
+%D
+%D \starttyping
+%D \startsetups adaptive:test:a
+%D     \setbox\usedadaptivebox\vbox to \usedadaptivetotal \bgroup
+%D         \externalfigure
+%D           [cow.pdf]
+%D           [width=\framedmaxwidth,
+%D            frame=on,
+%D            height=\usedadaptivetotal]%
+%D    \egroup
+%D \stopsetups
+%D
+%D \startsetups adaptive:test:b
+%D     \setbox\usedadaptivebox\vbox to \usedadaptivetotal \bgroup
+%D         \externalfigure
+%D           [cow.pdf]
+%D           [width=\usedadaptivewidth,
+%D            frame=on,
+%D            height=\usedadaptivetotal]%
+%D    \egroup
+%D \stopsetups
+%D
+%D \framed[height=18cm,align=middle,adaptive=yes,top=,bottom=] {%
+%D     \begstrut \samplefile{tufte} \endstrut
+%D     \par
+%D     \adaptivevbox
+%D       [strut=yes,setups=adaptive:test:a]
+%D       {\showstruts\strut\hsize5cm\hss}%
+%D     \par
+%D     \adaptivevbox
+%D       [strut=yes,setups=adaptive:test:b]
+%D       {\showstruts\strut\hsize5cm\hss}%
+%D     \par
+%D     \begstrut \samplefile{tufte} \endstrut
+%D }
+%D \stoptyping
+
 \newdimen\d_framed_width
 \newdimen\d_framed_height
 \newdimen\d_framed_frameoffset
@@ -1192,8 +1230,13 @@
    \fi
    % the next check could move to heightalternative
    \ifconditional\c_framed_has_height
-     % obey user set height, also downward compatible
+     \ifcstok{\framedparameter\c!adaptive}\v!yes
+       \let\p_framed_adaptive\s!delay
+     \else
+       \let\p_framed_adaptive\empty
+     \fi
    \else
+     \let\p_framed_adaptive\empty
      \edef\p_framed_lines{\framedparameter\c!lines}%
      \ifempty\p_framed_lines
      \orelse\ifcase\p_framed_lines
@@ -1278,12 +1321,12 @@
    \fi
    \pack_framed_check_extra_offsets
    \edef\p_framed_background{\framedparameter\c!background}%
-%    \ifempty\p_framed_background
-%      \let\pack_framed_forgetall\forgetall
-%    \else
-%      \let\pack_framed_forgetall\relax
-%      \forgetall
-%    \fi
+ % \ifempty\p_framed_background
+ %   \let\pack_framed_forgetall\forgetall
+ % \else
+ %   \let\pack_framed_forgetall\relax
+ %   \forgetall
+ % \fi
    \edef\framedwidth {\the\ifdim\d_framed_width >\zeropoint         \d_framed_width \else\zeropoint\fi}% public
    \edef\framedheight{\the\ifdim\d_framed_height>\zeropoint         \d_framed_height\else\zeropoint\fi}% public
    \edef\framedoffset{\the\dimexpr\ifconditional\c_framed_has_offset\localoffset    \else\zeropoint\fi}% public
@@ -2218,7 +2261,7 @@
    \fi}
 
 \def\pack_framed_format_format_yes
-  {\vbox to \d_framed_height
+  {\vbox to \d_framed_height \p_framed_adaptive
      \bgroup
        \let\postprocessframebox\relax
      % \pack_framed_forgetall
@@ -2423,6 +2466,9 @@
      \else
        \clf_doreshapeframedbox
      \fi\b_framed_normal\relax
+     \ifx\p_framed_adaptive\s!delay
+       \adaptivecheckbox\b_framed_normal
+     \fi
    \fi}
 
 \def\pack_framed_reshape_analyze

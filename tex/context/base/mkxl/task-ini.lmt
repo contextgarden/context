@@ -136,7 +136,7 @@ appendaction("contributers", "normalizers", "nodes.handlers.wipe",              
 
 appendaction("adjusters",    "normalizers", "nodes.handlers.adjusters",                         nil, "nut",    "enabled"   )
 
-appendaction("vboxbuilders", "normalizers", "nodes.adaptive.handle",                            nil, "nut",    "disabled"  )
+appendaction("vboxbuilders", "normalizers", "nodes.adaptive.handlehorizontal",                  nil, "nut",    "disabled"  )
 appendaction("vboxbuilders", "normalizers", "nodes.handlers.backgroundsvbox",                   nil, "nut",    "disabled"  )
 ------------("vboxbuilders", "normalizers", "typesetters.margins.localhandler",                 nil, "nut",    "disabled"  )
 appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler",                    nil, "nut",    "enabled"   )
@@ -144,7 +144,6 @@ appendaction("vboxbuilders", "normalizers", "builders.profiling.vboxhandler",   
 appendaction("vboxbuilders", "normalizers", "typesetters.checkers.handler",                     nil, "nut",    "disabled"  )
 appendaction("vboxbuilders", "normalizers", "typesetters.synchronize.handler",                  nil, "nut",    "disabled"  )
 
-appendaction("mvlbuilders",  "normalizers", "nodes.adaptive.handle",                            nil, "nut",    "disabled"  )
 appendaction("mvlbuilders",  "normalizers", "nodes.handlers.backgroundspage",                   nil, "nut",    "disabled"  )
 appendaction("mvlbuilders",  "normalizers", "typesetters.margins.globalhandler",                nil, "nut",    "disabled"  )
 appendaction("mvlbuilders",  "normalizers", "nodes.handlers.migrate",                           nil, "nut",    "disabled"  )
@@ -152,6 +151,8 @@ appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler",    
 appendaction("mvlbuilders",  "normalizers", "builders.profiling.pagehandler",                   nil, "nut",    "disabled"  )
 appendaction("mvlbuilders",  "normalizers", "typesetters.checkers.handler",                     nil, "nut",    "disabled"  )
 appendaction("mvlbuilders",  "normalizers", "typesetters.synchronize.handler",                  nil, "nut",    "disabled"  )
+
+appendaction("vboxhandlers", "normalizers", "nodes.adaptive.handlevertical",                    nil, "nut",    "disabled"  )
 
 appendaction("everypar",     "normalizers", "nodes.handlers.checkparcounter",                   nil, "nut",    "disabled"  )
 

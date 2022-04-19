@@ -597,12 +597,14 @@ do
     traversers.glyph   = nuts.traverseglyph  (glyph)
     traversers.list    = nuts.traverselist   (glyph)
     traversers.content = nuts.traversecontent(glyph)
+    traversers.leader  = nuts.traverseleader (glyph)
 
     treversers.node    = nuts.traverse       (glyph,true)
     treversers.char    = nuts.traversechar   (glyph,true)
     treversers.glyph   = nuts.traverseglyph  (glyph,true)
     treversers.list    = nuts.traverselist   (glyph,true)
     treversers.content = nuts.traversecontent(glyph,true)
+    treversers.leader  = nuts.traverseleader (glyph,true)
 
     nuts.traversers = traversers
     nuts.treversers = treversers

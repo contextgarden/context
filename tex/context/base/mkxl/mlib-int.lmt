@@ -16,6 +16,7 @@ local get            = tex.get
 local emwidths       = fonts.hashes.emwidths
 local exheights      = fonts.hashes.exheights
 
+local registerscript = metapost.registerscript
 local registerdirect = metapost.registerdirect
 
 local on_right_page      = structures.pages.on_right
@@ -168,6 +169,21 @@ registerdirect("InPageBody",           in_body_page      )
 -- registerdirect("LayoutHasChanged",     layout_has_changed)
 
 registerdirect("defaultcolormodel",    defaultcolormodel)
+
+-- see node-rul.*
+
+registerdirect("RuleWidth",     function() return getdimen("d_rule_width")  * factor end)
+registerdirect("RuleHeight",    function() return getdimen("d_rule_height") * factor end)
+registerdirect("RuleDepth",     function() return getdimen("d_rule_depth")  * factor end)
+registerdirect("RuleH",         function() return getdimen("d_rule_h")      * factor end)
+registerdirect("RuleV",         function() return getdimen("d_rule_v")      * factor end)
+registerdirect("RuleThickness", function() return getdimen("d_rule_line")   * factor end)
+registerdirect("RuleOffset",    function() return getdimen("d_rule_offset") * factor end)
+registerdirect("RuleDirection", function() return getmacro("c_rule_direction")       end)
+registerdirect("RuleFactor",    function() return getmacro("m_rule_factor")          end)
+registerdirect("RuleOption",    function() return getmacro("m_rule_option")          end)
+--------------("RuleColor",     function() return getmacro("m_rule_color")           end)
+registerscript("RuleColor",     function() return getmacro("m_rule_color")           end)
 
 -- see typo-ada.*
 

@@ -280,6 +280,19 @@
 %D
 %D \typebuffer \getbuffer
 
+\newdimen\d_rule_width
+\newdimen\d_rule_height
+\newdimen\d_rule_depth
+\newdimen\d_rule_h
+\newdimen\d_rule_v
+\newdimen\d_rule_line
+\newdimen\d_rule_offset
+
+\mutable\let\m_rule_direction\empty
+\mutable\let\m_rule_factor   \empty
+\mutable\let\m_rule_option   \empty
+\mutable\let\m_rule_color    \empty
+
 \startuseMPgraphic{rules:under:random}
     draw
         ((0,RuleDepth) ... (RuleWidth,RuleDepth)) randomized (4*RuleThickness)

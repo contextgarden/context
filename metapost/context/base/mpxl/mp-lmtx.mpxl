@@ -1049,11 +1049,13 @@ presetparameters "chart" [
 ] ;
 
 presetparameters "chart:circle" "chart" [
-    height      = 5cm,
-    width       = 5mm,
-    labelanchor = "",
-    labeloffset = 0,
-    labelstrut  = "no",
+    height       = 5cm,
+    width        = 5mm,
+    innerradius  = 0,
+    initialangle = 0, % -90 == top
+    labelanchor  = "",
+    labeloffset  = 0,
+    labelstrut   = "no",
 ] ;
 
 presetparameters "chart:histogram" "chart" [
@@ -1183,8 +1185,12 @@ vardef lmt_do_chart_circle =
             for i = 1 upto nofsamples :
                 fillcolor := getparameter "fillcolors" i ;
                 value := (getparameter "samples" (1) i) * factor ;
-                last := first + (360 / 100) * value ;
+                last := first + (360/100) * value ;
                 s[i] := ((p cutbefore (r rotated first)) cutafter (r rotated last)) ;
+              % fill
+              %     (if innerradius > 0 : reverse (s[i] scaled innerradius) else : origin fi) -- s[i] -- cycle
+              %     withcolor fillcolor
+              % ;
                 fill origin -- s[i] -- cycle withcolor fillcolor ;
                 first := last ;
             endfor ;
@@ -1212,6 +1218,78 @@ vardef lmt_do_chart_circle =
             n := getparameter "originsize" ;
             if n > 0 :
                 fill fullcircle scaled n withcolor "white"  ;
+            fi ;
+            n := getparameter "innerradius" ;
+            if n > 0 :
+                fill fullcircle scaled n withcolor "white" ;
+            fi ;
+        fi ;
+        lmt_do_chart_stop ;
+    )
+enddef ;
+
+vardef lmt_do_chart_circle =
+    image (
+        lmt_do_chart_start("chart:circle") ;
+        if (nofsamplesets > 0) and (nofsamples > 0) :
+            nofsamplesets := 1 ;
+            save p, r, s, first, last, total, factor, n, percentage, initial, clockwise ;
+            path p, r, s[] ; boolean percentage, clockwise ;
+            clockwise := true ;
+            percentage := getparameter "percentage" ;
+            initial := if not clockwise : - fi getparameter "initialangle" ; % watch sign
+            total := 0 ;
+            for i = 1 upto nofsamples :
+                total := total + getparameter "samples" (1) i ; % () is needed else 1i
+            endfor ;
+            factor := 100/total ;
+            first := initial ;
+            if clockwise :
+                p := (reverse fullcircle rotated first) ysized (height) ;
+            else :
+                p := fullcircle ysized (height) ;
+            fi ;
+            r := origin -- (2*height,0) ;
+            for i = 1 upto nofsamples :
+                fillcolor := getparameter "fillcolors" i ;
+                value := (getparameter "samples" (1) i) * factor ;
+                last := first if clockwise : - else : + fi (360/100) * value ;
+                s[i] := ((p cutbefore (r rotated first)) cutafter (r rotated last)) ;
+              % fill
+              %     (if innerradius > 0 : reverse (s[i] scaled innerradius) else : origin fi) -- s[i] -- cycle
+              %     withcolor fillcolor
+              % ;
+                fill origin -- s[i] -- cycle withcolor fillcolor ;
+                first := last ;
+            endfor ;
+            if linewidth > 0 :
+                if drawcolor = "" :
+                    drawcolor := backgroundcolor ;
+                fi ;
+                for i = 1 upto nofsamples :
+                    interim linecap := butt ;
+                    draw origin -- (point 0            of s[i]) withpen pencircle scaled linewidth withcolor drawcolor ;
+                    draw origin -- (point length(s[i]) of s[i]) withpen pencircle scaled linewidth withcolor drawcolor ;
+                endfor ;
+            fi ;
+            if getparameter "showlabels" :
+                first := initial ;
+                for i = 1 upto nofsamples :
+                    value := getparameter "samples" (1) i ;
+                    last := first if clockwise : - else : + fi (360/100) * value * factor ;
+                    draw lmt_do_chart_text (s,i,value)
+                        shifted ((labelfraction*(height/2),0) rotated ((first+last)/2)) ;
+                    first := last ;
+                endfor ;
+            fi ;
+            lmt_do_chart_legend ;
+            n := getparameter "originsize" ;
+            if n > 0 :
+                fill fullcircle scaled n withcolor "white"  ;
+            fi ;
+            n := getparameter "innerradius" ;
+            if n > 0 :
+                fill fullcircle scaled n withcolor "white" ;
             fi ;
         fi ;
         lmt_do_chart_stop ;

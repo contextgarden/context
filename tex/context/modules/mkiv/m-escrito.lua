@@ -5499,21 +5499,23 @@ local function boundingbox (page)
     for i=1,#page do
         local object = page[i]
         local p = object.path
-        linewidth = object.type == "stroke" and object.linewidth
-        for i=1,#p do
-            local segment = p[i]
-            local type = segment[1]
-            if type == "lineto" then
-                if startx then
-                    update_bbox(startx,starty)
+        if p then
+            linewidth = object.type == "stroke" and object.linewidth
+            for i=1,#p do
+                local segment = p[i]
+                local type = segment[1]
+                if type == "lineto" then
+                    if startx then
+                        update_bbox(startx,starty)
+                    end
+                    update_bbox(segment[2],segment[3])
+                elseif type == "curveto" then
+                    local c6 = segment[6]
+                    local c7 = segment[7]
+                    splitter(0, 0, 1, startx, starty, segment[2], segment[3], segment[4], segment[5], c6, c7, startx, starty, c6, c7)
+                elseif type == "moveto" then
+                    startx, starty = segment[2], segment[3]
                 end
-                update_bbox(segment[2],segment[3])
-            elseif type == "curveto" then
-                local c6 = segment[6]
-                local c7 = segment[7]
-                splitter(0, 0, 1, startx, starty, segment[2], segment[3], segment[4], segment[5], c6, c7, startx, starty, c6, c7)
-            elseif type == "moveto" then
-                startx, starty = segment[2], segment[3]
             end
         end
     end

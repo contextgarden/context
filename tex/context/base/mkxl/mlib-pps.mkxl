@@ -277,7 +277,7 @@
 
 \permanent\protected\lettonothing\MPLIBstopgetpattern
 
-% For now here ... will be cleaned up:
+% For now here ... will be cleaned up and become macro calls instead:
 
 \newtoks\mptexttoks
 \newbox \mptextbox

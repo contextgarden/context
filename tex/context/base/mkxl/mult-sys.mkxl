@@ -176,6 +176,7 @@
 \definesystemconstant {data}
 \definesystemconstant {dd}
 \definesystemconstant {decimal}
+\definesystemconstant {delay}
 \definesystemconstant {DefaultFont}
 \definesystemconstant {default}
 \definesystemconstant {depth}

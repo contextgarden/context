@@ -498,6 +498,7 @@ return {
   "nohrule",
   "norelax",
   "normalizelinemode",
+  "normalizeparmode",
   "nospaces",
   "novrule",
   "numericscale",

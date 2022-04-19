@@ -33,6 +33,10 @@ local floor            = math.floor
 local getrandom        = utilities.randomizer.get
 local formatters       = string.formatters
 
+local setdimen         = tex.setdimen
+local setcount         = tex.setcount
+local setmacro         = tokens.setters.macro
+
 local codeinjections   = backends.registered.pdf.codeinjections
 
 -- This is very pdf specific. Maybe move some to lpdf-rul.lua some day.
@@ -82,18 +86,21 @@ FakeWord(%width%,%height%,%depth%,%line%,%color%);
 %initializations%
 FakeRule(%width%,%height%,%depth%,%line%,%color%);
         ]],
+--        ["fake:rest"] = replacer [[
+--RuleDirection := "%direction%" ;
+--RuleOption := "%option%" ;
+--RuleWidth := %width% ;
+--RuleHeight := %height% ;
+--RuleDepth := %depth% ;
+--RuleH := %h% ;
+--RuleV := %v% ;
+--RuleThickness := %line% ;
+--RuleFactor := %factor% ;
+--RuleOffset := %offset% ;
+--def RuleColor = %color% enddef ;
+--%data%;
+--        ]]
         ["fake:rest"] = replacer [[
-RuleDirection := "%direction%" ;
-RuleOption := "%option%" ;
-RuleWidth := %width% ;
-RuleHeight := %height% ;
-RuleDepth := %depth% ;
-RuleH := %h% ;
-RuleV := %v% ;
-RuleThickness := %line% ;
-RuleFactor := %factor% ;
-RuleOffset := %offset% ;
-def RuleColor = %color% enddef ;
 %data%;
         ]]
     }
@@ -107,21 +114,35 @@ def RuleColor = %color% enddef ;
         local total = ht + dp
         local code  = (predefined[name] or predefined["fake:rest"]) {
             data      = p.data or "",
-         -- width     = p.width * bpfactor,
-         -- height    = p.height * bpfactor,
-         -- depth     = p.depth * bpfactor,
-            width     = h * bpfactor,
-            height    = v * bpfactor * ht / total,
-            depth     = v * bpfactor * dp / total,
-            factor    = (p.factor or 0) * bpfactor, -- needs checking
-            offset    = p.offset or 0,
-            line      = (p.line or 65536) * bpfactor,
-            color     = mpcolor(p.ma,p.ca,p.ta),
-            option    = p.option or "",
-            direction = p.direction or lefttoright_code,
-            h         = h * bpfactor,
-            v         = v * bpfactor,
+      -- -- width     = p.width * bpfactor,
+      -- -- height    = p.height * bpfactor,
+      -- -- depth     = p.depth * bpfactor,
+      --    width     = h * bpfactor,
+      --    height    = v * bpfactor * ht / total,
+      --    depth     = v * bpfactor * dp / total,
+      --    factor    = (p.factor or 0) * bpfactor, -- needs checking
+      --    offset    = p.offset or 0,
+      --    line      = (p.line or 65536) * bpfactor,
+      --    color     = mpcolor(p.ma,p.ca,p.ta),
+      --    option    = p.option or "",
+      --    direction = p.direction or lefttoright_code,
+      --    h         = h * bpfactor,
+      --    v         = v * bpfactor,
         }
+        --
+        setdimen("d_rule_width", h)
+        setdimen("d_rule_height", v * ht / total)
+        setdimen("d_rule_depth", v * dp / total)
+        setdimen("d_rule_h", h)
+        setdimen("d_rule_v", v)
+        setdimen("d_rule_line", p.line or 65536)
+        setdimen("d_rule_offset", p.offset or 0)
+        setmacro("m_rule_factor", p.factor or 0)
+        setmacro("m_rule_option", p.option or "")
+        setmacro("m_rule_direction", p.direction or lefttoright_code)
+        setmacro("m_rule_color", mpcolor(p.ma,p.ca,p.ta))
+        print("!!!",mpcolor(p.ma,p.ca,p.ta))
+        --
         if not initialized then
             initialized = true
             simplemetapost("rulefun",formatters["randomseed := %s;"](getrandom("rulefun",0,4095)))

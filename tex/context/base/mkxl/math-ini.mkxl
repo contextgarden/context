@@ -1582,7 +1582,7 @@
 \permanent\protected\def\mfunctionlabeltext{\math_function_handle\mathlabeltext}
 
 \permanent\tolerant\protected\def\definemathfunction[#1]#*[#2]%
-  {\frozen\defcsname#1\endcsname{\math_function_handle_label{#1}{#2}}}
+  {\frozen\protected\defcsname#1\endcsname{\math_function_handle_label{#1}{#2}}}
 
 \protected\def\math_function_handle_label#1#2% tag settings
   {\begingroup

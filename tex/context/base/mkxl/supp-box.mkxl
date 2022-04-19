@@ -2911,7 +2911,7 @@
 %D \showboxhere 0 % always on console, less clutter
 %D \stoptyping
 
-\untraced\permanent\protected\def\showboxhere{\showbox nolevels content online }
+\untraced\permanent\protected\def\showboxhere{\showbox nolevels content online all }
 
 % % possible extra interface, currently disabled
 %

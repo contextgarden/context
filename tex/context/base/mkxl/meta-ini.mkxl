@@ -1012,9 +1012,17 @@
 
 %D This one is not optimized because it's only used for small snippets, if it
 %D is used at all.
+%D
+%D \starttyping
+%D test \MPcode {draw unitcircle scaled 1.5ExHeight} test test \MPcode [doublefun]
+%D {draw unitcircle scaled 3mm shifted (0,-1mm)} test
+%D \stoptyping
 
-\permanent\tolerant\protected\def\MPcode#=#:#*#=%
-  {\ifparameter#1\or
+\permanent\tolerant\protected\def\MPcode[#1]#:#2%
+  {\dontleavehmode
+   \begingroup
+   \obeyMPboxdepth
+   \ifparameter#1\or
      \meta_begin_graphic_group{#1}%
      \meta_enable_include
      \meta_process_graphic{#2}%
@@ -1022,8 +1030,9 @@
    \else
      \let\currentMPinstance\defaultMPinstance
      \meta_enable_include
-     \meta_process_graphic{#1}%
-   \fi}
+     \meta_process_graphic{#2}%
+   \fi
+   \endgroup}
 
 % a bit nasty (also needed for compatibility:
 

@@ -25,16 +25,20 @@
 \newdimen\d_adaptive_height
 \newdimen\d_adaptive_depth
 \newdimen\d_adaptive_line
+\newdimen\d_adaptive_hsize
 
 \mutable\let\m_adaptive_color\empty
 
 \newbox\b_adaptive_box
 
-\aliased\let\usedadaptivewidth    \d_adaptive_width
-\aliased\let\usedadaptiveheight   \d_adaptive_height
-\aliased\let\usedadaptivedepth    \d_adaptive_depth
-\aliased\let\usedadaptivelinewidth\d_adaptive_linewidth
-\aliased\let\usedadaptivebox      \b_adaptive_box
+\aliased\let\usedadaptivewidth \d_adaptive_width
+\aliased\let\usedadaptiveheight\d_adaptive_height
+\aliased\let\usedadaptivedepth \d_adaptive_depth
+\aliased\let\usedadaptiveline  \d_adaptive_line
+\aliased\let\usedadaptivehsize \d_adaptive_hsize
+\aliased\let\usedadaptivebox   \b_adaptive_box
+
+\protected\untraced\def\usedadaptivetotal{\dimexpr\usedadaptiveheight+\usedadaptivedepth\relax}
 
 \definesystemattribute[adaptive][public]
 
@@ -57,21 +61,31 @@
   %\c!strut=\v!no,
    \c!margin=2\emwidth]
 
-\permanent\tolerant\protected\def\adaptivebox[#1]#*[#2]%
-   {\dontleavehmode
+\permanent\protected\def\adaptivehbox{\typo_adaptive_box\zerocount}
+\permanent\protected\def\adaptivevbox{\typo_adaptive_box\plusone  }
+
+\aliased\let\adaptivebox\adaptivehbox
+
+\tolerant\def\typo_adaptive_box#1#*[#2]#*[#3]%
+   {\ifcase#1\dontleavehmode\fi
     \begingroup
-    \ifhastok={#1}%
+    \ifhastok={#2}%
       \let\currentadaptive\empty
-      \setupcurrentadaptive[#1]%
-    \else
-      \edef\currentadaptive{#1}%
       \setupcurrentadaptive[#2]%
+    \else
+      \edef\currentadaptive{#2}%
+      \setupcurrentadaptive[#3]%
     \fi
     \edef\p_setups{\adaptiveparameter\c!setups}%
     \dowithnextboxcontent
       {\useadaptivestyleandcolor\c!foregroundstyle\c!foregroundcolor
-       \ifcstok{\adaptiveparameter\c!strut}\v!yes\strut\fi % for now
-      }
+       \ifcstok{\adaptiveparameter\c!strut}\v!yes
+         \ifcase#1%
+           \strut
+         \else
+            % maybe \begstrut .. \endstrut
+         \fi
+       \fi}
       {\ifempty\p_setups
          % there is no need for postprocessing
        \else
@@ -86,17 +100,26 @@
        \edef\p_stretch{\adaptiveparameter\c!stretch}%
        \edef\p_shrink {\adaptiveparameter\c!shrink}%
        \uleaders
-         \hbox
-           \s!spread \scratchdimen
-         \bgroup
-           \hss\box\nextbox\hss
-         \egroup
-         \hskip
+         \ifcase#1%
+           \hbox
+             \s!spread \scratchdimen
+             \bgroup
+               \hss\box\nextbox\hss
+             \egroup
+           \hskip
+         \else
+           \vbox
+             \s!spread \scratchdimen
+             \bgroup
+               \vss\box\nextbox\vss
+             \egroup
+           \vskip
+         \fi
            \zeropoint
            \s!plus  \ifempty\p_stretch\scratchdimen\else\p_stretch\fi
            \s!minus \ifempty\p_shrink \scratchdimen\else\p_shrink \fi
          \endgroup}%
-    \hbox}
+    \ifcase#1\hbox\else\vbox\fi}
 
 %D Here is a test case, expect more:
 %D
@@ -170,6 +193,24 @@
 %D     }
 %D     \blank
 %D }
+%D
+%D \page
+%D
+%D \startsetups adaptive:test
+%D     \setbox\usedadaptivebox\vbox to \usedadaptivetotal \bgroup
+%D         \externalfigure
+%D           [cow.pdf]
+%D           [width=\usedadaptivewidth,
+%D            height=\usedadaptivetotal]%
+%D    \egroup
+%D \stopsetups
+%D
+%D \ruledvbox to \textheight {
+%D     \par \begstrut \samplefile{tufte} \endstrut \par
+%D     \adaptivevbox[strut=yes,setups=adaptive:test]{\hsize\textwidth\hss}
+%D     \par \begstrut \samplefile{tufte} \endstrut
+%D }
+%D
 %D \stoptyping
 
 \protect

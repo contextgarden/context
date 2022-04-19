@@ -819,7 +819,7 @@ function jobpositions.used()
     if positionsused == nil then
         positionsused = false
         for k, v in next, collected do
-            if k ~= "shared" and next(v) then
+            if k ~= "shared" and type(v) == "table" and next(v) then
                 positionsused = true
                 break
             end

@@ -3967,6 +3967,8 @@ permanent withdashes ;
 path mfun_b ;
 pair mfun_k ;
 
+path mfun_nullpath ;
+
 tertiarydef p sortedintersectiontimes q =
     sortedpath (p intersectiontimeslist q)
 enddef ;
@@ -3975,24 +3977,87 @@ tertiarydef p intersectionpath q =
     begingroup ;
     save mfun_b ; path mfun_b ; mfun_b := sortedpath (p intersectiontimeslist q) ;
     save mfun_k ; pair mfun_k ; mfun_k := point 0 of mfun_b;
-    .5[point xpart mfun_k of p, point ypart mfun_k of q]
-    for i = 1 upto length(mfun_b) :
-        hide(mfun_k := point i of mfun_b;)
-        -- .5[point xpart mfun_k of p, point ypart mfun_k of q]
-    endfor
+    if mfun_k <> (-1,-1) :
+        .5[point xpart mfun_k of p, point ypart mfun_k of q]
+        for i = 1 upto length(mfun_b) :
+            hide(mfun_k := point i of mfun_b;)
+            -- .5[point xpart mfun_k of p, point ypart mfun_k of q]
+        endfor
+    else :
+        mfun_nullpath
+    fi
     endgroup
 enddef ;
 
 tertiarydef p firstintersectionpath q =
     begingroup ;
     save mfun_b ; path mfun_b ; mfun_b := sortedpath (p intersectiontimeslist q) ;
-    point xpart (point 0 of mfun_b) of p
-    for i = 1 upto length(mfun_b) :
-        -- point xpart (point i of mfun_b) of p
-    endfor
+    if (point 0 of mfun_b) <> (-1,-1) :
+        point xpart (point 0 of mfun_b) of p
+        for i = 1 upto length(mfun_b) :
+            -- point xpart (point i of mfun_b) of p
+        endfor
+    else :
+        mfun_nullpath
+    fi
     endgroup
 enddef ;
 
 tertiarydef p secondintersectionpath q =
     q firstintersectionpath p
 enddef;
+
+vardef intersectionsfound expr p =
+    (point 0 of p) <> (-1,-1)
+enddef ;
+
+%D As part of our intersection journey MS came up with:
+
+tertiarydef p cutbeforefirst q =
+    begingroup ;
+    save mfun_b, mfun_p ; path mfun_b, mfun_p ; mfun_b := sortedpath (p intersectiontimeslist q) ;
+    if (point 0 of mfun_b) <> (-1,-1) :
+        mfun_p := subpath(xpart point 0 of mfun_b, infinity) of p;
+    else :
+        mfun_p := p ;
+    fi ;
+    mfun_p
+    endgroup ;
+enddef ;
+
+tertiarydef p cutafterfirst q =
+    begingroup ;
+    save mfun_b, mfun_p ; path mfun_b, mfun_p ; mfun_b := sortedpath (p intersectiontimeslist q) ;
+    if (point 0 of mfun_b) <> (-1,-1) :
+        mfun_p := subpath(0, xpart point 0 of mfun_b) of p;
+    else :
+        mfun_p := p ;
+    fi ;
+    mfun_p
+    endgroup ;
+enddef ;
+
+
+tertiarydef p cutbeforelast q =
+    begingroup ;
+    save mfun_b, mfun_p ; path mfun_b, mfun_p ; mfun_b := sortedpath (p intersectiontimeslist q) ;
+    if (point 0 of mfun_b) <> (-1,-1) :
+        mfun_p := subpath(xpart point (length mfun_b) of mfun_b, infinity) of p;
+    else :
+        mfun_p := p ;
+    fi ;
+    mfun_p
+    endgroup ;
+enddef ;
+
+tertiarydef p cutafterlast q =
+    begingroup ;
+    save mfun_b, mfun_p ; path mfun_b, mfun_p ; mfun_b := sortedpath (p intersectiontimeslist q) ;
+    if (point 0 of mfun_b) <> (-1,-1) :
+        mfun_p := subpath(0, xpart point (length mfun_b) of mfun_b) of p;
+    else :
+        mfun_p := p ;
+    fi ;
+    mfun_p
+    endgroup ;
+enddef ;

@@ -200,6 +200,60 @@ immutable % permanent
     InnerEdgeDistance, OuterSpaceWidth, InnerSpaceWidth, OuterMargin, InnerMargin,
     OuterEdge, InnerEdge ;
 
+% see node-rul.*
+
+% for the moment we put these here:
+
+% string  RuleDirection ; RuleDirection := "" ;
+% string  RuleOption    ; RuleOption    := "" ;
+% numeric RuleWidth     ; RuleWidth     := 0 ;
+% numeric RuleHeight    ; RuleHeight    := 0 ;
+% numeric RuleDepth     ; RuleDepth     := 0 ;
+% numeric RuleH         ; RuleH         := 0 ;
+% numeric RuleV         ; RuleV         := 0 ;
+% numeric RuleThickness ; RuleThickness := 0 ;
+% numeric RuleFactor    ; RuleFactor    := 0 ;
+% numeric RuleOffset    ; RuleOffset    := 0 ;
+%                     def RuleColor      = (.5white) enddef ; % yet undecided, might become a string
+
+newscriptindex mfid_RuleWidth     ; mfid_RuleWidth     := scriptindex "RuleWidth"     ; vardef RuleWidth     = runscript mfid_RuleWidth     enddef ;
+newscriptindex mfid_RuleHeight    ; mfid_RuleHeight    := scriptindex "RuleHeight"    ; vardef RuleHeight    = runscript mfid_RuleHeight    enddef ;
+newscriptindex mfid_RuleDepth     ; mfid_RuleDepth     := scriptindex "RuleDepth"     ; vardef RuleDepth     = runscript mfid_RuleDepth     enddef ;
+newscriptindex mfid_RuleH         ; mfid_RuleH         := scriptindex "RuleH"         ; vardef RuleH         = runscript mfid_RuleH         enddef ;
+newscriptindex mfid_RuleV         ; mfid_RuleV         := scriptindex "RuleV"         ; vardef RuleV         = runscript mfid_RuleV         enddef ;
+newscriptindex mfid_RuleThickness ; mfid_RuleThickness := scriptindex "RuleThickness" ; vardef RuleThickness = runscript mfid_RuleThickness enddef ;
+newscriptindex mfid_RuleOffset    ; mfid_RuleOffset    := scriptindex "RuleOffset"    ; vardef RuleOffset    = runscript mfid_RuleOffset    enddef ;
+newscriptindex mfid_RuleDirection ; mfid_RuleDirection := scriptindex "RuleDirection" ; vardef RuleDirection = runscript mfid_RuleDirection enddef ;
+newscriptindex mfid_RuleFactor    ; mfid_RuleFactor    := scriptindex "RuleFactor"    ; vardef RuleFactor    = runscript mfid_RuleFactor    enddef ;
+newscriptindex mfid_RuleOption    ; mfid_RuleOption    := scriptindex "RuleOption"    ; vardef RuleOption    = runscript mfid_RuleOption    enddef ;
+newscriptindex mfid_RuleColor     ; mfid_RuleColor     := scriptindex "RuleColor"     ;    def RuleColor     = runscript (mfid_RuleColor)   enddef ;
+
+immutable % permanent
+    RuleWidth, RuleHeight, RuleDepth, RuleH, RuleV, RuleThickness, RuleOffset,
+    RuleDirection, RuleFactor, RuleOption, RuleColor ;
+
+def FakeWord(expr RuleWidth, RuleHeight, RuleDepth, RuleThickness) (text RuleColor) =
+    fill unitsquare
+        xscaled RuleWidth
+        yscaled (RuleDepth-RuleThickness/2)
+        withcolor RuleColor ;
+    fill unitsquare
+        xscaled RuleWidth
+        yscaled (RuleHeight-RuleDepth-RuleThickness/2)
+        shifted (0,RuleDepth+RuleThickness)
+        withcolor RuleColor ;
+enddef ;
+
+def FakeRule(expr RuleWidth, RuleHeight, RuleDepth, RuleThickness) (text RuleColor) =
+    fill unitsquare
+        xscaled RuleWidth
+        yscaled RuleHeight
+        withcolor RuleColor ;
+enddef ;
+
+permanent
+    FakeWord, FakeRule ;
+
 % see typo-ada.*
 
 newscriptindex mfid_AdaptiveWidth     ; mfid_AdaptiveWidth     := scriptindex "AdaptiveWidth"     ; vardef AdaptiveWidth     = runscript mfid_AdaptiveWidth     enddef ;

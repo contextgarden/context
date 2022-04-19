@@ -7343,6 +7343,9 @@ return {
    ["pe"]="کنش",
    ["ro"]="actiune",
   },
+  ["adaptive"]={
+   ["en"]="adaptive",
+  },
   ["address"]={
    ["cs"]="adresa",
    ["de"]="adresse",

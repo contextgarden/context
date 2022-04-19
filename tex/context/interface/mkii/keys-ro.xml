@@ -284,7 +284,6 @@
 		<cd:variable name='inright' value='indreapta'/>
 		<cd:variable name='inrightedge' value='inparteadreapta'/>
 		<cd:variable name='inrightmargin' value='inmargineadreapta'/>
-		<cd:variable name='integral' value='integral'/>
 		<cd:variable name='interaction' value='interactiune'/>
 		<cd:variable name='interactionmenu' value='meniuinteractiune'/>
 		<cd:variable name='interactive' value='interactive'/>
@@ -648,6 +647,7 @@
 
 	<cd:constants>
 		<cd:constant name='action' value='actiune'/>
+		<cd:constant name='adaptive' value='adaptive'/>
 		<cd:constant name='address' value='adresa'/>
 		<cd:constant name='after' value='dupa'/>
 		<cd:constant name='afterhead' value='dupatitlu'/>
@@ -722,6 +722,7 @@
 		<cd:constant name='bottom' value='jos'/>
 		<cd:constant name='bottomafter' value='bottomafter'/>
 		<cd:constant name='bottombefore' value='bottombefore'/>
+		<cd:constant name='bottomcolor' value='bottomcolor'/>
 		<cd:constant name='bottomcommand' value='bottomcommand'/>
 		<cd:constant name='bottomdistance' value='distantajos'/>
 		<cd:constant name='bottomframe' value='framejos'/>
@@ -925,6 +926,7 @@
 		<cd:constant name='inputfile' value='inputfile'/>
 		<cd:constant name='insidesection' value='insidesection'/>
 		<cd:constant name='instance' value='instance'/>
+		<cd:constant name='integral' value='integral'/>
 		<cd:constant name='intent' value='intent'/>
 		<cd:constant name='interaction' value='interactiune'/>
 		<cd:constant name='interlinespace' value='spatiereinterliniara'/>
@@ -967,6 +969,7 @@
 		<cd:constant name='leftquote' value='minicitatstanga'/>
 		<cd:constant name='leftsample' value='leftsample'/>
 		<cd:constant name='leftsentence' value='propozitiestanga'/>
+		<cd:constant name='leftsource' value='leftsource'/>
 		<cd:constant name='leftspeech' value='leftspeech'/>
 		<cd:constant name='leftstyle' value='stilstanga'/>
 		<cd:constant name='leftsubsentence' value='subpropozitiestanga'/>
@@ -1013,6 +1016,7 @@
 		<cd:constant name='middle' value='mijloc'/>
 		<cd:constant name='middlecolor' value='middlecolor'/>
 		<cd:constant name='middlecommand' value='middlecommand'/>
+		<cd:constant name='middlesource' value='middlesource'/>
 		<cd:constant name='middlespeech' value='middlespeech'/>
 		<cd:constant name='middlestyle' value='middlestyle'/>
 		<cd:constant name='middletext' value='textmijloc'/>
@@ -1185,6 +1189,7 @@
 		<cd:constant name='rightquote' value='minicitatdreapta'/>
 		<cd:constant name='rightsample' value='rightsample'/>
 		<cd:constant name='rightsentence' value='propozitiedreapta'/>
+		<cd:constant name='rightsource' value='rightsource'/>
 		<cd:constant name='rightspeech' value='rightspeech'/>
 		<cd:constant name='rightstyle' value='stildreapta'/>
 		<cd:constant name='rightsubsentence' value='subpropozitiedreapta'/>
@@ -1320,6 +1325,7 @@
 		<cd:constant name='toffset' value='toffset'/>
 		<cd:constant name='tolerance' value='toleranta'/>
 		<cd:constant name='top' value='sus'/>
+		<cd:constant name='topcolor' value='topcolor'/>
 		<cd:constant name='topcommand' value='topcommand'/>
 		<cd:constant name='topdistance' value='distantasus'/>
 		<cd:constant name='topframe' value='framesus'/>

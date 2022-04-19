@@ -656,9 +656,17 @@
    \hfuzz   \maxdimen
    \vfuzz   \maxdimen}
 
+\permanent\protected\def\noboxtracing
+  {\showboxdepth  \zerocount
+   \showboxbreadth\zerocount}
+
 \permanent\protected\def\lessboxtracing
-  {\showboxdepth  \plusthree
-   \showboxbreadth\plusfive}
+  {\showboxdepth  \plusfive
+   \showboxbreadth\plusten}
+
+\permanent\protected\def\moreboxtracing
+  {\showboxbreadth\maxcount
+   \showboxdepth  \maxcount}
 
 %D Some expected plain variants follow. We don't reuse registers because we don't
 %D want clashes. These will go away and packages that need them have to define them.
@@ -837,8 +845,10 @@
 
 %D When we want to see a box we can as well show all of it.
 
-\showboxdepth  \maxcount
-\showboxbreadth\maxcount
+% \showboxdepth  \maxcount
+% \showboxbreadth\maxcount
+
+\lessboxtracing
 
 %D Just for tracing purposes we set:
 

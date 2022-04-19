@@ -199,13 +199,13 @@ end)
 nodes.builders = nodes.builder or { }
 local builders = nodes.builders
 
-local vboxactions = nodes.tasks.actions("vboxbuilders")
+local vpackactions = nodes.tasks.actions("vboxbuilders")
 
 function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
     local done = false
     if head then
         starttiming(builders)
-        head, done = vboxactions(head,groupcode)
+        head, done = vpackactions(head,groupcode)
         stoptiming(builders)
     end
     return head, done
@@ -248,6 +248,19 @@ end
 
 registercallback('vpack_filter',     builders.vpack_filter,     "vertical spacing etc")
 registercallback('buildpage_filter', builders.buildpage_filter, "vertical spacing etc (mvl)")
+
+local vboxactions = nodes.tasks.actions("vboxhandlers")
+
+function builders.vbox_filter(head,groupcode)
+    if head then
+        starttiming(builders)
+        head = vboxactions(head,groupcode)
+        stoptiming(builders)
+    end
+    return head
+end
+
+registercallback('packed_vbox_filter', builders.vbox_filter, "packed vbox treatments")
 
 statistics.register("v-node processing time", function()
     return statistics.elapsedseconds(builders)

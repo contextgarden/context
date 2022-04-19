@@ -2368,4 +2368,26 @@
 
 \permanent\protected\def\ignoreparskip{\c_spac_vspacing_ignore_parskip\plusone}
 
+%D New, use with care:
+%D
+%D \starttyping
+%D test test test \hfill\break
+%D test \blankbefore test
+%D test \blankbefore[2*line] test
+%D test \blankbefore test
+%D test test test \hfill\break
+%D test \blankbefore test
+%D test \blankbefore test
+%D test \blankbefore test
+%D test test test \hfill\break
+%D test \blankafter test
+%D test \blankafter test
+%D test \blankafter test
+%D test test test \hfill\break
+%D test test test \hfill\break
+%D \stoptyping
+
+\permanent\tolerant\protected\def\blankbefore[#1]{\vadjust pre {\ifcstok{#1}\emptytoks\blank\else\blank[#1]\fi}}
+\permanent\tolerant\protected\def\blankafter [#1]{\vadjust post{\ifcstok{#1}\emptytoks\blank\else\blank[#1]\fi}}
+
 \protect \endinput

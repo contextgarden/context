@@ -19,12 +19,15 @@
 
 \aliased\let\parfillrightskip\parfillskip
 
-\bitwiseflip \normalizelinemode \parindentskipnormalizecode
 \bitwiseflip \normalizelinemode \normalizelinenormalizecode
+\bitwiseflip \normalizelinemode \parindentskipnormalizecode
 \bitwiseflip \normalizelinemode \clipwidthnormalizecode
 \bitwiseflip \normalizelinemode \flattendiscretionariesnormalizecode
-\bitwiseflip \normalizelinemode \flattenleadersnormalizecode % neglectable overhead
+\bitwiseflip \normalizelinemode \flattenhleadersnormalizecode
 %bitwiseflip \normalizelinemode \discardzerotabskipsnormalizecode
+
+\bitwiseflip \normalizeparmode \normalizeparnormalizeparcode
+\bitwiseflip \normalizeparmode \flattenvleadersnormalizeparcode
 
 \let\v_spac_indentation_current\empty % amount/keyword
 
