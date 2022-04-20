@@ -37,7 +37,7 @@ return {
             NoLimitSupFactor               =   0,
             NoLimitSubFactor               = 900,
             FractionRuleThickness          =  55,
-            -- AccentBaseHeight               = 650,
+         -- AccentBaseHeight               = 650,
             AccentBaseDepth                = 150,
         },
         tweaks = {
@@ -102,10 +102,10 @@ return {
                 },
                 {
                   tweak   = "fixprimes",
-                  factor  = 0.8, -- accent base height
-               --    smaller = true, -- replace multiples
-                  scale   = 1.1, -- glyph scale
-               --    fake    = 0.65, -- replace multiples with this width proportion
+                  factor  = 0.8,  -- accent base height
+               -- smaller = true, -- replace multiples
+                  scale   = 1.1,  -- glyph scale
+               -- fake    = 0.65, -- replace multiples with this width proportion
                -- keep    = true, -- keep the text size prime (aka minute)
                 },
                 {

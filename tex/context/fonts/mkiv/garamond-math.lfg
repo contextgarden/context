@@ -6,16 +6,16 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            NoLimitSupFactor      =    0,
-            NoLimitSubFactor      = 1200,
-            FractionRuleThickness =   60,
-            OverbarRuleThickness  =   60,
-            -- RadicalRuleThickness  =   60,
-            UnderbarRuleThickness =   60,
-            -- AccentBaseHeight = 0,
-            AccentBaseDepth = 75,
-            -- AccentTopShiftUp = -75,
-            -- FlattenedAccentTopShiftUp = -100,
+            NoLimitSupFactor          =    0,
+            NoLimitSubFactor          = 1200,
+            FractionRuleThickness     =   60,
+            OverbarRuleThickness      =   60,
+         -- RadicalRuleThickness      =   60,
+            UnderbarRuleThickness     =   60,
+         -- AccentBaseHeight          =    0,
+            AccentBaseDepth           =   75,
+         -- AccentTopShiftUp          =  -75,
+         -- FlattenedAccentTopShiftUp = -100,
         },
         tweaks = {
             aftercopying = {
@@ -27,14 +27,14 @@ return {
                     tweak = "dimensions",
                     list  = {
                         -- offset width italic
-                        -- [0x00060] = { yoffset = -0.1 }, -- grave
-                        -- [0x000B4] = { yoffset = -0.1 }, -- acute
+                     -- [0x00060] = { yoffset = -0.1 }, -- grave
+                     -- [0x000B4] = { yoffset = -0.1 }, -- acute
                         [0x002C6] = { yoffset = -0.1 }, -- hat
                         [0x002DC] = { yoffset = -0.1 }, -- tilde
-                        -- [0x000AF] = { yoffset = -0.1 }, -- bar
+                     -- [0x000AF] = { yoffset = -0.1 }, -- bar
                         [0x002D8] = { yoffset = -0.15 }, -- breve
                         [0x002D9] = { yoffset = -0.15 }, -- dot
-                        -- [0x000A8] = { yoffset = -0.1 }, -- ddot
+                     -- [0x000A8] = { yoffset = -0.1 }, -- ddot
                         [0x020DB] = { yoffset = -0.115 }, -- dddot
                         [0x002C7] = { yoffset = -0.1 }, -- check
                         [0x020D7] = { yoffset = -0.1 }, -- vec
@@ -46,10 +46,10 @@ return {
                         [0x00306] = { yoffset = -0.12 , all=true }, -- widebreve
                         [0x00307] = { yoffset = -0.12 , all=true }, -- widedot
                         [0x00308] = { yoffset = -0.12 , all=true }, -- wideddot
-                        -- [0x020DB] = { yoffset = -0.1 , all=true }, -- widedddot
+                     -- [0x020DB] = { yoffset = -0.1 , all=true }, -- widedddot
                         [0x0030A] = { yoffset = -0.12 , all=true }, -- widering
                         [0x0030C] = { yoffset = -0.12 , all=true }, -- widecheck
-                        -- [0x002C6] = { scale=.85, yoffset = .1, width = .85, height = .935 }, -- hat
+                     -- [0x002C6] = { scale=.85, yoffset = .1, width = .85, height = .935 }, -- hat
                         [0x00393] = { 0.05, 1.05, 0.075       }, -- \Gamma
                      -- [0x003A6] = { 0.05, 1.05, 0           }, -- \Phi difficult!
                         [0x003A8] = { 0.05, 1.05, 0.075       }, -- \Psi
@@ -107,9 +107,9 @@ return {
                 {
                     tweak   = "fixprimes",
                     scale   = 0.9,
-                    -- smaller = true,
+                 -- smaller = true,
                     factor  = 0.9,
-                    -- fake    = 0.75,
+                 -- fake    = 0.75,
                 },
                 {
                     tweak = "checkspacing",

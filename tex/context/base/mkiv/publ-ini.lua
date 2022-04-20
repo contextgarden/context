@@ -1428,8 +1428,8 @@ do
     local function get(dataset,tag,field,what,check,catspec) -- somewhat more extensive
         local current = rawget(datasets,dataset)
         if current then
-            tag   = lowered.tag
-            field = lowered.field
+            tag   = lowered[tag]
+            field = lowered[field]
             local data = current.luadata[tag]
             if data then
                 local category = data.category
@@ -1479,8 +1479,8 @@ do
     local function btxflush(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
-            tag   = lowered.tag
-            field = lowered.field
+            tag   = lowered[tag]
+            field = lowered[field]
             local fields = dataset.luadata[tag]
             if fields then
                 local manipulator, field = splitmanipulation(field)
@@ -1507,8 +1507,8 @@ do
     local function btxfield(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
-            tag   = lowered.tag
-            field = lowered.field
+            tag   = lowered[tag]
+            field = lowered[field]
             local fields = dataset.luadata[tag]
             if fields then
                 local category = fields.category
@@ -1534,8 +1534,8 @@ do
     local function btxdetail(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
-            tag   = lowered.tag
-            field = lowered.field
+            tag   = lowered[tag]
+            field = lowered[field]
             local fields = dataset.luadata[tag]
             if fields then
                 local details = dataset.details[tag]
@@ -1566,11 +1566,11 @@ do
     local function btxdirect(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
-            tag   = lowered.tag
-            field = lowered.field
+            tag   = lowered[tag]
+            field = lowered[field]
             local fields = dataset.luadata[tag]
             if fields then
-                field = lowered.field
+                field = lowered[field]
                 local manipulator, field = splitmanipulation(field)
                 local value = fields[field]
                 if value then
@@ -1589,8 +1589,8 @@ do
     local function okay(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
-            tag   = lowered.tag
-            field = lowered.field
+            tag   = lowered[tag]
+            field = lowered[field]
             local fields = dataset.luadata[tag]
             if fields then
                 local category = fields.category

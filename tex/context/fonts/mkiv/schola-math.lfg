@@ -20,8 +20,8 @@ return {
         parameters = {
             NoLimitSupFactor =   0,
             NoLimitSubFactor = 900,
-            -- AccentBaseHeight = 0,
-            AccentBaseDepth  = 30,
+         -- AccentBaseHeight =   0,
+            AccentBaseDepth  =  30,
         },
         tweaks = {
             aftercopying = {
@@ -49,7 +49,7 @@ return {
                 {
                     tweak   = "fixprimes",
                     scale   = 0.85,
-                    -- smaller = true,
+                 -- smaller = true,
                     factor  = 1,
                 },
                 {

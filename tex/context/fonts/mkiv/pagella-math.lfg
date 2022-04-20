@@ -38,8 +38,8 @@ return {
             NoLimitSupFactor =   0,
             NoLimitSubFactor = 900,
             AccentTopShiftUp =  30,
-            -- AccentBaseHeight = 0,
-            AccentBaseDepth  = 80,
+         -- AccentBaseHeight =   0,
+            AccentBaseDepth  =  80,
         },
         tweaks = {
             aftercopying = {
@@ -62,8 +62,8 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {      -- offset width italic
-                        -- [0x002C6] = { scale=.85, yoffset = .1, width = .85, height = .935 }, -- hat
-                        -- [0x00302] = { scale=.85, yoffset = .1, width = .85, height = .935 }, -- hat
+                     -- [0x002C6] = { scale=.85, yoffset = .1, width = .85, height = .935 }, -- hat
+                     -- [0x00302] = { scale=.85, yoffset = .1, width = .85, height = .935 }, -- hat
                      -- [0x002C6] = { scale=.75, yoffset = .2, advance = .75, width = .75, height = .90 }, -- hat
                      -- [0x00302] = { scale=.75, yoffset = .2, advance = .75, width = .75, height = .90 }, -- hat
                         [0x00060] = { yoffset = -0.035 }, -- grave
@@ -75,19 +75,19 @@ return {
                         [0x002D9] = { yoffset = -0.035 }, -- dot
                         [0x000A8] = { yoffset = -0.05 }, -- ddot
                         [0x020DB] = { yoffset = -0.06 }, -- dddot
-                        -- [0x002DA] = { yoffset = -0.05 }, -- ring
-                        -- [0x002C7] = { yoffset = -0.05 }, -- check
+                     -- [0x002DA] = { yoffset = -0.05 }, -- ring
+                     -- [0x002C7] = { yoffset = -0.05 }, -- check
                         [0x020D7] = { yoffset = -0.05 }, -- vec
-                        -- [0x00300] = { yoffset = -0.07 , all=true }, -- widegrave
-                        -- [0x00301] = { yoffset = -0.07 , all=true }, -- wideacute
+                     -- [0x00300] = { yoffset = -0.07 , all=true }, -- widegrave
+                     -- [0x00301] = { yoffset = -0.07 , all=true }, -- wideacute
                         [0x00302] = { yoffset = -0.02 , all=true }, -- widehat
                         [0x00303] = { yoffset = -0.02 , all=true }, -- widetilde
                         [0x00304] = { yoffset = -0.05 , all=true }, -- widebar
                         [0x00306] = { yoffset = -0.03 , all=true }, -- widebreve
                         [0x00307] = { yoffset = -0.03 , all=true }, -- widedot
                         [0x00308] = { yoffset = -0.03 , all=true }, -- wideddot
-                        -- [0x020DB] = { yoffset =  0.0 , all=true }, -- widedddot
-                        -- [0x0030A] = { yoffset = -0.05 , all=true }, -- widering
+                     -- [0x020DB] = { yoffset =  0.0 , all=true }, -- widedddot
+                     -- [0x0030A] = { yoffset = -0.05 , all=true }, -- widering
                         [0x0030C] = { yoffset = -0.03 , all=true }, -- widecheck
                         [0x1D44E] = { 0,     1,    0,   0.9  }, -- a
                         [0x1D44F] = { 0,     1,    0,   1.3  }, -- b
@@ -128,9 +128,9 @@ return {
                 {
                     tweak   = "fixprimes",
                     factor  = 0.9,
-                    -- smaller = true,
+                 -- smaller = true,
                     scale   = 0.9,
-                    -- fake    = 0.65,
+                 -- fake    = 0.65,
                 },
                 {
                     tweak = "checkspacing",

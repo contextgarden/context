@@ -135,7 +135,7 @@ return {
                         [0x1D484] = { 0,      1,       0,    0.95 }, -- bold lowercase italic c
                         [0x1D485] = { 0,      1,       0,    0.75 }, -- bold lowercase italic d
                         [0x1D486] = { 0,      1,       0,    0.95 }, -- bold lowercase italic e
-                        -- [0x1D487] = { 0,      1,       0,    0.95 }, -- bold lowercase italic f
+                     -- [0x1D487] = { 0,      1,       0,    0.95 }, -- bold lowercase italic f
                         [0x1D488] = { 0,      1,       0,    0.9  }, -- bold lowercase italic g
                         [0x1D489] = { 0,      1,       0,    1.2  }, -- bold lowercase italic h
                      -- [0x1D48A] = { 0,      1,       0,    0.6  }, -- bold lowercase italic i
@@ -164,8 +164,8 @@ return {
                 },
                 {
                     tweak   = "fixprimes",
-                   --  scale   = 0.8,
-                   --  smaller = true,
+                 -- scale   = 0.8,
+                 -- smaller = true,
                     factor  = 1.1,
                 },
                 {
