@@ -431,6 +431,7 @@
 \newif\ifautoTBLcheckwidth  \autoTBLcheckwidthtrue
 \newif\ifappendTBLsetups    \appendTBLsetupstrue
 \newif\ifenableTBLbreak     \enableTBLbreakfalse
+\newif\ifforceTBLpageflow   \forceTBLpageflowfalse
 \newif\ifmultipleTBLheads   \multipleTBLheadsfalse
 \newif\iftightTBLrowspan    \tightTBLrowspantrue
 \newif\iftightTBLcolspan    \tightTBLcolspanfalse
@@ -992,15 +993,17 @@
    \relax
    \enableTBLbreakfalse
    \multipleTBLheadsfalse
+   \forceTBLpageflowfalse
    \autoTBLspreadfalse
    \tightTBLcolspanfalse
    \processaction
-     [\naturaltablelocalparameter\c!split]
+     [\naturaltablelocalparameter\c!split]%
      [     \v!yes=>\enableTBLbreaktrue,
         \v!repeat=>\enableTBLbreaktrue\multipleTBLheadstrue,
-          \v!auto=>\ifinsidesplitfloat\enableTBLbreaktrue\fi]
+          \v!page=>\enableTBLbreaktrue\forceTBLpageflowtrue,
+          \v!auto=>\ifinsidesplitfloat\enableTBLbreaktrue\fi]%
    \processaction
-     [\naturaltablelocalparameter\c!header]
+     [\naturaltablelocalparameter\c!header]%
      [\v!repeat=>\multipleTBLheadstrue]%
    \tabl_ntb_preset_parameters
    \processallactionsinset
@@ -1353,18 +1356,15 @@
 \protected\def\tabl_ntb_before_page
   {\ifx\m_tabl_ntb_same_page\v!before
    % \blank[\v!samepage,\v!strong]%
-     \unpenalty
      \nobreak
    \orelse\ifx\m_tabl_ntb_same_page\v!both
    % \blank[\v!samepage,\v!strong]%
-     \unpenalty
      \nobreak
    \fi}
 
 \protected\def\tabl_ntb_after_page
   {\ifnum\c_tabl_ntb_row>\c_tabl_ntb_n_of_head_lines
      \ifnum\tabl_ntb_get_nob\c_tabl_ntb_row=\zerocount
-       \unpenalty
        \ifx\m_tabl_ntb_same_page\v!after
        % \blank[\v!samepage,\v!strong]%
          \nobreak
@@ -1726,18 +1726,29 @@
    \box\b_tabl_ntb_final
    \afterTABLEbox}
 
+\def\tabl_ntb_split_page
+  {%\postprocessTABLEbox\b_tabl_ntb_final
+   %\tabl_ntb_anchor_process\b_tabl_ntb_final
+   \beforeTABLEbox
+   \registerparoptions % (*) better here (also does a \dontleavehmode)
+   \ifhmode\else\dontleavehmode\fi
+   \tabl_ntb_flush_content
+   \afterTABLEbox}
+
 \def\tabl_ntb_split_yes
   {\ifinsidesplitfloat
-     \donetrue
-   \orelse\ifinsidefloat
      \donefalse
-   \else
+   \orelse\ifinsidefloat
      \donetrue
+   \else
+     \donefalse
    \fi
    \ifdone
-     \expandafter\tabl_ntb_split_box
-   \else
      \expandafter\tabl_ntb_split_nop
+   \orelse\ifforceTBLpageflow
+     \expandafter\tabl_ntb_split_page
+   \else
+     \expandafter\tabl_ntb_split_box
    \fi}
 
 \newbox\TABLEsplitbox % public, don't change

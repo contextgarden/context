@@ -229,6 +229,7 @@
 
 \def\page_col_routine_package_step
   {% needs packaging anyway
+   \mofcolumns\recurselevel % added
    \getboxfromcache{\s!pagecolumn}{\number\recurselevel}\scratchbox
    \page_lines_add_numbers_to_box\scratchbox\recurselevel\c_page_col_n_of_columns\plusone % new
    \page_marks_synchronize_column\plusone\c_page_col_n_of_columns\recurselevel\scratchbox
@@ -867,8 +868,8 @@
    \enforced\let\stoppagecolumns\page_col_stop_nop}
 
 \protected\def\page_col_stop_yes
-  {\column % \page_otr_eject_page
-   \page
+  {%\column % \page_otr_eject_page
+   \page    % beware for empty pages
    \endgroup
  % \setupoutputroutine[\s!singlecolumn]%
    \page_otr_command_set_vsize

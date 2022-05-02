@@ -236,3 +236,10 @@ nodes.specialskipcodes = {
     [gluecodes.indentskip]                           = true,
     [gluecodes.correctionskip]                       = true,
 }
+
+table.setmetatableindex(listcodes,function(t,k)
+    -- fully qualified as yet unknown
+    local v = mathematics.classnames[k - 0x100] or listcodes.unknown
+    t[k] = v
+    return v
+end)

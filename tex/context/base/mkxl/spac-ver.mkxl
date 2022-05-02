@@ -1076,68 +1076,118 @@
 \permanent\protected\def\rightboundary  {\protrusionboundary\plustwo}
 \permanent\protected\def\signalcharacter{\boundary\plusone\char\zerocount\boundary\plustwo} % not the same as strut signals
 
-\newsignal\d_spac_struts_signal \setfalse\sigstruts
+%D We no longer need these sigstruts:
+%
+% \newsignal\d_spac_struts_signal \setfalse\sigstruts
+%
+% \permanent\protected\def\begstrut
+%   {\relax\ifcase\strutht
+%      % \ignorespaces % maybe
+%    \else
+%      \expandafter\spac_struts_beg
+%    \fi}
+%
+% \def\spac_struts_beg
+%   {\ifconditional\sigstruts
+%      \spac_struts_beg_signal
+%    \else
+%      \spac_struts_beg_normal
+%    \fi
+%    \ignorespaces}
+%
+% \def\spac_struts_beg_signal
+%   {\noindent\horizontalstrut
+%    \penalty\plustenthousand
+%    \hskip-\d_spac_struts_signal
+%    \hskip\d_spac_struts_signal}
+%
+% \def\spac_struts_beg_normal
+%   {\boundary\plusone
+%    \strut
+%   %\boundary\plusone
+%    \penalty\plustenthousand
+%   %\boundary\plusone
+%    \hskip\zeropoint}
+%
+% \permanent\protected\def\endstrut
+%   {\relax\ifhmode
+%      \ifcase\strutht
+%        % \removeunwantedspaces % maybe
+%      \else
+%        \spac_struts_end
+%      \fi
+%    \fi}
+%
+% \def\spac_struts_end
+%   {\ifconditional\sigstruts
+%      \spac_struts_end_signal
+%    \else
+%      \spac_struts_end_normal
+%    \fi}
+%
+% \def\spac_struts_end_signal
+%   {\ifdim\lastskip=\d_spac_struts_signal
+%      \unskip
+%      \unskip
+%      \unpenalty
+%      \setbox\scratchbox\lastbox
+%    \else
+%      \penalty\plustenthousand
+%      \hskip\zeropoint
+%      \strut
+%    \fi}
+%
+% \def\spac_struts_end_normal
+%   {\removeunwantedspaces
+%    \penalty\plustenthousand
+%   %\boundary\plustwo
+%    \hskip\zeropoint
+%   %\boundary\plustwo
+%    \strut
+%    \boundary\plustwo}
+
+%D \starttyping
+%D $ \ifhmode H1\fi x \ifhmode H2\fi $\par
+%D $ \ifmmode M1\fi x \ifmmode M2\fi $\par
+%D $$\ifvmode H1\fi x \ifvmode H2\fi$$\par
+%D $$\ifvmode M1\fi x \ifvmode M2\fi$$\par
+%D \stoptyping
 
 \permanent\protected\def\begstrut
-  {\relax\ifcase\strutht
-     % \ignorespaces % maybe
+  {\ifmmode
+     \strut
    \else
-     \spac_struts_beg
-   \fi}
-
-\def\spac_struts_beg
-  {\ifconditional\sigstruts
-     \spac_struts_beg_signal
-   \else
-     \spac_struts_beg_normal
+     \dontleavehmode
+     \ifcase\struthtdp\else
+       \spac_struts_beg
+     \fi
    \fi
    \ignorespaces}
 
-\def\spac_struts_beg_signal
-  {\noindent\horizontalstrut
-   \penalty\plustenthousand
-   \hskip-\d_spac_struts_signal
-   \hskip\d_spac_struts_signal}
-
-\def\spac_struts_beg_normal
+\def\spac_struts_beg
   {\boundary\plusone
    \strut
   %\boundary\plusone
    \penalty\plustenthousand
   %\boundary\plusone
-   \hskip\zeropoint}
+   \hskip\zeropoint
+   \ignorespaces}
 
 \permanent\protected\def\endstrut
-  {\relax\ifhmode
-     \ifcase\strutht
-       % \removeunwantedspaces % maybe
-     \else
+  {% \ifmmode M\fi
+   % \ifinner I\fi
+   \relax\ifhmode
+     \removeunwantedspaces
+     \ifcase\struthtdp\else
        \spac_struts_end
      \fi
-   \fi}
-
-\def\spac_struts_end
-  {\ifconditional\sigstruts
-     \spac_struts_end_signal
-   \else
-     \spac_struts_end_normal
-   \fi}
-
-\def\spac_struts_end_signal
-  {\ifdim\lastskip=\d_spac_struts_signal
-     \unskip
-     \unskip
-     \unpenalty
-     \setbox\scratchbox\lastbox
-   \else
-     \penalty\plustenthousand
-     \hskip\zeropoint
+   \orelse\ifmmode
+     \removeunwantedspaces
      \strut
    \fi}
 
-\def\spac_struts_end_normal
-  {\removeunwantedspaces
-   \penalty\plustenthousand
+\def\spac_struts_end
+  {\penalty\plustenthousand
   %\boundary\plustwo
    \hskip\zeropoint
   %\boundary\plustwo

@@ -54,12 +54,12 @@
 
 \mutable\let\currentpostponedpage\empty
 
-\permanent\protected\setvalue{\e!start\v!postponing}%
+\permanent\protected\defcsname\e!start\v!postponing\endcsname
   {\bgroup
    \obeylines
    \doifelsenextoptional{\egroup\page_postponed_blocks_start}{\egroup\page_postponed_blocks_start[0]}}
 
-\permanent\protected\setvalue{\e!stop\v!postponing}%
+\permanent\protected\defcsname\e!stop\v!postponing\endcsname
   {\clf_registerpostponedblock{\currentpostponedpage}\relax}
 
 \def\page_postponed_blocks_start[#1]%

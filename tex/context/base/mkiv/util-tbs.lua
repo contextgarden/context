@@ -57,7 +57,7 @@ end
 
 do
 
-    local find, gmatch = string.find, string.gmatch
+    local find, gmatch, formatters = string.find, string.gmatch, string.formatters
 
     local P, C, Ct, Cc, R = lpeg.P, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.R
 
@@ -72,7 +72,7 @@ do
 
     local specifier = Ct ((entry + (separator + index + test))^1)
 
-    function tablestore.field(namespace,name,default)
+    local function field(namespace,name,default)
         local data = loaded[namespace] or current
         if data then
     --         if find(name,"%[") then
@@ -110,5 +110,22 @@ do
             return data
         end
     end
+
+
+    function length(namespace,name,default)
+        local data = field(namespace,name)
+        return type(data) == "table" and #data or 0
+    end
+
+    function formatted(namespace,name,fmt)
+        local data = field(namespace,name)
+        if data then
+            return formatters[fmt](data)
+        end
+    end
+
+    tablestore.field     = field
+    tablestore.length    = length
+    tablestore.formatted = formatted
 
 end

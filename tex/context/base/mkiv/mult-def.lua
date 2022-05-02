@@ -11738,6 +11738,12 @@ return {
    ["en"]="smallcapsfont",
    ["fr"]="policepetitescaps",
   },
+  ["snap"]={
+   ["en"]="snap",
+  },
+  ["snapstep"]={
+   ["en"]="snapstep",
+  },
   ["solution"]={
    ["en"]="solution",
    ["fr"]="solution",

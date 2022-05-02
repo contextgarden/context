@@ -21,6 +21,7 @@
 \startluacode
 
     local tablestore = utilities.tablestore
+    local field      = tablestore.field
 
     interfaces.implement {
         name      = "loadtable",
@@ -32,25 +33,60 @@
 
     interfaces.implement {
         name      = "tablefield",
-        actions   = { tablestore.field, context },
+        actions   = function(namespace,name)
+            local data = field(namespace,name)
+            if data then
+                context(data)
+            end
+        end,
         arguments = "2 arguments",
         public    = true,
+protected = true,
     }
 
     interfaces.implement {
         name      = "tablefielddefault",
-        actions   = { tablestore.field, context },
+        actions   = function(namespace,name,default)
+            local data = field(namespace,name,default)
+            if data then
+                context(data)
+            end
+        end,
         arguments = "3 arguments",
+        public    = true,
+    }
+
+    local replace   = lpeg.replacer("@","%%")
+    local lpegmatch = lpeg.match
+
+    interfaces.implement {
+        name      = "tableformatted",
+        actions   = function(namespace,name,fmt)
+            local data = field(namespace,name)
+            if data then
+                context(lpegmatch(replace,fmt),data)
+            end
+        end,
+        arguments = "3 arguments",
+        public    = true,
+    }
+
+    interfaces.implement {
+        name      = "tablelength",
+        actions   = { tablestore.length, context },
+        arguments = "2 arguments",
         public    = true,
     }
 
     utilities.json.field  = tablestore.field
     utilities.json.loaded = tablestore.loaded
+    utilities.json.length = tablestore.length
 
 \stopluacode
 
 \let\loadjsonfile     \loadtable
 \let\jsonfield        \tablefield
 \let\jsonfielddefault \tablefielddefault
+\let\jsonlength       \tablelength
 
 \stopmodule

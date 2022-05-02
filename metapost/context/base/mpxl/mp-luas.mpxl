@@ -187,31 +187,38 @@ permanent
     setmacro, setdimen, setcount, settoks,
     setglobalmacro, setglobaldimen, setglobalcount, setglobaltoks ;
 
-newscriptindex mfid_positionpath   ; mfid_positionpath   := scriptindex("positionpath") ;
-newscriptindex mfid_positioncurve  ; mfid_positioncurve  := scriptindex("positioncurve") ;
-newscriptindex mfid_positionxy     ; mfid_positionxy     := scriptindex("positionxy") ;
-newscriptindex mfid_positionx      ; mfid_positionx      := scriptindex("positionx") ;
-newscriptindex mfid_positiony      ; mfid_positiony      := scriptindex("positiony") ;
-newscriptindex mfid_positionpar    ; mfid_positionpar    := scriptindex("positionpar") ;
-newscriptindex mfid_positionwhd    ; mfid_positionwhd    := scriptindex("positionwhd") ;
-newscriptindex mfid_positionpage   ; mfid_positionpage   := scriptindex("positionpage") ;
-newscriptindex mfid_positionregion ; mfid_positionregion := scriptindex("positionregion") ;
-newscriptindex mfid_positionbox    ; mfid_positionbox    := scriptindex("positionbox") ;
-newscriptindex mfid_positionanchor ; mfid_positionanchor := scriptindex("positionanchor") ;
+newscriptindex mfid_positionpath        ; mfid_positionpath        := scriptindex("positionpath") ;
+newscriptindex mfid_positioncurve       ; mfid_positioncurve       := scriptindex("positioncurve") ;
+newscriptindex mfid_positionxy          ; mfid_positionxy          := scriptindex("positionxy") ;
+newscriptindex mfid_positionx           ; mfid_positionx           := scriptindex("positionx") ;
+newscriptindex mfid_positiony           ; mfid_positiony           := scriptindex("positiony") ;
+newscriptindex mfid_positionposition    ; mfid_positionparagraph   := scriptindex("positionparagraph") ;
+newscriptindex mfid_positionwhd         ; mfid_positionwhd         := scriptindex("positionwhd") ;
+newscriptindex mfid_positionpage        ; mfid_positionpage        := scriptindex("positionpage") ;
+newscriptindex mfid_positioncolumn      ; mfid_positioncolumn      := scriptindex("positioncolumn") ;
+newscriptindex mfid_positionregion      ; mfid_positionregion      := scriptindex("positionregion") ;
+newscriptindex mfid_positionbox         ; mfid_positionbox         := scriptindex("positionbox") ;
+newscriptindex mfid_positionanchor      ; mfid_positionanchor      := scriptindex("positionanchor") ;
+newscriptindex mfid_positioncolumnfromx ; mfid_positioncolumnfromx := scriptindex("positioncolumnfromx") ;
+newscriptindex mfid_positioncolumnbox   ; mfid_positioncolumnbox   := scriptindex("positioncolumnbox") ;
+newscriptindex mfid_overlaycolumnbox    ; mfid_overlaycolumnbox    := scriptindex("overlaycolumnbox") ;
 
-vardef positionpath     (expr name) = runscript mfid_positionpath      (name) enddef ;
-vardef positioncurve    (expr name) = runscript mfid_positioncurve     (name) enddef ;
-vardef positionxy       (expr name) = runscript mfid_positionxy        (name) enddef ;
-vardef positionx        (expr name) = runscript mfid_positionx         (name) enddef ;
-vardef positiony        (expr name) = runscript mfid_positiony         (name) enddef ;
-vardef positionpar      (expr name) = runscript mfid_positionpar       (name) enddef ;
-vardef positionwhd      (expr name) = runscript mfid_positionwhd       (name) enddef ;
-vardef positionpage     (expr name) = runscript mfid_positionpage      (name) enddef ;
-vardef positioncolumn   (expr name) = runscript mfid_positioncolumn    (name) enddef ;
-vardef positionparagraph(expr name) = runscript mfid_positionparagraph (name) enddef ;
-vardef positionregion   (expr name) = runscript mfid_positionregion    (name) enddef ;
-vardef positionbox      (expr name) = runscript mfid_positionbox       (name) enddef ;
-vardef positionanchor               = runscript mfid_positionanchor           enddef ;
+vardef positionpath     (expr name)   = runscript mfid_positionpath     (name)   enddef ;
+vardef positioncurve    (expr name)   = runscript mfid_positioncurve    (name)   enddef ;
+vardef positionxy       (expr name)   = runscript mfid_positionxy       (name)   enddef ;
+vardef positionx        (expr name)   = runscript mfid_positionx        (name)   enddef ;
+vardef positiony        (expr name)   = runscript mfid_positiony        (name)   enddef ;
+vardef positionwhd      (expr name)   = runscript mfid_positionwhd      (name)   enddef ;
+vardef positionpage     (expr name)   = runscript mfid_positionpage     (name)   enddef ;
+vardef positioncolumn   (expr name)   = runscript mfid_positioncolumn   (name)   enddef ;
+vardef positionparagraph(expr name)   = runscript mfid_positionparagraph(name)   enddef ;
+vardef positionpar      (expr name)   = runscript mfid_positionparagraph(name)   enddef ;
+vardef positionregion   (expr name)   = runscript mfid_positionregion   (name)   enddef ;
+vardef positionbox      (expr name)   = runscript mfid_positionbox      (name)   enddef ;
+vardef positionanchor                 = runscript mfid_positionanchor            enddef ;
+vardef positioncolumnatx(expr name)   = runscript mfid_positioncolumnatx(name)   enddef ;
+vardef positioncolumnbox(expr column) = runscript mfid_positioncolumnbox(column) enddef ;
+vardef overlaycolumnbox (expr column) = runscript mfid_overlaycolumnbox (column) enddef ;
 
 vardef positioninregion =
     currentpicture := currentpicture shifted - positionxy(positionanchor) ;
@@ -223,7 +230,8 @@ enddef ;
 
 permanent positionpath, positioncurve, positionxy, positionwhd,
     positionpage, positionregion, positioncolumn, positionparagraph,
-    positionbox, positionanchor, positioninregion, positionatanchor ;
+    positionbox, positionanchor, positioninregion, positionatanchor,
+    positioncolumnatx, positioncolumnbox, overlaycolumnbox ;
 
 let wdpart = redpart ;
 let htpart = greenpart ;

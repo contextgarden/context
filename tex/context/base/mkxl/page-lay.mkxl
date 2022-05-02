@@ -66,6 +66,8 @@
 
 \newdimen\totaltextwidth
 
+\newdimen\textadaptive
+
 %D The next series of dimensions are complemented by left and rights ones.
 
 \newdimen\margindistance
@@ -651,6 +653,7 @@
    \global\topheight       \layoutparameter\c!top
    \global\backspace       \layoutparameter\c!backspace
    \global\topspace        \layoutparameter\c!topspace
+   \global\textadaptive    \layoutparameter\c!adaptive
    \page_layouts_set_dimensions
    \synchronizegridsnapping
    \usesetupsparameter\layoutparameter % depends on gridsnapping !
@@ -1434,6 +1437,7 @@
                    \c!lines=0,
                    \c!paper=, % for foxet
                     \c!page=, % for foxet
+                \c!adaptive=\zeropoint, % new: experiment
                  \c!columns=\plusone,
           \c!columndistance=\zeropoint]
 

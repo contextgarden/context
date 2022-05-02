@@ -90,6 +90,8 @@
 \setupmathradical
   [\c!alternative=\v!normal,
    \c!mpoffset=.25\exheight,
+   \c!height=\zeropoint,
+   \c!depth=\zeropoint,
    \c!strut=\v!height,
    \c!source=\zerocount]
 
@@ -138,12 +140,31 @@
 
 % style width [options: left middle right]
 
+%D \starttyping
+%D \definemathradical[esqrt][sqrt][height=\maxdimen,depth=\maxdimen]
+%D \definemathradical[fsqrt][sqrt][height=3ex,depth=2ex]
+%D \definemathradical[ssqrt][sqrt][height=-.5pt,depth=-.5pt]
+%D
+%D \def\TestSqrt#1%
+%D   {test $      #1{x}           + #1{\sin(x)}                         $ test\par
+%D    test $      #1{x}           + #1{\sin(x)} + #1{\frac{1}{x}}       $ test\par
+%D    test $      #1{x} + #1{x^2}                                       $ test\par
+%D    test $\left(#1{x} + #1{x^2}                                \right)$ test\par}
+%D
+%D \TestSqrt\sqrt \blank % dynamic
+%D \TestSqrt\esqrt\blank % equal
+%D \TestSqrt\fsqrt\blank % fixed
+%D \TestSqrt\ssqrt\blank % squeezed
+%D \stoptyping
+
 \def\math_radical_alternative{\csname\??mathradicalalternative\mathradicalparameter\c!alternative\endcsname}
 
 \integerdef\c_radical_unicode "221A
 
 \protected\def\math_radical_common
   {\Uroot
+     \s!height\dimexpr\mathradicalparameter\c!height\relax
+     \s!depth \dimexpr\mathradicalparameter\c!depth\relax
      \s!source\numexpr\namedboxanchor{\mathradicalparameter\c!source}\relax
      \s!style \normalmathstyle
      \zerocount \c_radical_unicode}

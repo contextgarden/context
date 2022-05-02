@@ -174,14 +174,29 @@
 \permanent\protected\def\smashedhbox{\hpack\bgroup\dowithnextboxcs\syst_boxes_smashed_nextbox\hbox}
 \permanent\protected\def\smashedvbox{\vpack\bgroup\dowithnextboxcs\syst_boxes_smashed_nextbox\vbox}
 
-%D First we define a helper. We use a \LUATEX\ feature in order to avoid
-%D mathpalettes.
+%D \starttyping
+%D \startTEXpage[offset=1dk,width=4em]
+%D   \dontleavehmode \hbox    {0} 0\par
+%D   \dontleavehmode \vphantom{0} 0\par
+%D   \dontleavehmode \hphantom{0} 0\par
+%D   $\textstyle        \vphantom{0}$ $\textstyle 0$\par
+%D   $\scriptstyle      \vphantom{0}$ $\scriptstyle 0$\par
+%D   $\scriptscriptstyle\vphantom{0}$ $\scriptscriptstyle 0$\par
+%D \stopTEXpage
+%D \stoptyping
 
-\newcount\c_boxes_math_style
+% \newcount\c_boxes_math_style
+%
+% \protected\def\syst_boxes_math_set_nextbox#1%
+%   {\c_boxes_math_style\normalmathstyle
+%    \setbox\nextbox\hbox{\normalstartimath\mathsurround\zeropoint\triggermathstyle\c_boxes_math_style{#1}\normalstopimath}}
 
 \protected\def\syst_boxes_math_set_nextbox#1%
-  {\c_boxes_math_style\normalmathstyle
-   \setbox\nextbox\hbox{\normalstartimath\mathsurround\zeropoint\triggermathstyle\c_boxes_math_style{#1}\normalstopimath}}
+  {\setbox\nextbox\hbox\expandafter\bgroup
+     \expandafter\normalstartimath\expandafter\Ustyle\the\mathstackstyle
+     \mathsurround\zeropoint{#1}%
+     \normalstopimath
+   \egroup}
 
 %D \macros
 %D   {smash}

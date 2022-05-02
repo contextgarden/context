@@ -209,6 +209,7 @@ return {
         --
         "nopreslackclassoptioncode", "nopostslackclassoptioncode",
         "lefttopkernclassoptioncode", "righttopkernclassoptioncode", "leftbottomkernclassoptioncode", "rightbottomkernclassoptioncode",
+        "lookaheadforendclassoptioncode", "defaultmathclassoptions",
         --
         "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noleftligatureglyphoptioncode",
         "noleftkernglyphoptioncode", "norightligatureglyphoptioncode", "norightkernglyphoptioncode",

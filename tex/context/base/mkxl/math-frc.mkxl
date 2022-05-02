@@ -560,7 +560,7 @@
    \c!left="28,
    \c!right="29]
 
-\permanent\protected\def\binom {\csname\inlineordisplaymath id:binom\endcsname}
+\permanent\protected\def\binom{\csname\inlineordisplaymath id:binom\endcsname}
 
 \definemathfraction
   [dbinom]

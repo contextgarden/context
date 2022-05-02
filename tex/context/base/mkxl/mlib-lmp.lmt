@@ -408,8 +408,13 @@ end
 
 do
 
+    local getcount       = tex.getcount
+
     local mpprint        = mp.print
     local mpfprint       = mp.fprint
+
+    local mpscaninteger  = mp.scan.integer
+    local mpscannumber   = mp.scan.number
 
     local jobpositions   = job.positions
     local getwhd         = jobpositions.whd
@@ -422,6 +427,14 @@ do
     local getregion      = jobpositions.region
     local getcolumn      = jobpositions.column
     local getmacro       = tokens.getters.macro
+
+    local columnofpos    = jobpositions.columnofpos
+    local getcolumndata  = jobpositions.getcolumndata
+ -- local overlapping    = jobpositions.overlapping
+ -- local onsamepage     = jobpositions.onsamepage
+ -- local columnofpos    = jobpositions.columnofpos
+
+    -- why not inject path directly
 
     registerscript("positionpath", function()
         local w, h, d = getwhd(scanstring())
@@ -450,6 +463,28 @@ do
         end
     end)
 
+    registerscript("positioncolumnbox", function()
+        local column = mpscaninteger()
+        local data   = getcolumndata(getcount("realpageno"),column)
+        if data then
+            local x, y, w, h, d = data.x, data.y, data.w, data.h, data.d
+            mpfprint("((%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle)",x,y-d,x+w,y-d,x+w,y+h,x,y+h)
+        else
+            mpprint("(0,0)--cycle")
+        end
+    end)
+
+    registerscript("overlaycolumnbox", function()
+        local column = mpscaninteger()
+        local data   = getcolumndata(getcount("realpageno"),column)
+        if data then
+            local w, hd = data.w, data.h + data.d
+            mpfprint("((0,0)--(%p,0)--(%p,%p)--(0,%p)--cycle)",w,w,hd,hd)
+        else
+            mpprint("(0,0)--cycle")
+        end
+    end)
+
     registerdirect("positionpage",      function() return getpage     (scanstring()) or 0 end)
     registerdirect("positioncolumn",    function() return getcolumn   (scanstring()) or 0 end)
     registerdirect("positionparagraph", function() return getparagraph(scanstring()) or 0 end)
@@ -459,6 +494,12 @@ do
     registerdirect("positionxy",        function() injectxy (getxy (scanstring())) end)
     registerdirect("positionx",         function() injectpt (getx  (scanstring())) end)
     registerdirect("positiony",         function() injectpt (gety  (scanstring())) end)
+
+    registerdirect("positioncolumnatx", function()
+        local realpage  = mpscaninteger()
+        local xposition = mpscannumber()
+        return columnofpos(realpage,xposition)
+    end)
 
 end
 

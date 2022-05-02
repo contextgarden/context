@@ -827,8 +827,8 @@
    \tracingonline    \zerocount}
 
 \permanent\protected\def\tracingnone
-  {\showboxdepth     \maxcount % \plusthree
-   \showboxbreadth   \plusten  % \plusfive
+  {\showboxdepth     \plusfive % lessboxtracing
+   \showboxbreadth   \plusten
    \tracingalignments\zerocount
    \tracingmath      \zerocount
    \tracingassigns   \zerocount

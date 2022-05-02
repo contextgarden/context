@@ -3686,7 +3686,7 @@ primarydef p outsideof q =
     not (p insideof q)
 enddef ;
 
-permanent crossingdebug, crossingscale, crossingnumberm, infotext, crossingunder, insideof, outsideof ;
+permanent crossingdebug, crossingscale, crossingnumbermax, infotext, crossingunder, insideof, outsideof ;
 
 %D Also handy:
 

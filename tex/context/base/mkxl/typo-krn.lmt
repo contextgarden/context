@@ -220,7 +220,21 @@ end
 
 local function inject_begin(boundary,prev,keeptogether,krn,ok) -- prev is a glyph
     local char, id = isglyph(boundary)
-    if id == kern_code then
+    if char then
+        if keeptogether and keeptogether(boundary,prev) then
+            -- keep 'm
+        else
+            local prevchar = isglyph(prev)
+            if prevchar and prevchar > 0 then
+                local font  = getfont(boundary)
+                local data  = chardata[font][prevchar]
+                local kerns = data and data.kerns
+                local kern  = new_kern((kerns and kerns[char] or 0) + quaddata[font]*krn)
+                setlink(kern,boundary)
+                return kern, true
+            end
+        end
+    elseif id == kern_code then
         if getsubtype(boundary) == fontkern_code then
             local inject = true
             if keeptogether then
@@ -235,20 +249,6 @@ local function inject_begin(boundary,prev,keeptogether,krn,ok) -- prev is a glyp
                 return boundary, true
             end
         end
-    elseif char then
-        if keeptogether and keeptogether(boundary,prev) then
-            -- keep 'm
-        else
-            local prevchar = isglyph(prev)
-            if prevchar and prevchar > 0 then
-                local font  = getfont(boundary)
-                local data  = chardata[font][prevchar]
-                local kerns = data and data.kerns
-                local kern  = new_kern((kerns and kerns[char] or 0) + quaddata[font]*krn)
-                setlink(kern,boundary)
-                return kern, true
-            end
-        end
     end
     return boundary, ok
 end
@@ -256,7 +256,21 @@ end
 local function inject_end(boundary,next,keeptogether,krn,ok)
     local tail = find_node_tail(boundary)
     local char, id = isglyph(tail)
-    if id == kern_code then
+    if char then
+        if keeptogether and keeptogether(tail,two) then
+            -- keep 'm
+        else
+            local nextchar = isglyph(tail)
+            if nextchar and nextchar > 0 then
+                local font  = getfont(tail)
+                local data  = chardata[font][nextchar]
+                local kerns = data and data.kerns
+                local kern  = (kerns and kerns[char] or 0) + quaddata[font]*krn
+                setlink(tail,new_kern(kern))
+                return boundary, true
+            end
+        end
+    elseif id == kern_code then
         if getsubtype(tail) == fontkern_code then
             local inject = true
             if keeptogether then
@@ -268,20 +282,6 @@ local function inject_end(boundary,next,keeptogether,krn,ok)
             if inject then
                 -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
                 setkern(tail,getkern(tail) + quaddata[getfont(next)]*krn,userkern_code)
-                return boundary, true
-            end
-        end
-    elseif char then
-        if keeptogether and keeptogether(tail,two) then
-            -- keep 'm
-        else
-            local nextchar = isglyph(tail)
-            if nextchar and nextchar > 0 then
-                local font  = getfont(tail)
-                local data  = chardata[font][nextchar]
-                local kerns = data and data.kerns
-                local kern  = (kerns and kerns[char] or 0) + quaddata[font]*krn
-                setlink(tail,new_kern(kern))
                 return boundary, true
             end
         end

@@ -16,7 +16,7 @@ return {
         "maxdimensions",
         "drawoptionsfactor",
         "dq", "sq",
-        "crossingscale", "crossingoption",
+        "crossingscale", "crossingoption", "crossingdebug",
         "contextlmtxmode", "metafunversion", "minifunversion",
         --
         -- for the moment we put these here as they need to stand out
@@ -47,6 +47,8 @@ return {
         "localanchorbox", "localanchorcell", "localanchorspan",
         "anchorbox", "anchorcell", "anchorspan",
         "matrixbox", "matrixcell", "matrixspan",
+        --
+        "pensilcolor", "pensilstep",
     },
     commands = {
         "loadfile", "loadimage", "loadmodule",
@@ -95,7 +97,7 @@ return {
         "checkedbounds", "checkbounds", "strut", "rule",
         "withmask", "bitmapimage",
         "colordecimals", "ddecimal", "dddecimal", "ddddecimal", "colordecimalslist",
-        "textext", "thetextext", "rawtextext", "textextoffset", "texbox", "thetexbox", "rawtexbox", "istextext",
+        "textext", "thetextext", "rawtextext", "textextoffset", "texbox", "thetexbox", "rawtexbox", "istextext", "infotext",
         "rawmadetext", "validtexbox", "onetimetextext", "rawfmttext", "thefmttext", "fmttext", "onetimefmttext",
         "notcached", "keepcached",
         "verbatim",
@@ -192,6 +194,7 @@ return {
         "positionpath", "positioncurve", "positionxy", "positionparagraph", "positioncolumn",
         "positionwhd", "positionpage", "positionregion", "positionbox", "positionx", "positiony",
         "positionanchor", "positioninregion", "positionatanchor",
+        "positioncolumnbox", "overlaycolumnbox", "positioncolumnatx",
         --
         "getposboxes", "getmultipars",
         "getpospage", "getposparagraph", "getposcolumn", "getposregion",
@@ -214,7 +217,7 @@ return {
         --
         "comment", "report", "lua", "lualist", "mp", "MP", "luacall",
         --
-        "mirrored", "mirroredabout",
+        "mirrored", "mirroredabout", "xslanted", "yslanted",
         --
         "scriptindex", "newscriptindex",
         --
@@ -225,5 +228,9 @@ return {
         --
         "withtolerance",
         --
+        "hatched", "withdashes",
+        "processpath", "pencilled",
+        "sortedintersectiontimes", "intersectionpath", "firstintersectionpath", "secondintersectionpath",
+        "intersectionsfound", "cutbeforefirst", "cutafterfirst",  "cutbeforelast", "cutafterlast",
     },
 }

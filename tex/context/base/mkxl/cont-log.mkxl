@@ -204,27 +204,43 @@
 \frozen\instance\protected\def\luametaTeX{lua\wordboundary meta\wordboundary\TeX}
 \frozen\instance\protected\def\XeTeX     {X\lower.5\exheight\hbox{\kern-.15\emwidth\mirror{E}}\kern-.1667\emwidth\TeX}
 
-% Adapted from a patch by Mojca:
+% % Adapted from a patch by Mojca:
+%
+% \def\syst_logos_xetex_e
+%   {\setbox\scratchbox\hbox{E}%
+%    \raise\dimexpr\ht\scratchbox+\dp\scratchbox\relax\hbox{\rotate[\c!rotation=180]{\box\scratchbox}}}
+%
+% \frozen\instance\protected\def\XeTeX
+%   {X\lower.5\exheight
+%    \hbox
+%      {\kern-.15\emwidth
+%       \iffontchar\font"018E\relax
+%         \char"018E%
+%       \else
+%         \ifx\fontalternative\s!bf         \mirror{E}\orelse
+%         \ifx\fontalternative\s!it\syst_logos_xetex_e\orelse
+%         \ifx\fontalternative\s!sl\syst_logos_xetex_e\orelse
+%         \ifx\fontalternative\s!bi\syst_logos_xetex_e\orelse
+%         \ifx\fontalternative\s!bs\syst_logos_xetex_e\else
+%                                           \mirror{E}\fi
+%       \fi}%
+%    \kern-.1667\emwidth\TeX}
 
-\def\syst_logos_xetex_e
-  {\setbox\scratchbox\hbox{E}%
-   \raise\dimexpr\ht\scratchbox+\dp\scratchbox\relax\hbox{\rotate[\c!rotation=180]{\box\scratchbox}}}
+% This is good enough for th efew times that we need it:
 
-\frozen\instance\protected\def\XeTeX
+\def\syst_logos_xe
   {X\lower.5\exheight
-   \hbox
-     {\kern-.15\emwidth
-      \iffontchar\font"018E\relax
-        \char"018E%
-      \else
-        \ifx\fontalternative\s!bf         \mirror{E}\orelse
-        \ifx\fontalternative\s!it\syst_logos_xetex_e\orelse
-        \ifx\fontalternative\s!sl\syst_logos_xetex_e\orelse
-        \ifx\fontalternative\s!bi\syst_logos_xetex_e\orelse
-        \ifx\fontalternative\s!bs\syst_logos_xetex_e\else
-                                          \mirror{E}\fi
-      \fi}%
-   \kern-.1667\emwidth\TeX}
+   \hbox\bgroup
+     \kern-.15\emwidth
+     \iffontchar\font"018E\relax
+       \char"018E%
+     \else
+       \mirror{E}%
+     \fi
+   \egroup}
+
+\frozen\instance\protected\def\XeTeX  {\syst_logos_xe\kern-.1667\emwidth\TeX}
+\frozen\instance\protected\def\XeLaTeX{\syst_logos_xe\LaTeX}
 
 \instance\protected\def\ETEX      {\eTeX}
 \instance\protected\def\PDFTEX    {\pdfTeX}

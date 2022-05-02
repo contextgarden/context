@@ -32,6 +32,8 @@
    %\c!margin=,
    %\c!align=,
    %\c!separator=,
+   \c!snap=\v!no,
+   \c!snapstep=\v!medium,
    \c!grid=\v!math,
    \c!location=\v!right,
    \c!left=(,
@@ -44,7 +46,7 @@
    \c!rightmargin=\zeropoint,
    \c!indentnext=\v!no,
    \c!alternative=\s!default,
-   \c!strut=\v!no,
+   \c!strut=\v!yes, % per 2022-04, was \v!no
    \c!numberstrut=\v!yes, % \v!no \v!yes \v!always
    \c!distance=2\emwidth]
 
@@ -889,7 +891,8 @@
   {\ifmmode
      % we can have a more dedicated value, and also maybe store the class so that we can
      % pick it up at the engine end (second pass)
-     \boundary\plusone
+%      \boundary\plusone
+     \boundary314\relax
    \fi}
 
 \protected\def\strc_math_break_here
@@ -1010,6 +1013,13 @@
    \strc_formulas_forget_display_skips
    \the\everybeforedisplayformula
    \begincsname\??mathtextalign\formulaparameter\c!textalign\endcsname
+   \ifcstok{\formulaparameter\c!strut}\v!yes
+     \let\strc_formulas_begstrut\begstrut
+     \let\strc_formulas_endstrut\endstrut
+   \else
+     \let\strc_formulas_begstrut\relax
+     \let\strc_formulas_endstrut\relax
+   \fi
    \csname\e!start\formulaparameter\c!alternative\v!formula\endcsname}
 
 \protected\def\strc_formulas_start_formula_nested#1%
@@ -1079,6 +1089,9 @@
 %D \startformula x \stopformula % now has \noindent (in mkii we messed with baselineskip)
 %D \stoptyping
 
+\let\strc_formulas_begstrut\relax
+\let\strc_formulas_endstrut\relax
+
 \permanent\protected\def\startdisplaymath
   {\ifhmode
      \par
@@ -1099,10 +1112,14 @@
    \else
      \expandafter\startinnermath
    \fi
+   \strc_formulas_begstrut
    \begingroup} % less interference with upcoming a \over b
 
 \permanent\protected\def\stopdisplaymath
   {\endgroup    % less interference with upcoming a \over b
+   \ifhmode
+     \strc_formulas_endstrut
+   \fi
    \ifcase\c_strc_formulas_mode
      \Ucheckedstopdisplaymath
    \or
@@ -1360,8 +1377,19 @@
 \def\strc_formulas_place_number_indeed
   {\strc_formulas_place_number_in_box}
 
+% \def\strc_formulas_place_number_in_box
+%   {\dostarttagged\t!formulacaption\empty
+%    \global\setbox\b_strc_formulas_number\naturalhbox{\strc_formulas_number_indeed}%
+%    \dostoptagged}
+
 \def\strc_formulas_place_number_in_box
   {\dostarttagged\t!formulacaption\empty
+   % this is really needed, otherwise we get spurious numbers probbaly due to some
+   % interference with other local variables .. also keep an eye on eqtest in the
+   % MS tests
+   \glet\strc_formulas_place_number       \relax
+   \glet\strc_formulas_place_number_nested\gobbletwoarguments
+   %
    \global\setbox\b_strc_formulas_number\naturalhbox{\strc_formulas_number_indeed}%
    \dostoptagged}
 
@@ -1397,6 +1425,20 @@
 
 \permanent\protected\def\setformulalistentry#1%
   {\gdef\namedformulaentry{#1}}
+
+%D New:
+%D
+%D \setupformula[snap=yes,snapstep=medium]
+
+\definesystemattribute[mathsnap][public]
+
+\appendtoks
+    \ifcstok{\formulaparameter\c!snap}\v!yes
+      \setmathsnapping{\formulaparameter\c!snapstep}%
+    \else
+      \setmathsnapping\v!reset
+    \fi
+\to \everysetupformula
 
 \protect \endinput
 

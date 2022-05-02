@@ -71,6 +71,7 @@ local trace_domains      = false  registertracker("math.domains",     function(v
 local trace_families     = false  registertracker("math.families",    function(v) trace_families    = v end)
 local trace_fences       = false  registertracker("math.fences",      function(v) trace_fences      = v end)
 local trace_unstacking   = false  registertracker("math.unstack",     function(v) trace_unstacking  = v end)
+local trace_snapping     = false  registertracker("math.snapping",    function(v) trace_snapping    = v end)
 
 local check_coverage     = true   registerdirective("math.checkcoverage",  function(v) check_coverage  = v end)
 
@@ -89,6 +90,7 @@ local report_domains     = logreporter("mathematics","domains")
 local report_families    = logreporter("mathematics","families")
 local report_fences      = logreporter("mathematics","fences")
 local report_unstacking  = logreporter("mathematics","unstack")
+local report_snapping    = logreporter("mathematics","snapping")
 
 local a_mathrendering    = privateattribute("mathrendering")
 local a_exportstatus     = privateattribute("exportstatus")
@@ -129,6 +131,7 @@ local getlist            = nuts.getlist
 local getwidth           = nuts.getwidth
 local getheight          = nuts.getheight
 local getdepth           = nuts.getdepth
+local getwhd             = nuts.getwhd
 
 local getnucleus         = nuts.getnucleus
 local getsub             = nuts.getsub
@@ -141,6 +144,9 @@ local setsub             = nuts.setsub
 local setsup             = nuts.setsup
 local setsubpre          = nuts.setsubpre
 local setsuppre          = nuts.setsuppre
+
+local getoffsets         = nuts.getoffsets
+local setoffsets         = nuts.setoffsets
 
 local flushnode          = nuts.flush
 local copy_node          = nuts.copy
@@ -169,6 +175,10 @@ local unsetvalue         = attributes.unsetvalue
 local implement          = interfaces.implement
 
 local v_reset            = variables.reset
+local v_small            = variables.small
+local v_medium           = variables.medium
+local v_big              = variables.big
+local v_line             = variables.line
 
 local chardata           = characters.data
 
@@ -2173,6 +2183,185 @@ do
 
 end
 
+
+do
+
+    local traversehlist = nuts.traversers.hlist
+
+    local getshift      = nuts.getshift
+    local setwhd        = nuts.setwhd
+    local setshift      = nuts.setshift
+
+    -- normalizer: can become engine feature (native tex loves shifts)
+
+    local function normalize(h)
+        for n, s in traversehlist, h do
+            if s > 0 then
+                local sh = getshift(n)
+                local ox, oy = getoffsets(n)
+                if sh ~= 0 then
+                    local w, h, d = getwhd(n)
+                    h = h - sh
+                    d = d + sh
+                    setshift(n)
+                    setwhd(n,w,h > 0 and h or 0,d > 0 and d or 0)
+                    setoffsets(n,ox,oy - sh)
+                end
+            end
+            local l = getlist(l)
+            if l then
+                normalize(l)
+            end
+        end
+    end
+
+    function handlers.normalize(h)
+        return normalize(h)
+    end
+
+end
+
+do
+
+    local traversehlist = nuts.traversers.hlist
+
+    local texgetdimen   = tex.getdimen
+    local texgetglue    = tex.getglue
+    local texgetcount   = tex.getcount
+
+    local newrule       = nuts.pool.outlinerule
+    local newkern       = nuts.pool.kern
+    local setcolor      = nodes.tracers.colors.set
+
+    local a_mathsnap    = attributes.private("mathsnap")
+
+    function handlers.snap(h,_,_,_,_,level)
+     -- if not level or level == 0 then
+        if texgetcount("mathnestinglevel") == 1 then
+            local trace_color
+            if trace_snapping == "frame" then
+                trace_color = "darkgray"
+            elseif type(trace_snapping) == "string" then
+                trace_color = trace_snapping
+            else
+                trace_color = false
+            end
+            local ht, dp, dd, hs, ds, hd
+            for n, s in traversehlist, h do
+                local step = getattr(n,a_mathsnap)
+                if step then
+                    local done = false
+                    if not dd then
+                        ht = texgetdimen("mathstrutht")
+                        dp = texgetdimen("mathstrutdp")
+                        hd = ht + dp
+                        -- lineskip can be large in alignments
+                     -- dd = hd / 12
+                        dd = hd / 6
+                        if step == 0xFFFF then
+                            hs = dd
+                            ds = dd
+                        else
+                            hs = ht/step
+                            ds = dp/step
+                        end
+                    end
+                    local w, h, d = getwhd(n)
+                    -- snap to line
+                  ::height::
+                    if h-dd < ht then
+                        if trace_snapping == true then
+                            report_snapping("adapting ht: old %p, new %p, lineskip %p",h,ht,dd)
+                        end
+                        done = true
+                        setheight(n,ht)
+                        goto depth
+                    end
+                    if h > ht then
+--                         while ht < (h-dd) do
+                        while ht < h do
+                            ht = round(ht + hs)
+                        end
+                        if h ~= ht then
+                            setheight(n,ht)
+                            if trace_snapping == true then
+                                report_snapping("enlarging ht: old %p, new %p, step %p",h,ht,hs)
+                            end
+                            done = true
+                        end
+                    end
+                  ::depth::
+                    if d-dd < dp then
+                        if trace_snapping == true then
+                            report_snapping("adapting dp: old %p, new %p, lineskip %p",d,dp,dd)
+                        end
+                        setdepth(n,dp)
+                        done = true
+                        goto done
+                    end
+                    if d > dp then
+--                         while dp < (d-dd) do
+                        while dp < d do
+                            dp = round(dp + ds)
+                        end
+                        if d ~= dp then
+                            setdepth(n,dp)
+                            if trace_snapping == true then
+                                report_snapping("enlarging dp: old %p, new %p, step %p",d,dp,ds)
+                            end
+                            done = true
+                        end
+                    end
+                 ::done::
+                    if done and trace_color then
+                     -- w, h, d = getwhd(n)
+                     -- local r = newrule(w,h,d,65536)
+                     -- setcolor(r,trace_color)
+                     -- setlink(r,newkern(-w),getlist(n))
+                     -- setlist(n,r)
+
+                        local old = newrule(w,h,d,65536)
+                        setcolor(old,"middlegray")
+                        w, h, d = getwhd(n)
+                        local new = newrule(w,h,d,65536/4)
+                        setcolor(new,trace_color)
+                        setlink(old,newkern(-w),new,newkern(-w),getlist(n))
+                        local ox, oy = getoffsets(n)
+                        setoffsets(old,-ox,-oy)
+                        setoffsets(new,-ox,-oy)
+                        setlist(n,old)
+                    end
+                end
+            end
+        end
+    end
+
+    local valid = {
+        [v_reset]  = unsetvalue,
+        [v_line]   = 0xFFFF,
+        [v_small]  = 8,
+        [v_medium] = 4,
+        [v_big]    = 2,
+    }
+
+    function mathematics.setsnapping(s)
+        if not enabled then
+            enableaction("math", "noads.handlers.snap")
+            enabled = true
+        end
+        texsetattribute(a_mathsnap,valid[s] or unsetvalue)
+    end
+
+    implement {
+        name      = "setmathsnapping",
+        public    = true,
+        protected = true,
+        arguments = "argument",
+        actions   = mathematics.setsnapping,
+    }
+
+end
+
 -- experimental
 
 do
@@ -2387,9 +2576,9 @@ local actions = tasks.actions("math") -- head, style, penalties
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
-function processors.mlisttohlist(head,style,penalties,beginclass,endclass)
+function processors.mlisttohlist(head,style,penalties,beginclass,endclass,level)
     starttiming(noads)
-    head = actions(head,style,penalties,beginclass,endclass)
+    head = actions(head,style,penalties,beginclass,endclass,level)
     stoptiming(noads)
     return head
 end

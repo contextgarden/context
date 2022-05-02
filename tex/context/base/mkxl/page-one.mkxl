@@ -79,6 +79,12 @@
    \else
      \global\vsize\textheight
    \fi
+   %
+   \ifzeropt\textadaptive\else
+     \global\d_page_adapts_delta\textadaptive
+     \global\pageextragoal-\textadaptive
+   \fi
+   %
    \global\advance\vsize\d_page_adapts_delta
    % alternatively we could set it in builders.buildpage_filter
  % \ifdim\pagegoal<\maxdimen .. \fi

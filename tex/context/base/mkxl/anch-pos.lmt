@@ -1750,9 +1750,17 @@ local function columnofpos(realpage,xposition)
     return 1
 end
 
-jobpositions.overlapping = overlapping
-jobpositions.onsamepage  = onsamepage
-jobpositions.columnofpos = columnofpos
+local function getcolumndata(realpage,column)
+    local p = columndata[realpage]
+    if p then
+        return p[column]
+    end
+end
+
+jobpositions.overlapping   = overlapping
+jobpositions.onsamepage    = onsamepage
+jobpositions.columnofpos   = columnofpos
+jobpositions.getcolumndata = getcolumndata
 
 -- interface
 

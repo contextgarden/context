@@ -210,6 +210,13 @@ if saferoption == 1 or shellescape ~= 1 then
 
     ffi = nil
 
+    -- A patch by LS for LaTeX per April 2022 but I'm, not sure if that breaks ConTeXt MKIV. I have
+    -- no time nor motivation to test that right now so we'll see where it breaks. We have different
+    -- loaders anyway and we don't test plain.
+
+    package.loaded .ffi = nil   -- Isn't that still nil then?
+    package.preload.ffi = error -- Do errors always go there?
+
 end
 
 if md5 then

@@ -1084,7 +1084,7 @@ def lmt_do_chart_start (expr what) =
     save fillcolor, drawcolor, labelcolor, labelstyle, labelformat, labelstrut, labelanchor, colormode ;
     string fillcolor, drawcolor, labelcolor, labelstyle, labelformat, labelstrut, labelanchor, colormode ;
     if hasparameter "sampleset" :
-        setluaparameter "what" "samples" (getparameter "sampleset") ;
+        setluaparameter what "samples" (getparameter "sampleset") ;
     fi ;
     height := getparameter "height" ;
     width := getparameter "width" ;

@@ -35,6 +35,8 @@
 %D Modules may provide additional alignment features. The following kind of plain
 %D mechanisms are provided by the core.
 
+\newtoks\mathdisplayaligntweaks
+
 \newtoks\t_math_align_a
 \newtoks\t_math_align_b
 \newtoks\t_math_align_c
@@ -77,20 +79,6 @@
    \tabskip\zeropoint
    \everycr\emptytoks}
 
-% \def\math_math_in_eqalign#1%
-%   {\startforceddisplaymath
-%    \tabskip\zeropoint
-%    \everycr\emptytoks
-%    {{}#1{}}% brrr we need to replace {}
-%    \stopforceddisplaymath}
-
-% \def\math_text_in_eqalign#1%
-%   {\startimath
-%    \tabskip\zeropoint
-%    \everycr\emptytoks
-%    #1%
-%    \stopimath}
-
 \def\math_math_in_eqalign#1%
   {\mathbeginclass\mathordcode
    \mathendclass  \mathordcode
@@ -109,27 +97,12 @@
    #1%
    \stopimath}
 
-% \permanent\protected\def\eqalign#1% why no halign here, probably because of displaywidth
-%   {\emptyhbox % why no \dontleavehmode
-%    \mskip\thinmuskip
-%    \vcenter
-%      {\math_openup\displayopenupvalue % was: \openup\jot
-%       \mathsurround\zeropoint
-%       \ialign{%
-%         \strut
-%         \hfil
-%         \startforceddisplaymath{\aligncontent}\stopforceddisplaymath
-%         \aligntab
-%         \startforceddisplaymath{{}\aligncontent{}}\stopforceddisplaymath
-%         \hfil\crcr
-%         #1\crcr}%
-%      }%
-%    \mskip\thinmuskip}
+\let\math_align_openup\relax % defined later on
 
 \permanent\protected\def\eqalign#1% rather plain, is this used at all ...
   {\dontleavehmode
    \mskip\thinmuskip\vcenter\bgroup % \vcenter \s!class \mathwrappercode \bgroup
-     \math_openup\displayopenupvalue
+     \math_align_openup
      \mathsurround\zeropoint        % \math_eqalign_set_defaults
      \ialign
        {\strut
@@ -384,9 +357,6 @@
     \pop_macro_NC
 \to \everymathalignmentdone
 
-\let\math_alignment_snap_start\relax
-\let\math_alignment_snap_stop \relax
-
 % % experimental:
 %
 % \def\math_alignment_snap_start
@@ -424,7 +394,8 @@
 % % [align={1:left,2:middle,3:right}]
 
 \permanent\tolerant\protected\def\math_alignment_start[#1]#*[#2]%
-  {\edef\currentmathalignment{#1}%
+  {\begingroup
+   \edef\currentmathalignment{#1}%
    \ifarguments\or\or
      \setupmathalignment[#1][#2]% bad! ungrouped
    \fi
@@ -446,7 +417,8 @@
    \dostoptagged
    \dostoptagged
    \the\everymathalignmentdone
-   \math_alignment_snap_stop}
+   \math_alignment_snap_stop
+   \endgroup}
 
 \installcorenamespace{mathalignment}
 \installcorenamespace{mathalignmentvariant}
@@ -469,10 +441,35 @@
   [\c!n=2,
    \c!m=1,
    \c!distance=\emwidth,
+   \c!spaceinbetween=.25\bodyfontsize,
    \c!grid=\v!math]
 
 \definemathalignment[align]            % default case (this is what amstex users expect)
 \definemathalignment[\v!mathalignment] % prefered case (this is cleaner, less clashing)
+
+% this needs some consideration:
+
+\def\math_align_openup{\math_openup\mathalignmentparameter\c!spaceinbetween\relax}
+
+\let\math_display_align_hack_indeed\relax
+
+\protected\def\math_display_align_hack % I don't like the global, maybe we should push and pop
+  {\glet\math_display_align_hack_indeed\math_display_align_hack_remove_skip
+   \math_align_openup
+   \everycr{\noalign{\math_display_align_hack_indeed}}}
+
+\def\math_display_align_hack_remove_skip
+  {\ifdim\prevdepth>-\thousandpoint
+     \vskip\dimexpr-\lineskiplimit+\normallineskiplimit\relax
+   \fi
+   \glet\math_display_align_hack_indeed\math_display_align_hack_insert_penalty}
+
+\def\math_display_align_hack_insert_penalty
+  {\penalty\interdisplaylinepenalty}
+
+\appendtoks
+    \math_display_align_hack
+\to \mathdisplayaligntweaks
 
 % special case.. in case one mistypes ..
 
@@ -977,21 +974,6 @@
    \dostoptagged
    \endlocalcontrol}
 
-% \protected\def\math_matrix_start_cell
-%   {\dostarttagged\t!mtablecell\empty
-%    \hss
-%    \math_left_of_eqalign
-%    \startimath
-%    \math_matrix_set_style
-%    \tabskip\zeropoint
-%    \everycr\emptytoks}
-%
-% \protected\def\math_matrix_stop_cell
-%   {\stopimath
-%    \math_right_of_eqalign
-%    \hss
-%    \dostoptagged}
-
 \protected\def\math_matrix_start_cell
   {\dostarttagged\t!mtablecell\empty
    \hss
@@ -1015,89 +997,6 @@
 % enabled    : 1
 % left/both  : 2
 % right/both : 4
-
-% \c_math_matrix_anchor_mode3
-
-% this will be replaced
-
-%\permanent\protected\def\setmathmatrixanchoring[#1]%
-%  {\c_math_matrix_anchor_mode\zerocount
-%   \processaction
-%     [#1]
-%     [    \v!left=>\bitwiseflip\c_math_matrix_anchor_mode\numexpr\plusone+\plustwo\relax,
-%         \v!right=>\bitwiseflip\c_math_matrix_anchor_mode\numexpr\plusone+\plusfour\relax,
-%          \v!both=>\bitwiseflip\c_math_matrix_anchor_mode\numexpr\plusone+\plustwo+\plusfour\relax,
-%           \v!yes=>\bitwiseflip\c_math_matrix_anchor_mode\numexpr\plusone]}
-%
-%\def\math_matrix_anchor
-%  {\ifbitwiseand\c_math_matrix_anchor_mode\plusone
-%     \markanchor{matrix}{\numexpr\c_math_eqalign_column+1\relax}\c_math_eqalign_row
-%   \fi}
-%
-%\protected\def\math_matrix_distance
-%  {\relax
-%   \ifdim\d_math_eqalign_distance>\zeropoint
-%     \hskip.5\d_math_eqalign_distance
-%   \fi
-%   \math_matrix_anchor
-%   \ifdim\d_math_eqalign_distance>\zeropoint
-%     \hskip.5\d_math_eqalign_distance
-%   \fi
-%   \relax}
-%
-%\protected\def\math_matrix_distance_first
-%  {\relax
-%   \ifbitwiseand\c_math_matrix_anchor_mode\plusone
-%     \math_matrix_anchor
-%   \fi
-%   \ifdim\d_math_eqalign_distance>\zeropoint
-%     \ifbitwiseand\c_math_matrix_anchor_mode\plustwo
-%       \hskip.5\d_math_eqalign_distance
-%     \fi
-%   \fi
-%   \relax}
-%
-%\protected\def\math_matrix_distance_last
-%  {\relax
-%   \ifdim\d_math_eqalign_distance>\zeropoint
-%     \ifbitwiseand\c_math_matrix_anchor_mode\plusfour
-%       \hskip.5\d_math_eqalign_distance
-%     \fi
-%   \fi
-%   \ifbitwiseand\c_math_matrix_anchor_mode\plusone
-%     \math_matrix_anchor
-%   \fi
-%   \relax}
-%
-% \def\math_matrix_preamble
-%   {\math_matrix_strut
-%    \math_matrix_distance_first
-%    \global\advance\c_math_eqalign_column\plusone
-%    \math_matrix_start_cell
-%      \aligncontent
-%    \math_matrix_stop_cell
-%    \aligntab
-%    \aligntab
-%    \math_matrix_distance
-%    \global\advance\c_math_eqalign_column\plusone
-%    \math_matrix_start_cell
-%      \aligncontent
-%    \math_matrix_stop_cell}
-%
-% \permanent\protected\def\math_matrix_NR
-%   {\aligntab\omit
-%    \math_matrix_distance_last
-%    \math_matrix_stop_row
-%    \math_matrix_pickup
-%    \crcr
-%    \math_matrix_start_row}
-%
-% \permanent\protected\def\math_matrix_NC
-%   {\ifconditional\c_math_matrix_first
-%      \expandafter\math_matrix_NC_yes
-%    \else
-%      \expandafter\math_matrix_NC_nop
-%    \fi}
 
 \permanent\protected\def\setmathmatrixanchoring[#1]%
   {\c_math_matrix_anchor_mode\zerocount
@@ -1212,39 +1111,6 @@
    \enforced\let\VL\math_matrix_VL
    \enforced\let\TB\math_common_TB
 \to \everymathmatrix
-
-% \def\math_matrix_start_processing
-%   {\ifmmode
-%      \mathatom \s!class \mathwrappedcode
-%    \else
-%      \dontleavehmode
-%    \fi
-%    \bgroup
-%    \tabskip\zeropoint
-%    \math_matrix_pickup
-%    \the\everymathmatrix
-%    %
-%  % \enforced\let\endmath\relax
-%    %
-%    \setbox\nextbox\vbox\bgroup
-%    \math_matrix_start_table
-%    \halign \bgroup
-%      % preamble
-%      \span\math_matrix_preamble
-%      % done
-%      \crcr
-%      \math_matrix_start_row}
-%
-% \def\math_matrix_stop_processing
-%   {%\math_matrix_stop_wrapup % optional
-%    \math_matrix_stop_row
-%    \egroup
-%    \math_matrix_stop_table
-%    \egroup
-%    \mathmatrixleft  % experimental hook
-%    \math_matrix_finish_nextbox
-%    \mathmatrixright % experimental hook
-%    \egroup}
 
 \def\math_matrix_start_processing
   {\ifmmode
@@ -1696,81 +1562,6 @@
    \egroup
    \endgroup}
 
-% %D \macros
-% %D   {bordermatrix}
-% %D
-% %D In \PLAIN\ \TEX\ the width of a parenthesis is stored in
-% %D the \DIMENSION\ \type{\mathparentwd}. This value is derived from
-% %D the width of \type{\tenrm B}, so let's take care of it now:
-%
-% \ifdefined\mathparentwd \else \newdimen\mathparentwd \fi
-%
-% \let\normalbordermatrix\bordermatrix % move that code to here instead
-%
-% \protected\def\bordermatrix
-%   {\begingroup
-%    \setbox\scratchbox\hbox{\mr\char"239C}%
-%    \global\mathparentwd\wd\scratchbox
-%    \endgroup
-%    \normalbordermatrix}
-%
-% \def\bordermatrix
-%   {\begingroup
-%    \mr
-%    \global\mathparentwd\fontcharwd\font"239C\relax
-%    \endgroup
-%    \normalbordermatrix}
-
-% %D \macros{overset, underset}
-% %D
-% %D The macros \type{\overset} and \type{\underset} are provided by
-% %D \AMS\ packages in \LATEX. These macro allows you to place a symbol
-% %D above or below another symbol, irrespective of whether the other
-% %D symbol is a relation or something else, and without influencing the
-% %D spacing.  For most cases there is a better way to do such things
-% %D (declaring a math command with limop option, or using accents), but
-% %D occasionally these macros can be useful, for example:
-% %D
-% %D \startbuffer
-% %D \startformula
-% %D \overset{*}{X} \underset{*}{X}
-% %D \stopformula
-% %D \stopbuffer
-% %D \typebuffer \getbuffer
-% %D
-% %D Use these macros sparingly. Remember, \TEX\ was designed for
-% %D mathematics, so there is usually a proper method for typesetting
-% %D common math notation.
-% %D
-% %D These macros are a cleaner version of \type {\binrel@} and
-% %D \type {\binrel@@} macros in \AMSTEX\ packages.
-%
-% \def\math_binrel_apply#1%
-%   {\begingroup
-%    \setbox\scratchbox\hbox
-%      {\thinmuskip   0mu
-%       \medmuskip   -1mu
-%       \thickmuskip -1mu
-%       \setbox\scratchbox\hbox{\normalstartimath#1\mathsurround\zeropoint\normalstopimath}%
-%       \kern-\wd\scratchbox
-%       \normalstartimath{}#1{}\mathsurround\zeropoint\normalstopimath}%
-%    \ifdim\wd\scratchbox<\zeropoint
-%      \endgroup
-%      \expandafter\mathbin
-%    \orelse\ifdim\wd\scratchbox>\zeropoint
-%      \endgroup
-%      \doubleexpandafter\mathrel
-%    \else
-%      \endgroup
-%      \doubleexpandafter\firstofoneargument
-%    \fi}
-%
-% \permanent\protected\def\overset#1#2%
-%   {\math_binrel_apply{#2}{\mathop{\kern\zeropoint#2}\limits\normalsuperscript{#1}}}
-%
-% \permanent\protected\def\underset#1#2%
-%   {\math_binrel_apply{#2}{\mathop{\kern\zeropoint#2}\limits\normalsubscript  {#1}}}
-
 %D \macros{overset, underset}
 %D
 %D The macros \type {\overset} and \type {\underset} are provided by \AMS\ packages
@@ -1798,9 +1589,6 @@
 
 \permanent\protected\def\startinnermath{\expandnamespaceparameter\??mathinnerstart\formulaparameter\c!align\v!normal}
 \permanent\protected\def\stopinnermath {\expandnamespaceparameter\??mathinnerstop \formulaparameter\c!align\v!normal}
-
-\permanent\protected\def\mathinnerstrut
-  {\doif{\formulaparameter\c!strut}\v!yes\strut}
 
 \permanent\protected\def\defineinnermathhandler#1#2#3%
   {\defcsname\??mathinnerstart#1\endcsname{#2}%
@@ -1857,25 +1645,6 @@
    \fi}
 
 % mode: 0=no frame | 1=number inside frame | 2=number outside frame
-
-% \def\strc_math_flush_aligned
-%   {\ifcase\c_strc_math_vertical
-%      \ifcase\mathraggedstatus\or\hfill\or\hfill\fi
-%      \box\b_strc_math_display
-%      \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi
-%    \else
-%      \ifconditional\c_strc_math_indent
-%        \ifzeropt\d_strc_math_indent\else
-%          \hangafter\plusone
-%          \hangindent\d_strc_math_indent
-%        \fi
-%      \fi
-%      \edef\p_interlinespace{\formulaparameter\c!interlinespace}%
-%      \ifempty\p_interlinespace\else\baselineskip\p_interlinespace\fi
-%      \global\d_strc_math_indent\zeropoint
-%      \ifcase\mathraggedstatus\or\raggedleft\or\raggedcenter\or\raggedright\fi
-%      \unhbox\b_strc_math_display
-%    \fi}
 
 \protected\def\strc_math_flush_aligned
   {\ifcase\c_strc_math_vertical
@@ -2128,7 +1897,6 @@
   %\strc_formulas_place_number % not here as we can have inner alignment numbers
    \dontcomplain
    \setbox\b_strc_math_display\math_hbox\bgroup % \checkeddisplaymath
-     \mathinnerstrut
      \startforceddisplaymath}
 
 \def\strc_math_flush_number_no

@@ -18,6 +18,7 @@ local tonode        = nodes.tonode
 local getid         = nuts.getid
 local getnext       = nuts.getnext
 local getwidth      = nuts.getwidth
+local getdata       = nuts.getdata
 local setglue       = nuts.setglue
 local getdimensions = nuts.dimensions
 local nextglue      = nuts.traversers.glue
@@ -33,11 +34,12 @@ local distance = 0
 function noads.handlers.align(h)
     if method ~= v_none then
         if method == v_auto then
+            --- can be a fast loop
             local s = h
             while s do
                 local id = getid(s)
                 local n  = getnext(s)
-                if id == boundary_code then -- check some type
+                if id == boundary_code and getdata(s) == 314 then
                     if n and getid(n) == glue_code then
                         s = n
                         n = getnext(s)
