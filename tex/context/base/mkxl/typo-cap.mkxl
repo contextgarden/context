@@ -73,7 +73,10 @@
 % test \word{test TEST \TeX} test
 % test \Word{test TEST \TeX} test
 
-\permanent\protected\def\setcharactercasing[#1]{\clf_setcharactercasing{#1}} % can be public implementor
+\permanent\tolerant\protected\def\setcharactercasing[#1]{\clf_setcharactercasing{#1}} % can be public implementor
+
+\protected\def\casing[#1]{\groupedcommand{\clf_setcharactercasing{#1}}{}}
+\protected\def\nocasing  {\groupedcommand{\clf_setcharactercasing  {}}{}}
 
 \protected\def\typo_capitale_WORD {\clf_setcharactercasing\v!WORD }
 \protected\def\typo_capitale_word {\clf_setcharactercasing\v!word }

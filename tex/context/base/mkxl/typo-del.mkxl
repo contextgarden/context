@@ -142,7 +142,6 @@
   [\c!rightsubsentence]
   [\rightboundarycharacter\c!rightsubsentence{sentence}]
 
-\newsignal\d_typo_subsentence_signal
 \newcount \c_typo_subsentence_nesting
 
 \mutable\let\beforesubsentence\donothing % maybe just a parameter
@@ -171,10 +170,12 @@
    \symbol[\c!midsentence]%
    \dostoptagged}
 
+\newboundary\c_typo_subsentence_boundary
+
 \permanent\protected\def\beginofsubsentence
   {\beforesubsentence
-   \ifdim\lastkern=\d_typo_subsentence_signal
-     \unskip
+   \ifnum\lastboundary=\c_typo_subsentence_boundary
+     \unboundary
      \kern\hspaceamount\currentusedlanguage{intersentence}%
    \fi
    \global\advance\c_typo_subsentence_nesting\plusone
@@ -199,15 +200,15 @@
    \dostoptagged
    \global\advance\c_typo_subsentence_nesting\minusone
    \unskip
-   \kern\d_typo_subsentence_signal\relax
+   \boundary\c_typo_subsentence_boundary
    \aftersubsentence}
 
 \permanent\protected\def\beginofsubsentencespacing % relax prevents space gobbling
-  {\kern\d_typo_subsentence_signal\relax}% \ignorespaces}
+  {\boundary\c_typo_subsentence_boundary}% \ignorespaces}
 
 \permanent\protected\def\endofsubsentencespacing
-  {\ifdim\lastkern=\d_typo_subsentence_signal
-     \unskip
+  {\ifnum\lastboundary=\c_typo_subsentence_boundary
+     \unboundary
      \hskip\hspaceamount\currentusedlanguage{intersentence}%
      % no good, actually language dependent:
      % \ignorespaces
@@ -285,8 +286,6 @@
 %D to extend the low level quotation macros in such a way that a speech feature
 %D could be build on top of it. The speech opening and closing symbols are defined
 %D per language. Italian is an example of a language that has them set.
-
-\newsignal\d_typo_delimited_signal
 
 \mutable\let\currentdelimitedtext      \s!unknown
 \mutable\let\currentparentdelimitedtext\currentdelimitedtext
@@ -711,14 +710,16 @@
 % even in \MKII. Maybe we should to this in \LUA. Only Italian has the
 % middlespeech parameter set.
 
+\newboundary\c_typo_delimited_boundary
+
 \def\typo_delimited_handle_middle#1% special case
   {\ifconditional\c_typo_delimited_repeating
      \begingroup
      \usedelimitedtextstyleandcolor\c!symstyle\c!symcolor
      \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
      \ifdim\wd\scratchbox>\zeropoint
-       \ifdim\lastkern=\d_typo_delimited_signal
-         \unkern
+       \ifnum\lastboundary=\c_typo_delimited_boundary
+         \unboundary
          \hskip\hspaceamount\currentusedlanguage{interquotation}%
        \else % maybe an option:
         %\edef\p_delimited_margin{\delimitedtextparameter\c!location}%
@@ -732,7 +733,7 @@
        \delimitedtextparameter#1% unhbox\scratchbox
        \dostoptagged
      % \penalty\plustenthousand % else overfull boxes, but that's better than dangling periods
-       \kern\d_typo_delimited_signal % +- \prewordbreak
+       \boundary\c_typo_delimited_boundary
      \fi
      \endgroup
    \else
@@ -744,11 +745,8 @@
    \usedelimitedtextstyleandcolor\c!symstyle\c!symcolor
    \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
    \ifdim\wd\scratchbox>\zeropoint
-     \ifdim\lastkern=\d_typo_delimited_signal
-       \unkern
-       \hskip\hspaceamount\currentusedlanguage{interquotation}%
-     \orelse\ifdim\lastskip=\d_typo_delimited_signal
-       \unskip
+     \ifnum\lastboundary=\c_typo_delimited_boundary
+       \unboundary
        \hskip\hspaceamount\currentusedlanguage{interquotation}%
      \fi
    % \strut % new, needed below
@@ -762,7 +760,7 @@
      \delimitedtextparameter#1% unhbox\scratchbox
      \dostoptagged
      \penalty\plustenthousand % new per 2013-03-09 WS mailing list
-     \hskip\d_typo_delimited_signal % +- \prewordbreak
+     \boundary\c_typo_delimited_boundary
    \fi
    \endgroup}
 
@@ -771,12 +769,8 @@
    \usedelimitedtextstyleandcolor\c!symstyle\c!symcolor
    \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
    \ifdim\wd\scratchbox>\zeropoint
-     \ifdim\lastkern=\d_typo_delimited_signal
-       \unkern
-       \penalty\plustenthousand
-       \hskip\hspaceamount\currentusedlanguage{interquotation}%
-     \orelse\ifdim\lastskip=\d_typo_delimited_signal
-       \unskip
+     \ifnum\lastboundary=\c_typo_delimited_boundary
+       \unboundary
        \penalty\plustenthousand
        \hskip\hspaceamount\currentusedlanguage{interquotation}%
      \fi
@@ -789,7 +783,7 @@
      \dotagsetdelimitedsymbol\s!right
      \delimitedtextparameter#1% unhbox\scratchbox
      \dostoptagged
-     \kern\d_typo_delimited_signal % +- \prewordbreak
+     \boundary\c_typo_delimited_boundary
    \fi
    \endgroup}
 

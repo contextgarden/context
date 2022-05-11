@@ -1312,7 +1312,7 @@ local handletransform, handleviewbox  do
     end
 
     local p_transform = (
-            lpegpatterns.whitespace^0 * (
+            p_space^0 * (
             P("translate")  * (p_numbers / translate)      -- maybe xy
           + P("scale")      * (p_numbers / scale)
           + P("rotate")     * (p_numbers / rotate)
@@ -1491,17 +1491,28 @@ do
         ["fill-opacity"]   = ".75",
     }
 
+    local skipspace  = p_space^0
+    local colon      = P(":")
+    local semicolon  = P(";")
+    local eos        = P(-1)
+
+    local someaction = (
+        skipspace * C((1 - (skipspace * (semicolon + eos + colon)))^1)
+      * colon
+      * skipspace * C((1 - (skipspace * (semicolon + eos)))^0)
+      * Carg(1) / function(k,v,a) a[k] = v end
+        + (p_space + semicolon)^1
+     )^1
+
     local function handlechains(c)
         if tags[c.tg] then
             local at = c.at
             local dt = c.dt
             if at and dt then
-             -- at["inkscape:connector-curvature"] = nil -- cleare entry and might prevent table growth
+             -- at["inkscape:connector-curvature"] = nil -- clear entry and might prevent table growth
                 local estyle = rawget(at,"style")
                 if estyle and estyle ~= "" then
-                    for k, v in gmatch(estyle,"%s*([^:]+):%s*([^;]+);?") do
-                        at[k] = v
-                    end
+                    lpegmatch(someaction,estyle,1,at)
                 end
                 local eclass = rawget(at,"class")
                 if eclass and eclass ~= "" then

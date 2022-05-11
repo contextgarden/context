@@ -605,7 +605,7 @@ end
 -- needed only a few loops of relistening the concert to implement it. In
 -- restrospect this was a language feature that should have been there a while ago.
 
-do
+local expand ; do
 
     local nuts        = nodes.nuts
     local nextglyph   = nuts.traversers.glyph
@@ -639,10 +639,11 @@ do
 
     local goodiesdata = setmetatableindex(function(t,k)
         local v = {
-            properties   = { },
-            replacements = { },
-            characters   = { },
-            exceptions   = { },
+            properties    = { },
+            replacements  = { },
+            characters    = { },
+            exceptions    = { },
+            substitutions = { },
         }
         t[k] = v
         return v
@@ -847,17 +848,19 @@ do
 
     languages.setgoodieshandler = function(specification) -- will become a table specifier
         if type(specification) == "table" then
-            local tag          = specification.tag
-            local goodies      = specification.goodies or tag
-            local result       = specification.result or 2
-            local data         = goodiesdata[goodies]
-            local properties   = data.properties
-            local replacements = data.replacements
-            local characters   = data.characters
-            local exceptions   = data.exceptions
-            local replacer     = nil
-            local d, instance  = resolve(tag)
-            local done         = false
+            local tag           = specification.tag
+            local goodies       = specification.goodies or tag
+            local result        = specification.result or 2
+            local data          = goodiesdata[goodies]
+            local properties    = data.properties
+            local replacements  = data.replacements
+            local substitutions = data.substitutions
+            local characters    = data.characters
+            local exceptions    = data.exceptions
+            local replacer      = nil
+            local substituter   = nil
+            local d, instance   = resolve(tag)
+            local done          = false
             -- check if something at all
             if type(characters) == "table" and characters and next(characters) then
                 addhjcodestoinstance(instance,characters)
@@ -877,6 +880,13 @@ do
                 replacer = Cs((utfchartabletopattern(replacements) / replacements + 1)^0)
                 if trace_goodies then
                     report_goodies("registering %a replacer for %a",goodies,tag)
+                end
+                done = true
+            end
+            if type(substitutions) == "table" and next(substitutions) then
+                substituter = Cs((utfchartabletopattern(substitutions) / substitutions + 1)^0)
+                if trace_goodies then
+                    report_goodies("registering %a substitutor for %a",goodies,tag)
                 end
                 done = true
             end
@@ -923,6 +933,7 @@ do
                     end
                     local result = 2
                     local o = properties[remapped]
+                  ::again::
                     if o then
                         if trace_goodies then
                             report("properties: %s %s",original,remapped)
@@ -946,7 +957,9 @@ do
                                 break
                             end
                         end
-                    elseif replacer then
+                        return result
+                    end
+                    if replacer then
                         -- todo: check lengths so that we can avoid a check
                         if getprop(first,"replaced") then
                             -- maybe some deadcycles
@@ -965,7 +978,31 @@ do
                                 result = 1
                             end
                         end
-                    elseif exceptions then
+                        return result
+                    end
+                    if substituter then
+                        if getprop(first,"replaced") then
+                            -- maybe some deadcycles
+                        else
+                            local r = lpegmatch(substituter,original)
+                            if original == r then
+                                if trace_goodies then
+                                    report_goodies("kept: %s => %s",original,remapped)
+                                end
+                            else
+                                if trace_goodies then
+                                    report_goodies("substituted: %s => %s => %s",original,remapped,r)
+                                end
+                                setprop(first,"replaced",true)
+                                if not properties[r] then
+                                    o = expand(r)
+                                    properties[original] = o
+                                    goto again
+                                end
+                            end
+                        end
+                    end
+                    if exceptions then
                         local exception = exceptions[original]
                         if exception then
                             if trace_goodies then
@@ -975,10 +1012,10 @@ do
                         else
                             result = 3
                         end
-                    else
-                        if trace_goodies then
-                            report_goodies("ignored: %s => %s",original,remapped)
-                        end
+                        return result
+                    end
+                    if trace_goodies then
+                        report_goodies("ignored: %s => %s",original,remapped)
                     end
                     return result
                 end)
@@ -1123,6 +1160,10 @@ do
         return v
     end)
 
+    expand = function(str)
+        return analyzed(true,actions,{},str)
+    end
+
     -- maybe also a skip symbol
 
     local replace1 = Cs ( ( S("|=<>+-.0123456789")/"" + lpegpatterns.utf8character    )^0 )
@@ -1199,11 +1240,12 @@ do
         local nw = 0
         local nl = #list
         --
-        local data         = goodiesdata[tag]
-        local properties   = data.properties
-        local replacements = data.replacements
-        local characters   = data.characters
-        local exceptions   = data.exceptions
+        local data          = goodiesdata[tag]
+        local properties    = data.properties
+        local replacements  = data.replacements
+        local substitutions = data.substitutions
+        local characters    = data.characters
+        local exceptions    = data.exceptions
         if filename then
             if not data.goodies then
                 data.goodies = { }
@@ -1217,10 +1259,11 @@ do
         for i=1,nl do
             local l = list[i]
             if type(l) == "table" then
-                local w  = l.words
-                local p  = l.patterns
-                local c  = l.characters
-                local e  = l.exceptions
+                local w = l.words
+                local p = l.patterns
+                local s = l.substitutions
+                local c = l.characters
+                local e = l.exceptions
                 lh = l.left  or false -- for practical reasons these are semi-global
                 rh = l.right or false -- for practical reasons these are semi-global
                 if c then
@@ -1301,9 +1344,12 @@ do
                             nw = nw + 1
                         end
                     end
+                elseif s then
+                    for k, v in next, s do
+                        substitutions[k] = v
+                    end
                 elseif p then
                     for k, v in next, p do
-                        -- todo: warning overload
                         replacements[k] = v
                     end
                 elseif e then

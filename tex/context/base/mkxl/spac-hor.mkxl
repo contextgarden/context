@@ -530,16 +530,40 @@
     \enforced\let\ \space
 \to \everysimplifycommands
 
-\newsignal\d_spac_keep_unwanted_space_signal
+% \newsignal\d_spac_keep_unwanted_space_signal
+%
+% % \parindentmode\plusone
+%
+% \permanent\protected\def\keepunwantedspaces
+%   {\ifhmode
+%      \ifdim\lastskip=\d_spac_keep_unwanted_space_signal\else
+%         \hskip\d_spac_keep_unwanted_space_signal\relax
+%      \fi
+%    \fi}
+%
+% \permanent\protected\def\removeunwantedspaces
+%   {\ifhmode
+%      \expandafter \spac_helpers_remove_unwantedspace
+%    \fi}
+%
+% \def\spac_helpers_remove_unwantedspace
+%   {\ifnum\lastnodetype=\gluenodecode\relax
+%      \ifnum\lastnodesubtype=\indentskipsubtypecode\relax
+%        % keep parindent
+%      \orelse\ifdim\lastskip=\d_spac_keep_unwanted_space_signal\relax
+%         \unskip
+%      \else
+%         \unskip
+%         \doubleexpandafter\spac_helpers_remove_unwantedspace
+%      \fi
+%    \fi}
 
-% \parindentmode\plusone
+\newboundary\c_spac_keepspaces_boundary
 
 \permanent\protected\def\keepunwantedspaces
-  {\ifhmode
-     \ifdim\lastskip=\d_spac_keep_unwanted_space_signal\else
-        \hskip\d_spac_keep_unwanted_space_signal\relax
-     \fi
-   \fi}
+  {\ifhmode\ifnum\lastboundary=\c_spac_keepspaces_boundary\else
+     \boundary\c_spac_keepspaces_boundary
+   \fi\fi}
 
 \permanent\protected\def\removeunwantedspaces
   {\ifhmode
@@ -547,15 +571,15 @@
    \fi}
 
 \def\spac_helpers_remove_unwantedspace
-  {\ifnum\lastnodetype=\gluenodecode\relax
-     \ifnum\lastnodesubtype=\indentskipsubtypecode\relax
-       % keep parindent
-     \orelse\ifdim\lastskip=\d_spac_keep_unwanted_space_signal\relax
-        \unskip
-     \else
-        \unskip
-        \doubleexpandafter\spac_helpers_remove_unwantedspace
-     \fi
+  {\ifnum\lastboundary=\c_spac_keepspaces_boundary
+     \expandafter\unboundary
+   \orunless\ifnum\lastnodetype=\gluenodecode
+     % no skip
+   \orelse\ifnum\lastnodesubtype=\indentskipsubtypecode
+     % keep parindent
+   \else
+      \unskip
+      \expandafter\spac_helpers_remove_unwantedspace
    \fi}
 
 \permanent\protected\def\onlynonbreakablespace
@@ -1183,33 +1207,40 @@
 %D    \oeps}
 %D \stoptyping
 
-\newsignal\d_spac_ignore_spaces_signal
-\newcount \c_spac_ignore_spaces
+% \newsignal\d_spac_ignore_spaces_signal
+% \newcount \c_spac_ignore_spaces
+%
+% \permanent\protected\def\startignorespaces
+%   {\advance\c_spac_ignore_spaces\plusone
+%    \ifcase\c_spac_ignore_spaces\or \ifhmode
+%      \hskip\d_spac_ignore_spaces_signal
+%    \fi \fi
+%    \ignorespaces}
+%
+% \permanent\protected\def\stopignorespaces
+%   {\ifcase\c_spac_ignore_spaces \or
+%      \ifhmode
+%        \doloop\spac_ignore_spaces_body
+%      \fi
+%    \fi
+%    \advance\c_spac_ignore_spaces\minusone}
+%
+% \def\spac_ignore_spaces_body
+%   {\ifzeropt\lastskip
+%      \exitloop
+%    \orelse\ifdim\lastskip=\d_spac_ignore_spaces_signal
+%      \unskip
+%      \exitloop
+%    \else
+%      \unskip
+%    \fi}
 
 \permanent\protected\def\startignorespaces
-  {\advance\c_spac_ignore_spaces\plusone
-   \ifcase\c_spac_ignore_spaces\or \ifhmode
-     \hskip\d_spac_ignore_spaces_signal
-   \fi \fi
-   \ignorespaces}
+  {\pushmacro\nospaces
+   \nospaces\plusone}
 
 \permanent\protected\def\stopignorespaces
-  {\ifcase\c_spac_ignore_spaces \or
-     \ifhmode
-       \doloop\spac_ignore_spaces_body
-     \fi
-   \fi
-   \advance\c_spac_ignore_spaces\minusone}
-
-\def\spac_ignore_spaces_body
-  {\ifzeropt\lastskip
-     \exitloop
-   \orelse\ifdim\lastskip=\d_spac_ignore_spaces_signal
-     \unskip
-     \exitloop
-   \else
-     \unskip
-   \fi}
+  {\popmacro\nospaces}
 
 %D \macros
 %D   {obeyfollowingtoken}

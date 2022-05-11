@@ -1241,6 +1241,8 @@
 		<cd:constant name='small' value='mic'/>
 		<cd:constant name='smallcapsfeatures' value='smallcapsfeatures'/>
 		<cd:constant name='smallcapsfont' value='smallcapsfont'/>
+		<cd:constant name='snap' value='snap'/>
+		<cd:constant name='snapstep' value='snapstep'/>
 		<cd:constant name='solution' value='solution'/>
 		<cd:constant name='sort' value='sort'/>
 		<cd:constant name='sorttype' value='sorttype'/>

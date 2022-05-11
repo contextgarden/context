@@ -166,6 +166,7 @@ return {
         "mathfractioncode", "mathmiddlecode", "mathaccentcode", "mathfencedcode", "mathghostcode",
         "mathvariablecode",  "mathactivecode", "mathvcentercode", "mathconstructcode", "mathwrappedcode",
         "mathbegincode", "mathendcode", "mathexplicitcode", "mathdivisioncode", "mathfactorialcode",
+        "mathdimensioncode",
         --
         "mathimaginarycode", "mathdifferentialcode", "mathexponentialcode", "mathfunctioncode", "mathdigitcode",
      -- "mathtopaccentcode", "mathbottomaccentcode", "mathdelimitercode", "mathrootcode", "mathprintcode",        --
@@ -454,8 +455,7 @@ return {
         "newconstant", "setnewconstant", "setconstant", "setconstantvalue",
         "newconditional", "settrue", "setfalse", "settruevalue", "setfalsevalue", "setconditional",
         --
-        "newmacro", "setnewmacro", "newfraction",
-        "newsignal",
+        "newmacro", "setnewmacro", "newfraction", "newsignal", "newboundary",
         --
         "dosingleempty", "dodoubleempty", "dotripleempty", "doquadrupleempty", "doquintupleempty", "dosixtupleempty", "doseventupleempty",
         "dosingleargument", "dodoubleargument", "dotripleargument", "doquadrupleargument", "doquintupleargument", "dosixtupleargument", "doseventupleargument",

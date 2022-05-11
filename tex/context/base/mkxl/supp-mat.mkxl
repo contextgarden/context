@@ -125,36 +125,36 @@
 %D
 %D REPLACED (keep commented):
 
-\newsignal\dimensionsignal
-
-\mutable\def\dimensiontypeface  {\tf}
-\mutable\def\dimensionhalfspace {\,}
-
-\aliased\let\dodimensionsignal\relax
-
-\permanent\protected\def\dimension#1%
-  {\pushmacro\dodimensionsignal
-   \enforced\gdef\dodimensionsignal{\kern\dimensionsignal}%
-   \ifzeropt\lastskip
-     \ifzeropt\lastkern
-       \ifmmode
-         \mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
-       \else
-         \mathematics{\dimensiontypeface#1}%
-       \fi
-     \orelse\ifdim\lastkern=\dimensionsignal
-       \mathematics{\dimensionhalfspace\dimensiontypeface#1}%
-     \else
-       \unkern\mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
-     \fi
-   \else
-     \unskip\mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
-   \fi
-   \dodimensionsignal
-   \popmacro\dodimensionsignal}
-
-\permanent\protected\def\nodimension#1%
-  {\unskip#1\enforced\glet\dodimensionsignal\relax}
+% \newsignal\dimensionsignal
+%
+% \mutable\def\dimensiontypeface  {\tf}
+% \mutable\def\dimensionhalfspace {\,}
+%
+% \aliased\let\dodimensionsignal\relax
+%
+% \permanent\protected\def\dimension#1%
+%   {\pushmacro\dodimensionsignal
+%    \enforced\gdef\dodimensionsignal{\kern\dimensionsignal}%
+%    \ifzeropt\lastskip
+%      \ifzeropt\lastkern
+%        \ifmmode
+%          \mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
+%        \else
+%          \mathematics{\dimensiontypeface#1}%
+%        \fi
+%      \orelse\ifdim\lastkern=\dimensionsignal
+%        \mathematics{\dimensionhalfspace\dimensiontypeface#1}%
+%      \else
+%        \unkern\mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
+%      \fi
+%    \else
+%      \unskip\mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
+%    \fi
+%    \dodimensionsignal
+%    \popmacro\dodimensionsignal}
+%
+% \permanent\protected\def\nodimension#1%
+%   {\unskip#1\enforced\glet\dodimensionsignal\relax}
 
 % experiment, not yet to be used
 

@@ -30,6 +30,7 @@ local v_auto = interfaces.variables.auto
 
 local method   = v_none
 local distance = 0
+local boundary = tex.boundaries.system("mathalign")
 
 function noads.handlers.align(h)
     if method ~= v_none then
@@ -39,7 +40,7 @@ function noads.handlers.align(h)
             while s do
                 local id = getid(s)
                 local n  = getnext(s)
-                if id == boundary_code and getdata(s) == 314 then
+                if id == boundary_code and getdata(s) == boundary then
                     if n and getid(n) == glue_code then
                         s = n
                         n = getnext(s)

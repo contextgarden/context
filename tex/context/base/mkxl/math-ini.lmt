@@ -121,16 +121,18 @@ local function registerengineclass(name,short)
     return class
 end
 
-local explicit_class    = registerengineclass("explicit","expl")
-local imaginary_class   = registerengineclass("imaginary","im")
-local diferential_class = registerengineclass("differential","dif")
-local exponential_class = registerengineclass("exponential","exp")
-local function_class    = registerengineclass("function","fnc")
-local digit_class       = registerengineclass("digit","dig")
-local division_class    = registerengineclass("division","div")
-local factorial_class   = registerengineclass("factorial","fac")
-local wrapped_class     = registerengineclass("wrapped", "wra")
-local construct_class   = registerengineclass("construct", "con")
+registerengineclass("explicit",    "expl")
+registerengineclass("imaginary",   "img")
+registerengineclass("differential","dif")
+registerengineclass("exponential", "exp")
+registerengineclass("function",    "fnc")
+registerengineclass("digit",       "dig")
+local division_class =
+registerengineclass("division",    "div")
+registerengineclass("factorial",   "fac")
+registerengineclass("wrapped",     "wra")
+registerengineclass("construct",   "con")
+registerengineclass("dimension",   "dim")
 
 classes["begin"] = 62  classnames[62] = "begin"
 classes["end"]   = 63  classnames[63] = "end"

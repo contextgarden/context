@@ -32,6 +32,10 @@
 %D a proper DAC connected but it can hardly keep up which also counts for me with MS
 %D testing faster than I can provide variants (www.youtube.com/watch?v=xzQCqAJNOSM).
 
+%D After an extremely short discussion MS and HH decided that we will not support
+%D \quote { BS ISO 80000-2:2009} because it doesn't comply to the CMS quality
+%D standards and is BS anyway.
+
 \unprotect
 
 %D We move these definitions into the format:
@@ -141,6 +145,7 @@
 \setnewconstant\mathfactorialcode     \mathclassvalue factorial
 \setnewconstant\mathwrappedcode       \mathclassvalue wrapped
 \setnewconstant\mathconstructcode     \mathclassvalue construct
+\setnewconstant\mathdimensioncode     \mathclassvalue dimension
 
 \setnewconstant\mathbegincode         \mathclassvalue begin
 \setnewconstant\mathendcode           \mathclassvalue end
@@ -412,6 +417,18 @@
   {mathematics.discretionaries}
   {\settrue \c_math_discretionaries}
   {\setfalse\c_math_discretionaries}
+
+%D This is moved here from supp-mat:
+
+\permanent\protected\def\dimension#1%
+  {\mathematics
+     {\mathatom
+        \s!leftclass  \mathdimensioncode
+        \s!rightclass \mathordinarycode
+      {\tf #1}}}
+
+\permanent\protected\def\nodimension#1%
+  {#1}
 
 %D A starter:
 %D
@@ -1142,6 +1159,15 @@
     %
     \inherited\setmathspacing \mathopencode        \mathconstructcode    \allmathstyles   \thinmuskip
     \inherited\setmathspacing \mathconstructcode   \mathclosecode        \allmathstyles   \thinmuskip
+    %
+    \inherited\setmathspacing \mathdimensioncode   \mathdimensioncode    \allmathstyles   \zeromuskip
+    \inherited\setmathspacing \mathordinarycode    \mathdimensioncode    \allsplitstyles  \thinmuskip
+    \inherited\setmathspacing \mathordinarycode    \mathdimensioncode    \allscriptstyles \tinymuskip
+    \inherited\setmathspacing \mathdigitcode       \mathdimensioncode    \allsplitstyles  \thinmuskip
+    \inherited\setmathspacing \mathdigitcode       \mathdimensioncode    \allscriptstyles \tinymuskip
+    \inherited\setmathspacing \mathclosecode       \mathdimensioncode    \allsplitstyles  \thinmuskip
+    \inherited\setmathspacing \mathclosecode       \mathdimensioncode    \allscriptstyles \tinymuskip
+    %
 \stopsetups
 
 \directsetup{math:spacing:default}

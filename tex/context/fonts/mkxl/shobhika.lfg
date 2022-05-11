@@ -5,7 +5,7 @@ return {
     author = "Hans Hagen & Sreeram",
     copyright = "ConTeXt development team",
     sanitizers = {
-        dev2rkrf  = { 
+        dev2rkrf  = {
             mapping = {
                 ["के्र"] = "क्रे",
                 ["कै्र"] = "क्रै",
@@ -20,8 +20,6 @@ return {
             -- ["ङै्र"] = "ङ्रै",
                 ["चे्र"] = "च्रे",
                 ["चै्र"] = "च्रै",
-                ["छे्र"] = "छ्रे",
-                ["छै्र"] = "छ्रै",
                 ["जे्र"] = "ज्रे",
                 ["जै्र"] = "ज्रै",
                 ["झे्र"] = "झ्रे",

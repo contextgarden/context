@@ -1,7 +1,7 @@
 return {
     name = "bhai",
     version = "1.00",
-    comment = "Goodies that complement shobhika.",
+    comment = "Goodies that complement bhai.",
     author = "Hans Hagen & Sreeram",
     copyright = "ConTeXt development team",
     sanitizers = {
@@ -20,8 +20,6 @@ return {
             -- ["ઙૈ્ર"] = "ઙ્રૈ",
                 ["ચે્ર"] = "ચ્રે",
                 ["ચૈ્ર"] = "ચ્રૈ",
-                ["છે્ર"] = "છ્રે",
-                ["છૈ્ર"] = "છ્રૈ",
                 ["જે્ર"] = "જ્રે",
                 ["જૈ્ર"] = "જ્રૈ",
                 ["ઝે્ર"] = "ઝ્રે",

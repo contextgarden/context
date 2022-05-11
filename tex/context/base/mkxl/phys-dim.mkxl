@@ -388,6 +388,7 @@
 \frozen\protected\def\unitsmediumspace{\medspace}
 \frozen\protected\def\unitsbigspace   {\thickspace}
 \frozen\protected\def\unitsbackspace  {\negthinspace}
+\frozen\protected\def\unitsmathspace  {\ifmmode\mathatomskip\mathdimensioncode\mathdimensioncode\mathstyle\fi}
 
 \permanent\protected\def\installunitsseparator#1#2%
   {\defcsname\??unitseparator#1\endcsname{#2}}
@@ -395,11 +396,12 @@
 \protected\def\phys_units_separator
   {\ifcsname\??unitseparator\unitparameter\c!separator\endcsname\lastnamedcs\else\cdot\fi}
 
-\installunitsseparator\v!normal {\cdot}
-\installunitsseparator\v!big    {\unitsbigspace}
-\installunitsseparator\v!medium {\unitsmediumspace}
-\installunitsseparator\v!small  {\unitssmallspace}
-\installunitsseparator\v!none   {}
+\installunitsseparator\v!normal{\cdot}
+\installunitsseparator\v!big   {\unitsbigspace}
+\installunitsseparator\v!medium{\unitsmediumspace}
+\installunitsseparator\v!small {\unitssmallspace}
+\installunitsseparator\v!none  {}
+\installunitsseparator\v!math  {\unitsmathspace}
 
 \permanent\protected\def\installunitsspace#1#2%
   {\defcsname\??unitspace#1\endcsname{#2}}
@@ -413,6 +415,7 @@
 \installunitsspace\v!medium{\unitsmediumspace}
 \installunitsspace\v!small {\unitssmallspace}
 \installunitsspace\v!none  {}
+\installunitsspace\v!math  {\unitsmathspace}
 
 \newtoks \everyunits % we keep the old \units command so we need a longer one
 
@@ -606,10 +609,37 @@
 \permanent\protected\def\unitsN#1%
   {\unitsNstart#1\unitsNstop}
 
+% \def\phys_units_start
+%   {\ifmmode
+%      \dostarttagged\t!maction\t!unit
+%      \bgroup % make an mrow
+%    \else
+%      \dostarttagged\t!unit\empty
+%    \fi
+%    \let\phys_units_finish\phys_units_stop
+%    \let\phys_units_start\relax}
+%
+% \def\phys_units_stop
+%   {\ifconditional\c_phys_units_number
+%      \setfalse\c_phys_units_number
+%      \dostoptagged
+%    \fi
+%    \ifconditional\c_phys_units_quantity
+%      \setfalse\c_phys_units_quantity
+%      \dostoptagged
+%    \fi
+%    \dostoptagged
+%    \ifmmode
+%      \egroup
+%    \fi}
+
 \def\phys_units_start
   {\ifmmode
      \dostarttagged\t!maction\t!unit
-     \bgroup % make an mrow
+     \mathatom
+        \s!leftclass  \mathdimensioncode
+        \s!rightclass \mathordinarycode
+     \bgroup
    \else
      \dostarttagged\t!unit\empty
    \fi

@@ -4294,7 +4294,7 @@ registerotffeature {
 -- we use a different call:
 --
 --   function(head,dataset,sequence,initialrl,font,dynamic)
---       return head, done
+--       return head
 --   end
 --
 -- Also see (!!).

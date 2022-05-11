@@ -209,7 +209,7 @@
 \newconditional\c_strc_itemgroups_optimize       \settrue\c_strc_itemgroups_optimize
 \newconditional\c_strc_itemgroups_auto_concat    \settrue\c_strc_itemgroups_auto_concat
 
-\newsignal     \d_strc_itemgroups_signal
+\newboundary   \c_strc_itemgroups_boundary
 
 \newbox        \b_strc_itemgroups
 
@@ -849,7 +849,7 @@
 %
 %    \ifhmode
 %      \ifconditional\c_strc_itemgroups_auto_concat
-%        \ifdim\lastskip=\d_strc_itemgroups_signal
+%        \ifnum\lastboundary=\c_strc_itemgroups_boundary
 %          \settrue\c_strc_itemgroups_concat
 %        \fi
 %      \fi
@@ -883,7 +883,7 @@
    %
    \ifhmode
      \ifconditional\c_strc_itemgroups_auto_concat
-       \ifdim\lastskip=\d_strc_itemgroups_signal
+       \ifnum\lastboundary=\c_strc_itemgroups_boundary
          \settrue\c_strc_itemgroups_concat
        \fi
      \fi
@@ -1196,7 +1196,7 @@
    \begstrut % \strut
    \nobreak                            % else problems with intext items
    \seteffectivehsize % NEW !
-   \hskip\d_strc_itemgroups_signal     % concat
+   \boundary\c_strc_itemgroups_boundary % was signal
    \itemgroupparameter\c!command}
 
 \protected\permanent\def\stopitemgroupitem

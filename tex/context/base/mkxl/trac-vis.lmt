@@ -143,20 +143,21 @@ local modes = {
     mathglue      = 0x1000000,
     mark          = 0x2000000,
     insert        = 0x4000000,
+    boundary      = 0x8000000,
 }
 
 visualizers.modes = modes
 
 local usedfont, exheight, emwidth
 local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_marginkern, l_mathkern, l_mathshape, l_italic, l_origin, l_discretionary, l_expansion, l_line, l_space, l_depth,
-    l_dir, l_whatsit, l_mark, l_insert
+    l_dir, l_whatsit, l_mark, l_insert, l_boundary
 
 local enabled = false
 local layers  = { }
 
 local preset_boxes  = modes.hbox + modes.vbox + modes.vtop + modes.origin
 local preset_makeup = preset_boxes
-                    + modes.kern + modes.glue + modes.penalty
+                    + modes.kern + modes.glue + modes.penalty + modes.boundary
 local preset_all    = preset_makeup
                     + modes.fontkern + modes.marginkern + modes.mathkern
                     + modes.whatsit + modes.glyph + modes.user + modes.math
@@ -218,6 +219,7 @@ local function initialize()
     l_par           = layers.par
     l_mark          = layers.mark
     l_insert        = layers.insert
+    l_boundary      = layers.boundary
     --
     if not userrule then
        userrule = nuts.rules.userrule
@@ -608,7 +610,7 @@ local ruledinsert do
     local si_cache = setmetatableindex(caches["insert"], function(f,index)
         local info = sometext(formatters["SI:%i"](index),usedfont,nil,"trace:w") -- whatsit
         setattr(info,a_layer,l_insert)
-        i_cache[index] = info
+        si_cache[index] = info
     end)
 
     ruledinsert = function(head,current)
@@ -658,6 +660,34 @@ local ruledwhatsit do
             info = sometext(formatters["W:%s"](tags[what] or what),usedfont,nil,"trace:w")
             setattr(info,a_layer,l_whatsit)
             w_cache[what] = info
+        end
+        head, current = insertnodeafter(head,current,copylist(info))
+        return head, current
+    end
+
+end
+
+local ruledboundary do
+
+    local boundarycodes = nodes.boundarycodes
+    local b_cache       = caches["boundary"]
+
+    local tags          = {
+        [boundarycodes.cancel]     = "CAN",
+        [boundarycodes.user]       = "USR",
+        [boundarycodes.protrusion] = "PRO",
+        [boundarycodes.word]       = "WRD",
+    }
+
+    ruledboundary = function(head,current)
+        local what = getsubtype(current)
+        local info = b_cache[what]
+        if info then
+            -- print("hit whatsit")
+        else
+            info = sometext(formatters["B:%s"](tags[what] or what),usedfont,nil,"trace:w")
+            setattr(info,a_layer,l_boundary)
+            b_cache[what] = info
         end
         head, current = insertnodeafter(head,current,copylist(info))
         return head, current
@@ -1396,6 +1426,7 @@ do
     local mark_code               = nodecodes.mark
     local insert_code             = nodecodes.insert
     local rule_code               = nodecodes.rule
+    local boundary_code           = nodecodes.boundary
 
     local kerncodes               = nodes.kerncodes
     local fontkern_code           = kerncodes.fontkern
@@ -1455,6 +1486,7 @@ do
         local trace_mathglue        = false
         local trace_mark            = false
         local trace_insert          = false
+        local trace_boundary        = false
         local current               = head
         local previous              = nil
         local attr                  = unsetvalue
@@ -1499,6 +1531,7 @@ do
                     trace_mathglue      = false
                     trace_mark          = false
                     trace_insert        = false
+                    trace_boundary      = false
                     if id == kern_code then
                         goto kern
                     else
@@ -1533,6 +1566,7 @@ do
                     trace_mathglue      = a & 0x1000000 ~= 0
                     trace_mark          = a & 0x2000000 ~= 0
                     trace_insert        = a & 0x4000000 ~= 0
+                    trace_boundary      = a & 0x8000000 ~= 0
                 end
             elseif a == unsetvalue then
                 goto list
@@ -1603,6 +1637,10 @@ do
             elseif id == insert_code then
                 if trace_insert then
                     head, current = ruledinsert(head,current)
+                end
+            elseif id == boundary_code then
+                if trace_boundary then
+                    head, current = ruledboundary(head,current)
                 end
             end
             goto next

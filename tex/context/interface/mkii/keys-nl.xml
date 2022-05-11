@@ -647,6 +647,7 @@
 
 	<cd:constants>
 		<cd:constant name='action' value='actie'/>
+		<cd:constant name='adaptive' value='adaptive'/>
 		<cd:constant name='address' value='adres'/>
 		<cd:constant name='after' value='na'/>
 		<cd:constant name='afterhead' value='kopna'/>
@@ -1240,6 +1241,8 @@
 		<cd:constant name='small' value='klein'/>
 		<cd:constant name='smallcapsfeatures' value='smallcapsfeatures'/>
 		<cd:constant name='smallcapsfont' value='smallcapsfont'/>
+		<cd:constant name='snap' value='snap'/>
+		<cd:constant name='snapstep' value='snapstep'/>
 		<cd:constant name='solution' value='oplossing'/>
 		<cd:constant name='sort' value='sort'/>
 		<cd:constant name='sorttype' value='sortering'/>

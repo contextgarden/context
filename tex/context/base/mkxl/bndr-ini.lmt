@@ -1,0 +1,52 @@
+if not modules then modules = { } end modules ['bndr-ini'] = {
+    version   = 1.001,
+    comment   = "companion to bndr-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local context           = context
+local storage           = storage
+local implement         = interfaces.implement
+local sharedstorage     = storage.shared
+
+local boundaries        = tex.boundaries or { } -- maybe different namespace
+tex.boundaries          = boundaries
+
+boundaries.names        = boundaries.names   or { }
+boundaries.numbers      = boundaries.numbers or { }
+
+local names             = boundaries.names
+local numbers           = boundaries.numbers
+
+storage.register("boundaries/names",   names,   "tex.boundaries.names")
+storage.register("boundaries/numbers", numbers, "tex.boundaries.numbers")
+
+sharedstorage.boundaries_last = sharedstorage.boundaries_last or 0 -- so zero is not used
+
+function boundaries.system(name)
+    local number = numbers[name]
+    if not number then
+        local last = sharedstorage.boundaries_last
+        number = last + 1
+        sharedstorage.boundaries_last = number
+        numbers[name] = number
+        names[number] = name
+    end
+    return number
+end
+
+implement {
+    name      = "defineboundary",
+    arguments = "string",
+    actions   = { boundaries.system, context }
+}
+
+-- implement {
+--     name      = "newboundary",
+--     arguments = "csname",
+--     public    = true,
+--     protected = true,
+--     actions   = function(n) tex.setintegervalue(n,boundaries.system()) end,
+-- }

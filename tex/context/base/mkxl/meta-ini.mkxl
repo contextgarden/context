@@ -203,10 +203,11 @@
 \mutable\def\currentMPinstance   {\defaultMPinstance}
 \mutable\def\currentMPformat     {\currentMPinstance}
 
-\defineMPinstance[metafun]    [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
-\defineMPinstance[minifun]    [\s!format=minifun,\s!extensions=\v!yes,\s!initializations=\v!yes]
-\defineMPinstance[extrafun]   [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
+\defineMPinstance[metafun]    [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!double]
+\defineMPinstance[minifun]    [\s!format=minifun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!double]
+\defineMPinstance[extrafun]   [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!double]
 \defineMPinstance[lessfun]    [\s!format=metafun]
+\defineMPinstance[scaledfun]  [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!scaled]
 \defineMPinstance[doublefun]  [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!double]
 \defineMPinstance[binaryfun]  [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!binary]
 \defineMPinstance[decimalfun] [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!decimal]
@@ -215,6 +216,7 @@
 
 \defineMPinstance[metapost]   [\s!format=mpost]
 \defineMPinstance[nofun]      [\s!format=mpost]
+\defineMPinstance[scaledpost] [\s!format=mpost,\c!method=\s!scaled]
 \defineMPinstance[doublepost] [\s!format=mpost,\c!method=\s!double]
 \defineMPinstance[binarypost] [\s!format=mpost,\c!method=\s!binary]
 \defineMPinstance[decimalpost][\s!format=mpost,\c!method=\s!decimal]

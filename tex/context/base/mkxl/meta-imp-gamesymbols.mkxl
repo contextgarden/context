@@ -22,64 +22,54 @@
 %D execute the code and leave no traces in the text flow. The code itself is not
 %D that spectacular:
 
+%D Todo: variant -2/-3 3D dice
+
 \startMPcalculation{simplefun}
+
+    picture DiceDots[] ; pickup pencircle scaled 3/2 ;
+
+    DiceDots[ 1] := image ( draw(4,4) ; ) ;
+    DiceDots[ 2] := image ( draw(2,6) ; draw(6,2) ; ) ;
+    DiceDots[-2] := image ( draw(6,6) ; draw(2,2) ; ) ;
+    DiceDots[ 3] := image ( draw(2,6) ; draw(4,4) ; draw(6,2) ; ) ;
+    DiceDots[-3] := image ( draw(6,6) ; draw(4,4) ; draw(2,2) ; ) ;
+    DiceDots[ 4] := image ( draw(2,6) ; draw(6,6) ; draw(2,2) ; draw(6,2) ; ) ;
+    DiceDots[ 5] := image ( draw(2,6) ; draw(6,6) ; draw(4,4) ; draw(2,2) ; draw(6,2) ; ) ;
+    DiceDots[ 6] := image ( draw(2,6) ; draw(6,6) ; draw(2,4) ; draw(6,4) ; draw(2,2) ; draw(6,2) ; ) ;
 
     def DiceFrame =
         pickup pencircle scaled 1/2 ;
         draw unitsquare scaled 8 ;
-        pickup pencircle scaled 3/2 ;
+      % pickup pencircle scaled 3/2 ;
     enddef ;
 
     vardef DiceOne =
         DiceFrame ;
-        draw (4,4) ;
-    enddef ;
-    vardef DiceTwoA =
-        DiceFrame ;
-        draw (2,6) ; draw (6,2) ;
-    enddef ;
-    vardef DiceTwoB =
-        DiceFrame ;
-        draw (6,6) ; draw (2,2) ;
+        draw DiceDots[1] ;
     enddef ;
     vardef DiceTwo =
-        if hasoption "mpsfont" "option" "reverse" :
-            DiceTwoB
-        else :
-            DiceTwoA
-        fi ;
-    enddef ;
-    vardef DiceThreeA =
         DiceFrame ;
-        draw (2,6) ; draw (4,4) ; draw (6,2) ;
-    enddef ;
-    vardef DiceThreeB =
-        DiceFrame ;
-        draw (6,6) ; draw (4,4) ; draw (2,2) ;
+        draw DiceDots[if hasoption "mpsfont" "option" "reverse" : - fi 2] ;
     enddef ;
     vardef DiceThree =
-        if hasoption "mpsfont" "option" "reverse" :
-            DiceThreeB
-        else :
-            DiceThreeA
-        fi ;
+        DiceFrame ;
+        draw DiceDots[if hasoption "mpsfont" "option" "reverse" : - fi 3] ;
     enddef ;
     vardef DiceFour =
         DiceFrame ;
-        draw (2,6) ; draw (6,6) ; draw (2,2) ; draw (6,2) ;
+        draw DiceDots[4] ;
     enddef ;
     vardef DiceFive =
         DiceFrame ;
-        draw (2,6) ; draw (6,6) ; draw (4,4) ; draw (2,2) ; draw (6,2) ;
+        draw DiceDots[5] ;
     enddef ;
     vardef DiceSix =
         DiceFrame ;
-        draw (2,6) ; draw (6,6) ; draw (2,4) ; draw (6,4) ; draw (2,2) ; draw (6,2) ;
+        draw DiceDots[6] ;
     enddef ;
 
     vardef DiceBad =
-        pickup pencircle scaled 1/2 ;
-        draw unitsquare scaled 8 ;
+        DiceFrame ;
         draw (1,7) -- (7,1) ; draw (1,1) -- (7,7) ;
     enddef ;
 
@@ -101,9 +91,67 @@
 
     lmt_registerglyph [ category = "dice", private = "invaliddice", code = "DiceBad;" ] ;
 
+    %D The transformations come from DICE3D.MF by Thomas A. Heim (1998)
+
+    transform t[];
+
+    numeric r ; r := sqrt(1/4) ;
+
+    hide((0,0) transformed t1 = (0,0)) ;
+    hide((1,0) transformed t1 = (r,r)) ;
+    hide((0,1) transformed t1 = (0,1)) ;
+
+    hide((0,0) transformed t2 = (0,0)) ;
+    hide((1,0) transformed t2 = (1,0)) ;
+    hide((0,1) transformed t2 = (r,r)) ;
+
+    t3 := t1 shifted (8,0) ; % front to right side
+    t4 := t2 shifted (0,8) ; % front to top
+
+    vardef Diced(expr a, b, c) =
+        draw image (
+            pickup pencircle scaled 1/2 ;
+            draw image (
+                % unitsquare smoothed 1/10
+                nodraw unitsquare scaled 8 transformed t4  ;
+                nodraw unitsquare scaled 8 transformed t3  ;
+                nodraw unitsquare scaled 8 ;
+                dodraw unitsquare scaled 8 ;
+            ) ;
+            draw DiceDots[a]                ;
+            draw DiceDots[b] transformed t3 ;
+            draw DiceDots[c] transformed t4 ;
+        ) ;
+    enddef ;
+
+    lmt_registerglyph [ category = "dice", unicode = "123", code = "Diced(1,2,3);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "135", code = "Diced(1,3,5);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "142", code = "Diced(1,4,2);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "154", code = "Diced(1,5,4);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "214", code = "Diced(2,1,4);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "231", code = "Diced(2,3,1);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "246", code = "Diced(2,4,6);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "263", code = "Diced(2,6,3);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "312", code = "Diced(3,1,2);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "326", code = "Diced(3,2,6);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "351", code = "Diced(3,5,1);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "365", code = "Diced(3,6,5);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "415", code = "Diced(4,1,5);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "421", code = "Diced(4,2,1);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "456", code = "Diced(4,5,6);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "462", code = "Diced(4,6,2);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "513", code = "Diced(5,1,3);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "536", code = "Diced(5,3,6);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "541", code = "Diced(5,4,1);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "564", code = "Diced(5,6,4);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "624", code = "Diced(6,2,4);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "632", code = "Diced(6,3,2);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "645", code = "Diced(6,4,5);", width = 12, height = 12 ] ;
+    lmt_registerglyph [ category = "dice", unicode = "653", code = "Diced(6,5,3);", width = 12, height = 12 ] ;
+
 \stopMPcalculation
 
-%D At the \TEX\ end we define three features. The reverse is just there for fun. The
+%D At the \TEX\ end we define four features. The reverse is just there for fun. The
 %D digits features will map digits onto dice.
 
 \definefontfeature
@@ -120,9 +168,47 @@
   [dice:digits]
   [dice:digits=yes]
 
+\definefontfeature
+  [dice:three]
+  [dice:three=yes]
+
 %D The mapping to dice happens here:
 
 \startluacode
+
+    -- before the digits feature
+
+    fonts.handlers.otf.addfeature("dice:three", {
+        type      = "ligature",
+        order     = { "dice:three" },
+        nocheck   = true,
+        data      = {
+            [123] = { 0x31, 0x32, 0x33 },
+            [135] = { 0x31, 0x33, 0x35 },
+            [142] = { 0x31, 0x34, 0x32 },
+            [154] = { 0x31, 0x35, 0x34 },
+            [214] = { 0x32, 0x31, 0x34 },
+            [231] = { 0x32, 0x33, 0x31 },
+            [246] = { 0x32, 0x34, 0x36 },
+            [263] = { 0x32, 0x36, 0x33 },
+            [312] = { 0x33, 0x31, 0x32 },
+            [326] = { 0x33, 0x32, 0x36 },
+            [351] = { 0x33, 0x35, 0x31 },
+            [365] = { 0x33, 0x36, 0x35 },
+            [415] = { 0x34, 0x31, 0x35 },
+            [421] = { 0x34, 0x32, 0x31 },
+            [456] = { 0x34, 0x35, 0x36 },
+            [462] = { 0x34, 0x36, 0x32 },
+            [513] = { 0x35, 0x31, 0x33 },
+            [536] = { 0x35, 0x33, 0x36 },
+            [541] = { 0x35, 0x34, 0x31 },
+            [564] = { 0x35, 0x36, 0x34 },
+            [624] = { 0x36, 0x32, 0x34 },
+            [632] = { 0x36, 0x33, 0x32 },
+            [645] = { 0x36, 0x34, 0x35 },
+            [653] = { 0x36, 0x35, 0x33 },
+        }
+    } )
 
     -- local invalid = fonts.helpers.privateslot("invaliddice")
 
@@ -336,14 +422,20 @@
     \definefont[DiceN][Serif*dice:normal]
     \definefont[DiceR][Serif*dice:reverse]
     \definefont[DiceD][Serif*dice:normal,dice:digits]
+    \definefont[DiceT][Serif*dice:normal,dice:three,dice:digits]
 
     \startTEXpage[offset=3pt]
         \DiceN
             \dostepwiserecurse{"2680}{"2685}{1}{\char#1\quad}%
-        \DiceN
+        \DiceR
             \dostepwiserecurse{"2680}{"2685}{1}{\char#1\quad}%
         \DiceD
             \darkblue 2\quad5\quad3\quad0
+    \stopTEXpage
+
+    \startTEXpage[offset=3pt]
+        \showglyphs \DiceT 1 2 3 4 5 6
+        \showglyphs \DiceT 653 421
     \stopTEXpage
 
 \stoptext

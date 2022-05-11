@@ -349,6 +349,7 @@
 \definesystemconstant {SansSlanted}
 \definesystemconstant {Sans}
 \definesystemconstant {sans}
+\definesystemconstant {scaled}
 \definesystemconstant {scriptscript}
 \definesystemconstant {script}
 \definesystemconstant {sc}

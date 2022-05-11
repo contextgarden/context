@@ -887,12 +887,15 @@
 % {\mathatom \s!leftclass \mathendcode \s!rightclass \mathbegincode{}\noatomruling}
   {\mathatom \s!class \mathbegincode{}\noatomruling}
 
+% maybe: \newboundary \c_strc_math_align_boundary
+
+\defineboundary[mathalign] % this one is also used at the lua end
+
 \protected\def\strc_math_align_here
   {\ifmmode
      % we can have a more dedicated value, and also maybe store the class so that we can
      % pick it up at the engine end (second pass)
-%      \boundary\plusone
-     \boundary314\relax
+     \boundary\c_bndr_mathalign
    \fi}
 
 \protected\def\strc_math_break_here

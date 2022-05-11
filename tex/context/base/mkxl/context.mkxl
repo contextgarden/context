@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2022.05.02 15:48}
+\immutable\edef\contextversion{2022.05.11 11:34}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -144,6 +144,7 @@
 \loadmkxlfile{toks-aux}
 
 \loadmkxlfile{attr-ini}
+\loadmkxlfile{bndr-ini}
 
 \loadmkxlfile{core-ini}
 \loadmkxlfile{core-env}

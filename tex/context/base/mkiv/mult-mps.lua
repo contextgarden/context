@@ -68,6 +68,8 @@ return {
         --
         "runscript", "maketext", "numbersystem",
         "overloadmode", "setproperty",
+        --
+        "intersectiontimeslist", "arcpoint", "arcpointlist", "subarclength", "maxknotpool", "nocycle",
     },
     commands = {
         "on", "off",
