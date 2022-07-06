@@ -3,7 +3,7 @@ return {
         "btex", "etex", "verbatimtex",
     },
     shortcuts = {
-        "..", "...", "--", "---", "&", "\\",
+        "..", "...", "--", "---", "&", "&&", "\\",
     },
     primitives = { -- to be checked
         "charcode", "day", "linecap", "linejoin", "miterlimit", "stacking", "month", "pausing",
@@ -50,7 +50,7 @@ return {
         "message", "delimiters", "turningnumber", "errmessage",
         "scantokens", "end", "outer", "inner", "write", "to", "readfrom", "closefrom",
         "withprescript", "withpostscript",
-        "top", "bot", "lft", "rt", "ulft", "urt", "llft", "lrt",
+     -- "top", "bot", "lft", "rt", "ulft", "urt", "llft", "lrt",
         --
         "redpart", "greenpart", "bluepart",
         "cyanpart", "magentapart", "yellowpart",
@@ -70,6 +70,13 @@ return {
         "overloadmode", "setproperty",
         --
         "intersectiontimeslist", "arcpoint", "arcpointlist", "subarclength", "maxknotpool", "nocycle",
+        "pathpoint", "pathprecontrol", "pathpostcontrol", "pathdirection",
+        "deltapoint", "deltaprecontrol", "deltapostcontrol", "deltadirection",
+        "corner", "xrange", "yrange",
+        "convexed", "uncontrolled",
+        "nep", "makenep",
+        "withmiterlimit", "withlinejoin", "withlinecap",
+        "centerof", "centerofmass",
     },
     commands = {
         "on", "off",
@@ -86,7 +93,8 @@ return {
         "pensquare",  "penrazor",  "penspec",
         "origin", "quartercircle", "right",
         "unitsquare", "up", "withdots",
-        "abs", "bbox", "ceiling", "center", "cutafter", "cutbefore", "dir",
+        "abs", "bbox", "ceiling", "cutafter", "cutbefore", "dir",
+     -- "center",
         "directionpoint", "div", "dotprod", "intersectionpoint", "inverse", "mod",
         "round", "unitvector", "whatever",
         "cutdraw", "draw", "drawarrow", "drawdblarrow", "fill", "filldraw", "drawdot",
@@ -126,6 +134,8 @@ return {
         "primitive", "permanent", "immutable", "mutable", "frozen",
         --
         "showproperty", "showhashentry",
+        --
+        "top", "bot", "lft", "rt", "ulft", "urt", "llft", "lrt",
     },
     internals = { -- we need to remove duplicates above
         --

@@ -185,7 +185,8 @@
    \c!distance=\mathstackersparameter\c!voffset, % distance between symbol and base (can be different from voffset)
    \c!minheight=\mathexheight,
    \c!mindepth=\zeropoint,
-   \c!minwidth=.5\mathemwidth,
+ % \c!minwidth=.5\mathemwidth,
+   \c!minwidth=.25\mathemwidth, % \iota
    \c!order=\v!normal,
    \c!strut=,
    \c!color=, % todo: when I need it
@@ -532,7 +533,8 @@
    \edef\p_limits{\mathstackersparameter\c!mathlimits}%
    \ifx\p_limits\v!yes
      \def\math_stackers_stop_group{\egroup\endgroup\ordlimits}%
-     \mathop\bgroup
+   % \mathop\bgroup
+     \mathaccent\bgroup
    \else
      \let\math_stackers_stop_group\endgroup
    \fi}
@@ -1252,6 +1254,8 @@
       \thickmuskip \zeromuskip
       \medmuskip   \zeromuskip
       \thinmuskip  \zeromuskip
+      \tinymuskip  \zeromuskip
+      \pettymuskip \zeromuskip
       #1%
       \mkern-7\onemuskip
       \cleaders\mathstylehbox{\mkern-2\onemuskip#2\mkern-2\onemuskip}\hfill

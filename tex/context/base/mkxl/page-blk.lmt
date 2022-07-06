@@ -1,0 +1,98 @@
+if not modules then modules = { } end modules ['page-blk'] = {
+    version   = 1.001,
+    comment   = "companion to page-blk.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local context     = context
+local implement   = interfaces.implement
+local texgetcount = tex.getcount
+
+local blocks = { }
+local block  = false
+
+implement {
+    name      = "startpageblock",
+    arguments = "string",
+    actions   = function(s)
+        local p = texgetcount("realpageno")
+        block = { p, p }
+        blocks[s] = block
+    end,
+}
+
+implement {
+    name    = "stoppageblock",
+    actions = function()
+        local p = texgetcount("realpageno") - 1
+        block[2] = p
+    end,
+}
+
+implement {
+    name      = "pageblockrealpage",
+    arguments = "string",
+    actions   = function(name)
+        local b = blocks[name]
+        context(b and b[1] or 0)
+    end,
+}
+
+implement {
+    name      = "flushpageblocks",
+    arguments = "string",
+    actions   = function(list)
+        local count = 0
+        local order = utilities.parsers.settings_to_array(list)
+        local pages = { }
+        for i=1,#order do
+            local name  = order[i]
+            local block = blocks[name]
+            if block then
+                for i=block[1],block[2] do
+                    count = count + 1
+                    pages[count] = i
+                end
+            end
+        end
+     -- if count ~= nofpages then
+     -- end
+     -- inspect(blocks)
+     -- inspect(pages)
+        if lpdf.setpageorder then
+            lpdf.setpageorder(pages) -- ,count)
+        end
+    end
+}
+
+-- maybe intercept nesting with error
+
+local currentpreroll = false
+local prerolled = { }
+
+implement {
+    name      = "startprerollpageblock",
+    arguments = "string",
+    actions   = function(name)
+        currentrealpage = texgetcount("realpageno")
+        currentpreroll  = name
+    end
+}
+
+implement {
+    name    = "stopprerollpageblock",
+    actions = function()
+        prerolled[currentpreroll] = texgetcount("realpageno") - currentrealpage
+        currentpreroll = false
+    end
+}
+
+implement {
+    name      = "prerolledpages",
+    arguments = "string",
+    actions   = function(name)
+        context(prerolled[name] or 0)
+    end
+}

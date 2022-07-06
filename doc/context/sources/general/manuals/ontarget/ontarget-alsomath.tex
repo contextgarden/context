@@ -1,0 +1,90 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-alsomath
+
+\environment ontarget-style
+
+\startchapter[title={The curious case of \type {\over}}]
+
+Normally \TEX\ scans forward but there are a few special cases. First of all,
+\TEX\ is either scanning regular content or it is scanning alignments. That
+results in intercepts in all kind of places. When a row ends, scanning for
+inter|-|row actions happens. When the preamble is scanned there is some lookahead
+with partial expansion. This has side effects but these can be avoided in
+\LUAMETATEX\ by several options. Another special case is math mode. Normally
+curly braces indicate grouping but not in math mode: there they construct an
+atom, ordinary by default. Although most math constructs actually pick up some
+following atom, in which case we get a wrapped construct that actually is
+processed in a nested cal to the math processing routine. That whole has a class
+and although in \LUAMETATEX\ we can make atoms with a different left end right
+class, normally what is inside is hidden stays hidden. \footnote {We can think of
+optionally exposing the edge classes but although it is easy to implement we see
+no reason to do that now. After all, the information is actually available
+already via variables.}
+
+Fraction commands like \type {\over} and \type {\above} are used like this:
+
+\starttyping
+a + 1 \over 2 + b
+\stoptyping
+
+and as there can be more than for instance single digits we can do:
+
+\starttyping
+a + {12} \over {34} + b
+\stoptyping
+
+but it doesn't end there because you actually need to wrap:
+
+\starttyping
+a + {{12} \over {34}} + b
+\stoptyping
+
+If you don't do this $b$ will become part of the fraction. The curly braces here
+make the $12$, $34$ and the whole fraction made from them ordinary atoms. Because
+that also influences spacing one should be aware of side effects.
+
+\starttyping
+a + {{12} \over {34}} + b
+\stoptyping
+
+The argument of \type {simplicity} of input is easily defeated by using
+
+\starttyping
+a + \frac{12}{34} + b
+\stoptyping
+
+because it also reads sequential, is in sync with other commands like \type
+{\sqrt} and actually uses less tokens. It used more runtime, also because
+\CONTEXT\ adds plenty of control and extras but you won't notice it.
+
+Because in \CONTEXT\ we assume users to use \type {\frac} it made sense to see if
+we can make curly braces act like groups. In \LUAMETATEX\ we already have \type
+{\beginmathgroup} and \type {\endmathgroup} that provide grouping with mathstyle
+recovery, and by setting \type {\mathgroupingmode} to a non|-|zero value curly
+braces will act like these.
+
+The effects are subtle:
+
+\showmakeup[mathglue]
+
+\startbuffer
+$ a + { \bf x } ^ 2  +  {\bf 1} + {\red 123} +
+\frac{1}{2} + {\scriptstyle 123} + \dd $
+\stopbuffer
+
+\typebuffer
+
+\startcombination[1*2]
+  {\scale[scale=2500]{\showmakeup[mathglue] \mathgroupingmode 0 \getbuffer}} {\type {\mathgroupingmode 0}}
+  {\scale[scale=2500]{\showmakeup[mathglue] \mathgroupingmode 1 \getbuffer}} {\type {\mathgroupingmode 1}}
+\stopcombination
+
+If you see the differences you might be happy with this new trick, if not, you
+probably are not that much into optimal math spacing anyway and you can forget
+about what you just read.
+
+\stopchapter
+
+\stopcomponent
+

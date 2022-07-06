@@ -56,6 +56,7 @@ mathematics               = mathematics or { }
 local mathematics         = mathematics
 
 local implement           = interfaces.implement
+local context             = context
 
 -- Unfortunately some alphabets have gaps (thereby troubling all applications that
 -- need to deal with math). Somewhat strange considering all those weird symbols that
@@ -108,7 +109,7 @@ mathematics.charactersets = allocate {
     },
 }
 
-mathematics.gaps = allocate {
+local gaps = allocate {
     [0x1D455] = 0x0210E, -- ℎ h
     [0x1D49D] = 0x0212C, -- ℬ script B
     [0x1D4A0] = 0x02130, -- ℰ script E
@@ -135,6 +136,8 @@ mathematics.gaps = allocate {
     [0x1D549] = 0x0211D, -- ℝ bb R
     [0x1D551] = 0x02124, -- ℤ bb Z
 }
+
+mathematics.gaps = gaps
 
 local function fillinmathgaps(tfmdata,key,value)
     local mathgaps     = mathematics.gaps
@@ -391,7 +394,7 @@ local monospaced_bi = tovector(sansserif_bi)
 local monospaced = {
     tf = monospaced_tf,
     it = monospaced_tf,
-    bf = monospaced_tf,
+    bf = monospaced_bf,
     bi = monospaced_bf,
 }
 
@@ -548,6 +551,16 @@ regular.italic        = tovector(regular_it)
 regular.bold          = tovector(regular_bf)
 regular.bolditalic    = tovector(regular_bi)
 
+blackboard.normal     = tovector(blackboard_tf)
+blackboard.italic     = tovector(blackboard_tf)
+blackboard.bold       = tovector(blackboard_tf)
+blackboard.bolditalic = tovector(blackboard_tf)
+
+fraktur.normal        = tovector(fraktur_tf)
+fraktur.italic        = tovector(fraktur_bf)
+fraktur.bold          = tovector(fraktur_tf)
+fraktur.bolditalic    = tovector(fraktur_bf)
+
 alphabets.serif       = tovector(regular)
 alphabets.type        = tovector(monospaced)
 alphabets.teletype    = tovector(monospaced)
@@ -561,6 +574,8 @@ local boldmap         = allocate { }
 mathematics.boldmap   = boldmap
 
 -- all math (a bit of redundancy here) (sorted for tracing)
+
+-- so we can do: mathematics.alphabets.blackboard.tf.digits
 
 for alphabet, styles in sortedhash(alphabets) do -- per 9/6/2011 we also have attr for missing
     for style, data in sortedhash(styles) do
@@ -752,6 +767,12 @@ function mathematics.remapalphabets(char,mathalphabet,mathgreek)
     if not mathalphabet then
         return
     end
+    local g = gaps[char]
+    if g then
+        report_remapping("gap character %U changed into %C",char,g)
+        char = g
+        return
+    end
     if mathgreek and mathgreek > 0 then
         if not isgreek[char] then
             -- nothing needed
@@ -822,3 +843,39 @@ function mathematics.addfallbacks(main)
     checkedcopy(characters,regular.bi.ucgreek,regular.it.ucgreek)
     checkedcopy(characters,regular.bi.lcgreek,regular.it.lcgreek)
 end
+
+implement {
+    name      = "traversemath",
+    arguments = { "string",  "string", "string", "csname" },
+    actions   = function(style,alternative,set,command)
+        local d = alphabets[style]
+        if d then
+            d = d[alternative]
+            if d then
+                d = d[set]
+                if d then
+                    local c = context[command]
+                    for k, v in sortedhash(d) do
+                        c(v)
+                    end
+                end
+            end
+        end
+    end
+}
+
+local blocks = characters.blocks
+
+implement {
+    name      = "traverseblock",
+    arguments = { "string", "csname" },
+    actions   = function(name,command)
+        local b = blocks[string.nospaces(name)]
+        if b then
+            local c = context[command]
+            for k = b.first, b.last do
+                c(gaps[k] or k)
+            end
+        end
+    end
+}

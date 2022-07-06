@@ -61,6 +61,7 @@
 
 \definefilesynonym [type-imp-latin-modern.mkiv]           [type-imp-latinmodern.mkiv]
 \definefilesynonym [type-imp-modern-latin.mkiv]           [type-imp-modernlatin.mkiv]
+\definefilesynonym [type-imp-less-modern-latin.mkiv]      [type-imp-modernlatin.mkiv]
 
 \definefilesynonym [type-imp-lucida.mkiv]                 [type-imp-lucida-typeone.mkiv]
 \definefilesynonym [type-imp-lucidaot.mkiv]               [type-imp-lucida-opentype.mkiv]
@@ -141,5 +142,8 @@
 \definefilesynonym [type-imp-kpfonts-light.mkiv]          [type-imp-kpfonts.mkiv]
 \definefilesynonym [type-imp-kpfonts-bold.mkiv]           [type-imp-kpfonts.mkiv]
 \definefilesynonym [type-imp-kpfonts-sans.mkiv]           [type-imp-kpfonts.mkiv]
+
+\definefilesynonym [type-imp-gentiumplus.mkiv]            [type-imp-gentium.mkiv]
+\definefilesynonym [type-imp-gentiumbook.mkiv]            [type-imp-gentium.mkiv]
 
 \protect \endinput

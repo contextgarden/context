@@ -19,6 +19,9 @@ use the given binary (e.g. codium, default: code)
 .TP
 .B --start
 start vscode with extension context
+.TP
+.B --lsfile
+generate language server file (work in progress)
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

@@ -112,13 +112,13 @@ implement {
 
 do
 
-    local nuts                     = nodes.nuts
-    local tonut                    = nodes.tonut
+    local nuts      = nodes.nuts
+    local tonut     = nodes.tonut
 
-    local setwhd                   = nuts.setwhd
-    local setlist                  = nuts.setlist
+    local setwhd    = nuts.setwhd
+    local setlist   = nuts.setlist
 
-    local new_hlist                = nuts.pool.hlist
+    local new_hlist = nuts.pool.hlist
 
     function codeinjections.restoreboxresource(index)
         local hbox = new_hlist()
@@ -128,8 +128,12 @@ do
         return hbox -- so we return a nut !
     end
 
-    function codeinjections.registerboxresource(n,offset) -- usecollected (arg 3) is a bit of a hack
-        local r = savebox(n,nil,true,true,0,offset or 0) -- direct, todo: accept functions as attr/resources
+    function codeinjections.registerboxresource(n,offset,delay,objnum)
+        local immediate = true
+        if delay == true or delay == 1 then
+            immediate = false
+        end
+        local r = savebox(n,nil,true,immediate,0,offset or 0,objnum)
         return r
     end
 

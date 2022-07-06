@@ -40,7 +40,7 @@ return {
                  -- feature  = false, -- use the saved ones (see typescript)
                     selector = 0xFE00,
                 },
-                -- 0xFEO1 should be roundhand style, if present                
+                -- 0xFEO1 should be roundhand style, if present
                 {
                     tweak    = "variants",
                     kind     = "script",

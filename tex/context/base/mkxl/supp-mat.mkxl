@@ -44,21 +44,21 @@
 %D
 %D Which is implemented (in \type{syst-ini.mkiv}) as:
 
-\permanent\protected\def\Ucheckedstartdisplaymath
-  {\ifinner
-     \ifhmode
-       \normalUstartmath
-       \let\Ucheckedstopdisplaymath\normalUstopmath
-     \else
-       \normalUstartdisplaymath
-       \let\Ucheckedstopdisplaymath\normalUstopdisplaymath
-     \fi
-   \else
-     \normalUstartdisplaymath
-     \let\Ucheckedstopdisplaymath\normalUstopdisplaymath
-   \fi}
-
-\aliased\let\Ucheckedstopdisplaymath\relax
+% \permanent\protected\def\Ucheckedstartdisplaymath
+%   {\ifinner
+%      \ifhmode
+%        \normalUstartmath
+%        \let\Ucheckedstopdisplaymath\normalUstopmath
+%      \else
+%        \normalUstartdisplaymath
+%        \let\Ucheckedstopdisplaymath\normalUstopdisplaymath
+%      \fi
+%    \else
+%      \normalUstartdisplaymath
+%      \let\Ucheckedstopdisplaymath\normalUstopdisplaymath
+%    \fi}
+%
+% \aliased\let\Ucheckedstopdisplaymath\relax
 
 % \let\normalsuper\Usuperscript % obsolete
 % \let\normalsuber\Usubscript   % obsolete
@@ -69,8 +69,8 @@
 \aliased\let\stopdmath \Ustopdisplaymath   % \Ucheckedstopdisplaymath
 
 \permanent\protected\def\mathematics#1{\relax         \ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
-\permanent\protected\def\displaymath#1{\noindent      \ifmmode#1\else\normalstartdmath#1\normalstopdmath\fi}
-\permanent\protected\def\inlinemath #1{\dontleavehmode\ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
+%permanent\protected\def\displaymath#1{\noindent      \ifmmode#1\else\normalstartdmath#1\normalstopdmath\fi}
+%permanent\protected\def\inlinemath #1{\dontleavehmode\ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
 \permanent\protected\def\textmath   #1{\dontleavehmode\ifmmode#1\else\begingroup\everymath\emptytoks\normalstartimath#1\normalstopimath\endgroup\fi} % \mathsurround\zeropoint
 
 \aliased\let\stopmathmode\relax
@@ -93,16 +93,22 @@
 %D \macros
 %D   {displaymathematics,inlinemathematics,automathematics}
 %D
-%D An example of usage of the following can be found in the MathML module:
+%D We no longer support native displaymath, which is no big deal because already
+%D for many years we abandoned it. We therefore also default differently now. We
+%D signal \LUAMETATEX\ that the double dollar mode actually has to be inline
+%D display math anyway.
 
 \ifdefined\strc_formulas_start_formula \else
-    \def\strc_formulas_start_formula{\normalstartdmath}
-    \def\strc_formulas_stop_formula {\normalstopdmath }
+   \def\strc_formulas_start_formula{\normalstartdmath}
+   \def\strc_formulas_stop_formula {\normalstopdmath }
 \fi
 
 \permanent\protected\def\displaymathematics#1{\relax\ifmmode#1\else\strc_formulas_start_formula{}#1\strc_formulas_stop_formula\fi}
 \permanent\protected\def\inlinemathematics   {\dontleavehmode\mathematics}
 %permanent\protected\def\automathematics     {\relax\ifhmode\expandafter\inlinemathematics\else\expandafter\displaymathematics\fi}
+
+\aliased\let\displaymath\displaymathematics % we no longer support native displaymath
+\aliased\let\inlinemath \inlinemathematics  % we no longer support native displaymath
 
 % better, esp when used in bTABLE ... eTABLE
 

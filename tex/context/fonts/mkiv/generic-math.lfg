@@ -1,8 +1,10 @@
+-- We will add a few more examplex to this file.
+
 return {
     name = "generic-math",
     version = "1.00",
     comment = "A starting point.",
-    author = "Hans Hagen",
+    author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
@@ -22,6 +24,9 @@ return {
             AccentBottomShiftDown    = 0,
             AccentBaseDepth          = 0,
             AccentFlattenedBaseDepth = 0,
+            DelimiterPercent         =   90,
+            DelimiterShortfall       =  400,
+            DisplayOperatorMinHeight = 1800, -- XXXX in font
         },
         tweaks = {
             aftercopying = {

@@ -1387,22 +1387,33 @@
 \setupnotes
   [\c!width=\v!auto]
 
+% \permanent\protected\def\setnotehsize
+%   {\ifinsidemulticolumns
+%      \setnoteparameter\c!width{\makeupwidth}%
+%    \else
+%      \edef\p_width{\noteparameter\c!width}%
+%      \ifx\p_width\v!auto
+%      % \ifinsidecolumns
+%          \setnoteparameter\c!width{\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi}%
+%      % \else
+%      %   \setnoteparameter\c!width{\makeupwidth}%
+%      % \fi
+%      \orelse\ifempty\p_width
+%        \setnoteparameter\c!width{\hsize}%
+%      \fi
+%   \fi
+%   \hsize\noteparameter\c!width\relax}
+%
+% We construct immediately and migrate so:
+
 \permanent\protected\def\setnotehsize
-  {\ifinsidemulticolumns
+  {\edef\p_width{\noteparameter\c!width}%
+   \ifx\p_width\v!auto
+     % intercept old value
+     \let\p_width\makeupwidth
      \setnoteparameter\c!width{\makeupwidth}%
-   \else
-     \edef\p_width{\noteparameter\c!width}%
-     \ifx\p_width\v!auto
-     % \ifinsidecolumns
-         \setnoteparameter\c!width{\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi}%
-     % \else
-     %   \setnoteparameter\c!width{\makeupwidth}%
-     % \fi
-     \orelse\ifempty\p_width
-       \setnoteparameter\c!width{\hsize}%
-     \fi
-  \fi
-  \hsize\noteparameter\c!width\relax}
+   \fi
+   \hsize\p_width\relax}
 
 \appendtoks
     % only needed when columns (could be three \set...)

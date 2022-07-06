@@ -269,6 +269,8 @@ do
                             k = lpegmatch(escaper,k) or k
                             v = lpegmatch(escaper,v) or v
                             n = n + 1 t[n] = f_key_val_str(depth,k,v)
+                        elseif i > 1 then
+                            n = n - 1
                         end
                     elseif tv == "table" then
                         local l = #v
@@ -284,6 +286,9 @@ do
                             end
                         elseif next(v) then
                             tojsonpp(v,k,depth,level+1,0)
+                        elseif i > 1 then
+                            n = n - 1
+                            -- we don't know if we have a hash or string
                         end
                     elseif tv == "boolean" then
                         if tk == "number" then
@@ -301,6 +306,8 @@ do
                             else
                                 t[n] = f_key_val_nop(depth,k)
                             end
+                        elseif i > 1 then
+                            n = n - 1
                         end
                     else
                         if tk == "number" then
@@ -310,6 +317,8 @@ do
                             k = lpegmatch(escaper,k) or k
                             n = n + 1
                             t[n] = f_key_val_null(depth,k)
+                        elseif i > 1 then
+                            n = n - 1
                         end
                     end
                 end

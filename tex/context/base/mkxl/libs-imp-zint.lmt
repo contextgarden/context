@@ -91,28 +91,12 @@ end)
 local report  = logs.reporter("zint")
 local context = context
 local shown   = false
+local sqrt    = math.sqrt
 
--- Same performance as just context(fmt,...): 113pps (On 2013 i7 laptop.)
-
------ f_rectangle = formatters["%nofill unitsquare xysized (%N,%N) shifted (%N,%N);"]
-local f_hexagon   = formatters["%nofill (%N,-%N)--(%N,-%N)--(%N,-%N)--(%N,-%N)--(%N,-%N)--(%N,-%N)--cycle;"]
-local f_circle    = formatters["%nofill unitcircle scaled %N shifted (%N,-%N);"]
-
-local s_done      = "dofill origin --cycle;"
+local f_rectangle = formatters["( unitsquare xyscaled (%N,-%N) shifted (%N,-%N) )"]
+local f_hexagon   = formatters["( fullhexagon scaled %N shifted (%N,-%N) )"]
+local f_circle    = formatters["( fullcircle scaled %N shifted (%N,-%N) )"]
 local f_string    = formatters['draw textext("%s") scaled (%N/10) shifted (%N,-%N);']
-
--- A bit faster: 130pps (When I see hexagons I'll do that too but MP takes way more time.)
-
--- local s_preamble = [[
---     save ns; def ns (expr a, b) = nofill unitsquare xyscaled a shifted b ; enddef;
---     save ds; def ds (expr a, b) = dofill unitsquare xyscaled a shifted b ; enddef;
--- ]]
-
-local s_preamble = [[
-    save ns; def ns (expr a, b) = nofill unitsquare xyscaled a shifted b ; enddef;
-]]
-
-local f_rectangle = formatters["ns((%i,-%i),(%i,-%i));"]
 
 local aliases = {
     isbnx = "isbn",
@@ -144,7 +128,6 @@ local function execute(specification)
                 if result then
                     -- not that fast but if needed we can speed it up
                     context.startMPcode()
-                    context(s_preamble)
                     local rectangles = result.rectangles
                     local hexagons   = result.hexagons
                     local circles    = result.circles
@@ -155,16 +138,16 @@ local function execute(specification)
                             local r = rectangles[i]
                             rectangles[i] = f_rectangle(r[3],r[4],r[1],r[2])
                         end
-                        rectangles[n+1] = s_done
-                        context("% t",rectangles)
+                        context("fill % && t && cycle;",rectangles)
                     end
                     if hexagons then
                         local n = #hexagons
+                        local s = sqrt(2) / 2 -- can be finetuned if needed
                         for i=1,n do
-                            hexagons[i] = f_hexagon(unpack(hexagons[i]))
+                            local h = hexagons[i]
+                            hexagons[i] = f_hexagon(s*h[3],h[1],h[2])
                         end
-                        hexagons[n+1] = s_done
-                        context("% t",hexagons)
+                        context("fill % && t && cycle;",hexagons)
                     end
                     if circles then
                         local n = #circles
@@ -172,15 +155,13 @@ local function execute(specification)
                             local c = circles[i]
                             circles[i] = f_circle(c[3],c[1],c[2])
                         end
-                        circles[n+1] = s_done
-                        context("% t",circles)
+                        context("eofill % && t && cycle;",circles)
                     end
                     if strings then
                         -- We set the font at the encapsulating level.
                         local n = #strings
                         for i=1,n do
                             local s = strings[i]
-                         -- context('draw textext("%s") scaled (%N/10) shifted (%N,%N);',
                             strings[i] = f_string(s[4],s[3],s[1],s[2])
                         end
                         context("% t",strings)

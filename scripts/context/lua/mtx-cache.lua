@@ -78,7 +78,8 @@ local function erase(banner,path,list)
         local kept = 0
         for i=1,#list do
             local filename = list[i]
-            if find(filename,"luatex%-cache") then
+         -- if find(filename,"luatex%-cache") then
+            if find(filename,LUATEXENGINE .. "%-cache") then
                 remove(filename)
                 if isfile(filename) then
                     kept = kept + 1

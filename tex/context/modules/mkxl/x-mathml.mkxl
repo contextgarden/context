@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D We should update this one wrt grouping and styles.
+
 % \xmlfilter{#1}{/*/name()} -> \xmltag
 
 % This implementation looks like a hack ... this is because we deal with all weird
@@ -1299,7 +1301,8 @@
                 }
             } {
                 % beware, the second {} is needed for the superscript
-                \xmlconcatrange{#1}{/*}{2}{}{}\normalsuperscript\prime
+              % \xmlconcatrange{#1}{/*}{2}{}{}\normalsuperscript\prime
+                \xmlconcatrange{#1}{/*}{2}{}{}\prime
             }
         }
     } {
@@ -2023,11 +2026,9 @@
             % probably not yet ok
             \setdimensionwithunit\scratchdimen\mmlfraclinethickness{pt}
         }
-        {
-            {\mmlfirst{#1}}
-                \above\scratchdimen
-            {\mmlsecond{#1}}
-        }
+%         {
+        \Uabove\scratchdimen{\mmlfirst{#1}}{\mmlsecond{#1}}
+%         }
     \fi
     \endgroup
 \stopxmlsetups

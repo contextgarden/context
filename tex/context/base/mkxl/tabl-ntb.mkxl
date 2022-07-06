@@ -372,6 +372,8 @@
 \def\tabl_ntb_get_dis#1{\ifcsname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
 \def\tabl_ntb_get_aut#1{\csname  \??naturaltableaut\m_tabl_tbl_level:\number#1\endcsname}
 
+% \i ntegerdef
+
 \def\tabl_ntb_let_bck#1#2{\global\expandafter\chardef\csname\??naturaltablebck\m_tabl_tbl_level:\number#1:\number#2\endcsname}
 
 \def\tabl_ntb_get_bck#1#2{\csname\??naturaltablebck\m_tabl_tbl_level:\number#1:\number#2\endcsname}

@@ -11,6 +11,7 @@
     <flag name="generate"><short>generate extension in sync with current version</short></flag>
     <flag name="program"><short>use the given binary (e.g. codium, default: code)</short></flag>
     <flag name="start"><short>start vscode with extension context</short></flag>
+    <flag name="lsfile"><short>generate language server file (work in progress)</short></flag>
    </subcategory>
   </category>
  </flags>

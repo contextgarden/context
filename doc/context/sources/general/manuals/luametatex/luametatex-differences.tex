@@ -279,6 +279,19 @@ end
 
 if luatex and luametatex then
 
+    local match = string.match
+
+    local index = structures.registers.collected and structures.registers.collected.luatexindex
+    local found = { }
+
+    if index then
+        local data = index.entries
+        for i=1,#data do
+            found[match(data[i].list[1][1],"\\tex%s*{(.-)}") or ""] = true
+        end
+     -- inspect(found)
+    end
+
     luatex     = table.tohash(luatex)
     luametatex = table.tohash(luametatex)
 
@@ -291,6 +304,9 @@ if luatex and luametatex then
     context.startcolumns { n = 2 }
         for k, v in table.sortedhash(luatex) do
             if not luametatex[k] then
+                if not found[k] then
+                    context.dontleavehmode()
+                end
                 context.type(k)
                 context.crlf()
             end
@@ -307,6 +323,10 @@ if luatex and luametatex then
     context.startcolumns { n = 2 }
         for k, v in table.sortedhash(luametatex) do
             if not luatex[k] then
+                if not found[k] then
+                    context.dontleavehmode()
+                    context.llap("\\infofont[todo] ")
+                end
                 context.type(k)
                 context.crlf()
             end

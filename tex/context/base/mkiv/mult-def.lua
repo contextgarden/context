@@ -7346,6 +7346,9 @@ return {
   ["adaptive"]={
    ["en"]="adaptive",
   },
+  ["freezespacing"]={
+   ["en"]="freezespacing",
+  },
   ["address"]={
    ["cs"]="adresa",
    ["de"]="adresse",
@@ -10051,6 +10054,15 @@ return {
    ["en"]="mathclass",
    ["fr"]="classemath",
   },
+  ["leftclass"]={
+   ["en"]="leftclass",
+  },
+  ["rightclass"]={
+   ["en"]="rightclass",
+  },
+  ["middleclass"]={
+   ["en"]="middleclass",
+  },
   ["mathlimits"]={
    ["en"]="mathlimits",
    ["fr"]="limitesmath",
@@ -10466,6 +10478,9 @@ return {
    ["pe"]="فاصله‌شماره",
    ["ro"]="numberdistance",
   },
+  ["numberthreshold"]={
+   ["en"]="numberthreshold",
+  },
   ["numbering"]={
    ["cs"]="cislovani",
    ["de"]="nummerierung",
@@ -10479,6 +10494,10 @@ return {
   ["numberorder"]={
    ["en"]="numberorder",
    ["fr"]="ordrenumero",
+  },
+  ["numberlocation"]=
+  {
+    ["en"]="numberlocation",
   },
   ["numberprefix"]={
    ["en"]="numberprefix",
@@ -10889,6 +10908,9 @@ return {
    ["nl"]="alinea",
    ["pe"]="پاراگراف",
    ["ro"]="paragraf",
+  },
+  ["penalties"]={
+   ["en"]="penalties",
   },
   ["period"]={
    ["en"]="period",
@@ -12260,6 +12282,10 @@ return {
    ["nl"]="tekstmarge",
    ["pe"]="حاشیه‌متن",
    ["ro"]="textmargin",
+  },
+  ["numbermethod"]={
+   ["en"]="numbermethod",
+   ["nl"]="nummermethode",
   },
   ["textmethod"]={
    ["cs"]="textmethod",

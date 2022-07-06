@@ -26,10 +26,15 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            NoLimitSupFactor =   0,
-            NoLimitSubFactor = 900,
-         -- AccentBaseHeight = 0,
-            AccentBaseDepth  = 50,
+            NoLimitSupFactor                =    0,
+            NoLimitSubFactor                =  900,
+         -- AccentBaseHeight                =    0,
+            AccentBaseDepth                 =   50,
+            RadicalDegreeBottomRaisePercent =   60,
+            RadicalRuleThickness            =   46, -- 52 in font 
+            DelimiterPercent                =   90,
+            DelimiterShortfall              =  400,
+            DisplayOperatorMinHeight        = 1800, -- 1300 in font (only one)
         },
         tweaks = {
             aftercopying = {
@@ -40,20 +45,20 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {
-                        [0x1D44F] = { 0,     1,    0,   1.3  }, -- b
-                        [0x1D451] = { 0,     1,    0,   0.8  }, -- d
-                        [0x1D452] = { 0,     1,    0,   0.9  }, -- e
-                        [0x0210E] = { 0,     1,    0,   1.3  }, -- h
-                        [0x1D458] = { 0,     1,    0,   1.3  }, -- k
-                        [0x1D453] = { 0.6,   1.4,  1.2, 1.5  }, -- f
-                        [0x1D457] = { 0.5,   1.3,  1.7       }, -- j
-                        [0x1D45D] = { 0.15,  1.15, 0,   1.4  }, -- p
-                        [0x1D45E] = { 0,     1,    0,   0.9  }, -- q
-                        [0x1D464] = { 0,     1,    0,   1.1  }, -- w
-                        [0x1D6FE] = { 0,     1,    0,   1.1  }, -- \gamma
-                        [0x1D706] = { 0,     1,    0,   1.05 }, -- \lambda
-                        [0x1D70A] = { 0,     1,    0,   1.2  }, -- \omicron
-                        [0x1D70F] = { 0,     1,    0,   1.05 }, -- \tau
+                        [0x1D44F] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.3  }, -- b
+                        [0x1D451] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.8  }, -- d
+                        [0x1D452] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.9  }, -- e
+                        [0x0210E] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.3  }, -- h
+                        [0x1D458] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.3  }, -- k
+                        [0x1D453] = { xoffset = 0.6,   width = 1.4,  italic = 1.2, anchor = 1.5  }, -- f
+                        [0x1D457] = { xoffset = 0.5,   width = 1.3,  italic = 1.7                }, -- j
+                        [0x1D45D] = { xoffset = 0.15,  width = 1.15, italic = 0,   anchor = 1.4  }, -- p
+                        [0x1D45E] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.9  }, -- q
+                        [0x1D464] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.1  }, -- w
+                        [0x1D6FE] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.1  }, -- \gamma
+                        [0x1D706] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.05 }, -- \lambda
+                        [0x1D70A] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.2  }, -- \omicron
+                        [0x1D70F] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.05 }, -- \tau
                     },
                 },
                 {
@@ -63,7 +68,7 @@ return {
                             topleft     = -0.2,
                          -- bottomleft  =  0,
                          -- topright    =  0,
-                            bottomright =  -0.2,
+                            bottomright = -0.2,
                        },
                     },
                 },

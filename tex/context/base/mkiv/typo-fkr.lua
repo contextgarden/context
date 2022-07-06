@@ -56,7 +56,7 @@ function typesetters.fontkerns.handler(head)
                             kern = (kern1 + kern2)/2                -- mixed
                         end
                         if kern ~= 0 then
-                            head, current = insertbefore(head,current,new_kern(kern))
+                            head = insertbefore(head,current,new_kern(kern))
                         end
                         lastdata = data
                     else
@@ -68,7 +68,7 @@ function typesetters.fontkerns.handler(head)
                     end
                     local kern = getkernpair(lastdata,lastchar,char)
                     if kern ~= 0 then
-                        head, current = insertbefore(head,current,new_kern(kern))
+                        head = insertbefore(head,current,new_kern(kern))
                     end
                 end
                 lastchar = char

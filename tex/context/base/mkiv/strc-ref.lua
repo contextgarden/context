@@ -2096,7 +2096,7 @@ function references.setandgetattribute(data) -- maybe do internal automatically 
         if ndat then
             local numbers = ndat.numbers
             if type(numbers) == "string" then
-                ndat.numbers = counters.compact(numbers,nil,true)
+                counters.compact(ndat,numbers)
             end
             data.numberdata = helpers.simplify(ndat)
         end

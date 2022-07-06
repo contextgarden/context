@@ -112,8 +112,8 @@ local function initialize(tfmdata,key,value)
     if value then
         local vfspecials  = fonts.helpers.vfspecials
         local vfcommands  = fonts.helpers.commands
-        local backgrounds = vfspecials.backgrounds
-        local outlines    = vfspecials.outlines
+     -- local backgrounds = vfspecials.backgrounds
+     -- local outlines    = vfspecials.outlines
         local characters  = tfmdata.characters
         local rule        = { "frame", true, true, true, false, false, false, false, "palegray" }
         local showchar    = true
@@ -178,7 +178,7 @@ local function initialize(tfmdata,key,value)
             local vfspecials  = fonts.helpers.vfspecials
             local vfcommands  = fonts.helpers.commands
             local backgrounds = vfspecials.backgrounds
-            local outlines    = vfspecials.outlines
+         -- local outlines    = vfspecials.outlines
             local characters  = tfmdata.characters
             local rulecache   = backgrounds
             local push        = vfcommands.push
@@ -192,6 +192,13 @@ local function initialize(tfmdata,key,value)
             for unicode, character in next, characters do
                 local mathkerns = character.mathkerns
                 local italic    = character.vitalic or character.italic
+
+if italic ~= italic then
+    -- 8427 in pagella suddenly gets a "nan" assigned ... can this be a lua bug
+    -- test file : staircase-001.tex
+    italic = 0
+end
+
                 if mathkerns or (italic and italic ~= 0) then
                     local width  = character.width  or 0
                     local height = character.height or 0
@@ -202,7 +209,7 @@ local function initialize(tfmdata,key,value)
                         count = count + 1 list[count] = itcolor
                         count = count + 1 list[count] = push
                         count = count + 1 list[count] = { "offset", width + (italic < 0 and -italic or 0), 0 }
-                        count = count + 1 list[count] = rulecache[height][depth][abs(-italic)]
+                        count = count + 1 list[count] = rulecache[height][depth][italic < 0 and -italic or italic]
                         count = count + 1 list[count] = pop
                         count = count + 1 list[count] = black
                     end
@@ -227,7 +234,7 @@ local function initialize(tfmdata,key,value)
                                     end
                                     count = count + 1 list[count] = push
                                     count = count + 1 list[count] = { "offset", width + (k < 0 and k or 0), - depth }
-                                    count = count + 1 list[count] = rulecache[h][0][abs(k)]
+                                    count = count + 1 list[count] = rulecache[h][0][k < 0 and -k or k]
                                     count = count + 1 list[count] = pop
                                 end
                             end
@@ -251,7 +258,7 @@ local function initialize(tfmdata,key,value)
                                     end
                                     count = count + 1 list[count] = push
                                     count = count + 1 list[count] = { "offset", width + (k < 0 and k or 0), height - h }
-                                    count = count + 1 list[count] = rulecache[h][0][abs(k)]
+                                    count = count + 1 list[count] = rulecache[h][0][k < 0 and k or k]
                                     count = count + 1 list[count] = pop
                                 end
                             end

@@ -81,7 +81,7 @@
 \defineinterfacevariable {btxlist}      {btxlist}
 \defineinterfacevariable {btxrendering} {btxrendering}
 
-\definelabelclass[btxlabel][2]
+\definelabelclass [btxlabel] [2]
 
 \clf_definelabels{btxlabel}{btx}\s!false\relax
 
@@ -877,6 +877,7 @@
        filter    {\btxrenderingparameter\c!filter}%
    \relax
    \ifnum\nofbtxlistentries>\zerocount
+     \clf_btxpreparelistentries{\currentbtxdataset}% could be put in collect
      \forgetall
      \btxrenderingparameter\c!before
      \ifconditional#2\relax
@@ -895,7 +896,6 @@
        \dostarttagged\t!list{btx}%
        \startpacked[\v!blank]%
        % sorting and so
-       \clf_btxpreparelistentries{\currentbtxdataset}% could be put in collect
        % next we analyze the width
        \ifempty\currentbtxnumbering \else
          \edef\p_width{\listparameter\c!width}%
@@ -926,9 +926,9 @@
    \global\advance\btxblock\plusone
    \endgroup}
 
-\permanent\protected\def\placebtxrendering   {\publ_place_list_indeed\conditionalfalse\conditionalfalse}
-\permanent\protected\def\completebtxrendering{\publ_place_list_indeed\conditionaltrue \conditionalfalse}
-\permanent\protected\def\flushbtxrendering   {\publ_place_list_indeed\conditionalfalse\conditionaltrue }
+\permanent\protected\def\placebtxrendering      {\publ_place_list_indeed\conditionalfalse\conditionalfalse}
+\permanent\protected\def\completebtxrendering   {\publ_place_list_indeed\conditionaltrue \conditionalfalse}
+\permanent\protected\def\flushbtxrendering      {\publ_place_list_indeed\conditionalfalse\conditionaltrue }
 
 \aliased\let\completelistofpublications\completebtxrendering % for old times sake
 \aliased\let\placelistofpublications   \placebtxrendering    % for old times sake
@@ -1530,8 +1530,14 @@
      \endgroup
    \fi}
 
+% \permanent\protected\def\btxmissing#1%
+%   {\dontleavehmode{\tttf<#1>}}
+
+\permanent\protected\def\currentbtxmissingreference
+  {\clf_btxmissing{\currentbtxdataset}{\currentbtxreference}}
+
 \permanent\protected\def\btxmissing#1%
-  {\dontleavehmode{\tttf<#1>}}
+  {\dontleavehmode{\tttf<\clf_btxmissing{\currentbtxdataset}{#1}>}}
 
 %D Compatibility:
 
@@ -1796,6 +1802,7 @@
      filename  {\dummyparameter\c!file}%
      filetype  {\dummyparameter\c!type}%
      criterium {\dummyparameter\c!criterium}%
+     options   {\dummyparameter\c!option}%
    \relax
    \endgroup}
 

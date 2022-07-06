@@ -238,9 +238,11 @@ local function manipulateeffect(tfmdata)
         parameters.hshift = hshift
         parameters.vshift = vshift
         for unicode, character in next, characters do
-            local oldwidth  = character.width
-            local oldheight = character.height
-            local olddepth  = character.depth
+            local oldwidth     = character.width
+            local oldheight    = character.height
+            local olddepth     = character.depth
+            local olditalic    = character.italic
+            local oldtopaccent = character.topaccent
             if oldwidth and oldwidth > 0 then
                 character.width = oldwidth + wdelta
             end
@@ -249,6 +251,15 @@ local function manipulateeffect(tfmdata)
             end
             if olddepth and olddepth > 0 then
                character.depth = olddepth + ddelta
+            end
+            if olditalic or oldtopaccent then
+                local factor = character.width / oldwidth
+                if olditalic and olditalic > 0 then
+                    character.italic = olditalic * factor
+                end
+                if oldtopaccent and oldtopaccent > 0 then
+                    character.topaccent = oldtopaccent * factor
+                end
             end
         end
         if mathparameters then

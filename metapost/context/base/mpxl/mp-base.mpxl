@@ -288,7 +288,8 @@ vardef round primary u =
             round(point i of u) ..
             controls round(postcontrol i of u) and round(precontrol i+1 of u) ..
         endfor
-        if cycle u : cycle else : point infinity of u fi
+%         if cycle u : cycle else : point infinity of u fi
+        if cycle u : cycle else : nocycle fi
     else :
         u
     fi
@@ -435,9 +436,9 @@ newinternal temp_internal_n ;
 path        temp_path_a, temp_path_b ;
 pair        temp_pair_dz, temp_pair_z[] ;
 
-vardef direction expr t of p =
-    postcontrol t of p - precontrol t of p
-enddef ;
+% vardef direction expr t of p =
+%     postcontrol t of p - precontrol t of p
+% enddef ;
 
 vardef directionpoint expr z of p =
     temp_internal_a := directiontime z of p ;
@@ -479,7 +480,8 @@ tertiarydef p softjoin q =
     endgroup
 enddef ;
 
-permanent direction, directionpoint, intersectionpoint, softjoin ;
+% permanent direction, directionpoint, intersectionpoint, softjoin ;
+permanent directionpoint, intersectionpoint, softjoin ;
 
 newinternal join_radius ;
 path cuttings ; % what got cut off
@@ -499,7 +501,7 @@ tertiarydef a cutbefore b =  % tries to cut as little as possible
 enddef ;
 
 tertiarydef a cutafter b =
-    reverse (reverse a  cutbefore  b)
+    reverse (reverse a cutbefore  b) % inefficient, a and b are copied
     hide(cuttings := reverse cuttings)
 enddef ;
 
@@ -808,7 +810,8 @@ def plain_pickup_path primary q =
 enddef ;
 
 vardef savepen =
-    temp_pen_stack[incr temp_pen_count] = currentpen ;
+    temp_pen_count := temp_pen_count + 1 ;
+    temp_pen_stack[temp_pen_count] = currentpen ;
     temp_pen_l[temp_pen_count] = pen_lft ;
     temp_pen_r[temp_pen_count] = pen_rt ;
     temp_pen_t[temp_pen_count] = pen_top ;

@@ -259,9 +259,9 @@
 
 \def\!tfComputeMinColWidth
   {\setbox\scratchbox\vbox
-     {\ialign{% Plain's initialized \halign; \tabskip=0pt \everycr={}
-      \span\the\!taDataColumnTemplate\cr
-      \!tfWidthText\cr}}%
+     {\everycr\emptytoks
+      \tabskip\zeroskip
+      \halign{\span\the\!taDataColumnTemplate\cr\!tfWidthText\cr}}%
    \!taMinimumColumnWidth\wd\scratchbox}
 
 \def\!tfFinishFormat
@@ -298,7 +298,11 @@
 
 \def\!tfReFormat#1%
   {\the \!taLeftGlue
-   \vbox{\forgetall\ialign{\span\the\!taDataColumnTemplate\cr#1\cr}}%
+   \vbox
+     {\forgetall
+      \everycr\emptytoks
+      \tabskip\zeroskip
+      \halign{\span\the\!taDataColumnTemplate\cr#1\cr}}%
    \the \!taRightGlue
    \kern\zeropoint} % prevents \unskip / really needed
 

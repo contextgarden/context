@@ -142,6 +142,7 @@ local helpinfo = [[
     <flag name="generate"><short>generate extension in sync with current version</short></flag>
     <flag name="program"><short>use the given binary (e.g. codium, default: code)</short></flag>
     <flag name="start"><short>start vscode with extension context</short></flag>
+    <flag name="lsfile"><short>generate language server file (work in progress)</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -164,6 +165,8 @@ local application = logs.application {
     banner   = "vscode extension generator",
     helpinfo = helpinfo,
 }
+
+local concat = table.concat
 
 local report = application.report
 
@@ -730,7 +733,7 @@ function scripts.vscode.generate(targetpath)
         for i=1,#t do
             result[i] = string.gsub(t[i],".",escapes)
         end
-        return table.concat(result,"|")
+        return concat(result,"|")
     end
 
     local function capture(str)
@@ -902,12 +905,12 @@ function scripts.vscode.generate(targetpath)
         -- mp argument {...text}
         local function words(list)
             table.sort(list,sorter)
-            return "\\\\(" .. table.concat(list,"|") .. ")" .. "(?=[^a-zA-Z])"
+            return "\\\\(" .. concat(list,"|") .. ")" .. "(?=[^a-zA-Z])"
         end
 
         local function bwords(list)
             table.sort(list,sorter)
-            return "(\\\\(" .. table.concat(list,"|") .. "))\\s*(\\{)"
+            return "(\\\\(" .. concat(list,"|") .. "))\\s*(\\{)"
         end
 
         local function ewords()
@@ -916,7 +919,7 @@ function scripts.vscode.generate(targetpath)
 
         local function environments(list)
             table.sort(list,sorter)
-            last = table.concat(list,"|")
+            last = concat(list,"|")
             if #list > 1 then
                 last = "(?:" .. last .. ")"
             end
@@ -1221,7 +1224,7 @@ function scripts.vscode.generate(targetpath)
 
         local function words(list)
             table.sort(list,sorter)
-            return "(" .. table.concat(list,"|") .. ")" .. "(?=[^a-zA-Z\\_@!?\127-\255])"
+            return "(" .. concat(list,"|") .. ")" .. "(?=[^a-zA-Z\\_@!?\127-\255])"
         end
 
         local capturedshortcuts          = oneof(mergedshortcuts)
@@ -1434,7 +1437,7 @@ function scripts.vscode.generate(targetpath)
 
         local function words(list)
             table.sort(list,sorter)
-            return "(" .. table.concat(list,"|") .. ")" .. "(?=[^a-zA-Z])"
+            return "(" .. concat(list,"|") .. ")" .. "(?=[^a-zA-Z])"
         end
 
         local capturedkeywords = words {
@@ -2151,7 +2154,7 @@ function scripts.vscode.generate(targetpath)
 
         local function words(list)
             table.sort(list,sorter)
-            local str = table.concat(list,"|")
+            local str = concat(list,"|")
             return "(" .. str .. "|" .. string.upper(str) .. ")" .. "(?=[^a-zA-Z])"
         end
 
@@ -2534,7 +2537,7 @@ function scripts.vscode.generate(targetpath)
 
         local function words(list)
             table.sort(list,sorter)
-            return "\\b(" .. table.concat(list,"|") .. ")\\b"
+            return "\\b(" .. concat(list,"|") .. ")\\b"
         end
 
         local capturedkeywords = words { -- copied from cpp.lua
@@ -3190,6 +3193,261 @@ function scripts.vscode.generate(targetpath)
 
 end
 
+-- {name: 'inherits: \\setupframed'}
+
+function scripts.vscode.ls(forcedinterface)
+
+    local interfaces = forcedinterfaces or environment.files or userinterfaces
+    if not interfaces.en then
+        -- loaded as script so we have "cont-yes.*" as name
+        interfaces = { "en" }
+    end
+    --
+    local filename = "context-en.xml"
+    local xmlfile  = resolvers.findfile(filename) or ""
+    if xmlfile == "" then
+        report("unable to locate %a",filename)
+        return
+    end
+    --
+    local filename = "mult-def.lua"
+    local deffile  = resolvers.findfile(filename) or ""
+    if deffile == "" then
+        report("unable to locate %a",filename)
+        return
+    end
+    local interface = dofile(deffile)
+    if not interface or not next(interface) then
+        report("invalid file %a",filename)
+        return
+    end
+    local variables = interface.variables
+    local constants = interface.constants
+    local commands  = interface.commands
+    local elements  = interface.elements
+    --
+    local collected = { }
+    --
+    report("loading %a",xmlfile)
+    local xmlroot = xml.load(xmlfile)
+
+    local interfaces = { "en" }
+
+--     <cd:keywords list="yes">
+--      <cd:inherit name="setupalign"/>
+--     </cd:keywords>
+
+    local function arguments(e)
+        local p = { }
+        for e in xml.collected(e,"/cd:arguments/*") do
+            local tg = e.tg
+            if tg == "keywords" then
+                local a = { }
+                for e in xml.collected(e,"/*") do
+                    a[#a+1] = {
+                        name = e.at.type
+                    }
+                end
+                p[#p+1] = {
+                    type       = tg,
+                    attributes = #a > 0 and a or nil,
+                    optional   = e.at.optional == "yes" or nil
+                }
+            elseif tg == "assignments" then
+                local a = { }
+                for e in xml.collected(e,"/parameter") do
+                    local c = { e.at.name, "=" }
+                    for e in xml.collected(e,"/constant") do
+                        c[#c+1] = e.at.type
+                    end
+                    if #c > 0 then
+                        a[#a+1] = {
+                            name = concat(c, " ")
+                        }
+                    end
+                end
+                p[#p+1] = {
+                    type       = tg,
+                    attributes = #a > 0 and a or nil,
+                    optional   = e.at.optional == "yes" or nil
+                }
+            else -- e.g. "content"
+                p[#p+1] = {
+                    type     = tg,
+                    optional = e.at.optional == "yes" or nil
+                }
+            end
+        end
+        return p
+    end
+
+    local function details(e, f)
+        local d = { "\\" .. f }
+        local n = 0
+        for e in xml.collected(e,"/cd:arguments/*") do
+            local tg = e.tg
+            if tg == "keywords" then
+                n = n + 1
+                if e.at.optional == "yes" then
+                    d[#d+1] = "[optional " .. n .. ":..,..]"
+                else
+                    d[#d+1] = "[mandate "  .. n .. ":..,..]"
+                end
+            elseif tg == "assignments" then
+                n = n + 1
+                if e.at.optional == "yes" then
+                    d[#d+1] = "[optional " .. n .. ":key=val,key=val,..]"
+                else
+                    d[#d+1] = "[mandate "  .. n .. ":key=val,key=val,..]"
+                end
+            else
+                d[#d+1] = "{ content }"
+            end
+        end
+        return concat(d, " ")
+    end
+
+    -- this one is a bit weird as it could be assembled in the languages server on the fly and
+    -- it bloats the file
+
+    local function documentation(c)
+        local d = { c.detail }
+        local p = c.params
+        if p then
+            local n = 0
+            for i=1,#p do
+                local pi = p[i]
+                local ti = pi.type
+                local ai = pi.attributes
+                if ti == "keywords" then
+                    n = n + 1
+                    if pi.optional then
+                        d[#d+1] = "[optional keywords " .. n .. "]"
+                    else
+                        d[#d+1] = "[mandate  keywords " .. n .. "]"
+                    end
+                    if ai then
+                        local t = { }
+                        for j=1,#ai do
+                            t[#t+1] = ai[j].name
+                        end
+                        if #t > 0 then
+                            d[#d+1] = concat(t," ")
+                        end
+                    end
+                elseif ti == "assignments" then
+                    n = n + 1
+                    if pi.optional then
+                        d[#d+1] = "[optional assignments " .. n .. "]"
+                    else
+                        d[#d+1] = "[mandate  assignments " .. n .. "]"
+                    end
+                    if ai then
+                        local t = { }
+                        for j=1,#ai do
+                            t[#t+1] = ai[j].name
+                        end
+                        if #t > 0 then
+                            d[#d+1] = concat(t,"\n")
+                        end
+                    end
+                else
+                    if pi.optional then
+                        d[#d+1] = "{ optional content }"
+                    else
+                        d[#d+1] = "{ mandate content }"
+                    end
+                end
+            end
+        end
+        c.documentation = concat(d,"\n")
+--         inspect(c.documentation)
+    end
+
+    if not xml.expand then
+        -- will be in next version
+        function xml.expand(root,pattern,whatever)
+            local collected = xml.applylpath(root,pattern)
+            if collected then
+                for c=1,#collected do
+                    local e = collected[c]
+                    local p = e.__p__
+                    if p then
+                        local d = p.dt
+                        local n = e.ni
+                        local t = whatever(e,p)
+                        if type(t) == "table" then
+                            d[n] = t[1]
+                            for i=2,#t do
+                                n = n + 1
+                                table.insert(d,n,t[i])
+                            end
+                        elseif t then
+                            d[n] = t
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    do
+        local c = { }
+        xml.expand(xmlroot,"/cd:interface/cd:interface/cd:command/**/inherit",function(e)
+            local f = c[e.at.name]
+            if not f then
+                f = xml.first(xmlroot,"/cd:interface/cd:interface/cd:command[@name='" .. e.at.name .. "']/cd:arguments")
+                c[e.at.name] = f
+            end
+            return f and f.dt
+        end)
+    end
+
+    for i=1,#interfaces do
+        local interface = interfaces[i]
+        local start = elements.start[interface] or elements.start.en
+        local stop  = elements.stop [interface] or elements.stop .en
+        for e in xml.collected(xmlroot,"cd:interface/cd:command") do
+            local at   = e.at
+            local name = at["name"] or ""
+            local type = at["type"]
+            if name ~= "" then
+                local c = commands[name]
+                local n = (c and (c[interface] or c.en)) or c or name
+                local sequence = xml.all(e,"/cd:sequence/*")
+                if at.generated == "yes" then
+                    -- skip (for now)
+                elseif type ~= "environment" then
+                    collected[#collected+1] = {
+                        name   = n,
+                        detail = details(e, n),
+                        params = arguments(e), -- why not "parameters"
+                    }
+                else
+                    local f = start .. n
+                    collected[#collected+1] = {
+                        name   = f,
+                        start  = f,
+                        stop   = stop  .. n,
+                        detail = details(e, f),
+                        params = arguments(e), -- why not "parameters"
+                    }
+                end
+            end
+        end
+    end
+    for i=1,#collected do
+        documentation(collected[i])
+    end
+    local jsonname = "vscode-context-ls.json"
+ -- local exmlname = "vscode-context-ls.xml"
+    report("")
+    report("vscode ls file saved: %s",jsonname)
+    report("")
+    io.savedata(jsonname,utilities.json.tojson(collected))
+ -- io.savedata(exmlname,tostring(xmlroot))
+end
+
 function scripts.vscode.start()
     local path = locate()
     if path then
@@ -3203,6 +3461,8 @@ end
 
 if environment.arguments.generate then
     scripts.vscode.generate()
+elseif environment.vscodels then
+    scripts.vscode.ls()
 elseif environment.arguments.start then
     scripts.vscode.start()
 elseif environment.arguments.exporthelp then
@@ -3211,4 +3471,6 @@ else
     application.help()
 end
 
-scripts.vscode.generate([[t:/vscode/data/context/extensions]])
+scripts.vscode.ls()
+
+-- scripts.vscode.generate([[t:/vscode/data/context/extensions]])

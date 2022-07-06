@@ -1,0 +1,111 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-dk
+
+\environment ontarget-style
+
+\startchapter[title={Getting rid of jit}]
+
+At the \NTG\ meeting there was a short discussion about performance of the
+\OPENTYPE\ font machinery. Currently we still support \LUAJITTEX\ and although
+the \MKIV\ code base is mostly separated from the \LMTX\ one there is still some
+compromise going on, as some \LUA\ code is shared and needs to adapt to the fact
+that \LUAJIT\ is stuck to \LUA 5.2 (sort of). One reason why we still support
+\LUAJITTEX\ is that there are users who like the performance gain. However, if
+these can switch to \CONTEXT\ we could get rid of \LUAJITTEX\ support. After all,
+\LUAJIT\ is stalled as is \FFI. Of course a plain \TEX\ users can object to using
+\CONTEXT\ but one can just use the basics and be as plain as possible.
+
+Performance of \LUAMETATEX\ is quite okay and it often performs better than
+\LUATEX\ or even \LUAJITTEX. One border case is for instance the somewhat
+overdone in terms of split feature steps is the Brill font. So, I decided to do
+some tests on my 2017 laptop that had replaced the 2013 one (Windows 10). We use
+cross compiled binaries. Here is the test:
+
+\starttyping
+% \enableexperiments[fonts.compact]
+
+\definefont[Fa][brill*default    @ 10pt]
+\definefont[Fb][brill*default    @ 12pt]
+\definefont[Fc][brill-bf*default @ 10pt]
+\definefont[Fd][brill-bf*default @ 12pt]
+
+\start \testfeatureonce{1000}{
+    \Fa \samplefile{tufte}       \samplefile{tufte}\par
+}\stop \page \edef\TimeA{\elapsedtime}
+\start \testfeatureonce{1000}{
+    \Fa \samplefile{tufte}\par\Fb\samplefile{tufte}\par
+}\stop \page \edef\TimeB{\elapsedtime}
+\start \testfeatureonce{1000}{
+    \Fa \samplefile{tufte}    \Fb\samplefile{tufte}\par
+}\stop \page \edef\TimeC{\elapsedtime}
+\start \testfeatureonce{1000}{
+    \Fa \samplefile{tufte}    \Fd\samplefile{tufte}\par
+    \Fb \samplefile{tufte}    \Fc\samplefile{tufte}\par
+}\stop \page \edef\TimeD{\elapsedtime}
+
+\startTEXpage[offset=10pt]
+    \strut\infofont
+    2 par 1 font : \TimeA\par
+    2 par 2 font : \TimeB\par
+    1 par 2 font : \TimeC\par
+    1 par 4 font : \TimeD\par
+\stopTEXpage
+\stoptyping
+
+The next table shows the best times from three tests where each one produces 1693
+pages in the default layout. We're talking of one run as normally \CONTEXT\ will
+run till a two pass stable state is reached (unless it is forced to one run),
+although in practice fixing a few typos will not for an extra run. Keep in mind
+that in \LUAMETATEX\ we have a \LUA\ driven backend that is more flexible with
+respect to fonts but therefore also adds some extra overhead. Also keep in mind
+that four different fonts per paragraph is a rare case.
+
+\starttabulate[|lT|c|c|c|c|]
+\NC
+    \BC 2 pars 1 font
+    \BC 2 pars 2 fonts
+    \BC 1 par 2 fonts
+    \BC 1 par 4 fonts
+\NC \NR
+\ML
+\BC luametatex         \NC  8.9 \NC  9.4 \NC 12.1 \NC 24.6 \NC \NR
+\BC luametatex compact \NC  8.9 \NC  9.3 \NC  9.3 \NC 23.9 \NC \NR
+\BC luatex             \NC 10.0 \NC 10.3 \NC 14.5 \NC 31.2 \NC \NR
+\BC luajittex          \NC  8.0 \NC  8.1 \NC 11.4 \NC 23.2 \NC \NR
+\stoptabulate
+
+One should take these measurements with a grain of salt because it also depends
+on the system load, but it shows that there is no real need to favor a
+\LUAJITTEX\ setup over a \LUAMETATEX\ one. In the meantime the default \LUATEX\
+binaries exceed 7~MB (and the hb variant adds quite a bit more) which
+\LUAMETATEX\ stays around 3~MB which is nice for high performance setups with
+thousands of (small) runs.
+
+Just for the record, when we use Dejavu Serif we get 2767 pages and the following
+timings. Again, the differences between \LUAMETATEX\ and \LUAJITTEX\ is not that
+significant, especially when you realize that we're not doing anything fancy that
+more runtime. In practice fonts are only part of the story.
+
+\starttabulate[|lT|c|c|c|c|]
+\NC
+    \BC 2 pars 1 font
+    \BC 2 pars 2 fonts
+    \BC 1 par 2 fonts
+    \BC 1 par 4 fonts
+\NC \NR
+\ML
+\BC luametatex         \NC 4.2 \NC 4.4 \NC 5.0 \NC 10.8 \NC \NR
+\BC luametatex compact \NC 4.2 \NC 4.5 \NC 4.5 \NC 10.5 \NC \NR
+\BC luatex             \NC 4.9 \NC 5.0 \NC 6.2 \NC 13.3 \NC \NR
+\BC luajittex          \NC 4.0 \NC 4.0 \NC 5.0 \NC 10.3 \NC \NR
+\stoptabulate
+
+% I tried to run \XETEX\ on the same file but that failed for some reason (it looks
+% like it got stuck in updating the font database; some 50~MB binaries are needed
+% so I guess I messed up somewhere).
+
+\stopchapter
+
+\stopcomponent
+

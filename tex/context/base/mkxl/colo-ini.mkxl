@@ -1378,6 +1378,7 @@
 \definecolor[trace:9][g=.4,b=.8]
 
 \definecolor[trace:w][s=1]
+\definecolor[trace:z][s=0,t=.5,a=1]
 \definecolor[trace:r][r=.75,t=.5,a=1]
 \definecolor[trace:g][g=.75,t=.5,a=1]
 \definecolor[trace:b][b=.75,t=.5,a=1]
@@ -1392,6 +1393,7 @@
 \definecolor[trace:o][r=1,g=.6,b=.1,t=.5,a=1]
 
 \definecolor[trace:dw][s=1]
+\definecolor[trace:dz][s=0,t=.75,a=1]
 \definecolor[trace:dr][r=.75,t=.75,a=1]
 \definecolor[trace:dg][g=.75,t=.75,a=1]
 \definecolor[trace:db][b=.75,t=.75,a=1]

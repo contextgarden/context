@@ -118,6 +118,36 @@
      \NC inner margin \NC \the\innermarginwidth               \NC \NR
    \stoptabulate}
 
+\permanent\protected\gdef\showcentering
+  {\setupbackgrounds
+     [\v!text]
+     [\c!background=centeringlines]}
+
+\defineoverlay
+  [centeringlines]
+  [\vpack to \d_overlay_height \bgroup
+     \vfill
+     \hpack to \d_overlay_width \bgroup
+        \hss
+        \hskip1cm
+        \dorecurse{15}{%
+            \kern-.25\onepoint
+            \ifodd\recurselevel
+                \darkred
+            \else
+                \darkblue
+            \fi
+            \vrule
+                height.5\d_overlay_height
+                depth .5\d_overlay_height
+                width .5\onepoint
+            \hskip1cm
+        }%
+        \hss
+     \egroup
+     \vfill
+   \egroup]
+
 %D Page grids:
 
 \newconstant\c_page_grids_location

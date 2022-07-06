@@ -8,79 +8,139 @@ if not modules then modules = { } end modules ['math-spa'] = {
 
 -- for the moment (when testing) we use a penalty 1
 
-local boundary_code = nodes.nodecodes.boundary
-local glue_code     = nodes.nodecodes.glue
+local setmetatableindex = table.setmetatableindex
 
-local nuts          = nodes.nuts
-local tonut         = nodes.tonut
-local tonode        = nodes.tonode
+local boundary_code     = nodes.nodecodes.boundary
+local hlist_code        = nodes.nodecodes.hlist
+local glue_code         = nodes.nodecodes.glue
+local line_code         = nodes.listcodes.line
+local ghost_code        = nodes.listcodes.ghost
 
-local getid         = nuts.getid
-local getnext       = nuts.getnext
-local getwidth      = nuts.getwidth
-local getdata       = nuts.getdata
-local setglue       = nuts.setglue
-local getdimensions = nuts.dimensions
-local nextglue      = nuts.traversers.glue
+local nuts              = nodes.nuts
+local tonut             = nodes.tonut
+local tonode            = nodes.tonode
 
-local texsetdimen   = tex.setdimen
+local getid             = nuts.getid
+local getsubtype        = nuts.getsubtype
+local getnext           = nuts.getnext
+local getwidth          = nuts.getwidth
+local getdata           = nuts.getdata
+local getdepth          = nuts.getdepth
+local getlist           = nuts.getlist
+local setglue           = nuts.setglue
+local getdimensions     = nuts.dimensions
+local getnormalizedline = node.direct.getnormalizedline
+local getbox            = nuts.getbox
+local setoffsets        = nuts.setoffsets
 
-local v_none = interfaces.variables.none
-local v_auto = interfaces.variables.auto
+local nextglue          = nuts.traversers.glue
+local nextlist          = nuts.traversers.list
+local nextboundary      = nuts.traversers.boundary
 
-local method   = v_none
-local distance = 0
-local boundary = tex.boundaries.system("mathalign")
+local texgetdimen       = tex.getdimen
+local texsetdimen       = tex.setdimen
+local texsetcount       = tex.setcount
 
-function noads.handlers.align(h)
-    if method ~= v_none then
-        if method == v_auto then
-            --- can be a fast loop
-            local s = h
-            while s do
-                local id = getid(s)
-                local n  = getnext(s)
-                if id == boundary_code and getdata(s) == boundary then
-                    if n and getid(n) == glue_code then
-                        s = n
-                        n = getnext(s)
-                    end
-                    local w = getdimensions(h,n) + distance
-                    texsetdimen("global","d_strc_math_indent",w)
-                    break
-                end
-                s = n
+local boundary          = tex.boundaries.system("mathalign")
+local stages            = { }
+local initial           = { }
+
+stages[1] = function(specification,stage)
+    local box      = getbox(specification.box)
+    local head     = getlist(box)
+    local align    = specification.alignstate
+    local distance = specification.distance
+    for s in nextboundary, head do
+        if getdata(s) == boundary then
+            -- todo: skip over ghost, maybe penalty, maybe glues all in one loop
+            local n = getnext(s)
+            while n and getid(n) == hlist_code and getsubtype(n) == ghost_code do
+                n = getnext(n)
             end
-        else
-            texsetdimen("global","d_strc_math_indent",distance)
+         -- while n and getid(n) == glue_code do
+            if n and getid(n) == glue_code then
+                n = getnext(n)
+            end
+            distance = distance + getdimensions(head,n)
+            break
         end
-        for n in nextglue, h do
-            setglue(n,getwidth(n),0,0)
+    end
+    texsetdimen("global","d_strc_math_indent",distance)
+    if align == 2 then
+        for n in nextglue, head do
+            setglue(n,getwidth(n),0,0,0,0)
         end
-    else
-     -- texsetdimen("global","d_strc_math_indent",0)
     end
 end
 
+stages[2] = function(specification,stage)
+    local head  = getlist(getbox(specification.box))
+    local align = specification.alignstate
+    local max   = false
+    local cnt   = 0
+    local width = 0
+    local depth = 0
+    for n, id, subtype, list in nextlist, head do
+        if subtype == line_code then
+            local t = getnormalizedline(n)
+            local m = t.rightskip + t.parfillrightskip
+            if not max then
+                max = m
+            elseif m < max then
+                max = m
+            end
+            cnt   = cnt + 1
+            width = m
+            depth = getdepth(n)
+        end
+    end
+    if stage == 2 and (align == 2 or align == 3) then
+        for n, id, subtype, list in nextlist, head do
+            if subtype == line_code then
+                if align == 1 then -- flushleft
+                elseif align == 2 then -- middle
+                    setoffsets(n,max/2,0)
+                elseif align == 3 then -- flushright
+                    setoffsets(n,max,0)
+                end
+            end
+        end
+    end
+    texsetcount("global","c_strc_math_n_of_lines",cnt)
+    texsetdimen("global","d_strc_math_max_width",max)
+    texsetdimen("global","d_strc_math_last_width",width)
+    texsetdimen("global","d_strc_math_last_depth",depth)
+end
+
+stages[3] = stages[2]
+
+stages[4] = function(specification,stage)
+    nuts.openup(specification,getlist(getbox(specification.box)))
+end
+
 interfaces.implement {
-    name      = "setmathhang",
+    name      = "handlemathhang",
     arguments = {
         {
-            { "method", "string" },
+            { "stage", "integer" },
+         -- { "method" },
+            { "alignstate", "integer" },
+            { "box", "integer" },
             { "distance", "dimension" },
+            { "inbetween", "dimension" },
+            { "height", "dimension" },
+            { "depth", "dimension" },
         }
     },
-    actions   = function(t)
-        method   = t.method or v_none
-        distance = t.distance or 0
+    actions   = function(specification)
+        local stage = specification.stage
+        if stage == 1 then
+            initial = specification
+        else
+            setmetatableindex(specification,initial)
+        end
+        if stage > 0 and stage <= #stages then
+            stages[stage](specification,stage)
+        end
     end
 }
-
-interfaces.implement {
-    name      = "resetmathhang",
-    actions   = function(t)
-        method   = v_none
-        distance = 0
-    end
-}
-

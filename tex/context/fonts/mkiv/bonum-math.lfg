@@ -25,9 +25,16 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            NoLimitSupFactor =   0,
-            NoLimitSubFactor = 900,
-            AccentBaseDepth  =  50,
+            NoLimitSupFactor                =    0,
+            NoLimitSubFactor                =  900,
+            AccentBaseDepth                 =   50,
+            RadicalDegreeBottomRaisePercent =   60,
+            RadicalRuleThickness            =   66, -- 72 in font
+            DelimiterPercent                =   90,
+            DelimiterShortfall              =  400,
+            DisplayOperatorMinHeight        = 1900, -- 1250 in font
+         -- AccentSuperscriptDrop           =  100,
+         -- AccentSuperscriptPercent        =  20,
         },
         tweaks = {
             aftercopying = {
@@ -37,136 +44,334 @@ return {
                 },
                 {
                     tweak = "dimensions",
-                    list  = {     -- offset width italic
-                        [0x00393] = { -0.05,  0.875,   0          }, -- \Gamma
-                        [0x00394] = { -0.05,  0.875,   0          }, -- \Delta
-                        [0x00398] = { -0.05,  0.9,     0          }, -- \Theta
-                        [0x0039B] = { -0.075, 0.85,    0          }, -- \Lambda
-                        [0x0039E] = { -0.075, 0.85,    0          }, -- \Xi
-                        [0x003A0] = { -0.075, 0.85,    0          }, -- \Pi
-                        [0x003A3] = { -0.075, 0.85,    0          }, -- \Sigma
-                        [0x003A5] = { -0.075, 0.85,    0          }, -- \Upsilon
-                        [0x003A6] = { -0.05,  0.9,     0          }, -- \Phi
-                        [0x003A8] = { -0.05,  0.9,     0          }, -- \Psi
-                        [0x003A9] = { -0.05,  0.9,     0          }, -- \Omega
-                        [0x02202] = { -0.075, 0.825,   0          }, -- \partial
-                        [0x1D436] = { -0.1,   1,       0          }, -- C
-                        [0x1D43A] = { -0.1,   1,       0          }, -- G
-                        [0x1D442] = { -0.1,   1,       0          }, -- O
-                        [0x1D444] = { -0.05,  1.025,   0          }, -- Q
-                        [0x1D445] = { -0.025, 1.05,    0          }, -- R
-                        [0x1D446] = { -0.05,  1,       0          }, -- S
-                        [0x1D447] = { -0.05,  1.05,    0.7        }, -- T
-                        [0x1D448] = { -0.125, 1,       0.3        }, -- U
-                        [0x1D449] = { -0.125, 1,       0.3        }, -- V
-                        [0x1D44A] = { -0.075, 1,       0.3        }, -- W
-                        [0x1D44B] = { 0.05,   1.1,     0.35       }, -- X
-                        [0x1D44C] = { -0.075, 1.1,     0.35       }, -- Y
-                        [0x1D44E] = { -0.05,  1.1,     0,    0.8  }, -- a
-                        [0x1D44F] = { -0.05,  1.1,     0          }, -- b
-                        [0x1D450] = { -0.05,  1.1,     0,    0.9  }, -- c
-                        [0x1D451] = { -0.05,  1.1,     0,    0.75 }, -- d
-                        [0x1D452] = { -0.05,  1.1,     0,    0.9  }, -- e
-                        [0x1D453] = { 0.45,   1.85,    0.45       }, -- f
-                        [0x1D454] = { 0.05,   1.1,     0,    0.9  }, -- g
-                        [0x0210E] = { -0.1,   1.05,    0,    1.15 }, -- h
-                        [0x1D456] = { -0.2,   1.1,     0          }, -- i
-                        [0x1D457] = { 0.6,    1.7,     0.45       }, -- j
-                        [0x1D458] = { -0.05,  1.1,     0,    1.15 }, -- k
-                        [0x1D459] = { -0.15,  1.1,     0,    0.8  }, -- l
-                        [0x1D45A] = { -0.05,  1,       0          }, -- m
-                        [0x1D45B] = { -0.1,   1,       0,    0.9  }, -- n
-                        [0x1D45C] = { -0.05,  1.1,     0,    0.9  }, -- o
-                        [0x1D45D] = { 0,      1.05,    0          }, -- p
-                        [0x1D45E] = { -0.05,  1.05,    0,    0.9  }, -- q
-                        [0x1D45F] = { -0.1,   1.15,    0,    0.9  }, -- r
-                        [0x1D460] = { -0.05,  1.05,    0          }, -- s
-                        [0x1D461] = { -0.15,  1.1,     0,    0.9  }, -- t
-                        [0x1D462] = { -0.1,   1.05,    0,    0.85 }, -- u
-                        [0x1D463] = { -0.1,   1.05,    0,    0.85 }, -- v
-                        [0x1D464] = { -0.05,  1.05,    0,    0.95 }, -- w
-                        [0x1D465] = { 0,      1.175,   0,    0.9  }, -- x
-                        [0x1D466] = { -0.05,  1.05,    0          }, -- y
-                        [0x1D467] = { -0.05,  1.1,     0,    0.9  }, -- z
-                        [0x1D6FC] = { -0.075, 0.825,   0          }, -- \alpha
-                        [0x1D6FD] = { 0,      0.85,    0,    1.1  }, -- \beta
-                        [0x1D6FE] = { -0.075, 0.825,   0.05, 1.05 }, -- \gamma
-                        [0x1D6FF] = { -0.1,   0.8,     0          }, -- \delta
-                        [0x1D716] = { -0.1,   0.8,     0          }, -- \epsilon
-                        [0x1D700] = { -0.1,   0.8,     0          }, -- \varepsilon
-                        [0x1D701] = { -0.1,   0.8,     0          }, -- \zeta
-                        [0x1D702] = { -0.1,   0.8,     0,    1.05 }, -- \eta
-                        [0x1D703] = { -0.1,   0.8,     0          }, -- \theta
-                        [0x1D717] = { -0.075, 0.85,    0,    1.03 }, -- \vartheta
-                        [0x1D704] = { -0.1,   0.8,     0,    1.05 }, -- \iota
-                        [0x1D705] = { -0.075, 0.825,   0          }, -- \kappa
-                        [0x1D706] = { -0.075, 0.825,   0,    1.05 }, -- \lambda
-                        [0x1D707] = { -0.075, 0.825,   0,    1.03 }, -- \mu
-                        [0x1D708] = { -0.075, 0.825,   0,    1.03 }, -- \nu
-                        [0x1D709] = { -0.075, 0.825,   0          }, -- \xi
-                        [0x1D70A] = { -0.075, 0.825,   0,    1.03 }, -- \omicron
-                        [0x1D70B] = { -0.075, 0.825,   0          }, -- \pi
-                        [0x1D71B] = { -0.07,  0.85,    0          }, -- \varpi
-                        [0x1D70C] = { -0.075, 0.85,    0          }, -- \rho
-                        [0x1D71A] = { -0.075, 0.85,    0          }, -- \varrho
-                        [0x1D70D] = { -0.075, 0.85,    0,    1.02 }, -- \varsigma
-                        [0x1D70E] = { -0.075, 0.85,    0          }, -- \sigma
-                        [0x1D70F] = { -0.08,  0.825,   0,    1.05 }, -- \tau
-                        [0x1D710] = { -0.08,  0.825,   0,    1.03 }, -- \upsilon
-                        [0x1D719] = { -0.075, 0.85,    0          }, -- \phi
-                        [0x1D711] = { -0.075, 0.85,    0,    1.02 }, -- \varphi
-                        [0x1D712] = { -0.075, 0.85,    0          }, -- \chi
-                        [0x1D713] = { -0.075, 0.85,    0          }, -- \psi
-                        [0x1D714] = { -0.05,  0.875,   0          }, -- \omega
-                     -- [0x1D718] = { -0.075, 0.825,   0,    1.03 }, -- \varkappa
-                        [0x1D719] = { -0.075, 0.85,    0          }, -- \phi
-                        [0x1D41B] = { 0,      1,       0,    1.5  }, -- bold lowercase upright b
-                        [0x1D41D] = { 0,      1,       0,    0.6  }, -- bold lowercase upright d
-                        [0x1D41F] = { 0,      1.25,    0,    0.8  }, -- bold lowercase upright f
-                        [0x1D420] = { 0,      1,       0,    0.6  }, -- bold lowercase upright g
-                        [0x1D421] = { 0,      1,       0,    1.5  }, -- bold lowercase upright h
-                        [0x1D424] = { 0,      1,       0,    1.5  }, -- bold lowercase upright k
-                        [0x1D425] = { 0,      1,       0,    0.75 }, -- bold lowercase upright l
-                        [0x1D42A] = { 0,      1,       0,    0.9  }, -- bold lowercase upright q
-                        [0x1D42B] = { 0,      1,       0,    0.9  }, -- bold lowercase upright r
-                        [0x1D42C] = { 0,      1,       0,    0.9  }, -- bold lowercase upright s
-                        [0x1D482] = { 0,      1,       0,    0.9  }, -- bold lowercase italic a
-                        [0x1D483] = { 0,      1,       0,    1.1  }, -- bold lowercase italic b
-                        [0x1D484] = { 0,      1,       0,    0.95 }, -- bold lowercase italic c
-                        [0x1D485] = { 0,      1,       0,    0.75 }, -- bold lowercase italic d
-                        [0x1D486] = { 0,      1,       0,    0.95 }, -- bold lowercase italic e
-                     -- [0x1D487] = { 0,      1,       0,    0.95 }, -- bold lowercase italic f
-                        [0x1D488] = { 0,      1,       0,    0.9  }, -- bold lowercase italic g
-                        [0x1D489] = { 0,      1,       0,    1.2  }, -- bold lowercase italic h
-                     -- [0x1D48A] = { 0,      1,       0,    0.6  }, -- bold lowercase italic i
-                     -- [0x1D48B] = { 0,      1,       0,    0.8  }, -- bold lowercase italic j
-                        [0x1D48C] = { 0,      1,       0,    1.2  }, -- bold lowercase italic k
-                        [0x1D48D] = { 0,      1,       0,    0.9  }, -- bold lowercase italic l
-                        [0x1D492] = { 0,      1,       0,    0.85 }, -- bold lowercase italic q
-                        [0x1D493] = { 0,      1,       0,    0.9  }, -- bold lowercase italic r
-                        [0x1D497] = { 0,      1,       0,    0.9  }, -- bold lowercase italic v
-                        [0x1D499] = { 0,      1,       0,    0.9  }, -- bold lowercase italic x
-                        [0x1D49A] = { 0,      1,       0,    0.95 }, -- bold lowercase italic y
-                        [0x1D49B] = { 0,      1,       0,    1.1  }, -- bold lowercase italic z
-                        [0x1D743] = { 0,      1,       0,    1.7  }, -- bold lowercase italic greek xi
+                    list  = {
+                        [0x00393] = { xoffset = -0.05,  width = 0.875, italic = 0                   }, -- \Gamma
+                        [0x00394] = { xoffset = -0.05,  width = 0.875, italic = 0                   }, -- \Delta
+                        [0x00398] = { xoffset = -0.05,  width = 0.9,   italic = 0                   }, -- \Theta
+                        [0x0039B] = { xoffset = -0.075, width = 0.85,  italic = 0                   }, -- \Lambda
+                        [0x0039E] = { xoffset = -0.075, width = 0.85,  italic = 0                   }, -- \Xi
+                        [0x003A0] = { xoffset = -0.075, width = 0.85,  italic = 0                   }, -- \Pi
+                        [0x003A3] = { xoffset = -0.075, width = 0.85,  italic = 0                   }, -- \Sigma
+                        [0x003A5] = { xoffset = -0.075, width = 0.85,  italic = 0                   }, -- \Upsilon
+                        [0x003A6] = { xoffset = -0.05,  width = 0.9,   italic = 0                   }, -- \Phi
+                        [0x003A8] = { xoffset = -0.05,  width = 0.9,   italic = 0                   }, -- \Psi
+                        [0x003A9] = { xoffset = -0.05,  width = 0.9,   italic = 0                   }, -- \Omega
+                        [0x02202] = { xoffset = -0.075, width = 0.825, italic = 0                   }, -- \partial
+                        [0x1D43A] = { xoffset = -0.1,   width = 1,     italic = 0                   }, -- G
+                        [0x1D442] = { xoffset = -0.1,   width = 1,     italic = 0                   }, -- O
+                        [0x1D444] = { xoffset = -0.05,  width = 1.025, italic = 0                   }, -- Q
+                        [0x1D44E] = { xoffset = -0.05,  width = 1.1,   italic = 0,    anchor = 0.8  }, -- a
+                        [0x1D44F] = { xoffset = -0.05,  width = 1.1,   italic = 0                   }, -- b
+                        [0x1D450] = { xoffset = -0.05,  width = 1.1,   italic = 0,    anchor = 0.9  }, -- c
+                        [0x1D451] = { xoffset = -0.05,  width = 1.1,   italic = 0,    anchor = 0.75 }, -- d
+                        [0x1D452] = { xoffset = -0.05,  width = 1.1,   italic = 0,    anchor = 0.9  }, -- e
+                        [0x1D453] = { xoffset = 0.45,   width = 1.9,   italic = 0.45                }, -- f
+                        [0x1D454] = { xoffset = 0.05,   width = 1.1,   italic = 0,    anchor = 0.9  }, -- g
+                        [0x0210E] = { xoffset = -0.1,   width = 1.05,  italic = 0,    anchor = 1.15 }, -- h
+                        [0x1D456] = { xoffset = -0.2,   width = 1.1,   italic = 0                   }, -- i
+                        [0x1D457] = { xoffset = 0.6,    width = 1.7,   italic = 0.45                }, -- j
+                        [0x1D458] = { xoffset = -0.05,  width = 1.1,   italic = 0,    anchor = 1.15 }, -- k
+                        [0x1D459] = { xoffset = -0.15,  width = 1.1,   italic = 0,    anchor = 0.8  }, -- l
+                        [0x1D45A] = { xoffset = -0.05,  width = 1,     italic = 0                   }, -- m
+                        [0x1D45B] = { xoffset = -0.1,   width = 1,     italic = 0,    anchor = 0.9  }, -- n
+                        [0x1D45C] = { xoffset = -0.05,  width = 1.1,   italic = 0,    anchor = 0.9  }, -- o
+                        [0x1D45D] = { xoffset = 0,      width = 1.05,  italic = 0                   }, -- p
+                        [0x1D45E] = { xoffset = -0.05,  width = 1.05,  italic = 0,    anchor = 0.9  }, -- q
+                        [0x1D45F] = { xoffset = -0.1,   width = 1.15,  italic = 0,    anchor = 0.9  }, -- r
+                        [0x1D460] = { xoffset = -0.05,  width = 1.05,  italic = 0                   }, -- s
+                        [0x1D461] = { xoffset = -0.15,  width = 1.2,   italic = 0,    anchor = 0.9  }, -- t
+                        [0x1D462] = { xoffset = -0.1,   width = 1.05,  italic = 0,    anchor = 0.85 }, -- u
+                        [0x1D463] = { xoffset = -0.1,   width = 1.05,  italic = 0,    anchor = 0.85 }, -- v
+                        [0x1D464] = { xoffset = -0.05,  width = 1.05,  italic = 0,    anchor = 0.95 }, -- w
+                        [0x1D465] = { xoffset = 0,      width = 1.175, italic = 0,    anchor = 0.9  }, -- x
+                        [0x1D466] = { xoffset = -0.05,  width = 1.05,  italic = 0                   }, -- y
+                        [0x1D467] = { xoffset = -0.05,  width = 1.1,   italic = 0,    anchor = 0.9  }, -- z
+                        [0x1D6FC] = { xoffset = -0.075, width = 0.825, italic = 0                   }, -- \alpha
+                        [0x1D6FD] = { xoffset = 0,      width = 0.9,   italic = 0,    anchor = 1.05 }, -- \beta
+                        [0x1D6FE] = { xoffset = -0.075, width = 0.85,  italic = 0.05, anchor = 1.05 }, -- \gamma
+                        [0x1D6FF] = { xoffset = -0.1,   width = 0.85,  italic = 0                   }, -- \delta
+                        [0x1D716] = { xoffset = -0.1,   width = 0.85,  italic = 0                   }, -- \epsilon
+                        [0x1D700] = { xoffset = -0.1,   width = 0.85,  italic = 0                   }, -- \varepsilon
+                        [0x1D701] = { xoffset = -0.1,   width = 0.85,  italic = 0                   }, -- \zeta
+                        [0x1D702] = { xoffset = -0.1,   width = 0.85,  italic = 0,    anchor = 1.05 }, -- \eta
+                        [0x1D703] = { xoffset = -0.1,   width = 0.85,  italic = 0                   }, -- \theta
+                        [0x1D717] = { xoffset = -0.075, width = 0.85,  italic = 0,    anchor = 1.03 }, -- \vartheta
+                        [0x1D704] = { xoffset = -0.1,   width = 0.9,   italic = 0,    anchor = 1.05 }, -- \iota
+                        [0x1D705] = { xoffset = -0.075, width = 0.85,  italic = 0                   }, -- \kappa
+                        [0x1D706] = { xoffset = -0.075, width = 0.85,  italic = 0,    anchor = 1.05 }, -- \lambda
+                        [0x1D707] = { xoffset = -0.075, width = 0.85,  italic = 0,    anchor = 1.03 }, -- \mu
+                        [0x1D708] = { xoffset = -0.075, width = 0.85,  italic = 0,    anchor = 1.03 }, -- \nu
+                        [0x1D709] = { xoffset = -0.075, width = 0.85,  italic = 0                   }, -- \xi
+                        [0x1D70A] = { xoffset = -0.075, width = 0.85,  italic = 0,    anchor = 1.03 }, -- \omicron
+                        [0x1D70B] = { xoffset = -0.075, width = 0.85,  italic = 0                   }, -- \pi
+                        [0x1D71B] = { xoffset = -0.07,  width = 0.85,  italic = 0                   }, -- \varpi
+                        [0x1D70C] = { xoffset = -0.075, width = 0.85,  italic = 0                   }, -- \rho
+                        [0x1D71A] = { xoffset = -0.075, width = 0.85,  italic = 0                   }, -- \varrho
+                        [0x1D70D] = { xoffset = -0.075, width = 0.85,  italic = 0,    anchor = 1.02 }, -- \varsigma
+                        [0x1D70E] = { xoffset = -0.075, width = 0.85,  italic = 0                   }, -- \sigma
+                        [0x1D70F] = { xoffset = -0.08,  width = 0.85,  italic = 0,    anchor = 1.05 }, -- \tau
+                        [0x1D710] = { xoffset = -0.08,  width = 0.85,  italic = 0,    anchor = 1.03 }, -- \upsilon
+                        [0x1D719] = { xoffset = -0.075, width = 0.85,  italic = 0                   }, -- \phi
+                        [0x1D711] = { xoffset = -0.075, width = 0.85,  italic = 0,    anchor = 1.02 }, -- \varphi
+                        [0x1D712] = { xoffset = -0.075, width = 0.85,  italic = 0                   }, -- \chi
+                        [0x1D713] = { xoffset = -0.075, width = 0.85,  italic = 0                   }, -- \psi
+                        [0x1D714] = { xoffset = -0.05,  width = 0.875, italic = 0                   }, -- \omega
+                     -- [0x1D718] = { xoffset = -0.075, width = 0.85,  italic = 0,    anchor = 1.03 }, -- \varkappa
+                        [0x1D719] = { xoffset = -0.075, width = 0.85,  italic = 0                   }, -- \phi
+                        [0x1D41B] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 1.5  }, -- bold lowercase upright b
+                        [0x1D41D] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.6  }, -- bold lowercase upright d
+                        [0x1D41F] = { xoffset = 0,      width = 1.25,  italic = 0,    anchor = 0.8  }, -- bold lowercase upright f
+                        [0x1D420] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.6  }, -- bold lowercase upright g
+                        [0x1D421] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 1.5  }, -- bold lowercase upright h
+                        [0x1D424] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 1.5  }, -- bold lowercase upright k
+                        [0x1D425] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.75 }, -- bold lowercase upright l
+                        [0x1D42A] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.9  }, -- bold lowercase upright q
+                        [0x1D42B] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.9  }, -- bold lowercase upright r
+                        [0x1D42C] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.9  }, -- bold lowercase upright s
+                     -- [0x1D482] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.9  }, -- bold lowercase italic a
+                     -- [0x1D483] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 1.1  }, -- bold lowercase italic b
+                     -- [0x1D484] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.95 }, -- bold lowercase italic c
+                     -- [0x1D485] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.75 }, -- bold lowercase italic d
+                     -- [0x1D486] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.95 }, -- bold lowercase italic e
+                     -- [0x1D487] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.95 }, -- bold lowercase italic f
+                     -- [0x1D488] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.9  }, -- bold lowercase italic g
+                     -- [0x1D489] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 1.2  }, -- bold lowercase italic h
+                     -- [0x1D48A] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.6  }, -- bold lowercase italic i
+                     -- [0x1D48B] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.8  }, -- bold lowercase italic j
+                     -- [0x1D48C] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 1.2  }, -- bold lowercase italic k
+                     -- [0x1D48D] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.9  }, -- bold lowercase italic l
+                     -- [0x1D492] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.85 }, -- bold lowercase italic q
+                     -- [0x1D493] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.9  }, -- bold lowercase italic r
+                     -- [0x1D497] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.9  }, -- bold lowercase italic v
+                     -- [0x1D499] = { xoffset = 0,      width = 1.1,   italic = 0,    anchor = 0.9  }, -- bold lowercase italic x
+                     -- [0x1D49A] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 0.95 }, -- bold lowercase italic y
+                     -- [0x1D49B] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 1.1  }, -- bold lowercase italic z
+                        [0x1D743] = { xoffset = 0,      width = 1,     italic = 0,    anchor = 1.7  }, -- bold lowercase italic greek xi
+                        [0x1D435] = {                                                 anchor = 1.05 }, -- italic B
+                        [0x1D436] = { xoffset = -0.1,                                 anchor = 0.7  }, -- italic C
+                        [0x1D437] = {                                                 anchor = 1.25 }, -- italic D
+                        [0x1D43A] = {                                                 anchor = 0.8  }, -- italic G
+                        [0x1D442] = {                                                 anchor = 0.85 }, -- italic O
+                        [0x1D443] = {                                                 anchor = 1.1  }, -- italic P
+                        [0x1D444] = {                                                 anchor = 0.85 }, -- italic Q
+                        [0x1D445] = { xoffset = -0.025, width = 1.05,                 anchor = 1.05 }, -- italic R
+                        [0x1D446] = { xoffset = -0.05,                                anchor = 0.85 }, -- italic S
+                        [0x1D447] = { xoffset = -0.05,  width = 1.05,  italic = 0.7,  anchor = 0.9, }, -- italic T
+                        [0x1D448] = { xoffset = -0.125,                italic = 0.3,  anchor = 0.9, }, -- italic U
+                        [0x1D449] = { xoffset = -0.125,                italic = 0.3,  anchor = 0.9, }, -- italic V
+                        [0x1D44A] = { xoffset = -0.075,                italic = 0.3,  anchor = 0.9, }, -- italic W
+                        [0x1D44C] = { xoffset = -0.075, width = 1.1,   italic = 0.35, anchor = 0.9, }, -- italic Y
+
+                        ["lowercasefraktur"] = {
+                            width    = 1.25,
+                            extend   = 1.25,
+                            height   = 1.15,
+                            depth    = 1.15,
+                            squeeze  = 1.15,
+                        },
+
+                        ["lowercasescript"] = {
+                            width    = 1.2,
+                            extend   = 1.2,
+                            height   = 1.2,
+                            depth    = 1.2,
+                            squeeze  = 1.2,
+                        },
                     },
                 },
                 {
                     tweak = "kerns",
                     list  = {
                         [0x2F] = {
-                            topleft     = -0.15,
-                         -- bottomleft  =  0,
-                         -- topright    =  0,
-                            bottomright = -0.15,
-                       },
+                            topleft     = -0.2,
+                            bottomright = -0.2,
+                        },
+                     -- [0x28] = { -- left parenthesis. No!
+                     --     topleft     = -0.1,
+                     --     bottomleft  = -0.1,
+                     -- },
+                     -- [0x29] = { -- right parenthesis. No!
+                     --     topright    = -0.1,
+                     --     bottomright = -0.1,
+                     --     all         = true,
+                     -- },
+                    },
+                },
+                {
+                    -- For upright alphabets, we unset the anchor.
+                    -- This means that accents are placed
+                    -- centered over the character.
+                    -- Should be on top
+                     tweak = "wipeanchors",
+                     list = {
+                                "digitsbold",
+                                "digitsdoublestruck",
+                                "digitsmonospace",
+                                "digitsnormal",
+                                "digitssansserifbold",
+                                "digitssansserifnormal",
+                                "lowercasebold",
+                                "lowercaseboldfraktur",
+                                "lowercasedoublestruck",
+                                "lowercasefraktur",
+                                "lowercasegreekbold",
+                                "lowercasegreeknormal",
+                                "lowercasegreeksansserifbold",
+                                "lowercasemonospace",
+                                "lowercasenormal",
+                                "lowercasesansserifbold",
+                                "lowercasesansserifnormal",
+                                "uppercasebold",
+                                "uppercaseboldfraktur",
+                                "uppercasedoublestruck",
+                                "uppercasefraktur",
+                                "uppercasegreekbold",
+                                "uppercasegreeknormal",
+                                "uppercasegreeksansserifbold",
+                                "uppercasemonospace",
+                                "uppercasenormal",
+                                "uppercasesansserifbold",
+                                "uppercasesansserifnormal",
+                            },
+                 },
+                 {
+                    -- For non-italic alphabets we remove italic correction.
+                    tweak = "wipeitalics",
+                    list  = {
+                                "digitsbold",
+                                "digitsdoublestruck",
+                                "digitsmonospace",
+                                "digitsnormal",
+                                "digitssansserifbold",
+                                "digitssansserifnormal",
+                                "lowercasebold",
+                                "lowercaseboldfraktur",
+                                "lowercasedoublestruck",
+                                "lowercasefraktur",
+                                "lowercasemonospace",
+                             -- "lowercasenormal",
+                                "lowercasesansserifbold",
+                             -- "lowercasesansserifnormal",
+                                "lowercasegreeknormal",
+                                "uppercasebold",
+                                "uppercaseboldfraktur",
+                                "uppercasedoublestruck",
+                                "uppercasefraktur",
+                                "uppercasegreekbold",
+                                "uppercasegreeknormal",
+                                "uppercasegreeksansserifbold",
+                                "uppercasemonospace",
+                                "uppercasesansserifbold",
+                                "uppercasesanserifnormal", -- some remain
+                    },
+                 },
+                 {
+                    -- This one fakes margins to get larger/smaller accents
+                    -- with for example \widetilde.
+                    tweak = "margins",
+                    list  = {
+                        [0x1D7DC] = { left = -.1, right = -.1 }, -- doublestruck 4
+
+                        [0x1D712] = { left = -.1, right = -.1 }, -- italic chi
+                        [0x1D713] = { left = -.1, right = -.1 }, -- italic psi
+                        [0x1D714] = { left = -.1, right = -.1 }, -- italic omega
+
+                        [0x003B1] = { left = -.1, right = -.1 }, -- upfight alpha
+                        [0x003B3] = { left = -.1, right = -.1 }, -- upfight gamma
+                        [0x003BA] = { left = -.1, right = -.1 }, -- upfight kappa
+                        [0x003BC] = { left = -.1, right = -.1 }, -- upfight mu
+                        [0x003C0] = { left = -.1, right = -.1 }, -- upfight pi
+                        [0x003C3] = { left = -.1, right = -.1 }, -- upfight sigma
+                        [0x003C5] = { left = -.1, right = -.1 }, -- upfight upsilon
+                        [0x003C6] = { left = -.1, right = -.1 }, -- upfight phi
+                        [0x003C8] = { left = -.1, right = -.1 }, -- upfight psi
+                        [0x003C9] = { left = -.1, right = -.1 }, -- upfight omega
+
+                        -- Greek lowercase sans (bold, italic) can be improved
+
+                        [0x1D451] = { left = -.1, right = -.1 }, -- italic d
+                        [0x1D453] = { left = -.1, right = -.1 }, -- italic f
+
+                        [0x00394] = { left = .1, right = .1 }, -- upfight Delta
+                        [0x003A3] = { left = .1, right = .1 }, -- upfight Sigma
+
+                     -- [0x0004A] = { left = .1, right = .1 }, -- J
+                        [0x00046] = { left = .1, right = .1 }, -- F
+                        [0x0004C] = { left = .1, right = .1 }, -- L
+                        [0x00050] = { left = .1, right = .1 }, -- P
+                        [0x00053] = { left = .1, right = .1 }, -- S
+                        [0x00054] = { left = .1, right = .1 }, -- T
+                        [0x0005A] = { left = .1, right = .1 }, -- Z
+
+                        [0x1D43D] = { left = -.1,  right = -.1  }, -- italic J
+                     -- [0x1D448] = { left = -.05, right = -.05 }, -- italic U
+                     -- [0x1D449] = { left = -.05, right = -.05 }, -- italic V
+                        [0x1D44B] = { left = -.05, right = -.05 }, -- italic X
+
+                     -- [0x1D487] = { left = -.2, right = -.2 }, -- bold italic f
+                     -- [0x1D489] = { left = -.2, right = -.2 }, -- bold italic h
+                     -- [0x1D496] = { left = -.1, right = -.1 }, -- bold italic u
+                     -- [0x1D499] = { left = -.1, right = -.1 }, -- bold italic x
+
+                     -- [0x1D711] = { left = -.1, right = -.1 }, -- italic varphi
+                     -- [0x1D713] = { left = -.1, right = -.1 }, -- italic psi
+
+                     -- [0x1D659] = { left = -.1, right = -.1 }, -- sans bold italic d
+                     -- [0x1D65C] = { left = -.1, right = -.1 }, -- sans bold italic g
+
+                     -- [0x1D409] = { left = .1, right = .1 }, -- bold upright J
+                     -- [0x1D412] = { left = .1, right = .1 }, -- bold upright S
+
+                     -- [0x1D509] = { left = .1, right = .1 }, -- fraktur F
+                     -- [0x1D50C] = { left = .1, right = .1 }, -- fraktur I
+                     -- [0x1D50D] = { left = .1, right = .1 }, -- fraktur J
+                     -- [0x1D51D] = { left = .1, right = .1 }, -- fraktur Z
+
+                     -- [0x1D538] = { left = .1, right = .1 }, -- doublestruck A
+                     -- [0x1D539] = { left = .1, right = .1 }, -- doublestruck B
+                     -- [0x1D53C] = { left = .1, right = .1 }, -- doublestruck E
+                     -- [0x1D53D] = { left = .1, right = .1 }, -- doublestruck F
+                     -- [0x1D541] = { left = .1, right = .1 }, -- doublestruck J
+                     -- [0x1D542] = { left = .1, right = .1 }, -- doublestruck K
+                     -- [0x1D543] = { left = .1, right = .1 }, -- doublestruck L
+                     -- [0x1D547] = { left = .1, right = .1 }, -- doublestruck P
+                     -- [0x1D549] = { left = .1, right = .1 }, -- doublestruck R
+                     -- [0x1D54A] = { left = .1, right = .1 }, -- doublestruck S
+                     -- [0x1D54B] = { left = .1, right = .1 }, -- doublestruck T
+                     -- [0x1D54D] = { left = .1, right = .1 }, -- doublestruck V
+                     -- [0x1D550] = { left = .1, right = .1 }, -- doublestruck Y
+
+                     -- [0x1D506] = { left = .1, right = .1 }, -- fraktur C
+
+                     -- [0x00393] = { left = .1, right = .1 }, -- upfight Gamma
+                     -- [0x00396] = { left = .1, right = .1 }, -- upfight Zeta
+
+                     -- [0x1D5D8] = { left = .1, right = .1 }, -- sans bold E
+                     -- [0x1D5D9] = { left = .1, right = .1 }, -- sans bold F
+                     -- [0x1D5DD] = { left = .2, right = .2 }, -- sans bold J -- nope
+                     -- [0x1D5DF] = { left = .1, right = .1 }, -- sans bold L
+                     -- [0x1D5E6] = { left = .1, right = .1 }, -- sans bold S
+
+                     -- [0x1D61A] = { left = .1, right = .1 }, -- sans italic S
+
+                     -- [0x1D5A2] = { left = .1, right = .1 }, -- sans C
+                     -- [0x1D5A4] = { left = .1, right = .1 }, -- sans E
+                     -- [0x1D5A5] = { left = .1, right = .1 }, -- sans F
+                     -- [0x1D5AB] = { left = .1, right = .1 }, -- sans L -- nope
+                     -- [0x1D5AF] = { left = .1, right = .1 }, -- sans P
+                     -- [0x1D5B2] = { left = .1, right = .1 }, -- sans S
+                     -- [0x1D5B9] = { left = .1, right = .1 }, -- sans Z
+
+                     -- [0x1D4A0] = { left = .1, right = .1 }, -- script E
+                     -- [0x1D4AE] = { left = .1, right = .1 }, -- script S
+                     -- [0x1D4B4] = { left = .1, right = .1 }, -- script Y
                     },
                 },
                 {
                     tweak   = "fixprimes",
                  -- scale   = 0.8,
                  -- smaller = true,
-                    factor  = 1.1,
+                    factor  = 1,--1.1
                 },
                 {
                     tweak = "addscripts",
@@ -193,6 +398,9 @@ return {
         -- experimental fixes for mkiv:
         --
         dimensions = dimensions,
-        kerns = kerns,
+        kerns      = kerns,
     },
 }
+
+-- \alpha is looking like an italic a. The one from Dejavu could perhaps be an alternative?
+-- No hvariants in 772

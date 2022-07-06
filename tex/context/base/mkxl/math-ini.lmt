@@ -51,7 +51,7 @@ local setdelcode            = tex.setdelcode
 
 -- These are different from mkiv with luatex.
 
-local classes          = allocate { }
+local classes          = allocate { unset = 64 } -- or -1
 local classnames       = allocate { }
 local maxengineclass   = 63
 local lastengineclass  = 0
@@ -121,21 +121,29 @@ local function registerengineclass(name,short)
     return class
 end
 
-registerengineclass("explicit",    "expl")
-registerengineclass("imaginary",   "img")
-registerengineclass("differential","dif")
-registerengineclass("exponential", "exp")
-registerengineclass("function",    "fnc")
-registerengineclass("digit",       "dig")
+registerengineclass("explicit",        "xpl")
+registerengineclass("imaginary",       "img")
+registerengineclass("differential",    "dif")
+registerengineclass("exponential",     "exp")
+registerengineclass("ellipsis",        "ell")
+registerengineclass("function",        "fnc")
+registerengineclass("digit",           "dig")
 local division_class =
-registerengineclass("division",    "div")
-registerengineclass("factorial",   "fac")
-registerengineclass("wrapped",     "wra")
-registerengineclass("construct",   "con")
-registerengineclass("dimension",   "dim")
+registerengineclass("division",        "div")
+registerengineclass("factorial",       "fac")
+registerengineclass("wrapped",         "wra")
+registerengineclass("construct",       "con")
+registerengineclass("dimension",       "dim")
+registerengineclass("textpunctuation", "tpu")
+registerengineclass("unspaced")
+registerengineclass("experimental")
+registerengineclass("fake")
 
-classes["begin"] = 62  classnames[62] = "begin"
-classes["end"]   = 63  classnames[63] = "end"
+local specialclasses = tex.specialmathclasscodes
+
+classes["all"]   = specialclasses["all"]    classnames[specialclasses["all"]  ] = "all"
+classes["begin"] = specialclasses["begin"]  classnames[specialclasses["begin"]] = "begin"
+classes["end"]   = specialclasses["end"]    classnames[specialclasses["end"]  ] = "end"
 
 callback.register("get_noad_class", function(n) return classnames[n] end)
 

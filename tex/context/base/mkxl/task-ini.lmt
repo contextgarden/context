@@ -119,7 +119,7 @@ appendaction("math",         "normalizers", "noads.handlers.classes",           
 appendaction("math",         "builders",    "builders.kernel.mlisttohlist",                     nil, "nut",    "enabled"   )  -- mandate
 appendaction("math",         "builders",    "typesetters.directions.processmath",               nil, "nut",    "disabled"  )
 appendaction("math",         "builders",    "noads.handlers.makeup",                            nil, "nonut",  "disabled"  )
-appendaction("math",         "builders",    "noads.handlers.align",                             nil, "nonut",  "enabled"   )
+------------("math",         "builders",    "noads.handlers.align",                             nil, "nonut",  "enabled"   )
 
 appendaction("math",         "finalizers",  "noads.handlers.normalize",                         nil, "nonut",  "enabled"   )
 appendaction("math",         "finalizers",  "noads.handlers.snap",                              nil, "nonut",  "disabled"  )
@@ -159,7 +159,9 @@ appendaction("vboxhandlers", "normalizers", "nodes.adaptive.handlevertical",    
 
 appendaction("everypar",     "normalizers", "nodes.handlers.checkparcounter",                   nil, "nut",    "disabled"  )
 
+appendaction("alignments",   "normalizers", "nodes.handlers.showpreamble",                      nil, "nut",    "enabled"   )
 appendaction("alignments",   "normalizers", "nodes.handlers.aligncharacter",                    nil, "nut",    "disabled"  )
+appendaction("alignments",   "normalizers", "nodes.handlers.fixmathalign",                      nil, "nut",    "enabled"   ) -- maybe delay
 
 appendaction("localboxes",   "lists",       "typesetters.localboxes.handler",                   nil, "nut",    "enabled"   )
 

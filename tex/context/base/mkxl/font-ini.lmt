@@ -10,8 +10,8 @@ if not modules then modules = { } end modules ['font-ini'] = {
 <p>Not much is happening here.</p>
 --ldx]]--
 
-local allocate    = utilities.storage.allocate
-local sortedhash  = table.sortedhash
+local sortedhash, setmetatableindex = table.sortedhash, table.setmetatableindex
+local allocate = utilities.storage.allocate
 
 fonts             = fonts or { }
 local fonts       = fonts
@@ -36,5 +36,64 @@ fonts.privateoffsets = {
     mathbase      = 0xFF000, -- used for hidden (virtual math)
     keepnames     = false,   -- when set to true names are always kept (not for context)
 }
+
+local effects = setmetatableindex(
+    function(t,slant)
+        local v = setmetatableindex(
+            function(t,squeeze)
+                local v = setmetatableindex(
+                    function(t,extend)
+                        local v = setmetatableindex(
+                            function(t,mode)
+                                local v = setmetatableindex(
+                                    function(t,line)
+                                        local v = {
+                                            slant   = slant,
+                                            squeeze = squeeze,
+                                            extend  = extend,
+                                            mode    = mode,
+                                            line    = line * 1000,
+                                        }
+                                        t[line] = v
+                                        return v
+                                    end)
+                                t[mode] = v
+                                return v
+                            end)
+                        t[extend] = v
+                        return v
+                    end)
+                t[squeeze] = v
+                return v
+            end)
+        t[slant] = v
+        return v
+    end)
+
+-- This is an experiment, part of math engine project (MS and HH) where we wondered
+-- how to deal with bad or missing alphabets. One solution is a character specific
+-- effect which is supported by the engine (in fact the backend). By using a table
+-- cache we limit checking. We use tweaks in font goodies to achieve it.
+--
+-- character.effect = fonts.effects[slant][squeeze][extend][mode][line]
+-- character.effect = fonts.toeffect { slant = .2 }
+
+fonts.effects = effects
+
+fonts.effects[0][1][1][0][0] = false
+
+function fonts.toeffect(t)
+    local slant   = t.slant   or 0
+    local squeeze = t.squeeze or 1
+    local extend  = t.extend  or 1
+    local mode    = t.mode    or 0
+    local line    = t.line    or 0
+    if slant or squeeze or extend or mode or line then
+        local effect = effects[slant][squeeze][extend][mode][line]
+        if effect then
+            return effect
+        end
+    end
+end
 
 -- Also here now:

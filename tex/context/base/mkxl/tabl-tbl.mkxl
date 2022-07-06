@@ -1968,7 +1968,7 @@
 %    % can we omit the next one in the first run? probably
 %    \noalign{\the\t_tabl_tabulate_every_after_row#2}}
 
-\permanent\protected\def\tabl_tabulate_NR_common#1#2#.#3% #. gobbles pars and spaces
+\permanent\tolerant\protected\def\tabl_tabulate_NR_common#1#2#.#3% #. gobbles pars and spaces
   {\global\advance\c_tabl_tabulate_noflines\plusone
    \global\setfalse\c_tabl_tabulate_firstflushed
    \global\setfalse\c_tabl_tabulate_equal

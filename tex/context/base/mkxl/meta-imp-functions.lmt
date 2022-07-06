@@ -1,0 +1,260 @@
+if not modules then modules = { } end modules ['meta-imp-functions'] = {
+    version   = 1.001,
+    comment   = "companion to meta-imp-functions.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+local formatters = string.formatters
+local sequenced  = table.sequenced
+
+local noffunctions = 0
+local version      = 1
+
+local function preparecache(p)
+    noffunctions = noffunctions + 1
+local action = p.action
+p.action = nil
+    local hash = md5.HEX(sequenced(p))
+    local name = formatters["mkiv-%s-m-f-%03i.lua"](tex.jobname,noffunctions)
+p.action = action
+    return name, hash
+end
+
+local function getcache(p)
+    local cache = p.cache
+    if cache then
+        local name, hash = preparecache(p)
+        local data = table.load(name)
+        if data and data.hash == hash and data.version == version and data.data then
+            return hash, name, data.data
+        else
+            return hash, name, false
+        end
+    else
+        return false, false, false
+    end
+end
+
+local function setcache(hash,name,data)
+    local result = {
+        version = version,
+        hash    = hash,
+        data    = data,
+    }
+    table.save(name,result)
+end
+
+local injectpath      = mp.inject.path
+local getparameterset = metapost.getparameterset
+
+local report = logs.reporter("metapost","functions")
+
+local functions = { }
+local actions   = { }
+
+function mp.registerfunction(specification)
+    local name   = specification.name
+    functions[name] = specification
+end
+
+function mp.registeraction(specification)
+    local name   = specification.name
+    actions[name] = specification
+end
+
+metapost.registerscript("processfunction", function()
+    local specification = getparameterset("function")
+    local name    = specification.name
+    local lua     = specification.lua
+    local fnction = functions[name]
+    local action  = lua and actions[lua]
+    if fnction then
+        if action then
+            specification.action = action.action
+        end
+     -- statistics.starttiming(functions)
+        fnction.action(specification)
+     -- statistics.stoptiming(functions)
+    end
+end)
+
+-- statistics.register("mp function time", function()
+--     return statistics.elapsedseconds(functions,"including feedback to metapost")
+-- end)
+
+-- Here comes the fancy stuff:
+
+local math = math
+local sqrt = math.sqrt
+
+local mathfunctions = math.functions or { }
+math.functions      = mathfunctions
+
+-- Todo : reference where we got the factors from because those from
+--
+-- This is Runge-Kutta-Merson 4("5")
+-- See Table 4.1. Merson 4("5") of Hairer, Nørsett, Wanner - Solving Ordinary Differential Equations I (Springer, 2008)
+--
+-- function mathfunctions.rungekutta(specification)
+--     local f      = specification.action or function(t,x,y) return x, y end
+--     local x      = specification.x      or 0
+--     local y      = specification.y      or 0
+--     local t      = 0
+--     local tmax   = specification.tmax   or 1
+--     local dt     = specification.dt     or tmax/10
+--     local eps    = specification.eps    or dt/10
+--     local r      = 1
+--  -- local result = { { x, y, x, y, x, y } }
+--     local result = { { x, y } }
+--     while t < tmax do
+--         local k1x, k1y = f(t,              x,
+--                                            y)
+--         k1x = dt * k1x
+--         k1y = dt * k1y
+--         local k2x, k2y = f(t + (1/3) * dt, x + (1/3) * k1x,
+--                                            y + (1/3) * k1y)
+--         k2x = dt * k2x
+--         k2y = dt * k2y
+--         local k3x, k3y = f(t + (1/3) * dt, x + (1/6) * k1x + (1/6) * k2x,
+--                                            y + (1/6) * k1y + (1/6) * k2y)
+--         k3x = dt * k3x
+--         k3y = dt * k3y
+--         local k4x, k4y = f(t + (1/2) * dt, x + (1/8) * k1x + (3/8) * k3x,
+--                                            y + (1/8) * k1y + (3/8) * k3y)
+--         k4x = dt * k4x
+--         k4y = dt * k4y
+--         local k5x, k5y = f(t +         dt, x + (1/2) * k1x - (3/2) * k3x - (2) * k4x,
+--                                            y + (1/2) * k1y - (3/2) * k3y - (2) * k4y)
+--         k5x = dt * k5x
+--         k5y = dt * k5y
+--         --
+--         local teps = sqrt(((1/10-1/6) * k1x + (3/10) * k3x + (2/5-2/3) * k4x + (1/5 -1/6) * k5x)^2 +
+--                           ((1/10-1/6) * k1y + (3/10) * k3y + (2/5-2/3) * k4y + (1/5 -1/6) * k5y)^2 )
+--         if teps < eps then
+--             dt = 0.9 * dt * (eps/teps)^(1/4)
+--             x = x + (1/10) * k1x + (3/10) * k3x + (2/5) * k4x + (1/5) * k5x
+--             y = y + (1/10) * k1y + (3/10) * k3y + (2/5) * k4y + (1/5) * k5y
+--             r = r + 1
+--          -- result[r] = { x, y, x, y, x, y }
+--             result[r] = { x, y }
+--             t = t + dt
+--         else
+--             dt = 0.9 * dt * (eps/teps)^(1/3)
+--         end
+--     end
+--     return result
+-- end
+
+local function rungekutta(specification)
+    local f        = specification.action   or function(t,x,y) return x, y end
+    local x        = specification.x        or 0
+    local y        = specification.y        or 0
+    local tmin     = specification.tmin     or 0
+    local tmax     = specification.tmax     or 1
+    local t        = tmin
+    local rmax     = specification.maxpath  or 0
+    local stepsize = specification.stepsize or "adaptive"
+    local dt       = specification.dt       or (tmax-tmin)/10
+    local eps      = specification.eps      or dt/10
+    local kind     = specification.kind     or specification.type    -- xy x y
+    local adaptive = stepsize == "adaptive"
+    local r        = 1
+    local result
+    if kind ~= "tx" and kind ~= "ty" then
+        kind = "xy"
+    end
+    if kind == "xy" then
+     -- result = { { x, y, x, y, x, y } }
+        result = { { x, y } }
+    elseif kind == "tx" then
+     -- result = { { x, x, t, x, t, x } }
+        result = { { t, x } }
+    else
+     -- result = { { x, y, t, y, t, y } }
+        result = { { t, y } }
+    end
+    local hash, name, data = getcache(specification)
+    if data then
+     -- print(hash,name,"REUSING")
+        return data
+    else
+     -- print(hash,name,"GENERATING")
+    end
+    if rmax == 0 then
+        rmax = 0xFFFF
+    end
+
+    while t < tmax do
+        local k1x, k1y = f(t,              x,
+                                           y)
+        k1x = dt * k1x
+        k1y = dt * k1y
+        local k2x, k2y = f(t + (1/3) * dt, x + (1/3) * k1x,
+                                           y + (1/3) * k1y)
+        k2x = dt * k2x
+        k2y = dt * k2y
+        local k3x, k3y = f(t + (1/3) * dt, x + (1/6) * k1x + (1/6) * k2x,
+                                           y + (1/6) * k1y + (1/6) * k2y)
+        k3x = dt * k3x
+        k3y = dt * k3y
+        local k4x, k4y = f(t + (1/2) * dt, x + (1/8) * k1x + (3/8) * k3x,
+                                           y + (1/8) * k1y + (3/8) * k3y)
+        k4x = dt * k4x
+        k4y = dt * k4y
+        local k5x, k5y = f(t +         dt, x + (1/2) * k1x - (3/2) * k3x - (2) * k4x,
+                                           y + (1/2) * k1y - (3/2) * k3y - (2) * k4y)
+        k5x = dt * k5x
+        k5y = dt * k5y
+        --
+        if adaptive then
+            local teps = sqrt(((1/10-1/6) * k1x + (3/10) * k3x + (2/5-2/3) * k4x + (1/5 -1/6) * k5x)^2 +
+                              ((1/10-1/6) * k1y + (3/10) * k3y + (2/5-2/3) * k4y + (1/5 -1/6) * k5y)^2 )
+            local step = eps/teps
+            if teps < eps then
+                step = step^(1/4)
+                dt = 0.9 * dt * step
+            else
+                step = step^(1/3)
+                dt = 0.9 * dt * step
+                goto again
+            end
+        end
+      ::append::
+        t = t + dt
+        x = x + (1/10) * k1x + (3/10) * k3x + (2/5) * k4x + (1/5) * k5x
+        y = y + (1/10) * k1y + (3/10) * k3y + (2/5) * k4y + (1/5) * k5y
+        r = r + 1
+        if kind == "xy" then
+            result[r] = { x, y }
+        elseif kind == "tx" then
+            result[r] = { t, x }
+        else
+            result[r] = { t, y }
+        end
+        if r >= rmax then
+         -- report("pathmax is set to %i, quiting",rmax)
+            break
+        end
+      ::again::
+    end
+    if name and hash then
+        setcache(hash,name,result)
+    end
+    return result
+end
+
+mathfunctions.rungekutta = rungekutta
+
+mp.registerfunction {
+    name   = "rungekutta",
+    action = function(specification)
+        local result = rungekutta(specification)
+        if result then
+            injectpath(result)
+        else
+            injectpath { { 0, 0 } }
+        end
+    end
+}

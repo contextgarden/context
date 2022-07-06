@@ -10,12 +10,15 @@ return {
             NoLimitSubFactor          = 1200,
             FractionRuleThickness     =   60,
             OverbarRuleThickness      =   60,
-         -- RadicalRuleThickness      =   60,
             UnderbarRuleThickness     =   60,
          -- AccentBaseHeight          =    0,
             AccentBaseDepth           =   75,
          -- AccentTopShiftUp          =  -75,
          -- FlattenedAccentTopShiftUp = -100,
+         -- RadicalRuleThickness      =   50, -- 50 in font
+            DelimiterPercent          =   90,
+            DelimiterShortfall        =  400,
+         -- DisplayOperatorMinHeight  = 1800, -- 1300 in font (only one)
         },
         tweaks = {
             aftercopying = {
@@ -27,70 +30,73 @@ return {
                     tweak = "dimensions",
                     list  = {
                         -- offset width italic
-                     -- [0x00060] = { yoffset = -0.1 }, -- grave
-                     -- [0x000B4] = { yoffset = -0.1 }, -- acute
-                        [0x002C6] = { yoffset = -0.1 }, -- hat
-                        [0x002DC] = { yoffset = -0.1 }, -- tilde
-                     -- [0x000AF] = { yoffset = -0.1 }, -- bar
-                        [0x002D8] = { yoffset = -0.15 }, -- breve
-                        [0x002D9] = { yoffset = -0.15 }, -- dot
-                     -- [0x000A8] = { yoffset = -0.1 }, -- ddot
+                     -- [0x00060] = { yoffset = -0.1 },   -- grave
+                     -- [0x000B4] = { yoffset = -0.1 },   -- acute
+                        [0x002C6] = { yoffset = -0.1 },   -- hat
+                        [0x002DC] = { yoffset = -0.1 },   -- tilde
+                     -- [0x000AF] = { yoffset = -0.1 },   -- bar
+                        [0x002D8] = { yoffset = -0.15 },  -- breve
+                        [0x002D9] = { yoffset = -0.15 },  -- dot
+                     -- [0x000A8] = { yoffset = -0.1 },   -- ddot
                         [0x020DB] = { yoffset = -0.115 }, -- dddot
-                        [0x002C7] = { yoffset = -0.1 }, -- check
-                        [0x020D7] = { yoffset = -0.1 }, -- vec
-                        [0x00300] = { yoffset = -0.12 , all=true }, -- widegrave
-                        [0x00301] = { yoffset = -0.12 , all=true }, -- wideacute
-                        [0x00302] = { yoffset = -0.12 , all=true }, -- widehat
-                        [0x00303] = { yoffset = -0.12 , all=true }, -- widetilde
-                        [0x00304] = { yoffset = -0.12 , all=true }, -- widebar
-                        [0x00306] = { yoffset = -0.12 , all=true }, -- widebreve
-                        [0x00307] = { yoffset = -0.12 , all=true }, -- widedot
-                        [0x00308] = { yoffset = -0.12 , all=true }, -- wideddot
-                     -- [0x020DB] = { yoffset = -0.1 , all=true }, -- widedddot
-                        [0x0030A] = { yoffset = -0.12 , all=true }, -- widering
-                        [0x0030C] = { yoffset = -0.12 , all=true }, -- widecheck
-                     -- [0x002C6] = { scale=.85, yoffset = .1, width = .85, height = .935 }, -- hat
-                        [0x00393] = { 0.05, 1.05, 0.075       }, -- \Gamma
-                     -- [0x003A6] = { 0.05, 1.05, 0           }, -- \Phi difficult!
-                        [0x003A8] = { 0.05, 1.05, 0.075       }, -- \Psi
-                        [0x02113] = { 0,    1,    0.075       }, -- \ell
-                        [0x1D436] = { 0,    1,    0.05        }, -- C
-                        [0x1D43D] = { 0.3,  1.4,  0.1         }, -- J
-                        [0x1D44B] = { 0,    1,    0.05        }, -- X
-                        [0x1D44F] = { 0,    1,    0,     1.25 }, -- b
-                        [0x1D450] = { 0,    1.1,  0           }, -- c
-                        [0x1D451] = { 0,    1,    0.05,   0.8 }, -- d
-                        [0x1D452] = { 0,    1.1,  0.05        }, -- e
-                        [0x1D453] = { 0.15, 1.15, 0.1, 1.2    }, -- f
-                        [0x1D454] = { 0.1,  1.2,  0.1         }, -- g
-                        [0x0210E] = { 0,    1.1,  0,    1.4   }, -- h
-                        [0x1D457] = { 0.2,  1.25, 0.05        }, -- j
-                        [0x1D458] = { 0,    1,    0,     1.25 }, -- k
-                        [0x1D459] = { 0,    1,    0.05        }, -- l
-                        [0x1D45D] = { 0.15, 1.15, 0,     1.4  }, -- p
-                        [0x1D45E] = { 0,    1.05, 0           }, -- q
-                        [0x1D45F] = { 0,    1.05, 0           }, -- r
-                        [0x1D461] = { 0,    1,    0.1         }, -- t
-                        [0x1D465] = { 0.05, 1.1,  0.05        }, -- x
-                        [0x1D466] = { 0.2,  1.2,  0,    1.35  }, -- y
-                        [0x1D6FD] = { 0.05, 1.1,  0.05        }, -- \beta
-                        [0x1D6FE] = { 0,    1.05, 0           }, -- \gamma
-                        [0x1D6FF] = { 0,    1,    0.1         }, -- \delta
-                        [0x1D716] = { 0,    1.1,  0           }, -- \epsilon
-                        [0x1D700] = { 0,    1.1,  0           }, -- \varepsilon
-                        [0x1D701] = { 0,    1,    0.15        }, -- \zeta
-                        [0x1D703] = { 0,    1,    0.1         }, -- \theta
-                        [0x1D705] = { 0,    1,    0.1         }, -- \kappa
-                        [0x1D706] = { 0.05, 1.1,  0           }, -- \lambda
-                        [0x1D707] = { 0.05, 1.05, 0           }, -- \mu
-                        [0x1D708] = { 0,    1.1,  0           }, -- \nu
-                        [0x1D709] = { 0,    1.1,  0           }, -- \xi
-                        [0x1D70B] = { 0,    1.05, 0           }, -- \pi
-                        [0x1D70C] = { 0.2,  1.2,  0           }, -- \rho
-                        [0x1D70E] = { 0,    1,    0.1         }, -- \sigma
-                        [0x1D70F] = { 0.05, 1.05, 0.1         }, -- \tau
-                        [0x1D712] = { 0.15, 1.2,  0.05        }, -- \chi
-                        [0x1D713] = { 0.05, 1.05, 0.05        }, -- \psi
+                        [0x002C7] = { yoffset = -0.1 },   -- check
+                        [0x020D7] = { yoffset = -0.1 },   -- vec
+
+                        [0x00300] = { yoffset = -0.12 , all = true }, -- widegrave
+                        [0x00301] = { yoffset = -0.12 , all = true }, -- wideacute
+                        [0x00302] = { yoffset = -0.12 , all = true }, -- widehat
+                        [0x00303] = { yoffset = -0.12 , all = true }, -- widetilde
+                        [0x00304] = { yoffset = -0.12 , all = true }, -- widebar
+                        [0x00306] = { yoffset = -0.12 , all = true }, -- widebreve
+                        [0x00307] = { yoffset = -0.12 , all = true }, -- widedot
+                        [0x00308] = { yoffset = -0.12 , all = true }, -- wideddot
+                     -- [0x020DB] = { yoffset = -0.1 ,  all = true }, -- widedddot
+                        [0x0030A] = { yoffset = -0.12 , all = true }, -- widering
+                        [0x0030C] = { yoffset = -0.12 , all = true }, -- widecheck
+
+                     -- [0x002C6] = { scale =.85, yoffset = .1, width = .85, height = .935 }, -- hat
+
+                        [0x00393] = { xoffset = 0.05, width = 1.05, italic = 0.075       }, -- \Gamma
+                     -- [0x003A6] = { xoffset = 0.05, width = 1.05, italic = 0           }, -- \Phi difficult!
+                        [0x003A8] = { xoffset = 0.05, width = 1.05, italic = 0.075       }, -- \Psi
+                        [0x02113] = { xoffset = 0,    width = 1,    italic = 0.075       }, -- \ell
+                        [0x1D436] = { xoffset = 0,    width = 1,    italic = 0.05        }, -- C
+                        [0x1D43D] = { xoffset = 0.3,  width = 1.4,  italic = 0.1         }, -- J
+                        [0x1D44B] = { xoffset = 0,    width = 1,    italic = 0.05        }, -- X
+                        [0x1D44F] = { xoffset = 0,    width = 1,    italic = 0,     1.25 }, -- b
+                        [0x1D450] = { xoffset = 0,    width = 1.1,  italic = 0           }, -- c
+                        [0x1D451] = { xoffset = 0,    width = 1,    italic = 0.05,   0.8 }, -- d
+                        [0x1D452] = { xoffset = 0,    width = 1.1,  italic = 0.05        }, -- e
+                        [0x1D453] = { xoffset = 0.15, width = 1.15, italic = 0.1, 1.2    }, -- f
+                        [0x1D454] = { xoffset = 0.1,  width = 1.2,  italic = 0.1         }, -- g
+                        [0x0210E] = { xoffset = 0,    width = 1.1,  italic = 0,    1.4   }, -- h
+                        [0x1D457] = { xoffset = 0.2,  width = 1.25, italic = 0.05        }, -- j
+                        [0x1D458] = { xoffset = 0,    width = 1,    italic = 0,     1.25 }, -- k
+                        [0x1D459] = { xoffset = 0,    width = 1,    italic = 0.05        }, -- l
+                        [0x1D45D] = { xoffset = 0.15, width = 1.15, italic = 0,     1.4  }, -- p
+                        [0x1D45E] = { xoffset = 0,    width = 1.05, italic = 0           }, -- q
+                        [0x1D45F] = { xoffset = 0,    width = 1.05, italic = 0           }, -- r
+                        [0x1D461] = { xoffset = 0,    width = 1,    italic = 0.1         }, -- t
+                        [0x1D465] = { xoffset = 0.05, width = 1.1,  italic = 0.05        }, -- x
+                        [0x1D466] = { xoffset = 0.2,  width = 1.2,  italic = 0,    1.35  }, -- y
+                        [0x1D6FD] = { xoffset = 0.05, width = 1.1,  italic = 0.05        }, -- \beta
+                        [0x1D6FE] = { xoffset = 0,    width = 1.05, italic = 0           }, -- \gamma
+                        [0x1D6FF] = { xoffset = 0,    width = 1,    italic = 0.1         }, -- \delta
+                        [0x1D716] = { xoffset = 0,    width = 1.1,  italic = 0           }, -- \epsilon
+                        [0x1D700] = { xoffset = 0,    width = 1.1,  italic = 0           }, -- \varepsilon
+                        [0x1D701] = { xoffset = 0,    width = 1,    italic = 0.15        }, -- \zeta
+                        [0x1D703] = { xoffset = 0,    width = 1,    italic = 0.1         }, -- \theta
+                        [0x1D705] = { xoffset = 0,    width = 1,    italic = 0.1         }, -- \kappa
+                        [0x1D706] = { xoffset = 0.05, width = 1.1,  italic = 0           }, -- \lambda
+                        [0x1D707] = { xoffset = 0.05, width = 1.05, italic = 0           }, -- \mu
+                        [0x1D708] = { xoffset = 0,    width = 1.1,  italic = 0           }, -- \nu
+                        [0x1D709] = { xoffset = 0,    width = 1.1,  italic = 0           }, -- \xi
+                        [0x1D70B] = { xoffset = 0,    width = 1.05, italic = 0           }, -- \pi
+                        [0x1D70C] = { xoffset = 0.2,  width = 1.2,  italic = 0           }, -- \rho
+                        [0x1D70E] = { xoffset = 0,    width = 1,    italic = 0.1         }, -- \sigma
+                        [0x1D70F] = { xoffset = 0.05, width = 1.05, italic = 0.1         }, -- \tau
+                        [0x1D712] = { xoffset = 0.15, width = 1.2,  italic = 0.05        }, -- \chi
+                        [0x1D713] = { xoffset = 0.05, width = 1.05, italic = 0.05        }, -- \psi
                     },
                 },
                 {

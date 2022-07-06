@@ -194,7 +194,7 @@ local n_box = 0
 
 local nofcontours = 0
 
--- We don't want cosmetics like axis and labels to trigger a  calculation,
+-- We don't want cosmetics like axis and labels to trigger a calculation,
 -- especially a slow one.
 
 local hashfields = {
@@ -1837,12 +1837,41 @@ local f_function_y = formatters [ [[
 end
 ]] ]
 
+-- local f_color = formatters [ [[
+--     local math = math
+--     return function(f)
+--         return %s
+--     end
+-- ]] ]
+
 local f_color = formatters [ [[
-    local math = math
-    return function(f)
-        return %s
-    end
-]] ]
+     local math = math
+     local min  = math.min
+     local max  = math.max
+     local abs  = math.abs
+     local minz = %s
+     local maxz = %s
+     --
+     local color_value = 0
+     local color_step  = mp.lmt_color_functions.step
+     local color_shade = mp.lmt_color_functions.shade
+
+     local function step(...)
+         return color_step(color_value,n,...)
+     end
+     local function shade(...)
+         return color_shade(color_value,n,...)
+     end
+  -- local function lin(l)
+  --     return l/n
+  -- end
+     %s
+     return function(f,z)
+         brightness_factor = f
+         function_value    = z
+         return %s
+     end
+ ]] ]
 
 function mp.lmt_surface_do(specification)
     --
@@ -1898,19 +1927,13 @@ function mp.lmt_surface_do(specification)
     local dy   = (ymax - ymin) / ny
     local xt   = xmin
     --
-    local minf, maxf
+    local minf, maxf, minz, maxz
     --
     -- similar as contours but no data loop here
     --
     local fcode = load((p.check and f_function_y or f_function_n)(preamble,code))
     local func  = type(fcode) == "function" and fcode()
     if type(func) ~= "function" then
-        return false -- fatal error
-    end
-    --
-    local ccode = load(f_color(colorcode))
-    local color = type(ccode) == "function" and ccode()
-    if type(color) ~= "function" then
         return false -- fatal error
     end
     --
@@ -1946,8 +1969,16 @@ function mp.lmt_surface_do(specification)
                 maxf = fac
             end
             --
-            data[i][j] = { x, y, fac }
-            --
+            if not minz then
+               minz = z
+               maxz = z
+            elseif z < minz then
+               minz = z
+            elseif z > maxz then
+               maxz = z
+            end
+            data[i][j] = { x, y, fac, z }
+             --
             yt = yt + dy
         end
         xt = xt + dx
@@ -1957,6 +1988,11 @@ function mp.lmt_surface_do(specification)
     local range   = maxf - minf
     local cl      = linecolor or 1
     local enforce = attributes.colors.model == "cmyk"
+    local ccode   = load(f_color(minz,maxz,preamble,colorcode))
+    local color   = type(ccode) == "function" and ccode()
+    if type(color) ~= "function" then
+        return false -- fatal error
+    end
     for i=0,nx-1 do
         for j=0,ny-1 do
             -- points
@@ -1990,7 +2026,7 @@ function mp.lmt_surface_do(specification)
          -- else
          --     -- fill and draw in one go to prevent artifacts
          -- end
-            local cr, cg, cb = color(cf)
+            local cr, cg, cb = color(cf,z1[4]) -- cf, zout
             if not cr then cr = 0 end
             if not cg then cg = 0 end
             if not cb then cb = 0 end

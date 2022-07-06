@@ -161,13 +161,17 @@
 
 \integerdef\c_radical_unicode "221A
 
-\protected\def\math_radical_common
+% We use a strut in the degree because not all fonts have the right gaps set up but
+% as struts are sort of predictable we can now fix all fonts in the lfg file.
+
+\protected\def\math_radical_common#degree%
   {\Uroot
      \s!height\dimexpr\mathradicalparameter\c!height\relax
      \s!depth \dimexpr\mathradicalparameter\c!depth\relax
      \s!source\numexpr\namedboxanchor{\mathradicalparameter\c!source}\relax
      \s!style \normalmathstyle
-     \zerocount \c_radical_unicode}
+     \zerocount \c_radical_unicode
+     {\mathstrut#degree}}
 
 \defcsname\??mathradicalalternative\v!default\endcsname %  #body%
   {\math_radical_common{\currentmathradicaldegree}}   % {#body}}

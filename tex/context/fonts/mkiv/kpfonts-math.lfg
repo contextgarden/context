@@ -6,10 +6,15 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            NoLimitSupFactor =   0,
-            NoLimitSubFactor = 900,
-            -- AccentBaseHeight = 0,
-            AccentBaseDepth = 30,
+            NoLimitSupFactor                =    0,
+            NoLimitSubFactor                =  900,
+         -- AccentBaseHeight                =    0,
+            AccentBaseDepth                 =   30,
+            RadicalDegreeBottomRaisePercent =   70,
+         -- RadicalRuleThickness            =   50, -- 50 in font
+            DelimiterPercent                =   90,
+            DelimiterShortfall              =  400,
+         -- DisplayOperatorMinHeight        = 1800, -- 1500 in font (only one)
         },
         tweaks = {
             aftercopying = {

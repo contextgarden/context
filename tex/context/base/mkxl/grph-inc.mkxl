@@ -860,16 +860,16 @@
 % Experimental (will become cleaner):
 
 \permanent\tolerant\protected\def\includesvgfile[#1]#*[#2]%
-  {\dontleavehmode\begingroup
+  {\hbox\bgroup % no \dontleavehmode
    \getdummyparameters[\c!offset=\zeropoint,#2]%
    \clf_includesvgfile{#1}\dimexpr\dummyparameter\c!offset\relax
-   \endgroup}
+   \egroup}
 
 \permanent\tolerant\protected\def\includesvgbuffer[#1]#*[#2]%
-  {\dontleavehmode\begingroup
+  {\hbox\bgroup % no \dontleavehmode
    \getdummyparameters[\c!offset=\zeropoint,#2]%
    \clf_includesvgbuffer{#1}\dimexpr\dummyparameter\c!offset\relax
-   \endgroup}
+   \egroup}
 
 % Bonus:
 

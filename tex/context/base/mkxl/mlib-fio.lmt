@@ -275,7 +275,8 @@ function mplib.new(specification)
     local instance
     instance = mplibnew {
         -- used
-        tolerance      = specification.tolerance,
+        bend_tolerance = specification.bendtolerance,
+        move_tolerance = specification.movetolerance,
         math_mode      = specification.mathmode,
         run_script     = specification.runscript,
         run_internal   = specification.runinternal,

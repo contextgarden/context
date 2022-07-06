@@ -18,10 +18,16 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            NoLimitSupFactor =   0,
-            NoLimitSubFactor = 900,
-         -- AccentBaseHeight =   0,
-            AccentBaseDepth  =  30,
+            NoLimitSupFactor                =    0,
+            NoLimitSubFactor                =  900,
+         -- AccentBaseHeight                =    0,
+            AccentBaseDepth                 =   30,
+            RadicalDegreeBottomRaisePercent =   60,
+            RadicalKernAfterDegree          = -500,
+            RadicalRuleThickness            =   64, -- 70 in font
+            DelimiterPercent                =   90,
+            DelimiterShortfall              =  400,
+            DisplayOperatorMinHeight        = 1800, -- 1333 in font
         },
         tweaks = {
             aftercopying = {
@@ -42,7 +48,7 @@ return {
                             topleft     = -0.2,
                          -- bottomleft  =  0,
                          -- topright    =  0,
-                            bottomright =  -0.2,
+                            bottomright = -0.2,
                        },
                     },
                 },
@@ -76,6 +82,6 @@ return {
         -- experimental fixes for mkiv:
         --
         dimensions = dimensions,
-        kerns = kerns,
+        kerns      = kerns,
     },
 }

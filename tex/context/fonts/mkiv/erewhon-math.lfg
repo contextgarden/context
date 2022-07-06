@@ -1,4 +1,4 @@
--- this file might go away and is for experiments only
+-- This file might go away and is for experiments only.
 
 return {
     name = "erewhon-math",
@@ -8,10 +8,16 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            NoLimitSupFactor =   0,
-            NoLimitSubFactor = 900,
-            AccentBaseHeight = 0,
-            AccentBaseDepth = 60,
+            NoLimitSupFactor                =    0,
+            NoLimitSubFactor                =  900,
+            AccentBaseHeight                =    0,
+            AccentBaseDepth                 =   60,
+            RadicalDegreeBottomRaisePercent =   55,
+            RadicalKernAfterDegree          = -600,
+            RadicalRuleThickness            =   45, -- 55 in font
+            DelimiterPercent                =   90,
+            DelimiterShortfall              =  400,
+         -- DisplayOperatorMinHeight        = 1800, -- 1300 in font (one size)
         },
         tweaks = {
             aftercopying = {
@@ -44,7 +50,7 @@ return {
                     tweak = "addrules",
                 },
             },
-        },      
+        },
         bigslots = {
             1, 2, 3, 4
         },

@@ -1034,8 +1034,8 @@
 \definehspace [\v!default] [\spaceamount]
 \definehspace [\v!none]    [\zeropoint]
 
-%D Taken from Taco's math module (cq. \AMS\ macros), but
-%D adapted to \type {\hspace}:
+%D Taken from Taco's math module (cq. \AMS\ macros), but %D adapted to \type
+%D {\hspace}:
 
 \permanent\protected\def\textormathspace         #1#2#3{\ifmmode\mskip#1#2\else\kern #1\hspaceamount\empty{#3}\fi\relax}
 \permanent\protected\def\textormathspacecommand  #1#2#3{\ifmmode\mskip#1#2\else#3\fi\relax}

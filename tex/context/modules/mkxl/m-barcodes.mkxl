@@ -31,10 +31,13 @@
 \continueifinputfile{m-barcodes.mkxl}
 
 \starttext
-    \startTEXpage
-        \barcode[type=isbn,text=978-9490688011]
-        \blank
-        \barcode[type=isbn,text=9780500518724]
+    \startTEXpage[offset=1dk]
+        \startcombination[2*2]
+            {\barcode[type=isbn,text=978-9490688011,width=3cm]} {}
+            {\barcode[type=isbn,text=9780500518724,width=3cm]}  {}
+            {\barcode[type=datamatrix,text=whatever,width=3cm,option=--square]} {}
+            {\barcode[type=maxicode,text=whatever,width=3cm]} {}
+        \stopcombination
     \stopTEXpage
 \stoptext
 

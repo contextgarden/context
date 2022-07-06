@@ -347,7 +347,7 @@ tasks.new {
     templates = templates,
 }
 
--- -- alignment -- --
+-- -- alignment -- -- gets temp node ! (currently as that might change)
 
 tasks.new {
     name      = "alignments",
@@ -370,7 +370,7 @@ local tonode = nodes.nuts.tonode
 
 %localize%
 
-return function(head,attr,preamble)
+return function(head,where,attr,preamble)
     local nuthead     = tonut(head)
     local nutattr     = tonut(attr)
     local nutpreamble = tonut(preamble)
@@ -380,19 +380,19 @@ end
 ]],
 
 step = [[
-    %action%(head,attr,preamble)
+    %action%(head,where,attr,preamble)
 ]],
 
 nut  = [[
-    %action%(nuthead,nutattr,nutpreamble)
+    %action%(nuthead,where,nutattr,nutpreamble)
 ]],
 
 nohead = [[
-    %action%(head,attr,preamble)
+    %action%(head,where,attr,preamble)
 ]],
 
 nonut = [[
-    %action%(nuthead,nutattr,nutpreamble)
+    %action%(nuthead,where,nutattr,nutpreamble)
 ]],
 
     }

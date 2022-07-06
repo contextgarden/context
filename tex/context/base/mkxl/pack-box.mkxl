@@ -54,7 +54,7 @@
 \mutable\let\currentanchor\empty
 
 \permanent\tolerant\protected\def\defineanchor[#1]#*[#2]#*[#3]#*[#4]% name targetlayer layersetting framedsetting
-  {\setvalue{\??anchor#1}{\pack_anchors_process_defined{#2}{#3}{#4}}}
+  {\defcsname\??anchor#1\endcsname{\pack_anchors_process_defined{#2}{#3}{#4}}}
 
 \let\pack_anchors_process_defined_indeed\gobbletwooptionals
 
@@ -228,7 +228,7 @@
 
 \installcorenamespace{collectorcorners}
 
-\setvalue{\??collectorcorners\v!middle}%
+\defcsname\??collectorcorners\v!middle\endcsname
   {\ifdim\d_pack_layers_x_size>\zeropoint
       \advance\d_pack_layers_x_position.5\d_pack_layers_x_size
     \fi
@@ -236,13 +236,13 @@
       \advance\d_pack_layers_y_position.5\d_pack_layers_y_size
     \fi}
 
-\setvalue{\??collectorcorners\v!bottom}%
+\defcsname\??collectorcorners\v!bottom\endcsname
   {\ifdim\d_pack_layers_y_size>\zeropoint
      \advance\d_pack_layers_y_position-\d_pack_layers_y_size
      \d_pack_layers_y_position-\d_pack_layers_y_position
    \fi}
 
-\setvalue{\??collectorcorners\v!right}%
+\defcsname\??collectorcorners\v!right\endcsname
   {\ifdim\d_pack_layers_x_size>\zeropoint
      \advance\d_pack_layers_x_position-\d_pack_layers_x_size
      \d_pack_layers_x_position-\d_pack_layers_x_position
@@ -535,18 +535,18 @@
 
 \installcorenamespace{bleedinglocation}
 
-\setvalue{\??bleedinglocation  t}{\settrue\c_pack_boxes_t\scratchhoffset\zeropoint}
-\setvalue{\??bleedinglocation  b}{\settrue\c_pack_boxes_b\scratchhoffset\zeropoint}
-\setvalue{\??bleedinglocation  l}{\settrue\c_pack_boxes_l\scratchvoffset\zeropoint}
-\setvalue{\??bleedinglocation  r}{\settrue\c_pack_boxes_r\scratchvoffset\zeropoint}
-\setvalue{\??bleedinglocation bl}{\settrue\c_pack_boxes_l\settrue\c_pack_boxes_b}
-\setvalue{\??bleedinglocation lb}{\settrue\c_pack_boxes_l\settrue\c_pack_boxes_b}
-\setvalue{\??bleedinglocation br}{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_b}
-\setvalue{\??bleedinglocation rb}{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_b}
-\setvalue{\??bleedinglocation tl}{\settrue\c_pack_boxes_l\settrue\c_pack_boxes_t}
-\setvalue{\??bleedinglocation lt}{\settrue\c_pack_boxes_l\settrue\c_pack_boxes_t}
-\setvalue{\??bleedinglocation tr}{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_t}
-\setvalue{\??bleedinglocation rt}{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_t}
+\defcsname\??bleedinglocation  t\endcsname{\settrue\c_pack_boxes_t\scratchhoffset\zeropoint}
+\defcsname\??bleedinglocation  b\endcsname{\settrue\c_pack_boxes_b\scratchhoffset\zeropoint}
+\defcsname\??bleedinglocation  l\endcsname{\settrue\c_pack_boxes_l\scratchvoffset\zeropoint}
+\defcsname\??bleedinglocation  r\endcsname{\settrue\c_pack_boxes_r\scratchvoffset\zeropoint}
+\defcsname\??bleedinglocation bl\endcsname{\settrue\c_pack_boxes_l\settrue\c_pack_boxes_b}
+\defcsname\??bleedinglocation lb\endcsname{\settrue\c_pack_boxes_l\settrue\c_pack_boxes_b}
+\defcsname\??bleedinglocation br\endcsname{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_b}
+\defcsname\??bleedinglocation rb\endcsname{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_b}
+\defcsname\??bleedinglocation tl\endcsname{\settrue\c_pack_boxes_l\settrue\c_pack_boxes_t}
+\defcsname\??bleedinglocation lt\endcsname{\settrue\c_pack_boxes_l\settrue\c_pack_boxes_t}
+\defcsname\??bleedinglocation tr\endcsname{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_t}
+\defcsname\??bleedinglocation rt\endcsname{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_t}
 
 \mutable\let\currentbleedposition\empty
 \mutable\let\currentpageposition \empty

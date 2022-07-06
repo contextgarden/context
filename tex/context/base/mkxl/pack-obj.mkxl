@@ -62,7 +62,28 @@
 
 %D We can get subtle differences in boundingboxes but both methods work ok.
 
+% How useful is this ... delayed but refered objects .. messy concept.
+%
+% \def\InitIt{%
+%     \c_pack_objects_delay\plusone
+%     \setobject{test}{1}\hbox{test me 1}
+%     \c_pack_objects_delay\zerocount
+% }
+%
+% \def\GetIt{%
+%     \c_pack_objects_delay\plusone
+%     \getobject{test}{1}
+%     \c_pack_objects_delay\zerocount
+% }
+%
+% \def\SetIt{%
+%     \c_pack_objects_delay\plustwo
+%     \setobject{test}{1}\hbox{\bf HERE}% we cannot have interactivity in xforms
+%     \c_pack_objects_delay\zerocount
+% }
+
 \newconstant\c_pack_objects_offset_mode % 0=tex 1=box
+\newconstant\c_pack_objects_delay       % 0=immediate 1=delay
 
 \protected\def\pack_objects_set_yes#1#2%
   {\ifcase\c_pack_objects_offset_mode
@@ -74,7 +95,12 @@
    \else
      \pack_objects_package_nop\nextbox
    \fi
-   \clf_registerreferencedobject{#1}{#2}\b_pack_objects\d_pack_objects_offset\c_pack_objects_offset_mode
+   \clf_registerreferencedobject
+     {#1}{#2}%
+     \b_pack_objects
+     \d_pack_objects_offset
+     \c_pack_objects_offset_mode
+     \c_pack_objects_delay
    \synctexresume
    \endgroup}
 
@@ -88,7 +114,12 @@
    \else
      \pack_objects_package_nop\nextbox
    \fi
-   \clf_registerobject{#1}{#2}\b_pack_objects\d_pack_objects_offset\c_pack_objects_offset_mode
+   \clf_registerobject
+     {#1}{#2}%
+     \b_pack_objects
+     \d_pack_objects_offset
+     \c_pack_objects_offset_mode
+     \c_pack_objects_delay
    \synctexresume
    \endgroup}
 

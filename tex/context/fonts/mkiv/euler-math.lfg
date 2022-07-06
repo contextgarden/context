@@ -7,6 +7,10 @@ return {
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     mathematics = {
+        parameters = {
+            DelimiterPercent                 =  901,
+            DelimiterShortfall               =  500,
+        },
         tweaks = {
             aftercopying = {
                 {

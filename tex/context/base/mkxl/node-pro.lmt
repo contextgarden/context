@@ -143,8 +143,9 @@ do
 
     local actions = tasks.actions("alignments")
 
-    function processors.alignment_filter(head,attr,preamble)
-        actions(head,attr,preamble)
+    function processors.alignment_filter(head,where,attr,preamble)
+        -- todo: add timing
+        actions(head,where,attr,preamble)
     end
 
     callbacks.register("alignment_filter", processors.alignment_filter, "things done with alignments")

@@ -1149,6 +1149,15 @@ experience. \footnote {Whenever I look at (my) old (math) school books I realize
 that Don Knuth had very good reasons to come up with \TEX\ and, it being hard to
 beat, \TEX\ still sets the standard!}
 
+As we mention class specific options, we also need to mention the special case
+where we have for instance simple formulas like single atoms (for instance
+digits) are preceded by a sign (binary). These special spacing cases are handled
+by a lookahead flag that can be set \typ {\setmathoptions <class>}, like the
+slack flags. More options might become available in due time. When set the
+lookahead will check for the automatically injected end class atom and use that
+for spacing when found. The mentioned lookahead is one of the hard coded
+heuristics in the traditional engine but here we need to explicitly configure it.
+
 \stopsubject
 
 \startsubject[title=Ghosts]
@@ -1770,6 +1779,232 @@ look again at this.
 
 \stopsubject
 
+\startsubject[title=Normalization]
+
+Once we had all these spacing related features upgraded it was time to move to
+other aspects math typesetting. Most of that is not handled in the engine but at
+the macro level. Examples of this are making sure that math spacing obeys the
+rules across alignment cells, breaking long formulas into lines with various
+alignment schemes. The first is accommodated by using the primitives that set the
+states at the beginning and end of a formula so that is definitely something that
+the engine facilitates. The second was already possible in \MKIV\ but is somewhat
+more transparent now by using tagged boundary nodes.
+
+But for this summary we stick to discussing the more low level features and where
+most of what we discussed here concerns horizontal spacing we also have some
+vertical magic like the mentioned scaled fences and operators but they sort of
+behave as expected given the traditional \TEX\ approach. We have some more:
+
+\startbuffer
+\definemathradical[esqrt][sqrt][height=\maxdimen,depth=\maxdimen]
+\definemathradical[ssqrt][sqrt][height=3ex,depth=2ex]
+
+\def\TestSqrt#1%
+  {test $ #1{x} + #1{\sin(x)} $ test\quad
+   test $ #1{x} + #1{\sin(x)} + #1{\frac{1}{x}} $ test\quad
+   test $ #1{x} + #1{x^2} $ test\quad
+   test $ \left(#1{x} + #1{x^2} \right) $ test\par}
+
+\TestSqrt \sqrt  \blank
+\TestSqrt \esqrt \blank
+\TestSqrt \ssqrt \blank
+\stopbuffer
+
+\typebuffer \getbuffer
+
+In the above example you see that square roots can be made to adapt themselves to
+other such roots. For this we had to add an additional pass. Originally there are
+just two passes: a first typesetting pass where the maximum height and depth are
+collected so that in the second pass the fences can be generated and injected.
+That second pass also handles the spacing and penalties. In \LUAMETATEX\ we now
+have (1) radical body typesetting, (2) radical typesetting, (3) atom typesetting
+with height and depth analysis, (4) fence typesetting, and finally (5) inject
+spacing, penalties, remove slack, etc.
+
+In the examples above we set the height and depth and these are passed by
+keywords to the radical primitive (most atoms and math structures accept keywords
+that control rendering). Here the special values \type {\maxdimen} signal that we
+have to make radicals of equal height and depth.
+
+In \MKII\ we had ways to snap formulas so that we got consistent line spacing.
+For a while I wondered if the engine could help with that but in the end no
+specific engine features are needed, but is is definitely an area that I keep an
+eye on because consistent spacing is important. After all one has to draw aline
+somewhere and we always have the \LUA\ callback mechanism available.
+
+\stopsubject
+
+\startsubject[title=More goodies]
+
+This summary will never be complete because we keep improving the rendering of
+math. For instance, when Mikael checked some less used math alphabets of Latin
+Modern and Bonum, as part of the goodie file completion, we were a bit horrified
+by the weird top accent anchoring, inconsistent dimensions and stale italic
+correction present in some glyphs. For instance there was a italic correction
+after an upright blackboard lowercase \quote {f}, the upright digits had somewhat
+random top accent anchors, and due to the lack of granularity in for instance
+wide hats, characters that are often seen together got inconsistent wide hats.
+Also clashing with scripts was possible. All this resulted in yet another bunch
+of features:
+
+\startitemize
+\startitem
+    In the goodie files we added efficient options to remove anchors from
+    alphabets (or individual characters).
+\stopitem
+\startitem
+    In the goodie files we added similar options to remove italic correction.
+\stopitem
+\startitem
+    Characters got a few extra fields: margins that can be used to cheat with
+    dimensions so that we can get more consistent wide accents.
+\stopitem
+\startitem
+    The engine also got the possibility to compensate for accents when
+    superscripts need to be anchored (by diminishing the height of accents as
+    well as via an offsets).
+\stopitem
+\stopitemize
+
+We expect to add (and use) some more options like this when we run into other
+persistent issues. For sure there are some already that are not discussed here.
+Of course one can argue why we spend time on this: in 15 years of \UNICODE\ math
+usage in the \TEX\ community no one ever bothered about a wide hat over the
+digit~7 and no one wondered about the bad spacing after a lowercase blackboard~f,
+but as we go on we do run into these phenomena and it has become a bit of an
+obsession to get it all right. \footnote {Of course all this puts the usual
+bashing of Microsoft Word by users in a different perspective: limited control in
+the \TEX\ engine, faulty fonts that come with \TEX\ distributions, lack of
+testing and quality control, and probably the believe that all gets done well
+automatically plays a role here.}
+
+By closely looking at default positioning of accents on top of characters Mikael
+noticed that the anchor points are actually always in the middle of the topmost
+left and right points of shapes. It looks like these points are calculates
+automatically and therefore you end up with an anchor on top of the highest part
+of the seven in Latin Modern Serif but in the middle of a seven with a flat top.
+You also get anchors at the top of the vertical line in b, d, and on the sticky
+bit of the g. It is a good example of being careful with automating font design.
+In our case, removing most anchors and adding a few later on was the solution.
+\footnote {In the original fonts and traditional \TEX\ engine a kerning pair
+between a so called skew char and the character at hand is used.}
+
+\stopsubject
+
+\startsubject[title=Untold stories]
+
+There are of course more features but not all make sense to discuss here. For instance,
+all hard coded properties are now configurable. Take for instance:
+
+\startbuffer
+\Umathsuperscriptvariant\textstyle  1
+\Umathsubscriptvariant  \textstyle  1
+
+$ 1_2^3 \quad {\scriptstyle 1_2^3} \quad {\displaystyle 1_2^3}$
+\stopbuffer
+
+\typebuffer
+
+This gives us:
+
+\startlinecorrection
+\scale[scale=3000]{\getbuffer}
+\stoplinecorrection
+
+Here the number refers to one of the build in variants, that themselves are a
+range of styles. In the next table the narrow variants are cramped:
+
+\def\Cramped#1{{\glyphyscale\numexpr6*\glyphyscale/10\relax#1}}
+
+\starttabulate[|c|l|c|c|c|c|c|c|c|c|]
+\BC 0 \BC normal \NC
+    D  \NC \Cramped{D}  \NC
+    T  \NC \Cramped{T}  \NC
+    S  \NC \Cramped{S}  \NC
+    SS \NC \Cramped{SS} \NC
+\NR
+\BC 1 \BC cramped \NC
+    \Cramped{D}  \NC \Cramped{D}  \NC
+    \Cramped{T}  \NC \Cramped{T}  \NC
+    \Cramped{S}  \NC \Cramped{S}  \NC
+    \Cramped{SS} \NC \Cramped{SS} \NC
+\NR
+\BC 2 \BC subscript \NC
+    \Cramped{S}  \NC \Cramped{S}  \NC
+    \Cramped{S}  \NC \Cramped{S}  \NC
+    \Cramped{SS} \NC \Cramped{SS} \NC
+    \Cramped{SS} \NC \Cramped{SS} \NC
+\NR
+\BC 3 \BC superscript \NC
+    S  \NC S  \NC
+    S  \NC S  \NC
+    SS \NC SS \NC
+    SS \NC SS \NC
+\NR
+\BC 4 \BC small \NC
+    S  \NC S  \NC
+    S  \NC S  \NC
+    SS \NC SS \NC
+    SS \NC SS \NC
+\NR
+\BC 5 \BC smaller \NC
+    S  \NC \Cramped{S}  \NC
+    S  \NC \Cramped{S}  \NC
+    SS \NC \Cramped{SS} \NC
+    SS \NC \Cramped{SS} \NC
+\NR
+\BC 6 \BC numerator \NC
+    S  \NC \Cramped{S}  \NC
+    S  \NC \Cramped{S}  \NC
+    SS \NC \Cramped{SS} \NC
+    SS \NC \Cramped{SS} \NC
+\NR
+\BC 7 \BC denominator \NC
+    \Cramped{S}  \NC \Cramped{S}  \NC
+    \Cramped{S}  \NC \Cramped{S}  \NC
+    \Cramped{SS} \NC \Cramped{SS} \NC
+    \Cramped{SS} \NC \Cramped{SS} \NC
+\NR
+\BC 8 \BC double (superscript) \NC
+    S  \NC \Cramped{S}  \NC
+    S  \NC \Cramped{S}  \NC
+    SS \NC \Cramped{SS} \NC
+    SS \NC \Cramped{SS} \NC
+\NR
+\stoptabulate
+
+If you want you can change these values but of course we're then basically
+changing some of logic behind math rendering and for sure Don Knuth had good
+reasons for these defaults.
+
+Another untold story relates to multi scripts. When a double script is seen,
+\TEX\ injects an ordinary recovery atom, issues an error message, and when told
+so just continues. In order to always continue \LUAMETATEX\ introduces a mode
+variable that default to minus one, as negative values will trigger the error.
+Zero of positive values are interpreted as a class and bypass the error. Here is
+an example of usage:
+
+\startbuffer
+\mathdoublescriptmode
+  "\tohexadecimal\mathexperimentalcode % experimental class
+   \tohexadecimal\mathexperimentalcode % we have to set both left and right
+
+\setmathspacing \mathexperimentalcode \mathexperimentalcode \allmathstyles 20mu
+\setmathspacing \mathordinarycode     \mathexperimentalcode \allmathstyles 20mu
+
+$x^1_2^3_4^^5__6^^7__8$
+\stopbuffer
+
+\typebuffer
+
+We get this:
+
+\startlinecorrection
+\scale[scale=3000]{\getbuffer}
+\stoplinecorrection
+
+\stopsubject
+
 \startsubject[title=Final words]
 
 One can argue that all these new features can make a document look better. But
@@ -1791,14 +2026,30 @@ handle math. One can also wonder in what way massive remote editing as well as
 collaborative working on documents make things better. It probably becomes less
 personal. At meetings and platforms \TEX\ users like to bash the alternatives but
 in the end they are part of the same landscape and when it comes to math they
-dominate. Maybe there is less to bragg about then we like: just do your thing and
+dominate. Maybe there is less to brag about then we like: just do your thing and
 try to do it as good as possible. Rely on your eyes and pay attention to the
 details, which is possible because the engine provided the means. The previous
 text shows a few things to pay attention to.
 
-Once all the basics that have to do with proper dimensions, spacing, penalties
-and logic are dealt with, we will move on to the more high level constructs. So,
-expect more.
+Now that all the basics that have to do with proper dimensions, spacing,
+penalties and logic are dealt with, we moved on to the more high level
+constructs. We also haven't applied some features in the \CONTEXT\ code base yet
+and are now experimenting with the more high level constructs. For instance the
+frequently used math alignment mechanism has been overhauled to support advanced
+inter atom spacing across rows, and in practice one will now more often not even
+use this alignment mechanism and use the alignment features in multi|-|line
+display math, if only because they offer advanced annotation. As a nice side
+effect some of the mechanism that we use for this (like the improved \type
+{\vadjust} primitive engine feature) also became somewhat more powerful in
+regular text mode and we'll see where that brings us.
+
+Given the time we spend on this and given the numerous new features it will take
+a while before all that got added to the engine will be documented. Of course the
+usage in \CONTEXT\ also serves as documentation. This is not really a problem
+because most users will happily rely on the goodie files being okay and
+maintained, and usage other than \CONTEXT\ is unlikely to use these new features,
+if only because it will break away from the established long term standards and
+habits.
 
 \stopsubject
 
@@ -1900,3 +2151,29 @@ expect more.
 %     $ \eq \not $\par % gets collapsed
 
 % example:  a_1=b_1+c_1 (for spacing)
+
+
+% \startbuffer
+% We test \dorecurse{20}{$x^{#1}$ and $\frac{1}{#1}^x$ and $\sqrt[#1]{x}$ and }that's it.
+% \stopbuffer
+%
+% \startpostponing
+% \startcombination[nx=2,ny=3,location=top]
+%     {\ruledvbox{\hsize.45\textwidth \setupformula[snap=no]                 \showboxes            \enabletrackers [math.snapping=darkred] \getbuffer}} {}
+%     {\ruledvbox{\hsize.45\textwidth \setupformula[snap=no]                                       \disabletrackers[math.snapping]         \getbuffer}} {}
+%     {\ruledvbox{\hsize.45\textwidth \setupformula[snap=yes,snapstep=small] \showboxes \darkgreen \enabletrackers [math.snapping=darkred] \getbuffer}} {}
+%     {\ruledvbox{\hsize.45\textwidth \setupformula[snap=yes,snapstep=small]            \darkgreen \disabletrackers[math.snapping]         \getbuffer}} {}
+%     {\ruledvbox{\hsize.45\textwidth \setupformula[snap=yes,snapstep=big]   \showboxes \darkblue  \enabletrackers [math.snapping=darkred] \getbuffer}} {}
+%     {\ruledvbox{\hsize.45\textwidth \setupformula[snap=yes,snapstep=big]              \darkblue  \disabletrackers[math.snapping]         \getbuffer}} {}
+% \stopcombination
+% \stoppostponing
+
+
+% https://yurichev.com/mirrors/knuth1989.pdf .. DEK:
+%
+% I too had trouble with numerators and denominators: change no. 229 increased the
+% amount of space surrounding the bar line in displayed fractions, and I should have
+% made a similar change to fractions in text. (Page 68 of the new Volume 2 turned out
+% to be extremely ugly because of badly spaced fractions.) T~x82 was able to improve
+% the situation because of my experiences with T~x78, but even today I must take
+% special precautions in my TEX documents to get certain square roots to look right.

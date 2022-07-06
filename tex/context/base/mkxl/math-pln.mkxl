@@ -17,120 +17,34 @@
 
 \unprotect
 
-% we need proper unicode:
+% We need proper unicode:
 
 \def\relbar{\mathrel{\smash-}} % - has the same height as + .. no clue what this refers to
 
-% might change
+%D This might change:
 
 \permanent\protected\def\hrulefill{\leaders\hrule\hfill}
-%protected\def\dotfill  {\cleaders\hbox{\normalstartimath\mathsurround\zeropoint\mkern1.5mu.\mkern1.5mu\normalstopimath}\hfill}
+%permanent\protected\def\dotfill  {\cleaders\hbox{\normalstartimath\mathsurround\zeropoint\mkern1.5mu.\mkern1.5mu\normalstopimath}\hfill}
 
-% will move .. not used anyway
+%D These need an update:
 
-\permanent\def\oalign#1%
-  {\leavevmode % plain tex uses this
-   \vtop
-     {\baselineskip\zeroskip
-      \lineskip.25\exheight
-      \ialign{\alignmark\alignmark\crcr#1\crcr}}}
+\permanent\protected\def\bmod
+  {\nonscript
+   \mskip-\medmuskip
+   \mkern5mu
+   \mfunction{mod}%
+   \penalty900
+   \mkern5mu
+   \nonscript
+   \mskip-\medmuskip}
 
-\permanent\def\ooalign % chars over each other
-  {\lineskiplimit-\maxdimen
-   \oalign}
+\permanent\protected\def\pmod#1%
+  {\allowbreak
+   \mkern18mu
+   (\mfunction{mod}\mskip\medmuskip#1)}
 
-% needs checking
-
-\permanent\protected\def\choose{\atopwithdelims()} % used in korean test file, has to go
-%permanent\protected\def\brack {\atopwithdelims[]}
-%permanent\protected\def\brace {\atopwithdelims\{\}}
-
-% needs checking
-
-\permanent\protected\def\buildrel#1\over#2%
-  {\mathrel{\mathop{\kern\zeropoint#2}\limits^{#1}}}
-
-    \permanent\protected\def\bmod
-      {\nonscript
-       \mskip-\medmuskip
-       \mkern5mu
-       \mfunction{mod}%
-       \penalty900
-       \mkern5mu
-       \nonscript
-       \mskip-\medmuskip}
-
-    \permanent\protected\def\pmod#1%
-      {\allowbreak
-       \mkern18mu
-       (\mfunction{mod}\mskip\medmuskip#1)}
-
-\permanent\protected\def\cases#1%
-  {\left\{%
-   \mskip\thinmuskip
-   \vcenter
-     {\normalbaselines
-      \mathsurround\zeropoint
-      \ialign{%
-        \normalstartimath\alignmark\alignmark\hfil\normalstopimath
-        \aligntab
-        \quad\alignmark\alignmark\hfil
-        \crcr
-        #1%
-        \crcr}}%
-   \right.}
-
-\permanent\protected\def\matrix#1%
-  {\emptyhbox
-   \mskip\thinmuskip
-   \vcenter
-     {\normalbaselines
-      \mathsurround\zeropoint
-      \ialign{%
-        \hfil\normalstartimath\alignmark\alignmark\normalstopimath\hfil
-        \aligntab
-        \aligntab
-        \quad\hfil\normalstartimath\alignmark\alignmark\normalstopimath\hfil
-        \crcr
-        \mathstrut
-        \crcr
-        \noalign{\kern-\baselineskip}
-        #1\crcr
-        \mathstrut
-        \crcr
-        \noalign{\kern-\baselineskip}}}%
-   \mskip\thinmuskip}
-
-\permanent\protected\def\pmatrix#1%
-  {\left(\matrix{#1}\right)}
-
-\permanent\protected\def\math_openup
-  {\afterassignment\math_openup_indeed\scratchdimen}
-
-\aliased\let\math_closeup\relax
-
-\def\math_openup_indeed
-  {\enforced\permanent\protected\edef\math_closeup
-     {\lineskip     \the\lineskip
-      \baselineskip \the\baselineskip
-      \lineskiplimit\the\lineskiplimit
-      \relax}%
-   \advance \lineskip      \scratchdimen
-   \advance \baselineskip  \scratchdimen
-   \advance \lineskiplimit \scratchdimen}
-
-\permanent\protected\def\openup {\math_openup } % the low level ones are used elsewhere
-\permanent\protected\def\closeup{\math_closeup} % the low level ones are used elsewhere
-
-\permanent\protected\def\displaylines#1%
-  {\the\mathdisplayaligntweaks
-   \tabskip\zeroskip
-   \halign
-     {\hbox to \displaywidth{%
-        \normalstartimath\tabskip\zeroskip\everycr\emptytoks\hfil\displaystyle\alignmark\alignmark\hfil\normalstopimath}\crcr
-        #1\crcr}}
-
-%D This comes from plain but I gave it a \CONTEXT\ touch:
+%D This comes from plain but I gave it a \CONTEXT\ touch. When Mikael and I are in
+%D the mood we will redo them in a more modern way.
 
 \permanent\def\math_border_NC_indeed
   {\enforced\global\def\math_border_NC{\aligntab}}

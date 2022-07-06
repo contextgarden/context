@@ -181,15 +181,30 @@ local seed = nil
 
 local default_tolerance = 131/65536.0 -- a little below 0.001 * 0x7FFF/0x4000
 local bend_tolerance    = default_tolerance
+local move_tolerance    = default_tolerance
 
 ----- bend_tolerance = 10/2000
+----- move_tolerance = bend_tolerance
 
 function metapost.setbendtolerance(t)
     bend_tolerance = t or default_tolerance
 end
+function metapost.setmovetolerance(t)
+    move_tolerance = t or default_tolerance
+end
+function metapost.settolerance(t)
+    bend_tolerance = t or default_tolerance
+    move_tolerance = t or default_tolerance
+end
 
 function metapost.getbendtolerance()
     return bend_tolerance
+end
+function metapost.getmovetolerance()
+    return move_tolerance
+end
+function metapost.gettolerance(t)
+    return bend_tolerance, move_tolerance
 end
 
 function metapost.load(name,method)
@@ -202,19 +217,19 @@ function metapost.load(name,method)
             seed = seed % 4096
         end
     end
---     local loghandler =
     method = method and methods[method] or "scaled"
     local mpx, terminal = new_instance {
-        tolerance   = bend_tolerance,
-        mathmode    = method,
-        runscript   = metapost.runscript,
-        runinternal = metapost.runinternal,
-        scripterror = metapost.scripterror,
-        maketext    = metapost.maketext,
-        handlers    = {
-            log     = metapost.newlogger(),
-         -- warning = function(...) end,
-         -- error   = function(...) end,
+        bendtolerance   = bend_tolerance,
+        movetolerance   = move_tolerance,
+        mathmode        = method,
+        runscript       = metapost.runscript,
+        runinternal     = metapost.runinternal,
+        scripterror     = metapost.scripterror,
+        maketext        = metapost.maketext,
+        handlers        = {
+            log         = metapost.newlogger(),
+         -- warning     = function(...) end,
+         -- error       = function(...) end,
         },
     }
     report_metapost("initializing number mode %a",method)

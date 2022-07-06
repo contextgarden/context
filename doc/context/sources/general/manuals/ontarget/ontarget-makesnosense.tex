@@ -1,0 +1,213 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-makesnosense
+
+\environment ontarget-style
+
+\startchapter[title={Not all makes sense}]
+
+The development of \CONTEXT\ is to a large extend driven by users with a wide
+variety of background and usage. I can safely say that much time spent on
+\CONTEXT\ qualifies as hobby (or maybe even more by curiosity). Of course I do
+use it myself but personally I never make advanced documents. I'm not a writer,
+nor an artist, nor a typesetter. I do like challenges so that's why we get
+mechanisms that can do tricky things and some stay sort of hidden because the
+practical usage is limited, although you will be surprised to see what users find
+in the source and use anyway. My colleague uses \CONTEXT\ for large scale, mostly
+complex and demanding \XML\ documents where one source is rendered in different
+ways with different parts used. Many features in \CONTEXT\ relate to workflows.
+
+I like to visualize things so that's part of the development cycle. I never start
+from some \quote {typographical} point of view, if only because in my experience
+much design is arbitrary and personal. The output should look okay on the
+average, and on reasonable simple documents there should be no need for manual
+intervention. I am quite willing to accept an occasional less optimal looking
+page and don't loose sleep over it. A next time, when a sentence gets added, it
+might be better and the problem can be moved further down the pages. Also, given
+what one runs into nowadays the average job that \TEX\ does is pretty good (but
+users can of course mess up). It is boundary conditions that determine in what
+direction a style or solution goes. The more abstract one argues about
+typesetting and possible solutions, the less interested I often become simply
+because there are no perfect solutions for every case. There are always those
+last few \percent\ points that need manual intervention or some trickery and most
+users get that. It is also what makes using \TEX\ fun.
+
+As mentioned, the \TEX\ engine does a pretty good job on average but that didn't
+prevent me from extending it: the mix of \TEX, \METAPOST\ and \LUA\ is even more
+fun. But what is the development agenda there? Again, it is very much driven by
+what users want me to solve, but there's also the curiosity element. A recent
+example of extending is the math sub system. It was already made more
+configurable and some features where added but now it is really flexible. This
+was doable because the heuristics in the engine are clear. It was could be done
+because I had a dedicated partner in this journey. \footnote {In another chapter
+I summarize what Mikael Sundqvist and I did in this context.} Other parts are
+more difficult but have nevertheless been extended, to mention a few: alignments,
+par building and page building. However the last two use some heuristics that are
+hard to make more flexible. For instance the badness calculation combined with
+the loop that tries to find breakpoints is already quite good and the somewhat
+special values involved in the calculations have been optimized stepwise by Don
+Knuth during the development of \TEX.
+
+Does that mean that one cannot add some options to influence that tuning? For sure
+one can. The source has this comment:
+
+\startquotation
+    When looking for optimal line breaks, \TEX\ creates a \quote {break node} for
+    each break that is {\em feasible}, in the sense that there is a way to end a line
+    at the given place without requiring any line to stretch more than a given
+    tolerance. A break node is characterized by three things: the position of the
+    break (which is a pointer to a \type {glue_node}, \type {math_node}, \type
+    {penalty_node}, or \type {disc_node}); the ordinal number of the line that will
+    follow this breakpoint; and the fitness classification of the line that has just
+    ended, i.e., \type {tight_fit}, \type {decent_fit}, \type {loose_fit}, or \type
+    {very_loose_fit}.
+\stopquotation
+
+The book {\TEX\ by Topic} (by Eijkhout) gives a good explanation of the way lines
+are broken so there is no need to go into detail here. The code involved is not
+that trivial anyway. The criteria for deciding what is bad are as follows:
+
+\starttabulate[|c|c|c|]
+\FL
+\BC verdict    \BC effect  \BC badness \NC \NR
+\ML
+\NC very loose \NC stretch \NC >= 100  \NC \NR
+\NC loose      \NC stretch \NC >= 13   \NC \NR
+\NC decent     \NC         \NC <= 12   \NC \NR
+\NC tight      \NC shrink  \NC >= 13   \NC \NR
+\LL
+\stoptabulate
+
+When the difference between two lines is more than one, they are considered to be
+visually incompatible. Then, if the badness of any line exceeds \type
+{pretolerance} a second pass is triggered, When \type {pretolerance} is negative
+the first pass is skipped. When the badness of any line exceeds \type {tolerance}
+a third pass is triggered and \type {emergencystretch} is used to make things fit.
+
+Where in traditional \TEX\ a lot of parsing, hyphenation, font handling and par
+building is combined, in \LUAMETATEX\ we always work with completely hyphenated
+and font readied lists. In traditional \TEX\ the first pass works on
+the original non|-|hyphenated lists.
+
+In the source there is an old note that one day I will play with a plugged in
+badness calculation but it also says that there might be a performance impact as
+well as all kind of unforeseen side effects because \TEX\ makes sure that the
+heuristics lead to values that don't result in overflow and such.
+
+Another note concerns more fitness values. Doing that will increase the runtime a
+little but on a modern machine that is not really an issue. Shortly after I
+upgraded my laptop to a somewhat newer one I decided to play with this and
+therefore any performance hit would go unnoticed anyway. The following snippet
+from the source shows the idea:
+
+\starttyping
+typedef enum fitness_value {
+    very_loose_fit, /*tex lines stretching more than their stretchability */
+    loose_fit,      /*tex lines stretching 0.5 to 1.0 of their stretchability */
+    semi_loose_fit,
+    decent_fit,     /*tex for all other lines */
+    semi_tight_fit,
+    tight_fit,      /*tex lines shrinking 0.5 to 1.0 of their shrinkability */
+    n_of_finess_values
+} fitness_value;
+\stoptyping
+
+This means that when we loop over \type {very_loose_fit} upto \type {tight_fit}
+we have two more classes to take into account: the semi ones. Playing with that
+and associating them with magic numbers quickly learned that we enter the area of
+\quote {random improvements}. You can render variants and because some will look
+better and others worse one can argue for any case. And as usual, once a user
+(unaware of what we are doing) looks at it, things like successive hyphens, wider
+spaces, rivers and such are seen as the main difference. Of course spacing is the
+direct result of this kind of messing, but because the effects are actually
+mostly noticeable on non|-|justified texts it then is the end|-|of|-|line spacing
+that influences the verdict. \footnote {When \HZ\ showed up in \PDFTEX\ we did
+experiments with random samples of its usage and \TEX ies at user group meetings
+and the results were such that one could only draw the conclusion that on the
+average a user has no clue if something is good or bad for what reason. The
+strong emphasis in the \TEX\ community on hyphenation makes that an eye|-|catching
+criterium. So having two in a successive lines even when there is really no
+better solution is what draws the attention and users then tend to think that
+what a survey is about is \quotation {The quality of hyphenation related to
+breaking paragraphs into lines.}}
+
+In the end this kind of extensions make little sense. One can of course play
+science and introduce all kind of imaginary cases where it might work but that is
+why I started this summary by explaining what drives developments: users and
+constraints. Playing science for the sake of it is pseudo science. And, as with
+much science related to typesetting (probably with the exception of Don's work)
+most has therefore little practical value.
+
+So, do we keep this feature or not? We actually do, if only to be able to
+demonstrate the fuzziness of this. We have an undocumented magic parameter:
+
+\starttyping
+\linebreakcriterium"0C0C0C63
+\stoptyping
+
+Actually the value is zero but when one of the four byte pairs is zero it will
+default to \type {"0C} (\number"0C) or \type {"63} (\number"63). The values
+concern \type {semitight}, \type {decent}, \type {semiloose}, and \type {loose}.
+After some trial and error I got to the examples on the next two pages. You need
+to zoom in to see the differences (the black one is the original). In setting used are:
+
+\starttabulate[|c|c|l|]
+\BC   \BC \type {\hsize} \BC \type {\setupalign}       \NC \NR
+\NC 1 \NC 12em           \NC normal, stretch, tolerant \NC \NR
+\NC 2 \NC 18em           \NC flushleft                 \NC \NR
+\stoptabulate
+
+As mentioned, one can look at specific expected properties and draw conclusions
+but when \TEX\ cannot find a good solution using its default, it is unlikely that
+alternative settings help you out, unless you do that on a per|-|paragraph basis.
+
+% run in default font and layout
+
+\startbuffer[lbc]
+\def\TestA#1#2#3%
+  {\switchtobodyfont[10pt]%
+   \ruledvtop
+     {\hsize#1\relax
+      \begingroup
+      \setupalign[#2]%
+      \linebreakcriterium"#3\relax
+      \samplefile{tufte}\par
+      \endgroup
+      \hpack to \hsize{\hss\infofont\setstrut\strut\black\string\linebreakcriterium="#3\hss}}}
+
+\def\TestB#1#2%
+  {\startTEXpage[offset=4dk]
+     \hbox \bgroup
+         {\black  \TestA{#1}{#2}{00000000}}\kern1ex
+         {\red    \TestA{#1}{#2}{00001C00}}\kern1ex
+         {\green  \TestA{#1}{#2}{00002C00}}\kern1ex
+         {\blue   \TestA{#1}{#2}{00003C00}}\kern1ex
+         {\cyan   \TestA{#1}{#2}{00004C00}}\kern1ex
+         {\magenta\TestA{#1}{#2}{00005C00}}
+     \egroup
+     \vskip1ex
+     \hbox \bgroup
+         \startoverlay {\TestA{#1}{#2}{00000000}}                                    \stopoverlay \kern1ex
+         \startoverlay {\TestA{#1}{#2}{00000000}} {\red    \TestA{#1}{#2}{00001C00}} \stopoverlay \kern1ex
+         \startoverlay {\TestA{#1}{#2}{00000000}} {\green  \TestA{#1}{#2}{00002C00}} \stopoverlay \kern1ex
+         \startoverlay {\TestA{#1}{#2}{00000000}} {\blue   \TestA{#1}{#2}{00003C00}} \stopoverlay \kern1ex
+         \startoverlay {\TestA{#1}{#2}{00000000}} {\cyan   \TestA{#1}{#2}{00004C00}} \stopoverlay \kern1ex
+         \startoverlay {\TestA{#1}{#2}{00000000}} {\magenta\TestA{#1}{#2}{00005C00}} \stopoverlay
+    \egroup
+   \stopTEXpage}
+
+\TestB{12em}{normal,stretch,tolerant}
+\TestB{18em}{flushleft}
+\stopbuffer
+
+\startpagemakeup[pagestate=start,doublesided=no,page=no]
+    \centerbox {\typesetbuffer[lbc][page=1,frame=on,height=\dimexpr\textwidth-2ex\relax,orientation=90]}
+\stoppagemakeup
+\startpagemakeup[pagestate=start,doublesided=no,page=no]
+    \centerbox {\typesetbuffer[lbc][page=2,frame=on,width=\dimexpr\textheight-2ex\relax,orientation=90]}
+\stoppagemakeup
+
+\stopchapter
+
+\stopcomponent
+

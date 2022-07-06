@@ -64,8 +64,12 @@
   {\ifempty\currentstructurereferenceprefix
      % nothing
    \orelse\ifx\currentstructurereferenceprefix\m_strc_references_prefix_yes
-     \global\advance\prefixcounter \plusone % temp here
-     \setupglobalreferenceprefix[\the\prefixcounter]%
+     \ifempty\currentstructurereference
+       \global\advance\prefixcounter \plusone % temp here
+       \setupglobalreferenceprefix[\the\prefixcounter]%
+     \else
+       \setupglobalreferenceprefix[\currentstructurereference]%
+     \fi
    \orelse\ifx\currentstructurereferenceprefix\m_strc_references_prefix_nop
      \setupglobalreferenceprefix[]%
    \else

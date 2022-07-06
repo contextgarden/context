@@ -379,7 +379,7 @@ local function backup(jobname,run,kind,filename)
             end
         end
         if validfile(filename) then
-            local tmpname = f_tempfile(jobname,kind,run or 1)
+            local tmpname = f_tempfile_i(jobname,kind,run or 1)
             report("copying %a into %a",filename,tmpname)
             file.copy(filename,tmpname)
         else

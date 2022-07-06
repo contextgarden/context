@@ -58,6 +58,9 @@
    \c!color=,
    \c!command=,
    \c!mathclass=,
+   \c!leftclass=\mathopencode,
+   \c!rightclass=\mathclosecode,
+   \c!middleclass=\mathmiddlecode,
    \c!leftsource=\zerocount,
    \c!middlesource=\zerocount,
    \c!rightsource=\mathfenceparameter\c!source,
@@ -141,14 +144,17 @@
    \s!axis
    \s!exact}
 
+\newconstant \c_math_fenced_class
+
 \def\math_fenced_common#1#2#3#4% \Uwhatever class symbol source
-  {\ifconditional\c_math_fenced_sized
+  {\c_math_fenced_class\mathfenceparameter#2\relax
+   \ifconditional\c_math_fenced_sized
    \orelse\ifconditional\c_math_fenced_level_mode
-     \ifnum#2=\mathopencode
+     \ifnum\c_math_fenced_class=\mathopencode
      % \hpack{\infofont<L:\number\c_math_fenced_level:\number\c_attr_mathsize>}%
        \integerdef\c_math_fenced_stack\c_attr_mathsize
        \push_macro_c_math_fenced_stack
-     \orelse\ifnum#2=\mathclosecode
+     \orelse\ifnum\c_math_fenced_class=\mathclosecode
        \pop_macro_c_math_fenced_stack
        \c_attr_mathsize\c_math_fenced_stack
      % \hpack{\infofont<R:\number\c_math_fenced_level:\number\c_attr_mathsize>}%
@@ -156,7 +162,7 @@
    \fi
    \edef\p_fence{#3}%
    \ifempty\p_fence
-     #1.\relax
+     \ifnum\c_math_fenced_class=\mathmiddlecode\else#1.\relax\fi
    \else
      \edef\p_factor   {\mathfenceparameter\c!factor}%
      \edef\p_size     {\mathfenceparameter\c!size}%
@@ -170,6 +176,9 @@
          \Uvextensible
        \else
          #1% \Uleft \Umiddle \Uleft
+        \ifx#1\Umiddle
+          nooverflow %
+        \fi
        \fi
      \orelse\ifx\p_factor\v!auto
        \ifconditional\c_math_fenced_level_mode
@@ -190,8 +199,10 @@
      \s!class
         \ifx\p_fence\v!none
           \mathghostcode
+        \orelse\ifempty\p_mathclass
+          \c_math_fenced_class
         \else
-          \ifempty\p_mathclass#2\else\p_mathclass\fi
+          \p_mathclass
         \fi
      \s!source
         \numexpr\namedboxanchor{\mathfenceparameter#4}\relax
@@ -209,14 +220,26 @@
 
 \def\math_fenced_left
   {\advance\c_math_fence_nesting\plusone
-   \math_fenced_common\Uleft\mathopencode\math_fenced_p_left\c!leftsource}
-
-\def\math_fenced_middle
-  {\math_fenced_common\Umiddle\mathmiddlecode\math_fenced_p_middle\c!middlesource}
+   \math_fenced_common\Uleft\c!leftclass\math_fenced_p_left\c!leftsource}
 
 \def\math_fenced_right
-  {\math_fenced_common\Uright\mathclosecode\math_fenced_p_right\c!rightsource
+  {\math_fenced_common\Uright\c!rightclass\math_fenced_p_right\c!rightsource
    \advance\c_math_fence_nesting\minusone}
+
+\def\math_fenced_middle_normal
+  {\math_fenced_common\Umiddle\c!middleclass\math_fenced_p_middle\c!middlesource}
+
+\def\math_fenced_middle_sized
+  {\settrue\c_math_fenced_sized
+   \math_fenced_middle_normal
+   \setfalse\c_math_fenced_sized}
+
+\appendtoks
+    \let\math_fenced_middle\math_fenced_middle_normal
+    \enforced\let\fence\math_fenced_direct
+\to \everymathatom
+
+\let\math_fenced_middle\math_fenced_middle_normal
 
 \def\math_fenced_p_left
   {\ifconditional\c_math_fenced_mirror
@@ -246,9 +269,12 @@
 \aliased\let\fence \relax
 \aliased\let\fenced\relax
 
+\protected\def\math_fenced_middle_common
+  {\math_fenced_middle} % redefined inside atom
+
 \protected\def\math_fenced_fenced_common
   {\startusemathstyleparameter\mathfenceparameter\c!mathstyle
-   \enforced\let\fence\math_fenced_middle}
+   \enforced\let\fence\math_fenced_middle_common}
 
 \protected\def\math_fenced_fenced_start#1%
   {\begingroup
@@ -299,6 +325,8 @@
    \settrue\c_math_fenced_sized
    \math_fenced_left
    \setfalse\c_math_fenced_sized
+   \let\math_fenced_middle\math_fenced_middle_sized
+ % \enforced\let\middle\math_fenced_middle_sized
    #1%
    \settrue\c_math_fenced_sized
    \math_fenced_right
@@ -342,6 +370,18 @@
      \math_fenced_fenced_stop\m_math_fenced_wrap
    \fi
    \endgroup}
+
+% for torture testing mikael sundqvist:
+%
+% \setupmathfence[brace][middle=124]
+%
+% \im{\fenced[brace]        {\vec{x}\in\reals^3\middle\vert \vec{x}\neq \vec{0}}}
+% \im{\fenced[brace]        {\vec{x}\in\reals^3\mid         \vec{x}\neq \vec{0}}}
+% \im{\fenced[brace][size=0]{\vec{x}\in\reals^3\fence       \vec{x}\neq \vec{0}}}
+
+\aliased\let\normalmid\mid
+
+\protected\def\mid{\ifcase\c_math_fence_nesting\normalmid\else\middle\vert\fi}
 
 % cases are defined in math-ali:
 
@@ -529,15 +569,15 @@
 \definemathfence [leftopeninterval]  [interval] [\c!left="2997,\c!right="2997]
 \definemathfence [rightopeninterval] [interval] [\c!left="2998,\c!right="2998]
 
-\immutable\protected\def\Linterval            {\math_fenced_fenced_start{interval}}
-\immutable\protected\def\Lointerval           {\math_fenced_fenced_start{openinterval}}
-\immutable\protected\def\Llointerval          {\math_fenced_fenced_start{leftopeninterval}}
-\immutable\protected\def\Lrointerval          {\math_fenced_fenced_start{rightopeninterval}}
+\immutable\protected\def\Linterval   {\math_fenced_fenced_start{interval}}
+\immutable\protected\def\Lointerval  {\math_fenced_fenced_start{openinterval}}
+\immutable\protected\def\Llointerval {\math_fenced_fenced_start{leftopeninterval}}
+\immutable\protected\def\Lrointerval {\math_fenced_fenced_start{rightopeninterval}}
 
-\immutable\protected\def\Rinterval            {\math_fenced_fenced_stop {interval}}
-\immutable\protected\def\Rointerval           {\math_fenced_fenced_stop {openinterval}}
-\immutable\protected\def\Rlointerval          {\math_fenced_fenced_stop {leftopeninterval}}
-\immutable\protected\def\Rrointerval          {\math_fenced_fenced_stop {rightopeninterval}}
+\immutable\protected\def\Rinterval   {\math_fenced_fenced_stop {interval}}
+\immutable\protected\def\Rointerval  {\math_fenced_fenced_stop {openinterval}}
+\immutable\protected\def\Rlointerval {\math_fenced_fenced_stop {leftopeninterval}}
+\immutable\protected\def\Rrointerval {\math_fenced_fenced_stop {rightopeninterval}}
 
 % \startformula
 % \left{ \frac{1}{a} \right}
@@ -570,9 +610,9 @@
   {\letcsname\??mathleft \normalmeaningless#1\endcsname#2%
    \letcsname\??mathright\normalmeaningless#3\endcsname#4}
 
-\def\math_unknown_left  {\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalleft  \nexttoken\fi}
-\def\math_unknown_right {\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalright \nexttoken\fi}
-\def\math_unknown_middle{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalmiddle\nexttoken\fi}
+\def\math_unknown_left  {\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\Uleft              \nexttoken\fi}
+\def\math_unknown_right {\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\Uright             \nexttoken\fi}
+\def\math_unknown_middle{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\Umiddle nooverflow \nexttoken\fi}
 
 \letcsname\??mathleft  \s!unknown\endcsname\math_unknown_left
 \letcsname\??mathright \s!unknown\endcsname\math_unknown_right
@@ -805,7 +845,7 @@
 \definemathcommand [Bigg] {\choosemathbig4}
 
 \definemathcommand [bigl]  [\s!open]     [one] {\big}
-\definemathcommand [bigm]  [\s!relation] [one] {\big}
+\definemathcommand [bigm]  [\s!relation] [one] {\big}    % why not just middle
 \definemathcommand [bigr]  [\s!close]    [one] {\big}
 \definemathcommand [Bigl]  [\s!open]     [one] {\Big}
 \definemathcommand [Bigm]  [\s!relation] [one] {\Big}
@@ -847,7 +887,7 @@
 
 \protected\def\math_fences_auto_left  #1{\c_attr_mathautofence\plusone  #1\c_attr_mathautofence\attributeunsetvalue}
 \protected\def\math_fences_auto_right #1{\c_attr_mathautofence\plustwo  #1\c_attr_mathautofence\attributeunsetvalue}
-\protected\def\math_fences_auto_middle#1{\c_attr_mathautofence\plusthree#1\c_attr_mathautofence\attributeunsetvalue}
+\protected\def\math_fences_auto_middle#1{\c_attr_mathautofence\plusthree#1\c_attr_mathautofence\attributeunsetvalue nooverflow }
 \protected\def\math_fences_auto_both  #1{\c_attr_mathautofence\plusfour #1\c_attr_mathautofence\attributeunsetvalue}
 
 \permanent\let\autofenceopen  \math_fences_auto_left    % for testing

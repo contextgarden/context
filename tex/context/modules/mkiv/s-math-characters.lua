@@ -113,36 +113,38 @@ function moduledata.math.characters.showlist(specification)
         end
     else
 
-local function collectalllookups(tfmdata,script,language)
-    local all     = setmetatableindex(function(t,k) local v = setmetatableindex("table") t[k] = v return v end)
-    local shared  = tfmdata.shared
-    local rawdata = shared and shared.rawdata
-    if rawdata then
-        local features = rawdata.resources.features
-        if features.gsub then
-            for kind, feature in next, features.gsub do
-                local validlookups, lookuplist = fonts.handlers.otf.collectlookups(rawdata,kind,script,language)
-                if validlookups then
-                    for i=1,#lookuplist do
-                        local lookup = lookuplist[i]
-                        local steps  = lookup.steps
-                        for i=1,lookup.nofsteps do
-                            local coverage = steps[i].coverage
-                            if coverage then
-                                for k, v in next, coverage do
-                                    all[k][lookup.type][kind] = v
+        local function collectalllookups(tfmdata,script,language)
+            local all     = setmetatableindex(function(t,k) local v = setmetatableindex("table") t[k] = v return v end)
+            local shared  = tfmdata.shared
+            local rawdata = shared and shared.rawdata
+            if rawdata then
+                local features = rawdata.resources.features
+                if features.gsub then
+                    for kind, feature in next, features.gsub do
+                        local validlookups, lookuplist = fonts.handlers.otf.collectlookups(rawdata,kind,script,language)
+                        if validlookups then
+                            for i=1,#lookuplist do
+                                local lookup = lookuplist[i]
+                                local steps  = lookup.steps
+                                for i=1,lookup.nofsteps do
+                                    local coverage = steps[i].coverage
+                                    if coverage then
+                                        for k, v in next, coverage do
+                                            all[k][lookup.type][kind] = v
+                                        end
+                                    end
                                 end
                             end
                         end
                     end
                 end
             end
+            return all
         end
-    end
-    return all
-end
 
-local alllookups = collectalllookups(tfmdata,"math","dflt")
+        local alllookups = collectalllookups(tfmdata,"math","dflt")
+
+        local luametatex = LUATEXENGINE == "luametatex"
 
         context.showmathcharactersstart()
         for _, unicode in next, sorted do
@@ -163,10 +165,29 @@ local alllookups = collectalllookups(tfmdata,"math","dflt")
                         local mathspec    = info.mathspec
                         local mathsymbol  = info.mathsymbol
                         local description = info.description or no_description
-                        context.showmathcharactersstartentry()
-                        context.showmathcharactersreference(f_unicode(unicode))
-                        context.showmathcharactersentryhexdectit(f_unicode(code),code,lower(description))
-                        context.showmathcharactersentrywdhtdpic(round(char.width or 0),round(char.height or 0),round(char.depth or 0),round(char.italic or 0))
+                        context.showmathcharactersstartentry(
+                        )
+                        context.showmathcharactersreference(
+                            f_unicode(unicode)
+                        )
+                        context.showmathcharactersentryhexdectit(
+                            f_unicode(code),
+                            code,
+                            lower(description)
+                        )
+                        if luametatex then
+                            context.showmathcharactersentrywdhtdpicta(
+                                code
+                            )
+                        else
+                            context.showmathcharactersentrywdhtdpicta(
+                                round(char.width     or 0),
+                                round(char.height    or 0),
+                                round(char.depth     or 0),
+                                round(char.italic    or 0),
+                                round(char.topaccent or 0)
+                            )
+                        end
                         if virtual and commands then
                             local t = { }
                             for i=1,#commands do

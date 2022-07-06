@@ -22,7 +22,7 @@
     \doifunknownfontfeature {lm-math-regular}  {\definefontfeature[lm-math-regular] [boldened-15]}
     \doifunknownfontfeature {lm-math-bold}     {\definefontfeature[lm-math-bold]    [boldened-30]}
 
-    \starttypescript [\s!serif] [modern-latin]
+    \starttypescript [\s!serif] [modernlatin,modern-latin]
       % \loadfontgoodies[lm]
         \definefontsynonym [Serif]           [\s!file:lmroman10-regular]      [\s!features={\s!default,lm-serif-regular}]
         \definefontsynonym [SerifItalic]     [\s!file:lmroman10-italic]       [\s!features={\s!default,lm-serif-regular}]
@@ -32,7 +32,17 @@
         \definefontsynonym [SerifBoldSlanted][\s!file:lmromanslant10-regular] [\s!features={\s!default,lm-serif-bold}]
     \stoptypescript
 
-    \starttypescript [\s!sans] [modern-latin]
+    \starttypescript [\s!serif] [lessmodernlatin,less-modern-latin]
+      % \loadfontgoodies[lm]
+        \definefontsynonym [Serif]           [\s!file:lmroman10-regular]      [\s!features={\s!default,lm-serif-regular}]
+        \definefontsynonym [SerifItalic]     [\s!file:lmroman10-italic]       [\s!features={\s!default,lm-serif-regular}]
+        \definefontsynonym [SerifSlanted]    [\s!file:lmromanslant10-regular] [\s!features={\s!default,lm-serif-regular}]
+        \definefontsynonym [SerifBold]       [\s!file:lmroman10-bold]         [\s!features={\s!default,lm-serif-regular}]
+        \definefontsynonym [SerifBoldItalic] [\s!file:lmroman10-bolditalic]   [\s!features={\s!default,lm-serif-regular}]
+        \definefontsynonym [SerifBoldSlanted][\s!file:lmromanslant10-bold]    [\s!features={\s!default,lm-serif-regular}]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [modernlatin,modern-latin]
       % \loadfontgoodies[lm]
         \definefontsynonym [Sans]           [\s!file:lmsans10-regular] [\s!features={\s!default,lm-sans-regular}]
         \definefontsynonym [SansItalic]     [\s!file:lmsans10-oblique] [\s!features={\s!default,lm-sans-regular}]
@@ -42,7 +52,17 @@
         \definefontsynonym [SansBoldSlanted][\s!file:lmsans10-oblique] [\s!features={\s!default,lm-sans-bold}]
     \stoptypescript
 
-    \starttypescript [\s!mono] [modern-latin]
+    \starttypescript [\s!sans] [lessmodernlatin,less-modern-latin]
+      % \loadfontgoodies[lm]
+        \definefontsynonym [Sans]           [\s!file:lmsans10-regular]     [\s!features={\s!default,lm-sans-regular}]
+        \definefontsynonym [SansItalic]     [\s!file:lmsans10-oblique]     [\s!features={\s!default,lm-sans-regular}]
+        \definefontsynonym [SansSlanted]    [\s!file:lmsans10-boldoblique] [\s!features={\s!default,lm-sans-regular}]
+        \definefontsynonym [SansBold]       [\s!file:lmsans10-bold]        [\s!features={\s!default,lm-sans-regular}]
+        \definefontsynonym [SansBoldItalic] [\s!file:lmsans10-boldoblique] [\s!features={\s!default,lm-sans-regular}]
+        \definefontsynonym [SansBoldSlanted][\s!file:lmsans10-boldoblique] [\s!features={\s!default,lm-sans-regular}]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [modernlatin,modern-latin]
       % \loadfontgoodies[lm]
         \definefontsynonym [Mono]           [\s!file:lmmono10-regular]      [\s!features={\s!default,lm-mono-regular}]
         \definefontsynonym [MonoItalic]     [\s!file:lmmono10-italic]       [\s!features={\s!default,lm-mono-regular}]
@@ -52,17 +72,27 @@
         \definefontsynonym [MonoBoldSlanted][\s!file:lmmonoslant10-regular] [\s!features={\s!default,lm-mono-bold}]
     \stoptypescript
 
-    \starttypescript [\s!math] [modern-latin]
+    \starttypescript [\s!mono] [lessmodernlatin,less-modern-latin]
+      % \loadfontgoodies[lm]
+        \definefontsynonym [Mono]           [\s!file:lmmono10-regular]      [\s!features={\s!default,lm-mono-regular}]
+        \definefontsynonym [MonoItalic]     [\s!file:lmmono10-italic]       [\s!features={\s!default,lm-mono-regular}]
+        \definefontsynonym [MonoSlanted]    [\s!file:lmmonoslant10-regular] [\s!features={\s!default,lm-mono-regular}]
+        \definefontsynonym [MonoBold]       [\s!file:lmmono10-bold]         [\s!features={\s!default,lm-mono-regular}]
+        \definefontsynonym [MonoBoldItalic] [\s!file:lmmono10-bolditalic]   [\s!features={\s!default,lm-mono-regular}]
+        \definefontsynonym [MonoBoldSlanted][\s!file:lmmonoslant10-regular] [\s!features={\s!default,lm-mono-bold}]
+    \stoptypescript
+
+    \starttypescript [\s!math] [modernlatin,modern-latin,lessmodernlatin,less-modern-latin]
         \loadfontgoodies[lm]
         \definefontsynonym [MathRoman]     [\v!file:latinmodern-math-regular.otf] [\s!features={\s!math\mathsizesuffix,lm-math,lm-math-regular,mathextra},\s!goodies=lm]
         \definefontsynonym [MathRomanBold] [\v!file:latinmodern-math-regular.otf] [\s!features={\s!math\mathsizesuffix,lm-math,lm-math-bold,mathextra},\s!goodies=lm]
     \stoptypescript
 
-    \starttypescript [modern-latin,modernlatin]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern-latin] [\s!default]
-        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern-latin] [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern-latin] [\s!default]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern-latin] [\s!default]
+    \starttypescript [modern-latin,modernlatin,less-modern-latin,lessmodernlatin]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone] [\s!default]
         \quittypescriptscanning
     \stoptypescript
 

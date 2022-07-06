@@ -147,6 +147,151 @@
     \stopsubject
 \stoptexdefinition
 
+\starttexdefinition protected showmathalphabettweaks_check_flush #1
+    \dontleavehmode
+    \hbox \bgroup
+        \smallinfofont
+        \setstrut
+        \lower \dimexpr\dp\scratchbox+\ht\strutbox\relax \hbox to \wd\scratchbox\bgroup
+            \hss
+            \strut
+            \hexnumber{#1}
+            \hss
+        \egroup
+        \hskip-\wd\scratchbox
+        \box\scratchbox
+    \egroup
+\stoptexdefinition
+
+\starttexdefinition protected showmathalphabettweaks_check_scripts
+    \subscript     1
+    \superscript   2
+    \subprescript  3
+    \superprescript4
+\stoptexdefinition
+
+\starttexdefinition protected showmathalphabettweaks_check_hat #1
+    \setbox\scratchbox\ruledhbox {
+        \im {
+            \resetmathattributes
+            \widehat{\Uchar#1}
+            \showmathalphabettweaks_check_scripts
+       }
+    }
+    \showmathalphabettweaks_check_flush{#1}
+\stoptexdefinition
+
+\starttexdefinition protected showmathalphabettweaks_check_fences #1
+    \setbox\scratchbox\ruledhbox {
+        \im {
+            \resetmathattributes
+            \left(
+                \Uchar#1
+                \showmathalphabettweaks_check_scripts
+            \right)
+        }
+    }
+    \showmathalphabettweaks_check_flush{#1}
+\stoptexdefinition
+
+\starttexdefinition protected showmathalphabettweaks_check #1#2
+   \startsubsubsubject[title=#1]
+       \traverseblock {#1} {
+         \begingroup
+         \showglyphs
+         \showfontitalics
+         \showfontkerns
+         #2{##1}%
+         \endgroup
+         \space\space
+       }
+       \removeunwantedspaces
+   \stopsubsubsubject
+\stoptexdefinition
+
+\starttexdefinition protected showmathalphabettweaks_all #1
+    \startsubsubject[title={Numbers}]
+        \showmathalphabettweaks_check{digits normal}#1
+        \showmathalphabettweaks_check{digits bold}#1
+        \showmathalphabettweaks_check{digits sansserif normal}#1
+        \showmathalphabettweaks_check{digits sansserif bold}#1
+        \showmathalphabettweaks_check{digits monospace}#1
+        \showmathalphabettweaks_check{digits doublestruck}#1
+    \stopsubsubject
+    \startsubsubject[title={Lowercase}]
+        \showmathalphabettweaks_check{lowercase normal}#1
+        \showmathalphabettweaks_check{lowercase italic}#1
+        \showmathalphabettweaks_check{lowercase bold}#1
+        \showmathalphabettweaks_check{lowercase bold italic}#1
+        \showmathalphabettweaks_check{lowercase sansserif normal}#1
+        \showmathalphabettweaks_check{lowercase sansserif italic}#1
+        \showmathalphabettweaks_check{lowercase sansserif bold}#1
+        \showmathalphabettweaks_check{lowercase sansserif bolditalic}#1
+        \showmathalphabettweaks_check{lowercase monospace}#1
+        \showmathalphabettweaks_check{lowercase fraktur}#1
+        \showmathalphabettweaks_check{lowercase bold fraktur}#1
+        \showmathalphabettweaks_check{lowercase script}#1
+        \showmathalphabettweaks_check{lowercase bold script}#1
+        \showmathalphabettweaks_check{lowercase doublestruck}#1
+        \showmathalphabettweaks_check{lowercase greek normal}#1
+        \showmathalphabettweaks_check{lowercase greek italic}#1
+        \showmathalphabettweaks_check{lowercase greek bold}#1
+        \showmathalphabettweaks_check{lowercase greek bold italic}#1
+      % \showmathalphabettweaks_check{lowercase greek sansserif normal}#1
+      % \showmathalphabettweaks_check{lowercase greek sansserif italic}#1
+        \showmathalphabettweaks_check{lowercase greek sansserif bold}#1
+        \showmathalphabettweaks_check{lowercase greek sansserif bolditalic}#1
+    \stopsubsubject
+    \startsubsubject[title={Uppercase}]
+        \showmathalphabettweaks_check{uppercase normal}#1
+        \showmathalphabettweaks_check{uppercase italic}#1
+        \showmathalphabettweaks_check{uppercase bold}#1
+        \showmathalphabettweaks_check{uppercase bolditalic}#1
+        \showmathalphabettweaks_check{uppercase sansserif normal}#1
+        \showmathalphabettweaks_check{uppercase sansserif italic}#1
+        \showmathalphabettweaks_check{uppercase sansserif bold}#1
+        \showmathalphabettweaks_check{uppercase sansserif bolditalic}#1
+        \showmathalphabettweaks_check{uppercase monospace}#1
+        \showmathalphabettweaks_check{uppercase fraktur}#1
+        \showmathalphabettweaks_check{uppercase bold fraktur}#1
+        \showmathalphabettweaks_check{uppercase script}#1
+        \showmathalphabettweaks_check{uppercase bold script}#1
+        \showmathalphabettweaks_check{uppercase doublestruck}#1
+        \showmathalphabettweaks_check{uppercase greek normal}#1
+        \showmathalphabettweaks_check{uppercase greek italic}#1
+        \showmathalphabettweaks_check{uppercase greek bold}#1
+        \showmathalphabettweaks_check{uppercase greek bolditalic}#1
+        \showmathalphabettweaks_check{uppercase greek sansserif bold}#1
+        \showmathalphabettweaks_check{uppercase greek sansserif bolditalic}#1
+    \stopsubsubject
+\stoptexdefinition
+
+\starttexdefinition protected showmathaccenttweaks
+    \showmathalphabettweaks_all\showmathalphabettweaks_check_hat
+\stoptexdefinition
+
+\starttexdefinition protected showmathfencetweaks
+    \showmathalphabettweaks_all\showmathalphabettweaks_check_fences
+\stoptexdefinition
+
+\starttexdefinition protected showmathmiddletweaks
+    \dostepwiserecurse {5} {75} {1} {
+        $\left\{
+         \mathatom class \mathconstructcode \bgroup \vcenter \bgroup \hbox \bgroup
+          \blackrule
+            [\c!height=\dimexpr##1pt/2\relax,
+             \c!depth=\dimexpr##1pt/2\relax,
+             \c!width=\emwidth,
+             \c!color=darkblue]%
+        \egroup \egroup \egroup
+        \middle|
+      % \begingroup\darkblue\scriptscriptstyle\mathtt{##1}\endgroup
+        \right)$
+        \space
+    }
+    \removeunwantedspaces
+\stoptexdefinition
+
 \protect
 
 \stopmodule
@@ -156,30 +301,55 @@
 \setuplayout
   [tight]
 
+\setuphead
+  [chapter]
+  [style=\bfd]
+
+\setuphead
+  [section]
+  [style=\bfc]
+
+\setuphead
+  [subsection]
+  [style=\bfb]
+
+\setuphead
+  [subsubsection]
+  [before=\blank,
+   style=\bfa]
+
+% \enabletrackers[math.tweaks]
+
 \starttext
 
-\definefontfeature[mathextra][compose=yes]
+%     \definefontfeature[mathextra][compose=yes]
 
-% \number"23DC
     \doifelse {\getdocumentargument{bodyfont}} {} {
 
 %         \setupbodyfont[cambria,10pt]   \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
-%         \setupbodyfont[modern]         \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
+%          \setupbodyfont[modern]         \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
 %         \setupbodyfont[pagella]        \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
 %         \setupbodyfont[termes]         \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
 %         \setupbodyfont[bonum]          \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
 %         \setupbodyfont[schola]         \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
 %         \setupbodyfont[lucidaot,10pt]  \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
-        \setupbodyfont[ebgaramond]       \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
+%         \setupbodyfont[ebgaramond]     \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
 %         \setupbodyfont[stixtwo]        \starttitle[title=\fontclass] \showmathfonttweaks \stoptitle
+
+%         \setupbodyfont[bonum]          \starttitle[title=\fontclass] \showmathaccenttweaks \stoptitle
+
+%         \setupbodyfont[bonum]          \starttitle[title=\fontclass] \showmathfencetweaks \stoptitle
+        \setupbodyfont[bonum]          \starttitle[title=\fontclass] \showmathmiddletweaks \stoptitle
+%         \setupbodyfont[modern]          \starttitle[title=\fontclass] \showmathfencetweaks \stoptitle
 
     } {
 
         \normalexpanded{\setupbodyfont[\getdocumentargument{bodyfont},12pt]}
         \showmathfonttweaks
-
+        \showmathaccenttweaks
+        \showmathfencetweaks
+        \showmathmiddletweaks
     }
-
 
 \stoptext
 

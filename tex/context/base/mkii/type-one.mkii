@@ -2858,7 +2858,7 @@
         \definetypeface [dejavu] [rm] [serif] [dejavu] [default] [encoding=\typescripttwo]
         \definetypeface [dejavu] [ss] [sans]  [dejavu] [default] [encoding=\typescripttwo]
         \definetypeface [dejavu] [tt] [mono]  [dejavu] [default] [encoding=\typescripttwo]
-        \definetypeface [dejavu] [mm] [math]  [xits]   [default] [rscale=auto]
+        \definetypeface [dejavu] [mm] [math]  [xits]   [default]
         \loadmapfile [dejavu-truetype.map]
     \stoptypescript
 
@@ -2866,7 +2866,7 @@
         \definetypeface [dejavu-condensed] [rm] [serif] [dejavu-condensed] [default] [encoding=\typescripttwo]
         \definetypeface [dejavu-condensed] [ss] [sans]  [dejavu-condensed] [default] [encoding=\typescripttwo]
         \definetypeface [dejavu-condensed] [tt] [mono]  [dejavu-condensed] [default] [encoding=\typescripttwo]
-        \definetypeface [dejavu-condensed] [mm] [math]  [xits]             [default] [rscale=auto]
+        \definetypeface [dejavu-condensed] [mm] [math]  [xits]             [default]
         \loadmapfile [dejavu-truetype.map]
     \stoptypescript
 
@@ -2874,26 +2874,15 @@
 
 \starttypescriptcollection[gentium]
 
-    \starttypescript [serif] [gentium] [ec,texnansi,qx,t5,l7x]
-        \definefontsynonym [Gentium-Roman]       [\typescriptthree-gentiumplus-regular]     [encoding=\typescriptthree]
-        \definefontsynonym [Gentium-Italic]      [\typescriptthree-gentiumplus-italic]      [encoding=\typescriptthree]
-        \definefontsynonym [Gentium-Bold]        [\typescriptthree-gentiumbasic-bold]       [encoding=\typescriptthree]
-        \definefontsynonym [Gentium-BoldItalic]  [\typescriptthree-gentiumbasic-bolditalic] [encoding=\typescriptthree]
-        \definefontsynonym [Gentium-RomanCaps]   [\typescriptthree-gentiumplus-regular-sc]  [encoding=\typescriptthree]
-        \definefontsynonym [Gentium-Slanted]     [Gentium-Italic]
-        \definefontsynonym [Gentium-BoldSlanted] [Gentium-BoldItalic]
-        \loadmapfile[gentium-\typescriptthree.map]
-    \stoptypescript
-
-    \starttypescript [serif] [gentium] [agr,t2a]
+    \starttypescript [serif] [gentium] [ec,texnansi,qx,t5,l7x,agr,t2a]
         \definefontsynonym [Gentium-Roman]       [\typescriptthree-gentiumplus-regular]    [encoding=\typescriptthree]
         \definefontsynonym [Gentium-Italic]      [\typescriptthree-gentiumplus-italic]     [encoding=\typescriptthree]
+        \definefontsynonym [Gentium-Bold]        [\typescriptthree-gentiumplus-bold]       [encoding=\typescriptthree]
+        \definefontsynonym [Gentium-BoldItalic]  [\typescriptthree-gentiumplus-bolditalic] [encoding=\typescriptthree]
         \definefontsynonym [Gentium-RomanCaps]   [\typescriptthree-gentiumplus-regular-sc] [encoding=\typescriptthree]
-        \definefontsynonym [Gentium-Bold]        [Gentium-Roman]
-        \definefontsynonym [Gentium-BoldItalic]  [Gentium-Italic]
-        \definefontsynonym [Gentium-Slanted]     [Gentium-Italic]
-        \definefontsynonym [Gentium-BoldSlanted] [Gentium-Italic]
-        \loadmapfile[gentium-\typescriptthree.map]
+        \definefontsynonym [Gentium-Slanted]     [\typescriptthree-gentiumplus-italic]     [encoding=\typescriptthree]
+        \definefontsynonym [Gentium-BoldSlanted] [\typescriptthree-gentiumplus-bolditalic] [encoding=\typescriptthree]
+        \loadmapfile[gentiumplus-\typescriptthree.map]
     \stoptypescript
 
     \starttypescript [serif] [gentium] [name]
@@ -2910,6 +2899,10 @@
 
     \starttypescript [gentium] [ec,texnansi,qx,t5,t2a,agr,l7x]
         \definetypeface [gentium] [rm] [serif] [gentium] [default] [encoding=\typescripttwo]
+        \definetypeface [gentium] [ss] [sans]  [dejavu]  [default] [encoding=\typescripttwo]
+        \definetypeface [gentium] [tt] [mono]  [dejavu]  [default] [encoding=\typescripttwo]
+        \definetypeface [gentium] [mm] [math]  [xits]    [default]
+        \loadmapfile [dejavu-truetype.map]
     \stoptypescript
 
 \stoptypescriptcollection

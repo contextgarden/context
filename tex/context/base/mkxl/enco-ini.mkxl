@@ -208,10 +208,11 @@
       \setbox0\hbox{#4}%
       \halign
         {##\crcr\hbox{#5}\crcr
-         \hidewidth
+         \hskip\hideskip % \hidewidth
          \hskip#2\wd0
          \hskip-#3\slantperpoint % in plain 1ex * dimenless value
-         \vpack to .2\exheight{\box0\vss}\hidewidth
+         \vpack to .2\exheight{\box0\vss}%
+         \hskip\hideskip % \hidewidth
          \crcr}}}
 
 \permanent\protected\def\buildtextmacron     {\bottomaccent{.25ex}{0}{15}{\textmacron}}

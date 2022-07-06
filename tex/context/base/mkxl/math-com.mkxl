@@ -1,0 +1,89 @@
+%D \module
+%D   [       file=math-com,
+%D        version=2022.07.17,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Combinations,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Initializations}
+
+%D This module might be extended.
+
+\unprotect
+
+% \startcombination[2*2]
+%     \startcontent
+%         \startplaceformula\startformula[width=\combinationwidth,title=a]1+x\stopformula\stopplaceformula
+%     \stopcontent
+%     \startcaption\stopcaption
+%     \startcontent
+%         \startplaceformula\startformula[width=\combinationwidth,title=b]2+x\stopformula\stopplaceformula
+%     \stopcontent
+%     \startcaption\stopcaption
+%     \startcontent
+%         \startplaceformula\startformula[width=\combinationwidth,xxxxx=c]3+x\stopformula\stopplaceformula
+%     \stopcontent
+%     \startcaption\stopcaption
+%     \startcontent
+%         \startplaceformula\startformula[width=\combinationwidth,title=d]4+x\stopformula\stopplaceformula
+%     \stopcontent
+%     \startcaption\stopcaption
+% \stopcombination
+%
+% \startplaceformula[a]
+% \startcombination[formula][nx=2,ny=2]
+%     \startformula[width=\combinationwidth,title=a]1+x\stopformula
+%     \startformula[width=\combinationwidth,title=b]2+x\stopformula
+%     \startformula[width=\combinationwidth,xxxxx=c]3+x\stopformula
+%     \startformula[width=\combinationwidth,title=d]4+x\stopformula
+% \stopcombination
+% \stopplaceformula
+%
+% \startplaceformula[a]
+% \startformulacombination[nx=2,ny=2]
+%     \startformula[width=\combinationwidth,title=a]1+x\stopformula
+%     \startformula[width=\combinationwidth,title=b]2+x\stopformula
+%     \startformula[width=\combinationwidth,xxxxx=c]3+x\stopformula
+%     \startformula[width=\combinationwidth,title=d]4+x\stopformula
+% \stopformulacombination
+% \stopplaceformula
+
+\defcsname\??combinationmethod\v!formula\endcsname
+  {\vcenter}
+
+\defcsname\??combinationmethod\v!formula:\v!start\endcsname
+  {\startformula
+   \dostarttagged\t!formulaset\empty
+   \global\settrue\c_strc_formulas_inside_formulas
+   \bgroup
+   \setupformulas[\c!width=\combinationwidth]%
+   \enforced\tolerant\protected\def\startformula[##1]%
+     {\startcontent
+      \strc_formulas_nested_formula_start[\c!width=\combinationwidth,##1]}%
+   \enforced\protected\def\stopformula
+     {\normalexpanded
+        {\strc_formulas_nested_formula_stop
+         \stopcontent
+         \startcaption
+         \formulaparameter\c!title
+         \stopcaption}}}
+
+\defcsname\??combinationmethod\v!formula:\v!stop\endcsname
+  {\egroup
+   \global\setfalse\c_strc_formulas_inside_formulas
+   \dostoptagged
+   \stopformula
+   \the\everyresetformulas}
+
+\definecombination[\v!formula][method=formula,width=\hsize]
+
+\protected\def\startformulacombination{\startcombination[\v!formula]}
+\protected\def\stopformulacombination {\stopcombination}
+
+\protect

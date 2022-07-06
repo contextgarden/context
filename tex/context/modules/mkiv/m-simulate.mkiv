@@ -109,7 +109,7 @@
       \else
         \discretionary{\p_hyphen}{}{\kern\scratchdimenthree}%
       \fi\fi\fi\fi\fi\fi}%
-   \edef\truncated##1##2\relax{##1}%
+   \def\truncated##1##2\relax{##1}%
    % trialtypesetting: tricky
    \ifx\p_random\empty \else
      \pushrandomseed

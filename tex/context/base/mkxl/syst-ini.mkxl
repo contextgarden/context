@@ -508,6 +508,7 @@
 \newdimen\scratchwidth
 \newdimen\scratchheight
 \newdimen\scratchdepth
+\newdimen\scratchitalic
 \newdimen\scratchtotal
 
 \newdimen\scratchoffset
@@ -567,7 +568,13 @@
 \immutable\dimensiondef  \scaledpoint   1sp
 \immutable\dimensiondef  \thousandpoint 1000pt
 
-\immutable\gluespecdef   \zeroskip      0pt plus 0pt minus 0pt
+\immutable\gluespecdef   \zeroskip           \zeropoint plus \zeropoint     minus \zeropoint
+\immutable\gluespecdef   \centeringskip      \zeropoint plus \thousandpoint minus \thousandpoint
+\immutable\gluespecdef   \stretchingskip     \zeropoint plus \thousandpoint
+\immutable\gluespecdef   \shrinkingskip      \zeropoint                     minus \thousandpoint
+\immutable\gluespecdef   \centeringfillskip  \zeropoint plus 1fill          minus 1fill
+\immutable\gluespecdef   \stretchingfillskip \zeropoint plus 1fill
+\immutable\gluespecdef   \shrinkingfillskip  \zeropoint                     minus 1fill
 
 \immutable\mugluespecdef \zeromuskip    0mu
 \immutable\mugluespecdef \onemuskip     1mu
@@ -1147,16 +1154,16 @@
 %D Again a few kind-of-extensions the core. These come from plain \TEX\ but are
 %D probably not used in \CONTEXT.
 
-\newskip \hideskip   \hideskip  = -1000pt plus 1fill
-\newskip \centering  \centering = 0pt plus 1000pt minus 1000pt
+\newskip \hideskip   \hideskip  = -1000pt plus 1fill           % obsolete
+\newskip \centering  \centering = 0pt plus 1000pt minus 1000pt % obsolete
 
-\permanent\def\hidewidth % for alignment entries that can stick out
-  {\hskip\hideskip}
-
-\permanent\def\ialign % initialized \halign, to be used grouped!
-  {\everycr\emptytoks
-   \tabskip\zeroskip
-   \halign}
+% \permanent\def\hidewidth % for alignment entries that can stick out
+%   {\hskip\hideskip}
+%
+% \permanent\def\ialign % initialized \halign, to be used grouped!
+%   {\everycr\emptytoks
+%    \tabskip\zeroskip
+%    \halign}
 
 \newcount \mscount
 
@@ -1248,10 +1255,6 @@
 
 \immutable\integerdef\eTeXversion   2
 \immutable\def       \eTeXrevision {2}
-
-%D Experiment:
-
-\glyphoptions"80 % replaces \glyphdimensionsmode=1
 
 %D Just in case users use this (or some styles still have it):
 

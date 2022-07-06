@@ -269,12 +269,29 @@
    \c!rightquotation=\leftguillemot,
    \c!date={\v!day,{.},\space,\v!month,\space,\v!year}]
 
+\installlanguage % for now we copy from slovenian
+  [\s!sq]
+  [\c!command=\v!no,
+   \s!lefthyphenmin=2,
+   \s!righthyphenmin=2,
+   \c!spacing=\v!packed,
+   \c!leftsentence=\hbox{\endash\space},
+   \c!rightsentence=\hbox{\space\endash},
+   \c!leftsubsentence=\endash,
+   \c!rightsubsentence=\endash,
+   \c!leftquote=\guilsingleright,
+   \c!rightquote=\guilsingleleft,
+   \c!leftquotation=\rightguillemot,
+   \c!rightquotation=\leftguillemot,
+   \c!date={\v!day,{.},\space,\v!month,\space,\v!year}]
+
 \installlanguage [\s!polish]    [\s!pl]
 \installlanguage [\s!czech]     [\s!cs]
 \installlanguage [\s!slovak]    [\s!sk]
 \installlanguage [\s!croatian]  [\s!hr]
 \installlanguage [\s!slovenian] [\s!sl]
 \installlanguage [slovene]      [\s!sl] % both possible (mojca: still needed?)
+\installlanguage [\s!albanian]  [\s!sq]
 
 % Cyrillic Languages
 
@@ -640,7 +657,7 @@
 % Greek
 
 \installlanguage
-  [\s!gr]
+  [\s!gr] % grc el-monotonic-greek.tex
   [\c!spacing=\v!packed,
    \c!leftsentence=\emdash,
    \c!rightsentence=\emdash,
@@ -651,7 +668,7 @@
    \c!leftquotation=«,
    \c!rightquotation=»,
    \c!date={\v!day\space\v!month\space\v!year},
-   \s!patterns=\s!agr] % ok?
+   \s!patterns=\s!gr]
 
 \installlanguage [\s!greek] [\s!gr]
 

@@ -1,0 +1,99 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-binary
+
+\environment ontarget-style
+
+\startchapter[title={The binary}]
+
+This is a very short chapter. Because \LUAMETATEX\ is also a script runner, I
+want to keep it lean and mean. So, when the size exceeded 3MB after we'd extended
+the math engine, I decided to (finally) let all the \METAPOST\ number interfaces
+pass pointers which brought down the binary 100K and below the 3MB mark again.
+
+I then became curious about how much of the binary actually is taken by
+\METAPOST, and a bit of calculation indicated that we went from 20.1\percent\ down
+to 18.3\percent. Here is the state per May 13, 2022:
+
+\startluacode
+
+    local bytes = {
+        liblua        =  515156,
+        libluaoptional=  103668,
+        libluarest    =   82492,
+        libluasocket  =  105700,
+        libmimalloc   =  178800,
+        libminiz      =   51584,
+        libmp         =  797636,
+        libmp         =  797636, -- went from 20.1% to 18.3% after going more pointers
+     -- libmp         =  797636 + (3061799 - 2960091),
+        libpplib      =  325162,
+        libtex        = 2207190,
+    }
+
+    local comment = {
+        liblua        = "lua core, tex interfaces",
+        libluaoptional= "framework, several small interfaces, cerf",
+        libluarest    = "general helper libraries",
+        libluasocket  = "helper that interfaces to the os libraries",
+        libmimalloc   = "memory management partial",
+        libminiz      = "minimalistic core",
+        libmp         = "mp graphic core, number libraries, lua interfacing",
+        libpplib      = "pdf reading core, encryption helpers",
+        libtex        = "extended tex core",
+    }
+
+    local luametatex = 2960091
+    local libraries  = 0 for k, v in next, bytes do libraries = libraries + v end
+    local normalizer = luametatex/libraries
+
+    local luastuff   = bytes.liblua
+                     + bytes.libluaoptional
+                     + bytes.libluarest
+                     + bytes.libluasocket
+
+    -------(luametatex) context.par()
+    -------(libraries)  context.par()
+    -------(normalizer) context.par()
+
+    context.starttabulate { "|l|r|r|p|" }
+        context.FL()
+        context.NC() context.bold("component")
+        context.NC() context.bold("pct")
+        context.NC() context.bold("bytes")
+        context.NC() context.bold("comment")
+        context.NC() context.NR()
+        context.ML()
+        for k, v in table.sortedpairs(bytes) do
+            context.NC() context(k)
+            context.NC() context("%.1f",100*v/libraries)
+            context.NC() context(math.round(normalizer*v))
+            context.NC() context(comment[k])
+            context.NC() context.NR()
+        end
+        context.ML()
+        context.NC() context.bold("luametatex")
+        context.NC()
+        context.NC() context.bold(luametatex)
+        context.NC() context("2022-05-13")
+        context.NC() context.NR()
+        context.LL()
+    context.stoptabulate()
+
+    function document.texstuff() context("%.1f\\percent",100 * bytes.libtex  /libraries) end
+    function document.mpsstuff() context("%.1f\\percent",100 * bytes.libmp   /libraries) end
+    function document.pdfstuff() context("%.1f\\percent",100 * bytes.libpplib/libraries) end
+    function document.luastuff() context("%.1f\\percent",100 * luastuff       /libraries) end
+
+\stopluacode
+
+It is clear that the \TEX\ core is good for half of the code (\ctxlua {document .
+texstuff ()}) with the accumulated \LUA\ stuff (\ctxlua {document . luastuff ()})
+and \METAPOST\ being a good second (\ctxlua {document . mpsstuff ()}) and third
+and the \PDF\ interpreting library a decent fourth (\ctxlua {document . pdfstuff
+()}) place.
+
+\stopchapter
+
+\stopcomponent
+

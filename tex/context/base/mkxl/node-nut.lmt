@@ -182,6 +182,8 @@ local nuts = {
     protrusionskippable     = direct.protrusionskippable,
     rangedimensions         = direct.rangedimensions,
     remove                  = d_remove_node,
+    repack                  = direct.repack,
+    freeze                  = direct.freeze,
     reverse                 = direct.reverse,
     setattr                 = direct.setattribute,
     setattribute            = direct.setattribute,
@@ -275,6 +277,7 @@ local nuts = {
     getspeciallist          = direct.getspeciallist,
     setspeciallist          = direct.setspeciallist,
     getusedattributes       = direct.getusedattributes,
+    gluetostring            = direct.gluetostring,
 }
 
 nodes.nuts     = nuts

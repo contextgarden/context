@@ -37,6 +37,8 @@ local conditionals      = tex.conditionals
 
 local ctx_latelua       = context.latelua
 
+local cheat = true
+
 local structures        = structures
 local lists             = structures.lists
 local sections          = structures.sections
@@ -193,8 +195,13 @@ local function finalizer()
         if r then
             local i = r.internal
             local f = flaginternals[i]
+            local v = usedviews[i]
+            if cheat and v then
+                -- this permits runs=2 with interactivity
+                r.view = v
+            end
             if f then
-                r.used = usedviews[i] or true
+                r.used = v or true
             end
         end
     end
@@ -232,7 +239,7 @@ function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
     if numberdata then
         local numbers = numberdata.numbers
         if type(numbers) == "string" then
-            numberdata.numbers = counters.compact(numbers,nil,true)
+            counters.compact(numberdata,numbers,numberdata.level)
         end
     end
     local group = numberdata and numberdata.group
@@ -869,13 +876,23 @@ function lists.process(specification)
     local total  = #result
     lists.result = result
     if total > 0 then
+        local usedinternals = references.usedinternals
+        local usedviews     = references.usedviews
         local specials = settings_to_set(specification.extras or "")
               specials = next(specials) and specials or nil
         for i=1,total do
-            local r = result[i]
-            local m = r.metadata
-            local s = specials and r.numberdata and specials[zerostrippedconcat(r.numberdata.numbers,".")] or ""
-            context.strclistsentryprocess(m.name,m.kind,i,s)
+            local listentry  = result[i]
+            local metadata   = listentry.metadata
+            local numberdata = listentry.numberdata
+            local references = listentry.references
+            local special    = specials and numberdata and specials[zerostrippedconcat(numberdata.numbers,".")] or ""
+            if cheat and references then
+                -- this permits runs=2 with interactivity
+                local internal = references.internal
+                usedinternals[internal] = true
+                usedviews    [internal] = references.view
+            end
+            context.strclistsentryprocess(metadata.name,metadata.kind,i,special)
         end
     end
 end
@@ -1098,6 +1115,7 @@ implement {
                 }
             },
             { "numberdata", {
+                    { "level", "integer" },
                     { "numbers" },
                     { "groupsuffix" },
                     { "group" },

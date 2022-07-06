@@ -946,6 +946,7 @@
    \edef\p_framed_background{\framedparameter\c!background}%
    % not here, in calling macro: setups
    \pack_framed_remove_depth
+   % beware, depth goes away when we have a frame, otherwise it's retained
    \ifx\p_framed_frame\v!overlay \orelse \ifx\p_framed_frame\v!none \else
      \ifempty\p_framed_rulethickness\else
         \d_framed_linewidth\p_framed_rulethickness\relax
@@ -1349,6 +1350,10 @@
 \installcorenamespace{framedoffsetalternative}
 
 % widths
+%
+% \inframed[adaptive=0500]{Just some words}
+% \inframed[adaptive=0]   {Just some words}
+% \inframed[adaptive=-500]{Just some words}
 
 \defcsname\??framedwidthalternative\empty\endcsname
   {\ifconditional\c_framed_has_format
@@ -1597,8 +1602,19 @@
      \pack_framed_reshape_reset
    \fi}
 
+% Musical timestamp for the adding the "freezespacing" feature: Porcupine Tree -
+% Herd Culling (Single Edit - Official Visualiser : some old sql code scrolling by
+% on some paper terminal font); scalefactors are in the range -1000..1000.
+
 \protected\def\pack_framed_finish
-  {\pack_framed_locator_before\p_framed_location
+  {\edef\p_freeze{\framedparameter\c!freezespacing}%
+   \ifempty\p_freeze
+ % \orelse\ifx\p_freeze\v!yes
+ %   \boxfreeze\b_framed_normal\zerocount
+   \else
+     \boxadapt\b_framed_normal\p_freeze\relax
+   \fi
+   \pack_framed_locator_before\p_framed_location
    \ifconditional\c_framed_has_format
      \ifempty\p_framed_anchoring\else
        \pack_framed_reverse_box
@@ -1957,143 +1973,6 @@
 
 %D When we set \type{empty} to \type{yes}, we get ourselves a frame and/or background,
 %D but no content, so actually we have a sort of phantom framed box.
-
-%D \macros
-%D   {mframed, minframed}
-%D
-%D When Tobias asked how to frame mathematical elements in formulas, Taco's posted the
-%D next macro:
-%D
-%D \starttyping
-%D \def\mframed#1%
-%D   {\relax
-%D    \ifmmode
-%D      \vcenter{\hbox{\framed{$\ifinner\else\displaystyle\fi#1$}}}%
-%D    \else
-%D      \framed{$#1$}%
-%D    \fi}
-%D \stoptyping
-%D
-%D Because \type {\ifinner} does not (always) reports what one would expect, we move the
-%D test to the outer level. We also want to pass arguments,
-%D
-%D \starttyping
-%D \def\mframed%
-%D   {\dosingleempty\domframed}
-%D
-%D \def\domframed[#1]#2% % tzt \dowithnextmathbox ?
-%D   {\relax
-%D    \ifmmode
-%D      \ifinner
-%D        \inframed[#1]{$#2$}%
-%D      \else
-%D        \vcenter{\hbox{\framed[#1]{$\displaystyle#2$}}}%
-%D      \fi
-%D    \else
-%D      \inframed[#1]{$#2$}%
-%D    \fi}
-%D \stoptyping
-%D
-%D Still better is the next alternative, if only because it takes care of setting the super-
-%D and subscripts styles
-
-\newcount\c_framed_mstyle
-
-\protected\def\pack_framed_math_strut
-  {\Ustartmath
-   \triggermathstyle\c_framed_mstyle
-   \vphantom{(}%
-   \Ustopmath}
-
-\installcorenamespace{mathframed}
-
-\installframedcommandhandler \??mathframed {mathframed} \??mathframed
-
-\newcount\c_pack_framed_mathframed
-\newtoks \t_pack_framed_mathframed
-
-\appendtoks
-    \frozen\protected\instance\edefcsname\currentmathframed\endcsname{\pack_framed_mathframed[\currentmathframed]}%
-\to \everydefinemathframed
-
-\let\pack_framed_mc_one\relax
-\let\pack_framed_mc_two\relax
-
-\tolerant\protected\def\pack_framed_mathframed[#1]#*[#2]#:#3% needs testing !
-  {\begingroup
-   \edef\currentmathframed{#1}%
-   \setupcurrentmathframed[#2]%
-   \c_framed_mstyle\normalmathstyle
-   \edef\m_framed_location{\mathframedparameter\c!location}%
-   \ifx\m_framed_location\v!mathematics
-     \enforced\let\normalstrut\pack_framed_math_pos % I don't like this overload!
-   \orelse\ifx\m_framed_location\v!low\else
-     \enforced\let\normalstrut\pack_framed_math_strut
-   \fi
-   \inheritedmathframedframed\bgroup
-     \Ustartmath
-     \triggermathstyle\c_framed_mstyle
-     \the\t_pack_framed_mathframed
-     #3%
-     \Ustopmath
-   \egroup
-   \endgroup}
-
-\def\pack_framed_math_pos
-  {\global\advance\c_pack_framed_mathframed\plusone
-   \xdef\pack_framed_mc_one{mcf:1:\number\c_pack_framed_mathframed}%
-   \xdef\pack_framed_mc_two{mcf:2:\number\c_pack_framed_mathframed}%
-   \xypos\pack_framed_mc_two}
-
-\appendtoks
-    \mathraggedstatus\plustwo   % makes \startalign work
-    \eqalignmode     \zerocount % makes \startalign fit
-\to \t_pack_framed_mathframed
-
-\installframedlocator \v!mathematics
-  {}
-  {\lower\dimexpr\MPy\pack_framed_mc_two-\MPy\pack_framed_mc_one\relax
-   \hpack{\xypos\pack_framed_mc_one\box\b_framed_normal}}
-
-\definemathframed[mframed]
-\definemathframed[inmframed][\c!location=\v!low]
-\definemathframed[mcframed] [\c!location=\v!mathematics]
-
-%D So instead of the rather versatile \type {\framed}, we use \type {\mframed}:
-%D
-%D \startbuffer
-%D \startformula
-%D   x \times   \mframed{y} \times y^{z_z}
-%D   x \times \inmframed{y} \times y^{z_z}
-%D \stopformula
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
-%D
-%D And:
-%D
-%D \startbuffer
-%D \startformula
-%D   x \times \mframed{y} \times y^{\mframed{z}_{\mframed{z}}}
-%D \stopformula
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
-%D
-%D As usual, one can specify in what way the text should be framed. One should be
-%D aware of the fact that, inorder to preserve the proper spacing, the \type
-%D {offset} is set to \type {overlay} and \type {frameoffset} is used used instead.
-%D
-%D \startbuffer
-%D \startformula
-%D   x \times y^{\mframed[framecolor=red]{z}_{z}}
-%D \stopformula
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
-%D
-%D For inline use, we also provide the \type {\inmframed} alternative: we want $x
-%D \times \inmframed{y}$ in inline math, right?
 
 %D This previous framing macros needs a lot of alternatives for putting rules around
 %D boxes, inserting offsets and aligning text. Each step is handled by separate macros.

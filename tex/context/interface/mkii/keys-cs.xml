@@ -647,6 +647,7 @@
 
 	<cd:constants>
 		<cd:constant name='action' value='akce'/>
+		<cd:constant name='adaptive' value='adaptive'/>
 		<cd:constant name='address' value='adresa'/>
 		<cd:constant name='after' value='po'/>
 		<cd:constant name='afterhead' value='pohlavicce'/>
@@ -1059,6 +1060,8 @@
 		<cd:constant name='numberconversionset' value='numberconversionset'/>
 		<cd:constant name='numberdistance' value='numberdistance'/>
 		<cd:constant name='numbering' value='cislovani'/>
+		<cd:constant name='numberlocation' value='numberlocation'/>
+		<cd:constant name='numbermethod' value='numbermethod'/>
 		<cd:constant name='numberorder' value='numberorder'/>
 		<cd:constant name='numberprefix' value='numberprefix'/>
 		<cd:constant name='numbersegments' value='numbersegments'/>
@@ -1069,6 +1072,7 @@
 		<cd:constant name='numberstopper' value='numberstopper'/>
 		<cd:constant name='numberstrut' value='numberstrut'/>
 		<cd:constant name='numberstyle' value='stylcisla'/>
+		<cd:constant name='numberthreshold' value='numberthreshold'/>
 		<cd:constant name='numberwidth' value='numberwidth'/>
 		<cd:constant name='nx' value='nx'/>
 		<cd:constant name='ny' value='ny'/>
@@ -1240,6 +1244,8 @@
 		<cd:constant name='small' value='male'/>
 		<cd:constant name='smallcapsfeatures' value='smallcapsfeatures'/>
 		<cd:constant name='smallcapsfont' value='smallcapsfont'/>
+		<cd:constant name='snap' value='snap'/>
+		<cd:constant name='snapstep' value='snapstep'/>
 		<cd:constant name='solution' value='solution'/>
 		<cd:constant name='sort' value='sort'/>
 		<cd:constant name='sorttype' value='sorttype'/>

@@ -1,5 +1,6 @@
 -- In order to be able to use beta math fonts, we use our own file name and
--- always remap.
+-- always remap. As this font is experimental we don't spend too much time
+-- on it now. Even then, we migth stick to design sizes only.
 
 local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
 
@@ -47,7 +48,6 @@ local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
 
 end
 
-
 return {
     name = "newcomputermodern",
     version = "1.00",
@@ -65,8 +65,11 @@ return {
                 end
                 return o * target.parameters.factor
             end,
-            NoLimitSupFactor =   0,
-            NoLimitSubFactor = 1200,
+            NoLimitSupFactor         =   0,
+            NoLimitSubFactor         = 1200,
+            DelimiterPercent         =   90,
+            DelimiterShortfall       =  400,
+         -- DisplayOperatorMinHeight = 1800, -- 1300 in font (only one)
         },
         tweaks = {
             aftercopying = {

@@ -53,7 +53,9 @@
 \unexpanded\def\blocksynctexfile[#1]%
   {\processcommacommand{#1}\synctexblockfilename}
 
-\def\continuewhenlmtxmode
+\let\continuewhenmkivmode\relax
+
+\unexpanded\def\continuewhenlmtxmode
   {\starttext
    \startTEXpage[\c!offset=2ex,\c!foregroundstyle=\tttf]%
       This file needs \LuaMetaTeX\ and \ConTeXt\ \LMTX.%

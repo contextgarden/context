@@ -51,6 +51,11 @@
 \letcsname\??mathoperatormethod   nolimits\expandafter\endcsname\csname\??mathoperatormethod\v!horizontal\endcsname
 \letcsname\??mathoperatormethod     limits\expandafter\endcsname\csname\??mathoperatormethod\v!vertical  \endcsname
 
+%D With the auto option DisplayOperatorMinHeight will kick in unless we explicitly set the size or
+%D use the start|-|stop variant (which will size automatically). The default of this font parameter
+%D are a bit on the small size which doesn't work well with fonts other than Latin Modern that has
+%D a large one. Keep in mind that we have e.g. integrals as operators and not fixed characters.
+
 \installlocalcurrenthandler\??mathoperators {mathoperator}
 
 \protected\def\math_operator_operator#1#2%
@@ -67,6 +72,7 @@
        \s!auto
      \fi
      \s!class \mathoperatorcode
+     \s!attr \indexofregister \c_attr_mathsize \attributeunsetvalue
      % todo: find a way to pick up or pass sup/sub to here
      \Udelimiter \zerocount \fam \mathoperatorparameter\c!left
      {\edef\m_operator_text{\mathoperatorparameter\c!top}%

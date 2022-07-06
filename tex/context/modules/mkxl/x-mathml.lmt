@@ -610,44 +610,108 @@ function mathml.mfenced(id) -- multiple separators
     ctx_disabledelimiter()
 end
 
-local function flush(e,tag,toggle)
-    if tag == "none" then
-     -- if not toggle then
-        context("{}") -- {} starts a new ^_ set
-     -- end
-    elseif toggle then
-        context("^{")
-        xmlsprint(e.dt)
-        context("}{}") -- {} starts a new ^_ set
-    else
-        context("_{")
-        xmlsprint(e.dt)
-        context("}")
-    end
-    return not toggle
-end
+-- local function flush(e,tag,toggle)
+--     if tag == "none" then
+--      -- if not toggle then
+--         context("{}") -- {} starts a new ^_ set
+--      -- end
+--     elseif toggle then
+--         context("^{")
+--         xmlsprint(e.dt)
+--         context("}{}") -- {} starts a new ^_ set
+--     else
+--         context("_{")
+--         xmlsprint(e.dt)
+--         context("}")
+--     end
+--     return not toggle
+-- end
+--
+-- function mathml.mmultiscripts(id)
+--     local done, toggle = false, false
+--     for e in lxmlcollected(id,"/*") do
+--         local tag = e.tg
+--         if tag == "mprescripts" then
+--             context("{}")
+--             done = true
+--         elseif done then
+--             toggle = flush(e,tag,toggle)
+--         end
+--     end
+--     local done, toggle = false, false
+--     for e in lxmlcollected(id,"/*") do
+--         local tag = e.tg
+--         if tag == "mprescripts" then
+--             break
+--         elseif done then
+--             toggle = flush(e,tag,toggle)
+--         else
+--             xmlsprint(e)
+--             done = true
+--         end
+--     end
+-- end
 
 function mathml.mmultiscripts(id)
-    local done, toggle = false, false
+    local prescripts = false
+    local subscripts = true
+    local firstdone  = false
     for e in lxmlcollected(id,"/*") do
-        local tag = e.tg
-        if tag == "mprescripts" then
-            context("{}")
-            done = true
-        elseif done then
-            toggle = flush(e,tag,toggle)
+        if firstdone then
+            xmlsprint(e.dt)
+            firstdone = true
+        else
+            local tag = e.tg
+            if tag == "none" then
+                subscripts = not subscripts
+            elseif tag == "prescripts" then
+                prescripts = true
+                subscripts = true
+            elseif subscripts then
+                if prescripts then
+                    context("\\subprescript{")
+                    xmlsprint(e.dt)
+                    context("}")
+                end
+                subscripts = false
+            else
+                if prescripts then
+                    context("\\superprescript{")
+                    xmlsprint(e.dt)
+                    context("}")
+                end
+                subscripts = true
+            end
         end
     end
-    local done, toggle = false, false
+    local prescripts = false
+    local subscripts = true
+    local firstdone  = false
     for e in lxmlcollected(id,"/*") do
-        local tag = e.tg
-        if tag == "mprescripts" then
-            break
-        elseif done then
-            toggle = flush(e,tag,toggle)
+        if firstdone then
+            firstdone = true
         else
-            xmlsprint(e)
-            done = true
+            local tag = e.tg
+            if tag == "none" then
+                subscripts = not subscripts
+            elseif tag == "prescripts" then
+                prescripts = true
+                subscripts = true
+            elseif subscripts then
+                if not prescripts then
+                    context("\\subscript{")
+                    xmlsprint(e.dt)
+                    context("}")
+                end
+                subscripts = false
+            else
+                if not prescripts then
+                    context("\\superscript{")
+                    xmlsprint(e.dt)
+                    context("}")
+                end
+                subscripts = true
+            end
         end
     end
 end

@@ -1,0 +1,110 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-makessense
+
+\environment ontarget-style
+
+\startchapter[title={But this does}]
+
+In \LUAMETATEX\ one can do a lot on \LUA, like what I will discuss next, but
+because it is somewhat fundamental it became a core feature of the engine. It was
+also quite easy to implement. It has to do with packaging. \footnote {I actually
+did prototype it in \LUA\ first but wanted a more natural integration in the
+end.}
+
+The box constructors in traditional \TEX\ accept two keywords: \type {to} for
+setting an exact width and \type {spread} for specifying additional width. In
+\LUAMETATEX\ we have some more like \type {shift} (a traditional \TEX\ concept),
+\type {orientation}, \type {xmove}, \type {xoffset}, \type {ymove} and \type
+{yoffset} for absolute positioning, \type {anchor(s)}, \type {target} and \type
+{source} for relative positioning, \type {axis} and \type {class} for usage in
+\math, \type {delay} for leader like boxes, the multiple \type {attr} key for
+setting attributes, a special subtype directive \type {container} and \type
+{direction} for controlling bidirectional typesetting, and \type {reverse} for
+reversing content. The latest addition: \type {adapt} is there for controlling
+and freezing glue.
+
+So, in addition to the width related keys \type {to} and \type {spread} we have
+\type {adapt} that drives wo what width the box will be typeset. \footnote {For
+the moment this keyword only has effect for horizontal boxes.} The keyword is
+followed by a scale values between -1000 and 1000 where a negative value enforces
+shrink and a positive value stretch. The following table shows the effects:
+
+\startbuffer
+\starttabulate
+    \Test{}
+    \Test{to      4cm}
+    \Test{to      \hsize}
+    \Test{spread  1cm}
+    \Test{spread -1cm}
+    \Test{adapt -1000}
+    \Test{adapt  -750}
+    \Test{adapt  -500}
+    \Test{adapt     0}
+    \Test{adapt   500}
+    \Test{adapt   750}
+    \Test{adapt  1000}
+\stoptabulate
+\stopbuffer
+
+\def\Test#1{%
+    \NC
+        \type {#1}
+    \NC
+        \showglyphs
+        \ruledhbox#1{Here are just some words so that we can see what happens.}%
+    \NC \NR
+}
+
+\getbuffer
+
+When a box is typeset the natural glue width is used but when the required width
+exceeds the natural width the glue stretch components kick in. With a negative
+spread the shrink is used but you can get underflows. The \type {adapt} feature
+freezes the glue and it removes the stretch and shrink after applying it to the
+glue width with the given scale factor. So, in order to get the minimum width you
+use \type {adapt -1000}.
+
+\def\Test#1{%
+    \NC
+        \type {#1}
+    \NC
+        \medmuskip 4mu plus 2mu minus 2mu\relax
+        \showmakeup[mathglue]%
+        \showglyphs
+        \ruledhbox#1{$ x + x + a = 2x + a$\hss}%
+    \NC \NR
+}
+
+The reason why I decided to add this feature is that when experimenting with math
+alignments I wanted to be able to see what shrink could be achieved. \footnote
+{At that time Mikael and I were experimenting with consistent spacing in math
+alignments.} The next example shows this:
+
+\getbuffer
+
+Once we had this new feature it made sense to add support for it to \type
+{\framed}, one of the oldest macros that got extended over time:
+
+\startbuffer
+\inframed[adaptive=1000] {Just some words}
+\inframed[adaptive=500]  {Just some words}
+\inframed[adaptive=0]    {Just some words}
+\inframed[adaptive=-500] {Just some words}
+\inframed[adaptive=-1000]{Just some words}
+\stopbuffer
+
+\typebuffer
+
+This renders as:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+Once we have it there other mechanisms can benefit from it, for instance natural
+tables. But keep in mind that spaces are fixed in there so there is only the
+expected result if glue has stretch or shrink.
+
+\stopchapter
+
+\stopcomponent
+

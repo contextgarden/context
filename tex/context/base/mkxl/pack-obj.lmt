@@ -99,14 +99,23 @@ objects = {
 
 local objects = objects
 
-function objects.register(ns,id,b,referenced,offset,mode)
-    local n = objects.n + 1
-    objects.n = n
-    nodes.handlers.finalizebox(b)
-    if mode == 0 then
+function objects.register(ns,id,b,referenced,offset,mode,delay)
+    -- The delay feature is just an experiment: a value of 1 delays the
+    -- flushing and 2 overloads the content. It might disappear again.
+    local found = data[ns][id]
+    if found and delay == 2 then
+        nodes.handlers.finalizebox(b)
+        data[ns][id] = {
+            codeinjections.registerboxresource(b,nil,nil,found[1]), -- hardcoded [1]
+            offset,
+            referenced or false,
+            mode,
+        }
+        return
+    elseif mode == 0 then
         -- tex
         data[ns][id] = {
-            codeinjections.registerboxresource(b), -- a box number
+            codeinjections.registerboxresource(b,nil,delay), -- a box number
             offset,
             referenced or false,
             mode,
@@ -114,7 +123,7 @@ function objects.register(ns,id,b,referenced,offset,mode)
     else
         -- box (backend)
         data[ns][id] = {
-            codeinjections.registerboxresource(b,offset), -- a box number
+            codeinjections.registerboxresource(b,offset,delay), -- a box number
             false,
             referenced,
             mode,
@@ -183,13 +192,13 @@ end
 
 implement {
     name      = "registerreferencedobject",
-    arguments = { "string", "string", "integer", true, "dimension", "integer" },
+    arguments = { "string", "string", "integer", true, "dimension", "integer", "integer" },
     actions   = objects.register,
 }
 
 implement {
     name      = "registerobject",
-    arguments = { "string", "string", "integer", false, "dimension", "integer" },
+    arguments = { "string", "string", "integer", false, "dimension", "integer", "integer" },
     actions   = objects.register,
 }
 

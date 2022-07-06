@@ -165,7 +165,7 @@ local function flushnormalpath(path, t, open, tolerance)
     for i=1,length do
         nt = nt + 1
         pth = path[i]
-        if not ith then
+        if not ith or pth.state == 1 then
             t[nt] = f_m(pth.x_coord,pth.y_coord)
         elseif curved(ith,pth,tolerance) then
 -- elseif pth.curved then
@@ -178,7 +178,9 @@ local function flushnormalpath(path, t, open, tolerance)
     if not open then
         nt = nt + 1
         local one = path[1]
-        if curved(pth,one,tolerance) then
+        if one.state == 1 then
+            t[nt] = f_m(one.x_coord,one.y_coord)
+        elseif curved(pth,one,tolerance) then
 -- if one.curved then
             t[nt] = f_c(pth.right_x,pth.right_y,one.left_x,one.left_y,one.x_coord,one.y_coord)
         else
@@ -209,7 +211,7 @@ local function flushconcatpath(path, t, open, tolerance, transform)
     for i=1,length do
         nt = nt + 1
         pth = path[i]
-        if not ith then
+        if not ith or pth.state == 1 then
             t[nt] = f_m(mpconcat(pth.x_coord,pth.y_coord))
         elseif curved(ith,pth,tolerance) then
 -- elseif pth.curved then
@@ -224,7 +226,9 @@ local function flushconcatpath(path, t, open, tolerance, transform)
     if not open then
         nt = nt + 1
         local one = path[1]
-        if curved(pth,one,tolerance) then
+        if one.state == 1 then
+            t[nt] = f_m(one.x_coord,one.y_coord)
+        elseif curved(pth,one,tolerance) then
 -- if one.curved then
             local a, b = mpconcat(pth.right_x,pth.right_y)
             local c, d = mpconcat(one.left_x,one.left_y)
@@ -476,6 +480,8 @@ function metapost.flush(specification,result)
                                                 local collect    = false
                                                 local both       = false
                                                 local flush      = false
+                                                local outline    = force_outline
+                                                local envelope   = false
                                                 local postscript = object.postscript
                                                 local tolerance  = options and tonumber(options.tolerance) or tolerance
                                         -- if not object.istext then
@@ -490,6 +496,8 @@ function metapost.flush(specification,result)
                                                 elseif postscript == "eoboth" then
                                                     evenodd = true
                                                     both    = true
+                                                elseif postscript == "envelope" then
+                                                    envelope = true
                                                 end
                                         --  end
                                                 --
@@ -505,6 +513,9 @@ function metapost.flush(specification,result)
                                                     end
                                                 else
                                                     local objecttype = object.type -- can have changed
+                                                    if envelope then
+                                                        dashed, linewidth = "", 1 -- to be sure
+                                                    end
                                                     if before then
                                                         result = pluginactions(before,result,flushfigure)
                                                     end
@@ -547,7 +558,7 @@ function metapost.flush(specification,result)
                                                     local open        = path and path[1].left_type and path[#path].right_type -- at this moment only "end_point"
                                                     local pen         = object.pen
                                                     if pen then
-                                                       if pen.type == "elliptical" then
+                                                       if pen.type == "elliptical" or outline then
                                                             transformed, penwidth = pen_characteristics(original) -- boolean, value
                                                             if penwidth ~= linewidth then
                                                                 result[#result+1] = f_w(penwidth)
@@ -567,6 +578,7 @@ function metapost.flush(specification,result)
                                                         if savedpath then
                                                             for i=1,#savedpath do
                                                                 local path = savedpath[i]
+                                                                local open = not path.cycle
                                                                 if transformed then
                                                                     flushconcatpath(path,result,open,tolerance,i==1)
                                                                 else
@@ -582,7 +594,7 @@ function metapost.flush(specification,result)
                                                         else
                                                             flushnormalpath(path,result,open,tolerance)
                                                         end
-                                                        if force_stroke then
+                                                        if outline or envelope then
                                                             result[#result+1] = open and "S" or "h S"
                                                         elseif objecttype == "fill" then
                                                             result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
@@ -607,6 +619,7 @@ function metapost.flush(specification,result)
                                                         if savedhtap then
                                                             for i=1,#savedhtap do
                                                                 local path = savedhtap[i]
+                                                                local open = not path.cycle
                                                                 if transformed then
                                                                     flushconcatpath(path,result,open,tolerance,i==1)
                                                                 else
@@ -621,7 +634,7 @@ function metapost.flush(specification,result)
                                                         else
                                                             flushnormalpath(path,result,open,tolerance)
                                                         end
-                                                        if force_stroke then
+                                                        if outline or envelope then
                                                             result[#result+1] = open and "S" or "h S"
                                                         elseif objecttype == "fill" then
                                                             result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo

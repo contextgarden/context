@@ -1,3 +1,7 @@
+-- This math font has not yet been set up. We will only do that when those involved
+-- ConTeXt (math) develoipment have official copies of all the text minion and math
+-- fonts without restrictions of usage in documents.
+
 local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
 
     local kern_W = { bottomright = { { kern = -150 } } }

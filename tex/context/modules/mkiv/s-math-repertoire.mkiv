@@ -34,6 +34,8 @@
 \definecolor[backgroundcolory][g=.6]
 \definecolor[baselinecolor]   [a=1,t=.5,s=.6]
 \definecolor[charactercolor]  [b=.6]
+\definecolor[italiccolor]     [r=.6]
+\definecolor[anchorcolor]     [s=1]
 \definecolor[pagecolor]       [s=.1]
 \definecolor[nonecolor]       [s=.5]
 \definecolor[textcolor]       [s=.9]
@@ -225,24 +227,68 @@
   {\iffontchar\font#2\relax
      \scale
        [sx=#1,sy=#1]
-       {\dontleavehmode
-        \begingroup
-        \setbox\scratchbox\hbox{\charactercolor\char#2}%
-        \scratchdimen\wd\scratchbox
-        \ifdim\scratchdimen>\zeropoint
+       {\dontleavehmode\hbox\bgroup
+        \setbox\scratchbox\hbox\bgroup
+          \charactercolor
+          \char#2\relax
+        \egroup
+        \scratchwidth \wd\scratchbox
+        \scratchheight\ht\scratchbox
+        \scratchdepth \dp\scratchbox
+        \scratchitalic\ifdefined\glyphscale\glyphxscaled\fontcharic\font#2\relax\else\zeropoint\fi
+        \setbox\scratchbox\hbox\bgroup
+          \ifdim\scratchitalic=\zeropoint\else
+            \hskip\scratchwidth
+            \ifdim\scratchitalic<\zeropoint
+              \hskip\scratchitalic
+              \scratchitalic-\scratchitalic
+            \fi
+            \italiccolor
+            \vrule
+              width  \scratchitalic
+              height \scratchheight
+              depth  \scratchdepth
+            \relax
+            \hskip-\dimexpr\scratchwidth+\scratchitalic\relax
+          \fi
+          \unhbox\scratchbox
+        \egroup
+        \scratchtotal\dimexpr\scratchwidth+\scratchitalic\relax
+        \wd\scratchbox\scratchtotal
+        %
+        \ifdim\scratchtotal>\zeropoint
           \backgroundline[backgroundcolor]{\box\scratchbox}%
-        \else\ifdim\scratchdimen<\zeropoint
-          \scratchdimen-\scratchdimen
-          \setbox\scratchbox\hbox to \scratchdimen{\hss\charactercolor\char#2}%
+        \else\ifdim\scratchtotal<\zeropoint
+          % really negative width?
+          \scratchtotal-\scratchtotal
+          \setbox\scratchbox\hbox to \scratchtotal{\hss\charactercolor\char#2}%
           \backgroundline[backgroundcolorx]{\box\scratchbox}%
         \else
           \setbox\scratchbox\hbox to \emwidth{\hss\charactercolor\char#2}%
-          \scratchdimen\wd\scratchbox
+          \scratchtotal\wd\scratchbox
           \backgroundline[backgroundcolory]{\box\scratchbox}%
         \fi\fi
-        \hskip-\scratchdimen
-        \baselinecolor\vrule width \scratchdimen height .05\exheight depth .05\exheight
-        \endgroup}%
+        \hskip-\scratchtotal
+        \baselinecolor\vrule width \scratchtotal height .05\exheight depth .05\exheight
+        %
+        \ifdefined\glyphscale
+          \scratchdimen\glyphyscaled\fontcharta\font#2\relax
+          \ifdim\scratchdimen=\zeropoint\else
+             \hskip-\scratchtotal
+             \hbox to \scratchwidth yoffset \scratchheight \bgroup
+               \hskip\scratchdimen
+               \anchorcolor
+               \vrule
+                 width  .10\exheight
+                 height .05\exheight
+                 depth  .05\exheight
+               \relax
+               \hss
+             \egroup
+             \hskip\scratchitalic
+          \fi
+        \fi
+        \egroup}%
    \fi}
 
 \unexpanded\def\showmathcharactersmth#1#2%
@@ -325,17 +371,50 @@
         [preset=middlebottom,voffset=5mm]
         {\showmathcharactersbodyfontschars{#2}}}}
 
-% dimensions
+% dimensions (we can ask them in tex)
 
-\unexpanded\def\showmathcharactersentrywdhtdpic#1#2#3#4%
-  {\setlayer
-     [page]
-     [preset=leftbottom,offset=5mm]
-     {\somedata[align=normal,width=5cm]
-        {\strut width \hfill \the\dimexpr#1\scaledpoint\par
-         \strut height\hfill \the\dimexpr#2\scaledpoint\par
-         \strut depth \hfill \the\dimexpr#3\scaledpoint\par
-         \strut italic\hfill \the\dimexpr#4\scaledpoint}}}
+\ifcase\contextlmtxmode
+
+    \unexpanded\def\showmathcharactersentrywdhtdpicta#1#2#3#4#5%
+      {\setlayer
+         [page]
+         [preset=leftbottom,offset=5mm]
+         {\somedata[align=normal,width=5cm]
+            {\strut width \hfill \the\dimexpr#1\scaledpoint\par
+             \strut height\hfill \the\dimexpr#2\scaledpoint\par
+             \strut depth \hfill \the\dimexpr#3\scaledpoint\par
+             \ifnum#4=\zerocount\else
+             \strut italic\hfill \the\dimexpr#4\scaledpoint\par
+             \fi
+             \ifnum#5=\zerocount\else
+             \strut accent\hfill \the\dimexpr#5\scaledpoint
+             \fi
+            }}}
+
+\else
+
+    \unexpanded\def\showmathcharactersentrywdhtdpicta#1%
+      {\setlayer
+         [page]
+         [preset=leftbottom,offset=5mm]
+         {\somedata[align=normal,width=5cm]
+            {\scratchwidth \glyphxscaled\fontcharwd\font#1%
+             \scratchheight\glyphxscaled\fontcharht\font#1%
+             \scratchdepth \glyphxscaled\fontchardp\font#1%
+             \scratchitalic\glyphxscaled\fontcharic\font#1%
+             \scratchdimen \glyphxscaled\fontcharta\font#1%
+             \strut width \hfill \the\scratchwidth \par
+             \strut height\hfill \the\scratchheight\par
+             \strut depth \hfill \the\scratchdepth \par
+             \ifnum\scratchitalic=\zerocount\else
+             \strut italic\hfill \the\scratchitalic\par
+             \fi
+             \ifnum\scratchdimen=\zerocount\else
+             \strut accent\hfill \the\scratchdimen
+             \fi
+            }}}
+
+\fi
 
 \unexpanded\def\showmathcharactersentryresource#1%
   {} % {virtual: #1\par}
@@ -459,16 +538,20 @@
 
 \continueifinputfile{s-math-repertoire.mkiv}
 
+% \enabledirectives[math.nogoodies]
+
 % \showmathcharacterssetbodyfonts{lucidaot,cambria,xits,stixtwo,modern,pagella,termes,bonum,schola,dejavu}
+\showmathcharacterssetbodyfonts{lucidaot,cambria,stixtwo,modern,pagella,termes,bonum,schola,ebgaramond,dejavu,modernlatin}
 % \showmathcharacterssetbodyfonts{newcomputermodern-book,lucidaot,cambria,stixtwo,modern,pagella,termes,bonum,schola,dejavu}
 % \showmathcharacterssetbodyfonts{newcomputermodern-book,stixtwo,modern,pagella,termes,bonum,schola,dejavu}
-\showmathcharacterssetbodyfonts{newcomputermodern-book,lucidaot,cambria,stixtwo,modern,pagella,termes,schola,dejavu}
+% \showmathcharacterssetbodyfonts{newcomputermodern-book,lucidaot,cambria,stixtwo,modern,pagella,termes,schola,dejavu}
+% \showmathcharacterssetbodyfonts{modernlatin,lucidaot,cambria,stixtwo,modern,pagella,termes,schola,dejavu}
 
 \starttext
 
     \doifelse {\getdocumentargument{bodyfont}} {} {
 
-      % \setupbodyfont[cambria,                12pt]
+        \setupbodyfont[cambria,                12pt]
       % \setupbodyfont[modern,                 12pt]
       % \setupbodyfont[lmvirtual,              12pt]
       % \setupbodyfont[pxvirtual,              12pt]
@@ -484,7 +567,7 @@
       % \setupbodyfont[schola,                 12pt]
       % \setupbodyfont[dejavu,                 12pt]
       % \setupbodyfont[lucidaot,               12pt]
-        \setupbodyfont[newcomputermodern-book, 12pt]
+      % \setupbodyfont[newcomputermodern-book, 12pt]
 
     } {
 

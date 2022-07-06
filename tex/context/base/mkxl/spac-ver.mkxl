@@ -420,8 +420,8 @@
   {\ifcsname\??whitespacemethod#1\endcsname
      \lastnamedcs
    \else
-     \s_spac_whitespace_parskip#1\fi
-   \relax}
+     \s_spac_whitespace_parskip#1%
+   \fi\relax}
 
 \permanent\protected\def\forgetparskip
   {\s_spac_whitespace_parskip\zeropoint
@@ -726,7 +726,7 @@
   {\maxdepth\systemmaxdepthfactor\globalbodyfontsize}
 
 \newskip \usedbaselineskip  % These used to be \normal... but that isn't pretty
-\newskip \usedlineskip      % in the token interface, so thes few now have new
+\newskip \usedlineskip      % in the token interface, so these few now have new
 \newdimen\usedlineskiplimit % names. They are public but not really user commands.
 
 \permanent\protected\def\normalbaselines
@@ -796,6 +796,8 @@
 %D \starttyping
 %D \rm \saveinterlinespace .... {\ss \restoreinterlinespace .... \endgraf}
 %D \stoptyping
+%D
+%D This is no longer needed.
 
 \aliased\let\restoreinterlinespace\relax
 
@@ -1553,6 +1555,18 @@
 \appendtoks
     \synchronizelocallinespecs
 \to \everysetuplocalinterlinespace
+
+%D More might be added here:
+
+\def\restoreglobalinterlinespace
+  {\mutable\let\normallineheight\globalbodyfontlineheight
+   \bodyfontlineheight \globalbodyfontlineheight
+   \bodyfontstrutheight\globalbodyfontstrutheight
+   \bodyfontstrutdepth \globalbodyfontstrutdepth}
+
+% \appendtoks
+%     \restoreglobalinterlinespace % done elsewhere
+% \to \everybeforepagebody
 
 %D We still have to synchronize these:
 

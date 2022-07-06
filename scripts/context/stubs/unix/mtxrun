@@ -6433,7 +6433,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-math"] = package.loaded["l-math"] or true
 
--- original size: 2549, stripped down to: 1825
+-- original size: 2679, stripped down to: 1909
 
 if not modules then modules={} end modules ['l-math']={
  version=1.001,
@@ -6446,8 +6446,14 @@ if not math.ceiling then
  math.ceiling=math.ceil
 end
 if not math.round then
- local floor=math.floor
- function math.round(x) return floor(x+0.5) end
+ if xmath then
+  math.round=xmath.round
+ else
+  local floor=math.floor
+  function math.round(x)
+   return x<0 and -floor(-x+0.5) or floor(x+0.5)
+  end
+ end
 end
 if not math.div then
  local floor=math.floor
@@ -14220,7 +14226,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-deb"] = package.loaded["util-deb"] or true
 
--- original size: 10136, stripped down to: 6832
+-- original size: 10593, stripped down to: 7102
 
 if not modules then modules={} end modules ['util-deb']={
  version=1.001,
@@ -14514,6 +14520,22 @@ local function showtraceback(rep)
  end
 end
 debugger.showtraceback=showtraceback
+if luac then
+ local show,dump=luac.print,string.dump
+ function luac.inspect(v)
+  if type(v)=="function" then
+   local ok,str=xpcall(dump,function() end,v)
+   if ok then
+    v=str
+   end
+  end
+  if type(v)=="string" then
+   show(v,true)
+  else
+   print(v)
+  end
+ end
+end
 
 
 end -- of closure
@@ -16310,7 +16332,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 62809, stripped down to: 36225
+-- original size: 62810, stripped down to: 36225
 
 if not modules then modules={} end modules ['lxml-tab']={
  version=1.001,
@@ -19111,7 +19133,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 33708, stripped down to: 20953
+-- original size: 34661, stripped down to: 21511
 
 if not modules then modules={} end modules ['lxml-aux']={
  version=1.001,
@@ -19373,6 +19395,36 @@ function xml.replace(root,pattern,whatever)
      d[n]=t
     end
     redo_ni(d) 
+   end
+  end
+ end
+end
+function xml.expand(root,pattern,whatever)
+ local collected=root and xmlapplylpath(root,pattern)
+ if collected then
+  for c=1,#collected do
+   local e=collected[c]
+   local p=e.__p__
+   if p then
+    if trace_manipulations then
+     report('expanding',pattern,c,e)
+    end
+    local d=p.dt
+    local n=e.ni
+    local t=whatever(e,p)
+    if t then
+     if type(t)=="table" then
+      t=xmlcopy(t)
+      d[n]=t[1]
+      for i=2,#t do
+       n=n+1
+       insert(d,n,t[i])
+      end
+     else
+      d[n]=t
+     end
+     redo_ni(d) 
+    end
    end
   end
  end
@@ -21311,7 +21363,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-env"] = package.loaded["data-env"] or true
 
--- original size: 9501, stripped down to: 6411
+-- original size: 9501, stripped down to: 6413
 
 if not modules then modules={} end modules ['data-env']={
  version=1.001,
@@ -21403,8 +21455,8 @@ local relations=allocate {
    names={ "mp" },
    variable='MPINPUTS',
    suffixes=CONTEXTLMTXMODE>0
-    and { 'mp','mpxl','mpvi','mpiv','mpii' }
-    or  { 'mp','mpvi','mpiv','mpii' },
+    and { 'mpxl','mpvi','mpiv','mpii','mp' }
+    or  {   'mpvi','mpiv','mpii','mp' },
    usertype=true,
   },
   tex={
@@ -25986,8 +26038,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1031629
--- stripped bytes    : 406052
+-- original bytes    : 1033170
+-- stripped bytes    : 406679
 
 -- end library merge
 

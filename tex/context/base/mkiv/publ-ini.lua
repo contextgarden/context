@@ -22,7 +22,7 @@ if not modules then modules = { } end modules ['publ-ini'] = {
 -- gain is not that large anyway because not much publication stuff is flushed.
 
 local next, rawget, type, tostring, tonumber = next, rawget, type, tostring, tonumber
-local match, find, gsub, lower = string.match, string.find, string.gsub, string.lower
+local match, find, gsub = string.match, string.find, string.gsub
 local concat, sort, tohash = table.concat, table.sort, table.tohash
 local mod = math.mod
 local formatters = string.formatters
@@ -32,7 +32,7 @@ local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 local lpegmatch = lpeg.match
 local P, S, C, Ct, Cs, R, Carg = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.R, lpeg.Carg
-local upper = characters.upper
+local upper, lower = characters.upper, characters.lower
 
 local report             = logs.reporter("publications")
 local report_cite        = logs.reporter("publications","cite")
@@ -693,6 +693,49 @@ local findallused do
         end
     }
 
+    implement {
+        name      = "btxmissing",
+        arguments = "2 strings",
+        actions   = function(dataset,tag)
+            local dataset = datasets[dataset]
+            if dataset then
+                local missing = dataset.missing
+                local message = missing[tag]
+                if message == nil then
+                    local luadata = dataset.luadata
+                    local entry   = luadata[tag]
+                    if not entry then
+                        local t = lower(tag)
+                        if luadata[t] then
+                            message = t
+                        else
+                            t = upper(tag)
+                            if luadata[t] then
+                                message = t
+                            else
+                                for k, v in next, luadata do
+                                    if t == upper(k) then
+                                        message = k
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    if not message then
+                        message = false
+                    end
+                    missing[tag] = message
+                end
+                if message then
+                    context("%s vs %s",tag,message)
+                    return
+                end
+            end
+            context(tag)
+        end
+    }
+
 end
 
 local function unknowncite(reference)
@@ -1316,12 +1359,6 @@ do
     local typesetters        = { }
     publications.typesetters = typesetters
 
-    local lowered = setmetatableindex(function(t,k)
-        k = lower(k)
-        t[k] = k
-        return k
-    end)
-
     local function defaulttypesetter(field,value,manipulator)
         if value and value ~= "" then
             value = tostring(value)
@@ -1428,8 +1465,6 @@ do
     local function get(dataset,tag,field,what,check,catspec) -- somewhat more extensive
         local current = rawget(datasets,dataset)
         if current then
-            tag   = lowered[tag]
-            field = lowered[field]
             local data = current.luadata[tag]
             if data then
                 local category = data.category
@@ -1479,8 +1514,6 @@ do
     local function btxflush(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
-            tag   = lowered[tag]
-            field = lowered[field]
             local fields = dataset.luadata[tag]
             if fields then
                 local manipulator, field = splitmanipulation(field)
@@ -1507,8 +1540,6 @@ do
     local function btxfield(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
-            tag   = lowered[tag]
-            field = lowered[field]
             local fields = dataset.luadata[tag]
             if fields then
                 local category = fields.category
@@ -1534,8 +1565,6 @@ do
     local function btxdetail(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
-            tag   = lowered[tag]
-            field = lowered[field]
             local fields = dataset.luadata[tag]
             if fields then
                 local details = dataset.details[tag]
@@ -1566,11 +1595,8 @@ do
     local function btxdirect(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
-            tag   = lowered[tag]
-            field = lowered[field]
             local fields = dataset.luadata[tag]
             if fields then
-                field = lowered[field]
                 local manipulator, field = splitmanipulation(field)
                 local value = fields[field]
                 if value then
@@ -1589,8 +1615,6 @@ do
     local function okay(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
-            tag   = lowered[tag]
-            field = lowered[field]
             local fields = dataset.luadata[tag]
             if fields then
                 local category = fields.category
@@ -2675,6 +2699,8 @@ do
 
     -- a bit redundant access to datasets
 
+    local creported = setmetatableindex("table")
+
     local function processcite(presets,specification)
         --
         if specification then
@@ -2701,9 +2727,15 @@ do
         --
         if not found or #found == 0 then
 --         if not list or #list == 0 then
-            report("no entry %a found in dataset %a",reference,dataset)
+            if not creported[dataset][reference] then
+                report("no entry %a found in dataset %a",reference,dataset)
+                creported[dataset][reference] = true
+            end
         elseif not setup then
-            report("invalid reference for %a",reference)
+            if not creported[""][reference] then
+                report("invalid reference for %a",reference)
+                creported[""][reference] = true
+            end
         else
             if trace_cite then
                 report("processing reference %a",reference)

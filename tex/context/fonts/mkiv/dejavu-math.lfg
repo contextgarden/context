@@ -18,10 +18,15 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            NoLimitSupFactor      =   0,
-            NoLimitSubFactor      = 900,
-            FractionRuleThickness =  60,
-            AccentBaseDepth          =  30,
+            NoLimitSupFactor                 =    0,
+            NoLimitSubFactor                 =  900,
+            FractionRuleThickness            =   60,
+            AccentBaseDepth                  =   30,
+            RadicalDegreeBottomRaisePercent  =   62,
+            RadicalRuleThickness             =   46, -- 52 in font
+            DelimiterPercent                 =   90,
+            DelimiterShortfall               =  400,
+            DisplayOperatorMinHeight         = 1800, -- 1333 in font
         },
         tweaks = {
             aftercopying = {
@@ -32,9 +37,9 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {
-                     -- [0x1D449]           = { 0, .8, .2 },
-                     -- [0x1D44A]           = { 0, .8, .2 },
-                        ["0x1D449:0x1D44A"] = { 0, .8, .2 },
+                     -- [0x1D449]           = { xoffset = 0, width = .8, italic = .2 },
+                     -- [0x1D44A]           = { xoffset = 0, width = .8, italic = .2 },
+                        ["0x1D449:0x1D44A"] = { xoffset = 0, width = .8, italic = .2 },
                     }
                 },
                 {

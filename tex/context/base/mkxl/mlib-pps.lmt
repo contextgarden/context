@@ -759,7 +759,7 @@ local function cm(object)
             local ry = fourth.x_coord - tx
             if sx == 0 then sx = 0.00001 end
             if sy == 0 then sy = 0.00001 end
-            return sx, rx, ry, sy, tx, ty
+            return sx, rx, ry, sy, tx, ty -- different order elsewhere !
         end
     end
     return 1, 0, 0, 1, 0, 0 -- weird case
@@ -1620,6 +1620,8 @@ local function pt_process(object,prescript,before,after)
             local llx, lly, urx, ury = getcorners(object.path)
             if abs(llx) < 0.0001 then llx = 0 end
             if abs(lly) < 0.0001 then lly = 0 end
+            if abs(urx) < 0.0001 then urx = 0 end
+            if abs(ury) < 0.0001 then ury = 0 end
             before[#before+1] = function()
                 if pt_action == "set" then
                     pattern_index = pattern_index + 1

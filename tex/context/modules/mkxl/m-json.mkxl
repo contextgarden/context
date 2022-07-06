@@ -41,7 +41,7 @@
         end,
         arguments = "2 arguments",
         public    = true,
-protected = true,
+        protected = true,
     }
 
     interfaces.implement {

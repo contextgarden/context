@@ -195,7 +195,7 @@ local nofreferred = 0
 local function initializer() -- can we use a tobesaved as metatable for collected?
     tobereferred = references.tobereferred
     referred     = references.referred
-    nofreferred = #referred
+    nofreferred  = #referred
 end
 
 -- no longer done this way
@@ -1854,7 +1854,7 @@ references.identify = identify
 
 local unknowns, nofunknowns, f_valid = { }, 0, formatters["[%s][%s]"]
 
-function references.valid(prefix,reference,specification)
+function references.valid(prefix,reference,specification,silent)
     local set, bug = identify(prefix,reference)
     local unknown = bug or #set == 0
     if unknown then
@@ -1862,7 +1862,7 @@ function references.valid(prefix,reference,specification)
         local str = f_valid(prefix,reference)
         local u = unknowns[str]
         if not u then
-            if somefound then
+            if somefound and not silent then
                 interfaces.showmessage("references",1,str) -- 1 = unknown, 4 = illegal
             end
             unknowns[str] = 1
@@ -1880,9 +1880,27 @@ function references.valid(prefix,reference,specification)
     return not unknown
 end
 
+function references.checked(prefix,reference,specification)
+    return references.valid(prefix,reference,specification,true)
+end
+
 implement {
     name      = "doifelsereference",
     actions   = { references.valid, commands.doifelse },
+    arguments = {
+        "string",
+        "string",
+        {
+            { "highlight", "boolean" },
+            { "newwindow", "boolean" },
+            { "layer" },
+        }
+    }
+}
+
+implement {
+    name      = "doifelsereferencechecked",
+    actions   = { references.checked, commands.doifelse },
     arguments = {
         "string",
         "string",
@@ -2064,7 +2082,7 @@ function references.setandgetattribute(data) -- maybe do internal automatically 
         if ndat then
             local numbers = ndat.numbers
             if type(numbers) == "string" then
-                ndat.numbers = counters.compact(numbers,nil,true)
+                counters.compact(ndat,numbers)
             end
             data.numberdata = helpers.simplify(ndat)
         end

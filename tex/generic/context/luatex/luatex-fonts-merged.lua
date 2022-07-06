@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2022-05-11 11:34
+-- merge date  : 2022-07-06 21:34
 
 do -- begin closure to overcome local limits and interference
 
@@ -3031,8 +3031,14 @@ if not math.ceiling then
  math.ceiling=math.ceil
 end
 if not math.round then
- local floor=math.floor
- function math.round(x) return floor(x+0.5) end
+ if xmath then
+  math.round=xmath.round
+ else
+  local floor=math.floor
+  function math.round(x)
+   return x<0 and -floor(-x+0.5) or floor(x+0.5)
+  end
+ end
 end
 if not math.div then
  local floor=math.floor
@@ -9034,7 +9040,6 @@ characters.indicgroups={
   [43249]=true,
  },
 }
-return characters.indicgroups
 
 end -- closure
 
@@ -18686,7 +18691,7 @@ do
    local scriptoffset=tableoffset+readushort(f)
    local featureoffset=tableoffset+readushort(f)
    local lookupoffset=tableoffset+readushort(f)
-   local variationsoffset=version>0x00010000 and (tableoffset+readulong(f)) or 0
+   local variationsoffset=version>0x00010000 and readulong(f) or 0
    if not scriptoffset then
     return
    end
@@ -18706,7 +18711,7 @@ do
     resolvelookups(f,lookupoffset,fontdata,lookups,lookuptypes,lookuphandlers,what,tableoffset)
    end
    if variationsoffset>0 then
-    loadvariations(f,fontdata,variationsoffset,lookuptypes,featurehash,featureorder)
+    loadvariations(f,fontdata,tableoffset+variationsoffset,lookuptypes,featurehash,featureorder)
    end
   end
  end
@@ -31707,14 +31712,6 @@ if not modules then modules={} end modules ['font-osd']={
  copyright="TAT Zetwerk / PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-local experiment1=false
-local experiment2=false
-local experiment2b1=false
-local experiment2b2=false
-experiments.register("fonts.indic.experiment1",function(v) experiment1=v end)
-experiments.register("fonts.indic.experiment2",function(v) experiment2=v end)
-experiments.register("fonts.indic.experiment2b1",function(v) experiment2b1=v end)
-experiments.register("fonts.indic.experiment2b2",function(v) experiment2b2=v end)
 local insert,remove,imerge,copy,tohash=table.insert,table.remove,table.imerge,table.copy,table.tohash
 local next,type,rawget=next,type,rawget
 local formatters=string.formatters

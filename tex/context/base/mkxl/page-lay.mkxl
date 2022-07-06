@@ -171,6 +171,20 @@
 
 \permanent\def\layoutdistance#1#2{\ifdim\zeropoint<#1#2\else\zeropoint\fi}
 
+\appendtoks
+    \global\pageextragoal\zeropoint
+\to \everysetuplayout
+
+\appendtoks
+    \global\pageextragoal \zeropoint
+\to \everysetupoutputroutine
+
+\immutable\integerdef\lasttextadaptive\zerocount
+
+\prependtoks
+	\enforced\integerdef\lasttextadaptive\plusone
+\to \everybeforeoutput
+
 % \newconditional\reverselayout
 
 \def\page_layouts_set_dimensions
@@ -1354,12 +1368,13 @@
 %D %showsetup{showgrid}
 %D %showsetup{showusage}
 
-\fetchmodulecommand \showprint   \f!page_run
-\fetchmodulecommand \showframe   \f!page_run
-\fetchmodulecommand \showlayout  \f!page_run
-\fetchmodulecommand \showsetups  \f!page_run
-\fetchmodulecommand \showmargins \f!page_run
-\fetchmodulecommand \showgrid    \f!page_run
+\fetchmodulecommand \showprint    \f!page_run
+\fetchmodulecommand \showframe    \f!page_run
+\fetchmodulecommand \showlayout   \f!page_run
+\fetchmodulecommand \showsetups   \f!page_run
+\fetchmodulecommand \showmargins  \f!page_run
+\fetchmodulecommand \showgrid     \f!page_run
+\fetchmodulecommand \showcentering\f!page_run
 
 \glet\page_grids_add_to_box\gobbleoneargument
 \glet\page_grids_add_to_one\gobbleoneargument
@@ -1435,8 +1450,8 @@
                   \c!setups=\systemsetupsprefix\s!default,
               \c!clipoffset=\zeropoint,
                    \c!lines=0,
-                   \c!paper=, % for foxet
-                    \c!page=, % for foxet
+                   \c!paper=,
+                    \c!page=,
                 \c!adaptive=\zeropoint, % new: experiment
                  \c!columns=\plusone,
           \c!columndistance=\zeropoint]

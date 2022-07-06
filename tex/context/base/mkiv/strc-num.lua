@@ -270,18 +270,36 @@ function counters.raw(name)
     return counterdata[name]
 end
 
-function counters.compact(name,level,onlynumbers)
+function counters.compact(target,name,level)
     local cd = counterdata[name]
     if cd then
-        local data    = cd.data
-        local compact = { }
-        for i=1,level or #data do
+        local data       = cd.data
+        local numbers    = { }
+        local ownnumbers = { }
+        local depth      = #data
+        if not level or level == 0 then
+            level = depth
+        elseif level > depth then
+            level = depth
+        end
+
+        for i=1,level do
             local d = data[i]
-            if d.number ~= 0 then
-                compact[i] = (onlynumbers and d.number) or d
+            if d then
+                local n = d.number
+                local o = d.own
+                if n ~= 0 then
+                    numbers[i] = n
+                end
+                if o ~= "" then
+                    ownnumbers[i] = o
+                end
             end
         end
-        return compact
+        target.numbers = numbers
+        if next(ownnumbers) then
+            target.ownnumbers = ownnumbers
+        end
     end
 end
 

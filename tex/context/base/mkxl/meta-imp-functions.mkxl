@@ -1,0 +1,342 @@
+%D \module
+%D   [       file=meta-imp-functions,
+%D        version=2022.05.17,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=All kind of functions,
+%D         author=Mikael Sundqvist & Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \useMPlibrary[functions]
+
+% todo: as with contours, cache
+
+\registerctxluafile{meta-imp-functions}{autosuffix}
+
+\startMPextensions
+    newscriptindex mfid_processfunction ; mfid_processfunction := scriptindex("processfunction") ;
+
+    presetparameters "function" [ name = "unknown", smoothen = false, maxpath = 65536 ] ;
+
+    def lmt_processfunction = applyparameters "function" "lmt_do_processfunction" enddef ;
+
+    vardef lmt_do_processfunction =
+        if getparameter "function" "smoothen" :
+            for k within (runscript mfid_processfunction) : pathpoint .. endfor nocycle
+        else :
+            (runscript mfid_processfunction)
+        fi
+    enddef ;
+\stopMPextensions
+
+\continueifinputfile{meta-imp-functions.mkxl}
+
+\starttext
+
+\startluacode
+    mp.registeraction {
+        name   = "ms2",
+        action = function(t, x, y)
+            return -y, x
+        end
+    }
+\stopluacode
+
+\startMPpage
+    path p ; p := lmt_processfunction [
+        name = "rungekutta"
+        lua  = "ms2",
+        x    = 1,
+        y    = 0,
+        tmax = 6pi,
+        dt   = 0.001,
+        eps  = 0.00001,
+    ] xysized (5cm,5cm) ;
+    draw       p withcolor red withpen pencircle scaled 1 ;
+    path q ; q := for i within p : pathpoint .. endfor nocycle ;
+    draw       q withcolor green withpen pencircle scaled 1/2 ;
+\stopMPpage
+
+%
+
+\startluacode
+    mp.registeraction {
+        name   = "ms3",
+        action = function(t, x, y)
+            return 1, -t*y*y
+        end
+    }
+\stopluacode
+
+\startMPpage
+    path p ; p := lmt_processfunction [
+        name = "rungekutta"
+        lua  = "ms3",
+        x    = 0,
+        y    = 2,
+        tmax = 10,
+        dt   = 0.001,
+        eps  = 0.00001,
+    ] xysized (5cm,5cm) ;
+    draw       p withcolor red withpen pencircle scaled  6 ;
+\stopMPpage
+
+%
+
+\startluacode
+    mp.registeraction {
+        name   = "ms4",
+        action = function(t, x, y)
+            return 1, -y
+        end
+    }
+\stopluacode
+
+\startMPpage
+    path p ; p := lmt_processfunction [
+        name = "rungekutta"
+        lua  = "ms4",
+        x    = 0,
+        y    = 1,
+        tmax = 10,
+        dt   = 0.001,
+        eps  = 0.00001,
+    ] scaled 5cm ;
+    draw       p withcolor red withpen pencircle scaled  6 ;
+\stopMPpage
+
+%
+
+\startluacode
+    mp.registeraction {
+        name   = "ms5",
+        action = function(t, x, y)
+            return x + y + x*x + y*y, x - y - x*x + y*y
+        end
+    }
+\stopluacode
+
+\startMPpage
+    path b ; numeric s;
+
+    s := 1cm ;
+    b := ((-2.5,-2.5) -- (1.5,-2.5) -- (1.5,1.5) -- (-2.5,1.5) -- cycle) scaled s ;
+
+    for i = -3.05 step 0.1 until 2.5 :
+        for j = -3.05 step 0.1 until 2.5 :
+            draw lmt_processfunction [
+                name = "rungekutta",
+                lua  = "ms5",
+                x    = i,
+                y    = j,
+                tmax = 10,
+                dt   = 0.1,
+                eps  = 0.001,
+                smoothen = true,
+                maxpath  = 500, % crazy large paths .. so kind of bad spec here
+            ]
+                scaled s
+                withpen pencircle scaled  0.1
+                withcolor (uniformdeviate(1),uniformdeviate(1),uniformdeviate(1))
+            ;
+        endfor ;
+    endfor ;
+
+    % so how much slack ?
+
+    draw b withpen pencircle scaled 2 ;
+    clip currentpicture to b ;
+
+\stopMPpage
+
+% https://wolfram.com/xid/0dekz2-wla
+
+\startluacode
+    mp.registeraction {
+        name   = "mma1",
+        action = function(t, x, y)
+            return 1, y*math.cos(x+y)
+        end
+    }
+\stopluacode
+
+\startMPpage
+    path p ; p := lmt_processfunction [
+        name = "rungekutta"
+        lua  = "mma1",
+        x    = 0,
+        y    = 1,
+        tmax = 30,
+        dt   = 0.001,
+        eps  = 0.00001,
+    ] xysized(10cm,5cm) ;
+    draw p withcolor red withpen pencircle scaled  2 ;
+    drawpoints p withcolor blue withpen pencircle scaled 2 ;
+\stopMPpage
+
+% https://wolfram.com/xid/0dekz2-gpx
+
+\startluacode
+    mp.registeraction {
+        name   = "mma2",
+        action = function(t, x, y)
+            return -y-x*x, 2*x-y*y*y
+        end
+    }
+\stopluacode
+
+\startMPpage
+    path p ; p := lmt_processfunction [
+        name = "rungekutta"
+        lua  = "mma2",
+        x    = 1,
+        y    = 1,
+        tmax = 20,
+        dt   = 0.001,
+        eps  = 0.00001,
+    ] xysized(10cm,10cm) ;
+    draw p withcolor red withpen pencircle scaled  2 ;
+    drawpoints p withcolor blue withpen pencircle scaled 2 ;
+\stopMPpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% https://wolfram.com/xid/0dekz2-xixft
+
+\startluacode
+    mp.registeraction {
+        name   = "mma3",
+        action = function(t, x, y)
+            return y, -0.1 * y - math.sin(x) + 0.5 * math.cos(t)
+        end
+    }
+\stopluacode
+
+\startMPpage
+    path p ; p := lmt_processfunction [
+        name    = "rungekutta"
+        lua     = "mma3",
+        x       = 0,
+        y       = 0,
+        tmax    = 100,
+        dt      = 0.001,
+        eps     = 0.00001,
+    ] xysized(10cm,10cm) ;
+    draw p withcolor red withpen pencircle scaled  2 ;
+    drawpoints p withcolor blue withpen pencircle scaled 2 ;
+\stopMPpage
+
+% https://wolfram.com/xid/0dekz2-dmilmp
+% Stiff! Not working!
+
+% \startluacode
+%     mp.registeraction {
+%         name   = "mma4",
+%         action = function(t, x, y)
+%             return y, - x + 1000 * (1 - x * x) * y
+%         end
+%     }
+% \stopluacode
+
+% \startMPpage % [instance=decimalfun]
+%     path p ; p := lmt_processfunction [
+%         name = "rungekutta"
+%         lua  = "mma4",
+%         x    = 2,
+%         y    = 0,
+%         tmax = 2000,
+%         dt   = 0.01,
+%         eps  = 0.0001
+%     ] xynormalized(10cm,10cm) ;
+%     draw p
+%         withpen pencircle scaled 2
+%         withcolor red
+%     ;
+%     %     drawpoints p withcolor blue withpen pencircle scaled 2 ;
+% \stopMPpage
+
+% https://wolfram.com/xid/0dekz2-d1orb
+% Discontinuous right-hand side
+
+\startluacode
+    mp.registeraction {
+        name   = "mma5",
+        action = function(t, x, y)
+            return 1, - math.cos(y) + math.floor(t)
+        end
+    }
+\stopluacode
+
+\startMPpage
+    save n ; n := 0 ;
+    for i = "xy", "tx", "ty" :
+        path p ; p := lmt_processfunction [
+            name    = "rungekutta",
+            type    = i,
+            lua     = "mma5",
+            x       = 0,
+            y       = 1,
+            tmax    = 3,
+            dt      = 0.001,
+            eps     = 0.0001,
+        ] xysized(10cm,10cm) shifted (n*11cm,0) ;
+        draw p withcolor red withpen pencircle scaled  2 ;
+        drawpoints p withcolor blue withpen pencircle scaled 2 ;
+        n := n + 1 ;
+    endfor ;
+\stopMPpage
+
+\startluacode
+    mp.registeraction {
+        name   = "mma6",
+        action = function(t, x, y)
+            return y, -x
+        end
+    }
+\stopluacode
+
+\startMPpage
+    save n ; n := 0 ;
+    for i = "xy", "tx", "ty" :
+        path p ; p := lmt_processfunction [
+            name    = "rungekutta",
+            kind    = i,
+            lua     = "mma6",
+            x       = 1,
+            y       = 0,
+            tmin    = 0,
+            tmax    = 6.28,
+            dt      = 0.001,
+            eps     = 0.0000001,
+        ] xysized(10cm,10cm) shifted (n*11cm,0) ;
+        draw p withcolor red withpen pencircle scaled  2 ;
+        drawpoints p withcolor blue withpen pencircle scaled 2 ;
+        n := n + 1 ;
+    endfor ;
+\stopMPpage
+
+\startMPpage
+    save n ; n := 0 ;
+    for i = "xy", "tx", "ty" :
+        path p ; p  := lmt_processfunction [
+            name     = "rungekutta",
+            kind     = i,
+            lua      = "mma6",
+            x        = 1,
+            y        = 0,
+            tmin     = 0,
+            tmax     = 6,
+            stepsize = "fixed",
+            dt       = 0.5,
+            maxpath  = 3,
+        ] xysized(10cm,10cm) shifted (n*11cm,0) ;
+        draw p withcolor red withpen pencircle scaled  2 ;
+        drawpoints p withcolor blue withpen pencircle scaled 2 ;
+        n := n + 1 ;
+    endfor ;
+\stopMPpage
+
+\stoptext

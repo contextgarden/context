@@ -1060,6 +1060,8 @@
 		<cd:constant name='numberconversionset' value='numberconversionset'/>
 		<cd:constant name='numberdistance' value='numberdistance'/>
 		<cd:constant name='numbering' value='numerotare'/>
+		<cd:constant name='numberlocation' value='numberlocation'/>
+		<cd:constant name='numbermethod' value='numbermethod'/>
 		<cd:constant name='numberorder' value='numberorder'/>
 		<cd:constant name='numberprefix' value='numberprefix'/>
 		<cd:constant name='numbersegments' value='numbersegments'/>
@@ -1070,6 +1072,7 @@
 		<cd:constant name='numberstopper' value='numberstopper'/>
 		<cd:constant name='numberstrut' value='numberstrut'/>
 		<cd:constant name='numberstyle' value='stilnumar'/>
+		<cd:constant name='numberthreshold' value='numberthreshold'/>
 		<cd:constant name='numberwidth' value='numberwidth'/>
 		<cd:constant name='nx' value='nx'/>
 		<cd:constant name='ny' value='ny'/>

@@ -316,6 +316,37 @@ function xml.replace(root,pattern,whatever)
     end
 end
 
+function xml.expand(root,pattern,whatever)
+    local collected = root and xmlapplylpath(root,pattern)
+    if collected then
+        for c=1,#collected do
+            local e = collected[c]
+            local p = e.__p__
+            if p then
+                if trace_manipulations then
+                    report('expanding',pattern,c,e)
+                end
+                local d = p.dt
+                local n = e.ni
+                local t = whatever(e,p)
+                if t then
+                    if type(t) == "table" then
+                        t = xmlcopy(t)
+                        d[n] = t[1]
+                        for i=2,#t do
+                            n = n + 1
+                            insert(d,n,t[i])
+                        end
+                    else
+                        d[n] = t
+                    end
+                    redo_ni(d) -- probably not needed
+                end
+            end
+        end
+    end
+end
+
 local function wrap(e,wrapper)
     local t = {
         rn = e.rn,

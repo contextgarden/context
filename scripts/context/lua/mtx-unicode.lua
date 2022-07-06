@@ -500,7 +500,7 @@ end
 
 local preamble
 
-local function splitdefinition(str,index)
+local function splitdefinition(filename,str,index)
     local l = splitlines(str)
     local t = { }
     if index then
@@ -522,7 +522,7 @@ local function splitdefinition(str,index)
                             t[k] = d
                         end
                     else
-                        report("problem: %s",s)
+                        report("problem: %i %s => %s",i,filename,s)
                     end
                 end
             end
@@ -599,13 +599,13 @@ function scripts.unicode.load()
             index                = textfiles.index                ~= "" and io.loaddata(textfiles.index)                or "",
         }
         texttables = {
-            unicodedata          = splitdefinition(textdata.unicodedata,true),
-            bidimirroring        = splitdefinition(textdata.bidimirroring,true),
-            linebreak            = splitdefinition(textdata.linebreak,true),
-            eastasianwidth       = splitdefinition(textdata.eastasianwidth,true),
-            standardizedvariants = splitdefinition(textdata.standardizedvariants,false),
-            arabicshaping        = splitdefinition(textdata.arabicshaping,true),
-            casefolding          = splitdefinition(textdata.casefolding,true),
+            unicodedata          = splitdefinition(textfiles.unicodedata,textdata.unicodedata,true),
+            bidimirroring        = splitdefinition(textfiles.bidimirroring,textdata.bidimirroring,true),
+            linebreak            = splitdefinition(textfiles.linebreak,textdata.linebreak,true),
+            eastasianwidth       = splitdefinition(textfiles.eastasianwidth,textdata.eastasianwidth,true),
+            standardizedvariants = splitdefinition(textfiles.standardizedvariants,textdata.standardizedvariants,false),
+            arabicshaping        = splitdefinition(textfiles.arabicshaping,textdata.arabicshaping,true),
+            casefolding          = splitdefinition(textfiles.casefolding,textdata.casefolding,true),
             index                = splitindex(textdata.index),
         }
         --

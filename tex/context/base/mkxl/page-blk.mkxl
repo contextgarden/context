@@ -1,0 +1,192 @@
+%D \module
+%D   [       file=page-blk,
+%D        version=2022.06.04,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Shuffling Pages,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Shuffling pages}
+
+%D This is a somewhat tricky module and although we have a somewhat abstract
+%D interface we are pretty much bound to \PDF\ output here. When large amounts of
+%D documents are to be generated and|/|or when saving a run makes sense the table
+%D of contents can be typeset at the end and moved to the beginning. However, it
+%D assumes a rather stable and predictable rendering. Don't use this without
+%D checking it really works out well.
+%D
+%D The low level backend code has been around for quite a while but we never had
+%D a real (need and therefore) interface for it. There actually is not that much
+%D code involved anyway. There is no need to backport it to \MKIV.
+
+\registerctxluafile{page-blk}{autosuffix}
+
+% Musical timestamp: end May 2022 xpropaganda (in loop mode to keep the pace).
+
+% pitfalls: we need to keep the toc in order (or generate it 'manually' based on
+% deltas but even then we get the numbers wrong)
+
+\unprotect
+
+\newcount\c_pages_prerolled
+
+\permanent\protected\def\startpageblock[#1]%
+  {\page
+   \clf_startpageblock{#1}}
+
+\permanent\protected\def\stoppageblock
+  {\page
+   \clf_stoppageblock}
+
+\permanent\protected\def\flushpageblocks[#1]%
+  {\page
+   \clf_flushpageblocks{#1}}
+
+\permanent\def\pageblockrealpage#1%
+  {\clf_pageblockrealpage{#1}}
+
+\tolerant\permanent\protected\def\startprerollpageblock[#1]%
+  {\page
+   \clf_startprerollpageblock{#1}%
+   \global\c_pages_prerolled\realpageno % hack
+   \setuppaper[\c!method=\v!none]}
+
+\permanent\protected\def\stopprerollpageblock
+  {\page
+   \clf_stopprerollpageblock
+   \setcounter[realpage][\c_pages_prerolled]% hack
+   \setuppaper[\c!method=\v!normal]}
+
+\permanent\def\prerolledpages#1%
+  {\clf_prerolledpages{#1}}
+
+\protect \endinput
+
+\usemodule[article-basic]
+
+\setupinteraction[state=start]
+
+% \enabletrackers[*reference*]
+% \enabletrackers[*destination*]
+
+\useMPlibrary[dum]
+
+\starttext
+
+\def\AlphaOffset{0}
+\def\BetaOffset {0}
+
+% the flexible ones (can come from files)
+
+\startbuffer[alpha]
+    \startchapter[title=Alpha]
+        \dorecurse{20}{\samplefile{tufte}\par}
+    \stopchapter
+\stopbuffer
+
+\startbuffer[beta]
+    \startchapter[title=Beta]
+        \dorecurse{6}{\samplefile{tufte}\par}
+    \stopchapter
+\stopbuffer
+
+% the fixed ones
+
+\startbuffer[gamma]
+    \startchapter[title=Gamma]
+        \externalfigure[whatever-dummy-3][width=\textwidth]
+    \stopchapter
+\stopbuffer
+
+\startbuffer[rest]
+    \startchapter[title=Rest A]
+        \samplefile{tufte}
+    \stopchapter
+    \startchapter[title=Rest B]
+        \samplefile{tufte}
+        \blank
+        Alpha : \goto{page \AlphaPages}[realpage(\AlphaPages)]\par
+        Beta  : \goto{page \BetaPages }[realpage(\BetaPages )]
+    \stopchapter
+\stopbuffer
+
+\startbuffer[contents]
+    \starttitle[title=Contents]
+        \placelist[chapter][criterium=text]
+    \stoptitle
+\stopbuffer
+
+% Preroll.
+
+\startprerollpageblock[alpha]
+    \start
+        \setuphead[chapter][incrementnumber=no]
+        \getbuffer[alpha]
+    \stop
+\stopprerollpageblock
+
+% \writestatus{!!!!!}{nofalphapages: \prerolledpages{alpha}}
+
+\startprerollpageblock[beta]
+    \start
+        \setuphead[chapter][incrementnumber=no]
+        \getbuffer[beta]
+    \stop
+\stopprerollpageblock
+
+% \writestatus{!!!!!}{nofbetapages: \prerolledpages{beta}}
+
+% Some titling.
+
+\startpageblock[titlepage]
+    \startstandardmakeup
+        \externalfigure[whatever-dummy-1][height=\textheight,width=\textwidth]
+    \stopstandardmakeup
+\stoppageblock
+
+\startpageblock[boguspage]
+    \startstandardmakeup
+        \externalfigure[whatever-dummy-2][height=\textheight,width=\textwidth]
+    \stopstandardmakeup
+\stoppageblock
+
+% The contents will end up here.
+
+% page 1
+
+% The main document.
+
+\setuppagenumber[number=2]
+
+\startpageblock[chapters]
+    % we have a predictable rest:
+
+    \edef\AlphaPages{\the\numexpr 4 \relax}
+    \edef\BetaPages {\the\numexpr 4 + \prerolledpages{alpha} \relax}
+
+    \getbuffer[rest]
+    \getbuffer[alpha]
+    \getbuffer[beta]
+    \getbuffer[gamma]
+\stoppageblock
+
+% This one will move:
+
+\setuppagenumber[number=1]
+
+\startpageblock[contents]
+    \getbuffer[contents]
+\stoppageblock
+
+\flushpageblocks
+  [titlepage,
+   boguspage,
+   contents,
+   chapters]
+
+\stoptext

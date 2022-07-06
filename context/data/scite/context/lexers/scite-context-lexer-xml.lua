@@ -41,7 +41,23 @@ local semicolon        = P(";")
 local equal            = P("=")
 local ampersand        = P("&")
 
-local name             = (R("az","AZ","09") + S("_-."))^1
+-- NameStartChar ::= ":" | [A-Z] | "_" | [a-z]
+--                 | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF]
+--                 | [#x370-#x37D] | [#x37F-#x1FFF]
+--                 | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF]
+--                 | [#x3001-#xD7FF]
+--                 | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
+--
+-- NameChar	  ::= NameStartChar
+--                 | "-" | "." | [0-9] | #xB7
+--                 | [#x203F-#x2040]
+--                 | [#x0300-#x036F]
+
+local name             = ( -- We are a bit more tolerant here.
+                            R("az","AZ","09")
+                          + S("_-.")
+                          + patterns.utf8two + patterns.utf8three + patterns.utf8four
+                         )^1
 local openbegin        = P("<")
 local openend          = P("</")
 local closebegin       = P("/>") + P(">")

@@ -1,0 +1,142 @@
+%D \module
+%D   [       file=m-oldmath,
+%D        version=2022.06.17,
+%D          title=Math,
+%D       subtitle=Fallback to old stuff,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is therefore copyrighted
+%D by \PRAGMA. See mreadme.pdf for details.
+
+%D For the \type {\over} die|-|hards (for this occasion I checked out Outlaw Vern's
+%D updated review on that movie):
+
+\unprotect
+
+\mathgroupingmode \zerocount
+
+\permanent\protected\def\eqalign#1% rather plain, is this used at all ...
+  {\dontleavehmode
+   \mskip\thinmuskip\vcenter\bgroup % \vcenter \s!class \mathwrappercode \bgroup
+     \mathsurround\zeropoint        % \math_eqalign_set_defaults
+     \ialign
+       {\strut
+        \hfil
+        \mathbeginclass\mathordcode
+        \mathendclass  \mathordcode
+        \startforceddisplaymath\aligncontent\stopforceddisplaymath
+        \aligntab
+        \mathbeginclass\mathordcode
+        \mathendclass  \mathordcode
+        \startforceddisplaymath\aligncontent\stopforceddisplaymath
+        \hfil
+        \crcr
+        #1%
+        \crcr}%
+   \egroup\mskip\thinmuskip}        % \egroup
+
+%D Obsolete:
+
+% \permanent\protected\def\displaylines#1%
+%   {\the\mathdisplayaligntweaks
+%    \tabskip\zeroskip
+%    \halign
+%      {\hbox to \displaywidth{%
+%         \normalstartimath\tabskip\zeroskip\everycr\emptytoks\hfil\displaystyle\alignmark\alignmark\hfil\normalstopimath}\crcr
+%         #1\crcr}}
+
+%D no longer defined:
+
+% \permanent\def\ialign % initialized \halign, to be used grouped!
+%   {\everycr\emptytoks
+%    \tabskip\zeroskip
+%    \halign}
+%
+% \permanent\def\oalign#1%
+%   {\leavevmode % plain tex uses this
+%    \vtop
+%      {\baselineskip\zeroskip
+%       \lineskip.25\exheight
+%       \ialign{\alignmark\alignmark\crcr#1\crcr}}}
+%
+% \permanent\def\ooalign % chars over each other
+%   {\lineskiplimit-\maxdimen
+%    \oalign}
+
+%D More old plain stuff:
+
+\permanent\protected\def\buildrel#1\over#2%
+  {\mathrel{\mathop{\kern\zeropoint#2}\limits^{#1}}}
+
+\permanent\protected\def\math_openup
+  {\afterassignment\math_openup_indeed\scratchdimen}
+
+\aliased\let\math_closeup\relax
+
+\def\math_openup_indeed
+  {\enforced\permanent\protected\edef\math_closeup
+     {\lineskip     \the\lineskip
+      \baselineskip \the\baselineskip
+      \lineskiplimit\the\lineskiplimit
+      \relax}%
+   \advance\lineskip     \scratchdimen
+   \advance\baselineskip \scratchdimen
+   \advance\lineskiplimit\scratchdimen}
+
+\permanent\protected\def\openup {\math_openup } % the low level ones are used elsewhere
+\permanent\protected\def\closeup{\math_closeup} % the low level ones are used elsewhere
+
+%D Who knows:
+
+\permanent\protected\def\choose{\atopwithdelims()} % used in korean test file, has to go
+\permanent\protected\def\brack {\atopwithdelims[]}
+\permanent\protected\def\brace {\atopwithdelims\{\}}
+
+%D We have better ways:
+
+\permanent\protected\def\cases#1%
+  {\left\{%
+   \mskip\thinmuskip
+   \vcenter
+     {\normalbaselines
+      \mathsurround\zeropoint
+      \ialign{%
+        \normalstartimath\alignmark\alignmark\hfil\normalstopimath
+        \aligntab
+        \quad\alignmark\alignmark\hfil
+        \crcr
+        #1%
+        \crcr}}%
+   \right.}
+
+\permanent\protected\def\matrix#1%
+  {\emptyhbox
+   \mskip\thinmuskip
+   \vcenter
+     {\normalbaselines
+      \mathsurround\zeropoint
+      \ialign{%
+        \hfil\normalstartimath\alignmark\alignmark\normalstopimath\hfil
+        \aligntab
+        \aligntab
+        \quad\hfil\normalstartimath\alignmark\alignmark\normalstopimath\hfil
+        \crcr
+        \mathstrut
+        \crcr
+        \noalign{\kern-\baselineskip}
+        #1\crcr
+        \mathstrut
+        \crcr
+        \noalign{\kern-\baselineskip}}}%
+   \mskip\thinmuskip}
+
+\permanent\protected\def\pmatrix#1%
+  {\left(\matrix{#1}\right)}
+
+
+
+\protect
+
+\endinput

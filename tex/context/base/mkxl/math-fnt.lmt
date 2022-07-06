@@ -27,6 +27,7 @@ local getid      = nuts.getid
 local chardata   = fonts.hashes.characters
 
 -- not yet ok for compact fonts .. needs checking .. or just make this non-compact only
+-- there's also an inaccuracy creeping in: \sqrt{\quad\blackrule[height=25pt,depth=25pt]}
 
 local function register_extensible(font,char,style,box)
     local bx = tonut(box)
@@ -35,14 +36,14 @@ local function register_extensible(font,char,style,box)
     local al = getattrlst(bx)
     local wd, ht, dp = getwhd(bx)
     local private = fonts.helpers.setboxdirectly(font,chardata[font][char].unicode or char,box)
- -- local g = new_glyph(font,private)
- -- setattrlst(g,al)
+    -- we saved a scaled glyph stream so we now use an unscaled one ...
     local g = new_glyph(font,private,al)
     local n = new_hlist(g)
+    -- so the dimensions of the box don't match the glyph scale!
     setwhd(n,wd,ht,dp)
     setattrlst(n,al)
     if id == vlist_code then
-        h = new_vlist(n)
+        n = new_vlist(n)
         setwhd(n,wd,ht,dp)
         setattrlst(n,al)
     end

@@ -116,7 +116,8 @@ hlist_out = function(this_box,current)
                 end
             end
         elseif id == glue_code then
-            cur_h = cur_h + effectiveglue(current,this_box)
+--             cur_h = cur_h + effectiveglue(current,this_box)
+cur_h = cur_h + effectiveglue(current,this_box,true)
         elseif id == hlist_code or id == vlist_code then
             local width, height, depth = getwhd(current)
             local list = getlist(current)
@@ -264,7 +265,8 @@ hlist_out = function(this_box,current)
         elseif id == rule_code then
             cur_h = cur_h + getwidth(current)
         elseif id == math_code then
-            cur_h = cur_h + effectiveglue(current,this_box)
+--             cur_h = cur_h + effectiveglue(current,this_box)
+cur_h = cur_h + effectiveglue(current,this_box,true)
         elseif id == dir_code then
             local dir, cancel = getdirection(current)
             if cancel then
@@ -348,7 +350,8 @@ vlist_out = function(this_box,current)
 
     for current, id, subtype in nextnode, current do
         if id == glue_code then
-            cur_v = cur_v + effectiveglue(current,this_box)
+--             cur_v = cur_v + effectiveglue(current,this_box)
+cur_v = cur_v + effectiveglue(current,this_box,true)
         elseif id == hlist_code or id == vlist_code then
             local width, height, depth = getwhd(current)
             local list = getlist(current)

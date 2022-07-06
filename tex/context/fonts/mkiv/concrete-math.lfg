@@ -8,8 +8,11 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            NoLimitSupFactor =   0,
-            NoLimitSubFactor = 900,
+            NoLimitSupFactor         =    0,
+            NoLimitSubFactor         =  900,
+            DelimiterPercent         =   90,
+            DelimiterShortfall       =  400,
+         -- DisplayOperatorMinHeight = 1800, -- 1400 in font (one size)
         },
         tweaks = {
             aftercopying = {
@@ -24,7 +27,7 @@ return {
                             topleft     = -0.2,
                          -- bottomleft  =  0,
                          -- topright    =  0,
-                            bottomright =  -0.2,
+                            bottomright = -0.2,
                         },
                     },
                 },

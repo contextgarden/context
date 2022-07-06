@@ -44,6 +44,7 @@
 % definesystemconstant {vn}
 
 \definesystemconstant {afrikaans}      \definesystemconstant {af}
+\definesystemconstant {albanian}       \definesystemconstant {sq}
 \definesystemconstant {ancientgreek}   \definesystemconstant {agr}
 \definesystemconstant {ancientlatin}   \definesystemconstant {ala}
 \definesystemconstant {arabic}         \definesystemconstant {ar}
@@ -414,6 +415,7 @@
 \definesystemconstant {unpack}
 \definesystemconstant {unknown}
 \definesystemconstant {Unicode}
+\definesystemconstant {upright}
 \definesystemconstant {userdata}
 \definesystemconstant {userpage}
 \definesystemconstant {user}
@@ -450,6 +452,7 @@
 \definemessageconstant {languages}
 \definemessageconstant {layouts}
 \definemessageconstant {lua}
+\definemessageconstant {math}
 \definemessageconstant {metapost}
 \definemessageconstant {publications}
 \definemessageconstant {references}

@@ -876,6 +876,7 @@
 		<cd:constant name='frameradius' value='شعاع‌قالب'/>
 		<cd:constant name='frames' value='قالبها'/>
 		<cd:constant name='freeregion' value='freeregion'/>
+		<cd:constant name='freezespacing' value='freezespacing'/>
 		<cd:constant name='from' value='از'/>
 		<cd:constant name='functioncolor' value='functioncolor'/>
 		<cd:constant name='functionstyle' value='functionstyle'/>
@@ -956,6 +957,7 @@
 		<cd:constant name='lastpubsep' value='lastpubsep'/>
 		<cd:constant name='layout' value='layout'/>
 		<cd:constant name='left' value='چپ'/>
+		<cd:constant name='leftclass' value='leftclass'/>
 		<cd:constant name='leftcolor' value='رنگ‌چپ'/>
 		<cd:constant name='leftcompoundhyphen' value='leftcompoundhyphen'/>
 		<cd:constant name='leftedge' value='لبه‌چپ'/>
@@ -1014,6 +1016,7 @@
 		<cd:constant name='menu' value='منو'/>
 		<cd:constant name='method' value='روش'/>
 		<cd:constant name='middle' value='میان'/>
+		<cd:constant name='middleclass' value='middleclass'/>
 		<cd:constant name='middlecolor' value='middlecolor'/>
 		<cd:constant name='middlecommand' value='middlecommand'/>
 		<cd:constant name='middlesource' value='middlesource'/>
@@ -1060,6 +1063,8 @@
 		<cd:constant name='numberconversionset' value='numberconversionset'/>
 		<cd:constant name='numberdistance' value='فاصله‌شماره'/>
 		<cd:constant name='numbering' value='شماره‌گذاری'/>
+		<cd:constant name='numberlocation' value='numberlocation'/>
+		<cd:constant name='numbermethod' value='numbermethod'/>
 		<cd:constant name='numberorder' value='numberorder'/>
 		<cd:constant name='numberprefix' value='numberprefix'/>
 		<cd:constant name='numbersegments' value='numbersegments'/>
@@ -1070,6 +1075,7 @@
 		<cd:constant name='numberstopper' value='numberstopper'/>
 		<cd:constant name='numberstrut' value='numberstrut'/>
 		<cd:constant name='numberstyle' value='سبک‌شماره'/>
+		<cd:constant name='numberthreshold' value='numberthreshold'/>
 		<cd:constant name='numberwidth' value='عرض‌شماره'/>
 		<cd:constant name='nx' value='nx'/>
 		<cd:constant name='ny' value='ny'/>
@@ -1123,6 +1129,7 @@
 		<cd:constant name='palet' value='لوح'/>
 		<cd:constant name='paper' value='برگ'/>
 		<cd:constant name='paragraph' value='پاراگراف'/>
+		<cd:constant name='penalties' value='penalties'/>
 		<cd:constant name='period' value='period'/>
 		<cd:constant name='place' value='بگذار'/>
 		<cd:constant name='placehead' value='بگذارسر'/>
@@ -1176,6 +1183,7 @@
 		<cd:constant name='reverse' value='برعکس'/>
 		<cd:constant name='right' value='راست'/>
 		<cd:constant name='rightchars' value='rightchars'/>
+		<cd:constant name='rightclass' value='rightclass'/>
 		<cd:constant name='rightcolor' value='رنگ‌راست'/>
 		<cd:constant name='rightcompoundhyphen' value='rightcompoundhyphen'/>
 		<cd:constant name='rightedge' value='لبه‌راست'/>

@@ -58,6 +58,7 @@ local getexpansion        = nuts.getexpansion
 local getstate            = nuts.getstate
 local getoffsets          = nuts.getoffsets
 local getindex            = nuts.getindex
+local getprop             = nuts.getprop
 
 local isglyph             = nuts.isglyph
 
@@ -137,10 +138,10 @@ local modes = {
     space         = 0x0040000,
     depth         = 0x0080000,
     marginkern    = 0x0100000,
-    mathkern      = 0x0200000,
+    mathkern      = 0x0200000, --
     dir           = 0x0400000,
     par           = 0x0800000,
-    mathglue      = 0x1000000,
+    mathglue      = 0x1000000, --
     mark          = 0x2000000,
     insert        = 0x4000000,
     boundary      = 0x8000000,
@@ -375,7 +376,6 @@ for mode, value in next, modes do
 end
 
 local fraction  = 10
-local normalize = true
 
 trackers  .register("visualizers.reset",    function(v) set("reset", v) end)
 trackers  .register("visualizers.all",      function(v) set("all",   v) end)
@@ -1026,6 +1026,8 @@ local ruledglue, ruledmathglue do
     local righthangskip_code    = gluecodes.righthangskip
     local parfillleftskip_code  = gluecodes.parfillleftskip or parfillskip_code
     local parfillrightskip_code = gluecodes.parfillrightskip or parfillskip_code
+    local parinitleftskip_code  = gluecodes.parinitleftskip
+    local parinitrightskip_code = gluecodes.parinitrightskip
     local indentskip_code       = gluecodes.indentskip
     local intermathskip_code    = gluecodes.intermathskip
     local correctionskip_code   = gluecodes.correctionskip
@@ -1033,16 +1035,10 @@ local ruledglue, ruledmathglue do
 
     local g_cache_v  = caches["vglue"]
     local g_cache_h  = caches["hglue"]
-    local g_cache_ls = caches["leftskip"]
-    local g_cache_rs = caches["rightskip"]
-    local g_cache_lh = caches["lefthang"]
-    local g_cache_rh = caches["righthang"]
-    local g_cache_lp = caches["parfillleftskip"]
-    local g_cache_rp = caches["parfillrightskip"]
-    local g_cache_is = caches["indentskip"]
-    local g_cache_cs = caches["correctionskip"]
+
     local g_cache_gn = caches["gluename"]
     local g_cache_gz = caches["gluezero"]
+    local g_cache_gf = caches["gluefixed"]
 
     local tags = {
      -- [userskip_code]                   = "US",
@@ -1077,8 +1073,8 @@ local ruledglue, ruledmathglue do
         [zerospaceskip_code]              = "ZS",
         [parfillleftskip_code]            = "PL",
         [parfillrightskip_code]           = "PR",
-        [gluecodes.parinitleftskip]       = "IL",
-        [gluecodes.parinitrightskip]      = "IR",
+        [parinitleftskip_code]            = "IL",
+        [parinitrightskip_code]           = "IR",
         [indentskip_code]                 = "IN",
         [correctionskip_code]             = "CS",
     }
@@ -1088,72 +1084,84 @@ local ruledglue, ruledmathglue do
         [righthangskip_code]    =  0.5,
         [leftskip_code]         = -2,
         [rightskip_code]        = -2,
+        [parinitleftskip_code]  = -1.3775,
+        [parinitrightskip_code] = -1.3775,
         [parfillleftskip_code]  = -0.75,
         [parfillrightskip_code] = -0.75,
     }
 
-    -- we sometimes pass previous as we can have issues in math (not watertight for all)
+    local f_amount = formatters["%s:%0.3f"]
 
-    local f_amount    = formatters["%s:%0.3f"]
-    local mathvalues  = nodes.mathvalues
+--     ruledglue = function(head,current,vertical,parent)
+--         local subtype = getsubtype(current)
+--         local width   = effectiveglue(current,parent)
+--         local stag    = stags[subtype]
+--         local amount  = f_amount(tags[subtype] or (vertical and "VS") or "HS",width*pt_factor) -- can be sped up
+--         local info    = (vertical and g_cache_v or g_cache_h)[amount]
+--         if subtype == intermathskip_code then
+--             head = ruledmathglue(head, current)
+--         end
+--         if info then
+--             -- print("glue hit")
+--         else
+--             if subtype == spaceskip_code or subtype == xspaceskip_code or subtype == zerospaceskip_code then
+--                 info = sometext(amount,l_glue,"trace:y")
+--             elseif subtype == userskip_code then
+--                 if width > 0 then
+--                     info = sometext(amount,l_glue,"trace:b")
+--                 elseif width < 0 then
+--                     info = sometext(amount,l_glue,"trace:r")
+--                 else
+--                     info = sometext(amount,l_glue,"trace:g")
+--                 end
+--             elseif subtype == tabskip_code then
+--                 info = sometext(amount,l_glue,"trace:s")
+--             elseif subtype == indentskip_code or subtype == correctionskip_code then
+--                 info = sometext(amount,l_glue,"trace:s")
+--             elseif subtype == leftskip_code then
+--                 info = sometext(amount,l_glue,"trace:y",false,true,stag)
+--             elseif subtype == rightskip_code then
+--                 info = sometext(amount,l_glue,"trace:y",false,false,stag)
+--             elseif subtype == lefthangskip_code then
+--                 info = sometext(amount,l_glue,"trace:y",false,true,stag)
+--             elseif subtype == righthangskip_code then
+--                 info = sometext(amount,l_glue,"trace:y",false,false,stag)
+--             elseif subtype == parfillleftskip_code then
+--                 info = sometext(amount,l_glue,"trace:s",false,true,stag)
+--             elseif subtype == parfillrightskip_code then
+--                 info = sometext(amount,l_glue,"trace:s",false,false,stag)
+--             elseif subtype == parinitleftskip_code then
+--                 info = sometext(amount,l_glue,"trace:s",false,true,stag)
+--             elseif subtype == parinitrightskip_code then
+--                 info = sometext(amount,l_glue,"trace:s",false,false,stag)
+--             else
+--                 info = sometext(amount,l_glue,"trace:m")
+--             end
+--             (vertical and g_cache_v or g_cache_h)[amount] = info
+--         end
+--         info = copylist(info)
+--         if vertical then
+--             info = vpack_nodes(info)
+--         end
+--         head, current = insertnodebefore(head,current,info)
+--         return head, getnext(current)
+--     end
 
-    mathvalues[-1] = "left"
-    mathvalues[-2] = "right"
-
-    local morehack = setmetatableindex(function(t,k)
-        local v = mathematics.classnames[k] -- yet unknown
---         v = v and string.sub(v,1,4) or string.formatters["x%02x"](k)
-        v = v and string.sub(v,1,3) or string.formatters["x%02x"](k)
-        t[k] = v
-        return v
-    end)
-
-    local temphack = setmetatableindex(function(t,k)
-        local v = mathvalues[k]
-        if v then
-            v = gsub(v,"spacing","") -- old
-        else
-            v = k - 256
-            v = morehack[v//64] ..morehack[v%64]
-        end
-        t[k] = v
-        return v
-    end)
-
-    local function gluename(current,layer,color)
-        local name = getfont(current)
-        local zero = iszeroglue(current)
-        local info = zero and g_cache_gz[name] or g_cache_gn[name]
-        if not info then
-            local text = hpack_string(temphack[name],usedfont)
-            local rule = new_rule(emwidth/fraction,2*exheight,(zero and 4.25 or 2.75)*exheight)
-            local list = getlist(text)
-            setlisttransparency(list,color)
-            settransparency(rule,color)
-            setshift(text,(zero and 3.5 or 2)*exheight)
-            info = new_hlist(setlink(rule,text))
-            setattr(info,a_layer,layer)
-            g_cache_gn[name] = info
-        end
-        return copylist(info)
-    end
-
-    ruledmathglue = function(head,current)
-        return insertnodebefore(head,current,gluename(current,l_glue,"trace:m"))
-    end
+    local g_caches = { } for k, v in next, tags do g_caches[k] = caches[v] end
 
     ruledglue = function(head,current,vertical,parent)
         local subtype = getsubtype(current)
         local width   = effectiveglue(current,parent)
-        local stag    = normalize and stags[subtype]
-        local amount  = f_amount(tags[subtype] or (vertical and "VS") or "HS",width*pt_factor) -- can be sped up
-        local info    = (vertical and g_cache_v or g_cache_h)[amount]
+        local stag    = stags[subtype]
+        local cache   = g_caches[subtype] or (vertical and g_cache_v) or g_cache_h
+        local info    = cache[amount]
         if subtype == intermathskip_code then
             head = ruledmathglue(head, current)
         end
         if info then
             -- print("glue hit")
         else
+            local amount = f_amount(tags[subtype] or (vertical and "VS") or "HS",width*pt_factor)
             if subtype == spaceskip_code or subtype == xspaceskip_code or subtype == zerospaceskip_code then
                 info = sometext(amount,l_glue,"trace:y")
             elseif subtype == userskip_code then
@@ -1169,21 +1177,25 @@ local ruledglue, ruledmathglue do
             elseif subtype == indentskip_code or subtype == correctionskip_code then
                 info = sometext(amount,l_glue,"trace:s")
             elseif subtype == leftskip_code then
-                info = sometext(amount,l_glue,normalize and "trace:y" or "trace:c",false,true,stag)
+                info = sometext(amount,l_glue,"trace:y",false,true,stag)
             elseif subtype == rightskip_code then
-                info = sometext(amount,l_glue,normalize and "trace:y" or "trace:c",false,false,stag)
+                info = sometext(amount,l_glue,"trace:y",false,false,stag)
             elseif subtype == lefthangskip_code then
-                info = sometext(amount,l_glue,normalize and "trace:y" or "trace:m",false,true,stag)
+                info = sometext(amount,l_glue,"trace:y",false,true,stag)
             elseif subtype == righthangskip_code then
-                info = sometext(amount,l_glue,normalize and "trace:y" or "trace:m",false,false,stag)
+                info = sometext(amount,l_glue,"trace:y",false,false,stag)
             elseif subtype == parfillleftskip_code then
                 info = sometext(amount,l_glue,"trace:s",false,true,stag)
             elseif subtype == parfillrightskip_code then
                 info = sometext(amount,l_glue,"trace:s",false,false,stag)
+            elseif subtype == parinitleftskip_code then
+                info = sometext(amount,l_glue,"trace:s",false,true,stag)
+            elseif subtype == parinitrightskip_code then
+                info = sometext(amount,l_glue,"trace:s",false,false,stag)
             else
                 info = sometext(amount,l_glue,"trace:m")
             end
-            (vertical and g_cache_v or g_cache_h)[amount] = info
+            cache[amount] = info
         end
         info = copylist(info)
         if vertical then
@@ -1216,6 +1228,78 @@ local ruledglue, ruledmathglue do
         info = copylist(info)
         head, current = insertnodebefore(head,current,info)
         return head, getnext(current)
+    end
+
+    -- we sometimes pass previous as we can have issues in math (not watertight for all)
+
+    local mathvalues = nodes.mathvalues
+
+    mathvalues[-1] = "left"
+    mathvalues[-2] = "right"
+
+    local morehack = setmetatableindex(function(t,k)
+        local v = mathematics.classnames[k] -- yet unknown
+        v = v and string.sub(v,1,3) or string.formatters["x%02x"](k)
+        t[k] = v
+        return v
+    end)
+
+    local temphack = setmetatableindex(function(t,k)
+        local v = mathvalues[k]
+        if v then
+            v = gsub(v,"spacing","") -- old, quads and so
+        else
+            v = k - 256
+            v = morehack[v//64] .. morehack[v%64]
+        end
+        t[k] = v
+        return v
+    end)
+
+    local g_cache_qd = caches["mathquad"]
+
+    ruledmathglue = function(head,current,parent)
+        local name  = getfont(current)
+        local zero  = iszeroglue(current)
+        local fixed = getprop(current,"fixedmathalign")
+        local color = false
+        local info  = zero and g_cache_gz[name]
+        local quad  = name == 0
+        local width = quad and effectiveglue(current,parent)
+        if not info then
+            if quad then
+                info  = g_cache_qd[width]
+                color = "trace:z"
+            elseif fixed then
+                info  = g_cache_gf[name]
+                color = "trace:dr"
+            else
+                info  = g_cache_gn[name]
+                color = "trace:z"
+            end
+        end
+        if not info then
+            local amount = quad and f_amount("QUAD",width*pt_factor) or temphack[name]
+         -- local amount = quad and f_amount("QD",width*pt_factor) or temphack[name]
+            local text   = hpack_string(amount,usedfont)
+            local rule   = new_rule(emwidth/fraction,2*exheight,(zero and 4.25 or 2.75)*exheight)
+            local list   = getlist(text)
+            setlistcolor(list,color)
+            setcolor(rule,color)
+            setlisttransparency(list,color)
+            settransparency(rule,color)
+            setshift(text,(zero and 3.5 or 2)*exheight)
+            info = new_hlist(setlink(rule,text))
+            setattr(info,a_layer,l_glue)
+            if quad then
+                g_cache_qd[width] = info
+            elseif fixed then
+                g_cache_gf[name] = info
+            else
+                g_cache_gn[name] = info
+            end
+        end
+        return insertnodebefore(head,current,copylist(info))
     end
 
 end
@@ -1373,32 +1457,41 @@ local ruledpenalty do
 
     local p_cache_v = caches["vpenalty"]
     local p_cache_h = caches["hpenalty"]
+    local p_cache_m = caches["mpenalty"]
 
     local raisepenalties = false
 
-    local getpenalty     = nuts.getpenalty
+    local getpenalty        = nuts.getpenalty
+    local pre_penalty_code  = nodes.penaltycodes.mathprepenalty
+    local post_penalty_code = nodes.penaltycodes.mathpostpenalty
 
     directives.register("visualizers.raisepenalties",function(v) raisepenalties = v end)
 
-    ruledpenalty = function(head,current,vertical)
+    ruledpenalty = function(head,current,vertical,subtype)
         local penalty = getpenalty(current)
-        local info = (vertical and p_cache_v or p_cache_h)[penalty]
+        local ismath  = subtype == pre_penalty_code or subtype == post_penalty_code
+        local cache   = (ismath and p_cache_m) or (vertical and p_cache_v) or p_cache_h
+        local info    = cache[penalty]
         if info then
             -- print("penalty hit")
         else
-            local amount = formatters["%s:%s"](vertical and "VP" or "HP",penalty)
-            if penalty > 0 then
+            local amount = formatters["%s:%s"]((ismath and "MP") or (vertical and "VP") or "HP",penalty)
+            if ismath then
+                info = sometext(amount,l_penalty,"trace:s")
+            elseif penalty > 0 then
                 info = sometext(amount,l_penalty,"trace:b")
             elseif penalty < 0 then
                 info = sometext(amount,l_penalty,"trace:r")
             else
                 info = sometext(amount,l_penalty,"trace:g")
             end
-            (vertical and p_cache_v or p_cache_h)[penalty] = info
+            cache[penalty] = info
         end
         info = copylist(info)
         if vertical then
             info = vpack_nodes(info)
+        elseif ismath then
+            setshift(info, 65536*4)
         elseif raisepenalties then
             setshift(info,-65536*4)
         end
@@ -1446,6 +1539,7 @@ do
 
     local listcodes               = nodes.listcodes
     local linelist_code           = listcodes.line
+    local rowlist_code            = listcodes.alignment
 
     local vtop_package_state      = 3 -- todo: symbolic
 
@@ -1602,7 +1696,8 @@ do
                 goto glue
             elseif id == penalty_code then
                 if trace_penalty then
-                    head, current = ruledpenalty(head,current,vertical)
+                    subtype = getsubtype(current)
+                    head, current = ruledpenalty(head,current,vertical,subtype)
                 end
             elseif id == hlist_code or id == vlist_code then
                 goto list
@@ -1716,7 +1811,7 @@ do
                 if trace_depth then
                     ruleddepth(current)
                 end
-                if trace_line and getsubtype(current) == linelist_code then
+                if trace_line and (getsubtype(current) == linelist_code or getsubtype(current) == rowlist_code) then
                     head, current = ruledbox(head,current,false,l_line,"L__",trace_simple,previous,trace_origin,parent)
                 elseif trace_hbox then
                     head, current = ruledbox(head,current,false,l_hbox,"H__",trace_simple,previous,trace_origin,parent)

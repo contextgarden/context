@@ -693,6 +693,11 @@
 
 \aliased\let\doifreferencefoundelse\doifelsereferencefound
 
+\permanent\def\doifelsereferencechecked#label%
+  {\clf_doifelsereferencechecked{\referenceprefix}{#label}{\extrareferencearguments}}
+
+\aliased\let\doifcheckedreferencefoundelse\doifelsereferencechecked
+
 %D The tester only splits the reference in components but does not look into them.
 %D The following macro does a preroll and determines for instance the current real
 %D reference pagenumber. The \type {\currentrealreference} macro does the same so

@@ -454,13 +454,17 @@
 
 \def\strc_counters_register_component_list#1#2#3#4%
   {\xdef\currentstructurecomponentname           {#2\s!name}%
-   \xdef\currentstructurecomponentlevel          {#2\c!level}%
+   \xdef\currentstructurecomponentcounter        {#2\s!counter}%
+   \xdef\currentstructurecomponentlevel          {#2\s!haslevel}%
    \edef\currentstructurecomponentexpansion      {#2\c!expansion}%
    \xdef\currentstructurecomponentxmlsetup       {#2\c!xmlsetup}%
    \xdef\currentstructurecomponentcatcodes       {#2\s!catcodes}%
    \xdef\currentstructurecomponentlabel          {#2\c!label}%
    \xdef\currentstructurecomponentreference      {#2\c!reference}%
    \xdef\currentstructurecomponentreferenceprefix{#2\c!referenceprefix}%
+   \ifempty\currentstructurecomponentcounter
+      \glet\currentstructurecomponentcounter\currentcounter
+   \fi
    \strc_counters_register_component_check_prefix
    \ifx\currentstructurecomponentexpansion\s!xml
      \xmlstartraw
@@ -533,7 +537,7 @@
           list     {\detokenize\expandafter{\currentstructurecomponentlist}}
       \fi
       }
-  \ifx\p_hasnumber\v!yes
+  \ifx\p_hasnumber\v!yes\ifempty\currentstructurecomponentcounter\else
       prefixdata {
           prefix        {#2\c!prefix}
           separatorset  {#2\c!prefixseparatorset}
@@ -545,10 +549,13 @@
           connector     {#2\c!prefixconnector}
       }
       numberdata { % more helpers here, like compact elsewhere
-          numbers       {\currentcounter}
+        \ifempty\currentstructurecomponentlevel\else
+          level         \currentstructurecomponentlevel
+        \fi
+          numbers       {\currentstructurecomponentcounter}
           group         {#2\c!group}
           groupsuffix   {#2\c!groupsuffix}
-          counter       {\currentcounter}
+          counter       {\currentstructurecomponentcounter}
           separatorset  {#2\c!numberseparatorset}
           conversion    {#2\c!numberconversion}
           conversionset {#2\c!numberconversionset}
@@ -556,7 +563,7 @@
           stopper       {#2\c!numberstopper}
           segments      {#2\c!numbersegments}
       }
-  \fi
+  \fi\fi
       userdata {\detokenize{#4}}
    %}
    \relax

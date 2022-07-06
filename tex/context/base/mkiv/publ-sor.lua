@@ -370,9 +370,17 @@ table.setmetatableindex(sorters,function(t,k) return anything end)
 
 publications.lists.sorters = sorters
 
--- publications.sortmethods.key = {
---     sequence = {
---         { field = "key",   default = "", unknown = "" },
---         { field = "index", default = "", unknown = "" },
---     },
--- }
+publications.sortmethods.key = {
+    sequence = {
+        { field = "key",   default = "", unknown = "" },
+        { field = "index", default = 0, unknown = 0 },
+    },
+}
+
+publications.sortmethods.index = {
+    sequence = {
+        { field = "index", default = 0, unknown = 0 },
+    },
+}
+
+publications.sortmethods.dataset = publications.sortmethods.index

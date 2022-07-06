@@ -1,0 +1,755 @@
+% language=us runpath=texruns:manuals/ontarget
+
+% Musical timestamp: while adding this to the engine and I listened to many John
+% Medeski (Martin and Wood) concert videos, many several times ... it kept me in
+% the flow!
+%
+% This wrapup was written with Dave Matthews Band - Seek Up - LIVE, 12/2/2018 in
+% the background, as I like these live acts.
+%
+% This is just a summary from my point of view. A real article is written by
+% Mikael Sundqvist who also explains how arctime and its companions actually
+% work.
+
+\startcomponent ontarget-metapost
+
+\environment ontarget-style
+
+\startchapter[title={To the point}]
+
+In the 2022 \NTG\ \MAPS\ 53 there is a visual very attractive article about
+generative graphics with \METAPOST\ by Fabrice Larribe. These graphics actually
+use very little \METAPOST\ code that use randomized paths and points and the
+magic is in getting the parameters right. This means that one has to process them
+a lot to figure out what looks best. Here is an example of such a graphic
+definition. I will show more variants so a rendering happens later on.
+
+\startbuffer
+\startMPdefinitions
+    vardef agitate_a(expr thepath, S, n, fn, t, ft) =
+        save R, nbpoints, noiselevel, rlength ;
+        path R ; nbpoints := n ; noiselevel := t ;
+        R := thepath ;
+        for s=1 upto S :
+            nbpoints := nbpoints * fn ;
+            noiselevel := noiselevel * ft ;
+            R := for i=1 upto nbpoints:
+                point (i/nbpoints) along R
+                    randomized noiselevel
+                ..
+            endfor cycle ;
+        endfor ;
+        R
+    enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=tex] \getbuffer
+
+I will not explain the working of this because there is the article. Instead, I
+will focus on something that came up when the \MAPS\ was prepared: performance.
+Not only are these graphics large (which is no real problem) but they also take a
+while to render (which is something that does matter when one wants to find the
+best a parameters). For the first few variants we keep the same names of
+variables as in the article.
+
+\startbuffer[final:definition]
+\startMPdefinitions
+    vardef agitator(expr pth, iterations, points, pointfactor, noise, noisefactor) =
+        save currentpath, currentpoints, currentnoise ; path currentpath ;
+        currentpath   := pth ;
+        currentpoints := points ;
+        currentnoise  := noise ;
+        for step = 1 upto iterations :
+            currentpath := arcpointlist currentpoints of currentpath ;
+            if currentnoise <> 0 :
+                currentpath :=
+                    for i within currentpath :
+                        pathpoint
+                        randomized currentnoise
+                        ..
+                    endfor
+                cycle ;
+            fi
+            currentnoise  := currentnoise  * noisefactor ;
+            currentpoints := currentpoints * pointfactor ;
+        endfor ;
+        currentpath
+    enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\startbuffer[final:graphic]
+\startMPcode
+  path pth ;
+  nofcircles  := 15 ; iterations  := 10 ;
+  points      := 10 ; pointfactor := 1.3 ;
+  noise       :=  5 ; noisefactor := 0.8 ;
+
+  nofcircles  :=  5 ; iterations  := 10 ;
+  points      :=  5 ; pointfactor := 1.3 ;
+
+% for c = nofcircles downto 1 :
+%   pth    := fullcircle scaled (c * 6.5) scaled 3 ;
+%   points := floor(arclength(pth) * 0.5) ;
+%   pth    := agitator(pth, iterations, points, pointfactor, noise, noisefactor) ;
+%   eofill pth
+%     withcolor darkred
+%     withtransparency(1,4/nofcircles) ;
+%   draw pth
+%     withpen pencircle scaled 0.1
+%     withtransparency(1,4/nofcircles) ;
+% endfor ;
+
+% currentpicture := currentpicture xsized TextWidth ;
+
+  for c = nofcircles downto 1 :
+    pth    := fullcircle scaled (c * 6.5) scaled 3 ;
+    points := floor(arclength(pth) * 0.5) ;
+    pth    := agitator(pth, iterations, points, pointfactor, noise, noisefactor) ;
+    draw pth
+      withpen pencircle scaled 1
+      withcolor (c/nofcircles)[darkgreen,darkred] ;
+  endfor ;
+
+  currentpicture := currentpicture xsized .5TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\startplacefigure
+  [title={Fabrice's agitated circles, with reduced properties to keep this file small (see source).},
+   reference=fig:agitated]
+    \getbuffer[final:definition,final:graphic]
+\stopplacefigure
+
+In \in {figure} [fig:agitated] we show the (kind of) graphic that we are dealing
+with. Such an agitator is used in a loop so that we agitate multiple circles,
+where we go from large to small with for instance 4868, 4539, 4221, 3892, 3564,
+3245, 2917, 2599, 2270, 1941, 1623, 1294, 966, 647 and 319 points. The article
+uses a definition like below for the graphic where you can see the agitator being
+applied to each of the circles.
+
+\starttyping[option=mp,color=]
+path P ; numeric NbCircles, S, nzero, fn, tzero, ft ;
+
+randomseed   := 10 ;
+defaultscale := .05 ;
+
+NbCircles := 15 ; S := 10 ; nzero := 10 ; fn := 1.3 ; tzero := 5 ; ft := 0.8 ;
+
+for c = NbCircles downto 1 :
+    P := fullcircle scaled (c*6.5) scaled 3 ;
+    P := agitate_a(P, S, nzero, fn, tzero, ft) ;
+    eofill P
+        withcolor transparent(1,4/NbCircles,col) ;
+    draw P
+        withpen pencircle scaled 0.1
+        transparent(1,4/NbCircles,.90[black,col]) ;
+endfor ;
+\stoptyping
+
+The first we noticed is that the graphics processes faster when double mode is
+used: we gain 40--50\percent\ and the reason for this is that modern processors
+are very good at handling doubles while \METAPOST\ in scaled mode has to do a lot
+of juggling with pseudo fractions. In the timings shown later we leave that
+improvement out. Also, because of this observation \CONTEXT\ \LMTX\ now defaults
+its \METAPOST\ instances to method double.
+
+When I stared at the agitator code I noticed that the \type {along} macro was
+used. That macro returns a point at given percentage along a path. In order to do
+that the macro calculates the length of the path and then locates that point. The
+primitive operations involved are \type {arclength}, \type {arctime of} and \type
+{point of} and each these takes some time to complete. A first improvement is to
+inline the \type {along} and hoist the length calculation outside the loop.
+
+\startbuffer
+\startMPdefinitions
+    vardef agitate_b(expr thepath, S, n, fn, t, ft) =
+        save R, nbpoints, noiselevel, rlength ;
+        path R ; nbpoints := n ; noiselevel := t ;
+        R := thepath ;
+        for s=1 upto S :
+            nbpoints := nbpoints * fn ;
+            noiselevel := noiselevel * ft ;
+            rlength := (arclength R) / nbpoints;
+            R := for i=1 upto nbpoints:
+                (point (arctime (i * rlength) of R) of R)
+                    randomized noiselevel
+                ..
+            endfor cycle ;
+        endfor ;
+        R
+    enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=tex] \getbuffer
+
+There is not that much that we can improve here but because Mikael Sundqvist and
+I had just extended \METAPOST\ with some intersection improvements, it made sense
+to see what we could do in the engine. In the next variant the \type {arcpoint}
+combines \type {arctime of} and \type {point of}. The reason this is much
+faster is that we are already on the right spot when we got the time, and we save
+a sequential \type {point of} lookup, something that takes more time when paths
+are longer.
+
+\startbuffer
+\startMPdefinitions
+    vardef agitate_c(expr thepath, S, n, fn, t, ft) =
+        save R, nbpoints, noiselevel, rlength ;
+        path R ; nbpoints := n ; noiselevel := t ;
+        R := thepath ;
+        for s=1 upto S :
+            nbpoints := nbpoints * fn ;
+            noiselevel := noiselevel * ft ;
+            rlength := (arclength R) / nbpoints;
+            R := for i=1 upto nbpoints:
+                (arcpoint (i * rlength) of R)
+                    randomized noiselevel
+                ..
+            endfor cycle ;
+        endfor ;
+        R
+    enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=tex] \getbuffer
+
+At that stage we wondered if we could come up with a primitive like \typ
+{intersectiontimelist} for these points; here a list refers to a path in which we
+collect the points. Now, as with the intersection primitives, \METAPOST\ loops
+over the segments of a path and works within such a segment. That is why the
+following variant has an explicit start at point zero: we can now use offsets
+(discrete points).
+
+\startbuffer
+\startMPdefinitions
+    vardef agitate_d(expr thepath, S, n, fn, t, ft) =
+        save R, nbpoints, noiselevel, rlength ;
+        path R ; nbpoints := n ; noiselevel := t ;
+        R := thepath ;
+        for s=1 upto S :
+            nbpoints := nbpoints * fn ;
+            noiselevel := noiselevel * ft ;
+            rlength := (arclength R) / nbpoints;
+            R := for i=1 upto nbpoints:
+                (arcpoint (0, i * rlength) of R)
+                    randomized noiselevel
+                ..
+            endfor cycle ;
+        endfor ;
+        R
+    enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=tex] \getbuffer
+
+During an evening zooming Mikael and I figured out, by closely looking at the
+source, how the arc functions work and how we could indeed come up with a list
+primitive. The main issue was to use the right information. Mikael sat down to
+make a pure \METAPOST\ variant and I hacked the engine. Mikael came up with a
+first variant similar to the following, where we use a new primitive \typ
+{subarclength}.
+
+\startbuffer
+\startMPdefinitions
+    vardef arcpoints_a(expr thepath, cnt) =
+        save len, seg, tot, tim, stp, acc ;
+        numeric len ; len := length thepath ;
+        numeric seg ; seg := 0 ;
+        numeric tot ; tot := 0 ;
+        numeric tim ; tim := 0 ;
+        %
+        numeric acc[] ; acc[0] := 0 ;
+        for i = 1 upto len:
+            acc[i] := acc[i-1] + subarclength (i-1,i) of thepath ;
+        endfor;
+        %
+        numeric stp ; stp := acc[len] / cnt;
+        %
+        point 0 of thepath
+        for tot = stp step stp until acc[len] :
+            hide(
+                forever :
+                    exitif ((tim < tot) and (tot < acc[seg+1])) ;
+                    seg := seg + 1 ;
+                    tim := acc[seg] ;
+                endfor ;
+            )
+            -- (arcpoint (seg,tot-tim) of thepath)
+        endfor if cycle thepath : -- cycle fi
+    enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=tex] \getbuffer
+
+Getting points of a path is somewhat complicated by the fact that the length of a
+closed path is different from that of an open path even if they have the same
+number of so-called knots. Internally a path is always a closed loop. That way,
+when \METAPOST\ runs over a path, it can easily access the first point when it's
+at the end, something that is handy when that point has to be taken into account.
+Therefore, the end condition of a loop over a path is the arrival at the
+beginning. In the next graphic we show a bit how these first (zero) and last
+points are located. One reason why the previous macros start at point one and not
+at zero is that \type {arclength} can overflow due to the randomly growing path
+otherwise.
+
+\startlinecorrection
+\startMPcode
+    path p ; p := ((0,0) -- (1,0) -- (1,1) -- (0,1)) xyscaled (20EmWidth,5LineHeight) ;
+    path q ; q := p -- cycle ;
+
+    draw p withpen pencircle scaled 4mm withcolor .2white ;
+    draw q withpen pencircle scaled 2mm withcolor .6white ;
+
+    draw point length(p) of p withpen pencircle scaled 6mm withcolor green;
+    draw point length(q) of q withpen pencircle scaled 6mm withcolor blue ;
+
+    draw point 0         of p withpen pencircle scaled 4mm withcolor red ;
+    draw point 0         of q withpen pencircle scaled 2mm withcolor yellow ;
+
+    draw textext.lft("\strut\tttf point length of p") shifted (point length(p) of p) shifted (-6mm,0) ;
+    draw textext.lft("\strut\tttf point length of q") shifted (point length(q) of q) shifted (-6mm,LineHeight) ;
+    draw textext.lft("\strut\tttf point 0 of p")      shifted (point 0         of p) shifted (-6mm,0) ;
+    draw textext.lft("\strut\tttf point 0 of q")      shifted (point 0         of q) shifted (-6mm,-LineHeight) ;
+
+    draw textext("\strut\tttf p is open (dark)")    shifted (center p) shifted (0, LineHeight/2) ;
+    draw textext("\strut\tttf q is closed (light)") shifted (center q) shifted (0,-LineHeight/2) ;
+\stopMPcode
+\stoplinecorrection
+
+The difference between starting at zero or one for a cycle is show below, we get
+more and more points!
+
+\startlinecorrection
+\startMPcode
+    path p ; p := fullsquare ; path q ;
+
+    for i=1 upto 100 :
+        q := for j=1 upto length(p) : (point j of p) -- endfor cycle ;
+        p := q ;
+    endfor ;
+
+    draw            p scaled 2cm withpen pencircle scaled 1mm withcolor "darkred" ;
+    drawpointlabels p scaled 2cm ;
+
+    path p ; p := fullsquare shifted (3/2,0) ; path q ;
+
+    for i=1 upto 100 :
+        q := for j=0 upto length(p) : (point j of p) -- endfor cycle ;
+        p := q ;
+    endfor ;
+
+    draw            p scaled 2cm withpen pencircle scaled 1mm withcolor "darkred" ;
+    drawpointlabels p scaled 2cm ;
+\stopMPcode
+\stoplinecorrection
+
+% point of
+%
+%     if (mp_left_type(p) == mp_endpoint_knot) {
+%         set_number_to_unity(n);
+%         number_negate(n);
+%     } else {
+%         set_number_to_zero(n);
+%     }
+%     do {
+%         p = mp_next_knot(p);
+%         number_add(n, unity_t);
+%     } while (p != cur_exp_knot);
+
+% length:
+%
+%     mp_knot p = cur_exp_knot;
+%     int l = mp_left_type(p) == mp_endpoint_knot ? -1 : 0;
+%     do {
+%         p = mp_next_knot(p);
+%         ++l;
+%     } while (p != cur_exp_knot);
+%     set_number_from_int(*n, l);
+
+In the next variants we will not loop over points but step to the \type
+{arclength}. Watch the new \type {subarclength} primitive that starts at an
+offset. This is much faster than taking a \type {subpath of}. We can move the
+accumulator loop into the main loop:
+
+\startbuffer
+\startMPdefinitions
+    vardef arcpoints_b(expr thepath, cnt) =
+        save len, aln, seg, tot, tim, stp, acc ;
+        numeric len ; len := length thepath ;
+        numeric aln ; aln := arclength thepath ;
+        numeric seg ; seg := 0 ;
+        numeric tot ; tot := 0 ;
+        numeric tim ; tim := 0 ;
+        numeric stp ; stp := aln / cnt;
+        numeric acc ; acc := subarclength (0,1) of thepath ;
+        %
+        point 0 of thepath
+        for tot = stp step stp until aln :
+            hide(
+                forever :
+                    exitif tot < acc ;
+                    seg := seg + 1 ;
+                    tim := acc ;
+                    acc := acc + subarclength (seg,seg+1) of thepath ;
+                endfor ;
+            )
+            -- (arcpoint (seg,tot-tim) of thepath)
+        endfor if cycle thepath : -- cycle fi
+    enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=tex] \getbuffer
+
+If you don't like the \type {hide} the next variant also works okay:
+
+\startbuffer
+\startMPdefinitions
+    vardef mfun_arc_point(text tot)(text thepath) =
+        forever :
+            exitif tot < acc ;
+            seg := seg + 1 ;
+            tim := acc ;
+            acc := acc + subarclength (seg,seg+1) of thepath ;
+        endfor ;
+        (arcpoint (seg,tot-tim) of thepath)
+    enddef ;
+
+    vardef arcpoints_c(expr thepath, cnt) =
+        save len, aln, seg, tot, tim, stp, acc ;
+        numeric len ; len := length thepath ;
+        numeric aln ; aln := arclength thepath ;
+        numeric seg ; seg := 0 ;
+        numeric tot ; tot := 0 ;
+        numeric tim ; tim := 0 ;
+        numeric stp ; stp := aln / cnt;
+        numeric acc ; acc := subarclength (0,1) of thepath ;
+        %
+        point 0 of thepath
+        for tot = stp step stp until aln :
+            -- mfun_arc_point(tot)(thepath)
+        endfor if cycle thepath : -- cycle fi
+    enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=tex] \getbuffer
+
+This got applied in three test agitators
+
+\startbuffer
+\startMPdefinitions
+    vardef agitate_e_a(expr thepath, S, n, fn, t, ft) =
+        save R, nbpoints, noiselevel ;
+        path R ; nbpoints := n ; noiselevel := t ;
+        R := thepath ;
+        for s=1 upto S :
+            nbpoints := nbpoints * fn ;
+            noiselevel := noiselevel * ft ;
+            R := arcpoints_a(R, nbpoints) ; % original Mikael
+            R := for i=0 upto length R:
+                (point i of R)
+                    randomized noiselevel
+                ..
+            endfor cycle ;
+        endfor ;
+        R
+    enddef ;
+
+    vardef agitate_e_b(expr thepath, S, n, fn, t, ft) =
+        save R, nbpoints, noiselevel ;
+        path R ; nbpoints := n ; noiselevel := t ;
+        R := thepath ;
+        for s=1 upto S :
+            nbpoints := nbpoints * fn ;
+            noiselevel := noiselevel * ft ;
+            R := arcpoints_b(R, nbpoints) ; % merged Mikael
+            R := for i=0 upto length R:
+                (point i of R)
+                    randomized noiselevel
+                ..
+            endfor cycle ;
+        endfor ;
+        R
+    enddef ;
+
+    vardef agitate_e_c(expr thepath, S, n, fn, t, ft) =
+        save R, nbpoints, noiselevel ;
+        path R ; nbpoints := n ; noiselevel := t ;
+        R := thepath ;
+        for s=1 upto S :
+            nbpoints := nbpoints * fn ;
+            noiselevel := noiselevel * ft ;
+            R := arcpoints_c(R, nbpoints) ; % split Mikael
+            R := for i=0 upto length R:
+                (point i of R)
+                    randomized noiselevel
+                ..
+            endfor cycle ;
+        endfor ;
+        R
+    enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=tex] \getbuffer
+
+The new engine primitive shortens these agitators:
+
+\startbuffer
+\startMPdefinitions
+    vardef agitate_e_d(expr thepath, S, n, fn, t, ft) =
+        save R, nbpoints, noiselevel ;
+        path R ; nbpoints := n ; noiselevel := t ;
+        R := thepath ;
+        for s=1 upto S :
+            nbpoints := nbpoints * fn ;
+            noiselevel := noiselevel * ft ;
+            R := arcpointlist nbpoints of R;
+            R := for i=0 upto length R:
+                (point i of R)
+                    randomized noiselevel
+                ..
+            endfor cycle ;
+        endfor ;
+        R
+    enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=tex] \getbuffer
+
+So are we done? Did we get rid of all bottlenecks? The answer is no! We still
+loop over the list in order to randomize the points. For each point we start at
+the beginning of the list. Let's first rewrite the agitator a little:
+
+\startbuffer
+\startMPdefinitions
+    vardef agitate_f_a(expr pth, iterations, points, pointfactor, noise, noisefactor) =
+        save currentpath, currentpoints, currentnoise ; path currentpath ;
+        currentpath   := pth ;
+        currentpoints := points ;
+        currentnoise  := noise ;
+        for step = 1 upto iterations :
+            currentpath   := arcpointlist currentpoints of currentpath ;
+            currentnoise  := currentnoise  * noisefactor ;
+            currentpoints := currentpoints * pointfactor ;
+            if currentnoise <> 0 :
+                currentpath :=
+                    for i = 0 upto length currentpath:
+                        (point i of currentpath) randomized currentnoise ..
+                    endfor
+                cycle ;
+            fi
+        endfor ;
+        currentpath
+    enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=tex] \getbuffer
+
+One of the \LUAMETAFUN\ extensions is a fast path iterator. In the next variant
+the \type {inpath} macro sets up an iterator (regular loop) with the length as
+final value. In the process the given path gets passed to \LUA\ where we can
+access it as array. The \type {pointof} macro (again a \LUA\ call) injects a
+pair. You will be surprised that even with passing the path to \LUA\ and calling
+out to \LUA\ to inject the pair this is way faster than the built|-|in \type
+{point of}.
+
+\startbuffer
+\startMPdefinitions
+    vardef agitate_f_b(expr pth, iterations, points, pointfactor, noise, noisefactor) =
+        save currentpath, currentpoints, currentnoise ; path currentpath ;
+        currentpath   := pth ;
+        currentpoints := points ;
+        currentnoise  := noise ;
+        for step = 1 upto iterations :
+            currentnoise  := currentnoise  * noisefactor ;
+            currentpoints := currentpoints * pointfactor ;
+            currentpath   := arcpointlist currentpoints of currentpath ;
+            if currentnoise <> 0 :
+                currentpath :=
+                    for i inpath currentpath :
+                        (pointof i) randomized currentnoise ..
+                    endfor
+                cycle ;
+            fi
+        endfor ;
+        currentpath
+    enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=tex] \getbuffer
+
+It was tempting to see if a more native solution pays of. One problem there is
+that a path is not really suitable for that as we currently don't have a data
+type that represents a point. Okay, actually we sort of have because we can use
+the transform record that has six points but that is something I will look into
+later (it just got added to the todo list).
+
+The \typ {i within pth} iterator is no conceptual beauty but does the job. Just
+keep in mind that it is just means for this kind of applications: run over a path
+point by point. The \type {i} has the current point number. Because we run over a
+path following the links we only run forward.
+
+\startbuffer
+\startMPdefinitions
+    vardef agitate_f_c(expr pth, iterations, points, pointfactor, noise, noisefactor) =
+        save currentpath, currentpoints, currentnoise ; path currentpath ;
+        currentpath   := pth ;
+        currentpoints := points ;
+        currentnoise  := noise ;
+        for step = 1 upto iterations :
+            currentnoise  := currentnoise  * noisefactor ;
+            currentpoints := currentpoints * pointfactor ;
+            currentpath   := arcpointlist currentpoints of currentpath ;
+            if currentnoise <> 0 :
+                currentpath :=
+                    for i within currentpath :
+                        pathpoint
+                        randomized currentnoise
+                        ..
+                    endfor
+                cycle ;
+            fi
+        endfor ;
+        currentpath
+    enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=tex] \getbuffer
+
+Any primitive solution more complex than this, like first creating a fast access
+data structure, of having a double linked list, or using some iterator larger
+than a simple numeric is very likely to have no gain over the super fast \LUA\
+variant.
+
+\startMPdefinitions
+    vardef agitate_x(expr thepath, S, n, fn, t, ft) =
+        save R, nbpoints ;
+        path R ; nbpoints := n ;
+        R := thepath ;
+        for s=1 upto S :
+            nbpoints := nbpoints * fn ;
+            R := arcpointlist nbpoints of R ;
+        endfor ;
+        R
+    enddef ;
+\stopMPdefinitions
+
+\startMPdefinitions
+    def TestMe (expr method, col, justtest) =
+        path P ;
+
+        randomseed   := 10;
+      % maxknotpool  := 20000; % default is 1000
+        defaultscale := .05;
+
+      % NbCircles :=  1 ; S :=  1 ; nzero := 10 ; fn := 1.3 ; tzero := 5 ; ft := 0.8 ;
+      % NbCircles :=  2 ; S := 10 ; nzero := 10 ; fn := 1.3 ; tzero := 5 ; ft := 0.8 ;
+      % NbCircles := 10 ; S :=  5 ; nzero := 10 ; fn := 1.3 ; tzero := 5 ; ft := 0.8 ;
+      % NbCircles := 10 ; S := 10 ; nzero := 20 ; fn := 1.3 ; tzero := 5 ; ft := 0.8 ;
+        NbCircles := 15 ; S := 10 ; nzero := 10 ; fn := 1.3 ; tzero := 5 ; ft := 0.8 ;
+
+        for c = NbCircles downto 1 :
+            P := fullcircle scaled (c*6.5) scaled 3 ;
+            nzero := floor(arclength(P)*0.5);
+                if method ==  0 : P := agitate_x  (P, S, nzero, fn, tzero, ft) ;
+            elseif method ==  1 : P := agitate_a  (P, S, nzero, fn, tzero, ft) ;
+            elseif method ==  2 : P := agitate_b  (P, S, nzero, fn, tzero, ft) ;
+            elseif method ==  3 : P := agitate_c  (P, S, nzero, fn, tzero, ft) ;
+            elseif method ==  4 : P := agitate_d  (P, S, nzero, fn, tzero, ft) ;
+            elseif method == 51 : P := agitate_e_a(P, S, nzero, fn, tzero, ft) ;
+            elseif method == 52 : P := agitate_e_b(P, S, nzero, fn, tzero, ft) ;
+            elseif method == 53 : P := agitate_e_c(P, S, nzero, fn, tzero, ft) ;
+            elseif method == 54 : P := agitate_e_d(P, S, nzero, fn, tzero, ft) ;
+            elseif method == 61 : P := agitate_f_a(P, S, nzero, fn, tzero, ft) ;
+            elseif method == 62 : P := agitate_f_b(P, S, nzero, fn, tzero, ft) ;
+            elseif method == 63 : P := agitate_f_c(P, S, nzero, fn, tzero, ft) ;
+            else :
+            fi ;
+            if justtest :
+                % do nothing
+            elseif method == 0 :
+                draw textext("no draw") ;
+            else :
+                eofill          P                              withcolor transparent(1,4/NbCircles,col) ;
+                draw            P withpen pencircle scaled 0.1           transparent(1,4/NbCircles,.90[black,col]) ;
+             %  drawpoints      P withpen pencircle scaled 0.2 withcolor white ;
+             %  drawpointlabels P                              withcolor white;
+            fi ;
+        endfor ;
+    enddef ;
+\stopMPdefinitions
+
+We show the average runtime for three runs. Here we don't render the paths, which
+takes about one second, including conversion to \PDF. Of course measurements like
+this can change a bit over time. To these times you need to add about a second
+for the draw and fill operations as well as conversion to a \PDF\ stream with
+transparencies. The improvement in runtime makes it possible to use agitators like
+this at runtime especially because normally one will not use such (combinations
+of) large paths.
+
+\starttabulate[|T|r|i2T|r|i2T|r|]
+    \BC agitate_a \NC 776.26 \BC agitate_e_a \NC 291.99 \BC agitate_f_a \NC 10.82 \NC \NR %  1  51 61
+    \BC agitate_b \NC 276.43 \BC agitate_e_b \NC  76.06 \BC agitate_f_b \NC  2.55 \NC \NR %  2  52 62
+    \BC agitate_c \NC 259.89 \BC agitate_e_c \NC  77.27 \BC agitate_f_c \NC  2.17 \NC \NR %  3  53 63
+    \BC agitate_d \NC 260.41 \BC agitate_e_d \NC  18.67 \BC             \NC       \NC \NR %  4  54
+\stoptabulate
+
+The final version of the agitator is slightly different because it depends if we
+start at zero or one but gives similar results and adapt the noise before or
+after the loop.
+
+\typebuffer[final:definition][option=tex]
+
+We use a similar example as in the mentioned article but coded a bit differently:
+
+\typebuffer[final:graphic][option=tex]
+
+For Mikael and me, who both like \METAPOST, it was a nice distraction from
+working months on extending math in \LUAMETATEX, but it also opens up the
+possibilities to do more with rendering (math) functions and graphics, so in the
+end we get paid back anyway.
+
+\stopchapter
+
+\stopcomponent
+
+% see agitate-002.tex
+
+% \startluacode
+%     local t = {
+%         0, -- also initialization
+%         1, 2, 3, 4,
+%         51, 52, 53, 54,
+%         61, 62, 63,
+%     }
+%     for i=1,#t do
+%         context.writestatus("TEST RUN",t[i])
+%         context("\\testfeatureonce{3}{\\startMPcalculation TestMe (%i, blue, true) ; \\stopMPcalculation}",t[i])
+%     end
+% \stopluacode
+
+% \testfeatureonce{1}{\startMPpage TestMe ( 0, \MPcolor{darkblue}  , false) ; \stopMPpage}
+% \testfeatureonce{1}{\startMPpage TestMe ( 1, \MPcolor{darkblue}  , false) ; \stopMPpage}
+% \testfeatureonce{1}{\startMPpage TestMe ( 2, \MPcolor{darkblue}  , false) ; \stopMPpage}
+% \testfeatureonce{1}{\startMPpage TestMe ( 3, \MPcolor{darkred}   , false) ; \stopMPpage}
+% \testfeatureonce{1}{\startMPpage TestMe ( 4, \MPcolor{darkgreen} , false) ; \stopMPpage}
+% \testfeatureonce{1}{\startMPpage TestMe (51, \MPcolor{darkred}   , false) ; \stopMPpage}
+% \testfeatureonce{1}{\startMPpage TestMe (52, \MPcolor{darkgreen} , false) ; \stopMPpage}
+% \testfeatureonce{1}{\startMPpage TestMe (53, \MPcolor{darkblue}  , false) ; \stopMPpage}
+% \testfeatureonce{1}{\startMPpage TestMe (54, \MPcolor{darkblue}  , false) ; \stopMPpage}
+% \testfeatureonce{1}{\startMPpage TestMe (61, \MPcolor{darkyellow}, false) ; \stopMPpage}
+% \testfeatureonce{1}{\startMPpage TestMe (62, \MPcolor{darkyellow}, false) ; \stopMPpage}
+% \testfeatureonce{1}{\startMPpage TestMe (63, \MPcolor{darkyellow}, false) ; \stopMPpage}
+
+% \stoptext

@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Language Macros / Labels}
 
-\registerctxluafile{lang-lab}{}
+\registerctxluafile{lang-lab}{autosuffix}
 \registerctxluafile{lang-txt}{}
 
 \unprotect
@@ -84,10 +84,10 @@
 \mutable\let\currenttextprefixtag  \s!unknown
 
 \protected\def\lang_labels_define_class_indeed#1#2#3#4#5#6#7#8#9%
-  {\permanent\instance\protected\defcsname  setup#1text\endcsname{\protecttextprefixes#2\def\currenttextprefixclass{#1}\lang_labels_text_prefix_setup}%
-   \permanent\instance\protected\defcsname preset#1text\endcsname{\protecttextprefixes 1\def\currenttextprefixclass{#1}\lang_labels_text_prefix_setup}%
-   \permanent\instance\protected\defcsname   copy#1text\endcsname{\protecttextprefixes 1\def\currenttextprefixclass{#1}\lang_labels_text_prefix_copy }%
-   \permanent\instance\protected\defcsname  start#1text\endcsname{\protecttextprefixes 1\def\currenttextprefixclass{#1}\lang_labels_text_prefix_start[#1]}%
+  {\permanent\instance\protected\defcsname  setup#1text\endcsname{\protecttextprefixes      #2\def\currenttextprefixclass{#1}\lang_labels_text_prefix_setup}%
+   \permanent\instance\protected\defcsname preset#1text\endcsname{\protecttextprefixes\plusone\def\currenttextprefixclass{#1}\lang_labels_text_prefix_setup}%
+   \permanent\instance\protected\defcsname   copy#1text\endcsname{\protecttextprefixes\plusone\def\currenttextprefixclass{#1}\lang_labels_text_prefix_copy }%
+   \permanent\instance\protected\defcsname  start#1text\endcsname{\protecttextprefixes\plusone\def\currenttextprefixclass{#1}\lang_labels_text_prefix_start[#1]}%
    \permanent\instance          \letcsname   stop#1text\endcsname \relax
    \permanent\instance\def#4{\reallanguagetag{\defaultlanguage\currentmainlanguage}}%
    \ifnum#2=\plustwo % used for math and tags
@@ -278,7 +278,7 @@
 
 \definelabelclass [head]      [0] % titles
 \definelabelclass [label]     [0] % texts
-\definelabelclass [mathlabel] [0] % functions
+\definelabelclass [mathlabel] [2] % functions
 \definelabelclass [taglabel]  [2] % tags
 
 \clf_definelabels{head}{titles}\s!true\relax
@@ -365,10 +365,10 @@
      last       {\detokenize\expandafter{\normalexpanded{\labeltext{and-2}}}}%
    \relax}
 
-\setuplabeltext [\s!nl] [and-1={{, }}, and-2={{ en }}]   % 1, 2 en 3
-\setuplabeltext [\s!en] [and-1={{, }}, and-2={{, }}]     % 1, 2, 3
-\setuplabeltext [\s!de] [and-1={{, }}, and-2={{ und }}]  % 1, 2 und 3
-\setuplabeltext [\s!hr] [and-1={{, }}, and-2={{ i }}]    % 1, 2 i 3
+\setuplabeltext [\s!nl] [and-1={{, }},and-2={{ en }}]   % 1, 2 en 3
+\setuplabeltext [\s!en] [and-1={{, }},and-2={{, }}]     % 1, 2, 3
+\setuplabeltext [\s!de] [and-1={{, }},and-2={{ und }}]  % 1, 2 und 3
+\setuplabeltext [\s!hr] [and-1={{, }},and-2={{ i }}]    % 1, 2 i 3
 
 %D Goodie (handy at \LUA\ end):
 

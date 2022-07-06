@@ -188,7 +188,7 @@ end
 function constructors.enable () enabled = true  end
 function constructors.disable() enabled = false end
 
-registercallback('linebreak_filter', processor, "breaking paragraps into lines")
+registercallback("linebreak_filter", processor, "breaking paragraps into lines")
 
 statistics.register("linebreak processing time", function()
     return statistics.elapsedseconds(parbuilders)
@@ -356,7 +356,7 @@ local function hpack_quality(how,detail,n,first,last,filename)
             setcolor(rule,"cyan")
         end
         rule = hpack(rule)
-        setwidth(rule,0)
+        setwidth(rule,0) -- maybe better whd all zero
         setdirection(rule,direction)
         return tonode(rule) -- can be a nut
     end

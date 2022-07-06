@@ -39,7 +39,7 @@ local concat, sortedhash = table.concat, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 local loaddata = io.loaddata
 
-local bpfactor               = number.dimenfactors.bp
+local bpfactor       <const> = number.dimenfactors.bp
 
 local osuuid                 = os.uuid
 local zlibcompresssize       = xzip.compresssize
@@ -129,8 +129,10 @@ local usedfonts, usedxforms, usedximages, usedxgroups
 local getxformname, getximagename
 local boundingbox, shippingmode, objectnumber
 local tmrx, tmry, tmsx, tmsy, tmtx, tmty
-local cmrx, cmry, cmsx, cmsy, cmtx, cmty
+----- cmrx, cmry, cmsx, cmsy, cmtx, cmty
+local cmrx, cmry,             cmtx, cmty
 local tmef
+local c_effect
 
 local function usefont(t,k) -- a bit redundant hash
  -- local v = pdfgetfontname(k)
@@ -142,7 +144,7 @@ end
 local function reset_variables(specification)
     pdf_h, pdf_v  = 0, 0
     cmrx, cmry    = 1.0, 1.0
-    cmsx, cmsy    = 0.0, 0.0
+ -- cmsx, cmsy    = 0.0, 0.0
     cmtx, cmty    = 0.0, 0.0
     tmrx, tmry    = 1.0, 1.0
     tmsx, tmsy    = 0.0, 0.0
@@ -169,6 +171,7 @@ local function reset_variables(specification)
     cur_factor    = 0
     tj_delta      = 0.0
     cw            = 0.0
+    c_effect      = nil
     usedfonts     = setmetatableindex(usefont)
     usedxforms    = { }
     usedximages   = { }
@@ -264,6 +267,7 @@ end
 -- helpers (maybe in collapse mode we have to go %.9N)
 
 local f_cm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N cm"]
+local f_cz = formatters["%.6N 0 0 %.6N %.6N %.6N cm"]
 local f_tm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N Tm"]
 
 local saved_text_pos_v = 0
@@ -277,6 +281,7 @@ local function begin_text()
     need_font  = true
     need_width = 0
     need_mode  = 0
+    c_effect   = nil
     mode       = "text"
 end
 
@@ -295,28 +300,32 @@ local function end_text()
     mode  = "page"
 end
 
-local saved_chararray_pos_h
-local saved_chararray_pos_v
+local begin_chararray, end_chararray do
 
-local saved_b = 0
+    local saved_chararray_pos_h
+    local saved_chararray_pos_v
 
-local function begin_chararray()
-    saved_chararray_pos_h = pdf_h
-    saved_chararray_pos_v = pdf_v
-    cw = horizontalmode and saved_chararray_pos_h or - saved_chararray_pos_v
-    tj_delta = 0
-    saved_b = b
-    b = b + 1 ; buffer[b] = " ["
-    mode = "chararray"
-end
+    local saved_b = 0
 
-local function end_chararray()
-    b = b + 1 ; buffer[b] = "] TJ"
-    buffer[saved_b] = concat(buffer,"",saved_b,b)
-    b = saved_b
-    pdf_h = saved_chararray_pos_h
-    pdf_v = saved_chararray_pos_v
-    mode  = "text"
+    begin_chararray = function()
+        saved_chararray_pos_h = pdf_h
+        saved_chararray_pos_v = pdf_v
+        cw = horizontalmode and saved_chararray_pos_h or - saved_chararray_pos_v
+        tj_delta = 0
+        saved_b = b
+        b = b + 1 ; buffer[b] = " ["
+        mode = "chararray"
+    end
+
+    end_chararray = function()
+        b = b + 1 ; buffer[b] = "] TJ"
+        buffer[saved_b] = concat(buffer,"",saved_b,b)
+        b = saved_b
+        pdf_h = saved_chararray_pos_h
+        pdf_v = saved_chararray_pos_v
+        mode  = "text"
+    end
+
 end
 
 local function begin_charmode()
@@ -353,7 +362,8 @@ end
 local function pdf_set_pos(h,v)
     local move = calc_pdfpos(h,v)
     if move then
-        b = b + 1 ; buffer[b] = f_cm(cmrx, cmsx, cmsy, cmry, cmtx*bpfactor, cmty*bpfactor)
+     -- b = b + 1 ; buffer[b] = f_cm(cmrx, cmsx, cmsy, cmry, cmtx*bpfactor, cmty*bpfactor)
+        b = b + 1 ; buffer[b] = f_cz(cmrx, cmry,             cmtx*bpfactor, cmty*bpfactor)
         pdf_h = pdf_h + cmtx
         pdf_v = pdf_v + cmty
     end
@@ -385,7 +395,8 @@ local function pdf_reset_pos()
             return
         end
     end
-    b = b + 1 ; buffer[b] = f_cm(cmrx, cmsx, cmsy, cmry, cmtx*bpfactor, cmty*bpfactor)
+ -- b = b + 1 ; buffer[b] = f_cm(cmrx, cmsx, cmsy, cmry, cmtx*bpfactor, cmty*bpfactor)
+    b = b + 1 ; buffer[b] = f_cz(cmrx,             cmry, cmtx*bpfactor, cmty*bpfactor)
     pdf_h = pdf_h + cmtx
     pdf_v = pdf_v + cmty
 end
@@ -393,7 +404,8 @@ end
 local function pdf_set_pos_temp(h,v)
     local move = calc_pdfpos(h,v)
     if move then
-        b = b + 1 ; buffer[b] = f_cm(cmrx, cmsx, cmsy, cmry, cmtx*bpfactor, cmty*bpfactor)
+     -- b = b + 1 ; buffer[b] = f_cm(cmrx, cmsx, cmsy, cmry, cmtx*bpfactor, cmty*bpfactor)
+        b = b + 1 ; buffer[b] = f_cz(cmrx,             cmry, cmtx*bpfactor, cmty*bpfactor)
     end
 end
 
@@ -522,18 +534,42 @@ do
         collapse = v
     end)
 
-    local function setup_fontparameters(font,factor,sx,sy)
-        local slant   = fontparameters.slantfactor   or 0
-        local extend  = fontparameters.extendfactor  or 1
-        local squeeze = fontparameters.squeezefactor or 1
-        local expand  = 1 + factor / 1000000
-        local format  = fontproperties.format
-        tmef       = expand
-        tmrx       = expand * extend
-        tmsy       = slant
-        tmry       = squeeze
-        need_width = fontparameters.width or 0
-        need_mode  = fontparameters.mode or 0
+    local function setup_fontparameters(font,factor,sx,sy,effect)
+        local format = fontproperties.format
+        local expand = 1 + factor / 1000000
+        tmef         = expand
+
+     -- local slant   = fontparameters.slantfactor   or 0
+     -- local squeeze = fontparameters.squeezefactor or 1
+     -- local extend  = fontparameters.extendfactor  or 1
+     -- tmrx          = extend * expand
+     -- tmry          = squeeze
+     -- tmsy          = slant
+     -- need_width    = fontparameters.width or 0
+     -- need_mode     = fontparameters.mode or 0
+
+        if effect then
+            if effect ~= c_effect then
+                tmsy       = effect.slant   or fontparameters.slantfactor   or 0
+                tmry       = effect.squeeze or fontparameters.squeezefactor or 1
+                tmrx       = effect.extend  or fontparameters.extendfactor  or 1
+                need_mode  = effect.mode    or fontparameters.mode          or 0
+                need_width = effect.line    or fontparameters.width         or 0
+                c_effect   = effect
+            else
+             -- we could check if effects have changed but effects use unique tables; for
+             -- now they win over font effects (only used in math)
+            end
+        else
+            tmsy       = fontparameters.slantfactor   or 0
+            tmry       = fontparameters.squeezefactor or 1
+            tmrx       = fontparameters.extendfactor  or 1
+            need_mode  = fontparameters.mode          or 0
+            need_width = fontparameters.width         or 0
+        end
+
+        tmrx       = expand * tmrx
+
         f_cur      = font
         f_pdf      = usedfonts[font] -- cache
         cur_factor = factor
@@ -665,7 +701,6 @@ do
         local s = data.scale
         local x = data.xoffset
         local y = data.yoffset
-
         if s then
             sx = s * sx
             sy = s * sy
@@ -679,16 +714,21 @@ do
             csy = 1
         end
 
+        local effect = data.effect
+
      -- if sx ~= f_x_scale or sy ~= f_y_scale or need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur then
-        if sx ~= f_x_scale or sy ~= f_y_scale or need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur or mode == "page" then
+        if sx ~= f_x_scale or sy ~= f_y_scale or need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur
+            or mode == "page"
+            or effect ~= c_effect
+        then
             pdf_goto_textmode()
-            setup_fontparameters(font,factor,sx,sy) -- too often due to page
+            setup_fontparameters(font,factor,sx,sy,effect) -- too often due to page
             set_font()
      -- elseif mode == "page" then
      --     pdf_goto_textmode()
      --     set_font()
         elseif cur_tmrx ~= tmrx or cur_factor ~= factor then
-            setup_fontparameters(font,factor,sx,sy)
+            setup_fontparameters(font,factor,sx,sy,effect)
             need_tm = true
         end
 
@@ -1120,11 +1160,11 @@ local flushimage  do
 
     local pdfcollectedresources = lpdf.collectedresources
 
-    function codeinjections.saveboxresource(box,attributes,resources,immediate,kind,margin)
+    function codeinjections.saveboxresource(box,attributes,resources,immediate,kind,margin,onum)
         n = n + 1
         local immediate = true
         local margin    = margin or 0 -- or dimension
-        local objnum    = pdfreserveobject()
+        local objnum    = onum or pdfreserveobject()
         local list      = tonut(type(box) == "number" and tex.takebox(box) or box)
         --
         if resources == true then
@@ -1146,6 +1186,10 @@ local flushimage  do
             index      = objnum,
             objnum     = objnum,
         }
+        local r = boxresources[objnum]
+        if r then
+            flushlist(l.list)
+        end
         boxresources[objnum] = l
         if immediate then
             localconverter(list,"xform",objnum,l)
@@ -1225,7 +1269,8 @@ local flushimage  do
         tx = cmtx * bpfactor
         ty = cmty * bpfactor
         b = b + 1 ; buffer[b] = s_b
-        b = b + 1 ; buffer[b] = f_cm(rx,0,0,ry,tx,ty)
+     -- b = b + 1 ; buffer[b] = f_cm(rx,0,0,ry,tx,ty)
+        b = b + 1 ; buffer[b] = f_cz(rx,    ry,tx,ty)
         b = b + 1 ; buffer[b] = f_fm(name)
         b = b + 1 ; buffer[b] = s_e
     end
@@ -1452,8 +1497,6 @@ local flushimage  do
 
         pdf_goto_pagemode()
 
-     -- local saved_b = b
-
         b = b + 1 ; buffer[b] = s_b
 
         local dim_h = size_h * bpfactor
@@ -1482,9 +1525,6 @@ local flushimage  do
 
         b = b + 1 ; buffer[b] = rule
         b = b + 1 ; buffer[b] = s_e
-
-     -- buffer[saved_b] = concat(buffer," ",saved_b,b)
-     -- b = saved_b
 
     end
 
@@ -1581,11 +1621,12 @@ local wrapupdocument, registerpage  do
         return list
     end
 
-    function lpdf.setpageorder(mapping)
+    function lpdf.setpageorder(mapping,p)
         -- mapping can be a hash so:
         local list = table.sortedkeys(mapping)
         local n    = #list
-        if n == nofpages then
+        local nop  = p or nofpages
+        if n == nop then
             local done = { }
             local hash = { }
             for i=1,n do
@@ -1603,7 +1644,7 @@ local wrapupdocument, registerpage  do
             end
             pages = done
         else
-            report("invalid page order, %i entries expected",nofpages)
+            report("invalid page order, %i entries expected",nop)
         end
     end
 
@@ -2070,6 +2111,11 @@ end
 local flushdeferred -- defined later
 
 local level = 0
+local state = true
+
+function lpdf.setpagestate(s)
+    state = s
+end
 
 local finalize  do
 
@@ -2157,6 +2203,10 @@ local finalize  do
 
             -- resources can be indirect
 
+if state == "ignore" or state == false then
+
+else
+
             registerpage(pageattributes)
 
             lpdf.finalizepage(true)
@@ -2170,6 +2220,8 @@ local finalize  do
             if TrimBox  then pageattributes.TrimBox  = pdfsharedobject(TrimBox ) end
             if CropBox  then pageattributes.CropBox  = pdfsharedobject(CropBox ) end
             if BleedBox then pageattributes.BleedBox = pdfsharedobject(BleedBox) end
+
+end
 
         else
 
@@ -2226,7 +2278,7 @@ local finalize  do
          -- wrapper.Resources = pdfreference(pdfflushobject(boxresources))
 
             if resources ~= "" then
-                 boxresources = boxresources + resources
+                boxresources = boxresources + resources
             end
             if attributes ~= "" then
                 wrapper = wrapper + attributes

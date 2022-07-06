@@ -1266,7 +1266,7 @@ implement {
     }
 }
 
-implement { name = "x_table_reflow_width",              actions = xtables.reflow_width  }
+implement { name = "x_table_reflow_width",              actions = xtables.reflow_width }
 implement { name = "x_table_reflow_height",             actions = xtables.reflow_height }
 implement { name = "x_table_construct",                 actions = xtables.construct }
 implement { name = "x_table_cleanup",                   actions = xtables.cleanup }

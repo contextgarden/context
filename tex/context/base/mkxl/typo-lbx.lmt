@@ -217,7 +217,7 @@ do
         lb_parinitrightskip = parinitrightskip
         lb_overshoot        = overshoot
         lb_linewidth        = getwidth(line)
-        -- only true for soem cases
+        -- only true for some cases
         lb_leftoffset       = leftskip  + lefthang  + parfillleftskip  + parinitleftskip  + indent
         lb_rightoffset      = rightskip + righthang + parfillrightskip + parinitrightskip - overshoot
         --

@@ -56,4 +56,12 @@
 
 \permanent\protected\lettonothing\continuewhenlmtxmode
 
+\permanent\protected\def\continuewhenmkivmode
+  {\starttext
+   \startTEXpage[\c!offset=2ex,\c!foregroundstyle=\tttf]%
+      This file needs \LuaTeX\ and \ConTeXt\ \MKIV.%
+   \stopTEXpage
+   \stoptext
+   \endinput}
+
 \protect \endinput

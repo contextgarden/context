@@ -232,12 +232,97 @@
 
 \let\p_nx_ny\empty
 
-\permanent\protected\def\stopcombination
-  {\bgroup\normalexpanded{\egroup{}\ntimes{{}{}}\c_pack_combinations_y}% brr
-   \dostoptagged
-   \egroup
-   \pack_combinations_pop
-   \egroup}
+% \permanent\tolerant\protected\def\startcombination[#1]#*[#2]% can be simplified
+%   {\bgroup % so we can grab a group
+%    \pack_combinations_push
+%    \edef\currentcombination{#1}%
+%    \edef\p_nx_ny{#2}%
+%    %
+%    \ifempty\p_nx_ny
+%      \ifcondition\validassignment{#1}%
+%        \let\currentcombination\empty
+%        \setupcurrentcombination[#1]%
+%        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+%      \else
+%        \doifelseinstring{*}\currentcombination
+%          {\edef\p_nx_ny{\currentcombination*\plusone*}%
+%           \let\currentcombination\empty}
+%          {\doifelsenumber\currentcombination
+%             {\edef\p_nx_ny{\currentcombination*\plusone*}%
+%              \let\currentcombination\empty}
+%             {\edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}}}%
+%      \fi
+%    \else
+%      \ifcondition\validassignment{#2}%
+%        \setupcurrentcombination[#2]%
+%        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+%      \else
+%        \edef\p_nx_ny{\p_nx_ny*\plusone*}%
+%      \fi
+%    \fi
+%    %
+% % test first:
+% %
+% %    \ifempty\p_nx_ny
+% %      \ifhastok={#1}%
+% %        \let\currentcombination\empty
+% %        \setupcurrentcombination[#1]%
+% %        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+% %      \orelse\ifhastok*{\currentcombination}%
+% %        \edef\p_nx_ny{\currentcombination*\plusone*}%
+% %        \let\currentcombination\empty
+% %      \orelse\ifchknum\currentcombination\or
+% %        \edef\p_nx_ny{\currentcombination*\plusone*}%
+% %        \let\currentcombination\empty
+% %      \else
+% %        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+% %      \fi
+% %    \orelse\ifhastok={#2}%
+% %      \setupcurrentcombination[#2]%
+% %      \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+% %    \else
+% %      \edef\p_nx_ny{\p_nx_ny*\plusone*}%
+% %    \fi
+%    %
+%    \forgetall
+%    %
+%    \the\everycombination
+%    %
+%    \enforced\let\startcontent\pack_common_content_start
+%    \enforced\let\stopcontent \pack_common_content_stop
+%    \enforced\let\startcaption\pack_common_caption_start
+%    \enforced\let\stopcaption \pack_common_caption_stop
+%    %
+%    \edef\p_height  {\combinationparameter\c!height}%
+%    \edef\p_width   {\combinationparameter\c!width}%
+%    \edef\p_location{\combinationparameter\c!location}%
+%    \edef\p_distance{\combinationparameter\c!distance}%
+%    %
+%    \pack_combinations_location_reset
+%    \rawprocesscommacommand[\p_location]\pack_combinations_location_step
+%    %
+%    \dostarttaggedchained\t!combination\currentcombination\??combination
+%    \vbox \ifx\p_height\v!fit\else to \p_height \fi \bgroup
+%    \enforced\let\combination\empty % permits \combination{}{} handy for cld
+%    \normalexpanded{\pack_combinations_start_indeed[\p_nx_ny]}}
+%
+% \permanent\protected\def\stopcombination
+%   {\bgroup\normalexpanded{\egroup{}\ntimes{{}{}}\c_pack_combinations_y}% brr
+%    \dostoptagged
+%    \egroup
+%    \pack_combinations_pop
+%    \egroup}
+
+\installcorenamespace{combinationmethod}
+
+% \defcsname\??combinationmethod:\v!start\endcsname
+%   {}
+%
+% \defcsname\??combinationmethod\endcsname
+%   {\vbox}
+%
+% \defcsname\??combinationmethod:\v!stop\endcsname
+%   {}
 
 \permanent\tolerant\protected\def\startcombination[#1]#*[#2]% can be simplified
   {\bgroup % so we can grab a group
@@ -267,6 +352,7 @@
        \edef\p_nx_ny{\p_nx_ny*\plusone*}%
      \fi
    \fi
+   \begincsname\??combinationmethod\combinationparameter\c!method:\v!start\endcsname
    %
 % test first:
 %
@@ -309,11 +395,24 @@
    \rawprocesscommacommand[\p_location]\pack_combinations_location_step
    %
    \dostarttaggedchained\t!combination\currentcombination\??combination
-   \vbox \ifx\p_height\v!fit\else to \p_height \fi \bgroup
+%    \vbox \ifx\p_height\v!fit\else to \p_height \fi \bgroup
+   \ifcsname\??combinationmethod\combinationparameter\c!method\endcsname
+     \lastnamedcs\else\vbox
+   \fi\ifx\p_height\v!fit\else to \p_height \fi \bgroup
    \enforced\let\combination\empty % permits \combination{}{} handy for cld
    \normalexpanded{\pack_combinations_start_indeed[\p_nx_ny]}}
 
+\permanent\protected\def\stopcombination
+  {\bgroup\normalexpanded{\egroup{}\ntimes{{}{}}\c_pack_combinations_y}% brr
+   \dostoptagged
+   \egroup
+   \begincsname\??combinationmethod\combinationparameter\c!method:\v!stop\endcsname
+   \pack_combinations_pop
+   \egroup}
+
 \let\pack_combinations_check_x_y\relax
+
+\aliased\let\combinationwidth\!!zeropoint
 
 \protected\def\pack_combinations_start_indeed[#1*#2*#3]%
   {\global\c_pack_combinations_x#1\relax
@@ -326,6 +425,10 @@
    \global\c_pack_combinations_max\c_pack_combinations_x
    \multiply\c_pack_combinations_y\c_pack_combinations_x
    \tabskip\zeropoint
+   \enforced\permanent\protected\edef\combinationwidth % \immutable
+     {\the\dimexpr
+        (\hsize-\numexpr\c_pack_combinations_x-\plusone\relax\dimexpr\combinationparameter\c!distance\relax)/\c_pack_combinations_x
+      \relax}%
    \halign \ifx\p_width\v!fit\else to \p_width \fi \bgroup % repetitive preamble
  % \halign noskips \ifx\p_width\v!fit\else to \p_width \fi \bgroup % repetitive preamble
    \aligntab

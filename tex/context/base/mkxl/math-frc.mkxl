@@ -661,35 +661,6 @@
   [\c!hfactor=20,
    \c!vfactor=10]
 
-%D For Mikael Sundqvist who found out that most inline fractions look real bad:
-
-\pushoverloadmode
-
-%ifdefined\d \let\text_d\d \else \let\text_d\firstofoneargument \fi
-\ifdefined\f \let\text_f\f \else \let\text_f\firstofoneargument \fi
-
-\definemathfraction
-  [f]
-  [\c!strut=\v!math]
-
-% \definemathfraction
-%   [d]
-%   [\c!method=\v!line,
-%    \c!strut=\v!math]
-
-\aliased\let\math_f\f
-%aliased\let\math_d\d
-
-\permanent\protected\def\d{\mathortext\math_d\text_d}
-%permanent\protected\def\f{\mathortext\math_f\text_f}
-
-% \setupmathfraction
-%   [%strut=math,
-%    \c!hfactor=100,
-%    \c!vfactor=100]
-
-\popoverloadmode
-
 \protect \endinput
 
 % I have no clue what \mthfrac and \mthsqrt are supposed to do but

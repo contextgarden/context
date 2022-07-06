@@ -814,15 +814,18 @@
 
 \newcount\c_mult_interfaces_n_of_namespaces
 
+% \def\v_interfaces_prefix_template
+%   {\number\c_mult_interfaces_n_of_namespaces>}
+
 \def\v_interfaces_prefix_template
-  {\number\c_mult_interfaces_n_of_namespaces>}
+  {\tohexadecimal\c_mult_interfaces_n_of_namespaces>}
 
 \permanent\protected\def\installnamespace#1% for modules and users
   {\ifcsname ????#1\endcsname
      \writestatus\m!system{duplicate user namespace '#1'}\wait
    \else
      \global\advance\c_mult_interfaces_n_of_namespaces\plusone
-     \immutable\edefcsname ????#1\endcsname{\v_interfaces_prefix_template}%
+     \immutable\xdefcsname ????#1\endcsname{\v_interfaces_prefix_template}%
    \fi}
 
 \permanent\protected\def\installcorenamespace#1%
@@ -830,7 +833,7 @@
      \writestatus\m!system{duplicate core namespace '#1'}\wait
    \else
      \global\advance\c_mult_interfaces_n_of_namespaces\plusone
-     \immutable\edefcsname ??#1\endcsname{\v_interfaces_prefix_template}%
+     \immutable\xdefcsname ??#1\endcsname{\v_interfaces_prefix_template}%
      \clf_registernamespace\c_mult_interfaces_n_of_namespaces{#1}%
    \fi}
 

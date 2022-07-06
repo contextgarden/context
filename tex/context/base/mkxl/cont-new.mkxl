@@ -13,7 +13,7 @@
 
 % \normalend % uncomment this to get the real base runtime
 
-\newcontextversion{2022.05.11 11:34}
+\newcontextversion{2022.07.06 21:34}
 
 %D This file is loaded at runtime, thereby providing an excellent place for hacks,
 %D patches, extensions and new features. There can be local overloads in cont-loc

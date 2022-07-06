@@ -105,21 +105,36 @@ in, so if you want to complain about \LUAMETATEX, don't bother me. Of course, if
 you really need professional support with these engines (or \TEX\ in general),
 you can always consider contacting the developers.
 
+In 2021|--|2022 the math engine was fundamentally overhauled. As a side effect
+some additional features were added. Not all are yet described in the manual:
+some are still experimental and it just takes time and effort to document and the
+priorities are with implementing their usage. Given the long term stability of
+math and them unlikely to be used in other macro packages there is no real urge
+anyway. It is also easier when we have examples of usage. Of course much is
+discussed in \type {ontarget.pdf} and presentations. The same is true for
+additions to \METAPOST: in due time these will be discussed in the \LUAMETAFUN\
+manual (the official \METAPOST\ manual is maintained elsewhere and should not
+discuss features that are not in the \LUATEX\ version).
+
 \blank[big]
 
 Hans Hagen
 
 \blank[2*big]
 
-\starttabulate[|||]
-\NC \LUAMETATEX\ Banner  \EQ \cldcontext{LUATEXENGINE} %
-                             \cldcontext{LUATEXVERSION} / %
-                             \cldcontext{LUATEXFUNCTIONALITY}
-                             \NC \NR
-\NC \LUAMETATEX\ Version \EQ \currentdate \NC \NR
-\NC \CONTEXT\    Version \EQ LMTX \contextversion \NC \NR
-\NC \LUATEX\     Team    \EQ Hans Hagen, Hartmut Henkel, Taco Hoekwater, Luigi Scarso \NC \NR
-\NC \LUAMETATEX\ Team    \EQ Hans Hagen, Alan Braslau, Mojca Miklavec and Wolfgang Schuster \NC \NR
+\starttabulate[||pl|]
+\NC \LUAMETATEX\ Banner   \EQ \cldcontext{LUATEXENGINE} %
+                              \cldcontext{LUATEXVERSION} / %
+                              \cldcontext{LUATEXFUNCTIONALITY}
+                              \NC \NR
+\NC \LUAMETATEX\ Version  \EQ \currentdate \NC \NR
+\NC \CONTEXT\    Version  \EQ LMTX \contextversion \NC \NR
+\NC \LUATEX\     Team     \EQ Hans Hagen, Hartmut Henkel, Taco Hoekwater, Luigi Scarso \NC \NR
+\NC \LUAMETATEX\ Team     \EQ Hans Hagen, Alan Braslau, Mojca Miklavec and Wolfgang Schuster, Mikael Sundqvist \NC \NR
+\NC resources and info at \EQ www.contextgarden.net\space\vl\space
+                              www.pragma-ade.nl\space\vl\space
+                              www.luametatex.org\space\vl\space
+                              ntg-context@ntg.nl (http://www.ntg.nl/mailman/listinfo/ntg-context) \NC \NR
 \stoptabulate
 
 \stopchapter

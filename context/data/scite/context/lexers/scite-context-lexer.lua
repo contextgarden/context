@@ -193,6 +193,14 @@ do
     patterns.float             = float
     patterns.cardinal          = decimal
 
+    local utf8next             = R("\128\191")
+
+    patterns.utf8next          = utf8next
+    patterns.utf8one           = R("\000\127")
+    patterns.utf8two           = R("\194\223") * utf8next
+    patterns.utf8three         = R("\224\239") * utf8next * utf8next
+    patterns.utf8four          = R("\240\244") * utf8next * utf8next * utf8next
+
     patterns.signeddecimal     = sign^-1 * decimal
     patterns.signedoctal       = sign^-1 * octal
     patterns.signedhexadecimal = sign^-1 * hexadecimal
@@ -268,6 +276,11 @@ do
     local utf8two          = R("\194\223") * utf8next
     local utf8three        = R("\224\239") * utf8next * utf8next
     local utf8four         = R("\240\244") * utf8next * utf8next * utf8next
+
+    helpers.utf8one   = utf8one
+    helpers.utf8two   = utf8two
+    helpers.utf8three = utf8three
+    helpers.utf8four  = utf8four
 
     local utfidentifier    = utf8two + utf8three + utf8four
     helpers.utfidentifier  = (R("AZ","az","__")      + utfidentifier)

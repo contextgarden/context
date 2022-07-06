@@ -1424,7 +1424,7 @@ can speed up things a bit. The second argument is not to be used!</p>
 --     end
 -- end
 --
--- We need to prevent __p__ recursio, so:
+-- We need to prevent __p__ recursion, so:
 
 local function copy(old,p)
     if old then

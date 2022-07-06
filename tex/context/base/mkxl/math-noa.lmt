@@ -7,6 +7,8 @@ if not modules then modules = { } end modules ['math-noa'] = {
     license   = "see context related readme files"
 }
 
+-- TODO: SET CLASSES !
+
 -- if specials and (specials[1] == "char" or specials[1] == "font") then -- can we avoid this
 -- ... better create a reverse mapping from the already present vectors
 
@@ -73,7 +75,8 @@ local trace_fences       = false  registertracker("math.fences",      function(v
 local trace_unstacking   = false  registertracker("math.unstack",     function(v) trace_unstacking  = v end)
 local trace_snapping     = false  registertracker("math.snapping",    function(v) trace_snapping    = v end)
 
-local check_coverage     = true   registerdirective("math.checkcoverage",  function(v) check_coverage  = v end)
+local check_coverage     = true   registerdirective("math.checkcoverage",  function(v) check_coverage   = v     end)
+local use_math_goodies   = true   registerdirective("math.nogoodies",      function(v) use_math_goodies = not v end)
 
 local report_processing  = logreporter("mathematics","processing")
 local report_remapping   = logreporter("mathematics","remapping")
@@ -233,13 +236,6 @@ local fence_code         = nodecodes.fence
 local leftfence_code     = fencecodes.left
 local middlefence_code   = fencecodes.middle
 local rightfence_code    = fencecodes.right
-
--- local mathclasses          = mathematics.classes
--- local fenceclasses         = {
---     [leftfence_code]   = mathclasses.open,
---     [middlefence_code] = mathclasses.middle,
---     [rightfence_code]  = mathclasses.close,
--- }
 
 -- this initial stuff is tricky as we can have removed and new nodes with the same address
 -- the only way out is a free-per-page list of nodes (not bad anyway)
@@ -1361,68 +1357,71 @@ do
     }
 
     local function initializemathalternates(tfmdata)
-        local goodies  = tfmdata.goodies
-        local autolist = defaults -- table.copy(defaults)
+        if use_math_goodies then
 
-        local function setthem(newalternates)
-            local resources      = tfmdata.resources -- was tfmdata.shared
-            local mathalternates = resources.mathalternates
-            local alternates, attributes, registered, presets
-            if mathalternates then
-                alternates = mathalternates.alternates
-                attributes = mathalternates.attributes
-                registered = mathalternates.registered
-            else
-                alternates, attributes, registered = { }, { }, { }
-                mathalternates = {
-                    attributes = attributes,
-                    alternates = alternates,
-                    registered = registered,
-                    presets    = { },
-                    resets     = { },
-                    hashes     = setmetatableindex("table")
-                }
-                resources.mathalternates = mathalternates
-            end
-            --
-            for name, data in sortedhash(newalternates) do
-                if alternates[name] then
-                    -- ignore
+            local goodies  = tfmdata.goodies
+            local autolist = defaults -- table.copy(defaults)
+
+            local function setthem(newalternates)
+                local resources      = tfmdata.resources -- was tfmdata.shared
+                local mathalternates = resources.mathalternates
+                local alternates, attributes, registered, presets
+                if mathalternates then
+                    alternates = mathalternates.alternates
+                    attributes = mathalternates.attributes
+                    registered = mathalternates.registered
                 else
-                    local attr = known[name]
-                    attributes[attr] = data
-                    alternates[name] = attr
-                    registered[#registered+1] = attr
+                    alternates, attributes, registered = { }, { }, { }
+                    mathalternates = {
+                        attributes = attributes,
+                        alternates = alternates,
+                        registered = registered,
+                        presets    = { },
+                        resets     = { },
+                        hashes     = setmetatableindex("table")
+                    }
+                    resources.mathalternates = mathalternates
+                end
+                --
+                for name, data in sortedhash(newalternates) do
+                    if alternates[name] then
+                        -- ignore
+                    else
+                        local attr = known[name]
+                        attributes[attr] = data
+                        alternates[name] = attr
+                        registered[#registered+1] = attr
+                    end
                 end
             end
-        end
 
-        if goodies then
-            local done = { }
-            for i=1,#goodies do
-                -- first one counts
-                -- we can consider sharing the attributes ... todo (only once scan)
-                local mathgoodies = goodies[i].mathematics
-                local alternates  = mathgoodies and mathgoodies.alternates
-                if alternates then
-                    if trace_goodies then
-                        report_goodies("loading alternates for font %a",tfmdata.properties.name)
-                    end
-                    for k, v in next, autolist do
-                        if not alternates[k] then
-                            alternates[k] = v
+            if goodies then
+                local done = { }
+                for i=1,#goodies do
+                    -- first one counts
+                    -- we can consider sharing the attributes ... todo (only once scan)
+                    local mathgoodies = goodies[i].mathematics
+                    local alternates  = mathgoodies and mathgoodies.alternates
+                    if alternates then
+                        if trace_goodies then
+                            report_goodies("loading alternates for font %a",tfmdata.properties.name)
                         end
+                        for k, v in next, autolist do
+                            if not alternates[k] then
+                                alternates[k] = v
+                            end
+                        end
+                        setthem(alternates)
+                        return
                     end
-                    setthem(alternates)
-                    return
                 end
             end
-        end
 
-        if trace_goodies then
-            report_goodies("loading default alternates for font %a",tfmdata.properties.name)
+            if trace_goodies then
+                report_goodies("loading default alternates for font %a",tfmdata.properties.name)
+            end
+            setthem(autolist)
         end
-        setthem(autolist)
 
     end
 
@@ -1818,7 +1817,9 @@ do
     end
 
     function handlers.kernpairs(head,style,penalties)
-        processnoads(head,kernpairs,"kernpairs")
+        if use_math_goodies then
+            processnoads(head,kernpairs,"kernpairs")
+        end
         return true -- not needed
     end
 

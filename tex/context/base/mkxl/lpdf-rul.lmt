@@ -78,28 +78,38 @@ do
     -- todo: RuleColor -> just string ?
     -- todo: fetch them instead fo push them
 
-    local predefined = {
+--     local predefined = {
+--         ["fake:word"] = replacer [[
+-- FakeWord(%width%,%height%,%depth%,%line%,%color%);
+--         ]],
+--         ["fake:rule"] = replacer[[
+-- %initializations%
+-- FakeRule(%width%,%height%,%depth%,%line%,%color%);
+--         ]],
+--         ["fake:rest"] = replacer [[
+-- RuleDirection := "%direction%" ;
+-- RuleOption := "%option%" ;
+-- RuleWidth := %width% ;
+-- RuleHeight := %height% ;
+-- RuleDepth := %depth% ;
+-- RuleH := %h% ;
+-- RuleV := %v% ;
+-- RuleThickness := %line% ;
+-- RuleFactor := %factor% ;
+-- RuleOffset := %offset% ;
+-- def RuleColor = %color% enddef ;
+-- %data%;
+--         ]]
+--     }
+
+        local predefined = {
         ["fake:word"] = replacer [[
-FakeWord(%width%,%height%,%depth%,%line%,%color%);
+FakeWord(RuleWidth,RuleHeight,RuleDepth,RuleThickness,RuleColor);
         ]],
         ["fake:rule"] = replacer[[
 %initializations%
-FakeRule(%width%,%height%,%depth%,%line%,%color%);
+FakeRule(RuleWidth,RuleHeight,RuleDepth,RuleThickness,RuleColor);
         ]],
---        ["fake:rest"] = replacer [[
---RuleDirection := "%direction%" ;
---RuleOption := "%option%" ;
---RuleWidth := %width% ;
---RuleHeight := %height% ;
---RuleDepth := %depth% ;
---RuleH := %h% ;
---RuleV := %v% ;
---RuleThickness := %line% ;
---RuleFactor := %factor% ;
---RuleOffset := %offset% ;
---def RuleColor = %color% enddef ;
---%data%;
---        ]]
         ["fake:rest"] = replacer [[
 %data%;
         ]]
@@ -141,7 +151,6 @@ FakeRule(%width%,%height%,%depth%,%line%,%color%);
         setmacro("m_rule_option", p.option or "")
         setmacro("m_rule_direction", p.direction or lefttoright_code)
         setmacro("m_rule_color", mpcolor(p.ma,p.ca,p.ta))
-        print("!!!",mpcolor(p.ma,p.ca,p.ta))
         --
         if not initialized then
             initialized = true

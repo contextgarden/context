@@ -81,4 +81,146 @@
 %D \stopTEXpage
 %D \stoptyping
 
+%D From the list:
+
+%D \starttyping
+%D \startformula[spaceinbetween=.5\lineheight]
+%D     \left\{
+%D         \mparagraph{Quaternion algebras\par over $\blackboard{Q}$ up to isomorphism}
+%D     \right\}
+%D     \alignhere \leftrightarrow
+%D     \left\{
+%D         \mparagraph
+%D           [foregroundcolor=darkred,offset=.1ex,frame=on]
+%D           {Finite subset of places of $\blackboard{Q}$\par of even cardinality}
+%D     \right\}
+%D     \breakhere \leftrightarrow
+%D     \left\{
+%D         \mparagraph{more text}
+%D     \right\}
+%D     \breakhere \leftrightarrow
+%D     \left\{
+%D         \mparagraph[foregroundcolor=darkblue]{and more text}
+%D     \right\}
+%D \stopformula
+%D \stoptyping
+
+\permanent\tolerant\protected\def\mparagraph[#1]#*#:#2%
+  {\vcenter class \mathconstructcode \bgroup % \mathwrappedcode would be like fraction
+     \framed[\c!offset=\v!overlay,\c!frame=\v!overlay,\c!align=\v!middle,#1]{#2}%
+   \egroup}
+
+%D Moved from pack-rul.mkxl to here:
+
+%D \macros
+%D   {mframed, minframed}
+%D
+%D See mkii and mkiv files for some history on this already rather old mechanism; it
+%D dates from the real beginning. In the meantime we used anchoring, and now we're
+%D doing it more \LMTX ish.
+
+% mframed   xx\mframed  {x^2 + \frac{2}{x} + \sqrt{\frac{2}{\sqrt{\frac{2}{x}}}}} \input tufte
+% inmframed xx\inmframed{x^2 + \frac{2}{x} + \sqrt{\frac{2}{\sqrt{\frac{2}{x}}}}} \input tufte
+% mcframed  xx\mcframed {x^2 + \frac{2}{x} + \sqrt{\frac{2}{\sqrt{\frac{2}{x}}}}} \input tufte
+% mtframed  xx\mtframed {x^2 + \frac{2}{x} + \sqrt{\frac{2}{\sqrt{\frac{2}{x}}}}} \input tufte
+
+\newcount\c_framed_mstyle
+
+\installcorenamespace{mathframed}
+
+\installframedcommandhandler \??mathframed {mathframed} \??mathframed
+
+\newtoks \t_pack_framed_mathframed
+\newdimen\d_pack_framed_mathframed
+
+\appendtoks
+    \frozen\protected\instance\edefcsname\currentmathframed\endcsname{\pack_framed_mathframed[\currentmathframed]}%
+\to \everydefinemathframed
+
+\tolerant\protected\def\pack_framed_mathframed[#1]#*[#2]#:#3% needs testing !
+  {\begingroup
+   \edef\currentmathframed{#1}%
+   \setupcurrentmathframed[#2]%
+   \c_framed_mstyle\normalmathstyle
+   \edef\m_framed_location{\mathframedparameter\c!location}%
+   \ifx\m_framed_location\v!mathematics
+     \inheritedmathframedframed\bgroup
+       \setbox\scratchbox\hbox\bgroup
+         \Ustartmath
+         \triggermathstyle\c_framed_mstyle
+         \the\t_pack_framed_mathframed
+         \mathatom \mathunspacedcode\bgroup
+           #3%
+         \egroup
+         \Ustopmath
+       \egroup
+       \global\d_pack_framed_mathframed\dp\scratchbox
+       \dontleavehmode\box\scratchbox
+     \egroup
+   \else
+     \inheritedmathframedframed\bgroup
+       \hbox\bgroup
+         \Ustartmath
+         \triggermathstyle\c_framed_mstyle
+           #3%
+         \Ustopmath
+       \egroup
+     \egroup
+   \fi
+   \endgroup}
+
+\appendtoks
+    \c_strc_math_ragged_status  \plustwo
+    \c_strc_formulas_check_width\zerocount
+\to \t_pack_framed_mathframed
+
+\installframedlocator \v!mathematics
+  {}
+  {\pack_framed_locator_set_lo
+   \ifzeropt\d_framed_locator_lo\else
+     \lower\dimexpr\d_framed_locator_lo+\d_pack_framed_mathframed\relax
+   \fi
+   \box\b_framed_normal}
+
+\definemathframed[mframed]
+\definemathframed[inmframed][\c!location=\v!low]
+\definemathframed[mcframed] [\c!location=\v!mathematics] % centered
+\definemathframed[mtframed] [\c!location=\v!mathematics,\c!offset=\v!overlay,\c!frame=\v!overlay] % tight
+
+%D So instead of the rather versatile \type {\framed}, we use \type {\mframed}:
+%D
+%D \startbuffer
+%D \startformula
+%D   x \times   \mframed{y} \times y^{z_z}
+%D   x \times \inmframed{y} \times y^{z_z}
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D And:
+%D
+%D \startbuffer
+%D \startformula
+%D   x \times \mframed{y} \times y^{\mframed{z}_{\mframed{z}}}
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D As usual, one can specify in what way the text should be framed. One should be
+%D aware of the fact that, inorder to preserve the proper spacing, the \type
+%D {offset} is set to \type {overlay} and \type {frameoffset} is used used instead.
+%D
+%D \startbuffer
+%D \startformula
+%D   x \times y^{\mframed[framecolor=red]{z}_{z}}
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D For inline use, we also provide the \type {\inmframed} alternative: we want $x
+%D \times \inmframed{y}$ in inline math, right?
+
 \protect

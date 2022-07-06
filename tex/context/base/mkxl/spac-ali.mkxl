@@ -309,6 +309,8 @@
    \rightskip        \plusone\rightskip
    \spaceskip        \zeropoint
    \xspaceskip       \zeropoint
+   \parinitleftskip  \zeropoint
+   \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
    \parfillskip      \s_zero_plus_one_fil % new
    \setfalse         \raggedonelinerstate % now here
@@ -322,6 +324,8 @@
    \rightskip        \plusone\rightskip\s!plus\zeropoint
    \spaceskip        \v_spac_align_space_amount
    \xspaceskip       \v_spac_align_space_amount_x
+   \parinitleftskip  \zeropoint
+   \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
    \parfillskip      \s_zero_plus_zero
    \parindent        \zeropoint
@@ -335,6 +339,8 @@
    \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_middle
    \spaceskip        \v_spac_align_space_amount
    \xspaceskip       \v_spac_align_space_amount_x
+   \parinitleftskip  \zeropoint
+   \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
    \parfillskip      \s_zero_plus_zero
    \parindent        \zeropoint
@@ -348,6 +354,8 @@
    \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_right
    \spaceskip        \v_spac_align_space_amount
    \xspaceskip       \v_spac_align_space_amount_x
+   \parinitleftskip  \zeropoint
+   \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
    \parfillskip      \s_zero_plus_one_fil
   %\parindent        \parindent
@@ -360,6 +368,8 @@
    \rightskip        \plusone\rightskip\s!plus\zeropoint
    \spaceskip        \v_spac_align_space_amount
    \xspaceskip       \v_spac_align_space_amount_x
+   \parinitleftskip  \zeropoint
+   \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
    \parfillskip      \s_zero_plus_zero
    \parindent        \zeropoint
@@ -372,6 +382,8 @@
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount
    \spaceskip        \v_spac_align_space_amount
    \xspaceskip       \v_spac_align_space_amount_x
+   \parinitleftskip  \zeropoint
+   \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
    \parfillskip      \s_zero_plus_zero
    \parindent        \zeropoint
@@ -384,6 +396,8 @@
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount
    \spaceskip        \v_spac_align_space_amount
    \xspaceskip       \v_spac_align_space_amount_x
+   \parinitleftskip  \zeropoint
+   \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
    \parfillskip      \s_zero_plus_zero
   %\parindent        \parindent
@@ -397,6 +411,8 @@
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount_half
    \spaceskip        \v_spac_align_space_amount
    \xspaceskip       \v_spac_align_space_amount_x
+   \parinitleftskip  \zeropoint
+   \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
    \parfillskip      \s_zero_plus_zero
    \parindent        \zeropoint
@@ -407,8 +423,10 @@
    \c_attr_alignstate\attributeunsetvalue
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount_negative\relax
-   \spaceskip        \zeropoint\relax
-   \xspaceskip       \zeropoint\relax
+   \spaceskip        \zeropoint
+   \xspaceskip       \zeropoint
+   \parinitleftskip  \zeropoint
+   \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
    \parfillskip      \zeropoint\s!plus\v_spac_align_fill_amount_double\relax
    \parindent        \zeropoint
@@ -419,8 +437,10 @@
    \c_attr_alignstate\attributeunsetvalue
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount_negative\relax
-   \spaceskip        \zeropoint\relax
-   \xspaceskip       \zeropoint\relax
+   \spaceskip        \zeropoint
+   \xspaceskip       \zeropoint
+   \parinitleftskip  \zeropoint
+   \parinitrightskip \zeropoint
    \parfillskip      \zeropoint
    \parfillleftskip  \zeropoint\s!plus\v_spac_align_fill_amount_extreme\relax
    \parindent        \zeropoint
@@ -432,11 +452,28 @@
    \c_attr_alignstate\plusthree
    \leftskip         \plusone\leftskip \s!plus\zeropoint\relax
    \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_right\relax
-   \spaceskip        \zeropoint\relax
-   \xspaceskip       \zeropoint\relax
+   \spaceskip        \zeropoint
+   \xspaceskip       \zeropoint
+   \parinitleftskip  \zeropoint
+   \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
    \parfillskip      \s_zero_plus_zero
   %\parindent        \parindent
+   \relax}
+
+\permanent\protected\def\spac_align_set_horizontal_slanted
+  {\raggedstatus     \zerocount
+  %\c_attr_alignstate\attributeunsetvalue
+   \c_attr_alignstate\plustwo
+   \leftskip         \plusone\leftskip \s!plus\spac_align_set_raggedness_middle
+   \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_middle
+   \spaceskip        \zeropoint
+   \xspaceskip       \zeropoint
+   \parinitleftskip  \zeropoint
+   \parinitrightskip \zeropoint\s!plus\v_spac_align_fill_amount_extreme\relax
+   \parfillleftskip  \zeropoint\s!plus\v_spac_align_fill_amount_extreme\relax
+   \parfillskip      \zeropoint
+   \parindent        \zeropoint
    \relax}
 
 \permanent\protected\def\spac_align_set_horizontal_extra
@@ -498,6 +535,9 @@
    \or
      % 9 paragraph
      \parfillskip\zeropoint
+   \or
+     % 10 slanted
+     \spac_align_set_horizontal_slanted
    \fi
    \relax}
 
@@ -732,6 +772,11 @@
 \defcsname\??aligncommand               l2r\endcsname{\c_spac_align_state_direction \plusone  }
 \defcsname\??aligncommand               r2l\endcsname{\c_spac_align_state_direction \plustwo  }
 
+
+\defcsname\??aligncommand\v!slanted        \endcsname{\c_spac_align_state_horizontal\plusten
+                                                      \c_spac_align_state_broad     \plustwo  }
+
+
 \defcsname\??aligncommand\v!table          \endcsname{\c_spac_align_state_vertical  \plusthree
                                                       \c_spac_align_state_broad     \plusone
                                                       \c_spac_align_state_horizontal\plustwo  }
@@ -823,6 +868,7 @@
 \aliased\let\flushedrightlastline\spac_align_set_horizontal_flushedright_last_line
 \aliased\let\ttraggedright       \spac_align_set_horizontal_right_tt            % a plain command
 \aliased\let\forgetragged        \spac_align_set_horizontal_none
+\aliased\let\raggedslanted       \spac_align_set_horizontal_slanted
 
 \appendtoks
     \spac_align_set_horizontal_none

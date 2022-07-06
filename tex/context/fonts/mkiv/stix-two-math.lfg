@@ -21,10 +21,18 @@ return {
             circled      = { feature = 'ss16', value = 1, comment = "Mathematical Alternative Circled Operators" },
         },
         parameters = {
-            NoLimitSupFactor =    0,
-            NoLimitSubFactor = 1000,
-            -- AccentBaseHeight = 0,
-            AccentBaseDepth  = 30,
+            NoLimitSupFactor                =    0,
+            NoLimitSubFactor                = 1000,
+         -- AccentBaseHeight                =    0,
+            AccentBaseDepth                 =   30,
+            RadicalDegreeBottomRaisePercent =   65,
+         -- RadicalKernBeforeDegree         =  500,
+            RadicalKernAfterDegree          = -500,
+            RadicalVerticalGap              =   10,
+         -- RadicalRuleThickness            =   68, -- 68 in font (but shifted down)
+            DelimiterPercent                =   90,
+            DelimiterShortfall              =  400,
+            DisplayOperatorMinHeight        = 1800, -- 1800 in font
         },
         tweaks = {
             aftercopying = {
@@ -39,7 +47,7 @@ return {
                             topleft     = -0.2,
                          -- bottomleft  =  0,
                          -- topright    =  0,
-                            bottomright =  -0.2,
+                            bottomright = -0.2,
                        },
                     },
                 },
@@ -64,24 +72,25 @@ return {
                      -- [0x000B4] = { yoffset = -0.035 }, -- acute
                      -- [0x002C6] = { yoffset = -0.035 }, -- hat
                      -- [0x002DC] = { yoffset = -0.035 }, -- tilde
-                     -- [0x000AF] = { yoffset = -0.05 }, -- bar
+                     -- [0x000AF] = { yoffset = -0.05  }, -- bar
                      -- [0x002D8] = { yoffset = -0.035 }, -- breve
-                        [0x002D9] = { yoffset = -0.02 }, -- dot
-                        [0x000A8] = { yoffset = -0.02 }, -- ddot
-                        [0x020DB] = { yoffset =  0.04 }, -- dddot
-                     -- [0x002DA] = { yoffset = -0.05 }, -- ring
-                     -- [0x002C7] = { yoffset = -0.05 }, -- check
-                        [0x020D7] = { yoffset = -0.07 }, -- vec
-                     -- [0x00300] = { yoffset = -0.07 , all=true }, -- widegrave
-                     -- [0x00301] = { yoffset = -0.07 , all=true }, -- wideacute
-                     -- [0x00302] = { yoffset = -0.02 , all=true }, -- widehat
-                     -- [0x00303] = { yoffset = -0.02 , all=true }, -- widetilde
-                     -- [0x00304] = { yoffset = -0.05 , all=true }, -- widebar
-                     -- [0x00306] = { yoffset = -0.03 , all=true }, -- widebreve
-                     -- [0x00307] = { yoffset = -0.03 , all=true }, -- widedot
-                     -- [0x00308] = { yoffset = -0.03 , all=true }, -- wideddot
-                     -- [0x020DB] = { yoffset =  0.0 , all=true }, -- widedddot
-                     -- [0x0030A] = { yoffset = -0.05 , all=true }, -- widering
+                        [0x002D9] = { yoffset = -0.02  }, -- dot
+                        [0x000A8] = { yoffset = -0.02  }, -- ddot
+                        [0x020DB] = { yoffset =  0.04  }, -- dddot
+                     -- [0x002DA] = { yoffset = -0.05  }, -- ring
+                     -- [0x002C7] = { yoffset = -0.05  }, -- check
+                        [0x020D7] = { yoffset = -0.07  }, -- vec
+
+                     -- [0x00300] = { yoffset = -0.07, all=true }, -- widegrave
+                     -- [0x00301] = { yoffset = -0.07, all=true }, -- wideacute
+                     -- [0x00302] = { yoffset = -0.02, all=true }, -- widehat
+                     -- [0x00303] = { yoffset = -0.02, all=true }, -- widetilde
+                     -- [0x00304] = { yoffset = -0.05, all=true }, -- widebar
+                     -- [0x00306] = { yoffset = -0.03, all=true }, -- widebreve
+                     -- [0x00307] = { yoffset = -0.03, all=true }, -- widedot
+                     -- [0x00308] = { yoffset = -0.03, all=true }, -- wideddot
+                     -- [0x020DB] = { yoffset =  0,    all=true }, -- widedddot
+                     -- [0x0030A] = { yoffset = -0.05, all=true }, -- widering
                     },
                 },
                 {
