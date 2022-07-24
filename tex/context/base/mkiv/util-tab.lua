@@ -978,3 +978,21 @@ end
 --         return remove(t,random(1,n))
 --     end
 -- end
+
+function combine(target,source)
+    -- no copy so if that is needed one needs to deepcopy source first
+    if target then
+        for k, v in next, source do
+            if type(v) == "table" then
+               target[k] = combine(target[k],source[k])
+            else
+               target[k] = v
+            end
+        end
+        return target
+    else
+        return source
+    end
+end
+
+table.combine = combine

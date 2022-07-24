@@ -150,6 +150,12 @@
 
 % So far for control.
 
+% no    : \ruledhbox{\m{\frac[strut=no]   {28}{8\times29}}} \par
+% tight : \ruledhbox{\m{\frac[strut=tight]{28}{8\times29}}} \par
+% yes   : \ruledhbox{\m{\frac[strut=yes]  {28}{8\times29}}} \par
+% math  : \ruledhbox{\m{\frac[strut=math] {28}{8\times29}}} \par
+% text  : \ruledhbox{\m{\frac[strut=text] {28}{8\times29}}} \par
+
 \installcorenamespace{mathfractionstrut}
 
 \def\math_frac_no_strut
@@ -169,6 +175,10 @@
 \defcsname\??mathfractionstrut\v!tight\endcsname
   {\enforced\let\m_fractions_strut_top\mathdepthstrut
    \enforced\let\m_fractions_strut_bot\mathheightstrut}
+
+\defcsname\??mathfractionstrut\v!text\endcsname
+  {\enforced\let\m_fractions_strut_top\strut
+   \enforced\let\m_fractions_strut_bot\strut}
 
 \math_frac_no_strut
 
@@ -413,39 +423,46 @@
     \ifempty\currentmathfraction
       \edef\p_threshold{\mathfractionparameter\c!inlinethreshold}%
       \ifempty\p_threshold
-        \let\math_fraction_set_threshold_inline\relax
+        \let\math_fraction_set_threshold_inline\math_fraction_set_threshold_inline_auto
       \orelse\ifx\p_threshold\v!auto
-        \let\math_fraction_set_threshold_inline\relax
+        \let\math_fraction_set_threshold_inline\math_fraction_set_threshold_inline_auto
       \else
-        \let\math_fraction_set_threshold_inline\math_fraction_set_theshold_inline
+        \let\math_fraction_set_threshold_inline\math_fraction_set_threshold_inline_ratio
       \fi
       \edef\p_threshold{\mathfractionparameter\c!displaythreshold}%
       \ifempty\p_threshold
-        \let\math_fraction_set_threshold_display\relax
+        \let\math_fraction_set_threshold_display\math_fraction_set_threshold_display_auto
       \orelse\ifx\p_threshold\v!auto
-        \let\math_fraction_set_threshold_display\relax
+        \let\math_fraction_set_threshold_display\math_fraction_set_threshold_display_auto
       \else
-        \let\math_fraction_set_threshold_display\math_fraction_set_theshold_display
+        \let\math_fraction_set_threshold_display\math_fraction_set_threshold_display_ratio
       \fi
     \fi
 \to \everysetupmathfraction
 
-\def\math_fraction_set_theshold_inline
+\def\math_fraction_set_threshold_inline_auto
+   {\Umathfractiondelsize\textstyle        \maxdimen
+    \Umathfractiondelsize\scriptstyle      \maxdimen
+    \Umathfractiondelsize\scriptscriptstyle\maxdimen}
+
+\def\math_fraction_set_threshold_display_auto
+   {\Umathfractiondelsize\displaystyle     \maxdimen}
+
+\def\math_fraction_set_threshold_inline_ratio
   {\edef\p_threshold{\mathfractionparameter\c!inlinethreshold}%
    \Umathfractiondelsize\textstyle        \p_threshold\dimexpr\textface\relax
    \Umathfractiondelsize\scriptstyle      \p_threshold\dimexpr\scriptface\relax
    \Umathfractiondelsize\scriptscriptstyle\p_threshold\dimexpr\scriptscriptface\relax}
 
-\def\math_fraction_set_theshold_display
+\def\math_fraction_set_threshold_display_ratio
   {\edef\p_threshold{\mathfractionparameter\c!displaythreshold}%
-   \Umathfractiondelsize\displaystyle     \p_threshold\dimexpr\textface\relax}
-
-%D This is a variant
+   \Umathfractiondelsize\displaystyle     \p_threshold\dimexpr\textface\relax
+   \Umathfractiondelsize\displaystyle     \maxdimen}
 
 \setupmathfractions
-  [%\c!inlinethreshold=.25,  % no unit but fraction
-   %\c!displaythreshold=.25, % no unit but fraction
-   \c!threshold=.5\exheight] % wrong name, better is margin or offset or so
+  [\c!inlinethreshold=.25,      % no unit but fraction
+   \c!displaythreshold=\v!auto, % no unit but fraction
+   \c!threshold=.25\exheight]
 
 \appendtoks
     \Umathskeweddelimitertolerance\allmathstyles\mathfractionparameter\c!threshold

@@ -28,7 +28,7 @@ if not modules then modules = { } end modules ['mlib-scn'] = {
 
 local type, next, rawget, getmetatable, tonumber = type, next, rawget, getmetatable, tonumber
 local byte, gmatch = string.byte, string.gmatch
-local insert, remove = table.insert, table.remove
+local insert, remove, combine = table.insert, table.remove, table.combine
 
 local mplib    = mplib
 local metapost = metapost
@@ -289,6 +289,27 @@ local function getparameters()
         setmetatableindex(parameters,presets)
     end
     namespaces[namespace] = parameters
+end
+
+local function mergeparameters()
+    local namespace  = scanstring()
+    local parameters = get_parameters()
+    local target     = namespaces[namespace]
+    if target then
+        combine(target,parameters)
+    else
+        -- same as below
+        local presets = presets[namespace]
+        local passed  = passed[namespace]
+        if passed then
+            if presets then
+                setmetatableindex(passed,presets)
+            end
+            setmetatableindex(parameters,passed)
+        elseif presets then
+            setmetatableindex(parameters,presets)
+        end
+    end
 end
 
 local function applyparameters()
@@ -755,6 +776,7 @@ local registertokens = metapost.registertokens
 
 registerdirect("getparameters",       getparameters)        -- nothing
 registertokens("applyparameters",     applyparameters)      -- action    : todo "token"
+registerdirect("mergeparameters",     mergeparameters)      -- nothing
 registerdirect("presetparameters",    presetparameters)     -- nothing
 registerdirect("hasparameter",        hasparameter)         -- boolean
 registerdirect("hasoption",           hasoption)            -- boolean

@@ -504,6 +504,22 @@ do
         end
     end
 
+    local beforepassingfonttotex = sequencers.new {
+        name      = "beforepassingfonttotex",
+        arguments = "tfmdata",
+    }
+
+    appendgroup(beforepassingfonttotex,"before") -- user
+    appendgroup(beforepassingfonttotex,"system") -- private
+    appendgroup(beforepassingfonttotex,"after" ) -- user
+
+    function constructors.beforepassingfonttotex(tfmdata)
+        local runner = beforepassingfonttotex.runner
+        if runner then
+            runner(tfmdata)
+        end
+    end
+
 end
 
 --[[ldx--
@@ -1381,6 +1397,7 @@ do  -- else too many locals
                         busy = false
                         mathematics.finishfallbacks(tfmdata,specification,fallbacks)
                         tfmdata.original = specification.specification
+constructors.beforepassingfonttotex(tfmdata)
                         local id = definefont(tfmdata,properties.id)
                         csnames[id] = specification.cs
                         properties.id = id -- already set

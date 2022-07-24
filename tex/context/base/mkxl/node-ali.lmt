@@ -20,6 +20,7 @@ local getattr            = nuts.getattr
 local setnext            = nuts.setnext
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
+local getboth            = nuts.getboth
 local setglue            = nuts.setglue
 local getglue            = nuts.getglue
 local setglue            = nuts.setglue
@@ -55,6 +56,7 @@ local nextglue           = traversers.glue
 local nextboundary       = traversers.boundary
 local nextnode           = traversers.node
 local nextlist           = traversers.list
+local nextrule           = traversers.rule
 
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
@@ -63,6 +65,7 @@ local kern_code          = nodecodes.kern
 local disc_code          = nodecodes.disc
 local unset_code         = nodecodes.unset
 local alignrecord_code   = nodecodes.alignrecord
+local rule_code          = nodecodes.rule
 
 local spaceskip_code     = nodes.gluecodes.spaceskip
 local xspaceskip_code    = nodes.gluecodes.xspaceskip
@@ -310,7 +313,7 @@ interfaces.implement {
     end,
 }
 
--- Let's put it here (for now):
+-- Let's put it here (for now) (some locals above) .. will be cleaned up!
 
 do
 
@@ -331,6 +334,7 @@ do
     local alignrecord_code  = nodecodes.alignrecord
     local hlist_code        = nodecodes.hlist
     local unset_code        = nodecodes.unset
+ -- local rule_code         = nodecodes.rule
 
     local nextnode          = nuts.traversers.node
 
@@ -596,6 +600,8 @@ deltas   = { }
         openup({ inbetween = inbetween }, head)
     end
 
+    -- This will become a bit more pluggable so that we have less checking.
+
     -- maybe zero pass: preamble pass
 
     function nodes.handlers.fixmathalign(head,where,attr,preamble)
@@ -609,10 +615,236 @@ deltas   = { }
             if signal == 0x40 then
                 second_pass(head,attr,preamble)
             end
-            -- maybe also signal
-            third_pass(head,attr,preamble)
+            if signal then
+                third_pass(head,attr,preamble)
+            end
         end
     end
+
+    --
+
+do
+
+    local a_mathalignmentvrule = attributes.private("mathalignmentvrule")
+
+    local function first_pass(head,attr,preamble)
+        for row, id, subtype, list in nextlist, head do
+            if id == hlist_code and subtype == row_code then
+                for cell, id, subtype, list in nextlist, list do
+                    if list then
+                        for n, id, subtype in nextrule, list do
+                            local signal = getattr(n,a_mathalignmentvrule)
+                            if signal then
+                                local prv, nxt = getboth(row)
+                                if prv then
+                                    if getid(prv) ~= rule_code or not getattr(prv,a_mathalignmentvrule) then
+                                        prv = nil
+                                    end
+                                end
+                                if nxt then
+                                    if getid(nxt) ~= rule_code or not getattr(nxt,a_mathalignmentvrule) then
+                                        nxt = nil
+                                    end
+                                end
+                                setoffsets(n,nil,nil,not prv and 0 or nil,not nxt and 0 or nil)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    function nodes.handlers.mathmatrixrules(head,where,attr,preamble)
+        if where == "wrapup" then
+            local signal = getattr(attr,a_mathalignmentvrule)
+            if signal == 1 then -- matrix
+                first_pass(head,attr,preamble)
+            end
+        end
+    end
+
+    local enabled = false
+
+    interfaces.implement {
+        name      = "enablematrixrules",
+     -- onlyonce  = true,
+        public    = true,
+        protected = true,
+        actions   = function()
+            if not enabled then
+                nodes.tasks.enableaction("alignments", "nodes.handlers.mathmatrixrules")
+                enabled = true
+            end
+        end,
+    }
+
+end
+
+    --
+
+    local a_ornament     = attributes.system("mathmatrixornament")
+
+    local leftornament   = tex.boundaries.system("c_math_matrix_ornament_l")
+    local rightornament  = tex.boundaries.system("c_math_matrix_ornament_r")
+    local topornament    = tex.boundaries.system("c_math_matrix_ornament_t")
+    local bottomornament = tex.boundaries.system("c_math_matrix_ornament_b")
+
+    local left     = 0
+    local right    = 0
+    local nofcells = 0
+    local found    = false
+
+    local lefts    = false
+    local rights   = false
+    local tops     = false
+    local bottoms  = false
+
+    local function first_pass(head,attr,preamble)
+        nofcells = 0
+        left     = 0
+        right    = 0
+        found    = false
+        lefts   = { }
+        rights  = { }
+        tops    = { }
+        bottoms = { }
+        for n in nextrecord, preamble do
+            nofcells = nofcells + 1
+        end
+        local cells = { }
+        for row in nextunset, head do
+            local c = 0
+            for cell in nextunset, getlist(row) do
+                local list = getlist(cell)
+                c = c + 1
+                for bound in nextboundary, list do
+                    local ornament = getdata(bound)
+                    if ornament == leftornament then
+                        if c == 1 then
+                            local w = getwidth(cell)
+                            if w > left then
+                                left = w
+                            end
+                            setwidth(cell,0)
+                            cells[c+1] = true
+                            cells[c] = true
+                            found = true
+                            lefts[#lefts+1] = cell
+                        end
+                    elseif ornament == rightornament then
+                        if c == nofcells then
+                            local w = getwidth(cell)
+                            if w > right then
+                                right = w
+                            end
+                            setwidth(cell,0)
+                            cells[c-1] = true
+                            cells[c] = true
+                            found = true
+                            rights[#rights+1] = cell
+                        end
+                    elseif ornament == topornament then
+                        setheight(row,0)
+                        setdepth(row,0)
+                        found = true
+                        tops[#tops+1] = cell
+                    elseif ornament == bottomornament then
+                        setheight(row,0)
+                        setdepth(row,0)
+                        found = true
+                        bottoms[#bottoms+1] = cell
+                    end
+                end
+            end
+        end
+        if next(cells) then
+            local c = 0
+            for n in nextrecord, preamble do
+                c = c + 1
+                if cells[c] then
+                    setwidth(n)
+                end
+            end
+        end
+    end
+
+    local function second_pass(box)
+        if found then
+            local head = getlist(nuts.getbox(box))
+            local leftmargin   = texgetdimen("d_math_matrix_margin_l")
+            local rightmargin  = texgetdimen("d_math_matrix_margin_r")
+            local topmargin    = texgetdimen("d_math_matrix_margin_t")
+            local bottommargin = texgetdimen("d_math_matrix_margin_b")
+            for i=1,#lefts do
+                setoffsets(lefts[i],-(left+leftmargin),0)
+            end
+            for i=1,#rights do
+                setoffsets(rights[i], (rightmargin),0)
+            end
+            for i=1,#tops do
+                setoffsets(tops[i],0,topmargin)
+            end
+            for i=1,#bottoms do
+                setoffsets(bottoms[i],0,-bottommargin)
+            end
+            lefts   = false
+            rights  = false
+            tops    = false
+            bottoms = false
+        end
+    end
+
+    function nodes.handlers.mathmatrixornaments(head,where,attr,preamble)
+        if where == "preroll" then
+            local signal = getattr(attr,a_ornament)
+            if signal == 0x10 then
+                first_pass(head,attr,preamble)
+            end
+     -- elseif where == "wrapup" then
+     --     local signal = getattr(attr,a_ornament)
+     --     if signal == 0x10 then
+     --         second_pass(head,attr,preamble)
+     --     end
+        end
+    end
+
+    interfaces.implement {
+        name      = "shiftmatrixornaments",
+        actions   = second_pass,
+        arguments = "integer",
+    }
+
+    local enabled = false
+
+    interfaces.implement {
+        name      = "enablematrixalign",
+     -- onlyonce  = true,
+        public    = true,
+        protected = true,
+        actions   = function()
+            if not enabled then
+                nodes.tasks.enableaction("alignments", "nodes.handlers.fixmathalign")
+                enabled = true
+            end
+        end,
+    }
+
+    local enabled = false
+
+    interfaces.implement {
+        name      = "enablematrixornaments",
+     -- onlyonce  = true,
+        public    = true,
+        protected = true,
+        actions   = function()
+            if not enabled then
+                nodes.tasks.enableaction("alignments", "nodes.handlers.mathmatrixornaments")
+                enabled = true
+            end
+        end,
+    }
+
 end
 
 local report = logs.reporter("alignment","preamble")

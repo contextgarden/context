@@ -106,7 +106,9 @@ local jobpositions      = job.positions
 local getpos            = jobpositions.getpos
 local getfree           = jobpositions.getfree
 
+----- data              = { }
 local realpage          = 1
+----- recycle           = 1000 -- only tables can overflow this
 local enabled           = false
 
 -- Freeing the data is somewhat tricky as we can have backgrounds spanning many
@@ -164,7 +166,7 @@ local function check(specification)
             wn[3] = dp
         end
     end
- -- inspect(w)
+--   inspect(w)
 end
 
 local index = 0
@@ -173,6 +175,7 @@ local registervalue = attributes.registervalue
 local getvalue      = attributes.getvalue
 
 local function flush(head,f,l,a,parent,depth)
+ -- local d = data[a]
     local d = getvalue(a_textbackground,a)
     if d then
         local ix = index
@@ -194,9 +197,40 @@ local function flush(head,f,l,a,parent,depth)
     return head, true
 end
 
+-- local function registerbackground(name)
+--     local n = #data + 1
+--     if n > recycle then
+--         -- we could also free all e: that are beyond a page but we don't always
+--         -- know the page so a recycle is nicer and the s lists are kept anyway
+--         -- so the amount of kept data is not that large
+--         n = 1
+--     end
+--     local b = jobpositions.tobesaved["b:"..name]
+--     if b then
+--         local s = setmetatableindex("table")
+--         b.s = s
+--         data[n] = {
+--             bpos   = b,
+--             name   = name,
+--             n      = n,
+--             shapes = s,
+--             count  = 0,
+--             sindex = 0,
+--         }
+--         texsetattribute(a_textbackground,n)
+--         if not enabled then
+--             enableaction("contributers", "nodes.handlers.textbackgrounds")
+--             enabled = true
+--         end
+--     else
+--         texsetattribute(a_textbackground,unsetvalue)
+--     end
+-- end
+
 local function registerbackground(name)
     local b = jobpositions.tobesaved["b:"..name]
     if b then
+        local n = registervalue(a_textbackground,t)
         local s = setmetatableindex("table")
         b.s = s
         local t = {
@@ -207,7 +241,7 @@ local function registerbackground(name)
             count  = 0,
             sindex = 0,
         }
-        texsetattribute(a_textbackground,registervalue(a_textbackground,t))
+        texsetattribute(a_textbackground,n)
         if not enabled then
             enableaction("contributers", "nodes.handlers.textbackgrounds")
             enabled = true

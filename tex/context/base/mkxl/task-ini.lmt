@@ -161,7 +161,9 @@ appendaction("everypar",     "normalizers", "nodes.handlers.checkparcounter",   
 
 appendaction("alignments",   "normalizers", "nodes.handlers.showpreamble",                      nil, "nut",    "enabled"   )
 appendaction("alignments",   "normalizers", "nodes.handlers.aligncharacter",                    nil, "nut",    "disabled"  )
-appendaction("alignments",   "normalizers", "nodes.handlers.fixmathalign",                      nil, "nut",    "enabled"   ) -- maybe delay
+appendaction("alignments",   "normalizers", "nodes.handlers.fixmathalign",                      nil, "nut",    "disabled"  )
+appendaction("alignments",   "normalizers", "nodes.handlers.mathmatrixornaments",               nil, "nut",    "disabled"  )
+appendaction("alignments",   "normalizers", "nodes.handlers.mathmatrixrules",                   nil, "nut",    "disabled"  )
 
 appendaction("localboxes",   "lists",       "typesetters.localboxes.handler",                   nil, "nut",    "enabled"   )
 

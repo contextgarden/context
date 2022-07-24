@@ -1688,7 +1688,7 @@
 %   \fi
 %   \divide\scratchdimen \hsize
 %   \multiply\scratchdimen 64
-%   \xdef\vboxtohboxfactor{\withoutpt\the\scratchdimen}%
+%   \xdef\vboxtohboxfactor{\toscaled\scratchdimen}%
 %   \egroup}
 %
 % \protected\def\startvboxtohbox

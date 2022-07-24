@@ -116,7 +116,6 @@ local setattrlist        = nuts.setattrlist
 local setwidth           = nuts.setwidth
 local setheight          = nuts.setheight
 local setdepth           = nuts.setdepth
-local setoptions         = nuts.setoptions
 
 local getfield           = nuts.getfield
 local getnext            = nuts.getnext
@@ -1960,7 +1959,6 @@ do
 end
 
 do
-    -- todo: make a primes class
 
     local fixscripts = { }
 
@@ -1983,7 +1981,9 @@ do
         [fraction_code] = true,
     }
 
-    fixscripts[mathchar_code] = function(pointer,what,n,parent,nested) -- todo: switch to turn in on and off
+    -- [prime|sub|sup]first
+
+    fixscripts[mathchar_code] = function(pointer,what,n,parent,nested) -- todo: switch to turn it on and off
         if parent then
             local char = getchar(pointer)
             if char and primes[char] then
@@ -1995,7 +1995,7 @@ do
                         local prevsub  = getsub(prev)
                         local primesup = getsup(parent)
                         local primesub = getsub(parent)
-                        setfield(prev,"scriptorder",prevsub and 2 or 1) -- sub first
+                        setfield(prev,"scriptorder",prevsub and 2 or 1) -- sub first, then prime
                         if primesup and not prevsup then
                             setsup(prev,primesup)
                             primesup = nil

@@ -1,9 +1,9 @@
-%D \module
+ %D \module
 %D   [       file=math-ini,
 %D        version=2008.01.02,
 %D          title=\CONTEXT\ Math Macros,
 %D       subtitle=Initializations,
-%D         author=Hans Hagen,
+%D         author={Hans Hagen \& Mikael Sundqvist},
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
@@ -72,7 +72,7 @@
 
 %D Basic spacing:
 
-\mathfencesmode \plusone % unpack
+% \mathfencesmode \plusone % gone
 
 \delimiterfactor    \plusthousand
 \delimitershortfall \zeropoint
@@ -92,7 +92,7 @@
    +\fractionrulemathcontrolcode            % idem
    +\accentskewhalfmathcontrolcode          % fall back to half width skewing when no topaccent is given
    +\accentskewapplymathcontrolcode         % use topaccent, otherwise use skew char
- % + checkligatureandkernmathcontrolcode    % old fonts
+   +\applyordinarykernpairmathcontrolcode   % old fonts
    +\applyverticalitalickernmathcontrolcode % best do this indeed
    +\applyordinaryitalickernmathcontrolcode % best do this indeed
  % +\applycharitalickernmathcontrolcode     % not done
@@ -103,7 +103,7 @@
    +\checktextitalickernmathcontrolcode
  % +\checkspaceitalickernmathcontrolcode    % old code path
    +\applyscriptitalickernmathcontrolcode
-   +\italicshapekernmathcontrolcode         % instead of adding pre italic to the shift, inject a kern
+ % +\italicshapekernmathcontrolcode         % obsolete: instead of adding pre italic to the shift, inject a kern
 \relax
 
 % \mathpenaltiesmode\plusone
@@ -172,6 +172,7 @@
 \setnewconstant\mathtextpunctuationcode \mathclassvalue textpunctuation % for punctuation in text font followed by interword spacing
 \setnewconstant\mathunspacedcode        \mathclassvalue unspaced        % for cases where we don't want spacing at all
 \setnewconstant\mathexperimentalcode    \mathclassvalue experimental    % for MS and HH testing purposed only
+\setnewconstant\mathunarycode           \mathclassvalue unary           % dedicated to Alan
 
 \setnewconstant\mathbegincode           \mathclassvalue begin
 \setnewconstant\mathendcode             \mathclassvalue end
@@ -197,6 +198,7 @@
 \copymathspacing \mathdigitcode        \mathordinarycode
 \copymathspacing \mathfunctioncode     \mathoperatorcode
 \copymathspacing \mathwrappedcode      \mathfractioncode
+\copymathspacing \mathunarycode        \mathordinarycode
 
 \setnewconstant\mathlimopcode \plusone
 \setnewconstant\mathnolopcode \plusone
@@ -233,6 +235,7 @@
 \untraced\protected\def\mathdimension   {\mathatom \s!class \mathdimensioncode   }
 %untraced\protected\def\mathbegin       {\mathatom \s!class \mathbegincode       } % dangerous
 %untraced\protected\def\mathend         {\mathatom \s!class \mathendcode         } % dangerous
+\untraced\protected\def\mathunary       {\mathatom \s!class \mathunarycode       }
 
 % obsolete
 
@@ -422,6 +425,17 @@
 \mathgroupingmode    \plusone
 %mathdoublescriptmode\zerocount % -1 will give an error (as usual) .. "LLRR (left class, right class)
 
+%D \starttyping
+%D \startTEXpage[offset=1dk]
+%D     $ 1 {\red +} 2$\par
+%D     $ 1 \color[red]{+} 2$\par
+%D     \mathgroupingmode0
+%D     $ 1 {\red +} 2$\par
+%D     $ 1 \mathbin{\red +} 2$\par
+%D     $ 1 \color[red]{+} 2$\par
+%D \stopTEXpage
+%D \stoptyping
+
 % $x ^^1__2 ^3_4 ^5_6 ^7_8 $
 
 \mathdoublescriptmode
@@ -442,6 +456,7 @@
  % +\closefenceclassoptioncode         % at some point we want to have to have access to it at
  % +\middlefenceclassoptioncode        % lua end ... so we keep it (also in the engine) commented
  % +\checkligatureclassoptioncode      % no font provides this so it is more a compatibility feature
+ % +\checkkernpairclassoptioncode
  % +\flattenclassoptioncode
  % +\omitpenaltyclassoptioncode        % old school check, we do pairwise instead
 \relax
@@ -449,12 +464,14 @@
 \setmathoptions\mathordinarycode\numexpr
     \noitaliccorrectionclassoptioncode
  % +\checkligatureclassoptioncode
+   +\checkkernpairclassoptioncode
    +\flattenclassoptioncode
 \relax
 
 \setmathoptions\mathoperatorcode\numexpr
     \defaultmathclassoptions
  % +\checkligatureclassoptioncode
+   +\checkkernpairclassoptioncode
 \relax
 
 \setmathoptions\mathbinarycode\numexpr
@@ -462,6 +479,7 @@
    +\lookaheadforendclassoptioncode
    +\noitaliccorrectionclassoptioncode
  % +\checkligatureclassoptioncode
+   +\checkkernpairclassoptioncode
    +\flattenclassoptioncode
 \relax
 
@@ -469,6 +487,7 @@
     \defaultmathclassoptions
    +\noitaliccorrectionclassoptioncode
  % +\checkligatureclassoptioncode
+   +\checkkernpairclassoptioncode
    +\flattenclassoptioncode
  % +\omitpenaltyclassoptioncode
 \relax
@@ -478,6 +497,7 @@
    +\noitaliccorrectionclassoptioncode
  % +\openfenceclassoptioncode
  % +\checkligatureclassoptioncode
+   +\checkkernpairclassoptioncode
 \relax
 
 \setmathoptions\mathclosecode\numexpr
@@ -485,6 +505,8 @@
    +\noitaliccorrectionclassoptioncode
  % +\closefenceclassoptioncode
  % +\checkligatureclassoptioncode
+   +\checkkernpairclassoptioncode
+   +\raiseprimeclassoptioncode
 \relax
 
 \setmathoptions\mathpunctuationcode\numexpr
@@ -492,6 +514,7 @@
    +\noitaliccorrectionclassoptioncode
  % +\checkligatureclassoptioncode
    +\flattenclassoptioncode
+   +\checkkernpairclassoptioncode
 \relax
 
 \setmathoptions\mathvariablecode\numexpr
@@ -510,10 +533,17 @@
 \setmathoptions\mathmiddlecode\numexpr
     \noitaliccorrectionclassoptioncode
  % +\middlefenceclassoptioncode
+   +\raiseprimeclassoptioncode
 \relax
 
 \setmathoptions\mathfractioncode\numexpr
     \defaultmathclassoptions
+   +\raiseprimeclassoptioncode
+\relax
+
+\setmathoptions\mathradicalcode\numexpr
+    \defaultmathclassoptions
+   +\raiseprimeclassoptioncode
 \relax
 
 \setmathoptions\mathaccentcode\numexpr
@@ -533,9 +563,19 @@
 
 \setmathoptions\mathbegincode
     \nopostslackclassoptioncode
+\relax
 
 \setmathoptions\mathendcode
     \nopreslackclassoptioncode
+\relax
+
+% Fenced is only used internally as these fences become open, middle and close
+% subtypes. If we don't set the following we should actually also define the
+% spacing rules.
+
+\setmathoptions\mathfencedcode
+    \unpackclassoptioncode
+\relax
 
 %D For now \unknown (todo: make it adapt to style but we're in text anyway)
 
@@ -3921,6 +3961,35 @@
    \enforced\def\mathtraversecommand##1{#2}%
    \clf_traverseblock{#1}\mathtraversecommand
    \popmacro\mathtraversecommand}
+
+%D Just some features:
+%D
+%D \starttyping
+%D $ x + \mathatom         class \mathordcode {xxx} \Umathphantom + x $\par
+%D $ x + \mathatom         class \mathordcode {xxx} \Umathvoid    + x $\par
+%D $ x + \mathatom phantom class \mathordcode {xxx}               + x $\par
+%D $ x + \mathatom void    class \mathordcode {xxx}               + x $\par
+%D
+%D \def\rab{\Umathchar"1"00"007C }
+%D
+%D $
+%D \color[green]{\rab\Umathadapttoright^{\black 1}_{\black 2}^^3__4}
+%D \color[blue] {\mathinner{\vrule height 30mm depth 30mm width 5mm}}
+%D \color[red]  {\rab\Umathadapttoleft ^5_6^^{\black 7}__{\black 8}}
+%D $
+%D
+%D $
+%D     \rab\Umathadapttoright^1_2^^3__4
+%D     \mathinner{\vrule height 30mm depth 30mm width 5mm}
+%D     \rab\Umathadapttoleft^5_6^^7__8
+%D $
+%D \stoptyping
+
+%D Just in case someone uses it:
+
+\appendtoks
+    \scriptspace.05\Umathquad\textstyle % for Mikael
+\to \everymathematics
 
 \protect \endinput
 

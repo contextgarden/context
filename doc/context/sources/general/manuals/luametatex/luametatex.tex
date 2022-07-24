@@ -96,6 +96,9 @@
 
 % with mimalloc and msvc we get a better native performance than crosscompiled
 
+% On the 2018 Dell 7520 Precission Xeon laptop runtime for 322 pages is now exactly
+% 8 seconds (just below 40 pages per second), we talking July 16, 2022.
+
 % \enableexperiments [tabulateusesize]
 % \enableexperiments [tabulatesparseskips]
 
@@ -151,6 +154,7 @@
     \component luametatex-pdf
     \component luametatex-libraries
     \component luametatex-primitives % this generates a list
+    \component luametatex-rejected
 \stopbodymatter
 
 \startbackmatter

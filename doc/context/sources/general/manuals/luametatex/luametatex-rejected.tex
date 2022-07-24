@@ -1,0 +1,94 @@
+% language=us runpath=texruns:manuals/luametatex
+
+\environment luametatex-style
+
+\startcomponent luametatex-rejected
+
+\startchapter[reference=rejected,title={Rejected features}]
+
+\startsection[title=Introduction]
+
+I should have started this chapter sooner because some experiments were removed
+without them being documented. This chapter is mostly for myself so that I don't
+revisit rejected features.
+
+\stopsection
+
+\startsection[title=Text]
+
+{\em todo}
+
+\stopsection
+
+\startsection[title=Math]
+
+\startsubsection[title=Fences]
+
+The \tex {mathfencesmode} primitive could be used to force the atom class of the
+fake fences to be the old inner class instead of the new fence class but we
+dropped that: it's now always a fence subtype (class). Unpacking is therefore now
+controlled by a class option and not enforced by the (new in \LUAMETATEX) subtype.
+
+\stopsubsection
+
+\startsubsection[title=Delimiters]
+
+The \tex {mathdelimitersmode} primitive was experimental and dealt with the
+following (potential) problems. Three bits can be set. The first bit prevents an
+unwanted shift when the fence symbol is not scaled (a cambria side effect). The
+second bit forces italic correction between a preceding character ordinal and the
+fenced subformula, while the third bit turns that subformula into an ordinary so
+that the same spacing applies as with unfenced variants.
+
+So, when set to 7 fenced subformulas with unscaled delimiters came out the same
+as unfenced ones. This could be handy for cases where one was forced to use \prm
+{left} and \prm {right} always because of unpredictable content. The full list of
+flags that we had at the time of removal is given in the next table:
+
+\starttabulate[|c|l|]
+\DB value  \BC meaning \NC \NR
+\TB
+\NC \type{"01} \NC don't apply the usual shift \NC \NR
+\NC \type{"02} \NC apply italic correction when possible \NC \NR
+\NC \type{"04} \NC force an ordinary subformula \NC \NR
+\NC \type{"08} \NC no shift when a base character \NC \NR
+\NC \type{"10} \NC only shift when an extensible \NC \NR
+\NC \type{"20} \NC don't error on a missing right  \NC \NR
+\LL
+\stoptabulate
+
+Because the effect depends on the font (and for Cambria one could use for
+instance \type {"16}) we finally decided to kick it out and correct the font
+instead using the font goodie file. After all it's more a \CONTEXT\ preference
+than an overall demand (read: we think no one else cares much about this).
+
+The \type {"20} options to not error on a missing right fence has been turned
+into \prm {mathcheckfencesmode}.
+
+\stopsubsection
+
+\startsubsection[title=Flattening]
+
+The \tex {mathflattenmode} primitive is gone as we have other ways to deal with
+this now. It related to italic corrections in traditional fonts.
+
+\stopsubsection
+
+\startsubsection[title=Rules]
+
+The \tex {mathrulethicknessmode} feature has been turned into a class option
+which is more granular.
+
+\stopsection
+
+\startsubsection[title=Control]
+
+Although it has its use when developing \LUAMETATEX\ the \tex {mathcontrolmode}
+parameters is no longer there. We have plenty of (more) detailed control now.
+
+\stopsection
+
+
+\stopchapter
+
+\stopcomponent

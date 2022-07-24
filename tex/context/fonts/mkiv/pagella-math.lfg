@@ -40,12 +40,16 @@ return {
             AccentTopShiftUp                =   30,
          -- AccentBaseHeight                =    0,
             AccentBaseDepth                 =   80,
+-- SpaceAfterScript                =   0,
+-- SpaceAfterScript                =   30,
             RadicalDegreeBottomRaisePercent =   60,
             RadicalKernAfterDegree          = -500,
             RadicalRuleThickness            =   54, -- 60 in font
             DelimiterPercent                =   90,
             DelimiterShortfall              =  400,
             DisplayOperatorMinHeight        = 1800, -- 1500 in font
+            PrimeRaisePercent               =   75, -- 50 default
+            PrimeRaiseComposedPercent       =   10, -- 25 default
         },
         tweaks = {
             aftercopying = {
@@ -103,7 +107,7 @@ return {
                         [0x1D450] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.9  }, -- c
                         [0x1D451] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.7  }, -- d
                         [0x1D452] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.9  }, -- e
-                        [0x1D453] = { xoffset = 0.50,  width = 1.70, italic = 0.6                }, -- f
+                        [0x1D453] = { xoffset = 0.50,  width = 1.70, italic = 0.6, anchor = 1.2  }, -- f
                         [0x1D454] = { xoffset = 0.10,  width = 1.15, italic = 0.2                }, -- g
                         [0x0210E] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.3  }, -- h
                         [0x1D458] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.3  }, -- k
@@ -132,6 +136,14 @@ return {
                          -- topright    =  0,
                             bottomright = -0.2,
                        },
+
+-- [0x1D453] = {
+--     topleft     = 3,
+--     bottomleft  = 3,
+--     topright    = 3,
+--     bottomright = 3,
+-- },
+
                     },
                 },
                 {
@@ -146,6 +158,9 @@ return {
                 },
                 {
                     tweak = "addscripts",
+                },
+                {
+                    tweak = "addprivates",
                 },
                 {
                     tweak = "accentdimensions",

@@ -28,7 +28,6 @@
 
 \definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x02100-0x02BFF] [\s!check=yes]
 \definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x1D400-0x1D7FF] [\s!check=yes]
-\definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x1D400-0x1D7FF] [\s!check=yes]
 \definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x0210E]         [\s!check=yes,\c!force=\v!yes]
 %definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x1D538-0x1D550] [\s!check=yes]
 
@@ -67,11 +66,15 @@
     \stoptypescript
 
     \starttypescript [\s!math] [euleroverpagella] [\s!name]
-        \definefontsynonym [MathRoman] [texgyrepagella-math] [\s!features={\s!math\mathsizesuffix,mathextra},\s!fallbacks=euleroverpagella]
+        \definefontsynonym [MathRoman] [texgyrepagella-math] [\s!features={\s!math\mathsizesuffix,mathextra},\s!fallbacks=euleroverpagella%
+        ,\s!goodies=pagella-with-euler-math%
+        ]
     \stoptypescript
 
     \starttypescript [\s!math] [pagellaovereuler] [\s!name]
-        \definefontsynonym [MathRoman] [\s!file:euler.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!fallbacks=pagellaovereuler]
+        \definefontsynonym [MathRoman] [\s!file:euler.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!fallbacks=pagellaovereuler%
+        ,\s!goodies=euler-with-pagella-math%
+        ]
     \stoptypescript
 
     \starttypescript [pagella-with-euler]

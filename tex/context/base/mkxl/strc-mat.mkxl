@@ -362,8 +362,10 @@
 
 \protected\def\strc_formulas_place_current_number
   {\ifempty\namedformulaentry
-     \labeltexts\currentformula{\convertedcounter[\v!formula][]}%
+     \begingroup
      \strc_formulas_handle_current_references
+     \labeltexts\currentformula{\convertedcounter[\v!formula][]}%
+     \endgroup
    \else
      \expandafter % hm, the next one reset \namedformulaentry
      \strc_formulas_handle_current_references
@@ -1061,48 +1063,144 @@
 %
 % \blank[line] \ruledhbox{zzzz} \blank[line]
 
+% \tolerant\protected\def\strc_math_text_here[#1]#:#*#=%
+%   {\ifparameter#2\or
+%     \ifnum\lastboundary=\c_math_begin_boundary\else
+%       \ifcstok{#1}\v!right\else
+%         \strc_math_break_here
+%       \fi
+%     \fi
+%     \vadjust
+%        \ifcstok{#1}\v!before
+%            pre
+%        \orelse\ifcstok{#1}\v!left
+%            pre
+%            baseline
+%            depth before -\thousandpoint
+%        \orelse\ifcstok{#1}\v!right
+%            post
+%            baseline
+%        \fi
+%        \bgroup
+%          \hbox to \displaywidth \bgroup
+%             \strut
+%             \ifcstok{#1}\v!right
+%                \hfill#2%
+%             \else
+%                #2\hss
+%             \fi
+%             \strut
+%          \egroup
+%        \egroup
+%     \ifcstok{#1}\v!right
+%       \strc_math_break_here
+%     \else
+%     % \mathatom class \mathexplicitcode{}%
+%       \strc_math_pickup_again
+%     \fi
+%   \orelse\ifcstok{#1}\v!page
+%     \strc_math_page_here
+%   \orelse\ifcstok{#1}\v!samepage
+%     \strc_math_same_here
+%   \else
+%     \strc_math_break_here
+%   \fi}
+
+\definelocalboxes
+  [\v!lefttext]
+  [\c!command=\localmarginlefttext\zeropoint,
+   \c!repeat=\v!no,
+   \c!distance=\zeropoint,
+   \c!location=\v!middle]
+
+\definelocalboxes
+  [\v!righttext]
+  [\c!command=\localmarginrighttext\zeropoint,
+   \c!repeat=\v!no,
+   \c!distance=\zeropoint,
+   \c!location=\v!middle]
+
+\installcorenamespace{mathtexthere}
+\installcorenamespace{mathbreakhere}
+
+\def\strc_math_text_here_right#1%
+  {\localbox[\v!righttext]{\llap{#1}}}
+
+\def\strc_math_text_here_left#1%
+  {\localbox[\v!lefttext]{\rlap{#1}}}
+
+\def\strc_math_text_here_before#1%
+  {\vadjust pre \bgroup
+     \hbox to \displaywidth \bgroup
+        \strut
+         #1\hss
+        \strut
+     \egroup
+   \egroup}
+
+\def\strc_math_text_here_after#1%
+  {\vadjust \bgroup
+     \hbox to \displaywidth \bgroup
+        \strut
+        #1\hss
+        \strut
+     \egroup
+   \egroup}
+
+\letcsname\??mathtexthere\v!left  \endcsname\strc_math_text_here_left
+\letcsname\??mathtexthere\v!right \endcsname\strc_math_text_here_right
+\letcsname\??mathtexthere\v!before\endcsname\strc_math_text_here_before
+\letcsname\??mathtexthere\v!after \endcsname\strc_math_text_here_after
+
+\defcsname\??mathbreakhere\v!left\endcsname#1%
+  {\ifnum\lastboundary=\c_math_begin_boundary\else
+     \strc_math_line_here
+   \fi
+   \strc_math_text_here_left{#1}%
+   \strc_math_pickup_again}
+
+\defcsname\??mathbreakhere\v!right\endcsname#1%
+  {\strc_math_text_here_right{#1}%
+   \strc_math_line_here
+   \strc_math_pickup_again}
+
+\defcsname\??mathbreakhere\v!before\endcsname#1%
+  {\ifnum\lastboundary=\c_math_begin_boundary\else
+     \strc_math_line_here
+   \fi
+   \strc_math_text_here_before{#1}%
+   \strc_math_pickup_again}
+
+\defcsname\??mathbreakhere\v!after\endcsname#1%
+  {\ifnum\lastboundary=\c_math_begin_boundary\else
+     \strc_math_line_here
+   \fi
+   \strc_math_text_here_after{#1}%
+   \strc_math_pickup_again}
+
+\tolerant\protected\def\strc_math_break_here[#1]#:#*#=%
+  {\ifparameter#2\or
+     \ifcsname\??mathbreakhere#1\endcsname
+       \expandafter\lastnamedcs
+     \else
+       \csname\??mathbreakhere\v!after\expandafter\endcsname
+     \fi{#2}%
+   \orelse\ifcstok{#1}\v!page
+     \strc_math_page_here
+   \orelse\ifcstok{#1}\v!samepage
+     \strc_math_same_here
+   \else
+     \strc_math_line_here
+   \fi}
+
 \tolerant\protected\def\strc_math_text_here[#1]#:#*#=%
   {\ifparameter#2\or
-    \ifnum\lastboundary=\c_math_begin_boundary\else
-      \ifcstok{#1}\v!right\else
-        \strc_math_break_here
-      \fi
-    \fi
-    \vadjust
-       \ifcstok{#1}\v!before
-           pre
-       \orelse\ifcstok{#1}\v!left
-           pre
-           baseline
-           depth before -\thousandpoint
-       \orelse\ifcstok{#1}\v!right
-           post
-           baseline
-       \fi
-       \bgroup
-         \hbox to \displaywidth \bgroup
-            \strut
-            \ifcstok{#1}\v!right
-               \hfill#2%
-            \else
-               #2\hss
-            \fi
-            \strut
-         \egroup
-       \egroup
-    \ifcstok{#1}\v!right
-      \strc_math_break_here
-    \else
-    % \mathatom class \mathexplicitcode{}%
-      \strc_math_pickup_again
-    \fi
-  \orelse\ifcstok{#1}\v!page
-    \strc_math_page_here
-  \orelse\ifcstok{#1}\v!samepage
-    \strc_math_same_here
-  \else
-    \strc_math_break_here
-  \fi}
+     \ifcsname\??mathtexthere#1\endcsname
+       \expandafter\lastnamedcs
+     \else
+       \csname\??mathtexthere\v!after\expandafter\endcsname
+     \fi{#2}%
+   \fi}
 
 \protected\def\strc_math_page_here
   {\ifmmode
@@ -1124,7 +1222,7 @@
      \strc_math_pickup_again
    \fi}
 
-\protected\def\strc_math_break_here
+\protected\def\strc_math_line_here
   {\ifmmode
      \ifconditional\c_strc_math_trace_hang
        \strc_math_trace_okay{darkgreen}{B}%
@@ -1134,16 +1232,16 @@
    \fi}
 
 \ifdefined\alignhere \else \aliased\let\alignhere\relax \fi
-%ifdefined\texthere  \else \aliased\let\texthere \relax \fi
+\ifdefined\texthere  \else \aliased\let\texthere \relax \fi
 \ifdefined\skiphere  \else \aliased\let\skiphere \relax \fi
 \ifdefined\breakhere \else \aliased\let\breakhere\relax \fi
 
 \appendtoks % must move to alignment
     \enforced\let\alignhere\strc_math_align_here
-    \enforced\let\breakhere\strc_math_text_here
+    \enforced\let\breakhere\strc_math_break_here
     \enforced\let\skiphere \strc_math_skip_here
-    %enforced\let\texthere \strc_math_text_here
-%     \global\setfalse\c_strc_math_aligned_here
+    \enforced\let\texthere \strc_math_text_here
+  % \global\setfalse\c_strc_math_aligned_here
 \to \everymathematics
 
 \installcorenamespace{mathtextalign}
@@ -1180,7 +1278,11 @@
   {\raggedslanted
   %\mathgluemode\plustwo
    \c_strc_math_ragged_status\plustwo
-   \parfillrightskip\wd\b_strc_formulas_number % should normally fit
+   \ifcase\c_strc_math_number_location\or
+     \parinitleftskip\wd\b_strc_formulas_number % should normally fit
+   \else
+     \parfillrightskip\wd\b_strc_formulas_number % should normally fit
+   \fi
    \updateparagraphproperties} % not needed
 
 \def\strc_math_setup_align
@@ -1245,15 +1347,19 @@
 
 \newcount\c_strc_math_n_of_lines
 \newdimen\d_strc_math_max_width
+\newdimen\d_strc_math_first_width
 \newdimen\d_strc_math_last_width
+\newdimen\d_strc_math_first_height
 \newdimen\d_strc_math_last_depth
 
 \appendtoks
-    \global\d_strc_math_indent    \zeropoint
-    \global\c_strc_math_n_of_lines\zerocount
-    \global\d_strc_math_max_width \zeropoint
-    \global\d_strc_math_last_width\zeropoint
-    \global\d_strc_math_last_depth\zeropoint
+    \global\d_strc_math_indent      \zeropoint
+    \global\c_strc_math_n_of_lines  \zerocount
+    \global\d_strc_math_max_width   \zeropoint
+    \global\d_strc_math_first_width \zeropoint
+    \global\d_strc_math_first_height\zeropoint
+    \global\d_strc_math_last_width  \zeropoint
+    \global\d_strc_math_last_depth  \zeropoint
 \to \everyresetformulas
 
 \newbox\b_strc_math_display % most code is in math-ali (for historical reasons)
@@ -1502,9 +1608,9 @@
 
 \permanent\protected\def\stopdisplaymath
   {\endgroup    % less interference with upcoming a \over b
-   \ifhmode
+%    \ifrelax\strc_formulas_begstrut\else
      \strc_formulas_endstrut
-   \fi
+%    \fi
    \stopinnermath
    \afterdisplayspace
    \egroup}

@@ -35,6 +35,10 @@ return {
             DisplayOperatorMinHeight        = 1900, -- 1250 in font
          -- AccentSuperscriptDrop           =  100,
          -- AccentSuperscriptPercent        =  20,
+         -- PrimeRaisePercent               =  50,
+            PrimeRaiseComposedPercent       =  0,
+         -- PrimeShiftUp                    = 0,
+         -- PrimeBaselineDropMax            = 0,
         },
         tweaks = {
             aftercopying = {
@@ -186,6 +190,11 @@ return {
                             topleft     = -0.2,
                             bottomright = -0.2,
                         },
+-- [0x1D453] = {
+-- [0x0210E] = {
+--     topleft     =  0.5,
+--     bottomright = -0.2,
+-- },
                      -- [0x28] = { -- left parenthesis. No!
                      --     topleft     = -0.1,
                      --     bottomleft  = -0.1,
@@ -374,6 +383,16 @@ return {
                     factor  = 1,--1.1
                 },
                 {
+                    tweak = "addprivates",
+                 -- list  = {
+                 --     -- for specific parameters see act file
+                 --     ["unary minus"]      = { preset = "unary minus"      },
+                 --     ["unary plus"]       = { preset = "unary plus"       },
+                 --     ["unary plus minus"] = { preset = "unary plus minus" },
+                 --     ["unary minus plus"] = { preset = "unary minus plus" },
+                 -- },
+                },
+                {
                     tweak = "addscripts",
                 },
                 {
@@ -381,6 +400,58 @@ return {
                 },
                 {
                     tweak = "addrules",
+                },
+                {
+                    tweak = "kernpairs",
+                    list = {
+                        [mathematics.tweaks.subsets.acenorsuvxz] = {
+                            [0x1D453] = -.1, -- f
+                            [0x1D457] = -.1, -- j
+                        },
+                        [mathematics.tweaks.subsets.bhklt] = {
+                            [0x1D453] = -.1, -- f
+                            [0x1D457] = -.1, -- j
+                        },
+                        [mathematics.tweaks.subsets.d] = {
+                            [0x1D453] = -.075, -- f
+                            [0x1D457] = -.075, -- j
+                        },
+                        [mathematics.tweaks.subsets.f] = {
+                            -- [mathematics.tweaks.subsets.aceimnorsuvwxz] = -.05,
+                            [mathematics.tweaks.subsets.gjqy] = -.15,
+                            [0x1D453] = -.2, -- ff
+                        },
+                        [mathematics.tweaks.subsets.i] = {
+                            [0x1D453] = -.2, -- f
+                            [0x1D457] = -.2, -- j
+                        },
+                        [mathematics.tweaks.subsets.mw] = {
+                            [0x1D453] = -.05, -- f
+                            [0x1D457] = -.05, -- j
+                        },
+                        [mathematics.tweaks.subsets.p] = {
+                            [0x1D453] = -.05, -- f
+                            [0x1D457] = -.05, -- j
+                        },
+                        [0x1D45F] = { -- r
+                            [0x1D460] = -.1, -- s
+                        },
+-- [mathematics.tweaks.subsets.acenorsuvxz] = {
+--     [mathematics.tweaks.subsets.acenorsuvxz] = 2,
+-- },
+--                         [0x1D452] = {
+--                             [0x1D453] = -.05,
+--                             [0x1D465] = -.3,
+--                         },
+--                         [0x1D453] = {
+--                             [0x1D453] = -.1,
+--                             [0x1D454] = -.1,
+--                             [0x1D465] = -.3,
+--                         },
+--                         [0x1D465] = {
+--                             [0x1D465] = .1,
+--                         }
+                        }
                 },
              -- {
              --      tweak  = "fixanchors",

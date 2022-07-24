@@ -995,10 +995,16 @@ path unitdiamond, fulldiamond ;
 unitdiamond := (.5,0) -- (1,.5) -- (.5,1) -- (0,.5) -- cycle ;
 fulldiamond := unitdiamond shifted - center unitdiamond ;
 
+path unitoctagon, fulloctagon ;
+
+unitoctagon := for i within (unitcircle rotated 45/2) : pathpoint -- endfor cycle ;
+fulloctagon := unitoctagon shifted - center unitoctagon ;
+
 path unithexagon, fullhexagon ;
 
-unithexagon := for i within (unitcircle rotated 45/2) : pathpoint -- endfor cycle ;
-fullhexagon := unithexagon shifted - center unithexagon ;
+%%%%hexagon := for i = 0 upto 5 : .5dir (60i) -- endfor cycle ;
+fullhexagon := for i = 0 step 60 until 360 : .5 dir(i) -- endfor cycle ;
+unithexagon := fullhexagon shifted (.5,.5) ;
 
 permanent
     fullsquare, unitcircle,
@@ -1006,7 +1012,7 @@ permanent
     tcircle, bcircle, lcircle, rcircle,
     urtriangle, ultriangle, lltriangle, lrtriangle,
     triangle, uptriangle, downtriangle, lefttriangle, righttriangle,
-    unitdiamond, fulldiamond, unithexagon, fullhexagon ;
+    unitdiamond, fulldiamond, unitoctagon, fulloctagon, unithexagon, fullhexagon ;
 
 %D More robust:
 

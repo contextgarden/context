@@ -454,6 +454,7 @@ moduledata.scite = scite
 \unexpanded\def\module_scite_buffer_inline[#1][#2]%
   {\dontleavehmode
    \begingroup
+   \lettypingparameter\c!margin\zeropoint
    \setcatcodetable\ctxcatcodes % needed in xml
    \ifsecondargument
      \clf_scitelexbuffer{#2}{#1}%
@@ -465,6 +466,7 @@ moduledata.scite = scite
    \module_scite_inherit_typing
    \dontcomplain
    \getbuffer[lex]%
+   \removeunwantedspaces
    \endgroup}
 
 \unexpanded\def\startInlineScite#1%

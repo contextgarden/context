@@ -876,6 +876,14 @@ expand the passed general text. The \type {g} and \type {x} variants are global.
 
 \stopsubsection
 
+\startsubsection[title={\prm {etoks} and \prm {xtoks}}]
+
+A mix between the previously discussed append and prepend primitives and simple
+toks register assignments are these two. They act like \prm {toks} but expand
+their content first. The \type {x} variant does a global assignment.
+
+\stopsubsection
+
 \startsubsection[title={\prm {csstring}, \prm {begincsname} and \prm {lastnamedcs}}]
 
 These are somewhat special. The \prm {csstring} primitive is like
@@ -1015,19 +1023,84 @@ but faster (only measurable with millions of calls) and probably more convenient
 
 \stopsubsection
 
-\startsubsection[title={\prm {defcsname}, \prm {edefcsname}, \prm {edefcsname} and \prm {xdefcsname}}]
+\startsubsection[title={\prm {defcsname}, \prm {edefcsname}, \prm {gdefcsname} and \prm {xdefcsname}}]
 
 Although we can implement these primitives easily using macros it makes sense,
 given the popularity of \prm {csname} to have these as primitives. It also saves
 some \prm {expandafter} usage and it looks a bit better in the source.
 
 \starttyping
-\def\gdefcsname foo\endcsname{oof}
+\gdefcsname foo\endcsname{oof}
 \stoptyping
 
 \stopsubsection
 
-\startsubsection[title={\prm {expanded}}]
+\startsubsection[title={\prm {letcsname} and \prm {gletcsname}}]
+
+These can also be implemented using macros but again they are natively provided
+by the engine for the same reasons: less code and less tracing clutter.
+
+\starttyping
+\gletcsname foo\endcsname \relax
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={\prm {futuredef} and \prm {futurecsname}}]
+
+This is just the definition variant of \prm {futurelet} and a simple example
+shows the difference:
+
+\startbuffer
+\def\whatever{[\next:\meaning\next]}
+\futurelet\next\whatever A
+\futuredef\next\whatever B
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+The next one was more an experiment that then stayed around, just to see what
+surprising abuse of this primitive will happen:
+
+\startbuffer
+\def\whateveryes{[YES]}
+\def\whatevernop{[NOP]}
+\let\whatever\undefined
+\futurecsname\whatevernop whatever\endcsname
+\futurecsname\whatevernop whateveryes\endcsname
+\stopbuffer
+
+\typebuffer
+
+When the assembles control sequence is undefined the given one will be expanded,
+a weird one, right? I will probably apply it some day in cases where I want less
+tracing and a more direct expansion of an assembled name.
+
+\getbuffer
+
+Here is a usage example:
+
+\starttyping
+\xdef\Whatever{\futurecsname\whatevernop    whatever\endcsname}
+\xdef\Whatever{\futurecsname\whateveryes whateveryes\endcsname}
+\xdef\Whatever{\ifcsname    whatever\endcsname\lastnamedcs\else\whatevernop\fi}
+\xdef\Whatever{\ifcsname whateveryes\endcsname\lastnamedcs\else\whatevernop\fi}
+\xdef\Whatever{\ifcsname    whatever\endcsname\csname    whatever\endcsname\else\whatevernop\fi}
+\xdef\Whatever{\ifcsname whateveryes\endcsname\csname whateveryes\endcsname\else\whatevernop\fi}
+\stoptyping
+
+The timings for one million times defining each of these definitions are 0.277,
+0.313, 0.310, 0.359, 0.352 and 0.573 seconds (on a 2018 Dell 7250 Precision
+laptop with mobile E3-1505M v6 processor), so there is a little gain here, but of
+course in practice no one will notice that because not that many such macros are
+defined (or used).
+
+\stopsubsection
+
+\startsubsection[title={\prm {expanded}, \prm {localcontrol}, \prm
+{localcontrolled}, \prm {beginlocalcontrol} and \prm {endlocalcontrol}}]
 
 \topicindex {expansion}
 
@@ -1036,113 +1109,115 @@ can come in handy: it avoids a tricky mix of \prm {expandafter} and \prm
 {noexpand}. You can compare it with what happens inside the body of an \prm
 {edef}. The \tex {immediateassignment} and \tex {immediateassigned} commands are
 gone because we have the more powerful local control commands. They are a tad
-slower but this mechanism isn't used that much anyway. Inside an \prm {edef} you
-can use the \type {\immediate} prefix anyway, so if you really want these
-primitives back you can say:
+slower but this mechanism isn't used that much anyway.
 
 \starttyping
-\let\immediateassignment\immediate
-\let\immediateassigned  \localcontrolled
+\let\immediateassigned\localcontrolled % sort of what \LUATEX provides
 \stoptyping
+
+Say that we define:
+
+\startbuffer
+\edef\TestA
+  {\advance\scratchcounter\plusone}
+\edef\TestB
+  {\localcontrol\TestA
+   \the\scratchcounter}
+\edef\TestC
+  {\localcontrolled{\advance\scratchcounter\plusone}%
+   \the\scratchcounter}
+\edef\TestD
+  {\beginlocalcontrol\advance\scratchcounter\plusone\endlocalcontrol
+   \the\scratchcounter}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+With this example:
+
+\startbuffer
+\scratchcounter 10 \meaningasis\TestA
+\scratchcounter 20 \meaningasis\TestB
+\scratchcounter 30 \meaningasis\TestC
+\scratchcounter 40 \meaningasis\TestD
+\stopbuffer
+
+\typebuffer
+
+We get this:
+
+\startlines
+\tttf \getbuffer
+\stoplines
+
+These local control primitives are a bit tricky and error message can be
+confusing. Future versions might have a bit better recovery but in practice it
+works as expected.
 
 \stopsubsection
 
-% \startsubsection[title={\prm {expanded}, \prm {immediateassignment} and \prm {immediateassigned}}]
-%
-% \topicindex {expansion}
-%
-% The \prm {expanded} primitive takes a token list and expands its content which can
-% come in handy: it avoids a tricky mix of \prm {expandafter} and \prm {noexpand}.
-% You can compare it with what happens inside the body of an \prm {edef}. But this
-% kind of expansion still doesn't expand some primitive operations.
-%
-% \startbuffer
-% \newcount\NumberOfCalls
-%
-% \def\TestMe{\advance\NumberOfCalls1 }
-%
-% \edef\Tested{\TestMe foo:\the\NumberOfCalls}
-% \edef\Tested{\TestMe foo:\the\NumberOfCalls}
-% \edef\Tested{\TestMe foo:\the\NumberOfCalls}
-%
-% \meaning\Tested
-% \stopbuffer
-%
-% \typebuffer
-%
-% The result is a macro that has the not expanded code in its body:
-%
-% \getbuffer
-%
-% Instead we can define \tex {TestMe} in a way that expands the assignment
-% immediately. You need of course to be aware of preventing look ahead interference
-% by using a space or \tex {relax} (often an expression works better as it doesn't
-% leave an \tex {relax}).
-%
-% \startbuffer
-% \def\TestMe{\immediateassignment\advance\NumberOfCalls1 }
-%
-% \edef\Tested{\TestMe foo:\the\NumberOfCalls}
-% \edef\Tested{\TestMe foo:\the\NumberOfCalls}
-% \edef\Tested{\TestMe foo:\the\NumberOfCalls}
-%
-% \meaning\Tested
-% \stopbuffer
-%
-% \typebuffer
-%
-% This time the counter gets updates and we don't see interference in the
-% resulting \tex {Tested} macro:
-%
-% \getbuffer
-%
-% Here is a somewhat silly example of expanded comparison:
-%
-% \startbuffer
-% \def\expandeddoifelse#1#2#3#4%
-%   {\immediateassignment\edef\tempa{#1}%
-%    \immediateassignment\edef\tempb{#2}%
-%    \ifx\tempa\tempb
-%      \immediateassignment\def\next{#3}%
-%    \else
-%      \immediateassignment\def\next{#4}%
-%    \fi
-%    \next}
-%
-% \edef\Tested
-%   {(\expandeddoifelse{abc}{def}{yes}{nop}/%
-%     \expandeddoifelse{abc}{abc}{yes}{nop})}
-%
-% \meaning\Tested
-% \stopbuffer
-%
-% \typebuffer
-%
-% It gives:
-%
-% \getbuffer
-%
-% A variant is:
-%
-% \starttyping
-% \def\expandeddoifelse#1#2#3#4%
-%   {\immediateassigned{
-%      \edef\tempa{#1}%
-%      \edef\tempb{#2}%
-%    }%
-%    \ifx\tempa\tempb
-%      \immediateassignment\def\next{#3}%
-%    \else
-%      \immediateassignment\def\next{#4}%
-%    \fi
-%    \next}
-% \stoptyping
-%
-% The possible error messages are the same as using assignments in preambles of
-% alignments and after the \prm {accent} command. The supported assignments are the
-% so called prefixed commands (except box assignments).
-%
-% \stopsubsection
+\startsubsection[title={\prm {semiprotected}, \prm {semiexpanded}, \prm {expand} and
+\prm {semiexpand}}]
+
+These primitives can best be explained with a few examples. The semi boils down to
+a bit more controlled usage of \prm {protected} macros.
+
+\startbuffer
+               \def\Test {test}
+               \def\TestA{\Test}
+\protected     \def\TestB{\Test}
+\semiprotected \def\TestC{\Test}
+              \edef\TestD{\Test}
+              \edef\TestE{\TestA}
+              \edef\TestF{\TestB}
+              \edef\TestG{\TestC}
+              \edef\TestH{\normalexpanded{\TestB\TestC}} % ctx has \expanded defined
+              \edef\TestI{\semiexpanded{\TestB\TestC}}
+              \edef\TestJ{\expand\TestB\expand\TestC}
+              \edef\TestK{\semiexpand\TestB\semiexpand\TestC}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The effective meanings are given next (we use \prm {meaningasis} for this):
+
+\startlines \tttf
+\meaningasis\Test
+\meaningasis\TestA
+\meaningasis\TestB
+\meaningasis\TestC
+\meaningasis\TestD
+\meaningasis\TestE
+\meaningasis\TestF
+\meaningasis\TestG
+\meaningasis\TestH
+\meaningasis\TestI
+\meaningasis\TestJ
+\meaningasis\TestK
+\stoplines
+
+\stopsubsection
+
+\startsubsection[title={\prm {norelax}}]
+
+There are a few cases where the \TEX\ scanned skips over spaces and \prm {relax} as
+well as quits on a \prm {relax} in which case it gets pushed back. An example is
+given below:
+
+\startbuffer
+\edef\TestA{\ifnum1=1\relax   Y\else N\fi} \meaningasis\TestA
+\edef\TestB{\ifnum1=1\norelax Y\else N\fi} \meaningasis\TestB
+\stopbuffer
+
+\typebuffer
+
+The second line also contains a sentinel but this time we use \prm {norelax}
+which will not be pushed back. So, this feature is just a trick to get rid of (in
+itself reasonable) side effects.
+
+\startlines\getbuffer \stoplines
+
+\stopsubsection
 
 \startsubsection[title={\prm {ignorepars}}]
 
@@ -1366,6 +1441,42 @@ You can check if a macro is defined as protected with \type {\ifprotected} while
 frozen macros can be tested with \type {\iffrozen}. A provisional \type
 {\ifusercmd} tests will check if a command is defined at the user level (and this
 one might evolve).
+
+\stopsubsection
+
+\startsubsection[title={\prm {ifhastok}, \prm {ifhastoks}, \prm {ifhasxtoks} and \prm {ifhaschar}}]
+
+\topicindex {conditions+tokens}
+\topicindex {tokens}
+
+The first three test primitives run over a token list in order to encounter a
+single token or a sequence. The \type {x} variants applies expansion.
+
+\startbuffer
+\def\ab {ab}
+\def\abc{abc}
+\ifhastok  1    {12} Y\else N\fi
+\ifhastoks {ab} {abc}Y\else N\fi
+\ifhastoks {ab} {\abc}Y\else N\fi
+\ifhastoks {\ab}{\abc}Y\else N\fi
+\ifhasxtoks{ab} {\abc}Y\else N\fi
+\ifhastok  3    {12} Y\else N\fi
+\ifhastoks {de} {abc}Y\else N\fi
+\stopbuffer
+
+\typebuffer \startpacked[blank] {\tt\nospacing\getbuffer} \stoppacked
+
+The \prm {ifhaschar} primitive differs from \prm {ifhastok} in that it handles
+nested balanced \quote {lists}, as in:
+
+\startbuffer
+\ifhastok  a  {abc}Y\else N\fi
+\ifhaschar a  {abc}Y\else N\fi
+\ifhastok  a{{a}bc}Y\else N\fi
+\ifhaschar a{{a}bc}Y\else N\fi
+\stopbuffer
+
+\typebuffer \startpacked[blank] {\tt\nospacing\getbuffer} \stoppacked
 
 \stopsubsection
 
@@ -1645,6 +1756,113 @@ a split of the given size but result has the natural dimensions then.
 
 \stopsubsection
 
+\startsubsection[title={\prm {boxxoffset}, \prm {boxyoffset}, \prm {boxxmove}, \prm {boxymove},
+\prm{boxorientation} and \prm{boxgeometry}}]
+
+This repertoire of primitives can be used to do relative positioning. The offsets
+are virtual while the moves adapt the dimensions. The orientation bitset can be
+used to rotate the box over 90, 180 and 270 degrees. It also influences the
+corner, midpoint or baseline.
+
+{\em There is information in the \CONTEXT\ low level manuals and in due time I
+will add a few examples here. This feature needs support in the backend when used
+(as in \CONTEXT) so it might influence performance.}
+
+\stopsubsection
+
+\startsubsection[title={\prm {boxtotal}}]
+
+The \prm {boxtotal} primitive returns the sum of the height and depth and is less
+useful as setter: it just sets the height and depth to half of the given value.
+
+\stopsubsection
+
+\startsubsection[title={\prm {boxshift}}]
+
+In traditional \TEX\ a box has height, depth, width and a shift where the later
+relates to \prm {raise}, \prm {lower}, \prm {moveleft} and \prm {moveright}. This
+primitive can be used to query and set this property.
+
+\startbuffer
+\setbox0\hbox{test test test}
+\setbox2\hbox{test test test} \boxshift2 -10pt
+\ruledhbox{x \raise10pt\box0\ x}
+\ruledhbox{x           \box2\ x}
+\stopbuffer
+
+\typebuffer
+
+\stopsubsection
+
+\startsubsection[title={\prm {boxanchor}, \prm {boxanchors}, \prm {boxsource} and \prm {boxtarget}}]
+
+{\em These are experimental.}
+
+\stopsubsection
+
+\startsubsection[title={\prm {boxfreeze}, \prm {boxadapt} and \prm {boxrepack}}]
+
+This operation will freeze the glue in the given box, something that normally is
+delayed and delegated to the backend.
+
+\startbuffer
+\setbox    0 \hbox to 5cm {\hss test}
+\setbox    2 \hbox to 5cm {\hss test}
+\boxfreeze 2 0
+\ruledhbox{\unhbox   0}
+\ruledhbox{\unhbox   2}
+\stopbuffer
+
+\typebuffer
+
+The second parameter to \prm {boxfreeze} determines recursion. Here we just
+freeze the outer level:
+
+\getbuffer
+
+Repacking will take the content of an existing box and add or subtract from it:
+
+\startbuffer
+\setbox 0 \hbox        {test test test}
+\setbox 2 \hbox {\red   test test test} \boxrepack0 +.2em
+\setbox 4 \hbox {\green test test test} \boxrepack0 -.2em
+\ruledhbox{\box0} \vskip-\lineheight
+\ruledhbox{\box0} \vskip-\lineheight
+\ruledhbox{\box0}
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+We can use this primitive to check the natural dimensions:
+
+\startbuffer
+\setbox 0 \hbox spread 10pt {test test test}
+\ruledhbox{\box0} (\the\boxrepack0,\the\wd0)
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Adapting will recalculate the dimensions with a scale factor for the glue:
+
+\startbuffer
+\setbox 0 \hbox       {test test test}
+\setbox 2 \hbox {\red  test test test} \boxadapt 0   200
+\setbox 4 \hbox {\blue test test test} \boxadapt 0  -200
+\ruledhbox{\box0} \vskip-\lineheight
+\ruledhbox{\box0} \vskip-\lineheight
+\ruledhbox{\box0}
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stopsubsection
+
 \startsubsection[title={Images and reused box objects},reference=sec:imagesandforms]
 
 In original \TEX\ image support is dealt with via specials. It's not a native
@@ -1728,6 +1946,14 @@ one never know if content needs a treatment so using them should be done with
 care. Apart from accepting more keywords (and therefore options) the normal
 box behave the same as before. The \prm {vcenter} builder also works in text
 mode.
+
+\stopsubsection
+
+\startsubsection[title={\prm {unhpack}, \prm {unvpack}}]
+
+These two are somewhat experimental. They ignore the accumulated pre- and
+postmigrated material bound to a box. I needed it for some experiment so the
+functionality might change when I really need it.
 
 \stopsubsection
 
@@ -1849,6 +2075,15 @@ to be incompatible with the \LUA\ end of the engine. The same is true for \type
 The \type {\lastnodesubtype} is a bonus and again reports the codes used
 internally. During development these might occasionally change, but eventually
 they will be stable.
+
+\stopsubsection
+
+\startsubsection[title={\prm {lastboundary} and \prm {unboundary}}]
+
+There are \prm {lastpenalty}, \prm {lastskip}, \prm {lastkern} and \prm {lastbox}
+primitives and \LUAMETATEX\ also offers \prm {lastboundary} which gives the value
+assigned to a user boundary node. This means that we also have a \prm
+{unboundary} to complement the other \tex {un...} primitives.
 
 \stopsubsection
 
@@ -2516,7 +2751,8 @@ experimental so what gets displayed might change.
 
 \stopsection
 
-\startsection[title={Constants with \prm{integerdef} and \prm {dimensiondef}}]
+\startsection[title={Constants with \prm{integerdef}, \prm {dimensiondef},
+\prm {gluespecdef} and \prm {mugluespecdef}}]
 
 It is rather common to store constant values in a register or character
 definition.
@@ -2530,8 +2766,10 @@ definition.
 But in \LUAMETATEX\ we also can do this:
 
 \starttyping
-\integerdef  \MyConstantC 456
-\dimensiondef\MyConstantD 456pt
+\integerdef    \MyConstantI 456
+\dimensiondef  \MyConstantD 456pt
+\gluespecdef   \MyConstantG 987pt minus 654pt plus 321pt
+\mugluespecdef \MyConstantG 3mu plus 2mu minus 1mu
 \stoptyping
 
 These two are stored as efficient as a register but don't occupy a register slot.
@@ -2544,14 +2782,52 @@ in a previous section.
 
 \stopsection
 
-\startsection[title={Serialization with \prm {todimension}, \prm {toscaled} and \prm {tointeger}}]
+\startsection[title={Getting internal indices with \prm {indexofcharacter} and \prm {indexofregister}}]
 
-These three serializers take a verbose or symbolic quantity:
+When you have defined a register with one of the \tex {...def} primitives but for
+some reasons needs to know the register index you can query that:
+
+\startbuffer
+\the\indexofregister \scratchcounterone,
+\the\indexofregister \scratchcountertwo,
+\the\indexofregister \scratchwidth,
+\the\indexofregister \scratchheight,
+\the\indexofregister \scratchdepth,
+\the\indexofregister \scratchbox
+\stopbuffer
+
+\typebuffer
+
+We lie a little here because in \CONTEXT\ the box index \tex {scratchbox} is
+actually defined as: \normalexpanded {\typ {\meaningasis \scratchbox}} but it
+still is a number so it fits in.
+
+\getbuffer
+
+A similar primitive gives us the (normally \UNICODE) value of a character:
+
+\startbuffer
+\chardef\MyCharA=65
+\the\indexofcharacter A
+\the\indexofcharacter \MyCharA
+\stopbuffer
+
+\typebuffer
+
+The result is equivalent to \type {\number `A} but avoids the back quote:
+\inlinebuffer.
+
+\stopsection
+
+\startsection[title={Serialization with \prm {todimension}, \prm {toscaled}, \prm {tohexadecimal} and \prm {tointeger}}]
+
+These serializers take a verbose or symbolic quantity:
 
 \starttyping
-\todimension 10pt   \todimension \scratchdimen    % with unit
-\toscaled    10pt   \toscaled    \scratchdimen    % without unit
-\tointeger   10     \tointeger   \scratchcounter
+\todimension   10pt   \todimension   \scratchdimen    % with unit
+\toscaled      10pt   \toscaled      \scratchdimen    % without unit
+\tointeger     10     \tointeger     \scratchcounter
+\tohexadecimal 10     \tohexadecimal \scratchcounter
 \stoptyping
 
 This is particularly handy in cases where you don't know what you deal with, for instance
@@ -2562,6 +2838,29 @@ when a value is stored in a macro. Using \type {\the} could fail there while:
 \stoptyping
 
 is often overkill and gives more noise in a trace.
+
+\stopsection
+
+\startsection[title={Serialization with \prm {thewithoutunit}, \prm {tosparsedimension} and \prm {tosparsescaled}}]
+
+By default \TEX\ lets \type {1pt} come out as \type {1.0pt} which is why we also have
+two sparse variants:
+
+\startbuffer
+\todimension    10pt\quad\tosparsedimension  10pt
+\todimension   1.2pt\quad\tosparsedimension 1.2pt
+\toscaled       10pt\quad\tosparsescaled     10pt
+\toscaled      1.2pt\quad\tosparsescaled    1.2pt
+\stopbuffer
+
+\typebuffer
+
+This time trailing zeros (and a trailing period) will be dropped:
+
+\startlines \getbuffer \stoplines
+
+The \prm {thewithoutunit} primitive is like \prm {the} on a dimension but it
+omits the unit.
 
 \stopsection
 

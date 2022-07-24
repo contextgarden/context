@@ -281,16 +281,20 @@ if luatex and luametatex then
 
     local match = string.match
 
-    local index = structures.registers.collected and structures.registers.collected.luatexindex
     local found = { }
 
-    if index then
-        local data = index.entries
-        for i=1,#data do
-            found[match(data[i].list[1][1],"\\tex%s*{(.-)}") or ""] = true
+    local function collect(index)
+        if index then
+            local data = index.entries
+            for i=1,#data do
+                found[match(data[i].list[1][1],"\\tex%s*{(.-)}") or ""] = true
+            end
+         -- inspect(found)
         end
-     -- inspect(found)
     end
+
+    collect(structures.registers.collected and structures.registers.collected.texindex)
+    collect(structures.registers.collected and structures.registers.collected.luatexindex)
 
     luatex     = table.tohash(luatex)
     luametatex = table.tohash(luametatex)
@@ -316,8 +320,9 @@ if luatex and luametatex then
 
  -- context.page()
 
-    context("The following primitives are available in \\LUAMETATEX\\ only. ")
-    context("At some point in time some might be added to \\LUATEX.")
+    context("The following primitives are available in \\LUAMETATEX\\ only. In the meantime ")
+    context("the \\LUAMETATEX\\ code base is so different from \\LUATEX\\ that backporting ")
+    context("is no longer reasonable.")
 
     context.blank()
     context.startcolumns { n = 2 }

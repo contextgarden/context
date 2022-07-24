@@ -554,7 +554,7 @@ do
                 tmry       = effect.squeeze or fontparameters.squeezefactor or 1
                 tmrx       = effect.extend  or fontparameters.extendfactor  or 1
                 need_mode  = effect.mode    or fontparameters.mode          or 0
-                need_width = effect.line    or fontparameters.width         or 0
+                need_width = effect.line    or fontparameters.width         or 0 -- scale sensitive!
                 c_effect   = effect
             else
              -- we could check if effects have changed but effects use unique tables; for
@@ -566,6 +566,7 @@ do
             tmrx       = fontparameters.extendfactor  or 1
             need_mode  = fontparameters.mode          or 0
             need_width = fontparameters.width         or 0
+            c_effect   = nil
         end
 
         tmrx       = expand * tmrx

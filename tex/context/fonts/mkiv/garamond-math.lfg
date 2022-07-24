@@ -19,6 +19,8 @@ return {
             DelimiterPercent          =   90,
             DelimiterShortfall        =  400,
          -- DisplayOperatorMinHeight  = 1800, -- 1300 in font (only one)
+            PrimeRaisePercent         =   85, -- 50 default
+         -- PrimeRaiseComposedPercent =   25, -- 25 default
         },
         tweaks = {
             aftercopying = {

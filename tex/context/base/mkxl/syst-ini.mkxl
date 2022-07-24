@@ -1256,10 +1256,9 @@
 \immutable\integerdef\eTeXversion   2
 \immutable\def       \eTeXrevision {2}
 
-%D Just in case users use this (or some styles still have it):
+% %D Just in case users use this (or some styles still have it):
 
-\aliased\let\immediateassignment\immediate
-\aliased\let\immediateassigned  \localcontrolled
+\aliased\let\immediateassigned\localcontrolled
 
 %D Needed (maybe no longer the multiple next ones):
 

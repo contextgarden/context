@@ -110,7 +110,7 @@ implement {
     arguments = "3 strings",
     actions   = function(start,stop,command)
         gobbletoken(createtoken(start),createtoken(stop))
-        if command then
+        if command and command ~= "" then
             context[command]()
         end
     end

@@ -1656,6 +1656,7 @@ do
             local xforms     = pdfdictionary()
             local nofglyphs  = 0
             local scale      = 10 * details.parameters.size/details.parameters.designsize
+scale = scale * (7200/7227) -- test on extensibles
             local units      = details.parameters.units
             local function boxtopdf(image,data) -- image == glyph
                 nofglyphs    = nofglyphs + 1

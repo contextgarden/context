@@ -357,8 +357,8 @@
 %D % \protected\def\LeftNumber {\hbox to \localboxesparameter{width}{\strut\box\localboxcontentbox\hss)}}
 %D % \protected\def\RightNumber{\hbox to \localboxesparameter{width}{\strut(\hss\box\localboxcontentbox)}}
 %D
-%D \protected\def\LeftText #1{#1\quad}
-%D \protected\def\RightText#1{\quad#1}
+%D \protected\def\LeftText {\localboxcontentbox\quad}
+%D \protected\def\RightText{\quad\localboxcontentbox}
 %D
 %D \start
 %D     \localbox[linenumber]{}%

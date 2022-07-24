@@ -15,20 +15,6 @@
 
 \unprotect
 
-% ignore missign right message, so we can have left extensibles (int or so)
-%
-% \mathdelimitersmode"20 (todo: flipbit)
-
-% maybe always "method=auto" for:
-%
-% \switchtobodyfont[cambria]
-% \ruledhbox{$f(x)$}
-% \ruledhbox{\mathdelimitersmode6$f\left(x\right)$}
-% \ruledhbox{\mathdelimitersmode7$f\left(x\right)$}
-% \ruledhbox{$f\left(\frac{1}{x}\right)$}
-
-% todo: mathstyle
-
 % \definemathfence [fancybracket] [bracket] [command=yes,color=blue]
 %
 % test $|x|$ test \par
@@ -185,6 +171,9 @@
          \Uvextensible
        \else
          #1% \Uleft \Umiddle \Uleft
+        \ifx#1\Umiddle
+          nooverflow %
+        \fi
        \fi
      \orelse\ifx\p_factor\v!none
        \math_fenced_common_factor_none
@@ -456,25 +445,6 @@
      \c_math_fenced_level\zerocount
    \fi
    \math_fenced_force_size\bigmathdelimitervariant\c_math_fenced_level\relax}
-
-% integral experiment (but no scripts)
-%
-% \protected\def\math_fenced_fenced_simple#1%
-%   {\pushmacro\currentmathfence
-%    \edef\currentmathfence{#1}%
-%    \math_fenced_fenced_common
-%    \math_fenced_left
-%    \popmacro\currentmathfence
-%    \stopusemathstyleparameter}
-%
-% \immutable\protected\def\integral   {\math_fenced_fenced_simple{integral}}
-%
-% let's keep this weird hack:
-%
-% \mathdelimitersmode"20
-% \startformula
-%     x = \integral {\vrule height 20mm depth 18mm width 5mm}^^{2\,}__{2\,}
-% \stopformula
 
 % todo: | in mathmode letter
 %
@@ -814,7 +784,7 @@
     \bigmathdelimitervariant\mathfenceparameter\c!alternative\relax % controls lua
 \to \everysetupmathfence
 
-\setupmathfence[\c!alternative=1] % or 5
+\setupmathfence[\c!alternative=5] % the rest will probably go
 
 \permanent\protected\def\choosemathbig
   {\mathortext\math_choosemathbig_math\math_choosemathbig_text}
@@ -912,38 +882,45 @@
 \permanent\protected\def\disableautofences
   {\setfalse\c_math_fences_auto}
 
-\protected\def\math_fences_used_left
+\permanent\protected\def\math_fences_used_left
   {\ifconditional\c_math_fences_auto
      \expandafter\math_fences_auto_left
    \else
      \expandafter\math_fences_normal_left
    \fi}
 
-\protected\def\math_fences_used_right
+\permanent\protected\def\math_fences_used_right
   {\ifconditional\c_math_fences_auto
      \expandafter\math_fences_auto_right
    \else
      \expandafter\math_fences_normal_right
    \fi}
 
-\protected\def\math_fences_used_middle
+\permanent\protected\def\math_fences_used_middle
   {\ifconditional\c_math_fences_auto
      \expandafter\math_fences_auto_middle
    \else
      \expandafter\math_fences_normal_middle
    \fi}
 
-\protected\def\math_fences_used_both
+\permanent\protected\def\math_fences_used_both
   {\ifconditional\c_math_fences_auto
      \expandafter\math_fences_auto_both
    \else
      \expandafter\math_fences_normal_both
    \fi}
 
-\permanent\let\left       \math_fences_used_left
-\permanent\let\right      \math_fences_used_right
-\permanent\let\middle     \math_fences_used_middle
-\permanent\let\leftorright\math_fences_used_both
+\aliased\let\left       \math_fences_used_left
+\aliased\let\right      \math_fences_used_right
+\aliased\let\middle     \math_fences_used_middle
+\aliased\let\leftorright\math_fences_used_both
+
+% \appendtoks
+%     \enforced\let\left       \math_fences_used_left
+%     \enforced\let\right      \math_fences_used_right
+%     \enforced\let\middle     \math_fences_used_middle
+%     \enforced\let\leftorright\math_fences_used_both
+% \to \everymathematics
 
 % wrappers
 
@@ -954,30 +931,18 @@
 \permanent\protected\def\stopcheckedfences
   {\endgroup}
 
-% \appendtoks
-   % maybe: safeguard against overloading
-   %
-   % \let\left       \math_fences_used_left
-   % \let\right      \math_fences_used_right
-   % \let\middle     \math_fences_used_middle
-   % \let\leftorright\math_fences_used_both
-% \to \everymathematics
-
 \appendtoks
     \ifempty\currentmathfence
-        \doifelse{\mathfenceparameter\c!state}\v!auto\enableautofences\disableautofences
+        \ifcstok{\mathfenceparameter\c!state}\v!auto\enableautofences\else\disableautofences\fi
     \fi
 \to \everysetupmathfence
 
-\newconstant\c_math_fences_delimiters_mode \c_math_fences_delimiters_mode"16 % \numexpr"02+"04+"10\relax
-
-%permanent\protected\def\enableautofencemode {\mathdelimitersmode\plussix} % the shift (1) is too fragile
-\permanent\protected\def\enableautofencemode {\mathdelimitersmode\c_math_fences_delimiters_mode}
-\permanent\protected\def\disableautofencemode{\mathdelimitersmode\zerocount}
+\permanent\protected\def\enableautofencemode {\mathcheckfencesmode\plusone}
+\permanent\protected\def\disableautofencemode{\mathcheckfencesmode\zerocount}
 
 \appendtoks
     \ifempty\currentmathfence
-        \doifelse{\mathfenceparameter\c!method}\v!auto\enableautofencemode\disableautofencemode
+        \ifcstok{\mathfenceparameter\c!method}\v!auto\enableautofencemode\else\disableautofencemode\fi
     \fi
 \to \everysetupmathfence
 

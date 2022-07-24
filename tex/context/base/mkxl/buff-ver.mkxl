@@ -774,11 +774,13 @@
   {\buff_verbatim_type_defined_buffer[\v!buffer][\thedefinedbuffer{#1}]}%
 
 \appendtoks
-    \frozen\instance\setuevalue{\e!type\currentbuffer}{\buff_verbatim_type_defined_buffer[\v!buffer][\currentdefinedbuffer]}%
+    \frozen\instance\protected\edefcsname\e!type\currentbuffer\endcsname
+      {\buff_verbatim_type_defined_buffer[\v!buffer][\currentdefinedbuffer]}%
 \to \everydefinebuffer
 
 \appendtoks % \e!buffer
-    \frozen\instance\setuevalue{\e!type\currenttyping\v!buffer}{\buff_verbatim_type_buffer_class{\currenttyping}}%
+    \frozen\instance\protected\edefcsname\e!type\currenttyping\v!buffer\endcsname
+      {\buff_verbatim_type_buffer_class{\currenttyping}}%
 \to \everydefinetyping
 
 \tolerant\protected\def\buff_verbatim_type_buffer[#1]#*[#2]%

@@ -15,6 +15,7 @@ local hlist_code        = nodes.nodecodes.hlist
 local glue_code         = nodes.nodecodes.glue
 local line_code         = nodes.listcodes.line
 local ghost_code        = nodes.listcodes.ghost
+local middle_code       = nodes.listcodes.middle
 
 local nuts              = nodes.nuts
 local tonut             = nodes.tonut
@@ -26,12 +27,14 @@ local getnext           = nuts.getnext
 local getwidth          = nuts.getwidth
 local getdata           = nuts.getdata
 local getdepth          = nuts.getdepth
+local getheight         = nuts.getheight
 local getlist           = nuts.getlist
 local setglue           = nuts.setglue
 local getdimensions     = nuts.dimensions
 local getnormalizedline = node.direct.getnormalizedline
 local getbox            = nuts.getbox
 local setoffsets        = nuts.setoffsets
+local addxoffset        = nuts.addxoffset
 
 local nextglue          = nuts.traversers.glue
 local nextlist          = nuts.traversers.list
@@ -73,43 +76,60 @@ stages[1] = function(specification,stage)
     end
 end
 
+local function reposition(n,offset)
+    -- We need to relocate the local boxes that we use to push something left or
+    -- right ... quite horrible and one needs a bit twisted mindset for this.
+    for n, id, subtype, list in nextlist, getlist(n) do
+        if subtype == middle_code then
+            addxoffset(n,-offset)
+        end
+    end
+    addxoffset(n,offset)
+end
+
 stages[2] = function(specification,stage)
-    local head  = getlist(getbox(specification.box))
-    local align = specification.alignstate
-    local max   = false
-    local cnt   = 0
-    local width = 0
-    local depth = 0
+    local head        = getlist(getbox(specification.box))
+    local align       = specification.alignstate
+    local maxwidth    = false
+    local cnt         = 0
+    local lastwidth   = 0
+    local firstheight = 0
+    local lastdepth   = 0
     for n, id, subtype, list in nextlist, head do
         if subtype == line_code then
             local t = getnormalizedline(n)
             local m = t.rightskip + t.parfillrightskip
-            if not max then
-                max = m
-            elseif m < max then
-                max = m
+            if not maxwidth then
+                maxwidth    = m
+                firstheight = getheight(n)
+                firstwidth  = m
+            elseif m < maxwidth then
+                maxwidth = m
             end
-            cnt   = cnt + 1
-            width = m
-            depth = getdepth(n)
+            cnt       = cnt + 1
+            lastwidth = m
+            lastdepth = getdepth(n)
         end
     end
     if stage == 2 and (align == 2 or align == 3) then
         for n, id, subtype, list in nextlist, head do
             if subtype == line_code then
                 if align == 1 then -- flushleft
+                    -- todo
                 elseif align == 2 then -- middle
-                    setoffsets(n,max/2,0)
+                    reposition(n,maxwidth/2)
                 elseif align == 3 then -- flushright
-                    setoffsets(n,max,0)
+                    reposition(n,maxwidth)
                 end
             end
         end
     end
     texsetcount("global","c_strc_math_n_of_lines",cnt)
-    texsetdimen("global","d_strc_math_max_width",max)
-    texsetdimen("global","d_strc_math_last_width",width)
-    texsetdimen("global","d_strc_math_last_depth",depth)
+    texsetdimen("global","d_strc_math_max_width",maxwidth)
+    texsetdimen("global","d_strc_math_first_width",firstwidth)
+    texsetdimen("global","d_strc_math_last_width",lastwidth)
+    texsetdimen("global","d_strc_math_first_height",firstheight)
+    texsetdimen("global","d_strc_math_last_depth",lastdepth)
 end
 
 stages[3] = stages[2]

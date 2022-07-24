@@ -1027,8 +1027,8 @@
 \def\tabl_table_Right #1{\hfill#1}
 
 \def\tabl_table_OpenUp#1#2%
-  {\edef\tablestrutheightfactor{\withoutpt\the\dimexpr\tablestrutheightfactor\points+#1\points}%
-   \edef\tablestrutdepthfactor {\withoutpt\the\dimexpr\tablestrutdepthfactor \points+#2\points}}
+  {\edef\tablestrutheightfactor{\toscaled\dimexpr\tablestrutheightfactor\points+#1\points}%
+   \edef\tablestrutdepthfactor {\toscaled\dimexpr\tablestrutdepthfactor \points+#2\points}}
 
 % SetTableToWidth -> textwidth=dimension [to dimension]
 % Expand          -> textwidth=max       [to \hsize]
@@ -2192,8 +2192,8 @@
    \else
      \let\tablestrutdepthfactor\p_tabl_table_depth
    \fi
-   \edef\tablestrutheightfactor{\withoutpt\the\dimexpr10\dimexpr\tablestrutheightfactor\points}%
-   \edef\tablestrutdepthfactor {\withoutpt\the\dimexpr10\dimexpr\tablestrutdepthfactor \points}%
+   \edef\tablestrutheightfactor{\toscaled\dimexpr10\dimexpr\tablestrutheightfactor\points}%
+   \edef\tablestrutdepthfactor {\toscaled\dimexpr10\dimexpr\tablestrutdepthfactor \points}%
    \d_tabl_table_strut_unit             \dimexpr\normalbaselineskip/12\relax % 12 is default bodyfont
    \d_tabl_table_kern_unit              .5em\relax
    \s_tabl_table_inter_column_space_unit.5em plus 1fil minus .25em\relax

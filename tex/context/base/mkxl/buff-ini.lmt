@@ -25,7 +25,7 @@ local trace_visualize   = false  trackers.register("buffers.visualize", function
 
 local report_buffers    = logs.reporter("buffers","usage")
 local report_typeset    = logs.reporter("buffers","typeset")
------ report_grabbing   = logs.reporter("buffers","grabbing")
+local report_grabbing   = logs.reporter("buffers","grabbing")
 
 local context           = context
 local commands          = commands
@@ -42,6 +42,9 @@ local scantokencode     = scanners.tokencode
 
 local getters           = tokens.getters
 local gettoken          = getters.token
+
+local createtoken       = token.create
+local grabtokens        = token.grab
 
 local getcommand        = tokens.accessors.command
 local getnextchar       = tokens.scanners.nextchar
@@ -350,50 +353,6 @@ end
 
 buffers.undent = undent
 
--- function commands.grabbuffer(name,begintag,endtag,bufferdata,catcodes,doundent) -- maybe move \\ to call
---     local dn = getcontent(name)
---     if dn == "" then
---         nesting  = 0
---         continue = false
---     end
---     if trace_grab then
---         if #bufferdata > 30 then
---             report_grabbing("%s => |%s..%s|",name,sub(bufferdata,1,10),sub(bufferdata,-10,#bufferdata))
---         else
---             report_grabbing("%s => |%s|",name,bufferdata)
---         end
---     end
---     local counter = counters[begintag]
---     if not counter then
---         counter = countnesting(begintag,endtag)
---         counters[begintag] = counter
---     end
---     nesting = nesting + lpegmatch(counter,bufferdata)
---     local more = nesting > 0
---     if more then
---         dn       = dn .. sub(bufferdata,2,-1) .. endtag
---         nesting  = nesting - 1
---         continue = true
---     else
---         if continue then
---             dn = dn .. sub(bufferdata,2,-2) -- no \r, \n is more generic
---         elseif dn == "" then
---             dn = sub(bufferdata,2,-2)
---         else
---             dn = dn .. "\n" .. sub(bufferdata,2,-2) -- no \r, \n is more generic
---         end
---         local last = sub(dn,-1)
---         if last == "\n" or last == "\r" then -- \n is unlikely as \r is the endlinechar
---             dn = sub(dn,1,-2)
---         end
---         if doundent or (autoundent and doundent == nil) then
---             dn = undent(dn)
---         end
---     end
---     assign(name,dn,catcodes)
---     commands.doifelse(more)
--- end
-
 local split = table.setmetatableindex(function(t,k)
     local v = totable(k)
     t[k] = v
@@ -418,17 +377,17 @@ local experiment = false
 local experiment = scantokencode and true
 
 local function pickup(start,stop)
-    local stoplist     = split[stop] -- totable(stop)
-    local stoplength   = #stoplist
-    local stoplast     = stoplist[stoplength]
-    local startlist    = split[start] -- totable(start)
-    local startlength  = #startlist
-    local startlast    = startlist[startlength]
-    local list         = { }
-    local size         = 0
-    local depth        = 0
- -- local done         = 32
-    local scancode     = experiment and scantokencode or scancode
+    local stoplist    = split[stop] -- totable(stop)
+    local stoplength  = #stoplist
+    local stoplast    = stoplist[stoplength]
+    local startlist   = split[start] -- totable(start)
+    local startlength = #startlist
+    local startlast   = startlist[startlength]
+    local list        = { }
+    local size        = 0
+    local depth       = 0
+ -- local done        = 32
+    local scancode    = experiment and scantokencode or scancode
     while true do -- or use depth
         local char = scancode()
         if char then
@@ -537,131 +496,16 @@ local function pickup(start,stop)
     end
 end
 
--- -- lmtx:
---
--- local function pickup(start,stop)
---     local stoplist     = split[stop] -- totable(stop)
---     local stoplength   = #stoplist
---     local stoplast     = stoplist[stoplength]
---     local startlist    = split[start] -- totable(start)
---     local startlength  = #startlist
---     local startlast    = startlist[startlength]
---     local list         = { }
---     local size         = 0
---     local depth        = 0
---     getnextchar() -- we start with a \relax
---     while true do -- or use depth
---         local char = getnextchar()
---         if char then
---             size = size + 1
---             list[size] = char
---             if char == stoplast and size >= stoplength then
---                 local done = true
---                 local last = size
---                 for i=stoplength,1,-1 do
---                     if stoplist[i] ~= list[last] then
---                         done = false
---                         break
---                     end
---                     last = last - 1
---                 end
---                 if done then
---                     if depth > 0 then
---                         depth = depth - 1
---                     else
---                         break
---                     end
---                     char = false -- trick: let's skip the next (start) test
---                 end
---             end
---             if char == startlast and size >= startlength then
---                 local done = true
---                 local last = size
---                 for i=startlength,1,-1 do
---                     if startlist[i] ~= list[last] then
---                         done = false
---                         break
---                     end
---                     last = last - 1
---                 end
---                 if done then
---                     depth = depth + 1
---                 end
---             end
---         else
---             local t = gettoken()
---             if t then
---                 -- we're skipping leading stuff, like obeyedlines and relaxes
---                 if experiment and size > 0 then
---                     -- we're probably in a macro
---                     local char = tochar[getcommand(t)]
---                     if char then
---                         size = size + 1 ; list[size] = char
---                     else
---                      -- local csname = getcsname(t)
---                         local csname = scancsname(t)
---                         if csname == stop then
---                             stoplength = 0
---                             break
---                         else
---                             size = size + 1 ; list[size] = "\\"
---                             size = size + 1 ; list[size] = csname
---                             size = size + 1 ; list[size] = " "
---                         end
---                     end
---                 else
---                     -- ignore and hope for the best
---                 end
---             else
---                 break
---             end
---         end
---     end
---     local start = 1
---     local stop  = size - stoplength - 1
---     -- not good enough: only empty lines, but even then we miss the leading
---     -- for verbatim
---     --
---     -- the next is not yet adapted to the new scanner ... we don't need lpeg here
---     --
---     for i=start,stop do
---         local li = list[i]
---         if lpegmatch(blackspace,li) then
---             -- keep going
---         elseif lpegmatch(eol,li) then
---             -- okay
---             start = i + 1
---         else
---             break
---         end
---     end
---     for i=stop,start,-1 do
---         if lpegmatch(whitespace,list[i]) then
---             stop = i - 1
---         else
---             break
---         end
---     end
---     --
---     if start <= stop then
---         return concat(list,"",start,stop)
---     else
---         return ""
---     end
--- end
-
--- function buffers.pickup(name,start,stop,finish,catcodes,doundent)
---     local data = tokens.pickup(start,stop)
---     if doundent or (autoundent and doundent == nil) then
---         data = buffers.undent(data)
---     end
---     buffers.assign(name,data,catcodes)
---     context(finish)
--- end
-
--- commands.pickupbuffer = buffers.pickup
-
 tokens.pickup = pickup
+
+local function showpickup(name,bufferdata,catcodes,undented)
+    undented = undented and ">" or "="
+    if #bufferdata > 50 then
+        report_grabbing("%s : %i =%s |%s..%s|",name,catcodes,undented,sub(bufferdata,1,20),sub(bufferdata,-20,#bufferdata))
+    else
+        report_grabbing("%s : %i =%s |%s|",name,catcodes,undented,bufferdata)
+    end
+end
 
 implement {
     name    = "pickupbuffer",
@@ -672,11 +516,40 @@ implement {
         local stop     = scanstring()
         local finish   = scancsname()
         local catcodes = scaninteger()
-        local doundent = scanboolean()
+        local doundent = scaninteger() == 1 -- better than a keyword scan
         -- could be a scanner:
         local data     = pickup(start,stop)
-        if doundent or (autoundent and doundent == nil) then
+        local undented = doundent or (autoundent and doundent == nil)
+        if undented then
             data = undent(data)
+        end
+        if trace_grab then
+            showpickup(name,data,catcodes,undented)
+        end
+        assign(name,data,catcodes)
+        context[finish]()
+    end
+}
+
+implement {
+    name    = "grabbuffer",
+    actions = function()
+        -- let's pickup all here (no arguments)
+        local name     = scanstring()
+        local start    = scanstring()
+        local stop     = scanstring()
+        local finish   = scancsname()
+        local catcodes = scaninteger()
+        local doundent = scaninteger() == 1 -- better than a keyword scan
+        local starttok = createtoken(start,true)
+        local stoptok  = createtoken(stop,true)
+        local data     = grabtokens(starttok,stoptok,true,13) -- strip first and last \endoflineasciicode
+        local undented = doundent or (autoundent and doundent == nil)
+        if undented then
+            data = undent(data)
+        end
+        if trace_grab then
+            showpickup(name,data,catcodes,undented)
         end
         assign(name,data,catcodes)
         context[finish]()

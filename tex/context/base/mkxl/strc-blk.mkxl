@@ -34,8 +34,8 @@
 
 \appendtoks
     \clf_definestructureblock{\currentblock}%
-    \frozen\setuevalue{\e!begin\currentblock}{\strc_blocks_begin{\currentblock}}%
-    \frozen\letvalue  {\e!end  \currentblock}\donothing
+    \frozen\protected\edefcsname\e!begin\currentblock\endcsname{\strc_blocks_begin{\currentblock}}%
+    \frozen          \letcsname \e!end  \currentblock\endcsname\donothing
 \to \everydefineblock
 
 % We need to prevent too much lookahead which will gobble newlines that are needed
@@ -72,6 +72,30 @@
      {}%
      {\clf_savestructureblock{\m_block}{\m_subblock}{#1}{\??block}}%
      \plusone}
+
+% \tolerant\protected\def\strc_blocks_begin#1#*[#2]#*[#3]% #:#/% get rid of spaces and pars
+%   {\edef\m_block{#1}%
+%    \let\m_subblock\empty
+%    \ifhastok={#2}%
+%      \expandafter\strc_blocks_begin_a % [settings]
+%    \orelse\ifparameter#2\or
+%      \expandafter\strc_blocks_begin_b % [tag] [settings]
+%    \else
+%      \expandafter\strc_blocks_begin_c %
+%    \fi{#2}{#3}}% #4}
+%
+% \protected\def\strc_blocks_begin_a#1#2% settings dummy
+%   {\normalexpanded{\buff_pickup{\??block}{\e!begin\m_block}{\e!end\m_block}}%
+%      {}%
+%      {\clf_savestructureblock{\m_block}{\m_subblock}{#1}{\??block}}%
+%      \plusone}
+%
+% \protected\def\strc_blocks_begin_b#1#2% tag settings
+%   {\edef\m_subblock{#1}%
+%    \strc_blocks_begin_a{#2}{}}
+%
+% \protected\def\strc_blocks_begin_c#1#2%
+%   {\strc_blocks_begin_a{}{}}
 
 \let\strc_blocks_setup\relax
 
@@ -145,11 +169,11 @@
    \ifhastok={#3}%
      \getparameters[\??blocktemp][\c!criterium=\v!text,#3]%
      \def\strc_blocks_setup{\setupcurrentblock[#3]}%
-     \clf_selectstructureblock{#1}{#2}{}{\csname\??blocktemp\c!criterium\endcsname}%
+     \clf_selectstructureblock{#1}{#2}{}{\begincsname\??blocktemp\c!criterium\endcsname}%
    \else
      \getparameters[\??blocktemp][\c!criterium=\v!text,#4]%
      \def\strc_blocks_setup{\setupcurrentblock[#4]}%
-     \clf_selectstructureblock{#1}{#2}{#3}{\csname\??blocktemp\c!criterium\endcsname}%
+     \clf_selectstructureblock{#1}{#2}{#3}{\begincsname\??blocktemp\c!criterium\endcsname}%
    \fi
    \endgroup}
 

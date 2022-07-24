@@ -105,11 +105,11 @@ return {
         "mmodeifcode", "innerifcode", "voidifcode", "hboxifcode", "vboxifcode", "xifcode", "eofifcode",
         "trueifcode", "falseifcode", "caseifcode", "definedifcode", "csnameifcode", "fontcharifcode",
         --
-        "overrulemathcontrolcode", "underrulemathcontrolcode", "radicalrulemathcontrolcode",  "fractionrulemathcontrolcode",
-        "accentskewhalfmathcontrolcode", "accentskewapplymathcontrolcode", "checkligatureandkernmathcontrolcode",
+        "overrulemathcontrolcode", "underrulemathcontrolcode", "radicalrulemathcontrolcode", "fractionrulemathcontrolcode",
+        "accentskewhalfmathcontrolcode", "accentskewapplymathcontrolcode", "applyordinarykernpairmathcontrolcode",
         "applyverticalitalickernmathcontrolcode", "applyordinaryitalickernmathcontrolcode", "applycharitalickernmathcontrolcode",
         "reboxcharitalickernmathcontrolcode", "applyboxeditalickernmathcontrolcode", "staircasekernmathcontrolcode",
-        "applytextitalickernmathcontrolcode", "applyscriptitalickernmathcontrolcode", "italicshapekernmathcontrolcode",
+        "applytextitalickernmathcontrolcode", "applyscriptitalickernmathcontrolcode",
         "checkspaceitalickernmathcontrolcode", "checktextitalickernmathcontrolcode",
         --
         "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noexpansionglyphoptioncode", "noprotrusionglyphoptioncode",
@@ -171,7 +171,7 @@ return {
         "mathimaginarycode", "mathdifferentialcode", "mathexponentialcode", "mathellipsiscode", "mathfunctioncode", "mathdigitcode",
      -- "mathtopaccentcode", "mathbottomaccentcode", "mathdelimitercode", "mathrootcode", "mathprintcode",        --
         "mathalphacode", "mathboxcode", "mathchoicecode", "mathnothingcode", "mathlimopcode", "mathnolopcode",
-        "mathunsetcode", "mathunspacedcode", "mathallcode", "mathfakecode",
+        "mathunsetcode", "mathunspacedcode", "mathallcode", "mathfakecode", "mathunarycode",
         --
         "constantnumber", "constantnumberargument", "constantdimen", "constantdimenargument", "constantemptyargument",
         --
@@ -211,7 +211,8 @@ return {
         "lefttopkernclassoptioncode", "righttopkernclassoptioncode", "leftbottomkernclassoptioncode", "rightbottomkernclassoptioncode",
         "lookaheadforendclassoptioncode", "noitaliccorrectionclassoptioncode",  "defaultmathclassoptions",
      -- "openfenceclassoptioncode", "closefenceclassoptioncode", "middlefenceclassoptioncode",
-        "checkligatureclassoptioncode", "flattenclassoptioncode", "omitpenaltyclassoptioncode",
+        "checkligatureclassoptioncode", "checkitaliccorrectionclassoptioncode", "checkkernpairclassoptioncode",
+        "flattenclassoptioncode", "omitpenaltyclassoptioncode", "unpackclassoptioncode", "raiseprimeclassoptioncode",
         --
         "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noleftligatureglyphoptioncode",
         "noleftkernglyphoptioncode", "norightligatureglyphoptioncode", "norightkernglyphoptioncode",

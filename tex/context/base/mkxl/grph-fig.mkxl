@@ -141,8 +141,8 @@
        \linewidth\onepoint
        \setuppositioning
          [\c!unit=pt,%
-          \c!xscale=\withoutpt\the\d_grph_steps_x,%
-          \c!yscale=\withoutpt\the\d_grph_steps_y,%
+          \c!xscale=\toscaled\d_grph_steps_x,%
+          \c!yscale=\toscaled\d_grph_steps_y,%
           \c!factor=1]%
        \ignorespaces#4%
        \enforced\let\referring\grph_steps_two_referring
@@ -219,9 +219,9 @@
           \position(0,0)
             {\basegrid
                [\c!nx=\externalfigureparameter\c!xmax,%
-                \c!dx=\withoutpt\the\d_grph_steps_x,%
+                \c!dx=\toscaled\d_grph_steps_x,%
                 \c!ny=\externalfigureparameter\c!ymax,%
-                \c!dy=\withoutpt\the\d_grph_steps_y,%
+                \c!dy=\toscaled\d_grph_steps_y,%
                 \c!xstep=1,%
                 \c!ystep=1,%
                 \c!scale=1,%
@@ -229,8 +229,8 @@
                 \c!unit=pt]}%
           \setuppositioning
             [\c!unit=pt,%
-             \c!xscale=\withoutpt\the\d_grph_steps_x,%
-             \c!yscale=\withoutpt\the\d_grph_steps_y,%
+             \c!xscale=\toscaled\d_grph_steps_x,%
+             \c!yscale=\toscaled\d_grph_steps_y,%
              \c!factor=1]%
           \linewidth\onepoint
           \ignorespaces#4\removeunwantedspaces % or just grab #4 unspaced

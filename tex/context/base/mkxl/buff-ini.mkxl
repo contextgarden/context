@@ -74,7 +74,8 @@
   {\begingroup % (1)
    #4%
    \begingroup % (2)
-   \scratchcounter\catcodetable
+   \scratchcounterone\catcodetable
+   \scratchcountertwo#6\relax
    \clf_erasebuffer{#1}%
    \setcatcodetable\vrbcatcodes
    \protected\def\buff_finish
@@ -84,17 +85,18 @@
    % todo: we need to skip the first lineending which is an active character
    % but sometimes we have something different ... this is a side effect of
    % checking for optional arguments i.e. the next token is already tokenized
-   % and for that reason we have the \relax as well as the \string
+   % and for that reason we had the \relax as well as the \string
    \clf_pickupbuffer
      {#1}%
      {#2}%
      {#3}%
-%      {\string\dofinishpickupbuffer}%
+   % {\string\dofinishpickupbuffer}%
      \buff_finish
-     \scratchcounter
-     \ifnum#6=\plusone\s!true\else\s!false\fi
- % \relax}
-   \expandafter\relax\string} % maybe \normalexpanded{\relax\utfchar{7}}} signal
+   % \ifnum#6=\plusone\s!true\else\s!false\fi
+   % \expandafter\relax\string} % dirty trick
+     \scratchcounterone
+     % better than \string but still a dirty trick to avoid \par mess in blocks
+     \expandafter\scratchcountertwo\detokenized}
 
 \protected\def\buff_stop#1%
   {\endgroup % (3 & 4 & 5 & 6)

@@ -4971,7 +4971,9 @@
 % that \TEX\ was written, it made no sense to add a lot of that. After decades we know
 % what extras we need.
 
-\permanent\def\withoutpt#1{\thewithoutunit\dimexpr#1} % best use the primitive directly
+% \permanent\def\withoutpt#1{\thewithoutunit\dimexpr#1}
+
+\aliased\let\withoutpt\toscaled
 
 %D The capitals are needed because \type {p} and \type {t} have catcode~12, while
 %D macronames only permit tokens with the catcode~11. As a result we cannot use the
@@ -4979,10 +4981,9 @@
 %D manipulations, we advice to study the \TEX book in detail. Because this macro
 %D does not do any assignment, we can use it in the following way too.
 
-% \def\PtToCm#1%
-%   {\withoutpt\the\dimexpr0.0351459804\dimexpr#1\relax\relax cm}
+% \permanent\def\PtToCm#1{\thewithoutunit\dimexpr0.0351459804\dimexpr#1\relax\relax cm}
 
-\permanent\def\PtToCm#1{\thewithoutunit\dimexpr0.0351459804\dimexpr#1\relax\relax cm}
+\permanent\def\PtToCm#1{\toscaled\dimexpr0.0351459804\dimexpr#1\relax\relax cm}
 
 %D We also support:
 %D
@@ -5627,11 +5628,9 @@
 %D \PointsToReal {dimension} \target
 %D \stoptyping
 
-% \protected\def\PointsToReal#1#2%
-%   {\edef#2{\withoutpt\the\dimexpr#1}}
+% \permanent\protected\def\PointsToReal#1#2{\edef#2{\thewithoutunit\dimexpr#1}}
 
-\permanent\protected\def\PointsToReal#1#2%
-  {\edef#2{\thewithoutunit\dimexpr#1}}
+\permanent\protected\def\PointsToReal#1#2{\edef#2{\toscaled#1}}
 
 %D \macros
 %D  {dontleavehmode}

@@ -558,7 +558,7 @@
   {\hbox}
 
 \def\grph_scale_fast_yes#1%
-  {\edef\finalscaleboxxscale{\withoutpt\the\dimexpr#1\onepoint/1000\relax}% brrr
+  {\edef\finalscaleboxxscale{\toscaled\dimexpr#1\onepoint/1000\relax}% brrr
    \let\finalscaleboxyscale\finalscaleboxxscale
    \dowithnextboxcs\grph_scale_fast_finish\hbox} % container ?
 

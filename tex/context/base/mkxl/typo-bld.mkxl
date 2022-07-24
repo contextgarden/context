@@ -33,6 +33,28 @@
 %     \dorecurse{100}{\input ward \par}
 % \stopparbuilder
 
+% \startluacode
+%     function builders.paragraphs.constructors.methods.preroll_a(head)
+%         local result, info = tex.linebreak(head)
+%         tex.prevdepth = info.prevdepth
+%         tex.prevgraf = info.prevgraf
+%         return result
+%     end
+%     function builders.paragraphs.constructors.methods.preroll_b(head)
+%         local result, info = tex.linebreak(nodes.nuts.copylist(head))
+%         return true
+%     end
+% \stopluacode
+%
+% \defineparbuilder[preroll_a]
+% \defineparbuilder[preroll_b]
+%
+% \starttext
+%     \setmainparbuilder[default]   \input tufte \par \input tufte \page
+%     \setmainparbuilder[preroll_a] \input tufte \par \input tufte \page
+%     \setmainparbuilder[preroll_b] \input tufte \par \input tufte \page
+% \stoptext
+
 \unprotect
 
 \registerctxluafile{typo-bld}{autosuffix}

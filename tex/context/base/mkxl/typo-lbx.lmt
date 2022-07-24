@@ -153,7 +153,8 @@ do
         end
     end
 
-    -- these two are now more or less the same so ...
+    -- these two are now more or less the same so ... todo: add
+    -- warning about non zero width
 
     local function processleftbox(box)
         local list = getlist(box)

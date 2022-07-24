@@ -631,6 +631,7 @@ local function copy_glyph(main,target,original,unicode,slot)
             height    = olddata.height,
             depth     = olddata.depth,
             italic    = olddata.italic,
+            topaccent = olddata.topaccent,
             kerns     = olddata.kerns,
             tounicode = olddata.tounicode,
             commands  = { { "slot", slot, unicode } },
@@ -644,6 +645,8 @@ local function copy_glyph(main,target,original,unicode,slot)
                     width     = oldnextdata.width,
                     height    = oldnextdata.height,
                     depth     = oldnextdata.depth,
+                    italic    = oldnextdata.italic,
+                    topaccent = oldnextdata.topaccent,
                     tounicode = olddata.tounicode,
                     commands  = { { "slot", slot, nextglyph } },
                 }

@@ -156,6 +156,10 @@ function constructors.aftercopyingcharacters(target,original)
     -- can be used for additional tweaking
 end
 
+function constructors.beforepassingfonttotex(tfmdata)
+    -- can be used for additional tweaking
+end
+
 function constructors.trytosharefont(target,tfmdata)
     -- implemented in font-def.lmt
 end

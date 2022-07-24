@@ -111,7 +111,7 @@ registerdirect("PaperBleed",           function() return getdimen("paperbleed") 
 registerdirect("RealPageNumber",       function() return getcount("realpageno")                    end)
 registerdirect("LastPageNumber",       function() return getcount("lastpageno")                    end)
 
-registerdirect("PageNumber",           function() return getcount("pageno")                        end)
+registerdirect("PageNumber",           function() return getcount("userpageno")                    end)
 registerdirect("NOfPages",             function() return getcount("lastpageno")                    end)
 
 registerdirect("SubPageNumber",        function() return getcount("subpageno")                     end)
@@ -127,10 +127,6 @@ registerdirect("BodyFontSize",         function() return getdimen("bodyfontsize"
 registerdirect("TopSkip",              function() return get     ("topskip",true)         * factor end)
 registerdirect("StrutHeight",          function() return getdimen("strutht")              * factor end)
 registerdirect("StrutDepth",           function() return getdimen("strutdp")              * factor end)
-
-registerdirect("PageNumber",           function() return getcount("pageno")                        end)
-registerdirect("RealPageNumber",       function() return getcount("realpageno")                    end)
-registerdirect("NOfPages",             function() return getcount("lastpageno")                    end)
 
 registerdirect("CurrentWidth",         function() return get     ("hsize")                * factor end)
 registerdirect("CurrentHeight",        function() return get     ("vsize")                * factor end)

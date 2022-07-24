@@ -876,6 +876,7 @@
 		<cd:constant name='frameradius' value='razaframe'/>
 		<cd:constant name='frames' value='frames'/>
 		<cd:constant name='freeregion' value='freeregion'/>
+		<cd:constant name='freezespacing' value='freezespacing'/>
 		<cd:constant name='from' value='dela'/>
 		<cd:constant name='functioncolor' value='functioncolor'/>
 		<cd:constant name='functionstyle' value='functionstyle'/>
@@ -956,6 +957,7 @@
 		<cd:constant name='lastpubsep' value='lastpubsep'/>
 		<cd:constant name='layout' value='layout'/>
 		<cd:constant name='left' value='stanga'/>
+		<cd:constant name='leftclass' value='leftclass'/>
 		<cd:constant name='leftcolor' value='culoarestanga'/>
 		<cd:constant name='leftcompoundhyphen' value='leftcompoundhyphen'/>
 		<cd:constant name='leftedge' value='bordurastanga'/>
@@ -1014,6 +1016,7 @@
 		<cd:constant name='menu' value='meniu'/>
 		<cd:constant name='method' value='metoda'/>
 		<cd:constant name='middle' value='mijloc'/>
+		<cd:constant name='middleclass' value='middleclass'/>
 		<cd:constant name='middlecolor' value='middlecolor'/>
 		<cd:constant name='middlecommand' value='middlecommand'/>
 		<cd:constant name='middlesource' value='middlesource'/>
@@ -1126,6 +1129,7 @@
 		<cd:constant name='palet' value='paleta'/>
 		<cd:constant name='paper' value='hartie'/>
 		<cd:constant name='paragraph' value='paragraf'/>
+		<cd:constant name='penalties' value='penalties'/>
 		<cd:constant name='period' value='period'/>
 		<cd:constant name='place' value='pune'/>
 		<cd:constant name='placehead' value='punetitlu'/>
@@ -1179,6 +1183,7 @@
 		<cd:constant name='reverse' value='reverse'/>
 		<cd:constant name='right' value='dreapta'/>
 		<cd:constant name='rightchars' value='rightchars'/>
+		<cd:constant name='rightclass' value='rightclass'/>
 		<cd:constant name='rightcolor' value='culoaredreapta'/>
 		<cd:constant name='rightcompoundhyphen' value='rightcompoundhyphen'/>
 		<cd:constant name='rightedge' value='borduradreapta'/>

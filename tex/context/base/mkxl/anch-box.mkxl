@@ -27,7 +27,8 @@
    \defineboxanchor[#6]%
    \setboxanchor[#6][#2][#4]\hpack{\xypos{\namespacedboxanchor{#6}}}%
    \ifparameter#4\or\setupboxanchorcontent[#1][#4]\fi
-   \startpositionoverlay{text-1}% will become configurable region
+%    \startpositionoverlay{text-1}% will become configurable region
+   \startpositionoverlay{text+1}% will become configurable region
      \setMPpositiongraphic
        {\namespacedboxanchor{#5}}%
        {\namedboxanchorcontentparameter{#1}\c!mp}%

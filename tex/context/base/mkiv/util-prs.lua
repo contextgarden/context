@@ -622,12 +622,6 @@ end
 -- local list, names = mycsvsplitter(crap,true)   inspect(list) inspect(names)
 -- local list, names = mycsvsplitter(crap)        inspect(list) inspect(names)
 
--- parsers.stepper("1,7-",9,function(i) print(">>>",i) end)
--- parsers.stepper("1-3,7,8,9")
--- parsers.stepper("1-3,6,7",function(i) print(">>>",i) end)
--- parsers.stepper(" 1 : 3, ,7 ")
--- parsers.stepper("1:4,9:13,24:*",30)
-
 local function ranger(first,last,n,action)
     if not first then
         -- forget about it
@@ -655,14 +649,29 @@ local stepper  = spacers * ( cardinal * ( spacers * S(":-") * spacers * ( cardin
                * Carg(1) * Carg(2) / ranger * S(", ")^0 )^1 * endofstring -- we're sort of strict (could do without endofstring)
 
 function parsers.stepper(str,n,action)
+    local ts = type(str)
     if type(n) == "function" then
-        lpegmatch(stepper,str,1,false,n or print)
-    else
+        if ts == "number" then
+            n(str)
+        elseif ts == "table" then
+            for i=1,#str do
+                n(str[i])
+            end
+        else
+            lpegmatch(stepper,str,1,false,n or print)
+        end
+    elseif ts == "string" then
         lpegmatch(stepper,str,1,n,action or print)
     end
 end
 
---
+-- parsers.stepper("1,7-",9,function(i) print(">>>",i) end)
+-- parsers.stepper("1-3,7,8,9")
+-- parsers.stepper("1-3,6,7",function(i) print(">>>",i) end)
+-- parsers.stepper(" 1 : 3, ,7 ")
+-- parsers.stepper("1:4,9:13,24:*",30)
+-- parsers.stepper(1,print)
+-- parsers.stepper({1,3,4},print)
 
 local pattern_math = Cs((P("%")/"\\percent " +  P("^")           * Cc("{") * lpegpatterns.integer * Cc("}") + anything)^0)
 local pattern_text = Cs((P("%")/"\\percent " + (P("^")/"\\high") * Cc("{") * lpegpatterns.integer * Cc("}") + anything)^0)
