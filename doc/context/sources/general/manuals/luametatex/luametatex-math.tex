@@ -55,6 +55,226 @@ don't expect other macro packages to use the new features anyway.
 
 \stopsection
 
+\startsection[title=Intermezzo]
+
+It is important to understand a bit how \TEX\ handles math. The math engine
+is a large subsystem and basically can be divided in two parts: convert
+sequential input into a list of nodes where math related ones actually are
+sort of intermediate and therefore called noads.
+
+In text mode entering \type {abc} results in three glyph nodes and \type {a b
+c} in three glyph nodes separated by (spacing) glue. Successive glyphs can be
+transformed in the font engine later on, just as hyphenation directive can
+be added. Eventually one (normally) gets a mix of glyphs, font kerns from
+a sequence of glyphs
+
+In math mode \type {abc} results in three simple ordinary noads and \type {a
+b c} is equivalent to that: three noads. But \type {a bc} results in two
+ordinary noads where the second one has a sublist of two ordinary noads.
+Because characters have class properties, \type {( a + b = c )} results in a
+simple open noad, a simple ordinary, a simple binary, a simple ordinary, a
+simple relation, a simple ordinary and simple close noad. The next samples show a
+bit of this; in order to see th effects spacing between ordinary atoms set
+to \type {9mu}.
+
+\startbuffer
+\typebuffer[sample]
+% \tracingmath1\tracingonline1
+\startlinecorrection
+\setmathspacing\mathordinarycode\mathordinarycode\allmathstyles9mu
+\mathgroupingmode\zerocount
+\scale[scale=2000]{\showmakeup[mathglue]\showboxes\mathspacingmode\plusone\getbuffer[sample]}
+\stoplinecorrection
+\blank[2*line]
+\stopbuffer
+
+\startbuffer[sample]
+$a b c$ \quad $a bc$ \quad $abc$
+\stopbuffer
+
+\getbuffer
+
+With \type {\tracingmath 1} we get this logged:
+
+\starttyping
+> \inlinemath=
+\noad[ord][...]
+.\nucleus
+..\mathchar[ord][...], family "0, character "61
+\noad[ord][...]
+.\nucleus
+..\mathchar[ord][...], family "0, character "62
+\noad[ord][...]
+.\nucleus
+..\mathchar[ord][...], family "0, character "63
+
+> \inlinemath=
+\noad[ord][...]
+.\nucleus
+..\mathchar[ord][...], family "0, character "61
+\noad[ord][...]
+.\nucleus
+..\mathchar[ord][...], family "0, character "62
+\noad[ord][...]
+.\nucleus
+..\mathchar[ord][...], family "0, character "63
+
+> \inlinemath=
+\noad[ord][...]
+.\nucleus
+..\mathchar[ord][...], family "0, character "61
+\noad[ord][...]
+.\nucleus
+..\mathchar[ord][...], family "0, character "62
+\noad[ord][...]
+.\nucleus
+..\mathchar[ord][...], family "0, character "63
+\stoptyping
+
+\startbuffer[sample]
+${a} {b} {c}$ \quad ${a} {bc}$ \quad ${abc}$
+\stopbuffer
+
+\getbuffer
+
+If the previous log surprises you, that might be because in \CONTEXT\ we set up the
+engine differently: curly braces don't create ordinary atoms. However, when we
+set \type {\mathgroupingmode 0} we return to what the engine normally does.
+
+\starttyping
+> \inlinemath=
+\noad[ord][...]
+.\nucleus
+..\mathchar[ord][...], family "0, character "61
+\noad[ord][...]
+.\nucleus
+..\mathchar[ord][...], family "0, character "62
+\noad[ord][...]
+.\nucleus
+..\mathchar[ord][...], family "0, character "63
+
+> \inlinemath=
+\noad[ord][...]
+.\nucleus
+..\mathchar[ord][...], family "0, character "61
+\noad[ord][...]
+.\nucleus
+..\submlist[0][...][tracing depth 5 reached]
+
+> \inlinemath=
+\noad[ord][...]
+.\nucleus
+..\submlist[0][...][tracing depth 5 reached]
+\stoptyping
+
+From the first example you can imagine what these sub lists look like: a list of
+ordinary atoms. The final list that is mix of nodes and yet unprocessed noads get
+fed into the math|-|to|-|hlist function and eventually the noads become glyphs,
+boxes, kerns, glue and whatever makes sense. A lot goes on there: think scripts,
+fractions, fences, accents, radicals, spacing, break control.
+
+An example of more tricky scanning is shown here:
+
+\starttyping
+a +   1 \over 2   + b
+a +  {1}\over{2}  + b
+a + {{1}\over{2}} + b
+\stoptyping
+
+In this case the \type {\over} makes \TEX\ reconsider the last noad, remove if
+from the current list and save it for later, then scan for a following atom a
+single character turned atom or a braced sequence that then is an ordinary noad.
+In the end a fraction noad is made. When that gets processed later specific
+numerator and denominator styles get applied (explicitly entered style nodes of
+course overload this for the content). The fact that this construct is all about
+(implicit) ordinary noads, themselves captured in noads, combined with the wish
+for enforced consistent positioning of numerator and denominator, plus style
+overload, color support and whatever comes to mind means that in practice one
+will use a \type {\frac} macro that provides all that control. \footnote {There
+are now a \prm {Uover} primitives that look ahead and then of course still
+treat curly braces as math lists to be picked up.}
+
+A similar tricky case is this:
+
+\starttyping
+      ( a +       ( b - c        ) + d        )
+\left ( a + \left ( b - c \right ) + d \right )
+\stoptyping
+
+Here the first line creates a list of noads but the second line create a fenced
+structure that is handled as a whole in order to make the fences match. \footnote
+{Actually instead of such a structure there could have been delimiters with
+backlinks but one never knows what happens with these links when processing
+passes are made so that fragility is avoided.} A fence noad will not break across
+lines as it is boxed and that is the reason why macro packages have these \type
+{\bigg} macros: they explicitly force a size using some trickery. In \LUAMETATEX\
+a fence object can actually be unpacked when the class is configured as such. It
+is one of the many extensions we have.
+
+There are some peculiar cases that one can run into but that actually are
+mentioned in the \TEX\ book. Often these reasons for intentional side effects
+become clear when one thinks of the average usage but unless one is willing to
+spend time on the \quote {fine points of math} they can also interfere with
+intentions. The next bits of code are just for the reader to look at. Try to
+predict the outcome. Watch out: in \LMTX\ the outcome is not what one gets by
+default in \LUATEX, \PDFTEX\ or regular \TEX. \footnote {One can set \typ
+{\mathgroupingmode = 0} to get close.}
+
+\starttyping
+$ 1 {\red +} 2$\par
+$ 1 \color[red]{+} 2$\par
+$ 1 \mathbin{\red +} 2$\par
+$ a + - b + {- b} $
+$ a \pm - b - {+ b} $
+$ - b $
+$ {- b} $
+\stoptyping
+
+The message here is that when a user is coding the mindset with respect to
+grouping using curly braces has to be switched to math mode too. And how many
+users really read the relevant chapters of the \TEX\ book a couple of times (as
+much makes only sense after playing with math in \TEX)? Even if one doesn't grasp
+everything it's a worthwhile read. Also consider this: did you really ask for an
+ordinary atom when you uses curly braces where no lists were expected? And what
+would have happened when ordinary related spacing had been set to non|-|zero?
+
+All the above (and plenty more) is why in \CONTEXT\ \LMTX\ we make extensive use
+of some \LUAMETATEX\ features, like: additional atom classes, configurable inter
+atom spacing and penalties, pairwise atom rules that can change classes, class
+based rendering options, more font parameters, configurable style instead of hard
+coded ones in constructs, more granular spacing, etc. That way we get quite
+predictable results but also drop some older (un)expected behavior and side
+effects. It is also why we cannot show many examples in the \LUAMETATEX\ manual:
+it uses \CONTEXT\ and we see no reason to complicate out lives (and spend energy
+on) turning off all the nicely cooperating features (and then for sure forgetting
+one) just for the sake of demos. It also gave us the opportunity to improve
+existing mechanisms and|/|or at least simplify their sometimes complex code.
+
+One last word here about sequences of ordinary atoms: the traditional code path
+feeds ordinary atoms into a ligature and kerning routine and does that when it
+encounters one. However, in \OPENTYPE\ we don't have ligatures not (single) kerns
+so there that doesn't apply. As we're not aware of traditional math fonts with
+ligatures and no one is likely to use these fonts with \LUAMETATEX\ the ligature
+code has been disabled. \footnote {It might show up in a different way if we feel
+the need in which case it's more related to runtime patches to fonts and class
+bases ligature building.} The kerning has been redone a bit so that it permits us
+to fine tune spacing (which in \CONTEXT\ we control with goodie files). The
+mentioned routine can also add italic correction, but that happens selectively
+because it is driven by specifications and circumstances. It is one of the places
+where the approach differs from the original, if only for practical reasons.
+
+\stopsection
+
+\startsection[title={Grouping with \prm {beginmathgroup} and \prm {endmathgroup}}]
+
+These two primitives behave like \prm {begingroup} and \prm {endgroup} but
+restore a style change inside the group. Style changes are actually injecting s
+special style noad which makes them sort of persistent till the next explicit
+change which can be confusing. This additional grouping model compensates for
+that.
+
+\stopsection
+
 \startsection[title={Unicode math characters}]
 
 \topicindex {math+\UNICODE}
@@ -182,6 +402,8 @@ options and keywords.
 
 \startsection[title=Setting up the engine]
 
+\startsubsection[title={Control}]
+
 \topicindex{math+control}
 
 Rendering math has long been dominated by \TEX\ but that changed when \MICROSOFT\
@@ -270,27 +492,29 @@ fonts are too inconsistent and an occasional fit is more robust that a generally
 applied rule.}
 
 \starttabulate[|l|l|c|]
-\DB bit             \BC name                            \NC \NC \NR
+\DB bit             \BC name                              \NC \NC \NR
 \TB
-\NC \type {0x00001} \NC \type {usefontcontrol}          \NC \star \NR
-\NC \type {0x00002} \NC \type {overrule}                \NC \star \NR
-\NC \type {0x00004} \NC \type {underrule}               \NC \star \NR
-\NC \type {0x00008} \NC \type {radicalrule}             \NC \star \NR
-\NC \type {0x00010} \NC \type {fractionrule}            \NC \star \NR
-\NC \type {0x00020} \NC \type {accentskewhalf}          \NC \star \NR
-\NC \type {0x00040} \NC \type {accentskewapply}         \NC \star \NR
-\NC \type {0x00080} \NC \type {checkligatureandkern}    \NC       \NR
-\NC \type {0x00100} \NC \type {applyverticalitalickern} \NC \star \NR
-\NC \type {0x00200} \NC \type {applyordinaryitalickern} \NC \star \NR
-\NC \type {0x00400} \NC \type {applycharitalickern}     \NC       \NR
-\NC \type {0x00800} \NC \type {reboxcharitalickern}     \NC       \NR
-\NC \type {0x01000} \NC \type {applyboxeditalickern}    \NC \star \NR
-\NC \type {0x02000} \NC \type {staircasekern}           \NC \star \NR
-\NC \type {0x04000} \NC \type {applytextitalickern}     \NC \star \NR
-\NC \type {0x08000} \NC \type {checktextitalickern}     \NC \star \NR
-\NC \type {0x10000} \NC \type {checkspaceitalickern}    \NC       \NR
-\NC \type {0x20000} \NC \type {applyscriptitalickern}   \NC \star \NR
-%NC \type {0x40000} \NC \type {italicshapekern}         \NC \star \NR now default
+\NC \type {0x000001} \NC \type {usefontcontrol}           \NC       \NR
+\NC \type {0x000002} \NC \type {overrule}                 \NC \star \NR
+\NC \type {0x000004} \NC \type {underrule}                \NC \star \NR
+\NC \type {0x000008} \NC \type {radicalrule}              \NC \star \NR
+\NC \type {0x000010} \NC \type {fractionrule}             \NC \star \NR
+\NC \type {0x000020} \NC \type {accentskewhalf}           \NC \star \NR
+\NC \type {0x000040} \NC \type {accentskewapply}          \NC \star \NR
+\NC \type {0x000080} \NC \type {applyordinarykernpair}    \NC \star \NR
+\NC \type {0x000100} \NC \type {applyverticalitalickern}  \NC \star \NR
+\NC \type {0x000200} \NC \type {applyordinaryitalickern}  \NC \star \NR
+\NC \type {0x000400} \NC \type {applycharitalickern}      \NC       \NR
+\NC \type {0x000800} \NC \type {reboxcharitalickern}      \NC       \NR
+\NC \type {0x001000} \NC \type {applyboxeditalickern}     \NC \star \NR
+\NC \type {0x002000} \NC \type {staircasekern}            \NC \star \NR
+\NC \type {0x004000} \NC \type {applytextitalickern}      \NC \star \NR
+\NC \type {0x008000} \NC \type {checktextitalickern}      \NC \star \NR
+\NC \type {0x010000} \NC \type {checkspaceitalickern}     \NC       \NR
+\NC \type {0x020000} \NC \type {applyscriptitalickern}    \NC \star \NR
+\NC \type {0x040000} \NC \type {analysescriptnucleuschar} \NC \star \NR
+\NC \type {0x080000} \NC \type {analysescriptnucleuslist} \NC \star \NR
+\NC \type {0x100000} \NC \type {analysescriptnucleusbox}  \NC \star \NR
 \LL
 \stoptabulate
 
@@ -299,6 +523,108 @@ fonts have different approaches (especially when it comes to dealing with the
 width and italic corrections) and is even more complicated by the fact that the
 fonts are often inconsistent (within and between). In \CONTEXT\ we deal with this
 by runtime fixes to fonts. In any case the Cambria font is taken as reference.
+
+\stopsubsection
+
+\startsubsection[title={Analyzing the script nucleus}]
+
+\topicindex {math+kerning}
+\topicindex {math+scripts}
+
+The three analyze option relate to staircase kerns for which we need to look into the
+nucleus to get to the first character. In principle we only need to look into simple
+characters and lists but we can also look into boxes.There can be interference with
+other kinds spacing as well as italic corrections, which is why it is an option. These three
+are not bound to fonts because we don't know if have a font involved.
+
+% We keep the next text commented for historic reasons. In \CONTEXT\ we clean up
+% fonts in the font goodie files so the examples would not be honest anyway. But it
+% shows a bit where we come from and what alternatives we tried.
+
+% If you want to typeset text in math macro packages often provide something \type
+% {\text} which obeys the script sizes. As the definition can be anything there is
+% a good chance that the kerning doesn't come out well when used in a script. Given
+% that the first glyph ends up in an \prm {hbox} we have some control over this.
+% And, as a bonus we also added control over the normal sublist kerning. The \prm
+% {mathscriptboxmode} parameter defaults to~1.
+%
+% \starttabulate[|c|l|]
+% \DB value     \BC meaning \NC \NR
+% \TB
+% \NC \type {0} \NC forget about kerning \NC \NR
+% \NC \type {1} \NC kern math sub lists with a valid glyph \NC \NR
+% \NC \type {2} \NC also kern math sub boxes that have a valid glyph \NC \NR
+% \NC \type {3} \NC only kern math sub boxes with a boundary node present\NC \NR
+% \LL
+% \stoptabulate
+%
+% Here we show some examples. Of course this doesn't solve all our problems, if
+% only because some fonts have characters with bounding boxes that compensate for
+% italics, while other fonts can lack kerns.
+%
+% \startbuffer[1]
+%     $T_{\tf fluff}$
+% \stopbuffer
+%
+% \startbuffer[2]
+%     $T_{\text{fluff}}$
+% \stopbuffer
+%
+% \startbuffer[3]
+%     $T_{\text{\boundary1 fluff}}$
+% \stopbuffer
+%
+% \unexpanded\def\Show#1#2#3%
+%   {\doifelsenothing{#3}
+%      {\small\tx\typeinlinebuffer[#1]}
+%      {\doifelse{#3}{-}
+%         {\small\bf\tt mode #2}
+%         {\switchtobodyfont[#3]\showfontkerns\showglyphs\mathscriptboxmode#2\relax\inlinebuffer[#1]}}}
+%
+% \starttabulate[|lBT|c|c|c|c|c|]
+%     \NC          \NC \Show{1}{0}{}         \NC\Show{1}{1}{}         \NC \Show{2}{1}{}         \NC \Show{2}{2}{}         \NC \Show{3}{3}{}         \NC \NR
+%     \NC          \NC \Show{1}{0}{-}        \NC\Show{1}{1}{-}        \NC \Show{2}{1}{-}        \NC \Show{2}{2}{-}        \NC \Show{3}{3}{-}        \NC \NR
+%     \NC modern   \NC \Show{1}{0}{modern}   \NC\Show{1}{1}{modern}   \NC \Show{2}{1}{modern}   \NC \Show{2}{2}{modern}   \NC \Show{3}{3}{modern}   \NC \NR
+%     \NC lucidaot \NC \Show{1}{0}{lucidaot} \NC\Show{1}{1}{lucidaot} \NC \Show{2}{1}{lucidaot} \NC \Show{2}{2}{lucidaot} \NC \Show{3}{3}{lucidaot} \NC \NR
+%     \NC pagella  \NC \Show{1}{0}{pagella}  \NC\Show{1}{1}{pagella}  \NC \Show{2}{1}{pagella}  \NC \Show{2}{2}{pagella}  \NC \Show{3}{3}{pagella}  \NC \NR
+%     \NC cambria  \NC \Show{1}{0}{cambria}  \NC\Show{1}{1}{cambria}  \NC \Show{2}{1}{cambria}  \NC \Show{2}{2}{cambria}  \NC \Show{3}{3}{cambria}  \NC \NR
+%     \NC dejavu   \NC \Show{1}{0}{dejavu}   \NC\Show{1}{1}{dejavu}   \NC \Show{2}{1}{dejavu}   \NC \Show{2}{2}{dejavu}   \NC \Show{3}{3}{dejavu}   \NC \NR
+% \stoptabulate
+%
+% Kerning between a character subscript is controlled by \prm {mathscriptcharmode}
+% which also defaults to~1.
+%
+% Here is another example. Internally we tag kerns as italic kerns or font kerns
+% where font kerns result from the staircase kern tables. In 2018 fonts like Latin
+% Modern and Pagella rely on cheats with the boundingbox, Cambria uses staircase
+% kerns and Lucida a mixture. Depending on how fonts evolve we might add some more
+% control over what one can turn on and off.
+%
+% \def\MathSample#1#2#3%
+%   {\NC
+%    #1 \NC
+%    #2 \NC
+%    \showglyphdata \switchtobodyfont[#2,17.3pt]$#3T_{f}$         \NC
+%    \showglyphdata \switchtobodyfont[#2,17.3pt]$#3\gamma_{e}$    \NC
+%    \showglyphdata \switchtobodyfont[#2,17.3pt]$#3\gamma_{ee}$   \NC
+%    \showglyphdata \switchtobodyfont[#2,17.3pt]$#3T_{\tf fluff}$ \NC
+%    \NR}
+%
+% \starttabulate[|Tl|Tl|l|l|l|l|]
+%     \FL
+%     \MathSample{normal}{modern}  {\mr}
+%     \MathSample{}      {pagella} {\mr}
+%     \MathSample{}      {cambria} {\mr}
+%     \MathSample{}      {lucidaot}{\mr}
+%     \ML
+%     \MathSample{bold}  {modern}  {\mb}
+%     \MathSample{}      {pagella} {\mb}
+%     \MathSample{}      {cambria} {\mb}
+%     \MathSample{}      {lucidaot}{\mb}
+%     \LL
+% \stoptabulate
+
+\stopsubsection
 
 \stopsection
 
@@ -721,6 +1047,7 @@ defaults and tweak them in the goodie files:
 \NC FlattenedAccentBaseDepth          \NC \prm {Umathflattenedaccentbasedepth}       \NC reserved  \NC \NR
 \NC SpaceBeforeScript                 \NC \prm {Umathspacebeforescript}              \NC 0         \NC \NR
 \NC PrimeRaisePercent                 \NC \prm {Umathprimeraise}                     \NC 0         \NC \NR
+\NC PrimeRaiseComposedPercent         \NC \prm {Umathprimeraisecomposed}             \NC 0         \NC \NR
 \NC PrimeShiftUp                      \NC \prm {Umathprimeshiftup}                   \NC 0         \NC \NR
 \NC PrimeShiftUpCramped               \NC \prm {Umathprimeshiftupcramped}            \NC 0         \NC \NR
 \NC PrimeSpaceAfter                   \NC \prm {Umathprimespaceafter}                \NC 0         \NC \NR
@@ -997,7 +1324,7 @@ Todo:
 
 \startsection[title={Math spacing}]
 
-\startsubsection[title={Setting inline surrounding space with \prm {mathsurround} and \prm {mathsurroundskip}}]
+\startsubsection[reference=spacing:surround,title={Setting inline surrounding space with \prm {mathsurround} and \prm {mathsurroundskip}}]
 
 \topicindex {math+spacing}
 
@@ -1007,7 +1334,7 @@ non|-|zero value (or zero with some stretch or shrink) this parameter will repla
 \prm {mathsurround}. By using an additional parameter instead of changing the nature
 of \prm {mathsurround}, we can remain compatible. In the meantime a bit more
 control has been added via \prm {mathsurroundmode}. This directive can take 6 values
-with zero being the default behaviour.
+with zero being the default behavior.
 
 \start
 
@@ -1062,7 +1389,7 @@ applicable in the first occasion that checks them (linebreaking or packaging).
 Besides the parameters mentioned in the previous sections, there are also
 primitives to control the math spacing table (as explained in Chapter~18 of the
 \TEX book). This happens per class pair. Because we have many possible classes,
-we no longer hand the many primitives that \LUATEX\ has but you can define then
+we no longer have the many primitives that \LUATEX\ has but you can define then
 using the generic \prm {setmathspacing} primitive:
 
 \starttyping
@@ -1070,8 +1397,8 @@ using the generic \prm {setmathspacing} primitive:
 \def\Umathordordopenspacing {\setmathspacing 0 4 }
 \stoptyping
 
-These parameters are of type \prm {muskip}, so setting a parameter can be done
-like this:
+These parameters are (normally) of type \prm {muskip}, so setting a parameter can
+be done like this:
 
 \starttyping
 \setmathspacing 1 0 \displaystyle=4mu plus 2mu % op ord Umathopordspacing
@@ -1097,13 +1424,65 @@ Careful readers will realize that there are also primitives for the items marked
 restrictions. However, you can enforce the remapping rules to conform to the
 rules of \TEX\ (or yourself).
 
-{\em Todo: explain rules.}
+Every class has a set of spacing parameters and the more classes you define the more
+pairwise spacing you need to define. However, you can default to an existing class.
+By default all spacing is zero and you can get rid of the defaults inherited from
+good old \TEX\ with \prm {resetmathspacing}. You can alias class spacing to an exiting
+class with \prm {letmathspacing}:
 
-{\em Todo: explain penalties.}
+\starttyping
+\letmathspacing class displayclass textclass scriptclass scriptscriptclass
+\stoptyping
 
-{\em Todo: explain let, set and copy primitives.}
+Instead you can copy spacing with \prm {copymathspacing}:
+
+\starttyping
+\copymathspacing class parentclass
+\stoptyping
+
+Specific paring happens with \prm {setmathspacing}:
+
+\starttyping
+\setmathspacing leftclass rightclass style value
+\stoptyping
+
+Unless we have a frozen parameter, the prefix \prm {inherited} makes it possible
+to have a more dynamic relationship: the used value resolves to the current value
+of the given register. Possible values are the usual mu skip register, a regular
+skip or dimension register, or just some mu skip value.
+
+A similar set of primitives deals with rules. These remap pairs onto other pairs, so
+\prm {setmathatomrule} looks like:
+
+\starttyping
+\setmathatomrule oldleftclass oldrightclass newleftclass newrightclass
+\stoptyping
+
+The \prm {letmathatomrule} and \prm {copymathatomrule} primitives take two
+classes where the second is the parent.
+
+Some primitives are still experimental and might evolve, like \prm
+{letmathparent} and \prm {copymathparent} that take numbers as in:
+
+\starttyping
+\letmathatomrule class spacingclass prepenaltyclass postpenaltyclass options reserved
+\stoptyping
+
+Primitives like this were used when experimenting and when re use them in \CONTEXT\
+eventually they will become stable.
+
+The \prm {setmathprepenalty} and \prm {setmathpostpenalty} primitives take a
+class and penalty (integer) value. These are injected before and after atoms with
+the given class where a penalty of 10000 is a signal to ignore it.
+
+The engine control options for a class can be set with \prm {setmathoptions}. The
+possible options are discussed elsewhere. This primitive takes a class number and
+an integer (bitset). For all these setters the \CONTEXT\ math setup gives examples.
 
 \stopsubsection
+
+% \setdefaultmathcodes
+% \setmathignore        parameter
 
 \startsubsection[title={Local \prm {frozen} settings with}]
 
@@ -1203,210 +1582,6 @@ unexpected side effects. For that reason there is a convenient checker: \prm
 \NC 1 \NC the parameter is set \NC \NR
 \NC 2 \NC the parameter is unset \NC \NR
 \LL
-\stoptabulate
-
-\stopsubsection
-
-\startsubsection[title={Skips around display math and \prm {mathdisplayskipmode}}]
-
-\topicindex {math+spacing}
-
-The injection of \prm {abovedisplayskip} and \prm {belowdisplayskip} is not
-symmetrical. An above one is always inserted, also when zero, but the below is
-only inserted when larger than zero. Especially the latter makes it sometimes hard
-to fully control spacing. Therefore \LUATEX\ comes with a new directive: \prm
-{mathdisplayskipmode}. The following values apply:
-
-\starttabulate[|c|l|]
-\DB value \BC meaning \NC \NR
-\TB
-\NC 0 \NC normal \TEX\ behaviour \NC \NR
-\NC 1 \NC always (same as 0) \NC \NR
-\NC 2 \NC only when not zero \NC \NR
-\NC 3 \NC never, not even when not zero \NC \NR
-\LL
-\stoptabulate
-
-\stopsubsection
-
-\startsubsection[title={Nolimit correction with \prm {mathnolimitsmode}}]
-
-\topicindex {math+limits}
-
-There are two extra math parameters \prm {Umathnolimitsupfactor} and \prm
-{Umathnolimitsubfactor} that were added to provide some control over how limits
-are spaced (for example the position of super and subscripts after integral
-operators). They relate to an extra parameter \prm {mathnolimitsmode}. The half
-corrections are what happens when scripts are placed above and below. The
-problem with italic corrections is that officially that correction italic is used
-for above|/|below placement while advanced kerns are used for placement at the
-right end. The question is: how often is this implemented, and if so, do the
-kerns assume correction too. Anyway, with this parameter one can control it.
-
-\starttabulate[|l|ck1|ck1|ck1|ck1|ck1|ck1|]
-    \NC
-        \NC \mathnolimitsmode0    $\displaystyle\int\nolimits^0_1$
-        \NC \mathnolimitsmode1    $\displaystyle\int\nolimits^0_1$
-        \NC \mathnolimitsmode2    $\displaystyle\int\nolimits^0_1$
-        \NC \mathnolimitsmode3    $\displaystyle\int\nolimits^0_1$
-        \NC \mathnolimitsmode4    $\displaystyle\int\nolimits^0_1$
-        \NC \mathnolimitsmode8000 $\displaystyle\int\nolimits^0_1$
-    \NC \NR
-    \TB
-    \BC mode
-        \NC \tttf 0
-        \NC \tttf 1
-        \NC \tttf 2
-        \NC \tttf 3
-        \NC \tttf 4
-        \NC \tttf 8000
-    \NC \NR
-    \BC superscript
-        \NC 0
-        \NC font
-        \NC 0
-        \NC 0
-        \NC +ic/2
-        \NC 0
-    \NC \NR
-    \BC subscript
-        \NC -ic
-        \NC font
-        \NC 0
-        \NC -ic/2
-        \NC -ic/2
-        \NC 8000ic/1000
-    \NC \NR
-\stoptabulate
-
-When the mode is set to one, the math parameters are used. This way a macro
-package writer can decide what looks best. Given the current state of fonts in
-\CONTEXT\ we currently use mode 1 with factor 0 for the superscript and 750 for
-the subscripts. Positive values are used for both parameters but the subscript
-shifts to the left. A \prm {mathnolimitsmode} larger that 15 is considered to
-be a factor for the subscript correction. This feature can be handy when
-experimenting.
-
-% \startsubsection[title={Controlling math italic mess with \prm {mathitalicsmode}}]
-%
-% \topicindex {math+italics}
-%
-% The \prm {mathitalicsmode} parameter can be set to~1 to force italic correction
-% before noads that represent some more complex structure (read: everything
-% that is not an ord, bin, rel, open, close, punct or inner). We show a Cambria
-% example.
-%
-% \starttexdefinition Whatever #1
-%     \NC \type{\mathitalicsmode = #1}
-%     \NC \mathitalicsmode#1\ruledhbox{$\left|T^1\right|$}
-%     \NC \mathitalicsmode#1\ruledhbox{$\left|T\right|$}
-%     \NC \mathitalicsmode#1\ruledhbox{$T+1$}
-%     \NC \mathitalicsmode#1\ruledhbox{$T{1\over2}$}
-%     \NC \mathitalicsmode#1\ruledhbox{$T\sqrt{1}$}
-%     \NC \NR
-% \stoptexdefinition
-%
-% \start
-%     \switchtobodyfont[cambria]
-%     \starttabulate[|c|c|c|c|c|c|]
-%         \Whatever{0}%
-%         \Whatever{1}%
-%     \stoptabulate
-% \stop
-%
-% This kind of parameters relate to the fact that italic correction in \OPENTYPE\
-% math is bound to fuzzy rules. So, control is the solution.
-%
-% \stopsubsection
-
-\stopsubsection
-
-\startsubsection[title={Influencing script kerning with \prm {mathscriptboxmode}}]
-
-\topicindex {math+kerning}
-\topicindex {math+scripts}
-
-If you want to typeset text in math macro packages often provide something \type
-{\text} which obeys the script sizes. As the definition can be anything there is
-a good chance that the kerning doesn't come out well when used in a script. Given
-that the first glyph ends up in an \prm {hbox} we have some control over this.
-And, as a bonus we also added control over the normal sublist kerning. The \prm
-{mathscriptboxmode} parameter defaults to~1.
-
-\starttabulate[|c|l|]
-\DB value     \BC meaning \NC \NR
-\TB
-\NC \type {0} \NC forget about kerning \NC \NR
-\NC \type {1} \NC kern math sub lists with a valid glyph \NC \NR
-\NC \type {2} \NC also kern math sub boxes that have a valid glyph \NC \NR
-\NC \type {3} \NC only kern math sub boxes with a boundary node present\NC \NR
-\LL
-\stoptabulate
-
-Here we show some examples. Of course this doesn't solve all our problems, if
-only because some fonts have characters with bounding boxes that compensate for
-italics, while other fonts can lack kerns.
-
-\startbuffer[1]
-    $T_{\tf fluff}$
-\stopbuffer
-
-\startbuffer[2]
-    $T_{\text{fluff}}$
-\stopbuffer
-
-\startbuffer[3]
-    $T_{\text{\boundary1 fluff}}$
-\stopbuffer
-
-\unexpanded\def\Show#1#2#3%
-  {\doifelsenothing{#3}
-     {\small\tx\typeinlinebuffer[#1]}
-     {\doifelse{#3}{-}
-        {\small\bf\tt mode #2}
-        {\switchtobodyfont[#3]\showfontkerns\showglyphs\mathscriptboxmode#2\relax\inlinebuffer[#1]}}}
-
-\starttabulate[|lBT|c|c|c|c|c|]
-    \NC          \NC \Show{1}{0}{}         \NC\Show{1}{1}{}         \NC \Show{2}{1}{}         \NC \Show{2}{2}{}         \NC \Show{3}{3}{}         \NC \NR
-    \NC          \NC \Show{1}{0}{-}        \NC\Show{1}{1}{-}        \NC \Show{2}{1}{-}        \NC \Show{2}{2}{-}        \NC \Show{3}{3}{-}        \NC \NR
-    \NC modern   \NC \Show{1}{0}{modern}   \NC\Show{1}{1}{modern}   \NC \Show{2}{1}{modern}   \NC \Show{2}{2}{modern}   \NC \Show{3}{3}{modern}   \NC \NR
-    \NC lucidaot \NC \Show{1}{0}{lucidaot} \NC\Show{1}{1}{lucidaot} \NC \Show{2}{1}{lucidaot} \NC \Show{2}{2}{lucidaot} \NC \Show{3}{3}{lucidaot} \NC \NR
-    \NC pagella  \NC \Show{1}{0}{pagella}  \NC\Show{1}{1}{pagella}  \NC \Show{2}{1}{pagella}  \NC \Show{2}{2}{pagella}  \NC \Show{3}{3}{pagella}  \NC \NR
-    \NC cambria  \NC \Show{1}{0}{cambria}  \NC\Show{1}{1}{cambria}  \NC \Show{2}{1}{cambria}  \NC \Show{2}{2}{cambria}  \NC \Show{3}{3}{cambria}  \NC \NR
-    \NC dejavu   \NC \Show{1}{0}{dejavu}   \NC\Show{1}{1}{dejavu}   \NC \Show{2}{1}{dejavu}   \NC \Show{2}{2}{dejavu}   \NC \Show{3}{3}{dejavu}   \NC \NR
-\stoptabulate
-
-Kerning between a character subscript is controlled by \prm {mathscriptcharmode}
-which also defaults to~1.
-
-Here is another example. Internally we tag kerns as italic kerns or font kerns
-where font kerns result from the staircase kern tables. In 2018 fonts like Latin
-Modern and Pagella rely on cheats with the boundingbox, Cambria uses staircase
-kerns and Lucida a mixture. Depending on how fonts evolve we might add some more
-control over what one can turn on and off.
-
-\def\MathSample#1#2#3%
-  {\NC
-   #1 \NC
-   #2 \NC
-   \showglyphdata \switchtobodyfont[#2,17.3pt]$#3T_{f}$         \NC
-   \showglyphdata \switchtobodyfont[#2,17.3pt]$#3\gamma_{e}$    \NC
-   \showglyphdata \switchtobodyfont[#2,17.3pt]$#3\gamma_{ee}$   \NC
-   \showglyphdata \switchtobodyfont[#2,17.3pt]$#3T_{\tf fluff}$ \NC
-   \NR}
-
-\starttabulate[|Tl|Tl|l|l|l|l|]
-    \FL
-    \MathSample{normal}{modern}  {\mr}
-    \MathSample{}      {pagella} {\mr}
-    \MathSample{}      {cambria} {\mr}
-    \MathSample{}      {lucidaot}{\mr}
-    \ML
-    \MathSample{bold}  {modern}  {\mb}
-    \MathSample{}      {pagella} {\mb}
-    \MathSample{}      {cambria} {\mb}
-    \MathSample{}      {lucidaot}{\mb}
-    \LL
 \stoptabulate
 
 \stopsubsection
@@ -1908,16 +2083,6 @@ influence the spacing. The numbers are the same as for character classes.
 
 \stopsubsection
 
-\startsubsection[title={Accents: \type{\mathlimitsmode}}]
-
-\topicindex {math+accents}
-
-When you use \type {\limits} or \type {\nolimits} without scripts spacing might
-get messed up. This can be prevented by setting \type {\mathlimitsmode} to a
-non|-|zero value.
-
-\stopsubsection
-
 \stopsection
 
 \startsection[title={Extracting values}]
@@ -2154,9 +2319,7 @@ requested math family is used.
 
 \stopsection
 
-\startsection[title={Goodies}]
-
-% \startsubsection[title={Flattening: \prm {mathflattenmode}}]
+% \startsection[title={Flattening: \prm {mathflattenmode}}]
 %
 % \topicindex {math+flattening}
 %
@@ -2201,9 +2364,12 @@ requested math family is used.
 %
 % \stopsubsection
 
-\startsubsection[title={Less Tracing}]
+
+\startsection[title={Tracing}]
 
 \topicindex {math+tracing}
+
+\startsubsection[title={Assignments}]
 
 Because there are quite some math related parameters and values, it is possible
 to limit tracing. Only when \type {tracingassigns} and|/|or \type
@@ -2211,13 +2377,25 @@ to limit tracing. Only when \type {tracingassigns} and|/|or \type
 
 \stopsubsection
 
+\startsubsection[title={\prm{tracingmath}}]
+
+The \TEX\ engine has a of places where tracing information can be generated so
+one can see what gets read and what comes out, but the math machinery is a black
+box. In \LUAMETATEX\ the math engine has been extended with tracing too.
+
+A value of one shows only the initial list, but a value of two also shows the
+intermediate lists as well as applied rules, injected spacing, injected penalties
+and parameter initialization. A value of three shows the result and larger values
+will do so with maximum breadth and depth.
+
+If you also want to see something on the console make sure to set \prm
+{tracingonline} to more than one.
+
+\stopsubsection
+
 \stopsection
 
-\startsection[title={Experiments}]
-
-There are a couple of experimental features. They will stay but details might
-change, for instance more control over spacing. We just show some examples and
-let your imagination work it out.
+\startsection[title={Classes}]
 
 \startsubsection[title={Forcing classes with \prm {Umathclass}}]
 
@@ -2240,6 +2418,242 @@ Watch how the spacing changes:
 \stoplines
 
 \stopsubsection
+
+\startsubsection[title={Checking class states}]
+
+When a formula is typeset it starts out with a begin class and finishes with an end class.
+This is done by adding two \quote {fake} atoms.  here are two global state variables that tell
+what the most recent edge classes are and two variables that act like registers and are
+local. There are also two registers that can be set to values that will force begin and end
+classes.
+
+The values of \prm {mathbeginclass} and \prm {mathendclass} are used when a
+formula starts and afterwards they are reset. Afterwards \prm {mathleftclass} and
+\prm {mathrightclass} have the effective edge classes. The global \prm
+{lastleftclass} and \prm {lastrightclass} variables also have the last edge
+classes but them being global they might not always reflect what you expect.
+
+\stopsubsection
+
+\startsubsection[title={Getting class spacing}]
+
+You can query the pairwise spacing of atoms with \prm {mathatomglue} and inject it with
+\prm {mathatomskip}, as in:
+
+\startbuffer
+\the\mathatomglue 5 4 \displaystyle : $[\mathatomskip 5 4 \displaystyle]$
+\stopbuffer
+
+\typebuffer
+
+and get: \inlinebuffer.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={Modes}]
+
+\startsubsection[title={Introduction}]
+
+For most cases the math engine acts the same as in regular \TEX, apart of course
+from some font specific features that need to be supported out of the box. There
+are however ways to divert, which we do in \CONTEXT. The following paragraphs are
+therefore rather \CONTEXT\ driven and not that relevant otherwise. Some modes have
+been removed and became default and|/|ro were replaced by more granular options.
+
+\stopsubsection
+
+\startsubsection[title={Controlling display math with \prm {mathdisplaymode}}]
+
+By setting \prm {mathdisplaymode} larger than zero double math shift characters
+(normally the dollar sign) are disabled. The reason for this feature is rather
+\CONTEXT\ specific: we pay a lot attention to spacing and the build in heuristics
+don't work well with that. We also need to initialize display math as well as
+deal with whatever has to be done with respect to finalizing. Because users use
+the high level commands anyway, disabling is okay for \CONTEXT\ and less likely
+to be done for other macro packages, so be careful with this one.
+
+\startsubsection
+
+\startsubsection[title={Skips around display math and \prm {mathdisplayskipmode}}]
+
+\topicindex {math+spacing}
+
+The injection of \prm {abovedisplayskip} and \prm {belowdisplayskip} is not
+symmetrical. An above one is always inserted, also when zero, but the below is
+only inserted when larger than zero. Especially the latter makes it sometimes hard
+to fully control spacing. Therefore \LUATEX\ comes with a new directive: \prm
+{mathdisplayskipmode}. The following values apply:
+
+\starttabulate[|c|l|]
+\DB value \BC meaning \NC \NR
+\TB
+\NC 0 \NC normal \TEX\ behavior \NC \NR
+\NC 1 \NC always (same as 0) \NC \NR
+\NC 2 \NC only when not zero \NC \NR
+\NC 3 \NC never, not even when not zero \NC \NR
+\LL
+\stoptabulate
+
+\stopsubsection
+
+\startsubsection[title={Scripts}]
+
+The regular superscript trigger \type {^} and subscript trigger \type {_} are
+quite convenient and although we do have verbose aliases in regular text these
+two will be used. A multiple superscript character sequence is used for accessing
+characters by number unless you disable that via catcode manipulations. In
+\CONTEXT\ the super- and subscript characters are regular characters and only in
+math mode they have a special meaning. We can have upto for script characters and
+they indicate pre- and postscripts.
+
+\starttabulate[|c|c|c|c|]
+\NC \type {^}    \NC         \NC super \NC post \NC \NR
+\NC \type {_}    \NC         \NC sub   \NC post \NC \NR
+\NC \type {^^}   \NC         \NC super \NC pre  \NC \NR
+\NC \type {__}   \NC         \NC sub   \NC pre  \NC \NR
+\NC \type {^^^}  \NC shifted \NC super \NC post \NC \NR
+\NC \type {___}  \NC shifted \NC sub   \NC post \NC \NR
+\NC \type {^^^^} \NC shifted \NC super \NC pre  \NC \NR
+\NC \type {____} \NC shifted \NC sub   \NC pre  \NC \NR
+\stoptabulate
+
+The shifted variants force a script to be an index and thereby make the other
+script move. This multiple character features used to be optional but is now always
+active.
+
+Related to this is the issue of double scripts. The regular \TEX\ is to issue
+an error message, inject an ordinary node and carry on when asked to. Here we have
+\prm {mathdoublescriptmode} as escape: when set to a zero or positive value it will
+also inject an atom but with class properties determined by its value. There will
+be no error message.
+
+\starttyping
+\mathdoublescriptmode"MMLLRR % main left right
+\stoptyping
+
+% Another variable that influences rendering is \prm {mathscriptcharmode} that in
+% \CONTEXT\ we default to~1. The \prm {mathscriptboxmode} parameter determines if a
+% boxed nucleus is analyzed and is also set to~1 in \CONTEXT. Both parameters are a
+% left|-|over from the split code path approach and might still be handy for
+% experiments. They might go away some day of replaced by a different control
+% option. Older versions if \LUAMETATEX\ had optional behavior for different values
+% but that code was removed.
+
+\stopsubsection
+
+\startsubsection[title={Grouping}]
+
+When set to non zero \prm {mathgroupingmode} will make stand alone \quote {list}
+as in \typ {a {bc} d} behave like grouping instead of creating composite atoms.
+In \CONTEXT\ indeed we set it to a positive value. Although it was ot strictly
+necessary it is nicer when users don't get side effects if they revert to low
+level source coding.
+
+\stopsubsection
+
+\startsubsection[title={Slack}]
+
+The \prm {mathslackmode} parameters controls removal of accidental left and|/|or
+right space added to a formula. Of course we enable this in \CONTEXT. There is
+more detailed control possible at the atom label as well as with class options.
+
+\stopsubsection
+
+\startsubsection[title={Limit fitting \prm {mathlimitsmode}}]
+
+\topicindex {math+limits}
+
+When set, this parameter avoids too wide limits to stick out too much by sort of
+centering them.
+
+\stopsubsection
+
+\startsubsection[title={Nolimit correction with \prm {mathnolimitsmode}}]
+
+\topicindex {math+limits}
+
+There are two extra math parameters \prm {Umathnolimitsupfactor} and \prm
+{Umathnolimitsubfactor} that were added to provide some control over how limits
+are spaced (for example the position of super and subscripts after integral
+operators). They relate to an extra parameter \prm {mathnolimitsmode}. The half
+corrections are what happens when scripts are placed above and below. The
+problem with italic corrections is that officially that correction italic is used
+for above|/|below placement while advanced kerns are used for placement at the
+right end. The question is: how often is this implemented, and if so, do the
+kerns assume correction too. Anyway, with this parameter one can control it.
+
+\starttabulate[|l|ck1|ck1|ck1|ck1|ck1|ck1|]
+    \NC
+        \NC \mathnolimitsmode0    $\displaystyle\int\nolimits^0_1$
+        \NC \mathnolimitsmode1    $\displaystyle\int\nolimits^0_1$
+        \NC \mathnolimitsmode2    $\displaystyle\int\nolimits^0_1$
+        \NC \mathnolimitsmode3    $\displaystyle\int\nolimits^0_1$
+        \NC \mathnolimitsmode4    $\displaystyle\int\nolimits^0_1$
+        \NC \mathnolimitsmode8000 $\displaystyle\int\nolimits^0_1$
+    \NC \NR
+    \TB
+    \BC mode
+        \NC \tttf 0
+        \NC \tttf 1
+        \NC \tttf 2
+        \NC \tttf 3
+        \NC \tttf 4
+        \NC \tttf 8000
+    \NC \NR
+    \BC superscript
+        \NC 0
+        \NC font
+        \NC 0
+        \NC 0
+        \NC +ic/2
+        \NC 0
+    \NC \NR
+    \BC subscript
+        \NC -ic
+        \NC font
+        \NC 0
+        \NC -ic/2
+        \NC -ic/2
+        \NC 8000ic/1000
+    \NC \NR
+\stoptabulate
+
+When the mode is set to one, the math parameters are used. This way a macro
+package writer can decide what looks best. Given the current state of fonts in
+\CONTEXT\ we currently use mode 1 with factor 0 for the superscript and 750 for
+the subscripts. Positive values are used for both parameters but the subscript
+shifts to the left. A \prm {mathnolimitsmode} larger that 15 is considered to
+be a factor for the subscript correction. This feature can be handy when
+experimenting.
+
+\stopsubsection
+
+\startsubsection[title={Some spacing control with \prm {mathsurroundmode} and \prm {mathspacingmode}}]
+
+See \in {section} [spacing:surround] for more about inline spacing. The \prm
+{mathsurroundmode} parameter just permits the glue variant to kick in and indeed
+we enable it in \CONTEXT.
+
+The \prm {mathspacingmode} parameter is for tracing: normally zero inter atom
+glue is not injected but when this parameter is set to non|-|zero even zero
+spacing will show up. This permits us to check the applied inter atom spacing.
+
+% \mathcheckfencesmode
+% \mathpenaltiesmode
+% \mathscriptboxmode
+% \mathrulesmode
+ % \supmarkmode
+% \mathgluemode
+
+\stopsection
+
+\startsection[title={Experiments}]
+
+There are a couple of experimental features. They will stay but details might
+change, for instance more control over spacing. We just show some examples and
+let your imagination work it out.
 
 \startsubsection[title={Scaling spacing with \prm {Umathxscale} and  \prm {Umathyscale}}]
 

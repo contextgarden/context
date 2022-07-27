@@ -1196,6 +1196,10 @@ The effective meanings are given next (we use \prm {meaningasis} for this):
 \meaningasis\TestK
 \stoplines
 
+I admit that is not yet applied much in \CONTEXT\ as we have no real need for it
+and I implemented it more out for nostalgic reasons: the kind of selective
+protect mechanism we have in \MKII.
+
 \stopsubsection
 
 \startsubsection[title={\prm {norelax}}]
@@ -1241,6 +1245,47 @@ When there is no match and a space was gobbled a space will be put back. The
 
 \stopsubsection
 
+\startsubsection[title={\prm {afterassigned}}]
+
+This primitive is a multiple token variant of \prm {afterassignment} and it takes
+a token list. It might look better in some cases than multiple single token
+\quote {calls}.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title=Grouping]
+
+\startsubsection[title={\prm {endsimplegroup}}]
+
+This feature might look somewhat weird so just ignore that it is there. It is one
+of these features that might never make it in a engine when discussed in
+committee but it comes in handy in \CONTEXT, so:
+
+\startbuffer
+\def\foo{\beginsimplegroup\bf\let\next}
+
+\foo{test}
+\foo{test\endgroup
+\foo{test\endsimplegroup
+\foo{test\egroup
+\stopbuffer
+
+\typebuffer
+
+These lines typeset as:
+
+\startlines \getbuffer \stoplines
+
+The \prm {beginsimplegroup} primitives signals that any end group command, except
+\prm {endmathgroup} will wrap up the current group. The \prm {endsimplegroup} is
+sort of redundant but fits in anyway.
+
+The also \LUAMETATEX\ specific \prm {mathbegingroup} and \prm {mathendgroup}
+commands are like \prm {begingroup} and \prm {endgroup} but restore the mathstyle
+when it has been changed in the group.
+
 \startsubsection[title={\prm {aftergrouped}}]
 
 There is a new experimental feature that can inject multiple tokens to after the group
@@ -1276,6 +1321,15 @@ test 4 : }
 This gives:
 
 \startpacked\getbuffer\stoppacked
+
+\stopsubsection
+
+\startsubsection[title={\prm {atendofgroup} and \prm {atendofgrouped}}]
+
+These are variants of \prm {aftergroup} and \prm {aftergrouped} but they happen
+{\em before} the groups is closed. It is one of these primitives that is not
+really needed but that can make code (and tracing) cleaner, which is one of the
+objectives (at least for \CONTEXT).
 
 \stopsubsection
 

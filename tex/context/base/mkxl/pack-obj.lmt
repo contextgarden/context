@@ -103,8 +103,8 @@ function objects.register(ns,id,b,referenced,offset,mode,delay)
     -- The delay feature is just an experiment: a value of 1 delays the
     -- flushing and 2 overloads the content. It might disappear again.
     local found = data[ns][id]
+    nodes.handlers.finalizebox(b)
     if found and delay == 2 then
-        nodes.handlers.finalizebox(b)
         data[ns][id] = {
             codeinjections.registerboxresource(b,nil,nil,found[1]), -- hardcoded [1]
             offset,

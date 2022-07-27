@@ -1,0 +1,229 @@
+%D \module
+%D   [       file=m-crappyspec,
+%D        version=2022.07.01, % about
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Meeting weird demands,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is for Benjamin Buchmuller who has to meet rather weird demands with
+%D respect to the number of characters per line. So, it's not about quality but more
+%D sort of previous century typewriter specification.
+%D
+%D \setmainparbuilder[crappyspec]
+
+\startluacode
+
+local type = type
+
+local nuts            = nodes.nuts
+
+local glyph_code      = nodes.nodecodes.glyph
+local hlist_code      = nodes.nodecodes.hlist
+local vlist_code      = nodes.nodecodes.vlist
+local disc_code       = nodes.nodecodes.disc
+
+local line_code       = nodes.listcodes.line
+
+local traverselist    = nuts.traverselist
+local traversecontent = nuts.traversecontent
+
+local flushlist       = nuts.flushlist
+local copylist        = nuts.copylist
+local getcharspec     = nuts.getcharspec
+local getreplace      = nuts.getreplace
+local getparstate     = nuts.getparstate
+local getlist         = nuts.getlist
+local getwidth        = nuts.getwidth
+local setwidth        = nuts.setwidth
+
+local texset          = tex.set
+local texsetdimen     = tex.setdimen
+local texgetdimen     = tex.getdimen
+local texgetcount     = tex.getcount
+local texlinebreak    = tex.linebreak
+
+local characters      = fonts.hashes.characters
+
+local function countglyphs(h)
+    local c = 0
+    if h then
+        for n, t, s in traversecontent(h) do
+            if t == glyph_code then
+                if true then
+                    local g, f = getcharspec(n)
+                    local d = characters[f][g] -- maybe cache
+                    local u = d and d.unicode
+                    if type(u) == "table" then
+                       c = c + #u
+                    else
+                       c = c + 1
+                    end
+                else
+                    c = c + 1
+                end
+            elseif t == disc_code then
+                c = c + countglyphs(getreplace(n),c)
+            elseif t == hlist_code or s == vlist_code then
+                c = c + countglyphs(getlist(h),c)
+            else
+                -- leader
+            end
+        end
+    end
+    return c
+end
+
+local function overflow(h, max)
+    for n, t, s in traverselist(h) do
+        if t == hlist_code and s == line_code then
+            local c = countglyphs(getlist(n))
+            if c > max then
+                return c, getwidth(n)
+            end
+        end
+    end
+    return false
+end
+
+function builders.paragraphs.constructors.methods.crappyspec(head)
+    -- todo: prevent useless calls
+    local p = getparstate(head)
+    if p then
+        local hsize = p.hsize
+        local max   = texgetcount("crappyspeccount")
+        local step  = texgetdimen("crappyspecstep")
+        if step <= 65536 then
+            step = 65536
+        end
+        while true do
+            local n = copylist(head)
+            local l, d = texlinebreak(n, { hsize = hsize })
+            local c, w = overflow(l,max)
+            if w and hsize > 10*step then -- safeguard
+                flushlist(l)
+                hsize = hsize - step
+            else
+                texsetdimen("crappyspecdimen",hsize)
+                flushlist(head)
+                head = l
+                local hsize = p.hsize
+                for n, t, s in traverselist(head) do
+                    if t == hlist_code and s == line_code then
+                     -- todo: add delta to rightskip or so
+                        setwidth(n,hsize)
+                    end
+                end
+                texset("prevdepth",d.prevdepth)
+                break
+            end
+        end
+    end
+    return head
+end
+\stopluacode
+
+\newcount\crappyspeccount
+\newdimen\crappyspecstep   \crappyspecstep \onepoint
+\newdimen\crappyspecdimen
+
+\defineparbuilder [crappyspec] % implemented in the builder namespace
+\defineparbuilder [default]    % implemented in the builder namespace
+
+\continueifinputfile{m-crappyspec.mkxl}
+
+\setupbodyfont
+  [pagella]
+
+\setuptolerance
+  [verytolerant,stretch]
+
+\showmakeup
+  [line]
+
+\setmainparbuilder
+  [crappyspec]
+
+\dontcomplain
+
+\protected\def\CrappyTraced
+  {\par \strut \rlap \bgroup\infofont
+     (\enspace
+         max   = \the\crappyspeccount \quad
+         step  = \the\crappyspecstep  \quad
+         hsize = \the\hsize           \quad
+         used  = \the\crappyspecdimen \enspace
+     )
+   \egroup \par}
+
+\starttext
+
+\crappyspeccount60  \samplefile{tufte} \CrappyTraced \par
+\crappyspeccount40  \samplefile{tufte} \CrappyTraced \par
+%   \crappyspecstep 2pt \samplefile{tufte} \CrappyTraced \par
+
+\samplefile{tufte} \CrappyTraced
+\startitemize
+    \startitem
+        \samplefile{tufte} \CrappyTraced
+    \stopitem
+    \startitem
+        \samplefile{ward}  \CrappyTraced
+    \stopitem
+\stopitemize
+
+\startnarrower[6*left,right]
+    \samplefile{tufte} \CrappyTraced
+\stopnarrower
+
+\starthanging [distance=4em,n=2] {test}
+    \samplefile{tufte} \CrappyTraced
+\stophanging
+
+\page % \stoptext
+
+\setuppapersize[landscape,letter]
+
+\samplefile{knuth} \CrappyTraced
+\startitemize[width=5em]
+    \startitem
+        \samplefile{knuth} \CrappyTraced
+    \stopitem
+    \startitem
+        {\smallcaps \darkblue \samplefile{knuth}} \CrappyTraced
+    \stopitem
+\stopitemize
+\crappyspeccount60
+\startitemize[width=5em]
+    \startitem
+        \samplefile{knuth} \CrappyTraced
+    \stopitem
+    \startitem
+        {\smallcaps \darkgreen \samplefile{knuth}} \CrappyTraced
+    \stopitem
+\stopitemize
+
+\page
+
+\crappyspecstep  1pt \crappyspeccount 60 % 5.5
+\crappyspecstep  2pt \crappyspeccount 60 % 3.2
+\crappyspecstep  5pt \crappyspeccount 60 % 1.4
+\crappyspecstep 10pt \crappyspeccount 60 % 0.9
+
+\crappyspecstep  1pt \crappyspeccount 80 % 0.8
+\crappyspecstep  2pt \crappyspeccount 80 % 0.8
+\crappyspecstep  5pt \crappyspeccount 80 % 0.8
+\crappyspecstep 10pt \crappyspeccount 80 % 0.6
+
+% \crappyspecstep  1pt \crappyspeccount 120 % 0.25
+% \crappyspecstep  2pt \crappyspeccount 120 % 0.25
+% \crappyspecstep  5pt \crappyspeccount 120 % 0.25
+
+% \testfeatureonce{100}{\samplefile{tufte}\par\CrappyTraced} % \page \elapsedtime
+
+\stoptext

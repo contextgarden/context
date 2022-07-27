@@ -42,19 +42,33 @@
 % \setupbodyfont[bonum]   \getbuffer
 % \setupbodyfont[pagella] \getbuffer
 
-\Umathchardef \unaryminus     \mathunarycode \zerocount \privatecharactercode{unary minus}
-\Umathchardef \unaryplus      \mathunarycode \zerocount \privatecharactercode{unary plus}
-\Umathchardef \unaryplusminus \mathunarycode \zerocount \privatecharactercode{unary plus minus}
-\Umathchardef \unaryminusplus \mathunarycode \zerocount \privatecharactercode{unary minus plus}
+\immutable\Umathchardef \unaryminus     \mathunarycode \zerocount \privatecharactercode{unary minus}
+\immutable\Umathchardef \unaryplus      \mathunarycode \zerocount \privatecharactercode{unary plus}
+\immutable\Umathchardef \unaryplusminus \mathunarycode \zerocount \privatecharactercode{unary plus minus}
+\immutable\Umathchardef \unaryminusplus \mathunarycode \zerocount \privatecharactercode{unary minus plus}
 
 \permanent\protected\def\um {\mathortext\unaryminus    \textminus}
 \permanent\protected\def\up {\mathortext\unaryplus     \textplus}
 \permanent\protected\def\upm{\mathortext\unaryplusminus\textpm}
 \permanent\protected\def\ump{\mathortext\unaryminusplus\textmp}
 
-\permanent\protected\def\una#1{\mathatom class \mathunarycode   {#1}}
-\permanent\protected\def\bin#1{\mathatom class \mathbinarycode  {#1}}
-\permanent\protected\def\rel#1{\mathatom class \mathrelationcode{#1}}
-\permanent\protected\def\ord#1{\mathatom class \mathordinarycode{#1}}
+\permanent\protected\def\una#1{\mathatom \s!class \mathunarycode   {#1}}
+\permanent\protected\def\bin#1{\mathatom \s!class \mathbinarycode  {#1}}
+\permanent\protected\def\rel#1{\mathatom \s!class \mathrelationcode{#1}}
+\permanent\protected\def\ord#1{\mathatom \s!class \mathordinarycode{#1}}
+
+% $x + \+1$\par
+% $x + \-1$\par
+
+\immutable\Umathchardef\mathunaryplus     \mathunarycode\zerocount"002B % these will go to char-def.lua
+\immutable\Umathchardef\mathunaryminus    \mathunarycode\zerocount"2212 % these will go to char-def.lua
+\immutable\Umathchardef\mathunaryplusminus\mathunarycode\zerocount"00B1 % these will go to char-def.lua
+\immutable\Umathchardef\mathunaryminusplus\mathunarycode\zerocount"2213 % these will go to char-def.lua
+
+\permanent\protected\def\+{\mathortext\mathunaryplus     \textplus             }
+%permanent\protected\def\-{\mathortext\mathunaryminus    \textminus            }
+\permanent\protected\def\-{\mathortext\mathunaryminus    \explicitdiscretionary}
+\permanent\protected\def\±{\mathortext\mathunaryplusminus\textpm}
+\permanent\protected\def\∓{\mathortext\mathunaryminusplus\textmp}
 
 \protect

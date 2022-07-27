@@ -104,6 +104,9 @@
  % +\checkspaceitalickernmathcontrolcode    % old code path
    +\applyscriptitalickernmathcontrolcode
  % +\italicshapekernmathcontrolcode         % obsolete: instead of adding pre italic to the shift, inject a kern
+   +\analyzescriptnucleuscharmathcontrolcode
+   +\analyzescriptnucleuslistmathcontrolcode
+   +\analyzescriptnucleusboxmathcontrolcode
 \relax
 
 % \mathpenaltiesmode\plusone
@@ -3338,13 +3341,10 @@
 % \ruledhbox{$\mathtext{abc ffi}$}
 % \ruledhbox{$\mathword{abc ffi}$}
 
-% I need to decide:
-%
-%mathscriptboxmode    \zerocount % no kerning
-%mathscriptboxmode    \plusone   % lists
-\mathscriptboxmode    \plustwo   % lists and boxes
-\mathscriptcharmode   \plusone   % lists and boxes
 %mathscriptboxmode    \plusthree % lists and boxes with \boundary=1 (also for testing and demo)
+%mathscriptboxmode    \plusone   % collapsed and then removed, now control option
+%mathscriptcharmode   \plusone   % idem
+
 %mathrulethicknessmode\plusone   % adaptive
 
 \permanent\protected\def\mathtext  {\mathortext{\math_text_choice_font\relax}\hbox}

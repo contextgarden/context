@@ -461,7 +461,6 @@ function metapost.flush(specification,result)
                                         local object = objects[o]
                                         if stack == object.stacking then
                                             local objecttype = object.type
-                                         -- print(i,o,stack,objecttype)
                                             if objecttype == "fill" or objecttype == "outline" then
                                                 -- we use an indirect table as we want to overload
                                                 -- entries but this is not possible in userdata
@@ -708,7 +707,6 @@ function metapost.flush(specification,result)
                                          --         processspecial(object.prescript)
                                          --     end
                                          -- else
-                                            else
                                                 -- error
                                             end
                                         end

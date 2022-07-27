@@ -490,6 +490,30 @@ which of course needs to be a valid one.
 
 \stopsubsection
 
+\startsubsection[title={\prm {fontspecifiedname} and \prm {fontspecifiedsize}}]
+
+These two primitives provide some details about the given font:
+
+\startbuffer
+{\tf [\fontspecifiedname\font] [\the\fontspecifiedsize\font]}
+{\bf [\fontspecifiedname\font] [\the\fontspecifiedsize\font]}
+{\it [\fontspecifiedname\font] [\the\fontspecifiedsize\font]}
+\stopbuffer
+
+\typebuffer
+
+So for this document we get:
+
+\startlines
+\getbuffer
+\stoplines
+
+Of course this also depends on the macro package because that is responsible for
+implementing font support and because all that is driven by callbacks the
+reported name doesn't even have to resemble a font.
+
+\stopsubsection
+
 \startsubsection[title={\prm {glyphoptions}}]
 
 \topicindex {ligatures+suppress}
@@ -772,6 +796,52 @@ and because \CONTEXT\ already used the data field, that is what happened. The
 script and state fields are shorts, that is, they run from zero to \type {0xFFFF}
 where we assume that zero means \quote {unset}. Although they can be used for
 whatever purpose their use in \CONTEXT\ is fixed.
+
+\stopsubsection
+
+\startsubsection[title={Scaling math fonts with \prm {glyphtextscale} etc}]
+
+More details about fonts in math mode can be found in the chapter about math so
+here we just mention a few primitives. The internal \prm {glyphtextscale}, \prm
+{glyphscriptscriptscale} and \prm {glyphscriptscriptscale} registers can be set
+to enforce additional scaling of math, like this:
+
+\startbuffer
+$                            a = b^2 = c^{d^2}$
+$\glyphtextscale         800 a = b^2 = c^{d^2}$
+$\glyphscriptscale       800 a = b^2 = c^{d^2}$
+$\glyphscriptscriptscale 800 a = b^2 = c^{d^2}$
+\stopbuffer
+
+\typebuffer
+
+You can of course set them all in any mix as long as the value is larger than
+zero and doesn't exceed 1000. In \CONTEXT\ we use this for special purposes so
+don't mess with it there. as there can be side unexpected (but otherwise valid)
+side effects.
+
+\startlines
+\getbuffer
+\stoplines
+
+The next few reported values depend on the font setup. A math font can be loaded
+at a certain scale and further scaled on the fly. An open type math font comes with
+recommended script and scriptscript scales and gets passed to the engine scaled. The
+values reported by \prm {mathscale} are {\em additional} scales.
+
+\startbuffer
+$\the\mathscale\textfont        \zerocount$
+$\the\mathscale\scriptfont      \zerocount$
+$\the\mathscale\scriptscriptfont\zerocount$
+\stopbuffer
+
+\typebuffer
+
+In \CONTEXT\ we use this for some experiments (of which some made it into
+features) but discussing this fall behind this manual. You cannot set these
+values because the engine has to work with consistent settings and messing around
+with fonts during a run only works well if the backend also cooperates. Also the
+values only makes sense in the perspective of the used macro package.
 
 \stopsubsection
 

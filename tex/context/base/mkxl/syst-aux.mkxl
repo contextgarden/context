@@ -3188,8 +3188,6 @@
 %D We now use the macro stack which is somewhat leaner and meaner and a little
 %D faster too.
 
-% left overs: too much \protected here
-
 \newcount\outerrecurse
 \newcount\innerrecurse
 
@@ -3199,79 +3197,61 @@
 \mutable\let\recurseaction\relax
 \mutable\let\recursestring\empty
 
-% \let\syst_helpers_stepwise_next\relax
-
-% \protected\def\syst_helpers_stepwise_recurse#1#2#3% from to step
-%   {\ifnum#1>#2\relax
-%      \expandafter\syst_helpers_stepwise_recurse_nop
-%    \else
-%      \def\recurselevel{#1}%
-%      \doubleexpandafter\syst_helpers_stepwise_recurse_yes\expandafter
-%    \fi\expandafter{\the\numexpr\recurselevel+#3\relax}{#2}{#3}}
-
-\protected\def\syst_helpers_stepwise_recurse#1#2#3% from to step
-  {\ifnum#1>#2\relax
-     \expandafter\gobblefourarguments
-   \else
-     \def\recurselevel{#1}%
-%    \doubleexpandafter\syst_helpers_stepwise_recurse_yes\expandafter
-%  \fi\expandafter{\the\numexpr\recurselevel+#3\relax}{#2}{#3}}
-     \doubleexpandafter\syst_helpers_stepwise_recurse_yes
-   \fi\expandafter{\the\numexpr\recurselevel+#3\relax}{#2}{#3}}
-
-\protected\def\syst_helpers_stepwise_recurse_yes
-  {\syst_helpers_recurse_content
-   \syst_helpers_stepwise_recurse}
-
-\protected\def\syst_helpers_stepwise_reverse#1#2#3% from to step
-  {\ifnum#1<#2\relax
-%      \expandafter\syst_helpers_stepwise_recurse_nop
-     \expandafter\gobblefourarguments
-   \else
-     \def\recurselevel{#1}%
-     \innerrecurse#1\relax
-     \advance\innerrecurse#3\relax
-%      \doubleexpandafter\syst_helpers_stepwise_reverse_yes\expandafter
-%    \fi\expandafter{\the\innerrecurse}{#2}{#3}}
-     \doubleexpandafter\syst_helpers_stepwise_reverse_yes
-   \fi\expandafter{\the\numexpr\recurselevel+#3\relax}{#2}{#3}}
-
-\protected\def\syst_helpers_stepwise_reverse_yes
-  {\syst_helpers_recurse_content
-   \syst_helpers_stepwise_reverse}
-
-% \protected\def\syst_helpers_stepwise_exit
-%   {\syst_helpers_stepwise_recurse_nop\relax}
-
-\permanent\def\doexpandedrecurse#1#2% user macro (also was \doxprecurse)
-  {\ifnum#1>\zerocount
-     #2\expandafter\doexpandedrecurse\expandafter{\the\numexpr#1-\plusone\relax}{#2}%
-   \fi}
+%% \protected\def\syst_helpers_stepwise_recurse#1#2#3% from to step
+%%   {\ifnum#1>#2\relax
+%%      \expandafter\gobblefourarguments
+%%    \else
+%%      \def\recurselevel{#1}%
+%%      \doubleexpandafter\syst_helpers_stepwise_recurse_yes
+%%    \fi\expandafter{\the\numexpr\recurselevel+#3\relax}{#2}{#3}}
+%%
+%% \protected\def\syst_helpers_stepwise_recurse_yes
+%%   {\syst_helpers_recurse_content
+%%    \syst_helpers_stepwise_recurse}
+%%
+%% \protected\def\syst_helpers_stepwise_reverse#1#2#3% from to step
+%%   {\ifnum#1<#2\relax
+%%      \expandafter\gobblefourarguments
+%%    \else
+%%      \def\recurselevel{#1}%
+%%      \innerrecurse#1\relax
+%%      \advance\innerrecurse#3\relax
+%%      \doubleexpandafter\syst_helpers_stepwise_reverse_yes
+%%    \fi\expandafter{\the\numexpr\recurselevel+#3\relax}{#2}{#3}}
+%%
+%% \protected\def\syst_helpers_stepwise_reverse_yes
+%%   {\syst_helpers_recurse_content
+%%    \syst_helpers_stepwise_reverse}
+%%
+%% \permanent\def\doexpandedrecurse#1#2% user macro (also was \doxprecurse)
+%%   {\ifnum#1>\zerocount
+%%      #2\expandafter\doexpandedrecurse\expandafter{\the\numexpr#1-\plusone\relax}{#2}%
+%%    \fi}
 
 %D The next one might replace the above and provides the current step in \type {#1}
 %D like \type {\dorecurse} do, but it comes with a tiny performance hit.
 
-\installsystemnamespace{expandedrecurse}
-
-\mutable\let\m_expanded_recursed\gobbleoneargument
-
-\permanent\def\doexpandedrecursed#1#2% this might replace: \doexpandedrecurse
-  {\beginlocalcontrol
-   \localpushmacro\m_expanded_recursed
-   \def\m_expanded_recursed##1{#2}%
-   \endlocalcontrol
-   \syst_do_expanded_recursed{1}{#1}{#2}% no \plusone !
-   \beginlocalcontrol
-   \localpopmacro\m_expanded_recursed
-   \endlocalcontrol}
-
-\def\syst_do_expanded_recursed#1#2#3%
-  {\ifnum#1>#2\norelax
-     \expandafter\gobblethreearguments
-   \else
-     \m_expanded_recursed{#1}\doubleexpandafter\syst_do_expanded_recursed
-   \fi
-   {\the\numexpr#1+\plusone\relax}{#2}{#3}}
+%% \installsystemnamespace{expandedrecurse}
+%%
+%% \mutable\let\m_expanded_recursed\gobbleoneargument
+%%
+%% \permanent\def\doexpandedrecursed#1#2% this might replace: \doexpandedrecurse
+%%   {\beginlocalcontrol
+%%    \localpushmacro\m_expanded_recursed
+%%    \def\m_expanded_recursed##1{#2}%
+%%    \endlocalcontrol
+%%    \syst_do_expanded_recursed{1}{#1}{#2}% no \plusone !
+%%    \beginlocalcontrol
+%%    \localpopmacro\m_expanded_recursed
+%%    \endlocalcontrol}
+%%
+%% \def\syst_do_expanded_recursed#1#2#3%
+%%   {\ifnum#1>#2\norelax
+%%      \expandafter\gobblethreearguments
+%%    \else
+%%      \m_expanded_recursed{#1}\doubleexpandafter\syst_do_expanded_recursed
+%%    \fi
+%%    {\the\numexpr#1+\plusone\relax}{#2}{#3}}
 
 %D As we can see here, the simple command \type{\dorecurse} is a special case of the
 %D more general:
@@ -3290,31 +3270,31 @@
 %D
 %D Because the simple case (n=1) is used often, we implement it more efficiently:
 
-\permanent\protected\def\dorecurse#1%
-  {\ifcase#1\relax
-     \expandafter\gobbletwoarguments
-   \or
-     \expandafter\syst_helpers_recurse_y
-   \else
-     \expandafter\syst_helpers_recurse_x
-   \fi{#1}}
-
-\protected\def\syst_helpers_recurse_indeed#1#2% from to
-% {\ifnum#1>#2 %
-  {\ifnum#1>#2\relax
-     \expandafter\syst_helpers_recurse_indeed_nop
-   \else
-     \def\recurselevel{#1}%
-     \innerrecurse#1\advance\innerrecurse\plusone
-     \doubleexpandafter\syst_helpers_recurse_indeed_yes
-   \fi\expandafter{\the\innerrecurse}{#2}}
-
-\protected\def\syst_helpers_recurse_indeed_yes
-  {\syst_helpers_recurse_content
-   \syst_helpers_recurse_indeed}
-
-\protected\def\syst_helpers_recurse_indeed_nop#0#0#0%
-  {}
+%% \permanent\protected\def\dorecurse#1%
+%%   {\ifcase#1\relax
+%%      \expandafter\gobbletwoarguments
+%%    \or
+%%      \expandafter\syst_helpers_recurse_y
+%%    \else
+%%      \expandafter\syst_helpers_recurse_x
+%%    \fi{#1}}
+%%
+%% \protected\def\syst_helpers_recurse_indeed#1#2% from to
+%% % {\ifnum#1>#2 %
+%%   {\ifnum#1>#2\relax
+%%      \expandafter\syst_helpers_recurse_indeed_nop
+%%    \else
+%%      \def\recurselevel{#1}%
+%%      \innerrecurse#1\advance\innerrecurse\plusone
+%%      \doubleexpandafter\syst_helpers_recurse_indeed_yes
+%%    \fi\expandafter{\the\innerrecurse}{#2}}
+%%
+%% \protected\def\syst_helpers_recurse_indeed_yes
+%%   {\syst_helpers_recurse_content
+%%    \syst_helpers_recurse_indeed}
+%%
+%% \protected\def\syst_helpers_recurse_indeed_nop#0#0#0%
+%%   {}
 
 %D \macros
 %D   {dowith}
@@ -3361,8 +3341,12 @@
   {\def\recurselevel{#1}%
    \expandafter\syst_helpers_loop_yes\expandafter{\the\numexpr\recurselevel+\plusone\relax}}
 
+%% \protected\def\syst_helpers_loop_yes
+%%   {\syst_helpers_recurse_content
+%%    \endofloop}
+
 \protected\def\syst_helpers_loop_yes
-  {\syst_helpers_recurse_content
+  {\normalexpanded{\recurseaction{\recurselevel}{\the\outerrecurse}}%
    \endofloop}
 
 \protected\def\syst_helpers_loop_nop#0%
@@ -3412,78 +3396,51 @@
 %D \dorecurse{3}{\expanded{\definesymbol[test-\recurselevel][xx-\recurselevel]}}
 %D \stoptyping
 
-\def\syst_helpers_recurse_content
-  {\normalexpanded{\recurseaction{\recurselevel}{\the\outerrecurse}}}
-
-\protected\def\syst_helpers_recurse_x#1#2%
-  {\global\advance\outerrecurse\plusone
-   \globalpushmacro\recurseaction
-   \globalpushmacro\recurselevel
-   \protected\gdef\recurseaction##1##2{#2}%
-   \expandafter\syst_helpers_recurse_indeed\expandafter1\expandafter{\number#1}%
-   \globalpopmacro\recurselevel
-   \globalpopmacro\recurseaction
-   \global\advance\outerrecurse\minusone}
-
-\protected\def\syst_helpers_recurse_y#1#2%
-  {\global\advance\outerrecurse\plusone
-   \globalpushmacro\recurseaction
-   \globalpushmacro\recurselevel
-   \let\recurselevel\!!plusone
-   \protected\gdef\recurseaction##1##2{#2}%
-   \syst_helpers_recurse_content
-   \globalpopmacro\recurselevel
-   \globalpopmacro\recurseaction
-   \global\advance\outerrecurse\minusone}
-
-% \protected\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
-%   {\global\advance\outerrecurse \plusone
-%    \globalpushmacro\recurseaction
-%    \globalpushmacro\recurselevel
-%    \protected\gdef\recurseaction##1##2{#4}%
-%    \normalexpanded{\ifcmpnum#3\zerocount
-%      \ifnum#1<#2\relax\relax % so we catch \number\numexpr xx without \relax's
-%        \syst_helpers_stepwise_exit
-%      \else
-%        \syst_helpers_stepwise_reverse
-%      \fi
-%    \or
-%      \syst_helpers_stepwise_exit
-%    \or
-%      \ifnum#2<#1\relax\relax % so we catch \number\numexpr xx without \relax's
-%        \syst_helpers_stepwise_exit
-%      \else
-%        \syst_helpers_stepwise_recurse
-%      \fi
-%    \fi{\number#1}{\number#2}{\number#3}}%
-%    \globalpopmacro\recurselevel
-%    \globalpopmacro\recurseaction
-%    \global\advance\outerrecurse\minusone}
-
-\permanent\protected\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4 ... todo: remove unused helpers
-  {\global\advance\outerrecurse \plusone
-   \globalpushmacro\recurseaction
-   \globalpushmacro\recurselevel
-   \protected\gdef\recurseaction##1##2{#4}%
-   \normalexpanded{\ifcmpnum#3\zerocount
-     \ifnum#1<#2\relax\relax % so we catch \number\numexpr xx without \relax's
-       \doubleexpandafter\gobbletwoarguments
-     \else
-       \tripleexpandafter\syst_helpers_stepwise_reverse
-     \fi
-   \or
-     \doubleexpandafter\gobbletwoarguments
-   \orelse\ifnum#2<#1\relax\relax % so we catch \number\numexpr xx without \relax's
-     \doubleexpandafter\gobbletwoarguments
-   \else
-     \doubleexpandafter\syst_helpers_stepwise_recurse
-   \fi\normalexpanded{{\number#1}{\number#2}{\number#3}}}%
-   \globalpopmacro\recurselevel
-   \globalpopmacro\recurseaction
-   \global\advance\outerrecurse\minusone}
-
-% \protected\def\syst_helpers_stepwise_recurse_nop#0#0#0#0%
-%   {}
+%% \def\syst_helpers_recurse_content
+%%   {\normalexpanded{\recurseaction{\recurselevel}{\the\outerrecurse}}}
+%%
+%% \protected\def\syst_helpers_recurse_x#1#2%
+%%   {\global\advance\outerrecurse\plusone
+%%    \globalpushmacro\recurseaction
+%%    \globalpushmacro\recurselevel
+%%    \protected\gdef\recurseaction##1##2{#2}%
+%%    \expandafter\syst_helpers_recurse_indeed\expandafter1\expandafter{\number#1}%
+%%    \globalpopmacro\recurselevel
+%%    \globalpopmacro\recurseaction
+%%    \global\advance\outerrecurse\minusone}
+%%
+%% \protected\def\syst_helpers_recurse_y#1#2%
+%%   {\global\advance\outerrecurse\plusone
+%%    \globalpushmacro\recurseaction
+%%    \globalpushmacro\recurselevel
+%%    \let\recurselevel\!!plusone
+%%    \protected\gdef\recurseaction##1##2{#2}%
+%%    \syst_helpers_recurse_content
+%%    \globalpopmacro\recurselevel
+%%    \globalpopmacro\recurseaction
+%%    \global\advance\outerrecurse\minusone}
+%%
+%% \permanent\protected\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4 ... todo: remove unused helpers
+%%   {\global\advance\outerrecurse \plusone
+%%    \globalpushmacro\recurseaction
+%%    \globalpushmacro\recurselevel
+%%    \protected\gdef\recurseaction##1##2{#4}%
+%%    \normalexpanded{\ifcmpnum#3\zerocount
+%%      \ifnum#1<#2\relax\relax % so we catch \number\numexpr xx without \relax's
+%%        \doubleexpandafter\gobbletwoarguments
+%%      \else
+%%        \tripleexpandafter\syst_helpers_stepwise_reverse
+%%      \fi
+%%    \or
+%%      \doubleexpandafter\gobbletwoarguments
+%%    \orelse\ifnum#2<#1\relax\relax % so we catch \number\numexpr xx without \relax's
+%%      \doubleexpandafter\gobbletwoarguments
+%%    \else
+%%      \doubleexpandafter\syst_helpers_stepwise_recurse
+%%    \fi\normalexpanded{{\number#1}{\number#2}{\number#3}}}%
+%%    \globalpopmacro\recurselevel
+%%    \globalpopmacro\recurseaction
+%%    \global\advance\outerrecurse\minusone}
 
 \newcount\fastloopindex
 \newcount\fastloopfinal
@@ -3511,6 +3468,67 @@
      \advance\fastloopindex\plusone
      \expandafter\syst_helpers_fast_loop_cs_step
    \fi}
+
+%D Here are the more modern implementations:
+
+\permanent\protected\def\installmacrostack#1%
+  {\ifdefined#1\else\mutable\let#1\empty\fi
+   \protected\gdefcsname push_macro_\csstring#1\endcsname{\localpushmacro#1}%
+   \protected\gdefcsname  pop_macro_\csstring#1\endcsname{\localpopmacro #1}}
+
+\permanent\protected\def\installglobalmacrostack#1%
+  {\ifdefined#1\else\mutable\glet#1\empty\fi
+   \protected\gdefcsname push_macro_\csstring#1\endcsname{\globalpushmacro#1}%
+   \protected\gdefcsname  pop_macro_\csstring#1\endcsname{\globalpopmacro #1}}
+
+% \showmacrostack can be used to see if there are different entries
+
+\installglobalmacrostack \recurseaction
+\installglobalmacrostack \recurselevel
+\installglobalmacrostack \recursedepth
+
+\permanent\protected\def\dostepwiserecurse#1#2#3#4%
+  {\push_macro_recurseaction
+   \push_macro_recurselevel
+   \push_macro_recursedepth
+   \protected\gdef\recurseaction##1##2{#4}%
+   \localcontrolledloop=#1=#2=#3%
+     {\edef\recurselevel{\the\currentloopiterator}%
+      \edef\recursedepth{\the\currentloopnesting}%
+      \normalexpanded{\recurseaction{\recurselevel}{\recursedepth}}}%
+   \pop_macro_recursedepth
+   \pop_macro_recurselevel
+   \pop_macro_recurseaction}
+
+\permanent\protected\def\dorecurse#1#2%
+  {\push_macro_recurseaction
+   \push_macro_recurselevel
+   \push_macro_recursedepth
+   \protected\gdef\recurseaction##1##2{#2}%
+   \localcontrolledloop=\plusone=#1=\plusone
+     {\edef\recurselevel{\the\currentloopiterator}%
+      \edef\recursedepth{\the\currentloopnesting}%
+      \normalexpanded{\recurseaction{\recurselevel}{\recursedepth}}}%
+   \pop_macro_recursedepth
+   \pop_macro_recurselevel
+   \pop_macro_recurseaction}
+
+\permanent\def\doexpandedrecurse#1#2% user macro (also was \doxprecurse)
+  {\expandedloop\plusone#1\plusone{#2}}
+
+\mutable\let\m_expanded_recursed\gobbleoneargument
+
+\installmacrostack\m_expanded_recursed
+
+\permanent\def\doexpandedrecursed#1#2% this might replace: \doexpandedrecurse
+  {\beginlocalcontrol
+   \push_macro_m_expanded_recursed
+   \def\m_expanded_recursed##1{#2}%
+   \endlocalcontrol
+   \expandedloop\plusone#1\plusone{\expandafter\m_expanded_recursed\expandafter{\the\currentloopiterator}}%
+   \beginlocalcontrol
+   \pop_macro_m_expanded_recursed
+   \endlocalcontrol}
 
 % Helper:
 
@@ -5888,13 +5906,29 @@
 %D   {\processcontent{stophans}\test{\message{\test}\wait}}
 %D \stoptyping
 
-\permanent\protected\def\processcontent#1%
-  {\begingroup\expandafter\syst_helpers_process_content\csname#1\endcsname}
+% \starttabulate[|||]
+%     \NC \type{#} \NC # \NC \NR
+% \stoptabulate
+%
+% \def\test#1%
+%   {\starttabulate[|||]
+%      \NC \type{#1} \NC #1 \NC \NR
+%    \stoptabulate}
+%
+% \test{!}
+
+%% \permanent\protected\def\processcontent#1%
+%%   {\begingroup\expandafter\syst_helpers_process_content\csname#1\endcsname}
 
 \protected\def\syst_helpers_process_content#1#2#3%
   {\protected\def\syst_helpers_process_content##1#1%
      {\endgroup\def#2{##1}#3}%
    \syst_helpers_process_content}
+
+\permanent\protected\def\processcontent#1%
+  {\begingroup
+   \catcode\hashasciicode\othercatcode
+   \expandafter\syst_helpers_process_content\csname#1\endcsname}
 
 %D \macros
 %D   {dogobblesingleempty, dogobbledoubleempty}

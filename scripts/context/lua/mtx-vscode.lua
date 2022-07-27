@@ -3256,15 +3256,19 @@ function scripts.vscode.ls(forcedinterface)
             elseif tg == "assignments" then
                 local a = { }
                 for e in xml.collected(e,"/parameter") do
-                    local c = { e.at.name, "=" }
+                 -- local c = { e.at.name, "=" }
+                    local c = { }
                     for e in xml.collected(e,"/constant") do
                         c[#c+1] = e.at.type
                     end
-                    if #c > 0 then
-                        a[#a+1] = {
-                            name = concat(c, " ")
-                        }
-                    end
+                 -- if #c > 0 then
+                 --     a[#a+1] = {
+                 --         name = concat(c, " ") -- maybe "|"
+                 --     }
+                 -- end
+                    a[#a+1] = {
+                        name = e.at.name .. "=" .. concat(c, " ") -- maybe "|"
+                    }
                 end
                 p[#p+1] = {
                     type       = tg,
@@ -3461,7 +3465,7 @@ end
 
 if environment.arguments.generate then
     scripts.vscode.generate()
-elseif environment.vscodels then
+elseif environment.arguments.lsfile then
     scripts.vscode.ls()
 elseif environment.arguments.start then
     scripts.vscode.start()
@@ -3471,6 +3475,6 @@ else
     application.help()
 end
 
-scripts.vscode.ls()
+-- scripts.vscode.ls()
 
 -- scripts.vscode.generate([[t:/vscode/data/context/extensions]])

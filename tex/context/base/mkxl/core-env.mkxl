@@ -380,8 +380,8 @@
 \permanent\def\fastsetupwithargument         #1{\csname\??setup:#1\endcsname}    % swapped per 2015-08-30
 \permanent\def\fastsetupwithargumentswapped#1#2{\csname\??setup:#2\endcsname{#1}}% swapped per 2015-09-05
 
-% the next one is meant for \c!setups situations, hence the check for
-% a shortcut
+%D The next one is meant for \c!setups situations, hence the check for a
+%D shortcut.
 
 \let\m_syst_setups_asked\empty
 
@@ -408,11 +408,20 @@
 
 \permanent\def\autosetups#1{\clf_autosetups{#1}} % todo: public implementor
 
-\permanent\edef\setupwithargument#1% saves a few expansions and is faster
-  {\noexpand\csname\??setup:\noexpand\ifcsname\??setup:#1\endcsname#1\noexpand\else\??empty\noexpand\fi\endcsname}
+%% \permanent\edef\setupwithargument#1% saves a few expansions and is faster
+%%   {\noexpand\csname\??setup:\noexpand\ifcsname\??setup:#1\endcsname#1\noexpand\else\??empty\noexpand\fi\endcsname}
+%%
+%% \permanent\edef\setupwithargumentswapped#1#2% saves a few expansions (can be \let)
+%%   {\noexpand\csname\??setup:\noexpand\ifcsname\??setup:#2\endcsname#2\noexpand\else\??empty\noexpand\fi\endcsname{#1}}
 
-\permanent\edef\setupwithargumentswapped#1#2% saves a few expansions (can be \let)
-  {\noexpand\csname\??setup:\noexpand\ifcsname\??setup:#2\endcsname#2\noexpand\else\??empty\noexpand\fi\endcsname{#1}}
+%D We can gain a bit more but as usual it's not noticeable at all in production runs. We use
+%D this one a lot in the \XML\ code.
+
+% \permanent\def\setupwithargument          #1{\futurecsname\gobbleoneargument\??setup:#1\endcsname}
+% \permanent\def\setupwithargumentswapped #1#2{\futurecsname\gobbleoneargument\??setup:#2\endcsname{#1}}
+
+\permanent\edef\setupwithargument         #1{\noexpand\futurecsname\noexpand\gobbleoneargument\??setup:#1\endcsname}
+\permanent\edef\setupwithargumentswapped#1#2{\noexpand\futurecsname\noexpand\gobbleoneargument\??setup:#2\endcsname{#1}}
 
 \aliased\let\directsetup\syst_setups
 \aliased\let\texsetup   \syst_setups % nicer than \directsetup and more en par with xmlsetup and luasetup

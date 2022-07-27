@@ -562,4 +562,11 @@
      \synchronizebigmath
    \fi}
 
+%D This is an experiment!
+
+\permanent\protected\def\mx {\ifmmode\scaledmathstyle\dimexpression\plusthousand*(\xtextface /\textface)\relax\fi}
+\permanent\protected\def\mxx{\ifmmode\scaledmathstyle\dimexpression\plusthousand*(\xxtextface/\textface)\relax\fi}
+
+\permanent\protected\def\setmscale#1{\ifmmode\scaledmathstyle\numericscale#1\relax\fi}
+
 \protect \endinput

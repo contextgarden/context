@@ -569,26 +569,28 @@
 \stopxmlsetups
 
 \startxmlsetups mml:cn:integer
-    \edef\mmlintegerbase{\xmlattdef{#1}{base}{}}
-    \ifx\mmlintegerbase\empty
-        \xmlflush{#1}
-    \else
-        \doifelse \MMLbasesymbol \v!no {
-            \MMLcCNbasedata{\xmlflush{#1}}
-        } {
-            \MMLcCNbasedata{\xmlflush{#1}}\normalsubscript{
-                \hbox {\startimath
-                    \mr
-                    \scriptscriptstyle
-                    \processaction
-                        [\MMLbasesymbol]
-                        [\v!characters=>\MMLcCNbasestring BODH,
-                               \v!text=>\MMLcCNbasestring{BIN}{OCT}{DEC}{HEX},
-                            \s!unknown=>\mmlintegerbase]
-                \stopimath}
+    \mathatom class \mathdigitcode \bgroup
+        \edef\mmlintegerbase{\xmlattdef{#1}{base}{}}
+        \ifx\mmlintegerbase\empty
+            \xmlflush{#1}
+        \else
+            \mtext {
+                \nospacing
+                \MMLcCNbasedata{\xmlflush{#1}}
             }
-        }
-    \fi
+            \doifnot \MMLbasesymbol \v!no {
+                \normalsubscript {
+                    \mtext {
+                        \processaction
+                            [\MMLbasesymbol]
+                            [\v!characters=>\MMLcCNbasestring BODH,
+                                   \v!text=>\MMLcCNbasestring{BIN}{OCT}{DEC}{HEX},
+                                \s!unknown=>\mmlintegerbase]
+                    }
+                }
+            }
+        \fi
+    \egroup
 \stopxmlsetups
 
 \def\MMLcCNbasedata#1%

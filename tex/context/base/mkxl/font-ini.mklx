@@ -612,7 +612,8 @@
 
 \def\font_basics_check_text_bodyfont_step#whatever#body% size can be empty (checking needed as \bf is already defined)
   {\ifcsname#whatever\endcsname\else
-     \permanent\setugvalue{#whatever}{#body}%
+    %\permanent\setugvalue{#whatever}{#body}%
+     \permanent\protected\gdefcsname#whatever\endcsname{#body}%
    \fi}
 
 \def\font_basics_check_text_bodyfont#style#alternative#size% size can be empty (checking needed as \bf is already defined)

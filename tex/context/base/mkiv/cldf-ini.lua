@@ -798,7 +798,7 @@ local function writer(parent,command,...) -- already optimized before call
                     flush(currentcatcodes,"}")
                 end
             elseif typ == "number" then
-                -- numbers never have funny catcodesz
+                -- numbers never have funny catcodes
                 flush(currentcatcodes,"{",ti,"}")
             elseif typ == "table" then
                 local tn = #ti
@@ -852,7 +852,7 @@ local function writer(parent,command,...) -- already optimized before call
                     else
                         flush(currentcatcodes,"[",tj,"]")
                     end
-                else -- is concat really faster than flushes here? probably needed anyway (print artifacts)
+                else
                     flush(currentcatcodes,"[")
                     for j=1,tn do
                         local tj = ti[j]

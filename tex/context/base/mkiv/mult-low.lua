@@ -111,6 +111,7 @@ return {
         "reboxcharitalickernmathcontrolcode", "applyboxeditalickernmathcontrolcode", "staircasekernmathcontrolcode",
         "applytextitalickernmathcontrolcode", "applyscriptitalickernmathcontrolcode",
         "checkspaceitalickernmathcontrolcode", "checktextitalickernmathcontrolcode",
+        "analyzescriptnucleuscharmathcontrolcode", "analyzescriptnucleuslistmathcontrolcode", "analyzescriptnucleusboxmathcontrolcode",
         --
         "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noexpansionglyphoptioncode", "noprotrusionglyphoptioncode",
         "noleftkerningglyphoptioncode", "noleftligaturingglyphoptioncode", "norightkerningglyphoptioncode", "norightligaturingglyphoptioncode",
