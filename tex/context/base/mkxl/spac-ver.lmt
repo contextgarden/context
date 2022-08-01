@@ -2167,6 +2167,7 @@ do
             else
                 head = glue_data
             end
+            -- texsetnest("top","prevdepth",0)
             texnest[texnest.ptr].prevdepth = 0 -- appending to the list bypasses tex's prevdepth handler
         end
         if trace then

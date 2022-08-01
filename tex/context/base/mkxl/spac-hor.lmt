@@ -36,3 +36,35 @@ interfaces.implement {
         end
     end,
 }
+
+local nuts = nodes.nuts
+local tonut = nodes.tonut
+local traverseglue = nuts.traversers.glue
+local setwidth = nodes.nuts.setwidth
+local indentskip_code = nodes.gluecodes.indentskip
+local texgetnest = tex.getnest
+
+local function lateindent(amount)
+    local head = tonut(texgetnest("top","head"))
+    if head then
+        for n, s in traverseglue, head do
+            if s == indentskip_code then
+                setwidth(n,amount or 0)
+            end
+        end
+    end
+end
+
+interfaces.implement {
+    name      = "lateindent",
+    public    = true,
+    protected = "true",
+    arguments = "dimension",
+    actions   = lateindent,
+}
+interfaces.implement {
+    name      = "lateundent",
+    public    = true,
+    protected = "true",
+    actions   = lateindent,
+}

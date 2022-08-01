@@ -418,8 +418,9 @@
 
 %D In the end Mikael and I prefer this but we need a high level interface:
 
-% \setmathignore\Umathspacebeforescript\plusone
-% \setmathignore\Umathspaceafterscript \plusone
+% \setmathignore\Umathspacebeforescript  \plusone
+% \setmathignore\Umathspaceafterscript   \plusone
+% \setmathignore\Umathradicaldegreebefore\plusone % done in math-rad.mklx
 
 \setmathignore \Umathspacebeforescript\zerocount
 \setmathignore \Umathspaceafterscript \zerocount
@@ -542,11 +543,19 @@
 \setmathoptions\mathfractioncode\numexpr
     \defaultmathclassoptions
    +\raiseprimeclassoptioncode
+   +\carryoverlefttopkernclassoptioncode
+   +\carryoverleftbottomkernclassoptioncode
+   +\carryoverrighttopkernclassoptioncode
+   +\carryoverrightbottomkernclassoptioncode
 \relax
 
 \setmathoptions\mathradicalcode\numexpr
     \defaultmathclassoptions
    +\raiseprimeclassoptioncode
+   +\carryoverlefttopkernclassoptioncode
+   +\carryoverleftbottomkernclassoptioncode
+   +\carryoverrighttopkernclassoptioncode
+   +\carryoverrightbottomkernclassoptioncode
 \relax
 
 \setmathoptions\mathaccentcode\numexpr
@@ -564,11 +573,11 @@
    +\rightbottomkernclassoptioncode
 \relax
 
-\setmathoptions\mathbegincode
+\setmathoptions\mathbegincode\numexpr
     \nopostslackclassoptioncode
 \relax
 
-\setmathoptions\mathendcode
+\setmathoptions\mathendcode\numexpr
     \nopreslackclassoptioncode
 \relax
 
@@ -576,9 +585,28 @@
 % subtypes. If we don't set the following we should actually also define the
 % spacing rules.
 
-\setmathoptions\mathfencedcode
+\setmathoptions\mathfencedcode\numexpr
     \unpackclassoptioncode
+   +\carryoverlefttopkernclassoptioncode
+   +\carryoverleftbottomkernclassoptioncode
+   +\carryoverrighttopkernclassoptioncode
+   +\carryoverrightbottomkernclassoptioncode
 \relax
+
+% test case for \lefttopkernclassoptioncode and \leftbottomkernclassoptioncode in cambria close:
+%
+% \setupbodyfont[cambria]
+% %\enableexperiments[math.extensibles]
+% %\disableexperiments[math.extensibles]
+%
+% \startTEXpage[offset=1dk]
+%     \startformula \showglyphs
+%         \left\{ \mathatom class \mathfractioncode {\raise .6ex\hbox{\blackrule[color=blue,  height=3cm,depth=3cm]}} \right\} ^1 _4 +
+%         \left\( \mathatom class \mathfractioncode {\raise .6ex\hbox{\blackrule[color=green, height=4cm,depth=4cm]}} \right\) ^2 _3 -
+%         \left\{ \mathatom class \mathfractioncode {\raise .6ex\hbox{\blackrule[color=red,   height=2cm,depth=2cm]}} \right\} ^3 _2 +
+%         \left\( \mathatom class \mathfractioncode {\raise .6ex\hbox{\blackrule[color=yellow,height=1cm,depth=1cm]}} \right\) ^4 _1
+%     \stopformula
+% \stopTEXpage
 
 %D For now \unknown (todo: make it adapt to style but we're in text anyway)
 

@@ -306,6 +306,7 @@ local remappers         = allocate()   figures.remappers   = remappers
 local converters        = allocate()   figures.converters  = converters
 local identifiers       = allocate()   figures.identifiers = identifiers
 local programs          = allocate()   figures.programs    = programs
+local conversions       = allocate()   figures.conversions = conversions
 
 local defaultformat <const> = "pdf"
 local defaultprefix <const> = "m_k_i_v_"
@@ -681,6 +682,13 @@ function figures.current()
     return callstack[#callstack] or lastfiguredata
 end
 
+function figures.setconversion(format,conversion)
+    if conversion == "reset" or conversion == "" then
+        conversion = nil
+    end
+    conversions[format] = conversion
+end
+
 local function get(category,tag,default)
     local value = lastfiguredata and lastfiguredata[category]
     value = value and value[tag]
@@ -781,6 +789,9 @@ local function register(askedname,specification)
             if not newformat or newformat == "" then
                 newformat = defaultformat
             end
+            --
+            conversion = conversions[format] or conversion
+            --
             if trace_conversion then
                 report_inclusion("checking conversion of %a, fullname %a, old format %a, new format %a, conversion %a, resolution %a, crop %a, arguments %a",
                     askedname,
@@ -2206,6 +2217,12 @@ implement {
             ctx_doexternalfigurerepeat(f[1],f[2],f[3],n)
         end
     end
+}
+
+implement {
+    name      = "setfigureconversion",
+    arguments = "2 strings",
+    actions   = figures.setconversion
 }
 
 -- for the moment we keep this here:

@@ -341,6 +341,41 @@ side effects have been explored. You can find some experimental use cases in
 
 \stopsection
 
+\startsection[title={Controlling hyphenation}]
+
+\startsubsection[title={\prm {hyphenationmin}}]
+
+\topicindex {languages}
+\topicindex {hyphenation}
+
+This primitive can be used to set the minimal word length, so setting it to a value
+of~$5$ means that only words of 6 characters and more will be hyphenated, of course
+within the constraints of the \prm {lefthyphenmin} and \prm {righthyphenmin}
+values (as stored in the glyph node). This primitive accepts a number and stores
+the value with the language.
+
+\stopsubsection
+
+\startsubsection[title={\prm {boundary}, \prm {noboundary}, \prm {protrusionboundary} and \prm {wordboundary}}]
+
+The \prm {noboundary} command is used to inject a whatsit node but now injects a normal
+node with type \nod {boundary} and subtype~0. In addition you can say:
+
+\starttyping
+x\boundary 123\relax y
+\stoptyping
+
+This has the same effect but the subtype is now~1 and the value~123 is stored.
+The traditional ligature builder still sees this as a cancel boundary directive
+but at the \LUA\ end you can implement different behaviour. The added benefit of
+passing this value is a side effect of the generalization. The subtypes~2 and~3
+are used to control protrusion and word boundaries in hyphenation and have
+related primitives.
+
+\stopsubsection
+
+\stopsection
+
 \startsection[title={The main control loop}]
 
 \topicindex {main loop}
@@ -771,7 +806,7 @@ ligatures are used. Of course kerning also complicates matters here.
 
 \startsection[title={The \type {language} library}][library=lang]
 
-\subsection {\type {new} and \type {id}}
+\startsubsection[title={\type {new} and \type {id}}]
 
 \topicindex {languages+library}
 
@@ -800,7 +835,9 @@ to the internal language with that id number.
 The number returned is the internal \prm {language} id number this object refers
 to.
 
-\subsection {\type {hyphenation}}
+\stopsubsection
+
+\startsubsection[title={\type {hyphenation}}]
 
 \libindex {hyphenation}
 
@@ -814,7 +851,9 @@ language.hyphenation(<language> l, <string> n)
 When no string is given (the first example) a string with all exceptions is
 returned.
 
-\subsection {\type {clearhyphenation} and \type {clean}}
+\stopsubsection
+
+\startsubsection[title={\type {clearhyphenation} and \type {clean}}]
 
 \libindex {clearhyphenation}
 \libindex {clean}
@@ -839,7 +878,9 @@ syntax of the argument string is explained in \in {section} [patternsexceptions]
 This function is useful if you want to do something else based on the words in a
 dictionary file, like spell|-|checking.
 
-\subsection {\type {patterns} and \type {clearpatterns}}
+\stopsubsection
+
+\startsubsection[title={\type {patterns} and \type {clearpatterns}}]
 
 \libindex {patterns}
 \libindex {clearpatterns}
@@ -859,7 +900,9 @@ language.clearpatterns(<language> l)
 
 This can be used to clear the pattern dictionary for a language.
 
-\subsection {\type {hyphenationmin}}
+\stopsubsection
+
+\startsubsection[title={\type {hyphenationmin}}]
 
 \libindex {hyphenationmin}
 
@@ -871,7 +914,9 @@ n = language.hyphenationmin(<language> l)
 language.hyphenationmin(<language> l, <number> n)
 \stopfunctioncall
 
-\subsection {\type {[pre|post][ex|]hyphenchar}}
+\stopsubsection
+
+\startsubsection[title={\type {[pre|post][ex|]hyphenchar}}]
 
 \libindex {prehyphenchar}
 \libindex {posthyphenchar}
@@ -902,7 +947,9 @@ These gets or set the \quote {pre|-|break} and \quote {post|-|break} hyphen
 characters for explicit hyphenation in this language. Both are initially
 decimal~0 (indicating emptiness).
 
-\subsection {\type {hyphenate}}
+\stopsubsection
+
+\startsubsection[title={\type {hyphenate}}]
 
 \libindex {hyphenate}
 
@@ -921,7 +968,9 @@ nodes with the node subtype having the value \type {1}. Glyph modes with
 different subtypes are not processed. See \in {section} [charsandglyphs] for
 more details.
 
-\subsection {\type {[set|get]hjcode}}
+\stopsubsection
+
+\startsubsection[title={\type {[set|get]hjcode}}]
 
 \libindex {sethjcode}
 \libindex {gethjcode}
@@ -935,6 +984,35 @@ language.sethjcode(<language> l, <number> char, <number> usedchar)
 
 When you set a hjcode the current sets get initialized unless the set was already
 initialized due to \prm {savinghyphcodes} being larger than zero.
+
+\subsection{\prm {hccode} and \type {[set|get]hccode}}
+
+A character can be set to non zero to indicate that it should be regarded as
+value visible hyphenation point. These examples show how that works (it si the
+second bit in \prm {hyphenationmode} that does the magic but we set them all
+here):
+
+\startbuffer
+{\hsize 1mm \hccode"2014 \zerocount  \hyphenationmode "0000000 xxx\emdash xxx \par}
+{\hsize 1mm \hccode"2014 "2014\relax \hyphenationmode "0000000 xxx\emdash xxx \par}
+
+{\hsize 1mm \hccode"2014 \zerocount  \hyphenationmode "FFFFFFF xxx\emdash xxx \par}
+{\hsize 1mm \hccode"2014 "2014\relax \hyphenationmode "FFFFFFF xxx\emdash xxx \par}
+
+{\hyphenationmode "0000000 xxx--xxx---xxx \par}
+{\hyphenationmode "FFFFFFF xxx--xxx---xxx \par}
+\stopbuffer
+
+\typebuffer
+
+Here we assign the code point because who knows what future extensions will
+bring. As with the other codes you can also set them from \LUA. The feature is
+experimental and might evolve when \CONTEXT\ users come up with reasonable
+demands.
+
+\startpacked \getbuffer \stoppacked
+
+\stopsubsection
 
 \stopsection
 

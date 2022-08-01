@@ -1268,4 +1268,13 @@
 \permanent\def\mplocation#1{\ifcsname\??mplocation#1\endcsname\lastnamedcs\else0\fi}
 %permanent\def\mplocation#1{\csname\??mplocation\ifcsname\??mplocation#1\endcsname#1\else\v!left\fi\endcsname}
 
+% new: \lateindent \lateundent
+
+% \parinitleftskip1cm \parindent 1cm \indent test \par
+% \parinitleftskip1cm \parindent 1cm \undent test \par
+% \parinitleftskip1cm \parindent 1cm \indent \undent test \par
+% \parinitleftskip1cm \parindent 1cm \indent \strut \undent test \par
+% \parinitleftskip1cm \parindent 1cm \strut \lateindent 2cm test \par
+% \parinitleftskip1cm \parindent 1cm \strut \lateindent 2cm test \lateundent \par
+
 \protect \endinput

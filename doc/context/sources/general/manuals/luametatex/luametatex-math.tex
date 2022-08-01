@@ -848,6 +848,12 @@ feature.
 These additional commands are not all that valuable on their own, but they come
 in handy as arguments to the math parameter settings that will be added shortly.
 
+Because internally the eight styles are represented as numbers some of the new
+primnitives that relate to them also work with numbers and often you can use them
+mixed. The \prm {tomathstyle} prefix converts a symbolic style into a number so
+\typ {\number \tomathstyle \crampedscriptstyle} gives~\number \tomathstyle
+\crampedscriptstyle.
+
 In Eijkhouts \quotation {\TEX\ by Topic} the rules for handling styles in scripts
 are described as follows:
 
@@ -1004,19 +1010,18 @@ undefined will get presets, quite likely zero):
 \DB primitive name                             \BC description \NC \NR
 \TB
 \NC \prm {Umathconnectoroverlapmin}            \NC \NC \NR
-\NC \prm {Umathsubscriptsuperscriptshiftdown}  \NC \NC \NR
-\NC \prm {Umathfractiondelsize}                \NC \NC \NR
+\NC \prm {Umathsubsupshiftdown}                \NC \NC \NR
 \NC \prm {Umathfractiondelsize}                \NC \NC \NR
 \NC \prm {Umathnolimitsupfactor}               \NC a multiplier for the way limits are shifted up and down \NC \NR
 \NC \prm {Umathnolimitsubfactor}               \NC a multiplier for the way limits are shifted up and down \NC \NR
-\NC \prm {Umathaccentbasedepth}                \NC the complement of \prm {UmathAccentBaseHeight} \NC \NR
-\NC \prm {Umathflattenedaccentbasedepth}       \NC the complement of \prm {UmathFlattenedAccentBaseHeight} \NC \NR
+\NC \prm {Umathaccentbasedepth}                \NC the complement of \prm {Umathaccentbaseheight} \NC \NR
+\NC \prm {Umathflattenedaccentbasedepth}       \NC the complement of \prm {Umathflattenedaccentbaseheight} \NC \NR
 \NC \prm {Umathspacebeforescript}              \NC \NC \NR
 \NC \prm {Umathraisepercent}                   \NC the percentage that the vertical position is scaled \NC \NR
-\NC \prm {Umathprimeshiftup}                   \NC the prime variant of \prm {SuperscriptShiftUp} \NC \NR
-\NC \prm {Umathprimeshiftupcramped}            \NC the prime variant of \prm {SuperscriptShiftUpCramped} \NC \NR
-\NC \prm {Umathprimespaceafter}                \NC the prescript variant of \prm {UmathSpaceAfterScript} \NC \NR
-\NC \prm {Umathprimebaselinedropmax}           \NC the prime variant of \prm {SuperscriptBaselineDropMax} \NC \NR
+\NC \prm {Umathprimeshiftup}                   \NC the prime variant of \prm {Umathsupshiftup} \NC \NR
+\NC \prm {Umathprimeshiftupcramped}            \NC the prime variant of \prm {Umathsupshiftup} \NC \NR
+\NC \prm {Umathprimespaceafter}                \NC the prescript variant of \prm {Umathspaceafterscript} \NC \NR
+\NC \prm {Umathprimebaselinedropmax}           \NC the prime variant of \prm {Umathsupshiftdrop} \NC \NR
 \NC \prm {Umathprimewidthpercent}              \NC the percentage of width that gets added \NC \NR
 \NC \prm {Umathskeweddelimitertolerance}       \NC \NC \NR
 \NC \prm {Umathaccenttopshiftup}               \NC the amount that a top accent is shifted up \NC \NR
@@ -1038,7 +1043,7 @@ defaults and tweak them in the goodie files:
 \DB font parameter                    \BC primitive name                             \BC default   \NC \NR
 \TB
 \NC MinConnectorOverlap               \NC \prm {Umathconnectoroverlapmin}            \NC 0         \NC \NR
-\NC SubscriptShiftDownWithSuperscript \NC \prm {Umathsubscriptsuperscriptshiftdown}  \NC inherited \NC \NR
+\NC SubscriptShiftDownWithSuperscript \NC \prm {Umathsubsupshiftdown}                \NC inherited \NC \NR
 \NC FractionDelimiterSize             \NC \prm {Umathfractiondelsize}                \NC undefined \NC \NR
 \NC FractionDelimiterDisplayStyleSize \NC \prm {Umathfractiondelsize}                \NC undefined \NC \NR
 \NC NoLimitSubFactor                  \NC \prm {Umathnolimitsupfactor}               \NC 0         \NC \NR
@@ -1275,6 +1280,16 @@ A few notes:
 As this mostly refers to \LUATEX\ there is more to tell about how \LUAMETATEX\
 deals with it. However, it is enough to know that much more behavior is
 configurable.
+
+You can let the engine ignore parameter with \prm {setmathignore}, like:
+
+\starttyping
+\setmathignore \Umathspacebeforescript 1
+\setmathignore \Umathspaceafterscript  1
+\stoptyping
+
+Be aware of the fact that a global setting can get unnoticed by users because
+there is no warning that some parameter is ignored.
 
 \stopsubsection
 
@@ -1565,6 +1580,23 @@ keywords:
 To what extend the options kick in depends on the class as well where and how the
 atom is used.
 
+The original \TEX\ engines has three atom modifiers: \prm {displaylimits}, \prm
+{limits}, and \prm {nolimits}. These look back to the last atom and set a limit
+related signal. Just to be consistent we have some more of that: \prm
+{Umathadapttoleft}, \prm {Umathadapttoright}, \prm {Umathuseaxis}, \prm
+{Umathnoaxis}, \prm {Umathphantom}, \prm {Umathvoid}, \prm {Umathsource}, \prm
+{Umathopenupheight}, \prm {Umathopenupdepth}, \prm {Umathlimits}, \prm
+{Umathnolimits}. The last two are equivalent to the lowercase ones with the
+similar names. Al these modifiers are cheap primitives and one can wonder if they
+are needed but that also now also applies to the original three. We could stick
+to one modifier that takes an integer but let's not diverge too much from the
+original concept.
+
+The \prm {nonscript} primitive injects a glue node that signals that the next
+glue is to be ignored when we are in script or scriptscript mode. The \prm
+{noatomruling} does the same but this time the signal is that no inter|-|atom
+rules need to be applied.
+
 \stopsubsection
 
 \startsubsection[title={Checking a state with \prm {ifmathparameter}}]
@@ -1700,6 +1732,10 @@ case all three dimensions are preserved in the last case only the height and dep
 In typeset form this looks like:
 
 \getbuffer
+
+Normally fences need to be matched, that is: when a left fence is seen, there has
+to be a right fence. When you set \prm {mathcheckfencesmode} to non|-|zero the
+scanner silently recovers from this.
 
 \stopsubsection
 
@@ -1963,6 +1999,10 @@ For Latin Modern the result looks as follows:
     \stoptabulate
 \stop
 
+For good old times we also have \prm {skewed} and \prm {skewedwithdelims}
+although it is unlikely that one will notice as it only makes sense in the
+updated approach.
+
 The \type {\over} and related primitives have the form:
 
 \starttyping
@@ -2040,7 +2080,7 @@ keeping the spacing compatible.
 
 \stopsubsection
 
-\startsubsection[title={Delimiters: \type{\Uleft}, \prm {Umiddle} and \prm {Uright}}]
+\startsubsection[title={Delimiters: \prm {Uleft}, \prm {Umiddle} and \prm {Uright}}]
 
 \topicindex {math+delimiters}
 
@@ -2273,11 +2313,13 @@ $}
 
 \typebuffer
 
-The question is: are these double super and subscript triggers the way to go?
-Anyway, you need to have them either being active (which in \CONTEXT\ then boils
-down to them being other characters), or say \type {\supmarkmode = 1} to disable
-the normal multiple \type {^} treatment (a value larger than 1 will also disable
-that in text mode).
+The problem with the circumflex is that it is also used for escaping character
+input. Normally that only happens in a format file so you can safely disable
+that. Alternatives are using active characters that adapt. In \CONTEXT\ we make
+them regular (other) characters in text mode and set \prm {supmarkmode} to~1 to
+disable the normal multiple \type {^} treatment (a value larger than 1 will also
+disable that in text mode). In math mode we make them active and behave as
+expected.
 
 \blank \getbuffer \blank
 
@@ -2447,6 +2489,15 @@ You can query the pairwise spacing of atoms with \prm {mathatomglue} and inject 
 \typebuffer
 
 and get: \inlinebuffer.
+
+\stopsubsection
+
+\startsubsection[title={Default math codes}]
+
+The probably not that useful primitive (but who knows) \prm {setdefaultmathcodes}
+initializes the mathcodes of digits to family zero and the lowercase and
+uppercase letters to family one, just as standard \TEX\ does. Don't do this in in
+\CONTEXT.
 
 \stopsubsection
 
@@ -2630,7 +2681,7 @@ experimenting.
 
 \stopsubsection
 
-\startsubsection[title={Some spacing control with \prm {mathsurroundmode} and \prm {mathspacingmode}}]
+\startsubsection[title={Some spacing control with \prm {mathsurroundmode}, \prm {mathspacingmode} and \prm {mathgluemode}}]
 
 See \in {section} [spacing:surround] for more about inline spacing. The \prm
 {mathsurroundmode} parameter just permits the glue variant to kick in and indeed
@@ -2640,12 +2691,17 @@ The \prm {mathspacingmode} parameter is for tracing: normally zero inter atom
 glue is not injected but when this parameter is set to non|-|zero even zero
 spacing will show up. This permits us to check the applied inter atom spacing.
 
-% \mathcheckfencesmode
-% \mathpenaltiesmode
-% \mathscriptboxmode
-% \mathrulesmode
- % \supmarkmode
-% \mathgluemode
+The \prm {mathgluemode} bitset controls if glue can stretch and|/|or shrink. It
+is used in some of the upgraded \CONTEXT\ high level math alignment command so
+probably more qualifies as a feature specific for that usage.
+
+\starttabulate[|c|l|]
+\DB value \BC meaning \NC \NR
+\TB
+\NC 0x01  \NC obey stretch component \NC \NR
+\NC 0x02  \NC obey shrink component \NC \NR
+\LL
+\stoptabulate
 
 \stopsection
 
@@ -2677,6 +2733,26 @@ effect and use a 20\percent\ scaling:
 
 \getbuffer
 
+\startsubsection[title={Scaling with \prm {scaledmathstyle}}]
+
+Because styles put a style switching node in the stream we have a
+scaling primitive that uses such a style node to signal dynamic
+scaling. Thisis still somewhat experimental.
+
+\startbuffer
+$
+    {\scaledmathstyle  500 x + x}\quad
+    {\scaledmathstyle 1000 x + x}\quad
+    {\scaledmathstyle 1500 x + x}
+$
+\stopbuffer
+
+\typebuffer
+
+You get differently sized math but of course you then probably also need to
+handle spacing differently, although for small deviations from 1000 is should
+come out acceptable.
+
 \stopsubsection
 
 \startsubsection[title={Spreading math with \prm {maththreshold}}]
@@ -2685,6 +2761,67 @@ Small formulas that don't get unpacked can be made to act like glue, that is,
 they become a sort of leader and permit the par builder to prevent excessive
 spacing because the embedded inter atom glue can now participate in the
 calculations. The \prm {maththreshold} primitive is a regular glue parameter.
+
+\stopsubsection
+
+\startsubsection[title={\prm {everymathatom} and \prm {lastatomclass}}]
+
+Just for completeness we have \prm {everymathatom} as companion for \prm {everyhbox}
+and friends and it is probably just as useful. The next example shows how it works:
+
+\startbuffer
+\everymathatom
+  {\begingroup
+   \scratchcounter\lastatomclass
+   \everymathatom{}%
+   \mathghost{\hbox to 0pt yoffset -1ex{\smallinfofont \setstrut\strut \the\scratchcounter\hss}}%
+   \endgroup}
+
+$ a = \mathatom class 4 {b} + \mathatom class 5 {c} $
+\stopbuffer
+
+\typebuffer
+
+We get a formula with open- and close atom spacing applied to~$b$ and~$c$:
+
+{\getbuffer}
+
+This example shows bit of all: we want the number to be invisible to the math
+machinery so we ghost it. So, we need to make sure we don't get recursion due to
+nested injection and expansion of \prm {everymathatom} and of course we need to
+store the number. The \prm {lastatomclass} state variable is only meaningful
+inside an explicit atom wrapper like \prm {mathatom} and \prm {mathatom}.
+
+\stopsubsection
+
+\startsubsection[title={\prm {postinlinepenalty} and \prm {preinlinepenalty}}]
+
+In horizontal lists math is embedded in a begin and end math node. These nodes
+also carry information about the surrounding space, and the in \LUAMETATEX\
+optional glue. We also store a penalty so that we can let that play a role in the
+decisions to be made; these two internal integer registers control this. Just
+like the mentioned spacing they are not visible as nodes in the list.
+
+\stopsubsection
+
+\startsubsection[title={\prm {mathforwardpenalties} and \prm {mathbackwardpenalties}}]
+
+These penalties are experimental and deltas added to the regular penalties
+between atoms. Here is an example, as with other primitives that take more
+arguments the first number indicates how much follows.
+
+\startbuffer
+$ a + b + c + d + e + f + g + h = x $\par
+\mathforwardpenalties  3 300 200 100
+\mathbackwardpenalties 3 250 150  50
+$ a + b + c + d + e + f + g + h = x $\par
+\stopbuffer
+
+\typebuffer
+
+You'll notice that we apply more severe penalties at the edges:
+
+{\showmakeup[penalty]\multiply\glyphscale\plustwo \getbuffer}
 
 \stopsubsection
 

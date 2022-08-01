@@ -6,39 +6,66 @@ if not modules then modules = { } end modules ['math-fnt'] = {
     license   = "see context related readme files"
 }
 
-local nuts       = nodes.nuts
-local tonut      = nodes.tonut
-local tonode     = nodes.tonode
-local nodepool   = nuts.pool
+local nuts          = nodes.nuts
+local tonut         = nodes.tonut
+local tonode        = nodes.tonode
+local nodepool      = nuts.pool
 
-local vlist_code = nodes.nodecodes.vlist
+local vlist_code    = nodes.nodecodes.vlist
 
-local new_hlist  = nodepool.hlist
-local new_vlist  = nodepool.vlist
------ new_glyph  = nodepool.glyph
-local new_glyph  = nuts.newmathglyph
+local new_hlist     = nodepool.hlist
+local new_vlist     = nodepool.vlist
+----- new_glyph     = nodepool.glyph
+local new_glyph     = nuts.newmathglyph
 
-local getattrlst = nuts.getattributelist
-local setattrlst = nuts.setattributelist
-local setwhd     = nuts.setwhd
-local getwhd     = nuts.getwhd
-local getid      = nuts.getid
+local getattrlst    = nuts.getattributelist
+local setattrlst    = nuts.setattributelist
+local setwhd        = nuts.setwhd
+local getwhd        = nuts.getwhd
+local getid         = nuts.getid
 
-local chardata   = fonts.hashes.characters
+local chardata      = fonts.hashes.characters
+local addcharacters = font.addcharacters
 
 -- not yet ok for compact fonts .. needs checking .. or just make this non-compact only
 -- there's also an inaccuracy creeping in: \sqrt{\quad\blackrule[height=25pt,depth=25pt]}
 
 local function register_extensible(font,char,style,box)
+    -- We don't share (yet)!
     local bx = tonut(box)
     nodes.handlers.finalizelist(bx)
     local id = getid(bx)
     local al = getattrlst(bx)
     local wd, ht, dp = getwhd(bx)
-    local private = fonts.helpers.setboxdirectly(font,chardata[font][char].unicode or char,box)
+    local fontdata = chardata[font]
+    local oldchar  = fontdata[char]
+    local unicode  = oldchar.unicode or char
+    local private = fonts.helpers.setboxdirectly(font,unicode,box)
     -- we saved a scaled glyph stream so we now use an unscaled one ...
     local g = new_glyph(font,private,al)
     local n = new_hlist(g)
+
+ -- local newchar = {
+ --     unicode = unicode,
+ --     width   = wd,
+ --     height  = ht,
+ --     depth  =  dp,
+ -- }
+ -- local p = oldchar.vparts
+ -- if p then
+ --     local first = fontdata[p[#p].glyph]
+ --     local last  = fontdata[p[ 1].glyph]
+ --     if first then
+ --         newchar.topleft  = first.topleft
+ --         newchar.topright = first.topright
+ --     end
+ --     if last then
+ --         newchar.bottomleft  = last.bottomleft
+ --         newchar.bottomright = last.bottomright
+ --     end
+ -- end
+ -- addcharacters(font, { [private] = newchar })
+
     -- so the dimensions of the box don't match the glyph scale!
     setwhd(n,wd,ht,dp)
     setattrlst(n,al)

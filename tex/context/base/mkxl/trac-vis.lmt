@@ -52,6 +52,7 @@ local getnext             = nuts.getnext
 local getboth             = nuts.getboth
 local getwhd              = nuts.getwhd
 local getkern             = nuts.getkern
+local getpenalty          = nuts.getpenalty
 local getwidth            = nuts.getwidth
 local getdepth            = nuts.getdepth
 local getexpansion        = nuts.getexpansion
@@ -772,42 +773,6 @@ local ruleduser do
 
 end
 
-local ruledmath do
-
-    local mathcodes = nodes.mathcodes
-    local m_cache   = {
-        beginmath = caches["bmath"],
-        endmath   = caches["emath"],
-    }
-    local tags      = {
-        beginmath = "B",
-        endmath   = "E",
-    }
-
-    ruledmath = function(head,current)
-        local what = getsubtype(current)
-        local tag  = mathcodes[what]
-        local skip = getkern(current) + getwidth(current) -- surround
-        local info = m_cache[tag][skip]
-        if info then
-            -- print("hit math")
-        else
-            local text, width = sometext(formatters["M:%s"](tag and tags[tag] or what),usedfont,nil,"trace:dr")
-            local rule = new_rule(skip,-655360/fraction,2*655360/fraction)
-            local dist = tag == "beginmath" and width or skip
-            setcolor(rule,"trace:dr")
-            settransparency(rule,"trace:dr")
-            setattr(rule,a_layer,l_math)
-            info = new_hlist(setlink(new_glue(-skip),rule,new_glue(-dist),text))
-            setattr(info,a_layer,l_math)
-            m_cache[tag][skip] = info
-        end
-        head, current = insertnodeafter(head,current,copylist(info))
-        return head, current
-    end
-
-end
-
 local ruleddepth do
 
     ruleddepth = function(current,wd,ht,dp)
@@ -1461,7 +1426,7 @@ local ruledpenalty do
 
     local raisepenalties = false
 
-    local getpenalty        = nuts.getpenalty
+    ----- getpenalty        = nuts.getpenalty
     local pre_penalty_code  = nodes.penaltycodes.mathprepenalty
     local post_penalty_code = nodes.penaltycodes.mathpostpenalty
 
@@ -1469,7 +1434,7 @@ local ruledpenalty do
 
     ruledpenalty = function(head,current,vertical,subtype)
         local penalty = getpenalty(current)
-        local ismath  = subtype == pre_penalty_code or subtype == post_penalty_code
+        local ismath  = subtype == pre_penalty_code or subtype == post_penalty_code or subtype == true
         local cache   = (ismath and p_cache_m) or (vertical and p_cache_v) or p_cache_h
         local info    = cache[penalty]
         if info then
@@ -1497,6 +1462,46 @@ local ruledpenalty do
         end
         head, current = insertnodebefore(head,current,info)
         return head, getnext(current)
+    end
+
+end
+
+local ruledmath do
+
+    local mathcodes = nodes.mathcodes
+    local m_cache   = {
+        beginmath = caches["bmath"],
+        endmath   = caches["emath"],
+    }
+    local tags      = {
+        beginmath = "B",
+        endmath   = "E",
+    }
+
+    ruledmath = function(head,current)
+        local what = getsubtype(current)
+        local tag  = mathcodes[what]
+        local skip = getkern(current) + getwidth(current) -- surround
+        local info = m_cache[tag][skip]
+        if info then
+            -- print("hit math")
+        else
+            local text, width = sometext(formatters["M:%s"](tag and tags[tag] or what),usedfont,nil,"trace:dr")
+            local rule = new_rule(skip,-655360/fraction,2*655360/fraction)
+            local dist = tag == "beginmath" and width or skip
+            setcolor(rule,"trace:dr")
+            settransparency(rule,"trace:dr")
+            setattr(rule,a_layer,l_math)
+            info = new_hlist(setlink(new_glue(-skip),rule,new_glue(-dist),text))
+            setattr(info,a_layer,l_math)
+            m_cache[tag][skip] = info
+        end
+        local saved = current
+        head, current = insertnodeafter(head,current,copylist(info))
+        if getpenalty(saved) ~= 0 then
+            head, current = ruledpenalty(head,saved,false,true)
+        end
+        return head, current
     end
 
 end
@@ -1714,6 +1719,7 @@ do
                     head, current = ruleduser(head,current)
                 end
             elseif id == math_code then
+                local saved = current
                 if trace_math then
                     head, current = ruledmath(head,current)
                 end

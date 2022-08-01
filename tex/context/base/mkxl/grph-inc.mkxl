@@ -407,6 +407,9 @@
    \dostoptagged
    \egroup}
 
+\permanent\protected\def\setfigureconversion[#1]#*[#2]%
+  {\clf_setfigureconversion{#1}{#2}}
+
 %D Next we provide a cross referenced scale-up mechanism:
 
 \def\strc_references_cross_forward#1#2%

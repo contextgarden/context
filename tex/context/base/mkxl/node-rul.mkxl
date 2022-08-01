@@ -88,10 +88,19 @@
     \frozen\protected\instance\edefcsname\currentbar\endcsname{\node_rules_direct{\currentbar}}%
 \to \everydefinebar
 
+% \protected\def\node_rules_direct#1%
+%   {\groupedcommand
+%      {\node_rules_set{#1}\barparameter\c!left}%
+%      {\relax\barparameter\c!right}}
+
 \protected\def\node_rules_direct#1%
   {\groupedcommand
-     {\node_rules_set{#1}\barparameter\c!left}%
-     {\relax\barparameter\c!right}}
+     {\dontleavehmode % this should not be needed but it is in \bTD
+      \node_rules_set{#1}
+      \barparameter\c!left
+      } %\ignorespaces}%
+     {%\removeunwantesspaces
+      \barparameter\c!right}}
 
 \permanent\protected\def\inlinebar[#1]%
   {\node_rules_direct{#1}}
@@ -287,9 +296,10 @@
 \newdimen\d_rule_v
 \newdimen\d_rule_line
 \newdimen\d_rule_offset
+\newdimen\d_rule_factor
 
 \mutable\let\m_rule_direction\empty
-\mutable\let\m_rule_factor   \empty
+% \mutable\let\m_rule_factor   \empty
 \mutable\let\m_rule_option   \empty
 \mutable\let\m_rule_color    \empty
 

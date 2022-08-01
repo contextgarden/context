@@ -496,13 +496,13 @@ When it became unavoidable that we output more detail, it also became clear that
 it made no sense to stay log and trace compatible. Some is controlled by
 parameters in order to stay close the original, but \CONTEXT\ is configured such
 that we benefit from the new possibilities. Examples are that in addition to
-\type {\meaning} we have \type {\meaningfull} that also exposes macro properties,
-and \type {\meaningless} that only exposes the body. The \type {\untraced} prefix
-will suppress some in the log, and we set \type {\tracinglevels} to 3 in order to
+\prm {meaning} we have \prm {meaningfull} that also exposes macro properties,
+and \prm {meaningless} that only exposes the body. The \prm {untraced} prefix
+will suppress some in the log, and we set \prm {tracinglevels} to 3 in order to
 get details about the input and grouping level. When there's less shown than
 expected keep in mind that \LUAMETATEX\ has a somewhat optimized saving and
 restoring of meanings so less can happen which is reflected in tracing. When node
-lists are serialized (as with \type {\showbox}) some nodes, like discretionaries
+lists are serialized (as with \prm {showbox}) some nodes, like discretionaries
 report more detail. The compact serializer, used for instance to signal overfull
 boxes, also shows a bit more detail with respect to non|-|content nodes. I math
 more is shown if only because we have more control and additional mechanisms.
@@ -511,7 +511,7 @@ more is shown if only because we have more control and additional mechanisms.
 
 \startsubsection[title=Parsing]
 
-Token parsers have been upgraded for the sake of \LUA, \type {\csname} handling
+Token parsers have been upgraded for the sake of \LUA, \prm {csname} handling
 has been extended, macro definitions can be more flexible so there code was
 adapted, more conditionals also brought some changes. But we build upon the
 (reorganized) \TEX\ foundation so the basics can definitely be recognized.
@@ -525,10 +525,10 @@ The reworked \LUAMETATEX\ engine is substantially faster than the \LUATEX\
 predecessor.
 
 The handling of conditionals has been adapted so that we can have flatter
-branches (\type {\orelse} cum suis). This again has some consequences for
+branches (\prm {orelse} cum suis). This again has some consequences for
 parsing. Because parsing alignments is rather interwoven in general parsing and
 expansion the handling of related primitives has been slightly adapted (also for
-the sake of \LUA\ interfacing) and dealing with \type {\noalign} situations is a
+the sake of \LUA\ interfacing) and dealing with \prm {noalign} situations is a
 bit more convenient.
 
 This are just a few of the adaptations and most of this happened stepwise with
@@ -545,6 +545,419 @@ Some primitives accept (optional) keywords and in \LUAMETATEX\ there are more
 keywords than in \LUATEX. Scanning can trigger error messages and lookahead side
 effects and in \LUAMETATEX\ these can be different. This is no big deal because
 errors are still errors.
+
+\stopsubsection
+
+\startsection[reference=differences,title={Differences with \LUATEX}]
+
+\startsubsection[title=Dropped primitives]
+
+As \LUAMETATEX\ is a leaner and meaner \LUATEX. This means that substantial parts and
+dependencies are gone: quite some font code, all backend code with related frontend
+code and of course image and font inclusion. There is also new functionality which
+makes for less lean but in the end we still have less, also in terms of dependencies.
+This chapter will discuss what is gone. We start with the primitives that were dropped.
+
+\starttabulate[|l|pl|]
+\BC fonts       \NC \type {\letterspacefont}
+                    \type {\copyfont}
+                    \type {\expandglyphsinfont}
+                    \type {\ignoreligaturesinfont}
+                    \type {\tagcode}
+                    \type {\leftghost}
+                    \type {\rightghost}
+                \NC \NR
+\BC backend     \NC \type {\dviextension}
+                    \type {\dvivariable }
+                    \type {\dvifeedback}
+                    \type {\pdfextension}
+                    \type {\pdfvariable }
+                    \type {\pdffeedback}
+                    \type {\dviextension}
+                    \type {\draftmode}
+                    \type {\outputmode}
+                \NC \NR
+\BC dimensions  \NC \type {\pageleftoffset}
+                    \type {\pagerightoffset}
+                    \type {\pagetopoffset}
+                    \type {\pagebottomoffset}
+                    \type {\pageheight}
+                    \type {\pagewidth}
+                \NC \NR
+\BC resources   \NC \type {\saveboxresource}
+                    \type {\useboxresource}
+                    \type {\lastsavedboxresourceindex}
+                    \type {\saveimageresource}
+                    \type {\useimageresource}
+                    \type {\lastsavedimageresourceindex}
+                    \type {\lastsavedimageresourcepages}
+                \NC \NR
+\BC positioning \NC \type {\savepos}
+                    \type {\lastxpos}
+                    \type {\lastypos}
+                \NC \NR
+\BC directions  \NC \type {\textdir}
+                    \type {\linedir}
+                    \type {\mathdir}
+                    \type {\pardir}
+                    \type {\pagedir}
+                    \type {\bodydir}
+                    \type {\pagedirection}
+                    \type {\bodydirection}
+                \NC \NR
+\BC randomizer  \NC \type {\randomseed}
+                    \type {\setrandomseed}
+                    \type {\normaldeviate}
+                    \type {\uniformdeviate}
+                \NC \NR
+\BC utilities   \NC \type {\synctex}
+                \NC \NR
+\BC extensions  \NC \type {\latelua}
+                    \type {\lateluafunction}
+                    \type {\openout}
+                    \type {\write}
+                    \type {\closeout}
+                    \type {\openin}
+                    \type {\read}
+                    \type {\readline}
+                    \type {\closein}
+                    \type {\ifeof}
+                \NC \NR
+\BC control     \NC \type {\suppressfontnotfounderror}
+                    \type {\suppresslongerror}
+                    \type {\suppressprimitiveerror}
+                    \type {\suppressmathparerror}
+                    \type {\suppressifcsnameerror}
+                    \type {\suppressoutererror}
+                    \type {\mathoption}
+                \NC \NR
+\BC system      \NC \type {\primitive}
+                    \type {\ifprimitive}
+                    \type {\formatname}
+                \NC \NR
+\BC ignored     \NC \type {\long}
+                    \type {\outer}
+                    \type {\mag}
+                \NC \NR
+\stoptabulate
+
+The math machinery has been overhauled stepwise. In the process detailed control
+has been added but later some of that got removed or replaced. The engine now
+assumes that \OPENTYPE\ fonts are used but you do need to set up the engine
+properly, something that has to be done with respect to fonts anyway. By enabling
+and|/|disabling certain features you can emulate the traditional engine. Font
+parameters no longer are taken from the traditional parameters when they are not
+set. We just assume properly passed so called math constants and quite a few new
+ones have been added.
+
+The resources and positioning primitives are actually useful but can be defined
+as macros that (via \LUA) inject nodes in the input that suit the macro package
+and backend. The three||letter direction primitives are gone and the numeric
+variants are now leading. There is no need for page and body related directions
+and they don't work well in \LUATEX\ anyway. We only have two directions left.
+Because we can hook in \LUA\ functions that get information about what is expected
+(consumer or provider) there are plenty possibilities for adding functionality
+using this scripting language.
+
+The primitive related extensions were not that useful and reliable so they have
+been removed. There are some new variants that will be discussed later. The \prm
+{outer} and \prm {long} prefixes are gone as they don't make much sense
+nowadays and them becoming dummies opened the way to something new: control
+sequence properties that permit protection against as well as controlled
+overloading of definitions. I don't think that (\CONTEXT) users will notice these
+prefixes being gone. The definition and parsing related \type {\suppress..}
+features are now default and can't be changed so related primitives are gone.
+
+The \prm {shipout} primitive does no ship out but just erases the content of
+the box unless of course that has happened already in another way. A macro
+package should implement its own backend and related shipout. Talking of backend,
+the extension primitives that relate to backends can be implemented as part of a
+backend design using generic whatsits. There is only one type of whatsit now. In
+fact we're now closer to original \TEX\ with respect to the extensions.
+
+The \type {img} library has been removed as it's rather bound to the backend. The
+\type {slunicode} library is also gone. There are some helpers in the string
+library that can be used instead and one can write additional \LUA\ code if
+needed. There is no longer a \type {pdf} backend library but we have an up to
+date \PDF\ parsing library on board.
+
+In the \type {node}, \type {tex} and \type {status} library we no longer have
+helpers and variables that relate to the backend. The \LUAMETATEX\ engine is in
+principle \DVI\ and \PDF\ unaware. There are, as mentioned, only generic whatsit
+nodes that can be used for some management related tasks. For instance you can
+use them to implement user nodes. More extensive status information is provided
+in the overhauled status library. All libraries have additional functionality and
+names of functions have been normalized (for as far as possible).
+
+The margin kern nodes are gone and we now use regular kern nodes for them. As a
+consequence there are two extra subtypes indicating the injected left or right
+kern. The glyph field served no real purpose so there was no reason for a special
+kind of node.
+
+The \KPSE\ library is no longer built|-|in, but one can use an external \KPSE\
+library, assuming that it is present on the system, because the engine has a so
+called optional library interface to it. Because there is no backend, quite some
+file related callbacks could go away. The following file related callbacks
+remained (till now):
+
+\starttyping
+find_write_file find_format_file open_data_file
+\stoptyping
+
+The callbacks related to errors are changed:
+
+\starttyping
+intercept_tex_error intercept_lua_error
+show_error_message show_warning_message
+\stoptyping
+
+There is a hook that gets called when one of the fundamental memory structures
+gets reallocated.
+
+\starttyping
+trace_memory
+\stoptyping
+
+When you use the overload protect mechanisms, a callback can be plugged in to handle
+exceptions:
+
+\starttyping
+handle_overload
+\stoptyping
+
+The (job) management hooks are kept:
+
+\starttyping
+process_jobname
+start_run stop_run wrapup_run
+pre_dump
+start_file stop_file
+\stoptyping
+
+Because we use a more generic whatsit model, there is a new callback:
+
+\starttyping
+show_whatsit
+\stoptyping
+
+Because tracing boxes now reports a lot more information, we have a plug in for
+detail:
+
+\starttyping
+get_attribute
+\stoptyping
+
+Being the core of extensibility, the typesetting callbacks of course stayed. This
+is what we ended up with:
+
+\startalign[flushleft,nothyphenated]
+\tt \cldcontext{table.concat(table.sortedkeys(callbacks.list), ", ")}
+\stopalign
+
+As in \LUATEX\ font loading happens with the following callback. This time it
+really needs to be set because there is no built|-|in font loader.
+
+\starttyping
+define_font
+\stoptyping
+
+There are all kinds of subtle differences in the implementation, for instance we
+no longer intercept \type {*} and \type {&} as these were already replaced long
+ago in \TEX\ engines by command line options. Talking of options, only a few are
+left. All input goes via \LUA, even the console. One can program a terminal if
+needed.
+
+We took our time for reaching a stable state in \LUATEX. Among the reasons is the
+fact that most was experimented with in \CONTEXT, which we can adapt to the
+engine as we go. It took many years to decide what to keep and how to do things.
+Of course there are places when things can be improved but that most likely only
+happens in \LUAMETATEX. Contrary to what is sometimes suggested, the
+\LUATEX|-|\CONTEXT\ \MKIV\ combination (assuming matched versions) has been quite
+stable. It made no sense otherwise. Most \CONTEXT\ functionality didn't change
+much at the user level. Of course there have been issues, as is natural with
+everything new and beta, but we have a fast update cycle.
+
+The same is true for \LUAMETATEX\ and \CONTEXT\ \LMTX: it can be used for
+production as usual and in practice \CONTEXT\ users tend to use the beta
+releases, which proves this. Of course, if you use low level features that are
+experimental you're on your own. Also, as with \LUATEX\ it might take many years
+before a long term stable is defined. The good news is that, when the source code
+has become part of the \CONTEXT\ distribution, there is always a properly
+working, more or less long term stable, snapshot.
+
+The error reporting subsystem has been redone quite a bit but is still
+fundamentally the same. We don't really assume interactive usage but if someone
+uses it, it might be noticed that it is not possible to backtrack or inject
+something. Of course it is no big deal to implement all that in \LUA\ if needed.
+It removes a system dependency and makes for a bit cleaner code. In \CONTEXT\ we
+quit on an error simply because one has to fix source anyway and runs are fast
+enough. Logging provides more detail and new primitives can be used to prevent
+clutter in tracing (the more complex a macro package becomes, the more extreme
+tracing becomes).
+
+\stopsubsection
+
+\startsubsection[title=New primitives]
+
+There are new primitives as well as some extensions to existing primitive
+functionality. These are described in following chapters but there might be
+hidden treasures in the binary. If you locate them, don't automatically assume
+them to stay, some might be part of experiments! There are for instance a few
+csname related definers, we have integer and dimension constants, the macro
+argument parser can be brought in tolerant mode, the repertoire of conditionals
+has been extended, some internals can be controlled (think of normalization of
+lines, hyphenation etc.), and macros can be protected against user overload. Not
+all is discussed in detail in this manual but there are introductions in the
+\CONTEXT\ distribution that explain them. But the \TEX\ kernel is of course
+omnipresent.
+
+\startluacode
+
+local luametatex = tex.primitives()
+local luatex     = table.load("luatex-primitives.lua")
+
+if not luatex then
+    local tex = "\\starttext \\ctxlua {table.save(tex.jobname .. '.lua',tex.primitives())} \\stoptext"
+
+    io.savedata("luatex-primitives.tex",    tex)
+
+    os.execute("context --luatex --once luatex-primitives")
+
+    luatex = table.load("luatex-primitives.lua")
+end
+
+
+if luatex and luametatex then
+
+    local match = string.match
+
+    local found = { }
+
+    local function collect(index)
+        if index then
+            local data = index.entries
+            for i=1,#data do
+                found[match(data[i].list[1][1],"\\tex%s*{(.-)}") or ""] = true
+            end
+         -- inspect(found)
+        end
+    end
+
+    collect(structures.registers.collected and structures.registers.collected.texindex)
+    collect(structures.registers.collected and structures.registers.collected.luatexindex)
+
+    luatex     = table.tohash(luatex)
+    luametatex = table.tohash(luametatex)
+
+ -- context.page()
+
+    context("The following primitives are available in \\LUATEX\\ but not in \\LUAMETATEX.  ")
+    context("Some of these are emulated in \\CONTEXT.")
+
+    context.blank()
+    context.startcolumns { n = 2 }
+        for k, v in table.sortedhash(luatex) do
+            if not luametatex[k] then
+                if not found[k] then
+                    context.dontleavehmode()
+                end
+                context.type(k)
+                context.crlf()
+            end
+        end
+    context.stopcolumns()
+    context.blank()
+
+ -- context.page()
+
+    context("The following primitives are available in \\LUAMETATEX\\ only. In the meantime ")
+    context("the \\LUAMETATEX\\ code base is so different from \\LUATEX\\ that backporting ")
+    context("is no longer reasonable.")
+
+    context.blank()
+    context.startcolumns { n = 2 }
+        for k, v in table.sortedhash(luametatex) do
+            if not luatex[k] then
+                if not found[k] then
+                    context.dontleavehmode()
+                    context.llap("\\infofont[todo] ")
+                end
+                context.type(k)
+                context.crlf()
+            end
+        end
+    context.stopcolumns()
+    context.blank()
+
+end
+
+\stopluacode
+
+\stopsubsection
+
+\startsubsection[title=Changed function names]
+
+As part of a bit more consistency some function names also changed. Names with an
+\type {_} got that removed (as that was the minority). It's easy to provide a
+back mapping if needed (just alias the functions).
+
+{\em Todo: only mention the \LUATEX\ ones.}
+
+\starttabulate[|l|l|l|l|]
+\DB library  \BC old name          \BC new name         \BC comment \NC \NR
+\TB
+\NC language \NC clear_patterns    \NC clearpatterns    \NC \NR
+\NC          \NC clear_hyphenation \NC clearhyphenation \NC \NR
+\NC mplib    \NC italcor           \NC italic           \NC \NR
+\NC          \NC pen_info          \NC peninfo          \NC \NR
+\NC          \NC solve_path        \NC solvepath        \NC \NR
+\NC texio    \NC write_nl          \NC writenl          \NC old name stays \NC \NR
+\NC node     \NC protect_glyph     \NC protectglyph     \NC \NR
+\NC          \NC protect_glyphs    \NC protectglyphs    \NC \NR
+\NC          \NC unprotect_glyph   \NC unprotectglyph   \NC \NR
+\NC          \NC unprotect_glyphs  \NC unprotectglyphs  \NC \NR
+\NC          \NC end_of_math       \NC endofmath        \NC \NR
+\NC          \NC mlist_to_hlist    \NC mlisttohlist     \NC \NR
+\NC          \NC effective_glue    \NC effectiveglue    \NC \NR
+\NC          \NC has_glyph         \NC hasglyph         \NC \NR
+\NC          \NC first_glyph       \NC firstglyph       \NC \NR
+\NC          \NC has_field         \NC hasfield         \NC \NR
+\NC          \NC copy_list         \NC copylist         \NC \NR
+\NC          \NC flush_node        \NC flushnode        \NC \NR
+\NC          \NC flush_list        \NC flushlist        \NC \NR
+\NC          \NC insert_before     \NC insertbefore     \NC \NR
+\NC          \NC insert_after      \NC insertafter      \NC \NR
+\NC          \NC last_node         \NC lastnode         \NC \NR
+\NC          \NC is_zero_glue      \NC iszeroglue       \NC \NR
+\NC          \NC make_extensible   \NC makeextensible   \NC \NR
+\NC          \NC uses_font         \NC usesfont         \NC \NR
+\NC          \NC is_char           \NC ischar           \NC \NR
+\NC          \NC is_direct         \NC isdirect         \NC \NR
+\NC          \NC is_glyph          \NC isglyph          \NC \NR
+\NC          \NC is_node           \NC isnode           \NC \NR
+\NC token    \NC scan_keyword      \NC scankeyword      \NC \NR
+\NC          \NC scan_keywordcs    \NC scankeywordcs    \NC \NR
+\NC          \NC scan_int          \NC scanint          \NC \NR
+\NC          \NC scan_real         \NC scanreal         \NC \NR
+\NC          \NC scan_float        \NC scanfloat        \NC \NR
+\NC          \NC scan_dimen        \NC scandimen        \NC \NR
+\NC          \NC scan_glue         \NC scanglue         \NC \NR
+\NC          \NC scan_toks         \NC scantoks         \NC \NR
+\NC          \NC scan_code         \NC scancode         \NC \NR
+\NC          \NC scan_string       \NC scanstring       \NC \NR
+\NC          \NC scan_argument     \NC scanargument     \NC \NR
+\NC          \NC scan_word         \NC scanword         \NC \NR
+\NC          \NC scan_csname       \NC scancsname       \NC \NR
+\NC          \NC scan_list         \NC scanlist         \NC \NR
+\NC          \NC scan_box          \NC scanbox          \NC \NR
+\LL
+\stoptabulate
+
+It's all part of trying to make the code base consistent but it is sometimes a
+bit annoying. However, that's why we develop this engine independent of the
+\LUATEX\ code base. It's anyway a change that has been on my todo list for quite
+a while because those inconsistencies annoyed me. It might take some years to
+get all done.
 
 \stopsubsection
 

@@ -450,8 +450,8 @@
    \else
     %\tracingpages\plusone \tracingonline\plustwo
      \begingroup
-     \pageboundarypenalty\plustenthousand
-     \pageboundary % becomes a penalty (after triggering the callback) (experimental!)
+   % \pageboundarypenalty\plustenthousand % is now:
+     \pageboundary\plustenthousand % becomes a penalty (after triggering the callback) (experimental!)
      \endgroup
     %\tracingpages\zerocount
    \fi

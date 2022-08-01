@@ -368,6 +368,9 @@
 \permanent\def\structurelistlocation
   {\clf_listlocation\numexpr\currentlistindex\relax}
 
+\permanent\def\structurelistrawnumber#1%
+  {\clf_rawlistnumber\numexpr\currentlistindex\relax{#1}}
+
 \permanent\def\structurelistrealpagenumber
   {\clf_listrealpage{\currentlist}\numexpr\currentlistindex\relax}
 

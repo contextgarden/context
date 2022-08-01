@@ -4,7 +4,7 @@
 
 \startcomponent luametatex-building
 
-\startchapter[reference=building,title={Building paragraphs and pages}]
+\startchapter[reference=building,title={Boxes, paragraphs and pages}]
 
 \startsection[title={Introduction}]
 
@@ -20,12 +20,849 @@ other chapters. These enhancements are still somewhat experimental.
 
 \stopsection
 
+\startsection[title=Directions]
+
+\topicindex {\OMEGA}
+\topicindex {\ALEPH}
+\topicindex {directions}
+
+\startsubsection[title={Two directions}]
+
+The directional model in \LUAMETATEX\ is a simplified version the the model used
+in \LUATEX. In fact, not much is happening at all: we only register a change in
+direction.
+
+\stopsubsection
+
+\startsubsection[title={How it works}]
+
+The approach is that we try to make node lists balanced but also try to avoid
+some side effects. What happens is quite intuitive if we forget about spaces
+(turned into glue) but even there what happens makes sense if you look at it in
+detail. However that logic makes in|-|group switching kind of useless when no
+properly nested grouping is used: switching from right to left several times
+nested, results in spacing ending up after each other due to nested mirroring. Of
+course a sane macro package will manage this for the user but here we are
+discussing the low level injection of directional information.
+
+This is what happens:
+
+\starttyping
+\textdirection 1 nur {\textdirection 0 run \textdirection 1 NUR} nur
+\stoptyping
+
+This becomes stepwise:
+
+\startnarrower
+\starttyping
+injected: [push 1]nur {[push 0]run [push 1]NUR} nur
+balanced: [push 1]nur {[push 0]run [pop 0][push 1]NUR[pop 1]} nur[pop 0]
+result  : run {RUNrun } run
+\stoptyping
+\stopnarrower
+
+And this:
+
+\starttyping
+\textdirection 1 nur {nur \textdirection 0 run \textdirection 1 NUR} nur
+\stoptyping
+
+becomes:
+
+\startnarrower
+\starttyping
+injected: [+TRT]nur {nur [+TLT]run [+TRT]NUR} nur
+balanced: [+TRT]nur {nur [+TLT]run [-TLT][+TRT]NUR[-TRT]} nur[-TRT]
+result  : run {run RUNrun } run
+\stoptyping
+\stopnarrower
+
+Now, in the following examples watch where we put the braces:
+
+\startbuffer
+\textdirection 1 nur {{\textdirection 0 run} {\textdirection 1 NUR}} nur
+\stopbuffer
+
+\typebuffer
+
+This becomes:
+
+\startnarrower
+\getbuffer
+\stopnarrower
+
+Compare this to:
+
+\startbuffer
+\textdirection 1 nur {{\textdirection 0 run }{\textdirection 1 NUR}} nur
+\stopbuffer
+
+\typebuffer
+
+Which renders as:
+
+\startnarrower
+\getbuffer
+\stopnarrower
+
+So how do we deal with the next?
+
+\startbuffer
+\def\ltr{\textdirection 0\relax}
+\def\rtl{\textdirection 1\relax}
+
+run {\rtl nur {\ltr run \rtl NUR \ltr run \rtl NUR} nur}
+run {\ltr run {\rtl nur \ltr RUN \rtl nur \ltr RUN} run}
+\stopbuffer
+
+\typebuffer
+
+It gets typeset as:
+
+\startnarrower
+\startlines
+\getbuffer
+\stoplines
+\stopnarrower
+
+We could define the two helpers to look back, pick up a skip, remove it and
+inject it after the dir node. But that way we loose the subtype information that
+for some applications can be handy to be kept as|-|is. This is why we now have a
+variant of \prm {textdirection} which injects the balanced node before the skip.
+Instead of the previous definition we can use:
+
+\startbuffer[def]
+\def\ltr{\linedirection 0\relax}
+\def\rtl{\linedirection 1\relax}
+\stopbuffer
+
+\typebuffer[def]
+
+and this time:
+
+\startbuffer[txt]
+run {\rtl nur {\ltr run \rtl NUR \ltr run \rtl NUR} nur}
+run {\ltr run {\rtl nur \ltr RUN \rtl nur \ltr RUN} run}
+\stopbuffer
+
+\typebuffer[txt]
+
+comes out as a properly spaced:
+
+\startnarrower
+\startlines
+\getbuffer[def,txt]
+\stoplines
+\stopnarrower
+
+Anything more complex that this, like combination of skips and penalties, or
+kerns, should be handled in the input or macro package because there is no way we
+can predict the expected behaviour. In fact, the \prm {linedirection} is just a
+convenience extra which could also have been implemented using node list parsing.
+
+Directions are complicated by the fact that they often need to work over groups
+so a separate grouping related stack is used. A side effect is that there can be
+paragraphs with only a local par node followed by direction synchronization
+nodes. Paragraphs like that are seen as empty paragraphs and therefore ignored.
+Because \prm {noindent} doesn't inject anything but a \prm {indent} injects
+an box, paragraphs with only an indent and directions are handles and paragraphs
+with content. When indentation is normalized a paragraph with an indentation
+skip is seen as content.
+
+\stopsubsection
+
+\startsubsection[title={Normalizing lines}]
+
+The original \TEX\ machinery was never meant to be opened up. As a consequence a
+constructed line can have different layouts. There can be left- and/or right
+skips and hanging indentation or parshape can result in a shift and adapted
+width. In \LUATEX\ glue got subtypes so we can recognize the left-, right and
+parfill skips, but still there is no hundred percent certainty about the shape.
+
+In \LUAMETATEX\ lines can be normalized. This is optional because we want to
+preserve the original (for comparison) and is controlled by \prm
+{normalizelinemode}. That variable actually drives some more. An earlier version
+provided a few more granular options (for instance: does a leftskip comes before
+or after a left hanging indentation) but in the end that was dropped. Because
+this normalization only is seen at the \LUA\ end there is no need to go into much
+detail here.
+
+At this moment a line has this pattern: left parfill, left hang, left skip,
+indentation, content, right hang, right skip, right parfill. Of course the
+indentation and fill skips are not present in every line.
+
+Control over normalization happens via the mentioned mode variable and here is
+what the engine provides right now. We use a bitmap:
+
+\starttabulate[|l|l|]
+\DB value \BC reported \NC \NR
+\TB
+\NC \type{0x0001} \NC normalize line as described above            \NC \NR
+\NC \type{0x0002} \NC use a skip for parindent instead of a box    \NC \NR
+\NC \type{0x0004} \NC swap hangindent in l2r mode                  \NC \NR
+\NC \type{0x0008} \NC swap parshape in l2r mode                    \NC \NR
+\NC \type{0x0010} \NC put breaks after dir in l2r mode             \NC \NR
+\NC \type{0x0020} \NC remove margin kerns (\PDFTEX\ left-over)     \NC \NR
+\NC \type{0x0040} \NC if needed clip width and use correction kern \NC \NR
+\LL
+\stoptabulate
+
+Setting the bit enables the related normalization. More features might be added
+in future releases.
+
+% Swapping shapes
+%
+% Another adaptation to the \ALEPH\ directional model is control over shapes driven
+% by \prm {hangindent} and \prm {parshape}. This is controlled by a new parameter
+% \prm {shapemode}:
+%
+% \starttabulate[|c|l|l|]
+% \DB value    \BC \prm {hangindent} \BC \prm {parshape} \NC \NR
+% \TB
+% \BC \type{0} \NC  normal             \NC normal            \NC \NR
+% \BC \type{1} \NC  mirrored           \NC normal            \NC \NR
+% \BC \type{2} \NC  normal             \NC mirrored          \NC \NR
+% \BC \type{3} \NC  mirrored           \NC mirrored          \NC \NR
+% \LL
+% \stoptabulate
+%
+% The value is reset to zero (like \prm {hangindent} and \prm {parshape})
+% after the paragraph is done with. You can use negative values to prevent
+% this. In \in {figure} [fig:shapemode] a few examples are given.
+%
+% \startplacefigure[reference=fig:shapemode,title={The effect of \type {shapemode}.}]
+%     \startcombination[2*3]
+%         {\ruledvbox \bgroup \setuptolerance[verytolerant]
+%             \hsize .45\textwidth \switchtobodyfont[6pt]
+%                 \pardirection 0 \textdirection 0
+%                 \hangindent 40pt \hangafter -3
+%                 \leftskip10pt \input tufte \par
+%          \egroup} {TLT: hangindent}
+%         {\ruledvbox \bgroup \setuptolerance[verytolerant]
+%             \hsize .45\textwidth \switchtobodyfont[6pt]
+%             \pardirection 0 \textdirection 0
+%             \parshape 4 0pt .8\hsize 10pt .8\hsize 20pt .8\hsize 0pt \hsize
+%             \input tufte \par
+%          \egroup} {TLT: parshape}
+%         {\ruledvbox \bgroup \setuptolerance[verytolerant]
+%             \hsize .45\textwidth \switchtobodyfont[6pt]
+%             \pardirection 1 \textdirection 1
+%             \hangindent 40pt \hangafter -3
+%             \leftskip10pt \input tufte \par
+%          \egroup} {TRT: hangindent mode 0}
+%         {\ruledvbox \bgroup \setuptolerance[verytolerant]
+%             \hsize .45\textwidth \switchtobodyfont[6pt]
+%             \pardirection 1 \textdirection 1
+%             \parshape 4 0pt .8\hsize 10pt .8\hsize 20pt .8\hsize 0pt \hsize
+%             \input tufte \par
+%          \egroup} {TRT: parshape mode 0}
+%         {\ruledvbox \bgroup \setuptolerance[verytolerant]
+%             \hsize .45\textwidth \switchtobodyfont[6pt]
+%             \shapemode=3
+%             \pardirection 1 \textdirection 1
+%             \hangindent 40pt \hangafter -3
+%             \leftskip10pt \input tufte \par
+%          \egroup} {TRT: hangindent mode 1 & 3}
+%         {\ruledvbox \bgroup \setuptolerance[verytolerant]
+%             \hsize .45\textwidth \switchtobodyfont[6pt]
+%             \shapemode=3
+%             \pardirection 1 \textdirection 1
+%             \parshape 4 0pt .8\hsize 10pt .8\hsize 20pt .8\hsize 0pt \hsize
+%             \input tufte \par
+%          \egroup} {TRT: parshape mode 2 & 3}
+%     \stopcombination
+% \stopplacefigure
+%
+% We have \type {\pardirection}, \type {\textdirection}, \type {\mathdirection} and
+% \type {\linedirection} that is like \type {\textdirection} but with some
+% additional (inline) glue checking.
+
+% Controlling glue with \prm {breakafterdirmode}
+%
+% Glue after a dir node is ignored in the linebreak decision but you can bypass that
+% by setting \prm {breakafterdirmode} to~\type {1}. The following table shows the
+% difference. Watch your spaces.
+%
+% \def\ShowSome#1{%
+%     \BC \type{#1}
+%     \NC \breakafterdirmode\zerocount\hsize\zeropoint#1
+%     \NC
+%     \NC \breakafterdirmode\plusone\hsize\zeropoint#1
+%     \NC
+%     \NC \NR
+% }
+%
+% \starttabulate[|l|Tp(1pt)|w(5em)|Tp(1pt)|w(5em)|]
+%     \DB
+%     \BC \type{0}
+%     \NC
+%     \BC \type{1}
+%     \NC
+%     \NC \NR
+%     \TB
+%     \ShowSome{pre {\textdirection 0 xxx} post}
+%     \ShowSome{pre {\textdirection 0 xxx }post}
+%     \ShowSome{pre{ \textdirection 0 xxx} post}
+%     \ShowSome{pre{ \textdirection 0 xxx }post}
+%     \ShowSome{pre { \textdirection 0 xxx } post}
+%     \ShowSome{pre {\textdirection 0\relax\space xxx} post}
+%     \LL
+% \stoptabulate
+
+\stopsubsection
+
+\startsubsection[title=Orientations]
+
+\topicindex {boxes+orientations}
+
+As mentioned, the difference with \LUATEX\ is that we only have numeric
+directions and that there are only two: left|-|to|-|right (\type {0}) and
+right|-|to|-|left (\type {1}). The direction of a box is set with \type
+{direction}.
+
+In addition to that boxes can now have an \type {orientation} keyword followed by
+optional \type {xoffset} and|/|or \type {yoffset} keywords. The offsets don't
+have consequences for the dimensions. The alternatives \type {xmove} and \type
+{ymove} on the contrary are reflected in the dimensions. Just play with them. The
+offsets and moves only are accepted when there is also an orientation, so no time
+is wasted on testing for these rarely used keywords. There are related primitives
+\type {\box...} that set these properties.
+
+As these are experimental it will not be explained here (yet). They are covered
+in the descriptions of the development of \LUAMETATEX: articles and|/|or
+documents in the \CONTEXT\ distribution. For now it is enough to know that the
+orientation can be up, down, left or right (rotated) and that it has some
+anchoring variants. Combined with the offsets this permits macro writers to
+provide solutions for top|-|down and bottom|-|up writing directions, something
+that is rather macro package specific and used for scripts that need
+manipulations anyway. The \quote {old} vertical directions were never okay and
+therefore not used.
+
+There are a couple of properties in boxes that you can set and query but that
+only really take effect when the backend supports them. When usage on \CONTEXT\
+shows that is't okay, they will become official, so we just mention them: \prm
+{boxdirection}, \prm {boxattribute}, \prm {boxorientation}, \prm {boxxoffset},
+\prm {boxyoffset}, \prm {boxxmove}, \prm {boxymove} and \prm {boxtotal}.
+
+{\em This is still somewhat experimental and will be documented in more detail
+when I've used it more in \CONTEXT\ and the specification is frozen. This might
+take some time (and user input).}
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={Boxes, rules and leaders}]
+
+\startsubsection[title={\prm {outputbox}}]
+
+\topicindex {output}
+
+This integer parameter allows you to alter the number of the box that will be
+used to store the page sent to the output routine. Its default value is 255, and
+the acceptable range is from 0 to 65535.
+
+\startsyntax
+\outputbox = 12345
+\stopsyntax
+
+\stopsubsection
+
+\startsubsection[title={\prm {hrule}, \prm {vrule}, \prm {srule}, \prm {nohrule} and \prm {novrule}}]
+
+\topicindex {rules}
+
+Both rule drawing commands take an optional \type {xoffset} and \type {yoffset}
+parameter. The displacement is virtual and not taken into account when the
+dimensions are calculated. A rule is specified in the usual way:
+
+\obeydepth
+
+\startbuffer
+\blue \vrule
+    height 2ex depth 1ex width 10cm
+\relax
+\stopbuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+There is however a catch. The keyword scanners in \LUAMETATEX\ are implemented
+slightly different. When \TEX\ scans a keyword it will (case insensitive) scan
+for a whole keyword. So, it scans for \type {height} and when it doesn't find it
+it will scan for \type {depth} etc. When it does find a keyword in this case it
+expects a dimension next. When that criterium is not met it will issue an error
+message.
+
+In order to avoid look ahead failures like that it is recommended to end the
+specification with \type {\relax}. A glue specification is an other example where
+a \type {\relax} makes sense when look ahead issues are expected and actually
+there in traditional scanning the order of keywords can also matter. In any case,
+when no valid keyword is seen the characters scanned so far are pushed back in
+the input.
+
+The main reason for using an adapted scanner is that we always permit repetition
+(consistency) and accept an arbitrary order. Because we have more keywords to
+process the scanner quits at a partial failure. This prevents some push back and
+also gives an earlier warning. Interesting is that some \CONTEXT\ users ran into
+error messages due to a missing \type {\relax} and found out that their style has
+a potential flaw with respect to look ahead. One can be lucky for years.
+
+Back to rules, there are some extra keywords, two deal with an offset, and four
+provide margins. The margins are a bit special because \type {left} and \type
+{top} are the same as are \type {right} and \type {bottom}. They influence the
+edges and these depend on it being a horizontal or vertical rule.
+
+\obeydepth
+
+\startbuffer
+\blue \vrule
+    height 2.0ex depth 1.0ex width 10cm
+\relax
+\white \vrule
+    height 1.0ex depth 0.5ex width  9cm
+    xoffset -9.5cm yoffset .25ex
+\relax
+\blue \vrule
+    height .5ex depth 0.25ex width  8cm
+    xoffset -18cm yoffset .375ex top 1pt
+\relax
+\stopbuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Two new primitives were introduced: \prm {nohrule} and \prm {novrule}. These can
+be used to reserve space. This is often more efficient than creating an empty box
+with fake dimensions. Of course this assumes that the backend implements them
+being invisible but still taking space.
+
+An \prm {srule} is sort of special. In text mode it is just a convenience (we
+could do without it for ages) but in math mode it comes in handy when we want to
+enforce consistency. \footnote {In \CONTEXT\ there is a lot of focus on
+consistent vertical spacing, something that doesn't naturally comes with \TEX\
+(you have to pay attention!) and therefore for decades now you can find plenty of
+documents with bad spacing of a nature that has seem to have become accepted as
+quality. This probably makes these \prm {srule}'s one of the few primitives that
+actually targets at \CONTEXT.}
+
+As with all rules, the backend will makes rules span the width or height and
+depth of the encapsulating box. An \prm {srule} is just a \prm {vrule} but is set
+up such that it can adapt itself:
+
+\startbuffer
+\hbox to 3cm {x\leaders\hrule\hfil x}
+\hbox{x \vrule width 4cm \relax x}
+\hbox{x \srule width 4cm \relax x}
+\hbox{x \vrule font \font char `( width 4cm \relax x}
+\hbox{x \srule font \font char `( width 4cm \relax x}
+\hbox{$x \srule fam \fam  char `( width 4cm \relax x$}
+\hbox{$x \vrule fam \fam  char `( width 4cm \relax x$}
+\stopbuffer
+
+\typebuffer
+
+You can hard code the height and depth or get it from a font|/|family|/|character
+combination. This is especially important in math mode where then can adapt to
+(stylistic) circumstances.
+
+\startlines
+\showboxes\getbuffer
+\stoplines
+
+Because this kind of rules has a dedicated subtype you can intercept it in the backend
+if needed.
+
+\stopsubsection
+
+\startsubsection[title={\prm {vsplit}}]
+
+\topicindex {splitting}
+
+The \prm {vsplit} primitive has to be followed by a specification of the required
+height. As alternative for the \type {to} keyword you can use \type {upto} to get
+a split of the given size but result has the natural dimensions then.
+
+\starttyping
+\vsplit 123 to   10cm % final box has the required height
+\vsplit 123 upto 10cm % final box has its natural height
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={\prm {boxxoffset}, \prm {boxyoffset}, \prm {boxxmove}, \prm {boxymove},
+\prm{boxorientation} and \prm{boxgeometry}}]
+
+This repertoire of primitives can be used to do relative positioning. The offsets
+are virtual while the moves adapt the dimensions. The orientation bitset can be
+used to rotate the box over 90, 180 and 270 degrees. It also influences the
+corner, midpoint or baseline.
+
+{\em There is information in the \CONTEXT\ low level manuals and in due time I
+will add a few examples here. This feature needs support in the backend when used
+(as in \CONTEXT) so it might influence performance.}
+
+\stopsubsection
+
+\startsubsection[title={\prm {boxtotal}}]
+
+The \prm {boxtotal} primitive returns the sum of the height and depth and is less
+useful as setter: it just sets the height and depth to half of the given value.
+
+\stopsubsection
+
+\startsubsection[title={\prm {boxshift}}]
+
+In traditional \TEX\ a box has height, depth, width and a shift where the later
+relates to \prm {raise}, \prm {lower}, \prm {moveleft} and \prm {moveright}. This
+primitive can be used to query and set this property.
+
+\startbuffer
+\setbox0\hbox{test test test}
+\setbox2\hbox{test test test} \boxshift2 -10pt
+\ruledhbox{x \raise10pt\box0\ x}
+\ruledhbox{x           \box2\ x}
+\stopbuffer
+
+\typebuffer
+
+\stopsubsection
+
+\startsubsection[title={\prm {boxanchor}, \prm {boxanchors}, \prm {boxsource} and \prm {boxtarget}}]
+
+{\em These are experimental.}
+
+\stopsubsection
+
+\startsubsection[title={\prm {boxfreeze}, \prm {boxadapt} and \prm {boxrepack}}]
+
+\topicindex {boxes+postprocessing}
+
+This operation will freeze the glue in the given box, something that normally is
+delayed and delegated to the backend.
+
+\startbuffer
+\setbox    0 \hbox to 5cm {\hss test}
+\setbox    2 \hbox to 5cm {\hss test}
+\boxfreeze 2 0
+\ruledhbox{\unhbox   0}
+\ruledhbox{\unhbox   2}
+\stopbuffer
+
+\typebuffer
+
+The second parameter to \prm {boxfreeze} determines recursion. Here we just
+freeze the outer level:
+
+\getbuffer
+
+Repacking will take the content of an existing box and add or subtract from it:
+
+\startbuffer
+\setbox 0 \hbox        {test test test}
+\setbox 2 \hbox {\red   test test test} \boxrepack0 +.2em
+\setbox 4 \hbox {\green test test test} \boxrepack0 -.2em
+\ruledhbox{\box0} \vskip-\lineheight
+\ruledhbox{\box0} \vskip-\lineheight
+\ruledhbox{\box0}
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+We can use this primitive to check the natural dimensions:
+
+\startbuffer
+\setbox 0 \hbox spread 10pt {test test test}
+\ruledhbox{\box0} (\the\boxrepack0,\the\wd0)
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Adapting will recalculate the dimensions with a scale factor for the glue:
+
+\startbuffer
+\setbox 0 \hbox       {test test test}
+\setbox 2 \hbox {\red  test test test} \boxadapt 0   200
+\setbox 4 \hbox {\blue test test test} \boxadapt 0  -200
+\ruledhbox{\box0} \vskip-\lineheight
+\ruledhbox{\box0} \vskip-\lineheight
+\ruledhbox{\box0}
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stopsubsection
+
+\startsubsection[title={Overshooting dimensions}]
+
+\topicindex {boxes+overfull}
+
+The \prm {overshoot} primitive reports the most recent amount of overshoot when a
+box is packages. It relates to overfull boxes and the then set \prm {badness} of
+1000000.
+
+\startbuffer
+\hbox to 2cm {does it fit}               \the\overshoot
+\hbox to 2cm {does it fit in here}       \the\overshoot
+\hbox to 2cm {how much does fit in here} \the\overshoot
+\stopbuffer
+
+\typebuffer
+
+This global state variables reports a dimension:
+
+\startlines
+\getbuffer
+\stoplines
+
+\stopsubsection
+
+\startsubsection[title={Images and reused box objects},reference=sec:imagesandforms]
+
+\topicindex {images}
+
+In original \TEX\ image support is dealt with via specials. It's not a native
+feature of the engine. All that \TEX\ cares about is dimensions, so in practice
+that meant: using a box with known dimensions that wraps a special that instructs
+the backend to include an image. The wrapping is needed because a special itself
+is a whatsit and as such has no dimensions.
+
+In \PDFTEX\ a special whatsit for images was introduced and that one {\em has}
+dimensions. As a consequence, in several places where the engine deals with the
+dimensions of nodes, it now has to check the details of whatsits. By inheriting
+code from \PDFTEX, the \LUATEX\ engine also had that property. However, at some
+point this approach was abandoned and a more natural trick was used: images (and
+box resources) became a special kind of rules, and as rules already have
+dimensions, the code could be simplified.
+
+When direction nodes and (formerly local) par nodes also became first class
+nodes, whatsits again became just that: nodes representing whatever you want, but
+without dimensions, and therefore they could again be ignored when dimensions
+mattered. And, because images were disguised as rules, as mentioned, their
+dimensions automatically were taken into account. This separation between front
+and backend cleaned up the code base already quite a bit.
+
+In \LUAMETATEX\ we still have the image specific subtypes for rules, but the
+engine never looks at subtypes of rules. That was up to the backend. This means
+that image support is not present in \LUAMETATEX. When an image specification was
+parsed the special properties, like the filename, or additional attributes, were
+stored in the backend and all that \LUATEX\ does is registering a reference to an
+image's specification in the rule node. But, having no backend means nothing is
+stored, which in turn would make the image inclusion primitives kind of weird.
+
+Therefore you need to realize that contrary to \LUATEX, {\em in \LUAMETATEX\
+support for images and box reuse is not built in}! However, we can assume that
+an implementation uses rules in a similar fashion as \LUATEX\ does. So, you can
+still consider images and box reuse to be core concepts. Here we just mention the
+primitives that \LUATEX\ provides. They are not available in the engine but can
+of course be implemented in \LUA.
+
+\starttabulate[|l|p|]
+\DB command \BC explanation \NC \NR
+\TB
+\NC \tex {saveboxresource}             \NC save the box as an object to be included later \NC \NR
+\NC \tex {saveimageresource}           \NC save the image as an object to be included later \NC \NR
+\NC \tex {useboxresource}              \NC include the saved box object here (by index) \NC \NR
+\NC \tex {useimageresource}            \NC include the saved image object here (by index) \NC \NR
+\NC \tex {lastsavedboxresourceindex}   \NC the index of the last saved box object \NC \NR
+\NC \tex {lastsavedimageresourceindex} \NC the index of the last saved image object \NC \NR
+\NC \tex {lastsavedimageresourcepages} \NC the number of pages in the last saved image object \NC \NR
+\LL
+\stoptabulate
+
+An implementation probably should accept the usual optional dimension parameters
+for \type {\use...resource} in the same format as for rules. With images, these
+dimensions are then used instead of the ones given to \tex {useimageresource} but
+the original dimensions are not overwritten, so that a \tex {useimageresource}
+without dimensions still provides the image with dimensions defined by \tex
+{saveimageresource}. These optional parameters are not implemented for \tex
+{saveboxresource}.
+
+\starttyping
+\useimageresource width 20mm height 10mm depth 5mm \lastsavedimageresourceindex
+\useboxresource   width 20mm height 10mm depth 5mm \lastsavedboxresourceindex
+\stoptyping
+
+Examples or optional entries are \type {attr} and \type {resources} that accept a
+token list, and the \type {type} key. When set to non|-|zero the \type {/Type}
+entry is omitted. A value of 1 or 3 still writes a \type {/BBox}, while 2 or 3
+will write a \type {/Matrix}. But, as said: this is entirely up to the backend.
+Generic macro packages (like \type {tikz}) can use these assumed primitives so
+one can best provide them. It is probably, for historic reasons, the only more or
+less standardized image inclusion interface one can expect to work in all macro
+packages.
+
+\stopsubsection
+
+\startsubsection[title={\prm {hpack}, \prm {vpack} and \prm {tpack}}]
+
+\topicindex {packing}
+
+These three primitives are the equivalents of \prm {hbox}, \prm {vbox} and
+\prm {vtop} but they don't trigger the packaging related callbacks. Of course
+one never know if content needs a treatment so using them should be done with
+care. Apart from accepting more keywords (and therefore options) the normal
+box behave the same as before. The \prm {vcenter} builder also works in text
+mode.
+
+\stopsubsection
+
+\startsubsection[title={\prm {unhpack}, \prm {unvpack}}]
+
+\topicindex {unpacking}
+
+These two are somewhat experimental. They ignore the accumulated pre- and
+postmigrated material bound to a box. I needed it for some experiment so the
+functionality might change when I really need it.
+
+\stopsubsection
+
+\startsubsection[title={\prm {gleaders} and \prm {uleaders}},reference=sec:gleaders]
+
+\topicindex {leaders}
+
+This type of leaders is anchored to the origin of the box to be shipped out. So
+they are like normal \prm {leaders} in that they align nicely, except that the
+alignment is based on the {\it largest\/} enclosing box instead of the {\it
+smallest\/}. The \type {g} stresses this global nature. The \prm {uleaders} are
+used for flexible boxes and are discussed elsewhere.
+
+\stopsubsection
+
+\stopsection
+
 \startsection[title={Paragraphs}]
 
-{\em This section will describe \prm {autoparagraphmode}, \prm
-{shapingpenaltiesmode}, \prm {shapingpenaltymode}, \prm {everybeforepar}, \prm
-{snapshotpar}, \prm {wrapuppar}, \prm {orphanpenalties}, \prm {orphanpenalty},
-enz. For the moment the manuals that come with \CONTEXT\ have to do.}
+\startsubsection[title=Freezing]
+
+In \LUAMETATEX\ we store quite some properties with a paragraph. Where in traditional
+\TEX\ the properties that are set when the paragraph broken into lines are used, here
+we can freeze them.
+
+{\em At some point this section will describe \prm {autoparagraphmode}, \prm
+{everybeforepar}, \prm {snapshotpar}, \prm {wrapuppar}, etc. For the moment the
+manuals that come with \CONTEXT\ have to do.}
+
+\stopsubsection
+
+\startsubsection[title=Penalties]
+
+In addition to the penalties introduced in \ETEX, we also provide \prm
+{orphanpenalty} and \prm {orphanpenalties}. When we're shaping a paragraph
+an additional \prm {shapingpenalty} can be injected. This penalty gets
+injected instead of the usual penalties when the following bits are set in
+\prm {shapingpenaltiesmode}:
+
+\starttabulate[|l|l|p|]
+\DB value        \BC ignored \NC \NR
+\TB
+\NC \type {0x01} \NC interlinepenalty \NC \NR
+\NC \type {0x02} \NC widowpenalty     \NC \NR
+\NC \type {0x04} \NC clubpenalty      \NC \NR
+\NC \type {0x08} \NC brokenpenalty    \NC \NR
+\LL
+\stoptabulate
+
+When none of these is set the shaping penalty will be added. That way one can
+prevent a page break inside a shape.
+
+\stopsubsection
+
+\startsubsection[title=Criteria]
+
+The linebreak algorithm uses some heuristics for determining the badness of a
+line. In most cases that works quite well. Of course one can run into a bad
+result when one has a large document of weird (extreme) constraints and it can be
+tempting to mess around with parameters which then of course can lead to bad
+results in other places. A solution is is to locally tweak penalties or looseness
+but one can also just accept the occasional less optimal result (after all there
+are plenty occasions to make a document look bad otherwise so best focus on the
+average first). That said, it is tempting to see if changing the hard codes
+criteria makes a difference. Experiments with this demonstrated the usual: when
+asked what looks best contradictions mix with expectations and being triggered by
+events that one related to \TEX, like successive hyphenated lines.
+
+The \prm {linebreakcriterium} parameter can be set to a value made from four bytes. We're
+not going to explain the magic numbers because they come from and are discussed in original
+\TEX. It is enough to know that we have four criteria:
+
+\starttabulate[|l|l|p|]
+\DB magic \BC bound to   \NC bytes      \NC \NR
+\TB
+\NC 12    \NC semi tight \NC 0x7F...... \NC \NR
+\NC 12    \NC decent     \NC 0x..7F.... \NC \NR
+\NC 12    \NC semi loose \NC 0x....7F.. \NC \NR
+\NC 99    \NC loose      \NC 0x......7F \NC \NR
+\LL
+\stoptabulate
+
+These four values can be changed according to the above pattern and are limited
+to the range 1\endash127 which is plenty especially when one keeps in mind that
+the actual useful values sit around the 12 anyway. Values outside the range (and
+therefore an all|-|over zero assignment) makes the defaults kick in.
+
+The original decisions are made in the following way:
+
+\starttyping
+function loose(badness)
+    if badness > loose_criterium then
+        return very_loose_fit
+    elseif badness > decent_criterium then
+        return loose_fit
+    else {
+        return decent_fit
+    end
+end
+
+function tight(badness)
+    if badness > decent_criterium then
+        return tight_fit
+    else {
+        return decent_fit
+    end
+end
+\stoptyping
+
+while in \LUAMETATEX\ we use (again in \LUA speak):
+
+\starttyping
+function loose(badness)
+    if badness > loose then
+        return very_loose_fit
+    elseif badness > semi_loose then
+        return semi_loose_fit
+    elseif badness > decent then
+        return loose_fit
+    else
+        return decent_fit
+    end
+end
+
+function tight(badness)
+    if badness > semi_tight then
+        return semi_tight_fit
+    else if badness > decent then
+        return tight_fit
+    else
+        return decent_fit
+    end
+end
+\stoptyping
+
+So we have a few more steps to play with. But don't be disappointed when it
+doesn't work out as you expect. Don Knuth did a good job on the heuristics and
+after many decades there is no real need to change something. Consider it a
+playground.
+
+\stopsubsection
 
 \stopsection
 
@@ -59,9 +896,15 @@ very early in the macro package loading process.
 \NC \prm {insertpenalty}    \NC \prm {insertpenalties} \NC the floating penalty (used when set) \NC \NR
 \NC \prm {insertmaxdepth}   \NC \prm {maxdepth}        \NC the maximum split depth (used when set) \NC \NR
 \NC \prm {insertstorage}    \NC                        \NC signals that the insert has to be stored for later \NC \NR
-\NC \prm {insertheight}     \NC \prm {ht} box          \NC the accumulated height of the inserts so far \NC \NR
-\NC \prm {insertdepth}      \NC \prm {dp} box          \NC the current depth of the inserts so far \NC \NR
-\NC \prm {insertwidth}      \NC \prm {wd} box          \NC the width of the inserts \NC \NR
+\NC \prm {insertheight}     \NC \prm {ht} box / index  \NC the accumulated height of the inserts so far \NC \NR
+\NC \prm {insertdepth}      \NC \prm {dp} box / index  \NC the current depth of the inserts so far \NC \NR
+\NC \prm {insertwidth}      \NC \prm {wd} box / index  \NC the width of the inserts \NC \NR
+\NC \prm {insertbox}        \NC box / index            \NC the boxed content \NC \NR
+\NC \prm {insertcopy}       \NC box / index            \NC a copy of the boxed content \NC \NR
+\NC \prm {insertunbox}      \NC box / index            \NC the unboxed content \NC \NR
+\NC \prm {insertuncopy}     \NC box / index            \NC a copy of the unboxed content \NC \NR
+\NC \prm {insertuncopy}     \NC box / index            \NC a copy of the unboxed content \NC \NR
+\NC \prm {insertprogress}   \NC box / index            \NC the currently accumulated height \NC \NR
 \LL
 \stoptabulate
 
@@ -88,6 +931,8 @@ The \LUAMETATEX\ engine has some tracing built in that is enabled by setting \pr
 
 \startsection[title={Marks}]
 
+\topicindex {marks}
+
 Marks are kind of signal nodes in the list that refer to stored token lists. When
 a page has been split off and is handed over to the output routine these signals
 are resolved into first, top and bottom mark references that can (for instance)
@@ -98,6 +943,13 @@ In \ETEX\ the standard \TEX\ primitives \prm {mark}, \prm {firstmark}, \prm
 been extended with plural forms that accent a number before the token list. That
 number indicates a mark class.
 
+In addition to the mark fetch commands, we also have access to the last set
+mark in the given class with \prm {currentmarks}:
+
+\startsyntax
+\currentmarks <16-bit number>
+\stopsyntax
+
 A problem with marks is that one cannot really reset them. Mark states are kept
 in the node lists and only periodically the state is snapshot into the global
 state variables. The \LUATEX\ engine can reset these global states with \prm
@@ -106,12 +958,28 @@ state variables. The \LUATEX\ engine can reset these global states with \prm
 This permits implementing controlled resets of specific marks at the cost of a
 possible interfering mode, but that can normally be dealt with rather well.
 
+The \prm {clearmarks} primitive complements the \ETEX\ mark primitives and clears
+a mark class completely, resetting all three connected mark texts to empty. It is
+an immediate command (no synchronization node is used).
+
+\startsyntax
+\clearmarks <16-bit number>
+\stopsyntax
+
+The \prm {flushmarks} variant is delayed but puts a (mark) node in the list as
+signal (we could have gone for a keyword to \prm {marks} instead).
+
+\startsyntax
+\flushmarks <16-bit number>
+\stopsyntax
+
 Another problem with marks is that when they are buried too deep, a property they
 share with inserts, they become invisible. This can be dealt with by the
 migration feature described in the next section.
 
 The \LUAMETATEX\ engine has some tracing built in that is enabled by setting \prm
-{tracingmarks} to a positive value.
+{tracingmarks} to a positive value. When set to~1 the page builder shows the set
+values, and when set to a higher value details about collecting them are shown.
 
 \stopsection
 
@@ -144,6 +1012,16 @@ which is why the value has to be at least 2 in order to be compatible with other
 
 \startsection[title={Migration}]
 
+There are a few injected node types that are used to track information: marks,
+inserts and adjusts (see previous sections). Marks are token lists that can be
+used to register states like section numbers and titles they are synchronized in
+the page builder when a page is shipped out. Inserts are node lists that get
+rendered and relate to specific locations and these are flushed with the main
+vertical list which also means that in calculating page breaks they need to be
+taken into account. An Adjust is material that gets injected before or after a
+line. Strictly spoke local boxes also in this repertoire but they are dealt with
+in the par builder.
+
 A new primitive \prm {automigrationmode} can be used to let deeply burried marks
 and inserts bubble up to the outer level.
 
@@ -162,6 +1040,22 @@ If you want to migrate marks and inserts you need to set all these flags. Migrat
 marks and inserts end up as post|-|box properties and will be handled in the page
 builder as such. At the \LUA\ end you can add pre- and post|-|box material too.
 
+The primitive register \prm {holdingmigrations} is a bitset that can be used to temporarily
+disable migrations. It is a generalization of \prm {holdinginserts}.
+
+\starttabulate[|cT|p|]
+\DB value \BC explanation \NC \NR
+\TB
+\NC 0x01  \NC marks   \NC \NR
+\NC 0x02  \NC inserts \NC \NR
+\NC 0x04  \NC adjusts \NC \NR
+\LL
+\stoptabulate
+
+Migrates material is bound to boxes so boxed material gets unboxed it is taken
+into account, but you should be aware of potential side effects. But then, marks,
+inserts and adjusts always demanded care.
+
 \stopsection
 
 \startsection[title={Pages}]
@@ -169,6 +1063,57 @@ builder as such. At the \LUA\ end you can add pre- and post|-|box material too.
 The page builder can be triggered by (for instance) a penalty but you can also
 use \prm {pageboundary}. This will trigger the page builder but not leave
 anything behind.
+
+{\em In due time we will discuss \prm {pagevsize}, \prm {pageextragoal} and \prm
+{lastpageextra} but for now we treat them as very experimental and they will be
+tested in \CONTEXT, also in discussion with users.}
+
+\stopsection
+
+\startsection[title={Paragraphs}]
+
+The numeric primitive \prm {lastparcontext} inspector reports the current context
+in which a paragraph triggering commands happened. The numbers can be queried
+with \type {tex.getparcontextvalues()} and currently are: \showvaluelist
+{tex.getparcontextvalues()}. As with the other \type {\last...} primitives this
+variable is global.
+
+Traditional \TEX\ has the \prm {parfillskip} parameter that determines the way
+the last line is filled. In \LUAMETATEX\ we also have \prm {parfillleftskip}. The
+counterparts for the first line are \prm {parinitleftskip} and \prm
+{parinitrightskip}.
+
+\startbuffer
+\leftskip        2em
+\rightskip       \leftskip
+\parfillskip     \zeropoint plus 1 fill
+\parfillleftskip \parfillskip
+\parinitleftskip \parfillleftskip
+\parinitrightskip\parfillleftskip
+\input ward
+\stopbuffer
+
+\typebuffer This results in: \par \start \em \getbuffer \par \stop
+
+An additional tracing primitive \prm {tracingfullboxes} reports details about the
+encountered overfull boxes. This can be rather verbose!
+
+Normally \TEX\ will insert an empty hbox when paragraph indentation is requested
+but when the second bit in \prm {normalizelinemode} has been set \LUAMETATEX\
+will in a glue node instead. You can zero the set value with \prm {undent} unless
+of course some more has been inserted already.
+
+\startbuffer
+\parinitleftskip1cm \parindent 1cm \indent test \par
+\parinitleftskip1cm \parindent 1cm \undent test \par
+\parinitleftskip1cm \parindent 1cm \indent \undent test \par
+\parinitleftskip1cm \parindent 1cm \indent \strut \undent test \par
+\stopbuffer
+
+\typebuffer \startpacked \getbuffer \stoppacked
+
+By setting \prm {tracingpenalties} to a positive value penalties related to
+windows, clubs, lines etc.\ get reported to the output channels.
 
 \stopsection
 
@@ -204,6 +1149,140 @@ keep these boxes. In that case a next paragraph will start fresh. The \type
 
 The commands: \prm {localleftboxbox}, \prm {localrightboxbox} and \prm
 {localmiddleboxbox} return a copy of the current related register content.
+
+\stopsection
+
+\startsection[title={Leaders}]
+
+Leaders are flexible content that are basically just seen as glue and it is up to
+the backend to apply the effective glue to the result as seen in the backend
+(like a rule of box). This means that the frontend doesn't do anything with the
+fact that we have a regular \prm {leaders}, a \prm {gleaders}, \prm {xleaders} or
+\prm {cleaders}. The \prm {uleaders} that has been added in \LUAMETATEX\ is just
+that: an extra leader category. The main difference is that the width of the
+given box is added to the glue. That way we create a stretchable box.
+
+\startbuffer
+\unexpandedloop 1 30 1 {x             \hbox{1 2 3}                                                           x }
+\unexpandedloop 1 30 1 {x {\uleaders \hbox{1 2 3}\hskip 0pt plus 10pt               minus 10pt\relax}        x }
+\unexpandedloop 1 30 1 {x {\uleaders \hbox{1 2 3}\hskip 0pt plus  \interwordstretch minus \interwordshrink}  x }
+\unexpandedloop 1 30 1 {x {\uleaders \hbox{1 2 3}\hskip 0pt plus 2\interwordstretch minus 2\interwordshrink} x }
+\stopbuffer
+
+\typebuffer
+
+Here are some examples:
+
+\startlines
+\getbuffer
+\stoplines
+
+So the flexibility fo the box plays a role in the line break calculations. But in
+the end the backend has to do the work.
+
+\startbuffer[a]
+{\green \hrule width \hsize} \par \vskip2pt
+\vbox to 40pt {
+    {\red\hrule width \hsize} \par \vskip2pt
+    \vbox {
+        \vskip2pt {\blue\hrule width \hsize} \par
+        \vskip 10pt plus 10pt minus 10pt
+        {\blue\hrule width \hsize} \par \vskip2pt
+    }
+    \vskip2pt {\red\hrule width \hsize} \par
+}
+\vskip2pt {\green \hrule width \hsize} \par
+\stopbuffer
+
+\startbuffer[b]
+{\green \hrule width \hsize} \par \vskip2pt
+\vbox to 40pt {
+    {\red\hrule width \hsize} \par \vskip2pt
+    \uleaders\vbox {
+        \vskip2pt {\blue\hrule width \hsize} \par
+        \vskip 10pt plus 10pt minus 10pt
+        {\blue\hrule width \hsize} \par \vskip2pt
+    }\vskip 0pt plus 10pt minus 10pt
+    \vskip2pt {\red\hrule width \hsize} \par
+}
+\vskip2pt {\green \hrule width \hsize} \par
+\stopbuffer
+
+\typebuffer[a]
+
+with
+
+\typebuffer[b]
+
+In the first case we get the this:
+
+\startlinecorrection
+\getbuffer[a]
+\stoplinecorrection
+
+but with \prm {uleaders} we get:
+
+\startlinecorrection
+\normalizeparmode\zerocount
+\getbuffer[b]
+\stoplinecorrection
+
+or this:
+
+\startlinecorrection
+\normalizeparmode"FF
+\getbuffer[b]
+\stoplinecorrection
+
+In the second case we flatten the leaders in the engine by setting the second bit
+in the \prm {normalizeparmode} parameter (\type {0x2}). We actually do the same
+with \prm {normalizelinemode} where bit 10 is set (\type {0x200}). The \type
+{delay} keyword can be passed with a box to prevent flattening. If we don't do
+this in the engine, the backend has to take care of it. In principle this permits
+implementing variants in a macro package. Eventually there will be plenty examples in
+the \CONTEXT\ code base and documentation. Till then, consider this experimental.
+
+\stopsection
+
+\startsection[title=Alignments]
+
+The primitive \prm {alignmark} duplicates the functionality of \type {#} inside
+alignment preambles, while \prm {aligntab} duplicates the functionality of \type
+{&}. The \prm {aligncontent} primitive directly refers to an entry so that one
+does not get repeated.
+
+Alignments can be traced with \prm {tracingalignments}. When set to~1 basics
+usage is shown, for instance of \prm {noalign} but more interesting is~2 or more:
+you then get the preambles reported.
+
+The \prm {halign} (tested) and \prm {valign} (yet untested) primitives accept a
+few keywords in addition to \type {to} and \type {spread}:
+
+\starttabulate[|l|p|]
+\DB keyword \BC explanation \NC \NR
+\TB
+\NC \type {attr}     \NC set the given attribute to the given value \NC \NR
+\NC \type {callback} \NC trigger the \type {alignment_filter} callback \NC \NR
+\NC \type {discard}  \NC discard zero \prm {tabskip}'s \NC \NR
+\NC \type {noskips}  \NC don't even process zero \prm {tabskip}'s \NC \NR
+\NC \type {reverse}  \NC reverse the final rows \NC \NR
+\LL
+\stoptabulate
+
+In the preamble the \prm {tabsize} primitive can be used to set the width of a
+column. By doing so one can avoid using a box in the preamble which, combined
+with the sparse tabskip features, is a bit easier on memory when you produce
+tables that span hundreds of pages and have a dozen columns.
+
+The \prm {everytab} complements the \prm {everycr} token register but is sort of
+experimental as it might become more selective and powerful some day.
+
+The two primitives \prm {alignmentcellsource} and \prm {alignmentwrapsource} that
+associate a source id (integer) to the current cell and row (line). Sources and
+targets are experimental and are being explored in \CONTEXT\ so we'll see where
+that ends up in.
+
+{\em todo: callbacks}
 
 \stopsection
 

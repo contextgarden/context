@@ -9,11 +9,12 @@ if not modules then modules = { } end modules ['math-act'] = {
 -- Here we tweak some font properties (if needed). The commented sections
 -- have been removed (no longer viable) but can be found in the .lua variant.
 
-local type, next = type, next
+local type, next, tonumber = type, next, tonumber
 local fastcopy, insert, remove = table.fastcopy, table.insert, table.remove
 local formatters = string.formatters
 local byte = string.byte
 local setmetatableindex, sortedhash  = table.setmetatableindex, table.sortedhash
+local lpegmatch = lpeg.match
 
 local trace_defining   = false  trackers.register("math.defining",   function(v) trace_defining   = v end)
 local trace_collecting = false  trackers.register("math.collecting", function(v) trace_collecting = v end)
@@ -284,11 +285,87 @@ end
 --     },
 -- },
 
+ -- ["0x7C.variants.*"] = { squeeze = 0.10, height = 0.10, depth = 0.10 },
+
+local detail  do
+
+    local splitter = lpeg.tsplitat(".")
+
+    detail = function(characters,k)
+        if type(k) == "string" then
+            local t = lpegmatch(splitter,k)
+            local n = #t
+            if n > 0 then
+                local base = tonumber(t[1]) or tonumber(t[1],16)
+                if base then
+                    local c = characters[base]
+                    if c and n > 1 then
+                        local list = t[2]
+                        if list == "parts" then
+                            local nxt = c.next
+                            while nxt do
+                                c = characters[nxt]
+                                nxt = c.next
+                            end
+                            c = c.hparts or c.vparts
+                            if c then
+                                local index = t[3]
+                                if index == "*" then
+                                    return t
+                                else
+                                    if index == "top" then
+                                        index = #c
+                                    elseif index == "bottom" then
+                                        index = 1
+                                    else
+                                        index = tonumber(index)
+                                    end
+                                    if index then
+                                        c = c[index]
+                                        if c then
+                                            return c.glyph
+                                        end
+                                    end
+                                end
+                            end
+                        elseif list == "variants" then
+                            local index = t[3]
+                            if index == "*" then
+                                local t = { }
+                                local nxt = c.next
+                                while nxt do
+                                    t[#t+1] = nxt
+                                    c = characters[nxt]
+                                    nxt = c.next
+                                end
+                                return t
+                            else
+                                index = tonumber(index)
+                                if index then
+                                    local nxt = c.next
+                                    while nxt and index > 1 do
+                                        c = characters[nxt]
+                                        nxt = c.next
+                                        index = index - 1
+                                    end
+                                    return nxt
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        else
+            return k
+        end
+    end
+
+end
+
 do
 
     local stepper     = utilities.parsers.stepper
     local count       = 0
-    local splitter    = lpeg.tsplitat(".")
     local toeffect    = fonts.toeffect
     local privateslot = fonts.helpers.privateslot
 
@@ -418,69 +495,6 @@ do
             end
         else
             report_tweak("no character %U",target,original,k)
-        end
-    end
-
- -- ["0x7C.variants.*"] = { squeeze = 0.10, height = 0.10, depth = 0.10 },
-
-    local function detail(characters,k)
-        if type(k) == "string" then
-            local t = lpeg.match(splitter,k)
-            local n = #t
-            if n > 0 then
-                local base = tonumber(t[1]) or tonumber(t[1],16)
-                if base then
-                    local c = characters[base]
-                    if c and n > 1 then
-                        local list = t[2]
-                        if list == "parts" then
-                            local nxt = c.next
-                            while nxt do
-                                c = characters[nxt]
-                                nxt = c.next
-                            end
-                            c = c.hparts or c.vparts
-                            if c then
-                                local index = t[3]
-                                if index == "*" then
-                                    return t
-                                else
-                                    index = tonumber(index)
-                                    if index then
-                                        c = c[index]
-                                        if c then
-                                            return c.glyph
-                                        end
-                                    end
-                                end
-                            end
-                        elseif list == "variants" then
-                            local index = t[3]
-                            if index == "*" then
-                                local t = { }
-                                local nxt = c.next
-                                while nxt do
-                                    t[#t+1] = nxt
-                                    c = characters[nxt]
-                                    nxt = c.next
-                                end
-                                return t
-                            else
-                                index = tonumber(index)
-                                if index then
-                                    local nxt = c.next
-                                    while nxt and index > 1 do
-                                        c = characters[nxt]
-                                        nxt = c.next
-                                        index = index - 1
-                                    end
-                                    return nxt
-                                end
-                            end
-                        end
-                    end
-                end
-            end
         end
     end
 
@@ -1111,13 +1125,26 @@ do
         local kerns = parameters.list
         if kerns then
             local characters = target.characters
-            local function setone(unicode,data)
-                local chardata = characters[mathgaps[unicode] or unicode]
-                local width    = chardata.width  or 0
-                local k = data.topleft     ; if k and k ~= 0 then chardata.topleft     = k * width end
-                local k = data.topright    ; if k and k ~= 0 then chardata.topright    = k * width end
-                local k = data.bottomleft  ; if k and k ~= 0 then chardata.bottomleft  = k * width end
-                local k = data.bottomright ; if k and k ~= 0 then chardata.bottomright = k * width end
+            local function setone(uc,data)
+                local function set(unicode)
+                    unicode = mathgaps[unicode] or unicode
+                    local chardata = characters[unicode]
+                    if chardata then
+                        local width = chardata.width  or 0
+                        local k = data.topleft     ; if k and k ~= 0 then chardata.topleft     = k * width end
+                        local k = data.topright    ; if k and k ~= 0 then chardata.topright    = k * width end
+                        local k = data.bottomleft  ; if k and k ~= 0 then chardata.bottomleft  = k * width end
+                        local k = data.bottomright ; if k and k ~= 0 then chardata.bottomright = k * width end
+                    end
+                end
+                local unicode  = detail(characters,uc)
+                if type(unicode) == "table" then
+                    for i=1,#unicode do
+                        set(unicode[i])
+                    end
+                elseif unicode then
+                    set(unicode)
+                end
             end
             for unicode, data in next, kerns do
                 setone(unicode,data) -- withscriptcode(tfmdata,unicode,data,kernone)

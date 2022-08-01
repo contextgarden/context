@@ -117,11 +117,12 @@
 
 \stopluacode
 
-\protected\def\showfields  #1{\ctxlua{document.functions.showfields("#1")}}
-\protected\def\showid      #1{\ctxlua{document.functions.showid("#1")}}
-\protected\def\showsubtypes#1{\ctxlua{document.functions.showsubtypes("#1")}}
-\protected\def\showvalues  #1{\ctxlua{document.functions.showvalues(node.values("#1"))}}
-\protected\def\showtypes     {\ctxlua{document.functions.showvalues(node.types())}}
+\protected\def\showfields   #1{\ctxlua{document.functions.showfields("#1")}}
+\protected\def\showid       #1{\ctxlua{document.functions.showid("#1")}}
+\protected\def\showsubtypes #1{\ctxlua{document.functions.showsubtypes("#1")}}
+\protected\def\showvalues   #1{\ctxlua{document.functions.showvalues(node.values("#1"))}}
+\protected\def\showtypes      {\ctxlua{document.functions.showvalues(node.types())}}
+\protected\def\showvaluelist#1{\ctxlua{document.functions.showvalues(#1)}}
 
 
 \definecolor[blue]      [b=.5]
@@ -387,12 +388,21 @@
 \setuplist
   [chapter]
   [style=bold,
-   before={\testpage[4]\blank},
    color=keptcolor]
 
 \setuplist
-  [section]
-  [before={\testpage[3]}]
+  [chapter]
+  [before={\testpage[4]\blank},
+%    after={\blank[none,samepage]}]
+   after={\blank[samepage]}]
+
+% \setuplist
+%   [section]
+%   [before={\testpage[3]}] % \ifnum \structurelistrawnumber{section} > 2 ... \fi
+
+\setuplist
+  [section,subsection]
+  [before={\ifnum \structurelistrawnumber{section}=1 \blank[samepage] \fi}]
 
 \setuplist
   [subsection,subsubsection]

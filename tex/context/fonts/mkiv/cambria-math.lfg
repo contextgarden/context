@@ -104,7 +104,29 @@ return {
                          -- bottomleft  =  0,
                          -- topright    =  0,
                             bottomright = -0.2,
-                       },
+                        },
+                        ["0x7D.parts.top"] = {
+                            topright    = -0.1,
+                        },
+                        ["0x7D.parts.bottom"] = {
+                            bottomright = -0.1,
+                        },
+                        ["0x29.parts.top"] = {
+                            topright    = -0.2,
+                        },
+                        ["0x29.parts.bottom"] = {
+                            bottomright = -0.2,
+                        },
+                        ["0x221A.parts.top"] = {
+                            topright = 0.2,
+                        },
+                        ["0x221A.parts.bottom"] = {
+                            bottomright = 0.2,
+                        },
+                        ["0x221A.variants.*"] = {
+                            topright = 0.2,
+                            bottomright = 0.2,
+                        },
                     },
                 },
                 {

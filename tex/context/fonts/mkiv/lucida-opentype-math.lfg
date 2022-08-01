@@ -40,7 +40,7 @@ return {
             AccentBaseDepth                 =  150,
             RadicalDegreeBottomRaisePercent =   50,
             RadicalKernAfterDegree          = -600,
-         -- RadicalRuleThickness            =   35, -- 40 in font (46 in demi) 
+         -- RadicalRuleThickness            =   35, -- 40 in font (46 in demi)
             DelimiterPercent                =   90,
             DelimiterShortfall              =  400,
          -- DisplayOperatorMinHeight        = 1800, -- 1300 in font (only one)

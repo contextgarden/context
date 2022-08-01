@@ -4,16 +4,6 @@
 
 \startcomponent luametatex-tex
 
-%     { "getbytecode",         lualib_get_bytecode        },
-%     { "setbytecode",         lualib_set_bytecode        },
-%     { "callbytecode",        lualib_call_bytecode       },
-%     { "getfunctionstable",   lualib_get_functions_table },
-%     { "getstartupfile",      lualib_get_startupfile     },
-%     { "getversion",          lualib_get_version         },
-%     { "setexitcode",         lualib_set_exitcode        },
-%     { NULL,                  NULL                       },
-
-
 \startchapter[reference=tex,title={The \TEX\ related libraries}]
 
 \startsection[title={The \type {lua} library}][library=lua]
@@ -341,6 +331,8 @@ stack.
 
 \subsubsection{Integer parameters}
 
+\topicindex{parameters+integer}
+
 The integer parameters accept and return \LUA\ integers. In some cases the values
 are checked, trigger other settings or result in some immediate change of
 behaviour: \ctxlua {document.filteredprimitives ("internal_int")}.
@@ -353,6 +345,8 @@ some internal integer register but to an engine property: \typ {deadcycles},
 
 \subsubsection{Dimension parameters}
 
+\topicindex{parameters+dimension}
+
 The dimension parameters accept \LUA\ numbers (signifying scaled points) or
 strings (with included dimension). The result is always a number in scaled
 points. These are read|-|write: \ctxlua {document.filteredprimitives
@@ -363,6 +357,8 @@ These are read|-|only: \typ {pagedepth}, \typ {pagefilllstretch}, \typ
 \typ {pagestretch} and \typ {pagetotal}.
 
 \subsubsection{Direction parameters}
+
+\topicindex{parameters+direction}
 
 The direction states can be queried with: \typ {gettextdir}, \typ {getlinedir},
 \typ {getmathdir} and \typ {getpardir}. You can set them with \typ
@@ -378,15 +374,21 @@ tex.textdirection = 1
 
 \subsubsection{Glue parameters}
 
+\topicindex{parameters+glue}
+
 The internal glue parameters accept and return a userdata object that represents
 a \nod {glue_spec} node: \ctxlua {document.filteredprimitives ("internal_glue")}.
 
 \subsubsection{Muglue parameters}
 
+\topicindex{parameters+muglue}
+
 All muglue parameters are to be used read|-|only and return a \LUA\ string
 \ctxlua {document.filteredprimitives ("internal_mu_glue")}.
 
 \subsubsection{Tokenlist parameters}
+
+\topicindex{parameters+tokens}
 
 The tokenlist parameters accept and return \LUA\ strings. \LUA\ strings are
 converted to and from token lists using \prm {the} \prm {toks} style expansion:

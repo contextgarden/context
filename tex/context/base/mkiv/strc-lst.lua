@@ -990,6 +990,18 @@ function lists.hasnumberdata(name,n)
     return false
 end
 
+function lists.rawnumber(n,name)
+    local data = lists.result[n]
+    if data then
+        local numberdata = data.numberdata
+        if numberdata then
+            numberdata = numberdata.numbers
+            return numberdata and numberdata[getsectionlevel(name)] or numberdata[name] or 0
+        end
+    end
+    return 0
+end
+
 function lists.prefix(name,n,spec)
     helpers.prefix(lists.result[n],spec)
 end
@@ -1325,6 +1337,12 @@ implement {
     name      = "discardfromlist",
     actions   = lists.discard,
     arguments = "integer"
+}
+
+implement {
+    name      = "rawlistnumber",
+    actions   = { lists.rawnumber, context },
+    arguments = { "integer", "string" },
 }
 
 -- new and experimental and therefore off by default

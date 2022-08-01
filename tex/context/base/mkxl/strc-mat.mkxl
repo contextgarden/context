@@ -1328,7 +1328,7 @@
 %
 % \startsetups[math:penalties:\v!text]
 %     \shapingpenaltiesmode \zerocount
-%     \interlinepenalty \plustenthousand
+%     \interlinepenalty     \plustenthousand
 % \stopsetups
 
 \startsetups[math:penalties:\v!page]
@@ -1393,6 +1393,48 @@
    \displaywidth\hsize
    \displayindent\zeropoint}
 
+% \def\strc_math_analyze_box
+%   {\clf_handlemathhang
+%      stage      \plusone
+%      alignstate \c_strc_math_ragged_status
+%      box        \b_strc_math_display
+%      distance   \formulaparameter\c!textdistance
+%    \relax
+%   %\holdingmigrations\zerocount
+%    \setbox\b_strc_math_display\vbox\bgroup % \vtop
+%      \ifnum\c_strc_math_split_mode=\c_strc_math_line_mode
+%        % we can't end up here
+%      \orelse\ifconditional\c_strc_math_aligned_here
+%        \ifzeropt\d_strc_math_indent\else
+%          \hangafter\plusone
+%          \hangindent\d_strc_math_indent
+%        \fi
+%         % \strc_math_setup_align % _inner
+%      \else
+%        \strc_math_setup_align
+%      \fi
+% %      \strc_math_setup_spacing\formulaparameter
+%      \strc_math_setup_penalties
+%      \unhbox\b_strc_math_display
+%    \egroup
+%    \clf_handlemathhang
+%      stage      \ifconditional\c_strc_math_aligned_here \plustwo \else \plusthree \fi
+%    % alignstate \c_strc_math_ragged_status
+%    % box        \b_strc_math_display
+%    % distance   \formulaparameter\c!textdistance
+%    \relax
+%    %
+%    \begingroup
+%      \edef\v_spac_whitespace_current{\formulaparameter\c!spaceinbetween}%
+%      \spac_whitespace_setup
+%      \clf_handlemathhang
+%        stage      \plusfour
+%        inbetween  1\parskip
+%        height     \strutht
+%        depth      \strutdp
+%      \relax
+%    \endgroup}
+
 \def\strc_math_analyze_box
   {\clf_handlemathhang
      stage      \plusone
@@ -1406,14 +1448,20 @@
        % we can't end up here
      \orelse\ifconditional\c_strc_math_aligned_here
        \ifzeropt\d_strc_math_indent\else
-         \hangafter\plusone
-         \hangindent\d_strc_math_indent
+\ifnum\c_page_sides_hangafter=\zerocount
+    \hangafter\plusone
+    \hangindent\d_strc_math_indent
+\else
+    % this might become the default anyway:
+    \advance\leftskip\d_strc_math_indent
+    \hskip-\d_strc_math_indent
+\fi
        \fi
         % \strc_math_setup_align % _inner
      \else
        \strc_math_setup_align
      \fi
-%      \strc_math_setup_spacing\formulaparameter
+   % \strc_math_setup_spacing\formulaparameter
      \strc_math_setup_penalties
      \unhbox\b_strc_math_display
    \egroup

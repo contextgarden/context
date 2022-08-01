@@ -168,15 +168,20 @@ registerdirect("defaultcolormodel",    defaultcolormodel)
 
 -- see node-rul.*
 
+-- offset is a multiplier
+-- factor is the amount
+
 registerdirect("RuleWidth",     function() return getdimen("d_rule_width")  * factor end)
 registerdirect("RuleHeight",    function() return getdimen("d_rule_height") * factor end)
 registerdirect("RuleDepth",     function() return getdimen("d_rule_depth")  * factor end)
 registerdirect("RuleH",         function() return getdimen("d_rule_h")      * factor end)
 registerdirect("RuleV",         function() return getdimen("d_rule_v")      * factor end)
 registerdirect("RuleThickness", function() return getdimen("d_rule_line")   * factor end)
-registerdirect("RuleOffset",    function() return getdimen("d_rule_offset") * factor end)
+registerdirect("RuleOffset",    function() return getdimen("d_rule_offset") / 65536 end)
+-- registerdirect("RuleOffset",    function() return getdimen("d_rule_offset") * factor end)
 registerdirect("RuleDirection", function() return getmacro("c_rule_direction")       end)
-registerdirect("RuleFactor",    function() return getmacro("m_rule_factor")          end)
+-- registerdirect("RuleFactor",    function() print(getmacro("m_rule_factor")) return (tonumber(getmacro("m_rule_factor")) or 0) * factor     end)
+registerdirect("RuleFactor",    function() return getdimen("d_rule_factor") * factor end)
 registerdirect("RuleOption",    function() return getmacro("m_rule_option")          end)
 --------------("RuleColor",     function() return getmacro("m_rule_color")           end)
 registerscript("RuleColor",     function() return getmacro("m_rule_color")           end)

@@ -66,7 +66,7 @@ implement {
 }
 
 function builders.checkparcontext(where)
-    if top and where == "normal" then
+    if top and (where == "normal" or where == "vmode") then -- vmode added, needs checking
         if top == "cycle" then
             local s = texget("parshape",true)
             if s then

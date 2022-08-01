@@ -457,7 +457,7 @@ expansion takes place inside the argument.
 
 \stopsubsection
 
-\startsubsection[title={\prm {fontid} and \prm {setfontid}}]
+\startsubsection[title={\prm {fontid}, \prm {setfontid} and \prm {mathstylefontid}}]
 
 \startsyntax
 \fontid\font
@@ -465,7 +465,7 @@ expansion takes place inside the argument.
 
 This primitive expands into a number. The currently used font id is
 \number\fontid\font. Here are some more: \footnote {Contrary to \LUATEX\ this is
-now a number so you need to use \type {\number} or \type {\the}. The same is true
+now a number so you need to use \prm {number} or \prm {the}. The same is true
 for some other numbers and dimensions that for some reason ended up in the
 serializer that produced a sequence of tokens.}
 
@@ -487,6 +487,15 @@ be bound to a real font, after all it's just a number.
 
 The primitive \prm {setfontid} can be used to enable a font with the given id,
 which of course needs to be a valid one.
+
+In math mode the font id depends on the style because there we have a family of
+three related fonts. In this document we get the following identifiers:
+
+\starttabulate[|l|c|]
+\NC \type {$ \the \mathstylefontid \scriptscriptstyle \fam$} \NC $\the\mathstylefontid\scriptscriptstyle \fam$ \NC \NR
+\NC \type {$ \the \mathstylefontid \scriptstyle       \fam$} \NC $\the\mathstylefontid\scriptstyle       \fam$ \NC \NR
+\NC \type {$ \the \mathstylefontid \textstyle         \fam$} \NC $\the\mathstylefontid\textstyle         \fam$ \NC \NR
+\stoptabulate
 
 \stopsubsection
 
@@ -526,6 +535,8 @@ features but in \LUAMETATEX\ these primitives are gone. They are replace by a mo
 generic control primitive \prm {glyphoptions}. This numerical parameter is a
 bitset with the following fields:
 
+% todo: use values
+
 \starttabulate[|l|pl|]
 \DB value       \BC effect \NC\NR
 \TB
@@ -555,6 +566,62 @@ query a font dimensions with \prm {fontdimen} you get the raw value but with \pr
 {scaledfontdimen} you get the useable value.
 
 \stopsubsection
+
+\startsubsection[title={\prm {glyphxscaled}, \prm {glyphyscaled}}]
+
+These two relate to the previous one:
+
+\startbuffer
+{\glyphxscale 1500 \the\glyphxscaled 100pt} and
+{\glyphyscale  750 \the\glyphyscaled 100pt}
+\stopbuffer
+
+\typebuffer
+
+We get: \inlinebuffer.
+
+\stopsubsection
+
+\startsubsection[title={Scaled fontdimensions}]
+
+When you use \prm {glyphscale},  \prm {glyphxscale} and|/|or  \prm {glyphyscale} the font
+dimensions
+
+\starttabulate[|l|c|c|c|]
+\DB dimension                     \BC scale \NC xscale \NC yscale \NC\NR
+\TB
+\NC \prm {scaledemwidth}          \NC \star \NC \star  \NC        \NC\NR
+\NC \prm {scaledexheight}         \NC \star \NC        \NC \star  \NC\NR
+\NC \prm {scaledextraspace}       \NC \star \NC \star  \NC        \NC\NR
+\NC \prm {scaledinterwordshrink}  \NC \star \NC \star  \NC        \NC\NR
+\NC \prm {scaledinterwordspace}   \NC \star \NC \star  \NC        \NC\NR
+\NC \prm {scaledinterwordstretch} \NC \star \NC \star  \NC        \NC\NR
+\NC \prm {scaledslantperpoint}    \NC \star \NC \star  \NC        \NC\NR
+\LL
+\stoptabulate
+
+The next table shows the effective sized when we scale by 2000. The last two
+columns scale twice: the shared scale and the x or y scale.
+
+\def\ShowThem#1%
+  {\normalexpanded{
+   \BC \small \prm {\csstring\parametermark1}
+   \NC {\localcontrolled{\glyphscale2000 \glyphxscale1000 \glyphyscale 1000} \withoutpt\parametermark1}
+   \NC {\localcontrolled{\glyphscale1000 \glyphxscale2000 \glyphyscale 1000} \withoutpt\parametermark1}
+   \NC {\localcontrolled{\glyphscale1000 \glyphxscale1000 \glyphyscale 2000} \withoutpt\parametermark1}
+   \NC {\localcontrolled{\glyphscale2000 \glyphxscale2000 \glyphyscale 1000} \withoutpt\parametermark1}
+   \NC {\localcontrolled{\glyphscale2000 \glyphxscale1000 \glyphyscale 2000} \withoutpt\parametermark1}
+   \NC \NR}}
+
+\starttabulate[|l|c{.}|c{.}|c{.}|c{.}|c{.}|]
+    \ShowThem\scaledemwidth
+    \ShowThem\scaledexheight
+    \ShowThem\scaledextraspace
+    \ShowThem\scaledinterwordshrink
+    \ShowThem\scaledinterwordspace
+    \ShowThem\scaledinterwordstretch
+    \ShowThem\scaledslantperpoint
+\stoptabulate
 
 \startsubsection[title={\prm {fontspecdef}, \prm {fontspecid}, \prm {fontspecscale}, , \prm {fontspecxscale}, \prm {fontspecyscale}}]
 
@@ -702,6 +769,18 @@ instance content moved into the margin:
 
 \stopsubsection
 
+\startsubsection[title={\prm{fontcharta}}]
+
+\topicindex {glyphs + properties}
+
+The \prm {fontcharwd}, \prm {fontcharht}, \prm {fontchardp} and \prm {fontcharit}
+give access to character properties. To this repertoire \LUAMETATEX\ adds the top
+accent accessor \prm {fontcharta} which came in handy for tracing. You pass a
+font reference and character code. Normally only \OPENTYPE\ math fonts have this
+property.
+
+\stopsubsection
+
 \stopsection
 
 \startsection[title={The \LUA\ font library}][library=font]
@@ -803,8 +882,8 @@ whatever purpose their use in \CONTEXT\ is fixed.
 
 More details about fonts in math mode can be found in the chapter about math so
 here we just mention a few primitives. The internal \prm {glyphtextscale}, \prm
-{glyphscriptscriptscale} and \prm {glyphscriptscriptscale} registers can be set
-to enforce additional scaling of math, like this:
+{glyphscriptscale} and \prm {glyphscriptscriptscale} registers can be set to
+enforce additional scaling of math, like this:
 
 \startbuffer
 $                            a = b^2 = c^{d^2}$
@@ -842,6 +921,27 @@ features) but discussing this fall behind this manual. You cannot set these
 values because the engine has to work with consistent settings and messing around
 with fonts during a run only works well if the backend also cooperates. Also the
 values only makes sense in the perspective of the used macro package.
+
+\stopsubsection
+
+\startsubsection[title={Tracing}]
+
+The \prm {tracingfonts} primitive that has been inherited from \PDFTEX\ has
+been adapted to support variants in reporting the font. The reason for this
+extension is that a csname not always makes sense. The zero case is the default.
+
+\starttabulate[|l|l|]
+\DB value \BC reported \NC \NR
+\TB
+\NC \type{0} \NC \type{\foo xyz} \NC \NR
+\NC \type{1} \NC \type{\foo (bar)} \NC \NR
+\NC \type{2} \NC \type{<bar> xyz} \NC \NR
+\NC \type{3} \NC \type{<bar @ ..pt> xyz} \NC \NR
+\NC \type{4} \NC \type{<id>} \NC \NR
+\NC \type{5} \NC \type{<id: bar>} \NC \NR
+\NC \type{6} \NC \type{<id: bar @ ..pt> xyz} \NC \NR
+\LL
+\stoptabulate
 
 \stopsubsection
 
