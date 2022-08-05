@@ -130,10 +130,12 @@
    \s!axis
    \s!exact}
 
-\newconstant \c_math_fenced_class
+\newconstant\c_math_fenced_class
+\integerdef \c_math_fence_check \zerocount
 
 \def\math_fenced_common#1#2#3#4% \Uwhatever class symbol source
   {\c_math_fenced_class\mathfenceparameter#2\relax
+   \math_fenced_check_size_mismatch % we need to catch an unbalanced \F as we are sequential
    \ifconditional\c_math_fenced_sized
    \orelse\ifconditional\c_math_fenced_level_mode
      \ifnum\c_math_fenced_class=\mathopencode
@@ -347,14 +349,14 @@
   {\math_fenced_fenced_stop\currentmathfence
    \endgroup}
 
-\def\math_fenced_start_wrap#1%
+\protected\def\math_fenced_start_wrap#1%
   {\begingroup
    \edef\m_math_fenced_wrap{#1}%
    \ifempty\m_math_fenced_wrap \else
      \math_fenced_fenced_start\m_math_fenced_wrap
    \fi}
 
-\def\math_fenced_stop_wrap
+\protected\def\math_fenced_stop_wrap
   {\ifempty\m_math_fenced_wrap \else
      \math_fenced_fenced_stop\m_math_fenced_wrap
    \fi
@@ -410,6 +412,7 @@
 %D \starttyping
 %D \startTEXpage[offset=1dk,width=20dk]
 %D   \ruledhbox{$ \F3 \left( 1 + \F2 \left( a + b \right) + \left( a + b \right) \right) $}\par
+%D   \ruledhbox{$ \left( 1 + \F3 \left( a + b \right) + \left( a + b \right) \right) $}\par
 %D   \ruledhbox{$ \F3 \left( 1 + \F0 \left( a + b \right) \right) $}\par
 %D   \ruledhbox{$ \F3 \left( 1 + \F= \left( a + b \right) \right) $}\par
 %D   \ruledhbox{$ \F4 \left( 1 + \fenced[parenthesis]{a + b} \right) $}\par
@@ -435,8 +438,18 @@
 
 \letcsname\??fencelevels*\endcsname\donothing
 
+\def\math_fenced_check_size_mismatch
+ {\ifnum\c_math_fence_check=\c_math_fence_nesting
+    \c_attr_mathsize\attributeunsetvalue
+    \setfalse\c_math_fenced_level_mode
+    \c_math_fenced_level\zerocount
+  \fi}
+
 \permanent\protected\def\F#1%
-  {\settrue\c_math_fenced_level_mode
+  {\ifconditional\c_math_fenced_level_mode\else
+     \integerdef\c_math_fence_check\c_math_fence_nesting
+   \fi
+   \settrue\c_math_fenced_level_mode
    \ifchknum#1\or
      \c_math_fenced_level#1\relax
    \orelse\ifcsname\??fencelevels#1\endcsname
@@ -857,7 +870,7 @@
 
 \protected\def\math_fences_auto_left  #1{\c_attr_mathautofence\plusone  #1\c_attr_mathautofence\attributeunsetvalue}
 \protected\def\math_fences_auto_right #1{\c_attr_mathautofence\plustwo  #1\c_attr_mathautofence\attributeunsetvalue}
-\protected\def\math_fences_auto_middle#1{\c_attr_mathautofence\plusthree#1\c_attr_mathautofence\attributeunsetvalue nooverflow }
+\protected\def\math_fences_auto_middle#1{\c_attr_mathautofence\plusthree#1\c_attr_mathautofence\attributeunsetvalue}
 \protected\def\math_fences_auto_both  #1{\c_attr_mathautofence\plusfour #1\c_attr_mathautofence\attributeunsetvalue}
 
 \permanent\let\autofenceopen  \math_fences_auto_left    % for testing

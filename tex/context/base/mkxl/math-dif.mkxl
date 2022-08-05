@@ -20,16 +20,25 @@
     % For new times sake:
 
     \let\normal_math_dd\dd
+    \let\normal_math_DD\DD
 
     \def\c!differentiald{differentiald} % for now
 
     \def\upright_math_dd{\mathatom \s!unpack \mathdifferentialcode{\mathupright d}}
+    \def\upright_math_DD{\mathatom \s!unpack \mathdifferentialcode{\mathupright D}}
 
     \permanent\protected\def\dd
       {\ifcstok{\mathematicsparameter\c!differentiald}\s!upright
          \upright_math_dd
        \else
          \normal_math_dd
+       \fi}
+
+    \permanent\protected\def\DD
+      {\ifcstok{\mathematicsparameter\c!differentiald}\s!upright
+         \upright_math_DD
+       \else
+         \normal_math_DD
        \fi}
 
   % \setupmathematics[differentiald=upright]

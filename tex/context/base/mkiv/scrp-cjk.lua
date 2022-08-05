@@ -695,6 +695,7 @@ local chinese_8 = {
     hiragana         = stretch_break, -- nobreak_autoshrink_break_stretch,
     katakana         = stretch_break, -- nobreak_autoshrink_break_stretch,
     half_width_open  = nobreak_autoshrink_break_stretch_nobreak_autoshrink,
+half_width_open  = stretch_break,
     half_width_close = nobreak_autoshrink_nobreak_stretch,
     full_width_open  = nobreak_autoshrink_break_stretch_nobreak_shrink,
     full_width_close = nobreak_autoshrink_nobreak_stretch,

@@ -24,6 +24,13 @@
 -- Just don't use this font. It's not good enough for production unless we patch it
 -- a lot, which we will not do unless we need it.
 
+-- When set this will bypass the italic correction hackery!
+
+-- local integral_variants = {  bottomright = -0.20 }
+-- local integral_top      = {  topright    =  0.05 }
+-- local integral_bottom   = {  bottomright = -0.25 }
+
+
 return {
     name = "asana-math",
     version = "1.00",

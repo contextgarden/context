@@ -876,6 +876,7 @@
 		<cd:constant name='frameradius' value='rayoncadre'/>
 		<cd:constant name='frames' value='cadres'/>
 		<cd:constant name='freeregion' value='regionlibre'/>
+		<cd:constant name='freezespacing' value='freezespacing'/>
 		<cd:constant name='from' value='de'/>
 		<cd:constant name='functioncolor' value='couleurfonction'/>
 		<cd:constant name='functionstyle' value='stylefonction'/>
@@ -956,6 +957,7 @@
 		<cd:constant name='lastpubsep' value='sepdernierepub'/>
 		<cd:constant name='layout' value='miseenpage'/>
 		<cd:constant name='left' value='gauche'/>
+		<cd:constant name='leftclass' value='leftclass'/>
 		<cd:constant name='leftcolor' value='couleurgauche'/>
 		<cd:constant name='leftcompoundhyphen' value='traitdunioncomposegauche'/>
 		<cd:constant name='leftedge' value='bordgauche'/>
@@ -1014,6 +1016,7 @@
 		<cd:constant name='menu' value='menu'/>
 		<cd:constant name='method' value='methode'/>
 		<cd:constant name='middle' value='milieu'/>
+		<cd:constant name='middleclass' value='middleclass'/>
 		<cd:constant name='middlecolor' value='couleurmilieu'/>
 		<cd:constant name='middlecommand' value='commandemilieu'/>
 		<cd:constant name='middlesource' value='middlesource'/>
@@ -1060,6 +1063,8 @@
 		<cd:constant name='numberconversionset' value='jeuconversionnumero'/>
 		<cd:constant name='numberdistance' value='distancenumero'/>
 		<cd:constant name='numbering' value='numérotation'/>
+		<cd:constant name='numberlocation' value='numberlocation'/>
+		<cd:constant name='numbermethod' value='numbermethod'/>
 		<cd:constant name='numberorder' value='ordrenumero'/>
 		<cd:constant name='numberprefix' value='prefixenumero'/>
 		<cd:constant name='numbersegments' value='segmentsnumero'/>
@@ -1070,6 +1075,7 @@
 		<cd:constant name='numberstopper' value='stoppeurnumero'/>
 		<cd:constant name='numberstrut' value='entretoisenumero'/>
 		<cd:constant name='numberstyle' value='stylenumero'/>
+		<cd:constant name='numberthreshold' value='numberthreshold'/>
 		<cd:constant name='numberwidth' value='largeurnumero'/>
 		<cd:constant name='nx' value='nx'/>
 		<cd:constant name='ny' value='ny'/>
@@ -1123,6 +1129,7 @@
 		<cd:constant name='palet' value='palette'/>
 		<cd:constant name='paper' value='papier'/>
 		<cd:constant name='paragraph' value='paragraphe'/>
+		<cd:constant name='penalties' value='penalties'/>
 		<cd:constant name='period' value='periode'/>
 		<cd:constant name='place' value='placer'/>
 		<cd:constant name='placehead' value='placertete'/>
@@ -1176,6 +1183,7 @@
 		<cd:constant name='reverse' value='inverser'/>
 		<cd:constant name='right' value='droite'/>
 		<cd:constant name='rightchars' value='caracteresdroite'/>
+		<cd:constant name='rightclass' value='rightclass'/>
 		<cd:constant name='rightcolor' value='couleurdroite'/>
 		<cd:constant name='rightcompoundhyphen' value='traitdunioncomposedroite'/>
 		<cd:constant name='rightedge' value='borddroit'/>

@@ -16,18 +16,20 @@
 \libindex{known}
 
 {\em The callbacks are a moving target. Don't bother me with questions about
-them.}
+them. Some are new and/or experimental and therefore not yet documented. In
+\CONTEXT\ we can easily adapt interfaces so changes in these have no real effect
+on users. Of course in due time all will be official and documented.}
 
 This library has functions that register, find and list callbacks. Callbacks are
 \LUA\ functions that are called in well defined places. There are two kinds of
 callbacks: those that mix with existing functionality, and those that (when
-enabled) replace functionality. In mosty cases the second category is expected to
-behave similar to the built in functionality because in a next step specific
-data is expected. For instance, you can replace the hyphenation routine. The
-function gets a list that can be hyphenated (or not). The final list should be
-valid and is (normally) used for constructing a paragraph. Another function can
-replace the ligature builder and|/|or kerner. Doing something else is possible
-but in the end might not give the user the expected outcome.
+enabled) replace functionality. In most cases the second category is expected to
+behave similar to the built in functionality because in a next step specific data
+is expected. For instance, you can replace the hyphenation routine. The function
+gets a list that can be hyphenated (or not). The final list should be valid and
+is (normally) used for constructing a paragraph. Another function can replace the
+ligature builder and|/|or kern routine. Doing something else is possible but in
+the end might not give the user the expected outcome.
 
 The first thing you need to do is registering a callback:
 
@@ -76,7 +78,7 @@ if callback.known("foo") then ... end
 
 \startsection[title={File related callbacks}][library=callback]
 
-\subsection{\cbk {find_format_file} and \cbk {find_log_file}}
+\startsubsection[title={\cbk {find_format_file} and \cbk {find_log_file}}]
 
 \topicindex{callbacks+format file}
 \topicindex{callbacks+log file}
@@ -91,7 +93,9 @@ These callbacks are called as:
 The \type {askedname} is a format file for reading (the format file for writing
 is always opened in the current directory) or a log file for writing.
 
-\subsection{\cbk {open_data_file}}
+\stopsubsection
+
+\startsubsection[title={\cbk {open_data_file}}]
 
 \topicindex{callbacks+opening files}
 
@@ -125,11 +129,13 @@ their only argument.
 %     function ()
 % \stopfunctioncall
 
+\stopsubsection
+
 \stopsection
 
 \startsection[title={Data processing callbacks}][library=callback]
 
-\subsection{\cbk {process_jobname}}
+\startsubsection[title={\cbk {process_jobname}}]
 
 \topicindex{callbacks+jobname}
 
@@ -148,13 +154,15 @@ inside this function or infinite recursion may occur. If you return \type {nil},
 \LUATEX\ will pretend your callback never happened. This callback does not
 replace any internal code.
 
+\stopsubsection
+
 \stopsection
 
 \startsection[title={Node list processing callbacks}][library=callback]
 
 The description of nodes and node lists is in~\in{chapter}[nodes].
 
-\subsection{\cbk {contribute_filter}}
+\startsubsection[title={\cbk {contribute_filter}}]
 
 \topicindex{callbacks+contributions}
 
@@ -178,7 +186,9 @@ what list you can give a treat.
 \LL
 \stoptabulate
 
-\subsection{\cbk {buildpage_filter}}
+\stopsubsection
+
+\startsubsection[title={\cbk {buildpage_filter}}]
 
 \topicindex{callbacks+building pages}
 
@@ -211,7 +221,9 @@ state is with respect to the \quote {current page}. The possible values for the
 \LL
 \stoptabulate
 
-\subsection{\cbk {build_page_insert}}
+\stopsubsection
+
+\startsubsection[title={\cbk {build_page_insert}}]
 
 \topicindex{callbacks+inserts}
 
@@ -242,7 +254,9 @@ prepended spacing. This permits for instance a different top space (when \type
 course you can mess with the insert box but you need to make sure that \LUATEX\
 is happy afterwards.
 
-\subsection{\cbk {pre_linebreak_filter}}
+\stopsubsection
+
+\startsubsection[title={\cbk {pre_linebreak_filter}}]
 
 \topicindex{callbacks+linebreaks}
 
@@ -300,7 +314,9 @@ three things:
 
 This callback does not replace any internal code.
 
-\subsection{\cbk {linebreak_filter}}
+\stopsubsection
+
+\startsubsection[title={\cbk {linebreak_filter}}]
 
 \topicindex{callbacks+linebreaks}
 
@@ -325,7 +341,9 @@ represent an \prm {hbox}. Failure to do so will result in a fatal error.
 Setting this callback to \type {false} is possible, but dangerous, because it is
 possible you will end up in an unfixable \quote {deadcycles loop}.
 
-\subsection{\type {append_to_vlist_filter}}
+\stopsubsection
+
+\startsubsection[title={\type {append_to_vlist_filter}}]
 
 \topicindex{callbacks+contributions}
 
@@ -344,7 +362,9 @@ the box or deal with it yourself. The prevdepth is also optional. Locations are
 \type {post_linebreak}. When the third argument returned is \type {true} the
 normal prevdepth correction will be applied, based on the first node.
 
-\subsection{\cbk {post_linebreak_filter}}
+\stopsubsection
+
+\startsubsection[title={\cbk {post_linebreak_filter}}]
 
 \topicindex{callbacks+linebreaks}
 
@@ -359,9 +379,14 @@ end
 
 This callback does not replace any internal code.
 
-\subsection{\cbk {glyph_run}}
+\stopsubsection
+
+\startsubsection[title={\cbk {glyph_run}}]
 
 \topicindex{callbacks+fonts}
+\topicindex{callbacks+hyphenation}
+\topicindex{callbacks+kerning}
+\topicindex{callbacks+ligature building}
 
 When set this callback is triggered when \TEX\ normally handles the ligaturing
 and kerning. In \LUATEX\ you use the \typ {hpack_filter} and \typ
@@ -379,7 +404,9 @@ The traditional \TEX\ font processing is bypassed so you need to take care of th
 with the helpers. (For the moment we keep the ligaturing and kerning callbacks but
 they are kind of obsolete.)
 
-\subsection{\cbk {hpack_filter}}
+\stopsubsection
+
+\startsubsection[title={\cbk {hpack_filter}}]
 
 \topicindex{callbacks+packing}
 
@@ -400,7 +427,9 @@ the number is in scaled points.
 
 This callback does not replace any internal code.
 
-\subsection{\cbk {vpack_filter}}
+\stopsubsection
+
+\startsubsection[title={\cbk {vpack_filter}}]
 
 \topicindex{callbacks+packing}
 
@@ -420,47 +449,70 @@ end
 
 This callback does not replace any internal code.
 
-\subsection{\type {hpack_quality}}
+\stopsubsection
+
+\startsubsection[title={\cbk {packed_vbox_filter}}]
 
 \topicindex{callbacks+packing}
 
-This callback can be used to intercept the overfull messages that can result from
-packing a horizontal list (as happens in the par builder). The function takes a
-few arguments:
+After the \cbk {vpack_filter} callback (see previous section) is triggered the
+box get packed and after that this callback can be configured to kick in.
 
 \startfunctioncall
-function(<string> incident, <number> detail, <node> head, <number> first,
-         <number> last)
-    return <node> whatever
+function(<node> head, <string> groupcode)
+    return <node> newhead
 end
 \stopfunctioncall
 
-The incident is one of \type {overfull}, \type {underfull}, \type {loose} or
-\type {tight}. The detail is either the amount of overflow in case of \type
-{overfull}, or the badness otherwise. The head is the list that is constructed
-(when protrusion or expansion is enabled, this is an intermediate list).
-Optionally you can return a node, for instance an overfull rule indicator. That
-node will be appended to the list (just like \TEX's own rule would).
+This callback does not replace any internal code.
 
-\subsection{\type {vpack_quality}}
+\stopsubsection
 
-\topicindex{callbacks+packing}
+\startsubsection[title={\cbk {alignment_filter}}]
 
-This callback can be used to intercept the overfull messages that can result from
-packing a vertical list (as happens in the page builder). The function takes a
-few arguments:
+\topicindex{callbacks+alignments}
+
+This is an experimental callback that when set is called several times during the
+construction of an alignment. The context values are available in \typ
+{tex.getalignmentcontextvalues()}.
 
 \startfunctioncall
-function(<string> incident, <number> detail, <node> head, <number> first,
-         <number> last)
+function(<node> head, <string> context, <node> attributes, <node> preamble)
+    -- no return values
 end
 \stopfunctioncall
 
-The incident is one of \type {overfull}, \type {underfull}, \type {loose} or
-\type {tight}. The detail is either the amount of overflow in case of \type
-{overfull}, or the badness otherwise. The head is the list that is constructed.
+There are no sanity checks so if a user messes up the passed node lists the results
+can be unpredictable and, as with other node related callbacks, crash the engine.
 
-\subsection{\cbk {process_rule}}
+\stopsubsection
+
+\startsubsection[title={\cbk {localbox_filter}}]
+
+\topicindex{callbacks+local boxes}
+
+Local boxes are a somewhat tricky and error prone feature so use this callback
+with care because the paragraph is easily messed up. A line can have a left,
+right and middle box where the middle one has no width. The callback gets quite
+some parameters passed:
+
+\startfunctioncall
+function(<node> linebox, <node> leftbox, <node> rightbox, <node> middlebox,
+    <number> linenumber,
+    <number> leftskip, <number> rightskip, <number> lefthang, <number> righthang,
+    <number> indentation, <number> parinitleftskip, <number> parinitrightskip,
+    <number> parfillleftskip, <number> parfillrightskip,
+    <number> overshoot)
+    -- no return values
+end
+\stopfunctioncall
+
+This is an experimental callback that will be tested in different \CONTEXT\
+mechanisms before it will be declared stable.
+
+\stopsubsection
+
+\startsubsection[title={\cbk {process_rule}}]
 
 \topicindex{callbacks+rules}
 
@@ -469,7 +521,9 @@ This is an experimental callback. It can be used with rules of subtype~4
 height. The callback can use \type {pdf.print} to write code to the \PDF\
 file but beware of not messing up the final result. No checking is done.
 
-\subsection{\type {pre_output_filter}}
+\stopsubsection
+
+\startsubsection[title={\type {pre_output_filter}}]
 
 \topicindex{callbacks+output}
 
@@ -485,32 +539,38 @@ end
 
 This callback does not replace any internal code.
 
-\subsection{\cbk {hyphenate}}
+\stopsubsection
+
+\startsubsection[title={\cbk {hyphenate}}]
 
 \topicindex{callbacks+hyphenation}
 
+This callback is supposed to insert discretionary nodes in the node list it
+receives.
+
 \startfunctioncall
 function(<node> head, <node> tail)
+    -- no return values
 end
 \stopfunctioncall
-
-No return values. This callback has to insert discretionary nodes in the node
-list it receives.
 
 Setting this callback to \type {false} will prevent the internal discretionary
 insertion pass.
 
-\subsection{\cbk {ligaturing}}
+\stopsubsection
+
+\startsubsection[title={\cbk {ligaturing}}]
 
 \topicindex{callbacks+ligature building}
 
+This callback, which expects no return values, has to apply ligaturing to the
+node list it receives.
+
 \startfunctioncall
 function(<node> head, <node> tail)
+    -- no return values
 end
 \stopfunctioncall
-
-No return values. This callback has to apply ligaturing to the node list it
-receives.
 
 You don't have to worry about return values because the \type {head} node that is
 passed on to the callback is guaranteed not to be a glyph_node (if need be, a
@@ -518,50 +578,98 @@ temporary node will be prepended), and therefore it cannot be affected by the
 mutations that take place. After the callback, the internal value of the \quote
 {tail of the list} will be recalculated.
 
-The \type {next} of \type {head} is guaranteed to be non-nil.
-
-The \type {next} of \type {tail} is guaranteed to be nil, and therefore the
-second callback argument can often be ignored. It is provided for orthogonality,
-and because it can sometimes be handy when special processing has to take place.
+The \type {next} of \type {head} is guaranteed to be non-nil. The \type {next} of
+\type {tail} is guaranteed to be nil, and therefore the second callback argument
+can often be ignored. It is provided for orthogonality, and because it can
+sometimes be handy when special processing has to take place.
 
 Setting this callback to \type {false} will prevent the internal ligature
-creation pass.
+creation pass. You must not ruin the node list. For instance, the head normally
+is a local par node, and the tail a glue. Messing too much can push \LUATEX\ into
+panic mode.
 
-You must not ruin the node list. For instance, the head normally is a local par node,
-and the tail a glue. Messing too much can push \LUATEX\ into panic mode.
+\stopsubsection
 
-\subsection{\cbk {kerning}}
+\startsubsection[title={\cbk {kerning}}]
 
 \topicindex{callbacks+kerning}
 
+This callback has to apply kerning between the nodes in the node list it
+receives. See \cbk {ligaturing} for calling conventions.
+
 \startfunctioncall
 function(<node> head, <node> tail)
+    -- no return values
 end
 \stopfunctioncall
 
-No return values. This callback has to apply kerning between the nodes in the
-node list it receives. See \cbk {ligaturing} for calling conventions.
-
 Setting this callback to \type {false} will prevent the internal kern insertion
-pass.
+pass. You must not ruin the node list. For instance, the head normally is a local
+par node, and the tail a glue. Messing too much can push \LUATEX\ into panic
+mode.
 
-You must not ruin the node list. For instance, the head normally is a local par node,
-and the tail a glue. Messing too much can push \LUATEX\ into panic mode.
+\stopsubsection
 
-\subsection{\type {insert_par}}
+\startsubsection[title={\cbk {append_line_filter}}]
+
+\topicindex{callbacks+lines}
+
+Every time a line is added this callback is triggered, when set. migrated
+material and adjusts also qualify as such and the detail relates to the adjust
+index.
+
+\startfunctioncall
+function(<node> head, <node> tail, <string> context, <number> detail)
+    return <node> newhead
+end
+\stopfunctioncall
+
+A list of possible context values can be queried with \typ
+{tex.getappendlinecontextvalues()}.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={Paragraph callbacks}]
+
+\startsubsection[title={\type {insert_par}}]
+
+\topicindex{callbacks+paragraphs}
 
 Each paragraph starts with a local par node that keeps track of for instance
 the direction. You can hook a callback into the creator:
 
 \startfunctioncall
 function(<node> par, <string> location)
+    -- no return values
 end
 \stopfunctioncall
 
 There is no return value and you should make sure that the node stays valid
 as otherwise \TEX\ can get confused.
 
-\subsection{\cbk {mlist_to_hlist}}
+\stopsubsection
+
+\startsubsection[title={\cbk {begin_paragraph}}]
+
+\topicindex{callbacks+paragraphs}
+
+{\em todo}
+
+\stopsubsection
+
+\startsubsection[title={\cbk {paragraph_context}}]
+
+\topicindex{callbacks+paragraphs}
+
+{\em todo}
+
+\stopsubsection
+
+\startsection[title={Math related callbacks}]
+
+\startsubsection[title={\cbk {mlist_to_hlist}}]
 
 \topicindex{callbacks+math}
 
@@ -581,28 +689,61 @@ penalties have to be inserted in this list, \type {false} otherwise.
 Setting this callback to \type {false} is bad, it will almost certainly result in
 an endless loop.
 
+\stopsubsection
+
+\startsubsection[title={\cbk {math_rule}}]
+
+\topicindex{callbacks+math}
+\topicindex{callbacks+ruled}
+
+{\em todo}
+
+\stopsubsection
+
+\startsubsection[title={\cbk {make_extensible}}]
+
+\topicindex{callbacks+math}
+\topicindex{callbacks+fonts}
+
+{\em todo}
+
+\stopsubsection
+
+\startsubsection[title={\cbk {register_extensible}}]
+
+\topicindex{callbacks+math}
+\topicindex{callbacks+fonts}
+
+{\em todo}
+
+\stopsubsection
+
 \stopsection
 
 \startsection[title={Information reporting callbacks}][library=callback]
 
-\subsection{\cbk {pre_dump}}
+\startsubsection[title={\cbk {pre_dump}}]
 
 \topicindex{callbacks+dump}
 
 \startfunctioncall
 function()
+    -- no return values
 end
 \stopfunctioncall
 
 This function is called just before dumping to a format file starts. It does not
 replace any code and there are neither arguments nor return values.
 
-\subsection{\cbk {start_run}}
+\stopsubsection
+
+\startsubsection[title={\cbk {start_run}}]
 
 \topicindex{callbacks+job run}
 
 \startfunctioncall
 function()
+    -- no return values
 end
 \stopfunctioncall
 
@@ -610,7 +751,9 @@ This callback replaces the code that prints \LUATEX's banner. Note that for
 successful use, this callback has to be set in the \LUA\ initialization script,
 otherwise it will be seen only after the run has already started.
 
-\subsection{\cbk {stop_run}}
+\stopsubsection
+
+\startsubsection[title={\cbk {stop_run}}]
 
 \topicindex{callbacks+job run}
 
@@ -623,12 +766,15 @@ This callback replaces the code that prints \LUATEX's statistics and \quote
 {output written to} messages. The engine can still do housekeeping and therefore
 you should not rely on this hook for postprocessing the \PDF\ or log file.
 
-\subsection{\cbk {intercept_tex_error}, \cbk {intercept_lua_error}}
+\stopsubsection
+
+\startsubsection[title={\cbk {intercept_tex_error}, \cbk {intercept_lua_error}}]
 
 \topicindex{callbacks+errors}
 
 \startfunctioncall
 function()
+    -- no return values
 end
 \stopfunctioncall
 
@@ -638,25 +784,31 @@ the normal actions are removed). You may find some of the values in the \type
 {status} table useful. The \TEX\ related callback gets two arguments: the current
 processing mode and a boolean indicating if there was a runaway.
 
-\subsection{\cbk {show_error_message} and \cbk {show_warning_message}}
+\stopsubsection
+
+\startsubsection[title={\cbk {show_error_message} and \cbk {show_warning_message}}]
 
 \topicindex{callbacks+errors}
 \topicindex{callbacks+warnings}
 
 \startfunctioncall
 function()
+    -- no return values
 end
 \stopfunctioncall
 
 These callback replaces the code that prints the error message. The usual
 interaction after the message is not affected.
 
-\subsection{\cbk {start_file}}
+\stopsubsection
+
+\startsubsection[title={\cbk {start_file}}]
 
 \topicindex{callbacks+files}
 
 \startfunctioncall
 function(category,filename)
+    -- no return values
 end
 \stopfunctioncall
 
@@ -674,30 +826,37 @@ This callback replaces the code that \LUATEX\ prints when a file is opened like
 \LL
 \stoptabulate
 
-\subsection{\cbk {stop_file}}
+\stopsubsection
+
+\startsubsection[title={\cbk {stop_file}}]
 
 \topicindex{callbacks+files}
 
 \startfunctioncall
 function(category)
+    -- no return values
 end
 \stopfunctioncall
 
 This callback replaces the code that \LUATEX\ prints when a file is closed like
 the \type {)} for regular files.
 
-\subsection{\cbk {wrapup_run}}
+\stopsubsection
+
+\startsubsection[title={\cbk {wrapup_run}}]
 
 \topicindex{callbacks+wrapping up}
 
 This callback is called after the \PDF\ and log files are closed. Use it at your own
 risk.
 
+\stopsubsection
+
 \stopsection
 
 \startsection[title={Font-related callbacks}][library=callback]
 
-\subsection{\cbk {define_font}}
+\startsubsection[title={\cbk {define_font}}]
 
 \topicindex{callbacks+fonts}
 
@@ -736,7 +895,29 @@ font structure.
 Setting this callback to \type {false} is pointless as it will prevent font
 loading completely but will nevertheless generate errors.
 
-\subsection{\cbk {show_whatsit}}
+\stopsubsection
+
+\startsubsection[title={\cbk {missing_character}}]
+
+\topicindex{callbacks+fonts}
+\topicindex{callbacks+characters}
+
+This callback is triggered when a character node is created and the font doesn't
+have the requested character.
+
+\startfunctioncall
+function(<node> glyph, <number> font, <number> character)
+    -- no return value
+end
+\stopfunctioncall
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title=Reporting]
+
+\startsubsection[title={\cbk {show_whatsit}}]
 
 \topicindex{callbacks+whatsits}
 
@@ -754,6 +935,149 @@ The indentation tells how many periods are to be typeset if you want to be
 compatible with the rest of tracing. The tracinglevels indicates if the current
 level and\|/or input level are shown cf. \prm {tracinglevels}. Of course one
 is free to show whatever in whatever way suits the whatsit best.
+
+\stopsubsection
+
+\startsubsection[title={\cbk {get_attribute}}]
+
+\topicindex{callbacks+attributes}
+
+Because attributes are abstract pairs of indices and values the reported
+properties makes not much sense and are very macro package (and user) dependent.
+This callback permits more verbose reporting by the engine when tracing is
+enabled.
+
+\startfunctioncall
+function(<number> index, <number> value)
+    return <string>, <string>
+end
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={\cbk {get_noad_class}}]
+
+\topicindex{callbacks+classes}
+
+We have built|-|in math classes but there can also be user defined ones. This
+callback can be used to report more meaningful strings instead of numbers when
+tracing.
+
+\startfunctioncall
+function(<number> class)
+    return <string>
+end
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={\cbk {trace_memory}}]
+
+When the engine starts all kind of memory is pre|-|allocated> depending on the
+configuration more gets allocated when a category runs out of memory. The
+\LUAMETATEX\ engine is more dynamic than \LUATEX. If this callback is set it will
+get called as follows:
+
+\startfunctioncall
+function(<string> category, <boolean> success)
+    -- no return value
+end
+\stopfunctioncall
+
+The boolean indicates if the allocation has been successful. One can best quit
+the run when this one is \type {false}, if the engine doesn't already do that.
+
+\stopsubsection
+
+\startsubsection[title={\type {hpack_quality}}]
+
+\topicindex{callbacks+packing}
+
+This callback can be used to intercept the overfull messages that can result from
+packing a horizontal list (as happens in the par builder). The function takes a
+few arguments:
+
+\startfunctioncall
+function(<string> incident, <number> detail, <node> head, <number> first,
+         <number> last)
+    return <node> whatever
+end
+\stopfunctioncall
+
+The incident is one of \type {overfull}, \type {underfull}, \type {loose} or
+\type {tight}. The detail is either the amount of overflow in case of \type
+{overfull}, or the badness otherwise. The head is the list that is constructed
+(when protrusion or expansion is enabled, this is an intermediate list).
+Optionally you can return a node, for instance an overfull rule indicator. That
+node will be appended to the list (just like \TEX's own rule would).
+
+\stopsubsection
+
+\startsubsection[title={\type {vpack_quality}}]
+
+\topicindex{callbacks+packing}
+
+This callback can be used to intercept the overfull messages that can result from
+packing a vertical list (as happens in the page builder). The function takes a
+few arguments:
+
+\startfunctioncall
+function(<string> incident, <number> detail, <node> head, <number> first,
+    <number> last)
+end
+\stopfunctioncall
+
+The incident is one of \type {overfull}, \type {underfull}, \type {loose} or
+\type {tight}. The detail is either the amount of overflow in case of \type
+{overfull}, or the badness otherwise. The head is the list that is constructed.
+
+\stopsubsection
+
+\startsubsection[title={\type {show_lua_call}}]
+
+\topicindex{callbacks+lua}
+
+This one can be used to help reporting definitions that relate to \LUA\ calls to
+be more meaningful when tracing.
+
+\startfunctioncall
+function(<string> name, <number> index)
+    return <string>
+end
+\stopfunctioncall
+
+\stopsubsection
+
+\startsubsection[title={\type {handle_overload}}]
+
+\topicindex{callbacks+overload}
+
+This is one of the few callbacks that is aimed at \CONTEXT: it relates to overload
+protection of macros and other variables.
+
+\startfunctioncall
+function(<boolean> error, <number> overload, <string> csname, <number> flags)
+    -- no return values
+end
+\stopfunctioncall
+
+The overload is determined by:
+
+\starttabulate[|c|l|c|c|c|c|c|]
+\DB   \BC         \BC immutable \BC permanent \BC primitive \BC frozen \BC instance \NC \NR
+\TB
+\NC 1 \NC warning \NC \star     \NC \star     \NC \star     \NC        \NC          \NC \NR
+\NC 2 \NC error   \NC \star     \NC \star     \NC \star     \NC        \NC          \NC \NR
+\NC 3 \NC warning \NC \star     \NC \star     \NC \star     \NC \star  \NC          \NC \NR
+\NC 4 \NC error   \NC \star     \NC \star     \NC \star     \NC \star  \NC          \NC \NR
+\NC 5 \NC warning \NC \star     \NC \star     \NC \star     \NC \star  \NC \star    \NC \NR
+\NC 6 \NC error   \NC \star     \NC \star     \NC \star     \NC \star  \NC \star    \NC \NR
+\LL
+\stoptabulate
+
+This relates to the optional prefixed that can be used when defining and setting
+quantities and is therefore also a bit of a playground. All macros and aliases in
+\CONTEXT\ are classified this way.
 
 \stopsection
 

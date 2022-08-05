@@ -463,6 +463,11 @@
  % +\checkkernpairclassoptioncode
  % +\flattenclassoptioncode
  % +\omitpenaltyclassoptioncode        % old school check, we do pairwise instead
+ % +\carryoverlefttopkernclassoptioncode
+ % +\carryoverleftbottomkernclassoptioncode
+ % +\carryoverrighttopkernclassoptioncode
+ % +\carryoverrightbottomkernclassoptioncode
+ % +\preferdelimiterdimensionsclassoptioncode
 \relax
 
 \setmathoptions\mathordinarycode\numexpr
@@ -547,6 +552,7 @@
    +\carryoverleftbottomkernclassoptioncode
    +\carryoverrighttopkernclassoptioncode
    +\carryoverrightbottomkernclassoptioncode
+   +\preferdelimiterdimensionsclassoptioncode
 \relax
 
 \setmathoptions\mathradicalcode\numexpr
@@ -556,6 +562,7 @@
    +\carryoverleftbottomkernclassoptioncode
    +\carryoverrighttopkernclassoptioncode
    +\carryoverrightbottomkernclassoptioncode
+   +\preferdelimiterdimensionsclassoptioncode
 \relax
 
 \setmathoptions\mathaccentcode\numexpr
@@ -591,6 +598,7 @@
    +\carryoverleftbottomkernclassoptioncode
    +\carryoverrighttopkernclassoptioncode
    +\carryoverrightbottomkernclassoptioncode
+   +\preferdelimiterdimensionsclassoptioncode
 \relax
 
 % test case for \lefttopkernclassoptioncode and \leftbottomkernclassoptioncode in cambria close:
@@ -738,15 +746,27 @@
      \setfalse\indisplaymath
    \fi}
 
+% \permanent\protected\def\startforceddisplaymath
+%   {\startimath
+%    \displaystyle
+%    \begingroup
+%    \settrue\indisplaymath}
+%
+% \permanent\protected\def\stopforceddisplaymath
+%   {\endgroup
+%    \stopimath}
+
+% \def\startidmath{\Ustartmathmode \displaystyle}
+% \def\stopidmath {\Ustopmathmode}
+
 \permanent\protected\def\startforceddisplaymath
-  {\startimath
-   \displaystyle
-   \begingroup
+  {\Ustartmathmode \displaystyle
+   \begingroup % can go
    \settrue\indisplaymath}
 
 \permanent\protected\def\stopforceddisplaymath
-  {\endgroup
-   \stopimath}
+  {\endgroup % can go
+   \Ustopmathmode}
 
 \permanent\protected\def\startpickupmath % for the moment private
   {\ifconditional\indisplaymath
@@ -877,12 +897,20 @@
      \normalstopimath
    \fi}
 
-%D maybe more setters
+%D We wrap in a construct so that we can do:
+%D
+%D \starttyping
+%D \startformula
+%D     \dm{f(x) = \frac{x}{y}} \mtp{,}
+%D     \im{g(x) = \frac{x}{y}} \mtp{.}
+%D \stopformula
+%D \stoptyping
 
 \permanent\protected\def\dm#1%
   {\relax
    \ifmmode
-     \beginmathgroup\forcedisplaymath#1\endmathgroup
+    %\beginmathgroup\forcedisplaymath#1\endmathgroup
+     \mathconstruct{\forcedisplaymath#1}%
    \else
      \startimath\begingroup\forcedisplaymath#1\endgroup\stopimath
    \fi}
@@ -890,7 +918,8 @@
 \permanent\protected\def\im#1%
   {\relax
    \ifmmode
-     \beginmathgroup\forceinlinemath#1\endmathgroup
+    %\beginmathgroup\forceinlinemath#1\endmathgroup
+     \mathconstruct{\forceinlinemath#1}%
    \else
      \startimath#1\stopimath
    \fi}
@@ -4018,6 +4047,30 @@
 \appendtoks
     \scriptspace.05\Umathquad\textstyle % for Mikael
 \to \everymathematics
+
+%D New:
+
+% \startformula
+%     \mathatom class 0 all \mathbincode      {a b c d} \breakhere
+%     \mathatom class 0 all \mathfractioncode {a b c d} \breakhere
+%     \base    {FE03} \breakhere
+%     \base[16]{FE03} \breakhere
+%     \base[8] {7204}
+% \stopformula
+
+\permanent\tolerant\def\mathdigits#1%
+  {\ifmmode
+     \mathatom class \mathdigitcode all \mathdigitcode {#1}%
+   \else
+     #1%
+   \fi}
+
+\permanent\tolerant\protected\def\base[#1]#*#:#2%
+  {\ifmmode
+     \mathdigits{\tf#2}\ifparameter#1\or\subscript{\mathdigits{\tf#1}}\fi
+   \else
+     #2\ifparameter#1\or\low{#1}\fi
+   \fi}
 
 \protect \endinput
 

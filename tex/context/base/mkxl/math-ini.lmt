@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['math-ini'] = {
 -- then we also have to set the other characters (only a subset done now)
 
 local next, type = next, type
-local formatters, find = string.formatters, string.find
+local formatters, find, nospaces = string.formatters, string.find, string.nospaces
 local utfchar, utfbyte, utflength = utf.char, utf.byte, utf.length
 ----- floor = math.floor
 local sortedhash = table.sortedhash
@@ -48,6 +48,145 @@ local chardata              = characters.data
 local texsetattribute       = tex.setattribute
 local setmathcode           = tex.setmathcode
 local setdelcode            = tex.setdelcode
+local texintegerdef         = tex.integerdef
+
+-- This is relatively new and experimental:
+
+do
+
+    local dictionaries       = { }
+    mathematics.dictionaries = dictionaries
+
+    local names  = dictionaries.names  or utilities.storage.allocate()
+    local groups = dictionaries.groups or utilities.storage.allocate()
+    local data   = dictionaries.data   or utilities.storage.allocate()
+
+    if storage then
+        storage.register("mathematics/dictionaries/names",  names,  "characters.dictionaries.names")
+        storage.register("mathematics/dictionaries/groups", groups, "characters.dictionaries.groups")
+        storage.register("mathematics/dictionaries/data",   data,   "characters.dictionaries.data")
+    end
+
+    function dictionaries.registergroup(name)
+        local group = rawget(names,name)
+        if not group then
+            group = #groups + 1
+            names[name]   = group
+            names[group]  = group
+            groups[group] = name
+            data[group]   = { }
+            local csname  = "math" .. nospaces(name) .. "dictionary"
+            texintegerdef(csname,group,"immutable")
+        end
+        return group
+    end
+
+    function dictionaries.registercharacter(group,index,description)
+        local d = names[group] -- can be number or string
+        if d then
+            data[d][index] = description
+        end
+    end
+
+    local fontchardata = fonts.hashes.characters
+    local f_dictionary = false
+    local register     = callback.register
+    local whatdetail   = "all"
+
+    local function trace(n,properties,group,index,font,char)
+     -- local properties, group, index, font, char = nodes.nuts.getchardict(nodes.nuts.tonut(n))
+        local char = fontchardata[font][char]
+        if char or whatdetail == "all" then
+            local unicode = char and char.unicode
+            if unicode then
+                local groupname = groups[group]
+                local indexname = false
+                if groupname then
+                    indexname = data[group][index] -- dictionaries.data
+                else
+                    groupname = "unknown"
+                end
+                if not indexname then
+                    indexname = chardata[unicode]
+                    indexname = indexname and indexname.description or "unknown"
+                end
+                if not f_dictionary then
+                    f_dictionary = formatters["properties [%04X:%04X:%04X] [%s] %U : %s"]
+                end
+                return f_dictionary(properties,group,index,groupname,unicode,indexname)
+            end
+        end
+    end
+
+    trackers.register("math.dictionaries",function(v)
+        whatdetail = v
+        if whatdetail then
+            register("get_math_dictionary",trace)
+        else
+            register("get_math_dictionary")
+        end
+    end)
+
+    register("get_math_dictionary",trace)
+
+    -- This is experimental and a prelude to the long pending "relate math rendering to
+    -- some field" wish. In TeX characters and symbols are grouped by class but that is
+    -- mostly related to spacing etc. while we actually want to group by meaning. A
+    -- reasonable but incomplete starting point is:
+    --
+    -- https://www.w3.org/TR/MathML3/appendixa.html#parsing_DefEncAtt
+    --
+    -- But it has some weird short names mixed with long ones (and a strange suddenly
+    -- uppercase: Differential-Operator) but we are not bound to that at all. We will
+    -- probably remove and add categories anyway. This openmath stuff looks a bit
+    -- abandoned but we can use it as a start and playground anyway.
+    --
+    -- The char-def.lua file will have mathgroup entries reflecting this.
+
+    local registergroup = mathematics.dictionaries.registergroup
+
+    registergroup("default")
+    registergroup("binary arithmic")
+    registergroup("binary linear algebra")
+    registergroup("binary logical")
+    registergroup("binary relation")
+    registergroup("binary set")
+    registergroup("constant arithmic")
+    registergroup("constant set")
+    registergroup("differential")
+    registergroup("integral")
+    registergroup("interval")
+    registergroup("lambda")
+    registergroup("limit")
+    registergroup("nary arithmic")
+    registergroup("nary constructor")
+    registergroup("nary functional")
+    registergroup("nary linear algebra")
+    registergroup("nary logical")
+    registergroup("nary minmax")
+    registergroup("nary relation")
+    registergroup("nary set list")
+    registergroup("nary set relation")
+    registergroup("nary set")
+    registergroup("nary statistics")
+    registergroup("partial") -- partial differential
+    registergroup("product")
+    registergroup("quantifier")
+    registergroup("unary arithmic")
+    registergroup("unary elementary")
+    registergroup("unary functional")
+    registergroup("unary linear algebra")
+    registergroup("unary logical")
+    registergroup("unary set")
+    registergroup("unary vector")
+
+    -- \Umathdictdef\vdash 1 \mathbinarylogicaldictionary "22A2 \mathrelationcode 0 "22A2
+    --
+    -- \startluacode
+    --     mathematics.dictionaries.registercharacter("binary logical",0x22A2,"implies")
+    -- \stopluacode
+
+end
 
 -- These are different from mkiv with luatex.
 

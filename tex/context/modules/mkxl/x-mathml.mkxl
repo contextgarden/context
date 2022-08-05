@@ -612,11 +612,13 @@
 \stopxmlsetups
 
 \startxmlsetups mml:cn:polar:b
-    {\mr e}\normalsuperscript{\xmlsnippet{#1}{1}+\xmlsnippet{#1}{3}\thinspace{\mr i}}
+%     {\mr e}\normalsuperscript{\xmlsnippet{#1}{1}+\xmlsnippet{#1}{3}\thinspace{\mr i}}
+    \ee\normalsuperscript{\xmlsnippet{#1}{1}+\xmlsnippet{#1}{3}\ii}
 \stopxmlsetups
 
 \startxmlsetups mml:cn:polar:c
-    \exp\left(\xmlsnippet{#1}{1}+\xmlsnippet{#1}{3}\thinspace{\mr i}\right)
+%     \exp\left(\xmlsnippet{#1}{1}+\xmlsnippet{#1}{3}\thinspace{\mr i}\right)
+    \exp\left(\xmlsnippet{#1}{1}+\xmlsnippet{#1}{3}\ii\right)
 \stopxmlsetups
 
 \startxmlsetups mml:cn:complex-polar
@@ -624,7 +626,8 @@
 \stopxmlsetups
 
 \startxmlsetups mml:cn:complex % todo ( )
-    \left(\xmlsnippet{#1}{1} + \xmlsnippet{#1}{3}\thinspace{\mr i}\right)
+%     \left(\xmlsnippet{#1}{1} + \xmlsnippet{#1}{3}\thinspace{\mr i}\right)
+    \left(\xmlsnippet{#1}{1} + \xmlsnippet{#1}{3}\ii\right)
 \stopxmlsetups
 
 \startxmlsetups mml:cn:complex-cartesian
@@ -832,7 +835,7 @@
 
 \startxmlsetups mml:otherwise
 %     \xmlflush{#1}\MMLcPIECEseparator&{\mr otherwise}\crcr
-    \xmlflush{#1}&{\mr otherwise}\crcr
+    \xmlflush{#1}&\mtext{otherwise}\crcr
 \stopxmlsetups
 
 % end of piece
@@ -866,8 +869,10 @@
 
 % min max
 
-\startxmlsetups mml:min \mathopnolimits{min} \xmlsetup{#1}{mml:minmax} \stopxmlsetups
-\startxmlsetups mml:max \mathopnolimits{max} \xmlsetup{#1}{mml:minmax} \stopxmlsetups
+% \startxmlsetups mml:min \mathopnolimits{min} \xmlsetup{#1}{mml:minmax} \stopxmlsetups
+\startxmlsetups mml:min \min \xmlsetup{#1}{mml:minmax} \stopxmlsetups
+% \startxmlsetups mml:max \mathopnolimits{max} \xmlsetup{#1}{mml:minmax} \stopxmlsetups
+\startxmlsetups mml:max \max \xmlsetup{#1}{mml:minmax} \stopxmlsetups
 
 \startxmlsetups mml:minmax
     \xmldoif {#1} {/mml:bvar} {
@@ -1243,7 +1248,8 @@
         \xmlfirst{#1}{/mml:ci}
     }
     \xmldoifelse {#1} {/mml:bvar} {
-        \thinspace {\mr d} \xmlfirst{#1}{/mml:bvar}
+%         \thinspace {\mr d} \xmlfirst{#1}{/mml:bvar}
+        \dd \xmlfirst{#1}{/mml:bvar}
     } {
         % nothing
     }
@@ -1270,7 +1276,8 @@
         } {
             \xmldoifelse {#1} {/mml:bvar} {
                 \mmlfrac {
-                    {\mr d}{
+%                     {\mr d}{
+                    \dd{
                         \xmldoifelse {#1} {/mml:degree} {
                             \normalsuperscript{\xmlconcat{#1}{/mml:degree}\empty}
                         } {
@@ -1292,7 +1299,8 @@
                         }
                     }
                 } {
-                    {\mr d}
+%                     {\mr d}
+                    \dd
                     \xmlfirst{#1}{/mml:bvar/!mml:degree}
                     \xmldoif {#1} {/mml:bvar/mml:degree} {
                         \normalsuperscript{\xmlfirst{#1}{/mml:bvar/mml:degree}}
@@ -1330,7 +1338,8 @@
 
 \startxmlsetups mml:partialdiff
     \xmldoifelse {#1} {/mml:list} {
-        {\mr D}\normalsubscript{
+%         {\mr D}\normalsubscript{
+        \DD\normalsubscript{
             \begingroup
                 \setfalse\mmllistdelimiters
                 \xmlall{#1}{/mml:list}
@@ -1340,7 +1349,8 @@
     } {
         \xmldoifelse {#1} {/mml:bvar} {
             \mmlfrac {
-                {\mr d}\normalsuperscript{
+%                 {\mr d}\normalsuperscript{
+                \dd\normalsuperscript{
                     \xmldoifelse {#1} {/mml:degree} {
                         \xmlconcat{#1}{/mml:degree}\empty
                     } {
@@ -1353,7 +1363,8 @@
                 \xmldoif {#1}{/mml:bvar/!mml:degree} {
                     \xmlfirst{#1}{/mml:bvar/!mml:degree} \,
                 }
-                {\mr d}\xmlfirst{#1}{/(mml:apply\string|mml:reln\string|mml:ci\string|mml:cn)}
+%                 {\mr d}\xmlfirst{#1}{/(mml:apply\string|mml:reln\string|mml:ci\string|mml:cn)}
+                \dd\xmlfirst{#1}{/(mml:apply\string|mml:reln\string|mml:ci\string|mml:cn)}
                 \xmldoif {#1} {/mml:bvar/mml:degree} {
                     \normalsuperscript{\xmlfirst{#1}{/mml:bvar/mml:degree}}
                 }
@@ -1692,8 +1703,8 @@
 \startxmlsetups mml:naturalnumbers \naturalnumbers        \stopxmlsetups
 \startxmlsetups mml:complexes      \complexes             \stopxmlsetups
 \startxmlsetups mml:primes         \primes                \stopxmlsetups
-\startxmlsetups mml:exponentiale   \mathopnolimits{e}     \stopxmlsetups
-\startxmlsetups mml:imaginaryi     \mathopnolimits{i}     \stopxmlsetups
+\startxmlsetups mml:exponentiale   \ee                    \stopxmlsetups % \mathopnolimits{e}     \stopxmlsetups
+\startxmlsetups mml:imaginaryi     \ii                    \stopxmlsetups % \mathopnolimits{i}     \stopxmlsetups
 \startxmlsetups mml:notanumber     \mathopnolimits{NaN}   \stopxmlsetups
 \startxmlsetups mml:true           \mathopnolimits{true}  \stopxmlsetups
 \startxmlsetups mml:false          \mathopnolimits{false} \stopxmlsetups

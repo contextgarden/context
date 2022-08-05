@@ -82,3 +82,20 @@ function mathematics.registersimplematrix(name,action)
         useractions[name] = action
     end
 end
+
+-- \cases{1, x>0 ; -1, x<0 }
+
+interfaces.implement {
+    name      = "simplecases",
+    arguments = "2 strings",
+    actions   = function(method,data)
+        -- no methods yet
+        local m = lpegmatch(rows,(gsub(data,"%s+"," ")))
+        for i=1,#m do
+            m[i] = lpegmatch(cols,m[i])
+        end
+        for i=1,#m do
+            context("\\NC %{ \\NC }t \\NR",m[i])
+        end
+    end
+}

@@ -1965,7 +1965,7 @@ do
                 permissions = permissions | 0xF0C3 -- needs work
                 --
                 optionlist = { }
-                for k, v in table.sortedhash(options) do
+                for k, v in sortedhash(options) do
                     if permissions & v == v then
                         optionlist[#optionlist+1] = k
                     end

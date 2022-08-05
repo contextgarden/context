@@ -216,12 +216,14 @@ function attributes.registervalue(index,value)
             -- this can be an option
             for i=c[1],c[2] do
                 if list[i] == nil then
+                    -- we avoid 0 because that can be a signal attribute value
+                    local n = i == 0 and 1 or i
                     if trace_values then
-                        report_value("reusing slot %i for attribute %i in range (%i,%i)",i,index,c[1],c[2])
+                        report_value("reusing slot %i for attribute %i in range (%i,%i)",n,index,c[1],c[2])
                     end
-                    c[1] = i
-                    list[i] = value
-                    return i
+                    c[1] = n
+                    list[n] = value
+                    return n
                 end
             end
         else

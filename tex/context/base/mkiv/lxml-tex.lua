@@ -2251,7 +2251,7 @@ function lxml.snippet(id,i)
     if e then
         local dt = e.dt
         if dt then
-            local dti = dt[i]
+            local dti = dt[tonumber(i)] -- string in lxml
             if dti then
                 xmlsprint(dti,e)
             end

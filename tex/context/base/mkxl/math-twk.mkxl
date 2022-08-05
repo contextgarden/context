@@ -71,4 +71,26 @@
 \permanent\protected\def\±{\mathortext\mathunaryplusminus\textpm}
 \permanent\protected\def\∓{\mathortext\mathunaryminusplus\textmp}
 
+% \permanent\protected\def\minute{\hbox shift -.8ex{$\char"2032$}}
+% \permanent\protected\def\second{\hbox shift -.8ex{$\char"2033$}}
+%
+% \permanent\protected\def\minute{$\char\privatecharactercode{prime 0x2032 1}$}
+% \permanent\protected\def\second{$\char\privatecharactercode{prime 0x2033 1}$}
+%
+% \permanent\protected\def\minute{$\Umathchar\zerocount\zerocount\privatecharactercode{prime 0x2032 1}$}
+% \permanent\protected\def\second{$\Umathchar\zerocount\zerocount\privatecharactercode{prime 0x2033 1}$}
+%
+% \immutable\Umathchardef\minute\zerocount\zerocount\privatecharactercode{prime 0x2032 1}
+% \immutable\Umathchardef\second\zerocount\zerocount\privatecharactercode{prime 0x2033 1}
+
+\immutable\chardef\textminute"2032
+\immutable\chardef\textsecond"2033
+
+\immutable\Umathchardef\mathminute\zerocount\zerocount\privatecharactercode{prime 0x2032 1}
+\immutable\Umathchardef\mathsecond\zerocount\zerocount\privatecharactercode{prime 0x2033 1}
+
+\permanent\protected\def\minute{\iffontchar\font\textminute\textminute\else\mathminute\fi}
+\permanent\protected\def\second{\iffontchar\font\textsecond\textsecond\else\mathsecond\fi}
+
+
 \protect

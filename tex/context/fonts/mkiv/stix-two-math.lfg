@@ -1,3 +1,9 @@
+-- When set this will bypass the italic correction hackery!
+local integral_variants = {  bottomright = -0.20 }
+-- local integral_top      = {  topright    =  0.05 }
+local integral_bottom   = {  bottomright = -0.35 }
+
+
 return {
     name = "stix-two-math",
     version = "1.00",
@@ -51,6 +57,55 @@ return {
                          -- topright    =  0,
                             bottomright = -0.2,
                        },
+
+                        ["0x7D.parts.top"] = {
+                            topright    = -0.15,
+                        }, -- right brace top
+                        ["0x7D.parts.bottom"] = {
+                            bottomright = -0.15,
+                        }, -- right brace bottom
+                        -- ["0x7D.variants.*"] = {
+                        --     topright = -0.15,
+                        --     bottomright = -0.15,
+                        -- }, -- right brace variants
+                        ["0x29.parts.top"] = {
+                            topright    = -0.1,
+                        }, -- right parenthesis top
+                        ["0x29.parts.bottom"] = {
+                            bottomright = -0.1,
+                        }, -- right parenthesis bottom
+                        ["0x29.variants.*"] = {
+                            topright = -0.2,
+                            bottomright = -0.2,
+                        }, -- right parenthesis variants
+                        ["0x221A.parts.top"] = {
+                            topright = 0.2,
+                        }, -- right radical top
+                        ["0x221A.parts.bottom"] = {
+                            bottomright = 0.2,
+                        }, -- right radical bottom
+                        ["0x221A.variants.*"] = {
+                            topright = 0.2,
+                            bottomright = 0.2,
+                        }, -- right radical variants
+
+                        -- angle
+                        [0x27E9]              = { topright = -0.1, bottomright = -0.1 },
+                        ["0x27E9.variants.*"] = { topright = -0.2, bottomright = -0.2 },
+                        [0x27EB]              = { topright = -0.1, bottomright = -0.1 },
+                        ["0x27EB.variants.*"] = { topright = -0.2, bottomright = -0.2 },
+
+                        ["0x222B.variants.*"] = integral_variants, ["0x222B.parts.top"] = integral_top, ["0x222B.parts.bottom"] = integral_bottom,
+                        ["0x222C.variants.*"] = integral_variants, ["0x222C.parts.top"] = integral_top, ["0x222C.parts.bottom"] = integral_bottom,
+                        ["0x222D.variants.*"] = integral_variants, ["0x222D.parts.top"] = integral_top, ["0x222D.parts.bottom"] = integral_bottom,
+                        ["0x222E.variants.*"] = integral_variants, ["0x222E.parts.top"] = integral_top, ["0x222E.parts.bottom"] = integral_bottom,
+                        ["0x222F.variants.*"] = integral_variants, ["0x222F.parts.top"] = integral_top, ["0x222F.parts.bottom"] = integral_bottom,
+                        ["0x2230.variants.*"] = integral_variants, ["0x2230.parts.top"] = integral_top, ["0x2230.parts.bottom"] = integral_bottom,
+                        ["0x2231.variants.*"] = integral_variants, ["0x2231.parts.top"] = integral_top, ["0x2231.parts.bottom"] = integral_bottom,
+                        ["0x2232.variants.*"] = integral_variants, ["0x2232.parts.top"] = integral_top, ["0x2232.parts.bottom"] = integral_bottom,
+                        ["0x2233.variants.*"] = integral_variants, ["0x2233.parts.top"] = integral_top, ["0x2233.parts.bottom"] = integral_bottom,
+
+
                     },
                 },
                 -- 0xFEOO should be chancery style, if present

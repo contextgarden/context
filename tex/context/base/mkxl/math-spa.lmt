@@ -12,6 +12,8 @@ local setmetatableindex = table.setmetatableindex
 
 local boundary_code     = nodes.nodecodes.boundary
 local hlist_code        = nodes.nodecodes.hlist
+local kern_code         = nodes.nodecodes.kern
+local penalty_code      = nodes.nodecodes.penalty
 local glue_code         = nodes.nodecodes.glue
 local line_code         = nodes.listcodes.line
 local ghost_code        = nodes.listcodes.ghost
@@ -39,6 +41,7 @@ local addxoffset        = nuts.addxoffset
 local nextglue          = nuts.traversers.glue
 local nextlist          = nuts.traversers.list
 local nextboundary      = nuts.traversers.boundary
+local nextnode          = nuts.traversers.node
 
 local texgetdimen       = tex.getdimen
 local texsetdimen       = tex.setdimen
@@ -56,15 +59,32 @@ stages[1] = function(specification,stage)
     for s in nextboundary, head do
         if getdata(s) == boundary then
             -- todo: skip over ghost, maybe penalty, maybe glues all in one loop
-            local n = getnext(s)
-            while n and getid(n) == hlist_code and getsubtype(n) == ghost_code do
-                n = getnext(n)
+--             local n = getnext(s)
+--             if n and getid(n) == kern_code then -- also needed
+--                 n = getnext(n)
+--             end
+--             while n and getid(n) == hlist_code and getsubtype(n) == ghost_code do
+--                 n = getnext(n)
+--             end
+--          -- while n and getid(n) == glue_code do
+--             if n and getid(n) == glue_code then
+--                 n = getnext(n)
+--             end
+            for n, id, subtype in nextnode, getnext(s) do
+                s = n
+                if id == kern_code then
+                    -- move on (s_2 case)
+                elseif id == glue_code then
+                    -- move on
+                elseif id == penalty_code then
+                    -- move on (untested)
+                elseif id == hlist_code and subtype == ghost_code then
+                    -- move on
+                else
+                    break
+                end
             end
-         -- while n and getid(n) == glue_code do
-            if n and getid(n) == glue_code then
-                n = getnext(n)
-            end
-            distance = distance + getdimensions(head,n)
+            distance = distance + getdimensions(head,s)
             break
         end
     end

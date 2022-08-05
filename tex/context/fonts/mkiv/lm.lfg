@@ -279,6 +279,44 @@ return {
                         [0x1D4B3] = { bottomright = -0.11, }, -- script X
                         [0x1D4B4] = { bottomright = -0.18, }, -- script Y
                         [0x1D4B5] = { bottomright = -0.05, }, -- script Z
+
+                        ["0x7D.parts.top"] = {
+                            topright    = -0.25,
+                        }, -- right brace top
+                        ["0x7D.parts.bottom"] = {
+                            bottomright = -0.25,
+                        }, -- right brace bottom
+                        ["0x7D.variants.*"] = {
+                            topright = -0.25,
+                            bottomright = -0.25,
+                        }, -- right brace variants
+                        ["0x29.parts.top"] = {
+                            topright    = -0.3,
+                        }, -- right parenthesis top
+                        ["0x29.parts.bottom"] = {
+                            bottomright = -0.3,
+                        }, -- right parenthesis bottom
+                        ["0x29.variants.*"] = {
+                            topright = -0.25,
+                            bottomright = -0.25,
+                        }, -- right parenthesis variants
+                        ["0x221A.parts.top"] = {
+                            topright = 0.2,
+                        }, -- right radical top
+                        ["0x221A.parts.bottom"] = {
+                            bottomright = 0.2,
+                        }, -- right radical bottom
+                        ["0x221A.variants.*"] = {
+                            topright = 0.2,
+                            bottomright = 0.2,
+                        }, -- right radical variants
+
+                         -- angle
+                        [0x27E9]              = { topright = -0.2, bottomright = -0.2 },
+                        ["0x27E9.variants.*"] = { topright = -0.3, bottomright = -0.3 },
+                        [0x27EB]              = { topright = -0.2, bottomright = -0.2 },
+                        ["0x27EB.variants.*"] = { topright = -0.3, bottomright = -0.3 },
+
                     },
                 },
              -- {

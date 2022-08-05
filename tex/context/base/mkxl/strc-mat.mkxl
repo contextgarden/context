@@ -1133,7 +1133,9 @@
   {\vadjust pre \bgroup
      \hbox to \displaywidth \bgroup
         \strut
+        \hskip\leftskip
          #1\hss
+        \hskip\rightskip
         \strut
      \egroup
    \egroup}
@@ -1142,7 +1144,9 @@
   {\vadjust \bgroup
      \hbox to \displaywidth \bgroup
         \strut
+        \hskip\leftskip
         #1\hss
+        \hskip\rightskip
         \strut
      \egroup
    \egroup}
@@ -1254,7 +1258,10 @@
     \c_strc_math_split_status \zerocount
 \to \everymathematics
 
-%
+\prependtoks
+    % we need to keep an eye on this
+    \mathgluemode\ifcase\raggedstatus\plusthree\else\zerocount\fi
+\to \everymathematics
 
 \defcsname\??mathtextalign\v!flushleft\endcsname
   {\raggedright

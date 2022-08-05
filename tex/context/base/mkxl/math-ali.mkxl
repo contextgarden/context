@@ -885,6 +885,39 @@
     \frozen\instance          \defcsname \e!stop \currentmathcases\endcsname{\math_cases_stop}%
 \to \everydefinemathcases
 
+%D Why not \unknown:
+%D
+%D \starttyping
+%D \definemathcases[mycases][simplecommand=mycases]
+%D
+%D \startformula
+%D \startmycases
+%D \NC 1  \NC x>0 \NR
+%D \NC -1 \NC x<0 \NR
+%D \stopmycases
+%D \stopformula
+%D
+%D \startformula
+%D     \mycases{1,x>0;-1,x<0}
+%D \stopformula
+%D \stoptyping
+
+\permanent\tolerant\protected\def\math_cases_simple[#1]#*[#2]#:#3%
+  {\begingroup
+   \edef\currentmathcases{#1}%
+   \setupcurrentmathcases[#2]%
+   \math_cases_start[\currentmathcases]%
+   \clf_simplecases{\mathcasesparameter\c!action}{#3}%
+   \math_cases_stop
+   \endgroup}
+
+\appendtoks
+    \edef\p_simplecommand{\mathcasesparameter\c!simplecommand}%
+    \ifempty\p_simplecommand\else
+        \frozen\protected\instance\edefcsname\p_simplecommand\endcsname{\math_cases_simple[\currentmathcases]}%
+    \fi
+\to \everydefinemathcases
+
 \let\math_cases_strut\relax
 
 \newcount\c_math_cases_nc
@@ -2604,6 +2637,9 @@
 \permanent\protected\def\math_simplealign_NC
   {\aligntab}
 
+\permanent\protected\def\math_simplealign_EQ
+  {\aligntab=\aligntab}
+
 \noaligned\tolerant\permanent\protected\def\math_simplealign_NR[#1]#*[#2]%
   {\unskip
    \strc_formulas_place_number_nested{#1}{#2}\crcr}
@@ -2630,6 +2666,7 @@
    \enforced\let\MC\math_simplealign_NC
    \enforced\let\NC\math_simplealign_NC
    \enforced\let\NR\math_simplealign_NR
+   \enforced\let\EQ\math_simplealign_EQ
    \enforced\let\TB\math_common_TB
    \math_eqalign_set_defaults
    \math_eqalign_set_columns{\mathsimplealignparameter\c!align}%
