@@ -57,26 +57,27 @@ local mathmode_code      = tex.modelevels.math
 
 local colortracers       = nodes.tracers.colors
 
-local trace_remapping    = false  registertracker("math.remapping",   function(v) trace_remapping   = v end)
-local trace_processing   = false  registertracker("math.processing",  function(v) trace_processing  = v end)
-local trace_analyzing    = false  registertracker("math.analyzing",   function(v) trace_analyzing   = v end)
-local trace_normalizing  = false  registertracker("math.normalizing", function(v) trace_normalizing = v end)
-local trace_collapsing   = false  registertracker("math.collapsing",  function(v) trace_collapsing  = v end)
-local trace_fixing       = false  registertracker("math.fixing",      function(v) trace_fixing      = v end)
-local trace_patching     = false  registertracker("math.patching",    function(v) trace_patching    = v end)
-local trace_goodies      = false  registertracker("math.goodies",     function(v) trace_goodies     = v end)
-local trace_variants     = false  registertracker("math.variants",    function(v) trace_variants    = v end)
-local trace_alternates   = false  registertracker("math.alternates",  function(v) trace_alternates  = v end)
-local trace_italics      = false  registertracker("math.italics",     function(v) trace_italics     = v end)
-local trace_kernpairs    = false  registertracker("math.kernpairs",   function(v) trace_kernpairs   = v end)
-local trace_domains      = false  registertracker("math.domains",     function(v) trace_domains     = v end)
-local trace_families     = false  registertracker("math.families",    function(v) trace_families    = v end)
-local trace_fences       = false  registertracker("math.fences",      function(v) trace_fences      = v end)
-local trace_unstacking   = false  registertracker("math.unstack",     function(v) trace_unstacking  = v end)
-local trace_snapping     = false  registertracker("math.snapping",    function(v) trace_snapping    = v end)
+local trace_remapping    = false  registertracker("math.remapping",    function(v) trace_remapping    = v end)
+local trace_processing   = false  registertracker("math.processing",   function(v) trace_processing   = v end)
+local trace_analyzing    = false  registertracker("math.analyzing",    function(v) trace_analyzing    = v end)
+local trace_normalizing  = false  registertracker("math.normalizing",  function(v) trace_normalizing  = v end)
+local trace_collapsing   = false  registertracker("math.collapsing",   function(v) trace_collapsing   = v end)
+local trace_fixing       = false  registertracker("math.fixing",       function(v) trace_fixing       = v end)
+local trace_patching     = false  registertracker("math.patching",     function(v) trace_patching     = v end)
+local trace_goodies      = false  registertracker("math.goodies",      function(v) trace_goodies      = v end)
+local trace_variants     = false  registertracker("math.variants",     function(v) trace_variants     = v end)
+local trace_alternates   = false  registertracker("math.alternates",   function(v) trace_alternates   = v end)
+local trace_italics      = false  registertracker("math.italics",      function(v) trace_italics      = v end)
+local trace_kernpairs    = false  registertracker("math.kernpairs",    function(v) trace_kernpairs    = v end)
+local trace_domains      = false  registertracker("math.domains",      function(v) trace_domains      = v end)
+local trace_families     = false  registertracker("math.families",     function(v) trace_families     = v end)
+local trace_fences       = false  registertracker("math.fences",       function(v) trace_fences       = v end)
+local trace_unstacking   = false  registertracker("math.unstack",      function(v) trace_unstacking   = v end)
+local trace_snapping     = false  registertracker("math.snapping",     function(v) trace_snapping     = v end)
+local trace_dictionaries = false  registertracker("math.dictionaries", function(v) trace_dictionaries = v end)
 
-local check_coverage     = true   registerdirective("math.checkcoverage",  function(v) check_coverage   = v     end)
-local use_math_goodies   = true   registerdirective("math.nogoodies",      function(v) use_math_goodies = not v end)
+local check_coverage     = true   registerdirective("math.checkcoverage", function(v) check_coverage   = v     end)
+local use_math_goodies   = true   registerdirective("math.nogoodies",     function(v) use_math_goodies = not v end)
 
 local report_processing  = logreporter("mathematics","processing")
 local report_remapping   = logreporter("mathematics","remapping")
@@ -679,7 +680,6 @@ do
 
     local remapalphabets    = mathematics.remapalphabets
     local fallbackstyleattr = mathematics.fallbackstyleattr
-    local setnodecolor      = colortracers.set
 
     local function report_remap(tag,id,old,new,extra)
         if new then
@@ -2548,6 +2548,67 @@ do
         visual = v
         setaction("math","noads.handlers.makeup",v)
     end)
+
+end
+
+-- for Mikael and me
+
+-- This could be an early callback, when we actually assign a character.
+
+do
+
+    local setnodecolor = colortracers.set
+    local getchardict  = nuts.getchardict
+    local setchardict  = nuts.setchardict
+
+    local dictionaries = { }  noads.processors.dictionaries = dictionaries
+    local groups       = mathematics.dictionaries.groups
+    local sets         = mathematics.dictionaries.sets
+    local variants     = mathematics.dictionaries.variants
+    local defaults     = mathematics.dictionaries.defaults
+
+    local function check(pointer,group,index)
+        local v = variants[index]
+        if v and v[group] then
+            return group
+        end
+        return 1
+    end
+
+    dictionaries[mathchar_code] = function(pointer)
+        local properties, group, index = getchardict(pointer)
+        local set  = sets[group]
+        local real = 1
+        if set then
+            local groups    = set.groups
+            local nofgroups = groups and #groups
+            if nofgroups > 0 then
+                for i=1,nofgroups do
+                    real = check(pointer,groups[i],index)
+                    if real ~= 1  then
+                        goto done
+                    end
+                end
+            end
+        else
+            real = check(pointer,group,index)
+        end
+      ::done::
+        if real == 1 then
+            real = defaults[index] or 1
+        end
+        setchardict(pointer,properties,real,index)
+        if trace_dictionaries and real > 1 then
+            local groupname = groups[real]
+            if groupname then
+                setnodecolor(pointer,"dictionary:"..groupname)
+            end
+        end
+    end
+
+    function handlers.dictionaries(head,style,penalties)
+        processnoads(head,dictionaries,"dictionaries")
+    end
 
 end
 

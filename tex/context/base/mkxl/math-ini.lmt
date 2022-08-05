@@ -6,19 +6,23 @@ if not modules then modules = { } end modules ['math-ini'] = {
     license   = "see context related readme files"
 }
 
--- if needed we can use the info here to set up xetex definition files
--- the "8000 hackery influences direct characters (utf) as indirect \char's
---
--- isn't characters.data loaded already ... shortcut it here
---
--- replace code 7 by 0 as we don't use it anyway (chars with code 7 will adapt to
--- to the fam when set ... we use other means .. ok, we could use it for spacing but
--- then we also have to set the other characters (only a subset done now)
+-- The way we do math in \CONTEXT\ \MKIV\ differs from other macro packages so you
+-- should not mix the somewhat unique (and bit weird) approach here with the more
+-- traditional (\TEX) approach. Also, we use char-def.lua as starting point and that
+-- file is quite \CONTEXT\ specific. When we added math to that there was no
+-- interest (quite the contrary) so we didn't went generic there which in retrospect
+-- also gives us the freedom to add more information, something that happens
+-- occasionally. Because that file is shared between \MKIV\ and \LMTX\ some
+-- information is only used by \LMTX. We also have quite some runs over the math
+-- list but that has been so since we started and performance will not degrade much
+-- by it; after all math is not that demanding. More details can be found in the
+-- manuals that discuss math. Most code (and concepts) date from 2005 so maybe I
+-- will upgrade the lot some day, although it has been adapted on the way to the
+-- changes in the engine(s).
 
 local next, type = next, type
 local formatters, find, nospaces = string.formatters, string.find, string.nospaces
-local utfchar, utfbyte, utflength = utf.char, utf.byte, utf.length
------ floor = math.floor
+local utfchar, utfbyte = utf.char, utf.byte
 local sortedhash = table.sortedhash
 local toboolean = toboolean
 
@@ -30,8 +34,6 @@ local ctx_sprint            = context.sprint
 local ctx_doifelsesomething = commands.doifelsesomething
 
 local trace_defining        = false  trackers.register("math.defining", function(v) trace_defining = v end)
-
-trace_defining = true
 
 local report_math           = logs.reporter("mathematics","initializing")
 
@@ -54,17 +56,32 @@ local texintegerdef         = tex.integerdef
 
 do
 
-    local dictionaries       = { }
+    local dictionaries       = mathematics.dictionaries or { }
     mathematics.dictionaries = dictionaries
 
-    local names  = dictionaries.names  or utilities.storage.allocate()
-    local groups = dictionaries.groups or utilities.storage.allocate()
-    local data   = dictionaries.data   or utilities.storage.allocate()
+    local names    = dictionaries.names    or utilities.storage.allocate()
+    local groups   = dictionaries.groups   or utilities.storage.allocate()
+    local data     = dictionaries.data     or utilities.storage.allocate()
+    local sets     = dictionaries.sets     or utilities.storage.allocate()
+    local variants = dictionaries.variants or utilities.storage.allocate() -- todo: get from char-def
+    local defaults = dictionaries.defaults or utilities.storage.allocate() -- todo: get from char-def
 
-    if storage then
-        storage.register("mathematics/dictionaries/names",  names,  "characters.dictionaries.names")
-        storage.register("mathematics/dictionaries/groups", groups, "characters.dictionaries.groups")
-        storage.register("mathematics/dictionaries/data",   data,   "characters.dictionaries.data")
+    storage.register("mathematics/dictionaries/names",    names,    "mathematics.dictionaries.names")
+    storage.register("mathematics/dictionaries/groups",   groups,   "mathematics.dictionaries.groups")
+    storage.register("mathematics/dictionaries/data",     data,     "mathematics.dictionaries.data")
+    storage.register("mathematics/dictionaries/sets",     sets,     "mathematics.dictionaries.sets")
+    storage.register("mathematics/dictionaries/variants", variants, "mathematics.dictionaries.variants")
+    storage.register("mathematics/dictionaries/defaults", defaults, "mathematics.dictionaries.defaults")
+
+    dictionaries.names    = dictionaries.names    or names
+    dictionaries.groups   = dictionaries.groups   or groups
+    dictionaries.data     = dictionaries.data     or data
+    dictionaries.sets     = dictionaries.sets     or sets
+    dictionaries.variants = dictionaries.variants or variants
+    dictionaries.defaults = dictionaries.defaults or defaults
+
+    if not sets.n then
+        sets.n = 0
     end
 
     function dictionaries.registergroup(name)
@@ -81,12 +98,70 @@ do
         return group
     end
 
+    function dictionaries.registergroupset(name,set)
+        local s = sets[name]
+        if not s then
+            local d = dictionaries.registergroup(name)
+            local n = sets.n + 1
+            local l = utilities.parsers.settings_to_array(set)
+            local g = { }
+            for i=1,#l do
+                local n = names[l[i]]
+                if n then
+                    g[#g+1] = n -- ordered
+                end
+            end
+            s = {
+                names  = l,
+                groups = g,
+                group  = d,
+            }
+            sets[name] = s
+            sets[d]    = s
+
+        end
+    end
+
+    function dictionaries.groupset(name)
+        return sets[name] or { }
+    end
+
+    function dictionaries.groupsetgroup(name)
+        local s = sets[name]
+        if s then
+            return s.group
+        else
+            return names[name] or 0
+        end
+    end
+
     function dictionaries.registercharacter(group,index,description)
         local d = names[group] -- can be number or string
         if d then
-            data[d][index] = description
+            data[d][index] = description or true
+            local v = variants[index]
+            if v then
+                v[d] = true
+            else
+                variants[index] = { [d] = true }
+            end
+            if not defaults[index] then
+                defaults[index] = d
+            end
         end
     end
+
+    implement {
+        name      = "registergroupset",
+        arguments = "2 strings",
+        actions   = dictionaries.registergroupset,
+    }
+
+    implement {
+        name      = "groupsetgroup",
+        arguments = "string",
+        actions   = { dictionaries.groupsetgroup, context },
+    }
 
     local fontchardata = fonts.hashes.characters
     local f_dictionary = false
@@ -106,7 +181,7 @@ do
                 else
                     groupname = "unknown"
                 end
-                if not indexname then
+                if not indexname or indexname == true then
                     indexname = chardata[unicode]
                     indexname = indexname and indexname.description or "unknown"
                 end
@@ -143,42 +218,46 @@ do
     --
     -- The char-def.lua file will have mathgroup entries reflecting this.
 
-    local registergroup = mathematics.dictionaries.registergroup
+    if environment.initex then
 
-    registergroup("default")
-    registergroup("binary arithmic")
-    registergroup("binary linear algebra")
-    registergroup("binary logical")
-    registergroup("binary relation")
-    registergroup("binary set")
-    registergroup("constant arithmic")
-    registergroup("constant set")
-    registergroup("differential")
-    registergroup("integral")
-    registergroup("interval")
-    registergroup("lambda")
-    registergroup("limit")
-    registergroup("nary arithmic")
-    registergroup("nary constructor")
-    registergroup("nary functional")
-    registergroup("nary linear algebra")
-    registergroup("nary logical")
-    registergroup("nary minmax")
-    registergroup("nary relation")
-    registergroup("nary set list")
-    registergroup("nary set relation")
-    registergroup("nary set")
-    registergroup("nary statistics")
-    registergroup("partial") -- partial differential
-    registergroup("product")
-    registergroup("quantifier")
-    registergroup("unary arithmic")
-    registergroup("unary elementary")
-    registergroup("unary functional")
-    registergroup("unary linear algebra")
-    registergroup("unary logical")
-    registergroup("unary set")
-    registergroup("unary vector")
+        local registergroup = mathematics.dictionaries.registergroup
+
+        registergroup("default")
+        registergroup("binary arithmic")
+        registergroup("binary linear algebra")
+        registergroup("binary logical")
+        registergroup("binary relation")
+        registergroup("binary set")
+        registergroup("constant arithmic")
+        registergroup("constant set")
+        registergroup("differential")
+        registergroup("integral")
+        registergroup("interval")
+        registergroup("lambda")
+        registergroup("limit")
+        registergroup("nary arithmic")
+        registergroup("nary constructor")
+        registergroup("nary functional")
+        registergroup("nary linear algebra")
+        registergroup("nary logical")
+        registergroup("nary minmax")
+        registergroup("nary relation")
+        registergroup("nary set list")
+        registergroup("nary set relation")
+        registergroup("nary set")
+        registergroup("nary statistics")
+        registergroup("partial") -- partial differential
+        registergroup("product")
+        registergroup("quantifier")
+        registergroup("unary arithmic")
+        registergroup("unary elementary")
+        registergroup("unary functional")
+        registergroup("unary linear algebra")
+        registergroup("unary logical")
+        registergroup("unary set")
+        registergroup("unary vector")
+
+    end
 
     -- \Umathdictdef\vdash 1 \mathbinarylogicaldictionary "22A2 \mathrelationcode 0 "22A2
     --
@@ -408,7 +487,10 @@ mathematics.virtualized   = virtualized
 
 do
 
-    local setmathcharacter = function(class,family,slot,unicode,mset,dset)
+    local registercharacter = mathematics.dictionaries.registercharacter
+    local groupnames        = mathematics.dictionaries.names
+
+    local setmathcharacter = function(class,family,slot,unicode,mset,dset,group)
         if mset and class ~= ordinary_class then
             setmathcode("global",slot,class,family,unicode)
             mset = false
@@ -416,6 +498,14 @@ do
         if dset and (class == open_class or class == close_class or class == middle_class or class == division_class) then
             setdelcode("global",slot,family,unicode,0,0)
             dset = false
+        end
+        if group then
+            group = groupnames[group] or 0
+            if group ~= 0 then
+                -- which one
+                registercharacter(group,unicode)
+             -- registercharacter(group,slot)
+            end
         end
         return mset, dset
     end
@@ -446,7 +536,7 @@ do
 
     local texmathchardef = tex.mathchardef
 
-    local setmathsymbol = function(name,class,engine,family,slot,stretch) -- hex is nicer for tracing
+    local setmathsymbol = function(name,class,engine,family,slot,stretch,group) -- hex is nicer for tracing
         if class == accent_class then
             ctx_sprint(f_topaccent(name,0,family,slot))
         elseif class == topaccent_class then
@@ -468,6 +558,13 @@ do
         elseif class == root_class then
             ctx_sprint(f_root(name,family,slot))
         elseif texmathchardef then
+            if group then
+                group = groupnames[group] or 0
+                if group ~= 0 then
+                    texmathchardef(name,engine,family,slot,"permanent",0,group,slot)
+                    return
+                end
+            end
             texmathchardef(name,engine,family,slot,"permanent")
         else
             -- beware, open/close and other specials should not end up here
@@ -505,7 +602,7 @@ do
                     if trace_defining then
                         report(class,engine,family,unicode,symbol)
                     end
-                    mset, dset = setmathcharacter(engine,family,unicode,symbol,mset,dset)
+                    mset, dset = setmathcharacter(engine,family,unicode,symbol,mset,dset,group)
                 end
                 local spec = other.mathspec
                 if spec then
@@ -515,7 +612,7 @@ do
                         if class then
                             local engine = toengineclass(class)
                             -- todo: trace
-                            mset, dset = setmathcharacter(engine,family,unicode,symbol,mset,dset)
+                            mset, dset = setmathcharacter(engine,family,unicode,symbol,mset,dset,group)
                         end
                     end
                 end
@@ -524,6 +621,7 @@ do
             local spec    = character.mathspec
             local name    = character.mathname
             local stretch = character.mathstretch
+            local group   = character.mathgroup
             if spec then
                 local done = false
                 if class then
@@ -536,7 +634,7 @@ do
                         if trace_defining then
                             report(class,engine,family,unicode)
                         end
-                        mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset)
+                        mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset,group)
                         done = true
                     end
                 end
@@ -544,6 +642,7 @@ do
                     local m     = spec[i]
                     local name  = m.name
                     local class = m.class or class
+                    local group = m.group or group
                     if class then
                         class = classes[class] or ordinary_class
                     else
@@ -555,7 +654,7 @@ do
                             if trace_defining then
                                 report(class,engine,family,unicode,name)
                             end
-                            setmathsymbol(name,class,engine,family,unicode,stretch)
+                            setmathsymbol(name,class,engine,family,unicode,stretch,group)
                         else
                             name = (class == classes.ordinary or class == classes.digit) and character.adobename -- bad
                             if name and trace_defining then
@@ -563,7 +662,7 @@ do
                             end
                         end
                         if not done then
-                            mset, dset = setmathcharacter(engine,family,unicode,m.unicode or unicode,mset,dset) -- see solidus
+                            mset, dset = setmathcharacter(engine,family,unicode,m.unicode or unicode,mset,dset,group) -- see solidus
                             done = true
                         end
                     end
@@ -580,7 +679,7 @@ do
                         if trace_defining then
                             report(class,engine,family,unicode,name)
                         end
-                        mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset)
+                        mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset,group)
                     else
                      -- if not name then
                      --     name = character.contextname -- too dangerous, we loose textslash and a few more
@@ -589,20 +688,20 @@ do
                             if trace_defining then
                                 report(class,engine,family,unicode,name)
                             end
-                            setmathsymbol(name,class,engine,family,unicode,stretch)
+                            setmathsymbol(name,class,engine,family,unicode,stretch,group)
                         else
                             if trace_defining then
                                 report(class,engine,family,unicode,character.adobename)
                             end
                         end
-                        mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset)
+                        mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset,group)
                     end
                 elseif class ~= ordinary_class then
                     local engine = toengineclass(class)
                     if trace_defining then
                         report(class,engine,family,unicode,character.adobename)
                     end
-                    mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset)
+                    mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset,group)
                 end
             end
         end

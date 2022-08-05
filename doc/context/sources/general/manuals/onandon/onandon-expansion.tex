@@ -75,6 +75,11 @@ the other with user defined conditions. The first one relates directly to
 expansion, the second one concerns conditions and relates more to parsing
 branches which on purpose avoids expansion.
 
+{\em In the meantime \LUAMETATEX\ has a slightly different implementation which
+goes under the umbrella \quote {local control}. We show both ways here. The
+example where two token lists are compared can be done easier with \type
+{\iftok}.}
+
 For the first one I use some silly examples. I must admit that although I can
 envision useful application, I really need to go over the large amount of
 \CONTEXT\ source code to really find a place where it is making things better.
@@ -106,7 +111,13 @@ preventing look ahead interference by using a space or \tex {relax} (often an
 expression works better as it doesn't leave an \tex {relax}).
 
 \startbuffer
+% luatex
+
 \def\TestMe{\immediateassignment\advance\NumberOfCalls1 }
+
+% luametatex
+
+\def\TestMe{\localcontrolled{\advance\NumberOfCalls1 }}
 
 \edef\Tested{\TestMe bar:\the\NumberOfCalls}
 \edef\Tested{\TestMe bar:\the\NumberOfCalls}
@@ -126,7 +137,9 @@ Here is a somewhat silly example of an expanded comparison of two \quote
 {strings}:
 
 \startbuffer
-\def\expandeddoifelse#1#2#3#4%
+% luatex
+
+\def\ExpandedDoifElse#1#2#3#4%
   {\immediateassignment\edef\tempa{#1}%
    \immediateassignment\edef\tempb{#2}%
    \ifx\tempa\tempb
@@ -136,9 +149,21 @@ Here is a somewhat silly example of an expanded comparison of two \quote
    \fi
    \next}
 
+% luametatex
+
+\def\ExpandedDoifElse#1#2#3#4%
+  {\localcontrolled{\edef\tempa{#1}}%
+   \localcontrolled{\edef\tempb{#2}}%
+   \ifx\tempa\tempb
+     \localcontrolled{\def\next{#3}}%
+   \else
+     \localcontrolled{\def\next{#4}}%
+   \fi
+   \next}
+
 \edef\Tested
-  {(\expandeddoifelse{abc}{def}{yes}{nop}/%
-    \expandeddoifelse{abc}{abc}{yes}{nop})}
+  {(\ExpandedDoifElse{abc}{def}{yes}{nop}/%
+    \ExpandedDoifElse{abc}{abc}{yes}{nop})}
 
 \meaning\Tested
 \stopbuffer
@@ -162,7 +187,9 @@ In addition to this one|-|time immediate assignment a pseudo token list variant
 is provided, so the above could be rewritten to:
 
 \starttyping
-\def\expandeddoifelse#1#2#3#4%
+% luatex
+
+\def\ExpandedDoifElse#1#2#3#4%
   {\immediateassigned {
      \edef\tempa{#1}
      \edef\tempb{#2}
@@ -171,6 +198,20 @@ is provided, so the above could be rewritten to:
      \immediateassignment\def\next{#3}%
    \else
      \immediateassignment\def\next{#4}%
+   \fi
+   \next}
+
+% luametatex
+
+\def\ExpandedDoifElse#1#2#3#4%
+  {\beginlocalcontrol
+     \edef\tempa{#1}
+     \edef\tempb{#2}
+   \endlocalcontrol
+   \ifx\tempa\tempb
+     \localcontrolled{\def\next{#3}}%
+   \else
+     \localcontrolled{\def\next{#4}}%
    \fi
    \next}
 \stoptyping
@@ -261,16 +302,33 @@ previously mentioned immediate assignment. Here is another example:
 The previously defined comparison macro can now be rewritten as:
 
 \starttyping
-\def\equaltokens#1#2%
+% luatex
+
+\def\EqualTokens#1#2%
   {\immediateassignment\edef\tempa{#1}%
    \immediateassignment\edef\tempb{#2}%
    \ifx\tempa\tempb}
 
-\def\expandeddoifelse#1#2#3#4%
-  {\ifcondition\equaltokens{#1}{#2}%
+\def\ExpandedDoifElse#1#2#3#4%
+  {\ifcondition\EqualTokens{#1}{#2}%
      \immediateassignment\def\next{#3}%
    \else
      \immediateassignment\def\next{#4}%
+   \fi
+   \next}
+
+% luametatex
+
+\def\EqualTokens#1#2%
+  {\localcontrolled{\edef\tempa{#1}}%
+   \localcontrolled{\edef\tempb{#2}}%
+   \ifx\tempa\tempb}
+
+\def\ExpandedDoifElse#1#2#3#4%
+  {\ifcondition\EqualTokens{#1}{#2}%
+     \localcontrolled{\def\next{#3}}%
+   \else
+     \localcontrolled{\def\next{#4}}%
    \fi
    \next}
 \stoptyping
