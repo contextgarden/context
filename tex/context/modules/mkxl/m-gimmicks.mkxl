@@ -39,6 +39,8 @@
 
 \continueifinputfile{m-gimmicks.mkxl}
 
+% Question on mailing list:
+
 \chardef\MacAnulty = \getprivateglyphslot{MacAnulty}
 
 \startsetups [box:demo:\number\MacAnulty]

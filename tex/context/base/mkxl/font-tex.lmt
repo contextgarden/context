@@ -24,39 +24,6 @@ local newprivateslot = fonts.helpers.newprivateslot
 
 local currentfont    = font.current
 
---
-
-local callbacks      = fonts.callbacks or { }
-fonts.callbacks      = callbacks
-
-function callbacks.devirtualize(chardata,f,c)
-    if chardata.commands then
-        local h = node.hpack(nodes.pool.glyph(f,c))
-        local p = setboxdirectly(f,c,h)
-        chardata.oldcommands = chardata.commands
-        chardata.commands = { { "char", p } }
-        chardata.callback = false
-    end
-end
-
-local function processcallback(f,c)
-    local characters = fontchars[f]
-    local chardata   = characters[c]
-    if chardata then
-        local callback = chardata.callback
-        if callback then
-            local action = type(callback) == "function" and callback or callbacks[callback]
-            if action then
-                action(chardata,f,c)
-            end
-        end
-    end
-end
-
-callback.register("process_character",processcallback)
-
-callbacks.callback = processcallback
-
 -- hm, seems to gobble the first \char
 
 local makesetups = formatters["box:%s:%S"]
@@ -218,3 +185,34 @@ fonts.handlers.otf.features.register {
 -- fonts.helpers.registerboxglyph { category = "demo", unicode = 104 }
 -- fonts.helpers.registerboxglyph { category = "demo", unicode = 105 }
 -- fonts.helpers.registerboxglyph { category = "demo", unicode = 106 }
+
+local callbacks      = fonts.callbacks or { }
+fonts.callbacks      = callbacks
+
+function callbacks.devirtualize(chardata,f,c)
+    if chardata.commands then
+        local h = node.hpack(nodes.pool.glyph(f,c))
+        local p = setboxdirectly(f,c,h)
+        chardata.oldcommands = chardata.commands
+        chardata.commands = { { "char", p } }
+        chardata.callback = false
+    end
+end
+
+local function processcallback(f,c)
+    local characters = fontchars[f]
+    local chardata   = characters[c]
+    if chardata then
+        local callback = chardata.callback
+        if callback then
+            local action = type(callback) == "function" and callback or callbacks[callback]
+            if action then
+                action(chardata,f,c)
+            end
+        end
+    end
+end
+
+callback.register("process_character",processcallback)
+
+callbacks.callback = processcallback
