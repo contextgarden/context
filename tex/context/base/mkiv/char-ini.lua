@@ -823,6 +823,7 @@ setmetatableindex(characters.is_command,    mti)
 setmetatableindex(characters.is_spacing,    mti)
 setmetatableindex(characters.is_punctuation,mti)
 setmetatableindex(characters.is_hyphenator, mti)
+setmetatableindex(characters.is_symbol,     mti)
 
 -- todo: also define callers for the above
 

@@ -27,7 +27,9 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {
-                        -- whatever
+                        [0x2A3F] = {
+                            factor = 0.84625, 
+                        }
                     },
                 },
                 {
@@ -92,6 +94,16 @@ return {
                 },
                 {
                     tweak = "addrules",
+                },
+                {
+                    tweak   = "addbars",
+                    advance = 0.025,
+                },
+                {
+                    tweak = "addactuarian",
+                },
+                {
+                    tweak = "addequals",
                 },
             },
         },

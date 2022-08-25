@@ -106,10 +106,17 @@
 % TODO: Add 4 (inherited) classes and then define them automatically from char-def
 % instead.
 
+\definemathoperator [integrals]
+\definemathoperator [summations]
+\definemathoperator [products]
+\definemathoperator [operators]
+
 \setupmathoperators [integrals]  [\c!size=\v!auto,\c!method=\mathematicsparameter\c!integral] % cf Mikael's wish
 \setupmathoperators [summations] [\c!size=\v!auto]
 \setupmathoperators [products]   [\c!size=\v!auto]
 \setupmathoperators [operators]  [\c!size=\v!auto]
+
+\setupmathematics[\c!integral=nolimits]
 
 \definemathoperator [integral]   [integrals]  [\c!left="222B] % these might go unless we decide
 \definemathoperator [iintegral]  [integrals]  [\c!left="222C] % to have verbose parents but who

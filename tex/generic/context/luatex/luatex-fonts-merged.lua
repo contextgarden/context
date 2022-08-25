@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2022-08-05 17:16
+-- merge date  : 2022-08-25 17:08
 
 do -- begin closure to overcome local limits and interference
 
@@ -13702,8 +13702,13 @@ local result={}
  local justpass=false
  local seacs={}
  local procidx=nil
- local function showstate(where)
-  report("%w%-10s : [%s] n=%i",depth*2,where,concat(stack," ",1,top),top)
+ local function showstate(where,i,n)
+  if i then
+   local j=i+n-1
+   report("%w%-10s : [%s] step",depth*2+2,where,concat(stack," ",i,j<=top and j or top))
+  else
+   report("%w%-10s : [%s] n=%i",depth*2,where,concat(stack," ",1,top),top)
+  end
  end
  local function showvalue(where,value,showstack)
   if showstack then
@@ -13819,9 +13824,9 @@ local result={}
    ymin=y
   end
  end
- local function xycurveto(x1,y1,x2,y2,x3,y3) 
+ local function xycurveto(x1,y1,x2,y2,x3,y3,i,n) 
   if trace_charstrings then
-   showstate("curveto")
+   showstate("curveto",i,n)
   end
   if keepcurve then
    r=r+1
@@ -13958,6 +13963,15 @@ local result={}
   if trace_charstrings then
    showstate("rrcurveto")
   end
+if top==6 then
+ local ax=x+stack[1] 
+ local ay=y+stack[2] 
+ local bx=ax+stack[3] 
+ local by=ay+stack[4] 
+ x=bx+stack[5]  
+ y=by+stack[6]  
+ xycurveto(ax,ay,bx,by,x,y,1,6)
+else
   for i=1,top,6 do
    local ax=x+stack[i]   
    local ay=y+stack[i+1] 
@@ -13965,8 +13979,9 @@ local result={}
    local by=ay+stack[i+3] 
    x=bx+stack[i+4]  
    y=by+stack[i+5]  
-   xycurveto(ax,ay,bx,by,x,y)
+   xycurveto(ax,ay,bx,by,x,y,i,6)
   end
+end
   top=0
  end
  local function hhcurveto()
@@ -13978,6 +13993,15 @@ local result={}
    y=y+stack[1]     
    s=2
   end
+if top==4 then
+   local ax=x+stack[1]  
+   local ay=y
+   local bx=ax+stack[2] 
+   local by=ay+stack[3] 
+   x=bx+stack[4]  
+   y=by
+   xycurveto(ax,ay,bx,by,x,y,1,4)
+else
   for i=s,top,4 do
    local ax=x+stack[i] 
    local ay=y
@@ -13985,8 +14009,9 @@ local result={}
    local by=ay+stack[i+2] 
    x=bx+stack[i+3]  
    y=by
-   xycurveto(ax,ay,bx,by,x,y)
+   xycurveto(ax,ay,bx,by,x,y,i,4)
   end
+end
   top=0
  end
  local function vvcurveto()
@@ -13999,6 +14024,16 @@ local result={}
    d=stack[1]      
    s=2
   end
+if top==4 then
+ local ax=x+d
+ local ay=y+stack[1]  
+ local bx=ax+stack[2] 
+ local by=ay+stack[3] 
+ x=bx
+ y=by+stack[4]  
+ xycurveto(ax,ay,bx,by,x,y,1,4)
+ d=0
+else
   for i=s,top,4 do
    local ax=x+d
    local ay=y+stack[i] 
@@ -14006,9 +14041,10 @@ local result={}
    local by=ay+stack[i+2] 
    x=bx
    y=by+stack[i+3]  
-   xycurveto(ax,ay,bx,by,x,y)
+   xycurveto(ax,ay,bx,by,x,y,i,4)
    d=0
   end
+end
   top=0
  end
  local function xxcurveto(swap)
@@ -14016,6 +14052,33 @@ local result={}
   if last then
    top=top-1
   end
+if top==4 then
+  local ax,ay,bx,by
+  if swap then
+   ax=x+stack[1]
+   ay=y
+   bx=ax+stack[2]
+   by=ay+stack[3]
+   y=by+stack[4]
+   if last then
+    x=bx+last
+   else
+    x=bx
+   end
+  else
+   ax=x
+   ay=y+stack[1]
+   bx=ax+stack[2]
+   by=ay+stack[3]
+   x=bx+stack[4]
+   if last then
+    y=by+last
+   else
+    y=by
+   end
+  end
+  xycurveto(ax,ay,bx,by,x,y,1,4)
+else
   for i=1,top,4 do
    local ax,ay,bx,by
    if swap then
@@ -14043,8 +14106,9 @@ local result={}
     end
     swap=true
    end
-   xycurveto(ax,ay,bx,by,x,y)
+   xycurveto(ax,ay,bx,by,x,y,i,4)
   end
+end
   top=0
  end
  local function hvcurveto()
@@ -14070,7 +14134,7 @@ local result={}
    local by=ay+stack[i+3] 
    x=bx+stack[i+4] 
    y=by+stack[i+5] 
-   xycurveto(ax,ay,bx,by,x,y)
+   xycurveto(ax,ay,bx,by,x,y,i,6)
   end
   x=x+stack[top-1] 
   y=y+stack[top]   
@@ -15214,26 +15278,35 @@ local function readfdselect(f,fontdata,data,glyphs,doshapes,version,streams)
    end
   end
  else
+  report("unsupported fd index format %i",format)
  end
  if maxindex>=0 then
   local cidarray=cid.fdarray
   if cidarray then
    setposition(f,header.offset+cidarray)
    local dictionaries=readlengths(f,version=="cff2")
-   for i=1,#dictionaries do
-    dictionaries[i]=readstring(f,dictionaries[i])
+   if #dictionaries>0 then
+    for i=1,#dictionaries do
+     dictionaries[i]=readstring(f,dictionaries[i])
+    end
+    parsedictionaries(data,dictionaries)
+    cid.dictionaries=dictionaries
+    readcidprivates(f,data)
+    for i=1,#dictionaries do
+     readlocals(f,data,dictionaries[i],version)
+    end
+    startparsing(fontdata,data,streams)
+    for i=1,#charstrings do
+     local dictionary=dictionaries[fdindex[i]+1]
+     if dictionary then
+      parsecharstring(fontdata,data,dictionary,charstrings[i],glyphs,i,doshapes,version,streams)
+     else
+     end
+    end
+    stopparsing(fontdata,data)
+   else
+    report("no cid dictionaries")
    end
-   parsedictionaries(data,dictionaries)
-   cid.dictionaries=dictionaries
-   readcidprivates(f,data)
-   for i=1,#dictionaries do
-    readlocals(f,data,dictionaries[i],version)
-   end
-   startparsing(fontdata,data,streams)
-   for i=1,#charstrings do
-    parsecharstring(fontdata,data,dictionaries[fdindex[i]+1],charstrings[i],glyphs,i,doshapes,version,streams)
-   end
-   stopparsing(fontdata,data)
   else
    report("no cid array")
   end

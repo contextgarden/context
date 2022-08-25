@@ -321,11 +321,16 @@ The unaltered ones are:
 \LL
 \stoptabulate
 
+% In \LUATEX\ we support the single number primitives *with \type {num} in their
+% name) conforming the \XETEX\ method. For the moment that still works but you need
+% to figure out the number yourself. The split number variants are more future safe
+% with respect to classes and families. We don't document \prm {Umathcharnumdef},
+% \prm {Umathcharnum}, \prm {Umathcodenum} and \prm {Udelcodenum} here any longer.
+
 In \LUATEX\ we support the single number primitives *with \type {num} in their
-name) conforming the \XETEX\ method. For the moment that still works but you need
-to figure out the number yourself. The split number variants are more future safe
-with respect to classes and families. We don't document \prm {Umathcharnumdef},
-\prm {Umathcharnum}, \prm {Umathcodenum} and \prm {Udelcodenum} here any longer.
+name) conforming the \XETEX\ method. These primitives have been dropped in
+\LUAMETATEX\ because we use different ranges and properties, so these numbers
+have no (stable) meaning.
 
 \starttabulate[|l|l|c|c|c|]
 \DB primitive           \BC        \BC class \BC family \BC character \NC \NR
@@ -777,7 +782,7 @@ with are no longer hard coded but can be set at runtime:
 \NC \prm {Umathdegreevariant}             \NC doublesuperscript \NC \NR
 \NC \prm {Umathaccentvariant}             \NC cramped           \NC \NR
 \NC \prm {Umathtopaccentvariant}          \NC cramped           \NC \NR
-\NC \prm {Umathbotaccentvariant}          \NC cramped           \NC \NR
+\NC \prm {Umathbottomaccentvariant}       \NC cramped           \NC \NR
 \NC \prm {Umathoverlayaccentvariant}      \NC cramped           \NC \NR
 \NC \prm {Umathnumeratorvariant}          \NC numerator         \NC \NR
 \NC \prm {Umathdenominatorvariant}        \NC denominator       \NC \NR
@@ -1935,6 +1940,25 @@ font metrics are involved we have a different code path for traditional fonts en
 
 \stopsubsection
 
+\startsubsection[title={Fractions and the new \prm {Ustretched} and \prm {Ustretchedwithdelims}}]
+
+\topicindex {math+fractions}
+
+These commands are similar the regular rule separated fractions but expect a delimiter
+that then will be used instead. This permits for instance the use of horizontal
+extensible arrows. When no extensible is possible (this is a font property) the given
+glyph is centered.
+
+Normally one will pass a specific delimiter and not a character, if only because
+these come from the non \ASCII\ ranges:
+
+\starttyping
+{ \Ustretched <delimiter> <options> {1} {2} }
+{ \Ustretchedwithdelims <delimiter> () <options> {1} {2} }
+\stoptyping
+
+\stopsubsection
+
 \startsubsection[title={Fractions and the new \prm {Uskewed} and \prm {Uskewedwithdelims}}]
 
 \topicindex {math+fractions}
@@ -1958,8 +1982,8 @@ rendering. Of course a user can also mess around a bit with the parameters
 The syntax used here is:
 
 \starttyping
-{ {1} \Uskewed / <options> {2} }
-{ {1} \Uskewedwithdelims / () <options> {2} }
+{ \Uskewed / <options> {1} {2} }
+{ \Uskewedwithdelims / () <options> {1} {2} }
 \stoptyping
 
 where the options can be \type {noaxis} and \type {exact}. By default we add half
@@ -1999,10 +2023,6 @@ For Latin Modern the result looks as follows:
     \stoptabulate
 \stop
 
-For good old times we also have \prm {skewed} and \prm {skewedwithdelims}
-although it is unlikely that one will notice as it only makes sense in the
-updated approach.
-
 The \type {\over} and related primitives have the form:
 
 \starttyping
@@ -2025,10 +2045,8 @@ The optional arguments are also supported but we have one extra option: \type
 
 The complete list of these commands is: \prm {Uabove}, \prm {Uatop}, \prm
 {Uover}, \prm {Uabovewithdelims}, \prm {Uatopwithdelims}, \prm {Uoverwithdelims},
-\prm {UUskewed}, \prm {UUskewedwithdelims}. As with other extensions we use a
-leading \type {U} and because we already had extra skew related primitives we end
-up with a \type {UU} there. This obscurity is not that big an issue because
-normally such primitives are wrapped in a macro. Here are a few examples:
+\prm {Uskewed}, \prm {Uskewedwithdelims}. As with other extensions we use a
+leading \type {U}. Here are a few examples:
 
 \startbuffer
 $\Uover {                   1234} {                   5678} $\quad

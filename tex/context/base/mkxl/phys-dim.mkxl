@@ -401,9 +401,20 @@
 \permanent\protected\def\installunitsspace#1#2%
   {\defcsname\??unitspace#1\endcsname{#2}}
 
+% \protected\def\phys_units_space
+%   {\unskip % weird, why is unskip needed
+%    \ifcsname\??unitspace\unitparameter\c!space\endcsname\lastnamedcs\else\unitsmediumspace\fi}
+
+% \im{1 \unit{hour} 20 \unit{minute} 56 \unit{second}}
+% \im{\unit{1 hour} \unit{20 minute} 56 \unit{second}}
+
 \protected\def\phys_units_space
-  {\unskip % weird, why is unskip needed
-   \ifcsname\??unitspace\unitparameter\c!space\endcsname\lastnamedcs\else\unitsmediumspace\fi}
+  {\ifmmode
+     % let the atoms do the work
+   \else
+     \unskip % weird, why is unskip needed
+     \ifcsname\??unitspace\unitparameter\c!space\endcsname\lastnamedcs\else\unitsmediumspace\fi
+   \fi}
 
 \installunitsspace\v!normal{\unitsmediumspace}
 \installunitsspace\v!big   {\unitsbigspace}
@@ -608,7 +619,7 @@
      \dostarttagged\t!maction\t!unit
      \mathatom
         \s!leftclass  \mathdimensioncode
-        \s!rightclass \mathordinarycode
+        \s!rightclass \mathdimensioncode
      \bgroup
    \else
      \dostarttagged\t!unit\empty

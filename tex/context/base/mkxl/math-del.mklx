@@ -1,0 +1,87 @@
+%D \module
+%D   [       file=math-del,
+%D        version=2022.07.29,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=delimiteds,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Delimited}
+
+\unprotect
+
+%D This is a variant on radicals but in the end it was better to just define a new
+%D environment for this. This is because we don't have the rule and we want a
+%D different control over the spacing. We also don't want the degree.
+
+% Todo: also add the mp plugin here but that more fun stuff for later (when we pick
+% up school math).
+
+\installcorenamespace{mathdelimited}
+\installcorenamespace{mathdelimitedalternative}
+
+\installcommandhandler \??mathdelimited {mathdelimited} \??mathdelimited
+
+\setupmathdelimited
+  [\c!alternative=\v!normal,
+   \c!mpoffset=.25\exheight,
+   \c!topoffset=\zeropoint,
+   \c!bottomoffset=\zeropoint,
+   \c!height=\zeropoint,
+   \c!depth=\zeropoint,
+   \c!strut=\v!height,
+   \c!source=\zerocount,
+   \c!left=\zerocount,
+   \c!right=\zerocount,
+   \c!leftmargin=\zeropoint,
+   \c!rightmargin=\zeropoint]
+
+\appendtoks
+    \frozen\protected\instance\edefcsname\currentmathdelimited\endcsname{\math_delimited_handle{\currentmathdelimited}}
+\to \everydefinemathdelimited
+
+\mutable\let\currentmathdelimited\empty
+
+\tolerant\protected\def\math_delimited_handle#tag#*[#settings]#:#body%
+  {\begingroup
+   \edef\currentmathdelimited{#tag}%
+   \setupcurrentmathdelimited[#settings]%
+   \math_delimited_alternative{%
+     \begincsname\??mathwhateverstrut\mathdelimitedparameter\c!strut\endcsname
+     \scratchdimen\mathdelimitedparameter\c!leftmargin \relax\ifzeropt\scratchdimen\else\kern\scratchdimen\fi
+     #body%
+     \scratchdimen\mathdelimitedparameter\c!rightmargin\relax\ifzeropt\scratchdimen\else\kern\scratchdimen\fi
+   }%
+   \endgroup}
+
+\def\math_delimited_alternative{\csname\??mathdelimitedalternative\mathdelimitedparameter\c!alternative\endcsname}
+
+\protected\def\math_delimited_common
+  {\Udelimited
+     \s!height\dimexpr\mathdelimitedparameter\c!height+\mathdelimitedparameter\c!topoffset\relax
+     \s!depth \dimexpr\mathdelimitedparameter\c!depth+\mathdelimitedparameter\c!bottomoffset\relax
+     \s!source\numexpr\namedboxanchor{\mathdelimitedparameter\c!source}\relax
+     \s!style \normalmathstyle
+     \zerocount \mathdelimitedparameter\c!left
+     \zerocount \mathdelimitedparameter\c!right
+  \relax}
+
+\defcsname\??mathdelimitedalternative\v!default\endcsname %  #body%
+  {\math_delimited_common} % {#body}}
+
+\defcsname\??mathdelimitedalternative\v!normal\endcsname#body%
+  {\edef\p_color{\mathdelimitedparameter\c!color}%
+   \ifempty\p_color
+     \math_delimited_common{#body}% {} really needed as \rootdelimited expands first
+   \else
+     \pushcolor[\p_color]%
+     \math_delimited_common
+     {\popcolor#body}%
+   \fi}
+
+\protect \endinput

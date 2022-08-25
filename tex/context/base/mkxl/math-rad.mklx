@@ -26,8 +26,6 @@
 % \def\rootradical{\Uroot    0 "221A } % can be done in char-def
 % \def\surdradical{\Uradical 0 "221A } % can be done in char-def
 
-\permanent\protected\def\root#1\of{\rootradical{#1}} % #2
-
 \protected\def\sqrt{\doifelsenextoptionalcs\rootwithdegree\rootwithoutdegree} % will be redefined
 
 % \permanent\protected\def\styledrootradical#1#2% so that \text works ok ... \rootradical behaves somewhat weird
@@ -93,7 +91,11 @@
    \c!height=\zeropoint,
    \c!depth=\zeropoint,
    \c!strut=\v!height,
-   \c!source=\zerocount]
+   \c!source=\zerocount,
+   \c!left="221A,
+   \c!right=\zerocount,
+   \c!leftmargin=\zeropoint,
+   \c!rightmargin=\zeropoint]
 
 \appendtoks
     \frozen\protected\instance\edefcsname\currentmathradical\endcsname{\math_radical_handle{\currentmathradical}}
@@ -124,9 +126,14 @@
    \ifempty\currentmathradicaldegree
      \let\currentmathradicaldegree\m_math_no_degree
    \fi
+   \ifcase\mathradicalparameter\c!right\else
+     \let\currentmathradicaldegree\m_math_no_degree
+   \fi
    \math_radical_alternative{%
      \begincsname\??mathwhateverstrut\mathradicalparameter\c!strut\endcsname
+     \scratchdimen\mathradicalparameter\c!leftmargin \relax\ifzeropt\scratchdimen\else\kern\scratchdimen\fi
      #body%
+     \scratchdimen\mathradicalparameter\c!rightmargin\relax\ifzeropt\scratchdimen\else\kern\scratchdimen\fi
    }%
    \endgroup}
 
@@ -159,19 +166,19 @@
 
 \def\math_radical_alternative{\csname\??mathradicalalternative\mathradicalparameter\c!alternative\endcsname}
 
-\integerdef\c_radical_unicode "221A
-
 % We use a strut in the degree because not all fonts have the right gaps set up but
 % as struts are sort of predictable we can now fix all fonts in the lfg file.
 
 \protected\def\math_radical_common#degree%
-  {\Uroot
+  {\Urooted
      \s!height\dimexpr\mathradicalparameter\c!height\relax
      \s!depth \dimexpr\mathradicalparameter\c!depth\relax
      \s!source\numexpr\namedboxanchor{\mathradicalparameter\c!source}\relax
      \s!style \normalmathstyle
-     \zerocount \c_radical_unicode
-     {\mathstrut#degree}}
+     \zerocount \mathradicalparameter\c!left
+     \zerocount \mathradicalparameter\c!right
+   \relax
+   {\mathstrut#degree}}
 
 \defcsname\??mathradicalalternative\v!default\endcsname %  #body%
   {\math_radical_common{\currentmathradicaldegree}}   % {#body}}
@@ -182,7 +189,7 @@
      \math_radical_common{\currentmathradicaldegree}{#body}% {} really needed as \rootradical expands first
    \orelse\ifempty\currentmathradicaldegree
      \pushcolor[\p_color]%
-     \math_radical_common{\currentmathradicaldegree}%
+     \math_radical_common{}%
      {\popcolor#body}%
    \else
      \pushcolor[\p_color]%
@@ -329,5 +336,29 @@
 % \definemathornament [mathhat] [mp=math:ornament:hat]
 %
 % \dorecurse{8}{$\mathhat{\blackrule[width=#1ex,color=gray]}$ }
+
+\definemathradical
+  [rannuity]
+  [\c!left=\zerocount,
+   \c!right="20E7,
+   \c!rightmargin=.05\emwidth]
+
+\definemathradical
+  [lannuity]
+  [\c!left="FE942,
+   \c!right=\zerocount,
+   \c!leftmargin=.05\emwidth,
+   \c!rightmargin=.05\emwidth]
+
+\definemathradical
+  [lrannuity]
+  [\c!left="FE942,
+   \c!right="20E7,
+   \c!leftmargin=.05\emwidth,
+   \c!rightmargin=.05\emwidth]
+
+\definemathradical
+  [annuity]
+  [rannuity]
 
 \protect \endinput

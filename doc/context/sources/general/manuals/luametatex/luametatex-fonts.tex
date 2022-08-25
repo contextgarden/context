@@ -115,7 +115,7 @@ has no ligatures and kerns and is normally not processed at all.
 \NC \type {depth}           \NC number  \NC depth in sp (default 0) \NC\NR
 \NC \type {italic}          \NC number  \NC italic correction in sp (default 0) \NC\NR
 \NC \type {topaccent}       \NC number  \NC top accent alignment place in sp (default zero) \NC\NR
-\NC \type {botaccent}       \NC number  \NC bottom accent alignment place, in sp (default zero) \NC\NR
+\NC \type {bottomaccent}    \NC number  \NC bottom accent alignment place, in sp (default zero) \NC\NR
 \NC \type {leftprotruding}  \NC number  \NC left protruding factor (\prm {lpcode}) \NC\NR
 \NC \type {rightprotruding} \NC number  \NC right protruding factor (\prm {rpcode}) \NC\NR
 \NC \type {expansion}       \NC number  \NC expansion factor (\prm {efcode}) \NC\NR
@@ -159,9 +159,9 @@ virtual character whose ligatures and kerns are used to handle word boundary
 processing. \type {rightboundary} is similar but not actually used for anything
 (yet).
 
-The values of \type {topaccent}, \type {botaccent} and \type {mathkern} are used
-only for math accent and superscript placement, see \at {page} [math] in this
-manual for details. The values of \type {leftprotrusion} and \type
+The values of \type {topaccent}, \type {bottomaccent} and \type {mathkern} are
+used only for math accent and superscript placement, see \at {page} [math] in
+this manual for details. The values of \type {leftprotrusion} and \type
 {rightprotrusion} are used only when \prm {protrudechars} is non-zero. Whether or
 not \type {expansion} is used depends on the font's global expansion settings, as
 well as on the value of \prm {adjustspacing}.

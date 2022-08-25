@@ -729,13 +729,13 @@ Accent nodes deal with stuff on top or below a math constructs. They support:
 \starttabulate[|l|l|p|]
 \DB field             \BC type        \BC explanation \NC \NR
 \TB
-\NC \type{subtype}   \NC number      \NC \showsubtypes{accent} \NC \NR
-\NC \type{nucleus}   \NC kernel node \NC base \NC \NR
-\NC \type{sub}       \NC kernel node \NC subscript \NC \NR
-\NC \type{sup}       \NC kernel node \NC superscript \NC \NR
-\NC \type{topaccent} \NC kernel node \NC top accent \NC \NR
-\NC \type{botaccent} \NC kernel node \NC bottom accent \NC \NR
-\NC \type{fraction}  \NC number      \NC larger step criterium (divided by 1000) \NC \NR
+\NC \type{subtype}      \NC number      \NC \showsubtypes{accent} \NC \NR
+\NC \type{nucleus}      \NC kernel node \NC base \NC \NR
+\NC \type{sub}          \NC kernel node \NC subscript \NC \NR
+\NC \type{sup}          \NC kernel node \NC superscript \NC \NR
+\NC \type{topaccent}    \NC kernel node \NC top accent \NC \NR
+\NC \type{bottomaccent} \NC kernel node \NC bottom accent \NC \NR
+\NC \type{fraction}     \NC number      \NC larger step criterium (divided by 1000) \NC \NR
 \LL
 \stoptabulate
 
@@ -824,22 +824,22 @@ Fraction nodes are also used for delimited cases, hence the \type {left} and
 \type {right} fields among: \showfields {fraction}.
 
 \starttabulate[|l|l|p|]
-\DB field          \BC type           \BC explanation \NC \NR
+\DB field              \BC type           \BC explanation \NC \NR
 \TB
-\NC \type{attr}    \NC node           \NC list of attributes \NC \NR
-\NC \type{width}   \NC number         \NC (optional) width of the fraction \NC \NR
-\NC \type{num}     \NC kernel node    \NC numerator \NC \NR
-\NC \type{denom}   \NC kernel node    \NC denominator \NC \NR
-\NC \type{left}    \NC delimiter node \NC left side symbol \NC \NR
-\NC \type{right}   \NC delimiter node \NC right side symbol \NC \NR
-\NC \type{middle}  \NC delimiter node \NC middle symbol \NC \NR
-\NC \type{options} \NC number         \NC bitset of rendering options \NC \NR
+\NC \type{attr}        \NC node           \NC list of attributes \NC \NR
+\NC \type{width}       \NC number         \NC (optional) width of the fraction \NC \NR
+\NC \type{numerator}   \NC kernel node    \NC numerator \NC \NR
+\NC \type{denominator} \NC kernel node    \NC denominator \NC \NR
+\NC \type{left}        \NC delimiter node \NC left side symbol \NC \NR
+\NC \type{right}       \NC delimiter node \NC right side symbol \NC \NR
+\NC \type{middle}      \NC delimiter node \NC middle symbol \NC \NR
+\NC \type{options}     \NC number         \NC bitset of rendering options \NC \NR
 \LL
 \stoptabulate
 
-Warning: never assign a node list to the \type {num}, or \type {denom} field
-unless you are sure its internal link structure is correct, otherwise an error
-can result.
+Warning: never assign a node list to the \type {numerator}, or \type
+{denominator} field unless you are sure its internal link structure is correct,
+otherwise an error can result.
 
 \stopsubsubsection
 
@@ -2251,6 +2251,7 @@ emulated in \LUA\ and not in the engine, so we retain downward compatibility.
 \supported {getsub}                  \nop \yes \relax
 \supported {getsuppre}               \nop \yes \relax
 \supported {getsup}                  \nop \yes \relax
+\supported {getprime}                \nop \yes \relax
 \supported {gettotal}                \yes \yes \relax
 %supported {getwhatever}             \nop \yes \relax % experiment for myself
 \supported {getwhd}                  \nop \yes \relax
@@ -2339,6 +2340,7 @@ emulated in \LUA\ and not in the engine, so we retain downward compatibility.
 \supported {setsub}                  \nop \yes \relax
 \supported {setsuppre}               \nop \yes \relax
 \supported {setsup}                  \nop \yes \relax
+\supported {setprime}                \nop \yes \relax
 \supported {setwhd}                  \nop \yes \relax
 \supported {setwidth}                \nop \yes \relax
 \supported {slide}                   \nop \yes \yes

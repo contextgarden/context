@@ -121,7 +121,7 @@ local function initialize(tfmdata,key,value)
         local detail      = type(value) == "string" and settings_to_hash(value) or { }
         local orientation = tonumber(detail.orientation) or 0
         if orientation == 1 or orientation == 3 then
-            local characters = tfmdata.characters
+           local characters = tfmdata.characters
             local parameters = tfmdata.parameters
             local emwidth    = parameters.quad
             local exheight   = parameters.xheight
@@ -146,12 +146,12 @@ local function initialize(tfmdata,key,value)
                     local width  = character.width or 0
                     local height = character.height or 0
                     local depth  = character.depth or 0
-                    character.width       = height + depth + rightshift + rightshift
+--                     character.width       = height + depth + rightshift + rightshift
                     character.height      = width - downshift
                     character.depth       = shift
-                    character.xoffset     = height + rightshift
-                    character.yoffset     = - downshift
-                    character.orientation = orientation
+--                     character.xoffset     = height + rightshift
+--                     character.yoffset     = - downshift
+--                     character.orientation = orientation
                 end
             end
             if ranges then

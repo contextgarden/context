@@ -175,9 +175,10 @@ local function textopener(tag,filename,filehandle,coding)
                 currentline = currentline + 1
              -- self.currentline = currentline
                 local content = lines[currentline]
--- lines[currentline] = nil
+             -- lines[currentline] = false
                 if content == "" then
-                    return ""
+                 -- return ""
+                    return content
              -- elseif content == ctrl_d or ctrl_z then
              --     return nil -- we need this as \endinput does not work in prints
                 elseif content then

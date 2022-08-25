@@ -1799,8 +1799,8 @@ def mfun_draw_controlpoints text t =
 %         normaldraw postcontrol i of temp_c mfun_opt_ctr t ;
 %     endfor ;
     for i within temp_c :
-        normaldraw pathprecontrol  t mfun_opt_pnt t ;
-        normaldraw pathpostcontrol t mfun_opt_pnt t ;
+        normaldraw pathprecontrol  t mfun_opt_ctr t ;
+        normaldraw pathpostcontrol t mfun_opt_ctr t ;
     endfor ;
 enddef;
 
@@ -1810,8 +1810,8 @@ def mfun_draw_controllines text t =
 %         normaldraw point i of temp_c -- postcontrol i of temp_c mfun_opt_lin t ;
 %     endfor ;
     for i within temp_c :
-        normaldraw pathpoint -- pathprecontrol  t mfun_opt_pnt t ;
-        normaldraw pathpoint -- pathpostcontrol t mfun_opt_pnt t ;
+        normaldraw pathpoint -- pathprecontrol  t mfun_opt_lin t ;
+        normaldraw pathpoint -- pathpostcontrol t mfun_opt_lin t ;
     endfor ;
 enddef;
 

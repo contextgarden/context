@@ -100,6 +100,10 @@ return {
                 {
                     tweak = "addrules",
                 },
+                {
+                    tweak = "fixellipses",
+                },
+
             },
         },
         bigslots = {

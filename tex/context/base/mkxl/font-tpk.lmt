@@ -622,15 +622,15 @@ do
         local extensibles = { }
         for i=0,ne-1 do
             extensibles[i] = wide and {
-                top = readcardinal2(s),
-                bot = readcardinal2(s),
-                mid = readcardinal2(s),
-                rep = readcardinal2(s),
+                top      = readcardinal2(s),
+                bottom   = readcardinal2(s),
+                middle   = readcardinal2(s),
+                extender = readcardinal2(s),
             } or {
-                top = readcardinal1(s),
-                bot = readcardinal1(s),
-                mid = readcardinal1(s),
-                rep = readcardinal1(s),
+                top      = readcardinal1(s),
+                bottom   = readcardinal1(s),
+                middle   = readcardinal1(s),
+                extender = readcardinal1(s),
             }
         end
         for i=1,np do

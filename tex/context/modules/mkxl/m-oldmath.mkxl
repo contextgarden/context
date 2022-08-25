@@ -135,7 +135,8 @@
 \permanent\protected\def\pmatrix#1%
   {\left(\matrix{#1}\right)}
 
-
+\permanent\protected\def\root#1\of% #2%
+  {\rootradical{#1}} % {#2}
 
 \protect
 

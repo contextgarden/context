@@ -25,16 +25,14 @@ local setmetatableindex = table.setmetatableindex
 local fallbacks         = { }
 mathematics.fallbacks   = fallbacks
 
-local helpers           = fonts.helpers
-local prependcommands   = helpers.prependcommands
-local charcommand       = helpers.commands.char
-local leftcommand       = helpers.commands.left
-local rightcommand      = helpers.commands.right
-local upcommand         = helpers.commands.up
-local downcommand       = helpers.commands.down
-local dummycommand      = helpers.commands.dummy
-local popcommand        = helpers.commands.pop
-local pushcommand       = helpers.commands.push
+----- helpers           = fonts.helpers
+----- charcommand       = helpers.commands.char
+----- leftcommand       = helpers.commands.left
+----- rightcommand      = helpers.commands.right
+----- upcommand         = helpers.commands.up
+----- downcommand       = helpers.commands.down
+----- popcommand        = helpers.commands.pop
+----- pushcommand       = helpers.commands.push
 
 local virtualcharacters = { }
 local virtualforced     = { }
@@ -172,79 +170,79 @@ end
 
 local addextra = mathematics.extras.add
 
-addextra(0xFE350) -- MATHEMATICAL DOUBLE ARROW LEFT END
-addextra(0xFE351) -- MATHEMATICAL DOUBLE ARROW MIDDLE PART
-addextra(0xFE352) -- MATHEMATICAL DOUBLE ARROW RIGHT END
-
-local leftarrow  = charcommand[0x2190]
-local relbar     = charcommand[0x2212]
-local rightarrow = charcommand[0x2192]
-
-virtualcharacters[0xFE350] = function(data)
- -- return combined(data,0x2190,0x2212) -- leftarrow relbar
-    local charone = data.characters[0x2190]
-    local chartwo = data.characters[0x2212]
-    if charone and chartwo then
-        local size = data.size/2
-        return {
-            width    = chartwo.width,
-            height   = size,
-            depth    = size,
-            commands = {
-                pushcommand,
-                downcommand[size/2],
-                leftarrow,
-                popcommand,
-                upcommand[size/2],
-                relbar,
-            }
-        }
-    end
-end
-
-virtualcharacters[0xFE351] = function(data)
- -- return combined(data,0x2212,0x2212) -- relbar, relbar  (isn't that just equal)
-    local char = data.characters[0x2212]
-    if char then
-        local size = data.size/2
-        return {
-            width    = char.width,
-            height   = size,
-            depth    = size,
-            commands = {
-                pushcommand,
-                downcommand[size/2],
-                relbar,
-                popcommand,
-                upcommand[size/2],
-                relbar,
-            }
-        }
-    end
-end
-
-virtualcharacters[0xFE352] = function(data)
- -- return combined(data,0x2192,0x2212) -- rightarrow relbar
-    local charone = data.characters[0x2192]
-    local chartwo = data.characters[0x2212]
-    if charone and chartwo then
-        local size = data.size/2
-        return {
-            width    = chartwo.width,
-            height   = size,
-            depth    = size,
-            commands = {
-                pushcommand,
-                downcommand[size/2],
-                relbar,
-                popcommand,
-                rightcommand[chartwo.width - charone.width],
-                upcommand[size/2],
-                rightarrow,
-            }
-        }
-    end
-end
+-- addextra(0xFE350) -- MATHEMATICAL DOUBLE ARROW LEFT END
+-- addextra(0xFE351) -- MATHEMATICAL DOUBLE ARROW MIDDLE PART
+-- addextra(0xFE352) -- MATHEMATICAL DOUBLE ARROW RIGHT END
+--
+-- local leftarrow  = charcommand[0x2190]
+-- local relbar     = charcommand[0x2212]
+-- local rightarrow = charcommand[0x2192]
+--
+-- virtualcharacters[0xFE350] = function(data)
+--  -- return combined(data,0x2190,0x2212) -- leftarrow relbar
+--     local charone = data.characters[0x2190]
+--     local chartwo = data.characters[0x2212]
+--     if charone and chartwo then
+--         local size = data.size/2
+--         return {
+--             width    = chartwo.width,
+--             height   = size,
+--             depth    = size,
+--             commands = {
+--                 pushcommand,
+--                 downcommand[size/2],
+--                 leftarrow,
+--                 popcommand,
+--                 upcommand[size/2],
+--                 relbar,
+--             }
+--         }
+--     end
+-- end
+--
+-- virtualcharacters[0xFE351] = function(data)
+--  -- return combined(data,0x2212,0x2212) -- relbar, relbar  (isn't that just equal)
+--     local char = data.characters[0x2212]
+--     if char then
+--         local size = data.size/2
+--         return {
+--             width    = char.width,
+--             height   = size,
+--             depth    = size,
+--             commands = {
+--                 pushcommand,
+--                 downcommand[size/2],
+--                 relbar,
+--                 popcommand,
+--                 upcommand[size/2],
+--                 relbar,
+--             }
+--         }
+--     end
+-- end
+--
+-- virtualcharacters[0xFE352] = function(data)
+--  -- return combined(data,0x2192,0x2212) -- rightarrow relbar
+--     local charone = data.characters[0x2192]
+--     local chartwo = data.characters[0x2212]
+--     if charone and chartwo then
+--         local size = data.size/2
+--         return {
+--             width    = chartwo.width,
+--             height   = size,
+--             depth    = size,
+--             commands = {
+--                 pushcommand,
+--                 downcommand[size/2],
+--                 relbar,
+--                 popcommand,
+--                 rightcommand[chartwo.width - charone.width],
+--                 upcommand[size/2],
+--                 rightarrow,
+--             }
+--         }
+--     end
+-- end
 
 ---------------------------------------------------------------------------------
 -- these are moved to math-act.lmt (keep this code)
@@ -649,124 +647,144 @@ end
 ---------------------------------------------------------------------------------
 -- these might move to math-act.lmt
 ---------------------------------------------------------------------------------
-
+--
 -- actuarian (beware: xits has an ugly one)
 
-addextra(0xFE940) -- SMALL ANNUITY SYMBOL
+-- addextra(0xFE940) -- SMALL ANNUITY SYMBOL
+--
+-- local function actuarian(data)
+--     local characters = data.target.characters
+--     local parameters = data.target.parameters
+--     local basechar   = characters[0x0078] -- x (0x0058 X) or 0x1D431
+--     local linewidth  = parameters.xheight / 10
+--     local basewidth  = basechar.width
+--     local baseheight = basechar.height
+--     return {
+--         -- todo: add alttext
+--         -- compromise: lm has large hooks e.g. \actuarial{a}
+--         width    = basewidth + 4 * linewidth,
+--         height   = basechar.height,
+--         depth    = basechar.depth,
+--         unicode  = 0x20E7,
+--         commands = {
+--             rightcommand[2 * linewidth],
+--             downcommand[- baseheight - 3 * linewidth],
+--             { "rule", linewidth, basewidth + 4 * linewidth },
+--             leftcommand[linewidth],
+--             downcommand[baseheight + 4 * linewidth],
+--             { "rule", baseheight + 5 * linewidth, linewidth },
+--         },
+--     }
+-- end
+--
+-- virtualcharacters[0x020E7] = actuarian -- checked
+-- -----------------[0xFE940] = actuarian -- unchecked
 
-local function actuarian(data)
-    local characters = data.target.characters
-    local parameters = data.target.parameters
-    local basechar   = characters[0x0078] -- x (0x0058 X) or 0x1D431
-    local linewidth  = parameters.xheight / 10
-    local basewidth  = basechar.width
-    local baseheight = basechar.height
-    return {
-        -- todo: add alttext
-        -- compromise: lm has large hooks e.g. \actuarial{a}
-        width    = basewidth + 4 * linewidth,
-        height   = basechar.height,
-        depth    = basechar.depth,
-        unicode  = 0x20E7,
-        commands = {
-            rightcommand[2 * linewidth],
-            downcommand[- baseheight - 3 * linewidth],
-            { "rule", linewidth, basewidth + 4 * linewidth },
-            leftcommand[linewidth],
-            downcommand[baseheight + 4 * linewidth],
-            { "rule", baseheight + 5 * linewidth, linewidth },
-        },
-    }
-end
-
-virtualcharacters[0x020E7] = actuarian -- checked
-virtualcharacters[0xFE940] = actuarian -- unchecked
-
-local function equals(data,unicode,snippet,advance,n) -- mathpair needs them
-    local characters = data.target.characters
-    local parameters = data.target.parameters
-    local basechar   = characters[snippet]
-    local advance    = advance * parameters.quad
-    return {
-        unicode  = unicode,
-        width    = n*basechar.width - (n-1)*advance,
-        height   = basechar.height,
-        depth    = basechar.depth,
-        commands = {
-            charcommand[snippet],
-            leftcommand[advance],
-            charcommand[snippet],
-            n > 2 and leftcommand[advance] or nil,
-            n > 2 and charcommand[snippet] or nil,
-        },
-    }
-end
-
-virtualcharacters[0x2A75] = function(data) return equals(data,0x2A75,0x003D, 1/5,2) end -- ==
-virtualcharacters[0x2A76] = function(data) return equals(data,0x2A76,0x003D, 1/5,3) end -- ===
-virtualcharacters[0x2980] = function(data) return equals(data,0x2980,0x007C,-1/8,3) end -- |||
-
----------------------------------------------------------------------------------
--- these might move to math-act.lmt -- lucida needs this
----------------------------------------------------------------------------------
-
-virtualcharacters[0x305] = function(data)
-    local target = data.target
-    local height = target.parameters.xheight/8
-    local width  = target.parameters.emwidth/2
-    local depth  = height
-    local used   = 0.8 * width
-    return {
-        width    = width,
-        height   = height,
-        depth    = depth,
-        commands = { { "rule", height, width } },
-        hparts   = {
-            {
-              advance   = width,
-              ["end"]   = used,
-              glyph     = 0x305,
-              start     = 0,
-            },
-            {
-              advance   = width,
-              ["end"]   = 0,
-              extender  = 1,
-              glyph     = 0x305,
-              start     = used,
-            },
-        }
-    }
-end
+-- local function equals(data,unicode,snippet,advance,n) -- mathpair needs them
+--     local characters = data.target.characters
+--     local parameters = data.target.parameters
+--     local basechar   = characters[snippet]
+--     local width      = n*basechar.width
+--     local advance    = advance * parameters.quad -- for equals
+--     return {
+--         unicode  = unicode,
+--         width    = width - (n-1)*advance,
+--         height   = basechar.height,
+--         depth    = basechar.depth,
+--         commands = {
+--             charcommand[snippet],
+--             leftcommand[advance],
+--             charcommand[snippet],
+--             n > 2 and leftcommand[advance] or nil,
+--             n > 2 and charcommand[snippet] or nil,
+--         },
+--     }
+-- end
+--
+-- virtualcharacters[0x2A75] = function(data) return equals(data,0x2A75,0x003D, 1/5,2) end -- ==
+-- virtualcharacters[0x2A76] = function(data) return equals(data,0x2A76,0x003D, 1/5,3) end -- ===
+--
+-- local function bars(data,unicode,snippet,advance,n) -- mathpair needs them
+--     local characters = data.target.characters
+--     local parameters = data.target.parameters
+--     local basechar   = characters[snippet]
+--     local width      = n*basechar.width
+--     advance = advance * width
+--     return {
+--         unicode  = unicode,
+--         width    = width - (n-1)*advance,
+--         height   = basechar.height,
+--         depth    = basechar.depth,
+--         callback = "devirtualize",
+--         commands = {
+--             charcommand[snippet],
+--             leftcommand[advance],
+--             charcommand[snippet],
+--             n > 2 and leftcommand[advance] or nil,
+--             n > 2 and charcommand[snippet] or nil,
+--         },
+--     }
+-- end
+--
+-- virtualcharacters[0x2980] = function(data) return bars(data,0x2980,0x007C,1/10,3) end -- |||
 
 ---------------------------------------------------------------------------------
--- these might move to math-act.lmt
+-- these might move to math-act.lmt -- lucida needs this -- no longer used
 ---------------------------------------------------------------------------------
 
-local function threedots(data,shift)
-    local characters = data.target.characters
-    local parameters = data.target.parameters
-    local periodchar = characters[0x002E]
-    local pluschar   = characters[0x002B]
-    local period     = charcommand[0x002E]
-    local periodwd   = periodchar.width  or 0
-    local periodht   = periodchar.height or 0
-    local perioddp   = periodchar.depth or 0
-    local offset     = 0
-    if shift then
-        local plusht = pluschar.height or 0
-        local plusdp = pluschar.depth or 0
-        local axis   = (plusdp + plusht)//2 - plusdp
-        offset   = axis - periodht//2
-        periodht = axis + periodht//2
-    end
-    return {
-        width    = 3*periodwd,
-        height   = periodht,
-        depth    = 0,
-        commands = { upcommand[offset], period, period, period }
-    }
-end
+-- virtualcharacters[0x305] = function(data)
+--     local target = data.target
+--     local height = target.parameters.xheight/8
+--     local width  = target.parameters.emwidth/2
+--     local depth  = height
+--     local used   = 0.8 * width
+--     return {
+--         width    = width,
+--         height   = height,
+--         depth    = depth,
+--         commands = { { "rule", height, width } },
+--         hparts   = {
+--             {
+--               advance   = width,
+--               ["end"]   = used,
+--               glyph     = 0x305,
+--               start     = 0,
+--             },
+--             {
+--               advance   = width,
+--               ["end"]   = 0,
+--               extender  = 1,
+--               glyph     = 0x305,
+--               start     = used,
+--             },
+--         }
+--     }
+-- end
 
-virtualcharacters[0x2026] = function(data) return threedots(data,false) end virtualforced[0x2026] = true
-virtualcharacters[0x22EF] = function(data) return threedots(data, true) end virtualforced[0x22EF] = true
+-- local function threedots(data,shift)
+--     local characters = data.target.characters
+--     local parameters = data.target.parameters
+--     local periodchar = characters[0x002E]
+--     local pluschar   = characters[0x002B]
+--     local period     = charcommand[0x002E]
+--     local periodwd   = periodchar.width  or 0
+--     local periodht   = periodchar.height or 0
+--     local perioddp   = periodchar.depth or 0
+--     local offset     = 0
+--     if shift then
+--         local plusht = pluschar.height or 0
+--         local plusdp = pluschar.depth or 0
+--         local axis   = (plusdp + plusht)//2 - plusdp
+--         offset   = axis - periodht//2
+--         periodht = axis + periodht//2
+--     end
+--     return {
+--         width    = 3*periodwd,
+--         height   = periodht,
+--         depth    = 0,
+--         commands = { upcommand[offset], period, period, period }
+--     }
+-- end
+--
+-- virtualcharacters[0x2026] = function(data) return threedots(data,false) end -- virtualforced[0x2026] = true
+-- virtualcharacters[0x22EF] = function(data) return threedots(data, true) end -- virtualforced[0x22EF] = true

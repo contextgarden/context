@@ -144,7 +144,7 @@ local function finalize(prop,key) -- delayed calculations
 end
 
 local function normalize(line,islocal) -- assumes prestine lines, nothing pre/appended
-    local prop  = getnormalizedline(line) -- we also can have "lineproperties" set but for a different porpose
+    local prop  = getnormalizedline(line) -- we also can have "lineproperties" set but for a different purpose
     local width = getwidth(line)
     local hsize = islocal and width or tex.hsize
     noflines    = noflines + 1
@@ -214,6 +214,12 @@ local function addtoline(n,list,option)
                 delta = line.lefthangskip + line.leftskip
             end
         end
+
+        -- this is a quick hack for line numbering in aligned math but maybe we need
+        -- a signal in the properties: if getprops(n,"repositioned")
+        local xoffset = nuts.getoffsets(n)
+        delta = delta - xoffset
+
         -- always kerns, also when 0 so that we can adapt but we can optimize if needed
         -- by keeping a hash as long as we use the shiftinline helper .. no need to
         -- optimize now .. we can also decide to put each blob in a hlist

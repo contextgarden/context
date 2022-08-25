@@ -68,8 +68,8 @@ local function flush(s,inline)
     context.resetbuffer(t_buffer)
 end
 
-local function t_tocontext(t)
-    local s = table.serialize(t)
+local function t_tocontext(t,s)
+    local s = table.serialize(t,s)
     context(function() flush(s,false) end)
 end
 

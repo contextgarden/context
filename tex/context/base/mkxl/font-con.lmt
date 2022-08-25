@@ -815,6 +815,10 @@ function constructors.scale(tfmdata,specification)
         if vc then
             chr.commands = scalecommands(vc,hdelta,vdelta)
         end
+        local cb = character.callback
+        if cb then
+            chr.callback = cb
+        end
         -- we assume that these are done in a manipulator afterwards
         -- as it makes no sense otherwise
      -- local vx = character.xoffset

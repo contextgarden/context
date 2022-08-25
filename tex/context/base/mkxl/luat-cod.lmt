@@ -290,7 +290,10 @@ local function open_data_file(name)
         return {
             reader = function()
                 return f:read("*line")
-            end
+            end,
+         -- close = function()
+         --     f:close()
+         -- end
         }
     else
         return false

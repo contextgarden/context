@@ -21,18 +21,33 @@ return {
              --     factor  = 0.9,
              -- },
                 {
-                    tweak = "kerns",
-                    list  = {
-                        [0x2F] = {
-                            topleft     = -0.2,
-                         -- bottomleft  =  0,
-                         -- topright    =  0,
-                            bottomright = -0.2,
-                        },
+                tweak = "kerns",
+                list  = {
+                    [0x2F] = {
+                        topleft     = -0.2,
+                        -- bottomleft  =  0,
+                        -- topright    =  0,
+                        bottomright = -0.2,
                     },
                 },
+                },
+                {
+                    tweak = "fixellipses",
+                },
+                {
+                    tweak   = "addbars",
+                    advance = 0.6,
+                },
+                {
+                    tweak = "addactuarian",
+                },
+                {
+                    tweak = "addequals",
+                },
+
+
+                },
             },
-        },
         bigslots = {
             1, 2, 3, 4
         },

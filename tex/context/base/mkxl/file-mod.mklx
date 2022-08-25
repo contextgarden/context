@@ -29,6 +29,15 @@
 %D More information on the specific modules can be found in their dedicated manuals.
 %D We use \type {\next} so that we can \type {\end} in modules.
 
+% \enabledirectives[logs.errors=*]
+% \enabledirectives[logs.errors=missing modules]
+%
+% \usemodule[letsquit]
+%
+% \starttext
+%     test
+% \stoptext
+
 \installcorenamespace{module}
 
 \mutable\let\currentmodule          \s!unknown

@@ -1455,14 +1455,14 @@
        % we can't end up here
      \orelse\ifconditional\c_strc_math_aligned_here
        \ifzeropt\d_strc_math_indent\else
-\ifnum\c_page_sides_hangafter=\zerocount
-    \hangafter\plusone
-    \hangindent\d_strc_math_indent
-\else
+% \ifnum\c_page_sides_hangafter=\zerocount
+%     \hangafter\plusone
+%     \hangindent\d_strc_math_indent
+% \else
     % this might become the default anyway:
     \advance\leftskip\d_strc_math_indent
     \hskip-\d_strc_math_indent
-\fi
+% \fi
        \fi
         % \strc_math_setup_align % _inner
      \else

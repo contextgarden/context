@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['node-ser'] = {
     license   = "see context related readme files"
 }
 
+-- needs to be updated (mayeb fetch field types)
+
 local type, tostring = type, tostring
 local concat, tohash, sortedkeys, sortedhash, printtable, serialize = table.concat, table.tohash, table.sortedkeys, table.sortedhash, table.print, table.serialize
 local formatters, format, rep = string.formatters, string.format, string.rep
@@ -64,6 +66,8 @@ end)
 
 nodes.fieldtypes = fieldtypes
 
+-- todo: subtype zero too
+
 local function astable(n)
     n = tonode(n)
     if n then
@@ -75,7 +79,9 @@ local function astable(n)
             for field, fieldtype in sortedhash(fields) do -- no need to sort
                 local value = n[field]
                 if value then
-                    if canbeignored[field] then
+                    if field == "subtype" then
+                        -- we always show them now
+                    elseif canbeignored[field] then
                         value = nil
                     elseif canbezero[fieldtype] and value == 0 then
                         value = nil

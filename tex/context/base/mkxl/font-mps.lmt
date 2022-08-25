@@ -118,6 +118,7 @@ function metapost.paths(d,xfactor,yfactor)
             end
         end
     elseif segments then
+-- inspect(segments)
         for i=1,#segments do
             local segment  = segments[i]
             local operator = segment[#segment]
@@ -137,7 +138,7 @@ function metapost.paths(d,xfactor,yfactor)
             elseif operator == "c" then -- "curveto"
                 size = size + 1
                 path[size] = f_curveto(xfactor*segment[1],yfactor*segment[2],xfactor*segment[3],yfactor*segment[4],xfactor*segment[5],yfactor*segment[6])
-            elseif operator =="q" then -- "quadraticto"
+            elseif operator == "q" then -- "quadraticto"
                 size = size + 1
                 -- first is always a moveto
                 local prev = segments[i-1]

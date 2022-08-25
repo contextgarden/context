@@ -173,6 +173,7 @@ return {
      -- "mathtopaccentcode", "mathbottomaccentcode", "mathdelimitercode", "mathrootcode", "mathprintcode",        --
         "mathalphacode", "mathboxcode", "mathchoicecode", "mathnothingcode", "mathlimopcode", "mathnolopcode",
         "mathunsetcode", "mathunspacedcode", "mathallcode", "mathfakecode", "mathunarycode",
+        "mathmaybeordinarycode", "mathmayberelationcode", "mathmaybebinarycode",
         --
         "constantnumber", "constantnumberargument", "constantdimen", "constantdimenargument", "constantemptyargument",
         --
@@ -215,7 +216,7 @@ return {
         "checkligatureclassoptioncode", "checkitaliccorrectionclassoptioncode", "checkkernpairclassoptioncode",
         "flattenclassoptioncode", "omitpenaltyclassoptioncode", "unpackclassoptioncode", "raiseprimeclassoptioncode",
         "carryoverlefttopkernclassoptioncode", "carryoverleftbottomkernclassoptioncode", "carryoverrighttopkernclassoptioncode", "carryoverrightbottomkernclassoptioncode",
-        "preferdelimiterdimensionsclassoptioncode",
+        "preferdelimiterdimensionsclassoptioncode", "autoinjectclassoptioncode",
         --
         "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noleftligatureglyphoptioncode",
         "noleftkernglyphoptioncode", "norightligatureglyphoptioncode", "norightkernglyphoptioncode",
@@ -586,7 +587,7 @@ return {
         --
         "assumelongusagecs",
         --
-        "Umathbotaccent", "Umathtopaccent",
+        "Umathbottomaccent", "Umathtopaccent", "Umathbotaccent",
         --
         "righttolefthbox", "lefttorighthbox", "righttoleftvbox", "lefttorightvbox", "righttoleftvtop", "lefttorightvtop",
         "rtlhbox", "ltrhbox", "rtlvbox", "ltrvbox", "rtlvtop", "ltrvtop",

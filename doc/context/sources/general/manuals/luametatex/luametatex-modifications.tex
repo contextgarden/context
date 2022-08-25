@@ -58,12 +58,13 @@ because we carry around more information.
 
 \stopsubsection
 
-\startsubsection[title=Changes from \TEX\ 3.1415926...]
+\startsubsection[title={Original \TEX}]
 
 \topicindex {\TEX}
 
-Of course it all starts with traditional \TEX. Even if we started with \PDFTEX,
-most still comes from original Knuthian \TEX. But we divert a bit.
+Of course it all starts with traditional \TEX. Even if we started with the
+\PDFTEX\ code base, most still comes from original Knuthian \TEX. But we divert a
+bit.
 
 \startitemize
 
@@ -86,29 +87,40 @@ most still comes from original Knuthian \TEX. But we divert a bit.
 \stopitem
 
 \startitem
-    See \in {chapter} [languages] for many small changes related to paragraph
-    building, language handling and hyphenation. The most important change is
-    that adding a brace group in the middle of a word (like in \type {of{}fice})
-    does not prevent ligature creation. Also, the hyphenation, ligature building
-    and kerning has been split so that we can hook in alternative or extra code
-    wherever we like. There are various options to control discretionary
-    injection and related penalties are now integrated in these nodes. Language
-    information is now bound to glyphs. The number of languages in \LUAMETATEX\
-    is smaller than in \LUATEX. Control over discretionaries is more granular and
-    now managed by less variables.
+    See \in {chapter} [languages] for quite some changes related to paragraph
+    building, language handling and hyphenation. Because we have independent runs
+    over the node list for hyphenation, kerning, ligature building, plus
+    callbacks that also can tweak the list, adding a brace group in the middle of
+    a word (like in \type {of{}fice}) does not prevent ligature creation. In
+    fact, preventing kerns and ligatures can now be done with glyph options so
+    that we don't depend on side effects of the engine. Because hyphenation,
+    ligature building and kerning has been split so that we can hook in
+    alternative or extra code wherever we like. There are various options to
+    control discretionary injection and related penalties are now integrated in
+    these nodes. Language information is now bound to glyphs. The number of
+    languages in \LUAMETATEX\ is smaller than in \LUATEX. Control over
+    discretionaries is more granular and now managed by less variables. Although
+    \LUAMETATEX\ behaves pretty much like you expect from \TEX, due to the many
+    possibilities it is unlikely that you get identical output.
 \stopitem
 
 \startitem
     There is no pool file, all strings are embedded during compilation. This also
     removed some memory constraints. We kept token and node memory management
     because it is convenient and efficient but parts were reimplemented in order
-    to remove some constraints. Token memory management is largely the same. All
-    the other large memory structures, like those related to nesting, the save
-    stack, input levels, the hash table and table of equivalents, etc. now all
-    start out small and are enlarged when needed, where maxima are controlled in
-    the usual way. In principle the initial memory footprint is smaller while at
-    the same time we can go real large. Because we have wide memory words some
-    data (arrays) used for housekeeping could be reorganized a bit.
+    to remove some constraints. Token and node memory management is a bit more
+    efficient which was needed because we carry around more information. All the
+    other large memory structures, like those related to nesting, the save stack,
+    input levels, the hash table and table of equivalents, etc. now all start out
+    small and are enlarged when needed, where maxima are controlled in the usual
+    way. In principle the initial memory footprint is smaller while at the same
+    time we can go real large. Because we have wide memory words some data
+    (arrays) used for housekeeping could be reorganized a bit.
+\stopitem
+
+\startitem
+    The macro (definition and expansion) parsers are extended and we can have more
+    detailed argument parsing. This has been done in a way that keeps compatibility.
 \stopitem
 
 \startitem
@@ -138,12 +150,25 @@ most still comes from original Knuthian \TEX. But we divert a bit.
     There is more control over some (formerly hard|-|coded) math properties. In
     fact, there is a whole extra bit of math related code because we need to deal
     with \OPENTYPE\ fonts. The math processing has been adapted to the new
-    (dynamic) font and glyph scaling features.
+    (dynamic) font and glyph scaling features. Because there is more granular
+    control, for instance because there are more classes, the engine has to be
+    set up differently. This is also true for features that control how for
+    instance math fonts are processed. An intermediate, improved, variant of the
+    \LUATEX\ dual code path approach has been sacrificed in the process.
 \stopitem
 
 \startitem
-    The \type {\outer} and \type {\long} prefixed are silently ignored. It is
-    permitted to use \type {\par} in math.
+    Math atoms and constructs like fractions, fences, radicals and accents have
+    all been extended. The new variants accept all kind of keywords that control
+    the rendering. As direct consequence noads (and nodes in general) are much
+    bigger in terms of memory usage. For now we keep the old commands available
+    but that might change when we see no eight bit fonts being used.
+\stopitem
+
+\startitem
+    The \prm {outer} and \prm {long} prefixed are silently ignored but other
+    prefixes have been added. It is permitted to use \prm {par} in math and
+    there are more such convenience options.
 \stopitem
 
 \startitem
@@ -161,14 +186,19 @@ most still comes from original Knuthian \TEX. But we divert a bit.
 
 \stopitemize
 
+There is much more to say here but at least this gives an idea of what you end up
+with if you move from traditional \TEX\ to \LUAMETATEX: a more complex but also
+more flexible system.
+
 \stopsubsection
 
-\startsubsection[title=Changes from \ETEX\ 2.2]
+\startsubsection[title={Goodies from \ETEX}]
 
 \topicindex {\ETEX}
 
-Being the de|-|facto standard extension of course we provide the \ETEX\
-features, but with a few small adaptations.
+Being the de|-|facto standard extension of course we provide the \ETEX\ features,
+but only those that make sense. We used version 2.2 which is basically the only
+version that was ever released.
 
 \startitemize
 
@@ -181,14 +211,19 @@ features, but with a few small adaptations.
     The \TEXXET\ extension is not present, so the primitives \type
     {\TeXXeTstate}, \type {\beginR}, \type {\beginL}, \type {\endR} and \type
     {\endL} are missing. Instead we used the \OMEGA|/|\ALEPH\ approach to
-    directionality as starting point, albeit it has been changed quite a bit,
-    so that we're probably not that far from \TEXXET.
+    directionality as starting point, albeit it has been changed quite a bit, so
+    that we're probably not that far from \TEXXET. In the end right to left
+    typesetting mostly boils down to marking regions in the node list and reverse
+    flushing these in the backend. The main addition that \OMEGA\ brought was the
+    initial paragraph node that stores the direction.
 \stopitem
 
 \startitem
     Some of the tracing information that is output by \ETEX's \prm
-    {tracingassigns} and \prm {tracingrestores} is not there. Also keep in mind
-    that tracing doesn't involve what \LUA\ does.
+    {tracingassigns} and \prm {tracingrestores} is not there. Where \ETEX\ added
+    some tracing, \LUAMETATEX\ adds much more and also permits to set details.
+    Tracing is not compatible, if only because we have more complex nodes and do
+    more in all kind of mechanism.
 \stopitem
 
 \startitem
@@ -201,14 +236,19 @@ features, but with a few small adaptations.
     Because we have more nodes, conditionals, etc.\ the \ETEX\ status related
     variables are adapted to \LUAMETATEX: we use different \quote {constants},
     but that should be no problem because any sane macro package uses
-    abstraction.
+    abstraction. All these properties can be queried via \LUA.
 \stopitem
 
 \startitem
-    The \type {\scantokens} primitive is now using the same mechanism as \LUA\
+    The \prm {scantokens} primitive is now using the same mechanism as \LUA\
     print|-|to|-|\TEX\ uses, which simplifies the code. There is a little
     performance hit but it will not be noticed in \CONTEXT, because we never use
     this primitive.
+\stopitem
+
+\startitem
+    The \ETEX\ engine provides \prm {protected} and although we have that too,
+    the implementation is different. Users should not notice that.
 \stopitem
 
 \startitem
@@ -230,28 +270,29 @@ features, but with a few small adaptations.
 
 \stopsubsection
 
-\startsubsection[title=Changes from \PDFTEX\ 1.40]
+\startsubsection[title={Bits of \PDFTEX}]
 
 \topicindex {\PDFTEX}
 
 Because we want to produce \PDF\ the most natural starting point was the popular
-\PDFTEX\ program. We inherit the stable features, dropped most of the
-experimental code and promoted some functionality to core \LUATEX\ functionality
-which in turn triggered renaming primitives. However, as the backend was dropped,
-not that much from \PDFTEX\ is present any more. Basically all we now inherit
-from \PDFTEX\ is expansion and protrusion but even that has been adapted. So
-don't expect \LUAMETATEX\ to be compatible.
+\PDFTEX\ program, so we took version 1.40. We inherit the stable features,
+dropped most of the experimental code and promoted some functionality to core
+\LUATEX\ functionality which in turn triggered renaming primitives. However, as
+the backend was dropped, not that much from \PDFTEX\ is present any more.
+Basically all we now inherit from \PDFTEX\ is expansion and protrusion but even
+that has been adapted. So don't expect \LUAMETATEX\ to be compatible.
 
 \startitemize
 
 \startitem
     The experimental primitives \prm {ifabsnum} and \prm {ifabsdim} have been
-    promoted to core primitives.
+    promoted to core primitives and became part of the much larger repertoire
+    of \LUAMETATEX\ conditionals. The primitives \prm {ifincsname} is also
+    inherited but has a different implementation.
 \stopitem
 
 \startitem
-    The primitives \prm {ifincsname}, \prm {expanded} and \prm {quitvmode}
-    have become core primitives.
+    Of course \prm {quitvmode} has become a core primitive too.
 \stopitem
 
 \startitem
@@ -270,12 +311,14 @@ don't expect \LUAMETATEX\ to be compatible.
 \stopitem
 
 \startitem
-    The hz optimization code has been partially redone so that we no longer need
-    to create extra font instances. The front- and backend have been decoupled
-    and the glyph and kern nodes carry the used values. In \LUATEX\ that made a
-    more efficient generation of \PDF\ code possible. It also resulted in much
-    cleaner code. The backend code is gone, but of course the information is
-    still carried around.
+    The hz optimization code has been redone so that we no longer need to create
+    extra font instances. The front- and backend have been decoupled and the
+    glyph and kern nodes carry the used values. In \LUATEX\ that made a more
+    efficient generation of \PDF\ code possible. It also resulted in much cleaner
+    code. The backend code is gone, but of course the information is still
+    carried around. Performance in \LUAMETATEX\ should be a bit better than in
+    \PDFTEX\ although of course its 32 bit machinery is in general slower than
+    the eight bit \PDFTEX.
 \stopitem
 
 \startitem
@@ -301,19 +344,33 @@ don't expect \LUAMETATEX\ to be compatible.
     to the backend.
 \stopitem
 
+\startitem
+    The image inclusion code was already different in \LUATEX\ and is gone in
+    \LUAMETATEX\ which has no backend. One can implement the same abstraction
+    layer (aka resouces) using \LUA.
+\stopitem
+
 \stopitemize
+
+Even if not that much is present from \PDFTEX\ in \LUAMETATEX\ we still see it as
+its ancestor. After all, without \PDFTEX\ the \TEX\ community would not be where
+it is now. We still use it as reference when we check something (that we
+changed).
 
 \stopsubsection
 
-\startsubsection[title=Changes from \ALEPH\ RC4]
+\startsubsection[title=Direcionality from \ALEPH]
 
 \topicindex {\ALEPH}
 
-In \LUATEX\ we took the 32 bit aspects and much of the directional mechanisms and
-merged it into the \PDFTEX\ code base as starting point for further development.
-Then we simplified directionality, fixed it and opened it up. In \LUAMETATEX\ not
-that much of the later is left. We only have two horizontal directions. Instead
-of vertical directions we introduce an orientation model bound to boxes.
+In \LUATEX\ we took the 32 bit aspects of \ALEPH\ RC4, the stable version of
+\OMEGA\ that also integrated \ETEX. In \LUATEX\ we also took much of the
+directional mechanisms and merged it into the \PDFTEX\ code base as starting
+point for further development. Then we simplified directionality, fixed it and
+opened it up. In \LUAMETATEX\ not that much of this is left. We only have two
+horizontal directions. Instead of vertical directions we introduce an orientation
+model bound to boxes. We kept the initial par node, local boxes (that also use
+par nodes) and directional nodes.
 
 The already reduced|-|to|-|four set of directions now only has two members:
 left|-|to|-|right and right|-|to|-|left. They don't do much as it is the backend
@@ -333,7 +390,8 @@ Here is a summary of inherited functionality:
     for the \type {^^} case but the four and six variants do no backtracking,
     i.e.\ when they are not followed by the right number of hexadecimal digits
     they issue an error message. Because \type {^^^} is a normal \TEX\ case, we
-    don't support the odd number of \type {^^^^^} either.
+    don't support the odd number of \type {^^^^^} either. This kind of parsing
+    can be disabled in \LUAMETATEX.
 \stopitem
 
 \startitem
@@ -353,11 +411,22 @@ Here is a summary of inherited functionality:
     take a number. The three letter codes are dropped.
 \stopitem
 
+\startitem
+    The local box mechamism has been extended and redone which permits a more
+    generalized and robust usage.
+\stopitem
+
 \stopitemize
+
+Most of the directional work is actually up to the backend. As \OMEGA\ never had
+a \PDF\ backend, the \LUATEX\ took care of the many directions. We now only have
+two directions so the backend code that has to be provided can be relatively
+simple. The biggest complication is in handling fonts and synchronizing the glyph
+streams. Much is also macro package (and usage) dependent.
 
 \stopsubsection
 
-\startsubsection[title=Changes from standard \WEBC]
+\startsubsection[title={No longer \WEBC}]
 
 \topicindex {\WEBC}
 
@@ -367,18 +436,29 @@ traces but eventually the code base should be lean and mean. The \METAPOST\
 library is coded in \CWEB\ and in order to be independent from related tools,
 conversion to \CCODE\ is done with a \LUA\ script ran by, surprise, \LUAMETATEX.
 
+The biggest consequence of this is that there are no dependencies, also not on
+ever changing libraries that we occasionally see break compilation of \LUATEX.
+Even on older machines (say 2013\endash2020) compilation should be sub minute.
+The amount of platform specific code is minimal.
+
 \stopsubsection
 
-\startsubsection[title=Changes from \LUATEX\ 1.10]
+\startsubsection[title={The follow up on \LUATEX}]
 
 \topicindex {\LUATEX}
 
 This engine is a follow up on \LUATEX, that became more or less frozen after
-version 1.10. Apart from reorganizing the code base, simplifying the build,
-limiting dependencies etc.\ this project also adds new functionality and removes
-some as well. The main differences are discussed in a separate section. The basic
-ideas remain the same but the engine is not downward compatible. This is why we
-have \CONTEXT\ \MKIV\ for \LUATEX\ and \CONTEXT\ \LMTX\ for \LUAMETATEX .
+version 1.10, so that is the version we started from. Apart from reorganizing the
+code base, simplifying the build, limiting dependencies etc.\ this project also
+adds new functionality and removes some as well. The main differences are
+discussed in a separate section. The basic ideas remain the same but the engine
+is not downward compatible. This is why we have \CONTEXT\ \MKIV\ for \LUATEX\ and
+\CONTEXT\ \LMTX\ for \LUAMETATEX .
+
+There is no \LUAJIT\ version of \LUAMETATEX, simply because there is not that
+much gain in the average run (at least not in \CONTEXT. Depending on the kind of
+documents, complexity of macro code and usage of \LUA, the \LUAMETATEX\ engine
+can be upto 30\percent\ faster than \LUATEX\ anyway.
 
 \stopsubsection
 

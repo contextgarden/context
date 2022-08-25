@@ -61,6 +61,24 @@ return {
     author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
+        parameters = {
+            FractionNumeratorDisplayStyleShiftUp =  600, -- used to be a function
+            NoLimitSupFactor                     =    0,
+            NoLimitSubFactor                     =  900,
+            AccentTopShiftUp                     =  -60,
+            FlattenedAccentTopShiftUp            =  -60,
+            -- AccentExtendMargin              =   50,
+         -- AccentBaseHeight                     =    0,
+         -- AccentBaseDepth                      =    0,
+         -- AccentTopOvershoot                   =   66,
+            AccentSuperscriptDrop                =  100, -- drop the superscripts if accents are present. Amount in percentage of height of accent(?)
+            AccentSuperscriptPercent             =    0,
+            DelimiterPercent                     =   90,
+            DelimiterShortfall                   =  400,
+         -- DisplayOperatorMinHeight             = 1800, -- 1300 in font (only one)
+            PrimeRaisePercent                    =   60, -- 50 default
+            PrimeRaiseComposedPercent            =   15, -- 25 default
+        },
         tweaks = {
             aftercopying = {
                 {
@@ -79,21 +97,21 @@ return {
                      -- [0x002D9] = { yoffset = -0.05  }, -- dot
                      -- [0x000A8] = { yoffset = -0.05  }, -- ddot
                      -- [0x020DB] = { yoffset = 0.2    }, -- dddot (done below!)
-                        [0x002DA] = { width = 0        }, -- ring (bounding box is wrong)
+                     --   [0x002DA] = { width = 0        }, -- ring (bounding box is wrong)
                      -- [0x002C7] = { yoffset = -0.05  }, -- check
                      -- [0x020D7] = { yoffset = -0.05  }, -- vec
 
-                        [0x00300] = { yoffset = -0.03,  all = true }, -- widegrave
-                        [0x00301] = { yoffset = -0.03,  all = true }, -- wideacute
-                        [0x00302] = { yoffset = -0.075, all = true }, -- widehat
-                        [0x00303] = { yoffset = -0.05,  all = true }, -- widetilde
-                        [0x00304] = { yoffset = -0.02,  all = true }, -- widebar
-                        [0x00306] = { yoffset = -0.05,  all = true }, -- widebreve
-                        [0x00307] = { yoffset = -0.027, all = true }, -- widedot
-                        [0x00308] = { yoffset = -0.027, all = true }, -- wideddot
-                        [0x020DB] = { yoffset = -0.065, all = true }, -- widedddot
-                        [0x0030C] = { yoffset = -0.05,  all = true }, -- widecheck
-                        [0x0030A] = { yoffset = -0.025, all = true }, -- widering
+                        -- [0x00300] = { yoffset = -0.03,  all = true }, -- widegrave
+                        -- [0x00301] = { yoffset = -0.03,  all = true }, -- wideacute
+                        -- [0x00302] = { yoffset = -0.075, all = true }, -- widehat
+                        -- [0x00303] = { yoffset = -0.05,  all = true }, -- widetilde
+                        -- [0x00304] = { yoffset = -0.02,  all = true }, -- widebar
+                        -- [0x00306] = { yoffset = -0.05,  all = true }, -- widebreve
+                        -- [0x00307] = { yoffset = -0.027, all = true }, -- widedot
+                        -- [0x00308] = { yoffset = -0.027, all = true }, -- wideddot
+                        -- [0x020DB] = { yoffset = -0.065, all = true }, -- widedddot
+                        -- [0x0030C] = { yoffset = -0.05,  all = true }, -- widecheck
+                        -- [0x0030A] = { yoffset = -0.025, all = true }, -- widering
 
                      -- [0x0212C] = { width = 0.95, italic = 0.05 }, -- script B
                      -- [0x1D49E] = { width = 0.8,  italic = 0.25 }, -- script C
@@ -241,6 +259,58 @@ return {
                      -- },
                     },
                 },
+
+                -- Accents are a mess. We migrate the extensibles from the combiners to the base accent
+                -- and then need to tweak the width (which is auto set because it was zero with a large
+                -- accent anchor offset). First we copy and fix.
+                {
+                    tweak = "extendaccents",
+                },
+                {
+                    tweak = "fixaccents",
+                },
+                -- First we set the dimensions of the initial accent which started out as zero but we want
+                -- a proper width.
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        -- [0x00300] = { width = 0.8 }, -- widegrave
+                        -- [0x00301] = { width = 0.9 }, -- wideacute
+                        [0x00302] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widehat
+                        [0x00303] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widetilde
+                        [0x00306] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widebreve
+                --         [0x0030A] = { width = 0.9, xoffset = -.0 }, -- widering
+                        [0x0030C] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widecheck
+                    },
+                },
+                -- Then we deal with all offsets and heights in one go. So we treat the initial accent
+                -- as well as the variants here.
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        -- here we want to apply to all
+                        -- [0x00300] = { yoffset = -0.02, height = .95, all = true }, -- widegrave : 0x0060
+                        -- [0x00301] = { yoffset = -0.02, height = .95, all = true }, -- wideacute : 0x00B4
+                        -- [0x00302] = { yoffset = -0.03, height = .95, all = true }, -- widehat   : 0x02C6
+                        -- [0x00303] = { yoffset = -0.02, height = .95, all = true }, -- widetilde : 0x02DC
+                        -- [0x00306] = { yoffset = -0.03, height = .95, all = true }, -- widebre   : 0x02D8
+                        -- [0x0030A] = { yoffset =  0.00, height = .95, all = true }, -- widering  : 0x02DA
+                        -- [0x0030C] = { yoffset = -0.03, height = .95, all = true }, -- widecheck : 0x02C7
+
+                        -- [0x00304] = { yoffset = -0.05, height = .95, all = true }, -- widebar   : 0x00AF
+
+                        -- [0x00307] = { yoffset = -0.03, height = .95, all = true }, -- widedot   : 0x02D9
+                        -- [0x00308] = { yoffset = -0.03, height = .95, all = true }, -- wideddot  : 0x00A8
+                        [0x020DB] = { yoffset =  -0.015,    height = .95, all = true }, -- widedddot : 0x20DB (self)
+                    },
+                },
+                -- We now copy these to the not wide slots so that we can set these to stretch as well,
+                -- if only because it is less confusing and more consistent.
+                {
+                    tweak = "copyaccents",
+                },
+                -- So far for the accents.
+
                 {
                     -- Here we modify "corner kerns".
                     -- We started with 0x2F, the solidus
@@ -489,6 +559,20 @@ return {
                 {
                     tweak = "addrules",
                 },
+                {
+                    tweak   = "addbars",
+                    advance = 0.52,
+                },
+                {
+                    tweak = "addactuarian",
+                },
+                {
+                    tweak = "addfourier",
+                    variant = 1,
+                },
+                {
+                    tweak = "addequals",
+                },
                 -- {
                 --     tweak = "wipevariants",
                 --     list  = {
@@ -496,21 +580,6 @@ return {
                 --     },
                 -- },
             },
-        },
-        parameters = {
-            FractionNumeratorDisplayStyleShiftUp =  600, -- used to be a function
-            NoLimitSupFactor                     =    0,
-            NoLimitSubFactor                     =  900,
-         -- AccentBaseHeight                     =    0,
-         -- AccentBaseDepth                      =    0,
-         -- AccentTopOvershoot                   =   66,
-            AccentSuperscriptDrop                =  100, -- drop the superscripts if accents are present. Amount in percentage of height of accent(?)
-            AccentSuperscriptPercent             =    0,
-            DelimiterPercent                     =   90,
-            DelimiterShortfall                   =  400,
-         -- DisplayOperatorMinHeight             = 1800, -- 1300 in font (only one)
-            PrimeRaisePercent                    =   60, -- 50 default
-            PrimeRaiseComposedPercent            =   15, -- 25 default
         },
         bigslots = {
             1, 3, 5, 7 -- In fact, 6 is the last one.

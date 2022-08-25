@@ -52,6 +52,8 @@ local setmathcode           = tex.setmathcode
 local setdelcode            = tex.setdelcode
 local texintegerdef         = tex.integerdef
 
+setdelcode = function() end
+
 -- This is relatively new and experimental:
 
 do
@@ -135,15 +137,18 @@ do
         end
     end
 
-    function dictionaries.registercharacter(group,index,description)
+    function dictionaries.registercharacter(group,index,description,class)
         local d = names[group] -- can be number or string
         if d then
             data[d][index] = description or true
             local v = variants[index]
+            if not class then
+                class = true
+            end
             if v then
-                v[d] = true
+                v[d] = class
             else
-                variants[index] = { [d] = true }
+                variants[index] = { [d] = class}
             end
             if not defaults[index] then
                 defaults[index] = d
@@ -170,25 +175,27 @@ do
 
     local function trace(n,properties,group,index,font,char)
      -- local properties, group, index, font, char = nodes.nuts.getchardict(nodes.nuts.tonut(n))
-        local char = fontchardata[font][char]
-        if char or whatdetail == "all" then
-            local unicode = char and char.unicode
-            if unicode then
-                local groupname = groups[group]
-                local indexname = false
-                if groupname then
-                    indexname = data[group][index] -- dictionaries.data
-                else
-                    groupname = "unknown"
+        if properties ~= 0 or group ~= 0 or index ~= 0 then
+            local char = fontchardata[font][char]
+            if char or whatdetail == "all" then
+                local unicode = char and char.unicode
+                if unicode then
+                    local groupname = groups[group]
+                    local indexname = false
+                    if groupname then
+                        indexname = data[group][index] -- dictionaries.data
+                    else
+                        groupname = "unknown"
+                    end
+                    if not indexname or indexname == true then
+                        indexname = chardata[unicode]
+                        indexname = indexname and indexname.description or "unknown"
+                    end
+                    if not f_dictionary then
+                        f_dictionary = formatters["properties [%04X:%04X:%04X] [%s] %U : %s"]
+                    end
+                    return f_dictionary(properties,group,index,groupname,unicode,indexname)
                 end
-                if not indexname or indexname == true then
-                    indexname = chardata[unicode]
-                    indexname = indexname and indexname.description or "unknown"
-                end
-                if not f_dictionary then
-                    f_dictionary = formatters["properties [%04X:%04X:%04X] [%s] %U : %s"]
-                end
-                return f_dictionary(properties,group,index,groupname,unicode,indexname)
             end
         end
     end
@@ -217,25 +224,29 @@ do
     -- abandoned but we can use it as a start and playground anyway.
     --
     -- The char-def.lua file will have mathgroup entries reflecting this.
+    --
+    -- This is a good one (with nice roll-overs too):
+    --
+    -- https://en.wikipedia.org/wiki/List_of_mathematical_symbols_by_subject
 
     if environment.initex then
 
         local registergroup = mathematics.dictionaries.registergroup
 
         registergroup("default")
-        registergroup("binary arithmic")
+        registergroup("binary arithmetic")
         registergroup("binary linear algebra")
         registergroup("binary logical")
         registergroup("binary relation")
         registergroup("binary set")
-        registergroup("constant arithmic")
+        registergroup("constant arithmetic")
         registergroup("constant set")
         registergroup("differential")
         registergroup("integral")
         registergroup("interval")
         registergroup("lambda")
         registergroup("limit")
-        registergroup("nary arithmic")
+        registergroup("nary arithmetic")
         registergroup("nary constructor")
         registergroup("nary functional")
         registergroup("nary linear algebra")
@@ -249,7 +260,7 @@ do
         registergroup("partial") -- partial differential
         registergroup("product")
         registergroup("quantifier")
-        registergroup("unary arithmic")
+        registergroup("unary arithmetic")
         registergroup("unary elementary")
         registergroup("unary functional")
         registergroup("unary linear algebra")
@@ -358,6 +369,10 @@ registerengineclass("unspaced")
 registerengineclass("experimental")
 registerengineclass("fake")
 
+registerengineclass("maybeordinary")
+registerengineclass("mayberelation")
+registerengineclass("maybebinary")
+
 local specialclasses = tex.specialmathclasscodes
 
 classes["all"]   = specialclasses["all"]    classnames[specialclasses["all"]  ] = "all"
@@ -366,8 +381,8 @@ classes["end"]   = specialclasses["end"]    classnames[specialclasses["end"]  ] 
 
 callback.register("get_noad_class", function(n) return classnames[n] end)
 
-local function registerprivateclass(name)
-    local class = classes[name]
+local function registerprivateclass(name,parent)
+    local class = parent and classes[parent] or classes[name]
     if not class then
         lastprivateclass = lastprivateclass + 1
         class = lastprivateclass
@@ -395,19 +410,22 @@ implement {
     actions   = registerengineclass,
 }
 
-local topaccent_class  = registerprivateclass("topaccent")
-local botaccent_class  = registerprivateclass("botaccent")
-local delimiter_class  = registerprivateclass("delimiter")
-local root_class       = registerprivateclass("root")
-local prime_class      = registerprivateclass("prime")
+local topaccent_class    = registerprivateclass("topaccent")
+local bottomaccent_class = registerprivateclass("bottomaccent")
+local delimiter_class    = registerprivateclass("delimiter")
+local root_class         = registerprivateclass("root")
+local prime_class        = registerprivateclass("prime")
+
+registerprivateclass("botaccent","bottomaccent")
 
 local accents = allocate {
-    accent    = true, -- some can be both
-    topaccent = true,  [topaccent_class] = true,
-    botaccent = true,  [botaccent_class] = true,
-    under     = true,  [under_class]     = true,
-    over      = true,  [over_class]      = true,
-    unknown   = false,
+    accent       = true, -- some can be both
+    topaccent    = true,  [topaccent_class]    = true,
+    bottomaccent = true,  [bottomaccent_class] = true,
+    botaccent    = true,
+    under        = true,  [under_class]        = true,
+    over         = true,  [over_class]         = true,
+    unknown      = false,
 }
 
 local integer_value = tokens.values.integer
@@ -503,8 +521,8 @@ do
             group = groupnames[group] or 0
             if group ~= 0 then
                 -- which one
-                registercharacter(group,unicode)
-             -- registercharacter(group,slot)
+                registercharacter(group,unicode,nil,class)
+             -- registercharacter(group,slot,nil,class)
             end
         end
         return mset, dset
@@ -521,18 +539,18 @@ do
         end
     end
 
-    local f_accent         = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
-    local f_fixedtopaccent = formatters[ [[\defUmathfixedtopaccent \%s{%X}{%X}{%X}]] ]
-    local f_fixedbotaccent = formatters[ [[\defUmathfixedbotaccent \%s{%X}{%X}{%X}]] ]
-    local f_topaccent      = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
-    local f_botaccent      = formatters[ [[\defUmathbotaccent \%s{%X}{%X}{%X}]] ]
-    local f_over           = formatters[ [[\defUdelimiterover \%s{%X}{%X}{%X}]] ]
-    local f_under          = formatters[ [[\defUdelimiterunder\%s{%X}{%X}{%X}]] ]
-    local f_fence          = formatters[ [[\defUdelimiter \%s{%X}{%X}{%X}]] ]
-    local f_delimiter      = formatters[ [[\defUdelimiter \%s{%X}{%X}{%X}]] ]
-    local f_radical        = formatters[ [[\defUradical \%s{%X}{%X}]]     ]
-    local f_root           = formatters[ [[\defUroot \%s{%X}{%X}]]     ]
-    local f_char           = formatters[ [[\defUmathchar \%s{%X}{%X}{%X}]] ]
+    local f_accent            = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
+    local f_fixedtopaccent    = formatters[ [[\defUmathfixedtopaccent \%s{%X}{%X}{%X}]] ]
+    local f_fixedbottomaccent = formatters[ [[\defUmathfixedbottomaccent \%s{%X}{%X}{%X}]] ]
+    local f_topaccent         = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
+    local f_bottomaccent      = formatters[ [[\defUmathbottomaccent \%s{%X}{%X}{%X}]] ]
+    local f_over              = formatters[ [[\defUdelimiterover \%s{%X}{%X}{%X}]] ]
+    local f_under             = formatters[ [[\defUdelimiterunder\%s{%X}{%X}{%X}]] ]
+    local f_fence             = formatters[ [[\defUdelimiter \%s{%X}{%X}{%X}]] ]
+    local f_delimiter         = formatters[ [[\defUdelimiter \%s{%X}{%X}{%X}]] ]
+    local f_radical           = formatters[ [[\defUradical \%s{%X}{%X}]]     ]
+    local f_root              = formatters[ [[\defUroot \%s{%X}{%X}]]     ]
+    local f_char              = formatters[ [[\defUmathchar \%s{%X}{%X}{%X}]] ]
 
     local texmathchardef = tex.mathchardef
 
@@ -540,9 +558,10 @@ do
         if class == accent_class then
             ctx_sprint(f_topaccent(name,0,family,slot))
         elseif class == topaccent_class then
+            -- only widegrave widehat widetilde : still needed?
             ctx_sprint((stretch and f_topaccent or f_fixedtopaccent)(name,0,family,slot))
-        elseif class == botaccent_class then
-            ctx_sprint((stretch and f_botaccent or f_fixedbotaccent)(name,0,family,slot))
+        elseif class == bottomaccent_class then
+            ctx_sprint((stretch and f_bottomaccent or f_fixedbottomaccent)(name,0,family,slot))
         elseif class == over_class then
             ctx_sprint(f_over(name,0,family,slot))
         elseif class == under_class then
@@ -561,7 +580,7 @@ do
             if group then
                 group = groupnames[group] or 0
                 if group ~= 0 then
-                    texmathchardef(name,engine,family,slot,"permanent",0,group,slot)
+                    texmathchardef(name,engine,family,slot,"permanent",0x1,group,slot)
                     return
                 end
             end
@@ -639,10 +658,11 @@ do
                     end
                 end
                 for i=1,#spec do
-                    local m     = spec[i]
-                    local name  = m.name
-                    local class = m.class or class
-                    local group = m.group or group
+                    local m       = spec[i]
+                    local name    = m.name
+                    local class   = m.class   or class
+                    local group   = m.group   or group
+                    local stretch = m.stretch or stretch
                     if class then
                         class = classes[class] or ordinary_class
                     else
@@ -898,7 +918,7 @@ do
         name      = "utfmathcommandbelow",
         public    = true,
         actions   = { utfmathcommand, context },
-        arguments = { "argument", false, "'botaccent'","'under'" }
+        arguments = { "argument", false, "'bottomaccent'","'under'" }
     }
 
     implement {
@@ -921,7 +941,7 @@ do
         name      = "doifelseutfmathbelow",
         public    = true,
         actions   = { utfmathaccent, ctx_doifelsesomething },
-        arguments = { "argument", false, "'botaccent'", "'under'" }
+        arguments = { "argument", false, "'bottomaccent'", "'under'" }
     }
 
     implement {

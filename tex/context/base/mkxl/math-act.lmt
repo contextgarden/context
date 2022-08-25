@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['math-act'] = {
 -- have been removed (no longer viable) but can be found in the .lua variant.
 
 local type, next, tonumber = type, next, tonumber
-local fastcopy, insert, remove = table.fastcopy, table.insert, table.remove
+local fastcopy, copytable, insert, remove = table.fastcopy, table.copy, table.insert, table.remove
 local formatters = string.formatters
 local byte = string.byte
 local setmetatableindex, sortedhash  = table.setmetatableindex, table.sortedhash
@@ -34,7 +34,9 @@ local stepper          = utilities.parsers.stepper
 
 local helpers          = fonts.helpers
 local upcommand        = helpers.commands.up
+local downcommand      = helpers.commands.down
 local rightcommand     = helpers.commands.right
+local leftcommand      = helpers.commands.left
 local charcommand      = helpers.commands.char
 local prependcommands  = helpers.prependcommands
 
@@ -98,6 +100,7 @@ function mathematics.initializeparameters(target,original)
         if not mathparameters.AccentBottomOvershoot             then mathparameters.AccentBottomOvershoot             = 0 end
         if not mathparameters.AccentSuperscriptDrop             then mathparameters.AccentSuperscriptDrop             = 0 end
         if not mathparameters.AccentSuperscriptPercent          then mathparameters.AccentSuperscriptPercent          = 0 end
+        if not mathparameters.AccentExtendMargin                then mathparameters.AccentExtendMargin                = 50 end
         if not mathparameters.DelimiterPercent                  then mathparameters.DelimiterPercent                  = 100 end
         if not mathparameters.DelimiterShortfall                then mathparameters.DelimiterShortfall                = 0 end
         --
@@ -373,13 +376,24 @@ do
         k = mathgaps[k] or k
         local character = targetcharacters[k]
         if character then
-            if not character.tweaked then -- todo: add a force
+--             if not character.tweaked then -- todo: add a force
                 local t = type(v)
                 if t == "number" then
                     v = list[v]
                     t = type(v)
                 end
                 if t == "table" and next(v) then
+                    local factor    = v.factor
+                    if factor then
+                        local m = v
+                        v = setmetatableindex({
+                            width   = factor,
+                            height  = factor,
+                            depth   = factor,
+                            squeeze = factor,
+                            extend  = factor,
+                        }, v)
+                    end
                     local original = v.original
                     if not original then
                         local delta = v.delta
@@ -391,7 +405,7 @@ do
                         original = mathgaps[original] or original
                         local data = targetcharacters[original]
                         if data then
-                            data = table.copy(data)
+                            data = copytable(data)
                             data.unicode = original
                             targetcharacters[k] = data
                             character = data
@@ -478,7 +492,7 @@ do
                 else
                     report_mathtweak("invalid dimension entry %U",k)
                 end
-                character.tweaked = true
+--                 character.tweaked = true
                 if v.all then
                     local nxt = character.next
                     if nxt then
@@ -492,7 +506,7 @@ do
                         end
                     end
                 end
-            end
+--             end
         else
             report_tweak("no character %U",target,original,k)
         end
@@ -769,7 +783,6 @@ do
 
     -- see changed hack in math-fbk
 
-    local copytable = table.copy
     local nps = fonts.helpers.newprivateslot
 
     local list = {
@@ -920,7 +933,6 @@ end
 
 do
 
-    local copytable = table.copy
     local nps = fonts.helpers.newprivateslot
 
     local privates = {
@@ -996,7 +1008,6 @@ do
                     if preset then
                         local p = predefined[preset]
                         if p then
-    --                         p = table.copy(p)
                             v = table.combine(p,v)
                             p.preset = nil
                         else
@@ -1287,7 +1298,7 @@ do
     }
 
     local function adapt(c,factor,baseheight,basedepth)
-        if not c.tweaked then
+--         if not c.tweaked then
             local height  = c.height or 0
             local depth   = c.depth  or 0
             local yoffset = 0
@@ -1313,8 +1324,8 @@ do
             c.yoffset = yoffset ~= 0 and yoffset or nil
             c.height  = height   > 0 and height  or nil
             c.depth   = depth    > 0 and depth   or nil
-            c.tweaked = true
-        end
+--             c.tweaked = true
+--         end
     end
 
     local function process(target,original,characters,list,baseheight,basedepth)
@@ -1383,6 +1394,9 @@ end
 
 do
 
+        local addprivate  = fonts.helpers.addprivate
+        local privateslot = fonts.helpers.privateslot
+
  --  function mathtweaks.addrules(target,original,parameters)
  --      local characters = target.characters
  --      local height     = target.mathparameters.OverbarRuleThickness
@@ -1436,8 +1450,6 @@ do
         --
         -- lucida lacks them ...
         --
-        local addprivate = fonts.helpers.addprivate
-        --
         local half   = thickness / 2
         local double = thickness * 2
         --
@@ -1482,6 +1494,215 @@ do
                     { advance = thickness, glyph = bpiece, ["end"] = half, start = 0 },
                 }
             }
+        end
+        --
+    end
+
+    local force = false  experiments.register("math.arrows", function(v) force = v end)
+
+    local function tighten(target,unicode,left,right,squeeze,yoffset)
+        local name = string.formatters["math tightened %U %.3N %.3N %.3N %.3N"](unicode,left,right,squeeze,yoffset)
+        local slot = privateslot(target,name)
+        if not slot then
+            local characters = target.characters
+            local data   = copytable(characters[unicode])
+            local width  = data.width
+            data.advance = width
+            data.width   = width * (1-left-right)
+            data.xoffset = width * -left
+            if squeeze ~= 1 then
+                data.effect  = { squeeze = squeeze }
+            end
+            if yoffset ~= 0 then
+                data.yoffset = (data.height or 0) * yoffset
+            end
+            slot = addprivate(target,name,data)
+        end
+        return slot
+    end
+
+    local function create(target,unicode,list,overloads)
+        local characters = target.characters
+        local chardata   = characters[unicode]
+        if chardata then
+            local endpoint = unicode
+            while chardata.next do
+                chardata = characters[chardata.next]
+            end
+--             if chardata and (force or not chardata.hparts) then
+            if chardata and (force or overloads[unicode] == false or not chardata.hparts) then
+                if not list then
+                    chardata.hparts = nil -- when we test
+                else
+                    local overload = overloads[unicode]
+                    local hparts   = { }
+                    for i=1,#list do
+                        local part    = list[i]
+                        local glyph   = part.glyph or unicode
+                        local check   = overloads[glyph]
+                        local left    = (check and check.left   ) or part.left    or 0
+                        local right   = (check and check.right  ) or part.right   or 0
+                        local squeeze =  check and check.squeeze or 1
+                        local yoffset =  check and check.yoffset or 0
+                        if left~= 0 or right ~= 0 or squeeze ~= 1 or yoffset ~= 0 then
+                            glyph = tighten(target,glyph,left,right,squeeze,yoffset)
+                        end
+                        local width = characters[glyph].width
+                        local step  = width/2
+                        if part.extensible then
+                            hparts[#hparts+1] = {
+                                advance  = width,
+                                glyph    = glyph,
+                                ["end"]  = step,
+                                start    = step,
+                                extender = 1,
+                            }
+                        else
+                            hparts[#hparts+1] = {
+                                advance = width,
+                                glyph   = glyph,
+                                ["end"] = 0,
+                                start   = step,
+                            }
+                        end
+                    end
+                    if #hparts == #list then
+                        chardata.hparts = hparts
+                    end
+                end
+            end
+        end
+    end
+
+    -- Unicode math lacks the arrow snippet while it does have fence snippets. Also, some
+    -- fonts have a relbar that doesn't match the double arrow.
+    --
+    -- {
+    --     tweak = "addarrows",
+    --     list  = { [0x3D] = { squeeze = .85, yoffset = .0975 } }
+    -- },
+    --
+    -- We have no begin and end snippet, so I played with centering and rules at the edges
+    --
+    -- [0x21A9] = { -- hookleftarrow
+    --     { glyph = 0x2212, left = slack, extensible = true },
+    --     { glyph = 0x21A9, right = slack },
+    --     { glyph = 0x2212, right = slack, extensible = true },
+    -- }
+    --
+    -- but in the end rejected it.
+
+    local function initialize(left, right, slack)
+        -- We save some space with locals. When no glyph is given the unicode itself is
+        -- used which also saves some.
+        local single = { glyph = 0x2212, left = slack, right = slack, extensible = true }
+        local double = { glyph = 0x003D, left = slack, right = slack, extensible = true }
+        local triple = { glyph = 0x2261, left = slack, right = slack, extensible = true }
+        ----- spacer = { glyph = 0x0020, left = slack, right = slack, extensible = true }
+        local slackslack  = { left = slack, right = slack }
+        local leftslack   = { left = left,  right = slack }
+        local slackright  = { left = slack, right = right }
+        ----- centered    = { spacer, { }, spacer }
+        local centered    = false -- the luametatex engine does this
+        local singleright = { single, slackright }
+        local leftsingle  = { leftslack,  single }
+        return {
+            --
+            [0x002D] = { { left = slack, right = slack, glyph = 0x2212 }, single }, -- rel
+            --
+            [0x2190] = leftsingle, -- leftarrow
+            [0x219E] = leftsingle, -- twoheadleftarrow
+            [0x21BC] = leftsingle, -- leftharpoonup
+            [0x21BD] = leftsingle, -- leftharpoondown
+            --
+            [0x2192] = singleright, -- rightarrow
+            [0x21A0] = singleright, -- twoheadrightarrow
+            [0x21C0] = singleright, -- rightharpoonup
+            [0x21C1] = singleright, -- rightharpoondown
+            --
+            [0x003D] = { slackslack, double }, -- equaltext
+            [0x2261] = { slackslack, triple }, -- triplerel
+            [0x27F8] = { leftslack,  double }, -- Leftarrow
+            [0x27F9] = { double, slackright }, -- Rightarrow
+            --
+            [0x21A9] = centered, -- hookleftarrow
+            [0x21AA] = centered, -- hookrightarrow
+            [0x21CB] = centered, -- leftrightharpoons
+            [0x21CC] = centered, -- rightleftharpoons
+            [0x21C4] = centered, -- rightoverleftarrow
+            [0x21A6] = centered, -- mapsto
+            --
+            [0x203E] = { slackslack, { left = slack, right = slack, extensible = true } }, -- bar
+            --
+            [0x27F7] = { { glyph = 0x2190, left = left, right = slack }, single, { glyph = 0x2192, left = slack, right = right } }, -- leftrightarrow rightleftarrow
+            [0x27FA] = { { glyph = 0x27F8, left = left, right = slack }, double, { glyph = 0x27F9, left = slack, right = right } }, -- Leftrightarrow Rightleftarrow
+        }
+    end
+
+    function mathtweaks.addarrows(target,original,parameters)
+        local overloads = parameters.list  or { } -- { [unicode] = { left = .1, right = .1 } }
+        local left      = parameters.left  or 0.05
+        local right     = parameters.right or 0.05
+        local slack     = parameters.slack or 0.1
+        local arrows    = initialize(left,right,slack)
+         -- inspect(arrows)
+        for unicode, list in sortedhash(arrows) do
+            create(target,unicode,list,overloads)
+        end
+    end
+
+end
+
+do -- this could be combined with the previous
+
+    function mathtweaks.addparts(target,original,parameters)
+        local characters = target.characters
+        local list       = parameters.list
+        if list then
+            for unicode, data in sortedhash(list) do
+                local template = data.template
+                if template then
+                    local source = characters[template]
+                    local target = characters[unicode]
+                    if source and target then
+                        local sequence   = data.sequence
+                        local horizontal = data.horizontal
+                        if sequence then
+                            local parts = horizontal and source.hparts or source.vparts
+                            if parts then
+                                local p = { }
+                                for i=1,#sequence do
+                                    local step  = sequence[i]
+                                    local glyph = step.glyph
+                                    if glyph == "first" or glyph == "last" then
+                                        local g = glyph == "first" and 1 or #parts
+                                        local c = fastcopy(parts[g])
+                                        local f = step.factor
+                                        if f then
+                                            c["end"]  = f * (c["end"] or 0)
+                                            c.start   = f * (c.start  or 0)
+                                        end
+                                        p[#p+1] = c
+                                    else
+                                        local c = characters[glyph]
+                                        if c then
+                                            p[#p+1] = {
+                                                glyph   = glyph,
+                                                advance = c.width,
+                                                start   = 0,
+                                                ["end"] = 0,
+                                            }
+                                        end
+                                    end
+                                end
+                                if #p > 0 then
+                                    target[horizontal and "hparts" or "vparts"] = p
+                                end
+                            end
+                        end
+                    end
+                end
+            end
         end
     end
 
@@ -1610,6 +1831,446 @@ end
 
 do
 
+    local mapping = {
+        [0x002F] = 0x2044,
+    }
+
+    function mathtweaks.fixslashes(target,original,parameters)
+        local characters = target.characters
+        for normal, weird in sortedhash(mapping) do
+            local normalone  = characters[normal]
+            local weirdone   = characters[weird]
+            if normalone and weirdone and not normalone.next then
+                normalone.next = weirdone.next
+                if trace_tweaking then
+                    report_tweak("extensibles from %U used for %U",target,original,weird,normal)
+                end
+            end
+            weirdone = copytable(normalone)
+            characters[weird] = weirdone
+            weirdone.unicode = weird
+        end
+    end
+
+end
+
+do -- see pagella for an extensive example
+
+    local mapping = {
+        [0x0300] = { 0x0060, false },  -- aliases can be a table
+        [0x0308] = { 0x00A8, false },
+        [0x0304] = { 0x00AF, false },
+        [0x0301] = { 0x00B4, false },
+        [0x0302] = { 0x02C6, true  },
+        [0x030C] = { 0x02C7, true  },
+        [0x0306] = { 0x02D8, false },
+        [0x0307] = { 0x02D9, false },
+        [0x030A] = { 0x02DA, false },
+        [0x0303] = { 0x02DC, true  },
+        [0x20DB] = { 0x20DB, false },
+    }
+
+local hat = fonts.helpers.newprivateslot("hat 0x0302") -- todo other sizes
+
+    function mathtweaks.fixaccents(target,original,parameters)
+        local characters = target.characters
+
+characters[hat] = copytable(characters[0x0302]) -- TODO
+
+        for stretching, entry in sortedhash(mapping) do
+            local alias  = entry[1]
+            local stretchingdata = characters[stretching]
+            if stretchingdata and stretchingdata.width == 0 then
+                local topaccent = stretchingdata.topaccent or 0
+                local width     = -topaccent
+                      topaccent = width/2
+                stretchingdata.width     = width
+                stretchingdata.topaccent = topaccent
+                stretchingdata.commands  = { rightcommand[width + topaccent], charcommand[stretching] }
+                if trace_tweaking then
+                    report_tweak("width of initial extensible accent %U set",target,original,stretching)
+                end
+            end
+        end
+    end
+
+    function mathtweaks.extendaccents(target,original,parameters)
+        local characters = target.characters
+        for stretching, entry in sortedhash(mapping) do
+            local extend = entry[2]
+            local stretchingdata = characters[stretching]
+            if extend then
+                local last = stretchingdata
+                while last do
+                    local n = last.next
+                    if n then
+                        last = characters[n]
+                    else
+                        last.extensible = true
+                        local flataccent = last.flataccent
+                        if flataccent then
+                            characters[flataccent].extensible = true
+                            end
+                        break
+                    end
+                end
+            end
+        end
+    end
+
+    function mathtweaks.copyaccents(target,original,parameters)
+        local characters = target.characters
+        for stretching, entry in sortedhash(mapping) do
+            local alias = entry[1]
+            if alias ~= stretching then
+                local stretchingdata = characters[stretching]
+                if stretchingdata then
+                    -- we need to nil [x|y]offsets
+                    characters[alias] = {
+                        width     = stretchingdata.width,
+                        height    = stretchingdata.height,
+                        depth     = stretchingdata.depth,
+                        next      = stretchingdata.next,
+                        commands  = { charcommand[stretching] },
+                        topaccent = stretchingdata.topaccent,
+                     -- unicode   = stretching,  -- when we aliasize to combiners
+                        unicode   = alias, -- when we keep the original
+                    }
+                    if trace_tweaking then
+                        report_tweak("extensibles accent %U copied to %U",target,original,stretching,alias)
+                    end
+                end
+            end
+        end
+    end
+
+end
+
+do
+
+    local single <const> = 0x003D
+    local double <const> = 0x2A75
+    local triple <const> = 0x2A76
+
+    function mathtweaks.addequals(target,original,parameters)
+        local characters = target.characters
+        local basechar   = characters[single]
+        local width      = basechar.width
+        local height     = basechar.height
+        local depth      = basechar.depth
+        local advance    = (parameters.advance or 1/20) * width
+        local char       = charcommand[single]
+        local left       = leftcommand[advance]
+        characters[double] = {
+            unicode  = double,
+            width    = 2*width - 1*advance,
+            height   = height,
+            depth    = depth,
+            callback = "devirtualize",
+            commands = { char, left, char },
+        }
+        characters[triple] = {
+            unicode  = triple,
+            width    = 3*width - 2*advance,
+            height   = height,
+            depth    = depth,
+            callback = "devirtualize",
+            commands = { char, left, char, left, char },
+        }
+        if trace_tweaking then
+            report_tweak("double %U and triple %U equals added",target,original,double,triple)
+        end
+    end
+
+end
+
+do
+
+    -- If we really want, we can have variants that also match radicals but in practice
+    -- radicals and actuarians are never seen together. We could also have a smaller
+    -- extender.
+
+    local radical   <const> = 0x0221A
+    local actuarian <const> = 0x020E7
+    local nairautca <const> = 0xFE942
+    local placehold <const> = 0xFE943
+
+    function mathtweaks.addactuarian(target,original,parameters)
+        local characters = target.characters
+        local parameters = target.parameters
+        local linewidth  = target.MathConstants.RadicalRuleThickness -- make option
+        local basechar   = characters[radical]
+        local baseheight = basechar.height
+        local basedepth  = basechar.depth
+        local basetotal  = baseheight + basedepth
+        local used       = baseheight
+        characters[actuarian] = {
+            width    = 2*linewidth,
+            height   = baseheight,
+            depth    = basedepth,
+            unicode  = actuarian,
+            callback = "devirtualize",
+            commands = {
+                downcommand[basedepth],
+                { "rule", basetotal, linewidth },
+            },
+            vparts = {
+                {
+                    advance  = basetotal,
+                    ["end"]  = used,
+                    glyph    = actuarian,
+                    start    = 0,
+                },
+                {
+                    advance  = basetotal,
+                    ["end"]  = 0,
+                    extender = 1,
+                    glyph    = actuarian,
+                    start    = used,
+                },
+            }
+        }
+        characters[placehold] = {
+            width    = 2*linewidth,
+            height   = baseheight,
+            depth    = basedepth,
+            unicode  = actuarian, -- whatever
+            callback = "devirtualize",
+            commands = {
+                rightcommand[linewidth],
+                downcommand[basedepth],
+                { "rule", basetotal, 0 },
+            },
+        }
+        characters[nairautca] = {
+            width    = 2*linewidth,
+            height   = baseheight,
+            depth    = basedepth,
+            unicode  = actuarian, -- whatever
+            callback = "devirtualize",
+         -- commands = {
+         --     rightcommand[linewidth],
+         --     downcommand[basedepth],
+         --     { "rule", basetotal, linewidth },
+         -- },
+            commands = {
+                rightcommand[linewidth],
+                upcommand[baseheight-4*linewidth],
+                { "rule", 4*linewidth, linewidth },
+            },
+            vparts = {
+                {
+                    advance  = basetotal,
+                    ["end"]  = used,
+                    extender = 1,
+                    glyph    = placehold,
+                    start    = 0,
+                },
+                {
+                    advance  = basetotal,
+                    ["end"]  = 0,
+                    glyph    = nairautca,
+                    start    = used,
+                },
+            }
+        }
+        if trace_tweaking then
+            report_tweak("actuarian %U added",target,original,actuarian)
+        end
+    end
+
+end
+
+do
+
+    -- todo: make callback because we can delay it but then we need to stack
+    -- callbacks
+
+    -- todo: use named privates for snippets
+
+    local list = {
+        { 0x302, 0xFE944, 0xFE945 },
+        { 0x303, 0xFE946, 0xFE947 },
+        { 0x30C, 0xFE948, 0xFE949 },
+    }
+
+    function mathtweaks.addfourier(target,original,parameters)
+        local characters = target.characters
+        for i=1,#list do
+            local entry       = list[i]
+            local basecode    = entry[1]
+            local fouriercode = entry[2]
+            local movecode    = entry[3]
+            local basechar    = characters[basecode]
+            local scale       = parameters.scale or 1
+            local variant     = parameters.variant
+            if variant then
+                for i=1,variant do
+                    local okay = basechar.next
+                    if okay then
+                        basecode = okay
+                        basechar = characters[basecode]
+                    else
+                        break
+                    end
+                end
+            end
+            local baseheight  = scale * (basechar.height or 0)
+            local basedepth   = scale * (basechar.depth  or 0)
+            local basewidth   = scale * (basechar.width  or 0)
+            local used        = baseheight/2
+            local total       = baseheight + basedepth
+            characters[movecode] = {
+                width    = basewidth,
+                height   = used,
+                unicode  = basecode,
+    --             callback = "devirtualize",
+                commands = {
+                    downcommand[used],
+                    { "rule", used, 0 },
+                },
+            }
+            characters[fouriercode] = {
+                width    = basewidth,
+                height   = baseheight,
+                depth    = basedepth,
+                unicode  = basecode,
+    --             callback = "devirtualize",
+                commands = {
+                    scale == 1 and charcommand[basecode] or { "slot", 0, basecode, scale, scale },
+                },
+                vparts = {
+                    {
+                        advance  = used,
+                        ["end"]  = used,
+                        extender = 1,
+                        glyph    = movecode,
+                        start    = used,
+                    },
+                    {
+                        advance  = total,
+                        ["end"]  = 0,
+                        glyph    = fouriercode,
+                        start    = total,
+                    },
+                }
+            }
+            if trace_tweaking then
+                report_tweak("fourier %U added using %U",target,original,basecode,fourier)
+            end
+        end
+    end
+
+end
+
+do
+
+    -- \im{\left\Uchar"007C \frac{1}{2} \right\Uchar"007C}
+    -- \im{\left\Uchar"2016 \frac{1}{2} \right\Uchar"2016}
+    -- \im{\left\Uchar"2980 \frac{1}{2} \right\Uchar"2980}
+
+    local single <const> = 0x007C
+    local double <const> = 0x2016
+    local triple <const> = 0x2980
+
+    local function extensible(unicode,total,used)
+        return {
+            {
+                advance  = total,
+                ["end"]  = used,
+                glyph    = unicode,
+                start    = 0,
+            },
+            {
+                advance  = total,
+                ["end"]  = 0,
+                extender = 1,
+                glyph    = unicode,
+                start    = used,
+            },
+        }
+    end
+
+    function mathtweaks.addbars(target,original,parameters)
+        local characters = target.characters
+        local basechar   = characters[single]
+        local width      = basechar.width
+        local height     = basechar.height
+        local depth      = basechar.depth
+        local advance    = (parameters.advance or 1/10) * width
+        local used       = 0.8*height
+        local total      = height + depth
+        characters[single].vparts = extensible(single,total,used)
+        characters[double] = {
+            unicode  = double,
+            width    = 2*width - 1*advance,
+            height   = height,
+            depth    = depth,
+            vparts   = extensible(double,total,used),
+            callback = "devirtualize",
+            commands = {
+                charcommand[single],
+                leftcommand[advance],
+                charcommand[single],
+            },
+        }
+        characters[triple] = {
+            unicode  = triple,
+            width    = 3*width - 2*advance,
+            height   = height,
+            depth    = depth,
+            vparts   = extensible(triple,total,used),
+            callback = "devirtualize",
+            commands = {
+                charcommand[single],
+                leftcommand[advance],
+                charcommand[single],
+                leftcommand[advance],
+                charcommand[single],
+            },
+        }
+        if trace_tweaking then
+            report_tweak("triple bars %U added",target,original,triple)
+        end
+    end
+
+end
+
+do
+
+    -- lucida: \im{\cdot \ldot \cdots \ldots}
+
+    local snormal <const> = 0x002E
+    local sraised <const> = 0x22C5
+
+    local tnormal <const> = 0x2026
+    local traised <const> = 0x22EF
+
+    function mathtweaks.fixellipses(target,original,parameters)
+        local characters = target.characters
+        local function fix(normal,raised)
+            local normalone  = characters[normal]
+            if normalone then
+                local raisedone = copytable(normalone)
+                characters[raised] = raisedone
+                raisedone.unicode = weird
+                local height  = raisedone.height
+                local yoffset = (parameters.yoffset or 2) * height
+                raisedone.yoffset = yoffset
+                raisedone.height  = height + yoffset
+                if trace_tweaking then
+                    report_tweak("taking %U from %U",target,original,weird,normal)
+                end
+            end
+        end
+        fix(snormal,sraised)
+        fix(tnormal,traised)
+    end
+
+end
+
+do
+
     -- For Ton, who needs the high minus and plus for calculator signs in Dutch
     -- school math books.
 
@@ -1700,32 +2361,41 @@ local function applytweaks(when,target,original)
     if apply_tweaks then
         local goodies = original.goodies
         if goodies then
-            for i=1,#goodies do
-                local goodie = goodies[i]
-                local mathematics = goodie.mathematics
-                local tweaks = mathematics and mathematics.tweaks
-                if type(tweaks) == "table" then
-                    tweaks = tweaks[when]
+            local tweaked = target.tweaked or { }
+            if tweaked[when] then
+                if trace_defining then
+                    report_math("tweaking math of %a @ %p (%s: %s)",target.properties.fullname,target.parameters.size,when,"done")
+                end
+            else
+                for i=1,#goodies do
+                    local goodie = goodies[i]
+                    local mathematics = goodie.mathematics
+                    local tweaks = mathematics and mathematics.tweaks
                     if type(tweaks) == "table" then
-                        if trace_defining then
-                            report_math("tweaking math of %a @ %p (%s)",target.properties.fullname,target.parameters.size,when)
-                        end
-                        for i=1,#tweaks do
-                            local tweak  = tweaks[i]
-                            local tvalue = type(tweak)
-                            if type(tweak) == "table" then
-                                local action = mathtweaks[tweak.tweak or ""]
-                                if action then
-                                    if original then
-                                        action(target,original,tweak)
-                                    else
-                                        action(target,tweak)
+                        tweaks = tweaks[when]
+                        if type(tweaks) == "table" then
+                            if trace_defining then
+                                report_math("tweaking math of %a @ %p (%s: %s)",target.properties.fullname,target.parameters.size,when,"okay")
+                            end
+                            for i=1,#tweaks do
+                                local tweak  = tweaks[i]
+                                local tvalue = type(tweak)
+                                if type(tweak) == "table" then
+                                    local action = mathtweaks[tweak.tweak or ""]
+                                    if action then
+                                        if original then
+                                            action(target,original,tweak)
+                                        else
+                                            action(target,tweak)
+                                        end
                                     end
                                 end
                             end
                         end
                     end
                 end
+                tweaked[when] = true
+                target.tweaked = tweaked
             end
         end
     else

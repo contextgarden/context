@@ -27,6 +27,9 @@ return {
             NoLimitSupFactor                 =    0,
             NoLimitSubFactor                 =  900,
             FractionRuleThickness            =   60,
+            AccentTopShiftUp                =  -25,
+            FlattenedAccentTopShiftUp       =  -25,
+            -- AccentExtendMargin              =   50,
             AccentBaseDepth                  =   30,
             RadicalDegreeBottomRaisePercent  =   62,
             RadicalRuleThickness             =   46, -- 52 in font
@@ -45,6 +48,7 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {
+                        [0x1D44E] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.9  }, -- a
                      -- [0x1D449]           = { xoffset = 0, width = .8, italic = .2 },
                      -- [0x1D44A]           = { xoffset = 0, width = .8, italic = .2 },
                         ["0x1D449:0x1D44A"] = { xoffset = 0, width = .8, italic = .2 },
@@ -107,6 +111,54 @@ return {
 
                     },
                 },
+                -- Accents are a mess. We migrate the extensibles from the combiners to the base accent
+                -- and then need to tweak the width (which is auto set because it was zero with a large
+                -- accent anchor offset). First we copy and fix.
+                {
+                    tweak = "extendaccents",
+                },
+                {
+                    tweak = "fixaccents",
+                },
+                -- First we set the dimensions of the initial accent which started out as zero but we want
+                -- a proper width.
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        [0x00302] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widehat
+                        [0x00303] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widetilde
+                        [0x00306] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widebreve
+                        [0x0030C] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widecheck
+                    },
+                },
+                -- Then we deal with all offsets and heights in one go. So we treat the initial accent
+                -- as well as the variants here.
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        -- here we want to apply to all
+                        -- [0x00300] = { yoffset = -0.02, height = .95, all = true }, -- widegrave : 0x0060
+                        -- [0x00301] = { yoffset = -0.02, height = .95, all = true }, -- wideacute : 0x00B4
+                        -- [0x00302] = { yoffset = -0.03, height = .95, all = true }, -- widehat   : 0x02C6
+                        -- [0x00303] = { yoffset = -0.02, height = .95, all = true }, -- widetilde : 0x02DC
+                        -- [0x00306] = { yoffset = -0.03, height = .95, all = true }, -- widebre   : 0x02D8
+                        -- [0x0030A] = { yoffset =  0.00, height = .95, all = true }, -- widering  : 0x02DA
+                        -- [0x0030C] = { yoffset = -0.03, height = .95, all = true }, -- widecheck : 0x02C7
+
+                        -- [0x00304] = { yoffset = -0.05, height = .95, all = true }, -- widebar   : 0x00AF
+
+                        -- [0x00307] = { yoffset = -0.03, height = .95, all = true }, -- widedot   : 0x02D9
+                        -- [0x00308] = { yoffset = -0.03, height = .95, all = true }, -- wideddot  : 0x00A8
+                        [0x020DB] = { yoffset =  0.015,    height = .95, all = true }, -- widedddot : 0x20DB (self)
+                    },
+                },
+                -- We now copy these to the not wide slots so that we can set these to stretch as well,
+                -- if only because it is less confusing and more consistent.
+                {
+                    tweak = "copyaccents",
+                },
+                -- So far for the accents.
+
                 {
                     tweak   = "fixprimes",
                     -- scale   = 0.9,
@@ -127,6 +179,20 @@ return {
                 },
                 {
                     tweak = "wipecues",
+                },
+                {
+                    tweak   = "addbars",
+                    advance = 0.175,
+                },
+                {
+                    tweak = "addactuarian",
+                },
+                {
+                    tweak = "addequals",
+                },
+                {
+                    tweak = "addfourier",
+                    variant = 1,
                 },
             },
         },

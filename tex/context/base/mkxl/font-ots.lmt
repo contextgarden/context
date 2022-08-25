@@ -325,6 +325,22 @@ local checkstep          = (tracers and tracers.steppers.check)    or function()
 local registerstep       = (tracers and tracers.steppers.register) or function() end
 local registermessage    = (tracers and tracers.steppers.message)  or function() end
 
+do
+
+    local setchr = setchar
+    local direct = nil
+
+    setchar = function(n,c)
+        direct = fonts.collections.direct
+        setchar = function(n,c)
+            setchr(n,c)
+            direct(n)
+        end
+        setchar(n,c)
+    end
+
+end
+
 local function logprocess(...)
     if trace_steps then
         registermessage(...)
@@ -542,6 +558,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
     if start == stop and getchar(start) == char and not hasmarks then
         resetinjection(start)
         setchar(start,char)
+-- fonts.collections.direct(start)
         return head, start
     end
     if inhibited(start,stop) then
@@ -558,6 +575,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
     end
     resetinjection(base)
     setchar(base,char)
+-- fonts.collections.direct(base)
     setoptions(base,getoptions(start) | getoptions(stop)) -- maybe only lig options
  -- setsubtype(base,ligatureglyph_code)
     setcomponents(base,comp)

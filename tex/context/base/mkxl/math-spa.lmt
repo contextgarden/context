@@ -18,6 +18,8 @@ local glue_code         = nodes.nodecodes.glue
 local line_code         = nodes.listcodes.line
 local ghost_code        = nodes.listcodes.ghost
 local middle_code       = nodes.listcodes.middle
+local leftskip_code     = nodes.gluecodes.leftskip
+local rightskip_code    = nodes.gluecodes.rightskip
 
 local nuts              = nodes.nuts
 local tonut             = nodes.tonut
@@ -104,6 +106,8 @@ local function reposition(n,offset)
             addxoffset(n,-offset)
         end
     end
+    -- this is tricky ... see line numbering so it might become a real shift
+    -- inside the box: setprops(n,"repositioned",true)
     addxoffset(n,offset)
 end
 

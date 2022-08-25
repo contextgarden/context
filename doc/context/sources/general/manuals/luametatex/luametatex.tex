@@ -105,6 +105,8 @@
 % \enableexperiments [tabulateusesize]
 % \enableexperiments [tabulatesparseskips]
 
+\linebuffering
+
 \enableexperiments[fonts.compact]
 % \enabledirectives[fonts.injections.method=advance] % tricky ... not all xoffsets are advance robust
 
@@ -113,7 +115,7 @@
 % \startluacode
 %     lpdf.setencryption {
 %         ownerpassword = "password",
-%         userpassword  = "",
+%         userpassword  = " ",
 %         permissions   = "print,quality"
 %     }
 % \stopluacode

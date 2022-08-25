@@ -130,10 +130,17 @@
    \s!axis
    \s!exact}
 
+% \startTEXpage[offset=1dk]
+%     \dm { \fenced[brace][middle="7C] { \frac{p}{q} \fence p,q \in \naturalnumbers} }\par
+%     \dm { \fenced[brace][middle=`|]  { \frac{p}{q} \fence p,q \in \naturalnumbers} }\par
+%     \dm { \fenced[brace][middle=124] { \frac{p}{q} \fence p,q \in \naturalnumbers} }\par
+%     \dm { \fenced[brace][middle=|]   { \frac{p}{q} \fence p,q \in \naturalnumbers} }
+% \stopTEXpage
+
 \newconstant\c_math_fenced_class
 \integerdef \c_math_fence_check \zerocount
 
-\def\math_fenced_common#1#2#3#4% \Uwhatever class symbol source
+\protected\def\math_fenced_common#1#2#3#4% \Uwhatever class symbol source
   {\c_math_fenced_class\mathfenceparameter#2\relax
    \math_fenced_check_size_mismatch % we need to catch an unbalanced \F as we are sequential
    \ifconditional\c_math_fenced_sized
@@ -198,10 +205,13 @@
      \s!source
         \numexpr\namedboxanchor{\mathfenceparameter#4}\relax
      \math_fenced_trace
-     \Udelimiter
-        \mathghostcode
-        \fam
-        \ifx\p_fence\v!none\zerocount\else\p_fence\relax\fi
+     \ifx\p_fence\v!none
+       \Udelimiter\mathghostcode\fam\zerocount
+     \orelse\ifchknum\p_fence\or
+       \Udelimiter\mathghostcode\fam\p_fence
+     \else
+       \p_fence
+     \fi
    \fi
    % we could use \s!attr \c_math_fenced_stack here
    \ifconditional\c_math_fenced_sized
@@ -459,13 +469,10 @@
    \fi
    \math_fenced_force_size\bigmathdelimitervariant\c_math_fenced_level\relax}
 
-% todo: | in mathmode letter
-%
-% \appendtoks
-%     \let\bar\letterbar
-% \to \everymathematics
-%
-% but then we don't have it in embedded text too so ...
+\appendtoks
+    \enforced\aliased\let|\letterbar
+   %\enforced\aliased\let\bar\letterbar
+\to \everymathematics
 
 \definemathfence [parenthesis] [\c!left="0028,\c!right="0029]
 \definemathfence [bracket]     [\c!left="005B,\c!right="005D]
@@ -578,127 +585,163 @@
 
 \pushoverloadmode
 
-\protected\def\left  {\afterassignment\math_left  \let\nexttoken}
-\protected\def\right {\afterassignment\math_right \let\nexttoken}
-\protected\def\middle{\afterassignment\math_middle\let\nexttoken}
+% \protected\def\left  {\afterassignment\math_left  \let\nexttoken}
+% \protected\def\right {\afterassignment\math_right \let\nexttoken}
+% \protected\def\middle{\afterassignment\math_middle\let\nexttoken}
+
+% \im { \left{       \frac{1}{2} \right}       }
+% \im { \left\bgroup \frac{1}{2} \right\egroup }
+% \im { \left\{      \frac{1}{2} \right\}      }
+% \im { \left\lbrace \frac{1}{2} \right\rbrace }
+
+\def\math_fenced_x_left
+  {\advance\c_math_fence_nesting\plusone
+   \ifx\math_fenced_x_p_left\bgroup\let\math_fenced_x_p_left\letterleftbrace\fi
+   \math_fenced_common\Uleft\c!leftclass\math_fenced_x_p_left\c!leftsource}
+
+\def\math_fenced_x_right
+  {\ifx\math_fenced_x_p_right\egroup\let\math_fenced_x_p_right\letterrightbrace\fi
+   \math_fenced_common\Uright\c!rightclass\math_fenced_x_p_right\c!rightsource
+   \advance\c_math_fence_nesting\minusone}
+
+\def\math_fenced_x_middle_normal
+  {\math_fenced_common\Umiddle\c!middleclass\math_fenced_x_p_middle\c!middlesource}
+
+% the expandafter permits \left\Uchar...
+
+\protected\def\lfence{\afterassignment\math_fenced_x_left  \expandafter\let\expandafter\math_fenced_x_p_left}
+\protected\def\rfence{\afterassignment\math_fenced_x_right \expandafter\let\expandafter\math_fenced_x_p_right}
+\protected\def\mfence{\afterassignment\math_fenced_x_middle\expandafter\let\expandafter\math_fenced_x_p_middle}
+
+\aliased\let\left  \lfence
+\aliased\let\right \rfence
+\aliased\let\middle\mfence
 
 \popoverloadmode
 
 % \let\leftorright\relax
 
-\newconditional\c_math_fenced_done
 \newconditional\c_math_fenced_unknown  \settrue\c_math_fenced_unknown
 
+% \permanent\protected\def\installmathfencepair#1#2#3#4%
+%   {\letcsname\??mathleft \normalmeaningless#1\endcsname#2%
+%    \letcsname\??mathright\normalmeaningless#3\endcsname#4}
+
 \permanent\protected\def\installmathfencepair#1#2#3#4%
-  {\letcsname\??mathleft \normalmeaningless#1\endcsname#2%
-   \letcsname\??mathright\normalmeaningless#3\endcsname#4}
+  {}
 
-\def\math_unknown_left  {\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\Uleft              \nexttoken\fi}
-\def\math_unknown_right {\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\Uright             \nexttoken\fi}
-\def\math_unknown_middle{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\Umiddle nooverflow \nexttoken\fi}
+% \def\math_unknown_left  {\ifconditional\c_math_fenced_unknown\Uleft              \nexttoken\fi}
+% \def\math_unknown_right {\ifconditional\c_math_fenced_unknown\Uright             \nexttoken\fi}
+% \def\math_unknown_middle{\ifconditional\c_math_fenced_unknown\Umiddle nooverflow \nexttoken\fi}
 
-\letcsname\??mathleft  \s!unknown\endcsname\math_unknown_left
-\letcsname\??mathright \s!unknown\endcsname\math_unknown_right
-\letcsname\??mathmiddle\s!unknown\endcsname\math_unknown_middle
+% \def\math_unknown_left
+%   {\let\math_fenced_p_left\nexttoken
+%    \math_fenced_left}
+%
+% \def\math_unknown_right
+%   {\let\math_fenced_p_right\nexttoken
+%    \math_fenced_right}
+%
+% \def\math_unknown_middle
+%   {\let\math_fenced_p_middle\nexttoken
+%    \math_fenced_middle}
+%
+% \letcsname\??mathleft  \s!unknown\endcsname\math_unknown_left
+% \letcsname\??mathright \s!unknown\endcsname\math_unknown_right
+% \letcsname\??mathmiddle\s!unknown\endcsname\math_unknown_middle
+%
+% \def\math_left
+%   {\ifcsname\??mathleft\normalmeaningless\nexttoken\endcsname
+%      \expandafter\lastnamedcs
+%    \else
+%      \expandafter\math_unknown_left
+%    \fi}
+%
+% \def\math_right
+%   {\ifcsname\??mathright\normalmeaningless\nexttoken\endcsname
+%      \expandafter\lastnamedcs
+%    \else
+%      \expandafter\math_unknown_right
+%    \fi}
+%
+% \def\math_middle
+%   {\ifcsname\??mathmiddle\normalmeaningless\nexttoken\endcsname
+%      \expandafter\lastnamedcs
+%    \else
+%      \expandafter\math_unknown_middle
+%    \fi}
+%
+% \permanent\protected\def\lfence#1%
+%   {\let\nexttoken#1%
+%    \ifcsname\??mathleft\normalmeaningless\nexttoken\endcsname
+%      \expandafter\lastnamedcs
+%    \else
+%      \expandafter\math_unknown_left
+%    \fi}
+%
+% \permanent\protected\def\rfence#1%
+%   {\let\nexttoken#1%
+%    \ifcsname\??mathright\normalmeaningless\nexttoken\endcsname
+%      \expandafter\lastnamedcs
+%    \else
+%      \expandafter\math_unknown_right
+%    \fi}
+%
+% \permanent\protected\def\mfence#1%
+%   {\let\nexttoken#1%
+%    \ifcsname\??mathmiddle\normalmeaningless\nexttoken\endcsname
+%      \expandafter\lastnamedcs
+%    \else
+%      \expandafter\math_unknown_middle
+%    \fi}
 
-\def\math_left
-  {\settrue\c_math_fenced_done
-   \ifcsname\??mathleft\normalmeaningless\nexttoken\endcsname
-     \expandafter\lastnamedcs
-   \else
-     \expandafter\math_unknown_left
-   \fi}
-
-\def\math_right
-  {\settrue\c_math_fenced_done
-   \ifcsname\??mathright\normalmeaningless\nexttoken\endcsname
-     \expandafter\lastnamedcs
-   \else
-     \expandafter\math_unknown_right
-   \fi}
-
-\def\math_middle
-  {\settrue\c_math_fenced_done
-   \ifcsname\??mathmiddle\normalmeaningless\nexttoken\endcsname
-     \expandafter\lastnamedcs
-   \else
-     \expandafter\math_unknown_middle
-   \fi}
-
-\permanent\protected\def\lfence#1%
-  {\settrue\c_math_fenced_done
-   \let\nexttoken#1%
-   \ifcsname\??mathleft\normalmeaningless\nexttoken\endcsname
-     \expandafter\lastnamedcs
-   \else
-     \expandafter\math_unknown_left
-   \fi}
-
-\permanent\protected\def\rfence#1%
-  {\settrue\c_math_fenced_done
-   \let\nexttoken#1%
-   \ifcsname\??mathright\normalmeaningless\nexttoken\endcsname
-     \expandafter\lastnamedcs
-   \else
-     \expandafter\math_unknown_right
-   \fi}
-
-\permanent\protected\def\mfence#1%
-  {\settrue\c_math_fenced_done
-   \let\nexttoken#1%
-   \ifcsname\??mathmiddle\normalmeaningless\nexttoken\endcsname
-     \expandafter\lastnamedcs
-   \else
-     \expandafter\math_unknown_middle
-   \fi}
-
-\normalexpanded{\installmathfencepair {|\detokenize {|}} \Ldoublebar {|\detokenize {|}} \Rdoublebar}
-\normalexpanded{\installmathfencepair {|\detokenize{||}} \Ltriplebar {|\detokenize{||}} \Rtriplebar}
-
-\installmathfencepair \bgroup \Lbrace         \egroup \Rbrace
-\installmathfencepair \egroup \Rbracemirrored \bgroup \Lbracemirrored
-
-\installmathfencepair \letteropenbrace \Lbrace \letterclosebrace \Rbrace % as we escape in mp textexts
-
-\installmathfencepair . \Lnothing             . \Rnothing
-\installmathfencepair . \Rnothingmirrored     . \Lnothingmirrored
-
-\installmathfencepair [ \Lbracket             ] \Rbracket
-\installmathfencepair ] \Rbracketmirrored     [ \Lbracketmirrored
-
-\installmathfencepair ( \Lparenthesis         ) \Rparenthesis
-\installmathfencepair ) \Rparenthesismirrored ( \Lparenthesismirrored
-
-\installmathfencepair < \Langle               > \Rangle
-\installmathfencepair > \Ranglemirrored       < \Langlemirrored
-
-\installmathfencepair / \Lsolidus             / \Rsolidus
-%installmathfencepair / \Rsolidusmirrored     / \Lsolidusmirrored
-
-\installmathfencepair | \Lbar                 | \Rbar
-%installmathfencepair | \Rbarmirrored         | \Lbarmirrored
-
-\installmathfencepair ⌊ \Lfloor               ⌋ \Rfloor
-\installmathfencepair ⌋ \Rfloormirrored       ⌊ \Lfloormirrored
-\installmathfencepair ⌈ \Lceiling             ⌉ \Rceiling
-\installmathfencepair ⌉ \Rceilingmirrored     ⌈ \Lceilingmirrored
-
-\installmathfencepair ⟨ \Langle               ⟩ \Rangle
-\installmathfencepair ⟩ \Ranglemirrored       ⟨ \Langlemirrored
-
-\installmathfencepair ⟪ \Ldoubleangle         ⟫ \Rdoubleangle
-\installmathfencepair ⟫ \Rdoubleanglemirrored ⟪ \Ldoubleanglemirrored
-
-\installmathfencepair ‖ \Ldoublebar           ‖ \Rdoublebar
-%installmathfencepair ‖ \Rdoublebarmirrored   ‖ \Ldoublebarmirrored
-
-\installmathfencepair ⦀ \Ltriplebar           ⦀ \Rtriplebar
-%installmathfencepair ⦀ \Rtriplebarmirrored   ⦀ \Ltriplebarmirrored
-
-% \installmathfencepair { \Lbrace             } \Rbrace
-% \installmathfencepair } \Rbracemirrored     { \Lbracemirrored
-
-\installmathfencepair ⦗ \Linterval            ⦘ \Rinterval
+% \normalexpanded{\installmathfencepair {|\detokenize {|}} \Ldoublebar {|\detokenize {|}} \Rdoublebar}
+% \normalexpanded{\installmathfencepair {|\detokenize{||}} \Ltriplebar {|\detokenize{||}} \Rtriplebar}
+%
+% \installmathfencepair \bgroup \Lbrace         \egroup \Rbrace
+% \installmathfencepair \egroup \Rbracemirrored \bgroup \Lbracemirrored
+%
+% \installmathfencepair \letteropenbrace \Lbrace \letterclosebrace \Rbrace % as we escape in mp textexts
+%
+% \installmathfencepair . \Lnothing             . \Rnothing
+% \installmathfencepair . \Rnothingmirrored     . \Lnothingmirrored
+%
+% \installmathfencepair [ \Lbracket             ] \Rbracket
+% \installmathfencepair ] \Rbracketmirrored     [ \Lbracketmirrored
+%
+% \installmathfencepair ( \Lparenthesis         ) \Rparenthesis
+% \installmathfencepair ) \Rparenthesismirrored ( \Lparenthesismirrored
+%
+% \installmathfencepair < \Langle               > \Rangle
+% \installmathfencepair > \Ranglemirrored       < \Langlemirrored
+%
+% \installmathfencepair / \Lsolidus             / \Rsolidus
+% %installmathfencepair / \Rsolidusmirrored     / \Lsolidusmirrored
+%
+% \installmathfencepair | \Lbar                 | \Rbar
+% %installmathfencepair | \Rbarmirrored         | \Lbarmirrored
+%
+% \installmathfencepair ⌊ \Lfloor               ⌋ \Rfloor
+% \installmathfencepair ⌋ \Rfloormirrored       ⌊ \Lfloormirrored
+% \installmathfencepair ⌈ \Lceiling             ⌉ \Rceiling
+% \installmathfencepair ⌉ \Rceilingmirrored     ⌈ \Lceilingmirrored
+%
+% \installmathfencepair ⟨ \Langle               ⟩ \Rangle
+% \installmathfencepair ⟩ \Ranglemirrored       ⟨ \Langlemirrored
+%
+% \installmathfencepair ⟪ \Ldoubleangle         ⟫ \Rdoubleangle
+% \installmathfencepair ⟫ \Rdoubleanglemirrored ⟪ \Ldoubleanglemirrored
+%
+% \installmathfencepair ‖ \Ldoublebar           ‖ \Rdoublebar
+% %installmathfencepair ‖ \Rdoublebarmirrored   ‖ \Ldoublebarmirrored
+%
+% \installmathfencepair ⦀ \Ltriplebar           ⦀ \Rtriplebar
+% %installmathfencepair ⦀ \Rtriplebarmirrored   ⦀ \Ltriplebarmirrored
+%
+% % \installmathfencepair { \Lbrace             } \Rbrace
+% % \installmathfencepair } \Rbracemirrored     { \Lbracemirrored
+%
+% \installmathfencepair ⦗ \Linterval            ⦘ \Rinterval
 
 \appendtoks
     \ignorediscretionaries % so $\mtext{a|b}$ works, this is ok because it's an \hbox
@@ -728,33 +771,33 @@
 \aliased\let\Lparen \Lparenthesis
 \aliased\let\Rparen \Rparenthesis
 
-\installmathfencepair \lbrace       \Lbrace       \rbrace       \Rbrace
-\installmathfencepair \lbracket     \Lbracket     \rbracket     \Rbracket
-\installmathfencepair \lbrack       \Lbracket     \rbracket     \Rbracket
-\installmathfencepair \lparenthesis \Lparenthesis \rparenthesis \Rparenthesis
-\installmathfencepair \lparent      \Lparenthesis \rparent      \Rparenthesis
-\installmathfencepair \lparen       \Lparenthesis \rparen       \Rparenthesis
-\installmathfencepair \langle       \Langle       \rangle       \Rangle
-\installmathfencepair \llangle      \Ldoubleangle \rrangle      \Rdoubleangle
-%installmathfencepair \lbar         \Lbar         \rbar         \Rbar
-\installmathfencepair \lVert        \Ldoublebar   \rVert        \Rdoublebar
-\installmathfencepair \vert         \Lbar         \vert         \Rbar
-\installmathfencepair \solidus      \Lsolidus     \solidus      \Rsolidus
-\installmathfencepair \lfloor       \Lfloor       \rfloor       \Rfloor
-\installmathfencepair \lceiling     \Lceiling     \rceiling     \Rceiling
-\installmathfencepair \lceil        \Lceiling     \rceil        \Rceiling
+% \installmathfencepair \lbrace       \Lbrace       \rbrace       \Rbrace
+% \installmathfencepair \lbracket     \Lbracket     \rbracket     \Rbracket
+% \installmathfencepair \lbrack       \Lbracket     \rbracket     \Rbracket
+% \installmathfencepair \lparenthesis \Lparenthesis \rparenthesis \Rparenthesis
+% \installmathfencepair \lparent      \Lparenthesis \rparent      \Rparenthesis
+% \installmathfencepair \lparen       \Lparenthesis \rparen       \Rparenthesis
+% \installmathfencepair \langle       \Langle       \rangle       \Rangle
+% \installmathfencepair \llangle      \Ldoubleangle \rrangle      \Rdoubleangle
+% %installmathfencepair \lbar         \Lbar         \rbar         \Rbar
+% \installmathfencepair \lVert        \Ldoublebar   \rVert        \Rdoublebar
+% \installmathfencepair \vert         \Lbar         \vert         \Rbar
+% \installmathfencepair \solidus      \Lsolidus     \solidus      \Rsolidus
+% \installmathfencepair \lfloor       \Lfloor       \rfloor       \Rfloor
+% \installmathfencepair \lceiling     \Lceiling     \rceiling     \Rceiling
+% \installmathfencepair \lceil        \Lceiling     \rceil        \Rceiling
 
-\installmathfencepair \ulcorner     \Luppercorner \urcorner     \Ruppercorner
-\installmathfencepair \llcorner     \Llowercorner \lrcorner     \Rlowercorner
-\installmathfencepair \lmoustache   \Lmoustache   \rmoustache   \Rmoustache
-\installmathfencepair \llbracket    \Lopenbracket \rrbracket    \Ropenbracket
-\installmathfencepair \lgroup       \Lgroup       \rgroup       \Rgroup
+% \installmathfencepair \ulcorner     \Luppercorner \urcorner     \Ruppercorner
+% \installmathfencepair \llcorner     \Llowercorner \lrcorner     \Rlowercorner
+% \installmathfencepair \lmoustache   \Lmoustache   \rmoustache   \Rmoustache
+% \installmathfencepair \llbracket    \Lopenbracket \rrbracket    \Ropenbracket
+% \installmathfencepair \lgroup       \Lgroup       \rgroup       \Rgroup
 
-\installmathfencepair \linterval    \Linterval    \rinterval    \Rinterval
-%installmathfencepair \linterv      \Linterval    \rinterv      \Rinterval
-\installmathfencepair \lointerval   \Linterval    \rointerval   \Rinterval
-\installmathfencepair \llointerval  \Llointerval  \rlointerval  \Rlointerval
-\installmathfencepair \lrointerval  \Lrointerval  \rrointerval  \Rrointerval
+% \installmathfencepair \linterval    \Linterval    \rinterval    \Rinterval
+% %installmathfencepair \linterv      \Linterval    \rinterv      \Rinterval
+% \installmathfencepair \lointerval   \Linterval    \rointerval   \Rinterval
+% \installmathfencepair \llointerval  \Llointerval  \rlointerval  \Rlointerval
+% \installmathfencepair \lrointerval  \Lrointerval  \rrointerval  \Rrointerval
 
 \aliased\let\textlbar\lbar \aliased\let\mathlbar\Lbar
 \aliased\let\textrbar\lbar \aliased\let\mathrbar\Rbar
@@ -764,20 +807,31 @@
 
 % \setupmathfences[color=darkgreen]
 
-\permanent\protected\def\{{\mathortext\lbrace      \letterleftbrace       } % or maybe a chardef
-\permanent\protected\def\}{\mathortext\rbrace      \letterrightbrace      } % or maybe a chardef
-\permanent\protected\def\[{\mathortext\lbracket    \letterleftbracket     } % or maybe a chardef
-\permanent\protected\def\]{\mathortext\rbracket    \letterrightbracket    } % or maybe a chardef
-\permanent\protected\def\({\mathortext\lparenthesis\letterleftparenthesis } % or maybe a chardef
-\permanent\protected\def\){\mathortext\rparenthesis\letterrightparenthesis} % or maybe a chardef
-\permanent\protected\def\|{\mathortext\vert        \letterbar             } % or maybe a chardef
-%permanent\protected\def\/{\mathortext\solidus     \letterslash           } % or maybe a chardef
+% \permanent\protected\def\{{\mathortext\lbrace      \letterleftbrace       } % or maybe a chardef
+% \permanent\protected\def\}{\mathortext\rbrace      \letterrightbrace      } % or maybe a chardef
+% \permanent\protected\def\[{\mathortext\lbracket    \letterleftbracket     } % or maybe a chardef
+% \permanent\protected\def\]{\mathortext\rbracket    \letterrightbracket    } % or maybe a chardef
+% \permanent\protected\def\({\mathortext\lparenthesis\letterleftparenthesis } % or maybe a chardef
+% \permanent\protected\def\){\mathortext\rparenthesis\letterrightparenthesis} % or maybe a chardef
+% \permanent\protected\def\|{\mathortext\vert        \letterbar             } % or maybe a chardef
+% %permanent\protected\def\/{\mathortext\solidus     \letterslash           } % or maybe a chardef
+%
+% \installmathfencepair \{ \Lbrace        \} \Rbrace
+% \installmathfencepair \[ \Lbracket      \] \Rbracket
+% \installmathfencepair \( \Lparenthesis  \) \Rparenthesis
+% \installmathfencepair \< \Langle        \> \Rangle
+% \installmathfencepair \| \Lbar          \| \Rbar
 
-\installmathfencepair \{ \Lbrace        \} \Rbrace
-\installmathfencepair \[ \Lbracket      \] \Rbracket
-\installmathfencepair \( \Lparenthesis  \) \Rparenthesis
-\installmathfencepair \< \Langle        \> \Rangle
-\installmathfencepair \| \Lbar          \| \Rbar
+% isn't that already the case .. still needed in lua mode ?
+
+\aliased\let\{\letterleftbrace
+\aliased\let\}\letterrightbrace
+\aliased\let\[\letterleftbracket
+\aliased\let\]\letterrightbracket
+\aliased\let\(\letterleftparenthesis
+\aliased\let\)\letterrightparenthesis
+\aliased\let\|\letterbar
+%aliased\let\/\letterslash % italic correction
 
 \popoverloadmode
 
@@ -852,11 +906,6 @@
 % \right\rintegral
 
 %definemathfence [fancybracket] [bracket] [command=yes,color=red]
-
-% experimental accents:
-%
-% \definemathoverextensible [top] [hoed]  ["FE302]
-% \definemathoverextensible [top] [slang] ["FE303]
 
 %D The nested fences recovery code is needed for mathml and the original
 %D code can still be found in the mkiv file.
@@ -1043,5 +1092,15 @@
     \integerdef\c_math_fence_level\minusone
     \c_math_fence_nesting\zerocount
 \to \everymathematics
+
+%D Experiment:
+
+\permanent\protected\def\autofences
+  {\setmathoptions\mathopencode\numexpression
+      \setmathoptions\mathopencode bor \autoinjectclassoptioncode
+   \relax
+   \setmathoptions\mathclosecode\numexpression
+     \setmathoptions\mathclosecode bor \autoinjectclassoptioncode
+   \relax}
 
 \protect

@@ -876,6 +876,7 @@
 		<cd:constant name='frameradius' value='kaderstraal'/>
 		<cd:constant name='frames' value='hokjes'/>
 		<cd:constant name='freeregion' value='vrijgebied'/>
+		<cd:constant name='freezespacing' value='freezespacing'/>
 		<cd:constant name='from' value='van'/>
 		<cd:constant name='functioncolor' value='functioncolor'/>
 		<cd:constant name='functionstyle' value='functionstyle'/>
@@ -956,6 +957,7 @@
 		<cd:constant name='lastpubsep' value='lastpubsep'/>
 		<cd:constant name='layout' value='layout'/>
 		<cd:constant name='left' value='links'/>
+		<cd:constant name='leftclass' value='leftclass'/>
 		<cd:constant name='leftcolor' value='linkerkleur'/>
 		<cd:constant name='leftcompoundhyphen' value='linkerkoppelteken'/>
 		<cd:constant name='leftedge' value='linkerrand'/>
@@ -1014,6 +1016,7 @@
 		<cd:constant name='menu' value='menu'/>
 		<cd:constant name='method' value='methode'/>
 		<cd:constant name='middle' value='midden'/>
+		<cd:constant name='middleclass' value='middleclass'/>
 		<cd:constant name='middlecolor' value='middenkleur'/>
 		<cd:constant name='middlecommand' value='middencommando'/>
 		<cd:constant name='middlesource' value='middlesource'/>
@@ -1060,6 +1063,8 @@
 		<cd:constant name='numberconversionset' value='numberconversionset'/>
 		<cd:constant name='numberdistance' value='nummerafstand'/>
 		<cd:constant name='numbering' value='nummeren'/>
+		<cd:constant name='numberlocation' value='numberlocation'/>
+		<cd:constant name='numbermethod' value='nummermethode'/>
 		<cd:constant name='numberorder' value='numberorder'/>
 		<cd:constant name='numberprefix' value='numberprefix'/>
 		<cd:constant name='numbersegments' value='numbersegments'/>
@@ -1070,6 +1075,7 @@
 		<cd:constant name='numberstopper' value='numberstopper'/>
 		<cd:constant name='numberstrut' value='nummerstrut'/>
 		<cd:constant name='numberstyle' value='nummerletter'/>
+		<cd:constant name='numberthreshold' value='numberthreshold'/>
 		<cd:constant name='numberwidth' value='nummerbreedte'/>
 		<cd:constant name='nx' value='nx'/>
 		<cd:constant name='ny' value='ny'/>
@@ -1123,6 +1129,7 @@
 		<cd:constant name='palet' value='palet'/>
 		<cd:constant name='paper' value='papier'/>
 		<cd:constant name='paragraph' value='alinea'/>
+		<cd:constant name='penalties' value='penalties'/>
 		<cd:constant name='period' value='period'/>
 		<cd:constant name='place' value='plaatsen'/>
 		<cd:constant name='placehead' value='plaatskop'/>
@@ -1176,6 +1183,7 @@
 		<cd:constant name='reverse' value='omgekeerd'/>
 		<cd:constant name='right' value='rechts'/>
 		<cd:constant name='rightchars' value='rightchars'/>
+		<cd:constant name='rightclass' value='rightclass'/>
 		<cd:constant name='rightcolor' value='rechterkleur'/>
 		<cd:constant name='rightcompoundhyphen' value='rechterkoppelteken'/>
 		<cd:constant name='rightedge' value='rechterrand'/>

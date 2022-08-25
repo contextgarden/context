@@ -13,6 +13,9 @@ if not modules then modules = { } end modules ['math-tag'] = {
 -- todo: tracing
 -- todo: maybe use lpeg matchers
 
+-- todo: prime
+-- todo: middle in fraction
+
 local find, match = string.find, string.match
 local insert, remove, concat = table.insert, table.remove, table.concat
 
@@ -32,6 +35,16 @@ local getattr           = nuts.getattr
 local getattrlist       = nuts.getattrlist
 local setattr           = nuts.setattr
 local getwidth          = nuts.getwidth
+
+local getnumerator      = nuts.getnumerator
+local getdenominator    = nuts.getdenominator
+local getdelimiter      = nuts.getdelimiter
+local getleftdelimiter  = nuts.getleftdelimiter
+local getrightdelimiter = nuts.getrightdelimiter
+local getdegree         = nuts.getdegree
+local gettop            = nuts.gettop
+local getbottom         = nuts.getbottom
+local getchoice         = nuts.getchoice
 
 local getnucleus        = nuts.getnucleus
 local getsub            = nuts.getsub
@@ -416,10 +429,13 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     end
                 end
             elseif id == fraction_code then
-                local num   = getfield(start,"num")
-                local denom = getfield(start,"denom")
-                local left  = getfield(start,"left")
-                local right = getfield(start,"right")
+                --
+                -- if middle then we have a stacker!
+                --
+                local num   = getnumerator(start)
+                local denom = getdenominator(start)
+                local left  = getleftdelimiter(start)
+                local right = getrightdelimiter(start)
                 if left then
                    setattr(left,a_tagged,start_tagged("mo"))
                    process(left)
@@ -435,10 +451,10 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     stop_tagged()
                 end
             elseif id == choice_code then
-                local display      = getfield(start,"display")
-                local text         = getfield(start,"text")
-                local script       = getfield(start,"script")
-                local scriptscript = getfield(start,"scriptscript")
+                local display      = getchoice(start,1)
+                local text         = getchoice(start,2)
+                local script       = getchoice(start,3)
+                local scriptscript = getchoice(start,4)
                 if display then
                     process(display)
                 end
@@ -452,28 +468,28 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     process(scriptscript)
                 end
             elseif id == fence_code then
-                local delim = getfield(start,"delimiter")
+                local delimiter = getdelimiter(start)
                 if subtype == leftfence_code then
                     -- left
                     local properties = { }
                     insert(fencesstack,properties)
                     setattr(start,a_tagged,start_tagged("mfenced",properties)) -- needs checking
-                    if delim then
+                    if delimiter then
                         start_tagged("ignore")
-                        local chr = getchar(delim)
+                        local chr = getchar(delimiter)
                         if chr ~= 0 then
                             properties.left = chr
                         end
-                        process(delim)
+                        process(delimiter)
                         stop_tagged()
                     end
                     start_tagged("mrow") -- begin of subsequence
                 elseif subtype == middlefence_code then
                     -- middle
-                    if delim then
+                    if delimiter then
                         start_tagged("ignore")
                         local top = fencesstack[#fencesstack]
-                        local chr = getchar(delim)
+                        local chr = getchar(delimiter)
                         if chr ~= 0 then
                             local mid = top.middle
                             if mid then
@@ -482,7 +498,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                 top.middle = { chr }
                             end
                         end
-                        process(delim)
+                        process(delimiter)
                         stop_tagged()
                     end
                     stop_tagged()        -- end of subsequence
@@ -493,13 +509,13 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                         report_tags("missing right fence")
                         properties = { }
                     end
-                    if delim then
+                    if delimiter then
                         start_tagged("ignore")
-                        local chr = getchar(delim)
+                        local chr = getchar(delimiter)
                         if chr ~= 0 then
                             properties.right = chr
                         end
-                        process(delim)
+                        process(delimiter)
                         stop_tagged()
                     end
                     stop_tagged() -- end of subsequence
@@ -508,11 +524,17 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     -- can't happen
                 end
             elseif id == radical_code then
-                local left   = getfield(start,"left")
-                local degree = getfield(start,"degree")
+                local left   = getleftdelimiter(start)
+                local right  = getrightdelimiter(start)
+                local degree = getdegree(start)
                 if left then
                     start_tagged("ignore")
                     process(left) -- root symbol, ignored
+                    stop_tagged()
+                end
+                if right then
+                    start_tagged("ignore")
+                    process(lright) -- actuarian symbol, ignored
                     stop_tagged()
                 end
                 if degree and hascontent(degree) then
@@ -526,29 +548,29 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     stop_tagged()
                 end
             elseif id == accent_code then
-                local topaccent = getfield(start,"topaccent")
-                local botaccent = getfield(start,"botaccent")
-                if botaccent then
+                local topaccent = gettop(start)
+                local bottomaccent = getbottom(start)
+                if bottomaccent then
                     if topaccent then
                         setattr(start,a_tagged,start_tagged("munderover", {
                             accent      = true,
                             top         = getunicode(topaccent),
-                            bottom      = getunicode(botaccent),
+                            bottom      = getunicode(bottomaccent),
                             topfixed    = subtype == fixedtopaccent_code or subtype == fixedbothaccent_code,
                             bottomfixed = subtype == fixedbottomaccent_code or subtype == fixedbothaccent_code,
                         }))
                         processsubsup(start)
-                        process(botaccent)
+                        process(bottomaccent)
                         process(topaccent)
                         stop_tagged()
                     else
                         setattr(start,a_tagged,start_tagged("munder", {
                             accent      = true,
-                            bottom      = getunicode(botaccent),
+                            bottom      = getunicode(bottomaccent),
                             bottomfixed = subtype == fixedbottomaccent_code or subtype == fixedbothaccent_code,
                         }))
                         processsubsup(start)
-                        process(botaccent)
+                        process(bottomaccent)
                         stop_tagged()
                     end
                 elseif topaccent then

@@ -40,10 +40,19 @@ local function register_extensible(font,char,style,box)
     local fontdata = chardata[font]
     local oldchar  = fontdata[char]
     local unicode  = oldchar.unicode or char
-    local private = fonts.helpers.setboxdirectly(font,unicode,box)
+-- we cannot have self referencing t3 fonts
+local oldcommands = oldchar.oldcommands
+local newcommands = oldchar.commands
+if oldcommands then
+    oldchar.commands = oldcommands
+end
+    local private  = fonts.helpers.setboxdirectly(font,unicode,box)
     -- we saved a scaled glyph stream so we now use an unscaled one ...
     local g = new_glyph(font,private,al)
     local n = new_hlist(g)
+if newcommands then
+    oldchar.commands = newcommands
+end
 
  -- local newchar = {
  --     unicode = unicode,

@@ -45,6 +45,15 @@ return {
                  -- keep    = true, -- keep the text size prime (aka minute)
                 },
                 {
+                    tweak = "fixslashes",
+                },
+                {
+                    tweak = "fixellipses",
+                },
+                {
+                    tweak = "addbreve",
+                },
+                {
                     tweak = "checkspacing",
                 },
                 {
@@ -65,7 +74,126 @@ return {
                  -- }
                 },
                 {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "addscripts",
+                },
+                {
+                    tweak = "accentdimensions",
+                },
+                {
                     tweak = "addrules",
+                },
+                {
+                    tweak = "addarrows",
+                    left  = 0.1,
+                    right = 0.1,
+                    slack = 0.20,
+                    list  = {
+                        [0x21A9] = false,
+                        [0x21AA] = false,
+                        [0x2190] = false,
+                        [0x2192] = false,
+                        [0x219E] = false,
+                        [0x21A0] = false,
+--                         [0x21A6] = false,
+--                         [0x21CB] = false,
+--                         [0x21CC] = false,
+                    }
+                }, 
+                {
+                    -- For upright alphabets, we unset the anchor.
+                    -- This means that accents are placed
+                    -- centered over the character
+                     tweak = "wipeanchors",
+                 --  list  = { 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58 }, -- todo: ranges
+                     list = {
+                        "digitsbold",
+                        "digitsdoublestruck",
+                        "digitsmonospace",
+                        "digitsnormal",
+                        "digitssansserifbold",
+                        "digitssansserifnormal",
+                        "lowercasebold",
+                        "lowercaseboldfraktur",
+                        "lowercasedoublestruck",
+                        "lowercasefraktur",
+                        "lowercasegreekbold",
+                        "lowercasegreeknormal",
+                        "lowercasegreeksansserifbold",
+                        "lowercasemonospace",
+                        "lowercasenormal",
+                        "lowercasesansserifbold",
+                        "lowercasesansserifnormal",
+                        "uppercasebold",
+                        "uppercaseboldfraktur",
+                        "uppercasedoublestruck",
+                        "uppercasefraktur",
+                        "uppercasegreekbold",
+                        "uppercasegreeknormal",
+                        "uppercasegreeksansserifbold",
+                        "uppercasemonospace",
+                        "uppercasenormal", -- they are italic!
+                        "uppercasesansserifbold",
+                        "uppercasesansserifnormal",
+                    },
+                },
+                {
+                    -- For non-italic alphabets we
+                    -- remove italic correction.
+                    tweak = "wipeitalics",
+                    list  = {
+                     -- "digitsbold",
+                     -- "digitsdoublestruck",
+                     -- "digitsmonospace",
+                     -- "digitsnormal",
+                     -- "digitssansserifbold",
+                     -- "digitssansserifnormal",
+                     -- "lowercasebold",
+                     -- "lowercaseboldfraktur",
+                     -- "lowercasedoublestruck",
+                     -- "lowercasefraktur",
+                        "lowercasemonospace",
+                        "lowercasenormal",
+                     -- "lowercasesansserifbold",
+                     -- "lowercasesansserifnormal",
+                     -- "lowercasegreeknormal",
+                        "uppercasebold",
+                     -- "uppercaseboldfraktur",
+                     -- "uppercasedoublestruck",
+                     -- "uppercasefraktur",
+                     -- "uppercasegreekbold",
+                     -- "uppercasegreeknormal",
+                     -- "uppercasegreeksansserifbold",
+                        "uppercasemonospace",
+                        "uppercasesansserifbold",
+                        "uppercasesanserifnormal",
+                    },
+                 },
+                 {
+                    -- This one fakes margins to get larger/smaller accents
+                    -- with for example \widetilde.
+                    -- see lm for many examples
+                    tweak = "margins",
+                    list  = {
+                    },
+                },               
+                {
+                    tweak = "addrules",
+                },
+                {
+                    tweak   = "addbars",
+                    advance = 0.1,
+                },
+                {
+                    tweak = "addactuarian",
+                },
+                {
+                    tweak = "addequals",
+                },
+                {
+                    tweak = "wipecues",
                 },
             },
         },

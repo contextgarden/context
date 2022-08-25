@@ -891,4 +891,20 @@
    \clf_setlanguageoptions{\askedlanguage}{#2}%
    \endgroup}
 
+% \startluacode
+%     table.save("oeps-fixes.llg", {
+%         name    = "demo",
+%         options = {
+%             { patterns = { fio  = "f|io" }, words = [[ fioot fiots ]] },
+%             { patterns = { fio  = "t|h"  }, words = [[ this that ]]   },
+%         },
+%     })
+% \stopluacode
+%
+% \setuplanguage[en][goodies={oeps-fixes.llg}] \setupbodyfont[ebgaramond]
+%
+% \starttext
+%     fiets fiots fiats fioot this that
+% \stoptext
+
 \protect \endinput

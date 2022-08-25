@@ -6,22 +6,56 @@ if not modules then modules = { } end modules ['font-mpf'] = {
     license   = "see context related readme files"
 }
 
-local formatters        = string.formatters
-local sortedhash        = table.sortedhash
+local formatters     = string.formatters
+local sortedhash     = table.sortedhash
 
-local addcharacters     = fonts.constructors.addcharacters
-local fontdata          = fonts.hashes.identifiers
+local addcharacters  = fonts.constructors.addcharacters
+local fontdata       = fonts.hashes.identifiers
+local fontchars      = fonts.hashes.characters
 
-local otf               = fonts.handlers.otf
-local otfregister       = otf.features.register
+local otf            = fonts.handlers.otf
+local otfregister    = otf.features.register
 
------ getshapes         = fonts.dropins.getshapes
+----- getshapes      = fonts.dropins.getshapes
 
-local register          = fonts.collections.register
-local checkenabled      = fonts.collections.checkenabled
-local newprivateslot    = fonts.helpers.newprivateslot
+local register       = fonts.collections.register
+local checkenabled   = fonts.collections.checkenabled
+local newprivateslot = fonts.helpers.newprivateslot
 
-local currentfont       = font.current
+local currentfont    = font.current
+
+--
+
+local callbacks      = fonts.callbacks or { }
+fonts.callbacks      = callbacks
+
+function callbacks.devirtualize(chardata,f,c)
+    if chardata.commands then
+        local h = node.hpack(nodes.pool.glyph(f,c))
+        local p = setboxdirectly(f,c,h)
+        chardata.oldcommands = chardata.commands
+        chardata.commands = { { "char", p } }
+        chardata.callback = false
+    end
+end
+
+local function processcallback(f,c)
+    local characters = fontchars[f]
+    local chardata   = characters[c]
+    if chardata then
+        local callback = chardata.callback
+        if callback then
+            local action = type(callback) == "function" and callback or callbacks[callback]
+            if action then
+                action(chardata,f,c)
+            end
+        end
+    end
+end
+
+callback.register("process_character",processcallback)
+
+callbacks.callback = processcallback
 
 -- hm, seems to gobble the first \char
 
@@ -84,7 +118,7 @@ local function setboxglyph(specification)
     end
 end
 
-function fonts.helpers.setboxdirectly(font,unicode,box) -- hash based on wd/ht/dp
+local function setboxdirectly(font,unicode,box) -- hash based on wd/ht/dp
     if box then
         local tfmdata      = fontdata[font]
         local glyphboxes   = (tfmdata.glyphboxes or 0) + 1
@@ -107,6 +141,8 @@ function fonts.helpers.setboxdirectly(font,unicode,box) -- hash based on wd/ht/d
         return private
     end
 end
+
+fonts.helpers.setboxdirectly = setboxdirectly
 
 local boxes = table.setmetatableindex("table")
 

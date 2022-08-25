@@ -101,6 +101,7 @@
 
 % extensions, order matters
 
+\registerctxluafile{font-imp-checks}{autosuffix}
 \registerctxluafile{font-imp-ligatures}{autosuffix}
 \registerctxluafile{font-imp-tex}{}
 \registerctxluafile{font-imp-reorder}{}

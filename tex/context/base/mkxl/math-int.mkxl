@@ -54,6 +54,6 @@
 \to \everyswitchmathematics
 
 \setupmathematics
-  [\c!integral=nolimits]
+  [\c!integral=auto]
 
 \protect \endinput

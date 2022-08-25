@@ -1,4 +1,4 @@
- %D \module
+%D \module
 %D   [       file=math-ini,
 %D        version=2008.01.02,
 %D          title=\CONTEXT\ Math Macros,
@@ -182,11 +182,35 @@
 \setnewconstant\mathallcode             \mathclassvalue all
 \setnewconstant\mathfakecode            \mathclassvalue fake
 
-%setnewconstant\mathtopaccentcode     \mathclassvalue topaccent % these are private and above 31
-%setnewconstant\mathbotaccentcode     \mathclassvalue botaccent % these are private and above 31
-%setnewconstant\mathdelimitercode     \mathclassvalue delimiter % these are private and above 31
-%setnewconstant\mathrootcode          \mathclassvalue root      % these are private and above 31
-%setnewconstant\mathprimecode         \mathclassvalue prime     % these are private and above 31
+%D \starttyping
+%D \enabletrackers[math.suspicious]
+%D
+%D \Umathchardef \foo \mathmaybeordinarycode 0 `o
+%D \Umathchardef \oof \mathmayberelationcode 0 `=
+%D \Umathchardef \ofo \mathmaybebinarycode   0 `+
+%D
+%D \starttext
+%D     $ \foo _ 1 \ofo \foo _ 2 \oof \foo _ 3 + 4 $
+%D \stoptext
+%D \stoptyping
+%D
+%D Gives:
+%D
+%D \starttyping
+%D mathematics     > suspicious > class 36, U+1D45C 𝑜
+%D mathematics     > suspicious > class 38, U+0002B +
+%D mathematics     > suspicious > class 37, U+0003D =
+%D \stoptyping
+
+\setnewconstant\mathmaybeordinarycode   \mathclassvalue maybeordinary
+\setnewconstant\mathmayberelationcode   \mathclassvalue mayberelation
+\setnewconstant\mathmaybebinarycode     \mathclassvalue maybebinary
+
+%setnewconstant\mathtopaccentcode     \mathclassvalue topaccent    % these are private and above 31
+%setnewconstant\mathbottomaccentcode  \mathclassvalue bottomaccent % these are private and above 31
+%setnewconstant\mathdelimitercode     \mathclassvalue delimiter    % these are private and above 31
+%setnewconstant\mathrootcode          \mathclassvalue root         % these are private and above 31
+%setnewconstant\mathprimecode         \mathclassvalue prime        % these are private and above 31
 
 %letmathspacing \mathimaginarycode    \mathordinarycode \mathordinarycode \mathordinarycode \mathordinarycode
 %letmathspacing \mathdifferentialcode \mathordinarycode \mathordinarycode \mathordinarycode \mathordinarycode
@@ -202,6 +226,10 @@
 \copymathspacing \mathfunctioncode     \mathoperatorcode
 \copymathspacing \mathwrappedcode      \mathfractioncode
 \copymathspacing \mathunarycode        \mathordinarycode
+
+\copymathspacing \mathmaybeordinarycode  \mathordinarycode
+\copymathspacing \mathmayberelationcode  \mathrelationcode
+\copymathspacing \mathmaybebinarycode    \mathbinarycode
 
 \setnewconstant\mathlimopcode \plusone
 \setnewconstant\mathnolopcode \plusone
@@ -543,6 +571,11 @@
     \noitaliccorrectionclassoptioncode
  % +\middlefenceclassoptioncode
    +\raiseprimeclassoptioncode
+   +\carryoverlefttopkernclassoptioncode
+   +\carryoverleftbottomkernclassoptioncode
+   +\carryoverrighttopkernclassoptioncode
+   +\carryoverrightbottomkernclassoptioncode
+   +\preferdelimiterdimensionsclassoptioncode
 \relax
 
 \setmathoptions\mathfractioncode\numexpr
@@ -567,9 +600,10 @@
 
 \setmathoptions\mathaccentcode\numexpr
     \defaultmathclassoptions
+   +\autoinjectclassoptioncode
 \relax
 
-% \m{m^2/x__3}
+% ord spacing but with support for \m{m^2/x__3}
 
 \setmathoptions\mathdivisioncode\numexpr
     \nopreslackclassoptioncode
@@ -673,9 +707,11 @@
 
 %D A few compatibility helpers:
 
-\permanent\def\Umathbotaccent{\Umathaccent \s!bottom }
-\permanent\def\Umathtopaccent{\Umathaccent \s!top    }
-\permanent\def\Umathaccents  {\Umathaccent \s!both   } % strange highlighting
+\permanent\def\Umathbottomaccent{\Umathaccent \s!bottom }
+\permanent\def\Umathtopaccent   {\Umathaccent \s!top    }
+\permanent\def\Umathaccents     {\Umathaccent \s!both   } % strange highlighting
+
+\aliased\let\Umathbotaccent\Umathbottomaccent
 
 %D The attributes that we will use (todo: pack some into one but uglier code):
 
@@ -690,7 +726,7 @@
 \definesystemattribute[mathitalics]    [public]
 \definesystemattribute[mathkernpairs]  [public]
 \definesystemattribute[mathbidi]       [public]
-\definesystemattribute[mathdomain]     [public]
+%definesystemattribute[mathdomain]     [public]
 \definesystemattribute[mathcollapsing] [public]
 \definesystemattribute[mathunstack]    [public]
 \definesystemattribute[mathvariant]    [public]
@@ -1062,7 +1098,7 @@
     \inherited\setmathspacing \mathordinarycode    \mathrelationcode     \allsplitstyles  \thickmuskip
     \inherited\setmathspacing \mathordinarycode    \mathrelationcode     \allscriptstyles \pettymuskip
   % \inherited\setmathspacing \mathordinarycode    \mathopencode         \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathordinarycode    \mathmiddlecode       \allsplitstyles  \medmuskip
+    \inherited\setmathspacing \mathordinarycode    \mathmiddlecode       \allsplitstyles  \thickmuskip
     \inherited\setmathspacing \mathordinarycode    \mathmiddlecode       \allscriptstyles \pettymuskip
   % \inherited\setmathspacing \mathordinarycode    \mathclosecode        \allmathstyles   \zeromuskip
   % \inherited\setmathspacing \mathordinarycode    \mathpunctuationcode  \allmathstyles   \zeromuskip
@@ -1081,7 +1117,7 @@
     \inherited\setmathspacing \mathoperatorcode    \mathrelationcode     \allsplitstyles  \thickmuskip
     \inherited\setmathspacing \mathoperatorcode    \mathrelationcode     \allscriptstyles \pettymuskip
   % \inherited\setmathspacing \mathoperatorcode    \mathopencode         \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathoperatorcode    \mathmiddlecode       \allsplitstyles  \medmuskip
+    \inherited\setmathspacing \mathoperatorcode    \mathmiddlecode       \allsplitstyles  \thickmuskip
     \inherited\setmathspacing \mathoperatorcode    \mathmiddlecode       \allscriptstyles \pettymuskip
   % \inherited\setmathspacing \mathoperatorcode    \mathclosecode        \allmathstyles   \zeromuskip
   % \inherited\setmathspacing \mathoperatorcode    \mathpunctuationcode  \allmathstyles   \zeromuskip
@@ -1100,7 +1136,7 @@
  %% \inherited\setmathspacing \mathbinarycode      \mathrelationcode     \allmathstyles   \zeromuskip
     \inherited\setmathspacing \mathbinarycode      \mathopencode         \allsplitstyles  \medmuskip
     \inherited\setmathspacing \mathbinarycode      \mathopencode         \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathbinarycode      \mathmiddlecode       \allsplitstyles  \medmuskip
+    \inherited\setmathspacing \mathbinarycode      \mathmiddlecode       \allsplitstyles  \thickmuskip
     \inherited\setmathspacing \mathbinarycode      \mathmiddlecode       \allscriptstyles \pettymuskip
  %% \inherited\setmathspacing \mathbinarycode      \mathclosecode        \allmathstyles   \zeromuskip
     \inherited\setmathspacing \mathbinarycode      \mathpunctuationcode  \allsplitstyles  \medmuskip
@@ -1179,7 +1215,7 @@
     \inherited\setmathspacing \mathpunctuationcode \mathrelationcode     \allscriptstyles \pettymuskip
     \inherited\setmathspacing \mathpunctuationcode \mathopencode         \allsplitstyles  \thinmuskip
     \inherited\setmathspacing \mathpunctuationcode \mathopencode         \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathmiddlecode       \allsplitstyles  \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathmiddlecode       \allsplitstyles  \thickmuskip
     \inherited\setmathspacing \mathpunctuationcode \mathmiddlecode       \allscriptstyles \pettymuskip
     \inherited\setmathspacing \mathpunctuationcode \mathclosecode        \allsplitstyles  \thinmuskip
     \inherited\setmathspacing \mathpunctuationcode \mathclosecode        \allscriptstyles \pettymuskip
@@ -1203,7 +1239,7 @@
     \inherited\setmathspacing \mathconstructcode   \mathrelationcode     \allscriptstyles \pettymuskip
     \inherited\setmathspacing \mathconstructcode   \mathopencode         \allsplitstyles  \thinmuskip
     \inherited\setmathspacing \mathconstructcode   \mathopencode         \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathconstructcode   \mathmiddlecode       \allsplitstyles  \thinmuskip
+    \inherited\setmathspacing \mathconstructcode   \mathmiddlecode       \allsplitstyles  \thickmuskip
     \inherited\setmathspacing \mathconstructcode   \mathmiddlecode       \allscriptstyles \pettymuskip
   % \inherited\setmathspacing \mathconstructcode   \mathclosecode        \allmathstyles   \zeromuskip
     \inherited\setmathspacing \mathconstructcode   \mathpunctuationcode  \allsplitstyles  \thinmuskip
@@ -1224,7 +1260,7 @@
     \inherited\setmathspacing \mathellipsiscode   \mathrelationcode     \allscriptstyles \pettymuskip
     \inherited\setmathspacing \mathellipsiscode   \mathopencode         \allsplitstyles  \thinmuskip
     \inherited\setmathspacing \mathellipsiscode   \mathopencode         \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathmiddlecode       \allsplitstyles  \thinmuskip
+    \inherited\setmathspacing \mathellipsiscode   \mathmiddlecode       \allsplitstyles  \thickmuskip
     \inherited\setmathspacing \mathellipsiscode   \mathmiddlecode       \allscriptstyles \pettymuskip
   % \inherited\setmathspacing \mathellipsiscode   \mathclosecode        \allmathstyles   \zeromuskip
     \inherited\setmathspacing \mathellipsiscode   \mathpunctuationcode  \allsplitstyles  \thinmuskip
@@ -1249,7 +1285,7 @@
     \inherited\setmathspacing \mathfractioncode    \mathrelationcode     \allscriptstyles \pettymuskip
     \inherited\setmathspacing \mathfractioncode    \mathopencode         \allsplitstyles  \thinmuskip
     \inherited\setmathspacing \mathfractioncode    \mathopencode         \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathfractioncode    \mathmiddlecode       \allsplitstyles  \medmuskip
+    \inherited\setmathspacing \mathfractioncode    \mathmiddlecode       \allsplitstyles  \thickmuskip
     \inherited\setmathspacing \mathfractioncode    \mathmiddlecode       \allscriptstyles \pettymuskip
     \inherited\setmathspacing \mathfractioncode    \mathclosecode        \allmathstyles   \pettymuskip
   % \inherited\setmathspacing \mathfractioncode    \mathpunctuationcode  \allmathstyles   \zeromuskip
@@ -1270,7 +1306,8 @@
     \inherited\setmathspacing \mathradicalcode     \mathrelationcode     \allsplitstyles  \thickmuskip
     \inherited\setmathspacing \mathradicalcode     \mathrelationcode     \allscriptstyles \pettymuskip
   % \inherited\setmathspacing \mathradicalcode     \mathopencode         \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathradicalcode     \mathmiddlecode       \allmathstyles   \zeromuskip
+    \inherited\setmathspacing \mathradicalcode     \mathmiddlecode       \allsplitstyles  \thickmuskip
+    \inherited\setmathspacing \mathradicalcode     \mathmiddlecode       \allscriptstyles \pettymuskip
   % \inherited\setmathspacing \mathradicalcode     \mathclosecode        \allmathstyles   \zeromuskip
   % \inherited\setmathspacing \mathradicalcode     \mathpunctuationcode  \allmathstyles   \zeromuskip
     \inherited\setmathspacing \mathradicalcode     \mathconstructcode    \allsplitstyles  \thinmuskip
@@ -1282,24 +1319,29 @@
     \inherited\setmathspacing \mathradicalcode     \mathradicalcode      \allsplitstyles  \thinmuskip
     \inherited\setmathspacing \mathradicalcode     \mathradicalcode      \allscriptstyles \pettymuskip
     %
-    \inherited\setmathspacing \mathmiddlecode      \mathordinarycode     \allsplitstyles  \medmuskip
+    \inherited\setmathspacing \mathmiddlecode      \mathordinarycode     \allsplitstyles  \thickmuskip
     \inherited\setmathspacing \mathmiddlecode      \mathordinarycode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathoperatorcode     \allmathstyles   \thinmuskip
+    \inherited\setmathspacing \mathmiddlecode      \mathoperatorcode     \allmathstyles   \thickmuskip
     \inherited\setmathspacing \mathmiddlecode      \mathbinarycode       \allsplitstyles  \medmuskip
     \inherited\setmathspacing \mathmiddlecode      \mathbinarycode       \allscriptstyles \pettymuskip
     \inherited\setmathspacing \mathmiddlecode      \mathrelationcode     \allsplitstyles  \thickmuskip
     \inherited\setmathspacing \mathmiddlecode      \mathrelationcode     \allscriptstyles \pettymuskip
-  % \inherited\setmathspacing \mathmiddlecode      \mathopencode         \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathmiddlecode      \mathmiddlecode       \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathmiddlecode      \mathclosecode        \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathmiddlecode      \mathpunctuationcode  \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathconstructcode    \allsplitstyles  \thinmuskip
+    \inherited\setmathspacing \mathmiddlecode      \mathopencode         \allsplitstyles  \thickmuskip
+    \inherited\setmathspacing \mathmiddlecode      \mathopencode         \allsplitstyles  \pettymuskip
+    \inherited\setmathspacing \mathmiddlecode      \mathmiddlecode       \allsplitstyles  \thickmuskip
+    \inherited\setmathspacing \mathmiddlecode      \mathmiddlecode       \allscriptstyles \pettymuskip
+    \inherited\setmathspacing \mathmiddlecode      \mathclosecode        \allsplitstyles  \thickmuskip
+    \inherited\setmathspacing \mathmiddlecode      \mathclosecode        \allscriptstyles \pettymuskip
+    \inherited\setmathspacing \mathmiddlecode      \mathpunctuationcode  \allsplitstyles  \thickmuskip
+    \inherited\setmathspacing \mathmiddlecode      \mathpunctuationcode  \allscriptstyles \pettymuskip
+    \inherited\setmathspacing \mathmiddlecode      \mathconstructcode    \allsplitstyles  \thickmuskip
     \inherited\setmathspacing \mathmiddlecode      \mathconstructcode    \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathellipsiscode     \allsplitstyles  \thinmuskip
+    \inherited\setmathspacing \mathmiddlecode      \mathellipsiscode     \allsplitstyles  \thickmuskip
     \inherited\setmathspacing \mathmiddlecode      \mathellipsiscode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathfractioncode     \allsplitstyles  \medmuskip
+    \inherited\setmathspacing \mathmiddlecode      \mathfractioncode     \allsplitstyles  \thickmuskip
     \inherited\setmathspacing \mathmiddlecode      \mathfractioncode     \allscriptstyles \pettymuskip
-  % \inherited\setmathspacing \mathmiddlecode      \mathradicalcode      \allmathstyles   \zeromuskip
+    \inherited\setmathspacing \mathmiddlecode      \mathradicalcode      \allsplitstyles  \thickmuskip
+    \inherited\setmathspacing \mathmiddlecode      \mathradicalcode      \allmathstyles   \pettymuskip
     %
     \inherited\setmathspacing \mathclosecode       \mathdifferentialcode \allsplitstyles  \thinmuskip
     \inherited\setmathspacing \mathclosecode       \mathdifferentialcode \allscriptstyles \pettymuskip
@@ -1321,6 +1363,10 @@
     \inherited\setmathspacing \mathclosecode       \mathdimensioncode    \allscriptstyles \pettymuskip
     \inherited\setmathspacing \mathfunctioncode    \mathbinarycode       \allsplitstyles  \medmuskip
     \inherited\setmathspacing \mathfunctioncode    \mathbinarycode       \allscriptstyles \pettymuskip
+    %
+    % \im{1\unit{hour} 20 \unit{minute} 56 \unit{second}}
+    %
+    \inherited\setmathspacing \mathdimensioncode   \mathdigitcode        \allmathstyles   \thickmuskip
     %
     \inherited\setmathspacing \mathfakecode        \mathallcode          \allmathstyles   \tinymuskip
     \inherited\setmathspacing \mathallcode         \mathfakecode         \allmathstyles   \tinymuskip
@@ -3627,29 +3673,30 @@
 \permanent\protected\def\mathminus    {\ifmmode –\orelse\iffontchar\font`−−\else –\fi}
 \permanent\protected\def\mathplusminus{±}
 
-%D Experiment: (todo: same switch as italic, using \type {\everyswitchmathematics}).
-
-\newcount\c_math_domain_attribute
-
-\def\math_domain_initialize
-  {\ifnum\c_math_domain_attribute=\attributeunsetvalue \else
-     \clf_initializemathdomain % one time
-     \glet\math_domain_initialize\relax
-   \fi}
-
-\appendtoks
-    \edef\p_domain{\mathematicsparameter\c!domain}%
-    \ifempty\p_domain
-        \c_math_domain_attribute\attributeunsetvalue
-    \else
-        \c_math_domain_attribute\clf_getmathdomain\p_domain\relax
-        \math_domain_initialize
-    \fi
-\to \everyswitchmathematics % only in mathematics
-
-\appendtoks
-    \c_attr_mathdomain\c_math_domain_attribute
-\to \everymathematics
+%D Experiment, replaced by dictionaries but for now we keep the code as the domain key
+%D might come back.
+%
+% \newcount\c_math_domain_attribute
+%
+% \def\math_domain_initialize
+%   {\ifnum\c_math_domain_attribute=\attributeunsetvalue \else
+%      \clf_initializemathdomain % one time
+%      \glet\math_domain_initialize\relax
+%    \fi}
+%
+% \appendtoks
+%     \edef\p_domain{\mathematicsparameter\c!domain}%
+%     \ifempty\p_domain
+%         \c_math_domain_attribute\attributeunsetvalue
+%     \else
+%         \c_math_domain_attribute\clf_getmathdomain\p_domain\relax
+%         \math_domain_initialize
+%     \fi
+% \to \everyswitchmathematics % only in mathematics
+%
+% \appendtoks
+%     \c_attr_mathdomain\c_math_domain_attribute
+% \to \everymathematics
 
 \setupmathematics
   [\s!italics=3] % for the moment only this one makes sense .. still experimental

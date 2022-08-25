@@ -1,0 +1,40 @@
+if not modules then modules = { } end modules ['font-imp-checks'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA ADE",
+    copyright = "ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+if not context then return end
+
+local function initialize(tfmdata,value)
+    if value then
+        local characters = tfmdata.characters
+        if not characters[0x2012] then
+            local data = characters[0x2013]
+            local zero = characters[0x0030]
+            if data and zero then
+                local copy  = table.copy(data)
+                local width = zero.width or 0
+                if width > 0 then
+                    characters[0x2012] = copy
+                    copy.effect = {
+                        extend = width/copy.width
+                    }
+                    copy.width = width
+                end
+            end
+        end
+   end
+end
+
+fonts.handlers.otf.features.register {
+    name        = "checkmissing",
+    description = "checkmissing",
+    manipulators = {
+        base = initialize,
+        node = initialize,
+    }
+}
+

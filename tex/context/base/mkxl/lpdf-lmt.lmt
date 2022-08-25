@@ -2133,7 +2133,7 @@ local finalize  do
         pdf_goto_pagemode() -- for now
 
         local objnum        = details.objnum
-        local specification = details.specification
+        local specification = details.specification or { }
 
         local content = concat(buffer,"\n",1,b)
 

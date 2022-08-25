@@ -1,0 +1,87 @@
+%D \module
+%D   [       file=m-gimmicks,
+%D        version=2022.07.25
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Whatever comes up,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\def\MacScale    {.7}%
+\def\MacRule     {.05}%
+\def\MacDistance {.05}%
+\def\MacKern     {0}%
+
+\protected\def\Mac
+  {\dontleavehmode
+   \begingroup
+   \scratchwidth   \fontcharwd\font`M\relax
+   \scratchdistance\MacScale\fontcharwd\font`c\relax
+   \scratchoffset  \dimexpr\fontcharht\font`M -\MacScale\fontcharht\font`c\relax
+   \scratchdepth   \MacRule\exheight
+   \kern\scratchwidth
+   \vrule
+     width  \scratchdistance
+     height \dimexpr \scratchoffset- \scratchdepth-\MacDistance\exheight\relax
+     depth  \dimexpr-\scratchoffset+2\scratchdepth+\MacDistance\exheight\relax
+   \relax
+   \kern-\dimexpr\scratchwidth+\scratchdistance\relax
+   M%
+   \glyphscale\numexpr\numericscale\MacScale*\glyphyscale/\plusthousand\relax
+   \glyph
+     yoffset \scratchoffset `c
+   \kern\MacKern\emwidth
+   \endgroup}
+
+\continueifinputfile{m-gimmicks.mkxl}
+
+\chardef\MacAnulty = \getprivateglyphslot{MacAnulty}
+
+\startsetups [box:demo:\number\MacAnulty]
+    \Mac Anulty
+\stopsetups
+
+\registerboxglyph category {demo} unicode \MacAnulty \relax
+
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name    = "mcanulty",
+        type    = "ligature",
+        nocheck = true,
+        data    = {
+         -- [\number\MacAnulty]                         = { "M", "c", "A", "n", "u", "l", "t", "y", },
+            [fonts.constructors.privateslots.MacAnulty] = { "M", "c", "A", "n", "u", "l", "t", "y", },
+        }
+    }
+\stopluacode
+
+\definefontfeature[whatever][default][box=demo,mcanulty=yes]
+
+\startTEXpage [offset=10dk]
+%     \def\Test#1{%
+%         \begingroup
+%         #1%
+%         \dostepwiserecurse{5}{8}{1}{
+%             \def\MacScale{.##1}%
+%             \Mac Anulty
+%             \par
+%         }
+%         \endgroup
+%     }
+%     \Test\tf
+%     \Test\bf
+%     \Test\it
+%     \Test\sl
+%     \Test\bfb
+%     \def\MacScale{.6}
+%     \def\MacKern {-.1}
+%     \Mac Anulty
+
+\definedfont[Serif*whatever]     McAnulty\quad \MacAnulty\par
+\definedfont[SerifBold*whatever] McAnulty\quad \MacAnulty\par
+
+\stopTEXpage

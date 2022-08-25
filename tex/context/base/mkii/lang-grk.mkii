@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% \endinput % something changed with greek but what
+
 \writestatus{loading}{ConTeXt Language Macros / Greek}
 
 %D The framework of this module is set up by Hans Hagen while
@@ -29,6 +31,11 @@
    \c!rightquote=\greekrightquot,
    \c!leftquotation=\greekleftquot,
    \c!rightquotation=\greekrightquot,
+    % we're missing an encoding for greek
+   \s!patterns=\s!agr,
+   \s!mapping=\s!agr,
+   \s!encoding=\s!agr,
+   % but one can use mkiv / lmtx anyway
    \c!date={\v!day\ \v!month\ \v!year}]
 
 \installlanguage [greek] [\s!gr]

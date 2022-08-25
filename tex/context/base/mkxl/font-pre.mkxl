@@ -47,6 +47,13 @@
 %
 % dtls flac :math
 
+%D The missing feature:
+%D
+%D \starttyping
+%D \ruledhbox{\char"2012}\par % figuredash
+%D \ruledhbox{0}\par
+%D \stoptyping
+
 \definefontfeature
   [always]
   [mode=node,    % we had 'auto', but let's try 'node' for a while and see what the impact is
@@ -54,6 +61,7 @@
    autoscript=position,
    autolanguage=position,
    textcontrol=collapsehyphens,
+   checkmissing=yes,
    kern=yes,     % consider skipping the base passes when no base mode is used
    mark=yes,
    mkmk=yes,
@@ -404,7 +412,7 @@
   [mode=base,
  % mode=none, % better, maybe do this last
    kern=yes,
-%  flac=yes,
+% flac=yes, % handled differently
 % liga=yes, % makes no sense
 % mode=node,
 % mathnolimitsmode={0,800}, % now in lfg files

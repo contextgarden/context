@@ -87,6 +87,12 @@ return {
                 {
                     tweak = "addrules",
                 },
+                {
+                    tweak = "addactuarian",
+                },
+                {
+                    tweak = "addequals",
+                },
             },
         },
         bigslots = {
