@@ -436,11 +436,11 @@
 \newconditional\c_tabl_use_size
 \newconditional\c_tabl_sparse_skips
 
-% \settrue\c_tabl_use_size
-% \settrue\c_tabl_sparse_skips
+\settrue\c_tabl_use_size     % default per 2022-08-25
+\settrue\c_tabl_sparse_skips % default per 2022-08-25
 
-\installtexexperiment {tabulateusesize}     {\settrue\c_tabl_use_size}     {\setfalse\c_tabl_use_size}
-\installtexexperiment {tabulatesparseskips} {\settrue\c_tabl_sparse_skips} {\setfalse\c_tabl_sparse_skips}
+\installtexdirective {tabulateusesize}     {\settrue\c_tabl_use_size}     {\setfalse\c_tabl_use_size}
+\installtexdirective {tabulatesparseskips} {\settrue\c_tabl_sparse_skips} {\setfalse\c_tabl_sparse_skips}
 
 \def\tabl_tabulate_set_preamble_step#1#2% only makes sense for many tabulates
   {\etoksapp\t_tabl_tabulate_preamble{%

@@ -40,19 +40,22 @@ local function register_extensible(font,char,style,box)
     local fontdata = chardata[font]
     local oldchar  = fontdata[char]
     local unicode  = oldchar.unicode or char
--- we cannot have self referencing t3 fonts
-local oldcommands = oldchar.oldcommands
-local newcommands = oldchar.commands
-if oldcommands then
-    oldchar.commands = oldcommands
-end
+    -- we cannot have self referencing t3 fonts
+    local oldcommands = oldchar.oldcommands
+    local newcommands = oldchar.commands
+    if oldcommands then
+        oldchar.commands = oldcommands
+    end
+    --
     local private  = fonts.helpers.setboxdirectly(font,unicode,box)
     -- we saved a scaled glyph stream so we now use an unscaled one ...
     local g = new_glyph(font,private,al)
     local n = new_hlist(g)
-if newcommands then
-    oldchar.commands = newcommands
-end
+    --
+    if newcommands then
+        oldchar.commands = newcommands
+    end
+    --
 
  -- local newchar = {
  --     unicode = unicode,
@@ -86,6 +89,10 @@ end
     return tonode(n)
 end
 
-experiments.register("math.extensibles", function(v)
+directives.register("math.extensibles", function(v)
     callback.register("register_extensible", v and register_extensible or nil)
 end)
+
+-- Default per 2022-08-25
+
+callback.register("register_extensible", register_extensible)

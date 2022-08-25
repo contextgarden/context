@@ -84,4 +84,17 @@
      {\popcolor#body}%
    \fi}
 
+% todo:
+%
+% \setupmathdelimited
+%   [topoffset=.2\exheight]
+%
+% \definemathdelimited
+%   [fourier]
+%   [rule=no,
+%    left=\zerocount,
+%    right="FE944] % 46 48
+%
+% $ \autofences \fourier{(z+\frac12)} + \courier{(z+\frac12)} + \xourier{(z+\frac12)} $
+
 \protect \endinput
