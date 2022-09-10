@@ -6,16 +6,21 @@ if not modules then modules = { } end modules ['typo-itc'] = {
     license   = "see context related readme files"
 }
 
+-- very old code ...
+
 local tonumber = tonumber
 
 local trace_italics       = false  trackers.register("typesetters.italics", function(v) trace_italics = v end)
 
 local report_italics      = logs.reporter("nodes","italics")
 
-local threshold           = 0.5   trackers.register("typesetters.threshold", function(v) threshold = v == true and 0.5 or tonumber(v) end)
+local threshold           = 0.5   directives.register("typesetters.italics.threshold", function(v) threshold = v == true and 0.5 or tonumber(v) end)
 
 typesetters.italics       = typesetters.italics or { }
 local italics             = typesetters.italics
+
+local variables           = interfaces.variables
+local settings_to_hash    = utilities.parsers.settings_to_hash
 
 local nodecodes           = nodes.nodecodes
 local glyph_code          = nodecodes.glyph
@@ -120,11 +125,11 @@ end
 -- todo: clear attribute
 
 local function correction_okay(n)
-    return not (getoptions(n) & no_correction_code)
+    return not (getoptions(n) & no_correction_code == no_correction_code)
 end
 
 local function okay(data,current,font,prevchar,previtalic,char,what)
-    if getoptions(current) & no_correction_code then
+    if getoptions(current) & no_correction_code == no_correction_code then
         if trace_italics then
             report_italics("ignoring %p between %s italic %C and italic %C, %s",previtalic,what,prevchar,char,"disabled")
         end
@@ -203,7 +208,8 @@ local function domath(head,current)
         local char, id = isglyph(next)
         if char and correction_okay(next) then
             -- we can have an old font where italic correction has been applied
-            -- or a new one where it hasn't been done
+            -- or a new one where it hasn't been done ... actually, we now always
+            -- have one under detailed engine control
             local kern = getprev(current)
             if kern and getid(kern) == kern_code then
                 local glyph = getprev(kern)
@@ -212,12 +218,7 @@ local function domath(head,current)
                     -- punctuation
                     if is_punctuation[char] then
                         local a = getattr(glyph,a_mathitalics)
-                        if a and (a < 100 or a > 100) then
-                            if a > 100 then
-                                a = a - 100
-                            else
-                                a = a + 100
-                            end
+                        if a then
                             local i = getkern(kern)
                             local c, f = isglyph(glyph)
                             if getheight(next) < 1.25*exheights[f] then
@@ -231,45 +232,45 @@ local function domath(head,current)
                                     end
                                     setkern(kern,0) -- or maybe a small value or half the ic
                                 end
-                            elseif i == 0 then
-                                local d = chardata[f][c]
-                                local i = d.italic
-                                if i == 0 then
-                                    if trace_italics then
-                                        report_italics("%s italic %p between math %C and punctuation %C","ignoring",i,c,char)
-                                    end
-                                else
-                                    setkern(kern,i)
-                                    if trace_italics then
-                                        report_italics("%s italic %p between math %C and punctuation %C","setting",i,c,char)
-                                    end
-                                end
+                         -- elseif i == 0 then
+                         --     local d = chardata[f][c]
+                         --     local i = d.italic
+                         --     if i == 0 then
+                         --         if trace_italics then
+                         --             report_italics("%s italic %p between math %C and punctuation %C","ignoring",i,c,char)
+                         --         end
+                         --     else
+                         --         setkern(kern,i)
+                         --         if trace_italics then
+                         --             report_italics("%s italic %p between math %C and punctuation %C","setting",i,c,char)
+                         --         end
+                         --     end
                             elseif trace_italics then
                                 report_italics("%s italic %p between math %C and punctuation %C","keeping",k,c,char)
                             end
                         end
                     end
                 end
-            else
-                local glyph = kern
-                if glyph and getid(glyph) == glyph_code then
-                    -- [math: <glyph>]<glyph> : we add the correction when we have
-                    -- no punctuation
-                    if not is_punctuation[char] then
-                        local a = getattr(glyph,a_mathitalics)
-                        if a and (a < 100 or a > 100) then
-                            if a > 100 then
-                                a = a - 100
-                            else
-                                a = a + 100
-                            end
-                            if trace_italics then
-                                report_italics("%s italic %p between math %C and non punctuation %C","adding",a,getchar(glyph),char)
-                            end
-                            insertnodeafter(head,glyph,correction_kern(a,glyph))
-                        end
-                    end
-                end
+         -- else
+         --     local glyph = kern
+         --     if glyph and getid(glyph) == glyph_code then
+         --         -- [math: <glyph>]<glyph> : we add the correction when we have
+         --         -- no punctuation
+         --         if not is_punctuation[char] then
+         --             local a = getattr(glyph,a_mathitalics)
+         --             if a and (a < 100 or a > 100) then
+         --                 if a > 100 then
+         --                     a = a - 100
+         --                 else
+         --                     a = a + 100
+         --                 end
+         --                 if trace_italics then
+         --                     report_italics("%s italic %p between math %C and non punctuation %C","adding",a,getchar(glyph),char)
+         --                 end
+         --                 insertnodeafter(head,glyph,correction_kern(a,glyph))
+         --             end
+         --         end
+         --     end
             end
         end
     end
@@ -667,9 +668,6 @@ implement {
     name      = "resetitaliccorrection",
     actions   = italics.reset,
 }
-
-local variables        = interfaces.variables
-local settings_to_hash = utilities.parsers.settings_to_hash
 
 local function setupitaliccorrection(option) -- no grouping !
     if enabletext then

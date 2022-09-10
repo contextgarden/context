@@ -630,29 +630,35 @@ end
 -- logs.errors=characters
 -- logs.errors=missing
 -- logs.errors=*
+-- logs.quitonerror=missing modules
 
 do
 
     local finalactions  = { }
     local fatalerrors   = { }
     local possiblefatal = { }
+    local quitonerror   = { }
     local loggingerrors = false
 
     function logs.loggingerrors()
         return loggingerrors
     end
 
-    directives.register("logs.errors",function(v)
+    local function register(v)
         loggingerrors = v
         if type(v) == "string" then
-            fatalerrors = settings_to_hash(v)
-            for k, v in next, fatalerrors do
-                fatalerrors[k] = string.topattern(k)
+            local target = settings_to_hash(v)
+            for k, v in next, target do
+                target[k] = string.topattern(k)
             end
+            return target
         else
-            fatalerrors = { }
+            return { }
         end
-    end)
+    end
+
+    directives.register("logs.errors",     function(v) fatalerrors = register(v) end)
+    directives.register("logs.quitonerror",function(v) quitonerror = register(v) end)
 
     function logs.registerfinalactions(...)
         insert(finalactions,...) -- so we can force an order if needed
@@ -662,6 +668,7 @@ do
     local report = nil
     local state  = nil
     local target = nil
+    local fatal  = false
 
     local function startlogging(t,r,w,s)
         target = t
@@ -692,6 +699,10 @@ do
         end
         poptarget()
         state = oldstate
+        if fatal then
+            logs.report("error logging","error marked as fatal")
+            luatex.abort()
+        end
     end
 
     function logs.startfilelogging(...)
@@ -713,6 +724,11 @@ do
         if fatalerrors[w] then
             possiblefatal[w] = true
         else
+            for k, v in next, quitonerror do
+                if find(w,v) then
+                    fatal = true
+                end
+            end
             for k, v in next, fatalerrors do
                 if find(w,v) then
                     possiblefatal[w] = true

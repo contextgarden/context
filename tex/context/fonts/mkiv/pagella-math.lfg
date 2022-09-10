@@ -261,6 +261,18 @@ return {
                     tweak = "addfourier",
                     variant = 1,
                 },
+
+{
+    tweak = "kernpairs",
+    list = {
+        -- beware: we kept the italic correction in spite of punctuation class
+        [0x1D453] = { -- f
+            [0x3A] = -.1,
+            [0x3B] = -.1,
+        },
+    },
+},
+
             },
         },
         bigslots = {

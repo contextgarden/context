@@ -7628,6 +7628,18 @@ return {
    ["pe"]="عرض‌خودکار",
    ["ro"]="autolatime",
   },
+  ["autopunctuation"]={
+   ["en"]="autopunctuation",
+   ["fr"]="autoponctuation",
+  },
+  ["autospacing"]={
+   ["en"]="autospacing",
+   ["fr"]="autospacing",
+  },
+  ["autonumbers"]={
+   ["en"]="autonumbers",
+   ["fr"]="autonumbers",
+  },
   ["availableheight"]={
    ["en"]="availableheight",
    ["fr"]="hauteurdisponible",
@@ -14767,10 +14779,6 @@ return {
    ["nl"]="autointro",
    ["pe"]="پیشگفتارخودکار",
    ["ro"]="autointro",
-  },
-  ["autopunctuation"]={
-   ["en"]="autopunctuation",
-   ["fr"]="autoponctuation",
   },
   ["back"]={
    ["cs"]="zpet",

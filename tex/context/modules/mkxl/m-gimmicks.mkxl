@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=m-gimmicks,
-%D        version=2022.07.25
+%D        version=2022.08.25
 %D          title=\CONTEXT\ Extra Modules,
 %D       subtitle=Whatever comes up,
 %D         author=Hans Hagen,
@@ -41,13 +41,13 @@
 
 % Question on mailing list:
 
-\chardef\MacAnulty = \getprivateglyphslot{MacAnulty}
+\chardef\MacAnulty = \privatecharactercode{MacAnulty}
 
-\startsetups [box:demo:\number\MacAnulty]
+\startsetups [box:mcanulty:\number\MacAnulty]
     \Mac Anulty
 \stopsetups
 
-\registerboxglyph category {demo} unicode \MacAnulty \relax
+\registerboxglyph category {mcanulty} unicode \MacAnulty \relax
 
 \startluacode
     fonts.handlers.otf.addfeature {
@@ -55,13 +55,17 @@
         type    = "ligature",
         nocheck = true,
         data    = {
-         -- [\number\MacAnulty]                         = { "M", "c", "A", "n", "u", "l", "t", "y", },
-            [fonts.constructors.privateslots.MacAnulty] = { "M", "c", "A", "n", "u", "l", "t", "y", },
+         -- [\number\MacAnulty]                         = {
+         -- [fonts.constructors.privateslots.MacAnulty] = {
+            [fonts.helpers.privateslot("MacAnulty")]    = {
+                "M", "c", "A", "n", "u", "l", "t", "y",
+            },
         }
     }
 \stopluacode
 
-\definefontfeature[whatever][default][box=demo,mcanulty=yes]
+\definefontfeature[whatever][default][box=mcanulty,mcanulty=yes]
+\definefontfeature[default][default][box=mcanulty,mcanulty=yes]
 
 \startTEXpage [offset=10dk]
 %     \def\Test#1{%
@@ -83,7 +87,10 @@
 %     \def\MacKern {-.1}
 %     \Mac Anulty
 
-\definedfont[Serif*whatever]     McAnulty\quad \MacAnulty\par
-\definedfont[SerifBold*whatever] McAnulty\quad \MacAnulty\par
+{\definedfont[Serif*whatever]     McAnulty\quad \MacAnulty\par}
+{\definedfont[SerifBold*whatever] McAnulty\quad \MacAnulty\par}
+
+{\tf McAnulty\quad \MacAnulty\par}
+{\bf McAnulty\quad \MacAnulty\par}
 
 \stopTEXpage

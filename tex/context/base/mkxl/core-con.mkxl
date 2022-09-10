@@ -552,7 +552,7 @@
 \installcorenamespace {conversionwords}
 
 %D It might be better to move more to \LUA\ as we also need conversion there and
-%D doublicating logic doesn't make things cleaner. It means that all conversions
+%D duplicating logic doesn't make things cleaner. It means that all conversions
 %D will get a language argument too. However, we permit definitions at the \TEX\ end
 %D so we have to provide some hybrid method.
 

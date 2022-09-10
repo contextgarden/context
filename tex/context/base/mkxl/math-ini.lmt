@@ -368,6 +368,7 @@ registerengineclass("textpunctuation", "tpu")
 registerengineclass("unspaced")
 registerengineclass("experimental")
 registerengineclass("fake")
+registerengineclass("numbergroup",     "ngr")
 
 registerengineclass("maybeordinary")
 registerengineclass("mayberelation")

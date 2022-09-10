@@ -1586,11 +1586,11 @@
 % \unexpanded\def\disablemathpunctuation{\setfalse\automathpunctuation}
 %
 % \appendtoks
-%     \doifelse{\mathematicsparameter\v!autopunctuation}\v!yes\settrue\setfalse\automathpunctuation
+%     \doifelse{\mathematicsparameter\c!autopunctuation}\v!yes\settrue\setfalse\automathpunctuation
 % \to \everyswitchmathematics
 %
 % \setupmathematics
-%   [\v!autopunctuation=\v!no]
+%   [\c!autopunctuation=\v!no]
 %
 % \def\math_punctuation_next{\ifx\nexttoken\blankspace\signalcharacter\fi}
 %
@@ -1676,9 +1676,9 @@
            \let\math_punctuation_yes_period   \math_punctuation_nop_period
            \let\math_punctuation_yes_semicolon\math_punctuation_all_semicolon
 
-\def\math_punctuation_comma_next    {\begingroup\Umathcode\c_math_comma    \ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_comma    ,\endgroup}
-\def\math_punctuation_period_next   {\begingroup\Umathcode\c_math_period   \ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_period   .\endgroup}
-\def\math_punctuation_semicolon_next{\begingroup\Umathcode\c_math_semicolon\ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_semicolon;\endgroup}
+\def\math_punctuation_comma_next    {\begingroup\Umathcode\c_math_comma    \ifx\nexttoken\blankspace\mathpunctcode\else\mathordcode\fi\zerocount\c_math_comma    ,\endgroup}
+\def\math_punctuation_period_next   {\begingroup\Umathcode\c_math_period   \ifx\nexttoken\blankspace\mathpunctcode\else\mathordcode\fi\zerocount\c_math_period   .\endgroup}
+\def\math_punctuation_semicolon_next{\begingroup\Umathcode\c_math_semicolon\ifx\nexttoken\blankspace\mathpunctcode\else\mathordcode\fi\zerocount\c_math_semicolon;\endgroup}
 
 \installcorenamespace {mathautopunctuation}
 
@@ -1745,12 +1745,12 @@
     \mathcode\c_math_comma    \c_math_special
     \mathcode\c_math_period   \c_math_special
     \mathcode\c_math_semicolon\c_math_special
-    \begincsname\??mathautopunctuation\mathematicsparameter\v!autopunctuation\endcsname
+    \begincsname\??mathautopunctuation\mathematicsparameter\c!autopunctuation\endcsname
 \to \everymathematics
 
 \appendtoks
-    \ifcsname\??mathautopunctuation\mathematicsparameter\v!autopunctuation\endcsname \else
-        \letmathematicsparameter\v!autopunctuation\v!no
+    \ifcsname\??mathautopunctuation\mathematicsparameter\c!autopunctuation\endcsname \else
+        \letmathematicsparameter\c!autopunctuation\v!no
     \fi
 \to \everysetupmathematics
 
@@ -1758,7 +1758,7 @@
 \def\disablemathpunctuation{\csname\??mathautopunctuation\v!yes\endcsname}
 
 \setupmathematics
-  [\v!autopunctuation=\v!no] % no | yes | all | comma | yes,semicolon | all,semicolon
+  [\c!autopunctuation=\v!no] % no | yes | all | comma | yes,semicolon | all,semicolon
 
 %D The consequences of setting this are as follows:
 %D

@@ -176,6 +176,7 @@
 \setnewconstant\mathunspacedcode        \mathclassvalue unspaced        % for cases where we don't want spacing at all
 \setnewconstant\mathexperimentalcode    \mathclassvalue experimental    % for MS and HH testing purposed only
 \setnewconstant\mathunarycode           \mathclassvalue unary           % dedicated to Alan
+\setnewconstant\mathnumbergroupcode     \mathclassvalue numbergroup
 
 \setnewconstant\mathbegincode           \mathclassvalue begin
 \setnewconstant\mathendcode             \mathclassvalue end
@@ -230,6 +231,9 @@
 \copymathspacing \mathmaybeordinarycode  \mathordinarycode
 \copymathspacing \mathmayberelationcode  \mathrelationcode
 \copymathspacing \mathmaybebinarycode    \mathbinarycode
+
+%copymathspacing \mathnumbergroupcode  \mathpunctuationcode
+\copymathspacing \mathnumbergroupcode  \mathrelationcode     % for now
 
 \setnewconstant\mathlimopcode \plusone
 \setnewconstant\mathnolopcode \plusone
@@ -552,6 +556,7 @@
  % +\checkligatureclassoptioncode
    +\flattenclassoptioncode
    +\checkkernpairclassoptioncode
+   +\removeitaliccorrectionclassoptioncode
 \relax
 
 \setmathoptions\mathvariablecode\numexpr
@@ -730,6 +735,8 @@
 \definesystemattribute[mathcollapsing] [public]
 \definesystemattribute[mathunstack]    [public]
 \definesystemattribute[mathvariant]    [public]
+\definesystemattribute[mathnumbers]    [public]
+\definesystemattribute[mathspacing]    [public]
 
 \definesystemattribute[displaymath]    [public]
 
@@ -1206,29 +1213,29 @@
     \inherited\setmathspacing \mathclosecode       \mathfractioncode     \allscriptstyles \pettymuskip
   % \inherited\setmathspacing \mathclosecode       \mathradicalcode      \allmathstyles   \zeromuskip
     %
-    \inherited\setmathspacing \mathpunctuationcode \mathordinarycode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathordinarycode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathoperatorcode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathoperatorcode     \allscriptstyles \pettymuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathordinarycode     \allsplitstyles  \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathordinarycode     \allscriptstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathoperatorcode     \allsplitstyles  \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathoperatorcode     \allscriptstyles \thinmuskip
   % \inherited\setmathspacing \mathpunctuationcode \mathbinarycode       \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathrelationcode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathrelationcode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathopencode         \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathopencode         \allscriptstyles \pettymuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathrelationcode     \allsplitstyles  \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathrelationcode     \allscriptstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathopencode         \allsplitstyles  \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathopencode         \allscriptstyles \thinmuskip
     \inherited\setmathspacing \mathpunctuationcode \mathmiddlecode       \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathmiddlecode       \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathclosecode        \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathclosecode        \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathpunctuationcode  \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathpunctuationcode  \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathconstructcode    \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathconstructcode    \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathellipsiscode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathellipsiscode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathfractioncode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathfractioncode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathradicalcode      \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathradicalcode      \allscriptstyles \pettymuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathmiddlecode       \allscriptstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathclosecode        \allsplitstyles  \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathclosecode        \allscriptstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathpunctuationcode  \allsplitstyles  \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathpunctuationcode  \allscriptstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathconstructcode    \allsplitstyles  \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathconstructcode    \allscriptstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathellipsiscode     \allsplitstyles  \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathellipsiscode     \allscriptstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathfractioncode     \allsplitstyles  \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathfractioncode     \allscriptstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathradicalcode      \allsplitstyles  \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode \mathradicalcode      \allscriptstyles \thinmuskip
     %
     \inherited\setmathspacing \mathconstructcode   \mathordinarycode     \allsplitstyles  \thinmuskip
     \inherited\setmathspacing \mathconstructcode   \mathordinarycode     \allscriptstyles \pettymuskip
@@ -2452,16 +2459,39 @@
 %D we can stick to numbers. At some point this will change because we can now
 %D control in in the engine and goodies per font.
 
-\installcorenamespace{mathitalics}
+% \installcorenamespace{mathitalics}
+%
+% \setnewconstant\c_math_italics_attribute\attributeunsetvalue
+%
+% \letcsname\??mathitalics       1\endcsname\plusone              % fontitalics
+% \letcsname\??mathitalics       2\endcsname\plustwo              % fontdata
+% \letcsname\??mathitalics       3\endcsname\plusthree            % quad based
+% \letcsname\??mathitalics       4\endcsname\plusfour             % combination of 1 and 3
+% \letcsname\??mathitalics \v!none\endcsname\attributeunsetvalue
+% \letcsname\??mathitalics\v!reset\endcsname\attributeunsetvalue
+%
+% \def\math_italics_initialize
+%   {\ifnum\c_math_italics_attribute=\attributeunsetvalue \else
+%      \clf_initializemathitalics % one time
+%      \glet\math_italics_initialize\relax
+%    \fi}
+%
+% \appendtoks
+%     \edef\p_italics{\mathematicsparameter\s!italics}%
+%     \c_math_italics_attribute
+%         \ifcsname\??mathitalics\p_italics\endcsname\lastnamedcs\else\attributeunsetvalue\fi
+%     \relax
+%   % \math_italics_initialize
+% \to \everyswitchmathematics % only in mathematics
+%
+% \appendtoks
+%     \math_italics_initialize
+%     \c_attr_mathitalics\c_math_italics_attribute
+% \to \everymathematics
 
 \setnewconstant\c_math_italics_attribute\attributeunsetvalue
 
-\letcsname\??mathitalics       1\endcsname\plusone              % fontitalics
-\letcsname\??mathitalics       2\endcsname\plustwo              % fontdata
-\letcsname\??mathitalics       3\endcsname\plusthree            % quad based
-\letcsname\??mathitalics       4\endcsname\plusfour             % combination of 1 and 3
-\letcsname\??mathitalics \v!none\endcsname\attributeunsetvalue
-\letcsname\??mathitalics\v!reset\endcsname\attributeunsetvalue
+% merge these:
 
 \def\math_italics_initialize
   {\ifnum\c_math_italics_attribute=\attributeunsetvalue \else
@@ -2472,18 +2502,20 @@
 \appendtoks
     \edef\p_italics{\mathematicsparameter\s!italics}%
     \c_math_italics_attribute
-        \ifcsname\??mathitalics\p_italics\endcsname\lastnamedcs\else\attributeunsetvalue\fi
+      \ifx\p_italics\v!none
+        \attributeunsetvalue
+      \orelse\ifx\p_italics\v!reset
+        \attributeunsetvalue
+      \else
+        \plusone
+      \fi
     \relax
-  % \math_italics_initialize
 \to \everyswitchmathematics % only in mathematics
 
 \appendtoks
     \math_italics_initialize
     \c_attr_mathitalics\c_math_italics_attribute
 \to \everymathematics
-
-% \setupmathematics % done later
-%   [\s!italics=3] % 4 is probably better
 
 % looks nicer but can generate bogus csnames
 %
@@ -2539,11 +2571,11 @@
 % \protected\def\disablemathpunctuation{\setfalse\automathpunctuation}
 %
 % \appendtoks
-%     \doifelse{\mathematicsparameter\v!autopunctuation}\v!yes\settrue\setfalse\automathpunctuation
+%     \doifelse{\mathematicsparameter\c!autopunctuation}\v!yes\settrue\setfalse\automathpunctuation
 % \to \everyswitchmathematics
 %
 % \setupmathematics
-%   [\v!autopunctuation=\v!no]
+%   [\c!autopunctuation=\v!no]
 %
 % \def\math_punctuation_next{\ifx\nexttoken\blankspace\signalcharacter\fi}
 %
@@ -2609,12 +2641,12 @@
 
 % todo: use \Umathclass\c_math_comma\mathpunctcode etc for temporary switching
 
-\def\math_set_o_comma    {\Umathcode\c_math_comma    \mathordcode  \zerocount\c_math_comma}
-\def\math_set_p_comma    {\Umathcode\c_math_comma    \mathpunctcode\zerocount\c_math_comma}
-\def\math_set_o_period   {\Umathcode\c_math_period   \mathordcode  \zerocount\c_math_period}
-\def\math_set_p_period   {\Umathcode\c_math_period   \mathpunctcode\zerocount\c_math_period}
-\def\math_set_o_semicolon{\Umathcode\c_math_semicolon\mathordcode  \zerocount\c_math_semicolon}
-\def\math_set_p_semicolon{\Umathcode\c_math_semicolon\mathpunctcode\zerocount\c_math_semicolon}
+\def\math_set_o_comma    {\Umathcode\c_math_comma    \mathordinarycode   \zerocount\c_math_comma}
+\def\math_set_p_comma    {\Umathcode\c_math_comma    \mathpunctuationcode\zerocount\c_math_comma}
+\def\math_set_o_period   {\Umathcode\c_math_period   \mathordinarycode   \zerocount\c_math_period}
+\def\math_set_p_period   {\Umathcode\c_math_period   \mathpunctuationcode\zerocount\c_math_period}
+\def\math_set_o_semicolon{\Umathcode\c_math_semicolon\mathordinarycode   \zerocount\c_math_semicolon}
+\def\math_set_p_semicolon{\Umathcode\c_math_semicolon\mathpunctuationcode\zerocount\c_math_semicolon}
 
 \edef\math_set_o_both {\math_set_o_period\math_set_o_comma}
 \edef\math_set_p_both {\math_set_p_period\math_set_p_comma}
@@ -2633,9 +2665,9 @@
           \let\math_punctuation_yes_period   \math_punctuation_nop_period
           \let\math_punctuation_yes_semicolon\math_punctuation_all_semicolon
 
-\def\math_punctuation_comma_next    {\begingroup\Umathcode\c_math_comma    \ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_comma    ,\endgroup}
-\def\math_punctuation_period_next   {\begingroup\Umathcode\c_math_period   \ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_period   .\endgroup}
-\def\math_punctuation_semicolon_next{\begingroup\Umathcode\c_math_semicolon\ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_semicolon;\endgroup}
+\def\math_punctuation_comma_next    {\begingroup\Umathcode\c_math_comma    \ifx\nexttoken\blankspace\mathpunctuationcode\else\mathordinarycode\fi\zerocount\c_math_comma    ,\endgroup}
+\def\math_punctuation_period_next   {\begingroup\Umathcode\c_math_period   \ifx\nexttoken\blankspace\mathpunctuationcode\else\mathordinarycode\fi\zerocount\c_math_period   .\endgroup}
+\def\math_punctuation_semicolon_next{\begingroup\Umathcode\c_math_semicolon\ifx\nexttoken\blankspace\mathpunctuationcode\else\mathordinarycode\fi\zerocount\c_math_semicolon;\endgroup}
 
 \installcorenamespace {mathautopunctuation}
 
@@ -2704,12 +2736,12 @@
     \mathcode\c_math_comma    \c_math_special
     \mathcode\c_math_period   \c_math_special
     \mathcode\c_math_semicolon\c_math_special
-    \begincsname\??mathautopunctuation\mathematicsparameter\v!autopunctuation\endcsname
+    \begincsname\??mathautopunctuation\mathematicsparameter\c!autopunctuation\endcsname
 \to \everymathematics
 
 \appendtoks
-    \ifcsname\??mathautopunctuation\mathematicsparameter\v!autopunctuation\endcsname \else
-        \letmathematicsparameter\v!autopunctuation\v!no
+    \ifcsname\??mathautopunctuation\mathematicsparameter\c!autopunctuation\endcsname \else
+        \letmathematicsparameter\c!autopunctuation\v!no
     \fi
 \to \everysetupmathematics
 
@@ -2717,7 +2749,73 @@
 \permanent\protected\def\disablemathpunctuation{\csname\??mathautopunctuation\v!yes\endcsname}
 
 \setupmathematics
-  [\v!autopunctuation=\v!no] % no | yes | all | comma | yes,semicolon | all,semicolon
+  [\c!autopunctuation=\v!no] % no | yes | all | comma | yes,semicolon | all,semicolon
+
+%D The next replaces the above:
+
+% \startbuffer
+%     \im{x + 1,222,333.44 + x}\par
+%     \im{x + 1.222.333,44 + x}\par
+%     \im{x + 1, 222, 333. 44 + x}\par
+%     \im{(1.5, 1.5) + (1,5;1,5)}\par
+%     \im{111 2222}\par
+%     \im{f: \reals\to\reals}\par
+%     \im{f : \reals\to\reals}\par
+%     \im{f\colon\reals\to\reals}\par
+%     \im{f \colon\reals\to\reals}\par
+% \stopbuffer
+%
+% \startTEXpage[offset=1dk]
+%     \setupmathematics[autospacing=yes] \getbuffer \blank
+%     \setupmathematics[autonumbers=1]   \getbuffer \blank
+%     \setupmathematics[autonumbers=2]   \getbuffer \blank
+%     \setupmathematics[autonumbers=3]   \getbuffer \blank
+%     \setupmathematics[autonumbers=4]   \getbuffer \blank
+%     \setupmathematics[autonumbers=5]   \getbuffer \blank
+%     \setupmathematics[autonumbers=6]   \getbuffer \blank
+% \stopTEXpage
+
+\installcorenamespace{autospacing}
+
+\permanent\protected\def\enablemathautospacing
+  {\attribute\mathspacingattribute\plusone
+   \clf_initializemathspacing}
+
+\permanent\protected\def\disablemathautospacing
+  {\attribute\mathspacingattribute\attributeunsetvalue}
+
+\appendtoks
+    \ifcstok{\mathematicsparameter\c!autospacing}\v!yes
+      \enablemathautospacing
+    \else
+      \disablemathautospacing
+    \fi
+\to \everysetupmathematics
+
+\setupmathematics
+  [\c!autospacing=\v!no]
+
+\permanent\protected\def\enablemathautonumbers
+  {\attribute\mathnumbersattribute\plusone
+   \clf_initializemathnumbers}
+
+\permanent\protected\def\disablemathautonumbers
+  {\attribute\mathnumbersattribute\attributeunsetvalue}
+
+\appendtoks
+    \edef\p_autonumbers{\mathematicsparameter\c!autonumbers}%
+    \ifchknum\p_autonumbers\or
+      \enablemathautonumbers % default
+      \attribute\mathnumbersattribute\p_autonumbers\relax
+    \orelse\ifx\p_autonumbers\v!no
+      \disablemathautonumbers
+    \else
+      \enablemathautonumbers % default
+    \fi
+\to \everysetupmathematics
+
+\setupmathematics
+  [\c!autonumbers=\v!no]
 
 %D The consequences of setting this are as follows:
 %D
@@ -3418,54 +3516,143 @@
 %D
 %D \typebuffer \getbuffer
 
-\def\math_text_choice_font#1#2#%
-  {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
-   \hbox#2\bgroup
-   \bgroup
-   \aftergroup\hss
-   \aftergroup\egroup
-   \hss
+% %mathscriptboxmode    \plusthree % lists and boxes with \boundary=1 (also for testing and demo)
+% %mathscriptboxmode    \plusone   % collapsed and then removed, now control option
+% %mathscriptcharmode   \plusone   % idem
+%
+% %mathrulethicknessmode\plusone   % adaptive
+
+% We keep this as reference:
+%
+% \def\math_text_choice_font#1#2#%
+%   {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
+%    \hbox#2\bgroup
+%    \bgroup
+%    \aftergroup\hss
+%    \aftergroup\egroup
+%    \hss
+%    \font_basics_switchtobodyfont\m_math_text_choice_face
+%    #1%
+%    \let\next}
+%
+% \def\math_text_choice_word#1#2#%
+%   {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
+%    \hbox#2\bgroup
+%    \bgroup
+%    \aftergroup\hss
+%    \aftergroup\egroup
+%    \hss
+%    \font_basics_switchtobodyfont\m_math_text_choice_face
+%    #1%
+%    \nospacing % \normalnospaces\plusone
+%    \let\next}
+%
+% % \ruledhbox{$\mathtext{abc ffi}$}
+% % \ruledhbox{$\mathword{abc ffi}$}
+%
+% \permanent\protected\def\mathtext  {\mathortext{\math_text_choice_font\relax}\hbox}
+% \permanent\protected\def\mathword  {\mathortext{\math_text_choice_word\relax}\hbox}
+%
+% \permanent\protected\def\mathtexttf{\mathortext{\math_text_choice_font\tf}\hbox}
+% \permanent\protected\def\mathtextit{\mathortext{\math_text_choice_font\it}\hbox}
+% \permanent\protected\def\mathtextsl{\mathortext{\math_text_choice_font\sl}\hbox}
+% \permanent\protected\def\mathtextbf{\mathortext{\math_text_choice_font\bf}\hbox}
+% \permanent\protected\def\mathtextbi{\mathortext{\math_text_choice_font\bi}\hbox}
+% \permanent\protected\def\mathtextbs{\mathortext{\math_text_choice_font\bs}\hbox}
+%
+% \permanent\protected\def\mathwordtf{\mathortext{\math_text_choice_word\tf}\hbox}
+% \permanent\protected\def\mathwordit{\mathortext{\math_text_choice_word\it}\hbox}
+% \permanent\protected\def\mathwordsl{\mathortext{\math_text_choice_word\sl}\hbox}
+% \permanent\protected\def\mathwordbf{\mathortext{\math_text_choice_word\bf}\hbox}
+% \permanent\protected\def\mathwordbi{\mathortext{\math_text_choice_word\bi}\hbox}
+% \permanent\protected\def\mathwordbs{\mathortext{\math_text_choice_word\bs}\hbox}
+
+%D The split option is sort or a gimmick but one never knows how it might come in
+%D handy. It was also an interesting test for how easy we can get this done (an extra
+%D option as well as cheating in the line break function). And it was a good excuse
+%D to add options to glue (which was pending). Actually, the main reason for this
+%D trickery was that unrolling lists into the main math list could have strange side
+%D effects, due to glue being ignored in math in the libereak routine, so better get
+%D it working than explaining why if could have side effects.
+
+%D The fact that one can pass e.g \type {to 4cm} before the content is an old and
+%D probably never used feature that we keep in order to remain compatible.
+
+\installcorenamespace{mathtext}
+
+\installcommandhandler \??mathtext {mathtext} \??mathtext
+
+\setupmathtext
+  [\s!leftclass=\mathtextparameter\s!class,
+   \s!rightclass=\mathtextparameter\s!class,
+   \s!class=\mathordinarycode]
+
+\appendtoks
+    \frozen\protected\edefcsname\currentmathtext\endcsname{\math_text_handle{\currentmathtext}}
+\to \everydefinemathtext
+
+\newtoks\everymathtext
+
+\tolerant\protected\def\math_text_handle_indeed#1#*[#2]#:#3#%
+  {\begingroup
+   \edef\currentmathtext{#1}%
+   \setupcurrentmathtext[#2]%
+   \normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
+   \ifcstok{\mathtextparameter\c!alternative}\v!split
+     \mathatom
+       unroll
+       class      \mathtextparameter\s!class
+       leftclass  \mathtextparameter\s!leftclass
+       rightclass \mathtextparameter\s!rightclass
+       \bgroup
+     \hbox#3\bgroup
+     \aftergroup\egroup
+     \aftergroup\endgroup
+   \else
+     \hbox#3\bgroup
+     \atendofgroup\hss
+     \aftergroup\endgroup
+     \ifcstok{\mathtextparameter\c!alternative}\v!word
+       \nospacing % \normalnospaces\plusone
+     \fi
+     \hss
+   \fi
    \font_basics_switchtobodyfont\m_math_text_choice_face
-   #1%
+   \usemathtextstyleandcolor\c!style\c!color
+   \the\everymathtext\relax
    \let\next}
 
-\def\math_text_choice_word#1#2#%
-  {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
-   \hbox#2\bgroup
-   \bgroup
-   \aftergroup\hss
-   \aftergroup\egroup
-   \hss
-   \font_basics_switchtobodyfont\m_math_text_choice_face
-   #1%
-   \nospacing % \normalnospaces\plusone
-   \let\next}
+\protected\def\math_text_handle#1%
+   {\mathortext{\math_text_handle_indeed{#1}}\hbox}
 
-% \ruledhbox{$\mathtext{abc ffi}$}
-% \ruledhbox{$\mathword{abc ffi}$}
+\definemathtext[mathtext]
+\definemathtext[mathtexttf][mathtext][\c!style=\tf]
+\definemathtext[mathtextit][mathtext][\c!style=\it]
+\definemathtext[mathtextsl][mathtext][\c!style=\sl]
+\definemathtext[mathtextbf][mathtext][\c!style=\bf]
+\definemathtext[mathtextbi][mathtext][\c!style=\bi]
+\definemathtext[mathtextbs][mathtext][\c!style=\bs]
 
-%mathscriptboxmode    \plusthree % lists and boxes with \boundary=1 (also for testing and demo)
-%mathscriptboxmode    \plusone   % collapsed and then removed, now control option
-%mathscriptcharmode   \plusone   % idem
+\definemathtext[mathword]  [mathtext][\c!alternative=\v!word]
+\definemathtext[mathwordtf][mathword][\c!style=\tf]
+\definemathtext[mathwordit][mathword][\c!style=\it]
+\definemathtext[mathwordsl][mathword][\c!style=\sl]
+\definemathtext[mathwordbf][mathword][\c!style=\bf]
+\definemathtext[mathwordbi][mathword][\c!style=\bi]
+\definemathtext[mathwordbs][mathword][\c!style=\bs]
 
-%mathrulethicknessmode\plusone   % adaptive
+\definemathtext[mathsplit]  [mathtext] [\c!alternative=\v!split]
+\definemathtext[mathsplittf][mathsplit][\c!style=\tf]
+\definemathtext[mathsplitit][mathsplit][\c!style=\it]
+\definemathtext[mathsplitsl][mathsplit][\c!style=\sl]
+\definemathtext[mathsplitbf][mathsplit][\c!style=\bf]
+\definemathtext[mathsplitbi][mathsplit][\c!style=\bi]
+\definemathtext[mathsplitbs][mathsplit][\c!style=\bs]
 
-\permanent\protected\def\mathtext  {\mathortext{\math_text_choice_font\relax}\hbox}
-\permanent\protected\def\mathword  {\mathortext{\math_text_choice_word\relax}\hbox}
-
-\permanent\protected\def\mathtexttf{\mathortext{\math_text_choice_font\tf}\hbox}
-\permanent\protected\def\mathtextit{\mathortext{\math_text_choice_font\it}\hbox}
-\permanent\protected\def\mathtextsl{\mathortext{\math_text_choice_font\sl}\hbox}
-\permanent\protected\def\mathtextbf{\mathortext{\math_text_choice_font\bf}\hbox}
-\permanent\protected\def\mathtextbi{\mathortext{\math_text_choice_font\bi}\hbox}
-\permanent\protected\def\mathtextbs{\mathortext{\math_text_choice_font\bs}\hbox}
-
-\permanent\protected\def\mathwordtf{\mathortext{\math_text_choice_word\tf}\hbox}
-\permanent\protected\def\mathwordit{\mathortext{\math_text_choice_word\it}\hbox}
-\permanent\protected\def\mathwordsl{\mathortext{\math_text_choice_word\sl}\hbox}
-\permanent\protected\def\mathwordbf{\mathortext{\math_text_choice_word\bf}\hbox}
-\permanent\protected\def\mathwordbi{\mathortext{\math_text_choice_word\bi}\hbox}
-\permanent\protected\def\mathwordbs{\mathortext{\math_text_choice_word\bs}\hbox}
+\appendtoks
+    \reinstatecatcodecommand\barasciicode
+    \obeydiscretionaries
+\to \everymathtext
 
 %D Safeguard against redefinitions:
 
@@ -3773,7 +3960,7 @@
 
 \permanent\protected\def\math_scripts_unstack
   {\clf_enablescriptunstacking
-   \c_attr_mathunstack\plusone}
+   \c_attr_mathunstack\plustwo} % \plusone for the other way around
 
 \ifdefined\stackscripts   \else \aliased\let\stackscripts  \relax \fi
 \ifdefined\unstackscripts \else \aliased\let\unstackscripts\relax \fi

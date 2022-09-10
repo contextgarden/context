@@ -39,6 +39,8 @@ local sharedprivates = setmetatableindex(function(t,k)
     return v
 end)
 
+fonts.helpers.sharedprivates = sharedprivates
+
 function helpers.addprivate(tfmdata,name,characterdata)
     local properties = tfmdata.properties
     local characters = tfmdata.characters

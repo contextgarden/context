@@ -2905,6 +2905,8 @@ local openfile, closefile  do
     local close    = false
     local update   = false
 
+    directives.enable("backend.pdf.inmemory", function(v) inmemory = true end)
+
  -- local banner <const> = "%\xCC\xD5\xC1\xD4\xC5\xD8\xD0\xC4\xC6\010"     -- LUATEXPDF  (+128)
     local banner <const> = "%\xC3\xCF\xCE\xD4\xC5\xD8\xD4\xD0\xC4\xC6\010" -- CONTEXTPDF (+128)
 

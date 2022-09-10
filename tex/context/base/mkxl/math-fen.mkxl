@@ -270,11 +270,32 @@
 \aliased\let\fence \relax
 \aliased\let\fenced\relax
 
+\protected\def\math_fenced_middle_bar  {\mfence |\relax}
+\protected\def\math_fenced_middle_colon{\mfence :\relax}
+\protected\def\math_fenced_middle_comma{\mathatom \s!leftclass \mathpunctuationcode \s!rightclass \mathmiddlecode {,}}
+
+\startsetups math:fence:set:bar
+    \aliased\let\suchthat\math_fenced_middle_bar
+    \aliased\let\where   \math_fenced_middle_comma
+    \aliased\let\and     \math_fenced_middle_comma
+\stopsetups
+
+\startsetups math:fence:set:colon
+    \aliased\let\suchthat\math_fenced_middle_colon
+    \aliased\let\where   \math_fenced_middle_comma
+    \aliased\let\and     \math_fenced_middle_comma
+\stopsetups
+
+\startsetups math:fence:set
+    \directsetup{math:fence:set:bar}
+\stopsetups
+
 \protected\def\math_fenced_middle_common
   {\math_fenced_middle} % redefined inside atom
 
 \protected\def\math_fenced_fenced_common
   {\startusemathstyleparameter\mathfenceparameter\c!mathstyle
+   \usesetupsparameter\mathfenceparameter
    \enforced\let\fence\math_fenced_middle_common}
 
 \protected\def\math_fenced_fenced_start#1%
@@ -604,7 +625,7 @@
    \math_fenced_common\Uright\c!rightclass\math_fenced_x_p_right\c!rightsource
    \advance\c_math_fence_nesting\minusone}
 
-\def\math_fenced_x_middle_normal
+\def\math_fenced_x_middle
   {\math_fenced_common\Umiddle\c!middleclass\math_fenced_x_p_middle\c!middlesource}
 
 % the expandafter permits \left\Uchar...

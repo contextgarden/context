@@ -96,10 +96,10 @@
 \protected\def\node_rules_direct#1%
   {\groupedcommand
      {\dontleavehmode % this should not be needed but it is in \bTD
-      \node_rules_set{#1}
+      \node_rules_set{#1}%
       \barparameter\c!left
-      } %\ignorespaces}%
-     {%\removeunwantesspaces
+      }%\ignorespaces}%
+     {%\removeunwantedspaces
       \barparameter\c!right}}
 
 \permanent\protected\def\inlinebar[#1]%

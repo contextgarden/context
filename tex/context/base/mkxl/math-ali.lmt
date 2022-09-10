@@ -8,94 +8,285 @@ if not modules then modules = { } end modules ['math-ali'] = {
 
 local unpack = unpack
 local gsub = string.gsub
-local lpegmatch = lpeg.match
+local sort, keys = table.sort, table.keys
 local settings_to_array = utilities.parsers.settings_to_array
-
-local rows = utilities.parsers.groupedsplitat(";")
-local cols = utilities.parsers.groupedsplitat(",")
+local P, R, S, C, Cc, Ct, Cs = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Ct, lpeg.Cs
+local lpegmatch = lpeg.match
 
 local context = context
 
-local actions = {
-    transpose = function(m)
-        local t = { }
-        for j=1,#m[1] do
-            local r = { }
-            for i=1,#m do
-                r[i] = m[i][j]
+do
+
+    local rows = utilities.parsers.groupedsplitat(";")
+    local cols = utilities.parsers.groupedsplitat(",")
+
+    local actions = {
+        transpose = function(m)
+            local t = { }
+            for j=1,#m[1] do
+                local r = { }
+                for i=1,#m do
+                    r[i] = m[i][j]
+                end
+                t[j] = r
             end
-            t[j] = r
-        end
-        return t
-    end,
-    negate = function(m)
-        for i=1,#m do
-            local mi = m[i]
-            for j=1,#mi do
-                mi[j] = - mi[j]
-            end
-        end
-        return m
-    end,
-    scale = function(m,s)
-        s = tonumber(s)
-        if s then
+            return t
+        end,
+        negate = function(m)
             for i=1,#m do
                 local mi = m[i]
                 for j=1,#mi do
-                    mi[j] = s*mi[j]
+                    mi[j] = - mi[j]
+                end
+            end
+            return m
+        end,
+        scale = function(m,s)
+            s = tonumber(s)
+            if s then
+                for i=1,#m do
+                    local mi = m[i]
+                    for j=1,#mi do
+                        mi[j] = s*mi[j]
+                    end
+                end
+            end
+            return m
+        end,
+    }
+
+    local useractions = {
+    }
+
+    interfaces.implement {
+        name      = "simplematrix",
+        arguments = "2 strings",
+        actions   = function(method,data)
+            local m = lpegmatch(rows,(gsub(data,"%s+"," ")))
+            for i=1,#m do
+                m[i] = lpegmatch(cols,m[i])
+            end
+            local methods = settings_to_array(method)
+            for i=1,#methods do
+                local detail = settings_to_array(methods[i])
+                local method = detail[1]
+                local action = actions[method] or useractions[method]
+                if action then
+                    m = action(m,unpack(detail,2)) or m
+                end
+            end
+            for i=1,#m do
+                context("\\NC %{ \\NC }t \\NR",m[i])
+            end
+        end
+    }
+
+    function mathematics.registersimplematrix(name,action)
+        if type(action) == "function" then
+            useractions[name] = action
+        end
+    end
+
+    -- \cases{1, x>0 ; -1, x<0 }
+
+    interfaces.implement {
+        name      = "simplecases",
+        arguments = "2 strings",
+        actions   = function(method,data)
+            -- no methods yet
+            local m = lpegmatch(rows,(gsub(data,"%s+"," ")))
+            for i=1,#m do
+                m[i] = lpegmatch(cols,m[i])
+            end
+            for i=1,#m do
+                context("\\NC %{ \\NC }t \\NR",m[i])
+            end
+        end
+    }
+
+end
+
+do
+
+    local relations = {
+        ["<"]   = "<", [">"]   = ">",
+        ["!<"]  = "≮", ["!>"]  = "≯",
+        ["<<"]  = "≪", [">>"] = "≫",
+        ["="]   = "=", ["=="]  = "=",
+        ["<>"]  = "≠", ["!="]  = "≠",
+        ["<="]  = "≤", [">="]  = "≥",
+        ["=<"]  = "≦", ["=>"]  = "≧",
+        ["!=<"] = "≰", ["!=>"] = "≱",
+        ["~"]   = "≈", ["~~"]  = "≈",
+    }
+
+    for k, v in next, table.copy(relations) do relations[v] = v end
+
+ -- local binaries = {
+ --     ["+"] = "+",
+ --     ["-"] = "-",
+ --     ["/"] = "/",
+ --     ["*"] = "",
+ -- }
+
+    local separators = {
+        [","] = true,
+        [";"] = true,
+    }
+
+    local alternatives = {
+        -- not that many
+    }
+
+    local p_sign     = S("-+")
+    local p_script   = S("^")^1
+    local p_number   = R("09","..")^1 + lpeg.patterns.nestedbraces
+    local p_alpha    = R("az","AZ")^1
+    local p_variable = p_alpha * (P("_") * (p_number + p_alpha))^-1
+
+    local spacing    = P(" ")^0
+    local script     = Cs(p_script * Cc("{") * p_sign^0 * (p_number + p_variable) * Cc("}"))
+    local sign       = C(p_sign) + Cc("+")
+    local number     = C(p_number)
+    local variable   = C(p_variable)
+ -- local binary     = lpeg.utfchartabletopattern(binaries) / binaries
+    local relation   = lpeg.utfchartabletopattern(relations) / relations
+    local separator  = lpeg.utfchartabletopattern(separators)
+
+    local snippet = Ct (
+        (
+              spacing * sign * spacing * number    * spacing * variable
+            + spacing * sign * spacing * number    * spacing * Cc(false)
+            + spacing * sign * spacing * Cc(false) * spacing * variable
+        ) * (script + Cc(false))
+    )
+
+    local parser = Ct ( Ct (
+        ( Ct ( snippet^1 ) * spacing * relation    )^1
+      * ( Ct ( snippet^1 ) * spacing * separator^0 )
+    )^1 )
+
+    local num = "!"
+
+    local ctx_NC, ctx_NR = context.NC, context.NR
+    local ctx_typ = context.typ
+    local ctx_ord, ctx_rel = context.mathord, context.mathrel
+
+    local clean = table.setmetatableindex(function(t,k)
+        local v = gsub(k,"[{}]","")
+        t[k] = v
+        return v
+    end)
+
+    alternatives.equationsystem = function(action,str)
+        local rows = lpegmatch(parser,str)
+        if not rows then
+            ctx_typ("bad system, case 1: %s",1,str)
+            return
+        end
+        local nrow = #rows
+        local all = table.setmetatableindex("table")
+        for r=1,nrow do
+            local row = rows[r]
+            for s=1,#row,2 do
+                local set = row[s]
+                for v=1,#set do
+                    local vvv = set[v]
+                    local var = vvv[3]
+                    if not var then
+                        var = num
+                    end
+                    if set[var] then
+                        print("bad system, two constants")
+                    end
+                    set[var] = set[v]
+                    all[s][var] = true
+                    set[v] = nil
                 end
             end
         end
-        return m
-    end,
-}
-
-local useractions = {
-}
-
-interfaces.implement {
-    name      = "simplematrix",
-    arguments = "2 strings",
-    actions   = function(method,data)
-        local m = lpegmatch(rows,(gsub(data,"%s+"," ")))
-        for i=1,#m do
-            m[i] = lpegmatch(cols,m[i])
-        end
-        local methods = settings_to_array(method)
-        for i=1,#methods do
-            local detail = settings_to_array(methods[i])
-            local method = detail[1]
-            local action = actions[method] or useractions[method]
-            if action then
-                m = action(m,unpack(detail,2)) or m
+        --
+        local cnt = #rows[1]
+        for r=1,nrow do
+            if #rows[r] ~= cnt then
+                ctx_typ("bad system, case %i: %s",2,str)
+                return
             end
         end
-        for i=1,#m do
-            context("\\NC %{ \\NC }t \\NR",m[i])
+        for r=1,#rows[1] do
+            local a = keys(all[r])
+            sort(a,function(a,b)
+                return clean[a] < clean[b]
+            end)
+            all[r] = a
+        end
+        --
+        for r=1,nrow do
+            local row = rows[r]
+            for r=1,#row do
+                local set = row[r]
+                local how = all[r]
+                if #how > 0 then
+                 -- local done = false
+                    for i=1,#how do
+                        local k = how[i]
+                        local e = set[k]
+                        if e then
+                            ctx_NC()
+                         -- if not done and e[1] == "+" then
+                            if i == 1 and e[1] == "+" then
+                             -- ctx_ord("")
+                             -- ctx_hphantom(e[1])
+                             -- ctx_ord("")
+                            else
+                                ctx_ord("")
+                                context(e[1])
+                                ctx_ord("")
+                             -- done = true
+                            end
+                            ctx_NC()
+                            if e[2] then
+                                context(e[2])
+                             -- done = true
+                            end
+                            if e[3] then
+                                context(e[3])
+                             -- done = true
+                            end
+                            if e[4] then
+                                context(e[4])
+                             -- done = true
+                            end
+                        else
+                            ctx_NC()
+                         -- ctx_mathord("")
+                            ctx_NC()
+                        end
+                    end
+                else
+                    ctx_NC()
+                    ctx_ord("")
+                    context(set)
+                    ctx_ord("")
+                end
+            end
+            ctx_NR()
         end
     end
-}
 
-function mathematics.registersimplematrix(name,action)
-    if type(action) == "function" then
-        useractions[name] = action
-    end
+    interfaces.implement {
+        name      = "simplealign",
+     -- public    = true,
+        protected = true,
+        arguments = "3 strings",
+        actions   = function(alternative,action,str)
+            local a = alternatives[alternative]
+            if a then
+                a(action,str)
+            else
+                context(str)
+            end
+        end
+    }
+
 end
-
--- \cases{1, x>0 ; -1, x<0 }
-
-interfaces.implement {
-    name      = "simplecases",
-    arguments = "2 strings",
-    actions   = function(method,data)
-        -- no methods yet
-        local m = lpegmatch(rows,(gsub(data,"%s+"," ")))
-        for i=1,#m do
-            m[i] = lpegmatch(cols,m[i])
-        end
-        for i=1,#m do
-            context("\\NC %{ \\NC }t \\NR",m[i])
-        end
-    end
-}

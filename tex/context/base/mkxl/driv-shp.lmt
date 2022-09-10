@@ -990,6 +990,8 @@ local gluewidth = effectiveglue(current,this_box,true)
                     local usedorientation = false
                     if hasanchor then
                         anchor, source, target = getanchors(current)
+-- print(getanchors(current))
+-- if not anchor then anchor = 0 end
                     end
                     if hasorientation then
                         local orientation, xoffset, yoffset, woffset, hoffset, doffset = getorientation(current)

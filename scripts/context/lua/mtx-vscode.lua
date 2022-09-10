@@ -285,6 +285,20 @@ function scripts.vscode.generate(targetpath)
 
     end
 
+ -- local function registersettings()
+ --
+ --     local filename = "./settings.json"
+ --
+ --     local data = {
+ --         ["editor.bracketPairColorization.enabled"]                            = false,
+ --         ["editor.bracketPairColorization.independentColorPoolPerBracketType"] = false,
+ --     }
+ --
+ --     report("saving settings %a",filename)
+ --
+ --     io.savedata(filename,data)
+ -- end
+
     local function registertheme(theme)
 
         local category = theme.category
@@ -301,6 +315,7 @@ function scripts.vscode.generate(targetpath)
             ["name"]        = category,
             ["colors"]      = theme.colors,
             ["tokenColors"] = theme.styles,
+            ["settings"]    = theme.settings,
         }
 
         report("saving theme %a in %a",category,filename)
@@ -360,11 +375,13 @@ function scripts.vscode.generate(targetpath)
             displayName = "ConTeXt",
             description = "ConTeXt Syntax Highlighting",
             publisher   = "ConTeXt Development Team",
+            publisher   = "cdt",
             version     = "1.0.0",
             engines     = {
                 vscode = "*"
             },
             categories = {
+                "Programming Languages",
                 "Lexers",
                 "Syntaxes"
             },
@@ -596,6 +613,8 @@ function scripts.vscode.generate(targetpath)
             colors      = colors,
             styles      = styles,
         }
+
+     -- registersettings()
 
     end
 
@@ -3457,7 +3476,8 @@ function scripts.vscode.start()
     if path then
         local codecmd = environment.arguments.program or "code" -- can be codium
      -- local command = 'start "vs code context" ' .. codecmd .. ' --reuse-window --ignore-gpu-blacklist --extensions-dir "' .. path .. '" --install-extension context'
-        local command = 'start "vs code context" ' .. codecmd .. ' --reuse-window --extensions-dir "' .. path .. '" --install-extension context'
+     -- local command = 'start "vs code context" ' .. codecmd .. ' --reuse-window --extensions-dir "' .. path .. '" --install-extension context'
+        local command = 'start "vs code context" ' .. codecmd .. ' --reuse-window --extensions-dir "' .. path .. '" --verbose --force --install-extension cdt.context'
         report("running command: %s",command)
         os.execute(command)
     end

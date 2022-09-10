@@ -84,17 +84,27 @@
      {\popcolor#body}%
    \fi}
 
-% todo:
-%
-% \setupmathdelimited
-%   [topoffset=.2\exheight]
-%
-% \definemathdelimited
-%   [fourier]
-%   [rule=no,
-%    left=\zerocount,
-%    right="FE944] % 46 48
-%
+\integerdef\delimitedrighthatuc   \privatecharactercode{delimited right hat}
+\integerdef\delimitedrighttildeuc \privatecharactercode{delimited right tilde}
+\integerdef\delimitedrightcheckuc \privatecharactercode{delimited right check}
+
+% todo: some more .. are the offsets okay?
+
+\definemathdelimited
+  [fourier]
+  [\c!topoffset=.2\exheight,
+   \c!right=\delimitedrighthatuc]
+
+\definemathdelimited
+  [inversefourier]
+  [fourier]
+  [\c!right=\delimitedrightcheckuc]
+
+\definemathdelimited
+  [fuzzyfourier]
+  [fourier]
+  [\c!right=\delimitedrighttildeuc]
+
 % $ \autofences \fourier{(z+\frac12)} + \courier{(z+\frac12)} + \xourier{(z+\frac12)} $
 
 \protect \endinput

@@ -1150,30 +1150,14 @@
    \defineoverlay[#1:\v!background][\overlayanchorbox{#1:\v!background}]%
    \defineoverlay[#1:\v!foreground][\overlayanchorbox{#1:\v!foreground}]}
 
-\permanent\def\namedboxanchor#1%
-  {\csname\??boxanchorid#1\endcsname} % no checking
-
-% \permanent\protected\def\overlayanchorbox#1%
-%   {\begingroup
-%    \scratchcounter\csname\??boxanchorbox#1\endcsname
-%    \ifvoid\scratchcounter\else
-%      \setbox\scratchbox\hpack \s!source \namedboxanchor{#1}\bgroup
-%    % \setbox\scratchbox\hpack\bgroup
-%        \box\scratchcounter
-%      \egroup
-%    % \boxsource\scratchbox\namedboxanchor{#1}%
-%      \wd\scratchbox\overlaywidth
-%      \ht\scratchbox\overlayheight
-%      \dp\scratchbox\overlaydepth
-%      \box\scratchbox
-%    \fi
-%    \endgroup}
+\permanent\def\namedanchorbox#1%
+  {\begincsname\??boxanchorid#1\endcsname} % no checking
 
 \permanent\protected\def\overlayanchorbox#1%
   {\begingroup
    \scratchcounter\csname\??boxanchorbox#1\endcsname
    \ifvoid\scratchcounter\else
-     \boxsource\scratchcounter\namedboxanchor{#1}%
+     \boxsource\scratchcounter\namedanchorbox{#1}%
      \wd\scratchcounter\d_overlay_width
      \ht\scratchcounter\d_overlay_height
      \dp\scratchcounter\d_overlay_depth
@@ -1189,20 +1173,24 @@
       \scratchcounterone\csname\??boxanchorbox#1\endcsname\relax
       \scratchxoffset\boxanchorparameter\c!xoffset\relax
       \scratchyoffset\boxanchorparameter\c!yoffset\relax
-      \boxtarget\nextbox \namedboxanchor {#1}\relax
+      \boxtarget\nextbox \namedanchorbox {#1}\relax
       \boxanchors\nextbox
         % target
-        \ifcsname\??boxpreset\boxanchorparameter\c!target\endcsname
-          \lastnamedcs
-        \else
-          \halfwaytotallistanchorcode
-        \fi
+        \numexpr
+          \ifcsname\??boxpreset\boxanchorparameter\c!target\endcsname
+            \lastnamedcs
+          \else
+            \halfwaytotallistanchorcode
+          \fi
+        \relax
         % source
-        \ifcsname\??boxpreset\boxanchorparameter\c!source\endcsname
-          \lastnamedcs
-        \else
-          \halfwaytotallistanchorcode
-        \fi
+        \numexpr
+          \ifcsname\??boxpreset\boxanchorparameter\c!source\endcsname
+            \lastnamedcs
+          \else
+            \halfwaytotallistanchorcode
+          \fi
+        \relax
       \ifdim\scratchxoffset=\zeropoint\else
          \boxxoffset\nextbox\scratchxoffset
       \fi

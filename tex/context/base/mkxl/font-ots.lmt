@@ -435,7 +435,7 @@ end
 -- However, for arabic we need to keep them around for the sake of mark placement
 -- and indices.
 
-local function flattendisk(head,disc)
+local function flattendisk(head,disc) -- happen seldom, otherwise can be a helper
     local pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
     local prev, next = getboth(disc)
     local ishead = head == disc
@@ -472,7 +472,7 @@ local function flattendisk(head,disc)
     end
 end
 
-local function appenddisc(disc,list)
+local function appenddisc(disc,list) -- happen seldom, otherwise can be a helper
     local pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
     local posthead    = list
     local replacehead = copynodelist(list)
@@ -3955,19 +3955,11 @@ do
                     local lookupcache = step.coverage
                     while start do
                         local nxt, char, id = isnextchar(start,font,dynamic,state) -- we can move the data/state checks here
--- if forcetestrun and sequence.name == "s_s_7" then
---     if nuts.getid(start) == nodecodes.glyph then
---         print("C F D S",start,char,font,dynamic,state,nuts,getstate(start))
---     end
--- end
                         if char then
                             if skiphash and skiphash[char] then -- we never needed it here but let's try
                                 start = nxt
                             else
                                 local lookupmatch = lookupcache[char]
--- if forcetestrun and sequence.name == "s_s_7" then
---     print(lookupmatch)
--- end
                                 if lookupmatch then
                                     currentscale, currentxscale, currentyscale = getscales(start)
                                     local ok, df

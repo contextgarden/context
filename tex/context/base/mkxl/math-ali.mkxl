@@ -2760,6 +2760,61 @@
     \expandafter\startsubstack\the\scratchtoks\strut\stopsubstack
     \endgroup}
 
+%D Similar to simplecases:
+%D
+%D \starttyping
+%D \startformula
+%D     \equationsystem {
+%D        {(1-a)}x^{2x} - 3y_2 + 14z  = 2 + x,
+%D        {(1-a)}x^2    - 3y_2 +  4z <= 62,
+%D        {(1-a)}x^a    - 3y_2 +  4z >= 12,
+%D        {(1-a)}x^{2a} - 3y_2 + 24z != 4,
+%D               x^^2   - 3y_2 +  4z ~  1,
+%D               x^^2   - 3y_2 +  4z ≠  1,
+%D             -2x      -         4z <> 10,
+%D     }
+%D \stopformula
+%D \stoptyping
+
+\permanent\tolerant\protected\def\math_align_simple[#1]#*[#2]#:#3%
+  {\begingroup
+   \edef\currentmathsimplealign{#1}%
+   \setupcurrentmathsimplealign[#2]%
+   \math_simplealign_start[\currentmathsimplealign]%
+   \clf_simplealign{\mathsimplealignparameter\c!alternative}{\mathsimplealignparameter\c!action}{#3}%
+   \math_simplealign_stop
+   \endgroup}
+
+\appendtoks
+    \edef\p_simplecommand{\mathsimplealignparameter\c!simplecommand}%
+    \ifempty\p_simplecommand\else
+        \frozen\protected\instance\edefcsname\p_simplecommand\endcsname{\math_align_simple[\currentmathsimplealign]}%
+    \fi
+\to \everydefinemathsimplealign
+
+\definemathsimplealign % new !
+  [equationsystem]
+  [\c!simplecommand=equationsystem,
+   \c!alternative=equationsystem, % for the moment we use this key
+   \c!align={all:right},
+   \c!distance=\v!math,
+   \c!left=,
+   \c!right=]
+
+\definemathsimplealign
+  [lequationsystem]
+  [equationsystem]
+  [\c!simplecommand=lequationsystem,
+   \c!left={\startmathfenced[cases]},
+   \c!right=\stopmathfenced]
+
+\definemathsimplealign
+  [requationsystem]
+  [equationsystem]
+  [\c!simplecommand=requationsystem,
+   \c!left={\startmathfenced[sesac]},
+   \c!right=\stopmathfenced]
+
 \protect \endinput
 
 % \placeformula \startformula[-] \startmatrix

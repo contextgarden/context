@@ -996,3 +996,25 @@ function combine(target,source)
 end
 
 table.combine = combine
+
+-- If needed we can add something (some discussion on the list but I'm not sure if
+-- it makes sense because merging such mixed tables is quite unusual.
+--
+-- function table.himerged(...)
+--     local result = { }
+--     local r      = 0
+--     for i=1,select("#",...) do
+--         local s = select(i,...)
+--         if s then
+--             for k, v in next, s do
+--                 if type(k) == "number"  then
+--                     r = r + 1
+--                     result[r] = v
+--                 else
+--                     result[k] = v
+--                 end
+--             end
+--         end
+--     end
+--     return result
+-- end

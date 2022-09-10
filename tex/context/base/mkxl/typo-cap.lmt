@@ -38,7 +38,7 @@ local copy_node       = nuts.copy
 local endofmath       = nuts.endofmath
 local insertafter     = nuts.insertafter
 local findattribute   = nuts.findattribute
-local unsetattributes = nuts.unsetattributes
+----- unsetattributes = nuts.unsetattributes
 
 local nextglyph       = nuts.traversers.glyph
 

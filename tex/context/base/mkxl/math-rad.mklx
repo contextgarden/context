@@ -337,23 +337,28 @@
 %
 % \dorecurse{8}{$\mathhat{\blackrule[width=#1ex,color=gray]}$ }
 
+% \annuity {(x+1)} \Uchar"20E7
+
+\integerdef\delimitedleftanutityuc  \privatecharactercode{delimited left annuity}
+\integerdef\delimitedrightanutityuc \privatecharactercode{delimited right annuity}
+
 \definemathradical
   [rannuity]
   [\c!left=\zerocount,
-   \c!right="20E7,
+   \c!right=\delimitedrightanutityuc,
    \c!rightmargin=.05\emwidth]
 
 \definemathradical
   [lannuity]
-  [\c!left="FE942,
+  [\c!left=\delimitedleftanutityuc,
    \c!right=\zerocount,
    \c!leftmargin=.05\emwidth,
    \c!rightmargin=.05\emwidth]
 
 \definemathradical
   [lrannuity]
-  [\c!left="FE942,
-   \c!right="20E7,
+  [\c!left=\delimitedleftanutityuc,
+   \c!right=\delimitedrightanutityuc,
    \c!leftmargin=.05\emwidth,
    \c!rightmargin=.05\emwidth]
 

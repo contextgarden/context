@@ -227,7 +227,7 @@ state is with respect to the \quote {current page}. The possible values for the
 
 \topicindex{callbacks+inserts}
 
-This callback is called when the pagebuilder adds an insert. There is not much
+This callback is called when the page builder adds an insert. There is not much
 control over this mechanism but this callback permits some last minute
 manipulations of the spacing before an insert, something that might be handy when
 for instance multiple inserts (types) are appended in a row.
@@ -897,7 +897,7 @@ loading completely but will nevertheless generate errors.
 
 \stopsubsection
 
-\startsubsection[title={\cbk {missing_character}}]
+\startsubsection[title={\cbk {missing_character} and \cbk {process_character}}]
 
 \topicindex{callbacks+fonts}
 \topicindex{callbacks+characters}
@@ -907,6 +907,15 @@ have the requested character.
 
 \startfunctioncall
 function(<node> glyph, <number> font, <number> character)
+    -- no return value
+end
+\stopfunctioncall
+
+The \type {process_character} callback is experimental and gets called when a
+glyph node is created and the callback field in a character is set.
+
+\startfunctioncall
+function(<number> font, <number> character)
     -- no return value
 end
 \stopfunctioncall

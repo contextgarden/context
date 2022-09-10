@@ -1,5 +1,7 @@
 % language=us runpath=texruns:manuals/luametatex
 
+% \enabledirectives[backend.pdf.inmemory]
+
 % ------------------------   ------ ------------------   ------------------------
 % 2019-12-17  32bit  64bit   2020-01-10  32bit  64bit   2020-11-30  32bit  64bit
 % ------------------------   ------------------------   ------------------------
@@ -105,7 +107,7 @@
 % \enableexperiments [tabulateusesize]
 % \enableexperiments [tabulatesparseskips]
 
-\linebuffering
+\ifdefined\linebuffering \linebuffering \fi
 
 \enableexperiments[fonts.compact]
 % \enabledirectives[fonts.injections.method=advance] % tricky ... not all xoffsets are advance robust

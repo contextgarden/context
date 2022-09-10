@@ -165,17 +165,29 @@
 %D This can be used when a direct definition has been done and the selector has been
 %D lost. A problem is that \type {\next} needs to be unique (as it gets bound) (still?).
 
+% \def\syst_catcodes_reinstate_normal
+%   {\begingroup
+%    \edef\temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+%    \global\letcharcode\c_syst_catcodes_b\temp
+%    \endgroup}
+%
+% \def\syst_catcodes_reinstate_unexpanded
+%   {\begingroup
+%    \protected\edef\temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+%    \global\letcharcode\c_syst_catcodes_b\temp
+%    \endgroup}
+
+% I really need to get rid of this ...
+
+\let\m_syst_catcodes_temp\relax
+
 \def\syst_catcodes_reinstate_normal
-  {\begingroup
-   \edef\temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
-   \global\letcharcode\c_syst_catcodes_b\temp
-   \endgroup}
+  {\edef\m_syst_catcodes_temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+   \letcharcode\c_syst_catcodes_b\m_syst_catcodes_temp}
 
 \def\syst_catcodes_reinstate_unexpanded
-  {\begingroup
-   \protected\edef\temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
-   \global\letcharcode\c_syst_catcodes_b\temp
-   \endgroup}
+  {\protected\edef\m_syst_catcodes_temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+   \letcharcode\c_syst_catcodes_b\m_syst_catcodes_temp}
 
 \newconstant\defaultcatcodetable
 

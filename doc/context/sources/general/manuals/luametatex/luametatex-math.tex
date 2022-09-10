@@ -1035,6 +1035,7 @@ undefined will get presets, quite likely zero):
 \NC \prm {Umathaccentbottomovershoot}          \NC \NC \NR
 \NC \prm {Umathaccentsuperscriptdrop}          \NC \NC \NR
 \NC \prm {Umathaccentsuperscriptpercent}       \NC \NC \NR
+\NC \prm {Umathaccentextendmargin}             \NC margins added to automatically extended accents \NC \NR
 \NC \prm {Umathflattenedaccenttopshiftup}      \NC the amount that a wide top accent is shifted up \NC \NR
 \NC \prm {Umathflattenedaccentbottomshiftdown} \NC the amount that a wide bottom accent is shifted down \NC \NR
 \NC \prm {Umathdelimiterpercent}               \NC \NC \NR
@@ -1070,6 +1071,7 @@ defaults and tweak them in the goodie files:
 \NC AccentBottomOvershoot             \NC \prm {Umathaccentbottomovershoot}          \NC 0         \NC \NR
 \NC AccentSuperscriptDrop             \NC \prm {Umathaccentsuperscriptdrop}          \NC 0         \NC \NR
 \NC AccentSuperscriptPercent          \NC \prm {Umathaccentsuperscriptpercent}       \NC 0         \NC \NR
+\NC AccentExtendMargin                \NC \prm {Umathaccentextendmargin}             \NC 0         \NC \NR
 \NC FlattenedAccentTopShiftUp         \NC \prm {Umathflattenedaccenttopshiftup}      \NC undefined \NC \NR
 \NC FlattenedAccentBottomShiftDown    \NC \prm {Umathflattenedaccentbottomshiftdown} \NC undefined \NC \NR
 \NC DelimiterPercent                  \NC \prm {Umathdelimiterpercent}               \NC 0         \NC \NR
@@ -1795,22 +1797,62 @@ concerns the width.
 
 \stopsubsection
 
-\startsubsection[title={Building radicals with \prm {Uradical} and \prm {Uroot}}]
+\startsubsection[title={Building radicals with \prm {Uradical}, \prm {Uroot} and \prm {Urooted}}]
 
 \topicindex {math+radicals}
+\topicindex {math+roots}
 
 The new primitive \prm {Uroot} allows the construction of a radical noad
 including a degree field. Its syntax is an extension of \prm {Uradical}:
 
 \starttyping
-\Uradical <fam integer> <char integer> <radicand>
-\Uroot    <fam integer> <char integer> <degree> <radicand>
+\Uradical
+    <fam integer> <left char integer>
+    <content>
+\Uroot
+    <fam integer> <left char integer>
+    <degree>
+    <content>
+\Urooted
+    <fam integer> <left char integer>
+    <fam integer> <right char integer>
+    <degree>
+    <content>
 \stoptyping
 
 The placement of the degree is controlled by the math parameters \prm
 {Umathradicaldegreebefore}, \prm {Umathradicaldegreeafter}, and \prm
 {Umathradicaldegreeraise}. The degree will be typeset in \prm
 {scriptscriptstyle}.
+
+In \CONTEXT\ we use \prm {Urooted} to wrap something in an \quote {annuity}
+umbrella where there is a symbol at the end that has to behave like the radical
+does at the left end: adapt its size. In order to support variants this primitive
+supports two delimiters.
+
+{\em todo: mention optional keywords}
+
+\stopsubsection
+
+\startsubsection[title={Tight delimiters with \prm {Udelimited}}]
+
+\topicindex {math+radicals}
+\topicindex {math+delimiters}
+
+This new primitive is like \prm {Rooted} in that it takes two delimiters but it
+takes no degree and no rule is drawn.
+
+\starttyping
+\Udelimited
+    <fam integer> <left char integer>
+    <fam integer> <right char integer>
+    <content>
+\stoptyping
+
+In \CONTEXT\ we use it for fourier notations in which case there is only a right
+symbol (like a hat).
+
+{\em todo: mention optional keywords}
 
 \stopsubsection
 
@@ -2844,6 +2886,39 @@ You'll notice that we apply more severe penalties at the edges:
 \stopsubsection
 
 \stopsection
+
+\startsubsection[title={\prm {Umathdiscretionary} and \prm {hmcode}}]
+
+\topicindex {math+discretionaries}
+
+The usual \prm {discretionary} command is supported in math mode but it has the
+disadvantage that one needs to make sure that the content triplet does the math
+right (especially the style). This command takes an optional class specification.
+
+\starttyping
+\Umathdiscretionary [class n] {+} {+} {+}
+\stoptyping
+
+It uses the same logic as \prm {mathchoice} but in this case we handle three
+snippets in the current style.
+
+A fully automatic mechanism kicks in when a character has a \prm {hmcode} set:
+
+\starttabulate[|c|l|p|]
+\DB bit \BC meaning \BC explanation \NC \NR
+\TB
+\NC 1   \NC normal  \NC a discretionary is created with the same components \NC \NR
+\NC 2   \NC italic  \NC following italic correction is kept with the component \NC \NR
+\LL
+\stoptabulate
+
+So we can say:
+
+\starttyping
+\hmcode `+ 3
+\stoptyping
+
+When the \type {italic} bit is set italic correction is kept at a linebreak.
 
 \stopchapter
 

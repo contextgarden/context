@@ -73,6 +73,7 @@ local setshift     = nuts.setshift
 local setwidth     = nuts.setwidth
 local setsubtype   = nuts.setsubtype
 local setleader    = nuts.setleader
+local setclass     = nuts.setclass
 
 local setdata      = nuts.setdata
 local setruledata  = nuts.setruledata
@@ -452,11 +453,18 @@ function nutpool.temp()
     return copy_nut(temp)
 end
 
-function nutpool.noad()         return copy_nut(noad)         end
+function nutpool.noad(class)
+    local n = copy_nut(noad)
+    if class then
+        setsubtype(n,class)
+        setclass(n,class,class,class)
+    end
+    return n
+end
+
 function nutpool.delimiter()    return copy_nut(delimiter)    end  nutpool.delim = nutpool.delimiter
 function nutpool.fence()        return copy_nut(fence)        end
 function nutpool.submlist()     return copy_nut(submlist)     end
-function nutpool.noad()         return copy_nut(noad)         end
 function nutpool.fence()        return copy_nut(fence)        end
 function nutpool.accent()       return copy_nut(accent)       end
 function nutpool.radical()      return copy_nut(radical)      end

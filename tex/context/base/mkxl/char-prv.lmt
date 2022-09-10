@@ -208,40 +208,6 @@ characters.private={
    unicodeslot=0xFE937,
   },
   --
-  [0xFE942]={
-   description="COMBINING REVERSE ANNUITY SYMBOL BASE",
-   unicodeslot=0xFE942,
-  },
-  [0xFE943]={
-   description="COMBINING REVERSE ANNUITY SYMBOL FILL",
-   unicodeslot=0xFE942,
-  },
-  --
-  [0xFE944]={
-   description="COMBINING FOURIER CIRCUMFLEX BASE",
-   unicodeslot=0xFE942,
-  },
-  [0xFE945]={
-   description="COMBINING FOURIER CIRCUMFLEX FILL",
-   unicodeslot=0xFE942,
-  },
-  [0xFE946]={
-   description="COMBINING FOURIER TILDE BASE",
-   unicodeslot=0xFE942,
-  },
-  [0xFE947]={
-   description="COMBINING FOURIER TILDE FILL",
-   unicodeslot=0xFE942,
-  },
-  [0xFE948]={
-   description="COMBINING FOURIER CARON BASE",
-   unicodeslot=0xFE942,
-  },
-  [0xFE949]={
-   description="COMBINING FOURIER CARON FILL",
-   unicodeslot=0xFE942,
-  },
-  --
   [0xFE957]={ -- vfu
    description="SMASHED PRIME 0x02057",
    unicodeslot=0xFE957,

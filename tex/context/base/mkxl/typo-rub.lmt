@@ -73,6 +73,8 @@ local new_kern        = nodepool.kern
 local setprop         = nuts.setprop
 local getprop         = nuts.getprop
 
+local findattribute   = nuts.findattribute
+
 local enableaction    = nodes.tasks.enableaction
 
 local nofrubies       = 0
@@ -85,6 +87,12 @@ typesetters.rubies    = rubies
 
 local trace_rubies    = false  trackers.register("typesetters.rubies",function(v) trace_rubies = v end)
 local report_rubies   = logs.reporter("rubies")
+
+-- todo: use the more modern lmtx storage model
+
+local registervalue   = attributes.registervalue
+local getvalue        = attributes.getvalue
+local texsetattribute = tex.setattribute
 
 do
 
@@ -177,8 +185,9 @@ do
             start     = false,
             stop      = false,
         }
-        rubylist[nofrubies] = setmetatableindex(t, shared)
-        texsetattribute(a_ruby,nofrubies)
+     -- rubylist[nofrubies] = setmetatableindex(t,shared)
+     -- texsetattribute(a_ruby,nofrubies)
+        texsetattribute(a_ruby,registervalue(a_ruby,setmetatableindex(t,shared)))
     end
 
     implement {
@@ -189,51 +198,156 @@ do
 
 end
 
-function rubies.check(head)
-    local current = head
-    local start   = nil
-    local stop    = nil
-    local found   = nil
+-- function rubies.check(head)
+--     local current = head
+--     local start   = nil
+--     local stop    = nil
+--     local found   = nil
+--
+--     local function flush(where)
+--         local r = rubylist[found]
+--         if r then
+--             local prev = getprev(start)
+--             local next = getnext(stop)
+--             setprev(start)
+--             setnext(stop)
+--             local h = hpack(start)
+--             if start == head then
+--                 head = h
+--             else
+--                 setlink(prev,h)
+--             end
+--             setlink(h,next)
+--             local bwidth = getwidth(h)
+--             local rwidth = r.width
+--             r.basewidth  = bwidth
+--             r.start      = start
+--             r.stop       = stop
+--             setprop(h,"ruby",found)
+--             if rwidth > bwidth then
+--                 -- ruby is wider
+--                 setwidth(h,rwidth)
+--             end
+--         end
+--     end
+--
+--     while current do
+--         local nx = getnext(current)
+--         local id = getid(current)
+--         if id == glyph_code then
+--             local a  = getattr(current,a_ruby)
+--             if not a then
+--                 if found then
+--                     flush("flush 1")
+--                     found = nil
+--                 end
+--             elseif a == found then
+--                 stop = current
+--             else
+--                 if found then
+--                     flush("flush 2")
+--                 end
+--                 found = a
+--                 start = current
+--                 stop  = current
+--             end
+--             -- go on
+--         elseif id == kern_code and getsubtype(current,fontkern_code) then
+--             -- go on
+--         elseif found and id == disc_code then
+--             -- go on (todo: look into disc)
+--         elseif found then
+--             flush("flush 3")
+--             found = nil
+--         end
+--         current = nx
+--     end
+--
+--     if found then
+--         flush("flush 4")
+--     end
+--     return head, true -- no need for true
+-- end
 
-    local function flush(where)
-        local r = rubylist[found]
-        if r then
-            local prev = getprev(start)
-            local next = getnext(stop)
-            setprev(start)
-            setnext(stop)
-            local h = hpack(start)
-            if start == head then
-                head = h
-            else
-                setlink(prev,h)
-            end
-            setlink(h,next)
-            local bwidth = getwidth(h)
-            local rwidth = r.width
-            r.basewidth  = bwidth
-            r.start      = start
-            r.stop       = stop
-            setprop(h,"ruby",found)
-            if rwidth > bwidth then
-                -- ruby is wider
-                setwidth(h,rwidth)
+function rubies.check(head)
+    local _, current = findattribute(head,a_ruby)
+    if current then
+
+        local start   = nil
+        local stop    = nil
+        local found   = nil
+
+        local function flush(where)
+--            local r = rubylist[found]
+local r = getvalue(a_ruby,found)
+            if r then
+                -- can be an option
+                while start ~= stop and getid(start) == glue_code do
+                    start = getnext(start)
+                end
+                while stop ~= start and getid(stop) == glue_code do
+                    stop = getprev(stop)
+                end
+                --
+                local prev = getprev(start)
+                local next = getnext(stop)
+                setprev(start)
+                setnext(stop)
+                local h = hpack(start)
+                if start == head then
+                    head = h
+                else
+                    setlink(prev,h)
+                end
+                setlink(h,next)
+                local bwidth = getwidth(h)
+                local rwidth = r.width
+                r.basewidth  = bwidth
+                r.start      = start
+                r.stop       = stop
+                setprop(h,"ruby",found)
+                if rwidth > bwidth then
+                    -- ruby is wider
+                    setwidth(h,rwidth)
+                end
             end
         end
-    end
 
-    while current do
-        local nx = getnext(current)
-        local id = getid(current)
-        if id == glyph_code then
+--         while current do
+--             local nx = getnext(current)
+--             local a  = getattr(current,a_ruby)
+--             if not a then
+--                 if found then
+--                     flush("flush 1")
+--                     found = nil
+--                 end
+--             elseif a == found then
+--                 stop = current
+--             else
+--                 if found then
+--                     flush("flush 2")
+--                 end
+--                 found = a
+--                 start = current
+--                 stop  = current
+--             end
+--             current = nx
+--         end
+
+        -- todo: we can avoid a lookup
+
+        while current do
+            local nx = getnext(current)
             local a  = getattr(current,a_ruby)
             if not a then
                 if found then
                     flush("flush 1")
                     found = nil
                 end
+_, current = findattribute(nx,a_ruby)
             elseif a == found then
                 stop = current
+current = nx
             else
                 if found then
                     flush("flush 2")
@@ -241,30 +355,26 @@ function rubies.check(head)
                 found = a
                 start = current
                 stop  = current
+current = nx
             end
-            -- go on
-        elseif id == kern_code and getsubtype(current,fontkern_code) then
-            -- go on
-        elseif found and id == disc_code then
-            -- go on (todo: look into disc)
-        elseif found then
-            flush("flush 3")
-            found = nil
         end
-        current = nx
+
     end
+
     if found then
         flush("flush 4")
     end
     return head, true -- no need for true
 end
 
+
 local attach
 
 local function whatever(current,list)
     local a = getprop(current,"ruby")
     if a then
-        local ruby    = rubylist[a]
+--         local ruby    = rubylist[a]
+local ruby = getvalue(a_ruby,a)
         local align   = ruby.align   or v_middle
         local stretch = ruby.stretch or v_no
         local hoffset = ruby.hoffset or 0
@@ -358,7 +468,7 @@ local function whatever(current,list)
             setlist(current,text)
         end
         setprop(current,"ruby",false)
-        rubylist[a] = nil
+--         rubylist[a] = nil
     elseif list then
         attach(list)
     end

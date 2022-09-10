@@ -96,7 +96,6 @@
 		<cd:variable name='author' value='autor'/>
 		<cd:variable name='auto' value='auto'/>
 		<cd:variable name='autointro' value='autointro'/>
-		<cd:variable name='autopunctuation' value='autopunctuation'/>
 		<cd:variable name='back' value='zurueck'/>
 		<cd:variable name='background' value='hintergrund'/>
 		<cd:variable name='backmatter' value='epiloge'/>
@@ -686,6 +685,9 @@
 		<cd:constant name='autofile' value='autofile'/>
 		<cd:constant name='autofocus' value='autofocus'/>
 		<cd:constant name='autohang' value='autohang'/>
+		<cd:constant name='autonumbers' value='autonumbers'/>
+		<cd:constant name='autopunctuation' value='autopunctuation'/>
+		<cd:constant name='autospacing' value='autospacing'/>
 		<cd:constant name='autostrut' value='autostrut'/>
 		<cd:constant name='autowidth' value='autobreite'/>
 		<cd:constant name='availableheight' value='availableheight'/>
@@ -876,6 +878,7 @@
 		<cd:constant name='frameradius' value='rahmenradius'/>
 		<cd:constant name='frames' value='umrahmen'/>
 		<cd:constant name='freeregion' value='freeregion'/>
+		<cd:constant name='freezespacing' value='freezespacing'/>
 		<cd:constant name='from' value='von'/>
 		<cd:constant name='functioncolor' value='functioncolor'/>
 		<cd:constant name='functionstyle' value='functionstyle'/>
@@ -956,6 +959,7 @@
 		<cd:constant name='lastpubsep' value='lastpubsep'/>
 		<cd:constant name='layout' value='layout'/>
 		<cd:constant name='left' value='links'/>
+		<cd:constant name='leftclass' value='leftclass'/>
 		<cd:constant name='leftcolor' value='linkerfarbe'/>
 		<cd:constant name='leftcompoundhyphen' value='leftcompoundhyphen'/>
 		<cd:constant name='leftedge' value='linkekante'/>
@@ -1014,6 +1018,7 @@
 		<cd:constant name='menu' value='menue'/>
 		<cd:constant name='method' value='methode'/>
 		<cd:constant name='middle' value='mittig'/>
+		<cd:constant name='middleclass' value='middleclass'/>
 		<cd:constant name='middlecolor' value='middlecolor'/>
 		<cd:constant name='middlecommand' value='middlecommand'/>
 		<cd:constant name='middlesource' value='middlesource'/>
@@ -1060,6 +1065,8 @@
 		<cd:constant name='numberconversionset' value='numberconversionset'/>
 		<cd:constant name='numberdistance' value='numberdistance'/>
 		<cd:constant name='numbering' value='nummerierung'/>
+		<cd:constant name='numberlocation' value='numberlocation'/>
+		<cd:constant name='numbermethod' value='numbermethod'/>
 		<cd:constant name='numberorder' value='numberorder'/>
 		<cd:constant name='numberprefix' value='numberprefix'/>
 		<cd:constant name='numbersegments' value='numbersegments'/>
@@ -1070,6 +1077,7 @@
 		<cd:constant name='numberstopper' value='numberstopper'/>
 		<cd:constant name='numberstrut' value='numberstrut'/>
 		<cd:constant name='numberstyle' value='nummernstil'/>
+		<cd:constant name='numberthreshold' value='numberthreshold'/>
 		<cd:constant name='numberwidth' value='numberwidth'/>
 		<cd:constant name='nx' value='nx'/>
 		<cd:constant name='ny' value='ny'/>
@@ -1123,6 +1131,7 @@
 		<cd:constant name='palet' value='palette'/>
 		<cd:constant name='paper' value='papier'/>
 		<cd:constant name='paragraph' value='absatz'/>
+		<cd:constant name='penalties' value='penalties'/>
 		<cd:constant name='period' value='period'/>
 		<cd:constant name='place' value='platziere'/>
 		<cd:constant name='placehead' value='setzekopf'/>
@@ -1176,6 +1185,7 @@
 		<cd:constant name='reverse' value='reverse'/>
 		<cd:constant name='right' value='rechts'/>
 		<cd:constant name='rightchars' value='rightchars'/>
+		<cd:constant name='rightclass' value='rightclass'/>
 		<cd:constant name='rightcolor' value='rechterfarbe'/>
 		<cd:constant name='rightcompoundhyphen' value='rightcompoundhyphen'/>
 		<cd:constant name='rightedge' value='rechtekante'/>

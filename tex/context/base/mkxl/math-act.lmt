@@ -1746,12 +1746,21 @@ do
                 local method   = entry[2]
                 local fraction = entry[3]
                 local width    = 0
-                if how == "c" then
-                    width = characters[fraction].width  -- char
-                elseif how == "s" then
-                    width = fraction * parameters.space -- space
+                local height   = 0
+             -- local depth    = 0
+                if method == "c" then
+                    local template = characters[fraction]
+                    width  = template.width
+                    height = template.height
+                 -- depth  = template.depth
+                elseif method == "s" then
+                    width  = fraction * parameters.space -- space
+                    height = 0
+                 -- depth  = 0
                 else
                     width = fraction * parameters.quad  -- quad
+                    height = 0
+                 -- depth  = 0
                 end
                 if trace_tweaking then
                     report_tweak("setting width of %U to %p",target,original,unicode,width)
@@ -1759,6 +1768,8 @@ do
                 characters[unicode] = {
                     width    = width,
                  -- advance  = width,
+                    height   = height,
+                 -- depth    = depth,
                     unicode  = unicode,
                     commands = {
                      -- { "slot", 0, 32 },
@@ -1990,10 +2001,12 @@ do
     -- radicals and actuarians are never seen together. We could also have a smaller
     -- extender.
 
+    local nps = fonts.helpers.newprivateslot
+
     local radical   <const> = 0x0221A
-    local actuarian <const> = 0x020E7
-    local nairautca <const> = 0xFE942
-    local placehold <const> = 0xFE943
+    local actuarian <const> = nps("delimited right annuity") -- 0x020E7
+    local nairautca <const> = nps("delimited left annuity" )
+    local placehold <const> = nps("delimited ghost annuity")
 
     function mathtweaks.addactuarian(target,original,parameters)
         local characters = target.characters
@@ -2004,6 +2017,21 @@ do
         local basedepth  = basechar.depth
         local basetotal  = baseheight + basedepth
         local used       = baseheight
+        --
+        characters[0x020E7] = {
+            width    = 6*linewidth,
+            height   = baseheight,
+            depth    = basedepth,
+            unicode  = actuarian,
+            callback = "devirtualize",
+            commands = {
+                upcommand[baseheight-4*linewidth],
+                { "rule", linewidth, 4*linewidth },
+                downcommand[basetotal/2-linewidth],
+                { "rule", basetotal/2, linewidth },
+            },
+        }
+        --
         characters[actuarian] = {
             width    = 2*linewidth,
             height   = baseheight,
@@ -2086,12 +2114,12 @@ do
     -- todo: make callback because we can delay it but then we need to stack
     -- callbacks
 
-    -- todo: use named privates for snippets
+    local nps = fonts.helpers.newprivateslot
 
     local list = {
-        { 0x302, 0xFE944, 0xFE945 },
-        { 0x303, 0xFE946, 0xFE947 },
-        { 0x30C, 0xFE948, 0xFE949 },
+        { 0x302, nps("delimited right hat"  ), nps("delimited ghost hat"  ) },
+        { 0x303, nps("delimited right tilde"), nps("delimited ghost tilde") },
+        { 0x30C, nps("delimited right check"), nps("delimited ghost check") },
     }
 
     function mathtweaks.addfourier(target,original,parameters)

@@ -220,7 +220,7 @@
      \fi
    \endcsname}
 
-\setvalue{\??discretionarymode n}#1%
+\defcsname\??discretionarymode n\endcsname#1%
   {\detokenize{#1}}
 
 %D The macro \type{\lang_discretionaries_check_before} takes care of loners like
@@ -257,9 +257,9 @@
    \ifx          :\nexttoken \settrue \punctafterdiscretionary \orelse
    \ifx          ;\nexttoken \settrue \punctafterdiscretionary \fi}
 
-\letvalue{\??discretionarymode m}\handlemathmodediscretionary
+\letcsname\??discretionarymode m\endcsname\handlemathmodediscretionary
 
-\setvalue{\??discretionarymode t}#1%
+\defcsname\??discretionarymode t\endcsname#1%
   {\bgroup
    \let\nextnextnext\egroup
    \def\next##1#1%
@@ -349,7 +349,7 @@
      \fi
    \endcsname}
 
-\setuvalue{\??discretionarymode d}#1%
+\protected\defcsname\??discretionarymode d\endcsname#1%
   {\edef\lang_discretionaries_token{\detokenize{#1}}%
    \let\lang_discretionaries_action\compoundhyphen
    \ifcsname\??discretionaryaction\lang_discretionaries_token\endcsname
@@ -358,7 +358,7 @@
      \expandafter\indirectdiscretionary
    \fi{#1}}
 
-\setuvalue{\??discretionarymode i}#1%
+\protected\defcsname\??discretionarymode i\endcsname#1%
  %{\prewordbreak\discretionary{\hbox{#1}}{}{\hbox{#1}}\postwordbreak}
   {\wordboundary\discretionary{\hbox{#1}}{}{\hbox{#1}}\wordboundary}
  %{\discretionary options \plusthree{\hbox{#1}}{}{\hbox{#1}}}

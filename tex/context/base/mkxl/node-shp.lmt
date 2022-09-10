@@ -49,17 +49,17 @@ do
 
     local report  = logs.reporter("shipout")
 
-    local trace   = false  trackers.register("backend", "cleanup", function(v) trace = v end)
+    local trace   = false  trackers.register("backend.cleanup", function(v) trace = v end)
 
-    local flatten = true -- always true
+    local flatten = true -- also done as line option
     local soften  = true -- true by default
 
     nodes.handlers.cleanuppage = function(head)
-        local count    = 0
+     -- local count    = 0
         local found    = 0
         local replaced = 0
         if flatten then
-            head, count = flattendiscretionaries(head)
+            head, count = flattendiscretionaries(head,true) -- nested
         end
         if soften then
             head, found, replaced = softenhyphens(head) -- could have been a lua loop
