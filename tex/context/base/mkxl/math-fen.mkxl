@@ -349,7 +349,9 @@
    \setfalse\c_math_fenced_sized
    \let\math_fenced_middle\math_fenced_middle_sized
  % \enforced\let\middle\math_fenced_middle_sized
-   #1%
+\begingroup
+   #1% otherwise middle interferes
+\endgroup
    \settrue\c_math_fenced_sized
    \math_fenced_right
    \setfalse\c_math_fenced_sized
@@ -1122,6 +1124,9 @@
    \relax
    \setmathoptions\mathclosecode\numexpression
      \setmathoptions\mathclosecode bor \autoinjectclassoptioncode
+   \relax
+   \setmathoptions\mathmiddlecode\numexpression
+     \setmathoptions\mathmiddlecode bor \autoinjectclassoptioncode
    \relax}
 
 \protect

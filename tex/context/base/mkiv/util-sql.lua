@@ -121,7 +121,7 @@ if optional then
         local m = methods[k]
         if m then
             report_state("start loading method %a as %a",k,m)
-            require("libs-imp-" .. m .. "lmt") -- brrr
+            require("libs-imp-" .. m .. ".lmt") -- brrr
             report_state("loading method %a done",k)
             return rawget(t,m)
         else

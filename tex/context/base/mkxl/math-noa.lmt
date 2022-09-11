@@ -96,6 +96,8 @@ local setattrlist        = nuts.setattrlist
 local setwidth           = nuts.setwidth
 local setheight          = nuts.setheight
 local setdepth           = nuts.setdepth
+local setdelimiter       = nuts.setdelimiter
+local setclass           = nuts.setclass
 
 local getfield           = nuts.getfield
 local getnext            = nuts.getnext
@@ -878,7 +880,7 @@ do
                 local method = div(a,100)
                 local size   = a % 100
                 setattr(pointer,a_mathsize,0)
-                local delimiter = getfield(pointer,"delimiter")
+                local delimiter = getdelimiter(pointer)
                 if delimiter then
                     local chr, fnt, fam = getcharspec(delimiter)
                     if chr > 0 and fnt > 0 then
@@ -920,8 +922,8 @@ do
     local dummyfencechar  = 0x2E
 
     local function makefence(what,char,template)
-        local d = new_delimiter() -- todo: attr
-        local f = new_fence()     -- todo: attr
+        local d = new_delimiter()
+        local f = new_fence()
         if char then
             local sym = getnucleus(char)
             local chr, fnt, fam = getcharspec(sym)
@@ -935,8 +937,8 @@ do
         setattrlist(d,template)
         setattrlist(f,template)
         setsubtype(f,what)
-        setfield(f,"delimiter",d)
-        setfield(f,"class",-1) -- tex itself does this, so not fenceclasses[what]
+        setdelimiter(f,d)
+        setclass(f,-1) -- tex itself does this, so not fenceclasses[what]
         return f
     end
 
@@ -1834,9 +1836,11 @@ do
 
     local a_numbers = privateattribute("mathnumbers")
     local a_spacing = privateattribute("mathspacing")
+    local a_fencing = privateattribute("mathfencing")
 
-    local numbers   = { }
-    local spacing   = { }
+    local numbers = { }
+    local spacing = { }
+    local fencing = { }
 
     local separators = {
         [0x2E] = { 0x2E, 0x2C, 0x002E, 0x002C, 0x2008, 0x2008 }, -- . -- punctuationspace
@@ -1859,6 +1863,18 @@ do
     local colons = {
         [0x003A] = snoloc,
         [0x2236] = snoloc,
+    }
+
+    local middles = {
+        [0x007C] = true,
+        [0x2016] = true,
+        [0x2980] = true,
+    }
+
+    local singles = {
+        0x007C,
+        0x2016,
+        0x2980,
     }
 
     local followedbyspace_code = tex.noadoptioncodes.followedbyspace
@@ -1942,6 +1958,56 @@ do
         end
     end
 
+    -- we can share code, see earlier
+
+    local function makefence(chr,fam,subtype,class,template)
+        local f = new_fence()
+        local d = new_delimiter()
+        setchar(d,chr)
+        setfam(d,fam)
+        setattrlist(d,template)
+        setattrlist(f,template)
+        setsubtype(f,subtype)
+        setdelimiter(f,d)
+        setclass(f,class) -- tex itself does this, so not fenceclasses[what]
+        return f
+    end
+
+    -- we loose scripts so maybe also copy these
+
+    fencing[mathchar_code] = function(pointer,what,n,parent)
+        if getattr(pointer,a_fencing) and pointer == getnucleus(parent) then
+            local oldchar = getcharspec(pointer)
+            local found   = middles[oldchar]
+            if found then
+                local prev, next = getboth(parent)
+                if getcharspec(next) == oldchar then
+                    local nextnext = getnext(next)
+                    -- we need to preserve the followed property
+                    if getcharspec(nextnext) == oldchar then
+                        oldchar = singles[3]
+                        prev, parent = nuts.remove(prev,parent,true)
+                        prev, parent = nuts.remove(prev,parent,true)
+                    else
+                        oldchar = singles[2]
+                        prev, parent = nuts.remove(prev,parent,true)
+                    end
+                    next = getnext(parent)
+                    pointer = getnucleus(parent)
+                    setchar(pointer,oldchar)
+                end
+                if followedbyspace(prev) and followedbyspace(parent) then
+                    local chr, fnt, fam = getcharspec(pointer)
+                    local f1 = makefence(0,0,0,0,pointer)
+                    local f2 = makefence(chr,fam,middlefence_code,middle_class,pointer)
+                    setlink(prev,f1,f2,next)
+                    flushnode(parent)
+                end
+                return true, parent
+            end
+        end
+    end
+
     -- numbers
 
     function handlers.numbers(head,style,penalties)
@@ -1970,14 +2036,34 @@ do
 
     local enable = function()
         enableaction("math", "noads.handlers.spacing")
-     -- if trace_numbers then
-     --     report_spacing("enabling math spacinf")
+     -- if trace_spacing then
+     --     report_spacing("enabling math spacing")
      -- end
         enable = false
     end
 
     implement {
         name     = "initializemathspacing",
+        actions  = enable,
+        onlyonce = true,
+    }
+
+    -- fences
+
+    function handlers.fencing(head,style,penalties)
+        processnoads(head,fencing,"fencing")
+    end
+
+    local enable = function()
+        enableaction("math", "noads.handlers.fencing")
+     -- if trace_fencing then
+     --     report_fencing("enabling math fencing")
+     -- end
+        enable = false
+    end
+
+    implement {
+        name     = "initializemathfencing",
         actions  = enable,
         onlyonce = true,
     }

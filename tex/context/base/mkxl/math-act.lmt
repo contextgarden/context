@@ -2208,10 +2208,12 @@ do
                 ["end"]  = used,
                 glyph    = unicode,
                 start    = 0,
+             -- start    = used/5,
             },
             {
                 advance  = total,
-                ["end"]  = 0,
+             -- ["end"]  = 0,
+                ["end"]  = used/5, -- prevents small gap with inward curved endpoints
                 extender = 1,
                 glyph    = unicode,
                 start    = used,
@@ -2226,7 +2228,8 @@ do
         local height     = basechar.height
         local depth      = basechar.depth
         local advance    = (parameters.advance or 1/10) * width
-        local used       = 0.8*height
+     -- local used       = 0.8*height
+        local used       = 1.2*height -- large overlap because no smaller pieces
         local total      = height + depth
         characters[single].vparts = extensible(single,total,used)
         characters[double] = {

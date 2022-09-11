@@ -737,6 +737,7 @@
 \definesystemattribute[mathvariant]    [public]
 \definesystemattribute[mathnumbers]    [public]
 \definesystemattribute[mathspacing]    [public]
+\definesystemattribute[mathfencing]    [public]
 
 \definesystemattribute[displaymath]    [public]
 
@@ -2816,6 +2817,26 @@
 
 \setupmathematics
   [\c!autonumbers=\v!no]
+
+\installcorenamespace{autofencing}
+
+\permanent\protected\def\enablemathautofencing
+  {\attribute\mathfencingattribute\plusone
+   \clf_initializemathfencing}
+
+\permanent\protected\def\disablemathautofencing
+  {\attribute\mathfencingattribute\attributeunsetvalue}
+
+\appendtoks
+    \ifcstok{\mathematicsparameter\c!autofencing}\v!yes
+      \enablemathautofencing
+    \else
+      \disablemathautofencing
+    \fi
+\to \everysetupmathematics
+
+\setupmathematics
+  [\c!autofencing=\v!no]
 
 %D The consequences of setting this are as follows:
 %D

@@ -7636,6 +7636,10 @@ return {
    ["en"]="autospacing",
    ["fr"]="autospacing",
   },
+  ["autofencing"]={
+   ["en"]="autofencing",
+   ["fr"]="autofencing",
+  },
   ["autonumbers"]={
    ["en"]="autonumbers",
    ["fr"]="autonumbers",

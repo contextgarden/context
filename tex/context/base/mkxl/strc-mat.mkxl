@@ -1319,7 +1319,7 @@
   {\raggedright
    \mathgluemode\plustwo
    \c_strc_math_ragged_status\plustwo
-   \strc_math_analyze_box}\stopformula
+   \strc_math_analyze_box}
 
 \def\strc_math_setup_align_auto
   {\ifcsname\??mathtextalign\formulaparameter\c!align:\v!auto\endcsname

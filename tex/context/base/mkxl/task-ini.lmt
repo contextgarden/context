@@ -100,6 +100,7 @@ appendaction("shipouts",     "wrapup",      "luatex.synctex.collect",           
 appendaction("math",         "normalizers", "noads.handlers.showtree",                          nil, "nonut",  "disabled"  )
 appendaction("math",         "normalizers", "noads.handlers.numbers",                           nil, "nonut",  "disabled"  )
 appendaction("math",         "normalizers", "noads.handlers.spacing",                           nil, "nonut",  "disabled"  )
+appendaction("math",         "normalizers", "noads.handlers.fencing",                           nil, "nonut",  "disabled"  )
 appendaction("math",         "normalizers", "noads.handlers.unscript",                          nil, "nonut",  "enabled"   )
 appendaction("math",         "normalizers", "noads.handlers.unstack",                           nil, "nonut",  "disabled"  )
 appendaction("math",         "normalizers", "noads.handlers.relocate",                          nil, "nonut",  "enabled"   )

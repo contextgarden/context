@@ -1,0 +1,19 @@
+\setupbodyfont[pagella]
+
+\starttext
+
+\startTEXpage[offset=1ex,background=color,backgroundcolor=darkgray,align=middle]
+  \ifcase\contextlmtxmode
+    {\red    Welcome}
+    {\white  to}
+    {\blue   \ConTeXt}
+    {\orange \MKIV}
+  \else
+    {\red    welcome}
+    {\white  to}
+    {\blue   context}
+    {\orange lmtx}
+  \fi
+\stopTEXpage
+
+\stoptext

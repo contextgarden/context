@@ -13,13 +13,13 @@
 
 \startmodule[sql]
 
-\registerctxluafile{util-tpl}{}
-\registerctxluafile{util-sql}{}
-
 \ifcase\contextlmtxmode\else
     \registerctxluafile{libs-imp-mysql}{autosuffix}
     \registerctxluafile{libs-imp-sqlite}{autosuffix}
 \fi
+
+\registerctxluafile{util-tpl}{}
+\registerctxluafile{util-sql}{}
 
 \setupmodule
 

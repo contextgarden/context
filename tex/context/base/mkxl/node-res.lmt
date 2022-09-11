@@ -462,6 +462,8 @@ function nutpool.noad(class)
     return n
 end
 
+-- maybe also the rest wrt subtype and class
+
 function nutpool.delimiter()    return copy_nut(delimiter)    end  nutpool.delim = nutpool.delimiter
 function nutpool.fence()        return copy_nut(fence)        end
 function nutpool.submlist()     return copy_nut(submlist)     end
