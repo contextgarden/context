@@ -1880,7 +1880,11 @@ do
     local followedbyspace_code = tex.noadoptioncodes.followedbyspace
 
     local function followedbyspace(n)
-        return getoptions(n) & followedbyspace_code == followedbyspace_code
+        return n and (getoptions(n) & followedbyspace_code == followedbyspace_code)
+    end
+
+    local function followbyspace(n)
+        setoptions(n,getoptions(n) | followedbyspace_code)
     end
 
     numbers[mathchar_code] = function(pointer,what,n,parent)
@@ -1981,10 +1985,10 @@ do
             local found   = middles[oldchar]
             if found then
                 local prev, next = getboth(parent)
-                if getcharspec(next) == oldchar then
+                if getcharspec(next) == oldchar and not followedbyspace(parent) then
                     local nextnext = getnext(next)
                     -- we need to preserve the followed property
-                    if getcharspec(nextnext) == oldchar then
+                    if getcharspec(nextnext) == oldchar and not followedbyspace(next) then
                         oldchar = singles[3]
                         prev, parent = nuts.remove(prev,parent,true)
                         prev, parent = nuts.remove(prev,parent,true)
@@ -2002,8 +2006,12 @@ do
                     local f2 = makefence(chr,fam,middlefence_code,middle_class,pointer)
                     setlink(prev,f1,f2,next)
                     flushnode(parent)
+followbyspace(f1)
+followbyspace(f2)
+                    return true, f2
+                else
+                    return true, parent
                 end
-                return true, parent
             end
         end
     end

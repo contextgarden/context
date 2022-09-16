@@ -67,6 +67,8 @@ function fonts.constructors.assignmathparameters(original,target) -- wrong way a
     end
 end
 
+-- we need a better reset because the following will scale
+
 local undefined <const> = 0x3FFFFFFF -- maxdimen or undefined_math_parameter
 
 function mathematics.initializeparameters(target,original)
@@ -74,11 +76,11 @@ function mathematics.initializeparameters(target,original)
     if mathparameters and next(mathparameters) then
         mathparameters = mathematics.dimensions(mathparameters)
         --
-        if not mathparameters.MinConnectorOverlap               then mathparameters.MinConnectorOverlap               = undefined end
-        if not mathparameters.SubscriptShiftDownWithSuperscript then mathparameters.SubscriptShiftDownWithSuperscript = undefined end -- a tex one
-        if not mathparameters.FractionDelimiterSize             then mathparameters.FractionDelimiterSize             = undefined end
-        if not mathparameters.FractionDelimiterDisplayStyleSize then mathparameters.FractionDelimiterDisplayStyleSize = undefined end
-        if not mathparameters.SkewedDelimiterTolerance          then mathparameters.SkewedDelimiterTolerance          = undefined end
+     -- if not mathparameters.MinConnectorOverlap               then mathparameters.MinConnectorOverlap               = undefined end
+     -- if not mathparameters.SubscriptShiftDownWithSuperscript then mathparameters.SubscriptShiftDownWithSuperscript = undefined end -- a tex one
+     -- if not mathparameters.FractionDelimiterSize             then mathparameters.FractionDelimiterSize             = undefined end
+     -- if not mathparameters.FractionDelimiterDisplayStyleSize then mathparameters.FractionDelimiterDisplayStyleSize = undefined end
+     -- if not mathparameters.SkewedDelimiterTolerance          then mathparameters.SkewedDelimiterTolerance          = undefined end
         -- some more can be undefined:
         if not mathparameters.PrimeRaisePercent                 then mathparameters.PrimeRaisePercent                 = 50 end
         if not mathparameters.PrimeRaiseComposedPercent         then mathparameters.PrimeRaiseComposedPercent         = 25 end
@@ -103,6 +105,8 @@ function mathematics.initializeparameters(target,original)
         if not mathparameters.AccentExtendMargin                then mathparameters.AccentExtendMargin                = 50 end
         if not mathparameters.DelimiterPercent                  then mathparameters.DelimiterPercent                  = 100 end
         if not mathparameters.DelimiterShortfall                then mathparameters.DelimiterShortfall                = 0 end
+        if not mathparameters.RadicalKernAfterExtensible        then mathparameters.RadicalKernAfterExtensible        = 0 end
+        if not mathparameters.RadicalKernBeforeExtensible       then mathparameters.RadicalKernBeforeExtensible       = 0 end
         --
         target.mathparameters = mathparameters
     end

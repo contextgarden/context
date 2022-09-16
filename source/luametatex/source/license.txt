@@ -1,0 +1,181 @@
+------------------------------------------------------------------------------------------
+PREAMBLE
+------------------------------------------------------------------------------------------
+
+The LuaMetaTeX program is a light weight variant of LuaTeX. This program finds its origin
+in parts of TeX (the original program, eTeX (some extensions), pdfTeX (more extensions)
+Aleph (based on Omega, directions) and of course LuaTeX (lots of things).
+
+So, basically we follow up on LuaTeX which itself is a follow up on TeX, eTeX, pdfTeX and
+Aleph. The actual starting point (in 2005) was a special Lua enhanced version of pdfTeX
+by Hartmut Henkel that we experimented with and triggered a follow up. However, the code
+base is no longer Pascal (which then gets converted to C) but regular C code instead. That
+conversion was done by Taco Hoekwater as part of the Oriental TeX project.
+
+There are many articles (presentations and documents) that discuss the development history.
+These articles and documents describing the projects shed more light on what functionality
+showed up when and why. As these projects closely relate to ConTeXt development you can
+find those documents in the ConTeXt distribution.
+
+After this conversion quite some implementation details changed over the decade that
+followed: memory management was adapted, string handling became dynamic, managing the
+table of equivalents was tuned to the mix, callbacks were added. The opening up resulted in
+some adaption of the internals too. Font handling changed, math support for opentype math
+has been introduced. Hyphenation handling, ligature building and kerning are clearly
+separated and language support has been rewritten from scratch. In addition to Lua, the
+TeX engine is also complemented by the MetaPost library. Luigi Scarso added support for
+LuaJIT and ffi and over time makes sure that the code works out okay in the regular
+TeXLive build too.
+
+In 2018-2019 the conversion from LuaTeX to LuaMetaTeX was done by Hans Hagen as part of
+an attempt to simplify the build and get rid of code that might have been useful when we
+started but no longer makes sense. Because the LuaTeX interfaces had to stabelize, this
+follow up also provides us a new testbed. The LuaMetaTeX source code is distributed as
+part of the ConTeXt distribution which is also used for testing and development. Most
+tests are done by those involved in ConTeXt development, so issues should be reported to
+the mailing lists related to this macro package.
+
+In the process the code base has been adapted substantially, although the decade of
+LuaTeX development already prepared for that. This also leads occasionally instable
+setups. We're grateful to ConTeXt community for their patience in testing these continuous
+developments.
+
+The license below is from LuaTeX and also applies to LuaMetaTeX. Although other team
+members contribute(d) to the code, we stick to this description. The --credits option
+provides more information.
+
+------------------------------------------------------------------------------------------
+EXCUSE
+------------------------------------------------------------------------------------------
+
+Although some code comes from pdfTeX and Aleph, the majority comes from good old TeX and
+eTeX or is completely new. Original TeX is a well documented program written in WEB and
+those building upon it have added comments. In LuaMetaTeX we use plain C files but the
+comments are still mostly present. When you read them you really need to keep in mind that
+some refer to good old TeX! The nice comments come from Don Knuth, the bad and fuzzy ones
+originate at us. We appologize to Don for this.
+
+------------------------------------------------------------------------------------------
+CREDITS
+------------------------------------------------------------------------------------------
+
+LuaMetaTeX builds upon the code from LuaTeX which comes from:
+
+    tex        : Donald Knuth
+    etex       : Peter Breitenlohner, Phil Taylor and friends
+
+The expansion and protrusion code is derived from:
+
+    pdftex     : Han The Thanh and friends
+
+Some of the bidirectional text flow model is taken from:
+
+    omega      : John Plaice and Yannis Haralambous
+    aleph      : Giuseppe Bilotta
+
+Graphic support is provided by:
+
+    metapost   : John Hobby, Taco Hoekwater, Luigi Scarso, Hans Hagen and friends
+
+All this is opened up with:
+
+    lua        : Roberto Ierusalimschy, Waldemar Celes and Luiz Henrique de Figueiredo
+    lpeg       : Roberto Ierusalimschy
+
+A few libraries are embedded, of which we mention:
+
+    avl        : Richard McGraw (adapted)
+    decnumber  : Mike Cowlishaw (IBM)
+    libcerf    : Joachim Wuttke (adapted to msvc)
+    md5        : Peter Deutsch (with partial code from pplib libraries)
+    pplib      : Paweł Jackowski (with partial code from libraries)
+    sha2       : Aaron D. Gifford (with partial code from pplib libraries)
+    socket     : Diego Nehab (partial and adapted)
+  # zlib       : Jean-loup Gailly and Mark Adler
+    miniz      : Rich Geldreich etc.
+    mimalloc   : Daan Leijen (Microsoft Research)
+
+The code base contains more names and references. Some libraries are partially adapted. We
+use an adapted version of the lfs from the Kepler Project. Also, MetaPost used decNumber
+for decimal number mode.
+
+Depending on demand a few optional libraries can be used, for instance curl, imagemagick,
+lz4, lzo, mujs, mysql, sqlite and zint but there are no dependencies and only very limited
+interfaces are provided (ConTeXt provides \LUA\ layers on top).
+
+------------------------------------------------------------------------------------------
+TEAM
+------------------------------------------------------------------------------------------
+
+LuaTeX     : Hans Hagen, Hartmut Henkel, Taco Hoekwater, Luigi Scarso
+LuaMetaTeX : Hans Hagen, Wolfgang Schuster, Mojca Miklavec, Alan Braslau
+
+------------------------------------------------------------------------------------------
+MAIN LICENSE (consider it part of each file that refers to this file)
+------------------------------------------------------------------------------------------
+
+Copyright Taco Hoekwater & Hans Hagen & Wolfgang Schuster
+
+This file is part of LuaMetaTeX.
+
+LuaMetaTeX is free software; you can redistribute it and/or modify it under the terms of
+the GNU General Public License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+
+LuaMetaTeX is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU Lesser General Public License for more details.
+
+You could have received a copy of the GNU General Public License along with LuaMetaTeX; if
+not, see <http://www.gnu.org/licenses/>.
+
+------------------------------------------------------------------------------------------
+REMARK
+------------------------------------------------------------------------------------------
+
+The Lua(Meta)TeX team can always decide to relicense to a variant licence in the future,
+but please don't start one of these religious licence discussions with us. We like what
+we're doing, we permits others to use it, and that is the bottomline.
+
+------------------------------------------------------------------------------------------
+OTHER LICENSES
+------------------------------------------------------------------------------------------
+
+The files taken from elsewhere have their own license information at the top of the files
+or in a file their path. It's a mixed bag but basically all permit usage and extensions.
+
+------------------------------------------------------------------------------------------
+BUILD | FARM | REPOSITORIES
+------------------------------------------------------------------------------------------
+
+Mojca Miklavec, Hans Hagen, Alan Braslau
+
+------------------------------------------------------------------------------------------
+CONTEXT MKII | MKIV | LMTX
+------------------------------------------------------------------------------------------
+
+Hans Hagen, Wolfgang Schuster, etc
+
+------------------------------------------------------------------------------------------
+WEBSITE
+------------------------------------------------------------------------------------------
+
+http://www.luatex.org
+http://contextgarden.net
+http://www.pragma-ade.com / http://www.pragma-nl.com
+
+------------------------------------------------------------------------------------------
+SUPPORT
+------------------------------------------------------------------------------------------
+
+http://www.ntg.nl/mailman/listinfo/ntg-context
+http://www.ntg.nl/mailman/listinfo/dev-context
+
+------------------------------------------------------------------------------------------
+MORE LINKS
+------------------------------------------------------------------------------------------
+
+http://www.ntg.nl
+http://www.tug.org
+
+------------------------------------------------------------------------------------------

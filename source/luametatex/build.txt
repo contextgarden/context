@@ -1,0 +1,43 @@
+Hi,
+
+The build script produce efficient static binaries with only a couple of system libraries as
+dependency. ConTeXt will not depend on anything else than provided here. Lua is the extension
+language to be used and that has worked well for quite a while now.
+
+The build script that is provided will compile under ./build so you might want to make a copy
+of the source tree to a suitable place that you can wipe after the job is done. The script
+accepts only a few command line arguments.
+
+  build.sh :
+
+  --native    build/native    meant for unix (linux, freebsd, openbsd, osx, arm)
+  --mingw-32  build/mingw-32  meant for 32 bit windows (crosscompiled)
+  --mingw-64  build/mingw-64  meant for 64 bit windows (crosscompiled)
+
+I develop LuaMetaTeX on Windows and use WLS (with OpenSuse) for cross compilation as well as
+native Linux binaries. Editing is done in Visual Studio with the exception of the MetaPost
+CWeb files for which I use SciTE.
+
+Because we use CMake, you can compile using the MSVC compiler as well as CLang. Currently the
+MingW crosscompiled binaries are slightly faster, next come the native ones, but till now
+CLang lags behind. The native compiler produces the smallest binaries and compiles fastest.
+
+  build.cmd :
+
+    --x64      build/msvc-cmd-x64    meant for 64 bit windows using intel/amd chips
+    --x32      build/msvc-cmd-x86    meant for 32 bit windows using intel/amd chips
+    --arm64    build/msvc-cmd-arm64  meant for 64 bit windows using arm chips
+
+Alternatively you can run a build job from Visual Studio. Of course it only works well if you
+have the right compilers installed which is easy to do from the user interface. All settings
+happen in CMakeLists.txt so you have to load that one.
+
+Support for LuaMetaTeX and ConTeXt is provided at the (dev-)context mailing lists and at the
+ConTeXt Wiki. Binaries are available at:
+
+    https://build.contextgarden.net/#/waterfall?tags=c.luametatex
+    https://dl.contextgarden.net/build/luametatex
+
+The first link shows the status, the second link is where the binaries can be downloaded.
+
+Hans Hagen

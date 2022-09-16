@@ -1,0 +1,118 @@
+== Revision history of libcerf, maintained by Joachim Wuttke ==
+
+Homepage moved to https://jugit.fz-juelich.de/mlz/libcerf, 17mar19
+
+libcerf-1.13, released 28feb19:
+  - Further adjustments for compilation under Windows
+
+libcerf-1.12, released 7feb19:
+  - Require CMake 3.6, outcomment code that requires 3.13.
+  - Relative paths in CMake sources, for use as subproject.
+  - When compiling as CPP, then #include<complex>, not <complex.h>;
+    revise the entire C-vs-CPP machinery.
+  - Remove tests with different inf or nan results on different systems or under
+    different compilers.
+
+libcerf-1.11, released 28dec18:
+  - Cover voigt by test_voigt.
+  - Implement new function voigt_hwhm.
+  - Restore libcerf.pc.
+  - Add INSTALL instructions, and other minor adjustments for use of libcerf in C++ projects.
+  - Support 'ctest', which runs the numeric accuracy tests from test1.c.
+  - Rename type cmplx into _cerf_cmplx to avoid name clash with Gnuplot pre 5.3.
+
+libcerf-1.8 [2oct18], libcerf-1.9 [16oct18] and libcerf-1.10 [20dec18]
+  MUST NOT BE USED
+  - A bug introduced in v1.8 had broken the normalization of the Voigt function.
+  - The git history leading to v1.10 has been rewritten, starting anew from v1.7
+
+libcerf-1.7, released 26sep18:
+  - Option -DCERF_CPP allows to choose C++ compilation, which is useful
+    because MS VisualStudio supports C++14, but not yet C99, and in
+    particular does not support complex.h under C.
+
+libcerf-1.6, released 20sep18:
+  - Migrated from automake to CMake.
+  - Corrected typos in man pages.
+
+libcerf-1.5, released 12oct16:
+  - Removed unused inline function (detected by clang-1.3., reported by Luke Benes)
+
+libcerf-1.4, released 27aug14:
+  - HTML version of man pages no longer installs to man/html.
+  - More concise man pages.
+  - Delete a few unused include's.
+  - Autotools script corrected (suggestions by Christoph Junghans).
+
+libcerf-1.3, released 17jul13:
+  - Now supporting pkg-config (suggested by Mojca Miklavec).
+
+libcerf-1.2, released 16jul13:
+  - Test programs no longer install to $bindir (reported by Mojca Miklavec).
+
+libcerf-1.1, released 12may13:
+  - Added Fortran binding by Antonio Cervellino.
+
+libcerf-1.0, released 31jan13 by Joachim Wuttke:
+  - Based on http://ab-initio.mit.edu/Faddeeva as of 28jan13.
+  - Verified accuracy using double-exponential transform.
+  - Simplified function names;
+    use leading 'c' for complex functions (except in w_of_z).
+  - Added function voigt(x,sigma,gamma).
+  - Added configure.ac, Makefile.am &c to allow for autotools standard
+    installation (commands ./configure, make, sudo make install).
+  - Splitted source code into directories lib/ and test/.
+  - Eliminated unused alternate code (!USE_CONTINUED_FRACTION).
+  - Eliminated relerr arguments.
+  - Replaced "complex" by "_Complex" for C++ compatibility.
+  - Wrote man pages w_of_z(3), dawson(3), voigt(3), cerf(3), erfcx(3), erfi(3).
+  - Created project home page http://apps.jcns.fz-juelich.de/libcerf.
+  - Registered project "libcerf" at sourceforge.net.
+
+== Revision history of Faddeeva.cc by Steven G. Johnson ==
+
+Project at http://ab-initio.mit.edu/Faddeeva
+
+  4 October 2012: Initial public release (SGJ)
+  5 October 2012: Revised (SGJ) to fix spelling error,
+                  start summation for large x at round(x/a) (> 1)
+                  rather than ceil(x/a) as in the original
+                  paper, which should slightly improve performance
+                  (and, apparently, slightly improves accuracy)
+ 19 October 2012: Revised (SGJ) to fix bugs for large x, large -y,
+                  and 15<x<26. Performance improvements. Prototype
+                  now supplies default value for relerr.
+ 24 October 2012: Switch to continued-fraction expansion for
+                  sufficiently large z, for performance reasons.
+                  Also, avoid spurious overflow for |z| > 1e154.
+                  Set relerr argument to min(relerr,0.1).
+ 27 October 2012: Enhance accuracy in Re[w(z)] taken by itself,
+                  by switching to Alg. 916 in a region near
+                  the real-z axis where continued fractions
+                  have poor relative accuracy in Re[w(z)].  Thanks
+                  to M. Zaghloul for the tip.
+ 29 October 2012: Replace SLATEC-derived erfcx routine with
+                  completely rewritten code by me, using a very
+                  different algorithm which is much faster.
+ 30 October 2012: Implemented special-case code for real z
+                  (where real part is exp(-x^2) and imag part is
+                   Dawson integral), using algorithm similar to erfx.
+                  Export ImFaddeeva_w function to make Dawson's
+                  integral directly accessible.
+ 3 November 2012: Provide implementations of erf, erfc, erfcx,
+                  and Dawson functions in Faddeeva:: namespace,
+                  in addition to Faddeeva::w.  Provide header
+                  file Faddeeva.hh.
+ 4 November 2012: Slightly faster erf for real arguments.
+                  Updated MATLAB and Octave plugins.
+27 November 2012: Support compilation with either C++ or
+                  plain C (using C99 complex numbers).
+                  For real x, use standard-library erf(x)
+                  and erfc(x) if available (for C99 or C++11).
+                  #include "config.h" if HAVE_CONFIG_H is #defined.
+15 December 2012: Portability fixes (copysign, Inf/NaN creation),
+                  use CMPLX/__builtin_complex if available in C,
+                  slight accuracy improvements to erf and dawson
+                  functions near the origin.  Use gnulib functions
+                  if GNULIB_NAMESPACE is defined.
+18 December 2012: Slight tweaks (remove recomputation of x*x in Dawson)

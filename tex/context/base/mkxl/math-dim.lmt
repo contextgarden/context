@@ -131,7 +131,7 @@ end
 --     return t.default or t.text_style or 0
 -- end
 --
--- This will all go away in \LMTX\ becuase itv makes no sense to support old fonts any longer,
+-- This will all go away in \LMTX\ because it makes no sense to support old fonts any longer,
 -- even when we assemble them one really needs to think about proper values. Okay, there is
 -- some historic value in here.
 

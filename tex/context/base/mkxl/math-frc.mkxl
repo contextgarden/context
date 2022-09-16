@@ -454,21 +454,32 @@
 \def\math_fraction_set_threshold_inline_auto
    {\Umathfractiondelsize\textstyle        \maxdimen
     \Umathfractiondelsize\scriptstyle      \maxdimen
-    \Umathfractiondelsize\scriptscriptstyle\maxdimen}
+    \Umathfractiondelsize\scriptscriptstyle\maxdimen
+\Umathfractiondelsize\crampedtextstyle        \Umathfractiondelsize\textstyle
+\Umathfractiondelsize\crampedscriptstyle      \Umathfractiondelsize\scriptstyle
+\Umathfractiondelsize\crampedscriptscriptstyle\Umathfractiondelsize\scriptscriptstyle
+    }
 
 \def\math_fraction_set_threshold_display_auto
-   {\Umathfractiondelsize\displaystyle     \maxdimen}
+   {\Umathfractiondelsize\displaystyle     \maxdimen
+\Umathfractiondelsize\crampeddisplaystyle  \Umathfractiondelsize\displaystyle
+   }
 
 \def\math_fraction_set_threshold_inline_ratio
   {\edef\p_threshold{\mathfractionparameter\c!inlinethreshold}%
    \Umathfractiondelsize\textstyle        \p_threshold\dimexpr\textface\relax
    \Umathfractiondelsize\scriptstyle      \p_threshold\dimexpr\scriptface\relax
-   \Umathfractiondelsize\scriptscriptstyle\p_threshold\dimexpr\scriptscriptface\relax}
+   \Umathfractiondelsize\scriptscriptstyle\p_threshold\dimexpr\scriptscriptface\relax
+\Umathfractiondelsize\crampedtextstyle        \Umathfractiondelsize\textstyle
+\Umathfractiondelsize\crampedscriptstyle      \Umathfractiondelsize\scriptstyle
+\Umathfractiondelsize\crampedscriptscriptstyle\Umathfractiondelsize\scriptscriptstyle
+    }
 
 \def\math_fraction_set_threshold_display_ratio
   {\edef\p_threshold{\mathfractionparameter\c!displaythreshold}%
    \Umathfractiondelsize\displaystyle     \p_threshold\dimexpr\textface\relax
-   \Umathfractiondelsize\displaystyle     \maxdimen}
+\Umathfractiondelsize\crampeddisplaystyle  \Umathfractiondelsize\displaystyle
+   }
 
 \setupmathfractions
   [\c!inlinethreshold=.25,      % no unit but fraction

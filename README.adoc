@@ -1,0 +1,18 @@
+== ConTeXt source code
+
+This repository hosts ConTeXt, a TeX macro package. There are three versions:
+
+MkII:: the frozen version meant for pdfTeX
+MkIV:: the mostly frozen version meant for LuaTeX
+MkXL:: the latest version running on LuaMetaTeX
+
+Here we collect all the file needed to run ConTeXt, including the sources of
+LuaMetaTeX. More information can be found on the wiki:
+
+* https://wiki.contextgarden.net
+
+For support there is a mailing list available ntg-context@ntg.nl
+
+* https://www.ntg.nl/mailman/listinfo/ntg-context
+
+Hans Hagen
