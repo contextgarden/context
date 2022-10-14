@@ -181,7 +181,7 @@
    \s!depth \scratchdepth
    \relax
    \ifzeropt\scratchdistance\else
-     \hskip\scratchdistance
+     \kern\scratchdistance % hskip
    \fi}
 
 \installcorenamespace{blackruletype}
@@ -648,7 +648,7 @@
            {\llap
               {\usetextrulesstyleandcolor\c!style\c!color
                #1%
-               \hskip\leftmargindistance}}
+               \kern\leftmargindistance}} % hskip
            {\color[\directtextrulesparameter\c!rulecolor]
               {\vrule
                  \s!height\scratchheight
@@ -794,7 +794,7 @@
        \strut
        #2%
        \hfill\directfillinrulesparameter\c!separator
-       \hskip\scratchdistance
+       \kern\scratchdistance % hskip
      \egroup
    \fi
    \setupwhitespace[\v!big]%

@@ -122,7 +122,7 @@ appendaction("math",         "normalizers", "noads.handlers.dictionaries",      
 appendaction("math",         "normalizers", "noads.handlers.suspicious",                        nil, "nonut",  "enabled"   )
 
 appendaction("math",         "builders",    "builders.kernel.mlisttohlist",                     nil, "nut",    "enabled"   )  -- mandate
-appendaction("math",         "builders",    "typesetters.directions.processmath",               nil, "nut",    "disabled"  )
+------------("math",         "builders",    "typesetters.directions.processmath",               nil, "nut",    "disabled"  )
 appendaction("math",         "builders",    "noads.handlers.makeup",                            nil, "nonut",  "disabled"  )
 ------------("math",         "builders",    "noads.handlers.align",                             nil, "nonut",  "enabled"   )
 

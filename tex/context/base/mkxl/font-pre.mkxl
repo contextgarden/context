@@ -427,10 +427,6 @@
    language=dflt,
    script=math]
 
-\definefontfeature
-  [oldmath]
-  [oldmath=yes]
-
 \ifdefined\mathnolimitsmode
     \mathnolimitsmode\plusone % font driven (only opentype)
 \fi

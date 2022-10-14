@@ -50,13 +50,15 @@ local function register_extensible(font,char,style,box)
     local private  = fonts.helpers.setboxdirectly(font,unicode,box)
     -- we saved a scaled glyph stream so we now use an unscaled one ...
     local g = new_glyph(font,private,al)
+    if fonts.hashes.properties[font].compactmath then
+        nuts.setscales(g,1000,1000,1000)
+    end
     local n = new_hlist(g)
     --
     if newcommands then
         oldchar.commands = newcommands
     end
     --
-
  -- local newchar = {
  --     unicode = unicode,
  --     width   = wd,
@@ -77,7 +79,6 @@ local function register_extensible(font,char,style,box)
  --     end
  -- end
  -- addcharacters(font, { [private] = newchar })
-
     -- so the dimensions of the box don't match the glyph scale!
     setwhd(n,wd,ht,dp)
     setattrlst(n,al)

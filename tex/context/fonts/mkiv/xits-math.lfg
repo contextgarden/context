@@ -1,3 +1,7 @@
+-- When testing XITS in LMTX one has to do this:
+--
+-- \definefilesynonym [type-imp-xits.mkiv] [type-imp-xits.mkiv]
+
 return {
     name = "xits-math",
     version = "1.00",
@@ -15,6 +19,25 @@ return {
         },
     },
     mathematics = {
+        parameters = {
+            NoLimitSupFactor                =    0,
+            NoLimitSubFactor                = 1000,
+         -- AccentBaseHeight                =    0,
+            AccentBaseDepth                 =   30,
+            FlattenedAccentTopShiftUp       =   0, -- now also set, the wide ones (so we can move in one go)
+         -- AccentExtendMargin              =   50,
+            RadicalDegreeBottomRaisePercent =   65,
+         -- RadicalKernBeforeDegree         =  500,
+            RadicalKernAfterDegree          = -500,
+            RadicalVerticalGap              =   10,
+         -- RadicalRuleThickness            =   68, -- 68 in font (but shifted down)
+            DelimiterPercent                =   90,
+            DelimiterShortfall              =  400,
+            DisplayOperatorMinHeight        = 1800, -- 1800 in font
+            PrimeRaisePercent               =   75, -- 50 default
+            PrimeRaiseComposedPercent       =   10, -- 25 default
+
+        },
         tweaks = {
             aftercopying = {
                 {
@@ -68,6 +91,10 @@ return {
                 },
                 {
                     tweak = "addrules",
+                },
+                {
+                    tweak = "setoptions",
+                    set   = { "ignorekerndimensions" }
                 },
             },
         },

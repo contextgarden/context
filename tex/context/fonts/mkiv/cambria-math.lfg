@@ -46,11 +46,14 @@ end
 -- local integral_top      = {  topright    =  0.05 }
 -- local integral_bottom   = {  bottomright = -0.30 }
 
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
+
 return {
     name = "cambria-math",
     version = "1.00",
     comment = "Goodies that complement cambria.",
-    author = "Hans Hagen",
+    author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
@@ -72,38 +75,16 @@ return {
         tweaks = {
             aftercopying = {
                 {
-                    tweak = "dimensions",
-                    list  = {
-
-                     -- [0x00060] = { yoffset = -0.1  }, -- grave
-                     -- [0x000B4] = { yoffset = -0.1  }, -- acute
-                     -- [0x002C6] = { yoffset = -0.1  }, -- hat
-                     -- [0x002DC] = { yoffset = -0.1  }, -- tilde
-                     -- [0x000AF] = { yoffset = -0.1  }, -- bar
-                     -- [0x002D8] = { yoffset = -0.15 }, -- breve
-                     -- [0x002D9] = { yoffset = -0.15 }, -- dot
-                     -- [0x000A8] = { yoffset = -0.1  }, -- ddot
-                        -- [0x020DB] = { yoffset = -0.05 }, -- dddot
-                     -- [0x002C7] = { yoffset = -0.1  }, -- check
-                        -- [0x020D7] = { yoffset = -0.05 }, -- vec
-
-                     -- [0x00300] = { yoffset = -0.12,  all=true }, -- widegrave
-                     -- [0x00301] = { yoffset = -0.12,  all=true }, -- wideacute
-                     -- [0x00302] = { yoffset = -0.12,  all=true }, -- widehat
-                     -- [0x00303] = { yoffset = -0.12,  all=true }, -- widetilde
-                     -- [0x00304] = { yoffset = -0.12,  all=true }, -- widebar
-                     -- [0x00306] = { yoffset = -0.12,  all=true }, -- widebreve
-                        -- [0x00307] = { yoffset = -0.025, all=true }, -- widedot
-                        -- [0x00308] = { yoffset = -0.025, all=true }, -- wideddot
-                     -- [0x020DB] = { yoffset = -0.1,   all=true }, -- widedddot
-                     -- [0x0030A] = { yoffset = -0.12,  all=true }, -- widering
-                     -- [0x0030C] = { yoffset = -0.12,  all=true }, -- widecheck
-
-                        [0x1D43D] = { xoffset = 0.25, width = 1.15, italic = 0.2              }, -- J
-                        [0x1D487] = {                                            anchor = 0.8 }, -- bold lower case italic f
-                     -- [0x1D487] = { xoffset = 0,    width = 1,    italic = 0,  anchor = 1.3 }, -- bold lower case italic f
-
-                    },
+                    tweak = "addmirrors",
+                },
+                presets.matheulercalligraphic { rscale = 0.97 },
+                presets.mathrsfscript         { rscale = 0.97 },
+                presets.mathxitsarabic        { rscale = 0.95 },
+                {
+                    tweak = "simplifykerns",
+                },
+                presets.moveitalics {
+                    correct = true
                 },
                 {
                     tweak = "kerns",
@@ -264,3 +245,40 @@ return {
         kernpairs  = kernpairs,
     },
 }
+
+
+-- Old
+                -- {
+                --     tweak = "dimensions",
+                --     list  = {
+
+                --      -- [0x00060] = { yoffset = -0.1  }, -- grave
+                --      -- [0x000B4] = { yoffset = -0.1  }, -- acute
+                --      -- [0x002C6] = { yoffset = -0.1  }, -- hat
+                --      -- [0x002DC] = { yoffset = -0.1  }, -- tilde
+                --      -- [0x000AF] = { yoffset = -0.1  }, -- bar
+                --      -- [0x002D8] = { yoffset = -0.15 }, -- breve
+                --      -- [0x002D9] = { yoffset = -0.15 }, -- dot
+                --      -- [0x000A8] = { yoffset = -0.1  }, -- ddot
+                --         -- [0x020DB] = { yoffset = -0.05 }, -- dddot
+                --      -- [0x002C7] = { yoffset = -0.1  }, -- check
+                --         -- [0x020D7] = { yoffset = -0.05 }, -- vec
+
+                --      -- [0x00300] = { yoffset = -0.12,  all=true }, -- widegrave
+                --      -- [0x00301] = { yoffset = -0.12,  all=true }, -- wideacute
+                --      -- [0x00302] = { yoffset = -0.12,  all=true }, -- widehat
+                --      -- [0x00303] = { yoffset = -0.12,  all=true }, -- widetilde
+                --      -- [0x00304] = { yoffset = -0.12,  all=true }, -- widebar
+                --      -- [0x00306] = { yoffset = -0.12,  all=true }, -- widebreve
+                --         -- [0x00307] = { yoffset = -0.025, all=true }, -- widedot
+                --         -- [0x00308] = { yoffset = -0.025, all=true }, -- wideddot
+                --      -- [0x020DB] = { yoffset = -0.1,   all=true }, -- widedddot
+                --      -- [0x0030A] = { yoffset = -0.12,  all=true }, -- widering
+                --      -- [0x0030C] = { yoffset = -0.12,  all=true }, -- widecheck
+
+                --         [0x1D43D] = { xoffset = 0.25, width = 1.15, italic = 0.2              }, -- J
+                --         [0x1D487] = {                                            anchor = 0.8 }, -- bold lower case italic f
+                --      -- [0x1D487] = { xoffset = 0,    width = 1,    italic = 0,  anchor = 1.3 }, -- bold lower case italic f
+
+                --     },
+                -- },

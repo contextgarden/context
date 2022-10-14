@@ -1,10 +1,13 @@
 -- this file might go away and is for experiments only
 
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
+
 return {
     name = "concrete-math",
     version = "1.00",
     comment = "Goodies that complement concrete math.",
-    author = "Hans Hagen",
+    author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
@@ -16,20 +19,21 @@ return {
         },
         tweaks = {
             aftercopying = {
-             -- {
-             --     tweak   = "fixprimes",
-             --     factor  = 0.9,
-             -- },
                 {
-                tweak = "kerns",
-                list  = {
-                    [0x2F] = {
-                        topleft     = -0.2,
-                        -- bottomleft  =  0,
-                        -- topright    =  0,
-                        bottomright = -0.2,
-                    },
+                    tweak   = "fixprimes",
+                    factor  = 0.9,
                 },
+                -- there are circular variants
+--                 {
+--                     tweak = "addmirrors",
+--                 },
+--                 presets.matheulercalligraphic { rscale = 0.97 },
+--                 presets.mathrsfscript         { rscale = 0.95 },
+                {
+                    tweak = "kerns",
+                    list  = {
+                        [0x002F] = { topleft = -0.2, bottomright = -0.2 },
+                    },
                 },
                 {
                     tweak = "fixellipses",
@@ -44,10 +48,12 @@ return {
                 {
                     tweak = "addequals",
                 },
-
-
+                {
+                    tweak = "setoptions",
+                    set   = { "ignorekerndimensions" }
                 },
             },
+        },
         bigslots = {
             1, 2, 3, 4
         },

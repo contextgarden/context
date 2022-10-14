@@ -34,6 +34,7 @@ local context           = context
 local implement         = interfaces.implement
 
 local texgetcount       = tex.getcount
+local texiscount        = tex.iscount
 
 local getmacro          = tokens.getters.macro
 local expandasvalue     = tex.expandasvalue
@@ -60,6 +61,8 @@ local f_point           = formatters["%p"]
 local f_pair            = formatters["(%p,%p)"]
 local f_path            = formatters["%--t--cycle"]
 local f_pair_i          = formatters["(%r,%r)"] -- rounded
+
+local c_realpageno      = texiscount("realpageno")
 
 graphics                = graphics or { }
 local backgrounds       = { }
@@ -254,7 +257,7 @@ end
 nodes.handlers.textbackgrounds = function(head,where,parent) -- we have hlistdir and local dir
     -- todo enable action in register
     index    = index + 1
-    realpage = texgetcount("realpageno")
+    realpage = texgetcount(c_realpageno)
     return processranges(a_textbackground,flush,head,parent)
 end
 
@@ -1214,7 +1217,7 @@ backgrounds.fetchmultipar = fetchmultipar
 local function getwhatever(action)
      local tags   = scanmpstring()
      local anchor = scanmpstring()
-     local page   = texgetcount("realpageno")
+     local page   = texgetcount(c_realpageno)
      if tags == "self" then
         tags = expandasvalue(string_value,"mpcategoryparameter",true,"self")
      elseif type(tags) == "string" then

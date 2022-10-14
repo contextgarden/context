@@ -675,12 +675,16 @@ vardef mfun_tool_striped_angle(expr option, p, asked_angle, asked_gap) text extr
         mask := shape rotated used_angle ;
         maximum := max (xpart llcorner mask, xpart urcorner mask, ypart llcorner mask, ypart urcorner mask) ;
         minimum := min (xpart llcorner mask, xpart urcorner mask, ypart llcorner mask, ypart urcorner mask) ;
+        % a hack:
+maximum := maximum + max(xpart urcorner shape, ypart urcorner shape);
+minimum := minimum - max(xpart urcorner shape, ypart urcorner shape);
+        %
         pattern := image (
             if isinner :
                 mfun_tool_striped_angle_action extra ;
                 for s within shape :
                     if stroked s or filled s :
-                        clip currentpicture to pathpart s ;
+                       clip currentpicture to pathpart s ;
                     fi
                 endfor ;
             else :
@@ -739,6 +743,29 @@ enddef;
 
 def do_stripe_path_a (text asked_spec) (text asked_draw) (expr asked_path) text asked_text =
     draw image(asked_draw asked_path asked_text) anglestriped(3,0,0) asked_spec ;
+enddef ;
+
+%D A more efficient variant by Mikael:
+
+% path p ; p := fullcircle scaled 3cm && (unitsquare scaled 2cm shifted (4cm,4cm)) && cycle ;
+% draw hatch(p,30,0.2cm) ; draw p ;
+
+vardef hatch(expr p, a, d) =
+    save thestripe, diag, b ; picture thestripe ; numeric diag ; path b ;
+    b := boundingbox p;
+    diag := 0.55 * ( abs((urcorner b) - (llcorner b)) ) ;
+    thestripe := image (
+        draw (-diag,0) -- (diag, 0) &&
+        for i = d step d until diag:
+            (-diag, i) -- (diag, i) &&
+            (-diag,-i) -- (diag,-i) &&
+        endfor nocycle
+        withpen currentpen ;
+    ) ;
+    thestripe := thestripe shifted center b ;
+    thestripe := thestripe rotatedaround(center b, a) ;
+    clip thestripe to p ;
+    thestripe
 enddef ;
 
 %D A few normalizing macros:
@@ -4350,12 +4377,12 @@ tertiarydef p cutbeforefirst q =
     begingroup ;
     save mfun_b, mfun_p ; path mfun_b, mfun_p ; mfun_b := sortedpath (p intersectiontimeslist q) ;
     if (point 0 of mfun_b) <> (-1,-1) :
-        mfun_p := subpath(xpart point 0 of mfun_b, infinity) of p;
+        mfun_p := subpath(xpart point 0 of mfun_b, length p) of p;
     else :
         mfun_p := p ;
     fi ;
     mfun_p
-    endgroup ;
+    endgroup
 enddef ;
 
 tertiarydef p cutafterfirst q =
@@ -4367,7 +4394,7 @@ tertiarydef p cutafterfirst q =
         mfun_p := p ;
     fi ;
     mfun_p
-    endgroup ;
+    endgroup
 enddef ;
 
 
@@ -4375,12 +4402,12 @@ tertiarydef p cutbeforelast q =
     begingroup ;
     save mfun_b, mfun_p ; path mfun_b, mfun_p ; mfun_b := sortedpath (p intersectiontimeslist q) ;
     if (point 0 of mfun_b) <> (-1,-1) :
-        mfun_p := subpath(xpart point (length mfun_b) of mfun_b, infinity) of p;
+        mfun_p := subpath(xpart point (length mfun_b) of mfun_b, length p) of p;
     else :
         mfun_p := p ;
     fi ;
     mfun_p
-    endgroup ;
+    endgroup
 enddef ;
 
 tertiarydef p cutafterlast q =
@@ -4392,7 +4419,7 @@ tertiarydef p cutafterlast q =
         mfun_p := p ;
     fi ;
     mfun_p
-    endgroup ;
+    endgroup
 enddef ;
 
 % I don't want to define this path every time I make a demo:

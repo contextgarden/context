@@ -1392,27 +1392,6 @@ static int texlib_getdimen(lua_State *L)
     return 1;
 }
 
-// static halfword texlib_aux_make_glue(lua_State *L, int top, int slot)
-// {
-//     halfword value = copy_node(zero_glue);
-//     if (++slot <= top) {
-//         glue_amount(value) = lmt_toroundnumber(L, slot);
-//         if (++slot <= top) {
-//             glue_stretch(value) = lmt_toroundnumber(L, slot);
-//             if (++slot <= top) {
-//                 glue_shrink(value) = lmt_toroundnumber(L, slot);
-//                 if (++slot <= top) {
-//                     glue_stretch_order(value) = lmt_tohalfword(L, slot);
-//                     if (++slot <= top) {
-//                         glue_shrink_order(value) = lmt_tohalfword(L, slot);
-//                     }
-//                 }
-//             }
-//         }
-//     }
-//     return value;
-// }
-
 static halfword texlib_aux_make_glue(lua_State *L, int top, int slot)
 {
     halfword value = tex_copy_node(zero_glue);
@@ -2624,6 +2603,7 @@ static int texlib_aux_convert(lua_State *L, int cur_code)
         case insert_progress_code:     /* arg <register int> */
         case lua_code:                 /* arg complex */
         case lua_escape_string_code:   /* arg token list */
+     /* case lua_token_string_code: */ /* arg token list */
         case string_code:              /* arg token */
         case cs_string_code:           /* arg token */
         case detokenized_code:         /* arg token */
@@ -4361,7 +4341,7 @@ static int texlib_runstring(lua_State *L)
 static int texlib_getmathdir(lua_State *L)
 {
     lua_pushinteger(L, math_direction_par);
-    return 0;
+    return 1;
 }
 
 static int texlib_setmathdir(lua_State *L)
@@ -4824,6 +4804,7 @@ static int texlib_getnoadoptionvalues(lua_State *L)
     lua_push_key_at_index(L, auto,                  noad_option_auto);
     lua_push_key_at_index(L, unrolllist,            noad_option_unroll_list);
     lua_push_key_at_index(L, followedbyspace,       noad_option_followed_by_space);
+    lua_push_key_at_index(L, proportional,          noad_option_proportional);
     return 1;
 }
 
@@ -4943,6 +4924,7 @@ static int texlib_getmathclassoptionvalues(lua_State *L)
     lua_set_string_by_index(L, prefer_delimiter_dimensions_class_option,  "preferdelimiterdimensions");
     lua_set_string_by_index(L, auto_inject_class_option,                  "autoinject");
     lua_set_string_by_index(L, remove_italic_correction_class_option,     "removeitaliccorrection");
+    lua_set_string_by_index(L, operator_italic_correction_class_option,   "operatoritaliccorrection");
     return 1;
 }
 
@@ -5025,6 +5007,20 @@ static int texlib_getfrozenparvalues(lua_State *L)
     return 1;
 }
 
+static int texlib_getkerneloptionvalues(lua_State *L)
+{
+    lua_createtable(L, 2, 6);
+    lua_set_string_by_index(L, math_kernel_no_italic_correction, "noitaliccorrection");
+    lua_set_string_by_index(L, math_kernel_no_left_pair_kern,    "noleftpairkern");    
+    lua_set_string_by_index(L, math_kernel_no_right_pair_kern,   "norightpairkern");   
+    lua_set_string_by_index(L, math_kernel_auto_discretionary,   "autodiscretionary");
+    lua_set_string_by_index(L, math_kernel_full_discretionary,   "fulldiscretionary");
+    lua_set_string_by_index(L, math_kernel_ignored_character,    "ignoredcharacter");
+    lua_set_string_by_index(L, math_kernel_is_large_operator,    "islargeoperator");
+    lua_set_string_by_index(L, math_kernel_has_italic_shape,     "hasitalicshape");
+    return 1;
+}
+
 static int texlib_getshapingpenaltiesvalues(lua_State *L)
 {
     lua_createtable(L, 2, 2);
@@ -5034,7 +5030,6 @@ static int texlib_getshapingpenaltiesvalues(lua_State *L)
     lua_push_key_at_index(L, brokenpenalty,    broken_penalty_shaping);
     return 1;
 }
-
 
 static int texlib_getprimitiveorigins(lua_State *L)
 {
@@ -5163,7 +5158,7 @@ static int texlib_getdiscstatevalues(lua_State *L)
 
 static int texlib_getmathcontrolvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 19);
+    lua_createtable(L, 2, 21);
     lua_set_string_by_index(L, math_control_use_font_control,            "usefontcontrol");
     lua_set_string_by_index(L, math_control_over_rule,                   "overrule");
     lua_set_string_by_index(L, math_control_under_rule,                  "underrule");
@@ -5185,6 +5180,8 @@ static int texlib_getmathcontrolvalues(lua_State *L)
     lua_set_string_by_index(L, math_control_analyze_script_nucleus_char, "analyzescriptnucleuschar");
     lua_set_string_by_index(L, math_control_analyze_script_nucleus_list, "analyzescriptnucleuslist");
     lua_set_string_by_index(L, math_control_analyze_script_nucleus_box,  "analyzescriptnucleusbox");
+    lua_set_string_by_index(L, math_control_accent_top_skew_with_offset, "accenttopskewwithoffset");
+    lua_set_string_by_index(L, math_control_ignore_kern_dimensions,      "ignorekerndimensions");
     return 1;
 }
 
@@ -5484,6 +5481,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getprimitiveorigins",        texlib_getprimitiveorigins        },
     { "getfrozenparvalues",         texlib_getfrozenparvalues         },
     { "getshapingpenaltiesvalues",  texlib_getshapingpenaltiesvalues  },
+    { "getkerneloptionvalues",      texlib_getkerneloptionvalues      },
     { "getspecialmathclassvalues",  texlib_getspecialmathclassvalues  },
     { "getlargestusedmark",         texlib_getlargestusedmark         },
     { "getoutputactive",            texlib_getoutputactive            },

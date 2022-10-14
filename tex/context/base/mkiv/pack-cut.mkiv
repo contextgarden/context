@@ -102,9 +102,8 @@
          \vss}%
       \hss}}
 
-\unexpanded\def\makecutbox#1%
-  {\bgroup
-   \d_pack_cutmarks_height\ht#1%
+\unexpanded\def\makecutbox#1% not grouped !
+  {\d_pack_cutmarks_height\ht#1%
    \d_pack_cutmarks_depth \dp#1%
    \d_pack_cutmarks_width \wd#1%
    \setbox#1\hpack
@@ -155,8 +154,7 @@
       \box#1}%
    \wd#1\d_pack_cutmarks_width
    \ht#1\d_pack_cutmarks_height
-   \dp#1\d_pack_cutmarks_depth
-   \egroup}
+   \dp#1\d_pack_cutmarks_depth}
 
 \unexpanded\def\cuthbox{\hpack\bgroup\dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\hbox}
 \unexpanded\def\cutvbox{\vpack\bgroup\dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\vbox}

@@ -134,12 +134,12 @@ void tex_run_vadjust(void)
     scaled depthafter = 0;
     halfword attrlist = null;
     tex_scan_adjust_keys(&options, &code, &index, &depthbefore, &depthafter, &attrlist);
-    tex_set_saved_record(saved_adjust_item_location, saved_adjust_location, 0, code);
-    tex_set_saved_record(saved_adjust_item_options, saved_adjust_options, 0, options);
-    tex_set_saved_record(saved_adjust_item_index, saved_adjust_index, 0, index);
-    tex_set_saved_record(saved_adjust_item_attr_list, saved_adjust_attr_list, 0, attrlist);
-    tex_set_saved_record(saved_adjust_item_depth_before, saved_adjust_depth_before, 0, depthbefore);
-    tex_set_saved_record(saved_adjust_item_depth_after, saved_adjust_depth_after, 0, depthafter);
+    tex_set_saved_record(saved_adjust_item_location, adjust_location_save_type, 0, code);
+    tex_set_saved_record(saved_adjust_item_options, adjust_options_save_type, 0, options);
+    tex_set_saved_record(saved_adjust_item_index, adjust_index_save_type, 0, index);
+    tex_set_saved_record(saved_adjust_item_attr_list, adjust_attr_list_save_type, 0, attrlist);
+    tex_set_saved_record(saved_adjust_item_depth_before, adjust_depth_before_save_type, 0, depthbefore);
+    tex_set_saved_record(saved_adjust_item_depth_after, adjust_depth_after_save_type, 0, depthafter);
     lmt_save_state.save_stack_data.ptr += saved_adjust_n_of_items;
     tex_new_save_level(vadjust_group);
     tex_scan_left_brace();

@@ -990,7 +990,8 @@
 %D \ifzeropt \somedimen ... \else ... \fi
 %D \stoptyping
 
-\aliased\let\ifzeropt\ifcase
+\aliased\let\ifzeropt\ifzerodim % was \let\ifzeropt\ifcase
+\aliased\let\ifzero  \ifzeronum % was \let\ifzeropt\ifcase
 
 % these token list helpers might move to syst-aux.mkiv
 %
@@ -1254,8 +1255,8 @@
 
 %D For a while we will keep these useless numbers as for instance tikz checks for them:
 
-\immutable\integerdef\eTeXversion   2
-\immutable\def       \eTeXrevision {2}
+\immutable\integerdef\eTeXversion    2
+\immutable\def       \eTeXrevision {.2} % there is a funny period here
 
 % %D Just in case users use this (or some styles still have it):
 

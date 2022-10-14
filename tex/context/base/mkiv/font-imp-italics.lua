@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['font-imp-italics'] = {
     license   = "see context related readme files"
 }
 
-local next = next
+local next, tonumber = next, tonumber
 
 local fonts              = fonts
 local handlers           = fonts.handlers
@@ -14,11 +14,13 @@ local registerotffeature = handlers.otf.features.register
 local registerafmfeature = handlers.afm.features.register
 
 local function initialize(tfmdata,key,value)
+    local factor = tonumber(value) or 1
     for unicode, character in next, tfmdata.characters do
         local olditalic = character.italic
         if olditalic and olditalic ~= 0 then
-            character.width  = character.width + olditalic
-            character.italic = 0
+            character.width       = character.width + olditalic
+            character.italic      = 0
+            character.bottomright = -factor * olditalic
         end
     end
 end

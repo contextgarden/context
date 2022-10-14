@@ -1199,7 +1199,7 @@
       \fi
       \global\setbox\scratchcounterone\hpack\bgroup
         \unhbox\scratchcounterone
-        \hskip-\wd\nextbox
+        \kern-\wd\nextbox
         \box\nextbox
       \egroup
       \endgroup}}

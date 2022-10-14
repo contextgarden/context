@@ -15,6 +15,14 @@
 
 \unprotect
 
+\newskip  \bodyfontlineheight        % why a skip
+\newdimen \bodyfontstrutheight
+\newdimen \bodyfontstrutdepth
+
+\newskip  \globalbodyfontlineheight  % why a skip
+\newdimen \globalbodyfontstrutheight
+\newdimen \globalbodyfontstrutdepth
+
 \registerctxluafile{spac-ver}{autosuffix,optimize}
 
 % todo: use usernodes ?
@@ -1396,13 +1404,13 @@
 \installcorenamespace{gridsnapperattributes}
 \installcorenamespace{gridsnappersets}
 
-\newskip  \bodyfontlineheight
-\newdimen \bodyfontstrutheight
-\newdimen \bodyfontstrutdepth
+% \newskip  \bodyfontlineheight  % see top
+% \newdimen \bodyfontstrutheight % see top
+% \newdimen \bodyfontstrutdepth  % see top
 
-\newskip  \globalbodyfontlineheight % why a skip
-\newdimen \globalbodyfontstrutheight
-\newdimen \globalbodyfontstrutdepth
+% \newskip  \globalbodyfontlineheight  % see top
+% \newdimen \globalbodyfontstrutheight % see top
+% \newdimen \globalbodyfontstrutdepth  % see top
 
 \permanent\def\snappedvboxattribute{\ifgridsnapping attr\snapvboxattribute\c_attr_snapmethod\fi}
 \permanent\def\setlocalgridsnapping{\ifgridsnapping \c_attr_snapvbox \c_attr_snapmethod\fi}

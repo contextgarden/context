@@ -631,8 +631,9 @@ local function copy_glyph(main,target,original,unicode,slot)
             height    = olddata.height,
             depth     = olddata.depth,
             italic    = olddata.italic,
-            topaccent = olddata.topaccent,
+            topanchor = olddata.topanchor,
             kerns     = olddata.kerns,
+            mathkerns = olddata.mathkerns,
             tounicode = olddata.tounicode,
             commands  = { { "slot", slot, unicode } },
         }
@@ -646,7 +647,9 @@ local function copy_glyph(main,target,original,unicode,slot)
                     height    = oldnextdata.height,
                     depth     = oldnextdata.depth,
                     italic    = oldnextdata.italic,
-                    topaccent = oldnextdata.topaccent,
+                    topanchor = oldnextdata.topanchor,
+                    kerns     = olddata.kerns,
+                    mathkerns = olddata.mathkerns,
                     tounicode = olddata.tounicode,
                     commands  = { { "slot", slot, nextglyph } },
                 }
@@ -982,7 +985,7 @@ function vfmath.define(specification,set,goodies)
                                     if skewchar then
                                         local k = kerns[skewchar]
                                         if k then
-                                            t.topaccent = width/2 + k
+                                            t.topanchor = width/2 + k
                                         end
                                     end
                                     characters[unicode] = t
@@ -1130,8 +1133,6 @@ function vfmath.define(specification,set,goodies)
     if trace_virtual or trace_timings then
         report_virtual("loading and virtualizing font %a at size %p took %0.3f seconds",name,size,os.clock()-start)
     end
-    --
- -- main.oldmath = true
     --
     -- We bypass the scaler so ...
     --

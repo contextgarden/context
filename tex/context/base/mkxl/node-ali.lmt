@@ -30,6 +30,7 @@ local getlist            = nuts.getlist
 local setlist            = nuts.setlist
 local setattrlist        = nuts.setattrlist
 local setprop            = nuts.setprop
+local getprop            = nuts.getprop
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local addmargins         = nuts.addmargins
@@ -626,16 +627,24 @@ deltas   = { }
 do
 
     local a_mathalignmentvrule = attributes.private("mathalignmentvrule")
+    local a_mathalignmenthrule = attributes.private("mathalignmenthrule")
 
-    local function first_pass(head,attr,preamble)
+    -- these loops will be combined
+
+    local dp = { }
+    local ht = { }
+
+    local function vrule_pass(head,attr,preamble)
+        local i = 0
         for row, id, subtype, list in nextlist, head do
             if id == hlist_code and subtype == row_code then
+                i = i + 1
+                local prv, nxt = getboth(row)
                 for cell, id, subtype, list in nextlist, list do
                     if list then
                         for n, id, subtype in nextrule, list do
                             local signal = getattr(n,a_mathalignmentvrule)
                             if signal then
-                                local prv, nxt = getboth(row)
                                 if prv then
                                     if getid(prv) ~= rule_code or not getattr(prv,a_mathalignmentvrule) then
                                         prv = nil
@@ -646,7 +655,9 @@ do
                                         nxt = nil
                                     end
                                 end
-                                setoffsets(n,nil,nil,not prv and 0 or nil,not nxt and 0 or nil)
+                                local top = not prv and 0 or nil
+                                local bot = not nxt and 0 or nil
+                                setoffsets(n,nil,nil,d and -d or top,h and -h or bot)
                             end
                         end
                     end
@@ -655,11 +666,54 @@ do
         end
     end
 
+    local function hrule_pass(head,attr,preamble)
+        local i = 0
+        for row, id, subtype, list in nextlist, head do
+            if id == hlist_code and subtype == row_code then
+                i = i + 1
+                local height = 0
+                local depth  = 0
+                local done   = false
+                for cell, id, subtype, list in nextlist, list do
+                    if list then
+                        for n, id, subtype in nextglue, list do
+                            local signal = getattr(n,a_mathalignmenthrule)
+                            if signal then
+                                local w, h, d = getwhd(n)
+                                if h and d then
+                                    if h > height then
+                                        height = h
+                                    end
+                                    if d > depth then
+                                        depth = d
+                                    end
+                                    done = true
+                                end
+                            end
+                        end
+                    end
+                end
+                if done then
+                    setheight(row,height)
+                    setdepth(row,depth)
+                    dp[i] = height
+                    ht[i] = depth
+                end
+            end
+        end
+    end
+
     function nodes.handlers.mathmatrixrules(head,where,attr,preamble)
         if where == "wrapup" then
+            dp = { }
+            ht = { }
+            local signal = getattr(attr,a_mathalignmenthrule)
+            if signal == 0x01 then -- matrix
+                hrule_pass(head,attr,preamble)
+            end
             local signal = getattr(attr,a_mathalignmentvrule)
-            if signal == 1 then -- matrix
-                first_pass(head,attr,preamble)
+            if signal == 0x01 then -- matrix
+                vrule_pass(head,attr,preamble)
             end
         end
     end

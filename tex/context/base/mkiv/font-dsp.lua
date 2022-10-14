@@ -2177,6 +2177,8 @@ do
         --
         local usedlookups    = false -- setmetatableindex("number")
         --
+        local allsteps = { } -- new per 2022-09-25
+
         for lookupid=1,noflookups do
             local lookup     = lookups[lookupid]
             local lookuptype = lookup.type
@@ -2214,6 +2216,7 @@ do
                             steps[nofsteps] = step
                             local rules = step.rules
                             if rules then
+                                allsteps[#allsteps+1] = step -- new per 2022-09-25
                                 for i=1,#rules do
                                     local rule         = rules[i]
                                     local before       = rule.before
@@ -2337,11 +2340,14 @@ do
             end
         end
 
-        for i=lastsequence+1,nofsequences do
-            local sequence = sequences[i]
-            local steps    = sequence.steps
-            for i=1,#steps do
-                local step  = steps[i]
+     -- for i=lastsequence+1,nofsequences do
+     --     local sequence = sequences[i]
+     --     local steps    = sequence.steps
+     --     for i=1,#steps do
+     --         local step  = steps[i]
+
+            for i=1,#allsteps do          -- new per 2022-09-25
+                local step  = allsteps[i] -- new per 2022-09-25
                 local rules = step.rules
                 if rules then
                     for i=1,#rules do
@@ -2419,7 +2425,7 @@ do
                     end
                 end
             end
-        end
+     -- end -- new per 2022-09-25
 
         for i, n in sortedhash(sublookupcheck) do
             local l = lookups[i]
@@ -2881,7 +2887,7 @@ local function readmathglyphinfo(f,fontdata,offset)
                 if not math then
                     glyph.math = { accent = accent }
                 else
-                    math.accent = accent
+                    math.accent = accent -- will become math.topanchor
                 end
             end
         end

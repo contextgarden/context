@@ -160,6 +160,7 @@
 \definesystemconstant {class}
 \definesystemconstant {leftclass}
 \definesystemconstant {rightclass}
+\definesystemconstant {calligraphic}
 \definesystemconstant {clone}
 \definesystemconstant {close}
 \definesystemconstant {cmyk}

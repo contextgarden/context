@@ -443,7 +443,7 @@ void tex_undump_insert_data(dumpstream f) {
 
 void tex_run_insert(void)
 {
-    tex_set_saved_record(saved_insert_item_index, saved_insert_index, 0, tex_scan_insert_index());
+    tex_set_saved_record(saved_insert_item_index, insert_index_save_type, 0, tex_scan_insert_index());
     lmt_save_state.save_stack_data.ptr += saved_insert_n_of_items;
     tex_new_save_level(insert_group);
     tex_scan_left_brace();

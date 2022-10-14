@@ -16,4 +16,3 @@ extern size_t         aux_utf8len      (const char *text, size_t size);
 # define buffer_to_unichar(k) aux_str2uni((const unsigned char *)(lmt_fileio_state.io_buffer+k))
 
 # endif
-

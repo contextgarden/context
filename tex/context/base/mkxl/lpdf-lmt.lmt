@@ -202,6 +202,7 @@ local usedfontstreams = { }
 
 local usedindices = setmetatableindex(function(t,k)
     local n = 0
+-- n = 31
     local v = setmetatableindex(function(tt,kk)
         if n >= 0xFFFF then
             report_fonts("registering character index: overflow in hash %a, todo: use overflow font")
@@ -2488,11 +2489,12 @@ end
 
 do
 
-    local names       = { }
-    local cache       = { }
-    local nofpages    = 0
+    local names        = { }
+    local cache        = { }
+    local nofpages     = 0
 
-    local texgetcount = tex.getcount
+    local texgetcount  = tex.getcount
+    local c_realpageno = tex.iscount("realpageno")
 
     pdfreserveobject = function(name)
         nofobjects = nofobjects + 1
@@ -2511,7 +2513,7 @@ do
     pdfpagereference = function(n,complete) -- true | false | nil | n [true,false]
         if n == true or not n then
             complete = n
-            n = texgetcount("realpageno")
+            n = texgetcount(c_realpageno)
         end
         if n > nofpages then
             nofpages = n

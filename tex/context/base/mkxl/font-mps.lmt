@@ -46,6 +46,14 @@ function metapost.boundingbox(d,factor)
     return f_boundingbox(llx,lly,urx,lly,urx,ury,llx,ury)
 end
 
+function metapost.baseline(d,factor)
+    local bounds = d.boundingbox
+    local factor = factor or 1
+    local llx    = factor*bounds[1]
+    local urx    = factor*bounds[3]
+    return f_vertical(llx,0,urx,0)
+end
+
 function metapost.widthline(d,factor)
     local bounds = d.boundingbox
     local factor = factor or 1

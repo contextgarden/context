@@ -213,6 +213,7 @@ local blocks = allocate {
     ["arabic"]                                      = { first = 0x00600, last = 0x006FF, otf="arab",  description = "Arabic" },
     ["arabicextendeda"]                             = { first = 0x008A0, last = 0x008FF,              description = "Arabic Extended-A" },
     ["arabicextendedb"]                             = { first = 0x00870, last = 0x0089F,              description = "Arabic Extended-B" },
+    ["arabicextendedc"]                             = { first = 0x10EC0, last = 0x10EFF,              description = "Arabic Extended-C" },
     ["arabicmathematicalalphabeticsymbols"]         = { first = 0x1EE00, last = 0x1EEFF,              description = "Arabic Mathematical Alphabetic Symbols" },
     ["arabicpresentationformsa"]                    = { first = 0x0FB50, last = 0x0FDFF, otf="arab",  description = "Arabic Presentation Forms-A" },
     ["arabicpresentationformsb"]                    = { first = 0x0FE70, last = 0x0FEFF, otf="arab",  description = "Arabic Presentation Forms-B" },
@@ -260,6 +261,7 @@ local blocks = allocate {
     ["cjkunifiedideographsextensione"]              = { first = 0x2B820, last = 0x2CEAF,              description = "CJK Unified Ideographs Extension E" },
     ["cjkunifiedideographsextensionf"]              = { first = 0x2CEB0, last = 0x2EBEF,              description = "CJK Unified Ideographs Extension F" },
     ["cjkunifiedideographsextensiong"]              = { first = 0x30000, last = 0x3134F,              description = "CJK Unified Ideographs Extension G" },
+    ["cjkunifiedideographsextensionh"]              = { first = 0x31350, last = 0x323AF,              description = "CJK Unified Ideographs Extension H" },
     ["combiningdiacriticalmarks"]                   = { first = 0x00300, last = 0x0036F,              description = "Combining Diacritical Marks" },
     ["combiningdiacriticalmarksextended"]           = { first = 0x01AB0, last = 0x01AFF,              description = "Combining Diacritical Marks Extended" },
     ["combiningdiacriticalmarksforsymbols"]         = { first = 0x020D0, last = 0x020FF,              description = "Combining Diacritical Marks for Symbols" },
@@ -279,10 +281,12 @@ local blocks = allocate {
     ["cyrillicextendeda"]                           = { first = 0x02DE0, last = 0x02DFF, otf="cyrl",  description = "Cyrillic Extended-A" },
     ["cyrillicextendedb"]                           = { first = 0x0A640, last = 0x0A69F, otf="cyrl",  description = "Cyrillic Extended-B" },
     ["cyrillicextendedc"]                           = { first = 0x01C80, last = 0x01C8F,              description = "Cyrillic Extended-C" },
+    ["cyrillicextendedd"]                           = { first = 0x1E030, last = 0x1E08F,              description = "Cyrillic Extended-D" },
     ["cyrillicsupplement"]                          = { first = 0x00500, last = 0x0052F, otf="cyrl",  description = "Cyrillic Supplement" },
     ["deseret"]                                     = { first = 0x10400, last = 0x1044F, otf="dsrt",  description = "Deseret" },
     ["devanagari"]                                  = { first = 0x00900, last = 0x0097F, otf="deva",  description = "Devanagari" },
     ["devanagariextended"]                          = { first = 0x0A8E0, last = 0x0A8FF,              description = "Devanagari Extended" },
+    ["devanagariextendeda"]                         = { first = 0x11B00, last = 0x11B5F,              description = "Devanagari Extended-A" },
     ["digitsarabicindic"]                           = { first = 0x00660, last = 0x00669, math = true },
  -- ["digitsbengali"]                               = { first = 0x009E6, last = 0x009EF, math = true },
     ["digitsbold"]                                  = { first = 0x1D7CE, last = 0x1D7D7, math = true },
@@ -314,7 +318,7 @@ local blocks = allocate {
     ["dominotiles"]                                 = { first = 0x1F030, last = 0x1F09F,              description = "Domino Tiles" },
     ["duployan"]                                    = { first = 0x1BC00, last = 0x1BC9F,              description = "Duployan" },
     ["earlydynasticcuneiform"]                      = { first = 0x12480, last = 0x1254F,              description = "Early Dynastic Cuneiform" },
-    ["egyptianhieroglyphformatcontrols"]            = { first = 0x13430, last = 0x1343F,              description = "Egyptian Hieroglyph Format Controls" },
+    ["egyptianhieroglyphformatcontrols"]            = { first = 0x13430, last = 0x1345F,              description = "Egyptian Hieroglyph Format Controls" },
     ["egyptianhieroglyphs"]                         = { first = 0x13000, last = 0x1342F,              description = "Egyptian Hieroglyphs" },
     ["elbasan"]                                     = { first = 0x10500, last = 0x1052F,              description = "Elbasan" },
     ["elymaic"]                                     = { first = 0x10FE0, last = 0x10FFF,              description = "Elymaic" },
@@ -365,6 +369,7 @@ local blocks = allocate {
     ["ipaextensions"]                               = { first = 0x00250, last = 0x002AF,              description = "IPA Extensions" },
     ["javanese"]                                    = { first = 0x0A980, last = 0x0A9DF,              description = "Javanese" },
     ["kaithi"]                                      = { first = 0x11080, last = 0x110CF,              description = "Kaithi" },
+    ["kaktoviknumerals"]                            = { first = 0x1D2C0, last = 0x1D2DF,              description = "Kaktovik Numerals" },
     ["kanaextendeda"]                               = { first = 0x1B100, last = 0x1B12F,              description = "Kana Extended-A" },
     ["kanaextendedb"]                               = { first = 0x1AFF0, last = 0x1AFFF,              description = "Kana Extended-B" },
     ["kanasupplement"]                              = { first = 0x1B000, last = 0x1B0FF,              description = "Kana Supplement" },
@@ -374,6 +379,7 @@ local blocks = allocate {
     ["katakana"]                                    = { first = 0x030A0, last = 0x030FF, otf="kana",  description = "Katakana" },
     ["katakanaphoneticextensions"]                  = { first = 0x031F0, last = 0x031FF, otf="kana",  description = "Katakana Phonetic Extensions" },
     ["kayahli"]                                     = { first = 0x0A900, last = 0x0A92F,              description = "Kayah Li" },
+    ["kawi"]                                        = { first = 0x11F00, last = 0x11F5F,              description = "Kawi" },
     ["kharoshthi"]                                  = { first = 0x10A00, last = 0x10A5F, otf="khar",  description = "Kharoshthi" },
     ["khitansmallscript"]                           = { first = 0x18B00, last = 0x18CFF,              description = "Khitan Small Script" },
     ["khmer"]                                       = { first = 0x01780, last = 0x017FF, otf="khmr",  description = "Khmer" },
@@ -456,6 +462,7 @@ local blocks = allocate {
     ["myanmarextendeda"]                            = { first = 0x0AA60, last = 0x0AA7F,              description = "Myanmar Extended-A" },
     ["myanmarextendedb"]                            = { first = 0x0A9E0, last = 0x0A9FF,              description = "Myanmar Extended-B" },
     ["nabataean"]                                   = { first = 0x10880, last = 0x108AF,              description = "Nabataean" },
+    ["nagmundari"]                                  = { first = 0x1E4D0, last = 0x1E4FF,              description = "Nag Mundari" },
     ["nandinagari"]                                 = { first = 0x119A0, last = 0x119FF,              description = "Nandinagari" },
     ["newa"]                                        = { first = 0x11400, last = 0x1147F,              description = "Newa" },
     ["newtailue"]                                   = { first = 0x01980, last = 0x019DF,              description = "New Tai Lue" },
@@ -585,7 +592,20 @@ local blocks = allocate {
     ["yiradicals"]                                  = { first = 0x0A490, last = 0x0A4CF, otf="yi",    description = "Yi Radicals" },
     ["yisyllables"]                                 = { first = 0x0A000, last = 0x0A48F, otf="yi",    description = "Yi Syllables" },
     ["zanabazarsquare"]                             = { first = 0x11A00, last = 0x11A4F,              description = "Zanabazar Square" },
-    ["znamennymusicalnotation"]                     = { first = 0x1CF00, last = 0x1CFCF,              description = "Znamenny Musical Notation" }
+    ["znamennymusicalnotation"]                     = { first = 0x1CF00, last = 0x1CFCF,              description = "Znamenny Musical Notation" },
+
+    -- we need this early on:
+
+    ["lowercasecalligraphic"]     = { first = 0x100000, last = 0x100019, math = true },
+    ["uppercasecalligraphic"]     = { first = 0x100020, last = 0x100039, math = true },
+    ["lowercaseboldcalligraphic"] = { first = 0x100040, last = 0x100059, math = true },
+    ["uppercaseboldcalligraphic"] = { first = 0x100060, last = 0x100079, math = true },
+ -- ["lowercasesansgreek"]        = { first = 0x100040, last = 0x100059, math = true }, -- reserved for future use
+ -- ["uppercasesansgreek"]        = { first = 0x100060, last = 0x100079, math = true }, -- reserved for future use
+ -- ["lowercaseitalicsansgreek"]  = { first = 0x100080, last = 0x100099, math = true }, -- reserved for future use
+ -- ["uppercaseitalicsansgreek"]  = { first = 0x1000A0, last = 0x1000B9, math = true }, -- reserved for future use
+ -- ["lowercaseblackboarditalic"] = { first = 0x1000C0, last = 0x1000D9, math = true }, -- reserved for future use
+ -- ["uppercaseblackboarditalic"] = { first = 0x1000E0, last = 0x1000F9, math = true }, -- reserved for future use
 }
 
 -- moved from math-act.lua to here:

@@ -142,6 +142,12 @@ local function addfeature(data,feature,specifications,prepareonly)
 
     local descriptions = data.descriptions
     local resources    = data.resources
+
+    if not descriptions or not resources then
+        report_otf("missing specification")
+        return
+    end
+
     local features     = resources.features
     local sequences    = resources.sequences
 

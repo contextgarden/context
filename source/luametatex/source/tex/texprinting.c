@@ -150,48 +150,6 @@ void tex_print_ln(void)
 
 */
 
-// void tex_print_char(int s)
-// {
-//     if (s < 0 || s > 255) {
-//         tex_formatted_warning("print", "weird character %i", s);
-//     } else if (s == new_line_char_par && (lmt_print_state.selector < pseudo_selector_code)) {
-//         tex_print_ln();
-//     } else {
-//         switch (lmt_print_state.selector) {
-//             case no_print_selector_code:
-//                 break;
-//             case terminal_selector_code:
-//                 fputc(s, stdout);
-//                 ++lmt_print_state.terminal_offset;
-//                 break;
-//             case logfile_selector_code:
-//                 fputc(s, lmt_print_state.logfile);
-//                 ++lmt_print_state.logfile_offset;
-//                 break;
-//             case terminal_and_logfile_selector_code:
-//                 fputc(s, stdout);
-//                 fputc(s, lmt_print_state.logfile);
-//                 ++lmt_print_state.terminal_offset;
-//                 ++lmt_print_state.logfile_offset;
-//                 break;
-//             case pseudo_selector_code:
-//                 if (lmt_print_state.tally < lmt_print_state.trick_count) {
-//                     lmt_print_state.trick_buffer[lmt_print_state.tally % lmt_error_state.line_limits.size] = (unsigned char) s;
-//                 }
-//                 ++lmt_print_state.tally;
-//                 break;
-//             case new_string_selector_code:
-//                 tex_append_char((unsigned char) s);
-//                 break;
-//             case luabuffer_selector_code:
-//                 lmt_char_to_buffer((char) s);
-//                 break;
-//             default:
-//                 break;
-//         }
-//     }
-// }
-
 void tex_print_char(int s)
 {
     if (s < 0 || s > 255) {
@@ -462,7 +420,7 @@ void tex_print_banner(void)
         stdout,
         "%s %s\n",
         lmt_engine_state.luatex_banner,
-        str_string(lmt_dump_state.format_identifier)
+        lmt_engine_state.dump_name
     );
 }
 
@@ -470,13 +428,12 @@ void tex_print_log_banner(void)
 {
     fprintf(
         lmt_print_state.logfile,
-        "engine: %s, format id: %s, time stamp: %d-%d-%d %d:%d, startup file: %s, job name: %s, dump name: %s",
+        "engine: %s, format id: %s, time stamp: %d-%d-%d %d:%d, startup file: %s, job name: %s",
         lmt_engine_state.luatex_banner,
-        str_string(lmt_dump_state.format_identifier),
+        lmt_engine_state.dump_name,
         year_par, month_par > 12 ? 0 : month_par, day_par, time_par / 60, time_par % 60,
         lmt_engine_state.startup_filename ? lmt_engine_state.startup_filename : "-",
-        lmt_engine_state.startup_jobname ? lmt_engine_state.startup_jobname : "-",
-        lmt_engine_state.dump_name ? lmt_engine_state.dump_name : "-"
+        lmt_engine_state.startup_jobname ? lmt_engine_state.startup_jobname : "-"
     );
 }
 
@@ -518,29 +475,6 @@ void tex_print_str_esc(const char *s)
     }
 }
 
-/*tex 
-    An array of digits in the range |0..15| is printed by |print_the_digs|. These digits are in the
-    reverse order: |dig[k-1]|$\,\ldots\,$|dig[0]|! 
-*/
-
-// inline static void tex_print_decimal_digits(const unsigned char *digits, int k)
-// {
-//     while (k-- > 0) {
-//         tex_print_char('0' + digits[k]);
-//     }
-// }
-
-// inline static void tex_print_hexadecimal_digits(const unsigned char *digits, int k)
-// {
-//     while (k-- > 0) {
-//         if (digits[k] < 10) {
-//             tex_print_char('0' + digits[k]);
-//         } else {
-//             tex_print_char('A' - 10 + digits[k]);
-//         }
-//     }
-// }
-
 /*tex
 
     The following procedure, which prints out the decimal representation of a given integer |n|,
@@ -549,28 +483,6 @@ void tex_print_str_esc(const char *s)
     implemented consistently by all \PASCAL\ compilers.
 
 */
-
-// void tex_print_int(int n)
-// {
-//     /*tex In the end a 0..9 fast path works out best. */
-//     if (n >= 0 && n <= 9) { 
-//         tex_print_char('0' + n);
-//     } else { 
-//         /*tex index to current digit; we assume that $|n|<10^{23}$ */
-//         int k = 0;
-//         unsigned char digits[24];
-//         if (n < 0) {
-//             tex_print_char('-');
-//             n = -n; 
-//         }
-//         do {
-//             digits[k] = (unsigned char) (n % 10);
-//             n = n / 10;
-//             ++k;
-//         } while (n != 0);
-//         tex_print_decimal_digits(digits, k);
-//     }
-// }
 
 void tex_print_int(int n)
 {
@@ -694,19 +606,6 @@ void tex_print_sparse_dimension(scaled s, int unit)
     variants. Because we have bitsets that can give upto |0xFFFFFFFF| we treat the given integer
     as an unsigned. 
 */
-
-// void tex_print_hex(int n)
-// {
-//     /*tex index to current digit; we assume that $0\L n<16^{22}$ */
-//     int k = 0 ;
-//     unsigned char digits[24];
-//     do {
-//         digits[k] = n % 16;
-//         n = n / 16;
-//         ++k;
-//     } while (n != 0);
-//     tex_print_hexadecimal_digits(digits, k);
-// }
 
 void tex_print_hex(int sn)
 {
@@ -989,6 +888,9 @@ void tex_print_mathspec(int p)
     6   <id: bar @ ..> xyz
     \stoptyping
 
+    This is no longer the case: we now always print a full specification. The |\tracingfonts|
+    register will be dropped. 
+
 */
 
 void tex_print_char_identifier(halfword c) // todo: use string_print_format
@@ -1249,21 +1151,19 @@ void tex_print_levels(void)
 
 */
 
-extern void tex_print_format(const char *format, ...)
+const char *tex_print_format_args(const char *format, va_list args)
 {
-    va_list args;
-    va_start(args, format); /* hm, weird, no number */
     while (1) {
         int chr = *format++;
         switch (chr) {
             case '\0':
-                goto DONE;
+                return va_arg(args, char *);
             case '%':
                 {
                     chr = *format++;
                     switch (chr) {
                         case '\0':
-                            goto DONE;
+                            return va_arg(args, char *);
                         case 'c':
                             tex_print_char(va_arg(args, int));
                             break;
@@ -1384,6 +1284,19 @@ extern void tex_print_format(const char *format, ...)
                                 }
                                 break;
                             }
+                        case 'Q':
+                            {
+                                scaled s = va_arg(args, scaled);
+                                int u = va_arg(args, int);
+                                tex_print_spec(s, u);
+                                break;
+                            }
+                        case 'R':
+                            {
+                                halfword d = va_arg(args, int);
+                                tex_print_rule_dimen(d);
+                                break;
+                            }
                         case 'S':
                             {
                                 halfword cs = va_arg(args, int);
@@ -1424,13 +1337,19 @@ extern void tex_print_format(const char *format, ...)
                 break;
         }
     }
-  DONE:
+}
+
+void tex_print_format(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format); /* hm, weird, no number */
+    tex_print_format_args(format, args);
     va_end(args);
 }
 
 /*tex
 
-    Group codes were introcued in \ETEX\ but have been extended in the meantime in \LUATEX\ and
+    Group codes were introduced in \ETEX\ but have been extended in the meantime in \LUATEX\ and
     later again in \LUAMETATEX. We might have (even) more granularity in the future.
 
     Todo: combine this with an array of struct(id,name,lua) ... a rainy day + stack of new cd's job.

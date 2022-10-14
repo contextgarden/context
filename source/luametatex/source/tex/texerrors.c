@@ -600,105 +600,18 @@ void tex_handle_error_message_only(
     in ConTeXt but I;'m nor that sure if users really need it. The english is probably the least
     problematic part of an error so first I will perfect the tracing bit.
 
-*/
-
-/*
-    %c   int       char
-    %s  *char      string
-    %q  *char      'string'
-    %i   int       integer
-    %e             backslash (tex escape)
-    %C   int int   symbolic representation of cmd chr
-    %E  *char      \cs
-    %S   int       tex cs string
-    %M   int       mode
-    %T   int       tex string
-    %%             percent
+    Todo: a translation callback: |str, 1 => str|, or not.
 
 */
 
 extern void tex_handle_error(error_types type, const char *format, ...)
 {
+    const char *str = NULL;
     va_list args;
     va_start(args, format); /* hm, weird, no number */
-    /*tex Todo: a translation callback: |str, 1 => str|. */
     tex_aux_start_error();
-    while (1) {
-        int chr = *format++;
-        switch (chr) {
-            case '\0':
-                goto DONE;
-            case '%':
-                {
-                    chr = *format++;
-                    switch (chr) {
-                        case '\0':
-                            goto DONE;
-                        case 'c':
-                            tex_print_char(va_arg(args, int));
-                            break;
-                        case 's':
-                            tex_print_str(va_arg(args, char *));
-                            break;
-                        case 'q':
-                            tex_print_char('\'');
-                            tex_print_str(va_arg(args, char *));
-                            tex_print_char('\'');
-                            break;
-                        case 'm':
-                            tex_print_cs_checked(va_arg(args, int));
-                            break;
-                        case 'i':
-                            tex_print_int(va_arg(args, int));
-                            break;
-                        case 'e':
-                            tex_print_str_esc(NULL);
-                            break;
-                        case 'C':
-                            {
-                                int cmd = va_arg(args, int);
-                                int val = va_arg(args, int);
-                                tex_print_cmd_chr((singleword) cmd, val); /* inlining doesn't work */
-                                break;
-                            }
-                        case 'E':
-                            tex_print_str_esc(va_arg(args, char *));
-                            break;
-                        case 'S':
-                            {
-                                halfword cs = va_arg(args, int);
-                                tex_print_cs(cs);
-                                break;
-                            }
-                        case 'M':
-                            {
-                                halfword mode = va_arg(args, int);
-                                tex_print_str(tex_string_mode(mode));
-                                break;
-                            }
-                        case 'T':
-                            {
-                                strnumber s = va_arg(args, int);
-                                tex_print_tex_str(s);
-                                break;
-                            }
-                        case '%':
-                            tex_print_char('%');
-                            break;
-                        default:
-                            /* ignore bad one */
-                            break;
-                    }
-                }
-                break;
-            default:
-                tex_print_char(chr); /* todo: utf */
-                break;
-        }
-    }
-  DONE:
-    /*tex Todo: a translation callback: |str, 2 => str|. */
-    tex_aux_update_help_text(va_arg(args, char *));
+    tex_print_format_args(format, args);
+    tex_aux_update_help_text(str);
     tex_aux_do_handle_error_type(type);
     va_end(args);
 }

@@ -1,0 +1,106 @@
+return {
+    name        = "common-math",
+    version     = "1.00",
+    comment     = "Goodies that complement pagella.",
+    author      = "Hans Hagen & Mikael Sundqvist",
+    copyright   = "ConTeXt development team",
+    mathematics = {
+        tweaks = {
+            presets = {
+                matheulercalligraphic = function(parameters)
+                    return {
+                        tweak   = "replacealphabets",
+                        feature = "matheulercalligraphic",
+                        list    = {
+                            {
+                                source   = "uppercasescript",
+                                target   = "uppercasecalligraphic",
+                                filename = "euler.otf",
+                                rscale   = parameters.rscale,
+                            },
+                            {
+                                source   = "uppercaseboldscript",
+                                target   = "uppercaseboldcalligraphic",
+                                filename = "euler.otf",
+                                rscale   = parameters.rscale,
+                            },
+                        },
+                    }
+                end,
+                mathrsfscript = function(parameters)
+                    return {
+                        tweak   = "replacealphabets",
+                        feature = "mathrsfscript",
+                        list    = {
+                            {
+                                source   = "uppercasescript",
+                                target   = "uppercasescript",
+                                filename = "ralphsmithsformalscript-companion.otf",
+                                rscale   = parameters.rscale,
+                                feature  = "ss01",
+                            },
+                            {
+                                source   = "uppercaseboldscript",
+                                target   = "uppercaseboldscript",
+                                filename = "ralphsmithsformalscript-companion.otf",
+                                rscale   = parameters.rscale,
+                                feature  = "ss01",
+                            },
+                        },
+                    }
+                end,
+                mathxitsarabic = function(parameters)
+                    return {
+                        tweak   = "replacealphabets",
+                        feature = "mathxitsarabic",
+                        list    = {
+                            {
+                                source   = "arabicmathematicalalphabeticsymbols",
+                                target   = "arabicmathematicalalphabeticsymbols",
+                                filename = "xitsmath-companion.otf",
+                                rscale   = parameters.rscale,
+                            },
+                            {
+                                source   = "digitsarabicindic",
+                                target   = "digitsarabicindic",
+                                filename = "xitsmath-companion.otf",
+                                rscale   = parameters.rscale,
+                            },
+                            {
+                                source   = "digitsextendedarabicindic",
+                                target   = "digitsextendedarabicindic",
+                                filename = "xitsmath-companion.otf",
+                                rscale   = parameters.rscale,
+                            },
+                        },
+                    }
+                end,
+                moveitalics = function(parameters)
+                    return {
+                        tweak   = "moveitalics",
+                        correct = parameters.correct,
+                        list    = {
+                            "lowercasenormal",
+                            "lowercaseitalic",
+                            "lowercasebold",
+                            "lowercasebolditalic",
+                            "lowercasegreeknormal",
+                            "lowercasegreekitalic",
+                            "lowercasegreekbold",
+                            "lowercasegreekbolditalic",
+                            "uppercasenormal",
+                            "uppercaseitalic",
+                            "uppercasebold",
+                            "uppercasebolditalic",
+                            "uppercasegreeknormal",
+                            "uppercasegreekitalic",
+                            "uppercasegreekbold",
+                            "uppercasegreekbolditalic",
+                            mathematics.tweaks.subsets.dotless,
+                        }
+                    }
+                end,
+            },
+        },
+    },
+}

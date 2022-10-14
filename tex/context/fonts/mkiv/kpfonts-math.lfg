@@ -1,3 +1,6 @@
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
+
 return {
     name = "kpfonts-math",
     version = "1.00",
@@ -11,12 +14,12 @@ return {
          -- AccentBaseHeight                =    0,
             AccentBaseDepth                 =   30,
             RadicalDegreeBottomRaisePercent =   70,
-         -- RadicalRuleThickness            =   50, -- 50 in font
+         -- RadicalRuleThickness            =   50, --   50 in font
             DelimiterPercent                =   90,
             DelimiterShortfall              =  400,
          -- DisplayOperatorMinHeight        = 1800, -- 1500 in font (only one)
-            PrimeRaisePercent               =  25, -- 50 default
-         -- PrimeRaiseComposedPercent       =  25, -- 25 default
+            PrimeRaisePercent               =   25, --   50 default
+         -- PrimeRaiseComposedPercent       =   25, --   25 default
         },
         tweaks = {
             aftercopying = {
@@ -27,51 +30,22 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {
-                        [0x2A3F] = {
-                            factor = 0.84625, 
-                        }
+                        [0x2A3F] = { factor = 0.84625 }
                     },
                 },
                 {
                     tweak = "kerns",
                     list  = {
-                        [0x2F] = {
-                            topleft     = -0.2,
-                         -- bottomleft  =  0,
-                         -- topright    =  0,
-                            bottomright =  -0.2,
-                       },
-
-                        ["0x7D.parts.top"] = {
-                            topright    = -0.25,
-                        }, -- right brace top
-                        ["0x7D.parts.bottom"] = {
-                            bottomright = -0.25,
-                        }, -- right brace bottom
-                        ["0x7D.variants.*"] = {
-                            topright = -0.1,
-                            bottomright = -0.1,
-                        }, -- right brace variants
-                        ["0x29.parts.top"] = {
-                            topright    = -0.05,
-                        }, -- right parenthesis top
-                        ["0x29.parts.bottom"] = {
-                            bottomright = -0.05,
-                        }, -- right parenthesis bottom
-                        ["0x29.variants.*"] = {
-                            topright = -0.05,
-                            bottomright = -0.05,
-                        }, -- right parenthesis variants
-                        ["0x221A.parts.top"] = {
-                            topright = 0.2,
-                        }, -- right radical top
-                        ["0x221A.parts.bottom"] = {
-                            bottomright = 0.2,
-                        }, -- right radical bottom
-                        ["0x221A.variants.*"] = {
-                            topright = 0.2,
-                            bottomright = 0.2,
-                        }, -- right radical variants
+                        [0x002F]                = { topleft  = -0.2,  bottomright = -0.2  },
+                        ["0x7D.parts.top"]      = { topright = -0.25                      }, -- right brace top
+                        ["0x7D.parts.bottom"]   = {                   bottomright = -0.25 }, -- right brace bottom
+                        ["0x7D.variants.*"]     = { topright = -0.1,  bottomright = -0.1  }, -- right brace variants
+                        ["0x29.parts.top"]      = { topright = -0.05                      }, -- right parenthesis top
+                        ["0x29.parts.bottom"]   = {                   bottomright = -0.05 }, -- right parenthesis bottom
+                        ["0x29.variants.*"]     = { topright = -0.05, bottomright = -0.05 }, -- right parenthesis variants
+                        ["0x221A.parts.top"]    = { topright = 0.2                        }, -- right radical top
+                        ["0x221A.parts.bottom"] = {                   bottomright =  0.2  }, -- right radical bottom
+                        ["0x221A.variants.*"]   = { topright = 0.2,   bottomright =  0.2  }, -- right radical variants
 
                     },
                 },
@@ -83,6 +57,34 @@ return {
              --     fake    = 0.75, -- replace multiples with this width proportion
              --  -- keep    = true, -- keep the text size prime (aka minute)
              -- },
+                {
+                    tweak = "addmirrors",
+                },
+                {
+                    -- kpfonts have calligraphic at private slots
+                    tweak   = "replacealphabets",
+                    list    = {
+                        {
+                            source   = "uppercasescript",
+                            target   = "uppercasecalligraphic",
+                        },
+                        {
+                            source   = { first = 0x0E7E1, last = 0x0E7FA },
+                            target   = "uppercasecalligraphic",
+                        },
+                        {
+                            source   = "uppercaseboldscript",
+                            target   = "uppercaseboldcalligraphic",
+                        },
+                        {
+                            source   = { first = 0x0E701, last = 0x0E71A },
+                            target   = "uppercaseboldcalligraphic",
+                        },
+                    },
+                },
+                presets.matheulercalligraphic { rscale = 0.95 },
+                presets.mathrsfscript         { rscale = 0.95 },
+                presets.mathxitsarabic        { rscale = 0.92 },
                 {
                     tweak = "checkspacing",
                 },
@@ -96,14 +98,19 @@ return {
                     tweak = "addrules",
                 },
                 {
+                    -- This will be fixed. Check if new version comes out!
                     tweak   = "addbars",
-                    advance = 0.025,
+                    advance = 0.5,
                 },
                 {
                     tweak = "addactuarian",
                 },
                 {
                     tweak = "addequals",
+                },
+                {
+                    tweak = "setoptions",
+                    set   = { "ignorekerndimensions" }
                 },
             },
         },

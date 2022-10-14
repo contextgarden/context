@@ -93,7 +93,7 @@ inline scaled tex_aux_checked_dimen2(scaled v)
 /*tex
     These two helpers, of which the second one is still experimental, actually belong in another
     file so then might be moved. Watch how the first one has the |unsave| call!
- */
+*/
 
 static void tex_aux_fixup_directions_and_unsave(void)
 {
@@ -171,7 +171,7 @@ static void tex_aux_out_of_range_error(halfword val, halfword max)
     runners finish what another started, for instance when we see a left brace, depending on state
     another runner can kick in.
 
- */
+*/
 
 static void tex_aux_adjust_space_factor(halfword chr)
 {
@@ -414,7 +414,7 @@ static void tex_aux_set_lua_value(int a) {
 
     There is a special treatment for spaces when |space_factor <> 1000|.
 
- */
+*/
 
 static void tex_aux_run_math_space(void) {
     if (! disable_spaces_par) {
@@ -797,9 +797,9 @@ static void tex_aux_scan_local_box(int code) {
     quarterword options = 0;
     halfword class = 0;
     tex_scan_local_boxes_keys(&options, &class);
-    tex_set_saved_record(saved_localbox_item_location, saved_local_box_location, 0, code);
-    tex_set_saved_record(saved_localbox_item_index, saved_local_box_index, 0, class);
-    tex_set_saved_record(saved_localbox_item_options, saved_local_box_options, 0, options);
+    tex_set_saved_record(saved_localbox_item_location, local_box_location_save_type, 0, code);
+    tex_set_saved_record(saved_localbox_item_index, local_box_index_save_type, 0, class);
+    tex_set_saved_record(saved_localbox_item_options, local_box_options_save_type, 0, options);
     lmt_save_state.save_stack_data.ptr += saved_localbox_n_of_items;
     tex_new_save_level(local_box_group);
     tex_scan_left_brace();
@@ -811,7 +811,7 @@ static void tex_aux_scan_local_box(int code) {
 static void tex_aux_finish_local_box(void)
 {
     tex_unsave();
-    if (saved_type(saved_localbox_item_location - saved_localbox_n_of_items) == saved_local_box_location) {
+    if (saved_type(saved_localbox_item_location - saved_localbox_n_of_items) == local_box_location_save_type) {
         halfword p;
         halfword location = saved_value(saved_localbox_item_location - saved_localbox_n_of_items);
         quarterword options = (quarterword) saved_value(saved_localbox_item_options - saved_localbox_n_of_items);
@@ -2227,7 +2227,7 @@ static void tex_aux_run_discretionary(void)
                     }
                 }
               DONE:
-                tex_set_saved_record(saved_discretionary_item_component, saved_discretionary_count, 0, 0);
+                tex_set_saved_record(saved_discretionary_item_component, discretionary_count_save_type, 0, 0);
                 lmt_save_state.save_stack_data.ptr += saved_discretionary_n_of_items;
                 tex_new_save_level(discretionary_group);
                 tex_scan_left_brace();
@@ -2357,7 +2357,7 @@ static void tex_aux_finish_discretionary(void)
     p = node_next(cur_list.head);
     tex_pop_nest();
     d = cur_list.tail;
-    if (saved_type(saved_discretionary_item_component - saved_discretionary_n_of_items) == saved_discretionary_count) {
+    if (saved_type(saved_discretionary_item_component - saved_discretionary_n_of_items) == discretionary_count_save_type) {
         switch (saved_value(saved_discretionary_item_component - saved_discretionary_n_of_items)) {
             case 0:
                 if (n > 0) {
@@ -2412,7 +2412,7 @@ static void tex_aux_finish_discretionary(void)
             default:
                 break;
         }
-        tex_set_saved_record(saved_discretionary_item_component - saved_discretionary_n_of_items, saved_discretionary_count, 0, saved_value(saved_discretionary_item_component - saved_discretionary_n_of_items) + 1);
+        tex_set_saved_record(saved_discretionary_item_component - saved_discretionary_n_of_items, discretionary_count_save_type, 0, saved_value(saved_discretionary_item_component - saved_discretionary_n_of_items) + 1);
         tex_new_save_level(discretionary_group);
         tex_scan_left_brace();
         tex_push_nest();
@@ -2558,6 +2558,8 @@ static void tex_aux_run_right_brace(void)
             tex_aux_finish_output();
             break;
         case math_group:
+        case math_component_group:
+        case math_stack_group:
             tex_finish_math_group();
             break;
         case discretionary_group:
@@ -2574,6 +2576,9 @@ static void tex_aux_run_right_brace(void)
             break;
         case math_fraction_group:
             tex_finish_math_fraction();
+            break;
+        case math_radical_group:
+            tex_finish_math_radical();
             break;
         case math_operator_group:
             tex_finish_math_operator();
@@ -2962,35 +2967,33 @@ static void tex_aux_run_kern(void)
 static void tex_aux_run_kern(void)
 {
     halfword code = cur_chr;
-    halfword val = tex_scan_dimen(0, 0, 0, 0, NULL);
     switch (code) {
-        case normal_kern_code:
-            break;
+        /* not yet enabled and maybe it never wil be */
         case h_kern_code:
-            if (cur_mode == mmode) {
-                break;
-            } else {
-                cur_tok = token_val(kern_cmd, normal_kern_code);
-                tex_aux_run_new_paragraph();
+            if (cur_mode == vmode) {
+                tex_back_input(token_val(kern_cmd, normal_kern_code));
+                tex_back_input(token_val(begin_paragraph_cmd, quitvmode_par_code));
                 return;
+            } else { 
+                break;
             }
-            break;
         case v_kern_code:
-            if (cur_mode == mmode) {
-                break;
-            } else {
-                cur_tok = token_val(kern_cmd, normal_kern_code);
-                tex_aux_run_head_for_vmode();
+            if (cur_mode == hmode) {
+                tex_back_input(token_val(kern_cmd, normal_kern_code));
+                tex_back_input(token_val(end_paragraph_cmd, normal_end_paragraph_code));
                 return;
-            }
-        case non_zero_width_kern_code:
-            if (val) {
+            } else { 
                 break;
-            } else {
-                return;
             }
     }
-    tex_tail_append(tex_new_kern_node(val, explicit_kern_subtype));
+    { 
+        scaled val = tex_scan_dimen(0, 0, 0, 0, NULL);
+        if (code == non_zero_width_kern_code && ! val) { 
+            return;
+        } else { 
+            tex_tail_append(tex_new_kern_node(val, explicit_kern_subtype));
+        }
+    }
 }
 
 static void tex_aux_run_mkern(void)
@@ -3548,14 +3551,12 @@ inline static void tex_aux_update_register(int a, int level, halfword index, hal
             }
             break;
         case glue_val_level:
-//          tex_define(a, index, register_glue_reference_cmd, value);
             tex_define(a, index, cmd == internal_glue_cmd ? internal_glue_reference_cmd : register_glue_reference_cmd, value);
             if (is_frozen(a) && cmd == internal_glue_cmd && cur_mode == hmode) {
                 tex_update_par_par(internal_glue_cmd,  index - lmt_primitive_state.prim_data[cmd].offset);
             }
             break;
         case mu_val_level:
-//          tex_define(a, index, register_glue_reference_cmd, value);
             tex_define(a, index, cmd == internal_glue_cmd ? internal_mu_glue_reference_cmd : register_mu_glue_reference_cmd, value);
             break;
         default:
@@ -4135,15 +4136,6 @@ static void tex_aux_set_shorthand_def(int a, int force)
                  // tex_define(a, p, math_char_xgiven_cmd, math_packed_character(mval.class_value,mval.family_value,mval.character_value));
                     break;
                 }
-            /* 
-            case math_uchar_def_code:
-                {
-                    mathcodeval mval = tex_scan_mathchar(umathnum_mathcode);
-                    tex_define(a, p, mathspec_cmd, tex_new_math_spec(mval, umathnum_mathcode));
-                 // tex_define(a, p, math_char_xgiven_cmd, math_packed_character(mval.class_value,mval.family_value,mval.character_value));
-                    break;
-                }
-            */
             case count_def_code:
                 {
                     halfword n = tex_scan_int_register_number();
@@ -4780,22 +4772,12 @@ static void tex_aux_set_define_char_code(int a) /* maybe make |a| already a bool
         case extmathcode_charcode:
             tex_scan_extdef_math_code((is_global(a)) ? level_one : cur_level, umath_mathcode);
             break;
-        /*
-        case extmathcodenum_charcode:
-            tex_scan_extdef_math_code((is_global(a)) ? level_one : cur_level, umathnum_mathcode);
-            break;
-        */
         case delcode_charcode:
             tex_scan_extdef_del_code((is_global(a)) ? level_one : cur_level, tex_mathcode);
             break;
         case extdelcode_charcode:
             tex_scan_extdef_del_code((is_global(a)) ? level_one : cur_level, umath_mathcode);
             break;
-        /*
-        case extdelcodenum_charcode:
-            tex_scan_extdef_del_code((is_global(a)) ? level_one : cur_level, umathnum_mathcode);
-            break;
-        */
         default:
             break;
     }
@@ -5133,8 +5115,14 @@ static void tex_aux_set_math_parameter(int a)
                 case all_math_styles:
                     tex_set_all_styles(code, value, global_or_local(a), indirect);
                     break;
+                case all_main_styles:
+                    tex_set_main_styles(code, value, global_or_local(a), indirect);
+                    break;
                 case all_split_styles:
                     tex_set_split_styles(code, value, global_or_local(a), indirect);
+                    break;
+                case all_unsplit_styles:
+                    tex_set_unsplit_styles(code, value, global_or_local(a), indirect);
                     break;
                 case all_uncramped_styles:
                     tex_set_uncramped_styles(code, value, global_or_local(a), indirect);
@@ -5492,12 +5480,15 @@ void tex_get_r_token(void)
     do {
         tex_get_token();
     } while (cur_tok == space_token);
-    if (eqtb_valid_cs(cur_cs)) {
+    if (eqtb_invalid_cs(cur_cs)) {
         if (cur_cs == 0) {
             tex_back_input(cur_tok);
         }
         cur_tok = deep_frozen_protection_token;
-        /* moved down but this might interfere with input on the console */
+        /*tex 
+            Moved down but this might interfere with input on the console which we don't use 
+            anyway. 
+        */
         tex_handle_error(
             insert_error_type,
             "Missing control sequence inserted",
@@ -5506,6 +5497,20 @@ void tex_get_r_token(void)
             "mixing me up too badly.\n"
         );
         goto RESTART;
+ // } else if (cur_cmd == cs_name_cmd && cur_chr == cs_name_code) { 
+ //     /*tex 
+ //         This permits 
+ //             |\someassignment\csname foo\endcsname| 
+ //         over 
+ //             |\expandafter\someassignment\csname foo\endcsname| 
+ //         but it actually doesn't happen that frequently so even if we measure a gain of some 
+ //         10\percent on some cases (with millions of iterations) for now I will not enable this
+ //         feature. Of course it is also incompatible but I don't expect anyone to redefine csname
+ //         so it is actually a pretty safe extension. Of course it also reduces tracing. I will 
+ //         come back to it when I suspect a performance gain in \CONTEXT\ (or want my code to look 
+ //         better).
+ //     */
+ //     cur_cs = tex_create_csname();    
     }
 }
 
@@ -6007,9 +6012,7 @@ static void tex_aux_run_show_whatever(void)
                         tex_begin_diagnostic();
                     }
                     if (! content) {
-                        tex_print_str("> \\box");
-                        tex_print_int(n);
-                        tex_print_char('=');
+                        tex_print_format("> \\box%i=",n);
                     }
                     if (r) {
                         tex_show_box(r);
@@ -6028,7 +6031,7 @@ static void tex_aux_run_show_whatever(void)
             }
         case show_the_code:
             {
-                halfword head = tex_the_value_toks(1, NULL, 0);
+                halfword head = tex_the_value_toks(the_code, NULL, 0);
                 tex_print_nlp();
                 tex_print_str("> ");
                 tex_show_token_list(head, null, default_token_show_max, 0);
@@ -6381,9 +6384,6 @@ void tex_initialize_variables(void)
         math_pre_display_gap_factor_par = default_pre_display_gap;
      /* pre_binary_penalty_par = infinite_penalty; */
      /* pre_relation_penalty_par = infinite_penalty; */
-     /* math_script_box_mode_par = 1; */
-     /* math_script_char_mode_par = 1; */
-     /* math_flatten_mode_par = 1; */ /*tex We default to ord */ /* obsolete */
         math_font_control_par = assumed_math_control; 
         math_eqno_gap_step_par = default_eqno_gap_step;
         px_dimen_par = one_bp;

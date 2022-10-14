@@ -53,6 +53,7 @@
    \c!source=\zerocount,
    \c!height=\zeropoint,
    \c!depth=\zeropoint,
+   \c!distance=\zerocount,
    \c!factor=\v!auto]
 
 \appendtoks
@@ -314,7 +315,66 @@
 
 \installlocalcurrenthandler \??mathfences {mathfence}
 
-\tolerant\protected\def\math_fenced_fenced#1#*[#2]%
+%D The horizontal text variant was introduced for Alan Braslau. Because this is not
+%D used that often we only support double text arguments.
+%D
+%D Musical timestamp: I am The Moon by Tedeschi Trucks Band
+
+% \definemathfence [tupdownarrows] [text] [\c!left="2191,\c!right="2193]
+
+\protected\def\math_fenced_horizontal_common#1#2#3#4% \Uwhatever class symbol source
+  {\c_math_fenced_class\mathfenceparameter#2\relax
+   \edef\p_fence{#3}%
+   #1% \Uleft \Umiddle \Uleft
+   \usedcolorparameterattributes{\mathfenceparameter\c!color}%
+   \s!leftclass  \mathunspacedcode
+   \s!rightclass \mathunspacedcode
+   \s!class      \mathunspacedcode
+   \s!source     \numexpr\namedboxanchor{\mathfenceparameter#4}\relax
+   \Udelimiter\mathghostcode\fam\p_fence}
+
+\tolerant\protected\def\math_fenced_horizontal#1#*[#2]#:#*#3#4%
+  {% \csname math\mathfenceparameter\c!mathclass\endcsname
+   \mathord \bgroup % class here
+     \setlocalmathfencecurrent{#1}% \edef\currentmathfence{#1}%
+     \setupcurrentmathfence[#2]%
+   % \usemathstyleparameter\mathfenceparameter\c!mathstyle
+     \setmathsmalltextbox\scratchboxone\hbox{\usemathfencestyleandcolor\c!leftstyle \c!leftcolor #3}%
+     \setmathsmalltextbox\scratchboxtwo\hbox{\usemathfencestyleandcolor\c!rightstyle\c!rightcolor#4}%
+     \let\math_fenced_common\math_fenced_horizontal_common
+     \edef\p_fenced_middle{\mathfenceparameter\c!middle}%
+     \ifempty\p_fenced_middle\else
+       \letmathfenceparameter\c!left \p_fenced_middle
+       \letmathfenceparameter\c!right\zerocount
+     \fi
+     \scratchdistance\mathfenceparameter\c!distance
+     \box\scratchboxone
+     \kern\scratchdistance
+     \math_fenced_fenced_start\currentmathfence
+     \math_fenced_fenced_stop \currentmathfence
+     \kern\scratchdistance
+     \box\scratchboxtwo
+   \egroup}
+
+\tolerant\protected\def\math_fenced_fenced#1%
+  {\ifcstok{\namedmathfenceparameter{#1}\c!text}\v!yes % not the best keyword
+     \expandafter\math_fenced_horizontal
+   \else
+     \expandafter\math_fenced_vertical
+   \fi{#1}}
+
+% two step because we don't want to define text itself as command
+
+\definemathfence
+  [\v!text]
+
+\setupmathfence
+  [\v!text]
+  [\c!text=\v!yes,
+   \c!command=\v!yes,
+   \c!distance=.125\emwidth]
+
+\tolerant\protected\def\math_fenced_vertical#1#*[#2]%
   {\begingroup
  %{\beginmathgroup
    \setlocalmathfencecurrent{#1}% \edef\currentmathfence{#1}%
@@ -1128,5 +1188,15 @@
    \setmathoptions\mathmiddlecode\numexpression
      \setmathoptions\mathmiddlecode bor \autoinjectclassoptioncode
    \relax}
+
+%D New (to be completed):
+
+% $x + \tupdownarrows{left}{right} + x$
+% $x + \tdownuparrows{left}{right} + x$
+% $x + \tupanddownarrows[color=red,leftcolor=green,rightcolor=blue]{left}{right} + x$
+
+\definemathfence [tupanddownarrows] [\v!text] [\c!left="2191,\c!right="2193]
+\definemathfence [tupdownarrows]    [\v!text] [\c!left="21C5,\c!right=0]
+\definemathfence [tdownuparrows]    [\v!text] [\c!middle="21F5]
 
 \protect

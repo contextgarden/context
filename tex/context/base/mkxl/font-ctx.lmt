@@ -1221,23 +1221,23 @@ do  -- else too many locals
             "integer",
         },
         actions   = function (
-                        global,          -- \ifx\fontclass\empty\s!false\else\s!true\fi
-                        cs,              -- {#csname}%
-                        str,             -- \somefontfile
-                        size,            -- \d_font_scaled_font_size
-                        inheritancemode, -- \c_font_feature_inheritance_mode
-                        classfeatures,   -- \m_font_class_features
-                        fontfeatures,    -- \m_font_features
-                        classfallbacks,  -- \m_font_class_fallbacks
-                        fontfallbacks,   -- \m_font_fallbacks
-                        mathsize,        -- \fontface
-                        textsize,        -- \d_font_scaled_text_face
-                        classgoodies,    -- \m_font_class_goodies
-                        goodies,         -- \m_font_goodies
-                        classdesignsize, -- \m_font_class_designsize
-                        fontdesignsize,  -- \m_font_designsize
-                        scaledfontmode   -- \scaledfontmode
-                    )
+            global,          -- \ifx\fontclass\empty\s!false\else\s!true\fi
+            cs,              -- {#csname}%
+            str,             -- \somefontfile
+            size,            -- \d_font_scaled_font_size
+            inheritancemode, -- \c_font_feature_inheritance_mode
+            classfeatures,   -- \m_font_class_features
+            fontfeatures,    -- \m_font_features
+            classfallbacks,  -- \m_font_class_fallbacks
+            fontfallbacks,   -- \m_font_fallbacks
+            mathsize,        -- \fontface
+            textsize,        -- \d_font_scaled_text_face
+            classgoodies,    -- \m_font_class_goodies
+            goodies,         -- \m_font_goodies
+            classdesignsize, -- \m_font_class_designsize
+            fontdesignsize,  -- \m_font_designsize
+            scaledfontmode   -- \scaledfontmode
+        )
             if trace_defining then
                 report_defining("start stage two: %s, size %s, features %a & %a, mode %a",str,size,classfeatures,fontfeatures,inheritancemode)
             end
@@ -1397,7 +1397,7 @@ do  -- else too many locals
                         busy = false
                         mathematics.finishfallbacks(tfmdata,specification,fallbacks)
                         tfmdata.original = specification.specification
-constructors.beforepassingfonttotex(tfmdata)
+                        constructors.beforepassingfonttotex(tfmdata)
                         local id = definefont(tfmdata,properties.id)
                         csnames[id] = specification.cs
                         properties.id = id -- already set

@@ -6,14 +6,18 @@
 # define LMT_MLIST_H
 
 typedef struct kernset {
-    scaled topright;
-    scaled bottomright;
-    scaled topleft;
-    scaled bottomleft;
-    scaled height;
-    scaled depth;
-    scaled toptotal;
-    scaled bottomtotal;
+    scaled   topright;
+    scaled   bottomright;
+    scaled   topleft;
+    scaled   bottomleft;
+    scaled   height;
+    scaled   depth;
+    scaled   toptotal;
+    scaled   bottomtotal;
+    halfword dimensions;
+    halfword font;
+    halfword character; 
+    halfword padding;
 } kernset; 
 
 extern void     tex_run_mlist_to_hlist (halfword p, halfword penalties, halfword style, int beginclass, int endclass);

@@ -3146,9 +3146,9 @@ static int tokenlib_save_lua(lua_State *L)
         while (1) {
             --ptr;
             switch (save_type(ptr)) {
-                case level_boundary:
+                case level_boundary_save_type:
                     goto SAVE;
-                case restore_lua:
+                case restore_lua_save_type:
                     if (save_value(ptr) == f) {
                         return 0;
                     } else {
@@ -3158,7 +3158,7 @@ static int tokenlib_save_lua(lua_State *L)
         }
     }
   SAVE:
-    tex_save_halfword_on_stack(restore_lua, f);
+    tex_save_halfword_on_stack(restore_lua_save_type, f);
     return 0;
 }
 

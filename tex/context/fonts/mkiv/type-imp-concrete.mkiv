@@ -1,7 +1,19 @@
+%D \module
+%D   [       file=type-imp-erewhon,
+%D        version=2022.30.09, % a bit older
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=\TEX Gyre Fonts,
+%D         author=Mikael Sundqvist,
+%D           date=\currentdate,
+%D      copyright={\CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
 %\loadtypescriptfile[texgyre]
 %\resetfontfallback  [concrete-euler-fix]
 %\definefontfallback[concrete-euler-fix][texgyrepagella-math] [0x022EE,0x022F0,0x022F1,0x02661,0x02220][force=yes]
-
 
 \starttypescriptcollection[concrete]
 
@@ -9,42 +21,42 @@
     %\definefontfeature[none-slanted-concrete]   [none]   [slant=.2]
 
     \starttypescript [\s!serif] [concrete-serif]
-        \definefontsynonym [\s!Serif]           [\s!file:cmunorm]   [\s!features=\s!default]
-        \definefontsynonym [\s!SerifItalic]     [\s!file:cmunoti]   [\s!features=\s!default]
-        \definefontsynonym [\s!SerifSlanted]    [\s!file:cmunorm]   [\s!features=default-slanted-concrete]
-        \definefontsynonym [\s!SerifBold]       [\s!file:cmunobx]   [\s!features=\s!default]
-        \definefontsynonym [\s!SerifBoldItalic] [\s!file:cmunobi]   [\s!features=\s!default]
-        \definefontsynonym [\s!SerifBoldSlanted][\s!file:cmunobx]   [\s!features=default-slanted-concrete]
+        \definefontsynonym [\s!Serif]            [\s!file:cmunorm] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]      [\s!file:cmunoti] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifSlanted]     [\s!file:cmunorm] [\s!features=default-slanted-concrete]
+        \definefontsynonym [\s!SerifBold]        [\s!file:cmunobx] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic]  [\s!file:cmunobi] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldSlanted] [\s!file:cmunobx] [\s!features=default-slanted-concrete]
     \stoptypescript
 
     \starttypescript [\s!sans] [concrete-sans]
-        \definefontsynonym [\s!Sans]            [\s!file:cmunss]    [\s!features=\s!default]
-        \definefontsynonym [\s!SansItalic]      [\s!file:cmunsi]    [\s!features=\s!default]
-        \definefontsynonym [\s!SansSlanted]     [\s!file:cmunss]    [\s!features=default-slanted-concrete]
-        \definefontsynonym [\s!SansBold]        [\s!file:cmunsx]    [\s!features=\s!default]
-        \definefontsynonym [\s!SansBoldItalic]  [\s!file:cmunso]    [\s!features=\s!default]
-        \definefontsynonym [\s!SansBoldSlanted] [\s!file:cmunsx]    [\s!features=default-slanted-concrete]
+        \definefontsynonym [\s!Sans]            [\s!file:cmunss] [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]      [\s!file:cmunsi] [\s!features=\s!default]
+        \definefontsynonym [\s!SansSlanted]     [\s!file:cmunss] [\s!features=default-slanted-concrete]
+        \definefontsynonym [\s!SansBold]        [\s!file:cmunsx] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic]  [\s!file:cmunso] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldSlanted] [\s!file:cmunsx] [\s!features=default-slanted-concrete]
     \stoptypescript
 
     \starttypescript [\s!mono] [concrete-mono]
-        \definefontsynonym [\s!Mono]            [\s!file:cmuntt]    [\s!features=\s!none]
-        \definefontsynonym [\s!MonoItalic]      [\s!file:cmunit]    [\s!features=\s!none]
-        \definefontsynonym [\s!MonoSlanted]     [\s!file:cmunst]    [\s!features=\s!none]
-        \definefontsynonym [\s!MonoBold]        [\s!file:cmuntb]    [\s!features=\s!none]
-        \definefontsynonym [\s!MonoBoldItalic]  [\s!file:cmuntx]    [\s!features=\s!none]
-        \definefontsynonym [\s!MonoBoldSlanted] [\s!file:cmuntb]    [\s!features=none-slanted-concrete]
+        \definefontsynonym [\s!Mono]            [\s!file:cmuntt] [\s!features=\s!none]
+        \definefontsynonym [\s!MonoItalic]      [\s!file:cmunit] [\s!features=\s!none]
+        \definefontsynonym [\s!MonoSlanted]     [\s!file:cmunst] [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBold]        [\s!file:cmuntb] [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBoldItalic]  [\s!file:cmuntx] [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBoldSlanted] [\s!file:cmuntb] [\s!features=none-slanted-concrete]
     \stoptypescript
 
     \starttypescript [\s!math] [concrete-math] [\s!name]
         \loadfontgoodies[concrete-math]
-        \definefontsynonym[\s!MathRoman] [\s!file:Concrete-Math.otf] [\s!features=\s!math\mathsizesuffix,\s!goodies=concrete-math]    
+        \definefontsynonym[\s!MathRoman] [\s!file:Concrete-Math.otf] [\s!features={\s!math\mathsizesuffix,mathextra,concrete:mathextra},\s!goodies=concrete-math]
     \stoptypescript
 
     \starttypescript [concrete]
         \definetypeface [concrete] [\s!rm] [\s!serif] [concrete-serif] [\s!default]
-        \definetypeface [concrete] [\s!ss] [\s!sans]  [concrete-sans] [\s!default]
-        \definetypeface [concrete] [\s!tt] [\s!mono]  [concrete-mono] [\s!default]
-        \definetypeface [concrete] [\s!mm] [\s!math]  [concrete-math] [\s!default]
+        \definetypeface [concrete] [\s!ss] [\s!sans]  [concrete-sans]  [\s!default]
+        \definetypeface [concrete] [\s!tt] [\s!mono]  [concrete-mono]  [\s!default]
+        \definetypeface [concrete] [\s!mm] [\s!math]  [concrete-math]  [\s!default]
         \quittypescriptscanning
     \stoptypescript
 

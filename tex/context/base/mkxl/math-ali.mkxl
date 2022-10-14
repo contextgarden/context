@@ -1011,12 +1011,12 @@
      \ifmmode\stopimath\fi
      \hfil
      \aligntab
-     \hskip\mathcasesparameter\c!distance\relax
+     \kern\mathcasesparameter\c!distance\relax % hskip
      \math_cases_strut % looks better
      \aligncontent
      \hfil
      \aligntab
-     \hskip\mathcasesparameter\c!numberdistance\relax
+     \kern\mathcasesparameter\c!numberdistance\relax % hskip
      \span\math_text_in_eqalign{\aligncontent}%
      \crcr} % todo: number
 
@@ -1286,7 +1286,7 @@
      \math_matrix_anchor
    % \ifdim\d_math_eqalign_distance>\zeropoint
    %   \ifbitwiseand\c_math_matrix_anchor_mode\plustwo
-   %      \hskip.5\d_math_eqalign_distance
+   %      \kern.5\d_math_eqalign_distance
    %   \fi
    % \fi
    \fi}
@@ -1296,7 +1296,7 @@
    \ifcase\c_math_matrix_anchor_mode\else
    % \ifdim\d_math_eqalign_distance>\zeropoint
    %   \ifbitwiseand\c_math_matrix_anchor_mode\plusfour
-   %     \hskip.5\d_math_eqalign_distance
+   %     \kern.5\d_math_eqalign_distance
    %   \fi
    % \fi
      \math_matrix_anchor
@@ -1312,7 +1312,7 @@
    \aligntab
    \aligntab
    \math_matrix_anchor
-   \hskip.5\d_math_eqalign_distance % kern
+   \kern.5\d_math_eqalign_distance % hskip
    \aligncontent
    \aligntab
    \global\advance\c_math_eqalign_column\plusone
@@ -1358,27 +1358,40 @@
      \dousecolorparameter\p_rulecolor
    \fi}
 
-% \noaligned\permanent\tolerant\protected\def\math_matrix_HL[#1]#*%
-%   {\noalign\bgroup
-%      \math_matrix_check_rule[#1]%
-%      \divide\scratchdimen\plustwo
-%      \autorule\s!height\scratchdimen\s!depth\scratchdimen\relax
-%    \egroup}
-%
-% \permanent\tolerant\protected\def\math_matrix_VL[#1]#*%
-%   {\NC
-%      \math_matrix_check_rule[#1]%
-%      \divide\d_math_eqalign_distance\plustwo
-%      \hskip-\d_math_eqalign_distance
-%      \autorule\s!width\scratchdimen\relax
-%      \hskip-\d_math_eqalign_distance
-%    \NC}
-
 % These offset are an experiment so we abuse some existing keys or we have to
 % cook up new ones. Maybe we then should provide small medium big halfline etc.
 % but all depends on actual demand for this feature.
 
+% Musical timestamp VL, NL, SL: Bad Hombre II by Antonio Sanches
+%
+% \startformula
+% \startmatrix[left=\left(,right=\right)]
+% \NC 0  \NL 0  \NC 0  \NC 2x \NC 1  \NC 0  \NC 0  \NL \NR
+% \NC 0  \VL 0  \NC 0  \NC 0  \NC 2x \NC 0  \NC 0  \NL \NR
+% \NC 0  \VL 0  \NC 0  \NC 0  \NC 0  \NC 3x \NC 0  \NL \NR
+% \NC 0  \NL 0  \NC 0  \NC 0  \NC 0  \NC 0  \NC 4x \VL \NR
+% \stopmatrix
+% \stopformula
+%
+% \startformula
+% \startmatrix[left=\left(,right=\right)]
+% \SL[3]               \NL    \NL    \NL    \NL    \NL \NR
+% \VL 2x \NL 1  \NL 0  \VL 0  \NL 0  \NL 0  \NL 0  \NL \NR
+% \VL 0  \NL 2x \NL 1  \VL 0  \NL 0  \NL 0  \NL 0  \NL \NR
+% \VL 0  \NL 0  \NL 2x \VL 0  \NL 0  \NL 0  \NL 0  \NL \NR
+% \SL[5]                             \NL    \NL    \NL \NR
+% \NL 0  \NL 0  \NL 0  \VL 2x \NL 1  \VL 0  \NL 0  \NL \NR
+% \NL 0  \NL 0  \NL 0  \VL 0  \NL 2x \VL 0  \NL 0  \NL \NR
+% \NL    \NL    \NL    \SL[3]               \NL    \NL \NR
+% \NL 0  \NL 0  \NL 0  \NL 0  \NL 0  \VL 3x \VL 0  \NL \NR
+% \NL    \NL    \NL    \NL    \NL    \SL[2]        \NL \NR
+% \NL 0  \NL 0  \NL 0  \NL 0  \NL 0  \NL 0  \VL 3x \VL \NR
+% \NL    \NL    \NL    \NL    \NL    \NL    \SL[1] \NL \NR
+% \stopmatrix
+% \stopformula
+
 \definesystemattribute[mathalignmentvrule][public]
+\definesystemattribute[mathalignmenthrule][public]
 
 \setupmathmatrix
   [%c!toffset=\zeropoint,
@@ -1417,32 +1430,136 @@
      \fi
    \egroup}
 
-\protected\def\math_matrix_vertical_rule#1%
-  {\math_matrix_check_rule[#1]%
+\protected\def\math_matrix_vertical_rule_indeed#1#2%
+  {\math_matrix_check_rule[#2]%
    \enablematrixrules
-   \vrule
+   #1
       \s!attr   \mathalignmentvruleattribute\plusone
       \s!width  \scratchdimen
       \s!top   -\dimexpr\mathmatrixparameter\c!toffset\relax
       \s!bottom-\dimexpr\mathmatrixparameter\c!boffset\relax
    \relax}
 
+\protected\def\math_matrix_vertical_rule_yes{\math_matrix_vertical_rule_indeed\vrule  }
+\protected\def\math_matrix_vertical_rule_nop{\math_matrix_vertical_rule_indeed\novrule}
+
+\installcorenamespace{mathmatrixrulealternative}
+
+\newboundary\c_math_matrix_vl_boundary
+%newboundary\c_math_matrix_sl_boundary
+
+\protected\def\math_matrix_horizontal_rule_indeed#1#2%
+  {\math_matrix_check_rule[#2]%
+   \global\setfalse\c_math_matrix_first
+   \global\settrue\c_math_matrix_sl_seen
+   \enablematrixrules
+   \leaders#1%
+      \s!attr   \mathalignmenthruleattribute\plusone
+      \s!height .5\scratchdimen
+      \s!depth  .5\scratchdimen
+    % \s!top   -\dimexpr\mathmatrixparameter\c!toffset\relax
+    % \s!bottom-\dimexpr\mathmatrixparameter\c!boffset\relax
+   \hfilll
+   \kern\dimexpr.5\d_math_eqalign_distance\relax
+   \aligntab}
+
+\protected\def\math_matrix_horizontal_rule_yes{\math_matrix_horizontal_rule_indeed\hrule  }
+\protected\def\math_matrix_horizontal_rule_nop{\math_matrix_horizontal_rule_indeed\nohrule}
+
+\def\math_matrix_hrule_progress_rest#1%
+  {\expandedloop
+     \plusone
+     \numexpr(\ifchknum#1\or#1\else\c_math_matrix_columns\fi)*\plustwo+\minusone\relax
+     \plusone
+   {\span\omit}}%
+
+\def\math_matrix_hrule_progress_first#1%
+  {\expandedloop
+     \plusone
+     \numexpr(\ifchknum#1\or#1\else\c_math_matrix_columns\fi+\minusone)*\plustwo+\plusone\relax
+     \plusone
+   {\span\omit}}%
+
+\def\math_matrix_hrule_progress
+  {\NL
+   \ifconditional\c_math_matrix_first
+     \expandafter\math_matrix_hrule_progress_first
+   \else
+     \expandafter\math_matrix_hrule_progress_rest
+   \fi}
+
+\tolerant\permanent\protected\def\SL[#1]#*[#2]#*% [n] [name] | [name] | [n]
+  {\ifcsname\??mathmatrixrulealternative#2\endcsname
+     \lastnamedcs{#1}{#2}%
+   \orelse\ifcsname\??mathmatrixrulealternative#1\endcsname
+     \lastnamedcs{#2}{#1}%
+   \else
+     \csname\??mathmatrixrulealternative\v!auto\endcsname{#1}{#2}%
+   \fi}
+
+\defcsname\??mathmatrixrulealternative\v!auto\endcsname#1#2%
+  {\math_matrix_hrule_progress{#1}%
+   \ifnum\c_math_matrix_first=\zerocount
+     \kern-\dimexpr\linewidth\relax
+   \else
+     \kern-\dimexpr.5\d_math_eqalign_distance+\linewidth\relax
+   \fi
+   \math_matrix_horizontal_rule_yes{#2}%
+   %boundary\c_math_matrix_sl_boundary
+   \enforced\let\NR\math_matrix_NL_NR}
 
 \permanent\tolerant\protected\def\math_matrix_VL[#1]#*%
   {\span\omit
-   \hskip.5\d_math_eqalign_distance
-   \math_matrix_vertical_rule{#1}%
-   \hskip.5\d_math_eqalign_distance
-   \aligntab}
+   \ifconditional\c_math_matrix_first\else
+     \kern.5\d_math_eqalign_distance % hskip
+   \fi
+   \math_matrix_vertical_rule_yes{#1}%
+   \kern.5\d_math_eqalign_distance % hskip
+   \global\setfalse\c_math_matrix_first
+   \aligntab
+   \boundary\c_math_matrix_vl_boundary
+   \enforced\let\NR\math_matrix_NL_NR
+   }
+
+\permanent\tolerant\protected\def\math_matrix_NL[#1]#*%
+  {\span\omit
+   \ifconditional\c_math_matrix_first\else
+     \kern.5\d_math_eqalign_distance % hskip
+   \fi
+   \math_matrix_vertical_rule_nop{#1}%
+   \kern.5\d_math_eqalign_distance % hskip
+   \global\setfalse\c_math_matrix_first
+   \aligntab
+   \boundary\c_math_matrix_vl_boundary
+   \enforced\let\NR\math_matrix_NL_NR}
+
+\permanent\protected\def\math_matrix_NL_NR
+  {\ifnum\lastboundary=\c_math_matrix_vl_boundary
+     \ifconditional \c_math_matrix_sl_seen
+       \kern-1.5\d_math_eqalign_distance % hskip
+     \else
+       \kern-.5\d_math_eqalign_distance % hskip
+     \fi
+   \fi
+   \math_matrix_anchor_last
+   \math_matrix_stop_row
+   \math_matrix_pickup
+   \crcr
+   \math_matrix_start_row}
+
+\appendtoks
+   \enforced\let\NL\math_matrix_NL
+   \global\setfalse\c_math_matrix_sl_seen
+\to \everymathmatrix
 
 \permanent\tolerant\protected\def\math_matrix_VC[#1]#*%
   {\NC
-   \math_matrix_vertical_rule{#1}%
+   \math_matrix_vertical_rule_yes{#1}%
    \NC}
 
 \permanent\tolerant\protected\def\math_matrix_VT[#1]#*%
   {\span\omit
-   \math_matrix_vertical_rule{#1}%
+   \math_matrix_vertical_rule_yes{#1}%
    \aligntab}
 
 \def\math_matrix_start_row
@@ -1531,6 +1648,7 @@
       callback
       \s!attr \mathmatrixornamentattribute "10
       \s!attr \mathalignmentvruleattribute \plusone
+      \s!attr \mathalignmenthruleattribute \plusone
    \bgroup
      % preamble
      \span\math_matrix_preamble
@@ -2300,7 +2418,7 @@
      \hpack to \displaywidth\bgroup
        \hss
        \strc_math_flush_number_box
-       \hskip\d_framed_locator_ro
+       \kern\d_framed_locator_ro
      \egroup
    \egroup
    \strc_math_flush_box_framed_fit_inline}
@@ -2308,7 +2426,7 @@
 \def\strc_math_number_left_overflow_inside
   {\setbox\b_strc_math_display\vpack\bgroup
      \hpack to \displaywidth\bgroup
-     % \hskip\d_framed_locator_lo
+     % \kern\d_framed_locator_lo
        \strc_math_flush_number_box
        \hss
      \egroup
@@ -2722,7 +2840,7 @@
    \ifzeropt\scratchdimen\else\kern\scratchdimen\fi
    \setbox\scratchbox\hbox{\mathsimplealignparameter\c!text}%
    \ifvoid\scratchbox\else
-     \hskip\mathsimplealignparameter\c!textdistance
+     \kern\mathsimplealignparameter\c!textdistance % hskip
      \vcenter{\box\scratchbox}%
    \fi
    \egroup

@@ -80,15 +80,15 @@ typedef struct extinfo {
 
 typedef struct mathinfo {
     scaled    vertical_italic;
-    scaled    top_accent;
-    scaled    bottom_accent;
+    scaled    top_anchor;              /* provided by the font, aka topaccent */
+    scaled    bottom_anchor;           /* provided by context */ 
     int       smaller;
     scaled    scale;
-    int       flat_accent;
-    int       top_left_math_kerns;
-    int       top_right_math_kerns;
-    int       bottom_right_math_kerns;
-    int       bottom_left_math_kerns;
+    int       flat_accent;             /* flac feature code point */
+    int       top_left_math_kerns;     /* size of array */
+    int       top_right_math_kerns;    /* size of array */
+    int       bottom_right_math_kerns; /* size of array */
+    int       bottom_left_math_kerns;  /* size of array */
     extinfo  *horizontal_parts;
     extinfo  *vertical_parts;
     scaled   *top_left_math_kern_array;
@@ -104,6 +104,10 @@ typedef struct mathinfo {
     scaled   right_margin;
     scaled   top_margin;
     scaled   bottom_margin;
+    scaled   top_overshoot;
+    scaled   bottom_overshoot;
+    int      mirror;
+    int      padding;
 } mathinfo;
 
 typedef struct charinfo {
@@ -184,8 +188,6 @@ typedef struct texfont {
     char       *original;
     /*tex for experimental new thingies */
     int         compactmath;
-    /*tex default to false when MathConstants not seen */
-    int         oldmath;
     /*tex this controls the engine */
     int         mathcontrol;
     int         textcontrol;
@@ -199,8 +201,6 @@ typedef struct texfont {
     /*tex all parameters, although only some are used */
     int         parameter_count;
     scaled     *parameter_base;
-    /* */
-    int         padding;
     /*tex also special */
     charinfo   *left_boundary;
     charinfo   *right_boundary;
@@ -235,8 +235,6 @@ extern font_state_info lmt_font_state;
 # define font_design_size(a)            lmt_font_state.fonts[a]->design_size
 # define font_first_character(a)        lmt_font_state.fonts[a]->first_character
 # define font_last_character(a)         lmt_font_state.fonts[a]->last_character
-/*define font_touched(a)                font_state.fonts[a]->touched */
-# define font_oldmath(a)                lmt_font_state.fonts[a]->oldmath
 # define font_compactmath(a)            lmt_font_state.fonts[a]->compactmath
 # define font_mathcontrol(a)            lmt_font_state.fonts[a]->mathcontrol
 # define font_textcontrol(a)            lmt_font_state.fonts[a]->textcontrol
@@ -253,8 +251,6 @@ extern font_state_info lmt_font_state;
 # define set_font_design_size(a,b)      lmt_font_state.fonts[a]->design_size = b
 # define set_font_first_character(a,b)  lmt_font_state.fonts[a]->first_character = b
 # define set_font_last_character(a,b)   lmt_font_state.fonts[a]->last_character = b
-/*define set_font_touched(a,b)          font_state.fonts[a]->touched = b */
-# define set_font_oldmath(a,b)          lmt_font_state.fonts[a]->oldmath = b
 # define set_font_compactmath(a,b)      lmt_font_state.fonts[a]->compactmath = b
 # define set_font_mathcontrol(a,b)      lmt_font_state.fonts[a]->mathcontrol = b
 # define set_font_textcontrol(a,b)      lmt_font_state.fonts[a]->textcontrol = b
@@ -408,7 +404,7 @@ extern charinfo *tex_get_charinfo     (halfword f, int c);
 extern int       tex_char_exists      (halfword f, int c);
 extern void      tex_char_process     (halfword f, int c);
 extern int       tex_math_char_exists (halfword f, int c, int size);
-extern int       tex_get_math_char    (halfword f, int c, int size, scaled *scale);
+extern int       tex_get_math_char    (halfword f, int c, int size, scaled *scale, int direction);
 
 /*tex
 
@@ -461,15 +457,19 @@ extern int       tex_get_math_char    (halfword f, int c, int size, scaled *scal
 # define set_charinfo_bottom_margin(ci,val)                if (ci->math) { ci->math->bottom_margin = val; }
 
 # define set_charinfo_smaller(ci,val)                      if (ci->math) { ci->math->smaller = val; }
+# define set_charinfo_mirror(ci,val)                       if (ci->math) { ci->math->mirror = val; }
 # define set_charinfo_vertical_italic(ci,val)              if (ci->math) { ci->math->vertical_italic = val; }
-# define set_charinfo_top_accent(ci,val)                   if (ci->math) { ci->math->top_accent = val; }
-# define set_charinfo_bottom_accent(ci,val)                if (ci->math) { ci->math->bottom_accent = val; }
+# define set_charinfo_top_anchor(ci,val)                   if (ci->math) { ci->math->top_anchor = val; }
+# define set_charinfo_bottom_anchor(ci,val)                if (ci->math) { ci->math->bottom_anchor = val; }
 # define set_charinfo_flat_accent(ci,val)                  if (ci->math) { ci->math->flat_accent = val; }
 
 # define set_charinfo_top_left_kern(ci,val)                if (ci->math) { ci->math->top_left_kern = val; }
 # define set_charinfo_top_right_kern(ci,val)               if (ci->math) { ci->math->top_right_kern = val; }
 # define set_charinfo_bottom_left_kern(ci,val)             if (ci->math) { ci->math->bottom_left_kern = val; }
 # define set_charinfo_bottom_right_kern(ci,val)            if (ci->math) { ci->math->bottom_right_kern = val; }
+
+# define set_charinfo_top_overshoot(ci,val)                if (ci->math) { ci->math->top_overshoot = val; }
+# define set_charinfo_bottom_overshoot(ci,val)             if (ci->math) { ci->math->bottom_overshoot = val; }
 
 /*tex Setters: */
 
@@ -532,18 +532,21 @@ extern scaled    tex_char_width_italic_from_glyph       (halfword g); /* x/y sca
 
 extern scaledwhd tex_char_whd_from_glyph                (halfword g); /* x/y scaled */
 
-extern halfword  tex_char_vertical_italic_from_font     (halfword f, halfword c);
-extern halfword  tex_char_top_accent_from_font          (halfword f, halfword c);
-extern halfword  tex_char_bot_accent_from_font          (halfword f, halfword c);
-extern halfword  tex_char_flat_accent_from_font         (halfword f, halfword c);
+extern halfword  tex_char_unchecked_top_anchor_from_font    (halfword f, halfword c);
+extern halfword  tex_char_unchecked_bottom_anchor_from_font (halfword f, halfword c);
 
+extern halfword  tex_char_vertical_italic_from_font     (halfword f, halfword c);
+extern halfword  tex_char_flat_accent_from_font         (halfword f, halfword c);
 extern halfword  tex_char_top_anchor_from_font          (halfword f, halfword c);
-extern halfword  tex_char_bot_anchor_from_font          (halfword f, halfword c);
+extern halfword  tex_char_bottom_anchor_from_font       (halfword f, halfword c);
 
 extern scaled    tex_char_left_margin_from_font         (halfword f, halfword c);
 extern scaled    tex_char_right_margin_from_font        (halfword f, halfword c);
 extern scaled    tex_char_top_margin_from_font          (halfword f, halfword c);
 extern scaled    tex_char_bottom_margin_from_font       (halfword f, halfword c);
+
+extern scaled    tex_char_top_overshoot_from_font       (halfword f, halfword c);
+extern scaled    tex_char_bottom_overshoot_from_font    (halfword f, halfword c);
 
 extern extinfo  *tex_char_vertical_parts_from_font      (halfword f, halfword c);
 extern extinfo  *tex_char_horizontal_parts_from_font    (halfword f, halfword c);

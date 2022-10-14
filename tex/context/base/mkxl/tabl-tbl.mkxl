@@ -407,11 +407,11 @@
 % \protected % we can expand this one
 \def\tabl_tabulate_inject_pre_skip#1%
   {\ifdim#1>\zeropoint
-     \kern#1\relax % was \hskip
+     \kern#1\relax % hskip
    \orelse\ifnum\c_tabl_tabulate_column=\zerocount
      \ifconditional\c_tabl_tabulate_autorulespacing
        \ifcase\c_tabl_tabulate_has_rule_spec_first\else
-         \kern\s_tabl_tabulate_first\relax % was \hskip
+         \kern\s_tabl_tabulate_first\relax % hskip
        \fi
      \fi
    \fi}
@@ -423,7 +423,7 @@
    \orelse\ifnum\c_tabl_tabulate_columns=\c_tabl_tabulate_nofcolumns
      \ifconditional\c_tabl_tabulate_autorulespacing
        \ifcase\c_tabl_tabulate_has_rule_spec_last\else
-         \kern\s_tabl_tabulate_last\relax % was \hskip
+         \kern\s_tabl_tabulate_last\relax % hskip
        \fi
      \fi
    \fi}

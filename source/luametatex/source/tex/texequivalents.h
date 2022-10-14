@@ -526,22 +526,15 @@ typedef enum int_codes {
     math_eqno_gap_step_code,            /*tex factor/1000 used for distance between eq and eqno */
     math_display_skip_mode_code,
     math_scripts_mode_code,
- /* math_script_box_mode_code, */
- /* math_script_char_mode_code, */
     math_limits_mode_code,
     math_nolimits_mode_code,
     math_rules_mode_code,
     math_rules_fam_code,
     math_penalties_mode_code,
     math_check_fences_mode_code,
- /* math_delimiters_mode_code, */
- /* math_fences_mode_code, */
- /* math_rule_thickness_mode_code, */
     math_slack_mode_code,
- /* math_flatten_mode_code, */
     math_skip_mode_code,
     math_double_script_mode_code,
- /* math_control_mode_code, */
     math_font_control_code,
     math_display_mode_code,
     math_dict_group_code,
@@ -723,7 +716,7 @@ typedef enum attribute_codes {
 
 # define eqtb_indirect_range(n) ((n < internal_glue_base) || ((n > eqtb_size) && (n <= lmt_hash_state.hash_data.top)))
 # define eqtb_out_of_range(n)   ((n >= undefined_control_sequence) && ((n <= eqtb_size) || n > lmt_hash_state.hash_data.top))
-# define eqtb_valid_cs(n)       ((n == 0) || (n > lmt_hash_state.hash_data.top) || ((n > frozen_control_sequence) && (n <= eqtb_size)))
+# define eqtb_invalid_cs(n)     ((n == 0) || (n > lmt_hash_state.hash_data.top) || ((n > frozen_control_sequence) && (n <= eqtb_size)))
 
 # define character_in_range(i)  (i >= 0 && i <= max_character_code)
 # define catcode_in_range(i)    (i >= 0 && i <= max_category_code)
@@ -855,73 +848,79 @@ inline void tex_set_saved_record(halfword ptr, quarterword type, quarterword lev
 
     The rather explicit |save_| items indicate a type. They are sometimes used to lookup a specific
     field (when tracing).
+
+    Todo: less of these, a few more generic ones, like count, dimen, etc
 */
 
 typedef enum save_types {
-    restore_old_value, /*tex a value should be restored later */
-    restore_zero,      /*tex an undefined entry should be restored */
-    insert_tokens,
-    restore_lua,
-    level_boundary,    /*tex the beginning of a group */
+    restore_old_value_save_type, /*tex a value should be restored later */
+    restore_zero_save_type,      /*tex an undefined entry should be restored */
+    insert_tokens_save_type,
+    restore_lua_save_type,
+    level_boundary_save_type,    /*tex the beginning of a group */
     /* */
-    saved_line_number,
+    line_number_save_type,
     /* */
-    saved_insert_index,
+    insert_index_save_type,
     /* */
-    saved_discretionary_count,
+    discretionary_count_save_type,
     /* */
-    saved_text_direction,
+    text_direction_save_type,
     /* */
-    saved_equation_number_location,
+    equation_number_location_save_type,
     /* */
-    saved_choices_count,
+    choices_count_save_type,
     /* */
-    saved_fraction_variant,
-    saved_fraction_auto_style,
-    saved_fraction_user_style,
-    saved_operator_variant,
+    fraction_variant_save_type,
+    fraction_auto_style_save_type,
+    fraction_user_style_save_type,
     /* */
-    saved_attribute_list,
+    radical_degree_done_save_type, /* make this better: just types */
+    radical_style_save_type,
     /* */
-    saved_math_pointer,
-    saved_math_class,
+    operator_variant_save_type,
     /* */
-    saved_box_type,
-    saved_box_context,
-    saved_box_spec,
-    saved_box_direction,
-    saved_box_attr_list,
-    saved_box_pack,
-    saved_box_orientation,
-    saved_box_anchor,
-    saved_box_geometry,
-    saved_box_xoffset,
-    saved_box_yoffset,
-    saved_box_xmove,
-    saved_box_ymove,
-    saved_box_reverse,
-    saved_box_discard,
-    saved_box_noskips,
-    saved_box_callback,
-    saved_box_container,
-    saved_box_shift,
-    saved_box_source,
-    saved_box_target,
-    saved_box_axis,
-    saved_box_class,
-    saved_box_state,
-    saved_box_retain,
+    attribute_list_save_type,
     /* */
-    saved_local_box_location,
-    saved_local_box_index,
-    saved_local_box_options,
+    math_pointer_save_type,
+    math_class_save_type,
     /* */
-    saved_adjust_location,
-    saved_adjust_options,
-    saved_adjust_index,
-    saved_adjust_attr_list,
-    saved_adjust_depth_before,
-    saved_adjust_depth_after,
+    box_type_save_type,
+    box_context_save_type,
+    box_spec_save_type,
+    box_direction_save_type,
+    box_attr_list_save_type,
+    box_pack_save_type,
+    box_orientation_save_type,
+    box_anchor_save_type,
+    box_geometry_save_type,
+    box_xoffset_save_type,
+    box_yoffset_save_type,
+    box_xmove_save_type,
+    box_ymove_save_type,
+    box_reverse_save_type,
+    box_discard_save_type,
+    box_noskips_save_type,
+    box_callback_save_type,
+    box_container_save_type,
+    box_shift_save_type,
+    box_source_save_type,
+    box_target_save_type,
+    box_axis_save_type,
+    box_class_save_type,
+    box_state_save_type,
+    box_retain_save_type,
+    /* */
+    local_box_location_save_type,
+    local_box_index_save_type,
+    local_box_options_save_type,
+    /* */
+    adjust_location_save_type,
+    adjust_options_save_type,
+    adjust_index_save_type,
+    adjust_attr_list_save_type,
+    adjust_depth_before_save_type,
+    adjust_depth_after_save_type,
 } save_types;
 
 /*tex Nota bena: |equiv_value| is the same as |equiv| but sometimes we use that name instead. */
@@ -966,12 +965,15 @@ typedef enum tex_group_codes {
     no_align_group,      /*tex code for |\noalign| */
     output_group,        /*tex code for output routine */
     math_group,          /*tex code for, e.g., |\char'136| */
+    math_stack_group,
+    math_component_group,
     discretionary_group, /*tex code for |\discretionary|' */
     insert_group,        /*tex code for |\insert| */
     vadjust_group,       /*tex code for |\vadjust| */
     vcenter_group,       /*tex code for |\vcenter| */
     math_fraction_group, /*tex code for |\over| and friends */
     math_operator_group,
+    math_radical_group,
     math_choice_group,   /*tex code for |\mathchoice| */
     also_simple_group,   /*tex code for |\begingroup|\unknown|\egroup| */
     semi_simple_group,   /*tex code for |\begingroup|\unknown|\endgroup| */
@@ -1265,7 +1267,6 @@ extern void tex_forced_word_define (int g, halfword p, singleword flag, halfword
 # define math_skip_par                   glue_parameter(math_skip_code)
 # define math_skip_mode_par              count_parameter(math_skip_mode_code)
 # define math_double_script_mode_par     count_parameter(math_double_script_mode_code)
-/*define math_control_mode_par           count_parameter(math_control_mode_code) */
 # define math_font_control_par           count_parameter(math_font_control_code)
 # define math_display_mode_par           count_parameter(math_display_mode_code)
 # define math_dict_group_par             count_parameter(math_dict_group_code)
@@ -1364,18 +1365,20 @@ extern void tex_forced_word_define (int g, halfword p, singleword flag, halfword
 
 # define end_line_char_inactive          ((end_line_char_par < 0) || (end_line_char_par > 127))
 
-# define delimiter_factor_par            count_parameter(delimiter_factor_code)
-/*define post_binary_penalty_par         count_parameter(post_binary_penalty_code) */
+/*tex
+    We keep these as reference but they are no longer equivalent to regular \TEX\ because we have
+    class based penalties instead.
+*/
+
+/*define post_binary_penalty_par         count_parameter(post_binary_penalty_code)   */
 /*define post_relation_penalty_par       count_parameter(post_relation_penalty_code) */
-/*define pre_binary_penalty_par          count_parameter(pre_binary_penalty_code)  */
-/*define pre_relation_penalty_par        count_parameter(pre_relation_penalty_code) */
+/*define pre_binary_penalty_par          count_parameter(pre_binary_penalty_code)    */
+/*define pre_relation_penalty_par        count_parameter(pre_relation_penalty_code)  */
+
+# define delimiter_factor_par            count_parameter(delimiter_factor_code)
 # define math_penalties_mode_par         count_parameter(math_penalties_mode_code)
 # define math_check_fences_par           count_parameter(math_check_fences_mode_code)
-/*define math_delimiters_mode_par        count_parameter(math_delimiters_mode_code) */
-/*define math_fences_mode_par            count_parameter(math_fences_mode_code) */
-/*define math_rule_thickness_mode_par    count_parameter(math_rule_thickness_mode_code) */
 # define math_slack_mode_par             count_parameter(math_slack_mode_code)
-/*define math_flatten_mode_par           count_parameter(math_flatten_mode_code) */
 # define null_delimiter_space_par        dimen_parameter(null_delimiter_space_code)
 # define disable_spaces_par              count_parameter(disable_spaces_code)
 # define glyph_options_par               count_parameter(glyph_options_code)
@@ -1388,8 +1391,6 @@ extern void tex_forced_word_define (int g, halfword p, singleword flag, halfword
 # define glyph_x_offset_par              dimen_parameter(glyph_x_offset_code)
 # define glyph_y_offset_par              dimen_parameter(glyph_y_offset_code)
 # define math_scripts_mode_par           count_parameter(math_scripts_mode_code)
-/*define math_script_box_mode_par        count_parameter(math_script_box_mode_code) */
-/*define math_script_char_mode_par       count_parameter(math_script_char_mode_code) */
 # define math_limits_mode_par            count_parameter(math_limits_mode_code)
 # define math_nolimits_mode_par          count_parameter(math_nolimits_mode_code)
 # define math_rules_mode_par             count_parameter(math_rules_mode_code)
@@ -1457,19 +1458,6 @@ typedef enum shaping_penalties_mode_bits {
 
 # define tab_size_par                    dimen_parameter(tab_size_code)
 
-/*define prev_graf_par                   cur_list.prev_graf */
-/*define prev_depth_par                  cur_list.prev_depth */
-/*define space_factor_par                cur_list.space_factor */
-
-/*define tail_par                        cur_list.tail */
-/*define head_par                        cur_list.head */
-/*define mode_par                        cur_list.mode */
-/*define dirs_par                        cur_list.dirs */
-
-/*define incompleat_noad_par             cur_list.incompleat_noad */
-/*define mode_line_par                   cur_list.mode_line */
-/*define delim_par                       cur_list.delim */
-
 # define par_shape_par                   specification_parameter(par_shape_code)
 # define inter_line_penalties_par        specification_parameter(inter_line_penalties_code)
 # define club_penalties_par              specification_parameter(club_penalties_code)
@@ -1479,10 +1467,16 @@ typedef enum shaping_penalties_mode_bits {
 # define math_forward_penalties_par      specification_parameter(math_forward_penalties_code)
 # define math_backward_penalties_par     specification_parameter(math_backward_penalties_code)
 
+/*tex 
+    We keep these three as reference but because they are backend related they are basically 
+    no-ops and ignored. 
+*/
+
 /*define h_offset_par                    dimen_parameter(h_offset_code) */
 /*define v_offset_par                    dimen_parameter(v_offset_code) */
-# define px_dimen_par                    dimen_parameter(px_dimen_code)
 /*define mag_par                         count_parameter(mag_code) */
+
+# define px_dimen_par                    dimen_parameter(px_dimen_code)
 
 # define max_dead_cycles_par             count_parameter(max_dead_cycles_code)
 # define output_box_par                  count_parameter(output_box_code)
@@ -1596,7 +1590,6 @@ typedef enum hyphenation_mode_bits {
 /*define glue_data_par                   count_parameter(glue_data_code) */
 
 # define cur_lang_par                    count_parameter(language_code)
-/*define cur_font_par                    eq_value(current_font_sequence) */
 # define cur_font_par                    count_parameter(font_code)
 
 typedef enum normalize_line_mode_bits {

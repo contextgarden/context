@@ -1,6 +1,9 @@
 -- In order to be able to use beta math fonts, we use our own file name and
 -- always remap.
 
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
+
 local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
 
     local kern_150 = { bottomright = { { kern = -150 } } }
@@ -76,8 +79,14 @@ return {
             DelimiterPercent                     =   90,
             DelimiterShortfall                   =  400,
          -- DisplayOperatorMinHeight             = 1800, -- 1300 in font (only one)
-            PrimeRaisePercent                    =   60, -- 50 default
-            PrimeRaiseComposedPercent            =   15, -- 25 default
+            PrimeRaisePercent                    =   60,
+            PrimeRaiseComposedPercent            =   15,
+            -- SubSuperscriptGapMin                 =  160, -- 160 in font
+            SuperscriptBaselineDropMax           =  250, -- 250 in font
+            -- SuperscriptBottomMaxWithSubscript    =  344, -- 344 in font
+            -- SuperscriptBottomMin                 =  108, -- 108 in font
+            SuperscriptShiftUp                   =  363, -- 363 in font
+            SuperscriptShiftUpCramped            =  89, -- 289 in font
         },
         tweaks = {
             aftercopying = {
@@ -85,6 +94,13 @@ return {
                     tweak    = "version",
                     expected = "Version 1.958",
                 },
+                {
+                    tweak = "addmirrors",
+                },
+                presets.matheulercalligraphic { rscale = 1    },
+                presets.mathrsfscript         { rscale = 1    },
+                presets.mathxitsarabic        { rscale = 0.88 },
+                presets.moveitalics           { correct = true },
                 {
                     tweak = "dimensions",
                     list  = {
@@ -447,7 +463,7 @@ return {
                      -- "lowercasedoublestruck",
                      -- "lowercasefraktur",
                         "lowercasemonospace",
-                        "lowercasenormal",
+                        -- "lowercasenormal",
                      -- "lowercasesansserifbold",
                      -- "lowercasesansserifnormal",
                      -- "lowercasegreeknormal",
@@ -549,6 +565,9 @@ return {
                 },
                 {
                     tweak = "fixradicals",
+                },
+                {
+                    tweak = "addprivates",
                 },
                 {
                     tweak = "addscripts",

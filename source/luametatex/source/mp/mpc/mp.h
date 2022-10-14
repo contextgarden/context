@@ -606,6 +606,8 @@ typedef enum mp_name_type_type {
     mp_unequal_operation,
     mp_concatenate_operation,
     mp_just_append_operation,
+    mp_tolerant_concat_operation,
+    mp_tolerant_append_operation,
     mp_rotated_operation,
     mp_slanted_operation,
     mp_scaled_operation,

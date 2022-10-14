@@ -3,6 +3,8 @@ local integral_variants = {  bottomright = -0.4 }
 -- local integral_top      = {  topright    =  0.05 }
 local integral_bottom   = {  bottomright = -0.35 }
 
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
 
 return {
     name = "stix-two-math",
@@ -31,18 +33,18 @@ return {
             NoLimitSubFactor                = 1000,
          -- AccentBaseHeight                =    0,
             AccentBaseDepth                 =   30,
-            FlattenedAccentTopShiftUp       =   0, -- now also set, the wide ones (so we can move in one go)            
-            -- AccentExtendMargin              =   50,
+            FlattenedAccentTopShiftUp       =    0,
+         -- AccentExtendMargin              =   50,
             RadicalDegreeBottomRaisePercent =   65,
          -- RadicalKernBeforeDegree         =  500,
             RadicalKernAfterDegree          = -500,
             RadicalVerticalGap              =   10,
-         -- RadicalRuleThickness            =   68, -- 68 in font (but shifted down)
+         -- RadicalRuleThickness            =   68, --   68 in font (but shifted down)
             DelimiterPercent                =   90,
             DelimiterShortfall              =  400,
             DisplayOperatorMinHeight        = 1800, -- 1800 in font
-            PrimeRaisePercent               =   75, -- 50 default
-            PrimeRaiseComposedPercent       =   10, -- 25 default
+            PrimeRaisePercent               =   75, --   50 default
+            PrimeRaiseComposedPercent       =   10, --   25 default
         },
         tweaks = {
             aftercopying = {
@@ -51,52 +53,39 @@ return {
                     expected = "Version 2.12 b168",
                 },
                 {
+                    tweak   = "fixprimes",
+                    scale   = 1,
+                 -- smaller = true,
+                    factor  = 1,
+                },
+                {
+                    tweak = "addmirrors",
+                },
+                presets.mathxitsarabic { rscale = 0.95 },
+                {
+                    tweak = "simplifykerns",
+                },
+                presets.moveitalics {
+                    correct = true
+                },
+                {
                     tweak = "kerns",
                     list  = {
-                        [0x2F] = {
-                            topleft     = -0.2,
-                         -- bottomleft  =  0,
-                         -- topright    =  0,
-                            bottomright = -0.2,
-                       },
-
-                        ["0x7D.parts.top"] = {
-                            topright    = -0.15,
-                        }, -- right brace top
-                        ["0x7D.parts.bottom"] = {
-                            bottomright = -0.15,
-                        }, -- right brace bottom
-                        -- ["0x7D.variants.*"] = {
-                        --     topright = -0.15,
-                        --     bottomright = -0.15,
-                        -- }, -- right brace variants
-                        ["0x29.parts.top"] = {
-                            topright    = -0.1,
-                        }, -- right parenthesis top
-                        ["0x29.parts.bottom"] = {
-                            bottomright = -0.1,
-                        }, -- right parenthesis bottom
-                        ["0x29.variants.*"] = {
-                            topright = -0.2,
-                            bottomright = -0.2,
-                        }, -- right parenthesis variants
-                        ["0x221A.parts.top"] = {
-                            topright = 0.2,
-                        }, -- right radical top
-                        ["0x221A.parts.bottom"] = {
-                            bottomright = 0.2,
-                        }, -- right radical bottom
-                        ["0x221A.variants.*"] = {
-                            topright = 0.2,
-                            bottomright = 0.2,
-                        }, -- right radical variants
-
-                        -- angle
-                        [0x27E9]              = { topright = -0.1, bottomright = -0.1 },
-                        ["0x27E9.variants.*"] = { topright = -0.2, bottomright = -0.2 },
-                        [0x27EB]              = { topright = -0.1, bottomright = -0.1 },
-                        ["0x27EB.variants.*"] = { topright = -0.2, bottomright = -0.2 },
-
+                        [0x002F]                = { topleft  = -0.2,  bottomright = -0.2  },
+                        ["0x7D.parts.top"]      = { topright = -0.15,                     }, -- right brace top
+                        ["0x7D.parts.bottom"]   = {                   bottomright = -0.15 }, -- right brace bottom
+                        -- ["0x7D.variants.*"]  = { topright = -0.15, bottomright = -0.15 }, -- right brace variants
+                        ["0x29.parts.top"]      = { topright = -0.1,                      }, -- right parenthesis top
+                        ["0x29.parts.bottom"]   = {                   bottomright = -0.1  }, -- right parenthesis bottom
+                        ["0x29.variants.*"]     = { topright = -0.2,  bottomright = -0.2  }, -- right parenthesis variants
+                        ["0x221A.parts.top"]    = { topright =  0.2,                      }, -- right radical top
+                        ["0x221A.parts.bottom"] = {                   bottomright =  0.2  }, -- right radical bottom
+                        ["0x221A.variants.*"]   = { topright =  0.2,  bottomright =  0.2  }, -- right radical variants
+                        [0x27E9]                = { topright = -0.1,  bottomright = -0.1  }, -- angle
+                        ["0x27E9.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
+                        [0x27EB]                = { topright = -0.1,  bottomright = -0.1  },
+                        ["0x27EB.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
+                        --
                         ["0x222B.variants.*"] = integral_variants, ["0x222B.parts.top"] = integral_top, ["0x222B.parts.bottom"] = integral_bottom,
                         ["0x222C.variants.*"] = integral_variants, ["0x222C.parts.top"] = integral_top, ["0x222C.parts.bottom"] = integral_bottom,
                         ["0x222D.variants.*"] = integral_variants, ["0x222D.parts.top"] = integral_top, ["0x222D.parts.bottom"] = integral_bottom,
@@ -106,23 +95,21 @@ return {
                         ["0x2231.variants.*"] = integral_variants, ["0x2231.parts.top"] = integral_top, ["0x2231.parts.bottom"] = integral_bottom,
                         ["0x2232.variants.*"] = integral_variants, ["0x2232.parts.top"] = integral_top, ["0x2232.parts.bottom"] = integral_bottom,
                         ["0x2233.variants.*"] = integral_variants, ["0x2233.parts.top"] = integral_top, ["0x2233.parts.bottom"] = integral_bottom,
-
-
                     },
                 },
-                -- 0xFEOO should be chancery style, if present
                 {
-                    tweak    = "variants",
-                    kind     = "script",
-                 -- feature  = false, -- use the saved ones (see typescript)
-                    selector = 0xFE00,
-                },
-                -- 0xFEO1 should be roundhand style, if present
-                {
-                    tweak    = "variants",
-                    kind     = "script",
-                    feature  = "ss01",-- this changes to roundhand style for stixtwo
-                    selector = 0xFE01,
+                    tweak   = "replacealphabets",
+                    list    = {
+                        {
+                            source   = "uppercasescript",
+                            target   = "uppercasecalligraphic",
+                        },
+                        {
+                            source   = "uppercasescript",
+                            target   = "uppercasescript",
+                            feature  = "ss01",
+                        },
+                    },
                 },
                 -- Accents are a mess. We migrate the extensibles from the combiners to the base accent
                 -- and then need to tweak the width (which is auto set because it was zero with a large
@@ -138,9 +125,9 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {
-                        [0x00302] = { width = 1.2, anchor = 1.10, xoffset =  .05 }, -- widehat
-                        [0x00303] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widetilde
-                        [0x00306] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widebreve
+                        [0x00302] = { width = 1.2, anchor = 1.10, xoffset = .05 }, -- widehat
+                        [0x00303] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widetilde
+                        [0x00306] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widebreve
                         [0x0030C] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widecheck
                     },
                 },
@@ -149,20 +136,18 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {
-                        -- here we want to apply to all
-                        -- [0x00300] = { yoffset = -0.02, height = .95, all = true }, -- widegrave : 0x0060
-                        -- [0x00301] = { yoffset = -0.02, height = .95, all = true }, -- wideacute : 0x00B4
-                        -- [0x00302] = { yoffset = -0.03, height = .95, all = true }, -- widehat   : 0x02C6
-                        -- [0x00303] = { yoffset = -0.02, height = .95, all = true }, -- widetilde : 0x02DC
-                        -- [0x00306] = { yoffset = -0.03, height = .95, all = true }, -- widebre   : 0x02D8
-                        -- [0x0030A] = { yoffset =  0.00, height = .95, all = true }, -- widering  : 0x02DA
-                        -- [0x0030C] = { yoffset = -0.03, height = .95, all = true }, -- widecheck : 0x02C7
-
-                        -- [0x00304] = { yoffset = -0.05, height = .95, all = true }, -- widebar   : 0x00AF
-
-                        -- [0x00307] = { yoffset = -0.03, height = .95, all = true }, -- widedot   : 0x02D9
-                        -- [0x00308] = { yoffset = -0.03, height = .95, all = true }, -- wideddot  : 0x00A8
-                        [0x020DB] = { yoffset =  0.025,    height = .95, all = true }, -- widedddot : 0x20DB (self)
+                     -- here we want to apply to all
+                     -- [0x00300] = { yoffset = -0.02,  height = .95, all = true }, -- widegrave : 0x0060
+                     -- [0x00301] = { yoffset = -0.02,  height = .95, all = true }, -- wideacute : 0x00B4
+                     -- [0x00302] = { yoffset = -0.03,  height = .95, all = true }, -- widehat   : 0x02C6
+                     -- [0x00303] = { yoffset = -0.02,  height = .95, all = true }, -- widetilde : 0x02DC
+                     -- [0x00306] = { yoffset = -0.03,  height = .95, all = true }, -- widebre   : 0x02D8
+                     -- [0x0030A] = { yoffset =  0.00,  height = .95, all = true }, -- widering  : 0x02DA
+                     -- [0x0030C] = { yoffset = -0.03,  height = .95, all = true }, -- widecheck : 0x02C7
+                     -- [0x00304] = { yoffset = -0.05,  height = .95, all = true }, -- widebar   : 0x00AF
+                     -- [0x00307] = { yoffset = -0.03,  height = .95, all = true }, -- widedot   : 0x02D9
+                     -- [0x00308] = { yoffset = -0.03,  height = .95, all = true }, -- wideddot  : 0x00A8
+                        [0x020DB] = { yoffset =  0.025, height = .95, all = true }, -- widedddot : 0x20DB (self)
                     },
                 },
                 -- We now copy these to the not wide slots so that we can set these to stretch as well,
@@ -171,13 +156,6 @@ return {
                     tweak = "copyaccents",
                 },
                 -- So far for the accents.
-
-                {
-                    tweak   = "fixprimes",
-                    scale   = 1,
-                 -- smaller = true,
-                    factor  = 1,
-                },
                 {
                     tweak = "checkspacing",
                 },
@@ -204,21 +182,21 @@ return {
                     tweak = "addfourier",
                     variant = 1,
                 },
-{
-    tweak = "addparts",
-    list  = {
-        [0x21F4] = {
-            horizontal = true,
-            template   = 0x2192,
-            sequence   = {
-                { glyph = "first", factor = 2 },
-                { glyph = 0x2022, },
-                { glyph = "first", factor = 2 },
-                { glyph = "last"  },
-            }
-        }
-    }
-},
+                {
+                    tweak = "addparts",
+                    list  = {
+                        [0x21F4] = {
+                            horizontal = true,
+                            template   = 0x2192,
+                            sequence   = {
+                                { glyph = "first", factor = 2 },
+                                { glyph = 0x2022, },
+                                { glyph = "first", factor = 2 },
+                                { glyph = "last"  },
+                            }
+                        }
+                    }
+                },
             },
         },
         bigslots = {
@@ -226,5 +204,3 @@ return {
         },
     },
 }
-
-

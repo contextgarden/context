@@ -18,21 +18,21 @@ extern halfword lmt_check_isdirectornode  (lua_State *L, int i, int *isdirect);
 extern void     lmt_initialize_properties (int set_size);
 
 extern halfword lmt_hpack_filter_callback(
-    halfword head_node,
+    halfword head,
     scaled   size,
-    int      pack_type,
+    int      packtype,
     int      extrainfo,
-    int      d,
+    int      direction,
     halfword a
 );
 
 extern halfword lmt_vpack_filter_callback(
-    halfword head_node,
+    halfword head,
     scaled   size,
-    int      pack_type,
-    scaled   maxd,
+    int      packtype,
+    scaled   depth,
     int      extrainfo,
-    int      d,
+    int      direction,
     halfword a
 );
 
@@ -44,20 +44,20 @@ extern halfword lmt_packed_vbox_filter_callback(
 extern void lmt_node_filter_callback(
     int       filterid,
     int       extrainfo,
-    halfword  head_node,
-    halfword *tail_node
+    halfword  head,
+    halfword *tail
 );
 
 extern int lmt_linebreak_callback(
-    int       is_broken,
-    halfword  head_node,
-    halfword *new_head
+    int       isbroken,
+    halfword  head,
+    halfword *newhead
 );
 
 extern void lmt_alignment_callback(
-    halfword head_node,
+    halfword head,
     halfword context,
-    halfword attr_list,
+    halfword attrlist,
     halfword preamble
 );
 
@@ -67,26 +67,26 @@ extern void lmt_local_box_callback(
     halfword rightbox,
     halfword middlebox,
     halfword linenumber,
-    scaled leftskip,
-    scaled rightskip,
-    scaled lefthang,
-    scaled righthang,
-    scaled indentation,
-    scaled parinitleftskip,
-    scaled parinitrightskip,
-    scaled parfillleftskip,
-    scaled parfillrightskip,
-    scaled overshoot
+    scaled   leftskip,
+    scaled   rightskip,
+    scaled   lefthang,
+    scaled   righthang,
+    scaled   indentation,
+    scaled   parinitleftskip,
+    scaled   parinitrightskip,
+    scaled   parfillleftskip,
+    scaled   parfillrightskip,
+    scaled   overshoot
 );
 
 extern int lmt_append_to_vlist_callback(
     halfword  box,
     int       location,
-    halfword  prev_depth,
+    halfword  prevdepth,
     halfword *result,
-    int      *next_depth,
-    int      *prev_set,
-    int      *check_depth
+    int      *nextdepth,
+    int      *prevset,
+    int      *checkdepth
 );
 
 extern void lmt_begin_paragraph_callback(

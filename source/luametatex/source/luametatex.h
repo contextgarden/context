@@ -76,6 +76,7 @@
     2.09.35 : near the end of 2021 (so close to the 2.10 release date)
     2.09.55 : in July 2022 (the official release of the new math engine)
     2.10.00 : a few days before the ctx 2022 meeting (starting September 19)
+    2.10.01 : mid October 2022 
 
     At some point the \CONTEXT\ group will be responsible for guaranteeing that the official version
     is what comes with \CONTEXT\ and that long term support and stabilty is guaranteed and that no 
@@ -86,9 +87,9 @@
 # include "tex/textypes.h"
 
 # define luametatex_version          210
-# define luametatex_revision         00
-# define luametatex_version_string   "2.10.00"
-# define luametatex_development_id   20220918
+# define luametatex_revision         01
+# define luametatex_version_string   "2.10.01"
+# define luametatex_development_id   20221014
 
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"

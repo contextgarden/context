@@ -14,6 +14,9 @@ local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
 
 end
 
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
+
 return {
     name = "minion-math",
     version = "1.00",
@@ -37,49 +40,51 @@ return {
         parameters = {
             NoLimitSupFactor                =    0,
             NoLimitSubFactor                =  900,
-        --     AccentTopShiftUp                =  -15,
-        --     FlattenedAccentTopShiftUp       =  -15,
-        --     -- AccentExtendMargin              =   50,
-        --     AccentBaseDepth                 =   50,
-        --     RadicalDegreeBottomRaisePercent =   60,
-        --     RadicalRuleThickness            =   66, -- 72 in font
-        --     DelimiterPercent                =   90,
-        --     DelimiterShortfall              =  400,
-        --     DisplayOperatorMinHeight        = 1900, -- 1250 in font
-        --  -- AccentSuperscriptDrop           =  100,
-        --  -- AccentSuperscriptPercent        =  20,
-         PrimeRaisePercent               =  50, -- 50 default
-         PrimeRaiseComposedPercent       =  25, -- 25 default
-        --  PrimeShiftUp                    = 0,
-        --  PrimeBaselineDropMax            = 0,
-            RadicalKernAfterExtensible      =    100, -- 0 default
-            RadicalKernBeforeExtensible     =    100, -- 0 default
+         -- AccentTopShiftUp                =  -15,
+         -- FlattenedAccentTopShiftUp       =  -15,
+         -- AccentExtendMargin              =   50,
+         -- AccentBaseDepth                 =   50,
+         -- RadicalDegreeBottomRaisePercent =   60,
+         -- RadicalRuleThickness            =   66, --   72 in font
+         -- DelimiterPercent                =   90,
+         -- DelimiterShortfall              =  400,
+         -- DisplayOperatorMinHeight        = 1900, -- 1250 in font
+         -- AccentSuperscriptDrop           =  100,
+         -- AccentSuperscriptPercent        =   20,
+            PrimeRaisePercent               =   50, --   50 default
+            PrimeRaiseComposedPercent       =   25, --   25 default
+         -- PrimeShiftUp                    =    0,
+         -- PrimeBaselineDropMax            =    0,
+            RadicalKernAfterExtensible      =  100, --   0 default
+            RadicalKernBeforeExtensible     =  100, --   0 default
         },
         tweaks = {
             aftercopying = {
              -- {
              --     tweak    = "version",
-             --     expected = "unknown",
+             --     expected = "unknown", -- todo
              -- },
                 {
-                    tweak = "dimensions",
-                 -- smaller = true,
-                    list  = dimensions,
+                    tweak = "addmirrors",
                 },
-                -- {
-                --     tweak    = "variants",
-                --     kind     = "script",
-                --     feature  = "s_s_0",-- this changes to chancery style for lucida
-                --  -- feature  = false, -- use the saved ones (see typescript)
-                --     selector = 0xFE00,
-                -- },
-                -- -- 0xFEO1 should be roundhand style, if present
-                -- {
-                --     tweak    = "variants",
-                --     kind     = "script",
-                --     selector = 0xFE01,
-                -- },
-
+                presets.matheulercalligraphic { rscale = 0.95 },
+                presets.mathrsfscript         { rscale = 0.95 },
+                presets.mathxitsarabic        { rscale = 0.88 },
+                {
+                    tweak = "simplifykerns",
+                },
+                presets.moveitalics {
+                    correct = true
+                },
+                {   -- Check!
+                    tweak   = "replacealphabets",
+                    list    = {
+                        {
+                            source   = "uppercasecalligraphic",
+                            target   = "uppercasescript",
+                        },
+                    },
+                },
                 {
                     tweak = "extendaccents",
                 },
@@ -94,18 +99,18 @@ return {
                     factor = 0.95,
                     scale  = 0.9,
                 },
-                -- {
-                --     tweak = "checkspacing",
-                -- },
-                -- {
-                --     tweak = "addscripts",
-                -- },
-                -- {
-                --     tweak = "accentdimensions",
-                -- },
-                -- {
-                --     tweak = "addrules",
-                -- },
+             -- {
+             --     tweak = "checkspacing",
+             -- },
+             -- {
+             --     tweak = "addscripts",
+             -- },
+             -- {
+             --     tweak = "accentdimensions",
+             -- },
+             -- {
+             --     tweak = "addrules",
+             -- },
                 {
                     tweak = "addfourier",
                     variant = 1,

@@ -91,7 +91,7 @@ mathcodeval tex_mathchar_from_spec(int value)
     return mval;
 }
 
-void tex_show_mathcode_value(mathcodeval mval, int extcode)
+void tex_show_mathcode_value(mathcodeval mval, int extcode) /* todo: format option */
 {
     tex_print_char('"');
     if (extcode == tex_mathcode) {
@@ -110,9 +110,7 @@ void tex_show_mathcode_value(mathcodeval mval, int extcode)
 static void tex_aux_show_mathcode(int n)
 {
     mathcodeval mval = tex_get_math_code(n);
-    tex_print_str_esc("Umathcode");
-    tex_print_int(n);
-    tex_print_char('=');
+    tex_print_format("%eUmathcode%i=", n);
     tex_show_mathcode_value(mval, umath_mathcode);
 }
 
@@ -207,9 +205,7 @@ static void tex_aux_undump_mathcode(dumpstream f)
 static void tex_aux_show_delcode(int n)
 {
     delcodeval dval = tex_get_del_code(n);
-    tex_print_str_esc("Udelcode");
-    tex_print_int(n);
-    tex_print_char('=');
+    tex_print_format("%eUdelcode=", n);
     if (tex_has_del_code(dval)) {
         tex_print_char('"');
         print_hex_digit_two(dval.small.family_value);

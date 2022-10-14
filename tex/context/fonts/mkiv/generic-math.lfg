@@ -102,6 +102,17 @@ return {
 --                         [0x21CC] = false,
                     }
                 }, 
+--                 {
+--                     tweak  = "limits",
+--                     factor = 1.5,
+--                     list   = {
+--                         [0x0222B] = true,
+--                         [0x0222C] = 1.45,
+--                         [0x0222D] = true,
+--                         [0x0222E] = true,
+--                         [0x0222F] = true,
+--                     },
+--                 },
                 {
                     -- For upright alphabets, we unset the anchor.
                     -- This means that accents are placed
@@ -171,6 +182,18 @@ return {
                         "uppercasesanserifnormal",
                     },
                  },
+             -- {
+             --     comment = "example"
+             --     tweak   = "action",
+             --     action  = function(target,original,parameters) mathematics.tweaks.fixdimensions(target, original, parameters)
+             --     list    = fixes, -- one of the parameters
+             -- },
+             -- {
+             --     comment = "example"
+             --     tweak   = "action",
+             --     action  = mathematics.tweaks.fixdimensions,
+             --     list    = fixes, -- one of the parameters
+             -- },
                  {
                     -- This one fakes margins to get larger/smaller accents
                     -- with for example \widetilde.
@@ -179,6 +202,10 @@ return {
                     list  = {
                     },
                 },               
+             -- {
+             --      tweak  = "fixanchors",
+             --      factor = .5,
+             -- },
                 {
                     tweak = "addrules",
                 },

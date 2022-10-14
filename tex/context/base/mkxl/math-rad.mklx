@@ -242,13 +242,13 @@
    \scratchdimen       \wd\scratchbox
    \scratchtopoffset   \dimexpr\scratchoffset+\dp\nextbox\relax
    \scratchbottomoffset\dimexpr\scratchoffset+\ht\nextbox/2\relax
-   \hpack to \scratchdimen{\hss\box\nextbox\hskip\scratchoffset}%
-   \hskip-\scratchdimen
+   \hpack to \scratchdimen{\hss\box\nextbox\kern\scratchoffset}%
+   \kern-\scratchdimen
    \lower\dimexpr\scratchtopoffset\box\scratchbox%
    \ifx\currentmathradicaldegree\empty \else
      \setbox\scratchbox\mathstylehbox{\scriptscriptstyle\currentmathradicaldegree\hss}%
      \wd\scratchbox\scratchdimen
-     \hskip-\scratchdimen
+     \kern-\scratchdimen
      \raise\dimexpr\scratchbottomoffset\box\scratchbox
    \fi
    \endgroup}
@@ -296,7 +296,7 @@
    % the width of the graphic determines the width of the final result
    \setbox\scratchbox\hpack{\uniqueMPgraphic{\p_mp}}% todo: add code key + tag
    \hpack to \wd\scratchbox{\hss\box\nextbox\hss}%
-   \hskip-\wd\scratchbox
+   \kern-\wd\scratchbox
    \box\scratchbox
    \endgroup}
 

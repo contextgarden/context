@@ -110,10 +110,7 @@ static void tex_aux_show_eqtb(halfword n);
 static void tex_aux_diagnostic_trace(halfword p, const char *s)
 {
     tex_begin_diagnostic();
-    /* print_format ... */
-    tex_print_char('{');
-    tex_print_str(s);
-    tex_print_char(' ');
+    tex_print_format("{%s ", s);
     tex_aux_show_eqtb(p);
     tex_print_char('}');
     tex_end_diagnostic();
@@ -449,8 +446,8 @@ void tex_new_save_level(quarterword c)
     /*tex We begin a new level of grouping. */
     if (tex_room_on_save_stack()) {
         save_attribute_state_before();
-        tex_set_saved_record(saved_group_line_number, saved_line_number, 0, lmt_input_state.input_line);
-        tex_set_saved_record(saved_group_level_boundary, level_boundary, cur_group, cur_boundary);
+        tex_set_saved_record(saved_group_line_number, line_number_save_type, 0, lmt_input_state.input_line);
+        tex_set_saved_record(saved_group_level_boundary, level_boundary_save_type, cur_group, cur_boundary);
         /*tex eventually we will have bumped |lmt_save_state.save_stack_data.ptr| by |saved_group_n_of_items|! */
         ++lmt_save_state.save_stack_data.ptr;
         if (cur_level == max_quarterword) {
@@ -510,7 +507,7 @@ static int tex_aux_save_value(int id)
 
 static int tex_aux_saved_box_spec(halfword *packing, halfword *amount)
 {
-    int i = tex_aux_found_save_type(saved_box_spec);
+    int i = tex_aux_found_save_type(box_spec_save_type);
     if (i) {
         *packing = saved_level(i);
         *amount = saved_value(i);
@@ -595,7 +592,21 @@ void tex_show_save_groups(void)
             case output_group:
                 tex_print_str_esc("output");
                 goto FOUND2;
+         // maybe: 
+         //
+         // case math_group:
+         // case math_component_group:
+         // case math_stack_group:
+         //      tex_print_str_esc(lmt_interface.group_code_values[cur_group].name);
+         //      goto FOUND2;
             case math_group:
+                tex_print_str_esc("mathsubformula");
+                goto FOUND2;
+            case math_component_group:
+                tex_print_str_esc("mathcomponent");
+                goto FOUND2;
+            case math_stack_group:
+                tex_print_str_esc("mathstack");
                 goto FOUND2;
             case discretionary_group:
                 tex_print_str_esc("discretionary");
@@ -604,6 +615,10 @@ void tex_show_save_groups(void)
             case math_fraction_group:
                 tex_print_str_esc("fraction");
                 tex_aux_show_group_count(tex_aux_save_value(saved_fraction_item_variant));
+                goto FOUND2;
+            case math_radical_group:
+                tex_print_str_esc("radical");
+                tex_aux_show_group_count(tex_aux_save_value(radical_degree_done_save_type));
                 goto FOUND2;
             case math_operator_group:
                 tex_print_str_esc("operator");
@@ -634,10 +649,10 @@ void tex_show_save_groups(void)
                 ++pointer;
                 tex_print_str_esc("begingroup");
                 goto FOUND2;
-//case math_simple_group:
-//    ++pointer;
-//    tex_print_str_esc("beginmathgroup");
-//    goto FOUND2;
+         // case math_simple_group:
+         //     ++pointer;
+         //     tex_print_str_esc("beginmathgroup");
+         //     goto FOUND2;
             case math_shift_group:
                 if (mode == mmode) {
                     tex_print_char('$');
@@ -873,9 +888,9 @@ static void tex_aux_eq_save(halfword p, quarterword l)
 {
     if (tex_room_on_save_stack()) {
         if (l == level_zero) {
-            save_type(lmt_save_state.save_stack_data.ptr) = restore_zero;
+            save_type(lmt_save_state.save_stack_data.ptr) = restore_zero_save_type;
         } else {
-            save_type(lmt_save_state.save_stack_data.ptr) = restore_old_value;
+            save_type(lmt_save_state.save_stack_data.ptr) = restore_old_value_save_type;
             save_word(lmt_save_state.save_stack_data.ptr) = lmt_hash_state.eqtb[p];
         }
         save_level(lmt_save_state.save_stack_data.ptr) = l;
@@ -897,6 +912,8 @@ static void tex_aux_eq_save(halfword p, quarterword l)
     it looks like we can destroy the token list or node (list). Not, that might actually work ok in
     the case of glue refs that have work by ref count and token lists and node (lists) are always
     different so there we do no harm.
+
+    There is room for some optimization here. 
 
 */
 
@@ -948,8 +965,8 @@ inline static int tex_aux_equal_eq(halfword p, singleword cmd, singleword flag, 
             case tolerant_protected_call_cmd:
             case tolerant_semi_protected_call_cmd:
                 /*tex The initial token reference will do as it is unique. */
-//              if (eq_value(p) == chr) {
-  if (eq_value(p) == chr && eq_level(p) == cur_level) {
+             // if (eq_value(p) == chr) {
+                if (eq_value(p) == chr && eq_level(p) == cur_level) {
                     tex_delete_token_reference(eq_value(p));
                     return 1;
                 } else {
@@ -960,7 +977,7 @@ inline static int tex_aux_equal_eq(halfword p, singleword cmd, singleword flag, 
             case register_box_reference_cmd:
                 /*tex These are also references. */
                 if (eq_type(p) == cmd && eq_value(p) == chr && ! chr) {
-//              if (eq_type(p) == cmd && eq_value(p) == chr && ! chr && eq_level(p) == cur_level) {
+             // if (eq_type(p) == cmd && eq_value(p) == chr && ! chr && eq_level(p) == cur_level) {
                     return 1;
                 } else {
                     /* play safe */
@@ -979,7 +996,7 @@ inline static int tex_aux_equal_eq(halfword p, singleword cmd, singleword flag, 
             case register_toks_cmd:
                 /*tex Again we have references. */
                 if (eq_value(p) == chr) {
-//              if (eq_value(p) == chr && eq_level(p) == cur_level) {
+            //  if (eq_value(p) == chr && eq_level(p) == cur_level) {
                     return 1;
                 } else {
                     return 0;
@@ -996,7 +1013,7 @@ inline static int tex_aux_equal_eq(halfword p, singleword cmd, singleword flag, 
                     math file).
                 */
                 if (eq_type(p) == cmd && eq_value(p) == chr) {
-//              if (eq_type(p) == cmd && eq_value(p) == chr && eq_level(p) == cur_level) {
+             // if (eq_type(p) == cmd && eq_value(p) == chr && eq_level(p) == cur_level) {
                     return 1;
                 }
                 return 0;
@@ -1344,15 +1361,6 @@ void tex_forced_define(int g, halfword p, singleword f, singleword t, halfword e
     }
 }
 
-// void forced_define(int l, halfword p, singleword f, singleword t, halfword e)
-// {
-//     eq_destroy(hash_state.eqtb[p]);
-//     set_eq_level(p, l);
-//     set_eq_type(p, t);
-//     set_eq_flag(p, f);
-//     set_eq_value(p, e);
-// }
-
 void tex_word_define(int g, halfword p, halfword w)
 {
     if (tex_aux_mutation_permitted(p)) {
@@ -1430,7 +1438,7 @@ void tex_forced_word_define(int g, halfword p, singleword f, halfword w)
 void tex_save_for_after_group(halfword t)
 {
     if (cur_level > level_one && tex_room_on_save_stack()) {
-        save_type(lmt_save_state.save_stack_data.ptr) = insert_tokens;
+        save_type(lmt_save_state.save_stack_data.ptr) = insert_tokens_save_type;
         save_level(lmt_save_state.save_stack_data.ptr) = level_zero;
         save_value(lmt_save_state.save_stack_data.ptr) = t;
         ++lmt_save_state.save_stack_data.ptr;
@@ -1498,9 +1506,9 @@ void tex_unsave(void)
         while (1) {
             --lmt_save_state.save_stack_data.ptr;
             switch (save_type(lmt_save_state.save_stack_data.ptr)) {
-                case level_boundary:
+                case level_boundary_save_type:
                     goto DONE;
-                case restore_old_value:
+                case restore_old_value_save_type:
                     {
                         halfword p = save_value(lmt_save_state.save_stack_data.ptr);
                         /*tex
@@ -1535,7 +1543,7 @@ void tex_unsave(void)
                         }
                         break;
                     }
-                case insert_tokens:
+                case insert_tokens_save_type:
                     {
                         /*tex A list starts a new input level (for now). */
                         halfword p = save_value(lmt_save_state.save_stack_data.ptr);
@@ -1548,7 +1556,7 @@ void tex_unsave(void)
                         }
                         break;
                     }
-                case restore_lua:
+                case restore_lua_save_type:
                     {
                         /* The same as lua_function_code in |textoken.c|. */
                         halfword p = save_value(lmt_save_state.save_stack_data.ptr);
@@ -1566,7 +1574,7 @@ void tex_unsave(void)
                         a = 1;
                         break;
                     }
-                case restore_zero:
+                case restore_zero_save_type:
                     {
                         halfword p = save_value(lmt_save_state.save_stack_data.ptr);
                         if (eq_level(p) == level_one) {
@@ -1946,11 +1954,11 @@ void tex_initialize_equivalents(void)
 int tex_located_save_value(int id)
 {
     int i = lmt_save_state.save_stack_data.ptr - 1;
-    while (save_type(i) != level_boundary) {
+    while (save_type(i) != level_boundary_save_type) {
         i--;
     }
     while (i < lmt_save_state.save_stack_data.ptr) {
-        if (save_type(i) == restore_old_value && save_value(i) == id) {
+        if (save_type(i) == restore_old_value_save_type && save_value(i) == id) {
             /*
             if (math_direction_par != save_value(i - 1)) {
                 return 1;

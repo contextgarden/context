@@ -75,6 +75,9 @@
 %   at the lua end and some checking: use \mathhorizontalcode or \mathextensiblecode
 %   but in practice arrows etc are not used that often
 
+% At some point we can consider to use the more natural \LUAMETATEX\ features but the
+% problem is that we lack proper support in fonts and we also have less control.
+
 \installcorenamespace {mathextensiblefallbacks}
 
 % currently no italic correction ... problem is that we don't know yet if we have an italic
@@ -1059,6 +1062,7 @@
 \definemathextensible [\v!reverse] [xrightharpoondown]   ["21C1]
 \definemathextensible [\v!reverse] [xrightharpoonup]     ["21C0]
 \definemathextensible [\v!reverse] [xrightoverleftarrow] ["21C4]
+\definemathextensible [\v!reverse] [xleftoverrightarrow] ["21C6]
 \definemathextensible [\v!reverse] [xleftrightharpoons]  ["21CB]
 \definemathextensible [\v!reverse] [xrightleftharpoons]  ["21CC]
 \definemathextensible [\v!reverse] [xtriplerel]          ["2261]
@@ -1081,6 +1085,7 @@
 \definemathextensible [\v!mathematics] [mrightharpoondown]   ["21C1]
 \definemathextensible [\v!mathematics] [mrightharpoonup]     ["21C0]
 \definemathextensible [\v!mathematics] [mrightoverleftarrow] ["21C4]
+\definemathextensible [\v!mathematics] [mleftoverrightarrow] ["21C6]
 \definemathextensible [\v!mathematics] [mleftrightharpoons]  ["21CB]
 \definemathextensible [\v!mathematics] [mrightleftharpoons]  ["21CC]
 \definemathextensible [\v!mathematics] [mtriplerel]          ["2261]
@@ -1103,6 +1108,7 @@
 \definemathextensible [\v!text] [trightharpoondown]   ["21C1]
 \definemathextensible [\v!text] [trightharpoonup]     ["21C0]
 \definemathextensible [\v!text] [trightoverleftarrow] ["21C4]
+\definemathextensible [\v!text] [tleftoverrightarrow] ["21C6]
 \definemathextensible [\v!text] [tleftrightharpoons]  ["21CB]
 \definemathextensible [\v!text] [trightleftharpoons]  ["21CC]
 \definemathextensible [\v!text] [ttriplerel]          ["2261]
@@ -1184,6 +1190,7 @@
 \definemathextensible [\v!chemistry] [cleftarrow]          ["2190]
 \definemathextensible [\v!chemistry] [crightarrow]         ["2192]
 \definemathextensible [\v!chemistry] [crightoverleftarrow] ["21C4]
+\definemathextensible [\v!chemistry] [cleftoverrightarrow] ["21C6]
 
 % for the moment:
 
@@ -1208,6 +1215,7 @@
 \immutable\protected\def\rightarrowfill        {\math_stackers_hacked_fill \relbar                   \relbar                      \rightarrow}
 \immutable\protected\def\leftarrowfill         {\math_stackers_hacked_fill \leftarrow                \relbar                      \relbar    }
 \immutable\protected\def\rightoverleftarrowfill{\math_stackers_hacked_fill \ctxdoublearrowfillleftend\ctxdoublearrowfillmiddlepart\ctxdoublearrowfillrightend}
+\immutable\protected\def\leftoverrightarrowfill{\math_stackers_hacked_fill \ctxdoublearrowfillrightend\ctxdoublearrowfillmiddlepart\ctxdoublearrowfillleftend}
 \immutable\protected\def\equalfill             {\math_stackers_hacked_fill \Relbar                   \Relbar                      \Relbar}
 \immutable\protected\def\Rightarrowfill        {\math_stackers_hacked_fill \Relbar                   \Relbar                      \Rightarrow}
 \immutable\protected\def\Leftarrowfill         {\math_stackers_hacked_fill \Leftarrow                \Relbar                      \Relbar}
@@ -1247,6 +1255,7 @@
 \defineextensiblefiller [rightharpoondownfill]   ["21C1]
 \defineextensiblefiller [rightharpoonupfill]     ["21C0]
 \defineextensiblefiller [rightoverleftarrowfill] ["21C4]
+\defineextensiblefiller [leftoverrightarrowfill] ["21C6]
 %defineextensiblefiller [leftrightharpoonsfill]  ["21CB] % yet undefined
 %defineextensiblefiller [rightleftharpoonsfill]  ["21CC] % yet undefined
 \defineextensiblefiller [triplerelfill]          ["2261]
@@ -1303,7 +1312,7 @@
   [\v!symbol]
   [\c!voffset=-.3\mathexheight,
    \c!hoffset=\zeropoint,
-   \c!mathclass=ord,
+   \c!mathclass=\s!ordinary,
    \c!topoffset=.4\mathemwidth, % poor man's italic correction
    \c!middlecommand=\mathematics]
 

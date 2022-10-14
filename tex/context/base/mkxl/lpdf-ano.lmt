@@ -386,6 +386,8 @@ local v_minheight = variables.minheight
 local v_fit       = variables.fit
 local v_tight     = variables.tight
 
+local c_realpageno = tex.iscount("realpageno")
+
 -- nicer is to create dictionaries and set properties but it's a bit overkill
 
 -- The problem with the following settings is that they are guesses: we never know
@@ -466,7 +468,7 @@ end)
 local function flushdestination(specification)
     local names = specification.names
     local view  = specification.view
-    local r     = pdfpagereference(texgetcount("realpageno"))
+    local r     = pdfpagereference(c_realpageno)
     if (references.innermethod ~= v_name) and (view == defaultview or not view or view == "") then
         r = pagedestinations[r]
     else
@@ -1079,7 +1081,7 @@ end
 function specials.deltapage(var,actions)
     local p = tonumber(var.operation)
     if p then
-        p = references.checkedrealpage(p + texgetcount("realpageno"))
+        p = references.checkedrealpage(p + texgetcount(c_realpageno))
         return pdflinkpage(p)
     end
 end

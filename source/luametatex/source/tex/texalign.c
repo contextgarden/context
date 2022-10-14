@@ -549,12 +549,12 @@ static void tex_aux_scan_align_spec(quarterword c)
     }
     /*tex Now we're referenced. We need to preserve this over the group. */
     add_attribute_reference(attrlist);
-    tex_set_saved_record(saved_align_specification, saved_box_spec, mode, amount);
+    tex_set_saved_record(saved_align_specification, box_spec_save_type, mode, amount);
     /* We save them but could put them in the state as we do for some anyway. */
-    tex_set_saved_record(saved_align_reverse, saved_box_reverse, reverse, 0);
-    tex_set_saved_record(saved_align_discard, saved_box_discard, noskips ? 0 : discard, 0);
-    tex_set_saved_record(saved_align_noskips, saved_box_noskips, noskips, 0);
-    tex_set_saved_record(saved_align_callback, saved_box_callback, callback, 0);
+    tex_set_saved_record(saved_align_reverse, box_reverse_save_type, reverse, 0);
+    tex_set_saved_record(saved_align_discard, box_discard_save_type, noskips ? 0 : discard, 0);
+    tex_set_saved_record(saved_align_noskips, box_noskips_save_type, noskips, 0);
+    tex_set_saved_record(saved_align_callback, box_callback_save_type, callback, 0);
     lmt_save_state.save_stack_data.ptr += saved_align_n_of_items;
     tex_new_save_level(c);
     if (! brace) {

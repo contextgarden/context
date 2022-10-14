@@ -146,7 +146,7 @@
    \scratchcounter\clf_addtolist
         references {
             internal \locationcount
-          % block    {\currentsectionblock}
+          % block    {\currentsectionblock} % needed for publications (can be get from section)
           % section  structures.sections.currentid()
           % location {\p_location}
         }

@@ -872,6 +872,7 @@ do
             FontName    = basefont,
             Flags       = 4,
             FontBBox    = fontbbox,
+-- FontMatrix = pdfarray { 0.001, 0, 0, 0.001, 0, 0 },
             Ascent      = scale(ascender),
             Descent     = scale(descender),
             ItalicAngle = round(italicangle or 0),
@@ -971,7 +972,6 @@ do
                 return int4tag .. tointeger4(n)
             end
 
-            local e  = false
             local z  = byte("0")
             local dp = 10
             local ep = 11
@@ -985,6 +985,7 @@ do
                 local s = fg(v)
                 local t = { [0] = realtag }
                 local n = 0
+                local e = false
                 for s in gmatch(s,".") do
                     if s == "e" or s == "E" then
                         e = true
@@ -1027,6 +1028,73 @@ do
                 return t
             end
 
+         -- -- An alternative
+         --
+         -- local fg = formatters["%0.14gE%i"]
+         --
+         -- todictreal = function(v)
+         --     local E = 0
+         --     if v >= 10.0 then
+         --         while v >= 10.0 do
+         --             v = v / 10.0
+         --             E = E + 1
+         --         end
+         --     elseif v < 1.0 then
+         --         while v < 1.0 do
+         --             v = v * 10.0
+         --             E = E - 1
+         --         end
+         --     end
+         --     local s = fg(v,E)
+         --     local t = { [0] = realtag }
+         --     local n = 0
+         --     local e = false
+         --     for s in gmatch(s,".") do
+         --         if s == "e" or s == "E" then
+         --             e = true
+         --         elseif s == "+" then
+         --             -- skip
+         --         elseif s == "-" then
+         --             n = n + 1
+         --             if e then
+         --                 t[n] = em
+         --                 e = false
+         --             else
+         --                 t[n] = mn
+         --             end
+         --         else
+         --             if e then
+         --                 n = n + 1
+         --                 t[n] = ep
+         --                 e = false
+         --             end
+         --             n = n + 1
+         --             if s == "." then
+         --                 t[n] = dp
+         --             else
+         --                 t[n] = byte(s) - z
+         --             end
+         --         end
+         --     end
+         --     n = n + 1
+         --     t[n] = es
+         --     if (n % 2) ~= 0 then
+         --         n = n + 1
+         --         t[n] = es
+         --     end
+         --     local j = 0
+         --     for i=1,n,2 do
+         --         j = j + 1
+         --         t[j] = char(t[i]*0x10+t[i+1])
+         --     end
+         --     -- print(v,s)
+         --     -- for i=0,j do
+         --     --     print(string.format("%02X",utf.byte(t[i])))
+         --     -- end
+         --     t = concat(t,"",0,j)
+         --     return t
+         -- end
+
             todictnumber = function(n)
                 if not n or n == 0 then
                     return todictinteger(0)
@@ -1063,7 +1131,8 @@ do
         local function todictdeltas(t)
             local r = { }
             for i=1,#t do
-                r[i] = todictnumber(t[i]-(t[i-1] or 0))
+--                r[i] = todictnumber(t[i]-(t[i-1] or 0))
+                r[i] = todictnumber(t[i]+(t[i-1] or 0))
             end
             return concat(r)
         end
@@ -1140,7 +1209,7 @@ do
             --
             local charstrings        = fontfile.charstrings
             local nofglyphs          = #charstrings + 1
-            local fontmatrix         = { 0.001, 0, 0, 0.001, 0, 0 } -- todo
+--             local fontmatrix         = { 0.001, 0, 0, 0.001, 0, 0 } -- todo
             local fontbbox           = fontfile.fontbbox
             local defaultwidth       = cffinfo.defaultwidth or 0
             local nominalwidth       = cffinfo.nominalwidth or 0
@@ -1153,6 +1222,8 @@ do
             local bluefuzz           = cffinfo.bluefuzz
             local stdhw              = cffinfo.stdhw
             local stdvw              = cffinfo.stdvw
+            local stemsnaph          = cffinfo.stemsnaph
+            local stemsnapv          = cffinfo.stemsnapv
             --
             if defaultwidth == 0 then defaultwidth     = nil end
             if nomimalwidth == 0 then nominalwidth     = nil end
@@ -1163,8 +1234,10 @@ do
             if bluescale         then bluescale        = todictnumber(bluescale) end
             if blueshift         then blueshift        = todictnumber(blueshift) end
             if bluefuzz          then bluefuzz         = todictnumber(bluefuzz) end
-            if stdhw             then stdhw            = todictdeltas(stdhw) end
-            if stdvw             then stdvw            = todictdeltas(stdvw) end
+            if stemsnaph         then stemsnaph        = todictarray(stemsnaph) end
+            if stemsnapv         then stemsnapv        = todictarray(stemsnapv) end
+            if stdhw             then stdhw            = todictnumber(stdhw) end
+            if stdvw             then stdvw            = todictnumber(stdvw) end
             --
             local fontversion        = todictstring(fontfile,fontheader.fontversion or "uknown version")
             local familyname         = todictstring(fontfile,cffinfo.familyname or names.family or basefontname)
@@ -1177,7 +1250,7 @@ do
             local underlineposition  = todictnumber(cffinfo.underlineposition)
             local underlinethickness = todictnumber(cffinfo.underlinethickness)
             local charstringtype     = todictnumber(2)
-            local fontmatrix         = todictarray(fontmatrix)
+--             local fontmatrix         = todictarray(fontmatrix)
             local ros                = todictstring(fontfile,"Adobe")    -- registry
                                     .. todictstring(fontfile,"Identity") -- identity
                                     .. todictnumber(0)                   -- supplement
@@ -1191,18 +1264,21 @@ do
             --
             local defaultwidthx      = todictnumber(defaultwidth)
             local nominalwidthx      = todictnumber(nominalwidth)
+            -- the order of the blues is important!
             local private            = ""
-                                    .. (defaultwidthx and (defaultwidthx .. todictkey(20)) or "")
-                                    .. (nominalwidthx and (nominalwidthx .. todictkey(21)) or "")
-                                    .. (bluevalues and (bluevalues .. todictkey(6)) or "")
-                                    .. (otherblues and (otherblues .. todictkey(7)) or "")
-                                    .. (familyblues and (familyblues .. todictkey(8)) or "")
-                                    .. (familyotherblues and (familyotherblues .. todictkey(9)) or "")
-                                    .. (bluescale and (bluescale .. todictkey(12,9)) or "")
-                                    .. (blueshift and (blueshift .. todictkey(12,10)) or "")
-                                    .. (bluefuzz and (bluefuzz .. todictkey(12,11)) or "")
-                                    .. (stdhw and (stdhw .. todictkey(12,12)) or "")
-                                    .. (stdvw and (stdvw .. todictkey(12,13)) or "")
+                                    .. (bluevalues       and (bluevalues       .. todictkey( 6))    or "")
+                                    .. (otherblues       and (otherblues       .. todictkey( 7))    or "")
+                                    .. (familyblues      and (familyblues      .. todictkey( 8))    or "")
+                                    .. (familyotherblues and (familyotherblues .. todictkey( 9))    or "")
+                                    .. (bluescale        and (bluescale        .. todictkey(12, 9)) or "")
+                                    .. (blueshift        and (blueshift        .. todictkey(12,10)) or "")
+                                    .. (bluefuzz         and (bluefuzz         .. todictkey(12,11)) or "")
+                                    .. (stdhw            and (stdhw            .. todictkey(10))    or "")
+                                    .. (stdvw            and (stdvw            .. todictkey(11))    or "")
+                                    .. (stemsnaph        and (stemsnaph        .. todictkey(12,12)) or "")
+                                    .. (stemsnapv        and (stemsnapv        .. todictkey(12,13)) or "")
+                                    .. (defaultwidthx    and (defaultwidthx    .. todictkey(20))    or "")
+                                    .. (nominalwidthx    and (nominalwidthx    .. todictkey(21))    or "")
             local privatesize        = todictnumber(#private)
             local privatespec        = privatesize .. privateoffset
             --
@@ -1245,7 +1321,7 @@ do
              .. underlineposition     .. todictkey(12, 3)
              .. underlinethickness    .. todictkey(12, 4)
              .. charstringtype        .. todictkey(12, 6)
-             .. fontmatrix            .. todictkey(12, 7)
+--              .. fontmatrix            .. todictkey(12, 7)
              .. strokewidth           .. todictkey(12, 8)
              .. topvars
             }
@@ -1271,6 +1347,10 @@ do
             offset        = writetable(target,fontfile.charmappings,offset,"charsets")
             --
             -- fdselect
+            --
+            -- see printer mail thread / experiments with Leah Neukirchen: some printers
+            -- (probaby with an old GS on board) need this matrix because oitherwise they
+            -- accumulate the top one (resulting in very tiny invisible results)
             --
             local fdselect =
                 tocardinal1(3) -- format
@@ -1301,8 +1381,8 @@ do
             offset        = writestring(target,private,offset,"private")
             --
             local fdarray = {
-                fontname    .. todictkey(12,38)
-             .. privatespec .. todictkey(18)
+                fontname       .. todictkey(12,38)
+             .. privatespec    .. todictkey(18) -- case 1
             }
             fdarrayoffset = todictoffset(offset)
             offset        = writeindex(target,fdarray,offset,"fdarray")
@@ -1314,19 +1394,18 @@ do
              .. charsetoffset    .. todictkey(15)
              .. fdarrayoffset    .. todictkey(12,36)
              .. fdselectoffset   .. todictkey(12,37)
-             .. privatespec      .. todictkey(18)
+             .. privatespec      .. todictkey(18) -- case 2
             target[dictof] = topdict .. topvars
             --
             target = concat(target)
          -- if trace_details then
-         --     local name = "temp.cff"
-         --     report_fonts("saving %a",name)
-         --     io.savedata(name,target)
-         --     inspect(fonts.handlers.otf.readers.cffcheck(name))
+         --   local name = "temp.cff"
+         --   report_fonts("saving %a",name)
+         --   io.savedata(name,target)
+         --   inspect(fonts.handlers.otf.readers.cffcheck(name))
          -- end
             return target
         end
-
     end
 
     -- todo: check widths (missing a decimal)
@@ -1468,6 +1547,7 @@ do
             FontName    = basefont,
             Flags       = 4,
             FontBBox    = fontbbox,
+-- FontMatrix = pdfarray { 0.001, 0, 0, 0.001, 0, 0 },
             Ascent      = scale(ascender),
             Descent     = scale(descender),
             ItalicAngle = round(italicangle or 0),

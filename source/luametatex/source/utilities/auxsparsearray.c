@@ -325,13 +325,6 @@ int sa_get_item_n(const sa_tree head, int n)
     }
 }
 
-/*
-void rawset_sa_item_4(sa_tree head, int n, sa_tree_item v)
-{
-    head->tree[LMT_SA_H_PART(n)][LMT_SA_M_PART(n)][LMT_SA_L_PART(n)] = v;
-}
-*/
-
 void sa_clear_stack(sa_tree a)
 {
     if (a) {

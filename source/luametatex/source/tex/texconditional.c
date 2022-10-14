@@ -506,6 +506,11 @@ void tex_conditional_if(halfword code, int unless)
                 }
             }
             goto RESULT;
+        case if_zero_int_code:
+            {
+                result = tex_scan_int(0, NULL) == 0;
+            }
+            goto RESULT;
         case if_abs_dim_code:
         case if_dim_code:
             /*tex
@@ -531,6 +536,11 @@ void tex_conditional_if(halfword code, int unless)
                  /* default:                       break; */
                     default : result = (n1 == n2); break;
                 }
+            }
+            goto RESULT;
+        case if_zero_dim_code:
+            {
+                result = tex_scan_dimen(0, 0, 0, 0, NULL) == 0;
             }
             goto RESULT;
         case if_odd_code:

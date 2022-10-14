@@ -1,0 +1,1666 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-gettingridof
+
+\environment ontarget-style
+
+\startchapter[title={Issues in math fonts}]
+
+\startsection[title=Introduction]
+
+After trying to improve math rendering of \OPENTYPE\ math fonts, we \footnote
+{Mikael Sundqvist and Hans Hagen} ended up with a mix of improving the engine and
+fixing fonts runtime, and we are rather satisfied with the results so far.
+
+However, as we progress and also improve the more structural and input related
+features of \CONTEXT, we wonder why we don't simply are more drastic when it
+comes to fonts. The \OPENTYPE\ specifications are vague, and most existing
+\OPENTYPE\ math fonts use a mixture of the \OPENTYPE\ features and the old \TEX\
+habits, so we are sort of on our own. The advantage of this situation is that we
+feel free to experiment and do as we like.
+
+In another article we discuss our issues with \UNICODE\ math, and we have
+realized that good working solutions will be bound to a macro package anyway.
+Also, math typesetting has not evolved much after Don Knuth set the standard,
+even if the limitations of those times in terms of memory, processing speed and
+font technologies have been lifted already for a while. And right from the start
+Don invited users to extend and adapt \TEX\ to one's needs.
+
+Here we will zoom in on a few aspects: font parameters, glyph dimensions and
+properties and kerning of scripts and atoms. We discuss \OPENTYPE\ math fonts
+only, and start with a summary of how we tweak them. We leave a detailed engine
+discussion to a future article, since that would demand way more pages, and could
+confuse the reader.
+\stopsection
+
+\startsection[title={Tweaks, also known as goodies}]
+
+The easiest tweaks to describe are those that wipe features. Because the
+\TEXGYRE\ fonts have many bad top accent anchors (they sit above the highest
+point of the shape) the \typ {wipeanchors} tweak can remove them, and we do that
+per specified alphabet.
+
+\bgroup
+\definefontfeature[mathextra][goodies=]
+\switchtobodyfont[modern]
+\startformula
+\scale[s=2]{$\widehat{7}$}
+% \widehat{7}
+\stopformula
+\egroup
+\stopformulas
+
+In a similar fashion we \typ {wipeitalics} from upright shapes. Okay, maybe they
+can play a role for subscript placement, but then they can also interfere, and
+they do not fit with the \OPENTYPE\ specification. The \typ {wipecues} tweak
+zeros the dimensions of the invisible times and friends so that they don't
+interfere and \typ {wipevariants} gets rid of bad variants of specified
+characters.
+
+The fixers is another category, and the names indicate what gets fixed. Tweaks
+like these take lists of code points and specific properties to fix. We could
+leave it to your imagination what \typ {fixaccents}, \typ {fixanchors}, \typ
+{fixellipses}, \typ {fixoldschool}, \typ {fixprimes}, \typ {fixradicals} and \typ
+{fixslashes} do, but here are some details. Inconsistencies in the dimensions of
+accents make them jump all over the place so we normalize them. We support
+horizontal stretching at the engine level.
+
+\startformula
+\scale[s=2]{\dm{\widehat{a+b+c+d} = \widetilde{u+v+w+x+y}}}
+\stopformula
+
+It required only a few lines of code thanks to already present scaling features.
+
+% MPS: I thought of an example showing the accents, but I could
+%      not get it to work fine with the goodies loaded the second
+%      time the font was loaded
+%
+% \startformulas
+% \bgroup \definefontfeature[mathextra][goodies=]\setupbodyfont[modern]
+% \startformula[width=2em]
+% \widehat{7}
+% \stopformula
+% \egroup
+% \bgroup\setupbodyfont[modern]
+% \startformula[width=2em]
+% \widehat{7}
+% \stopformula
+% \egroup
+% \stopformulas
+
+Anchors can be off so we fix these in a way so that they look better on
+especially italic shapes. We make sure that the automated sizing works
+consistently, as this is driven by width and overshoot. Several kind of ellipses
+can be inconsistent with each other as well as with periods (shape and size wise)
+so we have to deal with that. Radicals and other extensibles have old school
+dimensions (\TEX\ fonts have a limited set of widths and heights). We need to fix
+for instance fences of various size because we want to apply kerns to scripts on
+the four possible corners for which we need to know the real height and depth,
+
+Discussing primes would take many paragraphs so we stick to mentioning that they
+are a mess. We now have native prime support in the engine as well as assume
+properly dimensioned symbols to be used. Slashes are used for skewed fractions so
+we'd better make sure they are set up right.
+
+A nice tweak is \typ {replacealphabets}. We use this to provide alternative
+script (roundhand) and calligraphic (chancery) alphabets (yes we have both
+natively in \CONTEXT\ while \UNICODE\ combines them in one alphabet). Many
+available \OPENTYPE\ math fonts come with one of the two alphabets only, some
+with roundhand and some with chancery. For the record: this tweak replaces the
+older \typ {variants} tweak that filtered scripts from a stylistic font feature.
+
+We also use the \typ {replacealphabets} tweak to drop in Arabic shapes so that we
+can do bidirectional math. In practice that doesn't really boil down to a
+replacement but more to an addition. The \typ {addmirrors} features accompanies
+this, and it is again a rather small extension to the engine to make sure we can
+do this efficiently: when a character is looked up we check a mirror variant when
+we are in r2l mode, just like we look up a smaller variant when we're in compact
+font mode (a \CONTEXT\ feature).
+
+\bgroup
+\definefontfeature[mathextra][mathxitsarabic=yes]
+\switchtobodyfont[bonum]
+\setupmathematics[bidi=yes,align=righttoleft]\par
+\setupalign[righttoleft] %
+\startformula
+\scale[s=2]{\dm{
+\sum_{\char"1EE4E=\char"1EE01}^{\char"1EE02} \char"1EE03^{\char"1EE4E} =
+\char"1EE03^{\char"1EE01}\frac{\char"0661 - \char"1EE03^{\char"1EE02 -
+\char"1EE01 + \char"0661}}{\char"0661 - \char"1EE03} \quad (\char"1EE03\neq
+\char"0661)
+}}
+
+% \int_{\char"0627}^{\char"0628} \char"1EE03 '(\char"1EE4E)
+% %\mathatom class \mathdifferentialcode {\char"062F}
+% \dd
+% \char"1EE4E
+% = \char"1EE03(\char"0628) - \char"1EE03(\char"0627)
+% \stopformula
+% \startformula
+% \sqrt[\char"0663](\char"1EE30) = (\char"1EE30)^{1/\char"0663}
+\stopformula
+\egroup
+
+Another application of \typ {replacealphabets} is to drop in single characters
+from another font. We use this for instance to replace the \quote {not really an
+alpha} in Bonum by one of our own liking. Below we show a math italic a and the
+original alpha, together with the modified alpha.
+
+\startformula
+\scale[s=2]{\dm{
+a + \text{\getnamedglyphdirect{file:TeXGyreBonumMath-Companion.otf}{alpha.old}} + \alpha
+}}
+\stopformula
+
+For that we ship a companion font. On our disks (and in the distribution) you can
+find:
+
+\starttyping
+/tex/texmf-fonts/fonts/data/cms/companion/RalphSmithsFormalScript-Companion.otf
+/tex/texmf-fonts/fonts/data/cms/companion/TeXGyreBonumMath-Companion.otf
+/tex/texmf-fonts/fonts/data/cms/companion/XITSMath-Companion.otf
+\stoptyping
+
+All these are efficient drop|-|ins that are injected by the \typ
+{replacealphabets}, some under user control, some always. We tried to limit the
+overhead and actually bidirectional math could be simplified which also had the
+benefit that when one does tens of thousands of bodyfont switches a bit of
+runtime is gained.
+
+There are more addition tweaks: \typ {addactuarian} creates the relevant symbols
+which is actually a right sided radical (the engine has support for two|-|sided
+radicals). It takes a bit of juggling with virtual glyphs and extensible recipes,
+but the results are rewarding.
+
+\setupmathradical[annuity][strut=no]
+\definemathdelimited
+   [myannuity]
+   [topoffset=.2\exheight,
+    strut=no,
+    rightmargin=.05\emwidth,
+    right=\delimitedrightanutityuc]
+
+\startformula
+\scale[s=2]{\dm{
+\widebar{A}__{\myannuity{m}}^^{2}_{x:\annuity{n}}^{1}
+}}
+\stopformula
+
+In a similar fashion we try to add missing extensible arrows with \typ
+{addarrows}, bars with \typ {addbars}, equals with \typ {addequals} and again
+using the radical mechanism fourier notation symbols (like hats) with \typ
+{addfourier}. That one involves subtle kerning because these symbols end up at
+the right top of a fence like symbol.
+
+\startformula
+\scale[s=2]{\dm{
+\widehat{f \ast g \ast h}(\xi) = \fourier{\F1\left(f\ast g \ast h\right)}(\xi)
+}}
+\stopformula
+
+It was actually one of the reasons to introduce a more advanced kerning mechanism
+in the engine, which is not entirely trivial because one has to carry around more
+information, since all this is font and character bound, and when wrapped in
+boxes that gets hard to analyze. The \typ {addrules} makes sure that we can do
+bars over and under constructs properly. The \typ {addparts} is there to add
+extensible recipes to characters.
+
+Some of these tweaks actually are not new and are also available in \MKIV\ but
+more as features (optionally driven by the goodie file). An example is \typ
+{addscripts} that is there for specially positioned and scaled signs (high minus
+and such) but that tweak will probably be redone as part of the \quotation {deal
+with all these plus and minus issues}. The dedicated to Alan Braslau \typ
+{addprivates} tweak is an example of this: we add specific variants for unary
+minus and plus that users can enable on demand, which in turn of course gives
+class specific spacing, but we promised not to discuss those engine features
+here.
+
+\startformula
+\scale[s=2]{\dm{
+\int_1^2 \left[(x+2)^{\frac[strut=no]{1}{2}} - (x+2)^{\um\frac[strut=no]{1}{2}}\right] \dd x
+}}
+\stopformula
+
+There is a handful of tweaks that deals with fixing glyph properties (in detail).
+We mention: \typ {dimensions} and \typ {accentdimensions} that can reposition in
+the boundingbox, fix the width and italic correction, squeeze and expand etc. The
+\typ {kernpairs} tweak adds kern pairs to combinations of characters. The \typ
+{kerns} provides a way to add top left, bottom left, top right and bottom right
+kerns and those really make the results look better so we love it!
+
+\startformula
+\scale[s=2]{\showglyphs\dm{\F3\left(\frac{1}{1+x^2}\right)^n \quad x^2/(1+x)}}
+\stopformula
+
+The \typ {margins} tweak sets margin fields that the engine can use to calculate
+accents over the base character better. The same is true for \typ {setovershoots}
+that can make accents lean over a bit. The \typ {staircase} feature can be used
+to add the somewhat complicated \OPENTYPE\ kerns. From all this you can deduce
+that the engine has all types of kerning that \OPENTYPE\ requires, and more.
+
+Accents as specified in fonts can be a pain to deal with so we have more tweaks
+for them: \typ {copyaccents} moves them to the right slots and \typ
+{extendaccents} makes sure that we can extend them. Not all font makers have the
+same ideas about where these symbols should sit and what their dimensions should
+be.
+
+The \typ {checkspacing} tweak fixes bad or missing spacing related to \UNICODE\
+character entries in the font, because after all, we might need them. We need to
+keep for instance \MATHML\ in mind, which means: processing content that we don't
+see and that can contain whatever an editor puts in. The \typ {replacements}
+feature replaces one character by another from the same font. The \typ
+{substitutes} replaces a character by one from a stylistic feature.
+
+Relatively late we added the \typ {setoptions} which was needed to control the
+engine for specific fonts. The rendering is controlled by a bunch of options
+(think of kerning, italic correction, and such). Some are per font, many per
+class. Because we can (and do) use mixed math fonts in a document, we might need
+to adapt the engine level options per font, and that is what this tweak does: it
+passes options to the font so that the engine can consult them and prefer them
+over the \quote {global} ones. We needed this for some fonts that have old school
+dimensions for extensibles (like Lucida), simply because they imitated Computer
+Modern. Normally that goes unnoticed, but, as mentioned before, it interferes
+with our optional kerning. The \typ {fixoldschool} tweak sort of can fix that too
+so \typ {setoptions} is seldom needed. Luckily, some font providers are willing
+to fix their fonts!
+
+We set and configure all these tweaks in a so-called goodie file, basically a
+runtime module that returns a \LUA\ table with specifications. In addition to the
+tweaks subtable in the math namespace, there is a subtable that overloads the
+font parameters: the ones that \OPENTYPE\ specifies, but also new ones that we
+added. In the next section we elaborate more on these font bound parameters.
+
+\stopsection
+
+\startsection[title=Font parameters]
+
+At some point in the upgrading of the math machinery we discussed some of the
+inconsistencies between the math constants of the XITS and STIX fonts. Now, one
+has to keep in mind that XITS was based on a first release of STIX that only had
+\TYPEONE\ fonts so what follows should not to be seen as criticism, but more as
+observations and reason for discussion, as well as a basis for decisions to be
+made.
+
+One thing we have to mention in advance, is that we often wonder why some weird
+and|/|or confusing stuff in math fonts go unnoticed. We have some suggestions:
+
+\startitemize
+\startitem
+    The user doesn't care that much how math comes out. This can easily be
+    observed when you run into documents on the internet or posts on forums. And
+    publishers don't always seem to care either. Consistency with old documents
+    sometimes seems to be more important than quality.
+\stopitem
+\startitem
+    The user switches to another math font when the current one doesn't handle
+    its intended math domain well. We have seen that happening and it's the
+    easiest way out when you have not much control anyway (for instance when
+    using online tools).
+\stopitem
+\startitem
+    The user eventually adds some skips and kerns to get things right, because
+    after all \TEX\ is also about tweaking.
+\stopitem
+\startitem
+    The user doesn't typeset that complex math. It's mostly inline math with an
+    occasional alignment (also in text style) and very few multi|-|level display
+    math (with left and right fences that span at most a fraction).
+\stopitem
+\stopitemize
+
+We do not claim to be perfect, but we care for details, so let's go on. The next
+table shows the math constants as they can be found in the \STIX\ (two) and
+\XITS\ (one) fonts. When you typeset with these fonts you will notice that \XITS\
+is somewhat smaller, so two additional columns show the values compensated for
+the axis height and accent base height.
+
+\startluacode
+local one = {
+   ["AccentBaseHeight"]=450,
+   ["AxisHeight"]=250,
+   ["DelimitedSubFormulaMinHeight"]=1500,
+   ["DisplayOperatorMinHeight"]=1450,
+   ["FlattenedAccentBaseHeight"]=662,
+   ["FractionDenominatorDisplayStyleGapMin"]=198,
+   ["FractionDenominatorDisplayStyleShiftDown"]=700,
+   ["FractionDenominatorGapMin"]=66,
+   ["FractionDenominatorShiftDown"]=480,
+   ["FractionNumeratorDisplayStyleGapMin"]=198,
+   ["FractionNumeratorDisplayStyleShiftUp"]=580,
+   ["FractionNumeratorGapMin"]=66,
+   ["FractionNumeratorShiftUp"]=480,
+   ["FractionRuleThickness"]=66,
+   ["LowerLimitBaselineDropMin"]=600,
+   ["LowerLimitGapMin"]=150,
+   ["MathLeading"]=150,
+   ["MinConnectorOverlap"]=50,
+   ["OverbarExtraAscender"]=66,
+   ["OverbarRuleThickness"]=66,
+   ["OverbarVerticalGap"]=198,
+   ["RadicalDegreeBottomRaisePercent"]=70,
+   ["RadicalDisplayStyleVerticalGap"]=186,
+   ["RadicalExtraAscender"]=66,
+   ["RadicalKernAfterDegree"]=-555,
+   ["RadicalKernBeforeDegree"]=277,
+   ["RadicalRuleThickness"]=66,
+   ["RadicalVerticalGap"]=82,
+   ["ScriptPercentScaleDown"]=75,
+   ["ScriptScriptPercentScaleDown"]=60,
+   ["SkewedFractionHorizontalGap"]=300,
+   ["SkewedFractionVerticalGap"]=66,
+   ["SpaceAfterScript"]=41,
+   ["StackBottomDisplayStyleShiftDown"]=900,
+   ["StackBottomShiftDown"]=800,
+   ["StackDisplayStyleGapMin"]=462,
+   ["StackGapMin"]=198,
+   ["StackTopDisplayStyleShiftUp"]=580,
+   ["StackTopShiftUp"]=480,
+   ["StretchStackBottomShiftDown"]=600,
+   ["StretchStackGapAboveMin"]=150,
+   ["StretchStackGapBelowMin"]=150,
+   ["StretchStackTopShiftUp"]=300,
+   ["SubSuperscriptGapMin"]=264,
+   ["SubscriptBaselineDropMin"]=50,
+   ["SubscriptShiftDown"]=250,
+   ["SubscriptTopMax"]=400,
+   ["SuperscriptBaselineDropMax"]=375,
+   ["SuperscriptBottomMaxWithSubscript"]=400,
+   ["SuperscriptBottomMin"]=125,
+   ["SuperscriptShiftUp"]=400,
+   ["SuperscriptShiftUpCramped"]=275,
+   ["UnderbarExtraDescender"]=66,
+   ["UnderbarRuleThickness"]=66,
+   ["UnderbarVerticalGap"]=198,
+   ["UpperLimitBaselineRiseMin"]=300,
+   ["UpperLimitGapMin"]=150,
+}
+
+local two = {
+   ["AccentBaseHeight"]=480,
+   ["AxisHeight"]=258,
+   ["DelimitedSubFormulaMinHeight"]=1325,
+   ["DisplayOperatorMinHeight"]=1800,
+   ["FlattenedAccentBaseHeight"]=656,
+   ["FractionDenominatorDisplayStyleGapMin"]=150,
+   ["FractionDenominatorDisplayStyleShiftDown"]=640,
+   ["FractionDenominatorGapMin"]=68,
+   ["FractionDenominatorShiftDown"]=585,
+   ["FractionNumeratorDisplayStyleGapMin"]=150,
+   ["FractionNumeratorDisplayStyleShiftUp"]=640,
+   ["FractionNumeratorGapMin"]=68,
+   ["FractionNumeratorShiftUp"]=585,
+   ["FractionRuleThickness"]=68,
+   ["LowerLimitBaselineDropMin"]=670,
+   ["LowerLimitGapMin"]=135,
+   ["MathLeading"]=150,
+   ["MinConnectorOverlap"]=100,
+   ["OverbarExtraAscender"]=68,
+   ["OverbarRuleThickness"]=68,
+   ["OverbarVerticalGap"]=175,
+   ["RadicalDegreeBottomRaisePercent"]=55,
+   ["RadicalDisplayStyleVerticalGap"]=170,
+   ["RadicalExtraAscender"]=78,
+   ["RadicalKernAfterDegree"]=-335,
+   ["RadicalKernBeforeDegree"]=65,
+   ["RadicalRuleThickness"]=68,
+   ["RadicalVerticalGap"]=85,
+   ["ScriptPercentScaleDown"]=70,
+   ["ScriptScriptPercentScaleDown"]=55,
+   ["SkewedFractionHorizontalGap"]=350,
+   ["SkewedFractionVerticalGap"]=68,
+   ["SpaceAfterScript"]=40,
+   ["StackBottomDisplayStyleShiftDown"]=690,
+   ["StackBottomShiftDown"]=385,
+   ["StackDisplayStyleGapMin"]=300,
+   ["StackGapMin"]=150,
+   ["StackTopDisplayStyleShiftUp"]=780,
+   ["StackTopShiftUp"]=470,
+   ["StretchStackBottomShiftDown"]=590,
+   ["StretchStackGapAboveMin"]=68,
+   ["StretchStackGapBelowMin"]=68,
+   ["StretchStackTopShiftUp"]=800,
+   ["SubSuperscriptGapMin"]=150,
+   ["SubscriptBaselineDropMin"]=160,
+   ["SubscriptShiftDown"]=210,
+   ["SubscriptTopMax"]=368,
+   ["SuperscriptBaselineDropMax"]=230,
+   ["SuperscriptBottomMaxWithSubscript"]=380,
+   ["SuperscriptBottomMin"]=120,
+   ["SuperscriptShiftUp"]=360,
+   ["SuperscriptShiftUpCramped"]=252,
+   ["UnderbarExtraDescender"]=68,
+   ["UnderbarRuleThickness"]=68,
+   ["UnderbarVerticalGap"]=175,
+   ["UpperLimitBaselineRiseMin"]=300,
+   ["UpperLimitGapMin"]=135,
+}
+
+local designrelated = {
+   ["AccentBaseHeight"]                = "optional**",
+   ["AxisHeight"]                      = "mandate",
+   ["FlattenedAccentBaseHeight"]       = "optional**",
+   ["FractionRuleThickness"]           = "optional",
+   ["MinConnectorOverlap"]             = "mandate",
+   ["OverbarRuleThickness"]            = "optional*",
+   ["RadicalDegreeBottomRaisePercent"] = "mandate",
+   ["UnderbarRuleThickness"]           = "optional*",
+}
+
+local a1 = two.AccentBaseHeight / one.AccentBaseHeight
+local a2 = two.AxisHeight / one.AxisHeight
+
+context.starttabulate { "|l|r|r|r|r|l|" }
+    context.FL()
+        context.BC() context("constant")
+        context.BC() context("stix")
+        context.BC() context("xits")
+        context.BC() context("base")
+        context.BC() context("axis")
+        context.BC() context("relevance")
+        context.BC() context.NR()
+    context.ML()
+        for key, oldvalue in table.sortedhash(one) do
+            local newvalue = two[key]
+            local accvalue = math.round(oldvalue * a1)
+            local axivalue = math.round(oldvalue * a2)
+            context.NC() context(key)
+            context.NC() context(newvalue)
+            context.NC() context(oldvalue)
+            context.NC() if newvalue == accvalue then context.bold(accvalue) else context(accvalue) end
+            context.NC() if newvalue == axivalue then context.bold(axivalue) else context(axivalue) end
+            context.NC() context(designrelated[key])
+            context.NC() context.NR()
+        end
+    context.LL()
+context.stoptabulate()
+\stopluacode
+
+Very few values are the same. So, what exactly do these constants tell us? You
+can even wonder why they are there at all. Just think of this: we want to typeset
+math, and we have an engine that we can control. We know how we want it to look.
+So, what do these constants actually contribute? Plenty relates to the height and
+depth of the nucleus and|/|or the axis. The fact that we have to fix some in the
+goodie files, and the fact that we actually need more variables that control
+positioning, makes for a good argument to just ignore most of the ones provided
+by the font, especially when they seem somewhat arbitrarily. Can it be that font
+designers are just gambling a bit, looking at another font, and starting from
+there?
+
+The relationship between \TEX's math font parameters and the \OPENTYPE\ math
+constants is not one|-|to|-|one. Mapping them onto each other is possible but
+actually is font dependent. However, we can assume that the values of Computer
+Modern are leading.
+
+The \typ {AxisHeight}, \typ {AccentBaseHeight} and \typ
+{FlattenedAccentBaseHeight} are set to the x|-|height, a value that is defined in
+all fonts. The \typ {SkewedFractionVerticalGap} also gets that value. Other
+variables relate to the em|-|width (or \type {\quad}), for instance the \typ
+{SkewedFractionHorizontalGap} that gets half that value. Of course these last two
+then assume that the engine handles skewed fractions.
+
+Variables that directly map onto each other are \typ {StretchStackGapBelowMin} as
+\typ {bigopspacing1}, \typ {StretchStackTopShiftUp} as \typ {bigopspacing3}, \typ
+{StretchStackGapAboveMin} as \typ {bigopspacing2} and \typ
+{StretchStackBottomShiftDown} as \typ {bigopspacing4}. However, these clash with
+\typ {UpperLimitBaselineRiseMin} as \typ {bigopspacing3}, \typ {UpperLimitGapMin}
+as \typ {bigopspacing1}, \typ {LowerLimitBaselineDropMin} as \typ {bigopspacing4}
+and \typ {LowerLimitGapMin} as \typ {bigopspacing2}. Where in traditional fonts
+these are the same, in \OPENTYPE\ they can be different. Should they be?
+
+Internally we use different names for variables, simply because the engine has
+some parameters that \OPENTYPE\ maths hasn't. So we have \typ {limit_above_kern}
+and \typ {limit_below_kern} for \typ {bigopspacing5}.
+
+A couple of parameters have different values for (cramped) displaystyle. The \typ
+{FractionDelimiterSize} and \typ {FractionDelimiterDisplayStyleSize} use \typ
+{delim2} and \typ {delim1}. The \typ {FractionDenominatorShiftDown} and \typ
+{FractionDenominatorDisplayStyleShiftDown} map onto \typ {denom2} and \typ
+{denom1} and their numerator counterparts from \typ {num2} and \typ {num1}. The
+\typ {Stack*} parameters also use these. The \typ {sub1}, \typ{sub2}, \typ{sup1},
+\typ{sup2}, \typ{sup3}, and \typ {supdrop} can populate the \type {Sub*} and
+\type {Super*} parameters, also in different styles.
+
+The rest of the parameters can be defined in terms of the default rulethickness,
+quad or xheight, often multiplied by a factor. For some we see the \type {1/18}
+show up a number that we also see with muskips. Some constants can be set from
+registers, like \typ {SpaceAfterScript} which is just \type {\scriptspace}.
+
+If you look at the \LUATEX\ source you wil find a section where this mapping is
+done in the case of a traditional font, that is: one without a math constants
+table. In \LUAMETATEX\ we don't need to do this because font loading happens in
+\LUA. So we simply issue an error when the math engine can't resolve a mandate
+parameter. The fact that we have a partial mapping from math constants onto
+traditional parameters and that \LUATEX\ has to deal with the traditional ones
+too make for a somewhat confusing landscape. When in \LUAMETATEX\ we assume wide
+fonts to be used that have a math constants table, we can probably clean up some
+of this.
+
+We need to keep in mind that Cambria was the starting point, and it did borrow
+some concepts from \TEX. But \TEX\ had parameters because there was not enough
+information in the glyphs! Also, Cambria was meant for \MSWORD, and a word
+processor is unlikely to provide the level of control that \TEX\ offers, so it
+needs some directions with respect to e.g.\ spacing. Without user control, it has
+to come up with acceptable compromises. So actually the \LUAMETATEX\ math engine
+can be made a bit cleaner when we just get rid of these parameters.
+
+So, which constants are actually essential? The \typ {AxisHeight} is important
+and also design related. Quite likely this is where the minus sits above the
+baseline. It is used for displacements of the baseline so that for instance
+fractions nicely align. When testing script anchored to fences we noticed that
+the parenthesis in XITS had too little depth while STIX had the expected amount.
+This relates to anchoring relative to the math axis.
+
+Is there a reason why \typ {UnderbarRuleThickness} and \typ
+{OverbarRuleThickness} should differ? If not, then we only need a variable that
+somehow tells us what thickness fits best with the other top and bottom accents.
+It is quite likely the same as the \typ {RadicalRuleThickness}, which is needed
+to extend the radical symbol. So, here three constants can be replaced by one
+design related one. The \typ {FractionRuleThickness} can also be derived from
+that, but more likely is that it is a quantity that the macro package sets up
+anyway, maybe related to rules used elsewhere.
+
+The \typ {MinConnectorOverlap} and \typ {RadicalDegreeBottomRaisePercent} also
+are related to the design although one could abuse the top accent anchor for the
+second one. So they are important. However, given the small number of
+extensibles, they could have been part of the extensible recipes.
+
+The \typ {AccentBaseHeight} and \typ {FlattenedAccentBaseHeight} might relate to
+the margin that the designer put below the accent as part of the glyph, so it is
+kind of a design related constant. Nevertheless, we fix quite some accents in the
+goodie files because they can be inconsistent. That makes these constants
+somewhat dubious too. If we have to check a font, we can just as well set up
+constants that we need in the goodie file. Also, isn't it weird that there are no
+bottom variants?
+
+We can forget about \typ {MathLeading} as it serves no purpose in \TEX. The \typ
+{DisplayOperatorMinHeight} is often set wrong so although we fix that in the
+goodie file it might be that we just can use an internal variable. It is not the
+font designer who decides that anyway. The same is true for \typ
+{DelimitedSubFormulaMinHeight}.
+
+If we handle skewed fractions, \typ {SkewedFractionHorizontalGap} and \typ
+{SkewedFractionVerticalGap} might give an indication of the tilt but why do we
+need two? It is design related though, so they have some importance, when set
+right.
+
+The rest can be grouped, and basically we can replace them by a consistent set of
+engine parameters. We can still set them up per font, but at least we can then
+use a clean set. Currently, we already have more. For instance, why only \typ
+{SpaceAfterScript} and not one for before, and how about prescripts and primes?
+If we have to complement them with additional ones and also fix them, we can as
+well set up all these script related variables.
+
+For fractions the font provides \typ {FractionDenominatorDisplayStyleGapMin},
+\typ {FractionDenominatorDisplayStyleShiftDown}, \typ
+{FractionDenominatorGapMin}, \typ {FractionDenominatorShiftDown}, \typ
+{FractionNumeratorDisplayStyleGapMin}, \typ
+{FractionNumeratorDisplayStyleShiftUp}, \typ {FractionNumeratorGapMin} and \typ
+{FractionNumeratorShiftUp}. We might try to come up with a simpler model.
+
+Limits have: \typ {LowerLimitBaselineDropMin}, \typ {LowerLimitGapMin}, \typ
+{UpperLimitBaselineRiseMin} and \typ {UpperLimitGapMin}. Limits are tricky anyway
+as they also depend on abusing the italic correction for anchoring.
+
+Horizontal bars are driven by \typ {OverbarExtraAscender}, \typ
+{OverbarVerticalGap}, \typ {UnderbarExtraDescender} and \typ
+{UnderbarVerticalGap}, but for e.g.\ arrows we are on our own, so again a not so
+useful set.
+
+Then radicals: we need some more than these \typ
+{RadicalDisplayStyleVerticalGap}, \typ {RadicalExtraAscender}, \typ
+{RadicalKernAfterDegree}, \typ {RadicalKernBeforeDegree} and \typ
+{RadicalVerticalGap}, and because we really need to check these there is no gain
+having them in the font.
+
+Isn't it more a decision by the macro package how script and scriptscript should
+be scaled? Currently we listen to \typ {ScriptPercentScaleDown} and \typ
+{ScriptScriptPercentScaleDown}, but maybe it relates more to usage.
+
+We need more control than just \typ {SpaceAfterScript} and an engine could
+provide it more consistently. It's a loner.
+
+How about \typ {StackBottomDisplayStyleShiftDown}, \typ {StackBottomShiftDown},
+\typ {StackDisplayStyleGapMin}, \typ {StackGapMin}, \typ
+{StackTopDisplayStyleShiftUp} and \typ {StackTopShiftUp}? And isn't this more for
+the renderer to decide: \typ {StretchStackBottomShiftDown}, \typ
+{StretchStackGapAboveMin}, \typ {StretchStackGapBelowMin} and \typ
+{StretchStackTopShiftUp}?
+
+This messy bit can also be handled more convenient so what exactly is the
+relationship with the font design of \typ {SubSuperscriptGapMin}, \typ
+{SubscriptBaselineDropMin}, \typ {SubscriptShiftDown}, \typ {SubscriptTopMax},
+\typ {SuperscriptBaselineDropMax}, \typ {SuperscriptBottomMaxWithSubscript}, \typ
+{SuperscriptBottomMin}, \typ {SuperscriptShiftUp} and \typ
+{SuperscriptShiftUpCramped}?
+
+Just for the record, here are the (font related) ones we added so far. A set of
+prime related constants similar to the script ones: \typ {PrimeRaisePercent},
+\typ {PrimeRaiseComposedPercent}, \typ {PrimeShiftUp}, \typ
+{PrimeBaselineDropMax}, \typ {PrimeShiftUpCramped}, \typ {PrimeSpaceAfter} and
+\typ {PrimeWidthPercent}. Of course, we also added \typ {SpaceBeforeScript} just
+because we want to be symmetrical in the engine where we also have to deal with
+prescripts.
+
+These we provide for some further limit positioning: \typ {NoLimitSupFactor} and
+\typ {NoLimitSubFactor}; these for delimiters: \typ {DelimiterPercent} and \typ
+{DelimiterShortfall}; and these for radicals in order to compensate for sloping
+shapes: \typ {RadicalKernAfterExtensible} and \typ {RadicalKernBeforeExtensible}
+because we have doublesided radicals.
+
+Finally, there are quite some (horrible) accent tuning parameters: \typ
+{AccentTopShiftUp}, \typ {AccentBottomShiftDown}, \typ
+{FlattenedAccentTopShiftUp}, \typ {FlattenedAccentBottomShiftDown}, \typ
+{AccentBaseDepth}, \typ {AccentFlattenedBaseDepth}, \typ {AccentTopOvershoot},
+\typ {AccentBottomOvershoot}, \typ {AccentSuperscriptDrop}, \typ
+{AccentSuperscriptPercent} and \typ {AccentExtendMargin}, but we tend to move
+some of that to the tweaks on a per accent basis.
+
+Setting these parameters right is not trivial, and also a bit subjective. We might,
+however, assume that for instance the math axis is set right, but alas, when we
+were fixing the less and greater symbols in Lucida Bright Math, we found that all
+symbols actually were designed for a math axis of 325, instead of the given
+value 313, and that difference can be seen!
+
+\startbuffer
+\scale[s=2]{\dm{
+    2 > -\left\{\frac{1}{1+x^2}\right\}
+}}
+\stopbuffer
+
+\startlinecorrection
+\startcombination[nx=2]
+    \startcontent
+    % \definefontfeature[mathextra][goodies=]
+         \switchtobodyfont[lucidaold]
+         \showglyphs
+         \getbuffer
+     \stopcontent
+     \startcaption
+         Old Lucida
+     \stopcaption
+     \startcontent
+         \switchtobodyfont[lucida]
+         \showglyphs
+         \getbuffer
+     \stopcontent
+     \startcaption
+         New Lucida
+     \stopcaption
+\stopcombination
+\stoplinecorrection
+
+The assumption is that the axis goes trough the middle of
+the minus. Luckily it was relatively easy to fix these two symbols (they also had
+to be scaled, maybe they originate in the text font?) and adapt the
+axis. We still need to check all the other fonts, but it looks like they are okay,
+which is good because the math axis plays an important role in rendering math.
+It is one of the few parameters that has to be present and right. A nice side
+effect of this is that we end up with discussing new (\CONTEXT) features. One
+can for instance shift all non-character symbols down just a little and lower
+the math axis, to get a bit more tolerance in lines with many inline fractions,
+radicals or superscripts, that otherwise would result in interline skips.
+
+A first step in getting out of this mess is to define {\em all} these parameters
+in the goodie file where we fix them anyway. That way we are at least not
+dependent on changes in the font. We are not a word processor so we have way more
+freedom to control matters. And preset font parameters sometimes do more harm
+than good. A side effect of a cleanup can be that we get rid of the evolved mix
+of uppercase and lowercase math control variables and can be more consistent.
+Ever since \LUATEX\ got support for \OPENTYPE, math constants names have been
+mapped and matched to traditional \TEX\ font parameters.
+
+\stopsection
+
+\startsection[title=Metrics]
+
+With metrics we refer to the dimensions and other properties of math glyphs. The
+origin of digital math fonts is definitely Computer Modern and thereby the
+storage of properties is bound to the \TFM\ file format. That format is binary
+and can be loaded fast. It can also be stored in the format, unless you're using
+\LUATEX\ or \LUAMETATEX\ where \LUA\ is the storage format. A \TFM\ file stores
+per character the width, height, depth and italic correction. The file also
+contains font parameters. In math fonts there are extensible recipes and there is
+information about next in size glyphs. The file has kerning and ligature tables
+too.
+
+Given the times \TEX\ evolved in, the format is rather compact. For instance, the
+height, depth and italic correction are shared and indices to three shared values
+are used. There can be 16 heights and depths and 64 italic corrections. That way
+much fits into a memory word.
+
+The documentation tells us that \quotation {The italic correction of a character
+has two different uses. (a)~In ordinary text, the italic correction is added to
+the width only if the \TEX\ user specifies \quote{\type {\/}} after the
+character. (b)~In math formulas, the italic correction is always added to the
+width, except with respect to the positioning of subscripts.} It is this last
+phenomena that gives us some trouble with fonts in \OPENTYPE\ math. The fact that
+traditional fonts cheat with the width and that we add and selectively remove or
+ignore the correction makes for fuzzy code in \LUATEX\ although splitting the
+code paths and providing options to control all this helps a bit. In \LUAMETATEX\
+we have more control but also expect an \OPENTYPE\ font. In \OPENTYPE\ math there
+are italic corrections, and we even have the peculiar usage of it in positioning
+limits. However, the idea was that staircase kerns do the detailed relative
+positioning.
+
+Before we dive into this a bit more, it is worth mentioning that Don Knuth paid a
+lot of attention to details. The italic alphabet in math uses the same shapes as
+the text italic but metrics are different as is shown below. We have also met fonts
+where it looked like the text italics were taken, and where the metrics were handled
+via more excessive italic correction, sometimes combined with staircase kerns that
+basically were corrections for the side bearing. This is why we always come back to
+Latin Modern and Cambria when we investigate fonts: one is based on the traditional
+\TEX\ model, with carefully chosen italic corrections, and the other is based on the
+\OPENTYPE\ model with staircase kerning. They are our reference fonts.
+
+\startlinecorrection
+\startcombination[nx=1,ny=2]
+    \startcontent
+        \definedfont[file:lmroman10italic.otf]%
+        \showglyphs
+        \scale[s=3]{abcdefghijklmnopqrstuvwxyz}
+    \stopcontent
+    \startcaption
+        Latin Modern Roman Italic
+    \stopcaption
+    \startcontent
+        \definedfont[file:latinmodernmath.otf]%
+        \showglyphs
+        \scale[s=3]{𝑎𝑏𝑐𝑑𝑒𝑓𝑔ℎ𝑖𝑗𝑘𝑙𝑚𝑛𝑜𝑝𝑞𝑟𝑠𝑡𝑢𝑣𝑤𝑥𝑦𝑧}
+    \stopcontent
+    \startcaption
+        Latin Modern Math Italic
+    \stopcaption
+\stopcombination
+\stoplinecorrection
+
+In \CONTEXT\ \MKIV\ we played a lot with italic correction in math and there were
+ways to enforce, ignore, selectively apply it, etc. But, because fonts actually
+demand a mixture, in \LUAMETATEX\ we ended up with more extensive runtime
+patching of them. Another reason for this was that math fonts can have weird
+properties. It looks like when these standards are set and fonts are made, the
+font makers can do as they like as long as the average formula comes out right,
+and metrics to some extent resemble a traditional font. However, when testing how
+well a font behaves in a real situation there can be all kind of interferences
+from the macro package: inter|-|atom kerning, spacing corrections macros,
+specific handling of cases, etc. We even see \OPENTYPE\ fonts that seem to
+have the same limited number of heights, depths and italic corrections. And, as a
+consequence we get for instance larger sizes of fences having the same depth for
+all the size variants, something that is pretty odd for an \OPENTYPE\ font with no
+limitations.
+
+The italic correction in traditional \TEX\ math gets added to the width. When a
+subscript is attached to a kernel character it sits tight against that character:
+its position is driven by the width of the kernel. A superscript on the other
+hand is moved over the italic width so that it doesn't overlap or touch the
+likely sticking out bit of the kernel. This means that a traditional font (and
+quite some \OPENTYPE\ math fonts are modelled after Computer Modern) have to find
+compromises of width and italic correction for characters where the subscript is
+supposed to move left (inside the bounding box of the kernel).
+
+The \OPENTYPE\ specification has some vague remarks about applying italic
+correction between the last in a series of slanted shapes and operators, as well
+as positioning limits, and suggests that it relates to relative super- and
+subscript positioning. It doesn't mention that the correction is to be added to
+the width. However, the main mechanism for anchoring script are these top and
+bottom edge kerns. It's why in fonts that provide these, we are unlikely to find
+italic correction unless it is used for positioning limits.
+
+It is for that reason that an engine can produce reasonable results for fonts
+that either provide italics or provide kerns for anchoring: having both on the
+same glyph would mean troubles. It means that we can configure the engine options
+to add italic correction as well as kerns, assuming distinctive usage of those
+features. For a font that uses both we need to make a choice (this is possible,
+since we can configure options per font). But that will never lead to always nicely
+typeset math. In fact, without tweaks many fonts will look right because in
+practice they use some mixture. But we are not aiming at partial success, we want
+all to look good.
+
+Here is another thing to keep in mind (although now we are guessing a bit). There
+is a limited number of heights and depths in \TEX\ fonts possible (16), but four
+times as many italic corrections can be defined (64). Is it because Don Knuth
+wanted to properly position the sub- and subscripts? Adding italic correction to
+the width is pretty safe: shapes should not overlap. Choosing the right width for
+a subscript needs more work because it's is more visual. In the end we have a
+width that is mostly driven by superscript placement! That also means that as
+soon as we remove the italic correction things start looking bad. In fact,
+because also upright math characters have italic correction the term \quote
+{italic} is a bit of a cheat: it's all about script positioning and has little to
+do with the slope of the shapes.
+
+One of the reasons why for instance spacing between an italic shape and an
+upright one in \TEX\ works out okay is that in most cases they come from a
+different font, which can be used as criterium for keeping the correction;
+between a sequence of same|-|font characters it gets removed. However, in
+\OPENTYPE\ math there is a good chance that all comes from the same font (at
+least in \CONTEXT), unless one populates many families as in traditional \TEX. We
+have no clue how other macro packages deal with this but it might well be the
+case that using many families (one for each alphabet) works better in the end.
+The engine is really shape and alphabet agnostic, but one can actually wonder if
+we should add a glyph property indicating the distinctive range. It would provide
+engine level control over a run of glyphs (like multiplying a variable
+represented by a greek alpha by another variable presented by an upright b).
+
+But glyph properties cannot really be used here because we are still dealing with
+characters when the engine transforms the noad list into a node list. So, when we
+discussed this, we started wondering how the engine could know about a specific
+shape (and tilt) property at all, and that brought us to pondering about an
+additional axis of options. We already group characters in classes, but we can
+also group them with properties like \typ {tilted}, \typ {dotless}, \typ {bold}.
+When we pair atoms we can apply options, spacing and such based on the specific
+class pair, and we can do something similar with category pairs. It basically
+boils down to for instance \type {\mccode} that binds a character to a category.
+Then we add a command like \typ {\setmathcategorization} (analogue to \typ
+{\setmathspacing}) that binds options to pairs of categories. An easier variant
+of this might be to let the \type {\mccode} carry a (bit)set of options that then
+get added to the already existing options that can be bound to character noads as
+we create them. This saves us some configuration. Deciding what suits best
+depends on what we want to do: the fact that \TEX\ doesn't do this means that
+probably no one ever gave it much thought, but once we do have this mechanism it
+might actually trigger demand, if only by staring at existing documents where
+characters of a different kind sit next to each other (take this \quote {a}
+invisible times \quote {x}). It would not be the first time that (in \CONTEXT)
+the availability of some feature triggers creative (ab)usage.
+
+Because the landscape has settled, because we haven't seen much fundamental
+evolution in \OPENTYPE\ math, because in general \TEX\ math doesn't really
+evolve, and because \CONTEXT\ in the past has not been seen as suitable for
+ math, we can, as mentioned before, basically decide what approach we
+follow. So, that is why we can pick up on this italic correction in a more
+drastic way: we can add the correction to the width, thereby creating a nicely
+bounded glyph, and moving the original correction to the right bottom kern, as
+that is something we already support. In fact, this feature is already available,
+we only had to add setting the right bottom kern. The good news is that we don't
+need to waste time on trying to get something extra in the font format, which is
+unlikely to happen anyway after two decades.
+
+It is worth noticing that when we were exploring this as part of using \METAPOST\
+to analyze and visualize these aspects, we also reviewed the \typ {wipeitalics}
+tweak and wondered if, in retrospect, it might be a dangerous one when applied to
+alphabets (for digits and blackboard bold letters it definitely makes
+sense): it can make traditional super- and subscript anchoring less optimal.
+However, for some fonts we found that improper bounding boxes can badly interfere
+anyway: for instance the upright \quote {f} in EBGaramond sticks out left and
+right, and has staircase kerns that make scripts overlap. The right top of the
+shape sticks out a lot and that is because the text font variant is used. We already decided to
+add a \typ {moveitalics} tweak that moves italic kerns into the
+width and then setting a right bottom kern that compensates it that can be a
+pretty good starting point for our further exploration of optimal kerns at the
+corners. That tweak also fixes the side bearings (negative llx) and compensates
+left kerns (when present) accordingly. An additional \typ {simplifykerns} tweak
+can later migrate staircase kerns to simple kerns.
+
+So, does that free us from tweaks like \typ {dimensions} and \typ {kerns}? Not
+completely. But we can forget about the italic correction
+in most cases. We have to set up less lower right kerns and maybe correct a few.
+It is just a more natural solution. So how about these kerns that we need to
+define? After all, we also have to deal with proper top kerns, and like to add
+kerns that are not there simply because the mentioned comprise between width,
+italic and the combination was impossible. More about that in the next section.
+
+\stopsection
+
+\startsection[title=Kerning]
+
+In the next pictures we will try to explain more visual what we have in mind and
+are experimenting with as we write this. In the traditional approach we have
+shapes that can communicate the width, height, depth and italic correction to the
+engine so that is what the engine can work with. The engine also has the
+challenge to anchor subscripts and superscripts in a visual pleasing way.
+
+\startMPdefinitions
+    numeric UsedUnit ; UsedUnit = 1mm ;
+    numeric UsedWidth ; UsedWidth := 10UsedUnit ;
+    numeric UsedItalic ; UsedItalic := 2UsedUnit ;
+    numeric UsedScript ; UsedScript = 5UsedUnit;
+    picture LeftCharA ; LeftCharA := image(
+        draw origin -- (UsedWidth,UsedWidth)
+            withpen pencircle scaled 2UsedUnit
+            withcolor .4white ;
+        path p ; p := boundingbox currentpicture ;
+        draw rightboundary currentpicture
+            bottomenlarged -5UsedUnit
+            withpen pencircle scaled .5UsedUnit ;
+        setbounds currentpicture to p ;
+        draw origin
+            withpen pencircle scaled 1UsedUnit
+            withcolor .1white ;
+        setbounds currentpicture to boundingbox currentpicture
+            leftenlarged -UsedItalic
+            rightenlarged -UsedItalic ;
+        draw boundingbox currentpicture
+            withpen pencircle scaled .1UsedUnit ;
+    ) ;
+    picture RightCharA ; RightCharA := image(
+        draw (0,UsedWidth) -- (UsedWidth,0)
+            withpen pencircle scaled 2UsedUnit
+            withcolor .6white ;
+        path p ; p := boundingbox currentpicture ;
+        draw rightboundary currentpicture
+            bottomenlarged -5UsedUnit
+            withpen pencircle scaled .5UsedUnit ;
+        setbounds currentpicture to p ;
+        draw origin
+            withpen pencircle scaled 1UsedUnit
+            withcolor .1white ;
+        setbounds currentpicture to boundingbox currentpicture
+            leftenlarged -UsedItalic
+            rightenlarged -UsedItalic ;
+        draw boundingbox currentpicture
+            withpen pencircle scaled .1UsedUnit ;
+    ) ;
+    picture LeftCharB ; LeftCharB := image(
+        draw origin -- (UsedWidth,UsedWidth)
+            withpen pencircle scaled 2UsedUnit
+            withcolor .4white ;
+        path p ; p := boundingbox currentpicture ;
+        draw origin
+            withpen pencircle scaled 1UsedUnit
+            withcolor .1white ;
+        draw boundingbox currentpicture
+            withpen pencircle scaled .1UsedUnit ;
+        draw lrcorner p
+            shifted (-UsedItalic,0)
+            withpen pencircle scaled 1UsedUnit
+            withcolor .1white ;
+        draw urcorner p
+            withpen pencircle scaled 1UsedUnit
+            withcolor .1white ;
+        setbounds currentpicture to p ;
+    ) ;
+    picture RightCharB ; RightCharB := image(
+        draw (0,UsedWidth) -- (UsedWidth,0)
+            withpen pencircle scaled 2UsedUnit
+            withcolor .6white ;
+        path p ; p := boundingbox currentpicture ;
+        draw origin
+            withpen pencircle scaled 1UsedUnit
+            withcolor .1white ;
+        draw boundingbox currentpicture
+            withpen pencircle scaled .1UsedUnit ;
+        draw lrcorner p
+            shifted (-UsedItalic,0)
+            withpen pencircle scaled 1UsedUnit
+            withcolor .1white ;
+        draw urcorner p
+            withpen pencircle scaled 1mm
+            withcolor .1white ;
+        setbounds currentpicture to p ;
+    ) ;
+    picture SuperScript ; SuperScript := image(
+        draw unitsquare scaled UsedScript
+            shifted (0,-UsedScript/2)
+    ) ;
+    picture SubScript ; SubScript := image(
+        draw unitsquare scaled UsedScript
+            shifted (0,-UsedScript/2)
+    ) ;
+    def WidenResultA =
+        setbounds currentpicture to boundingbox currentpicture
+            leftenlarged 6UsedUnit
+            rightenlarged 6UsedUnit;
+    enddef ;
+    def WidenResultB =
+        setbounds currentpicture to boundingbox currentpicture
+            topenlarged .5UsedScript
+            leftenlarged 6UsedUnit
+            rightenlarged 6UsedUnit;
+    enddef ;
+\stopMPdefinitions
+
+\startlinecorrection
+    \startcombination[nx=3,ny=1]
+        \startcontent
+            \startMPcode
+                draw LeftCharA ;
+                draw RightCharA xshifted (UsedWidth+UsedItalic+3UsedUnit) ;
+                WidenResultA ;
+            \stopMPcode
+        \stopcontent
+        \startcaption
+            two characters
+        \stopcaption
+        \startcontent
+            \startMPcode
+                draw LeftCharA ;
+                draw RightCharA xshifted UsedWidth ;
+                WidenResultA ;
+            \stopMPcode
+        \stopcontent
+        \startcaption
+            width only
+        \stopcaption
+        \startcontent
+            \startMPcode
+                draw LeftCharA ;
+                draw RightCharA xshifted (UsedWidth+UsedItalic) ;
+                WidenResultA ;
+            \stopMPcode
+        \stopcontent
+        \startcaption
+            with italic
+        \stopcaption
+    \stopcombination
+\stoplinecorrection
+
+In this graphic we show two pseudo characters. The shown bounding box indicates
+the width as seen by the engine. An example of such a shape is the math italic~f,
+and as it is used a lot in formulas it is also one of the most hard ones to handle
+when it comes to spacing: in nearly all fonts the right top sticks out and in
+some fonts the left part also does that. Imagine how that works out with scripts,
+fences and preceding characters.
+
+When we put two such characters together they will overlap, and this is why we need
+to add the italic correction. That is also why the \TEX\ documentation speaks in
+terms of \quotation {always add the italic correction to the width}. This also
+means that we need to remove it occasionally, something that you will notice when
+you study for instance the \LUATEX\ source, that has a mix of traditional and
+\OPENTYPE\ code paths. Actually, compensating can either be done by changing the
+width property of a glyph node or by explicitly adding a kern. In \LUAMETATEX\ we
+always add real kerns because we can then trace better.
+
+The last graphic in the above set shows how we compensate the width for the bit
+that sticks out. It also shows that we definitely need to take neighboring shapes
+into account when we determine the width and italic correction, especially when
+the later is {\em not} applied (read: removed).
+
+\startlinecorrection
+    \startcombination[nx=3,ny=1]
+        \startcontent
+            \startMPcode
+                draw LeftCharA ;
+                path p ; p := boundingbox currentpicture ;
+                draw SuperScript
+                    shifted urcorner p xshifted UsedScript ;
+                draw SubScript
+                    shifted lrcorner p xshifted UsedScript  ;
+                WidenResultB ;
+            \stopMPcode
+        \stopcontent
+        \startcaption
+            kernel
+        \stopcaption
+        \startcontent
+            \startMPcode
+                draw LeftCharA ;
+                path p ; p := boundingbox currentpicture ;
+                draw SuperScript
+                    shifted urcorner p ;
+                draw SubScript
+                    shifted lrcorner p ;
+                WidenResultB ;
+            \stopMPcode
+        \stopcontent
+        \startcaption
+            subscript
+        \stopcaption
+        \startcontent
+            \startMPcode
+                draw LeftCharA ;
+                path p ; p := boundingbox currentpicture ;
+                draw SuperScript
+                    shifted urcorner p
+                    xshifted UsedItalic ;
+                draw SubScript
+                    shifted lrcorner p ;
+                WidenResultB ;
+            \stopMPcode
+        \stopcontent
+        \startcaption
+            superscript
+        \stopcaption
+    \stopcombination
+\stoplinecorrection
+
+Here we anchored a super- and subscript. The subscript position it tight to the
+advance width, again indicated by the box. The superscript however is moved by
+the italic correction and in the engine additional spacing before and after can
+be applied as well, but we leave that for now. It will be clear that when the
+font designer chooses the width and italic correction, the fact that scripts get
+attached has to be taken into account.
+
+\startlinecorrection
+    \startcombination[nx=2,ny=1]
+        \startcontent
+            \startMPcode
+                draw LeftCharB ;
+                draw RightCharB xshifted (UsedWidth+UsedItalic+3UsedUnit) ;
+                WidenResultA ;
+            \stopMPcode
+        \stopcontent
+        \startcaption
+            two characters
+        \stopcaption
+        \startcontent
+            \startMPcode
+                draw LeftCharB ;
+                draw RightCharB xshifted (UsedWidth+UsedItalic) ;
+                WidenResultA ;
+            \stopMPcode
+        \stopcontent
+        \startcaption
+            width only
+        \stopcaption
+    \stopcombination
+\stoplinecorrection
+
+In this graphic we combine the italic correction with the width. Keep in mind
+that in these examples we use tight values but in practice that correction can
+also add some extra right side bearing (white space). This addition is an
+operation that we can do when loading a font. At the same time we also compensate
+the left edge for which we can use the x coordinate of the left corner of the
+glyphs real bounding box. The advance width starts at zero and that corner is
+then left of the origin. By looking at shapes we concluded that in most cases
+that shift is valid for usage in math where we don't need that visual overlap. In
+fact, when we tested some of that we found that the results can be quite horrible
+when you don't do that; not all fonts have left bottom kerning implemented.
+
+The dot at the right is actually indicating the old italic correction. Here we
+let it sit on the edge but as mentioned there can be additional (or maybe less)
+italic correction than tight.
+
+\startlinecorrection
+    \startcombination[nx=3,ny=1]
+        \startcontent
+            \startMPcode
+                draw LeftCharB ;
+                path p ; p := boundingbox currentpicture ;
+                draw SuperScript
+                    shifted urcorner p xshifted UsedScript ;
+                draw SubScript
+                    shifted lrcorner p xshifted UsedScript ;
+                WidenResultB ;
+            \stopMPcode
+        \stopcontent
+        \startcaption
+            kernel
+        \stopcaption
+        \startcontent
+            \startMPcode
+                draw LeftCharB ;
+                path p ; p := boundingbox currentpicture ;
+                draw SuperScript
+                    shifted urcorner p ;
+                draw SubScript
+                    shifted lrcorner p ;
+                WidenResultB ;
+            \stopMPcode
+        \stopcontent
+        \startcaption
+            superscript
+        \stopcaption
+        \startcontent
+            \startMPcode
+                draw LeftCharB ;
+                path p ; p := boundingbox currentpicture ;
+                draw SuperScript
+                    shifted urcorner p ;
+                draw SubScript
+                    shifted (-UsedItalic,0)
+                    shifted lrcorner p ;
+                WidenResultB ;
+            \stopMPcode
+        \stopcontent
+        \startcaption
+            subscript
+        \stopcaption
+    \stopcombination
+\stoplinecorrection
+
+Finally we add the scripts here. This time we position the superscript and
+subscript at the top and bottom anchors. The bottom anchor is, as mentioned, the
+old italic correction, and the top one currently just the edge. And this is what
+our next project is about: identify the ideal anchors and use these instead.
+
+In the \CONTEXT\ goodie files (the files that tweak the math fonts runtime) we
+can actually already set these top and bottom anchors and the engine will use
+them when set. These kerns are not to be confused with the more complicated
+staircase kerns. They are much simpler and lightweight. The fact that we already
+have them makes it relatively easy to experiment with this.
+
+It must be noted that we talk about three kinds of kerns: inter character kerns,
+corner kerns and staircase kerns. We can set them all up with tweaks but so far
+we only did that for the most significant ones, like integrals. The question is:
+can we automate this? We should be careful because the bad top accent anchors in
+the \TEXGYRE\ fonts demonstrate how flawed heuristics can be. Interesting is that
+the developers of these font used \METAPOST\ and are highly qualified in that
+area. And for us using \METAPOST\ is also natural!
+
+The approach that we follow is somewhat interactive. When working on the math
+update we like to chat (with zoom) about these matters. We discuss and explore
+plenty and with these kerns we do the same. Because \METAPOST\ produces such nice
+and crispy graphics, and because \METAFUN\ is well integrated into \CONTEXT\ we
+can link all these subsystems and just look at what we get. A lot is about
+visualization: if we discuss so called \quote {grayness} in the perspective of
+kerning, we end up with calculating areas, then look at what it tells us and as a
+next step figure out some heuristic. And of course we challenge each other into
+new trickery.
+
+% THIS WILL BECOME A MODULE!
+
+\startluacode
+local formatters = string.formatters
+
+local glyph  = nil
+local mpdata = nil
+
+local f_boundingbox = formatters["((%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle)"]
+local f_vertical    = formatters["((%N,%N)--(%N,%N))"]
+
+function mp.lmt_glyphshape_start(id,character)
+    if type(id) == "string" then
+        id = fonts.definers.internal({ name = id } ,"<module:fonts:shapes:font>")
+    end
+    local fontid       = (id and id ~= 0 and id) or font.current()
+    local shapedata    = fonts.hashes.shapes[fontid] -- by index
+    local characters   = fonts.hashes.characters[fontid] -- by unicode
+    local descriptions = fonts.hashes.descriptions[fontid] -- by unicode
+    local shapeglyphs  = shapedata.glyphs or { }
+    if type(character) == "string" and character ~= "" then
+        local hex = string.match(character,"^0x(.+)")
+        if hex then
+            character = tonumber(hex,16)
+        else
+            character = utf.byte(character)
+        end
+    else
+        character = tonumber(character)
+    end
+    local chardata = characters[character]
+    local descdata = descriptions[character]
+    if chardata then
+        glyph = shapeglyphs[chardata.index]
+        if glyph and (glyph.segments or glyph.sequence) and not glyph.paths then
+            local units  = shapedata.units or 1000
+            local factor = 100/units
+            local width  = (descdata.width or 0)  * factor
+            local height = descdata.boundingbox[4] * factor
+            local depth  = descdata.boundingbox[2] * factor
+            local math   = descdata.math
+            local italic = (math and math.italic or 0) * factor
+            local accent = (math and math.accent or 0) * factor
+            mpdata = {
+                paths       = fonts.metapost.paths(glyph,factor),
+                boundingbox = fonts.metapost.boundingbox(glyph,factor),
+                baseline    = fonts.metapost.baseline(glyph,factor),
+                width       = width,
+                height      = height,
+                depth       = depth,
+                italic      = italic,
+                accent      = accent,
+                usedbox     = f_boundingbox(0,depth,width,depth,width,height,0,height),
+                usedline    = f_vertical(0,0,width,0),
+            }
+        end
+    else
+        print("NO",id,character)
+    end
+end
+
+function mp.lmt_glyphshape_stop()
+    glyph  = nil
+    mpdata = nil
+end
+
+function mp.lmt_glyphshape_n()
+    if mpdata then
+        mp.print(#mpdata.paths)
+    else
+        mp.inject.numeric(0)
+    end
+end
+
+function mp.lmt_glyphshape_path(i)
+    if mpdata then
+        mp.print(mpdata.paths[i])
+    else
+        mp.inject.pair(0,0)
+    end
+end
+
+function mp.lmt_glyphshape_boundingbox()
+    if mpdata then
+        mp.print(mpdata.boundingbox)
+    else
+        mp.inject.pair(0,0)
+    end
+end
+function mp.lmt_glyphshape_usedbox()
+    if mpdata then
+        mp.print(mpdata.usedbox)
+    else
+        mp.inject.pair(0,0)
+    end
+end
+
+function mp.lmt_glyphshape_baseline()
+    if mpdata then
+        mp.print(mpdata.baseline)
+    else
+        mp.inject.pair(0,0)
+    end
+end
+function mp.lmt_glyphshape_usedline()
+    if mpdata then
+        mp.print(mpdata.usedline)
+    else
+        mp.inject.pair(0,0)
+    end
+end
+
+function mp.lmt_glyphshape_width () mp.print(mpdata and mpdata.width  or 0) end
+function mp.lmt_glyphshape_depth () mp.print(mpdata and mpdata.depth  or 0) end
+function mp.lmt_glyphshape_height() mp.print(mpdata and mpdata.height or 0) end
+function mp.lmt_glyphshape_italic() mp.print(mpdata and mpdata.italic or 0) end
+function mp.lmt_glyphshape_accent() mp.print(mpdata and mpdata.accent or 0) end
+
+\stopluacode
+
+\startMPdefinitions
+    presetparameters "glyphshape" [
+      % id        = "",
+      % character = "",
+        shape       = true,
+        boundingbox = false,
+        baseline    = false,
+        usedline    = true,
+        usedbox     = true,
+    ] ;
+
+def lmt_glyphshape = applyparameters "glyphshape" "lmt_do_glyphshape" enddef ;
+
+vardef glyphshape_start(expr id, character) =
+    lua.mp.lmt_glyphshape_start(id, character) ;
+enddef ;
+
+vardef glyphshape_stop         = lua.mp.lmt_glyphshape_stop() ;      enddef ;
+vardef glyphshape_n            = lua.mp.lmt_glyphshape_n()           enddef ;
+vardef glyphshape_path(expr i) = lua.mp.lmt_glyphshape_path(i)       enddef ;
+vardef glyphshape_boundingbox  = lua.mp.lmt_glyphshape_boundingbox() enddef ;
+vardef glyphshape_baseline     = lua.mp.lmt_glyphshape_baseline()    enddef ;
+vardef glyphshape_usedbox      = lua.mp.lmt_glyphshape_usedbox()     enddef ;
+vardef glyphshape_usedline     = lua.mp.lmt_glyphshape_usedline()    enddef ;
+vardef glyphshape_width        = lua.mp.lmt_glyphshape_width()       enddef ;
+vardef glyphshape_height       = lua.mp.lmt_glyphshape_height()      enddef ;
+vardef glyphshape_depth        = lua.mp.lmt_glyphshape_depth()       enddef ;
+vardef glyphshape_italic       = lua.mp.lmt_glyphshape_italic()      enddef ;
+vardef glyphshape_accent       = lua.mp.lmt_glyphshape_accent()      enddef ;
+
+vardef lmt_do_glyphshape =
+    image (
+        pushparameters "glyphshape" ;
+            lua.mp.lmt_glyphshape_start(getparameter "id", getparameter "character") ;
+            if getparameter "shape" :
+                draw for i=1 upto lua.mp.lmt_glyphshape_n() :
+                    lua.mp.lmt_glyphshape_path(i) &&
+                endfor cycle ;
+            fi ;
+            if getparameter "boundingbox" :
+                draw
+                    lua.mp.lmt_glyphshape_boundingbox()
+                    withcolor red
+                ;
+            fi ;
+            if getparameter "usedline" :
+                draw
+                    lua.mp.lmt_glyphshape_usedline()
+                    withcolor green
+                ;
+            fi ;
+            if getparameter "usedbox" :
+                draw
+                    lua.mp.lmt_glyphshape_usedbox()
+                    withcolor blue
+                ;
+            fi ;
+            lua.mp.lmt_glyphshape_stop() ;
+        popparameters ;
+    )
+enddef ;
+
+\stopMPdefinitions
+
+\startplacefigure[location=none]
+\startMPcode[offset=1dk]
+picture leftchar ;
+picture rightchar ;
+path leftbbox ;
+path rightbbox ;
+numeric leftitalic ;
+numeric rightitalic ;
+numeric leftaccent ;
+numeric rightaccent ;
+
+numeric N ; N := 50 ;
+
+glyphshape_start("file:texgyrebonum-math.otf", "0x1D453") ;
+    leftchar   := image (draw for i=1 upto glyphshape_n : glyphshape_path(i) && endfor cycle ;) ;
+    leftbbox   := glyphshape_usedbox ;
+    leftaccent := glyphshape_accent ;
+    leftitalic := xpart urcorner leftbbox - glyphshape_italic ;
+glyphshape_stop ;
+glyphshape_start("file:texgyrebonum-math.otf", "0x1D45A") ;
+    rightchar := image (draw for i=1 upto glyphshape_n : glyphshape_path(i) && endfor cycle ;) ;
+    rightbbox := glyphshape_usedbox ;
+    rightaccent := glyphshape_accent ;
+    rightitalic := xpart urcorner rightbbox - glyphshape_italic ;
+glyphshape_stop ;
+
+rightchar := rightchar xshifted (xpart lrcorner leftbbox) ;
+rightbbox := rightbbox xshifted (xpart lrcorner leftbbox) ;
+
+rightaccent := rightaccent  + xpart lrcorner leftbbox ;
+rightitalic := rightitalic  + xpart lrcorner leftbbox ;
+
+numeric d ; d := (xpart lrcorner leftbbox) - leftitalic ;
+rightchar := rightchar shifted (d,0);
+rightbbox := rightbbox shifted (d,0);
+
+draw leftbbox  withcolor 0.5white ;
+draw rightbbox withcolor 0.5white ;
+draw leftchar  withpen pencircle scaled 1 ;
+draw rightchar withpen pencircle scaled 1 ;
+
+numeric miny, maxy ;
+
+miny := max(ypart lrcorner leftbbox, ypart llcorner rightbbox) ;
+maxy := min(ypart urcorner leftbbox, ypart ulcorner rightbbox) ;
+
+path testv ; testv := ((0,miny) -- (0,maxy)) xshifted (xpart lrcorner leftbbox) ;
+
+% %   testv := testv shifted (d,0);
+% draw testv withcolor darkred ;
+
+path midpath, leftintersections, rightintersections ;
+pair leftintersection[], rightintersection[] ;
+
+numeric yta ; yta := 0 ;
+numeric minl ; minl := 1000 ;
+
+for i = 1 upto (N-1) :
+    midpath := (0, ypart point (i/N) along testv) -- (xpart urcorner rightbbox, ypart point (i/N) along testv);
+    for j within leftchar :
+        midpath := midpath cutbeforelast pathpart j ;
+    endfor
+    for j within rightchar :
+        midpath := midpath cutafterfirst pathpart j ;
+    endfor
+
+    if ( (i = 1) or ((xpart point 1 of midpath) - (xpart point 0 of midpath) < minl) ) :
+        minl := (xpart point 1 of midpath) - (xpart point 0 of midpath) ;
+    fi
+
+    if ((xpart point 0 of midpath) < eps) or ((xpart point 1 of midpath) > ((xpart urcorner rightbbox) - eps)) :
+        draw midpath withpen pencircle scaled 1 withcolor 0.1[white,darkgreen] withtransparency (1,0.5) ;
+        midpath := (point 0 of midpath) && cycle ;
+    fi
+
+    draw midpath withcolor 0.4[white,darkgreen] ;
+    draw point 0 of midpath withpen pencircle scaled 1 withcolor darkgreen ;
+    draw point 1 of midpath withpen pencircle scaled 1.25 withcolor darkgreen ;
+
+    yta := yta + (1/N)*((xpart point 1 of midpath) - (xpart point 0 of midpath)) ;
+endfor
+
+drawarrow (origin -- ((xpart lrcorner leftbbox) - leftitalic,0)) shifted (urcorner leftbbox) withcolor "orange" ;
+drawarrow (origin -- ((xpart lrcorner rightbbox) - rightitalic - d,0)) shifted (urcorner rightbbox) withcolor "orange" ;
+
+% draw (leftaccent,   (ypart urcorner leftbbox )) withcolor "darkblue" withpen pencircle scaled 3 ;
+% draw (rightaccent + d,  (ypart urcorner rightbbox)) withcolor "darkblue" withpen pencircle scaled 3 ;
+
+\stopMPcode
+
+\stopplacefigure
+
+
+We are sure that getting this next stage in the perfection of math typesetting in
+\CONTEXT\ and \LUAMETATEX\ will take quite some time, but the good news is that
+all machinery is in place. We also have to admit that it all might not work out
+well, so that we stick to what we have now. But at least we had the fun then. And
+it is also a nice example of both applying mathematics and programming graphics.
+
+That said, if it works out well, we can populate the goodie files with output
+from \METAPOST, tweak a little when needed, and that saves us some time. One
+danger is that when we try to improve rendering the whole system also evolves
+which in turn will give different output, but we can always implement all this as
+features because after all \CONTEXT\ is very much about configuration. And it
+makes nice topics for articles and talks too!
+
+The kerns discussed in the previous paragraphs are not the ones that we
+find in \OPENTYPE\ fonts. There we have \quote {staircase} kerns that stepwise go
+up or down by height and kern. So, one can have different kerns depending on the
+height and sort of follow the shape. This permits quite precise kerning between
+for instance the right bottom of a kernel and left top of a subscript. So how is
+that used in practice? The reference font Cambria has these kerns but close
+inspection shows that these are not that accurate. Fortunately, we never enter
+the danger zone with subscripts, because other parameters prevent that. If we look
+at for instance Lucida and Garamond, then we see that their kerns are mostly used
+as side bearing, and not really as staircase kerns.
+
+\usemodule[s][fonts-shapes]
+
+\startlinecorrection
+\startcombination[nx=5,ny=1]
+    \startcontent
+        \ShowGlyphShape{name:cambria-math}{100bp}{0x1D6FD}
+    \stopcontent
+    \startcaption
+        \type {U+1D6FD}
+    \stopcaption
+    \startcontent
+        \ShowGlyphShape{name:cambria-math}{100bp}{0x003A4}
+    \stopcontent
+    \startcaption
+        \type {U+003A4}
+    \stopcaption
+    \startcontent
+        \ShowGlyphShape{name:cambria-math}{100bp}{0x1D4CC}
+    \stopcontent
+    \startcaption
+        \type {U+1D4CC}
+    \stopcaption
+    \startcontent
+        \ShowGlyphShape{name:cambria-math}{100bp}{0x1D6B8}
+    \stopcontent
+    \startcaption
+        \type {U+1D6B8}
+    \stopcaption
+    \startcontent
+        \ShowGlyphShape{name:cambria-math}{100bp}{0x1D70C}
+    \stopcontent
+    \startcaption
+        \type {U+1D70C}
+    \stopcaption
+\stopcombination
+\stoplinecorrection
+
+In these figures you see a few glyphs from cambria with staircase kerns and
+although we show them small you will notice that some kern boundaries touch the
+shape. As subscripts never go that high it goes unnoticed but it also shows that
+sticking to the lowest boundary makes sense.
+
+We conclude that we can simplify these kerns, and just transform them into our
+(upto four) corner kerns. It is unlikely that Cambria gets updates and that other
+fonts become more advanced. One can even wonder if multiple steps really give
+better results. The risk of overlap increases with more granularity because not
+every pair of glyphs is checked. Also, the repertoire of math characters will
+likely not grow and include shapes that differ much from what we can look at now.
+Reducing these kerns to simple ones, that can easily be patched at will in a
+goodie file, has advantages. We can even simplify the engine.
+
+\stopsection
+
+\startsection[title=Conclusion]
+
+So how can we summarize the above? The first conclusion is that we can only get
+good results when we runtime patch fonts to suite the engine and our (\CONTEXT)
+need. The second conclusion is that we should seriously consider to drop (read:
+ignore) most math font parameter and|/|or to reorganize them. There is no
+need to be conforming, because these parameters are often not that well
+implemented (thumb in mouth). The third conclusion (or observation) is that we
+should get rid of the excessive use of italic correction, and go for our new
+corner kerns instead. Last, we can conclude that it makes sense to explore how we
+can use \METAPOST\ to analyze the shapes in such a way that we can improve inter
+character kerning, corner kerns and maybe even, in a limited way, staircase kerns.
+
+And, to come back to accents: very few characters need a top kern. Most can be
+handled with centered anchors, and we need tweaks for margins and overshoot
+anyway. The same is true for many other tweaks: they are there to stay.
+
+This is how we plan to go forward:
+
+\startitemize[packed]
+    \startitem
+        We pass no italic corrections in the math fonts to the engine,
+        but instead we have four dedicated simple corner kerns, top and
+        bottom anchors, and we also compensate negative left side bearing. We
+        should have gone that route earlier (as follow up on a \MKIV\ feature)
+        but were still in some backward compatibility mindset.
+    \stopitem
+    \startitem
+        The \LUAMETATEX\ math engine might then be simplified by removing all
+        code related to italic correction. Of course it hurts that we spent so
+        much time on that over the years. We can anyway disable engine options
+        related to italic correction in the \CONTEXT\ setup. Of course the engine
+        is less old school generic then but that is the price of progress.
+    \stopitem
+    \startitem
+        A default goodie file is applied that takes care of this when no goodie
+        file is provided. We could do some in the engine, but there is no real
+        need for that. We can simplify the mid 2022 goodie files because we have
+        to fix less glyphs.
+    \stopitem
+    \startitem
+        If we ever need italic correction (that is: backtrack) then we use the
+        (new) \type {\mccode} option code that can identity sloped shapes. But,
+        given that ignoring the correction between sloped shapes looks pretty bad,
+        we can as well forget about this. After all, italic correction never
+        really was about correcting italics, but more about anchoring scripts.
+    \stopitem
+    \startitem
+        Staircase kerns can be reduced to simple corner kerns and the engine can
+        be simplified a bit more. In the end, all we need is true widths and simple
+        corner kerns.
+    \stopitem
+    \startitem
+        We reorganize the math parameters and get rid of those that are not
+        really font design dependent. This also removes a bit of overlap. This will
+        be done as we document.
+    \stopitem
+    \startitem
+        Eventually we can remove tweaks that are no longer needed in the new
+        setup, which is a good thing as it also save us some documenting and
+        maintenance.
+    \stopitem
+\stopitemize
+
+All this will happen in the perspective of \CONTEXT\ and \LUAMETATEX\ but we
+expect that after a few years of usage we can with confidence come to some
+conclusions that can trickle back in the other engines so that other macro
+packages can benefit from a somewhat radical different but reliable approach to
+math rendering, one that works well with the old and new fonts.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

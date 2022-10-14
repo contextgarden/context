@@ -1,10 +1,13 @@
 -- This file might go away and is for experiments only.
 
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
+
 return {
     name = "erewhon-math",
     version = "1.00",
     comment = "Goodies that complement erewhon math.",
-    author = "Hans Hagen",
+    author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
@@ -22,58 +25,34 @@ return {
         tweaks = {
             aftercopying = {
                 {
-                    tweak = "kerns",
-                    list  = {
-                        [0x2F] = {
-                            topleft     = -0.15,
-                         -- bottomleft  =  0,
-                         -- topright    =  0,
-                            bottomright =  -0.15,
-                       },
-
-                        ["0x7D.parts.top"] = {
-                            topright    = -0.15,
-                        }, -- right brace top
-                        ["0x7D.parts.bottom"] = {
-                            bottomright = -0.15,
-                        }, -- right brace bottom
-                        ["0x7D.variants.*"] = {
-                            topright = -0.05,
-                            bottomright = -0.05,
-                        }, -- right brace variants
-                        ["0x29.parts.top"] = {
-                            topright    = -0.1,
-                        }, -- right parenthesis top
-                        ["0x29.parts.bottom"] = {
-                            bottomright = -0.1,
-                        }, -- right parenthesis bottom
-                        ["0x29.variants.*"] = {
-                            topright = -0.1,
-                            bottomright = -0.1,
-                        }, -- right parenthesis variants
-                        ["0x221A.parts.top"] = {
-                            topright = 0.2,
-                        }, -- right radical top
-                        ["0x221A.parts.bottom"] = {
-                            bottomright = 0.2,
-                        }, -- right radical bottom
-                        ["0x221A.variants.*"] = {
-                            topright = 0.2,
-                            bottomright = 0.2,
-                        }, -- right radical variants
-
-                        -- angle
-                        [0x27E9]              = { topright = -0.1, bottomright = -0.1 },
-                        ["0x27E9.variants.*"] = { topright = -0.2, bottomright = -0.2 },
-                        [0x27EB]              = { topright = -0.1, bottomright = -0.1 },
-                        ["0x27EB.variants.*"] = { topright = -0.2, bottomright = -0.2 },
-
-                    },
-                },
-                {
                     tweak   = "fixprimes",
                     factor  = 0.9,
                     scale   = 0.9,
+                },
+                {
+                    tweak = "addmirrors",
+                },
+                presets.matheulercalligraphic { rscale = 0.93 },
+                presets.mathrsfscript         { rscale = 0.93 },
+                presets.mathxitsarabic        { rscale = 0.90 },
+                {
+                    tweak = "kerns",
+                    list  = {
+                        [0x002F]                = { topleft  = -0.15, bottomright = -0.15 },
+                        ["0x7D.parts.top"]      = { topright = -0.15,                     }, -- right brace top
+                        ["0x7D.parts.bottom"]   = {                   bottomright = -0.15 }, -- right brace bottom
+                        ["0x7D.variants.*"]     = { topright = -0.05, bottomright = -0.05 }, -- right brace variants
+                        ["0x29.parts.top"]      = { topright = -0.1,                      }, -- right parenthesis top
+                        ["0x29.parts.bottom"]   = {                   bottomright = -0.1  }, -- right parenthesis bottom
+                        ["0x29.variants.*"]     = { topright = -0.1,  bottomright = -0.1  }, -- right parenthesis variants
+                        ["0x221A.parts.top"]    = { topright =  0.2,                      }, -- right radical top
+                        ["0x221A.parts.bottom"] = {                   bottomright =  0.2  }, -- right radical bottom
+                        ["0x221A.variants.*"]   = { topright =  0.2,  bottomright =  0.2  }, -- right radical variants
+                        [0x27E9]                = { topright = -0.1,  bottomright = -0.1  }, -- angle
+                        ["0x27E9.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
+                        [0x27EB]                = { topright = -0.1,  bottomright = -0.1  },
+                        ["0x27EB.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
+                    },
                 },
                 {
                     tweak = "checkspacing",
@@ -92,6 +71,10 @@ return {
                 },
                 {
                     tweak = "addequals",
+                },
+                {
+                    tweak = "setoptions",
+                    set   = { "ignorekerndimensions" }
                 },
             },
         },

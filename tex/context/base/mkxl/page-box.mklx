@@ -79,10 +79,19 @@
 %   {\boxxoffset#box\dimexpr\boxxoffset#box\doifbothsides++-\backoffset\relax
 %    \boxyoffset#box\dimexpr\boxyoffset#box-\topoffset\relax}
 
+% \def\page_boxes_apply_offset % #box
+%   {\unless\ifzeropt\topoffset % we can't do an unless here
+%      \expandafter\page_boxes_apply_offset_indeed
+%    \orunless\ifzeropt\backoffset
+%      \expandafter\page_boxes_apply_offset_indeed
+%    \else
+%      \expandafter\gobbleoneargument
+%    \fi}
+
 \def\page_boxes_apply_offset % #box
-  {\unless\ifzeropt\topoffset
+  {\unless\ifdim\topoffset=\zeropoint
      \expandafter\page_boxes_apply_offset_indeed
-   \orunless\ifzeropt\backoffset
+   \orunless\ifdim\backoffset=\zeropoint
      \expandafter\page_boxes_apply_offset_indeed
    \else
      \expandafter\gobbleoneargument
@@ -100,9 +109,9 @@
 \def\page_boxes_apply_replicate_indeed#box%
   {\setbox#box\vpack
      {\offinterlineskip
-      \dorecurse{\layoutparameter\c!ny}
+      \dorecurse{\layoutparameter\c!ny}%
         {\hpack{\dorecurse{\layoutparameter\c!nx}{\copy#box\kern\layoutparameter\c!dx}\unskip}%
-         \vskip\layoutparameter\c!dy}
+         \vskip\layoutparameter\c!dy}%
       \unskip}}
 
 \def\page_boxes_apply_orientate_paper#box%

@@ -13,6 +13,8 @@
 
 \unprotect
 
+% to be redone in a more modern way
+
 %D \macros
 %D   {makecutbox, cuthbox, cutvbox, cutvtop}
 %D
@@ -101,9 +103,8 @@
          \vss}%
       \hss}}
 
-\permanent\protected\def\makecutbox#1%
-  {\bgroup
-   \d_pack_cutmarks_height\ht#1%
+\permanent\protected\def\makecutbox#1% not grouped !
+  {\d_pack_cutmarks_height\ht#1%
    \d_pack_cutmarks_depth \dp#1%
    \d_pack_cutmarks_width \wd#1%
    \setbox#1\hpack
@@ -155,7 +156,7 @@
    \wd#1\d_pack_cutmarks_width
    \ht#1\d_pack_cutmarks_height
    \dp#1\d_pack_cutmarks_depth
-   \egroup}
+   \box#1}
 
 \permanent\protected\def\cuthbox{\hpack\bgroup\dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\hbox}
 \permanent\protected\def\cutvbox{\vpack\bgroup\dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\vbox}

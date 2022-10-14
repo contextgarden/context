@@ -11,7 +11,7 @@
     and extensibles are made from other glyphs, as in traditional \TEX\ fonts.
 
     In traditional \TEX\ the italic correction is added to the width of the glyph. This is part of
-    the engine design and this is also reflected in the widtn metric of the font. In \OPENTYPE\ math
+    the engine design and this is also reflected in the width metric of the font. In \OPENTYPE\ math
     this is different. There the italic correction had more explicit usage. The 1.7 spec says:
 
     \startitemize
@@ -82,6 +82,58 @@
     delimiter options got removed or were just handled by the noad options. The code is still in the 
     repository. Also some options related to tracing injected kerns became defaults because we had 
     them always turned on. 
+
+*/
+
+/* 
+
+    There is a persistent issue with operators and italic correction. For n_ary ones the italic 
+    correction is used for positioning scripts above or below (shifted horizontally) or 
+    at the right top and bottom (also shifted horizontally). That assumes a proper width that 
+    doesn't need italic correction itself. On the other hand, in the case of arbitrary characters 
+    that want to be operators the italic correction can be part of th ewidth (take the |f| as 
+    example). Now, the most problematic one is the integral and especially in Latin Modern where 
+    it is very slanted. In \CONTEXT\ we use the left operator feature to deal with all this. 
+
+    We considered a special class for operators where italic correction is used for positioning 
+    but in the end we rejected that. We now: 
+
+    \startitemize
+    \startitem 
+        asume properly bounded characters (sum, product, integral) and most are upright anyway
+    \stopitem 
+    \startitem  
+        top and bottom scripts are centered 
+    \stopitem 
+    \startitem 
+        right and left scripts are bound tight to the edge 
+    \stopitem 
+    \startitem  
+        italic correction can be completely ignored 
+    \stopitem 
+    \startitem  
+        top and bottom anchors (set up in the goodie) control optional displacements 
+    \stopitem 
+    \startitem  
+        top right and top left kerns (set up in the goodie) control optional displacements 
+    \stopitem 
+    \stopitemize
+
+    We already did the kerns for some fonts using information in the goodie file, and now we 
+    also use the top and bottom anchors. In fact, the only real exception is Latin Modern, so 
+    instead of messing up the code with exceptions and tricky controls we now have a few lines 
+    in (basically) one goodie file. 
+
+    An class option can be set to add italic corrections to operators so in the case of the 
+    integral, where it is used for positioning, it can then be used to calculate anchors, but 
+    that is then done in the goodie file. Keep in mind that these anchors are an engine feature.
+
+    For most math fonts all works out of the box, only fonts with highly asymetrical integral 
+    signs are touched by this, but fonts like that likely need tweaks anyway. 
+
+    For the record: the specificaton only talks about possible application so we can basically do 
+    as we like. All works fine for Cambria and the \TEX\ community didn't make sure that better 
+    features were added (like anchors) for their shapes. 
 
 */
 
@@ -179,6 +231,10 @@ inline void tex_math_wipe_kerns(kernset *kerns) {
         kerns->depth = 0;
         kerns->toptotal = 0;
         kerns->bottomtotal = 0;
+        kerns->dimensions = 0;
+        kerns->font = null_font;
+        kerns->character = 0;
+        kerns->padding = 0;
     }
 }
 
@@ -192,13 +248,14 @@ inline void tex_math_copy_kerns(kernset *kerns, kernset *parent) {
         kerns->depth = parent->depth;
         kerns->toptotal = parent->toptotal;
         kerns->bottomtotal = parent->bottomtotal;
+        kerns->dimensions = parent->dimensions;
+        kerns->font = parent->font;
+        kerns->character = parent->character;
     }
 }
 
 /*tex
-
     When the style changes, the following piece of program computes associated information:
-
 */
 
 inline static halfword tex_aux_set_style_to_size(halfword style)
@@ -315,21 +372,17 @@ inline static scaled limited_rounded(double d) {
     }
 }
 
-// inline static int tex_aux_has_opentype_metrics(halfword f)
-// {
-//     return font_math_parameter_count(f) > 0 && ! font_oldmath(f);
-// }
-
-inline static int tex_aux_math_engine_control(halfword fnt, halfword chr)
+inline static int tex_aux_math_engine_control(halfword fnt, halfword control)
 {
-    if (fnt && (math_font_control_par & math_control_use_font_control) == math_control_use_font_control) {
+ // if (fnt && (math_font_control_par & math_control_use_font_control) == math_control_use_font_control) {
+    if (fnt && (font_mathcontrol(fnt) & math_control_use_font_control) == math_control_use_font_control) {
         /*tex 
             This is only for old fonts and it might go away eventually. Not all control options relate to 
             a font.
         */
-        return (font_mathcontrol(fnt) & chr) == chr;
+        return (font_mathcontrol(fnt) & control) == control;
     }
-    return (math_font_control_par & chr) == chr;
+    return (math_font_control_par & control) == control;
 }
 
 /*
@@ -397,7 +450,7 @@ halfword tex_math_font_char_dp(halfword fnt, halfword chr, halfword style)
 
 inline static halfword tex_aux_new_math_glyph(halfword fnt, halfword chr, quarterword subtype) {
     halfword scale = 1000;
-    halfword glyph = tex_new_glyph_node(subtype, fnt, tex_get_math_char(fnt, chr, lmt_math_state.size, &scale), null); /* todo: data */;
+    halfword glyph = tex_new_glyph_node(subtype, fnt, tex_get_math_char(fnt, chr, lmt_math_state.size, &scale, math_direction_par), null); /* todo: data */;
     set_glyph_options(glyph, glyph_options_par);
     glyph_scale(glyph) = tex_aux_math_glyph_scale(scale);
     glyph_x_scale(glyph) = glyph_x_scale_par;
@@ -517,63 +570,19 @@ static inline int tex_aux_checked_right_kern(halfword list, halfword state, half
     }
 }
 
-/*tex We no longer need this one:
-
-    \starttyping
-    static halfword tex_aux_math_remove_italic_kern(halfword head, scaled *italic, const char *trace)
-    {
-        halfword tail = tex_tail_of_node_list(box_list(head));
-        if (tail && node_type(tail) == kern_node  && node_subtype(tail) == italic_kern_subtype && kern_amount(tail) == *italic) {
-            tex_aux_trace_kerns(tail, "removing italic kern", trace);
-            if (head == tail) {
-                head = null;
-            } else {
-                head = node_prev(tail);
-                node_next(node_prev(tail)) = null;
-            }
-            tex_flush_node(tail);
-            *italic = 0;
-        }
-        return head;
-    }
-    \starttyping
-
-*/
-
-/*tex We no longer need this one:
-
-    \starttyping
-    static void tex_aux_normalize_delimiters(halfword l, halfword r)
-    {
-        if (box_width(l) == null_delimiter_space_par) {
-            box_height(l) = box_height(r);
-            box_depth(l) = box_depth(r);
-            box_shift_amount(l) = box_shift_amount(r);
-        } else if (box_width(r) == null_delimiter_space_par) {
-            box_height(r) = box_height(l);
-            box_depth(r) = box_depth(l);
-            box_shift_amount(r) = box_shift_amount(l);
-        }
-    }
-    \starttyping
-
-*/
-
 static scaled tex_aux_check_rule_thickness(halfword target, int size, halfword *fam, halfword control, halfword param)
 {
- /* if (math_rule_thickness_mode_par > 0) { */
-        halfword family = noad_family(target);
-        if (family != unused_math_family) {
-            halfword font = tex_fam_fnt(family, size);
-            if (tex_aux_math_engine_control(font, control)) {
-                scaled thickness = tex_get_font_math_parameter(font, size, param);
-                if (thickness != undefined_math_parameter) {
-                    *fam = family;
-                    return thickness;
-                }
+    halfword family = noad_family(target);
+    if (family != unused_math_family) {
+        halfword font = tex_fam_fnt(family, size);
+        if (tex_aux_math_engine_control(font, control)) {
+            scaled thickness = tex_get_font_math_parameter(font, size, param);
+            if (thickness != undefined_math_parameter) {
+                *fam = family;
+                return thickness;
             }
         }
- /* } */
+    }
     return undefined_math_parameter;
 }
 
@@ -585,6 +594,7 @@ static halfword tex_aux_fake_nucleus(quarterword cls)
     halfword q = tex_new_node(math_char_node, 0);
     set_noad_classes(n, cls);
     noad_nucleus(n) = q;
+    math_kernel_node_set_option(q, math_kernel_ignored_character);
     return n;
 }
 
@@ -805,6 +815,9 @@ static halfword tex_aux_underbar(halfword box, scaled gap, scaled height, scaled
         \startitem accent placement \stopitem
     \stopitemize
 
+    We keep this as reference but oldmath handling has been replaces by options that determine code
+    paths. We actually assuem that \OPENTRYPE fonts are used anyway. The flag is gone. 
+
     In the traditional case an italic kern is always added and the |ic| variable is then passed
     to the caller. For a while we had an option to add the correction to the width but now we
     have the control options. So these are the options:
@@ -853,43 +866,6 @@ static halfword tex_aux_char_box(halfword fnt, int chr, halfword att, scaled *ic
     }
     return box;
 }
-
-/*tex
-
-    When we build an extensible character, it's handy to have the following subroutine, which puts
-    a given character on top of the characters already in box |b|:
-
-*/
-
-// static scaled tex_aux_stack_into_box(halfword b, halfword f, int c, quarterword subtype, int horiziontal)
-// {
-//     /*tex New node placed into |b|. Italic gets added to width in 8 bit fonts. */
-//     halfword boxed = tex_aux_char_box(f, c, get_attribute_list(b), NULL, subtype);
-//     halfword glyph = box_list(boxed);
-//     if (horiziontal) {
-//         halfword list = box_list(b);
-//         if (list) {
-//             tex_couple_nodes(tex_tail_of_node_list(list), boxed);
-//         } else {
-//             box_list(b) = boxed;
-//         }
-//         if (box_height(b) < box_height(boxed)) {
-//             box_height(b) = box_height(boxed);
-//         }
-//         if (box_depth(b) < box_depth(boxed)) {
-//             box_depth(b) = box_depth(boxed);
-//         }
-//         return tex_char_width_from_glyph(glyph);
-//     } else { 
-//         tex_try_couple_nodes(boxed, box_list(b));
-//         box_list(b) = boxed;
-//         box_height(b) = box_height(boxed);
-//         if (box_width(b) < box_width(boxed)) {
-//             box_width(b) = box_width(boxed);
-//         }
-//         return tex_char_total_from_glyph(glyph);
-//     }
-// }
 
 /*tex 
     There is no need to deal with an italic correction here. If there is one in an extensible we 
@@ -1204,7 +1180,6 @@ halfword tex_make_extensible(halfword fnt, halfword chr, scaled target, scaled m
                         initial = overlap;
                     }
                     if (advance == 0) {
-                        /*tex for tfm fonts (so no need for scaling) */
                         advance = tex_aux_math_y_size_scaled(fnt, tex_char_total_from_font(fnt, e->glyph), size); /* todo: combine */
                         if (advance <= 0) {
                             tex_formatted_error("fonts", "bad vertical extensible character %i in font %i", chr, fnt);
@@ -1224,7 +1199,6 @@ halfword tex_make_extensible(halfword fnt, halfword chr, scaled target, scaled m
                             initial = overlap;
                         }
                         if (advance == 0) {
-                            /*tex for tfm fonts (so no need for scaling) */
                             advance = tex_aux_math_y_size_scaled(fnt, tex_char_total_from_font(fnt, e->glyph), size); /* todo: combine */
                             if (advance <= 0) {
                                 tex_formatted_error("fonts", "bad vertical extensible character %i in font %i", chr, fnt);
@@ -1248,7 +1222,7 @@ halfword tex_make_extensible(halfword fnt, halfword chr, scaled target, scaled m
     for (extinfo *e = extensible; e; e = e->next) {
         if (e->extender == 0) {
             scaled progress;
-            scaled initial = horizontal ? tex_aux_math_x_size_scaled(fnt, e->start_overlap, size) : tex_aux_math_y_size_scaled(fnt,e->start_overlap, size);
+            scaled initial = horizontal ? tex_aux_math_x_size_scaled(fnt, e->start_overlap, size) : tex_aux_math_y_size_scaled(fnt, e->start_overlap, size);
             if (overlap < initial) {
                 initial = overlap;
             }
@@ -1542,12 +1516,25 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
         }
     }
     if (! flat) {
-        /*tex A vertical variant. Todo: add a kern instead. */
+        /*tex 
+            We have a vertical variant. Case 1 deals with the fact that fonts can lie about their
+            dimensions which happens in tfm files where there are a limited number of heights and 
+            depths. However, that doesn't work out well when we want to anchor script later on in 
+            a more sophisticated way. Most \OPENTYPE\ fonts have proper heights and depth but there 
+            are some that don't. Problems can show up when we use kerns (as \CONTEXT\ does via 
+            goodie files) and the relevant class option has been enabled. In order to deal with the 
+            problematic fonts we can disable this via a font option. The natural height and depth 
+            are communicated via extremes and kerns. 
+            
+            For fonts that have their shapes positioned properly around their axis case 1 doesn't 
+            interfere but could as well be skipped. These shapes can also be used directly in 
+            the input if needed (basically case 1 then becomes case 4).  
+        */
         switch (shift) { 
             case 0:
                 box_shift_amount(result) = tex_half_scaled(box_height(result) - box_depth(result));
                 break;
-            case 1: 
+            case 1:
                 box_shift_amount(result) = tex_half_scaled(box_height(result) - box_depth(result));
                 box_shift_amount(result) -= tex_aux_math_axis(size);
                 break;
@@ -2049,7 +2036,6 @@ static int tex_aux_fetch(halfword n, const char *where, halfword *f, halfword *c
     if (node_type(n) == glyph_node) {
         *f = glyph_font(n);
         *c = glyph_character(n);
-     /* lmt_math_state.opentype = tex_aux_has_opentype_metrics(*f); */
         if (tex_char_exists(*f, *c)) {
             return 1;
         } else {
@@ -2059,27 +2045,23 @@ static int tex_aux_fetch(halfword n, const char *where, halfword *f, halfword *c
     } else {
         *f = tex_fam_fnt(kernel_math_family(n), lmt_math_state.size);
         *c = kernel_math_character(n);
-        if (*f == null_font) {
-            char msg[256];
-            snprintf(msg, 255, "\\%s%d is undefined in %s, font id %d, character %d)",
-                tex_aux_math_size_string(lmt_math_state.size), kernel_math_family(n), where, *f, *c
-            );
+        if (math_kernel_node_has_option(n, math_kernel_ignored_character)) {
+            return 1;
+        } else if (*f == null_font) {
             tex_handle_error(
                 normal_error_type,
-                msg,
+                "\\%s%i is undefined in %s, font id %i, character %i)",
+                tex_aux_math_size_string(lmt_math_state.size), kernel_math_family(n), where, *f, *c,
                 "Somewhere in the math formula just ended, you used the stated character from an\n"
                 "undefined font family. For example, plain TeX doesn't allow \\it or \\sl in\n"
                 "subscripts. Proceed, and I'll try to forget that I needed that character."
             );
             return 0;
+        } else if (tex_math_char_exists(*f, *c, lmt_math_state.size)) {
+            return 1;
         } else {
-         /* lmt_math_state.opentype = tex_aux_has_opentype_metrics(*f); */
-            if (tex_math_char_exists(*f, *c, lmt_math_state.size)) {
-                return 1;
-            } else {
-                tex_char_warning(*f, *c);
-                return 0;
-            }
+            tex_char_warning(*f, *c);
+            return 0;
         }
     }
 }
@@ -2302,6 +2284,8 @@ static void tex_aux_set_radical_kerns(delimiterextremes *extremes, kernset *kern
         if (tex_math_has_class_option(radical_noad_subtype, prefer_delimiter_dimensions_class_option)) {  
             kerns->height = extremes->height;
             kerns->depth = extremes->depth;
+            kerns->dimensions = 1;
+            kerns->font = extremes->tfont;
         }
     }
 }
@@ -2400,13 +2384,7 @@ static void tex_aux_make_root_radical(halfword target, int style, int size, kern
             if (width) {
                 scaled before = tex_get_math_x_parameter_checked(style, math_parameter_radical_degree_before);
                 scaled after = tex_get_math_x_parameter_checked(style, math_parameter_radical_degree_after);
-             /* scaled raise = tex_get_math_y_parameter_checked(style, math_parameter_radical_degree_raise); */ /* no! */
                 scaled raise = tex_get_math_parameter_checked(style, math_parameter_radical_degree_raise);
-                /* old:
-                if (-after > (width + before)) {
-                    after = -(width + before);
-                }
-                new: */
                 if (-after > width) {
                     before += -after - width;
                 }
@@ -2572,9 +2550,7 @@ static void tex_aux_make_over_delimiter(halfword target, int style, int size)
 }
 
 /*tex
-
     This has the extensible delimiter |x| as a limit below |nucleus| box |y|.
-
 */
 
 static void tex_aux_make_under_delimiter(halfword target, int style, int size)
@@ -2602,9 +2578,7 @@ static void tex_aux_make_under_delimiter(halfword target, int style, int size)
 }
 
 /*tex
-
     This has the extensible delimiter |x| as a limit above |nucleus| box |y|.
-
 */
 
 static void tex_aux_make_delimiter_over(halfword target, int style, int size)
@@ -2633,9 +2607,7 @@ static void tex_aux_make_delimiter_over(halfword target, int style, int size)
 }
 
 /*tex
-
     This has the extensible delimiter |y| as a limit below a |nucleus| box |x|.
-
 */
 
 static void tex_aux_make_delimiter_under(halfword target, int style, int size)
@@ -2727,7 +2699,7 @@ typedef enum math_accent_location_codes {
     stretch_accent_code = 8,
 } math_accent_location_codes;
 
-static int tex_aux_compute_accent_skew(halfword target, int flags, scaled *s, halfword size)
+static int tex_aux_compute_accent_skew(halfword target, int flags, scaled *skew, halfword size)
 {
     /*tex will be true if a top-accent is placed in |s| */
     int absolute = 0;
@@ -2742,21 +2714,21 @@ static int tex_aux_compute_accent_skew(halfword target, int flags, scaled *s, ha
                         There is no bot_accent so let's assume that the shift also applies
                         to bottom and overlay accents.
                     */
-                    *s = tex_char_top_accent_from_font(fnt, chr);
-                    if (*s != INT_MIN) {
-                        *s = tex_aux_math_x_size_scaled(fnt, *s, size);
+                    *skew = tex_char_unchecked_top_anchor_from_font(fnt, chr);
+                    if (*skew != INT_MIN) {
+                        *skew = tex_aux_math_x_size_scaled(fnt, *skew, size);
                         absolute = 1;
                     } else {
-                        *s = 0;
+                        *skew = 0;
                     }
                 } else if (flags & top_accent_code) {
-                    *s = tex_aux_math_x_size_scaled(fnt, tex_get_kern(fnt, chr, font_skew_char(fnt)), size);
+                    *skew = tex_aux_math_x_size_scaled(fnt, tex_get_kern(fnt, chr, font_skew_char(fnt)), size);
                 } else {
-                    *s = 0;
+                    *skew = 0;
                 }
                 if (tracing_math_par >= 2) {
                     tex_begin_diagnostic();
-                    tex_print_format("[math: accent skew, font %i, chr %x, skew %D, absolute %i]", fnt, chr, *s, pt_unit, absolute);
+                    tex_print_format("[math: accent skew, font %i, chr %x, skew %D, absolute %i]", fnt, chr, *skew, pt_unit, absolute);
                     tex_end_diagnostic();
                 }
                 break;
@@ -2793,11 +2765,11 @@ static int tex_aux_compute_accent_skew(halfword target, int flags, scaled *s, ha
                 if (p && ! node_next(p)) {
                     switch (node_type(p)) {
                         case accent_noad:
-                            absolute = tex_aux_compute_accent_skew(p, flags, s, size);
+                            absolute = tex_aux_compute_accent_skew(p, flags, skew, size);
                             break;
                         case simple_noad:
                             if (! noad_has_following_scripts(p)) {
-                                absolute = tex_aux_compute_accent_skew(p, flags, s, size);
+                                absolute = tex_aux_compute_accent_skew(p, flags, skew, size);
                             }
                             break;
                     }
@@ -2812,12 +2784,14 @@ static int tex_aux_compute_accent_skew(halfword target, int flags, scaled *s, ha
     }
     return absolute;
 }
+
 static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, halfword accentchr, int flags, int style, int size, scaled *accenttotal)
 {
     /*tex The width and height (without scripts) of base character: */
     scaled baseheight = 0;
  // scaled basedepth = 0;
     scaled basewidth = 0;
+    scaled usedwidth = 0;
     /*tex The space to remove between accent and base: */
     scaled delta = 0;
     scaled overshoot = 0;
@@ -2825,11 +2799,14 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
     halfword attrlist = node_attr(target);
     scaled fraction = accent_fraction(target) > 0 ? accent_fraction(target) : 1000;
     scaled skew = 0;
+    scaled offset = 0;
     halfword accent = null;
     halfword base = null;
     halfword result = null;
     halfword nucleus = noad_nucleus(target);
     halfword stretch = (flags & stretch_accent_code) == stretch_accent_code;
+    halfword basefnt = null_font;
+    halfword basechr = 0;
     /*tex
         Compute the amount of skew, or set |skew| to an alignment point. This will be true if a
         top-accent has been determined.
@@ -2850,32 +2827,49 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
         baseheight = box_height(base);
      // basedepth = box_depth(base);
     }
-    if (! absolute && tex_aux_math_engine_control(accentfnt, math_control_accent_skew_half)) {
+    if (base) {
+        halfword list = box_list(base);
+        if (list && node_type(list) == glyph_node) {
+            basefnt = glyph_font(list);
+            basechr = glyph_character(list);
+        }
+    }
+    if (stretch && absolute && (flags & top_accent_code) && tex_aux_math_engine_control(accentfnt, math_control_accent_top_skew_with_offset)) {
+        /*tex 
+            This assumes a font that has been tuned for it. We used a privately made font (will be
+            in the \CONTEXT\ distribution) RalphSmithsFormalScript.otf (derived from the type one 
+            font) for experimenting with top accents and these parameters. The idea is to have a 
+            decent accent on the very slanted top (of e.g. A) that sticks out a little at the right 
+            edge but still use glyphs with a proper boundingbox, so no messing around with italic 
+            correction. Eventually this might become a more advanced (general) mechanism. Watch the 
+            formula for calculating the used width. 
+        */
+        if (base && basefnt && basechr) { 
+            offset = tex_char_top_overshoot_from_font(basefnt, basechr);
+            offset = offset == INT_MIN ? 0 : tex_aux_math_x_size_scaled(basefnt, offset, size);
+        }
+        usedwidth = 2 * ((skew < (basewidth - skew) ? skew : (basewidth - skew)) + offset);
+    } else if (! absolute && tex_aux_math_engine_control(accentfnt, math_control_accent_skew_half)) {
         skew = tex_half_scaled(basewidth);
         absolute = 1;
+        usedwidth = basewidth;
+    } else { 
+        usedwidth = basewidth;
     }
     /*tex
         Todo: |w = w - loffset - roffset| but then we also need to add a few
         kerns so no hurry with that one.
     */
-    if (stretch && (tex_char_width_from_font(accentfnt, accentchr) < basewidth)) {
+    if (stretch && (tex_char_width_from_font(accentfnt, accentchr) < usedwidth)) {
         /*tex Switch to a larger accent if available and appropriate */
         scaled target = 0; 
         if (flags & overlay_accent_code) { 
             target = baseheight;
         } else {
-            target += basewidth;
-            if (base) {
-                /*tex Use larger margins, */
-                halfword list = box_list(base);
-                if (list && node_type(list) == glyph_node) {
-                    halfword basefnt = glyph_font(list);
-                    halfword basechr = glyph_character(list);
-                    if (basefnt && basechr) { 
-                        target += tex_aux_math_x_size_scaled(basefnt, tex_char_right_margin_from_font(basefnt, basechr), size);
-                        target += tex_aux_math_x_size_scaled(basefnt, tex_char_left_margin_from_font(basefnt, basechr), size);
-                    }
-                }
+            target += usedwidth;
+            if (base && basefnt && basechr) { 
+                target += tex_aux_math_x_size_scaled(basefnt, tex_char_right_margin_from_font(basefnt, basechr), size);
+                target += tex_aux_math_x_size_scaled(basefnt, tex_char_left_margin_from_font(basefnt, basechr), size);
             }
         }
         if (fraction > 0) {
@@ -2891,7 +2885,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
                     we don't step.
                 */
                 halfword overlap = tex_get_math_x_parameter_checked(style, math_parameter_connector_overlap_min);
-                accent = tex_aux_get_delimiter_box(accentfnt, accentchr, basewidth, overlap, 1, attrlist);
+                accent = tex_aux_get_delimiter_box(accentfnt, accentchr, usedwidth, overlap, 1, attrlist);
                 accent = register_extensible(accentfnt, accentchr, size, accent, attrlist);
                 break;
             } else if (! tex_char_has_tag_from_font(accentfnt, accentchr, list_tag)) {
@@ -2918,7 +2912,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
     }
     if (! accent) {
         /*tex Italic gets added to width for traditional fonts (no italic anyway): */
-        accent = tex_aux_char_box(accentfnt, accentchr, attrlist, NULL, glyph_math_accent_subtype, basewidth, style);
+        accent = tex_aux_char_box(accentfnt, accentchr, attrlist, NULL, glyph_math_accent_subtype, basewidth, style); // usedwidth 
     }
     if (accenttotal) {
         *accenttotal = box_total(accent);
@@ -2931,7 +2925,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
             halfword flatchr = tex_char_flat_accent_from_font(accentfnt, accentchr);
             if (flatchr != INT_MIN && flatchr != accentchr) {
                 tex_flush_node(accent);
-                accent = tex_aux_char_box(accentfnt, flatchr, attrlist, NULL, glyph_math_accent_subtype, basewidth, style);
+                accent = tex_aux_char_box(accentfnt, flatchr, attrlist, NULL, glyph_math_accent_subtype, usedwidth, style);
                 if (tracing_math_par >= 2) {
                     tex_begin_diagnostic();
                     tex_print_format("[math: flattening accent, old %x, new %x]", accentchr, flatchr);
@@ -2976,17 +2970,6 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
         base = tex_aux_clean_box(nucleus, style, style, math_nucleus_list, 1, NULL); /* keep italic */
         delta = delta + box_height(base) - baseheight;
         baseheight = box_height(base);
-    } else {
-        /*tex We have only pure math char nodes here:*/
-     // halfword basefnt = tex_fam_fnt(math_family(nucleus), size);
-     // if (tex_aux_has_opentype_metrics(basefnt)) {
-     //     halfword basechr = math_character(nucleus);
-     //     if (math_kernel_node_has_option(nucleus, math_kernel_no_italic_correction)) {
-     //         italic = 0;
-     //     } else if (tex_aux_math_engine_control(basefnt, math_control_accent_italic_kern)) {
-     //         italic = tex_aux_math_x_style_scaled(basefnt, tex_char_italic_from_font(basefnt, basechr), size);
-     //     }
-     // }
     }
     /*tex The top accents of both characters are aligned. */
     {
@@ -2997,7 +2980,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
                 /*tex If the accent is extensible just take the center. */
                 anchor = tex_half_scaled(accentwidth);
             } else {
-                anchor = tex_char_top_accent_from_font(accentfnt, accentchr); /* no bot accent key */
+                anchor = tex_char_unchecked_top_anchor_from_font(accentfnt, accentchr); /* no bot accent key */
                 if (anchor != INT_MIN) {
                     anchor = tex_aux_math_y_size_scaled(accentfnt, anchor, size); /* why y and not x */
                 } else {
@@ -3064,14 +3047,6 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
         box_shift_amount(result) = - delta;
     }
     box_width(result) += overshoot;
- // if (italic) {
- //     /*tex
- //         The old font codepath has ic built in, but new font code doesn't so we add
- //         the correction here.
- //     */
- //     tex_aux_math_insert_italic_kern(result, italic, nucleus, "accent");
- //     box_width(result) += italic ;
- // }
     kernel_math_list(nucleus) = result;
     node_type(nucleus) = sub_box_node;
 }
@@ -3199,6 +3174,8 @@ static void tex_aux_wrap_fraction_result(halfword target, int style, int size, h
             if (tex_math_has_class_option(fraction_noad_subtype, prefer_delimiter_dimensions_class_option)) {  
                 kerns->height = extremes.height;
                 kerns->depth = extremes.depth;
+                kerns->dimensions = 1;
+                kerns->font = extremes.tfont;
             }
         }
      /* tex_aux_normalize_delimiters(left, right); */
@@ -3220,27 +3197,30 @@ static void tex_aux_wrap_fraction_result(halfword target, int style, int size, h
 /*tex
     The numerator and denominator must be separated by a certain minimum clearance, called |clr| in 
     the following program. The difference between |clr| and the actual clearance is |2 * delta|.
+
+    In the case of a fraction line, the minimum clearance depends on the actual thickness of the 
+    line but we've moved that elsewhere. This gap vs up/down is kindo f weird anyway. 
 */
+
+static void tex_aux_calculate_fraction_shifts(halfword target, int style, int size, scaled *shift_up, scaled *shift_down, int up, int down)
+{
+    (void) size;
+    *shift_up = tex_get_math_y_parameter_checked(style, up);
+    *shift_down = tex_get_math_y_parameter_checked(style, down);
+    *shift_up = tex_round_xn_over_d(*shift_up, fraction_v_factor(target), 1000);
+    *shift_down = tex_round_xn_over_d(*shift_down, fraction_v_factor(target), 1000);
+}
 
 static void tex_aux_calculate_fraction_shifts_stack(halfword target, int style, int size, halfword numerator, halfword denominator, scaled *shift_up, scaled *shift_down, scaled *delta)
 {
     scaled clearance = tex_get_math_y_parameter_checked(style, math_parameter_stack_vgap);
-    (void) size;
-    *shift_up = tex_get_math_y_parameter_checked(style, math_parameter_stack_num_up);
-    *shift_down = tex_get_math_y_parameter_checked(style, math_parameter_stack_denom_down);
-    *shift_up = tex_round_xn_over_d(*shift_up, fraction_v_factor(target), 1000);
-    *shift_down = tex_round_xn_over_d(*shift_down, fraction_v_factor(target), 1000);
+    tex_aux_calculate_fraction_shifts(target, style, size, shift_up, shift_down, math_parameter_stack_num_up, math_parameter_stack_denom_down);
     *delta = tex_half_scaled(clearance - ((*shift_up - box_depth(numerator)) - (box_height(denominator) - *shift_down)));
     if (*delta > 0) {
         *shift_up += *delta;
         *shift_down += *delta;
     }
 }
-
-/*tex
-    In the case of a fraction line, the minimum clearance depends on the actual thickness of the 
-    line.
-*/
 
 static void tex_aux_calculate_fraction_shifts_normal(halfword target, int style, int size, halfword numerator, halfword denominator, scaled *shift_up, scaled *shift_down, scaled *delta)
 {
@@ -3249,26 +3229,17 @@ static void tex_aux_calculate_fraction_shifts_normal(halfword target, int style,
     scaled denominator_clearance = tex_get_math_y_parameter_checked(style, math_parameter_fraction_denom_vgap);
     scaled delta_up = 0;
     scaled delta_down = 0;
-    *shift_up = tex_get_math_y_parameter_checked(style, math_parameter_fraction_num_up);
-    *shift_down = tex_get_math_y_parameter_checked(style, math_parameter_fraction_denom_down);
-    *shift_up = tex_round_xn_over_d(*shift_up, fraction_v_factor(target), 1000);
-    *shift_down = tex_round_xn_over_d(*shift_down, fraction_v_factor(target), 1000);
+    tex_aux_calculate_fraction_shifts(target, style, size, shift_up, shift_down, math_parameter_fraction_num_up, math_parameter_fraction_denom_down);
     /* hm, delta is only set when we have a middle delimiter ... needs checking .. i should write this from scratch */
     *delta = tex_half_scaled(tex_aux_math_given_y_scaled(fraction_rule_thickness(target)));
-    if (has_noad_option_exact(target)) {
-        delta_up = numerator_clearance - ((*shift_up   - box_depth(numerator) ) - (axis + *delta));
-        delta_down = denominator_clearance - ((*shift_down - box_height(denominator)) + (axis - *delta));
-    } else {
-        // maybe this is just the old tex code path
-        scaled rule_thickness = tex_aux_math_given_y_scaled(fraction_rule_thickness(target));
-        scaled rule_parameter = tex_get_math_y_parameter_checked(style, math_parameter_fraction_rule);
-        numerator_clearance = tex_ext_xn_over_d(numerator_clearance, rule_thickness, rule_parameter);
-        denominator_clearance = tex_ext_xn_over_d(denominator_clearance, rule_thickness, rule_parameter);
-        delta_up = numerator_clearance - ((*shift_up   - box_depth(numerator) ) - (axis + *delta));
-        delta_down = denominator_clearance - ((*shift_down - box_height(denominator)) + (axis - *delta));
+    delta_up = numerator_clearance - ((*shift_up   - box_depth(numerator) ) - (axis + *delta));
+    delta_down = denominator_clearance - ((*shift_down - box_height(denominator)) + (axis - *delta));
+    if (delta_up > 0) {
+        *shift_up += delta_up;
     }
-    *shift_up += delta_up;
-    *shift_down += delta_down;
+    if (delta_down > 0) {
+        *shift_down += delta_down;
+    }
 }
 
 static scaled tex_aux_check_fraction_rule(halfword target, int style, int size, int fractiontype, halfword *usedfam)
@@ -3285,6 +3256,12 @@ static scaled tex_aux_check_fraction_rule(halfword target, int style, int size, 
     } else if (fractiontype == above_fraction_subtype) {
         /*tex Bypassed by command. */
         preferfont = 0;
+        if (has_noad_option_proportional(target)) {            
+            /* We replaced the non |exact| code path by this one: */
+            scaled text = tex_get_math_y_parameter_checked(text_style, math_parameter_fraction_rule);
+            scaled here = tex_get_math_y_parameter_checked(style, math_parameter_fraction_rule);
+            fraction_rule_thickness(target) = tex_ext_xn_over_d(fraction_rule_thickness(target), here, text);
+        }
     } else if (fraction_rule_thickness(target)) {
         /*tex Controlled by optional parameter. */
         preferfont = 1;
@@ -3296,7 +3273,7 @@ static scaled tex_aux_check_fraction_rule(halfword target, int style, int size, 
         }
     }
     if (fraction_rule_thickness(target) == preset_rule_thickness) {
-        fraction_rule_thickness(target) = tex_get_math_y_parameter_checked(style, math_parameter_fraction_rule);
+        fraction_rule_thickness(target) = tex_get_math_y_parameter_checked(style, math_parameter_fraction_rule); 
     }
     if (usedfam) {
         *usedfam = fam;
@@ -3371,7 +3348,7 @@ static halfword tex_aux_make_skewed_fraction(halfword target, int style, int siz
     shift_up = shift_down; /*tex The |shift_up| value might change later. */
     tex_aux_wrap_fraction_parts(target, style, size, &numerator, &denominator, 0);
     /*tex 
-        Here we don't share code bnecause we're going horizontal.
+        Here we don't share code because we're going horizontal.
     */
     if (! has_noad_option_noaxis(target)) {
         shift_up += tex_half_scaled(tex_aux_math_axis(size));
@@ -3582,9 +3559,8 @@ static halfword tex_aux_check_nucleus_complexity (
 );
 
 /*
-    For easy configuration ... fonts are somewhat inconsistent and the
-    values for italic correction run from 30 to 60\% of the width.
-
+    For easy configuration ... fonts are somewhat inconsistent and the values for italic correction 
+    run from 30 to 60\% of the width.
 */
 
 static void tex_aux_get_shifts(int mode, int style, scaled delta, scaled *top, scaled *bot)
@@ -3623,415 +3599,44 @@ static void tex_aux_get_shifts(int mode, int style, scaled delta, scaled *top, s
     }
 }
 
-// static scaled tex_aux_make_op(halfword q, int style, int size, int italic, int forced_no_limits, kernset *kerns)
-// {
-//     /*tex for historic reasons we have two flags .. because we need to adapt to the style */
-//     int limits = has_noad_option_limits(q);
-//     int nolimits = has_noad_option_nolimits(q);
-//     if (! limits && ! nolimits && (style == display_style || style == cramped_display_style)) {
-//         nolimits = 0;
-//         limits = 1;
-//         noad_options(q) |= noad_option_limits; /* so we can track it */
-//     }
-//     if (forced_no_limits) {
-//         nolimits = 1;
-//     }
-//     if (node_type(noad_nucleus(q)) == math_char_node) {
-//         halfword x;
-//         int shiftaxis = 0;
-//         halfword chr = null;
-//         halfword fnt = null;
-//         halfword autoleft = null;
-//         halfword autoright = null;
-//         halfword autosize = has_noad_option_auto(q);
-//         scaled openupheight = has_noad_option_openupheight(q) ? noad_height(q) : 0;
-//         scaled openupdepth = has_noad_option_openupdepth(q) ? noad_depth(q) : 0;
-//         if (has_noad_option_adapttoleft(q) && node_prev(q)) {
-//             autoleft = node_prev(q);
-//             if (node_type(autoleft) != simple_noad) {
-//                 autoleft = null;
-//             } else {
-//                 autoleft = noad_new_hlist(autoleft);
-//             }
-//         }
-//         if (has_noad_option_adapttoright(q) && node_next(q)) {
-//             autoright = noad_nucleus(node_next(q));
-//         }
-//         tex_aux_fetch(noad_nucleus(q), "operator", &fnt, &chr);
-//         /*tex Nicer is actually to just test for |display_style|. */
-//         if ((style < text_style) || autoleft || autoright || autosize) {
-//             /*tex Try to make it larger in displaystyle. */
-//             scaled opsize = tex_get_math_parameter(style, math_parameter_operator_size, NULL);
-//             if ((autoleft || autoright || autosize) && (opsize == undefined_math_parameter)) {
-//                 opsize = 0;
-//             }
-//             if (opsize != undefined_math_parameter) {
-//                 /*tex Creating a temporary delimiter is the cleanest way. */
-//                 halfword y = tex_new_node(delimiter_node, 0);
-//                 tex_attach_attribute_list_copy(y, noad_nucleus(q));
-//                 delimiter_small_family(y) = math_family(noad_nucleus(q));
-//                 delimiter_small_character(y) = math_character(noad_nucleus(q));
-//                 opsize = tex_aux_math_y_scaled(opsize, style);
-//                 if (autoright) {
-//                     /*tex We look ahead and preroll, |autoright| is a noad. */
-//                     scaledwhd siz = tex_natural_hsizes(autoright, null, 0.0, 0, 0);
-//                     scaled total = siz.ht + siz.dp;
-//                     if (total > opsize) {
-//                         opsize = total;
-//                     }
-//                 }
-//                 if (autoleft && box_total(autoleft) > opsize) {
-//                     /*tex We look back and check, |autoleft| is a box. */
-//                     opsize = box_total(autoleft);
-//                 }
-//                 /* we need to check for overflow here */
-//                 opsize += limited_scaled(openupheight);
-//                 opsize += openupdepth;
-//                 x = tex_aux_make_delimiter(y, text_size, opsize, 0, style, ! has_noad_option_noaxis(q), noad_options(q), NULL, &italic, 0, has_noad_option_nooverflow(q), NULL);
-//              // if (italic) {
-//              //     if (lmt_math_state.opentype) {
-//              //         /*tex
-//              //             As we never added italic correction we don't need to compensate. The ic
-//              //             is stored in a special field of the node and applied in some occasions.
-//              //         */
-//              //     } else if (noad_subscr(q) && ! has_noad_option_limits(q)) { /* todo: control option */
-//              //         /*tex
-//              //             Here we (selectively) remove the italic correction that always gets added
-//              //             in a traditional font. See (**). In \OPENTYPE\ mode we insert italic kerns,
-//              //             but in traditional mode it's width manipulation. This actually makes sense
-//              //             because those fonts have a fake width and the italic correction sets that
-//              //             right.
-//              //         */
-//              //         box_list(x) = tex_aux_math_remove_italic_kern(box_list(x), &italic, "operator");
-//              //         box_width(x) -= italic;
-//              //     }
-//              // }
-//             } else {
-//                 /*tex
-//                     Where was the weird + 1 coming from? It tweaks the comparison. Anyway, because we
-//                     do a lookup we don't need to scale the |total| and |opsize|. We have a safeguard
-//                     against endless loops.
-//                 */
-//                 opsize = tex_char_total_from_font(fnt, chr) + openupheight + openupdepth + 1;
-//                 /*
-//                 if (opsize) {
-//                     opsize = tex_aux_math_y_style_scaled(fnt, opsize, size); // we compare unscaled
-//                 }
-//                 */
-//                 while (tex_char_tag_from_font(fnt, chr) == list_tag && tex_char_total_from_font(fnt, chr) < opsize) {
-//                     halfword rem = tex_char_remainder_from_font(fnt, chr);
-//                     if (chr != rem && tex_char_exists(fnt, rem)) {
-//                         chr = rem;
-//                         math_character(noad_nucleus(q)) = chr;
-//                     } else {
-//                         break;
-//                     }
-//                 }
-//                 if (math_kernel_node_has_option(noad_nucleus(q), math_kernel_no_italic_correction)) {
-//                     italic = 0;
-//                 } else {
-//                     italic = tex_aux_math_x_size_scaled(fnt, tex_char_italic_from_font(fnt, chr), size);
-//                 }
-//                 x = tex_aux_clean_box(noad_nucleus(q), style, style, math_nucleus_list, 0, NULL);
-//              // if (italic) {
-//              //     if (lmt_math_state.opentype) {
-//              //         /*tex we never added italic correction unless we had a |mlist_to_hlist| call. */
-//              //     } else if (noad_subscr(q) && ! has_noad_option_limits(q)) { /* todo: control option */
-//              //         box_list(x) = tex_aux_math_remove_italic_kern(box_list(x), &italic, "operator");
-//              //         box_width(x) -= italic;
-//              //     }
-//              // }
-//                 shiftaxis = 1;
-//             }
-//         } else {
-//             /*tex Non display style. */
-//             italic = tex_aux_math_x_size_scaled(fnt, tex_char_italic_from_font(fnt, chr), size);
-//             x = tex_aux_clean_box(noad_nucleus(q), style, style, math_nucleus_list, 0, NULL);
-//          // if (italic) {
-//          //     if (lmt_math_state.opentype) {
-//          //         /*tex We never added italic correction, but it gets ignored anyway. */
-//          //         box_width(x) -= italic;
-//          //     } else if (noad_subscr(q) && ! has_noad_option_limits(q)) { /* todo: control option, what does this assume from the font */
-//          //         /*tex remove italic correction */
-//          //         box_width(x) -= italic;
-//          //     }
-//          // }
-//             box_height(x) += openupheight;
-//             box_depth(x) += openupdepth;
-//             shiftaxis = 1;
-//         }
-//         if (shiftaxis) {
-//             /*tex center vertically */
-//             box_shift_amount(x) = tex_half_scaled(box_height(x) - box_depth(x)) - tex_aux_math_axis(size);
-//         }
-//         if ((node_type(x) == hlist_node) && (openupheight || openupdepth)) {
-//             box_shift_amount(x) -= openupheight/2;
-//             box_shift_amount(x) += openupdepth/2;
-//         }
-//         node_type(noad_nucleus(q)) = sub_box_node;
-//         math_list(noad_nucleus(q)) = x;
-//     }
-//     if (nolimits) {
-//         /*tex
-//             We end up here when there is an explicit directive or when we're in displaymode without
-//             an explicit directive. If in text mode we want to have this mode driven placement tweak
-//             we need to use the |\nolimits| directive. Beware: that mode might be changed to a font
-//             property or option itself.
-//         */
-//      // if (lmt_math_state.opentype) {
-//             kernset localkerns = { .tr = 0, .br = 0, .tl = 0, .bl = 0 };
-//             if (kerns) { 
-//                 localkerns.tr = kerns->tr;
-//                 localkerns.br = kerns->br;
-//                 localkerns.tl = kerns->tl;
-//                 localkerns.bl = kerns->bl;
-//             }
-//             halfword p = tex_aux_check_nucleus_complexity(q, NULL, style, lmt_math_state.size, &localkerns);
-//             if (noad_has_scripts(q)) {
-//                 scaled top = 0; /*tex Normally this would be: | delta|. */
-//                 scaled bot = 0; /*tex Normally this would be: |-delta|. */
-//                 if (localkerns.tr || localkerns.br) {
-//                     italic = 0;
-//                 }
-//                 tex_aux_get_shifts(math_nolimits_mode_par, style, italic, &top, &bot);
-//                 tex_aux_make_scripts(q, p, 0, style, top, bot, 0, &localkerns);
-//             } else {
-//                 tex_aux_assign_new_hlist(q, p);
-//             }
-//             italic = 0;
-//      // } else {
-//      //     /*tex similar code as in the caller */
-//      //     halfword p = tex_aux_check_nucleus_complexity(q, &italic, style, lmt_math_state.size, NULL);
-//      //     if (noad_has_scripts(q)) {
-//      //         tex_aux_make_scripts(q, p, italic, style, 0, 0);
-//      //     } else {
-//      //         tex_aux_assign_new_hlist(q, p);
-//      //     }
-//      // }
-//     } else if (limits) {
-//         /*tex
-// 
-//             The following program builds a vlist box |v| for displayed limits. The width of the box
-//             is not affected by the fact that the limits may be skewed.
-// 
-//             We end up here when we have a limits directive or when that property is set because
-//             we're in displaymode.
-//         */
-//         halfword nucleus = noad_nucleus(q);
-//         halfword x = tex_aux_clean_box(noad_supscr(q), tex_math_style_variant(style, math_parameter_superscript_variant), style, math_sup_list, 0, NULL);
-//         halfword y = tex_aux_clean_box(nucleus, style, style, math_nucleus_list, 0, NULL);
-//         halfword z = tex_aux_clean_box(noad_subscr(q), tex_math_style_variant(style, math_parameter_subscript_variant), style, math_sub_list, 0, NULL);
-//         halfword result = tex_new_null_box_node(vlist_node, math_modifier_list);
-//         tex_attach_attribute_list_copy(result, q);
-//         if (nucleus) {
-//             switch (node_type(nucleus)) {
-//                 case sub_mlist_node:
-//                 case sub_box_node:
-//                     {
-//                         halfword n = math_list(nucleus);
-//                         if (! n) {
-//                             /* kind of special */
-//                         } else if (node_type(n) == hlist_node) {
-//                             /*tex just a not scaled char */
-//                             n = box_list(n);
-//                             while (n) {
-//                                 if (node_type(n) == glyph_node && ! tex_has_glyph_option(n, glyph_option_no_italic_correction)) {
-//                                     if (tex_aux_math_engine_control(glyph_font(n), math_control_apply_boxed_italic_kern)) {
-//                                         italic = tex_aux_math_x_size_scaled(glyph_font(n), tex_char_italic_from_font(glyph_font(n), glyph_character(n)), size);
-//                                     }
-//                                 }
-//                                 n = node_next(n);
-//                             }
-//                         } else {
-//                             /*tex This might need checking. */
-//                             while (n) {
-//                                 if (node_type(n) == fence_noad && noad_italic(n) > italic) {
-//                                     /*tex we can have dummies, the period ones */
-//                                     italic = tex_aux_math_given_x_scaled(noad_italic(n));
-//                                 }
-//                                 n = node_next(n);
-//                             }
-//                         }
-//                         break;
-//                     }
-//                 case math_char_node:
-//                     {
-//                         halfword fnt = tex_fam_fnt(math_family(nucleus), size);
-//                         halfword chr = math_character(nucleus);
-//                         italic = tex_aux_math_x_size_scaled(fnt, tex_char_italic_from_font(fnt, chr), size);
-//                         break;
-//                     }
-//             }
-//         }
-//         /*tex We're still doing limits. */
-//         {
-//             scaled halfitalic = tex_half_scaled(italic);
-//             scaled supwidth = box_width(x);
-//             scaled boxwidth = box_width(y);
-//             scaled subwidth = box_width(z);
-//             box_width(result) = boxwidth;
-//             if (supwidth > boxwidth) {
-//                 boxwidth = supwidth;
-//             }
-//             if (subwidth > boxwidth) {
-//                 boxwidth = subwidth;
-//             }
-//             box_width(result) = boxwidth;
-//             x = tex_aux_rebox(x, boxwidth, size);
-//             y = tex_aux_rebox(y, boxwidth, size);
-//             z = tex_aux_rebox(z, boxwidth, size);
-//             /*tex This is only (visually) ok for integrals, but other operators have no italic anyway. */
-//             box_shift_amount(x) = halfitalic;
-//             box_shift_amount(z) = -halfitalic;
-//             if (math_limits_mode_par >= 1) {
-//                 /*tex
-//                     This option enforces the real dimensions and avoids longer limits to stick out
-//                     which is a traditional \TEX\ feature. It's handy to have this for testing. Nicer
-//                     would be to also adapt the width of the wrapped scripts but these are reboxed
-//                     with centering so we keep that as it is.
-//                 */
-//                 if (supwidth + halfitalic > boxwidth) {
-//                     box_width(result) += supwidth + halfitalic - boxwidth;
-//                 }
-//                 if (subwidth + halfitalic > boxwidth) {
-//                     box_x_offset(result) = subwidth + halfitalic - boxwidth;
-//                     box_width(result) += box_x_offset(result);
-//                     tex_set_box_geometry(result, offset_geometry);
-//                 }
-//             } else {
-//                 /*tex We keep the possible left and/or right overshoot of limits. */
-//             }
-//             /*tex Here the target |v| is still empty but we do set the height and depth. */
-//             box_height(result) = box_height(y);
-//             box_depth(result) = box_depth(y);
-//         }
-//         /*tex
-// 
-//             Attach the limits to |y| and adjust |height(v)|, |depth(v)| to account for
-//             their presence.
-// 
-//             We use |shift_up| and |shift_down| in the following program for the amount of
-//             glue between the displayed operator |y| and its limits |x| and |z|.
-// 
-//             The vlist inside box |v| will consist of |x| followed by |y| followed by |z|,
-//             with kern nodes for the spaces between and around them; |b| is baseline and |v|
-//             is the minumum gap.
-// 
-//         */
-//         if (noad_supscr(q)) {
-//             scaled bgap = tex_get_math_y_parameter_checked(style, math_parameter_limit_above_bgap);
-//             scaled vgap = tex_get_math_y_parameter_checked(style, math_parameter_limit_above_vgap);
-//             scaled vkern = tex_get_math_y_parameter_checked(style, math_parameter_limit_above_kern);
-//             scaled vshift = bgap - box_depth(x);
-//             if (vshift < vgap) {
-//                 vshift = vgap;
-//             }
-//             if (vshift) {
-//                 halfword kern = tex_new_kern_node(vshift, vertical_math_kern_subtype);
-//                 tex_attach_attribute_list_copy(kern, q);
-//                 tex_couple_nodes(kern, y);
-//                 tex_couple_nodes(x, kern);
-//             } else {
-//                 tex_couple_nodes(y, x);
-//             }
-//             if (vkern) {
-//                 halfword kern = tex_new_kern_node(vkern, vertical_math_kern_subtype);
-//                 tex_attach_attribute_list_copy(kern, q);
-//                 tex_couple_nodes(kern, x);
-//                 box_list(result) = kern;
-//             } else {
-//                 box_list(result) = x;
-//             }
-//             box_height(result) += vkern + box_total(x) + vshift;
-//         } else {
-//             box_list(x) = null;
-//             tex_flush_node(x);
-//             box_list(result) = y;
-//         }
-//         if (noad_subscr(q)) {
-//             scaled bgap = tex_get_math_y_parameter_checked(style, math_parameter_limit_below_bgap);
-//             scaled vgap = tex_get_math_y_parameter_checked(style, math_parameter_limit_below_vgap);
-//             scaled vkern = tex_get_math_y_parameter_checked(style, math_parameter_limit_below_kern);
-//             scaled vshift = bgap - box_height(z);
-//             if (vshift < vgap) {
-//                 vshift = vgap;
-//             }
-//             if (vshift) {
-//                 halfword kern = tex_new_kern_node(vshift, vertical_math_kern_subtype);
-//                 tex_attach_attribute_list_copy(kern, q);
-//                 tex_couple_nodes(y, kern);
-//                 tex_couple_nodes(kern, z);
-//             } else {
-//                 tex_couple_nodes(y, z);
-//             }
-//             if (vkern) {
-//                 halfword kern = tex_new_kern_node(vkern, vertical_math_kern_subtype);
-//                 tex_attach_attribute_list_copy(kern, q);
-//                 tex_couple_nodes(z, kern);
-//             }
-//             box_depth(result) += vkern + box_total(z) + vshift;
-//         } else {
-//             box_list(z) = null;
-//             tex_flush_node(z);
-//         }
-//         if (noad_subscr(q)) {
-//             math_list(noad_subscr(q)) = null;
-//             tex_flush_node(noad_subscr(q));
-//             noad_subscr(q) = null;
-//         }
-//         if (noad_supscr(q)) {
-//             math_list(noad_supscr(q)) = null;
-//             tex_flush_node(noad_supscr(q));
-//             noad_supscr(q) = null;
-//         }
-//         tex_aux_assign_new_hlist(q, result);
-//      // if (lmt_math_state.opentype) {
-//             italic = 0;
-//      // }
-//     } else {
-//         /*tex
-//             We end up here when we're not in displaymode and don't have a (no)limits directive.
-//         */
-//     }
-//     return italic;
-// }
-
-static scaled tex_aux_op_no_limits(halfword target, int style, int size, int italic, kernset *kerns)
+static scaled tex_aux_op_no_limits(halfword target, int style, int size, int italic, kernset *kerns, int forceitalics)
 {
     kernset localkerns ;
-    halfword p;
+    halfword kernel;
     (void) size; 
+    (void) forceitalics; 
     if (kerns) { 
         tex_math_copy_kerns(&localkerns, kerns);
     } else { 
         tex_math_wipe_kerns(&localkerns);
     }
-    p = tex_aux_check_nucleus_complexity(target, NULL, style, lmt_math_state.size, &localkerns);
+    kernel = tex_aux_check_nucleus_complexity(target, NULL, style, lmt_math_state.size, &localkerns);
     if (noad_has_scripts(target)) {
-        scaled top = 0; /*tex Normally this would be: | delta|. */
-        scaled bot = 0; /*tex Normally this would be: |-delta|. */
+        scaled topshift = 0; /*tex Normally this would be: | delta|. */
+        scaled botshift = 0; /*tex Normally this would be: |-delta|. */
         if (localkerns.topright || localkerns.bottomright) {
             italic = 0;
         }
-        tex_aux_get_shifts(math_nolimits_mode_par, style, italic, &top, &bot);
-        tex_aux_make_scripts(target, p, 0, style, top, bot, 0, &localkerns);
+        tex_aux_get_shifts(math_nolimits_mode_par, style, italic, &topshift, &botshift);
+        tex_aux_make_scripts(target, kernel, 0, style, topshift, botshift, 0, &localkerns);
     } else {
-        tex_aux_assign_new_hlist(target, p);
+        tex_aux_assign_new_hlist(target, kernel);
     }
     // italic = 0;
     return 0; 
 }
 
-static scaled tex_aux_op_do_limits(halfword target, int style, int size, int italic, kernset *kerns)
+static scaled tex_aux_op_do_limits(halfword target, int style, int size, int italic, kernset *kerns, int forceitalics)
 {
     halfword nucleus = noad_nucleus(target);
-    halfword x = tex_aux_clean_box(noad_supscr(target), tex_math_style_variant(style, math_parameter_superscript_variant), style, math_sup_list, 0, NULL);
-    halfword y = tex_aux_clean_box(nucleus, style, style, math_nucleus_list, 0, NULL);
-    halfword z = tex_aux_clean_box(noad_subscr(target), tex_math_style_variant(style, math_parameter_subscript_variant), style, math_sub_list, 0, NULL);
+    halfword superscript = tex_aux_clean_box(noad_supscr(target), tex_math_style_variant(style, math_parameter_superscript_variant), style, math_sup_list, 0, NULL);
+    halfword kernel = tex_aux_clean_box(nucleus, style, style, math_nucleus_list, forceitalics, NULL);
+    halfword subscript = tex_aux_clean_box(noad_subscr(target), tex_math_style_variant(style, math_parameter_subscript_variant), style, math_sub_list, 0, NULL);
     halfword result = tex_new_null_box_node(vlist_node, math_modifier_list);
     (void) kerns;
     tex_attach_attribute_list_copy(result, target);
     if (nucleus) {
+        // todo: get rid of redundant italic calculation ... it is still a mess .. maybe use noad_italic .. then this whole branch can go 
         switch (node_type(nucleus)) {
             case sub_mlist_node:
             case sub_box_node:
@@ -4072,11 +3677,27 @@ static scaled tex_aux_op_do_limits(halfword target, int style, int size, int ita
         }
     }
     /*tex We're still doing limits. */
-    {
+    if (noad_supscr(target) || noad_subscr(target)) {
+        scaled supwidth = box_width(superscript);
+        scaled boxwidth = box_width(kernel);
+        scaled subwidth = box_width(subscript);
         scaled halfitalic = tex_half_scaled(italic);
-        scaled supwidth = box_width(x);
-        scaled boxwidth = box_width(y);
-        scaled subwidth = box_width(z);
+        halfword topshift = halfitalic;
+        halfword bottomshift = halfitalic; 
+        if (kerns && ! halfitalic) { 
+            halfword fnt = kerns->font;
+            halfword chr = kerns->character;
+            if (fnt && chr) { 
+                scaled t = tex_aux_math_x_size_scaled(fnt, tex_char_top_anchor_from_font(fnt, chr), size);
+                scaled b = tex_aux_math_x_size_scaled(fnt, tex_char_bottom_anchor_from_font(fnt, chr), size);
+                if (t) { 
+                    topshift = t - boxwidth;
+                }
+                if (b) {    
+                    bottomshift = boxwidth - b;
+                }
+            }
+        }
         box_width(result) = boxwidth;
         if (supwidth > boxwidth) {
             boxwidth = supwidth;
@@ -4085,12 +3706,12 @@ static scaled tex_aux_op_do_limits(halfword target, int style, int size, int ita
             boxwidth = subwidth;
         }
         box_width(result) = boxwidth;
-        x = tex_aux_rebox(x, boxwidth, size);
-        y = tex_aux_rebox(y, boxwidth, size);
-        z = tex_aux_rebox(z, boxwidth, size);
+        superscript = tex_aux_rebox(superscript, boxwidth, size);
+        kernel = tex_aux_rebox(kernel, boxwidth, size);
+        subscript = tex_aux_rebox(subscript, boxwidth, size);
         /*tex This is only (visually) ok for integrals, but other operators have no italic anyway. */
-        box_shift_amount(x) = halfitalic;
-        box_shift_amount(z) = -halfitalic;
+        box_shift_amount(superscript) = topshift;
+        box_shift_amount(subscript) = -bottomshift;
         if (math_limits_mode_par >= 1) {
             /*tex
                 This option enforces the real dimensions and avoids longer limits to stick out
@@ -4098,11 +3719,11 @@ static scaled tex_aux_op_do_limits(halfword target, int style, int size, int ita
                 would be to also adapt the width of the wrapped scripts but these are reboxed
                 with centering so we keep that as it is.
             */
-            if (supwidth + halfitalic > boxwidth) {
-                box_width(result) += supwidth + halfitalic - boxwidth;
+            if (supwidth + topshift > boxwidth) {
+                box_width(result) += supwidth + topshift - boxwidth;
             }
-            if (subwidth + halfitalic > boxwidth) {
-                box_x_offset(result) = subwidth + halfitalic - boxwidth;
+            if (subwidth + bottomshift > boxwidth) {
+                box_x_offset(result) = subwidth + bottomshift - boxwidth;
                 box_width(result) += box_x_offset(result);
                 tex_set_box_geometry(result, offset_geometry);
             }
@@ -4110,8 +3731,12 @@ static scaled tex_aux_op_do_limits(halfword target, int style, int size, int ita
             /*tex We keep the possible left and/or right overshoot of limits. */
         }
         /*tex Here the target |v| is still empty but we do set the height and depth. */
-        box_height(result) = box_height(y);
-        box_depth(result) = box_depth(y);
+        box_height(result) = box_height(kernel);
+        box_depth(result) = box_depth(kernel);
+    } else { 
+        box_width(result) = box_width(kernel);
+        box_height(result) = box_height(kernel);
+        box_depth(result) = box_depth(kernel);
     }
     /*tex
 
@@ -4126,61 +3751,61 @@ static scaled tex_aux_op_do_limits(halfword target, int style, int size, int ita
         is the minumum gap.
 
     */
-    if (noad_supscr(target)) {
+    if (noad_supscr(target)) { 
         scaled bgap = tex_get_math_y_parameter_checked(style, math_parameter_limit_above_bgap);
         scaled vgap = tex_get_math_y_parameter_checked(style, math_parameter_limit_above_vgap);
         scaled vkern = tex_get_math_y_parameter_checked(style, math_parameter_limit_above_kern);
-        scaled vshift = bgap - box_depth(x);
+        scaled vshift = bgap - box_depth(superscript);
         if (vshift < vgap) {
             vshift = vgap;
         }
         if (vshift) {
             halfword kern = tex_new_kern_node(vshift, vertical_math_kern_subtype);
             tex_attach_attribute_list_copy(kern, target);
-            tex_couple_nodes(kern, y);
-            tex_couple_nodes(x, kern);
+            tex_couple_nodes(kern, kernel);
+            tex_couple_nodes(superscript, kern);
         } else {
-            tex_couple_nodes(y, x);
+            tex_couple_nodes(kernel, superscript);
         }
         if (vkern) {
             halfword kern = tex_new_kern_node(vkern, vertical_math_kern_subtype);
             tex_attach_attribute_list_copy(kern, target);
-            tex_couple_nodes(kern, x);
+            tex_couple_nodes(kern, superscript);
             box_list(result) = kern;
         } else {
-            box_list(result) = x;
+            box_list(result) = superscript;
         }
-        box_height(result) += vkern + box_total(x) + vshift;
+        box_height(result) += vkern + box_total(superscript) + vshift;
     } else {
-        box_list(x) = null;
-        tex_flush_node(x);
-        box_list(result) = y;
+        box_list(superscript) = null;
+        tex_flush_node(superscript);
+        box_list(result) = kernel;
     }
     if (noad_subscr(target)) {
         scaled bgap = tex_get_math_y_parameter_checked(style, math_parameter_limit_below_bgap);
         scaled vgap = tex_get_math_y_parameter_checked(style, math_parameter_limit_below_vgap);
         scaled vkern = tex_get_math_y_parameter_checked(style, math_parameter_limit_below_kern);
-        scaled vshift = bgap - box_height(z);
+        scaled vshift = bgap - box_height(subscript);
         if (vshift < vgap) {
             vshift = vgap;
         }
         if (vshift) {
             halfword kern = tex_new_kern_node(vshift, vertical_math_kern_subtype);
             tex_attach_attribute_list_copy(kern, target);
-            tex_couple_nodes(y, kern);
-            tex_couple_nodes(kern, z);
+            tex_couple_nodes(kernel, kern);
+            tex_couple_nodes(kern, subscript);
         } else {
-            tex_couple_nodes(y, z);
+            tex_couple_nodes(kernel, subscript);
         }
         if (vkern) {
             halfword kern = tex_new_kern_node(vkern, vertical_math_kern_subtype);
             tex_attach_attribute_list_copy(kern, target);
-            tex_couple_nodes(z, kern);
+            tex_couple_nodes(subscript, kern);
         }
-        box_depth(result) += vkern + box_total(z) + vshift;
+        box_depth(result) += vkern + box_total(subscript) + vshift;
     } else {
-        box_list(z) = null;
-        tex_flush_node(z);
+        box_list(subscript) = null;
+        tex_flush_node(subscript);
     }
     if (noad_subscr(target)) {
         kernel_math_list(noad_subscr(target)) = null;
@@ -4202,9 +3827,9 @@ static scaled tex_aux_op_do_limits(halfword target, int style, int size, int ita
     we have more fance fence support now. 
 */
 
-static void tex_aux_op_wrapup(halfword target, int style, int size, int italic, kernset *kerns)
+static scaled tex_aux_op_wrapup(halfword target, int style, int size, int italic, kernset *kerns, int forceitalics)
 {
-    halfword x;
+    halfword box;
     int shiftaxis = 0;
     halfword chr = null;
     halfword fnt = null;
@@ -4256,7 +3881,7 @@ static void tex_aux_op_wrapup(halfword target, int style, int size, int italic, 
             /* we need to check for overflow here */
             opsize += limited_scaled(openupheight);
             opsize += openupdepth;
-            x = tex_aux_make_delimiter(target, y, text_size, opsize, 0, style, ! has_noad_option_noaxis(target), NULL, &italic, 0, has_noad_option_nooverflow(target), NULL, 0);
+            box = tex_aux_make_delimiter(target, y, text_size, opsize, 0, style, ! has_noad_option_noaxis(target), NULL, &italic, 0, has_noad_option_nooverflow(target), NULL, 0);
         } else {
             /*tex
                 Where was the weird + 1 coming from? It tweaks the comparison. Anyway, because we
@@ -4278,36 +3903,56 @@ static void tex_aux_op_wrapup(halfword target, int style, int size, int italic, 
                     break;
                 }
             }
-            if (math_kernel_node_has_option(noad_nucleus(target), math_kernel_no_italic_correction)) {
+            if (math_kernel_node_has_option(noad_nucleus(target), math_kernel_no_italic_correction) && ! forceitalics) {
                 italic = 0;
-            } else {
+            } else { 
                 italic = tex_aux_math_x_size_scaled(fnt, tex_char_italic_from_font(fnt, chr), size);
             }
-            x = tex_aux_clean_box(noad_nucleus(target), style, style, math_nucleus_list, 0, NULL);
+            box = tex_aux_clean_box(noad_nucleus(target), style, style, math_nucleus_list, 0, NULL);
             shiftaxis = 1;
         }
     } else {
         /*tex Non display style. */
         italic = tex_aux_math_x_size_scaled(fnt, tex_char_italic_from_font(fnt, chr), size);
-        x = tex_aux_clean_box(noad_nucleus(target), style, style, math_nucleus_list, 0, NULL);
-        box_height(x) += openupheight;
-        box_depth(x) += openupdepth;
+        box = tex_aux_clean_box(noad_nucleus(target), style, style, math_nucleus_list, 0, NULL);
+        box_height(box) += openupheight;
+        box_depth(box) += openupdepth;
         shiftaxis = 1;
     }
     if (shiftaxis) {
         /*tex center vertically */
-        box_shift_amount(x) = tex_half_scaled(box_height(x) - box_depth(x)) - tex_aux_math_axis(size);
+        box_shift_amount(box) = tex_half_scaled(box_height(box) - box_depth(box)) - tex_aux_math_axis(size);
     }
-    if ((node_type(x) == hlist_node) && (openupheight || openupdepth)) {
-        box_shift_amount(x) -= openupheight/2;
-        box_shift_amount(x) += openupdepth/2;
+    if ((node_type(box) == hlist_node) && (openupheight || openupdepth)) {
+        box_shift_amount(box) -= openupheight/2;
+        box_shift_amount(box) += openupdepth/2;
+    }
+    if (forceitalics && italic && box_list(box)) { 
+        /*tex 
+            This features is provided in case one abuses operators in weird ways and expects italic 
+            correction to be part of the width. Maybe it should be an kernel option so that it can 
+            be controlled locally. Now here we enter fuzzy specification teritory. For n-ary 
+            operators we are supposed to use the italic correction for placements of vertical and 
+            horizontal scripts (limits an nolimits) but when we patch the width that gets messy (we
+            now need to need to backtrack twice times half the correction). The bad news is that 
+            there is no way to see if we have a n-ary unless we add a new class and only for the 
+            lone slanted integrals in lm. So, instead we just zero the correction now. After all, 
+            we can use a fence instead for these n-ary's. Actually there are probably not that many 
+            slanted operators, so it' smore about using a letter as such. So, |italiic *= 2| became 
+            |italic = 0|. 
+        */
+        tex_aux_math_insert_italic_kern(tex_tail_of_node_list(box_list(box)), italic, noad_nucleus(target), "operator");
+        box_width(box) += italic;
+        italic = 0;
     }
     node_type(noad_nucleus(target)) = sub_box_node;
-    kernel_math_list(noad_nucleus(target)) = x;
+    kernel_math_list(noad_nucleus(target)) = box;
+    return italic;
 }
 
 static scaled tex_aux_make_op(halfword target, int style, int size, int italic, int limits_mode, kernset *kerns)
 {
+    int forceitalics = node_subtype(target) == operator_noad_subtype && tex_math_has_class_option(operator_noad_subtype, operator_italic_correction_class_option);
     if (limits_mode == limits_horizontal_mode) {
         /*tex We enforce this and it can't be overruled! */
     } else if (! has_noad_option_limits(target) && ! has_noad_option_nolimits(target) && (style == display_style || style == cramped_display_style)) {
@@ -4319,7 +3964,7 @@ static scaled tex_aux_make_op(halfword target, int style, int size, int italic, 
         limits_mode = limits_vertical_mode;
     }
     if (node_type(noad_nucleus(target)) == math_char_node) {
-        tex_aux_op_wrapup(target, style, size, italic, kerns);
+        italic = tex_aux_op_wrapup(target, style, size, italic, kerns, forceitalics);
     }
     switch (limits_mode) {
         case limits_horizontal_mode: 
@@ -4329,7 +3974,7 @@ static scaled tex_aux_make_op(halfword target, int style, int size, int italic, 
                 we need to use the |\nolimits| directive. Beware: that mode might be changed to a font
                 property or option itself.
             */
-            return tex_aux_op_no_limits(target, style, size, italic, kerns); /* italic becomes zero */
+            return tex_aux_op_no_limits(target, style, size, italic, kerns, forceitalics); /* italic becomes zero */
         case limits_vertical_mode:
             /*tex
 
@@ -4337,12 +3982,13 @@ static scaled tex_aux_make_op(halfword target, int style, int size, int italic, 
                 we're in displaymode. The following program builds a vlist box |v| for displayed limits. 
                 The width of the box is not affected by the fact that the limits may be skewed.
             */
-            return tex_aux_op_do_limits(target, style, size, italic, kerns); /* italic becomes zero */
+            return tex_aux_op_do_limits(target, style, size, italic, kerns, forceitalics); /* italic becomes zero */
         default:
             /*tex
-                We end up here when we're not in displaymode and don't have a (no)limits directive.
+                We end up here when we're not in displaymode and don't have a (no)limits directive. 
+                When called the wrong way we loose the nucleus. 
             */
-            return italic; /* italic is retained */
+            return italic; /* italic is retained, happens very seldom */
     }
 }
 
@@ -4359,133 +4005,6 @@ static scaled tex_aux_make_op(halfword target, int style, int size, int italic, 
     No boundary characters enter into these ligatures.
 
 */
-
-/* How about: ord_noad_type_limits */
-
-// inline static int tex_aux_is_simple_char_noad(halfword p) /* only old school characters */
-// {
-//     return (node_type(p) == simple_noad) && (node_type(noad_nucleus(p)) == math_char_node && tex_math_has_class_option(node_subtype(p), check_ligature_class_option));
-// }
-// 
-// inline static int tex_aux_have_same_nucleus_fam(halfword p, halfword q)
-// {
-//     return math_family(noad_nucleus(p)) == math_family(noad_nucleus(q));
-// }
-// 
-// static void tex_aux_make_ord(halfword q, halfword size)
-// {
-//     /*tex The left-side character for lig/kern testing. */
-//   RESTART:
-//     /*tex We can end up here again after a ligature is built. */
-//     if (! noad_has_following_scripts(q) && node_type(noad_nucleus(q)) == math_char_node) {
-//         halfword p = node_next(q);
-//         /*tex */
-//         if (p && tex_aux_is_simple_char_noad(p) && tex_aux_have_same_nucleus_fam(p, q)) {
-//             halfword chr = null;
-//             halfword fnt = null;
-//             node_type(noad_nucleus(q)) = math_text_char_node;
-//             tex_aux_fetch(noad_nucleus(q), "ordinal", &fnt, &chr);
-//             if (tex_aux_math_engine_control(fnt, math_control_apply_ordinary_italic_kern)) {
-//                 /*
-//                     We don't have other kerns in opentype math fonts. There are however these
-//                     staircase kerns that are dealt with elsewhere. But for new math fonts we do
-//                     need to add italic correction.
-//                 */
-//                 if (math_kernel_node_has_option(noad_nucleus(q), math_kernel_no_italic_correction)) {
-//                     /* go on */
-//                 } else {
-//                     scaled kern = tex_aux_math_x_size_scaled(fnt, tex_char_italic_from_font(fnt, math_character(noad_nucleus(q))), size);
-//                     if (kern) {
-//                         tex_aux_math_insert_italic_kern(q, kern, q, "ord");
-//                     }
-//                 }
-//             } else if (tex_aux_math_engine_control(fnt, math_control_check_ligature_and_kern)) {
-//                 if (tex_has_kern(fnt, chr) || tex_has_ligature(fnt, chr)) {
-//                     /*tex
-// 
-//                         Here we construct ligatures, quite unlikely in new math fonts so maybe we
-//                         should just not go here for such fonts.
-// 
-//                         If character |a| has a kern with |cur_c|, attach the kern after~|q|; or if
-//                         it has a ligature with |cur_c|, combine noads |q| and~|p| appropriately;
-//                         then |return| if the cursor has moved past a noad, or |goto restart|.
-// 
-//                         Note that a ligature between an |ord_noad| and another kind of noad is
-//                         replaced by an |ord_noad|, when the two noads collapse into one.
-// 
-//                         We could make a parenthesis (say) change shape when it follows certain
-//                         letters. Presumably a font designer will define such ligatures only when
-//                         this convention makes sense.
-// 
-//                     */
-//                     halfword nxt = math_character(noad_nucleus(p));
-//                     halfword slot;
-//                     int type = tex_valid_ligature(chr, nxt, &slot);
-//                     if (type >= 0) {
-//                         switch (type) {
-//                             case  1: /*tex \type{=:|} */
-//                             case  5: /*tex \type{=:|>} */
-//                                 math_character(noad_nucleus(q)) = slot;
-//                                 break;
-//                             case  2: /*tex \type{|=:} */
-//                             case  6: /*tex \type{|=:>} */
-//                                 math_character(noad_nucleus(p)) = slot;
-//                                 break;
-//                             case  3: /*tex \type{|=:|} */
-//                             case  7: /*tex \type{|=:|>} */
-//                             case 11: /*tex \type{|=:|>>} */
-//                                 {
-//                                     halfword r = tex_new_node(simple_noad, ordinary_noad_subtype);
-//                                     halfword s = tex_new_node(math_char_node, 0);
-//                                     tex_attach_attribute_list_copy(r, q);
-//                                     tex_attach_attribute_list_copy(s, q);
-//                                     noad_nucleus(r) = s;
-//                                     math_character(noad_nucleus(r)) = slot;
-//                                     math_family(noad_nucleus(r)) = math_family(noad_nucleus(q));
-//                                     tex_couple_nodes(q, r);
-//                                     tex_couple_nodes(r, p);
-//                                     if (type < 11) {
-//                                         node_type(noad_nucleus(r)) = math_char_node;
-//                                     } else {
-//                                         /*tex prevent combination */
-//                                         node_type(noad_nucleus(r)) = math_text_char_node;
-//                                     }
-//                                 }
-//                                 break;
-//                             default:  /*tex |=:| */
-//                                 tex_try_couple_nodes(q, node_next(p));
-//                                 math_character(noad_nucleus(q)) = slot;
-//                                 noad_subscr(q) = noad_subscr(p);
-//                                 noad_supscr(q) = noad_supscr(p);
-//                                 noad_subscr(p) = null ;
-//                                 noad_supscr(p) = null ;
-//                                 tex_flush_node(p);
-//                                 break;
-//                         }
-//                         if (type > 3) {
-//                             return;
-//                         } else {
-//                             node_type(noad_nucleus(q)) = math_char_node;
-//                             goto RESTART; /*tex Inefficient but we never see this branch anyway. */
-//                         }
-//                     }
-//                     {
-//                      // scaled kern = tex_aux_math_x_size_scaled(fnt, tex_valid_kern(chr, nxt), size);
-//                         halfword nxtchr = null;
-//                         halfword nxtfnt = null;
-//                         tex_aux_fetch(noad_nucleus(p), "ordinal", &nxtfnt, &nxtchr);
-//                         scaled kern = tex_get_kern(fnt, chr, nxtchr);
-//                         if (kern) {
-//                             tex_aux_math_insert_font_kern(q, kern, q, "ord");
-//                             return;
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
-
 
 // $ \mathord {a}  $ : ord -> nucleus -> mathchar 
 // $ \mathord {ab} $ : ord -> nucleus -> submlist -> ord + ord 
@@ -4517,7 +4036,7 @@ static halfword tex_aux_check_ord(halfword current, halfword size, halfword next
         case sub_mlist_node: 
             { 
              // I'm not that motivated for this and it should be an engine option anyway then.
-
+             //
              // halfword head = math_list(nucleus);
              // halfword tail = tex_tail_of_node_list(head);
              // // doesn't work 
@@ -5181,7 +4700,9 @@ static int tex_aux_get_sub_kern(halfword kernel, scriptdata *sub, scaled shift_d
     some freedom in dealing with them.
 
     This code is now a bit too complex due to some (probably by now) redundant analysis so at some
-    point I will rewrite it.
+    point I will rewrite it. Anyway, normally we don't end up in the next one because italic 
+    correction already has been dealt with and thereby is zerood. In fact, if we end up here I need 
+    to check why! 
 
 */
 
@@ -5191,7 +4712,7 @@ inline static scaled tex_aux_insert_italic_now(halfword target, halfword kernel,
         case math_char_node:
         case math_text_char_node:
             {
-                halfword fam = noad_family(noad_nucleus(target));
+                halfword fam = kernel_math_family(noad_nucleus(target));
                 if (fam != unused_math_family) {
                     halfword fnt = tex_fam_fnt(fam, lmt_math_state.size);
                     if (! tex_aux_math_engine_control(fnt, math_control_apply_script_italic_kern)) {
@@ -5315,13 +4836,16 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
     */
     tex_aux_assign_new_hlist(target, kernel);
     kernelsize = tex_natural_hsizes(kernel, null, 0.0, 0, 0);
-    if (kerns) { 
-        /* todo: option */
-        if (kerns->height) {
-            kernelsize.ht = kerns->height;
-        }
-        if (kerns->depth) {
-            kernelsize.dp = kerns->depth;
+    if (kerns && kerns->dimensions) { 
+        if (tex_aux_math_engine_control(kerns->font, math_control_ignore_kern_dimensions)) {
+            /* hack for bad xits fence depth */
+        } else { 
+            if (kerns->height) {
+                kernelsize.ht = kerns->height;
+            }
+            if (kerns->depth) {
+                kernelsize.dp = kerns->depth;
+            }
         }
     }
     switch (node_type(kernel)) {
@@ -5609,7 +5133,8 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
         }
         /* */
         if (postsupdata.box) {
-            tex_aux_get_math_sup_shifts(postsupdata.box, style, &shift_up);
+            /* Do we still want to chain these sups or should we combine it? */
+            tex_aux_get_math_sup_shifts(postsupdata.box, style, &shift_up); /* maybe only in else branch */
             if (postsubdata.box) {
                 tex_aux_get_math_sup_sub_shifts(postsupdata.box, postsubdata.box, style, &shift_up, &shift_down);
                 tex_aux_get_sup_kern(kernel, &postsupdata, shift_up, supshift, &supkern, kerns);
@@ -5705,6 +5230,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
     }
     if (presubdata.box) {
         if (presupdata.box) {
+            /* Do we still want to chain these sups or should we combine it? */
             tex_aux_get_math_sup_shifts(presupdata.box, style, &shift_up);
             tex_aux_get_math_sup_sub_shifts(presupdata.box, presubdata.box, style, &shift_up, &shift_down);
             prekern = box_width(presupdata.box);
@@ -5834,7 +5360,7 @@ static halfword tex_aux_make_left_right(halfword target, int style, scaled max_d
         halfword lst;
         scaled delta = height + depth;
         tmp = tex_aux_make_delimiter(target, fence_delimiter_list(target), size, delta, 0, style, 0, &stack, &ic, 0, has_noad_option_nooverflow(target), extremes, 0);
-/* do extremes here */
+        /* do extremes here */
         noad_italic(target) = ic;
         /*tex
             Beware, a stacked delimiter has a shift but no corrected height/depth (yet).
@@ -5919,8 +5445,12 @@ static halfword tex_aux_make_left_right(halfword target, int style, scaled max_d
             if (tex_math_has_class_option(fenced_noad_subtype, prefer_delimiter_dimensions_class_option)) {  
                 kerns.height = extremes->height;
                 kerns.depth = extremes->depth;
+                kerns.dimensions = 1;
+                kerns.font = extremes->tfont;
+                kerns.character = extremes->tchar;
             }
         }
+        /* returns italic, so maybe noad_italic(target) = ... */
         tex_aux_make_op(target, style, size, ic, limits_unknown_mode, &kerns);
         /* otherwise a leak: */
         kernel_math_list(s) = null;
@@ -6156,10 +5686,6 @@ halfword tex_math_spacing_glue(halfword ltype, halfword rtype, halfword style)
     there. The delta parameter can have a value already. When it keeps it value the caller can add
     is as italic correction. However, when we have no scripts we do it here.
 
-    Also, in some cases a new glyph is made while we alredy have one. The fetch routine also sets
-    |lmt_math_state.opentype| so we can use it here. The complexity of the muxed machinery makes
-    this complexity test also complex.
-
 */
 
 static halfword tex_aux_check_nucleus_complexity(halfword target, scaled *italic, halfword style, halfword size, kernset *kerns)
@@ -6295,15 +5821,19 @@ static halfword tex_aux_check_nucleus_complexity(halfword target, scaled *italic
                     halfword list = kernel_math_list(nucleus);
                     halfword package = null;
                     halfword fenced = node_type(target) == simple_noad && node_subtype(target) == fenced_noad_subtype;
+                    halfword last = fenced ? tex_tail_of_node_list(list) : null;
                     int unpack = tex_math_has_class_option(node_subtype(target), unpack_class_option) || has_noad_option_unpacklist(target);
-                    // todo: check has_noad_option_unpacklist vs hpack later
-                 // halfword result = tex_mlist_to_hlist(list, fenced || has_noad_option_unpacklist(q), style, unset_noad_class, unset_noad_class); /*tex Here we're nesting. */
                     halfword result = tex_mlist_to_hlist(list, unpack, style, unset_noad_class, unset_noad_class, kerns); /*tex Here we're nesting. */
                     tex_aux_set_current_math_size(style);
                     package = tex_hpack(result, 0, packing_additional, direction_unknown, holding_none_option);
                     if (fenced) {
                         node_subtype(package) = math_fence_list;
-                 // } else if (has_noad_option_unpacklist(q)) {
+                        if (list && node_type(list) == fence_noad && noad_analyzed(list) != unset_noad_class) {
+                            set_noad_left_class(target, noad_analyzed(list));
+                        }
+                        if (last && node_type(last) == fence_noad && noad_analyzed(last) != unset_noad_class) {
+                            set_noad_right_class(target, noad_analyzed(last));
+                        }
                     } else if (unpack) {
                         node_subtype(package) = math_list_list;
                     } else if (noad_class_main(target) == unset_noad_class) {
@@ -6420,6 +5950,7 @@ static int tex_aux_make_fenced(halfword current, halfword current_style, halfwor
     if (nucleus) {
         halfword list = kernel_math_list(nucleus);
         if (list && node_type(list) == fence_noad && node_subtype(list) == left_operator_side) {
+            /* maybe use this more: */
             fenceclasses->main = noad_class_main(list);
             fenceclasses->left = noad_class_left(list);
             fenceclasses->right = noad_class_right(list);
@@ -6482,6 +6013,8 @@ static void tex_aux_finish_fenced(halfword current, halfword main_style, scaled 
                 if (tex_math_has_class_option(fenced_noad_subtype, prefer_delimiter_dimensions_class_option)) {  
                     kerns->height = extremes.height;
                     kerns->depth = extremes.depth;
+                    kerns->dimensions = 1;
+                    kerns->font = extremes.tfont;
                 }
                 break;
             case right_fence_side:
@@ -6623,8 +6156,7 @@ static void tex_aux_show_math_list(const char *fmt, halfword list)
 
 static void tex_aux_wrapup_nucleus_and_add_scripts(halfword current, halfword nxt, int current_style, halfword *italic, kernset *kerns)
 {
-    halfword p;
-    p = tex_aux_check_nucleus_complexity(current, italic, current_style, lmt_math_state.size, kerns);
+    halfword p = tex_aux_check_nucleus_complexity(current, italic, current_style, lmt_math_state.size, kerns);
     if (p && noad_source(current)) {
         switch (node_type(p)) {
             case hlist_node:
@@ -6779,6 +6311,11 @@ static void tex_mlist_to_hlist_preroll_radicals(mliststate *state)
     }
 }
 
+/*tex 
+    At some point this will all change to well defined kernel/script/talic handling but then we no 
+    longer are compatible. It depends on fonts being okay. We already have some dead brances. 
+*/
+
 static void tex_mlist_to_hlist_preroll_dimensions(mliststate *state)
 {
     halfword current = state->mlist;
@@ -6854,7 +6391,7 @@ static void tex_mlist_to_hlist_preroll_dimensions(mliststate *state)
                                 noad_options(current) |= noad_option_no_limits;
                             }
                         }
-                        PROCESS:
+                      PROCESS:
                         if (  // node_subtype(q) == operator_noad_subtype
                                 // ||
                                    has_noad_option_limits(current)       || has_noad_option_nolimits(current)
@@ -6873,7 +6410,7 @@ static void tex_mlist_to_hlist_preroll_dimensions(mliststate *state)
                             }
                             /* tex_math_has_class_option(node_subtype(current),keep_correction_class_code) */
                             if (node_subtype(current) != operator_noad_subtype) {
-                                    italic = 0;
+                                italic = 0;
                             }
                             if (fenceclasses.main != unset_noad_class) {
                                 noad_class_main(current) = fenceclasses.main;
@@ -6962,52 +6499,7 @@ static void tex_mlist_to_hlist_preroll_dimensions(mliststate *state)
             superscript should be moved right with respect to a subscript when both are present.
         */
         tex_aux_wrapup_nucleus_and_add_scripts(current, nxt, current_style, &italic, &localkerns);
-        // {
-        //     kernset kerns;
-        //     halfword p;
-        //     tex_math_copy_kerns(&kerns, &localkerns);
-        //     p = tex_aux_check_nucleus_complexity(current, &italic, current_style, lmt_math_state.size, &kerns);
-        //     if (p && noad_source(current)) {
-        //         switch (node_type(p)) {
-        //             case hlist_node:
-        //             case vlist_node:
-        //                 if (! box_source_anchor(p)) {
-        //                     box_source_anchor(p) = noad_source(current);
-        //                     tex_set_box_geometry(p, anchor_geometry);
-        //                 }
-        //                 break;
-        //             default:
-        //                 /*tex Todo: maybe pack and assign! */
-        //                 break;
-        //         }
-        //     }
-        //     if (noad_has_scripts(current)) {
-        //         scaled drop = 0;
-        //         if (node_type(current) == accent_noad && noad_has_superscripts(current)) { 
-        //             drop = tex_get_math_y_parameter_default(current_style, math_parameter_accent_superscript_drop, 0);
-        //             drop += scaledround(localkerns.toptotal * tex_get_math_parameter_default(current_style, math_parameter_accent_superscript_percent, 0) / 100.0);
-        //         }
-        //         tex_aux_make_scripts(current, p, italic, current_style, 0, 0, drop, &kerns);
-        //     } else {
-        //         /*tex
-        //             Adding italic correction here is kind of fuzzy because some characters already have
-        //             that built in. However, we also add it in the scripts so if it's optional here it
-        //             also should be there. The compexity tester can have added it in which case delta
-        //             is zero.
-        //         */
-        //         if (nxt && italic) {
-        //             if (node_type(nxt) == simple_noad && tex_math_has_class_option(node_subtype(nxt), no_italic_correction_class_option)) {
-        //                 italic = 0;
-        //             }
-        //             if (italic) {
-        //                 /* If we want it as option we need the fontor store it in the noad. */
-        //                 tex_aux_math_insert_italic_kern(p, italic, current, "final");
-        //             }
-        //         }
-        //         tex_aux_assign_new_hlist(current, p);
-        //     }
-        // }
-        CHECK_DIMENSIONS:
+      CHECK_DIMENSIONS:
         {
             scaledwhd siz = tex_natural_hsizes(noad_new_hlist(current), null, normal_glue_multiplier, normal_glue_sign, normal_glue_sign);
             if (siz.ht > state->max_height) {
@@ -7017,7 +6509,7 @@ static void tex_mlist_to_hlist_preroll_dimensions(mliststate *state)
                 state->max_depth = siz.dp;
             }
         }
-        DONE_WITH_NODE:
+      DONE_WITH_NODE:
         if ((node_type(current) == simple_noad) && noad_new_hlist(current)) { 
             if (has_noad_option_phantom(current) || has_noad_option_void(current)) {
                 noad_new_hlist(current) = tex_aux_make_list_phantom(noad_new_hlist(current), has_noad_option_void(current), get_attribute_list(current));
@@ -7060,6 +6552,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
     int recent_subtype = ordinary_noad_subtype;
     halfword current_style = state->main_style;
     halfword fenced = null;
+    halfword packedfence = null;
     halfword recent_left_slack = 0;
     halfword recent_right_slack = 0;
     halfword recent_class_overload = unset_noad_class;
@@ -7132,6 +6625,9 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                         goto RESTART;
                     }
                 } else {
+                    /*tex
+                        Here we have a wrapped list of left, middle, right and content nodes.  
+                    */
                     current_subtype = node_subtype(current);
                     current_left_slack = noad_left_slack(current);
                     current_right_slack = noad_right_slack(current);
@@ -7139,17 +6635,14 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                     switch (current_subtype) {
                         case fenced_noad_subtype:
                             {
-                                // halfword list = noad_new_hlist(current);
-                                // if (list && ! noad_nucleus(current) && ! noad_has_scripts(current)) { // scripts test will go
-                                        fenced = current;
-                                        if (get_noad_right_class(fenced) != unset_noad_class) {
-                                            current_subtype = get_noad_left_class(fenced);
-                                        } else if (get_noad_main_class(fenced) != unset_noad_class) { // needs testing by MS
-                                            current_subtype = get_noad_main_class(fenced);
-                                        } else {
-                                            current_subtype = open_noad_subtype; /* safeguard, see comment above */
-                                        }
-                                // }
+                                fenced = current;
+                                if (get_noad_right_class(fenced) != unset_noad_class) {
+                                    current_subtype = get_noad_left_class(fenced);
+                                } else if (get_noad_main_class(fenced) != unset_noad_class) { // needs testing by MS
+                                    current_subtype = get_noad_main_class(fenced);
+                                } else {
+                                    current_subtype = open_noad_subtype; /* safeguard, see comment above */
+                                }
                                 break;
                             }
                         default:
@@ -7230,9 +6723,10 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 current_subtype = fraction_noad_subtype; /* inner_noad_type */
                 break;
             case fence_noad:
+                /*tex Here we have a left, right, middle */
                 current_type = simple_noad; /*tex Same kind of fields. */
                 current_subtype = noad_analyzed(current);
-                fenced = current;
+                packedfence = current;
                 break;
             case style_node:
                 tex_aux_make_style(current, &current_style, &current_mu);
@@ -7481,7 +6975,8 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 /* curious */
             } else if (node_type(l) == hlist_node && box_source_anchor(l)) {
                 tex_couple_nodes(p, l);
-            } else if (fenced) {
+            } else if (packedfence) { 
+                /*tex This branch probably can go away, see below. */
                 /*tex Watch out: we can have |[prescripts] [fencelist] [postscripts]| */
                 if (tex_math_has_class_option(fenced_noad_subtype, unpack_class_option)) {
                     p = tex_aux_unroll_noad(p, l, math_fence_list);
@@ -7518,6 +7013,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 fenced = null;
             }
             noad_new_hlist(current) = null;
+            packedfence = null;
         }
         /*tex
             Append any |new_hlist| entries for |q|, and any appropriate penalties. We insert a
@@ -7612,7 +7108,7 @@ halfword tex_mlist_to_hlist(halfword mlist, int penalties, int main_style, int b
     state.penalties = penalties;
     state.main_style = main_style;
     state.beginclass = beginclass == unset_noad_class ? math_begin_class : beginclass;
-    state.endclass = endclass == unset_noad_class ? math_end_class : endclass;;
+    state.endclass = endclass == unset_noad_class ? math_end_class : endclass;
     state.kerns = kerns;
     state.scale = glyph_scale_par;
     state.max_height = 0;

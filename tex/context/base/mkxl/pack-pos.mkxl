@@ -90,7 +90,7 @@
    \vbox to \d_pack_positioning_y_dimension
      {\vskip\d_pack_positioning_y_offset
       \hbox to \d_pack_positioning_x_dimension
-        {\hskip\d_pack_positioning_x_offset
+        {\kern\d_pack_positioning_x_offset
          \box\b_pack_positioning
          \hfill}
       \vfill}%
@@ -145,7 +145,7 @@
      {\offinterlineskip % else we get an empty line
       \vskip\d_pack_positioning_y_position
       \hbox to \zeropoint
-        {\hskip\d_pack_positioning_x_position
+        {\kern\d_pack_positioning_x_position
          \box\nextbox
          \hss}
       \vss}%

@@ -105,6 +105,13 @@
   [fourier]
   [\c!right=\delimitedrighttildeuc]
 
+% \definemathdelimited
+%   [bannuity]
+%   [%topoffset=.2\exheight,
+%    \c!strut=no,
+%    \c!rightmargin=.05\emwidth,
+%    \c!right=\delimitedrightanutityuc]
+
 % $ \autofences \fourier{(z+\frac12)} + \courier{(z+\frac12)} + \xourier{(z+\frac12)} $
 
 \protect \endinput

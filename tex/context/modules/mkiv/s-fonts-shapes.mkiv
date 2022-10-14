@@ -30,7 +30,7 @@
 \startsetups module:showallglyphshapes:start
 
     \unexpanded\def\modulefontsstartshowglyphshape##1##2##3{
-        \startTEXpage[\c!offset=\exheight] % ,\c!frame=\v!on]
+        \startTEXpage[\c!offset=\exheight]% ,\c!frame=\v!on]
         \edef\lastshownglyphshapefieldunicode{##1}%
         \edef\lastshownglyphshapefieldname   {##2}%
         \edef\lastshownglyphshapefieldindex  {##3}%
@@ -106,8 +106,11 @@
     % \startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{0xF0299}     \stopTEXpage
     % \startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{NameMe.1190} \stopTEXpage
 
-    \startTEXpage[offset=0pt]\ShowGlyphShape{file:stixtwomath-regular.otf}{20bp}{0x1D44A}\stopTEXpage
-    \startTEXpage[offset=0pt]\ShowGlyphShape{file:stixtwomath-regular.otf}{20bp}{0x1D44C}\stopTEXpage
+%     \startTEXpage[offset=0pt]\ShowGlyphShape{file:stixtwomath-regular.otf}{20bp}{0x1D44A}\stopTEXpage
+%     \startTEXpage[offset=0pt]\ShowGlyphShape{file:stixtwomath-regular.otf}{20bp}{0x1D44C}\stopTEXpage
+
+% \definefontfeature[tg][goodies=pagella-math]
+% \startTEXpage[offset=0pt]\ShowGlyphShape{file:texgyrepagella-math.otf*tg}{20bp}{0x002F}\stopTEXpage
 
 %     \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{20bp}{0x00066}\stopTEXpage
 %     \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{20bp}{0x1D453}\stopTEXpage
@@ -126,7 +129,12 @@
 % \startTEXpage[offset=0pt]\ShowGlyphShape{file:husayninotebold.ttf}{50bp}{0x006DD}\stopTEXpage
 % \startTEXpage[offset=0pt]\ShowGlyphShape{file:arabtype.ttf}{50bp}{0x0FCA1}\stopTEXpage
 
-% \showallglyphshapes[name=name:cambria-math,size=100bp]
+\showallglyphshapes[name=name:cambria-math,size=100bp,kerns=bottomright]
+% \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{100bp}{0x1D6FD}\stopTEXpage
+
+% \showallglyphshapes[name=file:lucidabrightmathot,size=100bp,kerns=all]
+% \showallglyphshapes[name=file:garamondmath,size=100bp,kerns=bottomright]
+
 % \showallglyphshapes[name=name:arabtype,size=100bp]
 % \showallglyphshapes[name=file:husayninotebold.ttf,size=100bp]
 % \showallglyphshapes[name=name:dejavuserif,size=100bp]

@@ -54,6 +54,7 @@ local implement          = interfaces.implement
 
 local ctx_latelua        = context.latelua
 
+local texiscount         = tex.iscount
 local texgetcount        = tex.getcount
 local texsetcount        = tex.setcount
 local texconditionals    = tex.conditionals
@@ -123,6 +124,11 @@ local componentsplitter  = references.componentsplitter
 local currentreference   = nil
 
 local txtcatcodes        = catcodes.numbers.txtcatcodes -- or just use "txtcatcodes"
+
+local c_realpageno               = texiscount("realpageno")
+local c_locationcount            = texiscount("locationcount")
+local c_locationorder            = texiscount("locationorder")
+local c_lastdestinationattribute = texiscount("lastdestinationattribute")
 
 local context                      = context
 
@@ -294,7 +300,7 @@ local function referredpage(n)
         end
     end
     -- fallback
-    return texgetcount("realpageno")
+    return texgetcount(c_realpageno)
 end
 
 references.referredpage = referredpage
@@ -304,7 +310,7 @@ function references.registerpage(n) -- called in the backend code
         if n > maxreferred then
             maxreferred = n
         end
-        tobereferred[n] = texgetcount("realpageno")
+        tobereferred[n] = texgetcount(c_realpageno)
     end
 end
 
@@ -323,14 +329,14 @@ local function setnextorder(kind,name)
         lastorder = (ok[name] or 0) + 1
         ok[name] = lastorder
     end
-    texsetcount("global","locationorder",lastorder)
+    texsetcount("global",c_locationorder,lastorder)
 end
 
 
 local function setnextinternal(kind,name)
     setnextorder(kind,name) -- always incremented with internal
-    local n = texgetcount("locationcount") + 1
-    texsetcount("global","locationcount",n)
+    local n = texgetcount(c_locationcount) + 1
+    texsetcount("global",c_locationcount,n)
     return n
 end
 
@@ -433,12 +439,12 @@ end
 -- function references.enhance(prefix,tag)
 --     local l = tobesaved[prefix][tag]
 --     if l then
---         l.references.realpage = texgetcount("realpageno")
+--         l.references.realpage = texgetcount(c_realpageno)
 --     end
 -- end
 
 local function synchronizepage(reference) -- non public helper
-    reference.realpage = texgetcount("realpageno")
+    reference.realpage = texgetcount(c_realpageno)
     if jobpositions.used() then
         reference.x, reference.y = getpos()
     end
@@ -2040,7 +2046,7 @@ local function setinternalreference(specification)
     if internal then -- new
         destinationattributes[internal] = destination
     end
-    texsetcount("lastdestinationattribute",destination)
+    texsetcount(c_lastdestinationattribute,destination)
     return destination
 end
 
@@ -2107,7 +2113,7 @@ function references.setandgetattribute(data) -- maybe do internal automatically 
             } or unsetvalue
         end
     end
-    texsetcount("lastdestinationattribute",attr)
+    texsetcount(c_lastdestinationattribute,attr)
     return attr
 end
 
@@ -2685,7 +2691,7 @@ function references.checkedrealpage(r)
         realpageofpage(r) -- just initialize
     end
     if not r then
-        return texgetcount("realpageno")
+        return texgetcount(c_realpageno)
     elseif r < 1 then
         return 1
     elseif r > nofrealpages then
@@ -2780,7 +2786,7 @@ end
 function specials.deltapage(var,actions)
     local p = tonumber(var.operation)
     if p then
-        p = references.checkedrealpage(p + texgetcount("realpageno"))
+        p = references.checkedrealpage(p + texgetcount(c_realpageno))
         var.r = p
         actions.realpage = actions.realpage or p -- first wins
     end

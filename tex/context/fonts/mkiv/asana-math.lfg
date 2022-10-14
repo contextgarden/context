@@ -30,6 +30,8 @@
 -- local integral_top      = {  topright    =  0.05 }
 -- local integral_bottom   = {  bottomright = -0.25 }
 
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
 
 return {
     name = "asana-math",
@@ -49,7 +51,7 @@ return {
          -- StretchStackGapAboveMin          = less,
          -- StretchStackGapBelowMin          = less,
          -- StretchStackTopShiftUp           = less,
-            NoLimitSupFactor                 = -200,
+            NoLimitSupFactor                 =  200,
             NoLimitSubFactor                 = 1200,
             AccentBaseDepth                  =  300,
             RadicalDegreeBottomRaisePercent  =   70,
@@ -65,6 +67,12 @@ return {
                     expected = "Version 000.958",
                     message  = "this font is not supported",
                 },
+                {
+                    tweak = "addmirrors",
+                },
+                presets.matheulercalligraphic { rscale = 1    },
+                presets.mathrsfscript         { rscale = 1    },
+                presets.mathxitsarabic        { rscale = 0.95 },
                 {
                     tweak = "dimensions",
                     list  = {
@@ -103,7 +111,10 @@ return {
                 {
                     tweak = "fixellipses",
                 },
-
+                {
+                    tweak = "setoptions",
+                    set   = { "ignorekerndimensions" }
+                },
             },
         },
         bigslots = {

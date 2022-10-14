@@ -1068,11 +1068,14 @@
 %      \applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}%
 %    \fi}
 
+\let\currentregisterrealpage\!!zerocount % todo: more general accessor
+
 \permanent\protected\def\withregisterpagecommand#1#2#3#4%
   {\ifcase#3\relax
      {\tt [entry\space not\space flushed]}%
    \else
      \def\currentregisterpageindex{#2}%
+     \def\currentregisterrealpage{#3}%
      \iflocation
        \strc_references_goto_internal{\applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}}[internal(#2)]%
      \else

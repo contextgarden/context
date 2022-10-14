@@ -2313,9 +2313,7 @@ static void tex_aux_show_attr_list(halfword p)
                     tex_print_int(v);
                 }
             } else {
-                tex_print_int(k);
-                tex_print_char('=');
-                tex_print_int(v);
+                tex_print_format("%i=%i", k, v);
             };
             p = node_next(p);
             if (p) {
@@ -2330,18 +2328,14 @@ void tex_print_name(halfword n, const char* what)
 {
     tex_print_str_esc(what);
     if (tracing_nodes_par > 0) {
-        tex_print_char('<');
-        tex_print_int(n);
-        tex_print_char('>');
+        tex_print_format("<%i>", n);
     }
 }
 
 static void tex_aux_print_subtype_and_attributes_str(halfword p, const char *n)
 {
     if (show_node_details_par > 0) {
-        tex_print_char('[');
-        tex_print_str(n);
-        tex_print_char(']');
+        tex_print_format("[%s]",n);
     }
     if (show_node_details_par > 1 && tex_nodetype_has_attributes(node_type(p))) {
         tex_aux_show_attr_list(p);
@@ -2415,9 +2409,7 @@ static void tex_print_node_and_details(halfword p)
 static void tex_aux_print_subtype_and_attributes_int(halfword p, halfword n)
 {
     if (show_node_details_par > 0) { \
-        tex_print_char('[');
-        tex_print_int(n);
-        tex_print_char(']');
+        tex_print_format("[%i]", n);
     }
     if (show_node_details_par > 1 && tex_nodetype_has_attributes(node_type(p))) {
         tex_aux_show_attr_list(p);
@@ -2476,23 +2468,19 @@ void tex_aux_show_dictionary(halfword p, halfword properties, halfword group, ha
         lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "Nddddd->R", p, properties, group, index, font, character, &s);
         tex_restore_cur_string(u);
         if (s) {
-            tex_print_str(", ");
-            tex_print_str(s);
+            tex_print_format(", %s", s);
             lmt_memory_free(s);
             return;
         }
     }
     if (properties) {
-        tex_print_str(", properties ");
-        tex_print_qhex(properties);
+        tex_print_format(", properties %x", properties);
     }
     if (group) {
-        tex_print_str(", group ");
-        tex_print_qhex(group);
+        tex_print_format(", group %x", group);
     }
     if (index) {
-        tex_print_str(", index ");
-        tex_print_qhex(index);
+        tex_print_format(", index %x", index);
     }
 }
 
@@ -2537,120 +2525,87 @@ void tex_show_node_list(halfword p, int threshold, int max)
                         }
                         /* effective */
                         if (whd.wd) {
-                            tex_print_str(", wd ");
-                            tex_print_dimension(whd.wd, pt_unit);
+                            tex_print_format(", wd %D", whd.wd, pt_unit);
                         }
                         if (whd.ht) {
-                            tex_print_str(", ht ");
-                            tex_print_dimension(whd.ht, pt_unit);
+                            tex_print_format(", ht %D", whd.ht, pt_unit);
                         }
                         if (whd.dp) {
-                            tex_print_str(", dp ");
-                            tex_print_dimension(whd.dp, pt_unit);
+                            tex_print_format(", dp %D", whd.dp, pt_unit);
                         }
                         if (whd.ic) {
-                            tex_print_str(", ic ");
-                            tex_print_dimension(whd.ic, pt_unit);
+                            tex_print_format(", ic %D", whd.ic, pt_unit);
                         }
                         /* */
                         if (get_glyph_language(p)) {
-                            tex_print_str(", language (n=");
-                            tex_print_int(get_glyph_language(p));
-                            tex_print_str(",l=");
-                            tex_print_int(get_glyph_lhmin(p));
-                            tex_print_str(",r=");
-                            tex_print_int(get_glyph_rhmin(p));
-                            tex_print_char(')');
+                            tex_print_format(", language (n=%i,l=%i,r=%i)", get_glyph_language(p), get_glyph_lhmin(p), get_glyph_rhmin(p));
                         }
                         if (get_glyph_script(p)) {
-                            tex_print_str(", script ");
-                            tex_print_int(get_glyph_script(p));
+                            tex_print_format(", script %i", get_glyph_script(p));
                         }
                         if (get_glyph_hyphenate(p)) {
-                            tex_print_str(", hyphenationmode ");
-                            tex_print_qhex(get_glyph_hyphenate(p));
+                            tex_print_format(", hyphenationmode %x", get_glyph_hyphenate(p));
                         }
                         if (glyph_x_offset(p)) {
-                            tex_print_str(", xoffset ");
-                            tex_print_dimension(glyph_x_offset(p), pt_unit);
+                            tex_print_format(", xoffset %D", glyph_x_offset(p), pt_unit);
                         }
                         if (glyph_y_offset(p)) {
-                            tex_print_str(", yoffset ");
-                            tex_print_dimension(glyph_y_offset(p), pt_unit);
+                            tex_print_format(", yoffset %D", glyph_y_offset(p), pt_unit);
                         }
                         if (glyph_left(p)) {
-                            tex_print_str(", left ");
-                            tex_print_dimension(glyph_left(p), pt_unit);
+                            tex_print_format(", left %D", glyph_left(p), pt_unit);
                         }
                         if (glyph_right(p)) {
-                            tex_print_str(", right ");
-                            tex_print_dimension(glyph_right(p), pt_unit);
+                            tex_print_format(", right %D", glyph_right(p), pt_unit);
                         }
                         if (glyph_raise(p)) {
-                            tex_print_str(", raise ");
-                            tex_print_dimension(glyph_raise(p), pt_unit);
+                            tex_print_format(", raise %D", glyph_raise(p), pt_unit);
                         }
                         if (glyph_expansion(p)) {
-                            tex_print_str(", expansion ");
-                            tex_print_int(glyph_expansion(p));
+                            tex_print_format(", expansion %i", glyph_expansion(p));
                         }
                         if (glyph_scale(p) && glyph_scale(p) != 1000) {
-                            tex_print_str(", scale ");
-                            tex_print_int(glyph_scale(p));
+                            tex_print_format(", scale %i", glyph_scale(p));
                         }
                         if (glyph_x_scale(p) && glyph_x_scale(p) != 1000) {
-                            tex_print_str(", xscale ");
-                            tex_print_int(glyph_x_scale(p));
+                            tex_print_format(", xscale %i", glyph_x_scale(p));
                         }
                         if (glyph_y_scale(p) && glyph_y_scale(p) != 1000) {
-                            tex_print_str(", yscale ");
-                            tex_print_int(glyph_y_scale(p));
+                            tex_print_format(", yscale %i", glyph_y_scale(p));
                         }
                         if (glyph_data(p)) {
-                            tex_print_str(", data ");
-                            tex_print_int(glyph_data(p));
+                            tex_print_format(", data %i", glyph_data(p));
                         }
                         if (glyph_state(p)) {
-                            tex_print_str(", state ");
-                            tex_print_int(glyph_state(p));
+                            tex_print_format(", state %i", glyph_state(p));
                         }
                         if (glyph_options(p)) {
-                            tex_print_str(", options ");
-                            tex_print_qhex(glyph_options(p));
+                            tex_print_format(", options %x", glyph_options(p));
                         }
                         if (glyph_discpart(p)) {
-                            tex_print_str(", discpart ");
-                            tex_print_int(glyph_discpart(p));
+                            tex_print_format(", discpart %i", glyph_discpart(p));
                         }
                         tex_aux_show_dictionary(p, glyph_properties(p), glyph_group(p), glyph_index(p), glyph_font(p), glyph_character(p));
                     }
-                    tex_print_str(", font ");
-                    /* this could be a callback */
-                    tex_print_font_identifier(glyph_font(p)); /* for now consistent with others, might change */
-                    tex_print_str(", glyph ");
-                    tex_print_char_identifier(glyph_character(p));
+                    tex_print_format(", font %F, glyph %U", glyph_font(p), glyph_character(p));
                     break;
                 case hlist_node:
                 case vlist_node:
                 case unset_node:
                     /*tex Display box |p|. */
                     if (box_width(p)) {
-                        tex_print_str(", width ");
-                        tex_print_dimension(box_width(p), pt_unit);
+                        tex_print_format(", width %D", box_width(p), pt_unit);
                     }
                     if (box_height(p)) {
-                        tex_print_str(", height ");
-                        tex_print_dimension(box_height(p), pt_unit);
+                        tex_print_format(", height %D", box_height(p), pt_unit);
                     }
                     if (box_depth(p)) {
-                        tex_print_str(", depth ");
-                        tex_print_dimension(box_depth(p), pt_unit);
+                        tex_print_format(", depth %D", box_depth(p), pt_unit);
                     }
                     if (node_type(p) == unset_node) {
                         /*tex Display special fields of the unset node |p|. */
                         if (box_span_count(p)) {
-                            tex_print_str(", columns ");
-                            tex_print_int(box_span_count(p) + 1);
+                            tex_print_format(", columns %i", box_span_count(p) + 1);
                         }
                         if (box_glue_stretch(p)) {
                             tex_print_str(", stretch ");
@@ -2691,8 +2646,7 @@ void tex_show_node_list(halfword p, int threshold, int max)
                             }
                         }
                         if (box_shift_amount(p) != 0) {
-                            tex_print_str(", shifted ");
-                            tex_print_dimension(box_shift_amount(p), pt_unit);
+                            tex_print_format(", shifted %D", box_shift_amount(p), pt_unit);
                         }
                         if (valid_direction(box_dir(p))) {
                             tex_print_str(", direction ");
@@ -2703,41 +2657,30 @@ void tex_show_node_list(halfword p, int threshold, int max)
                             }
                         }
                         if (box_geometry(p)) {
-                            tex_print_str(", geometry ");
-                            tex_print_qhex(box_geometry(p));
+                            tex_print_format(", geometry %x", box_geometry(p));
                             if (tex_has_box_geometry(p, orientation_geometry)) {
-                                tex_print_str(", orientation ");
-                                tex_print_qhex(box_orientation(p));
+                                tex_print_format(", orientation %x", box_orientation(p));
                             }
                             if (tex_has_box_geometry(p, offset_geometry)) {
-                                tex_print_str(", offset(");
-                                tex_print_dimension(box_x_offset(p), pt_unit);
-                                tex_print_char(',');
-                                tex_print_dimension(box_y_offset(p), pt_unit);
-                                tex_print_char(')');
+                                tex_print_format(", offset(%D,%D)", box_x_offset(p), pt_unit, box_y_offset(p), pt_unit);
                             }
                             if (tex_has_box_geometry(p, anchor_geometry)) {
                                 if (box_anchor(p)) {
-                                    tex_print_str(", anchor ");
-                                    tex_print_qhex(box_anchor(p));
+                                    tex_print_format(", anchor %x", box_anchor(p));
                                 }
                                 if (box_source_anchor(p)) {
-                                    tex_print_str(", source ");
-                                    tex_print_int(box_source_anchor(p));
+                                    tex_print_format(", source %i", box_source_anchor(p));
                                 }
                                 if (box_target_anchor(p)) {
-                                    tex_print_str(", target ");
-                                    tex_print_int(box_target_anchor(p));
+                                    tex_print_format(", target %i", box_target_anchor(p));
                                 }
                             }
                         }
                         if (box_index(p)) {
-                            tex_print_str(", index ");
-                            tex_print_int(box_index(p));
+                            tex_print_format(", index %i", box_index(p));
                         }
                         if (box_package_state(p)) {
-                            tex_print_str(", state ");
-                            tex_print_int(box_package_state(p));
+                            tex_print_format(", state %i", box_package_state(p));
                         }
                     }
                     tex_print_node_list(box_pre_adjusted(p), "preadjusted", threshold, max);
@@ -2749,59 +2692,50 @@ void tex_show_node_list(halfword p, int threshold, int max)
                 case rule_node:
                     /*tex Display rule |p|. */
                     if (rule_width(p)) {
-                        tex_print_str(", width ");
-                        tex_print_rule_dimen(rule_width(p));
+                        tex_print_format(", width %R", rule_width(p));
                     }
                     if (rule_height(p)) {
-                        tex_print_str(", height ");
-                        tex_print_rule_dimen(rule_height(p));
+                        tex_print_format(", height %R", rule_height(p));
                     }
                     if (rule_depth(p)) {
-                        tex_print_str(", depth ");
-                        tex_print_rule_dimen(rule_depth(p));
+                        tex_print_format(", depth %R", rule_depth(p));
                     }
                     if (rule_left(p)) {
-                        tex_print_str(", left / top ");
-                        tex_print_rule_dimen(rule_left(p));
+                        tex_print_format(", left / top %R", rule_left(p));
                     }
                     if (rule_right(p)) {
-                        tex_print_str(", right / bottom ");
-                        tex_print_rule_dimen(rule_right(p));
+                        tex_print_format(", right / bottom %R", rule_right(p));
                     }
                     if (rule_x_offset(p)) {
-                        tex_print_str(", xoffset ");
-                        tex_print_rule_dimen(rule_x_offset(p));
+                        tex_print_format(", xoffset %R", rule_x_offset(p));
                     }
                     if (rule_y_offset(p)) {
-                        tex_print_str(", yoffset ");
-                        tex_print_rule_dimen(rule_y_offset(p));
+                        tex_print_format(", yoffset %R", rule_y_offset(p));
                     }
                     if (rule_font(p)) {
                         if (rule_font(p) < 0 || rule_font(p) >= rule_font_fam_offset) {
-                            tex_print_str(", font ");
-                            tex_print_font_identifier(rule_font(p));
+                            tex_print_format(", font %F", rule_font(p));
                         } else {
-                            tex_print_str(", family ");
-                            tex_print_int(rule_font(p) - rule_font_fam_offset);
+                            tex_print_format(", family %i", rule_font(p) - rule_font_fam_offset);
                         }
                     }
                     if (rule_character(p)) {
-                        tex_print_str(", character ");
-                        tex_print_char_identifier(rule_character(p));
+                        tex_print_format(", character %U", rule_character(p));
                     }
                     break;
                 case insert_node:
                     /*tex Display insertion |p|. The natural size is the sum of height and depth. */
-                    tex_print_str(", index ");
-                    tex_print_int(insert_index(p));
-                    tex_print_str(", total height ");
-                    tex_print_dimension(insert_total_height(p), pt_unit);
-                    tex_print_str(", max depth ");
-                    tex_print_dimension(insert_max_depth(p), pt_unit);
-                    tex_print_str(", split glue (");
-                    tex_print_specnode(insert_split_top(p), no_unit);
-                    tex_print_str("), float cost ");
-                    tex_print_int(insert_float_cost(p));
+                    tex_print_format(
+                        ", index %i, total height %D, max depth %D, split glue (", 
+                        insert_index(p), 
+                        insert_total_height(p), pt_unit,
+                        insert_max_depth(p), pt_unit
+                    );
+                    tex_print_specnode(insert_split_top(p), no_unit); /* todo: formatter for specnode but what CHAR to use */
+                    tex_print_format(
+                     "), float cost %i",
+                        insert_float_cost(p)
+                    );
                     tex_print_node_list(insert_list(p), "list", threshold, max);
                     break;
                 case dir_node:
@@ -2861,8 +2795,8 @@ void tex_show_node_list(halfword p, int threshold, int max)
                             if (tex_par_state_is_set(p, par_shaping_penalty_code)        ) { v = par_shaping_penalty(p)         ; if (v > 0)                 { tex_print_str(", shapingpenalty ");           tex_print_int      (v);          } }
                         }
                         /* local boxes */
-                        v = tex_get_local_left_width(p)  ; if (v) { tex_print_str(", leftboxwidth ");  tex_print_dimension(v, pt_unit); }
-                        v = tex_get_local_right_width(p) ; if (v) { tex_print_str(", rightboxwidth "); tex_print_dimension(v, pt_unit); }
+                        v = tex_get_local_left_width(p)  ; if (v) { tex_print_format(", leftboxwidth %D", v, pt_unit); }
+                        v = tex_get_local_right_width(p) ; if (v) { tex_print_format(", rightboxwidth %D", v, pt_unit); }
                         tex_print_node_list(par_box_left(p), "leftbox", threshold, max);
                         tex_print_node_list(par_box_right(p), "rightbox", threshold, max);
                         tex_print_node_list(par_box_middle(p), "middlebox", threshold, max);
@@ -2870,8 +2804,7 @@ void tex_show_node_list(halfword p, int threshold, int max)
                     break;
                 case boundary_node:
                     if (boundary_data(p)) {
-                        tex_print_str(", data ");
-                        tex_print_int(boundary_data(p));
+                        tex_print_format(", data %i", boundary_data(p));
                     }
                     break;
                 case whatsit_node:
@@ -2915,27 +2848,22 @@ void tex_show_node_list(halfword p, int threshold, int max)
                             tex_print_specnode(p, node_subtype(p) < conditional_math_glue ? pt_unit : mu_unit); /* was |no_unit : mu_unit| */
                         }
                         if (glue_data(p)) {
-                            tex_print_str(", data ");
-                            tex_print_int(glue_data(p));
+                            tex_print_format(", data %i", glue_data(p));
                         }
                         if (node_subtype(p) == space_skip_glue && glue_font(p)) {
-                            tex_print_str(", font ");
-                            tex_print_int(glue_font(p));
+                            tex_print_format(", font %i", glue_font(p));
                         }
                     }
                     break;
                 case kern_node:
                     /*tex Display kern |p| */
-                    tex_print_str(", amount ");
-                    tex_print_dimension(kern_amount(p), pt_unit);
                     if (node_subtype(p) != explicit_math_kern_subtype) {
-                        tex_print_unit(pt_unit);
+                        tex_print_format(", amount %D", kern_amount(p), pt_unit);
                         if (kern_expansion(p)) {
-                            tex_print_str(", expansion ");
-                            tex_print_int(kern_expansion(p));
+                            tex_print_format(", expansion %i", kern_expansion(p));
                         }
                     } else {
-                        tex_print_unit(mu_unit);
+                        tex_print_format(", amount %D", kern_amount(p), mu_unit);
                     }
                     break;
                 case math_node:
@@ -2944,38 +2872,31 @@ void tex_show_node_list(halfword p, int threshold, int max)
                         tex_print_str(", glued ");
                         tex_print_specnode(p, no_unit);
                     } else if (math_surround(p)) {
-                        tex_print_str(", surrounded ");
-                        tex_print_dimension(math_surround(p), pt_unit);
+                        tex_print_format(", surrounded %D", math_surround(p), pt_unit);
                     }
                     if (math_penalty(p)) {
-                        tex_print_str(", penalty ");
-                        tex_print_int(math_penalty(p));
+                        tex_print_format(", penalty %i", math_penalty(p));
                     }
                     break;
                 case penalty_node:
                     /*tex Display penalty |p|. */
-                    tex_print_str(", amount ");
-                    tex_print_int(penalty_amount(p));
+                    tex_print_format(", amount %i", penalty_amount(p));
                     break;
                 case disc_node:
                     if (disc_class(p) != unset_disc_class) {
-                        tex_print_str(", class ");
-                        tex_print_int(disc_class(p));
+                        tex_print_format(", class %i", disc_class(p));
                     }
                     if (disc_options(p)) {
-                        tex_print_str(", options ");
-                        tex_print_qhex(disc_options(p));
+                        tex_print_format(", options %x", disc_options(p));
                     }
-                    tex_print_str(", penalty ");
-                    tex_print_int(disc_penalty(p));
+                    tex_print_format(", penalty %i", disc_penalty(p));
                     tex_print_node_list(disc_pre_break_head(p), "prebreaklist", threshold, max);
                     tex_print_node_list(disc_post_break_head(p), "postbreaklist", threshold, max);
                     tex_print_node_list(disc_no_break_head(p), "nobreaklist", threshold, max);
                     break;
                 case mark_node:
                     /*tex Display mark |p|. */
-                    tex_print_str(", index ");
-                    tex_print_int(mark_index(p));
+                    tex_print_format(", index %i", mark_index(p));
                     if (node_subtype(p) == reset_mark_value_code) {
                         tex_print_str(", reset");
                     } else {
@@ -2985,20 +2906,16 @@ void tex_show_node_list(halfword p, int threshold, int max)
                 case adjust_node:
                     /*tex Display adjustment |p|. */
                     if (adjust_options(p)) {
-                        tex_print_str(", options ");
-                        tex_print_qhex(adjust_options(p));
+                        tex_print_format(", options %x", adjust_options(p));
                     }
                     if (adjust_index(p)) {
-                        tex_print_str(", index ");
-                        tex_print_int(adjust_index(p));
+                        tex_print_format(", index %i", adjust_index(p));
                     }
                     if (has_adjust_option(p, adjust_option_depth_before) && adjust_depth_before(p)) {
-                        tex_print_str(", depthbefore ");
-                        tex_print_dimension(adjust_depth_before(p), pt_unit);
+                        tex_print_format(", depthbefore %D", adjust_depth_before(p), pt_unit);
                     }
                     if (has_adjust_option(p, adjust_option_depth_after) &&adjust_depth_before(p)) {
-                        tex_print_str(", depthafter ");
-                        tex_print_dimension(adjust_depth_after(p), pt_unit);
+                        tex_print_format(", depthafter %D", adjust_depth_after(p), pt_unit);
                     }
                     tex_print_node_list(adjust_list(p), "list", threshold, max);
                     break;

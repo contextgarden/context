@@ -225,30 +225,6 @@ registerotffeature {
 -- end
 
 local function initialize(tfmdata,value)
-    if value then
-        local rawdata       = tfmdata.shared.rawdata
-        local rawresources  = rawdata and rawdata.resources
-        local mathconstants = rawresources.mathconstants
-        if mathconstants then
-            tfmdata.properties.oldmath = true
-        end
-    end
-end
-
-registerotffeature {
-    name         = "oldmath",
-    description  = "deal with fake opentype fonts",
- -- manipulators = {
- --     base = manipulate,
- --     node = manipulate,
- -- },
-    initializers = {
-        base = initialize,
-        node = initialize,
-    }
-}
-
-local function initialize(tfmdata,value)
     if type(value) == "string" then
         local rawdata       = tfmdata.shared.rawdata
         local rawresources  = rawdata and rawdata.resources
@@ -318,46 +294,45 @@ registerotffeature {
 -- is. So the quick and dirty solution is:
 --
 -- add copies in private slots
--- use a pseudo feature to acess those
+-- use a pseudo feature to access those
 -- and optionally afterwards replace the original slots
 
-local coverage = { }
-
-local function initialize(tfmdata,value)
-    if value then
-        if not next(coverage) then
-            for k, char in next, mathematics.alphabets.sr.tf.lcletters do
-                coverage[char] = 0xFE800 + k
-            end
-            for k, char in next, mathematics.alphabets.sr.tf.ucletters do
-                coverage[char] = 0xFE800 + k
-            end
-            fonts.handlers.otf.addfeature {
-                name = "savemathscripts",
-                type = "substitution",
-                data = coverage,
-            }
-        end
-        local characters   = tfmdata.characters
-        local descriptions = tfmdata.descriptions
-        for char, private in next, coverage do
-            local data = characters[char]
-            if data and not characters[private] then
-                -- otherwise we need a virtual
-                characters  [private] = copytable(data)
-                descriptions[private] = copytable(descriptions[char])
-            end
-        end
-    end
-end
-
-registerotffeature {
-    name         = "copymathscripts",
-    description  = "copy math script",
-    prepend      = 1,
-    initializers = {
-        base = initialize,
-        node = initialize,
-    }
-}
-
+-- local coverage = { }
+--
+-- local function initialize(tfmdata,value)
+--     if value then
+--         if not next(coverage) then
+--             for k, char in next, mathematics.alphabets.sr.tf.lcletters do
+--                 coverage[char] = 0xFE800 + k
+--             end
+--             for k, char in next, mathematics.alphabets.sr.tf.ucletters do
+--                 coverage[char] = 0xFE800 + k
+--             end
+--             fonts.handlers.otf.addfeature {
+--                 name = "savemathscripts",
+--                 type = "substitution",
+--                 data = coverage,
+--             }
+--         end
+--         local characters   = tfmdata.characters
+--         local descriptions = tfmdata.descriptions
+--         for char, private in next, coverage do
+--             local data = characters[char]
+--             if data and not characters[private] then
+--                 -- otherwise we need a virtual
+--                 characters  [private] = copytable(data)
+--                 descriptions[private] = copytable(descriptions[char])
+--             end
+--         end
+--     end
+-- end
+--
+-- registerotffeature {
+--     name         = "copymathscripts",
+--     description  = "copy math script",
+--     prepend      = 1,
+--     initializers = {
+--         base = initialize,
+--         node = initialize,
+--     }
+-- }

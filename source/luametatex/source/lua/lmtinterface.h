@@ -484,6 +484,7 @@ make_lua_key(L, binradspacing);\
 make_lua_key(L, binrelspacing);\
 make_lua_key(L, boolean);\
 make_lua_key(L, bottomaccent);\
+make_lua_key(L, bottomanchor);\
 make_lua_key(L, bottomaccentvariant);\
 make_lua_key(L, bothflexible);\
 make_lua_key(L, bottom);\
@@ -491,6 +492,7 @@ make_lua_key(L, bottomleft);\
 make_lua_key(L, bottomlevel);\
 make_lua_key(L, bottommargin);\
 make_lua_key(L, bottomright);\
+make_lua_key(L, bottomovershoot);\
 make_lua_key(L, boundary);\
 make_lua_key(L, box);\
 make_lua_key(L, broken);\
@@ -879,11 +881,13 @@ make_lua_key(L, math_style);\
 make_lua_key(L, mathtextchar);\
 make_lua_key(L, mathchar);\
 make_lua_key(L, mathchoice);\
+make_lua_key(L, mathcomponent);\
 make_lua_key(L, MathConstants);\
 make_lua_key(L, mathcontrol);\
 make_lua_key(L, mathdir);\
 make_lua_key(L, mathfence);\
 make_lua_key(L, mathfraction);\
+make_lua_key(L, mathradical);\
 make_lua_key(L, mathkerns);\
 make_lua_key(L, MathLeading);\
 make_lua_key(L, mathoperator);\
@@ -894,6 +898,8 @@ make_lua_key(L, mathshapekern);\
 make_lua_key(L, mathshift);\
 make_lua_key(L, mathsimple);\
 make_lua_key(L, mathskip);\
+make_lua_key(L, mathstack);\
+make_lua_key(L, mathsubformula);\
 make_lua_key(L, mathstyle);\
 make_lua_key(L, medmuskip);\
 make_lua_key(L, message);\
@@ -911,6 +917,7 @@ make_lua_key(L, middlepunctspacing);\
 make_lua_key(L, middleradspacing);\
 make_lua_key(L, middlerelspacing);\
 make_lua_key(L, MinConnectorOverlap);\
+make_lua_key(L, mirror);\
 make_lua_key(L, mkern);\
 make_lua_key(L, mode);\
 make_lua_key(L, modeline);\
@@ -956,7 +963,6 @@ make_lua_key(L, nucleus);\
 make_lua_key(L, number);\
 make_lua_key(L, numerator);\
 make_lua_key(L, numeratorvariant);\
-make_lua_key(L, oldmath);\
 make_lua_key(L, op);\
 make_lua_key(L, opbinspacing);\
 make_lua_key(L, opclosespacing);\
@@ -1094,6 +1100,7 @@ make_lua_key(L, protected_call);\
 make_lua_key(L, protrudechars);\
 make_lua_key(L, protrusion);\
 make_lua_key(L, properties);\
+make_lua_key(L, proportional);\
 make_lua_key(L, ptr);\
 make_lua_key(L, punct);\
 make_lua_key(L, punctbinspacing);\
@@ -1352,11 +1359,13 @@ make_lua_key(L, tolerant_call);\
 make_lua_key(L, tolerant_protected_call);\
 make_lua_key(L, top);\
 make_lua_key(L, topaccent);\
+make_lua_key(L, topanchor);\
 make_lua_key(L, topaccentvariant);\
 make_lua_key(L, topleft);\
 make_lua_key(L, topmargin);\
 make_lua_key(L, topright);\
 make_lua_key(L, topskip);\
+make_lua_key(L, topovershoot);\
 make_lua_key(L, total);\
 make_lua_key(L, tracingparagraphs);\
 make_lua_key(L, trailer);\
@@ -1661,32 +1670,6 @@ extern void lmt_initialize_interface(void);
 
 # define lmt_toroundnumber  lmt_roundnumber
 # define lmt_touroundnumber lmt_uroundnumber
-
-/*
-# define lua_set_string_by_key(L,a,b) \
-    lua_pushstring(L, b ? b : ""); \
-    lua_setfield(L, -2, a);
-
-# define lua_set_string_by_index(L,a,b) \
-    lua_pushstring(L, b ? b : ""); \
-    lua_rawseti(L, -2, a);
-
-# define lua_set_integer_by_key(L,a,b) \
-    lua_pushinteger(L, b); \
-    lua_setfield(L, -2, a);
-
-# define lua_set_integer_by_index(L,a,b) \
-    lua_pushinteger(L, b); \
-    lua_rawseti(L, -2, a);
-
-# define lua_set_boolean_by_key(L,a,b) \
-    lua_pushboolean(L, b); \
-    lua_setfield(L, -2, a);
-
-# define lua_set_boolean_by_index(L,a,b) \
-    lua_pushboolean(L, b); \
-    lua_rawseti(L, -2, a);
-*/
 
 inline static void lua_set_string_by_key(lua_State *L, const char *a, const char *b)
 {

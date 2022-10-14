@@ -73,23 +73,6 @@ static int fontlib_aux_count_hash_items(lua_State *L)
 
 */
 
-/*
-# define set_numeric_field_by_index(target,name,dflt) \
-    lua_key_rawgeti(name); \
-    target = (lua_type(L, -1) == LUA_TNUMBER) ? lmt_roundnumber(L, -1) : dflt ; \
-    lua_pop(L, 1);
-
-# define set_boolean_field_by_index(target,name,dflt) \
-    lua_key_rawgeti(name); \
-    target = (lua_type(L, -1) == LUA_TBOOLEAN) ? lua_toboolean(L, -1) : dflt ; \
-    lua_pop(L, 1);
-
-# define set_string_field_by_index(target,name) \
-    lua_key_rawgeti(name); \
-    target = (lua_type(L, -1) == LUA_TSTRING) ? lua_tostring(L, -1) : NULL ; \
-    lua_pop(L, 1);
-*/
-
 # define set_numeric_field_by_index(target,name,dflt) \
     lua_push_key(name); \
     target = (lua_rawget(L, -2) == LUA_TNUMBER) ? lmt_roundnumber(L, -1) : dflt ; \
@@ -219,9 +202,6 @@ static void fontlib_aux_read_lua_math_parameters(lua_State *L, int f)
             }
             lua_pop(L, 1);
         }
-        set_font_oldmath(f, 0);
-    } else {
-        set_font_oldmath(f, 1);
     }
     lua_pop(L, 1);
 }
@@ -251,11 +231,6 @@ static void fontlib_aux_store_math_kerns(lua_State *L, int index, charinfo *co, 
             for (lua_Integer l = 1; l <= k; l++) {
                 if (lua_rawgeti(L, -1, l) == LUA_TTABLE) {
                     scaled ht, krn;
-//                    set_numeric_field_by_index(ht, height, min_infinity);
-//                    set_numeric_field_by_index(krn, kern, min_infinity);
-//                    if (krn > min_infinity && ht > min_infinity) {
-//                        tex_add_charinfo_math_kern(co, id, ht, krn);
-//                    }
                     set_numeric_field_by_index(ht, height, 0);
                     set_numeric_field_by_index(krn, kern, 0);
                     if (krn || ht) {
@@ -297,6 +272,8 @@ static void fontlib_aux_font_char_from_lua(lua_State *L, halfword f, int i, int 
             tex_char_malloc_mathinfo(co);
             set_numeric_field_by_index(target, smaller, 0);
             set_charinfo_smaller(co, target);
+            set_numeric_field_by_index(target, mirror, 0);
+            set_charinfo_mirror(co, target);
             set_numeric_field_by_index(target, vitalic, 0);
             set_charinfo_vertical_italic(co, target);
             /* */
@@ -318,12 +295,15 @@ static void fontlib_aux_font_char_from_lua(lua_State *L, halfword f, int i, int 
             set_numeric_field_by_index(target, bottommargin, 0);
             set_charinfo_bottom_margin(co, target);
             /* */
-         // set_numeric_field_by_index(target, options, 0);
-         // set_charinfo_options(co, target);
-            set_numeric_field_by_index(target, topaccent, INT_MIN);
-            set_charinfo_top_accent(co, target);
-            set_numeric_field_by_index(target, bottomaccent, INT_MIN);
-            set_charinfo_bottom_accent(co, target);
+            set_numeric_field_by_index(target, topovershoot, 0);
+            set_charinfo_top_overshoot(co, target);
+            set_numeric_field_by_index(target, bottomovershoot, 0);
+            set_charinfo_bottom_overshoot(co, target);
+            /* */
+            set_numeric_field_by_index(target, topanchor, INT_MIN);
+            set_charinfo_top_anchor(co, target);
+            set_numeric_field_by_index(target, bottomanchor, INT_MIN);
+            set_charinfo_bottom_anchor(co, target);
             set_numeric_field_by_index(target, flataccent, INT_MIN);
             set_charinfo_flat_accent(co, target);
             set_numeric_field_by_index(target, next, -1);
@@ -574,8 +554,6 @@ static int lmt_font_from_lua(lua_State *L, int f)
         set_font_design_size(f, j);
         set_numeric_field_by_index(j, size, font_design_size(f));
         set_font_size(f, j);
-        set_boolean_field_by_index(j, oldmath, 0);
-        set_font_oldmath(f, j);
         set_boolean_field_by_index(j, compactmath, 0);
         set_font_compactmath(f, j);
         set_numeric_field_by_index(j, mathcontrol, 0);
@@ -594,12 +572,8 @@ static int lmt_font_from_lua(lua_State *L, int f)
         set_font_skew_char(f, j);
         set_boolean_field_by_index(no_math, nomath, 0);
         fontlib_aux_read_lua_parameters(L, f);
-        if (no_math) {
-            set_font_oldmath(f, 1);
-        } else {
+        if (! no_math) {
             fontlib_aux_read_lua_math_parameters(L, f);
-            set_boolean_field_by_index(j, oldmath, 0);
-            set_font_oldmath(f, j);
         }
         /*tex The characters. */
         lua_push_key(characters);
@@ -808,8 +782,6 @@ static int fontlib_setfont(lua_State *L)
         luaL_checktype(L, 2, LUA_TTABLE);
         if (! tex_is_valid_font(i)) {
             return luaL_error(L, "font with id %d is not a valid font", i);
-     // } else if (font_touched(i)) {
-     //     return luaL_error(L, "font with id %d has been accessed already, changing it is forbidden", i);
         } else {
             lua_settop(L, 2);
             lmt_font_from_lua(L, i);

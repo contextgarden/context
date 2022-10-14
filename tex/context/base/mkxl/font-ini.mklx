@@ -657,8 +657,8 @@
 % 4:x{\definedfont[Serif sa 4]x}\par
 % 5:x{\definedfont[Serif sa 5]x}\par
 
-\permanent\def\safontscale{\number\dimexpr\v_font_size_absolute\relax}
-\permanent\def\mofontscale{\number\dimexpr\font_basics_set_mapped_fontsize\v_font_size_absolute\relax}
+% \permanent\def\safontscale{\number\dimexpr\v_font_size_absolute\relax}
+% \permanent\def\mofontscale{\number\dimexpr\font_basics_set_mapped_fontsize\v_font_size_absolute\relax}
 
 \mutable\let\somefontname \s!unknown
 \mutable\let\somefontspec \s!unknown
@@ -991,7 +991,7 @@
 
 \newif\ifskipfontcharacteristics \skipfontcharacteristicstrue
 
-\tracingfonts\plussix % <id: name @ size>
+% \tracingfonts\plussix % <id: name @ size>
 
 %D When fontclasses are used, we define the font global, since namespaces are
 %D used. Otherwise we parse the specs each time.

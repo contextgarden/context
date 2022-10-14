@@ -168,9 +168,9 @@ end
 local lastsaved = 0
 
 function sections.save(sectiondata)
-local sectiondata = helpers.simplify(sectiondata) -- maybe done earlier
-    local numberdata = sectiondata.numberdata
-    local ntobesaved = #tobesaved
+    local sectiondata = helpers.simplify(sectiondata) -- maybe done earlier
+    local numberdata  = sectiondata.numberdata
+    local ntobesaved  = #tobesaved
     if not numberdata or sectiondata.metadata.nolist then
         -- stay
     else

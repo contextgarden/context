@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2022-09-16 14:39
+-- merge date  : 2022-10-14 10:13
 
 do -- begin closure to overcome local limits and interference
 
@@ -13418,10 +13418,10 @@ do
    result.familyotherblues={ unpack(stack,1,top) }
    top=0
   end+P("\10")/function()
-   result.strhw=stack[top]
+   result.stdhw=stack[top]
    top=0
   end+P("\11")/function()
-   result.strvw=stack[top]
+   result.stdvw=stack[top]
    top=0
   end+P("\13")/function()
    result.uniqueid=stack[top]
@@ -13493,7 +13493,7 @@ do
    result.bluescale=stack[top]
    top=0
   end+P("\10")/function()
-   result.bluesnap=stack[top]
+   result.blueshift=stack[top]
    top=0
   end+P("\11")/function()
    result.bluefuzz=stack[top]
@@ -13547,7 +13547,7 @@ do
    top=0
   end
  )
- local remap={
+ local remap_1={
   ["\x00"]="00",["\x01"]="01",["\x02"]="02",["\x03"]="03",["\x04"]="04",["\x05"]="05",["\x06"]="06",["\x07"]="07",["\x08"]="08",["\x09"]="09",["\x0A"]="0.",["\x0B"]="0E",["\x0C"]="0E-",["\x0D"]="0",["\x0E"]="0-",["\x0F"]="0",
   ["\x10"]="10",["\x11"]="11",["\x12"]="12",["\x13"]="13",["\x14"]="14",["\x15"]="15",["\x16"]="16",["\x17"]="17",["\x18"]="18",["\x19"]="19",["\x1A"]="1.",["\x1B"]="1E",["\x1C"]="1E-",["\x1D"]="1",["\x1E"]="1-",["\x1F"]="1",
   ["\x20"]="20",["\x21"]="21",["\x22"]="22",["\x23"]="23",["\x24"]="24",["\x25"]="25",["\x26"]="26",["\x27"]="27",["\x28"]="28",["\x29"]="29",["\x2A"]="2.",["\x2B"]="2E",["\x2C"]="2E-",["\x2D"]="2",["\x2E"]="2-",["\x2F"]="2",
@@ -13563,8 +13563,13 @@ do
   ["\xC0"]="E-0",["\xC1"]="E-1",["\xC2"]="E-2",["\xC3"]="E-3",["\xC4"]="E-4",["\xC5"]="E-5",["\xC6"]="E-6",["\xC7"]="E-7",["\xC8"]="E-8",["\xC9"]="E-9",["\xCA"]="E-.",["\xCB"]="E-E",["\xCC"]="E-E-",["\xCD"]="E-",["\xCE"]="E--",["\xCF"]="E-",
   ["\xD0"]="-0",["\xD1"]="-1",["\xD2"]="-2",["\xD3"]="-3",["\xD4"]="-4",["\xD5"]="-5",["\xD6"]="-6",["\xD7"]="-7",["\xD8"]="-8",["\xD9"]="-9",["\xDA"]="-.",["\xDB"]="-E",["\xDC"]="-E-",["\xDD"]="-",["\xDE"]="--",["\xDF"]="-",
  }
- local p_last=S("\x0F\x1F\x2F\x3F\x4F\x5F\x6F\x7F\x8F\x9F\xAF\xBF")+R("\xF0\xFF")
- local p_nibbles=P("\30")*Cs(((1-p_last)/remap)^0*(P(1)/remap))/function(n)
+ local remap_2={
+  ["\x0F"]="0",["\x1F"]="1",["\x2F"]="2",["\x3F"]="3",["\x4F"]="4",
+  ["\x5F"]="5",["\x6F"]="6",["\x7F"]="7",["\x8F"]="8",["\x9F"]="9",
+ }
+ local p_last_1=S("\x0F\x1F\x2F\x3F\x4F\x5F\x6F\x7F\x8F\x9F\xAF\xBF")
+ local p_last_2=R("\xF0\xFF")
+ local p_nibbles=P("\30")*Cs(((1-(p_last_1+p_last_2))/remap_1)^0*(p_last_1/remap_2+p_last_2/""))/function(n)
   top=top+1
   stack[top]=tonumber(n) or 0
  end
@@ -15378,6 +15383,8 @@ function readers.cff(f,fontdata,specification)
     cffinfo.bluefuzz=data.bluefuzz
     cffinfo.stdhw=data.stdhw
     cffinfo.stdvw=data.stdvw
+    cffinfo.stemsnaph=data.stemsnaph
+    cffinfo.stemsnapv=data.stemsnapv
    end
   end
   cleanup(data,dictionaries)
@@ -18461,6 +18468,7 @@ do
   local noflookups=#lookups
   local lookupprefix=sub(what,2,2)
   local usedlookups=false
+  local allsteps={} 
   for lookupid=1,noflookups do
    local lookup=lookups[lookupid]
    local lookuptype=lookup.type
@@ -18495,6 +18503,7 @@ do
        steps[nofsteps]=step
        local rules=step.rules
        if rules then
+        allsteps[#allsteps+1]=step 
         for i=1,#rules do
          local rule=rules[i]
          local before=rule.before
@@ -18600,11 +18609,8 @@ do
     reported[name]=true
    end
   end
-  for i=lastsequence+1,nofsequences do
-   local sequence=sequences[i]
-   local steps=sequence.steps
-   for i=1,#steps do
-    local step=steps[i]
+   for i=1,#allsteps do    
+    local step=allsteps[i] 
     local rules=step.rules
     if rules then
      for i=1,#rules do
@@ -18674,7 +18680,6 @@ do
      end
     end
    end
-  end
   for i,n in sortedhash(sublookupcheck) do
    local l=lookups[i]
    local t=l.type
@@ -19097,7 +19102,7 @@ local function readmathglyphinfo(f,fontdata,offset)
     if not math then
      glyph.math={ accent=accent }
     else
-     math.accent=accent
+     math.accent=accent 
     end
    end
   end
@@ -21289,7 +21294,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.120 
+otf.version=3.121 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
@@ -27329,12 +27334,8 @@ local trace_testruns=false  registertracker("otf.testruns",function(v) trace_tes
 local forcediscretionaries=false
 local forcepairadvance=false 
 local repeatablemultiples=context or false
-directives.register("otf.forcediscretionaries",function(v)
- forcediscretionaries=v
-end)
-directives.register("otf.forcepairadvance",function(v)
- forcepairadvance=v
-end)
+directives.register("otf.forcediscretionaries",function(v) forcediscretionaries=v end)
+directives.register("otf.forcepairadvance",function(v) forcepairadvance=v end)
 local report_direct=logs.reporter("fonts","otf direct")
 local report_subchain=logs.reporter("fonts","otf subchain")
 local report_chain=logs.reporter("fonts","otf chain")
@@ -27356,7 +27357,6 @@ local setboth=nuts.setboth
 local getid=nuts.getid
 local getstate=nuts.getstate
 local getsubtype=nuts.getsubtype
-local setsubtype=nuts.setsubtype
 local getchar=nuts.getchar
 local setchar=nuts.setchar
 local getdisc=nuts.getdisc
@@ -27376,10 +27376,10 @@ local flushcomponents=components.flush
 local ischar=nuts.ischar
 local usesfont=nuts.usesfont
 local insertnodeafter=nuts.insertafter
-local copy_node=nuts.copy
-local copy_node_list=nuts.copylist
-local remove_node=nuts.remove
-local find_node_tail=nuts.tail
+local copynode=nuts.copy
+local copynodelist=nuts.copylist
+local removenode=nuts.remove
+local findnodetail=nuts.tail
 local flushnodelist=nuts.flushlist
 local flushnode=nuts.flushnode
 local endofmath=nuts.endofmath
@@ -27389,7 +27389,6 @@ local setmetatableindex=table.setmetatableindex
 local nextnode=nuts.traversers.node
 local nodecodes=nodes.nodecodes
 local glyphcodes=nodes.glyphcodes
-local disccodes=nodes.disccodes
 local glyph_code=nodecodes.glyph
 local glue_code=nodecodes.glue
 local disc_code=nodecodes.disc
@@ -27398,8 +27397,7 @@ local dir_code=nodecodes.dir
 local par_code=nodecodes.par
 local lefttoright_code=nodes.dirvalues.lefttoright
 local righttoleft_code=nodes.dirvalues.righttoleft
-local discretionarydisc_code=disccodes.discretionary
-local ligatureglyph_code=glyphcodes.ligature
+local discretionarydisc_code=nodes.disccodes.discretionary
 local a_noligature=attributes.private("noligature")
 local injections=nodes.injections
 local setmark=injections.setmark
@@ -27490,7 +27488,7 @@ local function cref(dataset,sequence,index)
   return "no valid dataset"
  end
  local merged=sequence.merged and "merged " or ""
- if index then
+ if index and index>1 then
   return formatters["feature %a, type %a, %schain lookup %a, index %a"](
    dataset[4],sequence.type,merged,sequence.name,index)
  else
@@ -27547,7 +27545,7 @@ end
 local function appenddisc(disc,list)
  local pre,post,replace,pretail,posttail,replacetail=getdisc(disc,true)
  local posthead=list
- local replacehead=copy_node_list(list)
+ local replacehead=copynodelist(list)
  if post then
   setlink(posttail,posthead)
  else
@@ -27574,7 +27572,6 @@ local function markstoligature(head,start,stop,char)
   end
   resetinjection(base)
   setchar(base,char)
-  setsubtype(base,ligatureglyph_code)
   setcomponents(base,start)
   setlink(prev,base,next)
   flushcomponents(start)
@@ -27612,7 +27609,6 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
  end
  resetinjection(base)
  setchar(base,char)
- setsubtype(base,ligatureglyph_code)
  setcomponents(base,comp)
  setlink(prev,base,next)
  if not discfound then
@@ -27632,7 +27628,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
     if trace_marks then
      logwarning("%s: keep ligature mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
     end
-    local n=copy_node(start)
+    local n=copynode(start)
     copyinjection(n,start) 
     head,current=insertnodeafter(head,current,n) 
    elseif trace_marks then
@@ -27696,57 +27692,57 @@ end
 local function multiple_glyphs(head,start,multiple,skiphash,what,stop) 
  local nofmultiples=#multiple
  if nofmultiples>0 then
+  local first=start
   resetinjection(start)
   setchar(start,multiple[1])
   if nofmultiples>1 then
-   local sn=getnext(start)
-   for k=2,nofmultiples do
-    local n=copy_node(start) 
+   for i=2,nofmultiples do
+    local n=copynode(start) 
     resetinjection(n)
-    setchar(n,multiple[k])
+    setchar(n,multiple[i])
     insertnodeafter(head,start,n)
     start=n
    end
-   if what~=true and repeatablemultiples then
-    local kind=type(what)
-    local m,f,l
-    if kind=="string" then
-     local what,n=string.match(what,"^repeat(.-)[:=](%d+)$")
-     if what=="middle" then
-      m=tonumber(n)
-     elseif what=="first" then
-      f=tonumber(n)
-     elseif what=="last" then
-      l=tonumber(n)
-     end
-    elseif kind=="table" then
-       m=what.middle
-       f=what.first
-       l=what.last
+  end
+  if what~=true and repeatablemultiples then
+   local kind=type(what)
+   local m,f,l
+   if kind=="string" then
+    local what,n=string.match(what,"^repeat(.-)[:=](%d+)$")
+    if what=="middle" then
+     m=tonumber(n)
+    elseif what=="first" then
+     f=tonumber(n)
+    elseif what=="last" then
+     l=tonumber(n)
     end
-    if f or m or l then
-     if m and m>1 and nofmultiples==3 then
-      local middle=getnext(first)
-      for i=2,m do
-       local n=copynode(middle) 
-       resetinjection(n)
-       insertnodeafter(head,first,n)
-      end
+   elseif kind=="table" then
+      m=what.middle
+      f=what.first
+      l=what.last
+   end
+   if f or m or l then
+    if m and m>1 and nofmultiples==3 then
+     local middle=getnext(first)
+     for i=2,m do
+      local n=copynode(middle) 
+      resetinjection(n)
+      insertnodeafter(head,first,n)
      end
-     if f and f>1 then
-      for i=2,f do
-       local n=copynode(first) 
-       resetinjection(n)
-       insertnodeafter(head,first,n)
-      end
+    end
+    if f and f>1 then
+     for i=2,f do
+      local n=copynode(first) 
+      resetinjection(n)
+      insertnodeafter(head,first,n)
      end
-     if l and l>1 then
-      for i=2,l do
-       local n=copynode(start) 
-       resetinjection(n)
-       insertnodeafter(head,start,n)
-       start=n
-      end
+    end
+    if l and l>1 then
+     for i=2,l do
+      local n=copynode(start) 
+      resetinjection(n)
+      insertnodeafter(head,start,n)
+      start=n
      end
     end
    end
@@ -27918,9 +27914,9 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
     local prev=getprev(start)
     if stop then
      setnext(stop)
-     local copy=copy_node_list(start)
+     local copy=copynodelist(start)
      local tail=stop 
-     local liat=find_node_tail(copy)
+     local liat=findnodetail(copy)
      if pre then
       setlink(liat,pre)
      end
@@ -27931,7 +27927,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
      replace=start
     else
      setnext(start)
-     local copy=copy_node(start)
+     local copy=copynode(start)
      if pre then
       setlink(copy,pre)
      end
@@ -28308,7 +28304,7 @@ function chainprocs.gsub_remove(head,start,stop,dataset,sequence,currentlookup,r
  if trace_chains then
   logprocess("%s: removing character %s",cref(dataset,sequence,chainindex),gref(getchar(start)))
  end
- head,start=remove_node(head,start,true)
+ head,start=removenode(head,start,true)
  return head,getprev(start),true
 end
 function chainprocs.gsub_single(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
@@ -28821,7 +28817,7 @@ do if not userkern then
  local thekern=nuts.new("kern",1) 
  local setkern=nuts.setkern    
  userkern=function(k)
-  local n=copy_node(thekern)
+  local n=copynode(thekern)
   setkern(n,k)
   return n
  end
@@ -28858,26 +28854,33 @@ local function setdiscchecked(d,pre,post,replace)
  setdisc(d,pre,post,replace)
 end
 local noflags={ false,false,false,false }
-local function chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck)
+local function chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck,where)
  local size=ck[5]-ck[4]+1
  local chainlookups=ck[6]
  local done=false
  if chainlookups then
   if size==1 then
    local chainlookup=chainlookups[1]
-   for j=1,#chainlookup do
-    local chainstep=chainlookup[j]
-    local chainkind=chainstep.type
-    local chainproc=chainprocs[chainkind]
-    if chainproc then
-     local ok
-     head,start,ok=chainproc(head,start,last,dataset,sequence,chainstep,rlmode,skiphash,1)
-     if ok then
-      done=true
+   if chainlookup then
+    for j=1,#chainlookup do
+     local chainstep=chainlookup[j]
+     if chainstep then
+      local chainkind=chainstep.type
+      local chainproc=chainprocs[chainkind]
+      if chainproc then
+       local ok
+       head,start,ok=chainproc(head,start,last,dataset,sequence,chainstep,rlmode,skiphash,1)
+       if ok then
+        done=true
+       end
+      else
+       logprocess("%s: %s is not yet supported (1)",cref(dataset,sequence),chainkind)
+      end
+     else
+      logprocess("%s: has an issue (1)",cref(dataset,sequence))
      end
-    else
-     logprocess("%s: %s is not yet supported (1)",cref(dataset,sequence),chainkind)
     end
+   else
    end
    else
    local i=1
@@ -28902,20 +28905,24 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck)
     if chainlookup then
      for j=1,#chainlookup do
       local chainstep=chainlookup[j]
-      local chainkind=chainstep.type
-      local chainproc=chainprocs[chainkind]
-      if chainproc then
-       local ok,n
-       head,start,ok,n=chainproc(head,start,last,dataset,sequence,chainstep,rlmode,skiphash,i)
-       if ok then
-        done=true
-        if n and n>1 and i+n>nofchainlookups then
-         i=size 
-         break
+      if chainstep then
+       local chainkind=chainstep.type
+       local chainproc=chainprocs[chainkind]
+       if chainproc then
+        local ok,n
+        head,start,ok,n=chainproc(head,start,last,dataset,sequence,chainstep,rlmode,skiphash,i)
+        if ok then
+         done=true
+         if n and n>1 and i+n>nofchainlookups then
+          i=size 
+          break
+         end
         end
+       else
+        logprocess("%s: %s is not yet supported (2)",cref(dataset,sequence),chainkind)
        end
       else
-       logprocess("%s: %s is not yet supported (2)",cref(dataset,sequence),chainkind)
+       logprocess("%s: has an issue (2)",cref(dataset,sequence))
       end
      end
     else
@@ -28939,7 +28946,7 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck)
   else
    done=true
    if trace_contexts then
-    logprocess("%s: skipping match",cref(dataset,sequence))
+    logprocess("%s: skipping match @ %i",cref(dataset,sequence),where)
    end
   end
  end
@@ -28966,6 +28973,8 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
  local last=start
  local prev=getprev(start)
  local hasglue=false
+ local useddisc=nil   
+ local usedstart=start
  local i=f
  while i<=l do
   local id=getid(current)
@@ -29028,7 +29037,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
     tail=prev
     setprev(current,sweepnode)
    else
-    tail=find_node_tail(head)
+    tail=findnodetail(head)
    end
    setnext(sweepnode,current)
    setprev(head)
@@ -29139,13 +29148,13 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
    head=lookaheaddisc
   end
   local pre,post,replace=getdisc(lookaheaddisc)
-  local new=copy_node_list(cf) 
+  local new=copynodelist(cf) 
   local cnew=new
   if pre then
-   setlink(find_node_tail(cf),pre)
+   setlink(findnodetail(cf),pre)
   end
   if replace then
-   local tail=find_node_tail(new)
+   local tail=findnodetail(new)
    setlink(tail,replace)
   end
   for i=1,insertedmarks do
@@ -29159,14 +29168,14 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
   end
   if not notmatchpre[lookaheaddisc] then
    local ok=false
-   cf,start,ok=chainrun(cf,start,cl,dataset,sequence,rlmode,skiphash,ck)
+   cf,start,ok=chainrun(cf,start,cl,dataset,sequence,rlmode,skiphash,ck,1)
    if ok then
     done=true
    end
   end
   if not notmatchreplace[lookaheaddisc] then
    local ok=false
-   new,cnew,ok=chainrun(new,cnew,clast,dataset,sequence,rlmode,skiphash,ck)
+   new,cnew,ok=chainrun(new,cnew,clast,dataset,sequence,rlmode,skiphash,ck,2)
    if ok then
     done=true
    end
@@ -29177,6 +29186,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
    setdisc(lookaheaddisc,cf,post,new)
   end
   start=getprev(lookaheaddisc)
+  useddisc=lookaheaddisc 
   sweephead[cf]=getnext(clast) or false
   sweephead[new]=getnext(cl) or false
  elseif backtrackdisc then
@@ -29198,8 +29208,8 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
   setprev(cf)
   setnext(cl)
   local pre,post,replace,pretail,posttail,replacetail=getdisc(backtrackdisc,true)
-  local new=copy_node_list(cf)
-  local cnew=find_node_tail(new)
+  local new=copynodelist(cf)
+  local cnew=findnodetail(new)
   for i=1,insertedmarks do
    cnew=getprev(cnew)
   end
@@ -29209,14 +29219,14 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
   end
   if not notmatchpost[backtrackdisc] then
    local ok=false
-   cf,start,ok=chainrun(cf,start,last,dataset,sequence,rlmode,skiphash,ck)
+   cf,start,ok=chainrun(cf,start,last,dataset,sequence,rlmode,skiphash,ck,3)
    if ok then
     done=true
    end
   end
   if not notmatchreplace[backtrackdisc] then
    local ok=false
-   new,cnew,ok=chainrun(new,cnew,clast,dataset,sequence,rlmode,skiphash,ck)
+   new,cnew,ok=chainrun(new,cnew,clast,dataset,sequence,rlmode,skiphash,ck,4)
    if ok then
     done=true
    end
@@ -29237,30 +29247,55 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
    setdisc(backtrackdisc,pre,post,replace)
   end
   start=getprev(backtrackdisc)
+  useddisc=backtrackdisc 
   sweephead[post]=getnext(clast) or false
   sweephead[replace]=getnext(last) or false
  else
   local ok=false
-  head,start,ok=chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck)
+  head,start,ok=chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck,5)
   if ok then
    done=true
   end
  end
- return head,start,done
+ if useddisc and start~=usedstart then 
+    start=getnext(start)           
+ end                  
+ return head,start,done,useddisc           
 end
-local function chaintrac(head,start,dataset,sequence,rlmode,skiphash,ck,match,discseen,sweepnode)
- local rule=ck[1]
- local lookuptype=ck[8] or ck[2]
- local nofseq=#ck[3]
- local first=ck[4]
- local last=ck[5]
- local char=getchar(start)
- logwarning("%s: rule %s %s at char %s for (%s,%s,%s) chars, lookuptype %a, %sdisc seen, %ssweeping",
-  cref(dataset,sequence),rule,match and "matches" or "nomatch",
-  gref(char),first-1,last-first+1,nofseq-last,lookuptype,
-  discseen and "" or "no ",sweepnode and "" or "not ")
+local chaintrac do
+ local level=0
+ local last={}
+ chaintrac=function(head,start,dataset,sequence,rlmode,skiphash,ck,match,discseen,sweepnode)
+  if dataset then
+   level=level+1
+   last[level]=start
+   local rule=ck[1]
+   local lookuptype=ck[8] or ck[2]
+   local nofseq=#ck[3] 
+   local first=ck[4]
+   local last=ck[5]
+   local char=getchar(start)
+   logwarning("+ %i : %s: rule %s %s at char %s for (%s,%s,%s) chars, lookuptype %a, %sdisc seen, %ssweeping",
+    level,cref(dataset,sequence),rule,match and "matches" or "nomatch",
+    gref(char),first-1,last-first+1,nofseq-last,lookuptype,
+    discseen and "" or "no ",sweepnode and "" or "not ")
+  else
+   local what=start and "done" or "continue"
+   local where=head==last[level] and "same" or "different"
+   local char=getchar(head)
+   if char then
+    logwarning("- %i : %s at char %s, %s node",level,what,gref(char),where)
+   else
+    logwarning("- %i : %s, %s node",level,what,where)
+   end
+   level=level-1
+  end
+ end
 end
 local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,skiphash)
+ if not contexts then
+  return head,start,false
+ end
  local sweepnode=sweepnode
  local sweeptype=sweeptype
  local postreplace
@@ -29288,7 +29323,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
   local ck=contexts[k]
   local seq=ck[3]
   local f=ck[4] 
-local last=start
+  local last=start
   if not startchar or not seq[f][startchar] then
    goto next
   end
@@ -29399,7 +29434,6 @@ local last=start
     end
    end
    if f>1 then
-    if startprev then
      local prev=startprev
      if prereplace and prev==checkdisc then
       prev=getprev(sweepnode)
@@ -29514,9 +29548,6 @@ local last=start
      else
       goto next
      end
-    else
-     goto next
-    end
    end
    if s>l then
     local current=last and getnext(last)
@@ -29640,12 +29671,15 @@ local last=start
   if discseen or sweepnode then
    head,start,done=chaindisk(head,start,dataset,sequence,rlmode,skipped and skiphash,ck)
   else
-   head,start,done=chainrun(head,start,last,dataset,sequence,rlmode,skipped and skiphash,ck)
+   head,start,done=chainrun(head,start,last,dataset,sequence,rlmode,skipped and skiphash,ck,6)
+  end
+  if trace_contexts then
+   chaintrac(start,done)
   end
   if done then
    break
   end
-  ::next::
+   ::next::
  end
  if discseen then
   notmatchpre={}
@@ -29662,15 +29696,26 @@ handlers.gpos_context=handle_contextchain
 local function chained_contextchain(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash)
  local steps=currentlookup.steps
  local nofsteps=currentlookup.nofsteps
- if nofsteps>1 then
-  reportmoresteps(dataset,sequence)
- end
- local l=steps[1].coverage[getchar(start)]
- if l then
-  return handle_contextchain(head,start,dataset,sequence,l,rlmode,skiphash)
+ local char=getchar(start)
+ if nofsteps==1 then
+  local s=steps[1]
+  local l=s.coverage[char]
+  if l then
+   return handle_contextchain(head,start,dataset,sequence,l,rlmode,skiphash)
+  end
  else
-  return head,start,false
+  for i=1,nofsteps do
+   local s=steps[i]
+   local l=s.coverage[char]
+   if l then
+    local h,s,d=handle_contextchain(head,start,dataset,sequence,l,rlmode,skiphash)
+    if d then
+     return h,s,d
+    end
+   end
+  end
  end
+ return head,start,false
 end
 chainprocs.gsub_context=chained_contextchain
 chainprocs.gsub_contextchain=chained_contextchain
@@ -29853,7 +29898,7 @@ local function kernrun(disc,k_run,font,attr,...)
  if done and trace_testruns then
   report_disc("done",disc)
  end
- return nextstart,done
+ return nextstart
 end
 local function comprun(disc,c_run,...) 
  if trace_compruns then
@@ -29896,8 +29941,12 @@ local function comprun(disc,c_run,...)
   end
   setdisc(disc,pre,post,replace)
  end
- return getnext(disc),renewed
+ return getnext(disc)
 end
+local test_flatten_start=2 
+directives.register("otf.testrun.forceflatten",function(v)
+ test_flatten_start=v and 1 or 2
+end)
 local function testrun(disc,t_run,c_run,...)
  if trace_testruns then
   report_disc("test",disc)
@@ -29925,7 +29974,7 @@ local function testrun(disc,t_run,c_run,...)
    local d=d_replace>d_post and d_replace or d_post
    local head=getnext(disc) 
    local tail=head
-   for i=2,d do 
+   for i=test_flatten_start,d do
     local nx=getnext(tail)
     local id=getid(nx)
     if id==disc_code then
@@ -29939,7 +29988,7 @@ local function testrun(disc,t_run,c_run,...)
    next=getnext(tail)
    setnext(tail)
    setprev(head)
-   local new=copy_node_list(head)
+   local new=copynodelist(head)
    if posttail then
     setlink(posttail,head)
    else
@@ -30002,7 +30051,7 @@ local function testrun(disc,t_run,c_run,...)
    report_disc("done",disc)
   end
  end
- return getnext(disc),renewed
+ return getnext(disc)
 end
 local nesting=0
 local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
@@ -30420,7 +30469,7 @@ do
      head=h
     end
    elseif typ=="gsub_reversecontextchain" then
-    local start=find_node_tail(head)
+    local start=findnodetail(head)
     local rlmode=0 
     local merged=steps.merged
     while start do
@@ -30498,13 +30547,12 @@ do
        start=getnext(start)
       elseif id==disc_code then
        if not discs or discs[start]==true then
-        local ok
         if gpossing then
-         start,ok=kernrun(start,k_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
+         start=kernrun(start,k_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
         elseif forcetestrun then
-         start,ok=testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
+         start=testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
         else
-         start,ok=comprun(start,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
+         start=comprun(start,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
         end
        else
         start=getnext(start)
@@ -30568,13 +30616,12 @@ do
        start=getnext(start)
       elseif id==disc_code then
        if not discs or discs[start]==true then
-        local ok
         if gpossing then
-         start,ok=kernrun(start,k_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
+         start=kernrun(start,k_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
         elseif forcetestrun then
-         start,ok=testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
+         start=testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
         else
-         start,ok=comprun(start,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
+         start=comprun(start,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
         end
        else
         start=getnext(start)
@@ -31074,6 +31121,10 @@ local function addfeature(data,feature,specifications,prepareonly)
  end
  local descriptions=data.descriptions
  local resources=data.resources
+ if not descriptions or not resources then
+  report_otf("missing specification")
+  return
+ end
  local features=resources.features
  local sequences=resources.sequences
  if not features or not sequences then
@@ -33297,7 +33348,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
  local subpos=nil
  local postpos=nil
  reorderreph.coverage={} 
- rephbase[font]={}
+ rephbase[font]={} 
  for i=1,#seqsubset do
   local subset=seqsubset[i]
   local kind=subset[1]
@@ -33418,7 +33469,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
    end
   end
  end
- local current,base,firstcons=start,nil,nil
+ local current,base,firstcons,subnotafterbase,postnotafterbase=start,nil,nil,nil,nil
  if getstate(start,s_rphf) then
   current=getnext(getnext(start))
  end
@@ -33474,7 +33525,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
     logprocess("reorder two, handle nbsp")
    end
   end
- else
+ else 
   local last=getnext(stop)
   while current~=last do 
    local next=getnext(current)
@@ -33537,8 +33588,8 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
     logprocess("reorder two, handle matra")
    end
   end
-  if dependent_vowel[char] then
-   if pre_mark[char] then 
+   if not moved[current] and dependent_vowel[char] then
+   if pre_mark[char] then
     moved[current]=true
     local prev,next=getboth(current)
     setlink(prev,next)
@@ -34012,11 +34063,11 @@ local function analyze_next_chars_two(c,font)
     if pre_mark[v] and not already_pre_mark then
      already_pre_mark=true
     elseif post_mark[v] and not already_post_mark then
-     if devanagarihash[font].conjuncts=="mixed" then
-      return c
-     else
-      already_post_mark=true
-     end
+       if devanagarihash[font].conjuncts=="mixed" then
+        return c
+       else
+        already_post_mark=true
+       end
     elseif below_mark[v] and not already_below_mark then
      already_below_mark=true
     elseif above_mark[v] and not already_above_mark then
@@ -37079,7 +37130,7 @@ local afm=fonts.handlers.afm
 local pfb=fonts.handlers.pfb
 local hashes=fonts.hashes
 local identifiers=hashes.identifiers
-local version=otf.version or 0.011
+local version=otf.version or 0.013
 local shapescache=containers.define("fonts","shapes",version,true)
 local streamscache=containers.define("fonts","streams",version,true)
 local compact_streams=false
@@ -37926,17 +37977,19 @@ if not modules then modules={} end modules ['font-imp-italics']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-local next=next
+local next,tonumber=next,tonumber
 local fonts=fonts
 local handlers=fonts.handlers
 local registerotffeature=handlers.otf.features.register
 local registerafmfeature=handlers.afm.features.register
 local function initialize(tfmdata,key,value)
+ local factor=tonumber(value) or 1
  for unicode,character in next,tfmdata.characters do
   local olditalic=character.italic
   if olditalic and olditalic~=0 then
    character.width=character.width+olditalic
    character.italic=0
+   character.bottomright=-factor*olditalic
   end
  end
 end

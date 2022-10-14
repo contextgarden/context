@@ -254,16 +254,6 @@
         }
     }
 
- //  int aux_is_readable(const char *filename)
- //  {
- //      struct stat finfo;
- //      FILE *f;
- //      return (stat(filename, &finfo) == 0)
- //          && S_ISREG(finfo.st_mode)
- //          && ((f = aux_utf8_fopen(filename, "r")) != NULL)
- //          && ! fclose(f);
- //  }
-
     int aux_is_readable(const char *filename)
     {
         struct _stati64 info;

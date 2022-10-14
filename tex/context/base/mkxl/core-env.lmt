@@ -135,30 +135,30 @@ end)
 
 tex.isdefined = isdefined
 
-function tex.isdimen(name)
-    local hit = cache[name]
-    return hit.command == dimencode and hit.index or true
-end
-
-function tex.iscount(name)
-    local hit = cache[name]
-    return hit.command == countcode and hit.index or true
-end
-
-function tex.istoken(name)
-    local hit = cache[name]
-    return hit.command == tokencode and hit.index or true
-end
-
-function tex.isskip(name)
-    local hit = cache[name]
-    return hit.command == skipcode and hit.index or true
-end
-
-function tex.ismuskip(name)
-    local hit = cache[name]
-    return hit.command == muskipcode and hit.index or true
-end
+-- function tex.isdimen(name)
+--     local hit = cache[name]
+--     return hit.command == dimencode and hit.index or true
+-- end
+--
+-- function tex.iscount(name)
+--     local hit = cache[name]
+--     return hit.command == countcode and hit.index or true
+-- end
+--
+-- function tex.istoken(name)
+--     local hit = cache[name]
+--     return hit.command == tokencode and hit.index or true
+-- end
+--
+-- function tex.isskip(name)
+--     local hit = cache[name]
+--     return hit.command == skipcode and hit.index or true
+-- end
+--
+-- function tex.ismuskip(name)
+--     local hit = cache[name]
+--     return hit.command == muskipcode and hit.index or true
+-- end
 
 function tex.type(name)
     return types[cache[name].command] or "macro"

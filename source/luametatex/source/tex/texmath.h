@@ -23,8 +23,6 @@
 typedef struct math_state_info {
     int      size;        /*tex Size code corresponding to |cur_style|. */
     int      level;       /*tex Maybe we should expose this one. */
- /* int      opentype; */ /*tex We just assume opentype now. */
- /* int      padding;  */
     sa_tree  par_head;
     sa_tree  fam_head;
     halfword last_left;
@@ -272,6 +270,7 @@ typedef enum math_class_options {
     prefer_delimiter_dimensions_class_option  = 0x0080000,
     auto_inject_class_option                  = 0x0100000,
     remove_italic_correction_class_option     = 0x0200000,
+    operator_italic_correction_class_option   = 0x0400000,
     no_class_options                          = 0xF000000,
 } math_class_options;
 
@@ -582,10 +581,12 @@ extern void     tex_initialize_math_spacing      (void);
 
 extern void     tex_set_display_styles           (halfword code, halfword value, halfword level, halfword indirect);
 extern void     tex_set_text_styles              (halfword code, halfword value, halfword level, halfword indirect);
+extern void     tex_set_main_styles              (halfword code, halfword value, halfword level, halfword indirect);
 extern void     tex_set_script_styles            (halfword code, halfword value, halfword level, halfword indirect);
 extern void     tex_set_script_script_styles     (halfword code, halfword value, halfword level, halfword indirect);
 extern void     tex_set_all_styles               (halfword code, halfword value, halfword level, halfword indirect);
 extern void     tex_set_split_styles             (halfword code, halfword value, halfword level, halfword indirect);
+extern void     tex_set_unsplit_styles           (halfword code, halfword value, halfword level, halfword indirect);
 extern void     tex_set_uncramped_styles         (halfword code, halfword value, halfword level, halfword indirect);
 extern void     tex_set_cramped_styles           (halfword code, halfword value, halfword level, halfword indirect);
 extern void     tex_reset_all_styles             (halfword level);
@@ -652,6 +653,7 @@ extern void     tex_run_math_italic_correction (void);
 extern void     tex_finish_math_group          (void);
 extern void     tex_finish_math_choice         (void);
 extern void     tex_finish_math_fraction       (void);
+extern void     tex_finish_math_radical        (void);
 extern void     tex_finish_math_operator       (void);
 extern void     tex_finish_display_alignment   (halfword head, halfword tail, halfword prevdepth);
 
@@ -677,6 +679,8 @@ typedef enum math_control_codes {
     math_control_analyze_script_nucleus_char = 0x040000,
     math_control_analyze_script_nucleus_list = 0x080000,
     math_control_analyze_script_nucleus_box  = 0x100000, 
+    math_control_accent_top_skew_with_offset = 0x200000, 
+    math_control_ignore_kern_dimensions      = 0x400000, /* for bad fonts (like xits fence depths) */
 } math_control_codes;
 
 /*tex This is what we use for \OPENTYPE\ in \CONTEXT: */
@@ -699,6 +703,7 @@ typedef enum math_control_codes {
   | math_control_analyze_script_nucleus_char \
   | math_control_analyze_script_nucleus_list \
   | math_control_analyze_script_nucleus_box \
+  | math_control_accent_top_skew_with_offset \
 )
 
 /*tex
@@ -744,10 +749,22 @@ typedef enum saved_fraction_items {
     saved_fraction_n_of_items     = 3,
 } saved_fraction_items;
 
+typedef enum saved_radical_items {
+    saved_radical_degree_done = 0,
+    saved_radical_style       = 1,
+    saved_radical_n_of_items  = 2,
+} saved_radical_items;
+
 typedef enum saved_operator_items {
     saved_operator_item_variant = 0,
     saved_operator_n_of_items   = 1,
 } saved_operator_items;
+
+/*tex
+    These items are for regular groups, ustacks, atoms and such. We could make dedicated items
+    but in the end it means duplicatign code and we then also need to redo accents as these 
+    check for the group, in which case we then have to intercept the lot. I might do it anyway. 
+*/
 
 typedef enum saved_math_group_items {
     saved_math_group_item_pointer = 0,

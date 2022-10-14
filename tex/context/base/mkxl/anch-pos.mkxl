@@ -17,9 +17,18 @@
 %D early, but starting in 2012 more dramatic changes started to happen, especially
 %D in relation to background graphics. It will probably take some time to settle.
 
-\registerctxluafile{anch-pos}{autosuffix}
-
 \unprotect
+
+\newcount\c_anch_column % will be delegated to lua
+\newcount\c_anch_text   % will be delegated to lua
+\newcount\c_anch_free
+\newtoks \t_anch_positions_tracers
+\newcount\c_anch_positions_paragraph
+
+\newbox  \b_anch_position
+\newif   \ifpositioning   % sort of public
+
+\registerctxluafile{anch-pos}{autosuffix}
 
 %D The first application of positional information was embedded graphics. Since we
 %D are interacting with text, it made sense to take the current line height and
@@ -43,8 +52,8 @@
 % \dosetpositionstrut               #1 % defined at lua end
 % \dosetpositionstrutkind         #1#2 % defined at lua end
 
-\newbox\b_anch_position
-\newif \ifpositioning   % sort of public
+% see top: \newbox\b_anch_position
+% see top: \newif \ifpositioning   % sort of public
 
 \mutable\let\currentposition      \empty
 \mutable\let\currentpositionaction\empty
@@ -282,8 +291,8 @@
 \permanent\def\textanchor  {text:\the\realpageno}
 \permanent\def\regionanchor{region:0}
 
-\newcount\c_anch_column % will be delegated to lua
-\newcount\c_anch_text   % will be delegated to lua
+% see top: \newcount\c_anch_column % will be delegated to lua
+% see top: \newcount\c_anch_text   % will be delegated to lua
 
 % beware we need to pass \somethingexpanded or { }
 
@@ -336,7 +345,7 @@
      \expandafter\gobblesixarguments
    \fi}
 
-\newcount\c_anch_free
+% see top: \newcount\c_anch_free
 
 \protected\def\anch_mark_tagged_box_free_yes#1#2#3#4#5#6% only needed when positions
   {\global\advance\c_anch_free\plusone % could be done at the lua end
@@ -408,8 +417,8 @@
 %D can keep track of them. This mechanism is activated automatically based on
 %D information collected in the previous pass.
 
-\newtoks \t_anch_positions_tracers
-\newcount\c_anch_positions_paragraph
+% see top: \newtoks \t_anch_positions_tracers
+% see top: \newcount\c_anch_positions_paragraph
 
 \permanent\protected\def\tracepositions
   {\the\t_anch_positions_tracers}

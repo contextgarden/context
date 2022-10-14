@@ -269,8 +269,8 @@
                                                                      \Udelimiter\zerocount\fam\scratchcountertwo}
 \defcsname\??fractionmethods\v!vertical  \v!auto   \v!none\endcsname{\Uover}
 \defcsname\??fractionmethods\v!vertical  \v!auto          \endcsname{\Uoverwithdelims
-                                                                    \Udelimiter\zerocount\fam\scratchcounterone
-                                                                    \Udelimiter\zerocount\fam\scratchcountertwo}
+                                                                     \Udelimiter\zerocount\fam\scratchcounterone
+                                                                     \Udelimiter\zerocount\fam\scratchcountertwo}
 \defcsname\??fractionmethods\v!vertical  \v!symbol \v!none\endcsname{\Ustretched
                                                                      \Udelimiter\zerocount\fam\scratchcounterthree}
 \defcsname\??fractionmethods\v!vertical  \v!symbol        \endcsname{\Ustretchedwithdelims
@@ -452,34 +452,20 @@
 \to \everysetupmathfraction
 
 \def\math_fraction_set_threshold_inline_auto
-   {\Umathfractiondelsize\textstyle        \maxdimen
-    \Umathfractiondelsize\scriptstyle      \maxdimen
-    \Umathfractiondelsize\scriptscriptstyle\maxdimen
-\Umathfractiondelsize\crampedtextstyle        \Umathfractiondelsize\textstyle
-\Umathfractiondelsize\crampedscriptstyle      \Umathfractiondelsize\scriptstyle
-\Umathfractiondelsize\crampedscriptscriptstyle\Umathfractiondelsize\scriptscriptstyle
-    }
+   {\Umathfractiondelsize\allmathstyles\maxdimen}
 
 \def\math_fraction_set_threshold_display_auto
-   {\Umathfractiondelsize\displaystyle     \maxdimen
-\Umathfractiondelsize\crampeddisplaystyle  \Umathfractiondelsize\displaystyle
-   }
+   {\Umathfractiondelsize\alldisplaystyles\maxdimen}
 
 \def\math_fraction_set_threshold_inline_ratio
   {\edef\p_threshold{\mathfractionparameter\c!inlinethreshold}%
-   \Umathfractiondelsize\textstyle        \p_threshold\dimexpr\textface\relax
-   \Umathfractiondelsize\scriptstyle      \p_threshold\dimexpr\scriptface\relax
-   \Umathfractiondelsize\scriptscriptstyle\p_threshold\dimexpr\scriptscriptface\relax
-\Umathfractiondelsize\crampedtextstyle        \Umathfractiondelsize\textstyle
-\Umathfractiondelsize\crampedscriptstyle      \Umathfractiondelsize\scriptstyle
-\Umathfractiondelsize\crampedscriptscriptstyle\Umathfractiondelsize\scriptscriptstyle
-    }
+   \Umathfractiondelsize\alltextstyles        \p_threshold\dimexpr\textface\relax
+   \Umathfractiondelsize\allscriptstyles      \p_threshold\dimexpr\scriptface\relax
+   \Umathfractiondelsize\allscriptscriptstyles\p_threshold\dimexpr\scriptscriptface\relax}
 
 \def\math_fraction_set_threshold_display_ratio
   {\edef\p_threshold{\mathfractionparameter\c!displaythreshold}%
-   \Umathfractiondelsize\displaystyle     \p_threshold\dimexpr\textface\relax
-\Umathfractiondelsize\crampeddisplaystyle  \Umathfractiondelsize\displaystyle
-   }
+   \Umathfractiondelsize\alldisplaystyles\p_threshold\dimexpr\textface\relax}
 
 \setupmathfractions
   [\c!inlinethreshold=.25,      % no unit but fraction

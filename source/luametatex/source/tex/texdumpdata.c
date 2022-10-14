@@ -5,8 +5,8 @@
 # include "luametatex.h"
 
 dump_state_info lmt_dump_state = {
-    .format_identifier = 0,
-    .format_name       = 0
+    .fingerprint = luametatex_format_fingerprint,
+    .padding     = 0
 };
 
 /*tex
@@ -54,9 +54,7 @@ dump_state_info lmt_dump_state = {
 static int tex_aux_report_dump_state(dumpstream f, int pos, const char *what)
 {
     int tmp = ftell(f);
-    tex_print_int(tmp - pos);
-    tex_print_char(' ');
-    tex_print_str(what);
+    tex_print_format("%i %s", tmp - pos, what);
     fflush(stdout);
     return tmp;
 }
@@ -94,37 +92,26 @@ static void tex_aux_undump_fingerprint(dumpstream f)
 
 static void tex_aux_dump_final_check(dumpstream f)
 {
-    dump_int(f, lmt_dump_state.format_identifier);
-    dump_int(f, lmt_dump_state.format_name);
     dump_via_int(f, luametatex_format_fingerprint);
 }
 
 static void tex_aux_undump_final_check(dumpstream f)
 {
     int x;
-    undump_int(f, lmt_dump_state.format_identifier);
-    if (lmt_dump_state.format_identifier < 0 || lmt_dump_state.format_identifier > lmt_string_pool_state.string_pool_data.ptr) {
-        goto BAD;
-    }
-    undump_int(f, lmt_dump_state.format_name);
-    if (lmt_dump_state.format_name < 0 || lmt_dump_state.format_name > lmt_string_pool_state.string_pool_data.ptr) {
-        goto BAD;
-    }
     undump_int(f, x);
     if (x == luametatex_format_fingerprint) {
         return;
+    } else {
+        tex_fatal_undump_error("final fingerprint");
     }
-  BAD:
-    tex_fatal_undump_error("final fingerprint");
 }
 
 static void tex_aux_create_fmt_name(void)
 {
     lmt_print_state.selector = new_string_selector_code;
-    tex_print_format("%s %i.%i.%i",lmt_fileio_state.fmt_name, year_par, month_par, day_par);
-    lmt_dump_state.format_identifier = tex_make_string();
-    tex_print_str(lmt_fileio_state.job_name);
-    lmt_dump_state.format_name = tex_make_string();
+//    lmt_dump_state.format_identifier = tex_make_string();
+//    lmt_dump_state.format_name = tex_make_string();
+    tex_print_format("%s %i.%i.%i %s",lmt_fileio_state.fmt_name, year_par, month_par, day_par, lmt_fileio_state.job_name);
     lmt_print_state.selector = terminal_and_logfile_selector_code;
 }
 
@@ -221,7 +208,7 @@ void tex_store_fmt_file(void)
     }
 
     tex_print_nlp();
-    tex_print_format("Dumping format '%T' in file '%s': ", lmt_dump_state.format_identifier, lmt_fileio_state.fmt_name);
+    tex_print_format("Dumping format in file '%s': ", lmt_fileio_state.fmt_name);
     fflush(stdout);
 
     tex_compact_tokens();
@@ -322,10 +309,7 @@ int tex_load_fmt_file(void)
 
 void tex_initialize_dump_state(void)
 {
-    lmt_dump_state.format_name = get_nullstr();
-    if (lmt_main_state.run_state == initializing_state) {
-        lmt_dump_state.format_identifier = tex_maketexstring(" (INITEX)");
-    } else {
-        lmt_dump_state.format_identifier = 0;
+    if (! lmt_engine_state.dump_name) {
+        lmt_engine_state.dump_name = lmt_memory_strdup("initex");
     }
 }

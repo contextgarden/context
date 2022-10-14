@@ -56,6 +56,8 @@ local texsetcount  = tex.setcount
 local texnest      = tex.nest
 local texgetbox    = tex.getbox
 
+local tg = texgetdimen
+
 local buildpage    = tex.triggerbuildpage
 
 local variables    = interfaces.variables
@@ -69,13 +71,6 @@ local v_split      = variables.split
 local v_min        = variables.min
 local v_max        = variables.max
 local v_none       = variables.none
-local v_line       = variables.line
-local v_noheight   = variables.noheight
-local v_nodepth    = variables.nodepth
-local v_line       = variables.line
-local v_halfline   = variables.halfline
-local v_line_m     = "-" .. v_line
-local v_halfline_m = "-" .. v_halfline
 local v_first      = variables.first
 local v_last       = variables.last
 local v_top        = variables.top
@@ -114,6 +109,11 @@ local a_skippenalty       = attributes.private('skippenalty')
 local a_skiporder         = attributes.private('skiporder')
 local a_snapmethod        = attributes.private('snapmethod')
 local a_snapvbox          = attributes.private('snapvbox')
+
+local d_bodyfontstrutheight       = tex.isdimen("bodyfontstrutheight")
+local d_bodyfontstrutdepth        = tex.isdimen("bodyfontstrutdepth")
+local d_globalbodyfontstrutheight = tex.isdimen("globalbodyfontstrutheight")
+local d_globalbodyfontstrutdepth  = tex.isdimen("globalbodyfontstrutdepth")
 
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
@@ -357,6 +357,13 @@ end
 
 local snap_hlist  do
 
+    local v_noheight   = variables.noheight
+    local v_nodepth    = variables.nodepth
+    local v_line       = variables.line
+    local v_halfline   = variables.halfline
+    local v_line_m     = "-" .. v_line
+    local v_halfline_m = "-" .. v_halfline
+
     local floor = math.floor
     local ceil  = math.ceil
 
@@ -397,24 +404,24 @@ local snap_hlist  do
         local snapht, snapdp
         if method[v_local] then
             -- snapping is done immediately here
-            snapht = texgetdimen("bodyfontstrutheight")
-            snapdp = texgetdimen("bodyfontstrutdepth")
+            snapht = texgetdimen(d_bodyfontstrutheight)
+            snapdp = texgetdimen(d_bodyfontstrutdepth)
             if t then
                 t[#t+1] = formatters["local: snapht %p snapdp %p"](snapht,snapdp)
             end
         elseif method[v_global] then
-            snapht = texgetdimen("globalbodyfontstrutheight")
-            snapdp = texgetdimen("globalbodyfontstrutdepth")
+            snapht = texgetdimen(d_globalbodyfontstrutheight)
+            snapdp = texgetdimen(d_globalbodyfontstrutdepth)
             if t then
                 t[#t+1] = formatters["global: snapht %p snapdp %p"](snapht,snapdp)
             end
         else
             -- maybe autolocal
             -- snapping might happen later in the otr
-            snapht = texgetdimen("globalbodyfontstrutheight")
-            snapdp = texgetdimen("globalbodyfontstrutdepth")
-            local lsnapht = texgetdimen("bodyfontstrutheight")
-            local lsnapdp = texgetdimen("bodyfontstrutdepth")
+            snapht = texgetdimen(d_globalbodyfontstrutheight)
+            snapdp = texgetdimen(d_globalbodyfontstrutdepth)
+            local lsnapht = texgetdimen(d_bodyfontstrutheight)
+            local lsnapdp = texgetdimen(d_bodyfontstrutdepth)
             if snapht ~= lsnapht and snapdp ~= lsnapdp then
                 snapht, snapdp = lsnapht, lsnapdp
             end
@@ -672,7 +679,7 @@ local snap_hlist  do
         local lines = (ch+cd)/snaphtdp
         if t then
             local original = (h+d)/snaphtdp
-            local whatever = (ch+cd)/(texgetdimen("globalbodyfontstrutheight") + texgetdimen("globalbodyfontstrutdepth"))
+            local whatever = (ch+cd)/(texgetdimen(d_globalbodyfontstrutheight) + texgetdimen(d_globalbodyfontstrutdepth))
             t[#t+1] = formatters["final lines : %p -> %p (%p)"](original,lines,whatever)
             t[#t+1] = formatters["final height: %p -> %p"](h,ch)
             t[#t+1] = formatters["final depth : %p -> %p"](d,cd)
@@ -1699,10 +1706,10 @@ do
         --
         if trace_vsnapping then
             report_snapper("global ht/dp = %p/%p, local ht/dp = %p/%p",
-                texgetdimen("globalbodyfontstrutheight"),
-                texgetdimen("globalbodyfontstrutdepth"),
-                texgetdimen("bodyfontstrutheight"),
-                texgetdimen("bodyfontstrutdepth")
+                texgetdimen(d_globalbodyfontstrutheight),
+                texgetdimen(d_globalbodyfontstrutdepth),
+                texgetdimen(d_bodyfontstrutheight),
+                texgetdimen(d_bodyfontstrutdepth)
             )
         end
         if trace then

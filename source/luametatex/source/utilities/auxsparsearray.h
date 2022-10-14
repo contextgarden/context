@@ -57,14 +57,6 @@ typedef struct sparse_state_info {
 
 extern sparse_state_info lmt_sparse_state;
 
-/*
-typedef struct sa_mathblob {
-    unsigned int character_value:21;
-    unsigned int class_value:3;
-    unsigned int family_value:8;
-}   sa_mathblob;
-*/
-
 typedef struct sa_mathblob {
     unsigned int class_value:math_class_bits;
     unsigned int family_value:math_family_bits;
@@ -121,10 +113,6 @@ extern void         sa_set_item_1    (sa_tree head, int n, int v, int gl);
 extern void         sa_set_item_2    (sa_tree head, int n, int v, int gl);
 extern void         sa_set_item_4    (sa_tree head, int n, sa_tree_item v, int gl);
 extern void         sa_set_item_8    (sa_tree head, int n, sa_tree_item v1, sa_tree_item v2, int gl);
-/*     void         sa_rawset_item_1 (sa_tree head, int n, sa_tree_item v); */
-/*     void         sa_rawset_item_2 (sa_tree head, int n, sa_tree_item v); */
-/*     void         sa_rawset_item_4 (sa_tree head, int n, sa_tree_item v); */
-/*     void         sa_rawset_item_8 (sa_tree head, int n, sa_tree_item v1, sa_tree_item v2); */
 extern sa_tree      sa_new_tree      (int size, int bytes, sa_tree_item dflt);
 extern sa_tree      sa_copy_tree     (sa_tree head);
 extern void         sa_destroy_tree  (sa_tree head);

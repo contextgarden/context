@@ -683,13 +683,14 @@ end
 
 do
 
-    local a_mathalphabet    = privateattribute("mathalphabet")
-    local a_mathgreek       = privateattribute("mathgreek")
+    local a_mathalphabet       = privateattribute("mathalphabet")
+    local a_mathgreek          = privateattribute("mathgreek")
 
-    local relocate          = { }
+    local relocate             = { }
 
-    local remapalphabets    = mathematics.remapalphabets
-    local fallbackstyleattr = mathematics.fallbackstyleattr
+    local remapalphabets       = mathematics.remapalphabets
+    local fallbackstyleattr    = mathematics.fallbackstyleattr
+    local fallbackalphabetattr = mathematics.fallbackalphabetattr
 
     local function report_remap(tag,id,old,new,extra)
         if new then

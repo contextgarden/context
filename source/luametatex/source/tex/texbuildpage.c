@@ -177,15 +177,6 @@ void tex_initialize_buildpage(void)
     |last_node_type| are similar. And finally, |insert_penalties| holds the sum of the penalties
     associated with all split and floating insertions.
 
-*/
-
-void tex_print_page_totals(void)
-{
-    tex_print_format("%P", page_total, page_stretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink);
-}
-
-/*tex
-
     Here is a procedure that is called when the |page_contents| is changing from |empty| to
     |inserts_only| or |box_there|.
 

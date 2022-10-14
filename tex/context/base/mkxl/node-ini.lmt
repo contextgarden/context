@@ -226,6 +226,8 @@ local texsetintegervalue = tex.setintegervalue
 for i=0,nodecodes.glyph do
     texsetintegervalue(nodecodes[i] .. "nodecode",i,"immutable")
 end
+texsetintegervalue("tempnodecode",nodecodes.temp,"immutable") -- can happen in tables
+
 for i=0,#gluecodes do
     texsetintegervalue(gluecodes[i] .. "subtypecode",i,"immutable")
 end

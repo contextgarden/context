@@ -35,6 +35,8 @@ local equationlist_code = listcodes.equation
 
 local texsetdimen       = tex.setdimen
 local texsetcount       = tex.setcount
+local texisdimen        = tex.isdimen
+local texiscount        = tex.iscount
 
 local implement         = interfaces.implement
 
@@ -52,8 +54,6 @@ local getdirection      = nuts.getdirection
 local setshift          = nuts.setshift
 local setwidth          = nuts.setwidth
 local getwidth          = nuts.getwidth
--- local setboxglue        = nuts.setboxglue
--- local getboxglue        = nuts.getboxglue
 local setboxglue        = nuts.setglue
 local getboxglue        = nuts.getglue
 
@@ -72,6 +72,13 @@ local checkformath      = false
 directives.register("framed.checkmath",function(v) checkformath = v end) -- experiment
 
 -- beware: dir nodes and pseudostruts can end up on lines of their own
+
+local c_framednoflines     = texiscount("framednoflines")
+local d_framedfirstheight  = texisdimen("framedfirstheight")
+local d_framedlastdepth    = texisdimen("framedlastdepth")
+local d_framedminwidth     = texisdimen("framedminwidth")
+local d_framedmaxwidth     = texisdimen("framedmaxwidth")
+local d_framedaveragewidth = texisdimen("framedaveragewidth")
 
 local function doreshapeframedbox(n,resync)
     if resync then
@@ -148,7 +155,7 @@ local function doreshapeframedbox(n,resync)
                                 setlist(p)
                                 flushnode(p)
                             elseif checkformath and subtype == equationlist_code then
-                             -- display formulas use a shift
+                             -- display formulas use a shift .. actually we never have display mode
                                 if nofnonzero == 1 then
                                     setshift(h,0)
                                 end
@@ -172,12 +179,12 @@ local function doreshapeframedbox(n,resync)
             end
         end
     end
-    texsetcount("global","framednoflines",noflines)
-    texsetdimen("global","framedfirstheight",firstheight or 0) -- also signal
-    texsetdimen("global","framedlastdepth",lastdepth or 0)
-    texsetdimen("global","framedminwidth",minwidth)
-    texsetdimen("global","framedmaxwidth",maxwidth)
-    texsetdimen("global","framedaveragewidth",averagewidth)
+    texsetcount("global",c_framednoflines,noflines)
+    texsetdimen("global",d_framedfirstheight,firstheight or 0) -- also signal
+    texsetdimen("global",d_framedlastdepth,lastdepth or 0)
+    texsetdimen("global",d_framedminwidth,minwidth)
+    texsetdimen("global",d_framedmaxwidth,maxwidth)
+    texsetdimen("global",d_framedaveragewidth,averagewidth)
 end
 
 local function doanalyzeframedbox(n)
@@ -206,9 +213,9 @@ local function doanalyzeframedbox(n)
             end
         end
     end
-    texsetcount("global","framednoflines",noflines)
-    texsetdimen("global","framedfirstheight",firstheight or 0)
-    texsetdimen("global","framedlastdepth",lastdepth or 0)
+    texsetcount("global",c_framednoflines,noflines)
+    texsetdimen("global",d_framedfirstheight,firstheight or 0)
+    texsetdimen("global",d_framedlastdepth,lastdepth or 0)
 end
 
 implement { name = "doreshapeframedbox", actions = doreshapeframedbox, arguments = "integer" }

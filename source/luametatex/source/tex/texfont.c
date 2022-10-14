@@ -251,6 +251,7 @@ void tex_char_malloc_mathinfo(charinfo *ci)
         mi->top_right_math_kern_array = NULL;
         mi->bottom_right_math_kern_array = NULL;
         mi->bottom_left_math_kern_array = NULL;
+        /* zero annyway: */
         mi->top_left_kern = 0;
         mi->top_right_kern = 0;
         mi->bottom_left_kern = 0;
@@ -259,6 +260,9 @@ void tex_char_malloc_mathinfo(charinfo *ci)
         mi->right_margin = 0;
         mi->top_margin = 0;
         mi->bottom_margin = 0;
+        /* */
+        mi->top_overshoot = INT_MIN;
+        mi->bottom_overshoot = INT_MIN;
         if (ci->math) {
             /*tex This seldom or probably never happens. */
             tex_set_charinfo_vertical_parts(ci, NULL);
@@ -399,28 +403,43 @@ int tex_math_char_exists(halfword f, int c, int size)
     a little.
 */
 
-int tex_get_math_char(halfword f, int c, int size, scaled *scale)
+int tex_get_math_char(halfword f, int c, int size, scaled *scale, int direction)
 {
     int id = find_charinfo_id(f, c);
     texfont *tf = lmt_font_state.fonts[f];
-    if (id && size && tf->compactmath) {
-        for (int i=1;i<=size;i++) {
+    if (id) { 
+        /* */
+        if (direction) { 
             charinfo *ci = &tf->chardata[id];
-            if (ci->math) {
-                int s = ci->math->smaller;
-                if (s && proper_char_index(f, s)) {
-                    id = find_charinfo_id(f, s);
-                    if (id) {
-                        /* todo: trace */
-                        c = s;
+            int m = ci->math->mirror;
+            if (m && proper_char_index(f, m)) {
+                int mid = find_charinfo_id(f, m);
+                if (mid) { 
+                    id = mid;
+                    c = m;
+                }
+            }
+        }
+        /* */
+        if (size && tf->compactmath) {
+            for (int i=1;i<=size;i++) {
+                charinfo *ci = &tf->chardata[id];
+                if (ci->math) {
+                    int s = ci->math->smaller;
+                    if (s && proper_char_index(f, s)) {
+                        id = find_charinfo_id(f, s);
+                        if (id) {
+                            /* todo: trace */
+                            c = s;
+                        } else {
+                            break;
+                        }
                     } else {
                         break;
                     }
                 } else {
                     break;
                 }
-            } else {
-                break;
             }
         }
     }
@@ -430,11 +449,6 @@ int tex_get_math_char(halfword f, int c, int size, scaled *scale)
             *scale = 1000;
         }
     }
-    /*
-    if (! id && ! tf->oldmath) {
-        c = check_math_char(f, c, size);
-    }
-    */
     return c;
 }
 
@@ -688,7 +702,6 @@ void tex_create_null_font(void)
     int id = tex_new_font();
     tex_set_font_name(id, "nullfont");
     tex_set_font_original(id, "nullfont");
- /* set_font_touched(id, 1); */
 }
 
 int tex_is_valid_font(halfword f)
@@ -1562,48 +1575,6 @@ void tex_set_cur_font(halfword g, halfword f)
     update_tex_font(g, f);
 }
 
-/*tex This prints a scaled real, rounded to five digits. */
-
-static char *tex_aux_scaled_to_string(scaled s)
-{
-    static char result[16];
-    int k = 0;
-    /*tex The amount of allowable inaccuracy: */
-    scaled delta;
-    if (s < 0) {
-        /*tex Only print the sign, if negative */
-        result[k++] = '-';
-        s = -s;
-    }
-    {
-        int l = 0;
-        char digs[8] = { 0 };
-        int n = s / unity;
-        /*tex Process the integer part: */
-        do {
-            digs[l++] = (char) (n % 10);
-            n = n / 10;;
-        } while (n > 0);
-        while (l > 0) {
-            result[k++] = (char) (digs[--l] + '0');
-        }
-    }
-    result[k++] = '.';
-    s = 10 * (s % unity) + 5;
-    delta = 10;
-    do {
-        if (delta > unity) {
-            /*tex Round the last digit: */
-            s = s + 0100000 - 050000;
-        }
-        result[k++] = (char) ('0' + (s / unity));
-        s = 10 * (s % unity);
-        delta = delta * 10;
-    } while (s > delta);
-    result[k] = 0;
-    return (char *) result;
-}
-
 /*tex
 
     Because we do fonts in \LUA\ we can decide to drop this one and assume a definition using the
@@ -1639,29 +1610,23 @@ int tex_tex_def_font(int a)
             /*tex Put the positive 'at' size into |s|. */
             s = tex_scan_dimen(0, 0, 0, 0, NULL);
             if ((s <= 0) || (s >= 01000000000)) {
-                char msg[256];
-                snprintf(msg, 255,
-                    "Improper 'at' size (%spt), replaced by 10pt",
-                    tex_aux_scaled_to_string(s)
-                );
                 tex_handle_error(
                     normal_error_type,
-                    msg,
+                    "Improper 'at' size (%D), replaced by 10pt",
+                    s,
+                    pt_unit,
                     "I can only handle fonts at positive sizes that are less than 2048pt, so I've\n"
-                    "changed what you said to 10pt." );
+                    "changed what you said to 10pt." 
+                );
                 s = 10 * unity;
             }
         } else if (tex_scan_keyword("scaled")) {
             s = tex_scan_int(0, NULL);
             if ((s <= 0) || (s > 32768)) {
-                char msg[256];
-                snprintf(msg, 255,
-                    "Illegal magnification has been changed to 1000 (%d)",
-                    (int) s
-                );
                 tex_handle_error(
                     normal_error_type,
-                    msg,
+                    "Illegal magnification has been changed to 1000 (%i)",
+                    s,
                     "The magnification ratio must be between 1 and 32768."
                 );
                 s = -1000;
@@ -1800,27 +1765,27 @@ halfword tex_char_vertical_italic_from_font(halfword f, halfword c)
     return ci->math ? ci->math->vertical_italic : INT_MIN;
 }
 
-halfword tex_char_top_accent_from_font(halfword f, halfword c)
+halfword tex_char_unchecked_top_anchor_from_font(halfword f, halfword c)
 {
     charinfo *ci = tex_aux_char_info(f, c);
-    return ci->math ? ci->math->top_accent : INT_MIN;
+    return ci->math ? ci->math->top_anchor : INT_MIN;
 }
 
 halfword tex_char_top_anchor_from_font(halfword f, halfword c)
 {
-    scaled n = tex_char_top_accent_from_font(f, c);
+    scaled n = tex_char_unchecked_top_anchor_from_font(f, c);
     return n == INT_MIN ? 0 : n;
 }
 
-halfword tex_char_bot_accent_from_font(halfword f, halfword c)
+halfword tex_char_unchecked_bottom_anchor_from_font(halfword f, halfword c)
 {
     charinfo *ci = tex_aux_char_info(f, c);
-    return ci->math ? ci->math->bottom_accent : INT_MIN;
+    return ci->math ? ci->math->bottom_anchor : INT_MIN;
 }
 
-halfword tex_char_bot_anchor_from_font(halfword f, halfword c)
+halfword tex_char_bottom_anchor_from_font(halfword f, halfword c)
 {
-    scaled n = tex_char_bot_accent_from_font(f, c);
+    scaled n = tex_char_unchecked_bottom_anchor_from_font(f, c);
     return n == INT_MIN ? 0 : n;
 }
 
@@ -1888,6 +1853,18 @@ scaled tex_char_bottom_margin_from_font(halfword f, halfword c)
 {
     charinfo *ci = tex_aux_char_info(f, c);
     return ci->math ? ci->math->bottom_margin : 0;
+}
+
+scaled tex_char_top_overshoot_from_font(halfword f, halfword c)
+{
+    charinfo *ci = tex_aux_char_info(f, c);
+    return ci->math ? ci->math->top_overshoot : 0;
+}
+
+scaled tex_char_bottom_overshoot_from_font(halfword f, halfword c)
+{
+    charinfo *ci = tex_aux_char_info(f, c);
+    return ci->math ? ci->math->bottom_overshoot : 0;
 }
 
 /* Nodes */

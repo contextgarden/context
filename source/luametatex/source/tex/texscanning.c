@@ -168,60 +168,44 @@ inline static void tex_aux_downgrade_cur_val(int level, int succeeded, int negat
                 and they don't downgrade, nor negate which saves a little testing.
             */
             break;
-     // case int_val_level:
-     // case attr_val_level:
-     // case dimen_val_level:
-     //     while (cur_val_level > level) {
-     //         --cur_val_level;
-     //     }
-     //     if (negative) {
-     //         negate(cur_val);
-     //     }
-     //     break;
-     // case glue_val_level:
-     // case mu_val_level:
-     //     while (cur_val_level > level) {
-     //         tex_aux_downgrade_cur_val(); /* cleaner is inline */
-     //     }
-     //     if (succeeded == 1) {
-     //         cur_val = new_glue_spec_node(cur_val);
-     //     }
-     //     if (negative) {
-     //         negate(glue_amount(cur_val));
-     //         negate(glue_stretch(cur_val));
-     //         negate(glue_shrink(cur_val));
-     //     }
-     //     break;
-     // default:
-     //     /* this can't happen */
-     //     return 0;
-        default:
-            /*tex There is no real need for it being a loop, a test would do. */
-            while (cur_val_level > level) {
-                /*tex Convert |cur_val| to a lower level. */
-                switch (cur_val_level) {
-                    case glue_val_level:
-                        cur_val = glue_amount(cur_val);
-                        break;
-                    case mu_val_level :
-                        tex_aux_mu_error(1);
-                        break;
-                }
-                --cur_val_level;
-            }
-            if (cur_val_level == glue_val_level || cur_val_level == mu_val_level) {
-                if (succeeded == 1) {
-                    cur_val = tex_new_glue_spec_node(cur_val);
-                }
-                if (negative) {
-                    glue_amount(cur_val) = -glue_amount(cur_val);
-                    glue_stretch(cur_val) = -glue_stretch(cur_val);
-                    glue_shrink(cur_val) = -glue_shrink(cur_val);
-                }
-            } else if (negative) {
-                cur_val = -cur_val;
-            }
-            break;
+      case int_val_level:
+      case attr_val_level:
+      case dimen_val_level:
+          while (cur_val_level > level) {
+              --cur_val_level;
+          }
+          if (negative) {
+              cur_val = -cur_val;
+          }
+          break;
+       default:
+           /*tex There is no real need for it being a loop, a test would do. */
+           while (cur_val_level > level) {
+               /*tex Convert |cur_val| to a lower level. */
+               switch (cur_val_level) {
+                   case glue_val_level:
+                   case mu_val_level :
+                       cur_val = glue_amount(cur_val);
+                       break;
+                // case mu_val_level :
+                //     tex_aux_mu_error(1);
+                //     break;
+               }
+               --cur_val_level;
+           }
+           if (cur_val_level == glue_val_level || cur_val_level == mu_val_level) {
+               if (succeeded == 1) {
+                   cur_val = tex_new_glue_spec_node(cur_val);
+               }
+               if (negative) {
+                   glue_amount(cur_val) = -glue_amount(cur_val);
+                   glue_stretch(cur_val) = -glue_stretch(cur_val);
+                   glue_shrink(cur_val) = -glue_shrink(cur_val);
+               }
+           } else if (negative) {
+               cur_val = -cur_val;
+           }
+           break;
     }
 }
 
@@ -1077,12 +1061,10 @@ static void tex_aux_set_cur_val_by_define_char_cmd(int chr)
             break;
         case mathcode_charcode:
         case extmathcode_charcode:
-     /* case extmathcodenum_charcode: */
             chr = tex_get_math_code_number(index);
             break;
         case delcode_charcode:
         case extdelcode_charcode:
-     /* case extdelcodenum_charcode: */
             chr = tex_get_del_code_number(index);
             break;
         default:
@@ -1358,7 +1340,6 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
             if (tex_aux_valid_tok_level(level)) {
                 cur_val = cur_chr;
                 cur_val_level = font_val_level;
-                /* set_font_touched(cur_chr, 1); */
                 return cur_val;
             } else {
                 break;
@@ -3280,7 +3261,6 @@ halfword tex_scan_font_identifier(halfword *spec)
         case define_font_cmd:
             return cur_font_par;
         case set_font_cmd:
-         /* set_font_touched(cur_chr, 1); */
             return cur_chr;
         case fontspec_cmd:
             {
@@ -3295,7 +3275,6 @@ halfword tex_scan_font_identifier(halfword *spec)
                 halfword siz = cur_chr;
                 halfword fam = tex_scan_math_family_number();
                 halfword fnt = tex_fam_fnt(fam, siz);
-             /* set_font_touched(fnt, 1); */
                 return fnt;
             }
         case register_int_cmd:

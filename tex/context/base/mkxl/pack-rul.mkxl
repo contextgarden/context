@@ -18,6 +18,13 @@
 %D packaging and expansion we also keep tracing reasonable. For instance, multiple
 %D stacked backgrounds can slow down a run if not optimized this way.
 
+\newcount\framednoflines
+\newdimen\framedfirstheight
+\newdimen\framedlastdepth
+\newdimen\framedminwidth
+\newdimen\framedmaxwidth
+\newdimen\framedaveragewidth
+
 \registerctxluafile{pack-rul}{autosuffix,optimize}
 
 \unprotect
@@ -703,7 +710,7 @@
 \def\pack_framed_stroked_box_normal_closed
   {\hpack\bgroup
      \scratchdimen.5\d_framed_linewidth
-     \hskip\scratchdimen
+     \kern\scratchdimen
      \clf_framedoutline
        \dimexpr\d_framed_target_wd-\d_framed_linewidth\relax
        \dimexpr\d_framed_target_ht-\scratchdimen\relax
@@ -2323,12 +2330,12 @@
 %D It is possible to let the frame macro calculate the width of a centered box
 %D automatically (\type {fit}). When doing so, we need to reshape the box:
 
-\newcount\framednoflines
-\newdimen\framedfirstheight
-\newdimen\framedlastdepth
-\newdimen\framedminwidth
-\newdimen\framedmaxwidth
-\newdimen\framedaveragewidth
+% \newcount\framednoflines
+% \newdimen\framedfirstheight
+% \newdimen\framedlastdepth
+% \newdimen\framedminwidth
+% \newdimen\framedmaxwidth
+% \newdimen\framedaveragewidth
 
 \def\pack_framed_reshape_reset
   {\framednoflines    \zerocount

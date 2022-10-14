@@ -117,7 +117,7 @@
      \setupcurrentscale[#2]%
    \fi
    %
-   \dowithnextboxcs\grph_scale_finish\hbox}
+   \dowithnextboxcs\grph_scale_finish\naturalhbox} % intercept direction
 
 \def\grph_scale_finish
   {% todo: p_scale_

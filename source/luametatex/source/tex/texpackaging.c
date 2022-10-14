@@ -300,35 +300,35 @@ static void tex_aux_scan_full_spec(quarterword c, quarterword spec_direction, in
     /*tex Now we're referenced. We need to preserve this over the group. */
     add_attribute_reference(attrlist);
     /* */
-    tex_set_saved_record(saved_full_spec_item_context, saved_box_context, 0, context);
+    tex_set_saved_record(saved_full_spec_item_context, box_context_save_type, 0, context);
     /*tex Traditionally these two are packed into one record: */
-    tex_set_saved_record(saved_full_spec_item_packaging, saved_box_spec, spec_code, spec_amount);
+    tex_set_saved_record(saved_full_spec_item_packaging, box_spec_save_type, spec_code, spec_amount);
     /*tex Adjust |text_dir_ptr| for |scan_spec|: */
     if (spec_direction != direction_unknown) {
-        tex_set_saved_record(saved_full_spec_item_direction, saved_box_direction, spec_direction, lmt_dir_state.text_dir_ptr);
+        tex_set_saved_record(saved_full_spec_item_direction, box_direction_save_type, spec_direction, lmt_dir_state.text_dir_ptr);
         lmt_dir_state.text_dir_ptr = tex_new_dir(normal_dir_subtype, spec_direction);
     } else {
-        tex_set_saved_record(saved_full_spec_item_direction, saved_box_direction, spec_direction, null);
+        tex_set_saved_record(saved_full_spec_item_direction, box_direction_save_type, spec_direction, null);
     }
     /* We could pack some in one record. */
-    tex_set_saved_record(saved_full_spec_item_attr_list, saved_box_attr_list, 0, attrlist);
-    tex_set_saved_record(saved_full_spec_item_only_pack, saved_box_pack, 0, just_pack);
-    tex_set_saved_record(saved_full_spec_item_orientation, saved_box_orientation, 0, orientation);
-    tex_set_saved_record(saved_full_spec_item_anchor, saved_box_anchor, 0, anchor);
-    tex_set_saved_record(saved_full_spec_item_geometry, saved_box_geometry, 0, geometry);
-    tex_set_saved_record(saved_full_spec_item_xoffset, saved_box_xoffset, 0, xoffset);
-    tex_set_saved_record(saved_full_spec_item_yoffset, saved_box_yoffset, 0, yoffset);
-    tex_set_saved_record(saved_full_spec_item_xmove, saved_box_xmove, 0, xmove);
-    tex_set_saved_record(saved_full_spec_item_ymove, saved_box_ymove, 0, ymove);
-    tex_set_saved_record(saved_full_spec_item_reverse, saved_box_reverse, 0, reverse);
-    tex_set_saved_record(saved_full_spec_item_container, saved_box_container, 0, container);
-    tex_set_saved_record(saved_full_spec_item_shift, saved_box_shift, 0, shift);
-    tex_set_saved_record(saved_full_spec_item_source, saved_box_source, 0, source);
-    tex_set_saved_record(saved_full_spec_item_target, saved_box_target, 0, target);
-    tex_set_saved_record(saved_full_spec_item_axis, saved_box_axis, 0, axis);
-    tex_set_saved_record(saved_full_spec_item_class, saved_box_class, 0, mainclass);
-    tex_set_saved_record(saved_full_spec_item_state, saved_box_state, 0, state);
-    tex_set_saved_record(saved_full_spec_item_retain, saved_box_retain, 0, retain);
+    tex_set_saved_record(saved_full_spec_item_attr_list, box_attr_list_save_type, 0, attrlist);
+    tex_set_saved_record(saved_full_spec_item_only_pack, box_pack_save_type, 0, just_pack);
+    tex_set_saved_record(saved_full_spec_item_orientation, box_orientation_save_type, 0, orientation);
+    tex_set_saved_record(saved_full_spec_item_anchor, box_anchor_save_type, 0, anchor);
+    tex_set_saved_record(saved_full_spec_item_geometry, box_geometry_save_type, 0, geometry);
+    tex_set_saved_record(saved_full_spec_item_xoffset, box_xoffset_save_type, 0, xoffset);
+    tex_set_saved_record(saved_full_spec_item_yoffset, box_yoffset_save_type, 0, yoffset);
+    tex_set_saved_record(saved_full_spec_item_xmove, box_xmove_save_type, 0, xmove);
+    tex_set_saved_record(saved_full_spec_item_ymove, box_ymove_save_type, 0, ymove);
+    tex_set_saved_record(saved_full_spec_item_reverse, box_reverse_save_type, 0, reverse);
+    tex_set_saved_record(saved_full_spec_item_container, box_container_save_type, 0, container);
+    tex_set_saved_record(saved_full_spec_item_shift, box_shift_save_type, 0, shift);
+    tex_set_saved_record(saved_full_spec_item_source, box_source_save_type, 0, source);
+    tex_set_saved_record(saved_full_spec_item_target, box_target_save_type, 0, target);
+    tex_set_saved_record(saved_full_spec_item_axis, box_axis_save_type, 0, axis);
+    tex_set_saved_record(saved_full_spec_item_class, box_class_save_type, 0, mainclass);
+    tex_set_saved_record(saved_full_spec_item_state, box_state_save_type, 0, state);
+    tex_set_saved_record(saved_full_spec_item_retain, box_retain_save_type, 0, retain);
     lmt_save_state.save_stack_data.ptr += saved_full_spec_n_of_items;
     tex_new_save_level(c);
     if (! brace) {
@@ -2287,13 +2287,13 @@ halfword tex_vpack(halfword p, scaled h, int m, scaled l, singleword pack_direct
     return r;
 }
 
-halfword tex_filtered_vpack(halfword p, scaled h, int m, scaled l, int grp, halfword pack_direction, int just_pack, halfword attr, int state, int retain)
+halfword tex_filtered_vpack(halfword p, scaled h, int m, scaled maxdepth, int grp, halfword direction, int just_pack, halfword attr, int state, int retain)
 {
     halfword q = p;
     if (! just_pack) {
-        q = lmt_vpack_filter_callback(q, h, m, l, grp, pack_direction, attr);
+        q = lmt_vpack_filter_callback(q, h, m, maxdepth, grp, direction, attr);
     }
-    q = tex_vpack(q, h, m, l, checked_direction_value(pack_direction), retain);
+    q = tex_vpack(q, h, m, maxdepth, checked_direction_value(direction), retain);
     if (q && normalize_par_mode_permitted(normalize_par_mode_par, flatten_v_leaders_mode) && ! is_box_package_state(state, package_u_leader_delayed)) {
         tex_flatten_leaders(q, NULL);
     }
@@ -2376,7 +2376,7 @@ void tex_package(singleword nature)
     halfword context, spec, dirptr, attrlist, justpack, orientation, anchor, geometry, source, target, axis, mainclass, state, retain;
     scaled shift;
     int grp = cur_group;
-    scaled d = box_max_depth_par;
+    scaled maxdepth = box_max_depth_par;
     halfword boxnode = null; /*tex Aka |cur_box|. */
     tex_unsave();
     lmt_save_state.save_stack_data.ptr -= saved_full_spec_n_of_items;
@@ -2405,7 +2405,7 @@ void tex_package(singleword nature)
         box_package_state(boxnode) = hbox_package_state;
     } else {
         boxnode = tex_filtered_vpack(node_next(cur_list.head), spec, saved_level(saved_full_spec_item_packaging),
-            d, grp, saved_level(saved_full_spec_item_direction), justpack, attrlist, state, retain);
+            maxdepth, grp, saved_level(saved_full_spec_item_direction), justpack, attrlist, state, retain);
         if (nature == vtop_code) {
             /*tex
 
@@ -2414,21 +2414,21 @@ void tex_package(singleword nature)
                 |hlist_node|, |vlist_node|, or |rule_node|; otherwise the |\vtop| height is zero.
 
             */
-            scaled h = 0;
-            halfword p = box_list(boxnode);
-            if (p) {
-                switch (node_type(p)) {
+            scaled height = 0;
+            halfword list = box_list(boxnode);
+            if (list) {
+                switch (node_type(list)) {
                     case hlist_node:
                     case vlist_node:
-                        h = box_height(p);
+                        height = box_height(list);
                         break;
                     case rule_node:
-                        h = rule_height(p);
+                        height = rule_height(list);
                         break;
                 }
             }
-            box_depth(boxnode) = box_total(boxnode) - h;
-            box_height(boxnode) = h;
+            box_depth(boxnode) = box_total(boxnode) - height;
+            box_height(boxnode) = height;
             box_package_state(boxnode) = vtop_package_state;
         } else {
             box_package_state(boxnode) = vbox_package_state;
@@ -3360,7 +3360,7 @@ void tex_begin_box(int boxcontext, scaled shift)
                         break;
                 }
                 mode = code - vtop_code;
-                tex_set_saved_record(saved_full_spec_item_context, saved_box_context, 0, boxcontext);
+                tex_set_saved_record(saved_full_spec_item_context, box_context_save_type, 0, boxcontext);
                 switch (abs(cur_list.mode)) {
                     case vmode:
                         spec_direction = dir_lefttoright;

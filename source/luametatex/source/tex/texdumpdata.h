@@ -55,13 +55,13 @@
 
 */
 
-# define luametatex_format_fingerprint 670
+# define luametatex_format_fingerprint 674
 
 /* These end up in the string pool. */
 
 typedef struct dump_state_info {
-    strnumber format_identifier;
-    strnumber format_name;
+    int fingerprint;
+    int padding;
 } dump_state_info;
 
 extern dump_state_info lmt_dump_state;

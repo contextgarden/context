@@ -169,7 +169,7 @@ void tex_compact_tokens(void)
         memset((void *) mapper, -1, ((size_t) lmt_token_memory_state.tokens_data.allocated) * sizeof(halfword));
         memoryword *tokens = lmt_token_memory_state.tokens;
         /* also reset available */
-        for (int cs = 0; cs < (eqtb_size + lmt_hash_state.hash_data.ptr); cs++) {
+        for (int cs = 0; cs < (eqtb_size + lmt_hash_state.hash_data.ptr + 1); cs++) {
             switch (eq_type(cs)) {
                 case call_cmd:
                 case protected_call_cmd:
@@ -2114,27 +2114,24 @@ halfword tex_string_to_toks(const char *ss)
 
     |lua_str_toks| is almost identical, but it also escapes the three symbols that \LUA\ considers
     special while scanning a literal string.
-
-    This changes the string |str_pool[b .. pool_ptr]| to a token list:
-
 */
 
 static halfword lmt_str_toks(lstring b) /* returns head */
 {
-    /*tex index into string */
     unsigned char *k = (unsigned char *) b.s;
-    /*tex tail of the token list */
-    halfword h = null;
-    halfword p = null;
+    halfword head = null;
+    halfword tail = head;
     while (k < (unsigned char *) b.s + b.l) {
-        /*tex token being appended */
         halfword t = aux_str2uni(k);
         k += utf8_size(t);
         if (t == ' ') {
             t = space_token;
         } else {
             if ((t == '\\') || (t == '"') || (t == '\'') || (t == 10) || (t == 13)) {
-                p = tex_store_new_token(p, escape_token);
+                tail = tex_store_new_token(tail, escape_token);
+                if (! head) {
+                    head = tail;
+                }
                 if (t == 10) {
                     t = 'n';
                 } else if (t == 13) {
@@ -2143,12 +2140,12 @@ static halfword lmt_str_toks(lstring b) /* returns head */
             }
             t += other_token;
         }
-        p = tex_store_new_token(p, t);
-        if (! h) {
-            h = p;
+        tail = tex_store_new_token(tail, t);
+        if (! head) {
+            head = tail;
         }
     }
-    return h;
+    return head;
 }
 
 /*tex
@@ -2801,20 +2798,36 @@ void tex_run_convert_tokens(halfword code)
                 break;
             }
         case lua_escape_string_code:
+     /* case lua_token_string_code: */ /* for now rejected: could also be keyword */
             {
-                lstring escstr;
-                int l = 0;
-                int e = lmt_token_state.in_lua_escape;
+                /* tex 
+                    If I would need it I could probably add support for catcode tables and verbose 
+                    serialization. Maybe we can use some of the other (more efficient) helpers when
+                    we have a detokenize variant. We make sure that the escape character is a 
+                    backslash because these conversions can occur anywhere and are very much 
+                    related to \LUA\ calls. (Maybe it makes sense to pass it a argument to the
+                    serializer.) 
+
+                    A |\luatokenstring| primitive doesn't really make sense because \LUATEX\ lacks
+                    it and |\luaescapestring| is a compatibility primitive.
+                */
+                lstring str;
+                int length = 0;
+                int saved_in_lua_escape = lmt_token_state.in_lua_escape;
+                halfword saved_escape_char = escape_char_par;
                 full_scanner_status saved_full_status = tex_save_full_scanner_status();
-                halfword result = tex_scan_toks_expand(0, NULL, 0);
+                halfword result = tex_scan_toks_expand(0, NULL, 0); 
+             /* halfword result = tex_scan_toks_expand(0, NULL, code == lua_token_string_code); */
                 lmt_token_state.in_lua_escape = 1;
-                escstr.s = (unsigned char *) tex_tokenlist_to_tstring(result, 0, &l, 0, 0, 0);
-                escstr.l = (unsigned) l;
-                lmt_token_state.in_lua_escape = e;
+                escape_char_par = '\\';
+                str.s = (unsigned char *) tex_tokenlist_to_tstring(result, 0, &length, 0, 0, 0);
+                str.l = (unsigned) length;
+                lmt_token_state.in_lua_escape = saved_in_lua_escape;
+                escape_char_par = saved_escape_char;
                 tex_delete_token_reference(result); /* boils down to flush_list */
                 tex_unsave_full_scanner_status(saved_full_status);
-                if (escstr.l) {
-                    result = lmt_str_toks(escstr);
+                if (str.l) {
+                    result = lmt_str_toks(str);
                     tex_begin_inserted_list(result);
                 }
                 return;
@@ -2855,7 +2868,7 @@ void tex_run_convert_tokens(halfword code)
                     tex_open_log_file();
                 }
                 push_selector;
-                tex_print_tex_str(lmt_dump_state.format_name);
+                tex_print_str(lmt_engine_state.dump_name);
                 pop_selector;
                 break;
             }
@@ -2937,7 +2950,7 @@ strnumber tex_the_convert_string(halfword c, int i)
             tex_aux_print_job_name();
             break;
         case format_name_code:
-            tex_print_tex_str(lmt_dump_state.format_name);
+            tex_print_str(lmt_engine_state.dump_name);
             break;
         case luatex_banner_code:
             tex_print_str(lmt_engine_state.luatex_banner);

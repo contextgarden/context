@@ -66,7 +66,7 @@ local context             = context
 
 -- todo: allocate
 
-mathematics.styles       = allocate { "regular", "sansserif", "monospaced", "fraktur", "script", "blackboard" }
+mathematics.styles       = allocate { "regular", "sansserif", "monospaced", "fraktur", "script", "calligraphic", "blackboard" }
 mathematics.alternatives = allocate { "normal", "bold", "italic", "bolditalic" }
 mathematics.sets         = allocate { "ucletters", "lcletters", "digits", "ucgreek", "lcgreek", "symbols" }
 
@@ -520,58 +520,95 @@ local script = {
     bi = script_bf,
 }
 
-local alphabets = allocate {
-    regular    = regular,
-    sansserif  = sansserif,
-    monospaced = monospaced,
-    blackboard = blackboard,
-    fraktur    = fraktur,
-    script     = script,
+local calligraphic_tf = {
+    digits    = tovector(regular_tf.digits),
+    ucletters = toupper(0x100020),
+    lcletters = tolower(0x100000),
+    lcgreek   = tovector(regular_tf.lcgreek),
+    ucgreek   = tovector(regular_tf.ucgreek),
+    symbols   = tovector(regular_tf.symbols),
 }
 
-alphabets.tt          = tovector(monospaced)
-alphabets.ss          = tovector(sansserif)
-alphabets.rm          = tovector(regular)
-alphabets.bb          = tovector(blackboard)
-alphabets.fr          = tovector(fraktur)
-alphabets.sr          = tovector(script)
+local calligraphic_bf = {
+    digits    = tovector(regular_bf.digits),
+    ucletters = toupper(0x100060),
+    lcletters = tolower(0x100040),
+    lcgreek   = tovector(regular_bf.lcgreek),
+    ucgreek   = tovector(regular_bf.ucgreek),
+    symbols   = tovector(regular_bf.symbols),
+}
 
-monospaced.normal     = tovector(monospaced_tf)
-monospaced.italic     = tovector(monospaced_it)
-monospaced.bold       = tovector(monospaced_bf)
-monospaced.bolditalic = tovector(monospaced_bi)
+local calligraphic = {
+    tf = calligraphic_tf,
+    bf = calligraphic_bf,
+    it = calligraphic_tf,
+    bi = calligraphic_bf,
+}
 
-sansserif.normal      = tovector(sansserif_tf)
-sansserif.italic      = tovector(sansserif_it)
-sansserif.bold        = tovector(sansserif_bf)
-sansserif.bolditalic  = tovector(sansserif_bi)
+local alphabets = allocate {
+    regular      = regular,
+    sansserif    = sansserif,
+    monospaced   = monospaced,
+    blackboard   = blackboard,
+    fraktur      = fraktur,
+    script       = script,
+    calligraphic = calligraphic,
+}
 
-regular.normal        = tovector(regular_tf)
-regular.italic        = tovector(regular_it)
-regular.bold          = tovector(regular_bf)
-regular.bolditalic    = tovector(regular_bi)
+alphabets.tt            = tovector(monospaced)
+alphabets.ss            = tovector(sansserif)
+alphabets.rm            = tovector(regular)
+alphabets.bb            = tovector(blackboard)
+alphabets.fr            = tovector(fraktur)
+alphabets.sr            = tovector(script)
+alphabets.ca            = tovector(calligraphic)
 
-blackboard.normal     = tovector(blackboard_tf)
-blackboard.italic     = tovector(blackboard_tf)
-blackboard.bold       = tovector(blackboard_tf)
-blackboard.bolditalic = tovector(blackboard_tf)
+monospaced.normal       = tovector(monospaced_tf)
+monospaced.italic       = tovector(monospaced_it)
+monospaced.bold         = tovector(monospaced_bf)
+monospaced.bolditalic   = tovector(monospaced_bi)
 
-fraktur.normal        = tovector(fraktur_tf)
-fraktur.italic        = tovector(fraktur_bf)
-fraktur.bold          = tovector(fraktur_tf)
-fraktur.bolditalic    = tovector(fraktur_bf)
+sansserif.normal        = tovector(sansserif_tf)
+sansserif.italic        = tovector(sansserif_it)
+sansserif.bold          = tovector(sansserif_bf)
+sansserif.bolditalic    = tovector(sansserif_bi)
 
-alphabets.serif       = tovector(regular)
-alphabets.type        = tovector(monospaced)
-alphabets.teletype    = tovector(monospaced)
+regular.normal          = tovector(regular_tf)
+regular.italic          = tovector(regular_it)
+regular.bold            = tovector(regular_bf)
+regular.bolditalic      = tovector(regular_bi)
 
-mathematics.alphabets = alphabets
+blackboard.normal       = tovector(blackboard_tf)
+blackboard.italic       = tovector(blackboard_tf)
+blackboard.bold         = tovector(blackboard_tf)
+blackboard.bolditalic   = tovector(blackboard_tf)
 
-local mathremap       = allocate { }
-mathematics.mapremap  = mathremap
+fraktur.normal          = tovector(fraktur_tf)
+fraktur.italic          = tovector(fraktur_bf)
+fraktur.bold            = tovector(fraktur_tf)
+fraktur.bolditalic      = tovector(fraktur_bf)
 
-local boldmap         = allocate { }
-mathematics.boldmap   = boldmap
+script.normal           = tovector(script_tf)
+script.italic           = tovector(script_bf)
+script.bold             = tovector(script_tf)
+script.bolditalic       = tovector(script_bf)
+
+calligraphic.normal     = tovector(calligraphic_tf)
+calligraphic.italic     = tovector(calligraphic_bf)
+calligraphic.bold       = tovector(calligraphic_tf)
+calligraphic.bolditalic = tovector(calligraphic_bf)
+
+alphabets.serif         = tovector(regular)
+alphabets.type          = tovector(monospaced)
+alphabets.teletype      = tovector(monospaced)
+
+mathematics.alphabets   = alphabets
+
+local mathremap         = allocate { }
+mathematics.mapremap    = mathremap
+
+local boldmap           = allocate { }
+mathematics.boldmap     = boldmap
 
 -- all math (a bit of redundancy here) (sorted for tracing)
 
@@ -704,10 +741,11 @@ implement {
     actions   = function(alphabet)
         if texgetmode() == mathmode_code then
          -- local r = mathremap[mathalphabet]
-            local r = mathremap[texgetattribute(mathalphabet)]
+            local a = texgetattribute(mathalphabet)
+            local r = mathremap[a]
             local style = r and r.style or "tf"
             local data = alphabets[alphabet][style]
-            texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
+            texsetattribute(mathalphabet,data and data.attribute or a)
         end
     end
 }
@@ -805,7 +843,7 @@ end
 
 -- begin of experiment
 
-local fallback = {
+local stylefallbacks = {
     tf = "bf",
     it = "bi",
     bf = "tf",
@@ -813,12 +851,12 @@ local fallback = {
 }
 
 function mathematics.fallbackstyleattr(attribute)
-    local r = mathremap[attribute]
-    local alphabet = r.alphabet or "regular"
-    local style = r.style or "tf"
-    local fback = fallback[style]
-    if fback then
-        local data = alphabets[alphabet][fback]
+    local redirect = mathremap[attribute]
+    local alphabet = redirect.alphabet or "regular"
+    local style    = redirect.style or "tf"
+    local fallback = stylefallbacks[style]
+    if fallback then
+        local data = alphabets[alphabet][fallback]
         if data then
             local attr = data.attribute
             return attribute ~= attr and attr

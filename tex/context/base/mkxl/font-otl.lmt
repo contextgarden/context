@@ -52,7 +52,7 @@ local report_otf          = logs.reporter("fonts","otf loading")
 local fonts               = fonts
 local otf                 = fonts.handlers.otf
 
-otf.version               = 3.120 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version               = 3.121 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                 = containers.define("fonts", "otl", otf.version, true)
 otf.svgcache              = containers.define("fonts", "svg", otf.version, true)
 otf.pngcache              = containers.define("fonts", "png", otf.version, true)
@@ -426,9 +426,9 @@ local function copytotfm(data,cache_id)
                         character.vitalic = vitalic
                     end
                     --
-                    local accent = m.accent -- taccent?
-                    if accent then
-                        character.accent = accent
+                    local topanchor = m.topanchor or m.accent -- for now
+                    if topanchor then
+                        character.topanchor = topanchor
                     end
                     --
                     local kerns = m.kerns
@@ -766,14 +766,14 @@ end
 
 -- moved from font-oth.lua, todo: also afm
 
-local function getgsub(tfmdata,k,kind,value)
+local function getgsub(tfmdata,k,kind,value,script,language)
     local shared  = tfmdata.shared
     local rawdata = shared and shared.rawdata
     if rawdata then
         local sequences = rawdata.resources.sequences
         if sequences then
             local properties = tfmdata.properties
-            local validlookups, lookuplist = otf.collectlookups(rawdata,kind,properties.script,properties.language)
+            local validlookups, lookuplist = otf.collectlookups(rawdata,kind,script or properties.script,language or properties.language)
             if validlookups then
              -- local choice = tonumber(value) or 1 -- no random here (yet)
                 for i=1,#lookuplist do
@@ -797,8 +797,8 @@ end
 
 otf.getgsub = getgsub -- returns value, gsub_kind
 
-function otf.getsubstitution(tfmdata,k,kind,value)
-    local found, kind = getgsub(tfmdata,k,kind,value)
+function otf.getsubstitution(tfmdata,k,kind,value,script,language)
+    local found, kind = getgsub(tfmdata,k,kind,value,script,language)
     if not found then
         --
     elseif kind == "gsub_single" then
@@ -812,16 +812,16 @@ end
 
 otf.getalternate = otf.getsubstitution
 
-function otf.getmultiple(tfmdata,k,kind)
-    local found, kind = getgsub(tfmdata,k,kind)
+function otf.getmultiple(tfmdata,k,kind,value,script,language)
+    local found, kind = getgsub(tfmdata,k,kind,value,script,language)
     if found and kind == "gsub_multiple" then
         return found
     end
     return { k }
 end
 
-function otf.getkern(tfmdata,left,right,kind)
-    local kerns = getgsub(tfmdata,left,kind or "kern",true) -- for now we use getsub
+function otf.getkern(tfmdata,left,right,kind,value,script,language)
+    local kerns = getgsub(tfmdata,left,kind or "kern",true,script,language) -- for now we use getsub
     if kerns then
         local found = kerns[right]
         local kind  = type(found)

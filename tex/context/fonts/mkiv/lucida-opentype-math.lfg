@@ -1,3 +1,5 @@
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
 local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
 
  -- local kern_250 = { bottomright = { { kern = -250 } }, force = true }
@@ -42,75 +44,83 @@ return {
             NoLimitSupFactor                =    0,
             NoLimitSubFactor                =  900,
             FractionRuleThickness           =   55,
-            -- AccentTopShiftUp                =  0,
-            -- FlattenedAccentTopShiftUp       =  0,
-            -- AccentExtendMargin              =   50,
+         -- AccentTopShiftUp                =    0,
+         -- FlattenedAccentTopShiftUp       =    0,
+         -- AccentExtendMargin              =   50,
          -- AccentBaseHeight                =  650,
             AccentBaseDepth                 =  150,
             RadicalDegreeBottomRaisePercent =   50,
             RadicalKernAfterDegree          = -600,
-         -- RadicalRuleThickness            =   35, -- 40 in font (46 in demi)
+         -- RadicalRuleThickness            =   35, --   40 in font (46 in demi)
             DelimiterPercent                =   90,
             DelimiterShortfall              =  400,
          -- DisplayOperatorMinHeight        = 1800, -- 1300 in font (only one)
-            PrimeRaisePercent               =   60, -- 50 default
-            PrimeRaiseComposedPercent       =   50, -- 25 default
+            PrimeRaisePercent               =   60, --   50 default
+            PrimeRaiseComposedPercent       =   50, --   25 default
+--             AxisHeight = 325,
         },
         tweaks = {
             aftercopying = {
                 {
                     tweak    = "version",
-                    expected = "Version 1.802",
+                    expected = "Version 1.803",
                 },
-                -- {
-                --     tweak = "substitutes",
-                --     list  = {
-                --         [0x2264] = "ss03",
-                --         [0x2265] = "ss03",
-                --     }
-                -- },
-                -- \definefontfeature[mathlucida][copymathscripts=yes]
-                -- \definefontfeature[mathlucida][copymathscripts=yes,ss04=yes]
-                -- 0xFEOO should be chancery style, if present
                 {
-                    tweak    = "variants",
-                    kind     = "script",
-                    feature  = "ss04",-- this changes to chancery style for lucida
-                 -- feature  = false, -- use the saved ones (see typescript)
-                    selector = 0xFE00,
+                    tweak   = "fixoldschool",
+                    version = "Version 1.802",
                 },
-                -- 0xFEO1 should be roundhand style, if present
+-- {
+--     tweak = "showinfo",
+--     version = "Version 1.803",
+-- },
                 {
-                    tweak    = "variants",
-                    kind     = "script",
-                    selector = 0xFE01,
+                    tweak = "addmirrors",
+                },
+                presets.mathxitsarabic {
+                    rscale = 1.05
+                },
+                {
+                    tweak   = "replacealphabets",
+                    list    = {
+                        {
+                            source   = "uppercasescript",
+                            target   = "uppercasecalligraphic",
+                            feature  = "ss04",
+                        },
+                    },
+                },
+                {
+                    tweak   = "dimensions",
+                    version = "Version 1.802",
+                    list    = {
+                        -- The < and > are slightly too small. We scale them by 867/795
+                        ["0x003C"]      = { scale = 1.09057, width = 1.09057, height = 1.09057 },
+                        ["0x003E"]      = { scale = 1.09057, width = 1.09057, height = 1.09057 },
+                        -- The = is too big if in ss03. We scale it by 795/867 (not working like this)
+                     -- ["0x003D.ss03"] = { scale = 0.916955, width = 0.916955, height = 0.916955 },
+                    },
                 },
                 {
                     tweak = "dimensions",
                     list  = {
-                        -- these we fix here
+                        -- these we fix here. Remove when we have new version of Lucida
                         ["0x23DC.parts.1"]  = { xoffset = -0.075, height = .4, yoffset = -0.6 },
                         ["0x23DC.parts.2"]  = {                   height = .4, yoffset = -0.6 },
                         ["0x23DC.parts.3"]  = { xoffset =  0.075, height = .4, yoffset = -0.6 },
                         ["0x23DD.parts.1"]  = { xoffset = -0.075, depth  = .8, yoffset =  0.2 },
                         ["0x23DD.parts.2"]  = {                   depth  = .8, yoffset =  0.2 },
                         ["0x23DD.parts.3"]  = { xoffset =  0.075, depth  = .8, yoffset =  0.2 },
-                        -- The < and > are slightly too small. We scale them by 867/795
-                        ["0x003C"]          = { scale = 1.09057, width = 1.09057, height = 1.09057 },
-                        ["0x003E"]          = { scale = 1.09057, width = 1.09057, height = 1.09057 },
-                        -- The = is too big if in ss03. We scale it by 795/867 (not working like this)
-                     -- ["0x003D.ss03"]     = { scale = 0.916955, width = 0.916955, height = 0.916955 },
                         -- these are done later using the AccentBase* parameters
                      -- [0x23DC]            = { height = .2, yoffset = -0.8 },
                      -- [0x23DD]            = { depth  = .6, yoffset =  0.4 },
-
+                        --
                      -- ["0x7C.variants.1"] = { squeeze = 0.75, height = 0.75, depth = 0.75 },
                      -- ["0x7C.variants.2"] = { squeeze = 0.75, height = 0.75, depth = 0.75 },
                      -- ["0x7C.variants.3"] = { squeeze = 0.75, height = 0.75, depth = 0.75 },
                      -- ["0x7C.variants.4"] = { squeeze = 0.75, height = 0.75, depth = 0.75 },
                         -- going zero makes them be ignored
-                        ["0x7C.variants.3"]={ squeeze = 0.90, height = 0.90, depth = 0.90 },
-                        ["0x7C.variants.4"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
+                        ["0x7C.variants.3"] = { squeeze = 0.90, height = 0.90, depth = 0.90 },
+                        ["0x7C.variants.4"] = { squeeze = 0.80, height = 0.80, depth = 0.80 },
                     },
                 },
                 -- Accents are a mess. We migrate the extensibles from the combiners to the base accent
@@ -127,10 +137,10 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {
-                        -- [0x00302] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widehat
-                        -- [0x00303] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widetilde
-                        -- [0x00306] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widebreve
-                        -- [0x0030C] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widecheck
+                     -- [0x00302] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widehat
+                     -- [0x00303] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widetilde
+                     -- [0x00306] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widebreve
+                     -- [0x0030C] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widecheck
                     },
                 },
                 -- Then we deal with all offsets and heights in one go. So we treat the initial accent
@@ -138,20 +148,18 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {
-                        -- here we want to apply to all
-                        -- [0x00300] = { yoffset = -0.02, height = .95, all = true }, -- widegrave : 0x0060
-                        -- [0x00301] = { yoffset = -0.02, height = .95, all = true }, -- wideacute : 0x00B4
-                        -- [0x00302] = { yoffset = -0.03, height = .95, all = true }, -- widehat   : 0x02C6
-                        -- [0x00303] = { yoffset = -0.02, height = .95, all = true }, -- widetilde : 0x02DC
-                        -- [0x00306] = { yoffset = -0.03, height = .95, all = true }, -- widebre   : 0x02D8
-                        -- [0x0030A] = { yoffset =  0.00, height = .95, all = true }, -- widering  : 0x02DA
-                        -- [0x0030C] = { yoffset = -0.03, height = .95, all = true }, -- widecheck : 0x02C7
-
-                        -- [0x00304] = { yoffset = -0.05, height = .95, all = true }, -- widebar   : 0x00AF
-
-                        -- [0x00307] = { yoffset = -0.03, height = .95, all = true }, -- widedot   : 0x02D9
-                        -- [0x00308] = { yoffset = -0.03, height = .95, all = true }, -- wideddot  : 0x00A8
-                        -- [0x020DB] = { yoffset =  -0.015,    height = .95, all = true }, -- widedddot : 0x20DB (self)
+                      -- here we want to apply to all
+                      -- [0x00300] = { yoffset = -0.02,  height = .95, all = true }, -- widegrave : 0x0060
+                      -- [0x00301] = { yoffset = -0.02,  height = .95, all = true }, -- wideacute : 0x00B4
+                      -- [0x00302] = { yoffset = -0.03,  height = .95, all = true }, -- widehat   : 0x02C6
+                      -- [0x00303] = { yoffset = -0.02,  height = .95, all = true }, -- widetilde : 0x02DC
+                      -- [0x00306] = { yoffset = -0.03,  height = .95, all = true }, -- widebre   : 0x02D8
+                      -- [0x0030A] = { yoffset =  0.00,  height = .95, all = true }, -- widering  : 0x02DA
+                      -- [0x0030C] = { yoffset = -0.03,  height = .95, all = true }, -- widecheck : 0x02C7
+                      -- [0x00304] = { yoffset = -0.05,  height = .95, all = true }, -- widebar   : 0x00AF
+                      -- [0x00307] = { yoffset = -0.03,  height = .95, all = true }, -- widedot   : 0x02D9
+                      -- [0x00308] = { yoffset = -0.03,  height = .95, all = true }, -- wideddot  : 0x00A8
+                      -- [0x020DB] = { yoffset = -0.015, height = .95, all = true }, -- widedddot : 0x20DB (self)
                     },
                 },
                 -- We now copy these to the not wide slots so that we can set these to stretch as well,
@@ -173,50 +181,20 @@ return {
                 {
                     tweak = "kerns",
                     list  = {
-                        [0x2F] = {
-                            topleft     = -0.2,
-                         -- bottomleft  =  0,
-                         -- topright    =  0,
-                            bottomright =  -0.2,
-                       },
-
-                        ["0x7D.parts.top"] = {
-                            topright    = -0.15,
-                        }, -- right brace top
-                        ["0x7D.parts.bottom"] = {
-                            bottomright = -0.15,
-                        }, -- right brace bottom
-                        ["0x7D.variants.*"] = {
-                            topright = -0.15,
-                            bottomright = -0.15,
-                        }, -- right brace variants
-                        ["0x29.parts.top"] = {
-                            topright    = -0.25,
-                        }, -- right parenthesis top
-                        ["0x29.parts.bottom"] = {
-                            bottomright = -0.25,
-                        }, -- right parenthesis bottom
-                        ["0x29.variants.*"] = {
-                            topright = -0.2,
-                            bottomright = -0.2,
-                        }, -- right parenthesis variants
-                        ["0x221A.parts.top"] = {
-                            topright = 0.2,
-                        }, -- right radical top
-                        ["0x221A.parts.bottom"] = {
-                            bottomright = 0.2,
-                        }, -- right radical bottom
-                        ["0x221A.variants.*"] = {
-                            topright = 0.2,
-                            bottomright = 0.2,
-                        }, -- right radical variants
-
-                        -- angle
-                        [0x27E9]              = { topright = -0.2, bottomright = -0.2 },
-                        ["0x27E9.variants.*"] = { topright = -0.3, bottomright = -0.3 },
-                        [0x27EB]              = { topright = -0.2, bottomright = -0.2 },
-                        ["0x27EB.variants.*"] = { topright = -0.3, bottomright = -0.3 },
-
+                        [0x002F]                = { topleft  = -0.2,  bottomright = -0.2  },
+                        ["0x7D.parts.top"]      = { topright = -0.15                      }, -- right brace top
+                        ["0x7D.parts.bottom"]   = {                   bottomright = -0.15 }, -- right brace bottom
+                        ["0x7D.variants.*"]     = { topright = -0.15, bottomright = -0.15 }, -- right brace variants
+                        ["0x29.parts.top"]      = { topright = -0.25                      }, -- right parenthesis top
+                        ["0x29.parts.bottom"]   = {                   bottomright = -0.25 }, -- right parenthesis bottom
+                        ["0x29.variants.*"]     = { topright = -0.2,  bottomright = -0.2  }, -- right parenthesis variants
+                        ["0x221A.parts.top"]    = { topright = 0.2                        }, -- right radical top
+                        ["0x221A.parts.bottom"] = {                   bottomright =  0.2  }, -- right radical bottom
+                        ["0x221A.variants.*"]   = { topright = 0.2,   bottomright =  0.2  }, -- right radical variants
+                        [0x27E9]                = { topright = -0.2,  bottomright = -0.2  }, -- angle
+                        ["0x27E9.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
+                        [0x27EB]                = { topright = -0.2,  bottomright = -0.2  },
+                        ["0x27EB.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
                         ["0x222B.variants.*"] = integral_variants, ["0x222B.parts.top"] = integral_top, ["0x222B.parts.bottom"] = integral_bottom,
                         ["0x222C.variants.*"] = integral_variants, ["0x222C.parts.top"] = integral_top, ["0x222C.parts.bottom"] = integral_bottom,
                         ["0x222D.variants.*"] = integral_variants, ["0x222D.parts.top"] = integral_top, ["0x222D.parts.bottom"] = integral_bottom,
@@ -254,7 +232,7 @@ return {
                 },
                 {
                     tweak = "addfourier",
-                    -- scale = 1.5,
+                 -- scale = 1.5,
                     variant = 1,
                 },
                 {
@@ -269,9 +247,9 @@ return {
                         [0x2192] = false,
                         [0x219E] = false,
                         [0x21A0] = false,
---                         [0x21A6] = false,
---                         [0x21CB] = false,
---                         [0x21CC] = false,
+                     -- [0x21A6] = false,
+                     -- [0x21CB] = false,
+                     -- [0x21CC] = false,
                     }
                 },
             },

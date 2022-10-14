@@ -15,6 +15,26 @@
 
 \unprotect
 
+%D The original (\MKIV) approach to bidi is that we have two extra families for
+%D regular, bold and pseudobold:
+%D
+%D regular    normal=0 l2r=1 r2l=2
+%D bold       normal=3 l2r=4 r2l=5
+%D pseudobold normal=6 l2r=7 r2l=8
+%D
+%D where l2r is just an alias. Because we're now using the mirror lookup (like
+%D we do a smaller lookup) in the engine we not just have:
+%D
+%D regular    normal=0
+%D bold       normal=3
+%D pseudobold normal=6
+%D
+%D And when one can wonder if pseudobold is needed (just bolden); we can then
+%D actually go down to only two families. It is one of these cases when it hurts
+%D to throw away a nice old mechanism that worked quite well so here we keep it
+%D commented. For what it's worth: this variant switches a bit faster too and
+%D produces less logging but I doubt if anyone will notice that.
+
 %D Be nice:
 
 \ifdefined\??fontinstanceready \else \installcorenamespace{fontinstanceready} \fi
@@ -55,16 +75,16 @@
 % todo: \c_font_fam_mr
 
 \aliased\let\c_font_fam_mr   \zerocount  % math regular
-\aliased\let\c_font_fam_mr_lr\plusone    % math regular l2r
-\aliased\let\c_font_fam_mr_rl\plustwo    % math regular r2l
+%aliased\let\c_font_fam_mr_lr\plusone    % math regular l2r
+%aliased\let\c_font_fam_mr_rl\plustwo    % math regular r2l
 
 \aliased\let\c_font_fam_mb   \plusthree  % math bold
-\aliased\let\c_font_fam_mb_lr\plusfour   % math bold l2r
-\aliased\let\c_font_fam_mb_rl\plusfive   % math bold r2l
+%aliased\let\c_font_fam_mb_lr\plusfour   % math bold l2r
+%aliased\let\c_font_fam_mb_rl\plusfive   % math bold r2l
 
 \definesystemattribute[mathfamily][public]
 
-\newconditional\c_font_bidirectional_mathstrategy  % can be default, not that much overhead: \settrue\c_font_bidirectional_mathstrategy
+%newconditional\c_font_bidirectional_mathstrategy  % can be default, not that much overhead: \settrue\c_font_bidirectional_mathstrategy
 \newconditional\c_font_complete_bold_mathstrategy  \settrue\c_font_complete_bold_mathstrategy
 
 % \frozen ...
@@ -106,9 +126,12 @@
 
 \mutable\let\fontfamily\relax % for now public but it is a helper
 
+\newconditional\c_math_last_family_set
+
 \def\font_helpers_set_math_family_indeed_normal#mrtag#family% \fontface etc are also used later on
   {\let\savedfontbody\fontbody
    \let\fontfamily#family%
+   \settrue\c_math_last_family_set
    % the order is important as we depend on known id's when completing fonts
    % enabling is needed when we have fallbacks which spoils the families
    \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusthree
@@ -139,6 +162,7 @@
 \def\font_helpers_set_math_family_indeed_compact#mrtag#family% \fontface etc are also used later on
   {\let\savedfontbody\fontbody
    \let\fontfamily#family%
+   \settrue\c_math_last_family_set
    \font_helpers_set_math_family_set_scales_compact
    % the order is important as we depend on known id's when completing fonts
    % enabling is needed when we have fallbacks which spoils the families
@@ -163,6 +187,7 @@
    \let\defaultfontclass\fontclass % else truefontname falls back on the wrong one
    \let\savedfontbody\fontbody
    \let\fontfamily#familytag%
+   \settrue\c_math_last_family_set
    \font_helpers_set_math_family_set_scales_normal
    \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusthree
    \font_helpers_set_math_family_bold_a\scriptscriptfont#mbfam#mrfam% defines
@@ -183,6 +208,7 @@
    \let\defaultfontclass\fontclass % else truefontname falls back on the wrong one
    \let\savedfontbody\fontbody
    \let\fontfamily#familytag%
+   \settrue\c_math_last_family_set
    \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone
    \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% defines
    \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% enables
@@ -309,77 +335,114 @@
 \let\m_font_fallbacks\empty
 \let\m_font_goodies  \empty
 
-\appendtoks % can be analyzed once
-    % why here ..
-   %\edef\m_font_class_direction{\ifcsname\??fontclass\fontclass\s!mm\s!direction\endcsname\csname\??fontclass\fontclass\s!mm\s!direction\endcsname\fi}%
-    \edef\m_font_class_direction{\begincsname\??fontclass\fontclass\s!mm\s!direction\endcsname}%
-    % ...
-    \ifx\m_font_class_direction\v!both
-      \settrue\c_font_bidirectional_mathstrategy
-    \else
-      \setfalse\c_font_bidirectional_mathstrategy
-    \fi
-\to \t_font_math_strategies
-
-\def\font_helpers_bidirectional_mathstrategy_yes
-  {\font_helpers_set_math_family\c_font_fam_mr_lr\s!mrlr
-   \font_helpers_set_math_family\c_font_fam_mr_rl\s!mrrl
-   \ifnum\fontid\textfont\c_font_fam_mr=\fontid\textfont\c_font_fam_mr_lr\else
-     \font_helpers_bidirectional_mathstrategy_yes_changed
-   \fi}
-
-\def\font_helpers_bidirectional_mathstrategy_yes_changed
-  {\textfont        \c_font_fam_mr\textfont        \c_font_fam_mr_lr
-   \scriptfont      \c_font_fam_mr\scriptfont      \c_font_fam_mr_lr
-   \scriptscriptfont\c_font_fam_mr\scriptscriptfont\c_font_fam_mr_lr}
-
-\def\font_helpers_bidirectional_mathstrategy_nop
-  {\font_helpers_set_math_family\c_font_fam_mr\s!mr
-   \ifnum\fontid\textfont\c_font_fam_mr_rl=\fontid\textfont\c_font_fam_mr\else
-     \font_helpers_bidirectional_mathstrategy_nop_changed
-   \fi}
-
-\def\font_helpers_bidirectional_mathstrategy_nop_changed
-  {\textfont        \c_font_fam_mr_lr\textfont        \c_font_fam_mr
-   \scriptfont      \c_font_fam_mr_lr\scriptfont      \c_font_fam_mr
-   \scriptscriptfont\c_font_fam_mr_lr\scriptscriptfont\c_font_fam_mr
-   \textfont        \c_font_fam_mr_rl\textfont        \c_font_fam_mr
-   \scriptfont      \c_font_fam_mr_rl\scriptfont      \c_font_fam_mr
-   \scriptscriptfont\c_font_fam_mr_rl\scriptscriptfont\c_font_fam_mr}
+% \appendtoks % can be analyzed once
+%     % why here ..
+%    %\edef\m_font_class_direction{\ifcsname\??fontclass\fontclass\s!mm\s!direction\endcsname\csname\??fontclass\fontclass\s!mm\s!direction\endcsname\fi}%
+%     \edef\m_font_class_direction{\begincsname\??fontclass\fontclass\s!mm\s!direction\endcsname}%
+%     % ...
+%     \ifx\m_font_class_direction\v!both
+%       \settrue\c_font_bidirectional_mathstrategy
+%     \else
+%       \setfalse\c_font_bidirectional_mathstrategy
+%     \fi
+% \to \t_font_math_strategies
+%
+% \def\font_helpers_bidirectional_mathstrategy_yes
+%   {\font_helpers_set_math_family\c_font_fam_mr_lr\s!mrlr
+%    \font_helpers_set_math_family\c_font_fam_mr_rl\s!mrrl
+%    \ifnum\fontid\textfont\c_font_fam_mr=\fontid\textfont\c_font_fam_mr_lr\else
+%      \font_helpers_bidirectional_mathstrategy_yes_changed
+%    \fi}
+%
+% \def\font_helpers_bidirectional_mathstrategy_yes_changed
+%   {\textfont        \c_font_fam_mr\textfont        \c_font_fam_mr_lr
+%    \scriptfont      \c_font_fam_mr\scriptfont      \c_font_fam_mr_lr
+%    \scriptscriptfont\c_font_fam_mr\scriptscriptfont\c_font_fam_mr_lr}
+%
+% \def\font_helpers_bidirectional_mathstrategy_nop
+%   {\font_helpers_set_math_family\c_font_fam_mr\s!mr
+%    \ifnum\fontid\textfont\c_font_fam_mr_rl=\fontid\textfont\c_font_fam_mr\else
+%      \font_helpers_bidirectional_mathstrategy_nop_changed
+%    \fi}
+%
+% \def\font_helpers_bidirectional_mathstrategy_nop
+%   {\font_helpers_set_math_family\c_font_fam_mr\s!mr}
+%
+% \def\font_helpers_bidirectional_mathstrategy_nop_changed
+%   {\textfont        \c_font_fam_mr_lr\textfont        \c_font_fam_mr
+%    \scriptfont      \c_font_fam_mr_lr\scriptfont      \c_font_fam_mr
+%    \scriptscriptfont\c_font_fam_mr_lr\scriptscriptfont\c_font_fam_mr
+%    \textfont        \c_font_fam_mr_rl\textfont        \c_font_fam_mr
+%    \scriptfont      \c_font_fam_mr_rl\scriptfont      \c_font_fam_mr
+%    \scriptscriptfont\c_font_fam_mr_rl\scriptscriptfont\c_font_fam_mr}
+%
+% \appendtoks
+%     \ifconditional\c_font_bidirectional_mathstrategy
+%       \font_helpers_bidirectional_mathstrategy_yes
+%     \else
+%       \font_helpers_bidirectional_mathstrategy_nop
+%     \fi
+% \to \t_font_math_strategies
 
 \appendtoks
-    \ifconditional\c_font_bidirectional_mathstrategy
-      \font_helpers_bidirectional_mathstrategy_yes
-    \else
-      \font_helpers_bidirectional_mathstrategy_nop
-    \fi
+    \font_helpers_set_math_family\c_font_fam_mr\s!mr
 \to \t_font_math_strategies
 
-\def\font_helpers_complete_bold_mathstrategy_yes_bidi
-  {\font_helpers_set_math_family_bold\c_font_fam_mb_lr\s!mblr\c_font_fam_mr_lr
-   \font_helpers_set_math_family_bold\c_font_fam_mb_rl\s!mbrl\c_font_fam_mr_rl
-   \ifnum\fontid\textfont\c_font_fam_mb=\fontid\textfont\c_font_fam_mb_lr\else
-     \font_helpers_complete_bold_mathstrategy_yes_bidi_changed
-   \fi}
-
-\def\font_helpers_complete_bold_mathstrategy_yes_bidi_changed
-  {\textfont        \c_font_fam_mb\textfont        \c_font_fam_mb_lr
-   \scriptfont      \c_font_fam_mb\scriptfont      \c_font_fam_mb_lr
-   \scriptscriptfont\c_font_fam_mb\scriptscriptfont\c_font_fam_mb_lr}
+% \def\font_helpers_complete_bold_mathstrategy_yes_bidi
+%   {\font_helpers_set_math_family_bold\c_font_fam_mb_lr\s!mblr\c_font_fam_mr_lr
+%    \font_helpers_set_math_family_bold\c_font_fam_mb_rl\s!mbrl\c_font_fam_mr_rl
+%    \ifnum\fontid\textfont\c_font_fam_mb=\fontid\textfont\c_font_fam_mb_lr\else
+%      \font_helpers_complete_bold_mathstrategy_yes_bidi_changed
+%    \fi}
+%
+% \def\font_helpers_complete_bold_mathstrategy_yes_bidi_changed
+%   {\textfont        \c_font_fam_mb\textfont        \c_font_fam_mb_lr
+%    \scriptfont      \c_font_fam_mb\scriptfont      \c_font_fam_mb_lr
+%    \scriptscriptfont\c_font_fam_mb\scriptscriptfont\c_font_fam_mb_lr}
+%
+% \def\font_helpers_complete_bold_mathstrategy_yes
+%   {\font_helpers_set_math_family_bold\c_font_fam_mb\s!mb\c_font_fam_mr\relax
+%    \ifnum\fontid\textfont\c_font_fam_mb_rl=\fontid\textfont\c_font_fam_mb\else
+%      \font_helpers_complete_bold_mathstrategy_yes_changed
+%    \fi}
+%
+% \def\font_helpers_complete_bold_mathstrategy_yes_changed
+%   {\textfont        \c_font_fam_mb_rl\textfont        \c_font_fam_mb
+%    \scriptfont      \c_font_fam_mb_rl\scriptfont      \c_font_fam_mb
+%    \scriptscriptfont\c_font_fam_mb_rl\scriptscriptfont\c_font_fam_mb
+%    \textfont        \c_font_fam_mb_lr\textfont        \c_font_fam_mb
+%    \scriptfont      \c_font_fam_mb_lr\scriptfont      \c_font_fam_mb
+%    \scriptscriptfont\c_font_fam_mb_lr\scriptscriptfont\c_font_fam_mb}
+%
+% \def\font_helpers_complete_bold_mathstrategy_nop
+%   {\ifnum\fontid\textfont\c_font_fam_mb=\fontid\textfont\c_font_fam_mr\else
+%      \font_helpers_complete_bold_mathstrategy_nop_changed
+%    \fi}
+%
+% \def\font_helpers_complete_bold_mathstrategy_nop_changed
+%   {\textfont        \c_font_fam_mb   \textfont        \c_font_fam_mr
+%    \scriptfont      \c_font_fam_mb   \scriptfont      \c_font_fam_mr
+%    \scriptscriptfont\c_font_fam_mb   \scriptscriptfont\c_font_fam_mr
+%    \textfont        \c_font_fam_mb_lr\textfont        \c_font_fam_mr_lr
+%    \scriptfont      \c_font_fam_mb_lr\scriptfont      \c_font_fam_mr_lr
+%    \scriptscriptfont\c_font_fam_mb_lr\scriptscriptfont\c_font_fam_mr_lr
+%    \textfont        \c_font_fam_mb_rl\textfont        \c_font_fam_mr_rl
+%    \scriptfont      \c_font_fam_mb_rl\scriptfont      \c_font_fam_mr_rl
+%    \scriptscriptfont\c_font_fam_mb_rl\scriptscriptfont\c_font_fam_mr_rl}
+%
+% \def\font_helpers_apply_complete_bold_mathstrategy
+%   {\ifconditional\c_font_complete_bold_mathstrategy
+%      \ifconditional\c_font_bidirectional_mathstrategy
+%        \font_helpers_complete_bold_mathstrategy_yes_bidi
+%      \else
+%        \font_helpers_complete_bold_mathstrategy_yes
+%      \fi
+%    \else
+%      \font_helpers_complete_bold_mathstrategy_nop
+%    \fi}
 
 \def\font_helpers_complete_bold_mathstrategy_yes
-  {\font_helpers_set_math_family_bold\c_font_fam_mb\s!mb\c_font_fam_mr\relax
-   \ifnum\fontid\textfont\c_font_fam_mb_rl=\fontid\textfont\c_font_fam_mb\else
-     \font_helpers_complete_bold_mathstrategy_yes_changed
-   \fi}
-
-\def\font_helpers_complete_bold_mathstrategy_yes_changed
-  {\textfont        \c_font_fam_mb_rl\textfont        \c_font_fam_mb
-   \scriptfont      \c_font_fam_mb_rl\scriptfont      \c_font_fam_mb
-   \scriptscriptfont\c_font_fam_mb_rl\scriptscriptfont\c_font_fam_mb
-   \textfont        \c_font_fam_mb_lr\textfont        \c_font_fam_mb
-   \scriptfont      \c_font_fam_mb_lr\scriptfont      \c_font_fam_mb
-   \scriptscriptfont\c_font_fam_mb_lr\scriptscriptfont\c_font_fam_mb}
+  {\font_helpers_set_math_family_bold\c_font_fam_mb\s!mb\c_font_fam_mr\relax}
 
 \def\font_helpers_complete_bold_mathstrategy_nop
   {\ifnum\fontid\textfont\c_font_fam_mb=\fontid\textfont\c_font_fam_mr\else
@@ -389,21 +452,11 @@
 \def\font_helpers_complete_bold_mathstrategy_nop_changed
   {\textfont        \c_font_fam_mb   \textfont        \c_font_fam_mr
    \scriptfont      \c_font_fam_mb   \scriptfont      \c_font_fam_mr
-   \scriptscriptfont\c_font_fam_mb   \scriptscriptfont\c_font_fam_mr
-   \textfont        \c_font_fam_mb_lr\textfont        \c_font_fam_mr_lr
-   \scriptfont      \c_font_fam_mb_lr\scriptfont      \c_font_fam_mr_lr
-   \scriptscriptfont\c_font_fam_mb_lr\scriptscriptfont\c_font_fam_mr_lr
-   \textfont        \c_font_fam_mb_rl\textfont        \c_font_fam_mr_rl
-   \scriptfont      \c_font_fam_mb_rl\scriptfont      \c_font_fam_mr_rl
-   \scriptscriptfont\c_font_fam_mb_rl\scriptscriptfont\c_font_fam_mr_rl}
+   \scriptscriptfont\c_font_fam_mb   \scriptscriptfont\c_font_fam_mr}
 
 \def\font_helpers_apply_complete_bold_mathstrategy
   {\ifconditional\c_font_complete_bold_mathstrategy
-     \ifconditional\c_font_bidirectional_mathstrategy
-       \font_helpers_complete_bold_mathstrategy_yes_bidi
-     \else
-       \font_helpers_complete_bold_mathstrategy_yes
-     \fi
+     \font_helpers_complete_bold_mathstrategy_yes
    \else
      \font_helpers_complete_bold_mathstrategy_nop
    \fi}
@@ -420,27 +473,33 @@
     \fam\zerocount % all characters and symbols are in this family
 \to \everymathematics
 
+% \protected\def\font_helpers_synchronize_math_family_mr
+%   {\c_attr_mathfamily\ifconditional\c_font_bidirectional_mathstrategy
+%      \ifconditional\c_math_right_to_left
+%        \plustwo
+%      \else
+%        \plusone
+%      \fi
+%    \else
+%      \zerocount
+%    \fi}
+%
+% \protected\def\font_helpers_synchronize_math_family_mb
+%   {\c_attr_mathfamily\ifconditional\c_font_bidirectional_mathstrategy
+%      \ifconditional\c_math_right_to_left
+%        \ifconditional\c_font_pseudo_bold_math_state\pluseight\else\plusfive\fi
+%      \else
+%        \ifconditional\c_font_pseudo_bold_math_state\plusseven\else\plusfour\fi
+%      \fi
+%    \else
+%      \ifconditional\c_font_pseudo_bold_math_state\plussix\else\plusthree\fi
+%    \fi}
+
 \protected\def\font_helpers_synchronize_math_family_mr
-  {\c_attr_mathfamily\ifconditional\c_font_bidirectional_mathstrategy
-     \ifconditional\c_math_right_to_left
-       \plustwo
-     \else
-       \plusone
-     \fi
-   \else
-     \zerocount
-   \fi}
+  {\c_attr_mathfamily\zerocount}
 
 \protected\def\font_helpers_synchronize_math_family_mb
-  {\c_attr_mathfamily\ifconditional\c_font_bidirectional_mathstrategy
-     \ifconditional\c_math_right_to_left
-       \ifconditional\c_font_pseudo_bold_math_state\pluseight\else\plusfive\fi
-     \else
-       \ifconditional\c_font_pseudo_bold_math_state\plusseven\else\plusfour\fi
-     \fi
-   \else
-     \ifconditional\c_font_pseudo_bold_math_state\plussix\else\plusthree\fi
-   \fi}
+  {\c_attr_mathfamily\ifconditional\c_font_pseudo_bold_math_state\plussix\else\plusthree\fi}
 
 \installcorenamespace{fontmathsynchronizer}
 \installcorenamespace{fontmathstoredstrategy}
@@ -471,7 +530,6 @@
     \fi
 \to \t_font_math_strategies
 
-%def\font_helpers_synchronize_math_bold_strategy{\csname\??fontmathstoredstrategy\fontclass\endcsname}
 \def\font_helpers_synchronize_math_bold_strategy{\begincsname\??fontmathstoredstrategy\fontclass\endcsname}
 
 \newconditional\c_font_pseudo_bold_math_state
@@ -568,5 +626,20 @@
 \permanent\protected\def\mxx{\ifmmode\scaledmathstyle\dimexpression\plusthousand*(\xxtextface/\textface)\relax\fi}
 
 \permanent\protected\def\setmscale#1{\ifmmode\scaledmathstyle\numericscale#1\relax\fi}
+
+%D This is nasty, as the engine only stores the last set family parameters (per style) which
+%D in our case can be bold.
+
+\def\font_helpers_synchronize_math_parameters
+  {\textfont        \zerocount\textfont        \zerocount
+   \scriptfont      \zerocount\scriptfont      \zerocount
+   \scriptscriptfont\zerocount\scriptscriptfont\zerocount
+   \setfalse\c_math_last_family_set}
+
+\appendtoks
+    \ifconditional\c_math_last_family_set
+      \font_helpers_synchronize_math_parameters
+    \fi
+\to\everybodyfont
 
 \protect \endinput

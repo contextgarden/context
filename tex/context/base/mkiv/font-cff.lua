@@ -348,11 +348,11 @@ do
             top = 0
         end
       + P("\10") / function()
-            result.strhw = stack[top]
+            result.stdhw = stack[top]
             top = 0
         end
       + P("\11") / function()
-            result.strvw = stack[top]
+            result.stdvw = stack[top]
             top = 0
         end
       + P("\13") / function()
@@ -453,7 +453,7 @@ do
             top = 0
         end
       + P("\10") / function()
-            result.bluesnap = stack[top]
+            result.blueshift = stack[top]
             top = 0
         end
       + P("\11") / function()
@@ -528,7 +528,7 @@ do
     -- the second variant is much faster. Not that it matters much as we don't see
     -- such numbers often.
 
-    local remap = {
+    local remap_1 = {
         ["\x00"] = "00",  ["\x01"] = "01",  ["\x02"] = "02",  ["\x03"] = "03",  ["\x04"] = "04",  ["\x05"] = "05",  ["\x06"] = "06",  ["\x07"] = "07",  ["\x08"] = "08",  ["\x09"] = "09",  ["\x0A"] = "0.",  ["\x0B"] = "0E",  ["\x0C"] = "0E-",  ["\x0D"] = "0",  ["\x0E"] = "0-",  ["\x0F"] = "0",
         ["\x10"] = "10",  ["\x11"] = "11",  ["\x12"] = "12",  ["\x13"] = "13",  ["\x14"] = "14",  ["\x15"] = "15",  ["\x16"] = "16",  ["\x17"] = "17",  ["\x18"] = "18",  ["\x19"] = "19",  ["\x1A"] = "1.",  ["\x1B"] = "1E",  ["\x1C"] = "1E-",  ["\x1D"] = "1",  ["\x1E"] = "1-",  ["\x1F"] = "1",
         ["\x20"] = "20",  ["\x21"] = "21",  ["\x22"] = "22",  ["\x23"] = "23",  ["\x24"] = "24",  ["\x25"] = "25",  ["\x26"] = "26",  ["\x27"] = "27",  ["\x28"] = "28",  ["\x29"] = "29",  ["\x2A"] = "2.",  ["\x2B"] = "2E",  ["\x2C"] = "2E-",  ["\x2D"] = "2",  ["\x2E"] = "2-",  ["\x2F"] = "2",
@@ -544,11 +544,18 @@ do
         ["\xC0"] = "E-0", ["\xC1"] = "E-1", ["\xC2"] = "E-2", ["\xC3"] = "E-3", ["\xC4"] = "E-4", ["\xC5"] = "E-5", ["\xC6"] = "E-6", ["\xC7"] = "E-7", ["\xC8"] = "E-8", ["\xC9"] = "E-9", ["\xCA"] = "E-.", ["\xCB"] = "E-E", ["\xCC"] = "E-E-", ["\xCD"] = "E-", ["\xCE"] = "E--", ["\xCF"] = "E-",
         ["\xD0"] = "-0",  ["\xD1"] = "-1",  ["\xD2"] = "-2",  ["\xD3"] = "-3",  ["\xD4"] = "-4",  ["\xD5"] = "-5",  ["\xD6"] = "-6",  ["\xD7"] = "-7",  ["\xD8"] = "-8",  ["\xD9"] = "-9",  ["\xDA"] = "-.",  ["\xDB"] = "-E",  ["\xDC"] = "-E-",  ["\xDD"] = "-",  ["\xDE"] = "--",  ["\xDF"] = "-",
     }
+    local remap_2 = {
+        ["\x0F"] = "0", ["\x1F"] = "1", ["\x2F"] = "2", ["\x3F"] = "3", ["\x4F"] = "4",
+        ["\x5F"] = "5", ["\x6F"] = "6", ["\x7F"] = "7", ["\x8F"] = "8", ["\x9F"] = "9",
+    }
 
-    local p_last = S("\x0F\x1F\x2F\x3F\x4F\x5F\x6F\x7F\x8F\x9F\xAF\xBF")
-                 + R("\xF0\xFF")
+    local p_last_1 = S("\x0F\x1F\x2F\x3F\x4F\x5F\x6F\x7F\x8F\x9F\xAF\xBF")
+    local p_last_2 = R("\xF0\xFF")
 
-    local p_nibbles = P("\30") * Cs(((1-p_last)/remap)^0 * (P(1)/remap)) / function(n)
+    -- tricky, we don't want to append last
+
+ -- local p_nibbles = P("\30") * Cs(((1-p_last)/remap)^0 * (P(1)/remap)) / function(n)
+    local p_nibbles = P("\30") * Cs(((1-(p_last_1+p_last_2))/remap_1)^0 * (p_last_1/remap_2 + p_last_2/"")) / function(n)
         -- 0-9=digit a=. b=E c=E- d=reserved e=- f=finish
         top = top + 1
         stack[top] = tonumber(n) or 0
@@ -2715,6 +2722,8 @@ function readers.cff(f,fontdata,specification)
                 cffinfo.bluefuzz         = data.bluefuzz
                 cffinfo.stdhw            = data.stdhw
                 cffinfo.stdvw            = data.stdvw
+                cffinfo.stemsnaph        = data.stemsnaph
+                cffinfo.stemsnapv        = data.stemsnapv
             end
         end
         cleanup(data,dictionaries)

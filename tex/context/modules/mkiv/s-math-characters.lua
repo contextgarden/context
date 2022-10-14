@@ -185,7 +185,7 @@ function moduledata.math.characters.showlist(specification)
                                 round(char.height    or 0),
                                 round(char.depth     or 0),
                                 round(char.italic    or 0),
-                                round(char.topaccent or 0)
+                                round(char.topanchor or char.topaccent or 0)
                             )
                         end
                         if virtual and commands then

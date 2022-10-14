@@ -448,8 +448,8 @@ end)
 function statistics.formatruntime(runtime)
     if not environment.initex then -- else error when testing as not counters yet
      -- stoptiming(statistics) -- to be sure
-        local shipped = texgetcount('nofshipouts')
-        local pages = texgetcount('realpageno')
+        local shipped = texgetcount("nofshipouts")
+        local pages = texgetcount("realpageno")
         if pages > shipped then
             pages = shipped
         end

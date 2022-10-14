@@ -65,6 +65,8 @@ local tex               = tex
 local texgetdimen       = tex.getdimen
 local texgetcount       = tex.getcount
 local texgetinteger     = tex.getintegervalue or tex.getcount
+local texiscount        = tex.iscount
+local texisdimen        = tex.isdimen
 local texsetcount       = tex.setcount
 local texget            = tex.get
 local texsp             = tex.sp
@@ -133,15 +135,19 @@ local default = { -- not r and paragraphs etc
     }
 }
 
-local f_b_tag     = formatters["b:%s"]
-local f_e_tag     = formatters["e:%s"]
-local f_p_tag     = formatters["p:%s"]
------ f_w_tag     = formatters["w:%s"]
+local f_b_tag      = formatters["b:%s"]
+local f_e_tag      = formatters["e:%s"]
+local f_p_tag      = formatters["p:%s"]
+----- f_w_tag      = formatters["w:%s"]
 
-local f_region    = formatters["region:%s"]
+local f_region     = formatters["region:%s"]
 
-local f_tag_three = formatters["%s:%s:%s"]
-local f_tag_two   = formatters["%s:%s"]
+local f_tag_three  = formatters["%s:%s:%s"]
+local f_tag_two    = formatters["%s:%s"]
+
+local c_realpageno = texiscount("realpageno")
+local d_strutht    = texisdimen("strutht")
+local d_strutdp    = texisdimen("strutdp")
 
 -- Because positions are set with a delay we cannot yet make the tree -- so that
 -- is a finalizer step. But, we already have a dual split.
@@ -902,7 +908,7 @@ local function enhance(data)
         data.y = y ~= 0 and y or nil
     end
     if data.p == true then
-        data.p = texgetcount("realpageno") -- we should use a variable set in otr
+        data.p = texgetcount(c_realpageno) -- we should use a variable set in otr
     end
     if data.c == true then
         data.c = column
@@ -1075,7 +1081,7 @@ local function b_region(specification)
         local x, y = getpos()
         last.x = x ~= 0 and x or nil
         last.y = y ~= 0 and y or nil
-        last.p = texgetcount("realpageno")
+        last.p = texgetcount(c_realpageno)
         insert(regions,tag) -- todo: fast stack
         region = tag
     end
@@ -1117,7 +1123,7 @@ local function setregionbox(n,tag,index,k,lo,ro,to,bo,column) -- kind
     -- these auto regions (comning from framed). Too messy and the split in the
     -- setter is fast enough.
     tobesaved[tag] = {
-     -- p  = texgetcount("realpageno"), -- we copy them
+     -- p  = texgetcount(c_realpageno), -- we copy them
         x  = 0,
         y  = 0,
         w  = w  ~= 0 and w  or nil,
@@ -1191,6 +1197,8 @@ end
 
 do
 
+    local c_anch_positions_paragraph = texiscount("c_anch_positions_paragraph")
+
     local nofparagraphs = 0
 
     local function enhancepar_1(data)
@@ -1205,7 +1213,7 @@ do
                 if y ~= 0 then
                     data.y  = y
                 end
-                data.p = texgetcount("realpageno") -- we should use a variable set in otr
+                data.p = texgetcount(c_realpageno) -- we should use a variable set in otr
                 if column then
                     data.c = column
                 end
@@ -1253,7 +1261,7 @@ do
             if y ~= 0 then
                 data.y  = y
             end
-            data.p = texgetcount("realpageno") -- we should use a variable set in otr
+            data.p = texgetcount(c_realpageno)
             if column then
                 data.c = column
             end
@@ -1268,10 +1276,10 @@ do
         name    = "parpos",
         actions = function()
             nofparagraphs = nofparagraphs + 1
-            texsetcount("global","c_anch_positions_paragraph",nofparagraphs)
+            texsetcount("global",c_anch_positions_paragraph,nofparagraphs)
             local name = f_p_tag(nofparagraphs)
-            local h = texgetdimen("strutht")
-            local d = texgetdimen("strutdp")
+            local h = texgetdimen(d_strutht)
+            local d = texgetdimen(d_strutdp)
             --
             local top = texgetnest("top","head")
             local nxt = top.next
@@ -1429,8 +1437,8 @@ do
         public    = true,
         protected = true,
         actions   = function(name)
-            local h = texgetdimen("strutht")
-            local d = texgetdimen("strutdp")
+            local h = texgetdimen(d_strutht)
+            local d = texgetdimen(d_strutdp)
             local spec = {
                 p   = true,
                 c   = column,
@@ -1453,8 +1461,8 @@ do
         public    = true,
         protected = true,
         actions   = function(name,kind)
-            local h = texgetdimen("strutht")
-            local d = texgetdimen("strutdp")
+            local h = texgetdimen(d_strutht)
+            local d = texgetdimen(d_strutdp)
             local spec = {
                 k   = kind,
                 p   = true,
@@ -1476,7 +1484,7 @@ end
 
 function jobpositions.getreserved(tag,n)
     if tag == v_column then
-        local fulltag = f_tag_three(tag,texgetcount("realpageno"),n or 1)
+        local fulltag = f_tag_three(tag,texgetcount(c_realpageno),n or 1)
         local data = collected[fulltag]
         if data then
             return data, fulltag
@@ -1484,7 +1492,7 @@ function jobpositions.getreserved(tag,n)
         tag = v_text
     end
     if tag == v_text then
-        local fulltag = f_tag_two(tag,texgetcount("realpageno"))
+        local fulltag = f_tag_two(tag,texgetcount(c_realpageno))
         return collected[fulltag] or false, fulltag
     end
     return collected[tag] or false, tag
@@ -2257,7 +2265,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function(list)
-        doifelse(onsamepage(list,tostring(texgetcount("realpageno"))))
+        doifelse(onsamepage(list,tostring(texgetcount(c_realpageno))))
     end
 }
 

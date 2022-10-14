@@ -83,16 +83,21 @@ local function showglyphshape(specification)
     local characters    = tfmdata.characters
     local descriptions  = tfmdata.descriptions
     local parameters    = tfmdata.parameters
+    local tfmfactor     = parameters.scaledpoints/10
+-- inspect(tfmdata.parameters)
+-- inspect(tfmdata.properties)
     local anchors       = fonts.helpers.collectanchors(tfmdata)
 
-    local function showonecharacter(unicode)
+    local function showonecharacter(unicode,krn,tight)
         local c = characters  [unicode]
         local d = descriptions[unicode]
         if c and d then
             local factor = (parameters.size/parameters.units)*((7200/7227)/65536)
             local llx, lly, urx, ury = unpack(d.boundingbox)
+            local height = ury
+            local depth  = lly
             llx, lly, urx, ury = llx*factor, lly*factor, urx*factor, ury*factor
-            local width = (d.width or 0)*factor
+            local width  = (d.width or 0)*factor
             context.start()
             context.dontleavehmode()
             context.obeyMPboxdepth()
@@ -110,76 +115,52 @@ local function showglyphshape(specification)
             context('draw boundingbox p withcolor .2white withpen pencircle scaled .065bp ;')
             context("defaultscale := 0.05 ; ")
             -- inefficient but non critical
-            local slant = {
-                function(v,dx,dy,txt,xsign,ysign,loc,labloc)
-                    local n = #v
-                    if n > 0 then
-                        local l = { }
-                        for i=1,n do
-                            local c = v[i]
-                            local h = c.height or 0
-                            local k = c.kern or 0
-                            l[i] = formatters["((%s,%s) shifted (%s,%s))"](xsign*k*factor,ysign*h*factor,dx,dy)
+            function slant(v,dx,dy,txt,xsign,ysign,loc,labloc,shift)
+                local n = #v
+                if n > 0 then
+                    local l = { }
+                    local t = { }
+                    for i=1,n do
+                        local c = v[i]
+                        local h = c.height or height or 0
+                        local d = depth or 0
+                        local k = c.kern or 0
+                        if i == 1 then
+                            l[1] = formatters["((%s,%s) shifted (%s,%s))"](xsign*k*factor,d*factor,dx,dy)
+                            t[1] = formatters['draw textext.%s("\\tttf(%s,%s)") scaled .025 shifted %s shifted (%i/4,%i/3);'](labloc,k,d,l[1],shift,shift);
                         end
-                        context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled 1/16) withcolor .5white;", xsign*v[1].kern*factor,lly,dx,dy,l[1])
-                        context("draw laddered (%..t) withcolor .5white ;",l) -- why not "--"
-                        context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled 1/16) withcolor .5white;", xsign*v[#v].kern*factor,ury,dx,dy,l[#l])
-                        for i=1,n do
-                            context("draw %s withcolor blue withpen pencircle scaled 2lw ;",l[i])
-                        end
+                        l[i+1] = formatters["((%s,%s) shifted (%s,%s))"](xsign*k*factor,ysign*h*factor,dx,dy)
+                        t[i+1] = formatters['draw textext.%s("\\tttf(%s,%s)") scaled .025 shifted %s shifted (%i/4,%i/3);'](labloc,k,h,l[i+1],shift,shift);
                     end
-                end,
-                function(v,dx,dy,txt,xsign,ysign,loc,labloc)
-                    local n = #v
-                    if n > 0 then
-                        local l = { }
-                        for i=1,n do
-                            local c = v[i]
-                            local h = c.height or 0
-                            local k = c.kern or 0
-                            l[i] = formatters["((%s,%s) shifted (%s,%s))"](xsign*k*factor,ysign*h*factor,dx,dy)
-                        end
-                        if loc == "top" then
-                            context('label.%s("\\type{%s}",%s shifted (0,-1bp)) ;',loc,txt,l[n])
-                        else
-                            context('label.%s("\\type{%s}",%s shifted (0,2bp)) ;',loc,txt,l[1])
-                        end
-                        for i=1,n do
-                            local c = v[i]
-                            local h = c.height or 0
-                            local k = c.kern or 0
-                            context('label.top("(%s,%s)",%s shifted (0,-2bp));',k,h,l[i])
-                        end
+                    context("draw laddered (%--t) withcolor .5white ;",l)
+                    for i=1,#l do
+                        context("draw %s withcolor blue withpen pencircle scaled 2lw ;",l[i])
+                        context(t[i])
                     end
-                end,
-            }
+                end
+            end
             --
             local math = d.math
             if math then
                 local kerns = math.kerns
                 if kerns then
-                    for i=1,#slant do
-                        local s = slant[i]
-                        for k, v in next, kerns do
-                            if k == "topright" then
-                             -- s(v,width+italic,0,k,1,1,"top","ulft")
-                                s(v,width,0,k,1,1,"top","ulft")
-                            elseif k == "bottomright" then
-                                s(v,width,0,k,1,1,"bot","lrt")
-                            elseif k == "topleft" then
-                                s(v,0,0,k,-1,1,"top","ulft")
-                            elseif k == "bottomleft" then
-                                s(v,0,0,k,-1,1,"bot","lrt")
-                            end
+                    for k, v in next, kerns do
+                        if k == "topright" and (krn == "all" or krn == k) then
+                            slant(v,width,0,k,1,1,"top","lrt",1)
+                        elseif k == "bottomright" and (krn == "all" or krn == k) then
+                            slant(v,width,0,k,1,1,"bot","ulft",-1)
+                        elseif k == "topleft" and (krn == "all" or krn == k) then
+                            slant(v,0,0,k,-1,1,"top","lrt",1)
+                        elseif k == "bottomleft" and (krn == "all" or krn == k) then
+                            slant(v,0,0,k,-1,1,"bot","ulft",-1)
                         end
                     end
                 end
-                local accent = math.accent
+                local accent = math.topanchor or math.accent
                 if accent and accent ~= 0 then
                     local a = accent * factor
-                    context('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',a,ury,a,ury)
-                    context('label.bot("\\type{%s}",(%s,%s+1bp));',"accent",a,ury)
-                    context('label.top("%s",(%s,%s-1bp));',math.accent,a,ury)
+                    context('draw (%s,%s+1/4)--(%s,%s-1/4) withcolor blue;',a,ury,a,ury)
+                    context('draw textext.top("\\tttf%s") scaled .025 shifted (%s,%s+2/4);',accent,a,ury)
                 end
             end
             --
@@ -215,7 +196,29 @@ local function showglyphshape(specification)
                 context('label.rt("%s",(%s-2bp,%s-1bp));',italic,width+i,ury)
             end
             context('draw origin withcolor red withpen pencircle scaled 2lw;')
-            context("setbounds currentpicture to boundingbox currentpicture enlarged 1bp ;")
+            local kern  = c.topright
+            if kern and kern ~= 0 then
+                local k = kern * factor / tfmfactor
+                context('draw (%s,%s) withcolor "orange" withpen pencircle scaled .2 ;',width+k,ury)
+            end
+            local kern  = c.bottomright
+            if kern and kern ~= 0 then
+                local k = kern * factor / tfmfactor
+                context('draw (%s,%s) withcolor "orange" withpen pencircle scaled .2 ;',width+k,lly)
+            end
+            local kern  = c.topleft
+            if kern and kern ~= 0 then
+                local k = kern * factor / tfmfactor
+                context('draw (%s,%s) withcolor "orange" withpen pencircle scaled .2 ;',-k,ury)
+            end
+            local kern  = c.bottomleft
+            if kern and kern ~= 0 then
+                local k = kern * factor / tfmfactor
+                context('draw (%s,%s) withcolor "orange" withpen pencircle scaled .2 ;',-k,lly)
+            end
+            if not tight then
+                context("setbounds currentpicture to boundingbox currentpicture enlarged 1bp ;")
+            end
             context("currentpicture := currentpicture scaled 8 ;")
             context.stopMPcode()
             context.stop()
@@ -226,16 +229,28 @@ local function showglyphshape(specification)
                     fonts.helpers.nametoslot(specification.character)
 
     if unicode then
-        showonecharacter(unicode)
+        showonecharacter(unicode,"all",true)
     else
         context.modulefontsstartshowglyphshapes()
         for unicode, description in fonts.iterators.descriptions(tfmdata) do
             if unicode >= 0x110000 then
                 break
             end
+            local kerns = specification.kerns
+            if kerns then
+                local k = description and description.math and description.math.kerns
+                if k then
+                    if not (kerns == "all" or k[kerns]) then
+                        goto DONE
+                    end
+                else
+                    goto DONE
+                end
+            end
             context.modulefontsstartshowglyphshape(unicode,description.name or "",description.index or 0)
-                showonecharacter(unicode)
+                showonecharacter(unicode,kerns,false)
             context.modulefontsstopshowglyphshape()
+          ::DONE::
         end
         context.modulefontsstopshowglyphshapes()
     end

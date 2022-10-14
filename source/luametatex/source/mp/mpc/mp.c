@@ -1882,6 +1882,8 @@ static const char *mp_op_string (int c)
             case mp_unequal_operation          : return "<>";
             case mp_concatenate_operation      : return "&";
             case mp_just_append_operation      : return "&&";
+            case mp_tolerant_concat_operation  : return "&&&";
+            case mp_tolerant_append_operation  : return "&&&&";
             case mp_rotated_operation          : return "rotated";
             case mp_slanted_operation          : return "slanted";
             case mp_scaled_operation           : return "scaled";
@@ -17230,6 +17232,8 @@ static void mp_do_binary (MP mp, mp_node p, int c)
             break;
         case mp_concatenate_operation:
         case mp_just_append_operation:
+        case mp_tolerant_concat_operation:
+        case mp_tolerant_append_operation:
             if ((mp->cur_exp.type == mp_string_type) && (mp_type(p) == mp_string_type)) {
                 mp_string str = mp_cat(mp, mp_get_value_str(p), cur_exp_str);
                 delete_str_ref(cur_exp_str) ;
@@ -21505,7 +21509,7 @@ static int mp_scan_path (MP mp)
         mp_left_type(pp) = mp_open_knot;
         mp_right_type(qq) = mp_open_knot;
     }
-    if (d == mp_ampersand_command && dd != mp_just_append_operation) {
+    if (d == mp_ampersand_command && dd != mp_just_append_operation && dd != mp_tolerant_concat_operation && dd != mp_tolerant_append_operation) {
         if (! (number_equal(path_q->x_coord, pp->x_coord)) || ! (number_equal(path_q->y_coord, pp->y_coord))) {
             mp_back_error(
                 mp,
@@ -21524,6 +21528,22 @@ static int mp_scan_path (MP mp)
         number_clone(pp->right_given, x);
     }
     if (d == mp_ampersand_command) {
+        if (dd == mp_tolerant_concat_operation || dd == mp_tolerant_append_operation) {
+            mp_number dx, dy;
+            set_number_from_subtraction(dx, path_q->x_coord, pp->x_coord);
+            set_number_from_subtraction(dy, path_q->y_coord, pp->y_coord);
+            number_abs(dx);
+            number_abs(dy);
+            if (number_lessequal(dx, epsilon_t) && number_lessequal(dy, epsilon_t)) {
+                set_number_half_from_addition(dx, path_q->x_coord, pp->x_coord);
+                set_number_half_from_addition(dy, path_q->y_coord, pp->y_coord);
+                number_clone(pp->left_x, dx);
+                number_clone(path_q->right_x, dx);
+                number_clone(pp->left_y, dy);
+                number_clone(path_q->right_y, dy);
+            }
+            dd = dd == mp_tolerant_concat_operation ? mp_concatenate_operation : mp_just_append_operation;
+        }
         if (dd == mp_just_append_operation) {
             mp_left_type(pp) = mp_explicit_knot;
             mp_right_type(path_q) = mp_explicit_knot;
@@ -21927,6 +21947,8 @@ void mp_final_cleanup (MP mp)
     mp_primitive(mp, "mpversion", mp_nullary_command, mp_version_operation);
     mp_primitive(mp, "&", mp_ampersand_command, mp_concatenate_operation);
     mp_primitive(mp, "&&", mp_ampersand_command, mp_just_append_operation);
+    mp_primitive(mp, "&&&", mp_ampersand_command, mp_tolerant_concat_operation);
+    mp_primitive(mp, "&&&&", mp_ampersand_command, mp_tolerant_append_operation);
     mp_primitive(mp, "rotated", mp_secondary_binary_command, mp_rotated_operation);
     mp_primitive(mp, "slanted", mp_secondary_binary_command, mp_slanted_operation);
     mp_primitive(mp, "scaled", mp_secondary_binary_command, mp_scaled_operation);

@@ -45,14 +45,19 @@ typedef enum if_test_codes {
     or_else_code,           /*tex |\orelse| */
     or_unless_code,         /*tex |\orunless| */
 
-    /*tex Here come the \if... codes: */
+    /*tex 
+        Here come the \if... codes. Some are just there to minimize tracing and are not faster, 
+        like |\ifzerodim| (we can use |\ifcase| instead but not with |\unless|). 
+    */
 
     if_char_code,           /*tex |\if| */
     if_cat_code,            /*tex |\ifcat| */
-    if_abs_int_code,        /*tex |\ifabsnum| */
     if_int_code,            /*tex |\ifnum| */
-    if_abs_dim_code,        /*tex |\ifabsdim| */
+    if_abs_int_code,        /*tex |\ifabsnum| */ 
+    if_zero_int_code,       /*tex |\ifzeronum|*/
     if_dim_code,            /*tex |\ifdim| */
+    if_abs_dim_code,        /*tex |\ifabsdim| */
+    if_zero_dim_code,       /*tex |\ifzerodim| */
     if_odd_code,            /*tex |\ifodd| */
     if_vmode_code,          /*tex |\ifvmode| */
     if_hmode_code,          /*tex |\ifhmode| */
@@ -93,7 +98,7 @@ typedef enum if_test_codes {
     if_has_toks_code,       /*tex |\ifhastoks| */
     if_has_xtoks_code,      /*tex |\ifhasxtoks| */
     if_has_char_code,       /*tex |\ifhaschar| */
-    if_insert_code          /*tex |\ifinsert| */
+    if_insert_code,         /*tex |\ifinsert| */
  // if_bitwise_and_code,    /*tex |\ifbitwiseand| */
 } if_test_codes;
 

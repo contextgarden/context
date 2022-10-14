@@ -78,7 +78,6 @@ extern void tex_initialize_buildpage (void);
 extern void tex_initialize_pagestate (void);
 extern void tex_build_page           (void);
 extern void tex_resume_after_output  (void);
-extern void tex_print_page_totals    (void);
 
 /*tex The tail of the contribution list: */
 

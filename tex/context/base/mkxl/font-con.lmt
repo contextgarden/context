@@ -533,12 +533,6 @@ function constructors.scale(tfmdata,specification)
         targetparameters.scriptscale       = scriptscale
         targetparameters.scriptscriptscale = scriptscriptscale
 
-        -- todo: maybe retrofit to font-con.lua
-
-        local oldmath = properties.oldmath
-        targetproperties.oldmath = oldmath
-        target.oldmath = oldmath
-
         local mathcontrol = properties.mathcontrol
         targetproperties.mathcontrol = mathcontrol
         target.mathcontrol = mathcontrol
@@ -706,10 +700,26 @@ function constructors.scale(tfmdata,specification)
             if vi and vi ~= 0 then
                 chr.vitalic = vi*hdelta
             end
-            local va = character.accent
+--             local va = character.accent
+--             if va and not chr.topanchor then
+--                 chr.topanchor = va
+--             end
+            local va = character.topanchor
             if va then
-                chr.topaccent = va*vdelta
+                chr.topanchor = va*vdelta
             end
+            va = character.bottomanchor
+            if va then
+                chr.bottomanchor = va*vdelta
+            end
+            local vo = character.topovershoot
+            if vo then
+                chr.topovershoot = vo*hdelta
+            end
+         -- vo = character.bottomovershoot
+         -- if vo then
+         --     chr.bottomovershoot = vo*hdelta
+         -- end
             if stackmath then -- not ok yet
                 local mk = character.mathkerns
                 if mk then
@@ -754,6 +764,10 @@ function constructors.scale(tfmdata,specification)
             local sm = character.smaller
             if sm then
                 chr.smaller = sm
+            end
+            local mi = character.mirror
+            if mi then
+                chr.mirror = mi
             end
             local fa = character.flataccent
             if fa then

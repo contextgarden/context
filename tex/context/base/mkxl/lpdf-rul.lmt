@@ -146,9 +146,7 @@ FakeRule(RuleWidth,RuleHeight,RuleDepth,RuleThickness,RuleColor);
         setdimen("d_rule_h", h)
         setdimen("d_rule_v", v)
         setdimen("d_rule_line", p.line or 65536)
---         setdimen("d_rule_offset", p.offset or 0)
         setdimen("d_rule_offset", (p.offset or 0) * 65536)
---         setmacro("m_rule_factor", (p.factor or 0) * bpfactor) -- needs checking
         setdimen("d_rule_factor", (p.factor or 0)) -- needs checking
         setmacro("m_rule_option", p.option or "")
         setmacro("m_rule_direction", p.direction or lefttoright_code)

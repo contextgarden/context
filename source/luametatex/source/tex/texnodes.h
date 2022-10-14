@@ -1588,8 +1588,11 @@ typedef enum simple_choice_subtypes {
     \LL
     \stoptabulate
 
-    We can use smaller variables for style and class and then have one field available for
-    other usage so no need to grow.
+    We can use smaller variables for style and class and then have one field available for other 
+    usage so no need to grow.
+
+    As with other nodes, not all fields are used and|/|or can be set at the tex end but they are 
+    available for usage at the \LUA\ end. Some have been used for experiments and stay around. 
 
 */
 
@@ -1680,6 +1683,7 @@ typedef struct noad_classes {
    noad_class_main(n)  = (singleword) unset_noad_class; \
    noad_class_left(n)  = (singleword) unset_noad_class; \
    noad_class_right(n) = (singleword) unset_noad_class; \
+   noad_analyzed(n)    = (singleword) unset_noad_class; \
 } while (0);
 
 # define set_noad_classes(n,c) do { \
@@ -1740,8 +1744,7 @@ typedef enum noad_options {
     noad_option_auto                     = 0x10000000,
     noad_option_unroll_list              = 0x20000000,
     noad_option_followed_by_space        = 0x40000000,
-    /* available: */
-    noad_option_reserved                 = 0x80000000,
+    noad_option_proportional             = 0x80000000,
 } noad_options;
 
 # define has_option(a,b)     (((a) & (b)) == (b))
@@ -1796,6 +1799,7 @@ inline int has_noad_no_script_option(halfword n, halfword option)
 # define has_noad_option_void(a)                (has_option(noad_options(a), noad_option_void))
 # define has_noad_option_unrolllist(a)          (has_option(noad_options(a), noad_option_unroll_list))
 # define has_noad_option_followedbyspace(a)     (has_option(noad_options(a), noad_option_followed_by_space))
+# define has_noad_option_proportional(a)        (has_option(noad_options(a), noad_option_proportional))
 
 /*tex
     In the meantime the codes and subtypes are in sync. The variable component does not really
@@ -1995,6 +1999,9 @@ typedef enum math_kernel_options {
     math_kernel_no_right_pair_kern   = 0x0004,
     math_kernel_auto_discretionary   = 0x0008,
     math_kernel_full_discretionary   = 0x0010,
+    math_kernel_ignored_character    = 0x0020,
+    math_kernel_is_large_operator    = 0x0040,
+    math_kernel_has_italic_shape     = 0x0080,
 } math_kernel_options;
 
 # define math_kernel_node_size 5
@@ -2494,7 +2501,7 @@ inline static void tex_attach_attribute_list_attribute(halfword target, halfword
         if (is_global(a)) { \
             int i; \
             for (i = (lmt_save_state.save_stack_data.ptr - 1); i >= 0; i--) { \
-                if (save_type(i) == saved_attribute_list) { \
+                if (save_type(i) == attribute_list_save_type) { \
                     delete_attribute_reference(save_value(i)); \
                     save_value(i) = attribute_cache_disabled; \
                 } \
@@ -2508,7 +2515,7 @@ inline static void tex_attach_attribute_list_attribute(halfword target, halfword
 
 # define save_attribute_state_before() do { \
     halfword c = current_attribute_state; \
-    tex_set_saved_record(saved_attribute_item_list, saved_attribute_list, 0, c); \
+    tex_set_saved_record(saved_attribute_item_list, attribute_list_save_type, 0, c); \
     lmt_save_state.save_stack_data.ptr += saved_attribute_n_of_items; \
     add_attribute_reference(c); \
 } while (0)

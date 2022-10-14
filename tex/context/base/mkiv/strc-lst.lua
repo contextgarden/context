@@ -263,6 +263,14 @@ function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
     if r and not r.section then
         r.section = structures.sections.currentid()
     end
+    local b = r and t.block
+    if r and not b then
+        local s = r.section
+        if s then
+            s = structures.sections.tobesaved[s]
+            r.block = s and s.block or nil
+        end
+    end
     local i = r and r.internal or 0 -- brrr
     if r and kind and name then
         local tag = tags.getid(kind,name)
@@ -834,6 +842,7 @@ filters[v_default] = function(specification) -- is named
     for i=1,#collected do
         local v = collected[i]
         local r = v.references
+-- inspect(v)
         if r and (not block or not r.block or pblock == r.block) then
             local sectionnumber = sections[r.section]
             if sectionnumber then

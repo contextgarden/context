@@ -101,9 +101,9 @@ return {
         "adjustnodecode", "ligaturenodecode", "discretionarynodecode", "whatsitnodecode", "mathnodecode",
         "gluenodecode", "kernnodecode", "penaltynodecode", "unsetnodecode", "mathsnodecode",
         --
-        "charifcode", "catifcode", "numifcode", "dimifcode", "oddifcode", "vmodeifcode", "hmodeifcode",
-        "mmodeifcode", "innerifcode", "voidifcode", "hboxifcode", "vboxifcode", "xifcode", "eofifcode",
-        "trueifcode", "falseifcode", "caseifcode", "definedifcode", "csnameifcode", "fontcharifcode",
+     -- "charifcode", "catifcode", "numifcode", "dimifcode", "oddifcode", "vmodeifcode", "hmodeifcode",
+     -- "mmodeifcode", "innerifcode", "voidifcode", "hboxifcode", "vboxifcode", "xifcode", "eofifcode",
+     -- "trueifcode", "falseifcode", "caseifcode", "definedifcode", "csnameifcode", "fontcharifcode",
         --
         "overrulemathcontrolcode", "underrulemathcontrolcode", "radicalrulemathcontrolcode", "fractionrulemathcontrolcode",
         "accentskewhalfmathcontrolcode", "accentskewapplymathcontrolcode", "applyordinarykernpairmathcontrolcode",
@@ -112,10 +112,11 @@ return {
         "applytextitalickernmathcontrolcode", "applyscriptitalickernmathcontrolcode",
         "checkspaceitalickernmathcontrolcode", "checktextitalickernmathcontrolcode",
         "analyzescriptnucleuscharmathcontrolcode", "analyzescriptnucleuslistmathcontrolcode", "analyzescriptnucleusboxmathcontrolcode",
+        "accenttopskewwithoffsetmathcontrolcode", "ignorekerndimensionsmathcontrolcode",
         --
         "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noexpansionglyphoptioncode", "noprotrusionglyphoptioncode",
         "noleftkerningglyphoptioncode", "noleftligaturingglyphoptioncode", "norightkerningglyphoptioncode", "norightligaturingglyphoptioncode",
-        "noitaliccorrectionglyphoptioncode",
+        "noitaliccorrectionglyphoptioncode", "islargeoperatorglyphoptioncode", "hasitalicshapeglyphoptioncode",
         --
         "normalparcontextcode", "vmodeparcontextcode", "vboxparcontextcode", "vtopparcontextcode", "vcenterparcontextcode",
         "vadjustparcontextcode", "insertparcontextcode", "outputparcontextcode", "alignparcontextcode",
@@ -217,6 +218,7 @@ return {
         "flattenclassoptioncode", "omitpenaltyclassoptioncode", "unpackclassoptioncode", "raiseprimeclassoptioncode",
         "carryoverlefttopkernclassoptioncode", "carryoverleftbottomkernclassoptioncode", "carryoverrighttopkernclassoptioncode", "carryoverrightbottomkernclassoptioncode",
         "preferdelimiterdimensionsclassoptioncode", "autoinjectclassoptioncode", "removeitaliccorrectionclassoptioncode",
+        "operatoritaliccorrectionclassoptioncode",
         --
         "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noleftligatureglyphoptioncode",
         "noleftkernglyphoptioncode", "norightligatureglyphoptioncode", "norightkernglyphoptioncode",

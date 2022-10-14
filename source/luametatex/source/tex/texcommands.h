@@ -189,8 +189,6 @@ typedef enum tex_command_code {
         during expansion of this serializer prefix.
     */
     char_given_cmd,                   /*tex character code defined by |\chardef| */
- // math_char_given_cmd,              /*tex math code defined by |\mathchardef| */
- // math_char_xgiven_cmd,             /*tex math code defined by |\Umathchardef| or |\Umathcharnumdef| */
     some_item_cmd,                    /*tex most recent item (|\lastpenalty|, |\lastkern|, |\lastskip| and more) */
     /*tex
        The previous command was described as \quotation {the last that cannot be prefixed by
@@ -429,35 +427,36 @@ typedef enum auxiliary_codes {
 # define last_auxiliary_code insert_mode_code
 
 typedef enum convert_codes {
-    number_code,               /*tex command code for |\number| */
-    to_integer_code,           /*tex command code for |\tointeger| (also gobbles |\relax|) */
-    to_hexadecimal_code,       /*tex command code for |\tohexadecimal| */
-    to_scaled_code,            /*tex command code for |\toscaled| (also gobbles |\relax|) */
-    to_sparse_scaled_code,     /*tex command code for |\tosparsescaled| (also gobbles |\relax|) */
-    to_dimension_code,         /*tex command code for |\todimension| (also gobbles |\relax|) */
-    to_sparse_dimension_code,  /*tex command code for |\tosparsedimension| */
-    to_mathstyle_code,         /*tex command code for |\tomathstyle| */
-    lua_code,                  /*tex command code for |\directlua| */
-    lua_function_code,         /*tex command code for |\luafunction| */
-    lua_bytecode_code,         /*tex command code for |\luabytecode| */
-    expanded_code,             /*tex command code for |\expanded| */
-    semi_expanded_code,        /*tex command code for |\constantexpanded| */
-    string_code,               /*tex command code for |\string| */
-    cs_string_code,            /*tex command code for |\csstring| */
-    detokenized_code,          /*tex command code for |\detokenized| */
-    roman_numeral_code,        /*tex command code for |\romannumeral| */
-    meaning_code,              /*tex command code for |\meaning| */
-    meaning_full_code,         /*tex command code for |\meaningfull| */
-    meaning_less_code,         /*tex command code for |\meaningless| */
-    meaning_asis_code,         /*tex command code for |\meaningasis| */
-    uchar_code,                /*tex command code for |\Uchar| */
-    lua_escape_string_code,    /*tex command code for |\luaescapestring| */
-    font_name_code,            /*tex command code for |\fontname| */
-    font_specification_code,   /*tex command code for |\fontspecification| */
-    job_name_code,             /*tex command code for |\jobname| */
-    format_name_code,          /*tex command code for |\AlephVersion| */
-    luatex_banner_code,        /*tex command code for |\luatexbanner| */
-    font_identifier_code,      /*tex command code for |tex.fontidentifier| (virtual) */
+    number_code,              /*tex command code for |\number| */
+    to_integer_code,          /*tex command code for |\tointeger| (also gobbles |\relax|) */
+    to_hexadecimal_code,      /*tex command code for |\tohexadecimal| */
+    to_scaled_code,           /*tex command code for |\toscaled| (also gobbles |\relax|) */
+    to_sparse_scaled_code,    /*tex command code for |\tosparsescaled| (also gobbles |\relax|) */
+    to_dimension_code,        /*tex command code for |\todimension| (also gobbles |\relax|) */
+    to_sparse_dimension_code, /*tex command code for |\tosparsedimension| */
+    to_mathstyle_code,        /*tex command code for |\tomathstyle| */
+    lua_code,                 /*tex command code for |\directlua| */
+    lua_function_code,        /*tex command code for |\luafunction| */
+    lua_bytecode_code,        /*tex command code for |\luabytecode| */
+    expanded_code,            /*tex command code for |\expanded| */
+    semi_expanded_code,       /*tex command code for |\constantexpanded| */
+    string_code,              /*tex command code for |\string| */
+    cs_string_code,           /*tex command code for |\csstring| */
+    detokenized_code,         /*tex command code for |\detokenized| */
+    roman_numeral_code,       /*tex command code for |\romannumeral| */
+    meaning_code,             /*tex command code for |\meaning| */
+    meaning_full_code,        /*tex command code for |\meaningfull| */
+    meaning_less_code,        /*tex command code for |\meaningless| */
+    meaning_asis_code,        /*tex command code for |\meaningasis| */
+    uchar_code,               /*tex command code for |\Uchar| */
+    lua_escape_string_code,   /*tex command code for |\luaescapestring| */
+ /* lua_token_string_code, */ /*tex command code for |\luatokenstring| */
+    font_name_code,           /*tex command code for |\fontname| */
+    font_specification_code,  /*tex command code for |\fontspecification| */
+    job_name_code,            /*tex command code for |\jobname| */
+    format_name_code,         /*tex command code for |\AlephVersion| */
+    luatex_banner_code,       /*tex command code for |\luatexbanner| */
+    font_identifier_code,     /*tex command code for |tex.fontidentifier| (virtual) */
 } convert_codes;
 
 # define first_convert_code number_code
@@ -670,7 +669,6 @@ typedef enum shorthand_def_codes {
     math_char_def_code,   /*tex |\mathchardef| */
     math_xchar_def_code,  /*tex |\Umathchardef| */
     math_dchar_def_code,  /*tex |\Umathdictdef| */
- /* math_uchar_def_code,  */ /* |\Umathcharnumdef| */
     count_def_code,       /*tex |\countdef| */
     attribute_def_code,   /*tex |\attributedef| */
     dimen_def_code,       /*tex |\dimendef| */
@@ -700,7 +698,6 @@ typedef enum math_char_number_codes {
     math_char_number_code,  /*tex |\mathchar| */
     math_xchar_number_code, /*tex |\Umathchar| */
     math_dchar_number_code, /*tex |\Umathdict| */
- /* math_uchar_number_code, */ /* |\Umathcharnum| */
     math_class_number_code, /*tex |\Umathclass| */
 } math_char_number_codes;
 
@@ -1034,14 +1031,11 @@ typedef enum charcode_codes {
     hmcode_charcode,
     mathcode_charcode,
     extmathcode_charcode,
- /* extmathcodenum_charcode, */
     delcode_charcode,
     extdelcode_charcode,
- /* extdelcodenum_charcode, */
 } charcode_codes;
 
 # define first_charcode_code catcode_charcode
-/*define last_charcode_code  extdelcodenum_charcode */
 # define last_charcode_code  extdelcode_charcode
 
 typedef enum math_styles {
@@ -1063,7 +1057,9 @@ typedef enum math_styles {
     all_script_styles,
     all_script_script_styles,
     all_math_styles,
+    all_main_styles,
     all_split_styles,
+    all_unsplit_styles,
     all_uncramped_styles,
     all_cramped_styles,
 } math_styles;

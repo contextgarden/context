@@ -255,8 +255,8 @@ function scripts.unicode.update()
                         specials    = specials,
                         arabic      = arabic,
                         combining   = combining,
-                        uccode      = uccode,
-                        lccode      = lccode,
+                        uccode      = uccode and uccode or nil,
+                        lccode      = lccode and lccode or nil,
                     }
                     characterdata[unicode] = char
                 else
@@ -477,7 +477,7 @@ function scripts.unicode.update()
         if first then
             local d = characterdata[first]
             if d then
-                local v = d.variants
+             -- local v = d.variants
                 local v = rawget(d,"variants")
                 if not v then
                     v = { }
@@ -634,13 +634,83 @@ end
 --    [0xFE01]="roundhand style",
 -- }
 
+-- local variants_90={
+--    [0xFE00]="rotated 90 degrees",
+-- }
+--
+-- local variants_180={
+--    [0xFE01]="rotated 180 degrees",
+-- }
+--
+-- local variants_270={
+--    [0xFE02]="rotated 270 degrees",
+-- }
+--
+-- local variants_expanded={
+--    [0xFE00]="expanded",
+-- }
+--
+-- local variants_90_180={
+--    [0xFE00]="rotated 90 degrees",
+--    [0xFE01]="rotated 180 degrees",
+-- }
+--
+-- local variants_90_180_270={
+--    [0xFE00]="rotated 90 degrees",
+--    [0xFE01]="rotated 180 degrees",
+--    [0xFE02]="rotated 270 degrees",
+-- }
+--
+-- local variants_180_270={
+--    [0xFE01]="rotated 180 degrees",
+--    [0xFE02]="rotated 270 degrees",
+-- }
+--
+-- local variants_90_270={
+--    [0xFE00]="rotated 90 degrees",
+--    [0xFE02]="rotated 270 degrees",
+-- }
+
 function scripts.unicode.save(filename)
     if preamble then
         local data = table.serialize(characters.data,"characters.data", { hexify = true, noquotes = true })
-        data = gsub(data,"%{%s+%[0xFE0E%]=\"text style\",%s+%[0xFE0F%]=\"emoji style\",%s+%}",              "variants_emoji")
-        data = gsub(data,"%{%s+%[0xFE00%]=\"corner%-justified form\",%s+%[0xFE01%]=\"centered form\",%s+%}","variants_forms")
-        data = gsub(data,"%{%s+%[0xFE00%]=\"chancery style\",%s+%[0xFE01%]=\"roundhand style\",%s+%}",      "variants_style")
-        data = gsub(data,"%{%s+%[0xFE00%]=\"dotted form\",%s+%}",                                           "variants_dotted")
+        data = gsub(data,
+            "%{%s+%[0xFE0E%]=\"text style\",%s+%[0xFE0F%]=\"emoji style\",%s+%}",
+            "variants_emoji"
+        )
+        data = gsub(data,
+            "%{%s+%[0xFE00%]=\"corner%-justified form\",%s+%[0xFE01%]=\"centered form\",%s+%}",
+            "variants_forms"
+        )
+        data = gsub(data,
+            "%{%s+%[0xFE00%]=\"chancery style\",%s+%[0xFE01%]=\"roundhand style\",%s+%}",
+            "variants_style"
+        )
+        data = gsub(data,
+            "%{%s+%[0xFE00%]=\"dotted form\",%s+%}",
+            "variants_dotted"
+        )
+        data = gsub(data,
+            "%{%s+%[0xFE00%]=\"expanded\",%s+%}",
+            "variants_expanded"
+        )
+        data = gsub(data,
+            "%{%s+%[0xFE0%d%]=\"rotated (%d+) degrees\",%s+%}",
+            "variants_%1"
+        )
+        data = gsub(data,
+            "%{%s+%[0xFE0%d%]=\"rotated (%d+) degrees\"," ..
+              "%s*%[0xFE0%d%]=\"rotated (%d+) degrees\"," ..
+              "%s+%}",
+            "variants_%1_%2"
+        )
+        data = gsub(data,
+            "%{%s+%[0xFE0%d%]=\"rotated (%d+) degrees\"," ..
+              "%s*%[0xFE0%d%]=\"rotated (%d+) degrees\"," ..
+              "%s*%[0xFE0%d%]=\"rotated (%d+) degrees\"," ..
+              "%s+%}",
+            "variants_%1_%2_%3"
+        )
         io.savedata(filename,preamble .. data)
     end
 end

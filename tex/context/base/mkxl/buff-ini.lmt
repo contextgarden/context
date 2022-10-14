@@ -573,7 +573,7 @@ local function savebuffer(list,name,prefix,option,directory) -- name is optional
     if directory ~= "" and dir.makedirs(directory) then
         name = file.join(directory,name)
     end
-    io.savedata(name,replacenewlines(content),"\n",option == v_append)
+    savedata(name,replacenewlines(content),"\n",option == v_append)
 end
 
 implement {

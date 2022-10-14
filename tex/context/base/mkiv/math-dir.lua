@@ -142,6 +142,7 @@ function directions.processmath(head) -- style, penalties
             return processmath(head)
         end
     end
+    return head
 end
 
 function directions.setmath(n)

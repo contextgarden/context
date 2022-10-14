@@ -34,6 +34,7 @@ local processors           = typesetters.processors
 local splitprocessor       = processors.split
 
 local texgetcount          = tex.getcount
+local texiscount           = tex.iscount
 
 local variables            = interfaces.variables
 local v_forward            = variables.forward
@@ -66,6 +67,9 @@ local setinternalreference = references.setinternalreference
 local setmetatableindex    = table.setmetatableindex
 
 local absmaxlevel          = 5 -- \c_strc_registers_maxlevel
+
+local c_realpageno         = texiscount("realpageno")
+local c_locationcount      = texiscount("locationcount")
 
 local h_prefixpage              = helpers.prefixpage
 local h_prefixlastpage          = helpers.prefixlastpage
@@ -564,7 +568,7 @@ local function storeregister(rawdata) -- metadata, references, entries
     --
     local internal = references.internal
     if not internal then
-        internal = texgetcount("locationcount") -- we assume that it has been set
+        internal = texgetcount(c_locationcount) -- we assume that it has been set
         references.internal = internal
     end
     --
@@ -606,7 +610,7 @@ local function enhanceregister(specification)
     local data  = saved.metadata.notsaved and collected[name] or saved
     local entry = data.entries[n]
     if entry then
-        entry.references.realpage = texgetcount("realpageno")
+        entry.references.realpage = texgetcount(c_realpageno)
     end
 end
 
@@ -621,7 +625,7 @@ local function extendregister(name,tag,rawdata) -- maybe do lastsection internal
         local entry = data.entries[tag]
         if entry then
             local references = entry.references
-            references.lastrealpage = texgetcount("realpageno")
+            references.lastrealpage = texgetcount(c_realpageno)
             references.lastsection = currentid()
             if rawdata then
                 local userdata = rawdata.userdata

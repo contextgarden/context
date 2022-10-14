@@ -168,7 +168,7 @@ end
 
 -- a few examples:
 
-local addextra = mathematics.extras.add
+-- local addextra = mathematics.extras.add
 
 -- addextra(0xFE350) -- MATHEMATICAL DOUBLE ARROW LEFT END
 -- addextra(0xFE351) -- MATHEMATICAL DOUBLE ARROW MIDDLE PART
@@ -395,7 +395,7 @@ local addextra = mathematics.extras.add
 --     local height = target.parameters.xheight / 2
 --     local c, done = accent_to_extensible(target,private,data.original,unicode,height,0,nil,-height,unicode)
 --     if done then
---         c.topaccent = nil -- or maybe also all the others
+--         c.topanchor = nil -- or maybe also all the others
 --     end
 --     return c
 -- end

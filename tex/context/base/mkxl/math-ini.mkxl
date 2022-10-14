@@ -55,7 +55,7 @@
 
 \registerctxluafile{math-ini}{autosuffix}
 \registerctxluafile{math-dim}{autosuffix}
-% \registerctxluafile{math-act}{autosuffix}
+%registerctxluafile{math-act}{autosuffix}
 \registerctxluafile{math-ext}{}
 \registerctxluafile{math-vfu}{autosuffix}
 \registerctxluafile{math-ttv}{}
@@ -65,7 +65,7 @@
 \registerctxluafile{math-noa}{autosuffix}
 \registerctxluafile{math-tag}{autosuffix}
 \registerctxluafile{math-fbk}{autosuffix}
-\registerctxluafile{math-dir}{}
+%registerctxluafile{math-dir}{}
 \registerctxluafile{math-spa}{autosuffix}
 \registerctxluafile{math-fnt}{autosuffix}
 \registerctxluafile{math-pre}{autosuffix}
@@ -107,6 +107,8 @@
    +\analyzescriptnucleuscharmathcontrolcode
    +\analyzescriptnucleuslistmathcontrolcode
    +\analyzescriptnucleusboxmathcontrolcode
+   +\accenttopskewwithoffsetmathcontrolcode
+ % +\ignorekerndimensionsmathcontrolcode    % xits needs this (bad depth of fences)
 \relax
 
 % \mathpenaltiesmode\plusone
@@ -513,7 +515,21 @@
     \defaultmathclassoptions
  % +\checkligatureclassoptioncode
    +\checkkernpairclassoptioncode
+ % up to Mikael to decide, ok with italic chars, maybe less so with raw ints:
+ % +\operatoritaliccorrectionclassoptioncode
 \relax
+
+% we tweak away weird italics so only special cases see this:
+%
+% \def\IntOr{\Umathchar\mathordinarycode"00"00222B }
+% \def\IntOp{\Umathchar\mathoperatorcode"00"00222B }
+%
+% \showglyphs \showfontitalics
+% $\IntOp\limits x \quad \IntOp\limits^1_2 x \quad \IntOp\nolimits^1_2 x $\blank
+% $\IntOr\limits x \quad \IntOr\limits^1_2 x \quad \IntOr\nolimits^1_2 x $\blank
+%
+% $\mathop{f}     (x) \quad \mathop{f}\limits     (x) \quad \mathop{f}\nolimits     (x)$\blank
+% $\mathop{f}^a_b (x) \quad \mathop{f}\limits^a_b (x) \quad \mathop{f}\nolimits^a_b (x)$\blank
 
 \setmathoptions\mathbinarycode\numexpr
     \defaultmathclassoptions
@@ -1099,318 +1115,317 @@
 \startsetups math:spacing:presets
     \resetmathspacing
     %
-  % \inherited\setmathspacing \mathordinarycode    \mathordinarycode     \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathordinarycode    \mathoperatorcode     \allmathstyles   \thinmuskip
-    \inherited\setmathspacing \mathordinarycode    \mathbinarycode       \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathordinarycode    \mathbinarycode       \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathordinarycode    \mathrelationcode     \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathordinarycode    \mathrelationcode     \allscriptstyles \pettymuskip
-  % \inherited\setmathspacing \mathordinarycode    \mathopencode         \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathordinarycode    \mathmiddlecode       \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathordinarycode    \mathmiddlecode       \allscriptstyles \pettymuskip
-  % \inherited\setmathspacing \mathordinarycode    \mathclosecode        \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathordinarycode    \mathpunctuationcode  \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathordinarycode    \mathconstructcode    \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathordinarycode    \mathconstructcode    \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathordinarycode    \mathellipsiscode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathordinarycode    \mathellipsiscode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathordinarycode    \mathfractioncode     \allsplitstyles  \tinymuskip
-    \inherited\setmathspacing \mathordinarycode    \mathfractioncode     \allscriptstyles \pettymuskip
-  % \inherited\setmathspacing \mathordinarycode    \mathradicalcode      \allsplitstyles  \tinymuskip  % 220705 Results in an unwanted space
-  % \inherited\setmathspacing \mathordinarycode    \mathradicalcode      \allscriptstyles \pettymuskip % 220705 Results in an unwanted space
+  % \inherited\setmathspacing \mathordinarycode        \mathordinarycode        \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathordinarycode        \mathoperatorcode        \allmathstyles    \thinmuskip
+    \inherited\setmathspacing \mathordinarycode        \mathbinarycode          \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathordinarycode        \mathbinarycode          \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathordinarycode        \mathrelationcode        \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathordinarycode        \mathrelationcode        \allunsplitstyles \pettymuskip
+  % \inherited\setmathspacing \mathordinarycode        \mathopencode            \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathordinarycode        \mathmiddlecode          \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathordinarycode        \mathmiddlecode          \allunsplitstyles \pettymuskip
+  % \inherited\setmathspacing \mathordinarycode        \mathclosecode           \allmathstyles    \zeromuskip
+  % \inherited\setmathspacing \mathordinarycode        \mathpunctuationcode     \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathordinarycode        \mathconstructcode       \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathordinarycode        \mathconstructcode       \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathordinarycode        \mathellipsiscode        \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathordinarycode        \mathellipsiscode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathordinarycode        \mathfractioncode        \allsplitstyles   \tinymuskip
+    \inherited\setmathspacing \mathordinarycode        \mathfractioncode        \allunsplitstyles \pettymuskip
+  % \inherited\setmathspacing \mathordinarycode        \mathradicalcode         \allsplitstyles   \tinymuskip  % 220705 Results in an unwanted space
+  % \inherited\setmathspacing \mathordinarycode        \mathradicalcode         \allunsplitstyles \pettymuskip % 220705 Results in an unwanted space
     %
-    \inherited\setmathspacing \mathoperatorcode    \mathordinarycode     \allmathstyles   \thinmuskip
-    \inherited\setmathspacing \mathoperatorcode    \mathoperatorcode     \allmathstyles   \thinmuskip
-  % \inherited\setmathspacing \mathoperatorcode    \mathbinarycode       \allmathstyles \ zeromuskip
-    \inherited\setmathspacing \mathoperatorcode    \mathrelationcode     \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathoperatorcode    \mathrelationcode     \allscriptstyles \pettymuskip
-  % \inherited\setmathspacing \mathoperatorcode    \mathopencode         \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathoperatorcode    \mathmiddlecode       \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathoperatorcode    \mathmiddlecode       \allscriptstyles \pettymuskip
-  % \inherited\setmathspacing \mathoperatorcode    \mathclosecode        \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathoperatorcode    \mathpunctuationcode  \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathoperatorcode    \mathconstructcode    \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathoperatorcode    \mathconstructcode    \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathoperatorcode    \mathellipsiscode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathoperatorcode    \mathellipsiscode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathoperatorcode    \mathfractioncode     \allmathstyles   \thinmuskip
-    \inherited\setmathspacing \mathoperatorcode    \mathradicalcode      \allmathstyles   \thinmuskip
+    \inherited\setmathspacing \mathoperatorcode        \mathordinarycode        \allmathstyles    \thinmuskip
+    \inherited\setmathspacing \mathoperatorcode        \mathoperatorcode        \allmathstyles    \thinmuskip
+  % \inherited\setmathspacing \mathoperatorcode        \mathbinarycode          \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathoperatorcode        \mathrelationcode        \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathoperatorcode        \mathrelationcode        \allunsplitstyles \pettymuskip
+  % \inherited\setmathspacing \mathoperatorcode        \mathopencode            \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathoperatorcode        \mathmiddlecode          \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathoperatorcode        \mathmiddlecode          \allunsplitstyles \pettymuskip
+  % \inherited\setmathspacing \mathoperatorcode        \mathclosecode           \allmathstyles    \zeromuskip
+  % \inherited\setmathspacing \mathoperatorcode        \mathpunctuationcode     \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathoperatorcode        \mathconstructcode       \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathoperatorcode        \mathconstructcode       \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathoperatorcode        \mathellipsiscode        \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathoperatorcode        \mathellipsiscode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathoperatorcode        \mathfractioncode        \allmathstyles    \thinmuskip
+    \inherited\setmathspacing \mathoperatorcode        \mathradicalcode         \allmathstyles    \thinmuskip
     %
-    \inherited\setmathspacing \mathbinarycode      \mathordinarycode     \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathbinarycode      \mathordinarycode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathbinarycode      \mathoperatorcode     \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathbinarycode      \mathoperatorcode     \allscriptstyles \pettymuskip
- %% \inherited\setmathspacing \mathbinarycode      \mathbinarycode       \allmathstyles   \zeromuskip
- %% \inherited\setmathspacing \mathbinarycode      \mathrelationcode     \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathbinarycode      \mathopencode         \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathbinarycode      \mathopencode         \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathbinarycode      \mathmiddlecode       \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathbinarycode      \mathmiddlecode       \allscriptstyles \pettymuskip
- %% \inherited\setmathspacing \mathbinarycode      \mathclosecode        \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathbinarycode      \mathpunctuationcode  \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathbinarycode      \mathpunctuationcode  \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathbinarycode      \mathconstructcode    \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathbinarycode      \mathconstructcode    \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathbinarycode      \mathellipsiscode     \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathbinarycode      \mathellipsiscode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathbinarycode      \mathfractioncode     \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathbinarycode      \mathfractioncode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathbinarycode      \mathradicalcode      \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathbinarycode      \mathradicalcode      \allscriptstyles \pettymuskip
+    \inherited\setmathspacing \mathbinarycode          \mathordinarycode        \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathbinarycode          \mathordinarycode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathbinarycode          \mathoperatorcode        \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathbinarycode          \mathoperatorcode        \allunsplitstyles \pettymuskip
+ %% \inherited\setmathspacing \mathbinarycode          \mathbinarycode          \allmathstyles    \zeromuskip
+ %% \inherited\setmathspacing \mathbinarycode          \mathrelationcode        \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathbinarycode          \mathopencode            \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathbinarycode          \mathopencode            \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathbinarycode          \mathmiddlecode          \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathbinarycode          \mathmiddlecode          \allunsplitstyles \pettymuskip
+ %% \inherited\setmathspacing \mathbinarycode          \mathclosecode           \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathbinarycode          \mathpunctuationcode     \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathbinarycode          \mathpunctuationcode     \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathbinarycode          \mathconstructcode       \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathbinarycode          \mathconstructcode       \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathbinarycode          \mathellipsiscode        \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathbinarycode          \mathellipsiscode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathbinarycode          \mathfractioncode        \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathbinarycode          \mathfractioncode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathbinarycode          \mathradicalcode         \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathbinarycode          \mathradicalcode         \allunsplitstyles \pettymuskip
     %
-    \inherited\setmathspacing \mathrelationcode    \mathordinarycode     \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathrelationcode    \mathordinarycode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathrelationcode    \mathoperatorcode     \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathrelationcode    \mathoperatorcode     \allscriptstyles \pettymuskip
- %% \inherited\setmathspacing \mathrelationcode    \mathbinarycode       \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathrelationcode    \mathrelationcode     \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathrelationcode    \mathopencode         \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathrelationcode    \mathopencode         \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathrelationcode    \mathmiddlecode       \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathrelationcode    \mathmiddlecode       \allscriptstyles \thinmuskip
-  % \inherited\setmathspacing \mathrelationcode    \mathclosecode        \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathrelationcode    \mathpunctuationcode  \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathrelationcode    \mathpunctuationcode  \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathrelationcode    \mathconstructcode    \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathrelationcode    \mathconstructcode    \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathrelationcode    \mathellipsiscode     \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathrelationcode    \mathellipsiscode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathrelationcode    \mathfractioncode     \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathrelationcode    \mathfractioncode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathrelationcode    \mathradicalcode      \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathrelationcode    \mathradicalcode      \allscriptstyles \pettymuskip
+    \inherited\setmathspacing \mathrelationcode        \mathordinarycode        \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathrelationcode        \mathordinarycode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathrelationcode        \mathoperatorcode        \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathrelationcode        \mathoperatorcode        \allunsplitstyles \pettymuskip
+ %% \inherited\setmathspacing \mathrelationcode        \mathbinarycode          \allmathstyles    \zeromuskip
+  % \inherited\setmathspacing \mathrelationcode        \mathrelationcode        \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathrelationcode        \mathopencode            \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathrelationcode        \mathopencode            \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathrelationcode        \mathmiddlecode          \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathrelationcode        \mathmiddlecode          \allunsplitstyles \thinmuskip
+  % \inherited\setmathspacing \mathrelationcode        \mathclosecode           \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathrelationcode        \mathpunctuationcode     \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathrelationcode        \mathpunctuationcode     \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathrelationcode        \mathconstructcode       \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathrelationcode        \mathconstructcode       \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathrelationcode        \mathellipsiscode        \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathrelationcode        \mathellipsiscode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathrelationcode        \mathfractioncode        \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathrelationcode        \mathfractioncode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathrelationcode        \mathradicalcode         \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathrelationcode        \mathradicalcode         \allunsplitstyles \pettymuskip
     %
-  % \inherited\setmathspacing \mathopencode        \mathordinarycode     \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathopencode        \mathoperatorcode     \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathopencode        \mathbinarycode       \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathopencode        \mathrelationcode     \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathopencode        \mathopencode         \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathopencode        \mathmiddlecode       \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathopencode        \mathclosecode        \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathopencode        \mathpunctuationcode  \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathopencode        \mathconstructcode    \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathopencode        \mathellipsiscode     \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathopencode        \mathfractioncode     \allmathstyles   \pettymuskip
-  % \inherited\setmathspacing \mathopencode        \mathradicalcode      \allmathstyles   \zeromuskip
+  % \inherited\setmathspacing \mathopencode            \mathordinarycode        \allmathstyles    \zeromuskip
+  % \inherited\setmathspacing \mathopencode            \mathoperatorcode        \allmathstyles    \zeromuskip
+  % \inherited\setmathspacing \mathopencode            \mathbinarycode          \allmathstyles    \zeromuskip
+  % \inherited\setmathspacing \mathopencode            \mathrelationcode        \allmathstyles    \zeromuskip
+  % \inherited\setmathspacing \mathopencode            \mathopencode            \allmathstyles    \zeromuskip
+  % \inherited\setmathspacing \mathopencode            \mathmiddlecode          \allmathstyles    \zeromuskip
+  % \inherited\setmathspacing \mathopencode            \mathclosecode           \allmathstyles    \zeromuskip
+  % \inherited\setmathspacing \mathopencode            \mathpunctuationcode     \allmathstyles    \zeromuskip
+  % \inherited\setmathspacing \mathopencode            \mathconstructcode       \allmathstyles    \zeromuskip
+  % \inherited\setmathspacing \mathopencode            \mathellipsiscode        \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathopencode            \mathfractioncode        \allmathstyles    \pettymuskip
+  % \inherited\setmathspacing \mathopencode            \mathradicalcode         \allmathstyles    \zeromuskip
     %
-    \inherited\setmathspacing \mathclosecode       \mathordinarycode     \allmathstyles   \tinymuskip
-    \inherited\setmathspacing \mathclosecode       \mathoperatorcode     \allmathstyles   \thinmuskip
-    \inherited\setmathspacing \mathclosecode       \mathbinarycode       \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathclosecode       \mathbinarycode       \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathclosecode       \mathrelationcode     \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathclosecode       \mathrelationcode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathclosecode       \mathopencode         \alltextstyles   \tinymuskip
-    \inherited\setmathspacing \mathclosecode       \mathopencode         \alldisplaystyles\thinmuskip
-    \inherited\setmathspacing \mathclosecode       \mathopencode         \allscriptstyles \pettymuskip
-  % \inherited\setmathspacing \mathclosecode       \mathmiddlecode       \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathclosecode       \mathclosecode        \allmathstyles   \zeromuskip
-  % \inherited\setmathspacing \mathclosecode       \mathpunctuationcode  \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathclosecode       \mathconstructcode    \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathclosecode       \mathconstructcode    \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathclosecode       \mathfactorialcode    \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathclosecode       \mathellipsiscode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathclosecode       \mathellipsiscode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathclosecode       \mathfractioncode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathclosecode       \mathfractioncode     \allscriptstyles \pettymuskip
-  % \inherited\setmathspacing \mathclosecode       \mathradicalcode      \allmathstyles   \zeromuskip
+    \inherited\setmathspacing \mathclosecode           \mathordinarycode        \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathclosecode           \mathoperatorcode        \allmathstyles    \thinmuskip
+    \inherited\setmathspacing \mathclosecode           \mathbinarycode          \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathclosecode           \mathbinarycode          \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathclosecode           \mathrelationcode        \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathclosecode           \mathrelationcode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathclosecode           \mathopencode            \alltextstyles    \tinymuskip
+    \inherited\setmathspacing \mathclosecode           \mathopencode            \alldisplaystyles \thinmuskip
+    \inherited\setmathspacing \mathclosecode           \mathopencode            \allunsplitstyles \pettymuskip
+  % \inherited\setmathspacing \mathclosecode           \mathmiddlecode          \allmathstyles    \zeromuskip
+  % \inherited\setmathspacing \mathclosecode           \mathclosecode           \allmathstyles    \zeromuskip
+  % \inherited\setmathspacing \mathclosecode           \mathpunctuationcode     \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathclosecode           \mathconstructcode       \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathclosecode           \mathconstructcode       \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathclosecode           \mathfactorialcode       \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathclosecode           \mathellipsiscode        \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathclosecode           \mathellipsiscode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathclosecode           \mathfractioncode        \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathclosecode           \mathfractioncode        \allunsplitstyles \pettymuskip
+  % \inherited\setmathspacing \mathclosecode           \mathradicalcode         \allmathstyles    \zeromuskip
     %
-    \inherited\setmathspacing \mathpunctuationcode \mathordinarycode     \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathordinarycode     \allscriptstyles \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathoperatorcode     \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathoperatorcode     \allscriptstyles \thinmuskip
-  % \inherited\setmathspacing \mathpunctuationcode \mathbinarycode       \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathrelationcode     \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathrelationcode     \allscriptstyles \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathopencode         \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathopencode         \allscriptstyles \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathmiddlecode       \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathmiddlecode       \allscriptstyles \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathclosecode        \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathclosecode        \allscriptstyles \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathpunctuationcode  \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathpunctuationcode  \allscriptstyles \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathconstructcode    \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathconstructcode    \allscriptstyles \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathellipsiscode     \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathellipsiscode     \allscriptstyles \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathfractioncode     \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathfractioncode     \allscriptstyles \thinmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathradicalcode      \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode \mathradicalcode      \allscriptstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathordinarycode        \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathordinarycode        \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathoperatorcode        \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathoperatorcode        \allunsplitstyles \thinmuskip
+  % \inherited\setmathspacing \mathpunctuationcode     \mathbinarycode          \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathrelationcode        \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathrelationcode        \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathopencode            \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathopencode            \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathmiddlecode          \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathmiddlecode          \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathclosecode           \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathclosecode           \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathpunctuationcode     \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathpunctuationcode     \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathconstructcode       \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathconstructcode       \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathellipsiscode        \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathellipsiscode        \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathfractioncode        \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathfractioncode        \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathradicalcode         \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathradicalcode         \allunsplitstyles \thinmuskip
     %
-    \inherited\setmathspacing \mathconstructcode   \mathordinarycode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathconstructcode   \mathordinarycode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathconstructcode   \mathoperatorcode     \allmathstyles   \thinmuskip
-    \inherited\setmathspacing \mathconstructcode   \mathbinarycode       \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathconstructcode   \mathbinarycode       \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathconstructcode   \mathrelationcode     \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathconstructcode   \mathrelationcode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathconstructcode   \mathopencode         \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathconstructcode   \mathopencode         \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathconstructcode   \mathmiddlecode       \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathconstructcode   \mathmiddlecode       \allscriptstyles \pettymuskip
-  % \inherited\setmathspacing \mathconstructcode   \mathclosecode        \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathconstructcode   \mathpunctuationcode  \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathconstructcode   \mathpunctuationcode  \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathconstructcode   \mathconstructcode    \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathconstructcode   \mathconstructcode    \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathconstructcode   \mathfractioncode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathconstructcode   \mathfractioncode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathconstructcode   \mathradicalcode      \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathconstructcode   \mathradicalcode      \allscriptstyles \pettymuskip
+    \inherited\setmathspacing \mathconstructcode       \mathordinarycode        \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathconstructcode       \mathordinarycode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathconstructcode       \mathoperatorcode        \allmathstyles    \thinmuskip
+    \inherited\setmathspacing \mathconstructcode       \mathbinarycode          \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathconstructcode       \mathbinarycode          \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathconstructcode       \mathrelationcode        \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathconstructcode       \mathrelationcode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathconstructcode       \mathopencode            \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathconstructcode       \mathopencode            \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathconstructcode       \mathmiddlecode          \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathconstructcode       \mathmiddlecode          \allunsplitstyles \pettymuskip
+  % \inherited\setmathspacing \mathconstructcode       \mathclosecode           \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathconstructcode       \mathpunctuationcode     \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathconstructcode       \mathpunctuationcode     \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathconstructcode       \mathconstructcode       \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathconstructcode       \mathconstructcode       \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathconstructcode       \mathfractioncode        \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathconstructcode       \mathfractioncode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathconstructcode       \mathradicalcode         \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathconstructcode       \mathradicalcode         \allunsplitstyles \pettymuskip
     %
-    \inherited\setmathspacing \mathellipsiscode   \mathordinarycode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathordinarycode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathoperatorcode     \allmathstyles   \thinmuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathbinarycode       \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathbinarycode       \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathrelationcode     \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathrelationcode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathopencode         \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathopencode         \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathmiddlecode       \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathmiddlecode       \allscriptstyles \pettymuskip
-  % \inherited\setmathspacing \mathellipsiscode   \mathclosecode        \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathpunctuationcode  \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathpunctuationcode  \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathconstructcode    \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathconstructcode    \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathellipsiscode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathellipsiscode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathfractioncode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathfractioncode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathradicalcode      \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathellipsiscode   \mathradicalcode      \allscriptstyles \pettymuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathordinarycode        \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathordinarycode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathoperatorcode        \allmathstyles    \thinmuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathbinarycode          \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathbinarycode          \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathrelationcode        \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathrelationcode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathopencode            \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathopencode            \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathmiddlecode          \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathmiddlecode          \allunsplitstyles \pettymuskip
+  % \inherited\setmathspacing \mathellipsiscode        \mathclosecode           \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathpunctuationcode     \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathpunctuationcode     \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathconstructcode       \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathconstructcode       \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathellipsiscode        \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathellipsiscode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathfractioncode        \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathfractioncode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathradicalcode         \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathradicalcode         \allunsplitstyles \pettymuskip
     %
+    \inherited\setmathspacing \mathfractioncode        \mathordinarycode        \allsplitstyles   \tinymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathordinarycode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathoperatorcode        \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathfractioncode        \mathoperatorcode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathbinarycode          \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathfractioncode        \mathbinarycode          \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathrelationcode        \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathfractioncode        \mathrelationcode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathopencode            \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathfractioncode        \mathopencode            \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathmiddlecode          \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathfractioncode        \mathmiddlecode          \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathclosecode           \allmathstyles    \pettymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathpunctuationcode     \allsplitstyles   \tinymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathpunctuationcode     \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathtextpunctuationcode \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathconstructcode       \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathfractioncode        \mathconstructcode       \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathellipsiscode        \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathfractioncode        \mathellipsiscode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathfractioncode        \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathfractioncode        \mathfractioncode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathradicalcode         \allsplitstyles   \tinymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathradicalcode         \allunsplitstyles \pettymuskip
     %
-    \inherited\setmathspacing \mathfractioncode    \mathordinarycode     \allsplitstyles  \tinymuskip
-    \inherited\setmathspacing \mathfractioncode    \mathordinarycode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathfractioncode    \mathoperatorcode     \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathfractioncode    \mathoperatorcode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathfractioncode    \mathbinarycode       \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathfractioncode    \mathbinarycode       \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathfractioncode    \mathrelationcode     \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathfractioncode    \mathrelationcode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathfractioncode    \mathopencode         \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathfractioncode    \mathopencode         \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathfractioncode    \mathmiddlecode       \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathfractioncode    \mathmiddlecode       \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathfractioncode    \mathclosecode        \allmathstyles   \pettymuskip
-    \inherited\setmathspacing \mathfractioncode    \mathpunctuationcode  \allsplitstyles  \tinymuskip
-    \inherited\setmathspacing \mathfractioncode    \mathpunctuationcode  \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathfractioncode    \mathtextpunctuationcode  \allmathstyles   \tinymuskip
-    \inherited\setmathspacing \mathfractioncode    \mathconstructcode    \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathfractioncode    \mathconstructcode    \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathfractioncode    \mathellipsiscode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathfractioncode    \mathellipsiscode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathfractioncode    \mathfractioncode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathfractioncode    \mathfractioncode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathfractioncode    \mathradicalcode      \allsplitstyles  \tinymuskip
-    \inherited\setmathspacing \mathfractioncode    \mathradicalcode      \allscriptstyles \pettymuskip
+    \inherited\setmathspacing \mathradicalcode         \mathordinarycode        \allsplitstyles   \tinymuskip
+    \inherited\setmathspacing \mathradicalcode         \mathordinarycode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathradicalcode         \mathoperatorcode        \allmathstyles    \thinmuskip
+    \inherited\setmathspacing \mathradicalcode         \mathbinarycode          \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathradicalcode         \mathbinarycode          \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathradicalcode         \mathrelationcode        \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathradicalcode         \mathrelationcode        \allunsplitstyles \pettymuskip
+  % \inherited\setmathspacing \mathradicalcode         \mathopencode            \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathradicalcode         \mathmiddlecode          \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathradicalcode         \mathmiddlecode          \allunsplitstyles \pettymuskip
+  % \inherited\setmathspacing \mathradicalcode         \mathclosecode           \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathradicalcode         \mathpunctuationcode     \allsplitstyles   \pettymuskip
+    \inherited\setmathspacing \mathradicalcode         \mathpunctuationcode     \allunsplitstyles \tinymuskip
+    \inherited\setmathspacing \mathradicalcode         \mathconstructcode       \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathradicalcode         \mathconstructcode       \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathradicalcode         \mathellipsiscode        \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathradicalcode         \mathellipsiscode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathradicalcode         \mathfractioncode        \allsplitstyles   \tinymuskip
+    \inherited\setmathspacing \mathradicalcode         \mathfractioncode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathradicalcode         \mathradicalcode         \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathradicalcode         \mathradicalcode         \allunsplitstyles \pettymuskip
     %
-    \inherited\setmathspacing \mathradicalcode     \mathordinarycode     \allsplitstyles  \tinymuskip
-    \inherited\setmathspacing \mathradicalcode     \mathordinarycode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathradicalcode     \mathoperatorcode     \allmathstyles   \thinmuskip
-    \inherited\setmathspacing \mathradicalcode     \mathbinarycode       \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathradicalcode     \mathbinarycode       \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathradicalcode     \mathrelationcode     \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathradicalcode     \mathrelationcode     \allscriptstyles \pettymuskip
-  % \inherited\setmathspacing \mathradicalcode     \mathopencode         \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathradicalcode     \mathmiddlecode       \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathradicalcode     \mathmiddlecode       \allscriptstyles \pettymuskip
-  % \inherited\setmathspacing \mathradicalcode     \mathclosecode        \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathradicalcode     \mathpunctuationcode  \allsplitstyles  \pettymuskip
-    \inherited\setmathspacing \mathradicalcode     \mathpunctuationcode  \allscriptstyles \tinymuskip
-    \inherited\setmathspacing \mathradicalcode     \mathconstructcode    \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathradicalcode     \mathconstructcode    \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathradicalcode     \mathellipsiscode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathradicalcode     \mathellipsiscode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathradicalcode     \mathfractioncode     \allsplitstyles  \tinymuskip
-    \inherited\setmathspacing \mathradicalcode     \mathfractioncode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathradicalcode     \mathradicalcode      \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathradicalcode     \mathradicalcode      \allscriptstyles \pettymuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathordinarycode        \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathordinarycode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathoperatorcode        \allmathstyles    \thickmuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathbinarycode          \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathbinarycode          \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathrelationcode        \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathrelationcode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathopencode            \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathopencode            \allsplitstyles   \pettymuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathmiddlecode          \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathmiddlecode          \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathclosecode           \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathclosecode           \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathpunctuationcode     \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathpunctuationcode     \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathconstructcode       \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathconstructcode       \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathellipsiscode        \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathellipsiscode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathfractioncode        \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathfractioncode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathradicalcode         \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathradicalcode         \allmathstyles    \pettymuskip
     %
-    \inherited\setmathspacing \mathmiddlecode      \mathordinarycode     \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathordinarycode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathoperatorcode     \allmathstyles   \thickmuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathbinarycode       \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathbinarycode       \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathrelationcode     \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathrelationcode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathopencode         \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathopencode         \allsplitstyles  \pettymuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathmiddlecode       \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathmiddlecode       \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathclosecode        \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathclosecode        \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathpunctuationcode  \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathpunctuationcode  \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathconstructcode    \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathconstructcode    \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathellipsiscode     \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathellipsiscode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathfractioncode     \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathfractioncode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathradicalcode      \allsplitstyles  \thickmuskip
-    \inherited\setmathspacing \mathmiddlecode      \mathradicalcode      \allmathstyles   \pettymuskip
+    \inherited\setmathspacing \mathclosecode           \mathdifferentialcode    \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathclosecode           \mathdifferentialcode    \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathordinarycode        \mathdifferentialcode    \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathordinarycode        \mathdifferentialcode    \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathfactorialcode       \mathordinarycode        \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathfactorialcode       \mathordinarycode        \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathfactorialcode       \mathfactorialcode       \allmathstyles    \zeromuskip
     %
-    \inherited\setmathspacing \mathclosecode       \mathdifferentialcode \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathclosecode       \mathdifferentialcode \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathordinarycode    \mathdifferentialcode \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathordinarycode    \mathdifferentialcode \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathfactorialcode   \mathordinarycode     \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathfactorialcode   \mathordinarycode     \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathfactorialcode   \mathfactorialcode    \allmathstyles   \zeromuskip
+    \inherited\setmathspacing \mathopencode            \mathconstructcode       \allmathstyles    \thinmuskip
+    \inherited\setmathspacing \mathconstructcode       \mathclosecode           \allmathstyles    \thinmuskip
     %
-    \inherited\setmathspacing \mathopencode        \mathconstructcode    \allmathstyles   \thinmuskip
-    \inherited\setmathspacing \mathconstructcode   \mathclosecode        \allmathstyles   \thinmuskip
-    %
-    \inherited\setmathspacing \mathdimensioncode   \mathdimensioncode    \allmathstyles   \zeromuskip
-    \inherited\setmathspacing \mathordinarycode    \mathdimensioncode    \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathordinarycode    \mathdimensioncode    \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathdigitcode       \mathdimensioncode    \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathdigitcode       \mathdimensioncode    \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathclosecode       \mathdimensioncode    \allsplitstyles  \thinmuskip
-    \inherited\setmathspacing \mathclosecode       \mathdimensioncode    \allscriptstyles \pettymuskip
-    \inherited\setmathspacing \mathfunctioncode    \mathbinarycode       \allsplitstyles  \medmuskip
-    \inherited\setmathspacing \mathfunctioncode    \mathbinarycode       \allscriptstyles \pettymuskip
+    \inherited\setmathspacing \mathdimensioncode       \mathdimensioncode       \allmathstyles    \zeromuskip
+    \inherited\setmathspacing \mathordinarycode        \mathdimensioncode       \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathordinarycode        \mathdimensioncode       \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathdigitcode           \mathdimensioncode       \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathdigitcode           \mathdimensioncode       \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathclosecode           \mathdimensioncode       \allsplitstyles   \thinmuskip
+    \inherited\setmathspacing \mathclosecode           \mathdimensioncode       \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathfunctioncode        \mathbinarycode          \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathfunctioncode        \mathbinarycode          \allunsplitstyles \pettymuskip
     %
     % \im{1\unit{hour} 20 \unit{minute} 56 \unit{second}}
     %
-    \inherited\setmathspacing \mathdimensioncode   \mathdigitcode        \allmathstyles   \thickmuskip
+    \inherited\setmathspacing \mathdimensioncode       \mathdigitcode           \allmathstyles    \thickmuskip
     %
-    \inherited\setmathspacing \mathfakecode        \mathallcode          \allmathstyles   \tinymuskip
-    \inherited\setmathspacing \mathallcode         \mathfakecode         \allmathstyles   \tinymuskip
+    \inherited\setmathspacing \mathfakecode            \mathallcode             \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathallcode             \mathfakecode            \allmathstyles    \tinymuskip
     %
-    \inherited\setmathspacing \mathtextpunctuationcode \mathordinarycode     \allmathstyles \mathinterwordmuskip
-    \inherited\setmathspacing \mathtextpunctuationcode \mathoperatorcode     \allmathstyles \mathinterwordmuskip
-    \inherited\setmathspacing \mathtextpunctuationcode \mathbinarycode       \allmathstyles \mathinterwordmuskip
-    \inherited\setmathspacing \mathtextpunctuationcode \mathrelationcode     \allmathstyles \mathinterwordmuskip
-    \inherited\setmathspacing \mathtextpunctuationcode \mathopencode         \allmathstyles \mathinterwordmuskip
-    \inherited\setmathspacing \mathtextpunctuationcode \mathmiddlecode       \allmathstyles \mathinterwordmuskip
-    \inherited\setmathspacing \mathtextpunctuationcode \mathclosecode        \allmathstyles \mathinterwordmuskip
-    \inherited\setmathspacing \mathtextpunctuationcode \mathpunctuationcode  \allmathstyles \mathinterwordmuskip
-    \inherited\setmathspacing \mathtextpunctuationcode \mathconstructcode    \allmathstyles \mathinterwordmuskip
-    \inherited\setmathspacing \mathtextpunctuationcode \mathellipsiscode     \allmathstyles \mathinterwordmuskip
-    \inherited\setmathspacing \mathtextpunctuationcode \mathfractioncode     \allmathstyles \mathinterwordmuskip
-    \inherited\setmathspacing \mathtextpunctuationcode \mathradicalcode      \allmathstyles \mathinterwordmuskip
-    \inherited\setmathspacing \mathtextpunctuationcode \mathdifferentialcode \allmathstyles \mathinterwordmuskip
-    \inherited\setmathspacing \mathtextpunctuationcode \mathpunctuationcode  \allmathstyles \mathinterwordmuskip
-
-    \inherited\setmathspacing  \mathordinarycode     \mathtextpunctuationcode \allmathstyles \tinymuskip
-    \inherited\setmathspacing  \mathoperatorcode     \mathtextpunctuationcode \allmathstyles \tinymuskip
-    \inherited\setmathspacing  \mathbinarycode       \mathtextpunctuationcode \allmathstyles \tinymuskip
-    \inherited\setmathspacing  \mathrelationcode     \mathtextpunctuationcode \allmathstyles \tinymuskip
-    \inherited\setmathspacing  \mathopencode         \mathtextpunctuationcode \allmathstyles \tinymuskip
-    \inherited\setmathspacing  \mathmiddlecode       \mathtextpunctuationcode \allmathstyles \tinymuskip
-    \inherited\setmathspacing  \mathclosecode        \mathtextpunctuationcode \allmathstyles \tinymuskip
-    \inherited\setmathspacing  \mathpunctuationcode  \mathtextpunctuationcode \allmathstyles \tinymuskip
-    \inherited\setmathspacing  \mathconstructcode    \mathtextpunctuationcode \allmathstyles \tinymuskip
-    \inherited\setmathspacing  \mathellipsiscode     \mathtextpunctuationcode \allmathstyles \tinymuskip
-    \inherited\setmathspacing  \mathfractioncode     \mathtextpunctuationcode \allmathstyles \tinymuskip
-    \inherited\setmathspacing  \mathradicalcode      \mathtextpunctuationcode \allmathstyles \tinymuskip
-    \inherited\setmathspacing  \mathdifferentialcode \mathtextpunctuationcode \allmathstyles \tinymuskip
-    \inherited\setmathspacing  \mathpunctuationcode  \mathtextpunctuationcode \allmathstyles \tinymuskip
+    \inherited\setmathspacing \mathtextpunctuationcode \mathordinarycode        \allmathstyles    \mathinterwordmuskip
+    \inherited\setmathspacing \mathtextpunctuationcode \mathoperatorcode        \allmathstyles    \mathinterwordmuskip
+    \inherited\setmathspacing \mathtextpunctuationcode \mathbinarycode          \allmathstyles    \mathinterwordmuskip
+    \inherited\setmathspacing \mathtextpunctuationcode \mathrelationcode        \allmathstyles    \mathinterwordmuskip
+    \inherited\setmathspacing \mathtextpunctuationcode \mathopencode            \allmathstyles    \mathinterwordmuskip
+    \inherited\setmathspacing \mathtextpunctuationcode \mathmiddlecode          \allmathstyles    \mathinterwordmuskip
+    \inherited\setmathspacing \mathtextpunctuationcode \mathclosecode           \allmathstyles    \mathinterwordmuskip
+    \inherited\setmathspacing \mathtextpunctuationcode \mathpunctuationcode     \allmathstyles    \mathinterwordmuskip
+    \inherited\setmathspacing \mathtextpunctuationcode \mathconstructcode       \allmathstyles    \mathinterwordmuskip
+    \inherited\setmathspacing \mathtextpunctuationcode \mathellipsiscode        \allmathstyles    \mathinterwordmuskip
+    \inherited\setmathspacing \mathtextpunctuationcode \mathfractioncode        \allmathstyles    \mathinterwordmuskip
+    \inherited\setmathspacing \mathtextpunctuationcode \mathradicalcode         \allmathstyles    \mathinterwordmuskip
+    \inherited\setmathspacing \mathtextpunctuationcode \mathdifferentialcode    \allmathstyles    \mathinterwordmuskip
+    \inherited\setmathspacing \mathtextpunctuationcode \mathpunctuationcode     \allmathstyles    \mathinterwordmuskip
+    %
+    \inherited\setmathspacing \mathordinarycode        \mathtextpunctuationcode \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathoperatorcode        \mathtextpunctuationcode \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathbinarycode          \mathtextpunctuationcode \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathrelationcode        \mathtextpunctuationcode \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathopencode            \mathtextpunctuationcode \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathtextpunctuationcode \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathclosecode           \mathtextpunctuationcode \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathtextpunctuationcode \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathconstructcode       \mathtextpunctuationcode \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathtextpunctuationcode \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathtextpunctuationcode \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathradicalcode         \mathtextpunctuationcode \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathdifferentialcode    \mathtextpunctuationcode \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathtextpunctuationcode \allmathstyles    \tinymuskip
 \stopsetups
 
 \directsetup{math:spacing:default}
@@ -1506,10 +1521,12 @@
 
 \permanent\protected\def\math_upright     {\setmathattribute\s!regular\s!tf\setmathfontstylealternate\s!tf}
 \permanent\protected\def\math_italic      {\setmathattribute\s!regular\s!it\setmathfontstylealternate\s!it}
-\permanent\protected\def\math_script      {\setmathalphabet \s!script    \setmathfontstylealternate\s!script\setmathvariant\s!handwriting}
-\permanent\protected\def\math_calligraphic{\setmathalphabet \s!script    \setmathfontstylealternate\s!script\setmathvariant\s!calligraphy}
-\permanent\protected\def\math_fraktur     {\setmathalphabet \s!fraktur   \setmathfontstylealternate\s!fraktur}
-\permanent\protected\def\math_blackboard  {\setmathalphabet \s!blackboard\setmathfontstylealternate\s!blackboard}
+%permanent\protected\def\math_script      {\setmathalphabet \s!script      \setmathfontstylealternate\s!script\setmathvariant\s!handwriting}
+%permanent\protected\def\math_calligraphic{\setmathalphabet \s!script      \setmathfontstylealternate\s!script\setmathvariant\s!calligraphy}
+\permanent\protected\def\math_script      {\setmathalphabet \s!script      \setmathfontstylealternate\s!script}
+\permanent\protected\def\math_calligraphic{\setmathalphabet \s!calligraphic\setmathfontstylealternate\s!calligraphic}
+\permanent\protected\def\math_fraktur     {\setmathalphabet \s!fraktur     \setmathfontstylealternate\s!fraktur}
+\permanent\protected\def\math_blackboard  {\setmathalphabet \s!blackboard  \setmathfontstylealternate\s!blackboard}
 
 \permanent\protected\def\mathupright     {\mathgroupedcommandcs\math_upright     }
 \permanent\protected\def\mathitalic      {\mathgroupedcommandcs\math_italic      }
@@ -1804,14 +1821,12 @@
 % using \s!font \mathstylefontid\mathstyle\fam would needs expansion and guesswork
 
 \appendtoks
-    \Umathruleheight\alltextstyles        \strutheightfactor\fontspecifiedsize\textfont        \zerocount
-    \Umathruledepth \alltextstyles        \strutdepthfactor \fontspecifiedsize\textfont        \zerocount
+    \Umathruleheight\allmainstyles        \strutheightfactor\fontspecifiedsize\textfont        \zerocount
+    \Umathruledepth \allmainstyles        \strutdepthfactor \fontspecifiedsize\textfont        \zerocount
     \Umathruleheight\allscriptstyles      \strutheightfactor\fontspecifiedsize\scriptfont      \zerocount
     \Umathruledepth \allscriptstyles      \strutdepthfactor \fontspecifiedsize\scriptfont      \zerocount
     \Umathruleheight\allscriptscriptstyles\strutheightfactor\fontspecifiedsize\scriptscriptfont\zerocount
     \Umathruledepth \allscriptscriptstyles\strutdepthfactor \fontspecifiedsize\scriptscriptfont\zerocount
-    \Umathruleheight\alldisplaystyles     \Umathruleheight\textstyle
-    \Umathruledepth \alldisplaystyles     \Umathruledepth \textstyle
 \to \everybodyfont
 
 \protected\def\math_strut
@@ -2364,26 +2379,26 @@
     \math_basics_synchronize_direction
 \to \everyswitchmathematics
 
-% experimental (needed for an article)
+% experimental (needed for an article) .. this is is no longer neded
 
-\installcorenamespace {mathbidi}
-
-\newcount\c_math_bidi
-
-\def\math_bidi_enable {\clf_setmathdirection\plusone  \relax\c_math_bidi\plusone}
-\def\math_bidi_disable{\clf_setmathdirection\zerocount\relax\c_math_bidi\attributeunsetvalue}
-
-\letcsname\??mathbidi\v!yes\endcsname\math_bidi_enable
-\letcsname\??mathbidi\v!no \endcsname\math_bidi_disable
-
-\appendtoks
-    \edef\p_bidi{\mathematicsparameter\c!bidi}% still needed ?
-    \ifcsname\??mathbidi\p_bidi\endcsname\lastnamedcs\else\math_bidi_disable\fi
-\to \everysetupmathematics
-
-\appendtoks
-    \c_attr_mathbidi\ifconditional\c_math_right_to_left\c_math_bidi\else\attributeunsetvalue\fi
-\to \everyswitchmathematics
+% \installcorenamespace {mathbidi}
+%
+% \newcount\c_math_bidi
+%
+% \def\math_bidi_enable {\clf_setmathdirection\plusone  \relax\c_math_bidi\plusone}
+% \def\math_bidi_disable{\clf_setmathdirection\zerocount\relax\c_math_bidi\attributeunsetvalue}
+%
+% \letcsname\??mathbidi\v!yes\endcsname\math_bidi_enable
+% \letcsname\??mathbidi\v!no \endcsname\math_bidi_disable
+%
+% \appendtoks
+%     \edef\p_bidi{\mathematicsparameter\c!bidi}% still needed ?
+%     \ifcsname\??mathbidi\p_bidi\endcsname\lastnamedcs\else\math_bidi_disable\fi
+% \to \everysetupmathematics
+%
+% \appendtoks
+%     \c_attr_mathbidi\ifconditional\c_math_right_to_left\c_math_bidi\else\attributeunsetvalue\fi
+% \to \everyswitchmathematics
 
 %D Delayed: greek.
 %D
