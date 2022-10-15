@@ -1301,15 +1301,53 @@ end
 
 local ruledstrut do
 
-    local strut_size = 65536 * 8 / 10
-    local strut_code = nodes.rulecodes.strut
+    local strut_size      = 65536 * 8 / 10
+    local strut_code      = nodes.rulecodes.strut
+    local math_code       = nodes.nodecodes.math
+    local traverseid      = nuts.traverseid
+    local rangedimensions = nuts.rangedimensions
+    local a_mathaxis      = attributes.private("mathaxis")
 
-    ruledstrut = function(head,current)
-        if getsubtype(current) == strut_code and getwidth(current) == 0 then
-            -- maybe force gray
-            setwidth(current,strut_size)
-            setattr(current,a_layer,l_strut)
-            head, current = insertnodeafter(head,current,new_kern(-strut_size))
+    ruledstrut = function(head,current,parent)
+        if getwidth(current) == 0 then
+            if getsubtype(current) == strut_code  then
+                local w = strut_size
+                local a = getattr(current,a_mathaxis)
+                if a then
+                    local b, e
+                    for n in traverseid(math_code,current) do
+                        e = n
+                        break
+                    end
+                    for n in traverseid(math_code,current,true) do
+                        b = n
+                        break
+                    end
+                    if not b then
+                        b = head
+                    end
+                    if not e then
+                        e = nuts.tail(b)
+                    end
+                    w = rangedimensions(parent,b,e)
+                    setwidth(current,w)
+                    setcolor(current,"trace:ds")
+                    settransparency(current,"trace:ds")
+                    head, current, rule = nuts.remove(head,current)
+                    local kern = new_kern(-w)
+                    if a == 2 then
+                        insertnodebefore(head,e,kern)
+                        insertnodebefore(head,e,rule)
+                    else
+                        insertnodeafter(head,b,kern)
+                        insertnodeafter(head,b,rule)
+                    end
+                else
+                    setwidth(current,w)
+                    head, current = insertnodeafter(head,current,new_kern(w))
+                end
+                setattr(current,a_layer,l_strut)
+            end
         end
         return head, current
     end
@@ -1708,7 +1746,7 @@ do
                 goto list
             elseif id == rule_code then
                 if trace_strut then
-                    head, current = ruledstrut(head,current)
+                    head, current = ruledstrut(head,current,parent)
                 end
             elseif id == whatsit_code then
                 if trace_whatsit then

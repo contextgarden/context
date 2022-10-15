@@ -172,16 +172,6 @@ else : % decimal
 
 fi ;
 
-%D Variant on post to the mailing list by MC:
-
-vardef atantwo(expr dy, dx) =
-    if dx == 0 :
-        if dy < 0 : - fi pi / 2
-    else :
-        atan(dy/dx) if dx > 0 : if dy < 0 : - else : + fi pi fi
-    fi
-enddef ;
-
 permanent
     m_acos, m_acosh, m_asin, m_asinh, m_atan, m_atantwo, m_atanh, m_cbrt, m_ceil,
     m_copysign, m_cos, m_cosh, m_deg, m_erf, m_erfc, m_exp, m_exptwo, m_expm, m_fabs,

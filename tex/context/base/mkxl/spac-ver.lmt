@@ -114,6 +114,8 @@ local d_bodyfontstrutheight       = tex.isdimen("bodyfontstrutheight")
 local d_bodyfontstrutdepth        = tex.isdimen("bodyfontstrutdepth")
 local d_globalbodyfontstrutheight = tex.isdimen("globalbodyfontstrutheight")
 local d_globalbodyfontstrutdepth  = tex.isdimen("globalbodyfontstrutdepth")
+----- d_strutht                   = tex.isdimen("strutht")
+local d_strutdp                   = tex.isdimen("strutdp")
 
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
@@ -970,6 +972,8 @@ do
  -- local cmd = token.create("vspacingfromtempstring")
  -- local cmd = token.create("vspacingpredefinedvalue") -- not yet known
 
+    local s_scratchskip = tex.isskip("scratchskip")
+
     local function handler(multiplier, keyword, detail)
         if not keyword then
             report_vspacing("unknown directive %a",s)
@@ -1024,7 +1028,7 @@ do
                  -- setmacro("tempstring",keyword)
                  -- runlocal(ctx_vspacingfromtempstring)
                     --
-                    amount, stretch, shrink = texgetglue("scratchskip")
+                    amount, stretch, shrink = texgetglue(s_scratchskip)
                     if not stretch then
                         stretch = 0
                     end
@@ -2547,22 +2551,22 @@ do
     local mark_code   = nodes.nodecodes.mark
     local line_code   = nodes.listcodes.line
 
-    local nuts             = nodes.nuts
-    local getid            = nuts.getid
-    local getsubtype       = nuts.getsubtype
-    local getdepth         = nuts.getdepth
-    local setdepth         = nuts.setdepth
+ -- local nuts             = nodes.nuts
+ -- local getid            = nuts.getid
+ -- local getsubtype       = nuts.getsubtype
+ -- local getdepth         = nuts.getdepth
+ -- local setdepth         = nuts.setdepth
     local gettotal         = nuts.gettotal
     local getspeciallist   = nuts.getspeciallist
     local setspeciallist   = nuts.setspeciallist
 
     local triggerbuildpage = tex.triggerbuildpage
 
-    local texgetdimen = tex.getdimen
-    local texsetdimen = tex.setdimen
+ -- local texgetdimen = tex.getdimen
+ -- local texsetdimen = tex.setdimen
     local texgetnest  = tex.getnest
-    local texget      = tex.get
-    local texset      = tex.set
+ -- local texget      = tex.get
+ -- local texset      = tex.set
 
     local trace = false  trackers.register("otr.forcestrutdepth", function(v)
         trace = v and function(n)
@@ -2605,7 +2609,7 @@ do
                 for n, id, subtype in treversenode, tail do
                     if id == hlist_code then
                         if subtype == line_code then
-                            local strutdp = texgetdimen("strutdp")
+                            local strutdp = texgetdimen(d_strutdp)
                             local delta   = strutdp - getdepth(n)
                             if delta > 0 then
                                 setdepth(n,strutdp)
@@ -2629,7 +2633,7 @@ do
          -- if abs(nest.mode) == vmode_code and nest.head then
                 local tail = nest.tail
                 if tail.id == hlist_code and tail.subtype == line_code then
-                    local strutdp = texgetdimen("strutdp")
+                    local strutdp = texgetdimen(d_strutdp)
                     if tail.depth < strutdp then
                         tail.depth = strutdp
                     end

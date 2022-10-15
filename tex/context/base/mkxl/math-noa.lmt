@@ -2469,7 +2469,6 @@ do
     local traversehlist = nuts.traversers.hlist
 
     local texgetdimen   = tex.getdimen
-    local texgetglue    = tex.getglue
     local texgetcount   = tex.getcount
 
     local newrule       = nuts.pool.outlinerule
@@ -2478,12 +2477,16 @@ do
 
     local a_mathsnap    = attributes.private("mathsnap")
 
+    local d_mathstrutht = tex.isdimen("mathstrutht")
+    local d_mathstrutdp = tex.isdimen("mathstrutdp")
+    local c_mathnesting = tex.iscount("mathnestinglevel")
+
     local trace_snapping  = false  registertracker("math.snapping", function(v) trace_snapping = v end)
     local report_snapping = logreporter("mathematics","snapping")
 
     function handlers.snap(h,_,_,_,_,level)
      -- if not level or level == 0 then
-        if texgetcount("mathnestinglevel") == 1 then
+        if texgetcount(c_mathnesting) == 1 then
             local trace_color
             if trace_snapping == "frame" then
                 trace_color = "darkgray"
@@ -2498,8 +2501,8 @@ do
                 if step then
                     local done = false
                     if not dd then
-                        ht = texgetdimen("mathstrutht")
-                        dp = texgetdimen("mathstrutdp")
+                        ht = texgetdimen(d_mathstrutht)
+                        dp = texgetdimen(d_mathstrutdp)
                         hd = ht + dp
                         -- lineskip can be large in alignments
                      -- dd = hd / 12

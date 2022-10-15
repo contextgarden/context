@@ -51,7 +51,9 @@
 
 \unprotect
 
-%D We move these definitions into the format:
+\newdimen\mathstrutht
+\newdimen\mathstrutdp
+\newcount\mathnestinglevel
 
 \registerctxluafile{math-ini}{autosuffix}
 \registerctxluafile{math-dim}{autosuffix}
@@ -720,7 +722,7 @@
 %D
 %D \start \blank \getbuffer \blank \stop
 
-\newcount\mathnestinglevel
+% \newcount\mathnestinglevel % see top
 
 \appendtoks
     \advance\mathnestinglevel\plusone
@@ -1864,8 +1866,8 @@
 \permanent\protected\def\topstrut{\srule\s!width\zeropoint\s!height\strutht  \s!depth\zeropoint\relax}
 \permanent\protected\def\botstrut{\srule\s!width\zeropoint\s!height\zeropoint\s!depth\strutdp  \relax}
 
-\newdimen\mathstrutht
-\newdimen\mathstrutdp
+% \newdimen\mathstrutht % see top
+% \newdimen\mathstrutdp % see top
 
 \appendtoks
     \mathstrutht\strutht
@@ -4367,6 +4369,27 @@
 
 \permanent\tolerant\protected\def\setmathgroupset[#1]%
   {\mathdictgroup\clf_groupsetgroup{#1}\relax}
+
+%D Only for testing (limited line span):
+%D
+%D \starttyping
+%D test \im {z + \mathaxisbelow x + 2 - a = 1} test \par
+%D test \im {z + \mathaxisontop x + 2 - a = 1} test
+%D \stoptyping
+
+\definesystemattribute[mathaxis][public]
+
+\def\math_axis_inject#1%
+   {\mathatom \s!class \mathghostcode \s!unpack {
+    \showmakeup[strut]% todo: shortcut
+    \srule
+       \s!height \dimexpr\Umathaxis\mathstyle+.2\points\relax
+       \s!depth -\dimexpr\Umathaxis\mathstyle-.2\points\relax
+       \s!attr \mathaxisattribute #1%
+    \relax}}
+
+\permanent\protected\def\mathaxisbelow{\math_axis_inject\plusone}
+\permanent\protected\def\mathaxisontop{\math_axis_inject\plustwo}
 
 \protect \endinput
 

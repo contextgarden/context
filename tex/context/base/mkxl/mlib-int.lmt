@@ -8,27 +8,16 @@ if not modules then modules = { } end modules ['mlib-int'] = {
 
 local factor         = number.dimenfactors.bp
 local mpstring       = mp.string
-local mpboolean      = mp.boolean
+local injectnumeric  = mp.inject.numeric
+local isdimen        = tex.isdimen
+local iscount        = tex.iscount
 local getdimen       = tex.getdimen
 local getcount       = tex.getcount
 local getmacro       = tokens.getters.macro
 local get            = tex.get
-local emwidths       = fonts.hashes.emwidths
-local exheights      = fonts.hashes.exheights
 
 local registerscript = metapost.registerscript
 local registerdirect = metapost.registerdirect
-
-local on_right_page      = structures.pages.on_right
-local is_odd_page        = structures.pages.is_odd
-local in_body_page       = structures.pages.in_body
-local page_fraction      = structures.pages.fraction
-local layout_has_changed = structures.pages.has_changed
-
-local function defaultcolormodel() -- can be helper
-    local colormethod = getcount("MPcolormethod")
-    return (colormethod == 0 or colormethod == 1) and 1 or 3
-end
 
 do
 
@@ -62,134 +51,174 @@ do
 
 end
 
-local injectnumeric = mp.inject.numeric
+do
 
-registerdirect("PaperHeight",          function() return getdimen("paperheight")          * factor end)
-registerdirect("PaperWidth",           function() return getdimen("paperwidth")           * factor end)
-registerdirect("PrintPaperHeight",     function() return getdimen("printpaperheight")     * factor end)
-registerdirect("PrintPaperWidth",      function() return getdimen("printpaperwidth")      * factor end)
-registerdirect("TopSpace",             function() return getdimen("topspace")             * factor end)
-registerdirect("BottomSpace",          function() return getdimen("bottomspace")          * factor end)
-registerdirect("BackSpace",            function() return getdimen("backspace")            * factor end)
-registerdirect("CutSpace",             function() return getdimen("cutspace")             * factor end)
-registerdirect("MakeupHeight",         function() return getdimen("makeupheight")         * factor end)
-registerdirect("MakeupWidth",          function() return getdimen("makeupwidth")          * factor end)
-registerdirect("TopHeight",            function() return getdimen("topheight")            * factor end)
-registerdirect("TopDistance",          function() return getdimen("topdistance")          * factor end)
-registerdirect("HeaderHeight",         function() return getdimen("headerheight")         * factor end)
-registerdirect("HeaderDistance",       function() return getdimen("headerdistance")       * factor end)
-registerdirect("TextHeight",           function() return getdimen("textheight")           * factor end)
-registerdirect("FooterDistance",       function() return getdimen("footerdistance")       * factor end)
-registerdirect("FooterHeight",         function() return getdimen("footerheight")         * factor end)
-registerdirect("BottomDistance",       function() return getdimen("bottomdistance")       * factor end)
-registerdirect("BottomHeight",         function() return getdimen("bottomheight")         * factor end)
-registerdirect("LeftEdgeWidth",        function() return getdimen("leftedgewidth")        * factor end)
-registerdirect("LeftEdgeDistance",     function() return getdimen("leftedgedistance")     * factor end)
-registerdirect("LeftMarginWidth",      function() return getdimen("leftmarginwidth")      * factor end)
-registerdirect("LeftMarginDistance",   function() return getdimen("leftmargindistance")   * factor end)
-registerdirect("TextWidth",            function() return getdimen("textwidth")            * factor end)
-registerdirect("RightMarginDistance",  function() return getdimen("rightmargindistance")  * factor end)
-registerdirect("RightMarginWidth",     function() return getdimen("rightmarginwidth")     * factor end)
-registerdirect("RightEdgeDistance",    function() return getdimen("rightedgedistance")    * factor end)
-registerdirect("RightEdgeWidth",       function() return getdimen("rightedgewidth")       * factor end)
-registerdirect("InnerMarginDistance",  function() return getdimen("innermargindistance")  * factor end)
-registerdirect("InnerMarginWidth",     function() return getdimen("innermarginwidth")     * factor end)
-registerdirect("OuterMarginDistance",  function() return getdimen("outermargindistance")  * factor end)
-registerdirect("OuterMarginWidth",     function() return getdimen("outermarginwidth")     * factor end)
-registerdirect("InnerEdgeDistance",    function() return getdimen("inneredgedistance")    * factor end)
-registerdirect("InnerEdgeWidth",       function() return getdimen("inneredgewidth")       * factor end)
-registerdirect("OuterEdgeDistance",    function() return getdimen("outeredgedistance")    * factor end)
-registerdirect("OuterEdgeWidth",       function() return getdimen("outeredgewidth")       * factor end)
-registerdirect("PageOffset",           function() return getdimen("pagebackgroundoffset") * factor end)
-registerdirect("PageDepth",            function() return getdimen("pagebackgrounddepth")  * factor end)
-registerdirect("LayoutColumns",        function() return getcount("layoutcolumns")                 end)
-registerdirect("LayoutColumnDistance", function() return getdimen("layoutcolumndistance") * factor end)
-registerdirect("LayoutColumnWidth",    function() return getdimen("layoutcolumnwidth")    * factor end)
-registerdirect("SpineWidth",           function() return getdimen("spinewidth")           * factor end)
-registerdirect("PaperBleed",           function() return getdimen("paperbleed")           * factor end)
+    local d_paperheight         = isdimen("paperheight")         registerdirect("PaperHeight",          function() return getdimen(d_paperheight)         * factor end)
+    local d_paperwidth          = isdimen("paperwidth")          registerdirect("PaperWidth",           function() return getdimen(d_paperwidth)          * factor end)
+    local d_printpaperheight    = isdimen("printpaperheight")    registerdirect("PrintPaperHeight",     function() return getdimen(d_printpaperheight)    * factor end)
+    local d_printpaperwidth     = isdimen("printpaperwidth")     registerdirect("PrintPaperWidth",      function() return getdimen(d_printpaperwidth)     * factor end)
+    local d_topspace            = isdimen("topspace")            registerdirect("TopSpace",             function() return getdimen(d_topspace)            * factor end)
+    local d_bottomspace         = isdimen("bottomspace")         registerdirect("BottomSpace",          function() return getdimen(d_bottomspace)         * factor end)
+    local d_backspace           = isdimen("backspace")           registerdirect("BackSpace",            function() return getdimen(d_backspace)           * factor end)
+    local d_cutspace            = isdimen("cutspace")            registerdirect("CutSpace",             function() return getdimen(d_cutspace)            * factor end)
+    local d_makeupheight        = isdimen("makeupheight")        registerdirect("MakeupHeight",         function() return getdimen(d_makeupheight)        * factor end)
+    local d_makeupwidth         = isdimen("makeupwidth")         registerdirect("MakeupWidth",          function() return getdimen(d_makeupwidth)         * factor end)
+    local d_topheight           = isdimen("topheight")           registerdirect("TopHeight",            function() return getdimen(d_topheight)           * factor end)
+    local d_topdistance         = isdimen("topdistance")         registerdirect("TopDistance",          function() return getdimen(d_topdistance)         * factor end)
+    local d_headerheight        = isdimen("headerheight")        registerdirect("HeaderHeight",         function() return getdimen(d_headerheight)        * factor end)
+    local d_headerdistance      = isdimen("headerdistance")      registerdirect("HeaderDistance",       function() return getdimen(d_headerdistance)      * factor end)
+    local d_textheight          = isdimen("textheight")          registerdirect("TextHeight",           function() return getdimen(d_textheight)          * factor end)
+    local d_footerdistance      = isdimen("footerdistance")      registerdirect("FooterDistance",       function() return getdimen(d_footerdistance)      * factor end)
+    local d_footerheight        = isdimen("footerheight")        registerdirect("FooterHeight",         function() return getdimen(d_footerheight)        * factor end)
+    local d_bottomdistance      = isdimen("bottomdistance")      registerdirect("BottomDistance",       function() return getdimen(d_bottomdistance)      * factor end)
+    local d_bottomheight        = isdimen("bottomheight")        registerdirect("BottomHeight",         function() return getdimen(d_bottomheight)        * factor end)
+    local d_leftedgewidth       = isdimen("leftedgewidth")       registerdirect("LeftEdgeWidth",        function() return getdimen(d_leftedgewidth)       * factor end)
+    local d_leftedgedistance    = isdimen("leftedgedistance")    registerdirect("LeftEdgeDistance",     function() return getdimen(d_leftedgedistance)    * factor end)
+    local d_leftmarginwidth     = isdimen("leftmarginwidth")     registerdirect("LeftMarginWidth",      function() return getdimen(d_leftmarginwidth)     * factor end)
+    local d_leftmargindistance  = isdimen("leftmargindistance")  registerdirect("LeftMarginDistance",   function() return getdimen(d_leftmargindistance)  * factor end)
+    local d_textwidth           = isdimen("textwidth")           registerdirect("TextWidth",            function() return getdimen(d_textwidth)           * factor end)
+    local d_rightmargindistance = isdimen("rightmargindistance") registerdirect("RightMarginDistance",  function() return getdimen(d_rightmargindistance) * factor end)
+    local d_rightmarginwidth    = isdimen("rightmarginwidth")    registerdirect("RightMarginWidth",     function() return getdimen(d_rightmarginwidth)    * factor end)
+    local d_rightedgedistance   = isdimen("rightedgedistance")   registerdirect("RightEdgeDistance",    function() return getdimen(d_rightedgedistance)   * factor end)
+    local d_rightedgewidth      = isdimen("rightedgewidth")      registerdirect("RightEdgeWidth",       function() return getdimen(d_rightedgewidth)      * factor end)
 
-registerdirect("RealPageNumber",       function() return getcount("realpageno")                    end)
-registerdirect("LastPageNumber",       function() return getcount("lastpageno")                    end)
+end
 
-registerdirect("PageNumber",           function() return getcount("userpageno")                    end)
-registerdirect("NOfPages",             function() return getcount("lastpageno")                    end)
+do
 
-registerdirect("SubPageNumber",        function() return getcount("subpageno")                     end)
-registerdirect("NOfSubPages",          function() return getcount("lastsubpageno")                 end)
+    local onrightpage = structures.pages.on_right
 
-registerdirect("CurrentColumn",        function() return getcount("mofcolumns")                    end)
-registerdirect("NOfColumns",           function() return getcount("nofcolumns")                    end)
+    registerdirect("InnerMarginDistance",  function() return getdimen(onrightpage() and d_leftmargindistance  or d_rightmargindistance) * factor end)
+    registerdirect("InnerMarginWidth",     function() return getdimen(onrightpage() and d_leftmarginwidth     or d_rightmarginwidth   ) * factor end)
+    registerdirect("OuterMarginDistance",  function() return getdimen(onrightpage() and d_rightmargindistance or d_leftmargindistance ) * factor end)
+    registerdirect("OuterMarginWidth",     function() return getdimen(onrightpage() and d_rightmarginwidth    or d_leftmarginwidth    ) * factor end)
+    registerdirect("InnerEdgeDistance",    function() return getdimen(onrightpage() and d_leftmargindistance  or d_rightmargindistance) * factor end)
+    registerdirect("InnerEdgeWidth",       function() return getdimen(onrightpage() and d_leftmarginwidth     or d_rightmarginwidth   ) * factor end)
+    registerdirect("OuterEdgeDistance",    function() return getdimen(onrightpage() and d_rightedgedistance   or d_leftedgedistance   ) * factor end)
+    registerdirect("OuterEdgeWidth",       function() return getdimen(onrightpage() and d_rightedgewidth      or d_leftedgewidth      ) * factor end)
 
-registerdirect("BaseLineSkip",         function() return get     ("baselineskip",true)    * factor end)
-registerdirect("LineHeight",           function() return getdimen("lineheight")           * factor end)
-registerdirect("BodyFontSize",         function() return getdimen("bodyfontsize")         * factor end)
+end
 
-registerdirect("TopSkip",              function() return get     ("topskip",true)         * factor end)
-registerdirect("StrutHeight",          function() return getdimen("strutht")              * factor end)
-registerdirect("StrutDepth",           function() return getdimen("strutdp")              * factor end)
+do
 
-registerdirect("CurrentWidth",         function() return get     ("hsize")                * factor end)
-registerdirect("CurrentHeight",        function() return get     ("vsize")                * factor end)
+    local d_pagebackgroundoffset = isdimen("pagebackgroundoffset") registerdirect("PageOffset",           function() return getdimen(d_pagebackgroundoffset) * factor end)
+    local d_pagebackgrounddepth  = isdimen("pagebackgrounddepth")  registerdirect("PageDepth",            function() return getdimen(d_pagebackgrounddepth)  * factor end)
+    local c_layoutcolumns        = iscount("layoutcolumns")        registerdirect("LayoutColumns",        function() return getcount(c_layoutcolumns)                 end)
+    local d_layoutcolumndistance = isdimen("layoutcolumndistance") registerdirect("LayoutColumnDistance", function() return getdimen(d_layoutcolumndistance) * factor end)
+    local d_layoutcolumnwidth    = isdimen("layoutcolumnwidth")    registerdirect("LayoutColumnWidth",    function() return getdimen(d_layoutcolumnwidth)    * factor end)
+    local d_spinewidth           = isdimen("spinewidth")           registerdirect("SpineWidth",           function() return getdimen(d_spinewidth)           * factor end)
+    local d_paperbleed           = isdimen("paperbleed")           registerdirect("PaperBleed",           function() return getdimen(d_paperbleed)           * factor end)
 
-registerdirect("EmWidth",              function() return emwidths [false]                 * factor end)
-registerdirect("ExHeight",             function() return exheights[false]                 * factor end)
+end
 
-registerdirect("HSize",                function() return get     ("hsize")                * factor end)
-registerdirect("VSize",                function() return get     ("vsize")                * factor end)
-registerdirect("LastPageNumber",       function() return getcount("lastpageno")                    end)
+do
 
-registerdirect("OverlayWidth",         function() return getdimen("d_overlay_width")      * factor end)
-registerdirect("OverlayHeight",        function() return getdimen("d_overlay_height")     * factor end)
-registerdirect("OverlayDepth",         function() return getdimen("d_overlay_depth")      * factor end)
-registerdirect("OverlayLineWidth",     function() return getdimen("d_overlay_linewidth")  * factor end)
-registerdirect("OverlayOffset",        function() return getdimen("d_overlay_offset")     * factor end)
-registerdirect("OverlayRegion",        function() return getmacro("m_overlay_region")              end)
---------------("CurrentLayout",        function() return getmacro("currentlayout")                 end)
+    local c_realpageno    = getcount("realpageno")    registerdirect("RealPageNumber", function() return getcount(c_realpageno)    end)
+    local c_lastpageno    = getcount("lastpageno")    registerdirect("LastPageNumber", function() return getcount(c_lastpageno)    end)
 
--- registerscript("PageFraction",      function() return mpboolean(page_fraction     ()) end)
--- registerscript("OnRightPage",       function() return mpboolean(on_right_page     ()) end)
--- registerscript("OnOddPage",         function() return mpboolean(is_odd_page       ()) end)
--- registerscript("InPageBody",        function() return mpboolean(in_body_page      ()) end)
+    local c_userpageno    = getcount("userpageno")    registerdirect("PageNumber",     function() return getcount(c_userpageno)    end)
+    local c_lastpageno    = getcount("lastpageno")    registerdirect("NOfPages",       function() return getcount(c_lastpageno)    end)
 
-registerdirect("PageFraction",         function() return page_fraction     () end)
-registerdirect("OnRightPage",          function() return on_right_page     () end)
-registerdirect("OnOddPage",            function() return is_odd_page       () end)
-registerdirect("InPageBody",           function() return in_body_page      () end)
-registerdirect("LastChangedLayoutPage",function() return getcount("c_page_layouts_changed") end)
-registerdirect("SwapMarginDimensions", function() token.expandmacro("swapmargindimensions") end)
+    local c_subpageno     = getcount("subpageno")     registerdirect("SubPageNumber",  function() return getcount(c_subpageno)     end)
+    local c_lastsubpageno = getcount("lastsubpageno") registerdirect("NOfSubPages",    function() return getcount(c_lastsubpageno) end)
 
-registerdirect("PageFraction",         page_fraction     )
-registerdirect("OnRightPage",          on_right_page     )
-registerdirect("OnOddPage",            is_odd_page       )
-registerdirect("InPageBody",           in_body_page      )
--- registerdirect("LayoutHasChanged",     layout_has_changed)
+    local c_mofcolumns    = getcount("mofcolumns")    registerdirect("CurrentColumn",  function() return getcount(c_mofcolumns)    end)
+    local c_nofcolumns    = getcount("nofcolumns")    registerdirect("NOfColumns",     function() return getcount(c_nofcolumns)    end)
 
-registerdirect("defaultcolormodel",    defaultcolormodel)
+end
 
--- see node-rul.*
+do
 
--- offset is a multiplier
--- factor is the amount
+    registerdirect("BaseLineSkip",  function() return get("baselineskip",true) * factor end)
+    registerdirect("TopSkip",       function() return get("topskip",true)      * factor end)
+    registerdirect("CurrentWidth",  function() return get("hsize")             * factor end)
+    registerdirect("CurrentHeight", function() return get("vsize")             * factor end)
+    registerdirect("HSize",         function() return get("hsize")             * factor end)
+    registerdirect("VSize",         function() return get("vsize")             * factor end)
 
-registerdirect("RuleWidth",     function() return getdimen("d_rule_width")  * factor end)
-registerdirect("RuleHeight",    function() return getdimen("d_rule_height") * factor end)
-registerdirect("RuleDepth",     function() return getdimen("d_rule_depth")  * factor end)
-registerdirect("RuleH",         function() return getdimen("d_rule_h")      * factor end)
-registerdirect("RuleV",         function() return getdimen("d_rule_v")      * factor end)
-registerdirect("RuleThickness", function() return getdimen("d_rule_line")   * factor end)
-registerdirect("RuleOffset",    function() return getdimen("d_rule_offset") / 65536 end)
--- registerdirect("RuleOffset",    function() return getdimen("d_rule_offset") * factor end)
-registerdirect("RuleDirection", function() return getmacro("c_rule_direction")       end)
--- registerdirect("RuleFactor",    function() print(getmacro("m_rule_factor")) return (tonumber(getmacro("m_rule_factor")) or 0) * factor     end)
-registerdirect("RuleFactor",    function() return getdimen("d_rule_factor") * factor end)
-registerdirect("RuleOption",    function() return getmacro("m_rule_option")          end)
---------------("RuleColor",     function() return getmacro("m_rule_color")           end)
-registerscript("RuleColor",     function() return getmacro("m_rule_color")           end)
+    local emwidths  = fonts.hashes.emwidths
+    local exheights = fonts.hashes.exheights
+
+    registerdirect("EmWidth",  function() return emwidths [false] * factor end)
+    registerdirect("ExHeight", function() return exheights[false] * factor end)
+
+end
+
+do
+
+    local d_lineheight   = isdimen("lineheight")   registerdirect("LineHeight",   function() return getdimen(d_lineheight)   * factor end)
+    local d_bodyfontsize = isdimen("bodyfontsize") registerdirect("BodyFontSize", function() return getdimen(d_bodyfontsize) * factor end)
+    local d_strutht      = isdimen("strutht")      registerdirect("StrutHeight",  function() return getdimen(d_strutht)      * factor end)
+    local d_strutdp      = isdimen("strutdp")      registerdirect("StrutDepth",   function() return getdimen(d_strutdp)      * factor end)
+
+end
+
+do
+
+    local d_overlay_width     = isdimen("d_overlay_width")     registerdirect("OverlayWidth",     function() return getdimen(d_overlay_width)     * factor end)
+    local d_overlay_height    = isdimen("d_overlay_height")    registerdirect("OverlayHeight",    function() return getdimen(d_overlay_height)    * factor end)
+    local d_overlay_depth     = isdimen("d_overlay_depth")     registerdirect("OverlayDepth",     function() return getdimen(d_overlay_depth)     * factor end)
+    local d_overlay_linewidth = isdimen("d_overlay_linewidth") registerdirect("OverlayLineWidth", function() return getdimen(d_overlay_linewidth) * factor end)
+    local d_overlay_offset    = isdimen("d_overlay_offset")    registerdirect("OverlayOffset",    function() return getdimen(d_overlay_offset)    * factor end)
+                                                               registerdirect("OverlayRegion",    function() return getmacro("m_overlay_region")              end)
+                                                               --------------("CurrentLayout",    function() return getmacro("currentlayout")                 end)
+
+end
+
+do
+
+    registerdirect("LastChangedLayoutPage",function() return getcount("c_page_layouts_changed") end)
+    registerdirect("SwapMarginDimensions", function() token.expandmacro("swapmargindimensions") end)
+
+    registerdirect("PageFraction",     structures.pages.fraction)
+    registerdirect("OnRightPage",      structures.pages.on_right)
+    registerdirect("OnOddPage",        structures.pages.is_odd)
+    registerdirect("InPageBody",       structures.pages.in_body)
+    --------------("LayoutHasChanged", structures.pages.has_changed)
+
+end
+
+do
+
+    local function defaultcolormodel() -- can be helper
+        local colormethod = getcount("MPcolormethod")
+        return (colormethod == 0 or colormethod == 1) and 1 or 3
+    end
+
+    registerdirect("defaultcolormodel", defaultcolormodel)
+
+end
+
+do
+
+    -- see node-rul.*
+    -- offset is a multiplier
+    -- factor is the amount
+
+    -- TODO: dimensions are yet undefined so we will move this
+
+    registerdirect("RuleWidth",     function() return getdimen("d_rule_width")  * factor end)
+    registerdirect("RuleHeight",    function() return getdimen("d_rule_height") * factor end)
+    registerdirect("RuleDepth",     function() return getdimen("d_rule_depth")  * factor end)
+    registerdirect("RuleH",         function() return getdimen("d_rule_h")      * factor end)
+    registerdirect("RuleV",         function() return getdimen("d_rule_v")      * factor end)
+    registerdirect("RuleThickness", function() return getdimen("d_rule_line")   * factor end)
+    registerdirect("RuleOffset",    function() return getdimen("d_rule_offset") / 65536  end) -- not factor
+    registerdirect("RuleDirection", function() return getmacro("c_rule_direction")       end)
+    registerdirect("RuleFactor",    function() return getdimen("d_rule_factor") * factor end)
+    registerdirect("RuleOption",    function() return getmacro("m_rule_option")          end)
+    registerscript("RuleColor",     function() return getmacro("m_rule_color")           end)
+
+end
 
 -- see typo-ada.*
 
-registerdirect("AdaptiveWidth",     function() return getdimen("d_adaptive_width")  * factor end)
-registerdirect("AdaptiveHeight",    function() return getdimen("d_adaptive_height") * factor end)
-registerdirect("AdaptiveDepth",     function() return getdimen("d_adaptive_depth")  * factor end)
-registerdirect("AdaptiveThickness", function() return getdimen("d_adaptive_line")   * factor end)
-registerdirect("AdaptiveColor",     function() return getmacro("m_adaptive_color")           end)
+do
+
+    local d_adaptive_width  = isdimen("d_adaptive_width")  registerdirect("AdaptiveWidth",     function() return d_adaptive_width  * factor end)
+    local d_adaptive_height = isdimen("d_adaptive_height") registerdirect("AdaptiveHeight",    function() return d_adaptive_height * factor end)
+    local d_adaptive_depth  = isdimen("d_adaptive_depth")  registerdirect("AdaptiveDepth",     function() return d_adaptive_depth  * factor end)
+    local d_adaptive_line   = isdimen("d_adaptive_line")   registerdirect("AdaptiveThickness", function() return d_adaptive_line   * factor end)
+                                                           registerdirect("AdaptiveColor",     function() return getmacro("m_adaptive_color") end)
+
+end

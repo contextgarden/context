@@ -21,12 +21,14 @@
 
 % Allocation:
 
-\ifdefined\realpageno  \else \permanent\countdef\realpageno \zerocount  \fi \realpageno \plusone
-\ifdefined\userpageno  \else \permanent\countdef\userpageno \plusone    \fi \userpageno \plusone
-\ifdefined\subpageno   \else \permanent\countdef\subpageno  \plustwo    \fi \subpageno  \plusone % was \zerocount but that doesn't work well with bytext
-\ifdefined\arrangeno   \else \permanent\countdef\arrangeno  \plusthree  \fi \arrangeno  \zerocount % !
-\ifdefined\pagenoshift \else \permanent\countdef\pagenoshift\plusfour   \fi \pagenoshift\zerocount % !
-\ifdefined\lastpageno  \else \permanent\countdef\lastpageno \plusfive   \fi \lastpageno \zerocount % !
+\ifdefined\realpageno    \else \permanent\countdef\realpageno    \zerocount  \fi \realpageno    \plusone
+\ifdefined\userpageno    \else \permanent\countdef\userpageno    \plusone    \fi \userpageno    \plusone
+\ifdefined\subpageno     \else \permanent\countdef\subpageno     \plustwo    \fi \subpageno     \plusone % was \zerocount but that doesn't work well with bytext
+\ifdefined\arrangeno     \else \permanent\countdef\arrangeno     \plusthree  \fi \arrangeno     \zerocount % !
+\ifdefined\pagenoshift   \else \permanent\countdef\pagenoshift   \plusfour   \fi \pagenoshift   \zerocount % !
+\ifdefined\lastpageno    \else \permanent\countdef\lastpageno    \plusfive   \fi \lastpageno    \zerocount % !
+\ifdefined\lastuserpageno\else \permanent\countdef\lastuserpageno\plussix    \fi \lastuserpageno\zerocount % !
+\ifdefined\lastsubpageno \else \permanent\countdef\lastsubpageno \plusseven  \fi \lastsubpageno \zerocount % !
 
 \ifdefined\pageno \else \aliased\let\pageno\userpageno \fi
 
@@ -101,7 +103,9 @@
     \strc_counters_set\s!realpage\realpageno
     \strc_counters_set\s!userpage\userpageno
     \strc_counters_set\s!subpage \subpageno
-    \lastpageno\lastcountervalue[\s!realpage]\relax
+    \lastpageno    \lastcountervalue[\s!realpage]\relax
+    \lastuserpageno\lastcountervalue[\s!userpage]\relax
+    \lastsubpageno \lastcountervalue[\s!subpage ]\relax
 \to \everyinitializepagecounters
 
 \aliased\let\setuppagenumber\setupuserpagenumber

@@ -40,8 +40,6 @@ local texset             = tex.set
 local getspeciallist     = nodes.nuts.getspeciallist
 local setspeciallist     = nodes.nuts.setspeciallist
 
-local texgetdimen        = tex.getdimen
-
 local nodes              = nodes
 local nodeidstostring    = nodes.idstostring
 local nodepool           = nodes.pool

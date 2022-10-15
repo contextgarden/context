@@ -871,11 +871,11 @@ local gluewidth = effectiveglue(current,this_box,true)
                                         local save_h = cur_h
                                         if pos_r == righttoleft_code then
                                             cur_h = ref_h - shipbox_h + cur_h
-                                            cur_h = width * (cur_h / width)
+                                            cur_h = width * (cur_h // width)
                                             cur_h = ref_h - shipbox_h - cur_h
                                         else
                                             cur_h = ref_h - shipbox_h - cur_h
-                                            cur_h = width * (cur_h / width)
+                                            cur_h = width * (cur_h // width)
                                             cur_h = ref_h - shipbox_h - cur_h
                                         end
                                         if cur_h < save_h then

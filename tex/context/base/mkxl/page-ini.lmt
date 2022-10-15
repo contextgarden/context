@@ -34,10 +34,12 @@ local active       = false
 
 local trace        = false  trackers.register("pages.mark",function(v) trace = v end)
 
+local c_realpageno = tex.iscount("realpageno")
+
 function pages.mark(name,list,settings)
     active = true
     --
-    local realpage = texgetcount("realpageno")
+    local realpage = texgetcount(c_realpageno)
     if type(settings) == "string" then
         settings = settings_to_hash(settings)
     end
@@ -111,7 +113,7 @@ end
 
 local function marked(name)
     if active then
-        local realpage = texgetcount("realpageno")
+        local realpage = texgetcount(c_realpageno)
         if last ~= 0 then
             for i=last,realpage-1 do
     --     print(last)
@@ -132,7 +134,7 @@ end
 
 local function markedparameter(name,key)
     if active then
-        local pagedata = rawget(data,texgetcount("realpageno"))
+        local pagedata = rawget(data,texgetcount(c_realpageno))
         if pagedata then
             pagedata = pagedata[name]
             if pagedata then
@@ -223,7 +225,7 @@ local function autopageaction()
     if active then
         local nofauto = #autolist
         if nofauto > 0 then
-            local realpage = texgetcount("realpageno")
+            local realpage = texgetcount(c_realpageno)
             for i=1,nofauto do
                 local entry    = autolist[i]
                 local names    = entry[1]
@@ -254,7 +256,7 @@ local function stopmarked()
     local nofauto = #autolist
     if nofauto > 0 then
         if not texlists.pagehead then
-            local realpage = texgetcount("realpageno")
+            local realpage = texgetcount(c_realpageno)
             for i=1,nofauto do
                 local entry = autolist[i]
                 local names = entry[1]

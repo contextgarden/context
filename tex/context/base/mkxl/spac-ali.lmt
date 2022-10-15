@@ -31,6 +31,7 @@ local nextlist         = nuts.traversers.list
 local new_stretch      = nuts.pool.stretch
 
 local a_realign        = attributes.private("realign")
+local c_realpageno     = tex.iscount("realpageno")
 
 local texsetattribute  = tex.setattribute
 local texgetcount      = tex.getcount
@@ -103,7 +104,7 @@ local function handler(head,leftpage,realpageno)
 end
 
 function alignments.handler(head)
-    return handler(head,isleftpage(),texgetcount("realpageno"))
+    return handler(head,isleftpage(),texgetcount(c_realpageno))
 end
 
 local enabled = false

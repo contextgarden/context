@@ -468,7 +468,7 @@ end)
 local function flushdestination(specification)
     local names = specification.names
     local view  = specification.view
-    local r     = pdfpagereference(c_realpageno)
+    local r     = pdfpagereference(texgetcount(c_realpageno))
     if (references.innermethod ~= v_name) and (view == defaultview or not view or view == "") then
         r = pagedestinations[r]
     else

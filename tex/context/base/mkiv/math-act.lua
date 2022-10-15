@@ -234,7 +234,7 @@ sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweakaft
 
 -- a couple of predefined tweaks:
 
-local tweaks       = { }
+local tweaks       = { subsets = { } }
 mathematics.tweaks = tweaks
 
 -- function tweaks.fixbadprime(target,original)
