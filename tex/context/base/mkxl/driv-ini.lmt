@@ -30,6 +30,8 @@ local shipout           = tex.shipout
 local texgetbox         = tex.getbox
 local texgetcount       = tex.getcount
 
+local c_realpageno      = tex.iscount("realpageno")
+
 function converters.engine(driver,boxnumber,mode,number,specification)
     return shipout(boxnumber)
 end
@@ -204,7 +206,7 @@ function drivers.convert(boxnumber)
     if currentinstance then
         callbacks.functions.start_page_number()
         starttiming(drivers)
-        convert(currentinstance,boxnumber,texgetcount("realpageno"))
+        convert(currentinstance,boxnumber,texgetcount(c_realpageno))
         stoptiming(drivers)
         callbacks.functions.stop_page_number()
     end

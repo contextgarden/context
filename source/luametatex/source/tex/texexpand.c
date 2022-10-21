@@ -684,7 +684,7 @@ inline static halfword tex_aux_get_cs_name(void)
     if (tex_aux_collect_cs_tokens(&p, &n)) {
         /*tex Look up the characters of list |r| in the hash table, and set |cur_cs|. */
         int siz;
-        char *s = tex_tokenlist_to_tstring(h, 1, &siz, 0, 0, 0);
+        char *s = tex_tokenlist_to_tstring(h, 1, &siz, 0, 0, 0, 0);
         cur_cs = (siz > 0) ? tex_string_locate((char *) s, siz, 1) : null_cs;
     } else {
         tex_aux_complain_missing_csname();

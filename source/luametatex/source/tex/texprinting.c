@@ -217,9 +217,9 @@ void tex_print_char(int s)
 
     The first 256 entries above the 17th unicode plane are used for a special trick: when \TEX\ has
     to print items in that range, it will instead print the character that results from substracting
-    0x110000 from that value. This allows byte-oriented output to things like |\specials|.
-
-    This feature will disappear.
+    0x110000 from that value. This allows byte-oriented output to things like |\specials|. We dropped 
+    this feature because it was never used (we used it as part of experiments with \LUATEX). The old 
+    code branches can be found in the repository. 
 
 */
 
@@ -245,36 +245,11 @@ static void tex_aux_uprint(int s)
         tex_print_char(0xE0 + (s / 0x1000));
         tex_print_char(0x80 + ((s % 0x1000) / 0x40));
         tex_print_char(0x80 + ((s % 0x1000) % 0x40));
-    } else if (s >= 0x110000) {
-        int c = s - 0x110000;
-        if (c >= 256) {
-            tex_formatted_warning("print", "bad raw byte to print (c=%d), skipped",c);
-        } else {
-            tex_print_char(c);
-        }
     } else {
         tex_print_char(0xF0 + (s / 0x40000));
         tex_print_char(0x80 + ((s % 0x40000) / 0x1000));
         tex_print_char(0x80 + (((s % 0x40000) % 0x1000) / 0x40));
         tex_print_char(0x80 + (((s % 0x40000) % 0x1000) % 0x40));
-    }
-}
-
-static void tex_aux_lprint(lstring *ss) {
-    /*tex current character code position */
-    unsigned char *j = ss->s;
-    unsigned char *l = j + ss->l;
-    while (j < l) {
-        /*tex We don't bother checking the last two bytes explicitly */
-        /* 0x110000 in utf=8: 0xF4 0x90 0x80 0x80 */
-        if ((j < l - 4) && (*j == 0xF4) && (*(j + 1) == 0x90)) {
-            int c = (*(j + 2) - 128) * 64 + (*(j + 3) - 128);
-            tex_print_char(c);
-            j = j + 4;
-        } else {
-            tex_print_char(*j);
-            ++j;
-        }
     }
 }
 
@@ -291,7 +266,10 @@ void tex_print_tex_str(int s)
     } else if (lmt_print_state.selector == new_string_selector_code) {
         tex_append_string(str_string(s), (unsigned) str_length(s));
     } else {
-        tex_aux_lprint(&str_lstring(s));
+        unsigned char *j = str_string(s);
+        for (unsigned i = 0; i < str_length(s); i++) {
+            tex_print_char(j[i]);
+        }
     }
 }
 
@@ -453,7 +431,7 @@ void tex_print_tex_str_esc(strnumber s)
 {
     /*tex Set variable |c| to the current escape character: */
     int c = escape_char_par;
-    if (c >= 0 && c < 0x110000) {
+    if (c >= 0) {
         tex_print_tex_str(c);
     }
     if (s) {
@@ -467,7 +445,7 @@ void tex_print_str_esc(const char *s)
 {
     /*tex Set variable |c| to the current escape character: */
     int c = escape_char_par;
-    if (c >= 0 && c < 0x110000) {
+    if (c >= 0) {
         tex_print_tex_str(c);
     }
     if (s) {

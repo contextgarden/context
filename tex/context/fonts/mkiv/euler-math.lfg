@@ -1,4 +1,5 @@
--- this file might go away and is for experiments only
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
 
 return {
     name = "euler-math",
@@ -8,26 +9,119 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            DelimiterPercent                 =  901,
-            DelimiterShortfall               =  500,
+            -- DelimiterPercent                 =  90,
+            -- DelimiterShortfall               =  500,
+            -- taken from pagella:
+            NoLimitSupFactor                =    0,
+            NoLimitSubFactor                =  900,
+            AccentTopShiftUp                =   10,
+            FlattenedAccentTopShiftUp       =   10,
+         -- AccentExtendMargin              =   50,
+         -- AccentBaseHeight                =    0,
+            AccentBaseDepth                 =   80,
+         -- SpaceAfterScript                =   0,
+         -- SpaceAfterScript                =   30,
+            RadicalDegreeBottomRaisePercent =   60,
+            RadicalKernAfterDegree          = -500,
+            RadicalRuleThickness            =   60, --   60 in font
+            DelimiterPercent                =   90,
+            DelimiterShortfall              =  400,
+            DisplayOperatorMinHeight        = 1800, -- 1500 in font
+            PrimeRaisePercent               =   75, --   50 default
+            PrimeRaiseComposedPercent       =   10, --   25 default
+         -- RadicalKernAfterExtensible      =    0, --    0 default
+         -- RadicalKernBeforeExtensible     =    0, --    0 default
+
         },
         tweaks = {
             aftercopying = {
                 {
+                    tweak    = "version",
+                    expected = "Version 000.002 ",
+                },
+                {
                     tweak   = "fixprimes",
-                    factor  = 0.9,
+                    factor  =  1.2,
                     smaller = true,
-                    scale   = 0.60,
-                    fake    = 0.75,
+                    scale   = 0.80,
+                    fake    = 0.80,
+                },
+                {
+                    tweak    = "replacealphabets",
+                    feature  = "pagellaovereuler",
+                    filename = "texgyrepagella-math.otf",
+                    list    = {
+                    -- { source = { first = 0x02100, last = 0x0210D } }, -- no 0x2210E
+                    -- { source = { first = 0x0210F, last = 0x02BFF } },
+                    { source = { first = 0x02100, last = 0x02BFF } },
+                    { source = { first = 0x1D400, last = 0x1D7FF } },
+                    { source = { first = 0x1D538, last = 0x1D550 } },
+                    },
+                },
+                {
+                    tweak = "addmirrors",
+                },
+                presets.scripttocalligraphic { },
+                presets.rsfstoscript         { },
+                presets.rsfsuprighttoscript  { },
+                presets.moderntocalligraphic { },
+                presets.eulertocalligraphic  { },
+                presets.xitsarabic           { rscale  = 1 },
+                presets.fallbacks            { },
+                presets.moveitalics          { correct = true },
+                presets.moveitalics          { correct = true, letters = true },
+                presets.moveintegrals        { },
+                presets.wipeitalics          { },
+                {
+                    tweak   = "fixoldschool",
+                },
+        -- add the accent fixes
+        -- fixslashes?
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "addscripts",
+                },
+                {
+                    tweak = "addprivates",
+                },
+                {
+                    tweak = "accentdimensions",
+                },
+                {
+                    tweak = "addrules",
+                },
+                {
+                    tweak = "addarrows",
+                },
+                {
+                    tweak   = "addbars",
+                    advance = 0.2,
+                },
+                {
+                    tweak = "addactuarian",
+                },
+                {
+                    tweak = "addequals",
+                },
+                {
+                    tweak   = "addfourier",
+                    variant = 1,
+                },
+                -- this is the mkiv section
+                {
+                    tweak   = "emulatelmtx",
+                    feature = "emulatelmtx",
+                    comment = "this is for mkiv",
                 },
             },
         },
         bigslots = {
             1, 3, 5, 7
         },
+        alternates = {
+            dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
+        },
     },
-
-
 }
-
-

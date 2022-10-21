@@ -82,7 +82,7 @@ function typesetters.italics.forcevariant(variant)
     forcedvariant = variant
 end
 
--- We use the same key as the tex font handler. So, if a valua has already be set, we
+-- We use the same key as the tex font handler. So, if a value has already be set, we
 -- use that one.
 
 local function setitalicinfont(font,char)
@@ -108,6 +108,7 @@ local function setitalicinfont(font,char)
                     end
                 end
             end
+            -- we don't want to do this each time so we also set zero here
             if trace_italics then
                 report_italics("setting italic correction of %C of font %a to %p",char,font,italic)
             end

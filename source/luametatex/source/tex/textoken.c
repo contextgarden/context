@@ -2820,7 +2820,7 @@ void tex_run_convert_tokens(halfword code)
              /* halfword result = tex_scan_toks_expand(0, NULL, code == lua_token_string_code); */
                 lmt_token_state.in_lua_escape = 1;
                 escape_char_par = '\\';
-                str.s = (unsigned char *) tex_tokenlist_to_tstring(result, 0, &length, 0, 0, 0);
+                str.s = (unsigned char *) tex_tokenlist_to_tstring(result, 0, &length, 0, 0, 0, 0);
                 str.l = (unsigned) length;
                 lmt_token_state.in_lua_escape = saved_in_lua_escape;
                 escape_char_par = saved_escape_char;
@@ -3034,8 +3034,6 @@ static void tex_aux_append_uchar_to_buffer(int s)
         lmt_token_state.buffer[lmt_token_state.bufloc++] = (char) (0xE0 +  (s / 0x1000));
         lmt_token_state.buffer[lmt_token_state.bufloc++] = (char) (0x80 + ((s % 0x1000) / 0x40));
         lmt_token_state.buffer[lmt_token_state.bufloc++] = (char) (0x80 + ((s % 0x1000) % 0x40));
-    } else if (s >= 0x110000) {
-        lmt_token_state.buffer[lmt_token_state.bufloc++] = (char) (s - 0x11000);
     } else {
         lmt_token_state.buffer[lmt_token_state.bufloc++] = (char) (0xF0 +   (s / 0x40000));
         lmt_token_state.buffer[lmt_token_state.bufloc++] = (char) (0x80 +  ((s % 0x40000) / 0x1000));
@@ -3078,7 +3076,7 @@ static void tex_aux_append_esc_to_buffer(const char *s)
 
 /* make two versions: macro and not */
 
-char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamble, int nospace, int strip)
+char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamble, int nospace, int strip, int wipe)
 {
     if (pp) {
         /*tex We need to go beyond the reference. */
@@ -3100,6 +3098,8 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
             int min = 0;
             int max = lmt_token_memory_state.tokens_data.top;
             int skip = 0;
+            int tail = p; 
+            int count = 0;
             if (skippreamble) {
                 skip = get_token_parameters(pp);
             }
@@ -3210,7 +3210,8 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
                             if (txt  < 0 || txt  >= lmt_string_pool_state.string_pool_data.ptr) {
                                 tex_aux_append_str_to_buffer(error_string_nonexistent(36));
                             } else {
-                                char *sh = tex_makecstring(txt);
+                                int allocated = 0;
+                                char *sh = tex_makecstring(txt, &allocated);
                                 char *s = sh;
                                 if (tex_is_active_cs(txt)) {
                                     s = s + 3;
@@ -3219,7 +3220,7 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
                                         s++;
                                     }
                                 } else {
-                                    if (e >= 0 && e < 0x110000) {
+                                    if (e >= 0) {
                                         tex_aux_append_uchar_to_buffer(e);
                                     }
                                     while (*s) {
@@ -3230,10 +3231,14 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
                                         tex_aux_append_char_to_buffer(' ');
                                     }
                                 }
-                                lmt_memory_free(sh);
+                                if (allocated) {
+                                    lmt_memory_free(sh);    
+                                }
                             }
                         }
                     }
+                    tail = p; 
+                    ++count;
                     p = token_link(p);
                 }
             }
@@ -3251,7 +3256,14 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
             if (siz) {
                 *siz = lmt_token_state.bufloc;
             }
+            if (wipe) { 
+                tex_flush_token_list_head_tail(pp, tail, count);
+            }
             return lmt_token_state.buffer;
+        } else { 
+            if (wipe) {
+                 tex_put_available_token(pp);
+            }
         }
     }
     if (siz) {

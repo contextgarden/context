@@ -15,6 +15,18 @@
 
 \unprotect
 
+\newcount\scaledfontmode
+\newcount\scaledfontsize
+\newcount\lastfontid
+
+\newcount\c_font_future_glyph_scale
+\newcount\c_font_scaled_font_mode_saved
+\newcount\c_font_scaled_points
+
+\ifdefined\globalbodyfontsize \else \newdimen\globalbodyfontsize \fi
+\ifdefined\localbodyfontsize  \else \newdimen\localbodyfontsize  \fi
+\ifdefined\bodyfontsize       \else \newdimen\bodyfontsize       \fi
+
 \registerctxluafile{font-ini}{autosuffix}
 \registerctxluafile{font-log}{}
 \registerctxluafile{font-con}{autosuffix} % kind of early

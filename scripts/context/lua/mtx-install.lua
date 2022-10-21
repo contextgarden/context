@@ -618,6 +618,11 @@ function install.update()
     end
     run("%s --make en", contextbin)
 
+    -- in case we also install luatex:
+
+    run("%s --luatex --generate",contextbin)
+    run("%s --luatex --make en", contextbin)
+
     -- in calling script: update mtxrun.exe and mtxrun.lua
 
     report("")

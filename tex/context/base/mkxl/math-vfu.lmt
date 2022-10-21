@@ -651,6 +651,7 @@ local function copy_glyph(main,target,original,unicode,slot)
                     kerns     = olddata.kerns,
                     mathkerns = olddata.mathkerns,
                     tounicode = olddata.tounicode,
+                    smaller   = olddata.smaller,
                     commands  = { { "slot", slot, nextglyph } },
                 }
                 local newnextglyph = addprivate(main,formatters["M-N-%H"](nextglyph),newnextdata)
@@ -703,7 +704,12 @@ local function copy_glyph(main,target,original,unicode,slot)
                 vvi.glyph = addprivate(main,formatters["M-V-%H"](oldglyph),newdata)
             end
         end
-        return newdata
+        local smaller = olddata.smaller
+        if smaller then
+            local smallerdata = copy_glyph(main,target,original,smaller,slot)
+            glyphdata.smaller = addprivate(main,formatters["M-S-%H"](smaller),smallerdata)
+        end
+        return glyphdata
     end
 end
 

@@ -7,10 +7,51 @@ return {
     mathematics = {
         tweaks = {
             presets = {
-                matheulercalligraphic = function(parameters)
+                fallbacks = function(parameters)
+                    return {
+                        tweak = "fallbacks",
+                    }
+                end,
+                scripttocalligraphic = function(parameters)
                     return {
                         tweak   = "replacealphabets",
-                        feature = "matheulercalligraphic",
+                        feature = "scripttocalligraphic",
+                        list    = {
+                            {
+                                source   = "uppercasescript",
+                                target   = "uppercasecalligraphic",
+                            },
+                            {
+                                source   = "uppercaseboldscript",
+                                target   = "uppercaseboldcalligraphic",
+                            },
+                        },
+                    }
+                end,
+                moderntocalligraphic = function(parameters)
+                    return {
+                        tweak   = "replacealphabets",
+                        feature = "moderntocalligraphic",
+                        list    = {
+                            {
+                                source   = "uppercasescript",
+                                target   = "uppercasecalligraphic",
+                                filename = "latinmodern-math.otf",
+                                rscale   = parameters.rscale,
+                            },
+                            {
+                                source   = "uppercaseboldscript",
+                                target   = "uppercaseboldcalligraphic",
+                                filename = "latinmodern-math.otf",
+                                rscale   = parameters.rscale,
+                            },
+                        },
+                    }
+                end,
+                eulertocalligraphic = function(parameters)
+                    return {
+                        tweak   = "replacealphabets",
+                        feature = "eulertocalligraphic",
                         list    = {
                             {
                                 source   = "uppercasescript",
@@ -27,10 +68,30 @@ return {
                         },
                     }
                 end,
-                mathrsfscript = function(parameters)
+                rsfstoscript = function(parameters)
                     return {
                         tweak   = "replacealphabets",
-                        feature = "mathrsfscript",
+                        feature = "rsfstoscript",
+                        list    = {
+                            {
+                                source   = "uppercasescript",
+                                target   = "uppercasescript",
+                                filename = "ralphsmithsformalscript-companion.otf",
+                                rscale   = parameters.rscale,
+                            },
+                            {
+                                source   = "uppercaseboldscript",
+                                target   = "uppercaseboldscript",
+                                filename = "ralphsmithsformalscript-companion.otf",
+                                rscale   = parameters.rscale,
+                            },
+                        },
+                    }
+                end,
+                rsfsuprighttoscript = function(parameters)
+                    return {
+                        tweak   = "replacealphabets",
+                        feature = "rsfsuprighttoscript",
                         list    = {
                             {
                                 source   = "uppercasescript",
@@ -49,10 +110,10 @@ return {
                         },
                     }
                 end,
-                mathxitsarabic = function(parameters)
+                xitsarabic = function(parameters)
                     return {
                         tweak   = "replacealphabets",
-                        feature = "mathxitsarabic",
+                        feature = "xitsarabic",
                         list    = {
                             {
                                 source   = "arabicmathematicalalphabeticsymbols",
@@ -79,7 +140,8 @@ return {
                     return {
                         tweak   = "moveitalics",
                         correct = parameters.correct,
-                        list    = {
+                        list    = (parameters.all and "all") or (parameters.letters and "letters") or {
+                            --
                             "lowercasenormal",
                             "lowercaseitalic",
                             "lowercasebold",
@@ -88,6 +150,19 @@ return {
                             "lowercasegreekitalic",
                             "lowercasegreekbold",
                             "lowercasegreekbolditalic",
+                            "lowercaseboldfraktur",
+                            "lowercaseboldscript",
+                            "lowercasedoublestruck",
+                            "lowercasefraktur",
+                            "lowercasegreeksansserifbold",
+                            "lowercasegreeksansserifbolditalic",
+                            "lowercasemonospace",
+                            "lowercasesansserifbold",
+                            "lowercasesansserifbolditalic",
+                            "lowercasesansserifitalic",
+                            "lowercasesansserifnormal",
+                            "lowercasescript",
+                            --
                             "uppercasenormal",
                             "uppercaseitalic",
                             "uppercasebold",
@@ -96,8 +171,93 @@ return {
                             "uppercasegreekitalic",
                             "uppercasegreekbold",
                             "uppercasegreekbolditalic",
+                            "uppercaseboldfraktur",
+                            "uppercasebolditalic",
+                            "uppercaseboldscript",
+                            "uppercasedoublestruck",
+                            "uppercasefraktur",
+                            "uppercasegreeksansserifbold",
+                            "uppercasegreeksansserifbolditalic",
+                            "uppercasemonospace",
+                            "uppercasesansserifbold",
+                            "uppercasesansserifbolditalic",
+                            "uppercasesansserifitalic",
+                            "uppercasesansserifnormal",
+                            "uppercasescript",
+                            --
+                            "digitsbold",
+                            "digitsdoublestruck",
+                            "digitslatin",
+                            "digitsmonospace",
+                            "digitsnormal",
+                            "digitssansserifbold",
+                            "digitssansserifnormal",
+                            --
+                            -- We don't do these (one can use all=true) because now we can get
+                            -- more details about what gets italics.
+                            --
+                            -- "latinextendeda",
+                            -- "latinextendedadditional",
+                            -- "latinextendedb",
+                            -- "latinextendedc",
+                            -- "latinextendedd",
+                            -- "latinextendede",
+                            -- "latinextendedf",
+                            -- "latinextendedg",
+                            -- "latinsupplement",
+                            --
                             mathematics.tweaks.subsets.dotless,
                         }
+                    }
+                end,
+                moveintegrals = function(parameters)
+                    return {
+                        tweak  = "movelimits",
+                        factor = parameters.factor or 1,
+                        list   = mathematics.tweaks.subsets.integrals,
+                    }
+                end,
+                wipeitalics = function(parameters)
+                    return {
+                        tweak = "wipeitalics",
+                        all   = true,
+                    }
+                end,
+                wipeanchors = function(parameters)
+                    return {
+                        -- For upright alphabets, we unset the anchor. This means that accents are placed
+                        -- centered over the character. Should be on top.
+                        tweak = "wipeanchors",
+                        list = {
+                            "digitsbold",
+                            "digitsdoublestruck",
+                            "digitsmonospace",
+                            "digitsnormal",
+                            "digitssansserifbold",
+                            "digitssansserifnormal",
+                            "lowercasebold",
+                            "lowercaseboldfraktur",
+                            "lowercasedoublestruck",
+                            "lowercasefraktur",
+                            "lowercasegreekbold",
+                            "lowercasegreeknormal",
+                            "lowercasegreeksansserifbold",
+                            "lowercasemonospace",
+                            "lowercasenormal",
+                            "lowercasesansserifbold",
+                            "lowercasesansserifnormal",
+                            "uppercasebold",
+                            "uppercaseboldfraktur",
+                            "uppercasedoublestruck",
+                            "uppercasefraktur",
+                            "uppercasegreekbold",
+                            "uppercasegreeknormal",
+                            "uppercasegreeksansserifbold",
+                            "uppercasemonospace",
+                            "uppercasenormal",
+                            "uppercasesansserifbold",
+                            "uppercasesansserifnormal",
+                        },
                     }
                 end,
             },

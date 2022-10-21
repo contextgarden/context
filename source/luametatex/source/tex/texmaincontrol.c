@@ -1372,11 +1372,13 @@ static void tex_aux_run_after_something(void) {
                 } while (cur_cmd == spacer_cmd);
                 if (cur_cmd == left_brace_cmd) {
                     halfword source = tex_scan_toks_normal(1, NULL);
-                    if (source) {
-                        tex_save_for_after_group(token_link(source));
-                        token_link(source) = null;
+                    if (source) { 
+                        if (token_link(source)) {
+                            tex_save_for_after_group(token_link(source));
+                            token_link(source) = null;
+                        }
+                        tex_put_available_token(source);
                     }
-                    tex_flush_token_list(source);
                 } else {
                     tex_handle_error(
                         normal_error_type,
@@ -1394,10 +1396,11 @@ static void tex_aux_run_after_something(void) {
                 if (cur_cmd == left_brace_cmd) {
                     halfword source = tex_scan_toks_normal(1, NULL);
                     if (source) {
+                        /*tex Always, also when empty. */
                         lmt_main_control_state.after_tokens = token_link(source);
                         token_link(source) = null;
+                        tex_put_available_token(source);
                     }
-                    tex_flush_token_list(source);
                 } else {
                     tex_handle_error(
                         normal_error_type,
@@ -1422,7 +1425,7 @@ static void tex_aux_run_after_something(void) {
                             }
                             token_link(p) = token_link(source);
                             token_link(source) = null;
-                            tex_flush_token_list(source);
+                            tex_put_available_token(source);
                         } else {
                             update_tex_end_of_group(source);
                         }
@@ -4118,7 +4121,6 @@ static void tex_aux_set_shorthand_def(int a, int force)
                 {
                     mathcodeval mval = tex_scan_mathchar(tex_mathcode);
                     tex_define(a, p, mathspec_cmd, tex_new_math_spec(mval, tex_mathcode));
-                 // tex_define(a, p, math_char_given_cmd, math_old_packed_character(mval.class_value,mval.family_value,mval.character_value));
                     break;
                 }
             case math_dchar_def_code:
@@ -4126,14 +4128,12 @@ static void tex_aux_set_shorthand_def(int a, int force)
                     mathdictval dval = tex_scan_mathdict();
                     mathcodeval mval = tex_scan_mathchar(umath_mathcode);
                     tex_define(a, p, mathspec_cmd, tex_new_math_dict_spec(dval, mval, umath_mathcode));
-                 // tex_define(a, p, math_char_xgiven_cmd, math_packed_character(mval.class_value,mval.family_value,mval.character_value));
                     break;
                 }
             case math_xchar_def_code:
                 {
                     mathcodeval mval = tex_scan_mathchar(umath_mathcode);
                     tex_define(a, p, mathspec_cmd, tex_new_math_spec(mval, umath_mathcode));
-                 // tex_define(a, p, math_char_xgiven_cmd, math_packed_character(mval.class_value,mval.family_value,mval.character_value));
                     break;
                 }
             case count_def_code:
@@ -5854,14 +5854,13 @@ static void tex_aux_run_message(void)
                 strnumber s = tex_aux_scan_string();
                 if (error_help_par) {
                     strnumber helpinfo = tex_tokens_to_string(error_help_par);
-                    char *h = tex_makecstring(helpinfo);
+                    char *h = tex_to_cstring(helpinfo);
                     tex_handle_error(
                         normal_error_type,
                         "%T",
                         s,
                         h
                     );
-                    lmt_memory_free(h);
                     tex_flush_str(helpinfo);
                 } else if (lmt_error_state.long_help_seen) {
                     tex_handle_error(
@@ -6298,8 +6297,6 @@ inline static void tex_aux_big_switch(int mode, int cmd)
 
         register_runner(italic_correction_cmd,  tex_aux_run_illegal_case,          tex_aux_run_text_italic_correction, tex_run_math_italic_correction);
         register_runner(math_char_number_cmd,   tex_aux_run_math_non_math,         tex_run_text_math_char_number,      tex_run_math_math_char_number);
-     // register_runner(math_char_given_cmd,    tex_aux_run_math_non_math,         tex_run_text_math_char_given,       tex_run_math_math_char_given);
-     // register_runner(math_char_xgiven_cmd,   tex_aux_run_math_non_math,         tex_run_text_math_char_xgiven,      tex_run_math_math_char_xgiven);
         register_runner(mathspec_cmd,           tex_aux_run_math_non_math,         tex_run_text_math_spec,             tex_run_math_math_spec);
         register_runner(vadjust_cmd,            tex_aux_run_illegal_case,          tex_run_vadjust,                    tex_run_vadjust);
 

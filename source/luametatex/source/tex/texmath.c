@@ -1713,12 +1713,6 @@ static int tex_aux_scan_math(halfword target, halfword style, int usetextfont, h
             mval = tex_get_math_spec(cur_chr);
             dval = tex_get_math_dict(cur_chr);
             break;
-     // case math_char_given_cmd:
-     //     mval = tex_mathchar_from_integer(cur_chr, tex_mathcode);
-     //     break;
-     // case math_char_xgiven_cmd:
-     //     mval = tex_mathchar_from_integer(cur_chr, umath_mathcode);
-     //     break;
         case delimiter_number_cmd:
             switch (cur_chr) {
                 case math_delimiter_code:
@@ -1962,12 +1956,6 @@ int tex_scan_math_cmd_val(mathcodeval *mval, mathdictval *dval)
         tex_get_x_token();
     } while (cur_cmd == spacer_cmd);
     switch (cur_cmd) {
-     // case math_char_given_cmd:
-     //     *mval = tex_mathchar_from_integer(cur_chr, tex_mathcode);
-     //     break;
-     // case math_char_xgiven_cmd:
-     //     *mval = tex_mathchar_from_integer(cur_chr, umath_mathcode);
-     //     break;
         case mathspec_cmd:
             *mval = tex_get_math_spec(cur_chr);
             break;
@@ -2049,26 +2037,6 @@ void tex_run_math_math_char_number(void) {
         tex_aux_append_math_char(mval, dval, 1);
     }
 }
-
-/*tex We build up an argument to |append_math_char|: */
-
-// void tex_run_text_math_char_given(void) {
-//     tex_aux_append_math_char_in_text(tex_mathchar_from_integer(cur_chr, tex_mathcode));
-// }
-//
-// void tex_run_math_math_char_given(void) {
-//     tex_aux_append_math_char(tex_mathchar_from_integer(cur_chr, tex_mathcode));
-// }
-
-/*tex We build up an argument to |append_math_char| the \LUATEX\ way: */
-
-// void tex_run_text_math_char_xgiven(void) {
-//     tex_aux_append_math_char_in_text(tex_mathchar_from_integer(cur_chr, umath_mathcode));
-// }
-//
-// void tex_run_math_math_char_xgiven(void) {
-//     tex_aux_append_math_char(tex_mathchar_from_integer(cur_chr, umath_mathcode));
-// }
 
 void tex_run_math_delimiter_number(void) {
     switch (cur_chr) {

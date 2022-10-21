@@ -206,4 +206,8 @@
     \scrn_identity_document    {date}\c!date
 \to \everystartdocument % or stop
 
+\appendtoks
+    \clf_setautoprefix{\interactionparameter\c!prefix}%
+\to \everysetupinteraction
+
 \protect \endinput

@@ -3145,7 +3145,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                     n = node_next(n);
                 }
             }
-            if (! n) {
+            if (! n && normalize_line_mode_par) {
                 /*tex For the moment: */
                 tex_normal_warning("tex", "right parinit skip is gone");
             }
@@ -3163,7 +3163,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                     n = node_prev(n);
                 }
             }
-            if (! n) {
+            if (! n && normalize_line_mode_par) {
                 /*tex For the moment: */
                 tex_normal_warning("tex", "left parfill skip is gone");
             }

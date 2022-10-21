@@ -21,7 +21,7 @@ typedef struct lstring {
         unsigned char *s;
         const    char *c;
     };
-    size_t         l; /* could be int, but this way we padd */
+    size_t l; /* could be int, but this way we padd */
 } lstring;
 
 typedef struct string_pool_info {
@@ -76,35 +76,37 @@ extern string_pool_info lmt_string_pool_state;
 
 /*tex Forget the last character in the pool. */
 
-inline void        tex_flush_char(void)       { --lmt_string_pool_state.string_temp_top; }
+inline void       tex_flush_char(void)       { --lmt_string_pool_state.string_temp_top; }
 
-extern strnumber   tex_make_string            (void);
-extern strnumber   tex_push_string            (const unsigned char *s, int l);
-extern char       *tex_take_string            (int *len);
-extern int         tex_str_eq_buf             (strnumber s, int k, int n);
-extern int         tex_str_eq_str             (strnumber s, strnumber t);
-extern int         tex_str_eq_cstr            (strnumber s, const char *, size_t);
-extern int         tex_get_strings_started    (void);
-extern void        tex_reset_cur_string       (void);
-/*     strnumber   tex_search_string          (strnumber search); */
-/*     int         tex_used_strings           (void); */
-extern strnumber   tex_maketexstring          (const char *s);
-extern strnumber   tex_maketexlstring         (const char *s, size_t);
-extern void        tex_append_char            (unsigned char c);
-extern void        tex_append_string          (const unsigned char *s, unsigned l);
-extern char       *tex_makecstring            (int s);
-extern char       *tex_makeclstring           (int s, size_t *len);
-extern void        tex_dump_string_pool       (dumpstream f);
-extern void        tex_undump_string_pool     (dumpstream f);
-extern void        tex_initialize_string_pool (void);
-extern void        tex_initialize_string_mem  (void);
-extern void        tex_flush_str              (strnumber s);
-extern strnumber   tex_save_cur_string        (void);
-extern void        tex_restore_cur_string     (strnumber u);
+extern strnumber  tex_make_string            (void);
+extern strnumber  tex_push_string            (const unsigned char *s, int l);
+extern char      *tex_take_string            (int *len);
+extern int        tex_str_eq_buf             (strnumber s, int k, int n);
+extern int        tex_str_eq_str             (strnumber s, strnumber t);
+extern int        tex_str_eq_cstr            (strnumber s, const char *, size_t);
+extern int        tex_get_strings_started    (void);
+extern void       tex_reset_cur_string       (void);
+/*     strnumber  tex_search_string          (strnumber search); */
+/*     int        tex_used_strings           (void); */
+extern strnumber  tex_maketexstring          (const char *s);
+extern strnumber  tex_maketexlstring         (const char *s, size_t);
+extern void       tex_append_char            (unsigned char c);
+extern void       tex_append_string          (const unsigned char *s, unsigned l);
+extern char      *tex_makecstring            (int s, int *allocated);
+extern char      *tex_makeclstring           (int s, size_t *len);
+extern void       tex_dump_string_pool       (dumpstream f);
+extern void       tex_undump_string_pool     (dumpstream f);
+extern void       tex_initialize_string_pool (void);
+extern void       tex_initialize_string_mem  (void);
+extern void       tex_flush_str              (strnumber s);
+extern strnumber  tex_save_cur_string        (void);
+extern void       tex_restore_cur_string     (strnumber u);
 
-/*     void        tex_increment_pool_string  (int n); */
-/*     void        tex_decrement_pool_string  (int n); */
+/*     void       tex_increment_pool_string  (int n); */
+/*     void       tex_decrement_pool_string  (int n); */
 
-extern void        tex_compact_string_pool    (void);
+extern void       tex_compact_string_pool    (void);
+
+inline char      *tex_to_cstring             (int s) { return str_length(s) > 0 ? (char *) str_string(s) : ""; }
 
 # endif

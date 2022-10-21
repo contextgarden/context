@@ -16,56 +16,40 @@ local registerotffeature = fonts.handlers.otf.features.register
 
 local setmetatableindex  = table.setmetatableindex
 
--- requested for latex but not supported unless really needed in context:
+-- local splitter  = lpeg.splitat(",",tonumber)
+-- local lpegmatch = lpeg.match
+--
+-- local function initialize(tfmdata,value)
+--     local mathparameters = tfmdata.mathparameters
+--     if mathparameters then
+--         local sup, sub
+--         if type(value) == "string" then
+--             sup, sub = lpegmatch(splitter,value)
+--             if not sup then
+--                 sub, sup = 0, 0
+--             elseif not sub then
+--                 sub, sup = sup, 0
+--             end
+--         elseif type(value) == "number" then
+--             sup, sub = 0, value
+--         end
+--         if sup then
+--             mathparameters.NoLimitSupFactor = sup
+--         end
+--         if sub then
+--             mathparameters.NoLimitSubFactor = sub
+--         end
+--     end
+-- end
 --
 -- registerotffeature {
---     name         = "ignoremathconstants",
---     description  = "ignore math constants table",
+--     name         = "mathnolimitsmode",
+--     description  = "influence nolimits placement",
 --     initializers = {
---         base = function(tfmdata,value)
---             if value then
---                 tfmdata.mathparameters = nil
---             end
---         end
+--         base = initialize,
+--         node = initialize,
 --     }
 -- }
-
--- tfmdata.properties.mathnolimitsmode = tonumber(value) or 0
-
-local splitter  = lpeg.splitat(",",tonumber)
-local lpegmatch = lpeg.match
-
-local function initialize(tfmdata,value)
-    local mathparameters = tfmdata.mathparameters
-    if mathparameters then
-        local sup, sub
-        if type(value) == "string" then
-            sup, sub = lpegmatch(splitter,value)
-            if not sup then
-                sub, sup = 0, 0
-            elseif not sub then
-                sub, sup = sup, 0
-            end
-        elseif type(value) == "number" then
-            sup, sub = 0, value
-        end
-        if sup then
-            mathparameters.NoLimitSupFactor = sup
-        end
-        if sub then
-            mathparameters.NoLimitSubFactor = sub
-        end
-    end
-end
-
-registerotffeature {
-    name         = "mathnolimitsmode",
-    description  = "influence nolimits placement",
-    initializers = {
-        base = initialize,
-        node = initialize,
-    }
-}
 
 local function initialize(tfmdata,value)
     tfmdata.properties.nostackmath = value and true

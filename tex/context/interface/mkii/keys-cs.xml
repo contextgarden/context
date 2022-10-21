@@ -96,7 +96,6 @@
 		<cd:variable name='author' value='autor'/>
 		<cd:variable name='auto' value='auto'/>
 		<cd:variable name='autointro' value='autouvod'/>
-		<cd:variable name='autopunctuation' value='autopunctuation'/>
 		<cd:variable name='back' value='zpet'/>
 		<cd:variable name='background' value='pozadi'/>
 		<cd:variable name='backmatter' value='epilogy'/>
@@ -683,9 +682,13 @@
 		<cd:constant name='authoretaltext' value='authoretaltext'/>
 		<cd:constant name='auto' value='auto'/>
 		<cd:constant name='autocase' value='autocase'/>
+		<cd:constant name='autofencing' value='autofencing'/>
 		<cd:constant name='autofile' value='autofile'/>
 		<cd:constant name='autofocus' value='autoostreni'/>
 		<cd:constant name='autohang' value='autohang'/>
+		<cd:constant name='autonumbers' value='autonumbers'/>
+		<cd:constant name='autopunctuation' value='autopunctuation'/>
+		<cd:constant name='autospacing' value='autospacing'/>
 		<cd:constant name='autostrut' value='autostrut'/>
 		<cd:constant name='autowidth' value='autosirka'/>
 		<cd:constant name='availableheight' value='availableheight'/>

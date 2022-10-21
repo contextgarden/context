@@ -1,36 +1,9 @@
 local common  = fonts.goodies.load("common-math.lfg")
 local presets = common.mathematics.tweaks.presets
-local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
 
- -- local kern_250 = { bottomright = { { kern = -250 } }, force = true }
-
- -- kerns = {
- --     [0x1D449] = kern_250, --
- --     [0x1D44A] = kern_250, -- 𝑊
- -- }
-
-    dimensions = {
-        default = { -- experimental values
-         -- [0x02044] = { xoffset = 275, width = 600 },
-            -- primes
-            [0xFE932] = { width =  200 },
-            [0xFE933] = { width =  500 },
-            [0xFE934] = { width =  800 },
-            [0xFE935] = { width = 1100 },
-            -- reverse primes
-            [0xFE935] = { width =  200 },
-            [0xFE936] = { width =  500 },
-            [0xFE937] = { width =  800 },
-        },
-    }
-
-end
-
--- When set this will bypass the italic correction hackery!
 local integral_variants = {  bottomright = -0.20 }
--- local integral_top      = {  topright    =  0.05 }
+----- integral_top      = {  topright    =  0.05 }
 local integral_bottom   = {  bottomright = -0.45 }
-
 
 return {
     name = "lucida-opentype-math",
@@ -57,7 +30,7 @@ return {
          -- DisplayOperatorMinHeight        = 1800, -- 1300 in font (only one)
             PrimeRaisePercent               =   60, --   50 default
             PrimeRaiseComposedPercent       =   50, --   25 default
---             AxisHeight = 325,
+         -- AxisHeight                      =  325, -- we keep the old fonts as they are (also for demos)
         },
         tweaks = {
             aftercopying = {
@@ -69,16 +42,24 @@ return {
                     tweak   = "fixoldschool",
                     version = "Version 1.802",
                 },
--- {
---     tweak = "showinfo",
---     version = "Version 1.803",
--- },
+             -- {
+             --     tweak = "showinfo",
+             --     version = "Version 1.803",
+             -- },
                 {
                     tweak = "addmirrors",
                 },
-                presets.mathxitsarabic {
-                    rscale = 1.05
-                },
+                presets.scripttocalligraphic {                },
+                presets.rsfstoscript         { rscale  = 1    },
+                presets.rsfsuprighttoscript  { rscale  = 1    },
+                presets.moderntocalligraphic { rscale  = 1    },
+                presets.eulertocalligraphic  { rscale  = 1    },
+                presets.xitsarabic           { rscale  = 1.05 },
+                presets.fallbacks            { },
+                presets.moveitalics          { correct = true },
+                presets.moveitalics          { correct = true, letters = true },
+                presets.moveintegrals        { factor = 1.5 },
+                presets.wipeitalics          { },
                 {
                     tweak   = "replacealphabets",
                     list    = {
@@ -87,6 +68,17 @@ return {
                             target   = "uppercasecalligraphic",
                             feature  = "ss04",
                         },
+                        {
+                            source   = "lowercasescript",
+                            target   = "lowercasecalligraphic",
+                            feature  = "ss04",
+                        },
+                        {
+                            source   = "uppercaseboldscript",
+                            target   = "uppercaseboldcalligraphic",
+                            feature  = "ss04",
+                        },
+                        -- No lowercase bold calligraphic/script in font
                     },
                 },
                 {
@@ -101,8 +93,9 @@ return {
                     },
                 },
                 {
-                    tweak = "dimensions",
-                    list  = {
+                    tweak   = "dimensions",
+                    version = "Version 1.802",
+                    list    = {
                         -- these we fix here. Remove when we have new version of Lucida
                         ["0x23DC.parts.1"]  = { xoffset = -0.075, height = .4, yoffset = -0.6 },
                         ["0x23DC.parts.2"]  = {                   height = .4, yoffset = -0.6 },
@@ -134,34 +127,34 @@ return {
                 },
                 -- First we set the dimensions of the initial accent which started out as zero but we want
                 -- a proper width.
-                {
-                    tweak = "dimensions",
-                    list  = {
-                     -- [0x00302] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widehat
-                     -- [0x00303] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widetilde
-                     -- [0x00306] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widebreve
-                     -- [0x0030C] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widecheck
-                    },
-                },
+--                 {
+--                     tweak = "dimensions",
+--                     list  = {
+--                      -- [0x00302] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widehat
+--                      -- [0x00303] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widetilde
+--                      -- [0x00306] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widebreve
+--                      -- [0x0030C] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widecheck
+--                     },
+--                 },
                 -- Then we deal with all offsets and heights in one go. So we treat the initial accent
                 -- as well as the variants here.
-                {
-                    tweak = "dimensions",
-                    list  = {
-                      -- here we want to apply to all
-                      -- [0x00300] = { yoffset = -0.02,  height = .95, all = true }, -- widegrave : 0x0060
-                      -- [0x00301] = { yoffset = -0.02,  height = .95, all = true }, -- wideacute : 0x00B4
-                      -- [0x00302] = { yoffset = -0.03,  height = .95, all = true }, -- widehat   : 0x02C6
-                      -- [0x00303] = { yoffset = -0.02,  height = .95, all = true }, -- widetilde : 0x02DC
-                      -- [0x00306] = { yoffset = -0.03,  height = .95, all = true }, -- widebre   : 0x02D8
-                      -- [0x0030A] = { yoffset =  0.00,  height = .95, all = true }, -- widering  : 0x02DA
-                      -- [0x0030C] = { yoffset = -0.03,  height = .95, all = true }, -- widecheck : 0x02C7
-                      -- [0x00304] = { yoffset = -0.05,  height = .95, all = true }, -- widebar   : 0x00AF
-                      -- [0x00307] = { yoffset = -0.03,  height = .95, all = true }, -- widedot   : 0x02D9
-                      -- [0x00308] = { yoffset = -0.03,  height = .95, all = true }, -- wideddot  : 0x00A8
-                      -- [0x020DB] = { yoffset = -0.015, height = .95, all = true }, -- widedddot : 0x20DB (self)
-                    },
-                },
+--                 {
+--                     tweak = "dimensions",
+--                     list  = {
+--                       -- here we want to apply to all
+--                       -- [0x00300] = { yoffset = -0.02,  height = .95, all = true }, -- widegrave : 0x0060
+--                       -- [0x00301] = { yoffset = -0.02,  height = .95, all = true }, -- wideacute : 0x00B4
+--                       -- [0x00302] = { yoffset = -0.03,  height = .95, all = true }, -- widehat   : 0x02C6
+--                       -- [0x00303] = { yoffset = -0.02,  height = .95, all = true }, -- widetilde : 0x02DC
+--                       -- [0x00306] = { yoffset = -0.03,  height = .95, all = true }, -- widebre   : 0x02D8
+--                       -- [0x0030A] = { yoffset =  0.00,  height = .95, all = true }, -- widering  : 0x02DA
+--                       -- [0x0030C] = { yoffset = -0.03,  height = .95, all = true }, -- widecheck : 0x02C7
+--                       -- [0x00304] = { yoffset = -0.05,  height = .95, all = true }, -- widebar   : 0x00AF
+--                       -- [0x00307] = { yoffset = -0.03,  height = .95, all = true }, -- widedot   : 0x02D9
+--                       -- [0x00308] = { yoffset = -0.03,  height = .95, all = true }, -- wideddot  : 0x00A8
+--                       -- [0x020DB] = { yoffset = -0.015, height = .95, all = true }, -- widedddot : 0x20DB (self)
+--                     },
+--                 },
                 -- We now copy these to the not wide slots so that we can set these to stretch as well,
                 -- if only because it is less confusing and more consistent.
                 {
@@ -252,6 +245,12 @@ return {
                      -- [0x21CC] = false,
                     }
                 },
+                -- this is the mkiv section
+                {
+                    tweak   = "emulatelmtx",
+                    feature = "emulatelmtx",
+                    comment = "this is for mkiv",
+                },
             },
         },
         alternates = {
@@ -260,6 +259,8 @@ return {
             operator     = { feature = 'ss03', value = 1, comment = "Mathematical Alternative Smaller Operators" },
             calligraphic = { feature = 'ss04', value = 1, comment = "Mathematical Alternative Calligraphic Characters" },
             zero         = { feature = 'ss05', value = 1, comment = "Mathematical Alternative Zero" },
+            multipledots = { feature = 'ss06', value = 1, comment = "Mathematical Alternative Multiple Dots" },
+            ldots        = { feature = 'ss07', value = 1, comment = "Mathematical Alternative Ellipsis" },
         },
         bigslots = {
             1, 2, 3, 4

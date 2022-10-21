@@ -1715,10 +1715,9 @@ static int texlib_gettoks(lua_State *L)
         if (lua_toboolean(L, slot)) {
             lmt_token_register_to_lua(L, state ? toks_parameter(index) : toks_register(index));
         } else {
+
             strnumber value = tex_get_tex_toks_register(index, state);
-            char *s = tex_makecstring(value);
-            lua_pushstring(L, s);
-            lmt_memory_free(s);
+            lua_pushstring(L, tex_to_cstring(value));
             tex_flush_str(value);
         }
     } else {
@@ -1754,7 +1753,7 @@ static int texlib_getmark(lua_State *L)
             if (num >= 0 && num <= lmt_mark_state.mark_data.ptr) {
                 halfword ptr = tex_get_some_mark(mrk, num);
                 if (ptr) {
-                    char *str = tex_tokenlist_to_tstring(ptr, 1, NULL, 0, 0, 0);
+                    char *str = tex_tokenlist_to_tstring(ptr, 1, NULL, 0, 0, 0, 0);
                     if (str) {
                         lua_pushstring(L, str);
                     } else {
@@ -1783,7 +1782,6 @@ int lmt_get_box_id(lua_State *L, int i, int report)
                 int cmd = eq_type(cs);
                 switch (cmd) {
                     case char_given_cmd:
-                 // case math_char_given_cmd:
                     case integer_cmd:
                         index = eq_value(cs);
                         break;
@@ -2597,7 +2595,6 @@ static int texlib_newindex(lua_State *L)
 static int texlib_aux_convert(lua_State *L, int cur_code)
 {
     int i = -1;
-    char *str = NULL;
     switch (cur_code) {
         /* ignored (yet) */
         case insert_progress_code:     /* arg <register int> */
@@ -2632,19 +2629,22 @@ static int texlib_aux_convert(lua_State *L, int cur_code)
             if (cur_code < 32) {
                 int texstr = tex_the_convert_string(cur_code, i);
                 if (texstr) {
-                    str = tex_makecstring(texstr);
+                    lua_pushstring(L, tex_to_cstring(texstr));
                     tex_flush_str(texstr);
+
+                 // int allocated = 0;
+                 // char *str = tex_makecstring(texstr, &allocated);
+                 // lua_pushstring(L, str);
+                 // if (allocated) {
+                 //     lmt_memory_free(str);
+                 // }
+                 // tex_flush_str(texstr);
+                    return 1; 
                 }
             }
             break;
     }
-    /* end */
-    if (str) {
-        lua_pushstring(L, str);
-        lmt_memory_free(str);
-    } else {
-        lua_pushnil(L);
-    }
+    lua_pushnil(L);
     return 1;
 }
 
@@ -2687,10 +2687,9 @@ static int texlib_aux_scan_internal(lua_State *L, int cmd, int code, int values)
         default:
             {
                 int texstr = tex_the_scanned_result();
-                char *str = tex_makecstring(texstr);
+                char *str = tex_to_cstring(texstr);
                 if (str) {
                     lua_pushstring(L, str);
-                    lmt_memory_free(str);
                 } else {
                     lua_pushnil(L);
                 }
@@ -3013,7 +3012,6 @@ static int texlib_get_internal(lua_State *L, int index, int all)
                     case set_auxiliary_cmd:
                     case set_page_property_cmd:
                     case char_given_cmd:
-                 // case math_char_given_cmd:
                     case integer_cmd:
                     case dimension_cmd:
                     case gluespec_cmd:
@@ -3407,26 +3405,22 @@ static int texlib_hashtokens(lua_State *L)
     int nx = 0;
     int all = lua_toboolean(L, 1);
     lua_createtable(L, hash_size, 0);
+    /* todo: check active characters as these have three bogus bytes in front */
     if (all) {
         while (cs <= hash_size) {
-            /* because strings never get freed we can as well directly access |s|. */
             strnumber s = cs_text(cs);
             if (s > 0) {
                 halfword n = cs_next(cs);
-                char *ss = tex_makecstring(s);
                 if (n) {
                     int mt = 0;
                     lua_createtable(L, 2, 0);
-                    lua_pushstring(L, ss);
-                    lmt_memory_free(ss);
+                    lua_pushstring(L, tex_to_cstring(s));
                     ++nt;
                     lua_rawseti(L, -2, ++mt);
                     while (n) {
                         s = cs_text(n);
                         if (s) {
-                            ss = tex_makecstring(s);
-                            lua_pushstring(L, ss);
-                            lmt_memory_free(ss);
+                            lua_pushstring(L, tex_to_cstring(s));
                             lua_rawseti(L, -2, ++mt);
                             ++nt;
                             ++nx;
@@ -3434,8 +3428,7 @@ static int texlib_hashtokens(lua_State *L)
                         n = cs_next(n);
                     }
                 } else {
-                    lua_pushstring(L, ss);
-                    lmt_memory_free(ss);
+                    lua_pushstring(L, tex_to_cstring(s));
                     ++nt;
                 }
             } else {
@@ -3449,16 +3442,12 @@ static int texlib_hashtokens(lua_State *L)
             strnumber s = cs_text(cs);
             if (s > 0) {
                 halfword n = cs_next(cs);
-                char *ss = tex_makecstring(s);
-                lua_pushstring(L, ss);
-                lmt_memory_free(ss);
+                lua_pushstring(L, tex_to_cstring(s));
                 lua_rawseti(L, -2, ++nt);
                 while (n) {
                     s = cs_text(n);
                     if (s) {
-                        ss = tex_makecstring(s);
-                        lua_pushstring(L, ss);
-                        lmt_memory_free(ss);
+                        lua_pushstring(L, tex_to_cstring(s));
                         lua_rawseti(L, -2, ++nt);
                         ++nx;
                     }
@@ -3482,9 +3471,7 @@ static int texlib_primitives(lua_State *L)
     while (cs < prim_size) {
         strnumber s = get_prim_text(cs);
         if (s > 0 && (get_prim_origin(cs) != no_command)) {
-            char *ss = tex_makecstring(s);
-            lua_pushstring(L, ss);
-            lmt_memory_free(ss);
+            lua_pushstring(L, tex_to_cstring(s));
             lua_rawseti(L, -2, ++nt);
         }
         cs++;
@@ -3518,9 +3505,7 @@ static int texlib_extraprimitives(lua_State *L)
     while (cs < prim_size) {
         strnumber s = get_prim_text(cs);
         if (s > 0 && (get_prim_origin(cs) & mask)) {
-            char *ss = tex_makecstring(s);
-            lua_pushstring(L, ss);
-            lmt_memory_free(ss);
+            lua_pushstring(L, tex_to_cstring(s));
             lua_rawseti(L, -2, ++nt);
         }
         cs++;
@@ -3531,7 +3516,7 @@ static int texlib_extraprimitives(lua_State *L)
 static void texlib_aux_enableprimitive(const char *pre, size_t prel, const char *prm)
 {
     strnumber s = tex_maketexstring(prm);
-    halfword prm_val = tex_prim_lookup(s);
+    halfword prm_val = tex_prim_lookup(s); /* todo: no need for tex string */
     tex_flush_str(s);
     if (prm_val != undefined_primitive && get_prim_origin(prm_val) != no_command) {
         char *newprm;
@@ -3594,10 +3579,8 @@ static int texlib_enableprimitives(lua_State *L)
                     for (int cs = 0; cs < prim_size; cs++) {
                         strnumber s = get_prim_text(cs);
                         if (s > 0) {
-                            /* there is actually no need to copy */
-                            char *prm = tex_makecstring(s);
+                            char *prm = tex_to_cstring(s);
                             texlib_aux_enableprimitive(pre, lpre, prm);
-                            lmt_memory_free(prm);
                         }
                     }
                 }
@@ -4561,8 +4544,6 @@ static int texlib_mathchardef(lua_State *L)
             d.index = lmt_optinteger(L, 8, 0);
             if (class_in_range(m.class_value) && family_in_range(m.family_value) && character_in_range(m.character_value)) {
                 tex_define(flags, cs, mathspec_cmd, tex_new_math_dict_spec(d, m, umath_mathcode));
-             // halfword code = math_packed_character(m.class_value, m.family_value, m.character_value);
-             // tex_define(flags, cs, (quarterword) math_char_xgiven_cmd, code);
             } else {
                 tex_normal_error("lua", "mathchardef needs proper class, family and character codes");
             }

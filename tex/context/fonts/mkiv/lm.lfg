@@ -4,59 +4,6 @@
 local common  = fonts.goodies.load("common-math.lfg")
 local presets = common.mathematics.tweaks.presets
 
-local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
-
-    local kern_150 = { bottomright = { { kern = -150 } } }
-    local kern_200 = { bottomright = { { kern = -200 } } }
-
-    kerns = {
-        [0x1D449] = kern_150, --
-        [0x1D44A] = kern_200, -- 𝑊
-
-        [0x1D4AB] = {
-         -- topleft     = { { kern = -200 } },
-            bottomright = { { kern = -200 } },
-        },
-    }
-
-    dimensions = {
-        -- always applied
-     -- default = {
-     -- },
-        -- driven by 'mathdimensions' feature
-        default = {
-            -- the root is quite displaced
-            [0x221A] = {
-                -- 73, -960, 853, 40
-                yoffset = 960 - 40,
-                height  = 960,
-                depth   =  40,
-            },
-
-        -- [0xFE932] = { xoffset = 50, width = 290 }, -- used prime
-        -- [0x2032]  = { xoffset = 50, width = 290 }, -- prime
-        },
-    -- -- seems ok now --
-    -- signs   = {
-    --  -- [0x00B1] = { -- ±
-    --  --     height = 500, depth = 0,
-    --  -- },
-    --  -- [0x2213] = { -- ∓
-    --  --     height = 500, depth = 0,
-    --  -- },
-    --     -- move in boundingbox
-    --     [0x00B1] = { -- ±
-    --         yoffset =  100,
-    --     },
-    --     [0x2213] = { -- ∓
-    --         yoffset = -100,
-    --     },
-    -- },
-    }
-
-end
-
-
 return {
     name = "latin modern",
     version = "1.00",
@@ -70,7 +17,7 @@ return {
             NoLimitSubFactor                     =  900,
             AccentTopShiftUp                     =  -60,
             FlattenedAccentTopShiftUp            =  -60,
-            -- AccentExtendMargin              =   50,
+         -- AccentExtendMargin                   =   50,
          -- AccentBaseHeight                     =    0,
          -- AccentBaseDepth                      =    0,
          -- AccentTopOvershoot                   =   66,
@@ -81,12 +28,12 @@ return {
          -- DisplayOperatorMinHeight             = 1800, -- 1300 in font (only one)
             PrimeRaisePercent                    =   60,
             PrimeRaiseComposedPercent            =   15,
-            -- SubSuperscriptGapMin                 =  160, -- 160 in font
+         -- SubSuperscriptGapMin                 =  160, -- 160 in font
             SuperscriptBaselineDropMax           =  250, -- 250 in font
-            -- SuperscriptBottomMaxWithSubscript    =  344, -- 344 in font
-            -- SuperscriptBottomMin                 =  108, -- 108 in font
+         -- SuperscriptBottomMaxWithSubscript    =  344, -- 344 in font
+         -- SuperscriptBottomMin                 =  108, -- 108 in font
             SuperscriptShiftUp                   =  363, -- 363 in font
-            SuperscriptShiftUpCramped            =  89, -- 289 in font
+            SuperscriptShiftUpCramped            =   89, -- 289 in font
         },
         tweaks = {
             aftercopying = {
@@ -97,68 +44,22 @@ return {
                 {
                     tweak = "addmirrors",
                 },
-                presets.matheulercalligraphic { rscale = 1    },
-                presets.mathrsfscript         { rscale = 1    },
-                presets.mathxitsarabic        { rscale = 0.88 },
-                presets.moveitalics           { correct = true },
+                presets.scripttocalligraphic { },
+                presets.rsfstoscript         { },
+                presets.rsfsuprighttoscript  { },
+                presets.moderntocalligraphic { },
+                presets.eulertocalligraphic  { },
+                presets.xitsarabic           { rscale  = 0.80 },
+                presets.fallbacks            { },
+                presets.moveitalics          { correct = true },
+                presets.moveitalics          { correct = true, letters = true },
+                presets.moveintegrals        { factor = 1.4 },
+                presets.wipeanchors          { },
+                presets.wipeitalics          { },
+                -- these will become moveanchors
                 {
                     tweak = "dimensions",
                     list  = {
-                     -- [0x00060] = { yoffset = -0.05  }, -- grave
-                     -- [0x000B4] = { yoffset = -0.05  }, -- acute
-                     -- [0x002C6] = { yoffset = -0.05  }, -- hat
-                     -- [0x002DC] = { yoffset = -0.05  }, -- tilde
-                     -- [0x000AF] = { yoffset = -0.075 }, -- bar
-                     -- [0x002D8] = { yoffset = -0.05  }, -- breve
-                     -- [0x002D9] = { yoffset = -0.05  }, -- dot
-                     -- [0x000A8] = { yoffset = -0.05  }, -- ddot
-                     -- [0x020DB] = { yoffset = 0.2    }, -- dddot (done below!)
-                     --   [0x002DA] = { width = 0        }, -- ring (bounding box is wrong)
-                     -- [0x002C7] = { yoffset = -0.05  }, -- check
-                     -- [0x020D7] = { yoffset = -0.05  }, -- vec
-
-                        -- [0x00300] = { yoffset = -0.03,  all = true }, -- widegrave
-                        -- [0x00301] = { yoffset = -0.03,  all = true }, -- wideacute
-                        -- [0x00302] = { yoffset = -0.075, all = true }, -- widehat
-                        -- [0x00303] = { yoffset = -0.05,  all = true }, -- widetilde
-                        -- [0x00304] = { yoffset = -0.02,  all = true }, -- widebar
-                        -- [0x00306] = { yoffset = -0.05,  all = true }, -- widebreve
-                        -- [0x00307] = { yoffset = -0.027, all = true }, -- widedot
-                        -- [0x00308] = { yoffset = -0.027, all = true }, -- wideddot
-                        -- [0x020DB] = { yoffset = -0.065, all = true }, -- widedddot
-                        -- [0x0030C] = { yoffset = -0.05,  all = true }, -- widecheck
-                        -- [0x0030A] = { yoffset = -0.025, all = true }, -- widering
-
-                     -- [0x0212C] = { width = 0.95, italic = 0.05 }, -- script B
-                     -- [0x1D49E] = { width = 0.8,  italic = 0.25 }, -- script C
-                     -- [0x1D49F] = { width = 0.9,  italic = 0.11 }, -- script D
-                     -- [0x02130] = { width = 0.85, italic = 0.18 }, -- script E
-                     -- [0x02131] = { width = 0.75, italic = 0.3  }, -- script F
-                     -- [0x1D4A2] = { width = 0.9,  italic = 0.11 }, -- script G
-                     -- [0x0210B] = { width = 0.85, italic = 0.18 }, -- script H
-                     -- [0x02110] = { width = 0.8,  italic = 0.25 }, -- script I
-                     -- [0x1D4A5] = { width = 0.8,  italic = 0.25 }, -- script J
-                     -- [0x1D4A6] = { width = 0.9,  italic = 0.11 }, -- script K
-                     -- [0x02112] = { width = 0.95, italic = 0.05 }, -- script L
-                     -- [0x02133] = { width = 0.9,  italic = 0.11 }, -- script M
-                     -- [0x1D4A9] = { width = 0.85, italic = 0.18 }, -- script N
-                     -- [0x1D4AA] = { width = 0.95, italic = 0.05 }, -- script O
-                     -- [0x1D4AB] = { width = 0.8,  italic = 0.25 }, -- script P
-                     -- [0x1D4AB] = { width = 0.95, italic = 0.05 }, -- script Q
-                     -- [0x0211B] = { width = 0.95, italic = 0.05 }, -- script R
-                     -- [0x1D4AE] = { width = 0.9,  italic = 0.11 }, -- script S
-                     -- [0x1D4AF] = { width = 0.75, italic = 0.33 }, -- script T
-                     -- [0x1D4B0] = { width = 0.9,  italic = 0.11 }, -- script U
-                     -- [0x1D4B1] = { width = 0.8,  italic = 0.25 }, -- script V
-                     -- [0x1D4B2] = { width = 0.8,  italic = 0.25 }, -- script W
-                     -- [0x1D4B3] = { width = 0.9,  italic = 0.11 }, -- script X
-                     -- [0x1D4B4] = { width = 0.85, italic = 0.18 }, -- script Y
-                     -- [0x1D4B5] = { width = 0.95, italic = 0.05 }, -- script Z
-
-                        -- Setting anchors to shift the location of accents
-                        -- Note: Many non-italic alphabets are wiped below
-                        -- Todo: Check the less common italic alphabets
-
                      -- [0x1D483] = { anchor = 1.15 }, -- bold italic b
                      -- [0x1D485] = { anchor = 0.8  }, -- bold italic d
                         [0x1D487] = { anchor = 0.9  }, -- bold italic f
@@ -290,13 +191,13 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {
-                        -- [0x00300] = { width = 0.8 }, -- widegrave
-                        -- [0x00301] = { width = 0.9 }, -- wideacute
+                     -- [0x00300] = { width = 0.8 },                                -- widegrave
+                     -- [0x00301] = { width = 0.9 },                                -- wideacute
                         [0x00302] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widehat
                         [0x00303] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widetilde
                         [0x00306] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widebreve
-                --         [0x0030A] = { width = 0.9, xoffset = -.0 }, -- widering
-                        [0x0030C] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widecheck
+                     -- [0x0030A] = { width = 0.9,                xoffset = -.0  }, -- widering
+                        [0x0030C] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widecheck
                     },
                 },
                 -- Then we deal with all offsets and heights in one go. So we treat the initial accent
@@ -305,19 +206,17 @@ return {
                     tweak = "dimensions",
                     list  = {
                         -- here we want to apply to all
-                        -- [0x00300] = { yoffset = -0.02, height = .95, all = true }, -- widegrave : 0x0060
-                        -- [0x00301] = { yoffset = -0.02, height = .95, all = true }, -- wideacute : 0x00B4
-                        -- [0x00302] = { yoffset = -0.03, height = .95, all = true }, -- widehat   : 0x02C6
-                        -- [0x00303] = { yoffset = -0.02, height = .95, all = true }, -- widetilde : 0x02DC
-                        -- [0x00306] = { yoffset = -0.03, height = .95, all = true }, -- widebre   : 0x02D8
-                        -- [0x0030A] = { yoffset =  0.00, height = .95, all = true }, -- widering  : 0x02DA
-                        -- [0x0030C] = { yoffset = -0.03, height = .95, all = true }, -- widecheck : 0x02C7
-
-                        -- [0x00304] = { yoffset = -0.05, height = .95, all = true }, -- widebar   : 0x00AF
-
-                        -- [0x00307] = { yoffset = -0.03, height = .95, all = true }, -- widedot   : 0x02D9
-                        -- [0x00308] = { yoffset = -0.03, height = .95, all = true }, -- wideddot  : 0x00A8
-                        [0x020DB] = { yoffset =  -0.015,    height = .95, all = true }, -- widedddot : 0x20DB (self)
+                     -- [0x00300] = { yoffset = -0.02,  height = .95, all = true }, -- widegrave : 0x0060
+                     -- [0x00301] = { yoffset = -0.02,  height = .95, all = true }, -- wideacute : 0x00B4
+                     -- [0x00302] = { yoffset = -0.03,  height = .95, all = true }, -- widehat   : 0x02C6
+                     -- [0x00303] = { yoffset = -0.02,  height = .95, all = true }, -- widetilde : 0x02DC
+                     -- [0x00306] = { yoffset = -0.03,  height = .95, all = true }, -- widebre   : 0x02D8
+                     -- [0x0030A] = { yoffset =  0.00,  height = .95, all = true }, -- widering  : 0x02DA
+                     -- [0x0030C] = { yoffset = -0.03,  height = .95, all = true }, -- widecheck : 0x02C7
+                     -- [0x00304] = { yoffset = -0.05,  height = .95, all = true }, -- widebar   : 0x00AF
+                     -- [0x00307] = { yoffset = -0.03,  height = .95, all = true }, -- widedot   : 0x02D9
+                     -- [0x00308] = { yoffset = -0.03,  height = .95, all = true }, -- wideddot  : 0x00A8
+                        [0x020DB] = { yoffset = -0.015, height = .95, all = true }, -- widedddot : 0x20DB (self)
                     },
                 },
                 -- We now copy these to the not wide slots so that we can set these to stretch as well,
@@ -333,12 +232,8 @@ return {
                     -- to have the 2 in x^2/5 a bit over the slash
                     tweak = "kerns",
                     list  = {
-                        [0x2F] = {
-                            topleft     = -0.2,
-                         -- bottomleft  =  0,
-                         -- topright    =  0,
-                            bottomright = -0.2,
-                        }, -- solidus
+                        [0x0002F] = { topleft = -0.2, bottomright = -0.2 }, -- solidus
+                        --
                         [0x1D49C] = { bottomright = -0.05, }, -- script A
                         [0x1D49D] = { bottomright = -0.05, }, -- script B
                         [0x1D49E] = { bottomright = -0.25, }, -- script C
@@ -365,43 +260,20 @@ return {
                         [0x1D4B3] = { bottomright = -0.11, }, -- script X
                         [0x1D4B4] = { bottomright = -0.18, }, -- script Y
                         [0x1D4B5] = { bottomright = -0.05, }, -- script Z
-
-                        ["0x7D.parts.top"] = {
-                            topright    = -0.25,
-                        }, -- right brace top
-                        ["0x7D.parts.bottom"] = {
-                            bottomright = -0.25,
-                        }, -- right brace bottom
-                        ["0x7D.variants.*"] = {
-                            topright = -0.25,
-                            bottomright = -0.25,
-                        }, -- right brace variants
-                        ["0x29.parts.top"] = {
-                            topright    = -0.3,
-                        }, -- right parenthesis top
-                        ["0x29.parts.bottom"] = {
-                            bottomright = -0.3,
-                        }, -- right parenthesis bottom
-                        ["0x29.variants.*"] = {
-                            topright = -0.25,
-                            bottomright = -0.25,
-                        }, -- right parenthesis variants
-                        ["0x221A.parts.top"] = {
-                            topright = 0.2,
-                        }, -- right radical top
-                        ["0x221A.parts.bottom"] = {
-                            bottomright = 0.2,
-                        }, -- right radical bottom
-                        ["0x221A.variants.*"] = {
-                            topright = 0.2,
-                            bottomright = 0.2,
-                        }, -- right radical variants
-
-                         -- angle
-                        [0x27E9]              = { topright = -0.2, bottomright = -0.2 },
-                        ["0x27E9.variants.*"] = { topright = -0.3, bottomright = -0.3 },
-                        [0x27EB]              = { topright = -0.2, bottomright = -0.2 },
-                        ["0x27EB.variants.*"] = { topright = -0.3, bottomright = -0.3 },
+                        --
+                        ["0x7D.parts.top"]      = { topright = -0.25                      }, -- right brace top
+                        ["0x7D.parts.bottom"]   = {                   bottomright = -0.25 }, -- right brace bottom
+                        ["0x7D.variants.*"]     = { topright = -0.25, bottomright = -0.25 }, -- right brace variants
+                        ["0x29.parts.top"]      = { topright = -0.3,                      }, -- right parenthesis top
+                        ["0x29.parts.bottom"]   = {                   bottomright = -0.3  }, -- right parenthesis bottom
+                        ["0x29.variants.*"]     = { topright = -0.25, bottomright = -0.25 }, -- right parenthesis variants
+                        ["0x221A.parts.top"]    = { topright =  0.2,                      }, -- right radical top
+                        ["0x221A.parts.bottom"] = {                   bottomright =  0.2  }, -- right radical bottom
+                        ["0x221A.variants.*"]   = { topright =  0.2,  bottomright =  0.2  }, -- right radical variants
+                        [0x27E9]                = { topright = -0.2,  bottomright = -0.2  }, -- angles
+                        ["0x27E9.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
+                        [0x27EB]                = { topright = -0.2,  bottomright = -0.2  },
+                        ["0x27EB.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
 
                     },
                 },
@@ -411,141 +283,72 @@ return {
              --     },
              -- },
                 {
-                    -- For upright alphabets, we unset the anchor.
-                    -- This means that accents are placed
-                    -- centered over the character
-                     tweak = "wipeanchors",
-                 --  list  = { 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58 }, -- todo: ranges
-                     list = {
-                        "digitsbold",
-                        "digitsdoublestruck",
-                        "digitsmonospace",
-                        "digitsnormal",
-                        "digitssansserifbold",
-                        "digitssansserifnormal",
-                        "lowercasebold",
-                        "lowercaseboldfraktur",
-                        "lowercasedoublestruck",
-                        "lowercasefraktur",
-                        "lowercasegreekbold",
-                        "lowercasegreeknormal",
-                        "lowercasegreeksansserifbold",
-                        "lowercasemonospace",
-                        "lowercasenormal",
-                        "lowercasesansserifbold",
-                        "lowercasesansserifnormal",
-                        "uppercasebold",
-                        "uppercaseboldfraktur",
-                        "uppercasedoublestruck",
-                        "uppercasefraktur",
-                        "uppercasegreekbold",
-                        "uppercasegreeknormal",
-                        "uppercasegreeksansserifbold",
-                        "uppercasemonospace",
-                        "uppercasenormal", -- they are italic!
-                        "uppercasesansserifbold",
-                        "uppercasesansserifnormal",
-                    },
-                },
-                {
-                    -- For non-italic alphabets we
-                    -- remove italic correction.
-                    tweak = "wipeitalics",
-                    list  = {
-                     -- "digitsbold",
-                     -- "digitsdoublestruck",
-                     -- "digitsmonospace",
-                     -- "digitsnormal",
-                     -- "digitssansserifbold",
-                     -- "digitssansserifnormal",
-                     -- "lowercasebold",
-                     -- "lowercaseboldfraktur",
-                     -- "lowercasedoublestruck",
-                     -- "lowercasefraktur",
-                        "lowercasemonospace",
-                        -- "lowercasenormal",
-                     -- "lowercasesansserifbold",
-                     -- "lowercasesansserifnormal",
-                     -- "lowercasegreeknormal",
-                        "uppercasebold",
-                     -- "uppercaseboldfraktur",
-                     -- "uppercasedoublestruck",
-                     -- "uppercasefraktur",
-                     -- "uppercasegreekbold",
-                     -- "uppercasegreeknormal",
-                     -- "uppercasegreeksansserifbold",
-                        "uppercasemonospace",
-                        "uppercasesansserifbold",
-                        "uppercasesanserifnormal",
-                    },
-                 },
-                 {
                     -- This one fakes margins to get larger/smaller accents
                     -- with for example \widetilde.
                     tweak = "margins",
                     list  = {
-                        [0x1D487] = { left = -.2, right = -.2 }, -- bold italic f
-                        [0x1D489] = { left = -.2, right = -.2 }, -- bold italic h
-                        [0x1D496] = { left = -.1, right = -.1 }, -- bold italic u
-                        [0x1D499] = { left = -.1, right = -.1 }, -- bold italic x
+                        [0x1D487] = { left = -.2,  right = -.2 }, -- bold italic f
+                        [0x1D489] = { left = -.2,  right = -.2 }, -- bold italic h
+                        [0x1D496] = { left = -.1,  right = -.1 }, -- bold italic u
+                        [0x1D499] = { left = -.1,  right = -.1 }, -- bold italic x
 
-                        [0x1D711] = { left = -.1, right = -.1 }, -- italic varphi
-                        [0x1D713] = { left = -.1, right = -.1 }, -- italic psi
+                        [0x1D711] = { left = -.1,  right = -.1 }, -- italic varphi
+                        [0x1D713] = { left = -.1,  right = -.1 }, -- italic psi
 
-                        [0x1D659] = { left = -.1, right = -.1 }, -- sans bold italic d
-                        [0x1D65C] = { left = -.1, right = -.1 }, -- sans bold italic g
+                        [0x1D659] = { left = -.1,  right = -.1 }, -- sans bold italic d
+                        [0x1D65C] = { left = -.1,  right = -.1 }, -- sans bold italic g
 
-                        [0x1D409] = { left = .1, right = .1 }, -- bold upright J
-                        [0x1D412] = { left = .1, right = .1 }, -- bold upright S
+                        [0x1D409] = { left =  .1,  right =  .1 }, -- bold upright J
+                        [0x1D412] = { left =  .1,  right =  .1 }, -- bold upright S
 
-                        [0x1D509] = { left = .1, right = .1 }, -- fraktur F
-                        [0x1D50C] = { left = .1, right = .1 }, -- fraktur I
-                        [0x1D50D] = { left = .1, right = .1 }, -- fraktur J
-                        [0x1D51D] = { left = .1, right = .1 }, -- fraktur Z
+                        [0x1D509] = { left =  .1,  right =  .1 }, -- fraktur F
+                        [0x1D50C] = { left =  .1,  right =  .1 }, -- fraktur I
+                        [0x1D50D] = { left =  .1,  right =  .1 }, -- fraktur J
+                        [0x1D51D] = { left =  .1,  right =  .1 }, -- fraktur Z
 
-                        [0x1D538] = { left = .1, right = .1 }, -- doublestruck A
-                        [0x1D539] = { left = .1, right = .1 }, -- doublestruck B
-                        [0x1D53C] = { left = .1, right = .1 }, -- doublestruck E
-                        [0x1D53D] = { left = .1, right = .1 }, -- doublestruck F
-                        [0x1D541] = { left = .1, right = .1 }, -- doublestruck J
-                        [0x1D542] = { left = .1, right = .1 }, -- doublestruck K
-                        [0x1D543] = { left = .1, right = .1 }, -- doublestruck L
-                        [0x1D547] = { left = .1, right = .1 }, -- doublestruck P
-                        [0x1D549] = { left = .1, right = .1 }, -- doublestruck R
-                        [0x1D54A] = { left = .1, right = .1 }, -- doublestruck S
-                        [0x1D54B] = { left = .1, right = .1 }, -- doublestruck T
-                        [0x1D54D] = { left = .1, right = .1 }, -- doublestruck V
-                        [0x1D550] = { left = .1, right = .1 }, -- doublestruck Y
+                        [0x1D538] = { left =  .1,  right =  .1 }, -- doublestruck A
+                        [0x1D539] = { left =  .1,  right =  .1 }, -- doublestruck B
+                        [0x1D53C] = { left =  .1,  right =  .1 }, -- doublestruck E
+                        [0x1D53D] = { left =  .1,  right =  .1 }, -- doublestruck F
+                        [0x1D541] = { left =  .1,  right =  .1 }, -- doublestruck J
+                        [0x1D542] = { left =  .1,  right =  .1 }, -- doublestruck K
+                        [0x1D543] = { left =  .1,  right =  .1 }, -- doublestruck L
+                        [0x1D547] = { left =  .1,  right =  .1 }, -- doublestruck P
+                        [0x1D549] = { left =  .1,  right =  .1 }, -- doublestruck R
+                        [0x1D54A] = { left =  .1,  right =  .1 }, -- doublestruck S
+                        [0x1D54B] = { left =  .1,  right =  .1 }, -- doublestruck T
+                        [0x1D54D] = { left =  .1,  right =  .1 }, -- doublestruck V
+                        [0x1D550] = { left =  .1,  right =  .1 }, -- doublestruck Y
 
-                        [0x1D506] = { left = .1, right = .1 }, -- fraktur C
+                        [0x1D506] = { left =  .1,  right =  .1 }, -- fraktur C
 
-                        [0x00393] = { left = .1, right = .1 }, -- upfight Gamma
-                        [0x00396] = { left = .1, right = .1 }, -- upfight Zeta
+                        [0x00393] = { left =  .1,  right =  .1 }, -- upfight Gamma
+                        [0x00396] = { left =  .1,  right =  .1 }, -- upfight Zeta
 
-                        [0x1D5D8] = { left = .1, right = .1 }, -- sans bold E
-                        [0x1D5D9] = { left = .1, right = .1 }, -- sans bold F
-                     -- [0x1D5DD] = { left = .2, right = .2 }, -- sans bold J -- nope
-                        [0x1D5DF] = { left = .1, right = .1 }, -- sans bold L
-                        [0x1D5E6] = { left = .1, right = .1 }, -- sans bold S
+                        [0x1D5D8] = { left =  .1,  right =  .1 }, -- sans bold E
+                        [0x1D5D9] = { left =  .1,  right =  .1 }, -- sans bold F
+                     -- [0x1D5DD] = { left =  .2,  right =  .2 }, -- sans bold J -- nope
+                        [0x1D5DF] = { left =  .1,  right =  .1 }, -- sans bold L
+                        [0x1D5E6] = { left =  .1,  right =  .1 }, -- sans bold S
 
-                        [0x1D61A] = { left = .1, right = .1 }, -- sans italic S
+                        [0x1D61A] = { left =  .1,  right =  .1 }, -- sans italic S
 
-                        [0x1D5A2] = { left = .1, right = .1 }, -- sans C
-                        [0x1D5A4] = { left = .1, right = .1 }, -- sans E
-                        [0x1D5A5] = { left = .1, right = .1 }, -- sans F
-                     -- [0x1D5AB] = { left = .1, right = .1 }, -- sans L -- nope
-                        [0x1D5AF] = { left = .1, right = .1 }, -- sans P
-                        [0x1D5B2] = { left = .1, right = .1 }, -- sans S
-                        [0x1D5B9] = { left = .1, right = .1 }, -- sans Z
+                        [0x1D5A2] = { left =  .1,  right =  .1 }, -- sans C
+                        [0x1D5A4] = { left =  .1,  right =  .1 }, -- sans E
+                        [0x1D5A5] = { left =  .1,  right =  .1 }, -- sans F
+                     -- [0x1D5AB] = { left =  .1,  right =  .1 }, -- sans L -- nope
+                        [0x1D5AF] = { left =  .1,  right =  .1 }, -- sans P
+                        [0x1D5B2] = { left =  .1,  right =  .1 }, -- sans S
+                        [0x1D5B9] = { left =  .1,  right =  .1 }, -- sans Z
 
-                        [0x1D4A0] = { left = .1, right = .1 }, -- script E
-                        [0x1D4AE] = { left = .1, right = .1 }, -- script S
-                        [0x1D4B4] = { left = .1, right = .1 }, -- script Y
+                        [0x1D4A0] = { left =  .1,  right =  .1 }, -- script E
+                        [0x1D4AE] = { left =  .1,  right =  .1 }, -- script S
+                        [0x1D4B4] = { left =  .1,  right =  .1 }, -- script Y
 
-                     -- [0x4A] = { left = .2, right = .2 }, -- J
-                        [0x4C] = { left = .1, right = .1 }, -- L
-                        [0x53] = { left = .1, right = .1 }, -- S
-                        [0x5A] = { left = .1, right = .1 }, -- Z
+                     -- [0x0004A] = { left =  .2,  right =  .2 }, -- J
+                        [0x0004C] = { left =  .1,  right =  .1 }, -- L
+                        [0x00053] = { left =  .1,  right =  .1 }, -- S
+                        [0x0005A] = { left =  .1,  right =  .1 }, -- Z
 
                         [0x1D43D] = { left = -.1,  right = -.1  }, -- italic J
                         [0x1D409] = { left = -.1,  right = -.1  }, -- bold J
@@ -598,16 +401,17 @@ return {
                 --         0x7C,
                 --     },
                 -- },
+                -- this is the mkiv section
+                {
+                    tweak   = "emulatelmtx",
+                    feature = "emulatelmtx",
+                    comment = "this is for mkiv",
+                },
             },
         },
         bigslots = {
             1, 3, 5, 7 -- In fact, 6 is the last one.
         },
-        --
-        -- experimental fixes for mkiv:
-        --
-        dimensions = dimensions,
-        kerns = kerns,
     },
     filenames = {
         ["latinmodern-math-regular.otf"] = {
@@ -805,3 +609,93 @@ return {
         },
     }
 }
+
+-- For now we keep these commented as they show where we came from.
+
+-- [0x00060] = { yoffset = -0.05  }, -- grave
+-- [0x000B4] = { yoffset = -0.05  }, -- acute
+-- [0x002C6] = { yoffset = -0.05  }, -- hat
+-- [0x002DC] = { yoffset = -0.05  }, -- tilde
+-- [0x000AF] = { yoffset = -0.075 }, -- bar
+-- [0x002D8] = { yoffset = -0.05  }, -- breve
+-- [0x002D9] = { yoffset = -0.05  }, -- dot
+-- [0x000A8] = { yoffset = -0.05  }, -- ddot
+-- [0x020DB] = { yoffset = 0.2    }, -- dddot (done below!)
+-- [0x002DA] = { width = 0        }, -- ring (bounding box is wrong)
+-- [0x002C7] = { yoffset = -0.05  }, -- check
+-- [0x020D7] = { yoffset = -0.05  }, -- vec
+
+-- [0x00300] = { yoffset = -0.03,  all = true }, -- widegrave
+-- [0x00301] = { yoffset = -0.03,  all = true }, -- wideacute
+-- [0x00302] = { yoffset = -0.075, all = true }, -- widehat
+-- [0x00303] = { yoffset = -0.05,  all = true }, -- widetilde
+-- [0x00304] = { yoffset = -0.02,  all = true }, -- widebar
+-- [0x00306] = { yoffset = -0.05,  all = true }, -- widebreve
+-- [0x00307] = { yoffset = -0.027, all = true }, -- widedot
+-- [0x00308] = { yoffset = -0.027, all = true }, -- wideddot
+-- [0x020DB] = { yoffset = -0.065, all = true }, -- widedddot
+-- [0x0030C] = { yoffset = -0.05,  all = true }, -- widecheck
+-- [0x0030A] = { yoffset = -0.025, all = true }, -- widering
+
+-- [0x0212C] = { width = 0.95, italic = 0.05 }, -- script B
+-- [0x1D49E] = { width = 0.8,  italic = 0.25 }, -- script C
+-- [0x1D49F] = { width = 0.9,  italic = 0.11 }, -- script D
+-- [0x02130] = { width = 0.85, italic = 0.18 }, -- script E
+-- [0x02131] = { width = 0.75, italic = 0.3  }, -- script F
+-- [0x1D4A2] = { width = 0.9,  italic = 0.11 }, -- script G
+-- [0x0210B] = { width = 0.85, italic = 0.18 }, -- script H
+-- [0x02110] = { width = 0.8,  italic = 0.25 }, -- script I
+-- [0x1D4A5] = { width = 0.8,  italic = 0.25 }, -- script J
+-- [0x1D4A6] = { width = 0.9,  italic = 0.11 }, -- script K
+-- [0x02112] = { width = 0.95, italic = 0.05 }, -- script L
+-- [0x02133] = { width = 0.9,  italic = 0.11 }, -- script M
+-- [0x1D4A9] = { width = 0.85, italic = 0.18 }, -- script N
+-- [0x1D4AA] = { width = 0.95, italic = 0.05 }, -- script O
+-- [0x1D4AB] = { width = 0.8,  italic = 0.25 }, -- script P
+-- [0x1D4AB] = { width = 0.95, italic = 0.05 }, -- script Q
+-- [0x0211B] = { width = 0.95, italic = 0.05 }, -- script R
+-- [0x1D4AE] = { width = 0.9,  italic = 0.11 }, -- script S
+-- [0x1D4AF] = { width = 0.75, italic = 0.33 }, -- script T
+-- [0x1D4B0] = { width = 0.9,  italic = 0.11 }, -- script U
+-- [0x1D4B1] = { width = 0.8,  italic = 0.25 }, -- script V
+-- [0x1D4B2] = { width = 0.8,  italic = 0.25 }, -- script W
+-- [0x1D4B3] = { width = 0.9,  italic = 0.11 }, -- script X
+-- [0x1D4B4] = { width = 0.85, italic = 0.18 }, -- script Y
+-- [0x1D4B5] = { width = 0.95, italic = 0.05 }, -- script Z
+
+-- Setting anchors to shift the location of accents
+-- Note: Many non-italic alphabets are wiped below
+-- Todo: Check the less common italic alphabets
+
+--                 {
+--                     -- For non-italic alphabets we
+--                     -- remove italic correction.
+--                     tweak = "wipeitalics",
+--                     list  = {
+--                      -- "digitsbold",
+--                      -- "digitsdoublestruck",
+--                      -- "digitsmonospace",
+--                      -- "digitsnormal",
+--                      -- "digitssansserifbold",
+--                      -- "digitssansserifnormal",
+--                      -- "lowercasebold",
+--                      -- "lowercaseboldfraktur",
+--                      -- "lowercasedoublestruck",
+--                      -- "lowercasefraktur",
+--                         "lowercasemonospace",
+--                         -- "lowercasenormal",
+--                      -- "lowercasesansserifbold",
+--                      -- "lowercasesansserifnormal",
+--                      -- "lowercasegreeknormal",
+--                         "uppercasebold",
+--                      -- "uppercaseboldfraktur",
+--                      -- "uppercasedoublestruck",
+--                      -- "uppercasefraktur",
+--                      -- "uppercasegreekbold",
+--                      -- "uppercasegreeknormal",
+--                      -- "uppercasegreeksansserifbold",
+--                         "uppercasemonospace",
+--                         "uppercasesansserifbold",
+--                         "uppercasesanserifnormal",
+--                     },
+--                  },

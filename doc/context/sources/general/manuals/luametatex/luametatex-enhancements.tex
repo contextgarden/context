@@ -257,10 +257,11 @@ the \UNICODE\ input is on purpose not built|-|in and can be handled by a macro
 package during callback processing. We have made some practical choices and the
 user has to live with those.
 
-Output in byte|-|sized chunks can be achieved by using characters just outside of
-the valid \UNICODE\ range, starting at the value $1{,}114{,}112$ (0x110000). When
-the time comes to print a character $c>=1{,}114{,}112$, \LUATEX\ will actually
-print the single byte corresponding to $c$ minus 1{,}114{,}112.
+% Output in byte|-|sized chunks can be achieved by using characters just outside of
+% the valid \UNICODE\ range, starting at the value $1{,}114{,}112$ (0x110000). When
+% the time comes to print a character $c>=1{,}114{,}112$, \LUATEX\ will actually
+% print the single byte corresponding to $c$ minus 1{,}114{,}112. This feature has
+% been dropped.
 
 Contrary to other \TEX\ engines, the output to the terminal is as|-|is so there
 is no escaping with \type {^^}. We operate in a \UTF\ universe. Because we

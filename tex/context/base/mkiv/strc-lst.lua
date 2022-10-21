@@ -98,7 +98,10 @@ local v_reference       = variables.reference
 local v_local           = variables["local"]
 local v_default         = variables.default
 
--- for the moment not public --
+local cheats = {
+    [variables.fit]   = true,
+    [variables.tight] = true,
+}
 
 local function zerostrippedconcat(t,separator)
     local f = 1
@@ -196,7 +199,7 @@ local function finalizer()
             local i = r.internal
             local f = flaginternals[i]
             local v = usedviews[i]
-            if cheat and v then
+            if cheat and v and cheats[v] then -- cheats check added, to be tested by RKB
                 -- this permits runs=2 with interactivity
                 r.view = v
             end

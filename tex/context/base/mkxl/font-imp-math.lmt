@@ -20,56 +20,55 @@ local texconditionals    = tex.conditionals
 
 -- tfmdata.properties.mathnolimitsmode = tonumber(value) or 0
 
-local splitter  = lpeg.splitat(",",tonumber)
-local lpegmatch = lpeg.match
+-- local splitter  = lpeg.splitat(",",tonumber)
+-- local lpegmatch = lpeg.match
+--
+-- local function initialize(tfmdata,value)
+--     local mathparameters = tfmdata.mathparameters
+--     if mathparameters then
+--         local sup, sub
+--         if type(value) == "string" then
+--             sup, sub = lpegmatch(splitter,value) -- settings_to_array
+--             if not sup then
+--                 sub, sup = 0, 0
+--             elseif not sub then
+--                 sub, sup = sup, 0
+--             end
+--         elseif type(value) == "number" then
+--             sup, sub = 0, value
+--         end
+--         if sup then
+--             mathparameters.NoLimitSupFactor = sup
+--         end
+--         if sub then
+--             mathparameters.NoLimitSubFactor = sub
+--         end
+--     end
+-- end
+--
+-- registerotffeature {
+--     name         = "mathnolimitsmode",
+--     description  = "influence nolimits placement",
+--     initializers = {
+--         base = initialize,
+--         node = initialize,
+--     }
+-- }
 
-local function initialize(tfmdata,value)
-    local mathparameters = tfmdata.mathparameters
-    if mathparameters then
-        local sup, sub
-        if type(value) == "string" then
-            sup, sub = lpegmatch(splitter,value) -- settings_to_array
-            if not sup then
-                sub, sup = 0, 0
-            elseif not sub then
-                sub, sup = sup, 0
-            end
-        elseif type(value) == "number" then
-            sup, sub = 0, value
-        end
-        if sup then
-            mathparameters.NoLimitSupFactor = sup
-        end
-        if sub then
-            mathparameters.NoLimitSubFactor = sub
-        end
-    end
-end
-
-registerotffeature {
-    name         = "mathnolimitsmode",
-    description  = "influence nolimits placement",
-    initializers = {
-        base = initialize,
-        node = initialize,
-    }
-}
-
-
--- this will become a mode in the engine
-
-local function initialize(tfmdata,value)
-    tfmdata.properties.nostackmath = value and true
-end
-
-registerotffeature {
-    name        = "nostackmath",
-    description = "disable math stacking mechanism",
-    initializers = {
-        base = initialize,
-        node = initialize,
-    }
-}
+-- this will become a mode in the engine -- done
+--
+-- local function initialize(tfmdata,value)
+--     tfmdata.properties.nostackmath = value and true
+-- end
+--
+-- registerotffeature {
+--     name        = "nostackmath",
+--     description = "disable math stacking mechanism",
+--     initializers = {
+--         base = initialize,
+--         node = initialize,
+--     }
+-- }
 
 -- A quick and dirty and low level implementation but okay for testing:
 

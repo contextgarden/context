@@ -1411,7 +1411,7 @@ do  -- else too many locals
                     context(function()
                         busy = false
                         mathematics.finishfallbacks(tfmdata,specification,fallbacks)
-tfmdata.original = specification.specification
+                        tfmdata.original = specification.specification
                         local id = definefont(tfmdata)
                         csnames[id] = specification.cs
                         properties.id = id
@@ -1449,7 +1449,7 @@ tfmdata.original = specification.specification
                     end)
                     return
                 else
-tfmdata.original = specification.specification
+                    tfmdata.original = specification.specification
                     local id = definefont(tfmdata)
                     csnames[id] = specification.cs
                     properties.id = id

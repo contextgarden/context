@@ -52,15 +52,12 @@ unsigned char *aux_uni2str(unsigned unic)
             buf[0] = (unsigned char) (0xc0 | (unic >> 6));
             buf[1] = (unsigned char) (0x80 | (unic & 0x3f));
             buf[2] = '\0';
-        } else if (unic >= 0x110000) {
-            buf[0] = (unsigned char) (unic - 0x110000);
-            buf[1] = '\0';
         } else if (unic < 0x10000) {
             buf[0] = (unsigned char) (0xe0 | (unic >> 12));
             buf[1] = (unsigned char) (0x80 | ((unic >> 6) & 0x3f));
             buf[2] = (unsigned char) (0x80 | (unic & 0x3f));
             buf[3] = '\0';
-        } else {
+        } else if (unic < 0x110000) {
             unic -= 0x10000;
             int u = (int) (((unic & 0xf0000) >> 16) + 1);
             buf[0] = (unsigned char) (0xf0 | (u >> 2));

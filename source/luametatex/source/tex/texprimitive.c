@@ -185,7 +185,7 @@ static int tex_aux_room_in_hash(void)
 inline static halfword tex_aux_compute_hash(const char *j, int l)
 {
     halfword h = (unsigned const char) j[0];
-    for (int k = 1; k < l; k++) {
+    for (unsigned k = 1; k < l; k++) {
         h = (h + h + (unsigned const char) j[k]) % hash_prime;
     }
     return h;
@@ -765,18 +765,6 @@ void tex_print_cmd_chr(singleword cmd, halfword chr)
             tex_print_str_esc("char");
             tex_print_qhex(chr);
             break;
-     // case math_char_given_cmd:
-     //     /*tex
-     //         Okay, it's better for old macro packages that mess with meaning to report a more
-     //         traditional value. A compromise. But, this might be dropped.
-     //     */
-     //     tex_print_str_esc("mathchar");
-     //     tex_show_mathcode_value(tex_mathchar_from_integer(chr, tex_mathcode), tex_mathcode);
-     //     break;
-     // case math_char_xgiven_cmd:
-     //     tex_print_str_esc("Umathchar");
-     //     tex_show_mathcode_value(tex_mathchar_from_integer(chr, umath_mathcode), umath_mathcode);
-     //     break;
         case lua_call_cmd:
             tex_aux_show_lua_call("luacall", chr);
             break;

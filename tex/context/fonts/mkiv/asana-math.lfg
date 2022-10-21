@@ -1,35 +1,3 @@
--- This patch code is moved from font-pat.lua to this goodies
--- files as it does not belong in the core code.
---
--- local patches = fonts.handlers.otf.enhancers.patches
---
--- local function patch(data,filename,threshold)
---     local m = data.metadata.math
---     if m then
---         local d = m.DisplayOperatorMinHeight or 0
---         if d < threshold then
---             patches.report("DisplayOperatorMinHeight(%s -> %s)",d,threshold)
---             m.DisplayOperatorMinHeight = threshold
---         end
---     end
--- end
---
--- patches.register("after","analyze math","asana",function(data,filename) patch(data,filename,1350) end)
---
--- local function less(value,target,original)
---     -- officially we should check the original
---     return 0.25 * value
--- end
-
--- Just don't use this font. It's not good enough for production unless we patch it
--- a lot, which we will not do unless we need it.
-
--- When set this will bypass the italic correction hackery!
-
--- local integral_variants = {  bottomright = -0.20 }
--- local integral_top      = {  topright    =  0.05 }
--- local integral_bottom   = {  bottomright = -0.25 }
-
 local common  = fonts.goodies.load("common-math.lfg")
 local presets = common.mathematics.tweaks.presets
 
@@ -70,32 +38,40 @@ return {
                 {
                     tweak = "addmirrors",
                 },
-                presets.matheulercalligraphic { rscale = 1    },
-                presets.mathrsfscript         { rscale = 1    },
-                presets.mathxitsarabic        { rscale = 0.95 },
+                presets.scripttocalligraphic { },
+                presets.rsfstoscript         { },
+                presets.rsfsuprighttoscript  { },
+                presets.moderntocalligraphic { },
+                presets.eulertocalligraphic  { },
+                presets.xitsarabic           { },
+                presets.fallbacks            { },
+                presets.moveitalics          { correct = true },
+                presets.moveitalics          { correct = true, letters = true },
+                presets.moveintegrals        { factor = 2 },
+                presets.wipeitalics          { },
                 {
                     tweak = "dimensions",
                     list  = {
                         -- nothing yet
                     }
                 },
-                -- {
-                --     tweak = "kerns",
-                --     list  = {
-                --         [0x2F] = {
-                            -- topleft     = -0.2,
-                            -- bottomleft  =  0,
-                            -- topright    =  0,
-                            -- bottomright =  -0.2,
-                --        },
-                --     },
-                -- },
-                -- {
-                --     tweak   = "fixprimes",
-                --     factor  = 0.85,
-                --     scale   = 0.65,
-                --     smaller = true,
-                -- },
+             -- {
+             --     tweak = "kerns",
+             --     list  = {
+             --         [0x2F] = {
+                         -- topleft     = -0.2,
+                         -- bottomleft  =  0,
+                         -- topright    =  0,
+                         -- bottomright =  -0.2,
+             --        },
+             --     },
+             -- },
+             -- {
+             --     tweak   = "fixprimes",
+             --     factor  = 0.85,
+             --     scale   = 0.65,
+             --     smaller = true,
+             -- },
                 {
                     tweak = "checkspacing",
                 },
@@ -114,6 +90,12 @@ return {
                 {
                     tweak = "setoptions",
                     set   = { "ignorekerndimensions" }
+                },
+                -- this is the mkiv section
+                {
+                    tweak   = "emulatelmtx",
+                    feature = "emulatelmtx",
+                    comment = "this is for mkiv",
                 },
             },
         },

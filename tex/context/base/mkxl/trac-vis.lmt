@@ -48,6 +48,7 @@ local getattr             = nuts.getattr
 local getsubtype          = nuts.getsubtype
 local getbox              = nuts.getbox
 local getlist             = nuts.getlist
+local getprev             = nuts.getprev
 local getnext             = nuts.getnext
 local getboth             = nuts.getboth
 local getwhd              = nuts.getwhd
@@ -1313,7 +1314,9 @@ local ruledstrut do
             if getsubtype(current) == strut_code  then
                 local w = strut_size
                 local a = getattr(current,a_mathaxis)
+                setattr(current,a_layer,l_strut)
                 if a then
+                    local p = getprev(current)
                     local b, e
                     for n in traverseid(math_code,current) do
                         e = n
@@ -1336,17 +1339,17 @@ local ruledstrut do
                     head, current, rule = nuts.remove(head,current)
                     local kern = new_kern(-w)
                     if a == 2 then
-                        insertnodebefore(head,e,kern)
-                        insertnodebefore(head,e,rule)
+                        head = insertnodebefore(head,e,kern)
+                        head = insertnodebefore(head,e,rule)
                     else
                         insertnodeafter(head,b,kern)
                         insertnodeafter(head,b,rule)
                     end
+                    current = p
                 else
                     setwidth(current,w)
-                    head, current = insertnodeafter(head,current,new_kern(w))
+                    head, current = insertnodeafter(head,current,new_kern(-w))
                 end
-                setattr(current,a_layer,l_strut)
             end
         end
         return head, current

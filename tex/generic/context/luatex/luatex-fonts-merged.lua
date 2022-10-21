@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2022-10-15 10:32
+-- merge date  : 2022-10-21 21:11
 
 do -- begin closure to overcome local limits and interference
 
@@ -37982,27 +37982,6 @@ local fonts=fonts
 local handlers=fonts.handlers
 local registerotffeature=handlers.otf.features.register
 local registerafmfeature=handlers.afm.features.register
-local function initialize(tfmdata,key,value)
- local factor=tonumber(value) or 1
- for unicode,character in next,tfmdata.characters do
-  local olditalic=character.italic
-  if olditalic and olditalic~=0 then
-   character.width=character.width+olditalic
-   character.italic=0
-   character.bottomright=-factor*olditalic
-  end
- end
-end
-local specification={
- name="italicwidths",
- description="add italic to width",
- manipulators={
-  base=initialize,
-  node=initialize,
- }
-}
-registerotffeature(specification)
-registerafmfeature(specification)
 local function initialize(tfmdata,value) 
  if value then
   local parameters=tfmdata.parameters

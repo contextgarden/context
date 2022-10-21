@@ -667,9 +667,10 @@
 \mutable\let\somefontsizex\empty
 \mutable\let\somefontsizey\empty
 
-\newcount\scaledfontmode  % also used at the lua end
-\newcount\scaledfontsize  % also used at the lua end
-\newcount\lastfontid      % also used at the lua end / tex end
+% \newcount\scaledfontmode % font-lib.mklx
+% \newcount\scaledfontsize % font-lib.mklx
+% \newcount\lastfontid     % font-lib.mklx
+
 \newtoks \everydefinefont
 
 \aliased\let\c_font_feature_inheritance_fontnone  \zerocount  % none
@@ -692,13 +693,11 @@
 
 \immutable\dimensiondef\d_font_scaled_default 10pt
 
-\newcount\c_font_future_glyph_scale
-
 % todo: move all to lua: use localcall for resolving filename
 
-\newcount\c_font_future_glyph_scale
-\newcount\c_font_scaled_font_mode_saved
-\newcount\c_font_scaled_points
+% \newcount\c_font_future_glyph_scale     % font-lib.mklx
+% \newcount\c_font_scaled_font_mode_saved % font-lib.mklx
+% \newcount\c_font_scaled_points          % font-lib.mklx
 
 \mutable\let\somefontspec         \empty
 \mutable\let\lastrawfontcall      \relax
@@ -1218,7 +1217,7 @@
    \ifcsname\??fontenvironments          \s!default\s!text   \endcsname\lastnamedcs\else
      \csname\??fontenvironments          \s!default          \endcsname            \fi}
 
-\setvalue{\??fontenvironments\s!default}{1}
+\defcsname\??fontenvironments\s!default\endcsname{1}
 
 %D In the following macros we use \type {\currentxfontsize} to hold the current
 %D x||size of the font. This enables us to support for instance \type {\sl} inside a
@@ -1313,10 +1312,10 @@
 % todo: class:size
 % todo: make assignments global
 
-\letvalue\??fontenvironments\empty % so we default to empty
+\letcsname\??fontenvironments\endcsname\empty % so we default to empty
 
 \permanent\def\bodyfontvariable#parameter%
-  {\csname\??fontenvironments
+  {\begincsname\??fontenvironments
      \ifcsname\??fontenvironments\fontclass\normalizedbodyfontsize#parameter\endcsname\fontclass\normalizedbodyfontsize#parameter\orelse
      \ifcsname\??fontenvironments\fontclass                       #parameter\endcsname\fontclass                       #parameter\orelse
      \ifcsname\??fontenvironments          \normalizedbodyfontsize#parameter\endcsname          \normalizedbodyfontsize#parameter\orelse
@@ -1329,13 +1328,20 @@
    \ifcsname\??fontenvironments          \normalizedbodyfontsize#parameter\endcsname\lastnamedcs\orelse
    \ifcsname\??fontenvironments\s!default                       #parameter\endcsname\lastnamedcs\fi}
 
-\permanent\def\bodyfontsizevariable#size#parameter%
-  {\csname\??fontenvironments
-     \ifcsname\??fontenvironments\fontclass#size#parameter\endcsname\fontclass#size#parameter\orelse
-     \ifcsname\??fontenvironments\fontclass     #parameter\endcsname\fontclass     #parameter\orelse
-     \ifcsname\??fontenvironments          #size#parameter\endcsname          #size#parameter\orelse
-     \ifcsname\??fontenvironments\s!default     #parameter\endcsname\s!default     #parameter\fi
-   \endcsname}
+% \permanent\def\bodyfontsizevariable#size#parameter%
+%   {\begincsname\??fontenvironments
+%      \ifcsname\??fontenvironments\fontclass#size#parameter\endcsname\fontclass#size#parameter\orelse
+%      \ifcsname\??fontenvironments\fontclass     #parameter\endcsname\fontclass     #parameter\orelse
+%      \ifcsname\??fontenvironments          #size#parameter\endcsname          #size#parameter\orelse
+%      \ifcsname\??fontenvironments\s!default     #parameter\endcsname\s!default     #parameter\fi
+%    \endcsname}
+
+\def\font_bodyfontvariable#parameter%
+  {\ifcsname\??fontenvironments\fontclass\normalizedbodyfontsize#parameter\endcsname\lastnamedcs\orelse
+   \ifcsname\??fontenvironments\fontclass                       #parameter\endcsname\lastnamedcs\orelse
+   \ifcsname\??fontenvironments\v!all    \normalizedbodyfontsize#parameter\endcsname\lastnamedcs\orelse
+   \ifcsname\??fontenvironments          \normalizedbodyfontsize#parameter\endcsname\lastnamedcs\orelse
+   \ifcsname\??fontenvironments\s!default                       #parameter\endcsname\lastnamedcs\fi}
 
 \def\font_bodyfontsizevariable#size#parameter%
   {\ifcsname\??fontenvironments\fontclass#size#parameter\endcsname\lastnamedcs\orelse
@@ -2387,6 +2393,28 @@
    }%
    \gletcsname\??fontbodyfaces\fontbody\endcsname\font_basics_set_faces}
 
+% \permanent\def\currentbodyfontdimension#parameter% there can be factors here
+%   {\the\dimexpr
+%      \ifcsname\??fontenvironments\fontclass\normalizedbodyfontsize#parameter\endcsname
+%        \lastnamedcs
+%      \orelse\ifcsname\??fontenvironments\fontclass\s!default#parameter\endcsname
+%        \lastnamedcs
+%        \dimexpr\normalizedbodyfontsize\relax
+%      \orelse\ifcsname\??fontenvironments\normalizedbodyfontsize#parameter\endcsname
+%        \lastnamedcs
+%      \else
+%        \csname\??fontenvironments\s!default#parameter\endcsname
+%        \dimexpr\normalizedbodyfontsize\relax
+%      \fi
+%    \relax}
+
+% \setupbodyfontenvironment [all]     [12pt] [x=4pt,small=4pt]
+% \setupbodyfontenvironment [pagella] [12pt] [x=4pt,small=4pt]
+%
+% \setupbodyfont[pagella,12pt]
+%
+% \starttext normal {\tx tx} {\small small} \stoptext
+
 \permanent\def\currentbodyfontdimension#parameter% there can be factors here
   {\the\dimexpr
      \ifcsname\??fontenvironments\fontclass\normalizedbodyfontsize#parameter\endcsname
@@ -2394,6 +2422,8 @@
      \orelse\ifcsname\??fontenvironments\fontclass\s!default#parameter\endcsname
        \lastnamedcs
        \dimexpr\normalizedbodyfontsize\relax
+     \orelse\ifcsname\??fontenvironments\v!all\normalizedbodyfontsize#parameter\endcsname
+       \lastnamedcs
      \orelse\ifcsname\??fontenvironments\normalizedbodyfontsize#parameter\endcsname
        \lastnamedcs
      \else

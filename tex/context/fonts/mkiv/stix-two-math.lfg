@@ -1,10 +1,9 @@
--- When set this will bypass the italic correction hackery!
-local integral_variants = {  bottomright = -0.4 }
--- local integral_top      = {  topright    =  0.05 }
-local integral_bottom   = {  bottomright = -0.35 }
-
 local common  = fonts.goodies.load("common-math.lfg")
 local presets = common.mathematics.tweaks.presets
+
+local integral_variants = {  bottomright = -0.4 }
+----- integral_top      = {  topright    =  0.05 }
+local integral_bottom   = {  bottomright = -0.35 }
 
 return {
     name = "stix-two-math",
@@ -61,12 +60,35 @@ return {
                 {
                     tweak = "addmirrors",
                 },
-                presets.mathxitsarabic { rscale = 0.95 },
+                -- MS: we need to check this, I moved it up
+                {
+                    tweak   = "replacealphabets",
+                    list    = {
+                        {
+                            source   = "uppercasescript",
+                            target   = "uppercasecalligraphic",
+                        },
+                        {
+                            source   = "uppercasescript",
+                            target   = "uppercasescript",
+                            feature  = "ss01",
+                        },
+                    },
+                },
+                --
+                presets.scripttocalligraphic  { },
+                presets.rsfstoscript          { },
+                presets.rsfsuprighttoscript   { },
+                presets.moderntocalligraphic  { },
+                presets.eulertocalligraphic   { },
+                presets.xitsarabic            { rscale  = 0.95 },
+                presets.fallbacks            { },
+                presets.moveitalics           { correct = true },
+                presets.moveitalics          { correct = true, letters = true },
+                presets.moveintegrals         { },
+                presets.wipeitalics          { },
                 {
                     tweak = "simplifykerns",
-                },
-                presets.moveitalics {
-                    correct = true
                 },
                 {
                     tweak = "kerns",
@@ -95,20 +117,6 @@ return {
                         ["0x2231.variants.*"] = integral_variants, ["0x2231.parts.top"] = integral_top, ["0x2231.parts.bottom"] = integral_bottom,
                         ["0x2232.variants.*"] = integral_variants, ["0x2232.parts.top"] = integral_top, ["0x2232.parts.bottom"] = integral_bottom,
                         ["0x2233.variants.*"] = integral_variants, ["0x2233.parts.top"] = integral_top, ["0x2233.parts.bottom"] = integral_bottom,
-                    },
-                },
-                {
-                    tweak   = "replacealphabets",
-                    list    = {
-                        {
-                            source   = "uppercasescript",
-                            target   = "uppercasecalligraphic",
-                        },
-                        {
-                            source   = "uppercasescript",
-                            target   = "uppercasescript",
-                            feature  = "ss01",
-                        },
                     },
                 },
                 -- Accents are a mess. We migrate the extensibles from the combiners to the base accent
@@ -196,6 +204,12 @@ return {
                             }
                         }
                     }
+                },
+                -- this is the mkiv section
+                {
+                    tweak   = "emulatelmtx",
+                    feature = "emulatelmtx",
+                    comment = "this is for mkiv",
                 },
             },
         },

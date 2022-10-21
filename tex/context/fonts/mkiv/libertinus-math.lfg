@@ -47,37 +47,20 @@ return {
                 {
                     tweak = "addmirrors",
                 },
-                presets.matheulercalligraphic { rscale = 0.92 },
-                presets.mathrsfscript         { rscale = 0.92 },
-                presets.mathxitsarabic        { rscale = 0.85 },
+                presets.scripttocalligraphic { },
+                presets.rsfstoscript         { rscale  = 0.97 },
+                presets.rsfsuprighttoscript  { rscale  = 0.97 },
+                presets.moderntocalligraphic { rscale  = 0.97 },
+                presets.eulertocalligraphic  { rscale  = 0.97 },
+                presets.xitsarabic           { rscale  = 0.85 },
+                presets.fallbacks            { },
+                presets.moveitalics          { correct = true },
+                presets.moveitalics          { correct = true, letters = true },
+                presets.moveintegrals        { factor = 1.5 },
+                presets.wipeitalics          { },
                 {
                     tweak = "simplifykerns",
                 },
-                {
-                    -- When it makes sense we get rid of italics.
-                    tweak   = "moveitalics",
-                    correct = true,
-                    list    = {
-                        "lowercasenormal",
-                        "lowercaseitalic",
-                        "lowercasebold",
-                        "lowercasebolditalic",
-                        "lowercasegreeknormal",
-                        "lowercasegreekitalic",
-                        "lowercasegreekbold",
-                        "lowercasegreekbolditalic",
-                        "uppercasenormal",
-                        "uppercaseitalic",
-                        "uppercasebold",
-                        "uppercasebolditalic",
-                        "uppercasegreeknormal",
-                        "uppercasegreekitalic",
-                        "uppercasegreekbold",
-                        "uppercasegreekbolditalic",
-                        mathematics.tweaks.subsets.dotless,
-                    }
-                },
-
                 {
                     tweak = "kerns",
                     list  = {
@@ -179,6 +162,12 @@ return {
                     tweak = "setoptions",
                     set   = { "ignorekerndimensions" }
                 },
+                -- this is the mkiv section
+                {
+                    tweak   = "emulatelmtx",
+                    feature = "emulatelmtx",
+                    comment = "this is for mkiv",
+                },
             },
         },
         bigslots = {
@@ -187,39 +176,39 @@ return {
     },
 }
 
--- Old values
-                -- {
-                --     tweak = "dimensions",
-                --     list  = {
-                --      -- [0x00060] = { yoffset = -0.075 }, -- grave
-                --      -- [0x000B4] = { yoffset = -0.075 }, -- acute
-                --      -- [0x002C6] = { yoffset = -0.075 }, -- hat
-                --      -- [0x002DC] = { yoffset = -0.075 }, -- tilde
-                --      -- [0x000AF] = { yoffset = -0.1   }, -- bar
-                --      -- [0x002D8] = { yoffset = -0.075 }, -- breve
-                --      -- [0x002D9] = { yoffset = -0.05  }, -- dot
-                --      -- [0x000A8] = { yoffset = -0.02  }, -- ddot
-                --      -- [0x020DB] = { yoffset = -0.02  }, -- dddot
-                --      -- [0x002DA] = { yoffset = -0.1   }, -- ring
-                --      -- [0x002C7] = { yoffset = -0.1   }, -- check
-                --      -- [0x020D7] = { yoffset = -0.1   }, -- vec
+-- For now we keep these commented as they show where we came from.
 
-                --      -- [0x00300] = { yoffset = -0.1,  all = true }, -- widegrave
-                --      -- [0x00301] = { yoffset = -0.1,  all = true }, -- wideacute
-                --      -- [0x00302] = { yoffset = -0.1,  all = true }, -- widehat
-                --      -- [0x00303] = { yoffset = -0.09, all = true }, -- widetilde
-                --      -- [0x00304] = { yoffset = -0.12, all = true }, -- widebar
-                --      -- [0x00306] = { yoffset = -0.05, all = true }, -- widebreve
-                --      -- [0x00307] = { yoffset = -0.02, all = true }, -- widedot
-                --      -- [0x00308] = { yoffset = -0.02, all = true }, -- wideddot
-                --      -- [0x020DB] = { yoffset = -0.1,  all = true }, -- widedddot
-                --      -- [0x0030A] = { yoffset = -0.12, all = true }, -- widering
-                --      -- [0x0030C] = { yoffset = -0.04, all = true }, -- widecheck
+-- {
+--     tweak = "dimensions",
+--     list  = {
+--      -- [0x00060] = { yoffset = -0.075 }, -- grave
+--      -- [0x000B4] = { yoffset = -0.075 }, -- acute
+--      -- [0x002C6] = { yoffset = -0.075 }, -- hat
+--      -- [0x002DC] = { yoffset = -0.075 }, -- tilde
+--      -- [0x000AF] = { yoffset = -0.1   }, -- bar
+--      -- [0x002D8] = { yoffset = -0.075 }, -- breve
+--      -- [0x002D9] = { yoffset = -0.05  }, -- dot
+--      -- [0x000A8] = { yoffset = -0.02  }, -- ddot
+--      -- [0x020DB] = { yoffset = -0.02  }, -- dddot
+--      -- [0x002DA] = { yoffset = -0.1   }, -- ring
+--      -- [0x002C7] = { yoffset = -0.1   }, -- check
+--      -- [0x020D7] = { yoffset = -0.1   }, -- vec
 
-                --      -- [0x1D44F] = { width = 1, italic = 0, anchor = 1.5 }, -- b (6.8)
-                --      -- [0x1D451] = { width = 1, italic = 0, anchor = 1.2 }, -- d (6.8)
-                --      -- [0x0210E] = { width = 1, italic = 0, anchor = 1.5 }, -- h (6.8)
-                --      -- [0x1D458] = { width = 1, italic = 0, anchor = 1.5 }, -- k (6.8)
-                --     },
-                -- },
+--      -- [0x00300] = { yoffset = -0.1,  all = true }, -- widegrave
+--      -- [0x00301] = { yoffset = -0.1,  all = true }, -- wideacute
+--      -- [0x00302] = { yoffset = -0.1,  all = true }, -- widehat
+--      -- [0x00303] = { yoffset = -0.09, all = true }, -- widetilde
+--      -- [0x00304] = { yoffset = -0.12, all = true }, -- widebar
+--      -- [0x00306] = { yoffset = -0.05, all = true }, -- widebreve
+--      -- [0x00307] = { yoffset = -0.02, all = true }, -- widedot
+--      -- [0x00308] = { yoffset = -0.02, all = true }, -- wideddot
+--      -- [0x020DB] = { yoffset = -0.1,  all = true }, -- widedddot
+--      -- [0x0030A] = { yoffset = -0.12, all = true }, -- widering
+--      -- [0x0030C] = { yoffset = -0.04, all = true }, -- widecheck
 
+--      -- [0x1D44F] = { width = 1, italic = 0, anchor = 1.5 }, -- b (6.8)
+--      -- [0x1D451] = { width = 1, italic = 0, anchor = 1.2 }, -- d (6.8)
+--      -- [0x0210E] = { width = 1, italic = 0, anchor = 1.5 }, -- h (6.8)
+--      -- [0x1D458] = { width = 1, italic = 0, anchor = 1.5 }, -- k (6.8)
+--     },
+-- },

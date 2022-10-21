@@ -1,20 +1,8 @@
-local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
-
-    local kern_V = { bottomright = { { kern = -250 } } }
-    local kern_W = kern_W
-
-    kerns = {
-        [0x1D449] = kern_V, -- 𝑉
-        [0x1D44A] = kern_W, -- 𝑊
-    }
-
-end
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
 
 local integral_variants = {  bottomright = -0.20 }
 local integral_bottom   = {  bottomright = -0.25 }
-
-local common  = fonts.goodies.load("common-math.lfg")
-local presets = common.mathematics.tweaks.presets
 
 return {
     name = "dejavu-math",
@@ -54,10 +42,17 @@ return {
                 {
                     tweak = "addmirrors",
                 },
-                presets.matheulercalligraphic { rscale = 1.02 },
-                presets.mathrsfscript         { rscale = 1.02 },
-                presets.mathxitsarabic        { rscale = 1.05 },
-                presets.moveitalics           { correct = true },
+                presets.scripttocalligraphic { },
+                presets.rsfstoscript         { rscale = 1.02 },
+                presets.rsfsuprighttoscript  { rscale = 1.02 },
+                presets.moderntocalligraphic { rscale = 1.02 },
+                presets.eulertocalligraphic  { rscale = 1.02 },
+                presets.xitsarabic           { rscale = 1.05 },
+                presets.fallbacks            { },
+                presets.moveitalics          { correct = true },
+                presets.moveitalics          { correct = true, letters = true },
+                presets.moveintegrals        { factor = 1.5 }, -- we need to check this
+                presets.wipeitalics          { },
                 {
                     tweak = "kerns",
                     list  = {
@@ -71,7 +66,7 @@ return {
                         ["0x221A.parts.top"]    = { topright =  0.2,                      }, -- right radical top
                         ["0x221A.parts.bottom"] = {                   bottomright =  0.2  }, -- right radical bottom
                         ["0x221A.variants.*"]   = { topright =  0.2,  bottomright =  0.2  }, -- right radical variants
-                        [0x27E9]                = { topright = -0.1,  bottomright = -0.1  },   -- angle
+                        [0x27E9]                = { topright = -0.1,  bottomright = -0.1  }, -- angle
                         ["0x27E9.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
                         [0x27EB]                = { topright = -0.1,  bottomright = -0.1  },
                         ["0x27EB.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
@@ -167,6 +162,12 @@ return {
                     tweak   = "addfourier",
                     variant = 1,
                 },
+                -- this is the mkiv section
+                {
+                    tweak   = "emulatelmtx",
+                    feature = "emulatelmtx",
+                    comment = "this is for mkiv",
+                },
             },
         },
         alternates = {
@@ -183,15 +184,14 @@ return {
     },
 }
 
+-- For now we keep these commented as they show where we came from.
 
-
--- Old
-                -- {
-                --     tweak = "dimensions",
-                --     list  = {
-                --         [0x1D44E]           = { width = 1,   italic = 0, anchor = 0.9 }, -- a
-                --      -- [0x1D449]           = { width =  .8, italic = .2 },
-                --      -- [0x1D44A]           = { width =  .8, italic = .2 },
-                --         ["0x1D449:0x1D44A"] = { width =  .8, italic = .2 },
-                --     }
-                -- },
+-- {
+--     tweak = "dimensions",
+--     list  = {
+--         [0x1D44E]           = { width = 1,   italic = 0, anchor = 0.9 }, -- a
+--      -- [0x1D449]           = { width =  .8, italic = .2 },
+--      -- [0x1D44A]           = { width =  .8, italic = .2 },
+--         ["0x1D449:0x1D44A"] = { width =  .8, italic = .2 },
+--     }
+-- },

@@ -112,6 +112,10 @@ local pdf_named               = pdfconstant("Named")
 local autoprefix              = "#"
 local usedautoprefixes        = { }
 
+function codeinjections.setautoprefix(prefix)
+    autoprefix = prefix ~= "" and prefix or autoprefix
+end
+
 local function registerautoprefix(name)
     local internal = autoprefix .. name
     if usedautoprefixes[internal] == nil then

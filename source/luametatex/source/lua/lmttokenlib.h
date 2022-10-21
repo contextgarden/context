@@ -28,7 +28,7 @@ typedef enum command_item_types {
 } command_item_types;
 
 extern void     lmt_token_list_to_lua         (lua_State *L, halfword p);
-extern void     lmt_token_list_to_luastring   (lua_State *L, halfword p, int nospace, int strip);
+extern void     lmt_token_list_to_luastring   (lua_State *L, halfword p, int nospace, int strip, int wipe);
 extern halfword lmt_token_list_from_lua       (lua_State *L, int slot);
 extern halfword lmt_token_code_from_lua       (lua_State *L, int slot);
 

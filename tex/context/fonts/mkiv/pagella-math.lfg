@@ -1,34 +1,3 @@
-local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
-
-    local kern_V   = { bottomright = { { kern = -200 } } }
-    local kern_W   = { bottomright = { { kern = -100 } } }
-
-    dimensions = {
-        default = {
-         -- [0x1D453]     = { xoffset = 162, width = 278 + 162 },-- 𝑓
-         -- [0x1D453]     = offset_f, -- 𝑓
-         -- ["1:0x1D453"] = offset_f, -- needed for compact
-         -- ["2:0x1D453"] = offset_f, -- needed for compact
-         -- ["*:0x1D453"] = offset_f, -- 𝑓
-        },
-    }
-
-    kerns = {
-     -- [0x1D449]     = kern_V, -- 𝑉
-     -- ["1:0x1D449"] = kern_V, -- needed for compact
-     -- ["2:0x1D449"] = kern_V, -- needed for compact
-     -- [0x1D44A]     = kern_W, -- 𝑊
-     -- ["1:0x1D44A"] = kern_W, -- needed for compact
-     -- ["2:0x1D44A"] = kern_W, -- needed for compact
-     -- ["*:0x1D453"] = kern_f,
-        ["*:0x1D449"] = kern_V, -- 𝑉
-        ["*:0x1D44A"] = kern_W, -- 𝑊
-    }
-
-end
-
--- When set this will bypass the italic correction hackery!
-
 local common  = fonts.goodies.load("common-math.lfg")
 local presets = common.mathematics.tweaks.presets
 
@@ -78,33 +47,42 @@ return {
                  -- fake    = 0.65,
                 },
                 {
+                    tweak    = "replacealphabets",
+                    feature  = "euleroverpagella",
+                    filename = "euler.otf",
+                    list    = {
+                     -- { source = { first = 0x02100, last = 0x0210D } }, -- no 0x2210E
+                     -- { source = { first = 0x0210F, last = 0x02BFF } },
+                        { source = { first = 0x02100, last = 0x02BFF } },
+                        { source = { first = 0x1D400, last = 0x1D7FF } },
+                        { source = { first = 0x1D538, last = 0x1D550 } },
+                    },
+                },
+                {
                     tweak = "addmirrors",
                 },
-                presets.matheulercalligraphic { rscale = 0.97 },
-                presets.mathrsfscript         { rscale = 0.97 },
-                presets.mathxitsarabic        { rscale = 0.95 },
                 {
-                    -- When it makes sense we get rid of italics.
-                    tweak   = "moveitalics",
-                    correct = true,
+                    tweak   = "fixoldschool",
+                    feature = "euleroverpagella",
+                },
+
+                presets.scripttocalligraphic { },
+                presets.rsfstoscript         { },
+                presets.rsfsuprighttoscript  { },
+                presets.moderntocalligraphic { },
+                presets.eulertocalligraphic  { },
+                presets.xitsarabic           { rscale  = 0.95 },
+                presets.fallbacks            { },
+                presets.moveitalics          { correct = true },
+                presets.moveitalics          { correct = true, letters = true },
+                presets.moveintegrals        { factor  = 1.5  }, -- we need to check the 1.5
+                presets.wipeanchors          { },
+                presets.wipeitalics          { },
+                {
+                    tweak   = "parameters",
+                    feature = "euleroverpagella",
                     list    = {
-                        "lowercasenormal",
-                        "lowercaseitalic",
-                        "lowercasebold",
-                        "lowercasebolditalic",
-                        "lowercasegreeknormal",
-                        "lowercasegreekitalic",
-                        "lowercasegreekbold",
-                        "lowercasegreekbolditalic",
-                        "uppercasenormal",
-                        "uppercaseitalic",
-                        "uppercasebold",
-                        "uppercasebolditalic",
-                        "uppercasegreeknormal",
-                        "uppercasegreekitalic",
-                        "uppercasegreekbold",
-                        "uppercasegreekbolditalic",
-                        mathematics.tweaks.subsets.dotless,
+                        RadicalRuleThickness = 54,
                     }
                 },
                 {
@@ -249,6 +227,20 @@ return {
                         },
                     },
                 },
+                -- this is the mkiv section
+                {
+                    tweak   = "emulatelmtx",
+                    feature = "emulatelmtx",
+                    comment = "this is for mkiv",
+                },
+                {
+                    tweak   = "parameters",
+                    feature = "emulatelmtx",
+                    comment = "this is for mkiv",
+                    list    = {
+                        AccentBaseHeight = 400,
+                    }
+                },
             },
         },
         bigslots = {
@@ -257,45 +249,36 @@ return {
         alternates = {
             dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
         },
-        --
-        -- experimental fixes for mkiv:
-        --
-        dimensions = dimensions,
-        kerns = kerns,
     },
 }
 
+-- For now we keep these commented as they show where we came from.
 
-
-
-
--- Old values
-
-                -- {
-                --     tweak = "dimensions",
-                --     list  = {      -- offset width italic
-                --         [0x020D7] = { yoffset = -0.05  }, -- vec
-                --         [0x1D44E] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.9  }, -- a
-                --         [0x1D44F] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.3  }, -- b
-                --         [0x1D450] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.9  }, -- c
-                --         [0x1D451] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.7  }, -- d
-                --         [0x1D452] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.9  }, -- e
-                --         [0x1D453] = { xoffset = 0.50,  width = 1.70, italic = 0.6, anchor = 1.2  }, -- f
-                --         [0x1D454] = { xoffset = 0.10,  width = 1.15, italic = 0.2                }, -- g
-                --         [0x0210E] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.3  }, -- h
-                --         [0x1D458] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.3  }, -- k
-                --         [0x1D459] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.9  }, -- l
-                --         [0x1D45E] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.9  }, -- q
-                --         [0x1D463] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.25 }, -- v
-                --         [0x1D464] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.2  }, -- w
-                --         [0x1D6FE] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.2  }, -- \gamma
-                --         [0x1D706] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.05 }, -- \lambda
-                --         [0x1D70A] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.2  }, -- \omicron
-                --         [0x1D70D] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.2  }, -- \varsigma
-                --         [0x1D70E] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.1  }, -- \sigma
-                --         [0x1D70F] = { xoffset = -.10,  width = 1,    italic = 0,   anchor = 0.95 }, -- \tau
-                --         [0x1D712] = { xoffset = 0.1,   width = 1.2,  italic = 0.1                }, -- \chi
-                --         [0x1D713] = { xoffset = -0.05, width = 0.95, italic = 0.1                }, -- \psi
-                --         [0x1D71D] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.7  }, -- \varpi
-                --     },
-                -- },
+-- {
+--     tweak = "dimensions",
+--     list  = {      -- offset width italic
+--         [0x020D7] = { yoffset = -0.05  }, -- vec
+--         [0x1D44E] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.9  }, -- a
+--         [0x1D44F] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.3  }, -- b
+--         [0x1D450] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.9  }, -- c
+--         [0x1D451] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.7  }, -- d
+--         [0x1D452] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.9  }, -- e
+--         [0x1D453] = { xoffset = 0.50,  width = 1.70, italic = 0.6, anchor = 1.2  }, -- f
+--         [0x1D454] = { xoffset = 0.10,  width = 1.15, italic = 0.2                }, -- g
+--         [0x0210E] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.3  }, -- h
+--         [0x1D458] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.3  }, -- k
+--         [0x1D459] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.9  }, -- l
+--         [0x1D45E] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.9  }, -- q
+--         [0x1D463] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.25 }, -- v
+--         [0x1D464] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.2  }, -- w
+--         [0x1D6FE] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.2  }, -- \gamma
+--         [0x1D706] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.05 }, -- \lambda
+--         [0x1D70A] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.2  }, -- \omicron
+--         [0x1D70D] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.2  }, -- \varsigma
+--         [0x1D70E] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 1.1  }, -- \sigma
+--         [0x1D70F] = { xoffset = -.10,  width = 1,    italic = 0,   anchor = 0.95 }, -- \tau
+--         [0x1D712] = { xoffset = 0.1,   width = 1.2,  italic = 0.1                }, -- \chi
+--         [0x1D713] = { xoffset = -0.05, width = 0.95, italic = 0.1                }, -- \psi
+--         [0x1D71D] = { xoffset = 0,     width = 1,    italic = 0,   anchor = 0.7  }, -- \varpi
+--     },
+-- },

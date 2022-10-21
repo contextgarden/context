@@ -699,7 +699,7 @@ local function copy_glyph(main,target,original,unicode,slot)
                 vvi.glyph = addprivate(main,formatters["M-V-%H"](oldglyph),newdata)
             end
         end
-        return newdata
+        return glyphdata
     end
 end
 

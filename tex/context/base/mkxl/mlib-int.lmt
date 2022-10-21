@@ -7,8 +7,6 @@ if not modules then modules = { } end modules ['mlib-int'] = {
 }
 
 local factor         = number.dimenfactors.bp
-local mpstring       = mp.string
-local injectnumeric  = mp.inject.numeric
 local isdimen        = tex.isdimen
 local iscount        = tex.iscount
 local getdimen       = tex.getdimen
@@ -53,49 +51,78 @@ end
 
 do
 
-    local d_paperheight         = isdimen("paperheight")         registerdirect("PaperHeight",          function() return getdimen(d_paperheight)         * factor end)
-    local d_paperwidth          = isdimen("paperwidth")          registerdirect("PaperWidth",           function() return getdimen(d_paperwidth)          * factor end)
-    local d_printpaperheight    = isdimen("printpaperheight")    registerdirect("PrintPaperHeight",     function() return getdimen(d_printpaperheight)    * factor end)
-    local d_printpaperwidth     = isdimen("printpaperwidth")     registerdirect("PrintPaperWidth",      function() return getdimen(d_printpaperwidth)     * factor end)
-    local d_topspace            = isdimen("topspace")            registerdirect("TopSpace",             function() return getdimen(d_topspace)            * factor end)
-    local d_bottomspace         = isdimen("bottomspace")         registerdirect("BottomSpace",          function() return getdimen(d_bottomspace)         * factor end)
-    local d_backspace           = isdimen("backspace")           registerdirect("BackSpace",            function() return getdimen(d_backspace)           * factor end)
-    local d_cutspace            = isdimen("cutspace")            registerdirect("CutSpace",             function() return getdimen(d_cutspace)            * factor end)
-    local d_makeupheight        = isdimen("makeupheight")        registerdirect("MakeupHeight",         function() return getdimen(d_makeupheight)        * factor end)
-    local d_makeupwidth         = isdimen("makeupwidth")         registerdirect("MakeupWidth",          function() return getdimen(d_makeupwidth)         * factor end)
-    local d_topheight           = isdimen("topheight")           registerdirect("TopHeight",            function() return getdimen(d_topheight)           * factor end)
-    local d_topdistance         = isdimen("topdistance")         registerdirect("TopDistance",          function() return getdimen(d_topdistance)         * factor end)
-    local d_headerheight        = isdimen("headerheight")        registerdirect("HeaderHeight",         function() return getdimen(d_headerheight)        * factor end)
-    local d_headerdistance      = isdimen("headerdistance")      registerdirect("HeaderDistance",       function() return getdimen(d_headerdistance)      * factor end)
-    local d_textheight          = isdimen("textheight")          registerdirect("TextHeight",           function() return getdimen(d_textheight)          * factor end)
-    local d_footerdistance      = isdimen("footerdistance")      registerdirect("FooterDistance",       function() return getdimen(d_footerdistance)      * factor end)
-    local d_footerheight        = isdimen("footerheight")        registerdirect("FooterHeight",         function() return getdimen(d_footerheight)        * factor end)
-    local d_bottomdistance      = isdimen("bottomdistance")      registerdirect("BottomDistance",       function() return getdimen(d_bottomdistance)      * factor end)
-    local d_bottomheight        = isdimen("bottomheight")        registerdirect("BottomHeight",         function() return getdimen(d_bottomheight)        * factor end)
-    local d_leftedgewidth       = isdimen("leftedgewidth")       registerdirect("LeftEdgeWidth",        function() return getdimen(d_leftedgewidth)       * factor end)
-    local d_leftedgedistance    = isdimen("leftedgedistance")    registerdirect("LeftEdgeDistance",     function() return getdimen(d_leftedgedistance)    * factor end)
-    local d_leftmarginwidth     = isdimen("leftmarginwidth")     registerdirect("LeftMarginWidth",      function() return getdimen(d_leftmarginwidth)     * factor end)
-    local d_leftmargindistance  = isdimen("leftmargindistance")  registerdirect("LeftMarginDistance",   function() return getdimen(d_leftmargindistance)  * factor end)
-    local d_textwidth           = isdimen("textwidth")           registerdirect("TextWidth",            function() return getdimen(d_textwidth)           * factor end)
-    local d_rightmargindistance = isdimen("rightmargindistance") registerdirect("RightMarginDistance",  function() return getdimen(d_rightmargindistance) * factor end)
-    local d_rightmarginwidth    = isdimen("rightmarginwidth")    registerdirect("RightMarginWidth",     function() return getdimen(d_rightmarginwidth)    * factor end)
-    local d_rightedgedistance   = isdimen("rightedgedistance")   registerdirect("RightEdgeDistance",    function() return getdimen(d_rightedgedistance)   * factor end)
-    local d_rightedgewidth      = isdimen("rightedgewidth")      registerdirect("RightEdgeWidth",       function() return getdimen(d_rightedgewidth)      * factor end)
+        -- These get swapped so the d_ numbers change.
 
-end
+        registerdirect("PaperHeight",         function() return getdimen("paperheight")         * factor end)
+        registerdirect("PaperWidth",          function() return getdimen("paperwidth")          * factor end)
+        registerdirect("PrintPaperHeight",    function() return getdimen("printpaperheight")    * factor end)
+        registerdirect("PrintPaperWidth",     function() return getdimen("printpaperwidth")     * factor end)
+        registerdirect("BackSpace",           function() return getdimen("backspace")           * factor end)
+        registerdirect("CutSpace",            function() return getdimen("cutspace")            * factor end)
 
-do
+        registerdirect("LeftEdgeWidth",       function() return getdimen("leftedgewidth")       * factor end)
+        registerdirect("LeftEdgeDistance",    function() return getdimen("leftedgedistance")    * factor end)
+        registerdirect("LeftMarginWidth",     function() return getdimen("leftmarginwidth")     * factor end)
+        registerdirect("LeftMarginDistance",  function() return getdimen("leftmargindistance")  * factor end)
+        registerdirect("RightMarginDistance", function() return getdimen("rightmargindistance") * factor end)
+        registerdirect("RightMarginWidth",    function() return getdimen("rightmarginwidth")    * factor end)
+        registerdirect("RightEdgeDistance",   function() return getdimen("rightedgedistance")   * factor end)
+        registerdirect("RightEdgeWidth",      function() return getdimen("rightedgewidth")      * factor end)
 
-    local onrightpage = structures.pages.on_right
+        -- leftmargintotal   rightmargintotal -- not yet
+        -- leftedgetotal     rightedgetotal
+        -- leftsidetotal     rightsidetotal
+        -- leftcombitotal    rightcombitotal
+        -- innermargintotal  outermargintotal
+        -- inneredgetotal    outeredgetotal
+        -- innercombitotal   outercombitotal
+        -- innersidetotal    outersidetotal
 
-    registerdirect("InnerMarginDistance",  function() return getdimen(onrightpage() and d_leftmargindistance  or d_rightmargindistance) * factor end)
-    registerdirect("InnerMarginWidth",     function() return getdimen(onrightpage() and d_leftmarginwidth     or d_rightmarginwidth   ) * factor end)
-    registerdirect("OuterMarginDistance",  function() return getdimen(onrightpage() and d_rightmargindistance or d_leftmargindistance ) * factor end)
-    registerdirect("OuterMarginWidth",     function() return getdimen(onrightpage() and d_rightmarginwidth    or d_leftmarginwidth    ) * factor end)
-    registerdirect("InnerEdgeDistance",    function() return getdimen(onrightpage() and d_leftmargindistance  or d_rightmargindistance) * factor end)
-    registerdirect("InnerEdgeWidth",       function() return getdimen(onrightpage() and d_leftmarginwidth     or d_rightmarginwidth   ) * factor end)
-    registerdirect("OuterEdgeDistance",    function() return getdimen(onrightpage() and d_rightedgedistance   or d_leftedgedistance   ) * factor end)
-    registerdirect("OuterEdgeWidth",       function() return getdimen(onrightpage() and d_rightedgewidth      or d_leftedgewidth      ) * factor end)
+        local d_leftedgewidth       = isdimen("leftedgewidth")
+        local d_leftedgedistance    = isdimen("leftedgedistance")
+        local d_leftmarginwidth     = isdimen("leftmarginwidth")
+        local d_leftmargindistance  = isdimen("leftmargindistance")
+        local d_rightmargindistance = isdimen("rightmargindistance")
+        local d_rightmarginwidth    = isdimen("rightmarginwidth")
+        local d_rightedgedistance   = isdimen("rightedgedistance")
+        local d_rightedgewidth      = isdimen("rightedgewidth")
+
+        registerdirect("InnerMarginDistance",  function() return getdimen(d_leftmargindistance ) * factor end)
+        registerdirect("InnerMarginWidth",     function() return getdimen(d_leftmarginwidth    ) * factor end)
+        registerdirect("OuterMarginDistance",  function() return getdimen(d_rightmargindistance) * factor end)
+        registerdirect("OuterMarginWidth",     function() return getdimen(d_rightmarginwidth   ) * factor end)
+        registerdirect("InnerEdgeDistance",    function() return getdimen(d_leftmargindistance ) * factor end)
+        registerdirect("InnerEdgeWidth",       function() return getdimen(d_leftmarginwidth    ) * factor end)
+        registerdirect("OuterEdgeDistance",    function() return getdimen(d_rightedgedistance  ) * factor end)
+        registerdirect("OuterEdgeWidth",       function() return getdimen(d_rightedgewidth     ) * factor end)
+
+        -- local onrightpage = structures.pages.on_right
+
+        -- registerdirect("InnerMarginDistance",  function() return getdimen(onrightpage() and "leftmargindistance"  or "rightmargindistance") * factor end)
+        -- registerdirect("InnerMarginWidth",     function() return getdimen(onrightpage() and "leftmarginwidth"     or "rightmarginwidth"   ) * factor end)
+        -- registerdirect("OuterMarginDistance",  function() return getdimen(onrightpage() and "rightmargindistance" or "leftmargindistance" ) * factor end)
+        -- registerdirect("OuterMarginWidth",     function() return getdimen(onrightpage() and "rightmarginwidth"    or "leftmarginwidth"    ) * factor end)
+        -- registerdirect("InnerEdgeDistance",    function() return getdimen(onrightpage() and "leftmargindistance"  or "rightmargindistance") * factor end)
+        -- registerdirect("InnerEdgeWidth",       function() return getdimen(onrightpage() and "leftmarginwidth"     or "rightmarginwidth"   ) * factor end)
+        -- registerdirect("OuterEdgeDistance",    function() return getdimen(onrightpage() and "rightedgedistance"   or "leftedgedistance"   ) * factor end)
+        -- registerdirect("OuterEdgeWidth",       function() return getdimen(onrightpage() and "rightedgewidth"      or "leftedgewidth"      ) * factor end)
+
+        -- These have stable d_ numbers.
+
+        local d_topspace       = isdimen("topspace")       registerdirect("TopSpace",       function() return getdimen(d_topspace)       * factor end)
+        local d_bottomspace    = isdimen("bottomspace")    registerdirect("BottomSpace",    function() return getdimen(d_bottomspace)    * factor end)
+        local d_makeupheight   = isdimen("makeupheight")   registerdirect("MakeupHeight",   function() return getdimen(d_makeupheight)   * factor end)
+        local d_makeupwidth    = isdimen("makeupwidth")    registerdirect("MakeupWidth",    function() return getdimen(d_makeupwidth)    * factor end)
+        local d_topheight      = isdimen("topheight")      registerdirect("TopHeight",      function() return getdimen(d_topheight)      * factor end)
+        local d_topdistance    = isdimen("topdistance")    registerdirect("TopDistance",    function() return getdimen(d_topdistance)    * factor end)
+        local d_headerheight   = isdimen("headerheight")   registerdirect("HeaderHeight",   function() return getdimen(d_headerheight)   * factor end)
+        local d_headerdistance = isdimen("headerdistance") registerdirect("HeaderDistance", function() return getdimen(d_headerdistance) * factor end)
+        local d_textheight     = isdimen("textheight")     registerdirect("TextHeight",     function() return getdimen(d_textheight)     * factor end)
+        local d_footerdistance = isdimen("footerdistance") registerdirect("FooterDistance", function() return getdimen(d_footerdistance) * factor end)
+        local d_footerheight   = isdimen("footerheight")   registerdirect("FooterHeight",   function() return getdimen(d_footerheight)   * factor end)
+        local d_bottomdistance = isdimen("bottomdistance") registerdirect("BottomDistance", function() return getdimen(d_bottomdistance) * factor end)
+        local d_bottomheight   = isdimen("bottomheight")   registerdirect("BottomHeight",   function() return getdimen(d_bottomheight)   * factor end)
+        local d_textwidth      = isdimen("textwidth")      registerdirect("TextWidth",      function() return getdimen(d_textwidth)      * factor end)
 
 end
 

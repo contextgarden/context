@@ -412,13 +412,13 @@
   [mode=base,
  % mode=none, % better, maybe do this last
    kern=yes,
-% flac=yes, % handled differently
-% liga=yes, % makes no sense
-% mode=node,
-% mathnolimitsmode={0,800}, % now in lfg files
+ % flac=yes, % handled differently
+ % liga=yes, % makes no sense
+ % mode=node,
+ % mathnolimitsmode={0,800}, % now in lfg files
    mathalternates=yes,
-   mathitalics=yes, % we pass them
-   mathdimensions=all,
+ % mathitalics=yes, % we pass them
+ % mathdimensions=all,
  % mathkerns=yes,
  % staircase=yes,
    compactmath=yes,
@@ -467,10 +467,10 @@
 \definefontfeature[math-scriptscript-r2l]    [mathematics-r2l]  [ssty=2,mathsize=yes]
 
 % this will go away: could be a mode in the engine
-
-\definefontfeature[math-nostack-text]        [math-text]        [nostackmath=yes]
-\definefontfeature[math-nostack-script]      [math-script]      [nostackmath=yes]
-\definefontfeature[math-nostack-scriptscript][math-scriptscript][nostackmath=yes]
+%
+% \definefontfeature[math-nostack-text]        [math-text]        [nostackmath=yes]
+% \definefontfeature[math-nostack-script]      [math-script]      [nostackmath=yes]
+% \definefontfeature[math-nostack-scriptscript][math-scriptscript][nostackmath=yes]
 
 % \definefontfeature[mathtext]         [math-text]
 % \definefontfeature[mathscript]       [math-script]
@@ -987,11 +987,9 @@
 
 \startsetups experiment:fonts:compact
     \settrue\c_font_compact
-
 %     \definefontfeature[virtualmath]          [mathematics]    [compactmath=yes]
 %     \definefontfeature[virtualmath-l2r]      [mathematics-l2r][compactmath=yes]
 %     \definefontfeature[virtualmath-r2l]      [mathematics-r2l][compactmath=yes]
-
 %     \definefontfeature[math-text]            [mathematics]    [compactmath=yes]
 %     \definefontfeature[math-script]          [mathematics]    [compactmath=yes]
 %     \definefontfeature[math-scriptscript]    [mathematics]    [compactmath=yes]

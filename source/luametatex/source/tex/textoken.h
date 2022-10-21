@@ -366,8 +366,7 @@ extern void       tex_run_combine_the_toks        (void);
 extern void       tex_run_convert_tokens          (halfword code);
 extern strnumber  tex_the_convert_string          (halfword c, int i);
 extern strnumber  tex_tokens_to_string            (halfword p);
-/*     char      *tex_tokenlist_to_cstring        (int p, int inhibit_par, int *siz); */
-extern char      *tex_tokenlist_to_tstring        (int p, int inhibit_par, int *siz, int skip, int nospace, int strip);
+extern char      *tex_tokenlist_to_tstring        (int p, int inhibit_par, int *siz, int skip, int nospace, int strip, int wipe);
 
 extern halfword   tex_get_tex_dimen_register      (int j, int internal);
 extern halfword   tex_get_tex_skip_register       (int j, int internal);
@@ -391,9 +390,6 @@ extern halfword   tex_copy_token_list             (halfword h, halfword *t);
 
 extern halfword   tex_parse_str_to_tok            (halfword head, halfword *tail, halfword ct, const char *str, size_t lstr, int option);
 
-inline int tex_valid_token(int t)
-{
-    return ((t >= 0) && (t <= (int) lmt_token_memory_state.tokens_data.top));
-}
+inline int        tex_valid_token                 (int t) { return ((t >= 0) && (t <= (int) lmt_token_memory_state.tokens_data.top)); }
 
 # endif

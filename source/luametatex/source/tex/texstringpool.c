@@ -435,12 +435,30 @@ char *tex_makeclstring(int s, size_t *len)
     }
 }
 
+/* 
 char *tex_makecstring(int s)
 {
     if (s < cs_offset_value) {
         return (char *) aux_uni2str((unsigned) s);
     } else {
         return lmt_memory_strdup((str_length(s) > 0) ? (const char *) str_string(s) : "");
+    }
+}
+*/
+
+/*tex 
+    I might eventually replace this because in qite some calls we know that we knwo that we have
+    a pointer in string space. We can kin dof predict in what cases we are below |cs_offset_value|
+    anyway. 
+*/
+
+char *tex_makecstring(int s, int *allocated)
+{
+    *allocated = s < cs_offset_value;
+    if (*allocated) {
+        return (char *) aux_uni2str((unsigned) s);
+    } else {
+        return str_length(s) > 0 ? (char *) str_string(s) : "";
     }
 }
 

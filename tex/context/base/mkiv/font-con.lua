@@ -534,7 +534,6 @@ function constructors.scale(tfmdata,specification)
     local realdimensions   = properties.realdimensions
     local writingmode      = properties.writingmode or "horizontal"
     local identity         = properties.identity or "horizontal"
-    --
     local vfonts = target.fonts
     if vfonts and #vfonts > 0 then
         target.fonts = fastcopy(vfonts) -- maybe we virtualize more afterwards

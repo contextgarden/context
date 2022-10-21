@@ -682,6 +682,7 @@
 		<cd:constant name='authoretaltext' value='authoretaltext'/>
 		<cd:constant name='auto' value='auto'/>
 		<cd:constant name='autocase' value='autocase'/>
+		<cd:constant name='autofencing' value='autofencing'/>
 		<cd:constant name='autofile' value='autofile'/>
 		<cd:constant name='autofocus' value='autofocus'/>
 		<cd:constant name='autohang' value='autohang'/>

@@ -205,8 +205,8 @@ if (DEFINED LMT_OPTIMIZE)
         # set_property(TARGET luametatex PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
         #
         # mingw64: 2865664, nocona: 2819584, lto: 2835968 (around 1% gain on manual)
-
-       set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+        #
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
         #
     else()
         # No message needed, just accept the fact.

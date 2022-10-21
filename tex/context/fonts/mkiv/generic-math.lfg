@@ -36,7 +36,24 @@ return {
                         -- whatever
                     },
                 },
+                presets.scripttocalligraphic {            },
+                presets.rsfstoscript         { rscale = 1 },
+                presets.rsfsuprighttoscript  { rscale = 1 },
+                presets.moderntocalligraphic { rscale = 1 },
+                presets.eulertocalligraphic  { rscale = 1 },
+                presets.xitsarabic           { rscale = 1 },
+                presets.fallbacks            { },
+                presets.moveitalics          { correct = true },
+                presets.moveitalics          { correct = true, letters = true },
+                presets.moveintegrals        { factor  = 1.5  }, -- we need to check the 1.5
+                presets.wipeanchors          { },
+                presets.wipeitalics          { },
                 {
+                    tweak = "simplifykerns",
+                },
+                presets.moveitalics {
+                    correct = true
+                },                {
                     tweak   = "fixprimes",
                     factor  = 0.85, -- accent base height
                     smaller = true, -- replace multiples
@@ -101,7 +118,7 @@ return {
 --                         [0x21CB] = false,
 --                         [0x21CC] = false,
                     }
-                }, 
+                },
 --                 {
 --                     tweak  = "limits",
 --                     factor = 1.5,
@@ -201,7 +218,7 @@ return {
                     tweak = "margins",
                     list  = {
                     },
-                },               
+                },
              -- {
              --      tweak  = "fixanchors",
              --      factor = .5,
@@ -221,6 +238,12 @@ return {
                 },
                 {
                     tweak = "wipecues",
+                },
+                -- this is the mkiv section
+                {
+                    tweak   = "emulatelmtx",
+                    feature = "emulatelmtx",
+                    comment = "this is for mkiv",
                 },
             },
         },

@@ -1437,7 +1437,7 @@ void tex_forced_word_define(int g, halfword p, singleword f, halfword w)
 
 void tex_save_for_after_group(halfword t)
 {
-    if (cur_level > level_one && tex_room_on_save_stack()) {
+    if (t && cur_level > level_one && tex_room_on_save_stack()) {
         save_type(lmt_save_state.save_stack_data.ptr) = insert_tokens_save_type;
         save_level(lmt_save_state.save_stack_data.ptr) = level_zero;
         save_value(lmt_save_state.save_stack_data.ptr) = t;

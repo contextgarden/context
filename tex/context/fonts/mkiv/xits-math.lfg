@@ -45,6 +45,31 @@ return {
                     expected = "Version 1.302",
                 },
                 {
+                    tweak   = "replacealphabets",
+                    list    = {
+                        {
+                            source   = "uppercasescript",
+                            target   = "uppercasecalligraphic",
+                        },
+                        {
+                            source   = "uppercasescript",
+                            target   = "uppercasescript",
+                            feature  = "ss01",
+                        },
+                    },
+                },
+                presets.scripttocalligraphic { },
+                presets.rsfstoscript         { rscale  = 0.95 },
+                presets.rsfsuprighttoscript  { rscale  = 0.95 },
+                presets.moderntocalligraphic { rscale  = 0.95 },
+                presets.eulertocalligraphic  { rscale  = 0.95 },
+                presets.xitsarabic           { rscale  = 0.88 },
+                presets.fallbacks            { },
+                presets.moveitalics          { correct = true },
+                presets.moveitalics          { correct = true, letters = true },
+                presets.moveintegrals        { factor = 1.4 },
+                presets.wipeitalics          { },
+                {
                     tweak = "kerns",
                     list  = {
                         [0x2F] = {
@@ -54,20 +79,6 @@ return {
                             bottomright =  -0.1,
                        },
                     },
-                },
-                -- 0xFEOO should be chancery style, if present
-                {
-                    tweak    = "variants",
-                    kind     = "script",
-                    feature  = "ss01",-- this changes to chancery style for xits
-                 -- feature  = false, -- use the saved ones (see typescript)
-                    selector = 0xFE00,
-                },
-                -- 0xFEO1 should be roundhand style, if present
-                {
-                    tweak    = "variants",
-                    kind     = "script",
-                    selector = 0xFE01,
                 },
                 {
                     tweak = "dimensions",
@@ -95,6 +106,12 @@ return {
                 {
                     tweak = "setoptions",
                     set   = { "ignorekerndimensions" }
+                },
+                -- this is the mkiv section
+                {
+                    tweak   = "emulatelmtx",
+                    feature = "emulatelmtx",
+                    comment = "this is for mkiv",
                 },
             },
         },

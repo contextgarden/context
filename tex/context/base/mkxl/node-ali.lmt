@@ -314,7 +314,7 @@ interfaces.implement {
     end,
 }
 
--- Let's put it here (for now) (some locals above) .. will be cleaned up!
+-- This will go to math-ali.lmt
 
 do
 
@@ -538,7 +538,7 @@ deltas   = { }
         for count=1,#records do
             if count == lindex then
                 if centered and overflow then
-                    lwidth = lwidth - tex.getdimen("d_math_eqalign_number_distance")
+                    lwidth = lwidth - texgetdimen("d_math_eqalign_number_distance")
                 end
                 setwidth(records[count],lwidth)
             elseif count == rindex then

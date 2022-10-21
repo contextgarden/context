@@ -865,9 +865,7 @@ make_lua_key(L, match);\
 make_lua_key(L, math);\
 make_lua_key(L, mathspec);\
 make_lua_key(L, math_accent);\
-make_lua_key(L, math_char_given);\
 make_lua_key(L, math_char_number);\
-make_lua_key(L, math_char_xgiven);\
 make_lua_key(L, math_choice);\
 make_lua_key(L, math_component);\
 make_lua_key(L, math_fence);\

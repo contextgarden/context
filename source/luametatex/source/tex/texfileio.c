@@ -875,10 +875,8 @@ char *tex_read_file_name(int optionalequal, const char * name, const char* ext)
         }
     }
   DONE:
-    s = tex_tokenlist_to_tstring(result, 1, &l, 0, 0, 0);
+    s = tex_tokenlist_to_tstring(result, 1, &l, 0, 0, 0, 1);
     fn = s ? tex_aux_pack_file_name(s, l, name, ext) : NULL;
-    /*tex Shouldn't we also free |result| ? */
-    tex_flush_token_list(result);
     return fn;
 }
 

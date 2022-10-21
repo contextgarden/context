@@ -1219,7 +1219,8 @@
    \ifcsname\tabl_ntb_row_pattern\c_tabl_ntb_current_row\c_tabl_ntb_current_col\endcsname
      \scratchcounter\numexpr\c_tabl_ntb_maximum_row-\c_tabl_ntb_current_row+\plusone\relax
      \ifnum\tabl_ntb_get_row\c_tabl_ntb_current_row\c_tabl_ntb_current_col>\scratchcounter
-       \tabl_ntb_set_row\c_tabl_ntb_current_row\c_tabl_ntb_current_col{\the\scratchcounter}%
+%        \tabl_ntb_set_row\c_tabl_ntb_current_row\c_tabl_ntb_current_col{\the\scratchcounter}%
+       \tabl_ntb_set_row\c_tabl_ntb_current_row\c_tabl_ntb_current_col\scratchcounter
      \fi
    \fi
    \tabl_ntb_let_ht\c_tabl_ntb_current_row\c_tabl_ntb_current_col\zeropoint

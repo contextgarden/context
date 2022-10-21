@@ -1958,6 +1958,13 @@
 %D For previous variants of the function styling you can check the git repository
 %D end April 2022.
 
+% \startTEXpage[offset=1dk]
+%                           $\sin(x) = 10$
+%     \m[functionstyle=sans]{\sin(x) = 10}
+%     \startformula                     \sin(x) = 10 \stopformula
+%     \startformula[functionstyle=sans] \sin(x) = 10 \stopformula
+% \stopTEXpage
+
 \protected\def\math_function_handle#1#2#3%
   {\begingroup
    \letdummyparameter\c!mathlimits\empty
@@ -1988,6 +1995,17 @@
        #2{#3}%
      \egroup
    \endgroup}
+
+\appendtoks
+    \edef\p_functionstyle{\formulaparameter\c!functionstyle}%
+    \ifempty\p_functionstyle\else
+        \letmathematicsparameter\c!functionstyle\p_functionstyle
+    \fi
+    \edef\p_functioncolor{\formulaparameter\c!functioncolor}%
+    \ifempty\p_functioncolor\else
+        \letmathematicsparameter\c!functioncolor\p_functioncolor
+    \fi
+\to \everybeforedisplayformula
 
 \permanent\tolerant\protected\def\mfunction         [#1]{\math_function_handle{#1}\firstofoneargument}
 \permanent\tolerant\protected\def\mfunctionlabeltext[#1]{\math_function_handle{#1}\mathlabeltext}
@@ -3948,7 +3966,7 @@
 
 \installcorenamespace{mathrules}
 
-\permanent\protected\def\enablemathrules{\letgvalue{\??mathrules\fontclass}\plusone}
+\permanent\protected\def\enablemathrules{\gletcsname\??mathrules\fontclass\endcsname\plusone}
 
 \appendtoks
     \mathrulesmode\ifcsname\??mathrules\fontclass\endcsname
@@ -4378,13 +4396,13 @@
 %D \stoptyping
 
 \definesystemattribute[mathaxis][public]
-
 \def\math_axis_inject#1%
    {\mathatom \s!class \mathghostcode \s!unpack {
     \showmakeup[strut]% todo: shortcut
+    \scratchdimen.5\Umathfractionrule\mathstyle
     \srule
-       \s!height \dimexpr\Umathaxis\mathstyle+.2\points\relax
-       \s!depth -\dimexpr\Umathaxis\mathstyle-.2\points\relax
+       \s!height \dimexpr\Umathaxis\mathstyle+\scratchdimen\relax
+       \s!depth -\dimexpr\Umathaxis\mathstyle-\scratchdimen\relax
        \s!attr \mathaxisattribute #1%
     \relax}}
 

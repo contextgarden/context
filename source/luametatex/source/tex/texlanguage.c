@@ -364,7 +364,7 @@ void tex_clear_patterns(struct tex_language *lang)
 
 void tex_load_tex_patterns(halfword curlang, halfword head)
 {
-    char *s = tex_tokenlist_to_tstring(head, 1, NULL, 0, 0, 0);
+    char *s = tex_tokenlist_to_tstring(head, 1, NULL, 0, 0, 0, 0);
     if (s) {
         tex_load_patterns(tex_get_language(curlang), (unsigned char *) s);
     }
@@ -539,7 +539,7 @@ void tex_clear_hyphenation(struct tex_language *lang)
 
 void tex_load_tex_hyphenation(halfword curlang, halfword head)
 {
-    char *s = tex_tokenlist_to_tstring(head, 1, NULL, 0, 0, 0);
+    char *s = tex_tokenlist_to_tstring(head, 1, NULL, 0, 0, 0, 0);
     if (s) {
         tex_load_hyphenation(tex_get_language(curlang), (unsigned char *) s);
     }

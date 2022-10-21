@@ -445,7 +445,7 @@ function constructors.scale(tfmdata,specification)
     local hasquality       = parameters.expansion or parameters.protrusion
     local hasitalics       = properties.hasitalics
     local autoitalicamount = properties.autoitalicamount
-    local stackmath        = not properties.nostackmath
+ -- local stackmath        = not properties.nostackmath
     local haskerns         = properties.haskerns     or properties.mode == "base" -- we can have afm in node mode
     local hasligatures     = properties.hasligatures or properties.mode == "base" -- we can have afm in node mode
     local realdimensions   = properties.realdimensions
@@ -720,7 +720,8 @@ function constructors.scale(tfmdata,specification)
          -- if vo then
          --     chr.bottomovershoot = vo*hdelta
          -- end
-            if stackmath then -- not ok yet
+            --
+         -- if stackmath then -- not ok yet
                 local mk = character.mathkerns
                 if mk then
                     local tr = mk.topright
@@ -734,7 +735,8 @@ function constructors.scale(tfmdata,specification)
                         bottomleft  = bl and mathkerns(bl,vdelta) or nil,
                     }
                 end
-            end
+         -- end
+            --
             if hasitalics then
                 local vi = character.italic
                 if vi and vi ~= 0 then

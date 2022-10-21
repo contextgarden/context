@@ -156,8 +156,6 @@ void lmt_tokenlib_initialize(void)
     lmt_interface.command_names[math_shift_cs_cmd]                = (command_item) { .id = math_shift_cs_cmd,                  .lua = lua_key_index(math_shift_cs),                .name = lua_key(math_shift_cs),                .kind = regular_command_item,   .min = 0,                         .max = last_math_shift_cs_code,      .base = 0,                       .fixedvalue = 0            }; /* a bit too tolerant */
     lmt_interface.command_names[end_cs_name_cmd]                  = (command_item) { .id = end_cs_name_cmd,                    .lua = lua_key_index(end_cs_name),                  .name = lua_key(end_cs_name),                  .kind = regular_command_item,   .min = 0,                         .max = 0,                            .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[char_given_cmd]                   = (command_item) { .id = char_given_cmd,                     .lua = lua_key_index(char_given),                   .name = lua_key(char_given),                   .kind = character_command_item, .min = 0,                         .max = max_character_code,           .base = 0,                       .fixedvalue = 0            };
- // lmt_interface.command_names[math_char_given_cmd]              = (command_item) { .id = math_char_given_cmd,                .lua = lua_key_index(math_char_given),              .name = lua_key(math_char_given),              .kind = character_command_item, .min = 0,                         .max = max_character_code,           .base = 0,                       .fixedvalue = 0            };
- // lmt_interface.command_names[math_char_xgiven_cmd]             = (command_item) { .id = math_char_xgiven_cmd,               .lua = lua_key_index(math_char_xgiven),             .name = lua_key(math_char_xgiven),             .kind = character_command_item, .min = 0,                         .max = max_character_code,           .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[some_item_cmd]                    = (command_item) { .id = some_item_cmd,                      .lua = lua_key_index(some_item),                    .name = lua_key(some_item),                    .kind = regular_command_item,   .min = 0,                         .max = last_some_item_code,          .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[internal_toks_cmd]                = (command_item) { .id = internal_toks_cmd,                  .lua = lua_key_index(internal_toks),                .name = lua_key(internal_toks),                .kind = internal_command_item,  .min = first_toks_code,           .max = last_toks_code,               .base = internal_toks_base,      .fixedvalue = 0            };
     lmt_interface.command_names[register_toks_cmd]                = (command_item) { .id = register_toks_cmd,                  .lua = lua_key_index(register_toks),                .name = lua_key(register_toks),                .kind = register_command_item,  .min = 0,                         .max = biggest_reg,                  .base = register_toks_base,      .fixedvalue = 0            };
@@ -433,10 +431,10 @@ void lmt_token_list_to_lua(lua_State *L, halfword p)
     }
 }
 
-void lmt_token_list_to_luastring(lua_State *L, halfword p, int nospace, int strip)
+void lmt_token_list_to_luastring(lua_State *L, halfword p, int nospace, int strip, int wipe)
 {
     int l;
-    char *s = tex_tokenlist_to_tstring(p, 1, &l, 0, nospace, strip); /* nasty ... preambles or not, could have been endmatchtoken  */
+    char *s = tex_tokenlist_to_tstring(p, 1, &l, 0, nospace, strip, wipe); /* nasty ... preambles or not, could have been endmatchtoken  */
     if (l) {
         lua_pushlstring(L, s, (size_t) l);
     } else {
@@ -511,16 +509,19 @@ halfword lmt_token_code_from_lua(lua_State *L, int slot)
 
 # define is_active_string(s) (strlen(s) > 3 && *s == 0xEF && *(s+1) == 0xBF && *(s+2) == 0xBF)
 
-static unsigned char *tokenlib_aux_get_cs_text(int cs)
+static unsigned char *tokenlib_aux_get_cs_text(int cs, int *allocated)
 {
     if (cs == null_cs) {
-        return (unsigned char *) lmt_memory_strdup("\\csname\\endcsname");
+        return (unsigned char *) "\\csname\\endcsname";
     } else if ((cs_text(cs) < 0) || (cs_text(cs) >= lmt_string_pool_state.string_pool_data.ptr)) {
-        return (unsigned char *) lmt_memory_strdup("");
-    } else if (tex_is_active_cs(cs_text(cs))) {
-        return (unsigned char *) tex_makecstring(cs_text(cs));
+        return (unsigned char *) "";
+ // } else {
+ //     return (unsigned char *) tex_makecstring(cs_text(cs));
+    } else if (cs_text(cs) < cs_offset_value) {
+        *allocated = 1;
+        return (unsigned char *) aux_uni2str((unsigned) cs_text(cs));
     } else {
-        return (unsigned char *) tex_makecstring(cs_text(cs));
+        return (unsigned char *) (str_length(cs_text(cs)) > 0 ?  (unsigned char *) str_string(cs_text(cs)) :  (unsigned char *) "");
     }
 }
 
@@ -871,14 +872,17 @@ static int tokenlib_scan_csname(lua_State *L)
     }
     t = cur_cs ? cs_token_flag + cur_cs : token_val (cur_cmd, cur_chr);
     if (t >= cs_token_flag) {
-        unsigned char *s = tokenlib_aux_get_cs_text(t - cs_token_flag);
+        int allocated = 0;
+        unsigned char *s = tokenlib_aux_get_cs_text(t - cs_token_flag, &allocated);
         if (s) {
             if (tex_is_active_cs(cs_text(t - cs_token_flag))) {
                 lua_pushstring(L, (char *) (s + 3));
             } else {
                 lua_pushstring(L, (char *) s);
             }
-            lmt_memory_free(s);
+            if (allocated) {
+                lmt_memory_free(s);
+            }
         } else {
             lua_pushnil(L);
         }
@@ -1408,8 +1412,7 @@ static int tokenlib_scan_string(lua_State *L)
             {
                 halfword defref = lmt_input_state.def_ref;
                 halfword result = tex_scan_toks_expand(1, NULL, 0);
-                lmt_token_list_to_luastring(L, result, 0, 0);
-                tex_flush_token_list(result);
+                lmt_token_list_to_luastring(L, result, 0, 0, 1);
                 lmt_input_state.def_ref = defref;
                 break;
             }
@@ -1421,8 +1424,7 @@ static int tokenlib_scan_string(lua_State *L)
         case tolerant_semi_protected_call_cmd:
             {
                 halfword t = token_link(cur_chr);
-                lmt_token_list_to_luastring(L, t, 0, 0);
-                tex_flush_token_list(t);
+                lmt_token_list_to_luastring(L, t, 0, 0, 1);
                 break;
             }
         case letter_cmd:
@@ -1463,8 +1465,7 @@ static int tokenlib_scan_argument(lua_State *L)
                 halfword defref = lmt_input_state.def_ref;
                 int expand = lua_type(L, 1) == LUA_TBOOLEAN ? lua_toboolean(L, 1) : 1;
                 halfword result = expand ? tex_scan_toks_expand(1, NULL, 0) : tex_scan_toks_normal(1, NULL);
-                lmt_token_list_to_luastring(L, result, 0, 0);
-                tex_flush_token_list(result);
+                lmt_token_list_to_luastring(L, result, 0, 0, 1);
                 lmt_input_state.def_ref = defref;
                 break;
             }
@@ -1485,8 +1486,7 @@ static int tokenlib_scan_argument(lua_State *L)
                       tex_back_input(cur_tok);
                       result = tex_scan_toks_expand(1, NULL, 0);
                   }
-                  lmt_token_list_to_luastring(L, result, 0, 0);
-                  tex_flush_token_list(result);
+                  lmt_token_list_to_luastring(L, result, 0, 0, 1);
                   lmt_input_state.def_ref = defref;
                   break;
               }
@@ -1685,8 +1685,7 @@ static int tokenlib_scan_delimited(lua_State *L)
       FINALYDONE:
         /* */
         lmt_input_state.def_ref = defref;
-        lmt_token_list_to_luastring(L, result, 0, 0);
-        tex_flush_token_list(result);
+        lmt_token_list_to_luastring(L, result, 0, 0, 1);
     } else {
         tex_back_input(cur_tok);
         lua_pushnil(L);
@@ -1781,8 +1780,7 @@ static int tokenlib_grab_until(lua_State *L)
         }
         tokenlib_aux_unsave_tex_scanner(texstate);
         lmt_input_state.def_ref = defref;
-        lmt_token_list_to_luastring(L, result, nospace, strip);
-        tex_flush_token_list(result);
+        lmt_token_list_to_luastring(L, result, nospace, strip, 1);
     } else { 
         lua_pushnil(L);
     }
@@ -2013,8 +2011,7 @@ static int tokenlib_scan_value(lua_State *L)
                 halfword defref = lmt_input_state.def_ref;
                 result = tex_scan_toks_expand(1, NULL, 0);
                 lmt_input_state.def_ref = defref;
-                lmt_token_list_to_luastring(L, result, 0, 0);
-                tex_flush_token_list(result);
+                lmt_token_list_to_luastring(L, result, 0, 0, 1);
             }
             break;
         /*
@@ -2052,8 +2049,7 @@ static int tokenlib_scan_value(lua_State *L)
                                 halfword defref = lmt_input_state.def_ref;
                                 result = tex_scan_toks_expand(1, NULL, 0);
                                 lmt_input_state.def_ref = defref;
-                                lmt_token_list_to_luastring(L, result, 0, 0);
-                                tex_flush_token_list(result);
+                                lmt_token_list_to_luastring(L, result, 0, 0, 1);
                                 luaL_addchar(&b, '{');
                                 luaL_addvalue(&b);
                                 luaL_addchar(&b, '}');
@@ -2069,7 +2065,8 @@ static int tokenlib_scan_value(lua_State *L)
                                 /*tex We need to add a space. */
                                 halfword t = cur_cs ? cs_token_flag + cur_cs : token_val(cur_cmd, cur_chr);
                                 if (t >= cs_token_flag) {
-                                    unsigned char *s = tokenlib_aux_get_cs_text(t - cs_token_flag);
+                                    int allocated = 0;
+                                    unsigned char *s = tokenlib_aux_get_cs_text(t - cs_token_flag, &allocated);
                                     if (s) {
                                         if (tex_is_active_cs(cs_text(t - cs_token_flag))) {
                                             lua_pushstring(L, (char *) (s + 3));
@@ -2080,7 +2077,9 @@ static int tokenlib_scan_value(lua_State *L)
                                             luaL_addvalue(&b);
                                             luaL_addchar(&b, ' ');
                                         }
-                                        lmt_memory_free(s);
+                                        if (allocated) {
+                                            lmt_memory_free(s);
+                                        }
                                     }
                                 }
                             }
@@ -2377,7 +2376,7 @@ static int tokenlib_getprimitives(lua_State *L)
     while (cs < prim_size) {
         strnumber s = get_prim_text(cs);
         if (s > 0 && (get_prim_origin(cs) != no_command)) {
-            char *ss = tex_makecstring(s);
+            char *ss = tex_to_cstring(s);
             int cmd = prim_eq_type(cs);
             int chr = prim_equiv(cs);
             if (! raw) {
@@ -2393,7 +2392,6 @@ static int tokenlib_getprimitives(lua_State *L)
             lua_pushinteger(L, prim_origin(cs));
             lua_rawseti(L, -2, 4);
             lua_rawseti(L, -2, ++nt);
-            lmt_memory_free(ss);
         }
         cs++;
     }
@@ -2508,14 +2506,17 @@ inline static int tokenlib_get_csname(lua_State *L)
     lua_token *n = tokenlib_aux_check_istoken(L, 1);
     halfword tok = token_info(n->token);
     if (tok >= cs_token_flag) {
-        unsigned char *s = tokenlib_aux_get_cs_text(tok - cs_token_flag);
+        int allocated = 0;
+        unsigned char *s = tokenlib_aux_get_cs_text(tok - cs_token_flag, &allocated);
         if (s) {
             if (tex_is_active_cs(cs_text(tok - cs_token_flag))) {
                 lua_pushstring(L, (char *) (s + 3));
             } else {
                 lua_pushstring(L, (char *) s);
             }
-            lmt_memory_free(s);
+            if (allocated) {
+                lmt_memory_free(s);
+            }
             return 1;
         }
     }
@@ -2544,10 +2545,13 @@ inline static int tokenlib_get_active(lua_State *L)
     halfword tok = token_info(n->token);
     int result = 0;
     if (tok >= cs_token_flag) {
-        unsigned char *s = tokenlib_aux_get_cs_text(tok - cs_token_flag);
+        int allocated = 0;
+        unsigned char *s = tokenlib_aux_get_cs_text(tok - cs_token_flag, &allocated);
         if (s) {
             result = tex_is_active_cs(cs_text(tok - cs_token_flag));
-            lmt_memory_free(s);
+            if (allocated) {
+                lmt_memory_free(s);
+            }
         }
     }
     lua_pushboolean(L, result);
@@ -2753,7 +2757,8 @@ static int tokenlib_get_fields(lua_State *L)
                 lua_createtable(L, 0, onlyflags ? 0 : 5);
                 if (tok >= cs_token_flag) {
                     int t = tok - cs_token_flag;
-                    unsigned char* str = tokenlib_aux_get_cs_text(t);
+                    int allocated = 0;
+                    unsigned char* str = tokenlib_aux_get_cs_text(t, &allocated);
                     if (str) {
                         if (! onlyflags) {
                             lua_push_key(csname);
@@ -2767,7 +2772,9 @@ static int tokenlib_get_fields(lua_State *L)
                             }
                             lua_rawset(L, -3);
                         }
-                        lmt_memory_free(str);
+                        if (allocated) {
+                            lmt_memory_free(str);
+                        }
                     }
                     cmd = eq_type(t);
                     chr = eq_value(t);
@@ -2836,9 +2843,12 @@ static int tokenlib_tostring(lua_State* L)
         unsigned char* csp = NULL;
         const char* cmn = NULL;
         if (tok >= cs_token_flag) {
+            int allocated = 0;
             tok -= cs_token_flag;
-            csn = tokenlib_aux_get_cs_text(tok);
-            csp = csn;
+            csn = tokenlib_aux_get_cs_text(tok, &allocated);
+            if (allocated) {
+                csp = csn;
+            }
             if (csn && tex_is_active_cs(cs_text(tok))) {
                 csn += 3;
             }
@@ -2974,7 +2984,7 @@ static int tokenlib_get_meaning(lua_State *L)
                     lmt_token_register_to_lua(L, chr);
                 }
             } else {
-                char *str = tex_tokenlist_to_tstring(chr, 1, NULL, 0, 0, 0);
+                char *str = tex_tokenlist_to_tstring(chr, 1, NULL, 0, 0, 0, 0);
                 lua_pushstring(L, str ? str : "");
             }
             return 1;
@@ -3041,10 +3051,9 @@ static int tokenlib_get_macro(lua_State *L)
             char *str = NULL;
             if (lua_toboolean(L, 2)) {
                 tokenlib_aux_expand_macros_in_tokenlist(chr); // todo: use return value instead of def_ref
-                str = tex_tokenlist_to_tstring(lmt_input_state.def_ref, 1, NULL, 0, 0, 0);
-                tex_flush_token_list(lmt_input_state.def_ref);
+                str = tex_tokenlist_to_tstring(lmt_input_state.def_ref, 1, NULL, 0, 0, 0, 1);
             } else {
-                str = tex_tokenlist_to_tstring(chr, 1, NULL, 1, 0, 0);
+                str = tex_tokenlist_to_tstring(chr, 1, NULL, 1, 0, 0, 0);
             }
             lua_pushstring(L, str ? str : "");
             return 1;
@@ -3091,8 +3100,7 @@ char *lmt_get_expansion(halfword head, int *len)
     halfword ref = get_reference_token();
     set_token_link(ref, head);
     tokenlib_aux_expand_macros_in_tokenlist(ref); // todo: use return value instead of def_ref
-    str = tex_tokenlist_to_tstring(lmt_input_state.def_ref, 1, len, 0, 0, 0);
-    tex_flush_token_list(lmt_input_state.def_ref);
+    str = tex_tokenlist_to_tstring(lmt_input_state.def_ref, 1, len, 0, 0, 0, 1);
     tex_flush_token_list(ref);
     return str;
 }
@@ -3113,12 +3121,9 @@ static int tokenlib_get_expansion(lua_State* L)
         char *s;
         int l;
         tex_parse_str_to_tok(h, &t, ct, str, len, 2); /* ignore unknown */
-
         tokenlib_aux_expand_macros_in_tokenlist(h); // todo: use return value instead of def_ref
-        s = tex_tokenlist_to_tstring(lmt_input_state.def_ref, 1, &l, 0, 0, 0);
-        tex_flush_token_list(lmt_input_state.def_ref);
+        s = tex_tokenlist_to_tstring(lmt_input_state.def_ref, 1, &l, 0, 0, 0, 1);
         tex_flush_token_list(h);
-
         if (l > 0) {
             lua_pushlstring(L, (const char *) s, (size_t) l);
             return 1;
@@ -3472,9 +3477,8 @@ static int tokenlib_serialize(lua_State *L)
         halfword t = n->token;
         char *s;
         tokenlib_aux_expand_macros_in_tokenlist(t); // todo: use return value instead of def_ref
-        s = tex_tokenlist_to_tstring(lmt_input_state.def_ref, 1, NULL, 0, 0, 0);
+        s = tex_tokenlist_to_tstring(lmt_input_state.def_ref, 1, NULL, 0, 0, 0, 1);
         lua_pushstring(L, s ? s : "");
-        tex_flush_token_list(lmt_input_state.def_ref);
     } else {
         lua_pushnil(L);
     }
@@ -3656,7 +3660,7 @@ void lmt_token_call(int p) /*tex The \TEX\ pointer to the token list. */
 {
     LoadS ls;
     int l = 0;
-    ls.s = tex_tokenlist_to_tstring(p, 1, &l, 0, 0, 0);
+    ls.s = tex_tokenlist_to_tstring(p, 1, &l, 0, 0, 0, 0);
     ls.size = (size_t) l;
     if (ls.size > 0) {
         lua_State *L = lmt_lua_state.lua_instance;

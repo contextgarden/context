@@ -1088,18 +1088,13 @@ void tex_scan_something_simple(halfword cmd, halfword chr)
     switch (cmd) {
         /* begin of tex_aux_short_scan_something_internal */
         case char_given_cmd:
-     // case math_char_given_cmd:
-     // case math_char_xgiven_cmd:
             cur_val = chr;
             cur_val_level = int_val_level;
             break;
-
-case mathspec_cmd:
-    cur_val = (chr && node_subtype(chr) == tex_mathcode) ? math_spec_value(chr) : 0;
-    cur_val_level = int_val_level;
-    break;
-
-
+        case mathspec_cmd:
+            cur_val = (chr && node_subtype(chr) == tex_mathcode) ? math_spec_value(chr) : 0;
+            cur_val_level = int_val_level;
+            break;
         case iterator_value_cmd:
             cur_val = chr > 0x100000 ? - (chr - 0x100000) : chr;
             cur_val_level = int_val_level;
@@ -1254,8 +1249,6 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
     switch (cmd) {
         /* begin of tex_aux_short_scan_something_internal */
         case char_given_cmd:
-     // case math_char_given_cmd:
-     // case math_char_xgiven_cmd:
             cur_val = chr;
             cur_val_level = int_val_level;
             break;

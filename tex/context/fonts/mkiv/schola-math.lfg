@@ -1,20 +1,8 @@
-local dimensions, kerns  if CONTEXTLMTXMODE == 0 then
-
-    local kern_V = { bottomright = { { kern = -200 } }, topright = { { kern = 50 } } }
-    local kern_W = { bottomright = { { kern = -100 } }, topright = { { kern = 50 } } }
-
-    kerns = {
-        [0x1D449] = kern_V, -- 𝑉
-        [0x1D44A] = kern_W, -- 𝑊
-    }
-
-end
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
 
 local integral_variants = {  bottomright = -0.20 }
 local integral_bottom   = {  bottomright = -0.20 }
-
-local common  = fonts.goodies.load("common-math.lfg")
-local presets = common.mathematics.tweaks.presets
 
 return {
     name = "schola-math",
@@ -55,10 +43,17 @@ return {
                 {
                     tweak = "addmirrors",
                 },
-                presets.matheulercalligraphic { rscale = 1    },
-                presets.mathrsfscript         { rscale = 1    },
-                presets.mathxitsarabic        { rscale = 0.93 },
-                presets.moveitalics           { correct = true },
+                presets.scripttocalligraphic { },
+                presets.rsfstoscript         { },
+                presets.rsfsuprighttoscript  { },
+                presets.moderntocalligraphic { },
+                presets.eulertocalligraphic  { },
+                presets.xitsarabic           { rscale  = 0.93 },
+                presets.fallbacks            { },
+                presets.moveitalics          { correct = true },
+                presets.moveitalics          { correct = true, letters = true },
+                presets.moveintegrals        { },
+                presets.wipeitalics          { },
                 {
                     tweak = "kerns",
                     list  = {
@@ -161,6 +156,12 @@ return {
                  -- scale   = 1.25,
                     variant = 1,
                 },
+                -- this is the mkiv section
+                {
+                    tweak   = "emulatelmtx",
+                    feature = "emulatelmtx",
+                    comment = "this is for mkiv",
+                },
             },
         },
         bigslots = {
@@ -169,10 +170,5 @@ return {
         alternates = {
             dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
         },
-        --
-        -- experimental fixes for mkiv:
-        --
-        dimensions = dimensions,
-        kerns      = kerns,
     },
 }

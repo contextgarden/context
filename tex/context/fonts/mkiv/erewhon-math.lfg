@@ -1,4 +1,5 @@
--- This file might go away and is for experiments only.
+-- This font is under active development so we don't want to tweek it too much
+-- before all issues are sorted out.
 
 local common  = fonts.goodies.load("common-math.lfg")
 local presets = common.mathematics.tweaks.presets
@@ -32,9 +33,17 @@ return {
                 {
                     tweak = "addmirrors",
                 },
-                presets.matheulercalligraphic { rscale = 0.93 },
-                presets.mathrsfscript         { rscale = 0.93 },
-                presets.mathxitsarabic        { rscale = 0.90 },
+                presets.scripttocalligraphic { },
+                presets.rsfstoscript         { },
+                presets.rsfsuprighttoscript  { },
+                presets.moderntocalligraphic { },
+                presets.eulertocalligraphic  { },
+                presets.xitsarabic           { rscale  = 0.90 },
+                presets.fallbacks            { },
+                presets.moveitalics          { correct = true },
+                presets.moveitalics          { correct = true, letters = true },
+                presets.moveintegrals        { factor = 1.5 },
+                presets.wipeitalics          { },
                 {
                     tweak = "kerns",
                     list  = {
@@ -76,6 +85,12 @@ return {
                     tweak = "setoptions",
                     set   = { "ignorekerndimensions" }
                 },
+                -- this is the mkiv section
+--                 {
+--                     tweak   = "emulatelmtx",
+--                     feature = "emulatelmtx",
+--                     comment = "this is for mkiv",
+--                 },
             },
         },
         bigslots = {
@@ -84,5 +99,3 @@ return {
     },
 
 }
-
-

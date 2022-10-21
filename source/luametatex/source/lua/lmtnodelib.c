@@ -2997,7 +2997,7 @@ static int nodelib_direct_getdata(lua_State *L)
                 }
             case mark_node:
                 if (lua_toboolean(L, 2)) {
-                    lmt_token_list_to_luastring(L, mark_ptr(n), 0, 0);
+                    lmt_token_list_to_luastring(L, mark_ptr(n), 0, 0, 0);
                 } else {
                     lmt_token_list_to_lua(L, mark_ptr(n));
                 }
@@ -6555,7 +6555,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                 lua_pushinteger(L, mark_index(n));
                             } else if (lua_key_eq(s, data) || lua_key_eq(s, mark)) {
                                 if (lua_toboolean(L, 3)) {
-                                    lmt_token_list_to_luastring(L, mark_ptr(n), 0, 0);
+                                    lmt_token_list_to_luastring(L, mark_ptr(n), 0, 0, 0);
                                 } else {
                                     lmt_token_list_to_lua(L, mark_ptr(n));
                                 }
