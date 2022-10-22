@@ -110,7 +110,7 @@
    \s!sl=SerifSlanted     sa 1,
    \s!bi=SerifBoldItalic  sa 1,
    \s!bs=SerifBoldSlanted sa 1,
-   \s!sc=SerifCaps        sa 1]
+   \s!sc=SerifCaps        sa 1] % obsolete, is a font feature now
 
 \definebodyfont [default] [ss]
   [\s!tf=Sans            sa 1,
@@ -119,7 +119,7 @@
    \s!sl=SansSlanted     sa 1,
    \s!bi=SansBoldItalic  sa 1,
    \s!bs=SansBoldSlanted sa 1,
-   \s!sc=SansCaps        sa 1]
+   \s!sc=SansCaps        sa 1] % obsolete, is a font feature now
 
 \definebodyfont [default] [tt]
   [\s!tf=Mono            sa 1,
@@ -128,20 +128,24 @@
    \s!sl=MonoSlanted     sa 1,
    \s!bi=MonoBoldItalic  sa 1,
    \s!bs=MonoBoldSlanted sa 1,
-   \s!sc=MonoCaps        sa 1]
+   \s!sc=MonoCaps        sa 1] % obsolete, is a font feature now
+
+% \definebodyfont [default] [mm]
+%   [\s!mr  =MathRoman        mo 1,
+%    \s!mrlr=MathRomanL2R     mo 1,
+%    \s!mrrl=MathRomanR2L     mo 1,
+%    \s!mb  =MathRomanBold    mo 1,
+    %    \s!mblr=MathRomanBoldL2R mo 1,
+%    \s!mbrl=MathRomanBoldR2L mo 1]
 
 \definebodyfont [default] [mm]
-  [\s!mr  =MathRoman        mo 1,
-   \s!mrlr=MathRomanL2R     mo 1,
-   \s!mrrl=MathRomanR2L     mo 1,
-   \s!mb  =MathRomanBold    mo 1,
-   \s!mblr=MathRomanBoldL2R mo 1,
-   \s!mbrl=MathRomanBoldR2L mo 1]
+  [\s!mr=MathRoman     mo 1,
+   \s!mb=MathRomanBold mo 1]
 
-\definebodyfont [default] [hw]
+\definebodyfont [default] [hw] % only for lucida, can be just a typeface
   [\s!tf=Handwriting sa 1]
 
-\definebodyfont [default] [cg]
+\definebodyfont [default] [cg] % only for lucida, can be just a typeface
   [\s!tf=Calligraphy sa 1]
 
 %D These definitions come into action as soon as names are mapped onto real file

@@ -140,17 +140,17 @@ end
 
 do
 
-    local c_realpageno    = getcount("realpageno")    registerdirect("RealPageNumber", function() return getcount(c_realpageno)    end)
-    local c_lastpageno    = getcount("lastpageno")    registerdirect("LastPageNumber", function() return getcount(c_lastpageno)    end)
+    local c_realpageno    = iscount("realpageno")    registerdirect("RealPageNumber", function() return getcount(c_realpageno)    end)
+    local c_lastpageno    = iscount("lastpageno")    registerdirect("LastPageNumber", function() return getcount(c_lastpageno)    end)
 
-    local c_userpageno    = getcount("userpageno")    registerdirect("PageNumber",     function() return getcount(c_userpageno)    end)
-    local c_lastpageno    = getcount("lastpageno")    registerdirect("NOfPages",       function() return getcount(c_lastpageno)    end)
+    local c_userpageno    = iscount("userpageno")    registerdirect("PageNumber",     function() return getcount(c_userpageno)    end)
+    local c_lastpageno    = iscount("lastpageno")    registerdirect("NOfPages",       function() return getcount(c_lastpageno)    end)
 
-    local c_subpageno     = getcount("subpageno")     registerdirect("SubPageNumber",  function() return getcount(c_subpageno)     end)
-    local c_lastsubpageno = getcount("lastsubpageno") registerdirect("NOfSubPages",    function() return getcount(c_lastsubpageno) end)
+    local c_subpageno     = iscount("subpageno")     registerdirect("SubPageNumber",  function() return getcount(c_subpageno)     end)
+    local c_lastsubpageno = iscount("lastsubpageno") registerdirect("NOfSubPages",    function() return getcount(c_lastsubpageno) end)
 
-    local c_mofcolumns    = getcount("mofcolumns")    registerdirect("CurrentColumn",  function() return getcount(c_mofcolumns)    end)
-    local c_nofcolumns    = getcount("nofcolumns")    registerdirect("NOfColumns",     function() return getcount(c_nofcolumns)    end)
+    local c_mofcolumns    = iscount("mofcolumns")    registerdirect("CurrentColumn",  function() return getcount(c_mofcolumns)    end)
+    local c_nofcolumns    = iscount("nofcolumns")    registerdirect("NOfColumns",     function() return getcount(c_nofcolumns)    end)
 
 end
 

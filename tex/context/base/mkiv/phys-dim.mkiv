@@ -170,9 +170,8 @@
 % \definesymbol[units][times][\ifmmode\cdot\else\kern.2\emwidth\cdot\kern.2\emwidth\fi]
 
 \unexpanded\def\digitstextbinop#1% assumes preceding
-  {\ifmmode#1\else\fourperemspace\nobreak#1\fourperemspace\fi}
+  {\ifmmode\mathord{#1}\else\nobreak#1\fi}
 
-%def\digitstimessymbol{\ifmmode\cdot\else\digitstextbinop\cdot\fi}
 \def\digitstimessymbol{\digitstextbinop\times}
 
 \unexpanded\def\digitszeropadding   {\hphantom{0}}
@@ -406,8 +405,13 @@
 %    \endcsname}
 
 \unexpanded\def\phys_units_separator
-  {\edef\currentunitsseparator{\unitparameter\c!separator}% no longer needed
-   \ifcsname\??unitseparator\currentunitsseparator\endcsname\lastnamedcs\else\cdot\fi}
+  {\ifcsname\??unitseparator\unitparameter\c!separator\endcsname
+     \lastnamedcs
+   \else
+     \csname\??unitseparator\v!normal\endcsname
+   \fi}
+
+\installunitsseparator\v!normal{\ifmmode\mathord{\cdot}\else\cdot\fi}
 
 \installunitsseparator\v!normal {\cdot}
 \installunitsseparator\v!big    {\unitsbigspace}
@@ -520,9 +524,6 @@
 \unexpanded\def\phys_units_indeed#1%
   {\edef\p_order{\unitparameter\c!order}%
    \ifx\p_order\v!reverse\expandafter\clf_unit_reverse\else\expandafter\clf_unit_normal\fi{\detokenize{#1}}}
-
-\unexpanded\def\digitstextbinnop#1%
-  {\ifmmode#1\else#1\fourperemspace\fi}
 
 \unexpanded\def\unitsPUS#1#2#3{\phys_units_next\prefixtext{#1}\unittext{#2}\unitsraise{\suffixtext{#3}}\c_phys_units_state\plusone} % suffix
 \unexpanded\def\unitsPU   #1#2{\phys_units_next\prefixtext{#1}\unittext{#2}\c_phys_units_state\plusthree}                           % unit

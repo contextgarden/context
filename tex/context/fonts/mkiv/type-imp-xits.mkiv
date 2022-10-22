@@ -17,6 +17,11 @@
 % scheduled for release by the end of 2010. Version 1.2, which will include Type 1
 % fonts for use with LaTeX, will follow in 2011. So, we are on our own anyway.
 
+% In \MKXL\ (aka LMTX) we now use StixTwo because Xits is frozen and not maintained
+% any longer. The obsolete LR2 and R2L variants are just ignored because in \LMTX\
+% all math fonts have bidi support injected for which we use a companion font that is
+% derived from Xits.
+
 \definefontfeature[xitsmath][copymathscripts=yes] % see lfg file
 
 \loadtypescriptfile[texgyre]
