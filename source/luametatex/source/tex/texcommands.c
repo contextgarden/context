@@ -138,6 +138,7 @@ void tex_initialize_commands(void)
         tex_primitive(tex_command,    "exhyphenchar",                   internal_int_cmd,       ex_hyphen_char_code,                      internal_int_base);
         tex_primitive(tex_command,    "exhyphenpenalty",                internal_int_cmd,       ex_hyphen_penalty_code,                   internal_int_base);
         tex_primitive(tex_command,    "fam",                            internal_int_cmd,       family_code,                              internal_int_base);
+        tex_primitive(luatex_command, "variablefam",                    internal_int_cmd,       variable_family_code,                     internal_int_base);
         tex_primitive(tex_command,    "finalhyphendemerits",            internal_int_cmd,       final_hyphen_demerits_code,               internal_int_base);
         tex_primitive(tex_command,    "floatingpenalty",                internal_int_cmd,       floating_penalty_code,                    internal_int_base);
         tex_primitive(tex_command,    "globaldefs",                     internal_int_cmd,       global_defs_code,                         internal_int_base);
@@ -743,6 +744,7 @@ void tex_initialize_commands(void)
         tex_primitive(tex_command,    "hyphenchar",                     set_font_property_cmd,  font_hyphen_code,                         0);
         tex_primitive(tex_command,    "skewchar",                       set_font_property_cmd,  font_skew_code,                           0);
         tex_primitive(luatex_command, "efcode",                         set_font_property_cmd,  font_ef_code,                             0);
+        tex_primitive(luatex_command, "cfcode",                         set_font_property_cmd,  font_cf_code,                             0);
         tex_primitive(luatex_command, "lpcode",                         set_font_property_cmd,  font_lp_code,                             0);
         tex_primitive(luatex_command, "rpcode",                         set_font_property_cmd,  font_rp_code,                             0);
         tex_primitive(tex_command,    "fontdimen",                      set_font_property_cmd,  font_dimen_code,                          0);

@@ -46,6 +46,8 @@ local setmetatableindex   = table.setmetatableindex
 local texgetattribute     = tex.getattribute
 local texsetattribute     = tex.setattribute
 
+local setmacro            = tokens.setters.macro
+
 local texgetmode          = tex.getmode
 local mathmode_code       = tex.modelevels.math
 
@@ -711,9 +713,19 @@ implement {
     protected = true,
     actions   = function(alphabet,style)
         if texgetmode() == mathmode_code then
-            local data = alphabets[alphabet] or regular
-            data = data[style] or data.tf
-            texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
+            local data = alphabets[alphabet]
+            if not data then
+                alphabet = "regular"
+                data     = regular
+            end
+            local used = data[style]
+            if not used then
+                style = "tf"
+                used  = data.tf
+            end
+            setmacro("currentmathalphabet",alphabet == "regular" and "rm" or alphabet)
+            setmacro("currentmathfontstyle",style)
+            texsetattribute(mathalphabet,used and used.attribute or texattribute[mathalphabet])
         end
     end
 }
@@ -728,6 +740,7 @@ implement {
             local r = mathremap[texgetattribute(mathalphabet)]
             local alphabet = r and r.alphabet or "regular"
             local data = alphabets[alphabet][style]
+            setmacro("currentmathfontstyle",style)
             texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
         end
     end

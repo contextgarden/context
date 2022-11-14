@@ -474,6 +474,7 @@ function definers.read(specification,size,id) -- id can be optional, name can al
     end
     specification = definers.resolve(specification)
     local hash    = constructors.hashinstance(specification)
+-- inspect(hash)
     local tfmdata = definers.registered(hash) -- id
     local name    = specification.name
     if tfmdata then

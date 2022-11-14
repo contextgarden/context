@@ -648,6 +648,7 @@ return {
   "unletprotected",
   "untraced",
   "unvpack",
+  "variablefam",
   "vpack",
   "wordboundary",
   "wrapuppar",

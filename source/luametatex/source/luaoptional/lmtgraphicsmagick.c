@@ -147,7 +147,7 @@ static int gmlib_execute(lua_State * L)
                     }
                     if (lua_getfield(L, -1, "noise" ) == LUA_TTABLE) {
                         lua_getfield(L, -1, "type");
-                        gmlib_state.gm_MagickAddNoiseImage(wand, lua_tointeger(L, -1));
+                        gmlib_state.gm_MagickAddNoiseImage(wand, lmt_tointeger(L, -1));
                         lua_pop(L, 2);
                     } else {
                         lua_pop(L, 1);

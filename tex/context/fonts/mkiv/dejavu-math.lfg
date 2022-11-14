@@ -1,8 +1,8 @@
 local common  = fonts.goodies.load("common-math.lfg")
 local presets = common.mathematics.tweaks.presets
 
-local integral_variants = {  bottomright = -0.20 }
-local integral_bottom   = {  bottomright = -0.25 }
+local integral_variants = { bottomright = -0.20 }
+local integral_bottom   = { bottomright = -0.25 }
 
 return {
     name = "dejavu-math",
@@ -12,15 +12,15 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            NoLimitSupFactor                 =    0,
-            NoLimitSubFactor                 =  900,
+            -- NoLimitSupFactor                 =    0,
+            -- NoLimitSubFactor                 =  900,
             FractionRuleThickness            =   60,
             AccentTopShiftUp                 =  -25,
             FlattenedAccentTopShiftUp        =  -25,
          -- AccentExtendMargin               =   50,
             AccentBaseDepth                  =   30,
-            RadicalDegreeBottomRaisePercent  =   62,
-            RadicalRuleThickness             =   46, --   52 in font
+            -- RadicalDegreeBottomRaisePercent  =   62,
+            -- RadicalRuleThickness             =   46, --   52 in font
             DelimiterPercent                 =   90,
             DelimiterShortfall               =  400,
             DisplayOperatorMinHeight         = 1800, -- 1333 in font
@@ -33,11 +33,17 @@ return {
                     tweak    = "version",
                     expected = "Version 1.106",
                 },
-                 {
+--                 {
+--                     tweak   = "fixprimes",
+--                     scale   = 0.85,
+--                  -- smaller = true,
+--                     factor  = 1,
+--                 },
+                {
                     tweak   = "fixprimes",
-                    scale   = 0.85,
+                    scale   = 1,
                  -- smaller = true,
-                    factor  = 1,
+                    factor  = 0.8,
                 },
                 {
                     tweak = "addmirrors",
@@ -53,6 +59,18 @@ return {
                 presets.moveitalics          { correct = true, letters = true },
                 presets.moveintegrals        { factor = 1.5 }, -- we need to check this
                 presets.wipeitalics          { },
+                -- We don't have italic correction in for instance math italic f which means that
+                -- we also didn't fix it. Therefore we need at least some reasonable kerns. Using
+                -- a dimension tweak before the above (e.g. 0.2 italic and 0.8 width) doesn't work
+                -- because once the advance is set the move is blocked and the ic stil wiped. So,
+                -- we kern. Actually the upright (ascii) f has italic correction.
+                {
+                    tweak = "kerns",
+                    list  = {
+                        [0x1D453] = { bottomright = -.2 },
+                    }
+                },
+                --
                 {
                     tweak = "kerns",
                     list  = {
@@ -71,15 +89,20 @@ return {
                         [0x27EB]                = { topright = -0.1,  bottomright = -0.1  },
                         ["0x27EB.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
                         --
-                        ["0x222B.variants.*"] = integral_variants, ["0x222B.parts.top"] = integral_top, ["0x222B.parts.bottom"] = integral_bottom,
-                        ["0x222C.variants.*"] = integral_variants, ["0x222C.parts.top"] = integral_top, ["0x222C.parts.bottom"] = integral_bottom,
-                        ["0x222D.variants.*"] = integral_variants, ["0x222D.parts.top"] = integral_top, ["0x222D.parts.bottom"] = integral_bottom,
-                        ["0x222E.variants.*"] = integral_variants, ["0x222E.parts.top"] = integral_top, ["0x222E.parts.bottom"] = integral_bottom,
-                        ["0x222F.variants.*"] = integral_variants, ["0x222F.parts.top"] = integral_top, ["0x222F.parts.bottom"] = integral_bottom,
-                        ["0x2230.variants.*"] = integral_variants, ["0x2230.parts.top"] = integral_top, ["0x2230.parts.bottom"] = integral_bottom,
-                        ["0x2231.variants.*"] = integral_variants, ["0x2231.parts.top"] = integral_top, ["0x2231.parts.bottom"] = integral_bottom,
-                        ["0x2232.variants.*"] = integral_variants, ["0x2232.parts.top"] = integral_top, ["0x2232.parts.bottom"] = integral_bottom,
-                        ["0x2233.variants.*"] = integral_variants, ["0x2233.parts.top"] = integral_top, ["0x2233.parts.bottom"] = integral_bottom,
+
+                        ["0x222B.parts.bottom"] = { bottomright = -0.20 }, -- int
+                        ["0x222C.parts.bottom"] = { bottomright = -0.15 }, -- iint
+                        ["0x222D.parts.bottom"] = { bottomright = -0.10 }, -- iiint
+                        ["0x2A0C.parts.bottom"] = { bottomright = -0.05 }, -- iiiint
+                        -- ["0x222B.variants.*"] = integral_variants, ["0x222B.parts.top"] = integral_top, ["0x222B.parts.bottom"] = integral_bottom,
+                        -- ["0x222C.variants.*"] = integral_variants, ["0x222C.parts.top"] = integral_top, ["0x222C.parts.bottom"] = integral_bottom,
+                        -- ["0x222D.variants.*"] = integral_variants, ["0x222D.parts.top"] = integral_top, ["0x222D.parts.bottom"] = integral_bottom,
+                        -- ["0x222E.variants.*"] = integral_variants, ["0x222E.parts.top"] = integral_top, ["0x222E.parts.bottom"] = integral_bottom,
+                        -- ["0x222F.variants.*"] = integral_variants, ["0x222F.parts.top"] = integral_top, ["0x222F.parts.bottom"] = integral_bottom,
+                        -- ["0x2230.variants.*"] = integral_variants, ["0x2230.parts.top"] = integral_top, ["0x2230.parts.bottom"] = integral_bottom,
+                        -- ["0x2231.variants.*"] = integral_variants, ["0x2231.parts.top"] = integral_top, ["0x2231.parts.bottom"] = integral_bottom,
+                        -- ["0x2232.variants.*"] = integral_variants, ["0x2232.parts.top"] = integral_top, ["0x2232.parts.bottom"] = integral_bottom,
+                        -- ["0x2233.variants.*"] = integral_variants, ["0x2233.parts.top"] = integral_top, ["0x2233.parts.bottom"] = integral_bottom,
 
                     },
                 },
@@ -89,6 +112,24 @@ return {
                 {
                     tweak = "extendaccents",
                 },
+
+
+{
+    tweak   = "radicaldegreeanchors",
+    list = {
+        [0x221A]                = { location = "left", hfactor  = .1, vfactor  = .65 },
+        ["0x221A.variants.*"]   = { location = "left", hfactor  = .1, vfactor  = .6 },
+        ["0x221A.variants.1"]   = { location = "left", hfactor  = .1, vfactor  = .65 },
+        ["0x221A.variants.2"]   = { location = "left", hfactor  = .1, vfactor  = .65 },
+     -- ["0x221A.variants.3"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.variants.4"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221Aq.variants.6"]  = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.parts.top"]    = { location = "left", hfactor  = .1, vfactor  = 5.5 }, -- keep commented: bottom wins over top
+        ["0x221A.parts.bottom"] = { location = "left", hfactor  = .1, vfactor  = 1.1 },
+    }
+},
                 {
                     tweak = "fixaccents",
                 },
@@ -126,12 +167,6 @@ return {
                 -- if only because it is less confusing and more consistent.
                 {
                     tweak = "copyaccents",
-                },
-                {
-                    tweak   = "fixprimes",
-                 -- scale   = 0.9,
-                 -- smaller = true,
-                    factor  = 0.8,
                 },
                 {
                     tweak = "checkspacing",
@@ -176,11 +211,11 @@ return {
         bigslots = {
             1, 3, 5, 7
         },
-        --
-        -- experimental fixes for mkiv:
-        --
-        dimensions = dimensions,
-        kerns = kerns,
+     -- --
+     -- -- experimental fixes for mkiv:
+     -- --
+     -- dimensions = dimensions,
+     -- kerns = kerns,
     },
 }
 

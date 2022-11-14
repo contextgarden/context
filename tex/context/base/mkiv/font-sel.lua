@@ -77,19 +77,24 @@ local report_typescript   = logs.reporter("selectfont","typescripts")
 defaults["rm"] = { features = { ["sc"] = "*,f:smallcaps" } }
 defaults["ss"] = { features = { ["sc"] = "*,f:smallcaps" } }
 
-defaults["asanamath"]          = { options = { extras = "asana-math",           features = "math\\mathsizesuffix",         goodies = "anana-math"           } }
-defaults["cambriamath"]        = { options = { extras = "cambria-math",         features = "math\\mathsizesuffix",         goodies = "cambria-math"         } }
-defaults["dejavumath"]         = { options = { extras = "dejavu",               features = "math\\mathsizesuffix"                                           } }
-defaults["neoeuler"]           = { options = { extras = "euler-math",           features = "math\\mathsizesuffix"                                           } }
-defaults["latinmodernmath"]    = { options = { extras = "lm,lm-math",           features = "math\\mathsizesuffix,lm-math", goodies = "lm"                   } }
-defaults["lucidabrightmathot"] = { options = { extras = "lucida-opentype-math", features = "math\\mathsizesuffix",         goodies = "lucida-opentype-math" } }
-defaults["minionmath"]         = { options = { extras = "minion-math",          features = "math\\mathsizesuffix",         goodies = "minion-math"          } }
-defaults["texgyredejavumath"]  = { options = { extras = "dejavu",               features = "math\\mathsizesuffix"                                           } }
-defaults["texgyrepagellamath"] = { options = { extras = "texgyre",              features = "math\\mathsizesuffix"                                           } }
-defaults["texgyrebonummath"]   = { options = { extras = "texgyre",              features = "math\\mathsizesuffix"                                           } }
-defaults["texgyrescholamath"]  = { options = { extras = "texgyre",              features = "math\\mathsizesuffix"                                           } }
-defaults["texgyretermesmath"]  = { options = { extras = "texgyre",              features = "math\\mathsizesuffix"                                           } }
-defaults["xitsmath"]           = { options = { extras = "xits-math",            features = "math\\mathsizesuffix",         goodies = "xits-math"            } }
+-- WS: we need to check the extras with the typescripts
+
+defaults["asanamath"]          = { options = { extras = "asana-math",           features = "math\\mathsizesuffix,mathextra",         goodies = "anana-math"   } }
+defaults["cambriamath"]        = { options = { extras = "cambria-math",         features = "math\\mathsizesuffix,mathextra",         goodies = "cambria-math" } }
+defaults["euler"]              = { options = { extras = "euler-math",           features = "math\\mathsizesuffix,mathextra",         goodies = "euler-math"   } }
+defaults["latinmodernmath"]    = { options = { extras = "lm,lm-math",           features = "math\\mathsizesuffix,mathextra,lm-math", goodies = "modern"       } }
+defaults["lucidabrightmathot"] = { options = { extras = "lucida-opentype-math", features = "math\\mathsizesuffix,mathextra",         goodies = "lucida-math"  } }
+defaults["minionmath"]         = { options = { extras = "minion-math",          features = "math\\mathsizesuffix,mathextra",         goodies = "minion-math"  } }
+defaults["stixtwomath"]        = { options = { extras = "stix-two-math",        features = "math\\mathsizesuffix,mathextra",         goodies = "stixtwo-math" } }
+defaults["texgyredejavumath"]  = { options = { extras = "dejavu",               features = "math\\mathsizesuffix,mathextra",         goodies = "dejavu-math"  } }
+defaults["texgyrepagellamath"] = { options = { extras = "texgyre",              features = "math\\mathsizesuffix,mathextra",         goodies = "pagella-math" } }
+defaults["texgyrebonummath"]   = { options = { extras = "texgyre",              features = "math\\mathsizesuffix,mathextra",         goodies = "bonum-math"   } }
+defaults["texgyrescholamath"]  = { options = { extras = "texgyre",              features = "math\\mathsizesuffix,mathextra",         goodies = "schola-math"  } }
+defaults["texgyretermesmath"]  = { options = { extras = "texgyre",              features = "math\\mathsizesuffix,mathextra",         goodies = "termes-math"  } }
+defaults["xitsmath"]           = { options = { extras = "xits-math",            features = "math\\mathsizesuffix,mathextra",         goodies = "xits-math"    } }
+
+defaults["neoeuler"]           = defaults["euler"]
+defaults["dejavumath"]         = defaults["texgyredejavumath"]
 
 extras["features"] = function(data,alternative,features)
     local d = data.options.features

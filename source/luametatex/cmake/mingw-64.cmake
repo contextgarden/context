@@ -1,6 +1,6 @@
-if (NOT __MINGW64_TOOLCHAIN_)
-    add_compile_options(-DLUASOCKET_INET_PTON)
-endif()
+# if (NOT __MINGW64_TOOLCHAIN_)
+#     add_compile_options(-DLUASOCKET_INET_PTON)
+# endif()
 
 set(CMAKE_SYSTEM_NAME Windows)
 set(TOOLCHAIN_PREFIX  x86_64-w64-mingw32)

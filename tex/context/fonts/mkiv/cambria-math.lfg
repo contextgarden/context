@@ -9,15 +9,15 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            NoLimitSupFactor                =    0,
-            NoLimitSubFactor                = 1000,
+            -- NoLimitSupFactor                =    0,
+            -- NoLimitSubFactor                = 1000,
          -- AccentTopShiftUp                =    0,
          -- FlattenedAccentTopShiftUp       =    0,
          -- AccentExtendMargin              =   50,
             AccentBaseDepth                 =  300,
-            RadicalDegreeBottomRaisePercent =   65,
-            RadicalKernAfterDegree          = -900,
-            RadicalRuleThickness            =  128, -- 133 in font
+            -- RadicalDegreeBottomRaisePercent =   65,
+            -- RadicalKernAfterDegree          = -900,
+            -- RadicalRuleThickness            =  128, -- 133 in font
             DelimiterPercent                =   90,
             DelimiterShortfall              =  400,
             DisplayOperatorMinHeight        = 2800, -- 2500 in font
@@ -76,6 +76,7 @@ return {
                         },
 
                         -- Keep as example. not needed in cambria (after all it is the reference):
+                        [0x2A0C] = { bottomright = -0.1 }, -- iiiint does not have any ic
 
                      -- ["0x222B.variants.*"] = integral_variants, ["0x222B.parts.top"] = integral_top, ["0x222B.parts.bottom"] = integral_bottom,
                      -- ["0x222C.variants.*"] = integral_variants, ["0x222C.parts.top"] = integral_top, ["0x222C.parts.bottom"] = integral_bottom,
@@ -95,6 +96,22 @@ return {
                 {
                     tweak = "extendaccents",
                 },
+{
+    tweak   = "radicaldegreeanchors",
+    list = {
+        [0x221A]                = { location = "left", hfactor  = -0.15, vfactor  = .75 },
+        ["0x221A.variants.*"]   = { location = "left", hfactor  = -0.1, vfactor  = .15 },
+        ["0x221A.variants.1"]   = { location = "left", hfactor  = -0.1, vfactor  = .55 },
+        ["0x221A.variants.2"]   = { location = "left", hfactor  = -0.1, vfactor  = .375 },
+        ["0x221A.variants.3"]   = { location = "left", hfactor  = -0.1, vfactor  = .275 },
+        ["0x221A.variants.4"]   = { location = "left", hfactor  = -0.1, vfactor  = .22 },
+        ["0x221A.variants.5"]   = { location = "left", hfactor  = -0.1, vfactor  = .175 },
+     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221Aq.variants.6"]  = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.parts.top"]    = { location = "left", hfactor  = .1, vfactor  = 5.5 }, -- keep commented: bottom wins over top
+        ["0x221A.parts.bottom"] = { location = "left", hfactor  = -0.1, vfactor  = 0.95 },
+    }
+},
                 {
                     tweak = "fixaccents",
                 },
@@ -181,6 +198,9 @@ return {
                 },
                 {
                     tweak = "addactuarian",
+                },
+                {
+                    tweak = "addequals",
                 },
                 {
                     tweak = "addfourier",

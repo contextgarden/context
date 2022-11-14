@@ -151,8 +151,8 @@ static int callbacklib_aux_run(lua_State *L, int id, int special, const char *va
     } else if (special == 2) {
         narg++;
     }
+    lmt_lua_state.saved_callback_count++;
     {
-        lmt_lua_state.saved_callback_count++;
         int i = lua_pcall(L, narg, nres, base);
         if (i) {
             /*tex

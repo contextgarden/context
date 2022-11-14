@@ -665,9 +665,9 @@ possibly become zero. We round to five digits
 @ @c
 static char *mp_string_scaled (MP mp, int s)
 {
-    (void) mp;
     static char scaled_string[32];
     int i = 0;
+    (void) mp;
     if (s < 0) {
         scaled_string[i++] = '-';
         s = -s;

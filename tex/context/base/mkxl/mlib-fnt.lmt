@@ -6,9 +6,10 @@ if not modules then modules = { } end modules ['font-mps'] = {
     license   = "see context related readme files"
 }
 
-local tostring   = tostring
-local concat     = table.concat
-local formatters = string.formatters
+local type, tonumber, tostring = type, tonumber, tostring
+local concat, insert, remove = table.concat, table.insert, table.remove
+local formatters, match = string.formatters, string.match
+local utfbyte = utf.byte
 
 -- QP0 [QP1] QP2 => CP0 [CP1 CP2] CP3
 
@@ -33,8 +34,8 @@ local f_dofill      = formatters["fill %s;"]
 local f_draw_trace  = formatters["drawpathonly %s;"]
 local f_draw        = formatters["draw %s;"]
 
-local f_boundingbox = formatters["((%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle)"]
-local f_vertical    = formatters["((%N,%N)--(%N,%N))"]
+local f_rectangle   = formatters["((%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle)"]
+local f_line        = formatters["((%N,%N)--(%N,%N))"]
 
 function metapost.boundingbox(d,factor)
     local bounds = d.boundingbox
@@ -43,7 +44,7 @@ function metapost.boundingbox(d,factor)
     local lly    = factor*bounds[2]
     local urx    = factor*bounds[3]
     local ury    = factor*bounds[4]
-    return f_boundingbox(llx,lly,urx,lly,urx,ury,llx,ury)
+    return f_rectangle(llx,lly,urx,lly,urx,ury,llx,ury)
 end
 
 function metapost.baseline(d,factor)
@@ -51,7 +52,7 @@ function metapost.baseline(d,factor)
     local factor = factor or 1
     local llx    = factor*bounds[1]
     local urx    = factor*bounds[3]
-    return f_vertical(llx,0,urx,0)
+    return f_line(llx,0,urx,0)
 end
 
 function metapost.widthline(d,factor)
@@ -60,7 +61,7 @@ function metapost.widthline(d,factor)
     local lly    = factor*bounds[2]
     local ury    = factor*bounds[4]
     local width  = factor*d.width
-    return f_vertical(width,lly,width,ury)
+    return f_line(width,lly,width,ury)
 end
 
 function metapost.zeroline(d,factor)
@@ -68,7 +69,7 @@ function metapost.zeroline(d,factor)
     local factor = factor or 1
     local lly    = factor*bounds[2]
     local ury    = factor*bounds[4]
-    return f_vertical(0,lly,0,ury)
+    return f_line(0,lly,0,ury)
 end
 
 function metapost.paths(d,xfactor,yfactor)
@@ -247,7 +248,7 @@ function metapost.maxbounds(data,index,factor)
     if width > urx then
         urx = width
     end
-    return f_boundingbox(
+    return f_rectangle(
         factor*llx,factor*ymin,
         factor*urx,factor*ymin,
         factor*urx,factor*ymax,
@@ -274,11 +275,15 @@ local emptyrule_code   = rulecodes.empty
 local nuts             = nodes.nuts
 local getwhd           = nuts.getwhd
 local getexpansion     = nuts.getexpansion
+local getscales        = nuts.getscales
 local isglyph          = nuts.isglyph
 
-local characters       = fonts.hashes.characters
-local parameters       = fonts.hashes.parameters
-local shapes           = fonts.hashes.shapes
+local fonthashes       = fonts.hashes
+local fontcharacters   = fonthashes.characters
+local fontparameters   = fonthashes.parameters
+local fontshapes       = fonthashes.shapes
+local fontdescriptions = fonthashes.descriptions
+
 local topaths          = metapost.paths
 
 local f_text           = formatters["mfun_do_outline_text_flush(%q,%i,%N,%N,%q)(%,t);"]
@@ -289,18 +294,18 @@ local s_nothing        = "(origin scaled 10)"
 local sc               = 10
 local fc               = number.dimenfactors.bp
 
-local function glyph(kind,font,char,advance,shift,ex)
-    local character = characters[font][char]
+local function glyph(kind,font,char,advance,shift,ex,s, sx,sy)
+    local character = fontcharacters[font][char]
     if character then
         local index = character.index
         if index then
-            local shapedata = shapes[font]
-            local glyphs    = shapedata.glyphs -- todo: subfonts fonts.shapes.indexed(font,sub)
+            local shapedata = fontshapes[font]
+            local glyphs    = shapedata.glyphs
             if glyphs then
                 local glyf = glyphs[index]
                 if glyf then
                     local units    = 1000 -- factor already takes shapedata.units into account
-                    local yfactor  = (sc/units) * parameters[font].factor / 655.36
+                    local yfactor  = (sc/units) * fontparameters[font].factor / 655.36
                     local xfactor  = yfactor
                     local shift    = shift or 0
                     local advance  = advance or 0
@@ -310,6 +315,10 @@ local function glyph(kind,font,char,advance,shift,ex)
                     if exfactor ~= 0 then
                         wfactor = (1+(ex/units)/1000)
                         xfactor = xfactor * wfactor
+                    end
+                    if s then
+                        xfactor = (s/1000) * ((sx or 1000)/1000) * xfactor
+                        yfactor = (s/1000) * ((sy or 1000)/1000) * yfactor
                     end
                     local paths = topaths(glyf,xfactor,yfactor)
                     if paths then
@@ -334,7 +343,8 @@ end
 
 local function flushcharacter(current, pos_h, pos_v, pod_r, font, char)
     local char, font = isglyph(current)
-    local code = glyph(kind,font,char,pos_h*fc,pos_v*fc,getexpansion(current))
+    local s, sx, sy = getscales(current)
+    local code = glyph(kind,font,char,pos_h*fc,pos_v*fc,getexpansion(current),s,sx,sy)
     if code then
         b = b + 1
         buffer[b] = code
@@ -405,3 +415,134 @@ function metapost.boxtomp(n,k)
     return result
 end
 
+-- This is a new set of commands:
+
+local loaded = table.setmetatableindex(function(t,k)
+    local v = fonts.definers.internal({ name = k } ,"<lmt:glyphshape:font>")
+    t[k] = v
+    return v
+end)
+
+local mpdata  = 0
+local mpstack = { }
+
+function mp.lmt_glyphshape_start(id,character)
+    if type(id) == "string" then
+        id = loaded[id]
+    end
+    local fontid       = (id and id ~= 0 and id) or font.current()
+    local shapedata    = fontshapes      [fontid] -- by index
+    local characters   = fontcharacters  [fontid] -- by unicode
+    local descriptions = fontdescriptions[fontid] -- by unicode
+    local mathgaps     = mathematics.gaps -- not yet loaded
+    local shapeglyphs  = shapedata.glyphs or { }
+    if type(character) == "string" and character ~= "" then
+        local hex = match(character,"^0x(.+)")
+        if hex then
+            character = tonumber(hex,16)
+        else
+            character = utfbyte(character)
+        end
+    else
+        character = tonumber(character)
+    end
+    local unicode  = mathgaps[character] or character
+    local chardata = characters[unicode]
+    local descdata = descriptions[unicode]
+    if chardata then
+        glyph = shapeglyphs[chardata.index]
+        if glyph then
+            mpdata = glyph.mpdata
+            if not mpdata then
+                if glyph.segments or glyph.sequence then
+                    local units  = shapedata.units or 1000
+                    local factor = 100/units
+                    local width  = (descdata.width or 0)  * factor
+                    local height = descdata.boundingbox[4] * factor
+                    local depth  = descdata.boundingbox[2] * factor
+                    local math   = descdata.math
+                    local italic = (math and math.italic or 0) * factor
+                    local accent = (math and math.accent or 0) * factor
+                    mpdata = {
+                        paths       = metapost.paths(glyph,factor),
+                        boundingbox = metapost.boundingbox(glyph,factor),
+                        baseline    = metapost.baseline(glyph,factor),
+                        width       = width,
+                        height      = height,
+                        depth       = depth,
+                        italic      = italic,
+                        accent      = accent,
+                        usedbox     = f_rectangle(0,depth,width,depth,width,height,0,height),
+                        usedline    = f_line(0,0,width,0),
+                    }
+                    glyph.mpdata = mpdata
+                else
+                    print("CHECK 1",id,character)
+                end
+            end
+        end
+    else
+        print("CHECK 2",id,character)
+    end
+    insert(mpstack, mpdata)
+end
+
+local mpprint       = mp.print
+local injectpair    = mp.inject.pair
+local injectnumeric = mp.inject.numeric
+
+function mp.lmt_glyphshape_stop()
+    mpdata = remove(mpstack)
+end
+
+function mp.lmt_glyphshape_n()
+    if mpdata then
+        mpprint(#mpdata.paths)
+    else
+        injectnumeric(0)
+    end
+end
+
+function mp.lmt_glyphshape_path(i)
+    if mpdata then
+        mpprint(mpdata.paths[i])
+    else
+        injectpair(0,0)
+    end
+end
+
+function mp.lmt_glyphshape_boundingbox()
+    if mpdata then
+        mpprint(mpdata.boundingbox)
+    else
+        injectpair(0,0)
+    end
+end
+function mp.lmt_glyphshape_usedbox()
+    if mpdata then
+        mpprint(mpdata.usedbox)
+    else
+        injectpair(0,0)
+    end
+end
+
+function mp.lmt_glyphshape_baseline()
+    if mpdata then
+        mpprint(mpdata.baseline)
+    else
+        injectpair(0,0)
+    end
+end
+function mp.lmt_glyphshape_usedline()
+    if mpdata then
+        mpprint(mpdata.usedline)
+    else
+        injectpair(0,0)
+    end
+end
+
+function mp.lmt_glyphshape_width () injectnumeric(mpdata and mpdata.width  or 0) end
+function mp.lmt_glyphshape_depth () injectnumeric(mpdata and mpdata.depth  or 0) end
+function mp.lmt_glyphshape_height() injectnumeric(mpdata and mpdata.height or 0) end
+function mp.lmt_glyphshape_italic() injectnumeric(mpdata and mpdata.italic or 0) end
+function mp.lmt_glyphshape_accent() injectnumeric(mpdata and mpdata.accent or 0) end

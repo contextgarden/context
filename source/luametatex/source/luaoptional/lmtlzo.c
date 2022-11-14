@@ -5,6 +5,7 @@
 # include <stdlib.h>
 
 # include "luametatex.h"
+# include "lmtoptional.h"
 
 # define lzo_output_length(n)  (n + n / 16 + 64 + 64) /* we add 64 instead of 3 */
 

@@ -3060,6 +3060,9 @@
 %D \stoptabulate
 %D \stoptyping
 
+% Not okay yet as we loose alignment in later columns .. weird .. do
+% we miss a tab?
+
 \installcorenamespace{tabulatespanb}
 \installcorenamespace{tabulatespana}
 
@@ -3076,7 +3079,9 @@
 
 \noaligned\tolerant\def\tabl_tabulate_NS[#1]#*[#2]%
   {\NC\loopcs{#1}\tabl_tabulate_span
-   \gdef\tabl_tabulate_kooh{\begincsname\??tabulatespana#2\endcsname}%
+   \gdef\tabl_tabulate_kooh
+     {\begincsname\??tabulatespana#2\endcsname
+      \glet\tabl_tabulate_kooh\relax}%
    \begincsname\??tabulatespanb#2\endcsname
    \ignorepars} % \ignorespaces
 

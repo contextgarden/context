@@ -422,11 +422,11 @@ scaled tex_char_stretch(halfword p) /* todo: move this to texfont.c and make it 
         halfword m = font_max_stretch(f);
         if (m > 0) {
             halfword c = glyph_character(p);
-            halfword ef = tex_char_ef_from_font(f, c);
-            if (ef > 0) {
+            scaled e = tex_char_ef_from_font(f, c);
+            if (e > 0) {
                 scaled dw = tex_calculated_glyph_width(p, m) - tex_char_width_from_glyph(p);
                 if (dw > 0) {
-                    return tex_round_xn_over_d(dw, ef, 1000);
+                    return tex_round_xn_over_d(dw, e, 1000);
                 }
             }
         }
@@ -441,11 +441,11 @@ scaled tex_char_shrink(halfword p) /* todo: move this to texfont.c and make it m
         halfword m = font_max_shrink(f);
         if (m > 0) {
             halfword c = glyph_character(p);
-            halfword ef = tex_char_ef_from_font(f, c);
-            if (ef > 0) {
+            scaled e = tex_char_cf_from_font(f, c);
+            if (e > 0) {
                 scaled dw = tex_char_width_from_glyph(p) - tex_calculated_glyph_width(p, -m);
                 if (dw > 0) {
-                    return tex_round_xn_over_d(dw, ef, 1000);
+                    return tex_round_xn_over_d(dw, e, 1000);
                 }
             }
         }
@@ -482,7 +482,7 @@ scaled tex_kern_shrink(halfword p)
         if (l && node_type(l) == glyph_node && ! tex_has_glyph_option(l, glyph_option_no_expansion)) {
             halfword m = font_max_shrink(glyph_font(l));
             if (m > 0) {
-                halfword e = tex_char_ef_from_font(glyph_font(l), glyph_character(l));
+                scaled e = tex_char_cf_from_font(glyph_font(l), glyph_character(l));
                 if (e > 0) {
                     scaled dw = tex_round_xn_over_d(w, 1000 - m, 1000) - w;
                     if (dw > 0) {
@@ -503,20 +503,23 @@ static void tex_aux_set_kern_expansion(halfword p, halfword ex_ratio)
         if (l && node_type(l) == glyph_node && ! tex_has_glyph_option(l, glyph_option_no_expansion)) {
             halfword f = glyph_font(l);
             halfword c = glyph_character(l);
-            halfword ef = tex_char_ef_from_font(f, c);
-            if (ef == 0) {
-                return;
-            } else if (ex_ratio > 0) {
-                halfword m = font_max_stretch(f);
-                if (m > 0) {
-                    halfword ex_stretch = tex_ext_xn_over_d(ex_ratio * ef, m, 1000000);
-                    kern_expansion(p) = tex_fix_expand_value(f, ex_stretch) * 1000;
+            if (ex_ratio > 0) {
+                scaled e = tex_char_ef_from_font(f, c);
+                if (e > 0) { 
+                    halfword m = font_max_stretch(f);
+                    if (m > 0) {
+                        e = tex_ext_xn_over_d(ex_ratio * e, m, 1000000);
+                        kern_expansion(p) = tex_fix_expand_value(f, e) * 1000;
+                    }
                 }
             } else if (ex_ratio < 0) {
-                halfword m = font_max_shrink(f);
-                if (m > 0) {
-                    halfword ex_shrink = tex_ext_xn_over_d(ex_ratio * ef, m, 1000000);
-                    kern_expansion(p) = tex_fix_expand_value(f, ex_shrink) * 1000;
+                scaled e = tex_char_cf_from_font(f, c);
+                if (e > 0) { 
+                    halfword m = font_max_shrink(f);
+                    if (m > 0) {
+                        e = tex_ext_xn_over_d(ex_ratio * e, m, 1000000);
+                        kern_expansion(p) = tex_fix_expand_value(f, e) * 1000;
+                    }
                 }
             }
         }
@@ -528,22 +531,27 @@ static void tex_aux_set_glyph_expansion(halfword p, int ex_ratio)
     switch (node_type(p)) {
         case glyph_node:
             if (! tex_has_glyph_option(p, glyph_option_no_expansion)) {
-                halfword f = glyph_font(p);
-                halfword c = glyph_character(p);
-                halfword ef = tex_char_ef_from_font(f, c);
-                if (ef == 0) {
-                    return;
-                } else if (ex_ratio > 0) {
-                    halfword m = font_max_stretch(f);
-                    if (m > 0) {
-                        halfword ex_stretch = tex_ext_xn_over_d(ex_ratio * ef, m, 1000000);
-                        glyph_expansion(p) = tex_fix_expand_value(f, ex_stretch) * 1000;
+                if (ex_ratio > 0) {
+                    halfword f = glyph_font(p);
+                    halfword c = glyph_character(p);
+                    scaled e = tex_char_ef_from_font(f, c);
+                    if (e > 0) { 
+                        halfword m = font_max_stretch(f);
+                        if (m > 0) {
+                            e = tex_ext_xn_over_d(ex_ratio * e, m, 1000000);
+                            glyph_expansion(p) = tex_fix_expand_value(f, e) * 1000;
+                        }
                     }
                 } else if (ex_ratio < 0) {
-                    halfword m = font_max_shrink(f);
-                    if (m > 0) {
-                        halfword ex_shrink = tex_ext_xn_over_d(ex_ratio * ef, m, 1000000);
-                        glyph_expansion(p) = tex_fix_expand_value(f, ex_shrink) * 1000;
+                    halfword f = glyph_font(p);
+                    halfword c = glyph_character(p);
+                    scaled e = tex_char_cf_from_font(f, c);
+                    if (e > 0) { 
+                        halfword m = font_max_shrink(f);
+                        if (m > 0) {
+                            e = tex_ext_xn_over_d(ex_ratio * e, m, 1000000);
+                            glyph_expansion(p) = tex_fix_expand_value(f, e) * 1000;
+                        }
                     }
                 }
             }
@@ -1039,7 +1047,7 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
     /*tex natural width */
     scaled x = 0;
     /*tex the current direction */
-    singleword hpack_dir = pack_direction == direction_unknown ? text_direction_par : pack_direction;
+    singleword hpack_dir = pack_direction == direction_unknown ?(singleword) text_direction_par : pack_direction;
     int disc_level = 0;
     halfword pack_interrupt[8];
     scaled font_stretch = 0;
@@ -1126,11 +1134,11 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
                                     break;
                                 }
                             case packing_substitute:
-                                {
-                                    lmt_packaging_state.previous_char_ptr = p;
+                                lmt_packaging_state.previous_char_ptr = p;
+                                if (lmt_packaging_state.font_expansion_ratio != 0) {
                                     tex_aux_set_glyph_expansion(p, lmt_packaging_state.font_expansion_ratio);
-                                    break;
                                 }
+                                break;
                         }
                     }
                     whd = tex_glyph_dimensions_ex(p);
@@ -1256,10 +1264,10 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
                                 break;
                             }
                         case packing_substitute:
-                            {
+                            if (lmt_packaging_state.font_expansion_ratio != 0) {
                                 tex_aux_set_kern_expansion(p, lmt_packaging_state.font_expansion_ratio);
-                                break;
                             }
+                            break;
                     }
                 }
                 x += tex_kern_dimension_ex(p);
@@ -1274,7 +1282,9 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
                             */
                             break;
                         case packing_substitute:
-                            tex_aux_set_glyph_expansion(p, lmt_packaging_state.font_expansion_ratio);
+                            if (lmt_packaging_state.font_expansion_ratio != 0) {
+                                tex_aux_set_glyph_expansion(p, lmt_packaging_state.font_expansion_ratio);
+                            }
                             break;
                     }
                 }
@@ -1575,7 +1585,7 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
 halfword tex_filtered_hpack(halfword p, halfword qt, scaled w, int m, int grp, halfword d, int just_pack, halfword attr, int state, int retain)
 {
     halfword head;
-    singleword direction = checked_direction_value(d);
+    singleword direction = (singleword) checked_direction_value(d);
     (void) state; /*tex Why do we pass it? Probably a left-over from an experiment. */
     if (just_pack) {
         head = node_next(p);
@@ -1603,7 +1613,7 @@ halfword tex_filtered_hpack(halfword p, halfword qt, scaled w, int m, int grp, h
 
 scaledwhd tex_natural_hsizes(halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order)
 {
-    scaledwhd siz = { 0, 0, 0 };
+    scaledwhd siz = { 0, 0, 0, 0 };
     scaled gp = 0;
     scaled gm = 0;
     while (p && p != pp) {
@@ -1757,7 +1767,7 @@ scaledwhd tex_natural_hsizes(halfword p, halfword pp, glueratio g_mult, int g_si
 
 scaledwhd tex_natural_vsizes(halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order)
 {
-    scaledwhd siz = { 0, 0, 0 };
+    scaledwhd siz = { 0, 0, 0, 0 };
     scaled gp = 0;
     scaled gm = 0;
     while (p && p != pp) {
@@ -1974,7 +1984,7 @@ halfword tex_natural_hsize(halfword p, halfword *correction)
 
 halfword tex_natural_vsize(halfword p)
 {
-    scaledwhd siz = { 0, 0, 0 };
+    scaledwhd siz = { 0, 0, 0, 0 };
     while (p) {
         switch (node_type(p)) {
             case hlist_node:
@@ -2293,7 +2303,7 @@ halfword tex_filtered_vpack(halfword p, scaled h, int m, scaled maxdepth, int gr
     if (! just_pack) {
         q = lmt_vpack_filter_callback(q, h, m, maxdepth, grp, direction, attr);
     }
-    q = tex_vpack(q, h, m, maxdepth, checked_direction_value(direction), retain);
+    q = tex_vpack(q, h, m, maxdepth, (singleword) checked_direction_value(direction), retain);
     if (q && normalize_par_mode_permitted(normalize_par_mode_par, flatten_v_leaders_mode) && ! is_box_package_state(state, package_u_leader_delayed)) {
         tex_flatten_leaders(q, NULL);
     }
@@ -3111,7 +3121,7 @@ halfword tex_vert_break(halfword p, scaled h, scaled d)
         prev_p = p;
         p = node_next(prev_p);
     }
-    return best_place;
+    return best_place; /* unreachable */
 }
 
 /*tex

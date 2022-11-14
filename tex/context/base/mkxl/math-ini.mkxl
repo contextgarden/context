@@ -111,6 +111,8 @@
    +\analyzescriptnucleusboxmathcontrolcode
    +\accenttopskewwithoffsetmathcontrolcode
  % +\ignorekerndimensionsmathcontrolcode    % xits needs this (bad depth of fences)
+ % +\ignoreflataccentsmathcontrolcode
+   +\extendaccentsmathcontrolcode
 \relax
 
 % \mathpenaltiesmode\plusone
@@ -891,7 +893,6 @@
 % Now we redefine \type {\mathematics} and \type {\m}:
 
 \pushoverloadmode
-
     \permanent\protected\def\mathematics{\doifelsenextoptionalcs\math_m_yes\math_m_nop}
 
     \aliased\let\m   \mathematics % we keep the simple versions
@@ -3723,6 +3724,54 @@
 \definemathtext[mathsplitbi][mathsplit][\c!style=\bi]
 \definemathtext[mathsplitbs][mathsplit][\c!style=\bs]
 
+% \startbuffer
+%     $
+%     {    x\! \neq x!} \quad {\ss     x\! \neq x!} \qquad
+%     {\it x\! \neq x!} \quad {\ss \it x\! \neq x!} \qquad
+%     {\fi x\! \neq x!} \quad {\ss \fi x\! \neq x!} \qquad
+%     {\bi x\! \neq x!} \quad {\ss \bi x\! \neq x!}
+%     $
+% \stopbuffer
+%
+% \startTEXpage[offset=1dk]
+%     \getbuffer \par \automathtext \getbuffer
+% \stopTEXpage
+
+\newconditional\c_mathtextauto % we need aproper key: \settrue\c_mathtextauto
+
+\permanent\protected\def\automathtext{\settrue\c_mathtextauto}
+
+\let\currentmathalphabet \s!rm
+\let\currentmathfontstyle\s!tf
+
+\permanent\protected\def\mathtextauto#1#2%
+  {\ifconditional\c_mathtextauto
+     \mathortext
+       {\mathpunct
+          {\begincsname\currentmathalphabet\endcsname
+           \begincsname mathtext\currentmathfontstyle\endcsname
+           {#1}}}%
+       {#1}%
+   \else
+     #2%
+   \fi}
+
+%D Actually in spac-hor.mkxl we defined them using \suggestedalias which redefines
+%D these so basically we now make that sort of obsolete.
+%D
+%D \starttyping
+%D $x\, x$\quad\automathtext$x\, x$
+%D \stoptyping
+
+\pushoverloadmode
+    \permanent\protected\def\.{\mathtextauto{.}{.}}
+    \permanent\protected\def\,{\mathtextauto{,}{\thinspace }}
+    \permanent\protected\def\:{\mathtextauto{:}{\medspace  }}
+    \permanent\protected\def\;{\mathtextauto{;}{\thickspace}}
+    \permanent\protected\def\!{\mathtextauto{!}{\negthinspace}}
+    \permanent\protected\def\?{\mathtextauto{?}{?}}
+\popoverloadmode
+
 \appendtoks
     \reinstatecatcodecommand\barasciicode
     \obeydiscretionaries
@@ -4294,13 +4343,21 @@
 
 %D Just to be sure:
 
-\immutable\integerdef\c_math_glyph_options\numexpr
+\immutable\integerdef\c_math_glyph_options_default\numexpr
     \noexpansionglyphoptioncode
    +\noprotrusionglyphoptioncode
 \relax
 
+\immutable\integerdef\c_math_glyph_options_hz\numexpr
+    \noprotrusionglyphoptioncode
+\relax
+
 \appendtoks
-    \glyphoptions\c_math_glyph_options
+    \ifcstok{\mathematicsparameter\v!hz}\v!yes
+      \glyphoptions\c_math_glyph_options_hz
+    \else
+      \glyphoptions\c_math_glyph_options_default
+    \fi
 \to \everymathematics
 
 %D Bonus for testing:

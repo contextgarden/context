@@ -29,6 +29,7 @@
 \registerctxluafile{mlib-pos}{autosuffix}
 \registerctxluafile{mlib-cnt}{autosuffix}
 \registerctxluafile{mlib-svg}{autosuffix}
+\registerctxluafile{mlib-fnt}{autosuffix} % outline fun
 
 \unprotect
 

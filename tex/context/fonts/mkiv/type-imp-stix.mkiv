@@ -13,19 +13,23 @@
 
 %D We provide typescripts for version one and two of the stix fonts. There is a
 %D xits variant based on the first (not opentype) release that also provides
-%D bidirectional math.
+%D bidirectional math. With (in 2022) stixtwo being frozsen for 2 years we can make
+%D these the default now.
 %D
 %D Users should be aware of the fact that the stix filenames keep changing so if
 %D something fails, make sure you have the files and that the names below match
-%D those on your system. (In \TEX\ distributions there's 2 and Two and math can have
-%D -Regular appended or not.
+%D those on your system. In \TEX\ distributions there's 2 and Two and math can have
+%D -Regular appended or not. You can expect the \CONTEXT\ distribution to be kept up
+%D to date.
 %D
-%D There's now also:
-%D
-%D   stixtwotext-medium.otf
-%D   stixtwotext-mediumitalic.otf
-%D   stixtwotext-semibold.otf
-%D   stixtwotext-semibolditalic.otf
+%D Per november 2022 we swithched from \OPENTYPE\ (otf) files to \TRUETYPE\ (ttf)
+%D files. The main reason is that the metrics are cleaner, especially when one peeks
+%D into the font for the purpose tweaking math (boundingbox, true positioning
+%D unaffected by excessive hinting shown in in FontForge). It is yet unclear to us
+%D (MS & HH) why there is this difference, but it might relate to the toolchain used
+%D for generating these fonts. We might even switch to (smaller) unhinted \TRUETYPE\
+%D fonts at some point but then we need to generate them ourselves). Anyway, the end
+%D results are the same but we just want to be able to view it right.
 
 \definefontfeature
   [stixtwomath]
@@ -35,23 +39,41 @@
 
 \starttypescriptcollection[stix]
 
+    \doifunknownfontfeature {stixtwo-math-bold} {\definefontfeature[stixtwo-math-bold][boldened]}
+
+    \starttypescript [\s!math] [stix,stixtwo,stix-nt,stixtwo-nt,xits]
+        \checkedmapfontsize[\typescripttwo][\s!script]      [.70]
+        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.55]
+    \stoptypescript
+
     \starttypescript [\s!math] [stix,stixtwo,xits] [\s!name]
-        \definefontsynonym[\s!MathRoman][\s!file:stixtwomath-regular.otf][\s!features={\s!math\mathsizesuffix,stixtwomath,mathextra},\s!goodies=stix-two-math]
+        \definefontsynonym[\s!MathRoman]    [\s!file:stixtwomath-regular.ttf][\s!features={\s!math\mathsizesuffix,stixtwomath,stixtwo:mathextra,mathextra},\s!goodies=stixtwo-math]
+        \definefontsynonym[\s!MathRomanBold][\s!file:stixtwomath-regular.ttf][\s!features={\s!math\mathsizesuffix,stixtwo-math-bold,stixtwomath,stixtwo:mathextra,mathextra},\s!goodies=stixtwo-math]
+    \stoptypescript
+
+    \starttypescript [\s!math] [stix-nt,stixtwo-nt] [\s!name]
+        \definefontsynonym[\s!MathRoman][\s!file:stixtwomath-regular.ttf][\s!features={\s!math\mathsizesuffix,stixtwomath,stixtwo:mathextra,mathextra}]
+        \definefontsynonym[\s!MathRoman][\s!file:stixtwomath-regular.ttf][\s!features={\s!math\mathsizesuffix,stixtwo-math-bold,stixtwomath,stixtwo:mathextra,mathextra}]
     \stoptypescript
 
     \starttypescript [\s!serif] [stix,stixtwo,xits] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
-        \definefontsynonym[\s!Serif]          [\s!file:stixtwotext-regular.otf]   [\s!features=\s!default]
-        \definefontsynonym[\s!SerifBold]      [\s!file:stixtwotext-bold.otf]      [\s!features=\s!default]
-        \definefontsynonym[\s!SerifItalic]    [\s!file:stixtwotext-italic.otf]    [\s!features=\s!default]
-        \definefontsynonym[\s!SerifBoldItalic][\s!file:stixtwotext-bolditalic.otf][\s!features=\s!default]
+        \definefontsynonym[\s!Serif]          [\s!file:stixtwotext-regular.ttf]   [\s!features=\s!default]
+        \definefontsynonym[\s!SerifBold]      [\s!file:stixtwotext-bold.ttf]      [\s!features=\s!default]
+        \definefontsynonym[\s!SerifItalic]    [\s!file:stixtwotext-italic.ttf]    [\s!features=\s!default]
+        \definefontsynonym[\s!SerifBoldItalic][\s!file:stixtwotext-bolditalic.ttf][\s!features=\s!default]
     \stoptypescript
 
+    \starttypescript[stix,stixtwo,xits,stix-nt,stixtwo-nt]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [stixtwo]    [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!serif] [stixtwo]    [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]     [\s!default] [\s!rscale=0.895]
+    \stoptypescript
     \starttypescript[stix,stixtwo,xits]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [stixtwo] [\s!default]
-        \definetypeface [\typescriptone] [\s!ss] [\s!serif] [stixtwo] [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]  [\s!default] [\s!rscale=0.895]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [stixtwo] [\s!default] [\s!direction=\s!both]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [stixtwo]    [\s!default] [\s!direction=\s!both]
+    \stoptypescript
+    \starttypescript[stix-nt,stixtwo-nt]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [stixtwo-nt] [\s!default] [\s!direction=\s!both]
     \stoptypescript
 
 \stoptypescriptcollection

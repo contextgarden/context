@@ -28,7 +28,10 @@ local nodes, node = nodes, node
 
 local nuts               = nodes.nuts
 
+local getid              = nuts.getid
 local getboth            = nuts.getboth
+local getsubtype         = nuts.getsubtype
+local setsubtype         = nuts.setsubtype
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getattr            = nuts.getattr
@@ -37,7 +40,6 @@ local getlanguage        = nuts.getlanguage
 local setchar            = nuts.setchar
 local setattrlist        = nuts.setattrlist
 local getfont            = nuts.getfont
-local setsubtype         = nuts.setsubtype
 local isglyph            = nuts.isglyph
 
 local setcolor           = nodes.tracers.colors.set
@@ -60,10 +62,12 @@ local nodecodes          = nodes.nodecodes
 local gluecodes          = nodes.gluecodes
 
 local glyph_code         = nodecodes.glyph
+local glue_code          = nodecodes.glue
 local spaceskip_code     = gluecodes.spaceskip
 
 local chardata           = characters.data
-local is_punctuation     = characters.is_punctuation
+local ispunctuation      = characters.is_punctuation
+local canhavespace       = characters.can_have_space
 
 local typesetters        = typesetters
 
@@ -182,13 +186,27 @@ local methods = {
 
     -- maybe also 0x0008 : backspace
 
+    [0x001E] = function(head,current) -- kind of special
+        local next = getnext(current)
+        head, current = remove_node(head,current,true)
+        if next and getid(next) == glue_code and getsubtype(next) == spaceskip_code then
+            local nextnext = getnext(next)
+            if nextnext then
+                local char, font = isglyph(nextnext)
+                if char and not canhavespace[char] then
+                    remove_node(head,next,true)
+                end
+            end
+        end
+    end,
+
     [0x001F] = function(head,current) -- kind of special
         local next = getnext(current)
         if next then
             local char, font = isglyph(next)
             if char then
                 head, current = remove_node(head,current,true)
-                if not is_punctuation[char] then
+                if not ispunctuation[char] then
                     local p = fontparameters[font]
                     head, current = insertnodebefore(head,current,new_glue(p.space,p.space_stretch,p.space_shrink))
                 end

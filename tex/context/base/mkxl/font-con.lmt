@@ -276,6 +276,8 @@ local function scaleparts(parts,delta)
     return t
 end
 
+-- getcharactertagvalues
+
 function constructors.scale(tfmdata,specification)
     local target         = { } -- the new table
     --
@@ -320,20 +322,20 @@ function constructors.scale(tfmdata,specification)
     --
     local mathsize    = tonumber(specification.mathsize) or 0
     local textsize    = tonumber(specification.textsize) or scaledpoints
-    local forcedsize  = tonumber(parameters.mathsize   ) or 0 -- can be set by the feature "mathsize"
+ -- local forcedsize  = tonumber(parameters.mathsize   ) or 0 -- can be set by the feature "mathsize"
     local extrafactor = tonumber(specification.factor  ) or 1
-    if (mathsize == 2 or forcedsize == 2) and parameters.scriptpercentage then
-        scaledpoints = parameters.scriptpercentage * textsize / 100
-    elseif (mathsize == 3 or forcedsize == 3) and parameters.scriptscriptpercentage then
-        scaledpoints = parameters.scriptscriptpercentage * textsize / 100
-    elseif forcedsize > 1000 then -- safeguard
-        scaledpoints = forcedsize
-    else
-        -- in context x and xx also use mathsize
-    end
+ --    if (mathsize == 2 or forcedsize == 2) and parameters.scriptpercentage then
+ --        scaledpoints = parameters.scriptpercentage * textsize / 100
+ --    elseif (mathsize == 3 or forcedsize == 3) and parameters.scriptscriptpercentage then
+ --        scaledpoints = parameters.scriptscriptpercentage * textsize / 100
+ --    elseif forcedsize > 1000 then -- safeguard
+ --        scaledpoints = forcedsize
+ --    else
+ --        -- in context x and xx also use mathsize
+ --    end
     targetparameters.mathsize    = mathsize
     targetparameters.textsize    = textsize
-    targetparameters.forcedsize  = forcedsize
+ -- targetparameters.forcedsize  = forcedsize
     targetparameters.extrafactor = extrafactor
     --
     local defaultwidth  = resources.defaultwidth  or 0
@@ -356,6 +358,7 @@ function constructors.scale(tfmdata,specification)
     --
     local askedscaledpoints   = scaledpoints
     local scaledpoints, delta = constructors.calculatescale(tfmdata,scaledpoints,nil,specification) -- no shortcut, dan be redefined
+-- print("B",mathsize,askedscaledpoints,scaledpoints,delta)
     --
     local hdelta      = delta
     local vdelta      = delta
@@ -486,7 +489,7 @@ function constructors.scale(tfmdata,specification)
     --
     local ascender = parameters.ascender
     if ascender then
-        targetparameters.ascender  = delta * ascender
+        targetparameters.ascender = delta * ascender
     end
     local descender = parameters.descender
     if descender then
@@ -671,6 +674,10 @@ function constructors.scale(tfmdata,specification)
             if ve then
                 chr.expansion = ve*1000 -- expansionfactor, hm, can happen elsewhere
             end
+            local vc = character.compression
+            if vc then
+                chr.compression = vc*1000 -- expansionfactor, hm, can happen elsewhere
+            end
             local vl = character.leftprotrusion
             if vl then
                 chr.leftprotrusion = width*vl
@@ -682,60 +689,42 @@ function constructors.scale(tfmdata,specification)
         end
         --
         if hasmath then
-            --
-            -- todo, just operate on descriptions.math
             local nxt = character.next
             if nxt then
                 chr.next = nxt
             end
-            local vparts = character.vparts
-            if vparts then
-                chr.vparts = scaleparts(vparts,vdelta)
+            local parts = character.parts
+            if parts then
+                local orientation = character.partsorientation or "vertical"
+                chr.parts = scaleparts(parts,orientation == "horizontal" and hdelta or vdelta)
+                chr.partsorientation = orientation
             end
-            local hparts = character.hparts
-            if hparts then
-                chr.hparts = scaleparts(hparts,hdelta)
-            end
-            local vi = character.vitalic
+            local vi = character.partsitalic
             if vi and vi ~= 0 then
-                chr.vitalic = vi*hdelta
+                chr.partsitalic = vi*hdelta
             end
---             local va = character.accent
---             if va and not chr.topanchor then
---                 chr.topanchor = va
---             end
             local va = character.topanchor
-            if va then
+            if va and va ~= 0 then
                 chr.topanchor = va*vdelta
             end
             va = character.bottomanchor
-            if va then
+            if va and va ~= 0 then
                 chr.bottomanchor = va*vdelta
             end
-            local vo = character.topovershoot
-            if vo then
-                chr.topovershoot = vo*hdelta
-            end
-         -- vo = character.bottomovershoot
-         -- if vo then
-         --     chr.bottomovershoot = vo*hdelta
-         -- end
             --
-         -- if stackmath then -- not ok yet
-                local mk = character.mathkerns
-                if mk then
-                    local tr = mk.topright
-                    local tl = mk.topleft
-                    local br = mk.bottomright
-                    local bl = mk.bottomleft
-                    chr.mathkerns = {
-                        topright    = tr and mathkerns(tr,vdelta) or nil,
-                        topleft     = tl and mathkerns(tl,vdelta) or nil,
-                        bottomright = br and mathkerns(br,vdelta) or nil,
-                        bottomleft  = bl and mathkerns(bl,vdelta) or nil,
-                    }
-                end
-         -- end
+            local mk = character.mathkerns
+            if mk then
+                local tr = mk.topright
+                local tl = mk.topleft
+                local br = mk.bottomright
+                local bl = mk.bottomleft
+                chr.mathkerns = {
+                    topright    = tr and mathkerns(tr,vdelta) or nil,
+                    topleft     = tl and mathkerns(tl,vdelta) or nil,
+                    bottomright = br and mathkerns(br,vdelta) or nil,
+                    bottomleft  = bl and mathkerns(bl,vdelta) or nil,
+                }
+            end
             --
             if hasitalics then
                 local vi = character.italic
@@ -743,42 +732,46 @@ function constructors.scale(tfmdata,specification)
                     chr.italic = vi*hdelta
                 end
             end
-            local vk = character.topleft
-            if vk and vk ~= 0 then
-                chr.topleft = vk*hdelta
-            end
-            local vk = character.topright
-            if vk and vk ~= 0 then
-                chr.topright = vk*hdelta
-            end
-            local vk = character.bottomleft
-            if vk and vk ~= 0 then
-                chr.bottomleft = vk*hdelta
-            end
-            local vk = character.bottomright
-            if vk and vk ~= 0 then
-                chr.bottomright = vk*hdelta
-            end
-         -- local ft = character.options
-         -- if ft then
-         --     chr.options = ft
+            --
+            -- These can never happen here as these come from tweaks but I need to check it:
+            --
+         -- local vo = character.topovershoot
+         -- if vo and vo ~= 0 then
+         --     chr.topovershoot = vo*hdelta
          -- end
+         -- local il = character.innerlocation
+         -- if il then
+         --     chr.innerlocation = il
+         --     chr.innerxoffset  = (character.innerxoffset or 0) * hdelta
+         --     chr.inneryoffset  = (character.inneryoffset or 0) * vdelta
+         -- end
+            --
+         -- if character.extensible then
+         --     chr.extensible = true -- stretch fixed width accent
+         -- end
+         -- --
+         -- local k = character.topleft      if k and k ~= 0 then chr.topleft      = k*hdelta end
+         -- local k = character.topright     if k and k ~= 0 then chr.topright     = k*hdelta end
+         -- local k = character.bottomleft   if k and k ~= 0 then chr.bottomleft   = k*hdelta end
+         -- local k = character.bottomright  if k and k ~= 0 then chr.bottomright  = k*hdelta end
+         -- --
+         -- local m = character.leftmargin   if m and m ~= 0 then chr.leftmargin   = m*hdelta end
+         -- local m = character.rightmargin  if m and m ~= 0 then chr.rightmargin  = m*hdelta end
+         -- local m = character.topmargin    if m and m ~= 0 then chr.topmargin    = m*hdelta end
+         -- local m = character.bottommargin if m and m ~= 0 then chr.bottommargin = m*hdelta end
+            --
             local sm = character.smaller
             if sm then
                 chr.smaller = sm
             end
-            local mi = character.mirror
-            if mi then
-                chr.mirror = mi
-            end
-            local fa = character.flataccent
+         -- local mi = character.mirror
+         -- if mi then
+         --     chr.mirror = mi
+         -- end
+            local fa = character.flataccent -- set here?
             if fa then
                 chr.flataccent = fa
             end
-            local m = character.leftmargin   if m and m ~= 0 then chr.leftmargin   = m*hdelta end
-            local m = character.rightmargin  if m and m ~= 0 then chr.rightmargin  = m*hdelta end
-            local m = character.topmargin    if m and m ~= 0 then chr.topmargin    = m*hdelta end
-            local m = character.bottommargin if m and m ~= 0 then chr.bottommargin = m*hdelta end
         elseif autoitalicamount then -- itlc feature
             local vi = description.italic
             if not vi then

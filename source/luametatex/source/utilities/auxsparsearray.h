@@ -105,24 +105,24 @@ typedef struct sa_tree_head {
 
 typedef sa_tree_head *sa_tree;
 
-extern int          sa_get_item_1    (const sa_tree head, int n);
-extern int          sa_get_item_2    (const sa_tree head, int n);
-extern sa_tree_item sa_get_item_4    (const sa_tree head, int n);
-extern sa_tree_item sa_get_item_8    (const sa_tree head, int n, sa_tree_item * v2);
-extern void         sa_set_item_1    (sa_tree head, int n, int v, int gl);
-extern void         sa_set_item_2    (sa_tree head, int n, int v, int gl);
-extern void         sa_set_item_4    (sa_tree head, int n, sa_tree_item v, int gl);
-extern void         sa_set_item_8    (sa_tree head, int n, sa_tree_item v1, sa_tree_item v2, int gl);
-extern sa_tree      sa_new_tree      (int size, int bytes, sa_tree_item dflt);
-extern sa_tree      sa_copy_tree     (sa_tree head);
-extern void         sa_destroy_tree  (sa_tree head);
-extern void         sa_dump_tree     (dumpstream f, sa_tree a);
-extern sa_tree      sa_undump_tree   (dumpstream f);
-extern void         sa_restore_stack (sa_tree a, int gl);
-extern void         sa_clear_stack   (sa_tree a);
+extern int     sa_get_item_1    (const sa_tree head, int n);                                     /* these return the value or dflt */
+extern int     sa_get_item_2    (const sa_tree head, int n);                                     /* these return the value or dflt */
+extern int     sa_get_item_4    (const sa_tree head, int n, sa_tree_item *v);                    /* these return success */
+extern int     sa_get_item_8    (const sa_tree head, int n, sa_tree_item *v1, sa_tree_item *v2); /* these return success */
+extern void    sa_set_item_1    (sa_tree head, int n, int v, int gl);
+extern void    sa_set_item_2    (sa_tree head, int n, int v, int gl);
+extern void    sa_set_item_4    (sa_tree head, int n, sa_tree_item v, int gl);
+extern void    sa_set_item_8    (sa_tree head, int n, sa_tree_item v1, sa_tree_item v2, int gl);
+extern sa_tree sa_new_tree      (int size, int bytes, sa_tree_item dflt);
+extern sa_tree sa_copy_tree     (sa_tree head);
+extern void    sa_destroy_tree  (sa_tree head);
+extern void    sa_dump_tree     (dumpstream f, sa_tree a);
+extern sa_tree sa_undump_tree   (dumpstream f);
+extern void    sa_restore_stack (sa_tree a, int gl);
+extern void    sa_clear_stack   (sa_tree a);
 
-extern void         sa_set_item_n    (const sa_tree head, int n, int v, int gl);
-extern int          sa_get_item_n    (const sa_tree head, int n);
+extern void    sa_set_item_n    (const sa_tree head, int n, int v, int gl);
+extern int     sa_get_item_n    (const sa_tree head, int n);
 
 inline static halfword sa_return_item_1(sa_tree head, halfword n)
 {

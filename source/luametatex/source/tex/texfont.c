@@ -134,33 +134,18 @@ void tex_undump_font_data(dumpstream f) {
     lmt_font_state.font_data.ptr = 0;
 }
 
-void tex_set_charinfo_vertical_parts(charinfo *ci, extinfo *ext)
+void tex_set_charinfo_extensible_recipe(charinfo *ci, extinfo *ext)
 {
     if (ci->math) {
-        if (ci->math->vertical_parts) {
-            extinfo *lst = ci->math->vertical_parts;
+        extinfo *lst = ci->math->extensible_recipe;
+        if (lst) {
             while (lst) {
                 extinfo *c = lst->next;
                 lmt_memory_free(lst);
                 lst = c;
             }
         }
-        ci->math->vertical_parts = ext;
-    }
-}
-
-void tex_set_charinfo_horizontal_parts(charinfo *ci, extinfo *ext)
-{
-    if (ci->math) {
-        if (ci->math->horizontal_parts) {
-            extinfo *lst = ci->math->horizontal_parts;
-            while (lst) {
-                extinfo *c = lst->next;
-                lmt_memory_free(lst);
-                lst = c;
-            }
-        }
-        ci->math->horizontal_parts = ext;
+        ci->math->extensible_recipe = ext;
     }
 }
 
@@ -245,8 +230,8 @@ void tex_char_malloc_mathinfo(charinfo *ci)
     int size = sizeof(mathinfo);
     mathinfo *mi = lmt_memory_calloc(1, (size_t) size);
     if (mi) {
-        mi->horizontal_parts = NULL;
-        mi->vertical_parts = NULL;
+        mi->extensible_recipe = NULL;
+        /* */
         mi->top_left_math_kern_array = NULL;
         mi->top_right_math_kern_array = NULL;
         mi->bottom_right_math_kern_array = NULL;
@@ -256,6 +241,7 @@ void tex_char_malloc_mathinfo(charinfo *ci)
         mi->top_right_kern = 0;
         mi->bottom_left_kern = 0;
         mi->bottom_right_kern = 0;
+        /* */
         mi->left_margin = 0;
         mi->right_margin = 0;
         mi->top_margin = 0;
@@ -265,8 +251,7 @@ void tex_char_malloc_mathinfo(charinfo *ci)
         mi->bottom_overshoot = INT_MIN;
         if (ci->math) {
             /*tex This seldom or probably never happens. */
-            tex_set_charinfo_vertical_parts(ci, NULL);
-            tex_set_charinfo_horizontal_parts(ci, NULL);
+            tex_set_charinfo_extensible_recipe(ci, NULL);
             set_charinfo_top_left_math_kern_array(ci, NULL);
             set_charinfo_top_right_math_kern_array(ci, NULL);
             set_charinfo_bottom_right_math_kern_array(ci, NULL);
@@ -281,12 +266,19 @@ void tex_char_malloc_mathinfo(charinfo *ci)
     }
 }
 
-# define find_charinfo_id(f,c) (sa_get_item_4(lmt_font_state.fonts[f]->characters,c).int_value)
+inline int aux_find_charinfo_id(halfword f, int c) 
+{
+    sa_tree_item item; 
+    sa_get_item_4(lmt_font_state.fonts[f]->characters, c, &item);
+    return (int) item.int_value;
+}
 
 charinfo *tex_get_charinfo(halfword f, int c)
 {
     if (proper_char_index(f, c)) {
-        int glyph = sa_get_item_4(lmt_font_state.fonts[f]->characters, c).int_value;
+        sa_tree_item item; 
+        sa_get_item_4(lmt_font_state.fonts[f]->characters, c, &item);
+        int glyph = (int) item.int_value;
         if (! glyph) {
             sa_tree_item sa_value = { 0 };
             int tglyph = ++lmt_font_state.fonts[f]->chardata_count;
@@ -334,7 +326,7 @@ static charinfo *tex_aux_char_info(halfword f, int c)
     if (f > lmt_font_state.font_data.ptr) {
         return NULL;
     } else if (proper_char_index(f, c)) {
-        return &(lmt_font_state.fonts[f]->chardata[(int) find_charinfo_id(f, c)]);
+        return &(lmt_font_state.fonts[f]->chardata[(int) aux_find_charinfo_id(f, c)]);
     } else if (c == left_boundary_char) {
         if (font_left_boundary(f)) {
             return font_left_boundary(f);
@@ -363,7 +355,7 @@ int tex_char_exists(halfword f, int c)
     if (f > lmt_font_state.font_data.ptr) {
         return 0;
     } else if (proper_char_index(f, c)) {
-        return (int) find_charinfo_id(f, c);
+        return (int) aux_find_charinfo_id(f, c);
     } else if (c == left_boundary_char) {
         if (font_has_left_boundary(f)) {
             return 1;
@@ -384,7 +376,7 @@ static int check_math_char(halfword f, int c, int size)
     if (callback_id > 0) {
         halfword s = c;
         lmt_run_callback(lua_state.lua_instance, callback_id, "ddd->d", f, c, size, &s);
-        if (s && proper_char_index(f, s) && find_charinfo_id(f, s)) {
+        if (s && proper_char_index(f, s) && aux_find_charinfo_id(f, s)) {
             return s;
         }
     }
@@ -405,7 +397,7 @@ int tex_math_char_exists(halfword f, int c, int size)
 
 int tex_get_math_char(halfword f, int c, int size, scaled *scale, int direction)
 {
-    int id = find_charinfo_id(f, c);
+    int id = aux_find_charinfo_id(f, c);
     texfont *tf = lmt_font_state.fonts[f];
     if (id) { 
         /* */
@@ -413,7 +405,7 @@ int tex_get_math_char(halfword f, int c, int size, scaled *scale, int direction)
             charinfo *ci = &tf->chardata[id];
             int m = ci->math->mirror;
             if (m && proper_char_index(f, m)) {
-                int mid = find_charinfo_id(f, m);
+                int mid = aux_find_charinfo_id(f, m);
                 if (mid) { 
                     id = mid;
                     c = m;
@@ -427,7 +419,7 @@ int tex_get_math_char(halfword f, int c, int size, scaled *scale, int direction)
                 if (ci->math) {
                     int s = ci->math->smaller;
                     if (s && proper_char_index(f, s)) {
-                        id = find_charinfo_id(f, s);
+                        id = aux_find_charinfo_id(f, s);
                         if (id) {
                             /* todo: trace */
                             c = s;
@@ -452,57 +444,32 @@ int tex_get_math_char(halfword f, int c, int size, scaled *scale, int direction)
     return c;
 }
 
-extinfo *tex_new_charinfo_part(int glyph, int startconnect, int endconnect, int advance, int extender)
-{
-    int size = sizeof(extinfo);
-    extinfo *ext = lmt_memory_malloc((size_t) size);
-    if (ext) {
-        ext->next = NULL;
-        ext->glyph = glyph;
-        ext->start_overlap = startconnect;
-        ext->end_overlap = endconnect;
-        ext->advance = advance;
-        ext->extender = extender;
-    } else {
-        tex_overflow_error("font", size);
-    }
-    return ext;
-}
-
-void tex_add_charinfo_vertical_part(charinfo *ci, extinfo *ext)
+void tex_append_charinfo_extensible_recipe(charinfo *ci, int glyph, int startconnect, int endconnect, int advance, int extender)
 {
     if (ci->math) {
-        if (ci->math->vertical_parts) {
-            extinfo *lst = ci->math->vertical_parts;
-            while (lst->next)
-                lst = lst->next;
-            lst->next = ext;
-        } else {
-            ci->math->vertical_parts = ext;
-        }
-    }
-}
-
-void tex_add_charinfo_horizontal_part(charinfo *ci, extinfo *ext)
-{
-    if (ci->math) {
-        if (ci->math->horizontal_parts) {
-            extinfo *lst = ci->math->horizontal_parts;
-            while (lst->next) {
-                lst = lst->next;
+        int size = sizeof(extinfo);
+        extinfo *ext = lmt_memory_malloc((size_t) size);
+        if (ext) {
+            extinfo *lst = ci->math->extensible_recipe;
+            ext->next = NULL;
+            ext->glyph = glyph;
+            ext->start_overlap = startconnect;
+            ext->end_overlap = endconnect;
+            ext->advance = advance;
+            ext->extender = extender;
+            if (lst) {
+                while (lst->next) {
+                    lst = lst->next;
+                }
+                lst->next = ext;
+            } else {
+                ci->math->extensible_recipe = ext;
             }
-            lst->next = ext;
         } else {
-            ci->math->horizontal_parts = ext;
+            tex_overflow_error("font", size);
         }
     }
 }
-
-/*tex
-
-    Note that many more small things like this are implemented as macros in the header file.
-
-*/
 
 int tex_get_charinfo_math_kerns(charinfo *ci, int id)
 {
@@ -598,43 +565,43 @@ void tex_add_charinfo_math_kern(charinfo *ci, int id, scaled ht, scaled krn)
     A small complication arises if |rep| is the only non-zero: it needs to be doubled as a
     non-repeatable to avoid mayhem.
 
-*/
-
-void tex_set_charinfo_extensible(charinfo *ci, int top, int bottom, int middle, int extender)
-{
-    if (ci->math) {
-        extinfo *ext;
-        /*tex Clear old data: */
-        tex_set_charinfo_vertical_parts(ci, NULL);
-        if (bottom == 0 && top == 0 && middle == 0 && extender != 0) {
-            ext = tex_new_charinfo_part(extender, 0, 0, 0, math_extension_normal);
-            tex_add_charinfo_vertical_part(ci, ext);
-            ext = tex_new_charinfo_part(extender, 0, 0, 0, math_extension_repeat);
-            tex_add_charinfo_vertical_part(ci, ext);
-        } else {
-            if (bottom) {
-                ext = tex_new_charinfo_part(bottom, 0, 0, 0, math_extension_normal);
-                tex_add_charinfo_vertical_part(ci, ext);
-            }
-            if (extender) {
-                ext = tex_new_charinfo_part(extender, 0, 0, 0, math_extension_repeat);
-                tex_add_charinfo_vertical_part(ci, ext);
-            }
-            if (middle) {
-                ext = tex_new_charinfo_part(middle, 0, 0, 0, math_extension_normal);
-                tex_add_charinfo_vertical_part(ci, ext);
-                if (extender) {
-                    ext = tex_new_charinfo_part(extender, 0, 0, 0, math_extension_repeat);
-                    tex_add_charinfo_vertical_part(ci, ext);
+    \starttyping
+    void tex_set_charinfo_extensible(charinfo *ci, int top, int bottom, int middle, int extender)
+    {
+        if (ci->math) {
+            extinfo *ext;
+            tex_set_charinfo_extensible_recipe(ci, NULL);
+            if (bottom == 0 && top == 0 && middle == 0 && extender != 0) {
+                ext = tex_new_charinfo_extensible_step(extender, 0, 0, 0, math_extension_normal);
+                tex_add_charinfo_extensible_step(ci, ext);
+                ext = tex_new_charinfo_extensible_step(extender, 0, 0, 0, math_extension_repeat);
+                tex_add_charinfo_extensible_step(ci, ext);
+            } else {
+                if (bottom) {
+                    ext = tex_new_charinfo_extensible_step(bottom, 0, 0, 0, math_extension_normal);
+                    tex_add_charinfo_extensible_step(ci, ext);
                 }
-            }
-            if (top) {
-                ext = tex_new_charinfo_part(top, 0, 0, 0, math_extension_normal);
-                tex_add_charinfo_vertical_part(ci, ext);
+                if (extender) {
+                    ext = tex_new_charinfo_extensible_step(extender, 0, 0, 0, math_extension_repeat);
+                    tex_add_charinfo_extensible_step(ci, ext);
+                }
+                if (middle) {
+                    ext = tex_new_charinfo_extensible_step(middle, 0, 0, 0, math_extension_normal);
+                    tex_add_charinfo_extensible_step(ci, ext);
+                    if (extender) {
+                        ext = tex_new_charinfo_extensible_step(extender, 0, 0, 0, math_extension_repeat);
+                        tex_add_charinfo_extensible_step(ci, ext);
+                    }
+                }
+                if (top) {
+                    ext = tex_new_charinfo_extensible_step(top, 0, 0, 0, math_extension_normal);
+                    tex_add_charinfo_extensible_step(ci, ext);
+                }
             }
         }
     }
-}
+    \stoptyping
+*/
 
 /*tex why not just preallocate for all math otf parameters */
 
@@ -667,13 +634,12 @@ void tex_delete_font(int f)
         set_font_left_boundary(f, NULL);
         set_font_right_boundary(f, NULL);
         for (int i = font_first_character(f); i <= font_last_character(f); i++) {
-            if (quick_char_exists(f, i)) {
+            if (tex_char_exists(f, i)) {
                 charinfo *co = tex_aux_char_info(f, i);
                 set_charinfo_kerns(co, NULL);
                 set_charinfo_ligatures(co, NULL);
                 if (co->math) {
-                    tex_set_charinfo_vertical_parts(co, NULL);
-                    tex_set_charinfo_horizontal_parts(co, NULL);
+                    tex_set_charinfo_extensible_recipe(co, NULL);
                     set_charinfo_top_left_math_kern_array(co, NULL);
                     set_charinfo_top_right_math_kern_array(co, NULL);
                     set_charinfo_bottom_right_math_kern_array(co, NULL);
@@ -1119,11 +1085,6 @@ static halfword tex_aux_handle_ligature_nesting(halfword root, halfword cur)
     have (any kind of) discretionaries. It is still on my agenda to look into nested discretionaries
     i.e. discs nodes in disc fields but it might never result in useable code.
 
-    Remark: there is now a patch for \LUATEX\ that fixes some long pending issue with select discs but
-    still it's kind of fuzzy. It also complicates the par builder in a way that I don't really want
-    (at least in \CONTEXT). It was anyway a good reason for removing traces of these special disc nodes
-    in \LUAMETATEX.
-
 */
 
 static halfword tex_aux_handle_ligature_word(halfword cur)
@@ -1326,7 +1287,6 @@ static halfword tex_aux_handle_ligature_word(halfword cur)
     }
     return cur;
 }
-
 
 /*tex The return value is the new tail, head should be a dummy: */
 
@@ -1725,6 +1685,11 @@ scaled tex_char_ef_from_font(halfword f, halfword c)
     return tex_aux_char_info(f, c)->expansion;
 }
 
+scaled tex_char_cf_from_font(halfword f, halfword c)
+{
+    return tex_aux_char_info(f, c)->compression;
+}
+
 scaled tex_char_lp_from_font(halfword f, halfword c)
 {
     return tex_aux_char_info(f, c)->leftprotrusion;
@@ -1737,32 +1702,35 @@ scaled tex_char_rp_from_font(halfword f, halfword c)
 
 halfword tex_char_has_tag_from_font(halfword f, halfword c, halfword tag)
 {
-    return (charinfo_tag(tex_aux_char_info(f, c)->tagrem) & tag) == tag;
+    return (tex_aux_char_info(f, c)->tag & tag) == tag;
 }
 
 void tex_char_reset_tag_from_font(halfword f, halfword c, halfword tag)
 {
     charinfo *ci = tex_aux_char_info(f, c);
- // tag = charinfo_tag(ci->tagrem) & ~(tag | charinfo_tag(ci->tagrem));
-    tag = charinfo_tag(ci->tagrem) & ~(tag);
-    ci->tagrem = charinfo_tagrem(tag,charinfo_rem(ci->tagrem));
-    
+    ci->tag = ci->tag & ~(tag);
 }
 
 halfword tex_char_tag_from_font(halfword f, halfword c)
 {
-    return charinfo_tag(tex_aux_char_info(f, c)->tagrem);
+    return tex_aux_char_info(f, c)->tag;
 }
 
-halfword tex_char_remainder_from_font(halfword f, halfword c)
-{
-    return charinfo_rem(tex_aux_char_info(f, c)->tagrem);
+int tex_char_checked_tag(halfword tag)
+{ 
+    return tag & (horizontal_tag | vertical_tag | extend_last_tag | italic_tag | n_ary_tag | radical_tag | punctuation_tag);
 }
 
-halfword tex_char_vertical_italic_from_font(halfword f, halfword c)
+halfword tex_char_next_from_font(halfword f, halfword c)
 {
     charinfo *ci = tex_aux_char_info(f, c);
-    return ci->math ? ci->math->vertical_italic : INT_MIN;
+    return ci->math ? ci->math->next : -1;
+}
+
+halfword tex_char_extensible_italic_from_font(halfword f, halfword c)
+{
+    charinfo *ci = tex_aux_char_info(f, c);
+    return ci->math ? ci->math->extensible_italic : INT_MIN;
 }
 
 halfword tex_char_unchecked_top_anchor_from_font(halfword f, halfword c)
@@ -1819,16 +1787,10 @@ scaled tex_char_bottom_right_kern_from_font(halfword f, halfword c)
     return ci->math ? ci->math->bottom_right_kern : 0;
 }
 
-extinfo *tex_char_vertical_parts_from_font(halfword f, halfword c)
+extinfo *tex_char_extensible_recipe_from_font(halfword f, halfword c)
 {
     charinfo *ci = tex_aux_char_info(f, c);
-    return ci->math ? ci->math->vertical_parts : NULL;
-}
-
-extinfo *tex_char_horizontal_parts_from_font(halfword f, halfword c)
-{
-    charinfo *ci = tex_aux_char_info(f, c);
-    return ci->math ? ci->math->horizontal_parts : NULL;
+    return ci->math ? ci->math->extensible_recipe : NULL;
 }
 
 scaled tex_char_left_margin_from_font(halfword f, halfword c)
@@ -1865,6 +1827,18 @@ scaled tex_char_bottom_overshoot_from_font(halfword f, halfword c)
 {
     charinfo *ci = tex_aux_char_info(f, c);
     return ci->math ? ci->math->bottom_overshoot : 0;
+}
+
+scaled tex_char_inner_x_offset_from_font(halfword f, halfword c)
+{
+    charinfo *ci = tex_aux_char_info(f, c);
+    return ci->math ? ci->math->inner_x_offset : 0;
+}
+
+scaled tex_char_inner_y_offset_from_font(halfword f, halfword c)
+{
+    charinfo *ci = tex_aux_char_info(f, c);
+    return ci->math ? ci->math->inner_y_offset : 0;
 }
 
 /* Nodes */
@@ -1989,6 +1963,13 @@ void tex_set_efcode_in_font(halfword f, halfword c, halfword i) {
     charinfo *ci = tex_aux_char_info(f, c);
     if (ci) {
         ci->expansion = i;
+    }
+}
+
+void tex_set_cfcode_in_font(halfword f, halfword c, halfword i) {
+    charinfo *ci = tex_aux_char_info(f, c);
+    if (ci) {
+        ci->compression = i;
     }
 }
 

@@ -2871,11 +2871,11 @@
 
 %D Usage \type {\sum _ {\mstack {i \in V_{0}, i \neq j}}}, documented by Mikael:
 
-\permanent\protected\def\mstack#1%
+\permanent\protected\def\mstack#1% todo: make it configurable
    {\begingroup
     \scratchtoks\emptytoks \setcharstrut(\relax
-    \processcommalist[#1]{\iftok\scratchtoks\emptytoks\else\toksapp\scratchtoks{\strut\NR}\fi\toksapp\scratchtoks}%
-    \expandafter\startsubstack\the\scratchtoks\strut\stopsubstack
+    \processcommalist[#1]{\iftok\scratchtoks\emptytoks\else\toksapp\scratchtoks{\mathstrut\NR}\fi\toksapp\scratchtoks}%
+    \expandafter\startsubstack\the\scratchtoks\mathstrut\stopsubstack
     \endgroup}
 
 %D Similar to simplecases:

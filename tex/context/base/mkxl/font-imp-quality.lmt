@@ -124,6 +124,9 @@ vectors['default'] = {
 
 vectors['quality'] = vectors['default'] -- metatable ?
 
+-- Compression is new and used for a math experiment. Musical timestamp(s): November
+-- 2022, a cluster of live performances: RPWL (5), PT (7, yes!) and xPropaganda (10).
+
 local function initialize(tfmdata,value)
     if value then
         local class, vector = get_class_and_vector(tfmdata,value,"expansions")
@@ -159,9 +162,23 @@ local function initialize(tfmdata,value)
                             end
                         end
                     end
-                    if v and v ~= 0 then
-                        chr.expansion = v*factor
-                    else -- can be option
+                    -- So, factor influences all shapes but we now obey zero when set!
+                    if v then
+                        if type(v) == "table" then
+                            local e = v[1]
+                            local c = v[2] or 0
+                            if e ~= 0 then
+                                chr.expansion = e*factor
+                            end
+                            if c ~= 0 then
+                                chr.compression = c*factor
+                            end
+                        elseif v == 0 then
+                         -- chr.expansion = 0
+                        else
+                            chr.expansion = v*factor
+                        end
+                    elseif factor ~= 1 then -- test is new
                         chr.expansion = factor
                     end
                 end
@@ -192,6 +209,82 @@ implement {
     name      = "setupfontexpansion",
     arguments = "2 strings",
     actions   = function(class,settings) getparameters(classes,class,'preset',settings) end
+}
+
+-- special version for math 7/11/22
+
+classes.math = {
+    stretch = 2,
+    shrink  = 2,
+    step    = .5,
+    vector  = 'math',
+    factor  = 1,
+}
+
+vectors.math = {
+    [0x002B] = { 4, 0 }, -- +
+    [0x2212] = { 4, 0 }, -- -
+    [0x003C] = { 8, 0 }, -- <
+    [0x003D] = { 8, 0 }, -- =
+    [0x003E] = { 8, 0 }, -- >
+    [0x002F] = { 2, 0 }, -- /
+    [0x0028] = { 2, 0 }, -- (
+    [0x0029] = { 2, 0 }, -- )
+    [0x005B] = { 2, 0 }, -- [
+    [0x005D] = { 2, 0 }, -- ]
+}
+
+local function initialize(tfmdata,value)
+    if value then
+        local class, vector = get_class_and_vector(tfmdata,value,"expansions")
+        if class then
+            if vector then
+                local stretch = class.stretch or 0
+                local shrink  = class.shrink  or 0
+                local step    = class.step    or 0
+                local factor  = class.factor  or 1
+                if trace_expansion then
+                    report_expansions("setting class %a, vector %a, factor %a, stretch %a, shrink %a, step %a",
+                        value,class.vector,factor,stretch,shrink,step)
+                end
+                tfmdata.parameters.expansion = {
+                    stretch = 10 * stretch,
+                    shrink  = 10 * shrink,
+                    step    = 10 * step,
+                    factor  = factor,
+                }
+                local characters = tfmdata.characters
+                for u, v in next, vector do
+                    local chr = characters[u]
+                    if type(v) == "table" then
+                        local e = v[1]
+                        local c = v[2] or 0
+                        if e ~= 0 then
+                            chr.expansion = e*factor
+                        end
+                        if c ~= 0 then
+                            chr.compression = c*factor
+                        end
+                    elseif v ~= 0 then
+                        chr.expansion = v*factor
+                    end
+                end
+            elseif trace_expansion then
+                report_expansions("unknown vector %a in class %a",class.vector,value)
+            end
+        elseif trace_expansion then
+            report_expansions("unknown class %a",value)
+        end
+    end
+end
+
+registerotffeature {
+    name        = "mathexpansion",
+    description = "apply hz optimization to math",
+    initializers = {
+        base = initialize,
+        node = initialize,
+    }
 }
 
 -- -- -- -- -- --

@@ -51,6 +51,14 @@ if (WIN32)
     )
 endif()
 
+# It seems to depend on the mingw installation: 
+
+if (__MINGW64_TOOLCHAIN_)
+    target_compile_definitions(luasocket PRIVATE
+        LUASOCKET_INET_PTON
+    )
+endif()
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_definitions(luasocket PRIVATE
         LUASOCKET_INET_PTON

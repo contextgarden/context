@@ -462,12 +462,16 @@ typedef enum convert_codes {
 # define first_convert_code number_code
 # define last_convert_code  luatex_banner_code
 
+/*tex 
+    At some point we might make |token_input_code| behave like |tex_token_input_code| and get rid
+    of |\everyeof| which is a quite useless feature that does more harm than good. 
+*/
+
 typedef enum input_codes {
     normal_input_code,
     end_of_input_code,
     token_input_code,
     tex_token_input_code,
-    /* for now private */
     tokenized_code,
     retokenized_code,
     quit_loop_code,
@@ -577,6 +581,7 @@ typedef enum font_property_codes {
     font_lp_code,
     font_rp_code,
     font_ef_code,
+    font_cf_code,
     font_dimen_code,
     scaled_font_dimen_code,
 } font_property_codes;
@@ -1067,7 +1072,7 @@ typedef enum math_styles {
 # define first_math_style display_style
 # define last_math_style  all_cramped_styles
 
-# define is_valid_math_style(n)   (n >= display_style   && n <= cramped_script_script_style)
+# define is_valid_math_style(n)   (n >= display_style      && n <= cramped_script_script_style)
 # define are_valid_math_styles(n) (n >= all_display_styles && n <= all_cramped_styles)
 
 inline static halfword tex_math_style_to_size(halfword s)

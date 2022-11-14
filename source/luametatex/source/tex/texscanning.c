@@ -668,7 +668,7 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
         case math_char_class_code:
         case math_char_fam_code:
         case math_char_slot_code:
-              /* we actually need two commands or we need to look ahead */
+            /* we actually need two commands or we need to look ahead */
             {
                 mathcodeval mval = { 0, 0, 0 };
                 mathdictval dval = { 0, 0, 0 };
@@ -1594,6 +1594,14 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
                             cur_val_level = int_val_level;
                             break;
                         }
+                    case font_cf_code:
+                        {
+                            halfword fnt = tex_scan_font_identifier(NULL);
+                            halfword chr = tex_scan_char_number(0);
+                            cur_val = tex_char_cf_from_font(fnt, chr);
+                            cur_val_level = int_val_level;
+                            break;
+                        }
                     case font_dimen_code:
                         {
                             cur_val = tex_get_font_dimen();
@@ -1975,8 +1983,8 @@ halfword tex_scan_int(int optional_equal, int *radix)
                         *radix = 8;
                     }
                     while (1) {
-                        tex_get_x_token();
                         unsigned d = 0;
+                        tex_get_x_token();
                         if ((cur_tok >= zero_token) && (cur_tok <= seven_token)) {
                             d = cur_tok - zero_token;
                         } else {
@@ -1997,7 +2005,7 @@ halfword tex_scan_int(int optional_equal, int *radix)
                             }
                         }
                     }
-                    break;
+                 // break;
                 }
             case hex_token:
                 {
@@ -2005,8 +2013,8 @@ halfword tex_scan_int(int optional_equal, int *radix)
                         *radix = 16;
                     }
                     while (1) {
-                        tex_get_x_token();
                         unsigned d = 0;
+                        tex_get_x_token();
                         if ((cur_tok >= zero_token) && (cur_tok <= nine_token)) {
                             d = cur_tok - zero_token;
                         } else if ((cur_tok >= A_token_l) && (cur_tok <= F_token_l)) {
@@ -2031,7 +2039,7 @@ halfword tex_scan_int(int optional_equal, int *radix)
                             }
                         }
                     }
-                    break;
+                 // break;
                 }
             default:
                 {
@@ -2061,7 +2069,7 @@ halfword tex_scan_int(int optional_equal, int *radix)
                         }
                         tex_get_x_token();
                     }
-                    break;
+                 // break;
                 }
         }
       DONE:
@@ -2099,8 +2107,8 @@ int tex_scan_cardinal(unsigned *value, int dontbark)
             case octal_token:
                 {
                     while (1) {
-                        tex_get_x_token();
                         unsigned d = 0;
+                        tex_get_x_token();
                         if ((cur_tok >= zero_token) && (cur_tok <= seven_token)) {
                             d = cur_tok - zero_token;
                         } else {
@@ -2112,13 +2120,13 @@ int tex_scan_cardinal(unsigned *value, int dontbark)
                             result = max_cardinal;
                         }
                     }
-                    break;
+                 // break;
                 }
             case hex_token:
                 {
                     while (1) {
-                        tex_get_x_token();
                         unsigned d = 0;
+                        tex_get_x_token();
                         if ((cur_tok >= zero_token) && (cur_tok <= nine_token)) {
                             d = cur_tok - zero_token;
                         } else if ((cur_tok >= A_token_l) && (cur_tok <= F_token_l)) {
@@ -2134,7 +2142,7 @@ int tex_scan_cardinal(unsigned *value, int dontbark)
                             result = max_cardinal;
                         }
                     }
-                    break;
+                 // break;
                 }
             default:
                 {
@@ -2152,7 +2160,7 @@ int tex_scan_cardinal(unsigned *value, int dontbark)
                         }
                         tex_get_x_token();
                     }
-                    break;
+                 // break;
                 }
         }
       DONE:
@@ -2304,6 +2312,7 @@ typedef enum scanned_unit {
 
 static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, halfword *order)
 {
+  AGAIN: /* only for true */
     do {
         tex_get_x_token();
     } while (cur_cmd == spacer_cmd);
@@ -2327,7 +2336,6 @@ static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, ha
             goto BACK_TWO;
         }
         cur_cs = save_cur_cs;
-      AGAIN:
         switch (chrone) {
             case 'p': case 'P':
                 switch (chrtwo) {
@@ -2405,7 +2413,7 @@ static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, ha
                     switch (chrtwo) {
                         case 'r': case 'R':
                             if (tex_scan_mandate_keyword("true", 2)) {
-                                /*tex This is now a bogus prefix! */
+                                /*tex This is now a bogus prefix that might get dropped! */
                                 goto AGAIN;
                             }
                     }
@@ -4178,7 +4186,7 @@ static void tex_aux_scan_expr(halfword level)
         node_subtype(t) = 0;
         /* */
         node_next(t) = top;
-        expression_type(t) = (quarterword) level;
+        expression_type(t) = (singleword) level;
         expression_state(t) = (singleword) state;
         expression_result(t) = (singleword) result;
         expression_expression(t) = expression;
@@ -4576,7 +4584,7 @@ static const char *bit_expression_names[] = {
     variant that only uses doubles: |dimenexpression| and |numberexpression|. 
 */
 
-# define factor 1000 
+# define factor 1 // 256, 1000 : wrong results so needs a fix 
 
 typedef struct stack_info {
     halfword head;
@@ -4879,8 +4887,8 @@ static halfword tex_scan_bit_int(int *radix)
                         *radix = 8;
                     }
                     while (1) {
-                        tex_get_x_token();
                         unsigned d = 0;
+                        tex_get_x_token();
                         if ((cur_tok >= zero_token) && (cur_tok <= seven_token)) {
                             d = cur_tok - zero_token;
                         } else {
@@ -4896,7 +4904,7 @@ static halfword tex_scan_bit_int(int *radix)
                             }
                         }
                     }
-                    break;
+                 // break;
                 }
             case hex_token:
                 {
@@ -4904,8 +4912,8 @@ static halfword tex_scan_bit_int(int *radix)
                         *radix = 16;
                     }
                     while (1) {
-                        tex_get_x_token();
                         unsigned d = 0;
+                        tex_get_x_token();
                         if ((cur_tok >= zero_token) && (cur_tok <= nine_token)) {
                             d = cur_tok - zero_token;
                         } else if ((cur_tok >= A_token_l) && (cur_tok <= F_token_l)) {
@@ -4925,7 +4933,7 @@ static halfword tex_scan_bit_int(int *radix)
                             }
                         }
                     }
-                    break;
+                 // break;
                 }
             default:
                 {
@@ -4950,7 +4958,7 @@ static halfword tex_scan_bit_int(int *radix)
                         }
                         tex_get_x_token();
                     }
-                    break;
+                 // break;
                 }
         }
       DONE:
@@ -5065,6 +5073,8 @@ static void tex_aux_trace_expression(stack_info stack, halfword level, halfword 
     tex_print_char(']');
     tex_end_diagnostic();
 }
+
+/* This one is not yet okay ... work in progress. */
 
 static void tex_aux_scan_expression(int level)
 {
@@ -5521,7 +5531,7 @@ static void tex_aux_scan_expression(int level)
                                     break;
                                 case bit_expression_multiply:
                                     {
-                                        double d = va * vb;
+                                        double d = (double) va * (double) vb;
                                         if (sa == bit_expression_float) {
                                             d = d / (65536 * factor);
                                         } else if (sb == bit_expression_float) {
@@ -5687,7 +5697,7 @@ int tex_scan_tex_value(halfword level, halfword *value)
 quarterword tex_scan_direction(int optional_equal)
 {
     int i = tex_scan_int(optional_equal, NULL);
-    return checked_direction_value(i);
+    return (quarterword) checked_direction_value(i);
 }
 
 halfword tex_scan_geometry(int optional_equal)

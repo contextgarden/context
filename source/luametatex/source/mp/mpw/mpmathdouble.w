@@ -1270,7 +1270,7 @@ typedef struct mp_double_random_info {
     long *ptr;
 } mp_double_random_info;
 
-mp_double_random_info mp_double_random_data = {
+static mp_double_random_info mp_double_random_data = {
     .dummy   = -1,
     .started = -1,
     .ptr     = &mp_double_random_data.dummy

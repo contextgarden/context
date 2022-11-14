@@ -1442,7 +1442,7 @@ avl_code_t avl_del_first(avl_tree t, void **backup)
     if (t && t->root) {
         avl_code_t rv;
         if (backup) {
-            ptr_handler h = { NULL, OP_BACKUP };
+            ptr_handler h = { NULL, OP_BACKUP, 0 };
             rv = node_del_first(t, &h);
             *backup = h.ptr;
         } else {
@@ -1460,7 +1460,7 @@ avl_code_t avl_del_last(avl_tree t, void **backup)
         if (backup == NULL) {
             return node_del_last(t, NULL);
         } else {
-            ptr_handler h = { NULL, OP_BACKUP };
+            ptr_handler h = { NULL, OP_BACKUP, 0 };
             avl_code_t rv = node_del_last(t, &h);
             *backup = h.ptr;
             return rv;
@@ -1527,7 +1527,7 @@ void avl_cat(avl_tree t0, avl_tree t1)
         return;
     } else if (t0->root) {
         int delta = depth(t1->root) - depth(t0->root);
-        ptr_handler h = { NULL, OP_DETACH };
+        ptr_handler h = { NULL, OP_DETACH, 0 };
         if (delta <= 0) {
             if (node_del_first (t1, &h) == 2) {
                 --delta;
@@ -1559,13 +1559,13 @@ void avl_cat(avl_tree t0, avl_tree t1)
 avl_code_t avl_split(const void *item, avl_tree t, avl_tree t0, avl_tree t1)
 {
     if (t && t->root) {
+        avl_compare_func cmp = t->compare;
+        avl_node *a, *p, *sn; /* sn: split node */
+        int k, na, an[AVL_STACK_CAPACITY];
         t0->root = NULL;
         t1->root = NULL;
         t0->count = 0;
         t1->count = 0;
-        avl_compare_func cmp = t->compare;
-        avl_node *a, *p, *sn; /* sn: split node */
-        int k, na, an[AVL_STACK_CAPACITY];
         /* invariant: [na]= size of tree rooted at [a] plus one */
         for (a = t->root, na = (int) (t->count + 1), k = 0;;) {
             int d_ = item_compare(cmp, t, item, get_item(a));

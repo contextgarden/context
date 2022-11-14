@@ -263,20 +263,28 @@ local function applyaxis(glyph,shape,deltas,dowidth)
                                         end
                                         if found == last then
                                             lastindex = currentindex
-                                            break;
+                                            break
                                         elseif found > last then
+
+-- \definefontfeature[book][default][axis={weight=800}]
+-- \definefont[testfont][file:Commissioner-vf-test.ttf*book]
+-- \testfont EΘÄΞ
+while lastindex > 1 and dpoints[lastindex] > last do
+    lastindex = lastindex - 1
+end
+
                                             break
                                         end
                                     end
                                 end
-                                -- print("unicode: ",glyph.unicode or "?")
-                                -- print("contour: ",first,contour,last)
-                                -- print("index  : ",firstindex,lastindex,cnt)
-                                -- print("points : ",dpoints[firstindex],dpoints[lastindex])
+                             -- print("unicode: ",glyph.unicode or "?")
+                             -- print("contour: ",first,contour,last)
+                             -- print("index  : ",firstindex,lastindex,cnt)
+                             -- print("points : ",dpoints[firstindex],dpoints[lastindex])
                                 local function find(i)
                                     local prv = lastindex
                                     for j=firstindex,lastindex do
-                                        local nxt = dpoints[j]
+                                        local nxt = dpoints[j] -- we could save this lookup when we return it
                                         if nxt == i then
                                             return false, j, false
                                         elseif nxt > i then
@@ -980,8 +988,8 @@ local function readglyph(f,nofcontours) -- read deltas here, saves space
     local x = 0
     for i=1,nofpoints do
         local flag = flags[i]
-     -- local short = band(flag,0x04) ~= 0
-     -- local same  = band(flag,0x20) ~= 0
+     -- local short = band(flag,0x02) ~= 0
+     -- local same  = band(flag,0x10) ~= 0
         if band(flag,0x02) ~= 0 then
             if band(flag,0x10) ~= 0 then
                 x = x + readbyte(f)

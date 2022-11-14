@@ -31,7 +31,7 @@
     \loadfoundtypescriptfile\empty{type-lua.mkxl}
     \loadfoundtypescriptfile\empty{type-siz.mkxl}
     \loadfoundtypescriptfile\empty{type-fbk.mkxl}
-    \loadfoundtypescriptfile\empty{type-imp-latinmodern.mkiv}
+    \loadfoundtypescriptfile\empty{type-imp-latinmodern.mkiv} % maybe no longer
 
     % and not:
 
@@ -54,19 +54,19 @@
     \usetypescriptfile[fbk]
     \usetypescriptfile[lua]
     \usetypescriptfile[siz]
-    \usetypescriptfile[latinmodern]
+    \usetypescriptfile[latinmodern] % maybe no longer
     \usetypescriptfile[loc]
 
 \fi
 
+\definefilesynonym [type-imp-modern.mkiv]                 [type-imp-latinmodern.mkiv]
 \definefilesynonym [type-imp-latin-modern.mkiv]           [type-imp-latinmodern.mkiv]
 \definefilesynonym [type-imp-modern-latin.mkiv]           [type-imp-modernlatin.mkiv]
 \definefilesynonym [type-imp-less-modern-latin.mkiv]      [type-imp-modernlatin.mkiv]
 
-%definefilesynonym [type-imp-lucida.mkiv]                 [type-imp-lucida-typeone.mkiv]
-\definefilesynonym [type-imp-lucida.mkiv]                 [type-imp-lucida-opentype.mkiv]
-\definefilesynonym [type-imp-lucidaot.mkiv]               [type-imp-lucida-opentype.mkiv]
-\definefilesynonym [type-imp-lucidadk.mkiv]               [type-imp-lucida-opentype.mkiv]
+\definefilesynonym [type-imp-lucida-opentype.mkiv]        [type-imp-lucida.mkiv]
+\definefilesynonym [type-imp-lucidaot.mkiv]               [type-imp-lucida.mkiv]
+\definefilesynonym [type-imp-lucidadk.mkiv]               [type-imp-lucida.mkiv]
 
 \definefilesynonym [type-imp-dejavu-condensed.mkiv]       [type-imp-dejavu.mkiv]
 
@@ -147,5 +147,25 @@
 
 \definefilesynonym [type-imp-gentiumplus.mkiv]            [type-imp-gentium.mkiv]
 \definefilesynonym [type-imp-gentiumbook.mkiv]            [type-imp-gentium.mkiv]
+
+%D These \type {*-nt} variants come in handy when we want top compare with non-tweaked math.
+
+\definefilesynonym [type-imp-bonum-nt.mkiv]               [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-schola-nt.mkiv]              [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-pagella-nt.mkiv]             [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-termes-nt.mkiv]              [type-imp-texgyre.mkiv]
+\definefilesynonym [type-imp-dejavu-nt.mkiv]              [type-imp-dejavu.mkiv]
+\definefilesynonym [type-imp-cambria-nt.mkiv]             [type-imp-cambria.mkiv]
+\definefilesynonym [type-imp-lucidaot-nt.mkiv]            [type-imp-lucida-opentype.mkiv]
+\definefilesynonym [type-imp-lucida-nt.mkiv]              [type-imp-lucida-opentype.mkiv]
+\definefilesynonym [type-imp-modern-nt.mkiv]              [type-imp-latinmodern.mkiv]
+\definefilesynonym [type-imp-stix-nt.mkiv]                [type-imp-stix.mkiv]
+\definefilesynonym [type-imp-stixtwo-nt.mkiv]             [type-imp-stix.mkiv]
+\definefilesynonym [type-imp-libertinus-nt.mkiv]          [type-imp-libertinus.mkiv]
+\definefilesynonym [type-imp-ebgaramond-nt.mkiv]          [type-imp-ebgaramond.mkiv]
+\definefilesynonym [type-imp-erewhon-nt.mkiv]             [type-imp-erewhon.mkiv]
+\definefilesynonym [type-imp-kpfonts-nt.mkiv]             [type-imp-kpfonts.mkiv]
+\definefilesynonym [type-imp-concrete-nt.mkiv]            [type-imp-concrete.mkiv]
+\definefilesynonym [type-imp-xcharter-nt.mkiv]            [type-imp-xcharter.mkiv]
 
 \protect \endinput

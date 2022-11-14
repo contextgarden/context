@@ -38,6 +38,12 @@ target_compile_definitions(mp PUBLIC
     DECNUMDIGITS=1000
 )
 
+if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(mp PRIVATE
+        -Wno-unreachable-code-break
+    )
+endif()
+
 if (NOT MSVC)
     target_compile_options(mp PRIVATE
         -Wno-unused-parameter
@@ -46,5 +52,5 @@ if (NOT MSVC)
         -Wno-cast-align
         # for decnumber with lto
         -fno-strict-aliasing
-)
+    )
 endif()

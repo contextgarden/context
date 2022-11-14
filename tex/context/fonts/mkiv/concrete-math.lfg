@@ -9,8 +9,8 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            NoLimitSupFactor         =    0,
-            NoLimitSubFactor         =  900,
+            -- NoLimitSupFactor         =    0,
+            -- NoLimitSubFactor         =  900,
             DelimiterPercent         =   90,
             DelimiterShortfall       =  400,
          -- DisplayOperatorMinHeight = 1800, -- 1400 in font (one size)
@@ -19,12 +19,15 @@ return {
             aftercopying = {
                 {
                     tweak   = "fixprimes",
-                    factor  = 0.9,
+                    factor  = 0.8,
                 },
                 -- there are circular variants
 --                 {
 --                     tweak = "addmirrors",
 --                 },
+{
+    tweak = "fixintegrals",
+},
                 presets.scripttocalligraphic { },
                 presets.rsfstoscript         { },
                 presets.rsfsuprighttoscript  { },
@@ -41,6 +44,23 @@ return {
                         [0x002F] = { topleft = -0.2, bottomright = -0.2 },
                     },
                 },
+
+{
+    tweak   = "radicaldegreeanchors",
+    list = {
+        -- [0x221A]                = { location = "left", hfactor  = .1, vfactor  = .3 },
+        -- ["0x221A.variants.*"]   = { location = "left", hfactor  = .1, vfactor  = .625 },
+        -- ["0x221A.variants.1"]   = { location = "left", hfactor  = .1, vfactor  = .575 },
+     -- ["0x221A.variants.2"]   = { location = "left", hfactor  = .1, vfactor  = .575 },
+     -- ["0x221A.variants.3"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.variants.4"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221Aq.variants.6"]  = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.parts.top"]    = { location = "left", hfactor  = .1, vfactor  = 5.5 }, -- keep commented: bottom wins over top
+        ["0x221A.parts.bottom"] = { location = "left", hfactor  = .0, vfactor  = 1.075 },
+    }
+},
                 {
                     tweak = "fixellipses",
                 },

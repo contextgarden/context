@@ -71,7 +71,7 @@ int lmt_library_okay(lmt_library lib)
 
 /* experiment */
 
-int librarylib_load(lua_State *L)
+static int librarylib_load(lua_State *L)
 {
     /* So we permit it in mtxrun (for now, when we test). */
     if (lmt_engine_state.lua_only || lmt_engine_state.permit_loadlib) {

@@ -2,6 +2,9 @@
 --
 -- \definefilesynonym [type-imp-xits.mkiv] [type-imp-xits.mkiv]
 
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
+
 return {
     name = "xits-math",
     version = "1.00",

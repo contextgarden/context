@@ -349,16 +349,19 @@ static void tex_aux_show_if_state(halfword code, halfword case_value)
 {
     tex_begin_diagnostic();
     switch (code) {
-        case if_chk_int_code   : tex_print_format("{chknum %i}",    case_value); break;
-        case if_val_int_code   : tex_print_format("{numval %i}",    case_value); break;
-        case if_cmp_int_code   : tex_print_format("{cmpnum %i}",    case_value); break;
-        case if_chk_dim_code   : tex_print_format("{chkdim %i}",    case_value); break;
-        case if_val_dim_code   : tex_print_format("{dimval %i}",    case_value); break;
-        case if_cmp_dim_code   : tex_print_format("{cmpdim %i}",    case_value); break;
-        case if_case_code      : tex_print_format("{case %i}",      case_value); break;
-        case if_math_style_code: tex_print_format("{mathstyle %i}", case_value); break;
-        case if_arguments_code : tex_print_format("{arguments %i}", case_value); break;
-        default                : tex_print_format("{todo %i}",      case_value); break;
+        case if_chk_int_code       : tex_print_format("{chknum %i}",        case_value); break;
+        case if_val_int_code       : tex_print_format("{numval %i}",        case_value); break;
+        case if_cmp_int_code       : tex_print_format("{cmpnum %i}",        case_value); break;
+        case if_chk_dim_code       : tex_print_format("{chkdim %i}",        case_value); break;
+        case if_val_dim_code       : tex_print_format("{dimval %i}",        case_value); break;
+        case if_cmp_dim_code       : tex_print_format("{cmpdim %i}",        case_value); break;
+        case if_case_code          : tex_print_format("{case %i}",          case_value); break;
+        case if_math_parameter_code: tex_print_format("{mathparameter %i}", case_value); break;
+        case if_math_style_code    : tex_print_format("{mathstyle %i}",     case_value); break;
+        case if_arguments_code     : tex_print_format("{arguments %i}",     case_value); break;
+        case if_parameters_code    : tex_print_format("{parameter %i}",     case_value); break;
+        case if_parameter_code     : tex_print_format("{parameters %i}",    case_value); break;
+        default                    : tex_print_format("{todo %i}",          case_value); break;
     }
     tex_end_diagnostic();
 }
@@ -776,38 +779,44 @@ void tex_conditional_if(halfword code, int unless)
             goto RESULT;
         case if_flags_code:
             {
-                singleword flag, fl;
+                halfword cs; 
+                singleword flag;
                 tex_get_r_token();
-                flag = eq_flag(cur_cs);
+                cs = cur_cs; 
+                flag = eq_flag(cs);
                 /* todo: each prefix */
                 tex_get_token();
                 if (cur_cmd == prefix_cmd) {
                     switch (cur_chr) {
-                        case permanent_code     : result = is_permanent    (flag); break;
-                        case immutable_code     : result = is_immutable    (flag); break;
-                        case mutable_code       : result = is_mutable      (flag); break;
-                        case noaligned_code     : result = is_noaligned    (flag); break;
-                        case instance_code      : result = is_instance     (flag); break;
-                        case untraced_code      : result = is_untraced     (flag); break;
-                        case global_code        : result = is_global       (flag); break;
-                        case tolerant_code      : result = is_tolerant     (flag); break;
-                        case protected_code     : result = is_protected    (flag); break;
-                        case overloaded_code    : result = is_overloaded   (flag); break;
-                        case aliased_code       : result = is_aliased      (flag); break;
-                        case immediate_code     : result = is_immediate    (flag); break;
-                        case semiprotected_code : result = is_semiprotected(flag); break;
+                        /*tex We check flags: */
+                        case frozen_code        : result = is_frozen   (flag); break;
+                        case permanent_code     : result = is_permanent(flag); break;
+                        case immutable_code     : result = is_immutable(flag); break;
+                     /* case primitive_code     : result = is_primitive(flag); break; */
+                        case mutable_code       : result = is_mutable  (flag); break;
+                        case noaligned_code     : result = is_noaligned(flag); break;
+                        case instance_code      : result = is_instance (flag); break;
+                        case untraced_code      : result = is_untraced (flag); break;
+                        /*tex We check cmd: */
+                        case global_code        : result = eq_level(cs) == level_one;; break;
+                        case tolerant_code      : result = is_tolerant_cmd(eq_type(cs)); break;
+                        case protected_code     : result = is_protected_cmd(eq_type(cs)); break;
+                        case semiprotected_code : result = is_semi_protected_cmd(eq_type(cs)); break;
                     }
                 } else {
+                    int fl; 
                     tex_back_input(cur_tok);
-                    fl = (singleword) tex_scan_int(1, NULL); /* maybe some checking or masking is needed here */
+                    fl = tex_scan_int(1, NULL); 
                     result = (flag & fl) == fl;
                     if (! result) {
                         if (is_protected(fl)) {
-                            result = is_protected_cmd(eq_type(cur_cs));
+                            result = is_protected_cmd(eq_type(cs));
+                        } else if (is_semiprotected(fl)) {
+                            result = is_semi_protected_cmd(eq_type(cs));
                         } else if (is_tolerant(fl)) {
-                            result = is_tolerant_cmd(eq_type(cur_cs));
+                            result = is_tolerant_cmd(eq_type(cs));
                         } else if (is_global(fl)) {
-                            result = eq_level(cur_cs) == level_one;
+                            result = eq_level(cs) == level_one;
                         }
                     }
                 }

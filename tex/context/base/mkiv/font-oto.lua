@@ -504,6 +504,9 @@ local function featuresinitializer(tfmdata,value)
                                 local value = features[feature]
                                 if value then
                                     local validlookups, lookuplist = collectlookups(rawdata,feature,script,language)
+-- if not validlookups and not lookuplist and script == "math" then
+--     validlookups, lookuplist = collectlookups(rawdata,feature,"dflt","dflt")
+-- end
                                     if not validlookups then
                                         -- skip
                                     elseif basesubstitutions and basesubstitutions[feature] then

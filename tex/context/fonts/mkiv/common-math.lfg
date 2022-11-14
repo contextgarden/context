@@ -56,13 +56,13 @@ return {
                             {
                                 source   = "uppercasescript",
                                 target   = "uppercasecalligraphic",
-                                filename = "euler.otf",
+                                filename = "euler-math.otf",
                                 rscale   = parameters.rscale,
                             },
                             {
                                 source   = "uppercaseboldscript",
                                 target   = "uppercaseboldcalligraphic",
-                                filename = "euler.otf",
+                                filename = "euler-math.otf",
                                 rscale   = parameters.rscale,
                             },
                         },

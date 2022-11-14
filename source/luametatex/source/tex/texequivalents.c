@@ -711,8 +711,8 @@ void tex_show_save_groups(void)
       FOUND1:
         {
             /*tex Show the box packaging info. */
-            tex_print_str_esc(package);
             halfword packing, amount;
+            tex_print_str_esc(package);
             if (tex_aux_saved_box_spec(&packing, &amount)) {
                 tex_print_str(packing == packing_exactly ? " to " : " spread ");
                 tex_print_dimension(amount, pt_unit);
@@ -1969,4 +1969,19 @@ int tex_located_save_value(int id)
         i++;
     }
     return 0;
+}
+
+extern int tex_cs_state(halfword p) 
+{
+    if (p == null_cs) {
+        return cs_null_error;
+    } else if (p < hash_base) {
+        return cs_below_base_error;
+    } else if (p == undefined_control_sequence) {
+        return cs_undefined_error;
+    } else if (eqtb_out_of_range(p)) {
+        return cs_out_of_range_error;
+    } else {
+        return cs_no_error;
+    }
 }

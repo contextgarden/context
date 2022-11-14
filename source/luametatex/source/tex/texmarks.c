@@ -67,12 +67,12 @@ void tex_reset_mark(halfword m)
            size = m;
        }
        if (size <= lmt_mark_state.mark_data.maximum) {
-           mark_record *tmp = aux_reallocate_array(lmt_mark_state.data, sizeof(mark_record), (size_t) size, 1);
+           mark_record *tmp = aux_reallocate_array(lmt_mark_state.data, sizeof(mark_record), size, 1);
            if (tmp) {
                lmt_mark_state.data = tmp;
                memset(&lmt_mark_state.data[lmt_mark_state.mark_data.top], 0, sizeof(mark_record) * (size - lmt_mark_state.mark_data.top));
                lmt_mark_state.mark_data.top = size;
-               lmt_mark_state.mark_data.allocated = sizeof(mark_record) * ((size_t) size);
+               lmt_mark_state.mark_data.allocated = sizeof(mark_record) * size;
            } else {
                tex_overflow_error("marks", size);
            }

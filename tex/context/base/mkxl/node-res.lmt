@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['node-res'] = {
 
 local type, next, rawset = type, next, rawset
 local gmatch, format = string.gmatch, string.format
+local round = math.round
 
 --[[ldx--
 <p>The next function is not that much needed but in <l n='context'/> we use
@@ -381,7 +382,7 @@ function nutpool.outlinerule(width,height,depth,line) -- w/h/d == nil will let t
         setwhd(n,width,height,depth)
     end
     if line then
-        setruledata(n,line)
+        setruledata(n,round(line)) -- has to be an integer
     end
     return n
 end

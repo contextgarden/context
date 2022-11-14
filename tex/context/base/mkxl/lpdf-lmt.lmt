@@ -238,7 +238,7 @@ lpdf.usedindices     = usedindices     -- [streamhash][index] -> realindex (can 
 local horizontalmode = true
 local scalefactor    = 1
 local threshold      = 655360
-local thresfactor    = 100
+----- thresfactor    = 100
 local tjfactor       = 100 / 65536
 
 function flushers.updatefontstate(font)
@@ -690,7 +690,7 @@ do
 
     local trace_threshold = false  trackers.register("backends.pdf.threshold", function(v) trace_threshold = v end)
 
- -- local f_skip = formatters["%.2N"]
+    ----- f_skip = formatters["%.2N"]
 
     -- I will redo this mess ... we no longer have the mkiv pdf generator that we used in
     -- luatex (a precursor to lmtx and also for comparison) but only in lmtx now so ...
@@ -776,7 +776,7 @@ do
                 move = calc_pdfpos(pos_h,pos_v)
             end
             if move then
-                local d = tj_delta * scalefactor / f_x_scale
+                local d = tj_delta * scalefactor / (tmef * f_x_scale)
                 if d <= -0.5 or d >= 0.5 then
                     if mode == "char" then
                         end_charmode()
@@ -1504,8 +1504,19 @@ local flushimage  do
         local dim_h = size_h * bpfactor
         local dim_v = size_v * bpfactor
         local rule
-
-        if dim_v <= one_bp then
+        --
+        -- this fails for showglyphs so and i have no reason to look into it now and rectangles
+        -- do a better job anyway
+        --
+        if subtype == outlinerule_code then
+            local linewidth = getdata(current)
+            pdf_set_pos_temp(pos_h,pos_v)
+            if linewidth > 0 then
+                rule = f_w(linewidth * bpfactor,dim_h,dim_v)
+            else
+                rule = f_o(dim_h,dim_v)
+            end
+        elseif dim_v <= one_bp then
             pdf_set_pos_temp(pos_h,pos_v + 0.5 * size_v)
             rule = f_v(dim_v,dim_h)
         elseif dim_h <= one_bp then
@@ -1513,16 +1524,7 @@ local flushimage  do
             rule = f_h(dim_h,dim_v)
         else
             pdf_set_pos_temp(pos_h,pos_v)
-            if subtype == outlinerule_code then
-                local linewidth = getdata(current)
-                if linewidth > 0 then
-                    rule = f_w(linewidth * bpfactor,dim_h,dim_v)
-                else
-                    rule = f_o(dim_h,dim_v)
-                end
-            else
-                rule = f_f(dim_h,dim_v)
-            end
+            rule = f_f(dim_h,dim_v)
         end
 
         b = b + 1 ; buffer[b] = rule

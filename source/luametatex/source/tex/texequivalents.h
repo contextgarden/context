@@ -571,6 +571,7 @@ typedef enum int_codes {
     alignment_wrap_source_code,
  /* page_boundary_penalty_code, */
     line_break_criterium_code,
+    variable_family_code,   
     /* those below these are not interfaced via primitives */
     internal_par_state_code,
     internal_dir_state_code,
@@ -1347,6 +1348,7 @@ extern void tex_forced_word_define (int g, halfword p, singleword flag, halfword
 # define split_top_skip_par              glue_parameter(split_top_skip_code)
 
 # define cur_fam_par                     count_parameter(family_code)
+# define variable_family_par             count_parameter(variable_family_code)
 # define pre_display_direction_par       count_parameter(pre_display_direction_code)
 # define pre_display_penalty_par         count_parameter(pre_display_penalty_code)
 # define post_display_penalty_par        count_parameter(post_display_penalty_code)
@@ -1705,6 +1707,7 @@ extern halfword tex_explicit_disc_penalty  (halfword mode);
 # define update_tex_glyph_state(a,v)           tex_word_define(a, internal_int_location(glyph_state_code), v)
 # define update_tex_glyph_script(a,v)          tex_word_define(a, internal_int_location(glyph_script_code), v)
 # define update_tex_family(a,v)                tex_word_define(a, internal_int_location(family_code), v)
+# define update_tex_variable_family(a,v)       tex_word_define(a, internal_int_location(variable_family_code), v)
 # define update_tex_language(a,v)              tex_word_define(a, internal_int_location(language_code), v)
 # define update_tex_font(a,v)                  tex_word_define(a, internal_int_location(font_code), v)
 
@@ -1765,5 +1768,15 @@ extern halfword tex_explicit_disc_penalty  (halfword mode);
 # define insert_multiplier(A) count_register(A)
 # define insert_maxheight(A)  dimen_register(A)
 # define insert_distance(A)   skip_register(A)
+
+typedef enum cs_errors {
+    cs_no_error,
+    cs_null_error,
+    cs_below_base_error,
+    cs_undefined_error, 
+    cs_out_of_range_error,
+} cs_errors;
+
+extern int tex_cs_state(halfword p) ;
 
 # endif

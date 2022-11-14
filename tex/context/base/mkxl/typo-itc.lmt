@@ -72,7 +72,7 @@ local italicsdata         = fonthashes.italics
 local exheights           = fonthashes.exheights
 local chardata            = fonthashes.characters
 
-local is_punctuation      = characters.is_punctuation
+local ispunctuation       = characters.is_punctuation
 
 local implement           = interfaces.implement
 
@@ -217,7 +217,7 @@ local function domath(head,current)
                 if glyph and getid(glyph) == glyph_code then
                     -- [math: <glyph><kern>]<glyph> : we remove the correction when we have
                     -- punctuation
-                    if is_punctuation[char] then
+                    if ispunctuation[char] then
                         local a = getattr(glyph,a_mathitalics)
                         if a then
                             local i = getkern(kern)
@@ -257,7 +257,7 @@ local function domath(head,current)
          --     if glyph and getid(glyph) == glyph_code then
          --         -- [math: <glyph>]<glyph> : we add the correction when we have
          --         -- no punctuation
-         --         if not is_punctuation[char] then
+         --         if not ispunctuation[char] then
          --             local a = getattr(glyph,a_mathitalics)
          --             if a and (a < 100 or a > 100) then
          --                 if a > 100 then

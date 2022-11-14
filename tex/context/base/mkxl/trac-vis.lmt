@@ -41,6 +41,7 @@ local setattr             = nuts.setattr
 local setwidth            = nuts.setwidth
 local setshift            = nuts.setshift
 local setoffsets          = nuts.setoffsets
+local getglyphdimensions  = nuts.getglyphdimensions
 
 local getid               = nuts.getid
 local getfont             = nuts.getfont
@@ -922,22 +923,27 @@ local ruledglyph do
  -- local ligature_code = 0x8000 + nodes.glyphcodes.ligature
 
     ruledglyph = function(head,current,previous) -- wrong for vertical glyphs
-        local wd = getwidth(current)
+        local wd, ht, dp = getglyphdimensions(current)
         if wd ~= 0 then
-            local wd, ht, dp = getwhd(current)
             local next = getnext(current)
             local prev = previous
             setboth(current)
             local linewidth = emwidth/(2*fraction)
             local x_offset, y_offset, l_margin, r_margin, raise = getoffsets(current)
-            local info = setlink((dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
-                width  = wd,
-                height = ht,
-                depth  = dp,
-                line   = linewidth,
-                type   = "box",
-            },new_kern(-wd))
-         -- if getsubtype(n) == ligature_code then
+--             local info = setlink((dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
+--                 width  = wd,
+--                 height = ht,
+--                 depth  = dp,
+--                 line   = linewidth,
+--                 type   = "box",
+--             },new_kern(-wd))
+local info = (dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
+    width  = wd,
+    height = ht,
+    depth  = dp,
+    line   = linewidth,
+    type   = "box",
+}
             local c, f = isglyph(current)
             local char = chardata[f][c]
             if char and type(char.unicode) == "table" then -- hackery test

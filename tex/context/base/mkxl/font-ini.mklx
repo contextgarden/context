@@ -419,11 +419,11 @@
    \fi}
 
 \def\normalizebodyfontsize_indeed#macro#body%
-  {\edef#macro{\clf_nbfs\dimexpr#body\relax}%
+  {\edef#macro{\clf_normalizedbodyfontsize\dimexpr#body\relax}%
    \gletcsname\??fontnormalizedbody\number\dimexpr#body\endcsname#macro}
 
 \permanent\def\thenormalizedbodyfontsize#body%
-  {\clf_nbfs\dimexpr#body\relax}
+  {\clf_normalizedbodyfontsize\dimexpr#body\relax}
 
 \mutable\edef\normalizedglobalbodyfontsize{\thenormalizedbodyfontsize\bodyfontsize}
 \mutable\edef\normalizedlocalbodyfontsize {\thenormalizedbodyfontsize\bodyfontsize}
@@ -458,12 +458,60 @@
 
 \installcorenamespace{mappedfontsize}
 
-\permanent\tolerant\protected\def\mapfontsize[#from]#spacer[#to]%
-  {\ifarguments\or\or\defcsname\??mappedfontsize\the\dimexpr#from\relax\endcsname{#to}\fi}
+% \permanent\tolerant\protected\def\mapfontsize[#from]#spacer[#to]%
+%   {\ifarguments\or\or\defcsname\??mappedfontsize\the\dimexpr#from\relax\endcsname{#to}\fi}
+%
+% \def\font_basics_set_mapped_fontsize#from%
+%   {\ifcsname\??mappedfontsize\the\dimexpr#from\relax\endcsname
+%      \lastnamedcs\else#from%
+%    \fi}
+
+% will become: mapmathfontsize
+
+%letcsname\??mappedfontsize\s!text        \endcsname\!!plusone
+\letcsname\??mappedfontsize\s!script      \endcsname\!!plustwo
+\letcsname\??mappedfontsize\s!scriptscript\endcsname\!!plusthree
+
+\permanent\tolerant\protected\def\mapfontsize[#class]#spacer[#from]#spacer[#to]%
+  {\ifarguments
+     % ignore
+   \or
+     % reset
+     \letcsname\??mappedfontsize#class:1\endcsname\undefined
+     \letcsname\??mappedfontsize#class:2\endcsname\undefined
+     \letcsname\??mappedfontsize#class:3\endcsname\undefined
+   \or
+     % unsupported
+   \or
+     % set
+     \defcsname
+       \??mappedfontsize
+       #class:%
+       \begincsname\??mappedfontsize#from\endcsname
+     \endcsname{#to}%
+   \fi}
+
+\permanent\tolerant\protected\def\checkedmapfontsize[#class]#spacer[#from]#spacer[#to]%
+  {\ifcsname\??mappedfontsize#class:\begincsname\??mappedfontsize#from\endcsname\endcsname
+     % keep (user) value
+   \else
+     \mapfontsize[#class][#from][#to]%
+   \fi}
+
+\permanent\tolerant\def\mappedfontsize#class#from%
+  {\begincsname
+     \??mappedfontsize
+     #class:%
+     \begincsname\??mappedfontsize#from\endcsname
+   \endcsname}
 
 \def\font_basics_set_mapped_fontsize#from%
-  {\ifcsname\??mappedfontsize\the\dimexpr#from\relax\endcsname
-     \lastnamedcs\else#from%
+  {\ifcsname\??mappedfontsize\fontclass:\fontface\endcsname
+    %\the\dimexpr\lastnamedcs\dimexpr#from\relax\relax
+    %\the\dimexpr\lastnamedcs\dimexpr\bodyfontsize\relax\relax
+     \the\dimexpr\lastnamedcs\dimexpr\normalizedbodyfontsize\relax\relax
+   \else % we could use default
+     #from%
    \fi}
 
 \installcorenamespace{fontbodyknown}
@@ -747,7 +795,7 @@
      \d_font_scaled_font_size\v_font_size_absolute\relax
      \d_font_scaled_font_size\currentfontbodysize\d_font_scaled_font_size % uses \somefontsize set by lua
    \or
-     % mo
+     % mo % mapped font size will go away
      \d_font_scaled_font_size\font_basics_set_mapped_fontsize\v_font_size_absolute
      \d_font_scaled_font_size\currentfontbodysize\d_font_scaled_font_size
    \or
@@ -1328,13 +1376,14 @@
    \ifcsname\??fontenvironments          \normalizedbodyfontsize#parameter\endcsname\lastnamedcs\orelse
    \ifcsname\??fontenvironments\s!default                       #parameter\endcsname\lastnamedcs\fi}
 
-% \permanent\def\bodyfontsizevariable#size#parameter%
-%   {\begincsname\??fontenvironments
-%      \ifcsname\??fontenvironments\fontclass#size#parameter\endcsname\fontclass#size#parameter\orelse
-%      \ifcsname\??fontenvironments\fontclass     #parameter\endcsname\fontclass     #parameter\orelse
-%      \ifcsname\??fontenvironments          #size#parameter\endcsname          #size#parameter\orelse
-%      \ifcsname\??fontenvironments\s!default     #parameter\endcsname\s!default     #parameter\fi
-%    \endcsname}
+\permanent\def\bodyfontsizevariable#size#parameter% used in s-fonts-show
+  {\begincsname\??fontenvironments
+     \ifcsname\??fontenvironments\fontclass#size#parameter\endcsname\fontclass#size#parameter\orelse
+     \ifcsname\??fontenvironments\fontclass     #parameter\endcsname\fontclass     #parameter\orelse
+     \ifcsname\??fontenvironments\v!all    #size#parameter\endcsname\v!all    #size#parameter\orelse
+     \ifcsname\??fontenvironments          #size#parameter\endcsname          #size#parameter\orelse
+     \ifcsname\??fontenvironments\s!default     #parameter\endcsname\s!default     #parameter\fi
+   \endcsname}
 
 \def\font_bodyfontvariable#parameter%
   {\ifcsname\??fontenvironments\fontclass\normalizedbodyfontsize#parameter\endcsname\lastnamedcs\orelse
@@ -1668,6 +1717,8 @@
 
 %D Here the rest concerns rl or lr so in this case it is not a size specifier but
 %D a directional one.
+
+%D no need for the: one two rest
 
 \protected\def\font_basics_define_body_font_nop_mm[#one#two#rest=#value]% local
   {%\ifcsname\s!mm\endcsname\else\font_basics_check_fontname_combination\s!mm{#one#two}{#rest}\fi
@@ -2365,6 +2416,8 @@
 %D range of text, script and scriptscript sizes, then we set the text fonts and the
 %D math families and finally we activate the default typeface and also set the font
 %D specific parameters assigned to \type {\everybodyfont}.
+
+% todo: per class
 
 \permanent\protected\def\textface        {\currentbodyfontdimension\s!text        }
 \permanent\protected\def\scriptface      {\currentbodyfontdimension\s!script      }

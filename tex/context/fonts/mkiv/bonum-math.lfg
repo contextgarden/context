@@ -2,8 +2,8 @@ local common  = fonts.goodies.load("common-math.lfg")
 local presets = common.mathematics.tweaks.presets
 
 local integral_variants = { bottomright = -0.20 }
-local integral_top      = { topright    =  0.05 }
-local integral_bottom   = { bottomright = -0.30 }
+local integral_top      = { topright    =  0 }
+local integral_bottom   = { bottomright = -0.10 } -- if too big it looks bad with triple integrals
 
 return {
     name = "bonum-math",
@@ -13,14 +13,14 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            NoLimitSupFactor                =    0,
-            NoLimitSubFactor                =  900,
+            -- NoLimitSupFactor                =    0,
+            -- NoLimitSubFactor                =  900,
             AccentTopShiftUp                =  -15,
             FlattenedAccentTopShiftUp       =  -15,
          -- AccentExtendMargin              =   50,
             AccentBaseDepth                 =   50,
-            RadicalDegreeBottomRaisePercent =   60,
-            RadicalRuleThickness            =   66, --   72 in font
+            -- RadicalDegreeBottomRaisePercent =   60,
+--             RadicalRuleThickness            =   66, --   72 in font
             DelimiterPercent                =   90,
             DelimiterShortfall              =  400,
             DisplayOperatorMinHeight        = 1900, -- 1250 in font
@@ -131,15 +131,19 @@ return {
                         [0x27EB]                = { topright = -0.1,  bottomright = -0.1  },
                         ["0x27EB.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
                         --
-                        [0x222B] = integral_variants, ["0x222B.variants.*"] = integral_variants, ["0x222B.parts.top"] = integral_top, ["0x222B.parts.bottom"] = integral_bottom,
-                        [0x222C] = integral_variants, ["0x222C.variants.*"] = integral_variants, ["0x222C.parts.top"] = integral_top, ["0x222C.parts.bottom"] = integral_bottom,
-                        [0x222D] = integral_variants, ["0x222D.variants.*"] = integral_variants, ["0x222D.parts.top"] = integral_top, ["0x222D.parts.bottom"] = integral_bottom,
-                        [0x222E] = integral_variants, ["0x222E.variants.*"] = integral_variants, ["0x222E.parts.top"] = integral_top, ["0x222E.parts.bottom"] = integral_bottom,
-                        [0x222F] = integral_variants, ["0x222F.variants.*"] = integral_variants, ["0x222F.parts.top"] = integral_top, ["0x222F.parts.bottom"] = integral_bottom,
-                        [0x2230] = integral_variants, ["0x2230.variants.*"] = integral_variants, ["0x2230.parts.top"] = integral_top, ["0x2230.parts.bottom"] = integral_bottom,
-                        [0x2231] = integral_variants, ["0x2231.variants.*"] = integral_variants, ["0x2231.parts.top"] = integral_top, ["0x2231.parts.bottom"] = integral_bottom,
-                        [0x2232] = integral_variants, ["0x2232.variants.*"] = integral_variants, ["0x2232.parts.top"] = integral_top, ["0x2232.parts.bottom"] = integral_bottom,
-                        [0x2233] = integral_variants, ["0x2233.variants.*"] = integral_variants, ["0x2233.parts.top"] = integral_top, ["0x2233.parts.bottom"] = integral_bottom,
+                        -- [0x222B] = integral_variants, ["0x222B.variants.*"] = integral_variants, ["0x222B.parts.top"] = integral_top, 
+                        ["0x222B.parts.bottom"] = { bottomright = -0.20 }, -- int
+                        ["0x222C.parts.bottom"] = { bottomright = -0.15 }, -- iint
+                        ["0x222D.parts.bottom"] = { bottomright = -0.10 }, -- iiint
+                        ["0x2A0C.parts.bottom"] = { bottomright = -0.05 }, -- iiiint
+                        -- [0x222C] = integral_variants, ["0x222C.variants.*"] = integral_variants, ["0x222C.parts.top"] = integral_top, 
+                        -- [0x222D] = integral_variants, ["0x222D.variants.*"] = integral_variants, ["0x222D.parts.top"] = integral_top, ["0x222D.parts.bottom"] = integral_bottom,
+                        -- [0x222E] = integral_variants, ["0x222E.variants.*"] = integral_variants, ["0x222E.parts.top"] = integral_top, ["0x222E.parts.bottom"] = integral_bottom,
+                        -- [0x222F] = integral_variants, ["0x222F.variants.*"] = integral_variants, ["0x222F.parts.top"] = integral_top, ["0x222F.parts.bottom"] = integral_bottom,
+                        -- [0x2230] = integral_variants, ["0x2230.variants.*"] = integral_variants, ["0x2230.parts.top"] = integral_top, ["0x2230.parts.bottom"] = integral_bottom,
+                        -- [0x2231] = integral_variants, ["0x2231.variants.*"] = integral_variants, ["0x2231.parts.top"] = integral_top, ["0x2231.parts.bottom"] = integral_bottom,
+                        -- [0x2232] = integral_variants, ["0x2232.variants.*"] = integral_variants, ["0x2232.parts.top"] = integral_top, ["0x2232.parts.bottom"] = integral_bottom,
+                        -- [0x2233] = integral_variants, ["0x2233.variants.*"] = integral_variants, ["0x2233.parts.top"] = integral_top, ["0x2233.parts.bottom"] = integral_bottom,
                     },
                 },
                 -- Accents are a mess. We migrate the extensibles from the combiners to the base accent
@@ -148,6 +152,30 @@ return {
                 {
                     tweak = "extendaccents",
                 },
+{
+    tweak   = "flattenaccents",
+    squeeze = 0.8,
+    height  = 0.9,
+    offset  = 0.1,
+},
+
+{
+    tweak   = "radicaldegreeanchors",
+    list = {
+        [0x221A]                = { location = "left", hfactor  = .1, vfactor  = .3 },
+        ["0x221A.variants.*"]   = { location = "left", hfactor  = .1, vfactor  = .625 },
+        ["0x221A.variants.1"]   = { location = "left", hfactor  = .1, vfactor  = .575 },
+     -- ["0x221A.variants.2"]   = { location = "left", hfactor  = .1, vfactor  = .575 },
+     -- ["0x221A.variants.3"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.variants.4"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221Aq.variants.6"]  = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.parts.top"]    = { location = "left", hfactor  = .1, vfactor  = 5.5 }, -- keep commented: bottom wins over top
+        ["0x221A.parts.bottom"] = { location = "left", hfactor  = .1, vfactor  = 1.15 },
+    }
+},
+
                 {
                     tweak = "fixaccents",
                 },

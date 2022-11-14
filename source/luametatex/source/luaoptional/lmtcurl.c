@@ -383,6 +383,7 @@ static int curllib_fetch(lua_State * L)
         if (lua_type(L,1) == LUA_TTABLE) {
             curl_instance *curl = curllib_state.curl_easy_init();
             if (curl)  {
+                int result; 
                 luaL_Buffer buffer;
                 luaL_buffinit(L, &buffer);
                 curllib_state.curl_easy_setopt(curl, curl_object_base + curl_option_writedata, &buffer);
@@ -422,7 +423,7 @@ static int curllib_fetch(lua_State * L)
                     }
                     lua_pop(L, 1); /* removes 'value' and keeps 'key' for next iteration */
                 }
-                int result = curllib_state.curl_easy_perform(curl);
+                result = curllib_state.curl_easy_perform(curl);
                 if (result) {
                     lua_pushboolean(L, 0);
                     lua_pushstring(L, curllib_state.curl_easy_strerror(result));

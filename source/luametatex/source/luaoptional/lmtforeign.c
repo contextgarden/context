@@ -918,7 +918,7 @@ static int foreignlib_function_call(lua_State *L)
         case foreign_type_ulong    : { unsigned long      r; foreign_state.ffi_call(cif, function->function, &r,   arguments); lua_pushinteger(L, (unsigned long)    r); break; }
         case foreign_type_longlong : { long long          r; foreign_state.ffi_call(cif, function->function, &r,   arguments); lua_pushinteger(L, (lua_Integer)      r); break; }
         case foreign_type_ulonglong: { unsigned long long r; foreign_state.ffi_call(cif, function->function, &r,   arguments); lua_pushinteger(L, (lua_Integer)      r); break; }
-        case foreign_type_float    : { float              r; foreign_state.ffi_call(cif, function->function, &r,   arguments); lua_pushnumber (L,                    r); break; }
+        case foreign_type_float    : { float              r; foreign_state.ffi_call(cif, function->function, &r,   arguments); lua_pushnumber (L, (lua_Number)       r); break; }
         case foreign_type_double   : { double             r; foreign_state.ffi_call(cif, function->function, &r,   arguments); lua_pushnumber (L,                    r); break; }
         case foreign_type_size_t   : { size_t             r; foreign_state.ffi_call(cif, function->function, &r,   arguments); lua_pushinteger(L,                    r); break; }
         case foreign_type_string   :

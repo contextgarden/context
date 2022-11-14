@@ -2010,6 +2010,20 @@
     \fi
 \to \everysetupformula
 
+%D Also new, handy for articles and manuals:
+
+% \starttext
+%     \showmakeup[line]
+%     \input tufte \startformula                e = mc^2 \stopformula
+%     \input tufte \startformula[bodyfont=10pt] e = mc^2 \stopformula
+%     \input tufte \startformula[bodyfont=24pt] e = mc^2 \stopformula
+%     \input tufte
+% \stoptext
+
+\prependtoks
+   \usebodyfontparameter\formulaparameter
+\to \everymathematics
+
 \protect \endinput
 
 % \abovedisplayshortskip0pt \belowdisplayshortskip0pt \abovedisplayskip0pt \belowdisplayskip0pt \forgetall

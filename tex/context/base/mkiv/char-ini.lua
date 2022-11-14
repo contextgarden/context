@@ -817,6 +817,19 @@ local is_symbol = allocate ( tohash {
     "sm", "sc", "sk", "so",
 } )
 
+local can_have_space = allocate ( tohash {
+    "lu", "ll", "lt", "lm", "lo", -- letters
+ -- "mn", "mc", "me",             -- marks
+    "nd", "nl", "no",             -- numbers
+    "ps", "pi",                   -- initial
+ -- "pe", "pf",                   -- final
+ -- "pc", "pd", "po",             -- punctuation
+    "sm", "sc", "sk", "so",       -- symbols
+ -- "zs", "zl", "zp",             -- separators
+ -- "cc", "cf", "cs", "co", "cn", -- others
+} )
+
+
 -- to be redone: store checked characters
 
 characters.is_character   = is_character
@@ -827,6 +840,7 @@ characters.is_mark        = is_mark
 characters.is_punctuation = is_punctuation
 characters.is_hyphenator  = is_hyphenator
 characters.is_symbol      = is_symbol
+characters.can_have_space = can_have_space
 
 local mti = function(t,k)
     if type(k) == "number" then
@@ -837,13 +851,14 @@ local mti = function(t,k)
     end
 end
 
-setmetatableindex(characters.is_character,  mti)
-setmetatableindex(characters.is_letter,     mti)
-setmetatableindex(characters.is_command,    mti)
-setmetatableindex(characters.is_spacing,    mti)
-setmetatableindex(characters.is_punctuation,mti)
-setmetatableindex(characters.is_hyphenator, mti)
-setmetatableindex(characters.is_symbol,     mti)
+setmetatableindex(characters.is_character,   mti)
+setmetatableindex(characters.is_letter,      mti)
+setmetatableindex(characters.is_command,     mti)
+setmetatableindex(characters.is_spacing,     mti)
+setmetatableindex(characters.is_punctuation, mti)
+setmetatableindex(characters.is_hyphenator,  mti)
+setmetatableindex(characters.is_symbol,      mti)
+setmetatableindex(characters.can_have_space, mti)
 
 -- todo: also define callers for the above
 

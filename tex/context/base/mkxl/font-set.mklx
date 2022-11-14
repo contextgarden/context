@@ -43,10 +43,14 @@
 %    \clf_resetnullfont % in luatex 0.70 this will also do the previous
 %    \glet\font_preloads_reset_nullfont\relax}
 
+% \def\font_preload_check_mode
+%   {\doifelsemode{lmmath}
+%      {\def\m_font_fallback_name{modern-designsize-virtual}}% this will stay
+%      {\def\m_font_fallback_name{modern-designsize}}%       % this might become 'modern'
+%    \glet\font_preload_check_mode\relax}
+
 \def\font_preload_check_mode
-  {\doifelsemode{lmmath}
-     {\def\m_font_fallback_name{modern-designsize-virtual}}% this will stay
-     {\def\m_font_fallback_name{modern-designsize}}%       % this might become 'modern'
+  {\def\m_font_fallback_name{modern}%
    \glet\font_preload_check_mode\relax}
 
 \def\font_preload_default_fonts

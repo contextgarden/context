@@ -284,6 +284,23 @@
    \c!leftquotation=\rightguillemot,
    \c!rightquotation=\leftguillemot,
    \c!date={\v!day,{.},\space,\v!month,\space,\v!year}]
+   
+\installlanguage
+  [\s!hy]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=\endash, % *sentences not confirmed
+   \c!rightsentence=\endash, 
+   \c!leftsubsentence=\endash,
+   \c!rightsubsentence=\endash,
+   \c!leftquote=\guilsingleleft,
+   \c!rightquote=\guilsingleright,
+   \c!leftquotation=\leftguillemot
+   \c!rightquotation=\rightguillemot
+   \c!date={\v!day,\space,\v!month,\space,\v!year}, % word
+ % \c!date={\v!day,{.},\v!month,{.},\v!year}, % numbers
+   \s!patterns=\s!hy,
+   \s!lefthyphenmin=2,
+   \s!righthyphenmin=2]
 
 \installlanguage [\s!polish]    [\s!pl]
 \installlanguage [\s!czech]     [\s!cs]
@@ -292,6 +309,10 @@
 \installlanguage [\s!slovenian] [\s!sl]
 \installlanguage [slovene]      [\s!sl] % both possible (mojca: still needed?)
 \installlanguage [\s!albanian]  [\s!sq]
+\installlanguage [\s!armenian]  [\s!hy]
+
+\installlanguage [\s!hye] [\s!hy] % Eastern Armenian
+\installlanguage [\s!hyw] [\s!hy] % Western Armenian
 
 % Cyrillic Languages
 

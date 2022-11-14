@@ -388,20 +388,20 @@ function constructors.scale(tfmdata,specification)
     --
     local mathsize    = tonumber(specification.mathsize) or 0
     local textsize    = tonumber(specification.textsize) or scaledpoints
-    local forcedsize  = tonumber(parameters.mathsize   ) or 0 -- can be set by the feature "mathsize"
+ -- local forcedsize  = tonumber(parameters.mathsize   ) or 0 -- can be set by the feature "mathsize"
     local extrafactor = tonumber(specification.factor  ) or 1
-    if (mathsize == 2 or forcedsize == 2) and parameters.scriptpercentage then
-        scaledpoints = parameters.scriptpercentage * textsize / 100
-    elseif (mathsize == 3 or forcedsize == 3) and parameters.scriptscriptpercentage then
-        scaledpoints = parameters.scriptscriptpercentage * textsize / 100
-    elseif forcedsize > 1000 then -- safeguard
-        scaledpoints = forcedsize
-    else
-        -- in context x and xx also use mathsize
-    end
+ --    if (mathsize == 2 or forcedsize == 2) and parameters.scriptpercentage then
+ --        scaledpoints = parameters.scriptpercentage * textsize / 100
+ --    elseif (mathsize == 3 or forcedsize == 3) and parameters.scriptscriptpercentage then
+ --        scaledpoints = parameters.scriptscriptpercentage * textsize / 100
+ --    elseif forcedsize > 1000 then -- safeguard
+ --        scaledpoints = forcedsize
+ --    else
+ --        -- in context x and xx also use mathsize
+ --    end
     targetparameters.mathsize    = mathsize    -- context specific
     targetparameters.textsize    = textsize    -- context specific
-    targetparameters.forcedsize  = forcedsize  -- context specific
+ -- targetparameters.forcedsize  = forcedsize  -- context specific
     targetparameters.extrafactor = extrafactor -- context specific
     --
     local addtounicode  = constructors.addtounicode

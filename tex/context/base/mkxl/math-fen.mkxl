@@ -54,6 +54,8 @@
    \c!height=\zeropoint,
    \c!depth=\zeropoint,
    \c!distance=\zerocount,
+   \c!topspace=\zeropoint,
+   \c!bottomspace=\zeropoint,
    \c!factor=\v!auto]
 
 \appendtoks
@@ -82,6 +84,17 @@
 %D $ a + \fenced[bar][factor=4] {\frac {b} {c}} + d $
 %D $ a + \fenced[bar]           {\frac {b} {c}} + d $
 %D \stoptyping
+
+% \startbuffer
+%     $ \left( \frac{1}{x}^{2} \right)$
+%     $ \left( x \right)$
+%     $ \left( x^2 \right)$
+%     $ \left( \frac{1}{x} \right)$
+%     $ \left( \frac{1}{x}^2 \right)$
+% \stopbuffer
+%
+% \getbuffer\blank
+% {\setupmathfence[topspace=-2pt,bottomspace=-1pt]\getbuffer\blank}
 
 % todo : class -> number
 
@@ -205,6 +218,10 @@
         \fi
      \s!source
         \numexpr\namedboxanchor{\mathfenceparameter#4}\relax
+     %
+     \s!top    \mathfenceparameter\c!topspace
+     \s!bottom \mathfenceparameter\c!bottomspace
+     %
      \math_fenced_trace
      \ifx\p_fence\v!none
        \Udelimiter\mathghostcode\fam\zerocount

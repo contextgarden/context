@@ -55,7 +55,7 @@
 
 */
 
-# define luametatex_format_fingerprint 674
+# define luametatex_format_fingerprint 675
 
 /* These end up in the string pool. */
 
@@ -71,8 +71,11 @@ extern int  tex_load_fmt_file          (void);
 extern int  tex_fatal_undump_error     (const char *s);
 extern void tex_initialize_dump_state  (void);
 
-# define   dump_items(f,p,item_size,nitems)       fwrite((void *) p, (size_t) item_size, (size_t) nitems, f)
-# define undump_items(f,p,item_size,nitems) { if (fread ((void *) p, (size_t) item_size, (size_t) nitems, f)) { } }
+//define   dump_items(f,p,item_size,nitems)       fwrite((void *) p, (size_t) item_size, (size_t) nitems, f)
+//define undump_items(f,p,item_size,nitems) { if (fread ((void *) p, (size_t) item_size, (size_t) nitems, f)) { } }
+
+# define   dump_items(f,p,item_size,nitems) fwrite((void *) p, (size_t) item_size, (size_t) nitems, f)
+# define undump_items(f,p,item_size,nitems) fread ((void *) p, (size_t) item_size, (size_t) nitems, f)
 
 # define   dump_things(f,base,len)   dump_items(f, (char *) &(base), sizeof (base), (int) (len))
 # define undump_things(f,base,len) undump_items(f, (char *) &(base), sizeof (base), (int) (len))

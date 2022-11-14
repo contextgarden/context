@@ -1594,8 +1594,7 @@ int tex_main_control(void)
             return cur_chr == dump_code;
         }
     }
-    /*tex not reached */
-    return 0;
+    return 0; /* unreachable */
 }
 
 /*tex
@@ -2242,9 +2241,9 @@ static void tex_aux_run_discretionary(void)
         case explicit_discretionary_code:
             /*tex |\-| */
             if (hyphenation_permitted(hyphenation_mode_par, explicit_hyphenation_mode)) {
+                int c = tex_get_pre_hyphen_char(cur_lang_par);
                 halfword d = tex_new_disc_node(explicit_discretionary_code);
                 tex_tail_append(d);
-                int c = tex_get_pre_hyphen_char(cur_lang_par);
                 if (c > 0) {
                     tex_set_disc_field(d, pre_break_code, tex_new_char_node(glyph_unset_subtype, cur_font_par, c, 1));
                 }
@@ -2259,10 +2258,10 @@ static void tex_aux_run_discretionary(void)
         case mathematics_discretionary_code:
             /*tex |-| */
             if (hyphenation_permitted(hyphenation_mode_par, automatic_hyphenation_mode)) {
+                halfword c = tex_get_pre_exhyphen_char(cur_lang_par);
                 halfword d = tex_new_disc_node(automatic_discretionary_code);
                 tex_tail_append(d);
                 /*tex As done in hyphenator: */
-                halfword c = tex_get_pre_exhyphen_char(cur_lang_par);
                 if (c <= 0) {
                     c = ex_hyphen_char_par;
                 }
@@ -4353,6 +4352,14 @@ static void tex_aux_set_font_property(void)
                 tex_set_efcode_in_font(fnt, chr, val);
                 break;
             }
+        case font_cf_code:
+            {
+                halfword fnt = tex_scan_font_identifier(NULL);
+                halfword chr = tex_scan_char_number(0);
+                halfword val = tex_scan_int(1, NULL);
+                tex_set_cfcode_in_font(fnt, chr, val);
+                break;
+            }
         case font_dimen_code:
             {
                 tex_set_font_dimen();
@@ -5958,7 +5965,7 @@ static void tex_aux_run_show_whatever(void)
                 int online = 0;
                 int max = 0;
                 while (1) {
-                    switch (tex_scan_character("ocdnaOCDNA", 0, 0, 0)) {
+                    switch (tex_scan_character("ocdnaOCDNA", 0, 1, 0)) {
                         case 'a': case 'A':
                             if (tex_scan_mandate_keyword("all", 1)) {
                                 max = 1;

@@ -765,7 +765,7 @@ static char *mplib_aux_run_script(MP mp, const char *str, size_t len, int n)
     return NULL;
 }
 
-void mplib_aux_run_internal(MP mp, int action, int n, int type, const char *name)
+static void mplib_aux_run_internal(MP mp, int action, int n, int type, const char *name)
 {
     if (mp->run_internal_id) {
         lua_State *L = (lua_State *) mp_userdata(mp);
@@ -2754,13 +2754,6 @@ static int mplib_getcallbackstate(lua_State *L)
     This assumes that the top of the stack is a table or nil already in the case.
 */
 
-# define mplib_set_color_objects(pq) \
-object_color_model = pq->color_model; \
-object_color_a = pq->color.a_val; \
-object_color_b = pq->color.b_val; \
-object_color_c = pq->color.c_val; \
-object_color_d = pq->color.d_val;
-
 static void mplib_aux_push_color(lua_State *L, struct mp_graphic_object *p)
 {
     if (p) {
@@ -2771,11 +2764,19 @@ static void mplib_aux_push_color(lua_State *L, struct mp_graphic_object *p)
             case mp_stroked_code:
                 {
                     mp_shape_object *h = (mp_shape_object *) p;
-                    mplib_set_color_objects(h);
+                    object_color_model = h->color_model; 
+                    object_color_a = h->color.a_val; 
+                    object_color_b = h->color.b_val; 
+                    object_color_c = h->color.c_val; 
+                    object_color_d = h->color.d_val;
                 }
                 break;
             default:
                 object_color_model = mp_no_model;
+                object_color_a = 0.0;
+                object_color_b = 0.0;
+                object_color_c = 0.0;
+                object_color_d = 0.0;
                 break;
         }
         switch (object_color_model) {

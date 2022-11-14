@@ -52,7 +52,7 @@ local report_otf          = logs.reporter("fonts","otf loading")
 local fonts               = fonts
 local otf                 = fonts.handlers.otf
 
-otf.version               = 3.121 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version               = 3.130 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                 = containers.define("fonts", "otl", otf.version, true)
 otf.svgcache              = containers.define("fonts", "svg", otf.version, true)
 otf.pngcache              = containers.define("fonts", "png", otf.version, true)
@@ -384,46 +384,33 @@ local function copytotfm(data,cache_id)
                 local m = d.math
                 if m then
                     --
-                    local italic   = m.italic
-                    local vitalic  = m.vitalic
-                    --
-                    local variants = m.hvariants
-                    local parts    = m.hparts
-                    if variants then
-                        local c = character
-                        for i=1,#variants do
-                         -- local un = variants[i].glyph
-                            local un = variants[i]
-                            c.next = un
-                            c = characters[un]
-                        end -- c is now last in chain
-                        c.hparts = parts
-                    elseif parts then
-                        character.hparts = parts
-                        italic = m.hitalic
-                    end
-                    --
-                    local variants = m.vvariants
-                    local parts    = m.vparts
-                    if variants then
-                        local c = character
-                        for i=1,#variants do
-                         -- local un = variants[i].glyph
-                            local un = variants[i]
-                            c.next = un
-                            c = characters[un]
-                        end -- c is now last in chain
-                        c.vparts = parts
-                    elseif parts then
-                        character.vparts = parts
-                    end
-                    --
+                    local italic = m.italic
                     if italic and italic ~= 0 then
                         character.italic = italic
                     end
                     --
-                    if vitalic and vitalic ~= 0 then
-                        character.vitalic = vitalic
+                    local variants         = m.variants
+                    local parts            = m.parts
+                    local partsitalic      = m.partsitalic
+                    local partsorientation = m.partsorientation
+                    if variants then
+                        local c = character
+                        for i=1,#variants do
+                            local un = variants[i]
+                            c.next = un
+                            c = characters[un]
+                        end -- c is now last in chain
+                        c.parts = parts
+                        c.partsorientation = partsorientation
+                        if partsitalic and partsitalic ~= 0 then
+                            c.partsitalic = partsitalic
+                        end
+                    elseif parts then
+                        character.parts = parts
+                        character.partsorientation = partsorientation
+                        if partsitalic and partsitalic ~= 0 then
+                            character.partsitalic = partsitalic
+                        end
                     end
                     --
                     local topanchor = m.topanchor or m.accent -- for now
@@ -678,25 +665,26 @@ local function read_from_otf(specification)
     return tfmdata
 end
 
-local function checkmathsize(tfmdata,mathsize)
-    local mathdata = tfmdata.shared.rawdata.metadata.math
-    local mathsize = tonumber(mathsize)
-    if mathdata then -- we cannot use mathparameters as luatex will complain
-        local parameters = tfmdata.parameters
-        parameters.scriptpercentage       = mathdata.ScriptPercentScaleDown
-        parameters.scriptscriptpercentage = mathdata.ScriptScriptPercentScaleDown
-        parameters.mathsize               = mathsize -- only when a number !
-    end
-end
-
-registerotffeature {
-    name         = "mathsize",
-    description  = "apply mathsize specified in the font",
-    initializers = {
-        base = checkmathsize,
-        node = checkmathsize,
-    }
-}
+-- local function checkmathsize(tfmdata,mathsize)
+--     local mathdata = tfmdata.shared.rawdata.metadata.math
+--     local mathsize = tonumber(mathsize)
+--     if mathdata then -- we cannot use mathparameters as luatex will complain
+--         local parameters = tfmdata.parameters
+--         parameters.scriptpercentage       = mathdata.ScriptPercentScaleDown
+--         parameters.scriptscriptpercentage = mathdata.ScriptScriptPercentScaleDown
+--         parameters.mathsize               = mathsize -- only when a number !
+--      -- print(mathdata.ScriptPercentScaleDown,mathdata.ScriptScriptPercentScaleDown)
+--     end
+-- end
+--
+-- registerotffeature {
+--     name         = "mathsize",
+--     description  = "apply mathsize specified in the font",
+--     initializers = {
+--         base = checkmathsize,
+--         node = checkmathsize,
+--     }
+-- }
 
 -- readers
 

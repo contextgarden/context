@@ -17,8 +17,8 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            NoLimitSupFactor                =    0,
-            NoLimitSubFactor                = 1000,
+            -- NoLimitSupFactor                =    0,
+            -- NoLimitSubFactor                = 1000,
             FractionRuleThickness           =   50,
             OverbarRuleThickness            =   50,
          -- RadicalRuleThickness            =   50,
@@ -28,8 +28,8 @@ return {
          -- AccentExtendMargin              =   50,
          -- AccentTopShiftUp                =    0,
             AccentBaseDepth                 =   10,
-            RadicalDegreeBottomRaisePercent =   60,
-            RadicalKernAfterDegree          = -425,
+            -- RadicalDegreeBottomRaisePercent =   60,
+            -- RadicalKernAfterDegree          = -425,
          -- RadicalRuleThickness            =   40, --   40 in font
             DelimiterPercent                =   90,
             DelimiterShortfall              =  400,
@@ -47,6 +47,16 @@ return {
                 {
                     tweak = "addmirrors",
                 },
+-- we have a weird middle integral piece
+{
+    tweak = "dimensions",
+    list  = {
+        [0x23AE] = { xoffset =  -.19 },
+    },
+},
+{
+    tweak = "fixintegrals",
+},
                 presets.scripttocalligraphic { },
                 presets.rsfstoscript         { rscale  = 0.97 },
                 presets.rsfsuprighttoscript  { rscale  = 0.97 },
@@ -126,11 +136,31 @@ return {
                     tweak = "copyaccents",
                 },
                 -- So far for the accents.
+{
+    tweak   = "radicaldegreeanchors",
+    list = {
+        [0x221A]                = { location = "left", hfactor  = .0, vfactor  = .625 },
+        ["0x221A.variants.*"]   = { location = "left", hfactor  = .0, vfactor  = .5 },
+        ["0x221A.variants.1"]   = { location = "left", hfactor  = .0, vfactor  = .55 },
+     -- ["0x221A.variants.2"]   = { location = "left", hfactor  = .1, vfactor  = .575 },
+     -- ["0x221A.variants.3"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.variants.4"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221Aq.variants.6"]  = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.parts.top"]    = { location = "left", hfactor  = .1, vfactor  = 5.5 }, -- keep commented: bottom wins over top
+        ["0x221A.parts.bottom"] = { location = "left", hfactor  = .0, vfactor  = 1.15 },
+    }
+},
+
+
+
                 {
                     tweak   = "fixprimes",
                     scale   = 0.9,
                  -- smaller = true,
                     factor  = 0.9,
+                    fake    = 0.8,
                 },
                 {
                     tweak = "checkspacing",
@@ -159,6 +189,7 @@ return {
                     variant = 1,
                 },
                 {
+                    -- needed for integrals (bad axis) and (less prominent) fences
                     tweak = "setoptions",
                     set   = { "ignorekerndimensions" }
                 },

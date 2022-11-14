@@ -36,7 +36,6 @@ local is_letter             = characters.is_letter
 local is_command            = characters.is_command
 local is_spacing            = characters.is_spacing
 local is_mark               = characters.is_mark
-local is_punctuation        = characters.is_punctuation
 
 local data                  = characters.data  if not data then return end
 local blocks                = characters.blocks

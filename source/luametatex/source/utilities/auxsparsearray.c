@@ -128,21 +128,23 @@ int sa_get_item_2(const sa_tree head, int n)
     return (int) head->dflt.ushort_value[n%2];
 }
 
-sa_tree_item sa_get_item_4(const sa_tree head, int n)
+int sa_get_item_4(const sa_tree head, int n, sa_tree_item *v)
 {
     if (head->tree) {
         int h = LMT_SA_H_PART(n);
         if (head->tree[h]) {
             int m = LMT_SA_M_PART(n);
             if (head->tree[h][m]) {
-                return head->tree[h][m][LMT_SA_L_PART(n)];
+                *v = head->tree[h][m][LMT_SA_L_PART(n)];
+                return 1;
             }
         }
     }
-    return head->dflt;
+    *v = head->dflt;
+    return 0;
 }
 
-sa_tree_item sa_get_item_8(const sa_tree head, int n, sa_tree_item *v2)
+int sa_get_item_8(const sa_tree head, int n, sa_tree_item *v1, sa_tree_item *v2)
 {
     if (head->tree != NULL) {
         int h = LMT_SA_H_PART(n);
@@ -150,13 +152,15 @@ sa_tree_item sa_get_item_8(const sa_tree head, int n, sa_tree_item *v2)
             int m = LMT_SA_M_PART(n);
             if (head->tree[h][m]) {
                 int l = 2*LMT_SA_L_PART(n);
+                *v1 = head->tree[h][m][l];
                 *v2 = head->tree[h][m][l+1];
-                return head->tree[h][m][l];
+                return 1;
             }
         }
     }
+    *v1 = head->dflt;
     *v2 = head->dflt;
-    return head->dflt;
+    return 0;
 }
 
 void sa_set_item_1(sa_tree head, int n, int v, int gl)

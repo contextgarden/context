@@ -161,13 +161,12 @@ void tex_compact_tokens(void)
 {
     int nc = 0;
  // memoryword *target = allocate_array(sizeof(memoryword), (size_t) token_memory_state.tokens_data.allocated, 0);
-    memoryword *target = aux_allocate_clear_array(sizeof(memoryword), (size_t) lmt_token_memory_state.tokens_data.allocated, 0);
-    halfword *mapper = aux_allocate_array(sizeof(halfword), (size_t) lmt_token_memory_state.tokens_data.allocated, 0);
+    memoryword *target = aux_allocate_clear_array(sizeof(memoryword), lmt_token_memory_state.tokens_data.allocated, 0);
+    halfword *mapper = aux_allocate_array(sizeof(halfword), lmt_token_memory_state.tokens_data.allocated, 0);
     int nofluacmds = 0;
     if (target && mapper) {
-     // memset((void *) target, 0, ((size_t) token_memory_state.tokens_data.allocated) * sizeof(memoryword));
-        memset((void *) mapper, -1, ((size_t) lmt_token_memory_state.tokens_data.allocated) * sizeof(halfword));
         memoryword *tokens = lmt_token_memory_state.tokens;
+        memset((void *) mapper, -1, ((size_t) lmt_token_memory_state.tokens_data.allocated) * sizeof(halfword));
         /* also reset available */
         for (int cs = 0; cs < (eqtb_size + lmt_hash_state.hash_data.ptr + 1); cs++) {
             switch (eq_type(cs)) {
@@ -579,8 +578,6 @@ static const char *tex_aux_special_cmd_string(halfword cmd, halfword chr, const 
     }
 }
 
-halfword nn = 0;
-
 halfword tex_show_token_list(halfword p, halfword q, int l, int asis)
 {
     if (p) {
@@ -794,7 +791,6 @@ halfword tex_scan_character(const char *s, int left_brace, int skip_space, int s
                 } else {
                     goto DONE;
                 }
-                break;
             case relax_cmd:
                 if (skip_relax) {
                     break;
@@ -3082,6 +3078,13 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
         /*tex We need to go beyond the reference. */
         int p = token_link(pp);
         if (p) {
+            int e = escape_char_par;  /*tex The serialization of the escape, normally a backlash. */
+            int n = '0';              /*tex The character after |#|, so |#0| upto |#9| */
+            int min = 0;
+            int max = lmt_token_memory_state.tokens_data.top;
+            int skip = 0;
+            int tail = p; 
+            int count = 0;
             if (lmt_token_state.bufmax > default_buffer_size) {
                 /* Let's start fresh and small. */
                 aux_deallocate_array(lmt_token_state.buffer);
@@ -3093,13 +3096,6 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
                 lmt_token_state.bufmax = default_buffer_size;
             }
             lmt_token_state.bufloc = 0;
-            int e = escape_char_par;  /*tex The serialization of the escape, normally a backlash. */
-            int n = '0';              /*tex The character after |#|, so |#0| upto |#9| */
-            int min = 0;
-            int max = lmt_token_memory_state.tokens_data.top;
-            int skip = 0;
-            int tail = p; 
-            int count = 0;
             if (skippreamble) {
                 skip = get_token_parameters(pp);
             }

@@ -67,7 +67,9 @@
      \ifchkdim\mathoperatorparameter\c!size\or
        \s!depth \mathoperatorparameter\c!size
        \s!height\mathoperatorparameter\c!size
-       \s!axis
+       \s!axis   % variants
+       \s!noaxis % extensibles (assumes also axis)
+       \s!exact  % make sure we don't overshoot when there are no variants and extensibles
      \orelse\ifcstok{\mathoperatorparameter\c!size}\v!auto
        \s!auto
      \fi
@@ -118,9 +120,10 @@
 
 \setupmathematics[\c!integral=nolimits]
 
-\definemathoperator [integral]   [integrals]  [\c!left="222B] % these might go unless we decide
-\definemathoperator [iintegral]  [integrals]  [\c!left="222C] % to have verbose parents but who
-\definemathoperator [iiintegral] [integrals]  [\c!left="222D] % will use them
+\definemathoperator [integral]    [integrals]  [\c!left="222B] % these might go unless we decide
+\definemathoperator [iintegral]   [integrals]  [\c!left="222C] % to have verbose parents but who
+\definemathoperator [iiintegral]  [integrals]  [\c!left="222D] % will use them
+\definemathoperator [iiiintegral] [integrals]  [\c!left="2A0C]
 
 \definemathoperator [int]        [integrals]  [\c!left="222B] %                          INTEGRAL
 \definemathoperator [iint]       [integrals]  [\c!left="222C] %                DOUBLE    INTEGRAL

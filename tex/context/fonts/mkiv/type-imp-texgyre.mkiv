@@ -1,4 +1,4 @@
-%D \module
+ %D \module
 %D   [       file=type-imp-texgyre,
 %D        version=2007.07.30,
 %D          title=\CONTEXT\ Typescript Macros,
@@ -163,35 +163,59 @@
 
     % caps: \definetypeface [pagella] [rm] [serif] [pagella-caps] [default]
 
-    \starttypescript [times,termes]
+    \starttypescript [termes,termes-nt,times]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [helvetica]      [\s!default] [\s!rscale=0.9]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.05]
+    \stoptypescript
+    \starttypescript [termes,times]
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [termes]         [\s!default]
         \quittypescriptscanning
     \stoptypescript
+    \starttypescript [termes-nt]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [termes-nt]      [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
 
-    \starttypescript [palatino,pagella]
+    \starttypescript [pagella,pagella-nt,palatino]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default] [\s!rscale=1.075]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.075]
+    \stoptypescript
+    \starttypescript [pagella,palatino]
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [pagella]        [\s!default]
         \quittypescriptscanning
     \stoptypescript
-
-    \starttypescript [schoolbook,schola]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
-        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default] [\s!rscale=1.1]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.1]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [schola]         [\s!default]
+    \starttypescript [pagella-nt]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [pagella-nt]     [\s!default]
         \quittypescriptscanning
     \stoptypescript
 
-    \starttypescript [bookman,bonum]
+    \starttypescript [schola,schola-nt,schoolbook]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default] [\s!rscale=1.1]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.1]
+    \stoptypescript
+    \starttypescript [schola,schoolbook]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [schola]         [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+    \starttypescript [schola-nt]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [schola-nt]      [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [bonum,bonum-nt,bookman]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default] [\s!rscale=1.1]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.1]
+    \stoptypescript
+    \starttypescript [bookman,bonum]
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [bonum]          [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+    \starttypescript [bonum-nt]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [bonum-nt]       [\s!default]
         \quittypescriptscanning
     \stoptypescript
 
@@ -240,9 +264,9 @@
 
 \startmode[txmath]
 
-    \starttypescriptcollection[texgyre-math-times]
+    \starttypescriptcollection[texgyre-math-termes]
 
-        \starttypescript [\s!math][times,termes][\s!all]
+        \starttypescript [\s!math][termes,times][\s!all]
             \loadfontgoodies[tx-math]
             \definefontsynonym[\s!MathRoman][txmath@tx-math]
           % \definefontsynonym[\s!MathRomanBold][MathRoman]
@@ -254,13 +278,19 @@
 
 \startnotmode[txmath]
 
-    \starttypescriptcollection[texgyre-math-times]
+    \starttypescriptcollection[texgyre-math-termes]
 
-        \starttypescript [\s!math][times,termes][\s!all]
-          % \loadfontgoodies[texgyre]
-          % \definefontsynonym[\s!MathRoman][file:texgyre-termes-math-regular.otf][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=texgyre]
+        \starttypescript [\s!math][termes,termes-nt,times][\s!all]
+            \checkedmapfontsize[\typescripttwo][\s!script]      [.74]
+            \checkedmapfontsize[\typescripttwo][\s!scriptscript][.55]
+        \stoptypescript
+        \starttypescript [\s!math][termes,times][\s!all]
             \definefontsynonym[\s!MathRoman]    [file:texgyretermes-math.otf][\s!features={\s!math\mathsizesuffix,termes:mathextra,mathextra},\s!goodies=termes-math]
             \definefontsynonym[\s!MathRomanBold][file:texgyretermes-math.otf][\s!features={\s!math\mathsizesuffix,termes:mathextra,termes-math-bold,mathextra},\s!goodies=termes-math]
+        \stoptypescript
+        \starttypescript [\s!math][termes-nt][\s!all]
+            \definefontsynonym[\s!MathRoman]    [file:texgyretermes-math.otf][\s!features={\s!math\mathsizesuffix,termes:mathextra,mathextra}]
+            \definefontsynonym[\s!MathRomanBold][file:texgyretermes-math.otf][\s!features={\s!math\mathsizesuffix,termes:mathextra,termes-math-bold,mathextra}]
         \stoptypescript
 
     \stoptypescriptcollection
@@ -285,11 +315,17 @@
 
     \starttypescriptcollection[texgyre-math-pagella]
 
-        \starttypescript [\s!math][palatino,pagella][\s!all]
-          % \loadfontgoodies[texgyre]
-          % \definefontsynonym[\s!MathRoman][file:texgyre-pagella-math-regular.otf][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=texgyre]
+        \starttypescript [\s!math][pagella,pagella-nt,palatino]% [\s!all]
+            \checkedmapfontsize[\typescripttwo][\s!script]      [.74]
+            \checkedmapfontsize[\typescripttwo][\s!scriptscript][.55]
+        \stoptypescript
+        \starttypescript [\s!math][pagella,palatino][\s!all]
             \definefontsynonym[\s!MathRoman]    [file:texgyrepagella-math.otf][\s!features={\s!math\mathsizesuffix,pagella:mathextra,mathextra},\s!goodies=pagella-math]
             \definefontsynonym[\s!MathRomanBold][file:texgyrepagella-math.otf][\s!features={\s!math\mathsizesuffix,pagella:mathextra,pagella-math-bold,mathextra},\s!goodies=pagella-math]
+        \stoptypescript
+        \starttypescript [\s!math][pagella-nt][\s!all]
+            \definefontsynonym[\s!MathRoman]    [file:texgyrepagella-math.otf][\s!features={\s!math\mathsizesuffix,pagella:mathextra,mathextra}]
+            \definefontsynonym[\s!MathRomanBold][file:texgyrepagella-math.otf][\s!features={\s!math\mathsizesuffix,pagella:mathextra,pagella-math-bold,mathextra}]
         \stoptypescript
 
     \stoptypescriptcollection
@@ -298,22 +334,34 @@
 
 \starttypescriptcollection[texgyre-math-bonum]
 
-    \starttypescript [\s!math][bookman,bonum][\s!all]
-      % \loadfontgoodies[texgyre]
-      % \definefontsynonym[\s!MathRoman][file:texgyre-bonum-math-regular.otf][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=texgyre]
+    \starttypescript [\s!math][bonum,bonum-nt,bookman][\s!all]
+        \checkedmapfontsize[\typescripttwo][\s!script]      [.77]
+        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.60]
+    \stoptypescript
+    \starttypescript [\s!math][bonum,bookman][\s!all]
         \definefontsynonym[\s!MathRoman]    [file:texgyrebonum-math.otf][\s!features={\s!math\mathsizesuffix,bonum:mathextra,mathextra},\s!goodies=bonum-math]
         \definefontsynonym[\s!MathRomanBold][file:texgyrebonum-math.otf][\s!features={\s!math\mathsizesuffix,bonum:mathextra,bonum-math-bold,mathextra},\s!goodies=bonum-math]
+    \stoptypescript
+    \starttypescript [\s!math][bonum-nt][\s!all]
+        \definefontsynonym[\s!MathRoman]    [file:texgyrebonum-math.otf][\s!features={\s!math\mathsizesuffix,bonum:mathextra,mathextra}]
+        \definefontsynonym[\s!MathRomanBold][file:texgyrebonum-math.otf][\s!features={\s!math\mathsizesuffix,bonum:mathextra,bonum-math-bold,mathextra}]
     \stoptypescript
 
 \stoptypescriptcollection
 
 \starttypescriptcollection[texgyre-math-schola]
 
-    \starttypescript [\s!math][schoolbook,schola][\s!all]
-      % \loadfontgoodies[texgyre]
-      % \definefontsynonym[\s!MathRoman][file:texgyre-schola-math-regular.otf][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=texgyre]
+    \starttypescript [\s!math][schola,schola-nt,schoolbook][\s!all]
+        \checkedmapfontsize[\typescripttwo][\s!script]      [.77]
+        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.60]
+    \stoptypescript
+    \starttypescript [\s!math][schola,schoolbook][\s!all]
         \definefontsynonym[\s!MathRoman]    [file:texgyreschola-math.otf][\s!features={\s!math\mathsizesuffix,schola:mathextra,mathextra},\s!goodies=schola-math]
         \definefontsynonym[\s!MathRomanBold][file:texgyreschola-math.otf][\s!features={\s!math\mathsizesuffix,schola:mathextra,schola-math-bold,mathextra},\s!goodies=schola-math]
+    \stoptypescript
+    \starttypescript [\s!math][schola-nt][\s!all]
+        \definefontsynonym[\s!MathRoman]    [file:texgyreschola-math.otf][\s!features={\s!math\mathsizesuffix,schola:mathextra,mathextra}]
+        \definefontsynonym[\s!MathRomanBold][file:texgyreschola-math.otf][\s!features={\s!math\mathsizesuffix,schola:mathextra,schola-math-bold,mathextra}]
     \stoptypescript
 
 \stoptypescriptcollection

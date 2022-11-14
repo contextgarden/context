@@ -5,9 +5,9 @@ local common  = fonts.goodies.load("common-math.lfg")
 local presets = common.mathematics.tweaks.presets
 
 return {
-    name = "erewhon-math",
+    name = "xcharter-math",
     version = "1.00",
-    comment = "Goodies that complement erewhon math.",
+    comment = "Goodies that complement xcharter math.",
     author = "Hans Hagen & Mikael Sundqvist",
     copyright = "ConTeXt development team",
     mathematics = {
@@ -15,22 +15,20 @@ return {
             -- NoLimitSupFactor                =    0,
             -- NoLimitSubFactor                =  900,
             -- AccentBaseHeight                =    0,
-            AccentBaseDepth                 =   60,
+            -- AccentBaseDepth                 =   60,
             -- RadicalDegreeBottomRaisePercent =   55,
             -- RadicalKernAfterDegree          = -600,
             -- RadicalRuleThickness            =   45, -- 55 in font
-            DelimiterPercent                =   90,
-            DelimiterShortfall              =  400,
+            -- DelimiterPercent                =   90,
+            -- DelimiterShortfall              =  400,
          -- DisplayOperatorMinHeight        = 1800, -- 1300 in font (one size)
         },
         tweaks = {
             aftercopying = {
                 {
                     tweak   = "fixprimes",
-                    -- smaller = true, -- replace multiples
-                    factor  = 0.9,
-                    scale   = 1.0,
-                    fake    = 0.85, -- replace multiples with this width proportion
+                    factor  = 0.8,
+                    scale   = 1,
                 },
                 {
                     tweak = "addmirrors",
@@ -38,11 +36,11 @@ return {
 {
     tweak = "dimensions",
     list  = {
-        ["0x222B.variants.*"] = { axis = .15 },
+        -- ["0x222B.variants.*"] = { axis = 0.15 },
     },
 },
 {
-    tweak = "fixintegrals",
+    -- tweak = "fixintegrals",
 },
                 presets.scripttocalligraphic { },
                 presets.rsfstoscript         { },
@@ -111,7 +109,7 @@ return {
                 },
                 {
                     tweak = "setoptions",
---                     set   = { "ignorekerndimensions" }
+                    -- set   = { "ignorekerndimensions" }
                 },
                 -- this is the mkiv section
 --                 {

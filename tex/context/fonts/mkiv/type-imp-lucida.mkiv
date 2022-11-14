@@ -21,7 +21,7 @@
 
 \starttypescriptcollection[lucida-opentype]
 
-    \starttypescript [lucida,lucidaot,lucidadk]
+    \starttypescript [lucida,lucidaot,lucidadk,lucidaot-nt,lucida-nt]
         \loadfontgoodies[lucida-opentype-math]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif]       [\typescriptone] [\s!default] [\s!features=\s!default]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]        [\typescriptone] [\s!default] [\s!features=\s!default]
@@ -29,11 +29,10 @@
         \definetypeface [\typescriptone] [\s!hw] [\s!handwriting] [\typescriptone] [\s!default] [\s!features=\s!default]
         \definetypeface [\typescriptone] [\s!cg] [\s!calligraphy] [\typescriptone] [\s!default] [\s!features=\s!default]
         \definetypeface [\typescriptone] [\s!mm] [\s!math]        [\typescriptone] [\s!default]
-        % no longer: \setupmathrendering[\typescriptone][\s!it=\s!italic]
         \quittypescriptscanning
     \stoptypescript
 
-    \starttypescript [\s!serif] [lucida,lucidaot,lucidadk]
+    \starttypescript [\s!serif] [lucida,lucidaot,lucidadk,lucidaot-nt,lucida-nt]
         \definefontsynonym [\s!Serif]            [\s!file:LucidaBrightOT.otf]
         \definefontsynonym [\s!SerifBold]        [\s!file:LucidaBrightOT-Demi.otf]
         \definefontsynonym [\s!SerifItalic]      [\s!file:LucidaBrightOT-Italic.otf]
@@ -42,7 +41,7 @@
         \definefontsynonym [\s!SerifBoldSlanted] [\s!SerifBoldItalic]
     \stoptypescript
 
-    \starttypescript [\s!sans] [lucida,lucidaot,lucidadk]
+    \starttypescript [\s!sans] [lucida,lucidaot,lucidadk,lucidaot-nt,lucida-nt]
         \definefontsynonym [\s!Sans]            [\s!file:LucidaSansOT.otf]
         \definefontsynonym [\s!SansBold]        [\s!file:LucidaSansOT-Demi.otf]
         \definefontsynonym [\s!SansItalic]      [\s!file:LucidaSansOT-Italic.otf]
@@ -51,7 +50,7 @@
         \definefontsynonym [\s!SansBoldSlanted] [\s!SansBoldItalic]
     \stoptypescript
 
-    \starttypescript [\s!mono] [lucida,lucidaot]
+    \starttypescript [\s!mono] [lucida,lucidaot,lucidaot-nt,lucida-nt]
         \definefontsynonym [\s!Mono]            [\s!file:LucidaSansTypewriterOT.otf]
         \definefontsynonym [\s!MonoBold]        [\s!file:LucidaSansTypewriterOT-Bold.otf]
         \definefontsynonym [\s!MonoItalic]      [\s!file:LucidaSansTypewriterOT-Oblique.otf]
@@ -60,7 +59,7 @@
         \definefontsynonym [\s!MonoBoldSlanted] [\s!MonoBoldItalic]
     \stoptypescript
 
-    \starttypescript [\s!mono] [lucidadk]
+    \starttypescript [\s!mono] [lucidadk,lucidaot-nt,lucida-nt]
         \definefontsynonym [\s!Mono]            [\s!file:LucidaGrandeMonoDK.otf]
         \definefontsynonym [\s!MonoBold]        [\s!file:LucidaGrandeMonoDK-Bold.otf]
         \definefontsynonym [\s!MonoItalic]      [\s!file:LucidaGrandeMonoDK-Oblique.otf]
@@ -69,16 +68,26 @@
         \definefontsynonym [\s!MonoBoldSlanted] [\s!MonoBoldItalic]
     \stoptypescript
 
-    \starttypescript [\s!math] [lucida,lucidaot,lucidadk]
-        \definefontsynonym [\s!MathRoman]     [\s!file:LucidaBrightMathOT.otf]      [\s!features={\s!math\mathsizesuffix,mathlucida,mathextra},\s!goodies=lucida-opentype-math]
-        \definefontsynonym [\s!MathRomanBold] [\s!file:LucidaBrightMathOT-Demi.otf] [\s!features={\s!math\mathsizesuffix,mathlucida,mathextra},\s!goodies=lucida-opentype-math]
+    \starttypescript [\s!math] [lucida,lucida-nt,lucidaot,lucidaot-nt,lucidadk]
+        \checkedmapfontsize[\typescripttwo][\s!script]      [.70]
+        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.50]
     \stoptypescript
 
-    \starttypescript [\s!handwriting] [lucida,lucidaot,lucidadk]
+    \starttypescript [\s!math] [lucida,lucidaot,lucidadk]
+        \definefontsynonym [\s!MathRoman]     [\s!file:LucidaBrightMathOT.otf]      [\s!features={\s!math\mathsizesuffix,mathlucida,mathextra},\s!goodies=lucida-math]
+        \definefontsynonym [\s!MathRomanBold] [\s!file:LucidaBrightMathOT-Demi.otf] [\s!features={\s!math\mathsizesuffix,mathlucida,mathextra},\s!goodies=lucida-math]
+    \stoptypescript
+
+    \starttypescript [\s!math] [lucidaot-nt,lucida-nt]
+        \definefontsynonym [\s!MathRoman]     [\s!file:LucidaBrightMathOT.otf]      [\s!features={\s!math\mathsizesuffix,mathlucida,mathextra}]
+        \definefontsynonym [\s!MathRomanBold] [\s!file:LucidaBrightMathOT-Demi.otf] [\s!features={\s!math\mathsizesuffix,mathlucida,mathextra}]
+    \stoptypescript
+
+    \starttypescript [\s!handwriting] [lucida,lucidaot,lucidadk,lucidaot-nt,lucida-nt]
         \definefontsynonym [\s!Handwriting] [\s!file:LucidaHandwritingOT.otf]
     \stoptypescript
 
-    \starttypescript [\s!calligraphy] [lucida,lucidaot,lucidadk]
+    \starttypescript [\s!calligraphy] [lucida,lucidaot,lucidadk,lucidaot-nt,lucida-nt]
         \definefontsynonym [\s!Calligraphy] [\s!file:LucidaCalligraphyOT.otf]
     \stoptypescript
 

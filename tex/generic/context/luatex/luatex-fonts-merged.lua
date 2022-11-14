@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2022-10-22 11:20
+-- merge date  : 2022-11-14 22:54
 
 do -- begin closure to overcome local limits and interference
 
@@ -9406,19 +9406,9 @@ function constructors.scale(tfmdata,specification)
  target.unscaled=tfmdata
  local mathsize=tonumber(specification.mathsize) or 0
  local textsize=tonumber(specification.textsize) or scaledpoints
- local forcedsize=tonumber(parameters.mathsize   ) or 0 
  local extrafactor=tonumber(specification.factor  ) or 1
- if (mathsize==2 or forcedsize==2) and parameters.scriptpercentage then
-  scaledpoints=parameters.scriptpercentage*textsize/100
- elseif (mathsize==3 or forcedsize==3) and parameters.scriptscriptpercentage then
-  scaledpoints=parameters.scriptscriptpercentage*textsize/100
- elseif forcedsize>1000 then 
-  scaledpoints=forcedsize
- else
- end
  targetparameters.mathsize=mathsize 
- targetparameters.textsize=textsize 
- targetparameters.forcedsize=forcedsize  
+ targetparameters.textsize=textsize
  targetparameters.extrafactor=extrafactor
  local addtounicode=constructors.addtounicode
  local tounicode=fonts.mappings.tounicode
@@ -15659,8 +15649,11 @@ local function applyaxis(glyph,shape,deltas,dowidth)
           end
           if found==last then
            lastindex=currentindex
-           break;
+           break
           elseif found>last then
+while lastindex>1 and dpoints[lastindex]>last do
+ lastindex=lastindex-1
+end
            break
           end
          end
@@ -15668,7 +15661,7 @@ local function applyaxis(glyph,shape,deltas,dowidth)
         local function find(i)
          local prv=lastindex
          for j=firstindex,lastindex do
-          local nxt=dpoints[j]
+          local nxt=dpoints[j] 
           if nxt==i then
            return false,j,false
           elseif nxt>i then
@@ -18602,22 +18595,18 @@ do
    report("used %s lookups: % t",what,sortedkeys(usedlookups))
   end
   local reported={}
-  local function report_issue(i,what,sequence,kind)
-   local name=sequence.name
-   if not reported[name] then
-    report("rule %i in %s lookup %a has %s lookups",i,what,name,kind)
-    reported[name]=true
-   end
+  local function report_issue(i,what,step,kind)
+    report("rule %i in step %i of %s has %s lookups",i,step,what,kind)
   end
-   for i=1,#allsteps do    
-    local step=allsteps[i] 
+   for s=1,#allsteps do    
+    local step=allsteps[s] 
     local rules=step.rules
     if rules then
      for i=1,#rules do
       local rule=rules[i]
       local rlookups=rule.lookups
       if not rlookups then
-       report_issue(i,what,sequence,"no")
+       report_issue(i,what,s,"no")
       elseif not next(rlookups) then
        rule.lookups=nil
       else
@@ -18653,12 +18642,12 @@ do
               sublookupcheck[lookupid]=1
               h=nofsublookups
              else
-              report_issue(i,what,sequence,"missing")
+              report_issue(i,what,s,"missing")
               rule.lookups=nil
               break
              end
             else
-             report_issue(i,what,sequence,"bad")
+             report_issue(i,what,s,"bad")
              rule.lookups=nil
              break
             end
@@ -19183,7 +19172,7 @@ local function readmathvariants(f,fontdata,offset)
  local vconstruction=readcardinaltable(f,vnofglyphs,ushort)
  local hconstruction=readcardinaltable(f,hnofglyphs,ushort)
  fontdata.mathconstants.MinConnectorOverlap=minoverlap
- local function get(offset,coverage,nofglyphs,construction,kvariants,kparts,kitalic)
+ local function get(offset,coverage,nofglyphs,construction,kvariants,kparts,kitalic,korientation,orientation)
   if coverage~=0 and nofglyphs>0 then
    local coverage=readcoverage(f,offset+coverage,true)
    for i=1,nofglyphs do
@@ -19246,13 +19235,21 @@ local function readmathvariants(f,fontdata,offset)
       if italic and italic~=0 then
        math[kitalic]=italic
       end
+      if orientation then
+       math[korientation]=orientation
+      end
      end
     end
    end
   end
  end
- get(offset,vcoverage,vnofglyphs,vconstruction,"vvariants","vparts","vitalic")
- get(offset,hcoverage,hnofglyphs,hconstruction,"hvariants","hparts","hitalic")
+ if CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 then
+  get(offset,hcoverage,hnofglyphs,hconstruction,"variants","parts","partsitalic","partsorientation","horizontal")
+  get(offset,vcoverage,vnofglyphs,vconstruction,"variants","parts","partsitalic","partsorientation","vertical")
+ else
+  get(offset,vcoverage,vnofglyphs,vconstruction,"vvariants","vparts","vitalic")
+  get(offset,hcoverage,hnofglyphs,hconstruction,"hvariants","hparts","hitalic")
+ end
 end
 function readers.math(f,fontdata,specification)
  local tableoffset=gotodatatable(f,fontdata,"math",specification.glyphs)
@@ -21294,7 +21291,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.121 
+otf.version=3.130 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
@@ -21777,24 +21774,6 @@ local function read_from_otf(specification)
  end
  return tfmdata
 end
-local function checkmathsize(tfmdata,mathsize)
- local mathdata=tfmdata.shared.rawdata.metadata.math
- local mathsize=tonumber(mathsize)
- if mathdata then 
-  local parameters=tfmdata.parameters
-  parameters.scriptpercentage=mathdata.ScriptPercentScaleDown
-  parameters.scriptscriptpercentage=mathdata.ScriptScriptPercentScaleDown
-  parameters.mathsize=mathsize 
- end
-end
-registerotffeature {
- name="mathsize",
- description="apply mathsize specified in the font",
- initializers={
-  base=checkmathsize,
-  node=checkmathsize,
- }
-}
 function otf.collectlookups(rawdata,kind,script,language)
  if not kind then
   return
@@ -24786,24 +24765,40 @@ local function unifyglyphs(fontdata,usenames)
    descriptions[unicode]=glyph
   end
  end
- for index=1,nofglyphs do
-  local math=glyphs[index].math
-  if math then
-   local list=math.vparts
-   if list then
-    for i=1,#list do local l=list[i] l.glyph=indices[l.glyph] end
+ if LUATEXENGINE=="luametatex" then
+  for index=1,nofglyphs do
+   local math=glyphs[index].math
+   if math then
+    local list=math.parts
+    if list then
+     for i=1,#list do local l=list[i] l.glyph=indices[l.glyph] end
+    end
+    local list=math.variants
+    if list then
+     for i=1,#list do list[i]=indices[list[i]] end
+    end
    end
-   local list=math.hparts
-   if list then
-    for i=1,#list do local l=list[i] l.glyph=indices[l.glyph] end
-   end
-   local list=math.vvariants
-   if list then
-    for i=1,#list do list[i]=indices[list[i]] end
-   end
-   local list=math.hvariants
-   if list then
-    for i=1,#list do list[i]=indices[list[i]] end
+  end
+ else
+  for index=1,nofglyphs do
+   local math=glyphs[index].math
+   if math then
+    local list=math.vparts
+    if list then
+     for i=1,#list do local l=list[i] l.glyph=indices[l.glyph] end
+    end
+    local list=math.hparts
+    if list then
+     for i=1,#list do local l=list[i] l.glyph=indices[l.glyph] end
+    end
+    local list=math.vvariants
+    if list then
+     for i=1,#list do list[i]=indices[list[i]] end
+    end
+    local list=math.hvariants
+    if list then
+     for i=1,#list do list[i]=indices[list[i]] end
+    end
    end
   end
  end
@@ -37130,7 +37125,7 @@ local afm=fonts.handlers.afm
 local pfb=fonts.handlers.pfb
 local hashes=fonts.hashes
 local identifiers=hashes.identifiers
-local version=otf.version or 0.013
+local version=otf.version or 0.014
 local shapescache=containers.define("fonts","shapes",version,true)
 local streamscache=containers.define("fonts","streams",version,true)
 local compact_streams=false

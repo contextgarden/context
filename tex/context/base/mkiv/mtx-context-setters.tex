@@ -24,9 +24,12 @@
 
 \starttext
 
-\doifdocumentargument {trackers}    { \ctxlua {trackers   .show(environment.arguments.pattern) } }
-\doifdocumentargument {directives}  { \ctxlua {directives .show(environment.arguments.pattern) } }
-\doifdocumentargument {experiments} { \ctxlua {experiments.show(environment.arguments.pattern) } }
+\doifdocumentargument {trackers}        { \ctxlua {trackers   .show(environment.arguments.pattern) } }
+\doifdocumentargument {directives}      { \ctxlua {directives .show(environment.arguments.pattern) } }
+\doifdocumentargument {experiments}     { \ctxlua {experiments.show(environment.arguments.pattern) } }
+\doifdocumentargument {showtrackers}    { \ctxlua {trackers   .show(environment.arguments.pattern) } }
+\doifdocumentargument {showdirectives}  { \ctxlua {directives .show(environment.arguments.pattern) } }
+\doifdocumentargument {showexperiments} { \ctxlua {experiments.show(environment.arguments.pattern) } }
 
 \stoptext
 

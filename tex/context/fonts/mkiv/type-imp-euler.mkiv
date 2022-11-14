@@ -11,6 +11,10 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% Instead of euler.otf we now use euler-math.otf which is a copy of the version
+% that Daniel Flipo maintains now. We will also make an euler-regular.otf for
+% text usage (which might have slighty different metrics then).
+
 \loadtypescriptfile[texgyre]
 \loadtypescriptfile[dejavu]
 
@@ -21,10 +25,10 @@
 
 % 0x1D455 : italic h
 
-\definefontfallback [euleroverpagella] [\s!file:euler.otf]   [0x02100-0x02BFF] [\s!check=yes,\c!force=yes]
-\definefontfallback [euleroverpagella] [\s!file:euler.otf]   [0x1D400-0x1D7FF] [\s!check=yes,\c!force=yes]
-\definefontfallback [euleroverpagella] [texgyrepagella-math] [0x0210E]         [\s!check=yes,\c!force=\v!yes]
-%definefontfallback [euleroverpagella] [\s!file:euler.otf]   [0x1D538-0x1D550] [\s!check=yes,\c!force=yes]
+\definefontfallback [euleroverpagella] [\s!file:euler-math.otf] [0x02100-0x02BFF] [\s!check=yes,\c!force=yes]
+\definefontfallback [euleroverpagella] [\s!file:euler-math.otf] [0x1D400-0x1D7FF] [\s!check=yes,\c!force=yes]
+\definefontfallback [euleroverpagella] [texgyrepagella-math]    [0x0210E]         [\s!check=yes,\c!force=\v!yes]
+%definefontfallback [euleroverpagella] [\s!file:euler-math.otf] [0x1D538-0x1D550] [\s!check=yes,\c!force=yes]
 
 \definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x02100-0x02BFF] [\s!check=yes]
 \definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x1D400-0x1D7FF] [\s!check=yes]
@@ -43,12 +47,12 @@
 
     \starttypescript [\s!serif] [eulernova] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
-        \definefontsynonym [\s!Serif] [\s!file:euler.otf] [\s!features=\s!default]
+        \definefontsynonym [\s!Serif] [\s!file:euler-math.otf] [\s!features=\s!default]
     \stoptypescript
 
     \starttypescript [\s!math] [eulernova] [\s!name]
       % \loadfontgoodies[euler-math]
-        \definefontsynonym [MathRoman] [\s!file:euler.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=euler-math]
+        \definefontsynonym [MathRoman] [\s!file:euler-math.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=euler-math]
     \stoptypescript
 
     \starttypescript [pagella-eulernova]
@@ -70,7 +74,7 @@
     \stoptypescript
 
     \starttypescript [\s!math] [pagellaovereuler] [\s!name]
-        \definefontsynonym [MathRoman] [\s!file:euler.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!fallbacks=pagellaovereuler,\s!goodies=euler-with-pagella-math]
+        \definefontsynonym [MathRoman] [\s!file:euler-math.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!fallbacks=pagellaovereuler,\s!goodies=euler-with-pagella-math]
     \stoptypescript
 
     \starttypescript [pagella-with-euler]

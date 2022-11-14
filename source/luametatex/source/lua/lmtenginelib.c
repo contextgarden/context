@@ -320,8 +320,8 @@ static void enginelib_show_credits(void)
         "and has been extended in many aspects.\n"
         "\n"
         "There is a lightweight subsystem for optional libraries but here we also delegate as much\n"
-        "as possibe to Lua. A few interfaces are provided bny default, others can be added using a\n"
-        "simple foreign interface subsystem. Although this is provided an dconsidered part of the\n"
+        "as possible to Lua. A few interfaces are provided by default, others can be added using a\n"
+        "simple foreign interface subsystem. Although this is provided and considered part of the\n"
         "LuaMetaTeX engine it is not something ConTeXt depends (and will) depend on.\n"
         "\n"
         "version   : " luametatex_version_string " | " LMT_TOSTRING(luametatex_development_id) "\n"
@@ -433,7 +433,7 @@ static void enginelib_check_option(char **options, int i)
 
 */
 
-const char *suffixes[] = { "lmt", "lua", NULL };
+static const char *suffixes[] = { "lmt", "lua", NULL };
 
 static void enginelib_parse_options(void)
 {

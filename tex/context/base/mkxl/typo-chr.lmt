@@ -31,7 +31,7 @@ local flushnode         = nodes.flushnode
 local flushlist         = nodes.flushlist
 
 local settexattribute   = tex.setattribute
-local punctuation       = characters.is_punctuation
+local ispunctuation     = characters.is_punctuation
 
 local variables         = interfaces.variables
 local v_all             = variables.all
@@ -51,7 +51,7 @@ local function pickup()
     local list = texgetnest()
     if list then
         local tail = list.tail
-        if tail and tail.id == glyph_code and punctuation[tail.char] then
+        if tail and tail.id == glyph_code and ispunctuation[tail.char] then
             local prev = tail.prev
             list.tail = prev
             if prev then

@@ -202,12 +202,8 @@ local iszeroglue = direct.iszeroglue
 local getglue    = direct.getglue
 local setglue    = direct.setglue
 
-function node.iszeroglue(n) return iszeroglue(todirect(n)) end
-function node.getglue   (n) return getglue   (todirect(n)) end
-function node.setglue   (n) return setglue   (todirect(n)) end
+function node.iszeroglue(n)     return iszeroglue(todirect(n))     end
+function node.getglue   (n)     return getglue   (todirect(n))     end
+function node.setglue   (n,...) return setglue   (todirect(n),...) end
 
-node.family_font               = tex.getfontoffamily
-
--- node.get_glue                  = node.getglue
--- node.set_glue                  = node.setglue
-
+node.family_font = tex.getfontoffamily

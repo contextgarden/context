@@ -18,7 +18,7 @@
 
 /* void : dlclose(lib) | string: dlerror() */
 
-typedef void (*lmt_library_function);
+typedef void *lmt_library_function;
 
 # ifdef _WIN32
 

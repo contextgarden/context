@@ -65,16 +65,24 @@
         \definefontsynonym [\s!SerifCaps]      [\s!Serif]                     [\s!features=eb-garamond-smallcaps]
     \stoptypescript
 
-    \starttypescript [\s!math] [ebgaramond] [\s!name]
-        \loadfontgoodies[garamond-math]
-        \definefontsynonym [\s!MathRoman] [\s!file:garamond-math.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=garamond-math]
+    \starttypescript [\s!math] [ebgaramond,ebgaramond-nt]
+        \checkedmapfontsize[\typescripttwo][\s!script]      [.70]
+        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.50]
     \stoptypescript
 
-    \starttypescript[ebgaramond]
-        \definetypeface [ebgaramond] [\s!rm] [\s!serif] [ebgaramond] [\s!default]
-        \definetypeface [ebgaramond] [\s!tt] [\s!mono]  [dejavu]     [\s!default] [\s!rscale=0.8]
-      % \definetypeface [ebgaramond] [\s!mm] [\s!math]  [bonum]      [\s!default] [\s!rscale=0.8]
-        \definetypeface [ebgaramond] [\s!mm] [\s!math]  [ebgaramond] [\s!default]
+    \starttypescript [\s!math] [ebgaramond] [\s!name]
+        \definefontsynonym [\s!MathRoman] [\s!file:garamond-math.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=ebgaramond-math]
+    \stoptypescript
+
+    \starttypescript [\s!math] [ebgaramond-nt] [\s!name]
+        \definefontsynonym [\s!MathRoman] [\s!file:garamond-math.otf] [\s!features={\s!math\mathsizesuffix,mathextra}]
+    \stoptypescript
+
+    \starttypescript[ebgaramond,ebgaramond-nt]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [ebgaramond]     [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default] [\s!rscale=0.8]
+      % \definetypeface [\typescriptone] [\s!mm] [\s!math]  [bonum]          [\s!default] [\s!rscale=0.8]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone] [\s!default]
     \stoptypescript
 
 \stoptypescriptcollection

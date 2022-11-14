@@ -5,6 +5,7 @@
 # include <stdlib.h>
 
 # include "luametatex.h"
+# include "lmtoptional.h"
 
 # define LZ4F_VERSION 100  /* used to check for an incompatible API breaking change */
 

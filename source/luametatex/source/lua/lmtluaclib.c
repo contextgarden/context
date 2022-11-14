@@ -31,7 +31,7 @@
 
 static TString **tmname = NULL;
 
-# define toproto(L,i) getproto(s2v(L->top+(i)))
+# define toproto(L,i) getproto(s2v(L->top.p+(i)))
 # define UPVALNAME(x) ((f->upvalues[x].name) ? getstr(f->upvalues[x].name) : "-")
 # define LUACVOID(p)  ((const void*)(p))
 # define eventname(i) (getstr(tmname[i]))

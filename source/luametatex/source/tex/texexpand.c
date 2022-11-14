@@ -528,13 +528,22 @@ void tex_expand_current_token(void)
                 default:
                     /* Maybe ... or maybe an option */
                  // if (lmt_expand_state.cs_name_level == 0) {
-                        /*tex Complain about an undefined macro */
-                        tex_handle_error(
-                            normal_error_type,
-                            "Undefined control sequence %m", cur_cs,
-                            "The control sequence at the end of the top line of your error message was never\n"
-                            "\\def'ed. You can just continue as I'll forget about whatever was undefined."
-                        );
+                        if (tex_cs_state(cur_cs) == cs_undefined_error) { 
+                            /*tex Complain about an undefined macro */
+                            tex_handle_error(
+                                normal_error_type,
+                                "Undefined control sequence %m", cur_cs,
+                                "The control sequence at the end of the top line of your error message was never\n"
+                                "\\def'ed. You can just continue as I'll forget about whatever was undefined."
+                            );
+                        } else { 
+                            /*tex We ended up in a situation that is unlikely to happen in traditional \TEX. */
+                            tex_handle_error(
+                                normal_error_type,
+                                "Control sequence expected instead of %C", cur_cmd, cur_chr,
+                                "You injected something that confused the parser, maybe by using some Lua call."
+                            );
+                        }
                  // }
                     break;
             }
@@ -1027,7 +1036,7 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                             s = null;
                             goto BAD;
                         }
-                        break;
+                     // break;
                     case thrash_match_token:
                         match = 0;
                         thrash = 1;

@@ -164,8 +164,9 @@ void tex_set_math_code(int n, mathcodeval v, int level)
 
 mathcodeval tex_get_math_code(int n)
 {
-    sa_tree_item item = sa_get_item_4(lmt_mathcode_state.mathcode_head, n);
+    sa_tree_item item;
     mathcodeval m = { 0, 0, 0 };
+    sa_get_item_4(lmt_mathcode_state.mathcode_head, n, &item);
     if (item.uint_value == MATHCODEDEFAULT) {
         m.character_value = n;
     } else if (item.uint_value == MATHCODEACTIVE) {
@@ -267,9 +268,9 @@ delcodeval tex_no_del_code(void)
 
 delcodeval tex_get_del_code(int n)
 {
-    sa_tree_item v2;
-    sa_tree_item v1 = sa_get_item_8(lmt_mathcode_state.delcode_head, n, &v2);
+    sa_tree_item v1, v2;
     delcodeval d = { { 0, -1, 0 }, { 0, 0, 0} };
+    sa_get_item_8(lmt_mathcode_state.delcode_head, n, &v1, &v2);
     if (v1.uint_value != DELCODEDEFAULT) {
         d.small.class_value = (short) v1.math_code_value.class_value;
         d.small.family_value = (short) v1.math_code_value.family_value;

@@ -71,17 +71,28 @@
         \definefontsynonym [\s!Mono] [LibertinusMono-Regular] [\s!features=\s!none]
     \stoptypescript
 
+    \starttypescript [\s!math] [libertinus,libertinus-nt]
+        \checkedmapfontsize[\typescripttwo][\s!script]      [.80]
+        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.60]
+    \stoptypescript
+
     \starttypescript [\s!math] [libertinus] [\s!name]
         \loadfontgoodies[libertinus-math]
         \definefontsynonym[\s!MathRoman    ] [\s!file:libertinusmath-regular.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=libertinus-math.lfg]
         \definefontsynonym[\s!MathRomanBold] [\s!file:libertinusmath-regular.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=libertinus-math.lfg]
     \stoptypescript
 
-    \starttypescript [libertinus]
-        \definetypeface [libertinus] [\s!rm] [\s!serif] [libertinus] [\s!default]
-        \definetypeface [libertinus] [\s!ss] [\s!sans]  [libertinus] [\s!default]
-        \definetypeface [libertinus] [\s!tt] [\s!mono]  [libertinus] [\s!default]
-        \definetypeface [libertinus] [\s!mm] [\s!math]  [libertinus] [\s!default]
+    \starttypescript [\s!math] [libertinus-nt] [\s!name]
+        \loadfontgoodies[libertinus-math]
+        \definefontsynonym[\s!MathRoman    ] [\s!file:libertinusmath-regular.otf] [\s!features={\s!math\mathsizesuffix,mathextra}]
+        \definefontsynonym[\s!MathRomanBold] [\s!file:libertinusmath-regular.otf] [\s!features={\s!math\mathsizesuffix,mathextra}]
+    \stoptypescript
+
+    \starttypescript [libertinus,libertinus-nt]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [libertinus]     [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [libertinus]     [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [libertinus]     [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone] [\s!default]
         \quittypescriptscanning
     \stoptypescript
 

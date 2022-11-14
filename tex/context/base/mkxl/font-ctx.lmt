@@ -187,6 +187,12 @@ constructors.noffontsloaded    = 0
 
 -- font.getcopy = font.getfont -- we always want the table that context uses
 
+local accuratefactors = false
+----- compactfontmode = false
+
+experiments.register("fonts.accurate", function(v) accuratefactors = v    end)
+experiments.register("fonts.compact",  function()  accuratefactors = true end)
+
 do
 
     -- Does this still make sense?
@@ -1635,8 +1641,11 @@ function constructors.calculatescale(tfmdata,scaledpoints,relativeid,specificati
         scaledpoints = (- scaledpoints/1000) * (tfmdata.designsize or parameters.designsize) -- already in sp
     end
     -- a temp hack till we have upgraded all mechanisms
-    local delta = round(scaledpoints/units)
+    local delta = scaledpoints/units
     local size  = round(scaledpoints)
+    if not accuratefactors then
+        delta = round(delta)
+    end
     texsetcount(c_font_scaled_points,size)
     --
     return size, delta
@@ -1662,16 +1671,17 @@ function constructors.hashinstance(specification,force)
     end
     specification.size = size
     if fallbacks then
-        return hash .. ' @ ' .. size .. ' @ ' .. fallbacks
+        hash = hash .. ' @ ' .. size .. ' @ ' .. fallbacks
     else
         local scalemode = specification.scalemode
         local special   = scalemode and specialscale[scalemode]
         if special then
-            return hash .. ' @ ' .. size .. ' @ ' .. special
+            hash = hash .. ' @ ' .. size .. ' @ ' .. special
         else
-            return hash .. ' @ ' .. size
+            hash = hash .. ' @ ' .. size
         end
     end
+    return hash
 end
 
 -- We overload the (generic) resolver:
@@ -2356,7 +2366,7 @@ do
     end
 
     implement {
-        name      = "nbfs",
+        name      = "normalizedbodyfontsize",
         arguments = "dimen",
         actions   = function(d)
             context(lpegmatch(stripper,f_strip(d/65536)))

@@ -2614,3 +2614,66 @@ vardef lmt_do_matrix =
         popparameters
     )
 enddef ;
+
+% This might move to its own module if we add more:
+
+presetparameters "glyphshape" [
+  % id        = "",
+  % character = "",
+    shape       = true,
+    boundingbox = false,
+    baseline    = false,
+    usedline    = true,
+    usedbox     = true,
+] ;
+
+def lmt_glyphshape = applyparameters "glyphshape" "lmt_do_glyphshape" enddef ;
+
+vardef glyphshape_start(expr id, character) =
+    lua.mp.lmt_glyphshape_start(id, character) ;
+enddef ;
+
+vardef glyphshape_stop         = lua.mp.lmt_glyphshape_stop() ;      enddef ;
+vardef glyphshape_n            = lua.mp.lmt_glyphshape_n()           enddef ;
+vardef glyphshape_path(expr i) = lua.mp.lmt_glyphshape_path(i)       enddef ;
+vardef glyphshape_boundingbox  = lua.mp.lmt_glyphshape_boundingbox() enddef ;
+vardef glyphshape_baseline     = lua.mp.lmt_glyphshape_baseline()    enddef ;
+vardef glyphshape_usedbox      = lua.mp.lmt_glyphshape_usedbox()     enddef ;
+vardef glyphshape_usedline     = lua.mp.lmt_glyphshape_usedline()    enddef ;
+vardef glyphshape_width        = lua.mp.lmt_glyphshape_width()       enddef ;
+vardef glyphshape_height       = lua.mp.lmt_glyphshape_height()      enddef ;
+vardef glyphshape_depth        = lua.mp.lmt_glyphshape_depth()       enddef ;
+vardef glyphshape_italic       = lua.mp.lmt_glyphshape_italic()      enddef ;
+vardef glyphshape_accent       = lua.mp.lmt_glyphshape_accent()      enddef ;
+
+vardef lmt_do_glyphshape =
+    image (
+        pushparameters "glyphshape" ;
+            lua.mp.lmt_glyphshape_start(getparameter "id", getparameter "character") ;
+            if getparameter "shape" :
+                draw for i=1 upto lua.mp.lmt_glyphshape_n() :
+                    lua.mp.lmt_glyphshape_path(i) &&
+                endfor cycle ;
+            fi ;
+            if getparameter "boundingbox" :
+                draw
+                    lua.mp.lmt_glyphshape_boundingbox()
+                    withcolor red
+                ;
+            fi ;
+            if getparameter "usedline" :
+                draw
+                    lua.mp.lmt_glyphshape_usedline()
+                    withcolor green
+                ;
+            fi ;
+            if getparameter "usedbox" :
+                draw
+                    lua.mp.lmt_glyphshape_usedbox()
+                    withcolor blue
+                ;
+            fi ;
+            lua.mp.lmt_glyphshape_stop() ;
+        popparameters ;
+    )
+enddef ;

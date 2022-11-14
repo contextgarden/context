@@ -53,7 +53,7 @@ in some places we clip to the official maxima but not always.
 //define zround(r) ((r>2147483647.0) ? 2147483647 : ((r<-2147483647.0) ? -2147483647 : ((r >= 0.0) ? (int)(r + 0.5) : ((int)(r-0.5)))))
 //define zround(r) ((r>2147483647.0) ? 2147483647 : ((r<-2147483647.0) ? -2147483647 : (int) lround(r)))
 
-# define scaledround(x)  ((scaled) lround((double) x))
+# define scaledround(x)  ((scaled) lround((double) (x)))
 # define longlonground   llround
 # define clippedround(r) ((r>2147483647.0) ? 2147483647 : ((r<-2147483647.0) ? -2147483647 : (int) lround(r)))
 # define glueround(x)    clippedround((double) (x))

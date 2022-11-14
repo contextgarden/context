@@ -12,11 +12,11 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            NoLimitSupFactor                =    0,
-            NoLimitSubFactor                =  900,
+            -- NoLimitSupFactor                =    0,
+            -- NoLimitSubFactor                =  900,
          -- AccentBaseHeight                =    0,
             AccentBaseDepth                 =   30,
-            RadicalDegreeBottomRaisePercent =   70,
+            -- RadicalDegreeBottomRaisePercent =   70,
          -- RadicalRuleThickness            =   50, --   50 in font
             DelimiterPercent                =   90,
             DelimiterShortfall              =  400,
@@ -52,14 +52,14 @@ return {
 
                     },
                 },
-             -- {
-             --     tweak   = "fixprimes",
-             --     factor  = 0.85, -- accent base height
-             --     smaller = true, -- replace multiples
-             --     scale   = 0.75, -- glyph scale
-             --     fake    = 0.75, -- replace multiples with this width proportion
-             --  -- keep    = true, -- keep the text size prime (aka minute)
-             -- },
+                {
+                    tweak   = "fixprimes",
+                    factor  = 1.4, -- accent base height
+                    smaller = true, -- replace multiples
+                    scale   = 1, -- glyph scale
+                    fake    = 0.8, -- replace multiples with this width proportion
+                 -- keep    = true, -- keep the text size prime (aka minute)
+                },
                 {
                     tweak = "addmirrors",
                 },
@@ -99,6 +99,24 @@ return {
                 {
                     tweak = "checkspacing",
                 },
+
+{
+    tweak   = "radicaldegreeanchors",
+    list = {
+        [0x221A]                = { location = "left", hfactor  = .0, vfactor  = .75 },
+        ["0x221A.variants.*"]   = { location = "left", hfactor  = .0, vfactor  = .55 },
+        ["0x221A.variants.1"]   = { location = "left", hfactor  = .0, vfactor  = .6 },
+     -- ["0x221A.variants.2"]   = { location = "left", hfactor  = .1, vfactor  = .575 },
+     -- ["0x221A.variants.3"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.variants.4"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221Aq.variants.6"]  = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.parts.top"]    = { location = "left", hfactor  = .1, vfactor  = 5.5 }, -- keep commented: bottom wins over top
+        ["0x221A.parts.bottom"] = { location = "left", hfactor  = .0, vfactor  = 0.65 },
+    }
+},
+
                 {
                     tweak = "addscripts",
                 },

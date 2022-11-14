@@ -663,20 +663,22 @@ typedef enum math_control_codes {
     math_control_accent_skew_apply           = 0x000040,
     math_control_apply_ordinary_kern_pair    = 0x000080,
     math_control_apply_vertical_italic_kern  = 0x000100,
-    math_control_apply_ordinary_italic_kern  = 0x000200,
-    math_control_apply_char_italic_kern      = 0x000400, /* traditional */
-    math_control_rebox_char_italic_kern      = 0x000800, /* traditional */
-    math_control_apply_boxed_italic_kern     = 0x001000,
-    math_control_staircase_kern              = 0x002000,
-    math_control_apply_text_italic_kern      = 0x004000,
-    math_control_check_text_italic_kern      = 0x008000,
-    math_control_check_space_italic_kern     = 0x010000,
-    math_control_apply_script_italic_kern    = 0x020000,
-    math_control_analyze_script_nucleus_char = 0x040000,
-    math_control_analyze_script_nucleus_list = 0x080000,
-    math_control_analyze_script_nucleus_box  = 0x100000, 
-    math_control_accent_top_skew_with_offset = 0x200000, 
-    math_control_ignore_kern_dimensions      = 0x400000, /* for bad fonts (like xits fence depths) */
+    math_control_apply_ordinary_italic_kern  = 0x0000200,
+    math_control_apply_char_italic_kern      = 0x0000400, /* traditional */
+    math_control_rebox_char_italic_kern      = 0x0000800, /* traditional */
+    math_control_apply_boxed_italic_kern     = 0x0001000,
+    math_control_staircase_kern              = 0x0002000,
+    math_control_apply_text_italic_kern      = 0x0004000,
+    math_control_check_text_italic_kern      = 0x0008000,
+    math_control_check_space_italic_kern     = 0x0010000,
+    math_control_apply_script_italic_kern    = 0x0020000,
+    math_control_analyze_script_nucleus_char = 0x0040000,
+    math_control_analyze_script_nucleus_list = 0x0080000,
+    math_control_analyze_script_nucleus_box  = 0x0100000, 
+    math_control_accent_top_skew_with_offset = 0x0200000, 
+    math_control_ignore_kern_dimensions      = 0x0400000, /* for bad fonts (like xits fence depths) */
+    math_control_ignore_flat_accents         = 0x0800000, 
+    math_control_extend_accents              = 0x1000000, 
 } math_control_codes;
 
 /*tex This is what we use for \OPENTYPE\ in \CONTEXT: */

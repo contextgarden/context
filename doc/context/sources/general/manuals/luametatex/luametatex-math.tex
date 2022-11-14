@@ -2192,7 +2192,9 @@ influence the spacing. The numbers are the same as for character classes.
 
 \topicindex {math+codes}
 
-You can extract the components of a math character. Say that we have defined:
+You should not really depend on the number that comes from \prm {Umathcode} because
+the engine can (at some point) use a different amount of families and classes. Given this,
+you can extract the components of a math character. Say that we have defined:
 
 \starttyping
 \Umathcode 1 2 3 4
@@ -2201,17 +2203,21 @@ You can extract the components of a math character. Say that we have defined:
 then
 
 \starttyping
-[\Umathcharclass1] [\Umathcharfam1] [\Umathcharslot1]
+[\Umathcharclass\Umathcode1] [\Umathcharfam\Umathcode1] [\Umathcharslot\Umathcode1]
 \stoptyping
 
-will return:
+which will return:
 
 \starttyping
 [2] [3] [4]
 \stoptyping
 
-These commands are provided as convenience. Before they come available you could
-do the following:
+You can of course store the code in for instance a register and use that as
+argument. The three commands also accept a specification (and maybe more in the
+future).
+
+These commands are provided as convenience. Before they became available you
+could do the following:
 
 \starttyping
 \def\Umathcharclass{\numexpr

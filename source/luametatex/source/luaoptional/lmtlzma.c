@@ -5,6 +5,7 @@
 # include <stdlib.h>
 
 # include "luametatex.h"
+# include "lmtoptional.h"
 
 /*
     We only need a few definitions and it's nice that they are already prepared for extensions.

@@ -379,16 +379,11 @@ local function expandglyph(characters,index,done)
             if n then
                 d.next = expandglyph(characters,n,done)
             end
-            local h = d.hparts
-            if h then
-                for i=1,#h do
-                    h[i].glyph = expandglyph(characters,h[i].glyph,done)
-                end
-            end
-            local v = d.vparts
-            if v then
-                for i=1,#v do
-                    v[i].glyph = expandglyph(characters,v[i].glyph,done)
+            local p = d.parts
+            if p then
+                for i=1,#p do
+                    local pi = p[i]
+                    pi.glyph = expandglyph(characters,pi.glyph,done)
                 end
             end
             return d

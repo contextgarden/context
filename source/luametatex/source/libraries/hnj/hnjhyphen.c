@@ -552,7 +552,7 @@ void hnj_dictionary_load(hjn_dictionary *dict, const unsigned char *f, int trace
                             char *newpat_pat = lookup_pattern(dict->merged, word, l1);
                             if (! newpat_pat) {
                                 char *neworg;
-                                unsigned char *newword = (unsigned char *) hnj_malloc((size_t) (l1 + 1));
+                                unsigned char *newword = (unsigned char *) hnj_malloc(l1 + 1);
                                 int e1 = 0;
                                 strncpy((char *) newword, (char *) word, (size_t) l1);
                                 newword[l1] = 0;
@@ -561,7 +561,7 @@ void hnj_dictionary_load(hjn_dictionary *dict, const unsigned char *f, int trace
                                         e1++;
                                     }
                                 }
-                                neworg = hnj_malloc((size_t) (l1 + 2 - e1));
+                                neworg = hnj_malloc(l1 + 2 - e1);
                                 /*tex Fill with right amount of zeros: */
                                 sprintf(neworg, "%0*d", l1 + 1 - e1, 0);
                                 insert_pattern(dict->merged, newword, combine_patterns(neworg, subpat_pat), trace);

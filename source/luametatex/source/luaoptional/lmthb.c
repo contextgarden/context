@@ -3,6 +3,7 @@
 */
 
 # include "luametatex.h"
+# include "lmtoptional.h"
 
 /*tex
 
@@ -473,9 +474,9 @@ static int hblib_load_font(lua_State * L)
         hb_face_t *face = hblib_state.hb_face_create(blob, id);
         unsigned int scale = hblib_state.hb_face_get_upem(face);
         hb_font_t *font = hblib_state.hb_font_create(face);
+        hblib_data *data = lua_newuserdatauv(L, sizeof(data), 0);
         hblib_state.hb_font_set_scale(font, scale, scale);
         hblib_state.hb_ot_font_set_funcs(font);
-        hblib_data *data = lua_newuserdatauv(L, sizeof(data), 0);
         data->font = font;
         luaL_getmetatable(L, HBLIB_METATABLE);
         lua_setmetatable(L, -2);

@@ -52,17 +52,17 @@ static int sparselib_new(lua_State *L)
     switch (bytes) {
         case 1:
             {
-                unsigned char d = (defval < 0 ? 0 : (defval > 0xFF ? 0xFF : defval));
+                int d = defval < 0 ? 0 : (defval > 0xFF ? 0xFF : defval);
                 for (int i = 0; i <= 3; i++) {
-                    item.uchar_value[i] = d ;
+                    item.uchar_value[i] = (unsigned char) d;
                 }
                 break;
             }
         case 2:
             {
-                unsigned short d = (defval < 0 ? 0 : (defval > 0xFFFF ? 0xFFFF : defval));
+                int d =  defval < 0 ? 0 : (defval > 0xFFFF ? 0xFFFF : defval);
                 for (int i = 0; i <= 1; i++) {
-                    item.ushort_value[i] = d ;
+                    item.ushort_value[i] = (unsigned short) d;
                 }
                 break;
             }

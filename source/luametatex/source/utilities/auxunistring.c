@@ -58,8 +58,9 @@ unsigned char *aux_uni2str(unsigned unic)
             buf[2] = (unsigned char) (0x80 | (unic & 0x3f));
             buf[3] = '\0';
         } else if (unic < 0x110000) {
+            int u; 
             unic -= 0x10000;
-            int u = (int) (((unic & 0xf0000) >> 16) + 1);
+            u = (int) (((unic & 0xf0000) >> 16) + 1);
             buf[0] = (unsigned char) (0xf0 | (u >> 2));
             buf[1] = (unsigned char) (0x80 | ((u & 3) << 4) | ((unic & 0x0f000) >> 12));
             buf[2] = (unsigned char) (0x80 | ((unic & 0x00fc0) >> 6));
@@ -92,8 +93,9 @@ char *aux_uni2string(char *utf8_text, unsigned unic)
         *utf8_text++ = (char) (0x80 | ((unic >> 6) & 0x3f));
         *utf8_text++ = (char) (0x80 | (unic & 0x3f));
     } else if (unic < 0x110000) {
+        unsigned u; 
         unic -= 0x10000;
-        unsigned u = ((unic & 0xf0000) >> 16) + 1;
+        u = ((unic & 0xf0000) >> 16) + 1;
         *utf8_text++ = (char) (0xf0 | (u >> 2));
         *utf8_text++ = (char) (0x80 | ((u & 3) << 4) | ((unic & 0x0f000) >> 12));
         *utf8_text++ = (char) (0x80 | ((unic & 0x00fc0) >> 6));

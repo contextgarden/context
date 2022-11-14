@@ -766,18 +766,18 @@ void mp_number_scaled_to_angle(mp_number *A)
 
 int mp_number_to_scaled(mp_number *A)
 {
-    int32_t result;
+    int result;
     decNumber corrected;
     decNumberFromInt32(&corrected, 65536);
     decNumberMultiply(&corrected, &corrected, A->data.num, &mp_decimal_data.set);
     decNumberReduce(&corrected, &corrected, &mp_decimal_data.set);
-    result = (int) floor(decNumberToDouble(&corrected) + 0.5);
+    result = lround(decNumberToDouble(&corrected));
     return result;
 }
 
 int mp_number_to_int(mp_number *A)
 {
-    int32_t result;
+    int result;
     mp_decimal_data.set.status = 0;
     result = decNumberToInt32(A->data.num, &mp_decimal_data.set);
     if (mp_decimal_data.set.status == DEC_Invalid_operation) {
@@ -790,7 +790,7 @@ int mp_number_to_int(mp_number *A)
 
 int mp_number_to_boolean(mp_number *A)
 {
-    uint32_t result;
+    unsigned int result;
     mp_decimal_data.set.status = 0;
     result = decNumberToUInt32(A->data.num, &mp_decimal_data.set);
     if (mp_decimal_data.set.status == DEC_Invalid_operation) {
@@ -1413,7 +1413,7 @@ typedef struct mp_decimal_random_info {
     long *ptr;
 } mp_decimal_random_info;
 
-mp_decimal_random_info mp_decimal_random_data = {
+static mp_decimal_random_info mp_decimal_random_data = {
     .dummy   = -1,
     .started = -1,
     .ptr     = &mp_decimal_random_data.dummy

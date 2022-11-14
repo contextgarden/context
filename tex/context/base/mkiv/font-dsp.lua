@@ -2332,12 +2332,11 @@ do
 
         local reported = { }
 
-        local function report_issue(i,what,sequence,kind)
-            local name = sequence.name
-            if not reported[name] then
-                report("rule %i in %s lookup %a has %s lookups",i,what,name,kind)
-                reported[name] = true
-            end
+        local function report_issue(i,what,step,kind)
+--             if not reported[step] then
+                report("rule %i in step %i of %s has %s lookups",i,step,what,kind)
+--                 reported[name] = true
+--             end
         end
 
      -- for i=lastsequence+1,nofsequences do
@@ -2346,18 +2345,18 @@ do
      --     for i=1,#steps do
      --         local step  = steps[i]
 
-            for i=1,#allsteps do          -- new per 2022-09-25
-                local step  = allsteps[i] -- new per 2022-09-25
+            for s=1,#allsteps do          -- new per 2022-09-25
+                local step  = allsteps[s] -- new per 2022-09-25
                 local rules = step.rules
                 if rules then
                     for i=1,#rules do
                         local rule     = rules[i]
                         local rlookups = rule.lookups
                         if not rlookups then
-                            report_issue(i,what,sequence,"no")
+                            report_issue(i,what,s,"no")
                         elseif not next(rlookups) then
                             -- can be ok as it aborts a chain sequence
-                         -- report_issue(i,what,sequence,"empty")
+                         -- report_issue(i,what,s,"empty")
                             rule.lookups = nil
                         else
                             -- we can have holes in rlookups flagged false and we can have multiple lookups
@@ -2398,12 +2397,12 @@ do
                                                         sublookupcheck[lookupid] = 1
                                                         h = nofsublookups
                                                     else
-                                                        report_issue(i,what,sequence,"missing")
+                                                        report_issue(i,what,s,"missing")
                                                         rule.lookups = nil
                                                         break
                                                     end
                                                 else
-                                                    report_issue(i,what,sequence,"bad")
+                                                    report_issue(i,what,s,"bad")
                                                     rule.lookups = nil
                                                     break
                                                 end
@@ -2977,7 +2976,7 @@ local function readmathvariants(f,fontdata,offset)
     --     advance = readushort(f),
     -- }
 
-    local function get(offset,coverage,nofglyphs,construction,kvariants,kparts,kitalic)
+    local function get(offset,coverage,nofglyphs,construction,kvariants,kparts,kitalic,korientation,orientation)
         if coverage ~= 0 and nofglyphs > 0 then
             local coverage = readcoverage(f,offset+coverage,true)
             for i=1,nofglyphs do
@@ -3042,14 +3041,23 @@ local function readmathvariants(f,fontdata,offset)
                         if italic and italic ~= 0 then
                             math[kitalic] = italic
                         end
+                        if orientation then
+                            math[korientation] = orientation
+                        end
                     end
                 end
             end
         end
     end
 
-    get(offset,vcoverage,vnofglyphs,vconstruction,"vvariants","vparts","vitalic")
-    get(offset,hcoverage,hnofglyphs,hconstruction,"hvariants","hparts","hitalic")
+ -- if LUATEXENGINE == "luametatex" then
+    if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then
+        get(offset,hcoverage,hnofglyphs,hconstruction,"variants","parts","partsitalic","partsorientation","horizontal")
+        get(offset,vcoverage,vnofglyphs,vconstruction,"variants","parts","partsitalic","partsorientation","vertical")
+    else
+        get(offset,vcoverage,vnofglyphs,vconstruction,"vvariants","vparts","vitalic")
+        get(offset,hcoverage,hnofglyphs,hconstruction,"hvariants","hparts","hitalic")
+    end
 end
 
 function readers.math(f,fontdata,specification)

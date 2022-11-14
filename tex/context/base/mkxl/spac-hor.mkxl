@@ -1073,6 +1073,8 @@
 \definehspace[2] [.2222\emwidth] % med
 \definehspace[3] [.2777\emwidth] % thick
 
+% These will be redefined anyway in math-ini:
+
 \suggestedalias \, \thinspace
 \suggestedalias \: \medspace
 \suggestedalias \; \thickspace

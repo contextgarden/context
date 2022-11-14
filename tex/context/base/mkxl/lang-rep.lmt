@@ -181,7 +181,7 @@ local function tonodes(list,template)
     return head
 end
 
-local is_punctuation = characters.is_punctuation
+local ispunctuation = characters.is_punctuation
 
 -- We can try to be clever and use the fact that there is no match to skip
 -- over to the next word but it is gives fuzzy code so for now I removed
@@ -326,7 +326,7 @@ function replacements.handler(head)
                 tree = trees[a]
                 if tree then
                     local char = getchar(current)
-                    local punc = is_punctuation[char]
+                    local punc = ispunctuation[char]
                     if mode == "punc" then
                         if not punc then
                             if root then

@@ -243,7 +243,6 @@ halfword tex_size_of_style(halfword style)
         case script_script_style:
         case cramped_script_script_style:
             return script_script_size;
-            break;
         default:
             return text_size;
     }
@@ -372,7 +371,9 @@ static void tex_aux_print_fam(const char *what, halfword size, halfword fam)
 
 int tex_fam_fnt(int fam, int size)
 {
-    return (int) sa_get_item_4(lmt_math_state.fam_head, fam + (256 * size)).int_value;
+    sa_tree_item item;
+    sa_get_item_4(lmt_math_state.fam_head, fam + (256 * size), &item);
+    return (int) item.int_value;
 }
 
 void tex_def_fam_fnt(int fam, int size, int fnt, int level)
@@ -413,7 +414,7 @@ void tex_def_math_parameter(int style, int param, scaled value, int level, int i
     int different = 1;
     if (level <= 1) {
         if (math_parameter_value_type(param) == math_muglue_parameter) {
-            item1 = sa_get_item_8(lmt_math_state.par_head, (param + (math_parameter_max_range * style)), &item2);
+            sa_get_item_8(lmt_math_state.par_head, (param + (math_parameter_max_range * style)), &item1, &item2);
             if (item2.int_value == indirect_math_regular && item1.int_value > thick_mu_skip_code) {
                 if (lmt_node_memory_state.nodesizes[item1.int_value]) {
                     tex_free_node(item1.int_value, glue_spec_size);
@@ -422,7 +423,7 @@ void tex_def_math_parameter(int style, int param, scaled value, int level, int i
         }
     } else { 
         /*tex Less tracing at the cost of a lookup. */
-        item1 = sa_get_item_8(lmt_math_state.par_head, (param + (math_parameter_max_range * style)), &item2);
+        sa_get_item_8(lmt_math_state.par_head, (param + (math_parameter_max_range * style)), &item1, &item2);
         different = item1.int_value != value || item2.int_value != indirect;
     }
  // if (different) { // maybe
@@ -440,8 +441,8 @@ void tex_def_math_parameter(int style, int param, scaled value, int level, int i
 scaled tex_get_math_parameter(int style, int param, halfword *type)
 {
     halfword indirect, value;
-    sa_tree_item v2;
-    sa_tree_item v1 = sa_get_item_8(lmt_math_state.par_head, (param + (math_parameter_max_range * style)), &v2);
+    sa_tree_item v1, v2;
+    sa_get_item_8(lmt_math_state.par_head, (param + (math_parameter_max_range * style)), &v1, &v2);
     indirect = v2.int_value == lmt_math_state.par_head->dflt.int_value ? indirect_math_unset : v2.uint_value;
     value = v1.int_value;
     switch (indirect) {
@@ -662,8 +663,8 @@ scaled tex_get_math_parameter(int style, int param, halfword *type)
 
 int tex_has_math_parameter(int style, int param)
 {
-    sa_tree_item v2;
-    sa_get_item_8(lmt_math_state.par_head, (param + (math_parameter_max_range * style)), &v2);
+    sa_tree_item v1, v2;
+    sa_get_item_8(lmt_math_state.par_head, (param + (math_parameter_max_range * style)), &v1, &v2);
     return v2.int_value == lmt_math_state.par_head->dflt.int_value ? indirect_math_unset : v2.uint_value;
 }
 
@@ -675,9 +676,9 @@ static void tex_aux_unsave_math_parameter_data(int gl)
             if (item.level > 0) {
                 int param = item.code % math_parameter_max_range;
                 int style = item.code / math_parameter_max_range;
-                sa_tree_item item1, item2;
                 if (math_parameter_value_type(param) == math_muglue_parameter) {
-                    item1 = sa_get_item_8(lmt_math_state.par_head, item.code, &item2);
+                    sa_tree_item item1, item2;
+                    sa_get_item_8(lmt_math_state.par_head, item.code, &item1, &item2);
                     if (item2.int_value == indirect_math_regular && item1.int_value > thick_mu_skip_code) {
                      /* if (tex_valid_node(item1.int_value)) { */
                         if (lmt_node_memory_state.nodesizes[item1.int_value]) {
@@ -788,13 +789,17 @@ halfword tex_new_sub_box(halfword curbox)
     return noad;
 }
 
-quarterword tex_aux_set_math_char(halfword target, mathcodeval *mval, mathdictval *dval)
+static quarterword tex_aux_set_math_char(halfword target, mathcodeval *mval, mathdictval *dval)
 {
     halfword hmcode = tex_get_hm_code(mval->character_value);
     kernel_math_character(target) = mval->character_value;
     if (mval->class_value == math_use_current_family_code) {
         kernel_math_family(target) = cur_fam_par_in_range ? cur_fam_par : mval->family_value;
         node_subtype(target) = ordinary_noad_subtype;
+    } else if (mval->family_value == variable_family_par) {
+        /*tex For CMS chairman MS, so that he can answer a ltx question someplace. */
+        kernel_math_family(target) = cur_fam_par_in_range ? cur_fam_par : mval->family_value;
+        node_subtype(target) = mval->class_value;
     } else {
         kernel_math_family(target) = mval->family_value;
         node_subtype(target) = mval->class_value;
@@ -1121,13 +1126,19 @@ static void tex_aux_display_fence_noad(halfword n, int threshold, int max)
     if (noad_depth(n)) {
         tex_print_format(", depth %D", noad_depth(n), pt_unit);
     }
-    if (get_noad_main_class(n) >= 0) {
+    if (fence_top_overshoot(n)) {
+        tex_print_format(", top %D", fence_top_overshoot(n), pt_unit);
+    }
+    if (fence_bottom_overshoot(n)) {
+        tex_print_format(", top %D", fence_bottom_overshoot(n), pt_unit);
+    }
+    if (get_noad_main_class(n) != unset_noad_class) {
         tex_print_format(", class %i", get_noad_main_class(n));
     }
-    if (get_noad_left_class(n) >= 0) {
+    if (get_noad_left_class(n) != unset_noad_class) {
         tex_print_format(", leftclass %i", get_noad_left_class(n));
     }
-    if (get_noad_right_class(n) >= 0) {
+    if (get_noad_right_class(n) != unset_noad_class) {
         tex_print_format(", rightclass %i", get_noad_right_class(n));
     }
     if (noad_source(n) != 0) {
@@ -1976,11 +1987,34 @@ int tex_scan_math_cmd_val(mathcodeval *mval, mathdictval *dval)
                     return 0;
             }
             break;
-        case letter_cmd:
-        case other_char_cmd:
-            mval->character_value = cur_chr;
+        case delimiter_number_cmd:
+            switch (cur_chr) {
+                case math_delimiter_code:
+                    *mval = tex_scan_delimiter_as_mathchar(tex_mathcode);
+                    break;
+                case math_udelimiter_code:
+                    *mval = tex_scan_delimiter_as_mathchar(umath_mathcode);
+                    break;
+                default:
+                    /* no message yet */
+                    return 0;
+            }
             break;
+        /*tex 
+            This is/was an experiment but could work out ambigiuous in some cases so when I bring it 
+            back it will be under more strict control. So, for instance a register would make us 
+            enter the default branch but a direct number the other case. In the meantiem we no longer 
+            use the direct char approach (for delimiters mostly) so we can comment it. 
+        */
+      // case letter_cmd: 
+      // case other_char_cmd: 
+      //     mval->character_value = cur_chr; 
+      //     break; 
         default:
+            /*tex
+                We could do a fast |tex_scan_something_internal| here but this branch is not that 
+                critical. 
+            */     
             {
                 halfword n = 0;
                 tex_back_input(cur_tok);
@@ -2718,7 +2752,7 @@ void tex_run_math_accent(void)
         case math_uaccent_code:
             /*tex |\Umathaccent| */
             while (1) {
-                switch (tex_scan_character("ansfASFN", 0, 0, 0)) {
+                switch (tex_scan_character("ansfASFN", 0, 1, 0)) {
                     case 'a': case 'A':
                         if (tex_scan_mandate_keyword("attr", 1)) {
                             attrlist = tex_scan_attribute(attrlist);
@@ -3707,8 +3741,10 @@ void tex_finish_math_group(void)
 
 void tex_run_math_fence(void)
 {
-    halfword ht = 0;
-    halfword dp = 0;
+    scaled ht = 0;
+    scaled dp = 0;
+    scaled top = 0;
+    scaled bottom = 0;
     halfword options = 0;
     halfword mainclass = unset_noad_class;
     halfword leftclass = unset_noad_class;
@@ -3738,19 +3774,9 @@ void tex_run_math_fence(void)
     }
     while (1) {
            /* todo: break down  */
-        switch (tex_scan_character("hdanlevpcrsuHDANLEVPCRSU", 0, 1, 0)) {
+        switch (tex_scan_character("hdanlevpcrsutbHDANLEVPCRSUTB", 0, 1, 0)) {
             case 0:
                 goto CHECK_PAIRING;
-            case 'h': case 'H':
-                if (tex_scan_mandate_keyword("height", 1)) {
-                    ht = tex_scan_dimen(0, 0, 0, 0, NULL);
-                }
-                break;
-            case 'd': case 'D':
-                if (tex_scan_mandate_keyword("depth", 1)) {
-                    dp = tex_scan_dimen(0, 0, 0, 0, NULL);
-                }
-                break;
             case 'a': case 'A':
                 switch (tex_scan_character("uxtUXT", 0, 0, 0)) {
                     case 'u': case 'U':
@@ -3771,6 +3797,21 @@ void tex_run_math_fence(void)
                     default:
                         tex_aux_show_keyword_error("auto|attr|axis");
                         goto CHECK_PAIRING;
+                }
+                break;
+            case 'b': case 'B':
+                if (tex_scan_mandate_keyword("bottom", 1)) {
+                    bottom = tex_scan_dimen(0, 0, 0, 0, NULL);
+                }
+                break;
+            case 'd': case 'D':
+                if (tex_scan_mandate_keyword("depth", 1)) {
+                    dp = tex_scan_dimen(0, 0, 0, 0, NULL);
+                }
+                break;
+            case 'h': case 'H':
+                if (tex_scan_mandate_keyword("height", 1)) {
+                    ht = tex_scan_dimen(0, 0, 0, 0, NULL);
                 }
                 break;
             case 'n': case 'N':
@@ -3863,6 +3904,11 @@ void tex_run_math_fence(void)
                     source = tex_scan_int(0, NULL);
                 }
                 break;
+            case 't': case 'T':
+                if (tex_scan_mandate_keyword("top", 1)) {
+                    top = tex_scan_dimen(0, 0, 0, 0, NULL);
+                }
+                break;
             default:
                 goto CHECK_PAIRING;
         }
@@ -3930,6 +3976,9 @@ void tex_run_math_fence(void)
         }
         noad_italic(fence) = 0;
         noad_source(fence) = source;
+        /* */
+        fence_top_overshoot(fence) = top;
+        fence_bottom_overshoot(fence) = bottom;
         /*tex
             By setting this here, we can get rid of the hard coded values in |mlist_to_hlist| which
             sort of interfere (or at least confuse) things there. When set, the |leftclass| and
@@ -4643,6 +4692,27 @@ static void tex_aux_define_dis_math_parameters(int size, int param, scaled value
     }
 }
 
+/*tex
+    In principle we could save some storage in the format file with:
+
+    \starttyping
+    static void tex_aux_define_all_math_parameters(int size, int param, scaled value, int level)
+    {
+        tex_def_math_parameter(all_math_styles, param, value, level, indirect_math_regular);
+    } 
+    \stoptyping
+
+    and then do this (we also need to move |all_math_styles| up in the enum to keep ranges compact):
+
+    \starttyping
+    if (! sa_get_item_8(lmt_math_state.par_head, (param + (math_parameter_max_range * style)), &item1, &item2)) {
+        sa_get_item_8(lmt_math_state.par_head, (param + (math_parameter_max_range * all_math_styles)), &item1, &item2);
+    }
+    \stoptyping
+
+    but in practice we actually get a bit larger file. 
+*/
+
 static void tex_aux_define_all_math_parameters(int size, int param, scaled value, int level)
 {
     switch (size) {
@@ -4756,7 +4826,7 @@ inline static scaled tex_aux_get_font_math_quantity(scaled scale, halfword v)
 
 /*tex
     The next function is called when we define a family, but first we define a few helpers
-    for identifying traditional math fonts. Watch the hard codes family check!
+    for identifying traditional math fonts. Watch the hard codes family check (gone now)!
 */
 
 void tex_fixup_math_parameters(int fam, int size, int f, int level)

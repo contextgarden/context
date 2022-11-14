@@ -71,7 +71,7 @@
         \definefontsynonym [MonoVariable]       [LMTypewriterVarWd-Regular] [\s!features=\s!none]
     \stoptypescript
 
-    \starttypescript [\s!math] [modern,latin-modern-designsize,latin-modern] [\s!name]
+    \starttypescript [\s!math] [modern,latin-modern-designsize,latin-modern,modern-nt] [\s!name]
         \loadfontgoodies[lm]
         \definefontsynonym [\s!MathRoman]     [LMMathRoman-Regular]
         \definefontsynonym [\s!MathRomanBold] [LMMathRoman-Bold]
@@ -173,16 +173,23 @@
         \definefontsynonym [LMTypewriterVarWd-DarkOblique]      [\s!file:lmmonoproplt10-boldoblique] [\s!features=\s!default]
     \stoptypescript
 
-%     \starttypescript [\s!math] [modern,latin-modern]
-%         \loadfontgoodies[lm]
-%         \definefontsynonym [LMMathRoman-Regular] [\v!file:latinmodern-math-regular.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=lm]
-%         \definefontsynonym [LMMathRoman-Bold]    [\v!file:latinmodern-math-regular.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=lm]
-%     \stoptypescript
+    \starttypescript [\s!math] [modern,modern-nt,latin-modern,modern-designsize,modern-base,%
+                                modernvariable,modern-variable,%
+                                modernvariablelight,modern-variable-light,%
+                                modern-mono,modern-base-mono]
+        \checkedmapfontsize[\typescripttwo][\s!script]      [.70]
+        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.50]
+    \stoptypescript
 
     \starttypescript [\s!math] [modern,latin-modern]
         \loadfontgoodies[lm]
-        \definefontsynonym [LMMathRoman-Regular] [\v!file:latinmodern-math-regular.otf] [\s!features={\s!math\mathsizesuffix,lm:mathextra,lm-math,mathextra},\s!goodies=lm]
-        \definefontsynonym [LMMathRoman-Bold]    [\v!file:latinmodern-math-regular.otf] [\s!features={\s!math\mathsizesuffix,lm:mathextra,lm-math-bold,lm-math,mathextra},\s!goodies=lm]
+        \definefontsynonym [LMMathRoman-Regular] [\v!file:latinmodern-math.otf] [\s!features={\s!math\mathsizesuffix,lm:mathextra,lm-math,mathextra},\s!goodies=modern-math]
+        \definefontsynonym [LMMathRoman-Bold]    [\v!file:latinmodern-math.otf] [\s!features={\s!math\mathsizesuffix,lm:mathextra,lm-math-bold,lm-math,mathextra},\s!goodies=modern-math]
+    \stoptypescript
+    \starttypescript [\s!math] [modern-nt]
+        \loadfontgoodies[lm]
+        \definefontsynonym [LMMathRoman-Regular] [\v!file:latinmodern-math.otf] [\s!features={\s!math\mathsizesuffix,lm:mathextra,lm-math,mathextra}]
+        \definefontsynonym [LMMathRoman-Bold]    [\v!file:latinmodern-math.otf] [\s!features={\s!math\mathsizesuffix,lm:mathextra,lm-math-bold,lm-math,mathextra}]
     \stoptypescript
 
     \starttypescript [modern-designsize-virtual]
@@ -206,6 +213,14 @@
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern] [\s!default]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern] [\s!default]
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern] [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [modern-nt]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern]    [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]    [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]    [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern-nt] [\s!default]
         \quittypescriptscanning
     \stoptypescript
 

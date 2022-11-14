@@ -1095,7 +1095,7 @@ static int fiolib_readcline(lua_State *L)
     FILE *f = lmt_valid_file(L);
     if (f) {
         luaL_Buffer buf;
-        int c;
+        int c = 0;
         int n = 0;
         luaL_buffinit(L, &buf);
         do {
@@ -1178,7 +1178,7 @@ static int fiolib_readcstring(lua_State *L)
     FILE *f = lmt_valid_file(L);
     if (f) {
         luaL_Buffer buf;
-        int c;
+        int c = 0;
         int n = 0;
         luaL_buffinit(L, &buf);
         do {

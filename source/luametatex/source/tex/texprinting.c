@@ -590,10 +590,6 @@ void tex_print_hex(int sn)
     unsigned int n = (unsigned int) sn;
     int k = 0;
     unsigned char digits[24];
-    if (n < 0) {
-        tex_print_char('-');
-        n = -n; 
-    }
     do {
         unsigned char d = (unsigned char) (n % 16);
         if (d < 10) {
@@ -695,30 +691,38 @@ void tex_print_current_string(void)
 
 void tex_print_cs_checked(halfword p)
 {
-    if (p == null_cs) {
-        tex_print_str_esc("csname");
-        tex_print_str_esc("endcsname");
-        tex_print_char(' ');
-    } else if (p < hash_base) {
-        tex_print_str(error_string_impossible(11));
-    } else if (p == undefined_control_sequence) {
-        tex_print_str_esc("undefined");
-        tex_print_char(' ');
-    } else if (eqtb_out_of_range(p)) {
-        tex_print_str(error_string_impossible(12));
-    } else {
-        strnumber t = cs_text(p);
-        if (t < 0 || t >= lmt_string_pool_state.string_pool_data.ptr) {
-            tex_print_str(error_string_nonexistent(13));
-        } else if (tex_is_active_cs(t)) {
-            tex_print_tex_str(active_cs_value(t));
-        } else {
-            tex_print_tex_str_esc(t);
-            if (! tex_single_letter(t) || (tex_get_cat_code(cat_code_table_par, aux_str2uni(str_string(t))) == letter_cmd)) {
-                tex_print_char(' ');
+    switch (tex_cs_state(p)) {
+        case cs_no_error:
+            {
+                strnumber t = cs_text(p);
+                if (t < 0 || t >= lmt_string_pool_state.string_pool_data.ptr) {
+                    tex_print_str(error_string_nonexistent(13));
+                } else if (tex_is_active_cs(t)) {
+                    tex_print_tex_str(active_cs_value(t));
+                } else {
+                    tex_print_tex_str_esc(t);
+                    if (! tex_single_letter(t) || (tex_get_cat_code(cat_code_table_par, aux_str2uni(str_string(t))) == letter_cmd)) {
+                        tex_print_char(' ');
+                    }
+                }
             }
-        }
-    }
+            break;
+        case cs_null_error:
+            tex_print_str_esc("csname");
+            tex_print_str_esc("endcsname");
+            tex_print_char(' ');
+            break;
+        case cs_below_base_error:
+            tex_print_str(error_string_impossible(11));
+            break;
+        case cs_undefined_error:
+            tex_print_str_esc("undefined");
+            tex_print_char(' ');
+            break;
+        case cs_out_of_range_error:
+            tex_print_str(error_string_impossible(12));
+            break;
+    } 
 }
 
 /*tex

@@ -14,7 +14,7 @@ include(GNUInstallDirs)
 # optionals at some time, but for now we enable them (there is not not much code involved). The 
 # idea behind thes eoptionals is that we have very simple (!) interfaces, delegating as much as 
 # possible to Lua. We will *not* add interfaces with many bindings because that will introduce
-# dependencies (and looking at e.g. LuaTeX build updates shows thatc clearly: a no-go). 
+# dependencies (and looking at e.g. LuaTeX build updates shows that clearly: a no-go). 
 
 set(LMT_KPSE_TOO 1) # In case we want to manage MKII scripts (etc) with mtxrun.
 set(LMT_HB_TOO   1) # Maybe handy for Idris' font development (old converted ffi stuff)
@@ -177,6 +177,10 @@ if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
         -Wno-missing-noreturn
         -Wno-implicit-fallthrough
       # -Wno-format
+        -Wno-reserved-identifier
+        -Wno-date-time
+        -Wno-format-nonliteral
+        -Wno-float-equal
     )
 
 endif()

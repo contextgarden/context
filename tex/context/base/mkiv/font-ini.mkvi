@@ -474,15 +474,52 @@
 
 \installcorenamespace{mappedfontsize}
 
-\unexpanded\def\mapfontsize
-  {\dodoubleargument\font_basics_map_fontsize}
+% \unexpanded\def\mapfontsize
+%   {\dodoubleargument\font_basics_map_fontsize}
 
-\def\font_basics_map_fontsize[#from][#to]%
-  {\setvalue{\??mappedfontsize\the\dimexpr#from\relax}{#to}}
+% \def\font_basics_map_fontsize[#from][#to]%
+%   {\setvalue{\??mappedfontsize\the\dimexpr#from\relax}{#to}}
+
+% \def\font_basics_set_mapped_fontsize#from%
+%   {\ifcsname\??mappedfontsize\the\dimexpr#from\relax\endcsname
+%      \lastnamedcs\else#from%
+%    \fi}
+
+%letcsname\??mappedfontsize\s!text        \endcsname\!!plusone
+\letcsname\??mappedfontsize\s!script      \endcsname\!!plustwo
+\letcsname\??mappedfontsize\s!scriptscript\endcsname\!!plusthree
+
+\unexpanded\def\mapfontsize
+  {\dotripleargument\font_basics_map_fontsize}
+
+\def\font_basics_map_fontsize[#class][#from][#to]%
+  {\setvalue{%
+       \??mappedfontsize
+       #class:%
+       \ifcsname\??mappedfontsize#from\endcsname\lastnamedcs\else1\fi
+   }{#to}}
+
+\permanent\tolerant\protected\def\checkedmapfontsize[#class]#spacer[#from]#spacer[#to]%
+  {\ifcsname\??mappedfontsize#class:\csname\??mappedfontsize#from\endcsname\endcsname
+     % keep (user) value
+   \else
+     \mapfontsize[#class][#from][#to]%
+   \fi}
+
+\permanent\tolerant\def\mappedfontsize#class#from%
+  {\begincsname
+     \??mappedfontsize
+     #class:%
+     \ifcsname\??mappedfontsize#from\endcsname\lastnamedcs\else1\fi
+   \endcsname}
 
 \def\font_basics_set_mapped_fontsize#from%
-  {\ifcsname\??mappedfontsize\the\dimexpr#from\relax\endcsname
-     \lastnamedcs\else#from%
+  {\ifcsname\??mappedfontsize\fontclass:\fontface\endcsname
+    %\the\dimexpr\lastnamedcs\dimexpr#from\relax\relax
+    %\the\dimexpr\lastnamedcs\dimexpr\bodyfontsize\relax\relax
+     \the\dimexpr\lastnamedcs\dimexpr\normalizedbodyfontsize\relax\relax
+   \else % we could use default
+     #from%
    \fi}
 
 \installcorenamespace{fontbodyknown}

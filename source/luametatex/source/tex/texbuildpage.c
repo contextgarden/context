@@ -1011,8 +1011,8 @@ static void tex_aux_fire_up(halfword c)
                                         wait = 1;
                                     }
                                 }
+                                split_best_insert(r) = null;
                                 {
-                                    split_best_insert(r) = null;
                                     /*tex
                                         We need this juggling in order to also set the old school box
                                         when we're in traditional mode.

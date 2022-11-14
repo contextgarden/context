@@ -438,7 +438,7 @@ mp_string mp_chop_string(MP mp, mp_string s, int a, int b)
             a = l;
         }
     }
-    mp_str_room(mp, (size_t) (b - a));
+    mp_str_room(mp, (b - a));
     if (reversed) {
         for (int k = b - 1; k >= a; k--) {
             mp_append_char(mp, *(s->str + k));

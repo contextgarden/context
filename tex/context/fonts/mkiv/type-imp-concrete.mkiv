@@ -20,7 +20,7 @@
     %\definefontfeature[default-slanted-concrete][default][slant=.2]
     %\definefontfeature[none-slanted-concrete]   [none]   [slant=.2]
 
-    \starttypescript [\s!serif] [concrete-serif]
+    \starttypescript [\s!serif] [concrete]
         \definefontsynonym [\s!Serif]            [\s!file:cmunorm] [\s!features=\s!default]
         \definefontsynonym [\s!SerifItalic]      [\s!file:cmunoti] [\s!features=\s!default]
         \definefontsynonym [\s!SerifSlanted]     [\s!file:cmunorm] [\s!features=default-slanted-concrete]
@@ -29,7 +29,7 @@
         \definefontsynonym [\s!SerifBoldSlanted] [\s!file:cmunobx] [\s!features=default-slanted-concrete]
     \stoptypescript
 
-    \starttypescript [\s!sans] [concrete-sans]
+    \starttypescript [\s!sans] [concrete]
         \definefontsynonym [\s!Sans]            [\s!file:cmunss] [\s!features=\s!default]
         \definefontsynonym [\s!SansItalic]      [\s!file:cmunsi] [\s!features=\s!default]
         \definefontsynonym [\s!SansSlanted]     [\s!file:cmunss] [\s!features=default-slanted-concrete]
@@ -38,7 +38,7 @@
         \definefontsynonym [\s!SansBoldSlanted] [\s!file:cmunsx] [\s!features=default-slanted-concrete]
     \stoptypescript
 
-    \starttypescript [\s!mono] [concrete-mono]
+    \starttypescript [\s!mono] [concrete]
         \definefontsynonym [\s!Mono]            [\s!file:cmuntt] [\s!features=\s!none]
         \definefontsynonym [\s!MonoItalic]      [\s!file:cmunit] [\s!features=\s!none]
         \definefontsynonym [\s!MonoSlanted]     [\s!file:cmunst] [\s!features=\s!none]
@@ -47,16 +47,26 @@
         \definefontsynonym [\s!MonoBoldSlanted] [\s!file:cmuntb] [\s!features=none-slanted-concrete]
     \stoptypescript
 
-    \starttypescript [\s!math] [concrete-math] [\s!name]
+    \starttypescript [\s!math] [concrete]
+        \checkedmapfontsize[\typescripttwo][\s!script]      [.76]
+        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.60]
+    \stoptypescript
+
+    \starttypescript [\s!math] [concrete] [\s!name]
         \loadfontgoodies[concrete-math]
         \definefontsynonym[\s!MathRoman] [\s!file:Concrete-Math.otf] [\s!features={\s!math\mathsizesuffix,mathextra,concrete:mathextra},\s!goodies=concrete-math]
     \stoptypescript
 
-    \starttypescript [concrete]
-        \definetypeface [concrete] [\s!rm] [\s!serif] [concrete-serif] [\s!default]
-        \definetypeface [concrete] [\s!ss] [\s!sans]  [concrete-sans]  [\s!default]
-        \definetypeface [concrete] [\s!tt] [\s!mono]  [concrete-mono]  [\s!default]
-        \definetypeface [concrete] [\s!mm] [\s!math]  [concrete-math]  [\s!default]
+    \starttypescript [\s!math] [concrete-nt] [\s!name]
+        \loadfontgoodies[concrete-math]
+        \definefontsynonym[\s!MathRoman] [\s!file:Concrete-Math.otf] [\s!features={\s!math\mathsizesuffix,mathextra,concrete:mathextra}]
+    \stoptypescript
+
+    \starttypescript [concrete,concrete-nt]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [concrete]       [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [concrete]       [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [concrete]       [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone] [\s!default]
         \quittypescriptscanning
     \stoptypescript
 

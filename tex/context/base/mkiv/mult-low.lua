@@ -112,7 +112,8 @@ return {
         "applytextitalickernmathcontrolcode", "applyscriptitalickernmathcontrolcode",
         "checkspaceitalickernmathcontrolcode", "checktextitalickernmathcontrolcode",
         "analyzescriptnucleuscharmathcontrolcode", "analyzescriptnucleuslistmathcontrolcode", "analyzescriptnucleusboxmathcontrolcode",
-        "accenttopskewwithoffsetmathcontrolcode", "ignorekerndimensionsmathcontrolcode",
+        "accenttopskewwithoffsetmathcontrolcode", "ignorekerndimensionsmathcontrolcode", "ignoreflataccentsmathcontrolcode",
+        "extendaccentsmathcontrolcode",
         --
         "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noexpansionglyphoptioncode", "noprotrusionglyphoptioncode",
         "noleftkerningglyphoptioncode", "noleftligaturingglyphoptioncode", "norightkerningglyphoptioncode", "norightligaturingglyphoptioncode",
@@ -188,7 +189,7 @@ return {
         "twoperemspace", "threeperemspace", "fourperemspace", "fiveperemspace", "sixperemspace",
         "figurespace", "punctuationspace", "hairspace", "enquad", "emquad",
         "zerowidthspace", "zerowidthnonjoiner", "zerowidthjoiner", "zwnj", "zwj",
-        "optionalspace", "asciispacechar", "softhyphen",
+        "optionalspace", "asciispacechar", "softhyphen", "autoinsertedspace",
         --
         "Ux", "eUx", "Umathaccents",
         --

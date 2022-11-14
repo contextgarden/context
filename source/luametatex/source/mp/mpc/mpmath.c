@@ -585,9 +585,9 @@ int mp_number_nonequalabs(mp_number *A, mp_number *B)
 
 static char *mp_string_scaled (MP mp, int s)
 {
-    (void) mp;
     static char scaled_string[32];
     int i = 0;
+    (void) mp;
     if (s < 0) {
         scaled_string[i++] = '-';
         s = -s;

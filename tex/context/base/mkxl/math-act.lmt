@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['math-act'] = {
 -- have been removed (no longer viable) but can be found in the .lua variant.
 
 local type, next, tonumber = type, next, tonumber
-local fastcopy, copytable, insert, remove = table.fastcopy, table.copy, table.insert, table.remove
+local fastcopy, copytable, insert, remove, concat = table.fastcopy, table.copy, table.insert, table.remove, table.concat
 local formatters = string.formatters
 local byte = string.byte
 local setmetatableindex, sortedkeys, sortedhash  = table.setmetatableindex, table.sortedkeys, table.sortedhash
@@ -24,6 +24,7 @@ local report_math      = logs.reporter("mathematics","initializing")
 local report_mathtweak = logs.reporter("mathematics","tweak")
 
 local getfontoffamily  = tex.getfontoffamily
+local texget           = tex.get
 local fontcharacters   = fonts.hashes.characters
 local chardata         = characters.data
 local extensibles      = mathematics.extensibles
@@ -245,8 +246,22 @@ end
 
 -- a couple of predefined tweaks:
 
-local mathtweaks   = { }
-mathematics.tweaks = mathtweaks
+local datasets       = { }
+local mathtweaks     = { datasets = datasets }
+mathematics.tweaks   = mathtweaks
+
+-- can be a common helper:
+
+local f_u = formatters["%U"]
+
+local function unicodecharlist(t)
+    local r = { }
+    local n = 0
+    for u in sortedhash(t) do
+        n = n + 1 ; r[n] = f_u(u)
+    end
+    return concat(r," ")
+end
 
 local function report_tweak(fmt,target,original,...)
     if fmt then
@@ -266,6 +281,16 @@ local function report_tweak(fmt,target,original,...)
         end
     else
         report_mathtweak("")
+    end
+end
+
+local function feedback_tweak(tweak,target,original,done)
+    if not done or (type(done) == "table" and not next(done)) then
+if trace_tweaking then -- for now
+        report_tweak("no need for %a",target,original,tweak)
+end
+    elseif trace_tweaking then
+        report_tweak("tweak %a applied to: %s",target,original,tweak,unicodecharlist(done))
     end
 end
 
@@ -341,7 +366,7 @@ local detail  do
                                 c = characters[nxt]
                                 nxt = c.next
                             end
-                            c = c.hparts or c.vparts
+                            c = c.parts
                             if c then
                                 local index = t[3]
                                 if index == "*" then
@@ -414,6 +439,12 @@ do
                     t = type(v)
                 end
                 if t == "table" and next(v) then
+
+                    local axis = tonumber(v.axis)
+                    if axis then
+                        axis = target.mathparameters.AxisHeight * axis
+                    end
+
                     local factor    = v.factor
                     if factor then
                         local m = v
@@ -490,6 +521,13 @@ do
                     if yoffsetfactor then
                         character.yoffset = yoffsetfactor * total
                     end
+
+                    if axis then
+                        character.height  = (character.height  or 0) - axis
+                        character.depth   = (character.depth   or 0) + axis
+                        character.yoffset = (character.yoffset or 0) + axis
+                    end
+
                     if italicfactor then
                         if italic then
                             character.italic = italicfactor * italic
@@ -533,7 +571,7 @@ do
                     if nxt then
                         adapt(list,target,original,targetcharacters,originalcharacters,nxt,v,compact,n)
                     else
-                        local parts = character.hparts
+                        local parts = character.parts
                         if parts then
                             for i=1,#parts do
                                 adapt(list,target,original,targetcharacters,originalcharacters,parts[i],v,compact,n)
@@ -621,25 +659,24 @@ do
          -- local originalcharacters = original.characters
             local count = 0
          -- local also  = getalso(target,original)
-         -- local done  = { }
+            local done  = false
             for k, v in sortedhash(list) do
                 local ori = targetcharacters[k]
                 local nxt = ori.next
                 local cnt = v
                 if nxt then
-                    local hpt, vpt
+                    local prt = nil
                     local lst = { }
                     while nxt do
                         local chr = targetcharacters[nxt]
                         lst[#lst+1] = chr
                         nxt = chr.next
                         if not nxt then
-                            hpt = chr.hparts
-                            vpt = chr.vparts
+                            prt = chr.parts
                             break
                         end
                     end
-                    if hpt or vpt then
+                    if prt then
                         count = count + 1
                         if cnt ~= "*" then
                             if #lst < cnt then
@@ -647,15 +684,18 @@ do
                             end
                             ori = lst[cnt]
                         end
-                        ori.hparts = hpt
-                        ori.vparts = vpt
-                     -- ori.next = nil -- so we keep the chain
+                        ori.parts = prt
+                    end
+                    if not trace_tweaking then
+                        done = true
+                    elseif done then
+                        done[k] = true
+                    else
+                        done = { [k] = true }
                     end
                 end
             end
-            if trace_tweaking and count > 0 then
-                report_tweak("%i variants wiped",target,original,count)
-            end
+            feedback_tweak("wipevariants",target,original,done)
         end
     end
 
@@ -663,7 +703,7 @@ end
 
 do
 
-    function mathtweaks.replacements(target,original,parameters)
+    function mathtweaks.replace(target,original,parameters)
         local list = parameters.list
         if list then
             local targetcharacters   = target.characters
@@ -687,7 +727,7 @@ do
         end
     end
 
-    function mathtweaks.substitutes(target,original,parameters)
+    function mathtweaks.substitute(target,original,parameters)
         local list = parameters.list
         if list then
             local targetcharacters   = target.characters
@@ -707,9 +747,6 @@ do
         end
     end
 
-    mathtweaks.replace    = mathtweaks.replacements
-    mathtweaks.substitute = mathtweaks.substitutes
-
 end
 
 do
@@ -721,7 +758,7 @@ do
         if list then
             local targetcharacters   = target.characters
             local originalcharacters = original.characters
-            local count              = 0
+            local done               = false
 
             local function add(v,n)
                 local chardata = targetcharacters[mathgaps[n] or n]
@@ -735,7 +772,13 @@ do
                                 local t = mathgaps[nn] or nn
                                 if t then
                                     kerns[t] = vv * width
-                                    count = count + 1
+                                    if not trace_tweaking then
+                                        done = true
+                                    elseif done then
+                                        done[t] = true
+                                    else
+                                        done = { [t] = true }
+                                    end
                                 end
                             end)
                         end
@@ -768,9 +811,7 @@ do
 --                 end
 --             end
 
-            if trace_tweaking and count > 0 then
-                report_tweak("%i kern pairs",target,original,count)
-            end
+            feedback_tweak("kernpairs",target,original,done)
         end
     end
 
@@ -1038,65 +1079,67 @@ do
 
 end
 
-do
+-- do
+--
+--     function mathtweaks.fixanchors(target,original,parameters)
+--         local targetcharacters= target.characters
+--         local factor = tonumber(parameters.factor) or 0
+--         if factor ~= 0 then
+--             local done = false
+--             for k, v in next, targetcharacters do
+--                 local a = v.topanchor
+--                 if a and a > 0 then
+--                     v.topanchor = a * factor
+--                     count = count + 1
+--                     if not trace_tweaking then
+--                         done = true
+--                     elseif done then
+--                         done[u] = true
+--                     else
+--                         done = { [u] = true }
+--                     end
+--                 end
+--             end
+--         end
+--         feedback_tweak("fixanchors",target,original,done)
+--     end
+--
+-- end
 
-    function mathtweaks.fixanchors(target,original,parameters)
-        local targetcharacters= target.characters
-        local factor = tonumber(parameters.factor) or 0
-        if factor ~= 0 then
-            local count = 0
-            for k, v in next, targetcharacters do
-                local a = v.topanchor
-                if a and a > 0 then
-                    v.topanchor = a * factor
-                    count = count + 1
-                end
-            end
-            if trace_tweaking and count > 0 then
-                report_tweak("%i top anchors fixed",target,original,count)
-            end
-        end
-    end
-
-    mathtweaks.fixaccents = mathtweaks.fixanchors
-
-end
-
-do
-
-    -- actually this should be a an engine feature driven by category because we don't
-    -- want this in display mode .. only a test for MS and HH
-
+-- do
+--
+--     -- actually this should be a an engine feature driven by category because we don't
+--     -- want this in display mode .. only a test for MS and HH
+--
 --     local issymbol = characters.is_symbol
 --
 --     function mathtweaks.oldstylemath(target,original,parameters)
--- local chardata = characters.data
+--         local chardata = characters.data
 --         local characters = target.characters
 --         local axis       = target.mathparameters.AxisHeight
 --         local delta      = (parameters.factor or .1) * axis
 --         target.mathparameters.AxisHeight = (axis - delta)
 --         for k, v in sortedhash(characters) do
 --             if issymbol[k] then -- quick hack, engine knows
--- print("old style math",k,chardata[k].description)
 --                 v.yoffset = -delta
 --                 v.height  = (v.height or 0) - delta
 --                 v.depth   = (v.depth  or 0) - delta
 --             end
 --         end
 --     end
-
-    function mathtweaks.oldstylemath(target,original,parameters)
-        -- not relevant
-    end
-
-end
+--
+--     function mathtweaks.oldstylemath(target,original,parameters)
+--         -- not relevant
+--     end
+--
+-- end
 
 do
 
     function mathtweaks.simplifykerns(target,original,parameters)
         local characters = target.characters
-        local simplified = 0
-        for k, v in sortedhash(characters) do
+        local done       = false
+        for u, v in sortedhash(characters) do
             local mathkerns = v.mathkerns
             if mathkerns then
                 local k = mathkerns.topleft
@@ -1128,25 +1171,28 @@ do
                     end
                 end
                 v.mathkerns = nil
-                simplified  = simplified + 1
+                if not trace_tweaking then
+                    done = true
+                elseif done then
+                    done[u] = true
+                else
+                    done = { [u] = true }
+                end
             end
         end
-        if simplified == 0 then
-            report_tweak("no need to simplify mathkerns",target,original)
-        elseif trace_tweaking then
-            report_tweak("%i mathkerns simplified",target,original,simplified)
-        end
+        feedback_tweak("simplifykerns",target,original,done)
     end
 
 end
 
 do
 
-     local function wipe(target,original,parameters,field,move,integrals)
+     local function wipe(whatever,target,original,parameters,field,move,integrals)
         local targetcharacters   = target.characters
         local targetdescriptions = target.descriptions
         local factor             = target.parameters.factor
         local correct            = parameters.correct
+        local done               = false
         local function getllx(u)
             local d = targetdescriptions[u]
             if d then
@@ -1172,7 +1218,7 @@ do
                             goto smaller
                         end
                     else
-                        local done   = false
+                        local okay   = false
                         local italic = c.italic
                         if move and not c.advance then -- advance check prevents double move
                             local width  = c.width or 0
@@ -1187,39 +1233,41 @@ do
                                     if topanchor then
                                         c.topanchor = topanchor + llx
                                     end
-                                    c.bottomleft = (c.bottomleft or 0) - llx
-                                    c.topleft    = (c.topleft    or 0) - llx
-                                    done = true
+                                    -- too bad (schola e^x):
+                                 -- c.bottomleft = (c.bottomleft or 0) - llx
+                                 -- c.topleft    = (c.topleft    or 0) - llx
+                                    okay = true
                                 end
                             end
                             if italic and italic ~= 0 then
                                 c.width       = width + italic
                                 c.bottomright = - italic
-                                done = true
+                                okay = true
                             else
                                 c.width = width
                             end
                         end
                         if italic then
                             c.italic = nil
-                            done = true
+                            okay = true
                         end
-                        if not done then
-                            goto smaller
-                        end
-                    end
-                    if trace_tweaking then
-                        if l then
-                            report_tweak("%s %a in range %a from %C","removing",target,original,field,l,s)
+                        if okay then
+                            if not trace_tweaking then
+                                done = true
+                            elseif done then
+                                done[u] = true
+                            else
+                                done = { [u] = true }
+                            end
                         else
-                            report_tweak("%s %a from %C","removing",target,original,field,s)
+                            goto smaller
                         end
                     end
                     goto smaller
                   ::smaller::
                     s = c.smaller
                   ::variants::
-                    -- no italics here anyway butr we could check them some day
+                    -- no italics here anyway but we could check them some day
                 else
                     break
                 end
@@ -1262,22 +1310,21 @@ do
                 end
             end
         end
+        feedback_tweak(whatever,target,original,done)
     end
 
     function mathtweaks.wipeanchors(target,original,parameters)
-        wipe(target,original,parameters,"topanchor")
+        wipe("wipeanchors",target,original,parameters,"topanchor")
     end
-
-    mathtweaks.wipeaccents = mathtweaks.wipeanchors
 
     function mathtweaks.wipeitalics(target,original,parameters)
         if not checkitalics then
-            wipe(target,original,parameters,"italic")
+            wipe("wipeitalics",target,original,parameters,"italic")
         end
     end
 
     function mathtweaks.moveitalics(target,original,parameters)
-        wipe(target,original,parameters,"italic",true)
+        wipe("moveitalics",target,original,parameters,"italic",true)
     end
 
  -- function mathtweaks.fixdigits(target,original,parameters)
@@ -1292,7 +1339,8 @@ do
         local characters = target.characters
         local list       = parameters.list
         if list then
-            for k, v in sortedhash(list) do
+            local done = false
+            for u, v in sortedhash(list) do
                 local c = characters[k]
                 if c then
                     local w = c.width
@@ -1301,14 +1349,19 @@ do
                         if trace_tweaking then
                             -- todo
                         end
+                        if not trace_tweaking then
+                            done = true
+                        elseif done then
+                            done[u] = true
+                        else
+                            done = { [u] = true }
+                        end
                     end
                 end
             end
-            -- todo: small
+            feedback_tweak("topanchors",target,original,done)
         end
     end
-
-    mathtweaks.topaccents = mathtweaks.topanchors
 
     function mathtweaks.movelimits(target,original,parameters)
         local characters = target.characters
@@ -1346,6 +1399,27 @@ do
                     if n then
                         relocate(n,factor)
                     end
+                    -- Kind of tricky: we configure the engine to use the vitalic
+                    -- so when we tweak we need to set that to zero.
+                    local parts  = c.parts
+                    local italic = c.partsitalic
+                    if parts and italic then
+                        if italic ~= 0 then
+                            local tchar = characters[parts[#parts].glyph]
+                            local bchar = characters[parts[1].glyph]
+                            local width = tchar.width or 0
+                            local half  = (italic/2) * factor
+                            tchar.topanchor    = width + half
+                            bchar.bottomanchor = width - half
+                            bchar.bottomright  = - italic
+                            if trace_tweaking then
+                                -- todo
+                            end
+                            tchar.italic = nil
+                            bchar.italic = nil
+                        end
+                        c.vitalic = nil
+                    end
                     if also then
                         local a = also[u]
                         if a then
@@ -1365,9 +1439,7 @@ do
                     relocate(k,tonumber(v) or factor)
                 end
             end
-            if not next(done) then
-                report_tweak("no need to move limits",target,original)
-            end
+            feedback_tweak("movelimits",target,original,done)
         end
     end
 
@@ -1544,6 +1616,8 @@ do
         },
     }
 
+    datasets.accentdimensions = candidates
+
     local function adapt(c,factor,baseheight,basedepth)
 --         if not c.tweaked then
             local height  = c.height or 0
@@ -1593,7 +1667,7 @@ do
                                 nv = nv + 1
                                 nc = c.next
                                 if not nc then
-                                    local hv = c.hparts
+                                    local hv = c.parts
                                     if hv then
                                         for i=1,#hv do
                                             local c = characters[hv[i].glyph]
@@ -1656,7 +1730,7 @@ do
  --         depth    = 0,
  --         unicode  = 0x203E,
  --         commands = { { "rule", height, width } },
- --         hparts   = {
+ --         parts    = {
  --             { advance = width, ["end"] = step, glyph = 0x203E, start = 0 },
  --             { advance = width, ["end"] = 0,    glyph = 0x203E, start = step, extender = 1 },
  --         }
@@ -1668,7 +1742,7 @@ do
  --         yoffset  = -depth,
  --         unicode  = 0x0332,
  --         commands = { { "rule", height, width } },
- --         hparts   = {
+ --         parts    = {
  --             { advance = width, ["end"] = step, glyph = 0x0332, start = 0 },
  --             { advance = width, ["end"] = 0,    glyph = 0x0332, start = step, extender = 1 },
  --         }
@@ -1687,7 +1761,7 @@ do
             yoffset  = - thickness / 2,
             unicode  = 0x203E,
             commands = { { "rule", thickness, width } },
-            hparts   = {
+            parts    = {
                 { advance = width, ["end"] = step, glyph = 0x203E, start = 0 },
                 { advance = width, ["end"] = 0,    glyph = 0x203E, start = step, extender = 1 },
             }
@@ -1714,7 +1788,7 @@ do
                 depth    = double,
                 unicode  = 0x23B4,
                 commands = { { "rule", thickness, width } },
-                hparts   = {
+                parts    = {
                     { advance = thickness, glyph = tpiece, ["end"] = 0,    start = half },
                     { advance = width,     glyph = 0x203E, ["end"] = step, start = step, extender = 1 },
                     { advance = thickness, glyph = tpiece, ["end"] = half, start = 0 },
@@ -1735,7 +1809,7 @@ do
                 depth    = half,
                 unicode  = 0x23B5,
                 commands = { { "rule", thickness, width } },
-                hparts   = {
+                parts    = {
                     { advance = thickness, glyph = bpiece, ["end"] = 0,    start = half },
                     { advance = width,     glyph = 0x203E, ["end"] = step, start = step, extender = 1 },
                     { advance = thickness, glyph = bpiece, ["end"] = half, start = 0 },
@@ -1776,13 +1850,12 @@ do
             while chardata.next do
                 chardata = characters[chardata.next]
             end
---             if chardata and (force or not chardata.hparts) then
-            if chardata and (force or overloads[unicode] == false or not chardata.hparts) then
+            if chardata and (force or overloads[unicode] == false or not chardata.parts) then
                 if not list then
-                    chardata.hparts = nil -- when we test
+                    chardata.parts = nil -- when we test
                 else
                     local overload = overloads[unicode]
-                    local hparts   = { }
+                    local parts    = { }
                     for i=1,#list do
                         local part    = list[i]
                         local glyph   = part.glyph or unicode
@@ -1797,7 +1870,7 @@ do
                         local width = characters[glyph].width
                         local step  = width/2
                         if part.extensible then
-                            hparts[#hparts+1] = {
+                            parts[#parts+1] = {
                                 advance  = width,
                                 glyph    = glyph,
                                 ["end"]  = step,
@@ -1805,7 +1878,7 @@ do
                                 extender = 1,
                             }
                         else
-                            hparts[#hparts+1] = {
+                            parts[#parts+1] = {
                                 advance = width,
                                 glyph   = glyph,
                                 ["end"] = 0,
@@ -1813,8 +1886,8 @@ do
                             }
                         end
                     end
-                    if #hparts == #list then
-                        chardata.hparts = hparts
+                    if #parts == #list then
+                        chardata.parts = parts
                     end
                 end
             end
@@ -1886,6 +1959,8 @@ do
         }
     end
 
+    datasets.addarrows = { }
+
     function mathtweaks.addarrows(target,original,parameters)
         local overloads = parameters.list  or { } -- { [unicode] = { left = .1, right = .1 } }
         local left      = parameters.left  or 0.05
@@ -1895,6 +1970,10 @@ do
          -- inspect(arrows)
         for unicode, list in sortedhash(arrows) do
             create(target,unicode,list,overloads)
+        end
+        datasets.addarrows = sortedkeys(arrows)
+        if trace_tweaking then
+            report_tweak("arrows added",target,original)
         end
     end
 
@@ -1915,7 +1994,7 @@ do -- this could be combined with the previous
                         local sequence   = data.sequence
                         local horizontal = data.horizontal
                         if sequence then
-                            local parts = horizontal and source.hparts or source.vparts
+                            local parts = source.parts
                             if parts then
                                 local p = { }
                                 for i=1,#sequence do
@@ -1943,7 +2022,7 @@ do -- this could be combined with the previous
                                     end
                                 end
                                 if #p > 0 then
-                                    target[horizontal and "hparts" or "vparts"] = p
+                                    target.parts = p
                                 end
                             end
                         end
@@ -1981,6 +2060,8 @@ do
         { 0x202F, "q", 1/8       }, -- narrownobreakspace
         { 0x205F, "s", 1/2       }, -- math thinspace
     }
+
+    datasets.checkspacing = list
 
     function mathtweaks.checkspacing(target,original,parameters)
         local characters = target.characters
@@ -2073,6 +2154,32 @@ do
         end
     end
 
+    local function fix(target,original,characters,u,l)
+        local data = characters[u]
+        if data then
+            data.innerlocation = l.location == "right" and 2 or 1
+            data.innerxoffset  = (l.hfactor or 1) *  (data.width  or 0)
+            data.inneryoffset  = (l.vfactor or 1) * ((data.height or 0) + (data.depth or 0))
+        end
+    end
+
+    function mathtweaks.radicaldegreeanchors(target,original,parameters)
+        local list = parameters.list
+        if list then
+            local characters = target.characters
+            for unicode, l in sortedhash(list) do -- resolve variants
+                local u = detail(characters,unicode) or unicode
+                if type(u) == "table" then
+                    for i=1,#u do
+                        fix(target,original,characters,u[i],l)
+                    end
+                else
+                    fix(target,original,characters,u,l)
+                end
+            end
+        end
+    end
+
 end
 
 do
@@ -2137,15 +2244,48 @@ do
         done = nil
     end
 
+    -- After the next one I rewarded myself by (again) watching Joe Parrish interpretation
+    -- of Shostakovich 10 Mvmt. II - Metal several times (video on yt, track on bandcamp)
+    -- ... timestamp: awaiting the new Albion (Official) single; their work comes in parts.
+
+    function mathtweaks.fixintegrals(target,original,parameters)
+        local characters = target.characters
+        local integral   = characters[0x222B]
+        if integral and not integral.parts then
+            local top = characters[0x2320]
+            local mid = characters[0x23AE]
+            local bot = characters[0x2321]
+            if top and mid and bot then
+                top = top.height
+                mid = mid.height
+                bot = bot.height
+                integral.partsitalic = integral.italic
+                integral.parts       = {
+                    { advance = bot, ["end"] = bot/3, glyph = 0x2321, start = bot/3  },
+                    { advance = mid, ["end"] = mid/2, glyph = 0x23AE, start = mid/2, extender = 1 },
+                    { advance = top, ["end"] = top/3, glyph = 0x2320, start = top/3  },
+                }
+                if trace_tweaking then
+                    report_tweak("fixing the integral extensible",target,original)
+                end
+            end
+        else
+            report_tweak("no need to fix the integral extensible",target,original)
+        end
+    end
+
 end
 
 do
 
     local list = { 0x2061, 0x2062, 0x2063, 0x2064 }
 
+    datasets.wipecues = list
+
     function mathtweaks.wipecues(target,original,parameters)
         local characters = target.characters
         local tobewiped  = parameters.list or list
+        local done       = false
         for i=1,#tobewiped do
             local unicode = tobewiped[i]
             characters[unicode] = {
@@ -2154,10 +2294,15 @@ do
                 depth   = 0,
                 unicode = unicode,
             }
-            if trace_tweaking then
-                report_tweak("character %U has been wiped",target,original,unicode)
+            if not trace_tweaking then
+                done = true
+            elseif done then
+                done[unicode] = true
+            else
+                done = { [unicode] = true }
             end
         end
+        feedback_tweak("wipecues",target,original,done)
     end
 
 end
@@ -2168,48 +2313,62 @@ do
         [0x002F] = 0x2044,
     }
 
+    datasets.fixslashes = mapping
+
     function mathtweaks.fixslashes(target,original,parameters)
         local characters = target.characters
+     -- local done       = false
         for normal, weird in sortedhash(mapping) do
             local normalone  = characters[normal]
             local weirdone   = characters[weird]
             if normalone and weirdone and not normalone.next then
                 normalone.next = weirdone.next
-                if trace_tweaking then
-                    report_tweak("extensibles from %U used for %U",target,original,weird,normal)
-                end
+             -- if not trace_tweaking then
+             --     done = true
+             -- elseif done then
+             --     done[normal] = true
+             -- else
+             --     done = { [normal] = true }
+             -- end
             end
             weirdone = copytable(normalone)
             characters[weird] = weirdone
             weirdone.unicode = weird
         end
-    end
+     -- feedback_tweak("fixslashes",target,original,done)
+        if trace_tweaking then
+            report_tweak("slashes fixed",target,original)
+        end
+     end
 
 end
 
 do -- see pagella for an extensive example
 
+    local nps = fonts.helpers.newprivateslot
+
     local mapping = {
-        [0x0300] = { 0x0060, false },  -- aliases can be a table
-        [0x0308] = { 0x00A8, false },
-        [0x0304] = { 0x00AF, false },
-        [0x0301] = { 0x00B4, false },
-        [0x0302] = { 0x02C6, true  },
-        [0x030C] = { 0x02C7, true  },
-        [0x0306] = { 0x02D8, false },
-        [0x0307] = { 0x02D9, false },
-        [0x030A] = { 0x02DA, false },
-        [0x0303] = { 0x02DC, true  },
-        [0x20DB] = { 0x20DB, false },
+        [0x0300] = { 0x0060, false, nps("flat 0x0060 1") },
+        [0x0308] = { 0x00A8, false, nps("flat 0x00A8 1") },
+        [0x0304] = { 0x00AF, false, nps("flat 0x00AF 1") },
+        [0x0301] = { 0x00B4, false, nps("flat 0x00B4 1") },
+        [0x0302] = { 0x02C6, true,  nps("flat 0x02C6 1") },
+        [0x030C] = { 0x02C7, true,  nps("flat 0x02C7 1") },
+        [0x0306] = { 0x02D8, false, nps("flat 0x02D8 1") },
+        [0x0307] = { 0x02D9, false, nps("flat 0x02D9 1") },
+        [0x030A] = { 0x02DA, false, nps("flat 0x02DA 1") },
+        [0x0303] = { 0x02DC, true,  nps("flat 0x02DC 1") },
+        [0x20DB] = { 0x20DB, false, nps("flat 0x20DB 1") },
     }
 
-local hat = fonts.helpers.newprivateslot("hat 0x0302") -- todo other sizes
+    datasets.fixaccents     = mapping
+    datasets.extendaccents  = mapping
+    datasets.flattenaccents = mapping
+    datasets.copyaccents    = mapping
 
     function mathtweaks.fixaccents(target,original,parameters)
         local characters = target.characters
-
-characters[hat] = copytable(characters[0x0302]) -- TODO
-
+        local done       = false
         for stretching, entry in sortedhash(mapping) do
             local alias  = entry[1]
             local stretchingdata = characters[stretching]
@@ -2218,23 +2377,43 @@ characters[hat] = copytable(characters[0x0302]) -- TODO
                 local width     = -topanchor
                       topanchor = width/2
                 stretchingdata.width     = width
+                stretchingdata.advance   = 0
                 stretchingdata.topanchor = topanchor
                 stretchingdata.commands  = { rightcommand[width + topanchor], charcommand[stretching] }
-                if trace_tweaking then
-                    report_tweak("width of initial extensible accent %U set",target,original,stretching)
+                if not trace_tweaking then
+                    done = true
+                elseif done then
+                    done[stretching] = true
+                else
+                    done = { [stretching] = true }
                 end
             end
         end
+        feedback_tweak("fixaccents",target,original,done)
     end
+
+    -- all  true|number  false
 
     function mathtweaks.extendaccents(target,original,parameters)
         local characters = target.characters
+        local all        = parameters.all
+        local count      = tonumber(all)
+        local done       = false
         for stretching, entry in sortedhash(mapping) do
             local extend = entry[2]
-            local stretchingdata = characters[stretching]
             if extend then
-                local last = stretchingdata
+                local last = characters[stretching]
+                local cnt  = 1
+                local okay = false
                 while last do
+                    if all or (count and cnt > count) then
+                        last.extensible = true
+                        local flataccent = last.flataccent
+                        if flataccent then
+                            characters[flataccent].extensible = true
+                            okay = true
+                        end
+                    end
                     local n = last.next
                     if n then
                         last = characters[n]
@@ -2243,16 +2422,72 @@ characters[hat] = copytable(characters[0x0302]) -- TODO
                         local flataccent = last.flataccent
                         if flataccent then
                             characters[flataccent].extensible = true
+                            okay = true
                         end
                         break
+                    end
+                    cnt = cnt + 1
+                end
+                if okay then
+                    if not trace_tweaking then
+                        done = true
+                    elseif done then
+                        done[stretching] = true
+                    else
+                        done = { [stretching] = true }
                     end
                 end
             end
         end
+        feedback_tweak("extendaccents",target,original,done)
+    end
+
+    -- force     true     false
+    -- height    factor   0.8
+    -- offset    factor   0.9|calculated
+    -- squeeze   factor   0.1|calculated
+
+    function mathtweaks.flattenaccents(target,original,parameters)
+        local characters = target.characters
+        local force   = parameters.force
+        local squeeze = parameters.squeeze or 0.8
+        local ofactor = parameters.offset  or (squeeze/2)
+        local hfactor = parameters.height  or (1 - ofactor)
+        local done    = false
+        for stretching, entry in sortedhash(mapping) do
+            local last = characters[stretching]
+            while last do
+                if force or not last.flataccent then
+                    local slot   = entry[3]
+                    local data   = copytable(last)
+                    local height = data.height  or 0
+                    data.effect  = { squeeze = squeeze }
+                    data.height  = hfactor * height
+                    data.yoffset = ofactor * height
+                    characters[slot] = data
+                    last.flataccent  = slot
+                    if not trace_tweaking then
+                        done = true
+                    elseif done then
+                        done[stretching] = true
+                    else
+                        done = { [stretching] = true }
+                    end
+                end
+                local n = last.next
+                if n then
+                    last = characters[n]
+                else
+                    break
+                end
+            end
+        end
+        feedback_tweak("flattenaccents",target,original,done)
     end
 
     function mathtweaks.copyaccents(target,original,parameters)
         local characters = target.characters
+        local done       = false
         for stretching, entry in sortedhash(mapping) do
             local alias = entry[1]
             if alias ~= stretching then
@@ -2266,15 +2501,20 @@ characters[hat] = copytable(characters[0x0302]) -- TODO
                         next      = stretchingdata.next,
                         commands  = { charcommand[stretching] },
                         topanchor = stretchingdata.topanchor,
-                     -- unicode   = stretching,  -- when we aliasize to combiners
+                     -- unicode   = stretching,  -- when we alias to combiners
                         unicode   = alias, -- when we keep the original
                     }
-                    if trace_tweaking then
-                        report_tweak("extensibles accent %U copied to %U",target,original,stretching,alias)
+                    if not trace_tweaking then
+                        done = true
+                    elseif done then
+                        done[stretching] = true
+                    else
+                        done = { [stretching] = true }
                     end
                 end
             end
         end
+        feedback_tweak("copyaccents",target,original,done)
     end
 
 end
@@ -2335,8 +2575,8 @@ do
         local parameters = target.parameters
         local linewidth  = target.MathConstants.RadicalRuleThickness -- make option
         local basechar   = characters[radical]
-        local baseheight = basechar.height/2
-        local basedepth  = basechar.depth/2
+        local baseheight = (basechar.height or 0)/2
+        local basedepth  = (basechar.depth  or 0)/2
         local basetotal  = baseheight + basedepth
         local used       = baseheight
         --
@@ -2364,7 +2604,7 @@ do
                 downcommand[basedepth],
                 { "rule", basetotal, linewidth },
             },
-            vparts = {
+            parts = {
                 {
                     advance  = basetotal,
                     ["end"]  = used,
@@ -2408,7 +2648,7 @@ do
                 upcommand[baseheight-4*linewidth],
                 { "rule", 4*linewidth, linewidth },
             },
-            vparts = {
+            parts = {
                 {
                     advance  = basetotal,
                     ["end"]  = used,
@@ -2489,7 +2729,7 @@ do
                 commands = {
                     scale == 1 and charcommand[basecode] or { "slot", 0, basecode, scale, scale },
                 },
-                vparts = {
+                parts = {
                     {
                         advance  = used,
                         ["end"]  = used,
@@ -2553,13 +2793,13 @@ do
      -- local used       = 0.8*height
         local used       = 1.2*height -- large overlap because no smaller pieces
         local total      = height + depth
-        characters[single].vparts = extensible(single,total,used)
+        characters[single].parts = extensible(single,total,used)
         characters[double] = {
             unicode  = double,
             width    = 2*width - 1*advance,
             height   = height,
             depth    = depth,
-            vparts   = extensible(double,total,used),
+            parts    = extensible(double,total,used),
             callback = "devirtualize",
             commands = {
                 charcommand[single],
@@ -2787,16 +3027,10 @@ do
             elseif trace_tweaking then
                 report_tweak("skipping mirror %U (%s)",target,original,unicode,what)
             end
-            local hparts = data.hparts
-            if hparts then
-                for i=1,#hparts do
-                    add(target,original,characters,hparts[i],"hpart")
-                end
-            end
-            local vparts = data.vparts
-            if vparts then
-                for i=1,#vparts do
-                    add(target,original,characters,vparts[i],"vpart")
+            local parts = data.parts
+            if parts then
+                for i=1,#parts do
+                    add(target,original,characters,parts[i],"hpart")
                 end
             end
             local smaller = data.smaller
@@ -2907,7 +3141,7 @@ do
         if setlist or resetlist then
             local properties = target.properties
             local codes      = tex.mathcontrolcodes
-            local oldcontrol = tex.get("mathfontcontrol")
+            local oldcontrol = texget("mathfontcontrol")
             local newcontrol = oldcontrol
             -- todo: reset
             if resetlist then
@@ -2989,15 +3223,13 @@ do
             local features        = target.specification.features.normal
             local definedfont     = fonts.definers.internal
             local copiedglyph     = fonts.handlers.vf.math.copy_glyph
--- does a deep copy, including parts and so
+            -- does a deep copy, including parts and so
             local getsubstitution = fonts.handlers.otf.getsubstitution
             local fontdata        = fonts.hashes.identifiers
             --
             local fonts      = target.fonts
             local size       = target.size
             local characters = target.characters
--- local descriptions = target.descriptions
-            -- compact: size = 655360
             if not fonts then
                 fonts = { }
                 target.fonts = fonts
@@ -3019,8 +3251,7 @@ do
                         local firstsource  = sourcerange.first
                         local lastsource   = sourcerange.last or firstsource
                         if firstsource and firsttarget then
-                            local offset       = firsttarget - firstsource
-                            local topovershoot = entry.topovershoot
+                            local offset = firsttarget - firstsource
                             if filename then
                                 local rscale = entry.rscale or 1 -- todo
                                 size = size * rscale -- maybe use scale in vf command
@@ -3047,11 +3278,10 @@ do
                                         if feature then
                                             sourceunicode = getsubstitution(dropin,sourceunicode,feature,true,"math","dflt") or sourceunicode
                                         end
-                                        if trace_tweaking then
-                                            report_tweak("copying %s %U from file %a to %s %U",target,original,thesource,sourceunicode,filename,thetarget,targetunicode)
-                                        end
+--                                         if trace_tweaking then
+--                                             report_tweak("copying %s %U from file %a to %s %U",target,original,thesource,sourceunicode,filename,thetarget,targetunicode)
+--                                         end
                                         characters[targetunicode] = copiedglyph(target,characters,chars,sourceunicode,index)
--- description
                                     end
                                 end
                             elseif feature then
@@ -3062,11 +3292,10 @@ do
                                     local variant       = getsubstitution(original,sourceunicode,feature,true,"math","dflt")
                                     local data          = characters[variant]
                                     if data then
-                                        if trace_tweaking then
-                                            report_tweak("copying %s %U from feature %a to %s %U",target,original,thesource,sourceunicode,feature,thetarget,targetunicode)
-                                        end
+--                                         if trace_tweaking then
+--                                             report_tweak("copying %s %U from feature %a to %s %U",target,original,thesource,sourceunicode,feature,thetarget,targetunicode)
+--                                         end
                                         characters[targetunicode] = copytable(data)
--- description
                                     end
                                 end
                             else
@@ -3075,13 +3304,12 @@ do
                                     local sourceunicode = mathgaps[s] or s
                                     local targetunicode = mathgaps[t] or t
                                     if sourceunicode ~= targetunicode then
-                                        local data          = characters[sourceunicode]
+                                        local data = characters[sourceunicode]
                                         if data then
-                                            if trace_tweaking then
-                                                report_tweak("copying %s %U to %s %U",target,original,thesource,sourceunicode,thetarget,targetunicode)
-                                            end
+--                                             if trace_tweaking then
+--                                                 report_tweak("copying %s %U to %s %U",target,original,thesource,sourceunicode,thetarget,targetunicode)
+--                                             end
                                             characters[targetunicode] = copytable(data)
--- description
                                         end
                                     end
                                 end
@@ -3184,21 +3412,23 @@ local function applytweaks(when,target,original)
     end
 end
 
+local function tweakable(target)
+    local mathparameters = target.mathparameters
+--     local features       = target.specification.features
+--     local mathscript     = features and features.normal and features.normal.script == "math"
+--     return mathparameters and mathscript -- and target,properties.hasmath
+    return mathparameters
+end
+
 function mathematics.tweakbeforecopyingfont(target,original)
-    if use_math_goodies then
-        local mathparameters = target.mathparameters -- why not hasmath
-        if mathparameters then
-            applytweaks("beforecopying",target,original)
-        end
+    if use_math_goodies and tweakable(target) then
+        applytweaks("beforecopying",target,original)
     end
 end
 
 function mathematics.tweakaftercopyingfont(target,original)
-    if use_math_goodies then
-        local mathparameters = target.mathparameters -- why not hasmath
-        if mathparameters then
-            applytweaks("aftercopying",target,original)
-        end
+    if use_math_goodies and tweakable(target) then
+        applytweaks("aftercopying",target,original)
     end
 end
 
@@ -3232,8 +3462,7 @@ do
     local reported = table.setmetatableindex("table")
 
     function mathematics.checkaftercopyingfont(target,original)
-        local mathparameters = target.mathparameters -- why not hasmath
-        if mathparameters then
+        if tweakable(target) then
             local chardata   = characters.data
             local characters = target.characters
             --
@@ -3300,11 +3529,8 @@ do
 end
 
 function mathematics.beforepassingfonttotex(target)
-    if use_math_goodies then
-        local mathparameters = target.mathparameters -- why not hasmath
-        if mathparameters then
-            applytweaks("beforepassing",target,target)
-        end
+    if tweakable(target) then
+        applytweaks("beforepassing",target,target)
     end
 end
 
@@ -3352,15 +3578,7 @@ local function extensiblecode(font,unicode)
     if not char then
         return unknown
     end
-    if character.hparts then
-        if character.vparts then
-            return { e_mixed, code, character }
-        else
-            local m = char.mathextensible
-            local e = m and extensibles[m]
-            return e and { e, code, character } or unknown
-        end
-    elseif character.vparts then
+    if character.parts then
         local m = char.mathextensible
         local e = m and extensibles[m]
         return e and { e, code, character } or unknown
@@ -3402,19 +3620,19 @@ local function horizontalcode(family,unicode)
     local loffset = 0
     local roffset = 0
     if kind == e_left then
-        local charlist = data[3].hparts
+        local charlist = data[3].parts
         if charlist then
             local left = charlist[1]
             loffset = abs((left["start"] or 0) - (left["end"] or 0))
         end
     elseif kind == e_right then
-        local charlist = data[3].hparts
+        local charlist = data[3].parts
         if charlist then
             local right = charlist[#charlist]
             roffset = abs((right["start"] or 0) - (right["end"] or 0))
         end
      elseif kind == e_horizontal then
-        local charlist = data[3].hparts
+        local charlist = data[3].parts
         if charlist then
             local left  = charlist[1]
             local right = charlist[#charlist]
@@ -3443,4 +3661,53 @@ interfaces.implement { -- can be public with two times "integerargument"
         texsetdimen("scratchrightoffset",roffset)
         context(kind)
     end
+}
+
+function mathematics.variantcode(unicode,variant)
+    local data = fontcharacters[getfontoffamily(texget("fam"))]
+    local char = data and data[unicode]
+    if char then
+        for i=1,variant do
+            local next = char.next
+            if next then
+                unicode = next
+                char = data[next]
+            else
+                break
+            end
+        end
+    end
+    return unicode
+end
+
+function mathematics.variantcount(unicode)
+    local data  = fontcharacters[getfontoffamily(texget("fam"))]
+    local char  = data and data[unicode]
+    local count = 0
+    if char then
+        while true do
+            local next = char.next
+            if next then
+                count = count + 1
+                char = data[next]
+            else
+                break
+            end
+        end
+    end
+    return count
+end
+
+interfaces.implement {
+    name      = "mathvariantcode",
+    public    = true,
+    arguments = { "integer", "integer" },
+    actions   = { mathematics.variantcode, context },
+}
+
+interfaces.implement {
+    name      = "mathvariantcount",
+    public    = true,
+    arguments = "integer",
+    actions   = { mathematics.variantcount, context },
 }

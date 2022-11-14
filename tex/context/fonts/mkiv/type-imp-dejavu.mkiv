@@ -16,7 +16,7 @@
 
 \definefontfeature[dejavu-condensed-mono][extend=.8]
 
-\starttypescriptcollection[dejavu]
+\starttypescriptcollection[xxdejavu]
 
     \doifunknownfontfeature {dejavu-math-bold} {\definefontfeature[dejavu-math-bold][boldened]}
 
@@ -44,26 +44,35 @@
         \definefontsynonym [\s!MonoBoldItalic] [\s!name:dejavusansmonoboldoblique] [\s!features=\s!none,\s!fallbacks=\s!MonoBoldItalic]
     \stoptypescript
 
-    \starttypescript [\s!math][dejavu] [\s!name]
+    \starttypescript [\s!math] [dejavu,dejavu-nt,dejavu-condensed]
+        \checkedmapfontsize[\typescripttwo][\s!script]      [.80]
+        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.65]
+    \stoptypescript
+
+    \starttypescript [\s!math] [dejavu] [\s!name]
         \loadfontgoodies[dejavu-math]
         \definefontsynonym[\s!MathRoman]    [\s!file:texgyredejavu-math][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=dejavu-math,\s!fallbacks=\s!Math]
         \definefontsynonym[\s!MathRomanBold][\s!file:texgyredejavu-math][\s!features={\s!math\mathsizesuffix,dejavu-math-bold,mathextra},\s!goodies=dejavu-math,\s!fallbacks=\s!Math]
     \stoptypescript
-
-    \starttypescript[dejavu]
-        \definetypeface [dejavu] [\s!rm] [\s!serif] [dejavu] [\s!default]
-        \definetypeface [dejavu] [\s!ss] [\s!sans]  [dejavu] [\s!default]
-        \definetypeface [dejavu] [\s!tt] [\s!mono]  [dejavu] [\s!default]
-      % \definetypeface [dejavu] [\s!mm] [\s!math]  [xits]   [\s!default] [\s!rscale=1.2]
-        \definetypeface [dejavu] [\s!mm] [\s!math]  [dejavu] [\s!default]
+    \starttypescript [\s!math] [dejavu-nt] [\s!name]
+        \loadfontgoodies[dejavu-math]
+        \definefontsynonym[\s!MathRoman]    [\s!file:texgyredejavu-math][\s!features={\s!math\mathsizesuffix,mathextra}]
+        \definefontsynonym[\s!MathRomanBold][\s!file:texgyredejavu-math][\s!features={\s!math\mathsizesuffix,dejavu-math-bold,mathextra}]
     \stoptypescript
 
-    \starttypescript[dejavubidi]
-        \definetypeface [dejavu] [\s!rm] [\s!serif] [dejavu]   [\s!default]
-        \definetypeface [dejavu] [\s!ss] [\s!sans]  [dejavu]   [\s!default]
-        \definetypeface [dejavu] [\s!tt] [\s!mono]  [dejavu]   [\s!default]
-        \definetypeface [dejavu] [\s!mm] [\s!math]  [xitsbidi] [\s!default] [\s!rscale=1.2]
+    \starttypescript[dejavu,dejavu-nt]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone] [\s!default]
     \stoptypescript
+
+  % \starttypescript[dejavubidi]
+  %     \definetypeface [dejavu] [\s!rm] [\s!serif] [dejavu]   [\s!default]
+  %     \definetypeface [dejavu] [\s!ss] [\s!sans]  [dejavu]   [\s!default]
+  %     \definetypeface [dejavu] [\s!tt] [\s!mono]  [dejavu]   [\s!default]
+  %     \definetypeface [dejavu] [\s!mm] [\s!math]  [xitsbidi] [\s!default] [\s!rscale=1.2]
+  % \stoptypescript
 
     \starttypescript [\s!serif] [dejavu-condensed] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]

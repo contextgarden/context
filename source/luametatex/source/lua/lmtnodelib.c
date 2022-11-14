@@ -231,7 +231,7 @@ static void nodelib_push_attribute_data(lua_State* L, halfword n)
 
 inline static singleword nodelib_getdirection(lua_State *L, int i)
 {
-    return ((lua_type(L, i) == LUA_TNUMBER) ? checked_direction_value(lmt_tohalfword(L, i)) : direction_def_value);
+    return ((lua_type(L, i) == LUA_TNUMBER) ? (singleword) checked_direction_value(lmt_tohalfword(L, i)) : direction_def_value);
 }
 
 /*tex
@@ -1892,7 +1892,7 @@ static int nodelib_direct_getdisc(lua_State *L)
                     if (lua_isboolean(L, 2) && lua_toboolean(L, 2)) {
                         nodelib_push_direct_or_nil(L, tex_tail_of_node_list(choice_pre_break(n)));
                         nodelib_push_direct_or_nil(L, tex_tail_of_node_list(choice_post_break(n)));
-                        nodelib_push_direct_or_nil(L, tex_tail_of_node_list(choice_post_break(n)));
+                        nodelib_push_direct_or_nil(L, tex_tail_of_node_list(choice_no_break(n)));
                         return 6;
                     } else {
                         return 3;
@@ -4504,7 +4504,7 @@ static int nodelib_direct_dimensions(lua_State *L)
 {
     int top = lua_gettop(L);
     if (top > 0) {
-        scaledwhd siz = { 0, 0, 0 };
+        scaledwhd siz = { 0, 0, 0, 0 };
         glueratio g_mult = normal_glue_multiplier;
         int vertical = 0;
         int g_sign = normal_glue_sign;
@@ -4545,7 +4545,7 @@ static int nodelib_direct_rangedimensions(lua_State *L) /* parent, first, last *
 {
     int top = lua_gettop(L);
     if (top > 1) {
-        scaledwhd siz = { 0, 0, 0 };
+        scaledwhd siz = { 0, 0, 0, 0 };
         int vertical = 0;
         halfword l = nodelib_valid_direct_from_index(L, 1); /* parent */
         halfword n = nodelib_valid_direct_from_index(L, 2); /* first  */
@@ -5379,8 +5379,8 @@ static int nodelib_direct_setglue(lua_State *L)
             case vlist_node:
             case unset_node:
                 box_glue_set(n)   = ((top > 1 && lua_type(L, 2) == LUA_TNUMBER)) ? (glueratio) lua_tonumber(L, 2)  : 0;
-                box_glue_order(n) = tex_checked_glue_sign((top > 2 && lua_type(L, 3) == LUA_TNUMBER) ? (halfword)  lua_tointeger(L, 3) : 0);
-                box_glue_sign(n)  = tex_checked_glue_order((top > 3 && lua_type(L, 4) == LUA_TNUMBER) ? (halfword)  lua_tointeger(L, 4) : 0);
+                box_glue_order(n) = tex_checked_glue_order((top > 2 && lua_type(L, 3) == LUA_TNUMBER) ? (halfword)  lua_tointeger(L, 3) : 0);
+                box_glue_sign(n)  = tex_checked_glue_sign((top > 3 && lua_type(L, 4) == LUA_TNUMBER) ? (halfword)  lua_tointeger(L, 4) : 0);
                 break;
             case math_node:
                 math_amount(n)        = ((top > 1 && lua_type(L, 2) == LUA_TNUMBER)) ? (halfword) lmt_roundnumber(L, 2) : 0;
@@ -7117,9 +7117,9 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, shrink)) {
                                 glue_shrink(n) = (halfword) lmt_roundnumber(L, 3);
                             } else if (lua_key_eq(s, stretchorder)) {
-                                glue_stretch_order(n) = lmt_tohalfword(L, 3);
+                                glue_stretch_order(n) = tex_checked_glue_order(lmt_tohalfword(L, 3));
                             } else if (lua_key_eq(s, shrinkorder)) {
-                                glue_shrink_order(n) = lmt_tohalfword(L, 3);
+                                glue_shrink_order(n) = tex_checked_glue_order(lmt_tohalfword(L, 3));
                             } else if (lua_key_eq(s, leader)) {
                                 glue_leader_ptr(n) = nodelib_direct_or_node_from_index(L, direct, 3);
                             } else if (lua_key_eq(s, font)) {
@@ -7265,9 +7265,9 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, shrink)) {
                                 math_shrink(n) = (halfword) lmt_roundnumber(L, 3);
                             } else if (lua_key_eq(s, stretchorder)) {
-                                math_stretch_order(n) = lmt_tohalfword(L, 3);
+                                math_stretch_order(n) = tex_checked_glue_order(lmt_tohalfword(L, 3));
                             } else if (lua_key_eq(s, shrinkorder)) {
-                                math_shrink_order(n) = lmt_tohalfword(L, 3);
+                                math_shrink_order(n) = tex_checked_glue_order(lmt_tohalfword(L, 3));
                             } else if (lua_key_eq(s, penalty)) {
                                 math_penalty(n) = lmt_tohalfword(L, 3);
                             } else {
@@ -7320,7 +7320,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, options)) {
                                 noad_options(n) = lmt_tohalfword(L, 3);
                             } else if (lua_key_eq(s, scriptorder)) {
-                                noad_script_order(n) = lmt_tohalfword(L, 3);
+                                noad_script_order(n) = lmt_tosingleword(L, 3);
                             } else if (lua_key_eq(s, class)) {
                                 halfword c = lmt_tohalfword(L, 3);
                                 set_noad_main_class(n, c);
@@ -7469,7 +7469,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                     /* just ignored */
                                     return 0; 
                             }
-                            break;
+                         // break;
                         case adjust_node:
                             if (lua_key_eq(s, list) || lua_key_eq(s, head)) {
                                 adjust_list(n) = nodelib_direct_or_node_from_index(L, direct, 3);
@@ -7522,9 +7522,9 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, shrink)) {
                                 glue_shrink(n) = (halfword) lmt_roundnumber(L, 3);
                             } else if (lua_key_eq(s, stretchorder)) {
-                                glue_stretch_order(n) = lmt_tohalfword(L, 3);
+                                glue_stretch_order(n) = tex_checked_glue_order(lmt_tohalfword(L, 3));
                             } else if (lua_key_eq(s, shrinkorder)) {
-                                glue_shrink_order(n) = lmt_tohalfword(L, 3);
+                                glue_shrink_order(n) = tex_checked_glue_order(lmt_tohalfword(L, 3));
                             } else {
                                 goto CANTSET;
                             }
@@ -9093,8 +9093,9 @@ static halfword lmt_direct_migrate_locate(halfword head, halfword *first, halfwo
             case insert_node:
                 {
                     if (inserts) {
+                        halfword list; 
                         head = nodelib_aux_migrate_decouple(head, current, next, first, last);
-                        halfword list = insert_list(current);
+                        list = insert_list(current);
                         if (list) {
                             insert_list(current) = lmt_direct_migrate_locate(list, first, last, inserts, marks);
                         }
@@ -9196,7 +9197,7 @@ static int nodelib_direct_hasglyphoption(lua_State *L)
     halfword current = nodelib_valid_direct_from_index(L, 1);
     int result = 0;
     if (current && node_type(current) == glyph_node) {
-        int option = lua_tointeger(L, 2);
+        int option = lmt_tointeger(L, 2);
         switch (option) {
             case glyph_option_normal_glyph:      // 0x00
                 break;
@@ -9332,9 +9333,9 @@ static int nodelib_direct_getnodes(lua_State *L)
         /* maybe count */
         lua_newtable(L);
         if (lua_type(L, 2) == LUA_TNUMBER) {
-            int t = lua_tonumber(L, 2);
+            int t = lmt_tointeger(L, 2);
             if (lua_type(L, 3) == LUA_TNUMBER) {
-                int s = lua_tonumber(L, 3);
+                int s = lmt_tointeger(L, 3);
                 while (n) {
                     if (node_type(n) == t && node_subtype(n) == s) {
                         lua_pushinteger(L, n);

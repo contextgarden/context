@@ -97,8 +97,6 @@
 
 \registerctxluafile{node-fnt}{autosuffix} % here
 
-\registerctxluafile{font-mps}{autosuffix} % outline fun
-
 \registerctxluafile{font-lua}{}
 
 \registerctxluafile{font-enh}{autosuffix}

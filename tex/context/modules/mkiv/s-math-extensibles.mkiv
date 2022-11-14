@@ -143,3 +143,71 @@
     }
 
 \stoptext
+
+% This could also be some tracer
+
+\definefontfeature[mathextra][goodies=] % or use the raw unpatched font
+
+
+\def\Test#1%
+  {\left(
+   \scratchdimen\Umathaxis\displaystyle
+   \blackrule
+     [height=\dimexpr#1ex+\scratchdimen\relax,
+      depth=\dimexpr#1ex-\scratchdimen\relax]
+   \right)}
+
+
+\startbuffer[p]
+%   \Umathconnectoroverlapmin\allmathstyles \zeropoint
+%   \Umathconnectoroverlapmin\allmathstyles 2pt % \zeropoint
+    \Umathdelimitershortfall \allmathstyles \zeropoint
+    \showboxes
+    \showglyphs
+    \Test{4.0}
+    \Test{4.5}
+    \Test{5.0}
+    \Test{8.0}
+    \quad
+    \dorecurse{\mathvariantcount `(} {
+        \char\mathvariantcode `( #1
+    }
+\stopbuffer
+
+\startbuffer[p]
+    \showboxes
+    \showglyphs
+    \overparent{\blackrule[color=darkgray,width=1em,height=2ex]}\quad
+    \overparent{\blackrule[color=darkgray,width=2em,height=2ex]}\quad
+    \overparent{\blackrule[color=darkgray,width=4em,height=2ex]}\quad
+    \overparent{\blackrule[color=darkgray,width=8em,height=2ex]}
+\stopbuffer
+
+\startbuffer
+    \hpack\bgroup
+    $
+        \getbuffer[p]
+    $
+    \egroup
+\stopbuffer
+
+\def\TestFont#1%
+  {\dontleavehmode
+   \begingroup
+   \hbox to 5.5em{\hss\type{#1}:}\quad
+   \switchtobodyfont[#1]\getbuffer
+   \endgroup
+   \par}
+
+\starttext
+    \startTEXpage[offset=1dk]
+%     \TestFont{modern}
+%     \TestFont{pagella}
+%     \TestFont{termes}
+%     \TestFont{bonum}
+    \TestFont{lucida}
+%     \TestFont{cambria}
+    \TestFont{ebgaramond}
+%     \TestFont{xits}
+    \stopTEXpage
+\stoptext

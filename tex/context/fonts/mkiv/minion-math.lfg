@@ -26,8 +26,8 @@ return {
     },
     mathematics = {
         parameters = {
-            NoLimitSupFactor                =    0,
-            NoLimitSubFactor                =  900,
+            -- NoLimitSupFactor                =    0,
+            -- NoLimitSubFactor                =  900,
          -- AccentTopShiftUp                =  -15,
          -- FlattenedAccentTopShiftUp       =  -15,
          -- AccentExtendMargin              =   50,
@@ -43,8 +43,8 @@ return {
             PrimeRaiseComposedPercent       =   25, --   25 default
          -- PrimeShiftUp                    =    0,
          -- PrimeBaselineDropMax            =    0,
-            RadicalKernAfterExtensible      =  100, --   0 default
-            RadicalKernBeforeExtensible     =  100, --   0 default
+            -- RadicalKernAfterExtensible      =  100, --   0 default
+            -- RadicalKernBeforeExtensible     =  100, --   0 default
         },
         tweaks = {
             aftercopying = {
@@ -71,6 +71,23 @@ return {
                 {
                     tweak = "extendaccents",
                 },
+{
+    tweak   = "radicaldegreeanchors",
+    list = {
+        [0x221A]                = { location = "left", hfactor  = -0.15, vfactor  = .75 },
+        ["0x221A.variants.*"]   = { location = "left", hfactor  = -0.1, vfactor  = .575 },
+        ["0x221A.variants.1"]   = { location = "left", hfactor  = -0.1, vfactor  = .725 },
+        ["0x221A.variants.2"]   = { location = "left", hfactor  = -0.1, vfactor  = .65 },
+        ["0x221A.variants.3"]   = { location = "left", hfactor  = -0.1, vfactor  = .625 },
+        ["0x221A.variants.4"]   = { location = "left", hfactor  = -0.1, vfactor  = .625 },
+    --  ["0x221A.variants.5"]   = { location = "left", hfactor  = 0.05, vfactor  = .525 },
+     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221Aq.variants.6"]  = { location = "left", hfactor  = .1, vfactor  = .55 },
+     -- ["0x221A.parts.top"]    = { location = "left", hfactor  = .1, vfactor  = 5.5 }, -- keep commented: bottom wins over top
+        ["0x221A.parts.bottom"] = { location = "left", hfactor  = -0.1, vfactor  = 0.85 },
+    }
+},
+
                 {
                     tweak = "fixaccents",
                 },

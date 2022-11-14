@@ -424,10 +424,11 @@ void tex_dump_insert_data(dumpstream f) {
 }
 
 void tex_undump_insert_data(dumpstream f) {
+    insert_record *tmp;
     undump_int(f, lmt_insert_state.mode);
     undump_int(f, lmt_insert_state.insert_data.ptr);
     undump_int(f, lmt_insert_state.insert_data.top);
-    insert_record *tmp = aux_allocate_clear_array(sizeof(insert_record), lmt_insert_state.insert_data.top, 1);
+    tmp = aux_allocate_clear_array(sizeof(insert_record), lmt_insert_state.insert_data.top, 1);
     if (tmp) {
         lmt_insert_state.inserts = tmp;
         lmt_insert_state.insert_data.allocated = lmt_insert_state.insert_data.top * sizeof(insert_record);

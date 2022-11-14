@@ -182,7 +182,7 @@ static int tex_aux_room_in_hash(void)
 
 */
 
-inline static halfword tex_aux_compute_hash(const char *j, int l)
+inline static halfword tex_aux_compute_hash(const char *j, unsigned l)
 {
     halfword h = (unsigned const char) j[0];
     for (unsigned k = 1; k < l; k++) {
@@ -504,7 +504,7 @@ static halfword tex_aux_insert_id(halfword p, const unsigned char *j, unsigned i
 halfword tex_id_locate(int j, int l, int create)
 {
     /*tex The index in |hash| array: */
-    halfword h = tex_aux_compute_hash((char *) (lmt_fileio_state.io_buffer + j), l);
+    halfword h = tex_aux_compute_hash((char *) (lmt_fileio_state.io_buffer + j), (unsigned) l);
     /*tex We start searching here. Note that |0 <= h < hash_prime|: */
     halfword p = h + hash_base;
     /*tex The next one in a list: */
@@ -536,7 +536,7 @@ halfword tex_id_locate(int j, int l, int create)
 halfword tex_string_locate(const char *s, size_t l, int create)
 {
     /*tex The hash code: */
-    halfword h = tex_aux_compute_hash(s, (int) l);
+    halfword h = tex_aux_compute_hash(s, (unsigned) l);
     /*tex The index in |hash| array. We start searching here. Note that |0 <= h < hash_prime|: */
     halfword p = h + hash_base;
     while (1) {
@@ -702,7 +702,7 @@ void tex_print_cmd_flags(halfword cs, halfword cmd, int flags, int escaped)
         if (is_instance (flags)) { (escaped ? tex_print_str_esc : tex_print_str)("instance " ); }
         if (is_untraced (flags)) { (escaped ? tex_print_str_esc : tex_print_str)("untraced " ); }
     }
-    if (is_tolerant_cmd (cmd)) {
+    if (is_tolerant_cmd(cmd)) {
         (escaped ? tex_print_str_esc : tex_print_str)("tolerant " );
     }
     if (is_protected_cmd(cmd)) {
