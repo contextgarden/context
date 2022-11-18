@@ -194,7 +194,7 @@ if ((DEFINED LMT_HB_TOO))
     add_definitions(-DLMT_HB_TOO=1)
 endif()
 
-# This needs cmake >= 3.9 and produces a 60K smaller mingw binary but it take quite a bit or
+# This needs cmake >= 3.9 and produces a 60K smaller mingw binary but it take quite a bit of
 # runtime to get there so it should become an option (apart from testing on all builders).
 
 if (DEFINED LMT_OPTIMIZE)

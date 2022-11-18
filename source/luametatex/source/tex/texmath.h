@@ -330,7 +330,7 @@ typedef enum math_style_variants {
 
 /*
 
-These are the mandate font parameters per \url {https://docs.microsoft.com/en-us/typography/opentype/spec/math}:
+These are the mandate font parameters: % https://docs.microsoft.com/en-us/typography/opentype/spec/math
 
 \starttabulate[|T|p|]
 \NC ScriptPercentScaleDown                   \NC Percentage of scaling down for level 1 superscripts and subscripts. Suggested value: 80 pct. \NC \NR
@@ -352,10 +352,10 @@ These are the mandate font parameters per \url {https://docs.microsoft.com/en-us
 \NC SuperscriptBottomMaxWithSubscript        \NC The maximum level to which the (ink) bottom of superscript can be pushed to increase the gap between superscript and subscript, before subscript starts being moved down. Suggested: 4/5 x-height. \NC \NR
 \NC SpaceAfterScript                         \NC Extra white space to be added after each subscript and superscript. Suggested: 0.5 pt for a 12 pt font. (Note that, in some math layout implementations, a constant value, such as 0.5 pt, may be used for all text sizes. Some implementations may use a constant ratio of text size, such as 1/24 of em.) \NC \NR
 \NC UpperLimitGapMin                         \NC Minimum gap between the (ink) bottom of the upper limit, and the (ink) top of the base operator. \NC \NR
-\NC UpperLimitBaselineRiseMin                \NC Minimum distance between baseline of upper limit and (ink) top of the base operator.
+\NC UpperLimitBaselineRiseMin                \NC Minimum distance between baseline of upper limit and (ink) top of the base operator. \NC \NR
 \NC LowerLimitGapMin                         \NC Minimum gap between (ink) top of the lower limit, and (ink) bottom of the base operator. \NC \NR
 \NC LowerLimitBaselineDropMin                \NC Minimum distance between baseline of the lower limit and (ink) bottom of the base operator. \NC \NR
-\NC StackTopShiftUp                          \NC Standard shift up applied to the top element of a stack.
+\NC StackTopShiftUp                          \NC Standard shift up applied to the top element of a stack. \NC \NR
 \NC StackTopDisplayStyleShiftUp              \NC Standard shift up applied to the top element of a stack in display style. \NC \NR
 \NC StackBottomShiftDown                     \NC Standard shift down applied to the bottom element of a stack. Positive for moving in the downward direction. \NC \NR
 \NC StackBottomDisplayStyleShiftDown         \NC Standard shift down applied to the bottom element of a stack in display style. Positive for moving in the downward direction. \NC \NR

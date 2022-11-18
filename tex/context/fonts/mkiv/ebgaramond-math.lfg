@@ -230,7 +230,7 @@ return {
                 },
                 {
                     tweak = "addfourier",
-                    variant = 1,
+                    variant = 2,
                 },
                 -- this is the mkiv section
                 {

@@ -536,6 +536,8 @@ typedef enum char_tag_codes {
 # define set_charinfo_top_overshoot(ci,val)                if (ci->math) { ci->math->top_overshoot = val; }
 # define set_charinfo_bottom_overshoot(ci,val)             if (ci->math) { ci->math->bottom_overshoot = val; }
 
+# define proper_char_index(f, c) (c >= font_first_character(f) && c <= font_last_character(f))
+
 /*tex Setters: */
 
 void             tex_set_lpcode_in_font                 (halfword f, halfword c, halfword i);

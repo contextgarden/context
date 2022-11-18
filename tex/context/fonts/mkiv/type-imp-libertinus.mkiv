@@ -21,6 +21,8 @@
 
 \starttypescriptcollection[libertinus]
 
+    \doifunknownfontfeature {libertinus-math-bold} {\definefontfeature[libertinus-math-bold][boldened]}
+
     \starttypescript [\s!serif] [libertinus]
         \definefontsynonym [LibertinusSerif-Regular]     [\s!file:libertinusserif-regular]
         \definefontsynonym [LibertinusSerif-Italic]      [\s!file:libertinusserif-italic]
@@ -78,14 +80,14 @@
 
     \starttypescript [\s!math] [libertinus] [\s!name]
         \loadfontgoodies[libertinus-math]
-        \definefontsynonym[\s!MathRoman    ] [\s!file:libertinusmath-regular.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=libertinus-math.lfg]
-        \definefontsynonym[\s!MathRomanBold] [\s!file:libertinusmath-regular.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=libertinus-math.lfg]
+        \definefontsynonym[\s!MathRoman    ] [\s!file:libertinusmath-regular.otf] [\s!features={\s!math\mathsizesuffix,libertinus:mathextra,mathextra},\s!goodies=libertinus-math.lfg]
+        \definefontsynonym[\s!MathRomanBold] [\s!file:libertinusmath-regular.otf] [\s!features={\s!math\mathsizesuffix,libertinus-math-bold,libertinus:mathextra,mathextra},\s!goodies=libertinus-math.lfg]
     \stoptypescript
 
     \starttypescript [\s!math] [libertinus-nt] [\s!name]
         \loadfontgoodies[libertinus-math]
-        \definefontsynonym[\s!MathRoman    ] [\s!file:libertinusmath-regular.otf] [\s!features={\s!math\mathsizesuffix,mathextra}]
-        \definefontsynonym[\s!MathRomanBold] [\s!file:libertinusmath-regular.otf] [\s!features={\s!math\mathsizesuffix,mathextra}]
+        \definefontsynonym[\s!MathRoman    ] [\s!file:libertinusmath-regular.otf] [\s!features={\s!math\mathsizesuffix,libertinus:mathextra,mathextra}]
+        \definefontsynonym[\s!MathRomanBold] [\s!file:libertinusmath-regular.otf] [\s!features={\s!math\mathsizesuffix,libertinus-math-bold,libertinus:mathextra,mathextra}]
     \stoptypescript
 
     \starttypescript [libertinus,libertinus-nt]

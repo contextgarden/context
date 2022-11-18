@@ -417,9 +417,13 @@
 %   [oldmath]
 %   [oldmath=yes]
 
-\ifdefined\mathnolimitsmode
-    \mathnolimitsmode\plusone % font driven (only opentype)
+\ifdefined\variablefam
+    \variablefam\pluscclv
 \fi
+
+% \ifdefined\mathnolimitsmode
+%     \mathnolimitsmode\plusone % font driven (only opentype)
+% \fi
 
 \ifdefined\mathitalicsmode
      \mathitalicsmode\plusone   % simple noads become zero

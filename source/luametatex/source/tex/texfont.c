@@ -26,8 +26,6 @@
 
 # include "luametatex.h"
 
-# define proper_char_index(f, c) (c >= font_first_character(f) && c <= font_last_character(f))
-
 inline static scaled tex_aux_font_x_scaled(scaled v)
 {
     return v ? scaledround(0.000001 * (glyph_scale_par ? glyph_scale_par : 1000) * (glyph_x_scale_par ? glyph_x_scale_par : 1000) * v) : 0;

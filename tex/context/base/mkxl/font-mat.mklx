@@ -47,7 +47,8 @@
 \ifdefined\??fontinstancebasic \else \installcorenamespace{fontinstancebasic} \fi
 \ifdefined\??fontinstanceclass \else \installcorenamespace{fontinstanceclass} \fi
 
-%D The order 3 2 1 of size matters: needed for math-fbk relative size storage!
+%D The order 3 2 1 of size matters is historic and was needed for math-fbk relative
+%D size storage! It is no longer relevant.
 
 %D \macros
 %D   {textonly}
@@ -124,13 +125,11 @@
 
 \mutable\let\fontfamily\relax % for now public but it is a helper
 
-%newconditional\c_math_last_family_set
 \newcount      \c_math_last_family_used
 
 \def\font_helpers_set_math_family_indeed_normal#mrtag#family% \fontface etc are also used later on
   {\let\savedfontbody\fontbody
    \let\fontfamily#family%
-%    \settrue\c_math_last_family_set
 \c_math_last_family_used\zerocount
    % the order is important as we depend on known id's when completing fonts
    % enabling is needed when we have fallbacks which spoils the families; per
@@ -163,7 +162,6 @@
 \def\font_helpers_set_math_family_indeed_compact#mrtag#family% \fontface etc are also used later on
   {\let\savedfontbody\fontbody
    \let\fontfamily#family%
-%    \settrue\c_math_last_family_set
 \c_math_last_family_used\zerocount
    \font_helpers_set_math_family_set_scales_compact
    % the order is important as we depend on known id's when completing fonts
@@ -189,7 +187,6 @@
    \let\defaultfontclass\fontclass % else truefontname falls back on the wrong one
    \let\savedfontbody\fontbody
    \let\fontfamily#familytag%
-%    \settrue\c_math_last_family_set
 \c_math_last_family_used\zerocount
    \font_helpers_set_math_family_set_scales_normal
    \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusthree
@@ -211,11 +208,10 @@
    \let\defaultfontclass\fontclass % else truefontname falls back on the wrong one
    \let\savedfontbody\fontbody
    \let\fontfamily#familytag%
-%    \settrue\c_math_last_family_set
 \c_math_last_family_used\zerocount
    \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone
    \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% defines
-%    \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% enables / still needed ?
+   \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% enables / still needed ?
                                        \scriptfont      #mbfam\textfont#mbfam% reuses
                                        \scriptscriptfont#mbfam\textfont#mbfam% reuses
    \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
@@ -480,14 +476,6 @@
 
 \mutable\let\bigmathfontsize\empty
 
-% \permanent\protected\def\synchronizebigmath
-%   {\ifx\bigmathfontsize\fontsize
-%      % already in sync
-%    \else
-%      \let\bigmathfontsize\fontsize
-%      \font_helpers_synchronize_math
-%    \fi}
-
 \permanent\protected\def\synchronizebigmath
   {\ifconditional\c_font_compact
      % no need
@@ -516,18 +504,6 @@
 
 %D This is nasty, as the engine only stores the last set family parameters (per style) which
 %D in our case can be bold.
-
-% \def\font_helpers_synchronize_math_parameters
-%   {\textfont        \zerocount\textfont        \zerocount
-%    \scriptfont      \zerocount\scriptfont      \zerocount
-%    \scriptscriptfont\zerocount\scriptscriptfont\zerocount
-%    \setfalse\c_math_last_family_set}
-%
-% \appendtoks
-%     \ifconditional\c_math_last_family_set
-%       \font_helpers_synchronize_math_parameters
-%     \fi
-% \to\everybodyfont
 
 \def\font_helpers_synchronize_math_parameters
   {\c_math_last_family_used\mathstylefontid\textstyle\zerocount

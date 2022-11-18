@@ -20,6 +20,8 @@
     %\definefontfeature[default-slanted-erewhon][default][slant=.2]
     %\definefontfeature[none-slanted-erewhon]   [none]   [slant=.2]
 
+    \doifunknownfontfeature {erewhon-math-bold} {\definefontfeature[erewhon-math-bold][boldened]}
+
     \starttypescript [\s!serif] [erewhon]
         \definefontsynonym [\s!Serif]           [\s!file:Erewhon-Regular]       [\s!features=\s!default]
         \definefontsynonym [\s!SerifItalic]     [\s!file:Erewhon-Italic]        [\s!features=\s!default]
@@ -49,11 +51,13 @@
     \stoptypescript
 
     \starttypescript [\s!math] [erewhon] [\s!name]
-        \definefontsynonym [\s!MathRoman][\s!file:Erewhon-Math.otf][\s!features={\s!math\mathsizesuffix,erewhon:mathextra,mathextra},\s!goodies=erewhon-math]
+        \definefontsynonym [\s!MathRoman]    [\s!file:Erewhon-Math.otf][\s!features={\s!math\mathsizesuffix,erewhon:mathextra,mathextra},\s!goodies=erewhon-math]
+        \definefontsynonym [\s!MathRomanBold][\s!file:Erewhon-Math.otf][\s!features={\s!math\mathsizesuffix,erewhon-math-bold,erewhon:mathextra,mathextra},\s!goodies=erewhon-math]
     \stoptypescript
 
     \starttypescript [\s!math] [erewhon-nt] [\s!name]
-        \definefontsynonym [\s!MathRoman][\s!file:Erewhon-Math.otf][\s!features={\s!math\mathsizesuffix,erewhon:mathextra,mathextra}]
+        \definefontsynonym [\s!MathRoman]    [\s!file:Erewhon-Math.otf][\s!features={\s!math\mathsizesuffix,erewhon:mathextra,mathextra}]
+        \definefontsynonym [\s!MathRomanBold][\s!file:Erewhon-Math.otf][\s!features={\s!math\mathsizesuffix,erewhon-math-bold,erewhon:mathextra,mathextra}]
     \stoptypescript
 
     \starttypescript [erewhon,erewhon-nt]

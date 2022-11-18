@@ -20,6 +20,8 @@
     %\definefontfeature[default-slanted-concrete][default][slant=.2]
     %\definefontfeature[none-slanted-concrete]   [none]   [slant=.2]
 
+    \doifunknownfontfeature {concrete-math-bold} {\definefontfeature[concrete-math-bold][boldened]}
+
     \starttypescript [\s!serif] [concrete]
         \definefontsynonym [\s!Serif]            [\s!file:cmunorm] [\s!features=\s!default]
         \definefontsynonym [\s!SerifItalic]      [\s!file:cmunoti] [\s!features=\s!default]
@@ -54,12 +56,14 @@
 
     \starttypescript [\s!math] [concrete] [\s!name]
         \loadfontgoodies[concrete-math]
-        \definefontsynonym[\s!MathRoman] [\s!file:Concrete-Math.otf] [\s!features={\s!math\mathsizesuffix,mathextra,concrete:mathextra},\s!goodies=concrete-math]
+        \definefontsynonym[\s!MathRoman]     [\s!file:Concrete-Math.otf] [\s!features={\s!math\mathsizesuffix,concrete:mathextra,mathextra},\s!goodies=concrete-math]
+        \definefontsynonym[\s!MathRomanBold] [\s!file:Concrete-Math.otf] [\s!features={\s!math\mathsizesuffix,concrete-math-bold,concrete:mathextra,mathextra},\s!goodies=concrete-math]
     \stoptypescript
 
     \starttypescript [\s!math] [concrete-nt] [\s!name]
         \loadfontgoodies[concrete-math]
-        \definefontsynonym[\s!MathRoman] [\s!file:Concrete-Math.otf] [\s!features={\s!math\mathsizesuffix,mathextra,concrete:mathextra}]
+        \definefontsynonym[\s!MathRoman]     [\s!file:Concrete-Math.otf] [\s!features={\s!math\mathsizesuffix,concrete:mathextra,mathextra}]
+        \definefontsynonym[\s!MathRomanBold] [\s!file:Concrete-Math.otf] [\s!features={\s!math\mathsizesuffix,concrete-math-bold,concrete:mathextra,mathextra}]
     \stoptypescript
 
     \starttypescript [concrete,concrete-nt]

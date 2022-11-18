@@ -17,6 +17,11 @@
 
     \doifunknownfontfeature {kp-sans-bold} {\definefontfeature[kp-sans-bold][boldened-15]}
 
+    \starttypescript [\s!math] [kpfonts,kpfonts-nt,kpfonts-bold,kpfonts-light,kpfonts-sans]
+        \checkedmapfontsize[\typescripttwo][\s!script]      [.70]
+        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.55]
+    \stoptypescript
+
     \starttypescript [kpfonts,kpfonts-light,kpfonts-bold,kpfonts-sans,kpfonts-nt]
         \loadfontgoodies[kpfonts-math]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default] [\s!features=\s!default]
@@ -37,67 +42,62 @@
         \definefontsynonym [\s!SerifBoldSlanted] [\s!SerifBoldItalic]
     \stoptypescript
 
+    \starttypescript [\s!math] [kpfonts]
+        \definefontsynonym [\s!MathRoman]     [\s!file:KpMath-Regular.otf]  [\s!features={\s!math\mathsizesuffix,kpfonts:mathextra,mathextra},\s!goodies=kpfonts-math]
+        \definefontsynonym [\s!MathRomanBold] [\s!file:KpMath-Semibold.otf] [\s!features={\s!math\mathsizesuffix,kpfonts:mathextra,mathextra},\s!goodies=kpfonts-math]
+    \stoptypescript
+
+    \starttypescript [\s!math] [kpfonts-nt]
+        \definefontsynonym [\s!MathRoman]     [\s!file:KpMath-Regular.otf]  [\s!features={\s!math\mathsizesuffix,kpfonts:mathextra,mathextra}]
+        \definefontsynonym [\s!MathRomanBold] [\s!file:KpMath-Semibold.otf] [\s!features={\s!math\mathsizesuffix,kpfonts:mathextra,mathextra}]
+    \stoptypescript
+
     \starttypescript [\s!serif] [kpfonts-light]
         \definefontsynonym [\s!Serif]            [\s!file:KpRoman-Light.otf]
-        \definefontsynonym [\s!SerifBold]        [\s!file:KpRoman-Semibold.otf]
+        \definefontsynonym [\s!SerifBold]        [\s!file:KpRoman-Regular.otf]
         \definefontsynonym [\s!SerifItalic]      [\s!file:KpRoman-LightItalic.otf]
-        \definefontsynonym [\s!SerifBoldItalic]  [\s!file:KpRoman-SemiboldItalic.otf]
+        \definefontsynonym [\s!SerifBoldItalic]  [\s!file:KpRoman-Italic.otf]
         \definefontsynonym [\s!SerifSlanted]     [\s!SerifItalic]
         \definefontsynonym [\s!SerifBoldSlanted] [\s!SerifBoldItalic]
     \stoptypescript
 
+    \starttypescript [\s!math] [kpfonts-light]
+        \definefontsynonym [\s!MathRoman]     [\s!file:KpMath-Light.otf]   [\s!features={\s!math\mathsizesuffix,kpfonts:mathextra,mathextra},\s!goodies=kpfonts-math]
+        \definefontsynonym [\s!MathRomanBold] [\s!file:KpMath-Regular.otf] [\s!features={\s!math\mathsizesuffix,kpfonts:mathextra,mathextra},\s!goodies=kpfonts-math]
+    \stoptypescript
+
     \starttypescript [\s!serif] [kpfonts-bold]
         \setups[\s!font:\s!fallback:\s!serif]
-        \definefontsynonym [\s!Serif]            [\s!file:KpRoman-Regular.otf]
-        \definefontsynonym [\s!SerifBold]        [\s!file:KpRoman-Bold.otf]
-        \definefontsynonym [\s!SerifItalic]      [\s!file:KpRoman-Italic.otf]
-        \definefontsynonym [\s!SerifBoldItalic]  [\s!file:KpRoman-BoldItalic.otf]
+        \definefontsynonym [\s!Serif]           [\s!file:KpRoman-Regular.otf]
+        \definefontsynonym [\s!SerifBold]       [\s!file:KpRoman-Bold.otf]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:KpRoman-Italic.otf]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:KpRoman-BoldItalic.otf]
+    \stoptypescript
+
+    \starttypescript [\s!math] [kpfonts-bold]
+        \definefontsynonym [\s!MathRoman]     [\s!file:KpMath-Regular.otf] [\s!features={\s!math\mathsizesuffix,kpfonts:mathextra,mathextra},\s!goodies=kpfonts-math]
+        \definefontsynonym [\s!MathRomanBold] [\s!file:KpMath-Bold.otf]    [\s!features={\s!math\mathsizesuffix,kpfonts:mathextra,mathextra},\s!goodies=kpfonts-math]
     \stoptypescript
 
     \starttypescript [\s!sans] [kpfonts,kpfonts-sans,kpfonts-light,kpfonts-bold,kpfonts-nt]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]            [\s!file:KpSans-Regular.otf]
-        \definefontsynonym [\s!SansBold]        [\s!file:KpSans-Bold.otf]
-        \definefontsynonym [\s!SansItalic]      [\s!file:KpSans-Italic.otf]
-        \definefontsynonym [\s!SansBoldItalic]  [\s!file:KpSans-BoldItalic.otf]
+        \definefontsynonym [\s!Sans]           [\s!file:KpSans-Regular.otf]
+        \definefontsynonym [\s!SansBold]       [\s!file:KpSans-Bold.otf]
+        \definefontsynonym [\s!SansItalic]     [\s!file:KpSans-Italic.otf]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:KpSans-BoldItalic.otf]
+    \stoptypescript
+
+    \starttypescript [\s!math] [kpfonts-sans]
+        \definefontsynonym [\s!MathRoman]     [\s!file:KpMath-Sans.otf] [\s!features={\s!math\mathsizesuffix,kpfonts:mathextra,mathextra},\s!goodies=kpfonts-math]
+        \definefontsynonym [\s!MathRomanBold] [\s!file:KpMath-Sans.otf] [\s!features={\s!math\mathsizesuffix,kp-sans-bold,kpfonts:mathextra,mathextra},\s!goodies=kpfonts-math]
     \stoptypescript
 
     \starttypescript [\s!mono] [kpfonts,kpfonts-sans,kpfonts-light,kpfonts-bold,kpfonts-nt]
         \setups[\s!font:\s!fallback:\s!mono]
-        \definefontsynonym [\s!Mono]            [\s!file:KpMono-Regular.otf]
-        \definefontsynonym [\s!MonoBold]        [\s!file:KpMono-Bold.otf]
-        \definefontsynonym [\s!MonoItalic]      [\s!file:KpMono-Italic.otf]
-        \definefontsynonym [\s!MonoBoldItalic]  [\s!file:KpMono-BoldItalic.otf]
-    \stoptypescript
-
-    \starttypescript [\s!math] [kpfonts,kpfonts-nt,kpfonts-bold,kpfonts-light,kpfonts-sans]
-        \checkedmapfontsize[\typescripttwo][\s!script]      [.70]
-        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.55]
-    \stoptypescript
-
-    \starttypescript [\s!math] [kpfonts]
-        \definefontsynonym [\s!MathRoman]     [\s!file:KpMath-Regular.otf]  [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=kpfonts-math]
-        \definefontsynonym [\s!MathRomanBold] [\s!file:KpMath-Semibold.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=kpfonts-math]
-    \stoptypescript
-
-    \starttypescript [\s!math] [kpfonts-nt]
-        \definefontsynonym [\s!MathRoman]     [\s!file:KpMath-Regular.otf]  [\s!features={\s!math\mathsizesuffix,mathextra}]
-        \definefontsynonym [\s!MathRomanBold] [\s!file:KpMath-Semibold.otf] [\s!features={\s!math\mathsizesuffix,mathextra}]
-    \stoptypescript
-
-    \starttypescript [\s!math] [kpfonts-bold]
-        \definefontsynonym [\s!MathRoman]     [\s!file:KpMath-Regular.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=kpfonts-math]
-        \definefontsynonym [\s!MathRomanBold] [\s!file:KpMath-Bold.otf]    [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=kpfonts-math]
-    \stoptypescript
-
-    \starttypescript [\s!math] [kpfonts-light]
-        \definefontsynonym [\s!MathRoman]     [\s!file:KpMath-Light.otf]   [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=kpfonts-math]
-        \definefontsynonym [\s!MathRomanBold] [\s!file:KpMath-Regular.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=kpfonts-math]
-    \stoptypescript
-
-    \starttypescript [\s!math] [kpfonts-sans]
-        \definefontsynonym [\s!MathRoman]     [\s!file:KpMath-Sans.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=kpfonts-math]
-        \definefontsynonym [\s!MathRomanBold] [\s!file:KpMath-Sans.otf] [\s!features={\s!math\mathsizesuffix,kp-sans-bold,mathextra},\s!goodies=kpfonts-math]
+        \definefontsynonym [\s!Mono]           [\s!file:KpMono-Regular.otf]
+        \definefontsynonym [\s!MonoBold]       [\s!file:KpMono-Bold.otf]
+        \definefontsynonym [\s!MonoItalic]     [\s!file:KpMono-Italic.otf]
+        \definefontsynonym [\s!MonoBoldItalic] [\s!file:KpMono-BoldItalic.otf]
     \stoptypescript
 
 \stoptypescriptcollection

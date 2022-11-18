@@ -640,11 +640,7 @@ interfaces.implement {
     arguments = { "integer", "integer", "box" },
     actions   = function(anchor,where,box)
         box = tonut(box)
-        if where < 0 then
-            insert(befores[anchor],box)
-        else
-            insert(afters[anchor],box)
-        end
+        insert(where < 0 and befores[anchor] or afters[anchor],box)
         stored = true
     end
 }
@@ -655,31 +651,25 @@ local hlist_out, vlist_out  do
     local flushnode = nuts.flushnode
 
     local function flushstored(current,source,before)
-        local s = nil
-        if before then
-            s = rawget(befores,source)
-        else
-            s = rawget(afters,source)
-        end
+        local t = before and befores or afters
+        local s = rawget(t,source)
         if s then
             for i=1,#s do
                 local si = s[i]
                 if si then
-                    finalize(si) -- tricky: we might need to group
-                    if getid(si) == vlist_code then
-                        vlist_out(current,si)
+                    local box = si -- si[1]
+                    finalize(box) -- tricky: we might need to group
+-- print(getanchors(box))
+                    if getid(box) == vlist_code then
+                        vlist_out(current,box)
                     else
-                        hlist_out(current,si)
+                        hlist_out(current,box)
                     end
-                    flushnode(si)
+                    flushnode(box)
                     s[i] = false
                 end
             end
-            if before then
-                rawset(befores,source,nil)
-            else
-                rawset(afters,source,nil)
-            end
+            rawset(t,source,nil)
         end
     end
 
@@ -834,8 +824,8 @@ local hlist_out, vlist_out  do
              -- cur_h = cur_h + wd - right -- hm, no left here?
                 cur_h = cur_h + wd -- see new tabulate alignment code
             elseif id == glue_code then
---                 local gluewidth = effectiveglue(current,this_box)
-local gluewidth = effectiveglue(current,this_box,true)
+             -- local gluewidth = effectiveglue(current,this_box)
+                local gluewidth = effectiveglue(current,this_box,true)
                 if gluewidth ~= 0 then
                     if subtype >= leaders_code then
                         local leader = getleader(current)

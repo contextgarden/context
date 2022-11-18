@@ -6411,6 +6411,7 @@ void tex_initialize_variables(void)
         math_end_class_par = math_end_class;
         math_left_class_par = unset_noad_class;
         math_right_class_par = unset_noad_class;
+        variable_family_par = -1, 
         aux_get_date_and_time(&time_par, &day_par, &month_par, &year_par, &lmt_engine_state.utc_time);
     }
 }

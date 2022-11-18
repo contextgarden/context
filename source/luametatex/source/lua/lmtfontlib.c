@@ -96,7 +96,7 @@ static int fontlib_aux_count_hash_items(lua_State *L)
 /*tex
 
     Font parameters can be set by number or by name. There are seven basic \TEX\ parameters in text
-    mode but in  math mode there can be numerous.
+    mode but in math mode there can be numerous.
 
 */
 
@@ -673,8 +673,8 @@ static int lmt_characters_from_lua(lua_State *L, int f)
         /*tex Find the array size values; |num| has the amount. */
         int num = 0;
         int todo = 0;
-        int bc = font_first_character(f);
-        int ec = font_last_character(f);
+        int first = font_first_character(f);
+        int last = font_last_character(f);
         /*tex First key: */
         lua_pushnil(L);
         while (lua_next(L, -2)) {
@@ -682,16 +682,17 @@ static int lmt_characters_from_lua(lua_State *L, int f)
                 int i = lmt_tointeger(L, -2);
                 if (i >= 0 && lua_istable(L, -1)) {
                     todo++;
-                    if (! tex_char_exists(f, i)) {
+                 /* if (! tex_char_exists(f, i)) { */ /* else we add each time even when in range */
+                    if (! proper_char_index(f, i)) {
                         num++;
-                        if (i > ec) {
-                            ec = i;
+                        if (i > last) {
+                            last = i;
                         }
-                        if (bc < 0) {
-                            bc = i;
+                        if (first < 0) {
+                            first = i;
                         }
-                        if (bc >= 0 && i < bc) {
-                            bc = i;
+                        if (first >= 0 && i < first) {
+                            first = i;
                         }
                     }
                 }
@@ -699,9 +700,11 @@ static int lmt_characters_from_lua(lua_State *L, int f)
             lua_pop(L, 1);
         }
         if (todo > 0) {
-            tex_font_malloc_charinfo(f, num);
-            set_font_first_character(f, bc);
-            set_font_last_character(f, ec);
+            if (num > 0) { 
+                tex_font_malloc_charinfo(f, num);
+                set_font_first_character(f, first);
+                set_font_last_character(f, last);
+            }
             /*tex First key: */
             lua_pushnil(L);
             while (lua_next(L, -2)) {

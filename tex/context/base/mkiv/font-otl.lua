@@ -643,25 +643,33 @@ local function read_from_otf(specification)
     return tfmdata
 end
 
--- local function checkmathsize(tfmdata,mathsize)
---     local mathdata = tfmdata.shared.rawdata.metadata.math
---     local mathsize = tonumber(mathsize)
---     if mathdata then -- we cannot use mathparameters as luatex will complain
---         local parameters = tfmdata.parameters
---         parameters.scriptpercentage       = mathdata.ScriptPercentScaleDown
---         parameters.scriptscriptpercentage = mathdata.ScriptScriptPercentScaleDown
---         parameters.mathsize               = mathsize -- only when a number !
---     end
--- end
+-- if context then
 --
--- registerotffeature {
---     name         = "mathsize",
---     description  = "apply mathsize specified in the font",
---     initializers = {
---         base = checkmathsize,
---         node = checkmathsize,
+--     -- so the next will go to some generic module instead
+--
+-- else
+--
+--     local function checkmathsize(tfmdata,mathsize)
+--         local mathdata = tfmdata.shared.rawdata.metadata.math
+--         local mathsize = tonumber(mathsize)
+--         if mathdata then -- we cannot use mathparameters as luatex will complain
+--             local parameters = tfmdata.parameters
+--             parameters.scriptpercentage       = mathdata.ScriptPercentScaleDown
+--             parameters.scriptscriptpercentage = mathdata.ScriptScriptPercentScaleDown
+--             parameters.mathsize               = mathsize -- only when a number !
+--         end
+--     end
+--
+--     registerotffeature {
+--         name         = "mathsize",
+--         description  = "apply mathsize specified in the font",
+--         initializers = {
+--             base = checkmathsize,
+--             node = checkmathsize,
+--         }
 --     }
--- }
+--
+-- end
 
 -- readers
 

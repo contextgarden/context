@@ -56,6 +56,8 @@
 
 \starttypescriptcollection[ebgaramond]
 
+    \doifunknownfontfeature {ebgaramond-math-bold} {\definefontfeature[ebgaramond-math-bold][boldened]}
+
     \starttypescript [\s!serif] [ebgaramond]
         \setups[font:fallback:serif]
         \definefontsynonym [\s!Serif]          [\s!file:ebgaramond-regular]   [\s!features=eb-garamond-normal]
@@ -71,11 +73,13 @@
     \stoptypescript
 
     \starttypescript [\s!math] [ebgaramond] [\s!name]
-        \definefontsynonym [\s!MathRoman] [\s!file:garamond-math.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=ebgaramond-math]
+        \definefontsynonym [\s!MathRoman]     [\s!file:garamond-math.otf] [\s!features={\s!math\mathsizesuffix,ebgaramond:mathextra,mathextra},\s!goodies=ebgaramond-math]
+        \definefontsynonym [\s!MathRomanBold] [\s!file:garamond-math.otf] [\s!features={\s!math\mathsizesuffix,ebgaramond-math-bold,ebgaramond:mathextra,mathextra},\s!goodies=ebgaramond-math]
     \stoptypescript
 
     \starttypescript [\s!math] [ebgaramond-nt] [\s!name]
-        \definefontsynonym [\s!MathRoman] [\s!file:garamond-math.otf] [\s!features={\s!math\mathsizesuffix,mathextra}]
+        \definefontsynonym [\s!MathRoman]     [\s!file:garamond-math.otf] [\s!features={\s!math\mathsizesuffix,ebgaramond:mathextra,mathextra}]
+        \definefontsynonym [\s!MathRomanBold] [\s!file:garamond-math.otf] [\s!features={\s!math\mathsizesuffix,ebgaramond-math-bold,ebgaramond:mathextra,mathextra}]
     \stoptypescript
 
     \starttypescript[ebgaramond,ebgaramond-nt]

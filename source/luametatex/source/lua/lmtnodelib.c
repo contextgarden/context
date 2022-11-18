@@ -1405,7 +1405,6 @@ static int nodelib_direct_setanchors(lua_State *L)
                         if (lua_toboolean(L, 2)) {
                             break;
                         }
-                        break;
                     default:
                         box_anchor(n) = 0;
                         break;

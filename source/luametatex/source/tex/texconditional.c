@@ -484,10 +484,6 @@ void tex_conditional_if(halfword code, int unless)
             goto RESULT;
         case if_abs_int_code:
         case if_int_code:
-            /*tex
-                Test the relation between integers or dimensions. Here we use the fact that |<|,
-                |=|, and |>| are consecutive ASCII codes.
-            */
             {
                 halfword n1 = tex_scan_int(0, NULL);
                 halfword cp = tex_aux_scan_comparison(code);
@@ -516,10 +512,6 @@ void tex_conditional_if(halfword code, int unless)
             goto RESULT;
         case if_abs_dim_code:
         case if_dim_code:
-            /*tex
-                Test the relation between integers or dimensions. Here we use the fact that |<|,
-                |=|, and |>| are consecutive ASCII codes.
-            */
             {
                 scaled n1 = tex_scan_dimen(0, 0, 0, 0, NULL);
                 halfword cp = tex_aux_scan_comparison(code);
@@ -547,7 +539,6 @@ void tex_conditional_if(halfword code, int unless)
             }
             goto RESULT;
         case if_odd_code:
-            /*tex Test if an integer is odd. */
             {
                 halfword v = tex_scan_int(0, NULL);
                 result = odd(v);

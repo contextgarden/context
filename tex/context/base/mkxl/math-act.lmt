@@ -1453,6 +1453,7 @@ do
         local kerns = parameters.list
         if kerns then
             local characters = target.characters
+            local done       = false
             local function setone(uc,data)
                 local function set(unicode)
                     unicode = mathgaps[unicode] or unicode
@@ -1463,6 +1464,13 @@ do
                         local k = data.topright    ; if k and k ~= 0 then chardata.topright    = k * width end
                         local k = data.bottomleft  ; if k and k ~= 0 then chardata.bottomleft  = k * width end
                         local k = data.bottomright ; if k and k ~= 0 then chardata.bottomright = k * width end
+                        if not trace_tweaking then
+                            done = true
+                        elseif done then
+                            done[unicode] = true
+                        else
+                            done = { [unicode] = true }
+                        end
                     end
                 end
                 local unicode  = detail(characters,uc)
@@ -1478,6 +1486,7 @@ do
                 setone(unicode,data) -- withscriptcode(tfmdata,unicode,data,kernone)
                 -- also smaller
             end
+            feedback_tweak("kerns",target,original,done)
         end
     end
 
@@ -1489,8 +1498,10 @@ do
         local margins = parameters.list
         if margins then
             local characters = target.characters
+            local done       = false
             local function setone(unicode,data)
-                local chardata = characters[mathgaps[unicode] or unicode]
+                unicode = mathgaps[unicode] or unicode
+                local chardata = characters[unicode]
                 if chardata then
                     local width    = chardata.width or 0
                     local total    = (chardata.height or 0) + (chardata.depth or 0)
@@ -1498,12 +1509,20 @@ do
                     local k = data.right  ; if k and k ~= 0 then chardata.rightmargin  = k * width end
                     local k = data.top    ; if k and k ~= 0 then chardata.topmargin    = k * total end
                     local k = data.bottom ; if k and k ~= 0 then chardata.bottommargin = k * total end
+                    if not trace_tweaking then
+                        done = true
+                    elseif done then
+                        done[unicode] = true
+                    else
+                        done = { [unicode] = true }
+                    end
                 end
             end
             for unicode, data in next, margins do
                 setone(unicode,data) -- withscriptcode(tfmdata,unicode,data,kernone)
                 -- also smaller
             end
+            feedback_tweak("margins",target,original,done)
         end
     end
 
@@ -2874,6 +2893,8 @@ do
         { 0x208B, 0x2212, false },
     }
 
+    datasets.addscripts = list
+
     local function add(target,original,characters,unicode,template,super,baseheight,scale)
         if not characters[unicode] then
             local origdata = characters[template]
@@ -3178,6 +3199,7 @@ do
         if list then
             local characters = target.characters
             local emwidth    = target.parameters.quad
+            local done       = false
             for i=1,#list do
                 local entry  = list[i]
                 local target = entry.target
@@ -3194,14 +3216,19 @@ do
                             local data = characters[unicode]
                             if data then
                                 data.topovershoot = top * (quad or data.width or 0)
+                                if not trace_tweaking then
+                                    done = true
+                                elseif done then
+                                    done[r] = true
+                                else
+                                    done = { [r] = true }
+                                end
                             end
-                        end
-                        if trace_tweaking then
-                            report_mathtweak("setting overshoots for %a",target)
                         end
                     end
                 end
             end
+            feedback_tweak("setovershoots",target,original,done)
         end
     end
 

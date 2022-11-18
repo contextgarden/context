@@ -16,6 +16,8 @@
     % \definefontfeature[default-slanted-xcharter][default][slant=.2]
     % \definefontfeature[none-slanted-xcharter]   [none]   [slant=.2]
 
+    \doifunknownfontfeature {xcharter-math-bold} {\definefontfeature[xcharter-math-bold][boldened]}
+
     \starttypescript [\s!serif] [xcharter] [\s!name]
         \definefontsynonym [\s!Serif]           [\s!file:XCharter-Roman]      [\s!features=\s!default]
         \definefontsynonym [\s!SerifItalic]     [\s!file:XCharter-Italic]     [\s!features=\s!default]
@@ -45,11 +47,13 @@
     \stoptypescript
 
     \starttypescript [\s!math] [xcharter][\s!name]
-        \definefontsynonym [\s!MathRoman][\s!file:XCharter-Math.otf][\s!features={\s!math\mathsizesuffix,xcharter:mathextra,mathextra},\s!goodies=xcharter-math]
+        \definefontsynonym [\s!MathRoman]    [\s!file:XCharter-Math.otf][\s!features={\s!math\mathsizesuffix,xcharter:mathextra,mathextra},\s!goodies=xcharter-math]
+        \definefontsynonym [\s!MathRomanBold][\s!file:XCharter-Math.otf][\s!features={\s!math\mathsizesuffix,xcharter-math-bold,xcharter:mathextra,mathextra},\s!goodies=xcharter-math]
     \stoptypescript
 
     \starttypescript [\s!math] [xcharter-nt] [\s!name]
-        \definefontsynonym [\s!MathRoman][\s!file:XCharter-Math.otf][\s!features={\s!math\mathsizesuffix,xcharter:mathextra,mathextra}]
+        \definefontsynonym [\s!MathRoman]    [\s!file:XCharter-Math.otf][\s!features={\s!math\mathsizesuffix,xcharter:mathextra,mathextra}]
+        \definefontsynonym [\s!MathRomanBold][\s!file:XCharter-Math.otf][\s!features={\s!math\mathsizesuffix,xcharter-math-bold,xcharter:mathextra,mathextra}]
     \stoptypescript
 
     \starttypescript [xcharter,xcharter-nt]

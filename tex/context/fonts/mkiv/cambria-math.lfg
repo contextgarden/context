@@ -204,7 +204,7 @@ return {
                 },
                 {
                     tweak = "addfourier",
-                    variant = 1,
+                    variant = 2,
                 },
                 -- { -- the ldots are squareshaped and the cdots are circular
                 --     tweak = "fixellipses",

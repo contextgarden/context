@@ -937,6 +937,10 @@ local ruledglyph do
 --                 line   = linewidth,
 --                 type   = "box",
 --             },new_kern(-wd))
+-- if ht == 0 and dp == 0 then
+--     ht = linewidth/2
+--     dp = ht
+-- end
 local info = (dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
     width  = wd,
     height = ht,

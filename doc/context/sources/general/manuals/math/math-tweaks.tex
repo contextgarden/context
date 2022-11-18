@@ -1,0 +1,1912 @@
+% language=us runpath=texruns:manuals/math macros=mkvi
+
+% \enabletrackers[math.tweaks]
+
+% \mapfontsize[pagella][script]      [.30] % a test
+% \mapfontsize[pagella][scriptscript][.45] % a test
+
+\hyphenation{ere-whon}
+
+\enableexperiments[fonts.compact] % gives different sized outline !
+
+% \definefontfeature[stixtwo:mathextra][kern=yes,script=dflt,language=dflt]
+
+\startluacode
+local list = {
+     { "cambria",    "cambria-math"    },
+     { "modern",     "modern-math"     },
+     { "pagella",    "pagella-math"    },
+     { "termes",     "termes-math"     },
+     { "schola",     "schola-math"     },
+     { "bonum",      "bonum-math"      },
+     { "dejavu",     "dejavu-math"     },
+     { "erewhon",    "erewhon-math"    },
+     { "concrete",   "concrete-math"   },
+     { "kpfonts",    "kpfonts-math"    },
+     { "lucida",     "lucida-math"     },
+     { "stixtwo",    "stixtwo-math"    },
+     { "ebgaramond", "ebgaramond-math" },
+     { "libertinus", "libertinus-math" },
+     { "xcharter",   "xcharter-math"   },
+}
+
+local loaded = { }
+local used   = table.setmetatableindex("table")
+
+local function identify(fontname,filename)
+    local g = fonts.goodies.load(filename)
+    if g then
+        local tweaks = g.mathematics.tweaks
+        if tweaks then
+            local after = tweaks.aftercopying
+            if after then
+                local sequence = { }
+                local usage    = { }
+                local bigslots = false
+                for i=1,#after do
+                    local tweak = after[i].tweak
+                    if tweak then
+                        sequence[#sequence+1] = tweak
+                        usage[tweak] = true
+                        used[tweak][fontname] = true
+                        if tweak == "bigslots" then
+                            bigslots = bigslots
+                        end
+                    end
+                end
+                local t = {
+                    sequence = sequence,
+                    usage    = usage,
+                    goodies  = g.mathematics,
+                    bigslots = bigslots,
+                }
+                loaded[fontname] = t
+            end
+        else
+            print("no tweaks",filename)
+        end
+    else
+        print("no goodie file",filename)
+    end
+end
+
+for i=1,#list do
+    local l = list[i]
+    identify(l[1],l[2])
+    context.usebodyfont { l[1] }
+    context.usebodyfont { l[1] .. "-nt" }
+end
+
+document.usedfonts   = list -- order
+document.usedgoodies = loaded
+document.usedtweaks  = used
+
+function document.gettweakusage(name)
+    local list = table.sortedkeys(document.usedtweaks[name])
+    if #list > 0 then
+        context("This tweak is used in: %, t.",list)
+    else
+        context("This tweak is used \\emphasized{nowhere}.")
+    end
+end
+
+function document.showsomething(name)
+    for i=1,#document.usedfonts do
+        context[name](document.usedfonts[i][1])
+    end
+end
+
+-- inspect(loaded)
+
+\stopluacode
+
+\def\ShowTweakUsage#1{\ctxlua{document.gettweakusage("#1")}}
+\def\ShowSomething #1{\ctxlua{document.showsomething("#1")}}
+
+\setupbodyfont[bonum]
+
+\usemodule[abbreviations-logos]
+
+\setuplayout
+  [height=middle,
+   width=middle,
+   footer=0pt]
+
+\setupwhitespace
+  [big]
+
+\setuphead
+  [chapter]
+  [header=high]
+
+\starttext
+
+% A riddle. Maybe use the path and the path randomizer.
+
+\startMPpage
+    fill Page enlarged 1mm withcolor darkred ;
+
+    picture p ; p := lmt_outline [ text = "\textdollar" ] ;
+    picture q ; q := lmt_outline [ text = "\texteuro" ] ;
+
+    p := (p shifted - center p) randomized .7 ;
+    q := (q shifted - center q) randomized .7 ;
+
+    draw image ( draw p ; draw q ; )
+        xysized (PaperWidth -4cm, PaperHeight -10cm)
+        shifted center Page
+        shifted (0,4cm)
+        withcolor yellow
+        withpen pencircle scaled 5mm ;
+
+    draw textext ("tweaking")
+        xsized (PaperWidth -4cm)
+        shifted center bottomboundary Page
+        shifted (0,5.5cm)
+        withcolor white ;
+
+    draw textext ("math fonts")
+        xsized (PaperWidth -4cm)
+        shifted center bottomboundary Page
+        shifted (0,2.25cm)
+        withcolor white ;
+
+    setbounds currentpicture to Page ;
+\stopMPpage
+
+\starttitle[title=Contents]
+    \startcolumns
+        \placelist[chapter][before=,after=,alternative=a]
+    \stopcolumns
+\stoptitle
+
+\startchapter[title=What is there to tweak]
+
+We have written about our struggle to \OPENTYPE\ render math fonts well before,
+but here we will do it from the perspective of \LUAMETATEX\ and \CONTEXT\ \LMTX\
+combined with the fonts available in 2022. So what is the state of these fonts?
+The answer to this question is that now the landscape has settled we have a
+curious mix of old and new style fonts that has to be dealt with. Our answer to
+this is an updated math engine combined with (in \CONTEXT) tweaking font
+properties that we can (or will not) deal with in the engine: think of adapting
+dimensions, adding missing shapes, variants and extensibles, normalizing anchors
+and kerns. Before we discuss these in details let us look at what fonts we
+have.
+
+In 2022 we can distinguish several groups of math fonts. The first contains only
+one font: Cambria by \MICROSOFT. This is the reference font that more or less
+defines the standard and indicates how an \OPENTYPE\ math font is to be
+constructed. It has been stable for a long time and we don't see any development
+in it. In the meantime the specification has been improved but there is still
+room for interpretation.
+
+The second group consists if Latin Modern, Pagella, Termes, Bonum, Schola and
+Dejavu. These are the outcome of the \TEX Gyre project funded by user groups and
+conducted by the GUST foundation (Jerzy, Jacko and friends). In this project some
+choices were made that are reflected in todays versions. It is a mix between old
+school \TEX\ fonts (that were the starting point) and interpretation of the
+\quote {standard} that at that time to some extend had to be deduced from
+observing Cambria usage in MSWord.
+
+The third group started with the release of the \TYPEONE\ \STIX\ fonts that had
+been announced several times as the reference \UNICODE\ math coverage font. In
+order to check its promises those fonts were quickly converted into a useable
+\XITS\ \OPENTYPE\ math font by Khaled Hosny. It took a while before an official
+\STIX\ (two) showed up. In principle that font can replace \XITS\ now because
+\XITS\ is no longer maintained (but it remain useful as it is a good benchmark
+for \STIX). We also inherit some bidirectional elements of \XITS\ that we can
+inject into other fonts.
+
+A fourth group contains Erewhon, Kepler, XCharter, Concrete and Euler. These are
+existing fonts repackaged and fine-tuned by Daniel Flippo. At the time of writing
+this they are a bit in flux and getting better by the day.
+
+Then there are the commercial fonts. Most noticeable is Lucida by Biggelow and
+Holmes which is font expanded, maintained and distributed by \TUG\ derived from
+the original \TYPEONE\ fonts. When we were upgrading the math engine we were
+happy to be awarded the opportunity to improve the metrics (and some minor)
+details in order to bring down the quite extensive number of runtime tweaks
+needed. As a commercial font it stands out because there is an update policy, so
+we can trust fixes to be available to users. The complete \OPENTYPE\ Lucida font
+family is also dirt cheap compared to fonts with such a broad coverage. Another
+commercial math font is Minion Math by Johannes Küstler but we have limited
+possibilities to tweak that because one needs the font as well as the text
+minions. It doesn't make sense to spend much time on fonts that one can't use in
+(sample) documents and one cannot expect us to invest in fonts we can't use
+anyway, right? So where Lucida is extensively supported for other commercial
+fonts we just apply default tweaks to those fonts which is probably good enough.
+
+Group six contains the left-overs: Garamond and Libertinus. We also expect a Plex
+Math companion. Originally Asana was in this group but eventually we decided that
+it is unusable in practice, so we dropped support for that weird and visually
+inconsistent mix of fonts. We have to see how Computer Modern Book will fit in
+but as we can use Latin Modern with effects instead there is no hurry with that
+one. The mentioned Garamond (that is meant to be combined with EBGaramond) is a
+bit outlier in the sense that it has excessive amounts of variants and some
+shapes that might look okay in text but not so in math, but thereby it makes a
+good test case for tweaks.
+
+There are some other setups that we take into account, like Euler over Pagella and
+Pagella over Euler but these just use the tweaks that apply to either of them.
+
+\stopchapter
+
+\startchapter[title=Math fonts in \CONTEXT]
+
+In \MKII\ math fonts are set up in the traditional way and because all available
+fonts \TYPEONE\ are modelled after Computer Modern quite some definitions were
+needed to populate the math families: the basic foursome: roman, italic, symbol,
+extensible, as well as additional families that deal with additional alphabets.
+
+In \MKIV\ it became simpler: we went \UNICODE. Traditional fonts can be assembled
+into a virtual \UNICODE\ font at runtime. Loading now came down to just one font,
+or two when bold math is required. Because \XITS\ introduced right-to-left math
+we actually can kick in a a few more instances but it doesn't change the
+principles.
+
+In \LMTX\ we integrated bidirectional math in such a way that we now only need
+one instance and the new \LUAMETATEX\ engine also provides an alternative to the
+triple family model where text, script and scriptscript share the same font
+instance which further limits loading time, which in turn means that we can waste
+some runtime on tweaking.
+
+So indeed in \MKIV\ and \LMTX\ we can tweak fonts runtime: we patch them before
+passing them to the engine. What was still experimental in \MKIV\ has matured in
+\LMTX, also because now considerable time was spent on trying out and configuring
+tweaks. This made sense because by now we can consider the math fonts to be sort
+of frozen: we have to accept that and have to rely on these patches. That we
+divert a bit from the \quote {official} \OPENTYPE\ math approach doesn't bother
+us much because after all, \TEX\ is still sort of setting the quality standard.
+
+We start with showing some usage tables. When defining a typeface one or more
+goodie files can be specified. This is what we set up by default:
+
+\startluacode
+
+context.starttabulate { "|l|l|" }
+    context.NC() context("bodyfont")
+    context.NC() context("goodie file")
+    context.NC() context.NR()
+    for i=1,#document.usedfonts do
+        local name   = document.usedfonts[i][1]
+        local goodie = document.usedfonts[i][2]
+        context.NC() context(name)
+        context.NC() context(goodie)
+        context.NC() context.NR()
+    end
+context.stoptabulate()
+\stopluacode
+
+Tweaks are applied in a specific order and sometimes a tweak is applied several
+times with different character lists and|/|or directives:
+
+\startluacode
+context.starttabulate { "|l|lp|" }
+    context.NC() context("bodyfont")
+    context.NC() context("tweak order")
+    context.NC() context.NR()
+    for i=1,#document.usedfonts do
+        local name   = document.usedfonts[i][1]
+        local goodie = document.usedfonts[i][2]
+        local sequence = document.usedgoodies[name].sequence
+        context.NC() context(name)
+        context.NC() context("% t",sequence)
+        context.NC() context.NR()
+    end
+context.stoptabulate()
+\stopluacode
+
+Keep in mind that some of these steps are driven by optional features or specific
+versions of the font, so there are likely less applied than seen here. We can
+condense this list to usage only:
+
+\startluacode
+context.starttabulate { "|l|lp|" }
+    context.NC() context("bodyfont")
+    context.NC() context("tweak usage")
+    context.NC() context.NR()
+    for i=1,#document.usedfonts do
+        local name   = document.usedfonts[i][1]
+        local goodie = document.usedfonts[i][2]
+        local usage  = table.sortedkeys(document.usedgoodies[name].usage)
+        context.NC() context(name)
+        context.NC() context("% t",usage)
+        context.NC() context.NR()
+    end
+context.stoptabulate()
+\stopluacode
+
+Finally we show what tweaks are actually applied. We have some more but these are
+either experimental, diagnostic or in the meantime sort of obsolete.
+
+\startluacode
+context.starttabulate { "|l|lp|" }
+    context.NC() context("tweak")
+    context.NC() context("usage")
+    context.NC() context.NR()
+    for tweak, detail in table.sortedhash(document.usedtweaks) do
+        context.NC() context(tweak)
+        context.NC() context("% t",table.sortedkeys(detail))
+        context.NC() context.NR()
+    end
+context.stoptabulate()
+-- inspect(table.sortedkeys(mathematics.tweaks))
+\stopluacode
+
+In the next chapters we will discuss the possible tweaks where roughly group them. Tweaks
+that are no longer used will be left out (even if they are still in \LMTX). One reason
+for orphaning tweaks is that we (finally) decided to get rid of all italics.
+
+(This is work in progress: we don't want to waste time on tweaks that became unused.)
+
+\stopchapter
+
+\startchapter[title=Math constants]
+
+A math goodie file looks like this"
+
+\starttyping
+return {
+    name        = "pagella-math",
+    version     = "1.00",
+    comment     = "Goodies that complement pagella.",
+    author      = "Hans Hagen & Mikael Sundqvist",
+    copyright   = "ConTeXt development team",
+    mathematics = {
+        parameters = {
+            AccentTopShiftUp          =   10,
+            FlattenedAccentTopShiftUp =   10,
+            AccentBaseDepth           =   80,
+            DelimiterPercent          =   90,
+            DelimiterShortfall        =  400,
+            DisplayOperatorMinHeight  = 1800, -- 1500 in font
+            PrimeRaisePercent         =   75, --   50 default
+            PrimeRaiseComposedPercent =   10, --   25 default
+        },
+        tweaks = {
+            -- Here we have a list of tweaks. Just have a look at the file!
+        },
+    }
+}
+\stoptyping
+
+In following chapters we discuss the  entries in the tweaks subtable, here we spend some
+words on the parameters. In \OPENTYPE\ speak these are called constants, which is also the
+term we use when passing a font from \LUA\ to the engine.
+
+\definedescription[MathFP][alternative=serried,width=fit,headstyle=\bf\tt,align={flushleft}]
+
+These are the mandate font parameters with their description straight from the specification:
+
+\startMathFP {ScriptPercentScaleDown}                    Percentage of scaling down for level 1 superscripts and subscripts. Suggested value: 80 pct. \stopMathFP
+\startMathFP {ScriptScriptPercentScaleDown}              Percentage of scaling down for level 2 (scriptscript) superscripts and subscripts. Suggested value: 60 pct. \stopMathFP
+\startMathFP {DelimitedSubFormulaMinHeight}              Minimum height required for a delimited expression (contained within parentheses, etc.) to be treated as a sub-formula. Suggested value: normal line height times 1.5. \stopMathFP
+\startMathFP {DisplayOperatorMinHeight}                  Minimum height of n-ary operators (such as integral and summation) for formulas in display mode (that is, appearing as standalone page elements, not embedded inline within text). \stopMathFP
+\startMathFP {MathLeading}                               White space to be left between math formulas to ensure proper line spacing. For example, for applications that treat line gap as a part of line ascender, formulas with ink going above (\typ {os2.sTypoAscender} + \typ {os2.sTypoLineGap} - \typ {MathLeading}) or with ink going below \typ {os2.sTypoDescender} will result in increasing line height. \stopMathFP
+\startMathFP {AxisHeight}                                Axis height of the font. In math typesetting, the term axis refers to a horizontal reference line used for positioning elements in a formula. The math axis is similar to but distinct from the baseline for regular text layout. For example, in a simple equation, a minus symbol or fraction rule would be on the axis, but a string for a variable name would be set on a baseline that is offset from the axis. The axisHeight value determines the amount of that offset. \stopMathFP
+\startMathFP {AccentBaseHeight}                          Maximum (ink) height of accent base that does not require raising the accents. Suggested: x‑height of the font (\typ {os2.sxHeight}) plus any possible overshots. \stopMathFP
+\startMathFP {FlattenedAccentBaseHeight}                 Maximum (ink) height of accent base that does not require flattening the accents. Suggested: cap height of the font (\typ {os2.sCapHeight}). \stopMathFP
+\startMathFP {SubscriptShiftDown}                        The standard shift down applied to subscript elements. Positive for moving in the downward direction. Suggested: \typ {os2.ySubscriptYOffset}. \stopMathFP
+\startMathFP {SubscriptTopMax}                           Maximum allowed height of the (ink) top of subscripts that does not require moving subscripts further down. Suggested: 4/5 \typ {xheigh}t. \stopMathFP
+\startMathFP {SubscriptBaselineDropMin}                  Minimum allowed drop of the baseline of subscripts relative to the (ink) bottom of the base. Checked for bases that are treated as a box or extended shape. Positive for subscript baseline dropped below the base bottom. \stopMathFP
+\startMathFP {SuperscriptShiftUp}                        Standard shift up applied to superscript elements. Suggested: \typ {os2.ySuperscriptYOffset}. \stopMathFP
+\startMathFP {SuperscriptShiftUpCramped}                 Standard shift of superscripts relative to the base, in cramped style. \stopMathFP
+\startMathFP {SuperscriptBottomMin}                      Minimum allowed height of the (ink) bottom of superscripts that does not require moving subscripts further up. Suggested: 1/4 times \typ {xheight}. \stopMathFP
+\startMathFP {SuperscriptBaselineDropMax}                Maximum allowed drop of the baseline of superscripts relative to the (ink) top of the base. Checked for bases that are treated as a box or extended shape. Positive for superscript baseline below the base top. \stopMathFP
+\startMathFP {SubSuperscriptGapMin}                      Minimum gap between the superscript and subscript ink. Suggested: 4 times default rule thickness. \stopMathFP
+\startMathFP {SuperscriptBottomMaxWithSubscript}         The maximum level to which the (ink) bottom of superscript can be pushed to increase the gap between superscript and subscript, before subscript starts being moved down. Suggested: 4/5 times \typ {xheigh}t. \stopMathFP
+\startMathFP {SpaceAfterScript}                          Extra white space to be added after each subscript and superscript. Suggested: 0.5 pt for a 12 pt font. (Note that, in some math layout implementations, a constant value, such as 0.5 pt, may be used for all text sizes. Some implementations may use a constant ratio of text size, such as 1/24 of \typ {emwidth}.) \stopMathFP
+\startMathFP {UpperLimitGapMin}                          Minimum gap between the (ink) bottom of the upper limit, and the (ink) top of the base operator. \stopMathFP
+\startMathFP {UpperLimitBaselineRiseMin}                 Minimum distance between baseline of upper limit and (ink) top of the base operator. \stopMathFP
+\startMathFP {LowerLimitGapMin}                          Minimum gap between (ink) top of the lower limit, and (ink) bottom of the base operator. \stopMathFP
+\startMathFP {LowerLimitBaselineDropMin}                 Minimum distance between baseline of the lower limit and (ink) bottom of the base operator. \stopMathFP
+\startMathFP {StackTopShiftUp}                           Standard shift up applied to the top element of a stack. \stopMathFP
+\startMathFP {StackTopDisplayStyleShiftUp}               Standard shift up applied to the top element of a stack in display style. \stopMathFP
+\startMathFP {StackBottomShiftDown}                      Standard shift down applied to the bottom element of a stack. Positive for moving in the downward direction. \stopMathFP
+\startMathFP {StackBottomDisplayStyleShiftDown}          Standard shift down applied to the bottom element of a stack in display style. Positive for moving in the downward direction. \stopMathFP
+\startMathFP {StackGapMin}                               Minimum gap between (ink) bottom of the top element of a stack, and the (ink) top of the bottom element. Suggested: 3 times default rule thickness. \stopMathFP
+\startMathFP {StackDisplayStyleGapMin}                   Minimum gap between (ink) bottom of the top element of a stack, and the (ink) top of the bottom element in display style. Suggested: 7 times default rule thickness. \stopMathFP
+\startMathFP {StretchStackTopShiftUp}                    Standard shift up applied to the top element of the stretch stack. \stopMathFP
+\startMathFP {StretchStackBottomShiftDown}               Standard shift down applied to the bottom element of the stretch stack. Positive for moving in the downward direction. \stopMathFP
+\startMathFP {StretchStackGapAboveMin}                   Minimum gap between the ink of the stretched element, and the (ink) bottom of the element above. Suggested: same value as \typ {UpperLimitGapMin}. \stopMathFP
+\startMathFP {StretchStackGapBelowMin}                   Minimum gap between the ink of the stretched element, and the (ink) top of the element below. Suggested: same value as \typ {LowerLimitGapMin}. \stopMathFP
+\startMathFP {FractionNumeratorShiftUp}                  Standard shift up applied to the numerator. \stopMathFP
+\startMathFP {FractionNumeratorDisplayStyleShiftUp}      Standard shift up applied to the numerator in display style. Suggested: same value as \typ {StackTopDisplayStyleShiftUp}. \stopMathFP
+\startMathFP {FractionDenominatorShiftDown}              Standard shift down applied to the denominator. Positive for moving in the downward direction. \stopMathFP
+\startMathFP {FractionDenominatorDisplayStyleShiftDown}  Standard shift down applied to the denominator in display style. Positive for moving in the downward direction. Suggested: same value as \typ {StackBottomDisplayStyleShiftDown}. \stopMathFP
+\startMathFP {FractionNumeratorGapMin}                   Minimum tolerated gap between the (ink) bottom of the numerator and the ink of the fraction bar. Suggested: default rule thickness. \stopMathFP
+\startMathFP {FractionNumDisplayStyleGapMin}             Minimum tolerated gap between the (ink) bottom of the numerator and the ink of the fraction bar in display style. Suggested: 3 times default rule thickness. \stopMathFP
+\startMathFP {FractionRuleThickness}                     Thickness of the fraction bar. Suggested: default rule thickness. \stopMathFP
+\startMathFP {FractionDenominatorGapMin}                 Minimum tolerated gap between the (ink) top of the denominator and the ink of the fraction bar. Suggested: default rule thickness. \stopMathFP
+\startMathFP {FractionDenomDisplayStyleGapMin}           Minimum tolerated gap between the (ink) top of the denominator and the ink of the fraction bar in display style. Suggested: 3 times default rule thickness. \stopMathFP
+\startMathFP {SkewedFractionHorizontalGap}               Horizontal distance between the top and bottom elements of a skewed fraction. \stopMathFP
+\startMathFP {SkewedFractionVerticalGap}                 Vertical distance between the ink of the top and bottom elements of a skewed fraction. \stopMathFP
+\startMathFP {OverbarVerticalGap}                        Distance between the overbar and the (ink) top of he base. Suggested: 3 times default rule thickness. \stopMathFP
+\startMathFP {OverbarRuleThickness}                      Thickness of overbar. Suggested: default rule thickness. \stopMathFP
+\startMathFP {OverbarExtraAscender}                      Extra white space reserved above the overbar. Suggested: default rule thickness. \stopMathFP
+\startMathFP {UnderbarVerticalGap}                       Distance between underbar and (ink) bottom of the base. Suggested: 3 times default rule thickness. \stopMathFP
+\startMathFP {UnderbarRuleThickness}                     Thickness of underbar. Suggested: default rule thickness. \stopMathFP
+\startMathFP {UnderbarExtraDescender}                    Extra white space reserved below the underbar. Always positive. Suggested: default rule thickness. \stopMathFP
+\startMathFP {RadicalVerticalGap}                        Space between the (ink) top of the expression and the bar over it. Suggested: 5/4 times default rule thickness. \stopMathFP
+\startMathFP {RadicalDisplayStyleVerticalGap}            Space between the (ink) top of the expression and the bar over it. Suggested: default rule thickness + 1/2 timss \typ {xheight}. \stopMathFP
+\startMathFP {RadicalRuleThickness}                      Thickness of the radical rule. This is the thickness of the rule in designed or constructed radical signs. Suggested: default rule thickness. \stopMathFP
+\startMathFP {RadicalExtraAscender}                      Extra white space reserved above the radical. Suggested: same value as \typ {RadicalRuleThickness}. \stopMathFP
+\startMathFP {RadicalKernBeforeDegree}                   Extra horizontal kern before the degree of a radical, if such is present. Suggested: 5/18 of \typ {emwidth}. \stopMathFP
+\startMathFP {RadicalKernAfterDegree}                    Negative kern after the degree of a radical, if such is present. Suggested: −10/18 of \typ {emwidth}. \stopMathFP
+\startMathFP {RadicalDegreeBottomRaisePercent}           Height of the bottom of the radical degree, if such is present, in proportion to the ascender of the radical sign. Suggested: 60 pct. \stopMathFP
+
+All these parameters can be set in the goodie file and will then overload the
+ones that are set already in the font. During \LUATEX\ and \LUAMETATEX\ development some
+additional parameters have been added:
+
+\startMathFP {MinConnectorOverlap}               to be described \stopMathFP
+\startMathFP {SubscriptShiftDownWithSuperscript} to be described \stopMathFP
+\startMathFP {FractionDelimiterSize}             to be described \stopMathFP
+\startMathFP {FractionDelimiterDisplayStyleSize} to be described \stopMathFP
+\startMathFP {NoLimitSubFactor}                  to be described \stopMathFP
+\startMathFP {NoLimitSupFactor}                  to be described \stopMathFP
+\startMathFP {AccentBaseDepth}                   to be described \stopMathFP
+\startMathFP {FlattenedAccentBaseDepth}          to be described \stopMathFP
+\startMathFP {SpaceBeforeScript}                 to be described \stopMathFP
+\startMathFP {PrimeRaisePercent}                 to be described \stopMathFP
+\startMathFP {PrimeShiftUp}                      to be described \stopMathFP
+\startMathFP {PrimeShiftUpCramped}               to be described \stopMathFP
+\startMathFP {PrimeSpaceAfter}                   to be described \stopMathFP
+\startMathFP {PrimeBaselineDropMax}              to be described \stopMathFP
+\startMathFP {PrimeWidthPercent}                 to be described \stopMathFP
+\startMathFP {SkewedDelimiterTolerance}          to be described \stopMathFP
+\startMathFP {AccentTopShiftUp}                  to be described \stopMathFP
+\startMathFP {AccentBottomShiftDown}             to be described \stopMathFP
+\startMathFP {AccentTopOvershoot}                to be described \stopMathFP
+\startMathFP {AccentBottomOvershoot}             to be described \stopMathFP
+\startMathFP {AccentSuperscriptDrop}             to be described \stopMathFP
+\startMathFP {AccentSuperscriptPercent}          to be described \stopMathFP
+\startMathFP {FlattenedAccentTopShiftUp}         to be described \stopMathFP
+\startMathFP {FlattenedAccentBottomShiftDown}    to be described \stopMathFP
+\startMathFP {DelimiterPercent}                  to be described \stopMathFP
+\startMathFP {DelimiterShortfall}                to be described \stopMathFP
+
+Whenever we thought that we should have some control we added a variable to play
+with. There are more variables that control the engine and some are set in
+\CONTEXT. Often a parameter can be set per style. We don't set them all.
+
+\stopchapter
+
+\startchapter[title=Font sizes]
+
+For quite a while \CONTEXT\ \MKIV\ and \LMTX\ have been set up to use the script
+and scriptscript scales from the \OPENTYPE\ fonts. However, the method used
+didn't always work as expected with the configured sizes in bodyfont environments
+that were based on initial usage of Computer Modern. That in itself is no big
+problem but as we defined the smaller sizes of for instance five point to be that
+value too, a conflict of namespace surfaced. It's a side effect of race
+condition: we want fast loading for which we need a namespace (at every size) but
+when the size in the \OPENTYPE\ file is non standard (read: the 10pt, 7pt, 5pt
+ratio) we get the wrong scales from the hash. We need to know the scale before we
+initialize the font. But as we don't want to consult the font data each time we
+check a scale we have now moved the ratios to the typescripts. This also makes it
+possible to overload them easier.
+
+The following table shows the values as configured and you will notice that there
+are differences. By moving them into the typescript we can also assure that
+updates to the font have no side effects. As with most math parameters in the
+font, these are not then well defined|/|explored anyway.
+
+\def\MappedScriptSize      {\cldcontext{fonts.hashes.mathparameters[\the\fontid\scriptscriptfont0].ScriptPercentScaleDown}}
+\def\MappedScriptScriptSize{\cldcontext{fonts.hashes.mathparameters[\the\fontid\scriptscriptfont0].ScriptScriptPercentScaleDown}}
+
+\starttexdefinition ShowMappedFontSize #1
+    \NC #1
+    \NC \mappedfontsize{#1}{script}
+    \NC \mappedfontsize{#1}{scriptscript}
+    \NC \bgroup\switchtobodyfont[#1]\normalexpanded{\egroup\MappedScriptSize}
+    \NC \bgroup\switchtobodyfont[#1]\normalexpanded{\egroup\MappedScriptScriptSize}
+    \NC \NR
+\stoptexdefinition
+
+\starttabulate[|l|c|c|c|c|]
+    \FL
+    \NC
+    \NS[1][c] user or typescript
+    \NS[1][c] font parameter
+    \NC \NR
+    \NC bodyfont
+    \NC script
+    \NC scriptscript
+    \NC script
+    \NC scriptscript
+    \NC \NR
+    \ML
+    \ShowSomething{ShowMappedFontSize}
+    \LL
+\stoptabulate
+
+A user can do the following:
+
+\starttyping
+\mapfontsize[pagella][script]      [.75]
+\mapfontsize[pagella][scriptscript][.65]
+\stoptyping
+
+before defining a typeface. In that case the definition in the typescript is
+ignored.
+
+Below we show the script and scriptscript shapes as available in the font. We
+just show overlayed shaped, so this is not a formula with proper spacing.
+
+\definecolor[tred]  [r=1,t=.5,a=1]
+\definecolor[tgreen][g=1,t=.5,a=1]
+\definecolor[tblue] [b=1,t=.5,a=1]
+
+\starttexdefinition ShowSizes #1
+    \startoverlay
+        {\tred  \definedfont[MathRoman*math]#1}
+        {\tgreen\definedfont[MathRoman*math-script]#1}
+        {\tblue \definedfont[MathRoman*math-scriptscript]#1}
+    \stopoverlay
+\stoptexdefinition
+
+\starttexdefinition ShowMathSizes #1
+    \NC #1 \NC \scale [s=4] {\inframed[frame=off]
+        {\switchtobodyfont[#1]\showglyphs%
+         \dontleavehmode \strut
+         \ShowSizes{2}\ShowSizes{+}
+         \ShowSizes{𝐴}\ShowSizes{=}
+         \ShowSizes{𝑔}\ShowSizes{−}
+         \ShowSizes{𝜋}\ShowSizes{)}}}
+    \NR \NR
+\stoptexdefinition
+
+\starttabulate[|l|l|]
+    \ShowSomething{ShowMathSizes}
+\stoptabulate
+
+\stopchapter
+
+\startchapter[title=Data structure]
+
+A traditional \TEX\ engine only needs metrics, that is: the shape is not
+relevant. The only measure that somewhat reflect the shape is the italic
+correction but it actually is not so much a correction and more the anchor of the
+subscript. This is also true for an engine that can deal with \OPENTYPE\ math.
+However, there the shape is reflected in the staircase kern tables that define
+the kerning at the corners.
+
+In \LUAMETATEX\ each character has the following numeric properties (there cna be
+more at the \LUA\ end: width, height, depth, italic, expansion, leftprotrusion
+and rightprotrusion. An \OPENTYPE\ font only provides the width and boundingbox
+so the later defines the height and depth. We have an status field that tells
+what we're dealing with and some special treatments is needed and a pointer
+(index) to a follow up glyph (the next in size in math.) There are an optional
+kerning table and ligature table (pointers to allocated arrays) as well as an
+optional pointer to a math specific table. At the \LUA\ end we have more fields
+and some play a role in tweaks. For instance, we can redefine dimensions and
+shift the shape around. These are \CONTEXT\ specific.
+
+The optional math (sub)table of a character has many fields. Here we only mention
+them because some will be referred to in later chapters: smaller, mirror, {\em
+flat accent}, top anchor, bottom anchor, {\em four optional corner math kerns
+arrays (with their size)}, {\em optional horizontal and vertical extensible
+recipes}, four simple corner kerns, four edge margins, a top and bottom accent
+overshoot, {\em italics for vertical and horizontal extensibles}, and an inner
+location, x offset and y offset for e.g. degree anchoring. The cursive fields
+come from \OPENTYPE\ MATH.
+
+This means that a math character has more data in the engine and therefore uses
+more memory. However, there are only a few math fonts loaded and not all
+characters need the math information. One reason for splitting the data in
+\LUAMETATEX\ is that we could save a lot of memory when huge e.g. \CJK\ fonts are
+used: there we want to occupy as little memory as possible.
+
+When reading the next chapters keep in mind that quite a bit fo the
+implementation of tweaks is \CONTEXT\ specific. The engine should be able to do a
+proper job without tweaks in which case one just has to live with the limitations
+of and artifacts in fonts.
+
+When making a manual like this a complication is that one has to load many math
+fonts and also find a way to show both the tweaked and non-tweaked version. We
+only demonstrate the core set of tweaked files so here is an example:
+
+\starttexdefinition TweakTest #1
+    \NC #1
+    \NC \switchtobodyfont[#1]    $\showglyphs\showfontitalics f^2_2 + x + 1$
+    \NC \switchtobodyfont[#1-nt] $\showglyphs\showfontitalics f^2_2 + x + 1$
+    \NC \switchtobodyfont[#1]    $\showglyphs\showfontitalics\showmakeup[mathglue] f^2_2 + x + 1$
+    \NC \switchtobodyfont[#1-nt] $\showglyphs\showfontitalics\showmakeup[mathglue] f^2_2 + x + 1$
+    \NC \NR
+\stoptexdefinition
+
+\starttabulate[|l|c|c|c|c|]
+    \NC \NC tweaked \NC original \NC tweaked \NC original \NC \NR
+    \ctxlua {
+        for i=1,#document.usedfonts do
+            if i > 1 then
+                context.TB()
+            end
+            context.TweakTest(document.usedfonts[i][1])
+        end
+    }
+\stoptabulate
+
+You will notice that in the tweaked version we have no kerns that compensate for the
+width. We will come to that later because these examples are more meant as calibrating
+the loading.
+
+\stopchapter
+
+\startchapter[title=Tweak: dimensions] \ShowTweakUsage{dimensions}
+
+Usage of this tweak can best be observed (and experimented) in the goodie files
+because there are many parameters. Most are fractions, for instance of the width.
+It is important to realize than when you mess with the \type {width} and \type
+{xoffset}, you need to set the \type {advance} to (most likely) the old width
+when it hasn't yet be set. This tells the backend what the natural glyph
+progression is.
+
+\stopchapter
+
+\startchapter[title=Tweak: topanchors]   \ShowTweakUsage{topanchors}
+
+\startbuffer
+\im{\hat{f}+\widehat{f}}
+\stopbuffer
+
+\starttabulate[|l|c|c|]
+    \NC \NC tweaked \NC original \NC \NR
+    \NC ebgaramond
+    \NC \switchtobodyfont[ebgaramond]    \getbuffer
+    \NC \switchtobodyfont[ebgaramond-nt] \getbuffer \NR
+\stoptabulate
+
+\stopchapter
+
+\startchapter[title=Tweak: moveitalics]  \ShowTweakUsage{moveitalics}
+
+By now we have written plenty about italic correction in math fonts. To summarize
+it: in traditional \TEX\ fonts the width of characters is such that the subscript
+sits nicely against the shape, and the italic correction determines where the
+superscript ends up or when that is absent where the next item starts. It is also
+used for positioning the limits on n-ary operators. In \OPENTYPE\ fonts kerning
+happens with staircase kerns and italic correction is supposedly only used after
+a run of italic shapes. There positioning the limits is also driven by that
+correction.
+
+The dual purpose is confusing. In traditional fonts the italic correction is
+actually a kern and that is why we decided to just add it to the width and use
+the same value for a negative bottom kern. An exception is the integral where as
+mentioned the correction determines the limits.
+
+With the fonts being some mix for old and new we also have to deal with the left
+end of the shapes, especially in relation to the positioning of top accents which
+can be somewhat erratic.
+
+All this head lead us to a tweak that does several things at once: get rid of
+weird left side bearings (so that for instance a math italic \type {f} doesn't
+stick out in a way that makes it unusable), correct the advance width with the
+italic correction, turn top accent values into top and bottom anchors, add top
+and bottom right and left kerns based on all this. Finally we wipe the old italic
+and top accent values and end up with a clean glyph that we can deal with properly
+in several circumstances.
+
+In the goodie files you can find these lines:
+
+\starttyping
+presets.moveitalics { correct = true },
+presets.moveitalics { correct = true, letters = true },
+\stoptyping
+
+In the file \type {common-math.lfg} you can find how these are defined. The first
+one does the alphabets and the second one all the letters. That second one is
+sort of redundant but one can now comment the line in order to check for
+left-overs. Because we do this for all fonts, we have defined these operations as
+presets. so it makes sense to study this file. These lines are in fact function
+calls that return a regular tweak table entry.
+
+\stopchapter
+
+\startchapter[title=Tweak: movelimits]   \ShowTweakUsage{movelimits}
+
+This tweak turns the italic correction of integrals into anchors and right kerns,
+something that the engine can deal with in a more advanced way than just some
+fuzzy italic correction because kerns permeable through the renderer. Again we
+have a preset:
+
+\starttyping
+presets.moveintegrals { factor = 1.5 }
+\stoptyping
+
+This is defined as:
+
+\starttyping
+moveintegrals = function(parameters)
+    return {
+        tweak  = "movelimits",
+        factor = parameters.factor or 1,
+        list   = mathematics.tweaks.subsets.integrals,
+    }
+end
+\stoptyping
+
+Watch how we pas a factor that does an extra shift on the top and bottom anchors.
+For the list we use a predefined list of integrals (and there are plenty in
+\UNICODE).
+
+\stopchapter
+
+\startchapter[title=Tweak: wipeanchors]  \ShowTweakUsage{wipeanchors}
+
+This tweak wipes the top anchors (top accents) for the given (ranges) of
+characters. There are fonts out there with weird ones and when wiped the centered
+positioning that kicks in when no anchor is defined works better. In practice
+only a few very sloped characters benefit from anchors. Interesting is that the
+math italic f is sensitive for bad dimensions and anchors and as that character
+is used a lot the impression can be that a whole font is bad if that one is.
+
+\stopchapter
+
+\startchapter[title=Tweak: wipeitalics]  \ShowTweakUsage{wipeitalics}
+
+This tweak wipes the \quote {italic correction} fields that are left over after
+applying \type {moveitalics} and \type {movelimits}. For instance some symbols
+can have italic corrections that make no sense but might have resulted from some
+automatic font generation workflow.
+
+\stopchapter
+
+\startchapter[title=Tweak: checkspacing] \ShowTweakUsage{checkspacing}
+
+This is a rather harmless but still useful tweak. There are plenty of spacing characters
+in \UNICODE\ and although in math mode spacing is handled automatically users might be
+tempted to inject their own. Normally that happens with commands but using these direct
+characters can be an option.
+
+\starttexdefinition CheckSpacingA #1
+    \start
+    \switchtobodyfont[#1]
+    \normalexpanded{\stop\ttx\withoutpt\emwidth}%
+\stoptexdefinition
+
+\starttexdefinition CheckSpacingB #1#2
+    \vrule height 1.5\exheight depth 0.5\exheight width 1pt
+    \start
+    \switchtobodyfont[#1]%
+    \char#2\relax
+    \stop
+    \vrule height 1.5\exheight depth 0.5\exheight width 1pt
+\stoptexdefinition
+
+\startluacode
+    local list = mathematics.tweaks.datasets.checkspacing
+    context.starttabulate { "|l|l|" .. string.rep("c|",#list) }
+        context.NC() context.NC()
+        for i=1,#list do
+            context.NC() context.rotate( { rotation = "90" }, string.formatters["\\ttx %U"](list[i][1]) )
+        end
+        context.NC() context.NR()
+        context.NC() context.NC()
+        for i=1,#list do
+            context.NC() context("\\ttx %s",list[i][2]) -- space quad char
+        end
+        context.NC() context.NR()
+        for i=1,#document.usedfonts do
+            local font = document.usedfonts[i][1]
+            context.NC()
+            context(font)
+            context.NC()
+            context.CheckSpacingA(font)
+            for i=1,#list do
+                context.NC()
+                context.CheckSpacingB(font,list[i][1])
+            end
+            context.NC()
+            context.NR()
+        end
+    context.stoptabulate()
+\stopluacode
+
+In this table the \type {s} indicates that the value is a spacer, like a \quote
+{non breakable space}, the \type {q} that the value is derived from a quad, like
+\quote {four per em space}, and the \type {c} means that we have a character
+driven quantity, like a \quote {punctuation space}.
+
+\stopchapter
+
+\startchapter[title=Tweak: setovershoots] \ShowTweakUsage{setovershoots}
+
+This tweak add some tolerance to characters which will make accents on top of
+them look a bit better.
+
+\starttyping
+{
+    tweak = "setovershoots",
+    list  = {
+        {
+            target       = "uppercasescript",
+            topovershoot = 0.05,
+        },
+        {
+            target       = "uppercaseboldscript",
+            topovershoot = 0.05,
+        },
+    },
+}
+\stoptyping
+
+\stopchapter
+
+\startchapter[title=Tweak: simplifykerns] \ShowTweakUsage{simplifykerns}
+
+The native kerning mechanism in \OPENTYPE\ math fonts uses staircase kerns for
+positioning scripts at each corner. When we looked into fonts in more detail we
+noticed that when the first step was normally okay, the second of third was such
+that the shape was actually touched. This made us add this tweak, where the
+extremes of staircase kerns (first top and last bottom) are used instead. This is
+possible because in \LUAMETATEX\ we have additional kerning features.
+
+One can argue that this degrades the quality but one has to keep in mind that
+\TEX\ will move script up and down anyway, so one seldom ends up in the more
+dangerous zones. So it's best to just catch it and throw out the few that we
+could benefit from.
+
+\stopchapter
+
+\startchapter[title=Tweak: kernpairs]     \ShowTweakUsage{kernpairs}
+
+We use this tweak to optimize kerning between successive characters. Here are
+some examples for bonum:
+
+\startlines
+{\showglyphs\switchtobodyfont   [bonum]$aj$\quad $fj$\quad $ij$}
+{\showglyphs\switchtobodyfont[bonum-nt]$aj$\quad $fj$\quad $ij$}
+\stoplines
+
+It might take while before we have set them up; fortunately we can use
+categories to set up a lot at the same time.
+
+Some fonts have kerns, for instance \STIX\ but not for math. Borrowing the
+default latin ones is no real option because it looks too inconsistent for use in
+math. This is why for now we keep it explicit.
+
+% \startlines
+% {\showglyphs\switchtobodyfont   [stixtwo]$aj$\quad $fj$\quad $ij$\quad \char65 \char67}
+% {\showglyphs\switchtobodyfont[stixtwo-nt]$aj$\quad $fj$\quad $ij$\quad \char65 \char67}
+% \stoplines
+
+\stopchapter
+
+\startchapter[title=Tweak: kerns]         \ShowTweakUsage{kerns}
+
+This tweak can be used to set the (simple) corner kerns.
+
+\starttyping
+{
+    tweak = "kerns",
+    list  = {
+        [0x002F] = { topleft = -0.2, bottomright = -0.2 },
+    }
+}
+\stoptyping
+
+The numbers are a fraction of the width and valid fields are \typ {topleft}, \typ
+{topright}, \typ {bottomleft} and \typ {bottomright}. These kerns are used in pre
+and postscripts.
+
+\starttexdefinition KernsTest #1
+    \NC #1
+    \NC \switchtobodyfont[#1]    $\showglyphs x^2/2$
+    \NC \switchtobodyfont[#1-nt] $\showglyphs x^2/2$
+    \NC \NR
+\stoptexdefinition
+
+\starttabulate[|l|c|c|]
+    \NC \NC tweaked \NC original \NC \NR
+    \ctxlua {
+        for i=1,#document.usedfonts do
+            if i > 1 then
+                context.TB { "medium" }
+            end
+            context.KernsTest(document.usedfonts[i][1])
+        end
+    }
+\stoptabulate
+
+\stopchapter
+
+\startchapter[title=Tweak: margins]       \ShowTweakUsage{margins}
+
+This tweak is similar to the kerns tweak but adds margins instead. it is a trick to
+enforce larger and|/|or smaller accents (like for instance \type {\widetilde}.
+
+\starttyping
+{
+    tweak = "margins",
+    list  = {
+        [0x1D7DC] = { left = -.1, right = -.1 }, -- doublestruck 4
+    }
+}
+\stoptyping
+
+The relevant fields are \type {left} and \type {right}, they specify the margins
+as fraction of the width, and \type {top} and \type {bottom}, those specify
+margins as fraction of the combined height and depth.
+
+Keep in mind that these are not \OPENTYPE\ math properties but specific (and
+native) to \LUAMETATEX.
+
+\stopchapter
+
+\startchapter[title=Tweak: staircase]     \ShowTweakUsage{staircase}
+
+{\em This tweak is kind of obsolete and might go away some day.}
+
+\stopchapter
+
+\startchapter[title=Tweak: fixintegrals] \ShowTweakUsage{fixintegrals}
+
+In the Computer Modern font there are only a few sizes for the integral sign
+\type {U+222B} and they are very sloped. Nowadays fonts also have an extensible
+in which case the shape is upright. In \UNICODE\ there are quite some characters
+that can be used to construct extensibles (like braces) and there are also
+snippets for constructing integrals: \type {0x2320}, \type {0x23AE} and \type
+{0x2321}. The fact that these are there and that fonts then provide them also
+makes it easy to provide extensibles: you just stack them:
+
+\starttexdefinition TestIntegralSnippets #1
+    \NC #1
+    \NC \showglyphs \switchtobodyfont[#1-nt]%
+        $ \displaystyle \integral { \quad \vcenter\bgroup
+            \darkred
+            \offinterlineskip
+            \hpack{$\char"2320$}
+            \hpack{$\char"23AE$}
+            \hpack{$\char"2321$}
+          \egroup } $
+    \NC \showglyphs \switchtobodyfont[#1-nt]$\char"2320$
+    \NC \showglyphs \switchtobodyfont[#1-nt]$\char"23AE$
+    \NC \showglyphs \switchtobodyfont[#1-nt]$\char"2321$
+    \NC \NR
+\stoptexdefinition
+
+\starttabulate[|||c|c|c|]
+    \ShowSomething{TestIntegralSnippets}
+\stoptabulate
+
+This tweak can use these snippets to provide an extensible in case it is not part
+of the integral glyph definition. In these examples we show the untweaked
+integral that is choosen when we provide the one made from three snippets. The
+red one is the constructed variant. Keep in mind that an extensible works best
+when there is some overlap possible.
+
+\stopchapter
+
+\startchapter[title=Tweak: accentdimensions] \ShowTweakUsage{accentdimensions}
+
+Positioning of accents is driven by \typ {AccentBaseHeight} and \typ
+{AccentBaseDepth} combined with the height of what goes under an accent as we ll
+as the height of the accent. Unfortunately the height of the accents is not
+always consistent across the repertoire and within a variant list starting with
+the initial character.
+
+\starttexdefinition TestAccentDimension #1#2#3
+    \NC \ifnum#3=1 #1\fi
+    \NC \tttf U+\ifnum#2<"FFF 0\fi\tohexadecimal#2
+    \NC \switchtobodyfont   [#1]\showglyphs$\char#2$
+    \NC \switchtobodyfont   [#1]\showglyphs$\dorecurse{3}{\char\mathvariantcode #2 ##1\quad}\unskip$
+    \NC \switchtobodyfont[#1-nt]\showglyphs$\char#2$
+    \NC \switchtobodyfont[#1-nt]\showglyphs$\dorecurse{3}{\char\mathvariantcode #2 ##1\quad}\unskip$
+    \NC \NR
+\stoptexdefinition
+
+\startluacode
+    function document.TestAccentDimension(list)
+        context.starttabulate { "|l|c|c|c|c|c|" }
+        context.FL()
+        context.NC() context("bodyfont")
+        context.NC() context("unicode")
+        context.NC() context("tweaked")
+        context.NC()
+        context.NC() context("original")
+        context.NC()
+        context.NC() context.NR()
+        for i=1,#document.usedfonts do
+            context.ML()
+            local n = 0
+            for k, v in table.sortedhash(mathematics.tweaks.datasets.accentdimensions[list]) do
+                n = n + 1
+                context.TestAccentDimension(document.usedfonts[i][1],k,n)
+            end
+        end
+        context.LL()
+        context.stoptabulate()
+    end
+\stopluacode
+
+The over and under accents are not always present so other tweaks fill in these gaps.
+
+\ctxlua{document.TestAccentDimension("over")}
+\ctxlua{document.TestAccentDimension("under")}
+
+We can specify what accents get processed but here we show the default set. In most cases o
+treatment is needed.
+
+\ctxlua{document.TestAccentDimension("accent")}
+
+The specification can be simple, just the tweak name, but you can also specify
+a detailed list:
+
+\starttyping
+{
+    tweak = "accentdimensions",
+    list  = { "over", "under" }, -- "accent"
+}
+\stoptyping
+
+or even:
+
+\starttyping
+{
+    tweak = "accentdimensions",
+    list  = {
+        [0x203E] = { factor = "over"  }, -- overbar
+        [0x203E] = { factor = "under" }, -- underbar
+        [0x23DE] = { factor = "over"  }, -- overbrace
+        [0x23DF] = { factor = "under" }, -- underbrace
+        [0x23DC] = { factor = "over"  }, -- overparent
+        [0x23DD] = { factor = "under" }, -- underparent
+        [0x23B4] = { factor = "over"  }, -- overbracket
+        [0x23B5] = { factor = "under" }, -- underbracket
+    }
+}
+\stoptyping
+
+Instead of a named factor you can pass a number to be applied to the height or
+depth. As with all tweaks, they are normally not applied at the user level so if
+you have to you'd better check the source code to see what really happens in this
+tweak (this is true for more tweaks).
+
+\stopchapter
+
+\startchapter[title=Tweak: copyaccents]      \ShowTweakUsage{copyaccents}
+
+This tweak deals with a mixup of combining accents and wide accents where
+recipes can be on the \quote {wrong} code point.
+
+\startluacode
+context.starttabulate { "|T|T|c|c|" }
+context.FL()
+context.NC() context("base")
+context.NC() context("accent")
+context.NC() context("scale")
+context.NC() context.NR()
+context.ML()
+for k, v in table.sortedhash(mathematics.tweaks.datasets.copyaccents) do
+    context.NC() context("%U",k)
+    context.NC() context("%U",v[1])
+    context.NC() context(v[2] and "yes" or "no")
+    context.NC() context("$\\char %i$",v[1])
+    context.NC() context.NR()
+end
+context.LL()
+context.stoptabulate()
+\stopluacode
+
+\stopchapter
+
+\startchapter[title=Tweak: fixaccents]       \ShowTweakUsage{fixaccents}
+
+When the width of an accent is zero but it has an top (accent) anchor defined we
+can fix the its width, which is what this somewhat obscure tweak does. It belongs
+to the repertoire of weird tweaks that we came up with when trying to make
+suboptimal fonts work well.
+
+\stopchapter
+
+\startchapter[title=Tweak: extendaccents]    \ShowTweakUsage{extendaccents}
+
+When a wide accent is used the engine will try to find a best match from a
+sequence of variants. When there are no more variants it will use an extensible
+(recipe) when present. When that is not the case, one can decide to stretch the
+last variant to fit, but that only works for a few accents: the scale column in
+the table in the chapter about copying accents shows them. This tweak takes a few
+optional parameters: \type{all} that is either \type {true} or a number
+indicating after which variant stretching starts, and \type {force} that forces
+stretch on all variants.
+
+\stopchapter
+
+% \startchapter[title=Tweak: fixanchors]       \ShowTweakUsage{fixanchors}
+%   obsolete
+% \stopchapter
+
+\startchapter[title=Tweak: flattenaccents]   \ShowTweakUsage{flattenaccents}
+
+An \OPENTYPE\ math font can have a flat variant of an accent that can kick in when we
+run out of space. This feature will flatten regular accents. The same list is used as
+for copying accents. There are optional parameters to control the flattening:
+
+\starttabulate[||||]
+\FL
+\NC parameter \NC type     \NC default           \NC \NR
+\ML
+\NC force     \NC boolean  \NC false             \NC \NR
+\NC height    \NC factor   \NC 0.8               \NC \NR
+\NC offset    \NC factor   \NC 0.9 or calculated \NC \NR
+\NC squeeze   \NC factor   \NC 0.1 or calculated \NC \NR
+\LL
+\stoptabulate
+
+\stopchapter
+
+\startchapter[title=Tweak: bigslots]         \ShowTweakUsage{bigslots}
+
+This tweak can be applied as tweak or at a higher level in the mathematics goodie
+table. When defined as tweak it is under font version control.
+
+\starttexdefinition CheckBigSlotA #1#2
+    \start
+    \switchtobodyfont[#1]%
+    \im{\char\mathvariantcode "7B #2}%
+    \stop
+    \hss
+\stoptexdefinition
+
+\starttexdefinition CheckBigSlotB #1#2
+    \start
+    \switchtobodyfont[#1]%
+    \setbox\scratchbox\hbox{\im{\char\mathvariantcode "7B #2}}%
+    \normalexpanded{\stop{\ttxx
+        \cldcontext{"\letterpercent.3f",\number\htdp\scratchbox/\number\exheight}%
+    }}\quad
+\stoptexdefinition
+
+\starttexdefinition CheckBigSlotC #1
+    \start
+    \switchtobodyfont[#1]%
+    \normalexpanded{\stop{\ttxx\withoutpt\exheight}}%
+\stoptexdefinition
+
+\startluacode
+context.starttabulate { "|l|l|l|l|l|" }
+    context.NC() context("font")
+ -- context.NC() context("tweak")
+ -- context.NC() context("global")
+    context.NC() context("sequence")
+    context.NC() context("ex-height")
+    context.NC() context("rendering")
+    context.NC() context("ratio to ex")
+    context.NC() context.NR()
+    for i=1,#document.usedfonts do
+        local font    = document.usedfonts[i][1]
+        local goodies = document.usedgoodies[font]
+        local llist   = goodies.bigslots
+        local glist   = goodies.goodies.bigslots
+        local list    = glist or llist
+        context.NC() context(font)
+     -- context.NC() context("% t",llist)
+     -- context.NC() context("% t",glist)
+        context.NC() if list then context("\\ttxx % t",list) else context("unset") end
+        context.NC()
+        if list then
+            context.CheckBigSlotC(font)
+        end
+        context.NC()
+        if list then
+         -- context.switchtobodyfont { font }
+         -- for i=1,#list do
+         --     context(function()
+         --         context.im(utf.char(mathematics.variantcode(0x7B,list[i]))) context.quad()
+         --         context.im(utf.char(mathematics.variantcode(0x5D,list[i]))) context.quad()
+         --     end)
+         -- end
+            context.hss()
+            for i=1,#list do
+                context.CheckBigSlotA(font,list[i])
+            end
+        end
+        context.NC()
+        if list then
+            for i=1,#list do
+                context.CheckBigSlotB(font,list[i])
+            end
+        end
+        context.NC() context.NR()
+    end
+context.stoptabulate()
+\stopluacode
+
+\stopchapter
+
+\startchapter[title=Tweak: wipevariants]     \ShowTweakUsage{wipevariants}
+
+When a font has too many variants one can wipe them with this tweak. The entries
+in the list specify the last variant. When a \type {*} will wipe all variants.
+
+\starttyping % [style=\ttx]
+{
+    tweak   = "radicaldegreeanchors",
+    list = {
+        [0x221A] = 5, -- becomes last variant
+    }
+}
+\stoptyping
+
+\stopchapter
+
+\startchapter[title=Tweak: radicaldegreeanchors] \ShowTweakUsage{radicaldegreeanchors}
+
+The position of the radical degree is determined by some font parameters (todo)
+but these are shared among the different sizes as well as the extensible. We
+therefore provide a tweak that sets real anchors. These are not officially in
+\UNICODE\ math but an engine feature. Here is the experimental setup we made for
+Lucida. It demonstrates that we can set the base character, variants and the
+extensible. The factors that default to one, are applied to the width and height
+plus depth in order to get the coordinates.
+
+\starttyping[style=\ttx]
+{
+    tweak   = "radicaldegreeanchors",
+    list = {
+        -- the base radical:
+     -- [0x221A]                = { hfactor =  .05, vfactor =  .675 },
+        -- all variants:
+     -- ["0x221A.variants.*"]   = { hfactor =  .05, vfactor =  .6   },
+        -- specific variants:
+     -- ["0x221A.variants.1"]   = { hfactor =  .05, vfactor =  .65  },
+     -- ["0x221A.variants.2"]   = { hfactor =  .1,  vfactor =  .65  },
+        ["0x221A.variants.3"]   = { hfactor = 0,    vfactor =  .55  },
+        ["0x221A.variants.4"]   = { hfactor = 0,    vfactor =  .50  },
+     -- ["0x221A.variants.5"]   = { hfactor =  .05, vfactor =  .525 },
+     -- ["0x221A.variants.5"]   = { hfactor =  .1,  vfactor =  .55  },
+     -- ["0x221A.variants.6"]   = { hfactor =  .1,  vfactor =  .55  },
+        -- extensibles where the setting of bottom wins over top:
+     -- ["0x221A.parts.top"]    = { hfactor =  .1,  vfactor = 5.5   },
+        ["0x221A.parts.bottom"] = { hfactor = 0,    vfactor =  .85  },
+    }
+}
+\stoptyping
+
+The \type {location} is not set here and defaults to \type {left}; it is
+redundant because currently we only have left sided radical degrees (but we do
+have right sided radicals).
+
+\stopchapter
+
+\startchapter[title=Tweak: fixradicals]          \ShowTweakUsage{fixradicals}
+
+Because there is are limited number of heights and depths available in original
+\TFM\ files and variants by their nature differ in height and depth some glyphs
+like radicals have interesting dimensions. At the time of writing this only Latin
+Modern has this property.
+
+{\em ff image needed here}
+
+\starttexdefinition TestFixRadical #1
+    \dontleavehmode
+    \NC {\srule height3ex depth 2ex \relax}#1
+    \NC \showglyphs \switchtobodyfont[#1-nt]$\mathaxisbelow \char"221A + x$
+    \NC \showglyphs \switchtobodyfont   [#1]$\mathaxisbelow \char"221A + x$
+    \NC \showglyphs \switchtobodyfont   [#1]$\mathaxisbelow \char\mathvariantcode "221A 1 + x$
+    \NC \showglyphs \switchtobodyfont   [#1]$\mathaxisbelow \sqrt{x}$
+    \NC \NR
+\stoptexdefinition
+
+\starttabulate[|l|c|c|c|c|]
+    \NC bodyfont \NC untweaked \NC tweaked \NC first variant \NC example \NC \NR
+    \ShowSomething{TestFixRadical}
+\stoptabulate
+
+% after this: \dorecurse{15}{ Nacht Na de Dam 2021 | Wende - Bloed in mijn Bloed }
+
+\stopchapter
+
+\startchapter[title=Tweak: fallbacks]        \ShowTweakUsage{fallbacks}
+
+This tweak is not really a tweak but hooks into the fallbacks that a user
+defined. However, when fallbacks are set, they need to be injected at the right
+spot in the sequence of tweaks which is why it is defined in the goodie file.
+
+\stopchapter
+
+\startchapter[title=Tweak: replacealphabets] \ShowTweakUsage{replacealphabets}
+
+This tweak is an important one. It is used to add or swap script and calligraphic
+alphabets, inject right to left variants and configure replacements based on
+features. The following fields can be set:
+
+\starttabulate[||||]
+\NC filename \NC string \NC source file \NC \NR
+\NC feature  \NC string \NC feature \NC \NR
+\NC source   \NC string \NC alphabet name \NC \NR
+\NC          \NC table  \NC first source range \NC \NR
+\NC target   \NC string \NC alphabet name \NC \NR
+\NC          \NC table  \NC first source range \NC \NR
+\NC rscale   \NC number \NC relative scale \NC \NR
+\stoptabulate
+
+When an effect (like boldening) is used it is also applied to the injected
+alphabets. When not given, the target range is the same as the source. An example
+of a more extensive specification is:
+
+\starttyping
+{
+    tweak    = "replacealphabets",
+    feature  = "euleroverpagella",
+    filename = "euler.otf",
+    list     = {
+        { source = { first = 0x02100, last = 0x02BFF } },
+        { source = { first = 0x1D400, last = 0x1D7FF } },
+        { source = { first = 0x1D538, last = 0x1D550 } },
+    },
+}
+\stoptyping
+
+The feature at the outer level is a selector that can be set as follows:
+
+\starttyping
+\definefontfeature[lucida:mathextra][euleroverpagella=yes]
+\stoptyping
+
+This feature is not to be confused by the file related one that we access in for
+instance for instance Lucida:
+
+\starttyping
+{
+    tweak   = "replacealphabets",
+    list    = {
+        {
+            source   = "uppercasescript",
+            target   = "uppercasecalligraphic",
+            feature  = "ss04",
+        },
+        {
+            source   = "lowercasescript",
+            target   = "lowercasecalligraphic",
+            feature  = "ss04",
+        },
+        {
+            source   = "uppercaseboldscript",
+            target   = "uppercaseboldcalligraphic",
+            feature  = "ss04",
+        },
+        -- No lowercase bold calligraphic/script in font
+    },
+},
+\stoptyping
+
+The calligraphic alphabets are not official \UNICODE\ but internal \CONTEXT\ ones
+that are used to switch between script and calligraphic styles.
+
+\stopchapter
+
+\startchapter[title=Tweak: replace]     \ShowTweakUsage{replace}
+
+You can replace a character in a font by another one:
+
+\starttyping
+{
+    tweak   = "replace",
+    list    = {
+        [0x123] = 0x125
+    },
+},
+\stoptyping
+
+\stopchapter
+
+\startchapter[title=Tweak: substitute]       \ShowTweakUsage{substitute}
+
+You can substitute a character in a font by one from a substitution feature:
+
+\starttyping
+{
+    tweak   = "substitute",
+    list    = {
+        [0x123] = "ss01"
+    },
+},
+\stoptyping
+
+\stopchapter
+
+\startchapter[title=Tweak: fixprimes] \ShowTweakUsage{fixprimes}
+
+\starttexdefinition PrimeTest #1
+    \NC #1
+    \NC \showglyphs \switchtobodyfont[#1]    $f'(x)+e^{g'(x)} - a''+ b''' + c''''$
+    \NC \showglyphs \switchtobodyfont[#1-nt] $f'(x)+e^{g'(x)} - a''+ b''' + c''''$
+    \NC \NR
+\stoptexdefinition
+
+\starttabulate[|l|c|c|c|c|]
+    \NC \NC tweaked \NC original \NC \NR
+    \ctxlua {
+        for i=1,#document.usedfonts do
+            if i > 1 then
+                context.TB()
+            end
+            context.PrimeTest(document.usedfonts[i][1])
+        end
+    }
+\stoptabulate
+
+\stopchapter
+
+\startchapter[title=Tweak: fixslashes] \ShowTweakUsage{fixslashes}
+
+This tweak makes sure that the regular slash \type {U+002F} behaves compatible
+with the math one \type {U+2044}. Not all fonts provide the correct variants
+chain.
+
+% There is currently no need to show datasets.fixslashes as there is
+% just one entry.
+
+\stopchapter
+
+\startchapter[title=Tweak: fixellipses] \ShowTweakUsage{fixellipses}
+
+\startbuffer
+\im{1 + 2+ \cdots + n} \im{1, 2, \ldots, n}
+\stopbuffer
+
+\starttabulate[|l|c|c|]
+    \NC \NC tweaked \NC original \NC \NR
+    \NC concrete
+    \NC \switchtobodyfont[concrete]    \getbuffer
+    \NC \switchtobodyfont[concrete-nt] \getbuffer \NR
+\stoptabulate
+
+\stopchapter
+
+\startchapter[title=Tweak: wipecues]    \ShowTweakUsage{wipecues}
+
+Cues are hidden directives that should not take space so we set their dimensions
+to zero:
+
+\startluacode
+    local t = mathematics.tweaks.datasets.wipecues
+    local c = characters.data
+    context.starttabulate { "|c|c|l|" }
+    for i=1,#t do
+        local u = t[i]
+        context.NC() context("%U",u)
+        context.NC() context("$\\char %i$",u)
+        context.NC() context(c[u].description)
+        context.NC() context.NR()
+    end
+    context.stoptabulate()
+\stopluacode
+
+{\em Maybe some day we add tracers in which case they are visible but stil take
+no space.}
+
+\stopchapter
+
+\startchapter[title=Tweak: addactuarian] \ShowTweakUsage{addactuarian}
+
+This adds the annuity symbol \type {U+020E7} but as extensible because in itself
+this symbol, if present in the font at all, is rather unusable. It uses the same
+mechanism as radicals (roots) but from the other edge.
+
+% {\em todo: realistic example by Mikael}
+% From wiki: https://en.wikipedia.org/wiki/Actuarial_notation
+
+{\red MPS: In the \typ{\rannuity{m}} example, I would like it to be without the top bar, but I cannot find that. Also, maybe the bar over $n$ should also be tighter.}
+
+
+\starttexdefinition ActuarianTest #1
+    \NC #1
+    \NC \switchtobodyfont[#1]
+    $\bar{A}^1_{x:\rannuity{n}}^^{2}__{\rannuity{m}}$
+    \NC \NR
+\stoptexdefinition
+
+\starttabulate[|l|c|]
+    \NC \NC tweaked \NC \NR
+    \ctxlua {
+        for i=1,#document.usedfonts do
+            if i > 1 then
+                context.TB()
+            end
+            context.ActuarianTest(document.usedfonts[i][1])
+        end
+    }
+\stoptabulate
+
+
+
+\stopchapter
+
+\startchapter[title=Tweak: addarrows]    \ShowTweakUsage{addarrows}
+
+Not all fonts have extensible arrows. Traditionally in \TEX\ these were made
+from arrow heads and rules. This tweak makes proper extensibles.
+
+\startluacode
+    local t = mathematics.tweaks.datasets.addarrows
+    local c = characters.data
+    context.starttabulate { "|c|c|c|l|" }
+    for i=1,#t do
+        local u = t[i]
+        context.NC() context("%U",u)
+        context.NC() context("$\\char %i$",u)
+        context.NC() context("$\\Umathaccent 0 0 %i{\\hskip3em}$",u)
+        context.NC() context(c[u].description)
+        context.NC() context.NR()
+    end
+    context.stoptabulate()
+\stopluacode
+
+\stopchapter
+
+\startchapter[title=Tweak: addbars]      \ShowTweakUsage{addbars}
+
+There is only one parameter to this tweak: \type {advance} which is a fraction
+of the width.
+
+\starttexdefinition BarTest #1
+    \NC #1
+    \NC \showglyphs \switchtobodyfont[#1]    $\char"007C\quad\char"2016\quad\char"2980$
+    \NC \showglyphs \switchtobodyfont[#1-nt] $\char"007C\quad\char"2016\quad\char"2980$
+    \NC \NR
+\stoptexdefinition
+
+\starttabulate[|l|c|c|]
+    \NC \NC tweaked \NC original \NC \NR
+    \ctxlua {
+        for i=1,#document.usedfonts do
+            if i > 1 then
+                context.TB()
+            end
+            context.BarTest(document.usedfonts[i][1])
+        end
+    }
+\stoptabulate
+
+\stopchapter
+
+\startchapter[title=Tweak: addequals]    \ShowTweakUsage{addequals}
+
+There is only one parameter to this tweak: \type {advance} which is a fraction
+of the width.
+
+\starttexdefinition EqualTest #1
+    \NC #1
+    \NC \showglyphs \switchtobodyfont[#1]    $\char"003D\quad\char"2A75\quad\char"2A76$
+    \NC \showglyphs \switchtobodyfont[#1-nt] $\char"003D\quad\char"2A75\quad\char"2A76$
+    \NC \NR
+\stoptexdefinition
+
+\starttabulate[|l|c|c|]
+    \NC \NC tweaked \NC original \NC \NR
+    \ctxlua {
+        for i=1,#document.usedfonts do
+            if i > 1 then
+                context.TB()
+            end
+            context.EqualTest(document.usedfonts[i][1])
+        end
+    }
+\stoptabulate
+
+\stopchapter
+
+\startchapter[title=Tweak: addfourier]   \ShowTweakUsage{addfourier}
+
+This adds the fourier rendering which uses the radical subsystem but with a right
+hand symbol.
+
+% {\em todo: realistic example by Mikael}
+% From Folland - Real analysis:
+
+\starttexdefinition FourierTest #1
+    \NC #1
+    \NC \switchtobodyfont[#1]
+    $\partial^\alpha \hat{f} = \fourier{[(-2\pi i x )^{\alpha} f]}$
+    \NC \NR
+\stoptexdefinition
+
+\starttabulate[|l|c|]
+    \NC \NC tweaked \NC \NR
+    \ctxlua {
+        for i=1,#document.usedfonts do
+            if i > 1 then
+                context.TB()
+            end
+            context.FourierTest(document.usedfonts[i][1])
+        end
+    }
+\stoptabulate
+
+
+
+
+\stopchapter
+
+\startchapter[title=Tweak: addmirrors]   \ShowTweakUsage{addmirrors}
+
+This adds symbols for right|-|to|-|left math by simply mirroring existing ones.
+Deep down the engine doesn't really care about in what direction typesetting
+happens (wrt spacing and building structures) , and it is the backend that does
+the real work. However, symbols need to be flipped.
+
+\stopchapter
+
+\startchapter[title=Tweak: addparts]     \ShowTweakUsage{addparts}
+
+Here is an example of a (probably rarely used) low level extensible definition:
+
+\starttyping
+{
+    tweak = "addparts",
+    list  = {
+        [0x21F4] = {
+            horizontal = true,
+            template   = 0x2192,
+            sequence   = {
+                { glyph = "first", factor = 2 },
+                { glyph = 0x2218 },
+                { glyph = "first", factor = 2 },
+                { glyph = "last" },
+            }
+        }
+    }
+},
+\stoptyping
+
+In this example \type {first} is equivalent to the first part of the template, and
+\type {last} to the last one. Like:
+
+\blank \start \switchtobodyfont[stixtwo] \im {
+    \char"21F4 \quad
+    \Umathtopaccent 0 0 "21F4 {\mathtexttf{\strut one two three}}
+} \stop \blank
+
+\stopchapter
+
+\startchapter[title=Tweak: addprivates]  \ShowTweakUsage{addprivates}
+
+This tweak adds some characters to the repertoire. Currently we have only a few:
+
+\starttexdefinition PrivatesTest #1
+    \NC #1
+    \NC \switchtobodyfont[#1] $\um  2$
+    \NC \switchtobodyfont[#1] $\up  2$
+    \NC \switchtobodyfont[#1] $\ump 2$
+    \NC \switchtobodyfont[#1] $\upm 2$
+    \NC \NR
+\stoptexdefinition
+
+\starttabulate[|l|c|c|c|c|]
+    \NC \NC \type {\um} \NC \type {\up} \NC \type {\ump} \NC \type {\upm} \NC \NR
+    \ctxlua {
+        for i=1,#document.usedfonts do
+%             if i > 1 then
+%                 context.TB { "small" }
+%             end
+            context.PrivatesTest(document.usedfonts[i][1])
+        end
+    }
+\stoptabulate
+
+\stopchapter
+
+\startchapter[title=Tweak: addrules]     \ShowTweakUsage{addrules}
+
+This adds a few (missing) rule based shapes to a font:
+
+\starttexdefinition RulesTest #1
+    \NC #1
+    \NC \switchtobodyfont[#1] $\Umathaccent top    0 0 "23B4 {\hskip2cm}$
+    \NC \switchtobodyfont[#1] $\Umathaccent top    0 0 "203E {\hskip2cm}$
+    \NC \switchtobodyfont[#1] $\Umathaccent bottom 0 0 "23B5 {\hskip2cm}$
+    \NC \NR
+\stoptexdefinition
+
+\starttabulate[|l|c|c|c|]
+    \NC \NC \type {0x23B4} \NC \type {0x203E} \NC \type {0x23B5} \NC \NR
+    \ctxlua {
+        for i=1,#document.usedfonts do
+            if i > 1 then
+                context.TB { "small" }
+            end
+            context.RulesTest(document.usedfonts[i][1])
+        end
+    }
+\stoptabulate
+
+\stopchapter
+
+\startchapter[title=Tweak: addscripts]   \ShowTweakUsage{addscripts}
+
+This tweak adds high plus and minus shapes (we use them for indicating calculator
+input):
+
+\starttexdefinition ScriptsTest #1
+    \NC #1
+    \NC \switchtobodyfont[#1] $\char"207A x$
+    \NC \switchtobodyfont[#1] $\char"207B x$
+    \NC \switchtobodyfont[#1] $\char"208A x$
+    \NC \switchtobodyfont[#1] $\char"208B x$
+    \NC \NR
+\stoptexdefinition
+
+\starttabulate[|l|c|c|c|c|]
+    \NC \NC \type {0x207A} \NC \type {0x2037B} \NC \type {0x208A} \NC \type {0x208B} \NC \NR
+    \ctxlua {
+        for i=1,#document.usedfonts do
+            if i > 1 then
+                context.TB { "small" }
+            end
+            context.ScriptsTest(document.usedfonts[i][1])
+        end
+    }
+\stoptabulate
+
+\stopchapter
+
+\startchapter[title=What we ran into]
+
+\startsubject[title=Introduction]
+
+In this chapter we will show some of the characters that triggered adding a tweak
+feature. It can be that in the meantime something changed (got fixed) but
+nevertheless we think that by collecting some example here can help developers of
+math fonts to play safe so that the engine can do a good job even without tweaks.
+
+\stopsubject
+
+\startsubject[title=Latin Modern: radical base]
+
+In traditional \TEX\ fonts, for practical reasons (like implementation limits)
+the base radical character sits quite a bit below the baseline. The engine will
+automatically compensate for this when it is defined as radical but it makes
+usage as stand alone character hard. It also doesn't play well with corner kerns
+and degree anchoring.
+
+\startlinecorrection
+\startcombination
+    {\externalfigure[lm-radical-base.png]    [width=.25\textwidth]} {base}
+    {\externalfigure[lm-radical-variant1.png][width=.25\textwidth]} {variant 1}
+\stopcombination
+\stoplinecorrection
+
+\stopsubject
+
+\startsubject[title=Latin Modern: weird anchors]
+
+The \TEX Gyre fonts have top accent anchors defined but they are (at least when
+we write this) often positioned on the highest point of the shape, which is
+probably a side effect of some automated heuristic. However, for some shapes that
+works out bad. This is why we can wipe these anchors, just use the middle of the
+width and provide our own when it makes sense.
+
+\startlinecorrection
+    \externalfigure[lm-7-anchor.png][width=.25\textwidth]
+\stoplinecorrection
+
+\stopsubject
+
+\startsubject[title=StixTwo]
+
+When trying to improve font metrics (aka tweaking) we sometimes take a look at
+the shapes in FontForge. So for instance when we noticed that the integral mid
+segment in StixTwo was too narrow we took that look. Then we also noticed that
+the glyph was positioned at the edge instead of in the middle but that the
+hinting was such that it ended up in the middle. Intrigued by this we looked into
+it in more detail and noticed that the \OPENTYPE\ and \TRUETYPE\ files show up
+quite different. So we fetching the source files from the git repository, and
+played with the build script.
+
+The starting point is a \TRUETYPE\ file that seems to provide all kind of tables,
+that are then adapted using a dedicated glyph name file (basically many verbose
+glyph names are replaced by (in the end sort of redundant) uni names as well as
+plenty small glif files (we didn't check if these are different from what is in
+the original ttf file). Intermediate files are generated and at some point auto
+hinting happens, using different tools for the two formats.
+
+At some point we figured out that the left side bearing in the head table was
+somehow interfering and more experiments (we used for instance Lucida Math as
+comparison) if became clear that the lsb bit in the head flags was the culprit.
+By (un)setting it we could let \FONTFORGE\ show the \OPENTYPE\ and \TRUETYPE\
+files in the same way of differently. We could also zero the lsb entries in the
+hmtx table, which sort of fixed it independent of the bit. For the record we
+show the effect here (this document is also a bit our archive).
+
+\startlinecorrection
+\startcombination[nx=3,ny=1]
+    {\externalfigure[StixTwo23AE-original.png][width=.25\textwidth]} {original otf}
+    {\externalfigure[StixTwo23AE-fixed.png]   [width=.25\textwidth]} {fixed otf}
+    {\externalfigure[StixTwo23AE-ttf.png]     [width=.25\textwidth]} {ttf}
+\stopcombination
+\stoplinecorrection
+
+The original variant:
+
+\starttyping
+<CharString name="uni23AE">
+125 21 -21 hstem
+301 102 vstem
+403 hmoveto
+650 -102 -650 vlineto
+endchar
+</CharString>
+\stoptyping
+
+The fixed version:
+
+\starttyping
+<CharString name="uni23AE">
+125 0 650 -629 -21 hstemhm
+301 102 hintmask 01100000
+403 0 rmoveto
+hintmask 10100000
+0 650 rlineto
+-102 0 rlineto
+0 -650 rlineto
+endchar
+</CharString>
+\stoptyping
+
+It was this character that we looked at because we use it in a demo, but actually
+many characters had this visual hinting side effect. So, one solution is to wipe
+the hints and let FontForge add new ones, but easier is to just use the
+\TRUETYPE\ files instead of the \OPENTYPE\ ones, either fixed or with hints
+removed,as in:
+
+\starttyping
+<CharString name="uni23AE">
+  125 403 0 rmoveto
+  0 650 rlineto
+  -102 0 rlineto
+  0 -650 rlineto
+  endchar
+</CharString>
+\stoptyping
+
+This is the original \type {uni23A_E_.glif} file:
+
+\starttyping
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="uni23AE" format="2">
+  <advance width="704"/>
+  <unicode hex="23AE"/>
+  <outline>
+    <contour>
+      <point x="403" y="0" type="line"/>
+      <point x="403" y="650" type="line"/>
+      <point x="301" y="650" type="line"/>
+      <point x="301" y="0" type="line"/>
+    </contour>
+  </outline>
+</glyph>
+\stoptyping
+
+In case one wonders why all this matters: occasionally we use the shape in
+\METAPOST\ and there we don't apply hinting, which means that we don't want to
+end up with the glyph positioned wrongly in the bounding box with hints moving
+them to the right spot. So that is why we now prefer the \TRUETYPE\ variant
+because then at least we can compare different programs visually. \footnote {In
+the FontForge preview rendering in the overview, hinting is also not applied so
+there glyphs are also positioned somewhat weird. In TypeTool3 the glyph doesn't
+show up at all when we enable outline fill so it makes an interesting puzzle.}
+
+\stopsubject
+
+\stopchapter
+
+% \startchapter[title=Left-overs]
+
+%  "action",
+%  "subsets",
+%  "parameters",
+
+%  "message",
+%  "showinfo",
+%  "setoptions",
+%  "oldstylemath",
+%  "fixoldschool",
+%  "version",
+
+% \stopchapter
+
+\stoptext

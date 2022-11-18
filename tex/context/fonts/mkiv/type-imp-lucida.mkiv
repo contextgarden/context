@@ -21,6 +21,8 @@
 
 \starttypescriptcollection[lucida-opentype]
 
+    \doifunknownfontfeature {lucida-math-bold} {\definefontfeature[lucida-math-bold][boldened]}
+
     \starttypescript [lucida,lucidaot,lucidadk,lucidaot-nt,lucida-nt]
         \loadfontgoodies[lucida-opentype-math]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif]       [\typescriptone] [\s!default] [\s!features=\s!default]
@@ -74,13 +76,15 @@
     \stoptypescript
 
     \starttypescript [\s!math] [lucida,lucidaot,lucidadk]
-        \definefontsynonym [\s!MathRoman]     [\s!file:LucidaBrightMathOT.otf]      [\s!features={\s!math\mathsizesuffix,mathlucida,mathextra},\s!goodies=lucida-math]
-        \definefontsynonym [\s!MathRomanBold] [\s!file:LucidaBrightMathOT-Demi.otf] [\s!features={\s!math\mathsizesuffix,mathlucida,mathextra},\s!goodies=lucida-math]
+        \definefontsynonym [\s!MathRoman]     [\s!file:LucidaBrightMathOT.otf]      [\s!features={\s!math\mathsizesuffix,mathlucida,lucida:mathextra,mathextra},\s!goodies=lucida-math]
+%         \definefontsynonym [\s!MathRomanBold] [\s!file:LucidaBrightMathOT-Demi.otf] [\s!features={\s!math\mathsizesuffix,mathlucida,mathextra},\s!goodies=lucida-math]
+        \definefontsynonym [\s!MathRomanBold] [\s!file:LucidaBrightMathOT.otf] [\s!features={\s!math\mathsizesuffix,lucida-math-bold,mathlucida,lucida:mathextra,mathextra},\s!goodies=lucida-math]
     \stoptypescript
 
     \starttypescript [\s!math] [lucidaot-nt,lucida-nt]
-        \definefontsynonym [\s!MathRoman]     [\s!file:LucidaBrightMathOT.otf]      [\s!features={\s!math\mathsizesuffix,mathlucida,mathextra}]
-        \definefontsynonym [\s!MathRomanBold] [\s!file:LucidaBrightMathOT-Demi.otf] [\s!features={\s!math\mathsizesuffix,mathlucida,mathextra}]
+        \definefontsynonym [\s!MathRoman]     [\s!file:LucidaBrightMathOT.otf]      [\s!features={\s!math\mathsizesuffix,mathlucida,lucida:mathextra,mathextra}]
+%         \definefontsynonym [\s!MathRomanBold] [\s!file:LucidaBrightMathOT-Demi.otf] [\s!features={\s!math\mathsizesuffix,mathlucida,mathextra}]
+        \definefontsynonym [\s!MathRomanBold] [\s!file:LucidaBrightMathOT.otf] [\s!features={\s!math\mathsizesuffix,lucida-math-bold,mathlucida,lucida:mathextra,mathextra}]
     \stoptypescript
 
     \starttypescript [\s!handwriting] [lucida,lucidaot,lucidadk,lucidaot-nt,lucida-nt]

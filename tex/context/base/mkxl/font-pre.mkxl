@@ -433,6 +433,10 @@
     \mathnolimitsmode\plusone % font driven (only opentype)
 \fi
 
+% \ifdefined\variablefam
+%     \variablefam 63
+% \fi
+
 % \adaptfontfeature[*math*][mathnolimitsmode=1000] % only subscript
 
 \definefontfeature
@@ -456,9 +460,13 @@
 % \definefontfeature[virtualmath-l2r]       [mathematics-l2r] % obsolete
 % \definefontfeature[virtualmath-r2l]       [mathematics-r2l] % obsolete
 
-\definefontfeature[math-text]             [mathematics]    % [ssty=no]
-\definefontfeature[math-script]           [mathematics]      [ssty=1,mathsize=yes]
-\definefontfeature[math-scriptscript]     [mathematics]      [ssty=2,mathsize=yes]
+\definefontfeature[math-text]             [mathematics]      [ssty=no]
+\definefontfeature[math-script]           [mathematics]      [ssty=1]
+\definefontfeature[math-scriptscript]     [mathematics]      [ssty=2]
+
+% \definefontfeature[math-text]             [mathematics]      [ssty=no]
+% \definefontfeature[math-script]           [mathematics]      [ssty=1,mathsize=yes]
+% \definefontfeature[math-scriptscript]     [mathematics]      [ssty=2,mathsize=yes]
 
 % \definefontfeature[math-text-l2r]         [mathematics-l2r]  [ssty=no]             % obsolete
 % \definefontfeature[math-script-l2r]       [mathematics-l2r]  [ssty=1,mathsize=yes] % obsolete
@@ -516,7 +524,7 @@
 %D \stoptext
 %D \stoptyping
 
-\definefontfeature[primes]     [primes=yes]
+\definefontfeature[primes]     [primes=yes] % text
 \definefontfeature[uppercasing][uppercasing=yes]
 \definefontfeature[lowercasing][lowercasing=yes]
 \definefontfeature[camelcasing][camelcasing=yes]

@@ -186,18 +186,20 @@ local methods = {
 
     -- maybe also 0x0008 : backspace
 
+    -- Watch out: a return value means "remove"!
+
     [0x001E] = function(head,current) -- kind of special
         local next = getnext(current)
-        head, current = remove_node(head,current,true)
         if next and getid(next) == glue_code and getsubtype(next) == spaceskip_code then
             local nextnext = getnext(next)
             if nextnext then
                 local char, font = isglyph(nextnext)
                 if char and not canhavespace[char] then
-                    remove_node(head,next,true)
+                    head, current = remove_node(head,next,true)
                 end
             end
         end
+        return head, current
     end,
 
     [0x001F] = function(head,current) -- kind of special
@@ -205,13 +207,13 @@ local methods = {
         if next then
             local char, font = isglyph(next)
             if char then
-                head, current = remove_node(head,current,true)
                 if not ispunctuation[char] then
                     local p = fontparameters[font]
                     head, current = insertnodebefore(head,current,new_glue(p.space,p.space_stretch,p.space_shrink))
                 end
             end
         end
+        return head, current
     end,
 
     [0x00A0] = function(head,current) -- nbsp
@@ -338,3 +340,30 @@ function characters.handler(head)
     end
     return head
 end
+
+-- function characters.handler(head)
+--     local wiped = false
+--     for current, char in nextchar, head do
+--         local method = methods[char]
+--         if method then
+--             if wiped then
+--                 wiped[#wiped+1] = current
+--             else
+--                 wiped = { current }
+--             end
+--             if trace_characters then
+--                 report_characters("replacing character %C, description %a",char,lower(chardata[char].description))
+--             end
+--             local h = method(head,current)
+--             if h then
+--                 head = h
+--             end
+--         end
+--     end
+--     if wiped then
+--         for i=1,#wiped do
+--             head = remove_node(head,wiped[i],true)
+--         end
+--     end
+--     return head
+-- end

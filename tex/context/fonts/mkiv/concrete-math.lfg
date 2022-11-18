@@ -75,6 +75,10 @@ return {
                     tweak = "addequals",
                 },
                 {
+                    tweak = "addfourier",
+                    variant = 2,
+                },
+                {
                     tweak = "setoptions",
                     set   = { "ignorekerndimensions" }
                 },

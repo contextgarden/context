@@ -111,7 +111,7 @@ return {
                         ["0x222B.parts.bottom"] = { bottomright = -0.30 }, -- int
                         -- ["0x222C.parts.bottom"] = { bottomright = -0.15 }, -- iint does not exist
                         -- ["0x222D.parts.bottom"] = { bottomright = -0.10 }, -- iiint does not exist
-                        -- ["0x2A0C.parts.bottom"] = { bottomright = -0.05 }, -- iiiint does not exist  
+                        -- ["0x2A0C.parts.bottom"] = { bottomright = -0.05 }, -- iiiint does not exist
                         -- -- ["0x222B.variants.*"] = integral_variants, ["0x222B.parts.top"] = integral_top, ["0x222B.parts.bottom"] = integral_bottom,
                         -- ["0x222C.variants.*"] = integral_variants, ["0x222C.parts.top"] = integral_top, ["0x222C.parts.bottom"] = integral_bottom,
                         -- ["0x222D.variants.*"] = integral_variants, ["0x222D.parts.top"] = integral_top, ["0x222D.parts.bottom"] = integral_bottom,
@@ -209,6 +209,9 @@ return {
                     advance = 0.4,
                 },
                 {
+                    tweak = "addactuarian",
+                },
+                {
                     tweak = "addfourier",
                     variant = 1,
                 },
@@ -220,7 +223,8 @@ return {
                             template   = 0x2192,
                             sequence   = {
                                 { glyph = "first", factor = 2 },
-                                { glyph = 0x2022, },
+--                                 { glyph = 0x2022 },
+                                { glyph = 0x2218 },
                                 { glyph = "first", factor = 2 },
                                 { glyph = "last"  },
                             }

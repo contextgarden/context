@@ -109,6 +109,19 @@
 \protected\def\page_shipouts_rotate#1%
   {\invokepagehandler\v!normal{\rotate[\c!rotation=\rootlayouttargetparameter\c!rotation]{#1}}}
 
+% inject an empty page after each page
+
+\def\page_shipouts_double#1%
+  {\page_shipouts_normal{#1}%
+   \page_shipouts_normal{\null}}
+
+\installshipoutmethod \v!doublesided
+  {\ifarrangingpages
+     \expandafter\page_shipouts_arrange
+   \else
+     \expandafter\page_shipouts_double
+   \fi}
+
 % extension mechanism
 
 \newcount\c_page_boxes_flush_n % set at the lua end
