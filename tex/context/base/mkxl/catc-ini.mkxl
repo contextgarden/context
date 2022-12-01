@@ -39,18 +39,19 @@
 %D We predefine some prefixes ahead of syst-aux and mult-sys. We reserve 8 slots for
 %D catcodes. (This active mess probably needs an update some day.)
 
-\installsystemnamespace{catcodelet} % let : \let
-\installsystemnamespace{catcodedef} % def : \def
-\installsystemnamespace{catcodeued} % ued : \protected\def
-\installsystemnamespace{catcodeget} %       \meaning
+% \installsystemnamespace{catcodelet} % let : \let
+% \installsystemnamespace{catcodedef} % def : \def
+% \installsystemnamespace{catcodeued} % ued : \protected\def
+% \installsystemnamespace{catcodeget} %       \meaning
 
 \installsystemnamespace{catcodetablet}
 \installsystemnamespace{catcodetablen}
 
 \newcount\c_syst_catcodes_n \c_syst_catcodes_n\zerocount % 0 = signal, so advance before allocate
-\newcount\c_syst_catcodes_a
-\newcount\c_syst_catcodes_b
-\newcount\c_syst_catcodes_c
+
+% \newcount\c_syst_catcodes_a
+% \newcount\c_syst_catcodes_b
+% \newcount\c_syst_catcodes_c
 
 \permanent\protected\def\newcatcodetable#1% we could move the cctdefcounter to lua
   {\global\advance\c_syst_catcodes_n\plusone
@@ -92,6 +93,8 @@
 
 \aliased\let\permitcaretescape\permitcircumflexescape
 
+\newconstant\defaultcatcodetable
+
 % ==
 %
 % \protected\def\startextendcatcodetable#1#2\stopextendcatcodetable
@@ -104,99 +107,147 @@
 %D The next command can be defined in a cleaner way in the MkIV way but we want
 %D to have a fast one with a minimal chance for interference. Do we still need
 %D this complex mechanism? Probably not. Future versions of \MKIV\ might only use
-%D active characters for very special cases.
+%D active characters for very special cases. Older files demonstrate this old
+%D hackery tilde abuse.
 
-\setnewconstant\c_syst_catcodes_hack\tildeasciicode
-
-%D Once a catcode is assigned, the next assignments will happen faster. However,
-%D redefinitions probably happen seldom so it's sort of overkill.
-
-\permanent\protected\def\letcatcodecommand{\afterassignment\syst_catcodes_let_a\c_syst_catcodes_a}
-\permanent\protected\def\defcatcodecommand{\afterassignment\syst_catcodes_def_a\c_syst_catcodes_a}
-\permanent\protected\def\uedcatcodecommand{\afterassignment\syst_catcodes_ued_a\c_syst_catcodes_a}
-
-\def\syst_catcodes_let_a{\afterassignment\syst_catcodes_let_b\c_syst_catcodes_b}
-\def\syst_catcodes_def_a{\afterassignment\syst_catcodes_def_b\c_syst_catcodes_b}
-\def\syst_catcodes_ued_a{\afterassignment\syst_catcodes_ued_b\c_syst_catcodes_b}
-
-\def\syst_catcodes_let_b % each time
-  {\ifcsname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname
-     \expandafter\lastnamedcs
-   \else
-     \expandafter\syst_catcodes_let_c
-   \fi}
-
-\def\syst_catcodes_def_b % each time
-  {\ifcsname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname
-     \expandafter\lastnamedcs
-   \else
-     \expandafter\syst_catcodes_def_c
-   \fi}
-
-\def\syst_catcodes_ued_b % each time
-  {\ifcsname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname
-     \expandafter\lastnamedcs
-   \else
-     \expandafter\syst_catcodes_ued_c
-   \fi}
-
-\def\syst_catcodes_let_c % only first time
-  {\frozen\enforced\gdefcsname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname\expandafter
-     {\enforced\letcsname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}%
-   \syst_catcodes_reinstate_unexpanded
-   \csname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}
-
-\def\syst_catcodes_def_c % only first time (we could use \normalexpanded here)
-  {\frozen\enforced\gdefcsname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
-     \expandafter##\expandafter1\expandafter
-       {\frozen\enforced\defcsname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname{##1}}%
-   \syst_catcodes_reinstate_normal
-   \csname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}
-
-\def\syst_catcodes_ued_c % only first time
-  {\frozen\enforced\gdefcsname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
-     \expandafter##\expandafter1\expandafter
-       {\frozen\enforced\protected\defcsname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname{##1}}%
-   \syst_catcodes_reinstate_unexpanded
-   \csname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}
-
-\permanent\def\reinstatecatcodecommand{\afterassignment\syst_catcodes_reinstate_normal\c_syst_catcodes_b}
+% %D Once a catcode is assigned, the next assignments will happen faster. However,
+% %D redefinitions probably happen seldom so it's sort of overkill. We also need to
+% %D take care of the initial (shared between catcode regfimes) binding.
+%
+% \permanent\protected\def\letcatcodecommand{\afterassignment\syst_catcodes_let_a\c_syst_catcodes_a}
+% \permanent\protected\def\defcatcodecommand{\afterassignment\syst_catcodes_def_a\c_syst_catcodes_a} % obsolete
+% \permanent\protected\def\uedcatcodecommand{\afterassignment\syst_catcodes_ued_a\c_syst_catcodes_a} % obsolete
+%
+% \def\syst_catcodes_let_a{\afterassignment\syst_catcodes_let_b\c_syst_catcodes_b}
+% \def\syst_catcodes_def_a{\afterassignment\syst_catcodes_def_b\c_syst_catcodes_b}
+% \def\syst_catcodes_ued_a{\afterassignment\syst_catcodes_ued_b\c_syst_catcodes_b}
+%
+% % The two step definition is used because we need to fetch the third argument.
+%
+% \def\syst_catcodes_let_b % each time
+%   {\ifcsname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname
+%      \expandafter\lastnamedcs
+%    \else
+%      \expandafter\syst_catcodes_let_c
+%    \fi}
+%
+% \def\syst_catcodes_def_b % each time
+%   {\ifcsname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname
+%      \expandafter\lastnamedcs
+%    \else
+%      \expandafter\syst_catcodes_def_c
+%    \fi}
+%
+% \def\syst_catcodes_ued_b % each time
+%   {\ifcsname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname
+%      \expandafter\lastnamedcs
+%    \else
+%      \expandafter\syst_catcodes_ued_c
+%    \fi}
+%
+% \def\syst_catcodes_let_c % only first time
+%   {\frozen\enforced\gdefcsname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname\expandafter
+%      {\expandafter\enforced\letcsname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}%
+%    \syst_catcodes_reinstate_unexpanded
+%    \csname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}
+%
+% \def\syst_catcodes_def_c % only first time (we could use \normalexpanded here)
+%   {\frozen\enforced\gdefcsname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
+%      \expandafter##\expandafter1\expandafter
+%        {\expandafter\frozen\expandafter\enforced\defcsname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname{##1}}%
+%    \syst_catcodes_reinstate_normal
+%    \csname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}
+%
+% \def\syst_catcodes_ued_c % only first time
+%   {\frozen\enforced\gdefcsname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
+%      \expandafter##\expandafter1\expandafter
+%        {\expandafter\frozen\expandafter\enforced\expandafter\protected\defcsname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname{##1}}%
+%    \syst_catcodes_reinstate_unexpanded
+%    \csname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}
+%
+% %D We can simplify this a bit (not that critical):
+%
+% \def\syst_catcodes_let_b
+%   {\afterassignment\syst_catcodes_let_c\let\m_syst_catcodes_temp}
+%
+% \def\syst_catcodes_let_c
+%   {\enforced\letcsname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname\m_syst_catcodes_temp
+%    \protected\edef\m_syst_catcodes_temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+%    \letcharcode\c_syst_catcodes_b\m_syst_catcodes_temp}
+%
+% \def\syst_catcodes_let_c
+%   {\letcharcode\c_syst_catcodes_b\m_syst_catcodes_temp}
+%
+% % not that much gain:
+%
+% \def\syst_catcodes_let_c % only first time
+%   {\expandafter\integerdef\csname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname\c_syst_catcodes_b
+%    \letcsname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname\m_syst_catcodes_temp
+%    \protected\edef\m_syst_catcodes_temp{\noexpand\catcodecommand\csname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}%
+%    \letcharcode\c_syst_catcodes_b\m_syst_catcodes_temp}
 
 %D This can be used when a direct definition has been done and the selector has been
-%D lost. A problem is that \type {\next} needs to be unique (as it gets bound) (still?).
+%D lost. I really need to get rid of this ...
 
+% \permanent\def\reinstatecatcodecommand{\afterassignment\syst_catcodes_reinstate_normal\c_syst_catcodes_b}
+%
+% \let\m_syst_catcodes_temp\relax
+%
 % \def\syst_catcodes_reinstate_normal
-%   {\begingroup
-%    \edef\temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
-%    \global\letcharcode\c_syst_catcodes_b\temp
-%    \endgroup}
+%   {\edef\m_syst_catcodes_temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+%    \letcharcode\c_syst_catcodes_b\m_syst_catcodes_temp}
 %
 % \def\syst_catcodes_reinstate_unexpanded
-%   {\begingroup
-%    \protected\edef\temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
-%    \global\letcharcode\c_syst_catcodes_b\temp
-%    \endgroup}
+%   {\protected\edef\m_syst_catcodes_temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+%    \letcharcode\c_syst_catcodes_b\m_syst_catcodes_temp}
+%
+% \permanent\def\catcodecommand#1%
+%   {\csname\??catcodeget\number
+%      \ifcsname\??catcodeget\number\currentcatcodetable:\number#1\endcsname
+%        \currentcatcodetable \else \defaultcatcodetable
+%      \fi
+%    :\number#1\endcsname}
 
-% I really need to get rid of this ...
+%D For now, will become just letcharcode:
 
-\let\m_syst_catcodes_temp\relax
+\permanent\protected\def\letcatcodecommand{\afterassignment\letcharcode\scratchcounter}
 
-\def\syst_catcodes_reinstate_normal
-  {\edef\m_syst_catcodes_temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
-   \letcharcode\c_syst_catcodes_b\m_syst_catcodes_temp}
+%D \startbuffer
+%D \def\foo{foo}
+%D \start
+%D   \pushactivechar    |   \letcharcode124 \foo test||test\par
+%D   \popactivechar     |                        test||test\par
+%D \stop
+%D \start
+%D   \pushactivecharcode124 \letcharcode124 \foo test||test\par
+%D   \popactivecharcode 124                      test||test\par
+%D \stop
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
 
-\def\syst_catcodes_reinstate_unexpanded
-  {\protected\edef\m_syst_catcodes_temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
-   \letcharcode\c_syst_catcodes_b\m_syst_catcodes_temp}
+\permanent\protected\def\pushactivechar#1%
+  {\expandafter\let\expandafter\m_active\csname\csactive#1\endcsname
+  %\expandafter\let\expandafter\m_active\csname\Uchar"FFFF\Uchar\expandafter`\string#1\endcsname
+   \pushmacro\m_active}
 
-\newconstant\defaultcatcodetable
+\permanent\protected\def\popactivechar#1%
+  {\popmacro\m_active
+  %\letcsname\Uchar"FFFF\Uchar\expandafter`\string#1\endcsname\m_active
+   \letcsname\csactive#1\endcsname\m_active}
 
-\permanent\def\catcodecommand#1%
-  {\csname\??catcodeget\number
-     \ifcsname\??catcodeget\number\currentcatcodetable:\number#1\endcsname
-       \currentcatcodetable \else \defaultcatcodetable
-     \fi
-   :\number#1\endcsname}
+\permanent\protected\def\pushactivecharcode{\afterassignment\syst_active_push\integerdef\c_active_char_code}
+\permanent\protected\def\popactivecharcode {\afterassignment\syst_active_pop\integerdef \c_active_char_code}
+
+\permanent\protected\def\syst_active_push
+  {\expandafter\let\expandafter\m_active\csname\csactive\Uchar\c_active_char_code\endcsname
+  %\expandafter\let\expandafter\m_active\csname\Uchar"FFFF\Uchar\c_active_char_code\endcsname
+   \pushmacro\m_active}
+
+\permanent\protected\def\syst_active_pop
+  {\popmacro\m_active
+  %\letcsname\Uchar"FFFF\Uchar\c_active_char_code\endcsname\m_active
+   \letcsname\csactive\Uchar\c_active_char_code\endcsname\m_active}
 
 %D \macros
 %D   {restorecatcodes,pushcatcodetable,popcatcodetable}

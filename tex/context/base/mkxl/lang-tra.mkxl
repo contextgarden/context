@@ -27,8 +27,10 @@
 
 \appendtoks
     \disablediscretionaries
-    \let~=\lettertilde
+  % \let~=\lettertilde
+    \enforced\letcharcode\tildeasciicode\lettertilde
   % \let|=\letterbar
+  % \enforced\letcharcode\barasciicode\letterbar
 \to \everytransliterations
 
 \def\lang_transliteration_common

@@ -390,6 +390,43 @@ extern halfword   tex_copy_token_list             (halfword h, halfword *t);
 
 extern halfword   tex_parse_str_to_tok            (halfword head, halfword *tail, halfword ct, const char *str, size_t lstr, int option);
 
-inline int        tex_valid_token                 (int t) { return ((t >= 0) && (t <= (int) lmt_token_memory_state.tokens_data.top)); }
+inline static int tex_valid_token                 (int t) { return ((t >= 0) && (t <= (int) lmt_token_memory_state.tokens_data.top)); }
+
+/*tex 
+
+    This is also a sort of documentation. Active characters are stored in the hash using a prefix 
+    which assumes that users don't use that one. So far we've seen no clashes which is due to the 
+    fact that the namespace prefix U+FFFF is an invalid \UNICODE\ character and it's kind of hard 
+    to get that one into the input anyway. 
+
+    The replacement character U+FFFD is a kind of fallback when we run into some troubles or when 
+    a control sequence is expected (and undefined is unacceptable). 
+
+    U+FFFD  REPLACEMENT CHARACTER 
+    U+FFFE  NOT A CHARACTER
+    U+FFFF  NOT A CHARACTER 
+
+    I experimented with a namespace character (catcodtable id) as fourth character but there are 
+    some unwanted side effects, for instance in testing an active character as separator (in 
+    arguments) so that code waa eventually removed. I might come back to this one day (active 
+    characters in the catcode regime namespace).
+
+*/
+
+# define utf_fffd_string            "\xEF\xBF\xBD" /* U+FFFD : 65533 */
+
+# define active_character_namespace "\xEF\xBF\xBF" /* U+FFFF : 65535 */
+
+# define active_character_first     '\xEF'        
+# define active_character_second    '\xBF'
+# define active_character_third     '\xBF'
+
+# define active_first               0xEF        
+# define active_second              0xBF
+# define active_third               0xBF
+
+# define active_character_unknown   "\xEF\xBF\xBD" /* utf_fffd_string */
+
+# define active_cs_value(A) aux_str2uni(str_string(A)+3)
 
 # endif

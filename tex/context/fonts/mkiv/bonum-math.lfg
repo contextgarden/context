@@ -24,11 +24,16 @@ return {
             DelimiterPercent                =   90,
             DelimiterShortfall              =  400,
             DisplayOperatorMinHeight        = 1900, -- 1250 in font
-         -- AccentSuperscriptDrop           =  100,
-         -- AccentSuperscriptPercent        =   20,
-         -- PrimeRaisePercent               =   50,
-            PrimeRaiseComposedPercent       =    0,
-         -- PrimeShiftUp                    =    0,
+            -- ScriptPercentScaleDown          = 65, -- 77 in font
+            -- ScriptScriptPercentScaleDown    = 50, -- 60 in font
+            SubscriptShiftDown              = 201, -- 231 in font
+            SuperscriptShiftUp              = 364, -- 334 in font
+            SubscriptShiftDownWithSuperscript = "1.4*SubscriptShiftDown", -- trial and error
+         -- PrimeRaisePercent               =   0, -- set to 0 in math-act
+         -- PrimeRaiseComposedPercent       =   0, -- set to 0 in math-act
+            PrimeShiftUp                    = "1.25*SuperscriptShiftUp",
+            PrimeShiftUpCramped             = "1.25*SuperscriptShiftUp",
+
          -- PrimeBaselineDropMax            =    0,
         },
         tweaks = {
@@ -41,7 +46,7 @@ return {
                     tweak   = "fixprimes",
                  -- scale   = 0.8,
                  -- smaller = true,
-                    factor  = 1,--1.1
+                    factor  = 0.77,--1.1
                 },
                 {
                     tweak = "addmirrors",
@@ -121,8 +126,8 @@ return {
                         [0x0029]                = { topright = -0.15, bottomright = -0.15 }, -- right parenthesis variants
                         ["0x29.variants.*"]     = { topright = -0.15, bottomright = -0.15 }, -- right parenthesis variants
                         ["0x29.parts.top"]      = { topright = -0.15,                     }, -- right parenthesis top
-                        ["0x29.parts.bottom"]   = {                   bottomright = -0.15 }, -- right parenthesis bottom                        -- radical
-                        [0x221A]                = { topright =  0.2,  bottomright =  0.2  },
+                        ["0x29.parts.bottom"]   = {                   bottomright = -0.15 }, -- right parenthesis bottom  
+                        [0x221A]                = { topright =  0.2,  bottomright =  0.2  }, -- radical
                         ["0x221A.variants.*"]   = { topright =  0.2,  bottomright =  0.2  },
                         ["0x221A.parts.top"]    = { topright =  0.2,                      },
                         ["0x221A.parts.bottom"] = {                   bottomright =  0.2  },
@@ -131,6 +136,8 @@ return {
                         [0x27EB]                = { topright = -0.1,  bottomright = -0.1  },
                         ["0x27EB.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
                         --
+                        [0x1D465] = { bottomright = -0.05, }, -- italic x (ic is too large)
+                        [0x00393] = { bottomright = -0.30, }, -- upright Gamma
                         -- [0x222B] = integral_variants, ["0x222B.variants.*"] = integral_variants, ["0x222B.parts.top"] = integral_top,
                         ["0x222B.parts.bottom"] = { bottomright = -0.20 }, -- int
                         ["0x222C.parts.bottom"] = { bottomright = -0.15 }, -- iint
@@ -419,6 +426,9 @@ return {
                 {
                     tweak   = "addfourier",
                     variant = 1,
+                },
+                {
+                    tweak   = "addprimed",
                 },
                 -- this is the mkiv section
                 {

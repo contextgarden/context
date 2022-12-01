@@ -57,8 +57,10 @@
     \enforced\let\{\letterleftbrace
     \enforced\let\}\letterrightbrace
     \enforced\let\|\letterbar
-    \enforced\let~=\lettertilde
-    \enforced\let|=\letterbar
+  % \enforced\let~=\lettertilde
+  % \enforced\let|=\letterbar
+    \enforced\letcharcode\tildeasciicode\lettertilde
+    \enforced\letcharcode\barasciicode  \letterbar
     \enforced\let\Ux\eUx
 \to \everyhyphenatedurl
 

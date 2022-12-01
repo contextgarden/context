@@ -571,7 +571,12 @@ typedef enum int_codes {
     alignment_wrap_source_code,
  /* page_boundary_penalty_code, */
     line_break_criterium_code,
-    variable_family_code,   
+    /* 
+        This one was added as experiment to \LUATEX\ (answer to a forwarded question) but as it 
+        didn't get tested it will go away. \CONTEXT\ doesn't need it and we don't need to be 
+        compatible anyway. Lesson learned.
+    */
+    variable_family_code,
     /* those below these are not interfaced via primitives */
     internal_par_state_code,
     internal_dir_state_code,
@@ -601,7 +606,7 @@ typedef enum int_codes {
 } int_codes;
 
 # define first_int_code pre_tolerance_code
-# define last_int_code  line_break_criterium_code
+# define last_int_code  variable_family_code
 
 typedef enum dimen_codes {
     par_indent_code,           /*tex indentation of paragraphs */
@@ -836,7 +841,7 @@ extern save_state_info lmt_save_state;
 # define saved_value(A) lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_value
 # define saved_word(A)  lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_word
 
-inline void tex_set_saved_record(halfword ptr, quarterword type, quarterword level, halfword value)
+inline static void tex_set_saved_record(halfword ptr, quarterword type, quarterword level, halfword value)
 {
     saved_type(ptr)  = type;
     saved_level(ptr) = level;

@@ -68,12 +68,12 @@ typedef struct input_file_state_info {
 
 extern input_file_state_info input_file_state;
 
-static inline int input_file_value(void)
+inline static int input_file_value(void)
 {
     return input_file_state.forced_file ? input_file_state.forced_file : lmt_input_state.cur_input.state_file;
 }
 
-static inline int input_line_value(void)
+inline static int input_line_value(void)
 {
     return input_file_state.forced_line ? input_file_state.forced_line : (input_file_state.line ? input_file_state.line : lmt_input_state.input_line);
 }

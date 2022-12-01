@@ -66,6 +66,7 @@ if not modules then modules = { } end modules ['font-otr'] = {
 --     require("char-ini")
 -- end
 
+local number = number
 local next, type, tonumber, rawget = next, type, tonumber, rawget
 local byte, lower, char, gsub = string.byte, string.lower, string.char, string.gsub
 local fullstrip = string.fullstrip
@@ -1683,7 +1684,7 @@ end
 function readers.cmap(f,fontdata,specification)
     local tableoffset = gotodatatable(f,fontdata,"cmap",specification.glyphs)
     if tableoffset then
-        local version      = readushort(f)
+        local version      = readushort(f) -- check later versions
         local noftables    = readushort(f)
         local records      = { }
         local unicodecid   = false
@@ -2425,25 +2426,29 @@ function readers.loadfont(filename,n,instance)
                 nofsubfonts   = fontdata.subfonts and #fontdata.subfonts or nil,
             },
             resources     = {
-             -- filename      = fontdata.filename,
-                filename      = filename,
-                private       = privateoffset,
-                duplicates    = fontdata.duplicates  or { },
-                features      = fontdata.features    or { }, -- we need to add these in the loader
-                sublookups    = fontdata.sublookups  or { }, -- we need to add these in the loader
-                marks         = fontdata.marks       or { }, -- we need to add these in the loader
-                markclasses   = fontdata.markclasses or { }, -- we need to add these in the loader
-                marksets      = fontdata.marksets    or { }, -- we need to add these in the loader
-                sequences     = fontdata.sequences   or { }, -- we need to add these in the loader
-                variants      = fontdata.variants, -- variant -> unicode -> glyph
-                version       = getname(fontdata,"version"),
-                cidinfo       = fontdata.cidinfo,
-                mathconstants = fontdata.mathconstants,
-                colorpalettes = fontdata.colorpalettes,
-                svgshapes     = fontdata.svgshapes,
-                pngshapes     = fontdata.pngshapes,
-                variabledata  = fontdata.variabledata,
-                foundtables   = fontdata.foundtables,
+             -- filename        = fontdata.filename,
+                filename        = filename,
+                private         = privateoffset,
+                duplicates      = fontdata.duplicates  or { },
+                features        = fontdata.features    or { }, -- we need to add these in the loader
+                sublookups      = fontdata.sublookups  or { }, -- we need to add these in the loader
+                marks           = fontdata.marks       or { }, -- we need to add these in the loader
+                markclasses     = fontdata.markclasses or { }, -- we need to add these in the loader
+                marksets        = fontdata.marksets    or { }, -- we need to add these in the loader
+                sequences       = fontdata.sequences   or { }, -- we need to add these in the loader
+                variants        = fontdata.variants, -- variant -> unicode -> glyph
+                version         = getname(fontdata,"version"),
+                cidinfo         = fontdata.cidinfo,
+                mathconstants   = fontdata.mathconstants,
+                colorpalettes   = fontdata.colorpalettes,
+                colorpaintdata  = fontdata.colorpaintdata,
+                colorpaintlist  = fontdata.colorpaintlist,
+                colorlinesdata  = fontdata.colorlinesdata,
+                coloraffinedata = fontdata.coloraffinedata,
+                svgshapes       = fontdata.svgshapes,
+                pngshapes       = fontdata.pngshapes,
+                variabledata    = fontdata.variabledata,
+                foundtables     = fontdata.foundtables,
             },
         }
     end

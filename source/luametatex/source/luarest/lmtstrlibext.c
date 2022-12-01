@@ -15,8 +15,6 @@
 
 /*tex Helpers */
 
-# define utf_fffd "\xEF\xBF\xBD"
-
 inline static int strlib_aux_tounicode(const char *s, size_t l, size_t *p)
 {
     unsigned char i = s[*p];
@@ -183,7 +181,7 @@ static int strlib_aux_utf_failed(lua_State *L, int new_ind)
 {
     lua_pushinteger(L, new_ind);
     lua_replace(L, lua_upvalueindex(2));
-    lua_pushliteral(L, utf_fffd);
+    lua_pushliteral(L, utf_fffd_string);
     return 1;
 }
 
@@ -356,7 +354,7 @@ static int strlib_utfcharactertable(lua_State *L)
             lua_pushlstring(L, s + p, b);
             p += b;
         } else {
-            lua_pushliteral(L, utf_fffd);
+            lua_pushliteral(L, utf_fffd_string);
             p += 1;
         }
         lua_rawseti(L, -2, n++);

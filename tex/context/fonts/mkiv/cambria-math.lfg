@@ -21,8 +21,10 @@ return {
             DelimiterPercent                =   90,
             DelimiterShortfall              =  400,
             DisplayOperatorMinHeight        = 2800, -- 2500 in font
-            PrimeRaisePercent               =   75, -- 50 default
-         -- PrimeRaiseComposedPercent       =   25, -- 25 default
+            -- PrimeRaisePercent               =    0, -- set to 0 in math-act
+         -- PrimeRaiseComposedPercent       =   25, -- set to 0 in math-act
+            PrimeShiftUp                    = "1.25*SuperscriptShiftUp",
+            PrimeShiftUpCramped             = "1.25*SuperscriptShiftUp",
         },
         tweaks = {
             aftercopying = {
@@ -46,35 +48,28 @@ return {
                 {
                     tweak = "kerns",
                     list  = {
-                        [0x2F] = {
-                            topleft     = -0.2,
-                         -- bottomleft  =  0,
-                         -- topright    =  0,
-                            bottomright = -0.2,
-                        },
-                        ["0x7D.parts.top"] = {
-                            topright    = -0.1,
-                        },
-                        ["0x7D.parts.bottom"] = {
-                            bottomright = -0.1,
-                        },
-                        ["0x29.parts.top"] = {
-                            topright    = -0.2,
-                        },
-                        ["0x29.parts.bottom"] = {
-                            bottomright = -0.2,
-                        },
-                        ["0x221A.parts.top"] = {
-                            topright = 0.2,
-                        },
-                        ["0x221A.parts.bottom"] = {
-                            bottomright = 0.2,
-                        },
-                        ["0x221A.variants.*"] = {
-                            topright = 0.2,
-                            bottomright = 0.2,
-                        },
-
+                        [0x002F]                = { topleft  = -0.2,  bottomright = -0.2 },
+                        ["0x002F.variants.*"]   = { topleft  = -0.2,  bottomright = -0.2 },
+                        -- No!
+                     -- [0x0028]                = { topleft  = -0.1,  bottomleft  = -0.1             }, -- left parenthesis
+                     -- [0x0029]                = { topright = -0.1,  bottomright = -0.1, all = true }, -- right parenthesis
+                        --
+                        [0x007D]                = { topright = -0.05, bottomright = -0.05 }, -- right brace variants
+                        ["0x7D.variants.*"]     = { topright = -0.10, bottomright = -0.10 }, -- right brace variants
+                        ["0x7D.parts.top"]      = { topright = -0.10,                     }, -- right brace top
+                        ["0x7D.parts.bottom"]   = {                   bottomright = -0.10 }, -- right brace bottom
+                        [0x0029]                = { topright = -0.15, bottomright = -0.15 }, -- right parenthesis variants
+                        ["0x29.variants.*"]     = { topright = -0.15, bottomright = -0.15 }, -- right parenthesis variants
+                        ["0x29.parts.top"]      = { topright = -0.15,                     }, -- right parenthesis top
+                        ["0x29.parts.bottom"]   = {                   bottomright = -0.15 }, -- right parenthesis bottom   
+                        [0x221A]                = { topright =  0.2,  bottomright =  0.2  }, -- radical
+                        ["0x221A.variants.*"]   = { topright =  0.2,  bottomright =  0.2  },
+                        ["0x221A.parts.top"]    = { topright =  0.2,                      },
+                        ["0x221A.parts.bottom"] = {                   bottomright =  0.2  },
+                        [0x27E9]                = { topright = -0.1,  bottomright = -0.1  }, -- angle
+                        ["0x27E9.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
+                        [0x27EB]                = { topright = -0.1,  bottomright = -0.1  },
+                        ["0x27EB.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
                         -- Keep as example. not needed in cambria (after all it is the reference):
                         [0x2A0C] = { bottomright = -0.1 }, -- iiiint does not have any ic
 
@@ -156,9 +151,10 @@ return {
 
                 {
                     tweak   = "fixprimes",
-                    scale   = 0.9,
+                    -- scale   = 1.0,
                  -- smaller = true,
-                    factor  = 0.9,
+                    factor  = 0.83,
+                    fake    = 0.8,
                 },
                 {
                     tweak = "checkspacing",
@@ -205,6 +201,9 @@ return {
                 {
                     tweak = "addfourier",
                     variant = 2,
+                },
+                {
+                    tweak   = "addprimed",
                 },
                 -- { -- the ldots are squareshaped and the cdots are circular
                 --     tweak = "fixellipses",

@@ -13,7 +13,7 @@ local registerotffeature = fonts.handlers.otf.features.register
 
 local function initialize(tfmdata,value)
     if type(value) == "string" then
-        tfmdata.properties.textcontrol = tex.stringtocodesbitmap(value,tex.textcontrolcodes)
+        tfmdata.properties.textcontrol = (tfmdata.properties.textcontrol or 0) | tex.stringtocodesbitmap(value,tex.textcontrolcodes)
     end
 end
 

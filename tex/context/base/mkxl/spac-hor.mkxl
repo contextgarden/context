@@ -523,10 +523,12 @@
 
 \permanent\protected\def\fixedspaces
   {\letcatcodecommand \ctxcatcodes \tildeasciicode\fixedspace
-   \enforced\let~\fixedspace} % we need to renew it
+  %\enforced\let~\fixedspace} % we need to renew it
+   \enforced\letcharcode\tildeasciicode\fixedspace} % why this
 
 \appendtoks
-    \enforced\let~\space
+   %\enforced\let~\space
+    \enforced\letcharcode\tildeasciicode\space
     \enforced\let\ \space
 \to \everysimplifycommands
 

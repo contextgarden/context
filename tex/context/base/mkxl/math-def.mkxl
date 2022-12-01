@@ -24,7 +24,7 @@
 
 \popoverloadmode
 
-\activatemathcharacters
+% \activatemathcharacters
 
 %D The \mfunction macro is an alternative for \hbox with a controlable font switch.
 

@@ -222,7 +222,7 @@ typedef enum limits_modes {
     limits_horizontal_mode, // no limits 
 } limits_modes;
 
-inline void tex_math_wipe_kerns(kernset *kerns) {
+inline static void tex_math_wipe_kerns(kernset *kerns) {
     if (kerns) { 
         kerns->topright = 0;
         kerns->topleft = 0;
@@ -239,7 +239,7 @@ inline void tex_math_wipe_kerns(kernset *kerns) {
     }
 }
 
-inline void tex_math_copy_kerns(kernset *kerns, kernset *parent) {
+inline static void tex_math_copy_kerns(kernset *kerns, kernset *parent) {
     if (kerns && parent) { 
         kerns->topright = parent->topright;
         kerns->topleft = parent->topleft;
@@ -511,7 +511,7 @@ static int tex_aux_math_followed_by_italic_kern(halfword current, const char *tr
     return 0;
 }
 
-static inline int tex_aux_checked_left_kern_fnt_chr(halfword fnt, halfword chr, halfword state, halfword subtype)
+inline static int tex_aux_checked_left_kern_fnt_chr(halfword fnt, halfword chr, halfword state, halfword subtype)
 {
     halfword top = 0;
     halfword bot = 0;
@@ -532,7 +532,7 @@ static inline int tex_aux_checked_left_kern_fnt_chr(halfword fnt, halfword chr, 
     }
 }
 
-static inline int tex_aux_checked_left_kern(halfword list, halfword state, halfword subtype)
+inline static int tex_aux_checked_left_kern(halfword list, halfword state, halfword subtype)
 {
     if (list && node_type(list) == glyph_node) { 
         return tex_aux_checked_left_kern_fnt_chr(glyph_font(list), glyph_character(list), state, subtype);
@@ -541,7 +541,7 @@ static inline int tex_aux_checked_left_kern(halfword list, halfword state, halfw
     }
 }
 
-static inline int tex_aux_checked_right_kern_fnt_chr(halfword fnt, halfword chr, halfword state, halfword subtype)
+inline static int tex_aux_checked_right_kern_fnt_chr(halfword fnt, halfword chr, halfword state, halfword subtype)
 {
     halfword top = 0;
     halfword bot = 0;
@@ -562,7 +562,7 @@ static inline int tex_aux_checked_right_kern_fnt_chr(halfword fnt, halfword chr,
     }
 }
 
-static inline int tex_aux_checked_right_kern(halfword list, halfword state, halfword subtype)
+inline static int tex_aux_checked_right_kern(halfword list, halfword state, halfword subtype)
 {
     if (list && node_type(list) == glyph_node) { 
         return tex_aux_checked_right_kern_fnt_chr(glyph_font(list), glyph_character(list), state, subtype);
@@ -2472,6 +2472,12 @@ static void tex_aux_make_delimited_radical(halfword target, int style, int size,
     halfword total = height + depth;
     delimiterextremes extremes = { .tfont = null_font, .tchar = 0, .bfont = null_font, .bchar = 0, .height = 0, .depth = 0 };
     noad_new_hlist(target) = null;
+    size += radical_size(target);
+    if (size < text_size) { 
+        size = text_size;
+    } else if (size > script_script_size) {
+        size = script_script_size;
+    }
     delimiter = tex_aux_make_delimiter(target, delimiter, size, total, 0, style, 2, NULL, NULL, 0, has_noad_option_nooverflow(target), &extremes, depth);
     if (companion) {
         /*tex For now we assume symmetry and same height and depth! */
@@ -4771,7 +4777,7 @@ inline static scaled tex_aux_insert_italic_now(halfword target, halfword kernel,
     return italic;
 }
 
-static inline int tex_aux_raise_prime_composed(halfword target)
+inline static int tex_aux_raise_prime_composed(halfword target)
 {
     int mainclass = -1 ; 
     /* maybe also mainclass */
@@ -4891,12 +4897,14 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
             primedata.node = tex_aux_analyze_script(noad_prime(target), &primedata);
             maxleftkern = tex_aux_math_left_kern(glyph_font(kernel), glyph_character(kernel));
          // maxrightkern = tex_aux_math_right_kern(glyph_font(kernel), glyph_character(kernel));
-            prime_up = tex_get_math_y_parameter_default(style, math_parameter_prime_shift_drop, 0);
-            shift_up = tex_get_math_y_parameter_checked(style, math_parameter_superscript_shift_drop);
-            shift_down = tex_get_math_y_parameter_checked(style, math_parameter_subscript_shift_drop);
-            break;           //  fallthrough 
+            prime_up = 0; 
+            shift_up = 0; 
+            shift_down = 0;
+            break;            
         default:
-            kernelsize.ht -= supdrop; /* new */
+            /*tex Used for optimizing accents. */
+            kernelsize.ht -= supdrop; 
+            /*tex These parameters are only applied in an assembly (and often some 0.5 .. 1.5 pt on 12pt). */
             prime_up = kernelsize.ht - tex_get_math_y_parameter_default(style, math_parameter_prime_shift_drop, 0);
             shift_up = kernelsize.ht - tex_get_math_y_parameter_checked(style, math_parameter_superscript_shift_drop);
             shift_down = kernelsize.dp + tex_get_math_y_parameter_checked(style, math_parameter_subscript_shift_drop);
@@ -5372,7 +5380,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
 
 */
 
-// static inline int tex_aux_is_extensible(halfword result)
+// inline static int tex_aux_is_extensible(halfword result)
 // {
 //     if (result) {
 //         switch (node_type(result)) { 
@@ -6119,7 +6127,7 @@ static halfword tex_aux_unroll_noad(halfword tail, halfword l, quarterword s)
     while (l) {
         halfword n = node_next(l);
         node_next(l) = null;
-        if (node_type(l) == hlist_node && (node_subtype(l) == s) && ! box_source_anchor(l)) {
+        if (node_type(l) == hlist_node && node_subtype(l) == s && ! box_source_anchor(l)) {
             if (box_list(l)) {
                 tex_couple_nodes(tail, box_list(l));
                 tail = tex_tail_of_node_list(tail);
@@ -7052,6 +7060,9 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 } else { 
                     tex_couple_nodes(p, l);
                 }
+            } else if ((current_subtype == open_noad_subtype || current_subtype == fenced_noad_subtype) && tex_math_has_class_option(fenced_noad_subtype, unpack_class_option)) {
+                /*tex tricky as we have an open subtype for spacing now. */
+                p = tex_aux_unroll_noad(p, l, math_fence_list);
             } else if (has_noad_option_unpacklist(current) || tex_math_has_class_option(current_subtype, unpack_class_option)) {
                 /*tex So here we only unpack a math list. */
                 p = tex_aux_unroll_noad(p, l, math_list_list);

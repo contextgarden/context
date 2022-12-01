@@ -2100,23 +2100,33 @@
 %D The result is as expected: the first line typesets ok, while the second one
 %D triggers an error message.
 
-\setnewconstant\activemathcharcode "8000
+% \setnewconstant\activemathcharcode "8000
+%
+% \newtoks\activatedmathcharacters
+%
+% \permanent\protected\def\activatemathcharacter#1%
+%   {\appendtoks
+%      \global\mathcode#1=\activemathcharcode
+%    \to \activatedmathcharacters}
+%
+% \permanent\def\activatemathcharacters
+%   {\the\activatedmathcharacters}
+%
+% % beware, not runtime, so has to happen at format generation
+%
+% \activatemathcharacter\circumflexasciicode
+% \activatemathcharacter\underscoreasciicode
+% %activatemathcharacter\ampersandasciicode
 
-\newtoks\activatedmathcharacters
+% % already done in catc-def.mkxl:
+%
+% \amcode \circumflexasciicode \superscriptcatcode
+% \amcode \underscoreasciicode \subscriptcatcode
+% \amcode \barasciicode        \othercatcode
+% \amcode \tildeasciicode      \othercatcode
 
-\permanent\protected\def\activatemathcharacter#1%
-  {\appendtoks
-     \global\mathcode#1=\activemathcharcode
-   \to \activatedmathcharacters}
-
-\permanent\def\activatemathcharacters
-  {\the\activatedmathcharacters}
-
-% beware, not runtime, so has to happen at format generation
-
-\activatemathcharacter\circumflexasciicode
-\activatemathcharacter\underscoreasciicode
-%activatemathcharacter\ampersandasciicode
+% \Umathcode\circumflexasciicode="0 "0 \circumflexasciicode
+% \Umathcode\underscoreasciicode="0 "0 \underscoreasciicode
 
 % \permanent\def\normalmathaligntab{&}
 %
@@ -2200,27 +2210,24 @@
 %D We also dropped the option to let ampersands be alignment tabs. That has never
 %D been a \CONTEXT\ feature|/|habit anyway.
 
-\bgroup
-
-    \catcode\underscoreasciicode\activecatcode
-    \catcode\circumflexasciicode\activecatcode
-  % \catcode\ampersandasciicode \activecatcode
-
-    \aliased\glet\specialmathaligntab\normalmathaligntab
-
-    \permanent\protected\gdef\obeymathcatcodes{%
-        \enforced\let _\normalsubscript
-        \enforced\let ^\normalsuperscript
-      % \enforced\def &\specialmathaligntab
-    }
-
-    \doglobal\appendtoks
-        \enforced\let _\normalsubscript
-        \enforced\let ^\normalsuperscript
-      % \enforced\let &\specialmathaligntab
-    \to \everymathematics
-
-\egroup
+% \bgroup
+%
+%     \catcode\underscoreasciicode\activecatcode
+%     \catcode\circumflexasciicode\activecatcode
+%
+%     \aliased\glet\specialmathaligntab\normalmathaligntab
+%
+%     \permanent\protected\gdef\obeymathcatcodes{%
+%         \enforced\let _\normalsubscript
+%         \enforced\let ^\normalsuperscript
+%     }
+%
+%     \doglobal\appendtoks
+%         \enforced\let _\normalsubscript
+%         \enforced\let ^\normalsuperscript
+%     \to \everymathematics
+%
+% \egroup
 
 %D We keep this, just for the fun of it:
 
@@ -3772,10 +3779,10 @@
     \permanent\protected\def\?{\mathtextauto{?}{?}}
 \popoverloadmode
 
-\appendtoks
-    \reinstatecatcodecommand\barasciicode
-    \obeydiscretionaries
-\to \everymathtext
+% \appendtoks
+%     \reinstatecatcodecommand\barasciicode
+%     \obeydiscretionaries
+% \to \everymathtext
 
 %D Safeguard against redefinitions:
 
@@ -4452,19 +4459,47 @@
 %D test \im {z + \mathaxisontop x + 2 - a = 1} test
 %D \stoptyping
 
-\definesystemattribute[mathaxis][public]
-\def\math_axis_inject#1%
-   {\mathatom \s!class \mathghostcode \s!unpack {
-    \showmakeup[strut]% todo: shortcut
-    \scratchdimen.5\Umathfractionrule\mathstyle
-    \srule
-       \s!height \dimexpr\Umathaxis\mathstyle+\scratchdimen\relax
-       \s!depth -\dimexpr\Umathaxis\mathstyle-\scratchdimen\relax
-       \s!attr \mathaxisattribute #1%
-    \relax}}
+%D \starttyping
+%D $ x^2 + x_2 + x_2^2\mathaxisbelow\mathscriptbelow$\par
+%D $ x^g + x_g + x_g^g\mathaxisbelow\mathscriptbelow$
+%D \stoptyping
 
-\permanent\protected\def\mathaxisbelow{\math_axis_inject\plusone}
-\permanent\protected\def\mathaxisontop{\math_axis_inject\plustwo}
+\definesystemattribute[mathaxis][public]
+
+\def\math_axis_inject_indeed#1%
+  {\srule
+     \s!height \dimexpr\scratchdimentwo+\scratchdimenone\relax
+     \s!depth -\dimexpr\scratchdimentwo-\scratchdimenone\relax
+     \s!attr \mathaxisattribute#1%
+   \relax}
+
+\def\math_axis_inject#1#2%
+  {\mathatom \s!class \mathghostcode \s!unpack {
+   \showmakeup[strut]% todo: shortcut
+   \ifcase#1%
+     % nothing
+   \or
+     \scratchdimenone.5\Umathfractionrule\mathstyle
+     \scratchdimentwo\Umathaxis\mathstyle
+     \math_axis_inject_indeed#2%
+   \or
+     \scratchdimenone.25\Umathfractionrule\mathstyle
+     \scratchdimentwo\Umathsupshiftup\mathstyle
+     \math_axis_inject_indeed#2%
+     \scratchdimentwo-\Umathsubshiftdown\mathstyle
+     \math_axis_inject_indeed#2%
+     \scratchdimentwo-\Umathsubsupshiftdown\mathstyle
+     \math_axis_inject_indeed#2%
+   % \scratchdimenone.125\Umathfractionrule\mathstyle
+     \divide\scratchdimenone\plustwo
+     \scratchdimentwo\Umathprimeshiftup\mathstyle
+     \math_axis_inject_indeed#2%
+   \fi}}
+
+\permanent\protected\def\mathaxisbelow  {\math_axis_inject\plusone\plusone}
+\permanent\protected\def\mathaxisontop  {\math_axis_inject\plusone\plustwo}
+\permanent\protected\def\mathscriptbelow{\math_axis_inject\plustwo\plusone}
+\permanent\protected\def\mathscriptontop{\math_axis_inject\plustwo\plustwo}
 
 \protect \endinput
 

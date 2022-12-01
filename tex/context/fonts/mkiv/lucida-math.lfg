@@ -28,9 +28,11 @@ return {
             DelimiterPercent                =   90,
             DelimiterShortfall              =  400,
          -- DisplayOperatorMinHeight        = 1800, -- 1300 in font (only one)
-            PrimeRaisePercent               =   60, --   50 default
-            PrimeRaiseComposedPercent       =   50, --   25 default
-            AxisHeight                      =  325, -- we keep the old fonts as they are (also for demos)
+            SuperscriptBottomMaxWithSubscript = 325,
+            -- PrimeRaisePercent               =   60, --   set to 0 in math-act
+            -- PrimeRaiseComposedPercent       =   50, --   set to 0 in math-act
+            PrimeShiftUp                    = "1.4*SuperscriptShiftUp",
+            PrimeShiftUpCramped             = "1.4*SuperscriptShiftUp",
         },
         tweaks = {
             aftercopying = {
@@ -217,12 +219,13 @@ return {
                     },
                 },
                 {
-                  tweak   = "fixprimes",
-                  factor  = 0.8,  -- accent base height
-               -- smaller = true, -- replace multiples
-                  scale   = 1.1,  -- glyph scale
-                  fake    = 0.65, -- replace multiples with this width proportion
-               -- keep    = true, -- keep the text size prime (aka minute)
+                   tweak   = "fixprimes",
+                --   factor  = 0.75,  -- accent base height
+                   factor  = 0.7,  -- accent base height
+                -- smaller = true, -- replace multiples
+                -- scale   = 1.1,  -- glyph scale
+                   fake    = 0.65, -- replace multiples with this width proportion
+                -- keep    = true, -- keep the text size prime (aka minute)
                 },
                 {
                     tweak = "checkspacing",
@@ -243,6 +246,9 @@ return {
                     tweak = "addfourier",
                  -- scale = 1.5,
                     variant = 1,
+                },
+                {
+                    tweak   = "addprimed",
                 },
                 {
                     tweak = "addarrows",

@@ -86,8 +86,11 @@
 \immutable\chardef\textminute"2032
 \immutable\chardef\textsecond"2033
 
-\immutable\Umathchardef\mathminute\zerocount\zerocount\privatecharactercode{prime 0x2032 1}
-\immutable\Umathchardef\mathsecond\zerocount\zerocount\privatecharactercode{prime 0x2033 1}
+% \immutable\Umathchardef\mathminute\zerocount\zerocount\privatecharactercode{prime 0x2032 1}
+% \immutable\Umathchardef\mathsecond\zerocount\zerocount\privatecharactercode{prime 0x2033 1}
+
+\immutable\Umathchardef\mathminute\zerocount\zerocount\textminute
+\immutable\Umathchardef\mathsecond\zerocount\zerocount\textsecond
 
 \permanent\protected\def\minute{\iffontchar\font\textminute\textminute\else\mathminute\fi}
 \permanent\protected\def\second{\iffontchar\font\textsecond\textsecond\else\mathsecond\fi}

@@ -62,6 +62,9 @@ function mathematics.initializeparameters(target,original)
         if not mathparameters.SpaceBeforeScript then
             mathparameters.SpaceBeforeScript = mathparameters.SpaceAfterScript
         end
+        if not mathparameters.SubscriptShiftDownWithSuperscript then
+            mathparameters.SubscriptShiftDownWithSuperscript = mathparameters.SubscriptShiftDown * 1.5
+        end
         target.mathparameters = mathparameters
     end
 end
@@ -155,28 +158,67 @@ function mathematics.overloadparameters(target,original)
                     if trace_defining then
                         report_math("overloading math parameters in %a @ %p",target.properties.fullname,target.parameters.size)
                     end
+                 -- for name, value in next, parameters do
+                 --     local tvalue = type(value)
+                 --     if tvalue == "string" then
+                 --         report_math("comment for math parameter %a: %s",name,value)
+                 --     else
+                 --         local oldvalue = mathparameters[name]
+                 --         local newvalue = oldvalue
+                 --         if oldvalue then
+                 --             if tvalue == "number" then
+                 --                 newvalue = value
+                 --             elseif tvalue == "function" then
+                 --                 newvalue = value(oldvalue,target,original)
+                 --             elseif not tvalue then
+                 --                 newvalue = nil
+                 --             end
+                 --             if trace_defining and oldvalue ~= newvalue then
+                 --                 report_math("overloading math parameter %a: %S => %S",name,oldvalue,newvalue)
+                 --             end
+                 --         else
+                 --          -- report_math("invalid math parameter %a",name)
+                 --         end
+                 --         mathparameters[name] = newvalue
+                 --     end
+                 -- end
+                    for name, value in next, parameters do
+                        local tvalue   = type(value)
+                        local oldvalue = mathparameters[name]
+                        local newvalue = oldvalue
+                        if tvalue == "number" then
+                            newvalue = value
+                        elseif tvalue == "string" then
+                            -- delay till all set
+                        elseif tvalue == "function" then
+                            newvalue = value(oldvalue,target,original)
+                        elseif not tvalue then
+                            newvalue = nil
+                        end
+                        if trace_defining and oldvalue ~= newvalue then
+                            report_math("overloading math parameter %a: %S => %S",name,oldvalue or 0,newvalue)
+                        end
+                        mathparameters[name] = newvalue
+                    end
                     for name, value in next, parameters do
                         local tvalue = type(value)
                         if tvalue == "string" then
-                            report_math("comment for math parameter %a: %s",name,value)
-                        else
-                            local oldvalue = mathparameters[name]
-                            local newvalue = oldvalue
-                            if oldvalue then
-                                if tvalue == "number" then
-                                    newvalue = value
-                                elseif tvalue == "function" then
-                                    newvalue = value(oldvalue,target,original)
-                                elseif not tvalue then
-                                    newvalue = nil
+                            local newvalue = mathparameters[value]
+                            if not newvalue then
+                                local code = loadstring("return " .. value,"","t",mathparameters)
+                                if type(code) == "function" then
+                                    local okay, v = pcall(code)
+                                    if okay then
+                                        newvalue = v
+                                    end
                                 end
-                                if trace_defining and oldvalue ~= newvalue then
-                                    report_math("overloading math parameter %a: %S => %S",name,oldvalue,newvalue)
-                                end
-                            else
-                             -- report_math("invalid math parameter %a",name)
                             end
-                            mathparameters[name] = newvalue
+                            if newvalue then
+                                -- split in number and string
+                                mathparameters[name] = newvalue
+                            elseif trace_defining then
+                                report_math("ignoring math parameter %a: %S",name,value)
+                            end
                         end
                     end
                 end

@@ -2173,7 +2173,7 @@ return 0;
 
 static int texlib_getmathcode(lua_State* L)
 {
-    mathcodeval mval = { 0, 0, 0 };
+    mathcodeval mval = tex_no_math_code();
     int ch = lmt_checkinteger(L, -1);
     if (character_in_range(ch)) {
         mval = tex_get_math_code(ch);
@@ -2192,7 +2192,7 @@ static int texlib_getmathcode(lua_State* L)
 
 static int texlib_getmathcodes(lua_State* L)
 {
-    mathcodeval mval = { 0, 0, 0 };
+    mathcodeval mval = tex_no_math_code();
     int ch = lmt_checkinteger(L, -1);
     if (character_in_range(ch)) {
         mval = tex_get_math_code(ch);
@@ -2603,6 +2603,7 @@ static int texlib_aux_convert(lua_State *L, int cur_code)
      /* case lua_token_string_code: */ /* arg token list */
         case string_code:              /* arg token */
         case cs_string_code:           /* arg token */
+        case cs_active_code:           /* arg token */
         case detokenized_code:         /* arg token */
         case meaning_code:             /* arg token */
         case to_mathstyle_code:
@@ -5191,8 +5192,11 @@ static int texlib_getmathcontrolvalues(lua_State *L)
 
 static int texlib_gettextcontrolvalues(lua_State *L)
 {
-    lua_createtable(L, 1, 0);
+    lua_createtable(L, 2, 2);
     lua_set_string_by_index(L, text_control_collapse_hyphens, "collapsehyphens");
+    lua_set_string_by_index(L, text_control_base_ligaturing,  "baseligaturing");
+    lua_set_string_by_index(L, text_control_base_kerning,     "basekerning");
+    lua_set_string_by_index(L, text_control_none_protected,   "noneprotected");
     return 1;
 }
 

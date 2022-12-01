@@ -93,7 +93,6 @@
   {\setupmathfence[\c!leftsource=,\c!rightsource=]%
    \glet\m_anch_matrix_list\empty}
 
-
 \defineboxanchorcontent
   [arrow]
   [\c!mp=mypos:boxanchor:arrow,

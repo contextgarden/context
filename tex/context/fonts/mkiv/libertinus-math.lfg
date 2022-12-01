@@ -4,7 +4,6 @@
 -- fix-feature or just disable ssty, but we have to revert to a runtime fix. Lucky me that I didn't
 -- remove that hardly needed 'tweaks' mechanism yet.
 
--- The italic x has a rectangular piece in its eye (redundant point)
 
 local common  = fonts.goodies.load("common-math.lfg")
 local presets = common.mathematics.tweaks.presets
@@ -34,8 +33,10 @@ return {
             DelimiterPercent                =   90,
             DelimiterShortfall              =  400,
          -- DisplayOperatorMinHeight        = 1800, -- 1250 in font (only one)
-            PrimeRaisePercent               =   70, --   50 default
-            PrimeRaiseComposedPercent       =   10, --   25 default
+         -- PrimeRaisePercent               =   70, --   set to 0 in math-act
+         -- PrimeRaiseComposedPercent       =   10, --   set to 0 in math-act
+            PrimeShiftUp                    = "1.2*SuperscriptShiftUp",
+            PrimeShiftUpCramped             = "1.2*SuperscriptShiftUp",
         },
         tweaks = {
             aftercopying = {
@@ -88,7 +89,8 @@ return {
                         ["0x27E9.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
                         [0x27EB]                = { topright = -0.1,  bottomright = -0.1  },
                         ["0x27EB.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
-
+                        --
+                        [0x00393] = { bottomright = -0.30, }, -- upright Gamma
                     },
                 },
                 -- Accents are a mess. We migrate the extensibles from the combiners to the base accent
@@ -157,10 +159,10 @@ return {
 
                 {
                     tweak   = "fixprimes",
-                    scale   = 0.9,
+                    -- scale   = 1,
                  -- smaller = true,
-                    factor  = 0.9,
-                    fake    = 0.8,
+                    factor  = 0.92,
+                    fake    = 0.75,
                 },
                 {
                     tweak = "checkspacing",
@@ -187,6 +189,9 @@ return {
                 {
                     tweak = "addfourier",
                     variant = 1,
+                },
+                {
+                    tweak = "addprimed",
                 },
                 {
                     -- needed for integrals (bad axis) and (less prominent) fences

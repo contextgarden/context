@@ -1372,7 +1372,7 @@ halfword tex_badness(scaled t, scaled s)
     }
 }
 
-static inline void tex_split_line_break_criterium(halfword criterium, halfword *semi_tight, halfword *decent, halfword *semi_loose, halfword *loose) {
+inline static void tex_split_line_break_criterium(halfword criterium, halfword *semi_tight, halfword *decent, halfword *semi_loose, halfword *loose) {
     *semi_tight = (criterium >> 24) & 0x7F;
     *decent = (criterium >> 16) & 0x7F;
     *semi_loose = (criterium >> 8) & 0x7F;
@@ -1391,7 +1391,7 @@ static inline void tex_split_line_break_criterium(halfword criterium, halfword *
     }
 }
 
-static inline halfword tex_normalized_loose_badness(halfword b, halfword loose, halfword semi_loose, halfword decent) 
+inline static halfword tex_normalized_loose_badness(halfword b, halfword loose, halfword semi_loose, halfword decent) 
 {
  // if (b > loose_criterium) {
  //     return very_loose_fit;
@@ -1411,7 +1411,7 @@ static inline halfword tex_normalized_loose_badness(halfword b, halfword loose, 
     }
 }
 
-static inline halfword tex_normalized_tight_badness(halfword b, halfword decent, halfword semi_tight) 
+inline static halfword tex_normalized_tight_badness(halfword b, halfword decent, halfword semi_tight) 
 {
  // if (b > decent_criterium) {
  //     return tight_fit;

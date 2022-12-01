@@ -36,6 +36,7 @@
    \c!depth=\zeropoint,
    \c!strut=\v!height,
    \c!source=\zerocount,
+   \c!size=\zerocount,
    \c!left=\zerocount,
    \c!right=\zerocount,
    \c!leftmargin=\zeropoint,
@@ -67,6 +68,7 @@
      \s!depth \dimexpr\mathdelimitedparameter\c!depth+\mathdelimitedparameter\c!bottomoffset\relax
      \s!source\numexpr\namedboxanchor{\mathdelimitedparameter\c!source}\relax
      \s!style \normalmathstyle
+     \s!size  \numexpr\namedboxanchor{\mathdelimitedparameter\c!size}\relax
      \zerocount \mathdelimitedparameter\c!left
      \zerocount \mathdelimitedparameter\c!right
   \relax}
@@ -113,5 +115,13 @@
 %    \c!right=\delimitedrightanutityuc]
 
 % $ \autofences \fourier{(z+\frac12)} + \courier{(z+\frac12)} + \xourier{(z+\frac12)} $
+
+\definemathdelimited [primed]                       [\c!right="2032,\c!size=1,\c!topoffset=.2\exheight]
+\definemathdelimited [doubleprimed]        [primed] [\c!right="2033]
+\definemathdelimited [tripleprimed]        [primed] [\c!right="2034]
+\definemathdelimited [quadrupleprimed]     [primed] [\c!right="2057]
+\definemathdelimited [reverseprimed]       [primed] [\c!right="2035]
+\definemathdelimited [doublereverseprimed] [primed] [\c!right="2036]
+\definemathdelimited [triplereverseprimed] [primed] [\c!right="2037]
 
 \protect \endinput

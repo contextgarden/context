@@ -182,7 +182,7 @@ nest_state_info lmt_nest_state = {
         .offset    = 0,
     },
     .shown_mode = 0,
-    .padding    = 0,
+    .math_mode  = 0,
 };
 
 /*tex
@@ -239,7 +239,8 @@ void tex_initialize_nesting(void)
 {
     lmt_nest_state.nest_data.ptr = 0;
     lmt_nest_state.nest_data.top = 0;
-    lmt_nest_state.shown_mode = 0;
+ // lmt_nest_state.shown_mode = 0;
+ // lmt_nest_state.math_mode = 0;
     cur_list.mode = vmode;
     cur_list.head = contribute_head;
     cur_list.tail = contribute_head;
@@ -290,6 +291,8 @@ void tex_push_nest(void)
 {
     list_state_record *top = &lmt_nest_state.nest[lmt_nest_state.nest_data.ptr];
     lmt_nest_state.nest_data.ptr += 1;
+ // lmt_nest_state.shown_mode = 0; // needs checking 
+    lmt_nest_state.math_mode = 0;
     if (tex_aux_room_on_nest_stack()) {
         cur_list.mode = top->mode;
         cur_list.head = tex_new_temp_node();

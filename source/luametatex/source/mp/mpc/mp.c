@@ -54,9 +54,9 @@
 # define  max_num_knot_nodes     1000
 # define  max_num_value_nodes    1000
 # define  max_num_symbolic_nodes 1000
-//define  mp_link(A)      (A)->link
-//define  mp_type(A)      (A)->type
-//define  mp_name_type(A) (A)->name_type
+# define  mp_link(A)      (A)->link
+# define  mp_type(A)      (A)->type
+# define  mp_name_type(A) (A)->name_type
 # define  mp_set_link(A,B) (A)->link = (mp_node) (B)
 # define  mp_max_command_code       mp_stop
 # define  mp_max_pre_command        mp_etex_command

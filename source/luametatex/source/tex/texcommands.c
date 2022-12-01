@@ -138,7 +138,6 @@ void tex_initialize_commands(void)
         tex_primitive(tex_command,    "exhyphenchar",                   internal_int_cmd,       ex_hyphen_char_code,                      internal_int_base);
         tex_primitive(tex_command,    "exhyphenpenalty",                internal_int_cmd,       ex_hyphen_penalty_code,                   internal_int_base);
         tex_primitive(tex_command,    "fam",                            internal_int_cmd,       family_code,                              internal_int_base);
-        tex_primitive(luatex_command, "variablefam",                    internal_int_cmd,       variable_family_code,                     internal_int_base);
         tex_primitive(tex_command,    "finalhyphendemerits",            internal_int_cmd,       final_hyphen_demerits_code,               internal_int_base);
         tex_primitive(tex_command,    "floatingpenalty",                internal_int_cmd,       floating_penalty_code,                    internal_int_base);
         tex_primitive(tex_command,    "globaldefs",                     internal_int_cmd,       global_defs_code,                         internal_int_base);
@@ -198,7 +197,8 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "tracingnodes",                   internal_int_cmd,       tracing_nodes_code,                       internal_int_base);
         tex_primitive(luatex_command, "tracingfullboxes",               internal_int_cmd,       tracing_full_boxes_code,                  internal_int_base);
         tex_primitive(luatex_command, "tracingpenalties",               internal_int_cmd,       tracing_penalties_code,                   internal_int_base);
-        tex_primitive(tex_command,    "uchyph",                         internal_int_cmd,       uc_hyph_code,                             internal_int_base); /* obsolete */
+        tex_primitive(tex_command,    "uchyph",                         internal_int_cmd,       uc_hyph_code,                             internal_int_base); /* obsolete, not needed */
+        tex_primitive(luatex_command, "variablefam",                    internal_int_cmd,       variable_family_code,                     internal_int_base); /* obsolete, not used */
         tex_primitive(tex_command,    "vbadness",                       internal_int_cmd,       vbadness_code,                            internal_int_base);
         tex_primitive(tex_command,    "widowpenalty",                   internal_int_cmd,       widow_penalty_code,                       internal_int_base);
         tex_primitive(tex_command,    "year",                           internal_int_cmd,       year_code,                                internal_int_base);
@@ -386,6 +386,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "expandtoken",                    expand_after_cmd,       expand_token_code,                        0);
         tex_primitive(luatex_command, "expandcstoken",                  expand_after_cmd,       expand_cs_token_code,                     0);
         tex_primitive(luatex_command, "expand",                         expand_after_cmd,       expand_code,                              0);
+        tex_primitive(luatex_command, "expandactive",                   expand_after_cmd,       expand_active_code,                       0);
         tex_primitive(luatex_command, "semiexpand",                     expand_after_cmd,       semi_expand_code,                         0);
         tex_primitive(luatex_command, "expandedafter",                  expand_after_cmd,       expand_after_toks_code,                   0);
      /* tex_primitive(luatex_command, "expandafterfi",                  expand_after_cmd,       expand_after_fi,                          0); */
@@ -655,6 +656,7 @@ void tex_initialize_commands(void)
         tex_primitive(tex_command,    "string",                         convert_cmd,            string_code,                              0);
         tex_primitive(luatex_command, "directlua",                      convert_cmd,            lua_code,                                 0);
         tex_primitive(luatex_command, "csstring",                       convert_cmd,            cs_string_code,                           0);
+        tex_primitive(luatex_command, "csactive",                       convert_cmd,            cs_active_code,                           0);
         tex_primitive(luatex_command, "detokenized",                    convert_cmd,            detokenized_code,                         0);
         tex_primitive(luatex_command, "expanded",                       convert_cmd,            expanded_code,                            0);
         tex_primitive(luatex_command, "semiexpanded",                   convert_cmd,            semi_expanded_code,                       0);
@@ -759,6 +761,7 @@ void tex_initialize_commands(void)
         tex_primitive(tex_command,    "sfcode",                         define_char_code_cmd,   sfcode_charcode,                          0);
         tex_primitive(luatex_command, "hccode",                         define_char_code_cmd,   hccode_charcode,                          0);
         tex_primitive(luatex_command, "hmcode",                         define_char_code_cmd,   hmcode_charcode,                          0);
+        tex_primitive(luatex_command, "amcode",                         define_char_code_cmd,   amcode_charcode,                          0);
         tex_primitive(tex_command,    "mathcode",                       define_char_code_cmd,   mathcode_charcode,                        0);
         tex_primitive(tex_command,    "delcode",                        define_char_code_cmd,   delcode_charcode,                         0);
 

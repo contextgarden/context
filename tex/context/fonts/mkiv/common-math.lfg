@@ -214,6 +214,7 @@ return {
                     return {
                         tweak  = "movelimits",
                         factor = parameters.factor or 1,
+                        icfactor = parameters.icfactor or 1,
                         list   = mathematics.tweaks.subsets.integrals,
                     }
                 end,

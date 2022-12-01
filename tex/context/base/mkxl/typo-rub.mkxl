@@ -45,7 +45,8 @@
    \enforced\let\ruby\noruby
    \edef\currentruby{#1}%
    \edef\p_location{\rubyparameter\c!location}%
-   \enforced\let|\relax
+ % \enforced\let|\relax
+   \enforced\letcharcode\barasciicode\relax
    \ifcsname\??rubyanalyze\p_location\endcsname
      \expandafter\lastnamedcs\else\expandafter\typo_ruby_analyze
    \fi{#2}{#3}%

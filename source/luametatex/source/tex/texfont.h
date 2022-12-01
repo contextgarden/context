@@ -324,6 +324,9 @@ extern font_state_info lmt_font_state;
 
 typedef enum text_control_codes {
     text_control_collapse_hyphens = 0x00001,
+    text_control_base_ligaturing  = 0x00002,
+    text_control_base_kerning     = 0x00004,
+    text_control_none_protected   = 0x00008,
 } text_control_codes;
 
 # define has_font_text_control(f,c)  ((font_textcontrol(f) & c) == c)

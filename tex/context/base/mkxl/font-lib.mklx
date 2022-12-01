@@ -43,7 +43,7 @@
 \registerctxluafile{font-web}{}           % opentype fontloader
 \registerctxluafile{font-cff}{optimize}   % quadratic outlines
 \registerctxluafile{font-ttf}{optimize}   % cubic outlines
-\registerctxluafile{font-dsp}{optimize}   % ... for this one
+\registerctxluafile{font-dsp}{autosuffix,optimize}
 \registerctxluafile{font-hsh}{autosuffix} % hashes used by context
 \registerctxluafile{font-vir}{}
 \registerctxluafile{font-vfc}{autosuffix}

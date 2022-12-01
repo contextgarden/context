@@ -55,7 +55,7 @@
 
 */
 
-# define luametatex_format_fingerprint 675
+# define luametatex_format_fingerprint 676
 
 /* These end up in the string pool. */
 

@@ -218,12 +218,16 @@ static void tex_aux_free_catcodes(void)
 # define HMCODESTACK      8
 # define HMCODEDEFAULT    0
 
+# define AMCODESTACK      8
+# define AMCODEDEFAULT    0
+
 typedef struct luscode_state_info {
     sa_tree uccode_head;
     sa_tree lccode_head;
     sa_tree sfcode_head;
     sa_tree hccode_head;
     sa_tree hmcode_head;
+    sa_tree amcode_head;
 } luscode_state_info;
 
 static luscode_state_info lmt_luscode_state = {
@@ -231,7 +235,8 @@ static luscode_state_info lmt_luscode_state = {
     .lccode_head = NULL,
     .sfcode_head = NULL,
     .hccode_head = NULL,
-    .hmcode_head = NULL
+    .hmcode_head = NULL,
+    .amcode_head = NULL
 };
 
 void tex_set_lc_code(int n, halfword v, int gl)
@@ -445,6 +450,45 @@ static void tex_aux_free_hmcodes(void)
     sa_destroy_tree(lmt_luscode_state.hmcode_head);
 }
 
+/*tex Experiment. */
+
+
+void tex_set_am_code(int n, halfword v, int gl)
+{
+    sa_set_item_1(lmt_luscode_state.amcode_head, n, v, gl);
+}
+
+halfword tex_get_am_code(int n)
+{
+    return sa_return_item_1(lmt_luscode_state.amcode_head, n);
+}
+
+static void tex_aux_unsave_amcodes(int gl)
+{
+    sa_restore_stack(lmt_luscode_state.amcode_head, gl);
+}
+
+static void tex_aux_initialize_amcodes(void)
+{
+    sa_tree_item item = { .int_value = AMCODEDEFAULT };
+    lmt_luscode_state.amcode_head = sa_new_tree(AMCODESTACK, 1, item);
+}
+
+static void tex_aux_dump_amcodes(dumpstream f)
+{
+    sa_dump_tree(f, lmt_luscode_state.amcode_head);
+}
+
+static void tex_aux_undump_amcodes(dumpstream f)
+{
+    lmt_luscode_state.amcode_head = sa_undump_tree(f);
+}
+
+static void tex_aux_free_amcodes(void)
+{
+    sa_destroy_tree(lmt_luscode_state.amcode_head);
+}
+
 /*tex
 
     The hyphenation codes are indeed stored in a tree and are used instead of lowercase codes when
@@ -544,6 +588,7 @@ void tex_unsave_text_codes(int grouplevel)
     tex_aux_unsave_sfcodes(grouplevel);
     tex_aux_unsave_hccodes(grouplevel);
     tex_aux_unsave_hmcodes(grouplevel);
+    tex_aux_unsave_amcodes(grouplevel);
 }
 
 void tex_initialize_text_codes(void)
@@ -554,6 +599,7 @@ void tex_initialize_text_codes(void)
     tex_aux_initialize_sfcodes();
     tex_aux_initialize_hccodes();
     tex_aux_initialize_hmcodes();
+    tex_aux_initialize_amcodes();
  /* initializehjcodes(); */
 }
 
@@ -565,6 +611,7 @@ void tex_free_text_codes(void)
     tex_aux_free_sfcodes();
     tex_aux_free_hccodes();
     tex_aux_free_hmcodes();
+    tex_aux_free_amcodes();
  /* freehjcodes(); */
 }
 
@@ -576,6 +623,7 @@ void tex_dump_text_codes(dumpstream f)
     tex_aux_dump_sfcodes(f);
     tex_aux_dump_hccodes(f);
     tex_aux_dump_hmcodes(f);
+    tex_aux_dump_amcodes(f);
  /* dumphjcodes(f); */
 }
 
@@ -587,6 +635,7 @@ void tex_undump_text_codes(dumpstream f)
     tex_aux_undump_sfcodes(f);
     tex_aux_undump_hccodes(f);
     tex_aux_undump_hmcodes(f);
+    tex_aux_undump_amcodes(f);
  /* undumphjcodes(f); */
 }
 

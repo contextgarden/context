@@ -120,7 +120,7 @@ extern halfword    tex_scan_math_properties_number    (void);
 extern halfword    tex_scan_math_group_number         (void);
 extern halfword    tex_scan_math_index_number         (void);
 extern halfword    tex_scan_math_discretionary_number (int optional_equal);
-extern halfword    tex_scan_category_code             (void);
+extern halfword    tex_scan_category_code             (int optional_equal);
 extern singleword  tex_scan_box_index                 (void); /*tex For local boxes: small for now! */
 extern singleword  tex_scan_box_axis                  (void);
 extern halfword    tex_scan_function_reference        (int optional_equal);

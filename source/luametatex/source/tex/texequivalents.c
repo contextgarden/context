@@ -1125,7 +1125,7 @@ void tex_geq_word_define(halfword p, int w)
     a side effect of looking at the code through a visual studio lense.)
 */
 
-static inline void tex_aux_set_eq_data(halfword p, singleword t, halfword e, singleword f, quarterword l)
+inline static void tex_aux_set_eq_data(halfword p, singleword t, halfword e, singleword f, quarterword l)
 {
     singleword flag = eq_flag(p);
     set_eq_level(p, l);

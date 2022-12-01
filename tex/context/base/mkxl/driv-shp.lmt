@@ -659,7 +659,6 @@ local hlist_out, vlist_out  do
                 if si then
                     local box = si -- si[1]
                     finalize(box) -- tricky: we might need to group
--- print(getanchors(box))
                     if getid(box) == vlist_code then
                         vlist_out(current,box)
                     else
@@ -717,11 +716,6 @@ local hlist_out, vlist_out  do
     local function applyanchor(anchor,shift,anchor_h,anchor_v,width,height,depth)
         local h = 0
         local v = 0
-        if shift then
-            anchor = (anchor & 0xFFFF0000) >> 16
-        else
-            anchor = (anchor & 0x0000FFFF)
-        end
         local a = anchor & 0x00FF
         local s = anchor & 0x0F00
         if a == 0x02 then
@@ -805,8 +799,12 @@ local hlist_out, vlist_out  do
         -- we can encounter par, boundary and penalty nodes but a special
         -- iterator over content nodes won't save much
         for current, id, subtype in nextnode, current do
+-- if id == nil then
+--     print("bad node",current)
+-- end
             if id == glyph_code then
                 local char, font = isglyph(current)
+-- if char then
                 local x_offset, y_offset, left, right, raise = getoffsets(current)
                 if x_offset ~= 0 or y_offset ~= 0 then
                     if pos_r == righttoleft_code then
@@ -823,6 +821,9 @@ local hlist_out, vlist_out  do
                 local wd = flush_character(current,font,char,false,true,pos_h,pos_v,pos_r)
              -- cur_h = cur_h + wd - right -- hm, no left here?
                 cur_h = cur_h + wd -- see new tabulate alignment code
+-- else
+--     print("bad character",current,nuts.getfont(current),nuts.getchar(current))
+-- end
             elseif id == glue_code then
              -- local gluewidth = effectiveglue(current,this_box)
                 local gluewidth = effectiveglue(current,this_box,true)
@@ -975,13 +976,11 @@ local hlist_out, vlist_out  do
                     local boxdir = getdirection(current) or lefttoright_code
                     local shift  = getshift(current)
                     local geometry, hasoffset, hasorientation, hasanchor = getgeometry(current,true)
-                    local anchor, source, target, targetdata
+                    local anchor, source, target, targetdata, s_anchor, t_anchor
                     local anc_h, anc_v
                     local usedorientation = false
                     if hasanchor then
-                        anchor, source, target = getanchors(current)
--- print(getanchors(current))
--- if not anchor then anchor = 0 end
+                        anchor, source, target, s_anchor, t_anchor = getanchors(current)
                     end
                     if hasorientation then
                         local orientation, xoffset, yoffset, woffset, hoffset, doffset = getorientation(current)
@@ -1074,8 +1073,10 @@ local hlist_out, vlist_out  do
                     end
                     pos_v = targetdata[2] + anc_v
                     if anchor and anchor > 0 then
-                        pos_h, pos_v = applyanchor(anchor,true,pos_h,pos_v,targetdata[3],targetdata[4],targetdata[5])
-                        pos_h, pos_v = applyanchor(anchor,false,pos_h,pos_v,width,height,depth)
+--                         pos_h, pos_v = applyanchor(anchor,true,t_anchor,pos_h,pos_v,targetdata[3],targetdata[4],targetdata[5])
+--                         pos_h, pos_v = applyanchor(anchor,false,s_anchor,pos_h,pos_v,width,height,depth)
+                        pos_h, pos_v = applyanchor(t_anchor,true, pos_h,pos_v,targetdata[3],targetdata[4],targetdata[5])
+                        pos_h, pos_v = applyanchor(s_anchor,false,pos_h,pos_v,width,height,depth)
                     end
                   ::process::
                     if source then
@@ -1365,10 +1366,10 @@ local glueheight = effectiveglue(current,this_box,true)
                     local boxdir = getdirection(current) or lefttoright_code
                     local shift = getshift(current)
                     local geometry, hasoffset, hasorientation, hasanchor = getgeometry(current,true)
-                    local anchor, source, target, targetdata
+                    local anchor, source, target, targetdata, s_anchor, t_anchor
                     local usedorientation = false
                     if hasanchor then
-                        anchor, source, target = getanchors(current)
+                        anchor, source, target, s_anchor, t_anchor = getanchors(current)
                     end
                     if hasorientation then
                         local orientation, xoffset, yoffset, woffset, hoffset, doffset = getorientation(current)
@@ -1469,8 +1470,10 @@ local glueheight = effectiveglue(current,this_box,true)
                     goto process
                   ::posdone::
                     if anchor and anchor > 0 then
-                        pos_h, pos_v = applyanchor(anchor,true,pos_h,pos_v,targetdata[3],targetdata[4],targetdata[5])
-                        pos_h, pos_v = applyanchor(anchor,false,pos_h,pos_v,width,height,depth)
+--                         pos_h, pos_v = applyanchor(anchor,true,t_anchor,pos_h,pos_v,targetdata[3],targetdata[4],targetdata[5])
+--                         pos_h, pos_v = applyanchor(anchor,false,s_anchor,pos_h,pos_v,width,height,depth)
+                        pos_h, pos_v = applyanchor(t_anchor,true, pos_h,pos_v,targetdata[3],targetdata[4],targetdata[5])
+                        pos_h, pos_v = applyanchor(s_anchor,false,pos_h,pos_v,width,height,depth)
                     end
                   ::process::
                     if source then

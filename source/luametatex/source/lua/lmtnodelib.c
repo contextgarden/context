@@ -1363,12 +1363,12 @@ static int nodelib_direct_getanchors(lua_State *L)
                     lua_pushnil(L);
                 }
                 /* bonus detail: source, target */
-                if (box_source_anchor(n)) {
+                if (box_anchor(n)) {
                     lua_pushinteger(L,  box_anchor(n)        & 0x0FFF);
                 } else {
                     lua_pushnil(L);
                 }
-                if (box_target_anchor(n)) {
+                if (box_anchor(n)) {
                     lua_pushinteger(L, (box_anchor(n) >> 16) & 0x0FFF);
                 } else {
                     lua_pushnil(L);
@@ -7861,6 +7861,57 @@ static int nodelib_direct_unprotectglyphs(lua_State *L)
     return 0;
 }
 
+/*tex This is an experiment. */
+
+inline static void nodelib_aux_protect_all_none(halfword h)
+{
+    while (h) {
+        if (node_type(h) == glyph_node) {
+            halfword f =  glyph_font(h);
+            if (f >= 0 && f <= lmt_font_state.font_data.ptr && lmt_font_state.fonts[f] && has_font_text_control(f, text_control_none_protected)) { 
+                glyph_protected(h) = glyph_protected_text_code;
+            }
+        }
+        h = node_next(h);
+    }
+}
+
+inline static void nodelib_aux_protect_node_none(halfword n)
+{
+    switch (node_type(n)) {
+        case glyph_node:
+            {
+                halfword f =  glyph_font(n);
+                if (f >= 0 && f <= lmt_font_state.font_data.ptr && lmt_font_state.fonts[f] && has_font_text_control(f, text_control_none_protected)) { 
+                    glyph_protected(n) = glyph_protected_text_code;
+                }
+            }
+            break;
+        case disc_node:
+            nodelib_aux_protect_all_none(disc_no_break_head(n));
+            nodelib_aux_protect_all_none(disc_pre_break_head(n));
+            nodelib_aux_protect_all_none(disc_post_break_head(n));
+            break;
+    }
+}
+
+static int nodelib_direct_protectglyphs_none(lua_State *L)
+{
+    halfword head = nodelib_valid_direct_from_index(L, 1);
+    halfword tail = nodelib_valid_direct_from_index(L, 2);
+    if (head) {
+        while (head) {
+            nodelib_aux_protect_node_none(head);
+            if (head == tail) {
+                break;
+            } else {
+                head = node_next(head);
+            }
+        }
+    }
+    return 0;
+}
+
 /* node.direct.first_glyph */
 
 static int nodelib_direct_firstglyph(lua_State *L)
@@ -7946,7 +7997,7 @@ static int nodelib_direct_hasglyph(lua_State *L)
 
 /* node.getword */
 
-static inline int nodelib_aux_in_word(halfword n)
+inline static int nodelib_aux_in_word(halfword n)
 {
     switch (node_type(n)) {
         case glyph_node:
@@ -9644,6 +9695,7 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "newmathglyph",            nodelib_direct_newmathglyph           },
     { "protectglyph",            nodelib_direct_protectglyph           },
     { "protectglyphs",           nodelib_direct_protectglyphs          },
+    { "protectglyphsnone",       nodelib_direct_protectglyphs_none     },
     { "protrusionskippable",     nodelib_direct_protrusionskipable     },
     { "rangedimensions",         nodelib_direct_rangedimensions        }, /* maybe get... */
     { "getglyphdimensions",      nodelib_direct_getglyphdimensions     },

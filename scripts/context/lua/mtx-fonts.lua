@@ -127,7 +127,7 @@ loadmodule("font-otr.lua")
 loadmodule("font-cff.lua")
 loadmodule("font-ttf.lua")
 loadmodule("font-tmp.lua")
-loadmodule("font-dsp.lua")
+loadmodule("font-dsp.lua") -- autosuffix
 loadmodule("font-oup.lua")
 
 loadmodule("font-otl.lua")

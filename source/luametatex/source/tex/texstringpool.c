@@ -82,7 +82,7 @@ string_pool_info lmt_string_pool_state = {
 # define initial_temp_string_slots  256
 # define reserved_temp_string_slots   2
 
-static inline void tex_aux_increment_pool_string(int n)
+inline static void tex_aux_increment_pool_string(int n)
 {
     lmt_string_pool_state.string_body_data.allocated += n;
     if (lmt_string_pool_state.string_body_data.allocated > lmt_string_pool_state.string_body_data.size) {
@@ -90,7 +90,7 @@ static inline void tex_aux_increment_pool_string(int n)
     }
 }
 
-static inline void tex_aux_decrement_pool_string(int n)
+inline static void tex_aux_decrement_pool_string(int n)
 {
     lmt_string_pool_state.string_body_data.allocated -= n;
 }

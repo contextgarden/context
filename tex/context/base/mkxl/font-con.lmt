@@ -502,7 +502,12 @@ function constructors.scale(tfmdata,specification)
     local scaledheight     = defaultheight * vdelta
     local scaleddepth      = defaultdepth  * vdelta
     --
-    local textcontrol = properties.textcontrol
+    local textcontrol = properties.textcontrol or 0
+    if targetproperties.mode == "base" then
+        textcontrol = textcontrol | 0x02 | 0x04 -- todo symbolic
+    elseif targetproperties.mode == "none" then
+        textcontrol = textcontrol | 0x08 -- todo symbolic
+    end
     targetproperties.textcontrol = textcontrol
     target.textcontrol = textcontrol
     --

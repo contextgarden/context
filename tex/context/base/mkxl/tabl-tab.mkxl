@@ -57,7 +57,8 @@
      \dontcomplain
      \tabl_table_restore_lineskips
      \normalbaselines
-     \enforced\let~\fixedspace
+   % \enforced\let~\fixedspace
+`    \enforced\letcharcode\tildeasciicode\fixedspace % why
      \inhibitblank % \blank[\v!disable]% % added
      \the\everytableparbox}
 
@@ -835,7 +836,7 @@
 \bgroup \catcode\tildeasciicode\activecatcode
 
     \appendtoks
-        \catcode\barasciicode\activecatcode
+%         \catcode\barasciicode\activecatcode
         \enforced\protected\def ~{\kern.5em}%
         \enforced\protected\def\\{\ifhmode\space\else\par\fi}%
     \to \everytable
@@ -1492,25 +1493,41 @@
 %  \noalign{\globalpopmacro\simpletableHL}%
    }
 
-\bgroup \catcode\barasciicode\othercatcode
+% \bgroup \catcode\barasciicode\othercatcode
+%
+% \gdef\tabl_table_second_stage[#1]% brr nested mess
+%   {\bgroup
+%    \tabl_table_use_bar
+%    \global\setfalse\tableactionstatepermitted
+%    \global\setfalse\hassometablehead
+%    \global\setfalse\hassometabletail
+%    \expanded{\doifelseinstring{|}{#1}}
+%      {\xdef\tabl_table_restart{\noexpand\tabl_table_restart_indeed{\noexpand\tabl_table_third_stage{#1}}}}
+%      {\ifcsname\??tabletemplate#1\endcsname
+%         \gdef\tabl_table_restart{\csname\??tabletemplate#1\endcsname}%
+%       \else
+%         \gdef\tabl_table_restart{\tabl_table_restart_indeed{\begincsname#1\endcsname}}%
+%       \fi}%
+%    \egroup
+%    \tabl_table_restart}
+%
+% \egroup
 
-\gdef\tabl_table_second_stage[#1]% brr nested mess
+\def\tabl_table_second_stage[#1]% brr nested mess
   {\bgroup
    \tabl_table_use_bar
    \global\setfalse\tableactionstatepermitted
    \global\setfalse\hassometablehead
    \global\setfalse\hassometabletail
-   \expanded{\doifelseinstring{|}{#1}}
-     {\xdef\tabl_table_restart{\noexpand\tabl_table_restart_indeed{\noexpand\tabl_table_third_stage{#1}}}}
-     {\ifcsname\??tabletemplate#1\endcsname
-        \gdef\tabl_table_restart{\csname\??tabletemplate#1\endcsname}%
-      \else
-        \gdef\tabl_table_restart{\tabl_table_restart_indeed{\begincsname#1\endcsname}}%
-      \fi}%
+   \normalexpanded{\noexpand\ifhastoks{|}{#1}}%
+     \xdef\tabl_table_restart{\noexpand\tabl_table_restart_indeed{\noexpand\tabl_table_third_stage{#1}}}%
+   \orelse\ifcsname\??tabletemplate#1\endcsname
+     \gdef\tabl_table_restart{\csname\??tabletemplate#1\endcsname}%
+   \else
+     \gdef\tabl_table_restart{\tabl_table_restart_indeed{\begincsname#1\endcsname}}%
+   \fi
    \egroup
    \tabl_table_restart}
-
-\egroup
 
 %D The third stage involves a lot of (re)sets, which we will explain later.
 
@@ -1859,14 +1876,15 @@
 
 \newcount\currenttablecolumn
 
-% DWhile defining this macro we change the \CATCODE\ of \type{|}. When counting the
-% Dbars, we use a non active representation of the bar, simply because we cannot be
-% Dsure if the bar is active or not.\footnote{Normally it is, but \TABLE\ changes
-% Dthe catcode when needed.}
+%D While defining this macro we change the \CATCODE\ of \type{|}. When counting the
+%D bars, we use a non active representation of the bar, simply because we cannot be
+%D sure if the bar is active or not.\footnote{Normally it is, but \TABLE\ changes
+%D the catcode when needed.}
 
 \bgroup
-    \catcode\barasciicode\othercatcode \permanent\gdef\tabl_table_bar{|}
-    \catcode\barasciicode\activecatcode\gdef\tabl_table_use_bar{\enforced\let|\tabl_table_bar}
+%     \catcode\barasciicode\othercatcode \permanent\gdef\tabl_table_bar{|}
+%     \catcode\barasciicode\activecatcode\gdef\tabl_table_use_bar{\enforced\let|\tabl_table_bar}
+\glet\tabl_table_use_bar\relax
 \egroup
 
 \bgroup \catcode\barasciicode\othercatcode
@@ -1874,7 +1892,7 @@
 \gdef\tabl_tables_get_nofcolumns#1% todo: also divert this to lua as with tabulate
   {\bgroup
    \cleanupfeatures % needed !
-   \tabl_table_use_bar
+   \tabl_table_use_bar % doesn't do anything as we don't treat #1
    \egroup}
 
 \egroup

@@ -26,6 +26,65 @@
 
 # include "luametatex.h"
 
+/*tex 
+    Finally the base mode ligaturing and kerning code has also been made more consistent with the 
+    rest: abstraction, more tight equality testing, helpers, merged some experiments, etc. It will 
+    probably evolve a bit more; not that we use basemode frequently in \CONTEXT. Keep in mind that 
+    it is not that hard to mess up the list when using \LUA\ but we do little checking here. 
+
+    From now on base mode ligaturing and kerning will only be applied when |text_font_control| 
+    have the |text_control_base_ligaturing| and |text_control_base_kerning| bits set. 
+*/
+
+inline static halfword tex_aux_discretionary_node(halfword target, int location)
+{
+    switch (location) {
+        case pre_break_code : return disc_pre_break_node(target); 
+        case post_break_code: return disc_post_break_node(target);
+        case no_break_code  : return disc_no_break_node(target);  
+        default             : return null;     
+    }
+}
+
+inline static int tex_aux_same_font_properties(halfword a, halfword b) // also in kern 
+{
+    return node_type(a) == glyph_node && node_type(b) == glyph_node 
+     && glyph_font(a)    == glyph_font(b)
+     && glyph_x_scale(a) == glyph_x_scale(b)
+     && glyph_y_scale(a) == glyph_y_scale(b)
+     && glyph_scale(a)   == glyph_scale(b);
+}
+
+inline static int tex_aux_apply_base_kerning(halfword n)
+{
+    if (glyph_protected(n)) {
+        return 0;
+    } else {
+        halfword f = glyph_font(n);
+        if (f >= 0 && f <= lmt_font_state.font_data.ptr && lmt_font_state.fonts[f]) { 
+            return has_font_text_control(f, text_control_base_kerning);
+        } else {
+            return 0;
+        }
+    }
+}
+
+inline static int tex_aux_apply_base_ligaturing(halfword n)
+{
+    if (glyph_protected(n)) {
+        return 0;
+    } else {
+        halfword f = glyph_font(n);
+        if (f >= 0 && f <= lmt_font_state.font_data.ptr && lmt_font_state.fonts[f]) { 
+            return has_font_text_control(f, text_control_base_ligaturing);
+        } else {
+            return 0;
+        }
+    }
+}
+
+/* */
+
 inline static scaled tex_aux_font_x_scaled(scaled v)
 {
     return v ? scaledround(0.000001 * (glyph_scale_par ? glyph_scale_par : 1000) * (glyph_x_scale_par ? glyph_x_scale_par : 1000) * v) : 0;
@@ -135,34 +194,34 @@ void tex_undump_font_data(dumpstream f) {
 void tex_set_charinfo_extensible_recipe(charinfo *ci, extinfo *ext)
 {
     if (ci->math) {
-        extinfo *lst = ci->math->extensible_recipe;
-        if (lst) {
-            while (lst) {
-                extinfo *c = lst->next;
-                lmt_memory_free(lst);
-                lst = c;
+        extinfo *list = ci->math->extensible_recipe;
+        if (list) {
+            while (list) {
+                extinfo *c = list->next;
+                lmt_memory_free(list);
+                list = c;
             }
         }
         ci->math->extensible_recipe = ext;
     }
 }
 
-void tex_set_font_parameters(halfword f, int b)
+void tex_set_font_parameters(halfword f, int index)
 {
     int i = font_parameter_count(f);
-    if (b > i) {
+    if (index > i) {
         /*tex If really needed this can be a calloc. */
-        int s = (b + 2) * (int) sizeof(int);
-        int *a = lmt_memory_realloc(font_parameter_base(f), (size_t) s);
-        if (a) {
-            lmt_font_state.font_data.allocated += (b - i + 1) * (int) sizeof(scaled);
-            font_parameter_base(f) = a;
-            font_parameter_count(f) = b;
-            while (i < b) {
+        int size = (index + 2) * (int) sizeof(int);
+        int *list = lmt_memory_realloc(font_parameter_base(f), (size_t) size);
+        if (list) {
+            lmt_font_state.font_data.allocated += (index - i + 1) * (int) sizeof(scaled);
+            font_parameter_base(f) = list;
+            font_parameter_count(f) = index;
+            while (i < index) {
                 font_parameter(f, ++i) = 0;
             }
         } else {
-            tex_overflow_error("font", s);
+            tex_overflow_error("font", size);
         }
     }
 }
@@ -174,14 +233,14 @@ int tex_new_font(void)
     int size = sizeof(charinfo);
     charinfo *ci = lmt_memory_calloc(1, (size_t) size);
     if (ci) {
-        texfont *t = NULL;
+        texfont *tf = NULL;
         size = sizeof(texfont);
-        t = lmt_memory_calloc(1, (size_t) size);
-        if (t) {
+        tf = lmt_memory_calloc(1, (size_t) size);
+        if (tf) {
             sa_tree_item sa_value = { 0 };
             int id = tex_new_font_id();
             lmt_font_state.font_data.allocated += size;
-            lmt_font_state.fonts[id] = t;
+            lmt_font_state.fonts[id] = tf;
             set_font_name(id, NULL);
             set_font_original(id, NULL);
             set_font_left_boundary(id, NULL);
@@ -194,13 +253,13 @@ int tex_new_font(void)
             set_font_skew_char(id, -1);
             /*tex allocate eight values including 0 */
             tex_set_font_parameters(id, 7);
-            for (int k = 0; k <= 7; k++) {
-                tex_set_font_parameter(id, k, 0);
+            for (int i = 0; i <= 7; i++) {
+                tex_set_font_parameter(id, i, 0);
             }
             /*tex character info zero is reserved for |notdef|. The stack size 1, default item value 0. */
-            t->characters = sa_new_tree(1, 4, sa_value);
-            t->chardata = ci;
-            t->chardata_size = 1;
+            tf->characters = sa_new_tree(1, 4, sa_value);
+            tf->chardata = ci;
+            tf->chardata_size = 1;
             return id;
         }
     }
@@ -208,16 +267,16 @@ int tex_new_font(void)
     return 0;
 }
 
-void tex_font_malloc_charinfo(halfword f, int num)
+void tex_font_malloc_charinfo(halfword f, int index)
 {
     int glyph = lmt_font_state.fonts[f]->chardata_size;
-    int size = (glyph + num) * sizeof(charinfo);
+    int size = (glyph + index) * sizeof(charinfo);
     charinfo *data = lmt_memory_realloc(lmt_font_state.fonts[f]->chardata , (size_t) size);
     if (data) {
-        lmt_font_state.font_data.allocated += num * sizeof(charinfo);
+        lmt_font_state.font_data.allocated += index * sizeof(charinfo);
         lmt_font_state.fonts[f]->chardata = data;
-        memset(&data[glyph], 0, (size_t) num * sizeof(charinfo));
-        lmt_font_state.fonts[f]->chardata_size += num;
+        memset(&data[glyph], 0, (size_t) index * sizeof(charinfo));
+        lmt_font_state.fonts[f]->chardata_size += index;
     } else {
         tex_overflow_error("font", size);
     }
@@ -690,10 +749,8 @@ halfword tex_get_font_identifier(halfword fontspec)
 }
 
 /*tex
-
     Here come some subroutines to deal with expanded fonts. Returning 1 means that they are
     identical.
-
 */
 
 ligatureinfo tex_get_ligature(halfword f, int lc, int rc)
@@ -793,11 +850,7 @@ halfword tex_checked_font_adjust(halfword adjust_spacing, halfword adjust_spacin
     return adjust_spacing;
 }
 
-/*tex
-
-    This returns the multiple of |font_step(f)| that is nearest to |e|.
-
-*/
+/*tex This returns the multiple of |font_step(f)| that is nearest to |e|. */
 
 int tex_fix_expand_value(halfword f, int e)
 {
@@ -936,34 +989,39 @@ halfword tex_get_parameter_glue(quarterword p, quarterword s)
 
 /*tex Ligaturing starts here */
 
-static void tex_aux_nesting_append(halfword nest1, halfword newn)
+static void tex_aux_discretionary_append(halfword target, int location, halfword n)
 {
-    halfword tail = node_tail(nest1);
-    tex_couple_nodes(tail ? tail : nest1, newn);
-    node_tail(nest1) = newn;
+    halfword node = tex_aux_discretionary_node(target, location);
+    if (node_tail(node)) { 
+        tex_couple_nodes(node_tail(node), n);
+    } else { 
+        node_head(node) = n;
+    }
+    node_tail(node) = n;
 }
 
-static void tex_aux_nesting_prepend(halfword nest1, halfword newn)
+static void tex_aux_discretionary_prepend(halfword target, int location, halfword n)
 {
-    halfword head = node_next(nest1);
-    tex_couple_nodes(nest1, newn);
-    if (head) {
-        tex_couple_nodes(newn, head);
+    halfword node = tex_aux_discretionary_node(target, location);
+    if (node_head(node)) { 
+        tex_couple_nodes(n, node_head(node));
     } else {
-        node_tail(nest1) = newn;
-    }
+        node_tail(node) = n;
+    } 
+    node_head(node) = n;
 }
 
-static void tex_aux_nesting_prepend_list(halfword nest1, halfword newn)
+static void tex_aux_nesting_prepend_list(halfword target, int location, halfword n) /* n is prepended to target */
 {
-    halfword head = node_next(nest1);
-    halfword tail = tex_tail_of_node_list(newn);
-    tex_couple_nodes(nest1, newn);
-    if (head) {
-        tex_couple_nodes(tail, head);
-    } else {
-        node_tail(nest1) = tail;
+    halfword node = tex_aux_discretionary_node(target, location);
+    halfword copy = tex_copy_node_list(n, null);
+    halfword tail = tex_tail_of_node_list(copy);
+    if (node_head(node)) {
+        tex_couple_nodes(tail, node_head(node));
+    } else { 
+        node_tail(node) = tail;
     }
+    node_head(node) = copy;
 }
 
 int tex_valid_ligature(halfword left, halfword right, int *slot)
@@ -987,7 +1045,9 @@ int tex_valid_ligature(halfword left, halfword right, int *slot)
 
 static int tex_aux_found_ligature(halfword left, halfword right)
 {
-    if (node_type(left) != glyph_node) {
+    if (! left || ! right) {
+        return 0;
+    } else if (node_type(left) != glyph_node || node_type(right) != glyph_node) {
         return 0;
     } else if (glyph_font(left) != glyph_font(right)) {
         return 0;
@@ -999,77 +1059,101 @@ static int tex_aux_found_ligature(halfword left, halfword right)
 }
 
 /*tex
-    We could be more efficient and reuse the possibly later removed node but it takes more code and
-    we don't have that many ligatures anyway.
+    In principle we only support simple ligatures, i.e.\ |move_after|, |keep_right| and |keep_left|
+    are zero. At some point we might even drop special ones, including those with boundaries because 
+    the likelyhood of encountering these in the \OPENTYPE\ arena is close to zero. 
 */
 
-static int tex_aux_try_ligature(halfword *first, halfword forward)
+static int tex_aux_try_ligature(halfword *first, halfword second, halfword *nextone)
 {
-    halfword cur = *first;
-    if (glyph_scale(cur) == glyph_scale(forward) && glyph_x_scale(cur) == glyph_x_scale(forward) && glyph_y_scale(cur) == glyph_y_scale(forward)) {
-        halfword slot;
-        halfword type = tex_valid_ligature(cur, forward, &slot);
-        if (type >= 0) {
-            int move_after = (type & 0x0C) >> 2;
-            int keep_right = (type & 0x01) != 0;
-            int keep_left = (type & 0x02) != 0;
-            halfword parent = (glyph_character(cur) >= 0) ? cur : ((glyph_character(forward) >= 0) ? forward : null);
-            halfword ligature = tex_new_glyph_node(glyph_ligature_subtype, glyph_font(cur), slot, parent);
-            if (keep_left) {
-                tex_couple_nodes(cur, ligature);
-                if (move_after) {
-                    move_after--;
-                    cur = ligature;
-                }
-            } else {
-                halfword prev = node_prev(cur);
-                tex_uncouple_node(cur);
-                tex_flush_node(cur);
-                tex_couple_nodes(prev, ligature);
-                cur = ligature;
+    halfword current = *first;
+    halfword slot;
+    halfword type = tex_valid_ligature(current, second, &slot);
+    if (type >= 0) {
+        int move_after = (type & 0x0C) >> 2;
+        int keep_right = (type & 0x01) != 0;
+        int keep_left  = (type & 0x02) != 0;
+        halfword next = node_next(second);
+        if (keep_left && keep_right) {
+            halfword ligature = tex_copy_node(current);
+            glyph_character(ligature) = slot; 
+            tex_couple_nodes(*first, ligature);
+            tex_couple_nodes(ligature, second);
+            if (nextone) {
+                *nextone = second;
             }
-            if (keep_right) {
-                tex_couple_nodes(ligature, forward);
-                if (move_after) {
-                    move_after--;
-                    cur = forward;
-                }
-            } else {
-                halfword next = node_next(forward);
-                tex_uncouple_node(forward);
-                tex_flush_node(forward);
-                if (next) {
-                    tex_couple_nodes(ligature, next);
-                }
+        } else if (keep_right) { 
+            glyph_character(*first) = slot; 
+            if (nextone) {
+                *nextone = second;
             }
-            *first = cur;
-            return 1;
+        } else if (keep_left) { 
+            glyph_character(second) = slot; 
+            if (nextone) {
+                *nextone = second;
+            }
+        } else { 
+            glyph_character(*first) = slot; 
+            tex_uncouple_node(second);
+            tex_flush_node(second);
+            tex_try_couple_nodes(*first, next);
+            if (nextone) {
+                *nextone = *first;
+            }
         }
+        /* untested */
+        if (nextone) {
+            while (move_after-- > 0 && *nextone) {
+                *nextone = node_next(*nextone);
+            }
+        }
+        return 1;
+    } else {
+        return 0;
     }
-    return 0;
 }
 
-/*tex
-
-    There shouldn't be any ligatures here - we only add them at the end of |xxx_break| in a |DISC-1
-    - DISC-2| situation and we stop processing |DISC-1| (we continue with |DISC-1|'s |post_| and
-    |no_break|.
-
-*/
-
-static halfword tex_aux_handle_ligature_nesting(halfword root, halfword cur)
+static void tex_aux_handle_ligature_list(halfword target, int location)
 {
-    if (cur) {
-        while (node_next(cur)) {
-            halfword fwd = node_next(cur);
-            if (node_type(cur) == glyph_node && node_type(fwd) == glyph_node && glyph_font(cur) == glyph_font(fwd) && tex_aux_try_ligature(&cur, fwd)) {
-                continue;
+    halfword node = tex_aux_discretionary_node(target, location);
+    halfword head = node_head(node);
+    halfword tail = node_tail(node);
+    if (head && head != tail) {
+        halfword current = head;
+        while (node_next(current)) {
+            halfword next = node_next(current);
+            int ishead = current == head;
+            halfword nextone = next;
+            if (tex_aux_same_font_properties(current, next) && tex_aux_try_ligature(&current, next, &nextone)) {
+                if (ishead) {
+                    head = current;
+                    node_head(node) = current;
+                }
+                current = nextone;
+            } else { 
+                current = next;
             }
-            cur = node_next(cur);
         }
-        node_tail(root) = cur;
+        node_tail(node) = current;
     }
-    return root;
+}
+
+static void tex_aux_handle_ligature_pair(halfword target, int location)
+{
+    halfword node = tex_aux_discretionary_node(target, location);
+    halfword head = node_head(node);
+    halfword tail = node_tail(node);
+    if (head && head != tail) {
+        halfword previous = node_prev(tail);
+        int ishead = previous == head;
+        if (tex_aux_same_font_properties(previous, tail) && tex_aux_try_ligature(&previous, tail, NULL)) {
+            if (ishead) {
+                head = previous;
+                node_head(node) = previous;
+            }
+            node_tail(node) = previous;
+        }
+    }
 }
 
 /*tex
@@ -1083,207 +1167,204 @@ static halfword tex_aux_handle_ligature_nesting(halfword root, halfword cur)
     have (any kind of) discretionaries. It is still on my agenda to look into nested discretionaries
     i.e. discs nodes in disc fields but it might never result in useable code.
 
+    Todo: check this boundary mess (check for subtype too). 
+    Todo: maybe get rid of weird ligatures, turn boundary into space and such.
+
 */
 
-static halfword tex_aux_handle_ligature_word(halfword cur)
+static halfword tex_aux_handle_ligature_word(halfword current)
 {
     halfword right = null;
-    if (node_type(cur) == boundary_node) {
-        halfword prev = node_prev(cur);
-        halfword fwd = node_next(cur);
+    halfword last = null; /* cf LuaTeX patch, an ancient border case buglet. */
+    if (node_type(current) == boundary_node) {
+        halfword previous = node_prev(current);
+        halfword next = node_next(current);
         /*tex There is no need to uncouple |cur|, it is freed. */
-        tex_flush_node(cur);
-        if (fwd) {
-            tex_couple_nodes(prev, fwd);
-            if (node_type(fwd) != glyph_node) {
-                return prev;
+        tex_flush_node(current);
+        if (next) {
+            tex_couple_nodes(previous, next);
+            if (node_type(next) != glyph_node) {
+                return previous;
             } else {
-                cur = fwd;
+                current = next;
             }
         } else {
-            node_next(prev) = fwd;
-            return prev;
+            node_next(previous) = next;
+            return previous;
         }
-    } else if (font_has_left_boundary(glyph_font(cur))) {
-        halfword prev = node_prev(cur);
-        halfword p = tex_new_glyph_node(glyph_unset_subtype, glyph_font(cur), left_boundary_char, cur);
-        tex_couple_nodes(prev, p);
-        tex_couple_nodes(p, cur);
-        cur = p;
+    } else if (node_type(current) == glyph_node && font_has_left_boundary(glyph_font(current))) {
+        halfword previous = node_prev(current);
+        halfword glyph = tex_new_glyph_node(glyph_unset_subtype, glyph_font(current), left_boundary_char, current);
+        tex_couple_nodes(previous, glyph);
+        tex_couple_nodes(glyph, current);
+        current = glyph;
     }
-    if (font_has_right_boundary(glyph_font(cur))) {
-        right = tex_new_glyph_node(glyph_unset_subtype, glyph_font(cur), right_boundary_char, cur);
+    if (node_type(current) == glyph_node && font_has_right_boundary(glyph_font(current))) {
+        right = tex_new_glyph_node(glyph_unset_subtype, glyph_font(current), right_boundary_char, current);
     }
-    /* todo: switch */
+ // tex_print_node_list(current, "GOING",max_integer, max_integer);
     while (1) {
-        halfword t = node_type(cur);
+        halfword currenttype = node_type(current);
         /*tex A glyph followed by \unknown */
-        if (t == glyph_node) {
-            halfword fwd = node_next(cur);
-            if (fwd) {
-                t = node_type(fwd);
-                if (t == glyph_node) {
-                    /*tex a glyph followed by a glyph */
-                    if (glyph_font(cur) != glyph_font(fwd)) {
-                        break;
-                    } else if (tex_aux_try_ligature(&cur, fwd)) {
-                        continue;
-                    }
-                } else if (t == disc_node) {
-                    /*tex a glyph followed by a disc */
-                    halfword pre = disc_pre_break_head(fwd);
-                    halfword nob = disc_no_break_head(fwd);
-                    halfword next, tail;
-                    /*tex Check on: |a{b?}{?}{?}| and |a+b=>B| : |{B?}{?}{a?}| */
-                    /*tex Check on: |a{?}{?}{b?}| and |a+b=>B| : |{a?}{?}{B?}| */
-                    if ((pre && node_type(pre) == glyph_node && tex_aux_found_ligature(cur, pre))
-                     || (nob && node_type(nob) == glyph_node && tex_aux_found_ligature(cur, nob))) {
-                        /*tex Move |cur| from before disc to skipped part */
-                        halfword prev = node_prev(cur);
-                        tex_uncouple_node(cur);
-                        tex_couple_nodes(prev, fwd);
-                        tex_aux_nesting_prepend(disc_no_break(fwd), cur);
-                        /*tex Now ligature the |pre_break|. */
-                        tex_aux_nesting_prepend(disc_pre_break(fwd), tex_copy_node(cur));
-                        /*tex As we have removed cur, we need to start again. */
-                        cur = prev;
-                    }
-                    /*tex Check on: |a{?}{?}{}b| and |a+b=>B| : |{a?}{?b}{B}|. */
-                    next = node_next(fwd);
-                    if ((! nob) && next && node_type(next) == glyph_node && tex_aux_found_ligature(cur, next)) {
-                        /*tex Move |cur| from before |disc| to |no_break| part. */
-                        halfword prev = node_prev(cur);
-                        tex_uncouple_node(cur);
-                        tex_couple_nodes(prev, fwd);
-                        /*tex We {\em know} it's empty. */
-                        tex_couple_nodes(disc_no_break(fwd), cur);
-                        /*tex Now copy |cur| the |pre_break|. */
-                        tex_aux_nesting_prepend(disc_pre_break(fwd), tex_copy_node(cur));
-                        /*tex Move next from after disc to |no_break| part. */
-                        tail = node_next(next);
-                        tex_uncouple_node(next);
-                        tex_try_couple_nodes(fwd, tail);
-                        /*tex We {\em know} this works. */
-                        tex_couple_nodes(cur, next);
-                        /*tex Make sure the list is correct. */
-                        disc_no_break_tail(fwd) = next;
-                        /*tex Now copy next to the |post_break|. */
-                        tex_aux_nesting_append(disc_post_break(fwd), tex_copy_node(next));
-                        /*tex As we have removed cur, we need to start again. */
-                        cur = prev;
-                    }
-                    /*tex We are finished with the |pre_break|. */
-                    tex_aux_handle_ligature_nesting(disc_pre_break(fwd), disc_pre_break_head(fwd));
-                } else if (t == boundary_node) {
-                    halfword next = node_next(fwd);
-                    tex_try_couple_nodes(cur, next);
-                    tex_flush_node(fwd);
-                    if (right) {
-                        /*tex Shame, didn't need it. */
-                        tex_flush_node(right);
-                        /*tex No need to reset |right|, we're going to leave the loop anyway. */
-                    }
-                    break;
-                } else if (right) {
-                    tex_couple_nodes(cur, right);
-                    tex_couple_nodes(right, fwd);
-                    right = null;
-                    continue;
-                } else {
-                    break;
-                }
-            } else {
-                /*tex The last character of a paragraph. */
-                if (right) {
-                    /*tex |par| prohibits the use of |couple_nodes| here. */
-                    tex_try_couple_nodes(cur, right);
-                    right = null;
-                    continue;
-                } else {
-                    break;
-                }
-            }
-            /*tex A discretionary followed by \unknown */
-        } else if (t == disc_node) {
-            /*tex If |{?}{x}{?}| or |{?}{?}{y}| then: */
-            if (disc_no_break_head(cur) || disc_post_break_head(cur)) {
-                halfword fwd;
-                if (disc_post_break_head(cur)) {
-                    tex_aux_handle_ligature_nesting(disc_post_break(cur), disc_post_break_head(cur));
-                }
-                if (disc_no_break_head(cur)) {
-                    tex_aux_handle_ligature_nesting(disc_no_break(cur), disc_no_break_head(cur));
-                }
-                fwd = node_next(cur);
-                while (fwd) {
-                    if (node_type(fwd) == glyph_node) {
-                        halfword nob = disc_no_break_tail(cur);
-                        halfword pst = disc_post_break_tail(cur);
-                        if ((! nob || ! tex_aux_found_ligature(nob, fwd)) && (! pst || ! tex_aux_found_ligature(pst, fwd))) {
-                            break;
-                        } else {
-                            halfword next = node_next(fwd);
-                            tex_aux_nesting_append(disc_no_break(cur), tex_copy_node(fwd));
-                            tex_aux_handle_ligature_nesting(disc_no_break(cur), nob);
-                            tex_uncouple_node(fwd);
-                            tex_try_couple_nodes(cur, next);
-                            tex_aux_nesting_append(disc_post_break(cur), fwd);
-                            tex_aux_handle_ligature_nesting(disc_post_break(cur), pst);
-                            fwd = node_next(cur);
+        if (currenttype == glyph_node) {
+            if (tex_aux_apply_base_ligaturing(current)) {
+                halfword forward = node_next(current);
+                if (forward) {
+                    halfword forwardtype = node_type(forward);
+                    if (forwardtype == glyph_node) {
+                        if (! tex_aux_apply_base_ligaturing(forward)) {
+                          //  break;
+                        } else if (! tex_aux_same_font_properties(current, forward)) {
+                          //  break;
+                        } else { 
+                            halfword nextone = current; 
+                            if (tex_aux_try_ligature(&current, forward, &nextone)) {
+                                current = nextone; 
+                                continue;
+                            }
                         }
+                    } else if (forwardtype == disc_node) {
+                        /*tex a glyph followed by a disc */
+                        halfword pre = disc_pre_break_head(forward);
+                        halfword replace = disc_no_break_head(forward);
+                        halfword next;
+                        /*tex Check on: |a{b?}{?}{?}| and |a+b=>B| : |{B?}{?}{a?}| */
+                        /*tex Check on: |a{?}{?}{b?}| and |a+b=>B| : |{a?}{?}{B?}| */
+                        if (tex_aux_found_ligature(current, pre) || tex_aux_found_ligature(current, replace)) {
+                            /*tex Move |cur| from before disc to skipped part */
+                            halfword previous = node_prev(current);
+                            tex_uncouple_node(current);
+                            tex_couple_nodes(previous, forward);
+                            tex_aux_discretionary_prepend(forward, no_break_code, current);
+                            tex_aux_discretionary_prepend(forward, pre_break_code, tex_copy_node(current));
+                            /*tex As we have removed cur, we need to start again. */
+                            current = previous;
+                        }
+                        /*tex Check on: |a{?}{?}{}b| and |a+b=>B| : |{a?}{?b}{B}|. */
+                        next = node_next(forward);
+                        if (! replace && tex_aux_found_ligature(current, next)) {
+                            /*tex Move |cur| from before |disc| to |no_break| part. */
+                            halfword previous = node_prev(current);
+                            halfword tail = node_next(next);
+                            tex_uncouple_node(current);
+                            tex_couple_nodes(previous, forward);
+                            tex_aux_discretionary_prepend(forward, pre_break_code, tex_copy_node(current));
+                            /*tex Move next from after disc to |no_break| part. */
+                            tex_uncouple_node(next);
+                            tex_try_couple_nodes(forward, tail);
+                            /*tex We {\em know} this works. */
+                            tex_couple_nodes(current, next);
+                            /*tex Make sure the list is correct. */
+                            tex_aux_discretionary_append(forward, post_break_code, tex_copy_node(next));
+                            /*tex As we have removed cur, we need to start again. */
+                            current = previous;
+                        }
+                        /*tex We are finished with the |pre_break|. */
+                        tex_aux_handle_ligature_list(forward, pre_break_code);
+                    } else if (forwardtype == boundary_node) {
+                        halfword next = node_next(forward);
+                        tex_try_couple_nodes(current, next);
+                        tex_flush_node(forward);
+                        if (right) {
+                            /*tex Shame, didn't need it. */
+                            tex_flush_node(right);
+                            /*tex No need to reset |right|, we're going to leave the loop anyway. */
+                        }
+                        break;
+                    } else if (right) {
+                        tex_couple_nodes(current, right);
+                        tex_couple_nodes(right, forward);
+                        right = null;
+                        continue;
+                    } else {
+                        break;
+                    }
+                } else {
+                    /*tex The last character of a paragraph. */
+                    if (right) {
+                        /*tex |par| prohibits the use of |couple_nodes| here. */
+                        tex_try_couple_nodes(current, right);
+                        right = null;
+                        continue;
                     } else {
                         break;
                     }
                 }
-                if (fwd && node_type(fwd) == disc_node) {
+                /*tex A discretionary followed by \unknown */
+            }
+        } else if (currenttype == disc_node) {
+            /*tex If |{?}{x}{?}| or |{?}{?}{y}| then: */
+            if (disc_no_break_head(current) || disc_post_break_head(current)) {
+                /*tex Is this nesting okay (and needed)? */
+                halfword forward;
+                if (disc_post_break_head(current)) {
+                    tex_aux_handle_ligature_list(current, post_break_code);
+                }
+                if (disc_no_break_head(current)) {
+                    tex_aux_handle_ligature_list(current, no_break_code);
+                }
+                forward = node_next(current);
+                while (forward && node_type(forward) == glyph_node && tex_aux_apply_base_ligaturing(forward)) {
+                    halfword replace = disc_no_break_tail(current);
+                    halfword post = disc_post_break_tail(current);
+                    if (tex_aux_found_ligature(replace, forward) || tex_aux_found_ligature(post, forward)) {
+                        tex_try_couple_nodes(current, node_next(forward));
+                        tex_uncouple_node(forward);
+                        tex_aux_discretionary_append(current, no_break_code, tex_copy_node(forward));
+                        tex_aux_handle_ligature_pair(current, no_break_code);
+                        tex_aux_handle_ligature_pair(current, post_break_code);
+                        forward = node_next(current);
+                    } else {
+                        break;
+                    }
+                }
+                if (forward && node_type(forward) == disc_node) {
                     /*tex This only deals with simple pre-only discretionaries and a following glyph. */
-                    halfword next = node_next(fwd);
+                    halfword next = node_next(forward);
                     if (next
-                        && ! disc_no_break_head(fwd)
-                        && ! disc_post_break_head(fwd)
+                        && ! disc_no_break_head(forward)
+                        && ! disc_post_break_head(forward)
                         && node_type(next) == glyph_node
-                        && ((disc_post_break_tail(cur) && tex_aux_found_ligature(disc_post_break_tail(cur), next)) ||
-                            (disc_no_break_tail  (cur) && tex_aux_found_ligature(disc_no_break_tail  (cur), next)))) {
+                        && tex_aux_apply_base_ligaturing(next)
+                        && ((disc_post_break_tail(current) && tex_aux_found_ligature(disc_post_break_tail(current), next)) ||
+                            (disc_no_break_tail  (current) && tex_aux_found_ligature(disc_no_break_tail  (current), next)))) {
                         halfword last = node_next(next);
                         tex_uncouple_node(next);
-                        tex_try_couple_nodes(fwd, last);
+                        tex_try_couple_nodes(forward, last);
                         /*tex Just a hidden flag, used for (base mode) experiments. */
                         if (hyphenation_permitted(hyphenation_mode_par, lazy_ligatures_hyphenation_mode)) {
                             /*tex f-f-i -> f-fi */
-                            halfword tail = disc_no_break_tail(cur);
-                            tex_aux_nesting_append(disc_no_break(cur), tex_copy_node(next));
-                            tex_aux_handle_ligature_nesting(disc_no_break(cur), tail);
-                            tail = disc_post_break_tail(cur);
-                            tex_aux_nesting_append(disc_post_break(cur), next);
-                            tex_aux_handle_ligature_nesting(disc_post_break(cur), tail);
-                            tex_try_couple_nodes(node_prev(fwd), node_next(fwd));
-                            tex_flush_node(fwd);
+                            tex_aux_discretionary_append(current, no_break_code, tex_copy_node(next));
+                            tex_aux_handle_ligature_pair(current,no_break_code);
+                            tex_aux_discretionary_append(current, post_break_code, next);
+                            tex_aux_handle_ligature_pair(current,post_break_code);
+                            tex_try_couple_nodes(node_prev(forward), node_next(forward));
+                            tex_flush_node(forward);
                         } else {
                             /*tex f-f-i -> ff-i : |{a-}{b}{AB} {-}{c}{}| => |{AB-}{c}{ABc}| */
-                            tex_aux_nesting_append(disc_post_break(fwd), tex_copy_node(next));
-                            if (disc_no_break_head(cur)) {
-                                halfword tail;
-                                tex_aux_nesting_prepend_list(disc_no_break(fwd), tex_copy_node_list(disc_no_break_head(cur), null));
-                                tail = disc_no_break_tail(fwd);
-                                tex_aux_nesting_append(disc_no_break(fwd), next);
-                                tex_aux_handle_ligature_nesting(disc_no_break(fwd), tail);
-                                tex_aux_nesting_prepend_list(disc_pre_break(fwd), tex_copy_node_list(disc_no_break_head(cur), null));
+                            tex_aux_discretionary_append(forward, post_break_code, tex_copy_node(next));
+                            if (disc_no_break_head(current)) {
+                                tex_aux_nesting_prepend_list(forward, no_break_code, disc_no_break_head(current));
+                                tex_aux_discretionary_append(forward, no_break_code, next);
+                                tex_aux_handle_ligature_pair(forward, no_break_code);
+                                tex_aux_nesting_prepend_list(forward, pre_break_code, disc_no_break_head(current));
                             }
-                            tex_try_couple_nodes(node_prev(cur), node_next(cur));
-                            tex_flush_node(cur);
-                            cur = fwd;
+                            tex_try_couple_nodes(node_prev(current), node_next(current));
+                            tex_flush_node(current);
+                            current = forward;
                         }
                     }
                 }
             }
         } else {
             /*tex We have glyph nor disc. */
-            return cur;
+            return last;
         }
         /*tex Goto the next node, where |\par| allows |node_next(cur)| to be NULL. */
-        cur = node_next(cur);
+        last = current;
+        current = node_next(current);
     }
-    return cur;
+    return current;
 }
 
 /*tex The return value is the new tail, head should be a dummy: */
@@ -1293,27 +1374,35 @@ halfword tex_handle_ligaturing(halfword head, halfword tail)
     if (node_next(head)) {
         /*tex A trick to allow explicit |node == null| tests. */
         halfword save_tail = null;
-        halfword cur, prev;
+        halfword current, previous;
         if (tail) {
             save_tail = node_next(tail);
             node_next(tail) = null;
         }
-        prev = head;
-        cur = node_next(prev);
-        while (cur) {
-            if (node_type(cur) == glyph_node || node_type(cur) == boundary_node) {
-                cur = tex_aux_handle_ligature_word(cur);
+        previous = head;
+        current = node_next(previous);
+        while (current) {
+            switch(node_type(current)) {
+                case glyph_node:
+                    if (tex_aux_apply_base_ligaturing(current)) {
+                        current = tex_aux_handle_ligature_word(current);
+                    }
+                    break;
+                case disc_node: 
+                case boundary_node:
+                    current = tex_aux_handle_ligature_word(current);
+                    break;
             }
-            prev = cur;
-            cur = node_next(cur);
+            previous = current;
+            if (current) {
+                current = node_next(current);
+            }
         }
-        if (! prev) {
-            prev = tail;
+        if (! previous) {
+            previous = tex_tail_of_node_list(head);
         }
-        tex_try_couple_nodes(prev, save_tail);
-     // if (tail) {
-     // }
-        return prev;
+        tex_try_couple_nodes(previous, save_tail);
+        return previous;
     } else {
         return tail;
     }
@@ -1321,13 +1410,9 @@ halfword tex_handle_ligaturing(halfword head, halfword tail)
 
 /*tex Kerning starts here: */
 
-static void tex_aux_add_kern_before(halfword left, halfword right)
+static halfword tex_aux_add_kern_before(halfword left, halfword right)
 {
-    if (
-            glyph_font(left) == glyph_font(right) &&
-            glyph_scale(left) == glyph_scale(right) &&
-            glyph_x_scale(left) == glyph_x_scale(right) &&
-            glyph_y_scale(left) == glyph_y_scale(right) &&
+    if (tex_aux_same_font_properties(left, right) &&
             ! tex_has_glyph_option(left, glyph_option_no_right_kern) &&
             ! tex_has_glyph_option(right, glyph_option_no_left_kern) &&
             tex_has_kern(glyph_font(left), glyph_character(left))
@@ -1335,21 +1420,19 @@ static void tex_aux_add_kern_before(halfword left, halfword right)
         scaled k = tex_raw_get_kern(glyph_font(left), glyph_character(left), glyph_character(right));
         if (k) {
             scaled kern = tex_new_kern_node(k, font_kern_subtype);
-            halfword prev = node_prev(right);
-            tex_couple_nodes(prev, kern);
+            halfword previous = node_prev(right);
+            tex_couple_nodes(previous, kern);
             tex_couple_nodes(kern, right);
             tex_attach_attribute_list_copy(kern, left);
+            return kern;
         }
     }
+    return null;
 }
 
-static void tex_aux_add_kern_after(halfword left, halfword right, halfword aft)
+static halfword tex_aux_add_kern_after(halfword left, halfword right, halfword after)
 {
-    if (
-            glyph_font(left) == glyph_font(right) &&
-            glyph_scale(left) == glyph_scale(right) &&
-            glyph_x_scale(left) == glyph_x_scale(right) &&
-            glyph_y_scale(left) == glyph_y_scale(right) &&
+    if (tex_aux_same_font_properties(left, right) &&
             ! tex_has_glyph_option(left, glyph_option_no_right_kern) &&
             ! tex_has_glyph_option(right, glyph_option_no_left_kern) &&
             tex_has_kern(glyph_font(left), glyph_character(left))
@@ -1357,78 +1440,96 @@ static void tex_aux_add_kern_after(halfword left, halfword right, halfword aft)
         scaled k = tex_raw_get_kern(glyph_font(left), glyph_character(left), glyph_character(right));
         if (k) {
             scaled kern = tex_new_kern_node(k, font_kern_subtype);
-            halfword next = node_next(aft);
-            tex_couple_nodes(aft, kern);
+            halfword next = node_next(after);
+            tex_couple_nodes(after, kern);
             tex_try_couple_nodes(kern, next);
-            tex_attach_attribute_list_copy(kern, aft);
+            tex_attach_attribute_list_copy(kern, after);
+            return kern;
+        }
+    }
+    return null;
+}
+
+static halfword tex_aux_do_handle_kerning(halfword root, halfword init_left, halfword init_right);
+
+static void tex_aux_handle_discretionary_kerning(halfword target, int location, halfword left, halfword right)
+{
+    halfword node = tex_aux_discretionary_node(target, location);
+    if (node_head(node)) {
+        halfword kern = tex_aux_do_handle_kerning(node_head(node), left, right);
+        if (kern) { 
+            node_head(node) = kern;
+            node_tail(node) = tex_tail_of_node_list(node_head(node));
         }
     }
 }
 
-static void tex_aux_do_handle_kerning(halfword root, halfword init_left, halfword init_right)
+static halfword tex_aux_do_handle_kerning(halfword root, halfword init_left, halfword init_right)
 {
-    halfword cur = node_next(root);
-    if (cur) {
+ // halfword head = node_next(root); // todo: get rid of this one 
+    halfword head = root; // todo: get rid of this one 
+    halfword current = head;
+    halfword initial = null;
+    if (current) {
         halfword left = null;
-        if (node_type(cur) == glyph_node) {
+        if (node_type(current) == glyph_node && tex_aux_apply_base_kerning(current)) {
             if (init_left) {
-                tex_aux_add_kern_before(init_left, cur);
+                halfword kern = tex_aux_add_kern_before(init_left, current);
+                if (current == head) {
+                    initial = kern; 
+                }
             }
-            left = cur;
+            left = current;
         }
-        cur = node_next(cur);
-        while (cur) {
-            halfword t = node_type(cur);
-            if (t == glyph_node) {
-                if (left) {
-                    tex_aux_add_kern_before(left, cur);
-                    if (glyph_character(left) < 0) {
-                        halfword prev = node_prev(left);
-                        tex_couple_nodes(prev, cur);
-                        tex_flush_node(left);
+        current = node_next(current);
+        while (current) {
+            halfword currenttype = node_type(current);
+            if (currenttype == glyph_node) { 
+                if (tex_aux_apply_base_kerning(current)) {
+                    if (left) {
+                        tex_aux_add_kern_before(left, current);
+                        if (glyph_character(left) < 0) {
+                            halfword previous = node_prev(left);
+                            tex_couple_nodes(previous, current);
+                            tex_flush_node(left);
+                        }
                     }
+                    left = current;
+                } else { 
+                    left = null;
                 }
-                left = cur;
             } else {
-                if (t == disc_node) {
-                    halfword right = node_type(node_next(cur)) == glyph_node ? node_next(cur) : null;
-                    tex_aux_do_handle_kerning(disc_pre_break(cur), left, null);
-                    if (disc_pre_break_head(cur)) {
-                        disc_pre_break_tail(cur) = tex_tail_of_node_list(disc_pre_break_head(cur));
-                    }
-                    tex_aux_do_handle_kerning(disc_post_break(cur), null, right);
-                    if (disc_post_break_head(cur)) {
-                        disc_post_break_tail(cur) = tex_tail_of_node_list(disc_post_break_head(cur));
-                    }
-                    tex_aux_do_handle_kerning(disc_no_break(cur), left, right);
-                    if (disc_no_break_head(cur)) {
-                        disc_no_break_tail(cur) = tex_tail_of_node_list(disc_no_break_head(cur));
-                    }
+                if (currenttype == disc_node) {
+                    halfword next = node_next(current);
+                    halfword right = node_type(next) == glyph_node && tex_aux_apply_base_kerning(next) ? next : null;
+                    tex_aux_handle_discretionary_kerning(current, pre_break_code, left, null);
+                    tex_aux_handle_discretionary_kerning(current, post_break_code, null, right);
+                    tex_aux_handle_discretionary_kerning(current, no_break_code, left, right);
                 }
                 if (left) {
-                    if (glyph_character(left) < 0) {
-                        halfword prev = node_prev(left);
-                        tex_couple_nodes(prev, cur);
+                    if (glyph_character(left) < 0) { /* boundary ? */
+                        halfword previous = node_prev(left);
+                        tex_couple_nodes(previous, current);
                         tex_flush_node(left);
                     }
                     left = null;
                 }
             }
-            cur = node_next(cur);
+            current = node_next(current);
         }
         if (left) {
             if (init_right) {
                 tex_aux_add_kern_after(left, init_right, left);
             }
             if (glyph_character(left) < 0) {
-                halfword prev = node_prev(left);
+                halfword previous = node_prev(left);
                 halfword next = node_next(left);
                 if (next) {
-                    tex_couple_nodes(prev, next);
+                    tex_couple_nodes(previous, next);
                     node_tail(root) = next;
-                } else if (prev != root) {
-                    node_next(prev) = null;
-                    node_tail(root) = prev;
+                } else if (previous != root) {
+                    node_next(previous) = null;
+                    node_tail(root) = previous;
                 } else {
                     node_next(root) = null;
                     node_tail(root) = null;
@@ -1440,6 +1541,7 @@ static void tex_aux_do_handle_kerning(halfword root, halfword init_left, halfwor
         tex_aux_add_kern_after(init_left, init_right, root);
         node_tail(root) = node_next(root);
     }
+    return initial; 
 }
 
 halfword tex_handle_kerning(halfword head, halfword tail)
@@ -1449,7 +1551,7 @@ halfword tex_handle_kerning(halfword head, halfword tail)
         save_link = node_next(tail);
         node_next(tail) = null;
         node_tail(head) = tail;
-        tex_aux_do_handle_kerning(head, null, null);
+        tex_aux_do_handle_kerning(node_next(head), null, null); /*tex There is no need to check initial here. */
         tail = node_tail(head);
         if (tex_valid_node(save_link)) {
             /* no need for check */
@@ -1457,7 +1559,7 @@ halfword tex_handle_kerning(halfword head, halfword tail)
         }
     } else {
         node_tail(head) = null;
-        tex_aux_do_handle_kerning(head, null, null);
+        tex_aux_do_handle_kerning(node_next(head), null, null); /*tex There is no need to check initial here. */
     }
     return tail;
 }
@@ -1494,19 +1596,17 @@ halfword tex_handle_glyphrun(halfword head, halfword group, halfword direction)
             if (callback_id) {
                 head = tex_aux_run_lua_ligkern_callback(lmt_lua_state.lua_instance, head, group, direction, callback_id);
             } else {
+                // what if disc at start 
                 tex_handle_ligaturing(head, null);
             }
             callback_id = lmt_callback_defined(kerning_callback);
             if (callback_id) {
                 head = tex_aux_run_lua_ligkern_callback(lmt_lua_state.lua_instance, head, group, direction, callback_id);
             } else {
-                halfword nest = tex_new_node(nesting_node, unset_nesting_code);
-                tex_couple_nodes(nest, head);
-                tex_aux_do_handle_kerning(nest, null, null);
-                head = node_next(nest);
-                node_prev(head) = null;
-                node_next(nest) = null;
-                tex_flush_node(nest);
+                halfword kern = tex_aux_do_handle_kerning(head, null, null);
+                if (kern) { 
+                    head = kern; 
+                }
             }
         }
     }
@@ -1534,10 +1634,8 @@ void tex_set_cur_font(halfword g, halfword f)
 }
 
 /*tex
-
     Because we do fonts in \LUA\ we can decide to drop this one and assume a definition using the
     token scanner. It also avoids the filename (split) mess.
-
 */
 
 int tex_tex_def_font(int a)
@@ -1555,7 +1653,7 @@ int tex_tex_def_font(int a)
         /*tex Stated 'at' size, or negative of scaled magnification. */
         scaled s = -1000;
         char *fn;
-        /*tex Here |a| detemines if we define global or not. */
+        /*tex Here |a| determines if we define global or not. */
         if (is_global(a)) {
             update_tex_font_global(u, null_font);
         } else {
@@ -1603,11 +1701,9 @@ int tex_tex_def_font(int a)
 }
 
 /*tex
-
     When \TEX\ wants to typeset a character that doesn't exist, the character node is not created;
     thus the output routine can assume that characters exist when it sees them. The following
     procedure prints a warning message unless the user has suppressed it.
-
 */
 
 void tex_char_warning(halfword f, int c)

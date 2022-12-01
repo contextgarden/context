@@ -1800,6 +1800,24 @@ halfword tex_list_node_mem_usage(void)
     (actually for each node tyep I guess).
 */
 
+extern void tex_change_attribute_register(halfword a, halfword id, halfword value)
+{
+    if (eq_value(id) != value) { 
+        if (is_global(a)) { 
+            int i; 
+            for (i = (lmt_save_state.save_stack_data.ptr - 1); i >= 0; i--) { 
+                if (save_type(i) == attribute_list_save_type) { 
+                    delete_attribute_reference(save_value(i)); 
+                    save_value(i) = attribute_cache_disabled; 
+                } 
+            } 
+        } else { 
+            delete_attribute_reference(current_attribute_state); 
+        } 
+        set_current_attribute_state(attribute_cache_disabled); 
+    } 
+}
+
 inline static halfword tex_aux_new_attribute_list_node(halfword count)
 {
     halfword r = tex_get_node(attribute_node_size);

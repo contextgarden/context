@@ -2061,24 +2061,26 @@ end
                         if t == 8 and top > 48 then
                             -- let's assume this only happens for rrcurveto .. the other ones would need some more
                             -- complex handling (cff2 stuff)
+                            --
+                            -- dx1 dy1 (dx1+dx2) (dy1+dy2) (dx1+dx2+dx3) (dy1+dy2+dy3) rcurveto.
                             local n = 0
                             for i=1,top do
                              -- if n == 42 then
                                 if n == 48 then
-                                    local zero = encode[0]
-                                    local res3 = result[r-3]
-                                    local res2 = result[r-2]
-                                    local res1 = result[r-1]
-                                    local res0 = result[r]
-                                    result[r-3] = zero
-                                    result[r-2] = zero
+--                                     local zero = encode[0]
+--                                     local res3 = result[r-3]
+--                                     local res2 = result[r-2]
+--                                     local res1 = result[r-1]
+--                                     local res0 = result[r]
+--                                     result[r-3] = zero
+--                                     result[r-2] = zero
                                     r = r + 1 ; result[r] = chars[t]
-                                    r = r + 1 ; result[r] = zero
-                                    r = r + 1 ; result[r] = zero
-                                    r = r + 1 ; result[r] = res3
-                                    r = r + 1 ; result[r] = res2
-                                    r = r + 1 ; result[r] = res1
-                                    r = r + 1 ; result[r] = res0
+--                                     r = r + 1 ; result[r] = zero
+--                                     r = r + 1 ; result[r] = zero
+--                                     r = r + 1 ; result[r] = res3
+--                                     r = r + 1 ; result[r] = res2
+--                                     r = r + 1 ; result[r] = res1
+--                                     r = r + 1 ; result[r] = res0
                                     n = 1
                                 else
                                     n = n + 1

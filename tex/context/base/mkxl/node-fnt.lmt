@@ -73,6 +73,7 @@ local wordboundary_code = boundarycodes.word
 
 local protectglyphs     = nuts.protectglyphs
 local unprotectglyphs   = nuts.unprotectglyphs
+local protectglyphsnone = nuts.protectglyphsnone
 
 local setmetatableindex = table.setmetatableindex
 
@@ -168,64 +169,428 @@ local function stop_trace(u,usedfonts,d,dynamicfonts,b,basefonts,r,redundant)
     report_fonts()
 end
 
+-- This is the original handler and we keep it around as reference. It served us
+-- well for quite a while.
+
+-- do
+--
+--     local usedfonts
+--     local dynamicfonts
+--     local basefonts  -- could be reused
+--     local basefont
+--     local prevfont
+--     local prevdynamic
+--     local variants
+--     local redundant  -- could be reused
+--     local firstnone
+--     local lastfont
+--     local lastproc
+--     local lastnone
+--
+--     local d, u, b, r
+--
+--     local function protectnone()
+--         protectglyphs(firstnone,lastnone)
+--         firstnone = nil
+--     end
+--
+--     local function setnone(n)
+--         if firstnone then
+--             protectnone()
+--         end
+--         if basefont then
+--             basefont[2] = getprev(n)
+--             basefont = false
+--         end
+--         if not firstnone then
+--             firstnone = n
+--         end
+--         lastnone = n
+--     end
+--
+--     local function setbase(n)
+--         if firstnone then
+--             protectnone()
+--         end
+--         if force_basepass then
+--             if basefont then
+--                 basefont[2] = getprev(n)
+--             end
+--             b = b + 1
+--             basefont = { n, false }
+--             basefonts[b] = basefont
+--         end
+--     end
+--
+--     local function setnode(n,font,dynamic) -- we could use prevfont and prevdynamic when we set then first
+--         if firstnone then
+--             protectnone()
+--         end
+--         if basefont then
+--             basefont[2] = getprev(n)
+--             basefont = false
+--         end
+--         if dynamic > 0 then
+--             local used = dynamicfonts[font]
+--             if not used then
+--                 used = { }
+--                 dynamicfonts[font] = used
+--             end
+--             if not used[dynamic] then
+--                 local fd = setfontdynamics[font]
+--                 if fd then
+--                     used[dynamic] = fd[dynamic]
+--                     d = d + 1
+--                 end
+--             end
+--         else
+--             local used = usedfonts[font]
+--             if not used then
+--                 lastfont = font
+--                 lastproc = fontprocesses[font]
+--                 if lastproc then
+--                     usedfonts[font] = lastproc
+--                     u = u + 1
+--                 end
+--             end
+--         end
+--     end
+--
+--     function handlers.characters(head,groupcode,direction)
+--         -- either next or not, but definitely no already processed list
+--         starttiming(nodes)
+--
+--         usedfonts    = { }
+--         dynamicfonts = { }
+--         basefonts    = { }
+--         basefont     = nil
+--         prevfont     = nil
+--         prevdynamic  = 0
+--         variants     = nil
+--         redundant    = nil
+--         firstnone    = nil
+--         lastfont     = nil
+--         lastproc     = nil
+--         lastnone     = nil
+--
+--         local fontmode = nil -- base none or other
+--
+--         d, u, b, r = 0, 0, 0, 0
+--
+--         if trace_fontrun then
+--             start_trace(head)
+--         end
+--
+--         -- There is no gain in checking for a single glyph and then having a fast path. On the
+--         -- metafun manual (with some 2500 single char lists) the difference is just noise.
+--
+--         for n, char, font, dynamic in nextchar, head do
+--
+--             if font ~= prevfont then
+--                 prevfont = font
+--                 fontmode = fontmodes[font]
+--                 if fontmode == "none" then
+--                     prevdynamic = 0
+--                     variants    = false
+--                     setnone(n)
+--                 elseif fontmode == "base" then
+--                     prevdynamic = 0
+--                     variants    = false
+--                     setbase(n)
+--                 else
+--                  -- local dynamic = getglyphdata(n) or 0 -- zero dynamic is reserved for fonts in context
+--                     prevdynamic = dynamic
+--                     variants    = fontvariants[font]
+--                     setnode(n,font,dynamic)
+--                 end
+--             elseif fontmode == "node" then
+--                 local dynamic = getglyphdata(n) or 0 -- zero dynamic is reserved for fonts in context
+--                 if dynamic ~= prevdynamic then
+--                     prevdynamic = dynamic
+--                     variants    = fontvariants[font]
+--                     setnode(n,font,dynamic)
+--                 end
+--             elseif firstnone then
+--                 lastnone = n
+--             end
+--
+--             if variants then
+--                 if (char >= 0xFE00 and char <= 0xFE0F) or (char >= 0xE0100 and char <= 0xE01EF) then
+--          -- if variants and char >= 0xFE00 then
+--          --     if char < 0xFE0F or (char >= 0xE0100 and char <= 0xE01EF) then
+--                     local hash = variants[char]
+--                     if hash then
+--                         local p = getprev(n)
+--                         if p then
+--                             local char    = ischar(p) -- checked
+--                             local variant = hash[char]
+--                             if variant then
+--                                 if trace_variants then
+--                                     report_fonts("replacing %C by %C",char,variant)
+--                                 end
+--                                 setchar(p,variant)
+--                                 if redundant then
+--                                     r = r + 1
+--                                     redundant[r] = n
+--                                 else
+--                                     r = 1
+--                                     redundant = { n }
+--                                 end
+--                             end
+--                         end
+--                     elseif keep_redundant then
+--                         -- go on, can be used for tracing
+--                     elseif redundant then
+--                         r = r + 1
+--                         redundant[r] = n
+--                     else
+--                         r = 1
+--                         redundant = { n }
+--                     end
+--                 end
+--             end
+--
+--         end
+--
+--         if firstnone then
+--             protectnone()
+--         end
+--
+--         if force_boundaryrun then
+--
+--             -- we can inject wordboundaries and then let the hyphenator do its work
+--             -- but we need to get rid of those nodes in order to build ligatures
+--             -- and kern (a rather context thing)
+--
+--             for b, subtype in nextboundary, head do
+--                 if subtype == wordboundary_code then
+--                     if redundant then
+--                         r = r + 1
+--                         redundant[r] = b
+--                     else
+--                         r = 1
+--                         redundant = { b }
+--                     end
+--                 end
+--             end
+--
+--         end
+--
+--         if redundant then
+--             for i=1,r do
+--                 local r = redundant[i]
+--                 local p, n = getboth(r)
+--                 if r == head then
+--                     head = n
+--                     setprev(n)
+--                 else
+--                     setlink(p,n)
+--                 end
+--                 if b > 0 then
+--                     for i=1,b do
+--                         local bi = basefonts[i]
+--                         local b1 = bi[1]
+--                         local b2 = bi[2]
+--                         if b1 == b2 then
+--                             if b1 == r then
+--                                 bi[1] = false
+--                                 bi[2] = false
+--                             end
+--                         elseif b1 == r then
+--                             bi[1] = n
+--                         elseif b2 == r then
+--                             bi[2] = p
+--                         end
+--                     end
+--                 end
+--                 flushnode(r)
+--             end
+--         end
+--
+--         if force_discrun then
+--             -- basefont is not supported in disc only runs ... it would mean a lot of
+--             -- ranges .. we could try to run basemode as a separate processor run but not
+--             -- for now (we can consider it when the new node code is tested
+--             for disc in nextdisc, head do
+--                 -- doing only replace is good enough because pre and post are normally used
+--                 -- for hyphens and these come from fonts that part of the hyphenated word
+--                 local r = getreplace(disc)
+--                 if r then
+--                     local prevfont    = nil
+--                     local prevdynamic = nil
+--                     local none        = false
+--                           firstnone   = nil
+--                           basefont    = nil
+--                     for n, char, font, dynamic in nextchar, r do
+--                      -- local dynamic = getglyphdata(n) or 0 -- zero dynamic is reserved for fonts in context
+--                         if font ~= prevfont or dynamic ~= prevdynamic then
+--                             prevfont    = font
+--                             prevdynamic = dynamic
+--                             local fontmode = fontmodes[font]
+--                             if fontmode == "none" then
+--                                 setnone(n)
+--                             elseif fontmode == "base" then
+--                                 -- so the replace gets an extra treatment ... so be it
+--                                 setbase(n)
+--                             else
+--                                 setnode(n,font,dynamic)
+--                             end
+--                         elseif firstnone then
+--                          -- lastnone = n
+--                             lastnone = nil
+--                         end
+--                         -- we assume one font for now (and if there are more and we get into issues then
+--                         -- we can always remove the break)
+--                         break
+--                     end
+--                     if firstnone then
+--                         protectnone()
+--                     end
+--                 end
+--             end
+--
+--         end
+--
+--         if trace_fontrun then
+--             stop_trace(u,usedfonts,d,dynamicfonts,b,basefonts,r,redundant)
+--         end
+--
+--         -- in context we always have at least 2 processors
+--         if u == 0 then
+--             -- skip
+--         elseif u == 1 then
+--             for i=1,#lastproc do
+--                 head = lastproc[i](head,lastfont,0,direction)
+--             end
+--         else
+--             for font, processors in next, usedfonts do -- unordered
+--                 for i=1,#processors do
+--                     head = processors[i](head,font,0,direction,u) -- u triggers disc optimizer
+--                 end
+--             end
+--         end
+--
+--         if d == 0 then
+--             -- skip
+--         elseif d == 1 then
+--             local font, dynamics = next(dynamicfonts)
+--             for dynamic, processors in next, dynamics do -- unordered, dynamic can switch in between
+--                 for i=1,#processors do
+--                     head = processors[i](head,font,dynamic,direction)
+--                 end
+--             end
+--         else
+--             for font, dynamics in next, dynamicfonts do
+--                 for dynamic, processors in next, dynamics do -- unordered, dynamic can switch in between
+--                     for i=1,#processors do
+--                         head = processors[i](head,font,dynamic,direction,d) -- d triggers disc optimizer
+--                     end
+--                 end
+--             end
+--         end
+--         if b == 0 then
+--             -- skip
+--         elseif b == 1 then
+--             -- only one font
+--             local range = basefonts[1]
+--             local start = range[1]
+--             local stop  = range[2]
+--             if (start or stop) and (start ~= stop) then
+--                 local front = head == start
+--                 if stop then
+--                     start = ligaturing(start,stop)
+--                     start = kerning(start,stop)
+--                 elseif start then -- safeguard
+--                     start = ligaturing(start)
+--                     start = kerning(start)
+--                 end
+--                 if front and head ~= start then
+--                     head = start
+--                 end
+--             end
+--         else
+--             -- multiple fonts
+--             for i=1,b do
+--                 local range = basefonts[i]
+--                 local start = range[1]
+--                 local stop  = range[2]
+--                 if start then -- and start ~= stop but that seldom happens
+--                     local front = head == start
+--                     local prev  = getprev(start)
+--                     local next  = getnext(stop)
+--                     if stop then
+--                         start, stop = ligaturing(start,stop)
+--                         start, stop = kerning(start,stop)
+--                     else
+--                         start = ligaturing(start)
+--                         start = kerning(start)
+--                     end
+--                     -- is done automatically
+--                     if prev then
+--                         setlink(prev,start)
+--                     end
+--                     if next then
+--                         setlink(stop,next)
+--                     end
+--                     -- till here
+--                     if front and head ~= start then
+--                         head = start
+--                     end
+--                 end
+--             end
+--         end
+--
+--         stoptiming(nodes)
+--
+--         if trace_characters then
+--             nodes.report(head)
+--         end
+--
+--         return head
+--     end
+--
+-- end
+
+
+-- This variant uses less code but relies on the engine checking the textcontrol
+-- flags:
+--
+-- baseligatures : 0x02
+-- basekerns     : 0x04
+-- noneprotected : 0x08
+--
+-- This permits one 'base' pass instead of multiple over ranges which is kind of
+-- tricky because we then can have clashes when we process replace fields
+-- independently. We can also protect 'none' in one go. It is actually not that
+-- much faster (and in some cases it might even be slower). We can make the code
+-- a bit leaner (no setbase and setnone).
+
 do
 
     local usedfonts
     local dynamicfonts
-    local basefonts  -- could be reused
-    local basefont
     local prevfont
     local prevdynamic
     local variants
     local redundant  -- could be reused
-    local firstnone
     local lastfont
     local lastproc
-    local lastnone
+    local basedone
+    local nonedone
 
     local d, u, b, r
 
-    local function protectnone()
-        protectglyphs(firstnone,lastnone)
-        firstnone = nil
-    end
-
     local function setnone(n)
-        if firstnone then
-            protectnone()
-        end
-        if basefont then
-            basefont[2] = getprev(n)
-            basefont = false
-        end
-        if not firstnone then
-            firstnone = n
-        end
-        lastnone = n
+        nonedone = true
     end
 
     local function setbase(n)
-        if firstnone then
-            protectnone()
-        end
         if force_basepass then
-            if basefont then
-                basefont[2] = getprev(n)
-            end
-            b = b + 1
-            basefont = { n, false }
-            basefonts[b] = basefont
+            basedone = true
         end
     end
 
     local function setnode(n,font,dynamic) -- we could use prevfont and prevdynamic when we set then first
-        if firstnone then
-            protectnone()
-        end
-        if basefont then
-            basefont[2] = getprev(n)
-            basefont = false
-        end
         if dynamic > 0 then
             local used = dynamicfonts[font]
             if not used then
@@ -258,24 +623,22 @@ do
 
         usedfonts    = { }
         dynamicfonts = { }
-        basefonts    = { }
-        basefont     = nil
         prevfont     = nil
         prevdynamic  = 0
         variants     = nil
         redundant    = nil
-        firstnone    = nil
         lastfont     = nil
         lastproc     = nil
-        lastnone     = nil
+        nonedone     = nil
+        basedone     = nil
 
         local fontmode = nil -- base none or other
 
         d, u, b, r = 0, 0, 0, 0
 
-        if trace_fontrun then
-            start_trace(head)
-        end
+--         if trace_fontrun then
+--             start_trace(head)
+--         end
 
         -- There is no gain in checking for a single glyph and then having a fast path. On the
         -- metafun manual (with some 2500 single char lists) the difference is just noise.
@@ -306,8 +669,6 @@ do
                     variants    = fontvariants[font]
                     setnode(n,font,dynamic)
                 end
-            elseif firstnone then
-                lastnone = n
             end
 
             if variants then
@@ -348,10 +709,6 @@ do
 
         end
 
-        if firstnone then
-            protectnone()
-        end
-
         if force_boundaryrun then
 
             -- we can inject wordboundaries and then let the hyphenator do its work
@@ -382,31 +739,13 @@ do
                 else
                     setlink(p,n)
                 end
-                if b > 0 then
-                    for i=1,b do
-                        local bi = basefonts[i]
-                        local b1 = bi[1]
-                        local b2 = bi[2]
-                        if b1 == b2 then
-                            if b1 == r then
-                                bi[1] = false
-                                bi[2] = false
-                            end
-                        elseif b1 == r then
-                            bi[1] = n
-                        elseif b2 == r then
-                            bi[2] = p
-                        end
-                    end
-                end
                 flushnode(r)
             end
         end
 
+        -- todo: make this more clever
+
         if force_discrun then
-            -- basefont is not supported in disc only runs ... it would mean a lot of
-            -- ranges .. we could try to run basemode as a separate processor run but not
-            -- for now (we can consider it when the new node code is tested
             for disc in nextdisc, head do
                 -- doing only replace is good enough because pre and post are normally used
                 -- for hyphens and these come from fonts that part of the hyphenated word
@@ -415,8 +754,6 @@ do
                     local prevfont    = nil
                     local prevdynamic = nil
                     local none        = false
-                          firstnone   = nil
-                          basefont    = nil
                     for n, char, font, dynamic in nextchar, r do
                      -- local dynamic = getglyphdata(n) or 0 -- zero dynamic is reserved for fonts in context
                         if font ~= prevfont or dynamic ~= prevdynamic then
@@ -426,29 +763,26 @@ do
                             if fontmode == "none" then
                                 setnone(n)
                             elseif fontmode == "base" then
-                                -- so the replace gets an extra treatment ... so be it
                                 setbase(n)
                             else
                                 setnode(n,font,dynamic)
                             end
-                        elseif firstnone then
-                         -- lastnone = n
-                            lastnone = nil
                         end
                         -- we assume one font for now (and if there are more and we get into issues then
                         -- we can always remove the break)
                         break
-                    end
-                    if firstnone then
-                        protectnone()
                     end
                 end
             end
 
         end
 
-        if trace_fontrun then
-            stop_trace(u,usedfonts,d,dynamicfonts,b,basefonts,r,redundant)
+--         if trace_fontrun then
+--             stop_trace(u,usedfonts,d,dynamicfonts,b,basefonts,r,redundant)
+--         end
+
+        if nonedone then
+            protectglyphsnone(head)
         end
 
         -- in context we always have at least 2 processors
@@ -465,6 +799,7 @@ do
                 end
             end
         end
+
         if d == 0 then
             -- skip
         elseif d == 1 then
@@ -483,55 +818,13 @@ do
                 end
             end
         end
-        if b == 0 then
-            -- skip
-        elseif b == 1 then
-            -- only one font
-            local range = basefonts[1]
-            local start = range[1]
-            local stop  = range[2]
-            if (start or stop) and (start ~= stop) then
-                local front = head == start
-                if stop then
-                    start = ligaturing(start,stop)
-                    start = kerning(start,stop)
-                elseif start then -- safeguard
-                    start = ligaturing(start)
-                    start = kerning(start)
-                end
-                if front and head ~= start then
-                    head = start
-                end
-            end
-        else
-            -- multiple fonts
-            for i=1,b do
-                local range = basefonts[i]
-                local start = range[1]
-                local stop  = range[2]
-                if start then -- and start ~= stop but that seldom happens
-                    local front = head == start
-                    local prev  = getprev(start)
-                    local next  = getnext(stop)
-                    if stop then
-                        start, stop = ligaturing(start,stop)
-                        start, stop = kerning(start,stop)
-                    else
-                        start = ligaturing(start)
-                        start = kerning(start)
-                    end
-                    -- is done automatically
-                    if prev then
-                        setlink(prev,start)
-                    end
-                    if next then
-                        setlink(stop,next)
-                    end
-                    -- till here
-                    if front and head ~= start then
-                        head = start
-                    end
-                end
+
+        if basedone then
+            local start = head
+            start = ligaturing(start)
+            start = kerning(start)
+            if head ~= start then
+                head = start
             end
         end
 

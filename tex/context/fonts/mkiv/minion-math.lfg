@@ -39,9 +39,12 @@ return {
          -- DisplayOperatorMinHeight        = 1900, -- 1250 in font
          -- AccentSuperscriptDrop           =  100,
          -- AccentSuperscriptPercent        =   20,
-            PrimeRaisePercent               =   50, --   50 default
-            PrimeRaiseComposedPercent       =   25, --   25 default
-         -- PrimeShiftUp                    =    0,
+            SubscriptShiftDown              =  200, -- 250 in font
+            SubscriptShiftDownWithSuperscript = "1.4*SubscriptShiftDown", -- 1.5* in math-act
+            -- PrimeRaisePercent               =   50, --   set to 0 in math-act
+            -- PrimeRaiseComposedPercent       =   25, --   set to 0 in math-act
+            PrimeShiftUp                    =   "1.15*SuperscriptShiftUp",
+            PrimeShiftUpCramped             =   "1.15*SuperscriptShiftUp",
          -- PrimeBaselineDropMax            =    0,
             -- RadicalKernAfterExtensible      =  100, --   0 default
             -- RadicalKernBeforeExtensible     =  100, --   0 default
@@ -65,6 +68,38 @@ return {
                 presets.moveitalics          { correct = true, letters = true },
                 presets.moveintegrals        { factor  = 1.3  },
                 presets.wipeitalics          { },
+
+                {
+                    tweak = "kerns",
+                    list  = {
+                        [0x002F]                = { topleft  = -0.2,  bottomright = -0.2 },
+                        ["0x002F.variants.*"]   = { topleft  = -0.2,  bottomright = -0.2 },
+                        -- No!
+                     -- [0x0028]                = { topleft  = -0.1,  bottomleft  = -0.1             }, -- left parenthesis
+                     -- [0x0029]                = { topright = -0.1,  bottomright = -0.1, all = true }, -- right parenthesis
+                        --
+                        [0x007D]                = { topright = -0.05, bottomright = -0.05 }, -- right brace variants
+                        ["0x7D.variants.*"]     = { topright = -0.10, bottomright = -0.10 }, -- right brace variants
+                        ["0x7D.parts.top"]      = { topright = -0.10,                     }, -- right brace top
+                        ["0x7D.parts.bottom"]   = {                   bottomright = -0.10 }, -- right brace bottom
+                        [0x0029]                = { topright = -0.15, bottomright = -0.15 }, -- right parenthesis variants
+                        ["0x29.variants.*"]     = { topright = -0.15, bottomright = -0.15 }, -- right parenthesis variants
+                        ["0x29.parts.top"]      = { topright = -0.15,                     }, -- right parenthesis top
+                        ["0x29.parts.bottom"]   = {                   bottomright = -0.15 }, -- right parenthesis bottom   
+                        [0x221A]                = { topright =  0.2,  bottomright =  0.2  }, -- radical
+                        ["0x221A.variants.*"]   = { topright =  0.2,  bottomright =  0.2  },
+                        ["0x221A.parts.top"]    = { topright =  0.2,                      },
+                        ["0x221A.parts.bottom"] = {                   bottomright =  0.2  },
+                        [0x27E9]                = { topright = -0.1,  bottomright = -0.1  }, -- angle
+                        ["0x27E9.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
+                        [0x27EB]                = { topright = -0.1,  bottomright = -0.1  },
+                        ["0x27EB.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
+                        -- Keep as example. not needed in cambria (after all it is the reference):
+                        [0x2A0C] = { bottomright = -0.1 }, -- iiiint does not have any ic
+                    },
+                },
+
+
                 {
                     tweak = "simplifykerns",
                 },
@@ -96,8 +131,8 @@ return {
                 },
                 {
                     tweak  = "fixprimes",
-                    factor = 0.95,
-                    scale  = 0.9,
+                    factor = 1,
+                    -- scale  = 0.9,
                 },
              -- {
              --     tweak = "checkspacing",
@@ -114,6 +149,9 @@ return {
                 {
                     tweak = "addfourier",
                     variant = 1,
+                },
+                {
+                    tweak = "addprimed",
                 },
                 -- this is the mkiv section
                 {

@@ -138,7 +138,7 @@ static void     tex_aux_math_math_component (halfword n, int append);
 
 inline static mathdictval tex_fake_math_dict(halfword chr) 
 {
-    mathdictval d = { 0, 0, 0 };
+    mathdictval d = tex_no_dict_code();
     if (math_dict_properties_par || math_dict_group_par) {
         d.properties = (unsigned short) math_dict_properties_par;
         d.group = (unsigned short) math_dict_group_par;
@@ -957,7 +957,7 @@ int tex_show_math_node(halfword n, int threshold, int max)
     return 1;
 }
 
-inline halfword tex_aux_valid_delimiter(halfword d)
+inline static halfword tex_aux_valid_delimiter(halfword d)
 {
     return (d && (delimiter_small_family(d) || delimiter_small_character(d) || delimiter_large_family(d) || delimiter_large_character(d))) ? d : null;
 }
@@ -1039,6 +1039,9 @@ static void tex_aux_display_radical_noad(halfword n, int threshold, int max)
     }
     if (radical_depth(n)) {
         tex_print_format(", depth %D", radical_depth(n), pt_unit);
+    }
+    if (radical_size(n)) {
+        tex_print_format(", size %i", radical_size(n));
     }
     if (noad_source(n) != 0) {
         tex_print_format(", source %i", noad_source(n));
@@ -1246,7 +1249,9 @@ void tex_run_math_initialize(void)
     switch(cur_cmd) {
         case math_shift_cmd:
             /*tex |get_x_token| would fail on |\ifmmode|! */
+            lmt_nest_state.math_mode = 1;
             tex_get_token();
+            lmt_nest_state.math_mode = 0;
             if (cur_cmd == math_shift_cmd && cur_list.mode > nomode) {
                 tex_aux_enter_display_math(math_shift_cmd);
             } else {
@@ -1513,7 +1518,7 @@ void tex_scan_extdef_del_code(int level, int extcode)
 
 mathdictval tex_scan_mathdict(void)
 {
-    mathdictval d = { 0, 0, 0 }; /* use this one directly */
+    mathdictval d = tex_no_dict_code(); /* use this one directly */
     d.properties = (unsigned short) tex_scan_math_properties_number();
     d.group = (unsigned short) tex_scan_math_group_number();
     d.index = (unsigned int) tex_scan_math_index_number();
@@ -1522,7 +1527,7 @@ mathdictval tex_scan_mathdict(void)
 
 mathcodeval tex_scan_mathchar(int extcode)
 {
-    mathcodeval d = { 0, 0, 0 }; /* use this one directly */
+    mathcodeval d = tex_no_math_code(); /* use this one directly */
     switch (extcode) {
         case tex_mathcode:
             /*tex |"<4bits><4bits><8bits>| */
@@ -1600,7 +1605,7 @@ halfword tex_new_math_dict_spec(mathdictval d, mathcodeval m, quarterword code)
 
 mathcodeval tex_get_math_spec(halfword s)
 {
-    mathcodeval m = { 0, 0, 0 };
+    mathcodeval m = tex_no_math_code();
     if (s) {
         m.class_value = math_spec_class(s);
         m.family_value = math_spec_family(s);
@@ -1611,7 +1616,7 @@ mathcodeval tex_get_math_spec(halfword s)
 
 mathdictval tex_get_math_dict(halfword s)
 {
-    mathdictval d = { 0, 0, 0 };
+    mathdictval d = tex_no_dict_code();
     if (s) {
         d.properties = math_spec_properties(s);
         d.group = math_spec_group(s);
@@ -1666,19 +1671,114 @@ mathcodeval tex_scan_delimiter_as_mathchar(int extcode)
     For some reason |$\char44$| gives an undefined |$| when we made that character active in math. 
 */
 
-static void tex_aux_scan_active_math_char(void)
+static void tex_aux_report_active(int where, const char *what, int code, int character) 
 {
-    cur_cs = tex_active_to_cs(cur_chr, 1);
-    cur_cmd = eq_type(cur_cs);
-    cur_chr = eq_value(cur_cs);
-    tex_x_token();
-    tex_back_input(cur_tok);
+    tex_begin_diagnostic();
+    tex_print_format("[active: location %i, %s, code %i, char %i]",where, what, code, character);
+    tex_end_diagnostic();
+}
+
+static void tex_aux_append_math_char(mathcodeval mval, mathdictval dval, int automatic);
+
+int tex_check_active_math_char(int character)
+{
+    halfword code = tex_get_am_code(character);
+    if (code) {
+        switch (code) {
+            case alignment_tab_cmd:              
+            case superscript_cmd:                
+            case subscript_cmd:                  
+                cur_cmd = code;
+                cur_chr = character;
+                cur_tok = token_val(cur_cmd, cur_chr);
+                if (tracing_commands_par >= 4) {
+                    tex_aux_report_active(4, "control", code, character);
+                }
+                return 1;
+            case letter_cmd:                     
+            case other_char_cmd:
+                cur_cmd = code;
+                cur_chr = character;
+                cur_tok = token_val(cur_cmd, cur_chr);
+                if (tracing_commands_par >= 4) {
+                    tex_aux_report_active(4, "inject", code, character);
+                }
+                return 1;
+            default: 
+                if (tracing_commands_par >= 4) {
+                    tex_aux_report_active(4, "ignore", code, character);
+                }
+                return 1;
+        }
+    } else { 
+        return 0;
+    }
+}
+
+int tex_pass_active_math_char(int character)
+{
+    halfword code = tex_get_am_code(character);
+    if (code) {
+        return 1;
+    } else { 
+        return 0;
+    }
+}
+
+static int tex_aux_scan_active_math_char(mathcodeval *mval, int where)
+{
+    halfword character = mval->character_value;
+    halfword code = tex_get_am_code(character);
+    if (code) {
+        switch (code) {
+            case alignment_tab_cmd:              
+            case superscript_cmd:                
+            case subscript_cmd:                  
+                cur_cmd = code;
+                cur_chr = character;
+                cur_tok = token_val(cur_cmd, cur_chr);
+                tex_back_input(cur_tok);
+                if (tracing_commands_par >= 4) {
+                    tex_aux_report_active(where, "control", code, character);
+                }
+                return 1;
+            case letter_cmd:                     
+            case other_char_cmd:
+                cur_cmd = code;
+                cur_chr = character;
+                cur_tok = token_val(cur_cmd, cur_chr);
+                if (tracing_commands_par >= 4) {
+                    tex_aux_report_active(where, "inject", code, character);
+                }
+                return 0;
+            default: 
+                if (tracing_commands_par >= 4) {
+                    tex_aux_report_active(where, "ignore", code, character);
+                }
+                return 1;
+        }
+    } else if (mval->class_value == active_math_class_value) {
+        cur_cs = tex_active_to_cs(cur_chr, 1);
+        cur_cmd = eq_type(cur_cs);
+        cur_chr = eq_value(cur_cs);
+        tex_x_token();
+        tex_back_input(cur_tok);
+        if (tracing_commands_par >= 4) {
+            tex_aux_report_active(where, "active", code, character);
+        }
+        return 1;
+    } else { 
+     // if (tracing_commands_par >= 4) {
+     //     tex_aux_report_active(where, "keep", code, mval->character_value);
+     // }
+        return 0;
+    }
 }
 
 static int tex_aux_scan_math(halfword target, halfword style, int usetextfont, halfword toks, halfword toks_text, int nocomponent, halfword cls, halfword all)
 {
-    mathcodeval mval = { 0, 0, 0 };
-    mathdictval dval = { 0, 0, 0 };
+    mathcodeval mval = tex_no_math_code();
+    mathdictval dval = tex_no_dict_code();
     lmt_math_state.last_atom = cls;
   RESTART:
     do {
@@ -1694,13 +1794,12 @@ static int tex_aux_scan_math(halfword target, halfword style, int usetextfont, h
         case other_char_cmd:
         case char_given_cmd:
             mval = tex_get_math_code(cur_chr);
-            if (mval.class_value == active_math_class_value) {
-                /*tex An active character is allowed here. */
-                tex_aux_scan_active_math_char();
-                goto RESTART;
+            if (tex_aux_scan_active_math_char(&mval, 1)) { 
+                goto RESTART; /* rescan pushed back token */
+            } else {
+                dval = tex_fake_math_dict(mval.character_value);
+                break;
             }
-            dval = tex_fake_math_dict(mval.character_value);
-            break;
     //  case char_number_cmd:
     //      /* The |\glyph| variant is accepted but no keywords here. */
     //      cur_chr = tex_scan_char_number();
@@ -1875,18 +1974,16 @@ static void tex_aux_append_math_fence_val(mathcodeval mval, mathdictval dval, qu
     /* todo : share the next three with the regular fences */
     noad_options(fence) |= noad_option_no_check;
     if (class == middle_noad_subtype && cur_group != math_fence_group) { 
-        tex_aux_append_math_fence_val((mathcodeval) { 0, 0, 0 }, (mathdictval) { 0, 0, 0 }, open_noad_subtype);
+        tex_aux_append_math_fence_val(tex_no_math_code(), tex_no_dict_code(), open_noad_subtype);
     }
     tex_aux_append_math_fence(fence, class);
 }
 
 static void tex_aux_append_math_char(mathcodeval mval, mathdictval dval, int automatic)
 {
-    if (mval.class_value == active_math_class_value) {
-        /*tex An active character is allowed here */
-        tex_aux_scan_active_math_char();
-        return;
-    } else {  
+    if (tex_aux_scan_active_math_char(&mval, 2)) { 
+        return; /* rescan pushed back token */
+    } else { 
         if (automatic && tex_math_has_class_option(mval.class_value, auto_inject_class_option)) {
             switch (mval.class_value) { 
                 case accent_noad_subtype:
@@ -1923,10 +2020,9 @@ static void tex_aux_append_math_char(mathcodeval mval, mathdictval dval, int aut
 static void tex_aux_append_math_char_in_text(mathcodeval mval, mathdictval dval)
 {
     (void) dval;
-    if (mval.class_value == active_math_class_value) {
-        /*tex An active character is allowed here. But why in text mode too. */
-        tex_aux_scan_active_math_char();
-    } else {
+    if (tex_aux_scan_active_math_char(&mval, 3)) {
+        return; /* rescan pushed back token */
+    } else { 
         halfword p = tex_new_char_node(glyph_character_subtype, tex_fam_fnt(mval.family_value, text_size), mval.character_value, 1); /* todo: data */
         tex_tail_append(p);
     }
@@ -1942,8 +2038,8 @@ void tex_run_math_char_number(void) {
         Both |\char| and |\glyph| get the same treatment. Scanning can change |cur_chr| so we do 
         that first. We no longer check for active here! 
     */
-    mathcodeval mval = { 0, 0, 0 };
-    mathdictval dval = { 0, 0, 0 };
+    mathcodeval mval = tex_no_math_code();
+    mathdictval dval = tex_no_dict_code();
     cur_chr = tex_scan_char_number(0); 
     mval.character_value = cur_chr;
     mval.family_value = (short) cur_fam_par;
@@ -2057,16 +2153,16 @@ int tex_scan_math_code_val(halfword code, mathcodeval *mval, mathdictval *dval)
 }
 
 void tex_run_text_math_char_number(void) {
-    mathcodeval mval = { 0, 0, 0 };
-    mathdictval dval = { 0, 0, 0 };
+    mathcodeval mval = tex_no_math_code();
+    mathdictval dval = tex_no_dict_code();
     if (tex_scan_math_code_val(cur_chr, &mval, &dval)) {
         tex_aux_append_math_char_in_text(mval, dval);
     }
 }
 
 void tex_run_math_math_char_number(void) {
-    mathcodeval mval = { 0, 0, 0 };
-    mathdictval dval = { 0, 0, 0 };
+    mathcodeval mval = tex_no_math_code();
+    mathdictval dval = tex_no_dict_code();
     if (tex_scan_math_code_val(cur_chr, &mval, &dval)) {
         tex_aux_append_math_char(mval, dval, 1);
     }
@@ -2075,10 +2171,10 @@ void tex_run_math_math_char_number(void) {
 void tex_run_math_delimiter_number(void) {
     switch (cur_chr) {
         case math_delimiter_code:
-            tex_aux_append_math_char(tex_scan_delimiter_as_mathchar(tex_mathcode), (mathdictval) { 0, 0, 0 }, 0);
+            tex_aux_append_math_char(tex_scan_delimiter_as_mathchar(tex_mathcode), tex_no_dict_code(), 0);
             break;
         case math_udelimiter_code:
-            tex_aux_append_math_char(tex_scan_delimiter_as_mathchar(umath_mathcode), (mathdictval) { 0, 0, 0 }, 0);
+            tex_aux_append_math_char(tex_scan_delimiter_as_mathchar(umath_mathcode), tex_no_dict_code(), 0);
             break;
     }
 }
@@ -2532,7 +2628,7 @@ void tex_run_math_radical(void)
                 }
                 break;
             case 's': case 'S':
-                switch (tex_scan_character("toTO", 0, 0, 0)) {
+                switch (tex_scan_character("itoITO", 0, 0, 0)) {
                     case 't': case 'T':
                         if (tex_scan_mandate_keyword("style", 2)) {
                             switch (code) {
@@ -2552,6 +2648,11 @@ void tex_run_math_radical(void)
                     case 'o': case 'O':
                         if (tex_scan_mandate_keyword("source", 2)) {
                             noad_source(radical) = tex_scan_int(0, NULL);
+                        }
+                        break;
+                    case 'i': case 'I':
+                        if (tex_scan_mandate_keyword("size", 2)) {
+                            radical_size(radical) = tex_scan_int(0, NULL);
                         }
                         break;
                     default:
@@ -3931,7 +4032,7 @@ void tex_run_math_fence(void)
             break;
         default:
             if (cur_group != math_fence_group) {
-                tex_aux_append_math_fence_val((mathcodeval) { 0, 0, 0 }, (mathdictval) { 0, 0, 0 }, open_noad_subtype);
+                tex_aux_append_math_fence_val(tex_no_math_code(), tex_no_dict_code(), open_noad_subtype);
             }
             switch (cur_group) {
                 case math_fence_group:
@@ -5578,7 +5679,7 @@ halfword tex_to_math_rules_parameter(halfword left, halfword right)
 
 void tex_set_default_math_codes(void)
 {
-    mathcodeval mval = { 0, 0, 0 };
+    mathcodeval mval = tex_no_math_code();
     /*tex This will remap old font families at runtime. */
     mval.class_value = math_use_current_family_code;
     /*tex Upright math digts come from family 0. */

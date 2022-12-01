@@ -73,7 +73,11 @@
 
 % unexpanded as otherwise we need to intercept / cleanup a lot
 
+\pushoverloadmode
+
 \protected\def~{\nobreakspace}
+
+\popoverloadmode
 
 \protect \endinput
 

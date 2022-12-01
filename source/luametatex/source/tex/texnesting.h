@@ -30,7 +30,7 @@ typedef struct nest_state_info {
     list_state_record *nest;
     memory_data        nest_data;
     int                shown_mode;
-    int                padding;
+    int                math_mode;
 } nest_state_info;
 
 extern nest_state_info lmt_nest_state;

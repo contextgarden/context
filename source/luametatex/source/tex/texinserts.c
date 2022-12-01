@@ -155,7 +155,7 @@ halfword tex_get_insert_distance(halfword i)
     }
 }
 
-static inline halfword tex_aux_insert_box(halfword i)
+inline static halfword tex_aux_insert_box(halfword i)
 {
     if (tex_valid_insert_id(i)) {
         return lmt_insert_state.mode == index_insert_mode ? insert_content(i) : lmt_insert_state.inserts[i].content;

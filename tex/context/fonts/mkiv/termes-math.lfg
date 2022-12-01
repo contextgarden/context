@@ -24,8 +24,15 @@ return {
             DelimiterPercent                =   90,
             DelimiterShortfall              =  400,
             DisplayOperatorMinHeight        = 1800, -- 1300 in font (only one)
-            PrimeRaisePercent               =   60, --   50 default
-            PrimeRaiseComposedPercent       =   10, --   25 default
+            -- ScriptPercentScaleDown          = 70, -- 74 in font (set in typescript)
+            -- ScriptScriptPercentScaleDown    = 50, -- 50 in font (set in typescript)
+            SuperscriptShiftUp              = 310, -- 339
+            SubscriptShiftDown              = 200, -- 222
+            SubscriptShiftDownWithSuperscript = "1.4*SubscriptShiftDown", -- 1.5* in math-act
+            -- PrimeRaisePercent               =   60, --   set to 0 in math-act
+            -- PrimeRaiseComposedPercent       =   10, --   set to 0 in math-act
+            PrimeShiftUp                    = "1.35*SuperscriptShiftUp",
+            PrimeShiftUpCramped             = "1.35*SuperscriptShiftUp",
         },
         tweaks = {
             aftercopying = {
@@ -35,9 +42,9 @@ return {
                 },
                 {
                     tweak   = "fixprimes",
-                    scale   = 0.85,
+                    -- scale   = 0.9,
                  -- smaller = true,
-                    factor  = 0.95,
+                    factor  = 0.76,
                 },
                 {
                     tweak = "addmirrors",
@@ -70,6 +77,8 @@ return {
                         ["0x27E9.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
                         [0x27EB]                = { topright = -0.1,  bottomright = -0.1  },
                         ["0x27EB.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
+                        --
+                        [0x00393] = { bottomright = -0.20, }, -- upright Gamma
                         --
                         ["0x222B.parts.bottom"] = { bottomright = -0.20 }, -- int
                         ["0x222C.parts.bottom"] = { bottomright = -0.15 }, -- iint

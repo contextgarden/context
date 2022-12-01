@@ -105,12 +105,11 @@ inline static int tex_single_letter(strnumber s)
 inline static int tex_is_active_cs(strnumber s)
 {
     if (s && str_length(s) > 3) {
-        const unsigned char *ss = str_string(s);
-        return (ss[0] == 0xEF) && (ss[1] == 0xBF) && (ss[2] == 0xBF);
+        const unsigned char *ss = str_string(s); // or signed and active_character ... 
+        return (ss[0] == active_first) && (ss[1] == active_second) && (ss[2] == active_third);
     } else {
         return 0;
     }
 }
-# define active_cs_value(A) aux_str2uni((str_string((A))+3))
 
 # endif

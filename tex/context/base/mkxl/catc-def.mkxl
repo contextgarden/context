@@ -24,13 +24,13 @@
 \ifdefined\texcatcodes \else \newcatcodetable \texcatcodes \fi
 \ifdefined\luacatcodes \else \newcatcodetable \luacatcodes \fi
 \ifdefined\notcatcodes \else \newcatcodetable \notcatcodes \fi
-\ifdefined\rlncatcodes \else \newcatcodetable \rlncatcodes \fi
+\ifdefined\rlncatcodes \else \newcatcodetable \rlncatcodes \fi % readline, not for context
 \ifdefined\vrbcatcodes \else \newcatcodetable \vrbcatcodes \fi
 \ifdefined\prtcatcodes \else \newcatcodetable \prtcatcodes \fi
 \ifdefined\ctxcatcodes \else \newcatcodetable \ctxcatcodes \fi
 \ifdefined\txtcatcodes \else \newcatcodetable \txtcatcodes \fi
-\ifdefined\tpacatcodes \else \newcatcodetable \tpacatcodes \fi % { }
-\ifdefined\tpbcatcodes \else \newcatcodetable \tpbcatcodes \fi % < >
+\ifdefined\tpacatcodes \else \newcatcodetable \tpacatcodes \fi % verbatim: { }
+\ifdefined\tpbcatcodes \else \newcatcodetable \tpbcatcodes \fi % verbatim: < >
 \ifdefined\ctdcatcodes \else \newcatcodetable \ctdcatcodes \fi % context definitions
 
 \startcatcodetable \nilcatcodes
@@ -254,6 +254,9 @@
 \letcatcodecommand \ctxcatcodes \barasciicode   \relax
 \letcatcodecommand \ctxcatcodes \tildeasciicode \relax
 
+% \letcatcodecommand \prtcatcodes \barasciicode   \relax
+% \letcatcodecommand \prtcatcodes \tildeasciicode \relax
+
 %D Because some characters have a special meaning, we provide shortcuts to their
 %D character representation. Some will be overloaded (which might change).
 
@@ -272,5 +275,10 @@
                 \catcodetable       \ctxcatcodes
     \aliased\let\defaultcatcodetable\ctxcatcodes
 \popoverloadmode
+
+\amcode \circumflexasciicode \superscriptcatcode
+\amcode \underscoreasciicode \subscriptcatcode
+\amcode \barasciicode        \othercatcode
+\amcode \tildeasciicode      \othercatcode
 
 \endinput

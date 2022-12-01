@@ -743,8 +743,10 @@ void tex_print_cmd_chr(singleword cmd, halfword chr)
         case other_char_cmd:
             tex_aux_print_chr_cmd("the", cmd, chr);
             break;
-        /*
         case active_char_cmd:
+            tex_aux_print_chr_cmd("active", cmd, chr);
+            break;
+        /*
         case comment_cmd:
         case invalid_char_cmd:
             break;

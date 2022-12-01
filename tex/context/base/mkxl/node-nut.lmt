@@ -199,6 +199,7 @@ local nuts = {
     prependbeforehead       = direct.prependbeforehead,
     protectglyph            = direct.protectglyph,
     protectglyphs           = direct.protectglyphs,
+    protectglyphsnone       = direct.protectglyphsnone,
     protrusionskippable     = direct.protrusionskippable,
     rangedimensions         = direct.rangedimensions,
     remove                  = d_remove_node,

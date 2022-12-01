@@ -282,7 +282,7 @@ typedef enum math_atom_font_options {
     math_atom_math_font_option = 2,
 } math_atom_font_options;
 
-inline int math_parameter_value_type(int n)
+inline static int math_parameter_value_type(int n)
 {
     if (n < last_math_parameter) {
         return lmt_interface.math_parameter_values[n].type;
@@ -563,7 +563,7 @@ extern scaled   tex_get_math_x_parameter_default (int style, int param, scaled d
 
 extern scaled   tex_get_math_y_parameter         (int style, int param);
 extern scaled   tex_get_math_y_parameter_checked (int style, int param);
-extern scaled   tex_get_math_y_parameter_default (int style, int paramm, scaled dflt);
+extern scaled   tex_get_math_y_parameter_default (int style, int param, scaled dflt);
 
 extern scaled   tex_get_font_math_parameter      (int font, int size, int param);
 extern scaled   tex_get_font_math_x_parameter    (int font, int size, int param);
@@ -623,6 +623,9 @@ extern void        tex_run_math_math_spec        (void);
 extern void        tex_run_text_math_spec        (void);
 
 extern void     tex_set_default_math_codes       (void);
+
+extern int      tex_check_active_math_char       (int character);
+extern int      tex_pass_active_math_char        (int character);
 
 /*tex The runners in maincontrol: */
 

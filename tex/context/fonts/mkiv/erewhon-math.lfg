@@ -22,14 +22,19 @@ return {
             DelimiterPercent                =   90,
             DelimiterShortfall              =  400,
          -- DisplayOperatorMinHeight        = 1800, -- 1300 in font (one size)
+            SubscriptShiftDown              = 200, -- 220 in font
+            SuperscriptShiftUp              = 400, -- 400 in font
+            SubscriptShiftDownWithSuperscript = "1.2*SubscriptShiftDown", -- unclear original value, trial and error
+            PrimeShiftUp              = "1.1*SuperscriptShiftUp",
+            PrimeShiftUpCramped       = "1.1*SuperscriptShiftUp",
         },
         tweaks = {
             aftercopying = {
                 {
                     tweak   = "fixprimes",
                     -- smaller = true, -- replace multiples
-                    factor  = 0.9,
-                    scale   = 1.0,
+                    factor  = 0.94  ,
+                    -- scale   = 1.0,
                     fake    = 0.85, -- replace multiples with this width proportion
                 },
                 {
@@ -72,6 +77,7 @@ return {
                         ["0x27E9.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
                         [0x27EB]                = { topright = -0.1,  bottomright = -0.1  },
                         ["0x27EB.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
+                        [0x00393] = { bottomright = -0.30, }, -- upright Gamma
                     },
                 },
 {
@@ -112,6 +118,9 @@ return {
                 {
                     tweak = "addfourier",
                     variant = 2,
+                },
+                {
+                    tweak = "addprimed",
                 },
                 {
                     tweak = "setoptions",

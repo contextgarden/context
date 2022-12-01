@@ -29,6 +29,8 @@ extern void     tex_set_hc_code                (int n, halfword v, int gl);
 extern halfword tex_get_hc_code                (int n);
 extern void     tex_set_hm_code                (int n, halfword v, int gl);
 extern halfword tex_get_hm_code                (int n);
+extern void     tex_set_am_code                (int n, halfword v, int gl);
+extern halfword tex_get_am_code                (int n);
 extern void     tex_set_hj_code                (int l, int n, halfword v, int gl);
 extern halfword tex_get_hj_code                (int l, int n);
 extern void     tex_initialize_xx_codes        (void);

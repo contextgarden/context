@@ -84,13 +84,13 @@ function mathematics.initializeparameters(target,original)
         mathparameters = mathematics.dimensions(mathparameters)
         --
      -- if not mathparameters.MinConnectorOverlap               then mathparameters.MinConnectorOverlap               = undefined end
-     -- if not mathparameters.SubscriptShiftDownWithSuperscript then mathparameters.SubscriptShiftDownWithSuperscript = undefined end -- a tex one
+        if not mathparameters.SubscriptShiftDownWithSuperscript then mathparameters.SubscriptShiftDownWithSuperscript = mathparameters.SubscriptShiftDown * 1.5 end
      -- if not mathparameters.FractionDelimiterSize             then mathparameters.FractionDelimiterSize             = undefined end
      -- if not mathparameters.FractionDelimiterDisplayStyleSize then mathparameters.FractionDelimiterDisplayStyleSize = undefined end
      -- if not mathparameters.SkewedDelimiterTolerance          then mathparameters.SkewedDelimiterTolerance          = undefined end
         -- some more can be undefined:
-        if not mathparameters.PrimeRaisePercent                 then mathparameters.PrimeRaisePercent                 = 50 end
-        if not mathparameters.PrimeRaiseComposedPercent         then mathparameters.PrimeRaiseComposedPercent         = 25 end
+        if not mathparameters.PrimeRaisePercent                 then mathparameters.PrimeRaisePercent                 = 0 end
+        if not mathparameters.PrimeRaiseComposedPercent         then mathparameters.PrimeRaiseComposedPercent         = 0 end
         if not mathparameters.PrimeShiftUp                      then mathparameters.PrimeShiftUp                      = mathparameters.SuperscriptShiftUp end
         if not mathparameters.PrimeBaselineDropMax              then mathparameters.PrimeBaselineDropMax              = mathparameters.SuperscriptBaselineDropMax end
         if not mathparameters.PrimeShiftUpCramped               then mathparameters.PrimeShiftUpCramped               = mathparameters.SuperscriptShiftUpCramped end
@@ -216,15 +216,15 @@ function mathematics.overloadparameters(target,original)
                                 local tvalue = type(value)
                                 if tvalue == "string" then
                                     local newvalue = mathparameters[value]
-                                 -- if not newvalue then
-                                 --     local code = loadstring("return " .. value,"","t",mathparameters)
-                                 --     if type(code) == "function" then
-                                 --         local okay, v = pcall(code)
-                                 --         if okay then
-                                 --             newvalue = v
-                                 --         end
-                                 --     end
-                                 -- end
+                                    if not newvalue then
+                                        local code = loadstring("return " .. value,"","t",mathparameters)
+                                        if type(code) == "function" then
+                                            local okay, v = pcall(code)
+                                            if okay then
+                                                newvalue = v
+                                            end
+                                        end
+                                    end
                                     if newvalue then
                                         -- split in number and string
                                         mathparameters[name] = newvalue
@@ -420,6 +420,84 @@ local detail  do
     end
 
 end
+
+-- This temporary tweak was used when we (MS & HH) were fixing the Latin Modern
+-- parameters that relate to script placement. We started from the original cmr
+-- ratios combined with the formal specification and ended up with the following
+-- values. In the end we rejected this tweak and setteled for checking and fixing:
+--
+-- SubscriptShiftDown
+-- SubscriptShiftDownWithSuperscript
+-- SuperscriptShiftUp
+-- SuperscriptShiftUpCramped
+--
+-- because it looks a bit arbitrary what values are set. We keep the code below
+-- as documentation.
+
+-- do
+--     -- modern
+--     --
+--     -- local factors = {
+--     --     scripts = {
+--     --         SubscriptBaselineDropMin          = 0.116,
+--     --         SubscriptShiftDown                = 0.348,
+--     --         SubscriptShiftDownWithSuperscript = 0.573,
+--     --         SubscriptTopMax                   = 0.800,
+--     --         SuperscriptBaselineDropMax        = 0.896,
+--     --         SuperscriptBottomMaxWithSubscript = 0.800,
+--     --         SuperscriptBottomMin              = 0.250,
+--     --         SuperscriptShiftUp                = 0.958,
+--     --         SuperscriptShiftUpCramped         = 0.958,
+--     --     }
+--     -- }
+--
+--     -- -- cambria
+--     --
+--     -- local factors = {
+--     --     scripts = {
+--     --         SubscriptBaselineDropMin          = 0.279,
+--     --         SubscriptShiftDown                = 0.364,
+--     --         SubscriptShiftDownWithSuperscript = 0.547,
+--     --         SubscriptTopMax                   = 0.662,
+--     --         SuperscriptBaselineDropMax        = 0.401,
+--     --         SuperscriptBottomMaxWithSubscript = 0.667,
+--     --         SuperscriptBottomMin              = 0.208,
+--     --         SuperscriptShiftUp                = 0.654,
+--     --         SuperscriptShiftUpCramped         = 0.654,
+--     --     }
+--     -- }
+--
+--     -- after some tests and inspection
+--     --
+--
+--     local factors = {
+--         scripts = {
+--             SubscriptBaselineDropMin          = 0.100, -- harmless but small (seldom triggered)
+--             SubscriptShiftDown                = 0.400, -- by inspection in several files
+--             SubscriptShiftDownWithSuperscript = 0.400, -- as above
+--             SubscriptTopMax                   = 0.800, -- Microsoft recommendation
+--             SuperscriptBaselineDropMax        = 0.100, -- see SubscriptBaselineDropMin
+--             SuperscriptBottomMaxWithSubscript = 0.800, -- Microsoft recommendation
+--             SuperscriptBottomMin              = 0.250, -- Microsoft recommendation
+--             SuperscriptShiftUp                = 0.650, -- by inspection, but also a bit gamble
+--             SuperscriptShiftUpCramped         = 0.650, -- see above, non-TeX
+--         }
+--     }
+--
+--     datasets.fixparameters = factors
+--
+--     function mathtweaks.fixparameters(target,original,parameters)
+--         local mathparameters = target.mathparameters
+--         if mathparameters and next(mathparameters) then
+--             local xheight = target.parameters.xheight
+--             -- todo : options
+--             for k, v in next, factors.scripts do
+--                 mathparameters[k] = v * xheight
+--             end
+--         end
+--     end
+--
+-- end
 
 do
 
@@ -819,150 +897,110 @@ end
 
 do
 
-    -- see changed hack in math-fbk
-
     local nps = fonts.helpers.newprivateslot
 
     local list = {
-        { 0x2032, { nps("prime 0x2032 1"), nps("prime 0x2032 2"), nps("prime 0x2032 3") }, 1 },
-        { 0x2033, { nps("prime 0x2033 1"), nps("prime 0x2033 2"), nps("prime 0x2033 3") }, 2 },
-        { 0x2034, { nps("prime 0x2034 1"), nps("prime 0x2034 2"), nps("prime 0x2034 3") }, 3 },
-        { 0x2057, { nps("prime 0x2057 1"), nps("prime 0x2057 2"), nps("prime 0x2057 3") }, 4 },
-        { 0x2035, { nps("prime 0x2035 1"), nps("prime 0x2035 2"), nps("prime 0x2035 3") }, 1 },
-        { 0x2036, { nps("prime 0x2036 1"), nps("prime 0x2036 2"), nps("prime 0x2036 3") }, 2 },
-        { 0x2037, { nps("prime 0x2037 1"), nps("prime 0x2037 2"), nps("prime 0x2037 3") }, 3 },
+        { 0x2032, nps("delimited ghost 0x2032"), 1 },
+        { 0x2033, nps("delimited ghost 0x2033"), 2, 0x2032 },
+        { 0x2034, nps("delimited ghost 0x2034"), 3, 0x2032 },
+        { 0x2057, nps("delimited ghost 0x2057"), 4, 0x2032 },
+        { 0x2035, nps("delimited ghost 0x2035"), 1 },
+        { 0x2036, nps("delimited ghost 0x2036"), 2, 0x2035 },
+        { 0x2037, nps("delimited ghost 0x2037"), 3, 0x2035 },
     }
 
-    local function copytable(t)
-        return {
-            width   = t.width,
-            height  = t.height,
-            depth   = t.depth,
-            index   = t.index,
-            unicode = t.unicode,
-        }
+    datasets.fixprimes = list
+
+    function mathtweaks.fixprimes(target,original,parameters)
+        local targetcharacters = target.characters
+        local factor = parameters.factor or 1
+        local fake   = tonumber(parameters.fake)
+        for i=1,#list do
+            local entry   = list[i]
+            local unicode = entry[1]
+            local count   = entry[3]
+            local used    = fonts.handlers.otf.getsubstitution(target,unicode,"ssty",true,"math","dflt") or unicode
+            local data    = targetcharacters[used]
+            if data then
+                targetcharacters[unicode] = data
+                local oldheight = data.height or 0
+                local newheight = factor * oldheight
+                data.yoffset = newheight - (oldheight or 0)
+                data.height  = newheight
+                data.smaller = nil
+            elseif not fake then
+                report_tweak("missing %i prime %U",target,original,count,unicode)
+            end
+        end
+        if fake then
+            for i=1,#list do
+                local entry = list[i]
+                local count = entry[3]
+                if count > 1 then
+                    local unicode  = entry[1]
+                    local original = entry[4]
+                    local data     = targetcharacters[original]
+                    if data then
+                        local oldwidth = data.width
+                        local xoffset  = fake * oldwidth
+                        local newwidth = oldwidth + (count - 1) * xoffset
+                        targetcharacters[unicode] = {
+                            width    = newwidth,
+                            height   = data.height,
+                            unicode  = unicode,
+                            commands = {
+                                              { "offset",           0, 0, original },
+                                              { "offset",     xoffset, 0, original },
+                                count > 2 and { "offset", 2 * xoffset, 0, original } or nil,
+                                count > 3 and { "offset", 3 * xoffset, 0, original } or nil,
+                            },
+                        }
+                    end
+                end
+            end
+        end
     end
 
-    local lastprivate
-
-    local function use(target,original,targetcharacters,charcode,private,newheight,scale,fake,keep,count,smaller)
-        if count == 1 then
-            lastprivate = private
-        end
-        if keep then
-            if trace_tweaking then
-                report_tweak("keeping prime %U",target,original,charcode)
-            end
-            return
-        end
-        if fake and count > 1 then
-            local olddata = targetcharacters[lastprivate]
-            if olddata then
-                -- todo: when keep
-                local oldheight = scale * olddata.height
-                local oldwidth  = scale * olddata.width
-                local yoffset   = (newheight - oldheight) / scale
-                local xoffset   = fake * oldwidth
-                local newwidth  = oldwidth + (count - 1) * xoffset
-                targetcharacters[charcode] = {
-                    yoffset  = yoffset,
-                    width    = newwidth,
-                    height   = newheight,
-                    smaller  = smaller,
-                    unicode  = olddata.unicode,
+    function mathtweaks.addprimed(target,original,parameters)
+        local characters = target.characters
+        for i=1,#list do
+            local entry    = list[i]
+            local basecode = entry[1]
+            local movecode = entry[2]
+            local basedata = characters[basecode]
+            if basedata then
+                local baseheight = basedata.height or 0
+                local basewidth  = basedata.width  or 0
+                local used       = baseheight
+                local total      = baseheight
+                characters[movecode] = { -- todo:share
+                    width    = basewidth,
+                    height   = used,
+                    unicode  = basecode, -- 0xFFFD or space or so
+        --             callback = "devirtualize",
                     commands = {
-                                      { "offset",           0, 0, lastprivate, scale, scale },
-                                      { "offset",     xoffset, 0, lastprivate, scale, scale },
-                        count > 2 and { "offset", 2 * xoffset, 0, lastprivate, scale, scale } or nil,
-                        count > 3 and { "offset", 3 * xoffset, 0, lastprivate, scale, scale } or nil,
+                        downcommand[used],
+                        { "rule", used, 0 },
+                    },
+                }
+                basedata.parts = {
+                    {
+                        advance  = used,
+                        ["end"]  = used,
+                        extender = 1,
+                        glyph    = movecode,
+                        start    = used,
+                    },
+                    {
+                        advance  = total,
+                        ["end"]  = 0,
+                        glyph    = basecode,
+                        start    = total,
                     },
                 }
                 if trace_tweaking then
-                    report_tweak("faking %U with %i primes",target,original,charcode,count)
+                    report_tweak("primed %U added",target,original,basecode)
                 end
-                return
-            end
-        end
-        local olddata = targetcharacters[private]
-        if olddata then
-            local oldheight = scale * olddata.height
-            local oldwidth  = scale * olddata.width
-            local yoffset   = (newheight - oldheight) / scale
-            targetcharacters[charcode] = {
-                yoffset  = yoffset,
-                width    = oldwidth,
-                height   = newheight,
-                smaller  = smaller,
-                unicode  = olddata.unicode,
-                commands = {
-                    { "offset", 0, 0, private, scale, scale }
-                },
-            }
-            if trace_tweaking then
-                report_tweak("fixing prime %U",target,original,charcode)
-            end
-            return
-        end
-        if trace_tweaking then
-            report_tweak("unable to fix prime %U",target,original,charcode)
-        end
-    end
-
-    function mathtweaks.fixprimes(target,original,parameters)
-        local targetcharacters   = target.characters
-        local targetparameters   = target.parameters
-        local originalcharacters = original.characters
-        local factor    = parameters.factor or 0.85
-        local scale     = parameters.scale or 1
-        local smaller   = parameters.smaller
-        local fake      = parameters.fake
-        local keep      = parameters.keep and targetparameters.mathsize == 1
-        local newheight = factor * target.mathparameters.AccentBaseHeight
-        local compact   = targetparameters.textscale and true or false
-        --
-        lastprivate = false
-        -- make virtual copies (just all of them, also for tracing)
-        for i=1,#list do
-            local entry = list[i]
-            local count = entry[3]
-            if not fake or count == 1 then
-                local c1 = entry[1]
-                local d1 = targetcharacters[c1]
-                if d1 then
-                    local pc = entry[2]
-                    local c2 = d1.smaller or c1
-                    local d2 = targetcharacters[c2]
-                    local c3 = d2.smaller or c2
-                    local d3 = targetcharacters[c3]
-                    if smaller then
-                        d1 = d2
-                        d2 = d3
-                    end
-                    targetcharacters[pc[1]] = copytable(d1)
-                    targetcharacters[pc[2]] = copytable(d2)
-                    targetcharacters[pc[3]] = copytable(d3)
-                end
-            end
-        end
-        -- replace
-        for i=1,#list do
-            local entry = list[i]
-            local count = entry[3]
-            local c1    = entry[1]
-            local pc    = entry[2]
-            local s1    = pc[1]
-            local d1    = targetcharacters[c1]
-            if compact and d1 then
-                local c2 = d1.smaller or c1
-                local d2 = targetcharacters[c2]
-                local c3 = d2.smaller or c2
-                local s2 = pc[2]
-                local s3 = pc[3]
-                use(target,original,targetcharacters,c1,s1,newheight,scale,fake,keep, count,c2)
-                use(target,original,targetcharacters,c2,s2,newheight,scale,fake,false,count,c3)
-                use(target,original,targetcharacters,c3,s3,newheight,scale,fake,false,count)
-            else
-                use(target,original,targetcharacters,c1,s1,newheight,scale,fake,keep,count)
             end
         end
     end
@@ -1384,7 +1422,7 @@ do
                             local half  = (italic/2) * factor
                             c.topanchor    = width + half
                             c.bottomanchor = width - half
-                            c.bottomright  = - italic
+                            c.bottomright  = - italic * (parameters.icfactor or 1)
                             if trace_tweaking then
                                 -- todo
                             end
@@ -2698,9 +2736,9 @@ do
     local nps = fonts.helpers.newprivateslot
 
     local list = {
-        { 0x302, nps("delimited right hat"  ), nps("delimited ghost hat"  ) },
-        { 0x303, nps("delimited right tilde"), nps("delimited ghost tilde") },
-        { 0x30C, nps("delimited right check"), nps("delimited ghost check") },
+        { 0x0302, nps("delimited right hat"),   nps("delimited ghost hat")   },
+        { 0x0303, nps("delimited right tilde"), nps("delimited ghost tilde") },
+        { 0x030C, nps("delimited right check"), nps("delimited ghost check") },
     }
 
     function mathtweaks.addfourier(target,original,parameters)

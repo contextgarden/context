@@ -232,14 +232,16 @@ function moduledata.fonts.variable.showvariations(specification)
         end
     context.stopsubject()
 
-    local sample = specification.sample
+    local sample   = specification.sample
+    local features = specification.features or "default"
 
     for i=1,#collected do
 
         local instance = collected[i]
         context.startsubject { title = instance }
+            local fontspecification = "name:" .. instance .. "*" .. features
             context.start()
-            context.definedfont { "name:" .. instance .. "*default" }
+            context.definedfont { fontspecification }
             context.start()
             if show_glyphs then
                 context.showglyphs()
@@ -247,6 +249,7 @@ function moduledata.fonts.variable.showvariations(specification)
             if show_kerns then
                 context.showfontkerns()
             end
+-- print("using",fontspecification)
             if sample and sample ~= "" then
                 context(sample)
             else

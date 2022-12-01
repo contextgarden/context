@@ -11,7 +11,7 @@ static void tex_aux_scan_expression (int level);
     A helper.
 */
 
-inline void tex_push_back(halfword tok, halfword cmd, halfword chr)
+inline static void tex_push_back(halfword tok, halfword cmd, halfword chr)
 {
     if (cmd != spacer_cmd && tok != deep_frozen_relax_token && ! (cmd == relax_cmd && chr == no_relax_code)) {
         tex_back_input(tok);
@@ -670,7 +670,7 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
         case math_char_slot_code:
             /* we actually need two commands or we need to look ahead */
             {
-                mathcodeval mval = { 0, 0, 0 };
+                mathcodeval mval = tex_no_math_code();
                 mathdictval dval = { 0, 0, 0 };
                 if (tex_scan_math_cmd_val(&mval, &dval)) {
                     switch (code) {
@@ -1058,6 +1058,9 @@ static void tex_aux_set_cur_val_by_define_char_cmd(int chr)
             break;
         case hmcode_charcode:
             chr = tex_get_hm_code(index);
+            break;
+        case amcode_charcode:
+            chr = tex_get_am_code(index);
             break;
         case mathcode_charcode:
         case extmathcode_charcode:
@@ -1820,7 +1823,7 @@ halfword   tex_scan_math_index_number         (void)               { return tex_
 halfword   tex_scan_math_discretionary_number (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, 0, max_math_discretionary, "Math discretionary"); }
 singleword tex_scan_box_index                 (void)               { return (singleword) tex_aux_scan_limited_int(0, 0, max_box_index, "Box index"); }
 singleword tex_scan_box_axis                  (void)               { return (singleword) tex_aux_scan_limited_int(0, 0, max_box_axis, "Box axis"); }
-halfword   tex_scan_category_code             (void)               { return tex_aux_scan_limited_int(0, 0, max_category_code,"Category code"); }
+halfword   tex_scan_category_code             (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, 0, max_category_code,"Category code"); }
 halfword   tex_scan_function_reference        (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, 0, max_function_reference, "Function reference"); }
 halfword   tex_scan_bytecode_reference        (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, 0, max_bytecode_index, "Bytecode reference"); }
 halfword   tex_scan_limited_scale             (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, -max_limited_scale, max_limited_scale, "Limited scale"); }

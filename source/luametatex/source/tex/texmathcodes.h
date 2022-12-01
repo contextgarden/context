@@ -74,4 +74,6 @@ extern void        tex_undump_math_codes          (dumpstream f);
 
 extern void        tex_free_math_codes            (void);
 
+extern mathdictval tex_no_dict_code               (void);
+
 # endif

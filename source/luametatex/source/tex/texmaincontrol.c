@@ -68,7 +68,7 @@ main_control_state_info lmt_main_control_state = {
     A few helpers:
 */
 
-inline scaled tex_aux_checked_dimen1(scaled v)
+inline static scaled tex_aux_checked_dimen1(scaled v)
 {
     if (v > max_dimen) {
         return max_dimen;
@@ -79,7 +79,7 @@ inline scaled tex_aux_checked_dimen1(scaled v)
     }
 }
 
-inline scaled tex_aux_checked_dimen2(scaled v)
+inline static scaled tex_aux_checked_dimen2(scaled v)
 {
     if (v > max_dimen) {
         return max_dimen;
@@ -473,6 +473,25 @@ static void tex_aux_run_space(void) {
 
 static void tex_aux_run_relax(void) {
     return;
+}
+
+static void tex_aux_run_active(void) {
+//     if (lmt_input_state.scanner_status == scanner_is_tolerant || lmt_input_state.scanner_status == scanner_is_matching) {
+//         cur_cs = tex_active_to_cs(cur_chr, ! lmt_hash_state.no_new_cs);
+//         cur_cmd = eq_type(cur_cs);
+//         cur_chr = eq_value(cur_cs);
+//         tex_x_token();
+//     } else 
+    if ((cur_mode == mmode || lmt_nest_state.math_mode) && tex_check_active_math_char(cur_chr)) {
+        /*tex We have an intercept. */
+        tex_back_input(cur_tok);
+    } else {
+        cur_cs = tex_active_to_cs(cur_chr, ! lmt_hash_state.no_new_cs);
+        cur_cmd = eq_type(cur_cs);
+        cur_chr = eq_value(cur_cs);
+        tex_x_token();
+        tex_back_input(cur_tok);
+    }
 }
 
 /*tex
@@ -1664,7 +1683,7 @@ void tex_local_control(int obeymode)
     tex_unsave_full_scanner_status(saved_full_status);
 }
 
-inline int tex_aux_is_iterator_value(halfword tokeninfo)
+inline static int tex_aux_is_iterator_value(halfword tokeninfo)
 {
     if (tokeninfo >= cs_token_flag) {
         halfword cs = tokeninfo - cs_token_flag;
@@ -3543,7 +3562,7 @@ inline static void tex_aux_update_register(int a, int level, halfword index, hal
             if ((register_attribute_number(index)) > lmt_node_memory_state.max_used_attribute) {
                 lmt_node_memory_state.max_used_attribute = register_attribute_number(index);
             }
-            change_attribute_register(a, index, value);
+            tex_change_attribute_register(a, index, value);
             tex_word_define(a, index, value);
             break;
         case dimen_val_level:
@@ -4497,9 +4516,9 @@ static void tex_aux_set_let(int a, int force)
         case let_charcode_code:
             /*tex |\letcharcode| (todo: protection) */
             {
-                halfword v = tex_scan_int(0, NULL);
-                if (v > 0) {
-                    p = tex_active_to_cs(v, 1);
+                halfword character = tex_scan_int(0, NULL);
+                if (character > 0) {
+                    p = tex_active_to_cs(character, 1);
                     do {
                         tex_get_token();
                     } while (cur_cmd == spacer_cmd);
@@ -4771,6 +4790,13 @@ static void tex_aux_set_define_char_code(int a) /* maybe make |a| already a bool
                 halfword chr = tex_scan_char_number(0);
                 halfword val = tex_scan_math_discretionary_number(1);
                 tex_set_hm_code(chr, val, global_or_local(a));
+            }
+            break;
+        case amcode_charcode:
+            {
+                halfword chr = tex_scan_char_number(0);
+                halfword val = tex_scan_category_code(1);
+                tex_set_am_code(chr, val, global_or_local(a));
             }
             break;
         case mathcode_charcode:
@@ -5181,7 +5207,7 @@ static void tex_aux_set_internal_attr(int a)
     if (internal_attribute_number(p) > lmt_node_memory_state.max_used_attribute) {
         lmt_node_memory_state.max_used_attribute = internal_attribute_number(p);
     }
-    change_attribute_register(a, p, v);
+    tex_change_attribute_register(a, p, v);
     tex_word_define(a, p, v);
 }
 
@@ -5192,7 +5218,7 @@ static void tex_aux_set_register_attr(int a)
     if (register_attribute_number(p) > lmt_node_memory_state.max_used_attribute) {
         lmt_node_memory_state.max_used_attribute = register_attribute_number(p);
     }
-    change_attribute_register(a, p, v);
+    tex_change_attribute_register(a, p, v);
     tex_word_define(a, p, v);
 }
 
@@ -5488,6 +5514,15 @@ void tex_get_r_token(void)
         tex_get_token();
     } while (cur_tok == space_token);
     if (eqtb_invalid_cs(cur_cs)) {
+        if (cur_cmd == active_char_cmd) {
+            cur_cs = tex_active_to_cs(cur_chr, 1);
+            cur_cmd = eq_type(cur_cs);
+            cur_chr = eq_value(cur_cs);
+         // tex_x_token();
+         //  if (! eqtb_invalid_cs(cur_cs)) {
+            return;
+         //  }
+        }
         if (cur_cs == 0) {
             tex_back_input(cur_tok);
         }
@@ -5777,7 +5812,7 @@ void tex_assign_internal_attribute_value(int a, halfword p, int val)
     if (register_attribute_number(p) > lmt_node_memory_state.max_used_attribute) {
         lmt_node_memory_state.max_used_attribute = register_attribute_number(p);
     }
-    change_attribute_register(a, p, val);
+    tex_change_attribute_register(a, p, val);
     tex_word_define(a, p, val);
 }
 
@@ -6348,6 +6383,8 @@ inline static void tex_aux_big_switch(int mode, int cmd)
         /* Just in case: */
 
         register_runner(ignore_cmd,             tex_aux_run_relax,                 tex_aux_run_relax,                  tex_aux_run_relax);
+
+        register_runner(active_char_cmd,        tex_aux_run_active,                tex_aux_run_active,                 tex_aux_run_active);
 
         /*tex The next is unlikely to happen but compilers like the check. */
 

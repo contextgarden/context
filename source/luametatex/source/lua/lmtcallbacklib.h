@@ -83,23 +83,23 @@ typedef enum callback_keys {
     callback_result_key    = 'R', /*tex a string (return value) but nil is also okay */
 } callback_keys;
 
-inline static int lmt_callback_defined   (int a)                               { return lmt_callback_state.values[a]; }
-inline static int lmt_callback_call      (lua_State *L, int i, int o, int top) { return lua_pcallk(L, i, o, top + 2, 0, NULL); }
+inline static int  lmt_callback_defined         (int a)                               { return lmt_callback_state.values[a]; }
+inline static int  lmt_callback_call            (lua_State *L, int i, int o, int top) { return lua_pcallk(L, i, o, top + 2, 0, NULL); }
 
-extern int  lmt_callback_okay            (lua_State *L, int i, int *top);
-extern void lmt_callback_error           (lua_State *L, int top, int i);
-inline void lmt_callback_wrapup          (lua_State *L, int top)  { lua_settop(L, top); }
+extern int         lmt_callback_okay            (lua_State *L, int i, int *top);
+extern void        lmt_callback_error           (lua_State *L, int top, int i);
+inline static void lmt_callback_wrapup          (lua_State *L, int top)  { lua_settop(L, top); }
+ 
+extern int         lmt_run_callback             (lua_State *L, int i, const char *values, ...);
+extern int         lmt_run_and_save_callback    (lua_State *L, int i, const char *values, ...);
+extern int         lmt_run_saved_callback_line  (lua_State *L, int i, int firstpos);
+extern int         lmt_run_saved_callback_close (lua_State *L, int i);
 
-extern int  lmt_run_callback             (lua_State *L, int i, const char *values, ...);
-extern int  lmt_run_and_save_callback    (lua_State *L, int i, const char *values, ...);
-extern int  lmt_run_saved_callback_line  (lua_State *L, int i, int firstpos);
-extern int  lmt_run_saved_callback_close (lua_State *L, int i);
+extern void        lmt_destroy_saved_callback   (lua_State *L, int i);
 
-extern void lmt_destroy_saved_callback   (lua_State *L, int i);
+extern void        lmt_run_memory_callback      (const char *what, int success);
 
-extern void lmt_run_memory_callback      (const char *what, int success);
-
-extern void lmt_push_callback_usage      (lua_State *L);
+extern void        lmt_push_callback_usage      (lua_State *L);
 
 # endif
 

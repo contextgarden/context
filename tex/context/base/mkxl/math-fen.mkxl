@@ -569,10 +569,10 @@
    \fi
    \math_fenced_force_size\bigmathdelimitervariant\c_math_fenced_level\relax}
 
-\appendtoks
-    \enforced\aliased\let|\letterbar
-   %\enforced\aliased\let\bar\letterbar
-\to \everymathematics
+% \appendtoks
+%     \enforced\aliased\let|\letterbar
+%    %\enforced\aliased\let\bar\letterbar
+% \to \everymathematics
 
 \definemathfence [parenthesis] [\c!left="0028,\c!right="0029]
 \definemathfence [bracket]     [\c!left="005B,\c!right="005D]
@@ -843,9 +843,9 @@
 %
 % \installmathfencepair ⦗ \Linterval            ⦘ \Rinterval
 
-\appendtoks
-    \ignorediscretionaries % so $\mtext{a|b}$ works, this is ok because it's an \hbox
-\to \everymathematics
+% \appendtoks
+%     \ignorediscretionaries % so $\mtext{a|b}$ works, this is ok because it's an \hbox
+% \to \everymathematics
 
 % We unofficial support some synonyms as we need them for some fuzzy web related math.
 
@@ -1215,5 +1215,7 @@
 \definemathfence [tupanddownarrows] [\v!text] [\c!left="2191,\c!right="2193]
 \definemathfence [tupdownarrows]    [\v!text] [\c!left="21C5,\c!right=0]
 \definemathfence [tdownuparrows]    [\v!text] [\c!middle="21F5]
+\definemathfence [tuparrow]         [\v!text] [\c!middle="2191]
+\definemathfence [tdownarrow]       [\v!text] [\c!middle="2193]
 
 \protect

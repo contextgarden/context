@@ -634,6 +634,104 @@ the loading.
 
 \stopchapter
 
+\startchapter[title=Script parameters]
+
+Here we show the parameters that deal with script placement. This chapter was
+added after we found that some values in Latin Modern were off. The tables show a
+factor that relates the value to the x-height which is for some part of the
+recommendation.
+
+\starttabulate[|c|l|c|l|]
+\NC       \NC SubscriptBaselineDropMin          \NC .10 \NC harmless, seldom triggered \NC \NR
+\NC \star \NC SubscriptShiftDown                \NC .40 \NC by inspection in several files \NC \NR
+\NC \star \NC SubscriptShiftDownWithSuperscript \NC .40 \NC as above \NC \NR
+\NC       \NC SubscriptTopMax                   \NC .80 \NC Microsoft recommendation \NC \NR
+\NC       \NC SuperscriptBaselineDropMax        \NC .10 \NC see Subscript..Min variant \NC \NR
+\NC       \NC SuperscriptBottomMaxWithSubscript \NC .80 \NC Microsoft recommendation \NC \NR
+\NC       \NC SuperscriptBottomMin              \NC .25 \NC Microsoft recommendation \NC \NR
+\NC \star \NC SuperscriptShiftUp                \NC .65 \NC by inspection, a gamble \NC \NR
+\NC \star \NC SuperscriptShiftUpCramped         \NC .65 \NC see above, non-\TEX \NC \NR
+\stoptabulate
+
+In the end only the ones marked with a star are really important. The other ones
+are often small and the drop ones between .5 and 1.5 points with (to us) no clear
+logic. We decided to not enable a tweak but explicitly check and set the (four)
+values in the goodie file.
+
+\starttexdefinition ShowScriptsValue #1#2#3
+    \NC \csstring#2
+    \NC \bgroup \switchtobodyfont[#1-nt]\normalexpanded{\egroup\fam0 \cldcontext{"\letterpercent0.3f",\number#2\textstyle/\number\exheight}}
+    \NC \bgroup \switchtobodyfont[#1-nt]\normalexpanded{\egroup\fam0 \the#2\textstyle}
+    \NC \bgroup \switchtobodyfont   [#1]\normalexpanded{\egroup\fam0 \the#2\textstyle}
+    \NC \NR
+\stoptexdefinition
+
+\starttexdefinition ShowScripts #1
+    \testpage[4]
+    \starttabulate[|l|r|r|r|]
+        \FL
+        \NC \bf #1
+        \NC factor
+        \NC original
+        \NC tweaked
+        \NC \NR
+        \ML
+      % \ShowScriptsValue{#1}{\Umathaxis}           {MathAxis}
+        \ShowScriptsValue{#1}{\Umathsubshiftdown}   {SubscriptShiftDown}
+        \ShowScriptsValue{#1}{\Umathsubshiftdrop}   {SubscriptBaselineDropMin}
+        \ShowScriptsValue{#1}{\Umathsubsupshiftdown}{SubscriptShiftDownWithSuperscript}
+      % \ShowScriptsValue{#1}{\Umathsubsupvgap}     {}
+        \ShowScriptsValue{#1}{\Umathsubtopmax}      {SubscriptTopMax}
+        \ShowScriptsValue{#1}{\Umathsupbottommin}   {SuperscriptBottomMin}
+        \ShowScriptsValue{#1}{\Umathsupshiftdrop}   {SuperscriptBaselineDropMax}
+        \ShowScriptsValue{#1}{\Umathsupshiftup}     {SuperscriptShiftUp}
+        \ShowScriptsValue{#1}{\Umathsupsubbottommax}{SuperscriptBaselineDropMax}
+        \LL
+    \stoptabulate
+\stoptexdefinition
+
+\ShowSomething{ShowScripts}
+
+One of the pitfalls is that in \CONTEXT\ we actually set \type
+{\Umathsubsupshiftdown} which the results in a bad parameter being used. This
+also makes that we do need to fix the font. footnote {Other macro packages are
+less likely to suffer from this as long as they don't set that parameter.} These
+are issues that we easily spent days on checking, double checking and exploring
+variants before settling on some approach. In this case we compared traditional
+\PDFTEX\ output using Computer Modern with \OPENTYPE\ rendering using Latin
+Modern which exposed the issue.
+
+\stopchapter
+
+\startchapter[title=primes]
+
+A few words on primes, a pain in the butt symbol. In traditional \TEX\ (fonts) a
+prime is a special symbol. Macro packages are set up in such a way that single
+quotes become primes. In practice that then boils down to putting the symbol in
+the superscript which means that at the \TEX\ level the smaller size is used.
+
+This smaller size is somehow reflected in the \OPENTYPE\ math fonts: the script
+and scriptscript sized (ssty variant 1 and 2) are basically meant to be
+superscripted. The text size however often looks differently and is positioned
+like an accent. Supposedly it is meant to be used without placement, as minute or
+second indicator. This is one of the cases where a text, script and scriptscript
+variant of the same glyphs looks pretty incompatible.
+
+Combined with up to four primes being combined as well as up to three reverse
+primes being provided this a rather messy implementation. In \CONTEXT\ we always
+tweaked the dimensions to consistently suit our purpose.
+
+When we experimented with primes as operator, implemented like we do with fourier
+using right delimited radicals, we realized that hooking this into the text level
+symbol gave inconsistent results so in the end we simplified the \type
+{fixprimes} tweak in a way that suits both usage patterns: we just use the \type
+{ssty}~1 variant (of course scaled to the right relative size) for all three
+sizes: there is no need to be more granular and it safes us some trouble. We
+thereby also sacrifice some detailed tweaking but also got rid of potential
+visual incompatibilities as for instance in \STIX.
+
+\stopchapter
+
 \startchapter[title=Tweak: dimensions] \ShowTweakUsage{dimensions}
 
 Usage of this tweak can best be observed (and experimented) in the goodie files
@@ -1414,11 +1512,12 @@ You can substitute a character in a font by one from a substitution feature:
     \NC #1
     \NC \showglyphs \switchtobodyfont[#1]    $f'(x)+e^{g'(x)} - a''+ b''' + c''''$
     \NC \showglyphs \switchtobodyfont[#1-nt] $f'(x)+e^{g'(x)} - a''+ b''' + c''''$
+    \NC \showglyphs \switchtobodyfont[#1]    $\primed{f}$
     \NC \NR
 \stoptexdefinition
 
-\starttabulate[|l|c|c|c|c|]
-    \NC \NC tweaked \NC original \NC \NR
+\starttabulate[|l|c|c|c|]
+    \NC \NC tweaked \NC original \NC primed \NC \NR
     \ctxlua {
         for i=1,#document.usedfonts do
             if i > 1 then
@@ -1617,16 +1716,13 @@ hand symbol.
     }
 \stoptabulate
 
-
-
-
 \stopchapter
 
 \startchapter[title=Tweak: addmirrors]   \ShowTweakUsage{addmirrors}
 
 This adds symbols for right|-|to|-|left math by simply mirroring existing ones.
 Deep down the engine doesn't really care about in what direction typesetting
-happens (wrt spacing and building structures) , and it is the backend that does
+happens (wrt spacing and building structures), and it is the backend that does
 the real work. However, symbols need to be flipped.
 
 \stopchapter

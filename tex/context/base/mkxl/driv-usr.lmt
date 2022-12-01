@@ -125,11 +125,11 @@ cur_h = cur_h + effectiveglue(current,this_box,true)
                 local boxdir = getdirection(current) or lefttoright_code
                 local shift  = getshift(current)
                 local geometry, hasoffset, hasorientation, hasanchor = getgeometry(current,true)
-                local anchor, source, target, targetdata
+                local anchor, source, target, targetdata, s_anchor, t_anchor
                 local anc_h, anc_v
                 local usedorientation = false
                 if hasanchor then
-                    anchor, source, target = getanchors(current)
+                    anchor, source, target, s_anchor, t_anchor  = getanchors(current)
                 end
                 if hasorientation then
                     local orientation, xoffset, yoffset, woffset, hoffset, doffset = getorientation(current)
@@ -221,8 +221,8 @@ cur_h = cur_h + effectiveglue(current,this_box,true)
                 end
                 pos_v = targetdata[2] + anc_v
                 if anchor and anchor > 0 then
-                    pos_h, pos_v = applyanchor(anchor,true,pos_h,pos_v,targetdata[3],targetdata[4],targetdata[5])
-                    pos_h, pos_v = applyanchor(anchor,false,pos_h,pos_v,width,height,depth)
+                    pos_h, pos_v = applyanchor(t_anchor,true, pos_h,pos_v,targetdata[3],targetdata[4],targetdata[5])
+                    pos_h, pos_v = applyanchor(s_anchor,false,pos_h,pos_v,width,height,depth)
                 end
               ::process::
                 if source then
@@ -359,10 +359,10 @@ cur_v = cur_v + effectiveglue(current,this_box,true)
                 local boxdir = getdirection(current) or lefttoright_code
                 local shift = getshift(current)
                 local geometry, hasoffset, hasorientation, hasanchor = getgeometry(current,true)
-                local anchor, source, target, targetdata
+                local anchor, source, target, targetdata, s_anchor, t_anchor
                 local usedorientation = false
                 if hasanchor then
-                    anchor, source, target = getanchors(current)
+                    anchor, source, target, s_anchor, t_anchor  = getanchors(current)
                 end
                 if hasorientation then
                     local orientation, xoffset, yoffset, woffset, hoffset, doffset = getorientation(current)
@@ -462,8 +462,8 @@ cur_v = cur_v + effectiveglue(current,this_box,true)
                 goto process
               ::posdone::
                 if anchor and anchor > 0 then
-                    pos_h, pos_v = applyanchor(anchor,true,pos_h,pos_v,targetdata[3],targetdata[4],targetdata[5])
-                    pos_h, pos_v = applyanchor(anchor,false,pos_h,pos_v,width,height,depth)
+                    pos_h, pos_v = applyanchor(t_anchor,true, pos_h,pos_v,targetdata[3],targetdata[4],targetdata[5])
+                    pos_h, pos_v = applyanchor(s_anchor,false,pos_h,pos_v,width,height,depth)
                 end
               ::process::
                 if source then

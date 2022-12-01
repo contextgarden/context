@@ -2728,7 +2728,8 @@
 \appendtoks
     \edef\p_threshold{\mathematicsparameter\c!threshold}%
     \maththreshold\ifcsname\??maththreshold\p_threshold\endcsname\lastnamedcs\else\p_threshold\fi\relax
-\to \everymath % \everymathematics
+% \to \everymath % \everymathematics
+\to \everymathematics
 
 %D Here is simple alignment mechanism:
 

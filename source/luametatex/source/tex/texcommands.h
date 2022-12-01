@@ -442,6 +442,7 @@ typedef enum convert_codes {
     semi_expanded_code,       /*tex command code for |\constantexpanded| */
     string_code,              /*tex command code for |\string| */
     cs_string_code,           /*tex command code for |\csstring| */
+    cs_active_code,           /*tex command code for |\csactive| */
     detokenized_code,         /*tex command code for |\detokenized| */
     roman_numeral_code,       /*tex command code for |\romannumeral| */
     meaning_code,             /*tex command code for |\meaning| */
@@ -743,6 +744,7 @@ typedef enum expand_after_codes {
     expand_token_code,
     expand_cs_token_code,
     expand_code,
+    expand_active_code,
     semi_expand_code,
     expand_after_toks_code,
  /* expand_after_fi, */
@@ -1034,6 +1036,7 @@ typedef enum charcode_codes {
     sfcode_charcode,
     hccode_charcode,
     hmcode_charcode,
+    amcode_charcode,
     mathcode_charcode,
     extmathcode_charcode,
     delcode_charcode,

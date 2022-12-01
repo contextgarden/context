@@ -22,9 +22,15 @@ return {
          -- RadicalRuleThickness      =   50, --   50 in font
             DelimiterPercent          =   90,
             DelimiterShortfall        =  400,
+            SubscriptShiftDown                = 200, -- 250 in font
+            SuperscriptShiftUp                = 400, -- 430 in font
+            SubscriptShiftDownWithSuperscript = "1.25*SubscriptShiftDown", -- trial and error
+            SubSuperscriptGapMin              = 200, -- 250 in font
          -- DisplayOperatorMinHeight  = 1800, -- 1300 in font (only one)
-            PrimeRaisePercent         =   85, --   50 default
-         -- PrimeRaiseComposedPercent =   25, --   25 default
+         -- PrimeRaisePercent         =    0, -- set to 0 in math-act
+         -- PrimeRaiseComposedPercent =   25, -- set to 0 in math-act
+            PrimeShiftUp              = "1.2*SuperscriptShiftUp",
+            PrimeShiftUpCramped       = "1.2*SuperscriptShiftUp",
         },
         tweaks = {
             aftercopying = {
@@ -34,9 +40,9 @@ return {
                 },
                 {
                     tweak   = "fixprimes",
-                    scale   = 0.95,
+                    -- scale   = 1,
                  -- smaller = true,
-                    factor  = 0.95,
+                    factor  = 0.73,
                  -- fake    = 0.75,
                 },
                 {
@@ -231,6 +237,9 @@ return {
                 {
                     tweak = "addfourier",
                     variant = 2,
+                },
+                {
+                    tweak = "addprimed",
                 },
                 -- this is the mkiv section
                 {

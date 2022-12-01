@@ -1874,6 +1874,7 @@ static int tokenlib_scan_next_char(lua_State *L)
             break;
         case letter_cmd:
         case other_char_cmd:
+        case active_char_cmd: /* needs testing */
             {
                 char buffer[6];
                 char *uindex = aux_uni2string((char *) buffer, (unsigned int) cur_chr);
@@ -3069,6 +3070,8 @@ static int tokenlib_push_macro(lua_State *L) // todo: just store cmd and flag to
     /*tex
         We need to check for a valid hit, but what is best here, for instance using |(cmd >= call_cmd)|
         is not okay as we miss a lot then.
+
+        Active characters: maybe when we pass a number ... 
     */
     if (lua_type(L, 1) == LUA_TSTRING) {
         size_t lname = 0;
@@ -3084,6 +3087,15 @@ static int tokenlib_push_macro(lua_State *L) // todo: just store cmd and flag to
             tokenlib_aux_make_new_package(L, cmd, eq_flag(cs), chr, cs, global);
             return 1;
         }
+    }
+    return 0;
+}
+
+static int tokenlib_pop_macro(lua_State *L)
+{
+    lua_token_package *p = tokenlib_aux_check_ispackage(L, 1);
+    if (p) {
+        tex_forced_define(p->how, p->cs, p->flag, p->cmd, p->chr);
     }
     return 0;
 }
@@ -3125,15 +3137,6 @@ static int tokenlib_get_expansion(lua_State* L)
     }
     lua_pushliteral(L, "");
     return 1;
-}
-
-static int tokenlib_pop_macro(lua_State *L)
-{
-    lua_token_package *p = tokenlib_aux_check_ispackage(L, 1);
-    if (p) {
-        tex_forced_define(p->how, p->cs, p->flag, p->cmd, p->chr);
-    }
-    return 0;
 }
 
 static int tokenlib_save_lua(lua_State *L)

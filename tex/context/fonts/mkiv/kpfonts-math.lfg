@@ -21,8 +21,11 @@ return {
             DelimiterPercent                =   90,
             DelimiterShortfall              =  400,
          -- DisplayOperatorMinHeight        = 1800, -- 1500 in font (only one)
-            PrimeRaisePercent               =   25, --   50 default
-         -- PrimeRaiseComposedPercent       =   25, --   25 default
+         -- PrimeRaisePercent               =   25, --   set to 0 in math-act
+         -- PrimeRaiseComposedPercent       =   25, --   set to 0 in math-act
+            PrimeShiftUp                    = "1.15*SuperscriptShiftUp",
+            PrimeShiftUpCramped             = "1.15*SuperscriptShiftUp",            
+            SubscriptShiftDownWithSuperscript = "1.2*SubscriptShiftDown", -- unclear original value, trial and error
         },
         tweaks = {
             aftercopying = {
@@ -54,7 +57,7 @@ return {
                 },
                 {
                     tweak   = "fixprimes",
-                    factor  = 1.4, -- accent base height
+                    factor  = 0.86, -- accent base height
                     smaller = true, -- replace multiples
                     scale   = 1, -- glyph scale
                     fake    = 0.8, -- replace multiples with this width proportion
@@ -140,6 +143,9 @@ return {
                 {
                     tweak = "addfourier",
                     variant = 2,
+                },
+                {
+                    tweak = "addprimed",
                 },
                 {
                     tweak = "setoptions",
