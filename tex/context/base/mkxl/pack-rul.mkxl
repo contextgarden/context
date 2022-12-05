@@ -1288,9 +1288,9 @@
      \enforced\lettonothing\delayedendstrut
      \enforced\lettonothing\delayedstrut
    \else
-     \enforced\let          \delayedbegstrut\localbegstrut
-     \enforced\let          \delayedendstrut\localendstrut
-     \enforced\let          \delayedstrut   \localstrut
+     \enforced\let         \delayedbegstrut\localbegstrut
+     \enforced\let         \delayedendstrut\localendstrut
+     \enforced\let         \delayedstrut   \localstrut
      \enforced\lettonothing\localbegstrut
      \enforced\lettonothing\localendstrut
      \enforced\lettonothing\localstrut

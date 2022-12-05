@@ -2448,7 +2448,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
     if useddisc and start ~= usedstart then -- make this option per font -- new 2022-09-25
        start = getnext(start)                                            -- new 2022-09-25
     end                                                                  -- new 2022-09-25
-    return head, start, done, useddisc                                   -- new 2022-09-25 
+    return head, start, done, useddisc                                   -- new 2022-09-25
 end
 
 local chaintrac do
@@ -2971,7 +2971,7 @@ handlers.gpos_context             = handle_contextchain
 -- end
 
 -- new 2022-09-25
- 
+
 local function chained_contextchain(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash)
     local steps    = currentlookup.steps
     local nofsteps = currentlookup.nofsteps

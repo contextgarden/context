@@ -27,7 +27,8 @@
 
 /*tex
     Due to the nature of the accessors, this is the module with most metatables. However, we
-    provide getters and setters too. Users can choose what they like most.
+    provide getters and setters too. Users can choose what they like most. If needed we can use 
+    fast metatable resolvers but there is no real need. 
 */
 
 # define TEX_METATABLE_ATTRIBUTE "tex.attribute"
@@ -2604,6 +2605,7 @@ static int texlib_aux_convert(lua_State *L, int cur_code)
         case string_code:              /* arg token */
         case cs_string_code:           /* arg token */
         case cs_active_code:           /* arg token */
+     /* case cs_lastname_code:      */ /* arg token */
         case detokenized_code:         /* arg token */
         case meaning_code:             /* arg token */
         case to_mathstyle_code:

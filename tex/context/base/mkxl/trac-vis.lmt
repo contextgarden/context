@@ -810,6 +810,7 @@ local ruledbox do
 
     ruledbox = function(head,current,vertical,layer,what,simple,previous,trace_origin,parent)
         local wd, ht, dp = getwhd(current)
+-- todo        local wd, ht, dh, shift = getlistdimensions(current)
         local force_origin = wd == 0 or (dp + ht) == 0
             local shift = getshift(current)
             local orientation, xoffset, yoffset = getorientation(current)

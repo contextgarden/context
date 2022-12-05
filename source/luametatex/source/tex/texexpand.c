@@ -677,6 +677,20 @@ int tex_is_valid_csname(void)
             tex_get_x_or_protected(); /* we skip unprotected ! */
         } while (cur_cmd != end_cs_name_cmd);
         goto FINISH;
+        /* no real gain: */
+     // while (1) {
+     //     tex_get_token();
+     //     if (cur_cmd == end_cs_name_cmd) {
+     //         goto FINISH;
+     //     } else if (cur_cmd <= max_command_cmd || is_protected_cmd(cur_cmd)) {
+     //       /* go on */
+     //     } else {
+     //         tex_expand_current_token();
+     //         if (cur_cmd != end_cs_name_cmd) {
+     //             goto FINISH;
+     //         }
+     //     }
+     // }
     } else if (n) {
         /*tex Look up the characters of list |n| in the hash table, and set |cur_cs|. */
         int f = lmt_fileio_state.io_first;

@@ -136,8 +136,6 @@ extern halfword    tex_get_font_dimen                 (void);
 extern void        tex_set_scaled_font_dimen          (void);
 extern halfword    tex_get_scaled_font_dimen          (void);
 
-extern void        tex_get_x_or_protected             (void);
-
 extern int         tex_fract                          (int x, int n, int d, int max_answer);
 
 extern halfword    tex_scan_lua_value                 (int index);

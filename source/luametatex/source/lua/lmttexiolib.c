@@ -19,7 +19,8 @@
 FILE *lmt_valid_file(lua_State *L) {
     luaL_Stream *p = (luaL_Stream *) lua_touserdata(L, 1);
     if (p && lua_getmetatable(L, 1)) {
-        luaL_getmetatable(L, LUA_FILEHANDLE);
+     // luaL_getmetatable(L, LUA_FILEHANDLE);
+        lua_get_metatablelua(file_handle_instance);
         if (! lua_rawequal(L, -1, -2)) {
             p = NULL;
         }

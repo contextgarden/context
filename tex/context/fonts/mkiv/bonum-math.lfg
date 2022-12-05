@@ -126,7 +126,7 @@ return {
                         [0x0029]                = { topright = -0.15, bottomright = -0.15 }, -- right parenthesis variants
                         ["0x29.variants.*"]     = { topright = -0.15, bottomright = -0.15 }, -- right parenthesis variants
                         ["0x29.parts.top"]      = { topright = -0.15,                     }, -- right parenthesis top
-                        ["0x29.parts.bottom"]   = {                   bottomright = -0.15 }, -- right parenthesis bottom  
+                        ["0x29.parts.bottom"]   = {                   bottomright = -0.15 }, -- right parenthesis bottom
                         [0x221A]                = { topright =  0.2,  bottomright =  0.2  }, -- radical
                         ["0x221A.variants.*"]   = { topright =  0.2,  bottomright =  0.2  },
                         ["0x221A.parts.top"]    = { topright =  0.2,                      },

@@ -1703,7 +1703,8 @@ static int mplib_new(lua_State *L)
             *mpud = mp;
             mplib_aux_set_bend_tolerance(L, bendtolerance);
             mplib_aux_set_move_tolerance(L, movetolerance);
-            luaL_getmetatable(L, MP_METATABLE_INSTANCE);
+         // luaL_getmetatable(L, MP_METATABLE_INSTANCE);
+            lua_get_metatablelua(mplib_instance);
             lua_setmetatable(L, -2);
             return 1;
         }
@@ -1763,7 +1764,8 @@ static int mplib_aux_wrapresults(lua_State *L, mp_run_data *res, int status, lua
             *v = p;
             mplib_aux_set_bend_tolerance(L, bendtolerance);
             mplib_aux_set_move_tolerance(L, movetolerance);
-            luaL_getmetatable(L, MP_METATABLE_FIGURE);
+         // luaL_getmetatable(L, MP_METATABLE_FIGURE);
+            lua_get_metatablelua(mplib_figure);
             lua_setmetatable(L, -2);
             lua_rawseti(L, -2, i);
             i++;
@@ -2341,7 +2343,8 @@ static int mplib_figure_objects(lua_State *L)
             *v = p;
             mplib_aux_set_bend_tolerance(L, bendtolerance);
             mplib_aux_set_move_tolerance(L, movetolerance);
-            luaL_getmetatable(L, MP_METATABLE_OBJECT);
+         // luaL_getmetatable(L, MP_METATABLE_OBJECT);
+            lua_get_metatablelua(mplib_object);
             lua_setmetatable(L, -2);
             lua_rawseti(L, -2, i);
             i++;

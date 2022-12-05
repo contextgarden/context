@@ -3380,25 +3380,6 @@ halfword tex_scan_general_text(halfword *tail)
 
 /*tex
 
-    The |get_x_or_protected| procedure is like |get_x_token| except that protected macros are not
-    expanded. It sets |cur_cmd|, |cur_chr|, |cur_tok|, and expands non-protected macros.
-
-*/
-
-void tex_get_x_or_protected(void)
-{
-    while (1) {
-        tex_get_token();
-        if (cur_cmd <= max_command_cmd || is_protected_cmd(cur_cmd)) {
-            return;
-        } else {
-            tex_expand_current_token();
-        }
-    }
-}
-
-/*tex
-
     |scan_toks|. This function returns a pointer to the tail of a new token list, and it also makes
     |def_ref| point to the reference count at the head of that list.
 
@@ -3759,7 +3740,7 @@ halfword tex_scan_macro_normal(void)
     return result;
 }
 
-# define optimize_grouping 0
+# define optimize_grouping 1
 
 halfword tex_scan_macro_expand(void)
 {

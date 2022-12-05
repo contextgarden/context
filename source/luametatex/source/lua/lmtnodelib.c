@@ -2489,10 +2489,18 @@ static int nodelib_direct_getgeometry(lua_State* L)
                         lua_pushboolean(L, tex_has_box_geometry(n, offset_geometry));
                         lua_pushboolean(L, tex_has_box_geometry(n, orientation_geometry));
                         lua_pushboolean(L, tex_has_box_geometry(n, anchor_geometry));
-                        return 4;
+                        lua_pushinteger(L, checked_direction_value(box_dir(n)));
+                        return 5;
                     } else {
                         return 1;
                     }
+                } else if (lua_toboolean(L, 2)) {
+                    lua_pushboolean(L, 0);
+                    lua_pushboolean(L, 0);
+                    lua_pushboolean(L, 0);
+                    lua_pushboolean(L, 0);
+                    lua_pushinteger(L, checked_direction_value(box_dir(n)));
+                    return 5;
                 }
                 break;
         }
@@ -2868,6 +2876,25 @@ static int nodelib_direct_getkerndimension(lua_State *L)
     } else {
         return 0;
     }
+}
+
+static int nodelib_direct_getlistdimensions(lua_State *L)
+{
+    halfword n = nodelib_valid_direct_from_index(L, 1);
+    if (n) {
+        switch (node_type(n)) { 
+            /* when we need it more node types will be handled */
+            case hlist_node:
+            case vlist_node:
+                lua_pushinteger(L, box_width(n));
+                lua_pushinteger(L, box_height(n));
+                lua_pushinteger(L, box_depth(n));
+                lua_pushinteger(L, box_shift_amount(n));
+                nodelib_push_direct_or_nil_node_prev(L, box_list(n));
+                return 5;
+        }
+    }
+    return 0;
 }
 
 /* node.direct.getlist */
@@ -3874,13 +3901,41 @@ static int nodelib_direct_remove(lua_State *L)
                 return 3;
             }
         } else {
-            lua_pushinteger(L, head);
+            nodelib_push_direct_or_nil(L, head);
             lua_pushnil(L);
         }
     } else {
         lua_pushnil(L);
         lua_pushnil(L);
     }
+    return 2;
+}
+
+static int nodelib_direct_remove_from_list(lua_State *L)
+{
+    halfword head = nodelib_valid_direct_from_index(L, 1);
+    int count = 0;
+    if (head) {
+        halfword id = lmt_tohalfword(L, 2);
+        halfword subtype = lmt_opthalfword(L, 3, -1);
+        halfword current = head;
+        while (current) { 
+            halfword next = node_next(current);
+            if (node_type(current) == id && (subtype < 0 || node_subtype(current) == subtype)) {
+                if (current == head) {
+                    head = next; 
+                    node_prev(next) = null;
+                } else {
+                    tex_try_couple_nodes(node_prev(current), next);
+                }
+                tex_flush_node(current);
+                ++count;
+            }
+            current = next;
+        }
+    }
+    nodelib_push_direct_or_nil(L, head);
+    lua_push_integer(L, count);
     return 2;
 }
 
@@ -8436,7 +8491,6 @@ static int nodelib_direct_isprevglyph(lua_State *L)
     }
 }
 
-
 /* direct.usesfont */
 
 inline static int nodelib_aux_uses_font_disc(lua_State *L, halfword n, halfword font)
@@ -9700,8 +9754,10 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "rangedimensions",         nodelib_direct_rangedimensions        }, /* maybe get... */
     { "getglyphdimensions",      nodelib_direct_getglyphdimensions     },
     { "getkerndimension",        nodelib_direct_getkerndimension       },
+    { "getlistdimensions",       nodelib_direct_getlistdimensions       },
     { "patchattributes",         nodelib_direct_patchattributes        },
     { "remove",                  nodelib_direct_remove                 },
+    { "removefromlist",          nodelib_direct_remove_from_list       },
     { "repack",                  nodelib_direct_repack                 },
     { "freeze",                  nodelib_direct_freeze                 },
     { "setattribute",            nodelib_direct_setattribute           },

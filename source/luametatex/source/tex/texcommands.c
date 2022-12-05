@@ -657,6 +657,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "directlua",                      convert_cmd,            lua_code,                                 0);
         tex_primitive(luatex_command, "csstring",                       convert_cmd,            cs_string_code,                           0);
         tex_primitive(luatex_command, "csactive",                       convert_cmd,            cs_active_code,                           0);
+     /* tex_primitive(luatex_command, "csnamestring",                   convert_cmd,            cs_lastname_code,                         0); */
         tex_primitive(luatex_command, "detokenized",                    convert_cmd,            detokenized_code,                         0);
         tex_primitive(luatex_command, "expanded",                       convert_cmd,            expanded_code,                            0);
         tex_primitive(luatex_command, "semiexpanded",                   convert_cmd,            semi_expanded_code,                       0);

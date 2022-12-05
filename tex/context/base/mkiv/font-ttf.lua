@@ -230,20 +230,7 @@ local function applyaxis(glyph,shape,deltas,dowidth)
                     if dowidth then
                         cnt = cnt - 4
                     end
-                    if cnt == 1 then
-                        local d = dpoints[1]
-                        local x = xvalues[d] * factor
-                        local y = yvalues[d] * factor
-                        for i=1,nofpoints do
-                            local p = points[i]
-                            if x ~= 0 then
-                                p[1] = p[1] + x
-                            end
-                            if y ~= 0 then
-                                p[2] = p[2] + y
-                            end
-                        end
-                    elseif cnt > 0 then
+                    if cnt > 0 then
                         -- Not the most efficient solution but we seldom do this. We
                         -- actually need to avoid the extra points here but I'll deal
                         -- with that when needed.
@@ -265,14 +252,13 @@ local function applyaxis(glyph,shape,deltas,dowidth)
                                             lastindex = currentindex
                                             break
                                         elseif found > last then
-
--- \definefontfeature[book][default][axis={weight=800}]
--- \definefont[testfont][file:Commissioner-vf-test.ttf*book]
--- \testfont EΘÄΞ
-while lastindex > 1 and dpoints[lastindex] > last do
-    lastindex = lastindex - 1
-end
-
+                                            -- \definefontfeature[book][default][axis={weight=800}]
+                                            -- \definefont[testfont][file:Commissioner-vf-test.ttf*book]
+                                            -- \testfont EΘÄΞ
+                                            while lastindex > 1 and dpoints[lastindex] > last do
+                                                lastindex = lastindex - 1
+                                            end
+                                            --
                                             break
                                         end
                                     end
@@ -351,6 +337,7 @@ end
                                             end
                                         else
                                             fx = (p2x - p1x)/(p3x - p1x)
+-- fx = round(fx)
                                             fx = (1 - fx) * x1 + fx * x3
                                         end
                                         --
@@ -374,6 +361,7 @@ end
                                             end
                                         else
                                             fy = (p2y - p1y)/(p3y - p1y)
+-- fy = round(fy)
                                             fy = (1 - fy) * y1 + fy * y3
                                         end
                                      -- -- maybe:
@@ -777,6 +765,18 @@ local function contours2outlines_shaped(glyphs,shapes,keepcurve)
                         end
                         first = last + 1
                     end
+                    -- See readers.hvar where we set the delta lsb as well as the adapted
+                    -- width. At this point we do know the boundingbox's llx. The xmax is
+                    -- not that relevant. It needs more testing!
+                    --
+                    xmin = glyph.boundingbox[1]
+                    --
+                    local dlsb = glyph.dlsb
+                    if dlsb then
+                        xmin = xmin + dlsb
+                        glyph.dlsb = nil -- save space
+                    end
+                    --
                     glyph.boundingbox = { round(xmin), round(ymin), round(xmax), round(ymax) }
                 end
             end

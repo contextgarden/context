@@ -215,16 +215,16 @@
 
 \stopinterface
 
-%D Used?
-
-\def\mult_check_for_assignment_indeed#-=#1#-^^^^0004%
-  {\if#1^^^^0003\assignmentfalse\else\assignmenttrue\fi}
-
-\def\mult_check_for_assignment_indeed_begin_#-=#1#-^^^^0004%
-  {\if#1^^^^0003}
-
-\def\mult_check_for_assignment#1%
-  {\expandafter\mult_check_for_assignment_indeed\detokenize{#1}=^^^^0003^^^^0003^^^^0004}
+% % No longer used:
+%
+% \def\mult_check_for_assignment_indeed#-=#1#-^^^^0004%
+%   {\if#1^^^^0003\assignmentfalse\else\assignmenttrue\fi}
+%
+% \def\mult_check_for_assignment_indeed_begin_#-=#1#-^^^^0004%
+%   {\if#1^^^^0003}
+%
+% \def\mult_check_for_assignment#1%
+%   {\expandafter\mult_check_for_assignment_indeed\detokenize{#1}=^^^^0003^^^^0003^^^^0004}
 
 %D Beware, zero arguments is an assignment!
 
@@ -266,7 +266,7 @@
 % slower: \def#3##1{\csname\ifcsname#1#2:##1\endcsname\expandafter\csstring\lastnamedcs\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
 
 %D pre-expansion can be a bit faster but handly any effect on a normal run so let's
-%D go for saving some memory
+%D go for saving some memory.
 
 \def\mult_interfaces_detokenize{\expandafter\expandafter\expandafter\detokenize\expandafter\expandafter\expandafter}
 

@@ -237,6 +237,24 @@ local read_integer = {
     streamreader.readinteger4,
 }
 
+directives.register("fonts.streamreader",function()
+
+    read_cardinal = {
+        streamreader.readcardinal1,
+        streamreader.readcardinal2,
+        streamreader.readcardinal3,
+        streamreader.readcardinal4,
+    }
+
+    read_integer = {
+        streamreader.readinteger1,
+        streamreader.readinteger2,
+        streamreader.readinteger3,
+        streamreader.readinteger4,
+    }
+
+end)
+
 -- Traditionally we use these unique names (so that we can flatten the lookup list
 -- (we create subsets runtime) but I will adapt the old code to newer names.
 
@@ -433,7 +451,7 @@ local function getfactors(data,instancespec)
             for i=1,#axis do
                 local a = axis[i]
                 local d = a.default
-                factors[i] = getaxisscale(segments,a.minimum,d,a.maximum,values[a.name or a.tag] or d)
+                factors[i] = getaxisscale(segments,a.minimum,d,a.maximum,values[a.name or a.tag] or values[a.tag] or d)
             end
             return factors
         end
@@ -4498,6 +4516,66 @@ function readers.fvar(f,fontdata,specification)
     end
 end
 
+local function calculate(f,fontdata,specification,offset,field,regions,deltas,nozero)
+    --
+    -- innerIndexBitCountMask = 0x000F
+    -- mapEntrySizeMask       = 0x0030
+    -- reservedFlags          = 0xFFC0
+    --
+    -- outerIndex = entry >>       ((entryFormat & innerIndexBitCountMask) + 1)
+    -- innerIndex = entry & ((1 << ((entryFormat & innerIndexBitCountMask) + 1)) - 1)
+    --
+    setposition(f,offset)
+    local format       = readushort(f) -- todo: check
+    local mapcount     = readushort(f)
+    local entrysize    = rshift(band(format,0x0030),4) + 1
+    local nofinnerbits = band(format,0x000F) + 1 -- n of inner bits
+    local innermask    = lshift(1,nofinnerbits) - 1
+    local readcardinal = read_cardinal[entrysize] -- 1 upto 4 bytes
+    local innerindex   = { } -- size is mapcount
+    local outerindex   = { } -- size is mapcount
+    for i=0,mapcount-1 do
+        local mapdata = readcardinal(f)
+        outerindex[i] = rshift(mapdata,nofinnerbits)
+        innerindex[i] = band(mapdata,innermask)
+    end
+    -- use last entry when no match i
+    setvariabledata(fontdata,"hvarwidths",true)
+    local glyphs = fontdata.glyphs
+    for i=0,fontdata.nofglyphs-1 do
+        local glyph = glyphs[i]
+        local outer = outerindex[i] or 0
+        local inner = innerindex[i] or i
+        if outer and inner then -- not needed
+            local delta = deltas[outer+1]
+            if delta then
+                local d = delta.deltas[inner+1]
+                if d then
+                    local scales = delta.scales
+                    local deltaw = field and glyph[field] or 0
+                    for i=1,#scales do
+                        local di = d[i]
+                        if di then
+                            deltaw = deltaw + scales[i] * di
+                        else
+                            break -- can't happen
+                        end
+                    end
+                    deltaw = round(deltaw)
+                    if nozero and deltaw == 0 then
+                        -- no need for dlsb zero
+                    else
+                        glyph[field] = deltaw
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Todo: when it's tested for a while the lsb hackery can be backported from the
+-- font-dsp.lmt file.
+
 function readers.hvar(f,fontdata,specification)
     local factors = specification.factors
     if not factors then
@@ -4508,92 +4586,30 @@ function readers.hvar(f,fontdata,specification)
         report("no hvar table, expect problems due to messy widths")
         return
     end
-
     local version         = readulong(f) -- 0x00010000
     local variationoffset = tableoffset + readulong(f) -- the store
     local advanceoffset   = tableoffset + readulong(f)
     local lsboffset       = tableoffset + readulong(f)
     local rsboffset       = tableoffset + readulong(f)
-
-    local regions    = { }
-    local variations = { }
-    local innerindex = { } -- size is mapcount
-    local outerindex = { } -- size is mapcount
-    local deltas     = { }
-
-    if variationoffset > 0 then
-        regions, deltas = readvariationdata(f,variationoffset,factors)
-    end
-    if not regions then
-        -- for now .. what to do ?
-        return
-    end
-
-    if advanceoffset > 0 then
-        --
-        -- innerIndexBitCountMask = 0x000F
-        -- mapEntrySizeMask       = 0x0030
-        -- reservedFlags          = 0xFFC0
-        --
-        -- outerIndex = entry >>       ((entryFormat & innerIndexBitCountMask) + 1)
-        -- innerIndex = entry & ((1 << ((entryFormat & innerIndexBitCountMask) + 1)) - 1)
-        --
-        setposition(f,advanceoffset)
-        local format       = readushort(f) -- todo: check
-        local mapcount     = readushort(f)
-        local entrysize    = rshift(band(format,0x0030),4) + 1
-        local nofinnerbits = band(format,0x000F) + 1 -- n of inner bits
-        local innermask    = lshift(1,nofinnerbits) - 1
-        local readcardinal = read_cardinal[entrysize] -- 1 upto 4 bytes
-        for i=0,mapcount-1 do
-            local mapdata = readcardinal(f)
-            outerindex[i] = rshift(mapdata,nofinnerbits)
-            innerindex[i] = band(mapdata,innermask)
-        end
-        -- use last entry when no match i
-        setvariabledata(fontdata,"hvarwidths",true)
-        local glyphs = fontdata.glyphs
-        for i=0,fontdata.nofglyphs-1 do
-            local glyph = glyphs[i]
-            local width = glyph.width
-            if width then
-                local outer = outerindex[i] or 0
-                local inner = innerindex[i] or i
-                if outer and inner then -- not needed
-                    local delta = deltas[outer+1]
-                    if delta then
-                        local d = delta.deltas[inner+1]
-                        if d then
-                            local scales = delta.scales
-                            local deltaw = 0
-                            for i=1,#scales do
-                                local di = d[i]
-                                if di then
-                                    deltaw = deltaw + scales[i] * di
-                                else
-                                    break -- can't happen
-                                end
-                            end
--- report("index: %i, outer: %i, inner: %i, deltas: %|t, scales: %|t, width: %i, delta %i",
---     i,outer,inner,d,scales,width,round(deltaw))
-                            glyph.width = width + round(deltaw)
-                        end
-                    end
-                end
+    if variationoffset > tableoffset then
+        local regions, deltas = readvariationdata(f,variationoffset,factors)
+        if regions then
+            if advanceoffset > tableoffset then
+                calculate(f,fontdata,specification,advanceoffset,"width",regions,deltas,false)
             end
+            -- I don't want to save the lsb as it is the llx that we already store but as
+            -- we're ahead of reading the bounding box so we cannot set the right lsb here
+            -- so we set the delta (d) instead.
+            if lsboffset > tableoffset then
+                calculate(f,fontdata,specification,lsboffset,"dlsb",regions,deltas,true) -- delta lsb
+            end
+         -- if rsboffset > tableoffset then
+         --     -- we don't use right side bearings
+         -- end
+         -- setvariabledata(fontdata,"hregions",regions)
         end
 
     end
-
- -- if lsboffset > 0 then
- --     -- we don't use left side bearings
- -- end
-
- -- if rsboffset > 0 then
- --     -- we don't use right side bearings
- -- end
-
- -- setvariabledata(fontdata,"hregions",regions)
 
 end
 

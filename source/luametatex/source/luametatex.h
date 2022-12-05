@@ -87,9 +87,9 @@
 # include "tex/textypes.h"
 
 # define luametatex_version          210
-# define luametatex_revision         02
-# define luametatex_version_string   "2.10.02"
-# define luametatex_development_id   20221118
+# define luametatex_revision         04
+# define luametatex_version_string   "2.10.04"
+# define luametatex_development_id   20221202
 
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"

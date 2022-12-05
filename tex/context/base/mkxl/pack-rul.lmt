@@ -195,7 +195,7 @@ local function doanalyzeframedbox(n)
     if getwidth(box) ~= 0 then
         local list = getlist(box)
         if list then
-            for n in nexthlist, list do
+            for n in nextlist, list do
                 local width, height, depth = getwhd(n)
                 if not firstheight then
                     firstheight = height
@@ -203,14 +203,22 @@ local function doanalyzeframedbox(n)
                 lastdepth = depth
                 noflines  = noflines + 1
             end
-            for n in nextvlist, list do
-                local width, height, depth = getwhd(n)
-                if not firstheight then
-                    firstheight = height
-                end
-                lastdepth = depth
-                noflines  = noflines + 1
-            end
+         -- for n in nexthlist, list do
+         --     local width, height, depth = getwhd(n)
+         --     if not firstheight then
+         --         firstheight = height
+         --     end
+         --     lastdepth = depth
+         --     noflines  = noflines + 1
+         -- end
+         -- for n in nextvlist, list do
+         --     local width, height, depth = getwhd(n)
+         --     if not firstheight then
+         --         firstheight = height
+         --     end
+         --     lastdepth = depth
+         --     noflines  = noflines + 1
+         -- end
         end
     end
     texsetcount("global",c_framednoflines,noflines)

@@ -1110,19 +1110,20 @@
   %\boundary\plusone
    \penalty\plustenthousand
   %\boundary\plusone
-   \hskip\zeropoint
-   \ignorespaces}
+   \hskip\zeropoint}
 
 \permanent\protected\def\endstrut
   {% \ifmmode M\fi
    % \ifinner I\fi
    \relax\ifhmode
-     \removeunwantedspaces
+    %\removeunwantedspaces
+     \spac_helpers_remove_unwantedspace
      \ifcase\struthtdp\else
        \spac_struts_end
      \fi
    \orelse\ifmmode
-     \removeunwantedspaces
+    %\removeunwantedspaces hmode only anyway
+     \spac_helpers_remove_unwantedspace
      \strut
    \fi}
 

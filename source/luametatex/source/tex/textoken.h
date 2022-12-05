@@ -359,6 +359,7 @@ extern halfword   tex_active_to_cs                (int c, int force);
 extern halfword   tex_string_to_toks              (const char *s);
 extern int        tex_get_char_cat_code           (int c);
 extern halfword   tex_get_token                   (void);
+extern void       tex_get_x_or_protected          (void);
 extern halfword   tex_str_toks                    (lstring s, halfword *tail); /* returns head */
 extern halfword   tex_cur_str_toks                (halfword *tail);            /* returns head */
 extern halfword   tex_str_scan_toks               (int c, lstring b);          /* returns head */

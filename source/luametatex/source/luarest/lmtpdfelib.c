@@ -90,7 +90,7 @@ static pdfe_dictionary *pdfelib_aux_check_isdictionary(lua_State *L, int n)
 {
     pdfe_dictionary *p = (pdfe_dictionary *) lua_touserdata(L, n);
     if (p && lua_getmetatable(L, n)) {
-        lua_get_metatablelua(pdfe_dictionary);
+        lua_get_metatablelua(pdfe_dictionary_instance);
         if (! lua_rawequal(L, -1, -2)) {
             p = NULL;
         }
@@ -107,7 +107,7 @@ static pdfe_array *pdfelib_aux_check_isarray(lua_State *L, int n)
 {
     pdfe_array *p = (pdfe_array *) lua_touserdata(L, n);
     if (p && lua_getmetatable(L, n)) {
-        lua_get_metatablelua(pdfe_array);
+        lua_get_metatablelua(pdfe_array_instance);
         if (! lua_rawequal(L, -1, -2)) {
             p = NULL;
         }
@@ -124,7 +124,7 @@ static pdfe_stream *pdfelib_aux_check_isstream(lua_State *L, int n)
 {
     pdfe_stream *p = (pdfe_stream *) lua_touserdata(L, n);
     if (p && lua_getmetatable(L, n)) {
-        lua_get_metatablelua(pdfe_stream);
+        lua_get_metatablelua(pdfe_stream_instance);
         if (! lua_rawequal(L, -1, -2)) {
             p = NULL;
         }
@@ -141,7 +141,7 @@ static pdfe_reference *pdfelib_aux_check_isreference(lua_State *L, int n)
 {
     pdfe_reference *p = (pdfe_reference *) lua_touserdata(L, n);
     if (p && lua_getmetatable(L, n)) {
-        lua_get_metatablelua(pdfe_reference);
+        lua_get_metatablelua(pdfe_reference_instance);
         if (! lua_rawequal(L, -1, -2)) {
             p = NULL;
         }
@@ -203,10 +203,10 @@ static int pdfelib_type(lua_State *L)
     void *p = lua_touserdata(L, 1);
     if (p && lua_getmetatable(L, 1)) {
         check_type(document, pdfe_instance);
-        check_type(dictionary, pdfe_dictionary);
-        check_type(array, pdfe_array);
-        check_type(reference, pdfe_reference);
-        check_type(stream, pdfe_stream);
+        check_type(dictionary, pdfe_dictionary_instance);
+        check_type(array, pdfe_array_instance);
+        check_type(reference, pdfe_reference_instance);
+        check_type(stream, pdfe_stream_instance);
     }
     return 0;
 }
@@ -278,7 +278,8 @@ static int pdfelib_reference_tostring(lua_State *L) {
 inline static void pdfe_push_dictionary(lua_State *L, ppdict *dictionary)
 {
     pdfe_dictionary *d = (pdfe_dictionary *) lua_newuserdatauv(L, sizeof(pdfe_dictionary), 0);
-    luaL_getmetatable(L, PDFE_METATABLE_DICTIONARY);
+ // luaL_getmetatable(L, PDFE_METATABLE_DICTIONARY);
+    lua_get_metatablelua(pdfe_dictionary_instance);
     lua_setmetatable(L, -2);
     d->dictionary = dictionary;
 }
@@ -307,7 +308,8 @@ static int pdfelib_aux_pushdictionaryonly(lua_State *L, ppdict *dictionary)
 inline static void pdfe_push_array(lua_State *L, pparray *array)
 {
     pdfe_array *a = (pdfe_array *) lua_newuserdatauv(L, sizeof(pdfe_array), 0);
-    luaL_getmetatable(L, PDFE_METATABLE_ARRAY);
+ // luaL_getmetatable(L, PDFE_METATABLE_ARRAY);
+    lua_get_metatablelua(pdfe_array_instance);
     lua_setmetatable(L, -2);
     a->array = array;
 }
@@ -336,7 +338,8 @@ static int pdfelib_aux_pusharrayonly(lua_State *L, pparray *array)
 inline static void pdfe_push_stream(lua_State *L, ppstream *stream)
 {
     pdfe_stream *s = (pdfe_stream *) lua_newuserdatauv(L, sizeof(pdfe_stream), 0);
-    luaL_getmetatable(L, PDFE_METATABLE_STREAM);
+ // luaL_getmetatable(L, PDFE_METATABLE_STREAM);
+    lua_get_metatablelua(pdfe_stream_instance);
     lua_setmetatable(L, -2);
     s->stream = stream;
     s->open = 0;
@@ -374,7 +377,8 @@ static int pdfelib_aux_pushstreamonly(lua_State *L, ppstream *stream)
 inline static void pdfe_push_reference(lua_State *L, ppref *reference)
 {
     pdfe_reference *r = (pdfe_reference *) lua_newuserdatauv(L, sizeof(pdfe_reference), 0);
-    luaL_getmetatable(L, PDFE_METATABLE_REFERENCE);
+ // luaL_getmetatable(L, PDFE_METATABLE_REFERENCE);
+    lua_get_metatablelua(pdfe_reference_instance);
     lua_setmetatable(L, -2);
     r->xref = reference->xref;
     r->onum = (int) reference->number;
@@ -861,7 +865,8 @@ static void aux_pdfelib_open(lua_State *L, FILE *f)
 {
     pdfe_document *p = (pdfe_document *) lua_newuserdatauv(L, sizeof(pdfe_document), 0);
     ppdoc *d = ppdoc_filehandle(f, 1);
-    luaL_getmetatable(L, PDFE_METATABLE_INSTANCE);
+ // luaL_getmetatable(L, PDFE_METATABLE_INSTANCE);
+    lua_get_metatablelua(pdfe_instance);
     lua_setmetatable(L, -2);
     p->document = d;
     p->open = 1;
@@ -936,7 +941,8 @@ static int pdfelib_new(lua_State *L)
             d = ppdoc_mem(memstream, streamsize);
             if (d) {
                 pdfe_document *p = (pdfe_document *) lua_newuserdatauv(L, sizeof(pdfe_document), 0);
-                luaL_getmetatable(L, PDFE_METATABLE_INSTANCE);
+             // luaL_getmetatable(L, PDFE_METATABLE_INSTANCE);
+                lua_get_metatablelua(pdfe_instance);
                 lua_setmetatable(L, -2);
                 p->document = d;
                 p->open = 1;
@@ -1321,12 +1327,12 @@ static int pdfelib_get_value_direct(lua_State *L, void **value, pp_d_direct get_
             case LUA_TSTRING:
                 {
                     const char *key = lua_tostring(L, 2);
-                    lua_get_metatablelua(pdfe_dictionary);
+                    lua_get_metatablelua(pdfe_dictionary_instance);
                     if (lua_rawequal(L, -1, -2)) {
                         *value = get_d(((pdfe_dictionary *) p)->dictionary, key);
                         return 1;
                     } else {
-                        lua_get_metatablelua(pdfe_reference);
+                        lua_get_metatablelua(pdfe_reference_instance);
                         if (lua_rawequal(L, -1, -3)) {
                             ppref *r = (((pdfe_reference *) p)->xref) ? ppxref_find(((pdfe_reference *) p)->xref, (ppuint) (((pdfe_reference *) p)->onum)) : NULL; \
                             ppobj *o = (r) ? ppref_obj(r) : NULL;
@@ -1341,12 +1347,12 @@ static int pdfelib_get_value_direct(lua_State *L, void **value, pp_d_direct get_
             case LUA_TNUMBER:
                 {
                     size_t index = lua_tointeger(L, 2);
-                    lua_get_metatablelua(pdfe_array);
+                    lua_get_metatablelua(pdfe_array_instance);
                     if (lua_rawequal(L, -1, -2)) {
                         *value = get_a(((pdfe_array *) p)->array, index);
                         return 2;
                     } else {
-                        lua_get_metatablelua(pdfe_reference);
+                        lua_get_metatablelua(pdfe_reference_instance);
                         if (lua_rawequal(L, -1, -3)) {
                             ppref *r = (((pdfe_reference *) p)->xref) ? ppxref_find(((pdfe_reference *) p)->xref, (ppuint) (((pdfe_reference *) p)->onum)) : NULL; \
                             ppobj *o = (r) ? ppref_obj(r) : NULL;
@@ -1375,11 +1381,11 @@ static int pdfelib_get_value_indirect(lua_State *L, void **value, pp_d_indirect 
             case LUA_TSTRING:
                 {
                     const char *key = lua_tostring(L, 2);
-                    lua_get_metatablelua(pdfe_dictionary);
+                    lua_get_metatablelua(pdfe_dictionary_instance);
                     if (lua_rawequal(L, -1, -2)) {
                         return get_d(((pdfe_dictionary *) p)->dictionary, key, value);
                     } else {
-                        lua_get_metatablelua(pdfe_reference);
+                        lua_get_metatablelua(pdfe_reference_instance);
                         if (lua_rawequal(L, -1, -3)) {
                             ppref *r = (((pdfe_reference *) p)->xref) ? ppxref_find(((pdfe_reference *) p)->xref, (ppuint) (((pdfe_reference *) p)->onum)) : NULL;
                             ppobj *o = (r) ? ppref_obj(r) : NULL;
@@ -1392,11 +1398,11 @@ static int pdfelib_get_value_indirect(lua_State *L, void **value, pp_d_indirect 
             case LUA_TNUMBER:
                 {
                     size_t index = lua_tointeger(L, 2);
-                    lua_get_metatablelua(pdfe_array);
+                    lua_get_metatablelua(pdfe_array_instance);
                     if (lua_rawequal(L, -1, -2)) {
                         return get_a(((pdfe_array *) p)->array, index, value);
                     } else {
-                        lua_get_metatablelua(pdfe_reference);
+                        lua_get_metatablelua(pdfe_reference_instance);
                         if (lua_rawequal(L, -1, -3)) {
                             ppref *r = (((pdfe_reference *) p)->xref) ? ppxref_find(((pdfe_reference *) p)->xref, (ppuint) (((pdfe_reference *) p)->onum)) : NULL;
                             ppobj *o = (r) ? ppref_obj(r) : NULL;

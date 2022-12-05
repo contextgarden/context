@@ -45,8 +45,10 @@ local getshift           = nuts.getshift
 local getreplace         = nuts.getreplace
 local setreplace         = nuts.setreplace
 local getfont            = nuts.getfont
-local getkerndimension   = nuts.getkerndimension
+
 local getglyphdimensions = nuts.getglyphdimensions
+local getkerndimension   = nuts.getkerndimension
+local getlistdimensions  = nuts.getlistdimensions
 
 local setdirection       = nuts.setdirection
 local setlink            = nuts.setlink
@@ -543,20 +545,19 @@ local flush_character do
         end
         local width, height, depth, naturalwidth, sx, sy
         if current then
-            -- height and depth not needed
-            if true then
+         -- if true then
                 width, height, depth, factor, sx, sy = getglyphdimensions(current)
-            else
-                naturalwidth, height, depth, factor = getwhd(current,true) -- also get corrected width
-                sx, sy = getxyscales(current)
-                if factor == 0 then
-                    width = naturalwidth
-                else
-                 -- width = (1.0 + factor/1000000.0) * naturalwidth
-                    width = naturalwidth + naturalwidth * factor/1000000.0
-                 -- width = naturalwidth + naturalwidth * 0.000001 * factor
-                end
-            end
+         -- else
+         --     naturalwidth, height, depth, factor = getwhd(current,true) -- also get corrected width
+         --     sx, sy = getxyscales(current)
+         --     if factor == 0 then
+         --         width = naturalwidth
+         --     else
+         --      -- width = (1.0 + factor/1000000.0) * naturalwidth
+         --         width = naturalwidth + naturalwidth * factor/1000000.0
+         --      -- width = naturalwidth + naturalwidth * 0.000001 * factor
+         --     end
+         -- end
         else
             width  = data.width or 0
             height = data.height or 0
@@ -799,12 +800,8 @@ local hlist_out, vlist_out  do
         -- we can encounter par, boundary and penalty nodes but a special
         -- iterator over content nodes won't save much
         for current, id, subtype in nextnode, current do
--- if id == nil then
---     print("bad node",current)
--- end
             if id == glyph_code then
                 local char, font = isglyph(current)
--- if char then
                 local x_offset, y_offset, left, right, raise = getoffsets(current)
                 if x_offset ~= 0 or y_offset ~= 0 then
                     if pos_r == righttoleft_code then
@@ -821,9 +818,6 @@ local hlist_out, vlist_out  do
                 local wd = flush_character(current,font,char,false,true,pos_h,pos_v,pos_r)
              -- cur_h = cur_h + wd - right -- hm, no left here?
                 cur_h = cur_h + wd -- see new tabulate alignment code
--- else
---     print("bad character",current,nuts.getfont(current),nuts.getchar(current))
--- end
             elseif id == glue_code then
              -- local gluewidth = effectiveglue(current,this_box)
                 local gluewidth = effectiveglue(current,this_box,true)
@@ -970,12 +964,16 @@ local hlist_out, vlist_out  do
                     end
                 end
             elseif id == hlist_code or id == vlist_code then
-                local width, height, depth = getwhd(current)
-                local list = getlist(current)
+--                 local width, height, depth = getwhd(current)
+--                 local list = getlist(current)
+--                 if list then
+--                     local boxdir = getdirection(current) or lefttoright_code
+--                     local shift  = getshift(current)
+                local width, height, depth, shift, list = getlistdimensions(current)
                 if list then
-                    local boxdir = getdirection(current) or lefttoright_code
-                    local shift  = getshift(current)
-                    local geometry, hasoffset, hasorientation, hasanchor = getgeometry(current,true)
+--                     local boxdir = getdirection(current) or lefttoright_code
+--                     local geometry, hasoffset, hasorientation, hasanchor = getgeometry(current,true)
+                    local geometry, hasoffset, hasorientation, hasanchor, boxdir = getgeometry(current,true)
                     local anchor, source, target, targetdata, s_anchor, t_anchor
                     local anc_h, anc_v
                     local usedorientation = false
@@ -1360,12 +1358,16 @@ local glueheight = effectiveglue(current,this_box,true)
                     end
                 end
             elseif id == hlist_code or id == vlist_code then
-                local width, height, depth = getwhd(current)
-                local list = getlist(current)
+--                 local width, height, depth = getwhd(current)
+--                 local list = getlist(current)
+--                 if list then
+--                     local boxdir = getdirection(current) or lefttoright_code
+--                     local shift = getshift(current)
+                local width, height, depth, shift, list = getlistdimensions(current)
                 if list then
-                    local boxdir = getdirection(current) or lefttoright_code
-                    local shift = getshift(current)
-                    local geometry, hasoffset, hasorientation, hasanchor = getgeometry(current,true)
+--                     local boxdir = getdirection(current) or lefttoright_code
+--                     local geometry, hasoffset, hasorientation, hasanchor = getgeometry(current,true)
+                    local geometry, hasoffset, hasorientation, hasanchor, boxdir = getgeometry(current,true)
                     local anchor, source, target, targetdata, s_anchor, t_anchor
                     local usedorientation = false
                     if hasanchor then

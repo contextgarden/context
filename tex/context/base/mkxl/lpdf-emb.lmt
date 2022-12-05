@@ -768,11 +768,11 @@ do
                 local blob = blobs[include[index]] -- we assume padding
                 if blob and #blob > 0 then
                     g = g + 1 ; glyphstreams[g] = blob
-                    h = h + 1 ; horizontals [h] = tocardinal2(data.width or 0)
-                    h = h + 1 ; horizontals [h] = tocardinal2(data.boundingbox[1])
+                    h = h + 1 ; horizontals [h] = tocardinal2(round(data.width or 0))
+                    h = h + 1 ; horizontals [h] = tocardinal2(round(data.boundingbox[1]))
                     if vertical then
-                        v = v + 1 ; verticals[v] = tocardinal2(data.height or 0)
-                        v = v + 1 ; verticals[v] = tocardinal2(data.boundingbox[3])
+                        v = v + 1 ; verticals[v] = tocardinal2(round(data.height or 0)) -- how about depth
+                        v = v + 1 ; verticals[v] = tocardinal2(round(data.boundingbox[3]))
                     end
                     streamoffset = streamoffset + #blob
                     lastoffset   = tocardinal4(streamoffset)

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2022-12-01 12:38
+-- merge date  : 2022-12-05 18:49
 
 do -- begin closure to overcome local limits and interference
 
@@ -15611,20 +15611,7 @@ local function applyaxis(glyph,shape,deltas,dowidth)
      if dowidth then
       cnt=cnt-4
      end
-     if cnt==1 then
-      local d=dpoints[1]
-      local x=xvalues[d]*factor
-      local y=yvalues[d]*factor
-      for i=1,nofpoints do
-       local p=points[i]
-       if x~=0 then
-        p[1]=p[1]+x
-       end
-       if y~=0 then
-        p[2]=p[2]+y
-       end
-      end
-     elseif cnt>0 then
+     if cnt>0 then
       local contours=shape.contours
       local nofcontours=#contours
       local first=1
@@ -15643,9 +15630,9 @@ local function applyaxis(glyph,shape,deltas,dowidth)
            lastindex=currentindex
            break
           elseif found>last then
-while lastindex>1 and dpoints[lastindex]>last do
- lastindex=lastindex-1
-end
+           while lastindex>1 and dpoints[lastindex]>last do
+            lastindex=lastindex-1
+           end
            break
           end
          end
@@ -16100,6 +16087,12 @@ local function contours2outlines_shaped(glyphs,shapes,keepcurve)
        end
       end
       first=last+1
+     end
+     xmin=glyph.boundingbox[1]
+     local dlsb=glyph.dlsb
+     if dlsb then
+      xmin=xmin+dlsb
+      glyph.dlsb=nil 
      end
      glyph.boundingbox={ round(xmin),round(ymin),round(xmax),round(ymax) }
     end
@@ -16875,6 +16868,20 @@ local read_integer={
  streamreader.readinteger3,
  streamreader.readinteger4,
 }
+directives.register("fonts.streamreader",function()
+ read_cardinal={
+  streamreader.readcardinal1,
+  streamreader.readcardinal2,
+  streamreader.readcardinal3,
+  streamreader.readcardinal4,
+ }
+ read_integer={
+  streamreader.readinteger1,
+  streamreader.readinteger2,
+  streamreader.readinteger3,
+  streamreader.readinteger4,
+ }
+end)
 local lookupnames={
  gsub={
   single="gsub_single",
@@ -21327,7 +21334,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.130 
+otf.version=3.131 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)

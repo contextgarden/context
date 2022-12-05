@@ -1,0 +1,77 @@
+if not modules then modules = { } end modules ['page-sel'] = {
+    version   = 1.001,
+    comment   = "companion to page-sel.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+--- maybe more will end up here
+
+local addsuffix = file.addsuffix
+local context = context
+
+do
+
+    local sections = { }
+
+    local function sectionpage(filename,reference,what)
+        local filedata = sections[filename]
+        if not filedata then
+            filedata = {
+                data = job.loadother(addsuffix(filename,"tuc")) or false,
+                list = { }
+            }
+            sections[filename] = filedata
+        end
+        local list  = filedata.list
+        local entry = list[reference]
+        if not entry then
+            local first = 0
+            local last  = 0
+            local data  = filedata.data
+            if data then
+                local lists = data.structures.lists.collected
+                local pages = data.structures.pages.collected
+                if lists and pages then
+                    for i=1,#lists do
+                        local li = lists[i]
+                        if li.references.reference == reference then
+                            local level = li.metadata.level
+                            first = li.references.realpage
+                            last  = pages[#pages].number
+                            for j=i+1,#lists do
+                                local lj = lists[j]
+                                if lj.metadata.level == level then
+                                    last = lj.references.realpage - 1
+                                    break
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            entry = {
+                first = first,
+                last  = last,
+            }
+            list[reference] = entry
+        end
+        context(what and entry.first or entry.last)
+    end
+
+    interfaces.implement {
+        name      = "firstsectionpage",
+        public    = true,
+        arguments = { "optional", "optional", true },
+        actions   = sectionpage
+    }
+
+    interfaces.implement {
+        name      = "lastsectionpage",
+        public    = true,
+        arguments = { "optional", "optional", false },
+        actions   = sectionpage
+    }
+
+end

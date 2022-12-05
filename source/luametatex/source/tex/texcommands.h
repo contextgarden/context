@@ -443,6 +443,7 @@ typedef enum convert_codes {
     string_code,              /*tex command code for |\string| */
     cs_string_code,           /*tex command code for |\csstring| */
     cs_active_code,           /*tex command code for |\csactive| */
+ /* cs_lastname_code,      */ /*tex command code for |\cslastname| */
     detokenized_code,         /*tex command code for |\detokenized| */
     roman_numeral_code,       /*tex command code for |\romannumeral| */
     meaning_code,             /*tex command code for |\meaning| */

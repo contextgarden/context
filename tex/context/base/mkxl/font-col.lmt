@@ -53,6 +53,7 @@ local charcommand        = helpers.commands.char
 local rightcommand       = helpers.commands.right
 local addprivate         = helpers.addprivate
 local hasprivate         = helpers.hasprivate
+local isprivate          = helpers.isprivate
 local fontpatternhassize = helpers.fontpatternhassize
 
 local hashes             = fonts.hashes
@@ -258,7 +259,9 @@ function collections.clonevector(name)
             if target then
                 for unicode = start, stop do
                     local unic = unicode + offset - start
-                    if not newchars[target] then
+                    if isprivate(unic) or isprivate(target) then
+                        -- ignore
+                    elseif not newchars[target] then
                         -- not in font
                     elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = { cloneid, target }
@@ -270,7 +273,9 @@ function collections.clonevector(name)
             else
                 for unicode = start, stop do
                     local unic = unicode + offset - start
-                    if not newchars[unicode] then
+                    if isprivate(unic) or isprivate(unicode) then
+                        -- ignore
+                    elseif not newchars[target] then
                         -- not in font
                     elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = cloneid
@@ -281,7 +286,9 @@ function collections.clonevector(name)
             if target then
                 for unicode = start, stop do
                     local unic = unicode + offset - start
-                    if force or (not vector[unic] and not oldchars[unic]) then
+                    if isprivate(unic) or isprivate(target) then
+                        -- ignore
+                    elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = { cloneid, target }
                     end
                     target = target + 1
@@ -289,14 +296,18 @@ function collections.clonevector(name)
             elseif remap then
                 for unicode = start, stop do
                     local unic = unicode + offset - start
-                    if force or (not vector[unic] and not oldchars[unic]) then
+                    if isprivate(unic) or isprivate(unicode) then
+                        -- ignore
+                    elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = { cloneid, remap[unicode] }
                     end
                 end
             else
                 for unicode = start, stop do
                     local unic = unicode + offset - start
-                    if force or (not vector[unic] and not oldchars[unic]) then
+                    if isprivate(unic) then
+                        -- ignore
+                    elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = cloneid
                     end
                 end

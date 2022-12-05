@@ -19,6 +19,8 @@
 
 \unprotect
 
+\registerctxluafile{page-sel}{autosuffix}
+
 \startcontextdefinitioncode
 
 %D One can (mis)use this mechanism to (re)arrange pages of already produced files.
@@ -424,5 +426,39 @@
    \endgroup}
 
 \stopcontextdefinitioncode
+
+%D Implemented in Lua:
+
+% crap.tex:
+%
+% \starttext
+%     \dorecurse{10}{
+%         \startchapter[title=Chapter #1,reference=chapter:#1]
+%             \dorecurse{10}{
+%                 \startsubject[title=Subject #1]
+%                     \dorecurse{2}{\samplefile{tufte}\par}
+%                 \stopsubject
+%                 \startsection[title=Section #1.##1,reference=#1.##1]
+%                     \dorecurse{10}{\samplefile{tufte}\par}
+%                 \stopsection
+%             }
+%         \stopchapter
+%     }
+% \stoptext
+%
+% load.tex:
+%
+% \starttext
+%     \dostepwiserecurse {\firstsectionpage[crap][chapter:3]} {\lastsectionpage[crap][chapter:3]} {1} {
+%         \startpagemakeup
+%             \externalfigure[crap.pdf][page=#1]
+%         \stoppagemakeup
+%     }
+%     \dostepwiserecurse {\firstsectionpage[crap][chapter:5]} {\lastsectionpage[crap][chapter:5]} {1} {
+%         \dontleavehmode
+%         \externalfigure[crap.pdf][page=#1,width=3cm,frame=on]%
+%         \space\allowbreak
+%     }
+% \stoptext
 
 \protect \endinput

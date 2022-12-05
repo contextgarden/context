@@ -234,8 +234,8 @@ extern int  luaextend_xcomplex  (lua_State *L);
 
 /*tex Used in |lmttokenlib|. */
 
-# define TOKEN_METATABLE_INSTANCE   "token.instance"
-# define TOKEN_METATABLE_PACKAGE    "token.package"
+# define TOKEN_METATABLE_INSTANCE  "token.instance"
+# define TOKEN_METATABLE_PACKAGE   "token.package"
 
 /*tex Used in |lmtepdflib|. */
 
@@ -254,6 +254,28 @@ extern int  luaextend_xcomplex  (lua_State *L);
 /*tex Used in |lmtsparselib|. */
 
 # define SPARSE_METATABLE_INSTANCE "sparse.instance"
+
+/*tex 
+    There are some more but for now we have no reason to alias them for performance reasons, so
+    that got postponed. We then also need to move the defines here: 
+*/
+
+/*
+# define DIR_METATABLE             "file.directory"
+
+# define LUA_BYTECODES_INDIRECT
+  
+# define TEX_METATABLE_TEX         "tex.tex"
+# define TEX_NEST_INSTANCE         "tex.nest.instance"
+# define TEX_*                     "tex.*"
+                                   
+# define LUA_FUNCTIONS             "lua.functions"
+# define LUA_BYTECODES             "lua.bytecodes"
+# define LUA_BYTECODES_INDIRECT    "lua.bytecodes.indirect"
+                                   
+# define LANGUAGE_METATABLE        "luatex.language"
+# define LANGUAGE_FUNCTIONS        "luatex.language.wordhandlers"
+*/
 
 /*tex
 
@@ -1458,10 +1480,12 @@ make_lua_key_alias(L, token_package,            TOKEN_METATABLE_PACKAGE);\
 make_lua_key_alias(L, sparse_instance,          SPARSE_METATABLE_INSTANCE);\
 /* */ \
 make_lua_key_alias(L, pdfe_instance,            PDFE_METATABLE_INSTANCE);\
-make_lua_key_alias(L, pdfe_dictionary,          PDFE_METATABLE_DICTIONARY);\
-make_lua_key_alias(L, pdfe_array,               PDFE_METATABLE_ARRAY);\
-make_lua_key_alias(L, pdfe_stream,              PDFE_METATABLE_STREAM);\
-make_lua_key_alias(L, pdfe_reference,           PDFE_METATABLE_REFERENCE);\
+make_lua_key_alias(L, pdfe_dictionary_instance, PDFE_METATABLE_DICTIONARY);\
+make_lua_key_alias(L, pdfe_array_instance,      PDFE_METATABLE_ARRAY);\
+make_lua_key_alias(L, pdfe_stream_instance,     PDFE_METATABLE_STREAM);\
+make_lua_key_alias(L, pdfe_reference_instance,  PDFE_METATABLE_REFERENCE);\
+/* */ \
+make_lua_key_alias(L, file_handle_instance,     LUA_FILEHANDLE);\
 /* done */
 
 # define declare_metapost_lua_keys(L) \

@@ -218,8 +218,10 @@ end
 
 streams.readbyte       = streams.readcardinal1
 streams.readsignedbyte = streams.readinteger1
+streams.readcardinal1  = streams.readcardinal1
 streams.readcardinal   = streams.readcardinal1
 streams.readinteger    = streams.readinteger1
+streams.readinteger1   = streams.readinteger1
 
 local readcardinaltable = sio.readcardinaltable
 local readintegertable  = sio.readintegertable

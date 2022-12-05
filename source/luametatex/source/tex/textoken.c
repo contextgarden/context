@@ -2078,6 +2078,28 @@ halfword tex_get_token(void)
     return cur_tok;
 }
 
+/*tex
+
+    The |get_x_or_protected| procedure is like |get_x_token| except that protected macros are not
+    expanded. It sets |cur_cmd|, |cur_chr|, |cur_tok|, and expands non-protected macros.
+
+*/
+
+void tex_get_x_or_protected(void)
+{
+    lmt_hash_state.no_new_cs = 0;
+    while (1) {
+        tex_get_next();
+        if (cur_cmd <= max_command_cmd || is_protected_cmd(cur_cmd)) {
+            break;
+        } else {
+            tex_expand_current_token();
+        }
+    }
+    cur_tok = cur_cs ? cs_token_flag + cur_cs : token_val(cur_cmd, cur_chr); /* needed afterwards ? */
+    lmt_hash_state.no_new_cs = 1;
+}
+
 /*tex This changes the string |s| to a token list. */
 
 halfword tex_string_to_toks(const char *ss)
@@ -2765,6 +2787,16 @@ void tex_run_convert_tokens(halfword code)
                 pop_selector;
                 break;
             }
+        /*
+        case cs_lastname_code:
+            if (lmt_scanner_state.last_cs_name != null_cs) {
+                int saved_selector;
+                push_selector;
+                tex_print_cs_name(lmt_scanner_state.last_cs_name);
+                pop_selector;
+            }
+            break;
+        */
         case detokenized_code:
             {
                 int saved_selector;

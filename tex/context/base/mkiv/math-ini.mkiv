@@ -324,18 +324,30 @@
 
 % e.g.: \definemathematics[i:mp][setups=i:tight,openup=yes]
 
-\newmuskip\defaultthickmuskip     \defaultthickmuskip  5mu plus 5mu
-\newmuskip\defaultmedmuskip       \defaultmedmuskip    4mu plus 2mu minus 4mu
-\newmuskip\defaultthinmuskip      \defaultthinmuskip   3mu
+\newmuskip\defaultthickmuskip \defaultthickmuskip 5mu plus 5mu
+\newmuskip\defaultmedmuskip   \defaultmedmuskip   4mu plus 2mu minus 4mu
+\newmuskip\defaultthinmuskip  \defaultthinmuskip  3mu
 
-\newmuskip\halfthickmuskip        \halfthickmuskip     2.5mu plus 2.5mu
-\newmuskip\halfmedmuskip          \halfmedmuskip       2.0mu plus 1.0mu minus 2.0mu
-\newmuskip\halfthinmuskip         \halfthinmuskip      1.5mu
+\newmuskip\halfthickmuskip \halfthickmuskip 2.5mu plus 2.5mu
+\newmuskip\halfmedmuskip   \halfmedmuskip   2.0mu plus 1.0mu minus 2.0mu
+\newmuskip\halfthinmuskip  \halfthinmuskip  1.5mu
 
-\newcount \defaultrelpenalty      \defaultrelpenalty       500
-\newcount \defaultbinoppenalty    \defaultbinoppenalty     700
-\newcount \defaultprerelpenalty   \defaultprerelpenalty   -100
-\newcount \defaultprebinoppenalty \defaultprebinoppenalty -100
+\newcount \defaultrelpenalty        \defaultrelpenalty         500
+\newcount \defaultbinoppenalty      \defaultbinoppenalty       700
+\newcount \defaultprerelpenalty     \defaultprerelpenalty     -100
+\newcount \defaultprebinoppenalty   \defaultprebinoppenalty   -100
+\newcount \defaultdisplayprepenalty \defaultdisplayprepenalty  -10
+
+% For the moment this way:
+
+\appendtoks
+    \setmathprepenalty \mathbinarycode         \defaultdisplayprepenalty
+  % \setmathpostpenalty\mathbinarycode         \zerocount
+    \setmathprepenalty \mathrelationcode       \defaultdisplayprepenalty
+  % \setmathpostpenalty\mathrelationcode       \zerocount
+    \setmathpostpenalty\mathtextpunctuationcode\defaultdisplayprepenalty
+  % \setmathprepenalty \mathtextpunctuationcode\zerocount
+\to \everybeforedisplayformula
 
 % we need to control these otherwise:
 %

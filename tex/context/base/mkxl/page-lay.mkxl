@@ -121,6 +121,15 @@
 
 \installswitchcommandhandler \??layout {layout} \??layout
 
+\pushoverloadmode
+
+    \let\page_layouts_define\definelayout % ugly hack for MS
+
+    \permanent\protected\def\definelayout[#1]% intercept relative pages
+      {\normalexpanded{\page_layouts_define[\ifhastoks{+}{#1}\the\numexpr\realpageno#1\relax\else#1\fi]}}
+
+\popoverloadmode
+
 \appendtoks
     \doifnothing{\directlayoutparameter\c!state}{\letlayoutparameter\c!state\v!start}%
 \to \everydefinelayout

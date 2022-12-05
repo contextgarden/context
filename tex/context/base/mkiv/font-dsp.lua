@@ -234,6 +234,24 @@ local read_integer = {
     streamreader.readinteger4,
 }
 
+directives.register("fonts.streamreader",function()
+
+    read_cardinal = {
+        streamreader.readcardinal1,
+        streamreader.readcardinal2,
+        streamreader.readcardinal3,
+        streamreader.readcardinal4,
+    }
+
+    read_integer = {
+        streamreader.readinteger1,
+        streamreader.readinteger2,
+        streamreader.readinteger3,
+        streamreader.readinteger4,
+    }
+
+end)
+
 -- Traditionally we use these unique names (so that we can flatten the lookup list
 -- (we create subsets runtime) but I will adapt the old code to newer names.
 

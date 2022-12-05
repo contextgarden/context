@@ -465,15 +465,22 @@ void tex_print_str_esc(const char *s)
 void tex_print_int(int n)
 {
     /*tex In the end a 0..9 fast path works out best; using |sprintf| is slower. */
+    if (n < 0) {
+        tex_print_char('-');
+        n = -n; 
+    }
     if (n >= 0 && n <= 9) { 
         tex_print_char('0' + n);
+    } else if (n >= 0 && n <= 99) { 
+        tex_print_char('0' + n/10);
+        tex_print_char('0' + n%10);
     } else { 
         int k = 0;
         unsigned char digits[24];
-        if (n < 0) {
-            tex_print_char('-');
-            n = -n; 
-        }
+//        if (n < 0) {
+//            tex_print_char('-');
+//            n = -n; 
+//        }
         do {
             digits[k] = '0' + (unsigned char) (n % 10);
             n = n / 10;

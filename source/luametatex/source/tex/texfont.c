@@ -1958,7 +1958,9 @@ scaled tex_char_depth_from_glyph(halfword g)
 scaled tex_char_total_from_glyph(halfword g)
 {
     charinfo *ci = tex_aux_char_info(glyph_font(g), glyph_character(g));
-    return tex_aux_glyph_y_scaled(g, ci->height + ci->depth);
+    scaled ht = ci->height;
+    scaled dp = ci->depth;
+    return tex_aux_glyph_y_scaled(g, (ht > 0 ? ht : 0) + (dp > 0 ? dp : 0)); /* so not progression */
 }
 
 scaled tex_char_italic_from_glyph(halfword g)

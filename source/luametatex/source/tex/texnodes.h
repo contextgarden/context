@@ -867,11 +867,11 @@ typedef enum list_geometries {
 # define box_glue_order(a)      vlink(a,6)
 # define box_glue_sign(a)       vinfo(a,6)
 # define box_glue_set(a)        dvalue(a,7)   /* So we reserve a whole memory word! */
-# define box_dir(a)             vlink00(a,8)
+# define box_dir(a)             vlink00(a,8)  /* We could encode it as geomtry but not now. */
 # define box_package_state(a)   vlink01(a,8)
 # define box_axis(a)            vlink02(a,8)
 # define box_geometry(a)        vlink03(a,8)
-# define box_orientation(a)     vinfo(a,8)    /* also used for size in alignments */
+# define box_orientation(a)     vinfo(a,8)    /* Also used for size in alignments. */
 # define box_x_offset(a)        vlink(a,9)
 # define box_y_offset(a)        vinfo(a,9)
 # define box_pre_migrated(a)    vlink(a,10)
@@ -885,7 +885,7 @@ typedef enum list_geometries {
 # define box_input_file(a)      vlink(a,14) /* aka box_synctex_tag  */
 # define box_input_line(a)      vinfo(a,14) /* aka box_synctex_line */
 
-# define box_total(a) (box_height(a) + box_depth(a))
+# define box_total(a) (box_height(a) + box_depth(a)) /* Here we add, with glyphs we maximize. */ 
 
 inline static void tex_set_box_geometry   (halfword b, halfword g) { box_geometry(b) |= (singleword) (g); }
 /*     static void tex_unset_box_geometry (halfword b, halfword g) { box_geometry(b) &= (singleword) ~((singleword) (g) | box_geometry(b)); } */
