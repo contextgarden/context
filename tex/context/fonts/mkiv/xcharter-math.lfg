@@ -12,40 +12,21 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            -- NoLimitSupFactor                =    0,
-            -- NoLimitSubFactor                =  900,
-            -- AccentBaseHeight                =    0,
-            -- AccentBaseDepth                 =   60,
-            -- RadicalDegreeBottomRaisePercent =   55,
-            -- RadicalKernAfterDegree          = -600,
-            -- RadicalRuleThickness            =   45, -- 55 in font
-            -- DelimiterPercent                =   90,
-            -- DelimiterShortfall              =  400,
-         -- DisplayOperatorMinHeight        = 1800, -- 1300 in font (one size)
-               SubscriptShiftDown              = 200, -- 300 in font
-               SubscriptShiftDownWithSuperscript = "1.3*SubscriptShiftDown", -- 1.5* in math-act
-               PrimeShiftUp                    = "1.2*SuperscriptShiftUp",
-               PrimeShiftUpCramped             = "1.2*SuperscriptShiftUp",
+            SubscriptShiftDown                = 200, -- 300 in font
+            SubscriptShiftDownWithSuperscript = "1.3*SubscriptShiftDown", -- 1.5* in math-act
+            PrimeShiftUp                      = "1.2*SuperscriptShiftUp",
+            PrimeShiftUpCramped               = "1.2*SuperscriptShiftUp",
+            PrimeBaselineDropMax              = "0.5*SuperscriptBaselineDropMax",
         },
         tweaks = {
             aftercopying = {
                 {
                     tweak   = "fixprimes",
                     factor  = 0.92,
-                    -- scale   = 1,
                 },
                 {
                     tweak = "addmirrors",
                 },
-{
-    tweak = "dimensions",
-    list  = {
-        -- ["0x222B.variants.*"] = { axis = 0.15 },
-    },
-},
-{
-    -- tweak = "fixintegrals",
-},
                 presets.scripttocalligraphic { },
                 presets.rsfstoscript         { },
                 presets.rsfsuprighttoscript  { },
@@ -78,23 +59,12 @@ return {
                         [0x00393] = { bottomright = -0.20, }, -- upright Gamma
                     },
                 },
-{
-    tweak   = "radicaldegreeanchors",
-    list = {
-        -- [0x221A]                = { location = "left", hfactor  = .1, vfactor  = .3 },
-        -- ["0x221A.variants.*"]   = { location = "left", hfactor  = .1, vfactor  = .625 },
-        -- ["0x221A.variants.1"]   = { location = "left", hfactor  = .1, vfactor  = .575 },
-     -- ["0x221A.variants.2"]   = { location = "left", hfactor  = .1, vfactor  = .575 },
-     -- ["0x221A.variants.3"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221A.variants.4"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221Aq.variants.6"]  = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221A.parts.top"]    = { location = "left", hfactor  = .1, vfactor  = 5.5 }, -- keep commented: bottom wins over top
-        ["0x221A.parts.bottom"] = { location = "left", hfactor  = .1, vfactor  = 1.025 },
-    }
-},
-
+                {
+                    tweak   = "radicaldegreeanchors",
+                    list = {
+                        ["0x221A.parts.bottom"] = { location = "left", hfactor  = .1, vfactor  = 1.025 },
+                    }
+                },
                 {
                     tweak = "checkspacing",
                 },
@@ -114,6 +84,9 @@ return {
                     tweak = "addequals",
                 },
                 {
+                    tweak = "addprimed",
+                },
+                {
                     tweak = "addfourier",
                     variant = 2,
                 },
@@ -121,12 +94,6 @@ return {
                     tweak = "setoptions",
                     -- set   = { "ignorekerndimensions" }
                 },
-                -- this is the mkiv section
---                 {
---                     tweak   = "emulatelmtx",
---                     feature = "emulatelmtx",
---                     comment = "this is for mkiv",
---                 },
             },
         },
         bigslots = {

@@ -1236,12 +1236,37 @@
 
 \newcount\registeredboxanchor
 
+\installmacrostack\boxanchoringclass
+
+\mutable\let\boxanchoringclass\empty
+
+\newcount\c_anchor_auto_box_class
+
+\permanent\protected\def\startboxanchoring[#1]% + == auto
+  {\push_macro_boxanchoringclass
+   \iftok{#1}{+}%
+     \global\advance\c_anchor_auto_box_class\plusone
+     \edef\boxanchoringclass{\the\c_anchor_auto_box_class::}%
+   \else
+     \edef\boxanchoringclass{#1}
+   \fi}
+
+\permanent\protected\def\stopboxanchoring
+  {\pop_macro_boxanchoringclass}
+
 \permanent\protected\def\registerboxanchor
   {\global\advance\registeredboxanchor\minusone}
 
 \permanent\protected\def\defineboxanchor[#1]%
   {\registerboxanchor
    \global\expandafter\integerdef\csname\??boxanchors#1\endcsname\registeredboxanchor}
+
+\permanent\protected\def\doifnotanchorbox#1%
+  {\ifcsname\??boxanchors#1\endcsname
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
 
 \permanent\def\namedboxanchor#1%
   {\normalexpanded{\ifcsname\??boxanchors#1\endcsname\lastnamedcs\orelse\ifchknum#1\or#1\else\zerocount\fi}}
@@ -1290,10 +1315,13 @@
 
 %D The name might change:
 
-\permanent\protected\def\mathboxanchored#1#2{#2\Umathsource\namedboxanchor{#1}\relax}
-
 \permanent\protected\def\mathrowanchored #1{\alignmentwrapsource\namedboxanchor{#1}\relax}
 \permanent\protected\def\mathcellanchored#1{\alignmentcellsource\namedboxanchor{#1}\relax}
+
+%permanent\protected\def\mathboxanchored#1#2{#2\Umathsource\namedboxanchor{#1}\relax}
+
+\permanent\tolerant\protected\def\mathboxanchored[#1]#:#2#3%
+  {#3\Umathsource\iftok{#1}{nucleus}#1\fi\namedboxanchor{\boxanchoringclass:#2}\relax}
 
 % to be used as:
 %

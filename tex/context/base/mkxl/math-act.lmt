@@ -3451,7 +3451,7 @@ local function applytweaks(when,target,original)
                                     if action then
                                         local feature  = tweak.feature
                                         local features = target.specification.features.normal
-                                        if not feature or features[feature] == true then
+                                        if feature == nil or features[feature] then
                                             local version = tweak.version
                                             if version and version ~= target.tweakversion then
                                                 report_math("skipping tweak %a version %a",tweak.tweak,version)

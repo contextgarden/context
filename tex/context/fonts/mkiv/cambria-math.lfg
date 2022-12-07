@@ -9,22 +9,12 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            -- NoLimitSupFactor                =    0,
-            -- NoLimitSubFactor                = 1000,
-         -- AccentTopShiftUp                =    0,
-         -- FlattenedAccentTopShiftUp       =    0,
-         -- AccentExtendMargin              =   50,
-            AccentBaseDepth                 =  300,
-            -- RadicalDegreeBottomRaisePercent =   65,
-            -- RadicalKernAfterDegree          = -900,
-            -- RadicalRuleThickness            =  128, -- 133 in font
-            DelimiterPercent                =   90,
-            DelimiterShortfall              =  400,
-            DisplayOperatorMinHeight        = 2800, -- 2500 in font
-            -- PrimeRaisePercent               =    0, -- set to 0 in math-act
-         -- PrimeRaiseComposedPercent       =   25, -- set to 0 in math-act
-            PrimeShiftUp                    = "1.25*SuperscriptShiftUp",
-            PrimeShiftUpCramped             = "1.25*SuperscriptShiftUp",
+            AccentBaseDepth          =  300,
+            DelimiterPercent         =   90,
+            DelimiterShortfall       =  400,
+            DisplayOperatorMinHeight = 2800, -- 2500 in font
+            PrimeShiftUp             = "1.25*SuperscriptShiftUp",
+            PrimeShiftUpCramped      = "1.25*SuperscriptShiftUp",
         },
         tweaks = {
             aftercopying = {
@@ -50,9 +40,6 @@ return {
                     list  = {
                         [0x002F]                = { topleft  = -0.2,  bottomright = -0.2 },
                         ["0x002F.variants.*"]   = { topleft  = -0.2,  bottomright = -0.2 },
-                        -- No!
-                     -- [0x0028]                = { topleft  = -0.1,  bottomleft  = -0.1             }, -- left parenthesis
-                     -- [0x0029]                = { topright = -0.1,  bottomright = -0.1, all = true }, -- right parenthesis
                         --
                         [0x007D]                = { topright = -0.05, bottomright = -0.05 }, -- right brace variants
                         ["0x7D.variants.*"]     = { topright = -0.10, bottomright = -0.10 }, -- right brace variants
@@ -61,7 +48,7 @@ return {
                         [0x0029]                = { topright = -0.15, bottomright = -0.15 }, -- right parenthesis variants
                         ["0x29.variants.*"]     = { topright = -0.15, bottomright = -0.15 }, -- right parenthesis variants
                         ["0x29.parts.top"]      = { topright = -0.15,                     }, -- right parenthesis top
-                        ["0x29.parts.bottom"]   = {                   bottomright = -0.15 }, -- right parenthesis bottom   
+                        ["0x29.parts.bottom"]   = {                   bottomright = -0.15 }, -- right parenthesis bottom
                         [0x221A]                = { topright =  0.2,  bottomright =  0.2  }, -- radical
                         ["0x221A.variants.*"]   = { topright =  0.2,  bottomright =  0.2  },
                         ["0x221A.parts.top"]    = { topright =  0.2,                      },
@@ -72,16 +59,6 @@ return {
                         ["0x27EB.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
                         -- Keep as example. not needed in cambria (after all it is the reference):
                         [0x2A0C] = { bottomright = -0.1 }, -- iiiint does not have any ic
-
-                     -- ["0x222B.variants.*"] = integral_variants, ["0x222B.parts.top"] = integral_top, ["0x222B.parts.bottom"] = integral_bottom,
-                     -- ["0x222C.variants.*"] = integral_variants, ["0x222C.parts.top"] = integral_top, ["0x222C.parts.bottom"] = integral_bottom,
-                     -- ["0x222D.variants.*"] = integral_variants, ["0x222D.parts.top"] = integral_top, ["0x222D.parts.bottom"] = integral_bottom,
-                     -- ["0x222E.variants.*"] = integral_variants, ["0x222E.parts.top"] = integral_top, ["0x222E.parts.bottom"] = integral_bottom,
-                     -- ["0x222F.variants.*"] = integral_variants, ["0x222F.parts.top"] = integral_top, ["0x222F.parts.bottom"] = integral_bottom,
-                     -- ["0x2230.variants.*"] = integral_variants, ["0x2230.parts.top"] = integral_top, ["0x2230.parts.bottom"] = integral_bottom,
-                     -- ["0x2231.variants.*"] = integral_variants, ["0x2231.parts.top"] = integral_top, ["0x2231.parts.bottom"] = integral_bottom,
-                     -- ["0x2232.variants.*"] = integral_variants, ["0x2232.parts.top"] = integral_top, ["0x2232.parts.bottom"] = integral_bottom,
-                     -- ["0x2233.variants.*"] = integral_variants, ["0x2233.parts.top"] = integral_top, ["0x2233.parts.bottom"] = integral_bottom,
                     },
                 },
 
@@ -91,22 +68,19 @@ return {
                 {
                     tweak = "extendaccents",
                 },
-{
-    tweak   = "radicaldegreeanchors",
-    list = {
-        [0x221A]                = { location = "left", hfactor  = -0.15, vfactor  = .75 },
-        ["0x221A.variants.*"]   = { location = "left", hfactor  = -0.1, vfactor  = .15 },
-        ["0x221A.variants.1"]   = { location = "left", hfactor  = -0.1, vfactor  = .55 },
-        ["0x221A.variants.2"]   = { location = "left", hfactor  = -0.1, vfactor  = .375 },
-        ["0x221A.variants.3"]   = { location = "left", hfactor  = -0.1, vfactor  = .275 },
-        ["0x221A.variants.4"]   = { location = "left", hfactor  = -0.1, vfactor  = .22 },
-        ["0x221A.variants.5"]   = { location = "left", hfactor  = -0.1, vfactor  = .175 },
-     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221Aq.variants.6"]  = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221A.parts.top"]    = { location = "left", hfactor  = .1, vfactor  = 5.5 }, -- keep commented: bottom wins over top
-        ["0x221A.parts.bottom"] = { location = "left", hfactor  = -0.1, vfactor  = 0.95 },
-    }
-},
+                {
+                    tweak   = "radicaldegreeanchors",
+                    list = {
+                        [0x221A]                = { location = "left", hfactor  = -0.15, vfactor  = .75 },
+                        ["0x221A.variants.*"]   = { location = "left", hfactor  = -0.1, vfactor  = .15 },
+                        ["0x221A.variants.1"]   = { location = "left", hfactor  = -0.1, vfactor  = .55 },
+                        ["0x221A.variants.2"]   = { location = "left", hfactor  = -0.1, vfactor  = .375 },
+                        ["0x221A.variants.3"]   = { location = "left", hfactor  = -0.1, vfactor  = .275 },
+                        ["0x221A.variants.4"]   = { location = "left", hfactor  = -0.1, vfactor  = .22 },
+                        ["0x221A.variants.5"]   = { location = "left", hfactor  = -0.1, vfactor  = .175 },
+                        ["0x221A.parts.bottom"] = { location = "left", hfactor  = -0.1, vfactor  = 0.95 },
+                    }
+                },
                 {
                     tweak = "fixaccents",
                 },
@@ -127,18 +101,6 @@ return {
                     tweak = "dimensions",
                     list  = {
                         -- here we want to apply to all
-                        -- [0x00300] = { yoffset = -0.02, height = .95, all = true }, -- widegrave : 0x0060
-                        -- [0x00301] = { yoffset = -0.02, height = .95, all = true }, -- wideacute : 0x00B4
-                        -- [0x00302] = { yoffset = -0.03, height = .95, all = true }, -- widehat   : 0x02C6
-                        -- [0x00303] = { yoffset = -0.02, height = .95, all = true }, -- widetilde : 0x02DC
-                        -- [0x00306] = { yoffset = -0.03, height = .95, all = true }, -- widebre   : 0x02D8
-                        -- [0x0030A] = { yoffset =  0.00, height = .95, all = true }, -- widering  : 0x02DA
-                        -- [0x0030C] = { yoffset = -0.03, height = .95, all = true }, -- widecheck : 0x02C7
-
-                        -- [0x00304] = { yoffset = -0.05, height = .95, all = true }, -- widebar   : 0x00AF
-
-                        -- [0x00307] = { yoffset = -0.03, height = .95, all = true }, -- widedot   : 0x02D9
-                        -- [0x00308] = { yoffset = -0.03, height = .95, all = true }, -- wideddot  : 0x00A8
                         [0x020DB] = { yoffset =  -0.03,    height = .95, all = true }, -- widedddot : 0x20DB (self)
                     },
                 },
@@ -151,8 +113,6 @@ return {
 
                 {
                     tweak   = "fixprimes",
-                    -- scale   = 1.0,
-                 -- smaller = true,
                     factor  = 0.83,
                     fake    = 0.8,
                 },
@@ -165,16 +125,6 @@ return {
                 {
                     tweak = "accentdimensions",
                     list  = { "over", "under" },
-                 -- list  = {
-                 --     [0x203E] = { factor = "over"  }, -- overbar
-                 --     [0x203E] = { factor = "under" }, -- underbar
-                 --     [0x23DE] = { factor = "over"  }, -- overbrace
-                 --     [0x23DF] = { factor = "under" }, -- underbrace
-                 --     [0x23DC] = { factor = "over"  }, -- overparent
-                 --     [0x23DD] = { factor = "under" }, -- underparent
-                 --     [0x23B4] = { factor = "over"  }, -- overbracket
-                 --     [0x23B5] = { factor = "under" }, -- underbracket
-                 -- }
                 },
                 {
                     tweak = "addrules",
@@ -205,9 +155,6 @@ return {
                 {
                     tweak   = "addprimed",
                 },
-                -- { -- the ldots are squareshaped and the cdots are circular
-                --     tweak = "fixellipses",
-                -- },
             },
         },
         bigslots = {
@@ -215,36 +162,3 @@ return {
         },
     },
 }
-
--- For now we keep these commented as they show where we came from.
-
--- {
---     tweak = "dimensions",
---     list  = {
---      -- [0x00060] = { yoffset = -0.1  }, -- grave
---      -- [0x000B4] = { yoffset = -0.1  }, -- acute
---      -- [0x002C6] = { yoffset = -0.1  }, -- hat
---      -- [0x002DC] = { yoffset = -0.1  }, -- tilde
---      -- [0x000AF] = { yoffset = -0.1  }, -- bar
---      -- [0x002D8] = { yoffset = -0.15 }, -- breve
---      -- [0x002D9] = { yoffset = -0.15 }, -- dot
---      -- [0x000A8] = { yoffset = -0.1  }, -- ddot
---      -- [0x020DB] = { yoffset = -0.05 }, -- dddot
---      -- [0x002C7] = { yoffset = -0.1  }, -- check
---      -- [0x020D7] = { yoffset = -0.05 }, -- vec
---      -- [0x00300] = { yoffset = -0.12,  all=true }, -- widegrave
---      -- [0x00301] = { yoffset = -0.12,  all=true }, -- wideacute
---      -- [0x00302] = { yoffset = -0.12,  all=true }, -- widehat
---      -- [0x00303] = { yoffset = -0.12,  all=true }, -- widetilde
---      -- [0x00304] = { yoffset = -0.12,  all=true }, -- widebar
---      -- [0x00306] = { yoffset = -0.12,  all=true }, -- widebreve
---      -- [0x00307] = { yoffset = -0.025, all=true }, -- widedot
---      -- [0x00308] = { yoffset = -0.025, all=true }, -- wideddot
---      -- [0x020DB] = { yoffset = -0.1,   all=true }, -- widedddot
---      -- [0x0030A] = { yoffset = -0.12,  all=true }, -- widering
---      -- [0x0030C] = { yoffset = -0.12,  all=true }, -- widecheck
---         [0x1D43D] = { xoffset = 0.25, width = 1.15, italic = 0.2              }, -- J
---         [0x1D487] = {                                            anchor = 0.8 }, -- bold lower case italic f
---      -- [0x1D487] = { xoffset = 0,    width = 1,    italic = 0,  anchor = 1.3 }, -- bold lower case italic f
---     },
--- },

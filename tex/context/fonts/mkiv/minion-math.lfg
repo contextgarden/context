@@ -26,28 +26,10 @@ return {
     },
     mathematics = {
         parameters = {
-            -- NoLimitSupFactor                =    0,
-            -- NoLimitSubFactor                =  900,
-         -- AccentTopShiftUp                =  -15,
-         -- FlattenedAccentTopShiftUp       =  -15,
-         -- AccentExtendMargin              =   50,
-         -- AccentBaseDepth                 =   50,
-         -- RadicalDegreeBottomRaisePercent =   60,
-         -- RadicalRuleThickness            =   66, --   72 in font
-         -- DelimiterPercent                =   90,
-         -- DelimiterShortfall              =  400,
-         -- DisplayOperatorMinHeight        = 1900, -- 1250 in font
-         -- AccentSuperscriptDrop           =  100,
-         -- AccentSuperscriptPercent        =   20,
-            SubscriptShiftDown              =  200, -- 250 in font
-            SubscriptShiftDownWithSuperscript = "1.4*SubscriptShiftDown", -- 1.5* in math-act
-            -- PrimeRaisePercent               =   50, --   set to 0 in math-act
-            -- PrimeRaiseComposedPercent       =   25, --   set to 0 in math-act
-            PrimeShiftUp                    =   "1.15*SuperscriptShiftUp",
-            PrimeShiftUpCramped             =   "1.15*SuperscriptShiftUp",
-         -- PrimeBaselineDropMax            =    0,
-            -- RadicalKernAfterExtensible      =  100, --   0 default
-            -- RadicalKernBeforeExtensible     =  100, --   0 default
+            SubscriptShiftDown                = 200, -- 250 in font
+            SubscriptShiftDownWithSuperscript = "1.40*SubscriptShiftDown", -- 1.5* in math-act
+            PrimeShiftUp                      = "1.15*SuperscriptShiftUp",
+            PrimeShiftUpCramped               = "1.15*SuperscriptShiftUp",
         },
         tweaks = {
             aftercopying = {
@@ -74,9 +56,6 @@ return {
                     list  = {
                         [0x002F]                = { topleft  = -0.2,  bottomright = -0.2 },
                         ["0x002F.variants.*"]   = { topleft  = -0.2,  bottomright = -0.2 },
-                        -- No!
-                     -- [0x0028]                = { topleft  = -0.1,  bottomleft  = -0.1             }, -- left parenthesis
-                     -- [0x0029]                = { topright = -0.1,  bottomright = -0.1, all = true }, -- right parenthesis
                         --
                         [0x007D]                = { topright = -0.05, bottomright = -0.05 }, -- right brace variants
                         ["0x7D.variants.*"]     = { topright = -0.10, bottomright = -0.10 }, -- right brace variants
@@ -85,7 +64,7 @@ return {
                         [0x0029]                = { topright = -0.15, bottomright = -0.15 }, -- right parenthesis variants
                         ["0x29.variants.*"]     = { topright = -0.15, bottomright = -0.15 }, -- right parenthesis variants
                         ["0x29.parts.top"]      = { topright = -0.15,                     }, -- right parenthesis top
-                        ["0x29.parts.bottom"]   = {                   bottomright = -0.15 }, -- right parenthesis bottom   
+                        ["0x29.parts.bottom"]   = {                   bottomright = -0.15 }, -- right parenthesis bottom
                         [0x221A]                = { topright =  0.2,  bottomright =  0.2  }, -- radical
                         ["0x221A.variants.*"]   = { topright =  0.2,  bottomright =  0.2  },
                         ["0x221A.parts.top"]    = { topright =  0.2,                      },
@@ -98,31 +77,24 @@ return {
                         [0x2A0C] = { bottomright = -0.1 }, -- iiiint does not have any ic
                     },
                 },
-
-
                 {
                     tweak = "simplifykerns",
                 },
                 {
                     tweak = "extendaccents",
                 },
-{
-    tweak   = "radicaldegreeanchors",
-    list = {
-        [0x221A]                = { location = "left", hfactor  = -0.15, vfactor  = .75 },
-        ["0x221A.variants.*"]   = { location = "left", hfactor  = -0.1, vfactor  = .575 },
-        ["0x221A.variants.1"]   = { location = "left", hfactor  = -0.1, vfactor  = .725 },
-        ["0x221A.variants.2"]   = { location = "left", hfactor  = -0.1, vfactor  = .65 },
-        ["0x221A.variants.3"]   = { location = "left", hfactor  = -0.1, vfactor  = .625 },
-        ["0x221A.variants.4"]   = { location = "left", hfactor  = -0.1, vfactor  = .625 },
-    --  ["0x221A.variants.5"]   = { location = "left", hfactor  = 0.05, vfactor  = .525 },
-     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221Aq.variants.6"]  = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221A.parts.top"]    = { location = "left", hfactor  = .1, vfactor  = 5.5 }, -- keep commented: bottom wins over top
-        ["0x221A.parts.bottom"] = { location = "left", hfactor  = -0.1, vfactor  = 0.85 },
-    }
-},
-
+                {
+                    tweak   = "radicaldegreeanchors",
+                    list = {
+                        [0x221A]                = { location = "left", hfactor  = -0.15, vfactor  = .75 },
+                        ["0x221A.variants.*"]   = { location = "left", hfactor  = -0.1, vfactor  = .575 },
+                        ["0x221A.variants.1"]   = { location = "left", hfactor  = -0.1, vfactor  = .725 },
+                        ["0x221A.variants.2"]   = { location = "left", hfactor  = -0.1, vfactor  = .65 },
+                        ["0x221A.variants.3"]   = { location = "left", hfactor  = -0.1, vfactor  = .625 },
+                        ["0x221A.variants.4"]   = { location = "left", hfactor  = -0.1, vfactor  = .625 },
+                        ["0x221A.parts.bottom"] = { location = "left", hfactor  = -0.1, vfactor  = 0.85 },
+                    }
+                },
                 {
                     tweak = "fixaccents",
                 },
@@ -132,20 +104,7 @@ return {
                 {
                     tweak  = "fixprimes",
                     factor = 1,
-                    -- scale  = 0.9,
                 },
-             -- {
-             --     tweak = "checkspacing",
-             -- },
-             -- {
-             --     tweak = "addscripts",
-             -- },
-             -- {
-             --     tweak = "accentdimensions",
-             -- },
-             -- {
-             --     tweak = "addrules",
-             -- },
                 {
                     tweak = "addfourier",
                     variant = 1,

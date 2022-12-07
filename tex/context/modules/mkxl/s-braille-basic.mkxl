@@ -119,7 +119,7 @@
 
 \startsection[title=Four]
 
-    Here is some simple inline math: \formula {$x_2 = 10 \neq \alpha$} and here is
+    Here is some simple inline math: \formula {x_2 = 10 \neq \alpha} and here is
     some (quick and dirty) display:
 
     \startformula

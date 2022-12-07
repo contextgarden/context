@@ -2674,7 +2674,7 @@ static int nodelib_direct_setoptions(lua_State *L)
             case fraction_noad:
             case accent_noad:
             case fence_noad:
-                noad_options(n) = lmt_tohalfword(L, 2);
+                noad_options(n) = lmt_tofullword(L, 2);
                 break;
             case math_char_node:
             case math_text_char_node:
@@ -7372,7 +7372,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, source)) {
                                 noad_source(n) = lmt_tohalfword(L, 3);
                             } else if (lua_key_eq(s, options)) {
-                                noad_options(n) = lmt_tohalfword(L, 3);
+                                noad_options(n) = lmt_tofullword(L, 3);
                             } else if (lua_key_eq(s, scriptorder)) {
                                 noad_script_order(n) = lmt_tosingleword(L, 3);
                             } else if (lua_key_eq(s, class)) {

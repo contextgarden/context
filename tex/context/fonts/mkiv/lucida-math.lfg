@@ -13,26 +13,14 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            -- RadicalDisplayStyleVerticalGap  =  100,
-            -- NoLimitSupFactor                =    0,
-            -- NoLimitSubFactor                =  900,
-            FractionRuleThickness           =   55,
-         -- AccentTopShiftUp                =    0,
-         -- FlattenedAccentTopShiftUp       =    0,
-         -- AccentExtendMargin              =   50,
-            -- AccentBaseHeight                =  650,
-            AccentBaseDepth                 =  250,
-            -- RadicalDegreeBottomRaisePercent =   50,
-            -- RadicalKernAfterDegree          = -600,
-         -- RadicalRuleThickness            =   35, --   40 in font (46 in demi)
-            DelimiterPercent                =   90,
-            DelimiterShortfall              =  400,
-         -- DisplayOperatorMinHeight        = 1800, -- 1300 in font (only one)
+            FractionRuleThickness             =   55,
+            AccentBaseDepth                   =  250,
+            DelimiterPercent                  =   90,
+            DelimiterShortfall                =  400,
             SuperscriptBottomMaxWithSubscript = 325,
-            -- PrimeRaisePercent               =   60, --   set to 0 in math-act
-            -- PrimeRaiseComposedPercent       =   50, --   set to 0 in math-act
-            PrimeShiftUp                    = "1.4*SuperscriptShiftUp",
-            PrimeShiftUpCramped             = "1.4*SuperscriptShiftUp",
+            PrimeShiftUp                      = "1.4*SuperscriptShiftUp",
+            PrimeShiftUpCramped               = "1.4*SuperscriptShiftUp",
+            PrimeBaselineDropMax              = "0.5*SuperscriptBaselineDropMax",
         },
         tweaks = {
             aftercopying = {
@@ -44,10 +32,6 @@ return {
                     tweak   = "fixoldschool",
                     version = "Version 1.802",
                 },
-             -- {
-             --     tweak = "showinfo",
-             --     version = "Version 1.803",
-             -- },
                 {
                     tweak = "addmirrors",
                 },
@@ -90,8 +74,6 @@ return {
                         -- The < and > are slightly too small. We scale them by 867/795
                         ["0x003C"]      = { scale = 1.09057, width = 1.09057, height = 1.09057 },
                         ["0x003E"]      = { scale = 1.09057, width = 1.09057, height = 1.09057 },
-                        -- The = is too big if in ss03. We scale it by 795/867 (not working like this)
-                     -- ["0x003D.ss03"] = { scale = 0.916955, width = 0.916955, height = 0.916955 },
                     },
                 },
                 {
@@ -105,15 +87,6 @@ return {
                         ["0x23DD.parts.1"]  = { xoffset = -0.075, depth  = .8, yoffset =  0.2 },
                         ["0x23DD.parts.2"]  = {                   depth  = .8, yoffset =  0.2 },
                         ["0x23DD.parts.3"]  = { xoffset =  0.075, depth  = .8, yoffset =  0.2 },
-                        -- these are done later using the AccentBase* parameters
-                     -- [0x23DC]            = { height = .2, yoffset = -0.8 },
-                     -- [0x23DD]            = { depth  = .6, yoffset =  0.4 },
-                        --
-                     -- ["0x7C.variants.1"] = { squeeze = 0.75, height = 0.75, depth = 0.75 },
-                     -- ["0x7C.variants.2"] = { squeeze = 0.75, height = 0.75, depth = 0.75 },
-                     -- ["0x7C.variants.3"] = { squeeze = 0.75, height = 0.75, depth = 0.75 },
-                     -- ["0x7C.variants.4"] = { squeeze = 0.75, height = 0.75, depth = 0.75 },
-                        -- going zero makes them be ignored
                         ["0x7C.variants.3"] = { squeeze = 0.90, height = 0.90, depth = 0.90 },
                         ["0x7C.variants.4"] = { squeeze = 0.80, height = 0.80, depth = 0.80 },
                     },
@@ -124,68 +97,30 @@ return {
                 {
                     tweak = "extendaccents",
                 },
-{
-    tweak   = "radicaldegreeanchors",
-    list = {
-     -- [0x221A]                = { location = "left", hfactor =  .05, vfactor = .675 },
-     -- ["0x221A.variants.*"]   = { location = "left", hfactor =  .05, vfactor = .6   },
-     -- ["0x221A.variants.1"]   = { location = "left", hfactor =  .05, vfactor = .65  },
-     -- ["0x221A.variants.2"]   = { location = "left", hfactor =  .1,  vfactor = .65  },
-        ["0x221A.variants.3"]   = { location = "left", hfactor = 0,    vfactor = .55  },
-        ["0x221A.variants.4"]   = { location = "left", hfactor = 0,    vfactor = .50  },
-     -- ["0x221A.variants.5"]   = { location = "left", hfactor =  .05, vfactor = .525 },
-     -- ["0x221A.variants.5"]   = { location = "left", hfactor =  .1,  vfactor = .55  },
-     -- ["0x221A.variants.6"]   = { location = "left", hfactor =  .1,  vfactor = .55  },
-     -- ["0x221A.parts.top"]    = { location = "left", hfactor =  .1,  vfactor = 5.5  }, -- keep commented: bottom wins over top
-        ["0x221A.parts.bottom"] = { location = "left", hfactor = 0,    vfactor =  .85 },
-    }
-},
+                {
+                    tweak   = "radicaldegreeanchors",
+                    list = {
+                        ["0x221A.variants.3"]   = { location = "left", hfactor = 0,    vfactor = .55  },
+                        ["0x221A.variants.4"]   = { location = "left", hfactor = 0,    vfactor = .50  },
+                        ["0x221A.parts.bottom"] = { location = "left", hfactor = 0,    vfactor = .85  },
+                    }
+                },
                 {
                     tweak = "fixaccents",
                 },
                 -- First we set the dimensions of the initial accent which started out as zero but we want
-                -- a proper width.
---                 {
---                     tweak = "dimensions",
---                     list  = {
---                      -- [0x00302] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widehat
---                      -- [0x00303] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widetilde
---                      -- [0x00306] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widebreve
---                      -- [0x0030C] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widecheck
---                     },
---                 },
+                -- a proper width. Not in lucida
                 -- Then we deal with all offsets and heights in one go. So we treat the initial accent
-                -- as well as the variants here.
---                 {
---                     tweak = "dimensions",
---                     list  = {
---                       -- here we want to apply to all
---                       -- [0x00300] = { yoffset = -0.02,  height = .95, all = true }, -- widegrave : 0x0060
---                       -- [0x00301] = { yoffset = -0.02,  height = .95, all = true }, -- wideacute : 0x00B4
---                       -- [0x00302] = { yoffset = -0.03,  height = .95, all = true }, -- widehat   : 0x02C6
---                       -- [0x00303] = { yoffset = -0.02,  height = .95, all = true }, -- widetilde : 0x02DC
---                       -- [0x00306] = { yoffset = -0.03,  height = .95, all = true }, -- widebre   : 0x02D8
---                       -- [0x0030A] = { yoffset =  0.00,  height = .95, all = true }, -- widering  : 0x02DA
---                       -- [0x0030C] = { yoffset = -0.03,  height = .95, all = true }, -- widecheck : 0x02C7
---                       -- [0x00304] = { yoffset = -0.05,  height = .95, all = true }, -- widebar   : 0x00AF
---                       -- [0x00307] = { yoffset = -0.03,  height = .95, all = true }, -- widedot   : 0x02D9
---                       -- [0x00308] = { yoffset = -0.03,  height = .95, all = true }, -- wideddot  : 0x00A8
---                       -- [0x020DB] = { yoffset = -0.015, height = .95, all = true }, -- widedddot : 0x20DB (self)
---                     },
---                 },
+                -- as well as the variants here. Not in lucida.
                 -- We now copy these to the not wide slots so that we can set these to stretch as well,
                 -- if only because it is less confusing and more consistent.
                 {
                     tweak = "copyaccents",
                 },
                 -- So far for the accents.
-
                 {
                     tweak = "fixslashes",
                 },
-                -- {
-                --     tweak = "fixellipses",
-                -- },
                 {
                     tweak = "addbreve",
                 },
@@ -206,26 +141,12 @@ return {
                         ["0x27E9.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
                         [0x27EB]                = { topright = -0.2,  bottomright = -0.2  },
                         ["0x27EB.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
-                        -- ["0x222B.variants.*"] = integral_variants, ["0x222B.parts.top"] = integral_top, ["0x222B.parts.bottom"] = integral_bottom,
-                        -- ["0x222C.variants.*"] = integral_variants, -- ["0x222C.parts.top"] = integral_top, ["0x222C.parts.bottom"] = integral_bottom,
-                        -- ["0x222D.variants.*"] = integral_variants, -- ["0x222D.parts.top"] = integral_top, ["0x222D.parts.bottom"] = integral_bottom,
-                        -- ["0x222E.variants.*"] = integral_variants, -- ["0x222E.parts.top"] = integral_top, ["0x222E.parts.bottom"] = integral_bottom,
-                        -- ["0x222F.variants.*"] = integral_variants, -- ["0x222F.parts.top"] = integral_top, ["0x222F.parts.bottom"] = integral_bottom,
-                        -- ["0x2230.variants.*"] = integral_variants, -- ["0x2230.parts.top"] = integral_top, ["0x2230.parts.bottom"] = integral_bottom,
-                        -- ["0x2231.variants.*"] = integral_variants, -- ["0x2231.parts.top"] = integral_top, ["0x2231.parts.bottom"] = integral_bottom,
-                        -- ["0x2232.variants.*"] = integral_variants, -- ["0x2232.parts.top"] = integral_top, ["0x2232.parts.bottom"] = integral_bottom,
-                        -- ["0x2233.variants.*"] = integral_variants, -- ["0x2233.parts.top"] = integral_top, ["0x2233.parts.bottom"] = integral_bottom,
-
                     },
                 },
                 {
                    tweak   = "fixprimes",
-                --   factor  = 0.75,  -- accent base height
                    factor  = 0.7,  -- accent base height
-                -- smaller = true, -- replace multiples
-                -- scale   = 1.1,  -- glyph scale
                    fake    = 0.65, -- replace multiples with this width proportion
-                -- keep    = true, -- keep the text size prime (aka minute)
                 },
                 {
                     tweak = "checkspacing",
@@ -244,7 +165,6 @@ return {
                 },
                 {
                     tweak = "addfourier",
-                 -- scale = 1.5,
                     variant = 1,
                 },
                 {
@@ -262,9 +182,6 @@ return {
                         [0x2192] = false,
                         [0x219E] = false,
                         [0x21A0] = false,
-                     -- [0x21A6] = false,
-                     -- [0x21CB] = false,
-                     -- [0x21CC] = false,
                     }
                 },
                 -- this is the mkiv section

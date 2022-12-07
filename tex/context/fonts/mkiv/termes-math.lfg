@@ -12,27 +12,17 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            -- NoLimitSupFactor                =    0,
-            -- NoLimitSubFactor                =  900,
-            AccentTopShiftUp                =  -15,
-            FlattenedAccentTopShiftUp       =  -15,
-         -- AccentExtendMargin              =   50,
-         -- AccentBaseHeight                =    0,
-            AccentBaseDepth                 =   50,
-            -- RadicalDegreeBottomRaisePercent =   60,
-            -- RadicalRuleThickness            =   46, --   52 in font
-            DelimiterPercent                =   90,
-            DelimiterShortfall              =  400,
-            DisplayOperatorMinHeight        = 1800, -- 1300 in font (only one)
-            -- ScriptPercentScaleDown          = 70, -- 74 in font (set in typescript)
-            -- ScriptScriptPercentScaleDown    = 50, -- 50 in font (set in typescript)
-            SuperscriptShiftUp              = 310, -- 339
-            SubscriptShiftDown              = 200, -- 222
-            SubscriptShiftDownWithSuperscript = "1.4*SubscriptShiftDown", -- 1.5* in math-act
-            -- PrimeRaisePercent               =   60, --   set to 0 in math-act
-            -- PrimeRaiseComposedPercent       =   10, --   set to 0 in math-act
-            PrimeShiftUp                    = "1.35*SuperscriptShiftUp",
-            PrimeShiftUpCramped             = "1.35*SuperscriptShiftUp",
+            AccentTopShiftUp                  =  -15,
+            FlattenedAccentTopShiftUp         =  -15,
+            AccentBaseDepth                   =   50,
+            DelimiterPercent                  =   90,
+            DelimiterShortfall                =  400,
+            DisplayOperatorMinHeight          = 1800, -- 1300 in font (only one)
+            SuperscriptShiftUp                = 310, -- 339
+            SubscriptShiftDown                = 200, -- 222
+            SubscriptShiftDownWithSuperscript = "1.40*SubscriptShiftDown", -- 1.5* in math-act
+            PrimeShiftUp                      = "1.35*SuperscriptShiftUp",
+            PrimeShiftUpCramped               = "1.35*SuperscriptShiftUp",
         },
         tweaks = {
             aftercopying = {
@@ -42,8 +32,6 @@ return {
                 },
                 {
                     tweak   = "fixprimes",
-                    -- scale   = 0.9,
-                 -- smaller = true,
                     factor  = 0.76,
                 },
                 {
@@ -84,15 +72,6 @@ return {
                         ["0x222C.parts.bottom"] = { bottomright = -0.15 }, -- iint
                         ["0x222D.parts.bottom"] = { bottomright = -0.10 }, -- iiint
                         ["0x2A0C.parts.bottom"] = { bottomright = -0.05 }, -- iiiint
-                        -- ["0x222B.variants.*"]   = integral_variants, ["0x222B.parts.top"] = integral_top, ["0x222B.parts.bottom"] = integral_bottom,
-                        -- ["0x222C.variants.*"]   = integral_variants, ["0x222C.parts.top"] = integral_top, ["0x222C.parts.bottom"] = integral_bottom,
-                        -- ["0x222D.variants.*"]   = integral_variants, ["0x222D.parts.top"] = integral_top, ["0x222D.parts.bottom"] = integral_bottom,
-                        -- ["0x222E.variants.*"]   = integral_variants, ["0x222E.parts.top"] = integral_top, ["0x222E.parts.bottom"] = integral_bottom,
-                        -- ["0x222F.variants.*"]   = integral_variants, ["0x222F.parts.top"] = integral_top, ["0x222F.parts.bottom"] = integral_bottom,
-                        -- ["0x2230.variants.*"]   = integral_variants, ["0x2230.parts.top"] = integral_top, ["0x2230.parts.bottom"] = integral_bottom,
-                        -- ["0x2231.variants.*"]   = integral_variants, ["0x2231.parts.top"] = integral_top, ["0x2231.parts.bottom"] = integral_bottom,
-                        -- ["0x2232.variants.*"]   = integral_variants, ["0x2232.parts.top"] = integral_top, ["0x2232.parts.bottom"] = integral_bottom,
-                        -- ["0x2233.variants.*"]   = integral_variants, ["0x2233.parts.top"] = integral_top, ["0x2233.parts.bottom"] = integral_bottom,
                     },
                 },
                 -- Accents are a mess. We migrate the extensibles from the combiners to the base accent
@@ -101,22 +80,14 @@ return {
                 {
                     tweak = "extendaccents",
                 },
-{
-    tweak   = "radicaldegreeanchors",
-    list = {
-        [0x221A]                = { location = "left", hfactor  = 0.0, vfactor = 0.6 },
-        ["0x221A.variants.*"]   = { location = "left", hfactor  = 0.0, vfactor = 0.6 },
-        -- ["0x221A.variants.1"]   = { location = "left", hfactor  = 0.05, vfactor  = .65 },
-        -- ["0x221A.variants.2"]   = { location = "left", hfactor  = .1, vfactor  = .65 },
-     -- ["0x221A.variants.3"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221A.variants.4"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
-    --  ["0x221A.variants.5"]   = { location = "left", hfactor  = 0.05, vfactor  = .525 },
-     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221Aq.variants.6"]  = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221A.parts.top"]    = { location = "left", hfactor  = .1, vfactor  = 5.5 }, -- keep commented: bottom wins over top
-        ["0x221A.parts.bottom"] = { location = "left", hfactor  = 0.05, vfactor  = 1.1 },
-    }
-},
+                {
+                    tweak   = "radicaldegreeanchors",
+                    list = {
+                        [0x221A]                = { location = "left", hfactor  = 0.0, vfactor = 0.6 },
+                        ["0x221A.variants.*"]   = { location = "left", hfactor  = 0.0, vfactor = 0.6 },
+                        ["0x221A.parts.bottom"] = { location = "left", hfactor  = 0.05, vfactor  = 1.1 },
+                    }
+                },
                 {
                     tweak = "fixaccents",
                 },
@@ -132,24 +103,7 @@ return {
                     },
                 },
                 -- Then we deal with all offsets and heights in one go. So we treat the initial accent
-                -- as well as the variants here.
-                {
-                    tweak = "dimensions",
-                    list  = {
-                     -- here we want to apply to all
-                     -- [0x00300] = { yoffset = -0.02,  height = .95, all = true }, -- widegrave : 0x0060
-                     -- [0x00301] = { yoffset = -0.02,  height = .95, all = true }, -- wideacute : 0x00B4
-                     -- [0x00302] = { yoffset = -0.03,  height = .95, all = true }, -- widehat   : 0x02C6
-                     -- [0x00303] = { yoffset = -0.02,  height = .95, all = true }, -- widetilde : 0x02DC
-                     -- [0x00306] = { yoffset = -0.03,  height = .95, all = true }, -- widebre   : 0x02D8
-                     -- [0x0030A] = { yoffset =  0.00,  height = .95, all = true }, -- widering  : 0x02DA
-                     -- [0x0030C] = { yoffset = -0.03,  height = .95, all = true }, -- widecheck : 0x02C7
-                     -- [0x00304] = { yoffset = -0.05,  height = .95, all = true }, -- widebar   : 0x00AF
-                     -- [0x00307] = { yoffset = -0.03,  height = .95, all = true }, -- widedot   : 0x02D9
-                     -- [0x00308] = { yoffset = -0.03,  height = .95, all = true }, -- wideddot  : 0x00A8
-                     -- [0x020DB] = { yoffset = -0.015, height = .95, all = true }, -- widedddot : 0x20DB (self)
-                    },
-                },
+                -- as well as the variants here. Not in termes.
                 -- We now copy these to the not wide slots so that we can set these to stretch as well,
                 -- if only because it is less confusing and more consistent.
                 {
@@ -176,6 +130,9 @@ return {
                     tweak = "addactuarian",
                 },
                 {
+                    tweak = "addprimed",
+                },
+                {
                     tweak = "addequals",
                 },
                 {
@@ -198,27 +155,3 @@ return {
         },
     },
 }
-
--- For now we keep these commented as they show where we came from.
-
--- Do a testrun with hats on these:
---
--- {
---     tweak = "dimensions",
---     list  = {
---         [0x1D44F] = {                 width = 1,    italic = 0,   anchor = 1.3  }, -- b
---         [0x1D451] = {                 width = 1,    italic = 0,   anchor = 0.8  }, -- d
---         [0x1D452] = {                 width = 1,    italic = 0,   anchor = 0.9  }, -- e
---         [0x0210E] = {                 width = 1,    italic = 0,   anchor = 1.3  }, -- h
---         [0x1D458] = {                 width = 1,    italic = 0,   anchor = 1.3  }, -- k
---         [0x1D453] = { xoffset = 0.6,  width = 1.4,  italic = 1.2, anchor = 1.5  }, -- f
---         [0x1D457] = { xoffset = 0.5,  width = 1.3,  italic = 1.7                }, -- j
---         [0x1D45D] = { xoffset = 0.15, width = 1.15, italic = 0,   anchor = 1.4  }, -- p
---         [0x1D45E] = {                 width = 1,    italic = 0,   anchor = 0.9  }, -- q
---         [0x1D464] = {                 width = 1,    italic = 0,   anchor = 1.1  }, -- w
---         [0x1D6FE] = {                 width = 1,    italic = 0,   anchor = 1.1  }, -- \gamma
---         [0x1D706] = {                 width = 1,    italic = 0,   anchor = 1.05 }, -- \lambda
---         [0x1D70A] = {                 width = 1,    italic = 0,   anchor = 1.2  }, -- \omicron
---         [0x1D70F] = {                 width = 1,    italic = 0,   anchor = 1.05 }, -- \tau
---     },
--- },

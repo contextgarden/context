@@ -56,6 +56,7 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
+            -- Borrow values from lm:
             FractionNumeratorDisplayStyleShiftUp = function(value,target,original)
                 local o = original.mathparameters.FractionNumeratorDisplayStyleShiftUp
                 if o > 675 then
@@ -69,16 +70,10 @@ return {
             NoLimitSubFactor         = 1200,
             DelimiterPercent         =   90,
             DelimiterShortfall       =  400,
-         -- DisplayOperatorMinHeight = 1800, -- 1300 in font (only one)
-            -- Borrow values from lm:
-            -- SubSuperscriptGapMin                 =  160, -- 160 in font (4*ruleheight)
             SubscriptBaselineDropMin             =  50, -- 200 in font (multiplied by 0.59999/2.39868)
             SubscriptShiftDown                   =  150, -- 247 in font (multiplied to be consistent with cm)
             SubscriptShiftDownWithSuperscript    =  247, -- relates to the previous one (see math-act)
-            -- SubscriptTopMax                      =  344, -- 344 in font .8 exheight
             SuperscriptBaselineDropMax           =  386, -- 250 in font (multiplied by 4.6333/2.99 (values in cm/values in lm))
-            -- SuperscriptBottomMaxWithSubscript    =  344, -- 344 in font .8 exheight
-            -- SuperscriptBottomMin                 =  108, -- 108 in font .25 exheight
             SuperscriptShiftUp                   =  413, -- 363 in font (multiplied with 4.9547/4.3536, got 413)
             SuperscriptShiftUpCramped            =  413, -- 289 in font (no distinction, old TeX)
             PrimeShiftUp                         = "1.1*SuperscriptShiftUp",
@@ -91,16 +86,9 @@ return {
                     expected = "Version 1.958",
                 },
                 {
-                    tweak = "dimensions",
-                    list  = {
-                        -- nothing yet
-                    },
-                },
-                {
                     tweak   = "fixprimes",
                     factor  = 0.825,
                     smaller = true,
-                    -- scale   = 0.70,
                     fake    = 0.6,
                 },
                 {

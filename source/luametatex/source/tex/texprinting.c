@@ -592,9 +592,9 @@ void tex_print_sparse_dimension(scaled s, int unit)
     as an unsigned. 
 */
 
-void tex_print_hex(int sn)
+void tex_print_hex(long long sn)
 {
-    unsigned int n = (unsigned int) sn;
+    unsigned long long n = (unsigned long long) sn;
     int k = 0;
     unsigned char digits[24];
     do {
@@ -612,13 +612,13 @@ void tex_print_hex(int sn)
     }
 }
 
-void tex_print_qhex(int n)
+void tex_print_qhex(long long n)
 {
     tex_print_char('"');
     tex_print_hex(n);
 }
 
-void tex_print_uhex(int n)
+void tex_print_uhex(long long n)
 {
     tex_print_str("U+");
     if (n < 16) {

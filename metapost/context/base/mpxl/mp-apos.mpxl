@@ -217,10 +217,12 @@ permanent
 
 def anch_box_arrows_draw =
     begingroup ;
-        save f, t, p, alternative, delta, dashtype, edge ; pair f, t ; path p ; string alternative ;
+        save f, t, p, alternative, delta, dashtype, edge, arrow, ff, tt ;
+        pair f, t, ff, tt ; path p ; string alternative, arrow ;
         dashtype := mpvarn("dashtype") ;
         delta := mpvard("distance");
         alternative := mpvars("alternative") ;
+        arrow := mpvars("arrow") ;
         if positionx(mpvars("rightedge")) > 0 :
             if alternative = "left" :
                 edge := positionx(mpvars("leftedge"));
@@ -241,21 +243,38 @@ def anch_box_arrows_draw =
         else :
             f := positionxy(mpvars("from")) ;
             t := positionxy(mpvars("to")) ;
+% drawdot f withpen pencircle scaled 2pt;
+% drawdot t withpen pencircle scaled 2pt;
+%             if alternative = "bottom" :
+%                 f := f yshifted (- abs(ypart f - ypart t)) ;
+%             elseif alternative = "top" :
+%                 f := f yshifted (abs(ypart f - ypart t)) ;
+%             elseif alternative = "left" :
+%                 f := f xshifted (- abs(xpart f - xpart t)) ;
+%             elseif alternative = "right" :
+%                 f := f xshifted (abs(xpart f - xpart t)) ;
+%             fi ;
+            %
+            %
             if alternative = "bottom" :
-                f := f yshifted (- abs(ypart f - ypart t)) ;
-                p := (f  -- (f yshifted -delta) -- (t yshifted -delta) --  t) ;
+ff := (xpart f, min(ypart f, ypart t));
+tt := (xpart t, ypart ff);
+                p := (f  -- (ff yshifted -delta) -- (tt yshifted -delta) --  t) ;
                 draw thetextext.bot(mpvars("text"), (point .5 along p) yshifted -.25ExHeight) ;
             elseif alternative = "top" :
-                f := f yshifted (abs(ypart f - ypart t)) ;
-                p := (f  -- (f yshifted delta) -- (t yshifted delta) --  t) ;
+ff := (xpart f, max(ypart f, ypart t));
+tt := (xpart t, ypart ff);
+                p := (f  -- (ff yshifted delta) -- (tt yshifted delta) --  t) ;
                 draw thetextext.top(mpvars("text"), (point .5 along p) yshifted .25ExHeight) ;
             elseif alternative = "left" :
-                f := f xshifted (- abs(xpart f - xpart t)) ;
-                p := (f  -- (f xshifted - delta) -- (t xshifted - delta) --  t) ;
+ff := (min(xpart f, xpart t), ypart f);
+tt := (xpart ff, ypart t);
+                p := (f  -- (ff xshifted - delta) -- (tt xshifted - delta) --  t) ;
                 draw thetextext.lft(mpvars("text"), (point .5 along p) xshifted -ExHeight) ;
             elseif alternative = "right" :
-                f := f xshifted (abs(xpart f - xpart t)) ;
-                p := (f  -- (f xshifted delta) -- (t xshifted delta) --  t) ;
+ff := (max(xpart f, xpart t), ypart f);
+tt := (xpart ff, ypart t);
+                p := (f  -- (ff xshifted delta) -- (tt xshifted delta) --  t) ;
                 draw thetextext.rt(mpvars("text"), (point .5 along p) xshifted ExHeight) ;
             elseif alternative = "middle" :
                 p := f  --  t ;
@@ -263,7 +282,16 @@ def anch_box_arrows_draw =
             fi ;
         fi ;
         % 1 = dashed, 2 = dashed with background
-        drawarrow p
+        if arrow ="no" :
+            draw
+        elseif arrow == "reverse" :
+            drawarrow reverse
+        elseif arrow == "both" :
+            drawdblarrow
+        else :
+            drawarrow
+        fi
+            p
             if dashtype == 1 :
                 withdashes .5ExHeight
             fi

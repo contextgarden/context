@@ -81,6 +81,7 @@
 
 typedef int             strnumber;
 typedef int             halfword;
+typedef long long       fullword;
 typedef unsigned short  quarterword;   /*tex It really is an unsigned one! But \MPLIB| had it signed. */
 typedef unsigned char   singleword;
 typedef int             scaled;

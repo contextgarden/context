@@ -164,6 +164,14 @@ void tex_math_copy_char_data(halfword target, halfword source, int wipelist)
     }
 }
 
+static inline void tex_math_set_scripts_options(halfword n)
+{
+    switch (math_scripts_mode_par) { 
+        case 1: noad_options(n) |= noad_option_fixed_super_or_sub_script; break;
+        case 2: noad_options(n) |= noad_option_fixed_super_and_sub_script; break;
+    }
+}
+
 // static const math_styles map_cramped_style[] = { /*tex cramp the style */
 //     cramped_display_style,
 //     cramped_display_style,
@@ -2004,6 +2012,7 @@ static void tex_aux_append_math_char(mathcodeval mval, mathdictval dval, int aut
                 math_kernel_node_set_option(q, math_kernel_no_italic_correction);
             }
             node_subtype(p) = tex_aux_set_math_char(q, &mval, &dval);
+            tex_math_set_scripts_options(p);
             tex_tail_append(p);
         }
     }
@@ -2420,6 +2429,7 @@ static void tex_aux_math_math_component(halfword target, int append)
 void tex_run_math_math_component(void)
 {
     halfword n = tex_new_node(simple_noad, ordinary_noad_subtype);
+    tex_math_set_scripts_options(n);
     tex_aux_math_math_component(n, 1);
 }
 
@@ -2472,6 +2482,9 @@ void tex_run_math_modifier(void)
                 noad_options(tail) |= noad_option_void;
                 break;
             case source_modifier_code:
+                if (tex_scan_keyword("nucleus")) {
+                    noad_options(tail) |= noad_option_source_on_nucleus;    
+                }
                 noad_source(tail) = tex_scan_int(0, NULL);
                 break;
             case openup_height_modifier_code:
@@ -2606,7 +2619,7 @@ static void tex_aux_scan_delimiter(halfword target, int code, int class)
 void tex_run_math_radical(void)
 {
     halfword code = cur_chr;
-    halfword options = 0;
+    fullword options = 0;
     halfword radical = tex_new_node(radical_noad, (quarterword) code);
     halfword style = yet_unset_math_style;
     halfword variant = 0; /* quad, harmless */
@@ -3437,7 +3450,7 @@ void tex_run_math_fraction(void)
         halfword autostyle = tex_math_style_variant(cur_list.math_style, math_parameter_fraction_variant);
         halfword userstyle = -1;
         halfword attrlist = null;
-        halfword options = 0;
+        fullword options = 0;
         halfword class = fraction_noad_subtype;
         halfword rulethickness = preset_rule_thickness;
         int ruledone = 0;
@@ -3846,7 +3859,7 @@ void tex_run_math_fence(void)
     scaled dp = 0;
     scaled top = 0;
     scaled bottom = 0;
-    halfword options = 0;
+    fullword options = 0;
     halfword mainclass = unset_noad_class;
     halfword leftclass = unset_noad_class;
     halfword rightclass = unset_noad_class;
@@ -4549,7 +4562,7 @@ static void tex_aux_finish_displayed_math(int atleft, halfword eqnumber, halfwor
 }
 
 /*tex
-*
+
     A |math_node|, which occurs only in horizontal lists, appears before and after mathematical
     formulas. The |subtype| field is |before| before the formula and |after| after it. There is a
     |surround| field, which represents the amount of surrounding space inserted by |\mathsurround|.

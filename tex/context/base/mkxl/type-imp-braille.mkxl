@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\continuewhenlmtxmode
+
 %D There is no need to waste money on a commercial braille font if we have dejavu. After
 %D all it's just dots. We also don't need features.
 
@@ -35,7 +37,7 @@
     \definefontfallback[BrailleMono] [\s!name:dejavuserif*brailletext][0x0000-0x1FFFF][force=yes]
     \definefontfallback[BrailleSerif][\s!name:dejavuserif*brailletext][0x0000-0x1FFFF][force=yes]
     \definefontfallback[BrailleSans] [\s!name:dejavuserif*brailletext][0x0000-0x1FFFF][force=yes]
-    \definefontfallback[BrailleMath] [\s!name:dejavuserif*braillemath][0x0000-0x1FFFF][force=yes]
+   %\definefontfallback[BrailleMath] [\s!name:dejavuserif*braillemath][0x0000-0x1FFFF][force=yes]
 
     \definefontfallback[BrailleMonoBold] [\s!name:dejavuserifbold*brailletext][0x0000-0x1FFFF][force=yes]
     \definefontfallback[BrailleSerifBold][\s!name:dejavuserifbold*brailletext][0x0000-0x1FFFF][force=yes]
@@ -70,8 +72,10 @@
 
     \starttypescript [\s!math][braille] [\s!name]
         \loadfontgoodies[dejavu-math]
-        \definefontsynonym[\s!MathRoman]    [\s!file:texgyredejavu-math][\s!features={mathbraille,\s!math\mathsizesuffix},\s!fallbacks=BrailleMath]
-        \definefontsynonym[\s!MathRomanBold][\s!file:texgyredejavu-math][\s!features={mathbraille,\s!math\mathsizesuffix,dejavu-math-bold},\s!fallbacks=BrailleMath]
+       %\definefontsynonym[\s!MathRoman]    [\s!file:texgyredejavu-math][\s!features={mathbraille,\s!math\mathsizesuffix},\s!fallbacks=BrailleMath]
+       %\definefontsynonym[\s!MathRomanBold][\s!file:texgyredejavu-math][\s!features={mathbraille,\s!math\mathsizesuffix,dejavu-math-bold},\s!fallbacks=BrailleMath]
+        \definefontsynonym[\s!MathRoman]    [\s!file:texgyredejavu-math][\s!features={braillemath,\s!math\mathsizesuffix},\s!goodies=dejavu-math]
+        \definefontsynonym[\s!MathRomanBold][\s!file:texgyredejavu-math][\s!features={braillemath,\s!math\mathsizesuffix,dejavu-math-bold},\s!goodies=dejavu-math]
     \stoptypescript
 
     \starttypescript[braille]

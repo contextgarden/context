@@ -135,10 +135,9 @@ unsigned aux_splitutf2uni(unsigned int *ubuf, const char *utf8buf)
 
 size_t aux_utf8len(const char *text, size_t size)
 {
-    size_t ls = size;
     size_t ind = 0;
     size_t num = 0;
-    while (ind < ls) {
+    while (ind < size) {
         unsigned char i = (unsigned char) *(text + ind);
         if (i < 0x80) {
             ind += 1;

@@ -9,15 +9,11 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            -- NoLimitSupFactor         =    0,
-            -- NoLimitSubFactor         =  900,
-            DelimiterPercent         =   90,
-            DelimiterShortfall       =  400,
-         -- DisplayOperatorMinHeight = 1800, -- 1400 in font (one size)
-         -- PrimeRaisePercent               =   0,  -- set to 0 in math-act
-         -- PrimeRaiseComposedPercent       =   25, -- set to 0 in math-act
-            PrimeShiftUp             = "1.2*SuperscriptShiftUp",
-            PrimeShiftUpCramped      = "1.2*SuperscriptShiftUp",
+            DelimiterPercent     =   90,
+            DelimiterShortfall   =  400,
+            PrimeShiftUp         = "1.2*SuperscriptShiftUp",
+            PrimeShiftUpCramped  = "1.2*SuperscriptShiftUp",
+            PrimeBaselineDropMax = "0.5*SuperscriptBaselineDropMax",
         },
         tweaks = {
             aftercopying = {
@@ -25,13 +21,9 @@ return {
                     tweak   = "fixprimes",
                     factor  = 0.92,
                 },
-                -- there are circular variants
---                 {
---                     tweak = "addmirrors",
---                 },
-{
-    tweak = "fixintegrals",
-},
+                {
+                    tweak = "fixintegrals",
+                },
                 presets.scripttocalligraphic { },
                 presets.rsfstoscript         { },
                 presets.rsfsuprighttoscript  { },
@@ -53,9 +45,6 @@ return {
                     list  = {
                         [0x002F]                = { topleft  = -0.2,  bottomright = -0.2 },
                         ["0x002F.variants.*"]   = { topleft  = -0.2,  bottomright = -0.2 },
-                        -- No!
-                     -- [0x0028]                = { topleft  = -0.1,  bottomleft  = -0.1             }, -- left parenthesis
-                     -- [0x0029]                = { topright = -0.1,  bottomright = -0.1, all = true }, -- right parenthesis
                         --
                         [0x007D]                = { topright = -0.05, bottomright = -0.05 }, -- right brace variants
                         ["0x7D.variants.*"]     = { topright = -0.25, bottomright = -0.25 }, -- right brace variants
@@ -64,7 +53,7 @@ return {
                         [0x0029]                = { topright = -0.15, bottomright = -0.15 }, -- right parenthesis variants
                         ["0x29.variants.*"]     = { topright = -0.15, bottomright = -0.15 }, -- right parenthesis variants
                         ["0x29.parts.top"]      = { topright = -0.15,                     }, -- right parenthesis top
-                        ["0x29.parts.bottom"]   = {                   bottomright = -0.15 }, -- right parenthesis bottom   
+                        ["0x29.parts.bottom"]   = {                   bottomright = -0.15 }, -- right parenthesis bottom
                         [0x221A]                = { topright =  0.2,  bottomright =  0.2  }, -- radical
                         ["0x221A.variants.*"]   = { topright =  0.2,  bottomright =  0.2  },
                         ["0x221A.parts.top"]    = { topright =  0.2,                      },
@@ -84,24 +73,12 @@ return {
                         [0x00393] = { width = 0.875, }, -- upright Gamma
                     },
                 },
-
-
-{
-    tweak   = "radicaldegreeanchors",
-    list = {
-        -- [0x221A]                = { location = "left", hfactor  = .1, vfactor  = .3 },
-        -- ["0x221A.variants.*"]   = { location = "left", hfactor  = .1, vfactor  = .625 },
-        -- ["0x221A.variants.1"]   = { location = "left", hfactor  = .1, vfactor  = .575 },
-     -- ["0x221A.variants.2"]   = { location = "left", hfactor  = .1, vfactor  = .575 },
-     -- ["0x221A.variants.3"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221A.variants.4"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221A.variants.5"]   = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221Aq.variants.6"]  = { location = "left", hfactor  = .1, vfactor  = .55 },
-     -- ["0x221A.parts.top"]    = { location = "left", hfactor  = .1, vfactor  = 5.5 }, -- keep commented: bottom wins over top
-        ["0x221A.parts.bottom"] = { location = "left", hfactor  = .0, vfactor  = 1.075 },
-    }
-},
+                {
+                    tweak   = "radicaldegreeanchors",
+                    list = {
+                        ["0x221A.parts.bottom"] = { location = "left", hfactor  = .0, vfactor  = 1.075 },
+                    }
+                },
                 {
                     tweak = "fixellipses",
                 },

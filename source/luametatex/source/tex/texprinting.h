@@ -59,9 +59,9 @@ extern void        tex_print_banner           (void);
 extern void        tex_print_log_banner       (void);
 extern void        tex_print_version_banner   (void);
 extern void        tex_print_int              (int n);
-extern void        tex_print_hex              (int n);
-extern void        tex_print_uhex             (int n);
-extern void        tex_print_qhex             (int n);
+extern void        tex_print_hex              (long long n);
+extern void        tex_print_uhex             (long long n);
+extern void        tex_print_qhex             (long long n);
 extern void        tex_print_roman_int        (int n);
 extern void        tex_print_current_string   (void);
 extern void        tex_print_cs_checked       (halfword p);                    /*tex Also does the |IMPOSSIBLE| etc. */

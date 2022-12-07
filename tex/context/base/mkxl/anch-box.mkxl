@@ -19,28 +19,68 @@
     anch_box_arrows_draw ;
 \stopMPpositiongraphic
 
+% \tolerant\permanent\protected\def\connectboxanchors[#1]#*[#2]#*[#3]#*[#4]#*#:#5#6%
+%   {\begingroup
+%    \defineboxanchor[#5]%
+%    \setboxanchor[#5][#1][#3]\hpack{\xypos{\namespacedboxanchor{#5}}}%
+%    \ifparameter#3\or\setupboxanchorcontent[#1][#3]\fi
+%    \defineboxanchor[#6]%
+%    \setboxanchor[#6][#2][#4]\hpack{\xypos{\namespacedboxanchor{#6}}}%
+%    \ifparameter#4\or\setupboxanchorcontent[#1][#4]\fi
+%   %\startpositionoverlay{text-1}% will become configurable region
+%    \startpositionoverlay{text+1}% will become configurable region
+%      \setMPpositiongraphic
+%        {\namespacedboxanchor{#5}}%
+%        {\namedboxanchorcontentparameter{#1}\c!mp}%
+%        {from=\namespacedboxanchor{#5},%
+%         to=\namespacedboxanchor{#6},%
+%         distance={\namedboxanchorcontentparameter{#1}\c!distance},%
+%         dashtype={\namedboxanchorcontentparameter{#1}\c!dash},%
+%         alternative={\namedboxanchorcontentparameter{#1}\c!alternative},%
+%         text={\namedboxanchorcontentparameter{#1}\c!text},%
+%         rulethickness={\namedboxanchorcontentparameter{#1}\c!rulethickness},%
+%         linecolor=\namedboxanchorcontentparameter{#1}{\c!rulecolor}}%
+%    \stoppositionoverlay
+%    \endgroup}
+
 \tolerant\permanent\protected\def\connectboxanchors[#1]#*[#2]#*[#3]#*[#4]#*#:#5#6%
   {\begingroup
-   \defineboxanchor[#5]%
-   \setboxanchor[#5][#1][#3]\hpack{\xypos{\namespacedboxanchor{#5}}}%
+   %
+   \edef\boxanchorone{\boxanchoringclass:#5}%
+   \edef\boxanchortwo{\boxanchoringclass:#6}%
+%    \edef\boxanchorone{#5}%
+%    \edef\boxanchortwo{#6}%
+   %
+   \doifnotanchorbox{\boxanchorone}{\defineboxanchor[\boxanchorone]}%
+   \doifnotanchorbox{\boxanchortwo}{\defineboxanchor[\boxanchortwo]}%
+   %
+   \edef\boxanchorposone{#1:#2:\namespacedboxanchor{\boxanchorone}}%
+   \edef\boxanchorpostwo{#1:#2:\namespacedboxanchor{\boxanchortwo}}%
+% \edef\boxanchorposone{#1:#2:\number\namedboxanchor{\boxanchorone}}%
+% \edef\boxanchorpostwo{#1:#2:\number\namedboxanchor{\boxanchortwo}}%
+   %
+   \setboxanchor[\boxanchorone][#1][#3]\hpack{\xypos{\boxanchorposone}}%
+   \setboxanchor[\boxanchortwo][#2][#4]\hpack{\xypos{\boxanchorpostwo}}%
+   %
    \ifparameter#3\or\setupboxanchorcontent[#1][#3]\fi
-   \defineboxanchor[#6]%
-   \setboxanchor[#6][#2][#4]\hpack{\xypos{\namespacedboxanchor{#6}}}%
-   \ifparameter#4\or\setupboxanchorcontent[#1][#4]\fi
-%    \startpositionoverlay{text-1}% will become configurable region
-   \startpositionoverlay{text+1}% will become configurable region
-     \setMPpositiongraphic
-       {\namespacedboxanchor{#5}}%
-       {\namedboxanchorcontentparameter{#1}\c!mp}%
-       {from=\namespacedboxanchor{#5},%
-        to=\namespacedboxanchor{#6},%
-        distance={\namedboxanchorcontentparameter{#1}\c!distance},%
-        dashtype={\namedboxanchorcontentparameter{#1}\c!dash},%
-        alternative={\namedboxanchorcontentparameter{#1}\c!alternative},%
-        text={\namedboxanchorcontentparameter{#1}\c!text},%
-        rulethickness={\namedboxanchorcontentparameter{#1}\c!rulethickness},%
-        linecolor=\namedboxanchorcontentparameter{#1}{\c!rulecolor}}%
-   \stoppositionoverlay
+   \ifparameter#4\or\setupboxanchorcontent[#2][#4]\fi % used ?
+   %
+   \normalexpanded{%
+     \startpositionoverlay{text+1}% will become configurable region
+       \setMPpositiongraphic
+         {\boxanchorposone}%
+         {\namedboxanchorcontentparameter{#1}\c!mp}%
+         {from=\boxanchorposone,%
+          to=\boxanchorpostwo,%
+          distance={\namedboxanchorcontentparameter{#1}\c!distance},%
+          dashtype={\namedboxanchorcontentparameter{#1}\c!dash},%
+          arrow={\namedboxanchorcontentparameter{#1}\c!arrow},%
+          alternative={\namedboxanchorcontentparameter{#1}\c!alternative},%
+          text={\namedboxanchorcontentparameter{#1}\c!text},%
+          rulethickness={\namedboxanchorcontentparameter{#1}\c!rulethickness},%
+          linecolor=\namedboxanchorcontentparameter{#1}{\c!rulecolor}}%
+     \stoppositionoverlay
+   }%
    \endgroup}
 
 % dedicated or not
@@ -69,6 +109,7 @@
         to=\namespacedboxanchor{#6},%
         distance={\namedboxanchorcontentparameter{#1}\c!distance},%
         dashtype={\namedboxanchorcontentparameter{#1}\c!dash},%
+        arrow={\namedboxanchorcontentparameter{#1}\c!arrow},%
         alternative={\namedboxanchorcontentparameter{#1}\c!alternative},%
         text={\namedboxanchorcontentparameter{#1}\c!text},%
         rulethickness={\namedboxanchorcontentparameter{#1}\c!rulethickness},%
@@ -176,5 +217,43 @@
    \c!corner={\v!right,\v!height},
    \c!xoffset=.25\exheight,
    \c!yoffset=.25\exheight]
+
+% \setupboxanchorcontent  [top]   [rulecolor=darkyellow]
+% \setupboxanchorcontent  [left]  [rulecolor=darkred]
+% \setupboxanchorcontent  [bottom][rulecolor=darkblue]
+% \setupboxanchorcontent  [right] [rulecolor=darkgreen]
+%
+% \startbuffer
+% \connectboxanchors[top]   [top]   [text={\small\small\strut\bf var 1}]{a1}{a2}
+% \connectboxanchors[top]   [top]   [text={\small\small\strut\bf var 2}]{b1}{b2}
+% \connectboxanchors[top]   [top]   [text={\small\small\strut\bf var 3}]{a1}{b1}
+% \connectboxanchors[bottom][bottom][text={\small\small\strut\bf var 4}]{b1}{b2}
+% \connectboxanchors[bottom][bottom][text={\small\small\strut\bf var 6}]{a1}{a2}
+% \connectboxanchors[bottom][bottom][rulecolor=darkgreen,distance=4ex,text={\small\small\strut\bf var 7}]{c1}{d1}
+%
+% % \start
+%
+% $\showboxes
+% % \mathboxanchored{a1}{a}^{2^x} +
+% % \mathboxanchored[nucleus]{a1}{a}^{2^x} +
+% % \mathboxanchored{a1}{g}^2 +
+% % \mathboxanchored{a1}{a} +
+% a^{\mathboxanchored{a1}{2}} +
+% % a^{\mathboxanchored{a1}{2}}_3 +
+% \mathboxanchored{b1}{b}
+% =
+% \mathboxanchored{c1}{c}^2 +
+% \mathboxanchored[nucleus]{d1}{d}^2
+% =
+% b_{\mathboxanchored{b2}{3}} +
+% \mathboxanchored{a2}{a}
+% $
+% \stopbuffer
+%
+% \starttext
+%   \startTEXpage[offset=10mm]\startboxanchoring[a]\getbuffer\stopboxanchoring\stopTEXpage
+%   \startTEXpage[offset=11mm]\startboxanchoring[b]\getbuffer\stopboxanchoring\stopTEXpage
+%   \startTEXpage[offset=12mm]\startboxanchoring[+]\getbuffer\stopboxanchoring\stopTEXpage
+% \stoptext
 
 \protect

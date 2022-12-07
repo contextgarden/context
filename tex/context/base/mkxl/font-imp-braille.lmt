@@ -103,6 +103,7 @@ local function initialize(tfmdata,value)
                     d.height   = height
                     d.depth    = depth
                     d.commands = c
+                    d.smaller  = nil
                 else
                     characters[u] = {
                         width    = n * width,

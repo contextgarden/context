@@ -18,12 +18,12 @@ return {
                         feature = "scripttocalligraphic",
                         list    = {
                             {
-                                source   = "uppercasescript",
-                                target   = "uppercasecalligraphic",
+                                source = "uppercasescript",
+                                target = "uppercasecalligraphic",
                             },
                             {
-                                source   = "uppercaseboldscript",
-                                target   = "uppercaseboldcalligraphic",
+                                source = "uppercaseboldscript",
+                                target = "uppercaseboldcalligraphic",
                             },
                         },
                     }
@@ -106,6 +106,20 @@ return {
                                 filename = "ralphsmithsformalscript-companion.otf",
                                 rscale   = parameters.rscale,
                                 feature  = "ss01",
+                            },
+                        },
+                    }
+                end,
+                braille = function(parameters)
+                    return {
+                        tweak   = "replacealphabets",
+                        feature = "braille",
+                        list    = {
+                            {
+                                source   = "braillepatterns",
+                                target   = "braillepatterns",
+                                filename = "dejavuserif.ttf",
+                                rscale   = parameters.rscale,
                             },
                         },
                     }

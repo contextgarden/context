@@ -1089,6 +1089,7 @@ local hlist_out, vlist_out  do
                                 anchor_v = anchor_v + (height - width)
                             end
                         end
+-- anchor_v = anchor_v + shift
                         anchors[source] = { anchor_h, anchor_v, width, height, depth }
                     end
                     if usedorientation then
@@ -1154,16 +1155,14 @@ local hlist_out, vlist_out  do
                         pos_v = pos_v - depth
                         flushrule(current,pos_h + xoffset,pos_v + yoffset,pos_r,width,total,subtype)
                     end
+                    cur_h = cur_h + width
                 end
-                -- move into above if
-                cur_h = cur_h + width
             elseif id == math_code then
              -- local kern = getkern(current)
              -- if kern ~= 0 then
              --     cur_h = cur_h + kern
              -- else
---                   cur_h = cur_h + effectiveglue(current,this_box)
-cur_h = cur_h + effectiveglue(current,this_box,true)
+                    cur_h = cur_h + effectiveglue(current,this_box,true)
              -- end
             elseif id == dir_code then
              -- We normally have proper begin-end pairs. A begin without end is (silently) handled
@@ -1278,8 +1277,7 @@ cur_h = cur_h + effectiveglue(current,this_box,true)
      --     local id = getid(current)
         for current, id, subtype in nextnode, current do
             if id == glue_code then
---                 local glueheight = effectiveglue(current,this_box)
-local glueheight = effectiveglue(current,this_box,true)
+                local glueheight = effectiveglue(current,this_box,true)
                 if glueheight ~= 0 then
                     if subtype >= leaders_code then
                         local leader = getleader(current)
@@ -1407,7 +1405,7 @@ local glueheight = effectiveglue(current,this_box,true)
                         end
                         pos_v = ref_v - (cur_v + basepoint_v)
                     elseif hasoffset then
---                         local orientation, xoffset, yoffset = getorientation(current)
+                     -- local orientation, xoffset, yoffset = getorientation(current)
                         local xoffset, yoffset = getoffsets(current)
                      -- local basepoint_h = shift
                      -- local basepoint_v = height
@@ -1535,8 +1533,8 @@ local glueheight = effectiveglue(current,this_box,true)
                         end
                         flushrule(current,pos_h + xoffset,pos_v - total - yoffset,pos_r,width,total,subtype)
                     end
+                    cur_v = cur_v + total
                 end
-                cur_v = cur_v + total
             elseif id == whatsit_code then
                 flushwhatsit[subtype](current,pos_h,pos_v)
             else

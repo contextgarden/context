@@ -761,7 +761,7 @@ void lmt_nodelib_initialize(void) {
     lmt_interface.node_data[nesting_node]        = (node_info) { .id = nesting_node,        .size = nesting_node_size,        .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(nestedlist),     .lua = lua_key_index(nestedlist),      .visible = 0 };
     lmt_interface.node_data[span_node]           = (node_info) { .id = span_node,           .size = span_node_size,           .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(span),           .lua = lua_key_index(span),            .visible = 0 };
     lmt_interface.node_data[align_stack_node]    = (node_info) { .id = align_stack_node,    .size = align_stack_node_size,    .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(alignstack),     .lua = lua_key_index(alignstack),      .visible = 0 };
-    lmt_interface.node_data[noad_state_node]     = (node_info) { .id = noad_state_node,     .size = noad_state_node_size,     .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(noadstate),      .lua = lua_key_index(noadstate),       .visible = 0 };
+ // lmt_interface.node_data[noad_state_node]     = (node_info) { .id = noad_state_node,     .size = noad_state_node_size,     .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(noadstate),      .lua = lua_key_index(noadstate),       .visible = 0 };
     lmt_interface.node_data[if_node]             = (node_info) { .id = if_node,             .size = if_node_size,             .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(ifstack),        .lua = lua_key_index(ifstack),         .visible = 0 };
     lmt_interface.node_data[unhyphenated_node]   = (node_info) { .id = unhyphenated_node,   .size = active_node_size,         .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(unhyphenated),   .lua = lua_key_index(unhyphenated),    .visible = 0 };
     lmt_interface.node_data[hyphenated_node]     = (node_info) { .id = hyphenated_node,     .size = active_node_size,         .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(hyphenated),     .lua = lua_key_index(hyphenated),      .visible = 0 };
@@ -1199,7 +1199,7 @@ halfword tex_copy_node(halfword p)
                     copy_sub_list(noad_subprescr(r), noad_subprescr(p)) ;
                     copy_sub_list(noad_supprescr(r), noad_supprescr(p)) ;
                     copy_sub_list(noad_prime(r), noad_prime(p)) ;
-                    copy_sub_list(noad_state(r), noad_state(p)) ;
+                 // copy_sub_list(noad_state(r), noad_state(p)) ;
                     switch (t) {
                         case radical_noad:
                             copy_sub_node(radical_left_delimiter(r), radical_left_delimiter(p)) ;
@@ -1381,7 +1381,7 @@ void tex_flush_node(halfword p)
                     tex_aux_free_sub_node_list(noad_subprescr(p));
                     tex_aux_free_sub_node_list(noad_supprescr(p));
                     tex_aux_free_sub_node_list(noad_prime(p));
-                    tex_aux_free_sub_node_list(noad_state(p));
+                 // tex_aux_free_sub_node_list(noad_state(p));
                     switch (t) {
                         case fraction_noad:
                          // tex_aux_free_sub_node_list(fraction_numerator(p));
@@ -1503,7 +1503,7 @@ static void tex_aux_check_node(halfword p)
             tex_aux_node_range_test(p, noad_subprescr(p));
             tex_aux_node_range_test(p, noad_supprescr(p));
             tex_aux_node_range_test(p, noad_prime(p));
-            tex_aux_node_range_test(p, noad_state(p));
+         // tex_aux_node_range_test(p, noad_state(p));
             switch (t) {
                 case radical_noad:
                     tex_aux_node_range_test(p, radical_degree(p));
