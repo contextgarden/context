@@ -2987,6 +2987,8 @@ do
         [0x0002F] = true, -- slashes
         [0x0005C] = true,
         [0x000F7] = true,
+        [0x02044] = true,
+        [0x02215] = true,
 
         [0x02032] = true, -- primes
         [0x02033] = true,

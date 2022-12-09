@@ -1304,6 +1304,16 @@ const char *tex_print_format_args(const char *format, va_list args)
                                 tex_print_uhex(c);
                                 break;
                             }
+                        case '2':
+                            {
+                                halfword c = va_arg(args, int);
+                                switch (c) {
+                                    case direction_l2r : tex_print_str("l2r"); break;
+                                    case direction_r2l : tex_print_str("r2l"); break;
+                                    default            : tex_print_str("unset"); break;
+                                }
+                                break;
+                            }
                         case '%':
                             tex_print_char('%');
                             break;

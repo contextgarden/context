@@ -420,19 +420,65 @@ inline static halfword tex_aux_grab_toks(int expand, int expandlist, int *head)
     return p ? token_link(p) : null;
 }
 
+// inline static halfword tex_aux_scan_comparison(int code)
+// {
+//     halfword r;
+//     do {
+//         tex_get_x_token();
+//     } while (cur_cmd == spacer_cmd);
+//     r = cur_tok - other_token;
+//     if ((r < '<') || (r > '>')) {
+//         tex_aux_missing_equal_error(code);
+//         return '=';
+//     } else {
+//         return r;
+//     }
+// }
+
+//inline static halfword tex_aux_scan_comparison(int code)
+//{
+//    do {
+//        tex_get_x_token();
+//    } while (cur_cmd == spacer_cmd);
+//    if (cur_cmd != other_char_cmd || (cur_chr < '<') || (cur_chr > '>')) {
+//        tex_aux_missing_equal_error(code);
+//        return '=';
+//    } else {
+//        return cur_chr;
+//    }
+//}
+
 inline static halfword tex_aux_scan_comparison(int code)
 {
-    halfword r;
-    do {
+    int negate = 0;
+    while (1) {
         tex_get_x_token();
-    } while (cur_cmd == spacer_cmd);
-    r = cur_tok - other_token;
-    if ((r < '<') || (r > '>')) {
-        tex_aux_missing_equal_error(code);
-        return '=';
-    } else {
-        return r;
-    }
+        switch (cur_cmd) { 
+            case letter_cmd: 
+            case other_char_cmd: 
+                switch (cur_chr) { 
+                    /* traditional */
+                    case '='   : return negate ? 3 : 0;
+                    case '<'   : return negate ? 4 : 1;
+                    case '>'   : return negate ? 5 : 2;
+                    /* bonus */
+                    case '!'   : negate = ! negate ; continue;
+                    /* neat */
+                    case 0x2208: return negate ? 7 : 6; /* element of */
+                    case 0x2209: return negate ? 6 : 7; /* not element of */
+                    case 0x2260: return negate ? 0 : 3; /* not equal */
+                    case 0x2264: return negate ? 2 : 5; /* less equal */
+                    case 0x2265: return negate ? 1 : 4; /* greater equal */
+                    case 0x2270: return negate ? 2 : 5; /* not less equal */
+                    case 0x2271: return negate ? 1 : 4; /* not greater equal */
+                }
+            case spacer_cmd: 
+                continue;
+            default:
+                tex_aux_missing_equal_error(code);
+                return 0;
+        }
+    } 
 }
 
 void tex_conditional_if(halfword code, int unless)
@@ -497,11 +543,14 @@ void tex_conditional_if(halfword code, int unless)
                     }
                 }
                 switch (cp) {
-                    case '<': result = (n1 <  n2); break;
-                 /* case '=': result = (n1 == n2); break; */
-                    case '>': result = (n1  > n2); break;
-                 /* default:                       break; */
-                    default : result = (n1 == n2); break;
+                    case 0: result = (n1 == n2); break;
+                    case 1: result = (n1 <  n2); break;
+                    case 2: result = (n1  > n2); break;
+                    case 3: result = (n1 != n2); break;
+                    case 4: result = (n1 >= n2); break;
+                    case 5: result = (n1 <= n2); break;
+                    case 6: result = (n1 & n2) == n1; break;
+                    case 7: result = (n1 & n2) != n1; break;
                 }
             }
             goto RESULT;
@@ -525,11 +574,15 @@ void tex_conditional_if(halfword code, int unless)
                     }
                 }
                 switch (cp) {
-                    case '<': result = (n1 <  n2); break;
-                 /* case '=': result = (n1 == n2); break; */
-                    case '>': result = (n1  > n2); break;
-                 /* default:                       break; */
-                    default : result = (n1 == n2); break;
+                    case 0: result = (n1 == n2); break;
+                    case 1: result = (n1 <  n2); break;
+                    case 2: result = (n1  > n2); break;
+                    case 3: result = (n1 != n2); break;
+                    case 4: result = (n1 >= n2); break;
+                    case 5: result = (n1 <= n2); break;
+                    /* maybe we should round */
+                    case 6: result = (n1/65536 & n2/65536) == n1/65536; break;
+                    case 7: result = (n1/65536 & n2/65536) != n1/65536; break;
                 }
             }
             goto RESULT;

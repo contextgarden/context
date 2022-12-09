@@ -2667,12 +2667,7 @@ void tex_show_node_list(halfword p, int threshold, int max)
                             tex_print_format(", shifted %D", box_shift_amount(p), pt_unit);
                         }
                         if (valid_direction(box_dir(p))) {
-                            tex_print_str(", direction ");
-                            switch (box_dir(p)) {
-                                case dir_lefttoright: tex_print_str("l2r"); break;
-                                case dir_righttoleft: tex_print_str("r2l"); break;
-                                default             : tex_print_str("unset"); break;
-                            }
+                            tex_print_format(", direction %2", box_dir(p));
                         }
                         if (box_geometry(p)) {
                             tex_print_format(", geometry %x", box_geometry(p));
@@ -2757,17 +2752,13 @@ void tex_show_node_list(halfword p, int threshold, int max)
                     tex_print_node_list(insert_list(p), "list", threshold, max);
                     break;
                 case dir_node:
-                    tex_print_str(", direction ");
-                    switch (dir_direction(p)) {
-                        case direction_l2r : tex_print_str("l2r"); break;
-                        case direction_r2l : tex_print_str("r2l"); break;
-                        default            : tex_print_str("unset"); break;
-                    }
+                    tex_print_format(", direction %2, level %i", dir_direction(p), dir_level(p));
                     break;
                 case par_node:
                     {
                         halfword v;
                         /*tex We're already past processing so we only show the stored values. */
+                        tex_print_format(", direction %2", par_dir(p));
                         if (node_subtype(p) == vmode_par_par_subtype) {
                             if (tex_par_state_is_set(p, par_par_shape_code)              ) { v = par_par_shape(p)               ; if (v)                     { tex_print_str(", parshape * ");               } }
                             if (tex_par_state_is_set(p, par_inter_line_penalties_code)   ) { v = par_inter_line_penalties(p)    ; if (v)                     { tex_print_str(", interlinepenalties * ");     } }

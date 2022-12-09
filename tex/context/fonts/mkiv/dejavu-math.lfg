@@ -32,6 +32,7 @@ return {
                     tweak    = "version",
                     expected = "Version 1.106",
                 },
+                presets.braille { },
                 {
                     tweak   = "fixprimes",
                     factor  = 0.63,
@@ -40,7 +41,6 @@ return {
                     tweak = "addmirrors",
                 },
                 presets.scripttocalligraphic { },
-                presets.braille              { },
                 presets.rsfstoscript         { rscale = 1.02 },
                 presets.rsfsuprighttoscript  { rscale = 1.02 },
                 presets.moderntocalligraphic { rscale = 1.02 },

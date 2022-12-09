@@ -135,6 +135,10 @@
     as we like. All works fine for Cambria and the \TEX\ community didn't make sure that better 
     features were added (like anchors) for their shapes. 
 
+    In the end, from the perspective of ConTeXt, the italics code can completely go away which 
+    means that we also no longer have to stare at somewhat fuzzy code originating in dealing 
+    with italics. It depends on how well our latest heuristic tweaks work out. 
+
 */
 
 # include "luametatex.h"

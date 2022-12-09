@@ -477,6 +477,7 @@ typedef enum int_codes {
     tracing_nodes_code,                 /*tex show node numbers too */
     tracing_full_boxes_code,            /*tex show [over/under]full boxes in the log */
     tracing_penalties_code,   
+    tracing_lists_code,   
     uc_hyph_code,                       /*tex hyphenate words beginning with a capital letter */
     output_penalty_code,                /*tex penalty found at current page break */
     max_dead_cycles_code,               /*tex bound on consecutive dead cycles of output */
@@ -1521,6 +1522,22 @@ typedef enum shaping_penalties_mode_bits {
 # define tracing_nodes_par               count_parameter(tracing_nodes_code)
 # define tracing_full_boxes_par          count_parameter(tracing_full_boxes_code)
 # define tracing_penalties_par           count_parameter(tracing_penalties_code)
+# define tracing_lists_par               count_parameter(tracing_lists_code)
+
+/*tex 
+    This tracer is mostly there for debugging purposes. Therefore what gets traced and how might
+    change depending on my needs. 
+*/
+
+typedef enum tracing_lists_codes {
+    trace_direction_list_code = 0x0001, 
+    trace_paragraph_list_code = 0x0002, 
+    trace_linebreak_list_code = 0x0004, 
+} tracing_lists_codes;
+
+# define tracing_direction_lists         ((tracing_lists_par & trace_direction_list_code) == trace_direction_list_code)
+# define tracing_paragraph_lists         ((tracing_lists_par & trace_paragraph_list_code) == trace_paragraph_list_code)
+# define tracing_linebreak_lists         ((tracing_lists_par & trace_linebreak_list_code) == trace_linebreak_list_code)
 
 # define show_box_depth_par              count_parameter(show_box_depth_code)
 # define show_box_breadth_par            count_parameter(show_box_breadth_code)

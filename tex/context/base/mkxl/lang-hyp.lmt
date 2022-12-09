@@ -1044,8 +1044,8 @@ featureset.hyphenonly   = hyphenonly == v_yes
         local stop            = nil
         local word            = { } -- we reuse this table
         local size            = 0
-        local leftchar        = false
-        local rightchar       = false -- utfbyte("-")
+     -- local leftchar        = false
+     -- local rightchar       = false -- utfbyte("-")
         local leftexchar      = false
         local rightexchar     = false -- utfbyte("-")
         local leftmin         = 0

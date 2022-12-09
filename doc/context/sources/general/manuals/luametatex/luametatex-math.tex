@@ -1651,16 +1651,17 @@ effects.
 \NC 0    \NC dynamic       \NC dynamic       \NC \SampleMath{0} \NC \NR
 \NC 1    \NC $d$           \NC $u$           \NC \SampleMath{1} \NC \NR
 \NC 2    \NC $s$           \NC $u$           \NC \SampleMath{2} \NC \NR
-\NC 3    \NC $s$           \NC $u + s - d$   \NC \SampleMath{3} \NC \NR
-\NC 4    \NC $d + (s-d)/2$ \NC $u + (s-d)/2$ \NC \SampleMath{4} \NC \NR
-\NC 5    \NC $d$           \NC $u + s - d$   \NC \SampleMath{5} \NC \NR
+%
+% In \LUATEX\ but dropped in \LUAMETATEX:
+%
+%NC 3    \NC $s$           \NC $u + s - d$   \NC \SampleMath{3} \NC \NR
+%NC 4    \NC $d + (s-d)/2$ \NC $u + (s-d)/2$ \NC \SampleMath{4} \NC \NR
+%NC 5    \NC $d$           \NC $u + s - d$   \NC \SampleMath{5} \NC \NR
 \LL
 \stoptabulate
 
-The value of this parameter obeys grouping but applies to the whole current
-formula.
-
-% if needed we can put the value in stylenodes but maybe more should go there
+The value of this parameter obeys grouping and is applied to character atoms only
+(but that might evolve as we go).
 
 \stopsubsection
 

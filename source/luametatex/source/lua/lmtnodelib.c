@@ -10116,20 +10116,7 @@ void lmt_node_filter_callback(
                         /*tex redundant as we set top anyway */
                         lua_pop(L, 2);
                         /*tex find tail in order to update tail */
-                        start = node_next(head);
-                        if (start) {
-                            /*tex maybe just always slide (harmless and fast) */
-                            halfword last = node_next(start);
-                            while (last) {
-                                start = last;
-                                last = node_next(start);
-                            }
-                            /*tex we're at the end now */
-                            *tail = start;
-                        } else {
-                            /*tex we're already at the end */
-                            *tail = head;
-                        }
+                        *tail = tex_tail_of_node_list(head);
                         lmt_callback_wrapup(L, top);
                     }
                 }

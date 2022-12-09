@@ -56,6 +56,7 @@ target_include_directories(lua PRIVATE
 target_compile_definitions(lua PUBLIC
     # This one should also be set in the lua namespace!
   # LUAI_HASHLIMIT=6 # obsolete
+  # LUAI_MAXSHORTLEN=48
     LUAI_MAXCSTACK=6000
     LUA_UCID
   # LUA_USE_JUMPTABLE=0
@@ -64,6 +65,7 @@ target_compile_definitions(lua PUBLIC
   # LUA_NOBUILTIN # disable likely usage
   # LUAI_ASSERT
   # LUA_STRFTIMEOPTIONS="aAbBcCdDeFgGhHIjmMnprRStTuUVwWxXyYzZ%" 
+  # MINSTRTABSIZE=65536
 )
 
 if (UNIX)

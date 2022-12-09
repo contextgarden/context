@@ -379,7 +379,12 @@
      \setupcurrentfloatcaption[#settings]%
      \edef\currentfloatcounter{\namedcounterparameter\currentfloat\s!name}%
      \iftrialtypesetting\strc_counters_save\currentfloatcounter\fi
-     \strc_counters_increment\currentfloatcounter
+     \doifelse{\floatcaptionparameter\c!number}\v!yes
+       {\global\nofloatnumberfalse}%
+       {\global\nofloatnumbertrue}%
+     \ifnofloatnumber\else
+       \strc_counters_increment\currentfloatcounter
+     \fi
      \strc_counters_register_component
        \s!float
        \setupcurrentfloatcaption
@@ -391,7 +396,7 @@
        [\s!name=\currentfloat,
         \s!counter=\currentfloatcounter,%
         \s!hascaption=\v!yes,%
-        \s!hasnumber=\v!yes,%
+        \s!hasnumber=\ifnofloatnumber\v!no\else\v!yes\fi,%
         \s!hastitle=\v!yes]%
        [#userdata]%
      \glet\m_strc_floats_previous_number\m_strc_counters_last_registered_index

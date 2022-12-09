@@ -313,7 +313,7 @@ local function prepare()
 
     -- filtered from the mentioned blog webpage:
 
-    local nemeth      = table.load(resolvers.find_file("math-brl.lua")).nemeth
+    local nemeth      = table.load(resolvers.find_file("math-brl.lmt")).nemeth
     codepoints.nemeth = nemeth
 
     -- we let the tex math engine do the spacing but it can become an option:

@@ -16,6 +16,9 @@
     model (with rotation and offsets) that can help implementing vertical rendering, but that code
     is not here.
 
+    Todo: |\tracingdirections| but costly so not really. The tracinglist is a middleground but I 
+    might comment it at some point. 
+
 */
 
 # include "luametatex.h"
@@ -56,6 +59,11 @@ halfword tex_update_dir_state(halfword p, halfword initial)
     }
 }
 
+/*tex 
+    The next function runs over the whole list (|first|, |last|) and initial is normally the 
+    direction of the paragraph.  
+*/
+
 halfword tex_sanitize_dir_state(halfword first, halfword last, halfword initial)
 {
     for (halfword e = first; e && e != last; e = node_next(e)) {
@@ -75,15 +83,56 @@ halfword tex_sanitize_dir_state(halfword first, halfword last, halfword initial)
     }
 }
 
+/*tex
+    Here we inject the nodes that inititialize and cancel the direction states as stored in the 
+    (reverse) stack into the list, after |tail|. 
+*/
+
+void tex_append_dir_state(void)
+{
+    halfword dir = lmt_dir_state.text_dir_ptr;
+    halfword tail = cur_list.tail;    
+    halfword first = null;
+    halfword last = null;
+    if (tracing_paragraph_lists) {
+        tex_begin_diagnostic();
+        tex_print_format("[paragraph: dirstate]");
+        tex_show_box(dir);
+        tex_end_diagnostic();
+    }
+    while (dir) {
+        if ((node_next(dir)) || (dir_direction(dir) != par_direction_par)) {
+            halfword tmp = tex_new_dir(normal_dir_subtype, dir_direction(dir));
+            tex_attach_attribute_list_copy(tmp, tail);
+            tex_try_couple_nodes(tmp, first);
+            first = tmp; 
+            if (! last) {
+                last = tmp; 
+            } 
+        }
+        dir = node_next(dir);
+    }
+    if (first) { 
+        if (tracing_paragraph_lists) {
+            tex_begin_diagnostic();
+            tex_print_format("[paragraph: injected dirs]");
+            tex_show_box(first);
+            tex_end_diagnostic();
+        }
+        tex_couple_nodes(cur_list.tail, first);
+        cur_list.tail = last; 
+    }
+}
+
 halfword tex_complement_dir_state(halfword tail)
 {
-    halfword e = node_next(tail);
-    for (halfword p = lmt_linebreak_state.dir_ptr; p ; p = node_next(p)) {
-        halfword s = tex_new_dir(cancel_dir_subtype, dir_direction(p));
-        tex_attach_attribute_list_copy(s, tail);
-        tex_couple_nodes(tail, s);
-        tex_try_couple_nodes(s, e);
-        tail = s;
+    halfword aftertail = node_next(tail);
+    for (halfword topdir = lmt_linebreak_state.dir_ptr; topdir ; topdir = node_next(topdir)) {
+        halfword dir = tex_new_dir(cancel_dir_subtype, dir_direction(topdir));
+        tex_attach_attribute_list_copy(dir, tail);
+        tex_couple_nodes(tail, dir);
+        tex_try_couple_nodes(dir, aftertail);
+        tail = dir;
     }
     return tail;
 }
@@ -106,29 +155,51 @@ halfword tex_new_dir(quarterword subtype, halfword direction)
     return p;
 }
 
-/* todo: |\tracingdirections| */
-
 void tex_push_text_dir_ptr(halfword val)
 {
+    if (tracing_direction_lists) {
+        tex_begin_diagnostic();
+        tex_print_format("[direction: push text, level %i, before]", cur_level);
+        tex_show_box(lmt_dir_state.text_dir_ptr);
+        tex_end_diagnostic();
+    }
     if (dir_level(lmt_dir_state.text_dir_ptr) == cur_level) {
         /*tex update */
         dir_direction(lmt_dir_state.text_dir_ptr) = val;
     } else {
-        /*tex add */
+        /*tex we push in front of head */
         halfword text_dir_tmp = tex_new_dir(normal_dir_subtype, val);
         node_next(text_dir_tmp) = lmt_dir_state.text_dir_ptr;
         lmt_dir_state.text_dir_ptr = text_dir_tmp;
+    }
+    if (tracing_direction_lists) {
+        tex_begin_diagnostic();
+        tex_print_format("[direction: push text, level %i, after]", cur_level);
+        tex_show_box(lmt_dir_state.text_dir_ptr);
+        tex_end_diagnostic();
     }
 }
 
 void tex_pop_text_dir_ptr(void)
 {
     halfword text_dir_ptr = lmt_dir_state.text_dir_ptr;
-    if (dir_level(text_dir_ptr) == cur_level) {
-        /*tex remove */
+    if (tracing_direction_lists) {
+        tex_begin_diagnostic();
+        tex_print_format("[direction: pop text, level %i, before]", cur_level);
+        tex_show_box(lmt_dir_state.text_dir_ptr);
+        tex_end_diagnostic();
+    }
+    if (dir_level(text_dir_ptr) == cur_level) { // maybe > and whole chain 
+        /*tex we remove from the head */
         halfword text_dir_tmp = node_next(text_dir_ptr);
         tex_flush_node(text_dir_ptr);
         lmt_dir_state.text_dir_ptr = text_dir_tmp;
+    }
+    if (tracing_direction_lists) {
+        tex_begin_diagnostic();
+        tex_print_format("[direction: pop text, level %i, after]", cur_level);
+        tex_show_box(lmt_dir_state.text_dir_ptr);
+        tex_end_diagnostic();
     }
 }
 

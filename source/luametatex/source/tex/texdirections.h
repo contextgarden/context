@@ -119,5 +119,6 @@ extern void     tex_set_box_dir           (halfword b, singleword d);
 extern halfword tex_update_dir_state     (halfword p, halfword initial);
 extern halfword tex_sanitize_dir_state   (halfword first, halfword last, halfword initial);
 extern halfword tex_complement_dir_state (halfword tail);
+extern void     tex_append_dir_state     (void);
 
 # endif

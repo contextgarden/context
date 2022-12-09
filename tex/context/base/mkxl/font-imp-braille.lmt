@@ -34,6 +34,10 @@ local braille_math_rule  do
 
     local braillerule
 
+ -- function(kind,font,width,height,attr)
+ --     return nodes.tonode(nodes.nuts.pool.rule(width,5*height,5*height))
+ -- end
+
     braille_math_rule = function(kind,font,width,height,attr)
         if not braillerule then
             braillerule = braille.special("rule")

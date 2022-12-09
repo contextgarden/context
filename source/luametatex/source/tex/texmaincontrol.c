@@ -960,16 +960,16 @@ static void tex_aux_insert_parindent(int indented)
 {
     if (normalize_line_mode_permitted(normalize_line_mode_par, parindent_skip_mode)) {
         /*tex We cannot use |new_param_glue| yet, because it's a dimen */
-        halfword p = tex_new_glue_node(zero_glue, indent_skip_glue);
+        halfword glue = tex_new_glue_node(zero_glue, indent_skip_glue);
         if (indented) {
-            glue_amount(p) = par_indent_par;
+            glue_amount(glue) = par_indent_par;
         }
-        tex_tail_append(p);
+        tex_tail_append(glue);
     } else if (indented) {
-        halfword p = tex_new_null_box_node(hlist_node, indent_list);
-        box_dir(p) = (singleword) par_direction_par;
-        box_width(p) = par_indent_par;
-        tex_tail_append(p);
+        halfword box = tex_new_null_box_node(hlist_node, indent_list);
+        box_dir(box) = (singleword) par_direction_par;
+        box_width(box) = par_indent_par;
+        tex_tail_append(box);
     }
 }
 
@@ -2859,31 +2859,105 @@ void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword maincl
 
 */
 
+// void tex_begin_paragraph(int doindent, int context)
+// {
+//     halfword q;
+//     int indented = doindent;
+//     int isvmode = cur_list.mode == vmode;
+//     if (isvmode || cur_list.head != cur_list.tail) {
+//          /*tex
+//              Actually we could remove the callback and hook it into the |\everybeforepar| but that one
+//              started out as a |tex.expandmacro| itself and we don't want the callback overhead every
+//              time, so now we have both. However, in the end I decided to do this one {\em before} the
+//              parskip is injected.
+//          */
+//          if (every_before_par_par) {
+//              tex_begin_inserted_list(tex_get_available_token(token_val(end_local_cmd, 0)));
+//              tex_begin_token_list(every_before_par_par, every_before_par_text);
+//              if (tracing_nesting_par > 2) {
+//                  tex_local_control_message("entering local control via \\everybeforepar");
+//              }
+//              tex_local_control(1);
+//          }
+//       // if (type(cur_list.tail) == glue_node && subtype(cur_list.tail) == par_skip_glue) {
+//       //     /* ignore */
+//       // } else {
+//              tex_tail_append(tex_new_param_glue_node(par_skip_code, par_skip_glue));
+//       // }
+//     }
+//     lmt_begin_paragraph_callback(isvmode, &indented, context);
+//     /*tex We'd better not messed up things in the callback! */
+//     cur_list.prev_graf = 0;
+//     tex_push_nest();
+//     cur_list.mode = hmode;
+//     cur_list.space_factor = default_space_factor;
+//     /*tex  Add local paragraph node */
+//     tex_tail_append(tex_new_par_node(vmode_par_par_subtype));
+//  // if (end_of_par_par) {
+//  //     update_tex_end_of_par(null); /* option */
+//  // }
+//     q = cur_list.tail;
+//     /*tex We will move this to after the dir nodes have been dealt with. */
+//     tex_aux_insert_parindent(indented);
+//     /*tex Dir nodes end up before the indent box. */
+//     {
+//         halfword dir_rover = lmt_dir_state.text_dir_ptr;
+//         while (dir_rover) {
+//             if ((node_next(dir_rover)) || (dir_direction(dir_rover) != par_direction_par)) {
+//                 halfword dir_graf_tmp = tex_new_dir(normal_dir_subtype, dir_direction(dir_rover));
+//                 tex_try_couple_nodes(dir_graf_tmp, node_next(q));
+//                 tex_couple_nodes(q, dir_graf_tmp);
+//             }
+//             dir_rover = node_next(dir_rover);
+//         }
+//     }
+//     /*tex We might need to go to the last injected dir and/or indent node. */
+//     while (node_next(q)) {
+//         q = node_next(q);
+//     }
+//     cur_list.tail = q;
+//     /*tex The |\everypar| tokens are injected after dir nodes have been added. */
+//     if (every_par_par) {
+//         tex_begin_token_list(every_par_par, every_par_text);
+//     }
+//     if (lmt_nest_state.nest_data.ptr == 1) {
+//         if (! lmt_page_builder_state.output_active) {
+//             lmt_page_filter_callback(begin_paragraph_page_context, 0);
+//         }
+//         /*tex put |par_skip| glue on current page */
+//         tex_build_page();
+//     }
+// }
+
+void tex_tail_prepend(halfword n) 
+{
+    tex_couple_nodes(node_prev(cur_list.tail), n);
+    tex_couple_nodes(n, cur_list.tail);
+    if (cur_list.tail == cur_list.head) {
+        cur_list.head = n;
+    }
+}
+
 void tex_begin_paragraph(int doindent, int context)
 {
-    halfword q;
     int indented = doindent;
     int isvmode = cur_list.mode == vmode;
     if (isvmode || cur_list.head != cur_list.tail) {
-    /*tex
-        Actually we could remove the callback and hook it into the |\everybeforepar| but that one
-        started out as a |tex.expandmacro| itself and we don't want the callback overhead every
-        time, so now we have both. However, in the end I decided to do this one {\em before} the
-        parskip is injected.
-    */
-    if (every_before_par_par) {
-        tex_begin_inserted_list(tex_get_available_token(token_val(end_local_cmd, 0)));
-        tex_begin_token_list(every_before_par_par, every_before_par_text);
-        if (tracing_nesting_par > 2) {
-            tex_local_control_message("entering local control via \\everybeforepar");
+        /*tex
+            Actually we could remove the callback and hook it into the |\everybeforepar| but that one
+            started out as a |tex.expandmacro| itself and we don't want the callback overhead every
+            time, so now we have both. However, in the end I decided to do this one {\em before} the
+            parskip is injected.
+        */
+        if (every_before_par_par) {
+            tex_begin_inserted_list(tex_get_available_token(token_val(end_local_cmd, 0)));
+            tex_begin_token_list(every_before_par_par, every_before_par_text);
+            if (tracing_nesting_par > 2) {
+                tex_local_control_message("entering local control via \\everybeforepar");
+            }
+            tex_local_control(1);
         }
-        tex_local_control(1);
-    }
- // if (type(cur_list.tail) == glue_node && subtype(cur_list.tail) == par_skip_glue) {
- //     /* ignore */
- // } else {
         tex_tail_append(tex_new_param_glue_node(par_skip_code, par_skip_glue));
- // }
     }
     lmt_begin_paragraph_callback(isvmode, &indented, context);
     /*tex We'd better not messed up things in the callback! */
@@ -2891,32 +2965,18 @@ void tex_begin_paragraph(int doindent, int context)
     tex_push_nest();
     cur_list.mode = hmode;
     cur_list.space_factor = default_space_factor;
-    /*tex  Add local paragraph node */
+    /*tex Add local paragraph node */
     tex_tail_append(tex_new_par_node(vmode_par_par_subtype));
- // if (end_of_par_par) {
- //     update_tex_end_of_par(null); /* option */
- // }
-    q = cur_list.tail;
-    /*tex We will move this to after the dir nodes have been dealt with. */
-    tex_aux_insert_parindent(indented);
     /*tex Dir nodes end up before the indent box. */
-    {
-        halfword dir_rover = lmt_dir_state.text_dir_ptr;
-        while (dir_rover) {
-            if ((node_next(dir_rover)) || (dir_direction(dir_rover) != par_direction_par)) {
-                halfword dir_graf_tmp = tex_new_dir(normal_dir_subtype, dir_direction(dir_rover));
-                tex_try_couple_nodes(dir_graf_tmp, node_next(q));
-                tex_couple_nodes(q, dir_graf_tmp);
-            }
-            dir_rover = node_next(dir_rover);
-        }
+    tex_append_dir_state();
+    tex_aux_insert_parindent(indented);
+    if (tracing_paragraph_lists) {
+        tex_begin_diagnostic();
+        tex_print_format("[paragraph: start, context %i]", context);
+        tex_show_box(node_next(cur_list.head));
+        tex_end_diagnostic();
     }
-    /*tex We might need to go to the last injected dir and/or indent node. */
-    while (node_next(q)) {
-        q = node_next(q);
-    }
-    cur_list.tail = q;
-    /*tex The |\everypar| tokens are injected after dir nodes have been added. */
+    /*tex The |\everypar| tokens are injected after all these nodes have been added. */
     if (every_par_par) {
         tex_begin_token_list(every_par_par, every_par_text);
     }
@@ -3396,7 +3456,7 @@ void tex_inject_text_or_line_dir(int val, int check_glue)
         /*tex |tail| is non zero but we test anyway. */
         halfword dirn = tex_new_dir(cancel_dir_subtype, text_direction_par);
         halfword tail = cur_list.tail;
-        if (check_glue && tail && node_type(tail) == glue_node)  {
+        if (check_glue && tail && node_type(tail) == glue_node) { // && node_subtype(tail) != indent_skip_glue
             halfword prev = node_prev(tail);
             tex_couple_nodes(prev, dirn);
             tex_couple_nodes(dirn, tail);

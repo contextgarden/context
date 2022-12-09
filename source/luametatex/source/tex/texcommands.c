@@ -197,6 +197,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "tracingnodes",                   internal_int_cmd,       tracing_nodes_code,                       internal_int_base);
         tex_primitive(luatex_command, "tracingfullboxes",               internal_int_cmd,       tracing_full_boxes_code,                  internal_int_base);
         tex_primitive(luatex_command, "tracingpenalties",               internal_int_cmd,       tracing_penalties_code,                   internal_int_base);
+        tex_primitive(luatex_command, "tracinglists",                   internal_int_cmd,       tracing_lists_code,                       internal_int_base);
         tex_primitive(tex_command,    "uchyph",                         internal_int_cmd,       uc_hyph_code,                             internal_int_base); /* obsolete, not needed */
         tex_primitive(luatex_command, "variablefam",                    internal_int_cmd,       variable_family_code,                     internal_int_base); /* obsolete, not used */
         tex_primitive(tex_command,    "vbadness",                       internal_int_cmd,       vbadness_code,                            internal_int_base);

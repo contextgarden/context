@@ -2092,8 +2092,9 @@ typedef enum boundary_subtypes {
 # define last_boundary_subtype word_boundary
 # define last_boundary_code    page_boundary
 
-# define boundary_node_size 3
-# define boundary_data(a)   vinfo(a,2)
+# define boundary_node_size   3
+# define boundary_data(a)     vinfo(a,2)
+# define boundary_reserved(a) vlink(a,2) // maybe level
 
 typedef enum dir_subtypes {
     normal_dir_subtype,

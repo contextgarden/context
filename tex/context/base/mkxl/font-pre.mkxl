@@ -411,12 +411,9 @@
   [mathematics]
   [mode=base,
  % mode=none, % better, maybe do this last
-   kern=yes,
-%    kern=force,
- % flac=yes, % handled differently
- % liga=yes, % makes no sense
- % mode=node,
- % mathnolimitsmode={0,800}, % now in lfg files
+   kern=yes,  % =force
+ % flac=yes,  % handled differently
+ % liga=yes,  % makes no sense
    mathalternates=yes,
  % mathitalics=yes, % we pass them
  % mathdimensions=all,
@@ -437,58 +434,15 @@
 %     \variablefam 63
 % \fi
 
-% \adaptfontfeature[*math*][mathnolimitsmode=1000] % only subscript
-
 \definefontfeature
   [collapseitalics]
   [collapseitalics=yes]
 
-% \definefontfeature[mathextra][collapseitalics]
+\definefontfeature[virtualmath]       [mathematics]
 
-% \definefontfeature % obsolete
-%   [mathematics-l2r]
-%   [mathematics]
-%   []
-
-% \definefontfeature % obsolete
-%   [mathematics-r2l]
-%   [mathematics]
-%   [rtlm=yes,
-%    locl=yes]
-
-\definefontfeature[virtualmath]           [mathematics]
-% \definefontfeature[virtualmath-l2r]       [mathematics-l2r] % obsolete
-% \definefontfeature[virtualmath-r2l]       [mathematics-r2l] % obsolete
-
-\definefontfeature[math-text]             [mathematics]      [ssty=no]
-\definefontfeature[math-script]           [mathematics]      [ssty=1]
-\definefontfeature[math-scriptscript]     [mathematics]      [ssty=2]
-
-% \definefontfeature[math-text]             [mathematics]      [ssty=no]
-% \definefontfeature[math-script]           [mathematics]      [ssty=1,mathsize=yes]
-% \definefontfeature[math-scriptscript]     [mathematics]      [ssty=2,mathsize=yes]
-
-% \definefontfeature[math-text-l2r]         [mathematics-l2r]  [ssty=no]             % obsolete
-% \definefontfeature[math-script-l2r]       [mathematics-l2r]  [ssty=1,mathsize=yes] % obsolete
-% \definefontfeature[math-scriptscript-l2r] [mathematics-l2r]  [ssty=2,mathsize=yes] % obsolete
-
-% \definefontfeature[math-text-r2l]         [mathematics-r2l]  [ssty=no]             % obsolete
-% \definefontfeature[math-script-r2l]       [mathematics-r2l]  [ssty=1,mathsize=yes] % obsolete
-% \definefontfeature[math-scriptscript-r2l] [mathematics-r2l]  [ssty=2,mathsize=yes] % obsolete
-
-% this will go away: could be a mode in the engine
-%
-% \definefontfeature[math-nostack-text]        [math-text]        [nostackmath=yes]
-% \definefontfeature[math-nostack-script]      [math-script]      [nostackmath=yes]
-% \definefontfeature[math-nostack-scriptscript][math-scriptscript][nostackmath=yes]
-
-% \definefontfeature[mathtext]         [math-text]
-% \definefontfeature[mathscript]       [math-script]
-% \definefontfeature[mathscriptscript] [math-scriptscript]
-
-% \definefontfeature
-%   [missing]
-%   [missing=yes]
+\definefontfeature[math-text]         [mathematics] [ssty=no]
+\definefontfeature[math-script]       [mathematics] [ssty=1]
+\definefontfeature[math-scriptscript] [mathematics] [ssty=2]
 
 %D Nice to have too:
 

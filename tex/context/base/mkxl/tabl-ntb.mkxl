@@ -105,7 +105,7 @@
    \dotagTABLEcell
   %\tabl_ntb_next_level
    \font_styles_math_reset
-   \usenaturaltablelocalstyleandcolor\c!style\c!color
+   \usenaturaltablelocalstyleandcolor\c!style\c!color % done twice ? needed for style (test onbly style)
    \everypar\t_tabl_ntb_cell_start
    \font_styles_math_start}
 
@@ -1955,8 +1955,7 @@
    \endgroup}
 
 \def\tabl_ntb_char_align % called often
-  {\edef\p_characteralign{\naturaltablelocalparameter\c!aligncharacter}%
-   \ifx\p_characteralign\v!yes
+  {\ifcstok{\naturaltablelocalparameter\c!aligncharacter}\v!yes
      \ifcase\c_tabl_tbl_pass\or
        \tabl_ntb_let_tal\currentTABLEcolumn\plusone
        \tabl_ntb_let_gal\plusone
