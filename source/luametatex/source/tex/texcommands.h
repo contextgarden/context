@@ -797,6 +797,11 @@ typedef enum local_control_codes {
     bits for this but we don't have enough. Now, because frozen macros can be unfrozen we can
     indeed have a prefix that bypasses the check. Explicit (re)definitions are then up to the user.
 
+    Constant macros are special in the sense that we set the reference count to the maximum. This is 
+    then a signal that we have an expanded macro with a meaning that we can immediately copy into 
+    the expanded token list, as in csname construction. This saves some memory access and token 
+    allocation. 
+
 */
 
 typedef enum prefix_codes {
@@ -820,6 +825,7 @@ typedef enum prefix_codes {
     enforced_code,
     always_code,
     inherited_code,
+    constant_code,
     long_code,
     outer_code,
 } prefix_codes;
@@ -859,9 +865,11 @@ typedef enum def_codes {
     def_csname_code,
     global_expanded_def_csname_code,
     global_def_csname_code,
+    constant_def_code,
+    constant_def_csname_code,
 } def_codes;
 
-# define last_def_code global_def_csname_code
+# define last_def_code constant_def_csname_code
 
 typedef enum let_codes {
     global_let_code,

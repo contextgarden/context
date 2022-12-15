@@ -184,7 +184,7 @@
 
 %D For the moment here:
 
-\mutable\let\lastpredefinedsymbol\empty % some day we can do more at the lua end
+\mutable\lettonothing\lastpredefinedsymbol % some day we can do more at the lua end
 
 \permanent\protected\def\predefinesymbol[#1]%
   {\begingroup

@@ -23,7 +23,7 @@
 %D Beware, the enable and disable commands are global switches, so best use the
 %D start|/|stop commands.
 
-\mutable\let\currentregime\empty
+\mutable\lettonothing\currentregime
 
 \permanent\protected\def\enableregime[#1]{\clf_enableregime{#1}}
 \permanent\protected\def\disableregime   {\clf_disableregime}

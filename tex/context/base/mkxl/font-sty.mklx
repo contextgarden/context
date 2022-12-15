@@ -142,8 +142,8 @@
 %D These commands are not grouped! Grouping is most probably done by the calling
 %D macro's and would lead to unnecessary overhead.
 
-\let\m_current_convert_font   \empty
-\let\m_current_convert_font_dt\empty
+\lettonothing\m_current_convert_font
+\lettonothing\m_current_convert_font_dt
 
 \permanent\protected\def\doconvertfont#specification% takes second argument / this command is obsolete
   {\edef\m_current_convert_font{#specification}%
@@ -180,7 +180,7 @@
 
 \setfalse\fontattributeisset
 
-\mutable\let\currentdetokenizedstyleparameter\empty
+\mutable\lettonothing\currentdetokenizedstyleparameter
 
 \permanent\protected\def\dousestyleparameter#value%
   {\edef\currentstyleparameter{#value}%
@@ -259,8 +259,8 @@
 
 \protected\def\font_styles_use_generic#specification%
   {\let\currentstyle\s!unknown % reasonable generic tag
-   \letstyleparameter\c!style\empty
-   \letstyleparameter\c!color\empty
+   \resetstyleparameter\c!style
+   \resetstyleparameter\c!color
    \setupcurrentstyle[#specification]%
    \usestylestyleandcolor\c!style\c!color}
 

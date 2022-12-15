@@ -1929,9 +1929,9 @@ static void tex_aux_append_math_accent(mathcodeval mval, mathdictval dval)
 
 */
 
-static void tex_aux_append_math_fence(halfword fence, quarterword class)
+static void tex_aux_append_math_fence(halfword fence, quarterword mathclass)
 {
-    switch (class) {
+    switch (mathclass) {
         case open_noad_subtype:
             {
                 tex_aux_push_math(math_fence_group, cur_list.math_style);
@@ -1968,7 +1968,7 @@ static void tex_aux_append_math_fence(halfword fence, quarterword class)
     }
 }
 
-static void tex_aux_append_math_fence_val(mathcodeval mval, mathdictval dval, quarterword class)
+static void tex_aux_append_math_fence_val(mathcodeval mval, mathdictval dval, quarterword mathclass)
 {
     halfword fence = tex_new_node(fence_noad, middle_fence_side);
     halfword delimiter = tex_new_node(delimiter_node, mval.class_value);
@@ -1981,10 +1981,10 @@ static void tex_aux_append_math_fence_val(mathcodeval mval, mathdictval dval, qu
     set_noad_classes(fence, mval.class_value);
     /* todo : share the next three with the regular fences */
     noad_options(fence) |= noad_option_no_check;
-    if (class == middle_noad_subtype && cur_group != math_fence_group) { 
+    if (mathclass == middle_noad_subtype && cur_group != math_fence_group) { 
         tex_aux_append_math_fence_val(tex_no_math_code(), tex_no_dict_code(), open_noad_subtype);
     }
-    tex_aux_append_math_fence(fence, class);
+    tex_aux_append_math_fence(fence, mathclass);
 }
 
 static void tex_aux_append_math_char(mathcodeval mval, mathdictval dval, int automatic)
@@ -2147,9 +2147,9 @@ int tex_scan_math_code_val(halfword code, mathcodeval *mval, mathdictval *dval)
         case math_class_number_code:
             {
                 halfword family = cur_fam_par;
-                halfword class  = tex_scan_int(0, NULL);
+                halfword mathclass  = tex_scan_int(0, NULL);
                 tex_scan_math_cmd_val(mval, dval);
-                mval->class_value = (short) class;
+                mval->class_value = (short) mathclass;
                 mval->family_value = (short) family;
             }
             break;
@@ -2518,7 +2518,7 @@ void tex_run_math_modifier(void)
 
 */
 
-static void tex_aux_scan_delimiter(halfword target, int code, int class)
+static void tex_aux_scan_delimiter(halfword target, int code, int mathclass)
 {
     delcodeval dval = tex_no_del_code();
     mathcodeval mval = tex_no_math_code();
@@ -2584,8 +2584,8 @@ static void tex_aux_scan_delimiter(halfword target, int code, int class)
             goto REALDELIMITER;
     }
   FAKEDELIMITER:
-    if (class != unset_noad_class) {
-        mval.class_value = (short) class; 
+    if (mathclass != unset_noad_class) {
+        mval.class_value = (short) mathclass; 
     }
     dval.small = mval;
     dval.large = mval;
@@ -3451,7 +3451,7 @@ void tex_run_math_fraction(void)
         halfword userstyle = -1;
         halfword attrlist = null;
         fullword options = 0;
-        halfword class = fraction_noad_subtype;
+        halfword mathclass = fraction_noad_subtype;
         halfword rulethickness = preset_rule_thickness;
         int ruledone = 0;
         fraction_h_factor(fraction) = 1000;
@@ -3581,7 +3581,7 @@ void tex_run_math_fraction(void)
                             if (tex_scan_mandate_keyword("class", 1)) {
                                 halfword c = (quarterword) tex_scan_math_class_number(0);
                                 if (valid_math_class_code(c)) {
-                                    class = c;
+                                    mathclass = c;
                                 }
                             }
                             break;
@@ -3673,7 +3673,7 @@ void tex_run_math_fraction(void)
         }
         fraction_rule_thickness(fraction) = rulethickness;
         noad_options(fraction) = options;
-        set_noad_main_class(fraction, class);
+        set_noad_main_class(fraction, mathclass);
         if (attrlist) {
             tex_attach_attribute_list_attribute(fraction, attrlist);
         }
@@ -5183,16 +5183,16 @@ void tex_reset_all_styles(halfword level)
     }
 }
 
-inline static halfword tex_aux_math_class_default(halfword class) {
-    return (class << 24) + (class << 16) + (class << 8) + class;
+inline static halfword tex_aux_math_class_default(halfword mathclass) {
+    return (mathclass << 24) + (mathclass << 16) + (mathclass << 8) + mathclass;
 }
 
-inline static void tex_set_math_class_default(halfword class, halfword parent, halfword options)
+inline static void tex_set_math_class_default(halfword mathclass, halfword parent, halfword options)
 {
-    tex_word_define(0, internal_int_location(first_math_class_code   + class), tex_aux_math_class_default(parent));
-    tex_word_define(0, internal_int_location(first_math_atom_code    + class), tex_aux_math_class_default(class));
-    tex_word_define(0, internal_int_location(first_math_options_code + class), options);
-    tex_word_define(0, internal_int_location(first_math_parent_code  + class), tex_aux_math_class_default(class));
+    tex_word_define(0, internal_int_location(first_math_class_code   + mathclass), tex_aux_math_class_default(parent));
+    tex_word_define(0, internal_int_location(first_math_atom_code    + mathclass), tex_aux_math_class_default(mathclass));
+    tex_word_define(0, internal_int_location(first_math_options_code + mathclass), options);
+    tex_word_define(0, internal_int_location(first_math_parent_code  + mathclass), tex_aux_math_class_default(mathclass));
 }
 
 static void tex_aux_set_math_atom_rule(halfword left, halfword right, halfword newleft, halfword newright)
@@ -5203,13 +5203,13 @@ static void tex_aux_set_math_atom_rule(halfword left, halfword right, halfword n
 void tex_initialize_math_spacing(void)
 {
 
-    for (int class = 0; class <= max_math_class_code; class++) {
-        tex_set_math_class_default(class, class, no_class_options);
+    for (int mathclass = 0; mathclass <= max_math_class_code; mathclass++) {
+        tex_set_math_class_default(mathclass, mathclass, no_class_options);
         /*tex We do this here as there is no real need for yet another initializer. */
-        tex_word_define(0, internal_int_location(first_math_pre_penalty_code  + class), infinite_penalty);
-        tex_word_define(0, internal_int_location(first_math_post_penalty_code + class), infinite_penalty);
-        tex_word_define(0, internal_int_location(first_math_display_pre_penalty_code  + class), infinite_penalty);
-        tex_word_define(0, internal_int_location(first_math_display_post_penalty_code + class), infinite_penalty);
+        tex_word_define(0, internal_int_location(first_math_pre_penalty_code  + mathclass), infinite_penalty);
+        tex_word_define(0, internal_int_location(first_math_post_penalty_code + mathclass), infinite_penalty);
+        tex_word_define(0, internal_int_location(first_math_display_pre_penalty_code  + mathclass), infinite_penalty);
+        tex_word_define(0, internal_int_location(first_math_display_post_penalty_code + mathclass), infinite_penalty);
     }
 
     tex_reset_all_styles(level_one);

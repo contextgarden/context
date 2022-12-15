@@ -24,7 +24,7 @@
 % \def\enabletextracerwhatever {...}
 % \def\disabletextracerwhatever{...}
 
-\mutable\let\alltextracers\empty % so that we can report available tracers
+\mutable\lettonothing\alltextracers % so that we can report available tracers
 
 \permanent\protected\def\installtextracer#1%
   {\addtocommalist{#1}\alltextracers}

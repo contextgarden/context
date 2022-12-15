@@ -90,8 +90,8 @@
      \expandafter\gobblethreeoptionals
    \fi}
 
-\let\m_bookmarks_names \empty
-\let\m_bookmarks_opened\empty
+\lettonothing\m_bookmarks_names
+\lettonothing\m_bookmarks_opened
 
 \tolerant\def\strc_bookmarks_place_yes[#1]#*[#2]#*[#3]%
   {\begingroup
@@ -104,7 +104,7 @@
      \let\m_bookmarks_names\v!all
    \fi
    \ifparameters\or\or
-     \doifelseassignment{#2}{\let\m_bookmarks_opened\empty\setupcurrentbookmark[#2]}\donothing
+     \doifelseassignment{#2}{\lettonothing\m_bookmarks_opened\setupcurrentbookmark[#2]}\donothing
    \or
      \setupcurrentbookmark[#3]% no every so not all possible
    \fi

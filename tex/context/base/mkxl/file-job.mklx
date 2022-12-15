@@ -46,7 +46,7 @@
 
 % helper (not really needed nowadays)
 
-\mutable\let\locatedfilepath\empty
+\mutable\lettonothing\locatedfilepath
 
 \permanent\protected\def\locatefilepath#name%
   {\edef\locatedfilepath{\clf_locatefilepath{#name}}} % todo: set at the lua end, catcodes and such
@@ -289,7 +289,7 @@
    \ifparameters
    \or
      \ifhastok={#namespace}%
-       \let\currentdocument\empty
+       \lettonothing\currentdocument
        \setupcurrentdocument[#namespace]%
      \else
        \edef\currentdocument{#namespace}%
@@ -324,7 +324,7 @@
    \ifparameters
    \or
      \ifhastok={#namespace}%
-       \let\currentdocument\empty
+       \lettonothing\currentdocument
        \setupcurrentdocument[#namespace]%
      \fi
    \or

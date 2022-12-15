@@ -51,10 +51,10 @@
     \enabledirectives[destinations.offset=\the\dimexpr\interactionparameter\c!focusoffset\relax]%
 \to \everysetupinteraction
 
-\mutable\let\currentinteractioncloseaction    \empty
-\mutable\let\currentinteractionclosepageaction\empty
-\mutable\let\currentinteractionopenaction     \empty
-\mutable\let\currentinteractionopenpageaction \empty
+\mutable\lettonothing\currentinteractioncloseaction
+\mutable\lettonothing\currentinteractionclosepageaction
+\mutable\lettonothing\currentinteractionopenaction
+\mutable\lettonothing\currentinteractionopenpageaction
 
 %D We have to make sure of some settings:
 

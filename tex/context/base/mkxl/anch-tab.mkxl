@@ -227,9 +227,9 @@
 %D In order to prevent potential clashes with abbreviations, postpone the mapping and
 %D make them mutable.
 
-\mutable\let\GSC\empty
-\mutable\let\GFC\empty
-\mutable\let\GTC\empty
+\mutable\lettonothing\GSC
+\mutable\lettonothing\GFC
+\mutable\lettonothing\GTC
 
 \appendtoks
     \enforced\let\GSC\tbGSC

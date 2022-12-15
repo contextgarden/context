@@ -228,9 +228,9 @@
 
 \newtoks\everycombination
 
-\aliased\let\combination\empty
+\aliased\lettonothing\combination
 
-\let\p_nx_ny\empty
+\lettonothing\p_nx_ny
 
 % \permanent\tolerant\protected\def\startcombination[#1]#*[#2]% can be simplified
 %   {\bgroup % so we can grab a group
@@ -240,16 +240,16 @@
 %    %
 %    \ifempty\p_nx_ny
 %      \ifcondition\validassignment{#1}%
-%        \let\currentcombination\empty
+%        \lettonothing\currentcombination
 %        \setupcurrentcombination[#1]%
 %        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
 %      \else
 %        \doifelseinstring{*}\currentcombination
 %          {\edef\p_nx_ny{\currentcombination*\plusone*}%
-%           \let\currentcombination\empty}
+%           \lettonothing\currentcombination}
 %          {\doifelsenumber\currentcombination
 %             {\edef\p_nx_ny{\currentcombination*\plusone*}%
-%              \let\currentcombination\empty}
+%              \lettonothing\currentcombination}
 %             {\edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}}}%
 %      \fi
 %    \else
@@ -265,15 +265,15 @@
 % %
 % %    \ifempty\p_nx_ny
 % %      \ifhastok={#1}%
-% %        \let\currentcombination\empty
+% %        \lettonothing\currentcombination
 % %        \setupcurrentcombination[#1]%
 % %        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
 % %      \orelse\ifhastok*{\currentcombination}%
 % %        \edef\p_nx_ny{\currentcombination*\plusone*}%
-% %        \let\currentcombination\empty
+% %        \lettonothing\currentcombination
 % %      \orelse\ifchknum\currentcombination\or
 % %        \edef\p_nx_ny{\currentcombination*\plusone*}%
-% %        \let\currentcombination\empty
+% %        \lettonothing\currentcombination
 % %      \else
 % %        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
 % %      \fi
@@ -303,7 +303,7 @@
 %    %
 %    \dostarttaggedchained\t!combination\currentcombination\??combination
 %    \vbox \ifx\p_height\v!fit\else to \p_height \fi \bgroup
-%    \enforced\let\combination\empty % permits \combination{}{} handy for cld
+%    \enforced\lettonothing\combination % permits \combination{}{} handy for cld
 %    \normalexpanded{\pack_combinations_start_indeed[\p_nx_ny]}}
 %
 % \permanent\protected\def\stopcombination
@@ -332,16 +332,16 @@
    %
    \ifempty\p_nx_ny
      \ifcondition\validassignment{#1}%
-       \let\currentcombination\empty
+       \lettonothing\currentcombination
        \setupcurrentcombination[#1]%
        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
      \else
        \doifelseinstring{*}\currentcombination
          {\edef\p_nx_ny{\currentcombination*\plusone*}%
-          \let\currentcombination\empty}
+          \lettonothing\currentcombination}
          {\doifelsenumber\currentcombination
             {\edef\p_nx_ny{\currentcombination*\plusone*}%
-             \let\currentcombination\empty}
+             \lettonothing\currentcombination}
             {\edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}}}%
      \fi
    \else
@@ -358,15 +358,15 @@
 %
 %    \ifempty\p_nx_ny
 %      \ifhastok={#1}%
-%        \let\currentcombination\empty
+%        \lettonothing\currentcombination
 %        \setupcurrentcombination[#1]%
 %        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
 %      \orelse\ifhastok*{\currentcombination}%
 %        \edef\p_nx_ny{\currentcombination*\plusone*}%
-%        \let\currentcombination\empty
+%        \lettonothing\currentcombination
 %      \orelse\ifchknum\currentcombination\or
 %        \edef\p_nx_ny{\currentcombination*\plusone*}%
-%        \let\currentcombination\empty
+%        \lettonothing\currentcombination
 %      \else
 %        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
 %      \fi
@@ -399,7 +399,7 @@
    \ifcsname\??combinationmethod\combinationparameter\c!method\endcsname
      \lastnamedcs\else\vbox
    \fi\ifx\p_height\v!fit\else to \p_height \fi \bgroup
-   \enforced\let\combination\empty % permits \combination{}{} handy for cld
+   \enforced\lettonothing\combination % permits \combination{}{} handy for cld
    \normalexpanded{\pack_combinations_start_indeed[\p_nx_ny]}}
 
 \permanent\protected\def\stopcombination

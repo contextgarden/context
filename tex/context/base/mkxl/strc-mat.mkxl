@@ -181,7 +181,7 @@
 \newtoks\everyresetformulas
 
 \appendtoks
-    \let\currentformula\empty % to be checked:
+    \lettonothing\currentformula % to be checked:
 \to \everyresetformulas
 
 % implementation
@@ -199,7 +199,7 @@
       \c!list=\currentplaceformulalist,
       \c!bookmark=\currentplaceformulabookmark]%
      [#2]%
-   \glet\namedformulaentry\empty % \relax
+   \glettonothing\namedformulaentry % \relax
    \glet#3\m_strc_counters_last_registered_index
    \glet#4\m_strc_counters_last_registered_synchronize
    \glet#5\m_strc_counters_last_registered_attribute}
@@ -388,30 +388,30 @@
 \mutable\let\currentsubformulanumber  \relax
 \mutable\let\currentformulasnumber    \relax
 
-\mutable\let\currentformulasreference     \empty
-\mutable\let\currentformulareference      \empty
-\mutable\let\currentsubformulareference   \empty
-\mutable\let\currentnestedformulanumber   \empty
-\mutable\let\currentnestedformulareference\empty
-\mutable\let\currentnestedformulaattribute\empty
+\mutable\lettonothing\currentformulasreference
+\mutable\lettonothing\currentformulareference
+\mutable\lettonothing\currentsubformulareference
+\mutable\lettonothing\currentnestedformulanumber
+\mutable\lettonothing\currentnestedformulareference
+\mutable\lettonothing\currentnestedformulaattribute
 
 \appendtoks
-    \glet\currentformulasreference     \empty
-    \glet\currentformulareference      \empty
-    \glet\currentsubformulareference   \empty
-    \glet\currentnestedformulareference\empty
+    \glettonothing\currentformulasreference
+    \glettonothing\currentformulareference
+    \glettonothing\currentsubformulareference
+    \glettonothing\currentnestedformulareference
 \to \everyresetformulas
 
-\mutable\let\currentformulassuffix     \empty
-\mutable\let\currentformulasuffix      \empty
-\mutable\let\currentsubformulasuffix   \empty
-\mutable\let\currentnestedformulasuffix\empty
+\mutable\lettonothing\currentformulassuffix
+\mutable\lettonothing\currentformulasuffix
+\mutable\lettonothing\currentsubformulasuffix
+\mutable\lettonothing\currentnestedformulasuffix
 
 \appendtoks
-    \glet\currentformulassuffix     \empty
-    \glet\currentformulasuffix      \empty
-    \glet\currentsubformulasuffix   \empty
-    \glet\currentnestedformulasuffix\empty
+    \glettonothing\currentformulassuffix
+    \glettonothing\currentformulasuffix
+    \glettonothing\currentsubformulasuffix
+    \glettonothing\currentnestedformulasuffix
 \to \everyresetformulas
 
 \mutable\let\currentplaceformulasynchronize \relax
@@ -426,10 +426,10 @@
     \glet\currentnestedformulasynchronize\relax
 \to \everyresetformulas
 
-\mutable\let\currentsubformulasattribute  \empty
-\mutable\let\currentsubformulasnumber     \empty
-\mutable\let\currentsubformulasreference  \empty
-\mutable\let\currentsubformulassynchronize\empty
+\mutable\lettonothing\currentsubformulasattribute
+\mutable\lettonothing\currentsubformulasnumber
+\mutable\lettonothing\currentsubformulasreference
+\mutable\lettonothing\currentsubformulassynchronize
 
 \def\strc_formulas_handle_current_references
   {\strc_formulas_reference_show
@@ -494,8 +494,8 @@
 %         \fi
 %         \strc_counters_increment\v!formula}%
 %    \fi
-%    \glet\currentplaceformulasuffix\empty
-%    \glet\currentnestedformulasuffix\empty
+%    \glettonothing\currentplaceformulasuffix
+%    \glettonothing\currentnestedformulasuffix
 %    \placecurrentformulanumber}
 
 \def\strc_formulas_handle_numbering_indeed
@@ -517,8 +517,8 @@
         \fi
         \strc_counters_increment\v!formula}%
    \fi
-   \glet\currentplaceformulasuffix\empty
-   \glet\currentnestedformulasuffix\empty
+   \glettonothing\currentplaceformulasuffix
+   \glettonothing\currentnestedformulasuffix
    \placecurrentformulanumber}
 
 \def\strc_formulas_handle_numbering
@@ -535,8 +535,8 @@
    \doifelsetext\currentnestedformulasuffix
      {\strc_counters_setown_sub\v!formula\plustwo\currentnestedformulasuffix}%
      {\strc_counters_increment_sub\v!formula\plustwo}%
-   \glet\currentplaceformulasuffix\empty
-   \glet\currentnestedformulasuffix\empty
+   \glettonothing\currentplaceformulasuffix
+   \glettonothing\currentnestedformulasuffix
    \placecurrentformulanumber}
 
 \def\strc_formulas_handle_sub_numbering
@@ -684,7 +684,7 @@
 
 \newconstant\c_strc_math_split_mode
 
-\mutable\let\m_strc_math_split\empty
+\mutable\lettonothing\m_strc_math_split
 
 \aliased\let\c_strc_math_line_mode\zerocount
 \aliased\let\c_strc_math_flow_mode\plusone
@@ -698,7 +698,7 @@
 
 \def\strc_formulas_display_space_before_normal
   {% not ok, try \stopformula\par\startformula vs \stopformula\startformula
-   \let\m_spacebefore\empty
+   \lettonothing\m_spacebefore
    \ifvmode
      \ifdim\lastskip>\zeropoint\else
        \ifdim\prevdepth<\zeropoint\else
@@ -797,7 +797,7 @@
    \fi
    \ifvmode
      \ifconditional\c_strc_formulas_packed
-       \let\p_spacebefore\empty
+       \lettonothing\p_spacebefore
      \else
        \edef\p_spacebefore{\formulaparameter\c!spacebefore}%
      \fi
@@ -815,7 +815,7 @@
    \fi
    \ifvmode
      \ifconditional\c_strc_formulas_packed
-       \let\p_spaceafter\empty
+       \lettonothing\p_spaceafter
      \else
        \edef\p_spaceafter{\formulaparameter\c!spaceafter}%
      \fi
@@ -1672,8 +1672,8 @@
 
 % already defined
 %
-% \let\startinnermath\empty
-% \let\stopinnermath \empty
+% \lettonothing\startinnermath
+% \lettonothing\stopinnermath
 
 % \defineformulaalternative[multi][\begindmath][\enddmath]
 %
@@ -1758,7 +1758,7 @@
    \global\settrue\c_strc_formulas_inside_formulas
    \edef\currentformulasreference{#1}%
    \strc_formulas_handle_number
-   \let\currentformula\empty
+   \lettonothing\currentformula
  % \strc_formulas_forget_display_skips
    \enforced\protected\def\startformula
      {\advance\scratchcounter\plusone
@@ -1808,8 +1808,8 @@
 
 \tolerant\protected\def\strc_formulas_place[#1]%
   {\xdef\currentplaceformulareference{#1}%
-   \glet\currentplaceformulasuffix\empty
-   \glet\currentnestedformulasuffix\empty
+   \glettonothing\currentplaceformulasuffix
+   \glettonothing\currentnestedformulasuffix
    \global\setfalse\c_strc_formulas_incremented
    \global\setfalse\c_strc_formulas_referenced
    \global\settrue\c_strc_formulas_inside_place
@@ -1839,9 +1839,9 @@
 % \startplaceformula[title=whatever] \startformula e=mc^2 \stopformula \stopplaceformula
 % \startplaceformula[suffix=x]       \startformula e=mc^2 \stopformula \stopplaceformula
 
-\mutable\let\currentplaceformulatitle    \empty
-\mutable\let\currentplaceformulareference\empty
-\mutable\let\currentplaceformulasuffix   \empty
+\mutable\lettonothing\currentplaceformulatitle
+\mutable\lettonothing\currentplaceformulareference
+\mutable\lettonothing\currentplaceformulasuffix
 
 \permanent\tolerant\protected\def\startplaceformula[#1]%
   {\begingroup
@@ -1858,25 +1858,25 @@
   {\doifassignmentelse{#1}\strc_formulas_start_place_parameters\strc_formulas_start_place_reference[#1]}
 
 \def\strc_formulas_start_place_nop[#1]%
-  {\glet\currentplaceformulareference\empty
-   \glet\currentplaceformulasuffix   \empty
+  {\glettonothing\currentplaceformulareference
+   \glettonothing\currentplaceformulasuffix
    \strc_formulas_place_nop}
 
 \def\strc_formulas_start_place_reference[#1]%
   {\xdef\currentplaceformulareference{#1}%
-   \glet\currentplaceformulasuffix\empty
+   \glettonothing\currentplaceformulasuffix
   %\doifelsenextbgroup\strc_formulas_place_yes\strc_formulas_place_nop} % [ref]{}
    \strc_formulas_place_nop}
 
-\mutable\let\currentplaceformulabookmark\empty
-\mutable\let\currentplaceformulalist    \empty
+\mutable\lettonothing\currentplaceformulabookmark
+\mutable\lettonothing\currentplaceformulalist
 
 \def\strc_formulas_start_place_parameters[#1]% maybe a dedicated setup handler
-  {\letdummyparameter\c!title    \empty
-   \letdummyparameter\c!reference\empty
-   \letdummyparameter\c!bookmark \empty
-   \letdummyparameter\c!list     \empty
-   \letdummyparameter\c!suffix   \empty
+  {\resetdummyparameter\c!title
+   \resetdummyparameter\c!reference
+   \resetdummyparameter\c!bookmark
+   \resetdummyparameter\c!list
+   \resetdummyparameter\c!suffix
    \getdummyparameters[#1]%
    \edef\currentplaceformulatitle    {\dummyparameter\c!title}%
    \edef\currentplaceformulareference{\dummyparameter\c!reference}%
@@ -1904,13 +1904,13 @@
      \xdef\currentnestedformulasuffix   {\mathalignmentparameter\c!suffix}%
      \global\d_math_eqalign_number_threshold\mathalignmentparameter\c!numberthreshold\relax
    \orelse\ifhastok+{#1}%
-     \glet\currentnestedformulareference\empty
+     \glettonothing\currentnestedformulareference
      \xdef\currentnestedformulasuffix   {+}%
    \orelse\ifempty\currentplaceformulareference
      \xdef\currentnestedformulareference{#1}%
      \xdef\currentnestedformulasuffix   {#2}%
    \else
-     \glet\currentnestedformulareference\empty
+     \glettonothing\currentnestedformulareference
      \xdef\currentnestedformulasuffix   {#1}%
    \fi
    \strc_formulas_place_number_nested_check}
@@ -1991,7 +1991,7 @@
    \hskip-\leftskip % bah
    \box\b_strc_math_display}
 
-\mutable\let\namedformulaentry\empty % \relax % this will become a key/value so that we can do bookmarks
+\mutable\lettonothing\namedformulaentry % \relax % this will become a key/value so that we can do bookmarks
 
 \permanent\protected\def\setformulalistentry#1%
   {\xdef\namedformulaentry{#1}}

@@ -105,28 +105,27 @@
 
 %aliased\let\currentconstructionhash           \??construction
 
-\mutable\let\currentconstructionmain           \empty
-\mutable\let\currentconstructionlevel          \empty
-\mutable\let\currentconstructionhandler        \empty
-
-\mutable\let\currentconstructionattribute      \empty
-\mutable\let\currentconstructionbookmark       \empty
-\mutable\let\currentconstructioncatcodes       \empty
-\mutable\let\currentconstructioncoding         \empty
-\mutable\let\currentconstructionexpansion      \empty
-\mutable\let\currentconstructionincrementnumber\empty
-\mutable\let\currentconstructionlabel          \empty
-\mutable\let\currentconstructionlist           \empty
-\mutable\let\currentconstructionlistentry      \empty
-\mutable\let\currentconstructionlistnumber     \empty
-\mutable\let\currentconstructionmarking        \empty
-\mutable\let\currentconstructionnumber         \empty
-\mutable\let\currentconstructionreference      \empty
-\mutable\let\currentconstructionreferencetext  \empty
-\mutable\let\currentconstructionreferenceprefix\empty
-\mutable\let\currentconstructionsynchronize    \empty
-\mutable\let\currentconstructiontitle          \empty
-\mutable\let\currentconstructionxmlsetup       \empty
+\mutable\lettonothing\currentconstructionmain
+\mutable\lettonothing\currentconstructionlevel
+\mutable\lettonothing\currentconstructionhandler
+\mutable\lettonothing\currentconstructionattribute
+\mutable\lettonothing\currentconstructionbookmark
+\mutable\lettonothing\currentconstructioncatcodes
+\mutable\lettonothing\currentconstructioncoding
+\mutable\lettonothing\currentconstructionexpansion
+\mutable\lettonothing\currentconstructionincrementnumber
+\mutable\lettonothing\currentconstructionlabel
+\mutable\lettonothing\currentconstructionlist
+\mutable\lettonothing\currentconstructionlistentry
+\mutable\lettonothing\currentconstructionlistnumber
+\mutable\lettonothing\currentconstructionmarking
+\mutable\lettonothing\currentconstructionnumber
+\mutable\lettonothing\currentconstructionreference
+\mutable\lettonothing\currentconstructionreferencetext
+\mutable\lettonothing\currentconstructionreferenceprefix
+\mutable\lettonothing\currentconstructionsynchronize
+\mutable\lettonothing\currentconstructiontitle
+\mutable\lettonothing\currentconstructionxmlsetup
 
 \settrue\c_strc_constructions_define_commands % use with care, might become a proper key
 
@@ -296,17 +295,17 @@
 \protected\defcsname\??constructioncommandhandler\v!construction\endcsname
   {\endgroup}
 
-\let\p_strc_constructions_sample        \empty
-\let\p_strc_constructions_align         \empty
-\let\p_strc_constructions_indenting     \empty
-\let\p_strc_constructions_width         \empty
-\let\p_strc_constructions_aligntitle    \empty
-\let\p_strc_constructions_renderingsetup\empty
-\let\p_strc_constructions_headalign     \empty
-\let\p_strc_constructions_hang          \empty
-\let\p_strc_constructions_inbetween     \empty
-\let\p_strc_constructions_closesymbol   \empty
-\let\p_strc_constructions_distance      \empty
+\lettonothing\p_strc_constructions_sample
+\lettonothing\p_strc_constructions_align
+\lettonothing\p_strc_constructions_indenting
+\lettonothing\p_strc_constructions_width
+\lettonothing\p_strc_constructions_aligntitle
+\lettonothing\p_strc_constructions_renderingsetup
+\lettonothing\p_strc_constructions_headalign
+\lettonothing\p_strc_constructions_hang
+\lettonothing\p_strc_constructions_inbetween
+\lettonothing\p_strc_constructions_closesymbol
+\lettonothing\p_strc_constructions_distance
 
 \newconditional\c_strc_constructions_distance_none
 

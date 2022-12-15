@@ -262,7 +262,7 @@
    \global\setbox\b_page_mix_preceding\vbox % pack ?
      {\forgetall
       \page_otr_command_flush_top_insertions
-      \ifdim\htdp\b_page_mix_preceding=\zeropoint \else
+      \ifzeropt\htdp\b_page_mix_preceding\else
         \writestatus\m!columns{preceding error}%
         \unvbox\b_page_mix_preceding
       \fi
@@ -401,7 +401,7 @@
 %D \stopmixedcolumns
 %D \stoptyping
 
-\mutable\let\currentmixedcolumnsmethod\empty
+\mutable\lettonothing\currentmixedcolumnsmethod
 
 \installmacrostack\currentmixedcolumns
 \installmacrostack\currentmixedcolumnsmethod
@@ -448,7 +448,7 @@
 
 \def\page_mix_start_columns_b[#1][#2]%
   {\ifhastok={#1}%
-     \let\currentmixedcolumns\empty
+     \lettonothing\currentmixedcolumns
      \page_mix_error_b
      \page_mix_start_columns_checked\page_mix_start_columns_b_yes\page_mix_start_columns_b_nop[#1]%
    \else
@@ -473,7 +473,7 @@
   {\writestatus\m!columns{best use an instance of mixed columns}}
 
 \def\page_mix_start_columns_c[#1][#2]%
-  {\let\currentmixedcolumns\empty
+  {\lettonothing\currentmixedcolumns
    \page_mix_start_columns_checked
      \page_mix_start_columns_c_yes
      \page_mix_start_columns_c_nop}
@@ -614,7 +614,7 @@
 
 % \defcsname\??mixedcolumnsbefore\s!otr\endcsname
 %   {\par
-%    \ifdim\pagetotal=\zeropoint \else
+%    \ifzeropt\pagetotal\else
 %      \verticalstrut     % probably no longer needed
 %      \vskip-\struttotal % probably no longer needed
 %    \fi}
@@ -625,7 +625,7 @@
 %   {\par
 %    \global\advance\c_page_mix_otr_nesting\plusone
 %    \ifcase\c_page_mix_otr_nesting\or
-%      \ifdim\pagetotal=\zeropoint \else
+%      \ifzeropt\pagetotal\else
 %        \obeydepth % we could handle this in pre material
 %      \fi
 %    \fi}
@@ -634,7 +634,7 @@
   {\par
    \global\advance\c_page_mix_otr_nesting\plusone
    \ifcase\c_page_mix_otr_nesting\or
-     \ifdim\pagetotal=\zeropoint \else
+     \ifzeropt\pagetotal\else
        % make sure that whitespace and blanks are done
        \strut
        \vskip-\lineheight
@@ -871,7 +871,7 @@
         \page_mix_construct_and_shipout\box\b_page_mix_collected\zerocount % three arguments
         \setbox\b_page_mix_collected\vpack{\clf_mixflushrest}% we could avoid this
         \clf_mixcleanup
-        \ifdim\ht\b_page_mix_collected=\zeropoint
+        \ifzeropt\ht\b_page_mix_collected
             \exitloop
         \fi
       \fi}%

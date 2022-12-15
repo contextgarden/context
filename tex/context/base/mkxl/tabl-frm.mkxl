@@ -102,13 +102,13 @@
      \setupframed[\??framedtablecolumn#1:#2][#3]%
    \fi}
 
-\mutable\let\currentframedtable\empty
+\mutable\lettonothing\currentframedtable
 
 \permanent\tolerant\protected\def\startframedtable[#1]#*[#2]%
   {\begingroup
    \forgetall
    \ifhastok={#1}%
-     \let\currentframedtable\empty
+     \lettonothing\currentframedtable
      \setupframed[\??framedtable][#1]%
    \else
      \edef\currentframedtable{#1}%
@@ -218,7 +218,7 @@
       \fi}%
    \ifcase\c_tabl_framed_pass
    \or
-     \letframedparameter\c!background\empty
+     \resetframedparameter\c!background
      \letframedparameter\c!frame\v!off
    \or
      \letframedparameter\c!height\d_tabl_framed_h

@@ -52,7 +52,7 @@
 \newcount      \c_page_postponed_blocks_next_page % set at the lua end
 \newconditional\c_page_postponed_busy
 
-\mutable\let\currentpostponedpage\empty
+\mutable\lettonothing\currentpostponedpage
 
 \permanent\protected\defcsname\e!start\v!postponing\endcsname
   {\bgroup

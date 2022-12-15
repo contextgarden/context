@@ -31,7 +31,7 @@
 
 \newconstant\c_grph_buffers_mode
 
-\mutable\let\lasttypesetbuffer\empty
+\mutable\lettonothing\lasttypesetbuffer
 
 \permanent\protected\def\typesetbuffer    {\bgroup\setconstant\c_grph_buffers_mode\plusone  \grph_buffers_typeset}
 \permanent\protected\def\typesetbufferonly{\bgroup\setconstant\c_grph_buffers_mode\zerocount\grph_buffers_typeset}

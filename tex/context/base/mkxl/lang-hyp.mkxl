@@ -107,19 +107,19 @@
 %   [\c!method=\s!traditional] % no translations
 
 \permanent\tolerant\protected\def\definehyphenationfeatures[#1]#*[#2]%
-  {\begingroup
-   \letdummyparameter\c!characters     \empty     % maybe \s!characters
-   \letdummyparameter\c!hyphens        \empty     % maybe \s!hyphens
-   \letdummyparameter\c!joiners        \empty     % maybe \s!joiners
-   \letdummyparameter\c!rightwords     \zerocount % maybe \s!rightwords
-   \letdummyparameter\s!lefthyphenmin  \zerocount
-   \letdummyparameter\s!righthyphenmin \zerocount
-   \letdummyparameter\s!hyphenmin      \zerocount
-   \letdummyparameter\s!lefthyphenchar \zerocount
-   \letdummyparameter\s!righthyphenchar\zerocount
-   \letdummyparameter\c!alternative    \empty
-   \letdummyparameter\c!rightedge      \empty
-   \letdummyparameter\c!rightchars     \empty
+  {\begingroup % maybe simple handler
+   \resetdummyparameter\c!characters                % maybe \s!characters
+   \resetdummyparameter\c!hyphens                   % maybe \s!hyphens
+   \resetdummyparameter\c!joiners                   % maybe \s!joiners
+   \letdummyparameter  \c!rightwords     \zerocount % maybe \s!rightwords
+   \letdummyparameter  \s!lefthyphenmin  \zerocount
+   \letdummyparameter  \s!righthyphenmin \zerocount
+   \letdummyparameter  \s!hyphenmin      \zerocount
+   \letdummyparameter  \s!lefthyphenchar \zerocount
+   \letdummyparameter  \s!righthyphenchar\zerocount
+   \resetdummyparameter\c!alternative
+   \resetdummyparameter\c!rightedge
+   \resetdummyparameter\c!rightchars
    \getdummyparameters[#2]%
    \clf_definehyphenationfeatures
       {#1}%

@@ -69,16 +69,15 @@
 \newconditional\splitfloatdone
 \newconditional\onlyonesplitofffloat   \settrue\onlyonesplitofffloat
 
-\newif         \ifinsidesplitfloat   % will become conditional
+\newif   \ifinsidesplitfloat   % will become conditional
+\newcount\noffloatssplits
+\newtoks \everysplitfloatsetup
 
-\newcount      \noffloatssplits
-\newtoks       \everysplitfloatsetup
+\mutable\let\extrasplitfloatlines \!!zerocount
+\mutable\let\splitfloatfinalizer  \relax
 
-\mutable\let   \extrasplitfloatlines \!!zerocount
-\mutable\let   \splitfloatfinalizer  \relax
-\mutable\let   \splitfloatcommand    \empty
-
-\mutable\let   \floatcaptionsuffix   \empty
+\mutable\lettonothing\splitfloatcommand
+\mutable\lettonothing\floatcaptionsuffix
 
 \permanent\tolerant\protected\def\splitfloat[#1]#:#2% nog dubbele refs
   {\bgroup
@@ -134,7 +133,7 @@
    \global\advance\noffloatssplits\plusone
    \ifcase\noffloatssplits\relax \or
      \ifconditional\onlyonesplitofffloat
-       \let\floatcaptionsuffix\empty
+       \lettonothing\floatcaptionsuffix
      \fi
    \fi
    \bgroup

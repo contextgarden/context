@@ -187,8 +187,10 @@ do
     local d_overlay_depth     = isdimen("d_overlay_depth")     registerdirect("OverlayDepth",     function() return getdimen(d_overlay_depth)     * factor end)
     local d_overlay_linewidth = isdimen("d_overlay_linewidth") registerdirect("OverlayLineWidth", function() return getdimen(d_overlay_linewidth) * factor end)
     local d_overlay_offset    = isdimen("d_overlay_offset")    registerdirect("OverlayOffset",    function() return getdimen(d_overlay_offset)    * factor end)
-                                                               registerdirect("OverlayRegion",    function() return getmacro("m_overlay_region")              end)
-                                                               --------------("CurrentLayout",    function() return getmacro("currentlayout")                 end)
+                                                               registerdirect("OverlayRegion",    function() return getmacro("m_overlay_region")           end)
+                                                               registerdirect("CurrentLayout",    function() return getmacro("currentlayout")              end)
+                                                               registerdirect("OverlayColor",     function() return getmacro("overlaycolor")               end)
+                                                               registerdirect("OverlayLineColor", function() return getmacro("overlaylinecolor")               end)
 
 end
 

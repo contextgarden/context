@@ -352,7 +352,7 @@ void tex_print_str(const char *s)
             lmt_string_to_buffer(s);
             return;
         default:
-            break;
+            return;
     }
     if (terminal || logfile) {
         int len = (int) strlen(s);

@@ -22,8 +22,8 @@
 \newtoks\everyresetversion
 \newtoks\everysetupversion
 
-\mutable\let\currentversioninfo\empty
-\mutable\let\currentversiontext\empty
+\mutable\lettonothing\currentversioninfo
+\mutable\lettonothing\currentversiontext
 
 \let\page_info_add_to_box\gobbleoneargument
 
@@ -35,12 +35,12 @@
      \edef\currentversiontext{\dummyparameter\c!text}%
    \else
      \edef\currentversioninfo{#1}%
-     \let \currentversiontext\empty
+     \lettonothing\currentversiontext
    \fi
    \ifcsname\??layoutinfo\currentversioninfo\endcsname
      \let\page_info_add_to_box\page_info_add_to_box_indeed
    \else
-     \let\currentversioninfo\empty
+     \lettonothing\currentversioninfo
      \let\page_info_add_to_box\gobbleoneargument
    \fi
    \the\everysetupversion}
@@ -57,7 +57,7 @@
   {\begincsname\??layoutinfo#1\endcsname}
 
 \installversioninfo\v!final
-  {\let\currentversioninfo\empty
+  {\lettonothing\currentversioninfo
    \let\page_info_add_to_box\gobbleoneargument}
 
 \installversioninfo\v!concept

@@ -55,8 +55,8 @@
 \def\m_strc_references_prefix_yes{+}
 \def\m_strc_references_prefix_nop{-}
 
-\mutable\let\currentstructurereferenceprefix\empty
-\mutable\let\currentstructurereferencetext  \empty
+\mutable\lettonothing\currentstructurereferenceprefix
+\mutable\lettonothing\currentstructurereferencetext
 
 \installglobalmacrostack\currentstructurereferenceprefix
 
@@ -105,15 +105,16 @@
 \permanent\def\namedstructureheadlocation#1% expandable, maybe [#1]
   {\csname\??savedinternalreference\ifcsname\??savedinternalreference#1\endcsname#1\else\s!default\fi\endcsname}
 
-\mutable\let\currentheadbackreference       \empty
-\mutable\let\currentheaddefault             \empty
-\mutable\let\currentheadincrement           \empty
-\mutable\let\currentheadinteraction         \empty
-\mutable\let\currentheadlabeltag            \empty
-\mutable\let\currentheadnumber              \!!zerocount
-\mutable\let\currentheadrenderingalternative\empty
-\mutable\let\currentheadrenderingsetup      \empty
-\mutable\let\currentheadtext                \empty
+\mutable\lettonothing\currentheadbackreference
+\mutable\lettonothing\currentheaddefault
+\mutable\lettonothing\currentheadincrement
+\mutable\lettonothing\currentheadinteraction
+\mutable\lettonothing\currentheadlabeltag
+\mutable\lettonothing\currentheadrenderingalternative
+\mutable\lettonothing\currentheadrenderingsetup
+\mutable\lettonothing\currentheadtext
+
+\mutable\let\currentheadnumber\!!zerocount
 
 % zeros:
 %
@@ -457,9 +458,9 @@
    \setstructurelevel\currenthead{\thenamedheadlevel\currenthead}%
 \to \everyredefinehead
 
-\mutable\let\currentsectionheadcoupling\empty
-\mutable\let\currentsectionheadsection \empty
-\mutable\let\currentsectionlevel       \empty
+\mutable\lettonothing\currentsectionheadcoupling
+\mutable\lettonothing\currentsectionheadsection
+\mutable\lettonothing\currentsectionlevel
 
 \appendtoks
     % beware, this is a global register
@@ -502,14 +503,14 @@
    \pop_macro_currentheadparent
    \pop_macro_currenthead}
 
-\mutable\let\currentnamedsection\empty
+\mutable\lettonothing\currentnamedsection
 
 \installmacrostack\currentnamedsection
 
 % structure sections (the parents of chapter etc)
 
-\aliased\let\firstsectionname\empty
-\aliased\let\lastsectionname \empty
+\mutable\lettonothing\firstsectionname
+\mutable\lettonothing\lastsectionname
 
 %aliased\let\resetallstructuremarks            \relax
 %aliased\let\resetcurrentstructuremarks        \relax
@@ -554,7 +555,7 @@
 
 \newtoks\everydefinesection
 
-\mutable\let\currentsection\empty % historic alias
+\mutable\lettonothing\currentsection % historic alias
 
 \permanent\protected\def\definesection[#1]%
   {\ifcsname\??headlevel#1\endcsname \else
@@ -819,9 +820,10 @@
    \fi
    \dostoptagged}
 
-\mutable\let\currenthead        \empty
-\mutable\let\currentheadcoupling\empty
-\mutable\let\currentheadsection \empty
+\mutable\lettonothing\currenthead
+\mutable\lettonothing\currentheadcoupling
+\mutable\lettonothing\currentheadsection
+
 \mutable\let\currentheadlevel   \!!zerocount
 \mutable\let\currentheadcounter \!!zerocount
 
@@ -876,9 +878,9 @@
 \newtoks\everybeforesectionheadhandle
 \newtoks\everyaftersectionheadhandle
 
-\mutable\let\getheadnumber\empty
-\mutable\let\getheadtitle \empty
-\mutable\let\getheadsyncs \empty
+\mutable\lettonothing\getheadnumber
+\mutable\lettonothing\getheadtitle
+\mutable\lettonothing\getheadsyncs
 
 \def\strc_sectioning_handle#1#2#3% name data userdata (we can move #1 to the caller)
   {\xdef\currenthead        {#1}%
@@ -905,9 +907,9 @@
    %
    % \currentstructuresynchronize % will move
    %
-   \let\getheadnumber\empty
-   \let\getheadtitle \empty
-   \let\getheadsyncs \empty
+   \lettonothing\getheadnumber
+   \lettonothing\getheadtitle
+   \lettonothing\getheadsyncs
    \ifconditional\c_strc_sectioning_increment
      \ifconditional\c_strc_sectioning_place
        \strc_sectioning_before_yes
@@ -1214,7 +1216,7 @@
 %permanent\def\previoussectioncountervalue{\clf_depthnumber\numexpr\thenamedheadlevel\currenthead+\minusone\relax}
 \permanent\def\previoussectioncountervalue{\clf_depthnumber\numexpr\thenamedheadlevel\previoushead\relax}
 
-\mutable\let\previoushead\empty
+\mutable\lettonothing\previoushead
 
 \def\strc_sectioning_handle_page_nop
   {\edef\p_continue{\headparameter\c!continue}%

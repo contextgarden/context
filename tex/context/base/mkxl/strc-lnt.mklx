@@ -87,7 +87,7 @@
 
 % maybe do this in lua
 
-\mutable\let\currentlinenotereference\empty
+\mutable\lettonothing\currentlinenotereference
 
 \def\page_lines_in_from{\in[lr:b:\currentlinenotereference]}
 \def\page_lines_in_to  {\in[lr:e:\currentlinenotereference]}
@@ -136,7 +136,7 @@
      \fi
    \fi}
 
-\let\currentlinenotereference\empty
+\lettonothing\currentlinenotereference
 
 \mutable\let\linenotelinenumber\relax
 

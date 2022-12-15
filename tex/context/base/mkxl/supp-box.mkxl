@@ -1081,7 +1081,7 @@
 
 %D This can be done in a more modern way but for nostalgic reasons we keep it.
 
-\mutable\let\nextprocessedtoken\empty
+\mutable\lettonothing\nextprocessedtoken
 
 \mutable\let\before \relax % for now mutable
 %mutable\let\between\relax % is a math character
@@ -1180,8 +1180,8 @@
 
 %D See \MKIV\ file for the older implementation.
 
-\let\m_syst_boxes_left \empty
-\let\m_syst_boxes_right\empty
+\lettonothing\m_syst_boxes_left
+\lettonothing\m_syst_boxes_right
 
 \permanent\protected\def\limitatetext#1#2#3%
   {% we could also split in \LUA

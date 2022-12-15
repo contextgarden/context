@@ -21,8 +21,6 @@
 
     Watch out: zero is always valid and the good old single mark!
 
-    Todo: class -> index
-
 */
 
 mark_state_info lmt_mark_state = {
@@ -115,23 +113,23 @@ int tex_valid_mark(halfword m) {
     return m < lmt_mark_state.mark_data.top;
 }
 
-halfword tex_new_mark(quarterword subtype, halfword class, halfword ptr)
+halfword tex_new_mark(quarterword subtype, halfword index, halfword ptr)
 {
     halfword mark = tex_new_node(mark_node, subtype);
-    mark_index(mark) = class;
+    mark_index(mark) = index;
     mark_ptr(mark) = ptr;
     if (lmt_mark_state.min_used < 0) {
-        lmt_mark_state.min_used = class;
-        lmt_mark_state.max_used = class;
+        lmt_mark_state.min_used = index;
+        lmt_mark_state.max_used = index;
     } else {
-        if (class < lmt_mark_state.min_used) {
-            lmt_mark_state.min_used = class;
+        if (index < lmt_mark_state.min_used) {
+            lmt_mark_state.min_used = index;
         }
-        if (class > lmt_mark_state.max_used) {
-            lmt_mark_state.max_used = class;
+        if (index > lmt_mark_state.max_used) {
+            lmt_mark_state.max_used = index;
         }
     }
-    tex_set_mark(class, current_marks_code, ptr);
+    tex_set_mark(index, current_marks_code, ptr);
     return mark;
 }
 
@@ -315,16 +313,16 @@ int tex_has_mark(halfword m)
 
 void tex_run_mark(void)
 {
-    halfword class = 0;
+    halfword index = 0;
     halfword code = cur_chr;
     switch (code) {
         case set_marks_code:
         case clear_marks_code:
         case flush_marks_code:
-            class = tex_scan_mark_number();
+            index = tex_scan_mark_number();
             break;
     }
-    if (tex_valid_mark(class)) {
+    if (tex_valid_mark(index)) {
         quarterword subtype = set_mark_value_code;
         halfword ptr = null;
         switch (code) {
@@ -333,13 +331,13 @@ void tex_run_mark(void)
                 ptr = tex_scan_toks_expand(0, NULL, 0);
                 break;
             case clear_marks_code:
-                tex_wipe_mark(class);
+                tex_wipe_mark(index);
                 return;
             case flush_marks_code:
                 subtype = reset_mark_value_code;
                 break;
         }
-        tex_tail_append(tex_new_mark(subtype, class, ptr));
+        tex_tail_append(tex_new_mark(subtype, index, ptr));
     } else {
         /* error already issued */
     }

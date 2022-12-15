@@ -98,7 +98,7 @@
 
 \permanent\protected\def\startuserdata
   {\begingroup
-   \let\currentuserdata\empty
+   \lettonothing\currentuserdata
    \doifelsenextoptionalcs\userdata_start_delayed\userdata_start_indeed}
 
 \def\userdata_start_delayed[#1]%

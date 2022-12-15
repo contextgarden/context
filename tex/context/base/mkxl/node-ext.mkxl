@@ -66,7 +66,7 @@
 %D \dostopclipping
 %D \stoptyping
 
-\mutable\let\MPclippath\empty
+\mutable\lettonothing\MPclippath
 
 % \permanent\protected\def\dostartclipping#1#2#3% we can move this to lua and only set a box here
 %   {\forcecolorhack

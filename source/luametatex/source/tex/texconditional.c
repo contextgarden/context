@@ -555,9 +555,7 @@ void tex_conditional_if(halfword code, int unless)
             }
             goto RESULT;
         case if_zero_int_code:
-            {
-                result = tex_scan_int(0, NULL) == 0;
-            }
+            result = tex_scan_int(0, NULL) == 0;
             goto RESULT;
         case if_abs_dim_code:
         case if_dim_code:
@@ -587,15 +585,10 @@ void tex_conditional_if(halfword code, int unless)
             }
             goto RESULT;
         case if_zero_dim_code:
-            {
-                result = tex_scan_dimen(0, 0, 0, 0, NULL) == 0;
-            }
+            result = tex_scan_dimen(0, 0, 0, 0, NULL) == 0;
             goto RESULT;
         case if_odd_code:
-            {
-                halfword v = tex_scan_int(0, NULL);
-                result = odd(v);
-            }
+            result = odd(tex_scan_int(0, NULL));
             goto RESULT;
         case if_vmode_code:
             result = abs(cur_list.mode) == vmode;
@@ -970,8 +963,7 @@ void tex_conditional_if(halfword code, int unless)
                     halfword t = token_info(lmt_input_state.cur_input.loc);
                     lmt_input_state.cur_input.loc = token_link(lmt_input_state.cur_input.loc);
                     if (t < cs_token_flag && token_cmd(t) == parameter_reference_cmd) {
-                      // result = token_info(input_state.parameter_stack[input_state.cur_input.parameter_start + token_chr(t) - 1]) != null ? 1 : 2;
-                         result = lmt_input_state.parameter_stack[lmt_input_state.cur_input.parameter_start + token_chr(t) - 1] != null ? 1 : 2;
+                        result = lmt_input_state.parameter_stack[lmt_input_state.cur_input.parameter_start + token_chr(t) - 1] != null ? 1 : 2;
                     }
                 }
                 goto CASE;
@@ -1103,19 +1095,19 @@ void tex_conditional_if(halfword code, int unless)
      //     }
         default:
             {
-                int class;
+                int category;
                 strnumber u = tex_save_cur_string();
                 int save_scanner_status = lmt_input_state.scanner_status;
                 lmt_input_state.scanner_status = scanner_is_normal;
                 lmt_token_state.luacstrings = 0;
-                class = lmt_function_call_by_class(code - last_if_test_code, 0, &result);
+                category = lmt_function_call_by_category(code - last_if_test_code, 0, &result);
                 tex_restore_cur_string(u);
                 lmt_input_state.scanner_status = save_scanner_status;
                 if (lmt_token_state.luacstrings > 0) {
                     tex_lua_string_start();
                     /* bad */
                 }
-                switch (class) {
+                switch (category) {
                     case lua_value_integer_code:
                     case lua_value_cardinal_code:
                     case lua_value_dimension_code:

@@ -52,7 +52,7 @@
 %D We keep calculations and checks to a minimum and also try to minimize
 %D the amount of tracing due to expansion.
 
-\mutable\let\currentotrbackground\empty
+\mutable\lettonothing\currentotrbackground
 
 %D This is the only spot where we have a low level dependency on the way
 %D parent chains are defined but we want the speed.

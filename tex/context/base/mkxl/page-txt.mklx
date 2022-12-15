@@ -90,8 +90,8 @@
     \fi
 \to \everysetuplayoutelement
 
-\mutable\let\currenttextstate \empty
-\mutable\let\previoustextstate\empty
+\mutable\lettonothing\currenttextstate
+\mutable\lettonothing\previoustextstate
 
 \def\page_layouts_reset_element_status#vertical%
   {\gdefcsname\??layouttextsreset#vertical\endcsname{\page_layouts_set_element_status_normal#vertical}}
@@ -175,7 +175,7 @@
 \permanent\protected\def\setupfootertexts{\setuptexts[\v!footer]}
 \permanent\protected\def\setupbottomtexts{\setuptexts[\v!bottom]}
 
-\mutable\let\currentlayoutelementstate\empty
+\mutable\lettonothing\currentlayoutelementstate
 
 \permanent\tolerant\protected\def\setuptexts[#vertical]#spacer[#horizontal]#spacer[#a]#spacer[#b]#spacer[#c]#spacer[#d]%
   {\ifarguments
@@ -221,7 +221,7 @@
 
 \setvalue{\??layouttextstrut\v!yes}{\setstrut\strut} % maybe more variants
 
-\let\m_page_layouts_element_content\empty
+\lettonothing\m_page_layouts_element_content
 
 \protected\def\page_layouts_process_element_single#content%
   {\edef\m_page_layouts_element_content{\detokenize{#content}}% so no \v!xxx
@@ -272,7 +272,7 @@
 
 \newcount\c_page_layouts_element_state_n
 
-\mutable\let\textlinestatus\empty
+\mutable\lettonothing\textlinestatus
 
 \def\page_layouts_set_element_status#vertical%
   {\c_page_layouts_element_state_n=0\namedlayoutelementparameter#vertical\c!n\relax
@@ -451,8 +451,8 @@
    \box\b_page_layouts_element
    \vkern-#height\relax}
 
-\let\page_layouts_place_extra_text_left \empty % historic
-\let\page_layouts_place_extra_text_right\empty % historic
+\lettonothing\page_layouts_place_extra_text_left  % historic
+\lettonothing\page_layouts_place_extra_text_right % historic
 
 \def\page_layouts_place_text_line_right
   {\hpack
@@ -780,8 +780,8 @@
      \let\page_layouts_place_extra_text_left \page_layouts_place_page_number_left
      \let\page_layouts_place_extra_text_right\page_layouts_place_page_number_right
    \else
-     \let\page_layouts_place_extra_text_left \empty
-     \let\page_layouts_place_extra_text_right\empty
+     \lettonothing\page_layouts_place_extra_text_left
+     \lettonothing\page_layouts_place_extra_text_right
    \fi}
 
 \def\page_layouts_identify_page_number_location

@@ -128,10 +128,10 @@
   {\bgroup
    \enforced\let\startpagegrid\page_grd_start_dummy
    \ifarguments
-     \let\currentpagegrid\empty
+     \lettonothing\currentpagegrid
    \or
      \ifhastok={#1}%
-       \let\currentpagegrid\empty
+       \lettonothing\currentpagegrid
        \setupcurrentpagegrid[#1]%
      \else
        \def\currentpagegrid{#1}%

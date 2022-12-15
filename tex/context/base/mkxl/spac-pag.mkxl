@@ -30,7 +30,7 @@
      \setpagestate[#1][\number#2]%
    \fi}
 
-\let\m_spac_pagestates_realpage\empty
+\lettonothing\m_spac_pagestates_realpage
 
 \newconditional\c_spac_pagestates_found
 
@@ -145,7 +145,7 @@
 
 \installcorenamespace{pagechanges}
 
-\newif\ifpagechanged \mutable\let\lastchangedpage\empty
+\newif\ifpagechanged \mutable\lettonothing\lastchangedpage
 
 \def\spac_pagechanges_check#1#2#3%
   {\pagechangedfalse

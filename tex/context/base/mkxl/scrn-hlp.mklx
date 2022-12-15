@@ -74,8 +74,8 @@
     \frozen\instance\protected\edefcsname\e!stop \currenthelp\endcsname{\scrn_help_stop                  }%
 \to \everydefinehelp
 
-\mutable\let\currenthelpreference\empty
-\mutable\let\currenthelpname     \empty
+\mutable\lettonothing\currenthelpreference
+\mutable\lettonothing\currenthelpname
 
 \protected\def\scrn_help_argument#category%
   {\def\currenthelp{#category}%

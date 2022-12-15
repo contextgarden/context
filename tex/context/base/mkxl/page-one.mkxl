@@ -337,7 +337,7 @@
 \newskip       \s_page_one_between_top_insert
 
 \def\page_one_prepare_top_float
-  {\ifdim\d_page_floats_inserted_top=\zeropoint
+  {\ifzeropt\d_page_floats_inserted_top
      \settrue\c_page_one_top_of_insert
    \else
      \setfalse\c_page_one_top_of_insert
@@ -558,7 +558,7 @@
 
 \protected\def\page_one_command_flush_margin_blocks
   {\ifconditional\c_page_margin_blocks_present % \ifvoid\b_page_margin_blocks \else
-     \ifdim\pagetotal=\zeropoint
+     \ifzeropt\pagetotal
         \null % \fixedspace
      \fi
      \page_otr_command_next_page % \page

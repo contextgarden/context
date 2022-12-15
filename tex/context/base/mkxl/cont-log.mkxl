@@ -316,7 +316,6 @@
     \enforced\instance\def\LuaTeX    {LuaTeX}%
     \enforced\instance\def\LuajitTeX {LuajitTeX}%
     \enforced\instance\def\LuaMetaTeX{LuaMetaTeX}%
-   %\let\wordboundary\empty % primitive so we need to promote it to frozen (orjust preroll)
 \to \everysimplifycommands
 
 \protect \endinput

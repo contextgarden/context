@@ -1968,7 +1968,7 @@
 
 \protected\def\math_function_handle#1#2#3%
   {\begingroup
-   \letdummyparameter\c!mathlimits\empty
+   \resetdummyparameter\c!mathlimits
    \getdummyparameters[#1]%
    \edef\p_limits{\dummyparameter\c!mathlimits}%
    \mathatom

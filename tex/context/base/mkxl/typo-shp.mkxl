@@ -77,7 +77,7 @@
 
 % \permanent\protected\tolerant\def\startshapedparagraph[#1]% no grouping
 %   {\begingroup
-%    \let\currentshapedparagraph\empty
+%    \lettonothing\currentshapedparagraph
 %    \setupshapedparagraph[#1]%
 %    \edef\p_mp    {\shapedparagraphparameter\c!mp}%
 %    \edef\p_repeat{\shapedparagraphparameter\c!repeat}%
@@ -154,7 +154,7 @@
 
 \permanent\protected\tolerant\def\startshapedparagraph[#1]% no grouping
   {\begingroup
-   \let\currentshapedparagraph\empty
+   \lettonothing\currentshapedparagraph
    \setupshapedparagraph[#1]%
    \setlocalhsize
    \doifsomething{\shapedparagraphparameter\c!text}

@@ -269,7 +269,7 @@
      \edef\currentselectfont{\expandnamespacevalue\??fontshortstyle{#style}\s!rm}%
      \setupcurrentselectfont[#settings]%
    \else
-     \let\currentselectfont\empty
+     \lettonothing\currentselectfont
      \setupcurrentselectfont[#style]%
    \fi}
 

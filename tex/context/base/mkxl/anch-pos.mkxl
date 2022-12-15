@@ -55,10 +55,10 @@
 % see top: \newbox\b_anch_position
 % see top: \newif \ifpositioning   % sort of public
 
-\mutable\let\currentposition      \empty
-\mutable\let\currentpositionaction\empty
-\mutable\let\currentpositionanchor\empty
-\mutable\let\currentpositionregion\empty
+\mutable\lettonothing\currentposition
+\mutable\lettonothing\currentpositionaction
+\mutable\lettonothing\currentpositionanchor
+\mutable\lettonothing\currentpositionregion
 
 %D Sometimes we want to trick the position handler a bit:
 

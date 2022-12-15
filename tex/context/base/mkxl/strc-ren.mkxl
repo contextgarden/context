@@ -435,8 +435,9 @@
    \c!renderingsetup=\??headrenderings:\currentheadalternative]
 
 \let\currentheadalternative         \v!normal
-\let\currentheadrenderingsetup      \empty
 \let\currentheadrenderingalternative\v!vertical
+
+\lettonothing\currentheadrenderingsetup
 
 \permanent\tolerant\protected\def\defineheadplacement[#1]#*[#2]%
   {\doifelsenextbgroup
@@ -465,8 +466,8 @@
 % \headshownumber
 % \headisdisplay
 
-\let\headnumbercontent\empty
-\let\headtextcontent  \empty
+\lettonothing\headnumbercontent
+\lettonothing\headtextcontent
 
 \newdimen\headwidth
 \newdimen\headtextwidth

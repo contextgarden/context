@@ -50,7 +50,7 @@ extern void     tex_reset_mark                (halfword m);
 extern void     tex_wipe_mark                 (halfword m);
 extern void     tex_delete_mark               (halfword m, int what);
 extern halfword tex_get_some_mark             (halfword chr, halfword val);
-extern halfword tex_new_mark                  (quarterword subtype, halfword cls, halfword ptr);
+extern halfword tex_new_mark                  (quarterword subtype, halfword index, halfword ptr);
 extern void     tex_update_top_marks          (void);
 extern void     tex_update_first_and_bot_mark (halfword m);
 extern void     tex_update_first_marks        (void);

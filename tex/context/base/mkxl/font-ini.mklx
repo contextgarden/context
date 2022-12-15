@@ -333,7 +333,7 @@
    \the\everybodyfont
    \settrue\c_font_synchronize}
 
-\mutable\let\savedfont\empty
+\mutable\lettonothing\savedfont
 
 \installmacrostack\savedfont
 
@@ -712,8 +712,9 @@
 \mutable\let\somefontspec \s!unknown
 \mutable\let\somefontfile \s!unknown
 \mutable\let\somefontsize \zerocount
-\mutable\let\somefontsizex\empty
-\mutable\let\somefontsizey\empty
+
+\mutable\lettonothing\somefontsizex
+\mutable\lettonothing\somefontsizey
 
 % \newcount\scaledfontmode % font-lib.mklx
 % \newcount\scaledfontsize % font-lib.mklx
@@ -747,7 +748,8 @@
 % \newcount\c_font_scaled_font_mode_saved % font-lib.mklx
 % \newcount\c_font_scaled_points          % font-lib.mklx
 
-\mutable\let\somefontspec         \empty
+\mutable\lettonothing\somefontspec
+
 \mutable\let\lastrawfontcall      \relax
 \mutable\let\lastglobalrawfontcall\relax
 
@@ -763,9 +765,9 @@
 \protected\def\font_helpers_low_level_define_normal#specification#csname%
   {% we can now set more at the lua end
    \glet\somefontname\defaultfontfile
-   \let\somefontsize\empty
-   \let\somefontsizex\empty
-   \let\somefontsizey\empty
+   \lettonothing\somefontsize
+   \lettonothing\somefontsizex
+   \lettonothing\somefontsizey
    \clf_definefont_one{\detokenize\expandafter{\normalexpanded{#specification}}}% the escapestring catches at \somedimen
    % sets \scaledfontmode and \somefontname and \somefontsize
    \ifcase\fontface\relax
@@ -849,7 +851,7 @@
    \relax
    \ifcase\scaledfontsize
     %\scaledfontsize\plusone
-     \let\somefontspec\empty
+     \lettonothing\somefontspec
      \let\lastrawfontcall\relax
      \mutable\letcsname#csname\endcsname\relax
    \else
@@ -862,9 +864,9 @@
 \protected\def\font_helpers_low_level_define_compact#specification#csname%
   {% we can now set more at the lua end
    \glet\somefontname\defaultfontfile
-   \let\somefontsize\empty
-   \let\somefontsizex\empty
-   \let\somefontsizey\empty
+   \lettonothing\somefontsize
+   \lettonothing\somefontsizex
+   \lettonothing\somefontsizey
    \clf_definefont_one{\detokenize\expandafter{\normalexpanded{#specification}}}% the escapestring catches at \somedimen
    % sets \scaledfontmode and \somefontname and \somefontsize
    \ifcase\fontface\relax
@@ -961,7 +963,7 @@
    \relax
    \ifcase\scaledfontsize
     %\scaledfontsize\plusone
-     \let\somefontspec\empty
+     \lettonothing\somefontspec
      \let\lastrawfontcall\relax
      \mutable\letcsname#csname\endcsname\relax
    \else
@@ -980,7 +982,7 @@
      % experiment
      \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
      \ifrelax\lastrawfontcall
-       \let\somefontspec\empty
+       \lettonothing\somefontspec
      \else
      %
      % \ifempty\fontclass\else\global\fi
@@ -1162,7 +1164,7 @@
 
 \newconditional\c_font_auto_size \settrue\c_font_auto_size
 
-\mutable\let\lastfontidentifier\empty
+\mutable\lettonothing\lastfontidentifier
 
 \def\v_font_identifier_basic{\??fontinstancebasic           \lastfontidentifier-\fontsize-\fontface}
 \def\v_font_identifier_class{\??fontinstanceclass\fontclass-\lastfontidentifier-\fontsize-\fontface}
@@ -1455,13 +1457,13 @@
 
 \def\font_basics_define_body_font_environment_empty[#body][#settings][#dummy]%
   {\push_macro_fontclass
-   \let\fontclass\empty
+   \lettonothing\fontclass
    \font_basics_define_body_font_environment_class[][#body][#settings]%
    \pop_macro_fontclass}
 
 \def\font_basics_define_body_font_environment_unset[#body][#dummya][#dummyb]%
   {\push_macro_fontclass
-   \let\fontclass\empty
+   \lettonothing\fontclass
    \font_basics_define_body_font_environment_class[][#body][]%
    \pop_macro_fontclass}
 
@@ -1604,7 +1606,7 @@
 \protected\def\font_basics_define_body_font_class_given[#1][#2][#3]#4%
   {\push_macro_fontclass
    \doifelse{#4}\s!default
-     {\let\fontclass\empty}
+     {\lettonothing\fontclass}
      {\def\fontclass{#4}}%
    \definebodyfont[#1][#2][#3]%
    \pop_macro_fontclass}
@@ -1914,8 +1916,8 @@
      \edef\m_font_step{\font_bodyfontvariable\m_font_keyword}%
      \normalexpanded{\font_helpers_set_font_set_font_option_body{#method}{\m_font_step}{#message}}%
    \orelse\ifx\m_font_keyword\v!reset
-     \let\fontstyle\empty % new 31/7/2006
-     \let\fontsize \empty
+     \lettonothing\fontstyle % new 31/7/2006
+     \lettonothing\fontsize
    \orelse\ifcsname\??fontstyle\m_font_keyword\endcsname
      \let\fontstyle\m_font_keyword
    \else
@@ -1964,11 +1966,6 @@
       {\letcsname\??fontclassnop#typeface\endcsname\empty}
 
 \fi
-
-% \let\defaultfontstyle      \s!rm
-% \let\defaultfontalternative\s!tf
-% \let\defaultfontsize       \empty
-% \let\defaultfontface       \!!zerocount
 
 %D So far for synchronisation. (We can inline the following macros.)
 
@@ -2192,8 +2189,8 @@
   {\font_helpers_check_nested_x_fontsize
    \font_helpers_set_current_font_xxx_alternative{#alternative}{5}\scriptscriptstyle
    \currentxfontsize\plustwo
-   \enforced\let\tx\empty
-   \enforced\let\txx\empty}
+   \enforced\lettonothing\tx
+   \enforced\lettonothing\txx}
 
 %D This alternative is not really needed, but for old time's sake we keep it there.
 %D We can speed it up when needed.
@@ -2369,8 +2366,8 @@
    \else
      \font_scale_defined_xx
    \fi
-   \enforced\let\tx \empty
-   \enforced\let\txx\empty}
+   \enforced\lettonothing\tx
+   \enforced\lettonothing\txx}
 
 \permanent\protected\def\sx
   {\currentxfontsize\plusone
@@ -2397,10 +2394,10 @@
        \font_scale_inherit_normal_xx
      \fi
    \fi
-   \enforced\let\tx \empty
-   \enforced\let\txx\empty
-   \enforced\let\sx \empty
-   \enforced\let\sxx\empty}
+   \enforced\lettonothing\tx
+   \enforced\lettonothing\txx
+   \enforced\lettonothing\sx
+   \enforced\lettonothing\sxx}
 
 \permanent\protected\def\useinheritxsizes{\settrue \c_font_inherit_scale} % not yet public, playground for WS and me
 \permanent\protected\def\usedefinedxsizes{\setfalse\c_font_inherit_scale} % not yet public, playground for WS and me

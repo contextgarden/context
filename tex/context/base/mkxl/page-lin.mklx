@@ -96,7 +96,8 @@
 \def\page_lines_start_define
   {\setxvalue{\??linenumberinginstance\currentlinenumbering}%
      {\clf_registerlinenumbering
-        continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
+      % continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
+        continue {\ifzero\c_page_lines_mode\v!yes\else\v!no\fi}%
         start    \linenumberingparameter\c!start
         step     \linenumberingparameter\c!step
         method   {\linenumberingparameter\c!method}%
@@ -107,7 +108,8 @@
   {\clf_setuplinenumbering
      \csname\??linenumberinginstance\currentlinenumbering\endcsname
      {%
-        continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
+      % continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
+        continue {\ifzero\c_page_lines_mode\v!yes\else\v!no\fi}%
      }%
    \relax}
 
@@ -116,7 +118,8 @@
      \clf_setuplinenumbering
        \lastnamedcs
        {%
-            continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
+          % continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
+            continue {\ifzero\c_page_lines_mode\v!yes\else\v!no\fi}%
             start    \linenumberingparameter\c!start
             step     \linenumberingparameter\c!step
             method   {\linenumberingparameter\c!method}%
@@ -222,17 +225,17 @@
   {\edef\m_argument{#1}%
    \ifx\m_argument\v!continue
      \c_page_lines_mode\zerocount
-     \let\currentlinenumbering\empty
+     \lettonothing\currentlinenumbering
    \else
      \c_page_lines_mode\plusone
      \ifx\m_argument\v!empty
-       \let\currentlinenumbering\empty
+       \lettonothing\currentlinenumbering
      \orelse\ifhastok={#1}%
-       \let\currentlinenumbering\empty
+       \lettonothing\currentlinenumbering
        \setupcurrentlinenumbering[#1]%
      \else
        \doifelsenumber\m_argument
-         {\let\currentlinenumbering\empty
+         {\lettonothing\currentlinenumbering
           \letlinenumberingparameter\c!start\m_argument}
          {\let\currentlinenumbering\m_argument}%
      \fi
@@ -574,8 +577,8 @@
 
 \permanent\def\currentreferencelinenumber{\clf_filterreference{linenumber}}
 
-\let\m_page_lines_from\empty
-\let\m_page_lines_to  \empty
+\lettonothing\m_page_lines_from
+\lettonothing\m_page_lines_to
 
 \permanent\protected\def\doifelsesamelinereference#1#2#3%
   {\doifelsereferencefound{lr:b:#1}

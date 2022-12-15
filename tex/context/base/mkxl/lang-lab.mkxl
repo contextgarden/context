@@ -60,7 +60,7 @@
 
 \installcorenamespace{label}
 
-% \let\currentlabelcategory\empty
+% \lettonothing\currentlabelcategory
 
 \permanent\tolerant\protected\def\definelabelclass[#1]#*[#2]%
   {\normalexpanded
@@ -77,11 +77,12 @@
 
 % hm, not interfaced
 
-\mutable\let\thetextprefix\empty
+\mutable\lettonothing\thetextprefix
 
 \mutable\let\currenttextprefixclass\s!unknown
-\mutable\let\currenttextprefixname \empty
 \mutable\let\currenttextprefixtag  \s!unknown
+
+\mutable\lettonothing\currenttextprefixname
 
 \protected\def\lang_labels_define_class_indeed#1#2#3#4#5#6#7#8#9%
   {\permanent\instance\protected\defcsname  setup#1text\endcsname{\protecttextprefixes      #2\def\currenttextprefixclass{#1}\lang_labels_text_prefix_setup}%
@@ -223,8 +224,8 @@
      \expandafter\lang_labels_text_prefix_assign_dumb
    \fi{#1}}
 
-\let\m_lang_labels_left \empty
-\let\m_lang_labels_right\empty
+\lettonothing\m_lang_labels_left
+\lettonothing\m_lang_labels_right
 
 \def\lang_labels_text_prefix_assign_yes#1[#2,#3,#4]%
   {\def\m_lang_labels_left {#2}% no longer an edef ... else \Word undefined expansion issues

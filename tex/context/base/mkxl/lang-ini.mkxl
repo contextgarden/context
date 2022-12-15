@@ -58,9 +58,9 @@
 %D    \startmode[*nl] dutch   \stopmode}
 %D \stoptyping
 
-\mutable\let\askedlanguage      \empty
-\mutable\let\currentlanguage    \empty
-\mutable\let\currentmainlanguage\empty
+\mutable\lettonothing\askedlanguage
+\mutable\lettonothing\currentlanguage
+\mutable\lettonothing\currentmainlanguage
 
 %D \macros
 %D   {defaultlanguage,languageparameter,specificlanguageparameter}
@@ -191,7 +191,7 @@
 
 % \language[#1] gave unwanted side effect of loading language specifics
 
-\mutable\let\currentsetuplanguage\empty
+\mutable\lettonothing\currentsetuplanguage
 
 \permanent\tolerant\protected\def\installlanguage[#1]#*[#2]%
   {\ifcondition\validassignment{#2}%
@@ -544,7 +544,7 @@
 
 %D You can setup the default language to reset settings.
 
-\mutable\let\currentlanguagesetups\empty
+\mutable\lettonothing\currentlanguagesetups
 
 \appendtoks
     \edef\currentlanguagesetups{\languageparameter\c!setups}%

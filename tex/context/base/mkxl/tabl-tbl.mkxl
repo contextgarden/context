@@ -233,7 +233,7 @@
 %newconditional  \c_tabl_pre_is_set
 \newconditional  \c_tabl_post_is_set
 
-\let             \m_tabl_tabulate_separator_factor \empty % fraction
+\lettonothing    \m_tabl_tabulate_separator_factor  % fraction
 
 \aliased\let\tabulatesplitlinemode\c_tabl_tabulate_splitlinemode % temp hack, we need an interface
 
@@ -292,7 +292,7 @@
      \tabl_tabulate_initialize_box_nop#1%
    \fi}
 
-\def\tabl_tabulate_initialize_box_yes  {\global     \setbox\lastnamedcs\emptybox}
+\def\tabl_tabulate_initialize_box_yes  {\global\setbox\lastnamedcs\emptybox}
 \def\tabl_tabulate_initialize_box_nop#1{\expandafter\newbox\csname\??tabulatebox\number#1\endcsname}
 
 \tabl_tabulate_initialize_boxes{16} % not really needed
@@ -361,7 +361,7 @@
      \xdef\m_tabl_tabulate_color{#1}%
    \else
      \glet\m_tabl_tabulate_color\m_tabl_tabulate_color_local
-     \glet\m_tabl_tabulate_color_local\empty
+     \glettonothing\m_tabl_tabulate_color_local
    \fi
    \ifcase\c_tabl_tabulate_localcolorspan
      \global\c_tabl_tabulate_colorspan#2\relax
@@ -388,7 +388,7 @@
      \xdef\m_tabl_tabulate_vrule_color{#1}%
    \else
      \glet\m_tabl_tabulate_vrule_color\m_tabl_tabulate_vrule_color_local
-     \glet\m_tabl_tabulate_vrule_color_local\empty
+     \glettonothing\m_tabl_tabulate_vrule_color_local
    \fi}
 
 \let\tabl_tabulate_check_local_color      \gobbletwoarguments
@@ -408,7 +408,7 @@
 \def\tabl_tabulate_inject_pre_skip#1%
   {\ifdim#1>\zeropoint
      \kern#1\relax % hskip
-   \orelse\ifnum\c_tabl_tabulate_column=\zerocount
+   \orelse\ifzero\c_tabl_tabulate_column
      \ifconditional\c_tabl_tabulate_autorulespacing
        \ifcase\c_tabl_tabulate_has_rule_spec_first\else
          \kern\s_tabl_tabulate_first\relax % hskip
@@ -841,10 +841,10 @@
    \t_tabl_tabulate_emath\emptytoks
    \t_tabl_tabulate_font\emptytoks
    \t_tabl_tabulate_settings\emptytoks
-   \glet\m_tabl_tabulate_alignment\empty
-   \glet\m_tabl_tabulate_color\empty
-   \glet\m_tabl_tabulate_text_color\empty
-   \glet\m_tabl_tabulate_vrule_color\empty
+   \glettonothing\m_tabl_tabulate_alignment
+   \glettonothing\m_tabl_tabulate_color
+   \glettonothing\m_tabl_tabulate_text_color
+   \glettonothing\m_tabl_tabulate_vrule_color
    \global\c_tabl_tabulate_colorspan\zerocount
    \global\setfalse\c_tabl_auto_align_mode
    \global\setfalse\c_tabl_auto_align_mode_new
@@ -871,8 +871,8 @@
    \fi}
 
 \permanent\protected\def\tabl_tabulate_set_last_entry#1% rulespec
-  {\glet\m_tabl_tabulate_color\empty
-   \glet\m_tabl_tabulate_vrule_color\empty
+  {\glettonothing\m_tabl_tabulate_color
+   \glettonothing\m_tabl_tabulate_vrule_color
    \iftok{#1}\emptytoks
      \global\d_tabl_tabulate_vrulethickness\zeropoint
    \else
@@ -1115,9 +1115,9 @@
 
 % Here begins the implementation.
 
-\let\tabl_tabulate_insert_head\empty
-\let\tabl_tabulate_insert_body\empty
-\let\tabl_tabulate_insert_foot\empty
+\lettonothing\tabl_tabulate_insert_head
+\lettonothing\tabl_tabulate_insert_body
+\lettonothing\tabl_tabulate_insert_foot
 
 \def\tabl_tabulate_insert_head_content
   {\noalign{\global\settrue\c_tabl_tabulate_someamble}%
@@ -1134,23 +1134,23 @@
     %\expandafter\ifempty\csname\??tabulatehead\currenttabulation\endcsname
     %\expandafter\ifempty\lastnamedcs
      \ifempty\lastnamedcs
-       \let\tabl_tabulate_insert_head\empty
+       \lettonothing\tabl_tabulate_insert_head
      \else
        \let\tabl_tabulate_insert_head\tabl_tabulate_insert_head_content
      \fi
    \else
-     \let\tabl_tabulate_insert_head\empty
+     \lettonothing\tabl_tabulate_insert_head
    \fi
    \ifcsname\??tabulatefoot\currenttabulation\endcsname
     %\expandafter\ifempty\csname\??tabulatefoot\currenttabulation\endcsname
     %\expandafter\ifempty\lastnamedcs
      \ifempty\lastnamedcs
-       \let\tabl_tabulate_insert_foot\empty
+       \lettonothing\tabl_tabulate_insert_foot
      \else
        \let\tabl_tabulate_insert_foot\tabl_tabulate_insert_foot_content
      \fi
    \else
-     \let\tabl_tabulate_insert_foot\empty
+     \lettonothing\tabl_tabulate_insert_foot
    \fi}
 
 \def\tabl_tabulate_insert_content
@@ -1173,7 +1173,7 @@
 \permanent\protected\defcsname\e!start\v!tabulatehead\endcsname{\doifelsenextoptionalcs\tabl_tabulate_start_head_yes\tabl_tabulate_start_head_nop}
 \permanent\protected\defcsname\e!start\v!tabulatetail\endcsname{\doifelsenextoptionalcs\tabl_tabulate_start_foot_yes\tabl_tabulate_start_foot_nop}
 
-\let\m_tabl_tabulate_data\empty
+\lettonothing\m_tabl_tabulate_data
 
 \def\tabl_tabulate_start_head_yes[#1]%
   {\processcontent{\e!stop\v!tabulatehead}\m_tabl_tabulate_data{\letcsname\??tabulatehead#1\endcsname\m_tabl_tabulate_data}}
@@ -1216,7 +1216,7 @@
 
 \permanent\protected\defcsname\e!start\v!tabulate\endcsname
   {\bgroup % whole thing
-   \let\currenttabulationparent\empty
+   \lettonothing\currenttabulationparent
    \tabl_start_regular}
 
 \tolerant\protected\def\tabl_start_regular[#1]#*[#2]% [format] | [settings] | [format] [settings] | [settings] [format]
@@ -1411,30 +1411,30 @@
 
 % color columns
 
-\let\m_tabl_tabulate_color_previous     \empty
-\let\m_tabl_tabulate_color              \empty
-\let\m_tabl_tabulate_text_color         \empty
-\let\m_tabl_tabulate_color_local        \empty
-\let\m_tabl_tabulate_vrule_color        \empty
-\let\m_tabl_tabulate_vrule_color_local  \empty
-\let\m_tabl_tabulate_vrule_color_default\empty % used local
-\let\m_tabl_tabulate_hrule_color_default\empty % used local
-\let\m_tabl_tabulate_blank_default      \empty
+\lettonothing\m_tabl_tabulate_color_previous
+\lettonothing\m_tabl_tabulate_color
+\lettonothing\m_tabl_tabulate_text_color
+\lettonothing\m_tabl_tabulate_color_local
+\lettonothing\m_tabl_tabulate_vrule_color
+\lettonothing\m_tabl_tabulate_vrule_color_local
+\lettonothing\m_tabl_tabulate_vrule_color_default % used local
+\lettonothing\m_tabl_tabulate_hrule_color_default % used local
+\lettonothing\m_tabl_tabulate_blank_default
 
 \appendtoks
-    \glet  \m_tabl_tabulate_color_previous      \empty
-    \glet  \m_tabl_tabulate_color               \empty
-    \glet  \m_tabl_tabulate_text_color          \empty
-    \glet  \m_tabl_tabulate_color_local         \empty
-    \glet  \m_tabl_tabulate_vrule_color         \empty
-    \glet  \m_tabl_tabulate_vrule_color_local   \empty
+    \glettonothing\m_tabl_tabulate_color_previous
+    \glettonothing\m_tabl_tabulate_color
+    \glettonothing\m_tabl_tabulate_text_color
+    \glettonothing\m_tabl_tabulate_color_local
+    \glettonothing\m_tabl_tabulate_vrule_color
+    \glettonothing\m_tabl_tabulate_vrule_color_local
     \global\d_tabl_tabulate_vrulethickness_local\zeropoint
 \to \t_tabl_tabulate_every_row
 
 \protected\def\tabl_tabulate_color_side_right_second
   {\ifempty\m_tabl_tabulate_color_previous \else
      \tabl_tabulate_color_set\m_tabl_tabulate_color_previous
-     \glet\m_tabl_tabulate_color_previous\empty
+     \glettonothing\m_tabl_tabulate_color_previous
    \fi}
 
 \protected\def\tabl_tabulate_color_side_left_second
@@ -1451,9 +1451,9 @@
   {\ifempty\m_tabl_tabulate_color \else
      \tabl_tabulate_color_set\m_tabl_tabulate_color
      \ifcase\c_tabl_tabulate_colorspan
-       %\glet\m_tabl_tabulate_color_previous\empty
+       %\glettonothing\m_tabl_tabulate_color_previous
      \or
-       \glet\m_tabl_tabulate_color_previous\empty
+       \glettonothing\m_tabl_tabulate_color_previous
      \or
        \glet\m_tabl_tabulate_color_previous\m_tabl_tabulate_color
      \or
@@ -1635,7 +1635,7 @@
    \directvskip\s_tabl_tabulate_separator
    \egroup}
 
-\let\m_tabl_tabulate_hrule_color\empty
+\lettonothing\m_tabl_tabulate_hrule_color
 
 \def\tabl_tabulate_hrule_preset_step#1%
   {\doifelsenumber{#1}%
@@ -1756,10 +1756,10 @@
 %      \registerparoptions
 %      \ifinsidefloat
 %        % that is, an unbreakable one
-%        \glet\tabl_tabulate_register_par_options\empty
+%        \glettonothing\tabl_tabulate_register_par_options
 %      \else
 %        % unsafe in crossing pages, at each b...
-%        % \glet\tabl_tabulate_register_par_options\empty
+%        % \glettonothing\tabl_tabulate_register_par_options
 %      \fi
 %    \fi}
 %
@@ -1774,10 +1774,10 @@
   {\registerparoptions
    \ifinsidefloat
      % that is, an unbreakable one
-     \glet\tabl_tabulate_register_par_options\empty
+     \glettonothing\tabl_tabulate_register_par_options
    \else
      % unsafe in crossing pages, at each b...
-     % \glet\tabl_tabulate_register_par_options\empty
+     % \glettonothing\tabl_tabulate_register_par_options
    \fi}
 
 \let\tabl_tabulate_register_par_options\relax
@@ -1806,7 +1806,7 @@
       \hss}}
 
 \def\tabl_tabulate_flush_indent
-  {\ifnum\c_tabl_tabulate_column=\zerocount
+  {\ifzero\c_tabl_tabulate_column
      \tabl_tabulate_flush_indent_indeed
    \fi}
 
@@ -2037,7 +2037,7 @@
      \expandafter\ignorepars % \ignorespaces
    \else
      % successive lines
-     \let\tabl_tabulate_eskip\empty
+     \lettonothing\tabl_tabulate_eskip
      \dontcomplain
      \glet\tabl_tabulate_hook\tabl_tabulate_hook_yes
      \expandafter\tabl_tabulate_splitoff_box
@@ -2047,7 +2047,7 @@
 \protected\def\tabl_tabulate_xeskip_second{\tabl_tabulate_eskip}
 
 \protected\def\tabl_tabulate_flush_second_indeed
-  {\glet\tabl_tabulate_flush_collected_indeed\empty
+  {\glettonothing\tabl_tabulate_flush_collected_indeed
    \global\c_tabl_tabulate_column\zerocount
    \tabl_tabulate_pbreak_check
    \dofastloopcs\c_tabl_tabulate_columns\tabl_tabulate_flush_second_step
@@ -2156,6 +2156,7 @@
 \permanent\def\tabl_tabulate_HL_second
   {\csname
      \ifnum\c_tabl_tabulate_noflines=\zerocount                     F\orelse
+   % \ifzeroc_tabl_tabulate_noflines                                F\orelse
      \ifnum\c_tabl_tabulate_noflines=\c_tabl_tabulate_totalnoflines L\else
                                                                     M\fi
    L\endcsname}
@@ -2213,8 +2214,8 @@
 %D places where we can use \LUA\ code (for instance in alignment of numbers. The
 %D repeat parser is replace at the \LUA\ end as well.
 
-\let\tabl_tabulate_flush_collected       \empty
-\let\tabl_tabulate_flush_collected_indeed\empty
+\lettonothing\tabl_tabulate_flush_collected
+\lettonothing\tabl_tabulate_flush_collected_indeed
 
 \let\v_tabl_tabulate_align\!!zerocount
 
@@ -2266,8 +2267,8 @@
    \ifx\p_synchronize\v!background
      \edef\currentframedcontent{\tabulationparameter\c!frame}%
      \ifx\currentframedcontent\v!off
-       \lettabulationparameter\c!frame\empty
-       \let\currentframedcontent\empty
+       \resettabulationparameter\c!frame
+       \lettonothing\currentframedcontent
        \letframedcontentparameter\c!frame\v!off
      \fi
      \letframedcontentparameter\c!synchronize\p_synchronize
@@ -2318,7 +2319,7 @@
    %
    \the\t_tabl_tabulate_initializers_first % collect more here
    %
-   \glet\tabl_tabulate_flush_collected\empty
+   \glettonothing\tabl_tabulate_flush_collected
    \ifdim\d_tabl_tabulate_margin>\zeropoint
      \t_tabl_tabulate_preamble
        {\aligntab
@@ -2398,7 +2399,7 @@
    \setbox\scratchbox\emptybox % free memory
    \ifconditional\c_tabl_tabulate_split
      \splittopskip\strutht
-     \glet\tabl_tabulate_flush_collected_indeed\empty
+     \glettonothing\tabl_tabulate_flush_collected_indeed
      \glet\tabl_tabulate_flush_collected\tabl_tabulate_flush_second
    \fi
    \c_tabl_tabulate_totalnoflines\c_tabl_tabulate_noflines
@@ -2714,7 +2715,7 @@
 \permanent\protected\defcsname starttabulate\endcsname
   {\bgroup % whole thing
    \settrue\c_tabl_generic
-   \let\currenttabulationparent\empty
+   \lettonothing\currenttabulationparent
    \tabl_start_regular}
 
 \permanent\letcsname stoptabulate\endcsname\relax % testcase cvs-002.tex
@@ -2829,11 +2830,11 @@
 %    \c!foregroundcolor=,
 %    \c!foregroundstyle=]
 
-\let\m_table_current_row_background              \empty
-\let\m_table_current_row_background_default      \empty
-\let\m_table_current_row_background_filler       \empty
-\let\m_table_current_row_background_defaultfiller\empty
-\let\m_table_current_row_background_auto         \empty
+\lettonothing\m_table_current_row_background
+\lettonothing\m_table_current_row_background_default
+\lettonothing\m_table_current_row_background_filler
+\lettonothing\m_table_current_row_background_defaultfiller
+\lettonothing\m_table_current_row_background_auto
 
 \protected\def\tabl_register_row_background#1%
   {\xdef\m_table_current_row_background{#1}}
@@ -2886,16 +2887,16 @@
    \fi}
 
 \appendtoks
-    \glet\m_table_current_row_background\empty
-    \glet\m_table_current_row_background_filler\empty
+    \glettonothing\m_table_current_row_background
+    \glettonothing\m_table_current_row_background_filler
     \global\c_tabl_tabulate_nofrealrows\zerocount
     \global\c_tabl_tabulate_autocolor\zerocount
     \clf_resetbackgroundrowdata
 \to \t_tabl_tabulate_initializers_first
 
 \appendtoks
-    \glet\m_table_current_row_background\empty
-    \glet\m_table_current_row_background_filler\empty
+    \glettonothing\m_table_current_row_background
+    \glettonothing\m_table_current_row_background_filler
     \global\c_tabl_tabulate_nofrealrows\zerocount
     \global\c_tabl_tabulate_autocolor\zerocount
     \clf_resetbackgroundrowdata
@@ -2906,8 +2907,8 @@
 \to \t_tabl_tabulate_every_real_row
 
 \appendtoks
-    \glet\m_table_current_row_background\empty
-    \glet\m_table_current_row_background_filler\empty
+    \glettonothing\m_table_current_row_background
+    \glettonothing\m_table_current_row_background_filler
 \to \t_tabl_tabulate_every_after_row
 
 \permanent\protected\def\tabl_tabulate_NL_first[#1]%
@@ -3003,7 +3004,7 @@
      \edef\m_table_current_row_background_auto{\tabulateparameter{\c!backgroundcolor:\number\c_tabl_tabulate_autocolor}}%
    \fi
    \ifempty\m_table_current_row_background_auto
-     \let\m_table_current_row_background_auto\empty % \m_table_current_row_background_default
+     \lettonothing\m_table_current_row_background_auto % \m_table_current_row_background_default
    \fi
    \tabl_register_row_background{\m_table_current_row_background_auto}}
 
@@ -3036,9 +3037,9 @@
 \to \t_tabl_tabulate_initializers_first
 
 \appendtoks
-   \edef\m_table_current_row_background_default       {\tabulateparameter\c!backgroundcolor}%
+   \edef\m_table_current_row_background_default{\tabulateparameter\c!backgroundcolor}%
    \edef\m_table_current_row_background_default_filler{\tabulateparameter\c!background}%
-   \let \m_table_current_row_background_auto           \empty
+   \lettonothing\m_table_current_row_background_auto
 \to \everytabulate
 
 \setuptabulate

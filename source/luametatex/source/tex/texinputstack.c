@@ -62,9 +62,15 @@ input_file_state_info input_file_state = {
     .line        = 0,
 };
 
-#define reserved_input_stack_slots  2
-#define reserved_in_stack_slots     2
-#define reserved_param_stack_slots 10 /*tex We play safe and always keep 10 in reserve (we have 9 max anyway). */
+/*tex 
+    We play safe and always keep a few batches of parameter slots in reserve so that we 
+    are unlikely to overrun.
+*/
+
+# define reserved_input_stack_slots  2
+# define reserved_in_stack_slots     2
+//define reserved_param_stack_slots 32                    
+# define reserved_param_stack_slots (2 * max_match_count) 
 
 void tex_initialize_input_state(void)
 {
@@ -793,7 +799,7 @@ void tex_end_token_list(void)
         case macro_text:
             {
                 tex_delete_token_reference(lmt_input_state.cur_input.start);
-                if (get_token_parameters(lmt_input_state.cur_input.start)) {
+                if (get_token_preamble(lmt_input_state.cur_input.start)) {
                     /*tex Parameters must be flushed: */
                     int ptr = lmt_input_state.parameter_stack_data.ptr;
                     int start = lmt_input_state.cur_input.parameter_start;
@@ -850,10 +856,17 @@ void tex_cleanup_input_state(void)
                     ptr = lmt_input_state.parameter_stack_data.ptr;
                     start = lmt_input_state.cur_input.parameter_start;
                     while (ptr > start) {
-                        --ptr;
-                        if (lmt_input_state.parameter_stack[ptr]) {
+                        if (lmt_input_state.parameter_stack[--ptr]) {
                             tex_flush_token_list(lmt_input_state.parameter_stack[ptr]);
                         }
+                     // halfword p = lmt_input_state.parameter_stack[--ptr];
+                     // if (p) {
+                     //     if (! token_link(p)) {
+                     //         tex_put_available_token(p); /* very little gain on average */
+                     //     } else { 
+                     //         tex_flush_token_list(p);
+                     //     }
+                     // }
                     }
                     lmt_input_state.parameter_stack_data.ptr = start;
                     break;

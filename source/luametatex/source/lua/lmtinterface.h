@@ -562,6 +562,7 @@ make_lua_key(L, condition);\
 make_lua_key(L, conditional);\
 make_lua_key(L, conditionalmathskip);\
 make_lua_key(L, connectoroverlapmin);\
+make_lua_key(L, constant);\
 make_lua_key(L, container);\
 make_lua_key(L, contributehead);\
 make_lua_key(L, convert);\
@@ -1127,6 +1128,7 @@ make_lua_key(L, properties);\
 make_lua_key(L, proportional);\
 make_lua_key(L, protected);\
 make_lua_key(L, protected_call);\
+make_lua_key(L, semi_protected_call);\
 make_lua_key(L, protrudechars);\
 make_lua_key(L, protrusion);\
 make_lua_key(L, ptr);\
@@ -1387,6 +1389,7 @@ make_lua_key(L, tolerance);\
 make_lua_key(L, tolerant);\
 make_lua_key(L, tolerant_call);\
 make_lua_key(L, tolerant_protected_call);\
+make_lua_key(L, tolerant_semi_protected_call);\
 make_lua_key(L, top);\
 make_lua_key(L, topaccent);\
 make_lua_key(L, topaccentvariant);\

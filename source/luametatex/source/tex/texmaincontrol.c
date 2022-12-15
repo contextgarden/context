@@ -814,10 +814,10 @@ typedef enum saved_localbox_items {
 
 static void tex_aux_scan_local_box(int code) {
     quarterword options = 0;
-    halfword class = 0;
-    tex_scan_local_boxes_keys(&options, &class);
+    halfword index = 0;
+    tex_scan_local_boxes_keys(&options, &index);
     tex_set_saved_record(saved_localbox_item_location, local_box_location_save_type, 0, code);
-    tex_set_saved_record(saved_localbox_item_index, local_box_index_save_type, 0, class);
+    tex_set_saved_record(saved_localbox_item_index, local_box_index_save_type, 0, index);
     tex_set_saved_record(saved_localbox_item_options, local_box_options_save_type, 0, options);
     lmt_save_state.save_stack_data.ptr += saved_localbox_n_of_items;
     tex_new_save_level(local_box_group);
@@ -893,23 +893,6 @@ static void tex_aux_finish_local_box(void)
         tex_confusion("build local box");
     }
 }
-
-// static void tex_aux_run_leader(void) {
-//     switch (cur_chr) {
-//         case a_leaders_code:
-//             tex_aux_scan_box(a_leaders_flag, 0, 0);
-//             break;
-//         case c_leaders_code:
-//             tex_aux_scan_box(c_leaders_flag, 0, 0);
-//             break;
-//         case x_leaders_code:
-//             tex_aux_scan_box(x_leaders_flag, 0, 0);
-//             break;
-//         case g_leaders_code:
-//             tex_aux_scan_box(g_leaders_flag, 0, 0);
-//             break;
-//     }
-// }
 
 static int leader_flags[] = {
     a_leaders_flag,
@@ -1244,6 +1227,10 @@ static void tex_aux_run_text_boundary(void) {
         case protrusion_boundary:
             boundary_data(n) = tex_scan_int(0, NULL);
             break;
+        case page_boundary:
+            /* or maybe force vmode */
+            tex_scan_int(0, NULL);
+            break;
         default:
             break;
     }
@@ -1260,6 +1247,7 @@ static void tex_aux_run_math_boundary(void) {
                 break;
             }
         case protrusion_boundary:
+        case page_boundary:
             tex_scan_int(0, NULL);
             break;
     }
@@ -4479,7 +4467,7 @@ static void tex_aux_set_define_font(int a)
 
 static void tex_aux_set_def(int a, int force)
 {
-    halfword expand = 0;
+    int expand = 0;
     switch (cur_chr) {
         case expanded_def_code:
             expand = 1;
@@ -4505,6 +4493,15 @@ static void tex_aux_set_def(int a, int force)
             cur_cs = tex_create_csname();
             a = add_global_flag(a);
             goto DONE;
+        case constant_def_code:
+            expand = 2;
+            a = add_constant_flag(a);
+            break;
+        case constant_def_csname_code:
+            expand = 2;
+            cur_cs = tex_create_csname();
+            a = add_constant_flag(a);
+            goto DONE;
     }
     tex_get_r_token();
   DONE:
@@ -4513,7 +4510,13 @@ static void tex_aux_set_def(int a, int force)
     }
     if (force || tex_define_permitted(cur_cs, a)) {
         halfword p = cur_cs;
-        halfword t = expand ? tex_scan_macro_expand() : tex_scan_macro_normal();
+        halfword t = expand == 2 ? tex_scan_toks_expand(0, null, 1) : (expand ? tex_scan_macro_expand() : tex_scan_macro_normal());
+        if (is_constant(a)) {
+            /* todo: check if already defined or just accept a leak */
+            set_token_reference(t, max_token_reference);
+        } else if (! token_link(t)) { 
+            t = lmt_token_state.empty; /* maybe in tex_define */
+        }
         tex_define(a, p, tex_flags_to_cmd(a), t);
     }
 }
@@ -4674,7 +4677,14 @@ static void tex_aux_set_let(int a, int force)
                 a = add_global_flag(a);
             }
             if (force || tex_define_permitted(cur_cs, a)) {
-                tex_define(a, cur_cs, tex_flags_to_cmd(a), get_reference_token());
+                /*tex 
+                    The commented line permits plenty empty definitions, a |\let| can run out of 
+                    ref count so maybe some day \unknown 
+                */
+             // halfword empty = get_reference_token();
+                halfword empty = lmt_token_state.empty;
+             // tex_add_token_reference(empty);
+                tex_define(a, cur_cs, tex_flags_to_cmd(a), empty);
             }
             return;
         default:
@@ -4711,7 +4721,7 @@ static void tex_aux_set_let(int a, int force)
         }
         tex_define_inherit(a, p, (singleword) newf, (singleword) cmd, cur_chr);
     } else {
-        tex_define(a, p, (singleword) cur_cmd, cur_chr);
+        tex_define(a, p, (singleword) cur_cmd, cur_chr); 
     }
 }
 
@@ -4929,18 +4939,18 @@ static void tex_aux_set_math_parameter(int a)
         case math_parameter_let_spacing:
         case math_parameter_let_atom_rule:
             {
-                halfword class = tex_scan_math_class_number(0);
+                halfword mathclass = tex_scan_math_class_number(0);
                 halfword display = tex_scan_math_class_number(1);
                 halfword text = tex_scan_math_class_number(0);
                 halfword script = tex_scan_math_class_number(0);
                 halfword scriptscript = tex_scan_math_class_number(0);
-                if (valid_math_class_code(class)) {
+                if (valid_math_class_code(mathclass)) {
                     switch (code) {
                         case math_parameter_let_spacing:
-                            code = internal_int_location(first_math_class_code + class);
+                            code = internal_int_location(first_math_class_code + mathclass);
                             break;
                         case math_parameter_let_atom_rule:
-                            code = internal_int_location(first_math_atom_code + class);
+                            code = internal_int_location(first_math_atom_code + mathclass);
                             break;
                     }
                     value = (display << 24) + (text << 16) + (script << 8) + scriptscript;
@@ -4959,20 +4969,20 @@ static void tex_aux_set_math_parameter(int a)
         case math_parameter_copy_atom_rule:
         case math_parameter_copy_parent:
             {
-                halfword class = tex_scan_math_class_number(0);
+                halfword mathclass = tex_scan_math_class_number(0);
                 halfword parent = tex_scan_math_class_number(1);
-                if (valid_math_class_code(class) && valid_math_class_code(parent)) {
+                if (valid_math_class_code(mathclass) && valid_math_class_code(parent)) {
                     switch (code) {
                         case math_parameter_copy_spacing:
-                            code = internal_int_location(first_math_class_code + class);
+                            code = internal_int_location(first_math_class_code + mathclass);
                             value = count_parameter(first_math_class_code + parent);
                             break;
                         case math_parameter_copy_atom_rule:
-                            code = internal_int_location(first_math_atom_code + class);
+                            code = internal_int_location(first_math_atom_code + mathclass);
                             value = count_parameter(first_math_atom_code + parent);
                             break;
                         case math_parameter_copy_parent:
-                            code = internal_int_location(first_math_parent_code + class);
+                            code = internal_int_location(first_math_parent_code + mathclass);
                             value = count_parameter(first_math_parent_code + parent);
                             break;
                     }
@@ -4991,21 +5001,21 @@ static void tex_aux_set_math_parameter(int a)
         case math_parameter_set_display_pre_penalty:
         case math_parameter_set_display_post_penalty:
             {
-                halfword class = tex_scan_math_class_number(0);
+                halfword mathclass = tex_scan_math_class_number(0);
                 halfword penalty = tex_scan_int(1, NULL);
-                if (valid_math_class_code(class)) {
+                if (valid_math_class_code(mathclass)) {
                     switch (code) {
                         case math_parameter_set_pre_penalty:
-                            code = internal_int_location(first_math_pre_penalty_code + class);
+                            code = internal_int_location(first_math_pre_penalty_code + mathclass);
                             break;
                         case math_parameter_set_post_penalty:
-                            code = internal_int_location(first_math_post_penalty_code + class);
+                            code = internal_int_location(first_math_post_penalty_code + mathclass);
                             break;
                         case math_parameter_set_display_pre_penalty:
-                            code = internal_int_location(first_math_display_pre_penalty_code + class);
+                            code = internal_int_location(first_math_display_pre_penalty_code + mathclass);
                             break;
                         case math_parameter_set_display_post_penalty:
-                            code = internal_int_location(first_math_display_post_penalty_code + class);
+                            code = internal_int_location(first_math_display_post_penalty_code + mathclass);
                             break;
                     }
                     tex_word_define(a, code, penalty);
@@ -5021,13 +5031,13 @@ static void tex_aux_set_math_parameter(int a)
             }
         case math_parameter_let_parent:
             {
-                halfword class = tex_scan_math_class_number(0);
+                halfword mathclass = tex_scan_math_class_number(0);
                 halfword pre = tex_scan_math_class_number(1);
                 halfword post = tex_scan_math_class_number(0);
                 halfword options = tex_scan_math_class_number(0);
                 halfword reserved = tex_scan_math_class_number(0);
-                if (valid_math_class_code(class)) {
-                    code = internal_int_location(first_math_parent_code + class);
+                if (valid_math_class_code(mathclass)) {
+                    code = internal_int_location(first_math_parent_code + mathclass);
                     value = (reserved << 24) + (options << 16) + (pre << 8) + post;
                     tex_word_define(a, code, value);
                  // tex_assign_internal_int_value(a, code, value);
@@ -5052,9 +5062,9 @@ static void tex_aux_set_math_parameter(int a)
             }
         case math_parameter_options:
             {
-                halfword class = tex_scan_math_class_number(0);
-                if (valid_math_class_code(class)) {
-                    code = internal_int_location(first_math_options_code + class);
+                halfword mathclass = tex_scan_math_class_number(0);
+                if (valid_math_class_code(mathclass)) {
+                    code = internal_int_location(first_math_options_code + mathclass);
                     value = tex_scan_int(1, NULL);
                     tex_word_define(a, code, value);
                  // tex_assign_internal_int_value(a, code, value);
@@ -5409,6 +5419,7 @@ void tex_run_prefixed_command(void)
             case always_code:        flags = add_aliased_flag      (flags); force = 1; break;
             /*tex This one is special */
             case inherited_code:     flags = add_inherited_flag    (flags); break;
+            case constant_code:      flags = add_constant_flag     (flags); break;
             default:
                 goto PICKUP;
         }
@@ -5956,7 +5967,7 @@ static void tex_aux_run_message(void)
                 strnumber s = tex_aux_scan_string();
                 if (error_help_par) {
                     strnumber helpinfo = tex_tokens_to_string(error_help_par);
-                    char *h = tex_to_cstring(helpinfo);
+                    const char *h = tex_to_cstring(helpinfo);
                     tex_handle_error(
                         normal_error_type,
                         "%T",

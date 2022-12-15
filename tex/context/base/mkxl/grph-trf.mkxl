@@ -61,9 +61,9 @@
 
 % scratch:
 
-\let\m_grph_scale_temp  \empty
-\let\m_grph_scale_temp_x\empty
-\let\m_grph_scale_temp_y\empty
+\lettonothing\m_grph_scale_temp
+\lettonothing\m_grph_scale_temp_x
+\lettonothing\m_grph_scale_temp_y
 
 % public:
 
@@ -104,10 +104,10 @@
   {\bgroup
    % this is quite common so we might make this a helper
    \ifarguments
-     \let\currentscale\empty
+     \lettonothing\currentscale
    \or
      \ifhastok={#1}%
-       \let\currentscale\empty
+       \lettonothing\currentscale
        \setupcurrentscale[#1]%
      \else
        \edef\currentscale{#1}%
@@ -795,8 +795,8 @@
    \c!offset=\v!overlay,
    \c!frame=\v!off]
 
-\let\p_rotation_location\empty
-\let\p_rotation_rotation\empty
+\lettonothing\p_rotation_location
+\lettonothing\p_rotation_rotation
 
 \permanent\tolerant\protected\def\rotate[#1]% \bgroup: \rotate kan argument zijn
   {\bgroup

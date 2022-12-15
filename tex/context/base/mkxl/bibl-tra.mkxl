@@ -258,7 +258,7 @@
   {\dosingleempty\dosetupbibtex}
 
 \protected\def\dosetupbibtex[#1]%
-  {\let\@@pbdatabase\empty
+  {\lettonothing\@@pbdatabase
    \getparameters[\??pb][#1]%
    \the\everysetupbibtex}
 
@@ -299,7 +299,7 @@
      {\readsysfile{bibl-\@@pbalternative.tex}
         {\showmessage\m!publications{6}{bibl-\@@pbalternative}}
         {\showmessage\m!publications{1}{bibl-\@@pbalternative}}%
-      \let\@@pbalternative\empty}%
+      \lettonothing\@@pbalternative}%
    \let\setuppublicationlayout\normalsetuppublicationlayout % overloaded in bibl-num ... vadjust needs to be done with option
    \getparameters[\??pb][#1]% as bibl-* can have set things back
    \the\everysetuppublications
@@ -537,7 +537,7 @@
      \fi
      \ifnum\todocounter>\zerocount
        % find the current author list
-       \let\templist\empty
+       \lettonothing\templist
        \dorecurse{#2}
          {\scratchtoks\doubleexpandafter{\csname\??pb @#1\recurselevel\endcsname}%
           \edef\templist{\ifempty\templist\else\templist,\fi\the\scratchtoks}}%
@@ -881,10 +881,10 @@
      {\global\advance\bibtexcounter\plusone
       \def\currentpublicationkey{#1}%
       \ctxlua{bibtex.hacks.registerplaced("#1")}%
-      \def \currentlist               {pubs}%
-      \edef\currentlistentrynumber    {\number\bibtexcounter}%
-      \let \currentlistentrytitle     \bibtexpubtext
-      \let \currentlistentrypagenumber\empty
+      \def\currentlist{pubs}%
+      \edef\currentlistentrynumber{\number\bibtexcounter}%
+      \let\currentlistentrytitle\bibtexpubtext
+      \lettonothing\currentlistentrypagenumber
       \strc_lists_apply_renderingsetup}
      {}} % invalid
 
@@ -897,7 +897,7 @@
    \the\initializebibdefinitions % NEW
    \def\@@currentalternative{:l:}%
    \presetbibvariables
-   \let\biblanguage\empty
+   \lettonothing\biblanguage
    \ignorespaces
    \bibgetvard{#1}%
    \removeunwantedspaces
@@ -963,9 +963,9 @@
       \ifempty\LOextras
         \setupcite[\@@currentalternative][#1]%
       \else
-        \expandafter\ifrelax\csname \??pv \@@currentalternative\c!right\endcsname
+        \expandafter\ifrelax\csname\??pv\@@currentalternative\c!right\endcsname
           % avoids tail recursion
-          \expandafter\let\csname \??pv \@@currentalternative\c!right\endcsname\empty
+          \expandafter\lettonothing\csname\??pv\@@currentalternative\c!right\endcsname
         \fi
         \expandafter\ifrelax\csname LOright\endcsname
           \edef\LOextras{{\LOextras\bibalternative\c!right}}%
@@ -1050,22 +1050,22 @@
 
 %D Delegate this to \LUA.
 
-% \let\ixlastcommand   \relax
-% \let\ixsecondcomman  \relax
-% \let\ixfirstcommand  \relax
-% \let\thebibauthors   \empty
-% \let\thebibyears     \empty
-% \let\authorcount     \!!zerocount
+% \let         \ixlastcommand \relax
+% \let         \ixsecondcomman\relax
+% \let         \ixfirstcommand\relax
+% \lettonothing\thebibauthors
+% \lettonothing\thebibyears
+% \let         \authorcount   \!!zerocount
 
-\let\currentbibauthor\empty
+\lettonothing\currentbibauthor
 
 \protected\def\ixbibauthoryear#1#2#3#4%
   {\bgroup
-   \gdef\ixlastcommand  {#4}%
+   \gdef\ixlastcommand{#4}%
    \gdef\ixsecondcommand{#3}%
-   \gdef\ixfirstcommand {#2}%
-   \glet\thebibauthors  \empty
-   \glet\thebibyears    \empty
+   \gdef\ixfirstcommand{#2}%
+   \glettonothing\thebibauthors
+   \glettonothing\thebibyears
    \getcommalistsize[#1]%
    \ifbibcitecompress
      \dorecurse\commalistsize{\xdef\thebibyears{\thebibyears,}}%
@@ -1105,7 +1105,7 @@
   {\getcommacommandsize[#1]%
    \ifcase\commalistsize
     % anonymous?
-     \let\currentbibauthor\empty
+     \lettonothing\currentbibauthor
    \or
      \def\currentbibauthor{#1}%
    \or
@@ -1118,7 +1118,7 @@
 
 \protected\def\handlemultiplebibauthors#1#2%
   {\citescratchcounter\zerocount
-   \let\currentbibauthor\empty
+   \lettonothing\currentbibauthor
    \protected\def\bibprocessauthoritem##1%
      {\advance\citescratchcounter\plusone
       \ifnum \citescratchcounter=#1\relax

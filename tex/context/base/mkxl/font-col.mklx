@@ -34,7 +34,7 @@
 \permanent\tolerant\protected\def\definefontfallback[#name]#spacer[#font]#spacer[#ranges]#spacer[#settings]%
   {\let\mathsizesuffix\relax
    \clf_fontcollectiondefine{#name}{#font}{#ranges}{#settings}%
-   \let\mathsizesuffix\empty}
+   \lettonothing\mathsizesuffix}
 
 \permanent\tolerant\protected\def\resetfontfallback[#name]#spacer[#font]%
   {\clf_fontcollectionreset{#name}{#font}}
@@ -54,7 +54,7 @@
      \font_fallbacks_prepare#fallbacks%
    \endgroup}
 
-\let\m_font_fallbacks\empty % set in the font-ini
+\lettonothing\m_font_fallbacks % set in the font-ini
 
 \appendtoks
     \ifconditional\c_font_fallbacks_in_progress\else
@@ -68,7 +68,7 @@
    \fi
 \to\everydefinefont
 
-\let\m_font_fallbacks_spec\empty
+\lettonothing\m_font_fallbacks_spec
 
 \def\font_fallbacks_start_cloning
   {\begingroup

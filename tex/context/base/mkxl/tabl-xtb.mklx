@@ -98,7 +98,7 @@
 \newcount\c_tabl_x_swapped
 \newcount\c_tabl_x_swapped_max
 
-\let\m_tabl_x_swapped_settings\empty
+\lettonothing\m_tabl_x_swapped_settings
 
 \aliased\let\currentxtablerow   \clf_x_table_r
 \aliased\let\currentxtablecolumn\clf_x_table_c
@@ -156,8 +156,8 @@
     \c!rightmargindistance=\zeropoint,% whole table
 ]
 
-\def\tabl_x_default_buffer{x_table_\number\c_tabl_x_nesting}
-\let\tabl_x_current_buffer\empty
+\def         \tabl_x_default_buffer{x_table_\number\c_tabl_x_nesting}
+\lettonothing\tabl_x_current_buffer
 
 \permanent\protected\def\startxtable{\tabl_x_start_table}
 
@@ -280,7 +280,7 @@
         footer              {\xtableparameter\c!footer}%
    \relax
    %
-   \letxtableparameter\c!option\empty
+   \resetxtableparameter\c!option
    % not so nice but needed as we use this in the setup
    \linewidth\xtableparameter\c!rulethickness\relax
    % so we freeze it

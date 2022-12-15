@@ -51,8 +51,8 @@
 
 % maybe use chardefs
 
-\mutable\let\currentbidimode\empty
-\mutable\let\currentbidistamp\empty
+\mutable\lettonothing\currentbidimode
+\mutable\lettonothing\currentbidistamp
 
 \def\typo_dir_get_mode
   {\def\currentbidimode{\clf_getbidimode % test edef

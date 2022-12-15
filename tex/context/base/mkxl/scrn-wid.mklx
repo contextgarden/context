@@ -94,11 +94,11 @@
    \c!depth=\v!fit,
    \c!location=\v!high]
 
-\mutable\let\currentattachmentdepth     \empty
-\mutable\let\currentattachmentheight    \empty
-\mutable\let\currentattachmentregistered\empty
-\mutable\let\currentattachmentsymbol    \empty
-\mutable\let\currentattachmentwidth     \empty
+\mutable\lettonothing\currentattachmentdepth
+\mutable\lettonothing\currentattachmentheight
+\mutable\lettonothing\currentattachmentregistered
+\mutable\lettonothing\currentattachmentsymbol
+\mutable\lettonothing\currentattachmentwidth
 
 \permanent\tolerant\protected\def\registerattachment[#tag]#spacer[#settings]% we save (globally) at the lua end
   {\ifarguments\else
@@ -403,10 +403,10 @@
    \c!buffer=\v!comment,
    \c!location=\v!high]
 
-\mutable\let\currentcommentdepth \empty
-\mutable\let\currentcommentheight\empty
-\mutable\let\currentcommentsymbol\empty
-\mutable\let\currentcommentwidth \empty
+\mutable\lettonothing\currentcommentdepth
+\mutable\lettonothing\currentcommentheight
+\mutable\lettonothing\currentcommentsymbol
+\mutable\lettonothing\currentcommentwidth
 
 \appendtoks
     \frozen\protected\instance\edefcsname        \currentcomment\endcsname{\scrn_comment_argument[\currentcomment]}%
@@ -586,8 +586,8 @@
 %D \stoptext
 %D \stoptyping
 
-\mutable\let\currentrendering      \empty
-\mutable\let\currentrenderingwindow\empty
+\mutable\lettonothing\currentrendering
+\mutable\lettonothing\currentrenderingwindow
 
 \permanent\tolerant\protected\def\userendering[#tag]#spacer[#mime]#spacer[#file]#spacer[#option]%
   {\clf_registerrendering
@@ -617,11 +617,11 @@
 \installframedcommandhandler \??renderingwindow {renderingwindow} \??renderingwindow
 
 \appendtoks
-    \letrenderingwindowparameter\c!openpageaction \empty
-    \letrenderingwindowparameter\c!closepageaction\empty
-    \setrenderingwindowparameter\c!width          {\d_scrn_rendering_width }%
-    \setrenderingwindowparameter\c!height         {\d_scrn_rendering_height}%
-    \letrenderingwindowparameter\c!align          \v!flushleft
+    \resetrenderingwindowparameter\c!openpageaction
+    \resetrenderingwindowparameter\c!closepageaction
+    \setrenderingwindowparameter  \c!width          {\d_scrn_rendering_width }%
+    \setrenderingwindowparameter  \c!height         {\d_scrn_rendering_height}%
+    \letrenderingwindowparameter  \c!align          \v!flushleft
 \to \everypresetrenderingwindow
 
 \permanent\tolerant\protected\def\placerenderingwindow[#window]#spacer[#rendering]% do all in lua

@@ -78,9 +78,9 @@
 
 \installcommandhandler \??bar {bar} \??bar
 
-\mutable\let\p_node_color \empty % of just \p_*
-\mutable\let\p_node_text  \empty
-\mutable\let\p_node_offset\empty
+\mutable\lettonothing\p_node_color  % of just \p_*
+\mutable\lettonothing\p_node_text
+\mutable\lettonothing\p_node_offset
 
 \aliased\let\setupbars\setupbar
 
@@ -298,10 +298,10 @@
 \newdimen\d_rule_offset
 \newdimen\d_rule_factor
 
-\mutable\let\m_rule_direction\empty
-% \mutable\let\m_rule_factor   \empty
-\mutable\let\m_rule_option   \empty
-\mutable\let\m_rule_color    \empty
+\mutable\lettonothing\m_rule_direction
+%mutable\lettonothing\m_rule_factor
+\mutable\lettonothing\m_rule_option
+\mutable\lettonothing\m_rule_color
 
 \startuseMPgraphic{rules:under:random}
     draw

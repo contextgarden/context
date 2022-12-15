@@ -213,7 +213,7 @@
 \let\tabl_ntb_anchor_stop   \relax
 \let\tabl_ntb_anchor_process\gobbleoneargument
 
-\let\m_tabl_ntb_anchor_background\empty
+\lettonothing\m_tabl_ntb_anchor_background
 
 \let\xanchor\!!zerocount
 \let\yanchor\!!zerocount
@@ -239,17 +239,17 @@
 
 \def\tabl_ntb_anchor_setup
   {\ifcstok{\naturaltablelocalparameter\c!synchronize}\v!background
-     \let\tabl_ntb_anchor_start   \tabl_ntb_anchor_start_indeed
-     \let\tabl_ntb_anchor_stop    \tabl_ntb_anchor_stop_indeed
-     \let\tabl_ntb_anchor_process \tabl_ntb_anchor_process_indeed
+     \let\tabl_ntb_anchor_start\tabl_ntb_anchor_start_indeed
+     \let\tabl_ntb_anchor_stop\tabl_ntb_anchor_stop_indeed
+     \let\tabl_ntb_anchor_process\tabl_ntb_anchor_process_indeed
      \edef\m_tabl_ntb_anchor_background{\naturaltablelocalparameter\c!background}%
      \resetnaturaltablelocalparameter\c!background
      \setlocalanchoring
    \else
-     \let\m_tabl_ntb_anchor_background\empty
-     \let\tabl_ntb_anchor_start       \gobbletwoarguments
-     \let\tabl_ntb_anchor_stop        \relax
-     \let\tabl_ntb_anchor_process     \gobbleoneargument
+     \lettonothing\m_tabl_ntb_anchor_background
+     \let\tabl_ntb_anchor_start\gobbletwoarguments
+     \let\tabl_ntb_anchor_stop\relax
+     \let\tabl_ntb_anchor_process\gobbleoneargument
    \fi
    \resetnaturaltablelocalparameter\c!synchronize}
 
@@ -721,9 +721,9 @@
 % \dorecurse{10}{\bTR \dorecurse{6}{\bTD xxx \eTD} \eTR}
 % \eTABLE
 
-\let\m_tabl_ntb_before_split\empty
-\let\m_tabl_ntb_after_split \empty
-\let\m_tabl_ntb_same_page   \empty
+\lettonothing\m_tabl_ntb_before_split
+\lettonothing\m_tabl_ntb_after_split
+\lettonothing\m_tabl_ntb_same_page
 
 % split + page:
 %
@@ -758,13 +758,13 @@
    \fi[#1]}
 
 \def\tabl_ntb_td_yes[#1]#2\eTD
-  {\letnaturaltableparameter\c!ny    \m_tabl_ntb_default_nr
-   \letnaturaltableparameter\c!nx    \m_tabl_ntb_default_nc
-   \letnaturaltableparameter\c!nc    \plusone
-   \letnaturaltableparameter\c!nr    \plusone
-   \letnaturaltableparameter\c!n     \c_tabl_ntb_running_col
-   \letnaturaltableparameter\c!m     \empty
-   \letnaturaltableparameter\c!action\empty % not that important
+  {\letnaturaltableparameter  \c!ny    \m_tabl_ntb_default_nr
+   \letnaturaltableparameter  \c!nx    \m_tabl_ntb_default_nc
+   \letnaturaltableparameter  \c!nc    \plusone
+   \letnaturaltableparameter  \c!nr    \plusone
+   \letnaturaltableparameter  \c!n     \c_tabl_ntb_running_col
+   \resetnaturaltableparameter\c!m
+   \resetnaturaltableparameter\c!action% not that important
    \setupcurrentnaturaltable[#1]%
    %
    \c_tabl_ntb_nx\naturaltableparameter\c!nx\relax
@@ -850,8 +850,8 @@
    \letnaturaltableparameter\c!nc\plusone
    \letnaturaltableparameter\c!nr\plusone
    \setupcurrentnaturaltable[#1]%
-   \letnaturaltableparameter\c!n \empty
-   \letnaturaltableparameter\c!m \empty}
+   \resetnaturaltableparameter\c!n
+   \resetnaturaltableparameter\c!m}
 
 \def\tabl_ntb_td_pass_m#1%
   {\scratchcounter\numexpr\m_tabl_ntb_m-\c_tabl_ntb_running_col+\minusone-\c_tabl_ntb_spn\relax
@@ -862,8 +862,8 @@
    \letnaturaltableparameter\c!nc\plusone
    \letnaturaltableparameter\c!nr\plusone
    \setupcurrentnaturaltable[#1]%
-   \letnaturaltableparameter\c!n \empty
-   \letnaturaltableparameter\c!m \empty}
+   \resetnaturaltableparameter\c!n
+   \resetnaturaltableparameter\c!m}
 
 \def\tabl_ntb_cell_preset
   {\c_tabl_ntb_current_row\c_tabl_ntb_maximum_row
@@ -1291,9 +1291,9 @@
    \xdef\m_tabl_ntb_same_page   {#3}}
 
 \protected\def\tabl_ntb_row_align_reset
-  {\glet\m_tabl_ntb_before_split\empty
-   \glet\m_tabl_ntb_after_split \empty
-   \glet\m_tabl_ntb_same_page   \empty}
+  {\glettonothing\m_tabl_ntb_before_split
+   \glettonothing\m_tabl_ntb_after_split
+   \glettonothing\m_tabl_ntb_same_page   }
 
 \def\tabl_ntb_prelocate_error
   {\writestatus\m!TABLE{fatal error: use \string\prelocateTBLrows\space to increase table memory (now: \the\c_tabl_prelocated_rows)}}
@@ -1397,7 +1397,7 @@
 
 \protected\def\tabl_ntb_after_page
   {\ifnum\c_tabl_ntb_row>\c_tabl_ntb_n_of_head_lines
-     \ifnum\tabl_ntb_get_nob\c_tabl_ntb_row=\zerocount
+     \ifnum\tabl_ntb_get_nob\c_tabl_ntb_row=\zerocount % no \ifzero
        \ifx\m_tabl_ntb_same_page\v!after
        % \blank[\v!samepage,\v!strong]%
          \nobreak
@@ -1632,9 +1632,9 @@
 \def\tabl_ntb_table_stop
   {\forgetall % new, here see narrower-004.tex
   %\setbox\scratchbox\hbox
-  %  {\letnaturaltablelocalparameter\c!frame\v!off
-  %   \letnaturaltablelocalparameter\c!background\empty
-  %   \letnaturaltablelocalparameter\c!align\v!no
+  %  {\letnaturaltablelocalparameter  \c!frame     \v!off
+  %   \resetnaturaltablelocalparameter\c!background
+  %   \letnaturaltablelocalparameter  \c!align     \v!no
   %   \inheritednaturaltablelocalframed{\strut}}%
   %\edef\minimalcellheight{\the\ht\scratchbox}% not used
    \localcontrolledloop\plusone\c_tabl_ntb_maximum_col\plusone
@@ -2010,10 +2010,10 @@
 
 \protected\def\tabl_ntb_cell_process_a#1#2[#3]#4% grouping added ! ! !
   {\begingroup
-   \letnaturaltablelocalparameter\c!option\empty
+   \resetnaturaltablelocalparameter\c!option\empty
    \tabl_ntb_setup_cell{#1}{#2}%
    \setupcurrentnaturaltablelocal[#3]%
-   \letnaturaltablelocalparameter\c!background\empty
+   \resetnaturaltablelocalparameter\c!background
    \letnaturaltablelocalparameter\c!frame\v!off
    \scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
    \setbox\scratchbox\hbox
@@ -2073,7 +2073,7 @@
    \setbox\scratchbox\hbox
      {\tabl_ntb_setup_cell{#2}{#3}%
       \setupcurrentnaturaltablelocal[#4,#1]%
-      \letnaturaltablelocalparameter\c!background\empty
+      \resetnaturaltablelocalparameter\c!background
       \letnaturaltablelocalparameter\c!frame\v!off
       \inheritednaturaltablelocalframed{\tabl_ntb_cell_start#5\tabl_ntb_cell_stop}}%
    \setbox\scratchboxone\emptyhbox
@@ -2115,9 +2115,9 @@
   {\tabl_ntb_setup_cell{#1}{#2}%
    \bgroup
    \setupcurrentnaturaltablelocal[#3]%
-   \letnaturaltablelocalparameter\c!background\empty
-   \letnaturaltablelocalparameter\c!frame\v!off
-   \setnaturaltablelocalparameter\c!width{\d_tabl_ntb_width}%
+   \resetnaturaltablelocalparameter\c!background
+   \letnaturaltablelocalparameter  \c!frame     \v!off
+   \setnaturaltablelocalparameter  \c!width     {\d_tabl_ntb_width}%
    \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop}%
    \egroup}
 
@@ -2126,8 +2126,8 @@
    \tabl_ntb_setup_cell{#1}{#2}%
    \setupcurrentnaturaltablelocal[#3]% to get the color right, the way we
    \directcolor[\naturaltablelocalparameter\c!color]%
-   \letnaturaltablelocalparameter\c!color\empty
-   \setnaturaltablelocalparameter\c!width{\d_tabl_ntb_width}%
+   \resetnaturaltablelocalparameter\c!color
+   \setnaturaltablelocalparameter  \c!width{\d_tabl_ntb_width}%
    \ifzeropt\d_tabl_ntb_height % case: nc=maxcolumns
    \else
      \setnaturaltablelocalparameter\c!height{\d_tabl_ntb_height}%

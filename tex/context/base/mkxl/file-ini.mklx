@@ -182,11 +182,12 @@
 \newconstant\splitoffkind
 
 \mutable\def\splitoffroot{.}
-\mutable\let\splitofffull\empty
-\mutable\let\splitoffpath\empty
-\mutable\let\splitoffbase\empty
-\mutable\let\splitoffname\empty
-\mutable\let\splitofftype\empty
+
+\mutable\lettonothing\splitofffull
+\mutable\lettonothing\splitoffpath
+\mutable\lettonothing\splitoffbase
+\mutable\lettonothing\splitoffname
+\mutable\lettonothing\splitofftype
 
 \permanent\protected\def\splitfilename{\clf_splitfilename}
 

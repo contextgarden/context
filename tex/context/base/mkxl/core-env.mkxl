@@ -383,7 +383,7 @@
 %D The next one is meant for \c!setups situations, hence the check for a
 %D shortcut.
 
-\let\m_syst_setups_asked\empty
+\lettonothing\m_syst_setups_asked
 
 \permanent\protected\def\doprocesslocalsetups#1% sort of public, fast local variant
   {\edef\m_syst_setups_asked{#1}%
@@ -623,7 +623,7 @@
 \permanent\protected\def\setgvariables{\syst_variables_set[\getrawgparameters]}
 \permanent\protected\def\setxvariables{\syst_variables_set[\getrawxparameters]}
 
-\mutable\let\currentvariableclass\empty
+\mutable\lettonothing\currentvariableclass
 
 \tolerant\def\syst_variables_set[#1]#*[#2]#*[#3]% tricky, test on s-pre-60
   {\doifelse{#2}\currentvariableclass
@@ -643,14 +643,12 @@
 \permanent          \def\getvariable #1#2{\begincsname\??variables#1:#2\endcsname}
 \permanent\protected\def\showvariable#1#2{\showvalue{\begincsname\??variables#1:#2\endcsname}}
 
-\let\currentvariableclass\empty
-
 %D \macros
 %D   {checkvariables}
 %D
 %D I'll probably forget that this on exists.
 
-\let\m_syst_variables_temp\empty
+\lettonothing\m_syst_variables_temp
 
 \permanent\tolerant\def\checkvariables[#1]#*[#2]%
   {\dogetparameters\syst_variables_check_value[#1][#2]}

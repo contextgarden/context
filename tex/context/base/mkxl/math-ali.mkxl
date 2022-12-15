@@ -395,7 +395,7 @@
 
 \protected\def\math_alignment_lbox#1%
   {\begingroup
-   \setbox\scratchbox\hbox{\letformulaparameter\c!location\empty#1}%
+   \setbox\scratchbox\hbox{\resetformulaparameter\c!location#1}%
    \ifzeropt\wd\scratchbox\else
     %\enablematrixalign
      \hpack
@@ -409,7 +409,7 @@
 
 \protected\def\math_alignment_rbox#1%
   {\begingroup
-   \setbox\scratchbox\hbox{\letformulaparameter\c!location\empty#1}%
+   \setbox\scratchbox\hbox{\resetformulaparameter\c!location#1}%
    \ifzeropt\wd\scratchbox\else
     %\enablematrixalign
      \hpack
@@ -1499,11 +1499,12 @@
 
 \defcsname\??mathmatrixrulealternative\v!auto\endcsname#1#2%
   {\math_matrix_hrule_progress{#1}%
-   \ifnum\c_math_matrix_first=\zerocount
-     \kern-\dimexpr\linewidth\relax
-   \else
-     \kern-\dimexpr.5\d_math_eqalign_distance+\linewidth\relax
-   \fi
+ % \ifzero\c_math_matrix_first
+ %   \kern-\dimexpr\linewidth\relax
+ % \else
+ %   \kern-\dimexpr.5\d_math_eqalign_distance+\linewidth\relax
+ % \fi
+   \kern-\dimexpr\ifzero\c_math_matrix_first\else.5\d_math_eqalign_distance+\fi\linewidth\relax
    \math_matrix_horizontal_rule_yes{#2}%
    %boundary\c_math_matrix_sl_boundary
    \enforced\let\NR\math_matrix_NL_NR}
@@ -1720,8 +1721,8 @@
 
 \installcorenamespace{mathmatrixalignlocation}
 
-\mutable\let\mathmatrixleft \empty % experimental hook
-\mutable\let\mathmatrixright\empty % experimental hook
+\mutable\lettonothing\mathmatrixleft  % experimental hook
+\mutable\lettonothing\mathmatrixright % experimental hook
 
 \defcsname\??mathmatrixalignlocation\v!top   \endcsname{\raise\dimexpr(\nextboxdp-\nextboxht)/2 +\mathaxisheight\mathstyle\relax}
 \defcsname\??mathmatrixalignlocation\v!high  \endcsname{\raise\dimexpr(\nextboxdp-\nextboxht)/2\relax}
@@ -2307,7 +2308,7 @@
 
 \def\strc_math_flush_box_framed_fit_inline
   {\let\currentformulaframed\currentformula
-   \letformulaframedparameter\c!location\empty
+   \resetformulaframedparameter\c!location
    \letformulaframedparameter\c!width\v!fit
    \strc_math_flush_box_framed_common}
 

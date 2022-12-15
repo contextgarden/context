@@ -66,14 +66,14 @@
 \def\currentviewerlayer{\the\currentviewerlayertoks}
 
 \appendtoks
-    \let\currentviewerlayer\empty
+    \lettonothing\currentviewerlayer
 \to \everybeforepagebody
 
 % layout components are implemented rather directly (speed)
 
 \installcorenamespace{layoutcomponentattribute}
 
-\mutable\let\layoutcomponentboxattribute\empty
+\mutable\lettonothing\layoutcomponentboxattribute
 
 \permanent\def\attr_layoutcomponent_initialize#1%
   {\edef\layoutcomponentboxattribute{\clf_definedlayoutcomponent{#1}}%
@@ -87,11 +87,11 @@
    \fi}
 
 \permanent\def\attr_layoutcomponent_reset
-  {\let\layoutcomponentboxattribute\empty}
+  {\lettonothing\layoutcomponentboxattribute}
 
-\permanent\let\setlayoutcomponentattribute  \gobbleoneargument
-\permanent\let\resetlayoutcomponentattribute\relax
-          \let\layoutcomponentboxattribute  \empty
+\permanent\let         \setlayoutcomponentattribute  \gobbleoneargument
+\permanent\let         \resetlayoutcomponentattribute\relax
+          \lettonothing\layoutcomponentboxattribute
 
 \permanent\protected\def\showlayoutcomponents
   {\enforced\let\setlayoutcomponentattribute  \attr_layoutcomponent_set

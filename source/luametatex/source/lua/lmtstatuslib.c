@@ -254,8 +254,8 @@ static int statslib_getconstants(lua_State *L)
     lua_set_integer_by_key(L, "no_catcode_table",             no_catcode_table_preset);
     lua_set_integer_by_key(L, "default_catcode_table",        default_catcode_table_preset);
 
-    lua_set_cardinal_by_key(L, "max_cardinal",                 max_cardinal);
-    lua_set_cardinal_by_key(L, "min_cardinal",                 min_cardinal);
+    lua_set_cardinal_by_key(L,"max_cardinal",                 max_cardinal);
+    lua_set_cardinal_by_key(L,"min_cardinal",                 min_cardinal);
     lua_set_integer_by_key(L, "max_integer",                  max_integer);
     lua_set_integer_by_key(L, "min_integer",                  min_integer);
     lua_set_integer_by_key(L, "max_dimen",                    max_dimen);
@@ -268,7 +268,7 @@ static int statslib_getconstants(lua_State *L)
 
     lua_set_integer_by_key(L, "one_bp",                       one_bp);
 
-    lua_set_integer_by_key(L, "infinity",                     infinity);
+    lua_set_integer_by_key(L, "infinity",                     max_infinity);
     lua_set_integer_by_key(L, "min_infinity",                 min_infinity);
     lua_set_integer_by_key(L, "awful_bad",                    awful_bad);
     lua_set_integer_by_key(L, "infinite_bad",                 infinite_bad);

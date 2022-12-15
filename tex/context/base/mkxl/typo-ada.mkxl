@@ -27,7 +27,7 @@
 \newdimen\d_adaptive_line
 \newdimen\d_adaptive_hsize
 
-\mutable\let\m_adaptive_color\empty
+\mutable\lettonothing\m_adaptive_color
 
 \newbox\b_adaptive_box
 
@@ -70,7 +70,7 @@
    {\ifcase#1\dontleavehmode\fi
     \begingroup
     \ifhastok={#2}%
-      \let\currentadaptive\empty
+      \lettonothing\currentadaptive
       \setupcurrentadaptive[#2]%
     \else
       \edef\currentadaptive{#2}%

@@ -465,7 +465,7 @@
    %
    \reseteverypar % todo
    %
-   \ifdim\pagetotal=\zeropoint \else
+   \ifzeropt\pagetotal\else
      \verticalstrut
      \vskip-\struttotal
    \fi

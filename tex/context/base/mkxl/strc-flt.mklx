@@ -187,13 +187,13 @@
     \d_page_floats_compress_distance\floatparameter\c!compressdistance\relax
 \to \everysetupfloat
 
-\mutable\let\currentfloatattribute  \empty
-\mutable\let\currentfloatcounter    \empty
-\mutable\let\currentfloatgroup      \empty
-\mutable\let\currentfloatnumber     \empty
-\mutable\let\currentfloatsynchronize\empty
+\mutable\lettonothing\currentfloatattribute
+\mutable\lettonothing\currentfloatcounter
+\mutable\lettonothing\currentfloatgroup
+\mutable\lettonothing\currentfloatnumber
+\mutable\lettonothing\currentfloatsynchronize
 
-\let\m_strc_floats_previous_number  \empty % we can also just push/pop
+\lettonothing\m_strc_floats_previous_number % we can also just push/pop
 
 %D We need to do it again here:
 
@@ -323,12 +323,12 @@
 
 %D Captions.
 
-\mutable\let\floatcaptionarrangement\empty
-\mutable\let\floatcaptionattribute  \empty
-\mutable\let\floatcaptiondirectives \empty
-\mutable\let\floatcaptionlocation   \empty
-\mutable\let\floatcaptionnumber     \empty
-\mutable\let\floatcaptionsuffix     \empty
+\mutable\lettonothing\floatcaptionarrangement
+\mutable\lettonothing\floatcaptionattribute
+\mutable\lettonothing\floatcaptiondirectives
+\mutable\lettonothing\floatcaptionlocation
+\mutable\lettonothing\floatcaptionnumber
+\mutable\lettonothing\floatcaptionsuffix
 
 % For a while these were placeholders:
 %
@@ -419,7 +419,7 @@
 \newdimen\d_strc_floats_caption_height
 \newdimen\d_strc_floats_caption_depth
 
-\let\m_strc_floats_last_caption_tag\empty
+\lettonothing\m_strc_floats_last_caption_tag
 
 \def\strc_floats_make_complete_caption
   {\doifsomething{\floatcaptionparameter\c!spacebefore}{\blank[\floatcaptionparameter\c!spacebefore]}%
@@ -588,7 +588,7 @@
 % before we're really dealing with the float. Some day I'll root out the global
 % settings.
 
-\aliased\let\lastplacedfloat\empty
+\aliased\lettonothing\lastplacedfloat
 
 \def\strc_floats_set_current_tag#tag%
   {\edef\currentfloat{#tag}%
@@ -600,32 +600,33 @@
      {\writestatus\m!floatblocks{unknown float type '\currentfloat'}%
       \let\currentfloat\v!figure}% also a hack
    \enforced\glet\lastplacedfloat\currentfloat
-   \let\m_strc_floats_saved_userdata\empty
+   \lettonothing\m_strc_floats_saved_userdata
    \let\currentfloatcaption\currentfloat}
 
-\mutable\let\askedfloatmethod \empty
-\mutable\let\askedfloatoptions\empty
+\mutable\lettonothing\askedfloatmethod
+\mutable\lettonothing\askedfloatoptions
 
 \def\strc_floats_reset_variables
   {\global\emptyfloatcaptionfalse
    \global\nofloatcaptionfalse
    \global\nofloatnumberfalse
-   \glet\askedfloatmethod \empty
-   \glet\askedfloatoptions\empty}
+   \glettonothing\askedfloatmethod
+   \glettonothing\askedfloatoptions}
 
 % place
 
-\mutable\let\floatlabel         \empty
-\mutable\let\floatcolumn        \empty
-\mutable\let\floatrow           \empty
-\mutable\let\floatlocation      \empty
-\mutable\let\floatlocationmethod\empty
+\mutable\lettonothing\floatlabel
+\mutable\lettonothing\floatcolumn
+\mutable\lettonothing\floatrow
+\mutable\lettonothing\floatlocation
+\mutable\lettonothing\floatlocationmethod
+\mutable\lettonothing\floatlocationdefault
 
 \def\strc_floats_analyze_location
   {% more will be moved here
-   \let\floatlabel \empty
-   \let\floatcolumn\empty
-   \let\floatrow   \empty
+   \lettonothing\floatlabel
+   \lettonothing\floatcolumn
+   \lettonothing\floatrow
    %
    \edef\floatcaptionlocation{\floatcaptionparameter\c!location}%
    %
@@ -644,9 +645,10 @@
   {\strc_floats_set_current_tag{#tag}%
    \strc_floats_reset_variables
    \xdef\askedfloatoptions{#location}%
+   \edef\floatlocationdefault{\floatparameter\c!default}%
    \edef\floatlocation{#location}%
    \ifempty\floatlocation
-     \edef\floatlocation{\floatparameter\c!default}% beware of a clash between alignment locations
+     \let\floatlocation\floatlocationdefault % beware of a clash between alignment locations
    \fi
    \ifintable
      \the\c_floats_every_table_float
@@ -672,7 +674,7 @@
 
 \installsetuponlycommandhandler \??floatuserdata {floatuserdata}
 
-\let\m_strc_floats_saved_userdata\empty % todo: reset this in non start|stop cases
+\lettonothing\m_strc_floats_saved_userdata % todo: reset this in non start|stop cases
 
 %D We abuse the settings to pick up some float parameters too which makes it
 %D messy.
@@ -707,12 +709,13 @@
      \setupcurrentfloatuserdata[#userdata]%
      \def\m_strc_floats_saved_userdata{#userdata}%
    \else
-     \let\m_strc_floats_saved_userdata\empty
+     \lettonothing\m_strc_floats_saved_userdata
    \fi
-   % check
+   % check (see elsewhere
+   \edef\floatlocationdefault{\floatparameter\c!default}%
    \edef\floatlocation{\floatcaptionparameter\c!location}%
    \ifempty\floatlocation
-      \edef\floatlocation{\floatparameter\c!default}%
+     \let\floatlocation\floatlocationdefault % beware of a clash between alignment locations
    \fi
    % inherit
    \setexpandedfloatparameter\c!topoffset   {\floatcaptionparameter\c!topoffset}%
@@ -860,8 +863,9 @@
         \ifempty\forcedfloatmethod \else
           \doifelsecommandhandler\??float\forcedfloatmethod
             {\let\currentfloat\forcedfloatmethod
-             \edef\floatlocation{\floatparameter\c!default}%
-             \let\forcedfloatmethod\floatlocation}
+             \edef\floatlocationdefault{\floatparameter\c!default}%
+             \let\floatlocation\floatlocationdefault
+             \let\forcedfloatmethod\floatlocationdefault}
             \donothing
         \fi
         \ifempty\forcedfloatmethod
@@ -1114,14 +1118,14 @@
 %D \stopplacefigure
 %D \stoptyping
 
-\glet\currentsubfloatcounter\empty
+\glettonothing\currentsubfloatcounter
 
 \permanent\protected\def\startsubfloatnumbering
   {\glet\currentsubfloatcounter\s!unknown}
 
 \permanent\protected\def\stopsubfloatnumbering
   {\strc_counters_reset_sub\currentsubfloatcounter\plustwo
-   \glet\currentsubfloatcounter\empty}
+   \glettonothing\currentsubfloatcounter}
 
 \defineconversionset[subfloats][number,characters]
 
@@ -1135,8 +1139,8 @@
 \def\strc_floats_place_packaged_boxes_indeed#userdata%
   {\bgroup
    \ifconditional\usesamefloatnumber
-     \glet\currentfloatnumber     \m_strc_floats_previous_number
-     \glet\currentfloatattribute  \empty
+     \glet\currentfloatnumber\m_strc_floats_previous_number
+     \glettonothing\currentfloatattribute
      \glet\currentfloatsynchronize\relax
    \else
      \edef\currentfloatcounter{\namedcounterparameter\currentfloat\s!name}%
@@ -1327,7 +1331,7 @@
 \permanent\protected\def\hangsidefloat[#number]%
   {\global\c_page_sides_n_of_lines#number\relax}
 
-\mutable\let\extrafloatlocation\empty
+\mutable\lettonothing\extrafloatlocation
 
 \def\strc_floats_set_extra_action#rightpagelocation#leftpagelocation%
   {\rightorleftpageaction
@@ -1353,7 +1357,7 @@
 
 \def\strc_floats_check_extra_actions % less tracingthis way ....
   {\doifnotinset\v!text\floatlocation % fuzzy, text overloads left, since then it's a directive
-     {\let\extrafloatlocation\empty
+     {\lettonothing\extrafloatlocation
       % \d_page_sides_downshift will be reset afterwards, and can
       % already be set at this point
       \processcommacommand[\floatlocation]\strc_floats_check_extra_actions_step
@@ -2075,13 +2079,13 @@
 
 \def\strc_floats_build_box_top_stack_normal
   {\doifelseinset\v!overlay{\floatcaptionparameter\c!location}
-      \strc_floats_build_box_top_stack_normal_overlay
-      \strc_floats_build_box_top_stack_normal_content}
+     \strc_floats_build_box_top_stack_normal_overlay
+     \strc_floats_build_box_top_stack_normal_content}
 
 \def\strc_floats_build_box_bottom_stack_normal
   {\doifinset\v!overlay{\floatcaptionparameter\c!location}
-    \strc_floats_build_box_bottom_stack_normal_overlay
-    \strc_floats_build_box_bottom_stack_normal_content}
+     \strc_floats_build_box_bottom_stack_normal_overlay
+     \strc_floats_build_box_bottom_stack_normal_content}
 
 \def\strc_floats_build_box_top_stack_grid
   {\dp\b_strc_floats_caption\strutdepth
@@ -2504,13 +2508,12 @@
 
 \installcorenamespace{floatmethods}
 
-\mutable\let\floatmethod       \empty % set by lua
-\mutable\let\floatlabel        \empty % set by lua
-\mutable\let\floatcolumn       \empty % set by lua
-\mutable\let\floatrow          \empty % set by lua
-\mutable\let\floatspecification\empty
-
-\mutable\let\forcedfloatmethod \empty % set by lua and floatcombinations
+\mutable\lettonothing\floatmethod        % set by lua
+\mutable\lettonothing\floatlabel         % set by lua
+\mutable\lettonothing\floatcolumn        % set by lua
+\mutable\lettonothing\floatrow           % set by lua
+\mutable\lettonothing\floatspecification
+\mutable\lettonothing\forcedfloatmethod  % set by lua and floatcombinations
 
 \permanent\protected\def\setfloatmethodvariables#1% \floatmethod \floatlabel \floatrow \floatcolumn
   {\clf_analysefloatmethod{#1}} % move definition to lua end
@@ -2521,7 +2524,10 @@
 \def\strc_floats_get_box
   {\ifvisible
      \ifcsname\??floatmethods\currentoutputroutine:\floatmethod\endcsname \else
-        \let\floatmethod\v!here
+       \let\floatmethod\floatlocationdefault
+       \ifcsname\??floatmethods\currentoutputroutine:\floatmethod\endcsname \else
+         \let\floatmethod\v!here
+       \fi
      \fi
      \ifempty\forcedfloatmethod \else
        \let\floatmethod\forcedfloatmethod
@@ -2539,7 +2545,7 @@
 \installcorenamespace{floatsettings}
 
 \permanent\protected\def\installfloatmethod#1#2#3% routine keyword handler
-  {\setvalue{\??floatmethods#1:#2}{#3}}
+  {\defcsname\??floatmethods#1:#2\endcsname{#3}}
 
 \permanent\protected\def\handlefloatmethod#1%
   {\csname\??floatmethods\currentoutputroutine:#1\endcsname}

@@ -283,7 +283,7 @@
 
 \newcount\@MMLlevel \def\MMLcreset{\@MMLlevel\zerocount}
 
-\let\MMLctempresetlist\empty \def\setMMLcreset{\edef\MMLctempresetlist}
+\lettonothing\MMLctempresetlist \def\setMMLcreset{\edef\MMLctempresetlist}
 
 \let\MMLdoL\donothing
 \let\MMLdoR\donothing
@@ -311,7 +311,7 @@
            \edef\MMLdoL{\noexpand\left \mmlapplyopentoken }
            \edef\MMLdoR{\noexpand\right\mmlapplyclosetoken}
         \fi
-        \let\MMLctempresetlist\empty
+        \lettonothing\MMLctempresetlist
         \xmldoifelse {#1} {/mml:apply} {
 %             % <apply> <apply> ... </apply> <ci> .. </ci> </apply>
 %             \xmldoifelse {#1} {/mml:apply(mml:plus|mml:minus)} {% [a]
@@ -571,7 +571,7 @@
 \startxmlsetups mml:cn:integer
     \mathatom class \mathdigitcode \bgroup
         \edef\mmlintegerbase{\xmlattdef{#1}{base}{}}
-        \ifx\mmlintegerbase\empty
+        \ifempty\mmlintegerbase
             \xmlflush{#1}
         \else
             \mtext {
@@ -976,7 +976,7 @@
 
 \setupMMLappearance[power][\c!reduction=\v!yes]
 
-\let\MMLpowerelement\empty
+\lettonothing\MMLpowerelement
 
 \startxmlsetups mml:power
     \xmldoifelse {#1} {/mml:apply}  {
@@ -1479,12 +1479,12 @@
             }
         }
     } {
-        \let\mmlsumprodlower\empty
+        \lettonothing\mmlsumprodlower
     }
     \xmldoifelse {#1} {/mml:uplimit} {
         \def\mmlsumprodupper{\normalsuperscript{\xmlfirst{#1}{/mml:uplimit}}}
     } {
-        \let\mmlsumprodupper\empty
+        \lettonothing\mmlsumprodupper
     }
    \xmldoif {#1} {/mml:interval} { % open math converter gives this
         \edef\mmlintervalfrom{\xmlindex{#1}{/mml:interval}{1}}
@@ -1754,7 +1754,7 @@
     \else
         \normalsuperscript{\ifconditional\xmlinversefunction-\fi\MMLpowerelement}
         \setfalse\xmlinversefunction
-        \glet\MMLpowerelement\empty
+        \glettonothing\MMLpowerelement
     \fi
     \xmlsetup{#1}{mml:function:argument}
 \stopxmlsetups
@@ -2364,14 +2364,14 @@
             \scratchwidth \xmlattdef{#1}{width} \!!zeropoint % must be string
             \scratchheight\xmlattdef{#1}{height}\!!zeropoint
             \scratchdepth \xmlattdef{#1}{depth} \!!zeropoint
-            \ifdim\scratchheight=\zeropoint
-                \ifdim\scratchdepth=\zeropoint\else
+            \ifzeropt\scratchheight
+                \ifzeropt\scratchdepth\else
                     \novrule\s!depth\scratchdepth\s!height\zeropoint\s!width\zeropoint
                 \fi
             \else
                 \novrule\s!depth\zeropoint\s!height\scratchheight\s!width\zeropoint
             \fi
-            \ifdim\scratchwidth=\zeropoint
+            \ifzeropt\scratchwidth
                 % maybe we need to do it anyway
             \orelse\ifx\MMLmspaceoption\v!test
                 \hbox to \scratchwidth{\showstruts\strut\hss\lower2\exheight\hbox{\infofont\xmlattdef{#1}{width}}\hss\strut}

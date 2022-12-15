@@ -18,6 +18,9 @@
 
 \unprotect
 
+% todo \v!mathframed
+% todo \v!mathstrikeout
+
 \newconditional \c_framed_math_framed
 
 \installtextracker
@@ -25,43 +28,198 @@
   {\settrue \c_framed_math_framed}
   {\setfalse\c_framed_math_framed}
 
-\tolerant\protected\def\mathframed[#1]#:#2%
+\integerdef\c_framed_math_last_left \zerocount
+\integerdef\c_framed_math_last_right\zerocount
+
+\installglobalmacrostack\c_framed_math_last_left
+\installglobalmacrostack\c_framed_math_last_right
+
+\installcorenamespace{mathframed}
+
+\defineframed[\??mathframed]
+
+\setupframed[\??mathframed][\c!location=\v!middle]
+
+\tolerant\permanent\protected\def\definemathframed[#1]#*[#2]#*[#3]%
+  {\ifarguments\or
+     \defineframed[#1][\??mathframed]%
+   \or
+     \defineframed[#1][\??mathframed][#2]%
+   \or
+     \defineframed[#1][#2][#3]%
+   \fi
+   \tolerant\frozen\protected\defcsname#1\endcsname{\math_framed{#1}}}
+
+\definemathframed[mathframed]
+
+% \def\math_framed#1#*[#2]#:#3%
+%   {\begingroup
+%    \ifconditional\c_framed_math_framed
+%      \defineboxanchor[temp]%
+%    \fi
+%    \setmathatomrule\mathbegincode\mathbincode\allmathstyles\mathbegincode\mathbincode % hm
+%    \normalexpanded
+%      {\setbox\scratchbox\hpack
+%         \ifconditional\c_framed_math_framed
+%           \s!source \namedboxanchor{temp}
+%         \fi
+%         \s!ymove \Umathaxis\Ustyle\mathstyle
+%         \bgroup
+%           \localframedwithsettings
+%             [#1][#2]%
+%             {\startimath
+%              \Ustyle\mathstyle
+%              #3%
+%              \stopimath
+%              \integerdef\c_framed_math_last_left \lastleftclass
+%              \integerdef\c_framed_math_last_right\lastrightclass
+%              \push_macro_c_framed_math_last_left
+%              \push_macro_c_framed_math_last_right
+%              }%
+%         \egroup}%
+%    \pop_macro_c_framed_math_last_left
+%    \pop_macro_c_framed_math_last_right
+%    \mathatom
+%      \s!class \mathexplicitcode
+%      \ifnum\c_framed_math_last_left <\zerocount\else\s!leftclass \c_framed_math_last_left \fi
+%      \ifnum\c_framed_math_last_right<\zerocount\else\s!rightclass\c_framed_math_last_right\fi
+%      \bgroup
+%        \ifconditional\c_framed_math_framed
+%          \setboxanchor[temp][\c!corner={\v!left ,\v!bottom},\c!location={\v!right,\v!height}]%
+%            \hpack{\smallinfofont\the\c_framed_math_last_left}%
+%          \setboxanchor[temp][\c!corner={\v!right,\v!bottom},\c!location={\v!left ,\v!height}]%
+%            \hpack{\smallinfofont\the\c_framed_math_last_right}%
+%        \fi
+%        \box\scratchbox
+%      \egroup
+%    \endgroup}
+
+\dimensiondef\d_math_framed_offset\zeropoint
+
+\def\math_framed#1#*[#2]#:#3%
   {\begingroup
    \ifconditional\c_framed_math_framed
      \defineboxanchor[temp]%
    \fi
    \setmathatomrule\mathbegincode\mathbincode\allmathstyles\mathbegincode\mathbincode % hm
-   \normalexpanded
-     {\setbox\scratchbox\hpack
-        \ifconditional\c_framed_math_framed
-          \s!source \namedboxanchor{temp}
-        \fi
-        \s!ymove \Umathaxis\Ustyle\mathstyle
-        \bgroup
-          \framed
-            [\c!location=\v!middle,#1]
-            {\startimath
-             \Ustyle\mathstyle
-             #2%
-             \stopimath}%
-        \egroup}%
-   \scratchcounterone\lastleftclass
-   \scratchcountertwo\lastrightclass
- % \writestatus{!!}{[\number\lastleftclass,\number\lastrightclass]}%
+   %
+   \scratchdimen\Umathaxis\Ustyle\mathstyle
+   %
+   \edef\currentframed{#1}%
+   \setbox\scratchbox\hbox{\localframedwithsettings[#1][#2]%
+     {\strut\global\dimensiondef\d_math_framed_offset\dimexpr
+         \framedoffset/2
+%          +2\d_framed_linewidth
+      \relax}}%
+   %
+   \setbox\scratchbox\hpack\bgroup
+     \startimath
+     \Ustyle\mathstyle
+     #3%
+     \stopimath
+     \normalexpanded{\aftergrouped{%
+       \integerdef\c_framed_math_last_left \the\lastleftclass
+       \integerdef\c_framed_math_last_right\the\lastrightclass
+     }}%
+   \egroup
+   %
+   \boxymove\scratchbox\dimexpr
+     \scratchdimen
+     -\d_math_framed_offset/2
+   \relax
+   %
+   \setbox\scratchbox\hpack
+     \localframedwithsettings
+       [#1][#2]%
+       {\box\scratchbox}%
+   %
+   \boxymove\scratchbox\scratchdimen
+   %
+   \ifconditional\c_framed_math_framed
+     \boxsource\scratchbox \namedboxanchor{temp}% test
+   \fi
+   %
    \mathatom
      \s!class \mathexplicitcode
-     \ifnum\scratchcounterone<\zerocount\else\s!leftclass \scratchcounterone\fi
-     \ifnum\scratchcountertwo<\zerocount\else\s!rightclass\scratchcountertwo\fi
+     \ifnum\c_framed_math_last_left <\zerocount\else\s!leftclass \c_framed_math_last_left \fi
+     \ifnum\c_framed_math_last_right<\zerocount\else\s!rightclass\c_framed_math_last_right\fi
      \bgroup
        \ifconditional\c_framed_math_framed
-         \setboxanchor[temp][\c!corner={\v!left,\v!bottom},\c!location={\v!right,\v!height}]
-           \hpack{\smallinfofont \the\scratchcounterone}%
-         \setboxanchor[temp][\c!corner={\v!right,\v!bottom},\c!location={\v!left,\v!height}]
-           \hpack{\smallinfofont \the\scratchcountertwo}%
+         \setboxanchor[temp][\c!corner={\v!left ,\v!bottom},\c!location={\v!right,\v!height}]%
+           \hpack{\smallinfofont\the\c_framed_math_last_left}%
+         \setboxanchor[temp][\c!corner={\v!right,\v!bottom},\c!location={\v!left ,\v!height}]%
+           \hpack{\smallinfofont\the\c_framed_math_last_right}%
        \fi
        \box\scratchbox
      \egroup
    \endgroup}
+
+\defineoverlay[mathstrikeout][\useMPgraphic{\framedparameter{mp}}]
+
+\definemathframed
+  [mathstrikeout]
+  [\c!offset=\v!overlay,
+   \c!mp=mathstrikeout,
+   \c!rulethickness=1.5\linewidth,
+   \c!background={\v!foreground,mathstrikeout},
+  %\c!color=darkgreen,
+   \c!textstyle=\txx,
+   \c!mathstyle=\s!script,
+   \c!frame=\v!off,
+   \c!arrow=\v!yes]
+
+\definemathframed
+  [mathcrossout]
+  [mathstrikeout]
+  [\c!mp=mathcrossout,
+   strike:location=bottom]
+
+\permanent\protected\def\mathstrikeoutlabel
+  {\iftok{\framedparameter{strike:math}}\emptytoks
+     \useframedstyleandcolor\c!textstyle\c!color
+     \framedparameter{strike:text}%
+   \else
+     \startimath
+       \dousecolorparameter{\framedparameter\c!color}%  mathcolor
+       \usemathstyleparameter\framedparameter\c!mathstyle
+       \framedparameter{strike:math}%
+     \stopimath
+   \fi}
+
+\startuseMPgraphic{mathstrikeout}
+    path arr ; arr := (llcorner OverlayBox -- urcorner OverlayBox) ;
+    if "\framedparameter{arrow}" = "yes" : drawarrow else : draw fi arr
+        withpen pencircle scaled OverlayLineWidth
+        withcolor OverlayColor
+    ;
+    label.top("\mathstrikeoutlabel", point 1 of arr)
+        withcolor OverlayColor
+    ;
+  % draw OverlayBox
+  %     dashed evenly
+  %     withpen pencircle scaled .5OverlayLineWidth
+  %     withcolor OverlayColor
+  % ;
+    setbounds currentpicture to OverlayBox ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{mathcrossout}
+    draw (
+            (llcorner OverlayBox -- urcorner OverlayBox) &&
+            (ulcorner OverlayBox -- lrcorner OverlayBox)
+        )
+        withpen pencircle scaled OverlayLineWidth
+        withcolor OverlayColor
+    ;
+    if "\framedparameter{strike:location}" = "bottom" :
+        label.bot("\mathstrikeoutlabel", center bottomboundary currentpicture)
+    else :
+        label.top("\mathstrikeoutlabel", center topboundary currentpicture)
+    fi
+        withcolor OverlayColor
+    ;
+    setbounds currentpicture to OverlayBox ;
+\stopuseMPgraphic
 
 %D \starttyping
 %D \enabletrackers[framed.math]

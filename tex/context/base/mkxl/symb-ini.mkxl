@@ -58,12 +58,12 @@
 \setupsymbols
   [\c!stylealternative=\v!text]
 
-\mutable\let\currentsymbol   \empty
-\mutable\let\currentsymbolset\empty
+\mutable\lettonothing\currentsymbol
+\mutable\lettonothing\currentsymbolset
 
 \newtoks\t_symb_setups
 
-\let\m_symb_current_set\empty
+\lettonothing\m_symb_current_set
 
 \newconditional\c_symb_found
 
@@ -88,7 +88,7 @@
 \aliased\let\doifinsymbolsetelse\doifelseinsymbolset
 \aliased\let\doifsymbolsetelse  \doifelsesymbolset
 
-\letvalue{\??symbolset}\empty
+\letvalue\??symbolset\empty
 
 %def\symbolset#1{\csname\??symbolset\ifcsname\??symbolset#1\endcsname#1\fi\endcsname} % no [#1], to be used in commalists etc
 

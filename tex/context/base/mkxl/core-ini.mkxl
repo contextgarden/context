@@ -220,6 +220,7 @@
 
 \let\setlayoutcomponentattribute  \gobbleoneargument
 \let\resetlayoutcomponentattribute\relax
-\let\layoutcomponentboxattribute  \empty
+
+\lettonothing\layoutcomponentboxattribute
 
 \protect \endinput

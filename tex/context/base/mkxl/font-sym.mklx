@@ -129,9 +129,9 @@
 
 \installcorenamespace{symbolfont}
 
-\mutable\let\skedsymbolfont   \empty % for diagnostics
-\mutable\let\currentsymbolfont\empty
-\mutable\let\askedsymbolfont  \empty
+\mutable\lettonothing\skedsymbolfont    % for diagnostics
+\mutable\lettonothing\currentsymbolfont
+\mutable\lettonothing\askedsymbolfont
 
 \permanent\protected\def\setscaledstyledsymbolicfont#1#2#3% quite a slowdown, glyphfontfile
   {\edef\askedsymbolfont{\truefontname{\glyphfontfile{#3}} at \the\dimexpr#2\dimexpr\currentfontbodyscale\dimexpr#1}%

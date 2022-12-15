@@ -82,8 +82,9 @@
 
 \setfalse\twopassdatafound
 
-\mutable\let\twopassdata    \empty
-\mutable\let\twopassdatalist\empty
+\mutable\lettonothing\twopassdata
+\mutable\lettonothing\twopassdatalist
+
 \mutable\let\noftwopassitems\!!zeropoint
 
 \def\syst_twopass_check % can be delegated to lua once obsolete is gone

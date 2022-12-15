@@ -1155,6 +1155,7 @@ typedef enum flag_bit {
     value_flag_bit         = 0x08000,
     semiprotected_flag_bit = 0x10000,
     inherited_flag_bit     = 0x20000,
+    constant_flag_bit      = 0x40000,
 } flag_bits;
 
 /*tex Flags: */
@@ -1180,6 +1181,7 @@ typedef enum flag_bit {
 # define add_conditional_flag(a)    ((a) | conditional_flag_bit)
 # define add_value_flag(a)          ((a) | value_flag_bit)
 # define add_inherited_flag(a)      ((a) | inherited_flag_bit)
+# define add_constant_flag(a)       ((a) | constant_flag_bit)
 
 # define remove_flag(a,b)           ((a) & ~(b))
 
@@ -1220,6 +1222,7 @@ typedef enum flag_bit {
 # define is_conditional(a)          (((a) & conditional_flag_bit)   == conditional_flag_bit)
 # define is_value(a)                (((a) & value_flag_bit)         == value_flag_bit)
 # define is_inherited(a)            (((a) & inherited_flag_bit)     == inherited_flag_bit)
+# define is_constant(a)             (((a) & constant_flag_bit)      == constant_flag_bit)
 
 # define is_expandable(cmd)         (cmd > max_command_cmd)
 

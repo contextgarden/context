@@ -35,9 +35,9 @@
 \newdimen\canvasbleedoffset
 \newdimen\canvasartoffset
 
-\mutable\let\currentinteractionscreendelay \empty
-\mutable\let\currentinteractionscreenheight\empty
-\mutable\let\currentinteractionscreenwidth \empty
+\mutable\lettonothing\currentinteractionscreendelay
+\mutable\lettonothing\currentinteractionscreenheight
+\mutable\lettonothing\currentinteractionscreenwidth
 
 \newconditional\c_scrn_canvas_tight_page
 
@@ -210,7 +210,7 @@
 }
 
 \appendtoks
-    \let\scrn_canvas_synchronize_common\empty
+    \lettonothing\scrn_canvas_synchronize_common
 \to \everyaftershipout
 
 \def\scrn_canvas_synchronize_only
@@ -289,12 +289,12 @@
 
 %D Page transitions:
 
-\let\scrn_transitions_list\empty
+\lettonothing\scrn_transitions_list
 
 \permanent\tolerant\protected\def\setuppagetransitions[#list]%
   {\edef\scrn_transitions_list{#list}%
    \ifx\scrn_transitions_list\v!reset
-     \let\scrn_transitions_list\empty
+     \lettonothing\scrn_transitions_list
    \fi}
 
 \def\scrn_transitions_set

@@ -137,9 +137,9 @@ newscriptindex mfid_PaperBleed   ; mfid_PaperBleed   := scriptindex "PaperBleed"
 immutable % permanent
     PageFraction, SpineWidth, PaperBleed ;
 
-%              mfid_CurrentLayout    ; mfid_CurrentLayout    := scriptindex "CurrentLayout"    ; vardef CurrentLayout    = runscript mfid_CurrentLayout        enddef ;
-%              mfid_OverlayLineColor ; mfid_OverlayLineColor := scriptindex "OverlayLineColor  ; vardef OverlayLineColor = runscript mfid_OverlayLineColor     enddef ;
-%              mfid_OverlayColor     ; mfid_OverlayColor     := scriptindex "OverlayColor      ; vardef OverlayColor     = runscript mfid_OverlayColor         enddef ;
+newscriptindex mfid_CurrentLayout    ; mfid_CurrentLayout    := scriptindex "CurrentLayout"    ; vardef CurrentLayout    = runscript mfid_CurrentLayout        enddef ;
+newscriptindex mfid_OverlayLineColor ; mfid_OverlayLineColor := scriptindex "OverlayLineColor" ; vardef OverlayLineColor = runscript mfid_OverlayLineColor     enddef ;
+newscriptindex mfid_OverlayColor     ; mfid_OverlayColor     := scriptindex "OverlayColor"     ; vardef OverlayColor     = runscript mfid_OverlayColor         enddef ;
 newscriptindex mfid_OverlayWidth     ; mfid_OverlayWidth     := scriptindex "OverlayWidth"     ; vardef OverlayWidth     = runscript mfid_OverlayWidth         enddef ;
 newscriptindex mfid_OverlayHeight    ; mfid_OverlayHeight    := scriptindex "OverlayHeight"    ; vardef OverlayHeight    = runscript mfid_OverlayHeight        enddef ;
 newscriptindex mfid_OverlayDepth     ; mfid_OverlayDepth     := scriptindex "OverlayDepth"     ; vardef OverlayDepth     = runscript mfid_OverlayDepth         enddef ;
@@ -148,7 +148,7 @@ newscriptindex mfid_OverlayOffset    ; mfid_OverlayOffset    := scriptindex "Ove
 newscriptindex mfid_OverlayRegion    ; mfid_OverlayRegion    := scriptindex "OverlayRegion"    ; vardef OverlayRegion    = runscript mfid_OverlayRegion        enddef ;
 
 immutable % permanent
-  %  CurrentLayout, OverlayLineColor, OverlayColor,
+    CurrentLayout, OverlayLineColor, OverlayColor,
     OverlayWidth, OverlayHeight, OverlayDepth, OverlayLineWidth, OverlayOffset, OverlayRegion ;
 
 newscriptindex mfid_defaultcolormodel    ; mfid_defaultcolormodel    := scriptindex "defaultcolormodel"    ; vardef defaultcolormodel = runscript mfid_defaultcolormodel enddef ;

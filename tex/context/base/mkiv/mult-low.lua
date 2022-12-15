@@ -436,7 +436,8 @@ return {
         --
         "getparameters", "geteparameters", "getgparameters", "getxparameters", "forgetparameters", "copyparameters",
         --
-        "getdummyparameters", "dummyparameter", "directdummyparameter", "setdummyparameter", "letdummyparameter", "setexpandeddummyparameter",
+        "getdummyparameters", "dummyparameter", "directdummyparameter", "setdummyparameter", "letdummyparameter",
+        "setexpandeddummyparameter", "resetdummyparameter",
         "usedummystyleandcolor", "usedummystyleparameter", "usedummycolorparameter",
         --
         "processcommalist", "processcommacommand", "quitcommalist", "quitprevcommalist",

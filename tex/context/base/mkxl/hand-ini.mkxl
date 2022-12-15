@@ -73,7 +73,7 @@
 
 % \def\fonthandlingerror{\writestatus\m!fonts{font handling is replaced by features in mkiv}}
 %
-% \let\fonthandling\empty
+% \lettonothing\fonthandling
 %
 % \protected\def\startfonthandling  #1{\fonthandlingerror\fonthandlingerror\gobbleuntil\stopfonthandling} % can't happen
 % \protected\def\definefonthandling   {\dotripleempty\dodefinefonthandling}

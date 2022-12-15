@@ -582,7 +582,7 @@
 
 % [category] [settings] {name} % for historic reasons, all filenames are {}
 
-\mutable\let\currenttypingfile\empty
+\mutable\lettonothing\currenttypingfile
 
 \appendtoks
     \frozen\protected\instance\edefcsname\e!type\currenttyping\v!file\endcsname{\typefile[\currenttyping]}%
@@ -846,7 +846,7 @@
   {\dontleavehmode
    \begingroup
    \enforced\let\setupcurrenttyping\setupcurrenttype % a terrible hack but it saves code
-   \let\currenttype\empty
+   \lettonothing\currenttype
    \ifparameters
      \buff_verbatim_type_buffer_indeed_inline\currenttyping\empty% []
    \or

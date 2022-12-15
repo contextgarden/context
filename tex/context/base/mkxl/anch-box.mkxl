@@ -42,7 +42,6 @@
 %         linecolor=\namedboxanchorcontentparameter{#1}{\c!rulecolor}}%
 %    \stoppositionoverlay
 %    \endgroup}
-
 \tolerant\permanent\protected\def\connectboxanchors[#1]#*[#2]#*[#3]#*[#4]#*#:#5#6%
   {\begingroup
    %
@@ -70,17 +69,40 @@
        \setMPpositiongraphic
          {\boxanchorposone}%
          {\namedboxanchorcontentparameter{#1}\c!mp}%
-         {from=\boxanchorposone,%
+         {span=no,
+          from=\boxanchorposone,%
           to=\boxanchorpostwo,%
-          distance={\namedboxanchorcontentparameter{#1}\c!distance},%
+        % distance={\namedboxanchorcontentparameter{#1}\c!distance},%
           dashtype={\namedboxanchorcontentparameter{#1}\c!dash},%
-          arrow={\namedboxanchorcontentparameter{#1}\c!arrow},%
-          alternative={\namedboxanchorcontentparameter{#1}\c!alternative},%
-          text={\namedboxanchorcontentparameter{#1}\c!text},%
-          rulethickness={\namedboxanchorcontentparameter{#1}\c!rulethickness},%
-          linecolor=\namedboxanchorcontentparameter{#1}{\c!rulecolor}}%
+        % arrow={\namedboxanchorcontentparameter{#1}\c!arrow},%
+        % alternative={\namedboxanchorcontentparameter{#1}\c!alternative},%
+        % text={\namedboxanchorcontentparameter{#1}\c!text},%
+        % rulethickness={\namedboxanchorcontentparameter{#1}\c!rulethickness},%
+          linecolor=\namedboxanchorcontentparameter{#1}{\c!rulecolor},
+          #3}%
+       %
      \stoppositionoverlay
    }%
+   \ifcstok{\namedboxanchorcontentparameter{#1}\c!page}\v!yes
+     \normalexpanded{%
+       \startpositionoverlay{text+1}% will become configurable region
+           \setMPpositiongraphic
+             {\boxanchorpostwo}%
+             {\namedboxanchorcontentparameter{#1}\c!mp}%
+             {span=yes,
+              from=\boxanchorposone,%
+              to=\boxanchorpostwo,%
+            % distance={\namedboxanchorcontentparameter{#1}\c!distance},%
+              dashtype={\namedboxanchorcontentparameter{#1}\c!dash},%
+            % arrow={\namedboxanchorcontentparameter{#1}\c!arrow},%
+            % alternative={\namedboxanchorcontentparameter{#1}\c!alternative},%
+            % text={\namedboxanchorcontentparameter{#1}\c!text},%
+            % rulethickness={\namedboxanchorcontentparameter{#1}\c!rulethickness},%
+              linecolor=\namedboxanchorcontentparameter{#1}{\c!rulecolor}%
+              #3}%
+       \stoppositionoverlay
+     }%
+   \fi
    \endgroup}
 
 % dedicated or not
@@ -120,7 +142,7 @@
    \stoppositionoverlay
    \endgroup}
 
-\let\m_anch_matrix_list\empty
+\lettonothing\m_anch_matrix_list
 
 \tolerant\permanent\protected\def\startmatrixanchors
   {\glet\m_anch_matrix_list\empty

@@ -328,8 +328,8 @@
 
 \aliased\let\setupinteractionmenus\setupinteractionmenu
 
-\mutable\let\currentinteractionmenudistance\empty
-\mutable\let\currentinteractionmenustate   \empty
+\mutable\lettonothing\currentinteractionmenudistance
+\mutable\lettonothing\currentinteractionmenustate
 
 \let\scrn_menu_action\relax
 
@@ -434,7 +434,7 @@
 
 \newconditional\c_scrn_menu_zerodimensions
 
-\mutable\let\currentinteractionmenulocation\empty
+\mutable\lettonothing\currentinteractionmenulocation
 
 \def\scrn_menu_set_used
   {\d_scrn_menu_offset_left  \ifchkdim\interactionmenuparameter\c!leftoffset  \or\lastchkdim\else\zeropoint\fi
@@ -729,7 +729,7 @@
 \permanent\protected\def\scrn_menu_got_start[#action]#text\stopgot
   {\scrn_menu_action_start
    \letinteractionmenuparameter\c!frame\v!off
-   \letinteractionmenuparameter\c!background\empty
+   \resetinteractionmenuparameter\c!background
    \scrn_button_make
      \interactionmenuparameter
      \inheritedinteractionmenuframed
@@ -742,7 +742,7 @@
 \permanent\protected\def\scrn_menu_nop_start#text\stopnop
   {\scrn_menu_action_start
    \letinteractionmenuparameter\c!frame\v!off
-   \letinteractionmenuparameter\c!background\empty
+   \resetinteractionmenuparameter\c!background
    \letinteractionmenuparameter\c!empty\v!yes
    \inheritedinteractionmenuframed{\ignorespaces#text\removeunwantedspaces}%
    \scrn_menu_action_stop}
@@ -750,7 +750,7 @@
 \permanent\protected\def\scrn_menu_txt_start#text\stoptxt
   {\scrn_menu_action_start
    \letinteractionmenuparameter\c!frame\v!off
-   \letinteractionmenuparameter\c!background\empty
+   \resetinteractionmenuparameter\c!background
    \inheritedinteractionmenuframed{\ignorespaces#text\removeunwantedspaces}%
    \scrn_menu_action_stop}
 
@@ -1005,7 +1005,7 @@
 
 \def\scrn_menu_menu_button_b#settings#dummy#text#action%
   {\dontleavehmode \begingroup
-     \let\currentbutton\empty
+     \lettonothing\currentbutton
      \setupcurrentbutton[#settings]%
      \scrn_button_make
        \buttonparameter

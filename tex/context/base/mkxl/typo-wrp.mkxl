@@ -52,7 +52,7 @@
   {\wordboundary\strut}
 
 \appendtoks
-    \let\spac_crlf_placeholder\empty
+    \lettonothing\spac_crlf_placeholder
 \to \everysetnostrut
 
 \appendtoks

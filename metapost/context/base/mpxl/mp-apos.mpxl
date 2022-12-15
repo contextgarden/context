@@ -217,12 +217,16 @@ permanent
 
 def anch_box_arrows_draw =
     begingroup ;
-        save f, t, p, alternative, delta, dashtype, edge, arrow, ff, tt ;
-        pair f, t, ff, tt ; path p ; string alternative, arrow ;
+        save f, t, p, alternative, delta, dashtype, edge, arrow, ff, tt, spanpages, spanfirst, spanlast, skip ;
+        pair f, t, ff, tt ; path p ; string alternative, arrow ; boolean spanpages, spanfirst, spanlast, skip ;
         dashtype := mpvarn("dashtype") ;
         delta := mpvard("distance");
         alternative := mpvars("alternative") ;
         arrow := mpvars("arrow") ;
+        spanpages := false ;
+        spanfirst := true ;
+        spanlast := true ;
+        skip := false ;
         if positionx(mpvars("rightedge")) > 0 :
             if alternative = "left" :
                 edge := positionx(mpvars("leftedge"));
@@ -243,37 +247,40 @@ def anch_box_arrows_draw =
         else :
             f := positionxy(mpvars("from")) ;
             t := positionxy(mpvars("to")) ;
+            spanpages := getpospage(mpvars("to")) > getpospage(mpvars("from")) ;
+            if spanpages :
+                if getpospage(mpvars("from")) = RealPageNumber :
+                    t := (getposwidth(getposregion(mpvars("from"))),ypart f) ;
+                    spanlast := false ;
+                elseif getpospage(mpvars("to")) = RealPageNumber :
+                    f := (getposx(getposregion(mpvars("to"))),ypart t) ;
+                    spanfirst := false ;
+                fi ;
+            fi
 % drawdot f withpen pencircle scaled 2pt;
 % drawdot t withpen pencircle scaled 2pt;
-%             if alternative = "bottom" :
-%                 f := f yshifted (- abs(ypart f - ypart t)) ;
-%             elseif alternative = "top" :
-%                 f := f yshifted (abs(ypart f - ypart t)) ;
-%             elseif alternative = "left" :
-%                 f := f xshifted (- abs(xpart f - xpart t)) ;
-%             elseif alternative = "right" :
-%                 f := f xshifted (abs(xpart f - xpart t)) ;
-%             fi ;
             %
-            %
-            if alternative = "bottom" :
-ff := (xpart f, min(ypart f, ypart t));
-tt := (xpart t, ypart ff);
-                p := (f  -- (ff yshifted -delta) -- (tt yshifted -delta) --  t) ;
+            skip := (not spanpages) and ((mpvars("span")) = "yes") ;
+            if skip :
+                % we skip the second just in case
+            elseif alternative = "bottom" :
+                ff := (xpart f, min(ypart f, ypart t)) ;
+                tt := (xpart t, ypart ff) ;
+                p := (if spanfirst: f -- fi (ff yshifted -delta) -- (tt yshifted -delta) if spanlast : --  t fi) ;
                 draw thetextext.bot(mpvars("text"), (point .5 along p) yshifted -.25ExHeight) ;
             elseif alternative = "top" :
-ff := (xpart f, max(ypart f, ypart t));
-tt := (xpart t, ypart ff);
-                p := (f  -- (ff yshifted delta) -- (tt yshifted delta) --  t) ;
+                ff := (xpart f, max(ypart f, ypart t)) ;
+                tt := (xpart t, ypart ff) ;
+                p := (if spanfirst: f -- fi (ff yshifted delta) -- (tt yshifted delta) if spanlast : --  t fi) ;
                 draw thetextext.top(mpvars("text"), (point .5 along p) yshifted .25ExHeight) ;
             elseif alternative = "left" :
-ff := (min(xpart f, xpart t), ypart f);
-tt := (xpart ff, ypart t);
+                ff := (min(xpart f, xpart t), ypart f) ;
+                tt := (xpart ff, ypart t) ;
                 p := (f  -- (ff xshifted - delta) -- (tt xshifted - delta) --  t) ;
                 draw thetextext.lft(mpvars("text"), (point .5 along p) xshifted -ExHeight) ;
             elseif alternative = "right" :
-ff := (max(xpart f, xpart t), ypart f);
-tt := (xpart ff, ypart t);
+                ff := (max(xpart f, xpart t), ypart f) ;
+                tt := (xpart ff, ypart t) ;
                 p := (f  -- (ff xshifted delta) -- (tt xshifted delta) --  t) ;
                 draw thetextext.rt(mpvars("text"), (point .5 along p) xshifted ExHeight) ;
             elseif alternative = "middle" :
@@ -281,22 +288,24 @@ tt := (xpart ff, ypart t);
                 draw thetextext.rt(mpvars("text"), (point .5 along p) xshifted ExHeight) ;
             fi ;
         fi ;
-        % 1 = dashed, 2 = dashed with background
-        if arrow ="no" :
-            draw
-        elseif arrow == "reverse" :
-            drawarrow reverse
-        elseif arrow == "both" :
-            drawdblarrow
-        else :
-            drawarrow
-        fi
-            p
-            if dashtype == 1 :
-                withdashes .5ExHeight
+        if not skip :
+            % 1 = dashed, 2 = dashed with background
+            if arrow ="no" :
+                draw
+            elseif arrow == "reverse" :
+                drawarrow reverse
+            elseif arrow == "both" :
+                drawdblarrow
+            else :
+                drawarrow
             fi
-            withpen pencircle scaled mpvard("rulethickness")
-            withcolor mpvars("linecolor") ;
-        positioninregion ;
+                p
+                if dashtype == 1 :
+                    withdashes .5ExHeight
+                fi
+                withpen pencircle scaled mpvard("rulethickness")
+                withcolor mpvars("linecolor") ;
+            positioninregion ;
+        fi ;
     endgroup ;
 enddef ;

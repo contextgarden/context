@@ -64,7 +64,7 @@
   {\iflocation
      \begingroup
      \ifhastok={#tag}%
-       \let\currentinteractionbar\empty
+       \lettonothing\currentinteractionbar
        \setupcurrentinteractionbar[#tag]%
        \edef\currentinteractionbar{\interactionbarparameter\c!alternative}%
      \else
@@ -112,7 +112,7 @@
 
 \def\scrn_bar_buttons_indeed#settings#list%
   {\begingroup
-  %\let\currentinteractionbar\empty
+  %\lettonothing\currentinteractionbar
    \setupcurrentinteractionbar[#settings]%
    \d_scrn_bar_width   \interactionbarparameter\c!width\relax
    \d_scrn_bar_distance\interactionbarparameter\c!distance\relax
@@ -121,7 +121,7 @@
    \fi
    \doifnothing{\interactionbarparameter\c!height}{\letinteractionbarparameter\c!height\v!broad}%
    \doifnothing{\interactionbarparameter\c!depth }{\letinteractionbarparameter\c!depth\zeropoint}%%%
-   \letinteractionbarparameter\c!background\empty
+   \resetinteractionbarparameter\c!background
    \setbox2\hbox{\inheritedinteractionbarframed{\symbol[\interactionparameter\c!symbolset][\v!previouspage]}}%
    \scratchheight\ht2 % needed because we default to nothing
    \letinteractionbarparameter\c!strut\v!no

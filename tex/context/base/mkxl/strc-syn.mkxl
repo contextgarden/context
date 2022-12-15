@@ -260,12 +260,12 @@
 
 % these  might become private
 
-\mutable\let\currentsynonymoption   \empty
-\mutable\let\currentsynonymcoding   \empty
-\mutable\let\currentsynonymexpansion\empty
-\mutable\let\currentsynonym         \empty
-\mutable\let\currentsynonymtag      \empty
-\mutable\let\currentsynonymtext     \empty
+\mutable\lettonothing\currentsynonymoption
+\mutable\lettonothing\currentsynonymcoding
+\mutable\lettonothing\currentsynonymexpansion
+\mutable\lettonothing\currentsynonym
+\mutable\lettonothing\currentsynonymtag
+\mutable\lettonothing\currentsynonymtext
 
 \permanent\tolerant\protected\def\definesynonyms[#1]#*[#2]#*[#3]#*[#4]% name plural \meaning \use
   {\ifnum\lastarguments=\plusfour
@@ -498,7 +498,7 @@
      {}% todo: message that invalid
    \endgroup}
 
-\mutable\let\currentsimplelistentry\empty
+\mutable\lettonothing\currentsimplelistentry
 
 \protected\def\strc_synonym_normal#1#2#3#4%
   {\begingroup
@@ -527,12 +527,12 @@
 
 % these  might become private
 
-\mutable\let\currentsortingoption   \empty
-\mutable\let\currentsortingcoding   \empty
-\mutable\let\currentsortingexpansion\empty
-\mutable\let\currentsorting         \empty
-\mutable\let\currentsortingtag      \empty
-\mutable\let\currentsortingtext     \empty
+\mutable\lettonothing\currentsortingoption
+\mutable\lettonothing\currentsortingcoding
+\mutable\lettonothing\currentsortingexpansion
+\mutable\lettonothing\currentsorting
+\mutable\lettonothing\currentsortingtag
+\mutable\lettonothing\currentsortingtext
 
 \permanent\tolerant\protected\def\definesorting[#1]#*[#2]#*[#3]%
   {\ifnum\lastarguments=\plusthree

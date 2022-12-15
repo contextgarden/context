@@ -75,7 +75,7 @@
     \fi
 \to \everydefinedescription
 
-\let\p_strc_constructions_title \empty
+\lettonothing\p_strc_constructions_title
 
 \protected\defcsname\??constructioninitializer\v!description\endcsname
   {\let         \currentdescription              \currentconstruction

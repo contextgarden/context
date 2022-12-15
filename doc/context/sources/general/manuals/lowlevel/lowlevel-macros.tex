@@ -905,6 +905,81 @@ the values 1 and 3 give warnings and the values 2 and 4 trigger an error.
 
 \stopsectionlevel
 
+\startsectionlevel[title=Arguments]
+
+The number of arguments that a macro takes is traditionally limited to nine (or
+ten if one takes the trailing \type {#} into account). That this is enough for
+most cases is demonstrated by the fact that \CONTEXT\ has only a handful of
+macros that use \type {#9}. The reason for this limitation is in part a side
+effect of the way the macro preamble and arguments are parsed. However, because
+in \LUAMETATEX\ we use a different implementation, it was not that hard to permit
+a few more arguments, which is why we support upto 15 arguments, as in:
+
+\starttyping[option=TEX]
+\def\foo#1#2#3#4#5#6#7#8#9#A#B#C#D#E#F{...}
+\stoptyping
+
+We can support the whole alphabet without much trouble but somehow sticking to
+the hexadecimal numbers makes sense. It is unlikely that the core of \CONTEXT\
+will use this option but sometimes at the user level it can be handy. The penalty
+in terms of performance can be neglected.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Constants]
+
+The \LUAMETATEX\ engine has lots of efficiency tricks in the macro parsing and
+expansion code that makes it not only fast but also let is use less memory.
+However, every time that the body of a macro is to be injected the expansion
+machinery kicks in. This often means that a copy is made (pushed in the input and
+used afterwards). There are however cases where the body is just a list of
+character tokens (with category letter or other) and no expansion run over the
+list is needed.
+
+It is tempting to introduce a string data type that just stores strings and
+although that might happen at some point it has the disadvantage that one need to
+tokenize that string in order to be able to use it, which then defeats the gain.
+An alternative has been found in constant macros, that is: a macro without
+parameters and a body that is considered to be expanded and never freed by
+redefinition. There are two variants:
+
+\starttyping[option=TEX]
+\cdef      \foo          {whatever}
+\cdefcsname foo\endcsname{whatever}
+\stoptyping
+
+These are actually just equivalents to
+
+\starttyping[option=TEX]
+\edef      \foo          {whatever}
+\edefcsname foo\endcsname{whatever}
+\stoptyping
+
+just to make sure that the body gets expanded at definition time but they are
+also marked as being constant which in some cases might give some gain, for
+instance when used in csname construction. The gain is less then one expects
+although there are a few cases in \CONTEXT\ where extreme usage of parameters
+benefits from it. Users are unlikely to use these two primitives.
+
+Another example of a constant usage is this:
+
+\starttyping[option=TEX]
+\lettonothing\foo
+\stoptyping
+
+which gives \type {\foo} an empty body. That one is used in the core, if only because
+it gives a bit smaller code. Performance is no that different from
+
+\starttyping[option=TEX]
+\let\foo\empty
+\stoptyping
+
+but it saves one token (8 bytes) when used in a macro. The assignment itself is
+not that different because \type {\foo} is made an alias to \type {\empty} which
+in turn only needs incrementing a reference counter.
+
+\stopsectionlevel
+
 \stopdocument
 
 % freezing pitfalls:

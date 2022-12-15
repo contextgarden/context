@@ -108,32 +108,39 @@ typedef struct token_state_info {
     char     *buffer;
     int       bufloc;
     int       bufmax;
-    int       padding;
+    int       empty;
 } token_state_info;
 
 extern token_state_info lmt_token_state;
 
-// # define max_token_reference 0x7FFF /* we can bump to 0xFFFF when we go unsigned here */
-//
-//define token_reference(a)  token_memory_state.tokens[a].half1
-//
-// #define get_token_parameters(a) lmt_token_memory_state.tokens[a].quart2
-// #define get_token_reference(a)  lmt_token_memory_state.tokens[a].quart3
-//
-// #define set_token_parameters(a,b) lmt_token_memory_state.tokens[a].quart2  = (b)
-//
-// #define add_token_reference(a)    lmt_token_memory_state.tokens[a].quart3 += 1
-// #define sub_token_reference(a)    lmt_token_memory_state.tokens[a].quart3 -= 1
-// #define inc_token_reference(a,b)  lmt_token_memory_state.tokens[a].quart3 += (quarterword) (b)
-// #define dec_token_reference(a,b)  lmt_token_memory_state.tokens[a].quart3 -= (quarterword) (b)
+/*tex
 
-# define max_token_reference 0x0FFFFFFF
+    We now can have 15 paremeters but if needed we can go higher. However, we then also need to 
+    cache more and change the |preamble| and |count| to some funny bit ranges. If needed we can 
+    bump the reference count maximum but quite likely one already has run out of something else
+    already.   
 
-# define get_token_parameters(a) (lmt_token_memory_state.tokens[a].hulf1 >> 28)
-# define get_token_reference(a)  (lmt_token_memory_state.tokens[a].hulf1 & 0x0FFFFFFF)
+    \starttyping
+    preamble  = 0xF0000000 : 1 when we have one, including trailing #
+    count     = 0x0F000000
+    reference = 0x00FFFFFF
+    \stoptyping
 
-# define set_token_parameters(a,b) lmt_token_memory_state.tokens[a].hulf1 += ((b) << 28)  /* normally the variable is still zero here */
+*/
 
+# define max_match_count 15
+# define gap_match_count  7
+
+# define max_token_reference 0x00FFFFFF
+
+# define get_token_preamble(a)   ((lmt_token_memory_state.tokens[a].hulf1 >> 28) & 0xF)
+# define get_token_parameters(a) ((lmt_token_memory_state.tokens[a].hulf1 >> 24) & 0xF)
+# define get_token_reference(a)  ((lmt_token_memory_state.tokens[a].hulf1      ) & max_token_reference)
+
+# define set_token_preamble(a,b)   lmt_token_memory_state.tokens[a].hulf1 += ((b) << 28)  /* normally the variable is still zero here */
+# define set_token_parameters(a,b) lmt_token_memory_state.tokens[a].hulf1 += ((b) << 24)  /* normally the variable is still zero here */
+
+# define set_token_reference(a,b)  lmt_token_memory_state.tokens[a].hulf1 += (b)
 # define add_token_reference(a)    lmt_token_memory_state.tokens[a].hulf1 += 1            /* we are way off the parameter count */
 # define sub_token_reference(a)    lmt_token_memory_state.tokens[a].hulf1 -= 1            /* we are way off the parameter count */
 # define inc_token_reference(a,b)  lmt_token_memory_state.tokens[a].hulf1 += (b)          /* we are way off the parameter count */

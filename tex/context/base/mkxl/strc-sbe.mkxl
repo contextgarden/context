@@ -79,7 +79,7 @@
       bookmark {\sectionblockparameter\c!bookmark}%
    \relax}
 
-\mutable\let\currentsectionblock\empty % was \s!unknown
+\mutable\lettonothing\currentsectionblock % was \s!unknown
 
 \permanent\tolerant\protected\def\startsectionblock[#1]#*[#2]%
   {%\ctxlua{structures.counters.check(0)}% we assume sane usage of \page, as this is the only workable place (in push)

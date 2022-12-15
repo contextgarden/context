@@ -84,9 +84,10 @@
 \ifdefined\makeMPintoPDFobject    \else \newconstant\makeMPintoPDFobject    \fi
 \ifdefined\everyMPtoPDFconversion \else \newtoks    \everyMPtoPDFconversion \fi
 
-\let\lastPDFMPobject    \!!zerocount
-\let\currentPDFresources\empty
-\let\setMPextensions    \relax
+\let\lastPDFMPobject\!!zerocount
+\let\setMPextensions\relax
+
+\lettonothing\currentPDFresources
 
 \def\PDFMPformoffset{\ifdefined\objectoffset\objectoffset\else\zeropoint\fi} % no longer used
 
@@ -139,7 +140,7 @@
 
 %D A common hook.
 
-\let\MPfshowcommand\empty
+\lettonothing\MPfshowcommand
 
 %D Objects.
 

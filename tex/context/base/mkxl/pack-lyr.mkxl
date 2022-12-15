@@ -97,35 +97,35 @@
 
 \permanent\def\layeranchor{\currentlayer:\the\realpageno}
 
-\let\p_pack_layers_doublesided\empty
-\let\p_pack_layers_state      \empty
-\let\p_pack_layers_option     \empty
-\let\p_pack_layers_method     \empty
-\let\p_pack_layers_preset     \empty
-\let\p_pack_layers_rotation   \empty
-\let\p_pack_layers_position   \empty
-\let\p_pack_layers_hoffset    \empty
-\let\p_pack_layers_voffset    \empty
-\let\p_pack_layers_offset     \empty
-\let\p_pack_layers_dx         \empty
-\let\p_pack_layers_dy         \empty
-\let\p_pack_layers_sx         \empty
-\let\p_pack_layers_sy         \empty
-\let\p_pack_layers_x          \empty
-\let\p_pack_layers_y          \empty
-\let\p_pack_layers_corner     \empty
-\let\p_pack_layers_location   \empty
-\let\p_pack_layers_line       \empty
-\let\p_pack_layers_column     \empty
-\let\p_pack_layers_width      \empty
-\let\p_pack_layers_height     \empty
-\let\p_pack_layers_direction  \empty
-\let\p_pack_layers_region     \empty
+\lettonothing\p_pack_layers_doublesided
+\lettonothing\p_pack_layers_state
+\lettonothing\p_pack_layers_option
+\lettonothing\p_pack_layers_method
+\lettonothing\p_pack_layers_preset
+\lettonothing\p_pack_layers_rotation
+\lettonothing\p_pack_layers_position
+\lettonothing\p_pack_layers_hoffset
+\lettonothing\p_pack_layers_voffset
+\lettonothing\p_pack_layers_offset
+\lettonothing\p_pack_layers_dx
+\lettonothing\p_pack_layers_dy
+\lettonothing\p_pack_layers_sx
+\lettonothing\p_pack_layers_sy
+\lettonothing\p_pack_layers_x
+\lettonothing\p_pack_layers_y
+\lettonothing\p_pack_layers_corner
+\lettonothing\p_pack_layers_location
+\lettonothing\p_pack_layers_line
+\lettonothing\p_pack_layers_column
+\lettonothing\p_pack_layers_width
+\lettonothing\p_pack_layers_height
+\lettonothing\p_pack_layers_direction
+\lettonothing\p_pack_layers_region
 
-\let\m_pack_layers_page       \empty
-\let\m_pack_layers_target     \empty
-\let\m_pack_layers_region     \empty
-\let\m_pack_layers_anchor     \empty
+\lettonothing\m_pack_layers_page
+\lettonothing\m_pack_layers_target
+\lettonothing\m_pack_layers_region
+\lettonothing\m_pack_layers_anchor
 
 \newconditional\c_pack_layers_repeated
 \newconditional\c_pack_layers_trace
@@ -196,8 +196,8 @@
 %D \setlayer [identifier] [optional parameters] {data}
 %D \stoptyping
 
-\mutable\let\currentlayerwidth \empty
-\mutable\let\currentlayerheight\empty
+\mutable\lettonothing\currentlayerwidth
+\mutable\lettonothing\currentlayerheight
 
 \permanent\tolerant\protected\def\setcurrentlayerdimensions[#1]#*[#2]% name left|right
   {\edef\currentlayerwidth {\thelayerwidth {#2#1}}%
@@ -218,7 +218,7 @@
      \edef\m_pack_layers_target{#2}%
      \pack_layers_set_indeed{#3}%
    \orelse\ifhastok={#2}%
-     \let\m_pack_layers_target\empty
+     \lettonothing\m_pack_layers_target
      \pack_layers_set_indeed{#2}%
    \else
      \edef\m_pack_layers_target{#2}%
@@ -400,9 +400,11 @@
           {\alignedbox[\p_pack_layers_location]\vpack{\box\nextbox}}%
       \fi
       \ifnum\p_pack_layers_line=\zerocount\else % no \ifcase, can be negative
+    % \ifzero\p_pack_layers_line\else % todo: test this
         \advance\d_pack_layers_y_position\dimexpr\p_pack_layers_line\lineheight+\topskip-\lineheight-\ht\nextbox\relax
       \fi
       \ifnum\p_pack_layers_column=\zerocount\else % no \ifcase, can be negative
+    % \ifzero\p_pack_layers_column\else % todo: test this
         \advance\d_pack_layers_x_position\layoutcolumnoffset\p_pack_layers_column\relax
       \fi
       \ifx\p_pack_layers_location\v!grid
@@ -449,6 +451,7 @@
 
 \def\pack_layers_set_bottom_positions
   {\ifnum\p_pack_layers_line=\zerocount\else % can be < 0
+% {\ifzero\p_pack_layers_line\else % todo: test this
      \edef\p_pack_layers_line{\the\numexpr-\p_pack_layers_line+\layoutlines+\plusone\relax}% use counter instead ?
    \fi
    \ifdim\d_pack_layers_y_size>\zeropoint
@@ -459,6 +462,7 @@
 
 \def\pack_layers_set_right_positions
   {\ifnum\p_pack_layers_column=\zerocount\else % can be < 0
+% {\ifzero\p_pack_layers_column\else % todo: test this
      \edef\p_pack_layers_column{\the\numexpr-\layerparameter\c!column+\layoutcolumns+\plusone\relax}% use counter instead ?
    \fi
    \ifdim\d_pack_layers_x_size>\zeropoint

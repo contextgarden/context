@@ -55,14 +55,14 @@
 %D \type {!!!!}. In the meantime some of these are obsolete (we had some 12
 %D originally).
 
-\immutable\def\c!prefix!{c!}
-\immutable\def\k!prefix!{k!}
-\immutable\def\e!prefix!{e!}
-\immutable\def\f!prefix!{f!} % for the moment we keep this one
-\immutable\def\m!prefix!{m!}
-\immutable\def\s!prefix!{s!}
-\immutable\def\v!prefix!{v!}
-\immutable\def\t!prefix!{t!}
+\immutable\cdef\c!prefix!{c!}
+\immutable\cdef\k!prefix!{k!}
+\immutable\cdef\e!prefix!{e!}
+\immutable\cdef\f!prefix!{f!} % for the moment we keep this one
+\immutable\cdef\m!prefix!{m!}
+\immutable\cdef\s!prefix!{s!}
+\immutable\cdef\v!prefix!{v!}
+\immutable\cdef\t!prefix!{t!}
 
 %D \macros
 %D   [constants,variables,commands]
@@ -73,22 +73,22 @@
 %D \type {??}, and a system constant, which has the prefix \type {c!}. We'll se some
 %D more of this.
 
-\immutable\def\??prefix  {??}
-\immutable\def\@@prefix  {@@}
+\immutable\cdef\??prefix  {??}
+\immutable\cdef\@@prefix  {@@}
 
 %D Just to be complete we repeat some of the already defined system constants here.
 %D Maybe their prefix \type {\s!} now falls into place.
 
-\def\s!next    {next}         \def\s!default {default}
-\def\s!dummy   {dummy}        \def\s!unknown {unknown}
+\cdef\s!next    {next}         \cdef\s!default {default}
+\cdef\s!dummy   {dummy}        \cdef\s!unknown {unknown}
 
-\def\s!do      {do}           \def\s!dodo    {dodo}
+\cdef\s!do      {do}           \cdef\s!dodo    {dodo}
 
-\def\s!complex {complex}      \def\s!start   {start}
-\def\s!simple  {simple}       \def\s!stop    {stop}
+\cdef\s!complex {complex}      \cdef\s!start   {start}
+\cdef\s!simple  {simple}       \cdef\s!stop    {stop}
 
-\def\s!true    {true}
-\def\s!false   {false}
+\cdef\s!true    {true}
+\cdef\s!false   {false}
 
 %D The word \type {height} takes 6~token memory cells. The control sequence \type
 %D {\height} on the other hand uses only one. Knowing this, we can improve the
@@ -109,32 +109,32 @@
 %D than once. Savings like this should of course be implemented in english, just
 %D because \TEX\ is english.
 
-\def\s!width      {width}
-\def\s!height     {height}
-\def\s!depth      {depth}
-\def\s!spread     {spread}
-\def\s!plus       {plus}
-\def\s!minus      {minus}
-\def\s!to         {to}
+\cdef\s!width      {width}
+\cdef\s!height     {height}
+\cdef\s!depth      {depth}
+\cdef\s!spread     {spread}
+\cdef\s!plus       {plus}
+\cdef\s!minus      {minus}
+\cdef\s!to         {to}
 
-\def\s!fil        {fil}
-\def\s!fill       {fill}
-\def\s!filll      {filll}
+\cdef\s!fil        {fil}
+\cdef\s!fill       {fill}
+\cdef\s!filll      {filll}
 
-\def\s!attr       {attr}
-\def\s!axis       {axis}
-\def\s!both       {both}
-\def\s!bottom     {bottom}
-\def\s!left       {left}
-\def\s!options    {options}
-\def\s!orientation{orientation}
-\def\s!reverse    {reverse}
-\def\s!right      {right}
-\def\s!top        {top}
-\def\s!xmove      {xmove}
-\def\s!xoffset    {xoffset}
-\def\s!ymove      {ymove}
-\def\s!yoffset    {yoffset}
+\cdef\s!attr       {attr}
+\cdef\s!axis       {axis}
+\cdef\s!both       {both}
+\cdef\s!bottom     {bottom}
+\cdef\s!left       {left}
+\cdef\s!options    {options}
+\cdef\s!orientation{orientation}
+\cdef\s!reverse    {reverse}
+\cdef\s!right      {right}
+\cdef\s!top        {top}
+\cdef\s!xmove      {xmove}
+\cdef\s!xoffset    {xoffset}
+\cdef\s!ymove      {ymove}
+\cdef\s!yoffset    {yoffset}
 
 %D \macros
 
@@ -171,9 +171,9 @@
 %D \def\e!name{meaning}
 %D \stoptyping
 
-%permanent\protected\def\defineinterfaceconstant#1#2{\immutable\defcsname\c!prefix!#1\endcsname{#2}}
-\permanent\protected\def\defineinterfacevariable#1#2{\immutable\defcsname\v!prefix!#1\endcsname{#2}}
-\permanent\protected\def\defineinterfaceelement #1#2{\immutable\defcsname\e!prefix!#1\endcsname{#2}}
+%permanent\protected\def\defineinterfaceconstant#1#2{\immutable\cdefcsname\c!prefix!#1\endcsname{#2}}
+\permanent\protected\def\defineinterfacevariable#1#2{\immutable\cdefcsname\v!prefix!#1\endcsname{#2}}
+\permanent\protected\def\defineinterfaceelement #1#2{\immutable\cdefcsname\e!prefix!#1\endcsname{#2}}
 
 %D Next come some interface independant constants:
 %D
@@ -181,7 +181,7 @@
 %D \definefileconstant      {name} {meaning}
 %D \stoptyping
 
-\permanent\protected\def\definefileconstant#1#2{\immutable\defcsname\f!prefix!#1\endcsname{#2}}
+\permanent\protected\def\definefileconstant#1#2{\immutable\cdefcsname\f!prefix!#1\endcsname{#2}}
 
 %D And finaly we have the one argument, space saving constants
 %D
@@ -190,13 +190,13 @@
 %D \definemessageconstant {name}
 %D \stoptyping
 
-\permanent\protected\def\definesystemconstant #1{\immutable\defcsname\s!prefix!#1\endcsname{#1}}
-\permanent\protected\def\definemessageconstant#1{\immutable\defcsname\m!prefix!#1\endcsname{#1}}
+\permanent\protected\def\definesystemconstant #1{\immutable\cdefcsname\s!prefix!#1\endcsname{#1}}
+\permanent\protected\def\definemessageconstant#1{\immutable\cdefcsname\m!prefix!#1\endcsname{#1}}
 
 %D For now here:
 
-\permanent\protected\def\definetagconstant  #1{\immutable\defcsname\t!prefix!#1\endcsname{#1}}
-\permanent\protected\def\aliastagconstant #1#2{\aliased  \letcsname\t!prefix!#1\expandafter\endcsname\csname\t!prefix!#2\endcsname}
+\permanent\protected\def\definetagconstant  #1{\immutable\cdefcsname\t!prefix!#1\endcsname{#1}}
+\permanent\protected\def\aliastagconstant #1#2{\aliased   \letcsname\t!prefix!#1\expandafter\endcsname\csname\t!prefix!#2\endcsname}
 
 %D In a parameter driven system, some parameters are shared by more system
 %D components. In \CONTEXT\ we can distinguish parameters by a unique prefix. Such a
@@ -206,7 +206,7 @@
 %D \definesystemvariable {name}
 %D \stoptyping
 
-\permanent\protected\def\definesystemvariable#1{\immutable\edefcsname\??prefix#1\endcsname{\@@prefix#1}}
+\permanent\protected\def\definesystemvariable#1{\immutable\cdefcsname\??prefix#1\endcsname{\@@prefix#1}}
 
 \definesystemvariable{ms}
 
@@ -370,7 +370,7 @@
 
 \aliased\let\stopmessages\relax
 
-\mutable\let\currentmessagetext\empty
+\mutable\lettonothing\currentmessagetext
 
 \permanent\protected\def\setinterfacemessage#1#2#3%
   {\ifcsname\m!prefix!#1\endcsname\else\immutable\gdefcsname\m!prefix!#1\endcsname{#1}\fi
@@ -685,11 +685,11 @@
 
 \permanent\overloaded\protected\def\setinterfaceconstant#1#2%
   {\clf_setinterfaceconstant{#1}{#2}%
-   \immutable\defcsname\c!prefix!#1\endcsname{#1}}
+   \immutable\cdefcsname\c!prefix!#1\endcsname{#1}}
 
 \permanent\overloaded\protected\def\setinterfacevariable#1#2%
   {\clf_setinterfacevariable{#1}{#2}%
-   \immutable\defcsname\v!prefix!#1\endcsname{#2}}
+   \immutable\cdefcsname\v!prefix!#1\endcsname{#2}}
 
 %D \macros
 %D   {defineinterfaceconstant}
@@ -699,7 +699,7 @@
 %D c||version, but for documentation purposes the x||alternative comes in handy.
 
 \permanent\overloaded\protected\def\defineinterfaceconstant#1#2%
-  {\immutable\defcsname\c!prefix!#1\endcsname{#2}}
+  {\immutable\cdefcsname\c!prefix!#1\endcsname{#2}}
 
 %D \macros
 %D   {startelements}

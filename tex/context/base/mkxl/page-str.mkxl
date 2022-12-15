@@ -31,7 +31,7 @@
 
 \unprotect
 
-\mutable\let\currentoutputstream\empty
+\mutable\lettonothing\currentoutputstream
 
 \newif   \ifinoutputstream        % will become a conditional or mode
 \newtoks \everyenableoutputstream

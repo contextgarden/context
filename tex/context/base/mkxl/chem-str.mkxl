@@ -82,7 +82,7 @@
   [\c!align=\v!normal,
    \c!strut=\v!no]
 
-\mutable\let\currentdefinedchemical\empty
+\mutable\lettonothing\currentdefinedchemical
 
 \permanent\protected\def\setupchemicalframed
   {\setupframed[\??chemicalframed]}
@@ -120,9 +120,9 @@
       \ifcase\currentxfontsize\or\scriptstyle\or\scriptscriptstyle\fi
       #1}}
 
-\setvalue{\??chemicalsize\v!small }{\txx}
-\setvalue{\??chemicalsize\v!medium}{\tx}
-\setvalue{\??chemicalsize\v!big   }{}
+\defcsname\??chemicalsize\v!small \endcsname{\txx}
+\defcsname\??chemicalsize\v!medium\endcsname{\tx}
+\defcsname\??chemicalsize\v!big   \endcsname{}
 
 \newtoks       \everychemical
 \newtoks       \everystructurechemical
@@ -256,14 +256,14 @@
 \permanent\protected\def\chemicalbottext#1{\global\settrue\c_chem_some_text\gdef\m_chem_bot_text{#1}\ignorespaces}
 \permanent\protected\def\chemicalmidtext#1{\global\settrue\c_chem_some_text\gdef\m_chem_mid_text{#1}\ignorespaces}
 
-\mutable\let\toptext\empty
-\mutable\let\bottext\empty
-\mutable\let\midtext\empty
+\mutable\lettonothing\toptext
+\mutable\lettonothing\bottext
+\mutable\lettonothing\midtext
 
 \appendtoks
-    \let\toptext\chemicaltoptext \glet\m_chem_top_text\empty
-    \let\bottext\chemicalbottext \glet\m_chem_bot_text\empty
-    \let\midtext\chemicalmidtext \glet\m_chem_mid_text\empty
+    \let\toptext\chemicaltoptext \glettonothing\m_chem_top_text
+    \let\bottext\chemicalbottext \glettonothing\m_chem_bot_text
+    \let\midtext\chemicalmidtext \glettonothing\m_chem_mid_text
     \global\setfalse\c_chem_some_text
 \to \everystructurechemical
 

@@ -40,9 +40,10 @@
 
 \installcorenamespace{module}
 
-\mutable\let\currentmodule          \s!unknown
-\mutable\let\currentmodulecategory  \empty
-\mutable\let\currentmoduleparameters\empty
+\mutable\let\currentmodule\s!unknown
+
+\mutable\lettonothing\currentmodulecategory
+\mutable\lettonothing\currentmoduleparameters
 
 \installmacrostack\currentmodule
 \installmacrostack\currentmodulecategory
@@ -53,21 +54,20 @@
    \push_macro_currentmodulecategory
    \push_macro_currentmoduleparameters
    \ifparameters
-     \let\currentmodule\empty
+     \lettonothing\currentmodule
    \or
-     \let \currentmodulecategory  \empty
-     \edef\currentmodule          {#category}%
-     \let \currentmoduleparameters\empty
+     \lettonothing\currentmodulecategory
+     \edef\currentmodule{#category}%
+     \lettonothing\currentmoduleparameters
    \or
      \ifhastok={#name}%
-       \let\currentmodulecategory   \empty
-       \edef\currentmodule          {#category}%
+       \lettonothing\currentmodulecategory
+       \edef\currentmodule{#category}%
        \edef\currentmoduleparameters{#name}%
      \else
-       \edef\currentmodulecategory  {#category}%
-       \edef\currentmodulecategory  {#category}%
-       \edef\currentmodule          {#name}%
-       \let \currentmoduleparameters\empty
+       \edef\currentmodulecategory{#category}%
+       \edef\currentmodule{#name}%
+       \lettonothing\currentmoduleparameters
      \fi
    \or
      \edef\currentmodulecategory  {#category}%
@@ -139,7 +139,7 @@
      \getparameters[\??module#name:][#parameters]% internal (defaults)
      \normalexpanded{\getparameters[\??module#name:][\the\scratchtoks]}% loadtime (user)
    \fi
-   \let\currentmoduleparameters\empty
+   \lettonothing\currentmoduleparameters
    \the\everysetupmodule}
 
 \permanent\def\moduleparameter#name#parameter% should have been \namedmoduleparameter

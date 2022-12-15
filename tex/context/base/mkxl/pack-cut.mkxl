@@ -58,12 +58,13 @@
 \newcount\cutmarkoffset      \cutmarkoffset      \plusone
 
 \mutable\let\cutmarksymbol       \relax
-\mutable\let\cutmarktoptext      \empty
-\mutable\let\cutmarkbottomtext   \empty
-\mutable\let\cutmarkhoffset      \empty
-\mutable\let\cutmarkvoffset      \empty
 \mutable\def\cutmarklength       {2\bodyfontsize}
 \mutable\def\cutmarkrulethickness{\onepoint}
+
+\mutable\lettonothing\cutmarktoptext
+\mutable\lettonothing\cutmarkbottomtext
+\mutable\lettonothing\cutmarkhoffset
+\mutable\lettonothing\cutmarkvoffset
 
 \permanent\protected\def\horizontalcuts
   {\hpack to \d_pack_cutmarks_width
@@ -122,7 +123,7 @@
            {\scratchskip\ifempty\cutmarkhoffset\cutmarkoffset\scratchdimen\else\cutmarkhoffset\fi
             \setbox\scratchbox\hpack{\verticalcuts}%
             \llap{\copy\scratchbox\hskip\scratchskip}%
-            \ifdim\d_pack_cutmarks_depth=\zeropoint
+            \ifzeropt\d_pack_cutmarks_depth
               \hfill
             \else
               \bgroup

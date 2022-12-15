@@ -637,7 +637,7 @@
     if nofposboxes = 1 :
         posboxes[1] := (posboxes[1] enlarged mpvar "lineoffset") cornered mpvar "lineoffset" ;
         fill posboxes[1] withcolor mpvar "fillcolor" ;
-        draw posboxes[1] withpen pencircle scaled mpvar "linewidth"  withcolor mpvar "linecolor"  ;
+        draw posboxes[1] withpen pencircle scaled mpvar "linewidth" withcolor mpvar "linecolor"  ;
     fi ;
 \stopMPpositiongraphic
 

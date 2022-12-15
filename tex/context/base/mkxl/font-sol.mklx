@@ -107,11 +107,11 @@
      }%
    \relax}
 
-\let\currentfontsolution\empty
+\lettonothing\currentfontsolution
 
 \permanent\protected\def\resetfontsolution % resets all
   {\clf_resetfontsolution
-   \let\currentfontsolution\empty}
+   \lettonothing\currentfontsolution}
 
 \permanent\protected\def\startfontsolution % [#1]
   {\pushmacro\currentfontsolution

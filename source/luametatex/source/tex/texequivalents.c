@@ -243,6 +243,7 @@ void tex_dump_equivalents_mem(dumpstream f)
     /*tex A special register. */
     dump_int(f, lmt_token_state.par_loc);
  /* dump_int(f, lmt_token_state.line_par_loc); */ /*tex See note in textoken.c|. */
+    dump_int(f, lmt_token_state.empty);
 }
 
 void tex_undump_equivalents_mem(dumpstream f)
@@ -284,6 +285,7 @@ void tex_undump_equivalents_mem(dumpstream f)
  /* } else { */
  /*     tex_fatal_undump_error("lineparloc"); */
  /* } */
+    undump_int(f, lmt_token_state.empty);
     return;
 }
 

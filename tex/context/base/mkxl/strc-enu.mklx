@@ -146,10 +146,10 @@
      \frozen\protected\instance \defcsname\e!stop #tag\endcsname{\stopnamedenumeration}%
    \fi}
 
-\let\m_strc_enumeration_sub\empty
+\lettonothing\m_strc_enumeration_sub
 
 \appendtoks
-    \let\m_strc_enumeration_sub\empty
+    \lettonothing\m_strc_enumeration_sub
     \ifempty\currentenumerationparent
        % clone => parent | subclone => clone | subsubclone => subclone
        \strc_define_commands_enumeration
@@ -182,8 +182,8 @@
   %\strc_enumerations_setup_counter\currentenumeration
 \to \everydefineenumeration
 
-\let\p_strc_constructions_title \empty
-\let\p_strc_constructions_number\empty
+\lettonothing\p_strc_constructions_title
+\lettonothing\p_strc_constructions_number
 
 \protected\defcsname\??constructioninitializer\v!enumeration\endcsname
   {\let         \currentenumeration              \currentconstruction

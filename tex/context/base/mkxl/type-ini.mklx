@@ -39,29 +39,29 @@
 \newtoks       \everybeforedefinetypeface
 \newtoks       \everyafterdefinetypeface
 
-\mutable\let\typescriptfiles   \empty
-\mutable\let\currenttypescripts\empty
-\mutable\let\currenttypefile   \empty
+\mutable\lettonothing\typescriptfiles
+\mutable\lettonothing\currenttypescripts
+\mutable\lettonothing\currenttypefile
 
 \installmacrostack\currenttypefile
 
-\mutable\let\typescriptone  \empty % public, used in typescripts
-\mutable\let\typescripttwo  \empty % public, used in typescripts
-\mutable\let\typescriptthree\empty % public, used in typescripts
+\mutable\lettonothing\typescriptone   % public, used in typescripts
+\mutable\lettonothing\typescripttwo   % public, used in typescripts
+\mutable\lettonothing\typescriptthree % public, used in typescripts
 
 \installmacrostack\typescriptone
 \installmacrostack\typescripttwo
 \installmacrostack\typescriptthree
 
-\mutable\let\fontclassstyle \empty
+\mutable\lettonothing\fontclassstyle
 
 \installmacrostack\fontclassstyle
 
-\let\m_font_typescripts_one  \empty
-\let\m_font_typescripts_two  \empty
-\let\m_font_typescripts_three\empty
-\let\m_font_typescripts_check\empty
-\let\m_font_typescripts_match\empty
+\lettonothing\m_font_typescripts_one
+\lettonothing\m_font_typescripts_two
+\lettonothing\m_font_typescripts_three
+\lettonothing\m_font_typescripts_check
+\lettonothing\m_font_typescripts_match
 
 \installmacrostack\m_font_typescripts_one
 \installmacrostack\m_font_typescripts_two
@@ -105,7 +105,7 @@
 
 \permanent\protected\def\usetypescriptfile[#filename]%
   {\ifcstok{#filename}\v!reset
-     \let\typescriptfiles\empty
+     \lettonothing\typescriptfiles
    \else
      \splitfilename{#filename}%
      \addtocommalist\splitoffbase\typescriptfiles
@@ -296,7 +296,7 @@
   {\let\typescriptone  \m_font_typescripts_one
    \let\typescripttwo  \m_font_typescripts_two
    \let\typescriptthree\m_font_typescripts_three
-   \let\m_font_typescripts_match\empty
+   \lettonothing\m_font_typescripts_match
    \doifelsenextoptionalcs\font_typescripts_start_process_one\font_typescripts_start_process_all}
 
 \def\font_typescripts_start_process_all % could be a \let
@@ -496,11 +496,11 @@
 
 \def\font_typefaces_defining_start#name#style#settings%
   {\let\m_ts_rscale    \!!plusone % as we push/pop
-   \let\m_ts_features  \empty
-   \let\m_ts_fallbacks \empty
-   \let\m_ts_goodies   \empty
-   \let\m_ts_direction \empty
-   \let\m_ts_designsize\empty
+   \lettonothing\m_ts_features
+   \lettonothing\m_ts_fallbacks
+   \lettonothing\m_ts_goodies
+   \lettonothing\m_ts_direction
+   \lettonothing\m_ts_designsize
    \geteparameters[m_ts_][#settings]% todo raw ... no need for key interpretation
    \push_macro_fontclass
    \push_macro_fontclassstyle

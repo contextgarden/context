@@ -96,10 +96,10 @@
      {\setbox\b_page_fitting\hpack\bgroup
         \scale[\c!scale=\fittingpageparameter\c!scale]{\box\b_page_fitting}%
       \egroup}%
-   \ifdim\ht\b_page_fitting=\zeropoint
+   \ifzeropt\ht\b_page_fitting
      \ht\b_page_fitting\onepoint
    \fi
-   \ifdim\wd\b_page_fitting=\zeropoint
+   \ifzeropt\wd\b_page_fitting
      \wd\b_page_fitting\onepoint
    \fi
    \d_page_fitting_width \wd\b_page_fitting

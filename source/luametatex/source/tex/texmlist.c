@@ -477,11 +477,11 @@ static void tex_aux_trace_kerns(halfword kern, const char *what, const char *det
     }
 }
 
-static halfword tex_aux_math_insert_font_kern(halfword current, scaled amount, halfword template, const char *trace)
+static halfword tex_aux_math_insert_font_kern(halfword current, scaled amount, halfword attributetemplate, const char *trace)
 {
     /*tex Maybe |math_font_kern|, also to prevent expansion. */
     halfword kern = tex_new_kern_node(amount, font_kern_subtype);
-    tex_attach_attribute_list_copy(kern, template ? template : current);
+    tex_attach_attribute_list_copy(kern, attributetemplate ? attributetemplate : current);
     if (node_next(current)) {
         tex_couple_nodes(kern, node_next(current));
     }
@@ -490,11 +490,11 @@ static halfword tex_aux_math_insert_font_kern(halfword current, scaled amount, h
     return kern; 
 }
 
-static halfword tex_aux_math_insert_italic_kern(halfword current, scaled amount, halfword template, const char *trace)
+static halfword tex_aux_math_insert_italic_kern(halfword current, scaled amount, halfword attributetemplate, const char *trace)
 {
     /*tex Maybe |math_italic_kern|. */
     halfword kern = tex_new_kern_node(amount, italic_kern_subtype);
-    tex_attach_attribute_list_copy(kern, template ? template : current);
+    tex_attach_attribute_list_copy(kern, attributetemplate ? attributetemplate : current);
     if (node_next(current)) {
         tex_couple_nodes(kern, node_next(current));
     }
@@ -1666,7 +1666,7 @@ inline static void tex_aux_calculate_glue(scaled m, scaled *f, scaled *n)
     /*tex integer part of |m| */
     *n = tex_x_over_n_r(m, unity, f);
     /*tex the new glue specification */
-    if (f < 0) {
+    if (*f < 0) {
         --n;
         f += unity;
     }
@@ -5540,9 +5540,9 @@ if (! stack && has_noad_option_exact(target)) {
     }
 }
 
-inline static int tex_aux_fallback_math_spacing_class(halfword style, halfword class)
+inline static int tex_aux_fallback_math_spacing_class(halfword style, halfword mathclass)
 {
-    unsigned parent = (unsigned) count_parameter(first_math_class_code + class);
+    unsigned parent = (unsigned) count_parameter(first_math_class_code + mathclass);
     switch (style) {
         case display_style:       case cramped_display_style:       return (parent >> 24) & 0xFF;
         case text_style:          case cramped_text_style:          return (parent >> 16) & 0xFF;
@@ -5673,9 +5673,9 @@ static halfword tex_aux_math_spacing_glue(halfword ltype, halfword rtype, halfwo
     }
 }
 
-inline static int tex_aux_fallback_math_ruling_class(halfword style, halfword class)
+inline static int tex_aux_fallback_math_ruling_class(halfword style, halfword mathclass)
 {
-    unsigned parent = (unsigned) count_parameter(first_math_atom_code + class);
+    unsigned parent = (unsigned) count_parameter(first_math_atom_code + mathclass);
     switch (style) {
         case display_style:       case cramped_display_style:       return (parent >> 24) & 0xFF;
         case text_style:          case cramped_text_style:          return (parent >> 16) & 0xFF;
@@ -6838,6 +6838,8 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
             Apply some logic. The hard coded pairwise comparison is replaced by a generic one
             because we can have more classes. For a while spacing and pairing was under a mode
             control but that made no sense. We start with the begin class.  
+
+            Setting |state->beginclass| still fragile ... todo. 
         */
         recent_class_overload = get_noad_right_class(current);
         if (current_type == simple_noad && state->beginclass == unset_noad_class) {
@@ -6852,6 +6854,9 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
             recent = current;
             current = node_next(current);
             goto WIPE;
+        }
+        if (recent_subtype == math_begin_class) {
+            state->beginclass = current_subtype;
         }
         /*tex 
             This is a special case where a sign starts something marked as (like) numeric, in 

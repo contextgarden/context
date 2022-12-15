@@ -70,13 +70,13 @@
    \fi}
 
 \def\page_injections_direct_settings_parameters#settings% #parameters%
-  {\let\currentpageinjection\empty
+  {\lettonothing\currentpageinjection
    \checkpageinjectionparent
    \setupcurrentpageinjection[#settings]%
    \page_injections_direct_indeed}
 
 \def\page_injections_direct_parameters% #parameters%
-  {\let\currentpageinjection\empty
+  {\lettonothing\currentpageinjection
    \checkpageinjectionparent
    \page_injections_direct_indeed}
 

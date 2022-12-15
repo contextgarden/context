@@ -44,7 +44,7 @@
 \permanent\protected\tolerant\protected\def\startfontclass[#class]%
   {\push_macro_fontclass
    \doifelse{#class}\v!each
-     {\let\fontclass\empty}
+     {\lettonothing\fontclass}
      {\doifsomething{#class}{\def\fontclass{#class}}}}
 
 \permanent\protected\def\stopfontclass
@@ -65,8 +65,8 @@
 
 \installcorenamespace {fontfile} % file synonyms
 
-\let\m_font_name\empty
-\let\m_font_file\empty
+\lettonothing\m_font_name
+\lettonothing\m_font_file
 
 \mutable\def\defaultfontfile{\truefontname{Normal}} % was cmtt10, but that one is gone
 
@@ -141,7 +141,7 @@
 
 % \def\fntsetdefname {\glet\somefontname\defaultfontfile}
 % \def\fntsetsomename{\gdef\somefontname} % takes argument
-% \def\fntsetnopsize {\let\somefontsize\empty}
+% \def\fntsetnopsize {\lettonothing\somefontsize}
 % \def\fntsetsomesize{\def\somefontsize}  % takes argument
 
 % happens later, else mkvi parsing gets into troubles
@@ -272,8 +272,8 @@
 %D model and at that time we still defaulted to no model at all. Nowadays we default
 %D to the \type {modern} fontclass.
 
-\let\fontclass       \empty
-\let\defaultfontclass\empty
+\lettonothing\fontclass
+\lettonothing\defaultfontclass
 
 \permanent\def\fontclassname#class#name% tricky ... no lastnamedcs here due to nesting
   {\ifcsname\??fontfile#class#name\endcsname
@@ -307,48 +307,48 @@
    \ifcsname\??fontfile          #name\s!features\endcsname \edef\m_font_features{\lastnamedcs}\orelse          % symbolic_name
    \ifcsname\??fontfile\fontclass#name\endcsname \expandafter\font_helpers_set_features_yes\lastnamedcs \orelse % class + parent_name
    \ifcsname\??fontfile          #name\endcsname \expandafter\font_helpers_set_features_yes\lastnamedcs \else   % parent_name
-   \let\m_font_features\empty\fi}
+   \lettonothing\m_font_features\fi}
 
 \def\font_helpers_set_fallbacks_yes#name%
   {\ifcsname\??fontfile\fontclass#name\s!fallbacks\endcsname \edef\m_font_fallbacks{\lastnamedcs}\orelse
    \ifcsname\??fontfile          #name\s!fallbacks\endcsname \edef\m_font_fallbacks{\lastnamedcs}\orelse
    \ifcsname\??fontfile\fontclass#name\endcsname \expandafter\font_helpers_set_fallbacks_yes\lastnamedcs \orelse
    \ifcsname\??fontfile          #name\endcsname \expandafter\font_helpers_set_fallbacks_yes\lastnamedcs \else
-   \let\m_font_fallbacks\empty\fi}
+   \lettonothing\m_font_fallbacks\fi}
 
 \def\font_helpers_set_goodies_yes#name%
   {\ifcsname\??fontfile\fontclass#name\s!goodies  \endcsname \edef\m_font_goodies{\lastnamedcs}\orelse
    \ifcsname\??fontfile          #name\s!goodies  \endcsname \edef\m_font_goodies{\lastnamedcs}\orelse
    \ifcsname\??fontfile\fontclass#name\endcsname \expandafter\font_helpers_set_goodies_yes\lastnamedcs \orelse
    \ifcsname\??fontfile          #name\endcsname \expandafter\font_helpers_set_goodies_yes\lastnamedcs \else
-   \let\m_font_goodies\empty\fi}
+   \lettonothing\m_font_goodies\fi}
 
 \def\font_helpers_set_designsize_yes#name%
   {\ifcsname\??fontfile\fontclass#name\s!designsize\endcsname \edef\m_font_designsize{\lastnamedcs}\orelse
    \ifcsname\??fontfile          #name\s!designsize\endcsname \edef\m_font_designsize{\lastnamedcs}\orelse
    \ifcsname\??fontfile\fontclass#name\endcsname \expandafter\font_helpers_set_designsize_yes\lastnamedcs \orelse
    \ifcsname\??fontfile          #name\endcsname \expandafter\font_helpers_set_designsize_yes\lastnamedcs \else
-   \let\m_font_designsize\empty\fi}
+   \lettonothing\m_font_designsize\fi}
 
 \def\font_helpers_set_features_nop#name%
   {\ifcsname\??fontfile#name\s!features\endcsname \edef\m_font_features{\lastnamedcs}\orelse
    \ifcsname\??fontfile#name\endcsname \expandafter\font_helpers_set_features_nop\lastnamedcs \else
-   \let\m_font_features\empty\fi}
+   \lettonothing\m_font_features\fi}
 
 \def\font_helpers_set_fallbacks_nop#name%
   {\ifcsname\??fontfile#name\s!fallbacks\endcsname \edef\m_font_fallbacks{\lastnamedcs}\orelse
    \ifcsname\??fontfile#name\endcsname \expandafter\font_helpers_set_fallbacks_nop\lastnamedcs \else
-   \let\m_font_fallbacks\empty\fi}
+   \lettonothing\m_font_fallbacks\fi}
 
 \def\font_helpers_set_goodies_nop#name%
   {\ifcsname\??fontfile#name\s!goodies\endcsname \edef\m_font_goodies{\lastnamedcs}\orelse
    \ifcsname\??fontfile#name\endcsname \expandafter\font_helpers_set_goodies_nop\lastnamedcs \else
-   \let\m_font_goodies\empty\fi}
+   \lettonothing\m_font_goodies\fi}
 
 \def\font_helpers_set_designsize_nop#name%
   {\ifcsname\??fontfile#name\s!designsize\endcsname \edef\m_font_designsize{\lastnamedcs}\orelse
    \ifcsname\??fontfile#name\endcsname \expandafter\font_helpers_set_designsize_nop\lastnamedcs \else
-   \let\m_font_designsize\empty\fi}
+   \lettonothing\m_font_designsize\fi}
 
 \def\font_helpers_update_font_parameters_yes
   {\font_helpers_set_features_yes  \somefontname

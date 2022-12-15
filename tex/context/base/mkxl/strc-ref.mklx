@@ -70,28 +70,28 @@
 
 \installdirectcommandhandler \??referencing {referencing} % \??referencing
 
-\mutable\let\referenceprefix               \empty
+\mutable\lettonothing\referenceprefix
 
-\mutable\let\currentdestinationattribute   \empty
+\mutable\lettonothing\currentdestinationattribute
 
-\mutable\let\currentreferenceattribute     \empty
-\mutable\let\currentreferencecoding        \empty
-\mutable\let\currentreferencecontent       \empty
-\mutable\let\currentreferencedata          \empty
-\mutable\let\currentreferenceexpansion     \empty
-\mutable\let\currentreferenceformatautocase\empty
-\mutable\let\currentreferenceformatlabel   \empty
-\mutable\let\currentreferenceformatsetups  \empty
-\mutable\let\currentreferenceformattype    \empty
-\mutable\let\currentreferencekind          \empty
-\mutable\let\currentreferencelabels        \empty
-%mutable\let\currentreferencenumber        \empty
-%mutable\let\currentreferenceorder         \empty
-%mutable\let\currentreferencepage          \empty
-%mutable\let\currentreferencerealpage      \empty
-%mutable\let\currentreferencetext          \empty
-%mutable\let\currentreferencetitle         \empty
-\mutable\let\currentreferenceuserdata      \empty
+\mutable\lettonothing\currentreferenceattribute
+\mutable\lettonothing\currentreferencecoding
+\mutable\lettonothing\currentreferencecontent
+\mutable\lettonothing\currentreferencedata
+\mutable\lettonothing\currentreferenceexpansion
+\mutable\lettonothing\currentreferenceformatautocase
+\mutable\lettonothing\currentreferenceformatlabel
+\mutable\lettonothing\currentreferenceformatsetups
+\mutable\lettonothing\currentreferenceformattype
+\mutable\lettonothing\currentreferencekind
+\mutable\lettonothing\currentreferencelabels
+%mutable\lettonothing\currentreferencenumber
+%mutable\lettonothing\currentreferenceorder
+%mutable\lettonothing\currentreferencepage
+%mutable\lettonothing\currentreferencerealpage
+%mutable\lettonothing\currentreferencetext
+%mutable\lettonothing\currentreferencetitle
+\mutable\lettonothing\currentreferenceuserdata
 
 \newif\ifreferencing \referencingtrue
 
@@ -375,7 +375,7 @@
    \ifnum\lastdestinationattribute>\zerocount
      \edef#cs{attr \destinationattribute\number\lastdestinationattribute}%
    \else
-     \let#cs\empty
+     \lettonothing#cs%
    \fi}
 
 %D It's about time to clean up references .. stable enough now.
@@ -542,7 +542,7 @@
 %D one keeps references local, but the global ones in view. To enable this feature,
 %D we explictly split the prefix from the reference.
 
-\let\referenceprefix\empty
+\lettonothing\referenceprefix
 
 %D For a long time the only way to access an external file was to use the file
 %D prefix (\type {somefile::}. However, when you split up a document, redefining the
@@ -580,11 +580,11 @@
 %D
 %D We also use the odd/even characteristic to determine the page state.
 
-\mutable\let\currentrealreference      \empty
-\mutable\let\currentpagereference      \empty
-\mutable\let\currenttextreference      \empty
-\mutable\let\currentsubtextreference   \empty
-\mutable\let\currentsubsubtextreference\empty
+\mutable\lettonothing\currentrealreference
+\mutable\lettonothing\currentpagereference
+\mutable\lettonothing\currenttextreference
+\mutable\lettonothing\currentsubtextreference
+\mutable\lettonothing\currentsubsubtextreference
 
 % referencepagestate:
 %
@@ -923,14 +923,14 @@
 \permanent\protected\def\setupreferenceprefix[#prefix]%
   {\edef\p_prefix{#prefix}%
    \ifempty\p_prefix
-     \let\referenceprefix\empty
+     \lettonothing\referenceprefix
    \orelse\ifx\p_prefix\m_strc_references_prefix_yes
      \letreferencingparameter\c!prefix\s!unknown
      \global\advance\prefixcounter\plusone
      \edef\referenceprefix{\the\prefixcounter}%
    \orelse\ifx\p_prefix\m_strc_references_prefix_nop
      \letreferencingparameter\c!prefix\s!unknown
-     \let\referenceprefix\empty
+     \lettonothing\referenceprefix
    \orelse\ifx\p_prefix\s!unknown
      % forget about it
    \else
@@ -1217,9 +1217,9 @@
 \newtoks\defaultleftreferencetoks
 \newtoks\defaultrightreferencetoks
 
-\permanent\let\rightofreferencecontent\empty
-\permanent\let\leftofreference        \empty
-\permanent\let\rightofreference       \empty
+\permanent\lettonothing\rightofreferencecontent
+\permanent\lettonothing\leftofreference
+\permanent\lettonothing\rightofreference
 
 \permanent\protected\def\leftofreferencecontent
   {\removeunwantedspaces
@@ -1284,14 +1284,14 @@
        {#1}%
      \else
        \defaultleftreferencetoks
-       \enforced\let\leftofreferencecontent\empty
+       \enforced\lettonothing\leftofreferencecontent
      \fi
    \rightreferencetoks
      \ifparameter#2\or
        {#2}%
      \else
        \defaultrightreferencetoks
-       \enforced\let\rightofreferencecontent\empty
+       \enforced\lettonothing\rightofreferencecontent
      \fi
    % inefficient: double resolve
    \doifelsereferencefound{#3} % we need to resolve the text
@@ -1411,8 +1411,8 @@
      \def\currentreferencecontent{\directsetup\currentreferenceformatsetups}%
    \fi
    %
-   \enforced\let\leftofreferencecontent \empty
-   \enforced\let\rightofreferencecontent\empty
+   \enforced\lettonothing\leftofreferencecontent
+   \enforced\lettonothing\rightofreferencecontent
    \strc_references_pickup_goto}
 
 \permanent\protected\def\autoreferencelabeltext

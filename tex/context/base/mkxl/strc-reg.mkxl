@@ -138,33 +138,33 @@
 %D test \index{test+one} test \index{test+two} more \index{more}
 %D \stoptyping
 
-\mutable\let\currentregistercharacter   \empty
-\mutable\let\currentregistercoding      \empty
-\mutable\let\currentregisterentries     \empty
-\mutable\let\currentregisterentriesa    \empty
-\mutable\let\currentregisterentriesb    \empty
-\mutable\let\currentregisterentriesc    \empty
-\mutable\let\currentregisterexpansion   \empty
-\mutable\let\currentregisterkeys        \empty
-\mutable\let\currentregisterkeysa       \empty
-\mutable\let\currentregisterkeysb       \empty
-\mutable\let\currentregisterkeysc       \empty
-\mutable\let\currentregisterlabel       \empty
-\mutable\let\currentregistermaxwidth    \empty
-\mutable\let\currentregistername        \empty
-\mutable\let\currentregisternumber      \empty
-\mutable\let\currentregisterownnumber   \empty
-\mutable\let\currentregisterpageindex   \empty
-\mutable\let\currentregisterpagesymbol  \empty
-\mutable\let\currentregistersectionindex\empty
-\mutable\let\currentregisterseeindex    \empty
-\mutable\let\currentregisterseeword     \empty
-\mutable\let\currentregistersynchronize \empty
-\mutable\let\currentregisterxmlsetup    \empty
-\mutable\let\currentregisterprocessors  \empty
-\mutable\let\currentregisterprocessorsa \empty
-\mutable\let\currentregisterprocessorsb \empty
-\mutable\let\currentregisterprocessorsc \empty
+\mutable\lettonothing\currentregistercharacter
+\mutable\lettonothing\currentregistercoding
+\mutable\lettonothing\currentregisterentries
+\mutable\lettonothing\currentregisterentriesa
+\mutable\lettonothing\currentregisterentriesb
+\mutable\lettonothing\currentregisterentriesc
+\mutable\lettonothing\currentregisterexpansion
+\mutable\lettonothing\currentregisterkeys
+\mutable\lettonothing\currentregisterkeysa
+\mutable\lettonothing\currentregisterkeysb
+\mutable\lettonothing\currentregisterkeysc
+\mutable\lettonothing\currentregisterlabel
+\mutable\lettonothing\currentregistermaxwidth
+\mutable\lettonothing\currentregistername
+\mutable\lettonothing\currentregisternumber
+\mutable\lettonothing\currentregisterownnumber
+\mutable\lettonothing\currentregisterpageindex
+\mutable\lettonothing\currentregisterpagesymbol
+\mutable\lettonothing\currentregistersectionindex
+\mutable\lettonothing\currentregisterseeindex
+\mutable\lettonothing\currentregisterseeword
+\mutable\lettonothing\currentregistersynchronize
+\mutable\lettonothing\currentregisterxmlsetup
+\mutable\lettonothing\currentregisterprocessors
+\mutable\lettonothing\currentregisterprocessorsa
+\mutable\lettonothing\currentregisterprocessorsb
+\mutable\lettonothing\currentregisterprocessorsc
 
 \newconditional\c_strc_registers_defining
 \setnewconstant\c_strc_registers_maxlevel \plusfive
@@ -188,8 +188,8 @@
       \dorecurse\c_strc_registers_maxlevel{% weird, expanded should not be needed
         \normalexpanded{\defineregister[\currentregister:\recurselevel][\currentregister]}%
        %\defineregister[\currentregister:\recurselevel][\currentregister]%
-        \letregisterparameter{\c!entries:\recurselevel}\empty % needed as we use detokenize (ok, we can
-        \letregisterparameter{\c!keys   :\recurselevel}\empty % avoid it, but it's faster too)
+        \resetregisterparameter{\c!entries:\recurselevel}% needed as we use detokenize (ok, we can
+        \resetregisterparameter{\c!keys   :\recurselevel}% avoid it, but it's faster too)
       }%
       %
       \setfalse\c_strc_registers_defining
@@ -202,8 +202,8 @@
 
 %D Registering:
 
-\glet\currentregistername  \empty
-\glet\currentregisternumber\!!zerocount
+\glettonothing\currentregistername
+\glet         \currentregisternumber\!!zerocount
 
 \def\strc_registers_register_page_entry
   {\iftrialtypesetting
@@ -1083,7 +1083,7 @@
      \fi
    \fi}
 
-\let\m_current_register\empty
+\lettonothing\m_current_register
 
 \permanent\protected\def\pushcurrentregister#1%
   {\let\m_current_register\currentregister
@@ -1156,7 +1156,7 @@
        \doapplyregisterentrycommand{#2}{#5}%
      \fi
    \else
-     \let\currentregisterseeindex\empty
+     \lettonothing\currentregisterseeindex
      \doapplyregisterentrycommand{#2}{#5}%
    \fi
    \popcurrentregister}
@@ -1191,7 +1191,7 @@
    \iflocation
      \def\currentregisterseeindex{#6}%
    \else
-     \let\currentregisterseeindex\empty
+     \lettonothing\currentregisterseeindex
    \fi
    \ifnum#2=\plusone
      \labeltexts\v!see{\doapplyregisterseecommand{#4}{#7}}%
@@ -1224,7 +1224,7 @@
    \iflocation
      \def\currentregistersectionindex{#6}%
    \else
-     \let\currentregistersectionindex\empty
+     \lettonothing\currentregistersectionindex
    \fi
    \ifnum#2=\plusone\else
       ,\space
@@ -1284,7 +1284,7 @@
 
 % not yet ok : new internal handler names
 
-\aliased\let\registerpageseparatorsymbol\empty
+\lettonothing\registerpageseparatorsymbol
 
 \permanent\protected\def\registerpagebuttonsymbol
   {\vrule\s!width\emwidth\s!height\exheight\s!depth\zeropoint\relax}
@@ -1298,7 +1298,7 @@
   {\enforced\frozen\def\registerpageseparatorsymbol{,\space}} % now done via conversion
 
 \defcsname\??registersymbol\v!none\endcsname
-  {\enforced\frozen\let\registerpageseparatorsymbol\empty
+  {\enforced\frozen\lettonothing\registerpageseparatorsymbol
    \enforced\frozen\let\registeronepage\gobblefivearguments
    \enforced\frozen\let\registerpagerange\gobbleeightarguments}
 

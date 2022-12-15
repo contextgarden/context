@@ -280,7 +280,7 @@
 
 \newconditional\c_strc_tags_enabled
 
-\aliased\let\dotaggedplaceholder\empty
+\lettonothing\dotaggedplaceholder
 
 \immutable\chardef\strc_tags_placeholder_char\zerocount % "FFFC
 
@@ -309,7 +309,7 @@
      \enforced\let\dostoptagged         \donothing
    \else
      % initial
-     \enforced\let\dotaggedplaceholder  \empty
+     \enforced\lettonothing\dotaggedplaceholder
      \enforced\let\dostarttagged        \gobbletwoarguments
      \enforced\let\dostarttaggednodetail\gobbleoneargument
      \enforced\let\dostarttaggedchained \gobblethreearguments
@@ -388,10 +388,10 @@
   {\endgraf % we end before the group
    \begingroup
    \ifarguments
-     \let\currentparagraph\empty
+     \lettonothing\currentparagraph
    \or
      \ifhastok={#1}%
-       \let\currentparagraph\empty
+       \lettonothing\currentparagraph
        \setupcurrentparagraph[#1]
      \else
        \edef\currentparagraph{#1}%

@@ -34,7 +34,7 @@
 %D graphics. The color control flags are also gone as we now integrate into the
 %D regular colorspace handling (i.e.\ no longer independent configurations.)
 
-\mutable\let\MPfilename\empty
+\mutable\lettonothing\MPfilename
 
 \permanent\protected\def\convertMPtoPDF#1#2#3% scaling no longer supported at this level (so #2 & #3 are ignored)
   {\dostarttagged\t!mpgraphic\empty

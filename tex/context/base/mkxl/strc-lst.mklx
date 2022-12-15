@@ -258,7 +258,7 @@
       % use settings of first
    \else
       % use settings of root
-      \let\m_first\empty
+      \lettonothing\m_first
    \fi
    \strc_lists_place_indeed\m_first\m_list{#settings}%
    \stoppacked
@@ -271,7 +271,7 @@
 
 \def\strc_lists_place_indeed#tag#list#settings%
   {\begingroup
-   \the\t_lists_every_renderingcleanup % \let\currentlistentrylocation\empty
+   \the\t_lists_every_renderingcleanup % \lettonothing\currentlistentrylocation
    \edef\currentlist{#tag}%
    \setupcurrentlist[#settings]%
    \the\everystructurelist
@@ -523,7 +523,7 @@
 
 \permanent\protected\def\strclistsentryprocess#tag#method#index#extra% This one is called at the lua end!
   {\clf_pushlist#index\relax
-  %\let\currentlistentrylocation\empty
+  %\lettonothing\currentlistentrylocation
    \edef\currentlist      {#tag}%
    \edef\currentlistmethod{#method}%
    \edef\currentlistindex {#index}%
@@ -627,7 +627,8 @@
    \rightlabeltext\currentlistlabel}
 
 \mutable\let\currentlistnumber\!!zerocount
-\mutable\let\currentlistlabel \empty
+
+\mutable\lettonothing\currentlistlabel
 
 \protected\def\strc_lists_symbol_default
   {\dontleavehmode
@@ -852,10 +853,10 @@
 \newconditional\c_lists_show_number
 \newconditional\c_lists_show_page
 
-\mutable\let\currentlistentrylocation  \empty % watch the 'entry' in the name
-\mutable\let\currentlistentrynumber    \empty % watch the 'entry' in the name
-\mutable\let\currentlistentrytitle     \empty % watch the 'entry' in the name
-\mutable\let\currentlistentrypagenumber\empty % watch the 'entry' in the name
+\mutable\lettonothing\currentlistentrylocation   % watch the 'entry' in the name
+\mutable\lettonothing\currentlistentrynumber     % watch the 'entry' in the name
+\mutable\lettonothing\currentlistentrytitle      % watch the 'entry' in the name
+\mutable\lettonothing\currentlistentrypagenumber % watch the 'entry' in the name
 
 \appendtoks
     \dontcomplain
@@ -918,10 +919,10 @@
 \appendtoks
    % as we don't want any interference we clear some variables
    % afterwards
-   \let\currentlistentrylocation  \empty
-   \let\currentlistentrynumber    \empty
-   \let\currentlistentrytitle     \empty
-   \let\currentlistentrypagenumber\empty
+   \lettonothing\currentlistentrylocation
+   \lettonothing\currentlistentrynumber
+   \lettonothing\currentlistentrytitle
+   \lettonothing\currentlistentrypagenumber
    \setfalse\c_lists_has_page
    \setfalse\c_lists_has_number
    \setfalse\c_lists_show_page
@@ -929,7 +930,7 @@
    \setfalse\c_lists_show_number
 \to \t_lists_every_renderingcleanup
 
-\let\m_strc_list_alternative\empty % combined
+\lettonothing\m_strc_list_alternative % combined
 
 \protected\def\strc_lists_apply_renderingsetup
   {\the\t_lists_every_renderingsetup
@@ -1247,8 +1248,8 @@
     \noindent % otherwise annotations are mirrored up
     \typo_injectors_mark_list
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
-        \letlistparameter\c!depth\zeropoint
-        \letlistparameter\c!color\empty
+        \letlistparameter   \c!depth\zeropoint
+        \resettlistparameter\c!color
         \inheritedlistframed {
             \letinteractionparameter\c!strut\v!no % still needed?
             \strc_lists_set_style_color\c!style\c!color\v!all
@@ -1475,8 +1476,8 @@
      \a_strc_lists_destination\attributeunsetvalue
    \fi
    \ifnum\a_strc_lists_destination=\attributeunsetvalue
-     \let\strc_lists_get_destination_attribute\empty
-     \let\strc_lists_set_destination_attribute\empty
+     \lettonothing\strc_lists_get_destination_attribute
+     \lettonothing\strc_lists_set_destination_attribute
    \else
      \let\strc_lists_get_destination_attribute\strc_lists_get_destination_attribute_indeed
      \let\strc_lists_set_destination_attribute\strc_lists_set_destination_attribute_indeed
@@ -1487,8 +1488,8 @@
    \a_strc_lists_destination\attributeunsetvalue
    \let\strc_lists_get_reference_attribute\gobbleoneargument
    \let\strc_lists_set_reference_attribute\gobbleoneargument
-   \let\strc_lists_get_destination_attribute\empty
-   \let\strc_lists_set_destination_attribute\empty
+   \lettonothing\strc_lists_get_destination_attribute
+   \lettonothing\strc_lists_set_destination_attribute
    \let\strc_lists_set_style_color\strc_lists_set_style_color_normal}
 
 \def\strc_lists_interaction_check_yes
@@ -1503,8 +1504,8 @@
 \def\strc_lists_interaction_check_nop
   {\let\strc_lists_get_reference_attribute  \gobbleoneargument
    \let\strc_lists_set_reference_attribute  \gobbleoneargument
-   \let\strc_lists_get_destination_attribute\empty
-   \let\strc_lists_set_destination_attribute\empty
+   \lettonothing\strc_lists_get_destination_attribute
+   \lettonothing\strc_lists_set_destination_attribute
    \let\strc_lists_set_style_color          \strc_lists_set_style_color_normal}
 
 \strc_lists_interaction_check_nop

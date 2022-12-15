@@ -494,11 +494,11 @@
 %D \macros
 %D   {tempstring, scratchstring*}
 
-\mutable\let\tempstring      \empty
+\mutable\lettonothing\tempstring
 
-\mutable\let\scratchstring   \empty
-\mutable\let\scratchstringone\empty
-\mutable\let\scratchstringtwo\empty
+\mutable\lettonothing\scratchstring
+\mutable\lettonothing\scratchstringone
+\mutable\lettonothing\scratchstringtwo
 
 %D \macros
 %D   {scratchwidth, scratchheight, scratchdepth, scratchoffset, scratchdistance}
@@ -968,7 +968,7 @@
 %D {\let} (the only advantage is that we often give them names with some
 %D prefix.
 
-\permanent\protected\def\newmacro   #1{\mutable\let#1\empty}
+\permanent\protected\def\newmacro   #1{\mutable\lettonothing#1}
 \permanent\protected\def\setnewmacro#1{\mutable\let#1}
 
 \permanent\protected\def\newfraction#1{\mutable\let#1\!!plusone}
@@ -1234,7 +1234,7 @@
      \immediate\write\statuswrite{fatal error: duplicate system namespace '#1'}%
    \else
      \global\advance\c_syst_helpers_n_of_namespaces\plusone
-     \immutable\edefcsname ??#1\endcsname{\v_interfaces_prefix_template_system}%
+     \immutable\cdefcsname ??#1\endcsname{\v_interfaces_prefix_template_system}%
    \fi}
 
 %D It makes more sense to have these here:
@@ -1281,8 +1281,9 @@
 \mutable\let\of  \relax % \empty
 \mutable\let\and \relax % \empty
 \mutable\let\with\relax % \empty
-\mutable\let\nop \empty % used often
-\mutable\let\yes \empty % used often
+
+\mutable\lettonothing\nop % used often
+\mutable\lettonothing\yes % used often
 
 %D Another experiment:
 

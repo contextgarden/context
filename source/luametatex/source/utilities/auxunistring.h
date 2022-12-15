@@ -6,7 +6,8 @@
 # define LMT_UTILITIES_UNISTRING_H
 
 extern unsigned char *aux_uni2str      (unsigned);
-extern unsigned       aux_str2uni      (const unsigned char *);
+extern unsigned       aux_str2uni      (const unsigned char *text);
+extern unsigned       aux_str2uni_len  (const unsigned char *text, int *len);
 extern char          *aux_uni2string   (char *utf8_text, unsigned ch);
 extern unsigned       aux_splitutf2uni (unsigned int *ubuf, const char *utf8buf);
 extern size_t         aux_utf8len      (const char *text, size_t size);

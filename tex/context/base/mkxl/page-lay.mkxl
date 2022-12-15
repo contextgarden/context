@@ -154,7 +154,7 @@
       \page_layouts_check_next
     \or % \setuplayout[name]
       \ifx\currentlayout\v!reset
-        \let\currentlayout\empty
+        \lettonothing\currentlayout
       \fi
       \letlayoutparameter\c!state\v!normal % global ? still needed ?
       \glet\currentlayout\currentlayout % global
@@ -162,7 +162,7 @@
       \page_layouts_check_next
     \or % \setuplayout (reverts to main layout)
       \letlayoutparameter\c!state\v!normal % global ? still needed ?
-      \glet\currentlayout\empty % global
+      \glettonothing\currentlayout % global
       \page_layouts_synchronize
       \page_layouts_check_next
     \fi
@@ -334,8 +334,8 @@
 \let\v_page_target_top_fill   \relax
 \let\v_page_target_bottom_fill\relax
 
-\let\papersize     \empty
-\let\printpapersize\empty
+\lettonothing\papersize
+\lettonothing\printpapersize
 
 \def\v_page_target_top      {\namedlayouttargetparameter\papersize\c!top   }
 \def\v_page_target_bottom   {\namedlayouttargetparameter\papersize\c!bottom}
@@ -430,7 +430,7 @@
    \fi}
 
 \protected\def\page_paper_setup_size_settings[#1]% sometimes used to set paper/print size
-  {\let\currentlayouttarget\empty
+  {\lettonothing\currentlayouttarget
    \edef\m_layouttarget_paper_saved{\page_paper_the_paper_size{\layouttargetparameter\c!page }}%
    \edef\m_layouttarget_print_saved{\page_paper_the_print_size{\layouttargetparameter\c!paper}}%
    \setupcurrentlayouttarget[#1]%
@@ -570,7 +570,7 @@
    \page_paper_set_restore\m_page_asked_paper\m_page_asked_print
    %
    % locate page target
-   \let\currentlayouttarget\empty
+   \lettonothing\currentlayouttarget
    \page_paper_reset_paper
    \processcommacommand[\m_page_asked_paper]\page_paper_identify_target
    \ifempty\currentlayouttarget
@@ -661,8 +661,8 @@
     \let\synchronizegridsnapping\relax
 \fi
 
-\let\p_page_layouts_width \empty
-\let\p_page_layouts_height\empty
+\lettonothing\p_page_layouts_width
+\lettonothing\p_page_layouts_height
 
 \def\page_layouts_synchronize
   {\setups[\layoutparameter\c!preset]\relax
@@ -879,8 +879,40 @@
    \glet\v_page_layouts_pre_check\relax
    \page_layouts_synchronize}
 
+% \def\page_layouts_check_default
+%   {\ifcsname\namedlayouthash\v_real_page_normal\c!state\endcsname
+%      \page_layouts_check_default_indeed\v_real_page_normal
+%    \orelse\ifcsname\namedlayouthash\v_real_page_reverse\c!state\endcsname
+%      \page_layouts_check_default_indeed\v_real_page_reverse
+%    \orelse\ifcsname\namedlayouthash\v_real_page_named\c!state\endcsname
+%      \page_layouts_check_default_indeed\v_real_page_named
+%    \orelse\ifcsname\namedlayouthash\v_real_page_current\c!state\endcsname
+%      \page_layouts_check_default_indeed\v_real_page_current
+%    \orelse\ifcsname\namedlayouthash\v_real_page_odd_or_even\c!state\endcsname
+%      \page_layouts_check_default_indeed\v_real_page_odd_or_even
+%    \orelse\ifrelax\v_page_layouts_pre_check
+%      % okay
+%    \else
+%      \page_layouts_check_revert
+%    \fi}
+
+% \showframe
+%
+% \setuplayout         [width=100mm,height=200mm]
+% \definelayout[shorta][height=80mm]
+% \definelayout[shortb][height=130mm]
+%
+% \starttext
+%     \definelayout[2][shorta] \definelayout[4][shortb]
+%     \definelayout[7][shorta] \definelayout[8][shortb] % we need to check before
+%     \dorecurse{20}{#1: \samplefile{knuth}\par}
+% \stoptext
+
 \def\page_layouts_check_default
-  {\ifcsname\namedlayouthash\v_real_page_normal\c!state\endcsname
+  {\ifrelax\v_page_layouts_pre_check\else
+     \page_layouts_check_revert
+   \fi
+   \ifcsname\namedlayouthash\v_real_page_normal\c!state\endcsname
      \page_layouts_check_default_indeed\v_real_page_normal
    \orelse\ifcsname\namedlayouthash\v_real_page_reverse\c!state\endcsname
      \page_layouts_check_default_indeed\v_real_page_reverse
@@ -890,10 +922,10 @@
      \page_layouts_check_default_indeed\v_real_page_current
    \orelse\ifcsname\namedlayouthash\v_real_page_odd_or_even\c!state\endcsname
      \page_layouts_check_default_indeed\v_real_page_odd_or_even
-   \orelse\ifrelax\v_page_layouts_pre_check
-     % okay
-   \else
-     \page_layouts_check_revert
+ % \orelse\ifrelax\v_page_layouts_pre_check
+ %   % okay
+ % \else
+ %   \page_layouts_check_revert
    \fi}
 
 \permanent\protected\def\installlayoutmethod#1#2%

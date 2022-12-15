@@ -44,6 +44,7 @@ local function flags(t)
     if t.instance  then r[#r+1] = "instance"  end
     if t.tolerant  then r[#r+1] = "tolerant"  end
     if t.protected then r[#r+1] = "protected" end
+    if t.constant  then r[#r+1] = "constant"  end
     return r
 end
 
@@ -119,6 +120,7 @@ interfaces.implement {
                 elseif cn == "letter" or cn == "other char" then
                     wr(f3(id,cd,ix,cn,ix))
                 elseif cn == "match" then
+                    -- needs checking for additions
                     local s
                         if ix == 32 then s = "optional spacer"     -- space
                     elseif ix == 42 then s = "skip spaces"         -- *

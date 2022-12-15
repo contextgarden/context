@@ -788,7 +788,7 @@
   {\begingroup
    \begingroup
    \doifelseassignment{#1}%
-     {\let\currentpagecolumns\empty
+     {\lettonothing\currentpagecolumns
       \setuppagecolumns[#1]}%
      {\edef\currentpagecolumns{#1}}%
    \edef\p_page{\pagecolumnsparameter\c!page}%

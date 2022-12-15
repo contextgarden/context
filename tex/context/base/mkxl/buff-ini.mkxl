@@ -22,7 +22,7 @@
 %D pretty and never be efficient but it has served us for ages (conceptually it's
 %D as in \MKII).
 
-\mutable\let\currentbuffer\empty
+\mutable\lettonothing\currentbuffer
 
 % \doifelsebuffer      {#1} % expandable
 % \doifelsebufferempty {#1} % non expandable

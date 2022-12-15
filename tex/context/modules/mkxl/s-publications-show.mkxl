@@ -26,9 +26,9 @@
 
 \tolerant\gdef\publ_show_dataset_whatever#1[#2]%
   {\begingroup
-   \letdummyparameter\c!specification\currentbtxspecification
-   \setdummyparameter\c!dataset      {\currentbtxdataset}%
-   \letdummyparameter\c!field        \empty
+   \letdummyparameter  \c!specification\currentbtxspecification
+   \setdummyparameter  \c!dataset      {\currentbtxdataset}%
+   \resetdummyparameter\c!field
    \ifparameter#2\or
      \ifhastok={#2}%
        \getdummyparameters[#2]%

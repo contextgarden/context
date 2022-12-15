@@ -131,11 +131,11 @@
    \relax
    \endgroup}
 
-\mutable\let\currentparallelinstance\empty
-\mutable\let\currentparallelnumber  \empty
-\mutable\let\currentparallelline    \empty
-\mutable\let\currentparallellabel   \empty
-\mutable\let\currentparallelcontent \empty
+\mutable\lettonothing\currentparallelinstance
+\mutable\lettonothing\currentparallelnumber
+\mutable\lettonothing\currentparallelline
+\mutable\lettonothing\currentparallellabel
+\mutable\lettonothing\currentparallelcontent
 
 \permanent\protected\def\doflushparallel#instance#status#line#label#content% called at lua end
   {\begingroup

@@ -92,7 +92,7 @@ token_state_info lmt_token_state = {
     .buffer         = NULL,
     .bufloc         = 0,
     .bufmax         = 0,
-    .padding        = 0,
+    .empty          = null, 
 };
 
 /*tex Some properties are dumped in the format so these are aet already! */
@@ -212,6 +212,7 @@ void tex_compact_tokens(void)
                     }
             }
         }
+        lmt_token_state.empty = mapper[lmt_token_state.empty];
      // print(dump_state.format_identifier);
         tex_print_format("tokenlist compacted from %i to %i entries, ", lmt_token_memory_state.tokens_data.top, nc);
         if (nofluacmds) {
@@ -335,27 +336,41 @@ void tex_add_token_reference(halfword p)
 {
     if (get_token_reference(p) < max_token_reference) {
         add_token_reference(p);
-    } else {
-        tex_overflow_error("reference count", max_token_reference);
+ //   } else {
+ //       tex_overflow_error("reference count", max_token_reference);
     }
 }
 
 void tex_increment_token_reference(halfword p, int n)
 {
     if ((get_token_reference(p) + n) < max_token_reference) {
-        inc_token_reference(p,n);
-    } else {
-        tex_overflow_error("reference count", max_token_reference);
+        inc_token_reference(p, n);
+    } else { 
+        inc_token_reference(p, max_token_reference - get_token_reference(p));
+ // } else {
+ //     tex_overflow_error("reference count", max_token_reference);
     }
 }
+
+// void tex_delete_token_reference(halfword p)
+// {
+//     if (p) {
+//         if (get_token_reference(p)) {
+//             sub_token_reference(p);
+//         } else {
+//             tex_flush_token_list(p);
+//         }
+//     }
+// }
 
 void tex_delete_token_reference(halfword p)
 {
     if (p) {
-        if (get_token_reference(p)) {
-            sub_token_reference(p);
-        } else {
+        halfword r = get_token_reference(p);
+        if (! r) {
             tex_flush_token_list(p);
+        } if(r < max_token_reference) {
+            sub_token_reference(p);
         }
     }
 }
@@ -465,6 +480,9 @@ void tex_print_meaning(halfword code)
                 tex_print_cs(cur_cs);
                 return;
             } else {
+                if (cur_chr && get_token_reference(cur_chr) == max_token_reference) {
+                    tex_print_str("constant ");
+                }
                 switch (code) {
                     case meaning_code:
                     case meaning_full_code:
@@ -477,7 +495,7 @@ void tex_print_meaning(halfword code)
                         tex_print_cs(cur_cs);
                         tex_print_char(' ');
                         if (cur_chr && token_link(cur_chr)) {
-                            halfword body = get_token_parameters(cur_chr) ? tex_show_token_list(token_link(cur_chr), null, default_token_show_max, 1) : token_link(cur_chr);
+                            halfword body = get_token_preamble(cur_chr) ? tex_show_token_list(token_link(cur_chr), null, default_token_show_max, 1) : token_link(cur_chr);
                             tex_print_char('{');
                             if (body) {
                                 tex_show_token_list(body, null, default_token_show_max, 0);
@@ -582,7 +600,7 @@ halfword tex_show_token_list(halfword p, halfword q, int l, int asis)
 {
     if (p) {
         /*tex the highest parameter number, as an \ASCII\ digit */
-        unsigned char n = '0';
+        unsigned char n = 0;
         int min = 0;
         int max = lmt_token_memory_state.tokens_data.top;
         lmt_print_state.tally = 0;
@@ -639,6 +657,8 @@ halfword tex_show_token_list(halfword p, halfword q, int l, int asis)
                         tex_print_tex_str(match_visualizer);
                         if (chr <= 9) {
                             tex_print_char(chr + '0');
+                        } else if (chr <= max_match_count) {
+                            tex_print_char(chr + '0' + gap_match_count);
                         } else {
                             tex_print_char('!');
                             return null;
@@ -650,7 +670,7 @@ halfword tex_show_token_list(halfword p, halfword q, int l, int asis)
                             ++n;
                         }
                         tex_print_char(chr ? chr : '0');
-                        if (n > '9') {
+                        if (n > max_match_count) {
                             /*tex Can this happen at all? */
                             return null;
                         } else {
@@ -698,8 +718,9 @@ inline static halfword get_unichar_from_buffer(int *b)
     if (a <= 0x80) {
         *b += 1;
     } else {
-        a = (halfword) aux_str2uni(lmt_fileio_state.io_buffer + *b);
-        *b += utf8_size(a);
+        int al; 
+        a = (halfword) aux_str2uni_len(lmt_fileio_state.io_buffer + *b, &al);
+        *b += al;
     }
     return a;
 }
@@ -892,7 +913,7 @@ int tex_scan_optional_keyword(const char *s)
 
 /*tex
     Here we know that the first character(s) matched so we are in the middle of a keyword already
-    which means a different loop than the previous one.
+    which means a different loop than the previous one. 
 */
 
 int tex_scan_mandate_keyword(const char *s, int offset)
@@ -2111,8 +2132,9 @@ halfword tex_string_to_toks(const char *ss)
     halfword p = null;
     /*tex new node being added to the token list via |store_new_token| */
     while (s < se) {
-        halfword t = (halfword) aux_str2uni((const unsigned char *) s);
-        s += utf8_size(t);
+        int tl; 
+        halfword t = (halfword) aux_str2uni_len((const unsigned char *) s, &tl);
+        s += tl;
         if (t == ' ') {
             t = space_token;
         } else {
@@ -2148,8 +2170,9 @@ static halfword lmt_str_toks(lstring b) /* returns head */
     halfword head = null;
     halfword tail = head;
     while (k < (unsigned char *) b.s + b.l) {
-        halfword t = aux_str2uni(k);
-        k += utf8_size(t);
+        int tl; 
+        halfword t = aux_str2uni_len(k, &tl);
+        k += tl;
         if (t == ' ') {
             t = space_token;
         } else {
@@ -2190,14 +2213,14 @@ halfword tex_str_toks(lstring s, halfword *tail)
         unsigned char *k = s.s;
         unsigned char *l = k + s.l;
         while (k < l) {
-            halfword t = aux_str2uni(k);
+            int tl;
+            halfword t = aux_str2uni_len(k, &tl);
             if (t == ' ') {
-                k += 1;
                 t = space_token;
             } else {
-                k += utf8_size(t);
                 t += other_token;
             }
+            k += tl;
             p = tex_store_new_token(p, t);
             if (! h) {
                 h = p;
@@ -2220,14 +2243,14 @@ halfword tex_cur_str_toks(halfword *tail)
         /*tex tail of the token list */
         while (k < l) {
             /*tex token being appended */
-            halfword t = aux_str2uni(k);
+            int tl;
+            halfword t = aux_str2uni_len(k, &tl);
             if (t == ' ') {
-                k += 1;
                 t = space_token;
             } else {
-                k += utf8_size(t);
                 t += other_token;
             }
+            k += tl;
             p = tex_store_new_token(p, t);
             if (! h) {
                 h = p;
@@ -2261,8 +2284,9 @@ halfword tex_str_scan_toks(int ct, lstring ls)
     while (k < l) {
         int cc;
         /*tex token being appended */
-        halfword t = aux_str2uni(k);
-        k += utf8_size(t);
+        int lt;
+        halfword t = aux_str2uni_len(k, &lt);
+        k += lt;
         cc = tex_get_cat_code(ct, t);
         if (cc == 0) {
             /*tex We have a potential control sequence so we check for it. */
@@ -2271,8 +2295,7 @@ halfword tex_str_scan_toks(int ct, lstring ls)
             int c = 0 ;
             unsigned char *name = k ;
             while (k < l) {
-                t = (halfword) aux_str2uni((const unsigned char *) k);
-                s = utf8_size(t);
+                t = (halfword) aux_str2uni_len((const unsigned char *) k, &s);
                 c = tex_get_cat_code(ct,t);
                 if (c == 11) {
                     k += s ;
@@ -3131,7 +3154,7 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
         int p = token_link(pp);
         if (p) {
             int e = escape_char_par;  /*tex The serialization of the escape, normally a backlash. */
-            int n = '0';              /*tex The character after |#|, so |#0| upto |#9| */
+            int n = 0;                /*tex The character after |#|, so |#0| upto |#9| */
             int min = 0;
             int max = lmt_token_memory_state.tokens_data.top;
             int skip = 0;
@@ -3149,7 +3172,7 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
             }
             lmt_token_state.bufloc = 0;
             if (skippreamble) {
-                skip = get_token_parameters(pp);
+                skip = get_token_preamble(pp);
             }
             while (p) {
                 if (p < min || p > max) {
@@ -3192,12 +3215,14 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
                                     tex_aux_append_char_to_buffer(match_visualizer);
                                     if (chr <= 9) {
                                         tex_aux_append_char_to_buffer(chr + '0');
+                                    } else if (chr <= max_match_count) {
+                                        tex_aux_append_char_to_buffer(chr + '0' + gap_match_count);
                                     } else {
-                                        tex_aux_append_char_to_buffer('!');
+                                        tex_aux_append_char_to_buffer('!'); 
                                         goto EXIT;
                                     }
                                 } else {
-                                    if (chr > 9) {
+                                    if (chr > max_match_count) {
                                         goto EXIT;
                                     }
                                 }
@@ -3210,9 +3235,14 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
                                     ++n;
                                 }
                                 if (! skip) {
-                                    tex_aux_append_char_to_buffer(chr ? chr : '0');
+                                 // tex_aux_append_char_to_buffer(chr ? chr : '0');
+                                    if (chr <= 9) {
+                                        tex_aux_append_char_to_buffer(chr + '0');
+                                    } else if (chr <= max_match_count) {
+                                        tex_aux_append_char_to_buffer(chr + '0' + gap_match_count);
+                                    }
                                 }
-                                if (n > '9') {
+                                if (n > max_match_count) {
                                     goto EXIT;
                                 }
                                 break;
@@ -3457,14 +3487,14 @@ halfword tex_parse_str_to_tok(halfword head, halfword *tail, halfword ct, const 
         const char *se = str + lstr;
         while (str < se) {
             /*tex hh: |str2uni| could return len too (also elsewhere) */
-            halfword u = (halfword) aux_str2uni((const unsigned char *) str);
+            int ul;
+            halfword u = (halfword) aux_str2uni_len((const unsigned char *) str, &ul);
             halfword t = null;
             halfword cc = tex_get_cat_code(ct, u);
-            str += utf8_size(u);
+            str += ul;
             /*tex
-                This is a relating simple converter; if more is needed one can just use
-                |tex.print| with a regular |\def| or |\gdef| and feed the string into the
-                regular scanner.
+                This is a relative simple converter; if more is needed one can just use |tex.print|
+                with a regular |\def| or |\gdef| and feed the string into the regular scanner.
             */
             switch (cc) {
                 case escape_cmd:
@@ -3473,8 +3503,8 @@ halfword tex_parse_str_to_tok(halfword head, halfword *tail, halfword ct, const 
                         int lname = 0;
                         const char *name  = str;
                         while (str < se) {
-                            halfword u = (halfword) aux_str2uni((const unsigned char *) str);
-                            int s = utf8_size(u);
+                            int s; 
+                            halfword u = (halfword) aux_str2uni_len((const unsigned char *) str, &s);
                             int c = tex_get_cat_code(ct, u);
                             if (c == letter_cmd) {
                                 str += s;

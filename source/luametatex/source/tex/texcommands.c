@@ -774,10 +774,12 @@ void tex_initialize_commands(void)
         tex_primitive(tex_command,    "def",                            def_cmd,                def_code,                                 0);
         tex_primitive(tex_command,    "xdef",                           def_cmd,                global_expanded_def_code,                 0);
         tex_primitive(tex_command,    "gdef",                           def_cmd,                global_def_code,                          0);
+        tex_primitive(luatex_command, "cdef",                           def_cmd,                constant_def_code,                        0);
         tex_primitive(luatex_command, "edefcsname",                     def_cmd,                expanded_def_csname_code,                 0);
         tex_primitive(luatex_command, "defcsname",                      def_cmd,                def_csname_code,                          0);
         tex_primitive(luatex_command, "xdefcsname",                     def_cmd,                global_expanded_def_csname_code,          0);
         tex_primitive(luatex_command, "gdefcsname",                     def_cmd,                global_def_csname_code,                   0);
+        tex_primitive(luatex_command, "cdefcsname",                     def_cmd,                constant_def_csname_code,                 0);
 
         tex_primitive(tex_command,    "scriptfont",                     define_family_cmd,      script_size,                              0);
         tex_primitive(tex_command,    "scriptscriptfont",               define_family_cmd,      script_script_size,                       0);
@@ -961,6 +963,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "semiprotected",                  prefix_cmd,             semiprotected_code,                       0);
         tex_primitive(luatex_command, "enforced",                       prefix_cmd,             enforced_code,                            0);
         tex_primitive(luatex_command, "inherited",                      prefix_cmd,             inherited_code,                           0);
+        tex_primitive(luatex_command, "constant",                       prefix_cmd,             constant_code,                            0);
 
         tex_primitive(tex_command,    "long",                           prefix_cmd,             long_code,                                0);
         tex_primitive(tex_command,    "outer",                          prefix_cmd,             outer_code,                               0);
@@ -1303,10 +1306,16 @@ void tex_initialize_commands(void)
         cs_text(deep_frozen_cs_protection_code) = tex_maketexstring("inaccessible");
 
         cs_text(deep_frozen_cs_end_write_code) = tex_maketexstring("endwrite");
-        set_eq_level(deep_frozen_cs_end_write_code, level_one);
         set_eq_type(deep_frozen_cs_end_write_code, call_cmd);
         set_eq_flag(deep_frozen_cs_end_write_code, 0);
         set_eq_value(deep_frozen_cs_end_write_code, null);
+        set_eq_level(deep_frozen_cs_end_write_code, level_one);
+
+        /*tex The empty list reference should be reassigned after compacting! */
+
+        lmt_token_state.empty = get_reference_token();
+     // tex_add_token_reference(lmt_token_state.empty);
+        set_token_reference(lmt_token_state.empty, max_token_reference);
 
         lmt_string_pool_state.reserved = lmt_string_pool_state.string_pool_data.ptr;
         lmt_hash_state.no_new_cs = 1;

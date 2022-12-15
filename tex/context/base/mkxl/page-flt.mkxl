@@ -182,10 +182,10 @@
 %
 % \placefloatwithsetups[somefigure]{}{\externalfigure[dummy][width=5cm,height=2cm]}
 
-\mutable\let\floatsetupcaption\empty
-\mutable\let\floatsetupcontent\empty
-\mutable\let\floatsetupwidth  \empty
-\mutable\let\floatsetupheight \empty
+\mutable\lettonothing\floatsetupcaption
+\mutable\lettonothing\floatsetupcontent
+\mutable\lettonothing\floatsetupwidth
+\mutable\lettonothing\floatsetupheight
 
 \aliased\let\placesetupfloat\gobbleoneoptional
 

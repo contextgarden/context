@@ -71,10 +71,10 @@
 
 % todo: \strc_labels_command for user
 
-\let\m_strc_labels_sub\empty
+\lettonothing\m_strc_labels_sub
 
 \appendtoks
-    \let\m_strc_labels_sub\empty
+    \lettonothing\m_strc_labels_sub
     \ifempty\currentlabelparent
        % clone => parent | subclone => clone | subsubclone => subclone
        \strc_define_commands_label
@@ -106,8 +106,8 @@
    \letlabelparameter\s!counter\p_counter
 \to \everydefinelabel
 
-\let\p_strc_constructions_title \empty
-\let\p_strc_constructions_number\empty
+\lettonothing\p_strc_constructions_title
+\lettonothing\p_strc_constructions_number
 
 \newconditional\c_strc_constructions_number_keep
 

@@ -17,7 +17,7 @@ local implement           = interfaces.implement
 
 local allocate            = utilities.storage.allocate
 local mark                = utilities.storage.mark
-local prtcatcodes         = catcodes.numbers.prtcatcodes
+----- prtcatcodes         = catcodes.numbers.prtcatcodes
 local vrbcatcodes         = catcodes.numbers.vrbcatcodes
 local contextsprint       = context.sprint
 local setmetatableindex   = table.setmetatableindex

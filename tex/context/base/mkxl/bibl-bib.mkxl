@@ -450,7 +450,7 @@
      \edef\bibtexpublicationsalternative{\@@pbalternative}% parent
      \ifempty\bibtexpublicationsalternative \else
        \processcommacommand[\bibtexpublicationsalternative]\dodoloadbibtexpublicationalternative
-       \let\@@pbalternative\empty
+       \lettonothing\@@pbalternative
      \fi
    \fi}
 
@@ -655,9 +655,9 @@
      {\global\advance\bibtexcounter\plusone
       \ctxlua{bibtex.hacks.registerplaced("\currentbibtexsessiontag")}%
       \let\currentlist\currentbibtexsession
-      \let\currentlistentrynumber    \bibtexcounter
-      \let\currentlistentrytitle     \thebibtexpublicationlistelement
-      \let\currentlistentrypagenumber\empty
+      \let\currentlistentrynumber\bibtexcounter
+      \let\currentlistentrytitle\thebibtexpublicationlistelement
+      \lettonothing\currentlistentrypagenumber
       \strc_lists_apply_renderingsetup}
      {}} % invalid
 

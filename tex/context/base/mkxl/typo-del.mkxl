@@ -314,9 +314,9 @@
 %D     \NC [fr:en] \NC {\tttf fr} \quotation[fr:en]{{\tttf <en=\currentlanguage>} something french} \NC \NR
 %D \stoptabulate
 
-\mutable\let\currentdelimitedlanguage\empty
-\mutable\let\innerdelimitedlanguage  \empty
-\mutable\let\outerdelimitedlanguage  \empty
+\mutable\lettonothing\currentdelimitedlanguage
+\mutable\lettonothing\innerdelimitedlanguage
+\mutable\lettonothing\outerdelimitedlanguage
 
 \installglobalmacrostack\currentdelimitedlanguage
 
@@ -344,11 +344,11 @@
        {\let\currentdelimitedlanguage\innerdelimitedlanguage}%
        \donothing
    \fi
-   \let\m_delimited_argument\empty}
+   \lettonothing\m_delimited_argument}
 
 \def\typo_delimited_set_language_yes_a
   {\let\currentdelimitedlanguage\m_delimited_argument
-   \let\m_delimited_argument\empty}
+   \lettonothing\m_delimited_argument}
 
 \def\typo_delimited_push#1#2%
   {\push_macro_currentdelimitedtext     % can we combine these two

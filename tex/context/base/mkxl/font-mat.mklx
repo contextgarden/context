@@ -121,7 +121,7 @@
                                                                                                   \settrue \c_font_auto_size
    \fi}
 
-\mutable\let\mathsizesuffix\empty
+\mutable\lettonothing\mathsizesuffix
 
 \mutable\let\fontfamily\relax % for now public but it is a helper
 
@@ -134,16 +134,20 @@
    % the order is important as we depend on known id's when completing fonts
    % enabling is needed when we have fallbacks which spoils the families; per
    % mid 2022 this is no longer true as we do fallbacks differently
-   \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusthree
+   \let\mathsizesuffix\mathscriptscriptsuffix
+   \let\fontface\!!plusthree
    \font_helpers_set_math_family_a\scriptscriptfont#mrtag\font % defines
    \font_helpers_set_math_family_a\scriptscriptfont#mrtag\font % enables / still needed ?
-   \let\mathsizesuffix\mathscriptsuffix      \let\fontface\!!plustwo
+   \let\mathsizesuffix\mathscriptsuffix
+   \let\fontface\!!plustwo
    \font_helpers_set_math_family_a\scriptfont      #mrtag\font % defines
    \font_helpers_set_math_family_a\scriptfont      #mrtag\font % enables / still needed ?
-   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone
+   \let\mathsizesuffix\mathtextsuffix
+   \let\fontface\!!plusone
    \font_helpers_set_math_family_a\textfont        #mrtag\font % defines
    \font_helpers_set_math_family_a\textfont        #mrtag\font % enables / still needed ?
-   \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
+   \lettonothing\mathsizesuffix
+   \let\fontface\!!zerocount
    \let\fontbody\savedfontbody
    \setfalse\c_font_auto_size}
 
@@ -166,12 +170,14 @@
    \font_helpers_set_math_family_set_scales_compact
    % the order is important as we depend on known id's when completing fonts
    % enabling is needed when we have fallbacks which spoils the families
-   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone
+   \let\mathsizesuffix\mathtextsuffix
+   \let\fontface\!!plusone
    \font_helpers_set_math_family_a\textfont        #mrtag\font % defines
    \font_helpers_set_math_family_a\textfont        #mrtag\font % enables / still needed ?
                                   \scriptfont      #mrtag\font % reuses
                                   \scriptscriptfont#mrtag\font % reuses
-   \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
+   \lettonothing\mathsizesuffix
+   \let\fontface\!!zerocount
    \let\fontbody\savedfontbody
    \setfalse\c_font_auto_size}
 
@@ -189,16 +195,20 @@
    \let\fontfamily#familytag%
 \c_math_last_family_used\zerocount
    \font_helpers_set_math_family_set_scales_normal
-   \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusthree
+   \let\mathsizesuffix\mathscriptscriptsuffix
+   \let\fontface\!!plusthree
    \font_helpers_set_math_family_bold_a\scriptscriptfont#mbfam#mrfam% defines
    \font_helpers_set_math_family_bold_a\scriptscriptfont#mbfam#mrfam% enables / still needed ?
-   \let\mathsizesuffix\mathscriptsuffix      \let\fontface\!!plustwo
+   \let\mathsizesuffix\mathscriptsuffix
+   \let\fontface\!!plustwo
    \font_helpers_set_math_family_bold_a\scriptfont      #mbfam#mrfam% defines
    \font_helpers_set_math_family_bold_a\scriptfont      #mbfam#mrfam% enables / still needed ?
-   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone
+   \let\mathsizesuffix\mathtextsuffix
+   \let\fontface\!!plusone
    \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% defines
    \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% enables / still needed ?
-   \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
+   \lettonothing\mathsizesuffix
+   \let\fontface\!!zerocount
    \let\fontbody\savedfontbody
    \let\defaultfontclass\savedfontclass
    \setfalse\c_font_auto_size}
@@ -209,12 +219,14 @@
    \let\savedfontbody\fontbody
    \let\fontfamily#familytag%
 \c_math_last_family_used\zerocount
-   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone
+   \let\mathsizesuffix\mathtextsuffix
+   \let\fontface\!!plusone
    \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% defines
    \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% enables / still needed ?
                                        \scriptfont      #mbfam\textfont#mbfam% reuses
                                        \scriptscriptfont#mbfam\textfont#mbfam% reuses
-   \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
+   \lettonothing\mathsizesuffix
+   \let\fontface\!!zerocount
    \let\fontbody\savedfontbody
    \let\defaultfontclass\savedfontclass
    \setfalse\c_font_auto_size}
@@ -325,15 +337,15 @@
 %D 0 while in rl mode 0 is a copy of 1. There is no real overhead involved in this.
 %D This also permits different font definitions for normal and mixed.
 
-\let\m_font_class_direction\empty
-\let\m_font_class_features \empty
-\let\m_font_class_fallbacks\empty
-\let\m_font_class_goodies  \empty
+\lettonothing\m_font_class_direction
+\lettonothing\m_font_class_features
+\lettonothing\m_font_class_fallbacks
+\lettonothing\m_font_class_goodies
 
-\let\m_font_direction\empty
-\let\m_font_features \empty
-\let\m_font_fallbacks\empty
-\let\m_font_goodies  \empty
+\lettonothing\m_font_direction
+\lettonothing\m_font_features
+\lettonothing\m_font_fallbacks
+\lettonothing\m_font_goodies
 
 \appendtoks
     \font_helpers_set_math_family\c_font_fam_mr\s!mr
@@ -474,7 +486,7 @@
 \permanent\protected\def\autobigmath{\synchronizebigmathflag\plusone\synchronizebigmath}
 \permanent\protected\def\bigmath    {\synchronizebigmathflag\plustwo\synchronizebigmath}
 
-\mutable\let\bigmathfontsize\empty
+\mutable\lettonothing\bigmathfontsize
 
 \permanent\protected\def\synchronizebigmath
   {\ifconditional\c_font_compact

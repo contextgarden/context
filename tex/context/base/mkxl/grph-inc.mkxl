@@ -806,7 +806,7 @@
       \ifdim\scratchdimen<\d_grph_include_collection_minheight \d_grph_include_collection_minheight\scratchdimen \fi
    \fi}
 
-\mutable\let\currentexternalfigurecollection\empty
+\mutable\lettonothing\currentexternalfigurecollection
 
 \permanent\protected\def\startexternalfigurecollection[#1]%
   {\begingroup

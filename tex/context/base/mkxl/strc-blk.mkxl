@@ -43,12 +43,12 @@
 
 % maybe: systemmode "block:<name>"
 
-\let\m_block   \empty
-\let\m_subblock\empty
+\lettonothing\m_block
+\lettonothing\m_subblock
 
 \protected\def\strc_blocks_begin#1%
-  {\edef\m_block   {#1}%
-   \let \m_subblock\empty
+  {\edef\m_block{#1}%
+   \lettonothing\m_subblock
    \doifelsenextoptionalcs\strc_blocks_begin_yes\strc_blocks_begin_nop}
 
 \protected\def\strc_blocks_begin_yes[#1]%
@@ -75,7 +75,7 @@
 
 % \tolerant\protected\def\strc_blocks_begin#1#*[#2]#*[#3]% #:#/% get rid of spaces and pars
 %   {\edef\m_block{#1}%
-%    \let\m_subblock\empty
+%    \lettonothing\m_subblock
 %    \ifhastok={#2}%
 %      \expandafter\strc_blocks_begin_a % [settings]
 %    \orelse\ifparameter#2\or

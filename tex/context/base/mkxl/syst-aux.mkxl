@@ -163,7 +163,7 @@
 %D alternatives to this command. Beware, only the simple one has \type {\noexpand}
 %D before its argument.
 
-\let\m_syst_helpers_expanded\empty
+\lettonothing\m_syst_helpers_expanded
 
 \pushoverloadmode
 
@@ -224,17 +224,17 @@
 
 %D Maybe even nicer is a let that aliases but keeps the name.
 
-%          \aliased\let\donothing\empty
+       % \lettonothing\donothing
          \immutable\def\donothing        {} % better in tracing
 %untraced\immutable\def\untraceddonothing{}
 
-\let\m_syst_string_one  \empty
-\let\m_syst_string_two  \empty
-\let\m_syst_string_three\empty
-\let\m_syst_string_four \empty
+\lettonothing\m_syst_string_one
+\lettonothing\m_syst_string_two
+\lettonothing\m_syst_string_three
+\lettonothing\m_syst_string_four
 
-\let\m_syst_action_yes  \empty
-\let\m_syst_action_nop  \empty
+\lettonothing\m_syst_action_yes
+\lettonothing\m_syst_action_nop
 
 %D \macros
 %D   {doifnextcharelse}
@@ -806,7 +806,7 @@
 %D arguments state. Again it permits leaner and meaner macro definitions with a bit
 %D less clutter in tracing.
 
-\mutable\let\commalistcommand\empty
+\mutable\lettonothing\commalistcommand
 
 \protected\def\syst_helpers_process_comma_item#+,%
   {\ifarguments
@@ -931,7 +931,7 @@
 
 \let\syst_helpers_comma_list_step\relax
 
-\mutable\let\currentcommalistitem\empty
+\mutable\lettonothing\currentcommalistitem
 
 \permanent\protected\def\startprocesscommalist[#1]#2\stopprocesscommalist
   {\def\syst_helpers_comma_list_step##1{\def\currentcommalistitem{##1}#2}%
@@ -987,17 +987,17 @@
 %D this more hip and a bit faster now but \unknown\ it's seldom used nowadays as we
 %D have better ways now.
 
-\mutable\let\commalistelement\empty
+\mutable\lettonothing\commalistelement
 
-\let\m_syst_string_one\empty
-\let\m_syst_string_two\empty
+\lettonothing\m_syst_string_one
+\lettonothing\m_syst_string_two
 
 \let\syst_helpers_do_compare_process_action\relax
 
 \protected\def\syst_helpers_do_compare_process_action_a[#1=>#2][#3]%
   {\edef\m_syst_string_two{#1}%
    \ifx\m_syst_string_two\s!default
-     \let\commalistelement\empty
+     \lettonothing\commalistelement
      #2%
    \fi}
 
@@ -1115,8 +1115,8 @@
 %D A two step expansion is used to prevent problems with complicated arguments, for
 %D instance arguments that consist of two or more expandable tokens.
 
-\mutable\let\firstcharacter     \empty
-\mutable\let\remainingcharacters\empty
+\mutable\lettonothing\firstcharacter
+\mutable\lettonothing\remainingcharacters
 
 \permanent\protected\def\getfirstcharacter     #1{\clf_getfirstcharacter{#1}}
 \permanent\protected\def\doifelsefirstchar   #1#2{\clf_doifelsefirstchar{#1}{#2}}
@@ -1160,7 +1160,7 @@
 % \let\syst_helpers_do_do_if_in_string     \relax
 % \let\syst_helpers_do_do_if_not_in_string \relax
 %
-% \let\m_syst_sub_string                   \empty
+% \lettonothing\m_syst_sub_string
 %
 % \protected\def\doifelseinstring#1%
 %   {\edef\m_syst_sub_string{#1}% expand #1 here
@@ -1586,7 +1586,7 @@
 %D funny to see that this alternative saw the light so lately --- can be used to do
 %D expanded assigments.
 
-% \mutable\let\currentvalue\empty % only mkii
+% \mutable\lettonothing\currentvalue % only mkii
 
 \permanent\protected\def\getparameters   {\dogetparameters\dosetvalue}
 \permanent\protected\def\geteparameters  {\dogetparameters\dosetevalue}
@@ -1661,8 +1661,9 @@
 %D trouble and tokens.
 
 \mutable\let\currentassignmentlistcommand\gobbletwoarguments
-\mutable\let\currentassignmentlistkey    \empty
-\mutable\let\currentassignmentlistvalue  \empty
+
+\mutable\lettonothing\currentassignmentlistkey
+\mutable\lettonothing\currentassignmentlistvalue
 
 \let\syst_helpers_process_assign_entry\gobbleoneargument
 
@@ -1838,7 +1839,7 @@
   {\expandafterspaces\syst_helpers_get_from_comma_list}
 
 \permanent\protected\def\getfromcommalist[#1]#*[#2]%
-  {\let\commalistelement\empty
+  {\lettonothing\commalistelement
    \commalistcounter#2\relax
    \expandafterspaces\syst_helpers_get_from_comma_list#1\ignorearguments\ignorearguments}
 
@@ -2819,8 +2820,8 @@
 %D
 %D Trivial:
 
-\permanent\protected\def\letempty      #1{\let #1\empty}
-\permanent\protected\def\globalletempty#1{\glet#1\empty}
+\permanent\protected\def\letempty      #1{\lettonothing #1}
+\permanent\protected\def\globalletempty#1{\glettonothing#1}
 
 \permanent\protected\def\letvalueempty #1{\letcsname #1\endcsname\empty}
 \permanent\protected\def\letgvalueempty#1{\gletcsname#1\endcsname\empty}
@@ -3195,7 +3196,8 @@
 \mutable\def\recurselevel{0}
 
 \mutable\let\recurseaction\relax
-\mutable\let\recursestring\empty
+
+\mutable\lettonothing\recursestring
 
 %% \protected\def\syst_helpers_stepwise_recurse#1#2#3% from to step
 %%   {\ifnum#1>#2\relax
@@ -3472,12 +3474,12 @@
 %D Here are the more modern implementations:
 
 \permanent\protected\def\installmacrostack#1%
-  {\ifdefined#1\else\mutable\let#1\empty\fi
+  {\ifdefined#1\else\mutable\lettonothing#1\fi
    \protected\gdefcsname push_macro_\csstring#1\endcsname{\localpushmacro#1}%
    \protected\gdefcsname  pop_macro_\csstring#1\endcsname{\localpopmacro #1}}
 
 \permanent\protected\def\installglobalmacrostack#1%
-  {\ifdefined#1\else\mutable\glet#1\empty\fi
+  {\ifdefined#1\else\mutable\glettonothing#1\fi
    \protected\gdefcsname push_macro_\csstring#1\endcsname{\globalpushmacro#1}%
    \protected\gdefcsname  pop_macro_\csstring#1\endcsname{\globalpopmacro #1}}
 
@@ -4493,7 +4495,8 @@
 %D These macros are clones of the ones implemented in page~378 of Knuth's \TEX book.
 
 \newtoks\t_syst_helpers_scratch
-\let    \m_syst_helpers_scratch\empty
+
+\lettonothing\m_syst_helpers_scratch
 
 \permanent\protected\def\appendtoks#1\to#2%
   {\ifrelax\dodoglobal
@@ -4629,9 +4632,9 @@
 \permanent\protected\def\beforesplitstring#1\at#2\to#3%
   {\def\syst_helpers_split_string##1#2##0^^^^0004% no #- as we need to count
      {\ifarguments
-        \let#3\empty
+        \lettonothing#3%
       \or
-        \let#3\empty
+        \lettonothing#3%
       \else
         \def#3{##1}%
      \fi}%
@@ -4640,7 +4643,7 @@
 \permanent\protected\def\aftersplitstring#1\at#2\to#3%
   {\def\syst_helpers_split_string##0#2##2^^^^0004% no #- as we need to count
      {\ifarguments
-        \let#3\empty
+        \lettonothing#3%
       \or
         \def#3{#1}%
       \else
@@ -4656,11 +4659,11 @@
 \permanent\protected\def\splitstring#1\at#2\to#3\and#4%
   {\def\syst_helpers_split_string##1#2##2^^^^0004%
      {\ifarguments
-        \let#3\empty
-        \let#4\empty
+        \lettonothing#3*
+        \lettonothing#4*
       \or
         \def#3{#1}%
-        \let#4\empty
+        \lettonothing#4%
       \else
         \def#3{##1}%
         \def#4{##2}%
@@ -4670,11 +4673,11 @@
 \permanent\protected\def\greedysplitstring#1\at#2\to#3\and#4%
   {\def\syst_helpers_split_string##1#2##2^^^^0004%
      {\ifarguments
-        \let#3\empty
-        \let#4\empty
+        \lettonothing#3%
+        \lettonothing#4%
       \or
         \def#3{#1}%
-        \let#4\empty
+        \lettonothing#4%
       \else
         \def#3{##1}%
         \def#4{##2}%
@@ -4700,9 +4703,9 @@
 \permanent\protected\def\aftertestandsplitstring#1\at#2\to#3%
   {\def\syst_helpers_split_string##0#2##2^^^^0004% no #- as we need to count
      {\ifarguments
-        \let#3\empty
+        \lettonothing#3%
       \or
-        \let#3\empty
+        \lettonothing#3%
       \else
         \def#3{##2}%
      \fi}%
@@ -4711,11 +4714,11 @@
 \permanent\protected\def\testandsplitstring#1\at#2\to#3\and#4%
   {\def\syst_helpers_split_string##1#2##2^^^^0004%
      {\ifarguments
-        \let#3\empty
-        \let#4\empty
+        \lettonothing#3%
+        \lettonothing#4%
       \or
-        \let#3\empty
-        \let#4\empty
+        \lettonothing#3%
+        \lettonothing#4%
       \else
         \def#3{##1}%
         \def#4{##2}%
@@ -4876,7 +4879,7 @@
 \permanent\protected\def\substituteincommalist#1#2#3% old, new, list (slooow)
   {\edef\m_syst_string_one{#1}%
    \edef\m_syst_string_two{#2}%
-   \let\m_syst_string_four\empty
+   \lettonothing\m_syst_string_four
    \normalexpanded{\rawprocesscommacommand[#3]}\syst_helpers_substitute_in_comma_list_step
    \let#3\m_syst_string_four}
 
@@ -4903,9 +4906,10 @@
 %D This macro was used in the bibtex code (and is probably no longer needed).
 
 \newcount\c_syst_helpers_comma_list_index
-\let     \m_syst_helpers_comma_list_target\empty
 
-\mutable\let\newcommalistelement\empty
+\lettonothing\m_syst_helpers_comma_list_target
+
+\mutable\lettonothing\newcommalistelement
 
 \def\syst_helpers_replace_in_comma_list_step#1% we can use #+ here too
   {\ifnum\commalistcounter=\c_syst_helpers_comma_list_index\relax
@@ -4938,8 +4942,8 @@
 
 \permanent\protected\def\replaceincommalist#1#2% #1 = commalistelement #2 = position starts at 1
   {\c_syst_helpers_comma_list_index#2\relax
-   \let\m_syst_helpers_comma_list_target\empty
-   \let\commalistelement\empty
+   \lettonothing\m_syst_helpers_comma_list_target
+   \lettonothing\commalistelement
    \commalistcounter\plusone
    \expandafter\processcommalist\expandafter[#1]\syst_helpers_replace_in_comma_list_step
    \dodoglobal\let#1\m_syst_helpers_comma_list_target}
@@ -4952,7 +4956,7 @@
 %D kind of useless for handling comma lists in alignments. In these situations the
 %D next macro can be of use.
 
-\let\m_syst_helpers_comma_list_command_global\empty
+\lettonothing\m_syst_helpers_comma_list_command_global
 
 \def\syst_helpers_comma_list_command_global_step#1,%
   {\if]#1\else
@@ -5361,14 +5365,15 @@
 %D As we can see below, spaces following a control sequence are to enclosed in \type
 %D {{}}.
 
-\let\syst_helpers_strip_character  \relax
-\let\m_syst_helpers_strip_character\empty
+\let\syst_helpers_strip_character\relax
+
+\lettonothing\m_syst_helpers_strip_character
 
 \permanent\protected\def\stripcharacter#1\from#2\to#3%
   {\def\syst_helpers_strip_character##1#1##2\end
      {\edef\m_syst_helpers_strip_character{\m_syst_helpers_strip_character##1}%
       \doifnotempty{##2}{\syst_helpers_strip_character##2\end}}%
-   \let\m_syst_helpers_strip_character\empty
+   \lettonothing\m_syst_helpers_strip_character
    \edef\m_syst_string_one{#2}%
    \expandafter\syst_helpers_strip_character\m_syst_string_one#1\end
    \dodoglobal\let#3\m_syst_helpers_strip_character}
@@ -5599,7 +5604,7 @@
 %D
 %D They remove braces and backslashes and give us something to sort.
 
-\let\m_syst_helpers_untexed\empty
+\lettonothing\m_syst_helpers_untexed
 
 \permanent\protected\def\untexsomething
   {\begingroup
@@ -5785,7 +5790,7 @@
           \advance\privatescratchcounter \minusone
           \edef#3{#3##1}%
         \fi}%
-   % \let#3\empty % #3 can be #2, so:
+   % \lettonothing#3% #3 can be #2, so:
      \expandafter\let\expandafter#3\expandafter\empty
      \expandafter\handletokens#2\with\syst_helpers_split_off_tokens
    \else
@@ -5821,7 +5826,7 @@
 %D assignment, this time by using \type {\futurelet}, and grabbing an argument as
 %D well. That way we can handle the sentinal, a blank space and grouped tokens.
 
-\mutable\let\nexthandledtoken\empty % part of public interface
+\mutable\lettonothing\nexthandledtoken % part of public interface
 
 \let\syst_helpers_handle_tokens_command\relax
 
@@ -6051,13 +6056,13 @@
 
 \let\syst_helpers_serialize_comma_list_step\relax
 
-\mutable\let\serializedcommalist\empty
+\mutable\lettonothing\serializedcommalist
 
 \def\syst_helpers_serialize_comma_list_step#1%
   {\edef\serializedcommalist{\serializedcommalist#1}}
 
 \permanent\protected\def\serializecommalist[#1]%
-  {\let\serializedcommalist\empty
+  {\lettonothing\serializedcommalist
    \processcommacommand[#1]\syst_helpers_serialize_comma_list_step}
 
 %D \macros
@@ -6647,18 +6652,32 @@
    \or      \plusten
    \else    {\number#1}\fi}
 
-\permanent\def\constantdimen#1%
-  {\ifdim#1=\zeropoint
+% \permanent\def\constantdimen#1% takes register
+%   {\ifdim#1=\zeropoint
+%      \zeropoint
+%    \else
+%      \the#1\relax
+%    \fi}
+
+\permanent\def\constantdimen#1% takes register
+  {\ifzeropt#1\norelax
      \zeropoint
    \else
-     \the#1\relax
+     \todimension#1\norelax
    \fi}
 
+% \permanent\def\constantdimenargument#1% takes register
+%   {\ifdim#1=\zeropoint
+%      \zeropoint
+%    \else
+%      {\the#1}%
+%    \fi}
+
 \permanent\def\constantdimenargument#1%
-  {\ifdim#1=\zeropoint
+  {\ifzeropt#1%\norelax
      \zeropoint
    \else
-     {\the#1}%
+     {\todimension#1}%
    \fi}
 
 \permanent\def\constantemptyargument#1%

@@ -210,30 +210,30 @@
 \newdimen\d_framed_target_dp
 \newdimen\d_framed_linewidth  \aliased\let\ruledlinewidth\d_framed_linewidth % needed at lua end
 
-\let\p_framed_frame           \empty % \framedparameter\c!frame
-\let\p_framed_backgroundoffset\empty
-\let\p_framed_foregroundstyle \empty
-\let\p_framed_autostrut       \empty
-\let\p_framed_location        \empty
-\let\p_framed_orientation     \empty
-\let\p_framed_anchoring       \empty
-\let\p_framed_synchronize     \empty
-\let\p_framed_autowidth       \empty
-\let\p_framed_franalyze       \empty
-\let\p_framed_backgroundcorner\empty
-\let\p_framed_backgroundradius\empty
-\let\p_framed_framecorner     \empty
-\let\p_framed_frameradius     \empty
-\let\p_framed_lines           \empty
-\let\p_framed_empty           \empty
-\let\p_framed_backgroundcolor \empty
-\let\p_framed_framecolor      \empty
-\let\p_framed_component       \empty
-\let\p_framed_background      \empty
-\let\p_framed_rulethickness   \empty
-\let\p_framed_foregroundcolor \empty
-\let\p_framed_setups          \empty
-\let\p_framed_synchronize     \empty
+\lettonothing\p_framed_frame            % \framedparameter\c!frame
+\lettonothing\p_framed_backgroundoffset
+\lettonothing\p_framed_foregroundstyle
+\lettonothing\p_framed_autostrut
+\lettonothing\p_framed_location
+\lettonothing\p_framed_orientation
+\lettonothing\p_framed_anchoring
+\lettonothing\p_framed_synchronize
+\lettonothing\p_framed_autowidth
+\lettonothing\p_framed_franalyze
+\lettonothing\p_framed_backgroundcorner
+\lettonothing\p_framed_backgroundradius
+\lettonothing\p_framed_framecorner
+\lettonothing\p_framed_frameradius
+\lettonothing\p_framed_lines
+\lettonothing\p_framed_empty
+\lettonothing\p_framed_backgroundcolor
+\lettonothing\p_framed_framecolor
+\lettonothing\p_framed_component
+\lettonothing\p_framed_background
+\lettonothing\p_framed_rulethickness
+\lettonothing\p_framed_foregroundcolor
+\lettonothing\p_framed_setups
+\lettonothing\p_framed_synchronize
 
 %D We don't have to stick to a \TEX\ drawn rule, but also can use rounded
 %D or even fancier shapes, as we will see later on.
@@ -420,7 +420,7 @@
 \newdimen\d_overlay_offset
 \newdimen\d_overlay_linewidth
 
-\let\m_overlay_region\empty
+\lettonothing\m_overlay_region
 
 % expandable ... in a future version the space will go (in mp one can use Overlay*)
 
@@ -511,7 +511,7 @@
 
 \newtoks\everybackgroundbox
 
-\let\m_framed_background\empty % we might need a public name
+\lettonothing\m_framed_background % we might need a public name
 
 \def\pack_framed_process_background
   {\ifcsname\??overlaybuiltin\m_framed_background\endcsname
@@ -1112,14 +1112,14 @@
 \permanent\protected\lettonothing\localendstrut
 \permanent\protected\lettonothing\localstrut
 
-\mutable\let\localoffset \empty
-\mutable\let\localwidth  \empty
-\mutable\let\localheight \empty
-\mutable\let\localformat \empty
+\mutable\lettonothing\localoffset
+\mutable\lettonothing\localwidth
+\mutable\lettonothing\localheight
+\mutable\lettonothing\localformat
 
-\mutable\let\framedwidth \empty
-\mutable\let\framedheight\empty
-\mutable\let\framedoffset\empty
+\mutable\lettonothing\framedwidth
+\mutable\lettonothing\framedheight
+\mutable\lettonothing\framedoffset
 
 % better a constant:
 
@@ -1241,10 +1241,10 @@
      \ifcstok{\framedparameter\c!adaptive}\v!yes
        \let\p_framed_adaptive\s!delay
      \else
-       \let\p_framed_adaptive\empty
+       \lettonothing\p_framed_adaptive
      \fi
    \else
-     \let\p_framed_adaptive\empty
+     \lettonothing\p_framed_adaptive
      \edef\p_framed_lines{\framedparameter\c!lines}%
      \ifempty\p_framed_lines
      \orelse\ifcase\p_framed_lines

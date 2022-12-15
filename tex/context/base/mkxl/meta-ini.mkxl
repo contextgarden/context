@@ -368,15 +368,15 @@
 \permanent\protected\def\finalizeMPdrawing
   {\MPdrawingdonetrue}
 
-\mutable\let\MPdrawingdata\empty
+\mutable\lettonothing\MPdrawingdata
 
 \permanent\protected\def\resetMPdrawing
-  {\glet\MPdrawingdata\empty
+  {\glettonothing\MPdrawingdata
    \global\MPdrawingdonefalse}
 
 \permanent\protected\def\pushMPdrawing
   {\globalpushmacro\MPdrawingdata
-   \glet\MPdrawingdata\empty}
+   \glettonothing\MPdrawingdata}
 
 \permanent\protected\def\popMPdrawing
   {\globalpopmacro\MPdrawingdata}
@@ -415,7 +415,7 @@
 \mutable\def\width {0 } % left-over, obsolete
 \mutable\def\height{0 } % left-over, obsolete
 
-\mutable\let\currentMPclip\empty
+\mutable\lettonothing\currentMPclip
 
 \protected\def\meta_grab_clip_path#1#2#3%
   {\begingroup
@@ -496,7 +496,7 @@
 %D Currently the inheritance of backgrounds does not work and we might drop it
 %D anyway (too messy)
 
-\let\m_meta_current_variable\empty
+\lettonothing\m_meta_current_variable
 
 \installbasicnativeautosetuphandler \??mpcategory {mpcategory}
 
@@ -681,7 +681,7 @@
 
 \def\meta_uniquempgraphic_yes[#1]#*#=%
   {% ugly code but we run on top of older code
-   \letdummyparameter\c!instance\empty
+   \resetdummyparameter\c!instance
    \getdummyparameters[#1]%
    \edef\currentMPinstance{\dummyparameter\c!instance}%
    % here we feed the instance into the analyzer
@@ -757,7 +757,7 @@
 %    \orelse\ifcsname\??mpgraphic\currentMPgraphicname\endcsname
 %      \let\currentmpcategory\currentMPgraphicname
 %    \else
-%      \let\currentmpcategory\empty
+%      \lettonothing\currentmpcategory
 %    \fi
 %    \ifempty\currentmpcategory
 %      % message
@@ -773,7 +773,7 @@
 
 \def\meta_usempgraphic_yes[#1]#*#=%
   {% ugly code but we run on top of older code
-   \letdummyparameter\c!instance\empty
+   \resetdummyparameter\c!instance
    \getdummyparameters[#1]%
    \edef\currentMPinstance{\dummyparameter\c!instance}%
    % here we feed the instance into the analyzer
@@ -783,7 +783,7 @@
    \orelse\ifcsname\??mpgraphic\currentMPgraphicname\endcsname
      \let\currentmpcategory\currentMPgraphicname
    \else
-     \let\currentmpcategory\empty
+     \lettonothing\currentmpcategory
    \fi
    \ifempty\currentmpcategory
      % message
@@ -801,7 +801,7 @@
    \orelse\ifcsname\??mpgraphic\currentMPgraphicname\endcsname
      \let\currentmpcategory\currentMPgraphicname
    \else
-     \let\currentmpcategory\empty
+     \lettonothing\currentmpcategory
    \fi
    \ifempty\currentmpcategory
      % message
@@ -973,7 +973,7 @@
 %    \ifempty\currentMPinstance
 %      \let\currentMPinstance\defaultMPinstance
 %    \fi
-%    \let\currentMPgraphicname\empty
+%    \lettonothing\currentMPgraphicname
 %    \edef\currentMPformat{\MPinstanceparameter\s!format}%
 %    \meta_enable_include
 %    \meta_process_graphic{#2}%
@@ -988,7 +988,7 @@
    \ifempty\currentMPinstance
      \let\currentMPinstance\defaultMPinstance
    \fi
-   \let\currentMPgraphicname\empty
+   \lettonothing\currentMPgraphicname
    \edef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_enable_include
    \meta_process_graphic{#2}%
@@ -996,15 +996,15 @@
 
 \def\meta_start_mpcode_yes[#1]#2\stopMPcode
   {\begingroup
-   \letdummyparameter\c!instance\empty
-   \letdummyparameter\c!stacking\empty
+   \resetdummyparameter\c!instance
+   \resetdummyparameter\c!stacking
    \getdummyparameters[#1]%
    \edef\currentMPinstance{\dummyparameter\c!instance}%
    \setmpcategoryparameter\c!stacking{\dummyparameter\c!stacking}%
    \ifempty\currentMPinstance
      \let\currentMPinstance\defaultMPinstance
    \fi
-   \let\currentMPgraphicname\empty
+   \lettonothing\currentMPgraphicname
    \edef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_enable_include
    \meta_process_graphic{#2}%
@@ -1105,17 +1105,17 @@
 
 % \setupcolors[state=stop,conversion=never] % quite tricky ... type mismatch
 
-\startMPinitializations
-    CurrentLayout:="\currentlayout";
-\stopMPinitializations
+% \startMPinitializations
+%     CurrentLayout:="\currentlayout";
+% \stopMPinitializations
 
 %D A dirty trick, ** in colo-ini.lua (mpcolor). We cannot use a vardef, because
 %D that fails with spot colors.
 
-\startMPinitializations
-    def OverlayLineColor=\ifempty\overlaylinecolor black \else\MPcolor{\overlaylinecolor} \fi enddef;
-    def OverlayColor    =\ifempty\overlaycolor     black \else\MPcolor{\overlaycolor}     \fi enddef;
-\stopMPinitializations
+% \startMPinitializations
+%     def OverlayLineColor=\ifempty\overlaylinecolor black \else\MPcolor{\overlaylinecolor} \fi enddef;
+%     def OverlayColor    =\ifempty\overlaycolor     black \else\MPcolor{\overlaycolor}     \fi enddef;
+% \stopMPinitializations
 
 \appendtoks
     \disablediscretionaries
@@ -1367,7 +1367,7 @@
    \ifempty\currentMPinstance
      \let\currentMPinstance\defaultMPinstance
    \fi
-   \let\currentMPgraphicname\empty
+   \lettonothing\currentMPgraphicname
    \edef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_enable_include
    \meta_process_graphic{#2;draw origin}%
@@ -1398,8 +1398,8 @@
 
 %D Some more helpers (see \type {meta-grd.mkiv} for an example of usage):
 
-\permanent\def\MPdpar#1#2{\the\dimexpr#1#2\relax\empty}
-\permanent\def\MPnpar#1#2{\the\numexpr#1#2\relax\empty}
+\permanent\def\MPdpar#1#2{\the\dimexpr#1#2\relax\empty} % why \empty here
+\permanent\def\MPnpar#1#2{\the\numexpr#1#2\relax\empty} % why \empty here
 \permanent\def\MPspar#1#2{"#1#2"}
 
 %D Done.

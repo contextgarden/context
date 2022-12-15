@@ -80,7 +80,7 @@
     \colo_intents_set_text
 \to \everysetupcolors
 
-\let\p_colo_intent\empty
+\lettonothing\p_colo_intent
 
 \def\colo_intents_set_text
   {\edef\p_colo_intent{\colorsparameter\c!intent}%

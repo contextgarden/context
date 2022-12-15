@@ -204,13 +204,13 @@
 %D
 %D \typebuffer[graphic]
 
-\immutable\def\MPanchoridentifier{mpa}  % {mp-anchor}
-\mutable  \def\MPanchornumber    {\the\realpageno}
-\mutable  \let\MPanchorid        \empty
+\immutable\def         \MPanchoridentifier{mpa}  % {mp-anchor}
+\mutable  \def         \MPanchornumber    {\the\realpageno}
+\mutable  \lettonothing\MPanchorid
 
 %D The rest of the definitions concerning such overlays may look complicated,
 
-\mutable\let\currentpositionoverlay\empty
+\mutable\lettonothing\currentpositionoverlay
 
 %D Position actions are automatically executed when a position is set.
 
@@ -256,7 +256,7 @@
      \expandafter\gobbletwoarguments
    \fi}
 
-\let\currentpositionregion\empty
+\lettonothing\currentpositionregion
 
 \def\anch_positions_region_overlay_indeed#1#2%
   {\begingroup
@@ -294,14 +294,14 @@
 
 \ifdefined\checkpositionoverlays \else \let\checkpositionoverlays\relax \fi
 
-\mutable\let\currentpositionoverlay\empty
+\mutable\lettonothing\currentpositionoverlay
 
 \def\anch_positions_overlay_start_yes#1%
   {\checkpositionoverlays
    \edef\currentpositionoverlay{#1}}
 
 \permanent\protected\def\stoppositionoverlay
-  {\let\currentpositionoverlay\empty}
+  {\lettonothing\currentpositionoverlay}
 
 %D A position graphic is a normal (non||reused) \METAPOST\ graphic, used
 %D immediately, with zero dimensions, so that a sequence of them does not harm.

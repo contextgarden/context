@@ -213,10 +213,10 @@ void lmt_tokenlib_initialize(void)
  /* lmt_interface.command_names[string_cmd]                       = (command_item) { .id = string_cmd,                         .lua = lua_key_index(string),                       .name = lua_key(string),                       .kind = regular_command_item,   .min = ignore_entry,              .max = max_integer,                  .base = 0,                       .fixedvalue = 0            }; */
     lmt_interface.command_names[call_cmd]                         = (command_item) { .id = call_cmd,                           .lua = lua_key_index(call),                         .name = lua_key(call),                         .kind = token_command_item,     .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[protected_call_cmd]               = (command_item) { .id = protected_call_cmd,                 .lua = lua_key_index(protected_call),               .name = lua_key(protected_call),               .kind = token_command_item,     .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
-    lmt_interface.command_names[semi_protected_call_cmd]          = (command_item) { .id = semi_protected_call_cmd,            .lua = lua_key_index(protected_call),               .name = lua_key(protected_call),               .kind = token_command_item,     .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
+    lmt_interface.command_names[semi_protected_call_cmd]          = (command_item) { .id = semi_protected_call_cmd,            .lua = lua_key_index(semi_protected_call),          .name = lua_key(protected_call),               .kind = token_command_item,     .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[tolerant_call_cmd]                = (command_item) { .id = tolerant_call_cmd,                  .lua = lua_key_index(tolerant_call),                .name = lua_key(tolerant_call),                .kind = token_command_item,     .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[tolerant_protected_call_cmd]      = (command_item) { .id = tolerant_protected_call_cmd,        .lua = lua_key_index(tolerant_protected_call),      .name = lua_key(tolerant_protected_call),      .kind = token_command_item,     .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
-    lmt_interface.command_names[tolerant_semi_protected_call_cmd] = (command_item) { .id = tolerant_semi_protected_call_cmd,   .lua = lua_key_index(tolerant_protected_call),      .name = lua_key(tolerant_protected_call),      .kind = token_command_item,     .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
+    lmt_interface.command_names[tolerant_semi_protected_call_cmd] = (command_item) { .id = tolerant_semi_protected_call_cmd,   .lua = lua_key_index(tolerant_semi_protected_call), .name = lua_key(tolerant_protected_call),      .kind = token_command_item,     .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[deep_frozen_end_template_cmd]     = (command_item) { .id = deep_frozen_end_template_cmd,       .lua = lua_key_index(deep_frozen_cs_end_template),  .name = lua_key(deep_frozen_cs_end_template),  .kind = token_command_item,     .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[deep_frozen_dont_expand_cmd]      = (command_item) { .id = deep_frozen_dont_expand_cmd,        .lua = lua_key_index(deep_frozen_cs_dont_expand),   .name = lua_key(deep_frozen_cs_dont_expand),   .kind = token_command_item,     .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[internal_glue_reference_cmd]      = (command_item) { .id = internal_glue_reference_cmd,        .lua = lua_key_index(internal_glue_reference),      .name = lua_key(internal_glue_reference),      .kind = token_command_item,     .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
@@ -468,8 +468,9 @@ halfword lmt_token_list_from_lua(lua_State *L, int slot)
                     if (s[i] == ascii_space) {
                         tok = token_val(spacer_cmd, s[i]);
                     } else {
-                        int k = (int) aux_str2uni((const unsigned char *) (s + i));
-                        i = i + (size_t) (utf8_size(k)) - 1;
+                        int kl; 
+                        int k = (int) aux_str2uni_len((const unsigned char *) (s + i), &kl);
+                        i = i + kl - 1;
                         tok = token_val(other_char_cmd, k);
                     }
                     p = tex_store_new_token(p, tok);
@@ -737,15 +738,15 @@ static void tokenlib_aux_to_token(lua_State *L, int i, int m, int *head, int *ta
                 const unsigned char *p = (const unsigned char *) s;
                 size_t n = aux_utf8len(s, l);
                 for (size_t j = 0; j < n; j++) {
-                    int ch = *p;
-                    halfword x = tex_get_available_token(tokenlib_aux_to_token_val(aux_str2uni(p)));
+                    int xl; 
+                    halfword x = tex_get_available_token(tokenlib_aux_to_token_val(aux_str2uni_len(p, &xl)));
                     if (*head) {
                         token_link(*tail) = x;
                     } else {
                         *head = x;
                     }
                     *tail = x;
-                    p += utf8_size(ch);
+                    p += xl;
                 }
                 break;
             }
@@ -2370,7 +2371,7 @@ static int tokenlib_getprimitives(lua_State *L)
     while (cs < prim_size) {
         strnumber s = get_prim_text(cs);
         if (s > 0 && (get_prim_origin(cs) != no_command)) {
-            char *ss = tex_to_cstring(s);
+            const char *ss = tex_to_cstring(s);
             int cmd = prim_eq_type(cs);
             int chr = prim_equiv(cs);
             if (! raw) {
@@ -2668,6 +2669,19 @@ inline static int tokenlib_get_parameters(lua_State *L)
     return 0;
 }
 
+inline static int tokenlib_get_constant(lua_State *L)
+{
+    lua_token *n = tokenlib_aux_check_istoken(L, 1);
+    halfword tok = token_info(n->token);
+    int result = 0;
+    if (tok >= cs_token_flag && is_call_cmd(eq_type(tok - cs_token_flag))) {
+        halfword v = eq_value(tok - cs_token_flag);
+        result = v && get_token_reference(v) == max_token_reference;
+    }
+    lua_pushboolean(L, result);
+    return 1;
+}
+
 static int tokenlib_getfield(lua_State *L)
 {
     const char *s = lua_tostring(L, 2);
@@ -2711,6 +2725,8 @@ static int tokenlib_getfield(lua_State *L)
         return tokenlib_get_flags(L);
     } else if (lua_key_eq(s, parameters)) {
         return tokenlib_get_parameters(L);
+    } else if (lua_key_eq(s, constant)) {
+        return tokenlib_get_constant(L);
     } else {
         lua_pushnil(L);
     }
@@ -3229,11 +3245,17 @@ static int tokenlib_set_macro(lua_State *L) /* todo: protected */
                 slot = lmt_check_for_flags(L, slot, &flags, 1, 1);
             }
             if (tex_define_permitted(cs, flags)) { /* we check before we allocate */
-                halfword h = get_reference_token();
-                halfword t = h;
+                halfword h;
                 if (lstr > 0) {
+                    h = get_reference_token();
                     /*tex Options: 1=create (will trigger an error), 2=ignore. */
-                    tex_parse_str_to_tok(h, &t, ct, str, lstr, lua_toboolean(L, slot++) ? 2 : 1);
+                    tex_parse_str_to_tok(h, null, ct, str, lstr, lua_toboolean(L, slot++) ? 2 : 1);
+                    if (is_constant(flags)) {
+                        set_token_reference(h, max_token_reference);
+                    }
+                } else { 
+                    h = lmt_token_state.empty;
+                 // tex_add_token_reference(h);
                 }
                 tex_define(flags, cs, tex_flags_to_cmd(flags), h);
             }
@@ -3388,7 +3410,7 @@ static int tokenlib_set_char(lua_State *L) /* also in texlib */
 
 /* a weird place, these should be in tex */
 
-static int tokenlib_set_constant(lua_State *L, singleword cmd, halfword min, halfword max)
+static int tokenlib_set_constant_value(lua_State *L, singleword cmd, halfword min, halfword max)
 {
     int top = lua_gettop(L);
     if (top >= 2) {
@@ -3409,7 +3431,7 @@ static int tokenlib_set_constant(lua_State *L, singleword cmd, halfword min, hal
     return 0;
 }
 
-static int tokenlib_get_constant(lua_State *L, halfword cmd)
+static int tokenlib_get_constant_value(lua_State *L, halfword cmd)
 {
     if (lua_type(L, 1) == LUA_TSTRING) {
         size_t l;
@@ -3428,32 +3450,32 @@ static int tokenlib_get_constant(lua_State *L, halfword cmd)
 
 static int tokenlib_set_integer(lua_State *L)
 {
-    return tokenlib_set_constant(L, integer_cmd, min_integer, max_integer);
+    return tokenlib_set_constant_value(L, integer_cmd, min_integer, max_integer);
 }
 
 static int tokenlib_set_dimension(lua_State *L)
 {
-    return tokenlib_set_constant(L, dimension_cmd, min_dimen, max_dimen);
+    return tokenlib_set_constant_value(L, dimension_cmd, min_dimen, max_dimen);
 }
 
 // static int tokenlib_set_gluespec(lua_State *L)
 // {
-//     return tokenlib_set_constant(L, gluespec_cmd, min_dimen, max_dimen);
+//     return tokenlib_set_constant_value(L, gluespec_cmd, min_dimen, max_dimen);
 // }
 
 static int tokenlib_get_integer(lua_State *L)
 {
-    return tokenlib_get_constant(L, integer_cmd);
+    return tokenlib_get_constant_value(L, integer_cmd);
 }
 
 static int tokenlib_get_dimension(lua_State *L)
 {
-    return tokenlib_get_constant(L, dimension_cmd);
+    return tokenlib_get_constant_value(L, dimension_cmd);
 }
 
 // static int tokenlib_get_gluespec(lua_State *L)
 // {
-//     return tokenlib_get_constant(L, gluespec_cmd);
+//     return tokenlib_get_constant_value(L, gluespec_cmd);
 // }
 
 /*
@@ -3575,6 +3597,7 @@ static const struct luaL_Reg tokenlib_function_list[] = {
     { "getinstance",         tokenlib_get_instance          },
     { "getflags",            tokenlib_get_flags             },
     { "getparameters",       tokenlib_get_parameters        },
+    { "getconstant",         tokenlib_get_constant          },
     { "getmacro",            tokenlib_get_macro             },
     { "getmeaning",          tokenlib_get_meaning           },
     { "getcmdchrcs",         tokenlib_get_cmdchrcs          },
@@ -3721,11 +3744,13 @@ void lmt_local_call(int slot)
     lua_settop(L, stacktop);
 }
 
-int lmt_function_call_by_class(int slot, int property, halfword *value)
+/*tex We replaced |class| by |category because of g++ issues. */
+
+int lmt_function_call_by_category(int slot, int property, halfword *value)
 {
     lua_State *L = lmt_lua_state.lua_instance;
     int stacktop = lua_gettop(L);
-    int class = lua_value_none_code;
+    int category = lua_value_none_code;
     lua_pushcfunction(L, lmt_traceback);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_lua_state.function_table_id);
     if (lua_rawgeti(L, -1, slot) == LUA_TFUNCTION) {
@@ -3744,9 +3769,9 @@ int lmt_function_call_by_class(int slot, int property, halfword *value)
             lmt_error(L, "function call", slot, i == LUA_ERRRUN ? 0 : 1);
         } else {
             if (lua_type(L, -2) == LUA_TNUMBER) {
-                class = lmt_tointeger(L, -2);
+                category = lmt_tointeger(L, -2);
             }
-            switch (class) {
+            switch (category) {
                 case lua_value_none_code:
                     {
                         break;
@@ -3798,7 +3823,7 @@ int lmt_function_call_by_class(int slot, int property, halfword *value)
                 case lua_value_float_code:
                 case lua_value_string_code:
                     {
-                        class = lua_value_none_code;
+                        category = lua_value_none_code;
                         break;
                     }
                 case lua_value_boolean_code:
@@ -3816,14 +3841,14 @@ int lmt_function_call_by_class(int slot, int property, halfword *value)
                         break;
                 default:
                     {
-                        class = lua_value_none_code;
+                        category = lua_value_none_code;
                         break;
                     }
             }
         }
     }
     lua_settop(L, stacktop);
-    return class;
+    return category;
 }
 
 /* some day maybe an alternative too

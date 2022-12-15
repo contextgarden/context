@@ -155,7 +155,7 @@ extern halfword tex_badness(
 
 # define one_bp                                 65781
 
-# define infinity                        017777777777 /*tex the largest positive value that \TEX\ knows */
+# define max_infinity                      0x7FFFFFFF /*tex the largest positive value that \TEX\ knows */
 # define min_infinity                     -0x7FFFFFFF
 # define awful_bad                        07777777777 /*tex more than a billion demerits |0x3FFFFFFF| */ 
 # define infinite_bad                           10000 /*tex infinitely bad value */

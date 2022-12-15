@@ -11,35 +11,99 @@
 
 */
 
-unsigned aux_str2uni(const unsigned char *k)
+// unsigned xaux_str2uni(const unsigned char *k)
+// {
+//     const unsigned char *text = k;
+//     int ch = *text++;
+//     if (ch < 0x80) {
+//         return (unsigned) ch;
+//     } else if (ch <= 0xbf) {
+//         return 0xFFFD;
+//     } else if (ch <= 0xdf) {
+//         if (text[0] >= 0x80 && text[0] < 0xc0) {
+//             return (unsigned) (((ch & 0x1f) << 6) | (text[0] & 0x3f));
+//         }
+//     } else if (ch <= 0xef) {
+//         if (text[0] >= 0x80 && text[0] < 0xc0 && text[1] >= 0x80 && text[1] < 0xc0) {
+//             return (unsigned) (((ch & 0xf) << 12) | ((text[0] & 0x3f) << 6) | (text[1] & 0x3f));
+//         }
+//     } else if (ch <= 0xf7) {
+//         if (text[0] <  0x80 || text[1] <  0x80 || text[2] <  0x80 ||
+//             text[0] >= 0xc0 || text[1] >= 0xc0 || text[2] >= 0xc0) {
+//             return 0xFFFD;
+//         } else {
+//             int w1 = (((ch & 0x7) << 2) | ((text[0] & 0x30) >> 4)) - 1;
+//             int w2 = ((text[1] & 0xf) << 6) | (text[2] & 0x3f);
+//             w1 = (w1 << 6) | ((text[0] & 0xf) << 2) | ((text[1] & 0x30) >> 4);
+//             return (unsigned) (w1 * 0x400 + w2 + 0x10000);
+//         }
+//     }
+//     return 0xFFFD;
+// }
+
+unsigned aux_str2uni(const unsigned char *text)
 {
-    const unsigned char *text = k;
-    int ch = *text++;
-    if (ch < 0x80) {
-        return (unsigned) ch;
-    } else if (ch <= 0xbf) {
+    if (text[0] < 0x80) {
+        return (unsigned) text[0];
+    } else if (text[0] <= 0xbf) {
         return 0xFFFD;
-    } else if (ch <= 0xdf) {
-        if (text[0] >= 0x80 && text[0] < 0xc0) {
-            return (unsigned) (((ch & 0x1f) << 6) | (text[0] & 0x3f));
+    } else if (text[0] <= 0xdf) {
+        if (text[1] >= 0x80 && text[1] < 0xc0) {
+            return (unsigned) (((text[0] & 0x1f) << 6) | (text[1] & 0x3f));
         }
-    } else if (ch <= 0xef) {
-        if (text[0] >= 0x80 && text[0] < 0xc0 && text[1] >= 0x80 && text[1] < 0xc0) {
-            return (unsigned) (((ch & 0xf) << 12) | ((text[0] & 0x3f) << 6) | (text[1] & 0x3f));
+    } else if (text[0] <= 0xef) {
+        if (text[1] >= 0x80 && text[1] < 0xc0 && text[2] >= 0x80 && text[2] < 0xc0) {
+            return (unsigned) (((text[0] & 0xf) << 12) | ((text[1] & 0x3f) << 6) | (text[2] & 0x3f));
         }
-    } else if (ch <= 0xf7) {
-        if (text[0] <  0x80 || text[1] <  0x80 || text[2] <  0x80 ||
-            text[0] >= 0xc0 || text[1] >= 0xc0 || text[2] >= 0xc0) {
+    } else if (text[0] <= 0xf7) {
+        if (text[1] <  0x80 || text[2] <  0x80 || text[3] <  0x80 ||
+            text[1] >= 0xc0 || text[2] >= 0xc0 || text[3] >= 0xc0) {
             return 0xFFFD;
         } else {
-            int w1 = (((ch & 0x7) << 2) | ((text[0] & 0x30) >> 4)) - 1;
-            int w2 = ((text[1] & 0xf) << 6) | (text[2] & 0x3f);
-            w1 = (w1 << 6) | ((text[0] & 0xf) << 2) | ((text[1] & 0x30) >> 4);
+            int w1 = (((text[0] & 0x7) << 2) | ((text[1] & 0x30) >> 4)) - 1;
+            int w2 = ((text[2] & 0xf) << 6) | (text[3] & 0x3f);
+            w1 = (w1 << 6) | ((text[1] & 0xf) << 2) | ((text[2] & 0x30) >> 4);
             return (unsigned) (w1 * 0x400 + w2 + 0x10000);
         }
     }
     return 0xFFFD;
 }
+
+unsigned aux_str2uni_len(const unsigned char *text, int *len)
+{
+    if (text[0] < 0x80) {
+        *len = 1;
+        return (unsigned) text[0];
+    } else if (text[0] <= 0xbf) {
+        *len = 1;
+        return 0xFFFD;
+    } else if (text[0] <= 0xdf) {
+        if (text[1] >= 0x80 && text[1] < 0xc0) {
+            *len = 2;
+            return (unsigned) (((text[0] & 0x1f) << 6) | (text[1] & 0x3f));
+        }
+    } else if (text[0] <= 0xef) {
+        if (text[1] >= 0x80 && text[1] < 0xc0 && text[2] >= 0x80 && text[2] < 0xc0) {
+            *len = 3;
+            return (unsigned) (((text[0] & 0xf) << 12) | ((text[1] & 0x3f) << 6) | (text[2] & 0x3f));
+        }
+    } else if (text[0] <= 0xf7) {
+        if (text[1] <  0x80 || text[2] <  0x80 || text[3] <  0x80 ||
+            text[1] >= 0xc0 || text[2] >= 0xc0 || text[3] >= 0xc0) {
+            *len = 4;
+            return 0xFFFD;
+        } else {
+            *len = 4;
+            int w1 = (((text[0] & 0x7) << 2) | ((text[1] & 0x30) >> 4)) - 1;
+            int w2 = ((text[2] & 0xf) << 6) | (text[3] & 0x3f);
+            w1 = (w1 << 6) | ((text[1] & 0xf) << 2) | ((text[2] & 0x30) >> 4);
+            return (unsigned) (w1 * 0x400 + w2 + 0x10000);
+        }
+    }
+    *len = 1;
+    return 0xFFFD;
+}
+
 
 unsigned char *aux_uni2str(unsigned unic)
 {

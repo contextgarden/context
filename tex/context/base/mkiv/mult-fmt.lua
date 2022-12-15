@@ -217,9 +217,9 @@ function interfaces.setuserinterface(interface,response)
                 constant = constant[interface] or constant.en or given
                 constants[constant] = given -- breedte -> width
                 nofconstants = nofconstants + 1
-                setmacro("c!" .. given,given,"immutable")
+                setmacro("c!" .. given,given,"immutable","constant")
                 if reversetoo then
-                    setmacro("k!" .. constant,given,"immutable")
+                    setmacro("k!" .. constant,given,"immutable","constant")
                 end
                 report_constant("%-40s: %s",given,constant)
             end
@@ -232,7 +232,7 @@ function interfaces.setuserinterface(interface,response)
                 variable = variable[interface] or variable.en or given
                 variables[given] = variable -- ja -> yes
                 nofvariables = nofvariables + 1
-                setmacro("v!" .. given,variable,"immutable")
+                setmacro("v!" .. given,variable,"immutable","constant")
                 report_variable("%-40s: %s",given,variable)
             end
             logs.stopfilelogging()
@@ -244,7 +244,7 @@ function interfaces.setuserinterface(interface,response)
                 element = element[interface] or element.en or given
                 elements[element] = given
                 nofelements = nofelements + 1
-                setmacro("e!" .. given,element,"immutable")
+                setmacro("e!" .. given,element,"immutable","constant")
                 report_element("%-40s: %s",given,element)
             end
             logs.stopfilelogging()

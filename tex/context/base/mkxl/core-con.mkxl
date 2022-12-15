@@ -19,8 +19,8 @@
 
 \unprotect
 
-\ifdefined\currentlanguage \else \let\currentlanguage\empty              \fi
-\ifdefined\labeltext       \else \let\labeltext      \firstofoneargument \fi
+\ifdefined\currentlanguage \else \lettonothing\currentlanguage     \fi
+\ifdefined\labeltext       \else \let\labeltext\firstofoneargument \fi
 
 %D This module deals with all kind of conversions from numbers and dates. I
 %D considered splitting this module in a support one and a core one, but to keep
@@ -973,9 +973,9 @@
 
 %D Taken from x-asciimath (see digits-001.tex for an example):
 
-\mutable\let\spaceddigitsmethod   \empty % alternative methods   : 1 default, 2 and 3 only when > 4
-\mutable\let\spaceddigitssymbol   \empty % extra splitter symbol : {,}
-\mutable\let\spaceddigitsseparator\empty % separator symbol      : {\Uchar{"2008}}
+\mutable\lettonothing\spaceddigitsmethod    % alternative methods   : 1 default, 2 and 3 only when > 4
+\mutable\lettonothing\spaceddigitssymbol    % extra splitter symbol : {,}
+\mutable\lettonothing\spaceddigitsseparator % separator symbol      : {\Uchar{"2008}}
 
 \permanent\protected\def\spaceddigits#1%
   {\clf_spaceddigits

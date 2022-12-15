@@ -227,7 +227,7 @@
 %D indentation as set (by the output routine) inside the group are forgotten
 %D afterwards. (I must not forget its existence).
 
-\mutable\let\currentparagraphproperties\empty % visible for tracing
+\mutable\lettonothing\currentparagraphproperties % visible for tracing
 
 \permanent\def\carryoverpar#1% #1 can be \endgroup or \egroup or ... expandable !
   {\normalexpanded

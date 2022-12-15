@@ -63,7 +63,7 @@
    \frozen\instance\letvalue  {\e!stop \currentlines }\spac_lines_stop
 \to \everydefinelines
 
-\let\p_lines_option\empty
+\lettonothing\p_lines_option
 
 \let\spac_lines_break            \relax
 \let\spac_after_first_obeyed_line\relax
@@ -96,7 +96,7 @@
    \else
      \scratchdimen\dimexpr\commalistelement\relax
      \hskip
-       \ifdim\scratchdimen=\zeropoint
+       \ifzeropt\scratchdimen
          \zeropoint
        \else
          \scratchdimen

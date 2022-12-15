@@ -61,10 +61,10 @@
 
 \let\m_colo_weight_gray\v!yes
 
-\mutable\let\currentcolormodel \empty
-\mutable\let\currentcolorname  \empty
-\mutable\let\currentcolorpalet \empty
-\mutable\let\currentcolorprefix\empty % \currentcolorpalet:
+\mutable\lettonothing\currentcolormodel
+\mutable\lettonothing\currentcolorname
+\mutable\lettonothing\currentcolorpalet
+\mutable\lettonothing\currentcolorprefix % \currentcolorpalet:
 
 %D \macros
 %D   {definecolor,defineglobalcolor,definenamedcolor,definespotcolor,definemultitonecolor,
@@ -490,8 +490,8 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-\mutable\let\paletlist\empty
-\mutable\let\paletsize\!!zerocount
+\mutable\lettonothing\paletlist
+\mutable\let         \paletsize\!!zerocount
 
 \permanent\protected\def\getpaletlist[#1]%
   {\edef\paletlist{\begincsname\??paletlist#1\endcsname}}
@@ -588,15 +588,15 @@
   {\edef\currentcolorpalet{#1}%
    \ifempty\currentcolorpalet
      % seems to be a reset
-     \let\currentcolorprefix\empty
+     \lettonothing\currentcolorprefix
     %\t_colo_prefix\emptytoks
    \orelse\ifcsname\??paletlist\currentcolorpalet\endcsname
      \edef\currentcolorprefix{#1:}%
     %\t_colo_prefix\expandafter{\currentcolorprefix}%
    \else
      \colo_helpers_show_message\m!colors7\currentcolorpalet
-     \let\currentcolorpalet\empty
-     \let\currentcolorprefix\empty
+     \lettonothing\currentcolorpalet
+     \lettonothing\currentcolorprefix
     %\t_colo_prefix\emptytoks
    \fi
    \the\everysetuppalet
@@ -1101,8 +1101,8 @@
 %D \stopregistercolor
 %D \stoptyping
 
-\mutable\let\maintextcolor   \empty
-\mutable\def\defaulttextcolor{black}
+\mutable\lettonothing\maintextcolor
+\mutable\def         \defaulttextcolor{black}
 
 \permanent\protected\def\inheritmaintextcolor
   {\ifempty\maintextcolor\else\colo_helpers_activate\maintextcolor\fi}
@@ -1130,7 +1130,7 @@
 
 \permanent\protected\lettonothing\stoptextcolor
 
-\let\p_colo_textcolor\empty
+\lettonothing\p_colo_textcolor
 
 \def\colo_helpers_initialize_maintextcolor
   {\edef\p_colo_textcolor{\directcolorsparameter\c!textcolor}%

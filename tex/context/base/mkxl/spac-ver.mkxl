@@ -81,7 +81,7 @@
    \relax}
 
 \ifdefined\bodyfontinterlinespace \else
-  \let\bodyfontinterlinespace\empty
+  \lettonothing\bodyfontinterlinespace
 \fi
 
 \permanent\protected\def\presetnormallineheight % each bodyfont
@@ -118,12 +118,13 @@
 
 \installcorenamespace{interlinespacerelative}
 
-\aliased\let\setrelativeinterlinespace    \relax % used elsewhere
-\mutable\let\currentrelativeinterlinespace\empty
+\aliased\let\setrelativeinterlinespace\relax % used elsewhere
+
+\mutable\lettonothing\currentrelativeinterlinespace
 
 \defcsname\??interlinespacerelative\v!on   \endcsname{\oninterlineskip}
 \defcsname\??interlinespacerelative\v!off  \endcsname{\offinterlineskip}
-\defcsname\??interlinespacerelative\v!reset\endcsname{\enforced\let\currentrelativeinterlinespace\empty
+\defcsname\??interlinespacerelative\v!reset\endcsname{\enforced\lettonothing\currentrelativeinterlinespace
                                                       \enforced\let\setrelativeinterlinespace\relax
                                                       \setfontparameters}
 \defcsname\??interlinespacerelative\v!auto \endcsname{\enforced\let\setrelativeinterlinespace\spac_linespacing_set_relative_interlinespace}
@@ -501,7 +502,8 @@
   {\enforced\let\spac_lines_vbox\vbox}
 
 \let\v_spac_lines_around_action_set\relax
-\let\m_spac_lines_around           \empty
+
+\lettonothing\m_spac_lines_around
 
 \newconstant\c_spac_lines_correction_mode
 
@@ -1074,9 +1076,9 @@
 
 \appendtoks
  %  \setbox\strutbox\copy\nostrutbox
-    \enforced\let\strut   \empty
-    \enforced\let\endstrut\empty
-    \enforced\let\begstrut\empty
+    \enforced\lettonothing\strut
+    \enforced\lettonothing\endstrut
+    \enforced\lettonothing\begstrut
 \to \everysetnostrut
 
 %D When enabled, sigstruts will remove themselves if nothing goes inbetween. For
@@ -1429,7 +1431,7 @@
       \ifcsname\??gridsnappersets#1\endcsname\lastnamedcs\else#1\fi}}
 
 \permanent\protected\def\installsnapvalues#1#2%
-  {\let\m_spac_snapper\empty
+  {\lettonothing\m_spac_snapper
    \rawprocesscommacommand[#2]\spac_grids_expand_snapper
    \edef\p_spac_snapper{#1:\m_spac_snapper}%
    \ifcsname\??gridsnapperattributes\p_spac_snapper\endcsname
@@ -1649,14 +1651,15 @@
 \permanent\protected\def\setupgridsnapping[#1]% less overhead than setuplayout (needs testing)
   {\setlayoutparameter\c!grid{#1}\synchronizegridsnapping}
 
-\mutable\let\checkedgridmethod\empty   % these can become private
-\mutable\let\checkedgridscope \v!local % these can become private
+\mutable\lettonothing\checkedgridmethod % this can become private
+
+\mutable\let\checkedgridscope\v!local % this can become private
 
 \permanent\protected\def\checkgridmethod#1%
   {\edef\p_grid{#1}%
    \ifempty\p_grid
-     \let\checkedgridmethod\empty
-     \let\checkedgridscope \v!local
+     \lettonothing\checkedgridmethod
+     \let\checkedgridscope\v!local
    \else
      \splitatcolon\p_grid\checkedgridscope\checkedgridmethod
      \ifempty\checkedgridmethod
@@ -2179,12 +2182,12 @@
    \c!location=\v!left,
    \c!n=\zerocount]
 
-\let\m_spac_hanging_location\empty
+\lettonothing\m_spac_hanging_location
 
 \permanent\tolerant\protected\def\starthanging[#1]%
   {\dontleavehmode\bgroup
    \ifhastok={#1}%
-     \let\m_spac_hanging_location\empty
+     \lettonothing\m_spac_hanging_location
      \setupcurrenthanging[#1]%
    \else
      \edef\m_spac_hanging_location{#1}%

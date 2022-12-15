@@ -312,7 +312,7 @@
 
 \permanent\protected\def\dostartexport
   {%\glet\dostartexport\relax
-   \let\currentexport\empty
+   \lettonothing\currentexport
    \clf_setupexport
        align      {\exportparameter\c!align}%
        bodyfont   \dimexpr\exportparameter\c!bodyfont\relax

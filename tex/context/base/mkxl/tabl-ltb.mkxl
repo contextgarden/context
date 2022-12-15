@@ -140,7 +140,8 @@
 \permanent\def\linetablerparameter#1% faster, leaner and meaner
   {\begincsname
      \??linetable
-     \ifnum\c_tabl_lines_row=\zerocount % geen ifcase
+   % \ifnum\c_tabl_lines_row=\zerocount % geen ifcase
+     \ifzero\c_tabl_lines_row
        \ifcsname\??linetable r:\v!header#1\endcsname
          r:\v!header
        \orelse\ifcsname\??linetable r:0#1\endcsname
@@ -348,7 +349,7 @@
           \dp\b_tabl_lines_current\c_tabl_lines_part\strutdepth
           % noindent en endgraf needed else whitespace mess-up!
           \whitespace % here not after verticalstrut
-          \ifdim\topskipgap=\zeropoint\else
+          \ifzeropt\topskipgap\else
             \verticalstrut
             \nobreak
             \kern-\struttotal

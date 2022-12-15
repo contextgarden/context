@@ -61,7 +61,7 @@
 \newbox        \shipoutscratchbox
 \setnewconstant\shipoutfinalizemethod\plusone
 
-\mutable\let\pagestoshipout\empty % {1,3,6}
+\mutable\lettonothing\pagestoshipout % {1,3,6}
 
 \permanent\protected\def\shipoutrange#1#2%
   {\begingroup
@@ -706,7 +706,7 @@
         \wd\arrangedpageA\paperwidth
         \outputarrangedbox\arrangedpageA
         \egroup
-        \ifdim\ht\arrangedpageB=\zeropoint
+        \ifzeropt\ht\arrangedpageB
           \exitloop
         \fi}%
      \global\arrangedpageN\zerocount
@@ -1367,10 +1367,10 @@
 \installcorenamespace {pageshift}
 
 \permanent\protected\tolerant\def\definepageshift[#1]#*[#2]#*[#3]%
-  {\setvalue{\??pageshift#2:#1}{#3}}
+  {\defcsname\??pageshift#2:#1\endcsname{#3}}
 
-\let\page_boxes_h_shifts\empty
-\let\page_boxes_v_shifts\empty
+\lettonothing\page_boxes_h_shifts
+\lettonothing\page_boxes_v_shifts
 
 \newcount\c_page_boxes_h_shifts
 \newcount\c_page_boxes_v_shifts

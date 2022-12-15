@@ -29,7 +29,7 @@
 \bitwiseflip \normalizeparmode \normalizeparnormalizeparcode
 \bitwiseflip \normalizeparmode \flattenvleadersnormalizeparcode
 
-\let\v_spac_indentation_current\empty % amount/keyword
+\lettonothing\v_spac_indentation_current % amount/keyword
 
 \newdimen \d_spac_indentation_par
 \parindent\d_spac_indentation_par % for the show
@@ -54,7 +54,7 @@
 
 \aliased\let\synchronizeindenting\spac_indentation_setup_size
 
-\let\m_spac_indentation_options\empty
+\lettonothing\m_spac_indentation_options
 
 \def\spac_indentation_setup_options[#1]%
   {\edef\m_spac_indentation_options{#1}% comma separated list
@@ -762,7 +762,7 @@
 
 \permanent\tolerant\protected\def\startnarrower[#1]%
   {\begingroup
-   \let\currentnarrower\empty
+   \lettonothing\currentnarrower
    \ifparameter#1\or
      \spac_narrower_start_apply{#1}%
    \else
@@ -870,12 +870,12 @@
 
 \installcorenamespace{tolerancemethods}
 
-\mutable\let\bottomtolerance\empty % why not zero (not used annyway, but for now we keep it)
+\mutable\lettonothing\bottomtolerance % why not zero (not used annyway, but for now we keep it)
 
 \permanent\protected\def\installtolerancemethod#1#2#3%
   {\defcsname\??tolerancemethods#1:#2\endcsname{#3}}
 
-\installtolerancemethod \v!vertical   \v!verystrict   {\let\bottomtolerance\empty} % why not zero
+\installtolerancemethod \v!vertical   \v!verystrict   {\lettonothing\bottomtolerance} % why not zero
 \installtolerancemethod \v!vertical   \v!strict       {\def\bottomtolerance{.050}}
 \installtolerancemethod \v!vertical   \v!tolerant     {\def\bottomtolerance{.075}}
 \installtolerancemethod \v!vertical   \v!verytolerant {\def\bottomtolerance{.100}}

@@ -136,12 +136,10 @@
 
 % beware: these are global features on top of existing font features
 
-\mutable\let\currentfeature\s!current
-
-\let\m_font_feature_list \s!current
-\let\m_font_feature_asked\empty
-
-\newconstant\c_font_feature_state
+\mutable\let \currentfeature      \s!current
+\let         \m_font_feature_list \s!current
+\lettonothing\m_font_feature_asked
+\newconstant \c_font_feature_state
 
 \newevery\everyfontfeatureswitch
 
@@ -193,7 +191,7 @@
    \the\everyfontfeatureswitch}
 
 \protected\def\font_feature_replace
-  {\ifnum\c_font_feature_state=\zerocount
+  {\ifzero\c_font_feature_state
      \ifx\m_font_feature_asked\currentfeature\else
        \font_feature_replace_indeed
      \fi
@@ -214,9 +212,9 @@
    \fi}
 
 \protected\def\font_feature_reset_indeed
-  {\let\m_font_feature_asked\empty
-   \let\currentfeature      \s!current
-   \let\m_font_feature_list \s!current
+  {\lettonothing\m_font_feature_asked
+   \let\currentfeature\s!current
+   \let\m_font_feature_list\s!current
    \clf_resetfeature}
 
 \permanent\protected\def\revivefeature

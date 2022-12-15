@@ -34,7 +34,7 @@
 
 % \enablemode[lmmath]
 
-\let\m_font_fallback_name\empty
+\lettonothing\m_font_fallback_name
 
 % keep as reference:
 %

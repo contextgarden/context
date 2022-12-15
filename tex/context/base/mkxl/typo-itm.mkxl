@@ -103,7 +103,7 @@
    \ifempty\p_typo_items_symbol
      \let\m_typo_items_symbol\firstofoneargument
    \orelse\ifx\p_typo_items_symbol\v!none
-     \let\p_typo_items_symbol\empty
+     \lettonothing\p_typo_items_symbol
      \let\m_typo_items_symbol\firstofoneargument
    \else
      \doifelseconversiondefined\p_typo_items_symbol

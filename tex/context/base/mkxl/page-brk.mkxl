@@ -45,8 +45,8 @@
 \newtoks\everybeforepagebreak
 \newtoks\everyafterpagebreak
 
-\let\page_breaks_current_option \empty
-\let\page_breaks_current_options\empty
+\lettonothing\page_breaks_current_option
+\lettonothing\page_breaks_current_options
 
 \installcorenamespace{pagebreakmethod}
 \installcorenamespace{pagebreaks}
@@ -288,8 +288,8 @@
 \newtoks\everyaftercolumnbreak
 \newtoks\everysynchronizecolumn
 
-\let\page_breaks_columns_current_option \empty
-\let\page_breaks_columns_current_options\empty
+\lettonothing\page_breaks_columns_current_option
+\lettonothing\page_breaks_columns_current_options
 
 \def\page_breaks_columns_handle#1%
   {\edef\page_breaks_columns_current_options{#1}%

@@ -80,18 +80,18 @@
 %    \boxyoffset#box\dimexpr\boxyoffset#box-\topoffset\relax}
 
 % \def\page_boxes_apply_offset % #box
-%   {\unless\ifzeropt\topoffset % we can't do an unless here
+%   {\unless\ifdim\topoffset=\zeropoint
 %      \expandafter\page_boxes_apply_offset_indeed
-%    \orunless\ifzeropt\backoffset
+%    \orunless\ifdim\backoffset=\zeropoint
 %      \expandafter\page_boxes_apply_offset_indeed
 %    \else
 %      \expandafter\gobbleoneargument
 %    \fi}
 
 \def\page_boxes_apply_offset % #box
-  {\unless\ifdim\topoffset=\zeropoint
+  {\unless\ifzeropt\topoffset
      \expandafter\page_boxes_apply_offset_indeed
-   \orunless\ifdim\backoffset=\zeropoint
+   \orunless\ifzeropt\backoffset
      \expandafter\page_boxes_apply_offset_indeed
    \else
      \expandafter\gobbleoneargument

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=math-del,
+%D   [       file=math-dld,
 %D        version=2022.07.29,
 %D          title=\CONTEXT\ Math Macros,
 %D       subtitle=delimiteds,
@@ -46,7 +46,7 @@
     \frozen\protected\instance\edefcsname\currentmathdelimited\endcsname{\math_delimited_handle{\currentmathdelimited}}
 \to \everydefinemathdelimited
 
-\mutable\let\currentmathdelimited\empty
+\mutable\lettonothing\currentmathdelimited
 
 \tolerant\protected\def\math_delimited_handle#tag#*[#settings]#:#body%
   {\begingroup

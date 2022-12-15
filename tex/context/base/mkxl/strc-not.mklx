@@ -146,10 +146,10 @@
    \instance\protected\edefcsname\e!start#tag\endcsname{\strc_notations_start[#tag]}%
    \instance\protected\edefcsname\e!stop #tag\endcsname{\strc_notations_stop}}
 
-\let\m_strc_notation_sub\empty
+\lettonothing\m_strc_notation_sub
 
 \appendtoks
-    \let\m_strc_notation_sub\empty
+    \lettonothing\m_strc_notation_sub
     \ifempty\currentnotationparent
        % clone => parent | subclone => clone | subsubclone => subclone
        \strc_define_commands_notation
@@ -184,8 +184,8 @@
   %\strc_notes_setup_counter\currentnotation
 \to \everydefinenotation
 
-\let\p_strc_constructions_title \empty
-\let\p_strc_constructions_number\empty
+\lettonothing\p_strc_constructions_title
+\lettonothing\p_strc_constructions_number
 
 \protected\defcsname\??constructioninitializer\v!notation\endcsname
   {\let         \currentnotation                 \currentconstruction
@@ -544,8 +544,8 @@
 \newconstant\a_strc_notes_text_reference
 \newconstant\a_strc_notes_text_destination
 
-\let\strc_notes_get_reference_attribute_symbol  \empty
-\let\strc_notes_get_destination_attribute_symbol\empty
+\lettonothing\strc_notes_get_reference_attribute_symbol
+\lettonothing\strc_notes_get_destination_attribute_symbol
 
 \def\strc_notes_interaction_check_inline
   {\edef\p_interaction{\noteparameter\c!interaction}%
@@ -561,8 +561,8 @@
 
 \mutable\let\currentnotenumber\!!zerocount
 
-\let\strc_notes_get_reference_attribute_symbol  \empty
-\let\strc_notes_get_destination_attribute_symbol\empty
+\lettonothing\strc_notes_get_reference_attribute_symbol
+\lettonothing\strc_notes_get_destination_attribute_symbol
 
 \let\strc_notes_set_reference_attribute_number\donothing
 \let\strc_notes_set_reference_attribute_text  \donothing
@@ -576,8 +576,8 @@
 \let\m_strc_notes_internal\relax
 
 \def\strc_notes_prepare_inline_references_nop
-  {\let\strc_notes_get_reference_attribute_symbol\empty
-   \let\strc_notes_get_destination_attribute_symbol\empty
+  {\lettonothing\strc_notes_get_reference_attribute_symbol
+   \lettonothing\strc_notes_get_destination_attribute_symbol
    \let\strc_notes_set_style_color_inline\strc_notes_set_style_color_inline_nop}
 
 \def\strc_notes_prepare_inline_references_yes
@@ -727,7 +727,7 @@
      \dostoptagged
    \egroup
    \endgroup
-   \glet\lastnotesymbol\empty}
+   \glettonothing\lastnotesymbol}
 
 \protected\def\strc_notes_inject_dummy % temp hack
   {\removeunwantedspaces
@@ -739,7 +739,7 @@
    \fi
    \nobreak
    \hpack to .5\emwidth{}%
-   \glet\lastnotesymbol\empty}
+   \glettonothing\lastnotesymbol}
 
 \protected\def\strc_notes_inject_separator % patch by WS due to request on list
   {\edef\p_textseparator{\noteparameter\c!textseparator}%
@@ -1630,7 +1630,7 @@
 
 \newconditional\inlocalnotes
 
-\mutable\let\localnoteslist\empty
+\mutable\lettonothing\localnoteslist
 
 \permanent\tolerant\protected\def\startlocalnotes[#list]% grouping ? (we used to have a second argument ... settings)
   {\settrue\inlocalnotes
@@ -1641,7 +1641,7 @@
   {\processcommacommand[\localnoteslist]\strc_notes_local_stop_step
    \setfalse\inlocalnotes}
 
-\let\p_strc_notes_continue\empty
+\lettonothing\p_strc_notes_continue
 
 \def\strc_notes_local_start_step#tag%
   {\p_strc_notes_continue{\noteparameter\c!continue}%
@@ -1974,7 +1974,7 @@
 
 \installcorenamespace{notesymbol}
 
-\mutable\let\lastnotesymbol\empty % todo: per class
+\mutable\lettonothing\lastnotesymbol % todo: per class
 
 \permanent\tolerant\protected\def\notesymbol[#tag]#keepspacer[#reference]%
   {\ifnotesenabled

@@ -110,13 +110,13 @@
 \setupforms
   [\c!method=XML] % no need for everyjob initialization as this is the default
 
-\mutable\let\currentfieldbackgroundcolor     \empty
-\mutable\let\currentfieldbackgroundcolorvalue\empty
-\mutable\let\currentfieldbodycategory        \empty
-\mutable\let\currentfieldframecolor          \empty
-\mutable\let\currentfieldframecolorvalue     \empty
-\mutable\let\currentfieldlabel               \empty
-\mutable\let\currentfieldstackname           \empty
+\mutable\lettonothing\currentfieldbackgroundcolor
+\mutable\lettonothing\currentfieldbackgroundcolorvalue
+\mutable\lettonothing\currentfieldbodycategory
+\mutable\lettonothing\currentfieldframecolor
+\mutable\lettonothing\currentfieldframecolorvalue
+\mutable\lettonothing\currentfieldlabel
+\mutable\lettonothing\currentfieldstackname
 
 \appendtoks
     \iflocation
@@ -327,7 +327,7 @@
 %D (implemented as properties).
 
 \appendtoks
-    \let\currentfieldcategory\empty
+    \lettonothing\currentfieldcategory
     \doifelse{\interactionparameter\c!fieldlayer}\v!auto
       {\setupcurrentfieldcategory[\c!fieldlayer=\currentviewerlayer]}%
       {\setupcurrentfieldcategory[\c!fieldlayer=]}%
@@ -476,13 +476,13 @@
 \newconditional\fieldisvertical
 \newconditional\fieldishorizontal
 
-\mutable\let\currentfieldtotalframed  \empty
-\mutable\let\currentfieldlabelframed  \empty
-\mutable\let\currentfieldcontentframed\empty
+\mutable\lettonothing\currentfieldtotalframed
+\mutable\lettonothing\currentfieldlabelframed
+\mutable\lettonothing\currentfieldcontentframed
 
-\mutable\let\fieldtotalframedparameterhash  \empty % weird that we have to flag this
-\mutable\let\fieldlabelframedparameterhash  \empty % idem
-\mutable\let\fieldcontentframedparameterhash\empty % idem
+\mutable\lettonothing\fieldtotalframedparameterhash   % weird that we have to flag this
+\mutable\lettonothing\fieldlabelframedparameterhash   % idem
+\mutable\lettonothing\fieldcontentframedparameterhash % idem
 
 \permanent\tolerant\protected\def\field[#tag]#spacer[#label]% can be sped up with \setupcurrentfieldtotalframed etc
   {\iflocation
@@ -670,7 +670,7 @@
 \tolerant\def\scrn_tooltip_ignore[#settings]#:#anchortext#tiptext%
   {#anchortext}
 
-\mutable\let\currenttooltipname\empty
+\mutable\lettonothing\currenttooltipname
 
 \tolerant\def\scrn_tooltip_indeed[#settings]#:#anchortext#tiptext% a more modern aproach (push buttons)
   {\dontleavehmode \hbox \bgroup
@@ -683,7 +683,7 @@
        {\setupcurrenttooltip[#settings]}%
        {\setupcurrenttooltip[\c!location=#settings]}%
      \setbox\b_scrn_tooltip_text\hbox
-       {\lettooltipparameter\c!location\empty
+       {\resettooltipparameter\c!location
         \inheritedtooltipframed{#tiptext}}%
      \definesymbol
        [\currenttooltipname:txt]
@@ -986,7 +986,7 @@
        \setupcurrentinteractionmenu[#settings]%
        \let\scrn_rollbutton_symbol\scrn_rollbutton_symbol_m
      \orelse\ifhastok={#tag}%
-       \let\currentbutton\empty
+       \lettonothing\currentbutton
        \setupcurrentbutton[#tag]%
        \let\scrn_rollbutton_symbol\scrn_rollbutton_symbol_b
      \else

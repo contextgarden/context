@@ -15,13 +15,19 @@
 %D (interface might change). The code here evolved in an email exchange between me
 %D and Wolgang Schuster.
 
+%D We use constant definitions here because we don't need to expand the keywords
+%D which saves a little on the stack (read: memory access). The gain in performance
+%D is normally not noticeable unless one has plenty of parameter checking, which
+%D can happen in some scenarios. Even then the gain is only there when one has
+%D thousands of runs on e.g. virtual platforms.
+
 \writestatus{loading}{ConTeXt Multilingual Macros / Helpers}
 
 \registerctxluafile{mult-aux}{}
 
 \unprotect
 
-\immutable\edef\??empty{\Uchar25}  \immutable\letvalue{\Uchar25}\empty % hex 19
+\immutable\cdef\??empty{\Uchar25}  \immutable\letvalue{\Uchar25}\empty % hex 19
 
 % \edef\s!parent{\Uchar29} % inlining  is ugly, a tiny bit faster, but neglectable on a run
 
@@ -84,7 +90,7 @@
 
 % KEEP THIS:
 %
-% \let\m_mult_interfaces_namespace\empty
+% \lettonothing\m_mult_interfaces_namespace
 %
 % \def\mult_interfaces_get_parameters#1[#2%
 %   {\if\noexpand#2]%
@@ -172,7 +178,7 @@
 %D a comma and trigger a warning but we intercept that elsewhere. The alternative is
 %D to skip to the comma first which takes more time.
 
-\let\m_mult_interfaces_namespace\empty
+\lettonothing\m_mult_interfaces_namespace
 
 \def\mult_interfaces_get_parameters#1[%
   {\def\m_mult_interfaces_namespace{#1}%
@@ -355,8 +361,8 @@
 \mutable\let\dousecurrentstyleparameter\relax
 \mutable\let\dousecurrentcolorparameter\relax
 
-\mutable\let\currentstyleparameter\empty
-\mutable\let\currentcolorparameter\empty
+\mutable\lettonothing\currentstyleparameter
+\mutable\lettonothing\currentcolorparameter
 
 % maybe we should have \names ones too
 
@@ -402,35 +408,35 @@
      {\let#8#4%
       % watch out: no \edef#4{##1} before the ifarguments because #1 can have macros
       \ifarguments
-        \let#4\empty
+        \lettonothing#4%
         \the#5% predefine
-        \let#7\empty
+        \lettonothing#7%
         \letcsname#1#4:\s!chain\endcsname\empty
-        \edefcsname#1#4:\s!parent\endcsname{#3}%
+        \cdefcsname#1#4:\s!parent\endcsname{#3}%
       \or
         \edef#4{##1}%
         \the#5% predefine
-        \let#7\empty
-        \edefcsname#1#4:\s!chain\endcsname{##1}%
-        \edefcsname#1#4:\s!parent\endcsname{#3}%
+        \lettonothing#7%
+        \cdefcsname#1#4:\s!chain\endcsname{##1}%
+        \cdefcsname#1#4:\s!parent\endcsname{#3}%
       \or
         \edef#4{##1}%
         \the#5% predefine
         \relax
         \ifhastok={##2}%
-          \let#7\empty
-          \edefcsname#1#4:\s!chain\endcsname{##1}%
-          \edefcsname#1#4:\s!parent\endcsname{#3}%
+          \lettonothing#7%
+          \cdefcsname#1#4:\s!chain\endcsname{##1}%
+          \cdefcsname#1#4:\s!parent\endcsname{#3}%
           \mult_interfaces_get_parameters{#1#4:}[##2]%
         \else
           \edef#7{##2}%
           \ifempty#7%
-            \edefcsname#1#4:\s!chain\endcsname{##1}%
-            \edefcsname#1#4:\s!parent\endcsname{#3}%
+            \cdefcsname#1#4:\s!chain\endcsname{##1}%
+            \cdefcsname#1#4:\s!parent\endcsname{#3}%
           \else
             \mult_check_for_parent{#1}{#3}#4#7%
-            \edefcsname#1#4:\s!chain\endcsname{\mult_interfaces_chain#1{##2}##1}%
-            \edefcsname#1#4:\s!parent\endcsname{#1##2}%
+            \cdefcsname#1#4:\s!chain\endcsname{\mult_interfaces_chain#1{##2}##1}%
+            \cdefcsname#1#4:\s!parent\endcsname{#1##2}%
           \fi
         \fi
       \or
@@ -438,8 +444,8 @@
         \the#5% predefine
         \edef#7{##2}%
         \mult_check_for_parent{#1}{#3}#4#7%
-        \edefcsname#1#4:\s!chain\endcsname{\mult_interfaces_chain#1{##2}##1}%
-        \edefcsname#1#4:\s!parent\endcsname{#1##2}%
+        \cdefcsname#1#4:\s!chain\endcsname{\mult_interfaces_chain#1{##2}##1}%
+        \cdefcsname#1#4:\s!parent\endcsname{#1##2}%
         \mult_interfaces_get_parameters{#1#4:}[##3]%
       \fi
       \the#6%
@@ -472,7 +478,7 @@
            \the#4}%
         \processcommalist[##1]#8%
       \else
-        \let#3\empty
+        \lettonothing#3%
         \mult_interfaces_get_parameters{#1:}[##1]%
         \the#4%
       \fi
@@ -509,7 +515,7 @@
      {\ifarguments
         % \setuplayout
         \let#6#3%      % previous becomes current
-        \let#3\empty   % current becomes empty
+        \lettonothing#3%   % current becomes empty
         #2\doingrootsetroot
         \the#5%
         \the#8% switchsetups
@@ -518,7 +524,7 @@
           % \setuplayout[key=value]
           \let#7#3%
           \let#6#3%
-          \let#3\empty
+          \lettonothing#3%
           #2\doingrootsetuproot
           \mult_interfaces_get_parameters{#1:}[##1]%
           \the#5%
@@ -579,10 +585,10 @@
    \frozen\tolerant\protected\def#2[##1]##*[##2]##*[##3]%
      {\let#7#3%
       \ifarguments
-        \let#3\empty
+        \lettonothing#3%
         \the#4%
       \or
-        \let#3\empty
+        \lettonothing#3%
         \mult_interfaces_get_parameters{#1:}[##1]%
         \the#4%
       \or
@@ -757,17 +763,17 @@
   {\frozen\tolerant\protected\defcsname#1\endcsname[##1]##*[##2]%
      {\begingroup
       \ifarguments
-        \let#2\empty
+        \lettonothing#2%
       \or
        %\ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##1}=^^^^0003^^^^0003^^^^0004%
       % \ifcondition\mult_aux_no_assignment_indeed##1\ignorearguments
       %   \edef#2{##1}%
       % \else
-      %   \let#2\empty
+      %   \lettonothing#2%
       %   #3[##1]%
       % \fi
         \ifhastok={##1}%
-          \let#2\empty
+          \lettonothing#2%
           #3[##1]%
         \else
           \edef#2{##1}%
@@ -825,7 +831,7 @@
      \writestatus\m!system{duplicate user namespace '#1'}\wait
    \else
      \global\advance\c_mult_interfaces_n_of_namespaces\plusone
-     \immutable\xdefcsname ????#1\endcsname{\v_interfaces_prefix_template}%
+     \global\immutable\cdefcsname ????#1\endcsname{\v_interfaces_prefix_template}%
    \fi}
 
 \permanent\protected\def\installcorenamespace#1%
@@ -833,7 +839,7 @@
      \writestatus\m!system{duplicate core namespace '#1'}\wait
    \else
      \global\advance\c_mult_interfaces_n_of_namespaces\plusone
-     \immutable\xdefcsname ??#1\endcsname{\v_interfaces_prefix_template}%
+     \global\immutable\cdefcsname ??#1\endcsname{\v_interfaces_prefix_template}%
      \clf_registernamespace\c_mult_interfaces_n_of_namespaces{#1}%
    \fi}
 
@@ -858,6 +864,7 @@
 \permanent\protected\def\setdummyparameter        #1{\defcsname\??dummy#1\endcsname}
 \permanent\protected\def\setexpandeddummyparameter#1{\edefcsname\??dummy#1\endcsname}
 \permanent\protected\def\letdummyparameter        #1{\letcsname\??dummy#1\endcsname}
+\permanent\protected\def\resetdummyparameter      #1{\letcsname\??dummy#1\endcsname\empty}
 
 \edef\mult_interfaces_dummy{\??dummy} % nor immutable
 
@@ -1006,7 +1013,7 @@
 
 \protected\def\mult_interfaces_install_definition_set#1#2#3#4#5#6#7%
   {\newcount#3%
-   \let#6\empty
+   \lettonothing#6%
    \protected\def#2%
      {\expandafter\let\expandafter\c_mult_set\csname #1_t_#6\endcsname
       \ifrelax\c_mult_set
@@ -1197,10 +1204,10 @@
        \frozen\tolerant\protected\def#2[##1]##*[##2]##*[##3]%
          {\let#7#3%
           \ifarguments
-            \let#3\empty
+            \lettonothing#3%
             \the#4%
           \or
-            \let#3\empty
+            \lettonothing#3%
             \let\mult_interfaces_adef\mult_interfaces_adef_nop
             \mult_interfaces_get_parameters{#1:}[##1]%
             \let\mult_interfaces_adef\mult_interfaces_adef_yes

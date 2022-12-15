@@ -56,10 +56,10 @@
 \permanent\tolerant\protected\def\startpositioning[#1]#*[#2]%
   {\bgroup
    \ifparameters
-     \let\currentpositioning\empty
+     \lettonothing\currentpositioning
    \or
      \ifhastok={#1}%
-       \let\currentpositioning\empty
+       \lettonothing\currentpositioning
        \setupcurrentpositioning[#1]%
      \else
        \edef\currentpositioning{#1}%

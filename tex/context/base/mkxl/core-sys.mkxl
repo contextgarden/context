@@ -90,7 +90,7 @@
 
 \permanent\protected\def\setjobfullname#1% #1 = default if not given
   {\doifelsenothing\jobfilename
-     {\let\jobfullname\empty}
+     {\lettonothing\jobfullname}
      {\doif\jobfilesuffix\c!tex{\edef\jobfullname{\jobfilename.#1}}}}
 
 %D There are a couple of system states avaiable:

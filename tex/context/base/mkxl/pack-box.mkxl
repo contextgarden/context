@@ -51,7 +51,7 @@
 %
 % \anchor[text-1][preset=lefttop][framed settings]{HELLO WORLD}
 
-\mutable\let\currentanchor\empty
+\mutable\lettonothing\currentanchor
 
 \permanent\tolerant\protected\def\defineanchor[#1]#*[#2]#*[#3]#*[#4]% name targetlayer layersetting framedsetting
   {\defcsname\??anchor#1\endcsname{\pack_anchors_process_defined{#2}{#3}{#4}}}
@@ -359,8 +359,8 @@
         {\box\nextbox}%
       \setcollector
         [caption][#1]%
-        {\letdummyparameter\c!style\empty
-         \letdummyparameter\c!color\empty
+        {\resetdummyparameter\c!style
+         \resetdummyparameter\c!color
          \getdummyparameters[#2]%
          \dousestyleparameter{\directdummyparameter\c!style}%
          \setupinterlinespace
@@ -548,8 +548,8 @@
 \defcsname\??bleedinglocation tr\endcsname{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_t}
 \defcsname\??bleedinglocation rt\endcsname{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_t}
 
-\mutable\let\currentbleedposition\empty
-\mutable\let\currentpageposition \empty
+\mutable\lettonothing\currentbleedposition
+\mutable\lettonothing\currentpageposition
 
 \permanent\tolerant\protected\def\bleed[#1]%
   {\hbox\bgroup
@@ -694,10 +694,10 @@
 
 \permanent\tolerant\protected\def\setlayertext[#1]#*[#2]#*[#3]%
   {\bgroup
-   \letdummyparameter\c!align\empty
-   \letdummyparameter\c!width\hsize
-   \letdummyparameter\c!color\empty
-   \letdummyparameter\c!style\empty
+   \resetdummyparameter\c!align
+   \letdummyparameter  \c!width\hsize
+   \resetdummyparameter\c!color
+   \resetdummyparameter\c!style
    \getdummyparameters[#3]%
    \dowithnextboxcontent
      {\forgetall
@@ -1191,10 +1191,10 @@
             \halfwaytotallistanchorcode
           \fi
         \relax
-      \ifdim\scratchxoffset=\zeropoint\else
+      \ifzeropt\scratchxoffset\else
          \boxxoffset\nextbox\scratchxoffset
       \fi
-      \ifdim\scratchyoffset=\zeropoint\else
+      \ifzeropt\scratchyoffset\else
          \boxyoffset\nextbox\scratchyoffset
       \fi
       \global\setbox\scratchcounterone\hpack\bgroup
@@ -1238,7 +1238,7 @@
 
 \installmacrostack\boxanchoringclass
 
-\mutable\let\boxanchoringclass\empty
+\mutable\lettonothing\boxanchoringclass
 
 \newcount\c_anchor_auto_box_class
 

@@ -319,9 +319,9 @@
      -%
    \fi}
 
-\let\syst_catcodes_trace_set \empty
-\let\syst_catcodes_trace_push\empty
-\let\syst_catcodes_trace_pop \empty
+\lettonothing\syst_catcodes_trace_set
+\lettonothing\syst_catcodes_trace_push
+\lettonothing\syst_catcodes_trace_pop
 
 % \tracecatcodetables
 

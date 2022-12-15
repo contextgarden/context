@@ -88,7 +88,8 @@ inline static void tex_aux_expand_after(void)
     if (cur_cmd > max_command_cmd) {
         tex_expand_current_token();
     } else {
-        tex_back_input(t2);
+         tex_back_input(t2);
+      /* token_link(t1) = t2; */ /* no gain, rarely happens */
     }
     tex_back_input(t1);
 }
@@ -615,7 +616,6 @@ inline static int tex_aux_uni_to_buffer(unsigned char *b, int m, int c)
     much sense. It also long token lists that never (should) match anyway.
 */
 
-
 static int tex_aux_collect_cs_tokens(halfword *p, int *n)
 {
     while (1) {
@@ -650,7 +650,17 @@ static int tex_aux_collect_cs_tokens(halfword *p, int *n)
             */
             case call_cmd:
             case tolerant_call_cmd:
-                tex_aux_macro_call(cur_cs, cur_cmd, cur_chr);
+                if (get_token_reference(cur_chr) == max_token_reference) { // ! get_token_parameters(cur_chr)) {
+                    /* we avoid the macro stack and expansion and we don't trace either */
+                    halfword h = token_link(cur_chr);
+                    while (h) {
+                        *p = tex_store_new_token(*p, token_info(h));
+                        *n += 1;
+                        h = token_link(h);
+                    }
+                } else {
+                    tex_aux_macro_call(cur_cs, cur_cmd, cur_chr);
+                }
                 break;
             case end_cs_name_cmd:
                 return 1;
@@ -677,7 +687,7 @@ int tex_is_valid_csname(void)
             tex_get_x_or_protected(); /* we skip unprotected ! */
         } while (cur_cmd != end_cs_name_cmd);
         goto FINISH;
-        /* no real gain: */
+        /* no real gain as we hardly ever end up here */
      // while (1) {
      //     tex_get_token();
      //     if (cur_cmd == end_cs_name_cmd) {
@@ -941,6 +951,16 @@ int tex_get_parameter_count(void)
     return n;
 }
 
+/*tex 
+    We can avoid the copy of parameters to the stack but it complicates the code because we also need 
+    to clean up the previous set of parameters etc. It's not worth the effort. However, there are 
+    plenty of optimizations compared to the original. Some are measurable on an average run, others
+    are more likely to increase performance when thousands of successive runs happen in e.g. a virtual 
+    environment where threads fight for memory access and cpu cache. And because \CONTEXT\ is us used 
+    that way we keep looking into ways to gain performance, but not at the cost of dirty hacks (that 
+    I tried out of curiosity but rejected in the end). 
+*/
+
 static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
 {
     int tracing = tracing_macros_par > 0;
@@ -955,7 +975,7 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
         if (is_untraced(eq_flag(cs))) {
             tracing = 0;
         } else {
-            if (! get_token_parameters(chr)) {
+            if (! get_token_preamble(chr)) {
                 tex_print_str("->");
             } else {
                 /* maybe move the preamble scanner to here */
@@ -964,14 +984,14 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
         }
         tex_end_diagnostic();
     }
-    if (get_token_parameters(chr)) {
+    if (get_token_preamble(chr)) {
         halfword matchpointer = token_link(chr);
         halfword matchtoken = token_info(matchpointer);
         int save_scanner_status = lmt_input_state.scanner_status;
         halfword save_warning_index = lmt_input_state.warning_index;
         int nofscanned = 0;
         int nofarguments = 0;
-        halfword pstack[9]; /* We could go for 15 if we accept |#A-#F|. */
+        halfword pstack[max_match_count]; 
         /*tex
             Scan the parameters and make |link(r)| point to the macro body; but |return| if an
             illegal |\par| is detected.
@@ -1334,7 +1354,7 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                     ++nofscanned;
                     if (tracing) {
                         tex_begin_diagnostic();
-                        tex_print_format("%c%i<-", match_visualizer, nofscanned);
+                        tex_print_format("%c%c<-", match_visualizer, '0' + nofscanned + (nofscanned > 9 ? gap_match_count : 0));
                         tex_show_token_list(pstack[nofscanned - 1], null, default_token_show_max, 0);
                         tex_end_diagnostic();
                     }

@@ -1279,8 +1279,9 @@ static int tex_aux_still_okay(halfword f, halfword l, halfword r, int n, const c
                 tex_normal_warning("language", "the hyphenated word contains non-glyphs, skipping");
                 return 0;
             } else {
-                halfword c = (halfword) aux_str2uni((const unsigned char *) utf8original);
-                utf8original += utf8_size(c);
+                int cl; 
+                halfword c = (halfword) aux_str2uni_len((const unsigned char *) utf8original, &cl);
+                utf8original += cl;
                 if (! (c && c == glyph_character(f))) {
                     tex_normal_warning("language", "the hyphenated word contains different characters, skipping");
                     return 0;

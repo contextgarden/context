@@ -101,8 +101,8 @@
     \frozen\protected\instance\edefcsname\currentmathradical\endcsname{\math_radical_handle{\currentmathradical}}
 \to \everydefinemathradical
 
-\mutable\let\currentmathradical      \empty
-\mutable\let\currentmathradicaldegree\empty
+\mutable\lettonothing\currentmathradical
+\mutable\lettonothing\currentmathradicaldegree
 
 \setmathignore\Umathradicaldegreebefore\plusone
 

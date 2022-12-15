@@ -129,7 +129,7 @@
    \!taLastRegularTabskip\scratchskip
    \!taOnceOnlyTabskipfalse
    \!taBeginFormattrue
-   \let\!tfRowOfWidths\empty
+   \lettonothing\!tfRowOfWidths
    \doreadtableformatkeys}
 
 \def\!tfSetWidth
@@ -170,7 +170,7 @@
      \else
        \!tgValue
      \fi
-   \let\!tfWidthText\empty %      Override possible prior `w[sample entry]'
+   \lettonothing\!tfWidthText % Override possible prior `w[sample entry]'
    \doreadtableformatkeys}
 
 \def\!tfSetTabskip
@@ -181,7 +181,7 @@
      \scratchskip\!tgValue
    \fi
    \divide\scratchskip\plustwo
-   \ifnum\!taColumnNumber=\zerocount
+   \ifzero\!taColumnNumber
     %\!thToksEdef\!taRuleColumnTemplate{\the\!taRuleColumnTemplate\tabskip\the\scratchskip}%
      \normalexpanded{\!taRuleColumnTemplate{\the\!taRuleColumnTemplate\tabskip\the\scratchskip}}%
    \else
@@ -221,7 +221,7 @@
    \!tfAdjoinPriorColumn}
 
 \def\!tfAdjoinPriorColumn
-  {\ifnum\!taColumnNumber=\zerocount
+  {\ifzero\!taColumnNumber
      \!taPreamble=\!taRuleColumnTemplate % New \tabskip may have been added
    \else
      \ifempty\!tfRowOfWidths\else  % no "w" keys specified yet, not even this col
@@ -240,7 +240,7 @@
   \!taLeftGlue{\hfil}%
   \!taRightGlue{\hfil}%
   \!taMinimumColumnWidth\zeropoint
-  \let\!tfWidthText\empty
+  \lettonothing\!tfWidthText
   \!taOnceOnlyTabskipfalse
   \doreadtableformatkeys}
 
@@ -325,7 +325,7 @@
 
 \def\!tgCheckForSpace
   {\def\!tgCode{1}%
-   \let\!tgValue\empty
+   \lettonothing\!tgValue
    \ifx\tempstring\!thSpaceToken
      \expandafter\!tgReturn
    \else
@@ -682,7 +682,7 @@
 % extensions
 
 \newtableformatkey q%
-  {\let\!tqStyle\empty
+  {\lettonothing\!tqStyle
    \futurelet\!tnext\!tqTestForBracket}
 
 \newtableformatkey Q%
@@ -759,7 +759,7 @@
    % #2=extra depth
    \!taDimenA=#1\relax
    \!taDimenB=#2\relax
-   \let\!TsSpaceFactor\empty
+   \lettonothing\!TsSpaceFactor
    \ifmmode
      \expandafter\mathpalette % (*) the only place where still use this
      \expandafter\!TsEnlargeMath
@@ -896,8 +896,8 @@
 
 \newcount\c_tabl_table_n_of_vrules \c_tabl_table_n_of_vrules\plusone
 
-\let\m_tabl_table_vrule_color\empty
-\let\m_tabl_table_hrule_color\empty
+\lettonothing\m_tabl_table_vrule_color
+\lettonothing\m_tabl_table_hrule_color
 
 \def\tabl_table_insert_vrule
   {\vrule\s!width
@@ -930,7 +930,7 @@
      \global\c_tabl_table_n_of_vrules\plusone
      \unskip
    \fi
-   \glet\m_tabl_table_vrule_color\empty
+   \glettonothing\m_tabl_table_vrule_color
    \hfil
    \aligntab}
 
@@ -1381,8 +1381,8 @@
   {\tabl_tables_chuck_auto_row % before the tail, else noalign problem
    \tabl_table_insert_tail
    \noalign\bgroup
-     \glet\tabl_table_head\empty
-     \glet\tabl_table_tail\empty
+     \glettonothing\tabl_table_head
+     \glettonothing\tabl_table_tail
    \egroup
    \tabl_table_finish
    \ifempty\p_tabl_table_frame
@@ -1540,7 +1540,7 @@
 
 \newtoks\localtabledefinitions
 
-\mutable\let\currenttableformat\empty
+\mutable\lettonothing\currenttableformat
 
 \def\tabl_table_third_stage#1%
   {\global\settrue\tableactionstatepermitted
@@ -1612,8 +1612,8 @@
    \egroup
    \dontcomplain
    \tabl_table_split_box\tablecontentbox
-   \glet\tabl_table_head\empty % new here
-   \glet\tabl_table_tail\empty % new here
+   \glettonothing\tabl_table_head % new here
+   \glettonothing\tabl_table_tail % new here
    \flushnotes
    \egroup}
 
@@ -1663,8 +1663,8 @@
 
 %D This is so old ... adapting it to use tolerant might break something:
 
-\let\tabl_table_head\empty % needs checking
-\let\tabl_table_tail\empty % needs checking
+\lettonothing\tabl_table_head % needs checking
+\lettonothing\tabl_table_tail % needs checking
 
 \letcsname\e!start\v!tablehead\endcsname\relax % todo: frozen, but we use a grabber
 \letcsname\e!stop \v!tablehead\endcsname\relax % todo: frozen, but we use a grabber
@@ -1711,8 +1711,8 @@
    \noalign\bgroup
      \nobreak
      \tabl_table_set_action\tableunknownstate
-     \glet\tabl_tables_check_auto_row\empty
-     \glet\tabl_tables_chuck_auto_row\empty
+     \glettonothing\tabl_tables_check_auto_row
+     \glettonothing\tabl_tables_chuck_auto_row
      \global\currenttablecolumn\zerocount
    \egroup}
 
@@ -1841,18 +1841,18 @@
   {\glet\tabl_tables_check_auto_row\tabl_tables_check_auto_row_indeed
    \glet\tabl_tables_chuck_auto_row\tabl_tables_chuck_auto_row_indeed}
 
-\let\tabl_tables_check_auto_row\empty
-\let\tabl_tables_chuck_auto_row\empty
+\lettonothing\tabl_tables_check_auto_row
+\lettonothing\tabl_tables_chuck_auto_row
 
 \def\tabl_tables_check_auto_row_indeed
-  {\glet\tabl_tables_check_auto_row\empty
+  {\glettonothing\tabl_tables_check_auto_row
    \ifnum\tableactionstate=\tablerulestate   \FR\orelse
    \ifnum\tableactionstate=\tableunknownstate\FR\else
                                              \MR\fi}
 
 \def\tabl_tables_chuck_auto_row_indeed
-  {\glet\tabl_tables_check_auto_row\empty
-   \glet\tabl_tables_chuck_auto_row\empty
+  {\glettonothing\tabl_tables_check_auto_row
+   \glettonothing\tabl_tables_chuck_auto_row
    \ifnum\tableactionstate=\tablerulestate   \SR\orelse
    \ifnum\tableactionstate=\tableunknownstate\SR\else
                                              \LR\fi}
@@ -1908,8 +1908,8 @@
 \newcount\c_tabl_table_hrule_thickness_factor
 \newcount\c_tabl_table_drule_span
 
-\let\m_tabl_table_vrule_color\empty
-\let\m_tabl_table_hrule_color\empty
+\lettonothing\m_tabl_table_vrule_color
+\lettonothing\m_tabl_table_hrule_color
 
 \appendtoks
     \enforced\let\VL\tabl_table_VL
@@ -1934,7 +1934,7 @@
 \permanent\tolerant\protected\def\tabl_table_VL[#1]%
   {\tabl_tables_check_auto_row
    \global\advance\currenttablecolumn\plusone
-   \glet\m_tabl_table_vrule_color\empty
+   \glettonothing\m_tabl_table_vrule_color
    \global\c_tabl_table_vrule_thickness_factor\m_tabl_table_VLwidth\relax
    \iftok{#1}\emptytoks\else
      \rawprocesscommalist[#1]\tabl_table_vrulecommand
@@ -1978,7 +1978,7 @@
      \bgroup
        \global\c_tabl_table_hrule_thickness_factor\m_tabl_table_HLheight\relax
        \ifparameter#1\or
-         \glet\m_tabl_table_hrule_color\empty
+         \glettonothing\m_tabl_table_hrule_color
          \rawprocesscommalist[#1]\tabl_table_hrulecommand
          \ifempty\m_tabl_table_hrule_color\else
            \switchtocolor[\m_tabl_table_hrule_color]%
@@ -2094,7 +2094,7 @@
      \global\c_tabl_table_hrule_thickness_factor\m_tabl_table_HLheight\relax
      \global\c_tabl_table_drule_span\zerocount
      \iftok{#1}\emptytoks\else
-       \glet\m_tabl_table_hrule_color\empty
+       \glettonothing\m_tabl_table_hrule_color
        \rawprocesscommalist[#1]\tabl_table_drulecommand
      % \ifempty\m_tabl_table_hrule_color\else
      %   \switchtocolor[\m_tabl_table_hrule_color]% see *DL*

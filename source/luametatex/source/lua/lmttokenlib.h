@@ -33,7 +33,7 @@ extern halfword lmt_token_list_from_lua       (lua_State *L, int slot);
 extern halfword lmt_token_code_from_lua       (lua_State *L, int slot);
 
 extern void     lmt_function_call             (int slot, int prefix);
-extern int      lmt_function_call_by_class    (int slot, int property, halfword *value);
+extern int      lmt_function_call_by_category (int slot, int property, halfword *value);
 extern void     lmt_token_call                (int p);
 extern void     lmt_local_call                (int slot);
 

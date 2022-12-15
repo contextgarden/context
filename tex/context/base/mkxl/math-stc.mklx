@@ -215,9 +215,9 @@
 %D First we implement the helper that deals with an extensible in the middle and
 %D top and|/|or bottom texts:
 
-\let\m_math_stackers_text_top   \empty
-\let\m_math_stackers_text_bottom\empty
-\let\m_math_stackers_text_middle\empty
+\lettonothing\m_math_stackers_text_top
+\lettonothing\m_math_stackers_text_bottom
+\lettonothing\m_math_stackers_text_middle
 
 \def\math_stackers_flushtext#command#text%
   {\ifdim\scratchleftoffset >\zeropoint\math_stackers_skip\scratchleftoffset \fi

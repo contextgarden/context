@@ -224,10 +224,10 @@
 \newcount      \c_strc_itemgroups_column_depth
 
 \def           \v_strc_itemgroups_counter        {itemgroup:\currentparentitemgroup}
-\let           \m_strc_itemgroups_repeat_start   \empty
+\lettonothing  \m_strc_itemgroups_repeat_start
 \def           \v_strc_itemgroups_unknown_symbol {?}
-\let           \m_strc_itemgroups_indenting      \empty
-\let           \m_strc_itemgroups_destination    \empty
+\lettonothing  \m_strc_itemgroups_indenting
+\lettonothing  \m_strc_itemgroups_destination
 
 \mutable\let   \currentitemlevel                 \!!zerocount % public
 \mutable\def   \currentnofitems                  {\the\c_strc_itemgroups_max_items}
@@ -235,9 +235,9 @@
 
 \newtoks       \itemgroupcommands                % maybe public
 
-\mutable\def   \currentitemgroupsymbol           {n}    % here we cannot use a _ in the name
-\mutable\let   \currentitemgroupconversionset    \empty % here we cannot use a _ in the name
-\mutable\let   \currentitemgroupsegments         \empty
+\mutable\def          \currentitemgroupsymbol        {n} % here we cannot use a _ in the name
+\mutable\lettonothing \currentitemgroupconversionset     % here we cannot use a _ in the name
+\mutable\lettonothing \currentitemgroupsegments
 
 \def\strc_itemgroups_register_status
   {\clf_registeritemgroup{\currentparentitemgroup}\c_strc_itemgroups_nesting\c_strc_itemgroups_n_of_items\dimexpr\itemgroupparameter\c!maxwidth\relax}
@@ -393,8 +393,8 @@
 % \protected\def\strc_itemgroups_process_options#options%
 %   {\normalexpanded{\strc_itemgroups_process_option_list[#options]}} % expansion of options is handy for xml
 
-\mutable\let\itemgroupfirst \empty
-\mutable\let\itemgroupsecond\empty
+\mutable\lettonothing\itemgroupfirst
+\mutable\lettonothing\itemgroupsecond
 
 \def\strc_itemgroups_process_option#option%
   {\edef\scratchstringone{#option}%
@@ -474,8 +474,8 @@
                                             %\letitemgroupparameter\c!factor       \!!zerocount
                                              \letitemgroupparameter\c!factor       {\zerocount}%
                                              \setitemgroupparameter\c!packcriterium{\zerocount}%
-                                             \letitemgroupparameter\c!inner        \empty
-                                             \letitemgroupparameter\c!beforehead   \empty
+                                             \resetitemgroupparameter\c!inner
+                                             \resetitemgroupparameter\c!beforehead
                                              \letitemgroupparameter\c!afterhead    \blank
                                              \letitemgroupparameter\c!before       \blank
                                              \letitemgroupparameter\c!inbetween    \blank
@@ -503,23 +503,30 @@
    \setfalse\c_strc_itemgroups_symbol
    \setfalse\c_strc_itemgroups_columns
    % to be checked
-   \let\m_strc_itemgroups_destination\empty
-   \let\strc_itemgroups_used_symbol  \empty % ** start value
-   \let\strc_itemgroups_margin_symbol\empty
-   \let\strc_itemgroups_extra_symbol \empty
+   \lettonothing\m_strc_itemgroups_destination
+   \lettonothing\strc_itemgroups_used_symbol   % ** start value
+   \lettonothing\strc_itemgroups_margin_symbol
+   \lettonothing\strc_itemgroups_extra_symbol
    %
    \global\letitemgroupparameter\c!maxwidth\!!zeropoint
    }
 
-\setvalue{\??itemgroupfirst\v!intro       }{\settrue\c_strc_itemgroups_intro}
-\setvalue{\??itemgroupfirst\v!continue    }{\settrue\c_strc_itemgroups_continue}
-\setvalue{\??itemgroupfirst\v!random      }{\settrue\c_strc_itemgroups_randomize
-                                            \settrue\c_strc_itemgroups_collecting}
-\setvalue{\??itemgroupkeyword\v!horizontal}{\settrue\c_strc_itemgroups_horizontal
-                                            \settrue\c_strc_itemgroups_collecting
-                                            \settrue\c_strc_itemgroups_inline
-                                            \settrue\c_strc_itemgroups_joined
-                                            \strc_itemgroups_process_set_option_pack}
+\defcsname\??itemgroupfirst\v!intro\endcsname
+  {\settrue\c_strc_itemgroups_intro}
+
+\defcsname\??itemgroupfirst\v!continue\endcsname
+  {\settrue\c_strc_itemgroups_continue}
+
+\defcsname\??itemgroupfirst\v!random\endcsname
+  {\settrue\c_strc_itemgroups_randomize
+   \settrue\c_strc_itemgroups_collecting}
+
+\defcsname\??itemgroupkeyword\v!horizontal\endcsname
+  {\settrue\c_strc_itemgroups_horizontal
+   \settrue\c_strc_itemgroups_collecting
+   \settrue\c_strc_itemgroups_inline
+   \settrue\c_strc_itemgroups_joined
+   \strc_itemgroups_process_set_option_pack}
 
 \def\strc_itemgroups_preset_stage_one#options%
   {\processcommacommand[#options]\strc_itemgroups_preset_stage_one_indeed}
@@ -741,11 +748,11 @@
 %    \strc_itemgroups_insert_reference
 %    \endgroup}
 
-\let\strc_itemgroups_temp_symbol  \empty
-\let\strc_itemgroups_used_symbol  \empty
-\let\strc_itemgroups_asked_symbol \empty
-\let\strc_itemgroups_margin_symbol\empty
-\let\strc_itemgroups_extra_symbol \empty
+\lettonothing\strc_itemgroups_temp_symbol
+\lettonothing\strc_itemgroups_used_symbol
+\lettonothing\strc_itemgroups_asked_symbol
+\lettonothing\strc_itemgroups_margin_symbol
+\lettonothing\strc_itemgroups_extra_symbol
 
 \def\strc_itemgroups_set_symbol#symbol%
   {\edef\strc_itemgroups_temp_symbol{#symbol}%
@@ -762,14 +769,14 @@
    \strc_itemgroups_store_global_symbol\currentitemgroupsymbol
    \strc_itemgroups_store_local_symbol\v_strc_itemgroups_unknown_symbol
    \let\strc_itemgroups_used_symbol\strc_itemgroups_set_symbol_symbol_item
-   \let\strc_itemgroups_asked_symbol\empty}
+   \lettonothing\strc_itemgroups_asked_symbol}
 
 \def\strc_itemgroups_set_symbol_conversion
   {\let\currentitemgroupsymbol\strc_itemgroups_temp_symbol
    \strc_itemgroups_store_global_symbol\currentitemgroupsymbol
    \strc_itemgroups_store_local_symbol\strc_itemgroups_insert_item_counter
    \let\strc_itemgroups_used_symbol\strc_itemgroups_set_symbol_conversion_item
-   \let\strc_itemgroups_asked_symbol\empty}
+   \lettonothing\strc_itemgroups_asked_symbol}
 
 \def\strc_itemgroups_set_symbol_symbol_item
   {\symbol[\currentitemgroupsymbol]}
@@ -802,8 +809,8 @@
    \advance\d_strc_itemgroups_list_width\itemgroupparameter\c!distance\relax
    \let\currentitemgroup\m_strc_itemgroups_saved}
 
-\let\p_itemgroups_options      \empty
-\let\p_itemgroups_extra_options\empty
+\lettonothing\p_itemgroups_options
+\lettonothing\p_itemgroups_extra_options
 
 \permanent\tolerant\protected\def\startitemgroup[#category]#spacer[#options]#spacer[#settings]%
   {\begingroup % (1)
@@ -816,7 +823,7 @@
    \edef\currentitemgroup{\currentparentitemgroup:\currentitemlevel}%
    %
    \edef\p_itemgroups_options{\itemgroupparameter\c!option}%
-   \let\p_itemgroups_extra_options\empty
+   \lettonothing\p_itemgroups_extra_options
    \ifcase\nofarguments
      \strc_itemgroups_start_indeed{}%
    \or
@@ -937,11 +944,11 @@
    \fi\fi
    \ifconditional\c_strc_itemgroups_paragraph
      \ifnum\c_strc_itemgroups_nesting>\plusone
-       \letitemgroupparameter\c!inbetween\empty
+       \resetitemgroupparameter\c!inbetween
      \fi
    \fi
    \ifconditional\c_strc_itemgroups_pack
-     \letitemgroupparameter\c!inbetween\empty
+     \resetitemgroupparameter\c!inbetween
    \fi
    \ifconditional\c_strc_itemgroups_columns
      \ifinsidecolumns\orelse\ifcase\c_strc_itemgroups_column_depth
@@ -1159,7 +1166,7 @@
 %     \stopitemize
 % \stopitemize
 
-\mutable\let\currentitemreference\empty
+\mutable\lettonothing\currentitemreference
 
 \tolerant\permanent\protected\def\startitemgroupitem[#reference]% we can reuse more
   {\def\currentitemreference{#reference}%
@@ -1270,7 +1277,7 @@
   {\startitemgroupitem}
 
 \protected\def\strc_itemgroups_start_no_item
-  {\let\currentitemreference\empty
+  {\lettonothing\currentitemreference
    \strc_itemgroups_increment_item_counter
   %\advance\c_strc_itemgroups_n_of_items\plusone
    \setbox\b_strc_itemgroups\emptyhbox
@@ -1462,7 +1469,7 @@
           \strc_itemgroups_used_symbol
         \fi
       \fi}%
-   \let\strc_itemgroups_extra_symbol\empty
+   \lettonothing\strc_itemgroups_extra_symbol
    \setfalse\c_strc_itemgroups_symbol}
 
 \def\strc_itemgroups_make_fitting_box
@@ -1504,7 +1511,7 @@
        \edef\m_strc_itemgroups_repeat_start{\currentitemlevel}%
      \fi
    \else
-     \let\m_strc_itemgroups_repeat_start\empty
+     \lettonothing\m_strc_itemgroups_repeat_start
    \fi}
 
 \def\strc_itemgroups_insert_item
@@ -1527,7 +1534,7 @@
    \orelse\ifdim\d_strc_itemgroups_asked_width>\zeropoint
      \strc_itemgroups_make_aligned_box
    \fi
-   \let\m_strc_itemgroups_destination\empty
+   \lettonothing\m_strc_itemgroups_destination
    \ht\b_strc_itemgroups\strutheight % just in case a symbols is not yet available in
    \dp\b_strc_itemgroups\strutdepth  % the current run (more a mkii mp side artifact)
    \strc_itemgroups_check_for_repeated
@@ -1557,7 +1564,7 @@
    \ignorepars} % \ignorespaces
 
 \def\strc_itemgroups_start_item_nop
-  {\let\currentitemreference\empty
+  {\lettonothing\currentitemreference
    \strc_itemgroups_increment_item_counter
    \advance\c_strc_itemgroups_n_of_items\plusone
    \setbox\b_strc_itemgroups\hbox
@@ -1713,7 +1720,7 @@
 
 \let\strc_itemgroups_collected_store\relax
 
-\let\m_strc_itemgroups_collected\empty
+\lettonothing\m_strc_itemgroups_collected
 
 \normalexpanded{\def\strc_itemgroups_collected_store#1\csname\e!stop\v!item\endcsname}%
   {\advance\c_strc_itemgroups_collected_stored\plusone
@@ -1844,7 +1851,7 @@
    %letitemgroupparameter\c!width\zeropoint
    \strc_itemgroups_make_symbol_box
    \strc_itemgroups_make_destination_box
-   \let\m_strc_itemgroups_destination\empty
+   \lettonothing\m_strc_itemgroups_destination
    \ht\b_strc_itemgroups\strutheight
    \dp\b_strc_itemgroups\strutdepth
    \box\b_strc_itemgroups

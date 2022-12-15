@@ -38,16 +38,18 @@
 \immutable\def\defaultfontbody      {\normalizedbodyfontsize}
 \immutable\let\defaultfontstyle      \s!rm
 \immutable\let\defaultfontalternative\s!tf
-\immutable\let\defaultfontsize       \empty
 \immutable\let\defaultfontface       \!!zerocount
 
-\mutable\let\globalfontclass\empty
-\mutable\let\fontclass      \empty
+\immutable\lettonothing\defaultfontsize
+
 \mutable\let\fontbody       \defaultfontbody
 \mutable\let\fontstyle      \defaultfontstyle
 \mutable\let\fontalternative\defaultfontalternative
 \mutable\let\fontsize       \defaultfontsize
 \mutable\let\fontface       \!!zerocount
+
+\mutable\lettonothing\globalfontclass
+\mutable\lettonothing\fontclass
 
 \installmacrostack\fontstyle
 

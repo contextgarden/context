@@ -399,7 +399,7 @@
    \setfalse\c_math_fenced_level_mode
    \c_attr_mathsize\attributeunsetvalue
    %
-   \letmathfenceparameter\c!size\empty
+   \resetmathfenceparameter\c!size
    \letmathfenceparameter\c!factor\v!auto
    % so far
    \ifparameter#2\or
