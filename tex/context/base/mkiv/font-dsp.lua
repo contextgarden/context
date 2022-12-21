@@ -378,7 +378,7 @@ local function getaxisscale(segments,minimum,default,maximum,user)
     for i=1,#segments do
         local s = segments[i]
         if type(s) ~= "number" then
-            report("using default axis scale")
+         -- report("using default axis scale")
             return default
         elseif s[1] >= default then
             if s[2] == default then
@@ -3843,7 +3843,7 @@ function readers.hvar(f,fontdata,specification)
     end
     local tableoffset = gotodatatable(f,fontdata,"hvar",specification.variable)
     if not tableoffset then
-        report("no hvar table, expect problems due to messy widths")
+     -- report("no hvar table, expect problems due to messy widths")
         return
     end
 

@@ -414,10 +414,10 @@
      \egroup
    \fi}
 
-\newbox  \b_strc_floats_caption
-\newbox  \b_strc_floats_content
-\newdimen\d_strc_floats_caption_height
-\newdimen\d_strc_floats_caption_depth
+\newbox      \b_strc_floats_caption
+\newbox      \b_strc_floats_content
+\newdimension\d_strc_floats_caption_height
+\newdimension\d_strc_floats_caption_depth
 
 \lettonothing\m_strc_floats_last_caption_tag
 
@@ -530,7 +530,7 @@
 %D We can do this ...
 %D
 %D \starttyping
-%D \newcount\c_strc_floats_n
+%D \newinteger\c_strc_floats_n
 %D
 %D \definedataset[\s!float][\c!delay=\v!yes]
 %D
@@ -540,7 +540,7 @@
 %D   {\setdataset[\s!float][\number\c_strc_floats_n][]}
 %D
 %D \def\strc_float_load_data % precedes save !
-%D   {\global\advance\c_strc_floats_n\plusone
+%D   {\global\advanceby\c_strc_floats_n\plusone
 %D    \xdef\strc_float_realpage{\datasetvariable\s!float{\number\c_strc_floats_n}\s!page}%
 %D    \ifempty\strc_float_realpage
 %D      \glet\strc_float_realpage\realpageno % \realfolio
@@ -551,7 +551,7 @@
 
 \definepagestate[\s!float][\c!delay=\v!yes]
 
-\newcount\c_strc_floats_n
+\newinteger\c_strc_floats_n
 
 \let\strc_float_realpage\realpageno
 
@@ -559,7 +559,7 @@
   {\setpagestate[\s!float][\number\c_strc_floats_n]}
 
 \def\strc_float_load_data % precedes save !
-  {\global\advance\c_strc_floats_n\plusone
+  {\global\advanceby\c_strc_floats_n\plusone
    \xdef\strc_float_realpage{\pagestaterealpage\s!float{\number\c_strc_floats_n}}%
    \ifempty\strc_float_realpage
      \glet\strc_float_realpage\realpageno % \realfolio
@@ -888,9 +888,9 @@
 
 % nicer is a bunch of states and one loop that sets those states
 
-\newdimen\d_strc_floats_top
-\newdimen\d_strc_floats_bottom
-\newdimen\d_strc_floats_overflow
+\newdimension\d_strc_floats_top
+\newdimension\d_strc_floats_bottom
+\newdimension\d_strc_floats_overflow
 
 % \def\strc_floats_calculate_skip#target#skip%
 %   {\begingroup
@@ -1031,13 +1031,13 @@
 \permanent\def\floatcaptionwidth {\the\floatcaptionht}
 \permanent\def\floatcaptiondepth {\the\floatcaptiondp}
 
-\newdimen\naturalfloatwd
-\newdimen\naturalfloatht
-\newdimen\naturalfloatdp
+\newdimension\naturalfloatwd
+\newdimension\naturalfloatht
+\newdimension\naturalfloatdp
 
-\newdimen\floatcaptionwd
-\newdimen\floatcaptionht
-\newdimen\floatcaptiondp
+\newdimension\floatcaptionwd
+\newdimension\floatcaptionht
+\newdimension\floatcaptiondp
 
 \def\strc_floats_set_natural_dimensions#box%
   {\global\naturalfloatwd\wd#box\relax
@@ -1215,8 +1215,8 @@
    \strc_floats_get_box
    \global\insidefloatfalse}
 
-\newdimen\availablefloatwidth
-\newdimen\availablefloatheight
+\newdimension\availablefloatwidth
+\newdimension\availablefloatheight
 
 \def\strc_floats_set_local_hsize
   {\ifconditional\c_page_floats_center_box_local
@@ -1310,14 +1310,14 @@
      \global\d_page_sides_downshift\zeropoint
      \scratchconditiononetrue
    \fi
-   \global\advance\d_page_sides_downshift#sign\lineheight}
+   \global\advanceby\d_page_sides_downshift#sign\lineheight}
 
 \def\strc_floats_move_down_hang#lines%
   {\ifscratchconditiontwo \else
      \global\c_page_sides_n_of_lines\zerocount
      \scratchconditiontwotrue
    \fi
-   \global\advance\c_page_sides_n_of_lines#lines\relax}
+   \global\advanceby\c_page_sides_n_of_lines#lines\relax}
 
 \permanent\protected\def\movedownsidefloat[#settings]% already in core
   {\unless\ifhastok:{#settings}%
@@ -1618,16 +1618,16 @@
 
 \let\strc_floats_align_indeed_local\firstofoneargument
 
-\newdimen\d_strc_floats_content
-\newdimen\d_strc_float_temp_height
-\newdimen\d_strc_float_temp_width
+\newdimension\d_strc_floats_content
+\newdimension\d_strc_float_temp_height
+\newdimension\d_strc_float_temp_width
 
 \newconditional\c_floats_adapt_to_caption_width
 \newconditional\c_floats_store_minimal_package
 
-\newdimen\d_strc_floats_caption_hsize
-\newdimen\d_strc_floats_caption_min_width
-\newdimen\d_strc_floats_caption_overshoot
+\newdimension\d_strc_floats_caption_hsize
+\newdimension\d_strc_floats_caption_min_width
+\newdimension\d_strc_floats_caption_overshoot
 
 % These are expandable, for diagnostic purposes only, but might eventually go away:
 
@@ -2461,7 +2461,7 @@
        \strc_floats_set_page_variant
      \fi
      \strc_floats_set_local_dimensions
-     \global\advance\totalnoffloats\plusone
+     \global\advanceby\totalnoffloats\plusone
      \ifconditional\c_floats_store_minimal_package \else
        \setbox\floatbox\hpack{\strc_float_save_data\box\floatbox}% still needed? we will do renumbering differently
      \fi
@@ -2626,14 +2626,15 @@
 
 \initializeboxstack\??localfloatstack
 
-\newcount\c_strc_localfloats_n  \aliased\let\noflocalfloats\c_strc_localfloats_n
+%newcount  \c_strc_localfloats_n  \aliased\let \noflocalfloats\c_strc_localfloats_n
+\newinteger\c_strc_localfloats_n  \aliasinteger\noflocalfloats\c_strc_localfloats_n
 
 \permanent\protected\def\resetlocalfloats
   {\global\c_strc_localfloats_n\zerocount
    \initializeboxstack\??localfloatstack}
 
 \permanent\protected\def\somelocalfloat
-  {\global\advance\c_strc_localfloats_n\plusone
+  {\global\advanceby\c_strc_localfloats_n\plusone
    \savebox\??localfloatstack{\number\c_strc_localfloats_n}{\box\floatbox}}
 
 \permanent\protected\def\getlocalfloats

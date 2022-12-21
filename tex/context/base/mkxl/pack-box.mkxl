@@ -92,18 +92,18 @@
 \def\pack_anchor_notdefined_two   #1#2{\dowithnextbox{\pack_anchors_process_finish\currentanchor{#1}{#2}}\vbox}
 \def\pack_anchors_process_indeed#1#2#3{\dowithnextbox{\pack_anchors_process_finish          {#1}{#2}{#3}}\vbox}
 
-\newbox  \b_pack_anchors
-\newdimen\d_pack_anchors_width
-\newdimen\d_pack_anchors_height
-\newdimen\d_pack_anchors_depth
+\newbox      \b_pack_anchors
+\newdimension\d_pack_anchors_width
+\newdimension\d_pack_anchors_height
+\newdimension\d_pack_anchors_depth
 
 % \definelayer[anchor]
 
-\newcount\c_pack_anchors_n
-\newtoks \t_pack_anchors_flush
+\newinteger\c_pack_anchors_n
+\newtoks   \t_pack_anchors_flush
 
 \protected\def\pack_anchors_register#1#2%
-  {\global\advance\c_pack_anchors_n\plusone
+  {\global\advanceby\c_pack_anchors_n\plusone
    \pagereference[\v!layer:\v!anchor:\number\c_pack_anchors_n]%
    \putboxincache\v!anchor{\number\c_pack_anchors_n}\b_pack_anchors
 %    \xtoksapp\t_pack_anchors_flush{\pack_anchors_flush{\number\c_pack_anchors_n}{#1}{#2}}%
@@ -230,21 +230,21 @@
 
 \defcsname\??collectorcorners\v!middle\endcsname
   {\ifdim\d_pack_layers_x_size>\zeropoint
-      \advance\d_pack_layers_x_position.5\d_pack_layers_x_size
+      \advanceby\d_pack_layers_x_position.5\d_pack_layers_x_size
     \fi
     \ifdim\d_pack_layers_y_size>\zeropoint
-      \advance\d_pack_layers_y_position.5\d_pack_layers_y_size
+      \advanceby\d_pack_layers_y_position.5\d_pack_layers_y_size
     \fi}
 
 \defcsname\??collectorcorners\v!bottom\endcsname
   {\ifdim\d_pack_layers_y_size>\zeropoint
-     \advance\d_pack_layers_y_position-\d_pack_layers_y_size
+     \advanceby\d_pack_layers_y_position-\d_pack_layers_y_size
      \d_pack_layers_y_position-\d_pack_layers_y_position
    \fi}
 
 \defcsname\??collectorcorners\v!right\endcsname
   {\ifdim\d_pack_layers_x_size>\zeropoint
-     \advance\d_pack_layers_x_position-\d_pack_layers_x_size
+     \advanceby\d_pack_layers_x_position-\d_pack_layers_x_size
      \d_pack_layers_x_position-\d_pack_layers_x_position
    \fi}
 
@@ -271,13 +271,13 @@
    \setbox\nextbox\hpack
      {\alignedbox[\collectorparameter\c!location]\vpack{\box\nextbox}}%
    \boxmaxdepth\zeropoint % really needed, nice example
-   \global\advance\boxhdisplacement\d_pack_layers_x_position
+   \global\advanceby\boxhdisplacement\d_pack_layers_x_position
    \ifdim\boxhdisplacement<\zeropoint
      \global\setbox\b_pack_boxes_collector\hpack
        {\kern-\boxhdisplacement
         \box\b_pack_boxes_collector}%
    \fi
-   \global\advance\boxvdisplacement\d_pack_layers_y_position
+   \global\advanceby\boxvdisplacement\d_pack_layers_y_position
    \ifdim\boxvdisplacement<\zeropoint
      \global\setbox\b_pack_boxes_collector\hpack
        {\lower-\boxvdisplacement
@@ -393,8 +393,8 @@
 
 \installsimpleframedcommandhandler \??layeredtext {layeredtext} \??layeredtext
 
-\newdimen\d_pack_layeredtexts_width
-\newdimen\d_pack_layeredtexts_height
+\newdimension\d_pack_layeredtexts_width
+\newdimension\d_pack_layeredtexts_height
 
 \definelayer % private
   [\??layeredtextlayer]
@@ -509,7 +509,7 @@
 %
 % \affiliation{drawing}{\externalfigure[hakker][width=3cm]}
 
-\newcount\c_pack_boxes_bleeds
+\newinteger\c_pack_boxes_bleeds
 
 \installcorenamespace {bleeding}
 
@@ -553,7 +553,7 @@
 
 \permanent\tolerant\protected\def\bleed[#1]%
   {\hbox\bgroup
-   \global\advance\c_pack_boxes_bleeds\plusone
+   \global\advanceby\c_pack_boxes_bleeds\plusone
    %
    \enforced\permanent\xdef\bleedwidth {\the\hsize}%
    \enforced\permanent\xdef\bleedheight{\the\vsize}%
@@ -859,10 +859,10 @@
    \pack_boxes_offset_check[#1]%
    \dowithnextboxcs\pack_boxes_offsetfinish\hbox}
 
-\newcount\c_pack_boxes_offset_level
+\newinteger\c_pack_boxes_offset_level
 
 \def\pack_boxes_offset_check
-  {\advance\c_pack_boxes_offset_level\plusone
+  {\advanceby\c_pack_boxes_offset_level\plusone
    \edef\currentoffsetbox{\the\c_pack_boxes_offset_level}%
    \checkoffsetboxparent
    \setupcurrentoffsetbox}
@@ -1030,8 +1030,8 @@
    \ifcase\scratchcounter
      % just one
    \else
-     \scratchdimen\scratchwidth \divide\scratchdimen\wd\nextbox\scratchnx\scratchdimen\advance\scratchnx\plusone\relax
-     \scratchdimen\scratchheight\divide\scratchdimen\ht\nextbox\scratchny\scratchdimen\advance\scratchny\plusone\relax
+     \scratchdimen\scratchwidth \divideby\scratchdimen\wd\nextbox\scratchnx\scratchdimen\advanceby\scratchnx\plusone\relax
+     \scratchdimen\scratchheight\divideby\scratchdimen\ht\nextbox\scratchny\scratchdimen\advanceby\scratchny\plusone\relax
      % to be considered: methods
      \ifcase\scratchcounter
      \or % x and y
@@ -1133,13 +1133,13 @@
   [\c!xoffset=\zeropoint,
    \c!yoffset=\zeropoint]
 
-\newcount\c_boxes_n_of_anchors
+\newinteger\c_boxes_n_of_anchors
 
 \permanent\protected\def\defineanchorbox[#1]%
   {\ifcsname\??boxanchorid#1\endcsname
      \box\lastnamedcs\emptybox
    \else
-     \global\advance\c_boxes_n_of_anchors\plusone
+     \global\advanceby\c_boxes_n_of_anchors\plusone
      \expandafter\integerdef\csname\??boxanchorid #1\endcsname\c_boxes_n_of_anchors
      \expandafter\newbox    \csname\??boxanchorbox#1\endcsname
    \fi}
@@ -1234,18 +1234,18 @@
 \permanent\def\boxanchorpresetcode#1%
   {\ifcsname\??boxpreset#1\endcsname\lastnamedcs\else\halfwaytotallistanchorcode\fi}
 
-\newcount\registeredboxanchor
+\newinteger\registeredboxanchor
 
 \installmacrostack\boxanchoringclass
 
 \mutable\lettonothing\boxanchoringclass
 
-\newcount\c_anchor_auto_box_class
+\newinteger\c_anchor_auto_box_class
 
 \permanent\protected\def\startboxanchoring[#1]% + == auto
   {\push_macro_boxanchoringclass
    \iftok{#1}{+}%
-     \global\advance\c_anchor_auto_box_class\plusone
+     \global\advanceby\c_anchor_auto_box_class\plusone
      \edef\boxanchoringclass{\the\c_anchor_auto_box_class::}%
    \else
      \edef\boxanchoringclass{#1}
@@ -1255,7 +1255,7 @@
   {\pop_macro_boxanchoringclass}
 
 \permanent\protected\def\registerboxanchor
-  {\global\advance\registeredboxanchor\minusone}
+  {\global\advanceby\registeredboxanchor\minusone}
 
 \permanent\protected\def\defineboxanchor[#1]%
   {\registerboxanchor

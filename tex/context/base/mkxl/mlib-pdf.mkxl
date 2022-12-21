@@ -20,15 +20,15 @@
 %D Some code is shared between MPLIB and MPS. The following variables are also
 %D available for introspection and other purposes.
 
-\ifdefined\MPwidth  \else \newdimen\MPwidth  \fi
-\ifdefined\MPheight \else \newdimen\MPheight \fi
+\newdimension\MPwidth
+\newdimension\MPheight
 
-\ifdefined\MPllx    \else \newdimen\MPllx    \fi
-\ifdefined\MPlly    \else \newdimen\MPlly    \fi
-\ifdefined\MPurx    \else \newdimen\MPurx    \fi
-\ifdefined\MPury    \else \newdimen\MPury    \fi
+\newdimension\MPllx
+\newdimension\MPlly
+\newdimension\MPurx
+\newdimension\MPury
 
-\ifdefined\MPbox    \else \newbox  \MPbox    \fi
+\ifdefined\MPbox\else \newbox\MPbox\fi
 
 \permanent\protected\def\setMPboundingbox#1#2#3#4% at some point we might pass them as base or scaled points
   {\global\MPllx   #1\onebasepoint

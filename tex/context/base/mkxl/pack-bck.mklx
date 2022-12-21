@@ -131,7 +131,7 @@
         \ifdim\scratchdimen<\zeropoint
             \scratchdimen\pagegoal
         \fi
-        \advance\scratchdimen\dimexpr
+        \advanceby\scratchdimen\dimexpr
           -\backgroundparameter\c!topoffset
           -\backgroundparameter\c!bottomoffset
         \relax

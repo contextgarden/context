@@ -1456,6 +1456,7 @@ make_lua_key(L, void);\
 make_lua_key(L, vrule);\
 make_lua_key(L, vskip);\
 make_lua_key(L, vtop);\
+make_lua_key(L, dbox);\
 make_lua_key(L, whatsit);\
 make_lua_key(L, widowpenalties);\
 make_lua_key(L, widowpenalty);\

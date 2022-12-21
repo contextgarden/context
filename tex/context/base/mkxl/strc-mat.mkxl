@@ -670,7 +670,7 @@
 \abovedisplayshortskip\zeropoint
 \belowdisplayshortskip\zeropoint
 
-\newdimen\d_strc_formulas_display_width
+\newdimension\d_strc_formulas_display_width
 
 %D In \LMTX\ we have three ways of rendering formulas:
 %D
@@ -693,8 +693,7 @@
 \newconditional\c_strc_formulas_tight
 \newconditional\c_strc_formulas_packed
 \newconditional\c_strc_formulas_depth
-
-\newbox\b_strc_formulas_number
+\newbox        \b_strc_formulas_number
 
 \def\strc_formulas_display_space_before_normal
   {% not ok, try \stopformula\par\startformula vs \stopformula\startformula
@@ -830,8 +829,8 @@
     \let\setdisplaydimensions\relax % this one will be defined in math-ali
 \fi
 
-% \newskip\formulastrutht
-% \newskip\formulastrutdp
+% \newgluespec\formulastrutht
+% \newgluespec\formulastrutdp
 
 %D \startbuffer
 %D \startformula[9pt] x = 1 \stopformula
@@ -1007,7 +1006,7 @@
 \defineboundary[mathalign] % this one is also used at the lua end
 
 \newconditional\c_strc_math_trace_hang
-\newdimen      \d_strc_math_hang_state
+\newdimension  \d_strc_math_hang_state
 
 \installtextracker
   {math.autohang}
@@ -1041,9 +1040,9 @@
    \orelse\ifchknum#1\or
      \d_strc_math_hang_state#1\scratchdimen
    \orelse\iftok{#1}{+}%
-     \advance\d_strc_math_hang_state\scratchdimen
+     \advanceby\d_strc_math_hang_state\scratchdimen
    \orelse\iftok{#1}{-}%
-     \advance\d_strc_math_hang_state-\scratchdimen
+     \advanceby\d_strc_math_hang_state-\scratchdimen
    \else
      \d_strc_math_hang_state\scratchdimen
    \fi
@@ -1352,12 +1351,12 @@
 
 % a limitation is that this only works in a regular setting, so no shapes
 
-\newcount\c_strc_math_n_of_lines
-\newdimen\d_strc_math_max_width
-\newdimen\d_strc_math_first_width
-\newdimen\d_strc_math_last_width
-\newdimen\d_strc_math_first_height
-\newdimen\d_strc_math_last_depth
+\newinteger  \c_strc_math_n_of_lines
+\newdimension\d_strc_math_max_width
+\newdimension\d_strc_math_first_width
+\newdimension\d_strc_math_last_width
+\newdimension\d_strc_math_first_height
+\newdimension\d_strc_math_last_depth
 
 \appendtoks
     \global\d_strc_math_indent      \zeropoint
@@ -1371,8 +1370,8 @@
 
 \newbox\b_strc_math_display % most code is in math-ali (for historical reasons)
 
-\newskip\s_strc_formulas_margin_left
-\newskip\s_strc_formulas_margin_right
+\newgluespec\s_strc_formulas_margin_left
+\newgluespec\s_strc_formulas_margin_right
 
 \def\strc_formulas_set_paragraph
   {%\setlocalhsize
@@ -1460,7 +1459,7 @@
 %     \hangindent\d_strc_math_indent
 % \else
     % this might become the default anyway:
-    \advance\leftskip\d_strc_math_indent
+    \advanceby\leftskip\d_strc_math_indent
     \hskip-\d_strc_math_indent
 % \fi
        \fi
@@ -1556,7 +1555,7 @@
    \fi
    \bgroup % HERE
    \iftrialtypesetting\else
-     \global\advance\c_strc_formulas_n\plusone
+     \global\advanceby\c_strc_formulas_n\plusone
    \fi
    \def\currentformula{#1}%
    \dostarttaggedchained\t!formula\currentformula\??formula
@@ -1589,7 +1588,7 @@
 
 % tagging of formulanumbers is not ok (we get two display maths blobs)
 
-\newcount\c_strc_formulas_n
+\newinteger\c_strc_formulas_n
 
 \ifdefined\dotagregisterformula \else \aliased\let\dotagregisterformula\gobbleoneargument \fi
 
@@ -1761,13 +1760,13 @@
    \lettonothing\currentformula
  % \strc_formulas_forget_display_skips
    \enforced\protected\def\startformula
-     {\advance\scratchcounter\plusone
+     {\advanceby\scratchcounter\plusone
       \expandafter\gobbleuntil\csname\e!stop\v!formula\endcsname}%
    \scratchcounter\zerocount
    #2% preroll
    \hbox to \d_strc_formulas_display_width \bgroup
      \ifcase\scratchcounter\else
-       \divide\d_strc_formulas_display_width\scratchcounter
+       \divideby\d_strc_formulas_display_width\scratchcounter
      \fi
      \hss
      \enforced\let\startformula\strc_formulas_nested_formula_start

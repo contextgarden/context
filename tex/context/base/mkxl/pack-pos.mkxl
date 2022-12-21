@@ -44,14 +44,14 @@
    \c!xoffset=\zeropoint,
    \c!yoffset=\zeropoint]
 
-\newdimen\d_pack_positioning_x_position
-\newdimen\d_pack_positioning_y_position
-\newdimen\d_pack_positioning_x_dimension
-\newdimen\d_pack_positioning_y_dimension
-\newdimen\d_pack_positioning_x_offset
-\newdimen\d_pack_positioning_y_offset
+\newdimension\d_pack_positioning_x_position
+\newdimension\d_pack_positioning_y_position
+\newdimension\d_pack_positioning_x_dimension
+\newdimension\d_pack_positioning_y_dimension
+\newdimension\d_pack_positioning_x_offset
+\newdimension\d_pack_positioning_y_offset
 
-\newbox\b_pack_positioning
+\newbox      \b_pack_positioning
 
 \permanent\tolerant\protected\def\startpositioning[#1]#*[#2]%
   {\bgroup
@@ -84,8 +84,8 @@
    \doifnot{\positioningparameter\c!offset}\v!yes
      {\global\d_pack_positioning_x_offset\zeropoint
       \global\d_pack_positioning_y_offset\zeropoint}%
-   \global\advance\d_pack_positioning_x_dimension\d_pack_positioning_x_offset
-   \global\advance\d_pack_positioning_y_dimension\d_pack_positioning_y_offset
+   \global\advanceby\d_pack_positioning_x_dimension\d_pack_positioning_x_offset
+   \global\advanceby\d_pack_positioning_y_dimension\d_pack_positioning_y_offset
    \egroup
    \vbox to \d_pack_positioning_y_dimension
      {\vskip\d_pack_positioning_y_offset
@@ -100,10 +100,10 @@
   {\setdimensionwithunit\scratchdimen{#1}{\positioningparameter\c!unit}%
    \scratchdimen\positioningparameter#8\scratchdimen
    \scratchdimen\positioningparameter#9\scratchdimen
-   \advance\scratchdimen\positioningparameter#4\relax
+   \advanceby\scratchdimen\positioningparameter#4\relax
    % == \scratchdimen\dimexpr#8\dimexpr#9\scratchdimen\relax+#4\relax
    \doif{\positioningparameter#2}\v!relative
-     {\advance\scratchdimen#3%
+     {\advanceby\scratchdimen#3%
       \letpositioningparameter#4\zeropoint}%
    #3\scratchdimen
    \doifnot{\positioningparameter\c!state}\v!overlay

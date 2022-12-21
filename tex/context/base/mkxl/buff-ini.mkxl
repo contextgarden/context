@@ -120,12 +120,12 @@
    \c!after=,
    \c!define=\v!yes]
 
-\newcount\c_buff_n_of_defined
+\newinteger\c_buff_n_of_defined
 
 \mutable\let\currentdefinedbuffer\s!dummy
 
 \appendtoks
-    \global\advance\c_buff_n_of_defined\plusone
+    \global\advanceby\c_buff_n_of_defined\plusone
     \setexpandedbufferparameter\c!number{\number\c_buff_n_of_defined}%
     \edef\currentdefinedbuffer{def-\number\c_buff_n_of_defined}%
     \ifcstok{\bufferparameter\c!define}\v!yes
@@ -245,7 +245,7 @@
 \appendtoks
     \ifcsname\e!stop\currentsavebuffer\endcsname\else
       \definebuffer[\currentsavebuffer]%
-      \expandafter\newcount\csname\??savebuffercounter\currentsavebuffer\endcsname
+      \expandafter\newinteger\csname\??savebuffercounter\currentsavebuffer\endcsname
       \protected\edefcsname\e!stop\currentsavebuffer\endcsname{\buff_stop_save_buffer{\currentsavebuffer}}%
       \setsavebufferparameter\c!file{\currentsavebuffer.tex}%
     \fi
@@ -253,7 +253,7 @@
 
 \protected\def\buff_stop_save_buffer#1%
   {\edef\currentsavebuffer{#1}%
-   \global\advance\csname\??savebuffercounter\currentsavebuffer\endcsname\plusone
+   \global\advanceby\csname\??savebuffercounter\currentsavebuffer\endcsname\plusone
    \clf_savebuffer % will become key/value
      {\thedefinedbuffer{\currentsavebuffer}}%
      {\savebufferparameter\c!file}%

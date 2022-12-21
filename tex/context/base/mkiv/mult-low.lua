@@ -14,7 +14,7 @@ return {
         "zerocount", "minusone", "minustwo", "plusone", "plustwo", "plusthree", "plusfour", "plusfive",
         "plussix", "plusseven", "pluseight", "plusnine", "plusten", "pluseleven", "plustwelve", "plussixteen",
         "plusfifty", "plushundred", "plusonehundred", "plustwohundred", "plusfivehundred",
-        "plusthousand", "plustenthousand", "plustwentythousand", "medcard", "maxcard", "maxcardminusone",
+        "plusthousand", "plustenthousand", "plustwentythousand", "medcard", "maxcard", "maxcardminusone", "maxiterator",
         "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxcount", "maxdimen", "scaledpoint", "thousandpoint",
         "points", "halfpoint",
         "zeroskip", "centeringskip", "stretchingskip", "shrinkingskip",
@@ -262,6 +262,9 @@ return {
         "newcount", "newdimen", "newskip", "newmuskip", "newbox", "newtoks", "newread", "newwrite", "newmarks", "newinsert", "newattribute", "newif",
         "newlanguage", "newfamily", "newfam", "newhelp", -- not used
         --
+        "newinteger", "newdimension", "newgluespec", "newmugluespec",
+        "aliasinteger", "aliasdimension",
+        --
         "then",
         "begcsname",
         --
@@ -307,8 +310,8 @@ return {
         --
         "ruledhss", "ruledhfil", "ruledhfill", "ruledhfilll", "ruledhfilneg", "ruledhfillneg", "normalhfillneg",  "normalhfilllneg",
         "ruledvss", "ruledvfil", "ruledvfill", "ruledvfilll", "ruledvfilneg", "ruledvfillneg", "normalvfillneg",  "normalvfilllneg",
-        "ruledhbox", "ruledvbox", "ruledvtop", "ruledvcenter", "ruledmbox",
-        "ruledhpack", "ruledvpack", "ruledtpack",
+        "ruledhbox", "ruledvbox", "ruledvtop", "ruleddbox", "ruledvcenter", "ruledmbox",
+        "ruledhpack", "ruledvpack", "ruledtpack", "ruleddpack",
         "ruledhskip", "ruledvskip", "ruledkern", "ruledmskip", "ruledmkern",
         "ruledhglue", "ruledvglue", "normalhglue", "normalvglue",
         "ruledpenalty",

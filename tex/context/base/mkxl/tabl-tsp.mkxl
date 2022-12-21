@@ -130,7 +130,7 @@
    \dontcomplain
    \global\settrue\splitfloatdone
  % \nodelocationmode\zerocount % bypass auto-renumbering
-   \global\advance\noffloatssplits\plusone
+   \global\advanceby\noffloatssplits\plusone
    \ifcase\noffloatssplits\relax \or
      \ifconditional\onlyonesplitofffloat
        \lettonothing\floatcaptionsuffix
@@ -190,7 +190,7 @@
       \setbox\scratchbox\vbox{\flushlocalfloats}% \vpack ?
       \getnoflines{\ht\scratchbox}%
       \resetlocalfloats
-      \advance\noflines\minusone % compensate dummy line
+      \advanceby\noflines\minusone % compensate dummy line
       \normalexpanded{\egroup\noexpand\edef\noexpand\extrasplitfloatlines{\the\noflines}}%
       \global\settrue\usesamefloatnumber
    \else
@@ -206,25 +206,24 @@
 
 % todo: keep tail to rest, so we need a lookahead
 
-\newbox\b_split_content
-\newbox\b_split_result
-\newbox\b_split_head
-\newbox\b_split_next
-\newbox\b_split_tail
+\newbox        \b_split_content
+\newbox        \b_split_result
+\newbox        \b_split_head
+\newbox        \b_split_next
+\newbox        \b_split_tail
 
-\newtoks\t_split_before_result
-\newtoks\t_split_after_result
-\newtoks\t_split_before
-\newtoks\t_split_inbetween
-\newtoks\t_split_after
+\newtoks       \t_split_before_result
+\newtoks       \t_split_after_result
+\newtoks       \t_split_before
+\newtoks       \t_split_inbetween
+\newtoks       \t_split_after
+\newtoks       \everyresettsplit
 
-\newtoks\everyresettsplit
+\newinteger    \c_split_minimum_free_lines
 
-\newcount\c_split_minimum_free_lines
-
-\newdimen\d_split_minimum_free_space
-\newdimen\d_split_available_height
-\newdimen\d_split_inbetween_height
+\newdimension  \d_split_minimum_free_space
+\newdimension  \d_split_available_height
+\newdimension  \d_split_inbetween_height
 
 \newconditional\c_tabl_split_done
 \newconditional\c_tabl_split_head
@@ -295,7 +294,7 @@
      -\extrasplitfloatlines\lineheight
    \relax
    \ifdim\htdp\b_split_tail>\zeropoint
-     \advance\d_split_available_height-\htdp\b_split_tail
+     \advanceby\d_split_available_height-\htdp\b_split_tail
    \fi
    \setbox\b_split_result\vbox
      {\ifdim\ht\b_split_head>\zeropoint

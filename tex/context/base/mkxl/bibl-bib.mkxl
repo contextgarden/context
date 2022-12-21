@@ -344,8 +344,8 @@
 
 % variables
 
-\ifdefined\bibtexblock   \else \newcount\bibtexblock   \fi \bibtexblock\plusone
-\ifdefined\bibtexcounter \else \newcount\bibtexcounter \fi
+\ifdefined\bibtexblock   \else \newinteger\bibtexblock   \fi \bibtexblock\plusone
+\ifdefined\bibtexcounter \else \newinteger\bibtexcounter \fi
 
 \newtoks \everysetupbibtexpublications
 \newtoks \everysetupbibtexcitations
@@ -551,7 +551,7 @@
    \the\everysetupbibtexlistplacement
    \forgetall
    \typesetbibtexlist
-   \global\advance\bibtexblock\plusone}
+   \global\advanceby\bibtexblock\plusone}
 
 \setvalue{\??pb:\c!numbering:\v!short}#1% todo var s -> short tag
   {\bibtexlistnumberbox{\bibtexpublicationsparameter\c!numbercommand{\bibtexgetshort\currentpublicationtag}}}
@@ -580,7 +580,7 @@
    \fi
 \to \everysetupbibtexlistplacement
 
-\newdimen\bibtexnumberwidth
+\newdimension\bibtexnumberwidth
 
 \def\bibtexlistnumberbox{\hbox \ifcase\bibtexnumberwidth\else to \bibtexnumberwidth\fi}
 
@@ -652,7 +652,7 @@
 
 \def\dotypesetbibtexpublication
   {\doifelsebibreferencefound\currentbibtexsessiontag
-     {\global\advance\bibtexcounter\plusone
+     {\global\advanceby\bibtexcounter\plusone
       \ctxlua{bibtex.hacks.registerplaced("\currentbibtexsessiontag")}%
       \let\currentlist\currentbibtexsession
       \let\currentlistentrynumber\bibtexcounter

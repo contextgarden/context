@@ -51,9 +51,9 @@
 
 \unprotect
 
-\newdimen\mathstrutht
-\newdimen\mathstrutdp
-\newcount\mathnestinglevel
+\newdimension\mathstrutht
+\newdimension\mathstrutdp
+\newinteger  \mathnestinglevel
 
 \registerctxluafile{math-ini}{autosuffix}
 \registerctxluafile{math-dim}{autosuffix}
@@ -512,7 +512,7 @@
     \noitaliccorrectionclassoptioncode
  % +\checkligatureclassoptioncode
    +\checkkernpairclassoptioncode
-   +\flattenclassoptioncode
+ % +\flattenclassoptioncode
 \relax
 
 \setmathoptions\mathoperatorcode\numexpr
@@ -541,7 +541,7 @@
    +\noitaliccorrectionclassoptioncode
  % +\checkligatureclassoptioncode
    +\checkkernpairclassoptioncode
-   +\flattenclassoptioncode
+ % +\flattenclassoptioncode
 \relax
 
 \setmathoptions\mathrelationcode\numexpr
@@ -549,7 +549,7 @@
    +\noitaliccorrectionclassoptioncode
  % +\checkligatureclassoptioncode
    +\checkkernpairclassoptioncode
-   +\flattenclassoptioncode
+ % +\flattenclassoptioncode
  % +\omitpenaltyclassoptioncode
 \relax
 
@@ -574,7 +574,7 @@
     \defaultmathclassoptions
    +\noitaliccorrectionclassoptioncode
  % +\checkligatureclassoptioncode
-   +\flattenclassoptioncode
+ % +\flattenclassoptioncode
    +\checkkernpairclassoptioncode
    +\removeitaliccorrectionclassoptioncode
 \relax
@@ -724,10 +724,10 @@
 %D
 %D \start \blank \getbuffer \blank \stop
 
-% \newcount\mathnestinglevel % see top
+% \newinteger\mathnestinglevel % see top
 
 \appendtoks
-    \advance\mathnestinglevel\plusone
+    \advanceby\mathnestinglevel\plusone
 \to \everymathematics
 
 %D A few compatibility helpers:
@@ -1101,9 +1101,9 @@
 
 % granular, but more clutter
 %
-% \newskip\mathinterwordtextskip
-% \newskip\mathinterwordscriptskip
-% \newskip\mathinterwordscriptscriptskip
+% \newgluespec\mathinterwordtextskip
+% \newgluespec\mathinterwordscriptskip
+% \newgluespec\mathinterwordscriptscriptskip
 %
 % \appendtoks
 %     \mathinterwordtextskip         \fontinterwordspace\textfont        \zerocount \fontinterwordstretch\textfont        \zerocount \fontinterwordshrink\textfont        \zerocount \relax
@@ -1642,7 +1642,7 @@
 %D \stopformula
 %D \stoptyping
 
-\newcount\c_math_renderings_attribute
+\newinteger\c_math_renderings_attribute
 
 \appendtoks
     \c_math_renderings_attribute\clf_mathrenderset{\mathematicsparameter\c!symbolset}\relax
@@ -1867,8 +1867,8 @@
 \permanent\protected\def\topstrut{\srule\s!width\zeropoint\s!height\strutht  \s!depth\zeropoint\relax}
 \permanent\protected\def\botstrut{\srule\s!width\zeropoint\s!height\zeropoint\s!depth\strutdp  \relax}
 
-% \newdimen\mathstrutht % see top
-% \newdimen\mathstrutdp % see top
+% \newdimension\mathstrutht % see top
+% \newdimension\mathstrutdp % see top
 
 \appendtoks
     \mathstrutht\strutht
@@ -3367,7 +3367,7 @@
      \crampedscriptstyle  \or
     \fi}
 
-\newcount\c_math_saved_style
+\newinteger\c_math_saved_style
 
 \permanent\protected\def\pushmathstyle % assumes begingroup .. endgroup
   {\c_math_saved_style\mathstyle}
@@ -3796,7 +3796,7 @@
     \enforced\let\text\mathtext
 \to \everymathematics
 
-\newcount\interdisplaylinepenalty \interdisplaylinepenalty\plushundred
+\newinteger\interdisplaylinepenalty \interdisplaylinepenalty\plushundred
 
 %D Text in math:
 
@@ -3993,7 +3993,7 @@
 %D Experiment, replaced by dictionaries but for now we keep the code as the domain key
 %D might come back.
 %
-% \newcount\c_math_domain_attribute
+% \newinteger\c_math_domain_attribute
 %
 % \def\math_domain_initialize
 %   {\ifnum\c_math_domain_attribute=\attributeunsetvalue \else
@@ -4491,7 +4491,7 @@
      \scratchdimentwo-\Umathsubsupshiftdown\mathstyle
      \math_axis_inject_indeed#2%
    % \scratchdimenone.125\Umathfractionrule\mathstyle
-     \divide\scratchdimenone\plustwo
+     \divideby\scratchdimenone\plustwo
      \scratchdimentwo\Umathprimeshiftup\mathstyle
      \math_axis_inject_indeed#2%
    \fi}}

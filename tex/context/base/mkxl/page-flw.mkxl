@@ -74,7 +74,7 @@
     \fi
 \to \everydefinetextflow
 
-\newcount\b_page_textflow_box
+\newinteger\b_page_textflow_box
 
 \permanent\def\textflowcollector#1%
   {\begincsname\??textflowbox#1\endcsname}

@@ -270,7 +270,7 @@
 %D Texts can be disabled, moved up and ignored, depending in the \type {status}
 %D variable. This is handled by the next couple of macros.
 
-\newcount\c_page_layouts_element_state_n
+\newinteger\c_page_layouts_element_state_n
 
 \mutable\lettonothing\textlinestatus
 

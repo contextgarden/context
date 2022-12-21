@@ -49,7 +49,7 @@
 %D and we also can erase buffers easier when we keep a local cache, especially as we
 %D can flush per page.
 
-\newcount      \c_page_postponed_blocks_next_page % set at the lua end
+\newinteger    \c_page_postponed_blocks_next_page % set at the lua end
 \newconditional\c_page_postponed_busy
 
 \mutable\lettonothing\currentpostponedpage

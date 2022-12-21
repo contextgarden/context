@@ -281,14 +281,14 @@
 
 % simple version
 
-\newcount\@MMLlevel \def\MMLcreset{\@MMLlevel\zerocount}
+\newinteger\@MMLlevel \def\MMLcreset{\@MMLlevel\zerocount}
 
 \lettonothing\MMLctempresetlist \def\setMMLcreset{\edef\MMLctempresetlist}
 
 \let\MMLdoL\donothing
 \let\MMLdoR\donothing
 
-\newcount\mmlapplydepth \def\MMLcreset{\mmlapplydepth\zerocount}
+\newinteger\mmlapplydepth \def\MMLcreset{\mmlapplydepth\zerocount}
 
 \startxmlsetups mml:apply
     \MMLmathinner {
@@ -302,7 +302,7 @@
             \def\mmlapplyopentoken {(}
             \def\mmlapplyclosetoken{)}
         \fi
-        \advance\mmlapplydepth\plusone
+        \advanceby\mmlapplydepth\plusone
         \begingroup
         \ifempty\mmlapplyopentoken
            \let\MMLdoL\donothing
@@ -339,7 +339,7 @@
              }
 %         }
         \endgroup
-        \advance\mmlapplydepth\minusone
+        \advanceby\mmlapplydepth\minusone
       }
 \stopxmlsetups
 
@@ -850,10 +850,10 @@
 
 \setupMMLappearance [divide] [\c!level=\!!maxcard,\c!alternative=\v!a]
 
-\newcount\mmldividelevel
+\newinteger\mmldividelevel
 
 \startxmlsetups mml:divide
-    \advance\mmldividelevel\plusone
+    \advanceby\mmldividelevel\plusone
     \doifelse \MMLdividealternative \v!b {
         \mmlsecond{#1}/\mmlthird{#1}
     } {
@@ -864,7 +864,7 @@
             \mmlfrac{\MMLcreset\mmlsecond{#1}}{\MMLcreset\mmlthird{#1}}
         \fi
     }
-    \advance\mmldividelevel\minusone
+    \advanceby\mmldividelevel\minusone
 \stopxmlsetups
 
 % min max
@@ -894,7 +894,7 @@
 % reset check in case of (-x) + 37
 % reset check in case of (-x) + 37
 
-\newcount\mmlpluscounter
+\newinteger\mmlpluscounter
 
 \startxmlsetups mml:plus
     \doifelse \MMLsignreduction \v!yes {
@@ -918,7 +918,7 @@
 \stopxmlsetups
 
 \startxmlsetups mml:plus:body
-    \advance\mmlpluscounter\plusone
+    \advanceby\mmlpluscounter\plusone
     \ifnum\mmlpluscounter>\plusone
         \xmldoifelse{#1}{/mml:minus} {
             \ifnum\xmlcount{#1}{/!mml:minus}>\plusone
@@ -935,7 +935,7 @@
     \xmldirect{#1}
 \stopxmlsetups
 
-\newcount\mmlminuscounter
+\newinteger\mmlminuscounter
 
 \startsetups mml:minus
     \doifelse \MMLsignreduction \v!yes {
@@ -965,7 +965,7 @@
 
 \startxmlsetups mml:minus:body
     % we can also use concat here
-    \advance\mmlminuscounter\plusone
+    \advanceby\mmlminuscounter\plusone
     \ifnum\mmlminuscounter>\plusone
         -
     \fi

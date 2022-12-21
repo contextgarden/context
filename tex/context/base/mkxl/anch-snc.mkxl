@@ -136,14 +136,14 @@
 
 \permanent\protected\def\definesyncpositions[#1]%
   {\ifcsname\??syncposcounter:#1\endcsname \else
-     \expandafter\newcount\csname\??syncposcounter:#1\endcsname
+     \expandafter\newinteger\csname\??syncposcounter:#1\endcsname
    \fi}
 
 \permanent\tolerant\protected\def\syncposition[#1]#*[#2]%
   {\dontleavehmode
    \ifcsname\??syncposcounter:#1\endcsname
      \let\c_sync_n\lastnamedcs
-     \global\advance\c_sync_n\plusone
+     \global\advanceby\c_sync_n\plusone
      \enabletextarearegistration
      \setpositionplus{\s!syncpos:#1:\the\c_sync_n}{#2}\hpack{\strut}%
    \else

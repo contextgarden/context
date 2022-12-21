@@ -401,9 +401,9 @@
 %D local (sometimes in the textflow) size. We store these dimensions in two
 %D \DIMENSION\ registers. These registers are not to be misused in calculations.
 
-\ifdefined\globalbodyfontsize \else \newdimen\globalbodyfontsize \fi \globalbodyfontsize=12pt
-\ifdefined\localbodyfontsize  \else \newdimen\localbodyfontsize  \fi \localbodyfontsize =\globalbodyfontsize
-\ifdefined\bodyfontsize       \else \newdimen\bodyfontsize       \fi \bodyfontsize      =\globalbodyfontsize
+\ifdefined\globalbodyfontsize \else \newdimension\globalbodyfontsize \fi \globalbodyfontsize=12pt
+\ifdefined\localbodyfontsize  \else \newdimension\localbodyfontsize  \fi \localbodyfontsize =\globalbodyfontsize
+\ifdefined\bodyfontsize       \else \newdimension\bodyfontsize       \fi \bodyfontsize      =\globalbodyfontsize
 
 %D When we assign for instance 12pt to a \DIMENSION\ register the \type {\the}'d
 %D value comes out as 12.0pt, which is often not the way users specify the bodyfont
@@ -716,9 +716,9 @@
 \mutable\lettonothing\somefontsizex
 \mutable\lettonothing\somefontsizey
 
-% \newcount\scaledfontmode % font-lib.mklx
-% \newcount\scaledfontsize % font-lib.mklx
-% \newcount\lastfontid     % font-lib.mklx
+% \newinteger\scaledfontmode % font-lib.mklx
+% \newinteger\scaledfontsize % font-lib.mklx
+% \newinteger\lastfontid     % font-lib.mklx
 
 \newtoks \everydefinefont
 
@@ -732,21 +732,21 @@
 
 \setnewconstant\c_font_feature_inheritance_mode \c_font_feature_inheritance_default
 
-\newdimen      \d_font_scaled_text_face
-\newdimen      \d_font_scaled_font_size
+\newdimension  \d_font_scaled_text_face
+\newdimension  \d_font_scaled_font_size
 \newconditional\c_font_body_scale
 \newfraction   \f_font_body_scale
 
 \newconditional\c_font_compact
-\newcount      \c_font_scaled_glyph_scale
+\newinteger    \c_font_scaled_glyph_scale
 
 \immutable\dimensiondef\d_font_scaled_default 10pt
 
 % todo: move all to lua: use localcall for resolving filename
 
-% \newcount\c_font_future_glyph_scale     % font-lib.mklx
-% \newcount\c_font_scaled_font_mode_saved % font-lib.mklx
-% \newcount\c_font_scaled_points          % font-lib.mklx
+% \newcountinteger\c_font_future_glyph_scale     % font-lib.mklx
+% \newcountinteger\c_font_scaled_font_mode_saved % font-lib.mklx
+% \newcountinteger\c_font_scaled_points          % font-lib.mklx
 
 \mutable\lettonothing\somefontspec
 

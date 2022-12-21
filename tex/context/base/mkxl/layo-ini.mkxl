@@ -22,8 +22,8 @@
 
 \ifdefined\layoutisdoublesided \else \newconditional\layoutisdoublesided \fi
 \ifdefined\layoutissinglesided \else \newconditional\layoutissinglesided \fi
-\ifdefined\pagenoshift         \else \newcount      \pagenoshift         \fi
-\ifdefined\realpageno          \else \newcount      \realpageno          \fi
+\ifdefined\pagenoshift         \else \newinteger    \pagenoshift         \fi
+\ifdefined\realpageno          \else \newinteger    \realpageno          \fi
 
 \registerctxluafile{layo-ini}{autosuffix}
 

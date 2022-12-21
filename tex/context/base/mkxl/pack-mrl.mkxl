@@ -883,7 +883,7 @@
        \c!width=\scratchwidth,
        \c!height=\scratchheight,
        \c!depth=\scratchheight]}%
-   \frozen\advance\rightskip \directfillinlinesparameter\c!margin\relax
+   \frozen\advanceby\rightskip \directfillinlinesparameter\c!margin\relax
    \frozen\parfillskip\zeropoint\relax
    \endgroup}
 

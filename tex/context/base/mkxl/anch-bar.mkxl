@@ -59,10 +59,10 @@
 
 \installcommandhandler \??sidebar {sidebar} \??sidebar
 
-\newcount\c_anch_sidebars_n
-\newcount\c_anch_sidebars_current % local
-\newdimen\d_anch_sidebars_distance
-\newcount\c_anch_sidebars_level
+\newinteger  \c_anch_sidebars_n
+\newinteger  \c_anch_sidebars_current % local
+\newdimension\d_anch_sidebars_distance
+\newinteger  \c_anch_sidebars_level
 
 % \setupMPvariables
 %   [mpos:sidebar]
@@ -86,8 +86,8 @@
 \permanent\tolerant\protected\def\startsidebar[#1]#*[#2]%
   {\bgroup
    \dontleavehmode
-   \advance\c_anch_sidebars_level\plusone
-   \global\advance\c_anch_sidebars_n\plusone
+   \advanceby\c_anch_sidebars_level\plusone
+   \global\advanceby\c_anch_sidebars_n\plusone
    \c_anch_sidebars_current\c_anch_sidebars_n\relax % relax needed
    \ifhastok={#1}%
      \edef\currentsidebar{\the\c_anch_sidebars_level}%
@@ -103,16 +103,16 @@
    \ifempty\m_level
      \ifnum\c_anch_sidebars_level=\plusone
        \ifzeropt\scratchdimen
-         \advance\d_anch_sidebars_distance\scratchdistance\relax
+         \advanceby\d_anch_sidebars_distance\scratchdistance\relax
        \else
          \d_anch_sidebars_distance\scratchdimen
        \fi
      \else
-       \advance\d_anch_sidebars_distance\scratchdistance\relax
+       \advanceby\d_anch_sidebars_distance\scratchdistance\relax
      \fi
    \orelse\ifnum\m_level=\plusone
      \ifzeropt\scratchdimen
-       \advance\d_anch_sidebars_distance\scratchdistance\relax
+       \advanceby\d_anch_sidebars_distance\scratchdistance\relax
      \else
        \d_anch_sidebars_distance\scratchdimen
      \fi

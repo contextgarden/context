@@ -54,19 +54,19 @@
 
 \installframedcommandhandler \??multicolumns {multicolumns} \??multicolumns
 
-\newdimen      \d_page_mcl_available_width
-\newdimen      \d_page_mcl_distance
-\newdimen      \d_page_mcl_leftskip
-\newdimen      \d_page_mcl_rightskip
-\newdimen      \d_page_mcl_used_width
-\newdimen      \d_page_mcl_temp
-\newdimen      \d_page_mcl_saved_pagetotal  % brrr, still needed ?
+\newdimension   \d_page_mcl_available_width
+\newdimension   \d_page_mcl_distance
+\newdimension   \d_page_mcl_leftskip
+\newdimension   \d_page_mcl_rightskip
+\newdimension   \d_page_mcl_used_width
+\newdimension   \d_page_mcl_temp
+\newdimension   \d_page_mcl_saved_pagetotal  % brrr, still needed ?
 
-\newcount      \c_page_mcl_balance_minimum
-\newcount      \c_page_mcl_n_of_lines
+\newinteger    \c_page_mcl_balance_minimum
+\newinteger    \c_page_mcl_n_of_lines
 
 \newbox        \b_page_mcl_preceding
-\newdimen      \d_page_mcl_preceding_height
+\newdimension  \d_page_mcl_preceding_height
 \newconditional\c_page_mcl_preceding_present
 
 \newbox        \b_page_mcl_rest_of_page
@@ -85,10 +85,10 @@
 
 \newbox        \b_page_mcl_balance_content
 \newconstant   \c_page_mcl_balance_tries_max
-\newcount      \c_page_mcl_balance_tries
-\newdimen      \d_page_mcl_balance_target
-\newdimen      \d_page_mcl_balance_natural_height
-\newdimen      \d_page_mcl_balance_step
+\newinteger    \c_page_mcl_balance_tries
+\newdimension  \d_page_mcl_balance_target
+\newdimension  \d_page_mcl_balance_natural_height
+\newdimension  \d_page_mcl_balance_step
 \newconditional\c_page_mcl_balance_possible
 
 \c_page_mcl_balance_tries_max 250 % 100 is too small when floats are involved
@@ -294,7 +294,7 @@
        \settrue\c_page_mcl_balance_possible
      \else % check criterium to available lines
        \getnoflines{\ht\b_page_mcl_balance_content}%
-       \divide\noflines \nofcolumns \relax
+       \divideby\noflines \nofcolumns \relax
        \ifnum\noflines<\c_page_mcl_balance_minimum \relax
          \ifdim\dimexpr\ht\b_page_mcl_balance_content+\openlineheight\relax>\makeupheight
            \settrue\c_page_mcl_balance_possible % column exceeding text height
@@ -326,7 +326,7 @@
 
 \def\page_mcl_balance_try_one
   {\d_page_mcl_balance_target\dimexpr\ht\b_page_mcl_balance_content+\topskip-\baselineskip\relax
-   \divide\d_page_mcl_balance_target \nofcolumns
+   \divideby\d_page_mcl_balance_target \nofcolumns
    \vbadness\plustenthousand
    \c_page_mcl_balance_tries\zerocount
    \bgroup
@@ -345,18 +345,18 @@
    \egroup}
 
 \def\page_mcl_balance_try_one_attempt
-  {\advance\c_page_mcl_balance_tries \plusone
+  {\advanceby\c_page_mcl_balance_tries \plusone
    \global\setbox\b_page_mcl_rest_of_page\copy\b_page_mcl_balance_content\relax
    \dohandleallcolumns{\page_mcl_split_column\b_page_mcl_rest_of_page\d_page_mcl_balance_target}%
    \d_page_mcl_balance_natural_height\zeropoint
    \dohandleallcolumns\page_mcl_balance_try_one_attempt_step
-\advance\d_page_mcl_balance_natural_height-33\scaledpoint % some slack
+\advanceby\d_page_mcl_balance_natural_height-33\scaledpoint % some slack
    \ifnum\c_page_mcl_balance_tries>\c_page_mcl_balance_tries_max\relax
      \exitloop
    \orelse\ifdim\ht\b_page_mcl_rest_of_page>\zeropoint
-     \advance\d_page_mcl_balance_target\d_page_mcl_balance_step\relax
+     \advanceby\d_page_mcl_balance_target\d_page_mcl_balance_step\relax
    \orelse\ifdim\d_page_mcl_balance_natural_height>\ht\firstcolumnbox\relax
-     \advance\d_page_mcl_balance_target\d_page_mcl_balance_step\relax
+     \advanceby\d_page_mcl_balance_target\d_page_mcl_balance_step\relax
    \else
      \exitloop
    \fi}

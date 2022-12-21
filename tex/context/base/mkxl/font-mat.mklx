@@ -125,7 +125,7 @@
 
 \mutable\let\fontfamily\relax % for now public but it is a helper
 
-\newcount      \c_math_last_family_used
+\newinteger\c_math_last_family_used
 
 \def\font_helpers_set_math_family_indeed_normal#mrtag#family% \fontface etc are also used later on
   {\let\savedfontbody\fontbody

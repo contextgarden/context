@@ -1033,7 +1033,7 @@
 \startsetups[\??listrenderings:abc]
     \endgraf % are we grouped?
     \typo_injectors_check_list
-  % \advance % yes or no ... \rightskip is also honored
+  % \advanceby % yes or no ... \rightskip is also honored
     \leftskip\listparameter\c!margin % after \endgraf !
     \listparameter\c!before
     \endgraf
@@ -1178,7 +1178,7 @@
 
 \startsetups[\??listrenderings:d]
     \ifvmode
-        \advance\leftskip\listparameter\c!margin
+        \advanceby\leftskip\listparameter\c!margin
     \fi
     \begingroup
     \ifvmode

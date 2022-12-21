@@ -312,7 +312,8 @@ local function getalso(target,original)
     local also = target.tweakalso -- maybe
     if not also then
         also = { }
-        for k, v in sortedhash(target.characters) do
+     -- for k, v in sortedhash(target.characters) do
+        for k, v in next, target.characters do
             local u = v.unicode
             if u and k ~= u then
                 local a = also[u]
@@ -1177,7 +1178,8 @@ do
     function mathtweaks.simplifykerns(target,original,parameters)
         local characters = target.characters
         local done       = false
-        for u, v in sortedhash(characters) do
+     -- for u, v in sortedhash(characters) do
+        for u, v in next, characters do
             local mathkerns = v.mathkerns
             if mathkerns then
                 local k = mathkerns.topleft
@@ -1244,7 +1246,7 @@ do
             end
             return false
         end
-        local function step(s,l)
+        local function step(s)
             while s do
                 local u = mathgaps[s] or s
                 local c = targetcharacters[u]
@@ -1314,7 +1316,8 @@ do
         local list = parameters.list -- todo: ranges
         if list == "letters" or parameters.letters then
             local chardata = characters.data
-            for k, v in sortedhash(targetcharacters) do
+         -- for k, v in sortedhash(targetcharacters) do
+            for k, v in next, targetcharacters do
                 if v.italic then
                     local d = chardata[v.unicode]
                     local c = d and d.category
@@ -1331,17 +1334,20 @@ do
         end
         for i=1,#list do
             local l = list[i]
+            local t = type(l)
             if not l then
                 -- can be false
-            elseif type(l) == "table" then
+            elseif t == "table" then
                 for i=1,#l do
-                    step(i,l[i])
+                    step(l[i])
                 end
+            elseif t == "number" then
+                step(l)
             else
                 local r = blocks[l]
                 if r then
                     for i=r.first,r.last do
-                        step(i,l)
+                        step(i)
                     end
                 else
                     stepper(l,step)
@@ -3109,7 +3115,8 @@ do
 
     function mathtweaks.addmirrors(target,original,parameters)
         local characters = target.characters
-        for unicode, detail in sortedhash(characters) do
+     -- for unicode, detail in sortedhash(characters) do
+        for unicode, detail in next, characters do
             local data = chardata[unicode]
             if data and data.mirror then
                 add(target,original,characters,unicode,"mirror")
@@ -3566,7 +3573,8 @@ do
                 local italics  = 0
                 local metadata = original.shared.rawdata.metadata
                 local fontname = metadata and metadata.fontname or false
-                for k, v in sortedhash(characters) do
+             -- for k, v in sortedhash(characters) do
+                for k, v in next, characters do
                     local italic = v.italic
                     if italic then
                         local unicode = v.unicode

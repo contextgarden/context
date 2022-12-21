@@ -24,12 +24,12 @@
 \defineinsertion[\s!bottomfloat]
 \defineinsertion[\s!pagefloat]
 
-\newdimen   \d_page_floats_inserted_bottom
-\newdimen   \d_page_floats_inserted_top
-\newdimen   \d_page_floats_inserted_page
-\newcount   \c_page_floats_n_of_top         \c_page_floats_n_of_top   \plustwo
-\newcount   \c_page_floats_n_of_bottom      \c_page_floats_n_of_bottom\zerocount
-\newcount   \c_page_floats_n_of_page        \c_page_floats_n_of_page  \plustwo
+\newdimension\d_page_floats_inserted_bottom
+\newdimension\d_page_floats_inserted_top
+\newdimension\d_page_floats_inserted_page
+\newinteger  \c_page_floats_n_of_top           \c_page_floats_n_of_top   \plustwo
+\newinteger  \c_page_floats_n_of_bottom        \c_page_floats_n_of_bottom\zerocount
+\newinteger  \c_page_floats_n_of_page          \c_page_floats_n_of_page  \plustwo
 
 \newconstant\c_page_floats_insertions_topskip_mode  % 1 = no topskip
 
@@ -57,24 +57,23 @@
 \newconditional\c_page_floats_center_box_global
 \newconditional\c_page_floats_compress_flushed    \settrue\c_page_floats_compress_flushed
 
-\newdimen      \d_page_floats_compress_distance
+\newdimension  \d_page_floats_compress_distance
 
 %D For the moment we keep this but they will become private too.
 
-\newcount\totalnoffloats           % these will be redone ... handled at the lua end anyway
-\newcount\savednoffloats           % these will be redone ... handled at the lua end anyway
-\newcount\nofcollectedfloats       % communication channel
-\newdimen\maxcollectedfloatstotal  % communication channel
+\newinteger  \totalnoffloats           % these will be redone ... handled at the lua end anyway
+\newinteger  \savednoffloats           % these will be redone ... handled at the lua end anyway
+\newinteger  \nofcollectedfloats       % communication channel
+\newdimension\maxcollectedfloatstotal  % communication channel
+\newinteger  \noffloatinserts          % these will be redone ... handled at the lua end anyway
 
-\newcount\noffloatinserts          % these will be redone ... handled at the lua end anyway
+\newbox      \floattext
 
-\newbox  \floattext
-
-\newdimen\floatwidth
-\newdimen\floatheight
-\newdimen\floatdepth
-\newdimen\floattextwidth
-\newdimen\floattextheight
+\newdimension\floatwidth
+\newdimension\floatheight
+\newdimension\floatdepth
+\newdimension\floattextwidth
+\newdimension\floattextheight
 
 \newbox  \floatbox
 \newbox  \savedfloatbox

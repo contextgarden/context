@@ -43,7 +43,7 @@
 %D and such are now more or less default in \CONTEXT\ so we can simplify some of the
 %D code. We also use the new penalty mechanism.
 
-\newcount\compoundhyphenpenalty
+\newinteger\compoundhyphenpenalty
 
 % \ifcase\contextlmtxmode
 %     \hyphenpenaltymode\plusfour

@@ -27,7 +27,7 @@
 %
 % \definesystemattribute[trigger][public]
 %
-% \newcount\c_syst_attr_trigger
+% \newinteger\c_syst_attr_trigger
 %
 % \permanent\edef\startinheritattributes{\c_attr_trigger\plusone}
 % \permanent\edef\stopinheritattributes {\c_attr_trigger\attributeunsetvalue}
@@ -72,7 +72,7 @@
 
 % This is just a compatibility hack:
 
-\newcount\c_syst_attr_trigger
+\newinteger\c_syst_attr_trigger
 
 \permanent\protected\def\attributedcopy{\afterassignment\syst_attr_copy\c_syst_attr_trigger}
 \permanent\protected\def\attributedbox {\afterassignment\syst_attr_box \c_syst_attr_trigger}

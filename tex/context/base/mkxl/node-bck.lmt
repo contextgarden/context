@@ -52,6 +52,7 @@ local nexthlist          = nuts.traversers.hlist
 local nextlist           = nuts.traversers.list
 
 local flushnodelist      = nuts.flushlist
+local flushnode          = nuts.flush
 
 local new_rule           = nodepool.rule
 local new_kern           = nodepool.kern
@@ -166,7 +167,7 @@ local function add_alignbackgrounds(head,list)
     local template = getprop(head,"alignmentchecked")
     if template then
         list = colored_b(head,list,template[1],hlist_code,template[2])
-        flushnodelist(template)
+        flushnodelist(template[1])
         templates[currentrow] = false
         return list
     end

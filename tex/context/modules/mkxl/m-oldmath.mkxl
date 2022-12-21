@@ -81,9 +81,9 @@
       \baselineskip \the\baselineskip
       \lineskiplimit\the\lineskiplimit
       \relax}%
-   \advance\lineskip     \scratchdimen
-   \advance\baselineskip \scratchdimen
-   \advance\lineskiplimit\scratchdimen}
+   \advanceby\lineskip     \scratchdimen
+   \advanceby\baselineskip \scratchdimen
+   \advanceby\lineskiplimit\scratchdimen}
 
 \permanent\protected\def\openup {\math_openup } % the low level ones are used elsewhere
 \permanent\protected\def\closeup{\math_closeup} % the low level ones are used elsewhere

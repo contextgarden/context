@@ -141,7 +141,7 @@
 \permanent\protected\def\forgetinitial
   {\ifcase\c_initial_lines\else
      \begingroup
-     \advance\c_initial_lines-\prevgraf\relax
+     \advanceby\c_initial_lines-\prevgraf\relax
      \ifcase\c_initial_lines\else
        \obeydepth
        \forgetall

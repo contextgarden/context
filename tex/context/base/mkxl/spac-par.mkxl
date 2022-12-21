@@ -111,7 +111,7 @@
 
 \lettonothing\spac_paragraph_wrap
 
-\newcount\c_spac_paragraph_group_level
+\newinteger\c_spac_paragraph_group_level
 
 \protected\def\spac_paragraph_update
   {\c_spac_paragraph_group_level\currentgrouplevel\relax
@@ -130,7 +130,7 @@
    \expandafter\newtoks\csname\??eparwrap\the\currentgrouplevel\endcsname}
 
 \def\spac_paragraph_install_count#1%
-  {\expandafter\newcount\csname\??parwrapcount#1\endcsname}
+  {\expandafter\newinteger\csname\??parwrapcount#1\endcsname}
 
 \def\spac_paragraph_install_pair#1#2#3%
   {\expandafter\newtoks\csname\??parwrapbefore#3\endcsname
@@ -148,7 +148,7 @@
    \ifcsname\??parwrapbefore#3\endcsname \else
      \spac_paragraph_install_pair#1#2{#3}%
    \fi
-   #1\csname\??parwrapbefore#3\endcsname{\global\advance\csname\??parwrapcount#3\endcsname\plusone\relax % global, see (!)
+   #1\csname\??parwrapbefore#3\endcsname{\global\advanceby\csname\??parwrapcount#3\endcsname\plusone\relax % global, see (!)
                                          \clf_setparwrapper{#3}#4}%
    #2\csname\??parwrapafter #3\endcsname{#5}%
    \clf_newparwrapper{#3}%
@@ -390,20 +390,20 @@
 
 \lettonothing\flushpostponednodedata % hook into everypar
 
-\newbox  \b_spac_postponed_data
-%newcount\c_spac_postponed_data
+\newbox    \b_spac_postponed_data
+%newinteger\c_spac_postponed_data
 
 % \installcorenamespace {postponednodesstack}
 %
 % \initializeboxstack\??postponednodesstack
 %
 % \protected\def\pushpostponednodedata
-%   {\global\advance\c_spac_postponed_data\plusone
+%   {\global\advanceby\c_spac_postponed_data\plusone
 %    \savebox\??postponednodesstack{\the\c_spac_postponed_data}{\box\b_spac_postponed_data}}
 %
 % \protected\def\poppostponednodedata
 %   {\global\setbox\b_spac_postponed_data\hbox{\foundbox\??postponednodesstack{\the\c_spac_postponed_data}}%
-%    \global\advance\c_spac_postponed_data\minusone
+%    \global\advanceby\c_spac_postponed_data\minusone
 %    \ifvoid\b_spac_postponed_data\else
 %      \enforced\glet\flushpostponednodedata\spac_postponed_data_flush
 %    \fi}

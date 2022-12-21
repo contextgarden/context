@@ -31,10 +31,10 @@
 
 % Actually we can do better now with lua hacks.
 
-\newcount\c_math_delimiter_nesting
+\newinteger\c_math_delimiter_nesting
 
-\permanent\protected\def\leftfakedelimiter {\advance\c_math_delimiter_nesting\minusone\gobbleoneargument}
-\permanent\protected\def\rightfakedelimiter{\advance\c_math_delimiter_nesting\plusone \gobbleoneargument}
+\permanent\protected\def\leftfakedelimiter {\advanceby\c_math_delimiter_nesting\minusone\gobbleoneargument}
+\permanent\protected\def\rightfakedelimiter{\advanceby\c_math_delimiter_nesting\plusone \gobbleoneargument}
 
 \permanent\protected\def\checkdelimiters#1%
   {\c_math_delimiter_nesting\zerocount

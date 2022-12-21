@@ -15,13 +15,19 @@
 
 \unprotect
 
-\newskip  \bodyfontlineheight        % why a skip
-\newdimen \bodyfontstrutheight
-\newdimen \bodyfontstrutdepth
+\newgluespec\bodyfontlineheight        % why a skip
+\newdimen   \bodyfontstrutheight
+\newdimen   \bodyfontstrutdepth
 
-\newskip  \globalbodyfontlineheight  % why a skip
-\newdimen \globalbodyfontstrutheight
-\newdimen \globalbodyfontstrutdepth
+\newgluespec\globalbodyfontlineheight  % why a skip
+\newdimen   \globalbodyfontstrutheight
+\newdimen   \globalbodyfontstrutdepth
+
+\newgluespec\s_spac_vspacing_predefined
+
+% \overloaded\let\strutht  \undefined \newdimen\strutht   % already defined
+% \overloaded\let\strutdp  \undefined \newdimen\strutdp
+% \overloaded\let\struthtdp\undefined \newdimen\struthtdp
 
 \registerctxluafile{spac-ver}{autosuffix,optimize}
 
@@ -67,7 +73,7 @@
 
 \newif\iflocalinterlinespace
 
-\newskip \s_spac_vspacing_temp \s_spac_vspacing_temp\bigskipamount
+\newgluespec\s_spac_vspacing_temp \s_spac_vspacing_temp\bigskipamount
 
 \mutable\def\skipfactor    {.75}
 \mutable\def\skipgluefactor{.25}
@@ -240,10 +246,10 @@
 
 %D Helpers
 
-\newskip \s_spac_lastskip
-\newdimen\d_spac_prevdepth
-\newcount\c_spac_spacefactor
-\newdimen\d_spac_prevcontent % set by lua
+\newgluespec \s_spac_lastskip
+\newdimension\d_spac_prevdepth
+\newinteger  \c_spac_spacefactor
+%newdimension\d_spac_prevcontent % set by lua (no longer it seems)
 
 % \permanent\overloaded\protected\def\removelastskip
 %   {\ifvmode\ifzeropt\lastskip\else\vskip-\lastskip\fi\fi}
@@ -349,7 +355,7 @@
 
 \installcorenamespace{whitespacemethod}
 
-\newskip       \s_spac_whitespace_parskip   \s_spac_whitespace_parskip\zeropoint
+\newgluespec   \s_spac_whitespace_parskip   \s_spac_whitespace_parskip\zeropoint
 \newconditional\c_spac_whitespace_flexible  \settrue\c_spac_whitespace_flexible
 \newconstant   \c_spac_whitespace_grid_mode % option in layout / 1=permit_half_lines
 
@@ -457,10 +463,10 @@
 % todo: when packed blocks blank, we need to enable forced
 
 \newconditional\c_spac_packed_blank \settrue\c_spac_packed_blank
-\newcount      \c_spac_packed_level
+\newinteger    \c_spac_packed_level
 
 \permanent\tolerant\protected\def\startpacked[#1]%
-  {\global\advance\c_spac_packed_level\plusone
+  {\global\advanceby\c_spac_packed_level\plusone
    \par
    \ifnum\c_spac_packed_level=\plusone \ifvmode
      \begingroup
@@ -475,7 +481,7 @@
    \ifnum\c_spac_packed_level=\plusone \ifvmode
      \endgroup
    \fi \fi
-   \global\advance\c_spac_packed_level\minusone}
+   \global\advanceby\c_spac_packed_level\minusone}
 
 \permanent\protected\def\startunpacked
   {\directdefaultvspacing % \blank
@@ -650,17 +656,17 @@
 %D that can be prevented with \type {\dontleavehmode}. Never use \type
 %D {\leavevmode}!
 
-\newdimen\strutdimen
-\newdimen\lineheight
-\newdimen\openlineheight
-\newdimen\openstrutheight
-\newdimen\openstrutdepth
-\newdimen\topskipgap
+\newdimension\strutdimen        % not used
+\newdimension\lineheight
+\newdimension\openlineheight
+\newdimension\openstrutheight
+\newdimension\openstrutdepth
+\newdimension\topskipgap
 
-\newdimen\strutheight
-\newdimen\strutdepth
-\newdimen\struttotal
-\newdimen\strutwidth
+\newdimension\strutheight
+\newdimension\strutdepth
+\newdimension\struttotal
+\newdimension\strutwidth
 
 \let\m_spac_vertical_baseline_stretch_factor \zerocount
 \let\m_spac_vertical_baseline_shrink_factor  \zerocount
@@ -684,7 +690,7 @@
 \mutable\def\systemmaxdepthfactor{\maxdepthfactor}
 
 \ifdefined\globalbodyfontsize \else
-    \newdimen\globalbodyfontsize
+    \newdimension\globalbodyfontsize
     \globalbodyfontsize=12pt
 \fi
 
@@ -721,7 +727,7 @@
    \fi
    %\relax
    \topskipgap\topskip
-   \advance\topskipgap -\openstrutheight\relax
+   \advanceby\topskipgap -\openstrutheight\relax
    \ifdim\minimumstrutheight>\zeropoint
      \ifdim\topskip<\minimumstrutheight
        \topskip\minimumstrutheight\relax
@@ -735,9 +741,9 @@
 \permanent\protected\def\setmaxdepth
   {\maxdepth\systemmaxdepthfactor\globalbodyfontsize}
 
-\newskip \usedbaselineskip  % These used to be \normal... but that isn't pretty
-\newskip \usedlineskip      % in the token interface, so these few now have new
-\newdimen\usedlineskiplimit % names. They are public but not really user commands.
+\newgluespec \usedbaselineskip  % These used to be \normal... but that isn't pretty
+\newgluespec \usedlineskip      % in the token interface, so these few now have new
+\newdimension\usedlineskiplimit % names. They are public but not really user commands.
 
 \permanent\protected\def\normalbaselines
   {\baselineskip \usedbaselineskip
@@ -848,9 +854,9 @@
 
 %D The double \type {\hbox} construction enables us to backtrack boxes.
 
-\overloaded\let\strutht  \undefined \newdimen\strutht
-\overloaded\let\strutdp  \undefined \newdimen\strutdp
-\overloaded\let\struthtdp\undefined \newdimen\struthtdp
+% \overloaded\let\strutht  \undefined \newdimension\strutht    % see above
+% \overloaded\let\strutdp  \undefined \newdimension\strutdp
+% \overloaded\let\struthtdp\undefined \newdimension\struthtdp
 
 \permanent\protected\def\setstrut
   {\ifgridsnapping
@@ -1286,7 +1292,7 @@
 % just before margintexts ... will eventually be done differently in mkiv using
 % attributes
 
-\newcount\c_spac_keep_lines_together
+\newinteger\c_spac_keep_lines_together
 
 \permanent\protected\lettonothing\restoreinterlinepenalty
 
@@ -1407,13 +1413,13 @@
 \installcorenamespace{gridsnapperattributes}
 \installcorenamespace{gridsnappersets}
 
-% \newskip  \bodyfontlineheight  % see top
-% \newdimen \bodyfontstrutheight % see top
-% \newdimen \bodyfontstrutdepth  % see top
+% \newgluespec \bodyfontlineheight  % see top
+% \newdimension\bodyfontstrutheight % see top
+% \newdimension\bodyfontstrutdepth  % see top
 
-% \newskip  \globalbodyfontlineheight  % see top
-% \newdimen \globalbodyfontstrutheight % see top
-% \newdimen \globalbodyfontstrutdepth  % see top
+% \newgluespec \globalbodyfontlineheight  % see top
+% \newdimension\globalbodyfontstrutheight % see top
+% \newdimension\globalbodyfontstrutdepth  % see top
 
 \permanent\def\snappedvboxattribute{\ifgridsnapping attr\snapvboxattribute\c_attr_snapmethod\fi}
 \permanent\def\setlocalgridsnapping{\ifgridsnapping \c_attr_snapvbox \c_attr_snapmethod\fi}
@@ -1587,8 +1593,8 @@
       \s!plus\skipgluefactor\baselineskip
      \s!minus\skipgluefactor\baselineskip
    \relax
-   \medskipamount  \bigskipamount \divide\medskipamount  \plustwo
-   \smallskipamount\bigskipamount \divide\smallskipamount\plusfour}
+   \medskipamount  \bigskipamount \divideby\medskipamount  \plustwo
+   \smallskipamount\bigskipamount \divideby\smallskipamount\plusfour}
 
 %D Snapping.
 
@@ -1855,7 +1861,7 @@
   {\c_attr_skipcategory\pluseleven}
 
 %permanent\def\vspacingfromscratchtoks  {\scratchdimen\dimexpr\csname\??vspacingamount\the\scratchtoks\endcsname\relax}
-\permanent\def\vspacingpredefinedvalue#1{\scratchskip\glueexpr\csname\??vspacingamount#1\endcsname\relax}
+\permanent\def\vspacingpredefinedvalue#1{\s_spac_vspacing_predefined\glueexpr\csname\??vspacingamount#1\endcsname\relax}
 %permanent\def\vspacingfromtempstring   {\scratchdimen\dimexpr\csname\??vspacingamount\tempstring\endcsname\relax}
 
 % \installcorenamespace{vspacingamountnormal}
@@ -2014,7 +2020,7 @@
 
 %D used in itemize \unknown\ always test this:
 
-\newdimen\d_spac_overlay
+\newdimension\d_spac_overlay
 
 \def\spac_overlay_lines
   {\directcheckedvspacing{\v!back,\v!overlay}% \blank[\v!back,\v!overlay]%
@@ -2059,9 +2065,9 @@
 
 \definevspacing[\s!default]   [\v!white] % was big for a while
 
-\newcount\c_spac_vspacing_special_base \c_spac_vspacing_special_base = 32250 % 4000
-\newcount\c_spac_vspacing_special_step \c_spac_vspacing_special_step =    10 %  250
-\newcount\c_spac_vspacing_special_done
+\newinteger\c_spac_vspacing_special_base \c_spac_vspacing_special_base = 32250 % 4000
+\newinteger\c_spac_vspacing_special_step \c_spac_vspacing_special_step =    10 %  250
+\newinteger\c_spac_vspacing_special_done
 
 % 2019-05-31 : upgraded a bit to more distinctive samepage-[level]-[0|1|2] names
 
@@ -2332,7 +2338,7 @@
 % \prerollblank[2*line]  \the\prerolledblank
 % \prerollblank[-2*line] \the\prerolledblank
 
-\newskip\prerolledblank
+\newgluespec\prerolledblank
 
 \permanent\protected\def\prerollblank[#1]%
   {\begingroup
@@ -2349,12 +2355,12 @@
         \kern\zeropoint
         \blank[\p_blank]}%
      % \dimexpr doesn't work well with skips
-     \advance\scratchskip-\ht\scratchbox
+     \advanceby\scratchskip-\ht\scratchbox
      \global\prerolledblank-\scratchskip
    \fi
    \endgroup}
 
-\newcount\c_spac_vspacing_ignore_parskip
+\newinteger\c_spac_vspacing_ignore_parskip
 
 % \setupwhitespace[line]
 % \setuphead[subject][after={\blank[packed]},style=\bfb]
@@ -2395,5 +2401,67 @@
 
 \permanent\tolerant\protected\def\blankbefore[#1]{\vadjust pre {\ifcstok{#1}\emptytoks\blank\else\blank[#1]\fi}}
 \permanent\tolerant\protected\def\blankafter [#1]{\vadjust post{\ifcstok{#1}\emptytoks\blank\else\blank[#1]\fi}}
+
+%D Experimental:
+
+\installcorenamespace{textdisplay}
+
+\installcommandhandler \??textdisplay {textdisplay} \??textdisplay
+
+\appendtoks
+    \frozen\protected\edefcsname\e!start\currenttextdisplay\endcsname{\spac_textdisplay_start{\currenttextdisplay}}%
+    \frozen\protected\edefcsname\e!stop \currenttextdisplay\endcsname{\spac_textdisplay_stop}%
+\to \everydefinetextdisplay
+
+\setuptextdisplay
+  [\c!factor=.5,
+   \c!after=\textdisplayparameter\c!before]
+
+\tolerant\protected\def\spac_textdisplay_start#1#:[#2]%
+  {\par
+   \begingroup
+   \edef\currenttextdisplay{#1}%
+   \setupcurrenttextdisplay[#2]%
+   \textdisplayparameter\c!before
+   \dbox
+   \bgroup
+   \strut
+   \vskip-\lineheight
+   \vbox
+   \s!yoffset -\textdisplayparameter\c!factor\strutdp
+   \bgroup}
+
+\protected\def\spac_textdisplay_stop
+  {\egroup
+   \vskip-\lineheight\strut
+   \egroup
+   \textdisplayparameter\c!after
+   \endgroup
+   \par}
+
+\definetextdisplay[\v!textdisplay]
+
+% \useMPlibrary[dum]
+%
+% \definetextdisplay[steppedbystep][before={\blank[halfline]}]
+%
+% \starttext \showmakeup[line]
+%   \dostepwiserecurse{10}{25}{1}{
+%       xxxxxxxxxxxxxxxx\par
+%       \starttextdisplay
+%         \externalfigure[dummydummy][height=#1mm,text=no]%
+%       \stoptextdisplay
+%       xxxxxxxxxxxxxxxx\par
+%       \starttextdisplay[before=\blank,after=\blank] % factor=.5
+%         \externalfigure[dummydummy][height=#1mm,text=no]%
+%       \stoptextdisplay
+%       xxxxxxxxxxxxxxxx\par
+%       \startsteppedbystep
+%         \externalfigure[dummydummy][height=#1mm,text=no]%
+%       \stopsteppedbystep
+%       xxxxxxxxxxxxxxxx\par
+%       \page
+%   }
+% \stoptext
 
 \protect \endinput

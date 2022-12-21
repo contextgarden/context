@@ -15,6 +15,8 @@
 
 \writestatus{loading}{ConTeXt Backend Macros / XML export}
 
+\newinteger\tagparcounter
+
 \registerctxluafile{back-exp}        {autosuffix}
 \registerctxluafile{back-exp-imp-tag}{autosuffix}
 \registerctxluafile{back-exp-imp-mth}{autosuffix}
@@ -48,8 +50,6 @@
    \else
      \expandafter\ctxcommand
    \fi}
-
-\newcount\tagparcounter
 
 \permanent\protected\lettonothing\dotagsetparcounter
 \permanent\protected\lettonothing\doresetparcounter
@@ -158,7 +158,7 @@
 
 \appendtoks
     \enforced\permanent\protected\def\dotagsetparcounter
-      {\global\advance\tagparcounter\plusone\c_attr_taggedpar\tagparcounter}%
+      {\global\advanceby\tagparcounter\plusone\c_attr_taggedpar\tagparcounter}%
     \enforced\permanent\protected\def\doresetparcounter
       {\c_attr_taggedpar\attributeunsetvalue}%
 \to \everyenableelements

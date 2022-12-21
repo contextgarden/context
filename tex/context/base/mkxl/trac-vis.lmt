@@ -797,6 +797,7 @@ local ruledbox do
 
     local getshift       = nuts.getshift
     local getorientation = nuts.getorientation
+    local getheight      = nuts.getheight
 
     setmetatableindex(o_cache,function(t,size)
         local rule   = new_rule(2*size,size,size)
@@ -812,105 +813,138 @@ local ruledbox do
         local wd, ht, dp = getwhd(current)
 -- todo        local wd, ht, dh, shift = getlistdimensions(current)
         local force_origin = wd == 0 or (dp + ht) == 0
-            local shift = getshift(current)
-            local orientation, xoffset, yoffset = getorientation(current)
-            local next = getnext(current)
-            local prev = previous
-            setboth(current)
-            local linewidth = emwidth/fraction
-            local size      = 2*linewidth
-            local this
-            if not simple then
-                this = b_cache[what]
-                if not this then
-                    local text = hpack_string(what,usedfont)
-                    this = setlink(new_kern(-getwidth(text)),text)
-                    setlisttransparency(this,"trace:s")
-                    this = new_hlist(this)
-                    b_cache[what] = this
-                end
+        local shift = getshift(current)
+        local orientation, xoffset, yoffset = getorientation(current)
+        local next = getnext(current)
+        local prev = previous
+        setboth(current)
+        local linewidth = emwidth/fraction
+        local size      = 2*linewidth
+        local this
+        if not simple then
+            this = b_cache[what]
+            if not this then
+                local text = hpack_string(what,usedfont)
+                this = setlink(new_kern(-getwidth(text)),text)
+                setlisttransparency(this,"trace:s")
+                this = new_hlist(this)
+                b_cache[what] = this
             end
-            -- we need to trigger the right mode (else sometimes no whatits)
-            local info = setlink(
-                this and copylist(this) or nil,
-                (force_origin and emptyrule(wd,ht,dp)) -- we accept some overhead
-             or dp == 0 and userrule {
-                    width    = wd,
-                    height   = ht,
-                    line     = linewidth,
-                    type     = "box",
-                    baseline = false,
-
-                }
-             or userrule {
-                    width  = wd,
-                    height = ht,
-                    depth  = dp,
-                    line   = linewidth,
-                    type   = "box",
-                    dashed = 3*size,
-
-                }
-            )
-            --
-            setlisttransparency(info,"trace:s")
-            info = new_hlist(info) -- important
-            --
-            setattr(info,a_layer,layer)
-            if vertical then
-                if not force_origin and shift == 0 then
+        end
+        -- we need to trigger the right mode (else sometimes no whatits)
+--         local info = setlink(
+--             this and copylist(this) or nil,
+--             (force_origin and emptyrule(wd,ht,dp)) -- we accept some overhead
+--          or dp == 0 and userrule {
+--                 width    = wd,
+--                 height   = ht,
+--                 line     = linewidth,
+--                 type     = "box",
+--                 baseline = false,
+--             }
+--          or userrule {
+--                 width  = wd,
+--                 height = ht,
+--                 depth  = dp,
+--                 line   = linewidth,
+--                 type   = "box",
+--                 dashed = 3*size,
+--             }
+--         )
+        local rest, more
+        if force_origin then
+            rest = emptyrule(wd,ht,dp) -- we accept some overhead
+        elseif what == "_D_" then
+            -- also the other line
+            local up = nil
+            local list = getlist(current)
+            if list then
+                up = getheight(list)
+            end
+            rest = userrule {
+                width  = wd,
+                height = ht,
+                depth  = dp,
+                line   = linewidth,
+                type   = "box",
+                dashed = 3*size,
+                double = ht - up,
+            }
+        elseif dp == 0 then
+            rest = userrule {
+                width    = wd,
+                height   = ht,
+                line     = linewidth,
+                type     = "box",
+                baseline = false,
+            }
+        else
+            rest = userrule {
+                width  = wd,
+                height = ht,
+                depth  = dp,
+                line   = linewidth,
+                type   = "box",
+                dashed = 3*size,
+            }
+        end
+        local info = setlink(this and copylist(this) or nil,rest,more)
+        --
+        setlisttransparency(info,"trace:s")
+        info = new_hlist(info) -- important
+        --
+        setattr(info,a_layer,layer)
+        if vertical then
+            if not force_origin and shift == 0 then
+                info = setlink(current,dp ~= 0 and new_kern(-dp) or nil,info)
+            elseif trace_origin or force_origin then
+                local size   = 2*size
+                local origin = o_cache[size]
+                origin = copylist(origin)
+                if getid(parent) == vlist_code then
+                    setshift(origin,-shift)
+                    info = setlink(current,new_kern(-size),origin,new_kern(-size-dp),info)
+                else
+                    -- todo .. i need an example
                     info = setlink(current,dp ~= 0 and new_kern(-dp) or nil,info)
-                elseif trace_origin or force_origin then
-                    local size   = 2*size
-                    local origin = o_cache[size]
-                    origin = copylist(origin)
-                    if getid(parent) == vlist_code then
-                        setshift(origin,-shift)
-                        info = setlink(current,new_kern(-size),origin,new_kern(-size-dp),info)
-                    else
-                        -- todo .. i need an example
-                        info = setlink(current,dp ~= 0 and new_kern(-dp) or nil,info)
-                    end
-                    setshift(current,0)
-                else
-                    info = setlink(current,new_dp ~= 0 and new_kern(-dp) or nil,info)
-                    setshift(current,0)
                 end
-                info = new_vlist(info,wd,ht,dp,shift)
+                setshift(current,0)
             else
-                if not force_origin and shift == 0 then
-                    info = setlink(current,new_kern(-wd),info)
-                elseif trace_origin or force_origin then
-                    local size   = 2*size
-                    local origin = o_cache[size]
-                    origin = copylist(origin)
-                    if getid(parent) == vlist_code then
-                        info = setlink(current,new_kern(-wd-size-shift),origin,new_kern(-size+shift),info)
-                    else
-                        setshift(origin,-shift)
-                        info = setlink(current,new_kern(-wd-size),origin,new_kern(-size),info)
-                    end
-                    setshift(current,0)
+                info = setlink(current,new_dp ~= 0 and new_kern(-dp) or nil,info)
+                setshift(current,0)
+            end
+            info = new_vlist(info,wd,ht,dp,shift)
+        else
+            if not force_origin and shift == 0 then
+                info = setlink(current,new_kern(-wd),info)
+            elseif trace_origin or force_origin then
+                local size   = 2*size
+                local origin = o_cache[size]
+                origin = copylist(origin)
+                if getid(parent) == vlist_code then
+                    info = setlink(current,new_kern(-wd-size-shift),origin,new_kern(-size+shift),info)
                 else
-                    info = setlink(current,new_kern(-wd),info)
-                    setshift(current,0)
+                    setshift(origin,-shift)
+                    info = setlink(current,new_kern(-wd-size),origin,new_kern(-size),info)
                 end
-                info = new_hlist(info,wd,ht,dp,shift)
-            end
-            if next then
-                setlink(info,next)
-            end
-            if prev and prev > 0 then
-                setlink(prev,info)
-            end
-            if head == current then
-                return info, info
+                setshift(current,0)
             else
-                return head, info
+                info = setlink(current,new_kern(-wd),info)
+                setshift(current,0)
             end
-     -- else
-     --     return head, current
-     -- end
+            info = new_hlist(info,wd,ht,dp,shift)
+        end
+        if next then
+            setlink(info,next)
+        end
+        if prev and prev > 0 then
+            setlink(prev,info)
+        end
+        if head == current then
+            return info, info
+        else
+            return head, info
+        end
     end
 
 end
@@ -942,13 +976,13 @@ local ruledglyph do
 --     ht = linewidth/2
 --     dp = ht
 -- end
-local info = (dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
-    width  = wd,
-    height = ht,
-    depth  = dp,
-    line   = linewidth,
-    type   = "box",
-}
+            local info = (dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
+                width  = wd,
+                height = ht,
+                depth  = dp,
+                line   = linewidth,
+                type   = "box",
+            }
             local c, f = isglyph(current)
             local char = chardata[f][c]
             if char and type(char.unicode) == "table" then -- hackery test
@@ -1599,6 +1633,7 @@ do
     local rowlist_code            = listcodes.alignment
 
     local vtop_package_state      = 3 -- todo: symbolic
+    local dbox_package_state      = 4 -- todo: symbolic
 
     local getleader               = nuts.getleader
     local getdisc                 = nuts.getdisc
@@ -1876,14 +1911,19 @@ do
                 end
             elseif id == vlist_code then
                 local content = getlist(current)
-                local isvtop  = getstate(current) == vtop_package_state
+                local state   = getstate(current)
+                local isvtop  = state == vtop_package_state
+                local isdbox  = state == dbox_package_state
                 local tag     = nil
                 local layer   = nil
                 if content then
                     setlist(current,visualize(content,true,nil,current))
                 end
                 if trace_vtop then
-                    if isvtop then
+                    if isdbox then
+                        tag   = "_D_"
+                        layer = l_vtop
+                    elseif isvtop then
                         tag   = "_T_"
                         layer = l_vtop
                     elseif trace_vbox then
@@ -1891,7 +1931,10 @@ do
                         layer = l_vbox
                     end
                 elseif trace_vbox then
-                    if not isvtop then
+                    if isdbox then
+                        tag   = "_D_"
+                        layer = l_vtop
+                    elseif not isvtop then
                         tag   = "__V"
                         layer = l_vbox
                     end

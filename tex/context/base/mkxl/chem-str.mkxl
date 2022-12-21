@@ -131,9 +131,9 @@
 \newtoks       \t_chem_every_box
 \newbox        \b_chem_result
 \newconditional\c_chem_some_text
-\newdimen      \d_chem_width
-\newdimen      \d_chem_height
-\newdimen      \d_chem_depth
+\newdimension  \d_chem_width
+\newdimension  \d_chem_height
+\newdimension  \d_chem_depth
 
 \permanent\tolerant\protected\def\startchemical[#1]#*[#2]%
   {\ifmmode\vcenter\else\vbox\fi % vpack ?

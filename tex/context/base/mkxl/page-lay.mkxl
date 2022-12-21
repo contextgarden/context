@@ -24,92 +24,92 @@
 
 %D The dimensions related to layout areas are represented by real dimensions.
 
-\newdimen\paperheight          \paperheight          = 297mm
-\newdimen\paperwidth           \paperwidth           = 210mm
-\newdimen\paperoffset          \paperoffset          = \zeropoint
-\newdimen\paperbleed           \paperbleed           = \zeropoint
-\newdimen\spinewidth           \spinewidth           = \zeropoint
+\newdimension\paperheight          \paperheight          = 297mm
+\newdimension\paperwidth           \paperwidth           = 210mm
+\newdimension\paperoffset          \paperoffset          = \zeropoint
+\newdimension\paperbleed           \paperbleed           = \zeropoint
+\newdimension\spinewidth           \spinewidth           = \zeropoint
 
-\newdimen\printpaperheight     \printpaperheight     = \paperheight
-\newdimen\printpaperwidth      \printpaperwidth      = \paperwidth
+\newdimension\printpaperheight     \printpaperheight     = \paperheight
+\newdimension\printpaperwidth      \printpaperwidth      = \paperwidth
 
-\newdimen\makeupheight                               % calculated
-\newdimen\makeupwidth                                % calculated
+\newdimension\makeupheight                               % calculated
+\newdimension\makeupwidth                                % calculated
 
-\newdimen\textheight                                 % calculated
-\newdimen\textwidth                                  % calculated
+\newdimension\textheight                                 % calculated
+\newdimension\textwidth                                  % calculated
 
-\newdimen\topspace             \topspace             = 2cm
-\newdimen\backspace            \backspace            = \topspace
-\newdimen\cutspace             \cutspace             = \zeropoint
-\newdimen\bottomspace          \bottomspace          = \zeropoint
+\newdimension\topspace             \topspace             = 2cm
+\newdimension\backspace            \backspace            = \topspace
+\newdimension\cutspace             \cutspace             = \zeropoint
+\newdimension\bottomspace          \bottomspace          = \zeropoint
 
-\newdimen\headerheight         \headerheight         = 2cm
-\newdimen\footerheight         \footerheight         = \headerheight
+\newdimension\headerheight         \headerheight         = 2cm
+\newdimension\footerheight         \footerheight         = \headerheight
 
-\newdimen\topoffset            \topoffset            = \zeropoint
-\newdimen\backoffset           \backoffset           = \topoffset
+\newdimension\topoffset            \topoffset            = \zeropoint
+\newdimension\backoffset           \backoffset           = \topoffset
 
-\newdimen\leftmarginwidth      \leftmarginwidth      = 3cm
-\newdimen\rightmarginwidth     \rightmarginwidth     = \leftmarginwidth
+\newdimension\leftmarginwidth      \leftmarginwidth      = 3cm
+\newdimension\rightmarginwidth     \rightmarginwidth     = \leftmarginwidth
 
-\newdimen\leftedgewidth        \leftedgewidth        = 3cm
-\newdimen\rightedgewidth       \rightedgewidth       = \leftedgewidth
+\newdimension\leftedgewidth        \leftedgewidth        = 3cm
+\newdimension\rightedgewidth       \rightedgewidth       = \leftedgewidth
 
-\newdimen\topheight            \topheight            = \zeropoint
-\newdimen\bottomheight         \bottomheight         = \topheight
+\newdimension\topheight            \topheight            = \zeropoint
+\newdimension\bottomheight         \bottomheight         = \topheight
 
-\newcount\layoutlines          \layoutlines          = \zerocount
-\newcount\layoutcolumns        \layoutcolumns        = \zerocount
-\newdimen\layoutcolumndistance \layoutcolumndistance = \zeropoint
-\newdimen\layoutcolumnwidth    \layoutcolumnwidth    = \zeropoint
+\newinteger  \layoutlines          \layoutlines          = \zerocount
+\newinteger  \layoutcolumns        \layoutcolumns        = \zerocount
+\newdimension\layoutcolumndistance \layoutcolumndistance = \zeropoint
+\newdimension\layoutcolumnwidth    \layoutcolumnwidth    = \zeropoint
 
-\newdimen\totaltextwidth
+\newdimension\totaltextwidth
 
-\newdimen\textadaptive
+\newdimension\textadaptive
 
 %D The next series of dimensions are complemented by left and rights ones.
 
-\newdimen\margindistance
-\newdimen\edgedistance
-\newdimen\marginwidth
-\newdimen\edgewidth
+\newdimension\margindistance
+\newdimension\edgedistance
+\newdimension\marginwidth
+\newdimension\edgewidth
 
 %D Because a distance does not really makes sense when there is no area, we use a
 %D zero distance in case there is no area.
 
 %D The horizontal distances are:
 
-\newdimen\leftedgedistance
-\newdimen\rightedgedistance
-\newdimen\leftmargindistance
-\newdimen\rightmargindistance
+\newdimension\leftedgedistance
+\newdimension\rightedgedistance
+\newdimension\leftmargindistance
+\newdimension\rightmargindistance
 
 %D The vertical distances are:
 
-\newdimen\topdistance
-\newdimen\headerdistance
-\newdimen\textdistance
-\newdimen\footerdistance
-\newdimen\bottomdistance
+\newdimension\topdistance
+\newdimension\headerdistance
+\newdimension\textdistance
+\newdimension\footerdistance
+\newdimension\bottomdistance
 
-\newdimen\textovershoot % available in pagebuilder
+\newdimension\textovershoot % available in pagebuilder
 
 %D We need to calculate the extra distances:
 
-\newdimen\naturalmarginwidth
-\newdimen\naturaledgewidth
-\newdimen\naturalmargindistance
-\newdimen\naturaledgedistance
-\newdimen\naturalleftedgedistance
-\newdimen\naturalrightedgedistance
-\newdimen\naturalleftmargindistance
-\newdimen\naturalrightmargindistance
-\newdimen\naturaltopdistance
-\newdimen\naturalheaderdistance
-\newdimen\naturaltextdistance
-\newdimen\naturalfooterdistance
-\newdimen\naturalbottomdistance
+\newdimension\naturalmarginwidth
+\newdimension\naturaledgewidth
+\newdimension\naturalmargindistance
+\newdimension\naturaledgedistance
+\newdimension\naturalleftedgedistance
+\newdimension\naturalrightedgedistance
+\newdimension\naturalleftmargindistance
+\newdimension\naturalrightmargindistance
+\newdimension\naturaltopdistance
+\newdimension\naturalheaderdistance
+\newdimension\naturaltextdistance
+\newdimension\naturalfooterdistance
+\newdimension\naturalbottomdistance
 
 %D Now we've come to the setup and definition commands.
 
@@ -134,7 +134,7 @@
     \doifnothing{\directlayoutparameter\c!state}{\letlayoutparameter\c!state\v!start}%
 \to \everydefinelayout
 
-\newcount\c_page_layouts_changed
+\newinteger\c_page_layouts_changed
 
 \appendtoks
     \ifcase\layoutsetupmode
@@ -561,7 +561,7 @@
      \edef\currentlayouttarget{#1}%
    \fi}
 
-\newdimen\d_page_minimum_paper_size \d_page_minimum_paper_size\luaexpr{math.pi}\onebasepoint
+\newdimension\d_page_minimum_paper_size \d_page_minimum_paper_size\luaexpr{math.pi}\onebasepoint
 
 \protected\def\page_paper_set_current_indeed[#1][#2]%
   {\edef\m_page_asked_paper{#1}% can be the restores
@@ -652,8 +652,8 @@
 
   \def\page_paper_set_offsets % will move
     {\global\paperoffset\v_page_target_offset
-     \global\advance\paperwidth -2\paperoffset
-     \global\advance\paperheight-2\paperoffset}
+     \global\advanceby\paperwidth -2\paperoffset
+     \global\advanceby\paperheight-2\paperoffset}
 
 \fi
 
@@ -701,7 +701,7 @@
      \ifdim\scratchdimen<\zeropoint
        \scratchdimen\zeropoint
      \fi
-     \global\advance\makeupwidth\dimexpr
+     \global\advanceby\makeupwidth\dimexpr
        -\rightmargindistance-\rightmarginwidth
        -\rightedgedistance  -\rightedgewidth
        -\scratchdimen\relax
@@ -738,7 +738,7 @@
        \ifdim\scratchdimen<\zeropoint
          \scratchdimen\zeropoint
        \fi
-       \global\advance\makeupheight\dimexpr-\bottomdistance-\bottomheight-\scratchdimen\relax
+       \global\advanceby\makeupheight\dimexpr-\bottomdistance-\bottomheight-\scratchdimen\relax
      \else
        \global\makeupheight\layoutparameter\c!height\relax
        \ifzeropt\bottomspace
@@ -801,7 +801,7 @@
    \global\layoutcolumndistance\layoutparameter\c!columndistance
    \global\layoutcolumnwidth\dimexpr\makeupwidth-\layoutcolumns\layoutcolumndistance+\layoutcolumndistance\relax
    \ifnum\layoutcolumns>\plusone
-     \global\divide\layoutcolumnwidth\layoutcolumns
+     \global\divideby\layoutcolumnwidth\layoutcolumns
      \dorecurse\layoutcolumns\page_layouts_check_pseudo_column
    \fi}
 
@@ -1078,10 +1078,10 @@
 
 \installsetuponlycommandhandler \??adaptlayout {adaptlayout}
 
-\newdimen\d_page_adapts_pushed_text_height
-\newdimen\d_page_adapts_pushed_footer_height
-\newdimen\d_page_adapts_height
-\newdimen\d_page_adapts_delta
+\newdimension\d_page_adapts_pushed_text_height
+\newdimension\d_page_adapts_pushed_footer_height
+\newdimension\d_page_adapts_height
+\newdimension\d_page_adapts_delta
 
 \appendtoks \global\d_page_adapts_delta\zeropoint \to \everyshipout
 
@@ -1121,8 +1121,8 @@
    %
    \global\d_page_adapts_delta-\dimexpr\adaptlayoutparameter\c!top\relax
    %
-   \global\advance\textheight   \d_page_adapts_height
-   \global\advance\footerheight-\d_page_adapts_height
+   \global\advanceby\textheight   \d_page_adapts_height
+   \global\advanceby\footerheight-\d_page_adapts_height
    \showmessage\m!layouts1{\the\dimexpr\d_page_adapts_height,\the\realpageno}%
    % this will become a better one (do we need insert correction?)
    \page_otr_command_set_vsize
@@ -1185,10 +1185,10 @@
     \let\doifelselayoutsomeline\secondofthreearguments
 \fi
 
-\permanent\def\compensatevsizeheader             {\advance\textheight-\dimexpr\headerheight+\headerdistance\relax}
-\permanent\def\compensatevsizefooter             {\advance\textheight-\dimexpr\footerheight+\footerdistance\relax}
-\permanent\def\globalcompensatevsizeheader{\global\advance\textheight-\dimexpr\headerheight+\headerdistance\relax}
-\permanent\def\globalcompensatevsizefooter{\global\advance\textheight-\dimexpr\footerheight+\footerdistance\relax}
+\permanent\def\compensatevsizeheader             {\advanceby\textheight-\dimexpr\headerheight+\headerdistance\relax}
+\permanent\def\compensatevsizefooter             {\advanceby\textheight-\dimexpr\footerheight+\footerdistance\relax}
+\permanent\def\globalcompensatevsizeheader{\global\advanceby\textheight-\dimexpr\headerheight+\headerdistance\relax}
+\permanent\def\globalcompensatevsizefooter{\global\advanceby\textheight-\dimexpr\footerheight+\footerdistance\relax}
 
 \permanent\def\compensatevsizeheaderzero{\headerheight\zeropoint\page_layouts_set_distances}
 \permanent\def\compensatevsizefooterzero{\footerheight\zeropoint\page_layouts_set_distances}
@@ -1225,8 +1225,8 @@
    \doifelselayoutsomeline\v!header\compensatevsizeheader\compensatevsizeheaderzero
    \doifelselayoutsomeline\v!footer\compensatevsizefooter\compensatevsizefooterzero}
 
-\newdimen\innermakeupwidth  % special purpose
-\newdimen\innermakeupmargin % special purpose
+\newdimension\innermakeupwidth  % special purpose
+\newdimension\innermakeupmargin % special purpose
 
 \newconditional\innermakeupcompensation \settrue\innermakeupcompensation
 
@@ -1247,8 +1247,8 @@
      \global\innermakeupmargin\m_currentlayout_text_margin\relax
    \fi
    \scratchdimen\dimexpr\innermakeupmargin+\innermakeupmargin\relax
-   \global\advance\innermakeupwidth-\scratchdimen
-   \advance\textwidth-\scratchdimen}   % local
+   \global\advanceby\innermakeupwidth-\scratchdimen
+   \advanceby\textwidth-\scratchdimen}   % local
 
 \permanent\protected\def\calculatehsizes % name will change
   {\freezetextwidth
@@ -1306,7 +1306,7 @@
      \expandafter\page_layouts_if_odd_else_again
    \fi}
 
-\newdimen\texthoffset
+\newdimension\texthoffset
 
 \permanent\protected\def\settexthoffset % name will change
   {\texthoffset\doifbothsides\backspace\backspace{\dimexpr\paperwidth-\backspace-\makeupwidth\relax}}

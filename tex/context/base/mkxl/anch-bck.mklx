@@ -31,14 +31,14 @@
 
 % Paragraph positions:
 
-\newcount\c_anch_backgrounds_text_n
+\newinteger\c_anch_backgrounds_text_n
 
 \def\v_anch_backgrounds_text_current    {tbg:0}
 \def\v_anch_backgrounds_anchor_current_b{b:\v_anch_backgrounds_text_current}
 \def\v_anch_backgrounds_anchor_current_e{e:\v_anch_backgrounds_text_current}
 
 \def\anch_backgrounds_text_initialize_next
-  {\global\advance\c_anch_backgrounds_text_n\plusone
+  {\global\advanceby\c_anch_backgrounds_text_n\plusone
    \edef\v_anch_backgrounds_text_current{tbg:\number\c_anch_backgrounds_text_n}}
 
 % The first position can be used in the middle of a paragraph in which case we're
@@ -57,7 +57,7 @@
 
 %D Some MP
 
-\newcount\MPparcounter
+\newinteger\MPparcounter
 
 \permanent\def\MPself     {\MPvar{self}}
 \permanent\def\MPbself    {b:\MPvar{self}}
@@ -89,7 +89,7 @@
 %   \readfile{ward}{}{}
 % \stoptextbackground
 
-\newcount\c_anch_backgrounds_text_level
+\newinteger\c_anch_backgrounds_text_level
 
 \installcorenamespace{textbackground}
 \installcorenamespace{textbackgroundlevel}
@@ -121,14 +121,14 @@
 
 % ugly hack to register usage
 
-\newcount   \c_anch_backgrounds_text_count
-\newcount   \c_anch_backgrounds_text_check
+\newinteger \c_anch_backgrounds_text_count
+\newinteger \c_anch_backgrounds_text_check
 \newconstant\c_anch_backgrounds_text_state
 
 \permanent\tolerant\protected\def\starttextbackground[#tag]#spacer[#settings]%
   {\begingroup
-   \global\advance\c_anch_backgrounds_text_count\plusone
-   \advance\c_anch_backgrounds_text_level\plusone
+   \global\advanceby\c_anch_backgrounds_text_count\plusone
+   \advanceby\c_anch_backgrounds_text_level\plusone
    \def\currenttextbackground{#tag}%
    \anch_backgrounds_text_initialize_next
    \ifparameter#settings\or
@@ -255,7 +255,7 @@
   {\anch_backgrounds_epos
    \carryoverpar\endgroup}
 
-\newskip\textbackgroundskip
+\newgluespec\textbackgroundskip
 
 % maybe we should have a resetter for such compensation struts
 
@@ -311,7 +311,7 @@
    \removelastskip % new
    \spac_helpers_assign_skip\textbackgroundskip{\textbackgroundparameter\c!bottomoffset}%
    \ifdim\lastskip>\zeropoint
-     \advance\textbackgroundskip-\lastskip
+     \advanceby\textbackgroundskip-\lastskip
    \fi
    \ifgridsnapping
    \orelse\ifdim\textbackgroundskip>\zeropoint
@@ -392,10 +392,10 @@
 \newconditional\c_strc_floats_mark_as_free
 \newconditional\c_strc_floats_trace_free
 \newconstant   \c_free_offset_kind
-\newdimen      \d_free_offset_left
-\newdimen      \d_free_offset_right
-\newdimen      \d_free_offset_top
-\newdimen      \d_free_offset_bottom
+\newdimension  \d_free_offset_left
+\newdimension  \d_free_offset_right
+\newdimension  \d_free_offset_top
+\newdimension  \d_free_offset_bottom
 
 \installtextracker{floats.freeregion}
   {\settrue \c_strc_floats_trace_free}

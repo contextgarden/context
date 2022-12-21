@@ -202,8 +202,8 @@
 \installstructurelistprocessor{pubs:userdata}%
   {\ctxlua{bibtex.hacks.add(structures.lists.uservalue("\currentlist",\currentlistindex,"bibref"),\currentlistindex)}}
 
-\ifdefined\bibtexblock   \else \newcount\bibtexblock   \fi \bibtexblock\plusone
-\ifdefined\bibtexcounter \else \newcount\bibtexcounter \fi
+\ifdefined\bibtexblock   \else \newinteger\bibtexblock   \fi \bibtexblock\plusone
+\ifdefined\bibtexcounter \else \newinteger\bibtexcounter \fi
 
 %D \macros{bibdoif,bibdoifnot,bibdoifelse}
 %D
@@ -517,9 +517,9 @@
 %D Another level of indirection is needed to control the typesetting of all of these
 %D arguments.
 
-\newcount\etallimitcounter
-\newcount\etaldisplaycounter
-\newcount\todocounter
+\newinteger\etallimitcounter
+\newinteger\etaldisplaycounter
+\newinteger\todocounter
 
 \protected\def\specialbibinsert#1#2#3#4#5%
   {\bgroup
@@ -559,7 +559,7 @@
 %D \#3 = commacommand containing authors
 
 \protected\def\doprocessauthoritem#1#2#3%
-  {\advance\scratchcounter\plusone
+  {\advanceby\scratchcounter\plusone
    \ifnum\numexpr\scratchcounter-\plusone\relax<#2\relax
      \publicationlistparameter{#1}#3%
      \ifnum\scratchcounter=#2\relax
@@ -855,7 +855,7 @@
    \inpublisttrue
    \typesetpubslist
    \inpublistfalse
-   \global\advance\bibtexblock\plusone}
+   \global\advanceby\bibtexblock\plusone}
 
 %D \subsubject{What's in a publication}
 %D
@@ -878,7 +878,7 @@
 
 \protected\def\doplacepublicationindeed#1%
   {\doifelsebibreferencefound{#1}
-     {\global\advance\bibtexcounter\plusone
+     {\global\advanceby\bibtexcounter\plusone
       \def\currentpublicationkey{#1}%
       \ctxlua{bibtex.hacks.registerplaced("#1")}%
       \def\currentlist{pubs}%
@@ -1088,7 +1088,7 @@
    \expandafter\processcommalist\expandafter[\thebibauthors]\dodobibauthoryear}
 
 \protected\def\dodobibauthoryear#1%
-  {\advance\scratchcounter\plusone
+  {\advanceby\scratchcounter\plusone
    \edef\wantednumber{\the\scratchcounter}%
    \getfromcommacommand[\thebibyears][\wantednumber]%
    \expandafter\def\expandafter\currentbibyear\expandafter{\commalistelement}%
@@ -1114,13 +1114,13 @@
      \handlemultiplebibauthors{\commalistsize}{#1}%
    \fi}
 
-\newcount\citescratchcounter
+\newinteger\citescratchcounter
 
 \protected\def\handlemultiplebibauthors#1#2%
   {\citescratchcounter\zerocount
    \lettonothing\currentbibauthor
    \protected\def\bibprocessauthoritem##1%
-     {\advance\citescratchcounter\plusone
+     {\advanceby\citescratchcounter\plusone
       \ifnum \citescratchcounter=#1\relax
         \edef\currentbibauthor{\currentbibauthor##1}%
       \orelse\ifnum\numexpr\citescratchcounter+\plusone\relax=#1\relax
@@ -1196,8 +1196,8 @@
 %D Two temporary counters. One of these two can possibly be replaced by \type
 %D {\scratchcounter}.
 
-\newcount\bibitemcounter
-\newcount\bibitemwanted
+\newinteger\bibitemcounter
+\newinteger\bibitemwanted
 
 %D The first portion is simple enough: if this is the very first author it is quite
 %D straightforward to add it. \type {\bibitemcounter} and \type {\bibitemwanted} are
@@ -1223,12 +1223,12 @@
 %D setup properly to insert the year info.
 
 \protected\def\docomparemyauthor#1%
-  {\global\advance\bibitemwanted \plusone
+  {\global\advanceby\bibitemwanted \plusone
    \def\mytempc{#1}%
    \ifx\mytempc\myauthor
      \quitcommalist
    \orelse\ifnum\bibitemwanted=\bibitemcounter\relax
-     \global\advance\bibitemwanted \plusone
+     \global\advanceby\bibitemwanted \plusone
      \global\bibitemcounter\bibitemwanted\relax
      \expandafter\doglobal\expandafter\robustaddtocommalist\expandafter{{\myauthor}}\thebibauthors
    \fi}

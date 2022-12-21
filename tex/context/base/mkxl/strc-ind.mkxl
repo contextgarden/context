@@ -55,9 +55,9 @@
 %D
 %D \typebuffer \getbuffer
 
-\newcount\c_strc_indentedtexts_nesting
-\newdimen\d_strc_indentedtexts_width
-\newdimen\d_strc_indentedtexts_distance
+\newinteger  \c_strc_indentedtexts_nesting
+\newdimension\d_strc_indentedtexts_width
+\newdimension\d_strc_indentedtexts_distance
 
 \appendtoks
    \frozen\instance\setuevalue    {\e!start\currentindentedtext}{\strc_indentedtexts_start{\currentindentedtext}\c_strc_indentedtexts_nesting}%
@@ -84,7 +84,7 @@
       \indentedtextparameter\c!sample
       \spr{\indentedtextparameter\c!separator}}
      {\d_strc_indentedtexts_distance}%
-   \advance\d_strc_indentedtexts_width \d_strc_indentedtexts_distance
+   \advanceby\d_strc_indentedtexts_width \d_strc_indentedtexts_distance
    \setbox\scratchbox\hbox to \d_strc_indentedtexts_width
      {\useindentedtextstyleandcolor\c!headstyle\c!headcolor
       \strut
@@ -94,7 +94,7 @@
       \hskip\d_strc_indentedtexts_distance}%
    \parindent\zeropoint
    \hskip\c_strc_indentedtexts_nesting\d_strc_indentedtexts_width
-   \advance\c_strc_indentedtexts_nesting\plusone
+   \advanceby\c_strc_indentedtexts_nesting\plusone
    \dontleavehmode\box\scratchbox
    \hangindent\c_strc_indentedtexts_nesting\d_strc_indentedtexts_width
    \useindentedtextstyleandcolor\c!style\c!color}

@@ -19,7 +19,7 @@
 
 \unprotect
 
-\newdimen\totalinsertionheight
+\newdimension\totalinsertionheight
 
 \permanent\protected\def\settotalinsertionheight
   {\calculatetotalnoteheight

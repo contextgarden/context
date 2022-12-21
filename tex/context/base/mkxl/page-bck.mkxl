@@ -229,8 +229,8 @@
 %D cached in dedicated boxes. The offsets and depth of the page are used for
 %D alignment purposes.
 
-%newdimen\pageoffset % bleed
-%newdimen\pagedepth  % built-in
+%newdimension\pageoffset % bleed
+%newdimension\pagedepth  % built-in
 
 %D We need a bit more clever mechanism in order to handle layers well. This means
 %D that we cannot calculate both background at the same time since something may
@@ -291,11 +291,11 @@
         \box#1}%
    \fi}
 
-\newdimen\pagebackgroundhoffset  % THESE WILL BECOME OBSOLETE
-\newdimen\pagebackgroundvoffset
-\newdimen\pagebackgroundoffset   % used elsewhere
-\newdimen\pagebackgrounddepth
-\newdimen\pagebackgroundcompensation
+\newdimension\pagebackgroundhoffset  % THESE WILL BECOME OBSOLETE
+\newdimension\pagebackgroundvoffset
+\newdimension\pagebackgroundoffset   % used elsewhere
+\newdimension\pagebackgrounddepth
+\newdimension\pagebackgroundcompensation
 
 \def\page_backgrounds_set_offsets % used in menus (we can use ifcsname's here)
   {\ifconditional\c_page_backgrounds_some \ifconditional\c_page_backgrounds_new
@@ -485,8 +485,8 @@
      \expandafter\page_backgrounds_setup_double
    \fi[#1][#2][#3]}
 
-\newdimen\d_page_backgrounds_offset
-\newdimen\d_page_backgrounds_depth
+\newdimension\d_page_backgrounds_offset
+\newdimension\d_page_backgrounds_depth
 
 \appendtoks
    \edef\p_page_backgrounds_offset{\namedframedparameter{\??layoutbackgrounds\v!page}\c!offset}%
@@ -693,7 +693,7 @@
 %
 % \def\page_backgrounds_add_local_to_box_indeed#1%
 %   {\setbox#1\hbox{\localbackgroundframed{\??layoutbackgrounds\v!local}\v!local#1}%
-%    \global\advance\localpositionnumber\plusone} % afterwards !
+%    \global\advanceby\localpositionnumber\plusone} % afterwards !
 %
 % \let\page_backgrounds_add_local_to_box\gobbleoneargument
 

@@ -345,7 +345,7 @@
 % \newcount\c_colo_nesting
 %
 % \permanent\protected\def\pushcolor[#1]%
-%   {\global\advance\c_colo_nesting\plusone
+%   {\global\advanceby\c_colo_nesting\plusone
 %    \edefcsname\??colorstack\number\c_colo_nesting\endcsname
 %      {\c_attr_colormodel  \the\c_attr_colormodel
 %       \c_attr_color       \the\c_attr_color
@@ -355,7 +355,7 @@
 %
 % \permanent\protected\def\popcolor
 %   {\csname\??colorstack\number\c_colo_nesting\endcsname
-%    \global\advance\c_colo_nesting\minusone}
+%    \global\advanceby\c_colo_nesting\minusone}
 %
 % more efficient:
 
@@ -375,8 +375,8 @@
 
 % a simple one: assumes grouping
 
-\newcount\c_colo_saved_attribute_color
-\newcount\c_colo_saved_attribute_transparency
+\newinteger\c_colo_saved_attribute_color
+\newinteger\c_colo_saved_attribute_transparency
 
 \permanent\protected\def\savecolor
   {\c_colo_saved_attribute_color       \c_attr_color
@@ -464,7 +464,7 @@
 \def\colo_palet_allocate#1%
   {\letcsname\??paletlist#1\endcsname\empty
    \ifcsname\??paletsize#1\endcsname\else
-     \expandafter\newcount\csname\??paletsize#1\endcsname
+     \expandafter\newinteger\csname\??paletsize#1\endcsname
    \fi}
 
 \def\colo_palet_prepare#1%
@@ -474,14 +474,15 @@
    \else
      \colo_palet_allocate\colo_palet_name
    \fi
-   \enforced\expandafter\let\expandafter\c_colo_palet\csname\??paletsize\colo_palet_name\endcsname
+ % \enforced\expandafter\integerdef\expandafter\c_colo_palet\csname\??paletsize\colo_palet_name\endcsname
+   \edef\c_colo_palet{\csname\??paletsize\colo_palet_name\endcsname}% we can't alias  as they are integers
    \edef\m_colo_palet{\begincsname\??paletlist\colo_palet_name\endcsname}}
 
 \def\colo_palet_extend#1%
   {\addtocommalist{#1}\m_colo_palet
    \letcsname\??paletlist\colo_palet_name\endcsname\m_colo_palet
-  %\advance\csname\??paletsize\colo_palet_name\endcsname\plusone
-   \advance\c_colo_palet\plusone}
+  %\advanceby\csname\??paletsize\colo_palet_name\endcsname\plusone
+   \advanceby\c_colo_palet\plusone}
 
 \permanent\protected\def\doifelsecolorpalet#1%
   {\ifcsname\??paletlist#1\endcsname
@@ -849,8 +850,8 @@
 % \let\colo_basics_inherit    \gobbletwoarguments % used in mp interface
 
 \def\colo_basics_allocate#1%
-  {\expandafter\newcount\csname\??colornumber#1\endcsname
-   \clf_synccolorcount{#1}\c_syst_last_allocated_count}
+  {\expandafter\newinteger\csname\??colornumber#1\endcsname
+   \clf_synccolorcount{#1}{\??colornumber#1}}
 
 \def\colo_basics_synchronize#1%
   {\ifcsname\??colornumber#1\endcsname\else
@@ -862,10 +863,10 @@
 
 \let\colo_basics_inherit\clf_synccolorclone
 
-\newcount\c_colo_protection
+\newinteger\c_colo_protection
 
-\permanent\protected\def\startprotectedcolors{\advance\c_colo_protection\plusone }
-\permanent\protected\def\stopprotectedcolors {\advance\c_colo_protection\minusone}
+\permanent\protected\def\startprotectedcolors{\advanceby\c_colo_protection\plusone }
+\permanent\protected\def\stopprotectedcolors {\advanceby\c_colo_protection\minusone}
 
 \permanent\tolerant\protected\def\definecolor[#1]#*[#2]%
   {\iftok{#1}{#2}%
@@ -885,7 +886,7 @@
      \clf_defineprocesscolorglobal{#1}{#2}\v_colo_freeze_state\relax
      \colo_basics_synchronize{#1}%
      \ifcase\c_colo_protection
-       \protected\instance\setgvalue{#1}{\colo_helpers_activate{#1}}%
+       \protected\instance\gdefcsname#1\endcsname{\colo_helpers_activate{#1}}%
      \fi
    \fi}
 
@@ -920,14 +921,14 @@
   {\clf_definespotcolorglobal{#1}{#2}{#3}%
    \colo_basics_synchronize{#1}%
    \ifcase\c_colo_protection
-     \protected\instance\setgvalue{#1}{\colo_helpers_activate{#1}}%
+     \protected\instance\gdefcsname#1\endcsname{\colo_helpers_activate{#1}}%
    \fi}
 
 \permanent\tolerant\protected\def\definemultitonecolor[#1]#*[#2]#*[#3]#*[#4]%
   {\clf_definemultitonecolorglobal{#1}{#2}{#3}{#4}%
    \colo_basics_synchronize{#1}%
    \ifcase\c_colo_protection
-     \protected\instance\setgvalue{#1}{\colo_helpers_activate{#1}}%
+     \protected\instance\gdefcsname#1\endcsname{\colo_helpers_activate{#1}}%
    \fi}
 
 %D Transparencies (only):

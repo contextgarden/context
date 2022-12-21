@@ -263,6 +263,9 @@ def anch_box_arrows_draw =
             skip := (not spanpages) and ((mpvars("span")) = "yes") ;
             if skip :
                 % we skip the second just in case
+            elseif alternative = "" :
+                message("invalid alternative in draw box arrow");
+                skip := true;
             elseif alternative = "bottom" :
                 ff := (xpart f, min(ypart f, ypart t)) ;
                 tt := (xpart t, ypart ff) ;

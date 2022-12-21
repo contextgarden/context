@@ -245,7 +245,40 @@ better use the proper more high level definers (not discussed here).
 
 \startsectionlevel[title={\LUAMETATEX\ primitives}]
 
-{\em todo}
+The fact that scanning stops at a non-number or \type {\relax} can be sort of
+unpredictable which is why in \LUAMETATEX\ we also support the following variant:
+
+\starttyping[option=TEX]
+\scratchdimen\dimexpr  10pt + 3pt \relax
+\scratchdimen\dimexpr {10pt + 3pt}
+\stoptyping
+
+At the cost of one more token braces can be used as boundaries instead of the
+single \type {\relax} boundary.
+
+An important property of registers is that they can be accessed by a number. This
+has big consequences for the implementation: they are part of the big memory
+store and consume dedicated ranges. If we had only named access \TEX's memory
+layout could be a bit leaner. In principle we could make the number of registers
+smaller because any limit on the amount at some point can be an obstacle. It is
+for that reason that we also have name-only variants:
+
+\starttyping[option=TEX]
+\dimensiondef \MyDimenA   12pt
+\integerdef   \MyIntegerA 12
+\gluespecdef  \MyGlueA    12pt + 3pt minus 4pt
+\mugluespecdef\MyMuA      12mu + 3mu minus 4mu
+\stoptyping
+
+These are as efficient but not accessible by number but they behave like
+registers which means that you (can) use \type {\the}, \type {\advance}, \type
+{\multiply} and \type {\divide} with them. \footnote {There are also the slightly
+more efficient \type {\advanceby}, \type {\multiplyby} and \type {\divideby} that
+don't check for the \type {by} keyword.} In case you wonder why there is no
+alternative for \type {\toksdef}, there actually are multiple: they are called
+macros.
+
+{\em todo: expressions}
 
 \stopsectionlevel
 

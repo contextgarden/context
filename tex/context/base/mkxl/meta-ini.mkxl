@@ -596,8 +596,8 @@
 %D \uniqueMPgraphic{meta:hash}{gap=10pt,angle=30}
 %D \stoptyping
 
-\newcount\c_meta_object_counter
-\newbox  \b_meta_graphic
+\newinteger\c_meta_object_counter
+\newbox    \b_meta_graphic
 
 % hm, isn't this already done elsewhere?
 
@@ -648,7 +648,7 @@
      \lastnamedcs
    \else
      \meta_enable_include % redundant
-     \global\advance\c_meta_object_counter\plusone
+     \global\advanceby\c_meta_object_counter\plusone
      \meta_use_box{\number\c_meta_object_counter}\hpack{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
      \xdefcsname\??mpgraphic\overlaystamp:#1\endcsname{\meta_reuse_box{\number\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
      \csname\??mpgraphic\overlaystamp:#1\endcsname\empty
@@ -733,7 +733,7 @@
   {\begingroup
  % \currentmpcategory already set
    \meta_enable_include % redundant
-   \global\advance\c_meta_object_counter\plusone
+   \global\advanceby\c_meta_object_counter\plusone
    \meta_use_box{\number\c_meta_object_counter}\hpack{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
    \xdefcsname\??mpgraphic#1\endcsname{\meta_reuse_box{\number\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
    \csname\??mpgraphic#1\endcsname\empty

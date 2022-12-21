@@ -27,13 +27,13 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Cross Referencing}
 
-\newif   \iflocation
-\newcount\locationcount
-\newcount\locationorder
-\newbox  \locationbox
-
-\newcount\lastreferenceattribute
-\newcount\lastdestinationattribute
+\newif     \iflocation
+\newinteger\locationcount
+\newinteger\locationorder
+\newbox    \locationbox
+\newinteger\lastreferenceattribute
+\newinteger\lastdestinationattribute
+\newinteger\prefixcounter
 
 \registerctxluafile{strc-rsc}{autosuffix}
 \registerctxluafile{strc-ref}{autosuffix}
@@ -145,8 +145,8 @@
 %D Actually there is not much difference between a text and a full reference, but
 %D it's the concept that counts. The low level implementation is:
 
-% sett top : \newcount\lastreferenceattribute
-% sett top : \newcount\lastdestinationattribute
+% sett top : \newinteger\lastreferenceattribute
+% sett top : \newinteger\lastdestinationattribute
 
 \def\strc_references_finish#prefix#reference#internal% gets expanded anyway
   {\normalexpanded{\clf_deferredenhancereference{#prefix}{#reference}}}
@@ -798,8 +798,8 @@
 %D
 %D The flag \type {\iflocation} signals if we're in interactive mode.
 
-\ifdefined\buttonheight \else \newdimen\buttonheight \fi
-\ifdefined\buttonwidth  \else \newdimen\buttonwidth  \fi
+\ifdefined\buttonheight \else \newdimension\buttonheight \fi
+\ifdefined\buttonwidth  \else \newdimension\buttonwidth  \fi
 
 %D Internal references can best be set using the next few macros. Setting such
 %D references to unique values is completely up to the macros that call them.
@@ -811,10 +811,10 @@
 %D
 %D We could do this in \LUA\ \unknown
 
-% seet top: \newif   \iflocation
-% seet top: \newcount\locationcount
-% seet top: \newcount\locationorder
-% seet top: \newbox  \locationbox
+% seet top: \newif     \iflocation
+% seet top: \newinteger\locationcount
+% seet top: \newinteger\locationorder
+% seet top: \newbox    \locationbox
 
 \appendtoks
     \locationfalse
@@ -824,7 +824,7 @@
 \permanent\def\nextinternalorderreference{\the\locationorder}
 
 \permanent\def\setnextinternalreference
-  {\global\advance\locationcount\plusone}
+  {\global\advanceby\locationcount\plusone}
 
 % defined at the lua end
 %
@@ -882,7 +882,7 @@
 %D \type {\prefix} variable to \type {+}, the prefix is incremented, when set to
 %D \type {-} or empty, the prefix is reset. Other values become the prefix.
 
-\newcount\prefixcounter
+% \see top: newinteger\prefixcounter
 
 \newconditional\autocrossfilereferences
 
@@ -926,7 +926,7 @@
      \lettonothing\referenceprefix
    \orelse\ifx\p_prefix\m_strc_references_prefix_yes
      \letreferencingparameter\c!prefix\s!unknown
-     \global\advance\prefixcounter\plusone
+     \global\advanceby\prefixcounter\plusone
      \edef\referenceprefix{\the\prefixcounter}%
    \orelse\ifx\p_prefix\m_strc_references_prefix_nop
      \letreferencingparameter\c!prefix\s!unknown
@@ -1076,7 +1076,7 @@
 %     }
 % }
 
-\newcount      \nofreferencestates
+\newinteger    \nofreferencestates
 \newconditional\pagestatespread
 
 \appendtoks
@@ -1125,7 +1125,7 @@
      % issue warning that not stable
    \else
      % needs checking ... but probably never in trialmode
-     \global\advance\nofreferencestates\plusone
+     \global\advanceby\nofreferencestates\plusone
      \xypos{rst::\number\nofreferencestates}%
      % \tracedpagestate
    \fi
@@ -1479,7 +1479,7 @@
 % The unbox trick is needed in order to permit \par inside a reference. Otherwise
 % the reference attribute migrates to the outer boxes.
 
-\newcount\lastsavedreferenceattribute
+\newinteger\lastsavedreferenceattribute
 
 \newbox\referencebox
 

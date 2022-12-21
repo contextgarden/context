@@ -85,7 +85,7 @@
      \global\pageextragoal-\textadaptive
    \fi
    %
-   \global\advance\vsize\d_page_adapts_delta
+   \global\advanceby\vsize\d_page_adapts_delta
    % alternatively we could set it in builders.buildpage_filter
  % \ifdim\pagegoal<\maxdimen .. \fi
  % \writestatus{!!!!!!!!}{\the\vsize-> v:\the\pagevsize,g:\the\pagegoal,t:\the\pagetotal,i:\the\insertheights}%
@@ -142,9 +142,9 @@
      % \expandafter\firstofoneargument
    \fi}
 
-\newdimen\d_page_one_natural_depth
-\newbox  \b_page_one_bottom_notes
-\newbox  \b_page_one_contents
+\newdimension\d_page_one_natural_depth
+\newbox      \b_page_one_bottom_notes
+\newbox      \b_page_one_contents
 
 \let\page_one_command_package_show_state\relax
 
@@ -235,7 +235,7 @@
 %D \stoptext
 %D \stoptyping
 
-\newcount\c_page_one_stretch % we use marked pages which actually slow down a little
+\newinteger\c_page_one_stretch % we use marked pages which actually slow down a little
 
 \def\page_one_check_stretch_contents
   {\ifdim\dimexpr\textheight-\ht\b_page_one_contents\relax<\c_page_one_stretch\lineheight
@@ -334,7 +334,7 @@
 
 \newconditional\c_page_one_top_of_insert
 \newconditional\c_page_one_correct_top_insert  \settrue\c_page_one_correct_top_insert % false moves up (tight)
-\newskip       \s_page_one_between_top_insert
+\newgluespec   \s_page_one_between_top_insert
 
 \def\page_one_prepare_top_float
   {\ifzeropt\d_page_floats_inserted_top
@@ -343,7 +343,7 @@
      \setfalse\c_page_one_top_of_insert
    \fi
    \s_page_one_between_top_insert\ifdim\d_strc_floats_top>\d_strc_floats_bottom\d_strc_floats_top\else\d_strc_floats_bottom\fi\relax
-   \global\advance\d_page_floats_inserted_top\dimexpr\ht\floatbox+\dp\floatbox+\s_page_one_between_top_insert\relax}
+   \global\advanceby\d_page_floats_inserted_top\dimexpr\ht\floatbox+\dp\floatbox+\s_page_one_between_top_insert\relax}
 
 \def\page_one_insert_top_float % maybe remember last beforeskip
   {\floatingpenalty\zerocount
@@ -391,7 +391,7 @@
        \xdef\totaltopinserted{\the\d_page_floats_inserted_top}%
        \page_one_insert_top_float
        \ifconditional\c_page_floats_some_waiting
-         \advance\noffloatinserts \plusone
+         \advanceby\noffloatinserts \plusone
        \else
          \noffloatinserts\c_page_floats_n_of_top\relax
        \fi
@@ -419,7 +419,7 @@
 \def\page_one_command_set_bottom_insertions_indeed
   {\ifnum\noffloatinserts<\c_page_floats_n_of_bottom\relax
      \page_floats_get
-     \global\advance\d_page_floats_inserted_bottom\dimexpr\ht\floatbox+\dp\floatbox+\d_strc_floats_top\relax
+     \global\advanceby\d_page_floats_inserted_bottom\dimexpr\ht\floatbox+\dp\floatbox+\d_strc_floats_top\relax
      \ifdim\d_page_floats_inserted_bottom<\pagegoal\relax
        \floatingpenalty\zerocount
        \page_inserts_inject\namedinsertionnumber\s!bottomfloat\bgroup
@@ -428,7 +428,7 @@
          \page_otr_command_flush_float_box
        \egroup
        \ifconditional\c_page_floats_some_waiting
-         \advance\noffloatinserts \plusone
+         \advanceby\noffloatinserts \plusone
        \else
          \noffloatinserts\c_page_floats_n_of_bottom
        \fi
@@ -595,10 +595,10 @@
      \or
        % method 1 : safe
        % too fuzzy as it can change and for a high page it's a lot : \scratchdimentwo .99\pagegoal
-       \advance\scratchdimentwo -\strutdp
+       \advanceby\scratchdimentwo -\strutdp
      \or
        % method 2 : tight
-       \advance\scratchdimenone -\onepoint
+       \advanceby\scratchdimenone -\onepoint
      \fi
      \relax % really needed ! ! ! !
      \ifdim\scratchdimenone>\scratchdimentwo
@@ -798,7 +798,7 @@
    \page_floats_report_total}
 
 \def\page_one_place_float_bottom_indeed
-  {\global\advance\d_page_floats_inserted_bottom\dimexpr\ht\floatbox+\dp\floatbox+\d_strc_floats_top\relax
+  {\global\advanceby\d_page_floats_inserted_bottom\dimexpr\ht\floatbox+\dp\floatbox+\d_strc_floats_top\relax
    \floatingpenalty\zerocount
    \page_inserts_inject\namedinsertionnumber\s!bottomfloat\bgroup
      \forgetall

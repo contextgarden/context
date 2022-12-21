@@ -18,12 +18,12 @@
 %D packaging and expansion we also keep tracing reasonable. For instance, multiple
 %D stacked backgrounds can slow down a run if not optimized this way.
 
-\newcount\framednoflines
-\newdimen\framedfirstheight
-\newdimen\framedlastdepth
-\newdimen\framedminwidth
-\newdimen\framedmaxwidth
-\newdimen\framedaveragewidth
+\newinteger  \framednoflines
+\newdimension\framedfirstheight
+\newdimension\framedlastdepth
+\newdimension\framedminwidth
+\newdimension\framedmaxwidth
+\newdimension\framedaveragewidth
 
 \registerctxluafile{pack-rul}{autosuffix,optimize}
 
@@ -42,7 +42,7 @@
 %D The linewidth is available in \type{\linewidth}. The preset value of .4pt equals
 %D the default hard coded \TEX\ rule width.
 
-\newdimen\linewidth
+\newdimension\linewidth
 
 \permanent\tolerant\protected\def\setuplinewidth[#1]%
   {\assigndimension{#1}\linewidth{.2\points}{.4\points}{.6\points}}
@@ -205,10 +205,11 @@
 %D We will communicate through module specific variables, current framed
 %D parameters and some reserved dimension registers.
 
-\newdimen\d_framed_target_wd
-\newdimen\d_framed_target_ht
-\newdimen\d_framed_target_dp
-\newdimen\d_framed_linewidth  \aliased\let\ruledlinewidth\d_framed_linewidth % needed at lua end
+\newdimension\d_framed_target_wd
+\newdimension\d_framed_target_ht
+\newdimension\d_framed_target_dp
+%newdimen    \d_framed_linewidth  \aliased\let   \ruledlinewidth\d_framed_linewidth % needed at lua end
+\newdimension\d_framed_linewidth  \aliasdimension\ruledlinewidth\d_framed_linewidth % needed at lua end
 
 \lettonothing\p_framed_frame            % \framedparameter\c!frame
 \lettonothing\p_framed_backgroundoffset
@@ -414,11 +415,11 @@
 %D
 %D The resulting box is lowered to the right depth.
 
-\newdimen\d_overlay_width
-\newdimen\d_overlay_height
-\newdimen\d_overlay_depth
-\newdimen\d_overlay_offset
-\newdimen\d_overlay_linewidth
+\newdimension\d_overlay_width
+\newdimension\d_overlay_height
+\newdimension\d_overlay_depth
+\newdimension\d_overlay_offset
+\newdimension\d_overlay_linewidth
 
 \lettonothing\m_overlay_region
 
@@ -550,10 +551,10 @@
 %D Beware, a backgroundbox can be empty which is another reason why we set the
 %D width to zero instead of back-skipping.
 
-\newdimen\framedbackgroundwidth
-\newdimen\framedbackgroundheight
-\newdimen\framedbackgrounddepth
-\newdimen\framedbackgroundoffset
+\newdimension\framedbackgroundwidth
+\newdimension\framedbackgroundheight
+\newdimension\framedbackgrounddepth
+\newdimension\framedbackgroundoffset
 
 \aliased\let\foregroundbox\relax
 
@@ -631,7 +632,7 @@
       \d_framed_target_ht\dimexpr\ht\b_framed_normal+ \d_framed_frameoffset\relax
       \d_framed_target_dp\dimexpr\dp\b_framed_normal+ \d_framed_frameoffset+\framedparameter\c!framedepth\relax
       \ifdim\d_framed_target_dp<\zeropoint
-        \advance\d_framed_target_ht \d_framed_target_dp
+        \advanceby\d_framed_target_ht \d_framed_target_dp
         \scratchdimen-\d_framed_target_dp
         \d_framed_target_dp\zeropoint
       \else
@@ -847,11 +848,11 @@
 
 % \presetlocalframed[\??framed]
 
-\newcount\c_pack_framed_nesting
+\newinteger\c_pack_framed_nesting
 
 \permanent\tolerant\protected\def\framed[#1]%
   {\bgroup
-   \advance\c_pack_framed_nesting\plusone
+   \advanceby\c_pack_framed_nesting\plusone
    \letcsname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
    \edef\currentframed{>\the\c_pack_framed_nesting}%
    \pack_framed_initialize
@@ -866,7 +867,7 @@
      \bgroup
    \or
      \ifhastok={#1}%
-       \advance\c_pack_framed_nesting\plusone
+       \advanceby\c_pack_framed_nesting\plusone
        \letcsname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
        \edef\currentframed{>\the\c_pack_framed_nesting}%
        \pack_framed_initialize
@@ -895,7 +896,7 @@
 
 \permanent\protected\def\normalframedwithsettings[#1]%
   {\bgroup
-   \advance\c_pack_framed_nesting\plusone
+   \advanceby\c_pack_framed_nesting\plusone
    \letcsname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
    \bgroup
    \edef\currentframed{>\the\c_pack_framed_nesting}%
@@ -1075,11 +1076,11 @@
 %D }
 %D \stoptyping
 
-\newdimen\d_framed_width
-\newdimen\d_framed_height
-\newdimen\d_framed_frameoffset
-\newdimen\d_framed_backgroundoffset
-\newdimen\d_framed_local_offset
+\newdimension\d_framed_width
+\newdimension\d_framed_height
+\newdimension\d_framed_frameoffset
+\newdimension\d_framed_backgroundoffset
+\newdimension\d_framed_local_offset
 
 % todo: protect local \framednames
 
@@ -1262,8 +1263,8 @@
    %   \d_framed_width\localhsize
    % \fi
    % i.e. disable (colsetbackgroundproblemintechniek)
-   \advance\d_framed_width  -2\d_framed_local_offset
-   \advance\d_framed_height -2\d_framed_local_offset
+   \advanceby\d_framed_width  -2\d_framed_local_offset
+   \advanceby\d_framed_height -2\d_framed_local_offset
    \ifcsname\??framedstrutalternative\p_strut\endcsname
      \lastnamedcs
    \else
@@ -1684,7 +1685,7 @@
        \d_framed_linewidth
      \fi
    \ifconditional\c_framed_has_offset
-     \advance\d_framed_applied_offset\localoffset\relax
+     \advanceby\d_framed_applied_offset\localoffset\relax
    \fi
    \ifconditional\c_framed_has_extra_offset
      \pack_framed_apply_extra_offsets % includes \d_framed_applied_offset
@@ -1778,10 +1779,10 @@
 \def\pack_framed_locator_before#1{\begincsname\??framedlocatorbefore#1\endcsname}
 \def\pack_framed_locator_after #1{\begincsname\??framedlocatorafter #1\endcsname}
 
-\newdimen\d_framed_locator_ht
-\newdimen\d_framed_locator_dp
-\newdimen\d_framed_locator_lo
-\newdimen\d_framed_locator_ro
+\newdimension\d_framed_locator_ht
+\newdimension\d_framed_locator_dp
+\newdimension\d_framed_locator_lo
+\newdimension\d_framed_locator_ro
 
 \def\pack_framed_locator_set#1%
   {\d_framed_locator_ht\dimexpr
@@ -1917,7 +1918,7 @@
   {\pack_framed_remove_depth}
   {\pack_framed_restore_depth}
 
-\newdimen\d_framed_formula
+\newdimension\d_framed_formula
 
 \installframedlocator \v!formula % private, will become a more generic name
   {}
@@ -1929,9 +1930,9 @@
 
 % also used in fastlocalframed
 
-\newdimen\d_framed_original_wd
-\newdimen\d_framed_original_ht
-\newdimen\d_framed_original_dp
+\newdimension\d_framed_original_wd
+\newdimension\d_framed_original_ht
+\newdimension\d_framed_original_dp
 
 \def\pack_framed_remove_depth
   {\d_framed_original_wd\wd\b_framed_normal
@@ -1984,11 +1985,11 @@
 %D This previous framing macros needs a lot of alternatives for putting rules around
 %D boxes, inserting offsets and aligning text. Each step is handled by separate macros.
 
-\newdimen\d_framed_applied_offset
-\newdimen\d_framed_loffset
-\newdimen\d_framed_roffset
-\newdimen\d_framed_toffset
-\newdimen\d_framed_boffset
+\newdimension\d_framed_applied_offset
+\newdimension\d_framed_loffset
+\newdimension\d_framed_roffset
+\newdimension\d_framed_toffset
+\newdimension\d_framed_boffset
 
 \def\pack_framed_check_extra_offsets % we could check h and v indepently
   {\setfalse\c_framed_has_extra_offset
@@ -1996,17 +1997,17 @@
    \d_framed_roffset\framedparameter\c!roffset\relax
    \d_framed_toffset\framedparameter\c!toffset\relax
    \d_framed_boffset\framedparameter\c!boffset\relax
-   \ifzeropt\d_framed_loffset\else \advance\d_framed_width -\d_framed_loffset \settrue\c_framed_has_extra_offset \fi
-   \ifzeropt\d_framed_roffset\else \advance\d_framed_width -\d_framed_roffset \settrue\c_framed_has_extra_offset \fi
-   \ifzeropt\d_framed_toffset\else \advance\d_framed_height-\d_framed_toffset \settrue\c_framed_has_extra_offset \fi
-   \ifzeropt\d_framed_boffset\else \advance\d_framed_height-\d_framed_boffset \settrue\c_framed_has_extra_offset \fi}
+   \ifzeropt\d_framed_loffset\else \advanceby\d_framed_width -\d_framed_loffset \settrue\c_framed_has_extra_offset \fi
+   \ifzeropt\d_framed_roffset\else \advanceby\d_framed_width -\d_framed_roffset \settrue\c_framed_has_extra_offset \fi
+   \ifzeropt\d_framed_toffset\else \advanceby\d_framed_height-\d_framed_toffset \settrue\c_framed_has_extra_offset \fi
+   \ifzeropt\d_framed_boffset\else \advanceby\d_framed_height-\d_framed_boffset \settrue\c_framed_has_extra_offset \fi}
 
 \def\pack_framed_apply_extra_offsets
   {\setbox\b_framed_normal\vpack\bgroup
-     \advance\d_framed_toffset\d_framed_applied_offset
-     \advance\d_framed_boffset\d_framed_applied_offset
-     \advance\d_framed_loffset\d_framed_applied_offset
-     \advance\d_framed_roffset\d_framed_applied_offset
+     \advanceby\d_framed_toffset\d_framed_applied_offset
+     \advanceby\d_framed_boffset\d_framed_applied_offset
+     \advanceby\d_framed_loffset\d_framed_applied_offset
+     \advanceby\d_framed_roffset\d_framed_applied_offset
      \kern\d_framed_toffset
      \hpack\bgroup
         \kern\d_framed_loffset
@@ -2330,12 +2331,12 @@
 %D It is possible to let the frame macro calculate the width of a centered box
 %D automatically (\type {fit}). When doing so, we need to reshape the box:
 
-% \newcount\framednoflines
-% \newdimen\framedfirstheight
-% \newdimen\framedlastdepth
-% \newdimen\framedminwidth
-% \newdimen\framedmaxwidth
-% \newdimen\framedaveragewidth
+% \newinteger  \framednoflines
+% \newdimension\framedfirstheight
+% \newdimension\framedlastdepth
+% \newdimension\framedminwidth
+% \newdimension\framedmaxwidth
+% \newdimension\framedaveragewidth
 
 \def\pack_framed_reshape_reset
   {\framednoflines    \zerocount
@@ -2872,7 +2873,7 @@
     \ifcsname\??regularframedlevel\currentframed\endcsname
       % already defined, keeps settings
     \else
-      \expandafter\newcount\csname\??regularframedlevel\currentframed\endcsname
+      \expandafter\newinteger\csname\??regularframedlevel\currentframed\endcsname
     \fi
 \to \everypresetframed
 
@@ -2880,7 +2881,7 @@
     \frozen\instance\setuevalue{\currentframed}{\pack_framed_defined_process[\currentframed]}%
 \to \everydefineframed
 
-\newcount\c_temp_framed_crap
+\newinteger\c_temp_framed_crap
 
 % \permanent\tolerant\protected\def\pack_framed_defined_process[#1]#*[#2]% official (not much checking, todo: parent)
 %   {\bgroup
@@ -2890,7 +2891,7 @@
 %    \else
 %      \let\c_pack_framed_temp\c_temp_framed_crap
 %    \fi
-%    \advance\c_pack_framed_temp\plusone
+%    \advanceby\c_pack_framed_temp\plusone
 %    \defcsname\??framed#1>\the\c_pack_framed_temp:\s!parent\endcsname{\??framed#1}% \inheritlocalframed
 %    \bgroup
 %    \edef\currentframed{#1>\the\c_pack_framed_temp}%
@@ -2906,7 +2907,7 @@
    \else
      \scratchcounter\c_temp_framed_crap
    \fi
-   \advance\scratchcounter\plusone
+   \advanceby\scratchcounter\plusone
    \defcsname\??framed#1>\the\scratchcounter:\s!parent\endcsname{\??framed#1}% \inheritlocalframed
    \bgroup
    \edef\currentframed{#1>\the\scratchcounter}%
@@ -2998,8 +2999,8 @@
      \scratchrightoffset \framedcontentparameter\c!rightoffset \relax
      \scratchtopoffset   \framedcontentparameter\c!topoffset   \relax
      \scratchbottomoffset\framedcontentparameter\c!bottomoffset\relax
-     \advance\hsize\dimexpr-\scratchleftoffset-\scratchrightoffset \relax
-     \advance\vsize\dimexpr-\scratchtopoffset -\scratchbottomoffset\relax
+     \advanceby\hsize\dimexpr-\scratchleftoffset-\scratchrightoffset \relax
+     \advanceby\vsize\dimexpr-\scratchtopoffset -\scratchbottomoffset\relax
      \kern\scratchleftoffset
      \vpack\bgroup
        \vskip\scratchtopoffset

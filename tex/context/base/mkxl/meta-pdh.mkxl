@@ -466,7 +466,7 @@
 %D \NC /N      \NC smaller values, bigger inner circles \NC \NR
 %D \stoptabulate
 
-% \newcount\currentPDFshade  % 0  % global (document wide) counter
+% \newinteger\currentPDFshade  % 0  % global (document wide) counter
 %
 % \def\dosetMPsomePDFshade#1#2%
 %   {\immediate\pdfobj
@@ -481,7 +481,7 @@
 %         /Function \the\pdflastobj\space 0 R
 %         /Coords [\MPshadeC]
 %         /Extend [true true]>>}%
-%    \global\advance\currentPDFshade \plusone
+%    \global\advanceby\currentPDFshade \plusone
 %    \ctxlua{lpdf.adddocumentshade("Sh\the\currentPDFshade",lpdf.reference(\the\pdflastobj))}%
 %    \setxvalue{\@@MPSK#2}{\noexpand\dohandleMPshade{\the\currentPDFshade}}}
 %

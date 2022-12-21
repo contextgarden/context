@@ -183,7 +183,7 @@
 
 \math_frac_no_strut
 
-\newdimen\d_math_fraction_margin
+\newdimension\d_math_fraction_margin
 
 \def\math_fraction_margin_kern_indeed{\kern\d_math_fraction_margin}
 

@@ -34,12 +34,12 @@
 \installcorenamespace{pagecommentlocations}
 \installcorenamespace{pagecommentstates}
 
-\newdimen\d_page_comments_offset
-\newdimen\d_page_comments_page_width
-\newdimen\d_page_comments_page_height
-\newdimen\d_page_comments_width
-\newdimen\d_page_comments_height
-\newdimen\d_page_comments_distance
+\newdimension\d_page_comments_offset
+\newdimension\d_page_comments_page_width
+\newdimension\d_page_comments_page_height
+\newdimension\d_page_comments_width
+\newdimension\d_page_comments_height
+\newdimension\d_page_comments_distance
 
 \newconditional\c_page_comment_enabled
 

@@ -49,13 +49,13 @@
 %D By setting the next macros one can influence the length of the marks as well as
 %D the horizontal and vertical divisions.
 
-\newdimen\d_pack_cutmarks_width
-\newdimen\d_pack_cutmarks_height
-\newdimen\d_pack_cutmarks_depth
+\newdimension\d_pack_cutmarks_width
+\newdimension\d_pack_cutmarks_height
+\newdimension\d_pack_cutmarks_depth
 
-\newcount\horizontalcutmarks \horizontalcutmarks \plustwo
-\newcount\verticalcutmarks   \verticalcutmarks   \plustwo
-\newcount\cutmarkoffset      \cutmarkoffset      \plusone
+\newinteger  \horizontalcutmarks   \horizontalcutmarks \plustwo
+\newinteger  \verticalcutmarks     \verticalcutmarks   \plustwo
+\newinteger  \cutmarkoffset        \cutmarkoffset      \plusone
 
 \mutable\let\cutmarksymbol       \relax
 \mutable\def\cutmarklength       {2\bodyfontsize}

@@ -2335,7 +2335,7 @@ void tex_finish_vcenter_group(void)
     if (! tex_wrapped_up_paragraph(vcenter_par_context)) {
         halfword p;
         tex_end_paragraph(vcenter_group, vcenter_par_context);
-        tex_package(vpack_code);
+        tex_package(vbox_code); /* todo: vcenter_code */
         p = tex_pop_tail();
         if (p) {
             switch (node_type(p)) {
@@ -2381,6 +2381,21 @@ inline static scaled tex_aux_checked_dimen2(halfword v)
     }
 }
 
+static scaled tex_aux_first_height(halfword boxnode) 
+{
+    halfword list = box_list(boxnode);
+    if (list) {
+        switch (node_type(list)) {
+            case hlist_node:
+            case vlist_node:
+                return box_height(list);
+            case rule_node:
+                return rule_height(list);
+        }
+    }
+    return 0;
+}
+
 void tex_package(singleword nature)
 {
     halfword context, spec, dirptr, attrlist, justpack, orientation, anchor, geometry, source, target, axis, mainclass, state, retain;
@@ -2416,32 +2431,28 @@ void tex_package(singleword nature)
     } else {
         boxnode = tex_filtered_vpack(node_next(cur_list.head), spec, saved_level(saved_full_spec_item_packaging),
             maxdepth, grp, saved_level(saved_full_spec_item_direction), justpack, attrlist, state, retain);
-        if (nature == vtop_code) {
-            /*tex
+        switch (nature) { 
+            case vtop_code: 
+                {
+                    /*tex
 
-                Read just the height and depth of |boxnode| (|boxnode|), for |\vtop|. The height of
-                a |\vtop| box is inherited from the first item on its list, if that item is an
-                |hlist_node|, |vlist_node|, or |rule_node|; otherwise the |\vtop| height is zero.
+                        Read just the height and depth of |boxnode| (|boxnode|), for |\vtop|. The height of
+                        a |\vtop| box is inherited from the first item on its list, if that item is an
+                        |hlist_node|, |vlist_node|, or |rule_node|; otherwise the |\vtop| height is zero.
 
-            */
-            scaled height = 0;
-            halfword list = box_list(boxnode);
-            if (list) {
-                switch (node_type(list)) {
-                    case hlist_node:
-                    case vlist_node:
-                        height = box_height(list);
-                        break;
-                    case rule_node:
-                        height = rule_height(list);
-                        break;
+                    */
+                    scaled height = tex_aux_first_height(boxnode);
+                    box_depth(boxnode) = box_total(boxnode) - height;
+                    box_height(boxnode) = height;
+                    box_package_state(boxnode) = vtop_package_state;
                 }
-            }
-            box_depth(boxnode) = box_total(boxnode) - height;
-            box_height(boxnode) = height;
-            box_package_state(boxnode) = vtop_package_state;
-        } else {
-            box_package_state(boxnode) = vbox_package_state;
+                break;
+            case vbox_code: 
+                box_package_state(boxnode) = vbox_package_state;
+                break;
+            case dbox_code: 
+                box_package_state(boxnode) = dbox_package_state;
+                break;
         }
     }
     if (dirptr) {
@@ -2779,8 +2790,10 @@ inline static halfword tex_aux_depth_correction(halfword b, const line_break_pro
 {
     /*tex The deficiency of space between baselines: */
     halfword p;
+    halfword height = has_box_package_state(b, dbox_package_state) ? tex_aux_first_height(b) : box_height(b);
+    halfword depth = cur_list.prev_depth;
     if (properties) {
-        scaled d = glue_amount(properties->baseline_skip) - cur_list.prev_depth - box_height(b);
+        scaled d = glue_amount(properties->baseline_skip) - depth - height;
         if (d < properties->line_skip_limit) {
             p = tex_new_glue_node(properties->line_skip, line_skip_glue);
         } else {
@@ -2788,7 +2801,7 @@ inline static halfword tex_aux_depth_correction(halfword b, const line_break_pro
             glue_amount(p) = d;
         }
     } else {
-        scaled d = glue_amount(baseline_skip_par) - cur_list.prev_depth - box_height(b);
+        scaled d = glue_amount(baseline_skip_par) - depth - height;
         if (d < line_skip_limit_par) {
             p = tex_new_param_glue_node(line_skip_code, line_skip_glue);
         } else {
@@ -3234,12 +3247,12 @@ void tex_begin_box(int boxcontext, scaled shift)
                 boxnode = tex_copy_node(box_register(n));
                 break;
             }
-        case last_box_code:
+     /* case unpack_code: */
+     /*     break;        */
+         case last_box_code:
             /*tex
-
                 If the current list ends with a box node, delete it from the list and make |boxnode|
                 point to it; otherwise set |boxnode := null|.
-
             */
             boxnode = null;
             if (abs(cur_list.mode) == mmode) {
@@ -3276,11 +3289,8 @@ void tex_begin_box(int boxcontext, scaled shift)
         case vsplit_code:
             {
                 /*tex
-
                     Split off part of a vertical box, make |boxnode| point to it. Here we deal with
-                    things like |\vsplit 13 to 100pt|.
-
-                    Maybe todo: just split off one line.
+                    things like |\vsplit 13 to 100pt|. Maybe todo: just split off one line.
 
                 */
                 halfword mode = packing_exactly ;
@@ -3342,15 +3352,23 @@ void tex_begin_box(int boxcontext, scaled shift)
                 boxnode = tex_get_local_boxes(local_middle_box_code);
                 break;
             }
+       /*tex
+
+            Initiate the construction of an hbox or vbox, then |return|. Here is where we
+            enter restricted horizontal mode or internal vertical mode, in order to make a
+            box. The juggling with codes and addition or subtraction was somewhat messy.
+
+        */
+     /* case tpack_code:  */
+     /* case vpack_code:  */
+     /* case hpack_code:  */
+     /* case dpack_code:  */
+     /* case vtop_code:   */
+     /* case vbox_code:   */
+     /* case hbox_code:   */
+     /* case dbox_code:   */
         default:
             {
-                /*tex
-
-                    Initiate the construction of an hbox or vbox, then |return|. Here is where we
-                    enter restricted horizontal mode or internal vertical mode, in order to make a
-                    box.
-
-                */
                 int just_pack = 0;
                 quarterword spec_direction = direction_unknown;
                 /*tex 0 or |vmode| or |hmode| */
@@ -3366,6 +3384,10 @@ void tex_begin_box(int boxcontext, scaled shift)
                         break;
                     case hpack_code:
                         code = vtop_code + hmode;
+                        just_pack = 1;
+                        break;
+                    case dpack_code:
+                        code = dbox_code + hmode;
                         just_pack = 1;
                         break;
                 }
@@ -3392,7 +3414,7 @@ void tex_begin_box(int boxcontext, scaled shift)
                     if (mode == vmode) {
                         tex_aux_scan_full_spec(vbox_group, spec_direction, just_pack, shift);
                     } else {
-                        tex_aux_scan_full_spec(vtop_group, spec_direction, just_pack, shift);
+                        tex_aux_scan_full_spec((code == dbox_code || code == dpack_code) ? dbox_group : vtop_group, spec_direction, just_pack, shift);
                         mode = vmode;
                     }
                     tex_normal_paragraph(vmode_par_context);

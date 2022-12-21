@@ -70,23 +70,23 @@
 \newconditional \c_tabl_lines_preroll
 \newconditional \c_tabl_lines_in_table
 
-\newdimen       \d_tabl_lines_width
-\newdimen       \d_tabl_lines_height
-%newdimen       \d_tabl_lines_depth
+\newdimension   \d_tabl_lines_width
+\newdimension   \d_tabl_lines_height
+%newdimension   \d_tabl_lines_depth
 
 \newbox         \b_tabl_lines_cell
 
-\newcount       \c_tabl_lines_n_of_columns
-\newcount       \c_tabl_lines_n_of_rows
-\newcount       \c_tabl_lines_n_of_lines
-\newcount       \c_tabl_lines_n_of_parts
-\newcount       \c_tabl_lines_part           \c_tabl_lines_part\plusone
-\newcount       \c_tabl_lines_step           \c_tabl_lines_step\plusone
-\newcount       \c_tabl_lines_line
-\newcount       \c_tabl_lines_row
-\newcount       \c_tabl_lines_rows
-\newcount       \c_tabl_lines_column
-\newcount       \c_tabl_lines_subcol
+\newinteger     \c_tabl_lines_n_of_columns
+\newinteger     \c_tabl_lines_n_of_rows
+\newinteger     \c_tabl_lines_n_of_lines
+\newinteger     \c_tabl_lines_n_of_parts
+\newinteger     \c_tabl_lines_part           \c_tabl_lines_part\plusone
+\newinteger     \c_tabl_lines_step           \c_tabl_lines_step\plusone
+\newinteger     \c_tabl_lines_line
+\newinteger     \c_tabl_lines_row
+\newinteger     \c_tabl_lines_rows
+\newinteger     \c_tabl_lines_column
+\newinteger     \c_tabl_lines_subcol
 
 \newconstant    \c_tabl_lines_hmode
 \newconstant    \c_tabl_lines_page
@@ -182,9 +182,9 @@
    \fi}
 
 \def\tabl_lines_step_cell
-  {\advance\scratchdimen\linetablecparameter\c!width
-   \global\advance      \c_tabl_lines_column\plusone
-   \advance\scratchskip \linetablecparameter\c!distance}
+  {\advanceby\scratchdimen\linetablecparameter\c!width
+   \global\advanceby      \c_tabl_lines_column\plusone
+   \advanceby\scratchskip \linetablecparameter\c!distance}
 
 \permanent\tolerant\protected\def\startlinetablecell[#1]%
   {\global\setbox\b_tabl_lines_cell\hbox\bgroup
@@ -227,8 +227,8 @@
      % 1 = width, fixed height
      % 2 = no width, auto hsize
      \ifnum\c_tabl_lines_mode<\plustwo
-       \advance\scratchdimen-\linetablecparameter\c!leftoffset
-       \advance\scratchdimen-\linetablecparameter\c!rightoffset
+       \advanceby\scratchdimen-\linetablecparameter\c!leftoffset
+       \advanceby\scratchdimen-\linetablecparameter\c!rightoffset
      \fi
      \ifcase\c_tabl_lines_mode
        \dosetraggedcommand{\linetablecparameter\c!align}%
@@ -337,7 +337,7 @@
    \fi}
 
 \def\tabl_lines_flush_parts
-  {\global\advance\c_tabl_lines_line\plusone
+  {\global\advanceby\c_tabl_lines_line\plusone
    \ifnum\c_tabl_lines_line<\c_tabl_lines_n_of_lines
      % keep collecting
    \else
@@ -401,9 +401,9 @@
    \fi}
 
 \def\tabl_lines_check_part
-  {\global\advance\d_tabl_lines_width\wd\b_tabl_lines_cell
-   \global\advance\c_tabl_lines_column\c_tabl_lines_step
-   \global\advance\c_tabl_lines_subcol\c_tabl_lines_step
+  {\global\advanceby\d_tabl_lines_width\wd\b_tabl_lines_cell
+   \global\advanceby\c_tabl_lines_column\c_tabl_lines_step
+   \global\advanceby\c_tabl_lines_subcol\c_tabl_lines_step
    \relax
    %\message{\the\c_tabl_lines_column,\the\c_tabl_lines_subcol}\wait
    % from now on the column counter is already incremented
@@ -436,7 +436,7 @@
        \else
          \global\c_tabl_lines_page \plusone
        \fi
-       \global\advance\c_tabl_lines_part\plusone
+       \global\advanceby\c_tabl_lines_part\plusone
        \global\d_tabl_lines_width\wd\b_tabl_lines_current\zerocount
        \tabl_lines_start_part
      \fi
@@ -455,7 +455,7 @@
      \orelse\ifdim\d_tabl_lines_width>\hsize
        \donetrue
      \else
-       \global\advance\d_tabl_lines_width\scratchskip
+       \global\advanceby\d_tabl_lines_width\scratchskip
        \ifdim\d_tabl_lines_width>\hsize % ?
          \donetrue
        \fi
@@ -468,7 +468,7 @@
        \else
          \global\c_tabl_lines_page \plusone
        \fi
-       \global\advance\c_tabl_lines_part\plusone
+       \global\advanceby\c_tabl_lines_part\plusone
        \ifnum\c_tabl_lines_part>\c_tabl_lines_n_of_parts
          \global\c_tabl_lines_n_of_parts\c_tabl_lines_part
          \tabl_lines_initialize_box\c_tabl_lines_part
@@ -480,7 +480,7 @@
          \ifcase\c_tabl_lines_page\donetrue\or\donetrue\or\donefalse\fi
          \ifdone
            % insert repeater
-           \global\advance\d_tabl_lines_width\wd\b_tabl_lines_current\zerocount
+           \global\advanceby\d_tabl_lines_width\wd\b_tabl_lines_current\zerocount
            \ifconditional\c_tabl_lines_preroll\kern\wd\else\unhcopy\fi\b_tabl_lines_current\zerocount
          \fi
        \fi
@@ -521,8 +521,8 @@
    \global\c_tabl_lines_n_of_parts\zerocount
    \scratchcounter\zerocount
    \def\docommand##1%
-     {\global\advance\c_tabl_lines_n_of_parts\plusone
-      \advance\scratchcounter##1%
+     {\global\advanceby\c_tabl_lines_n_of_parts\plusone
+      \advanceby\scratchcounter##1%
       \xdefcsname\??linetablepart\number\c_tabl_lines_n_of_parts\endcsname{\the\scratchcounter}}%
    \processcommacommand[\linetableparameter\c!n]\docommand
    \tabl_lines_initialize_boxes\c_tabl_lines_n_of_parts
@@ -575,8 +575,8 @@
 
 \permanent\tolerant\protected\def\tabl_lines_BR[#1]% #1 not yet implemented
   {\ifnum\c_tabl_lines_head_state=1\else
-     \global\advance\c_tabl_lines_row\plusone
-     \global\advance\c_tabl_lines_rows\plusone
+     \global\advanceby\c_tabl_lines_row\plusone
+     \global\advanceby\c_tabl_lines_rows\plusone
    \fi
    \global\c_tabl_lines_column\plusone
    \global\c_tabl_lines_subcol\plusone
@@ -610,7 +610,7 @@
    % no \box\b_tabl_lines_cell, i.e. dummy columnn, last \NC \NR
    \tabl_lines_stop_part
    \tabl_lines_save_part
-   \advance\c_tabl_lines_column \minusone
+   \advanceby\c_tabl_lines_column \minusone
    \ifnum\c_tabl_lines_column>\c_tabl_lines_n_of_columns
      \global\c_tabl_lines_n_of_columns\c_tabl_lines_column
    \fi

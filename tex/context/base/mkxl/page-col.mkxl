@@ -24,16 +24,14 @@
 %D We reserve a counter for the number of columns as well as the current
 %D column. Both are not to be changed by users!
 
-%newcount\nofcolumns \nofcolumns\plusone % already in core-ini.mkiv
-\newcount\mofcolumns \mofcolumns\plusone
-
-\newconstant\columndirection % 0:lr 1:rl
+%newinteger    \nofcolumns \nofcolumns\plusone % already in core-ini.mkiv
+\newinteger    \mofcolumns \mofcolumns\plusone
+\newdimension  \columnwidth
+\newdimension  \columndistance
+\newconstant   \columndirection % 0:lr 1:rl
 
 \setnewconstant\maxnofcolumns       50
 \setnewconstant\allocatednofcolumns  0
-
-\newdimen\columnwidth
-\newdimen\columndistance
 
 %D During initialization the temporary boxes are allocated. This enables us to
 %D use as much columns as we want, without exhausting the pool of boxes too
@@ -125,7 +123,7 @@
    \fi}
 
 \protected\def\page_columns_all_next
-  {\advance\mofcolumns\plusone
+  {\advanceby\mofcolumns\plusone
    \edef\currentcolumn{\the\mofcolumns}%
    \page_columns_action\relax
    \ifnum\mofcolumns<\nofcolumns
@@ -141,7 +139,7 @@
    \fi}
 
 \protected\def\page_columns_rev_prev
-  {\advance\mofcolumns\minusone
+  {\advanceby\mofcolumns\minusone
    \edef\currentcolumn{\the\mofcolumns}%
    \page_columns_action\relax
    \ifnum\mofcolumns>\plusone
@@ -157,7 +155,7 @@
 \protected\def\page_columns_mid_next
   {\edef\currentcolumn{\the\mofcolumns}%
    \page_columns_action\relax
-   \advance\mofcolumns\plusone
+   \advanceby\mofcolumns\plusone
    \ifnum\mofcolumns<\nofcolumns
      \expandafter\page_columns_mid_next
    \fi}

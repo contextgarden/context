@@ -30,7 +30,7 @@
 
 %D Watch how we abuse highlights.
 
-\newcount\c_typo_overload_font_id
+\newinteger\c_typo_overload_font_id
 
 \protected\def\typo_overloads_define#1%
   {\begingroup

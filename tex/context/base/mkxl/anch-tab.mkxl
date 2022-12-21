@@ -18,7 +18,7 @@
 
 \unprotect
 
-\newcount\c_anch_tabs
+\newinteger\c_anch_tabs
 
 \protected\def\tabl_tabulate_hook_b
   {\iftrialtypesetting\else
@@ -54,7 +54,7 @@
 % \appendtoks \registerparoptions \to \everypar
 
 \appendtoks
-    \global\advance\c_anch_tabs\plusone
+    \global\advanceby\c_anch_tabs\plusone
 \to \everytabulate
 
 % for text backgrounds
@@ -74,7 +74,7 @@
 %D references to the graphics involved. Each table has its own namespace.
 
 \newconditional\tablehaspositions
-\newcount      \noftabpositions
+\newinteger    \noftabpositions
 \newtoks       \posXCtoks
 
 \protected\def\anch_tabulate_bpos{\bpos}
@@ -195,7 +195,7 @@
    \box\scratchbox}
 
 \appendtoks
-    \global\advance\noftabpositions\plusone
+    \global\advanceby\noftabpositions\plusone
     \global\setfalse\tablehaspositions
 \to \everytabulate
 
@@ -274,7 +274,7 @@
 \permanent\def\normalTABLEquote     {\unskip\!ttRightGlue&\omit\tablepos&}                  % "
 
 \appendtoks
-    \global\advance\noftabpositions\plusone
+    \global\advanceby\noftabpositions\plusone
     \global\setfalse\tablehaspositions
 \to \everytable
 

@@ -58,7 +58,7 @@
 
 \installattributestack\colorintentattribute
 
-\setevalue{\??colorintent\v!none}{\c_attr_colorintent\attributeunsetvalue} % or reset? used at all?
+\edefcsname\??colorintent\v!none\endcsname{\c_attr_colorintent\attributeunsetvalue} % or reset? used at all?
 
 \permanent\protected\def\startcolorintent[#1]%
   {\pushattribute\colorintentattribute

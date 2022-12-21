@@ -84,7 +84,7 @@
               \scratchwidth\wd\scratchbox
             \fi}%
          \colo_palets_process[#1]\colo_palets_show_palet}%
-      \advance\scratchwidth\emwidth
+      \advanceby\scratchwidth\emwidth
       \ifdim\scratchwidth<5\emwidth
         \scratchwidth5\emwidth
       \fi
@@ -219,7 +219,7 @@
       \setlocalhsize
       \hsize\localhsize
       \scratchcounter\zerocount
-      \dorecurse{15}{\doifcolor{#2:\recurselevel}{\advance\scratchcounter\plusone}}
+      \dorecurse{15}{\doifcolor{#2:\recurselevel}{\advanceby\scratchcounter\plusone}}
       \scratchwidth2\emwidth\relax
       \hsize\scratchcounter\scratchwidth
       \dorecurse\scratchcounter{\colo_groups_compare_step{#1}{#2}\recurselevel}}}

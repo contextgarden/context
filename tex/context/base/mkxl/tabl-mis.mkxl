@@ -153,10 +153,10 @@
     \typo_paragraphs_setup_saved[\currentparagraphs:1][\c!distance=\zeropoint]%
 \to \everydefineparagraphs
 
-\newcount\c_typo_paragraphs_n
-\newcount\c_typo_paragraphs_max
-\newdimen\d_typo_paragraphs_width
-\newdimen\d_typo_paragraphs_auto
+\newinteger  \c_typo_paragraphs_n
+\newinteger  \c_typo_paragraphs_max
+\newdimension\d_typo_paragraphs_width
+\newdimension\d_typo_paragraphs_auto
 
 \let\typo_paragraphs_start_cell\relax
 \let\typo_paragraphs_stop_cell \relax
@@ -171,22 +171,22 @@
    \else
      \d_typo_paragraphs_width\p_width\relax
    \fi
-   \advance\d_typo_paragraphs_width-2\dimexpr\paragraphsparameter\c!offset\relax
+   \advanceby\d_typo_paragraphs_width-2\dimexpr\paragraphsparameter\c!offset\relax
    \c_typo_paragraphs_max\paragraphsparameter\c!n\relax
    \d_typo_paragraphs_auto\d_typo_paragraphs_width\relax
    \scratchcounter\zerocount
    \dorecurse\c_typo_paragraphs_max
      {\edef\p_width{\namedparagraphsparameter{\currentparagraphs:\recurselevel}\c!width}%
       \ifempty\p_width
-        \advance\scratchcounter\plusone
+        \advanceby\scratchcounter\plusone
       \else
-        \advance\d_typo_paragraphs_auto-\p_width\relax
+        \advanceby\d_typo_paragraphs_auto-\p_width\relax
       \fi
       \ifnum\recurselevel>\plusone
-        \advance\d_typo_paragraphs_auto-\namedparagraphsparameter{\currentparagraphs:\recurselevel}\c!distance\relax
+        \advanceby\d_typo_paragraphs_auto-\namedparagraphsparameter{\currentparagraphs:\recurselevel}\c!distance\relax
       \fi}%
    \ifnum\scratchcounter>\zerocount
-     \divide\d_typo_paragraphs_auto\scratchcounter
+     \divideby\d_typo_paragraphs_auto\scratchcounter
    \else
      \d_typo_paragraphs_auto\zeropoint
    \fi
@@ -200,7 +200,7 @@
    \setbox\scratchbox\hpack
    \bgroup % (2)
    \forgetall
-   \advance\hsize-2\scratchoffset
+   \advanceby\hsize-2\scratchoffset
    \let\typo_paragraphs_start_cell\typo_paragraphs_start_cell_indeed
    \let\typo_paragraphs_stop_cell \typo_paragraphs_stop_cell_indeed
    \typo_paragraphs_start_cell_indeed}
@@ -223,7 +223,7 @@
 
 \def\typo_paragraphs_start_cell_indeed
   {\removeunwantedspaces
-   \advance\c_typo_paragraphs_n\plusone
+   \advanceby\c_typo_paragraphs_n\plusone
    \ifnum\c_typo_paragraphs_n>\c_typo_paragraphs_max
      \expandafter\typo_paragraphs_start_cell_nop
    \else

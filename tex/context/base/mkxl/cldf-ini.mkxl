@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Lua Documents / Initialization}
 
-\newcount\trialtypesettingstate % gets aliased at the Lua end
+% \newcount\trialtypesettingstate % gets aliased at the Lua end
 
 \registerctxluafile{cldf-ini}{autosuffix}
 

@@ -24,7 +24,7 @@
 %D \enabletrackers[hyphenation.applied.console]
 %D
 %D \dontcomplain \dostepwiserecurse{0}{15}{1}{
-%D     {\advance\hsize -#1cm \input tufte \par}
+%D     {\advanceby\hsize -#1cm \input tufte \par}
 %D }
 %D
 %D \stoptext

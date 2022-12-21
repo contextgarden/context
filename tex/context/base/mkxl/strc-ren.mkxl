@@ -15,10 +15,9 @@
 
 \unprotect
 
-\newbox\b_strc_rendering_head
-
-\newdimen\d_strc_rendering_local_leftoffset
-\newdimen\d_strc_rendering_local_rightoffset
+\newbox      \b_strc_rendering_head
+\newdimension\d_strc_rendering_local_leftoffset
+\newdimension\d_strc_rendering_local_rightoffset
 
 % Martin Kolarik's problem:
 %
@@ -246,12 +245,11 @@
 % \subsubsection   {Test\\Test} \input tufte \page
 % \subsubsubsection{Test\\Test} \input tufte \page
 
-\newdimen\d_strc_rendering_hang_height
-\newcount\n_strc_rendering_hang_lines
-
-\newdimen\d_strc_rendering_local_height
-\newdimen\d_strc_rendering_local_depth
-\newdimen\d_strc_rendering_local_lineheight
+\newdimension\d_strc_rendering_hang_height
+\newinteger  \n_strc_rendering_hang_lines
+\newdimension\d_strc_rendering_local_height
+\newdimension\d_strc_rendering_local_depth
+\newdimension\d_strc_rendering_local_lineheight
 
 \def\strc_rendering_initialize_line_state
   {\global\d_strc_rendering_local_height\strutht
@@ -469,11 +467,11 @@
 \lettonothing\headnumbercontent
 \lettonothing\headtextcontent
 
-\newdimen\headwidth
-\newdimen\headtextwidth
-\newskip \headtextdistance
-\newdimen\headnumberdistance
-\newdimen\headnumberwidth
+\newdimension\headwidth
+\newdimension\headtextwidth
+\newgluespec \headtextdistance
+\newdimension\headnumberdistance
+\newdimension\headnumberwidth
 
 % \newconditional\headshownumber % defined already
 % \newconditional\headisdisplay  % defined already
@@ -778,7 +776,7 @@
         }
         \setbox\scratchboxtwo\vbox {
             \headsetupspacing
-            \advance\hsize-\wd\scratchboxone\relax
+            \advanceby\hsize-\wd\scratchboxone\relax
             \headtextcontent
         }
         \hpack {
@@ -807,7 +805,7 @@
         }
         \setbox\scratchboxtwo\vtop {
             \headsetupspacing
-            \advance\hsize-\wd\scratchboxone\relax
+            \advanceby\hsize-\wd\scratchboxone\relax
             \headtextcontent
         }
         \hpack {

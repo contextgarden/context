@@ -569,6 +569,9 @@ void tex_show_save_groups(void)
             case vtop_group:
                 package = "vtop";
                 break;
+            case dbox_group:
+                package = "dbox";
+                break;
             case align_group:
                 if (alignmentstate == 0) {
                     package = (mode == -vmode) ? "halign" : "valign";
@@ -1173,6 +1176,37 @@ void tex_define(int g, halfword p, singleword t, halfword e) /* int g -> singlew
     }
     if (trace) {
         tex_aux_diagnostic_trace(p, "into");
+    }
+}
+
+void tex_define_again(int g, halfword p, singleword t, halfword e) /* int g -> singleword g */
+{
+    if (tracing_assigns_par > 0) { 
+        singleword f = make_eq_flag_bits(g);
+        if (is_global(g)) {
+            /* what if already global */
+            tex_aux_diagnostic_trace(p, "globally changing");
+         // if (tex_aux_equal_eq(p, t, f, e) && (eq_level(p) == level_one)) {
+         //     return; /* we can save some stack */
+         // }
+            tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+            tex_aux_set_eq_data(p, t, e, f, level_one);
+        } else if (tex_aux_equal_eq(p, t, f, e)) {
+            /* hm, we tweak the ref ! */
+            tex_aux_diagnostic_trace(p, "reassigning");
+        } else {
+            tex_aux_diagnostic_trace(p, "changing");
+            if (eq_level(p) == cur_level) {
+                tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+            } else if (cur_level > level_one) {
+                tex_aux_eq_save(p, eq_level(p));
+            }
+            tex_aux_set_eq_data(p, t, e, f, cur_level);
+        }
+        tex_aux_diagnostic_trace(p, "into");
+    } else { 
+        set_eq_type(p, t);
+        set_eq_value(p, e);    
     }
 }
 

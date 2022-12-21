@@ -19193,6 +19193,9 @@ return {
    ["pe"]="متن",
    ["ro"]="text",
   },
+  ["textdisplay"]={
+   ["en"]="textdisplay",
+  },
   ["textnote"]={
    ["en"]="textnote",
    ["fr"]="notetexte",

@@ -111,7 +111,7 @@
                \orelse\ifnum\scratchcountertwo=\scratchcounterthree
                  \exitloop
                \else
-                 \advance\scratchcountertwo\plusone
+                 \advanceby\scratchcountertwo\plusone
                \fi}}}
         {\processcommalist[#2]{\module_fonts_show_font_indeed{#1}}}}%
    \egroup}
@@ -418,7 +418,7 @@
 \protected\gdef\showotfsteps_n
   {\blank
    \begingroup
-     \advance\leftskip6\emwidth
+     \advanceby\leftskip6\emwidth
      \showotfstepmessages\recurselevel
      \par
    \endgroup

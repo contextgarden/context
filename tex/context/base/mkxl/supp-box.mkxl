@@ -24,9 +24,13 @@
 
 %D And some dimensions:
 
-\newdimen\givenwidth
-\newdimen\givenheight
-\newdimen\givendepth
+\newdimension\strutht    % see above
+\newdimension\strutdp
+\newdimension\struthtdp
+
+\newdimension\givenwidth
+\newdimension\givenheight
+\newdimension\givendepth
 
 % \fixupboxesmode\plusone % gone: is now the default
 
@@ -40,11 +44,14 @@
 %D not, you're in trouble). These shortcuts can be used like a dimension, opposite
 %D to the core macros \type {\strutdepth} and alike, which are values.
 
-                    \def\strutdp  {\dp\strutbox}   % overloaded in spac-ver
-                    \def\strutht  {\ht\strutbox}   % overloaded in spac-ver
-\permanent\protected\def\strutwd  {\wd\strutbox}
-                    \def\struthtdp{\htdp\strutbox} % overloaded in spac-ver
-\permanent\protected\def\strutgap {\dimexpr\strutht-\strutdp\relax}
+\iffalse
+    \def\strutdp  {\dp\strutbox}   % overloaded in spac-ver
+    \def\strutht  {\ht\strutbox}   % overloaded in spac-ver
+    \def\struthtdp{\htdp\strutbox} % overloaded in spac-ver
+\fi
+
+\permanent\protected\def\strutwd {\wd\strutbox}
+\permanent\protected\def\strutgap{\dimexpr\strutht-\strutdp\relax}
 
 %D \macros
 %D   {voidbox,nextbox}
@@ -62,7 +69,7 @@
 %D \DIMENSION\ \type{\prevdepth} and append it later on. The name \type {\nextdepth}
 %D suits this purpose well.
 
-\newdimen\nextdepth
+\newdimension\nextdepth
 
 %D \macros
 %D   {smashbox, smashboxed, smashedbox}
@@ -96,7 +103,7 @@
 
 %D The next implementation is less sensitive for spurious spaces.
 
-\newcount\c_boxes_register
+\newinteger\c_boxes_register
 
 \permanent\protected\def\smashbox
   {\afterassignment\syst_boxes_smash_boxes_register\c_boxes_register}
@@ -185,7 +192,7 @@
 %D \stopTEXpage
 %D \stoptyping
 
-% \newcount\c_boxes_math_style
+% \newinteger\c_boxes_math_style
 %
 % \protected\def\syst_boxes_math_set_nextbox#1%
 %   {\c_boxes_math_style\normalmathstyle
@@ -373,7 +380,7 @@
 %D
 %D \starttyping
 %D \def\getboxheight#1\of#2\box#3%
-%D   {#1\ht#3\advance#1\dp#3\relax}
+%D   {#1\ht#3\advanceby#1\dp#3\relax}
 %D \stoptyping
 %D
 %D The next alternative is slightly more clever, since it accepts \type {{12}} as
@@ -400,25 +407,25 @@
 %D met 0~regels. The raw alternative does not round. See the \MKII\ and \MKIV\ files
 %D for historic variants.
 
-\ifdefined\roundingeps \else \newdimen\roundingeps \roundingeps=10sp \fi
+\ifdefined\roundingeps \else \newdimension\roundingeps \roundingeps=10sp \fi
 
-\newcount\noflines
-\newdimen\noflinesheight
+\newinteger  \noflines
+\newdimension\noflinesheight
 
 \permanent\protected\def\getnoflines#1%
   {\noflinesheight#1\relax
    \ifzeropt\noflinesheight
      \noflines\zerocount
    \orelse\ifdim\noflinesheight>\zeropoint
-     \advance\noflinesheight-\roundingeps
-     \divide\noflinesheight\openlineheight
+     \advanceby\noflinesheight-\roundingeps
+     \divideby\noflinesheight\openlineheight
      \noflines\noflinesheight
-     \advance\noflines\plusone
+     \advanceby\noflines\plusone
    \else
-     \advance\noflinesheight\roundingeps
-     \divide\noflinesheight\openlineheight
+     \advanceby\noflinesheight\roundingeps
+     \divideby\noflinesheight\openlineheight
      \noflines\noflinesheight
-     \advance\noflines\minusone
+     \advanceby\noflines\minusone
    \fi}
 
 \permanent\protected\def\getroundednoflines#1%
@@ -426,12 +433,12 @@
    \ifzeropt\noflinesheight
      \noflines\zerocount
    \orelse\ifdim\noflinesheight>\zeropoint
-     \advance\noflinesheight\roundingeps
-     \divide\noflinesheight\openlineheight
+     \advanceby\noflinesheight\roundingeps
+     \divideby\noflinesheight\openlineheight
      \noflines\noflinesheight
    \else
-     \advance\noflinesheight-\roundingeps
-     \divide\noflinesheight\openlineheight
+     \advanceby\noflinesheight-\roundingeps
+     \divideby\noflinesheight\openlineheight
      \noflines\noflinesheight
    \fi}
 
@@ -440,14 +447,14 @@
    \ifzeropt\noflinesheight
      \noflines\zerocount
    \orelse\ifdim\noflinesheight>\zeropoint
-     \advance\noflinesheight\roundingeps
-     \advance\noflinesheight.5\openlineheight
-     \divide\noflinesheight\openlineheight
+     \advanceby\noflinesheight\roundingeps
+     \advanceby\noflinesheight.5\openlineheight
+     \divideby\noflinesheight\openlineheight
      \noflines\noflinesheight
    \else
-     \advance\noflinesheight-\roundingeps
-     \advance\noflinesheight-.5\openlineheight
-     \divide\noflinesheight\openlineheight
+     \advanceby\noflinesheight-\roundingeps
+     \advanceby\noflinesheight-.5\openlineheight
+     \divideby\noflinesheight\openlineheight
      \noflines\noflinesheight
    \fi}
 
@@ -493,7 +500,7 @@
 %      \unvbox\nextbox
 %    \endofshapebox
 %    \globalscratchcounter\zerocount
-%    \reshapebox{\global\advance\globalscratchcounter\plusone}%
+%    \reshapebox{\global\advanceby\globalscratchcounter\plusone}%
 %    \expandafter\egroup\expandafter\noflines\the\globalscratchcounter\relax}
 
 \def\syst_boxes_determine_noflines
@@ -842,18 +849,15 @@
 \newif    \ifreshapingbox
 \newif    \ifreshapingfailed % may save redundant runs
 
-\newbox   \shapebox
-\newcount \shapepenalty
-\newdimen \shapekern
-\newskip  \shapeskip
-
-\newbox   \newshapebox
-\newbox   \oldshapebox
-\newbox   \tmpshapebox
-
-\newcount \shapecounter
-
-\newevery \everyshapebox \relax
+\newbox      \shapebox
+\newinteger  \shapepenalty
+\newdimension\shapekern
+\newgluespec \shapeskip
+\newbox      \newshapebox
+\newbox      \oldshapebox
+\newbox      \tmpshapebox
+\newinteger \shapecounter
+\newevery   \everyshapebox \relax
 
 \permanent\dimensiondef\shapesignal.12345678pt % or 12345sp
 
@@ -917,7 +921,7 @@
      \restoreshapebox
      \exitloop
    \else
-     \advance\shapecounter \plusone
+     \advanceby\shapecounter \plusone
    \fi}
 
 \permanent\protected\def\beginofshapebox
@@ -1146,7 +1150,7 @@
 
 \def\syst_boxes_boundtext#1%
   {\setbox\scratchboxone\hbox{#1}%
-   \advance\scratchdimen -\wd\scratchboxone
+   \advanceby\scratchdimen -\wd\scratchboxone
    \ifdim\scratchdimen>\zeropoint\relax#1\fi}
 
 \permanent\protected\def\doboundtext#1#2#3% still used?
@@ -1155,7 +1159,7 @@
       \scratchdimen#2\relax
       \ifdim\wd\scratchbox>\scratchdimen
         \setbox\scratchbox\hbox{#3}%
-        \advance\scratchdimen -\wd\scratchbox
+        \advanceby\scratchdimen -\wd\scratchbox
         \handletokens#1\with\syst_boxes_boundtext
       \fi
       \box\scratchbox}}
@@ -1210,7 +1214,7 @@
    \ifdim\wd\scratchbox>#2\relax
      \setbox\scratchbox\hbox{#3}%
      \hsize#2\relax
-     \advance\hsize-\wd\scratchbox
+     \advanceby\hsize-\wd\scratchbox
      \setbox\scratchbox\vbox{\forgetall\veryraggedright#1}%
      \setbox\scratchbox\vsplit\scratchbox to \lineheight
      \vbox
@@ -1478,8 +1482,8 @@
    \dontcomplain
    \forgetall
    \scangivendimensions#1\relax
-   \advance\vsize\givenheight
-   \advance\hsize\givenwidth
+   \advanceby\vsize\givenheight
+   \advanceby\hsize\givenwidth
    \dowithnextboxcs\syst_boxes_centered_finish
    \hbox}
 
@@ -1563,19 +1567,19 @@
 
 \mutable\let\rigidcolumnlines\!!zerocount
 
-\newbox  \rigidcolumnbox
-\newdimen\rigidhsize
-\newcount\rigidcolumns
+\newbox      \rigidcolumnbox
+\newdimension\rigidhsize
+\newinteger  \rigidcolumns
 
 \permanent\protected\def\setrigidcolumnhsize#1#2#3% todo: \dimexpr
   {\global\rigidhsize\hsize
    \global\rigidcolumns#3\relax
    \hsize#1\relax
    \scratchdimen -#2\relax
-   \multiply\scratchdimen #3\relax
-   \advance\scratchdimen  #2\relax
-   \advance\hsize \scratchdimen
-   \divide\hsize #3\relax}
+   \multiplyby\scratchdimen #3\relax
+   \advanceby\scratchdimen  #2\relax
+   \advanceby\hsize \scratchdimen
+   \divideby\hsize #3\relax}
 
 % ==
 %
@@ -1600,15 +1604,15 @@
           % \iffalse
           %  % maybe some day an option
           %  \scratchskip\ht\rigidcolumnbox
-          %  \advance\scratchskip\dp\rigidcolumnbox
+          %  \advanceby\scratchskip\dp\rigidcolumnbox
           %  \getnoflines\scratchskip
           %  \ifodd\noflines
-          %    \advance\noflines\plusone
+          %    \advanceby\noflines\plusone
           %  \fi
-          %  \divide\noflines\rigidcolumns
+          %  \divideby\noflines\rigidcolumns
           %\else
             \scratchdimen\ht\rigidcolumnbox
-            \divide\scratchdimen \rigidcolumns
+            \divideby\scratchdimen \rigidcolumns
             \getnoflines\scratchdimen
           %\fi
         \else
@@ -1635,11 +1639,11 @@
                    \box\scratchbox
                    \hfill}%
                 \hfillneg}%
-            \ifvoid\rigidcolumnbox\exitloop\else\advance\scratchdimen\lineheight\fi}%
+            \ifvoid\rigidcolumnbox\exitloop\else\advanceby\scratchdimen\lineheight\fi}%
          \iftightrigidcolumns
            \setbox\scratchbox\hpack{\raise\dp\scratchbox\box\scratchbox}%
          \else
-           \advance\scratchdimen -\openstrutdepth
+           \advanceby\scratchdimen -\openstrutdepth
            \setbox\scratchbox\hpack{\raise\scratchdimen\box\scratchbox}%
            \dp\scratchbox\openstrutdepth
            \ht\scratchbox\scratchdimen
@@ -1671,8 +1675,8 @@
 %D These macros are used in reformatting footnotes, so they do what they're meant
 %D for.
 
-\newdimen\vboxtohboxslack
-\newdimen\hboxestohboxslack
+\newdimension\vboxtohboxslack
+\newdimension\hboxestohboxslack
 
 %D Create line and fake height of paragraph by messign with heights: a nice hack by
 %D DEK himself.
@@ -1681,13 +1685,13 @@
 %  {\bgroup
 %   \ifdim\baselineskip<16pt \relax
 %     \scratchdimen\baselineskip
-%     \multiply\scratchdimen 1024
+%     \multiplyby\scratchdimen 1024
 %   \else
 %     \message{cropping \baselineskip to 16pt}%
 %     \scratchdimen\maxdimen
 %   \fi
-%   \divide\scratchdimen \hsize
-%   \multiply\scratchdimen 64
+%   \divideby\scratchdimen \hsize
+%   \multiplyby\scratchdimen 64
 %   \xdef\vboxtohboxfactor{\toscaled\scratchdimen}%
 %   \egroup}
 %
@@ -1774,10 +1778,10 @@
 %D The next macro is used in typesetting inline headings. Let's first look at the
 %D macro and then show an example.
 
-\newbox   \unhhedbox
-\newbox   \hhbox
-\newdimen \lasthhboxwidth
-\newskip  \hhboxindent
+\newbox      \unhhedbox
+\newbox      \hhbox
+\newdimension\lasthhboxwidth
+\newgluespec \hhboxindent
 
 \permanent\protected\def\unhhbox#1\with#2%
   {\bgroup
@@ -1826,7 +1830,7 @@
 %D \unhhbox0\with{\ruledhbox{\box\hhbox}}
 %D \hskip1em plus 1em minus 1em
 %D \hhboxindent=\lasthhboxwidth
-%D \advance\hhboxindent by \lastskip
+%D \advanceby\hhboxindent by \lastskip
 %D \unhhbox2\with{\ruledhbox{\box\hhbox}}
 %D \stopbuffer
 %D
@@ -2103,14 +2107,14 @@
 %D This example demonstrates that one can use positive and negative values.
 %D Dimension registers are also accepted.
 
-\newdimen\sizeofbox
+\newdimension\sizeofbox
 
 \permanent\protected\def\boxofsize#1%
   {\bgroup
    \sizeofbox\zeropoint
    \scratchdimen\zeropoint
    \def\docommand
-     {\advance\sizeofbox\scratchdimen
+     {\advanceby\sizeofbox\scratchdimen
       \futurelet\nexttoken\dodocommand}%
    \def\dodocommand
      {\ifx\nexttoken\bgroup
@@ -2132,7 +2136,7 @@
      {\scratchdimen#1\hsize
       \ifdim\wd\nextbox>\scratchdimen
         \setbox\nextbox\hbox
-          {\advance\scratchdimen -.1\hsize
+          {\advanceby\scratchdimen -.1\hsize
            \limitatetext{\unhbox\nextbox}{\scratchdimen}{\nobreak#2}}%
       \fi
       \unhbox\nextbox}
@@ -2148,7 +2152,7 @@
       \hpack{\box\nextbox}
       \prevdepth\strutdp
       \doloop
-        {\advance\scratchdimen -\lineheight
+        {\advanceby\scratchdimen -\lineheight
          \ifdim\scratchdimen<\zeropoint
            \exitloop
          \else
@@ -2187,9 +2191,9 @@
 \permanent\protected\def\placedbox
   {\iftraceboxplacement\ruledhbox\else\hbox\fi}
 
-\newdimen\boxoffset
-\newdimen\boxhdisplacement
-\newdimen\boxvdisplacement
+\newdimension\boxoffset
+\newdimension\boxhdisplacement
+\newdimension\boxvdisplacement
 
 \permanent\protected\def\rightbox      {\hpack\bgroup\dowithnextboxcs\syst_boxes_rightbox_finish      \placedbox}
 \permanent\protected\def\leftbox       {\hpack\bgroup\dowithnextboxcs\syst_boxes_leftbox_finish       \placedbox}
@@ -2326,8 +2330,8 @@
 \permanent\protected\def\lrtbbox#1#2#3#4% l r t b
   {\bgroup
    \dowithnextboxcontent
-     {\advance\hsize-#1\advance\hsize-#2\relax
-      \advance\vsize-#3\advance\vsize-#4\relax}
+     {\advanceby\hsize-#1\advanceby\hsize-#2\relax
+      \advanceby\vsize-#3\advanceby\vsize-#4\relax}
      {\forgetall\vpack to \vsize{\vskip#3\hpack to \hsize{\hskip#1\box\nextbox\hss}\vss}\egroup}
      \vbox}
 
@@ -2342,7 +2346,7 @@
 \def\syst_boxes_toplinebox_finish
   {\ifdim\dp\nextbox>\strutdepth
      \scratchdimen\dp\nextbox
-     \advance\scratchdimen-\strutdepth
+     \advanceby\scratchdimen-\strutdepth
      \getnoflines\scratchdimen
      \struttedbox{\box\nextbox}%
      \dorecurse\noflines\verticalstrut
@@ -2432,7 +2436,7 @@
 
 \installcorenamespace {boxstack}
 
-\newcount\c_syst_boxes_stack
+\newinteger\c_syst_boxes_stack
 
 \mutable\let\b_syst_boxes_stack\relax
 
@@ -2441,7 +2445,7 @@
    \letcsname\??boxstack\number\c_syst_boxes_stack\endcsname\b_syst_boxes_stack}
 
 \protected\def\syst_boxes_push#1#2%
-  {\global\advance\c_syst_boxes_stack\plusone
+  {\global\advanceby\c_syst_boxes_stack\plusone
    \expandafter\let\expandafter\b_syst_boxes_stack\csname\??boxstack\number\c_syst_boxes_stack\endcsname
    \ifrelax\b_syst_boxes_stack % cheaper then csname check as in most cases it's defined
       \syst_boxes_stack_allocate
@@ -2450,7 +2454,7 @@
 
 \protected\def\syst_boxes_pop#1#2%
   {#1\setbox#2\box\csname\??boxstack\number\c_syst_boxes_stack\endcsname
-   \global\advance\c_syst_boxes_stack\minusone}
+   \global\advanceby\c_syst_boxes_stack\minusone}
 
 \permanent\protected\def\localpushbox {\syst_boxes_push\relax}
 \permanent\protected\def\localpopbox  {\syst_boxes_pop \relax}
@@ -2757,9 +2761,9 @@
 %D \setbox0\hbox to 10cm{foo} \the\naturalwd0
 %D \stoptyping
 
-\newdimen\lastnaturalboxwd
-\newdimen\lastnaturalboxht
-\newdimen\lastnaturalboxdp
+\newdimension\lastnaturalboxwd
+\newdimension\lastnaturalboxht
+\newdimension\lastnaturalboxdp
 
 %D We can define these public in lua:
 

@@ -587,10 +587,10 @@
 
 %D Lists:
 
-\newdimen\d_publ_number_width
+\newdimension\d_publ_number_width
 
-\ifdefined\btxblock       \else \newcount\btxblock       \fi \btxblock\plusone
-\ifdefined\btxcitecounter \else \newcount\btxcitecounter \fi % maybe pass this to lua
+\ifdefined\btxblock       \else \newinteger\btxblock       \fi \btxblock\plusone
+\ifdefined\btxcitecounter \else \newinteger\btxcitecounter \fi % maybe pass this to lua
 
 \newtoks\everysetupbtxlistplacement % name will change
 \newtoks\everysetupbtxciteplacement % name will change
@@ -924,7 +924,7 @@
    \ifconditional#1\relax
      \stopnamedsection
    \fi
-   \global\advance\btxblock\plusone
+   \global\advanceby\btxblock\plusone
    \endgroup}
 
 \permanent\protected\def\placebtxrendering      {\publ_place_list_indeed\conditionalfalse\conditionalfalse}
@@ -967,7 +967,7 @@
 \permanent\protected\def\btxsetlisttag#1%
   {\clf_btxflushlisttag{\currentbtxdataset}#1\relax}
 
-\newcount\c_btx_list_index
+\newinteger\c_btx_list_index
 
 \lettonothing\m_btx_list_action
 
@@ -975,7 +975,7 @@
   {\btxsetlisttag{\c_btx_list_index}
    \expandafter\m_btx_list_action\expandafter{\currentbtxtag}%
    \ifnum\c_btx_list_index<\nofbtxlistentries
-     \advance\c_btx_list_index\plusone
+     \advanceby\c_btx_list_index\plusone
      \expandafter\publ_flush_list_step_command
    \else
      \glet\m_btx_list_action\relax
@@ -985,7 +985,7 @@
   {\btxsetlisttag{\c_btx_list_index}
    \directsetup{\m_btx_list_action}%
    \ifnum\c_btx_list_index<\nofbtxlistentries
-     \advance\c_btx_list_index\plusone
+     \advanceby\c_btx_list_index\plusone
      \expandafter\publ_flush_list_step_setup
    \else
      \glet\m_btx_list_action\relax
@@ -1048,11 +1048,11 @@
 
 \permanent\protected\def\btxstartlistentry % maybe pass i
   {\begingroup
-   \global\advance\c_btx_list_reference\plusone}
+   \global\advanceby\c_btx_list_reference\plusone}
 
 \permanent\protected\def\btxstoplistentry
   {\iftrialtypesetting
-     \global\advance\c_btx_list_reference\minusone
+     \global\advanceby\c_btx_list_reference\minusone
    \fi
    \endgroup}
 
@@ -1110,7 +1110,7 @@
      \btx_reference_indeed
    \egroup}
 
-\newcount\c_btx_list_reference
+\newinteger\c_btx_list_reference
 
 \protected\def\btx_list_reference_inject
   {\dontleavehmode\begingroup % no box

@@ -114,22 +114,22 @@
 
 %D In order to avoid a mixup we use quite some local registers.
 
-\newdimen      \d_page_mix_column_width
-\newdimen      \d_page_mix_max_height
-\newdimen      \d_page_mix_max_width
-\newdimen      \d_page_mix_distance
-\newcount      \c_page_mix_n_of_columns
-\newdimen      \d_page_mix_threshold
-\newdimen      \d_page_mix_leftskip
-\newdimen      \d_page_mix_rightskip
+\newdimension  \d_page_mix_column_width
+\newdimension  \d_page_mix_max_height
+\newdimension  \d_page_mix_max_width
+\newdimension  \d_page_mix_distance
+\newinteger    \c_page_mix_n_of_columns
+\newdimension  \d_page_mix_threshold
+\newdimension  \d_page_mix_leftskip
+\newdimension  \d_page_mix_rightskip
 
-\newdimen      \d_page_mix_balance_step
+\newdimension  \d_page_mix_balance_step
 \setnewconstant\c_page_mix_balance_cycles   500
 
 \setnewconstant\c_page_mix_break_forced    -123
 
 \newbox        \b_page_mix_preceding
-\newdimen      \d_page_mix_preceding_height
+\newdimension  \d_page_mix_preceding_height
 
 \newbox        \b_page_mix_collected
 
@@ -619,11 +619,11 @@
 %      \vskip-\struttotal % probably no longer needed
 %    \fi}
 
-\newcount\c_page_mix_otr_nesting
+\newinteger\c_page_mix_otr_nesting
 
 % \defcsname\??mixedcolumnsbefore\s!otr\endcsname
 %   {\par
-%    \global\advance\c_page_mix_otr_nesting\plusone
+%    \global\advanceby\c_page_mix_otr_nesting\plusone
 %    \ifcase\c_page_mix_otr_nesting\or
 %      \ifzeropt\pagetotal\else
 %        \obeydepth % we could handle this in pre material
@@ -632,7 +632,7 @@
 
 \defcsname\??mixedcolumnsbefore\s!otr\endcsname
   {\par
-   \global\advance\c_page_mix_otr_nesting\plusone
+   \global\advanceby\c_page_mix_otr_nesting\plusone
    \ifcase\c_page_mix_otr_nesting\or
      \ifzeropt\pagetotal\else
        % make sure that whitespace and blanks are done
@@ -694,7 +694,7 @@
      \page_otr_command_set_vsize
      \page_otr_command_set_hsize
    \fi
-   \global\advance\c_page_mix_otr_nesting\minusone}
+   \global\advanceby\c_page_mix_otr_nesting\minusone}
 
 %D The splitting and therefore balancing is done at the \LUA\ end. This gives
 %D more readable code and also makes it easier to deal with insertions like
@@ -728,9 +728,9 @@
    \relax
    \deadcycles\zerocount}
 
-\newdimen\mixedcolumnseparatorheight
-\newdimen\mixedcolumnseparatordepth
-\newdimen\mixedcolumnseparatorwidth
+\newdimension\mixedcolumnseparatorheight
+\newdimension\mixedcolumnseparatordepth
+\newdimension\mixedcolumnseparatorwidth
 
 \def\page_mix_routine_package_step
   {% needs packaging anyway
@@ -999,7 +999,7 @@
 %        \setbox\scratchbox\vbox % tricky met objecten ?
 %          {\blank[\rootfloatparameter\c!spacebefore]
 %           \snaptogrid\vbox{\vskip\floatheight}}% copy?
-%        \advance\dimen0\dimexpr\ht\scratchbox+2\openlineheight+.5\lineheight\relax\relax % needed because goal a bit higher
+%        \advanceby\dimen0\dimexpr\ht\scratchbox+2\openlineheight+.5\lineheight\relax\relax % needed because goal a bit higher
 %        \ifdim\dimen0>\dimen2
 %          \global\setfalse\c_page_floats_room
 %    \else

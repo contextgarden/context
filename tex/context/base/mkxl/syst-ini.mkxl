@@ -343,6 +343,29 @@
 
 \immutable\integerdef\statuswrite   \minusone
 
+\immutable\dimensiondef\zeropoint     0pt
+
+%D These alternatives avoid the indirect references. Don't use these for generic
+%D code because one never knows what happens elsewhere.
+
+% \permanent\protected\def\newinteger   #1{\ifdefined#1\else\integerdef   #1\fi\zerocount} % can be relax
+% \permanent\protected\def\newdimension #1{\ifdefined#1\else\dimensiondef #1\fi\zeropoint}
+% \permanent\protected\def\newgluespec  #1{\ifdefined#1\else\gluespecdef  #1\fi\zeropoint}
+% \permanent\protected\def\newmugluespec#1{\ifdefined#1\else\mugluespecdef#1\fi\zeropoint}
+
+\permanent\protected\def\newinteger   #1{\integerdef   #1\zerocount}
+\permanent\protected\def\newdimension #1{\dimensiondef #1\zeropoint}
+\permanent\protected\def\newgluespec  #1{\gluespecdef  #1\zeropoint}
+\permanent\protected\def\newmugluespec#1{\mugluespecdef#1\zeropoint}
+
+%D The aliasing here is tricky: we need to make sure the alias is not let to the
+%D current value but behaves dynamic. Instead we can use just \newcount, unless of
+%D course I introduce a reference in the engine which is not more efficient so then
+%D one can as well use registers.
+
+\protected\def\aliasinteger  #1#2{\untraced\protected\def#1{#2}}% name parent
+\protected\def\aliasdimension#1#2{\untraced\protected\def#1{#2}}% name parent
+
 %D So, effectively we start allocating from 256 and upwards. The inserts sit in the
 %D range 128 upto 254. Page numbers use the counters 0 upto 9 and the pagebox is
 %D 255. Users can use the scratch registers upto 31 without problem but all others
@@ -375,11 +398,13 @@
   {\ifrelax#1%
     %\writestatus{!!!!!!!!!!}{\string #1 => RELAX}%
      \unletfrozen#1%
-     \newcount#1%
+   % \newcount#1%
+     \newinteger#1%
    \orelse\ifdefined#1%
     %\writestatus{!!!!!!!!!!}{\string #1 => DEFINED}%
    \else
-     \newcount#1%
+   % \newcount#1%
+     \newinteger#1%
    \fi}
 
 \permanent\protected\def\setnewconstant#1{\newconstant#1#1}
@@ -416,7 +441,7 @@
 
 \def\syst_basics_allocate_yes#1#2#3#4#5% last class method max name
   {\ifnum#1<#4\relax
-     \global\advance#1\plusone
+     \global\advanceby#1\plusone
      \permanent\global#3#5=#1\relax
    \else
      \writestatus{warning}{no room for \string#2\space \string#5\space (max: \number#4)}%
@@ -462,30 +487,30 @@
 %D some available. The private ones are used in cases where we don't want to
 %D intrude on normal scratch ones.
 
-\newcount \scratchcounter \newcount \globalscratchcounter \newcount \privatescratchcounter
-\newdimen \scratchdimen   \newdimen \globalscratchdimen   \newdimen \privatescratchdimen
-\newskip  \scratchskip    \newskip  \globalscratchskip    \newskip  \privatescratchskip
-\newmuskip\scratchmuskip  \newmuskip\globalscratchmuskip  \newmuskip\privatescratchmuskip
-\newtoks  \scratchtoks    \newtoks  \globalscratchtoks    \newtoks  \privatescratchtoks
-\newbox   \scratchbox     \newbox   \globalscratchbox     \newbox   \privatescratchbox
+\newinteger  \scratchcounter    \newinteger  \globalscratchcounter \newinteger  \privatescratchcounter
+\newdimension\scratchdimen      \newdimension\globalscratchdimen   \newdimension\privatescratchdimen
+\newgluespec \scratchskip       \newgluespec \globalscratchskip    \newgluespec \privatescratchskip
+\newmuskip   \scratchmuskip     \newmuskip   \globalscratchmuskip  \newmuskip   \privatescratchmuskip
+\newtoks     \scratchtoks       \newtoks     \globalscratchtoks    \newtoks     \privatescratchtoks
+\newbox      \scratchbox        \newbox      \globalscratchbox     \newbox      \privatescratchbox
 
-\newcount \scratchcounterone \newcount \scratchcountertwo \newcount \scratchcounterthree
-\newdimen   \scratchdimenone \newdimen   \scratchdimentwo \newdimen   \scratchdimenthree
-\newskip     \scratchskipone \newskip     \scratchskiptwo \newskip     \scratchskipthree
-\newmuskip \scratchmuskipone \newmuskip \scratchmuskiptwo \newmuskip \scratchmuskipthree
-\newtoks     \scratchtoksone \newtoks     \scratchtokstwo \newtoks     \scratchtoksthree
-\newbox       \scratchboxone \newbox       \scratchboxtwo \newbox       \scratchboxthree
+\newinteger  \scratchcounterone \newinteger  \scratchcountertwo    \newinteger  \scratchcounterthree
+\newdimension\scratchdimenone   \newdimension\scratchdimentwo      \newdimension\scratchdimenthree
+\newgluespec \scratchskipone    \newgluespec \scratchskiptwo       \newgluespec \scratchskipthree
+\newmuskip   \scratchmuskipone  \newmuskip   \scratchmuskiptwo     \newmuskip   \scratchmuskipthree
+\newtoks     \scratchtoksone    \newtoks     \scratchtokstwo       \newtoks     \scratchtoksthree
+\newbox      \scratchboxone     \newbox      \scratchboxtwo        \newbox      \scratchboxthree
 
-\newcount \scratchcounterfour \newcount \scratchcounterfive \newcount \scratchcountersix
-\newdimen   \scratchdimenfour \newdimen   \scratchdimenfive \newdimen   \scratchdimensix
-\newskip     \scratchskipfour \newskip     \scratchskipfive \newskip     \scratchskipsix
-\newmuskip \scratchmuskipfour \newmuskip \scratchmuskipfive \newmuskip \scratchmuskipsix
-\newtoks     \scratchtoksfour \newtoks     \scratchtoksfive \newtoks     \scratchtokssix
-\newbox       \scratchboxfour \newbox       \scratchboxfive \newbox       \scratchboxsix
+\newinteger  \scratchcounterfour\newinteger  \scratchcounterfive   \newinteger  \scratchcountersix
+\newdimension\scratchdimenfour  \newdimension\scratchdimenfive     \newdimension\scratchdimensix
+\newgluespec \scratchskipfour   \newgluespec \scratchskipfive      \newgluespec \scratchskipsix
+\newmuskip   \scratchmuskipfour \newmuskip   \scratchmuskipfive    \newmuskip   \scratchmuskipsix
+\newtoks     \scratchtoksfour   \newtoks     \scratchtoksfive      \newtoks     \scratchtokssix
+\newbox      \scratchboxfour    \newbox       \scratchboxfive      \newbox      \scratchboxsix
 
-\newcount\globalscratchcounterone
-\newcount\globalscratchcountertwo
-\newcount\globalscratchcounterthree
+\newinteger\globalscratchcounterone
+\newinteger\globalscratchcountertwo
+\newinteger\globalscratchcounterthree
 
 \mutable\let\scratchmacro   \relax
 \mutable\let\scratchmacroone\relax
@@ -505,46 +530,46 @@
 %D
 %D A few more scratch dimensions:
 
-\newdimen\scratchwidth
-\newdimen\scratchheight
-\newdimen\scratchdepth
-\newdimen\scratchitalic
-\newdimen\scratchtotal
+\newdimension\scratchwidth
+\newdimension\scratchheight
+\newdimension\scratchdepth
+\newdimension\scratchitalic
+\newdimension\scratchtotal
 
-\newdimen\scratchoffset
-\newdimen\scratchleftoffset
-\newdimen\scratchrightoffset
-\newdimen\scratchtopoffset
-\newdimen\scratchbottomoffset
+\newdimension\scratchoffset
+\newdimension\scratchleftoffset
+\newdimension\scratchrightoffset
+\newdimension\scratchtopoffset
+\newdimension\scratchbottomoffset
 
-\newdimen\scratchdistance
+\newdimension\scratchdistance
 
-\newdimen\scratchhsize
-\newdimen\scratchvsize
+\newdimension\scratchhsize
+\newdimension\scratchvsize
 
-\newdimen\scratchxoffset
-\newdimen\scratchyoffset
-\newdimen\scratchhoffset
-\newdimen\scratchvoffset
+\newdimension\scratchxoffset
+\newdimension\scratchyoffset
+\newdimension\scratchhoffset
+\newdimension\scratchvoffset
 
-\newdimen\scratchxposition
-\newdimen\scratchyposition
+\newdimension\scratchxposition
+\newdimension\scratchyposition
 
-\newcount\scratchnx
-\newcount\scratchny
+\newinteger\scratchnx
+\newinteger\scratchny
 
-\newcount\scratchmx
-\newcount\scratchmy
+\newinteger\scratchmx
+\newinteger\scratchmy
 
-\newcount\scratchmin
-\newcount\scratchmax
+\newinteger\scratchmin
+\newinteger\scratchmax
 
-\newcount\scratchunicode
+\newinteger\scratchunicode
 
-\newdimen\scratchleftskip
-\newdimen\scratchrightskip
-\newdimen\scratchtopskip
-\newdimen\scratchbottomskip
+\newdimension\scratchleftskip
+\newdimension\scratchrightskip
+\newdimension\scratchtopskip
+\newdimension\scratchbottomskip
 
 %D More allocations:
 
@@ -560,7 +585,7 @@
 
 \immutable\integerdef    \maxcount 2147483647
 
-\immutable\dimensiondef  \zeropoint     0pt
+%immutable\dimensiondef  \zeropoint     0pt
 \immutable\dimensiondef  \onepoint      1pt
 \immutable\dimensiondef  \halfapoint    0.5pt
 \immutable\dimensiondef  \maxdimen      16383.99999pt % 1073741823sp
@@ -620,6 +645,7 @@
 \immutable\integerdef\medcard            32768
 \immutable\integerdef\maxcard            65536 % pdftex has less mathchars
 \immutable\integerdef\maxcardminusone    65535
+\immutable\integerdef\maxiterator       "FFFFF
 
 \immutable\integerdef\binaryshiftedten          1024
 \immutable\integerdef\binaryshiftedtwenty    1048576
@@ -1137,9 +1163,9 @@
 %D The following registers are kind of standard and (for the moment) we define
 %D them here. This might change.
 
-\newskip \bigskipamount    \bigskipamount   = 12pt plus 4pt minus 4pt
-\newskip \medskipamount    \medskipamount   =  6pt plus 2pt minus 2pt
-\newskip \smallskipamount  \smallskipamount =  3pt plus 1pt minus 1pt
+\newgluespec \bigskipamount    \bigskipamount   = 12pt plus 4pt minus 4pt
+\newgluespec \medskipamount    \medskipamount   =  6pt plus 2pt minus 2pt
+\newgluespec \smallskipamount  \smallskipamount =  3pt plus 1pt minus 1pt
 
 \baselineskip  = 12pt
 \lineskip      =  1pt
@@ -1156,8 +1182,8 @@
 %D Again a few kind-of-extensions the core. These come from plain \TEX\ but are
 %D probably not used in \CONTEXT.
 
-\newskip \hideskip   \hideskip  = -1000pt plus 1fill           % obsolete
-\newskip \centering  \centering = 0pt plus 1000pt minus 1000pt % obsolete
+\newgluespec \hideskip   \hideskip  = -1000pt plus 1fill           % obsolete
+\newgluespec \centering  \centering = 0pt plus 1000pt minus 1000pt % obsolete
 
 % \permanent\def\hidewidth % for alignment entries that can stick out
 %   {\hskip\hideskip}
@@ -1176,7 +1202,7 @@
    \mscount#1\relax
    \loop
      \ifnum\mscount>\plusone
-       \spanomit \advance\mscount\minusone
+       \spanomit \advanceby\mscount\minusone
    \repeat}
 
 \let\nopdfcompression        \relax % later
@@ -1233,7 +1259,7 @@
   {\ifcsname ??#1\endcsname
      \immediate\write\statuswrite{fatal error: duplicate system namespace '#1'}%
    \else
-     \global\advance\c_syst_helpers_n_of_namespaces\plusone
+     \global\advanceby\c_syst_helpers_n_of_namespaces\plusone
      \immutable\cdefcsname ??#1\endcsname{\v_interfaces_prefix_template_system}%
    \fi}
 
@@ -1337,6 +1363,8 @@
 %D
 %D There is a little extra overhead in the overload protection but not that much.
 
+% integerdef is local
+
 \permanent\countdef\c_syst_local_count  = 231 \c_syst_local_count  = \c_syst_max_allocated_count
 \permanent\countdef\c_syst_local_dimen  = 232 \c_syst_local_dimen  = \c_syst_max_allocated_dimen
 \permanent\countdef\c_syst_local_skip   = 233 \c_syst_local_skip   = \c_syst_max_allocated_skip
@@ -1359,7 +1387,7 @@
 
 \permanent\protected\def\setnewlocalcount#1%
   {\ifnum\c_syst_local_count>\c_syst_max_allocated_count
-     \advance\c_syst_local_count\minusone
+     \advanceby\c_syst_local_count\minusone
      \overloaded\frozen\countdef#1\c_syst_local_count
    \else
      \syst_local_overflow_count#1%
@@ -1368,7 +1396,7 @@
 
 \permanent\protected\def\setnewlocaldimen#1%
   {\ifnum\c_syst_local_dimen>\c_syst_max_allocated_dimen
-     \advance\c_syst_local_dimen\minusone\dimendef#1\c_syst_local_dimen
+     \advanceby\c_syst_local_dimen\minusone\dimendef#1\c_syst_local_dimen
    \else
      \syst_local_overflow_dimen#1%
    \fi
@@ -1376,7 +1404,7 @@
 
 \permanent\protected\def\setnewlocalskip#1%
   {\ifnum\c_syst_local_skip>\c_syst_max_allocated_skip
-     \advance\c_syst_local_skip\minusone
+     \advanceby\c_syst_local_skip\minusone
      \overloaded\frozen\skipdef#1\c_syst_local_skip
    \else
      \syst_local_overflow_skip#1%
@@ -1385,7 +1413,7 @@
 
 \permanent\protected\def\setnewlocalmuskip#1%
   {\ifnum\c_syst_local_muskip>\c_syst_max_allocated_muskip
-     \advance\c_syst_local_muskip\minusone
+     \advanceby\c_syst_local_muskip\minusone
      \overloaded\frozen\muskipdef#1\c_syst_local_muskip
    \else
      \syst_local_overflow_muskip#1%
@@ -1394,7 +1422,7 @@
 
 \permanent\protected\def\setnewlocaltoks#1%
   {\ifnum\c_syst_local_toks>\c_syst_max_allocated_toks
-     \advance\c_syst_local_toks\minusone
+     \advanceby\c_syst_local_toks\minusone
      \overloaded\frozen\toksdef#1\c_syst_local_toks
    \else
      \syst_local_overflow_toks#1%
@@ -1403,7 +1431,7 @@
 
 \permanent\protected\def\setnewlocalbox#1%
   {\ifnum\c_syst_local_box>\c_syst_max_allocated_box
-     \advance\c_syst_local_box\minusone
+     \advanceby\c_syst_local_box\minusone
      \overloaded\frozen\integerdef#1\c_syst_local_box
    \else
      \syst_local_overflow_box#1%
@@ -1412,7 +1440,7 @@
 
 \permanent\protected\def\newlocalread#1% so no set
   {\ifnum\c_syst_local_read>\c_syst_max_allocated_read
-     \advance\c_syst_local_read\minusone
+     \advanceby\c_syst_local_read\minusone
      \overloaded\frozen\integerdef#1\c_syst_local_read
    \else
      \syst_local_overflow_read#1%
@@ -1420,7 +1448,7 @@
 
 \permanent\protected\def\newlocalwrite#1% so no set
   {\ifnum\c_syst_local_write>\c_syst_max_allocated_write
-     \advance\c_syst_local_write\minusone
+     \advanceby\c_syst_local_write\minusone
      \overloaded\frozen\integerdef#1\c_syst_local_write
    \else
      \syst_local_overflow_write#1%

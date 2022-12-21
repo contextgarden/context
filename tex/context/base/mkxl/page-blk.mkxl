@@ -33,7 +33,7 @@
 
 \unprotect
 
-\newcount\c_pages_prerolled
+\newinteger\c_pages_prerolled
 
 \permanent\protected\def\startpageblock[#1]%
   {\page

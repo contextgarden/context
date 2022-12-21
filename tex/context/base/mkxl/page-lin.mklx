@@ -56,7 +56,7 @@
 \mutable\let\linenumber\!!zerocount
 
 \newbox     \b_page_lines_scratch
-\newcount   \c_page_lines_reference
+\newinteger \c_page_lines_reference
 \newconstant\c_page_lines_nesting
 
 \newconditional\tracelinenumbering % we keep this for old times sake
@@ -133,7 +133,7 @@
 
 \protected\def\page_lines_some_reference#1#2#3%
   {\dontleavehmode\begingroup
-   \global\advance\c_page_lines_reference\plusone
+   \global\advanceby\c_page_lines_reference\plusone
    \c_attr_linereference\c_page_lines_reference
    #3% todo: #3{#1} as there is no need to pass #1 as part of #3
    % for the moment we use a simple system i.e. no prefixes etc .. todo: store as number
@@ -158,8 +158,10 @@
 \setnewconstant\c_page_lines_location \plusone  % 0=middle, 1=left, 2=right, 3=inner, 4=outer, 5=text, 6=begin, 7=end
 \setnewconstant\c_page_lines_alignment\plusfive % 0=middle, 1=left, 2=right, 5=auto
 
-\newdimen\d_page_lines_width
-\newdimen\d_page_lines_distance
+\newdimension  \d_page_lines_width
+\newdimension  \d_page_lines_distance
+
+\newinteger    \c_pages_lines_nesting
 
 \newevery \beforeeverylinenumbering \relax
 \newevery \aftereverylinenumbering  \relax
@@ -196,12 +198,10 @@
 % \startlinenumbering[<startvalue>|continue|settings|name]
 % \startlinenumbering[name][<startvalue>|continue|settings]
 
-\newcount\c_pages_lines_nesting
-
 \permanent\tolerant\protected\def\startlinenumbering[#1]#*[#2]%
   {\begingroup
    \page_postprocessors_linenumbers_check
-   \advance\c_pages_lines_nesting\plusone
+   \advanceby\c_pages_lines_nesting\plusone
    \ifnum\c_pages_lines_nesting>\plusone
      \expandafter\gobbletwooptionals
    \orelse\ifparameter#2\or
@@ -288,17 +288,17 @@
    \ifhmode \else
      \ifx\p_location\v!text
        \ifdim\leftskip>\zeropoint \else
-         \advance\leftskip\linenumberingparameter\c!margin
+         \advanceby\leftskip\linenumberingparameter\c!margin
          \settrue\c_page_lines_auto_narrow
        \fi
      \orelse\ifx\p_location\v!begin
        \ifdim\leftskip>\zeropoint \else
-         \advance\leftskip\linenumberingparameter\c!margin
+         \advanceby\leftskip\linenumberingparameter\c!margin
          \settrue\c_page_lines_auto_narrow
        \fi
      \orelse\ifx\p_location\v!end
        \ifdim\leftskip>\zeropoint \else
-         \advance\rightskip\linenumberingparameter\c!margin
+         \advanceby\rightskip\linenumberingparameter\c!margin
          \settrue\c_page_lines_auto_narrow
        \fi
      \fi

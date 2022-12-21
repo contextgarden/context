@@ -40,7 +40,7 @@
 % \definepagebreak[forsure][yes,+4]
 
 \newconditional\c_page_breaks_enabled   \settrue\c_page_breaks_enabled
-\newcount      \c_page_breaks_prevpage
+\newinteger    \c_page_breaks_prevpage
 
 \newtoks\everybeforepagebreak
 \newtoks\everyafterpagebreak
@@ -342,8 +342,8 @@
 
 %D Test page breaks.
 
-% \newdimen   \d_page_tests_test
-% \newconstant\c_page_tests_mode
+% \newdimension\d_page_tests_test
+% \newconstant \c_page_tests_mode
 
 \newconstant\testpagemethod  % old
 \newconstant\testpagetrigger % old

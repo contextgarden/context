@@ -78,7 +78,7 @@
 %D test test\number\lastnodeid test
 %D \stoptyping
 
-\newcount\c_syst_last_node_id
+\newinteger\c_syst_last_node_id
 
 \permanent\protected\def\doifelselastnode      {\clf_lastnodeequals}                 % can be public implementors
 \permanent\protected\def\doifelseatwordboundary{\clf_atwordboundary}                 % can be public implementors

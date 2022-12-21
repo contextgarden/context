@@ -71,15 +71,15 @@
 %     \stopalign
 % \stopformula
 
-\newtoks\mathdisplayaligntweaks
+\newtoks     \mathdisplayaligntweaks
 
-\newtoks \t_math_align_a
-\newtoks \t_math_align_b
-\newtoks \t_math_align_c
-\newskip \d_math_eqalign_distance
-\newskip \d_math_eqalign_rulethickness
-\newdimen\d_math_eqalign_number_distance
-\newcount\c_math_eqalign_repeat
+\newtoks     \t_math_align_a
+\newtoks     \t_math_align_b
+\newtoks     \t_math_align_c
+\newgluespec \d_math_eqalign_distance
+\newgluespec \d_math_eqalign_rulethickness
+\newdimension\d_math_eqalign_number_distance
+\newinteger  \c_math_eqalign_repeat
 
 \mutable\def\displayopenupvalue{.25\bodyfontsize}
 
@@ -110,9 +110,9 @@
         \toksapp\scratchtoks {\tabskip\d_math_eqalign_distance}%
         % so ...
         \toksapp\scratchtoks {\relax\math_eqalign_distance}%
-        \etoksapp\scratchtoks{\global\advance\c_math_eqalign_repeat\the\scratchcountertwo\relax}%
+        \etoksapp\scratchtoks{\global\advanceby\c_math_eqalign_repeat\the\scratchcountertwo\relax}%
       \else
-        \advance\scratchcounter\plusone
+        \advanceby\scratchcounter\plusone
       \fi
       \toksapp\scratchtoks\t_math_align_b}%
    \toksapp\scratchtoks\t_math_align_c
@@ -381,14 +381,14 @@
 
 %D Here we implement the user interface part. We start with basic math alignments:
 
-\newcount      \c_math_eqalign_column
-\newcount      \c_math_eqalign_row
+\newinteger    \c_math_eqalign_column
+\newinteger    \c_math_eqalign_row
 \newconditional\c_math_eqalign_first
 
-\newtoks \everymathalignment
-\newtoks \everymathalignmentdone
+\newtoks       \everymathalignment
+\newtoks       \everymathalignmentdone
 
-\newdimen\d_math_eqalign_number_threshold
+\newdimension  \d_math_eqalign_number_threshold
 
 \definesystemattribute[mathnumberlocation] [public]
 \definesystemattribute[mathnumberthreshold][public]
@@ -519,7 +519,7 @@
 % % [align=2:right]
 % % [align={1:left,2:middle,3:right}]
 
-\newskip\s_strc_math_alignment_inbetween
+\newgluespec\s_strc_math_alignment_inbetween
 
 \def\strc_math_setup_spacing_aligned#1%
   {\begingroup
@@ -551,7 +551,7 @@
    \edef\p_math_alignment_number{\mathalignmentparameter\c!number}%
    \processcommacommand
      [\mathalignmentparameter\c!align]%
-     {\advance\c_math_eqalign_column\plusone\math_eqalign_set_column}% takes argument
+     {\advanceby\c_math_eqalign_column\plusone\math_eqalign_set_column}% takes argument
    \global\c_math_eqalign_column\plusone
    \strc_math_setup_spacing_aligned\mathalignmentparameter
    \dostarttagged\t!math\empty
@@ -667,12 +667,12 @@
 
 \def\math_first_in_eqalign
   {\global\c_math_eqalign_column\plusone
-   \global\advance\c_math_eqalign_row\plusone
+   \global\advanceby\c_math_eqalign_row\plusone
    \dostarttagged\t!mtablerow \empty
    \dostarttagged\t!mtablecell\empty}
 
 \def\math_next_in_eqalign
-  {\global\advance\c_math_eqalign_column\plusone
+  {\global\advanceby\c_math_eqalign_column\plusone
    \dostoptagged % finish cell
    \dostarttagged\t!mtablecell\empty}
 
@@ -731,7 +731,7 @@
   {\normalexpanded{\math_eqalign_set_column_indeed[#1::]}}
 
 \def\math_eqalign_set_columns_step
-  {\advance\c_math_eqalign_column\plusone
+  {\advanceby\c_math_eqalign_column\plusone
   %\c_math_matrix_columns\c_math_eqalign_column
    \math_eqalign_set_column}
 
@@ -920,7 +920,7 @@
 
 \let\math_cases_strut\relax
 
-\newcount\c_math_cases_nc
+\newinteger\c_math_cases_nc
 
 \def\math_cases_NC_zero
   {\ifmmode\else\startimath\fi}
@@ -950,7 +950,7 @@
    \else
      % error
    \fi
-   \global\advance\c_math_cases_nc\plusone}
+   \global\advanceby\c_math_cases_nc\plusone}
 
 \permanent\protected\def\math_cases_TC
   {\ifcase\c_math_cases_nc
@@ -962,7 +962,7 @@
    \else
      % error
    \fi
-   \global\advance\c_math_cases_nc\plusone}
+   \global\advanceby\c_math_cases_nc\plusone}
 
 \noaligned\tolerant\permanent\protected\def\math_cases_NR[#1]#*[#2]%
   {\unskip
@@ -1124,7 +1124,7 @@
     \frozen\instance          \defcsname \e!stop \currentmathmatrix\endcsname{\math_matrix_stop}% no u else lookahead problem
 \to \everydefinemathmatrix
 
-\newcount\c_math_matrix_columns
+\newinteger\c_math_matrix_columns
 
 \def\math_matrix_start_table
   {\global\c_math_eqalign_column\zerocount
@@ -1141,7 +1141,7 @@
   {\beginlocalcontrol
    \global\c_math_matrix_columns\c_math_eqalign_column
    \global\c_math_eqalign_column\zerocount
-   \global\advance\c_math_eqalign_row\plusone
+   \global\advanceby\c_math_eqalign_row\plusone
    \dostarttagged\t!mtablerow\empty
    \endlocalcontrol}
 
@@ -1305,7 +1305,7 @@
 \def\math_matrix_preamble
   {\math_matrix_strut
    \math_matrix_anchor_first
-   \global\advance\c_math_eqalign_column\plusone
+   \global\advanceby\c_math_eqalign_column\plusone
    \math_matrix_start_cell
      \aligncontent
    \math_matrix_stop_cell
@@ -1315,7 +1315,7 @@
    \kern.5\d_math_eqalign_distance % hskip
    \aligncontent
    \aligntab
-   \global\advance\c_math_eqalign_column\plusone
+   \global\advanceby\c_math_eqalign_column\plusone
    \math_matrix_start_cell
      \aligncontent
    \math_matrix_stop_cell}
@@ -1401,7 +1401,7 @@
 \noaligned\permanent\tolerant\protected\def\math_matrix_HL[#1]#*%
   {\noalign\bgroup
      \math_matrix_check_rule[#1]%
-     \divide\scratchdimen\plustwo
+     \divideby\scratchdimen\plustwo
      \ifdim\scratchdimen>\zeropoint
      % \autorule\s!height\scratchdimen\s!depth\scratchdimen\relax
        \scratchdistance\mathmatrixparameter\c!toffset\relax
@@ -1567,7 +1567,7 @@
   {\beginlocalcontrol
    \global\c_math_matrix_columns\c_math_eqalign_column
    \global\c_math_eqalign_column\zerocount
-   \global\advance\c_math_eqalign_row\plusone
+   \global\advanceby\c_math_eqalign_row\plusone
    \dostarttagged\t!mtablerow\empty
    \endlocalcontrol}
 
@@ -1584,15 +1584,15 @@
 
 \definesystemattribute[mathmatrixornament][public]
 
-\newdimen\d_math_matrix_margin_l
-\newdimen\d_math_matrix_margin_r
-\newdimen\d_math_matrix_margin_t
-\newdimen\d_math_matrix_margin_b
+\newdimension\d_math_matrix_margin_l
+\newdimension\d_math_matrix_margin_r
+\newdimension\d_math_matrix_margin_t
+\newdimension\d_math_matrix_margin_b
 
-\newboundary\c_math_matrix_ornament_l
-\newboundary\c_math_matrix_ornament_r
-\newboundary\c_math_matrix_ornament_t
-\newboundary\c_math_matrix_ornament_b
+\newboundary \c_math_matrix_ornament_l
+\newboundary \c_math_matrix_ornament_r
+\newboundary \c_math_matrix_ornament_t
+\newboundary \c_math_matrix_ornament_b
 
 % anchors are wrong now
 
@@ -1686,8 +1686,8 @@
  % \edef\p_rulecolor{\mathmatrixparameter\c!rulecolor}
    \edef\math_matrix_set_style{\mathmatrixparameter\c!style}}
 
-\newcount\c_math_eqalign_column_saved
-\newcount\c_math_eqalign_row_saved
+\newinteger\c_math_eqalign_column_saved
+\newinteger\c_math_eqalign_row_saved
 
 % \installglobalmacrostack\c_math_matrix_first
 
@@ -1750,8 +1750,8 @@
    \ifconditional\c_math_matrix_text
      \ifcstok{\mathmatrixparameter\c!left\mathmatrixparameter\c!right}\emptytoks\else
        \scratchdistance\dimexpr(\wd\scratchbox-\scratchwidth)/\plustwo\relax
-       \advance\d_math_matrix_margin_l\scratchdistance
-       \advance\d_math_matrix_margin_r\scratchdistance
+       \advanceby\d_math_matrix_margin_l\scratchdistance
+       \advanceby\d_math_matrix_margin_r\scratchdistance
        \clf_shiftmatrixornaments\scratchbox
      \fi
    \fi
@@ -2136,12 +2136,11 @@
 \newconditional\c_strc_math_display_overflow
 \newconstant   \c_strc_math_number_location
 \newconstant   \c_strc_math_number_variant
-\newdimen      \d_strc_math_display_width
+\newdimension  \d_strc_math_display_width
 \newconstant   \c_strc_formulas_frame_mode
-\newdimen      \d_strc_math_indent
+\newdimension  \d_strc_math_indent
 \newconditional\c_strc_math_indent
-
-\newdimen\d_strc_math_framed_width
+\newdimension  \d_strc_math_framed_width
 
 \defcsname\??formulaoption\v!frame\endcsname
   {\edef\p_frame{\formulaparameter\c!frame}%
@@ -2797,14 +2796,14 @@
    \enablematrixalign
    \halign callback \s!attr \mathnumberlocationattribute \zerocount \bgroup
      \global\c_math_eqalign_column\zerocount
-     \global\advance\c_math_eqalign_row\zerocount
+     \global\advanceby\c_math_eqalign_row\zerocount
      \ignorespaces
      \aligncontent % dummy
      \removeunwantedspaces
      \lastleftclass \mathbegincode
      \lastrightclass\mathendcode
      \aligntab
-     \global\advance\c_math_eqalign_column\plusone
+     \global\advanceby\c_math_eqalign_column\plusone
      \math_left_of_eqalign  % \hfil
      \ignorespaces
      \math_align_strut
@@ -2815,7 +2814,7 @@
      \math_right_of_eqalign % \hfil
      \aligntab
      \aligntab
-     \global\advance\c_math_eqalign_column\plusone
+     \global\advanceby\c_math_eqalign_column\plusone
      \math_left_of_eqalign  % \hfil
      \ifx\m_simplealign_distance\v!math
        \mathbeginclass\lastrightclass

@@ -32,50 +32,50 @@
 %D Earth, sophisticated Massive Attack video clips, impressive Davie504 movies
 %D and so on).
 
-\newdimen       \d_page_sides_margin
-\newdimen       \d_page_sides_height       % includes the topskip
-\newdimen       \d_page_sides_width
-\newdimen       \d_page_sides_hsize
-\newdimen       \d_page_sides_vsize
-\newdimen       \d_page_sides_vsize_reset
-\newdimen       \d_page_sides_progress
-\newdimen       \d_page_sides_page_total
-\newdimen       \d_page_sides_shape_down_shift
+\newdimension   \d_page_sides_margin
+\newdimension   \d_page_sides_height       % includes the topskip
+\newdimension   \d_page_sides_width
+\newdimension   \d_page_sides_hsize
+\newdimension   \d_page_sides_vsize
+\newdimension   \d_page_sides_vsize_reset
+\newdimension   \d_page_sides_progress
+\newdimension   \d_page_sides_page_total
+\newdimension   \d_page_sides_shape_down_shift
 
-\newdimen       \d_page_sides_leftoffset
-\newdimen       \d_page_sides_rightoffset
+\newdimension   \d_page_sides_leftoffset
+\newdimension   \d_page_sides_rightoffset
 
 %newbox         \b_page_sides_bottom
 \newbox         \b_page_sides_spill_over
 
-\newcount       \c_page_sides_lines_done
-\newcount       \c_page_sides_checks_done
-\newcount       \c_page_sides_n_of_lines
-\newcount       \c_page_sides_n_of_hang
+\newinteger     \c_page_sides_lines_done
+\newinteger     \c_page_sides_checks_done
+\newinteger     \c_page_sides_n_of_lines
+\newinteger     \c_page_sides_n_of_hang
 \newconstant    \c_page_sides_float_type
-\newcount       \c_page_sides_hangafter
+\newinteger     \c_page_sides_hangafter
 
 \newconditional \c_page_sides_short
 \newconditional \c_page_sides_flag
 \newconditional \c_page_sides_shape_down
 \newconditional \c_page_sides_keep_together
 
-\newdimen       \d_page_sides_shift
-\newdimen       \d_page_sides_extrashift
-\newdimen       \d_page_sides_leftshift
-\newdimen       \d_page_sides_rightshift
-\newdimen       \d_page_sides_leftskip
-\newdimen       \d_page_sides_rightskip
-\newdimen       \d_page_sides_maximum
-\newdimen       \d_page_sides_topskip
-\newdimen       \d_page_sides_bottomskip
-\newdimen       \d_page_sides_midskip
-\newdimen       \d_page_sides_downshift
-\newdimen       \d_page_sides_pagetotal
-\newdimen       \d_page_sides_topoffset
-\newdimen       \d_page_sides_bottomoffset
-\newdimen       \d_page_sides_toptotal
-\newdimen       \d_page_sides_bottomtotal
+\newdimension   \d_page_sides_shift
+\newdimension   \d_page_sides_extrashift
+\newdimension   \d_page_sides_leftshift
+\newdimension   \d_page_sides_rightshift
+\newdimension   \d_page_sides_leftskip
+\newdimension   \d_page_sides_rightskip
+\newdimension   \d_page_sides_maximum
+\newdimension   \d_page_sides_topskip
+\newdimension   \d_page_sides_bottomskip
+\newdimension   \d_page_sides_midskip
+\newdimension   \d_page_sides_downshift
+\newdimension   \d_page_sides_pagetotal
+\newdimension   \d_page_sides_topoffset
+\newdimension   \d_page_sides_bottomoffset
+\newdimension   \d_page_sides_toptotal
+\newdimension   \d_page_sides_bottomtotal
 
 \newconstant    \c_page_sides_align
 \newconstant    \c_page_sides_skipmode
@@ -83,9 +83,9 @@
 
 \newconstant    \c_page_sides_method % sort of obsolete
 
-\newdimen       \d_page_sides_progression
+\newdimension   \d_page_sides_progression
 
-\newcount       \c_page_sides_m_of_lines
+\newinteger     \c_page_sides_m_of_lines
 \newconditional \c_page_sides_delayed
 
 %newconditional \c_page_sides_check_same_page
@@ -174,10 +174,10 @@
    \fi
    \ifzeropt\d_page_sides_shift
      \ifnum\c_page_sides_float_type=\plusfour
-       \global\advance\d_page_sides_shift\d_page_sides_extrashift
+       \global\advanceby\d_page_sides_shift\d_page_sides_extrashift
        \global\d_page_sides_extrashift\zeropoint
      \orelse\ifnum\c_page_sides_float_type=\plusfive
-       \global\advance\d_page_sides_shift\d_page_sides_extrashift
+       \global\advanceby\d_page_sides_shift\d_page_sides_extrashift
        \global\d_page_sides_extrashift\zeropoint
      \fi
    \else
@@ -232,10 +232,10 @@
    \global\d_page_sides_leftoffset \d_page_sides_rightskip
    \global\d_page_sides_rightoffset\d_page_sides_leftskip
    \ifdim\d_page_sides_rightskip>\zeropoint
-     \global\advance\d_page_sides_rightskip\rightskip
+     \global\advanceby\d_page_sides_rightskip\rightskip
    \fi
    \ifdim\d_page_sides_leftskip >\zeropoint
-     \global\advance\d_page_sides_leftskip \leftskip
+     \global\advanceby\d_page_sides_leftskip \leftskip
    \fi}
 
 %D Shifts get applied to the float box:
@@ -331,7 +331,7 @@
      \getnoflines{\ht\floatbox}%
      \privatescratchdimen\dimexpr\noflines\lineheight-\strutdp\relax
      \getrawnoflines\d_page_sides_toptotal
-     \advance\privatescratchdimen\noflines\lineheight
+     \advanceby\privatescratchdimen\noflines\lineheight
      \page_sides_force_depth
      \ht\floatbox\privatescratchdimen
      \dp\floatbox\zeropoint
@@ -351,17 +351,17 @@
    % the top of the box is at the previous baseline
    \ifcase\c_page_sides_align
        % 0 normal
-     \advance\privatescratchdimen\strutdp % or \openstrutdepth
+     \advanceby\privatescratchdimen\strutdp % or \openstrutdepth
    \or % 1 height
-     \advance\privatescratchdimen\strutdp % or \openstrutdepth
+     \advanceby\privatescratchdimen\strutdp % or \openstrutdepth
    \or % 2 line
    \or % 3 depth
-     \advance\privatescratchdimen\lineheight % or \openlineheight
-     \advance\privatescratchdimen\strutdp    % or \openstrutdepth
+     \advanceby\privatescratchdimen\lineheight % or \openlineheight
+     \advanceby\privatescratchdimen\strutdp    % or \openstrutdepth
    \or % 4 grid
      \privatescratchdimen\zeropoint
    \or
-     \advance\privatescratchdimen\strutht % or \openstrutheight
+     \advanceby\privatescratchdimen\strutht % or \openstrutheight
    \fi
    % new
    \global\c_page_sides_lines_done\zerocount
@@ -371,11 +371,11 @@
        +\htdp\floatbox
 %        -\lineheight
      \relax
-     \advance\privatescratchdimen\c_page_sides_n_of_lines\lineheight
-\advance\privatescratchdimen2\lineheight
+     \advanceby\privatescratchdimen\c_page_sides_n_of_lines\lineheight
+\advanceby\privatescratchdimen2\lineheight
    \else
      \global\d_page_sides_shape_down_shift\zeropoint
-     \advance\privatescratchdimen\c_page_sides_n_of_lines\lineheight
+     \advanceby\privatescratchdimen\c_page_sides_n_of_lines\lineheight
    \fi
    \iftracesidefloats
      \page_sides_apply_vertical_shift_traced % uses \privatescratchdimen
@@ -776,10 +776,10 @@
 % \def\page_sides_analyse_progress
 %   {\d_page_sides_progress\d_page_sides_vsize
 %    \ifconditional\c_page_sides_flag
-%      \advance\d_page_sides_progress-\d_page_sides_page_total
+%      \advanceby\d_page_sides_progress-\d_page_sides_page_total
 %      \global\setfalse\c_page_sides_flag
 %    \else
-%      \advance\d_page_sides_progress-\pagetotal
+%      \advanceby\d_page_sides_progress-\pagetotal
 %    \fi}
 
 % test case
@@ -800,7 +800,7 @@
   {%\page_otr_command_set_vsize % this is new, otherwise topfloats are not taken into account
    \d_page_sides_progress\d_page_sides_vsize
    \ifconditional\c_page_sides_flag
-     \advance\d_page_sides_progress-\d_page_sides_page_total
+     \advanceby\d_page_sides_progress-\d_page_sides_page_total
      \global\setfalse\c_page_sides_flag
    \else
      \ifdim\dimexpr\d_page_sides_progress+\d_page_sides_bottomtotal\relax>\pagegoal
@@ -808,7 +808,7 @@
        % everypar and we hope that it triggers a flush, see test above
        \pagegoal\dimexpr\pagegoal-\d_page_sides_bottomtotal\relax
      \fi
-     \advance\d_page_sides_progress-\pagetotal
+     \advanceby\d_page_sides_progress-\pagetotal
    \fi}
 
 \def\page_sides_analyse_space_stage_one
@@ -837,19 +837,19 @@
        % method 0 : raw
      \or
        % method 1 : safe (default)
-       \advance\scratchdimentwo -\strutdp
+       \advanceby\scratchdimentwo -\strutdp
      \or
        % method 2 : tight (grid default)
-       \advance\scratchdimenone -\onepoint
+       \advanceby\scratchdimenone -\onepoint
      \fi
    \or
      % tolerant
-     \advance\scratchdimentwo -.5\strutdp
+     \advanceby\scratchdimentwo -.5\strutdp
    \or
      % verytolerant
-   % \advance\scratchdimenone -\onepoint (maybe)
+   % \advanceby\scratchdimenone -\onepoint (maybe)
    \else
-     \advance\scratchdimentwo -\strutdp
+     \advanceby\scratchdimentwo -\strutdp
    \fi}
 
 \def\page_sides_analyse_space_stage_two
@@ -858,11 +858,11 @@
      \global\setfalse\c_page_floats_room
    \else
      \ifdim\dimexpr\pagegoal-\d_page_sides_vsize\relax<\d_page_sides_bottomtotal
-      % just weird: \global\advance\d_page_sides_vsize \scratchdimenone
+      % just weird: \global\advanceby\d_page_sides_vsize \scratchdimenone
        \global\settrue\c_page_sides_short
        % why was this \global\holdinginserts\plusone
      \else
-       \global\advance\d_page_sides_vsize \d_page_sides_bottomtotal % wins over inbetween
+       \global\advanceby\d_page_sides_vsize \d_page_sides_bottomtotal % wins over inbetween
        \global\setfalse\c_page_sides_short
      \fi
      \global\settrue\c_page_floats_room
@@ -1074,7 +1074,7 @@
    \ifx\p_sidethreshold\v!old
      \d_page_sides_progression\dimexpr\d_page_sides_progress+\strutht-\roundingeps\relax
      \c_page_sides_n_of_hang\d_page_sides_progression
-     \divide\c_page_sides_n_of_hang \baselineskip\relax
+     \divideby\c_page_sides_n_of_hang \baselineskip\relax
    \else
      \d_page_sides_progression
        \ifempty\p_sidethreshold
@@ -1098,8 +1098,8 @@
          \global\c_page_sides_lines_done\c_page_sides_n_of_hang
        \else
          \privatescratchcounter\c_page_sides_lines_done
-         \advance\privatescratchcounter-\c_page_sides_n_of_hang
-         \global\advance\c_page_sides_n_of_lines-\privatescratchcounter
+         \advanceby\privatescratchcounter-\c_page_sides_n_of_hang
+         \global\advanceby\c_page_sides_n_of_lines-\privatescratchcounter
        \fi
      \fi
      \ifnum\c_page_sides_n_of_lines>\zerocount
@@ -1109,8 +1109,8 @@
        \dorecurse\c_page_sides_n_of_lines
          {\toksapp\privatescratchtoks{\zeropoint\hsize}}%
        \ifnum\c_page_sides_n_of_hang>\c_page_sides_n_of_lines
-         \advance\c_page_sides_n_of_hang -\c_page_sides_n_of_lines\relax
-         \advance\privatescratchcounter\c_page_sides_n_of_hang
+         \advanceby\c_page_sides_n_of_hang -\c_page_sides_n_of_lines\relax
+         \advanceby\privatescratchcounter\c_page_sides_n_of_hang
          \dorecurse\c_page_sides_n_of_hang % weird, shouldn't that be scratchcounter
            {\ifnum\c_page_sides_float_type>\plusfour
               \toksapp\privatescratchtoks{\zeropoint\privatescratchdimen}%
@@ -1129,7 +1129,7 @@
        \global\c_page_sides_hangafter\hangafter
      \fi
    \fi
-   \global\advance\c_page_sides_checks_done \plusone
+   \global\advanceby\c_page_sides_checks_done \plusone
    \iftracesidefloats
      \page_sides_check_floats_tracer
    \fi}

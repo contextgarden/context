@@ -142,7 +142,7 @@
   [\c!rightsubsentence]
   [\rightboundarycharacter\c!rightsubsentence{sentence}]
 
-\newcount \c_typo_subsentence_nesting
+\newinteger\c_typo_subsentence_nesting
 
 \mutable\let\beforesubsentence\donothing % maybe just a parameter
 \mutable\let\aftersubsentence \donothing % maybe just a parameter
@@ -178,7 +178,7 @@
      \unboundary
      \kern\hspaceamount\currentusedlanguage{intersentence}%
    \fi
-   \global\advance\c_typo_subsentence_nesting\plusone
+   \global\advanceby\c_typo_subsentence_nesting\plusone
    \ifnum\c_typo_subsentence_nesting=\plusone
      \dontleavehmode
    \fi
@@ -198,7 +198,7 @@
    \symbol[\ifodd\c_typo_subsentence_nesting\c!rightsentence\else\c!rightsubsentence\fi]%
    \dostoptagged
    \dostoptagged
-   \global\advance\c_typo_subsentence_nesting\minusone
+   \global\advanceby\c_typo_subsentence_nesting\minusone
    \unskip
    \boundary\c_typo_subsentence_boundary
    \aftersubsentence}
@@ -361,13 +361,13 @@
      \typo_delimited_set_language_yes
    \fi
    \let\currentparentdelimitedtext\currentdelimitedtext
-   \global\advance\c_typo_delimited_nesting\plusone
+   \global\advanceby\c_typo_delimited_nesting\plusone
    \edef\delimitedtextlevel{\number\c_typo_delimited_nesting}%
    \normalexpanded{\chaintocurrentdelimitedtext{\currentparentdelimitedtext:\delimitedtextlevel}}%
    \edef\currentdelimitedtext{\currentparentdelimitedtext:\delimitedtextlevel}}
 
 \def\typo_delimited_pop
-  {\global\advance\c_typo_delimited_nesting\minusone
+  {\global\advanceby\c_typo_delimited_nesting\minusone
    \pop_macro_currentdelimitedlanguage
    \pop_macro_currentdelimitedtext}
 
@@ -377,7 +377,7 @@
 \installcommandhandler \??delimitedtext {delimitedtext} \??delimitedtext
 
 \appendtoks
-    \expandafter\newcount\csname\??delimitedtextlevel\currentdelimitedtext\endcsname
+    \expandafter\newinteger\csname\??delimitedtextlevel\currentdelimitedtext\endcsname
     \frozen\instance\protected\edefcsname\currentdelimitedtext        \endcsname{\delimitedtext[\currentdelimitedtext]}%
     \frozen\instance\protected\edefcsname\e!start\currentdelimitedtext\endcsname{\startdelimitedtext[\currentdelimitedtext]}%
     \frozen\instance\protected\edefcsname\e!stop \currentdelimitedtext\endcsname{\stopdelimitedtext}%

@@ -3756,7 +3756,8 @@ static void tex_aux_flatten_math_list(halfword parent)
         switch (node_type(p)) {
             case simple_noad:
                 {
-                    if (! noad_has_following_scripts(p) && tex_math_has_class_option(node_subtype(p), flatten_class_option)) {
+                    // how about the options and class
+                    if (! noad_has_following_scripts(p) && tex_math_has_class_option(node_subtype(p), flatten_class_option) && ! noad_source(p)) {
                         halfword n = noad_nucleus(p);
                         halfword s = parent;
                         node_type(s) = node_type(n);

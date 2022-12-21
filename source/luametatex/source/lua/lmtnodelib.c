@@ -8133,7 +8133,6 @@ static int nodelib_userdata_instock(lua_State *L)
     return 2;
 }
 
-
 /* node.usedlist */
 
 static int nodelib_userdata_usedlist(lua_State *L)

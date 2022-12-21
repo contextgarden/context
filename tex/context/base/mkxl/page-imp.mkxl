@@ -55,8 +55,8 @@
 \installcorenamespace{layoutarranger}
 \installcorenamespace{layoutarrangeoption}
 
-\newcount      \shippedoutpages
-\newcount      \combinedpagescounter
+\newinteger    \shippedoutpages
+\newinteger    \combinedpagescounter
 \newconstant   \whichpagetoshipout % 0=all 1=odd 2=even
 \newbox        \shipoutscratchbox
 \setnewconstant\shipoutfinalizemethod\plusone
@@ -124,7 +124,7 @@
 
 % extension mechanism
 
-\newcount\c_page_boxes_flush_n % set at the lua end
+\newinteger\c_page_boxes_flush_n % set at the lua end
 
 \let\page_boxes_flush_before\relax
 \let\page_boxes_flush_after \relax
@@ -206,7 +206,7 @@
    \clf_cleanupattributes}
 
 \def\page_shipouts_normal#1%
-  {\global\advance\shippedoutpages\plusone
+  {\global\advanceby\shippedoutpages\plusone
    % this is not resource safe!
    \ifempty\pagestoshipout
      \ifcase\whichpagetoshipout\relax
@@ -276,17 +276,17 @@
 \mutable\def\arrangedrotationO{0}
 \mutable\def\arrangedrotationE{0}
 
-\newcount\arrangedpageN
-\newcount\arrangedpageM
+\newinteger\arrangedpageN
+\newinteger\arrangedpageM
 
-\newcount\arrangedpageT \arrangedpageT\plusone
-\newcount\arrangedpageX \arrangedpageX\plusone
-\newcount\arrangedpageY \arrangedpageY\plusone
+\newinteger\arrangedpageT \arrangedpageT\plusone
+\newinteger\arrangedpageX \arrangedpageX\plusone
+\newinteger\arrangedpageY \arrangedpageY\plusone
 
 \def\page_paper_set_offsets
   {\global\paperoffset\v_page_target_offset
-   \global\advance\paperwidth -2\dimexpr\paperoffset/\arrangedpageX\relax
-   \global\advance\paperheight-2\dimexpr\paperoffset/\arrangedpageY\relax}
+   \global\advanceby\paperwidth -2\dimexpr\paperoffset/\arrangedpageX\relax
+   \global\advanceby\paperheight-2\dimexpr\paperoffset/\arrangedpageY\relax}
 
 \permanent\protected\def\doinstallarrangedoption#1#2%
   {\gdefcsname\??layoutarrangeoption#1\endcsname{#2}}
@@ -448,7 +448,7 @@
      \scratchcounter\numexpr\realpageno-\plusone\relax
      \dosetmodulo\scratchcounter\arrangedpageT\scratchcounter
      \ifcase\scratchcounter\else
-       \advance\scratchcounter \plusone
+       \advanceby\scratchcounter \plusone
        \dostepwiserecurse\scratchcounter\arrangedpageT\plusone
          {\noheaderandfooterlines\page_otr_insert_dummy_page}%
      \fi
@@ -466,7 +466,7 @@
       \box\scratchbox\box#5\hss}}
 
 \permanent\protected\def\gotonextarrangepage
-  {\global\advance\arrangeno\plusone}
+  {\global\advanceby\arrangeno\plusone}
 
 \permanent\protected\def\outputarrangedbox#1%
   {\begingroup
@@ -512,7 +512,7 @@
   {\showmessage\m!system{23}{\the\realpageno.\the\pageno\ifnum\subpageno>0 .\the\subpageno\fi,\number#1}}
 
 \permanent\protected\def\advancearrangedpageN
-  {\global\advance\arrangedpageN\plusone}
+  {\global\advanceby\arrangedpageN\plusone}
 
 % TOP
 
@@ -1266,7 +1266,7 @@
 
 \permanent\protected\protected\def\pusharrangedpageXY#1%
   {\advancearrangedpageN
-   \global\advance\arrangedpageM\plusone
+   \global\advanceby\arrangedpageM\plusone
    \reportarrangedpage\arrangedpageN
    \global\setbox\arrangedpageB\hpack \ifdim\v_page_target_width>\zeropoint to \v_page_target_width \fi
       {\ifvoid\arrangedpageB\else
@@ -1372,11 +1372,10 @@
 \lettonothing\page_boxes_h_shifts
 \lettonothing\page_boxes_v_shifts
 
-\newcount\c_page_boxes_h_shifts
-\newcount\c_page_boxes_v_shifts
-
-\newdimen\d_page_boxes_h_shifts
-\newdimen\d_page_boxes_v_shifts
+\newinteger  \c_page_boxes_h_shifts
+\newinteger  \c_page_boxes_v_shifts
+\newdimension\d_page_boxes_h_shifts
+\newdimension\d_page_boxes_v_shifts
 
 \let\page_boxes_apply_shift_print\gobbleoneargument
 \let\page_boxes_apply_shift_paper\gobbleoneargument
@@ -1384,7 +1383,7 @@
 \def\page_boxes_filter_shift#1#2#3% #1=\dimenx #2=\xpageshifts #3=\nofxpageshifts
   {#1\zeropoint
    \ifempty#2\else
-     \global\advance#3\plusone
+     \global\advanceby#3\plusone
      \getfromcommacommand[#2][#3]%
      \ifempty\commalistelement
        \global#3\plusone % we cycle

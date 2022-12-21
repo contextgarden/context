@@ -31,8 +31,8 @@
 
 \lettonothing\v_spac_indentation_current % amount/keyword
 
-\newdimen \d_spac_indentation_par
-\parindent\d_spac_indentation_par % for the show
+\newdimension\d_spac_indentation_par
+\parindent   \d_spac_indentation_par % for the show
 
 \newconditional\c_spac_indentation_indent_first \settrue\c_spac_indentation_indent_first
 \newconstant   \c_spac_indentation_toggle_state
@@ -643,13 +643,13 @@
 
 % Bovendien definieren we enkele extra \fill's:
 
-\newskip\s_spac_fil        \s_spac_fil       = \zeropoint \s!plus 1\s!fil  \relax
-\newskip\s_spac_fill       \s_spac_fill      = \zeropoint \s!plus 1\s!fill \relax
-\newskip\s_spac_filll      \s_spac_filll     = \zeropoint \s!plus 1\s!filll\relax
+\newgluespec\s_spac_fil        \s_spac_fil       \zeropoint \s!plus 1\s!fil  \relax
+\newgluespec\s_spac_fill       \s_spac_fill      \zeropoint \s!plus 1\s!fill \relax
+\newgluespec\s_spac_filll      \s_spac_filll     \zeropoint \s!plus 1\s!filll\relax
 
-\newskip\s_spac_neg_fil    \s_spac_neg_fil   = \zeropoint \s!plus-1\s!fil  \relax
-\newskip\s_spac_neg_fill   \s_spac_neg_fill  = \zeropoint \s!plus-1\s!fill \relax
-\newskip\s_spac_neg_filll  \s_spac_neg_filll = \zeropoint \s!plus-1\s!filll\relax
+\newgluespec\s_spac_neg_fil    \s_spac_neg_fil   \zeropoint \s!plus-1\s!fil  \relax
+\newgluespec\s_spac_neg_fill   \s_spac_neg_fill  \zeropoint \s!plus-1\s!fill \relax
+\newgluespec\s_spac_neg_filll  \s_spac_neg_filll \zeropoint \s!plus-1\s!filll\relax
 
 \permanent\protected\def\hfilll   {\hskip\s_spac_filll\relax}
 \permanent\protected\def\vfilll   {\vskip\s_spac_filll\relax}
@@ -667,9 +667,9 @@
 \installcorenamespace{narrower}
 \installcorenamespace{narrowermethod}
 
-\newskip\s_spac_narrower_left
-\newskip\s_spac_narrower_right
-\newskip\s_spac_narrower_middle
+\newgluespec\s_spac_narrower_left
+\newgluespec\s_spac_narrower_right
+\newgluespec\s_spac_narrower_middle
 
 \installcommandhandler \??narrower {narrower} \??narrower
 
@@ -693,18 +693,18 @@
   {\ifcsname\??narrowermethod#1\endcsname
      \lastnamedcs
    \else
-     \global\advance\s_spac_narrower_middle#1\relax
+     \global\advanceby\s_spac_narrower_middle#1\relax
    \fi}
 
 \def\spac_narrower_initialize[#1]% hm, can be dorepeat directly
   {\dorepeatwithcommand[#1]\spac_narrower_method_analyze}
 
-\installnarrowermethod  \v!left   {\global\advance\s_spac_narrower_left   \narrowerparameter\c!left  \relax}
-\installnarrowermethod  \v!middle {\global\advance\s_spac_narrower_middle \narrowerparameter\c!middle\relax}
-\installnarrowermethod  \v!right  {\global\advance\s_spac_narrower_right  \narrowerparameter\c!right \relax}
-\installnarrowermethod{-\v!left  }{\global\advance\s_spac_narrower_left  -\narrowerparameter\c!left  \relax}
-\installnarrowermethod{-\v!middle}{\global\advance\s_spac_narrower_middle-\narrowerparameter\c!middle\relax}
-\installnarrowermethod{-\v!right }{\global\advance\s_spac_narrower_right -\narrowerparameter\c!right \relax}
+\installnarrowermethod  \v!left   {\global\advanceby\s_spac_narrower_left   \narrowerparameter\c!left  \relax}
+\installnarrowermethod  \v!middle {\global\advanceby\s_spac_narrower_middle \narrowerparameter\c!middle\relax}
+\installnarrowermethod  \v!right  {\global\advanceby\s_spac_narrower_right  \narrowerparameter\c!right \relax}
+\installnarrowermethod{-\v!left  }{\global\advanceby\s_spac_narrower_left  -\narrowerparameter\c!left  \relax}
+\installnarrowermethod{-\v!middle}{\global\advanceby\s_spac_narrower_middle-\narrowerparameter\c!middle\relax}
+\installnarrowermethod{-\v!right }{\global\advanceby\s_spac_narrower_right -\narrowerparameter\c!right \relax}
 \installnarrowermethod  \v!reset  {\global        \s_spac_narrower_left   \zeropoint
                                    \global        \s_spac_narrower_middle \zeropoint
                                    \global        \s_spac_narrower_right  \zeropoint\relax}
@@ -720,8 +720,8 @@
      \spac_narrower_start_apply{\narrowerparameter\v!default}%
    \fi}
 
-\newskip       \s_spac_narrower_left_last
-\newskip       \s_spac_narrower_right_last
+\newgluespec   \s_spac_narrower_left_last
+\newgluespec   \s_spac_narrower_right_last
 \newconditional\s_spac_narrower_last_swap
 
 \def\spac_narrower_start_apply#1%
@@ -742,8 +742,8 @@
      \fi
    \else
      \normalexpanded{\processcommalistwithparameters[\scratchstringone]}\spac_narrower_initialize
-     \frozen\advance\leftskip \dimexpr\s_spac_narrower_left +\s_spac_narrower_middle\relax
-     \frozen\advance\rightskip\dimexpr\s_spac_narrower_right+\s_spac_narrower_middle\relax
+     \frozen\advanceby\leftskip \dimexpr\s_spac_narrower_left +\s_spac_narrower_middle\relax
+     \frozen\advanceby\rightskip\dimexpr\s_spac_narrower_right+\s_spac_narrower_middle\relax
    \fi
    \seteffectivehsize}
 
@@ -811,9 +811,9 @@
 
 \aliased\let\stopnarrow\spac_narrower_stop
 
-\newdimen\d_spac_effective_hsize     \permanent\protected\def\effectivehsize    {\hsize}
-\newdimen\d_spac_effective_leftskip  \permanent\protected\def\effectiveleftskip {\dimexpr\leftskip \relax}
-\newdimen\d_spac_effective_rightskip \permanent\protected\def\effectiverightskip{\dimexpr\rightskip\relax}
+\newdimension\d_spac_effective_hsize     \permanent\protected\def\effectivehsize    {\hsize}
+\newdimension\d_spac_effective_leftskip  \permanent\protected\def\effectiveleftskip {\dimexpr\leftskip \relax}
+\newdimension\d_spac_effective_rightskip \permanent\protected\def\effectiverightskip{\dimexpr\rightskip\relax}
 
 \permanent\protected\def\seteffectivehsize
   {\setlocalhsize
@@ -827,8 +827,8 @@
 \installcorenamespace{skipadaptionleft}
 \installcorenamespace{skipadaptionright}
 
-\newskip\leftskipadaption
-\newskip\rightskipadaption
+\newgluespec\leftskipadaption
+\newgluespec\rightskipadaption
 
 \defcsname\??skipadaptionleft \v!yes\endcsname{\ifzeropt\d_spac_indentation_par\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
 \letcsname\??skipadaptionleft \v!no \endcsname\zeropoint
@@ -843,8 +843,8 @@
 \permanent\protected\def\dosetleftskipadaption #1{\leftskipadaption \ifcsname\??skipadaptionleft #1\endcsname\lastnamedcs\else#1\fi\relax}
 \permanent\protected\def\dosetrightskipadaption#1{\rightskipadaption\ifcsname\??skipadaptionright#1\endcsname\lastnamedcs\else#1\fi\relax}
 
-\permanent\protected\def\doadaptleftskip #1{\normalexpanded{\dosetleftskipadaption {#1}}\frozen\advance\leftskip \leftskipadaption }
-\permanent\protected\def\doadaptrightskip#1{\normalexpanded{\dosetrightskipadaption{#1}}\frozen\advance\rightskip\rightskipadaption}
+\permanent\protected\def\doadaptleftskip #1{\normalexpanded{\dosetleftskipadaption {#1}}\frozen\advanceby\leftskip \leftskipadaption }
+\permanent\protected\def\doadaptrightskip#1{\normalexpanded{\dosetrightskipadaption{#1}}\frozen\advanceby\rightskip\rightskipadaption}
 
 \permanent\protected\def\forgetbothskips
   {\leftskip\zeropoint
@@ -1211,11 +1211,11 @@
 %D    \oeps}
 %D \stoptyping
 
-% \newsignal\d_spac_ignore_spaces_signal
-% \newcount \c_spac_ignore_spaces
+% \newsignal \d_spac_ignore_spaces_signal
+% \newinteger\c_spac_ignore_spaces
 %
 % \permanent\protected\def\startignorespaces
-%   {\advance\c_spac_ignore_spaces\plusone
+%   {\advanceby\c_spac_ignore_spaces\plusone
 %    \ifcase\c_spac_ignore_spaces\or \ifhmode
 %      \hskip\d_spac_ignore_spaces_signal
 %    \fi \fi
@@ -1227,7 +1227,7 @@
 %        \doloop\spac_ignore_spaces_body
 %      \fi
 %    \fi
-%    \advance\c_spac_ignore_spaces\minusone}
+%    \advanceby\c_spac_ignore_spaces\minusone}
 %
 % \def\spac_ignore_spaces_body
 %   {\ifzeropt\lastskip

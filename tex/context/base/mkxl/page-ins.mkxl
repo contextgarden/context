@@ -56,7 +56,7 @@
     \page_inserts_check_anchoring
 \to \everystarttext % or \everyjob
 
-\newcount\currentinsertionnumber % This is a count and not a macro !
+\newinteger\currentinsertionnumber % This is a count and not a macro !
 
 \newtoks\t_page_inserts_list
 
@@ -167,7 +167,7 @@
 %
 % \fi
 
-\newcount\c_page_inserts_last_allocated
+\newinteger\c_page_inserts_last_allocated
 
 \appendtoks
     \ifempty\currentinsertionparent
@@ -175,7 +175,7 @@
           % bad news
         \else
           %expandafter\newinsert\csname\??insertionnumber\currentinsertion\endcsname
-          \global\advance\c_page_inserts_last_allocated\plusone
+          \global\advanceby\c_page_inserts_last_allocated\plusone
           \global\expandafter\integerdef\csname\??insertionnumber\currentinsertion\endcsname\c_page_inserts_last_allocated
           \page_inserts_synchronize_registers
           \clf_defineinsertion

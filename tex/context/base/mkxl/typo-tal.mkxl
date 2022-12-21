@@ -123,11 +123,11 @@
    \c!character  =\alignmentcharacter]
 
 \permanent\protected\def\typo_charalign_pass_one
-  {\advance\scratchcounter\plusone
+  {\advanceby\scratchcounter\plusone
    \setbox\scratchbox\typo_charalign_pass}
 
 \permanent\protected\def\typo_charalign_pass_two
-  {\advance\scratchcounter\plusone
+  {\advanceby\scratchcounter\plusone
    \typo_charalign_pass}
 
 \def\typo_charalign_pass

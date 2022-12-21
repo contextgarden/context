@@ -152,7 +152,7 @@
        \marginblockparameter\c!bottom
       \egroup
       \ifdim\htdp\scratchbox>\textheight
-        \advance\scratchcounter\minusone
+        \advanceby\scratchcounter\minusone
        %\writestatus{quit}{\the\scratchcounter=>\the\htdp\scratchbox}
         \quitloop
       \else

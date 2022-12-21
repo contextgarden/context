@@ -601,8 +601,8 @@
 
 \permanent\def\renderingoption#tag{\clf_renderingvar{#tag}{option}}
 
-\newdimen\d_scrn_rendering_width  \d_scrn_rendering_width  8cm
-\newdimen\d_scrn_rendering_height \d_scrn_rendering_height 6cm
+\newdimension\d_scrn_rendering_width  \d_scrn_rendering_width  8cm
+\newdimension\d_scrn_rendering_height \d_scrn_rendering_height 6cm
 
 \let\m_scrn_rendering_page\!!zerocount
 

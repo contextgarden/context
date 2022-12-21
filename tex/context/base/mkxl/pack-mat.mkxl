@@ -21,7 +21,7 @@
 % todo \v!mathframed
 % todo \v!mathstrikeout
 
-\newconditional \c_framed_math_framed
+\newconditional\c_framed_math_framed
 
 \installtextracker
   {framed.math}
@@ -282,14 +282,14 @@
 % mcframed  xx\mcframed {x^2 + \frac{2}{x} + \sqrt{\frac{2}{\sqrt{\frac{2}{x}}}}} \input tufte
 % mtframed  xx\mtframed {x^2 + \frac{2}{x} + \sqrt{\frac{2}{\sqrt{\frac{2}{x}}}}} \input tufte
 
-\newcount\c_framed_mstyle
+\newinteger\c_framed_mstyle
 
 \installcorenamespace{mathframed}
 
 \installframedcommandhandler \??mathframed {mathframed} \??mathframed
 
-\newtoks \t_pack_framed_mathframed
-\newdimen\d_pack_framed_mathframed
+\newtoks     \t_pack_framed_mathframed
+\newdimension\d_pack_framed_mathframed
 
 \appendtoks
     \frozen\protected\instance\edefcsname\currentmathframed\endcsname{\pack_framed_mathframed[\currentmathframed]}%

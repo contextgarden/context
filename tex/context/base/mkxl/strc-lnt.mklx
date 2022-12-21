@@ -23,8 +23,8 @@
 
 \aliased\let\setuplinenote\setupnote
 
-\newcount\c_strc_linenotes
-\newtoks\everydefinelinenote
+\newinteger\c_strc_linenotes
+\newtoks   \everydefinelinenote
 
 \permanent\tolerant\protected\def\definelinenote[#1]#*[#2]#*[#3]%
   {\ifarguments
@@ -55,13 +55,13 @@
    \fi}
 
 \protected\def\strc_linenotes_direct#1#2%
-  {\global\advance\c_strc_linenotes\plusone
+  {\global\advanceby\c_strc_linenotes\plusone
    \strc_linenotes_indeed{#1}{\the\c_strc_linenotes}{#2}%
    \strc_linenotes_traced\empty
    \normalexpanded{\someline[\the\c_strc_linenotes]}}
 
 \protected\def\strc_linenotes_start#1[#2]#3%
-  {\global\advance\c_strc_linenotes\plusone
+  {\global\advanceby\c_strc_linenotes\plusone
    \keepunwantedspaces
    \strc_linenotes_indeed{#1}{#2}{#3}%
    \strc_linenotes_traced{#2}%

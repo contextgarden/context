@@ -15,7 +15,7 @@
 
 \unprotect
 
-\newcount\filterstate \filterstate\plusone % hm, public
+\newinteger\filterstate \filterstate\plusone % hm, public
 
 \registerctxluafile{node-cmp}{autosuffix}
 \registerctxluafile{node-ini}{autosuffix}
@@ -42,7 +42,7 @@
 
 %D This might go away (needs checking anyway, very old code):
 
-\newcount\c_node_tracers_show_box % box number
+\newinteger\c_node_tracers_show_box % box number
 
 \permanent\protected\def\shownextnodes{\afterassignment\node_tracers_show_next\c_node_tracers_show_box}
 \permanent\protected\def\showflatnodes{\afterassignment\node_tracers_show_flat\c_node_tracers_show_box}

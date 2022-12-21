@@ -129,19 +129,19 @@
 
 \newconditional\c_pack_layers_repeated
 \newconditional\c_pack_layers_trace
-\newcount      \c_pack_layers_current_data
+\newinteger    \c_pack_layers_current_data
 
 \newbox\b_layers \pushoverloadmode \mutable\let\b_layers\b_layers \popoverloadmode
 
-\newdimen\d_pack_layers_x_size
-\newdimen\d_pack_layers_y_size
-\newdimen\d_pack_layers_x_offset
-\newdimen\d_pack_layers_y_offset
-\newdimen\d_pack_layers_x_position
-\newdimen\d_pack_layers_y_position
+\newdimension\d_pack_layers_x_size
+\newdimension\d_pack_layers_y_size
+\newdimension\d_pack_layers_x_offset
+\newdimension\d_pack_layers_y_offset
+\newdimension\d_pack_layers_x_position
+\newdimension\d_pack_layers_y_position
 
-\newdimen\layerwidth
-\newdimen\layerheight
+\newdimension\layerwidth
+\newdimension\layerheight
 
 \mutable\let\lastlayerxpos\!!zeropoint
 \mutable\let\lastlayerypos\!!zeropoint
@@ -227,7 +227,7 @@
 
 \def\pack_layers_set_indeed#1%
   {\page_backgrounds_recalculate % brrr
-   \global\advance\c_pack_layers_current_data\plusone
+   \global\advanceby\c_pack_layers_current_data\plusone
    \forgetall
    \dontcomplain
    \edef\p_pack_layers_option{\layerparameter\c!option}%
@@ -401,11 +401,11 @@
       \fi
       \ifnum\p_pack_layers_line=\zerocount\else % no \ifcase, can be negative
     % \ifzero\p_pack_layers_line\else % todo: test this
-        \advance\d_pack_layers_y_position\dimexpr\p_pack_layers_line\lineheight+\topskip-\lineheight-\ht\nextbox\relax
+        \advanceby\d_pack_layers_y_position\dimexpr\p_pack_layers_line\lineheight+\topskip-\lineheight-\ht\nextbox\relax
       \fi
       \ifnum\p_pack_layers_column=\zerocount\else % no \ifcase, can be negative
     % \ifzero\p_pack_layers_column\else % todo: test this
-        \advance\d_pack_layers_x_position\layoutcolumnoffset\p_pack_layers_column\relax
+        \advanceby\d_pack_layers_x_position\layoutcolumnoffset\p_pack_layers_column\relax
       \fi
       \ifx\p_pack_layers_location\v!grid
         \setbox\nextbox\hpack
@@ -416,14 +416,14 @@
       \ifdim\scratchdimen<\getboxllx\b_layers_page
         \gsetboxllx\b_layers_page\scratchdimen
       \fi
-      \advance\scratchdimen\wd\nextbox
+      \advanceby\scratchdimen\wd\nextbox
       \wd\nextbox\ifdim\scratchdimen>\scratchwidth \scratchdimen \else \scratchwidth \fi
       \scratchdimen\dimexpr\d_pack_layers_y_position+\d_pack_layers_y_offset\relax
       \ifdim\scratchdimen<\getboxlly\b_layers_page
         \gsetboxlly\b_layers_page\scratchdimen
       \fi
       % ll compensation
-      \advance\scratchdimen\dimexpr\ht\nextbox+\dp\nextbox\relax
+      \advanceby\scratchdimen\dimexpr\ht\nextbox+\dp\nextbox\relax
       \ht\nextbox\ifdim\scratchdimen>\scratchheight \scratchdimen \else \scratchheight \fi
       \dp\nextbox\zeropoint
       % placement
@@ -455,7 +455,7 @@
      \edef\p_pack_layers_line{\the\numexpr-\p_pack_layers_line+\layoutlines+\plusone\relax}% use counter instead ?
    \fi
    \ifdim\d_pack_layers_y_size>\zeropoint
-     \advance\d_pack_layers_y_position-\d_pack_layers_y_size
+     \advanceby\d_pack_layers_y_position-\d_pack_layers_y_size
      \d_pack_layers_y_position-\d_pack_layers_y_position
      \d_pack_layers_y_offset-\d_pack_layers_y_offset
    \fi}
@@ -466,14 +466,14 @@
      \edef\p_pack_layers_column{\the\numexpr-\layerparameter\c!column+\layoutcolumns+\plusone\relax}% use counter instead ?
    \fi
    \ifdim\d_pack_layers_x_size>\zeropoint
-     \advance\d_pack_layers_x_position-\d_pack_layers_x_size
+     \advanceby\d_pack_layers_x_position-\d_pack_layers_x_size
      \d_pack_layers_x_position-\d_pack_layers_x_position
      \d_pack_layers_x_offset-\d_pack_layers_x_offset
    \fi}
 
 \def\pack_layers_set_middle_positions
-  {\ifdim\d_pack_layers_x_size>\zeropoint \advance\d_pack_layers_x_position.5\d_pack_layers_x_size \fi
-   \ifdim\d_pack_layers_y_size>\zeropoint \advance\d_pack_layers_y_position.5\d_pack_layers_y_size \fi}
+  {\ifdim\d_pack_layers_x_size>\zeropoint \advanceby\d_pack_layers_x_position.5\d_pack_layers_x_size \fi
+   \ifdim\d_pack_layers_y_size>\zeropoint \advanceby\d_pack_layers_y_position.5\d_pack_layers_y_size \fi}
 
 %D Given the task to be accomplished, the previous macro is not even that
 %D complicated. It mainly comes down to skipping to the right place and placing a

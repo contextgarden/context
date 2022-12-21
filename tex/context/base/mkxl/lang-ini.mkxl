@@ -395,8 +395,8 @@
    \the\everylanguage
    \relax}
 
-\newcount\hyphenstate
-\newcount\hyphenminoffset
+\newinteger\hyphenstate
+\newinteger\hyphenminoffset
 
 % This is the old implementation: a hack that sets the min values, because we want
 % to keep the language set:
@@ -502,12 +502,12 @@
 %D The rest stays the same as in mkiv:
 
 \permanent\protected\def\lesshyphens
-  {\advance\hyphenminoffset\plusone
+  {\advanceby\hyphenminoffset\plusone
    \lang_basics_synchronize_min_max}
 
 \permanent\protected\def\morehyphens
   {\ifcase\hyphenminoffset \else
-     \advance\hyphenminoffset\minusone
+     \advanceby\hyphenminoffset\minusone
    \fi
    \lang_basics_synchronize_min_max}
 
@@ -628,7 +628,7 @@
 
 \popoverloadmode
 
-\newcount\mainlanguagenumber
+\newinteger\mainlanguagenumber
 
 %D Beware: you might need to use \type {\dontleavehmode} outside and|/|or \type {\par}
 %D inside the group!

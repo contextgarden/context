@@ -1041,11 +1041,10 @@
     \strc_notes_set_delayed
 \to \everysynchronizenote
 
-\newskip \s_strc_notes_distance % we need to implement stretch
-\newcount\c_strc_notes_columns
-
-\newskip       \s_strc_notes_before
-\newskip       \s_strc_notes_inbetween
+\newgluespec   \s_strc_notes_distance % we need to implement stretch
+\newinteger    \c_strc_notes_columns
+\newgluespec   \s_strc_notes_before
+\newgluespec   \s_strc_notes_inbetween
 \newconditional\c_strc_notes_first_flushed
 
 % we can store them per insert so so real need to redo it
@@ -1858,16 +1857,16 @@
 
     \permanent\def\docalculatetotalnoteheight
       {\ifcase\c_strc_notes_page_location % tricky here ! ! ! to be sorted out ! ! !
-         \advance\totalnoteheight\normalexpanded{\additionaltotalnoteheight\currentnoteinsertionnumber}%
+         \advanceby\totalnoteheight\normalexpanded{\additionaltotalnoteheight\currentnoteinsertionnumber}%
        \fi}
 
     \permanent\def\docalculatetotalclevernoteheight
       {\ifcase\c_strc_notes_page_location \else % tricky here ! ! ! to be sorted out ! ! !
-         \advance\totalnoteheight\normalexpanded{\additionaltotalnoteheight\currentnoteinsertionnumber}%
+         \advanceby\totalnoteheight\normalexpanded{\additionaltotalnoteheight\currentnoteinsertionnumber}%
        \fi}
 
     \permanent\def\docalculatetotalpagenoteheight
-      {\advance\totalnoteheight\normalexpanded{\additionaltotalnoteheight\currentnoteinsertionnumber}}
+      {\advanceby\totalnoteheight\normalexpanded{\additionaltotalnoteheight\currentnoteinsertionnumber}}
 
     \permanent\def\calculatetotalnoteheight      {\totalnoteheight\zeropoint\strc_notes_process\docalculatetotalnoteheight}
     \permanent\def\calculatetotalclevernoteheight{\totalnoteheight\zeropoint\strc_notes_process\docalculatetotalclevernoteheight}

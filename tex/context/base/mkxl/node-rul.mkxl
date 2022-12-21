@@ -115,20 +115,20 @@
 %D \underbar {\underdots{\samplefile{tufte}}}\par
 %D \underdots{\underdots{\samplefile{tufte}}}\par
 
-\newcount\c_node_rules_nesting % todo: same as colors
-\newcount\c_node_rules_level
-\newcount\c_node_rules_up
-\newcount\c_node_rules_down
+\newinteger\c_node_rules_nesting % todo: same as colors
+\newinteger\c_node_rules_level
+\newinteger\c_node_rules_up
+\newinteger\c_node_rules_down
 
 \permanent\protected\def\node_rules_set#1%
   {\edef\currentbar{#1}%
-   \advance\c_node_rules_level\plusone
+   \advanceby\c_node_rules_level\plusone
    \usebarstyleandcolor\c!foregroundstyle\c!foregroundcolor
    \edef\p_node_color {\barparameter\c!color}% todo
    \edef\p_node_text  {\barparameter\c!text}%
    \edef\p_node_offset{\barparameter\c!offset}%
    % better is a dedicated key: up/down .. todo
-   \advance\ifdim\p_node_offset\onepoint<\zeropoint\c_node_rules_down\else\c_node_rules_up\fi\plusone
+   \advanceby\ifdim\p_node_offset\onepoint<\zeropoint\c_node_rules_down\else\c_node_rules_up\fi\plusone
    \clf_setrule
        continue      {\barparameter\c!continue}%
        unit          {\barparameter\c!unit}%
@@ -178,7 +178,7 @@
 % ungrouped % todo: use the lua based stacker
 
 \permanent\protected\def\pushbar[#1]%
-  {\global\advance\c_node_rules_nesting\plusone
+  {\global\advanceby\c_node_rules_nesting\plusone
    \edefcsname\??barstack\number\c_node_rules_nesting\endcsname
      {\c_node_rules_level\the\c_node_rules_level
       \c_attr_ruled      \the\c_attr_ruled}%
@@ -186,7 +186,7 @@
 
 \permanent\protected\def\popbar
   {\csname\??barstack\number\c_node_rules_nesting\endcsname\relax
-   \global\advance\c_node_rules_nesting\minusone}
+   \global\advanceby\c_node_rules_nesting\minusone}
 
 \setupbars
   [\c!method=0,                 % new: 0=center nested, 1=stack nested
@@ -289,14 +289,14 @@
 %D
 %D \typebuffer \getbuffer
 
-\newdimen\d_rule_width
-\newdimen\d_rule_height
-\newdimen\d_rule_depth
-\newdimen\d_rule_h
-\newdimen\d_rule_v
-\newdimen\d_rule_line
-\newdimen\d_rule_offset
-\newdimen\d_rule_factor
+\newdimension\d_rule_width
+\newdimension\d_rule_height
+\newdimension\d_rule_depth
+\newdimension\d_rule_h
+\newdimension\d_rule_v
+\newdimension\d_rule_line
+\newdimension\d_rule_offset
+\newdimension\d_rule_factor
 
 \mutable\lettonothing\m_rule_direction
 %mutable\lettonothing\m_rule_factor

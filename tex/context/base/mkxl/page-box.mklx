@@ -205,8 +205,8 @@
    \scratchheight\ht#box%
    \scratchdepth \dp#box%
    \setbox#box\hpack
-     {\advance\scratchheight\dimexpr\scratchdepth+2\scratchoffset\relax
-      \advance\scratchwidth \scratchoffset
+     {\advanceby\scratchheight\dimexpr\scratchdepth+2\scratchoffset\relax
+      \advanceby\scratchwidth \scratchoffset
       \ifconditional#right\relax
          \scratchdimen-\scratchoffset
          \kern\scratchdimen
@@ -237,10 +237,10 @@
    \scratchheight\ht#box%
    \scratchdepth \dp#box%
    \setbox#box\hpack
-     {\advance\scratchheight\dimexpr\scratchdepth+2\scratchoffset\relax
-      \advance\scratchwidth \scratchoffset
+     {\advanceby\scratchheight\dimexpr\scratchdepth+2\scratchoffset\relax
+      \advanceby\scratchwidth \scratchoffset
       \doifbothsides
-        {\advance\scratchwidth\scratchoffset
+        {\advanceby\scratchwidth\scratchoffset
          \scratchdimen-\scratchoffset
          \kern\scratchdimen}%
         {\scratchdimen\zeropoint}

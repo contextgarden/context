@@ -94,9 +94,9 @@
 
 \newconstant\c_page_otr_eject_penalty   \c_page_otr_eject_penalty   -\plustenthousand
 \newconstant\c_page_otr_super_penalty   \c_page_otr_super_penalty   -\plustwentythousand
-\newcount   \c_page_otr_trigger_penalty \c_page_otr_trigger_penalty -100010
+\newinteger \c_page_otr_trigger_penalty \c_page_otr_trigger_penalty -100010
 
-\newcount   \c_page_otr_columns % we will share this one
+\newinteger \c_page_otr_columns % we will share this one
 
 \newif      \ifinotr % we keep this (name) for old times sake
 
@@ -135,7 +135,7 @@
    \endgroup}
 
 \permanent\protected\def\installoutputroutine#invoke#action% \invoke \action
-  {\global\advance\c_page_otr_trigger_penalty\minusone
+  {\global\advanceby\c_page_otr_trigger_penalty\minusone
    \frozen\protected\edef#invoke{\page_otr_trigger{\number\c_page_otr_trigger_penalty}}%
    \setvalue{\??otrtriggers\number\c_page_otr_trigger_penalty}{#action}}
 

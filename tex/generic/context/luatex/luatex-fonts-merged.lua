@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2022-12-15 17:49
+-- merge date  : 2022-12-21 17:10
 
 do -- begin closure to overcome local limits and interference
 
@@ -16964,7 +16964,6 @@ local function getaxisscale(segments,minimum,default,maximum,user)
  for i=1,#segments do
   local s=segments[i]
   if type(s)~="number" then
-   report("using default axis scale")
    return default
   elseif s[1]>=default then
    if s[2]==default then
@@ -19897,7 +19896,6 @@ function readers.hvar(f,fontdata,specification)
  end
  local tableoffset=gotodatatable(f,fontdata,"hvar",specification.variable)
  if not tableoffset then
-  report("no hvar table, expect problems due to messy widths")
   return
  end
  local version=readulong(f) 

@@ -2952,11 +2952,13 @@ static int tokenlib_scan_box(lua_State *L)
         const char *s = lua_tostring(L, 1);
         halfword code = -1 ;
         if (lua_key_eq(s, hbox)) {
-            code = vtop_code + hmode;
+            code = hbox_code;
         } else if (lua_key_eq(s, vbox)) {
-            code = vtop_code + vmode;
+            code = vbox_code;
         } else if (lua_key_eq(s, vtop)) {
             code = vtop_code;
+        } else if (lua_key_eq(s, dbox)) {
+            code = dbox_code;
         }
         if (code >= 0) {
             tex_back_input(token_val(make_box_cmd, code));

@@ -1770,6 +1770,8 @@ int tex_n_of_used_nodes(int counts[])
     return n;
 }
 
+/* needs checking as we take from the pool */
+
 halfword tex_list_node_mem_usage(void)
 {
     char *saved_varmem_sizes = aux_allocate_array(sizeof(char), lmt_node_memory_state.nodes_data.allocated, 1);

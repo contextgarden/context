@@ -47,14 +47,14 @@
 \installsystemnamespace{catcodetablet}
 \installsystemnamespace{catcodetablen}
 
-\newcount\c_syst_catcodes_n \c_syst_catcodes_n\zerocount % 0 = signal, so advance before allocate
+\newinteger\c_syst_catcodes_n \c_syst_catcodes_n\zerocount % 0 = signal, so advance before allocate
 
-% \newcount\c_syst_catcodes_a
-% \newcount\c_syst_catcodes_b
-% \newcount\c_syst_catcodes_c
+%newinteger\c_syst_catcodes_a
+%newinteger\c_syst_catcodes_b
+%newinteger\c_syst_catcodes_c
 
 \permanent\protected\def\newcatcodetable#1% we could move the cctdefcounter to lua
-  {\global\advance\c_syst_catcodes_n\plusone
+  {\global\advanceby\c_syst_catcodes_n\plusone
    \gdefcsname\??catcodetablen\number\c_syst_catcodes_n\endcsname{\string#1}% logging
    \immutable\integerdef#1\c_syst_catcodes_n
    \ctxlua{catcodes.register("\expandafter\gobbleoneargument\string#1",\number#1)}}
@@ -262,10 +262,10 @@
 %D pop catcode tables and as we keep track of used tables users seldom need to deal
 %D with this themselves.
 
-\newcount\c_syst_catcodes_level
+\newinteger\c_syst_catcodes_level
 
 \permanent\protected\def\pushcatcodetable
-  {\advance\c_syst_catcodes_level\plusone
+  {\advanceby\c_syst_catcodes_level\plusone
    \syst_catcodes_trace_push
    \expandafter\integerdef\csname\??catcodetablet\number\c_syst_catcodes_level\endcsname\currentcatcodetable}
 
@@ -275,7 +275,7 @@
    \else
      \catcodetable\csname\??catcodetablet\number\c_syst_catcodes_level\endcsname
      \syst_catcodes_trace_pop
-     \advance\c_syst_catcodes_level\minusone
+     \advanceby\c_syst_catcodes_level\minusone
    \fi}
 
 \protected\def\syst_catcodes_trace_nesting_error

@@ -75,18 +75,24 @@
     \globalresetsystemmode{combination}%
 \to \everyinsidefloat
 
-\newcount\c_pack_combinations_nesting  % local
+\newinteger  \c_pack_combinations_nesting        % local
 
-\newcount\c_pack_combinations_x        % global
-\newcount\c_pack_combinations_y        % global
-\newcount\c_pack_combinations_max      % global
-
-\newdimen\d_pack_combinations_ht       % global
-
-\newbox  \b_pack_combinations_captions % global % can go
-\newbox  \b_pack_combinations_temp     % global % can go
-\newbox  \b_pack_combinations_content  % local
-\newbox  \b_pack_combinations_caption  % local
+\newinteger  \c_pack_combinations_x              % global
+\newinteger  \c_pack_combinations_y              % global
+\newinteger  \c_pack_combinations_x_saved
+\newinteger  \c_pack_combinations_y_saved
+\newinteger  \c_pack_combinations_max            % global
+\newinteger  \c_pack_combinations_max_saved
+\newdimension\d_pack_combinations_ht             % global
+\newdimension\d_pack_combinations_ht_saved
+\newbox      \b_pack_combinations_captions       % global % can go
+\newbox      \b_pack_combinations_captions_saved
+\newbox      \b_pack_combinations_temp           % global % can go
+\newbox      \b_pack_combinations_temp_saved
+\newbox      \b_pack_combinations_content        % local
+\newbox      \b_pack_combinations_content_saved
+\newbox      \b_pack_combinations_caption        % local
+\newbox      \b_pack_combinations_caption_saved
 
 \installcorenamespace{combination}
 
@@ -95,21 +101,10 @@
 \initializeboxstack{\??combination captions}
 \initializeboxstack{\??combination temp}
 
-\newcount\c_pack_combinations_x_saved
-\newcount\c_pack_combinations_y_saved
-\newcount\c_pack_combinations_max_saved
-
-\newdimen\d_pack_combinations_ht_saved
-
-\newbox  \b_pack_combinations_captions_saved
-\newbox  \b_pack_combinations_temp_saved
-\newbox  \b_pack_combinations_content_saved
-\newbox  \b_pack_combinations_caption_saved
-
 \setfalse\c_strc_constructions_define_commands
 
 \def\pack_combinations_push
-  {\advance\c_pack_combinations_nesting\plusone
+  {\advanceby\c_pack_combinations_nesting\plusone
    \ifnum\c_pack_combinations_nesting>\plusone
      \c_pack_combinations_x_saved  \c_pack_combinations_x
      \c_pack_combinations_y_saved  \c_pack_combinations_y
@@ -136,7 +131,7 @@
    \else
      \globalresetsystemmode{combination}% why global
    \fi
-   \advance\c_pack_combinations_nesting\minusone}
+   \advanceby\c_pack_combinations_nesting\minusone}
 
 \definelabel
   [\v!combination] % handy for configuring
@@ -423,7 +418,7 @@
    \dotagcombination
    \global\setbox\b_pack_combinations_captions\emptybox
    \global\c_pack_combinations_max\c_pack_combinations_x
-   \multiply\c_pack_combinations_y\c_pack_combinations_x
+   \multiplyby\c_pack_combinations_y\c_pack_combinations_x
    \tabskip\zeropoint
    \enforced\permanent\protected\edef\combinationwidth % \immutable
      {\the\dimexpr
@@ -526,8 +521,8 @@
       % we need to save the caption for a next alignment line
       \pack_combinations_save_caption}%
    \ifnum\c_pack_combinations_y>\plusone
-     \global\advance\c_pack_combinations_y\minusone
-     \global\advance\c_pack_combinations_x\minusone
+     \global\advanceby\c_pack_combinations_y\minusone
+     \global\advanceby\c_pack_combinations_x\minusone
      \ifcase\c_pack_combinations_x
        \doubleexpandafter\pack_combinations_pickup_package_pair_a
      \else
@@ -592,7 +587,7 @@
      \foundbox{\??combinationcaption:\number\c_pack_combinations_nesting}{\number\c_pack_combinations_x}%
      \vss
    \egroup
-   \global\advance\c_pack_combinations_x\minusone
+   \global\advanceby\c_pack_combinations_x\minusone
    \ifnum\c_pack_combinations_x>\zerocount % \c_pack_combinations_max
      \expandafter\pack_combinations_flush_captions_yes_followup
    \else
@@ -812,9 +807,9 @@
 
 % watch the hsize/vsize tricks
 
-\newbox  \b_pack_pairedboxes_first
-\newbox  \b_pack_pairedboxes_second
-\newdimen\s_pack_pairedboxes_size
+\newbox      \b_pack_pairedboxes_first
+\newbox      \b_pack_pairedboxes_second
+\newdimension\s_pack_pairedboxes_size
 
 \appendtoks
    \frozen\protected\instance\edefcsname\e!setup\currentpairedbox\e!endsetup\endcsname{\setuppairedbox     [\currentpairedbox]}%

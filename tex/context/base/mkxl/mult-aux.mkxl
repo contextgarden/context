@@ -818,7 +818,7 @@
 % todo: register namespaces at lua end for logging and reverse resolve
 % todo: move this to syst-ini so that we can use it real early
 
-\newcount\c_mult_interfaces_n_of_namespaces
+\newinteger\c_mult_interfaces_n_of_namespaces
 
 % \def\v_interfaces_prefix_template
 %   {\number\c_mult_interfaces_n_of_namespaces>}
@@ -830,7 +830,7 @@
   {\ifcsname ????#1\endcsname
      \writestatus\m!system{duplicate user namespace '#1'}\wait
    \else
-     \global\advance\c_mult_interfaces_n_of_namespaces\plusone
+     \global\advanceby\c_mult_interfaces_n_of_namespaces\plusone
      \global\immutable\cdefcsname ????#1\endcsname{\v_interfaces_prefix_template}%
    \fi}
 
@@ -838,7 +838,7 @@
   {\ifcsname ??#1\endcsname
      \writestatus\m!system{duplicate core namespace '#1'}\wait
    \else
-     \global\advance\c_mult_interfaces_n_of_namespaces\plusone
+     \global\advanceby\c_mult_interfaces_n_of_namespaces\plusone
      \global\immutable\cdefcsname ??#1\endcsname{\v_interfaces_prefix_template}%
      \clf_registernamespace\c_mult_interfaces_n_of_namespaces{#1}%
    \fi}
@@ -992,11 +992,11 @@
 %D Conventions:
 %D
 %D \starttyping
-%D \newcount       \c_class_whatever
+%D \newinteger     \c_class_whatever
 %D \newconditional \c_class_whatever
 %D \newconstant    \c_class_whatever
-%D \newdimen       \d_class_whatever
-%D \newskip        \s_class_whatever
+%D \newdimension   \d_class_whatever
+%D \newgluespec    \s_class_whatever
 %D \newmuskip      \s_class_whatever
 %D \newbox         \b_class_whatever
 %D \newtoks        \t_class_whatever
@@ -1012,7 +1012,7 @@
 \mutable\let\c_mult_set\relax
 
 \protected\def\mult_interfaces_install_definition_set#1#2#3#4#5#6#7%
-  {\newcount#3%
+  {\newinteger#3%
    \lettonothing#6%
    \protected\def#2%
      {\expandafter\let\expandafter\c_mult_set\csname #1_t_#6\endcsname
@@ -1022,12 +1022,12 @@
       \fi}
    \frozen\protected\def#4##1%
      {\pushmacro#6%
-      \advance#3\plusone
+      \advanceby#3\plusone
       \edef#6{##1}%
       \unprotect}%
    \frozen\protected\def#5%
      {\protect
-      \advance#3\minusone
+      \advanceby#3\minusone
       \popmacro#6}%
    \frozen\protected\def#7##1%
      {\edef#6{##1}%
@@ -1087,12 +1087,12 @@
 
 \permanent\protected\def\mult_interfaces_install_local_current_injector#1#2#3#4%
   {\protected\def#4##1%
-     {\advance#2\plusone
+     {\advanceby#2\plusone
       \edef#3{##1:\the#2}% \currentXXX
       \edefcsname#1#3:\s!parent\endcsname{#1##1}}}
 
 \permanent\protected\def\installlocalcurrenthandler#1#2% \??XXX {XXX}
-  {\expandafter\newcount\csname#1:\s!counter\endcsname
+  {\expandafter\newinteger\csname#1:\s!counter\endcsname
    \normalexpanded{\mult_interfaces_install_local_current_injector
      {\noexpand#1}%
      \expandafter\noexpand\csname #1:\s!counter\endcsname

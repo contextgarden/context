@@ -27,9 +27,11 @@ typedef enum box_codes {
     tpack_code,
     vpack_code,
     hpack_code,
+    dpack_code,
     vtop_code,     /*tex |chr_code| for |\vtop| */
     vbox_code,
     hbox_code,
+    dbox_code,
     insert_box_code,
     insert_copy_code,
     local_left_box_box_code,

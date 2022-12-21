@@ -30,17 +30,17 @@
 \definemeasure[threecolumns][\dimexpr\plusthree\columnwidth+\plustwo  \columndistance\relax]
 \definemeasure[fourcolumns] [\dimexpr\plusfour \columnwidth+\plusthree\columndistance\relax]
 
-\newcount      \c_page_col_n_of_columns \c_page_col_n_of_columns\plusone
-\newcount      \c_page_col_current      \c_page_col_current     \plusone
-\newdimen      \d_page_col_distance
-\newdimen      \d_page_col_max_height
-\newdimen      \d_page_col_max_width
-%newdimen      \d_page_col_balance_step
-\newdimen      \d_page_col_column_width
-\newdimen      \d_page_col_top_height
-\newdimen      \d_page_col_top_width
-\newdimen      \d_page_col_available
-\newdimen      \d_page_col_sofar
+\newinteger    \c_page_col_n_of_columns \c_page_col_n_of_columns\plusone
+\newinteger    \c_page_col_current      \c_page_col_current     \plusone
+\newdimension  \d_page_col_distance
+\newdimension  \d_page_col_max_height
+\newdimension  \d_page_col_max_width
+%newdimension  \d_page_col_balance_step
+\newdimension  \d_page_col_column_width
+\newdimension  \d_page_col_top_height
+\newdimension  \d_page_col_top_width
+\newdimension  \d_page_col_available
+\newdimension  \d_page_col_sofar
 \newconditional\c_page_col_page
 
 %D We need to step over empty columns.
@@ -70,7 +70,7 @@
        \fi
        \page_otr_eject_page
        \scratchcounterone\c_page_col_current
-       \advance\scratchcounterthree\plusone
+       \advanceby\scratchcounterthree\plusone
      \fi
    }%
    \endgroup}
@@ -217,7 +217,7 @@
          \endgroup
        \fi
      \fi
-     \global\advance\c_page_col_current\plusone
+     \global\advanceby\c_page_col_current\plusone
    \fi
    %
    \page_col_notes_synchronize
@@ -293,10 +293,10 @@
 %          % method 0 : raw
 %        \or
 %          % method 1 : safe
-%          \advance\scratchdimentwo -\strutdp
+%          \advanceby\scratchdimentwo -\strutdp
 %        \or
 %          % method 2 : tight
-%          \advance\scratchdimenone -\onepoint
+%          \advanceby\scratchdimenone -\onepoint
 %        \fi
 %        \relax % really needed ! ! ! !
 %        \ifdim\scratchdimenone>\scratchdimentwo
@@ -334,10 +334,10 @@
            % method 0 : raw
          \or
            % method 1 : safe
-           \advance\scratchdimentwo -\strutdp
+           \advanceby\scratchdimentwo -\strutdp
          \or
            % method 2 : tight
-           \advance\scratchdimenone -\onepoint
+           \advanceby\scratchdimenone -\onepoint
          \fi
          \relax % really needed ! ! ! !
          \ifdim\scratchdimenone>\scratchdimentwo
@@ -360,7 +360,7 @@
   {\ifnum\c_page_col_current=\c_page_col_n_of_columns
      \c_page_col_current\plusone
    \else
-     \advance\c_page_col_current\plusone
+     \advanceby\c_page_col_current\plusone
    \fi
    \page_col_command_set_hsize
    \hsize\d_page_col_available}
@@ -515,7 +515,7 @@
          \xdef\totaltopinserted{\the\d_page_floats_inserted_top}%
          \page_one_insert_top_float
          \ifconditional\c_page_floats_some_waiting
-           \advance\noffloatinserts \plusone
+           \advanceby\noffloatinserts \plusone
          \else
            \noffloatinserts\c_page_floats_n_of_top\relax
          \fi
@@ -546,9 +546,9 @@
 %D The separator code is more or less the same as mixed columns but we need
 %D to compensate for the top floats so we comment a bit for now.
 
-\newdimen\pagecolumnseparatorheight
-\newdimen\pagecolumnseparatordepth
-\newdimen\pagecolumnseparatorwidth
+\newdimension\pagecolumnseparatorheight
+\newdimension\pagecolumnseparatordepth
+\newdimension\pagecolumnseparatorwidth
 
 % \installcorenamespace{pagecolumnsseparator}
 %

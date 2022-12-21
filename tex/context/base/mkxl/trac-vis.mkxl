@@ -53,10 +53,12 @@
 \aliased\let\syst_visualizers_hbox   \hbox
 \aliased\let\syst_visualizers_vbox   \vbox
 \aliased\let\syst_visualizers_vtop   \vtop
+\aliased\let\syst_visualizers_dbox   \dbox
 \aliased\let\syst_visualizers_vcenter\vcenter
 \aliased\let\syst_visualizers_hpack  \hpack
 \aliased\let\syst_visualizers_vpack  \vpack
 \aliased\let\syst_visualizers_tpack  \tpack
+\aliased\let\syst_visualizers_dpack  \dpack
 
 \permanent\protected\def\ruledhbox   {\syst_visualizers_hbox    attr \visualattribute \clf_getvisual{simplehbox} }
 \permanent\protected\def\ruledhpack  {\syst_visualizers_hpack   attr \visualattribute \clf_getvisual{simplehbox} }
@@ -64,6 +66,8 @@
 \permanent\protected\def\ruledvpack  {\syst_visualizers_vpack   attr \visualattribute \clf_getvisual{simplevbox} }
 \permanent\protected\def\ruledvtop   {\syst_visualizers_vtop    attr \visualattribute \clf_getvisual{simplevtop} }
 \permanent\protected\def\ruledtpack  {\syst_visualizers_tpack   attr \visualattribute \clf_getvisual{simplevtop} }
+\permanent\protected\def\ruleddbox   {\syst_visualizers_dbox    attr \visualattribute \clf_getvisual{simplevtop} }
+\permanent\protected\def\ruleddpack  {\syst_visualizers_dpack   attr \visualattribute \clf_getvisual{simplevtop} }
 \permanent\protected\def\ruledvcenter{\syst_visualizers_vcenter attr \visualattribute \clf_getvisual{simplevbox} }
 \permanent\protected\def\ruledmbox #1{\ruledhbox{\startimath#1\stopimath}}
 

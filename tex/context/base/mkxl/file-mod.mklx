@@ -89,11 +89,11 @@
 \aliased\let\usemodule   \usemodules
 \aliased\let\usetexmodule\usemodules
 
-\newcount\c_syst_modules_nesting
-\newtoks \everysetupmodule
+\newinteger\c_syst_modules_nesting
+\newtoks   \everysetupmodule
 
 \permanent\tolerant\protected\def\startmodule[#1]#;#2 %
-  {\global\advance\c_syst_modules_nesting\plusone
+  {\global\advanceby\c_syst_modules_nesting\plusone
    \push_macro_currentmodule
    \push_macro_currentmoduleparameters
    \def\currentmodule{#1#2}}
@@ -104,7 +104,7 @@
    \else
      \pop_macro_currentmoduleparameters
      \pop_macro_currentmodule
-     \global\advance\c_syst_modules_nesting\minusone
+     \global\advanceby\c_syst_modules_nesting\minusone
    \fi}
 
 \permanent\protected\def\setupmodule % to be lmtx'd

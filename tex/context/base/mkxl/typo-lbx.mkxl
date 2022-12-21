@@ -59,11 +59,11 @@
    \c!location=\v!left,
    \c!distance=\zeropoint]
 
-\newcount\c_typo_localboxes
-\newcount\c_typo_localboxes_index
+\newinteger\c_typo_localboxes
+\newinteger\c_typo_localboxes_index
 
 \appendtoks
-    \global\advance\c_typo_localboxes\plusone
+    \global\advanceby\c_typo_localboxes\plusone
     \global\expandafter\integerdef\csname\??localboxesattribute\currentlocalboxes\endcsname\c_typo_localboxes
     \gletcsname\??localboxesnamespace\number\c_typo_localboxes\endcsname\currentlocalboxes
 \to \everydefinelocalboxes
@@ -337,10 +337,10 @@
 %D % \def\LineNumberL{\the\localboxlinenumber}
 %D % \def\LineNumberR{\the\localboxlinenumber}
 %D
-%D % \newcount\MyLineNumberL
-%D % \newcount\MyLineNumberR
-%D % \def\LineNumberL{\global\advance\MyLineNumberL\plusone\the\MyLineNumberL}
-%D % \def\LineNumberR{\global\advance\MyLineNumberR\plusone\the\MyLineNumberR}
+%D % \newinteger\MyLineNumberL
+%D % \newinteger\MyLineNumberR
+%D % \def\LineNumberL{\global\advanceby\MyLineNumberL\plusone\the\MyLineNumberL}
+%D % \def\LineNumberR{\global\advanceby\MyLineNumberR\plusone\the\MyLineNumberR}
 %D
 %D \definecounter[MyLineNumberL]
 %D \definecounter[MyLineNumberR]

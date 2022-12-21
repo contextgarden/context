@@ -21,9 +21,9 @@
 
 \installframedcommandhandler \??fittingpage {fittingpage} \??fittingpage
 
-\newdimen\d_page_fitting_width
-\newdimen\d_page_fitting_height
-\newbox  \b_page_fitting
+\newdimension\d_page_fitting_width
+\newdimension\d_page_fitting_height
+\newbox      \b_page_fitting
 
 \definepapersize
   [fittingpage]

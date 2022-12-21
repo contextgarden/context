@@ -71,16 +71,16 @@
 
 \installsystemnamespace{eolstack}
 
-\newcount\c_system_files_eol_level
+\newinteger\c_system_files_eol_level
 
 \permanent\protected\def\pushendofline
-  {\advance\c_system_files_eol_level\plusone
+  {\advanceby\c_system_files_eol_level\plusone
    \expandafter\chardef\csname\??eolstack\number\c_system_files_eol_level\endcsname\catcode\endoflineasciicode
    \catcode\endoflineasciicode\commentcatcode}
 
 \permanent\protected\def\popendofline
   {\catcode\endoflineasciicode\csname\??eolstack\number\c_system_files_eol_level\endcsname
-   \advance\c_system_files_eol_level\minusone}
+   \advanceby\c_system_files_eol_level\minusone}
 
 \permanent\protected\def\restoreendofline
   {\catcode\endoflineasciicode\endoflinecatcode}
@@ -90,12 +90,12 @@
 %D
 %D A low level capsule:
 
-\newcount\readingfilelevel       % no longer needed
-\newtoks \everystartreadingfile
-\newtoks \everystopreadingfile
+\newinteger\readingfilelevel       % no longer needed
+\newtoks   \everystartreadingfile
+\newtoks   \everystopreadingfile
 
 \permanent\protected\def\startreadingfile% beter een every en \setnormalcatcodes
-  {\global\advance\readingfilelevel\plusone
+  {\global\advanceby\readingfilelevel\plusone
    \the\everystartreadingfile
    \pushcatcodetable       % saveguard
    \setcatcodetable\ctxcatcodes
@@ -105,7 +105,7 @@
   {\popcatcodetable      % saveguard
    \clf_popregime % temporarily this way
    \the\everystopreadingfile
-   \global\advance\readingfilelevel\minusone}
+   \global\advanceby\readingfilelevel\minusone}
 
 %D \macros
 %D   {input, normalinput}

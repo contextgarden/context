@@ -113,10 +113,10 @@
 %D \externalfigure[mycow]
 %D \stoptyping
 
-\newcount\c_grph_steps_reference
-\newdimen\d_grph_steps_x
-\newdimen\d_grph_steps_y
-\newbox  \b_grph_steps_colorbar
+\newinteger  \c_grph_steps_reference
+\newdimension\d_grph_steps_x
+\newdimension\d_grph_steps_y
+\newbox      \b_grph_steps_colorbar
 
 \ifdefined\referring\else \mutable\let\referring\relax \fi
 \ifdefined\marking  \else \mutable\let\marking  \relax \fi
@@ -264,7 +264,7 @@
 \definesystemconstant{vwb}
 
 \tolerant\protected\def\grph_steps_three_referring(#1,#2)#*(#3,#4)#*[#5]%
-  {\advance\c_grph_steps_reference\plusone
+  {\advanceby\c_grph_steps_reference\plusone
    \position(#1,#2)
      {\hbox{\the\c_grph_steps_reference}}%
    \position(#1,#2)
@@ -291,15 +291,15 @@
        \setexternalfigureparameter\c!ymax{24}%
      \fi
      \d_grph_steps_y\figureheight
-     \divide\d_grph_steps_y \externalfigureparameter\c!ymax
+     \divideby\d_grph_steps_y \externalfigureparameter\c!ymax
      \d_grph_steps_x\d_grph_steps_y
      \scratchdimen\figurewidth
-     \advance\scratchdimen\d_grph_steps_y
-     \divide \scratchdimen\d_grph_steps_y
+     \advanceby\scratchdimen\d_grph_steps_y
+     \divideby \scratchdimen\d_grph_steps_y
      \setexternalfigureparameter\c!xmax{\number\scratchdimen}%
    \else
-     \d_grph_steps_x\figurewidth  \divide\d_grph_steps_x \externalfigureparameter\c!xmax\relax
-     \d_grph_steps_y\figureheight \divide\d_grph_steps_y \externalfigureparameter\c!ymax\relax
+     \d_grph_steps_x\figurewidth  \divideby\d_grph_steps_x \externalfigureparameter\c!xmax\relax
+     \d_grph_steps_y\figureheight \divideby\d_grph_steps_y \externalfigureparameter\c!ymax\relax
    \fi}
 
 \tolerant\def\grph_steps_comment#1(#2,#3)#*(#4,#5)#*[#6]#*#:#7% {kader}(x,y)(h,b)[...]{tekst}
@@ -314,7 +314,7 @@
   {\gotobox{\vpack{\grph_steps_area(#1,#2)#3{}}}[#4]}
 
 \tolerant\def\grph_steps_text#1(#2,#3)#*(#4,#5)#*[#6]%
-  {\advance\c_grph_steps_reference\plusone
+  {\advanceby\c_grph_steps_reference\plusone
    \hbox % \hpack ?
      {\quad
       \thisissomeinternal\s!vwb{#6}%

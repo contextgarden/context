@@ -719,7 +719,10 @@ typedef enum attribute_codes {
 # define internal_specification_location(a) (internal_specification_base + (a))
 # define internal_specification_number(a)   ((a) - internal_specification_base)
 
-# define eqtb_size (internal_specification_base + number_specification_pars)
+# define eqtb_size       (internal_specification_base + number_specification_pars)
+# define eqtb_max_so_far (eqtb_size + lmt_hash_state.hash_data.ptr + 1)
+
+/* below: top or ptr +1 ? */
 
 # define eqtb_indirect_range(n) ((n < internal_glue_base) || ((n > eqtb_size) && (n <= lmt_hash_state.hash_data.top)))
 # define eqtb_out_of_range(n)   ((n >= undefined_control_sequence) && ((n <= eqtb_size) || n > lmt_hash_state.hash_data.top))
@@ -968,6 +971,7 @@ typedef enum tex_group_codes {
     adjusted_hbox_group, /*tex code for |\hbox| in vertical mode */
     vbox_group,          /*tex code for |\vbox| */
     vtop_group,          /*tex code for |\vtop| */
+    dbox_group,          /*tex code for |\dbox| */
     align_group,         /*tex code for |\halign|, |\valign| */
     no_align_group,      /*tex code for |\noalign| */
     output_group,        /*tex code for output routine */
@@ -1012,6 +1016,7 @@ typedef enum tex_par_context_codes {
     vmode_par_context,
     vbox_par_context,
     vtop_par_context,
+    dbox_par_context,
     vcenter_par_context,
     vadjust_par_context,
     insert_par_context,
@@ -1257,6 +1262,7 @@ inline static singleword tex_flags_to_cmd(int flags)
 
 extern int  tex_define_permitted   (halfword cs, halfword prefixes);
 extern void tex_define             (int g, halfword p, singleword cmd, halfword chr);
+extern void tex_define_again       (int g, halfword p, singleword cmd, halfword chr);
 extern void tex_define_inherit     (int g, halfword p, singleword flag, singleword cmd, halfword chr);
 extern void tex_define_swapped     (int g, halfword p1, halfword p2, int force);
 extern void tex_forced_define      (int g, halfword p, singleword flag, singleword cmd, halfword chr);

@@ -76,10 +76,10 @@
      \endgroup
    \fi}
 
-\newdimen\d_scrn_bar_width
-\newdimen\d_scrn_bar_height
-\newdimen\d_scrn_bar_depth
-\newdimen\d_scrn_bar_distance
+\newdimension\d_scrn_bar_width
+\newdimension\d_scrn_bar_height
+\newdimension\d_scrn_bar_depth
+\newdimension\d_scrn_bar_distance
 
 %D Interaction buttons, in fact a row of tiny buttons, are typically only used for
 %D navigational purposed. The next macro builds such a row based on a specification
@@ -129,17 +129,17 @@
    \scratchcounterone\zerocount % new, was 1
    \processallactionsinset
      [#list]
-     [   \v!page=>\advance\scratchcounterone\plusfour,
-      \v!subpage=>\advance\scratchcounterone\plusfour,
-      \s!unknown=>\advance\scratchcounterone\plusone]%
+     [   \v!page=>\advanceby\scratchcounterone\plusfour,
+      \v!subpage=>\advanceby\scratchcounterone\plusfour,
+      \s!unknown=>\advanceby\scratchcounterone\plusone]%
    \ifzeropt\d_scrn_bar_width
      \scratchdimenone\dimexpr2\emwidth+\d_scrn_bar_distance\relax
      \scratchdimentwo\dimexpr\scratchcounterone\scratchdimenone-\d_scrn_bar_distance\relax
    \else
      \scratchdimenone\d_scrn_bar_width
      \scratchdimentwo\dimexpr\scratchcounterone\d_scrn_bar_distance-\d_scrn_bar_distance\relax
-     \advance\scratchdimenone -\scratchdimentwo
-     \divide\scratchdimenone \scratchcounterone
+     \advanceby\scratchdimenone -\scratchdimentwo
+     \divideby\scratchdimenone \scratchcounterone
      \scratchdimentwo\d_scrn_bar_width
    \fi
    \hbox to \scratchdimentwo
@@ -306,23 +306,23 @@
        \doloop
          {\scratchcounterthree\numexpr(\nofsubpages/\recurselevel)+\plusone\relax % rounding
           \scratchdimentwo\d_scrn_bar_distance
-          \multiply\scratchdimentwo \scratchcounterthree
-          \advance\scratchdimentwo -\d_scrn_bar_distance
+          \multiplyby\scratchdimentwo \scratchcounterthree
+          \advanceby\scratchdimentwo -\d_scrn_bar_distance
           \scratchdimenone\d_scrn_bar_width
-          \advance\scratchdimenone -\scratchdimentwo
-          \divide\scratchdimenone \scratchcounterthree
+          \advanceby\scratchdimenone -\scratchdimentwo
+          \divideby\scratchdimenone \scratchcounterthree
           \ifdim\scratchdimenone<\d_scrn_bar_distance\else
             \scratchcountertwo\recurselevel
             \exitloop
           \fi}%
        \ifnum\scratchcounterthree>\plusone
          % this is not that well tested
-         \advance\scratchcounterthree \minustwo
+         \advanceby\scratchcounterthree \minustwo
          \scratchdimenone-\d_scrn_bar_distance
          \scratchdimenone\scratchcounterthree\scratchdimenone
-         \advance\scratchdimenone \d_scrn_bar_width
-         \advance\scratchcounterthree \plusone
-         \divide\scratchdimenone \scratchcounterthree
+         \advanceby\scratchdimenone \d_scrn_bar_width
+         \advanceby\scratchcounterthree \plusone
+         \divideby\scratchdimenone \scratchcounterthree
        \fi
        \doifelse{\interactionbarparameter\c!symbol}\v!yes
          {\setupsymbolset[\interactionparameter\c!symbolset]%
@@ -334,7 +334,7 @@
        \scratchcounterfive\zerocount
        \dostepwiserecurse\firstsubpage\lastsubpage\plusone
          {\donefalse
-          \advance\scratchcounterfive \plusone
+          \advanceby\scratchcounterfive \plusone
           \ifnum\recurselevel=\firstsubpage\relax \donetrue \fi
           \ifnum\recurselevel=\lastsubpage \relax \donetrue \fi
           \scratchcountersix\therealsubpageno\recurselevel\relax

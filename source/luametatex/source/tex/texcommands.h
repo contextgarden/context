@@ -334,7 +334,7 @@ typedef enum tex_command_code {
 
 # define is_referenced_cmd(cmd)     (cmd >= call_cmd)
 # define is_nodebased_cmd(cmd)      (cmd >= gluespec_cmd && cmd <= fontspec_cmd)
-
+# define is_constant_cmd(cmd)       (cmd >= integer_cmd && cmd <= gluespec_cmd)
 
 # if (main_control_mode == 1)
 
@@ -362,10 +362,15 @@ typedef enum arithmic_codes {
     advance_code,
     multiply_code,
     divide_code,
+    advance_by_code,
+    multiply_by_code,
+    divide_by_code,
  /* bitwise_and_code, */
  /* bitwise_xor_code, */
  /* bitwise_or_code,  */
  /* bitwise_not_code, */
+ /* advance_by_plus_one_code,  */
+ /* advance_by_minus_one_code, */
 } arithmic_codes;
 
 # define last_arithmic_code divide_code
@@ -690,6 +695,8 @@ typedef enum shorthand_def_codes {
     mugluespec_def_code,
  /* mathspec_def_code, */
     fontspec_def_code,
+ /* integer_def_csname_code,   */
+ /* dimension_def_csname_code, */
 } shorthand_def_codes;
 
 # define last_shorthand_def_code fontspec_def_code

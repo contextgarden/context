@@ -23,16 +23,16 @@
 \installcorenamespace{attributepickup}
 
 \permanent\protected\def\pushattribute#1%
-  {\global\advance\csname\??attributestack\string#1\endcsname\plusone
+  {\global\advanceby\csname\??attributestack\string#1\endcsname\plusone
    \gdefcsname\??attributestack\string#1:\number\csname\??attributestack\string#1\endcsname\endcsname{\number\attribute#1}}
 
 \permanent\protected\def\popattribute#1%
   {\attribute#1\csname\??attributestack\string#1:\number\csname\??attributestack\string#1\endcsname\endcsname\relax
-   \global\advance\csname\??attributestack\string#1\endcsname\minusone}
+   \global\advanceby\csname\??attributestack\string#1\endcsname\minusone}
 
 \permanent\protected\def\installattributestack#1%
   {\ifcsname\??attributestack\string#1\endcsname \else
-     \expandafter\newcount\csname\??attributestack\string#1\endcsname
+     \expandafter\newinteger\csname\??attributestack\string#1\endcsname
    \fi}
 
 \newtoks \t_attr_list_global

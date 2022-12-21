@@ -43,6 +43,7 @@ local texsetattribute     = tex.setattribute
 local texgetattribute     = tex.getattribute
 local texgetcount         = tex.getcount
 local texgettoks          = tex.gettoks
+local texiscount          = tex.iscount
 local texgetmacro         = tokens.getters.macro
 
 local a_color             = attributes.private('color')
@@ -82,8 +83,19 @@ local function synccolorclone(name,clone)
     valid[name] = clone
 end
 
-local function synccolorcount(name,n)
-    counts[name] = n
+local synccolorcount  if CONTEXTLMTXMODE > 0 then
+--     local prefix = texgetmacro("??colornumber")
+--     for k, v in next, counts do
+--         counts[k] = texiscount(prefix..k)
+--         print(k,v,counts[k])
+--     end
+    synccolorcount = function(name,n)
+        counts[name] = texiscount(n)
+    end
+else
+    synccolorcount = function(name,n)
+        counts[name] = n
+    end
 end
 
 local stack = { }
@@ -1139,7 +1151,7 @@ local setcolormodel = colors.setmodel
 implement {
     name      = "synccolorcount",
     actions   = synccolorcount,
-    arguments = { "string", "integer" }
+    arguments = { "string", CONTEXTLMTXMODE > 0 and "string" or "integer" }
 }
 
 implement {

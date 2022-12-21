@@ -28,10 +28,10 @@
 
 %D Shipout control.
 
-\newcount\nofshipouts
+\newinteger\nofshipouts
 
 \appendtoks
-    \global\advance\nofshipouts\plusone
+    \global\advanceby\nofshipouts\plusone
 \to \everyaftershipout
 
 \newconditional\c_otr_shipout_enabled \settrue\c_otr_shipout_enabled
@@ -47,7 +47,7 @@
 
 \protected\def\page_otr_shipout_nop
   {\writestatus\m!system{ignoring shipout of real page \the\realpageno}%
-   \global\advance\realpageno\minusone % else no flush of resources
+   \global\advanceby\realpageno\minusone % else no flush of resources
    \dowithnextbox{\deadcycles\zerocount}}
 
 % We don't support direct user \shipouts (weird: this does not work, bug?)

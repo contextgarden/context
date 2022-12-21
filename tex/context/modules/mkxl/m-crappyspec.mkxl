@@ -128,9 +128,9 @@ function builders.paragraphs.constructors.methods.crappyspec(head)
 end
 \stopluacode
 
-\newcount\crappyspeccount
-\newdimen\crappyspecstep   \crappyspecstep \onepoint
-\newdimen\crappyspecdimen
+\newinteger  \crappyspeccount
+\newdimension\crappyspecstep   \crappyspecstep \onepoint
+\newdimension\crappyspecdimen
 
 \defineparbuilder [crappyspec] % implemented in the builder namespace
 \defineparbuilder [default]    % implemented in the builder namespace

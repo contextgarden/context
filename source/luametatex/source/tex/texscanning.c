@@ -3111,8 +3111,6 @@ strnumber tex_the_scanned_result(void)
     push_selector;
     switch (cur_val_level) {
         case int_val_level:
-            tex_print_int(cur_val);
-            break;
         case attr_val_level:
             tex_print_int(cur_val);
             break;
@@ -4134,7 +4132,7 @@ int tex_fract(int x, int n, int d, int max_answer)
 /*tex
 
     The main stacking logic approach is kept but I get the impression that the code is still
-    suboptimal.
+    suboptimal. We also accept braced expressions. 
 
 */
 
@@ -4159,6 +4157,7 @@ static void tex_aux_scan_expr(halfword level)
     int error_b = 0;
     /*tex top of expression stack */
     halfword top = null;
+int braced = 0;
     /*tex Scan and evaluate an expression |e| of type |l|. */
     cur_val_level = level; /* for now */
     lmt_scanner_state.expression_depth++;
@@ -4174,14 +4173,21 @@ static void tex_aux_scan_expr(halfword level)
   CONTINUE:
     operation = state == expression_none ? level : int_val_level; /* we abuse operation */
     /*tex
-
         Scan a factor |f| of type |o| or start a subexpression. Get the next non-blank non-call
         token.
-
     */
+  AGAIN:
     do {
         tex_get_x_token();
     } while (cur_cmd == spacer_cmd);
+    if (! braced) {
+        if (cur_cmd == left_brace_cmd) {
+            braced = 1;
+            goto AGAIN;
+        } else {
+            braced = 2;
+        }
+    }
     if (cur_tok == left_parent_token) {
         /*tex Push the expression stack and |goto restart|. */
         halfword t = tex_get_node(expression_node_size);
@@ -4248,6 +4254,9 @@ static void tex_aux_scan_expr(halfword level)
             operation = expression_none;
             if (! top) {
                 if (cur_cmd != relax_cmd) {
+                    if (cur_cmd == right_brace_cmd && braced == 1) {
+                        break;      
+                    }
                     tex_back_input(cur_tok);
                 }
             } else if (cur_tok != right_parent_token) {
@@ -5085,10 +5094,11 @@ static void tex_aux_scan_expression(int level)
     stack_info stack = tex_aux_new_stack();
     halfword operation = bit_expression_none;
     int alreadygotten = 0;
+    int braced = 0;
     int trace = tracing_expressions_par;
     while (1) {
         if (alreadygotten) {
-            alreadygotten= 0;
+            alreadygotten = 0;
         } else {
             tex_get_x_token();
         }
@@ -5096,6 +5106,21 @@ static void tex_aux_scan_expression(int level)
         switch (cur_cmd) {
             case relax_cmd:
                 goto COLLECTED;
+            case left_brace_cmd: 
+                if (! braced) {
+                    braced = 1;
+                    continue;
+                } else {
+                    goto NUMBER;
+                 // goto UNEXPECTED;
+                }
+            case right_brace_cmd:
+                if (braced) {
+                    goto COLLECTED;
+                } else {
+                    goto NUMBER;
+                 // goto UNEXPECTED;
+                }
             case spacer_cmd:
                 continue;
             case superscript_cmd:

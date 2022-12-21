@@ -60,13 +60,13 @@
    \c!inbetween={\blank[\v!medium]},
    \c!after=\blank]
 
-\newcount\c_typo_items_n
-\newcount\c_typo_items_m
-\newdimen\d_typo_items_text_width
-\newdimen\d_typo_items_symbol_width
-\newdimen\d_typo_items_distance
-\newbox  \b_typo_items_symbols
-\newbox  \b_typo_items_texts
+\newinteger  \c_typo_items_n
+\newinteger  \c_typo_items_m
+\newdimension\d_typo_items_text_width
+\newdimension\d_typo_items_symbol_width
+\newdimension\d_typo_items_distance
+\newbox      \b_typo_items_symbols
+\newbox      \b_typo_items_texts
 
 \permanent\tolerant\protected\def\items[#1]#:#2%
   {\bgroup
@@ -138,7 +138,7 @@
 \let\typo_items_make\relax
 
 \def\typo_items_item_horizontal
-  {\advance\c_typo_items_m\plusone
+  {\advanceby\c_typo_items_m\plusone
    \csname\??itemshorizontal
      \ifcsname\??itemshorizontal\p_typo_items_align\endcsname
        \p_typo_items_align
@@ -148,7 +148,7 @@
    \endcsname}
 
 \def\typo_items_item_vertical
-  {\advance\c_typo_items_m\plusone
+  {\advanceby\c_typo_items_m\plusone
    \csname\??itemsvertical
      \ifcsname\??itemsvertical\p_typo_items_align\endcsname
        \p_typo_items_align
@@ -169,7 +169,7 @@
   {\simplealignedbox\scratchwidth\m_typo_items_align}
 
 \def\typo_items_make_horizontal#1%
-  {\divide\scratchwidth\c_typo_items_n
+  {\divideby\scratchwidth\c_typo_items_n
    \hbox{#1}}
 
 \def\typo_items_make_vertical#1%
@@ -245,7 +245,7 @@
 \setvalue{\??itemsalternatives\v!left}#1%
   {\let\typo_items_make\typo_items_make_vertical
    \let\typo_items_item\typo_items_item_vertical
-   \advance\d_typo_items_text_width-\dimexpr\d_typo_items_symbol_width+\d_typo_items_distance\relax
+   \advanceby\d_typo_items_text_width-\dimexpr\d_typo_items_symbol_width+\d_typo_items_distance\relax
    \typo_items_construct_items_boxes{#1}%
    \noindent\hbox\bgroup
      \ifvoid\b_typo_items_symbols \else
@@ -260,7 +260,7 @@
 \setvalue{\??itemsalternatives\v!right}#1%
   {\let\typo_items_make\typo_items_make_vertical
    \let\typo_items_item\typo_items_item_vertical
-   \advance\d_typo_items_text_width-\dimexpr\d_typo_items_symbol_width+\d_typo_items_distance\relax
+   \advanceby\d_typo_items_text_width-\dimexpr\d_typo_items_symbol_width+\d_typo_items_distance\relax
    \typo_items_construct_items_boxes{#1}%
    \noindent\hbox\bgroup
      \box\b_typo_items_texts

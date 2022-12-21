@@ -80,15 +80,15 @@
 %D \setuplines[indentlist={0pt,1em,*}]
 %D \starttyping
 
-\newcount\c_spac_lines_indent_cnt
-\newcount\c_spac_lines_indent_max
-\newdimen\d_spac_lines_indent
+\newinteger  \c_spac_lines_indent_cnt
+\newinteger  \c_spac_lines_indent_max
+\newdimension\d_spac_lines_indent
 
 \def\spac_lines_indent_indeed
   {\ifnum\c_spac_lines_indent_cnt=\c_spac_lines_indent_max
      \c_spac_lines_indent_cnt\plusone
    \else
-     \advance\c_spac_lines_indent_cnt\plusone
+     \advanceby\c_spac_lines_indent_cnt\plusone
    \fi
    \getfromcommacommand[\m_spac_lines_indentlist][\c_spac_lines_indent_cnt]%
    \ifx\commalistelement\wildcardsymbol

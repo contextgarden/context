@@ -94,7 +94,7 @@
 \permanent\protected\def\startcharactertable[#1]#2\stopcharactertable % \dimexpr has fuzzy lookahead
   {\startnointerference
      \gdefcsname\??frequencywidths#1\endcsname{#2}% the width vector
-     \scratchcounter\zerocount \def\charfreq##1 ##2 {\advance\scratchcounter\plusone} #2%
+     \scratchcounter\zerocount \def\charfreq##1 ##2 {\advanceby\scratchcounter\plusone} #2%
      \xdefcsname\??frequencycounts#1\endcsname{\the\scratchcounter}% the character count
    \stopnointerference}
 

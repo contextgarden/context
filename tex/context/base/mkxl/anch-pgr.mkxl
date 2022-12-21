@@ -116,8 +116,8 @@
 %D stick to just one anchor and derive the head and tail anchors from this one. We
 %D set these anchors before and after each page.
 
-\newdimen\c_anch_page_width
-\newdimen\c_anch_page_height
+\newdimension\c_anch_page_width
+\newdimension\c_anch_page_height
 
 \protected\def\anch_positions_register_page#1% this one is flushed first ! ... can't we avoid this one
   {\ifpositioning\ifcase\realpageno\or

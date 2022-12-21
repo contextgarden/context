@@ -101,11 +101,11 @@
 % \definecolor[GridLineColor][red]
 % \definecolor[GridTextColor][blue]
 
-\newdimen\d_spac_lines_correction_before
-\newdimen\d_spac_lines_correction_after
+\newdimension\d_spac_lines_correction_before
+\newdimension\d_spac_lines_correction_after
 
-\newbox  \b_spac_lines_correction_before
-\newbox  \b_spac_lines_correction_after
+\newbox      \b_spac_lines_correction_before
+\newbox      \b_spac_lines_correction_after
 
 \def\spac_lines_initialize_corrections
   {\setbox\b_spac_lines_correction_before\hpack{\setstrut\strut}%
@@ -176,7 +176,7 @@
   {\ifdim\pagegoal<\maxdimen
      \ifdim\pagetotal>\lineheight % or \topskip
        \scratchdimen\pagetotal
-       \advance\scratchdimen\lineheight
+       \advanceby\scratchdimen\lineheight
        \ifdim\scratchdimen<\pagegoal
          \baselinecorrection
        \fi

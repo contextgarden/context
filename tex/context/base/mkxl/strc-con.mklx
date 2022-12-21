@@ -552,11 +552,11 @@
   [\c!renderingsetup=\??constructionrenderings:\v!label,
    \c!width=]
 
-\newbox   \constructionheadbox
-\newskip  \leftconstructionskip
-\newskip  \rightconstructionskip
-\newdimen \constructionsheadwidth
-\newdimen \constructionsheaddistance
+\newbox      \constructionheadbox
+\newgluespec \leftconstructionskip
+\newgluespec \rightconstructionskip
+\newdimension\constructionsheadwidth
+\newdimension\constructionsheaddistance
 
 \def\strc_constructions_set_hang_box#1% messy left/rightskip
   {\setbox\constructionheadbox\vtop   % \vbox gaat fout in hang
@@ -569,7 +569,7 @@
         \setupalign[\p_strc_constructions_headalign]% use fast one
       \fi
       \ifconditional\c_strc_constructions_distance_none \else
-        \advance\ifx#1\v!flushleft\rightskip\else\leftskip\fi\constructionsheaddistance % only difference and wrong anyway
+        \advanceby\ifx#1\v!flushleft\rightskip\else\leftskip\fi\constructionsheaddistance % only difference and wrong anyway
       \fi
       \flushconstructionheadbox}%
    \setbox\constructionheadbox\hpack{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
@@ -676,7 +676,7 @@
         \hskip\rightconstructionskip
     }
     \nobreak
-    \advance\rightskip \constructionsheaddistance
+    \advanceby\rightskip \constructionsheaddistance
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
@@ -722,7 +722,7 @@
 \startsetups[\??constructionrenderings:\v!left:\v!hanging]%
     \enforced\let\\\crlf
     \dontcomplain
-    \advance\constructionsheadwidth \constructionsheaddistance
+    \advanceby\constructionsheadwidth \constructionsheaddistance
     \strc_constructions_set_hang_box\v!flushleft
     \strc_constructions_set_hang\v!left
     \noindent
@@ -739,7 +739,7 @@
 \startsetups[\??constructionrenderings:\v!right:\v!hanging]%
     \enforced\let\\\crlf
     \dontcomplain
-    \advance\constructionsheadwidth \constructionsheaddistance
+    \advanceby\constructionsheadwidth \constructionsheaddistance
     \strc_constructions_set_hang_box\v!flushright
     \strc_constructions_set_hang\v!right
     \noindent
@@ -883,7 +883,7 @@
     % tricky: leftskipadaption is somewhat unpredictable
     \enforced\let\\\crlf
     \noindent
-    \advance\leftskip-\leftskipadaption\relax
+    \advanceby\leftskip-\leftskipadaption\relax
     \ifdim\leftskipadaption=\zeropoint
         \leftskipadaption1.5\emwidth\relax % just some default
         \ifnum\c_strc_constructions_nested_state=\plusone
@@ -893,7 +893,7 @@
         \fi
     \fi
     \ifnum\c_strc_constructions_nested_state>\zerocount % was \ifnum\c_strc_constructions_nested_state=\plusone
-        \advance\leftskip\leftskipadaption % but we're already further on
+        \advanceby\leftskip\leftskipadaption % but we're already further on
     \fi
     \hskip-\leftskipadaption\relax
     \ifhbox\constructionheadbox \unhbox\else\box\fi\constructionheadbox

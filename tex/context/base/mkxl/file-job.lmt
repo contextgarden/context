@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['file-job'] = {
 
 local next, rawget, tostring, tonumber = next, rawget, tostring, tonumber
 local gsub, match, gmatch, ind = string.gsub, string.match, string.gmatch, string.find
-local insert, remove, concat = table.insert, table.remove, table.concat
+local insert, remove, concat, unique, imerged = table.insert, table.remove, table.concat, table.unique, table.imerged
 local validstring, formatters = string.valid, string.formatters
 local sortedhash = table.sortedhash
 local setmetatableindex, setmetatablenewindex = table.setmetatableindex, table.setmetatablenewindex
@@ -1350,3 +1350,17 @@ implement {
     end,
 }
 
+implement {
+    name      = "adddefaultsuffix",
+    public    = true,
+    protected = true,
+    actions   = function(list)
+                    resolvers.defaultsuffixes = unique(
+                        imerged(
+                            resolvers.defaultsuffixes,
+                            list
+                        )
+                    )
+                end,
+    arguments = "array",
+}

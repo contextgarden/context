@@ -898,18 +898,19 @@ typedef enum package_states {
     hbox_package_state    = 0x01,
     vbox_package_state    = 0x02,
     vtop_package_state    = 0x03,
+    dbox_package_state    = 0x04,
     /* maybe vcenter */
 } package_states;
 
 typedef enum package_dimension_states {
     package_dimension_not_set  = 0x00,
-    package_dimension_size_set = 0x04,
+    package_dimension_size_set = 0x10,
 } package_dimension_states;
 
 typedef enum package_leader_states {
     package_u_leader_not_set  = 0x00,
-    package_u_leader_set      = 0x08,
-    package_u_leader_delayed  = 0x10,
+    package_u_leader_set      = 0x20,
+    package_u_leader_delayed  = 0x40,
 } package_leader_states;
 
 # define set_box_package_state(p,s) box_package_state(p) |= s

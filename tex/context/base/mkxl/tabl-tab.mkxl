@@ -34,11 +34,11 @@
 \newconditional\c_tabl_table_spacing_left
 \newconditional\c_tabl_table_spacing_right
 
-\newdimen      \d_tabl_table_line_thickness_unit
-\newdimen      \d_tabl_table_strut_unit
-\newskip       \s_tabl_table_inter_column_space_unit
-\newdimen      \d_tabl_table_column_width_unit
-\newdimen      \d_tabl_table_kern_unit
+\newdimension  \d_tabl_table_line_thickness_unit
+\newdimension  \d_tabl_table_strut_unit
+\newgluespec   \s_tabl_table_inter_column_space_unit
+\newdimension  \d_tabl_table_column_width_unit
+\newdimension  \d_tabl_table_kern_unit
 
 \mutable\def\tablestrutheightfactor      {8}
 \mutable\def\tablestrutdepthfactor       {3}
@@ -85,26 +85,26 @@
     \rightskip\zeropoint \s!plus 4em \relax
 \to \everytableparbox
 
-\newskip \tablelefttabskip
-\newskip \tablerighttabskip
+\newgluespec \tablelefttabskip
+\newgluespec \tablerighttabskip
 
-\newcount\!taColumnNumber
-\newcount\!taRecursionLevel % (Initially 0)
+\newinteger  \!taColumnNumber
+\newinteger  \!taRecursionLevel % (Initially 0)
 
-\newdimen\!taDimenA  % used by \Enlarge
-\newdimen\!taDimenB  % used by \Enlarge
-\newdimen\!taDimenC  % used by numeric.tex
-\newdimen\!taMinimumColumnWidth
+\newdimension\!taDimenA  % used by \Enlarge
+\newdimension\!taDimenB  % used by \Enlarge
+\newdimension\!taDimenC  % used by numeric.tex
+\newdimension\!taMinimumColumnWidth
 
-\newtoks \!taTableSpread
-\newtoks \!taPreamble
-\newtoks \!taDataColumnTemplate
-\newtoks \!taRuleColumnTemplate
-\newtoks \!taOldRuleColumnTemplate
-\newtoks \!taLeftGlue
-\newtoks \!taRightGlue
+\newtoks     \!taTableSpread
+\newtoks     \!taPreamble
+\newtoks     \!taDataColumnTemplate
+\newtoks     \!taRuleColumnTemplate
+\newtoks     \!taOldRuleColumnTemplate
+\newtoks     \!taLeftGlue
+\newtoks     \!taRightGlue
 
-\newskip \!taLastRegularTabskip
+\newgluespec \!taLastRegularTabskip
 
 \newif   \if!taBeginFormat
 \newif   \if!taOnceOnlyTabskip
@@ -123,8 +123,8 @@
   {\!taPreamble\emptytoks
    \!taColumnNumber\zerocount
    \scratchskip\s_tabl_table_inter_column_space_unit
-   \multiply\scratchskip\tableintercolumnspacefactor
-   \divide\scratchskip\plustwo
+   \multiplyby\scratchskip\tableintercolumnspacefactor
+   \divideby\scratchskip\plustwo
    \!taRuleColumnTemplate\expandafter{\expandafter\tabskip\the\scratchskip}%
    \!taLastRegularTabskip\scratchskip
    \!taOnceOnlyTabskipfalse
@@ -144,7 +144,7 @@
          \aftergroup\omit
          \!thLoop
            \ifnum \scratchcounter<\!taColumnNumber
-             \advance\scratchcounter\plusone
+             \advanceby\scratchcounter\plusone
              \aftergroup\!tfAOAO
          \repeat
          \aftergroup}%
@@ -176,11 +176,11 @@
 \def\!tfSetTabskip
   {\ifnum\!tgCode=\plusone
      \scratchskip\s_tabl_table_inter_column_space_unit
-     \multiply\scratchskip \ifempty\!tgValue\tableintercolumnspacefactor\else\!tgValue\fi
+     \multiplyby\scratchskip \ifempty\!tgValue\tableintercolumnspacefactor\else\!tgValue\fi
    \else
      \scratchskip\!tgValue
    \fi
-   \divide\scratchskip\plustwo
+   \divideby\scratchskip\plustwo
    \ifzero\!taColumnNumber
     %\!thToksEdef\!taRuleColumnTemplate{\the\!taRuleColumnTemplate\tabskip\the\scratchskip}%
      \normalexpanded{\!taRuleColumnTemplate{\the\!taRuleColumnTemplate\tabskip\the\scratchskip}}%
@@ -230,7 +230,7 @@
      \!thToksEdef\!taDataColumnTemplate{\the\!taLeftGlue\the\!taDataColumnTemplate\the\!taRightGlue}%
      \!thToksEdef\!taPreamble{\the\!taPreamble\aligntab\the\!taDataColumnTemplate\aligntab\the\!taRuleColumnTemplate}%
   \fi
-  \advance\!taColumnNumber\plusone
+  \advanceby\!taColumnNumber\plusone
   \if!taOnceOnlyTabskip
     \!thToksEdef\!taDataColumnTemplate{\aligncontent\tabskip\the\!taLastRegularTabskip}%
   \else
@@ -426,7 +426,7 @@
    \!thLoop
      \ifnum\scratchcounter>\zerocount
      \toksapp\scratchtoks{#2}%
-     \advance\scratchcounter\minusone
+     \advanceby\scratchcounter\minusone
    \repeat
    \expandafter\doreadtableformatkeys\the\scratchtoks}
 
@@ -631,7 +631,7 @@
      \scratchcounter#1\relax
      \!thLoop
        \ifnum \scratchcounter>\zerocount
-         \advance\scratchcounter\minusone
+         \advanceby\scratchcounter\minusone
          \aftergroup0
      \repeat
      \def\tempstring{#3}%
@@ -640,7 +640,7 @@
        \scratchcounter#2\relax
        \!thLoop
          \ifnum \scratchcounter>\zerocount
-         \advance\scratchcounter\minusone
+         \advanceby\scratchcounter\minusone
          \aftergroup0
        \repeat
      \fi
@@ -708,7 +708,7 @@
    \scratchcounter#1\relax
    \!thLoop
      \ifnum \scratchcounter>\zerocount
-       \advance\scratchcounter\minusone
+       \advanceby\scratchcounter\minusone
        \aftergroup0
    \repeat
    \def\tempstring{#3}%
@@ -717,7 +717,7 @@
      \scratchcounter#2\relax
      \!thLoop
        \ifnum\scratchcounter>\zerocount
-         \advance\scratchcounter\minusone
+         \advanceby\scratchcounter\minusone
          \aftergroup0
      \repeat
    \fi
@@ -826,7 +826,7 @@
      \fi
      \bgroup % for the \vtop, \vbox, or \vcenter
    \fi
-   \advance\!taRecursionLevel\plusone
+   \advanceby\!taRecursionLevel\plusone
    \let\!ttRightGlue\relax
    \everycr\emptytoks
    \ifnum\!taRecursionLevel=\plusone
@@ -894,7 +894,7 @@
 
 % INSERT VRULE
 
-\newcount\c_tabl_table_n_of_vrules \c_tabl_table_n_of_vrules\plusone
+\newinteger\c_tabl_table_n_of_vrules \c_tabl_table_n_of_vrules\plusone
 
 \lettonothing\m_tabl_table_vrule_color
 \lettonothing\m_tabl_table_hrule_color
@@ -950,22 +950,22 @@
      \omit
      \global\setfalse\c_tabl_table_is_division       % added
      \scratchcounter\currenttablecolumn              % added
-     \advance\scratchcounter #1%                     % added
-     \advance\scratchcounter \minusone               % added
+     \advanceby\scratchcounter #1%                     % added
+     \advanceby\scratchcounter \minusone               % added
      \def\next                                       % added
-       {\global\advance\currenttablecolumn #1%       % added
-        \global\advance\currenttablecolumn \minusone % added
+       {\global\advanceby\currenttablecolumn #1%       % added
+        \global\advanceby\currenttablecolumn \minusone % added
         \scratchcounter#1%
-        \advance\scratchcounter \minusone
-        \advance\scratchcounter \scratchcounter
+        \advanceby\scratchcounter \minusone
+        \advanceby\scratchcounter \scratchcounter
         \!thLoop
           \ifnum\scratchcounter>\plusone
-            \spanomit \advance\scratchcounter\minusone
+            \spanomit \advanceby\scratchcounter\minusone
         \repeat
         \span}%
    \else                                             % added
      \def\next % conflicts with possible next \omit  % added
-       {\global\advance\currenttablecolumn \plusone}%% added
+       {\global\advanceby\currenttablecolumn \plusone}%% added
    \fi
    \next}                                            % added
 
@@ -1019,7 +1019,7 @@
      \else
        \!tgValue      % user-specified dimension
      \fi
-  \divide\scratchdimen\plustwo}
+  \divideby\scratchdimen\plustwo}
 
 % \emptyhbox prevents \unskip
 
@@ -1074,8 +1074,8 @@
   {\ifnum\!tgCode=\plusone
      \ifempty\!tgValue
        \!taDimenA\tablestrutheightfactor\d_tabl_table_strut_unit
-       \advance\!taDimenA\tablestrutdepthfactor\d_tabl_table_strut_unit
-       \divide\!taDimenA\plustwo
+       \advanceby\!taDimenA\tablestrutdepthfactor\d_tabl_table_strut_unit
+       \divideby\!taDimenA\plustwo
      \else
        \!taDimenA\!tgValue\d_tabl_table_strut_unit
      \fi
@@ -1874,7 +1874,7 @@
 %D the number of \type{|}'s and \type{\VL}'s or alike is always one more than the
 %D number of columns.
 
-\newcount\currenttablecolumn
+\newinteger\currenttablecolumn
 
 %D While defining this macro we change the \CATCODE\ of \type{|}. When counting the
 %D bars, we use a non active representation of the bar, simply because we cannot be
@@ -1904,9 +1904,9 @@
 %D \sym{\type{\HC}} a horizontal colored line
 %D \stopitemize
 
-\newcount\c_tabl_table_vrule_thickness_factor
-\newcount\c_tabl_table_hrule_thickness_factor
-\newcount\c_tabl_table_drule_span
+\newinteger\c_tabl_table_vrule_thickness_factor
+\newinteger\c_tabl_table_hrule_thickness_factor
+\newinteger\c_tabl_table_drule_span
 
 \lettonothing\m_tabl_table_vrule_color
 \lettonothing\m_tabl_table_hrule_color
@@ -1928,12 +1928,12 @@
 \def\tabl_table_vrulecommand#1% global assignments
   {\doifelsenumber{#1}
      {\global\c_tabl_table_vrule_thickness_factor#1\relax
-      \global\multiply\c_tabl_table_vrule_thickness_factor\m_tabl_table_VLwidth\relax}
+      \global\multiplyby\c_tabl_table_vrule_thickness_factor\m_tabl_table_VLwidth\relax}
      {\xdef\m_tabl_table_vrule_color{#1}}}
 
 \permanent\tolerant\protected\def\tabl_table_VL[#1]%
   {\tabl_tables_check_auto_row
-   \global\advance\currenttablecolumn\plusone
+   \global\advanceby\currenttablecolumn\plusone
    \glettonothing\m_tabl_table_vrule_color
    \global\c_tabl_table_vrule_thickness_factor\m_tabl_table_VLwidth\relax
    \iftok{#1}\emptytoks\else
@@ -1959,7 +1959,7 @@
 \def\tabl_table_hrulecommand#1% global assignments
   {\doifelsenumber{#1}
      {\global\c_tabl_table_hrule_thickness_factor#1\relax
-      \global\multiply\c_tabl_table_hrule_thickness_factor\m_tabl_table_HLheight\relax}
+      \global\multiplyby\c_tabl_table_hrule_thickness_factor\m_tabl_table_HLheight\relax}
      {\xdef\m_tabl_table_hrule_color{#1}}}
 
 \permanent\tolerant\protected\def\tabl_table_HL[#1]%
@@ -2043,7 +2043,7 @@
 
 \protected\def\tabl_table_NC
   {\tabl_tables_check_auto_row
-   \global\advance\currenttablecolumn \plusone
+   \global\advanceby\currenttablecolumn \plusone
    \tabl_table_normal_no_bar}
 
 %D \startitemize[3*broad]
@@ -2076,7 +2076,7 @@
         \global\c_tabl_table_drule_span#1\relax
       \else
         \global\c_tabl_table_hrule_thickness_factor#1\relax
-        \global\multiply\c_tabl_table_hrule_thickness_factor\m_tabl_table_VLwidth\relax
+        \global\multiplyby\c_tabl_table_hrule_thickness_factor\m_tabl_table_VLwidth\relax
       \fi}
      {\xdef\m_tabl_table_hrule_color{#1}}}
 
@@ -2101,13 +2101,13 @@
      % \fi
      \fi
      \ifcase\c_tabl_table_drule_span
-       \global\advance\currenttablecolumn \plusone
+       \global\advanceby\currenttablecolumn \plusone
        \tabl_table_normal_single_rule
      \or
-       \global\advance\currenttablecolumn \plustwo
+       \global\advanceby\currenttablecolumn \plustwo
        \tabl_table_normal_single_rule
      \else
-       \global\advance\currenttablecolumn \plusone
+       \global\advanceby\currenttablecolumn \plusone
        \tabl_table_normal_multi_rule
      \fi
    \fi}
@@ -2121,7 +2121,7 @@
 \permanent\protected\def\tabl_table_DCV#1%
   {\tabl_table_check_division
    \tabl_tables_check_auto_row
-   \global\advance\currenttablecolumn \plusone
+   \global\advanceby\currenttablecolumn \plusone
    #1}
 
 \permanent\protected\def\tabl_table_DR

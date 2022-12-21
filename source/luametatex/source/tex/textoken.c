@@ -3359,6 +3359,8 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
 
 */
 
+/* The bin gets 1.2K smaller if we inline these. */
+
 halfword tex_get_tex_dimen_register     (int j, int internal) { return internal ? dimen_parameter(j) : dimen_register(j) ; }
 halfword tex_get_tex_skip_register      (int j, int internal) { return internal ? glue_parameter(j) : skip_register(j) ; }
 halfword tex_get_tex_mu_skip_register   (int j, int internal) { return internal ? mu_glue_parameter(j) : mu_skip_register(j); }

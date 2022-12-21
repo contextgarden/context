@@ -98,7 +98,7 @@
   [placeholder]
   [1=red,2=green,3=blue,4=cyan,5=magenta,6=yellow]
 
-\newcount\c_grph_replacement_n
+\newinteger\c_grph_replacement_n
 
 \setupexternalfigures
   [\c!reduction=0,
@@ -111,8 +111,8 @@
 %    \setuppalet[placeholder]%
    \getpaletsize[placeholder]%
    \ifnum\c_grph_replacement_n=\zerocount
-     \getrandomnumber \m_grph_replacement_n\plusone\paletsize
-     \global\c_grph_replacement_n \m_grph_replacement_n\relax
+     \getrandomnumber\m_grph_replacement_n\plusone\paletsize
+     \global\c_grph_replacement_n\m_grph_replacement_n\relax
    \else
      \global\advance\c_grph_replacement_n\plusone
    \fi

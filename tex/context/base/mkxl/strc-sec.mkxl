@@ -65,7 +65,7 @@
      % nothing
    \orelse\ifx\currentstructurereferenceprefix\m_strc_references_prefix_yes
      \ifempty\currentstructurereference
-       \global\advance\prefixcounter \plusone % temp here
+       \global\advanceby\prefixcounter \plusone % temp here
        \setupglobalreferenceprefix[\the\prefixcounter]%
      \else
        \setupglobalreferenceprefix[\currentstructurereference]%
@@ -529,7 +529,7 @@
 %  0 = block
 % +1 = structurelevel 1 .. n
 
-\newcount\maxstructuredepth
+\newinteger\maxstructuredepth
 
 \permanent\def\sectionlevel#1%
   {\csname\??headlevel\ifcsname\??headlevel#1\endcsname#1\else\v!none\fi\endcsname}
@@ -561,7 +561,7 @@
   {\ifcsname\??headlevel#1\endcsname \else
      \edef\currenthead{#1}%
      \let\currentsection\currenthead % just an alias
-     \global\advance\maxstructuredepth\plusone
+     \global\advanceby\maxstructuredepth\plusone
      \edefcsname\??headlevel#1\endcsname{\the\maxstructuredepth}%
      \setstructurelevel{#1}{\sectionlevel{#1}}%
      \normalexpanded{\setheadparameter{\s!parent}{\??head\lastsectionname}}% TO BE CHECKED, WE HAVE A HELPER
@@ -1150,7 +1150,7 @@
      \doifelselayouttextline\v!footer{\normalexpanded{\setuplayouttext[\v!footer][\c!state=\p_footer]}}\donothing
    \fi}
 
-\newcount      \c_strc_sectioning_preceding_level     \c_strc_sectioning_preceding_level\plusone
+\newinteger    \c_strc_sectioning_preceding_level     \c_strc_sectioning_preceding_level\plusone
 \newconditional\c_strc_sectioning_auto_break          \settrue\c_strc_sectioning_auto_break
 \newconditional\c_strc_sectioning_ignore_page
 \newboundary   \c_strc_sectioning_boundary

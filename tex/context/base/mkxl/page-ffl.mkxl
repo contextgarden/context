@@ -75,8 +75,8 @@
 %
 % \stoptext
 
-\newdimen\d_page_adapts_preroll
-\newcount\c_page_adapts_pushed
+\newdimension\d_page_adapts_preroll
+\newinteger  \c_page_adapts_pushed
 
 % this assumes a constant textheight and no adaptations otherwise so we
 % should block these for already set pages in adaptheight .. or we can
@@ -103,7 +103,7 @@
       \relax
       \putboxincache{\v!page:\number#1}{+}\nextbox
       \normalexpanded{\adaptlayout[\number#1][\c!top=\the\scratchdimen]}%
-      \global\advance\c_page_adapts_pushed\plusone
+      \global\advanceby\c_page_adapts_pushed\plusone
       \endgroup}}
 
 \def\page_otr_flush_top_content
@@ -114,7 +114,7 @@
          \nointerlineskip
          \par}%
       \disposeboxesincache{\v!page:\number\realpageno}%
-      \global\advance\c_page_adapts_pushed\minusone
+      \global\advanceby\c_page_adapts_pushed\minusone
       \nointerlineskip
    \fi}
 
@@ -156,24 +156,23 @@
   %\c!color,
    \c!width=\v!fit]
 
-\newcount\c_defining_facing_float
+\newinteger\c_defining_facing_float
 
 \appendtoks
-  \advance\c_defining_facing_float\plusone
+  \advanceby\c_defining_facing_float\plusone
   \ifcase\c_defining_facing_float\or
       \expanded{
         \definefacingfloat[\currentfacingfloat:\v!left ][\currentfacingfloat]%
         \definefacingfloat[\currentfacingfloat:\v!right][\currentfacingfloat]%
       }%
     \fi
-  \advance\c_defining_facing_float\minusone
+  \advanceby\c_defining_facing_float\minusone
 \to \everydefinefacingfloat
 
-\newcount\c_strc_floats_facing_saved
-\newcount\c_strc_floats_facing_flushed
-
-\newbox\b_strc_floats_facing_l
-\newbox\b_strc_floats_facing_r
+\newinteger\c_strc_floats_facing_saved
+\newinteger\c_strc_floats_facing_flushed
+\newbox    \b_strc_floats_facing_l
+\newbox    \b_strc_floats_facing_r
 
 \let\m_strc_floats_state\relax
 
@@ -181,7 +180,7 @@
 
 \def\strc_floats_facing_flush_indeed_step#1#2#3%
   {\ifnum#2<#3\relax
-     \advance#2\plusone
+     \advanceby#2\plusone
      \donetrue
      \writestatus
        {facing}
@@ -202,10 +201,10 @@
    \scratchcountersix  \zerocount
    % find first empty spread i.e. odd (left) and even (right) empty
    \ifdim\pagetotal>\zeropoint
-     \advance\scratchcounterone\plusone
+     \advanceby\scratchcounterone\plusone
    \fi
    \ifodd\scratchcounterone
-     \advance\scratchcounterone\plusone
+     \advanceby\scratchcounterone\plusone
    \fi
    \writestatus
      {facing}
@@ -214,15 +213,15 @@
        \page_adapts_layout_preroll\scratchcounterone
        \ifzeropt\d_page_adapts_preroll
          % left empty
-         \advance\scratchcounterone\plusone
+         \advanceby\scratchcounterone\plusone
          \page_adapts_layout_preroll\scratchcounterone
          \ifzeropt\d_page_adapts_preroll
            % right empty
-           \advance\scratchcounterone\minusone
+           \advanceby\scratchcounterone\minusone
            \exitloop
          \fi
        \else
-         \advance\scratchcounterone\plustwo
+         \advanceby\scratchcounterone\plustwo
        \fi
    }
    \writestatus
@@ -241,7 +240,7 @@
      \else
        \exitloop
      \fi
-     \advance\scratchcounterone\plusone
+     \advanceby\scratchcounterone\plusone
    }
    \disposeboxesincache{\currentfacingfloat:\v!right}%
    \disposeboxesincache{\currentfacingfloat:\v!left}%
@@ -304,7 +303,7 @@
    \letfacingfloatparameter\c!width\v!fit
    \ifx\p_width\v!frame
       \setbox\scratchbox\hpack{\inheritedfacingfloatframed{}}%
-      \advance\hsize-\wd\scratchbox
+      \advanceby\hsize-\wd\scratchbox
    \orelse\ifx\p_width\v!fit
       % whatever
    \else
@@ -335,7 +334,7 @@
    \doloop{%
      \strc_floats_facing_flush_wrap\b_strc_floats_facing_l\v!left
      \strc_floats_facing_flush_wrap\b_strc_floats_facing_r\v!right
-     \global\advance\c_strc_floats_facing_saved\plusone
+     \global\advanceby\c_strc_floats_facing_saved\plusone
      \ifvoid\b_strc_floats_facing_l\relax\ifvoid\b_strc_floats_facing_r\relax
        \exitloop
      \fi\fi}}

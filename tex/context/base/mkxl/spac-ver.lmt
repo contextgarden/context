@@ -972,7 +972,8 @@ do
  -- local cmd = token.create("vspacingfromtempstring")
  -- local cmd = token.create("vspacingpredefinedvalue") -- not yet known
 
-    local s_scratchskip = tex.isskip("scratchskip")
+    ----- s_predefined = "s_spac_vspacing_predefined"
+    local s_predefined = tex.isskip("s_spac_vspacing_predefined")
 
     local function handler(multiplier, keyword, detail)
         if not keyword then
@@ -1028,7 +1029,7 @@ do
                  -- setmacro("tempstring",keyword)
                  -- runlocal(ctx_vspacingfromtempstring)
                     --
-                    amount, stretch, shrink = texgetglue(s_scratchskip)
+                    amount, stretch, shrink = texgetglue(s_predefined)
                     if not stretch then
                         stretch = 0
                     end

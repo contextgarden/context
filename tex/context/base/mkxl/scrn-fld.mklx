@@ -620,12 +620,12 @@
 
 %D Common stuff (obsolete)
 
-\newcount\c_scrn_field_system_n
+\newinteger\c_scrn_field_system_n
 
 \permanent\def\currentsystemfield{sys::\number\c_scrn_field_system_n}
 
 \permanent\protected\def\nextsystemfield
-  {\global\advance\c_scrn_field_system_n\plusone}
+  {\global\advanceby\c_scrn_field_system_n\plusone}
 
 %D \CONTEXT\ had tooltips right from the moment that it supported fields. Due to the
 %D at that moment somewhat limited \PDF\ specification, they were implemented using
@@ -640,9 +640,9 @@
 %D before \tooltip[left]{inbetween}{a very nice tip} after\par
 %D \stoptyping
 
-\newbox  \b_scrn_tooltip_anchor
-\newbox  \b_scrn_tooltip_text
-\newcount\c_scrn_tooltip_n
+\newbox    \b_scrn_tooltip_anchor
+\newbox    \b_scrn_tooltip_text
+\newinteger\c_scrn_tooltip_n
 
 \installcorenamespace{tooltip}
 
@@ -675,7 +675,7 @@
 \tolerant\def\scrn_tooltip_indeed[#settings]#:#anchortext#tiptext% a more modern aproach (push buttons)
   {\dontleavehmode \hbox \bgroup
      \dontcomplain
-     \global\advance\c_scrn_tooltip_n\plusone
+     \global\advanceby\c_scrn_tooltip_n\plusone
      \edef\currenttooltipname{tooltip:\number\c_scrn_tooltip_n}%
      \setbox\b_scrn_tooltip_anchor\hbox
        {\strut#anchortext}%
@@ -763,7 +763,7 @@
 \definesymbol[\s!empty][]
 
 \def\scrn_fieldstack_add#tag#settings#symbol%
-  {\advance\scratchcounter\plusone
+  {\advanceby\scratchcounter\plusone
    \edef\currentfieldstackname{#tag:\number\scratchcounter}%
    \ifnum\scratchcounter=\fieldcategoryparameter\c!start\relax
      \definefieldbody[\currentfieldstackname][\c!type=check,\c!values={#symbol,\s!empty},\c!default={#symbol}]%
@@ -811,13 +811,13 @@
 %D \framed[background=WithTest]{toggle}
 %D \stoptyping
 
-\newcount\c_scrn_rollbutton_n
+\newinteger\c_scrn_rollbutton_n
 
 \permanent\tolerant\protected\def\overlayrollbutton[#1]#*[#2]#;#=#=%
   {\iflocation
      \bgroup
-     \global\advance\c_scrn_rollbutton_n_button\plusone
-     \global\advance\c_scrn_rollbutton_n_symbol\plusone
+     \global\advanceby\c_scrn_rollbutton_n_button\plusone
+     \global\advanceby\c_scrn_rollbutton_n_symbol\plusone
      \definesymbol
        [rollsymbol:\number\c_scrn_rollbutton_n_symbol]
        [{\framed[\c!frame=\v!off,\c!width=\overlaywidth,\c!height=\overlayheight]{}}]%
@@ -866,7 +866,7 @@
 %     \stopTEXpage
 % \stoptext
 
-\newcount\c_scrn_pushbutton_n
+\newinteger\c_scrn_pushbutton_n
 
 \permanent\tolerant\protected\def\definepushbutton[#tag]#spacer[#settings]%
   {\scrn_pushbutton_define_variant{#tag}{n}{push}%
@@ -881,7 +881,7 @@
 
 \def\scrn_pushbutton_handle#tag#settings#reference%
   {\bgroup
-   \global\advance\c_scrn_pushbutton_n\plusone
+   \global\advanceby\c_scrn_pushbutton_n\plusone
    \setupfield
      [pushbutton]%
      [\c!frame=\v!overlay,%
@@ -949,8 +949,8 @@
    r=green,
    d=blue]
 
-\newcount\c_scrn_rollbutton_n_button
-\newcount\c_scrn_rollbutton_n_symbol
+\newinteger\c_scrn_rollbutton_n_button
+\newinteger\c_scrn_rollbutton_n_symbol
 
 \permanent\def\lastrollbuttonindex{\the\c_scrn_rollbutton_n_button}
 
@@ -978,8 +978,8 @@
 \permanent\tolerant\protected\def\rollbutton[#tag]#spacer[#settings]#:#text[#reference]%
   {\dontleavehmode
    \bgroup
-   \global\advance\c_scrn_rollbutton_n_button\plusone
-   \global\advance\c_scrn_rollbutton_n_symbol\plusone
+   \global\advanceby\c_scrn_rollbutton_n_button\plusone
+   \global\advanceby\c_scrn_rollbutton_n_symbol\plusone
    \ifparameter#tag\or
      \ifparameter#settings\or
        \edef\currentinteractionmenu{#tag}%

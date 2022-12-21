@@ -78,7 +78,7 @@
 
 % document structure
 
-\ifdefined\textlevel                         \else \newcount\textlevel                          \fi % might go away
+\ifdefined\textlevel                         \else \newinteger\textlevel                        \fi % might go away
 \ifdefined\strc_pagenumbers_flush_final_page \else \let\strc_pagenumbers_flush_final_page\relax \fi % ugly
 
 \permanent\protected\def\dostarttext
@@ -344,5 +344,12 @@
 %    \lastnamedcs}
 
 \permanent\protected\def\samplefile#1{\clf_samplefile{#1}}
+
+% \adddefaultsuffix[foo,{},crap]
+% \adddefaultsuffix[{}]
+%
+% \typefile{./crapcrap}
+% \typefile{crapcrap}
+
 
 \protect \endinput

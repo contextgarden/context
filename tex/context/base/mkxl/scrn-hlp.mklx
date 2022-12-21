@@ -53,8 +53,8 @@
 
 % also status
 
-\newbox  \b_scrn_help_box
-\newcount\c_scrn_help_n
+\newbox    \b_scrn_help_box
+\newinteger\c_scrn_help_n
 
 \definesystemattribute[help][public]
 
@@ -79,7 +79,7 @@
 
 \protected\def\scrn_help_argument#category%
   {\def\currenthelp{#category}%
-   \global\advance\c_scrn_help_n\plusone
+   \global\advanceby\c_scrn_help_n\plusone
    \edef\currenthelpname{help:\number\c_scrn_help_n}%
    \doifelselocation\scrn_help_argument_indeed\scrn_help_argument_ignore}
 
@@ -98,7 +98,7 @@
   {#target}
 
 \tolerant\protected\def\scrn_help_start#category#spacer[#reference]%
-  {\global\advance\c_scrn_help_n\plusone
+  {\global\advanceby\c_scrn_help_n\plusone
    \edef\currenthelp{#category}%
    \edef\currenthelpreference{#reference}%
    \edef\currenthelpname{help:\number\c_scrn_help_n}%

@@ -47,7 +47,7 @@
 \installcorenamespace{colorgroup}
 \installcorenamespace{colorgroupsetter}
 
-\newcount\c_colo_groups_n % scratch counter
+\newinteger\c_colo_groups_n % scratch counter
 
 \permanent\tolerant\protected\def\definecolorgroup[#1]#*[#2]#*[#3]% % sort of obsolete, just use palets directly
   {\ifarguments\or\or
@@ -73,7 +73,7 @@
       \fi}}
 
 \def\colo_groups_define_entry#1#2#3% name mode specification
-  {\advance\c_colo_groups_n\plusone
+  {\advanceby\c_colo_groups_n\plusone
    \csname\??colorgroupsetter\ifcsname\??colorgroupsetter#2\endcsname#2\else\s!rgb\fi\endcsname[#1:\the\c_colo_groups_n][#3:0:0:0:0]}
 
 \setvalue{\??colorgroupsetter\s!gray}[#1][#2:#3]{\definecolor[#1][s=#2]}

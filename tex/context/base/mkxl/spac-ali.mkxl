@@ -297,8 +297,8 @@
 \let\v_spac_align_space_amount        \interwordspace
 \def\v_spac_align_space_amount_x          {.5\emwidth}
 
-\newskip\s_zero_plus_one_fil \s_zero_plus_one_fil = 0pt plus 1fil
-\newskip\s_zero_plus_zero    \s_zero_plus_zero    = 0pt plus 0pt
+\newgluespec\s_zero_plus_one_fil \s_zero_plus_one_fil = 0pt plus 1fil
+\newgluespec\s_zero_plus_zero    \s_zero_plus_zero    = 0pt plus 0pt
 
 % \s!plus ... slower than inline
 

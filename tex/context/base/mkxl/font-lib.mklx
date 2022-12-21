@@ -15,17 +15,17 @@
 
 \unprotect
 
-\newcount\scaledfontmode
-\newcount\scaledfontsize
-\newcount\lastfontid
+\newinteger\scaledfontmode
+\newinteger\scaledfontsize
+\newinteger\lastfontid
 
-\newcount\c_font_future_glyph_scale
-\newcount\c_font_scaled_font_mode_saved
-\newcount\c_font_scaled_points
+\newinteger\c_font_future_glyph_scale
+\newinteger\c_font_scaled_font_mode_saved
+\newinteger\c_font_scaled_points
 
-\ifdefined\globalbodyfontsize \else \newdimen\globalbodyfontsize \fi
-\ifdefined\localbodyfontsize  \else \newdimen\localbodyfontsize  \fi
-\ifdefined\bodyfontsize       \else \newdimen\bodyfontsize       \fi
+\ifdefined\globalbodyfontsize \else \newdimension\globalbodyfontsize \fi
+\ifdefined\localbodyfontsize  \else \newdimension\localbodyfontsize  \fi
+\ifdefined\bodyfontsize       \else \newdimension\bodyfontsize       \fi
 
 \registerctxluafile{font-ini}{autosuffix}
 \registerctxluafile{font-log}{}

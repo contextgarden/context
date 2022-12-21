@@ -178,8 +178,8 @@
 
 %D As it is not much code we now put it here:
 
-\newbox  \shapetextbox
-\newcount\shapetextindex
+\newbox    \shapetextbox
+\newinteger\shapetextindex
 
 \permanent\protected\def\startshapetext[#1]%
   {\begingroup
@@ -201,7 +201,7 @@
 %   {\vbox\bgroup
 %    \forgetall
 %    \dontcomplain
-%    \global\advance\shapetextindex\plusone
+%    \global\advanceby\shapetextindex\plusone
 %    \scratchcounter\getshapeparameter{lines}\relax
 %    \ifnum\scratchcounter>\zerocount
 %      \scratchwidth  \getshapeparameter{width}\scaledpoint\relax
@@ -227,7 +227,7 @@
   {\vbox\bgroup
    \forgetall
    \dontcomplain
-   \global\advance\shapetextindex\plusone
+   \global\advanceby\shapetextindex\plusone
    \scratchcounter\getshapeparameter{lines}\relax
    \ifnum\scratchcounter>\zerocount
      \scratchwidth  \getshapeparameter{width}\scaledpoint\relax

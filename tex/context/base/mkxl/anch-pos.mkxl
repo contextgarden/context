@@ -19,14 +19,13 @@
 
 \unprotect
 
-\newcount\c_anch_column % will be delegated to lua
-\newcount\c_anch_text   % will be delegated to lua
-\newcount\c_anch_free
-\newtoks \t_anch_positions_tracers
-\newcount\c_anch_positions_paragraph
-
-\newbox  \b_anch_position
-\newif   \ifpositioning   % sort of public
+\newinteger\c_anch_column % will be delegated to lua
+\newinteger\c_anch_text   % will be delegated to lua
+\newinteger\c_anch_free
+\newtoks   \t_anch_positions_tracers
+\newinteger\c_anch_positions_paragraph
+\newbox    \b_anch_position
+\newif     \ifpositioning   % sort of public
 
 \registerctxluafile{anch-pos}{autosuffix}
 
@@ -291,8 +290,8 @@
 \permanent\def\textanchor  {text:\the\realpageno}
 \permanent\def\regionanchor{region:0}
 
-% see top: \newcount\c_anch_column % will be delegated to lua
-% see top: \newcount\c_anch_text   % will be delegated to lua
+% see top: \newinteger\c_anch_column % will be delegated to lua
+% see top: \newinteger\c_anch_text   % will be delegated to lua
 
 % beware we need to pass \somethingexpanded or { }
 
@@ -303,7 +302,7 @@
 % that many variants: text, page, textarea, columnarea, free.
 
 \protected\def\anch_mark_column_box#1#2% box n
-  {\global\advance\c_anch_column\plusone
+  {\global\advanceby\c_anch_column\plusone
    \clf_markregionboxtaggedn#1{columnarea}\c_anch_column#2\relax} % extra height
 
 \protected\def\anch_mark_region_box % auto region:index
@@ -320,7 +319,7 @@
 
 \protected\def\anch_mark_flow_box#1% will be extended / renamed
   {\hpack\bgroup
-   \global\advance\c_anch_text\plusone
+   \global\advanceby\c_anch_text\plusone
    \clf_markregionboxtagged#1{textarea}\c_anch_text % will become flow:
    \box#1%
    \egroup}
@@ -329,7 +328,7 @@
   {\clf_markregionboxtagged#1{#2}#3\relax}
 
 \protected\def\anch_mark_flow_only#1% will be extended / renamed
-  {\global\advance\c_anch_text\plusone
+  {\global\advanceby\c_anch_text\plusone
    \clf_markregionboxcorrected#1{textarea}\c_anch_text}% will become flow:
 
 \protected\def\anch_make_page_box#1% maybe like text
@@ -345,10 +344,10 @@
      \expandafter\gobblesixarguments
    \fi}
 
-% see top: \newcount\c_anch_free
+% see top: \newinteger\c_anch_free
 
 \protected\def\anch_mark_tagged_box_free_yes#1#2#3#4#5#6% only needed when positions
-  {\global\advance\c_anch_free\plusone % could be done at the lua end
+  {\global\advanceby\c_anch_free\plusone % could be done at the lua end
    \clf_markregionboxtaggedkind
      #1%
      {free}%
@@ -417,8 +416,8 @@
 %D can keep track of them. This mechanism is activated automatically based on
 %D information collected in the previous pass.
 
-% see top: \newtoks \t_anch_positions_tracers
-% see top: \newcount\c_anch_positions_paragraph
+% see top: \newtoks   \t_anch_positions_tracers
+% see top: \newinteger\c_anch_positions_paragraph
 
 \permanent\protected\def\tracepositions
   {\the\t_anch_positions_tracers}

@@ -418,19 +418,19 @@
 %D After all, menus need some setup anyway. The offsets are added to the width or
 %D height (this is different from \MKII).
 
-\newbox  \b_scrn_menu
+\newbox      \b_scrn_menu
 
-\newdimen\d_scrn_menu_next_distance
-\newdimen\d_scrn_menu_final_width
-\newdimen\d_scrn_menu_final_height
-\newdimen\d_scrn_menu_used_width
-\newdimen\d_scrn_menu_used_height
-\newdimen\d_scrn_menu_asked_width
-\newdimen\d_scrn_menu_asked_height
-\newdimen\d_scrn_menu_offset_top
-\newdimen\d_scrn_menu_offset_bottom
-\newdimen\d_scrn_menu_offset_left
-\newdimen\d_scrn_menu_offset_right
+\newdimension\d_scrn_menu_next_distance
+\newdimension\d_scrn_menu_final_width
+\newdimension\d_scrn_menu_final_height
+\newdimension\d_scrn_menu_used_width
+\newdimension\d_scrn_menu_used_height
+\newdimension\d_scrn_menu_asked_width
+\newdimension\d_scrn_menu_asked_height
+\newdimension\d_scrn_menu_offset_top
+\newdimension\d_scrn_menu_offset_bottom
+\newdimension\d_scrn_menu_offset_left
+\newdimension\d_scrn_menu_offset_right
 
 \newconditional\c_scrn_menu_zerodimensions
 
@@ -608,7 +608,7 @@
 %D positional info. The status variable is 0, 1 or~2: not found, found and found but
 %D current page.
 
-\newcount      \c_scrn_menu_position
+\newinteger    \c_scrn_menu_position
 \newconstant   \c_scrn_menu_page_mode % 0=notfound  1=found  2=currentpage
 \newconditional\c_scrn_menu_positioning
 \newtoks       \t_scrn_menu_meta_data
@@ -711,7 +711,7 @@
    \scrn_menu_action_stop}
 
 \def\scrn_button_make_position#currentparameter#inheritedframed#letparameter#setparameter#text#action%
-  {\global\advance\c_scrn_menu_position\plusone
+  {\global\advanceby\c_scrn_menu_position\plusone
    \doifelsereferencefound{#action}% 0=not found, 1=same page, >1=elsewhere
      {\c_scrn_menu_page_mode\ifnum\currentreferencerealpage=\realpageno\plusone\else\plustwo\fi}%
      {\c_scrn_menu_page_mode\plustwo}%

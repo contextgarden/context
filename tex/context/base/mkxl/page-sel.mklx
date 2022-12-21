@@ -55,7 +55,7 @@
 \installsetuponlycommandhandler \??withpages {withpages}
 %  \installdirectcommandhandler \??withpages {withpages}
 
-\newcount\c_page_selectors_n
+\newinteger\c_page_selectors_n
 
 \permanent\tolerant\protected\def\insertpages[#filename]#spacer[#emptylist]#spacer[#settings]%
   {\doifelseassignment{#emptylist}
@@ -153,8 +153,8 @@
          \centeredbox
            {\doifelse{\directwithpagesparameter\c!marking}\v!on\cuthbox\hpack % only place where cuthbox is used
               {\ifdim\scratchoffset>\zeropoint\relax
-                 \advance\vsize -2\scratchoffset
-                 \advance\hsize -2\scratchoffset
+                 \advanceby\vsize -2\scratchoffset
+                 \advanceby\hsize -2\scratchoffset
                  \externalfigure[#filename][\c!page=\recurselevel,#figuresettings,\c!scale=,\c!factor=\v!max,\c!offset=\v!overlay]%
                \else
                  \externalfigure[#filename][\c!page=\recurselevel,#figuresettings,\c!offset=\v!overlay]%
@@ -243,7 +243,7 @@
                         \fi
                         \directwithpagesparameter\c!right}%
                      \directwithpagesparameter\c!bottom}%
-                  \global\advance\combinedpagescounter\plusone
+                  \global\advanceby\combinedpagescounter\plusone
                   \hfil}%
                \hfilneg}
             \vfil}%
@@ -280,7 +280,7 @@
                                 \c!backgroundcolor=\directwithpagesparameter\c!backgroundcolor,
                                 \c!frame=\directwithpagesparameter\c!frame]%
                            \fi}}
-                      \global\advance\combinedpagescounter\plusone
+                      \global\advanceby\combinedpagescounter\plusone
                       \directwithpagesparameter\c!bottom}}%
                 \hfil}%
             \hfilneg}}%
@@ -298,7 +298,7 @@
      {\startbaselinecorrection
         \hbox to \textwidth
           {\dorecurse\scratchnx
-             {\global\advance\combinedpagescounter\plusone
+             {\global\advanceby\combinedpagescounter\plusone
               \ifnum\combinedpagescounter>\c_page_selectors_n \else
                  \normalexpanded{\externalfigure
                    [\directwithpagesparameter\c!name]

@@ -21,11 +21,11 @@
 \installcorenamespace{framedtablerow}
 \installcorenamespace{framedtablecolumn}
 
-\newcount\c_tabl_framed_c
-\newcount\c_tabl_framed_r
-\newdimen\d_tabl_framed_h
-\newdimen\d_tabl_framed_d
-\newdimen\b_tabl_framed
+\newinteger  \c_tabl_framed_c
+\newinteger  \c_tabl_framed_r
+\newdimension\d_tabl_framed_h
+\newdimension\d_tabl_framed_d
+\newdimension\b_tabl_framed
 
 \initializeboxstack\??framedtable
 
@@ -135,7 +135,7 @@
    \ignorespaces}
 
 % \permanent\protected\def\startframedrow
-%   {\advance\c_tabl_framed_r\plusone
+%   {\advanceby\c_tabl_framed_r\plusone
 %    \c_tabl_framed_c\zerocount
 %    \d_tabl_framed_h\zeropoint
 %    \bgroup
@@ -160,12 +160,12 @@
   {\vpack to \d_tabl_framed_h{\flushbox\??framedtable{\number\fastloopindex}\vfill}%
    \ifzeropt\d_tabl_framed_d\else\kern\d_tabl_framed_d\fi}
 
-\newcount\c_tabl_framed_pass
+\newinteger\c_tabl_framed_pass
 
 \permanent\let\stopframedrow\relax
 
 \permanent\protected\def\startframedrow#1\stopframedrow
-  {\advance\c_tabl_framed_r\plusone
+  {\advanceby\c_tabl_framed_r\plusone
    \startframedrow_one#1\stopframedrow_one
    \startframedrow_two#1\stopframedrow_two}
 
@@ -205,7 +205,7 @@
    \ifzeropt\d_tabl_framed_d\else\kern\d_tabl_framed_d\fi}
 
 \permanent\protected\def\startframedcell
-  {\advance\c_tabl_framed_c\plusone
+  {\advanceby\c_tabl_framed_c\plusone
    \setbox\b_tabl_framed\hpack\bgroup
   %\bgroup
    \edef\currentframed{\number\c_tabl_framed_c}%

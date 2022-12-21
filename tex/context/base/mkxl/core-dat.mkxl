@@ -84,7 +84,7 @@
 \installcommandhandler \??pagestate {pagestate} \??pagestate
 
 \def\syst_pagestates_allocate
-  {\expandafter\newcount\csname\??pagestatecounter\currentpagestate\endcsname}
+  {\expandafter\newinteger\csname\??pagestatecounter\currentpagestate\endcsname}
 
 \appendtoks
     \syst_pagestates_allocate
@@ -98,7 +98,7 @@
    \edef\currentpagestate{#1}%
    \ifcsname\??pagestatecounter\currentpagestate\endcsname
      \scratchcounter\lastnamedcs
-     \advance\scratchcounter\plusone
+     \advanceby\scratchcounter\plusone
    \else
      \scratchcounter\plusone
      \syst_pagestates_allocate

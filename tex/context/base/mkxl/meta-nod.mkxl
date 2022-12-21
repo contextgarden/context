@@ -106,7 +106,7 @@
 %D Hm, we started out simple but it now quickly becomes the usual mess of \TEX,
 %D \METAPOST\ and \LUA. Hard to understand.
 
-\newcount\c_meta_nodes_n
+\newinteger\c_meta_nodes_n
 
 \permanent\protected\lettonothing\stopnodes
 
@@ -154,7 +154,7 @@
        \fi
      );%
    }}%
-   \advance\c_meta_nodes_n\plusone}
+   \advanceby\c_meta_nodes_n\plusone}
 
 \permanent\protected\lettonothing\placenode
 

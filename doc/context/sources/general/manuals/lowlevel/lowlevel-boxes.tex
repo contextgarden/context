@@ -689,6 +689,38 @@ test\quad
 \ruledhbox{\getbuffer}
 \stoplinecorrection
 
+Where a \type {\vtop} has the baseline at the top, a \type {\vbox} has it at the
+bottom. In \LUAMETATEX\ we also have a \type {\dbox}, which is a \type {\vbox} with
+that behaves like a \type {\vtop} when it's appended to a vertical list: the height of
+the first box or rule determines the (base)line correction that gets applied. The following
+example demonstrates this:
+
+\startlinecorrection
+\startcombination [nx=3,ny=1,location=top]
+    {\vbox \bgroup \hsize .3\textwidth
+        \small\small \setupalign[tolerant,stretch] \dontcomplain
+        xxxxxxxxxxxxxxxx\par
+        \ruledvbox{\samplefile{tufte}}\par
+        xxxxxxxxxxxxxxxx\par
+     \egroup} {\type {\vbox}}
+    {\vbox \bgroup \hsize .3\textwidth
+        \small\small \setupalign[tolerant,stretch] \dontcomplain
+        xxxxxxxxxxxxxxxx\par
+        \ruledvtop{\samplefile{tufte}}\par
+        xxxxxxxxxxxxxxxx\par
+     \egroup} {\type {\vtop}}
+    {\vbox \bgroup \hsize .3\textwidth
+        \small\small \setupalign[tolerant,stretch] \dontcomplain
+        xxxxxxxxxxxxxxxx\par
+        \ruleddbox{\samplefile{tufte} }\par
+        xxxxxxxxxxxxxxxx\par
+     \egroup} {\type {\dbox}}
+\stopcombination
+\stoplinecorrection
+
+The \type {d} stands for \quote {dual} because we (sort of) have two baselines. The
+regular height and depth are those of a \type {\vbox}.
+
 \stopsectionlevel
 
 \stopdocument

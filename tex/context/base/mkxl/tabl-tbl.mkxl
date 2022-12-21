@@ -161,24 +161,24 @@
 \newtoks         \t_tabl_tabulate_initializers_first
 \newtoks         \t_tabl_tabulate_initializers_second
 
-\newcount        \c_tabl_tabulate_nofauto
-\newcount        \c_tabl_tabulate_columns
-\newcount        \c_tabl_tabulate_column
-\newcount        \c_tabl_tabulate_plines_min
-\newcount        \c_tabl_tabulate_plines_max
-\newcount        \c_tabl_tabulate_max_colorcolumn
-\newcount        \c_tabl_tabulate_max_vrulecolumn
-\newcount        \c_tabl_tabulate_repeathead
-\newcount        \c_tabl_tabulate_noflines
-\newcount        \c_tabl_tabulate_totalnoflines
-\newcount        \c_tabl_tabulate_minusnoflines
-\newcount        \c_tabl_tabulate_align
-\newcount        \c_tabl_tabulate_nofrealrows
-\newcount        \c_tabl_tabulate_autocolor
+\newinteger      \c_tabl_tabulate_nofauto
+\newinteger      \c_tabl_tabulate_columns
+\newinteger      \c_tabl_tabulate_column
+\newinteger      \c_tabl_tabulate_plines_min
+\newinteger      \c_tabl_tabulate_plines_max
+\newinteger      \c_tabl_tabulate_max_colorcolumn
+\newinteger      \c_tabl_tabulate_max_vrulecolumn
+\newinteger      \c_tabl_tabulate_repeathead
+\newinteger      \c_tabl_tabulate_noflines
+\newinteger      \c_tabl_tabulate_totalnoflines
+\newinteger      \c_tabl_tabulate_minusnoflines
+\newinteger      \c_tabl_tabulate_align
+\newinteger      \c_tabl_tabulate_nofrealrows
+\newinteger      \c_tabl_tabulate_autocolor
 
-\newcount        \c_tabl_tabulate_nofcolumns            % set at the lua end by parser
-\newcount        \c_tabl_tabulate_has_rule_spec_first   % set at the lua end by parser (for the moment a count)
-\newcount        \c_tabl_tabulate_has_rule_spec_last    % set at the lua end by parser (for the moment a count)
+\newinteger      \c_tabl_tabulate_nofcolumns            % set at the lua end by parser
+\newinteger      \c_tabl_tabulate_has_rule_spec_first   % set at the lua end by parser (for the moment a count)
+\newinteger      \c_tabl_tabulate_has_rule_spec_last    % set at the lua end by parser (for the moment a count)
 
 \newconditional  \c_tabl_tabulate_nopbreak
 \newconditional  \c_tabl_tabulate_firstflushed
@@ -194,31 +194,31 @@
 \newconditional  \c_tabl_tabulate_reshape
 \newconditional  \c_tabl_tabulate_no_blank_in_paragraphs % can become always on
 
-\settrue\c_tabl_tabulate_split
-\settrue\c_tabl_tabulate_handlepbreak
-\settrue\c_tabl_tabulate_autorulespacing
-\settrue\c_tabl_tabulate_no_blank_in_paragraphs
+\settrue         \c_tabl_tabulate_split
+\settrue         \c_tabl_tabulate_handlepbreak
+\settrue         \c_tabl_tabulate_autorulespacing
+\settrue         \c_tabl_tabulate_no_blank_in_paragraphs
 
-\newdimen        \d_tabl_tabulate_width_p
-\newdimen        \d_tabl_tabulate_width_w
-\newdimen        \d_tabl_tabulate_width
-\newdimen        \d_tabl_tabulate_unit
-\newdimen        \d_tabl_tabulate_height_p_max
-\newdimen        \d_tabl_tabulate_vrulethickness_default
-\newdimen        \d_tabl_tabulate_hrulethickness_default
-\newdimen        \d_tabl_tabulate_vrulethickness
-\newdimen        \d_tabl_tabulate_hrulethickness          % not used
-\newdimen        \d_tabl_tabulate_vrulethickness_local
-\newdimen        \d_tabl_tabulate_hrulethickness_local
-\newdimen        \d_tabl_tabulate_indent
-\newdimen        \d_tabl_tabulate_splitoff_betweenskip
-\newdimen        \d_tabl_tabulate_margin
+\newdimension    \d_tabl_tabulate_width_p
+\newdimension    \d_tabl_tabulate_width_w
+\newdimension    \d_tabl_tabulate_width
+\newdimension    \d_tabl_tabulate_unit
+\newdimension    \d_tabl_tabulate_height_p_max
+\newdimension    \d_tabl_tabulate_vrulethickness_default
+\newdimension    \d_tabl_tabulate_hrulethickness_default
+\newdimension    \d_tabl_tabulate_vrulethickness
+\newdimension    \d_tabl_tabulate_hrulethickness          % not used
+\newdimension    \d_tabl_tabulate_vrulethickness_local
+\newdimension    \d_tabl_tabulate_hrulethickness_local
+\newdimension    \d_tabl_tabulate_indent
+\newdimension    \d_tabl_tabulate_splitoff_betweenskip
+\newdimension    \d_tabl_tabulate_margin
 
-\newskip         \s_tabl_tabulate_pre
-\newskip         \s_tabl_tabulate_post
-\newskip         \s_tabl_tabulate_first
-\newskip         \s_tabl_tabulate_last
-\newskip         \s_tabl_tabulate_separator
+\newgluespec     \s_tabl_tabulate_pre
+\newgluespec     \s_tabl_tabulate_post
+\newgluespec     \s_tabl_tabulate_first
+\newgluespec     \s_tabl_tabulate_last
+\newgluespec     \s_tabl_tabulate_separator
 
 \newbox          \b_tabl_tabulate
 
@@ -268,7 +268,7 @@
 \to \t_tabl_tabulate_initializers_second
 
 \prependtoks
-    \global\advance\c_tabl_tabulate_nofrealrows\plusone
+    \global\advanceby\c_tabl_tabulate_nofrealrows\plusone
 \to \t_tabl_tabulate_every_real_row
 
 \permanent\def\b_tabl_tabulate_current#1%
@@ -281,7 +281,7 @@
 \def\tabl_tabulate_initialize_boxes_step
   {\ifnum\scratchcounter>\zerocount
      \tabl_tabulate_initialize_box\scratchcounter
-     \advance\scratchcounter\minusone
+     \advanceby\scratchcounter\minusone
      \expandafter\tabl_tabulate_initialize_boxes_step
    \fi}
 
@@ -745,7 +745,7 @@
                  \settrue\c_tabl_tabulate_reshape,
      \s!unknown=>\d_tabl_tabulate_width#1\relax]%
    \ifconditional\c_tabl_tabulate_pwidth_set
-     \global\advance\d_tabl_tabulate_width_p\d_tabl_tabulate_width % accumulated parwidth
+     \global\advanceby\d_tabl_tabulate_width_p\d_tabl_tabulate_width % accumulated parwidth
    \fi
    \tabl_tabulate_set_preamble}
 
@@ -767,7 +767,7 @@
 % \def\tabl_tabulate_set_width_indeed(#1)%
 %   {\rawprocesscommacommand[#1]\tabl_tabulate_set_width_step
 %    \ifconditional\c_tabl_tabulate_pwidth_set
-%      \global\advance\d_tabl_tabulate_width_p\d_tabl_tabulate_width % accumulated parwidth
+%      \global\advanceby\d_tabl_tabulate_width_p\d_tabl_tabulate_width % accumulated parwidth
 %    \fi
 %    \tabl_tabulate_set_preamble}
 
@@ -796,7 +796,7 @@
      \tabl_tabulate_set_preamble_step\tabl_tabulate_bskip_raggedcenter\tabl_tabulate_eskip \fi}
 
 \def\tabl_tabulate_set_width_auto
-  {\global\advance\c_tabl_tabulate_nofauto\plusone
+  {\global\advanceby\c_tabl_tabulate_nofauto\plusone
    \ifcase\c_tabl_tabulate_align\relax
      \tabl_tabulate_set_preamble_step\tabl_tabulate_bskip             \tabl_tabulate_eskip \or
      \tabl_tabulate_set_preamble_step\tabl_tabulate_bskip_raggedright \tabl_tabulate_eskip \or
@@ -850,7 +850,7 @@
    \global\setfalse\c_tabl_auto_align_mode_new
    \resetalignmentcharacter
 %  \attribute\aligncharacterattribute\attributeunsetvalue
-   \global\advance\c_tabl_tabulate_columns\plusone
+   \global\advanceby\c_tabl_tabulate_columns\plusone
    \letcsname\??tabulatesetup\the\c_tabl_tabulate_columns\endcsname\donothing % here ?
    \iftok{#1}\emptytoks
      \global\d_tabl_tabulate_vrulethickness\zeropoint
@@ -969,7 +969,7 @@
        \ifnum\c_tabl_tabulate_plines_min=\plusone
          \tabl_tabulate_nobreak_inject
        \fi
-       \global\advance\c_tabl_tabulate_plines_min\plusone
+       \global\advanceby\c_tabl_tabulate_plines_min\plusone
        \ifnum\c_tabl_tabulate_plines_min=\c_tabl_tabulate_plines_max\relax
          \tabl_tabulate_nobreak_inject
        \fi
@@ -1799,7 +1799,7 @@
      {% we now have a local hsize, and since we want to
       % register positional info (i.e. real hsizes) we
       % need to reconstitute the original hsize
-      \advance\hsize\d_tabl_tabulate_indent
+      \advanceby\hsize\d_tabl_tabulate_indent
       % this is indeed rather messy and took a few hours
       % to dis/uncover
       \the\t_tabl_tabulate_every_row
@@ -1956,7 +1956,7 @@
 \to \t_tabl_tabulate_initializers_first
 
 % \permanent\protected\def\tabl_tabulate_NR_common#1#2%
-%   {\global\advance\c_tabl_tabulate_noflines\plusone
+%   {\global\advanceby\c_tabl_tabulate_noflines\plusone
 %    \global\setfalse\c_tabl_tabulate_firstflushed
 %    \global\setfalse\c_tabl_tabulate_equal
 %    \global\c_tabl_tabulate_column\zerocount
@@ -1969,7 +1969,7 @@
 %    \noalign{\the\t_tabl_tabulate_every_after_row#2}}
 
 \permanent\tolerant\protected\def\tabl_tabulate_NR_common#1#2#.#3% #. gobbles pars and spaces
-  {\global\advance\c_tabl_tabulate_noflines\plusone
+  {\global\advanceby\c_tabl_tabulate_noflines\plusone
    \global\setfalse\c_tabl_tabulate_firstflushed
    \global\setfalse\c_tabl_tabulate_equal
    \global\c_tabl_tabulate_column\zerocount
@@ -2223,7 +2223,7 @@
   {\ifdefined\page_sides_check_floats_indeed
      \page_sides_check_floats_indeed
      \ifdim\hangindent>\zeropoint
-       \advance\d_tabl_tabulate_indent\hangindent
+       \advanceby\d_tabl_tabulate_indent\hangindent
      \fi
    \fi}
 
@@ -2324,7 +2324,7 @@
      \t_tabl_tabulate_preamble
        {\aligntab
         \tabl_tabulate_flush_indent
-% \global\advance\c_tabl_tabulate_noflines\plusone
+% \global\advanceby\c_tabl_tabulate_noflines\plusone
         \strut
         \aligncontent % \alignmark\alignmark
         \tabskip\d_tabl_tabulate_margin
@@ -2336,7 +2336,7 @@
      \t_tabl_tabulate_preamble
        {\aligntab
         \tabl_tabulate_flush_indent
-% \global\advance\c_tabl_tabulate_noflines\plusone
+% \global\advanceby\c_tabl_tabulate_noflines\plusone
         \strut
         \aligncontent % \alignmark\alignmark
         \aligntab
@@ -2356,7 +2356,7 @@
    \toksapp\t_tabl_tabulate_preamble{%
      \aligntab
      \aligncontent % \alignmark\alignmark
-     \global\advance\c_tabl_tabulate_column\plusone % maybe just set it already
+     \global\advanceby\c_tabl_tabulate_column\plusone % maybe just set it already
    }%
    \toksapp\t_tabl_tabulate_dummy{%
      \NC\unskip\unskip\crcr\tabl_tabulate_flush_collected % no count
@@ -2393,7 +2393,7 @@
      % so, even if the natural size is larger, in the final run, we force the calculated width
      \d_tabl_tabulate_width\dimexpr\hsize-\wd\scratchbox-\d_tabl_tabulate_width_p-\d_tabl_tabulate_width_w\relax
      \ifnum\c_tabl_tabulate_nofauto>\zerocount
-       \divide\d_tabl_tabulate_width \c_tabl_tabulate_nofauto\relax
+       \divideby\d_tabl_tabulate_width \c_tabl_tabulate_nofauto\relax
      \fi
    \fi
    \setbox\scratchbox\emptybox % free memory
@@ -2997,7 +2997,7 @@
 \popoverloadmode
 
 \permanent\protected\def\tabl_tabulate_A_first
-  {\global\advance\c_tabl_tabulate_autocolor\plusone
+  {\global\advanceby\c_tabl_tabulate_autocolor\plusone
    \edef\m_table_current_row_background_auto{\tabulateparameter{\c!backgroundcolor:\number\c_tabl_tabulate_autocolor}}%
    \ifempty\m_table_current_row_background_auto
      \global\c_tabl_tabulate_autocolor\plusone

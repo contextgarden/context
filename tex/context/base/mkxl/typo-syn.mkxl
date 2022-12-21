@@ -164,7 +164,7 @@
      \endstrut
    \egroup
    \scratchdimentwo\wd\scratchboxtwo
-   \advance\scratchdimentwo\scratchdistance
+   \advanceby\scratchdimentwo\scratchdistance
    \clf_registersynchronize
      \strutht
      \strutdp
@@ -176,7 +176,7 @@
    \egroup
    \scratchdimenone\wd\scratchboxone
    \unhbox\scratchboxone
-   \advance\scratchdimentwo-\scratchdimenone
+   \advanceby\scratchdimentwo-\scratchdimenone
    \ifdim\scratchdimentwo>\zeropoint
      \wordboundary
      \typo_sync_rule
@@ -202,7 +202,7 @@
      \synchronizecontentparameter\c!right
    \egroup
    \scratchdimentwo\wd\scratchboxtwo
-   \advance\scratchdimentwo\scratchdistance
+   \advanceby\scratchdimentwo\scratchdistance
    \clf_registersynchronize
      \strutht
      \strutdp
@@ -219,7 +219,7 @@
    \egroup
    \scratchdimenone\wd\scratchboxone
    \unhbox\scratchboxone
-   \advance\scratchdimentwo-\scratchdimenone
+   \advanceby\scratchdimentwo-\scratchdimenone
    \ifdim\scratchdimentwo>\zeropoint
      \wordboundary
      \typo_sync_rule

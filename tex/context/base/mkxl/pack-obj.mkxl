@@ -39,15 +39,14 @@
 
 \installcorenamespace {objects}
 
-\newif   \ifinobject
-\newbox  \b_pack_objects
-
 \mutable\def\objectoffset{1cm} % Still public but use with care!
 
-\newdimen\d_pack_objects_offset \permanent\def\objectmargin{\the\d_pack_objects_offset}
-\newdimen\d_pack_objects_width  \permanent\def\objectwidth {\the\d_pack_objects_width}
-\newdimen\d_pack_objects_height \permanent\def\objectheight{\the\d_pack_objects_height}
-\newdimen\d_pack_objects_depth  \permanent\def\objectdepth {\the\d_pack_objects_depth}
+\newif       \ifinobject
+\newbox      \b_pack_objects
+\newdimension\d_pack_objects_offset \permanent\def\objectmargin{\the\d_pack_objects_offset}
+\newdimension\d_pack_objects_width  \permanent\def\objectwidth {\the\d_pack_objects_width}
+\newdimension\d_pack_objects_height \permanent\def\objectheight{\the\d_pack_objects_height}
+\newdimension\d_pack_objects_depth  \permanent\def\objectdepth {\the\d_pack_objects_depth}
 
 %D If I have time I will use the unreferenced variant for e.g. mp reuse. This can be
 %D rewritten in \LUA\ anyway.

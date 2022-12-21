@@ -213,15 +213,15 @@
 
 \newbox        \b_strc_itemgroups
 
-\newdimen      \d_strc_itemgroups_list_width
-\newdimen      \d_strc_itemgroups_asked_width
+\newdimension  \d_strc_itemgroups_list_width
+\newdimension  \d_strc_itemgroups_asked_width
 
-\newdimen      \d_strc_itemgroups_max_width      % multipass
-\newcount      \c_strc_itemgroups_max_items      % multipass
+\newdimension  \d_strc_itemgroups_max_width      % multipass
+\newinteger    \c_strc_itemgroups_max_items      % multipass
 
-\newcount      \c_strc_itemgroups_n_of_items
-\newcount      \c_strc_itemgroups_nesting
-\newcount      \c_strc_itemgroups_column_depth
+\newinteger    \c_strc_itemgroups_n_of_items
+\newinteger    \c_strc_itemgroups_nesting
+\newinteger    \c_strc_itemgroups_column_depth
 
 \def           \v_strc_itemgroups_counter        {itemgroup:\currentparentitemgroup}
 \lettonothing  \m_strc_itemgroups_repeat_start
@@ -801,12 +801,12 @@
    \orelse\ifnum\itemgroupparameter\c!factor>\zerocount
      \d_strc_itemgroups_list_width\itemgroupparameter\c!step\relax
      \ifzeropt\d_strc_itemgroups_list_width \d_strc_itemgroups_list_width=.5em\fi
-     \multiply\d_strc_itemgroups_list_width \itemgroupparameter\c!factor
-     \advance\d_strc_itemgroups_list_width\itemgroupparameter\c!width\relax
+     \multiplyby\d_strc_itemgroups_list_width \itemgroupparameter\c!factor
+     \advanceby\d_strc_itemgroups_list_width\itemgroupparameter\c!width\relax
    \else
      \d_strc_itemgroups_list_width\itemgroupparameter\c!width\relax
    \fi
-   \advance\d_strc_itemgroups_list_width\itemgroupparameter\c!distance\relax
+   \advanceby\d_strc_itemgroups_list_width\itemgroupparameter\c!distance\relax
    \let\currentitemgroup\m_strc_itemgroups_saved}
 
 \lettonothing\p_itemgroups_options
@@ -817,7 +817,7 @@
    \nofarguments\lastarguments
    \def\currentitemgroup{#category}% no nested mixing of itemgroups
    \let\currentparentitemgroup\currentitemgroup
-   \global\advance\c_strc_itemgroups_nesting\plusone
+   \global\advanceby\c_strc_itemgroups_nesting\plusone
    \def\currentitemlevel{\number\c_strc_itemgroups_nesting}%
    \normalexpanded{\chaintocurrentitemgroup{\currentparentitemgroup:\currentitemlevel}}%
    \edef\currentitemgroup{\currentparentitemgroup:\currentitemlevel}%
@@ -966,7 +966,7 @@
    \strc_itemgroups_calculate_list_width\c_strc_itemgroups_nesting
    \ifdim\d_strc_itemgroups_list_width>\zeropoint\relax
      \ifconditional\c_strc_itemgroups_inline\else
-       \frozen\advance\leftskip\d_strc_itemgroups_list_width\relax
+       \frozen\advanceby\leftskip\d_strc_itemgroups_list_width\relax
      \fi
    \fi
    \ifempty\m_strc_itemgroups_repeat_start
@@ -1086,7 +1086,7 @@
    \iftrialtypesetting
      \strc_counters_restore\v_strc_itemgroups_counter % could happen in LUA
    \fi
-   \global\advance\c_strc_itemgroups_nesting\minusone
+   \global\advanceby\c_strc_itemgroups_nesting\minusone
    \xdef\currentitemlevel{\number\c_strc_itemgroups_nesting}%
   %\ifconditional\c_strc_itemgroups_text
      \endgroup % (2)
@@ -1119,7 +1119,7 @@
      \ifconditional\c_strc_itemgroups_intro\strc_itemgroups_insert_breakno\fi
    \fi}
 
-\newcount\c_strc_itemgroups_prev_level
+\newinteger\c_strc_itemgroups_prev_level
 
 \def\strc_itemgroups_inbetween_command
   {\nameditemgroupparameter{\currentparentitemgroup:\number\c_strc_itemgroups_prev_level}\c!inbetween}
@@ -1279,7 +1279,7 @@
 \protected\def\strc_itemgroups_start_no_item
   {\lettonothing\currentitemreference
    \strc_itemgroups_increment_item_counter
-  %\advance\c_strc_itemgroups_n_of_items\plusone
+  %\advanceby\c_strc_itemgroups_n_of_items\plusone
    \setbox\b_strc_itemgroups\emptyhbox
    \strc_itemgroups_check_for_repeated
    \ignorepars} % \ignorespaces
@@ -1387,9 +1387,9 @@
 
 \def\strc_itemgroups_handle_text_item
   {\scratchdimen\wd\b_strc_itemgroups
-   \advance \scratchdimen \itemgroupparameter\c!distance\relax
+   \advanceby \scratchdimen \itemgroupparameter\c!distance\relax
    \ifdim\scratchdimen>\d_strc_itemgroups_list_width
-     \advance\scratchdimen -\d_strc_itemgroups_list_width
+     \advanceby\scratchdimen -\d_strc_itemgroups_list_width
    \else
      \scratchdimen\zeropoint
    \fi
@@ -1520,7 +1520,7 @@
    \else
      \par % done twice?
    \fi
-   \advance\c_strc_itemgroups_n_of_items\plusone
+   \advanceby\c_strc_itemgroups_n_of_items\plusone
    \strc_itemgroups_optimize_breaks
    \strc_itemgroups_check_indenting
    \dontleavehmode
@@ -1566,7 +1566,7 @@
 \def\strc_itemgroups_start_item_nop
   {\lettonothing\currentitemreference
    \strc_itemgroups_increment_item_counter
-   \advance\c_strc_itemgroups_n_of_items\plusone
+   \advanceby\c_strc_itemgroups_n_of_items\plusone
    \setbox\b_strc_itemgroups\hbox
      {\useitemgroupstyleandcolor\c!style\c!color
       \strc_itemgroups_used_symbol}%
@@ -1714,16 +1714,16 @@
 
 % better collectitems als conditional and a real plugin mechanism (some day)
 
-\newcount\c_strc_itemgroups_collected_stored
-\newcount\c_strc_itemgroups_collected_done
-\newcount\c_strc_itemgroups_collected_current
+\newinteger\c_strc_itemgroups_collected_stored
+\newinteger\c_strc_itemgroups_collected_done
+\newinteger\c_strc_itemgroups_collected_current
 
 \let\strc_itemgroups_collected_store\relax
 
 \lettonothing\m_strc_itemgroups_collected
 
 \normalexpanded{\def\strc_itemgroups_collected_store#1\csname\e!stop\v!item\endcsname}%
-  {\advance\c_strc_itemgroups_collected_stored\plusone
+  {\advanceby\c_strc_itemgroups_collected_stored\plusone
    \setvalue{\??itemgroupstack\number\c_strc_itemgroups_collected_stored}{\startitemgroupitem#1\stopitemgroupitem}}
 
 \def\strc_itemgroups_collected_flush_randomize
@@ -1751,7 +1751,7 @@
   {\ifconditional\c_strc_itemgroups_randomize
      \getrandomcount\c_strc_itemgroups_collected_current\plusone\c_strc_itemgroups_collected_stored
    \else
-     \advance\c_strc_itemgroups_collected_current\plusone
+     \advanceby\c_strc_itemgroups_collected_current\plusone
    \fi
    \ifcsname\??itemgroupstack\number\c_strc_itemgroups_collected_current\endcsname
      \edef\m_strc_itemgroups_collected{\lastnamedcs}%
@@ -1760,7 +1760,7 @@
      \else
        \strc_itemgroups_collected_flush_indeed
      \fi
-     \advance\c_strc_itemgroups_collected_done\plusone
+     \advanceby\c_strc_itemgroups_collected_done\plusone
    \fi
    \ifnum\c_strc_itemgroups_collected_done<\c_strc_itemgroups_collected_stored
      \expandafter\strc_itemgroups_collected_flush

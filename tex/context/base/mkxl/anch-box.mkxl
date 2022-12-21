@@ -19,29 +19,19 @@
     anch_box_arrows_draw ;
 \stopMPpositiongraphic
 
-% \tolerant\permanent\protected\def\connectboxanchors[#1]#*[#2]#*[#3]#*[#4]#*#:#5#6%
-%   {\begingroup
-%    \defineboxanchor[#5]%
-%    \setboxanchor[#5][#1][#3]\hpack{\xypos{\namespacedboxanchor{#5}}}%
-%    \ifparameter#3\or\setupboxanchorcontent[#1][#3]\fi
-%    \defineboxanchor[#6]%
-%    \setboxanchor[#6][#2][#4]\hpack{\xypos{\namespacedboxanchor{#6}}}%
-%    \ifparameter#4\or\setupboxanchorcontent[#1][#4]\fi
-%   %\startpositionoverlay{text-1}% will become configurable region
-%    \startpositionoverlay{text+1}% will become configurable region
-%      \setMPpositiongraphic
-%        {\namespacedboxanchor{#5}}%
-%        {\namedboxanchorcontentparameter{#1}\c!mp}%
-%        {from=\namespacedboxanchor{#5},%
-%         to=\namespacedboxanchor{#6},%
-%         distance={\namedboxanchorcontentparameter{#1}\c!distance},%
-%         dashtype={\namedboxanchorcontentparameter{#1}\c!dash},%
-%         alternative={\namedboxanchorcontentparameter{#1}\c!alternative},%
-%         text={\namedboxanchorcontentparameter{#1}\c!text},%
-%         rulethickness={\namedboxanchorcontentparameter{#1}\c!rulethickness},%
-%         linecolor=\namedboxanchorcontentparameter{#1}{\c!rulecolor}}%
-%    \stoppositionoverlay
-%    \endgroup}
+\def\anch_box_connect_parameters#1#2%
+  {span=no,
+   from=\boxanchorposone,%
+   to=\boxanchorpostwo,%
+   distance={\namedboxanchorcontentparameter{#1}\c!distance},%
+   dashtype={\namedboxanchorcontentparameter{#1}\c!dash},%
+   arrow={\namedboxanchorcontentparameter{#1}\c!arrow},%
+   alternative={\namedboxanchorcontentparameter{#1}\c!alternative},%
+   text={\namedboxanchorcontentparameter{#1}\c!text},%
+   rulethickness={\namedboxanchorcontentparameter{#1}\c!rulethickness},%
+   linecolor=\namedboxanchorcontentparameter{#1}{\c!rulecolor},
+   #2}
+
 \tolerant\permanent\protected\def\connectboxanchors[#1]#*[#2]#*[#3]#*[#4]#*#:#5#6%
   {\begingroup
    %
@@ -69,19 +59,8 @@
        \setMPpositiongraphic
          {\boxanchorposone}%
          {\namedboxanchorcontentparameter{#1}\c!mp}%
-         {span=no,
-          from=\boxanchorposone,%
-          to=\boxanchorpostwo,%
-        % distance={\namedboxanchorcontentparameter{#1}\c!distance},%
-          dashtype={\namedboxanchorcontentparameter{#1}\c!dash},%
-        % arrow={\namedboxanchorcontentparameter{#1}\c!arrow},%
-        % alternative={\namedboxanchorcontentparameter{#1}\c!alternative},%
-        % text={\namedboxanchorcontentparameter{#1}\c!text},%
-        % rulethickness={\namedboxanchorcontentparameter{#1}\c!rulethickness},%
-          linecolor=\namedboxanchorcontentparameter{#1}{\c!rulecolor},
-          #3}%
-       %
-     \stoppositionoverlay
+         {\anch_box_connect_parameters{#1}{#3}}%
+    \stoppositionoverlay
    }%
    \ifcstok{\namedboxanchorcontentparameter{#1}\c!page}\v!yes
      \normalexpanded{%
@@ -89,17 +68,7 @@
            \setMPpositiongraphic
              {\boxanchorpostwo}%
              {\namedboxanchorcontentparameter{#1}\c!mp}%
-             {span=yes,
-              from=\boxanchorposone,%
-              to=\boxanchorpostwo,%
-            % distance={\namedboxanchorcontentparameter{#1}\c!distance},%
-              dashtype={\namedboxanchorcontentparameter{#1}\c!dash},%
-            % arrow={\namedboxanchorcontentparameter{#1}\c!arrow},%
-            % alternative={\namedboxanchorcontentparameter{#1}\c!alternative},%
-            % text={\namedboxanchorcontentparameter{#1}\c!text},%
-            % rulethickness={\namedboxanchorcontentparameter{#1}\c!rulethickness},%
-              linecolor=\namedboxanchorcontentparameter{#1}{\c!rulecolor}%
-              #3}%
+             {\anch_box_connect_parameters{#1}{#3}}%
        \stoppositionoverlay
      }%
    \fi

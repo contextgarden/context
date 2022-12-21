@@ -119,10 +119,10 @@
 
 %D Defining figures.
 
-\newcount\c_grph_include_nesting
+\newinteger\c_grph_include_nesting
 
-\newtoks \everyexternalfigureresets % for the moment still public
-\newtoks \everyexternalfigurechecks % for the moment still public
+\newtoks   \everyexternalfigureresets % for the moment still public
+\newtoks   \everyexternalfigurechecks % for the moment still public
 
 % \useexternalfigure[alpha][cow]
 % \useexternalfigure[beta] [cow]       [width=1cm]
@@ -274,7 +274,7 @@
 
 \def\grph_include_place[#1][#2][#3]% [label][file][settings] | [file][settings] | [file][parent][settings]
   {\bgroup
-   \advance\c_grph_include_nesting\plusone
+   \advanceby\c_grph_include_nesting\plusone
    \edef\currentexternalfigure{\the\c_grph_include_nesting}%
    \checkexternalfigureparent % each inherits from the root
    %
@@ -788,10 +788,10 @@
 
 \newconditional\c_grph_include_in_collection
 
-\newdimen\d_grph_include_collection_minwidth
-\newdimen\d_grph_include_collection_maxwidth
-\newdimen\d_grph_include_collection_minheight
-\newdimen\d_grph_include_collection_maxheight
+\newdimension  \d_grph_include_collection_minwidth
+\newdimension  \d_grph_include_collection_maxwidth
+\newdimension  \d_grph_include_collection_minheight
+\newdimension  \d_grph_include_collection_maxheight
 
 \def\grph_include_analyze_collection[#1][#2]%
   {\ifconditional\c_grph_include_in_collection

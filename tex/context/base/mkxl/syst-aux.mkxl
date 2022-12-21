@@ -80,7 +80,7 @@
 
 \else
 
-    \newcount\c_syst_helpers_n_of_namespaces \c_syst_helpers_n_of_namespaces\pluseight % 1-8 reserved for catcodes
+    \newinteger\c_syst_helpers_n_of_namespaces \c_syst_helpers_n_of_namespaces\pluseight % 1-8 reserved for catcodes
 
     \def\v_interfaces_prefix_template_system{\number    \c_syst_helpers_n_of_namespaces>>}
     %def\v_interfaces_prefix_template_system{\characters\c_syst_helpers_n_of_namespaces>>} % no \characters yet
@@ -91,7 +91,7 @@
   {\ifcsname ??#1\endcsname
      \writestatus\m!system{duplicate system namespace '#1'}\wait
    \else
-     \global\advance\c_syst_helpers_n_of_namespaces\plusone
+     \global\advanceby\c_syst_helpers_n_of_namespaces\plusone
      \immutable\edefcsname ??#1\endcsname{\v_interfaces_prefix_template_system}%
    \fi}
 
@@ -1781,13 +1781,13 @@
 %D Afterwards, the length is available in the macro \type {\commalistsize}
 %D (not a \COUNTER).
 
-\newcount\commalistcounter
+\newinteger\commalistcounter
 
 \mutable\def\commalistsize{0}
 
 \def\syst_helpers_get_comma_list_size#0,% no #- as we need to count
   {\ifarguments\or
-     \advance\commalistcounter\plusone
+     \advanceby\commalistcounter\plusone
      \expandafter\syst_helpers_get_comma_list_size
    \fi}
 
@@ -1826,7 +1826,7 @@
 
 \def\syst_helpers_get_from_comma_list#1,%
   {\ifarguments \or
-     \advance\commalistcounter \minusone
+     \advanceby\commalistcounter \minusone
      \ifcase\commalistcounter
        \def\commalistelement{#1}%
        \expandafter\expandafter\expandafter\syst_helpers_gobble_comma_list
@@ -1945,7 +1945,7 @@
 %D We use some signals for telling the calling macros if all wanted arguments are
 %D indeed supplied by the user.
 
-\newcount\nofarguments
+\newinteger\nofarguments
 
 \newif\iffirstargument
 \newif\ifsecondargument
@@ -3120,11 +3120,11 @@
 %D Signals old dimensions and can be used in skips, kerns and tests like \type
 %D {\ifdim}.
 
-\newdimen\d_syst_maximum_signal % step is about 0.00025pt
+\newdimension\d_syst_maximum_signal % step is about 0.00025pt
 
 \permanent\protected\def\newsignal#1%
   {\ifdefined#1\else
-     \advance\d_syst_maximum_signal2\scaledpoint % to be save in rounding
+     \advanceby\d_syst_maximum_signal2\scaledpoint % to be save in rounding
      \immutable\dimensiondef#1\d_syst_maximum_signal
    \fi}
 
@@ -3189,8 +3189,8 @@
 %D We now use the macro stack which is somewhat leaner and meaner and a little
 %D faster too.
 
-\newcount\outerrecurse
-\newcount\innerrecurse
+\newinteger\outerrecurse
+\newinteger\innerrecurse
 
 \mutable\def\recursedepth{\the\outerrecurse}
 \mutable\def\recurselevel{0}
@@ -3217,7 +3217,7 @@
 %%    \else
 %%      \def\recurselevel{#1}%
 %%      \innerrecurse#1\relax
-%%      \advance\innerrecurse#3\relax
+%%      \advanceby\innerrecurse#3\relax
 %%      \doubleexpandafter\syst_helpers_stepwise_reverse_yes
 %%    \fi\expandafter{\the\numexpr\recurselevel+#3\relax}{#2}{#3}}
 %%
@@ -3287,7 +3287,7 @@
 %%      \expandafter\syst_helpers_recurse_indeed_nop
 %%    \else
 %%      \def\recurselevel{#1}%
-%%      \innerrecurse#1\advance\innerrecurse\plusone
+%%      \innerrecurse#1\advanceby\innerrecurse\plusone
 %%      \doubleexpandafter\syst_helpers_recurse_indeed_yes
 %%    \fi\expandafter{\the\innerrecurse}{#2}}
 %%
@@ -3332,7 +3332,7 @@
 \aliased\let\endofloop\donothing % maybe \syst_helpers_loop_end
 
 \permanent\protected\def\doloop#1%
-  {\global\advance\outerrecurse \plusone
+  {\global\advanceby\outerrecurse \plusone
    \globalpushmacro\recurseaction
    \globalpushmacro\recurselevel
    \protected\gdef\recurseaction##1##2{#1}%
@@ -3355,7 +3355,7 @@
   {\enforced\let\endofloop\syst_helpers_loop
    \globalpopmacro\recurselevel
    \globalpopmacro\recurseaction
-   \global\advance\outerrecurse\minusone}
+   \global\advanceby\outerrecurse\minusone}
 
 \permanent\protected\def\exitloop                % \exitloop quits at end
   {\enforced\let\endofloop\syst_helpers_loop_nop}
@@ -3402,17 +3402,17 @@
 %%   {\normalexpanded{\recurseaction{\recurselevel}{\the\outerrecurse}}}
 %%
 %% \protected\def\syst_helpers_recurse_x#1#2%
-%%   {\global\advance\outerrecurse\plusone
+%%   {\global\advanceby\outerrecurse\plusone
 %%    \globalpushmacro\recurseaction
 %%    \globalpushmacro\recurselevel
 %%    \protected\gdef\recurseaction##1##2{#2}%
 %%    \expandafter\syst_helpers_recurse_indeed\expandafter1\expandafter{\number#1}%
 %%    \globalpopmacro\recurselevel
 %%    \globalpopmacro\recurseaction
-%%    \global\advance\outerrecurse\minusone}
+%%    \global\advanceby\outerrecurse\minusone}
 %%
 %% \protected\def\syst_helpers_recurse_y#1#2%
-%%   {\global\advance\outerrecurse\plusone
+%%   {\global\advanceby\outerrecurse\plusone
 %%    \globalpushmacro\recurseaction
 %%    \globalpushmacro\recurselevel
 %%    \let\recurselevel\!!plusone
@@ -3420,10 +3420,10 @@
 %%    \syst_helpers_recurse_content
 %%    \globalpopmacro\recurselevel
 %%    \globalpopmacro\recurseaction
-%%    \global\advance\outerrecurse\minusone}
+%%    \global\advanceby\outerrecurse\minusone}
 %%
 %% \permanent\protected\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4 ... todo: remove unused helpers
-%%   {\global\advance\outerrecurse \plusone
+%%   {\global\advanceby\outerrecurse \plusone
 %%    \globalpushmacro\recurseaction
 %%    \globalpushmacro\recurselevel
 %%    \protected\gdef\recurseaction##1##2{#4}%
@@ -3442,10 +3442,10 @@
 %%    \fi\normalexpanded{{\number#1}{\number#2}{\number#3}}}%
 %%    \globalpopmacro\recurselevel
 %%    \globalpopmacro\recurseaction
-%%    \global\advance\outerrecurse\minusone}
+%%    \global\advanceby\outerrecurse\minusone}
 
-\newcount\fastloopindex
-\newcount\fastloopfinal
+\newinteger\fastloopindex
+\newinteger\fastloopfinal
 
 \let\m_syst_helpers_fast_loop_cs\relax
 
@@ -3467,7 +3467,7 @@
      \let\m_syst_helpers_fast_loop_cs\relax
    \else
      \m_syst_helpers_fast_loop_cs
-     \advance\fastloopindex\plusone
+     \advanceby\fastloopindex\plusone
      \expandafter\syst_helpers_fast_loop_cs_step
    \fi}
 
@@ -3564,14 +3564,14 @@
 %D \stoptyping
 
 \permanent\protected\def\doloopoverlist#1#2%
-  {\global\advance\outerrecurse\plusone
+  {\global\advanceby\outerrecurse\plusone
    \globalpushmacro\recurseaction
    \globalpushmacro\recursestring
    \protected\gdef\recurseaction##1{\edef\recursestring{##1}#2}%
    \processcommacommand[#1]\recurseaction
    \globalpopmacro\recursestring
    \globalpopmacro\recurseaction
-   \global\advance\outerrecurse\minusone}
+   \global\advanceby\outerrecurse\minusone}
 
 %D This is some \LMTX\ experiment:
 %D
@@ -4905,7 +4905,7 @@
 %D
 %D This macro was used in the bibtex code (and is probably no longer needed).
 
-\newcount\c_syst_helpers_comma_list_index
+\newinteger\c_syst_helpers_comma_list_index
 
 \lettonothing\m_syst_helpers_comma_list_target
 
@@ -4938,7 +4938,7 @@
        \fi
      \fi
    \fi
-   \advance\commalistcounter\plusone}
+   \advanceby\commalistcounter\plusone}
 
 \permanent\protected\def\replaceincommalist#1#2% #1 = commalistelement #2 = position starts at 1
   {\c_syst_helpers_comma_list_index#2\relax
@@ -5029,10 +5029,10 @@
 %D Simple but effective are the next two macros. There name exactly states their
 %D purpose.
 
-\newdimen\d_syst_helpers_swapped
-\newskip \s_syst_helpers_swapped
-\newcount\c_syst_helpers_swapped
-\let     \m_syst_helpers_swapped\relax
+\newdimension\d_syst_helpers_swapped
+\newgluespec \s_syst_helpers_swapped
+\newinteger  \c_syst_helpers_swapped
+\let         \m_syst_helpers_swapped\relax
 
 % \protected\def\swapdimens#1#2{\d_syst_helpers_swapped#1#1#2#2\d_syst_helpers_swapped}
 % \protected\def\swapskips #1#2{\s_syst_helpers_swapped#1#1#2#2\s_syst_helpers_swapped}
@@ -5083,7 +5083,7 @@
 %D These examples show us that an optional can be used. The value provided is added
 %D to \type {\localhsize}.
 
-\newdimen\localhsize
+\newdimension\localhsize
 
 \permanent\protected\def\setlocalhsize % don't change !
   {\doifelsenextoptional
@@ -5095,7 +5095,7 @@
 
 \def\syst_helpers_set_local_hsize_yes[#1]%
   {\syst_helpers_set_local_hsize_nop
-   \advance\localhsize#1\relax}
+   \advanceby\localhsize#1\relax}
 
 \permanent\def\availablehsize
   {\dimexpr
@@ -5756,7 +5756,7 @@
   {\def\m_syst_string_three{#1}%
    \ifx\m_syst_string_two\m_syst_string_three \else
      \ifx\m_syst_string_one\m_syst_string_three
-       \advance\privatescratchcounter\plusone
+       \advanceby\privatescratchcounter\plusone
      \fi
      \expandafter\syst_helpers_count_token
    \fi}
@@ -5770,7 +5770,7 @@
 
 \permanent\protected\def\counttokens#1\to#2%
   {\privatescratchcounter\zerocount
-   \def\syst_helpers_count_token##1{\advance\privatescratchcounter\plusone}%
+   \def\syst_helpers_count_token##1{\advanceby\privatescratchcounter\plusone}%
    \handletokens#1\with\syst_helpers_count_token
    \dodoglobal#2\privatescratchcounter}
 
@@ -5787,7 +5787,7 @@
      \privatescratchcounter#1\relax
      \def\syst_helpers_split_off_tokens##1%
        {\ifnum\privatescratchcounter>\zerocount
-          \advance\privatescratchcounter \minusone
+          \advanceby\privatescratchcounter \minusone
           \edef#3{#3##1}%
         \fi}%
    % \lettonothing#3% #3 can be #2, so:
@@ -6095,7 +6095,7 @@
 % can be sped up with ignored arguments
 
 \def\syst_filter_from_next_yes#1%
-  {\advance\scratchcounterone\plusone
+  {\advanceby\scratchcounterone\plusone
    \ifnum\scratchcounterone=\scratchcountertwo
      \scratchtoks{#1}%
    \fi
@@ -6181,10 +6181,10 @@
 %D This one can be used inside a measure (used in m4all):
 %D
 %D \starttyping
-%D \definemeasure[columnwidth][\dividedsize\textwidth{1em}{3}]
+%D \definemeasure[columnwidth][\dividebydsize\textwidth{1em}{3}]
 %D \stoptyping
 
-\permanent\def\dividedsize#1#2#3% size gap n
+\permanent\def\dividebydsize#1#2#3% size gap n
   {\dimexpr
      \ifnum\dimexpr#1\relax>\plusone
        (\dimexpr#1\relax-\numexpr#3-\plusone\relax\dimexpr#2\relax)/#3\else#1%
@@ -6230,8 +6230,8 @@
 %D
 %D We no longer use the \MKIV\ dirty trick. These are obsolete anyway.
 
-\newdimen   \roundingeps \roundingeps=10sp
-\newconstant\compresult
+\newdimension\roundingeps \roundingeps=10sp
+\newconstant \compresult
 
 \permanent\protected\def\comparedimension#1#2%
   {\compresult
@@ -6372,14 +6372,14 @@
 
 %D Sort of obsolete:
 
-\newcount\c_syst_helpers_mod
+\newinteger\c_syst_helpers_mod
 
 \permanent\protected\def\dosetmodulo#1#2#3%
-  {\c_syst_helpers_mod#1\divide\c_syst_helpers_mod#2\multiply\c_syst_helpers_mod#2%
-   #3#1\advance#3-\c_syst_helpers_mod}
+  {\c_syst_helpers_mod#1\divideby\c_syst_helpers_mod#2\multiplyby\c_syst_helpers_mod#2%
+   #3#1\advanceby#3-\c_syst_helpers_mod}
 
 \permanent\protected\def\dosetdivision#1#2#3%
-  {#3#1\divide#3 #2\relax}
+  {#3#1\divideby#3 #2\relax}
 
 \permanent\protected\def\DoMod#1by#2to#3{\dosetmodulo  {#1}{#2}{#3}}
 \permanent\protected\def\DoDiv#1by#2to#3{\dosetdivision{#1}{#2}{#3}}
@@ -6402,8 +6402,8 @@
 \permanent\protected\def\elapsedsteptime % unexpanded ! a bit useless but who knows ...
   {\clf_elapsedsteptime\elapsedsteps\relax}
 
-\newcount\c_syst_helpers_test_feature_n
-\newcount\c_syst_helpers_test_feature_m
+\newinteger\c_syst_helpers_test_feature_n
+\newinteger\c_syst_helpers_test_feature_m
 
 \let\syst_helpers_test_feature_yes\relax
 \let\syst_helpers_test_feature_nop\relax
@@ -6411,15 +6411,15 @@
 \permanent\def\currentfeaturetest{\number\c_syst_helpers_test_feature_n}
 
 \permanent\protected\def\testfeature#1#2%
-  {\c_syst_helpers_test_feature_m#1\relax
+  {\c_syst_helpers_test_feature_m\ifparameter#1\or#1\else\maxiterator\fi\relax
    \enforced\xdef\elapsedsteps{\number\c_syst_helpers_test_feature_m}%
    \def\syst_helpers_test_feature_yes
-     {\advance\c_syst_helpers_test_feature_n\plusone
+     {\advanceby\c_syst_helpers_test_feature_n\plusone
       \ifnum\c_syst_helpers_test_feature_n>\c_syst_helpers_test_feature_m\else
         #2\expandafter\syst_helpers_test_feature_yes
       \fi}%
    \def\syst_helpers_test_feature_nop
-     {\advance\c_syst_helpers_test_feature_n\plusone
+     {\advanceby\c_syst_helpers_test_feature_n\plusone
       \ifnum\c_syst_helpers_test_feature_n>\c_syst_helpers_test_feature_m\else
         \expandafter\syst_helpers_test_feature_nop
       \fi}%

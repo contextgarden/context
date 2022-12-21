@@ -288,8 +288,8 @@
      % heads/tails + hoffset
    \orelse\ifx\p_offset\v!min
      % heads/tails - hoffset
-     \advance\scratchleftoffset -\scratchhoffset
-     \advance\scratchrightoffset-\scratchhoffset
+     \advanceby\scratchleftoffset -\scratchhoffset
+     \advanceby\scratchrightoffset-\scratchhoffset
    \else % \v!normal
      % hoffset
      \scratchleftoffset\zeropoint
@@ -317,8 +317,8 @@
      \scratchdepth\scratchdimen
      \dp\scratchboxthree\scratchdepth
    \fi
-   \advance\scratchtopoffset   -\scratchheight
-   \advance\scratchbottomoffset-\scratchdepth
+   \advanceby\scratchtopoffset   -\scratchheight
+   \advanceby\scratchbottomoffset-\scratchdepth
    \ifdim\scratchtopoffset<\zeropoint
      \scratchtopoffset\zeropoint
    \fi
@@ -403,7 +403,7 @@
       \ifdim\scratchwidth<\scratchdimen
          \scratchwidth\scratchdimen
       \fi
-      \advance\scratchwidth2\scratchhoffset
+      \advanceby\scratchwidth2\scratchhoffset
       %
       \ifcase#method\relax
         \dostarttagged\t!mstackermid\empty
@@ -543,12 +543,12 @@
      \let\math_stackers_stop_group\endgroup
    \fi}
 
-\newconstant\c_math_stackers_top
-\newconstant\c_math_stackers_bottom
-\newconstant\c_math_stackers_codepoint
-\newconstant\c_math_stackers_extracode
-\newdimen   \d_math_stackers_offset_l
-\newdimen   \d_math_stackers_offset_r
+\newconstant \c_math_stackers_top
+\newconstant \c_math_stackers_bottom
+\newconstant \c_math_stackers_codepoint
+\newconstant \c_math_stackers_extracode
+\newdimension\d_math_stackers_offset_l
+\newdimension\d_math_stackers_offset_r
 
 \setupmathstackers[lt=\zeropoint,rt=\zeropoint,lb=\zeropoint,rb=\zeropoint]
 
@@ -587,7 +587,7 @@
       \ifdim\scratchwidth<\scratchdimen
          \scratchwidth\scratchdimen
       \fi
-      \advance\scratchwidth2\scratchhoffset
+      \advanceby\scratchwidth2\scratchhoffset
       %
      %\scratchunicode\c_math_stackers_codepoint
       \ifcase\c_math_stackers_bottom
@@ -798,7 +798,7 @@
       \ifdim\scratchwidth<\scratchdimen
          \scratchwidth\scratchdimen
       \fi
-      \advance\scratchwidth2\scratchhoffset
+      \advanceby\scratchwidth2\scratchhoffset
       %
       \ifdim\wd\scratchboxone<\scratchwidth
         \setbox\scratchboxone\hpack to \scratchwidth{\hss\unhbox\scratchboxone\hss}%

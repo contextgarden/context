@@ -100,8 +100,7 @@
 
 \newconditional\c_math_fenced_mirror \settrue \c_math_fenced_mirror
 \newconditional\c_math_fenced_sized  \setfalse\c_math_fenced_sized
-
-\newcount\c_math_fence_nesting
+\newinteger    \c_math_fence_nesting
 
 \installcorenamespace {mathfencesize}
 
@@ -152,7 +151,7 @@
 % \stopTEXpage
 
 \newconstant\c_math_fenced_class
-\integerdef \c_math_fence_check \zerocount
+\newinteger \c_math_fence_check
 
 \protected\def\math_fenced_common#1#2#3#4% \Uwhatever class symbol source
   {\c_math_fenced_class\mathfenceparameter#2\relax
@@ -238,12 +237,12 @@
    \fi}
 
 \def\math_fenced_left
-  {\advance\c_math_fence_nesting\plusone
+  {\advanceby\c_math_fence_nesting\plusone
    \math_fenced_common\Uleft\c!leftclass\math_fenced_p_left\c!leftsource}
 
 \def\math_fenced_right
   {\math_fenced_common\Uright\c!rightclass\math_fenced_p_right\c!rightsource
-   \advance\c_math_fence_nesting\minusone}
+   \advanceby\c_math_fence_nesting\minusone}
 
 \def\math_fenced_middle_normal
   {\math_fenced_common\Umiddle\c!middleclass\math_fenced_p_middle\c!middlesource}
@@ -532,7 +531,7 @@
 %D \stopTEXpage
 %D \stoptyping
 
-\newcount      \c_math_fenced_level
+\newinteger    \c_math_fenced_level
 \newconditional\c_math_fenced_level_mode
 
 \integerdef\c_math_fenced_stack \zerocount
@@ -542,8 +541,8 @@
 \installcorenamespace{fencelevels}
 \installcorenamespace{fencestack}
 
-\defcsname\??fencelevels+\endcsname{\advance\c_math_fenced_level\plusone  }
-\defcsname\??fencelevels-\endcsname{\advance\c_math_fenced_level\minusone }
+\defcsname\??fencelevels+\endcsname{\advanceby\c_math_fenced_level\plusone  }
+\defcsname\??fencelevels-\endcsname{\advanceby\c_math_fenced_level\minusone }
 \defcsname\??fencelevels=\endcsname        {\c_math_fenced_level\zerocount}
 
 \letcsname\??fencelevels*\endcsname\donothing
@@ -557,7 +556,7 @@
 
 \permanent\protected\def\F#1%
   {\ifconditional\c_math_fenced_level_mode\else
-     \integerdef\c_math_fence_check\c_math_fence_nesting
+     \c_math_fence_check\c_math_fence_nesting
    \fi
    \settrue\c_math_fenced_level_mode
    \ifchknum#1\or
@@ -695,14 +694,14 @@
 % \im { \left\lbrace \frac{1}{2} \right\rbrace }
 
 \def\math_fenced_x_left
-  {\advance\c_math_fence_nesting\plusone
+  {\advanceby\c_math_fence_nesting\plusone
    \ifx\math_fenced_x_p_left\bgroup\let\math_fenced_x_p_left\letterleftbrace\fi
    \math_fenced_common\Uleft\c!leftclass\math_fenced_x_p_left\c!leftsource}
 
 \def\math_fenced_x_right
   {\ifx\math_fenced_x_p_right\egroup\let\math_fenced_x_p_right\letterrightbrace\fi
    \math_fenced_common\Uright\c!rightclass\math_fenced_x_p_right\c!rightsource
-   \advance\c_math_fence_nesting\minusone}
+   \advanceby\c_math_fence_nesting\minusone}
 
 \def\math_fenced_x_middle
   {\math_fenced_common\Umiddle\c!middleclass\math_fenced_x_p_middle\c!middlesource}

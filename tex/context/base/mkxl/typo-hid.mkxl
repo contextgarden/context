@@ -19,7 +19,7 @@
 
 \unprotect
 
-\newcount\c_typo_hidden_level
+\newinteger\c_typo_hidden_level
 
 \permanent\protected\def\starthiddencontent
   {\ifcase\c_typo_hidden_level
@@ -27,10 +27,10 @@
      \let\clf_enablehidecontent\relax
      \attribute\hidecontentattribute\plusone
    \fi
-   \advance\c_typo_hidden_level\plusone}
+   \advanceby\c_typo_hidden_level\plusone}
 
 \permanent\protected\def\stophiddencontent
-  {\advance\c_typo_hidden_level\minusone
+  {\advanceby\c_typo_hidden_level\minusone
    \ifcase\c_typo_hidden_level
      \attribute\hidecontentattribute\attributeunsetvalue
    \fi}

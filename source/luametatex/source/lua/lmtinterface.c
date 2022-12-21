@@ -88,6 +88,7 @@ void lmt_initialize_interface(void)
     set_group_code_value(adjusted_hbox_group,  adjustedhbox);
     set_group_code_value(vbox_group,           vbox);
     set_group_code_value(vtop_group,           vtop);
+    set_group_code_value(dbox_group,           dbox);
     set_group_code_value(align_group,          align);
     set_group_code_value(no_align_group,       noalign);
     set_group_code_value(output_group,         output);
@@ -123,6 +124,7 @@ void lmt_initialize_interface(void)
     set_par_context_value(vmode_par_context,       vmode);
     set_par_context_value(vbox_par_context,        vbox);
     set_par_context_value(vtop_par_context,        vtop);
+    set_par_context_value(dbox_par_context,        dbox);
     set_par_context_value(vcenter_par_context,     vcenter);
     set_par_context_value(vadjust_par_context,     vadjust);
     set_par_context_value(insert_par_context,      insert);

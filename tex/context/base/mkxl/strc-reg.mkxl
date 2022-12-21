@@ -847,9 +847,9 @@
 %D placeindex as then flushing takes place inside the index. Took me hours
 %D to notice that.
 
-\newconstant\c_strc_registers_page_state % 0=nothing  1=page  2=see
-\newdimen   \d_strc_registers_distance
-\newcount   \c_strc_register_level
+\newconstant \c_strc_registers_page_state % 0=nothing  1=page  2=see
+\newdimension\d_strc_registers_distance
+\newinteger  \c_strc_register_level
 
 \def\strc_registers_update_text_properties
   {\ifx\m_current_register\currentregister\else
@@ -875,8 +875,8 @@
    \dostoptagged
    \endgroup}
 
-\newdimen\d_strc_registers_hangindent
-\newcount\c_strc_registers_hangafter
+\newdimension\d_strc_registers_hangindent
+\newinteger  \c_strc_registers_hangafter
 
 % \permanent\protected\def\usenestedregisterstyleandcolor#1#2% will change
 %   {\useregisterstyleandcolor#1#2%
@@ -898,7 +898,7 @@
 %    \edef\currentregister{\currentregister:\number\c_strc_register_level}%
 %    \usenestedregisterstyleandcolor\c!textstyle\c!textcolor
 %    \ifnum\c_strc_register_level>\plusone
-%      \advance\leftskip\d_strc_registers_distance\relax
+%      \advanceby\leftskip\d_strc_registers_distance\relax
 %    \fi
 %    \d_strc_registers_hangindent\registerparameter\c!distance\relax
 %    \c_strc_registers_hangafter \plusone
@@ -962,7 +962,7 @@
    \let\currentnestedregister\currentregister
    \usenestedregisterstyleandcolor\c!textstyle\c!textcolor
    \ifnum\c_strc_register_level>\plusone
-     \advance\leftskip\d_strc_registers_distance\relax
+     \advanceby\leftskip\d_strc_registers_distance\relax
    \fi
    \d_strc_registers_hangindent\registerparameter\c!distance\relax
    \c_strc_registers_hangafter \plusone
