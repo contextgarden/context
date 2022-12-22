@@ -1788,8 +1788,8 @@ extern halfword tex_explicit_disc_penalty  (halfword mode);
 # define update_tex_tab_skip_local(v)          tex_eq_define(internal_glue_location(tab_skip_code), internal_glue_reference_cmd, v);
 # define update_tex_tab_skip_global(v)        tex_geq_define(internal_glue_location(tab_skip_code), internal_glue_reference_cmd, v);
 
-# define update_tex_box_local(n,v)             tex_eq_define(register_box_location(n) - box_flag,        register_box_reference_cmd, v);
-# define update_tex_box_global(n,v)           tex_geq_define(register_box_location(n) - global_box_flag, register_box_reference_cmd, v);
+# define update_tex_box_local(n,v)             tex_eq_define(register_box_location(n), register_box_reference_cmd, v);
+# define update_tex_box_global(n,v)           tex_geq_define(register_box_location(n), register_box_reference_cmd, v);
 
 # define update_tex_insert_mode(a,v)           tex_word_define(a, internal_int_location(insert_mode_code), v)
 

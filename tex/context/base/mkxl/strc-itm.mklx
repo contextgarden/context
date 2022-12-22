@@ -216,8 +216,8 @@
 \newdimension  \d_strc_itemgroups_list_width
 \newdimension  \d_strc_itemgroups_asked_width
 
-\newdimension  \d_strc_itemgroups_max_width      % multipass
-\newinteger    \c_strc_itemgroups_max_items      % multipass
+\newdimension  \d_strc_itemgroups_max_width      \def\d_strc_itemgroups_max_width_reference{\d_strc_itemgroups_max_width}
+\newinteger    \c_strc_itemgroups_max_items
 
 \newinteger    \c_strc_itemgroups_n_of_items
 \newinteger    \c_strc_itemgroups_nesting
@@ -960,7 +960,7 @@
    \fi
    \ifconditional\c_strc_itemgroups_fitting
      \ifdim\d_strc_itemgroups_max_width>\zeropoint
-       \letitemgroupparameter\c!width\d_strc_itemgroups_max_width
+       \letitemgroupparameter\c!width\d_strc_itemgroups_max_width_reference
      \fi
    \fi
    \strc_itemgroups_calculate_list_width\c_strc_itemgroups_nesting

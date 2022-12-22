@@ -96,7 +96,6 @@
 		<cd:variable name='author' value='author'/>
 		<cd:variable name='auto' value='خودکار'/>
 		<cd:variable name='autointro' value='پیشگفتارخودکار'/>
-		<cd:variable name='autopunctuation' value='autopunctuation'/>
 		<cd:variable name='back' value='پشت'/>
 		<cd:variable name='background' value='پس‌زمینه'/>
 		<cd:variable name='backmatter' value='پس‌مطلب'/>
@@ -595,6 +594,7 @@
 		<cd:variable name='temporary' value='موقتی'/>
 		<cd:variable name='test' value='تست'/>
 		<cd:variable name='text' value='متن'/>
+		<cd:variable name='textdisplay' value='textdisplay'/>
 		<cd:variable name='textnote' value='textnote'/>
 		<cd:variable name='three' value='سه'/>
 		<cd:variable name='thursday' value='پنج‌شنبه'/>
@@ -683,9 +683,13 @@
 		<cd:constant name='authoretaltext' value='authoretaltext'/>
 		<cd:constant name='auto' value='خودکار'/>
 		<cd:constant name='autocase' value='autocase'/>
+		<cd:constant name='autofencing' value='autofencing'/>
 		<cd:constant name='autofile' value='پرونده‌خودکار'/>
 		<cd:constant name='autofocus' value='تمرکز‌خودکار'/>
 		<cd:constant name='autohang' value='آویزان‌خودکار'/>
+		<cd:constant name='autonumbers' value='autonumbers'/>
+		<cd:constant name='autopunctuation' value='autopunctuation'/>
+		<cd:constant name='autospacing' value='autospacing'/>
 		<cd:constant name='autostrut' value='بست‌خودکار'/>
 		<cd:constant name='autowidth' value='عرض‌خودکار'/>
 		<cd:constant name='availableheight' value='availableheight'/>

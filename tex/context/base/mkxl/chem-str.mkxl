@@ -268,17 +268,17 @@
 \to \everystructurechemical
 
 \def\chem_add_texts
-  {\setbox2\hpack to \d_chem_width{\strut\hss\hbox{\strut\m_chem_mid_text}\hss}%
-   \setbox4\hpack to \d_chem_width{\strut\hss\hbox{\strut\m_chem_top_text}\hss}%
-   \setbox6\hpack to \d_chem_width{\strut\hss\hbox{\strut\m_chem_bot_text}\hss}%
+  {\setbox\scratchboxone  \hpack to \d_chem_width{\strut\hss\hbox{\strut\m_chem_mid_text}\hss}%
+   \setbox\scratchboxtwo  \hpack to \d_chem_width{\strut\hss\hbox{\strut\m_chem_top_text}\hss}%
+   \setbox\scratchboxthree\hpack to \d_chem_width{\strut\hss\hbox{\strut\m_chem_bot_text}\hss}%
    \setbox\b_chem_result\hpack \bgroup
      \box\b_chem_result
      \hskip-\d_chem_width
-     \raise\d_chem_height\hpack{\lower\ht4\box4}%
+     \raise\d_chem_height\hpack{\lower\ht\scratchboxtwo\box\scratchboxtwo}%
      \hskip-\d_chem_width
-     \lower.5\dimexpr\ht2-\dp2\relax\box2%
+     \lower.5\dimexpr\ht\scratchboxone-\dp\scratchboxone\relax\box\scratchboxone
      \hskip-\d_chem_width
-     \lower\d_chem_depth \hpack{\raise\dp6\box6}%
+     \lower\d_chem_depth\hpack{\raise\dp\scratchboxthree\box\scratchboxthree}%
      \hss
    \egroup} % text on top of chemicals
 

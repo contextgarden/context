@@ -170,7 +170,8 @@ extern halfword tex_badness(
 # define semi_tight_criterium                      12 /* same as |decent_criterium| */
 
 # define default_rule                           26214 /*tex 0.4pt */
-# define ignore_depth                       -65536000 /*tex The magic dimension value to mean \quote {ignore me}. */
+# define ignore_depth                       -65536000 /*tex The magic dimension value to mean \quote {ignore me}: -1000pt */
+# define ignore_depth_zero_baselineskip    -131072000 /*tex Idem but keep zero skip: -2000pt */
 
 # define min_quarterword                            0 /*tex The smallest allowable value in a |quarterword|. */
 # define max_quarterword                        65535 /*tex The largest allowable value in a |quarterword|. */

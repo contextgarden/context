@@ -507,6 +507,12 @@ static int tex_aux_save_value(int id)
     return i ? saved_value(i) : 0;
 }
 
+static int tex_aux_save_level(int id)
+{
+    int i = tex_aux_found_save_type(id);
+    return i ? saved_level(i) : 0;
+}
+
 static int tex_aux_saved_box_spec(halfword *packing, halfword *amount)
 {
     int i = tex_aux_found_save_type(box_spec_save_type);
@@ -675,43 +681,47 @@ void tex_show_save_groups(void)
                 tex_confusion("show groups");
                 break;
         }
-        /*tex Show the box context */
-        {
-            int i = tex_aux_save_value(saved_full_spec_item_context);;
-            if (i) {
-                if (i < box_flag) {
-                    /* this is pretty horrible and likely wrong */
-                    singleword cmd = (abs(lmt_nest_state.nest[pointer].mode) == vmode) ? hmove_cmd : vmove_cmd;
-                    tex_print_cmd_chr(cmd, (i > 0) ? move_forward_code : move_backward_code);
-                    tex_print_dimension(abs(i), pt_unit);
-                } else if (i <= max_global_box_flag) {
-                    if (i >= global_box_flag) {
-                        tex_print_str_esc("global");
-                        i -= (global_box_flag - box_flag);
-                    }
-                    tex_print_str_esc("setbox");
-                    tex_print_int(i - box_flag);
-                    tex_print_char('=');
-                } else {
-                    switch (i) {
-                        case a_leaders_flag:
-                            tex_print_cmd_chr(leader_cmd, a_leaders);
-                            break;
-                        case c_leaders_flag:
-                            tex_print_cmd_chr(leader_cmd, c_leaders);
-                            break;
-                        case x_leaders_flag:
-                            tex_print_cmd_chr(leader_cmd, x_leaders);
-                            break;
-                        case g_leaders_flag:
-                            tex_print_cmd_chr(leader_cmd, g_leaders);
-                            break;
-                        case u_leaders_flag:
-                            tex_print_cmd_chr(leader_cmd, u_leaders);
-                            break;
+        /*tex 
+            Show the box context. In traditional \TEX\ the shift is encoded in the context which is 
+            why it had such a large offset for the other context value. That somewhat dirty trick 
+            was has stepwise been removed.
+        */
+        switch (tex_aux_save_value(saved_full_spec_item_context)) {
+            case direct_box_flag:
+                {
+                    scaled shift = tex_aux_save_value(saved_full_spec_item_shift);
+                    if (shift != null_flag) { 
+                        /*tex We passed the safeguard. */
+                        singleword cmd = (abs(lmt_nest_state.nest[pointer].mode) == vmode) ? hmove_cmd : vmove_cmd;
+                        tex_print_cmd_chr(cmd, (shift > 0) ? move_forward_code : move_backward_code);
+                        tex_print_dimension(abs(shift), pt_unit);
                     }
                 }
-            }
+                break;
+            case global_box_flag:
+                tex_print_str_esc("global");
+            case box_flag:
+                {
+                    tex_print_str_esc("setbox");
+                    tex_print_int(tex_aux_save_level(saved_full_spec_item_context));
+                    tex_print_char('=');
+                }
+                break;
+            case a_leaders_flag:
+                tex_print_cmd_chr(leader_cmd, a_leaders);
+                break;
+            case c_leaders_flag:
+                tex_print_cmd_chr(leader_cmd, c_leaders);
+                break;
+            case x_leaders_flag:
+                tex_print_cmd_chr(leader_cmd, x_leaders);
+                break;
+            case g_leaders_flag:
+                tex_print_cmd_chr(leader_cmd, g_leaders);
+                break;
+            case u_leaders_flag:
+                tex_print_cmd_chr(leader_cmd, u_leaders);
+                break;
         }
       FOUND1:
         {

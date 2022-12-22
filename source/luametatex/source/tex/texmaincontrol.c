@@ -662,7 +662,7 @@ static void tex_aux_run_end_group(void) {
 
  */
 
-static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift)
+static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, halfword slot)
 {
     /*tex Get the next non-blank non-relax... and optionally skip an equal sign */
     while (1) {
@@ -680,7 +680,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift)
     switch (cur_cmd) {
         case make_box_cmd:
             {
-                tex_begin_box(boxcontext, shift);
+                tex_begin_box(boxcontext, shift, slot);
                 return;
             }
         case vcenter_cmd:
@@ -705,7 +705,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift)
                                 case vlist_node:
                                 case rule_node:
                                 case glyph_node:
-                                    tex_box_end(boxcontext, boxnode, shift, unset_noad_class);
+                                    tex_box_end(boxcontext, boxnode, shift, unset_noad_class, slot);
                                     return;
                             }
                         }
@@ -720,7 +720,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift)
                 halfword v = tex_scan_lua_value(cur_chr);
                 switch (v) {
                     case no_val_level:
-                        tex_box_end(boxcontext, null, shift, unset_noad_class);
+                        tex_box_end(boxcontext, null, shift, unset_noad_class, slot);
                         return;
                     case list_val_level:
                         if (box_leaders_flag(boxcontext)) {
@@ -729,14 +729,14 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift)
                                 case vlist_node:
                                 case rule_node:
                              // case glyph_node:
-                                    tex_box_end(boxcontext, cur_val, shift, unset_noad_class);
+                                    tex_box_end(boxcontext, cur_val, shift, unset_noad_class, slot);
                                     return;
                             }
                         } else {
                             switch (node_type(cur_val)) {
                                 case hlist_node:
                                 case vlist_node:
-                                    tex_box_end(boxcontext, cur_val, shift, unset_noad_class);
+                                    tex_box_end(boxcontext, cur_val, shift, unset_noad_class, slot);
                                     return;
                             }
                         }
@@ -749,7 +749,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift)
             {
                 if (box_leaders_flag(boxcontext)) {
                     halfword rulenode = tex_aux_scan_rule_spec(cur_cmd == hrule_cmd ? h_rule_type : (cur_cmd == vrule_cmd ? v_rule_type : m_rule_type), cur_chr);
-                    tex_box_end(boxcontext, rulenode, shift, unset_noad_class);
+                    tex_box_end(boxcontext, rulenode, shift, unset_noad_class, slot);
                     return;
                 } else {
                     break;
@@ -762,7 +762,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift)
                     halfword boxnode = null;
                     tex_aux_run_text_char_number();
                     boxnode = tex_pop_tail();
-                    tex_box_end(boxcontext, boxnode, shift, unset_noad_class);
+                    tex_box_end(boxcontext, boxnode, shift, unset_noad_class, slot);
                     return;
                 } else {
                     break;
@@ -776,8 +776,8 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift)
         "that. So you might find something missing in your output. But keep trying; you\n"
         "can fix this later."
     );
-    if (boxcontext == lua_scan_flag) {
-        tex_box_end(boxcontext, null, shift, unset_noad_class);
+    if (boxcontext == lua_scan_flag) { /* hm */
+        tex_box_end(boxcontext, null, shift, unset_noad_class, slot);
     }
 }
 
@@ -791,7 +791,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift)
 static void tex_aux_run_move(void) {
     int code = cur_chr;
     halfword val = tex_scan_dimen(0, 0, 0, 0, NULL);
-    tex_aux_scan_box(0, 0, code == move_forward_code ? val : - val);
+    tex_aux_scan_box(direct_box_flag, 0, code == move_forward_code ? val : - val, -1);
 }
 
 /*tex
@@ -903,13 +903,13 @@ static int leader_flags[] = {
 };
 
 static void tex_aux_run_leader(void) {
-    tex_aux_scan_box(leader_flags[cur_chr], 0, null_flag);
+    tex_aux_scan_box(leader_flags[cur_chr], 0, null_flag, -1);
 }
 
 static void tex_aux_run_legacy(void) {
     switch (cur_chr) {
         case shipout_code:
-            tex_aux_scan_box(shipout_flag, 0, null_flag);
+            tex_aux_scan_box(shipout_flag, 0, null_flag, -1);
             break;
         default:
             /* cant_happen */
@@ -922,7 +922,7 @@ static void tex_aux_run_local_box(void) {
 }
 
 static void tex_aux_run_make_box(void) {
-    tex_begin_box(0, null_flag);
+    tex_begin_box(direct_box_flag, null_flag, -1);
 }
 
 /*tex
@@ -1465,7 +1465,7 @@ static void tex_aux_invalid_catcode_table_error(void) {
     tex_handle_error(
         normal_error_type,
         "Invalid \\catcode table",
-        "All \\catcode table ids must be between 0 and " LMT_TOSTRING(max_n_of_catcode_tables-1)
+        "All \\catcode table ids must be between 0 and " LMT_TOSTRING(max_n_of_catcode_tables - 1)
     );
 }
 
@@ -1890,7 +1890,7 @@ halfword tex_local_scan_box(void)
     int old_mode = cur_list.mode;
     int old_level = lmt_main_control_state.local_level;
     cur_list.mode = -hmode;
-    tex_aux_scan_box(lua_scan_flag, 0, null_flag);
+    tex_aux_scan_box(lua_scan_flag, 0, null_flag, -1);
     if (lmt_main_control_state.local_level == old_level) {
         /*tex |\directlua{print(token.scan_list())}\hbox{!}| (n n) */
         if (tracing_nesting_par > 2) {
@@ -2726,125 +2726,122 @@ static void tex_aux_wrapup_leader_box(halfword boxcontext, halfword boxnode)
     }
 }
 
-void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword mainclass)
+void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword mainclass, halfword slot)
 {
     cur_box = boxnode;
-    if (boxcontext < box_flag) {
-        /*tex
+    switch (boxcontext) {
+        case direct_box_flag:
+            /*tex
 
-            Append box |boxnode| to the current list, shifted by |boxcontext|. The global variable
-            |adjust_tail| will be non-null if and only if the current box might include adjustments
-            that should be appended to the current vertical list.
+                Append box |boxnode| to the current list, shifted by |boxcontext|. The global variable
+                |adjust_tail| will be non-null if and only if the current box might include adjustments
+                that should be appended to the current vertical list.
 
-            Having shift in the box context is kind of strange but as long as we stay below maxdimen
-            it works.
+                Having shift in the box context is kind of strange but as long as we stay below maxdimen
+                it works. We now pass the shift directly, so no boxcontext trick here.
 
-            We now pass the shift directly, so no boxcontext trick here.
-
-        */
-
-        if (boxnode) {
-         // box_shift_amount(boxnode) = boxcontext;
-            if (shift != null_flag) {
-                box_shift_amount(boxnode) = shift;
-            }
-            switch (cur_mode) {
-                case vmode:
-                    if (lmt_packaging_state.pre_adjust_tail) {
-                        if (pre_adjust_head != lmt_packaging_state.pre_adjust_tail) {
-                            tex_inject_adjust_list(pre_adjust_head, 1, boxnode, NULL);
-                        }
-                        lmt_packaging_state.pre_adjust_tail = null;
-                    }
-                    if (lmt_packaging_state.pre_migrate_tail) {
-                        if (pre_migrate_head != lmt_packaging_state.pre_migrate_tail) {
-                            tex_append_list(pre_migrate_head, lmt_packaging_state.pre_migrate_tail);
-                        }
-                        lmt_packaging_state.pre_migrate_tail = null;
-                    }
-                    tex_append_to_vlist(boxnode, lua_key_index(box), NULL);
-                    if (lmt_packaging_state.post_migrate_tail) {
-                        if (post_migrate_head != lmt_packaging_state.post_migrate_tail) {
-                            tex_append_list(post_migrate_head, lmt_packaging_state.post_migrate_tail);
-                        }
-                        lmt_packaging_state.post_migrate_tail = null;
-                    }
-                    if (lmt_packaging_state.post_adjust_tail) {
-                        if (post_adjust_head != lmt_packaging_state.post_adjust_tail) {
-                            tex_inject_adjust_list(post_adjust_head, 1, null, NULL);
-                        }
-                        lmt_packaging_state.post_adjust_tail = null;
-                    }
-                    if (cur_list.mode > nomode) {
-                        if (! lmt_page_builder_state.output_active) {
-                            lmt_page_filter_callback(box_page_context, 0);
-                        }
-                        tex_build_page();
-                    }
-                    break;
-                case hmode:
-                    cur_list.space_factor = default_space_factor;
-                    tex_couple_nodes(cur_list.tail, boxnode);
-                    cur_list.tail = boxnode;
-                    break;
-             /* case mmode: */
-                default:
-                    boxnode = tex_new_sub_box(boxnode);
-                    tex_couple_nodes(cur_list.tail, boxnode);
-                    cur_list.tail = boxnode;
-                    if (mainclass != unset_noad_class) {
-                        set_noad_classes(boxnode, mainclass);
-                    }
-                    break;
-            }
-        } else {
-            /* just scanning */
-        }
-    } else if (boxcontext < global_box_flag) {
-        /*tex Store |box| in a local box register  */
-        update_tex_box_local(boxcontext, boxnode);
-    } else if (boxcontext <= max_global_box_flag) {
-        /*tex Store |box| in a global box register  */
-        update_tex_box_global(boxcontext, boxnode);
-    } else {
-        switch (boxcontext) {
-            case shipout_flag:
-                /*tex This normally can't happen as some backend code needs to kick in. */
-                if (boxnode) {
-                    /*tex We just show the box ... */
-                    tex_begin_diagnostic();
-                    tex_show_node_list(boxnode, max_integer, max_integer);
-                    tex_end_diagnostic();
-                    /*tex ... and wipe it when it's a register ... */
-                    if (box_register(boxnode)) {
-                        tex_flush_node_list(boxnode);
-                        box_register(boxnode) = null;
-                    }
-                    /*tex ... so there is at least an indication that we flushed. */
+            */
+            if (boxnode) {
+                if (shift != null_flag) {
+                    box_shift_amount(boxnode) = shift;
                 }
-                break;
-            case left_box_flag:
-            case right_box_flag:
-            case middle_box_flag:
-                /*tex Actualy, this cannot happen ... will go away. */
-                tex_aux_finish_local_box();
-                break;
-            case lua_scan_flag:
-                /*tex We are done with scanning so let's return to the caller. */
-                tex_aux_wrapup_local_scan_box();
-                cur_box = boxnode;
-                break;
-            case a_leaders_flag:
-            case c_leaders_flag:
-            case x_leaders_flag:
-            case g_leaders_flag:
-            case u_leaders_flag:
-                tex_aux_wrapup_leader_box(boxcontext, boxnode);
-                break;
-            default:
-                /* fatal error */
-                break;
-        }
+                switch (cur_mode) {
+                    case vmode:
+                        if (lmt_packaging_state.pre_adjust_tail) {
+                            if (pre_adjust_head != lmt_packaging_state.pre_adjust_tail) {
+                                tex_inject_adjust_list(pre_adjust_head, 1, boxnode, NULL);
+                            }
+                            lmt_packaging_state.pre_adjust_tail = null;
+                        }
+                        if (lmt_packaging_state.pre_migrate_tail) {
+                            if (pre_migrate_head != lmt_packaging_state.pre_migrate_tail) {
+                                tex_append_list(pre_migrate_head, lmt_packaging_state.pre_migrate_tail);
+                            }
+                            lmt_packaging_state.pre_migrate_tail = null;
+                        }
+                        tex_append_to_vlist(boxnode, lua_key_index(box), NULL);
+                        if (lmt_packaging_state.post_migrate_tail) {
+                            if (post_migrate_head != lmt_packaging_state.post_migrate_tail) {
+                                tex_append_list(post_migrate_head, lmt_packaging_state.post_migrate_tail);
+                            }
+                            lmt_packaging_state.post_migrate_tail = null;
+                        }
+                        if (lmt_packaging_state.post_adjust_tail) {
+                            if (post_adjust_head != lmt_packaging_state.post_adjust_tail) {
+                                tex_inject_adjust_list(post_adjust_head, 1, null, NULL);
+                            }
+                            lmt_packaging_state.post_adjust_tail = null;
+                        }
+                        if (cur_list.mode > nomode) {
+                            if (! lmt_page_builder_state.output_active) {
+                                lmt_page_filter_callback(box_page_context, 0);
+                            }
+                            tex_build_page();
+                        }
+                        break;
+                    case hmode:
+                        cur_list.space_factor = default_space_factor;
+                        tex_couple_nodes(cur_list.tail, boxnode);
+                        cur_list.tail = boxnode;
+                        break;
+                    /* case mmode: */
+                    default:
+                        boxnode = tex_new_sub_box(boxnode);
+                        tex_couple_nodes(cur_list.tail, boxnode);
+                        cur_list.tail = boxnode;
+                        if (mainclass != unset_noad_class) {
+                            set_noad_classes(boxnode, mainclass);
+                        }
+                        break;
+                }
+            } else {
+                /* just scanning */
+            }
+            break;
+        case box_flag:
+            /*tex Store |box| in a local box register  */
+            update_tex_box_local(slot, boxnode);
+            break;
+        case global_box_flag:
+            /*tex Store |box| in a global box register  */
+            update_tex_box_global(slot, boxnode);
+            break;
+        case shipout_flag:
+            /*tex This normally can't happen as some backend code needs to kick in. */
+            if (boxnode) {
+                /*tex We just show the box ... */
+                tex_begin_diagnostic();
+                tex_show_node_list(boxnode, max_integer, max_integer);
+                tex_end_diagnostic();
+                /*tex ... and wipe it when it's a register ... */
+                if (box_register(boxnode)) {
+                    tex_flush_node_list(boxnode);
+                    box_register(boxnode) = null;
+                }
+                /*tex ... so there is at least an indication that we flushed. */
+            }
+            break;
+        case left_box_flag:
+        case right_box_flag:
+        case middle_box_flag:
+            /*tex Actualy, this cannot happen ... will go away. */
+            tex_aux_finish_local_box();
+            break;
+        case lua_scan_flag:
+            /*tex We are done with scanning so let's return to the caller. */
+            tex_aux_wrapup_local_scan_box();
+            cur_box = boxnode;
+            break;
+        case a_leaders_flag:
+        case c_leaders_flag:
+        case x_leaders_flag:
+        case g_leaders_flag:
+        case u_leaders_flag:
+            tex_aux_wrapup_leader_box(boxcontext, boxnode);
+            break;
+        default:
+            /* fatal error */
+            break;
     }
 }
 
@@ -2857,76 +2854,6 @@ void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword maincl
     a while, which is why we have a way to enable it. The glue is {\em always} injected, also when it's zero.
 
 */
-
-// void tex_begin_paragraph(int doindent, int context)
-// {
-//     halfword q;
-//     int indented = doindent;
-//     int isvmode = cur_list.mode == vmode;
-//     if (isvmode || cur_list.head != cur_list.tail) {
-//          /*tex
-//              Actually we could remove the callback and hook it into the |\everybeforepar| but that one
-//              started out as a |tex.expandmacro| itself and we don't want the callback overhead every
-//              time, so now we have both. However, in the end I decided to do this one {\em before} the
-//              parskip is injected.
-//          */
-//          if (every_before_par_par) {
-//              tex_begin_inserted_list(tex_get_available_token(token_val(end_local_cmd, 0)));
-//              tex_begin_token_list(every_before_par_par, every_before_par_text);
-//              if (tracing_nesting_par > 2) {
-//                  tex_local_control_message("entering local control via \\everybeforepar");
-//              }
-//              tex_local_control(1);
-//          }
-//       // if (type(cur_list.tail) == glue_node && subtype(cur_list.tail) == par_skip_glue) {
-//       //     /* ignore */
-//       // } else {
-//              tex_tail_append(tex_new_param_glue_node(par_skip_code, par_skip_glue));
-//       // }
-//     }
-//     lmt_begin_paragraph_callback(isvmode, &indented, context);
-//     /*tex We'd better not messed up things in the callback! */
-//     cur_list.prev_graf = 0;
-//     tex_push_nest();
-//     cur_list.mode = hmode;
-//     cur_list.space_factor = default_space_factor;
-//     /*tex  Add local paragraph node */
-//     tex_tail_append(tex_new_par_node(vmode_par_par_subtype));
-//  // if (end_of_par_par) {
-//  //     update_tex_end_of_par(null); /* option */
-//  // }
-//     q = cur_list.tail;
-//     /*tex We will move this to after the dir nodes have been dealt with. */
-//     tex_aux_insert_parindent(indented);
-//     /*tex Dir nodes end up before the indent box. */
-//     {
-//         halfword dir_rover = lmt_dir_state.text_dir_ptr;
-//         while (dir_rover) {
-//             if ((node_next(dir_rover)) || (dir_direction(dir_rover) != par_direction_par)) {
-//                 halfword dir_graf_tmp = tex_new_dir(normal_dir_subtype, dir_direction(dir_rover));
-//                 tex_try_couple_nodes(dir_graf_tmp, node_next(q));
-//                 tex_couple_nodes(q, dir_graf_tmp);
-//             }
-//             dir_rover = node_next(dir_rover);
-//         }
-//     }
-//     /*tex We might need to go to the last injected dir and/or indent node. */
-//     while (node_next(q)) {
-//         q = node_next(q);
-//     }
-//     cur_list.tail = q;
-//     /*tex The |\everypar| tokens are injected after dir nodes have been added. */
-//     if (every_par_par) {
-//         tex_begin_token_list(every_par_par, every_par_text);
-//     }
-//     if (lmt_nest_state.nest_data.ptr == 1) {
-//         if (! lmt_page_builder_state.output_active) {
-//             lmt_page_filter_callback(begin_paragraph_page_context, 0);
-//         }
-//         /*tex put |par_skip| glue on current page */
-//         tex_build_page();
-//     }
-// }
 
 void tex_tail_prepend(halfword n) 
 {
@@ -3048,7 +2975,7 @@ static void tex_aux_run_kern(void)
 {
     halfword code = cur_chr;
     switch (code) {
-        /* not yet enabled and maybe it never wil be */
+        /* not yet enabled and maybe it never will be */
         case h_kern_code:
             if (cur_mode == vmode) {
                 tex_back_input(token_val(kern_cmd, normal_kern_code));
@@ -4227,9 +4154,9 @@ static void tex_aux_set_box_property(void)
 
 static void tex_aux_set_box(int a)
 {
-    halfword n = tex_scan_box_register_number() + (is_global(a) ? global_box_flag : box_flag);
+    halfword slot = tex_scan_box_register_number();
     if (lmt_error_state.set_box_allowed) {
-        tex_aux_scan_box(n, 1, null_flag);
+        tex_aux_scan_box(is_global(a) ? global_box_flag : box_flag, 1, null_flag, slot);
     } else {
         tex_handle_error(
             normal_error_type,
@@ -5492,32 +5419,22 @@ static int tex_aux_set_some_item(halfword a)
 
 static void tex_aux_set_constant_register(halfword cmd, halfword cs, halfword flags)
 {
+    halfword v = null;
     switch(cmd) {
         case integer_cmd:
-            {
-                halfword v = tex_scan_int(1, NULL);
-                tex_define(flags, cs, integer_cmd, v);
-            }
+            v = tex_scan_int(1, NULL);
             break;
         case dimension_cmd:
-            {
-                scaled v = tex_scan_dimen(0, 0, 0, 1, NULL);
-                tex_define(flags, cs, dimension_cmd, v);
-            }
+            v = tex_scan_dimen(0, 0, 0, 1, NULL);
             break;
         case gluespec_cmd:
-            {
-                halfword v = tex_scan_glue(glue_val_level, 1);
-                tex_define(flags, cs, gluespec_cmd, v);
-            }
+            v = tex_scan_glue(glue_val_level, 1);
             break;
         case mugluespec_cmd:
-            {
-                halfword v = tex_scan_glue(mu_val_level, 1);
-                tex_define(flags, cs, mugluespec_cmd, v);
-            }
+            v = tex_scan_glue(mu_val_level, 1);
             break;
     }
+    tex_define(flags, cs, cmd, v);
 }
 
 void tex_run_prefixed_command(void)

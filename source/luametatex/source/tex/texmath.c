@@ -2458,53 +2458,70 @@ halfword tex_math_make_disc(halfword d)
 void tex_run_math_modifier(void)
 {
     halfword tail = cur_list.tail;
-    if (cur_list.head != tail && node_type(tail) == simple_noad) { // maybe all
-        switch (cur_chr) {
-            case adapt_to_left_modifier_code:
-                noad_options(tail) = unset_option(noad_options(tail), noad_option_adapt_to_right_size);
-                noad_options(tail) |= noad_option_adapt_to_left_size;
-                break;
-            case adapt_to_right_modifier_code:
-                noad_options(tail) = unset_option(noad_options(tail), noad_option_adapt_to_left_size);
-                noad_options(tail) |= noad_option_adapt_to_right_size;
-                break;
-            /* todo: actually this one can also be used for other types */
-            case axis_modifier_code:
-                noad_options(tail) |= noad_option_axis;
-                break;
-            case no_axis_modifier_code:
-                noad_options(tail) |= noad_option_no_axis;
-                break;
-            case phantom_modifier_code:
-                noad_options(tail) |= noad_option_phantom;
-                break;
-            case void_modifier_code:
-                noad_options(tail) |= noad_option_void;
-                break;
-            case source_modifier_code:
-                if (tex_scan_keyword("nucleus")) {
-                    noad_options(tail) |= noad_option_source_on_nucleus;    
+    if (cur_list.head != tail) {
+        switch (node_type(tail)) {
+            case simple_noad:
+                switch (cur_chr) {
+                    case adapt_to_left_modifier_code:
+                        noad_options(tail) = unset_option(noad_options(tail), noad_option_adapt_to_right_size);
+                        noad_options(tail) |= noad_option_adapt_to_left_size;
+                        break;
+                    case adapt_to_right_modifier_code:
+                        noad_options(tail) = unset_option(noad_options(tail), noad_option_adapt_to_left_size);
+                        noad_options(tail) |= noad_option_adapt_to_right_size;
+                        break;
+                    /* todo: actually this one can also be used for other types */
+                    case axis_modifier_code:
+                        noad_options(tail) |= noad_option_axis;
+                        break;
+                    case no_axis_modifier_code:
+                        noad_options(tail) |= noad_option_no_axis;
+                        break;
+                    case phantom_modifier_code:
+                        noad_options(tail) |= noad_option_phantom;
+                        break;
+                    case void_modifier_code:
+                        noad_options(tail) |= noad_option_void;
+                        break;
+                    case source_modifier_code:
+                        if (tex_scan_keyword("nucleus")) {
+                            noad_options(tail) |= noad_option_source_on_nucleus;    
+                        }
+                        noad_source(tail) = tex_scan_int(0, NULL);
+                        break;
+                    case openup_height_modifier_code:
+                        noad_options(tail) |= noad_option_openup_height;
+                        noad_height(tail) = tex_scan_dimen(0, 0, 0, 0, NULL);
+                        break;
+                    case openup_depth_modifier_code:
+                        noad_options(tail) |= noad_option_openup_depth;
+                        noad_depth(tail) = tex_scan_dimen(0, 0, 0, 0, NULL);
+                        break;
+                    case display_limits_modifier_code:
+                        noad_options(tail) = unset_option(noad_options(tail), noad_option_limits | noad_option_no_limits);
+                        break;
+                    case limits_modifier_code:
+                        noad_options(tail) = unset_option(noad_options(tail), noad_option_no_limits);
+                        noad_options(tail) |= noad_option_limits;
+                        break;
+                    case no_limits_modifier_code:
+                        noad_options(tail) = unset_option(noad_options(tail), noad_option_limits);
+                        noad_options(tail) |= noad_option_no_limits;
+                        break;
                 }
-                noad_source(tail) = tex_scan_int(0, NULL);
-                break;
-            case openup_height_modifier_code:
-                noad_options(tail) |= noad_option_openup_height;
-                noad_height(tail) = tex_scan_dimen(0, 0, 0, 0, NULL);
-                break;
-            case openup_depth_modifier_code:
-                noad_options(tail) |= noad_option_openup_depth;
-                noad_depth(tail) = tex_scan_dimen(0, 0, 0, 0, NULL);
-                break;
-            case display_limits_modifier_code:
-                noad_options(tail) = unset_option(noad_options(tail), noad_option_limits | noad_option_no_limits);
-                break;
-            case limits_modifier_code:
-                noad_options(tail) = unset_option(noad_options(tail), noad_option_no_limits);
-                noad_options(tail) |= noad_option_limits;
-                break;
-            case no_limits_modifier_code:
-                noad_options(tail) = unset_option(noad_options(tail), noad_option_limits);
-                noad_options(tail) |= noad_option_no_limits;
+            default:
+                switch (node_type(tail)) {
+                    case accent_noad:
+                        switch (cur_chr) {
+                            case source_modifier_code:
+                                if (tex_scan_keyword("nucleus")) {
+                                    noad_options(tail) |= noad_option_source_on_nucleus;    
+                                }
+                                noad_source(tail) = tex_scan_int(0, NULL);
+                                break;
+                        }
+
+                }
                 break;
         }
     }

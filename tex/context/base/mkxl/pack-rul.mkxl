@@ -2694,7 +2694,7 @@
 
 \tolerant\protected\def\pack_framed_text_start[#1]#*[#2]#*[#3]% or #1#*[#2]#*[#3]% and pass {#1}
   {\bgroup
-   \edef\currentframedtext{#1}
+   \edef\currentframedtext{#1}%
    \doifelseassignment{#2}
      {\pack_framed_text_start_indeed\empty{#2}}
      {\pack_framed_text_start_indeed{#2}{#3}}}

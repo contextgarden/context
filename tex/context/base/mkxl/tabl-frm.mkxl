@@ -23,7 +23,7 @@
 
 \newinteger  \c_tabl_framed_c
 \newinteger  \c_tabl_framed_r
-\newdimension\d_tabl_framed_h
+\newdimension\d_tabl_framed_h   \def\d_tabl_framed_h_reference{\d_tabl_framed_h}%
 \newdimension\d_tabl_framed_d
 \newdimension\b_tabl_framed
 
@@ -221,7 +221,7 @@
      \resetframedparameter\c!background
      \letframedparameter\c!frame\v!off
    \or
-     \letframedparameter\c!height\d_tabl_framed_h
+     \letframedparameter\c!height\d_tabl_framed_h_reference
    \fi
    \pack_framed_start_framed_whatever}
 

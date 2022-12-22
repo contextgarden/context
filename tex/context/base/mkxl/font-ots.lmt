@@ -292,9 +292,9 @@ local marks              = false
 local classes            = false
 local currentfont        = false
 local currentdynamic     = false
-local currentscale       = 1000 
-local currentxscale      = 1000 
-local currentyscale      = 1000 
+local currentscale       = 1000
+local currentxscale      = 1000
+local currentyscale      = 1000
 local factor             = 0
 local threshold          = 0
 local checkmarks         = false
@@ -2351,6 +2351,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
                 if keepdisc then
                     keepdisc = false
                     if notmatchpost[current] ~= notmatchreplace[current] then
+-- print(notmatchpost[current],notmatchreplace[current])
                         backtrackdisc = current
                     end
                     -- we assume a simple text only replace (we could use nuts.count)
@@ -2435,7 +2436,9 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
             setdisc(lookaheaddisc,cf,post,new)
         end
         start          = getprev(lookaheaddisc)
+if done then -- new 2022-12-22 : discretionary-001.tex
         useddisc       = lookaheaddisc -- new 2022-09-25
+end
         sweephead[cf]  = getnext(clast) or false
         sweephead[new] = getnext(cl) or false
     elseif backtrackdisc then
@@ -2496,7 +2499,9 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
             setdisc(backtrackdisc,pre,post,replace)
         end
         start              = getprev(backtrackdisc)
+if done then -- new 2022-12-22 : discretionary-001.tex
         useddisc           = backtrackdisc -- new 2022-09-25
+end
         sweephead[post]    = getnext(clast) or false
         sweephead[replace] = getnext(last) or false
     else
@@ -2508,10 +2513,11 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
         end
 
     end
+-- test case ?
     if useddisc and start ~= usedstart then -- make this option per font -- new 2022-09-25
        start = getnext(start)                                            -- new 2022-09-25
     end                                                                  -- new 2022-09-25
-    return head, start, done, useddisc                                   -- new 2022-09-25 
+    return head, start, done, useddisc                                   -- new 2022-09-25
 end
 
 local chaintrac do
@@ -3038,7 +3044,7 @@ handlers.gpos_context             = handle_contextchain
 -- end
 
 -- new 2022-09-25
- 
+
 local function chained_contextchain(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash)
     local steps    = currentlookup.steps
     local nofsteps = currentlookup.nofsteps

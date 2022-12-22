@@ -65,7 +65,7 @@
 
  */
 
-static void tex_aux_scan_full_spec(quarterword c, quarterword spec_direction, int just_pack, scaled shift)
+static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword spec_direction, int just_pack, scaled shift, halfword slot)
 {
     quarterword spec_code = packing_additional;
     int spec_amount = 0;
@@ -85,7 +85,6 @@ static void tex_aux_scan_full_spec(quarterword c, quarterword spec_direction, in
     halfword state = 0;
     halfword retain = 0;
     halfword mainclass = unset_noad_class;
-    int context = saved_value(saved_full_spec_item_context);
     int brace = 0;
     while (1) {
         /*tex Maybe |migrate <int>| makes sense here. */
@@ -300,7 +299,7 @@ static void tex_aux_scan_full_spec(quarterword c, quarterword spec_direction, in
     /*tex Now we're referenced. We need to preserve this over the group. */
     add_attribute_reference(attrlist);
     /* */
-    tex_set_saved_record(saved_full_spec_item_context, box_context_save_type, 0, context);
+    tex_set_saved_record(saved_full_spec_item_context, box_context_save_type, slot, context); /* slot fits in a quarterword */
     /*tex Traditionally these two are packed into one record: */
     tex_set_saved_record(saved_full_spec_item_packaging, box_spec_save_type, spec_code, spec_amount);
     /*tex Adjust |text_dir_ptr| for |scan_spec|: */
@@ -2320,7 +2319,7 @@ halfword tex_filtered_vpack(halfword p, scaled h, int m, scaled maxdepth, int gr
 
 void tex_run_vcenter(void)
 {
-    tex_aux_scan_full_spec(vcenter_group, direction_l2r, 0, 0);
+    tex_aux_scan_full_spec(direct_box_flag, vcenter_group, direction_l2r, 0, 0, -1);
     tex_normal_paragraph(vcenter_par_context);
     tex_push_nest();
     cur_list.mode = -vmode;
@@ -2398,13 +2397,14 @@ static scaled tex_aux_first_height(halfword boxnode)
 
 void tex_package(singleword nature)
 {
-    halfword context, spec, dirptr, attrlist, justpack, orientation, anchor, geometry, source, target, axis, mainclass, state, retain;
+    halfword slot, context, spec, dirptr, attrlist, justpack, orientation, anchor, geometry, source, target, axis, mainclass, state, retain;
     scaled shift;
     int grp = cur_group;
     scaled maxdepth = box_max_depth_par;
     halfword boxnode = null; /*tex Aka |cur_box|. */
     tex_unsave();
     lmt_save_state.save_stack_data.ptr -= saved_full_spec_n_of_items;
+    slot = saved_level(saved_full_spec_item_context);
     context = saved_value(saved_full_spec_item_context);
     spec = saved_value(saved_full_spec_item_packaging);
     dirptr = saved_value(saved_full_spec_item_direction);
@@ -2536,7 +2536,7 @@ void tex_package(singleword nature)
     box_axis(boxnode) = (singleword) axis;
     box_package_state(boxnode) |= (singleword) state;
     tex_pop_nest();
-    tex_box_end(context, boxnode, shift, mainclass);
+    tex_box_end(context, boxnode, shift, mainclass, slot);
 }
 
 void tex_run_unpackage(void)
@@ -2786,7 +2786,7 @@ void tex_run_unpackage(void)
 
 */
 
-inline static halfword tex_aux_depth_correction(halfword b, const line_break_properties *properties)
+static halfword tex_aux_depth_correction(halfword b, const line_break_properties *properties)
 {
     /*tex The deficiency of space between baselines: */
     halfword p;
@@ -3227,7 +3227,7 @@ halfword tex_vsplit(halfword n, scaled h, int m)
 
 */
 
-void tex_begin_box(int boxcontext, scaled shift)
+void tex_begin_box(int boxcontext, scaled shift, halfword slot)
 {
     halfword code = cur_chr;
     halfword boxnode = null; /*tex Aka |cur_box|. */
@@ -3392,7 +3392,6 @@ void tex_begin_box(int boxcontext, scaled shift)
                         break;
                 }
                 mode = code - vtop_code;
-                tex_set_saved_record(saved_full_spec_item_context, box_context_save_type, 0, boxcontext);
                 switch (abs(cur_list.mode)) {
                     case vmode:
                         spec_direction = dir_lefttoright;
@@ -3405,16 +3404,16 @@ void tex_begin_box(int boxcontext, scaled shift)
                         break;
                 }
                 if (mode == hmode) {
-                    if ((boxcontext < box_flag) && (abs(cur_list.mode) == vmode)) {
-                        tex_aux_scan_full_spec(adjusted_hbox_group, spec_direction, just_pack, shift);
+                    if ((boxcontext == direct_box_flag) && (abs(cur_list.mode) == vmode)) {
+                        tex_aux_scan_full_spec(boxcontext, adjusted_hbox_group, spec_direction, just_pack, shift, slot);
                     } else {
-                        tex_aux_scan_full_spec(hbox_group, spec_direction, just_pack, shift);
+                        tex_aux_scan_full_spec(boxcontext, hbox_group, spec_direction, just_pack, shift, slot);
                     }
                 } else {
                     if (mode == vmode) {
-                        tex_aux_scan_full_spec(vbox_group, spec_direction, just_pack, shift);
+                        tex_aux_scan_full_spec(boxcontext, vbox_group, spec_direction, just_pack, shift, slot);
                     } else {
-                        tex_aux_scan_full_spec((code == dbox_code || code == dpack_code) ? dbox_group : vtop_group, spec_direction, just_pack, shift);
+                        tex_aux_scan_full_spec(boxcontext, (code == dbox_code || code == dpack_code) ? dbox_group : vtop_group, spec_direction, just_pack, shift, slot);
                         mode = vmode;
                     }
                     tex_normal_paragraph(vmode_par_context);
@@ -3437,5 +3436,5 @@ void tex_begin_box(int boxcontext, scaled shift)
             }
     }
     /*tex In simple cases, we use the box immediately. */
-    tex_box_end(boxcontext, boxnode, shift, unset_noad_class);
+    tex_box_end(boxcontext, boxnode, shift, unset_noad_class, slot);
 }

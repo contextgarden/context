@@ -167,9 +167,6 @@
 \def\scrn_bar_goto#action%
   {\button{\symbol[#action]}[#action]\hss}
 
-% todo: this will be \letblackruleparameter\c!width\scratchdimenone (faster)
-% todo: make these setups
-
 \def\scrn_bar_alternative_a
   {\d_scrn_bar_width   \interactionbarparameter\c!width
    \d_scrn_bar_distance\interactionbarparameter\c!distance

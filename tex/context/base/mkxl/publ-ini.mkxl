@@ -906,7 +906,7 @@
              \clf_btxfetchlistentries{\currentbtxdataset}%
            \egroup
            \d_publ_number_width\wd\scratchbox
-           \letlistparameter\c!width\d_publ_number_width
+           \letlistparameter\c!width\d_publ_number_width % no need for _reference here, frozen
          \fi
        \fi
        \doifelse{\listparameter\c!prefix}\v!yes\settrue\setfalse\c_publ_prefixed

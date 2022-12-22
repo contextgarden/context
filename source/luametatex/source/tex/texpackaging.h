@@ -179,29 +179,37 @@ extern void      tex_run_vcenter          (void);
     |box_code|, |copy_code|, |last_box_code|, |vsplit_code|, |vtop_code|, |vtop_code + vmode|, and
     |vtop_code + hmode|, where the latter two are used denote |\vbox| and |\hbox|, respectively.
 
+    Originally the shift was encoded in the box context in case of a move. In fact even the local 
+    and global register assignments were in that property but this is no longer the case. This
+    actually makes implementing a |\boxspecdef| cleaner (a discarded experiment). The intermediate 
+    cleasned up flags can be found in the history. 
+
 */
 
 # define biggest_reg 65535  /*tex This could be in |textypes.h|. */
 
 typedef enum box_flags {
-    box_flag            = 010000000000,                        /*tex context code for |\setbox0| (< maxdimen) */
-    global_box_flag     = 010000000000 +     biggest_reg,      /*tex context code for |\global\setbox0| */
-    max_global_box_flag = 010000000000 + 2 * biggest_reg,
-    left_box_flag       = 010000000000 + 2 * biggest_reg +  1, /*tex context code for |\localleftbox| (not used) */
-    right_box_flag      = 010000000000 + 2 * biggest_reg +  2, /*tex context code for |\localrightbox| (not used) */
-    middle_box_flag     = 010000000000 + 2 * biggest_reg +  3, /*tex context code for |\localrightbox| (not used) */
-    shipout_flag        = 010000000000 + 2 * biggest_reg +  4, /*tex context code for |\shipout| */
-    lua_scan_flag       = 010000000000 + 2 * biggest_reg +  5, /*tex context code for |scan_list| */
-    a_leaders_flag      = 010000000000 + 2 * biggest_reg +  6, /*tex context code for |\leaders| */
-    c_leaders_flag      = 010000000000 + 2 * biggest_reg +  7, /*tex context code for |\cleaders| */
-    x_leaders_flag      = 010000000000 + 2 * biggest_reg +  8, /*tex context code for |\xleaders| */
-    g_leaders_flag      = 010000000000 + 2 * biggest_reg +  9, /*tex context code for |\gleaders| */
-    u_leaders_flag      = 010000000000 + 2 * biggest_reg + 10, /*tex context code for |\uleaders| */
+    direct_box_flag     = 0x00,
+ /* moved_box_flag      = 0x01, */
+ /* vcenter_box_flag    = 0x02, */ 
+    box_flag            = 0x02, /*tex context code for |\setbox0| */
+    global_box_flag     = 0x03, /*tex context code for |\global\setbox0| */
+    left_box_flag       = 0x04, /*tex context code for |\localleftbox| */
+    right_box_flag      = 0x05, /*tex context code for |\localrightbox| */
+    middle_box_flag     = 0x06, /*tex context code for |\localrightbox| */
+    shipout_flag        = 0x07, /*tex context code for |\shipout| */
+    lua_scan_flag       = 0x08, /*tex context code for |scan_list| */
+    a_leaders_flag      = 0x09, /*tex context code for |\leaders| */
+    c_leaders_flag      = 0x0A, /*tex context code for |\cleaders| */
+    x_leaders_flag      = 0x0B, /*tex context code for |\xleaders| */
+    g_leaders_flag      = 0x0C, /*tex context code for |\gleaders| */
+    u_leaders_flag      = 0x0D, /*tex context code for |\uleaders| */
+
 } box_flags;
 
 # define box_leaders_flag(f) (f >= a_leaders_flag && f <= u_leaders_flag)
 
-extern void tex_begin_box        (int boxcontext, scaled shift);
+extern void tex_begin_box        (int boxcontext, scaled shift, halfword slot);
 extern int  tex_ignore_math_skip (halfword p);
 
 # endif

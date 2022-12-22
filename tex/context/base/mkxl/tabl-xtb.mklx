@@ -15,6 +15,26 @@
 
 \writestatus{loading}{ConTeXt Table Macros / Xtreme}
 
+\unprotect
+
+\newdimension\d_tabl_x_width        \def\d_tabl_x_width_reference {\d_tabl_x_width }
+\newdimension\d_tabl_x_height       \def\d_tabl_x_height_reference{\d_tabl_x_height}
+\newdimension\d_tabl_x_depth        % not used
+\newdimension\d_tabl_x_distance
+\newdimension\d_tabl_x_final_width  \def\d_tabl_x_final_width_reference{\d_tabl_x_final_width}
+\newinteger  \c_tabl_x_nx
+\newinteger  \c_tabl_x_ny
+\newinteger  \c_tabl_x_mode
+\newbox      \b_tabl_x
+\newinteger  \c_tabl_x_state        % 0=empty 1=content 3=splitleft
+\newinteger  \c_tabl_x_nesting
+\newinteger  \c_tabl_x_skip_mode    % 1 = skip
+\newdimension\d_tabl_x_textwidth
+\newinteger  \c_tabl_x_swapped
+\newinteger  \c_tabl_x_swapped_max
+
+\protect
+
 \registerctxluafile{tabl-xtb}{autosuffix}
 
 % todo:
@@ -81,22 +101,6 @@
     \enforced\permanent\protected\def\dotagxtablesignal
       {\signalcharacter}% not used
 \to \everyenableelements
-
-\newdimension\d_tabl_x_width
-\newdimension\d_tabl_x_height
-\newdimension\d_tabl_x_depth        % not used
-\newdimension\d_tabl_x_distance
-\newinteger  \c_tabl_x_nx
-\newinteger  \c_tabl_x_ny
-\newinteger  \c_tabl_x_mode
-\newbox      \b_tabl_x
-\newinteger  \c_tabl_x_state        % 0=empty 1=content 3=splitleft
-\newdimension\d_tabl_x_final_width
-\newinteger  \c_tabl_x_nesting
-\newinteger  \c_tabl_x_skip_mode    % 1 = skip
-\newdimension\d_tabl_x_textwidth
-\newinteger  \c_tabl_x_swapped
-\newinteger  \c_tabl_x_swapped_max
 
 \lettonothing\m_tabl_x_swapped_settings
 
@@ -436,7 +440,7 @@
    \d_split_minimum_free_space\dimexpr\extraxtablesplitheight+\xtableparameter\c!splitoffset\relax
   %\c_split_minimum_free_lines\plustwo % not needed here as we're precise enough
    \let\tsplitdirectsplitter\tabl_x_split_splitter
-   \let\tsplitdirectwidth   \d_tabl_x_final_width
+   \let\tsplitdirectwidth   \d_tabl_x_final_width_reference
    \handledirecttsplit}
 
 \protected\def\tabl_x_split_splitter#height%
@@ -627,7 +631,7 @@
      \fi
      \setupcurrentxtable[#settings]%
      \relax
-     \letxtableparameter\c!width\d_tabl_x_width  % overloads given width
+     \letxtableparameter\c!width\d_tabl_x_width_reference  % overloads given width
      \inheritedxtableframed\bgroup
      \tabl_x_begin_of_cell
    \fi}
@@ -640,7 +644,7 @@
        \letxtableparameter\c!height\v!fit  % overloads given height
      \fi
      \relax
-     \letxtableparameter\c!width\d_tabl_x_width  % overloads given width
+     \letxtableparameter\c!width\d_tabl_x_width_reference % overloads given width
      \inheritedxtableframed\bgroup
      \tabl_x_begin_of_cell
    \fi}
@@ -657,8 +661,8 @@
   {\dostarttagged\t!tablecell\empty % can't we just tag the box
    \setbox\b_tabl_x\hpack\bgroup
    \setupcurrentxtable[#settings]%
-   \letxtableparameter\c!width \d_tabl_x_width  % overloads given width
-   \letxtableparameter\c!height\d_tabl_x_height % overloads given height
+   \letxtableparameter\c!width \d_tabl_x_width_reference  % overloads given width
+   \letxtableparameter\c!height\d_tabl_x_height_reference % overloads given height
    \clf_x_table_init_construct
    \inheritedxtableframed\bgroup
    \tabl_x_begin_of_cell
@@ -667,8 +671,8 @@
 \protected\def\tabl_x_start_cell_construct_nop
   {\dostarttagged\t!tablecell\empty % can't we just tag the box
    \setbox\b_tabl_x\hpack\bgroup
-   \letxtableparameter\c!width \d_tabl_x_width  % overloads given width
-   \letxtableparameter\c!height\d_tabl_x_height % overloads given height (commenting it ... nice option)
+   \letxtableparameter\c!width \d_tabl_x_width_reference  % overloads given width
+   \letxtableparameter\c!height\d_tabl_x_height_reference % overloads given height (commenting it ... nice option)
    \clf_x_table_init_construct
    \inheritedxtableframed\bgroup
    \tabl_x_begin_of_cell

@@ -52,7 +52,7 @@ extern void     tex_you_cant_error                  (const char *helpinfo);
 extern void     tex_off_save                        (void);
 
 extern halfword tex_local_scan_box                  (void);
-extern void     tex_box_end                         (int boxcontext, halfword boxnode, scaled shift, halfword mainclass);
+extern void     tex_box_end                         (int boxcontext, halfword boxnode, scaled shift, halfword mainclass, halfword slot);
 
 extern void     tex_get_r_token                     (void);
 

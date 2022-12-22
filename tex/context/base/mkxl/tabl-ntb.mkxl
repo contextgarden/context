@@ -160,7 +160,7 @@
 \newinteger    \c_tabl_ntb_current_row_four
 \newinteger    \c_tabl_ntb_current_col_four
 
-\newinteger    \c_tabl_ntb_running_col
+\newinteger    \c_tabl_ntb_running_col        \def\c_tabl_ntb_running_col_reference{\c_tabl_ntb_running_col}
 \newinteger    \c_tabl_ntb_maximum_row
 \newinteger    \c_tabl_ntb_maximum_col
 \newinteger    \c_tabl_ntb_maximum_row_span
@@ -758,11 +758,11 @@
    \fi[#1]}
 
 \def\tabl_ntb_td_yes[#1]#2\eTD
-  {\letnaturaltableparameter  \c!ny    \m_tabl_ntb_default_nr
-   \letnaturaltableparameter  \c!nx    \m_tabl_ntb_default_nc
-   \letnaturaltableparameter  \c!nc    \plusone
-   \letnaturaltableparameter  \c!nr    \plusone
-   \letnaturaltableparameter  \c!n     \c_tabl_ntb_running_col
+  {\letnaturaltableparameter  \c!ny\m_tabl_ntb_default_nr
+   \letnaturaltableparameter  \c!nx\m_tabl_ntb_default_nc
+   \letnaturaltableparameter  \c!nc\plusone
+   \letnaturaltableparameter  \c!nr\plusone
+   \letnaturaltableparameter  \c!n \c_tabl_ntb_running_col_reference
    \resetnaturaltableparameter\c!m
    \resetnaturaltableparameter\c!action% not that important
    \setupcurrentnaturaltable[#1]%
