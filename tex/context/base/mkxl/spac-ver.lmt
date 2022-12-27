@@ -2233,7 +2233,7 @@ do
             local flush = false
             stackhack = true -- todo: only when grid snapping once enabled
 
-            for n, id, subtype in nextnode, newhead do -- we could just look for glue nodes
+            for n, id, subtype in nextnode, newhead do
                 if id ~= glue_code then
                     flush = true
                 elseif subtype == userskip_code then
@@ -2359,7 +2359,9 @@ do
         enabled = v
     end)
 
-    local ignoredepth = -65536000
+    local function ignoredepth()
+        return texgetdimen("ignoredepthcriterium") -- -65536000
+    end
 
     -- A previous version analyzed the number of lines moved to the next page in
     -- synchronizepage because prevgraf is unreliable in that case. However, we cannot
@@ -2423,16 +2425,17 @@ do
                 local newdepth = outer.prevdepth
                 local olddepth = newdepth
                 if not texlists.pagehead then
-                    newdepth = ignoredepth
-                    texset("prevdepth",ignoredepth)
-                    outer.prevdepth = ignoredepth
+                    newdepth = ignoredepth()
+                    texset("prevdepth",newdepth)
+                    outer.prevdepth = newdepth
                 end
                 report("page %i, prevdepth %p => %p",texgetcount("realpageno"),olddepth,newdepth)
              -- report("list %s",nodes.idsandsubtypes(head))
             else
                 if not texlists.pagehead then
-                    texset("prevdepth",ignoredepth)
-                    outer.prevdepth = ignoredepth
+                    local newdepth = ignoredepth()
+                    texset("prevdepth",newdepth)
+                    outer.prevdepth = newdepth
                 end
             end
         end
@@ -2890,6 +2893,17 @@ do
     implement {
         name    = "forcepageflush",
         actions = vspacing.forcepageflush
+    }
+
+end
+
+do
+
+    implement {
+        name      = "injectzerobaselineskip",
+        protected = true,
+        public    = true,
+        actions   = { nodes.pool.baselineskip, context },
     }
 
 end

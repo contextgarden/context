@@ -2180,7 +2180,7 @@
 \def\strc_floats_relocate_caption_right#1{\strc_floats_align_caption{\hbox to \d_strc_float_temp_width{\hss#1}}}
 \def\strc_floats_relocate_caption_left #1{\strc_floats_align_caption{\hbox to \d_strc_float_temp_width{#1\hss}}}
 
-\permanent\protected\def\installfloatboxbuilder#1#2{\setvalue{\??floatbuilder#1}{#2}}
+\permanent\protected\def\installfloatboxbuilder#1#2{\defcsname\??floatbuilder#1\endcsname{#2}}
 
 \def\strc_floats_build_box
   {\strc_floats_build_box_before
@@ -2415,13 +2415,13 @@
 %    \expandnamespacemacro\??floatpreparesidecaption\p_strc_floats_caption_width\s!unknown
 %    \dostoptagged}
 %
-% \setvalue{\??floatpreparesidecaption\v!max}%
+% \defcsname\??floatpreparesidecaption\v!max\endcsname
 %   {\setbox\b_strc_floats_caption\vbox
 %      {\strc_floats_caption_set_align
 %       \hsize\wd\b_strc_floats_content
 %       \strc_floats_make_complete_caption}}
 %
-% \setvalue{\??floatpreparesidecaption\v!fit}%
+% \defcsname\??floatpreparesidecaption\v!fit\endcsname
 %   {\ifdim\wd\b_strc_floats_caption>\wd\b_strc_floats_content\relax
 %      \setbox\b_strc_floats_caption\vbox
 %        {\forgetall % needed?
@@ -2432,7 +2432,7 @@
 %        {\hss\hbox{\strc_floats_make_complete_caption}\hss}%
 %    \fi}
 %
-% \setvalue{\??floatpreparesidecaption\s!unknown}%
+% \defcsname\??floatpreparesidecaption\s!unknown\endcsname
 %   {\setbox\b_strc_floats_caption\vbox
 %      {\strc_floats_caption_set_align
 %       \hsize\p_strc_floats_caption_width % \wd\b_strc_floats_content
@@ -2554,7 +2554,7 @@
 %   {\ifcsname\??floatsettings#1:#2\endcsname \else
 %      \expandafter\newtoks\csname\??floatsettings#1:#2\endcsname
 %    \fi
-%    \setvalue{\??floatmethods#1:#2}{#3}}
+%    \defcsname\??floatmethods#1:#2\endcsname{#3}}
 %
 % \protected\def\startfloatmethodsettings#1#2 #3\stopfloatmethodsettings
 %   {\csname\??floatsettings#1:#2\endcsname\expandafter{\the\csname\??floatsettings#1:#2\endcsname#3}}

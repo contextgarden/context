@@ -287,7 +287,7 @@ static void tex_aux_undump_fmt_data(dumpstream f)
 
     /*tex This should go elsewhere. */
 
-    cur_list.prev_depth = ignore_depth;
+    cur_list.prev_depth = ignore_depth_criterium_par;
 }
 
 /*

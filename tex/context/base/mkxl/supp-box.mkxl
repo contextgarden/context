@@ -946,7 +946,7 @@
      % \par before the next \vskip gives far worse results
      \ifdim\parskip>\zeropoint\vskip\parskip\else\par\fi
      % and take a look
-     \ifdim\prevdepth=-\thousandpoint
+     \ifdim\prevdepth=-\thousandpoint % or <=
        \prevdepth\zeropoint
      \fi
      \ifdim\prevdepth<\zeropoint\relax

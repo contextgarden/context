@@ -277,8 +277,8 @@
     \normalexpanded {%
         \startsetups[\currentdocument:\v!start]\noexpand\directsetup{\ifempty\currentdocumentparent\s!document\else\currentdocumentparent\fi:\v!start}\stopsetups
         \startsetups[\currentdocument:\v!stop ]\noexpand\directsetup{\ifempty\currentdocumentparent\s!document\else\currentdocumentparent\fi:\v!stop }\stopsetups
-        \permanent\setvalue{\e!start\currentdocument}{\startdocument[\currentdocument]}%
-        \permanent\setvalue{\e!stop \currentdocument}{\stopdocument}
+        \permanent\defcsname\e!start\currentdocument\endcsname{\startdocument[\currentdocument]}%
+        \permanent\defcsname\e!stop \currentdocument\endcsname{\stopdocument}
     }%
 \to \everydefinedocument
 
@@ -339,7 +339,7 @@
 %
 % \protected\def\samplefile#1%
 %   {\ifcsname\??samplefile#1\endcsname \else
-%      \setxvalue{\??samplefile#1}{\cldloadfile{#1}}%
+%      \xdefcsname\??samplefile#1\endcsname{\cldloadfile{#1}}%
 %    \fi
 %    \lastnamedcs}
 

@@ -1,3 +1,4 @@
+three
 % language=us runpath=texruns:manuals/lowlevel
 
 % \hfil \hss
@@ -141,7 +142,28 @@ available space. So, here we force the text to the right or left.
 {\dontcomplain\showboxes\getbuffer}
 \stoplinecorrection
 
-We have three kind of boxes: \type {\hbox}, \type {\vbox} and \type {\vtop}:
+Instead of \type {\raise} you can also provide the shift (up or down) with a
+keyword:
+
+\startbuffer
+\ruledhbox\bgroup
+    x\raise  5pt\ruledhbox            {1}x
+    x\raise-10pt\ruledhbox            {2}x
+    x\raise -5pt\ruledhbox shift -20pt{3}x
+    x\ruledhbox            shift -10pt{4}x
+\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+{\dontcomplain\showboxes\getbuffer}
+\stoplinecorrection
+
+
+We have three kind of boxes: \type {\hbox}, \type {\vbox} and \type {\vtop}.
+Actually we have a fourth type \type {\dbox} but that is a variant on \type
+{\vbox} to which we come back later.
 
 \startbuffer
 \hbox{\strut height and depth\strut}

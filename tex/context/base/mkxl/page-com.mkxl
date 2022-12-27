@@ -163,7 +163,7 @@
         \hskip\dimexpr\paperwidth+\d_page_comments_distance+\d_page_comments_offset\relax
       \fi}}
 
-\permanent\protected\setvalue{\e!start\v!pagecomment}%
+\permanent\protected\defcsname\e!start\v!pagecomment\endcsname
   {\global\settrue\c_page_comment_enabled
    \grabbufferdatadirect\v!pagecomment{\e!start\v!pagecomment}{\e!stop\v!pagecomment}}
 

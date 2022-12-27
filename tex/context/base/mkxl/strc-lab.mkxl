@@ -111,7 +111,7 @@
 
 \newconditional\c_strc_constructions_number_keep
 
-\setvalue{\??constructioninitializer\v!label}%
+\defcsname\??constructioninitializer\v!label\endcsname
   {\let         \currentlabel                    \currentconstruction
    \enforced\let\constructionparameter           \labelparameter
    \enforced\let\constructionnamespace           \??label
@@ -139,7 +139,7 @@
      \setfalse\c_strc_constructions_title_state
    \fi}
 
-\setvalue{\??constructionfinalizer\v!label}%
+\defcsname\??constructionfinalizer\v!label\endcsname
   {\ifconditional\c_strc_constructions_number_state
      \iftrialtypesetting
        \strc_counters_restore\currentconstructionnumber
@@ -173,12 +173,12 @@
 
 \letcsname\??constructionmainhandler\v!label\expandafter\endcsname\csname\??constructionmainhandler\v!description\endcsname
 
-\protected\setevalue{\??constructioncommandhandler\v!label}%
+\protected\edefcsname\??constructioncommandhandler\v!label\endcsname
   {\csname\??constructionstarthandler\v!construction\endcsname
    \csname\??constructionstophandler \v!construction\endcsname
    \endgroup}
 
-\protected\setvalue{\??constructiontexthandler\v!label}%
+\protected\defcsname\??constructiontexthandler\v!label\endcsname
   {\begingroup
    \useconstructionstyleandcolor\c!headstyle\c!headcolor
    \strc_labels_text

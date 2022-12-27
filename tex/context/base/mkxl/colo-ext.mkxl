@@ -46,7 +46,7 @@
 \installcorenamespace{colorintent}
 
 \permanent\protected\def\registercolorintent#1#2% \relax is needed !
-  {\setevalue{\??colorintent#1}{\c_attr_colorintent\clf_registercolorintent{#2}\relax}}
+  {\edefcsname\??colorintent#1\endcsname{\c_attr_colorintent\clf_registercolorintent{#2}\relax}}
 
 \protected\def\colo_intents_set
   {\clf_enablecolorintents

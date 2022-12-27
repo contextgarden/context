@@ -1048,7 +1048,7 @@
       {\xdefcsname\??hiddenheadattr\currenthead\endcsname
          {\headreferenceattributes}% can be used when making a box
        \xdefcsname\??hiddenheadsync\currenthead\endcsname
-         {\noexpand\letgvalue{\??hiddenheadsync\currenthead}\relax
+         {\noexpand\gletcsname\??hiddenheadsync\currenthead\endcsname\relax
        % {\noexpand\gletcsname\??hiddenheadsync\currenthead\endcsname\relax
           \hpack\headreferenceattributes\bgroup
             \noexpand\setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}% otherwise no destination ... maybe tag ref as hidden and fall back on page reference
@@ -1068,7 +1068,7 @@
       {\xdefcsname\??hiddenheadattr\currenthead\endcsname
          {\headreferenceattributes}% can be used when making a box
        \xdefcsname\??hiddenheadsync\currenthead\endcsname
-         {\noexpand\letgvalue{\??hiddenheadsync\currenthead}\relax
+         {\noexpand\gletcsname\??hiddenheadsync\currenthead\endcsname\relax
           \noexpand\setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
           \hpack\headreferenceattributes{}% otherwise no destination ... maybe tag ref as hidden and fall back on page reference
           \theheadsynchronization}} % and it's a node anyway

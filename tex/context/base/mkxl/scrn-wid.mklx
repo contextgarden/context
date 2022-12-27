@@ -502,7 +502,7 @@
    \dp\b_scrn_comment_link\currentcommentdepth
    \expandnamespaceparameter\??commentlocation\commentparameter\c!location\s!unknown}
 
-\letvalue{\??commentmethods\v!hidden}\donothing
+\aliased\letcsname\??commentmethods\v!hidden\endcsname\donothing
 
 \protected\def\scrn_comment_flush_traced
   {\hpack\bgroup

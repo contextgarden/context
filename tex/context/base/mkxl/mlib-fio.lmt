@@ -9,7 +9,8 @@ if not modules then modules = { } end modules ['mlib-fio'] = {
 local type = type
 local find = string.find
 local concat = table.concat
-local suffix, addsuffix = file.suffix, file.addsuffix
+local suffix, addsuffix, is_writable = file.suffix, file.addsuffix, file.is_writable
+local urlhashed = url.hashed
 
 local findfile     = resolvers.findfile
 local mplibnew     = mplib.new
@@ -90,7 +91,7 @@ end
 -- finders.file = function(specification,name,mode,kind)
 --     if mode == "r" then
 --         return findmpfile(name,kind)
---     elseif file.is_writable(name) then
+--     elseif is_writable(name) then
 --         return name
 --     else
 --         return nil
@@ -102,7 +103,7 @@ end
 -- finders.file = function(specification,name,mode,kind)
 --     if not mode or mode == "r" then
 --         return findmpfile(name,kind)
---     elseif file.is_writable(name) then
+--     elseif is_writable(name) then
 --         return name
 --     else
 --         return nil
@@ -113,14 +114,14 @@ end
 
 finders.file = function(specification,name,mode,kind)
     if mode == "w" then
-        return file.is_writable(name) and name or nil
+        return is_writable(name) and name or nil
     else
         return findmpfile(name,kind) or nil
     end
 end
 
 local function finder(name,mode,kind) -- fake message for mpost.map and metafun.mpvi
-    local specification = url.hashed(name)
+    local specification = urlhashed(name)
     local finder = finders[specification.scheme] or finders.file
     local found = finder(specification,name,mode,validftype(ftype))
     return found

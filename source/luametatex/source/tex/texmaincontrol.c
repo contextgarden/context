@@ -65,32 +65,6 @@ main_control_state_info lmt_main_control_state = {
 };
 
 /*tex
-    A few helpers:
-*/
-
-inline static scaled tex_aux_checked_dimen1(scaled v)
-{
-    if (v > max_dimen) {
-        return max_dimen;
-    } else if (v < -max_dimen) {
-        return -max_dimen;
-    } else {
-        return v;
-    }
-}
-
-inline static scaled tex_aux_checked_dimen2(scaled v)
-{
-    if (v > max_dimen) {
-        return max_dimen;
-    } else if (v < 0) {
-        return 0;
-    } else {
-        return v;
-    }
-}
-
-/*tex
     These two helpers, of which the second one is still experimental, actually belong in another
     file so then might be moved. Watch how the first one has the |unsave| call!
 */
@@ -6569,6 +6543,7 @@ void tex_initialize_variables(void)
         math_left_class_par = unset_noad_class;
         math_right_class_par = unset_noad_class;
         variable_family_par = -1, 
+        ignore_depth_criterium_par = ignore_depth;
         aux_get_date_and_time(&time_par, &day_par, &month_par, &year_par, &lmt_engine_state.utc_time);
     }
 }

@@ -97,7 +97,7 @@
 \installcorenamespace {indentingpreset}
 
 \permanent\tolerant\protected\def\defineindenting[#1]#*[#2]% todo: mixes
-  {\ifarguments\else\setevalue{\??indentingpreset#1}{#2}\fi}
+  {\ifarguments\else\edefcsname\??indentingpreset#1\endcsname{#2}\fi}
 
 \def\spac_indentation_apply_step_one_nested
   {\expandafter\processcommacommand\expandafter[\lastnamedcs]\spac_indentation_apply_step_one}
@@ -383,7 +383,7 @@
 \permanent\protected\def\newfrenchspacing{\spac_spacecodes_set_fixed{1050}}
 \permanent\protected\def\nonfrenchspacing{\spac_spacecodes_set_stretch}
 
-\permanent\protected\def\installspacingmethod#1#2{\setvalue{\??spacecodemethod#1}{#2}}
+\permanent\protected\def\installspacingmethod#1#2{\defcsname\??spacecodemethod#1\endcsname{#2}}
 
 \installspacingmethod \empty    {}                  % keep values
 \installspacingmethod \v!fixed  {\frenchspacing   } % equal spaces everywhere

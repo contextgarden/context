@@ -292,14 +292,14 @@
 \permanent\protected\def\decrementpagenumber{\csname\??pagenumberdec\namedcounterparameter\s!userpage\c!state\endcsname}
 \permanent\protected\def\incrementpagenumber{\csname\??pagenumberinc\namedcounterparameter\s!userpage\c!state\endcsname}
 
-\letvalue{\??pagenumberdec\v!start}\strc_pagenumbers_decrement_userpage
-\letvalue{\??pagenumberdec\v!none }\strc_pagenumbers_decrement_userpage
-\letvalue{\??pagenumberdec\v!empty}\strc_pagenumbers_decrement_userpage
+\letcsname\??pagenumberdec\v!start\endcsname\strc_pagenumbers_decrement_userpage
+\letcsname\??pagenumberdec\v!none \endcsname\strc_pagenumbers_decrement_userpage
+\letcsname\??pagenumberdec\v!empty\endcsname\strc_pagenumbers_decrement_userpage
 
-\letvalue{\??pagenumberinc\v!start}\strc_pagenumbers_increment_userpage
-\letvalue{\??pagenumberinc\v!none }\strc_pagenumbers_increment_userpage
-\setvalue{\??pagenumberinc\v!empty}{\strc_pagenumbers_increment_userpage\strc_pagenumbers_synchronize_userpage}
-\letvalue{\??pagenumberinc\v!keep }\strc_pagenumbers_synchronize_userpage
+\letcsname\??pagenumberinc\v!start\endcsname\strc_pagenumbers_increment_userpage
+\letcsname\??pagenumberinc\v!none \endcsname\strc_pagenumbers_increment_userpage
+\defcsname\??pagenumberinc\v!empty\endcsname{\strc_pagenumbers_increment_userpage\strc_pagenumbers_synchronize_userpage}
+\letcsname\??pagenumberinc\v!keep \endcsname\strc_pagenumbers_synchronize_userpage
 
 % Setup general page numbering
 

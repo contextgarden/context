@@ -306,6 +306,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "pxdimen",                        internal_dimen_cmd,     px_dimen_code,                            internal_dimen_base);
         tex_primitive(luatex_command, "tabsize",                        internal_dimen_cmd,     tab_size_code,                            internal_dimen_base);
         tex_primitive(luatex_command, "pageextragoal",                  internal_dimen_cmd,     page_extra_goal_code,                     internal_dimen_base);
+        tex_primitive(luatex_command, "ignoredepthcriterium",           internal_dimen_cmd,     ignore_depth_criterium_code,              internal_dimen_base); /* mostly for myself, tutorials etc */
 
         /*tex Probably never used with \UNICODE\ omnipresent now: */
 

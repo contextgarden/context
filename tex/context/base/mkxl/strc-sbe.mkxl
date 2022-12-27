@@ -128,7 +128,7 @@
 \protected\def\strc_sectionblock_get_environment#1%
   {\csname\??sectionblockenvironment#1\endcsname}
 
-\permanent\tolerant\protected\setvalue{\e!start\v!sectionblockenvironment}[#1]% evt \pushendofline \popendofline
+\permanent\tolerant\protected\defcsname\e!start\v!sectionblockenvironment\endcsname[#1]% evt \pushendofline \popendofline
   {\grabuntil{\e!stop\v!sectionblockenvironment}{\strc_sectionblock_set_environment{#1}}}
 
 \permanent\protected\expandafter\lettonothing\csname\e!stop\v!sectionblockenvironment\endcsname

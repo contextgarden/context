@@ -21,13 +21,22 @@
 
 \unprotect
 
-\newdimension\d_adaptive_width  \aliasdimension\usedadaptivewidth \d_adaptive_width
-\newdimension\d_adaptive_height \aliasdimension\usedadaptiveheight\d_adaptive_height
-\newdimension\d_adaptive_depth  \aliasdimension\usedadaptivedepth \d_adaptive_depth
-\newdimension\d_adaptive_line   \aliasdimension\usedadaptiveline  \d_adaptive_line
-\newdimension\d_adaptive_hsize  \aliasdimension\usedadaptivehsize \d_adaptive_hsize
+\ifdefined\d_adaptive_width \else
+    \newdimension\d_adaptive_width
+    \newdimension\d_adaptive_height
+    \newdimension\d_adaptive_depth
+    \newdimension\d_adaptive_line
+    \newdimension\d_adaptive_hsize
+    \newbox      \b_adaptive_box
+\fi
 
-\newbox      \b_adaptive_box    \aliased\let\usedadaptivebox\b_adaptive_box
+\aliasdimension\usedadaptivewidth \d_adaptive_width
+\aliasdimension\usedadaptiveheight\d_adaptive_height
+\aliasdimension\usedadaptivedepth \d_adaptive_depth
+\aliasdimension\usedadaptiveline  \d_adaptive_line
+\aliasdimension\usedadaptivehsize \d_adaptive_hsize
+
+\aliased\let\usedadaptivebox\b_adaptive_box
 
 \mutable\lettonothing\m_adaptive_color
 

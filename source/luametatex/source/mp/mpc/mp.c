@@ -17038,6 +17038,7 @@ static void mp_do_binary (MP mp, mp_node p, int c)
             }
             break;
         case mp_times_operation:
+          TIMES:
             if ((mp->cur_exp.type < mp_color_type) || (p->type < mp_color_type)) {
                 mp_bad_binary(mp, p, mp_times_operation);
             } else if ((mp->cur_exp.type == mp_known_type) || (p->type == mp_known_type)) {
@@ -17222,6 +17223,11 @@ static void mp_do_binary (MP mp, mp_node p, int c)
                     mp_do_edges_trans(mp, p, (int) c);
                     mp_finish_binary(mp, old_p, old_exp);
                     return;
+                case mp_color_type:
+                case mp_cmykcolor_type:
+                    if (c == mp_scaled_operation) {
+                        goto TIMES;
+                    }
                 default:
                     mp_bad_binary(mp, p, (int) c);
                     break;

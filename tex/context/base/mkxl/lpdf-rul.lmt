@@ -352,17 +352,17 @@ do
         end
     end
 
-    local f_rectangle = formatters["%.6N w %.6N %.6N %.6N %.6N re %s"]
-    local f_baselined = formatters["%.6N w %.6N %.6N %.6N %.6N re s %.6N %.6N m %.6N %.6N l s"]
-    local f_dashlined = formatters["%.6N w %.6N %.6N %.6N %.6N re s [%.6N %.6N] 2 d %.6N %.6N m %.6N %.6N l s"]
-    local f_dashtwice = formatters["%.6N w %.6N %.6N %.6N %.6N re s [%.6N %.6N] 2 d %.6N %.6N m %.6N %.6N l s %.6N %.6N m %.6N %.6N l s"]
+    local f_rectangle = formatters["q %.6N w %.6N %.6N %.6N %.6N re %s Q"]
+    local f_baselined = formatters["q %.6N w %.6N %.6N %.6N %.6N re s %.6N %.6N m %.6N %.6N l s Q"]
+    local f_dashlined = formatters["q %.6N w %.6N %.6N %.6N %.6N re s [%.6N %.6N] 2 d %.6N %.6N m %.6N %.6N l s Q"]
+    local f_dashtwice = formatters["q %.6N w %.6N %.6N %.6N %.6N re s [%.6N %.6N] 2 d %.6N %.6N m %.6N %.6N l s %.6N %.6N m %.6N %.6N l s Q"]
     local f_radtangle = formatters[
-[[%.6N w %.6N %.6N m
+[[q %.6N w %.6N %.6N m
 %.6N %.6N l %.6N %.6N %.6N %.6N y
 %.6N %.6N l %.6N %.6N %.6N %.6N y
 %.6N %.6N l %.6N %.6N %.6N %.6N y
 %.6N %.6N l %.6N %.6N %.6N %.6N y
-h %s]]
+h %s Q]]
         ]
 
     local rule_any = function(p,h,v,i,n)

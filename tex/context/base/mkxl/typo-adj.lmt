@@ -19,6 +19,8 @@ local getdepth     = nuts.getdepth
 local newglue      = nuts.pool.glue
 local insertafter  = nuts.insertafter
 
+local texgetdimen  = tex.getdimen
+
 ----- a_adjuster   = attributes.system("adjuster")
 
 local function correct_depth(head,tail)
@@ -37,7 +39,8 @@ local function correct_depth(head,tail)
 end
 
 local function block_baselineskip(head,tail)
-    tex.prevdepth = -1000 * 65536 -- ignoredepth
+ -- tex.prevdepth = -1000 * 65536 -- ignoredepth
+    tex.prevdepth = texgetdimen("ignoredepthcriterium")
     return head
 end
 

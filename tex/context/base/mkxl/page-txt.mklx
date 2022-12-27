@@ -219,7 +219,7 @@
 %D Left and right texts are swapped on odd and even pages, but only when double
 %D sided typesetting is enabled.
 
-\setvalue{\??layouttextstrut\v!yes}{\setstrut\strut} % maybe more variants
+\defcsname\??layouttextstrut\v!yes\endcsname{\setstrut\strut} % maybe more variants
 
 \lettonothing\m_page_layouts_element_content
 

@@ -256,4 +256,6 @@
 \definesynchronize
   [paralleltext]
 
+% defined in lua: \hsplit to upto width height depth criterium shrinkcriterium stretchcriterium
+
 \protect \endinput

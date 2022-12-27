@@ -71,7 +71,7 @@
      \fi
    \endcsname}
 
-\immutable\letvalue{\??accents}\empty
+\immutable\letcsname\??accents\endcsname\empty
 
 %D Because now have this (\type {\chr} issues a one|-|time warning):
 
@@ -237,7 +237,7 @@
   {\topaccent{0pt}{0}{15}{\textgrave}} % e.g.
 
 \permanent\protected\def\definemathaccent#1 #2%
-  {\setvalue{#1}{\mathaccent#2 }}
+  {\defcsname#1\endcsname{\mathaccent#2 }} % can be redefined
 
 % from enco-def:
 

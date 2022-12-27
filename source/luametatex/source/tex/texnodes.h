@@ -1412,7 +1412,7 @@ inline static int tex_same_mathspec(halfword a, halfword b)
     Here are some more stack related nodes.
 */
 
-# define align_stack_node_size                 10
+# define align_stack_node_size                 15
 # define align_stack_align_ptr(a)              vinfo(a,1)
 # define align_stack_cur_align(a)              vlink(a,1)
 # define align_stack_preamble(a)               vinfo(a,2)
@@ -1431,6 +1431,17 @@ inline static int tex_same_mathspec(halfword a, halfword b)
 # define align_stack_cur_pre_migrate_tail(a)   vlink(a,8)
 # define align_stack_no_tab_skips(a)           vinfo(a,9)
 # define align_stack_attr_list(a)              vlink(a,9)
+
+# define align_stack_row_attrlist(a)           vinfo(a,10) 
+# define align_stack_row_orientation(a)        vlink(a,10)
+# define align_stack_row_yoffset(a)            vinfo(a,11)
+# define align_stack_row_xoffset(a)            vlink(a,11)
+# define align_stack_row_ymove(a)              vinfo(a,12)
+# define align_stack_row_xmove(a)              vlink(a,12)
+# define align_stack_row_shift(a)              vinfo(a,13)
+# define align_stack_row_source(a)             vlink(a,13)
+# define align_stack_row_target(a)             vinfo(a,14)
+# define align_stack_row_anchor(a)             vlink(a,14)
 
 /*tex
     If nodes are for nesting conditionals. We have more state information that in (for instance)

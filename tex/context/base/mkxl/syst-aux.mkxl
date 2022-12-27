@@ -584,6 +584,15 @@
      \expandafter\secondoftwoarguments
    \fi}
 
+% or (test this):
+%
+% \permanent\protected\def\processallactionsinset[#1]%
+%   {\ifcstok{#1}\emptytoks
+%      \expandafter\processaction
+%    \else
+%      \expandafter\syst_helpers_process_all_actions_in_set_indeed
+%    \fi[#1]}
+
 \aliased\let\doifemptyelse\doifelseempty
 
 \permanent\protected\def\doifempty#1%

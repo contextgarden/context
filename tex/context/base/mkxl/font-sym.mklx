@@ -56,19 +56,17 @@
 
 % potential generalization:
 %
-% \letvalue{\??fontfile:t:\s!rm}\s!Serif
-% \letvalue{\??fontfile:t:\s!ss}\s!Sans
-% \letvalue{\??fontfile:t:\s!tt}\s!Mono
-%
-% \letvalue{\??fontfile:a:\s!rm}\s!Regular
-% \letvalue{\??fontfile:a:\s!ss}\s!Support
-% \letvalue{\??fontfile:a:\s!tt}\s!Type
-%
-% \letvalue{\??fontfile:s:\s!bf}\s!Bold
-% \letvalue{\??fontfile:s:\s!sl}\s!Slanted
-% \letvalue{\??fontfile:s:\s!it}\s!Italic
-% \letvalue{\??fontfile:s:\s!bs}\s!BoldSlanted
-% \letvalue{\??fontfile:s:\s!bi}\s!BoldItalic
+% \letcsname\??fontfile:t:\s!rm\endcsname\s!Serif
+% \letcsname\??fontfile:t:\s!ss\endcsname\s!Sans
+% \letcsname\??fontfile:t:\s!tt\endcsname\s!Mono
+% \letcsname\??fontfile:a:\s!rm\endcsname\s!Regular
+% \letcsname\??fontfile:a:\s!ss\endcsname\s!Support
+% \letcsname\??fontfile:a:\s!tt\endcsname\s!Type
+% \letcsname\??fontfile:s:\s!bf\endcsname\s!Bold
+% \letcsname\??fontfile:s:\s!sl\endcsname\s!Slanted
+% \letcsname\??fontfile:s:\s!it\endcsname\s!Italic
+% \letcsname\??fontfile:s:\s!bs\endcsname\s!BoldSlanted
+% \letcsname\??fontfile:s:\s!bi\endcsname\s!BoldItalic
 %
 % \def\v_font_string_a{\executeifdefined{\??fontfile:t:\fontstyle}\s!Serif}
 % \def\v_font_string_a{\executeifdefined{\??fontfile:t:\fontstyle}\s!Serif}

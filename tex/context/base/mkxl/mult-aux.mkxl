@@ -796,7 +796,7 @@
 % First we had, in tune with the regular system variables:
 %
 % \starttyping
-% \protected\def\installnamespace#1{\setvalue{????#1}{@@@@#1}}
+% \protected\def\installnamespace#1{\defcsname ????#1\endcsname{@@@@#1}}
 % \stoptyping
 %
 % The following variant is nicer and in principle faster but that gets unnoticed

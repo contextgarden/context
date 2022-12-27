@@ -31,7 +31,7 @@
 
 \permanent\tolerant\protected\def\resetbuffer[#1]{\clf_erasebuffer{#1}} % todo: use public implementor
 
-\permanent\setuvalue{\e!start\v!buffer}%
+\permanent\protected\defcsname\e!start\v!buffer\endcsname
   {\begingroup % (3)
    \obeylines
    \buff_start}

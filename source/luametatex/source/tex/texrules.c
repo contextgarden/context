@@ -141,7 +141,7 @@ void tex_aux_run_vrule(void)
 void tex_aux_run_hrule(void)
 {
     tex_tail_append(tex_aux_scan_rule_spec(h_rule_type, cur_chr));
-    cur_list.prev_depth = ignore_depth;
+    cur_list.prev_depth = ignore_depth_criterium_par;
 }
 
 void tex_aux_run_mrule(void)

@@ -193,6 +193,7 @@
 \newconditional  \c_tabl_tabulate_pwidth_set
 \newconditional  \c_tabl_tabulate_reshape
 \newconditional  \c_tabl_tabulate_no_blank_in_paragraphs % can become always on
+\newconditional  \c_tabl_tabulate_no_interline_space
 
 \settrue         \c_tabl_tabulate_split
 \settrue         \c_tabl_tabulate_handlepbreak
@@ -516,7 +517,9 @@
                 \bgroup
                 \tabl_tabulate_hook_G
                 \tabl_tabulate_entry_before
-                \aligncontent % \alignmark\alignmark
+\tabl_tabulate_hook_box_begin % might move
+                \aligncontent
+\tabl_tabulate_hook_box_end   % might move
                 \tabl_tabulate_entry_after
                 \egroup
                 \noexpand\ifnum\noexpand\c_tabl_tabulate_type=\plusone\noexpand\else
@@ -525,6 +528,7 @@
                 \noexpand\fi
                 \ifconditional\c_tabl_tabulate_reshape
                     \tabl_tabulate_shaped_par_end
+                \else
                 \fi
                 \noexpand#2%
                 \tabl_tabulate_hook_e
@@ -735,41 +739,82 @@
 %   \dorecurse{100}{\NC \getbuffer \NC test \par test \par \NC \NR}
 % \stoptabulate
 
+% \starttabulate[|w(top,3cm)|w(top,3cm)|]
+% \NC test \NC test \par test \NC \NR
+% \NC test \NC test \par test \NC \NR
+% \stoptabulate
+%
+% \starttabulate[|w(top,packed,3cm)|w(top,packed,3cm)|]
+% \NC test \NC test \par test \NC \NR
+% \NC test \NC test \par test \NC \NR
+% \stoptabulate
+%
+% \starttabulate[interlinespace=no,format={|w(bottom,3cm)|w(bottom,3cm)|}]
+% \NC test \NC test \par test \NC \NR
+% \NC test \NC test \par test \NC \NR
+% \stoptabulate
+%
+% \starttabulate[format={|w(3cm)|w(3cm)|}]
+% \NC \vtop{\strut test} \NC \vtop{\strut test\par \strut test} \NC \NR
+% \NC \vtop{\strut test} \NC \vtop{\strut test\par \strut test} \NC \NR
+% \stoptabulate
+%
+% \starttabulate[interlinespace=no,format={|w(3cm)|w(3cm)|}]
+% \NC \vtop{\strut test} \NC \vtop{\strut test\par \strut test} \NC \NR
+% \NC \vtop{\strut test} \NC \vtop{\strut test\par \strut test} \NC \NR
+% \stoptabulate
+%
+% \starttabulate[interlinespace=no,format={|w(3cm)|w(3cm)|}]
+% \NC \vbox{\strut test} \NC \vbox{\strut test\par \strut test} \NC \NR
+% \NC \vbox{\strut test} \NC \vbox{\strut test\par \strut test} \NC \NR
+% \stoptabulate
+%
+% \starttabulate[interlinespace=no,format={|w(3cm)|w(3cm)|}]
+% \NC \vtop{\strut test} \NC \vbox{\strut test\par \strut test} \NC \NR
+% \NC \vbox{\strut test} \NC \vtop{\strut test\par \strut test} \NC \NR
+% \stoptabulate
+
+\installcorenamespace{tabulatewidth}
+
+\defcsname\??tabulatewidth\v!fit\endcsname
+  {\c_tabl_tabulate_modus\plusthree}
+
+\defcsname\??tabulatewidth\v!fixed\endcsname
+  {\c_tabl_tabulate_modus\plusthree
+   \settrue\c_tabl_tabulate_nopbreak}
+
+\defcsname\??tabulatewidth\v!packed\endcsname
+  {\settrue\c_tabl_tabulate_no_interline_space}
+
+\defcsname\??tabulatewidth\v!auto\endcsname
+  {\c_tabl_tabulate_modus\plusthree\settrue\c_tabl_tabulate_reshape}
+
+\lettonothing\tabl_tabulate_hook_box_begin
+\lettonothing\tabl_tabulate_hook_box_end
+
+\defcsname\??tabulatewidth\v!top\endcsname
+  {\def\tabl_tabulate_hook_box_begin{\vtop\bgroup\begstrut}%
+   \def\tabl_tabulate_hook_box_end  {\endstrut\egroup}}
+
+\defcsname\??tabulatewidth\v!bottom\endcsname
+  {\def\tabl_tabulate_hook_box_begin{\vbox\bgroup\begstrut}%
+   \def\tabl_tabulate_hook_box_end  {\endstrut\egroup}}
+
+\def\tabl_tabulate_set_width_step#1%
+  {\ifcsname\??tabulatewidth#1\endcsname
+     \lastnamedcs
+   \else
+     \d_tabl_tabulate_width#1\relax
+   \fi}
+
 \def\tabl_tabulate_set_width_indeed(#1)%
-  {\processallactionsinset % can be made faster
-     [#1]%
-     [   \v!fit=>\c_tabl_tabulate_modus\plusthree,
-       \v!fixed=>\c_tabl_tabulate_modus\plusthree
-                 \settrue\c_tabl_tabulate_nopbreak,
-        \v!auto=>\c_tabl_tabulate_modus\plusthree
-                 \settrue\c_tabl_tabulate_reshape,
-     \s!unknown=>\d_tabl_tabulate_width#1\relax]%
+  {\rawprocesscommacommand[#1]\tabl_tabulate_set_width_step
    \ifconditional\c_tabl_tabulate_pwidth_set
      \global\advanceby\d_tabl_tabulate_width_p\d_tabl_tabulate_width % accumulated parwidth
    \fi
    \tabl_tabulate_set_preamble}
 
-% faster but seldom used
-%
-% \installcorenamespace{tabulatewidth}
-%
-% \defcsname\??tabulatewidth\v!fit  \endcsname{\c_tabl_tabulate_modus\plusthree}
-% \defcsname\??tabulatewidth\v!fixed\endcsname{\c_tabl_tabulate_modus\plusthree\settrue\c_tabl_tabulate_nopbreak}
-% \defcsname\??tabulatewidth\v!auto \endcsname{\c_tabl_tabulate_modus\plusthree\settrue\c_tabl_tabulate_reshape}
-%
-% \def\tabl_tabulate_set_width_step#1%
-%   {\ifcsname\??tabulatewidth#1\endcsname
-%      \lastnamedcs
-%    \else
-%      \d_tabl_tabulate_width#1\relax
-%    \fi}
-%
-% \def\tabl_tabulate_set_width_indeed(#1)%
-%   {\rawprocesscommacommand[#1]\tabl_tabulate_set_width_step
-%    \ifconditional\c_tabl_tabulate_pwidth_set
-%      \global\advanceby\d_tabl_tabulate_width_p\d_tabl_tabulate_width % accumulated parwidth
-%    \fi
-%    \tabl_tabulate_set_preamble}
+% done
 
 \def\tabl_tabulate_set_raggedright {\ifnum\c_tabl_tabulate_type=\plusone \else\raggedright \fi}
 \def\tabl_tabulate_set_raggedcenter{\ifnum\c_tabl_tabulate_type=\plusone \else\raggedcenter\fi}
@@ -845,11 +890,12 @@
    \glettonothing\m_tabl_tabulate_color
    \glettonothing\m_tabl_tabulate_text_color
    \glettonothing\m_tabl_tabulate_vrule_color
+   \glettonothing\tabl_tabulate_hook_box
    \global\c_tabl_tabulate_colorspan\zerocount
    \global\setfalse\c_tabl_auto_align_mode
    \global\setfalse\c_tabl_auto_align_mode_new
    \resetalignmentcharacter
-%  \attribute\aligncharacterattribute\attributeunsetvalue
+ % \attribute\aligncharacterattribute\attributeunsetvalue
    \global\advanceby\c_tabl_tabulate_columns\plusone
    \letcsname\??tabulatesetup\the\c_tabl_tabulate_columns\endcsname\donothing % here ?
    \iftok{#1}\emptytoks
@@ -1326,16 +1372,18 @@
   {\tabulationparameter\c!after}
 
 \def\tabl_tabulate_outside_inbetween_indeed
-  {\doifempty{\tabulationparameter\c!after}
-     {\vskip\strutdp
-      \verticalstrut
-      \vskip-\struttotal}}
+  {\ifcstok{\tabulationparameter\c!after}\emptytoks\else
+     \vskip\strutdp
+     \verticalstrut
+     \vskip-\struttotal
+   \fi}
 
 \def\tabl_tabulate_inside_inbetween % needs checking
-  {\doifempty{\tabulationparameter\c!after}
-     {\vskip\strutdp
-      \verticalstrut
-      \vskip-\struttotal}}
+  {\ifcstok{\tabulationparameter\c!after}\emptytoks\else
+     \vskip\strutdp
+     \verticalstrut
+     \vskip-\struttotal
+   \fi}
 
 \protected\def\tabl_tabulate_start_building
   {\ifinsidefloat
@@ -1350,15 +1398,16 @@
    %
    \resetcharacteralign
    %
-   \edef\p_distance     {\tabulationparameter\c!distance}%
-   \edef\p_align        {\tabulationparameter\c!align}%
-   \edef\p_line         {\tabulationparameter\c!rule}%
-   \edef\p_rulecolor    {\tabulationparameter\c!rulecolor}%
-   \edef\p_rulethickness{\tabulationparameter\c!rulethickness}%
-   \edef\p_bodyfont     {\tabulationparameter\c!bodyfont}%
-   \edef\p_indenting    {\tabulationparameter\c!indenting}%
-   \edef\p_keeptogether {\tabulationparameter\c!keeptogether}%
-   \edef\p_blank        {\tabulationparameter\c!blank}%
+   \edef\p_distance      {\tabulationparameter\c!distance}%
+   \edef\p_align         {\tabulationparameter\c!align}%
+   \edef\p_line          {\tabulationparameter\c!rule}%
+   \edef\p_rulecolor     {\tabulationparameter\c!rulecolor}%
+   \edef\p_rulethickness {\tabulationparameter\c!rulethickness}%
+   \edef\p_bodyfont      {\tabulationparameter\c!bodyfont}%
+   \edef\p_indenting     {\tabulationparameter\c!indenting}%
+   \edef\p_keeptogether  {\tabulationparameter\c!keeptogether}%
+   \edef\p_blank         {\tabulationparameter\c!blank}%
+   \edef\p_interlinespace{\tabulationparameter\c!interlinespace}%
    %
    \ifx\p_keeptogether\v!no
      \settrue \c_tabl_tabulate_tolerant_break
@@ -1366,6 +1415,12 @@
    \else
      \setfalse\c_tabl_tabulate_tolerant_break
     %\settrue \c_tabl_tabulate_handlepbreak
+   \fi
+   %
+   \ifx\p_interlinespace\v!no
+     \settrue\c_tabl_tabulate_no_interline_space
+   \else
+     \setfalse\c_tabl_tabulate_no_interline_space
    \fi
    %
    \settrue\c_tabl_tabulate_split
@@ -1738,9 +1793,6 @@
      \tabl_tabulate_color_reset_indeed
    \fi}
 
-% \def\tabl_tabulate_color_reset_indeed
-%   {\dorecurse\c_tabl_tabulate_max_colorcolumn{\letgvalue{\??tabulatecolor\recurselevel}\undefined}} % slow
-
 \def\tabl_tabulate_color_reset_indeed
   {\dofastloopcs\c_tabl_tabulate_max_colorcolumn\tabl_tabulate_color_reset_step}
 
@@ -1888,6 +1940,84 @@
 \permanent\protected\def\tabl_tabulate_CM_first{\global\c_tabl_tabulate_localcolorspan\plustwo  \tabl_tabulate_set_color_column\zerocount}
 \permanent\protected\def\tabl_tabulate_CR_first{\global\c_tabl_tabulate_localcolorspan\plusthree\tabl_tabulate_set_color_column\zerocount}
 
+%D New per 27/12/2022:
+
+% \defineorientation[test][orientation=down,vertical=top]
+%
+% \definetabulatemove[a][xoffset=40pt]
+% \definetabulatemove[b][orientation=test,yoffset=depth]
+%
+% \startbuffer[b]
+% \starttabulate[|c|c|]
+% \TM[a] \NC \darkred   cell one   \NC \darkgray cell one   \NC \NR
+% \TM[b] \NC \darkgreen cell one   \NC \darkblue cell one   \NC \NR
+% \TM[a] \NC \darkred   cell two   \NC \darkgray cell two   \NC \NR
+% \TM[b] \NC \darkgreen cell two   \NC \darkblue cell two   \NC \NR
+% \TM[a] \NC \darkred   cell three \NC \darkgray cell three \NC \NR
+% \TM[b] \NC \darkgreen cell three \NC \darkblue cell three \NC \NR
+% \TM[a] \NC \darkred   cell four  \NC \darkgray cell four  \NC \NR
+% \TM[b] \NC \darkgreen cell four  \NC \darkblue cell four  \NC \NR
+% \stoptabulate
+% \stopbuffer
+%
+% \start \showmakeup[line] \showstruts \ruledvbox{\getbuffer[b]} \stop
+% \start                   \showstruts \ruledvbox{\getbuffer[b]} \stop
+% \start                               \ruledvbox{\getbuffer[b]} \stop
+%
+% \startbuffer[b]
+% \starttabulate[|p|p|]
+% \TM[a] \NC \darkred   \samplefile{tufte} \NC \darkgray \samplefile{ward} \NC \NR
+%        \NC \darkgreen \samplefile{tufte} \NC \darkblue \samplefile{ward} \NC \NR
+% \TM[a] \NC \darkred   \samplefile{tufte} \NC \darkgray \samplefile{ward} \NC \NR
+%        \NC \darkgreen \samplefile{tufte} \NC \darkblue \samplefile{ward} \NC \NR
+% \stoptabulate
+% \stopbuffer
+%
+% \start \showmakeup[line] \showstruts \getbuffer[b] \stop
+
+\installcorenamespace{tabulatemove}
+
+\installcommandhandler \??tabulatemove {tabulatemove} \??tabulatemove
+
+\setuptabulatemove
+  [\c!xoffset=\zeropoint,
+   \c!yoffset=\zeropoint,
+   \c!orientation=]
+
+\noaligned\permanent\tolerant\protected\def\tabl_tabulate_TM_yes[#1]#*[#2]%
+  {\beginlocalcontrol
+   \ifhastok={#1}%
+     \setupcurrenttabulatemove[#1]%
+   \else
+     \edef\currenttabulatemove{#1}%
+     \setupcurrenttabulatemove[#2]%
+   \fi
+   \edef\m_orientation{\theorientation{\tabulatemoveparameter\c!orientation}}%
+   \edef\m_xoffset    {\tabulatemoveparameter\c!xoffset}%
+   \edef\m_yoffset    {\tabulatemoveparameter\c!yoffset}%
+   \scratchyoffset
+     \ifx\m_yoffset\v!depth
+       -\strutdp
+     \orelse\ifx\m_yoffset\v!height
+       -\strutht
+     \else
+       \m_yoffset
+     \fi
+   \relax
+   \scratchxoffset\m_xoffset\relax
+   \xdef\tabl_tabulate_tm
+     {\ifzeropt\scratchxoffset\else\s!xmove  \the\scratchxoffset\fi % or move
+      \ifzeropt\scratchyoffset\else\s!ymove  \the\scratchyoffset\fi % or move
+      \ifzero  \m_orientation \else\s!orientation\m_orientation \fi
+     }%
+   \endlocalcontrol
+   \noalign\tabl_tabulate_tm{}}
+
+\noaligned\permanent\tolerant\protected\def\tabl_tabulate_TM_nop[#1]#*[#2]%
+  {}
+
+\lettonothing\tabl_tabulate_tm % new 27/12/2022
+
 %D Sort of special:
 %D
 %D \startbuffer
@@ -1945,6 +2075,7 @@
 \appendtoks
     \enforced\let\NR\tabl_tabulate_NR_second
     \enforced\let\NB\tabl_tabulate_NB_second
+    \enforced\let\TM\tabl_tabulate_TM_yes
 \to \t_tabl_tabulate_initializers_second
 
 \appendtoks
@@ -1953,6 +2084,7 @@
     \enforced\let\MR\NR
     \enforced\let\LR\NR
     \enforced\let\AR\NR
+    \enforced\let\TM\tabl_tabulate_TM_nop
 \to \t_tabl_tabulate_initializers_first
 
 % \permanent\protected\def\tabl_tabulate_NR_common#1#2%
@@ -2002,7 +2134,11 @@
        \fi
      \fi
    \fi
-   \global\setfalse\c_tabl_tabulate_firstflushed}
+   \global\setfalse\c_tabl_tabulate_firstflushed
+   \ifconditional\c_tabl_tabulate_no_interline_space
+     \nointerlineskip
+     \injectzerobaselineskip
+   \fi}
 
 \protected\def\tabl_tabulate_bbskip_second_split_yes
   {\ifvoid\b_tabl_tabulate_current\c_tabl_tabulate_column
@@ -2046,20 +2182,45 @@
 \protected\def\tabl_tabulate_xbskip_second{\tabl_tabulate_bskip}
 \protected\def\tabl_tabulate_xeskip_second{\tabl_tabulate_eskip}
 
+% \protected\def\tabl_tabulate_flush_second_indeed
+%   {\glettonothing\tabl_tabulate_flush_collected_indeed
+%    \global\c_tabl_tabulate_column\zerocount
+%    \tabl_tabulate_pbreak_check
+%    \dofastloopcs\c_tabl_tabulate_columns\tabl_tabulate_flush_second_step
+%    \global\settrue\c_tabl_tabulate_firstflushed}
+%
+% \protected\def\tabl_tabulate_flush_second_step
+%   {\ifvoid\b_tabl_tabulate_current\fastloopindex\else
+%      \gdef\tabl_tabulate_flush_collected_indeed{\the\t_tabl_tabulate_dummy}%
+%    \fi}
+%
+% \def\tabl_tabulate_flush_second
+%   {\noalign{\tabl_tabulate_flush_second_indeed}%
+%    \tabl_tabulate_flush_collected_indeed}
+
 \protected\def\tabl_tabulate_flush_second_indeed
   {\glettonothing\tabl_tabulate_flush_collected_indeed
    \global\c_tabl_tabulate_column\zerocount
    \tabl_tabulate_pbreak_check
+   \global\setfalse\c_tabl_tabulate_split_done % new 27/12/2022
    \dofastloopcs\c_tabl_tabulate_columns\tabl_tabulate_flush_second_step
+   \ifconditional\c_tabl_tabulate_split_done\else
+     \glet\tabl_tabulate_tm\s!reset % new 27/12/2022
+   \fi
    \global\settrue\c_tabl_tabulate_firstflushed}
 
 \protected\def\tabl_tabulate_flush_second_step
-  {\ifvoid\b_tabl_tabulate_current\fastloopindex\else
+  {\ifvoid\b_tabl_tabulate_current\fastloopindex
+   \else
      \gdef\tabl_tabulate_flush_collected_indeed{\the\t_tabl_tabulate_dummy}%
+     \ifvoid\b_tabl_tabulate_current\fastloopindex \else
+       \global\settrue\c_tabl_tabulate_split_done % new 27/12/2022
+     \fi
    \fi}
 
 \def\tabl_tabulate_flush_second
   {\noalign{\tabl_tabulate_flush_second_indeed}%
+   \noalign\tabl_tabulate_tm{\ifx\tabl_tabulate_tm\s!reset\glettonothing\tabl_tabulate_tm\fi}% new 27/12/2022
    \tabl_tabulate_flush_collected_indeed}
 
 \protected\def\tabl_tabulate_bskip_second_split_nop
@@ -2105,8 +2266,8 @@
 \permanent\tolerant\noaligned\protected\def\tabl_tabulate_BL_second[#1]{\noalign{\tabl_tabulate_hrule_preset[#1]\tabl_tabulate_BL_second_indeed}}
 
 \protected\def\tabl_tabulate_FL_second_indeed
-  {\ifinsidefloat\else
-     \doifempty{\tabulationparameter\c!before}\tabl_tabulate_baselinecorrection % no expansion
+  {\ifinsidefloat\orelse\ifcstok{\tabulationparameter\c!before}\emptytoks
+     \tabl_tabulate_baselinecorrection
    \fi
    \tabl_tabulate_hrule_inject
    \tabl_tabulate_nobreak_inject
@@ -2528,7 +2689,7 @@
 % \NC text \NC text \NC \NR
 % \stoptabulate
 
-\permanent\tolerant\noaligned\protected\def\tabl_tabulate_TB[#1]%
+\permanent\tolerant\noaligned\protected\def\tabl_tabulate_TB_yes[#1]%
   {\noalign\bgroup
      \unless\iftok{#1}\emptytoks
        \blank[#1]
@@ -2539,9 +2700,17 @@
      \fi
    \egroup}
 
+\permanent\tolerant\noaligned\protected\def\tabl_tabulate_TB_nop[#1]%
+  {}
+
 \appendtoks
-    \enforced\let\TB\tabl_tabulate_TB
-\to \everytabulate
+    \enforced\let\TB\tabl_tabulate_TB_yes
+\to \t_tabl_tabulate_initializers_first
+
+
+\appendtoks
+    \enforced\let\TB\tabl_tabulate_TB_nop
+\to \t_tabl_tabulate_initializers_second
 
 % %D Between alignment lines certain rules apply, and even a simple test can mess
 % %D up a table, which is why we have a special test facilityL

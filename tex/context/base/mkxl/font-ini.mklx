@@ -1949,7 +1949,7 @@
 % we need to check the fontclass
 
 \permanent\def\registerfontclass#class%
-  {\letgvalue{\??fontclassyes#class}\v!yes} % global ?
+  {\gletcsname\??fontclassyes#class\endcsname\v!yes} % global ?
 
 \permanent\def\setcurrentfontclass#class%
   {\ifcsname\??fontclassyes#class\endcsname

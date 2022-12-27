@@ -809,7 +809,7 @@
   {\xdefcsname\??layoutcolumn\recurselevel\endcsname
      {\the\numexpr\recurselevel-\plusone\relax\dimexpr\layoutcolumnwidth+\layoutcolumndistance\relax}}
 
-\letvalue{\??layoutcolumn0}\zeropoint
+\aliased\letcsname\??layoutcolumn0\endcsname\zeropoint
 
 \permanent\def\layoutcolumnoffset#1% can travel around so we can't use \lastnamedcs
   {\csname\??layoutcolumn\ifcsname\??layoutcolumn#1\endcsname#1\else0\fi\endcsname}

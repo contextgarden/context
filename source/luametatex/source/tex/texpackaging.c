@@ -2323,7 +2323,7 @@ void tex_run_vcenter(void)
     tex_normal_paragraph(vcenter_par_context);
     tex_push_nest();
     cur_list.mode = -vmode;
-    cur_list.prev_depth = ignore_depth;
+    cur_list.prev_depth = ignore_depth_criterium_par;
     if (every_vbox_par) {
         tex_begin_token_list(every_vbox_par, every_vbox_text);
     }
@@ -2355,28 +2355,6 @@ void tex_finish_vcenter_group(void)
             }
             tex_tail_append(p);
         }
-    }
-}
-
-inline static scaled tex_aux_checked_dimen1(halfword v)
-{
-    if (v > max_dimen) {
-        return max_dimen;
-    } else if (v < -max_dimen) {
-        return -max_dimen;
-    } else {
-        return v;
-    }
-}
-
-inline static scaled tex_aux_checked_dimen2(halfword v)
-{
-    if (v > max_dimen) {
-        return max_dimen;
-    } else if (v < 0) {
-        return 0;
-    } else {
-        return v;
     }
 }
 
@@ -2816,14 +2794,14 @@ void tex_append_to_vlist(halfword b, int location, const line_break_properties *
 {
     if (location >= 0) { 
         halfword result = null;
-        halfword next_depth = ignore_depth;
+        halfword next_depth = ignore_depth_criterium_par;
         int prev_set = 0;
         int check_depth = 0;
         if (lmt_append_to_vlist_callback(b, location, cur_list.prev_depth, &result, &next_depth, &prev_set, &check_depth)) {
             if (prev_set) {
                 cur_list.prev_depth = next_depth;
             }
-            if (check_depth && result && (cur_list.prev_depth > ignore_depth)) {
+            if (check_depth && result && (cur_list.prev_depth > ignore_depth_criterium_par)) {
                 /*tex
                     We only deal with a few types and one can always at the \LUA\ end check for some of
                     these and decide not to apply the correction.
@@ -2848,7 +2826,7 @@ void tex_append_to_vlist(halfword b, int location, const line_break_properties *
             return;
         }
     }
-    if (cur_list.prev_depth > ignore_depth) {
+    if (cur_list.prev_depth > ignore_depth_criterium_par) {
         halfword p = tex_aux_depth_correction(b, properties);
         tex_couple_nodes(cur_list.tail, p);
         cur_list.tail = p;
@@ -3422,7 +3400,7 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot)
                 update_tex_internal_dir_state(0);
                 cur_list.mode = - mode;
                 if (mode == vmode) {
-                    cur_list.prev_depth = ignore_depth;
+                    cur_list.prev_depth = ignore_depth_criterium_par;
                     if (every_vbox_par) {
                         tex_begin_token_list(every_vbox_par, every_vbox_text);
                     }

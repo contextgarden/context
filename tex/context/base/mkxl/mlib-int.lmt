@@ -244,10 +244,14 @@ end
 
 do
 
-    local d_adaptive_width  = isdimen("d_adaptive_width")  registerdirect("AdaptiveWidth",     function() return d_adaptive_width  * factor end)
-    local d_adaptive_height = isdimen("d_adaptive_height") registerdirect("AdaptiveHeight",    function() return d_adaptive_height * factor end)
-    local d_adaptive_depth  = isdimen("d_adaptive_depth")  registerdirect("AdaptiveDepth",     function() return d_adaptive_depth  * factor end)
-    local d_adaptive_line   = isdimen("d_adaptive_line")   registerdirect("AdaptiveThickness", function() return d_adaptive_line   * factor end)
+    local d_adaptive_width  = isdimen("d_adaptive_width")  registerdirect("AdaptiveWidth",     function() return getdimen(d_adaptive_width)  * factor end)
+    local d_adaptive_height = isdimen("d_adaptive_height") registerdirect("AdaptiveHeight",    function() return getdimen(d_adaptive_height) * factor end)
+    local d_adaptive_depth  = isdimen("d_adaptive_depth")  registerdirect("AdaptiveDepth",     function() return getdimen(d_adaptive_depth)  * factor end)
+    local d_adaptive_line   = isdimen("d_adaptive_line")   registerdirect("AdaptiveThickness", function() return getdimen(d_adaptive_line)   * factor end)
                                                            registerdirect("AdaptiveColor",     function() return getmacro("m_adaptive_color") end)
+
+    registerdirect("AdaptiveTotal", function()
+        return (getdimen(d_adaptive_height) + getdimen(d_adaptive_depth)) * factor
+    end)
 
 end

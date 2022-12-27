@@ -15,6 +15,17 @@
 
 \installcorenamespace{graphicvariable}
 
+% \unprotect
+
+% \newdimension\d_adaptive_width
+% \newdimension\d_adaptive_height
+% \newdimension\d_adaptive_depth
+% \newdimension\d_adaptive_line
+% \newdimension\d_adaptive_hsize
+% \newbox      \b_adaptive_box
+
+% \protect
+
 \registerctxluafile{mlib-fio}{autosuffix}
 \registerctxluafile{mlib-run}{autosuffix}
 \registerctxluafile{mlib-ctx}{autosuffix}

@@ -184,11 +184,11 @@
      \normalexpanded{\setuplayout[\m_page_makeup_name][\s!parent=\??layout]}% is remembered but checked later anyway
    \fi}
 
-\setvalue{\??makeupdoublesided\v!yes}%
+\defcsname\??makeupdoublesided\v!yes\endcsname
   {\emptyhbox
    \page}
 
-\setvalue{\??makeupdoublesided\v!empty}%
+\defcsname\??makeupdoublesided\v!empty\endcsname
   {\the\t_page_makeup_every_setup
   % == \page[\v!dummy]
    \page[\v!blank]%

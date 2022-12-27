@@ -2004,7 +2004,7 @@
 %
 % \protected\def\setnotesymbol[#1]#2#3%
 %   {\prewordbreak % prevent lookback
-%    \setgvalue{\??notesymbol#1}{#3}
+%    \gdefcsname\??notesymbol#1\endcsname{#3}
 %    \strc_notes_inject_symbol}
 %
 % \protected\def\ownnote[#1]#2#3#4%

@@ -690,6 +690,108 @@ could not achieve the same already, it's just a bit programmer friendly.
 
 \stopsectionlevel
 
+\startsectionlevel[title=Rows]
+
+Alignment support is what the documented source calls \quote {interwoven}. When
+the engine scans for input it processing text, math or alignment content. While
+doing alignments it collects rows, and inside these cells but also deals with
+material that ends up in between. In \LUAMETATEX\ I tried to isolate the bits and
+pieces as good as possible but it remains \ complicated (for all good reasons).
+Cells as well as rows are finalized after the whole alignment has been collected
+and processed. In the end cells and rows are boxes but till we're done they are
+in an \quote {unset} state.
+
+Scanning starts with interpreting the preamble, and then grabbing rows. There is
+some nasty lookahead involved for \type {\noalign}, \type {\span}, \type {\omit},
+\type {\cr} and \type {\crcr} and that is not code one wants to tweak too much
+(although we did in \LUAMETATEX). This means for instance that adding \quote
+{let's start a row here} primitive is sort of tricky (but it might happen some
+day) which in turn means that it is not really possible to set row properties. As
+an experiment we can set some properties now by hijacking \type {\noalign} and
+storing them on the alignment stack (indeed: at the cost of some extra overhead
+and memory). This permits the following:
+
+% \theorientation{down} "002
+
+\startbuffer
+\halign {
+    \hss
+    \ignorespaces \alignmark \removeunwantedspaces
+    \hss
+    \quad \aligntab \quad
+    \hss
+    \ignorespaces \alignmark \removeunwantedspaces
+    \hss
+    \cr
+    \noalign xoffset 40pt {}
+    {\darkred   cell one}   \aligntab {\darkgray cell one}   \cr
+    \noalign orientation "002 {}
+    {\darkgreen cell one}   \aligntab {\darkblue cell one}   \cr
+    \noalign xoffset 40pt {}
+    {\darkred   cell two}   \aligntab {\darkgray cell two}   \cr
+    \noalign orientation "002 {}
+    {\darkgreen cell two}   \aligntab {\darkblue cell two}   \cr
+    \noalign xoffset 40pt {}
+    {\darkred   cell three} \aligntab {\darkgray cell three} \cr
+    \noalign orientation "002 {}
+    {\darkgreen cell three} \aligntab {\darkblue cell three} \cr
+    \noalign xoffset 40pt {}
+    {\darkred   cell four}  \aligntab {\darkgray cell four}  \cr
+    \noalign orientation "002 {}
+    {\darkgreen cell four}  \aligntab {\darkblue cell four}  \cr
+}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\showmakeup[line]
+\ruledvbox{\getbuffer}
+\stoplinecorrection
+
+The supported keywords are similar to those for boxes: \type {source}, \type
+{target}, \type {anchor}, \type {orientation}, \type {shift}, \type {xoffset},
+\type {yoffset}, \type {xmove} and \type {ymove}. The dimensions can be prefixed
+by \type {add} and \type {reset} wipes all. Here is another example:
+
+\startbuffer
+\halign {
+    \hss
+    \ignorespaces \alignmark \removeunwantedspaces
+    \hss
+    \quad \aligntab \quad
+    \hss
+    \ignorespaces \alignmark \removeunwantedspaces
+    \hss
+    \cr
+    \noalign xmove 40pt {}
+    {\darkred   cell one}   \aligntab {\darkgray cell one}   \cr
+    {\darkgreen cell one}   \aligntab {\darkblue cell one}   \cr
+    \noalign xmove 20pt {}
+    {\darkred   cell two}   \aligntab {\darkgray cell two}   \cr
+    {\darkgreen cell two}   \aligntab {\darkblue cell two}   \cr
+    \noalign xmove 40pt {}
+    {\darkred   cell three} \aligntab {\darkgray cell three} \cr
+    {\darkgreen cell three} \aligntab {\darkblue cell three} \cr
+    \noalign xmove 20pt {}
+    {\darkred   cell four}  \aligntab {\darkgray cell four}  \cr
+    {\darkgreen cell four}  \aligntab {\darkblue cell four}  \cr
+}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\showmakeup[line]
+\ruledvbox{\getbuffer}
+\stoplinecorrection
+
+Some more features might be added in the future as is it an interesting
+playground. It is to be seen how this ends up in \CONTEXT\ high level interfaces
+like tabulate.
+
+\stopsectionlevel
+
 \startsectionlevel[title=Remark]
 
 It can be that the way alignments are interfaced with respect to attributes is a bit

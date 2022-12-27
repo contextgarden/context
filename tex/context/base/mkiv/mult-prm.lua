@@ -427,6 +427,7 @@ return {
   "ifzerodim",
   "ifzeronum",
   "ignorearguments",
+  "ignoredepthcriterium",
   "ignorepars",
   "immediate",
   "immutable",

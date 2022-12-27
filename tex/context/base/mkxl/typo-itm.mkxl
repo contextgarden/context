@@ -197,7 +197,7 @@
 
 \defineitems[\v!top][\c!width=\d_typo_items_text_width,\c!textalign=\itemsparameter\c!align]
 
-\setvalue{\??itemsalternatives\v!top}#1%
+\defcsname\??itemsalternatives\v!top\endcsname#1%
   {\let\typo_items_make\typo_items_make_horizontal
    \let\typo_items_item\typo_items_item_horizontal
    \typo_items_construct_items_boxes{#1}%
@@ -213,7 +213,7 @@
 
 \defineitems[\v!bottom][\c!width=\d_typo_items_text_width,\c!textalign=\itemsparameter\c!align]
 
-\setvalue{\??itemsalternatives\v!bottom}#1%
+\defcsname\??itemsalternatives\v!bottom\endcsname#1%
   {\let\typo_items_make\typo_items_make_horizontal
    \let\typo_items_item\typo_items_item_horizontal
    \typo_items_construct_items_boxes{#1}%
@@ -229,7 +229,7 @@
 
 \defineitems[\v!inmargin][\c!width=1.5\emwidth,\c!align=\v!flushright,\c!distance=\leftmargindistance]
 
-\setvalue{\??itemsalternatives\v!inmargin}#1%
+\defcsname\??itemsalternatives\v!inmargin\endcsname#1%
   {\let\typo_items_make\typo_items_make_vertical
    \let\typo_items_item\typo_items_item_vertical
    \typo_items_construct_items_boxes{#1}%
@@ -242,7 +242,7 @@
 
 \defineitems[\v!left][\c!width=1.5\emwidth,\c!align=\v!flushleft]
 
-\setvalue{\??itemsalternatives\v!left}#1%
+\defcsname\??itemsalternatives\v!left\endcsname#1%
   {\let\typo_items_make\typo_items_make_vertical
    \let\typo_items_item\typo_items_item_vertical
    \advanceby\d_typo_items_text_width-\dimexpr\d_typo_items_symbol_width+\d_typo_items_distance\relax
@@ -257,7 +257,7 @@
 
 \defineitems[\v!right][\c!width=1.5\emwidth,\c!align=\v!flushright]
 
-\setvalue{\??itemsalternatives\v!right}#1%
+\defcsname\??itemsalternatives\v!right\endcsname#1%
   {\let\typo_items_make\typo_items_make_vertical
    \let\typo_items_item\typo_items_item_vertical
    \advanceby\d_typo_items_text_width-\dimexpr\d_typo_items_symbol_width+\d_typo_items_distance\relax

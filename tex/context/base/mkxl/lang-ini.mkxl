@@ -379,10 +379,10 @@
 
 \let\lang_basics_synchronize_nop\zerocount % not loaded anyway
 
-\letvalue{\??languagenumbers}\lang_basics_synchronize_nop % initime
+\letcsname\??languagenumbers\endcsname\lang_basics_synchronize_nop % initime
 
 \appendtoks
-    \letvalue{\??languagenumbers}\lang_basics_synchronize_yes % runtime
+    \letcsname\??languagenumbers\endcsname\lang_basics_synchronize_yes % runtime
 \to \everydump
 
 \def\lang_basics_synchronize

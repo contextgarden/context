@@ -999,6 +999,375 @@ examples are visualized in \in {figure} [fig:flow].
 
 \stopsectionlevel
 
+\startsectionlevel[title=Leaders]
+
+Leaders are a basic feature that users probably never run into directly. They
+repeat content till it fits the specified width which can be stretched out. The
+content is typeset once and it is the backend that does the real work of
+repetition.
+
+\startbuffer
+\strut\leaders \hbox{!}\hfill\strut
+\strut\xleaders\hbox{!}\hfill\strut
+\strut\cleaders\hbox{!}\hfill\strut
+\strut\gleaders\hbox{!}\hfill\strut
+\stopbuffer
+
+\typebuffer
+
+Here \type {\leaders} starts at the left edge and are repeats the box as long as
+it fits, \type {\xleaders} spreads till the edges and \type {\cleaders} centers
+the lot. The \type {\gleaders} primitive (which is not in orginal \TEX) takes the
+outer box as reference and further behaves like \type {\cleaders}.
+
+\startlines \showmakeup[line] \getbuffer \stoplines
+
+The leader primitives take box or rule but in \LUAMETATEX\ a glyph can also be
+specified, which saves wrapping in a box.
+
+\startbuffer
+\ruledvbox \bgroup \hsize 10cm
+    \strut\cleaders\hbox{!}\hfill\strut
+\egroup
+
+\ruledvbox \bgroup \hsize 10cm
+    \strut\cleaders\hrule\hfill\strut
+\egroup
+
+\ruledvbox \bgroup \hsize 10cm
+    \strut\cleaders\glyph`!\hfill\strut
+\egroup
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+The \LUAMETATEX\ engine also introduced \type {\uleaders}
+
+\definecolor[tred]  [r=.6,a=1,t=.5]
+\definecolor[tgreen][g=.6,a=1,t=.5]
+\definecolor[tblue] [b=.6,a=1,t=.5]
+
+\startbuffer[one]
+    x xx xxx xxxx
+    \ruledhbox{L\hss R}\space
+    x xx xxx xxxx
+\stopbuffer
+
+\startbuffer[two]
+    x xx xxx xxxx
+    \uleaders\backgroundhbox[gray]{L\hss R}\hskip\zeropoint plus 100pt\relax\space
+    x xx xxx xxxx
+\stopbuffer
+
+\startbuffer[three]
+    x xx xxx xxxx
+    \uleaders\ruledhbox{L\hss R}\hskip\zeropoint plus 100pt\relax\space
+    x xx xxx xxxx
+\stopbuffer
+
+We show three boxes, a regular one first (red):
+
+\typebuffer[one]
+
+The second one (blue) is also a box but one that stretches upto 100pt and is in a
+later stage, when the paragraph has been built, is repackaged to the effective
+width. The third example (green) leaves out the background.
+
+\startlinecorrection
+\startoverlay
+    {\vbox{\color[tgreen]{\small\dorecurse {20} {\getbuffer[three]}}}}
+    {\vbox{\color[tblue] {\small\dorecurse {20} {\getbuffer  [two]}}}}
+    {\vbox{\color[tred]  {\small\dorecurse {20} {\getbuffer  [one]}}}}
+\stopoverlay
+\stoplinecorrection
+
+In \CONTEXT\ we have wrapped this feature in the adaptive box mechanism, so here
+a few a few examples:
+
+\setupexternalfigures[location={default,local,global}]
+
+\startbuffer
+\startsetups adaptive:test:a
+    \setbox\usedadaptivebox\vbox to \usedadaptivetotal \bgroup
+        \externalfigure
+          [cow.pdf]
+          [width=\framedmaxwidth,
+           frame=on,
+           height=\usedadaptivetotal]%
+   \egroup
+\stopsetups
+
+\startsetups adaptive:test:b
+    \setbox\usedadaptivebox\vbox to \usedadaptivetotal \bgroup
+        \externalfigure
+          [cow.pdf]
+          [width=\usedadaptivewidth,
+           frame=on,
+           height=\usedadaptivetotal]%
+   \egroup
+\stopsetups
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We use this as follows (see \in {figure} [fig:adaptive] for the result):
+
+\startbuffer
+\framed[height=18cm,align=middle,adaptive=yes,top=,bottom=] {%
+    \begstrut \samplefile{tufte} \endstrut
+    \par
+    \adaptivevbox
+      [strut=yes,setups=adaptive:test:a]
+      {\showstruts\strut\hsize5cm\hss}%
+    \par
+    \adaptivevbox
+      [strut=yes,setups=adaptive:test:b]
+      {\showstruts\strut\hsize5cm\hss}%
+    \par
+    \begstrut \samplefile{tufte} \endstrut
+}
+\stopbuffer
+
+\typebuffer
+
+\startplacefigure[reference=fig:adaptive]
+    \getbuffer
+\stopplacefigure
+
+Here is one that you can test yourself:
+
+\starttyping
+\startsetups adaptive:test
+    \setbox\usedadaptivebox\vbox to \usedadaptivetotal \bgroup
+        \externalfigure
+          [cow.pdf]
+          [width=\usedadaptivewidth,
+           height=\usedadaptivetotal]%
+   \egroup
+\stopsetups
+
+\ruledvbox to \textheight {
+    \par \begstrut \samplefile{tufte} \endstrut \par
+    \adaptivevbox[strut=yes,setups=adaptive:test]{\hsize\textwidth\hss}
+    \par \begstrut \samplefile{tufte} \endstrut
+}
+\stoptyping
+
+The next example comes from the test suite (where it runs over many pages in
+order to illustrate the idea):
+
+\startbuffer
+\startMPdefinitions
+    def TickTock =
+        interim linecap := squared;
+        save p ; path p ;
+        p := fullsquare xysized(AdaptiveWidth,.9(AdaptiveHeight+AdaptiveDepth)) ;
+        fill p withcolor AdaptiveColor ;
+        draw bottomboundary (p enlarged (-AdaptiveThickness) )
+            withdashes (3*AdaptiveThickness)
+            withpen pencircle scaled AdaptiveThickness
+            withcolor white ;
+    enddef ;
+\stopMPdefinitions
+
+\startsetups adaptive:test
+    \setbox\usedadaptivebox\hbox
+        to         \usedadaptivewidth
+        yoffset -.9\usedadaptivedepth
+    \bgroup
+        \hss
+        \startMPcode
+            TickTock ;
+        \stopMPcode
+        \hss
+   \egroup
+\stopsetups
+
+\definecolor[adaptive:tick][.25(blue,green)]
+\definecolor[adaptive:tock][.75(blue,green)]
+
+\defineadaptive
+  [tick]
+  [setups=adaptive:test,
+   color=adaptive:tick,
+   foregroundcolor=white,
+   foregroundstyle=\infofont,
+   strut=yes]
+
+\defineadaptive
+  [tock]
+  [tick]
+  [color=adaptive:tock]
+
+\dostepwiserecurse{8}{12}{1}{%
+    \dostepwiserecurse{5}{15}{1}{%
+        this~#1.##1 is~#1.##1 test~#1.##1
+        \ifodd##1\relax
+            \adaptivebox[tick]{\hss tick #1.##1\hss}
+        \else
+            \adaptivebox[tock]{\hss tock #1.##1\hss}
+        \fi
+    }
+}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+In the next example the graphics adapt to the available space:
+
+\startbuffer
+\startsetups adaptive:test
+    \setbox\usedadaptivebox\hbox
+        to       \usedadaptivewidth
+        yoffset -\usedadaptivedepth
+    \bgroup
+        \externalfigure
+          [cow.pdf]
+          [width=\usedadaptivewidth,
+           height=\dimexpr\usedadaptivetotal\relax]%
+    \egroup
+\stopsetups
+
+\dostepwiserecurse{1}{50}{1}{%
+    this~#1 is~#1 test~#1
+    {\adaptivebox[strut=yes,setups=adaptive:test]{}}
+}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopsectionlevel
+
+\startsectionlevel[title=Prevdepth]
+
+The depth of a box is normally positive but rules can have a negative depth in
+order to get a rule above the baseline. When \TEX\ was written the assumption was
+that a negative depth of more than 1000 point made no sense at all. The last
+depth on a vertical list is registered in the \type {\prevdepth} variable. This
+is basically a reference into the current list. In order to illustrate some
+interesting side effects of setting this \type {\prevdepth} and especially when
+we set it to -1000pt. In order to illustrate this this special value can be set
+to a different value in \LUAMETATEX. However, as dealing with the property is
+somewhat special in the engine you should not set it unless you know that the
+macro package is ware of it.
+
+\startbuffer
+line 1\par line 2 \par \nointerlineskip line 3 \par
+\stopbuffer
+
+\typebuffer
+
+Assuming that we haven't set any inter paragraph spacing this gives:
+
+\startlinecorrection
+\ruledvbox{\setupwhitespace[none]\showmakeup[line]\getbuffer}
+\stoplinecorrection
+
+Here \type {\nointerlineskip} is (normally) defined as:
+
+\starttyping
+\prevdepth-1000pt
+\stoptyping
+
+although in \CONTEXT\ we use \type {\ignoredepthcriterium} instead of the hard
+coded dimension. We now give a more extensive example:
+
+\startbuffer[definition-1]
+\def\PrevTest#1%
+  {\setbox0\ruledhbox{\strut$\tf#1$}%
+   \dp0=#1
+   \vbox\bgroup\hsize4em
+     FIRST\par
+     \unhbox0\par
+     LAST\par
+   \egroup}
+\stopbuffer
+
+\startbuffer[definition-2]
+\def\PrevTest#1%
+  {\setbox0\ruledhbox{\strut$\tf#1$}%
+   \dp0=#1
+   \vbox\bgroup
+     \ruledhbox{FIRST}\par
+     \box0\par
+     \ruledhbox{LAST}\par
+   \egroup}
+\stopbuffer
+
+\startbuffer[example]
+\ruledhbox \bgroup
+    \PrevTest{-10.0pt}\quad
+    \PrevTest{-20.0pt}\quad
+    \PrevTest{-49.9pt}\quad
+    \PrevTest{-50.0pt}\quad
+    \PrevTest{-50.1pt}\quad
+    \PrevTest{-60.0pt}\quad
+    \PrevTest{-80.0pt}%
+\egroup
+\stopbuffer
+
+In this example we set \type {\ignoredepthcriterium} to $\tf-50.0pt$ instead of the
+normal $\tf -1000pt$. The helper is defined as:
+
+\typebuffer[option=TEX][definitions-1]
+
+or
+
+\typebuffer[option=TEX][definitions-2]
+
+The result of the following example is shown in \in {figures} [fig:prevdepth-1]
+\in {and} [fig:prevdepth-2]. The first case is what we normally have in text and
+we haven't set \type {prevdepth} explicitly between lines so \TEX\ will just look
+at the depth of the lines. In the second case the depth is ignored when less than
+the criterium which is why, when we set the depth of the box to a negative value
+we get somewhat interesting skips.
+
+\startplacefigure[reference=fig:prevdepth-1]
+    \showmakeup[line]
+    \ignoredepthcriterium-50pt
+    \setupwhitespace[none]
+    \getbuffer[definition-1,example]
+\stopplacefigure
+
+\startplacefigure[reference=fig:prevdepth-2]
+    \showmakeup[line]
+    \ignoredepthcriterium-50pt
+    \setupwhitespace[none]
+    \getbuffer[definition-2,example]
+    \blank[5*line]
+\stopplacefigure
+
+I'm sure one can use this effect otherwise than intended but I doubt is any user
+is willing to do this but the fact that we can lower the criterium makes for nice
+experiments. Just for the record, in \in {figure} [fig:prevdepth-3] you see what
+we get with positive values:
+
+\startbuffer[example]
+\ruledhbox \bgroup
+    \PrevTest{10.0pt}\quad
+    \PrevTest{20.0pt}\quad
+    \PrevTest{49.9pt}\quad
+    \PrevTest{50.0pt}\quad
+    \PrevTest{50.1pt}\quad
+    \PrevTest{60.0pt}\quad
+    \PrevTest{80.0pt}%
+\egroup
+\stopbuffer
+
+\startplacefigure[reference=fig:prevdepth-3]
+    \showmakeup[line]
+    \ignoredepthcriterium50pt
+    \setupwhitespace[none]
+    \getbuffer[definition-2,example]
+\stopplacefigure
+
+Watch the interline skip kicking in when we make the depth larger than in
+\type {\ignoredepthcriterium} being $\tf 50pt$.
+
+\stopsectionlevel
+
 \startsectionlevel[title=Normalization]
 
 {\em todo: users don't need to bother about this but it might be interesting anyway}

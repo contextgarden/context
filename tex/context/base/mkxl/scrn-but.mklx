@@ -475,14 +475,14 @@
    \ht\b_scrn_menu\d_scrn_menu_asked_height
    \dp\b_scrn_menu\zeropoint}
 
-\setvalue{\??menualign\v!right     }{\let\scrn_menu_left_align\raggedright}
-\setvalue{\??menualign\v!left      }{\let\scrn_menu_left_align\raggedleft}
-\setvalue{\??menualign\v!flushright}{\let\scrn_menu_left_align\raggedleft}
-\setvalue{\??menualign\v!flushleft }{\let\scrn_menu_left_align\raggedright}
-\setvalue{\??menualign\v!middle    }{\let\scrn_menu_left_align\raggedcenter}
-\setvalue{\??menualign\v!low       }{\let\scrn_menu_top_align\vss\let\scrn_menu_bottom_align\relax}
-\setvalue{\??menualign\v!high      }{\let\scrn_menu_top_align\relax\let\scrn_menu_bottom_align\vss}
-\setvalue{\??menualign\v!lohi      }{\let\scrn_menu_top_align\vss\let\scrn_menu_bottom_align\vss}
+\defcsname\??menualign\v!right     \endcsname{\let\scrn_menu_left_align\raggedright}
+\defcsname\??menualign\v!left      \endcsname{\let\scrn_menu_left_align\raggedleft}
+\defcsname\??menualign\v!flushright\endcsname{\let\scrn_menu_left_align\raggedleft}
+\defcsname\??menualign\v!flushleft \endcsname{\let\scrn_menu_left_align\raggedright}
+\defcsname\??menualign\v!middle    \endcsname{\let\scrn_menu_left_align\raggedcenter}
+\defcsname\??menualign\v!low       \endcsname{\let\scrn_menu_top_align\vss\let\scrn_menu_bottom_align\relax}
+\defcsname\??menualign\v!high      \endcsname{\let\scrn_menu_top_align\relax\let\scrn_menu_bottom_align\vss}
+\defcsname\??menualign\v!lohi      \endcsname{\let\scrn_menu_top_align\vss\let\scrn_menu_bottom_align\vss}
 
 \let\scrn_menu_left_align  \relax
 \let\scrn_menu_right_align \relax
@@ -490,7 +490,7 @@
 \let\scrn_menu_bottom_align\relax
 
 \def\scrn_menu_set_align
-  {\csname\??menualign\interactionmenuparameter\c!itemalign\endcsname}
+  {\begincsname\??menualign\interactionmenuparameter\c!itemalign\endcsname}
 
 %D Hook into the pagebuilder (as less testing as possible):
 
@@ -523,13 +523,13 @@
 
 \let\scrn_menu_packager\relax
 
-\setvalue{\??menupacker\v!vertical}% all menus
+\defcsname\??menupacker\v!vertical\endcsname % all menus
   {\let\scrn_menu_packager\scrn_menu_packager_vertical
    \setbox\b_scrn_menu\hbox{\scrn_menu_actions\currentinteractionmenulocation}%
    \scrn_menu_apply_final
    \box\b_scrn_menu}
 
-\setvalue{\??menupacker\v!horizontal}% all menus
+\defcsname\??menupacker\v!horizontal\endcsname % all menus
   {\let\scrn_menu_packager\scrn_menu_packager_horizontal
    \setbox\b_scrn_menu\vbox{\scrn_menu_actions\currentinteractionmenulocation}%
    \scrn_menu_apply_final
@@ -682,13 +682,13 @@
    \endgroup
    \ignorespaces}
 
-\aliased\let\startraw \aliased\let\stopraw\relax \ifdefined\raw\else \aliased\let\raw\relax \fi
-\aliased\let\startbut \aliased\let\stopbut\relax \ifdefined\but\else \aliased\let\but\relax \fi
-\aliased\let\startgot \aliased\let\stopgot\relax \ifdefined\got\else \aliased\let\got\relax \fi
-\aliased\let\startnop \aliased\let\stopnop\relax \ifdefined\nop\else \aliased\let\nop\relax \fi
-\aliased\let\starttxt \aliased\let\stoptxt\relax \ifdefined\txt\else \aliased\let\txt\relax \fi
-\aliased\let\startrul \aliased\let\stoprul\relax \ifdefined\rul\else \aliased\let\rul\relax \fi
-\aliased\let\startcom \aliased\let\stopcom\relax \ifdefined\com\else \aliased\let\com\relax \fi
+\aliased\let\startraw\relax \aliased\let\stopraw\relax \ifdefined\raw\else \aliased\let\raw\relax \fi
+\aliased\let\startbut\relax \aliased\let\stopbut\relax \ifdefined\but\else \aliased\let\but\relax \fi
+\aliased\let\startgot\relax \aliased\let\stopgot\relax \ifdefined\got\else \aliased\let\got\relax \fi
+\aliased\let\startnop\relax \aliased\let\stopnop\relax \ifdefined\nop\else \aliased\let\nop\relax \fi
+\aliased\let\starttxt\relax \aliased\let\stoptxt\relax \ifdefined\txt\else \aliased\let\txt\relax \fi
+\aliased\let\startrul\relax \aliased\let\stoprul\relax \ifdefined\rul\else \aliased\let\rul\relax \fi
+\aliased\let\startcom\relax \aliased\let\stopcom\relax \ifdefined\com\else \aliased\let\com\relax \fi
 
 \protected\def\scrn_menu_raw_start[#action]#text\stopraw
   {\scrn_menu_action_start
@@ -763,13 +763,13 @@
   {\ignorespaces#text\removeunwantedspaces
    \ignorespaces}
 
-\permanent\protected\def\scrn_menu_raw#content\\{\scrn_menu_raw_start#content\stopraw} \aliased\let\stopraw\relax
-\permanent\protected\def\scrn_menu_but#content\\{\scrn_menu_but_start#content\stopbut} \aliased\let\stopbut\relax
-\permanent\protected\def\scrn_menu_got#content\\{\scrn_menu_got_start#content\stopgot} \aliased\let\stopgot\relax
-\permanent\protected\def\scrn_menu_nop#content\\{\scrn_menu_nop_start#content\stopnop} \aliased\let\stopnop\relax
-\permanent\protected\def\scrn_menu_txt#content\\{\scrn_menu_txt_start#content\stoptxt} \aliased\let\stoptxt\relax
-\permanent\protected\def\scrn_menu_rul#content\\{\scrn_menu_rul_start#content\stoprul} \aliased\let\stoprul\relax
-\permanent\protected\def\scrn_menu_com#content\\{\scrn_menu_com_start#content\stopcom} \aliased\let\stopcom\relax
+\permanent\protected\def\scrn_menu_raw#content\\{\scrn_menu_raw_start#content\stopraw}
+\permanent\protected\def\scrn_menu_but#content\\{\scrn_menu_but_start#content\stopbut}
+\permanent\protected\def\scrn_menu_got#content\\{\scrn_menu_got_start#content\stopgot}
+\permanent\protected\def\scrn_menu_nop#content\\{\scrn_menu_nop_start#content\stopnop}
+\permanent\protected\def\scrn_menu_txt#content\\{\scrn_menu_txt_start#content\stoptxt}
+\permanent\protected\def\scrn_menu_rul#content\\{\scrn_menu_rul_start#content\stoprul}
+\permanent\protected\def\scrn_menu_com#content\\{\scrn_menu_com_start#content\stopcom}
 
 \newtoks\everysetmenucommands % public
 

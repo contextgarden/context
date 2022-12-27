@@ -76,10 +76,10 @@
   {\advanceby\c_colo_groups_n\plusone
    \csname\??colorgroupsetter\ifcsname\??colorgroupsetter#2\endcsname#2\else\s!rgb\fi\endcsname[#1:\the\c_colo_groups_n][#3:0:0:0:0]}
 
-\setvalue{\??colorgroupsetter\s!gray}[#1][#2:#3]{\definecolor[#1][s=#2]}
-\setvalue{\??colorgroupsetter\s!rgb }[#1][#2:#3:#4:#5]{\definecolor[#1][r=#2,g=#3,b=#4]}
-\setvalue{\??colorgroupsetter\s!cmyk}[#1][#2:#3:#4:#5:#6]{\definecolor[#1][c=#2,m=#3=,y=#4,k=#5]}
-\setvalue{\??colorgroupsetter\s!spot}[#1][#2:#3:#4]{\definespotcolor[#1][#2][p=#3]}
+\defcsname\??colorgroupsetter\s!gray\endcsname[#1][#2:#3]{\definecolor[#1][s=#2]}
+\defcsname\??colorgroupsetter\s!rgb \endcsname[#1][#2:#3:#4:#5]{\definecolor[#1][r=#2,g=#3,b=#4]}
+\defcsname\??colorgroupsetter\s!cmyk\endcsname[#1][#2:#3:#4:#5:#6]{\definecolor[#1][c=#2,m=#3=,y=#4,k=#5]}
+\defcsname\??colorgroupsetter\s!spot\endcsname[#1][#2:#3:#4]{\definespotcolor[#1][#2][p=#3]}
 
 %D \macros
 %D   {showcolorgroup}

@@ -636,6 +636,7 @@ typedef enum dimen_codes {
     px_dimen_code,
     tab_size_code,
     page_extra_goal_code,
+    ignore_depth_criterium_code,
     /*tex total number of dimension parameters */
     number_dimen_pars,
 } dimen_codes;
@@ -1359,6 +1360,8 @@ extern void tex_forced_word_define (int g, halfword p, singleword flag, halfword
 # define split_max_depth_par             dimen_parameter(split_max_depth_code)
 # define overfull_rule_par               dimen_parameter(overfull_rule_code)
 # define box_max_depth_par               dimen_parameter(box_max_depth_code)
+# define ignore_depth_criterium_par      dimen_parameter(ignore_depth_criterium_code)
+
 # define top_skip_par                    glue_parameter(top_skip_code)
 # define split_top_skip_par              glue_parameter(split_top_skip_code)
 

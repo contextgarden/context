@@ -94,7 +94,7 @@
    \glet\page_postprocessors_linenumbers_column \page_postprocessors_linenumbers_column_indeed}
 
 \def\page_lines_start_define
-  {\setxvalue{\??linenumberinginstance\currentlinenumbering}%
+  {\xdefcsname\??linenumberinginstance\currentlinenumbering\endcsname
      {\clf_registerlinenumbering
       % continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
         continue {\ifzero\c_page_lines_mode\v!yes\else\v!no\fi}%

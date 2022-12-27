@@ -363,7 +363,7 @@
    \publ_command_yes{#1}}
 
 \permanent\protected\def\definebtxcommand#1% {body} #1..#n{body}
-  {\setuvalue{\??btxcommand\csstring#1}}%
+  {\protected\defcsname\??btxcommand\csstring#1\endcsname}%
 
 % access
 
@@ -1757,9 +1757,9 @@
 
 % \installcorenamespace{btxjournal}
 %
-% \letvalue{\s!btxjournal\v!long  }\btxexpandedjournal
-% \letvalue{\s!btxjournal\v!short }\btxabbreviatedjournal
-% \letvalue{\s!btxjournal\v!normal}\firstofoneargument
+% \aliased\letcsname\s!btxjournal\v!long  \endcsname\btxexpandedjournal
+% \aliased\letcsname\s!btxjournal\v!short \endcsname\btxabbreviatedjournal
+% \aliased\letcsname\s!btxjournal\v!normal\endcsname\firstofoneargument
 %
 % \protected\def\btxcheckedjournal
 %   {\expandnamespaceparameter\s!btxjournal\btxrenderingparameter\c!journalconversion}

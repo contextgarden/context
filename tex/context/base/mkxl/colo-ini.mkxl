@@ -538,14 +538,14 @@
 %    \or
 %      \colo_palet_prepare{#1}%
 %      \ifcondition\validassignment{#2}%
-%        \setevalue{\??colorpaletspecification#1}{#2}%
+%        \edefcsname\??colorpaletspecification#1\endcsname{#2}%
 %        \processcommalist[#2]{\colo_palets_define_one{#1}}%
 %      \orelse\ifcsname\??colorpaletspecification#2\endcsname
 %        \normalexpanded{\colo_palets_define_b{#1}{\lastnamedcs}{}}%
 %      \fi
 %    \or
 %      \colo_palet_prepare{#1}%
-%      \setevalue{\??colorpaletspecification#1}{#2}%
+%      \edefcsname\??colorpaletspecification#1\endcsname{#2}%
 %      \colo_palet_extend{#2}%
 %      \colo_palets_define_assign{#1}{#2}{#3}%
 %   \fi}

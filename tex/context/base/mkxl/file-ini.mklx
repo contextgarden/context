@@ -214,7 +214,7 @@
   {\ifcsname\??fileonce#whatever\endcsname
      \expandafter\gobbleoneargument
    \else
-     \letgvalue{\??fileonce#whatever}\relax
+     \aliased\gletcsname\??fileonce#whatever\endcsname\relax
      \expandafter\firstofoneargument
    \fi}
 

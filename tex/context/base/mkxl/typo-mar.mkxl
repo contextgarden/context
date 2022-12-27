@@ -328,11 +328,11 @@
 
 % \installcorenamespace{oppositemargin}
 %
-% \letvalue{\??oppositemargin\v!left  }\v!right
-% \letvalue{\??oppositemargin\v!right }\v!left
-% \letvalue{\??oppositemargin\v!inner }\v!outer
-% \letvalue{\??oppositemargin\v!outer }\v!inner
-% \letvalue{\??oppositemargin\v!normal}\v!normal
+% \letcsname\??oppositemargin\v!left  \endcsname\v!right
+% \letcsname\??oppositemargin\v!right \endcsname\v!left
+% \letcsname\??oppositemargin\v!inner \endcsname\v!outer
+% \letcsname\??oppositemargin\v!outer \endcsname\v!inner
+% \letcsname\??oppositemargin\v!normal\endcsname\v!normal
 %
 % \def\oppositemargin#1%
 %   {\csname\??oppositemargin\ifcsname\??oppositemargin#1\endcsname#1\else\v!normal\fi\endcsname}

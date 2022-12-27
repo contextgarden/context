@@ -70,6 +70,19 @@ typedef enum saved_full_spec_items {
     saved_full_spec_n_of_items       = 21,
 } saved_full_spec_items;
 
+// typedef enum saved_align_spec_items {
+//     saved_align_spec_item_attr_list   = 0,
+//     saved_align_spec_item_orientation = 1,
+//     saved_align_spec_item_anchor      = 2,
+//     saved_align_spec_item_geometry    = 3,
+//     saved_align_spec_item_xoffset     = 4,
+//     saved_align_spec_item_yoffset     = 5,
+//     saved_align_spec_item_shift       = 6,
+//     saved_align_spec_item_source      = 7,
+//     saved_align_spec_item_target      = 8,
+//     saved_align_spec_n_of_items       = 9,
+// } saved_align_spec_items;
+
 typedef enum holding_migration_options {
     holding_none_option    = 0x00,
     holding_marks_option   = 0x01,
@@ -211,5 +224,27 @@ typedef enum box_flags {
 
 extern void tex_begin_box        (int boxcontext, scaled shift, halfword slot);
 extern int  tex_ignore_math_skip (halfword p);
+
+inline static scaled tex_aux_checked_dimen1(halfword v)
+{
+    if (v > max_dimen) {
+        return max_dimen;
+    } else if (v < -max_dimen) {
+        return -max_dimen;
+    } else {
+        return v;
+    }
+}
+
+inline static scaled tex_aux_checked_dimen2(halfword v)
+{
+    if (v > max_dimen) {
+        return max_dimen;
+    } else if (v < 0) {
+        return 0;
+    } else {
+        return v;
+    }
+}
 
 # endif

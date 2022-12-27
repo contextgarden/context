@@ -159,7 +159,7 @@
         userdata {\detokenize\expandafter{\normalexpanded{#userdata}}}
    \relax
    \edef\currentlistnumber{\the\scratchcounter}%
-   \setxvalue{\??listlocations\currentlist}{\the\locationcount}%
+   \xdefcsname\??listlocations\currentlist\endcsname{\the\locationcount}%
    \ifx\p_location\v!here
      % this branch injects nodes !
      \strc_lists_inject_enhance{\currentlistnumber}%
@@ -684,7 +684,7 @@
 % \installcorenamespace{listfiller}
 %
 % \protected\def\installlistfiller#1#2%
-%   {\setuvalue{\??listfiller#1}{#2}}
+%   {\protected\defcsname\??listfiller#1\endcsname{#2}}
 %
 % \protected\def\listfiller#1%
 %   {\begincsname\??listfiller#1\endcsname}

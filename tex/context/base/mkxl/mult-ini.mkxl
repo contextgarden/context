@@ -357,7 +357,7 @@
 
 \permanent\protected\def\startmessages #1 library: #2 %
   {\begingroup
-   \ifcsname\m!prefix!#2\endcsname\else\immutable\setgvalue{\m!prefix!#2}{#2}\fi
+   \ifcsname\m!prefix!#2\endcsname\else\immutable\gdefcsname\m!prefix!#2\endcsname{#2}\fi
    \catcode\endoflineasciicode\othercatcode
    \doifelseinset{#1}{\currentresponses,all}\mult_messages_start_yes\mult_messages_start_nop{#2}}
 
@@ -716,9 +716,9 @@
 \permanent\overloaded\protected\def\setinterfaceelement#1#2%
   {\clf_setinterfaceelement{#1}{#2}%
    \ifcsname\e!prefix!#1\endcsname
-     \doifnotvalue{\e!prefix!#1}{#2}{\enforced\immutable\setvalue{\e!prefix!#1}{#2}}%
+     \doifnotvalue{\e!prefix!#1}{#2}{\enforced\immutable\defcsname\e!prefix!#1\endcsname{#2}}%
    \else
-     \enforced\immutable\setvalue{\e!prefix!#1}{#2}%
+     \enforced\immutable\defcsname\e!prefix!#1\endcsname{#2}%
    \fi}
 
 \permanent\protected\def\setinterfacecommand#1#2% \frozen ? \permanent ?

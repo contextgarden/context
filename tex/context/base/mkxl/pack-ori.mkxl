@@ -36,7 +36,7 @@
    \c!vertical=\v!normal]
 
 \appendtoks
-    \expandafter\chardef\csname\??orientations\currentorientation\endcsname\toorientation
+    \expandafter\integerdef\csname\??orientations\currentorientation\endcsname\toorientation
         orientation {\orientationparameter\c!orientation}
         horizontal  {\orientationparameter\c!horizontal}
         vertical    {\orientationparameter\c!vertical}
@@ -51,6 +51,7 @@
 \defineorientation[\v!right] [\c!orientation=\v!right]
 \defineorientation[\v!top]   [\c!orientation=\v!top]
 \defineorientation[\v!bottom][\c!orientation=\v!bottom]
+\defineorientation[\v!line]  [\c!orientation=\v!line]
 
 %D There will be some more helpers here.
 

@@ -1195,14 +1195,14 @@
 \pushoverloadmode
 
 \overloaded\permanent\protected\def\offinterlineskip % later we will overload this with a push pop
-  {\baselineskip-\thousandpoint
+  {\baselineskip \ignoredepthcriterium % -\thousandpoint
    \lineskip     \zeropoint
    \lineskiplimit\maxdimen
    % We also need this here now; thanks to taco for figuring that out!
    \let\minimumlinedistance\zeropoint}
 
 \overloaded\permanent\protected\def\nointerlineskip
-  {\prevdepth-\thousandpoint}
+  {\prevdepth\ignoredepthcriterium}% -\thousandpoint
 
 \aliased\let\normaloffinterlineskip\offinterlineskip % knuth's original
 
@@ -2143,10 +2143,10 @@
      \defcsname\??vspace#1:#2\endcsname{#3}%
    \fi}
 
-\letvalue{\??vspace:\s!unknown}\zeropoint
+\letcsname\??vspace:\s!unknown\endcsname\zeropoint
 
 \def\spac_vspace_unknown
-  {\csname\??vspace:\s!unknown\endcsname}
+  {\csname\??vspace:\s!unknown\endcsname} % why not a let?
 
 \permanent\tolerant\protected\def\vspace[#1]#*[#2]%
   {\par

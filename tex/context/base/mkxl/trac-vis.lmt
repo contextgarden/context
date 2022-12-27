@@ -797,6 +797,7 @@ local ruledbox do
 
     local getshift       = nuts.getshift
     local getorientation = nuts.getorientation
+    local setorientation = nuts.setorientation
     local getheight      = nuts.getheight
 
     setmetatableindex(o_cache,function(t,size)
@@ -811,10 +812,16 @@ local ruledbox do
 
     ruledbox = function(head,current,vertical,layer,what,simple,previous,trace_origin,parent)
         local wd, ht, dp = getwhd(current)
--- todo        local wd, ht, dh, shift = getlistdimensions(current)
+--       local wd, ht, dh, shift = nuts.getlistdimensions(current) -- MAYBE
         local force_origin = wd == 0 or (dp + ht) == 0
         local shift = getshift(current)
-        local orientation, xoffset, yoffset = getorientation(current)
+-- print(getorientation(current,true))
+        local orientation, xoffset, yoffset, w, h, d = getorientation(current) -- TODO
+if orientation and orientation ~= 0 and (h ~= 0 or d ~= 0) then
+--     wd = w
+    ht = h
+    dp = d
+end
         local next = getnext(current)
         local prev = previous
         setboth(current)
@@ -831,26 +838,6 @@ local ruledbox do
                 b_cache[what] = this
             end
         end
-        -- we need to trigger the right mode (else sometimes no whatits)
---         local info = setlink(
---             this and copylist(this) or nil,
---             (force_origin and emptyrule(wd,ht,dp)) -- we accept some overhead
---          or dp == 0 and userrule {
---                 width    = wd,
---                 height   = ht,
---                 line     = linewidth,
---                 type     = "box",
---                 baseline = false,
---             }
---          or userrule {
---                 width  = wd,
---                 height = ht,
---                 depth  = dp,
---                 line   = linewidth,
---                 type   = "box",
---                 dashed = 3*size,
---             }
---         )
         local rest, more
         if force_origin then
             rest = emptyrule(wd,ht,dp) -- we accept some overhead
@@ -888,6 +875,7 @@ local ruledbox do
                 dashed = 3*size,
             }
         end
+        --
         local info = setlink(this and copylist(this) or nil,rest,more)
         --
         setlisttransparency(info,"trace:s")
@@ -934,6 +922,10 @@ local ruledbox do
             end
             info = new_hlist(info,wd,ht,dp,shift)
         end
+-- if orientation then
+--     setorientation(current,0,0)
+--     setorientation(info,orientation,xoffset,yoffset)
+-- end
         if next then
             setlink(info,next)
         end
