@@ -23,15 +23,18 @@ typedef enum box_codes {
     copy_code,     /*tex |chr_code| for |\copy| */
     unpack_code,
     last_box_code, /*tex |chr_code| for |\lastbox| */
+    tsplit_code,   
     vsplit_code,   /*tex |chr_code| for |\vsplit| */
-    tpack_code,
-    vpack_code,
-    hpack_code,
+    dsplit_code,   
+ /* hsplit_code, */ 
+    tpack_code,    
+    vpack_code,    /*tex |chr_code| for |\vpack| */
     dpack_code,
-    vtop_code,     /*tex |chr_code| for |\vtop| */
-    vbox_code,
-    hbox_code,
+    hpack_code,
+    vtop_code,     
+    vbox_code,     /*tex |chr_code| for |\vbox| */
     dbox_code,
+    hbox_code,
     insert_box_code,
     insert_copy_code,
     local_left_box_box_code,

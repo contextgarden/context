@@ -59,17 +59,30 @@
 \aliased\let\syst_visualizers_vpack  \vpack
 \aliased\let\syst_visualizers_tpack  \tpack
 \aliased\let\syst_visualizers_dpack  \dpack
+\aliased\let\syst_visualizers_vsplit \vsplit
+\aliased\let\syst_visualizers_tsplit \tsplit
+\aliased\let\syst_visualizers_dsplit \dsplit
 
-\permanent\protected\def\ruledhbox   {\syst_visualizers_hbox    attr \visualattribute \clf_getvisual{simplehbox} }
-\permanent\protected\def\ruledhpack  {\syst_visualizers_hpack   attr \visualattribute \clf_getvisual{simplehbox} }
-\permanent\protected\def\ruledvbox   {\syst_visualizers_vbox    attr \visualattribute \clf_getvisual{simplevbox} }
-\permanent\protected\def\ruledvpack  {\syst_visualizers_vpack   attr \visualattribute \clf_getvisual{simplevbox} }
-\permanent\protected\def\ruledvtop   {\syst_visualizers_vtop    attr \visualattribute \clf_getvisual{simplevtop} }
-\permanent\protected\def\ruledtpack  {\syst_visualizers_tpack   attr \visualattribute \clf_getvisual{simplevtop} }
-\permanent\protected\def\ruleddbox   {\syst_visualizers_dbox    attr \visualattribute \clf_getvisual{simplevtop} }
-\permanent\protected\def\ruleddpack  {\syst_visualizers_dpack   attr \visualattribute \clf_getvisual{simplevtop} }
-\permanent\protected\def\ruledvcenter{\syst_visualizers_vcenter attr \visualattribute \clf_getvisual{simplevbox} }
+\permanent\protected\def\ruledhbox   {\syst_visualizers_hbox    \s!attr \visualattribute \clf_getvisual{simplehbox} }
+\permanent\protected\def\ruledhpack  {\syst_visualizers_hpack   \s!attr \visualattribute \clf_getvisual{simplehbox} }
+\permanent\protected\def\ruledvbox   {\syst_visualizers_vbox    \s!attr \visualattribute \clf_getvisual{simplevbox} }
+\permanent\protected\def\ruledvpack  {\syst_visualizers_vpack   \s!attr \visualattribute \clf_getvisual{simplevbox} }
+\permanent\protected\def\ruledvtop   {\syst_visualizers_vtop    \s!attr \visualattribute \clf_getvisual{simplevtop} }
+\permanent\protected\def\ruledtpack  {\syst_visualizers_tpack   \s!attr \visualattribute \clf_getvisual{simplevtop} }
+\permanent\protected\def\ruleddbox   {\syst_visualizers_dbox    \s!attr \visualattribute \clf_getvisual{simplevtop} }
+\permanent\protected\def\ruleddpack  {\syst_visualizers_dpack   \s!attr \visualattribute \clf_getvisual{simplevtop} }
+\permanent\protected\def\ruledvcenter{\syst_visualizers_vcenter \s!attr \visualattribute \clf_getvisual{simplevbox} }
 \permanent\protected\def\ruledmbox #1{\ruledhbox{\startimath#1\stopimath}}
+
+\mutable\integerdef\c_syst_visualizer\zerocount
+
+\permanent\protected\def\ruledvsplit{\afterassignment\syst_visualizers_v_split\integerdef\c_syst_visualizer}
+\permanent\protected\def\ruledtsplit{\afterassignment\syst_visualizers_t_split\integerdef\c_syst_visualizer}
+\permanent\protected\def\ruleddsplit{\afterassignment\syst_visualizers_d_split\integerdef\c_syst_visualizer}
+
+\permanent\protected\def\syst_visualizers_v_split{\syst_visualizers_vsplit\c_syst_visualizer \s!attr \visualattribute \clf_getvisual {simplevbox}}
+\permanent\protected\def\syst_visualizers_t_split{\syst_visualizers_tsplit\c_syst_visualizer \s!attr \visualattribute \clf_getvisual {simplevtop}}
+\permanent\protected\def\syst_visualizers_d_split{\syst_visualizers_dsplit\c_syst_visualizer \s!attr \visualattribute \clf_getvisual {simplevtop}}
 
 \appendtoks
     \ifcase\c_syst_visualizers_state\else

@@ -879,7 +879,9 @@ void tex_initialize_commands(void)
         tex_primitive(tex_command,    "box",                            make_box_cmd,           box_code,                                 0);
         tex_primitive(tex_command,    "copy",                           make_box_cmd,           copy_code,                                0);
         tex_primitive(tex_command,    "lastbox",                        make_box_cmd,           last_box_code,                            0);
+        tex_primitive(luatex_command, "tsplit",                         make_box_cmd,           tsplit_code,                              0);
         tex_primitive(tex_command,    "vsplit",                         make_box_cmd,           vsplit_code,                              0);
+        tex_primitive(luatex_command, "dsplit",                         make_box_cmd,           dsplit_code,                              0);
         tex_primitive(luatex_command, "tpack",                          make_box_cmd,           tpack_code,                               0);
         tex_primitive(luatex_command, "vpack",                          make_box_cmd,           vpack_code,                               0);
         tex_primitive(luatex_command, "hpack",                          make_box_cmd,           hpack_code,                               0);

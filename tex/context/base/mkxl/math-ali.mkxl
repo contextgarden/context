@@ -365,7 +365,7 @@
    \halign
      \ifconditional\c_math_align_overflow_mode
        callback
-       attr
+       \s!attr
          \mathnumberlocationattribute
          \numexpr\ifconditional\c_math_align_reformat_mode\plusfour\else\plustwo\fi * \plussixteen\relax % just a signal
      \fi

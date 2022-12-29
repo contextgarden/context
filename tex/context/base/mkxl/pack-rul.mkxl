@@ -764,8 +764,8 @@
 %
 % more modern:
 
-\def\pack_framed_rules_hrule{\hrule\s!height\d_framed_linewidth\s!left\d_framed_linewidth\s!right \d_framed_linewidth}
-\def\pack_framed_rules_vrule{\vrule\s!width \d_framed_linewidth\s!top \d_framed_linewidth\s!bottom\d_framed_linewidth\s!yoffset-\d_framed_linewidth}
+\def\pack_framed_rules_hrule{\hrule\s!height\d_framed_linewidth\s!left\d_framed_linewidth\s!right \d_framed_linewidth\relax}
+\def\pack_framed_rules_vrule{\vrule\s!width \d_framed_linewidth\s!top \d_framed_linewidth\s!bottom\d_framed_linewidth\relax}% \s!yoffset-\d_framed_linewidth}
 
 \def\pack_framed_t_rules{\pack_framed_rules_hrule\kern-\d_framed_linewidth}
 \def\pack_framed_b_rules{\kern-\d_framed_linewidth\pack_framed_rules_hrule}

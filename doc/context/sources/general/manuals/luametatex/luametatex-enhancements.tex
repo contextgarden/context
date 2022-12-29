@@ -1231,6 +1231,39 @@ This gives
 
 \stopsubsection
 
+\startsubsection[title={Comparing}]
+
+When comparing (for instance) to numbers the a \type {=}, \type {<} or \type {>}
+is used. In \LUAMETATEX\ you can negate such a comparison by \type {!}, as in
+\type {!=}, \type {!<} or \type {!>}. Multiple \type {!} flip that state.
+
+In addition to these \ASCII\ combinations, we also support some \UNICODE\
+variants. The extra comparison options are:
+
+\starttabulate[|l|c|c|l|]
+\DB character      \BC               \BC            \BC operation         \NC \NR
+\TB
+\NC \type {0x2208} \NC $\Uchar"2208$ \NC            \NC element of        \NC \NR
+\NC \type {0x2209} \NC $\Uchar"2209$ \NC            \NC not element of    \NC \NR
+\NC \type {0x2260} \NC $\Uchar"2260$ \NC \type {!=} \NC not equal         \NC \NR
+\NC \type {0x2264} \NC $\Uchar"2264$ \NC \type {!>} \NC less equal        \NC \NR
+\NC \type {0x2265} \NC $\Uchar"2265$ \NC \type {!<} \NC greater equal     \NC \NR
+\NC \type {0x2270} \NC $\Uchar"2270$ \NC            \NC not less equal    \NC \NR
+\NC \type {0x2271} \NC $\Uchar"2271$ \NC            \NC not greater equal \NC \NR
+\LL
+\stoptabulate
+
+\stopsubsection
+
+\startsubsection[title={\prm{ifzeronum}, \prm {ifzerodim}}]
+
+\topicindex {conditions+numbers}
+\topicindex {conditions+dimensions}
+
+Their name tells what they test for: zero (point) values.
+
+\stopsubsection
+
 \startsubsection[title={\prm{ifcmpnum}, \prm {ifcmpdim}, \prm {ifnumval}, \prm
 {ifdimval}, \prm {ifchknum} and \prm {ifchkdim}}]
 
@@ -1642,6 +1675,9 @@ The \prm {tracinglevels} variable is a bitset and offers the following features:
 So a value of~7 shows them all. In \CONTEXT\ we set this variable to~3 which
 gives a rather verbose log when tracing is on but in the end its'not that bad
 because using some of the newer programming related primitive can save tracing.
+
+The \prm {tracinglists} variable will show some of the (intermediate) lists that
+get processed. It is there mainly for development but might evolve.
 
 Because in \LUATEX\ the saving and restoring of locally redefined macros and set
 variables is optimized a bit in order to prevent redundant stack usage, there
@@ -2263,7 +2299,11 @@ But in \LUAMETATEX\ we also can do this:
 
 These two are stored as efficient as a register but don't occupy a register slot.
 They can be set as above, need \prm {the} for serializations and are seen as
-valid number or dimension when needed.
+valid number or dimension when needed. They do behave like registers so one can
+use for instance \prm {advance} and assign values but keep in mind that an alias
+(made by for instance \prm {let} clones the value and that clone will not follow
+a change in the original. For that, registers can be used because there we use an
+indirect reference.
 
 Experiments with constant strings made the engine source more complex than I
 wanted so that features was rejected. Of course we can use the prefixes mentioned
@@ -2460,6 +2500,21 @@ features in the future.}
 The if|-|test shown before can be done using the new primitives \prm
 {ifdimexpression} and \prm {ifnumexpression} which are boolean tests with zero
 being \type {false}.
+
+\stopsubsection
+
+\startsubsection[title={Calculations with \prm {advanceby}, \prm {multiplyby} and
+\prm {divideby}.}]
+
+The \prm {advance}, \prm {multiply} and \prm {divide} primitives accept an
+optional keyword \type {by}. In \CONTEXT\ we never use that feature and as a
+consequence the scanner has to push back a scanned token after checking for the
+\type {b} or \type {B}. These three new primitives avoid that and therefore
+perform better, but that is (as usual with such enhancements) only noticeable in
+demanding scenarios.
+
+The original three plus these new ones also operate on the \quote {constant}
+integers, dimensions etc.
 
 \stopsubsection
 

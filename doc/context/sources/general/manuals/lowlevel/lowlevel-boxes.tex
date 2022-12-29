@@ -1,4 +1,3 @@
-three
 % language=us runpath=texruns:manuals/lowlevel
 
 % \hfil \hss
@@ -742,6 +741,144 @@ example demonstrates this:
 
 The \type {d} stands for \quote {dual} because we (sort of) have two baselines. The
 regular height and depth are those of a \type {\vbox}.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Splitting]
+
+When you feed \TEX\ a paragraph of text it will accumulate the content in a
+list of nodes. When the paragraphs is finished by \type {\par} or an empty line
+it will be fed into the par builder that will try to break the lines as good
+as possible. Normally that paragraph will be added to the page and at some point
+there can be breaks between lines in order not to overflow the page. When you
+collect the paragraph in a box you can use \type {\vsplit} to emulate this.
+
+\startbuffer[sample]
+\setbox\scratchbox\vbox{\samplefile{tufte}}
+
+\startlinecorrection
+\ruledhbox{\vsplit\scratchbox to 2\lineheight}
+\stoplinecorrection
+\stopbuffer
+
+\typebuffer[sample][option=TEX] \getbuffer[sample]
+
+The split off box is given the specified height, but in \LUAMETATEX\ you can also
+get the natural dimensions:
+
+\startbuffer[sample]
+\setbox\scratchbox\vbox{\samplefile{tufte}}
+
+\startlinecorrection
+\ruledhbox{\vsplit\scratchbox upto 2\lineheight}
+\stoplinecorrection
+\stopbuffer
+
+\typebuffer[sample][option=TEX] \getbuffer[sample]
+
+We can force a resulting box type by using \type {\vsplit}, \type {\tsplit} and
+\type {\dsplit} (here we use the visualized variants):
+
+\startbuffer[sample]
+\setbox\scratchbox\vbox{\samplefile{tufte}}
+
+\startlinecorrection
+\ruledtsplit \scratchbox upto 2\lineheight
+\stoplinecorrection
+\stopbuffer
+
+\typebuffer[sample][option=TEX] \getbuffer[sample]
+
+\startbuffer[sample]
+\setbox\scratchbox\vbox{\samplefile{tufte}}
+
+\startlinecorrection
+\ruledvsplit \scratchbox upto 2\lineheight
+\stoplinecorrection
+\stopbuffer
+
+\typebuffer[sample][option=TEX] \getbuffer[sample]
+
+\startbuffer[sample]
+\setbox\scratchbox\vbox{\samplefile{tufte}}
+
+\startlinecorrection
+\ruleddsplit \scratchbox upto 2\lineheight
+\stoplinecorrection
+\stopbuffer
+
+\typebuffer[sample][option=TEX] \getbuffer[sample]
+
+The engine provides vertical splitters but \CONTEXT\ itself also has
+a horizontal one. \footnote {At some point I might turn that one into
+a native engine primitive.}
+
+\startbuffer
+\starttexdefinition Test #1#2#3
+    \par
+    \dontleavehmode
+    \strut
+    \llap{{\infofont #2}\quad}
+    \blackrule[width=#2,color=darkblue]
+    \par
+    \setbox\scratchbox\hbox{\samplefile{#1}}
+    \hsplit\scratchbox
+        to              #2
+        depth           \strutdp
+        height          \strutht
+        shrinkcriterium #3 % badness
+    \par
+\stoptexdefinition
+
+\dostepwiserecurse {100} {120} {2} {
+    \Test{tufte}{#1mm}{1000}
+    \Test{tufte}{#1mm}{-100}
+}
+\stopbuffer
+
+\typebuffer[option=TEX] \startpacked \getbuffer \stoppacked
+
+A split off box gets packed at its natural size and a badness as well as
+overshoot amount is calculated. When the overshoot is positive and the the
+badness is larger than the stretch criterium, the box gets repacked to the
+natural size. The same happens when the overshoot is negative and the badness
+exceeds the shrink criterium. When the overshoot is zero (basically we have a
+fit) but the badness still exceeds the stretch or shrink we also repack. Indeed
+this is a bit fuzzy, but so is badness.
+
+\startbuffer
+\starttexdefinition Test #1#2#3
+    \par
+    \dontleavehmode
+    \strut
+    \llap{{\infofont #2}\quad}
+    \blackrule[width=#2,color=darkblue]
+    \par
+    \setbox\scratchbox\hbox{\samplefile{#1}}
+    \doloop {
+        \ifvoid\scratchbox
+            \exitloop
+        \else
+            \hsplit\scratchbox
+                to     #2
+                depth  \strutdp
+                height \strutht
+                #3
+            \par
+            \allowbreak
+        \fi
+    }
+\stoptexdefinition
+
+\Test{tufte}{100mm}{shrinkcriterium 1000}
+\Test{tufte}{100mm}{shrinkcriterium 0}
+\Test{tufte}{100mm}{}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+Watch how the last line get stretched when we set the criterium to zero. I'm sure
+that users will find reasons to abuse this effect.
 
 \stopsectionlevel
 

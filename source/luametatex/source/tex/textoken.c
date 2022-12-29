@@ -480,15 +480,19 @@ void tex_print_meaning(halfword code)
                 tex_print_cs(cur_cs);
                 return;
             } else {
-                if (cur_chr && get_token_reference(cur_chr) == max_token_reference) {
-                    tex_print_str("constant ");
-                }
+                int constant = (cur_chr && get_token_reference(cur_chr) == max_token_reference);
                 switch (code) {
                     case meaning_code:
                     case meaning_full_code:
+                        if (constant) {
+                            tex_print_str("constant ");
+                        }
                         tex_print_str("macro");
                         goto FOLLOWUP;
                     case meaning_asis_code:
+                        if (constant) {
+                            tex_print_str_esc("constant ");
+                        }
                      // tex_print_format("%e%C %S ", def_cmd, def_code, cur_cs);
                         tex_print_cmd_chr(def_cmd, def_code);
                         tex_print_char(' ');

@@ -308,10 +308,13 @@ return {
         --
         "hglue", "vglue", "hfillneg", "vfillneg", "hfilllneg", "vfilllneg",
         --
+        "hsplit",
+        --
         "ruledhss", "ruledhfil", "ruledhfill", "ruledhfilll", "ruledhfilneg", "ruledhfillneg", "normalhfillneg",  "normalhfilllneg",
         "ruledvss", "ruledvfil", "ruledvfill", "ruledvfilll", "ruledvfilneg", "ruledvfillneg", "normalvfillneg",  "normalvfilllneg",
         "ruledhbox", "ruledvbox", "ruledvtop", "ruleddbox", "ruledvcenter", "ruledmbox",
         "ruledhpack", "ruledvpack", "ruledtpack", "ruleddpack",
+        "ruledvsplit", "ruledtsplit", "ruleddsplit",
         "ruledhskip", "ruledvskip", "ruledkern", "ruledmskip", "ruledmkern",
         "ruledhglue", "ruledvglue", "normalhglue", "normalvglue",
         "ruledpenalty",

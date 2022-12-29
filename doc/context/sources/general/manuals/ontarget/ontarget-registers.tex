@@ -1,0 +1,164 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-registers
+
+\environment ontarget-style
+
+\startchapter[title={Gaining performance}]
+
+In the meantime (2022) the \LUAMETATEX\ engine has touched many aspects of the
+original \TEX\ implementation. This has resulted in less memory consumption than
+for instance \LUATEX\ when we talk tokens, more efficient macro handing,
+additional storage options and numerous new features and optimizations. Of course
+one can disagree about all of this, but what matters to us is that it facilitates
+\CONTEXT\ well. That macro package went from \MKII\ to \MKIV\ to \MKXL\ (aka
+\LMTX).
+
+Although over the years the macros evolved the basic ideas haven't changed: it is
+a keyword driven macro package that is set up in a way that makes it possible to
+move forward. In spite of what one might think, the fundamentals didn't change
+much. It looks like we made the right decisions at the start, which means that we
+can change low level implementations to match the engine without users noticing
+much. Of course in the area of fonts, input encoding and languages things have
+changed simply because the environment in which we operate changes.
+
+A fundamental difference between \PDFTEX\ and \LUAMETATEX\ is that the later is
+in many aspects 32 and even 64 bit all over the place. That comes with a huge
+performance hit but also with possibilities (that I won't discuss here now)! On a
+simple document nothing can beat \PDFTEX, even with the optimizations that we can
+apply when using the modern engines. However, on more complex documents reality
+is that \LUAMETATEX\ can outperform \PDFTEX, and documents (read: user demands)
+have become more complex indeed.
+
+So, how does that work in practice? One can add some features to an engine but
+then the macro package has to be adapted. Due to the way \CONTEXT\ is organized
+it was not that hard to keep it in sync with new features, although not all are
+applied yet to full extend. Some new features improved performance, others made
+the machinery (or its usage) a bit slower. The first versions of \LUAMETATEX\
+were some 25\percent\ slower than \LUATEX, simply because the backend is written
+in \LUA. But, end 2022 we can safely say that \LUAMETATEX\ can be 50\percent\
+faster than its ancestor. This is due to a mix of the already mentioned
+optimizations and new features, for instance a more powerful macro parser. The
+backend has become more complex too, but also benefits from a few more helpers.
+
+Because we spend a lot of time in \LUA\ the interfaces to \TEX\ have been
+extended and improved too. Of course we depend on the \LUA\ interpreter being
+kept in optimum state by its authors. It must be said that quite some of the
+interfaces might look obscure but these are not really meant for the average user
+anyway. Also, as soon as one messes with tokens and nodes at that level one
+definitely need to know what one's doing!
+
+The more stable the engine becomes, the less there is to improve. Occasionally it
+was possible to squeeze our a few more milliseconds on run but it depends a lot
+of what one does. And \TEX\ is already quite fast anyway. Of course 0.005 seconds
+on a 5 second run is not much but hundred times such an improvement is
+noticeable, especially when there are multiple runs or when one processes a batch
+of 10.000 documents (each needing two runs).
+
+One interesting aspect of \TEX\ that it can surprise you every now and then. End
+2022 I decided to play a bit more with a feature that has been around for a
+while:
+
+\starttyping
+\integerdef  \fooA 123
+\dimensiondef\fooB 123pt
+\stoptyping
+
+These primitives create a counter and a dimen where the value is stored in the hash
+table. The original reason was that I didn't want to spoil registers. But although
+these are basically constants there is more to it now.
+
+\starttyping
+\countdef\fooC 27
+\dimendef\fooD 56
+\stoptyping
+
+These primitives create a command that stores the register number (here 27 and
+56) with the name. In this case a \quote {variable} is accessed in two steps: the
+\type {\fooC} macro expands to an register accessor with value 27. Next that
+accessor will kick in and fetch (or set) the value in slot 27 of the memory range
+bound to (in total 65K) counters. All these registers sit a the lower end of
+\TEX's memory which is definitely not next to the meaning of \type {\fooC}. So we
+have two memory accesses to get to the number. Contrary to that once we are at
+\type {\fooA} we are also at the value. Although memory access can be fast when
+the relevant slots are cached in practice it can give delays, especially in a
+program like \TEX\ where most data is spread all over the place. And imagine other
+processes competing for access too.
+
+It is for that reason that I decided to replace the more or less \quote
+{constant} property of \type {\fooA} by one that also supports assignments As
+well as the arithmic commands like \type {\advance}. This was not that hard due
+to the way the \LUAMETATEX\ source is organized. After that using these pseudo
+constants proved to be more efficient than registers, but of course I then had to
+adapt the source. Interestingly that should have been easy because one only needs
+to change the definitions of for instance \type {\newcount} but in practice that
+doesn't work because it will|/|can break for instance generic packages like Tikz.
+
+So, in the end a new allocator was added and just over 1000 lines in some 120
+files (with some overlap) had to be adapted to this. In addition some precautions
+had to be made for access from \LUA\ because the quantities were no longer
+registers. But it was rewarding in the sense that the test suite now ran some
+5\percent\ faster and processing the \LUAMETATEX\ manual went from 8.7 seconds on
+my laptop down to around 8.5, which is not bad.
+
+Now why do we bother so much about performance? If I really want a faster run
+using a decent desktop is of more help. But even then there can be reasons. When
+Mikael and I were discussing math engine developments at some point we noticed
+that a run took twice as much time as a result of (supposedly idle) background
+tasks. Now keep in mind that \TEX\ uses a single core so with plenty cores it
+should not be that bad. However, when the video chat program takes half of the
+CPU power, or when a mathematical manipulation program idles in the background
+taking 80 percent of a modern machine, or when a popular editor keeps all kind of
+plug ins busy for no reason, or when a supposedly closed a browser consumes
+gigabytes of memory and keeps dozens of supposedly idle threads busy, it becomes
+clear that we should not let \TEX\ put a large burden on memory access (and
+cache).
+
+It can get even worse when one runs on virtual machines where the host suggests
+that you get 16 cores so that you can run a dozen \TEX\ jobs in parallel but
+simple measurements show that these shared cores report a much higher ideal
+performance than the one you measure. So, the less demanding a \CONTEXT\ run
+becomes, the better: we're not so much after the .2 seconds on a 8 second run,
+but more after 3 seconds for that same run when using shared resources where it
+became 15 seconds. And this is what observations with respect to the performance
+of the test suite seem to indicate.
+
+In the end it's mostly about comfort: when you process a document of 300 pages,
+10 seconds is quite okay for a few changes, because one can relate time to
+output, but 20 seconds \unknown\ And when processing a a few page document the
+waiting time of a second is often less than what one needs to move the mouse
+around to the viewer. Also, when a user starts \TEX\ on the console and
+afterwards opens a browser from there that second is even less noticeable.
+
+Now let's go back to improvements. A related addition was \type {\advanceby} that
+doesn't check for the \type {by} keyword. When there is no such keyword we can
+avoid pushing back the non|-|matching next token which is also noticeable. Here
+about 680 changes were needed. Changes like these only make a difference in
+performance for some very demanding mechanisms in \CONTEXT. Again one cannot
+overload an existing primitive because generic packages can fail (as the test
+suite proved). There were also a few places where a dirty trick had to be changed
+because we cannot alias these constants.
+
+We can give similar stories about other improvements but this one sort of stands
+out because it is so noticeable. Also, other changes involve more drastic low
+level adaptations of \CONTEXT\ so these happen over a longer period of time. Of
+course all has to happen in ways that don't impact users. An example of a
+performance primitive is \typ {\advancebyplusone} which is actually implemented
+but still disabled because the gain is in hundreds of seconds range and I need to
+(again) adapt the source in order to benefit.
+
+The mentioned register variants are implemented for count (integer), dimen
+(dimension), skip (gluespec) and muskip (mugluespec). Token registers are more
+complex as they have reference counters as well as more manipulator primitives.
+The same is true for boxes (although it is tempting to come up with some faster
+access mechanism) and attributes, that also have more diverse accessors. Also,
+token lists and boxes involve way more than a simple assignment or access so any
+gain will drown in other actions. That said, it really makes sense now to drop
+the maximum of 64K registers to some more reasonable 8K (or even less for mu
+skips). That will save a couple of megabytes which sounds like little but still
+puts less burden on the system.
+
+\stopchapter
+
+\stopcomponent
+

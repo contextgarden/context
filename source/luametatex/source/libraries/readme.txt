@@ -14,7 +14,9 @@ The avl and hnj libraries are adapted to Lua(Meta)TeX and might get some more ad
 on our needs. The decnumber library that is also used in mplib is unchanged.
 
 In mimalloc we need to patch init.c: #if defined(_M_X64) || defined(_M_ARM64) to get rid of a link
-error.
+error as well as in options.c some snprint issue with the mingw64 cross compiler: 
+
+/* HH */ snprintf(tprefix, sizeof(tprefix), "%sthread 0x%x: ", prefix, (unsigned) _mi_thread_id()); /* HH: %z is unknown */
 
 In decNumber.c this got added: 
 

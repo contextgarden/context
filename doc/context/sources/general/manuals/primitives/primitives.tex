@@ -49,7 +49,16 @@
   [oldprimitive]
   [textcolor=nonecolor]
 
+% We use the next one because we want to check what has been done. In a document
+% like this using \type {\foo} makes more sense.
+
+\protected\def\prm#1{\doifmode{*bodypart}{\index{\tex{#1}}}\tex{#1}}
+
+% This is why we need to tag bodymatter.
+
 \starttext
+
+\startbodymatter
 
 \pushoverloadmode
 
@@ -110,63 +119,63 @@ subsystems (like math), allocate additional datatypes and resources, deal with
 fonts and languages, manipulate boxes and glyphs, etc.\ are not discussed here.
 In this document we concentrate on the programming aspects.
 
-\startalign[verytolerant,stretch]
-To be described here: \typ {enforced}, \typ {immutable}, \typ {instance},
-\typ {aliased}, \typ {mutable}, \typ {overloaded}, \typ {overloadmode}, \typ
-{tolerant}, \typ {permanent}, \typ {ifflags}, \typ {ifinsert}, \typ
-{ifmathparameter}, \typ {ifmathstyle}, \typ {ifparameter}, \typ
-{ifparameters}, \typ {ignorearguments}, \typ {ignorepars}, \typ
-{parametercount}, \typ {lastchkdim}, \typ {lastchknum}.
-
-Of a different order: \typ {adjustspacing}, \typ {adjustspacingshrink}, \typ
-{adjustspacingstep}, \typ {adjustspacingstretch}, \typ {attribute}, \typ
-{attributedef}, \typ {automaticdiscretionary}, \typ {automatichyphenpenalty},
-\typ {automigrationmode}, \typ {boundary}, \typ {boxattribute}, \typ
-{boxdirection}, \typ {boxorientation}, \typ {boxtotal}, \typ {boxxmove}, \typ
-{boxxoffset}, \typ {boxymove}, \typ {boxyoffset}, \typ {catcodetable}, \typ
-{clearmarks}, \typ {crampeddisplaystyle}, \typ {crampedscriptscriptstyle}, \typ
-{crampedscriptstyle}, \typ {crampedtextstyle}, \typ {directlua}, \typ {efcode},
-\typ {everybeforepar}, \typ {everytab}, \typ {exceptionpenalty}, \typ
-{explicitdiscretionary}, \typ {explicithyphenpenalty}, \typ {firstvalidlanguage},
-\typ {fontid}, \typ {fontmathcontrol}, \typ {fontspecifiedsize}, \typ
-{fonttextcontrol}, \typ {formatname}, \typ {gleaders}, \typ {gluespecdef}, \typ
-{glyphdatafield}, \typ {glyphoptions}, \typ {glyphscale}, \typ
-{glyphscriptfield}, \typ {glyphscriptscale}, \typ {glyphscriptscriptscale}, \typ
-{glyphstatefield}, \typ {glyphtextscale}, \typ {glyphxoffset}, \typ
-{glyphxscale}, \typ {glyphyoffset}, \typ {glyphyscale}, \typ {hccode}, \typ
-{hjcode}, \typ {hpack}, \typ {hyphenationmin}, \typ {hyphenationmode}, \typ
-{initcatcodetable}, \typ {insertbox},\typ {insertcopy}, \typ {insertdepth}, \typ
-{insertdistance}, \typ {insertheight}, \typ {insertheights}, \typ {insertlimit},
-\typ {insertmode}, \typ {insertmultiplier}, \typ {insertprogress}, \typ
-{insertunbox}, \typ {insertuncopy}, \typ {insertwidth}, \typ {lastnodesubtype},
-\typ {leftmarginkern}, \typ {letcharcode}, \typ {linedirection}, \typ {linepar},
-\typ {localbrokenpenalty}, \typ {localinterlinepenalty}, \typ {lpcode}, \typ
-{luabytecode}, \typ {luabytecodecall}, \typ {luacopyinputnodes}, \typ {luadef},
-\typ {luaescapestring}, \typ {luafunction}, \typ {luafunctioncall}, \typ
-{luatexbanner}, \typ {luatexrevision}, \typ {luatexversion}, \typ
-{mathcontrolmode}, \typ {mathdelimitersmode}, \typ {mathdirection}, \typ
-{mathdisplayskipmode}, \typ {matheqnogapstep}, \typ {mathflattenmode}, \typ
-{mathfontcontrol}, \typ {mathitalicsmode}, \typ {mathnolimitsmode}, \typ
-{mathpenaltiesmode}, \typ {mathrulesfam}, \typ {mathrulesmode}, \typ
-{mathrulethicknessmode}, \typ {mathscale}, \typ {mathscriptboxmode}, \typ
-{mathscriptcharmode}, \typ {mathscriptsmode}, \typ {mathstyle}, \typ
-{mathsurroundmode}, \typ {mathsurroundskip}, \typ {mugluespecdef}, \typ
-{noaligned}, \typ {noboundary}, \typ {nohrule}, \typ {normalizelinemode}, \typ
-{nospaces}, \typ {novrule}, \typ {numericscale}, \typ {numexpression}, \typ
-{outputbox}, \typ {parattribute}, \typ {pardirection}, \typ {postexhyphenchar},
-\typ {posthyphenchar}, \typ {prebinoppenalty}, \typ {predisplaygapfactor}, \typ
-{preexhyphenchar}, \typ {prehyphenchar}, \typ {prerelpenalty}, \typ
-{protrudechars}, \typ {protrusionboundary}, \typ {pxdimen}, \typ {quitvmode},
-\typ {retokenize}, \typ {rightmarginkern}, \typ {rpcode}, \typ
-{savecatcodetable}, \typ {scantextokens}, \typ {semiexpanded}, \typ {setfontid},
-\typ {snapshotpar}, \typ {supmarkmode}, \typ {textdirection}, \typ
-{thewithoutunit}, \typ {tpack}, \typ {tracingexpressions}, \typ {tracingfonts},
-\typ {tracinghyphenation}, \typ {tracingmath}, \typ {undent}, \typ {vpack}, \typ
-{wordboundary}, \typ {wrapuppar}.
-\stopalign
-
-{\em Some new primitives in this list might be forgotten or already became
-obsolete. Let me know if you run into one.}
+% \startalign[verytolerant,stretch]
+% To be described here: \typ {enforced}, \typ {immutable}, \typ {instance},
+% \typ {aliased}, \typ {mutable}, \typ {overloaded}, \typ {overloadmode}, \typ
+% {tolerant}, \typ {permanent}, \typ {ifflags}, \typ {ifinsert}, \typ
+% {ifmathparameter}, \typ {ifmathstyle}, \typ {ifparameter}, \typ
+% {ifparameters}, \typ {ignorearguments}, \typ {ignorepars}, \typ
+% {parametercount}, \typ {lastchkdim}, \typ {lastchknum}.
+%
+% Of a different order: \typ {adjustspacing}, \typ {adjustspacingshrink}, \typ
+% {adjustspacingstep}, \typ {adjustspacingstretch}, \typ {attribute}, \typ
+% {attributedef}, \typ {automaticdiscretionary}, \typ {automatichyphenpenalty},
+% \typ {automigrationmode}, \typ {boundary}, \typ {boxattribute}, \typ
+% {boxdirection}, \typ {boxorientation}, \typ {boxtotal}, \typ {boxxmove}, \typ
+% {boxxoffset}, \typ {boxymove}, \typ {boxyoffset}, \typ {catcodetable}, \typ
+% {clearmarks}, \typ {crampeddisplaystyle}, \typ {crampedscriptscriptstyle}, \typ
+% {crampedscriptstyle}, \typ {crampedtextstyle}, \typ {directlua}, \typ {efcode},
+% \typ {everybeforepar}, \typ {everytab}, \typ {exceptionpenalty}, \typ
+% {explicitdiscretionary}, \typ {explicithyphenpenalty}, \typ {firstvalidlanguage},
+% \typ {fontid}, \typ {fontmathcontrol}, \typ {fontspecifiedsize}, \typ
+% {fonttextcontrol}, \typ {formatname}, \typ {gleaders}, \typ {gluespecdef}, \typ
+% {glyphdatafield}, \typ {glyphoptions}, \typ {glyphscale}, \typ
+% {glyphscriptfield}, \typ {glyphscriptscale}, \typ {glyphscriptscriptscale}, \typ
+% {glyphstatefield}, \typ {glyphtextscale}, \typ {glyphxoffset}, \typ
+% {glyphxscale}, \typ {glyphyoffset}, \typ {glyphyscale}, \typ {hccode}, \typ
+% {hjcode}, \typ {hpack}, \typ {hyphenationmin}, \typ {hyphenationmode}, \typ
+% {initcatcodetable}, \typ {insertbox},\typ {insertcopy}, \typ {insertdepth}, \typ
+% {insertdistance}, \typ {insertheight}, \typ {insertheights}, \typ {insertlimit},
+% \typ {insertmode}, \typ {insertmultiplier}, \typ {insertprogress}, \typ
+% {insertunbox}, \typ {insertuncopy}, \typ {insertwidth}, \typ {lastnodesubtype},
+% \typ {leftmarginkern}, \typ {letcharcode}, \typ {linedirection}, \typ {linepar},
+% \typ {localbrokenpenalty}, \typ {localinterlinepenalty}, \typ {lpcode}, \typ
+% {luabytecode}, \typ {luabytecodecall}, \typ {luacopyinputnodes}, \typ {luadef},
+% \typ {luaescapestring}, \typ {luafunction}, \typ {luafunctioncall}, \typ
+% {luatexbanner}, \typ {luatexrevision}, \typ {luatexversion}, \typ
+% {mathcontrolmode}, \typ {mathdelimitersmode}, \typ {mathdirection}, \typ
+% {mathdisplayskipmode}, \typ {matheqnogapstep}, \typ {mathflattenmode}, \typ
+% {mathfontcontrol}, \typ {mathitalicsmode}, \typ {mathnolimitsmode}, \typ
+% {mathpenaltiesmode}, \typ {mathrulesfam}, \typ {mathrulesmode}, \typ
+% {mathrulethicknessmode}, \typ {mathscale}, \typ {mathscriptboxmode}, \typ
+% {mathscriptcharmode}, \typ {mathscriptsmode}, \typ {mathstyle}, \typ
+% {mathsurroundmode}, \typ {mathsurroundskip}, \typ {mugluespecdef}, \typ
+% {noaligned}, \typ {noboundary}, \typ {nohrule}, \typ {normalizelinemode}, \typ
+% {nospaces}, \typ {novrule}, \typ {numericscale}, \typ {numexpression}, \typ
+% {outputbox}, \typ {parattribute}, \typ {pardirection}, \typ {postexhyphenchar},
+% \typ {posthyphenchar}, \typ {prebinoppenalty}, \typ {predisplaygapfactor}, \typ
+% {preexhyphenchar}, \typ {prehyphenchar}, \typ {prerelpenalty}, \typ
+% {protrudechars}, \typ {protrusionboundary}, \typ {pxdimen}, \typ {quitvmode},
+% \typ {retokenize}, \typ {rightmarginkern}, \typ {rpcode}, \typ
+% {savecatcodetable}, \typ {scantextokens}, \typ {semiexpanded}, \typ {setfontid},
+% \typ {snapshotpar}, \typ {supmarkmode}, \typ {textdirection}, \typ
+% {thewithoutunit}, \typ {tpack}, \typ {tracingexpressions}, \typ {tracingfonts},
+% \typ {tracinghyphenation}, \typ {tracingmath}, \typ {undent}, \typ {vpack}, \typ
+% {wordboundary}, \typ {wrapuppar}.
+% \stopalign
+%
+% {\em Some new primitives in this list might be forgotten or already became
+% obsolete. Let me know if you run into one.}
 
 \stopsubject
 
@@ -176,18 +185,67 @@ obsolete. Let me know if you run into one.}
 % code so that it dealt a bit more natural with the newer features. A usual side
 % effects if writing manuals.
 
-% \startoldprimitive[title={\tex {meaning}}]
+\startoldprimitive[title={\prm {meaning}}]
+
+We start with a primitive that will be used in the following sections. The
+reported meaning can look a bit different than the one reported by other engines
+which is a side effect of additional properties and more extensive argument
+parsing.
+
+\startbuffer
+\tolerant\permanent\protected\gdef\foo[#1]#*[#2]{(#1)(#2)} \meaning\foo
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopoldprimitive
+
+\startnewprimitive[title={\prm {meaningless}}]
+
+This one reports a bit less than \prm {meaning}.
+
+\startbuffer
+\tolerant\permanent\protected\gdef\foo[#1]#*[#2]{(#1)(#2)} \meaningless\foo
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {meaningfull}}]
+
+This one reports a bit more than \prm {meaning}.
+
+\startbuffer
+\tolerant\permanent\protected\gdef\foo[#1]#*[#2]{(#1)(#2)} \meaningfull\foo
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {meaningasis}}]
+
+Although it is not really round trip with the original due to information
+being lost this primitive tries to return an equivalent definition.
+
+\startbuffer
+\tolerant\permanent\protected\gdef\foo[#1]#*[#2]{(#1)(#2)} \meaningasis\foo
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopnewprimitive
+
+% \startoldprimitive[title={\prm {par}}]
 % \stopoldprimitive
 %
-% \startoldprimitive[title={\tex {par}}]
-% \stopoldprimitive
-%
-% \startoldprimitive[title={\tex {linepar}}]
+% \startoldprimitive[title={\prm {linepar}}]
 % \stopoldprimitive
 
-\startoldprimitive[title={\tex {afterassignment}}]
+\startoldprimitive[title={\prm {afterassignment}}]
 
-The token following \type {\afterassignment}, a traditional \TEX\ primitive, is
+The token following \prm {afterassignment}, a traditional \TEX\ primitive, is
 saved and gets injected (and then expanded) after a following assignment took
 place.
 
@@ -201,18 +259,18 @@ place.
 
 \typebuffer
 
-The \type {\afterassignment}s are not accumulated, the last one wins:
+The \prm {afterassignment}s are not accumulated, the last one wins:
 
 {\getbuffer}
 
 \stopoldprimitive
 
-\startnewprimitive[title={\tex {afterassigned}}]
+\startnewprimitive[title={\prm {afterassigned}}]
 
-The \type {\afterassignment} primitive stores a token to be injected (and thereby
-expanded) after an assignment has happened. Unlike \type {\aftergroup}, multiple
+The \prm {afterassignment} primitive stores a token to be injected (and thereby
+expanded) after an assignment has happened. Unlike \prm {aftergroup}, multiple
 calls are not accumulated, and changing that would be too incompatible. This is
-why we have \type {\afterassigned}, which can be used to inject a bunch of
+why we have \prm {afterassigned}, which can be used to inject a bunch of
 tokens. But in order to be consistent this one is also not accumulative.
 
 \startbuffer
@@ -227,16 +285,16 @@ results in: \inlinebuffer\ being typeset.
 
 \stopnewprimitive
 
-\startoldprimitive[title={\tex {aftergroup}}]
+\startoldprimitive[title={\prm {aftergroup}}]
 
-The traditional \TEX\ \type {\aftergroup} primitive stores the next token and
+The traditional \TEX\ \prm {aftergroup} primitive stores the next token and
 expands that after the group has been closed.
 
 \startbuffer
 before{ ! \aftergroup a\aftergroup f\aftergroup t\aftergroup e\aftergroup r}
 \stopbuffer
 
-Multiple \type {\aftergroup}s are combined:
+Multiple \prm {aftergroup}s are combined:
 
 \typebuffer
 
@@ -244,9 +302,9 @@ Multiple \type {\aftergroup}s are combined:
 
 \stopoldprimitive
 
-\startnewprimitive[title={\tex {aftergrouped}}]
+\startnewprimitive[title={\prm {aftergrouped}}]
 
-The in itself powerful \type {\aftergroup} primitives works quite well, even
+The in itself powerful \prm {aftergroup} primitives works quite well, even
 if you need to do more than one thing: you can either use it multiple times, or
 you can define a macro that does multiple things and apply that after the group.
 However, you can avoid that by using this primitive which takes a list of tokens.
@@ -267,7 +325,7 @@ Because it happens after the group, we're no longer typesetting in bold.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {atendofgroup}}]
+\startnewprimitive[title={\prm {atendofgroup}}]
 
 The token provided will be injected just before the group ends. Because
 these tokens are collected, you need to be aware of possible interference
@@ -284,14 +342,14 @@ between them. However, normally this is managed by the macro package.
 \typebuffer
 
 Of course these effects can also be achieved by combining (extra) grouping with
-\type {\aftergroup} calls, so this is more a convenience primitives than a real
+\prm {aftergroup} calls, so this is more a convenience primitives than a real
 necessity: {\inlinebuffer}, as proven here.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {atendofgrouped}}]
+\startnewprimitive[title={\prm {atendofgrouped}}]
 
-This is the multi token variant of \type {\atendofgroup}. Of course the next
+This is the multi token variant of \prm {atendofgroup}. Of course the next
 example is somewhat naive when it comes to spacing and so, but it shows the
 purpose.
 
@@ -309,7 +367,7 @@ Multiple invocations are accumulated: {\inlinebuffer}.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {toksapp}}]
+\startnewprimitive[title={\prm {toksapp}}]
 
 One way to append something to a token list is the following:
 
@@ -334,9 +392,9 @@ times.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {etoksapp}}]
+\startnewprimitive[title={\prm {etoksapp}}]
 
-A variant of \type {\toksapp} is the following: it expands the to be appended
+A variant of \prm {toksapp} is the following: it expands the to be appended
 content.
 
 \starttyping
@@ -346,9 +404,9 @@ content.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {tokspre}}]
+\startnewprimitive[title={\prm {tokspre}}]
 
-Where appending something is easy because of the possible \type {\expandafter}
+Where appending something is easy because of the possible \prm {expandafter}
 trickery a prepend would involve more work, either using temporary token
 registers and|/|or using a mixture of the (no)expansion added by \ETEX, but all
 are kind of inefficient and cumbersome.
@@ -362,9 +420,9 @@ This prepends the token list that is provided.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {etokspre}}]
+\startnewprimitive[title={\prm {etokspre}}]
 
-A variant of \type {\tokspre} is the following: it expands the to be prepended
+A variant of \prm {tokspre} is the following: it expands the to be prepended
 content.
 
 \starttyping
@@ -374,35 +432,35 @@ content.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {gtoksapp}}]
+\startnewprimitive[title={\prm {gtoksapp}}]
 
-This is the global variant of \type {\toksapp}.
-
-\stopnewprimitive
-
-\startnewprimitive[title={\tex {xtoksapp}}]
-
-This is the global variant of \type {\etoksapp}.
+This is the global variant of \prm {toksapp}.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {gtokspre}}]
+\startnewprimitive[title={\prm {xtoksapp}}]
 
-This is the global variant of \type {\tokspre}.
-
-\stopnewprimitive
-
-\startnewprimitive[title={\tex {xtokspre}}]
-
-This is the global variant of \type {\etokspre}.
+This is the global variant of \prm {etoksapp}.
 
 \stopnewprimitive
 
-\startoldprimitive[title={\tex {csname}}]
+\startnewprimitive[title={\prm {gtokspre}}]
+
+This is the global variant of \prm {tokspre}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {xtokspre}}]
+
+This is the global variant of \prm {etokspre}.
+
+\stopnewprimitive
+
+\startoldprimitive[title={\prm {csname}}]
 
 This original \TEX\ primitive starts the construction of a control sequence
 reference. It does a lookup and when no sequence with than name is found, it will
-create a hash entry and defaults its meaning to \type {\relax}.
+create a hash entry and defaults its meaning to \prm {relax}.
 
 \starttyping
 \csname letters and other characters\endcsname
@@ -410,15 +468,15 @@ create a hash entry and defaults its meaning to \type {\relax}.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {endcsname}}]
+\startoldprimitive[title={\prm {endcsname}}]
 
-This primitive is used in combination with \type {\csname}, \type {\ifcsname} and
-\type {\begincsname} where its end the scanning for the to be constructed control
+This primitive is used in combination with \prm {csname}, \prm {ifcsname} and
+\prm {begincsname} where its end the scanning for the to be constructed control
 sequence token.
 
 \stopoldprimitive
 
-\startnewprimitive[title={\tex {begincsname}}]
+\startnewprimitive[title={\prm {begincsname}}]
 
 The next code creates a control sequence token from the given serialized tokens:
 
@@ -427,7 +485,7 @@ The next code creates a control sequence token from the given serialized tokens:
 \stoptyping
 
 When \type {\mymacro} is not defined a control sequence will be created with the
-meaning \type {\relax}. A side effect is that a test for its existence might fail
+meaning \prm {relax}. A side effect is that a test for its existence might fail
 because it now exists. The next sequence will {\em not} create an controil
 sequence:
 
@@ -445,7 +503,7 @@ This actually is kind of equivalent to:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {lastnamedcs}}]
+\startnewprimitive[title={\prm {lastnamedcs}}]
 
 The example code in the previous section has some redundancy, in the sense that
 there to be looked up control sequence name \type {mymacro} is assembled twice.
@@ -472,9 +530,9 @@ less tokens and parsing. It might even look nicer.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {futureexpand}}]
+\startnewprimitive[title={\prm {futureexpand}}]
 
-This primitive can be used as an alternative to a \type {\futurelet} approach,
+This primitive can be used as an alternative to a \prm {futurelet} approach,
 which is where the name comes from. \footnote {In the engine primitives
 that have similar behavior are grouped in commands that are then dealt with
 together, code wise.}
@@ -514,7 +572,7 @@ This gives us:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {futureexpandis}}]
+\startnewprimitive[title={\prm {futureexpandis}}]
 
 We assume that the previous section is read. This variant will not push back
 spaces, which permits a consistent approach i.e.\ the user can assume that macro
@@ -535,21 +593,21 @@ always gobbles the spaces.
 So, here no spaces are pushed back. This \type {is} in the name of this primitive
 means \quote {ignore spaces}, but having that added to the name would have made
 the primitive even more verbose (after all, we also don't have \type
-{\expandeddef} but \type {\edef} and no \type {\globalexpandeddef} but \type
-{\xdef}.
+{\expandeddef} but \prm {edef} and no \type {\globalexpandeddef} but \prm
+{xdef}.
 
 {\getbuffer}
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {futureexpandisap}}]
+\startnewprimitive[title={\prm {futureexpandisap}}]
 
 This primitive is like the one in the previous section but also ignores par
 tokens, so \type {isap} means \quote {ignore spaces and paragraphs}.
 
 \stopnewprimitive
 
-\startoldprimitive[title={\tex {expandafter}}]
+\startoldprimitive[title={\prm {expandafter}}]
 
 This original \TEX\ primitive stores the next token, does a one level expansion
 of what follows it, which actually can be an not expandable token, and
@@ -559,15 +617,15 @@ reinjects the stored token in the input. Like:
 \expandafter\let\csname my weird macro name\endcsname{m w m n}
 \stoptyping
 
-Without \type {\expandafter} the \type {\csname} primitive would have been let to
+Without \prm {expandafter} the \prm {csname} primitive would have been let to
 the left brace (effectively then a begin group). Actually in this particular case
 the control sequence with the weird name is injected and when it didn't yet exist
-it will get the meaning \type {\relax} so we sort of have two assignments in a
+it will get the meaning \prm {relax} so we sort of have two assignments in a
 row then.
 
 \stopoldprimitive
 
-\startnewprimitive[title={\tex {expandafterspaces}}]
+\startnewprimitive[title={\prm {expandafterspaces}}]
 
 This is a gobbler: the next token is reinjected after following spaces have been
 read. Here is a simple example:
@@ -588,7 +646,7 @@ a space (and leading spaces in a line are normally being ingored anyway).
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {expandafterpars}}]
+\startnewprimitive[title={\prm {expandafterpars}}]
 
 Here is another gobbler: the next token is reinjected after following spaces
 and par tokens have been read. So:
@@ -604,16 +662,16 @@ and par tokens have been read. So:
 
 \typebuffer
 
-gives us: \inlinebuffer, because empty lines are like \type {\par} and therefore
+gives us: \inlinebuffer, because empty lines are like \prm {par} and therefore
 ignored.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {expandtoken}}]
+\startnewprimitive[title={\prm {expandtoken}}]
 
 This primitive creates a token with a specific combination of catcode and
 character code. Because it assumes some knowledge of \TEX\ we can show it
-using some \type {\expandafter} magic:
+using some \prm {expandafter} magic:
 
 \startbuffer
 \expandafter\let\expandafter\temp\expandtoken 11 `X \meaning\temp
@@ -664,15 +722,16 @@ characters with catcode 10 are spaces, while those with code 9 are ignored.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {expandcstoken}}]
+\startnewprimitive[title={\prm {expandcstoken}}]
 
-The rationale behind this primitive is that when we \type {\let} a single token
+The rationale behind this primitive is that when we \prm {let} a single token
 like a character it is hard to compare that with something similar, stored in a
-macro. This primitive pushes back a single token alias created by \type {\let}
+macro. This primitive pushes back a single token alias created by \prm {let}
 into the input.
 
 \startbuffer
-\let\tempA + \meaning\tempA \crlf
+\let\tempA + \meaning\tempA
+
 \let\tempB X \meaning\tempB \crlf
 \let\tempC $ \meaning\tempC \par
 
@@ -691,7 +750,7 @@ into the input.
 
 \typebuffer
 
-The meaning of the \type {\let} macros shows that we have a shortcut to a
+The meaning of the \prm {let} macros shows that we have a shortcut to a
 character with (in this case) catcode letter, other (here \quote {other
 character} gets abbreviated to \quote {character}), math shift etc.
 
@@ -703,16 +762,16 @@ content of the two arguments is compared.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {expand}}]
+\startnewprimitive[title={\prm {expand}}]
 
-Normally a protected macro will not be expanded inside for instance an \type
-{\edef} but there is a way out: \footnote {This primitive is dedicated to Hans vd
+Normally a protected macro will not be expanded inside for instance an \prm
+{edef} but there is a way out: \footnote {This primitive is dedicated to Hans vd
 Meer who was playing with the unprotected version of \type {\doifelse} and
 wondered about the reason for it not being expandable in the first place.}
 
 \startbuffer
 \edef\temp       {\doifelse{a}{b}{c}{d}} \meaning\temp \crlf
-\edef\temp{\expand\doifelse{a}{b}{c}{d}} \meaning\temp
+\edef\temp{\expand\doifelse{a}{b}{c}{d}} \meaning\temp \par
 \stopbuffer
 
 \typebuffer
@@ -725,16 +784,16 @@ case in \CONTEXT\ \LMTX, but not in \MKIV.
 
 \stopnewprimitive
 
-\startoldprimitive[title={\tex {ignorespaces}}]
+\startoldprimitive[title={\prm {ignorespaces}}]
 
 This traditional \TEX\ primitive signals the scanner to ignore the following
 spaces, if any. We mention it because we show a companion in the next section.
 
 \stopoldprimitive
 
-\startnewprimitive[title={\tex {ignorepars}}]
+\startnewprimitive[title={\prm {ignorepars}}]
 
-This is a variant of \type {\ignorespaces}: following spaces {\em and} \type
+This is a variant of \prm {ignorespaces}: following spaces {\em and} \type
 {\par} equivalent tokens are ignored, so for instance:
 
 \startbuffer
@@ -746,16 +805,16 @@ three
 
 \typebuffer
 
-renders as: \inlinebuffer. Traditionally \TEX\ has been sensitive to \type {\par}
+renders as: \inlinebuffer. Traditionally \TEX\ has been sensitive to \prm {par}
 tokens in some of its building blocks. This has to do with the fact that it could
 indicate a runaway argument which in the times of slower machines and terminals
 was best to catch early. In \LUAMETATEX\ we no longer have long macros and the
-mechanisms that are sensitive can be told to accept \type {\par} tokens (and
+mechanisms that are sensitive can be told to accept \prm {par} tokens (and
 \CONTEXT\ set them such that this is the case).
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ignorearguments}}]
+\startnewprimitive[title={\prm {ignorearguments}}]
 
 This primitive will quit argument scanning and start expansion of the body of a
 macro. The number of grabbed arguments can be tested as follows:
@@ -767,7 +826,7 @@ macro. The number of grabbed arguments can be tested as follows:
 \MyMacro          \ignorearguments \quad
 \MyMacro       [1]\ignorearguments \quad
 \MyMacro    [1][2]\ignorearguments \quad
-\MyMacro [1][2][3]\ignorearguments \crlf
+\MyMacro [1][2][3]\ignorearguments \par
 \stopbuffer
 
 \typebuffer
@@ -778,41 +837,41 @@ macro. The number of grabbed arguments can be tested as follows:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {lastarguments}}]
+\startnewprimitive[title={\prm {lastarguments}}]
 
 \startbuffer
 \def\MyMacro    #1{\the\lastarguments (#1) }          \MyMacro{1}       \crlf
 \def\MyMacro  #1#2{\the\lastarguments (#1) (#2)}      \MyMacro{1}{2}    \crlf
-\def\MyMacro#1#2#3{\the\lastarguments (#1) (#2) (#3)} \MyMacro{1}{2}{3} \crlf
+\def\MyMacro#1#2#3{\the\lastarguments (#1) (#2) (#3)} \MyMacro{1}{2}{3} \par
 
 \def\MyMacro    #1{(#1)           \the\lastarguments} \MyMacro{1}       \crlf
 \def\MyMacro  #1#2{(#1) (#2)      \the\lastarguments} \MyMacro{1}{2}    \crlf
-\def\MyMacro#1#2#3{(#1) (#2) (#3) \the\lastarguments} \MyMacro{1}{2}{3} \crlf
+\def\MyMacro#1#2#3{(#1) (#2) (#3) \the\lastarguments} \MyMacro{1}{2}{3} \par
 \stopbuffer
 
 \typebuffer
 
-The value of \type {\lastarguments} can only be trusted in the expansion until
+The value of \prm {lastarguments} can only be trusted in the expansion until
 another macro is seen and expanded. For instance in these examples, as soon as a
 character (like the left parenthesis) is seen, horizontal mode is entered and
-\type {\everypar} is expanded which in turn can involve macros. You can see that
-in the second block (that is: unless we changed \type {\everypar} in the
+\prm {everypar} is expanded which in turn can involve macros. You can see that
+in the second block (that is: unless we changed \prm {everypar} in the
 meantime).
 
 {\getbuffer}
 
 \stopnewprimitive
 
-\startoldprimitive[title={\tex {scantokens}}]
+\startoldprimitive[title={\prm {scantokens}}]
 
 Just forget about this \ETEX\ primnitive, just take the one in the next section.
 
 \stopoldprimitive
 
-\startnewprimitive[title={\tex {scantextokens}}]
+\startnewprimitive[title={\prm {scantextokens}}]
 
 This primitive scans the input as if it comes from a file. In the next examples
-the \type {\detokenize} primitive turns tokenized code into verbatim code that is
+the \prm {detokenize} primitive turns tokenized code into verbatim code that is
 similar to what is read from a file.
 
 \startbuffer
@@ -820,19 +879,19 @@ similar to what is read from a file.
 \detokenize   {This is {\bf bold} and this is not.}\crlf
 \scantextokens{This is {\bf bold} and this is not.}\crlf
 \scantextokens{\whatever}\crlf
-\scantextokens\expandafter{\whatever}
+\scantextokens\expandafter{\whatever}\par
 \stopbuffer
 
 \typebuffer
 
 This primitive does not have the end|-|of|-|file side effects of its precursor
-\type {\scantokens}.
+\prm {scantokens}.
 
 {\getbuffer}
 
 \stopnewprimitive
 
-\startoldprimitive[title={\tex {number}}]
+\startoldprimitive[title={\prm {number}}]
 
 This \TEX\ primitive serializes the next token into a number, assuming that it
 is indeed a number, like
@@ -843,13 +902,116 @@ is indeed a number, like
 \number\scratchcounter
 \stoptyping
 
-For counters and such the \type {\the} primitive does the same, but when you're
+For counters and such the \prm {the} primitive does the same, but when you're
 not sure if what follows is a verbose number or (for instance) a counter the
-\type {\number} primitive is a safer bet, because \type {\the 65} will not work.
+\prm {number} primitive is a safer bet, because \type {\the 65} will not work.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {string}}]
+\startnewprimitive[title={\prm {tointeger}}]
+
+\startbuffer
+\scratchcounter = 1234 \tointeger\scratchcounter
+\stopbuffer
+
+The following code gives this: {\nospacing\inlinebuffer} and is equivalent to
+\prm {number}.
+
+\typebuffer
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {tohexadecimal}}]
+
+\startbuffer
+\scratchcounter = 1234 \tohexadecimal\scratchcounter
+\stopbuffer
+
+The following code gives this: {\nospacing\inlinebuffer} with uppercase letters.
+
+\typebuffer
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {todimension}}]
+
+\startbuffer
+\scratchdimen = 1234pt \todimension\scratchdimen
+\stopbuffer
+
+The following code gives this: {\nospacing\inlinebuffer} and like its numeric
+counterparts accepts anything that resembles a number this one goes beyond
+(user, internal or pseudo) registers values too.
+
+\typebuffer
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {toscaled}}]
+
+\startbuffer
+\scratchdimen = 1234pt \toscaled\scratchdimen
+\stopbuffer
+
+The following code gives this: {\nospacing\inlinebuffer} is similar to \prm
+{todimension} but omits the \type {pt} so that we don't need to revert to some
+nasty stripping code.
+
+\typebuffer
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {tosparsedimension}}]
+
+\startbuffer
+\scratchdimen = 1234pt \tosparsedimension\scratchdimen
+\stopbuffer
+
+The following code gives this: {\nospacing\inlinebuffer} where \quote {sparse}
+indicates that redundant trailing zeros are not shown.
+
+\typebuffer
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {tosparsescaled}}]
+
+\startbuffer
+\scratchdimen = 1234pt \tosparsescaled\scratchdimen
+\stopbuffer
+
+The following code gives this: {\nospacing\inlinebuffer} where \quote {sparse}
+means that redundant trailing zeros are omitted.
+
+\typebuffer
+
+\stopnewprimitive
+
+\startoldprimitive[title={\prm {numericscale}}]
+
+This primitive can best be explained by a few examples:
+
+\startbuffer
+\the\numericscale 1323
+\the\numericscale 1323.0
+\the\numericscale 1.323
+\the\numericscale 13.23
+\stopbuffer
+
+\typebuffer
+
+In several places \TEX\ uses a scale but due to the lack of floats it then uses
+1000 as 1.0 replacement. This primitive can be used for \quote {real} scales and
+the period signals this:
+
+\startlines \getbuffer \stoplines
+
+When there is a period (indicating the fraction) the result is an integer (count)
+that has the multiplier 1000 applied.
+
+\stopnewprimitive
+
+\startoldprimitive[title={\prm {string}}]
 
 We mention this original primitive because of the one in the next section. It
 expands the next token or control sequence as if it was just entered, so normally
@@ -857,7 +1019,7 @@ a control sequence becomes a backslash followed by characters and a space.
 
 \stopoldprimitive
 
-\startnewprimitive[title={\tex {csstring}}]
+\startnewprimitive[title={\prm {csstring}}]
 
 This primitive returns the name of the control sequence given without the leading
 escape character (normally a backslash). Of course you could strip that character
@@ -873,10 +1035,10 @@ We get the name, not the meaning: {\tt \inlinebuffer}.
 
 \stopnewprimitive
 
-\startoldprimitive[title={\tex {unexpanded}}]
+\startoldprimitive[title={\prm {unexpanded}}]
 
 This is an \ETEX\ enhancement. The content will not be expanded in a context
-where expansion is happening, like in an \type {\edef}. In \CONTEXT\ you need to
+where expansion is happening, like in an \prm {edef}. In \CONTEXT\ you need to
 use \type {\normalunexpanded} because we already had a macro with that name.
 
 \startbuffer
@@ -892,7 +1054,7 @@ use \type {\normalunexpanded} because we already had a macro with that name.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {detokenize}}]
+\startoldprimitive[title={\prm {detokenize}}]
 
 This \ETEX\ primitive turns the content of the provides list will become
 characters, kind of verbatim.
@@ -908,10 +1070,10 @@ characters, kind of verbatim.
 
 \stopoldprimitive
 
-\startnewprimitive[title={\tex {tokenized}}]
+\startnewprimitive[title={\prm {tokenized}}]
 
-Just as \type {\expanded} has a counterpart \type {\unexpanded}, it makes sense to give
-\type {\detokenize} a companion:
+Just as \prm {expanded} has a counterpart \prm {unexpanded}, it makes sense to give
+\prm {detokenize} a companion:
 
 \startbuffer
 \edef\foo{\detokenize{\inframed{foo}}}
@@ -939,7 +1101,7 @@ much (if at all).
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {expanded}}]
+\startnewprimitive[title={\prm {expanded}}]
 
 This primitive complements the two expansion related primitives mentioned in the
 previous two sections. This time the content will be expanded and then pushed
@@ -952,16 +1114,16 @@ examples:
 \def\A{!}
           \def\B#1{\string#1}                          \B{\A}  \crlf
           \def\B#1{\string#1} \normalexpanded{\noexpand\B{\A}} \crlf
-\protected\def\B#1{\string#1}                          \B{\A}  \crlf
+\protected\def\B#1{\string#1}                          \B{\A}  \par
 \stopbuffer
 
 \typebuffer {\getbuffer}
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {numexpression}}]
+\startnewprimitive[title={\prm {numexpression}}]
 
-The normal \tex {numexpr} primitive understands the \type {+}, \type {-}, \type
+The normal \prm {numexpr} primitive understands the \type {+}, \type {-}, \type
 {*} and \type {/} operators but in \LUAMETATEX\ we also can use \type {:} for a
 non rounded integer division (think of \LUA's \type {//}). if you want more than
 that, you can use the new expression primitive where you can use the following
@@ -1002,7 +1164,7 @@ An example of the verbose bitwise operators is:
 In the table you might have notices that some operators have equivalents. This
 makes the scanner a bit less sensitive for catcode regimes.
 
-When \type {\tracingexpressions} is set to one or higher the intermediate \quote
+When \prm {tracingexpressions} is set to one or higher the intermediate \quote
 {reverse polish notation} stack that is used for the calculation is shown, for
 instance:
 
@@ -1019,15 +1181,15 @@ When you want the output on your console, you need to say:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {dimexpression}}]
+\startnewprimitive[title={\prm {dimexpression}}]
 
-This command is like \tex {numexpression} but results in a dimension instead of
-an integer. Where \tex {dimexpr} doesn't like \typ {2 * 10pt} this expression
+This command is like \prm {numexpression} but results in a dimension instead of
+an integer. Where \prm {dimexpr} doesn't like \typ {2 * 10pt} this expression
 primitive is quite happy with it.
 
 \stopnewprimitive
 
-\startoldprimitive[title={\tex {if}}]
+\startoldprimitive[title={\prm {if}}]
 
 This traditional \TEX\ conditional checks if two character codes are the same. In
 order to understand unexpanded results it is good to know that internally \TEX\
@@ -1055,7 +1217,7 @@ we get the extra \type {A}:
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {ifcat}}]
+\startoldprimitive[title={\prm {ifcat}}]
 
 Another traditional \TEX\ primitive: what happens with what gets read in depends
 on the catcode of a character, think of characters marked to start math mode, or
@@ -1083,7 +1245,7 @@ need to compare characters.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {ifnum}}]
+\startoldprimitive[title={\prm {ifnum}}]
 
 This is a frequently used conditional: it compares two numbers where a number is
 anything that can be seen as such.
@@ -1098,15 +1260,44 @@ anything that can be seen as such.
 
 \typebuffer
 
-Unless a number is an unexpandable token it ends with a space or \type {\relax},
+Unless a number is an unexpandable token it ends with a space or \prm {relax},
 so when you end up in the true branch, you'd better check if \TEX\ could
 determine where the number ends.
 
 {\getbuffer}
 
+% When comparing integers, definitions (for instance characters) that can be seen
+% as such, or any converter that produces a number (like the \type {`} or \prm
+% {number} the usual \type {=}, \type {<} or \type {>} can be used. However, in
+% \LUAMETATEX\ you can negate such a comparison by \type {!}: \type {!=}, \type
+% {!<} or \type {!>}. Successive \type {!} toggle the negation state.
+
+On top of these \ASCII\ combinations, the engine also accepts some \UNICODE\
+characters. This brings the full repertoire to:
+
+\starttabulate[|l|cT|cT|l|]
+\FL
+\BC character      \BC               \BC    \BC operation         \NC \NR
+\ML
+\NC \type {0x003C} \NC $\Uchar"003C$ \NC    \NC less              \NC \NR
+\NC \type {0x003D} \NC $\Uchar"003D$ \NC    \NC equal             \NC \NR
+\NC \type {0x003E} \NC $\Uchar"003E$ \NC    \NC more              \NC \NR
+\NC \type {0x2208} \NC $\Uchar"2208$ \NC    \NC element of        \NC \NR
+\NC \type {0x2209} \NC $\Uchar"2209$ \NC    \NC not element of    \NC \NR
+\NC \type {0x2260} \NC $\Uchar"2260$ \NC != \NC not equal         \NC \NR
+\NC \type {0x2264} \NC $\Uchar"2264$ \NC !> \NC less equal        \NC \NR
+\NC \type {0x2265} \NC $\Uchar"2265$ \NC !< \NC greater equal     \NC \NR
+\NC \type {0x2270} \NC $\Uchar"2270$ \NC    \NC not less equal    \NC \NR
+\NC \type {0x2271} \NC $\Uchar"2271$ \NC    \NC not greater equal \NC \NR
+\LL
+\stoptabulate
+
+This also applied to \prm {ifdim} although in the case of element we discard the
+fractional part (read: divide the numeric representation by 65536).
+
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {ifdim}}]
+\startoldprimitive[title={\prm {ifdim}}]
 
 Dimensions can be compared with this traditional \TEX\ primitive.
 
@@ -1125,7 +1316,7 @@ The units are mandate:
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {ifodd}}]
+\startoldprimitive[title={\prm {ifodd}}]
 
 One reason for this condition to be around is that in a double sided layout we
 need test for being on an odd or even page. It scans for a number the same was
@@ -1142,36 +1333,36 @@ So: {\inlinebuffer}
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {ifvmode}}]
+\startoldprimitive[title={\prm {ifvmode}}]
 
 This traditional conditional checks we are in (internal) vertical mode.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {ifhmode}}]
+\startoldprimitive[title={\prm {ifhmode}}]
 
 This traditional conditional checks we are in (restricted) horizontal mode.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {ifmmode}}]
+\startoldprimitive[title={\prm {ifmmode}}]
 
 This traditional conditional checks we are in (inline or display) math mode mode.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {ifinner}}]
+\startoldprimitive[title={\prm {ifinner}}]
 
 This traditional one can be confusing. It is true when we are in restricted
 horizontal mode (a box), internal vertical mode (a box), or inline math mode.
 
 \startbuffer
 test \ifhmode \ifinner INNER\fi HMODE\fi\crlf
-\hbox{test \ifhmode \ifinner INNER \fi HMODE\fi} \crlf
+\hbox{test \ifhmode \ifinner INNER \fi HMODE\fi} \par
 
 \ifvmode \ifinner INNER\fi VMODE \fi\crlf
 \vbox{\ifvmode \ifinner INNER \fi VMODE\fi} \crlf
-\vbox{\ifinner INNER \ifvmode VMODE \fi \fi} \crlf
+\vbox{\ifinner INNER \ifvmode VMODE \fi \fi} \par
 \stopbuffer
 
 \typebuffer
@@ -1182,48 +1373,48 @@ Watch the last line: because we typeset \type {INNER} we enter horizontal mode:
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {ifvoid}}]
+\startoldprimitive[title={\prm {ifvoid}}]
 
 This traditional conditional checks if a given box register or internal box
 variable has any content.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {ifhbox}}]
+\startoldprimitive[title={\prm {ifhbox}}]
 
 This traditional conditional checks if a given box register or internal box
 variable represents a horizontal box,
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {ifvbox}}]
+\startoldprimitive[title={\prm {ifvbox}}]
 
 This traditional conditional checks if a given box register or internal box
 variable represents a vertical box,
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {ifx}}]
+\startoldprimitive[title={\prm {ifx}}]
 
-We use this traditional \TEX\ conditional a lot in \CONTEXT. Contrary to \type {\if}
+We use this traditional \TEX\ conditional a lot in \CONTEXT. Contrary to \prm {if}
 the two tokens that are compared are not expanded. This makes it possible to compare
 the meaning of two macros. Depending on the need, these macros can have their content
 expanded or not. A different number of parameters results in false.
 
 Control sequences are identical when they have the same command code and
-character code. Because a \type {\let} macro is just a reference, both let macros
-are the same and equal to \type {\relax}:
+character code. Because a \prm {let} macro is just a reference, both let macros
+are the same and equal to \prm {relax}:
 
 \starttyping
 \let\one\relax \let\two\relax
 \stoptyping
 
 The same is true for other definitions that result in the same (primitive) or
-meaning encoded in the character field (think of \type {\chardef}s and so).
+meaning encoded in the character field (think of \prm {chardef}s and so).
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {ifeof}}]
+\startoldprimitive[title={\prm {ifeof}}]
 
 This traditional conditional checks if current pointer into the the file bound to
 the given index is past the end of file. The read and write channels are not
@@ -1232,21 +1423,21 @@ data, and in \MKIV\ all file related stuff is dealt with in \LUATEX.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {iftrue}}]
+\startoldprimitive[title={\prm {iftrue}}]
 
 Here we have a traditional \TEX\ conditional that is always true (therefore the
-same is true for any macro that is \type {\let} to this primitive).
+same is true for any macro that is \prm {let} to this primitive).
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {iffalse}}]
+\startoldprimitive[title={\prm {iffalse}}]
 
 Here we have a traditional \TEX\ conditional that is always false (therefore the
-same is true for any macro that is \type {\let} to this primitive).
+same is true for any macro that is \prm {let} to this primitive).
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {ifcase}}]
+\startoldprimitive[title={\prm {ifcase}}]
 
 This numeric \TEX\ conditional takes a counter (literal, register, shortcut to a
 character, internal quantity) and goes to the branch that matches.
@@ -1258,11 +1449,11 @@ character, internal quantity) and goes to the branch that matches.
 \typebuffer
 
 Indeed: \inlinebuffer\ equals three. In later sections we will see some
-\LUAMETATEX\ primitives that behave like an \type {\ifcase}.
+\LUAMETATEX\ primitives that behave like an \prm {ifcase}.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {ifdefined}}]
+\startoldprimitive[title={\prm {ifdefined}}]
 
 In traditional \TEX\ checking for a macro to exist was a bit tricky and therefore
 \ETEX\ introduced a convenient conditional. We can do this:
@@ -1278,13 +1469,13 @@ seen was this:
 \expandafter\ifx\csname MyMacro\endcsname\relax ... \else ... \fi
 \stoptyping
 
-Instead of comparing with \type {\undefined} we need to check with \type {\relax}
+Instead of comparing with \type {\undefined} we need to check with \prm {relax}
 because the control sequence is defined when not yet present and defaults to
-\type {\relax}. This is not pretty.
+\prm {relax}. This is not pretty.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {ifcsname}}]
+\startoldprimitive[title={\prm {ifcsname}}]
 
 This is an \ETEX\ conditional that complements the one on the previous section:
 
@@ -1294,18 +1485,18 @@ This is an \ETEX\ conditional that complements the one on the previous section:
 \stoptyping
 
 Here the first one has the side effect of defining the macro and defaulting it to
-\type {\relax}, while the second one doesn't do that. Juts think of checking a
+\prm {relax}, while the second one doesn't do that. Juts think of checking a
 few million different names: the first one will deplete the hash table and
 probably string space too.
 
 In \LUAMETATEX\ the construction stops when there is no letter or other character
 seen (\TEX\ expands on the go so expandable macros are dealt with). Instead of an
-error message, the match is simply false and all tokens till the \type
-{\endcsname} are gobbled.
+error message, the match is simply false and all tokens till the \prm
+{endcsname} are gobbled.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {iffontchar}}]
+\startoldprimitive[title={\prm {iffontchar}}]
 
 This is an \ETEX\ conditional. It takes a font identifier and a character number.
 In modern fonts simply checking could not be enough because complex font features
@@ -1315,14 +1506,14 @@ just reports true when the font passed to the frontend has a slot filled.
 
 \stopoldprimitive
 
-\startnewprimitive[title={\tex {ifincsname}}]
+\startnewprimitive[title={\prm {ifincsname}}]
 
 This conditional is sort of obsolete and can be used to check if we're inside a
-\type {\csname} or \type {\ifcsname} construction. It's not used in \CONTEXT.
+\prm {csname} or \prm {ifcsname} construction. It's not used in \CONTEXT.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifabsnum}}]
+\startnewprimitive[title={\prm {ifabsnum}}]
 
 This test will negate negative numbers before comparison, as in:
 
@@ -1332,7 +1523,7 @@ This test will negate negative numbers before comparison, as in:
 
 \TestA {10}\quad\TestA {150}\quad\TestA {210}\crlf
 \TestB {10}\quad\TestB {150}\quad\TestB {210}\crlf
-\TestB{-10}\quad\TestB{-150}\quad\TestB{-210}\crlf
+\TestB{-10}\quad\TestB{-150}\quad\TestB{-210}\par
 \stopbuffer
 
 \typebuffer
@@ -1343,7 +1534,7 @@ Here we get the same result each time:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifabsdim}}]
+\startnewprimitive[title={\prm {ifabsdim}}]
 
 This test will negate negative dimensions before comparison, as in:
 
@@ -1353,7 +1544,7 @@ This test will negate negative dimensions before comparison, as in:
 
 \TestA {1pt}\quad\TestA {3pt}\quad\TestA {5pt}\crlf
 \TestB {1pt}\quad\TestB {3pt}\quad\TestB {5pt}\crlf
-\TestB{-1pt}\quad\TestB{-3pt}\quad\TestB{-5pt}\crlf
+\TestB{-1pt}\quad\TestB{-3pt}\quad\TestB{-5pt}\par
 \stopbuffer
 
 \typebuffer
@@ -1364,7 +1555,31 @@ So we get this:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifchknum}}]
+\startnewprimitive[title={\prm {ifzerodim}}]
+
+This tests for a dimen (dimension) being zero so we have:
+
+\starttyping
+\ifdim<dimension>=0pt
+\ifzerodim<dimension>
+\ifcase<dimension register>
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {ifzeronum}}]
+
+This tests for a number (integer) being zero so we have these variants now:
+
+\starttyping
+\ifnum<integer or equivalent>=0pt
+\ifzeronum<integer or equivalent>
+\ifcase<integer or equivalent>
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {ifchknum}}]
 
 In \CONTEXT\ there are quite some cases where a variable can have a number or a
 keyword indicating a symbolic name of a number or maybe even some special
@@ -1385,7 +1600,7 @@ The result is as expected:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifchkdim}}]
+\startnewprimitive[title={\prm {ifchkdim}}]
 
 A variant on the checker in the previous section is a dimension checker:
 
@@ -1403,9 +1618,9 @@ We get:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifcmpnum}}]
+\startnewprimitive[title={\prm {ifcmpnum}}]
 
-This conditional compares two numbers and the resulting \type {\ifcase} reflects
+This conditional compares two numbers and the resulting \prm {ifcase} reflects
 their relation:
 
 \startbuffer
@@ -1422,9 +1637,9 @@ This gives:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifcmpdim}}]
+\startnewprimitive[title={\prm {ifcmpdim}}]
 
-This conditional compares two dimensions and the resulting \type {\ifcase}
+This conditional compares two dimensions and the resulting \prm {ifcase}
 reflects their relation:
 
 \startbuffer
@@ -1441,9 +1656,9 @@ This gives:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifnumval}}]
+\startnewprimitive[title={\prm {ifnumval}}]
 
-This conditional is a variant on \type {\ifchknum}. This time we get
+This conditional is a variant on \prm {ifchknum}. This time we get
 some more detail about the value:
 
 \startbuffer
@@ -1461,9 +1676,9 @@ This gives:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifdimval}}]
+\startnewprimitive[title={\prm {ifdimval}}]
 
-This conditional is a variant on \type {\ifchkdim} and provides some more
+This conditional is a variant on \prm {ifchkdim} and provides some more
 detailed information about the value:
 
 \startbuffer
@@ -1481,7 +1696,7 @@ This gives:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {iftok}}]
+\startnewprimitive[title={\prm {iftok}}]
 
 When you want to compare two arguments, the usual way to do this is the
 following:
@@ -1531,7 +1746,7 @@ This:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifcstok}}]
+\startnewprimitive[title={\prm {ifcstok}}]
 
 A variant on the primitive mentioned in the previous section is one that
 operates on lists and macros:
@@ -1557,7 +1772,7 @@ This:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifcondition}}]
+\startnewprimitive[title={\prm {ifcondition}}]
 
 The conditionals in \TEX\ are hard coded as primitives and although it might
 look like \type {\newif} creates one, it actually just defined three macros.
@@ -1567,7 +1782,7 @@ look like \type {\newif} creates one, it actually just defined three macros.
 \meaning\MyTesttrue  \crlf
 \meaning\MyTestfalse \crlf
 \meaning\ifMyTest    \crlf \MyTesttrue
-\meaning\ifMyTest    \crlf
+\meaning\ifMyTest    \par
 \stopbuffer
 
 \typebuffer {\tttf \getbuffer}
@@ -1600,7 +1815,7 @@ will work out well too. This is not true for macros, so for instance:
 \stoptyping
 
 will make a run fail with an error (or simply loop forever, depending on your
-code). This is where \type {\ifcondition} enters the picture:
+code). This is where \prm {ifcondition} enters the picture:
 
 \starttyping
 \def\MyTest{\iftrue} \scratchcounter0
@@ -1625,7 +1840,7 @@ is also okay. Now, is that neat or not?
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {iffrozen}}]
+\startnewprimitive[title={\prm {iffrozen}}]
 
 This conditional checks if a control sequence is frozen:
 
@@ -1635,7 +1850,7 @@ is \iffrozen\MyMacro \else not \fi frozen
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifprotected}}]
+\startnewprimitive[title={\prm {ifprotected}}]
 
 This conditional checks if a control sequence is protected:
 
@@ -1645,7 +1860,7 @@ is \ifprotected\MyMacro \else not \fi protected
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifusercmd}}]
+\startnewprimitive[title={\prm {ifusercmd}}]
 
 This conditional checks if a control sequence is not one of the primitives:
 
@@ -1658,14 +1873,14 @@ macros, register allocations and character definitions.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifrelax}}]
+\startnewprimitive[title={\prm {ifrelax}}]
 
 This is a convenient shortcut for \typ {\ifx\relax} and the motivation for adding
 this one is (as with some others) to get less tracing.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifempty}}]
+\startnewprimitive[title={\prm {ifempty}}]
 
 This conditional checks if a control sequence is empty:
 
@@ -1693,16 +1908,16 @@ Of course this is not empty at all:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifboolean}}]
+\startnewprimitive[title={\prm {ifboolean}}]
 
 This tests a number (register or equivalent) and any nonzero value represents
 \type {true}, which is nicer than using an \type {\unless \ifcase}.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifmathparameter}}]
+\startnewprimitive[title={\prm {ifmathparameter}}]
 
-This is an \type {\ifcase} where the value depends on if the given math parameter
+This is an \prm {ifcase} where the value depends on if the given math parameter
 is zero, (\type {0}), set (\type {1}), or unset (\type {2}).
 
 \starttyping
@@ -1714,9 +1929,9 @@ is zero, (\type {0}), set (\type {1}), or unset (\type {2}).
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifmathstyle}}]
+\startnewprimitive[title={\prm {ifmathstyle}}]
 
-This is a variant of \type {\ifcase} were the number is one of the seven possible
+This is a variant of \prm {ifcase} were the number is one of the seven possible
 styles: display, text, cramped text, script, cramped script, script script,
 cramped script script.
 
@@ -1734,27 +1949,27 @@ cramped script script.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifarguments}}]
+\startnewprimitive[title={\prm {ifarguments}}]
 
-This is a variant of \type {\ifcase} were the selector is the number of arguments
+This is a variant of \prm {ifcase} were the selector is the number of arguments
 picked up. For example:
 
 \startbuffer
 \def\MyMacro#1#2#3{\ifarguments\0\or1\or2\or3\else ?\fi} \MyMacro{A}{B}{C}
 \def\MyMacro#1#0#3{\ifarguments\0\or1\or2\or3\else ?\fi} \MyMacro{A}{B}{C}
-\def\MyMacro#1#-#2{\ifarguments\0\or1\or2\or3\else ?\fi} \MyMacro{A}{B}{C}\crlf
+\def\MyMacro#1#-#2{\ifarguments\0\or1\or2\or3\else ?\fi} \MyMacro{A}{B}{C}\par
 \stopbuffer
 
 \typebuffer
 
 Watch the non counted, ignored, argument in the last case. Normally this test will
-be used in combination with \type {\ignorearguments}.
+be used in combination with \prm {ignorearguments}.
 
 {\getbuffer}
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifhastok}}]
+\startnewprimitive[title={\prm {ifhastok}}]
 
 This conditional looks for occurrences in token lists where each argument has to
 be a proper list.
@@ -1774,7 +1989,7 @@ We get:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifhastoks}}]
+\startnewprimitive[title={\prm {ifhastoks}}]
 
 This test compares two token lists. When a macro is passed it's meaning
 gets used.
@@ -1795,7 +2010,7 @@ gets used.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifhasxtoks}}]
+\startnewprimitive[title={\prm {ifhasxtoks}}]
 
 This primitive is like the one in the previous section but this time the
 given lists are expanded.
@@ -1850,7 +2065,22 @@ ok:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {ifnumexpression}}]
+\startnewprimitive[title={\prm {ifhaschar}}]
+
+This one is a simplified variant of the above:
+
+\startbuffer
+\ifhaschar !{this ! works} yes \else no \fi
+\stopbuffer
+
+\typebuffer
+
+and indeed we get: \inlinebuffer ! Of course the spaces in this this example
+code are normally not present in such a test.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {ifnumexpression}}]
 
 Here is an example of a conditional using expressions:
 
@@ -1864,7 +2094,8 @@ This matches when the result is non zero, and you can mix calculations and tests
 as with normal expressions.
 
 \stopnewprimitive
-\startnewprimitive[title={\tex {ifdimexpression}}]
+
+\startnewprimitive[title={\prm {ifdimexpression}}]
 
 The companion of the previous primitive is:
 
@@ -1880,27 +2111,27 @@ precision kicks in.
 
 \stopnewprimitive
 
-\startoldprimitive[title={\tex {else}}]
+\startoldprimitive[title={\prm {else}}]
 
 This traditional primitive is part of the condition testing mechanism. When a
-condition matches, \TEX\ will continue till it sees an \type {\else} or \type
-{\or} or \type {\orelse} (to be discussed later). It will then do a fast skipping
-pass till it sees an \type {\fi}.
+condition matches, \TEX\ will continue till it sees an \prm {else} or \prm
+{or} or \prm {orelse} (to be discussed later). It will then do a fast skipping
+pass till it sees an \prm {fi}.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {or}}]
+\startoldprimitive[title={\prm {or}}]
 
 This traditional primitive is part of the condition testing mechanism and relates
-to an \type {\ifcase} test (or a similar test to be introduced in later
+to an \prm {ifcase} test (or a similar test to be introduced in later
 sections). Depending on the value, \TEX\ will do a fast scanning till the right
-\type {\or} is seen, then it will continue expanding till it sees a \type {\or}
-or \type {\else} or \type {\orelse} (to be discussed later). It will then do a
-fast skipping pass till it sees an \type {\fi}.
+\prm {or} is seen, then it will continue expanding till it sees a \prm {or}
+or \prm {else} or \prm {orelse} (to be discussed later). It will then do a
+fast skipping pass till it sees an \prm {fi}.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {fi}}]
+\startoldprimitive[title={\prm {fi}}]
 
 This traditional primitive is part of the condition testing mechanism and ends a
 test. So, we have:
@@ -1912,12 +2143,12 @@ test. So, we have:
 \ifsomething ... \or ... \orelse \ifsometing  ... \else ... \fi
 \stoptyping
 
-The \type {\orelse} is new in \LUAMETATEX\ and a continuation like we find in
+The \prm {orelse} is new in \LUAMETATEX\ and a continuation like we find in
 other programming languages (see later section).
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {unless}}]
+\startoldprimitive[title={\prm {unless}}]
 
 This \ETEX\ prefix will negate the test (when applicable).
 
@@ -1931,7 +2162,7 @@ few cases.
 
 \stopoldprimitive
 
-\startnewprimitive[title={\tex {orelse}}]
+\startnewprimitive[title={\prm {orelse}}]
 
 This primitive provides a convenient way to flatten your conditional tests. So
 instead of
@@ -2013,23 +2244,23 @@ masters \TEX\ might hurt.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {orunless}}]
+\startnewprimitive[title={\prm {orunless}}]
 
-This is the negated variant of \tex {\orelse} (prefixing that one with \tex
+This is the negated variant of \prm {orelse} (prefixing that one with \tex
 {unless} doesn't work well.
 
 \stopnewprimitive
 
-\startoldprimitive[title={\tex {futurelet}}]
+\startoldprimitive[title={\prm {futurelet}}]
 
-The original \TEX\ primitive \type {\futurelet} can be used to create an alias to a next token,
+The original \TEX\ primitive \prm {futurelet} can be used to create an alias to a next token,
 push it back into the input and then expand a given token.
 
 \startbuffer
 \let\MySpecialToken[
 \def\DoWhatever{\ifx\NextToken\MySpecialToken YES\else NOP\fi : }
 \futurelet\NextToken\DoWhatever [A]\crlf
-\futurelet\NextToken\DoWhatever (A)
+\futurelet\NextToken\DoWhatever (A)\par
 \stopbuffer
 
 \typebuffer
@@ -2042,16 +2273,16 @@ related to user interfacing.
 
 \stopoldprimitive
 
-\startnewprimitive[title={\tex {futuredef}}]
+\startnewprimitive[title={\prm {futuredef}}]
 
-We elaborate on the example of using \type {\futurelet} in the previous section.
+We elaborate on the example of using \prm {futurelet} in the previous section.
 Compare that one with the next:
 
 \startbuffer
 \def\MySpecialToken{[}
 \def\DoWhatever{\ifx\NextToken\MySpecialToken YES\else NOP\fi : }
 \futurelet\NextToken\DoWhatever [A]\crlf
-\futurelet\NextToken\DoWhatever (A)
+\futurelet\NextToken\DoWhatever (A)\par
 \stopbuffer
 
 \typebuffer
@@ -2060,13 +2291,13 @@ This time we get:
 
 {\getbuffer}
 
-It is for that reason that we now also have \type {\futuredef}:
+It is for that reason that we now also have \prm {futuredef}:
 
 \startbuffer
 \def\MySpecialToken{[}
 \def\DoWhatever{\ifx\NextToken\MySpecialToken YES\else NOP\fi : }
 \futuredef\NextToken\DoWhatever [A]\crlf
-\futuredef\NextToken\DoWhatever (A)
+\futuredef\NextToken\DoWhatever (A)\par
 \stopbuffer
 
 \typebuffer
@@ -2077,7 +2308,7 @@ So we're back to what we want:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {futurecsname}}]
+\startnewprimitive[title={\prm {futurecsname}}]
 
 In order to make the repertoire of \type {def}, \type {let} and \type {futurelet}
 primitives complete we also have:
@@ -2088,7 +2319,7 @@ primitives complete we also have:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {letcharcode}}]
+\startnewprimitive[title={\prm {letcharcode}}]
 
 Assigning a meaning to an active character can sometimes be a bit cumbersome;
 think of using some documented uppercase magic that one tends to forget as it's
@@ -2096,7 +2327,7 @@ used only a few times and then never looked at again. So we have this:
 
 \startbuffer
 {\letcharcode 65 1 \catcode 65 13 A : \meaning A}\crlf
-{\letcharcode 65 2 \catcode 65 13 A : \meaning A}\crlf
+{\letcharcode 65 2 \catcode 65 13 A : \meaning A}\par
 \stopbuffer
 
 \typebuffer
@@ -2110,7 +2341,7 @@ Normally one will assign a control sequence:
 
 \startbuffer
 {\letcharcode 66 \bf \catcode 66 13 {B   bold}: \meaning B}\crlf
-{\letcharcode 73 \it \catcode 73 13 {I italic}: \meaning I}\crlf
+{\letcharcode 73 \it \catcode 73 13 {I italic}: \meaning I}\par
 \stopbuffer
 
 \typebuffer
@@ -2121,7 +2352,7 @@ Of course \type {\bf} and \type {\it} are \CONTEXT\ specific commands:
 
 \stopnewprimitive
 
-\startoldprimitive[title={\tex {global}}]
+\startoldprimitive[title={\prm {global}}]
 
 This is one of the original prefixes that can be used when we define a macro of
 change some register.
@@ -2139,10 +2370,10 @@ second and third definition are both global and these definitions are retained.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {long}}]
+\startoldprimitive[title={\prm {long}}]
 
 This original prefix gave the macro being defined the property that it could not
-have \type {\par} (or the often equivalent empty lines) in its arguments. It was
+have \prm {par} (or the often equivalent empty lines) in its arguments. It was
 mostly a protection against a forgotten right curly brace, resulting in a so called
 run|-|away argument. That mattered on a paper terminal or slow system where such a
 situation should be catched early. In \LUATEX\ it was already optional, and in
@@ -2150,28 +2381,28 @@ situation should be catched early. In \LUATEX\ it was already optional, and in
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {outer}}]
+\startoldprimitive[title={\prm {outer}}]
 
 An outer macro is one that can only be used at the outer level. This property is
-no longer supported. Like \type {\long}, the \type {\outer} prefix is now an
+no longer supported. Like \prm {long}, the \prm {outer} prefix is now an
 no|-|op (and we don't expect this to have unfortunate side effects).
 
 \stopoldprimitive
 
-\startoldprimitive[title={\tex {protected}}]
+\startoldprimitive[title={\prm {protected}}]
 
 A protected macro is one that doesn't get expanded unless it is time to do so.
-For instance, inside an \type {\edef} it just stays what it is. It often makes
+For instance, inside an \prm {edef} it just stays what it is. It often makes
 sense to pass macros as|-|is to (multi|-|pass) file (for tables of contents).
 
-In \CONTEXT\ we use either \type {\protected} or \type {\unexpanded} because the
+In \CONTEXT\ we use either \prm {protected} or \prm {unexpanded} because the
 later was the command we used to achieve the same results before \ETEX\
-introduced this protection primitive. Originally the \type {\protected} macro was
+introduced this protection primitive. Originally the \prm {protected} macro was
 also defined but it has been dropped.
 
 \stopoldprimitive
 
-\startnewprimitive[title={\tex {expand}}]
+\startnewprimitive[title={\prm {expand}}]
 
 Beware, this is not a prefix but a directive to ignore the protected characters of
 the following macro.
@@ -2194,9 +2425,9 @@ The meaning of the three macros is:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {untraced}}]
+\startnewprimitive[title={\prm {untraced}}]
 
-Related to the meaning providers is the \tex {untraced} prefix. It marks a macro
+Related to the meaning providers is the \prm {untraced} prefix. It marks a macro
 as to be reported by name only. It makes the macro look like a primitive.
 
 \starttyping
@@ -2223,7 +2454,7 @@ to users what the meaning of a macro is (if they trace at all). \footnote {An
 earlier variant could also hide the expansion completely but that was just
 confusing.}
 
-\startoldprimitive[title={\tex {immediate}}]
+\startoldprimitive[title={\prm {immediate}}]
 
 This one has no effect unless you intercept it at the \LUA\ end and act upon it.
 In original \TEX\ immediate is used in combination with read from and write to
@@ -2231,7 +2462,7 @@ file operations. So, this is an old primitive with a new meaning.
 
 \stopoldprimitive
 
-\startnewprimitive[title={\tex {frozen}}]
+\startnewprimitive[title={\prm {frozen}}]
 
 You can define a macro as being frozen:
 
@@ -2245,13 +2476,13 @@ When you redefine this macro you get an error:
 ! You can't redefine a frozen macro.
 \stoptyping
 
-This is a prefix like \type {\global} and it can be combined with other prefixes.
-\footnote {The \type {\outer} and \type {\long} prefixes are no|-|ops in
+This is a prefix like \prm {global} and it can be combined with other prefixes.
+\footnote {The \prm {outer} and \prm {long} prefixes are no|-|ops in
 \LUAMETATEX\ and \LUATEX\ can be configured to ignore them.}
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {letfrozen}}]
+\startnewprimitive[title={\prm {letfrozen}}]
 
 You can explicitly freeze an unfrozen macro:
 
@@ -2268,7 +2499,7 @@ A redefinition will now give:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {unletfrozen}}]
+\startnewprimitive[title={\prm {unletfrozen}}]
 
 A frozen macro cannot be redefined: you get an error. But as nothing in \TEX\ is set
 in stone, you can do this:
@@ -2283,7 +2514,7 @@ undecided to what extend \CONTEXT\ will use this feature.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {letprotected}}]
+\startnewprimitive[title={\prm {letprotected}}]
 
 Say that you have these definitions:
 
@@ -2294,7 +2525,7 @@ Say that you have these definitions:
 \letprotected      \MyMacroA
              \edef \MyMacroD{\MyMacroA\MyMacroB}
 \meaning           \MyMacroC\crlf
-\meaning           \MyMacroD
+\meaning           \MyMacroD\par
 \stopbuffer
 
 \typebuffer
@@ -2305,9 +2536,9 @@ The typeset meaning in this example is:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {unletprotected}}]
+\startnewprimitive[title={\prm {unletprotected}}]
 
-The complementary operation of \type {\letprotected} can be used to unprotect
+The complementary operation of \prm {letprotected} can be used to unprotect
 a macro, so that it gets expandable.
 
 \startbuffer
@@ -2317,7 +2548,7 @@ a macro, so that it gets expandable.
 \unletprotected      \MyMacroB
                \edef \MyMacroD{\MyMacroA\MyMacroB}
 \meaning             \MyMacroC\crlf
-\meaning             \MyMacroD
+\meaning             \MyMacroD\par
 \stopbuffer
 
 \typebuffer
@@ -2328,11 +2559,11 @@ Compare this with the example in the previous section:
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\tex {letdatacode}}]
+% \startnewprimitive[title={\prm {letdatacode}}]
 %   {\em Todo.}
 % \stopnewprimitive
 
-\startnewprimitive[title={\tex {beginlocalcontrol}}]
+\startnewprimitive[title={\prm {beginlocalcontrol}}]
 
 Once \TEX\ is initialized it will enter the main loop. In there certain commands
 trigger a function that itself can trigger further scanning and functions. In
@@ -2367,22 +2598,22 @@ A bit of close reading probably gives an impression of what happens here:
 {\getbuffer}
 
 The local loop can actually result in material being injected in the current node
-list. However, where normally assignments are not taking place in an \type
-{\edef}, here they are applied just fine. Basically we have a local \TEX\ job, be
+list. However, where normally assignments are not taking place in an \prm
+{edef}, here they are applied just fine. Basically we have a local \TEX\ job, be
 it that it shares all variables with the parent loop.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {endlocalcontrol}}]
+\startnewprimitive[title={\prm {endlocalcontrol}}]
 
      See previous section.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {localcontrolled}}]
+\startnewprimitive[title={\prm {localcontrolled}}]
 
 The previously described local control feature comes with two extra helpers. The
-\tex {localcontrolled} primitive takes a token list and wraps this into a local
+\prm {localcontrolled} primitive takes a token list and wraps this into a local
 control sidetrack. For example:
 
 \startbuffer
@@ -2405,7 +2636,7 @@ The assignment is applied immediately in the expanded definition.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {localcontrol}}]
+\startnewprimitive[title={\prm {localcontrol}}]
 
 This primitive takes a single token:
 
@@ -2427,28 +2658,28 @@ The three meanings are:
 \stoptabulate
 \stop
 
-The \tex {\localcontrol} makes that the following token gets expanded so we don't
+The \prm {localcontrol} makes that the following token gets expanded so we don't
 see the yet to be expanded assignment show up in the macro body.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {alignmark}}]
+\startnewprimitive[title={\prm {alignmark}}]
 
-When you have the \type{#} not set up as macro parameter character cq.\ align
+When you have the \type {#} not set up as macro parameter character cq.\ align
 mark, you can use this primitive instead. The same rules apply with respect to
 multiple such tokens in (nested) macros and alignments.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {aligntab}}]
+\startnewprimitive[title={\prm {aligntab}}]
 
-When you have the \type{&} not set up as align tab, you can use this primitive
+When you have the \type {&} not set up as align tab, you can use this primitive
 instead. The same rules apply with respect to multiple such tokens in (nested)
 macros and alignments.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {defcsname}}]
+\startnewprimitive[title={\prm {defcsname}}]
 
 We now get a series of log clutter avoidance primitives. It's fine if you argue
 that they are not really needed, just don't use them.
@@ -2460,13 +2691,13 @@ that they are not really needed, just don't use them.
 
 The fact that \TEX\ has three (expanded and global) companions can be seen as a
 signal that less verbosity makes sense. It's just that macro packages use plenty
-of \tex {\csname}'s.
+of \prm {csname}'s.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {edefcsname}}]
+\startnewprimitive[title={\prm {edefcsname}}]
 
-This is the companion of \tex {\edef}:
+This is the companion of \prm {edef}:
 
 \starttyping
 \expandafter\edef\csname MyMacro:1\endcsname{...}
@@ -2475,7 +2706,7 @@ This is the companion of \tex {\edef}:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {gdefcsname}}]
+\startnewprimitive[title={\prm {gdefcsname}}]
 
 As with standard \TEX\ we also define global ones:
 
@@ -2486,9 +2717,9 @@ As with standard \TEX\ we also define global ones:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {xdefcsname}}]
+\startnewprimitive[title={\prm {xdefcsname}}]
 
-This is the companion of \tex {\xdef}:
+This is the companion of \prm {xdef}:
 
 \starttyping
 \expandafter\xdef\csname MyMacro:1\endcsname{...}
@@ -2497,15 +2728,15 @@ This is the companion of \tex {\xdef}:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {glet}}]
+\startnewprimitive[title={\prm {glet}}]
 
-This is the global companion of \tex {\let}. The fact that it is not an original
+This is the global companion of \prm {let}. The fact that it is not an original
 primitive is probably due to the expectation for it not it not being used (as)
 often (as in \CONTEXT).
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {letcsname}}]
+\startnewprimitive[title={\prm {letcsname}}]
 
 It is easy to see that we save two tokens when we use this primitive. As with the
 \type {..defcs..} variants it also saves a push back of the composed macro name.
@@ -2517,7 +2748,7 @@ It is easy to see that we save two tokens when we use this primitive. As with th
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {gletcsname}}]
+\startnewprimitive[title={\prm {gletcsname}}]
 
 Naturally \LUAMETATEX\ also provides a global variant:
 
@@ -2531,7 +2762,37 @@ So, here we save even more.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {lettonothing}}]
+\startnewprimitive[title={\prm {cdef}}]
+
+This primitive is like \prm {edef} but in some usage scenarios is slightly
+more efficient because (delayed) expansion is ignored which in turn saves
+building a temporary token list.
+
+\startbuffer
+\edef\FooA{this is foo} \meaningfull\FooA\crlf
+\cdef\FooB{this is foo} \meaningfull\FooB\par
+\stopbuffer
+
+\typebuffer {\tttf \getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {cdefcsname}}]
+
+This primitive is like \prm {edefcsame} but in some usage scenarios is slightly
+more efficient because (delayed) expansion is ignored which in turn saves
+building a temporary token list.
+
+\startbuffer
+\edefcsname FooA\endcsname{this is foo} \meaningasis\FooA\crlf
+\cdefcsname FooB\endcsname{this is foo} \meaningasis\FooB\par
+\stopbuffer
+
+\typebuffer {\tttf \getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {lettonothing}}]
 
 This one let's a control sequence to nothing. Assuming that \tex {empty}
 is indeed empty, these two lines are equivalent.
@@ -2543,13 +2804,13 @@ is indeed empty, these two lines are equivalent.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {glettonothing}}]
+\startnewprimitive[title={\prm {glettonothing}}]
 
-This is the global companion of \tex {lettonothing}.
+This is the global companion of \prm {lettonothing}.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {norelax}}]
+\startnewprimitive[title={\prm {norelax}}]
 
 The rationale for this command can be shown by a few examples:
 
@@ -2574,12 +2835,12 @@ The five meanings are:
 \NC \string\teste \NC \meaning\teste \NC \NR
 \stoptabulate \stop
 
-So, the \type {\norelax} acts like \type {\relax} but is not pushed back as
+So, the \prm {norelax} acts like \prm {relax} but is not pushed back as
 usual (in some cases).
 
 \stopnewprimitive
 
-\startnewprimitive[title={\tex {swapcsvalues}}]
+\startnewprimitive[title={\prm {swapcsvalues}}]
 
 Because we mention some \type {def} and \type {let} primitives here, it makes
 sense to also mention a primitive that will swap two values (meanings). This one
@@ -2591,23 +2852,222 @@ an experimental feature.
 
 \stopnewprimitive
 
-"untraced",
+\startnewprimitive[title={\prm {integerdef}}]
 
-% \startnewprimitive[title={\tex {dimensiondef}}]
-% \stopnewprimitive
+You can alias to a count (integer) register with \prm {countdef}:
 
-% \startnewprimitive[title={\tex {integerdef}}]
-% \stopnewprimitive
+\starttyping
+\countdef\MyCount134
+\stoptyping
+
+Afterwards the next two are equivalent:
+
+\starttyping
+\MyCount   = 99
+\count1234 = 99
+\stoptyping
+
+where \type {\MyCount} can be a bit more efficient because no index needs to be
+scanned. However, in terms of storage the value (here 99) is always in the register
+so \type {\MyCount} has to get there. This indirectness has the benefit that directly
+setting the value is reflected in the indirect accessor.
+
+\starttyping
+\integerdef\MyCount = 99
+\stoptyping
+
+This primitive also defines a numeric equivalent but this time the number is stored
+with the equivalent. This means that:
+
+\starttyping
+\let\MyCopyOfCount = \MyCount
+\stoptyping
+
+will store the {\em current} value of \type {\MyCount} in \type {\MyCopyOfCount} and
+changing either of them is not reflected in the other.
+
+The usual \prm {advance}, \prm {multiply} and \prm {divide} can be used with these
+integers and they behave like any number. But compared to registers they are actually
+more a constant.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {dimensiondef}}]
+
+A variant of \prm {integerdef} is:
+
+\starttyping
+\dimensiondef\MyDimen = 1234pt
+\stoptyping
+
+The properties are comparable to the ones described in the section \prm
+{integerdef}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {gluespecdef}}]
+
+A variant of \prm {integerdef} and \prm {dimensiondef} is:
+
+\starttyping
+\gluespecdef\MyGlue = 3pt plus 2pt minus 1pt
+\stoptyping
+
+The properties are comparable to the ones described in the previous sections.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mugluespecdef}}]
+
+A variant of \prm {gluespecdef} that expects \type {mu} units is:
+
+\starttyping
+\mugluespecdef\MyGlue = 3mu plus 2mu minus 1mu
+\stoptyping
+
+The properties are comparable to the ones described in the previous sections.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {advanceby}}]
+
+This is slightly more efficient variant of \prm {advance} that doesn't look for
+\type {by} and therefore, if one is missing, doesn't need to push back the last
+seen token. Using \prm {advance} with \type {by} is nearly as efficient but takes
+more tokens.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {multiplyby}}]
+
+This is slightly more efficient variant of \prm {multiply} that doesn't look for
+\type {by}. See previous section.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {divideby}}]
+
+This is slightly more efficient variant of \prm {divide} that doesn't look for
+\type {by}. See previous section.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {localcontrolledloop}}]
+
+As with more of the primitives discussed here, there is a manual in the \quote
+{lowlevel} subset that goes into more detail. So, here a simple example has to
+do:
+
+\startbuffer
+\localcontrolledloop 1 100 1 {%
+    \ifnum\currentloopiterator>6\relax
+        \quitloop
+    \else
+        [\number\currentloopnesting:\number\currentloopiterator]
+        \localcontrolledloop 1 8 1 {%
+            (\number\currentloopnesting:\number\currentloopiterator)
+        }\par
+    \fi
+}
+\stopbuffer
+
+\typebuffer
+
+Here we see the main loop primitive being used nested. The code shows how we can
+\prm {quitloop} and have access to the \prm {currentloopiterator} as well as the
+nesting depth \prm {currentloopnesting}.
+
+\startpacked \getbuffer \stoppacked
+
+Be aware of the fact that \prm {quitloop} will end the loop at the {\em next}
+iteration so any content after it will show up. Normally this one will be issued
+in a condition and we want to end that properly. Also keep in mind that because
+we use local control (a nested \TEX\ expansion loop) anything you feed back can
+be injected out of order.
+
+The three numbers can be separated by an equal sign which is a trick to avoid
+look ahead issues that can result from multiple serialized numbers without spaces
+that indicate the end of sequence of digits.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {expandedloop}}]
+
+This variant of the previously introduced \prm {localcontrolledloop} doesn't
+enter a local branch but immediately does its work. This means that it can be
+used inside an expansion context like \prm {edef}.
+
+\startbuffer
+\edef\whatever
+  {\expandedloop 1 10 1
+     {\scratchcounter=\the\currentloopiterator\relax}}
+
+\meaningasis\whatever
+\stopbuffer
+
+\typebuffer
+
+\start \veryraggedright \tt\tfx \getbuffer \stop \blank
+
+The next section shows a companion primitive.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {unexpandedloop}}]
+
+As follow up on \prm {expandedloop} we now show its counterpart:
+
+\startbuffer
+\edef\whatever
+  {\unexpandedloop 1 10 1
+     {\scratchcounter=\the\currentloopiterator\relax}}
+
+\meaningasis\whatever
+\stopbuffer
+
+\typebuffer
+
+\start \veryraggedright \tt\tfx \getbuffer \stop \blank
+
+The difference between the (un)expanded loops and a local controlled
+one is shown here. Watch the out of order injection of \type {A}'s.
+
+\startbuffer
+\edef\TestA{\localcontrolledloop 1 5 1 {A}} % out of order
+\edef\TestB{\expandedloop        1 5 1 {B}}
+\edef\TestC{\unexpandedloop      1 5 1 {C\relax}}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We show the effective definition as well as the outcome of using them
+
+\startbuffer
+\meaningasis\TestA
+\meaningasis\TestB
+\meaningasis\TestC
+
+A: \TestA
+B: \TestB
+C: \TestC
+\stopbuffer
+
+\typebuffer \startlines \tttf \getbuffer \stoplines
+
+Watch how because it is empty \type {\TestA} has become a constant macro because
+that's what deep down empty boils down to.
+
+\stopnewprimitive
 
 \startsubject[title=Obsolete]
 
 The \LUAMETATEX\ engine has more than its \LUATEX\ ancestor but it also has less.
 Because in the end the local control mechanism performed quite okay I decided to
-drop the \tex {immediateassignment} and \tex {immediateassigned} variants. They
+drop the \prm {immediateassignment} and \prm {immediateassigned} variants. They
 sort of used the same trick so there isn't much to gain and it was less generic
 (read: error prone).
 
-% \startnewprimitive[title={\tex {immediateassignment}}]
+% \startnewprimitive[title={\prm {immediateassignment}}]
 %
 % Assignments are not expandable which means that you cannot define fully
 % expandable macros that have assignments. But, there is a way out of this:
@@ -2632,7 +3092,7 @@ sort of used the same trick so there isn't much to gain and it was less generic
 %
 % \stopnewprimitive
 %
-% \startnewprimitive[title={\tex {immediateassigned}}]
+% \startnewprimitive[title={\prm {immediateassigned}}]
 %
 % This is the multi|-|token variant of the primitive mentioned in the previous
 % section.
@@ -2839,5 +3299,86 @@ Hans Hagen \crlf Hasselt NL
 \stopsubject
 
 \popoverloadmode
+
+\startluacode
+    local match = string.match
+    local find  = string.match
+
+    function document.CheckCompleteness()
+        local primitives = token.getprimitives()
+        local luametatex = { }
+        local indexed    = { }
+
+        for i=1,#primitives do
+            local p = primitives[i]
+            if p[4] == 4 then
+                local name = p[3]
+                if find(name,"U") or find (name,"math") then
+                    -- ignore
+                    luametatex[name] = nil
+                else
+                    luametatex[name] = false
+                end
+            end
+        end
+
+        local function collect(index)
+            if index then
+                local data = index.entries
+                for i=1,#data do
+                    local name = match(data[i].list[1][1],"\\tex%s*{(.-)}") or ""
+                    if luametatex[name] == false then
+                        luametatex[name] = true
+                    end
+                    indexed[name] = true
+                end
+            end
+        end
+
+        collect(structures.registers.collected and structures.registers.collected.index)
+
+        context("To be checked primitives:")
+
+        context.blank()
+        context.startcolumns { n = 2 }
+        for k, v in table.sortedhash(luametatex) do
+            if not v then
+                context.dontleavehmode()
+                context.type(k)
+                context.crlf()
+            end
+        end
+        context.stopcolumns()
+        context.blank()
+
+        context("Indexed primitives:")
+
+        context.blank()
+        context.startcolumns { n = 2 }
+        for k, v in table.sortedhash(indexed) do
+            context.dontleavehmode()
+            if luametatex[k] == true then
+                context("\\color[darkgreen]{\\tttf %s}",k)
+            elseif luametatex[k] == false then
+                context("\\color[darkred]{\\tttf %s}",k)
+            else
+                context("{\\tttf %s}",k)
+            end
+            context.crlf()
+        end
+        context.stopcolumns()
+        context.blank()
+
+    end
+\stopluacode
+
+% \startmode[atpragma]
+%     \startluacode
+%         context.page()
+%         document.CheckCompleteness()
+%     \stopluacode
+% \stopmode
+
+\stopbodymatter
 
 \stoptext

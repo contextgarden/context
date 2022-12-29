@@ -477,7 +477,7 @@ if needed.
 
 \stopsubsection
 
-\startsubsection[title={\prm {vsplit}}]
+\startsubsection[title={\prm {vsplit}, \prm {tsplit} and \prm {dsplit}}]
 
 \topicindex {splitting}
 
@@ -489,6 +489,9 @@ a split of the given size but result has the natural dimensions then.
 \vsplit 123 to   10cm % final box has the required height
 \vsplit 123 upto 10cm % final box has its natural height
 \stoptyping
+
+The two alternative primitives return a \prm {vtop} or \prm {dbox} instead of a
+\prm {vbox}. All three accept the \type {attr} keyword as boxes do.
 
 \stopsubsection
 
@@ -702,16 +705,30 @@ packages.
 
 \stopsubsection
 
-\startsubsection[title={\prm {hpack}, \prm {vpack} and \prm {tpack}}]
+\startsubsection[title={\prm {dbox}}]
+
+This primitive is a variant on \prm {vbox} in the sense that when it gets
+appended to a vertical list the height of the topmost line or rule as well as the
+depth of the box are taken into account when interline space is calculated.
+
+\stopsubsection
+
+
+\startsubsection[title={\prm {hpack}, \prm {vpack}, \prm {tpack} and \prm {dpack}}]
 
 \topicindex {packing}
 
-These three primitives are the equivalents of \prm {hbox}, \prm {vbox} and
-\prm {vtop} but they don't trigger the packaging related callbacks. Of course
-one never know if content needs a treatment so using them should be done with
-care. Apart from accepting more keywords (and therefore options) the normal
-box behave the same as before. The \prm {vcenter} builder also works in text
-mode.
+These three primitives are the equivalents of \prm {hbox}, \prm {vbox}, \prm
+{vtop} and \prm P{dbox} but they don't trigger the packaging related callbacks.
+Of course one never know if content needs a treatment so using them should be
+done with care. Apart from accepting more keywords (and therefore options) the
+normal box behave the same as before.
+
+\stopsubsection
+
+\startsubsection[title={\prm {vcenter}}]
+
+The \prm {vcenter} builder also works in text mode.
 
 \stopsubsection
 
@@ -861,6 +878,11 @@ So we have a few more steps to play with. But don't be disappointed when it
 doesn't work out as you expect. Don Knuth did a good job on the heuristics and
 after many decades there is no real need to change something. Consider it a
 playground.
+
+The parameter \prm {ignoredepthcriterium} is set to -1000pt at startup and is a
+special signal for \prm {prevdepth}. You can change the value locally for
+educational purposes but best not mess with this standard value in production
+code unless you want special effects.
 
 \stopsubsection
 

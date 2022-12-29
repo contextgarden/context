@@ -188,6 +188,7 @@
 \instance\protected\def\INRSTEX {inrs\TeX}
 
 \instance\protected\def\PRAGMA  {Pragma ADE}
+\instance\protected\def\LUA     {\Lua} % below
 
 %D And this is how they show up: \TeX, \MetaFont, \MetaPost, \PiCTeX, \TaBlE, \ConTeXt,
 %D \PPCHTeX, \AmSTeX, \LaTeX, \LamSTeX.
@@ -203,6 +204,7 @@
 \frozen\instance\protected\def\luajitTeX {lua\wordboundary jit\wordboundary\TeX}
 \frozen\instance\protected\def\luametaTeX{lua\wordboundary meta\wordboundary\TeX}
 \frozen\instance\protected\def\XeTeX     {X\lower.5\exheight\hbox{\kern-.15\emwidth\mirror{E}}\kern-.1667\emwidth\TeX}
+
 
 % % Adapted from a patch by Mojca:
 %

@@ -2312,6 +2312,52 @@ halfword tex_filtered_vpack(halfword p, scaled h, int m, scaled maxdepth, int gr
     return q;
 }
 
+static scaled tex_aux_first_height(halfword boxnode) 
+{
+    halfword list = box_list(boxnode);
+    if (list) {
+        switch (node_type(list)) {
+            case hlist_node:
+            case vlist_node:
+                return box_height(list);
+            case rule_node:
+                return rule_height(list);
+        }
+    }
+    return 0;
+}
+
+static void tex_aux_set_vnature(halfword boxnode, int nature)
+{
+    switch (nature) { 
+        case vtop_code: 
+        case tsplit_code: 
+            {
+                /*tex
+
+                    Read just the height and depth of |boxnode| (|boxnode|), for |\vtop|. The height of
+                    a |\vtop| box is inherited from the first item on its list, if that item is an
+                    |hlist_node|, |vlist_node|, or |rule_node|; otherwise the |\vtop| height is zero.
+
+                */
+                scaled height = tex_aux_first_height(boxnode);
+                box_depth(boxnode) = box_total(boxnode) - height;
+                box_height(boxnode) = height;
+                box_package_state(boxnode) = vtop_package_state;
+            }
+            break;
+        case vbox_code: 
+        case vsplit_code: 
+            box_package_state(boxnode) = vbox_package_state;
+            break;
+        case dbox_code: 
+        case dsplit_code: 
+            box_package_state(boxnode) = dbox_package_state;
+            break;
+    }
+}
+
+
 /*tex
     Here we always start out in l2r mode and without shift. After all we need to be compatible with
     how it was before.
@@ -2358,21 +2404,6 @@ void tex_finish_vcenter_group(void)
     }
 }
 
-static scaled tex_aux_first_height(halfword boxnode) 
-{
-    halfword list = box_list(boxnode);
-    if (list) {
-        switch (node_type(list)) {
-            case hlist_node:
-            case vlist_node:
-                return box_height(list);
-            case rule_node:
-                return rule_height(list);
-        }
-    }
-    return 0;
-}
-
 void tex_package(singleword nature)
 {
     halfword slot, context, spec, dirptr, attrlist, justpack, orientation, anchor, geometry, source, target, axis, mainclass, state, retain;
@@ -2409,29 +2440,7 @@ void tex_package(singleword nature)
     } else {
         boxnode = tex_filtered_vpack(node_next(cur_list.head), spec, saved_level(saved_full_spec_item_packaging),
             maxdepth, grp, saved_level(saved_full_spec_item_direction), justpack, attrlist, state, retain);
-        switch (nature) { 
-            case vtop_code: 
-                {
-                    /*tex
-
-                        Read just the height and depth of |boxnode| (|boxnode|), for |\vtop|. The height of
-                        a |\vtop| box is inherited from the first item on its list, if that item is an
-                        |hlist_node|, |vlist_node|, or |rule_node|; otherwise the |\vtop| height is zero.
-
-                    */
-                    scaled height = tex_aux_first_height(boxnode);
-                    box_depth(boxnode) = box_total(boxnode) - height;
-                    box_height(boxnode) = height;
-                    box_package_state(boxnode) = vtop_package_state;
-                }
-                break;
-            case vbox_code: 
-                box_package_state(boxnode) = vbox_package_state;
-                break;
-            case dbox_code: 
-                box_package_state(boxnode) = dbox_package_state;
-                break;
-        }
+        tex_aux_set_vnature(boxnode, nature);
     }
     if (dirptr) {
         /*tex Adjust back |text_dir_ptr| for |scan_spec| */
@@ -2679,7 +2688,9 @@ void tex_run_unpackage(void)
                 cur_list.tail = tex_tail_of_node_list(tail);
                 break;
             }
+        case tsplit_code:
         case vsplit_code:
+        case dsplit_code:
             {
                 tex_try_couple_nodes(tail, lmt_packaging_state.split_discards_head);
                 lmt_packaging_state.split_discards_head = null;
@@ -3264,7 +3275,9 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot)
                 }
             }
             break;
+        case tsplit_code:
         case vsplit_code:
+        case dsplit_code:
             {
                 /*tex
                     Split off part of a vertical box, make |boxnode| point to it. Here we deal with
@@ -3274,24 +3287,47 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot)
                 halfword mode = packing_exactly ;
                 halfword index = tex_scan_box_register_number();
                 halfword size = 0;
-                switch (tex_scan_character("utUT", 0, 1, 0)) {
-                    case 'u': case 'U':
-                        if (tex_scan_mandate_keyword("upto", 1)) {
-                            mode = packing_additional;
-                            size = tex_scan_dimen(0, 0, 0, 0, NULL);
-                        }
-                        break;
-                    case 't': case 'T':
-                        if (tex_scan_mandate_keyword("to", 1)) {
-                            mode = packing_exactly ;
-                            size = tex_scan_dimen(0, 0, 0, 0, NULL);
-                        }
-                        break;
-                    default:
-                        tex_aux_show_keyword_error("upto|to");
-                        break;
+                halfword attrlist = null;
+                while (1) {
+                    switch (tex_scan_character("adtuvADTUV", 0, 1, 0)) {
+                        case 0:
+                            goto DONE;
+                        case 'a': case 'A':
+                            if (tex_scan_mandate_keyword("attr", 1)) {
+                                halfword i = tex_scan_attribute_register_number();
+                                halfword v = tex_scan_int(1, NULL);
+                                if (eq_value(register_attribute_location(i)) != v) {
+                                    if (attrlist) {
+                                        attrlist = tex_patch_attribute_list(attrlist, i, v);
+                                    } else {
+                                        attrlist = tex_copy_attribute_list_set(tex_current_attribute_list(), i, v);
+                                    }
+                                }
+                            }
+                            break;
+                        case 't': case 'T':
+                            if (tex_scan_mandate_keyword("to", 1)) {
+                                mode = packing_exactly ;
+                                size = tex_scan_dimen(0, 0, 0, 0, NULL);
+                            }
+                            break;
+                        case 'u': case 'U':
+                            if (tex_scan_mandate_keyword("upto", 1)) {
+                                mode = packing_additional;
+                                size = tex_scan_dimen(0, 0, 0, 0, NULL);
+                            }
+                            break;
+                        default:
+                            tex_aux_show_keyword_error("attr|upto|to|vbox|vtop|dbox");
+                            goto DONE;
+                    }
                 }
+              DONE:
                 boxnode = tex_vsplit(index, size, mode);
+                tex_aux_set_vnature(boxnode, code);
+                if (attrlist) { 
+                    tex_attach_attribute_list_attribute(boxnode, attrlist);
+                }
             }
             break;
         case insert_box_code:
@@ -3337,65 +3373,74 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot)
             box. The juggling with codes and addition or subtraction was somewhat messy.
 
         */
-     /* case tpack_code:  */
-     /* case vpack_code:  */
-     /* case hpack_code:  */
-     /* case dpack_code:  */
-     /* case vtop_code:   */
-     /* case vbox_code:   */
-     /* case hbox_code:   */
-     /* case dbox_code:   */
         default:
             {
-                int just_pack = 0;
-                quarterword spec_direction = direction_unknown;
-                /*tex 0 or |vmode| or |hmode| */
-                halfword mode; /* todo */
-                switch (code) {
-                    case tpack_code:
-                        code = vtop_code;
-                        just_pack = 1;
-                        break;
-                    case vpack_code:
-                        code = vtop_code + vmode;
-                        just_pack = 1;
-                        break;
-                    case hpack_code:
-                        code = vtop_code + hmode;
-                        just_pack = 1;
-                        break;
-                    case dpack_code:
-                        code = dbox_code + hmode;
-                        just_pack = 1;
-                        break;
-                }
-                mode = code - vtop_code;
+                quarterword direction;
+                int justpack = 0;
+                int group = vbox_group;
+                int mode = vmode;
+                int adjusted = 0;
                 switch (abs(cur_list.mode)) {
                     case vmode:
-                        spec_direction = dir_lefttoright;
+                        direction = dir_lefttoright;
+                        if (boxcontext == direct_box_flag) {
+                            adjusted = 1;
+                        }
                         break;
                     case hmode:
-                        spec_direction = (singleword) text_direction_par;
+                        direction = (singleword) text_direction_par;
                         break;
                     case mmode:
-                        spec_direction = (singleword) math_direction_par;
+                        direction = (singleword) math_direction_par;
+                        break;
+                    default: 
+                        direction = direction_unknown;
                         break;
                 }
-                if (mode == hmode) {
-                    if ((boxcontext == direct_box_flag) && (abs(cur_list.mode) == vmode)) {
-                        tex_aux_scan_full_spec(boxcontext, adjusted_hbox_group, spec_direction, just_pack, shift, slot);
-                    } else {
-                        tex_aux_scan_full_spec(boxcontext, hbox_group, spec_direction, just_pack, shift, slot);
-                    }
-                } else {
-                    if (mode == vmode) {
-                        tex_aux_scan_full_spec(boxcontext, vbox_group, spec_direction, just_pack, shift, slot);
-                    } else {
-                        tex_aux_scan_full_spec(boxcontext, (code == dbox_code || code == dpack_code) ? dbox_group : vtop_group, spec_direction, just_pack, shift, slot);
-                        mode = vmode;
-                    }
-                    tex_normal_paragraph(vmode_par_context);
+                switch (code) {
+                    case tpack_code:
+                     // mode = vmode; 
+                        justpack = 1;
+                        group = vtop_group;
+                        break;
+                    case vpack_code:
+                     // mode = vmode; 
+                        justpack = 1;
+                     // group = vbox_group;
+                        break;
+                    case hpack_code:
+                        mode = hmode; 
+                        justpack = 1;
+                        group = adjusted ? adjusted_hbox_group : hbox_group;
+                        break;
+                    case dpack_code:
+                     // mode = vmode; 
+                        justpack = 1;
+                        group = dbox_group;
+                        break;
+                    case vtop_code:
+                     // mode = vmode;
+                     // justpack = 0;
+                        group = vtop_group;
+                        break;
+                    case vbox_code:
+                     // mode = vmode;
+                     // justpack = 0;
+                     // group = vbox_group;
+                        break;
+                    case hbox_code:   
+                        mode = hmode;
+                     // justpack = 0;
+                        group = adjusted ? adjusted_hbox_group : hbox_group;
+                        break;
+                    case dbox_code:
+                     // mode = vmode;
+                     // justpack = 0;
+                        group = dbox_group;
+                        break;
                 }
+                tex_aux_scan_full_spec(boxcontext, group, direction, justpack, shift, slot);
+                tex_normal_paragraph(vmode_par_context);
                 tex_push_nest();
                 update_tex_internal_dir_state(0);
                 cur_list.mode = - mode;

@@ -1096,19 +1096,21 @@ they obey grouping, and you can use \type {\the\Umathquad\displaystyle} if
 needed.
 
 There are quite some parameters that can be set and there are eight styles, which means a lot
-of keying in. For that reason is is possible to set parameters groupwise
+of keying in. For that reason is is possible to set parameters groupwise:
 
-\starttabulate
-\DB primitive name               \BC description \NC \NR
+\starttabulate[|l|c|c|c|c|c|c|c|c|]
+\DB primitive name               \BC D \BC D' \BC T \BC T' \BC S \BC S' \BC SS \BC SS' \NC \NR
 \TB
-\NC \prm {alldisplaystyles}      \NC set both display styles \NC \NR
-\NC \prm {alltextstyles}         \NC set both text styles \NC \NR
-\NC \prm {allscriptstyles}       \NC set both script styles \NC \NR
-\NC \prm {allscriptscriptstyles} \NC set both scriptscript styles \NC \NR
-\NC \prm {allmathstyles}         \NC set all eight styles \NC \NR
-\NC \prm {allsplitstyles}        \NC set all display and text styles, and reset all script(script) styles \NC \NR
-\NC \prm {alluncrampedstyles}    \NC set all four uncramped styles \NC \NR
-\NC \prm {allcrampedstyles}      \NC set all four cramped styles \NC \NR
+\NC \prm {alldisplaystyles}      \NC$+$\NC$+ $\NC   \NC    \NC   \NC    \NC    \NC     \NC \NR
+\NC \prm {alltextstyles}         \NC   \NC    \NC$+$\NC$+ $\NC   \NC    \NC    \NC     \NC \NR
+\NC \prm {allscriptstyles}       \NC   \NC    \NC   \NC    \NC$+$\NC$+ $\NC    \NC     \NC \NR
+\NC \prm {allscriptscriptstyles} \NC   \NC    \NC   \NC    \NC   \NC    \NC$+ $\NC$+  $\NC \NR
+\NC \prm {allmathstyles}         \NC$+$\NC$+ $\NC$+$\NC$+ $\NC$+$\NC$+ $\NC$+ $\NC$+  $\NC \NR
+\NC \prm {allmainstyles}         \NC   \NC    \NC   \NC    \NC   \NC    \NC    \NC     \NC \NR
+\NC \prm {allsplitstyles}        \NC$+$\NC$+ $\NC$+$\NC$+ $\NC$-$\NC$- $\NC$- $\NC$-  $\NC \NR
+\NC \prm {allunsplitstyles}      \NC   \NC    \NC   \NC    \NC$+$\NC$+ $\NC$+ $\NC$+  $\NC \NR
+\NC \prm {alluncrampedstyles}    \NC$+$\NC    \NC$+$\NC    \NC$+$\NC    \NC$+ $\NC     \NC \NR
+\NC \prm {allcrampedstyles}      \NC   \NC$+ $\NC   \NC$+ $\NC   \NC$+ $\NC    \NC$+  $\NC \NR
 \LL
 \stoptabulate
 

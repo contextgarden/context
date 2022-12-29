@@ -294,6 +294,20 @@ Sapolsky : \xbartwo{\samplefile{sapolsky}\removeunwantedspaces}\par
 
 \typebuffer \getbuffer
 
+As a reminder that one can keep things simple, here are a few more examples that
+use defaults (and no colors):
+
+\startbuffer
+\underbar {\underbar {\samplefile{ward}}}\blank
+\underbar {\underdot {\samplefile{ward}}}\blank
+\underbar {\underdot {\samplefile{ward}}}\blank
+\underdot {\underbar {\samplefile{ward}}}\blank
+\underbars{\underdot {\samplefile{ward}}}\blank
+\underbar {\underdots{\samplefile{ward}}}\blank
+\underdots{\underdots{\samplefile{ward}}}\blank
+\stopbuffer
+
+\typebuffer {\setupbars[foregroundcolor=,color=]\getbuffer}
 
 \stopsubject
 
@@ -752,6 +766,81 @@ Or rendered:
 \getbuffer
 \stoplinecorrection
 
+% \frule
+%     width  10cm
+%     height  2cm
+%     depth   1cm
+%     line    1pt
+%     radius  3mm
+% \relax x
+
+The primitive \type {\leaders} can also be used with these \type {\frule}s so
+here is an example with and without:
+
+\startbuffer
+test \leaders \hrule height 1mm \hfill test \par
+test \leaders \frule height 6mm depth 3mm radius 1mm\hfill test \par
+\stopbuffer
+
+\typebuffer
+
+As you can see, the leader basically stretches the rule. That operation happens
+in the backend code; the frontend is only interested in the height and depth
+while the width is glue that can stretch.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Here are two more:
+
+\startbuffer
+\startuseMPgraphic{demoleader}
+    fill
+        unitcircle xysized (RuleWidth,RuleHeight+RuleDepth)
+        withcolor RuleColor ;
+\stopuseMPgraphic
+
+test {\red \leaders \frule
+    height 6mm
+    depth  3mm
+    type    mp
+    data    {\includeMPgraphic{demoleader}}
+\hfill} test
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+And:
+
+\startbuffer
+\startuseMPgraphic{demoleader}
+    drawdblarrow (0,RuleHeight) -- (RuleWidth,RuleHeight)
+        withpen pencircle scaled  RuleThickness
+        withcolor RuleColor ;
+\stopuseMPgraphic
+
+test {\red \leaders \frule
+    height  1mm % we need at least some dimensions
+    type    mp
+    line    1mm
+    data    {\includeMPgraphic{demoleader}}
+\hfill} test
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+The combination of \TEX\ and \METAPOST\ driven by \LUA\ (which is hidden from the
+user here) is quite powerful and has a pretty good performance too.
+
 The \type {\blackrule} command is the more high level way to inject a rule.
 
 \startbuffer
@@ -1003,6 +1092,98 @@ The auto variants will switch between colors:
 
 \typebuffer \start\getbuffer[setup]\getbuffer\stop
 
+\stopsubject
+
+\startsubject[title=Framing]
+
+The \TEX\ engine only has text and rules and all things other graphic has to come
+from elsewhere. However, as \quote {elsewhere} is rather integrated in \CONTEXT\
+users won't notice this limitation. It does however means that for historic
+reasons we have some interesting low level phenomena. One of the oldest commands
+in \CONTEXT\ is \type {\framed} which as the name indicates can draw a frame
+around something. This command is demonstrated in many places so here we stick to
+some remarks about the rules. Watch the following:
+
+\startbuffer
+\definecolor[t-one][r=.6,t=.5,a=1]
+\definecolor[t-two][g=.6,t=.5,a=1]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startoverlay
+  {\framed
+    [framecolor=t-one,rulethickness=3mm,offset=3mm,frame=closed]
+    {Just a bit of text!}}
+  {\framed
+    [framecolor=t-two,rulethickness=3mm,offset=8mm,frame=on]
+    {Just a bit of text!}}
+\stopoverlay
+\stopbuffer
+
+\typebuffer
+
+When you look closely you will notice the difference: check out the corners.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+The normal rule drawing happens with overlaps and the reason for that is that
+\TEX\ can only draw vertical and horizontal rules. We can of course avoid overlap
+but quite often (and certainly in the past) viewers would show small white
+stripes due to rounding errors and rendering artifacts. So, overlaps were a safe
+bet. However, as nowadays we have better control over the backend the additional
+\type {closed} option will draw the path as one.
+
+\startbuffer
+\dontleavehmode
+\framed
+  [width=4cm,height=15mm,rulethickness=3mm,framecolor=t-one,frame=off,
+   rightframe=on,leftframe=on,topframe=on,bottomframe=on]
+  {one}\quad
+\framed
+  [width=4cm,height=15mm,rulethickness=3mm,framecolor=t-two,frame=off,
+  rightframe=small,leftframe=small,topframe=small,bottomframe=small]
+  {two}\quad
+\framed
+  [width=4cm,height=15mm,rulethickness=3mm,framecolor=t-two,frame=off,
+  rightframe=small,leftframe=small,topframe=small,bottomframe=on]
+  {three}
+\stopbuffer
+
+\typebuffer
+
+This example shows another variant of frames, probably unknown (and not needed)
+to many users:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+\stopsubject
+
+\startsubject[title=Examples]
+
+There are quite some examples in the test suite, mailing list archive and wiki,
+so here only a few are given for you to run:
+
+% example by WS on the list:
+
+\starttyping
+\definefiller
+   [dots]
+   [left=\dontleavehmode,
+    right=\hskip\zeropoint\par]
+
+\samplefile{knuth} \dorecurse{5}{\filler[dots]}
+\samplefile{knuth} \dorecurse{5}{\hairline}
+\samplefile{knuth} \thinrules[n=5]
+\stoptyping
+
+All of these produce the text plus some visual cure where to fill in
+something.
 
 \stopsubject
 

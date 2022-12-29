@@ -76,7 +76,7 @@ static mi_option_desc_t options[_mi_option_last] =
   { 0, UNINIT, MI_OPTION(reserve_os_memory)     },
   { 0, UNINIT, MI_OPTION(deprecated_segment_cache) },  // cache N segments per thread
   { 0, UNINIT, MI_OPTION(page_reset) },          // reset page memory on free
-  { 0, UNINIT, MI_OPTION_LEGACY(abandoned_page_decommit, abandoned_page_reset) },// decommit free page memory when a thread terminates
+  { 0, UNINIT, MI_OPTION_LEGACY(abandoned_page_decommit, abandoned_page_reset) },// decommit free page memory when a thread terminates  
   { 0, UNINIT, MI_OPTION(deprecated_segment_reset) },
   #if defined(__NetBSD__)
   { 0, UNINIT, MI_OPTION(eager_commit_delay) },  // the first N segments per thread are not eagerly committed
@@ -86,15 +86,16 @@ static mi_option_desc_t options[_mi_option_last] =
   { 1, UNINIT, MI_OPTION(eager_commit_delay) },  // the first N segments per thread are not eagerly committed (but per page in the segment on demand)
   #endif
   { 25,   UNINIT, MI_OPTION_LEGACY(decommit_delay, reset_delay) }, // page decommit delay in milli-seconds
-  { 0,    UNINIT, MI_OPTION(use_numa_nodes) },    // 0 = use available numa nodes, otherwise use at most N nodes.
+  { 0,    UNINIT, MI_OPTION(use_numa_nodes) },    // 0 = use available numa nodes, otherwise use at most N nodes. 
   { 0,    UNINIT, MI_OPTION(limit_os_alloc) },    // 1 = do not use OS memory for allocation (but only reserved arenas)
   { 100,  UNINIT, MI_OPTION(os_tag) },            // only apple specific for now but might serve more or less related purpose
   { 16,   UNINIT, MI_OPTION(max_errors) },        // maximum errors that are output
   { 16,   UNINIT, MI_OPTION(max_warnings) },      // maximum warnings that are output
-  { 8,    UNINIT, MI_OPTION(max_segment_reclaim)},// max. number of segment reclaims from the abandoned segments per try.
+  { 8,    UNINIT, MI_OPTION(max_segment_reclaim)},// max. number of segment reclaims from the abandoned segments per try.  
   { 1,    UNINIT, MI_OPTION(allow_decommit) },    // decommit slices when no longer used (after decommit_delay milli-seconds)
   { 500,  UNINIT, MI_OPTION(segment_decommit_delay) }, // decommit delay in milli-seconds for freed segments
-  { 2,    UNINIT, MI_OPTION(decommit_extend_delay) }
+  { 1,    UNINIT, MI_OPTION(decommit_extend_delay) },
+  { 0,    UNINIT, MI_OPTION(destroy_on_exit)}     // release all OS memory on process exit; careful with dangling pointer or after-exit frees!
 };
 
 static void mi_option_init(mi_option_desc_t* desc);
@@ -106,7 +107,8 @@ void _mi_options_init(void) {
   for(int i = 0; i < _mi_option_last; i++ ) {
     mi_option_t option = (mi_option_t)i;
     long l = mi_option_get(option); MI_UNUSED(l); // initialize
-    if (option != mi_option_verbose) {
+    // if (option != mi_option_verbose)
+    {
       mi_option_desc_t* desc = &options[option];
       _mi_verbose_message("option '%s': %ld\n", desc->name, desc->value);
     }
@@ -179,13 +181,26 @@ static void mi_cdecl mi_out_stderr(const char* msg, void* arg) {
   if (!_mi_preloading()) {
     // _cputs(msg);  // _cputs cannot be used at is aborts if it fails to lock the console
     static HANDLE hcon = INVALID_HANDLE_VALUE;
+    static bool hconIsConsole;
     if (hcon == INVALID_HANDLE_VALUE) {
+      CONSOLE_SCREEN_BUFFER_INFO sbi;
       hcon = GetStdHandle(STD_ERROR_HANDLE);
+      hconIsConsole = ((hcon != INVALID_HANDLE_VALUE) && GetConsoleScreenBufferInfo(hcon, &sbi));
     }
     const size_t len = strlen(msg);
-    if (hcon != INVALID_HANDLE_VALUE && len > 0 && len < UINT32_MAX) {
+    if (len > 0 && len < UINT32_MAX) {
       DWORD written = 0;
-      WriteConsoleA(hcon, msg, (DWORD)len, &written, NULL);
+      if (hconIsConsole) {
+        WriteConsoleA(hcon, msg, (DWORD)len, &written, NULL);
+      }
+      else if (hcon != INVALID_HANDLE_VALUE) {
+        // use direct write if stderr was redirected
+        WriteFile(hcon, msg, (DWORD)len, &written, NULL);
+      }
+      else {
+        // finally fall back to fputs after all
+        fputs(msg, stderr);
+      }
     }
   }
   #else
@@ -480,13 +495,6 @@ static bool mi_getenv(const char* name, char* result, size_t result_size) {
   return false;
 }
 #else
-static inline int mi_strnicmp(const char* s, const char* t, size_t n) {
-  if (n==0) return 0;
-  for (; *s != 0 && *t != 0 && n > 0; s++, t++, n--) {
-    if (toupper(*s) != toupper(*t)) break;
-  }
-  return (n==0 ? 0 : *s - *t);
-}
 #if defined _WIN32
 // On Windows use GetEnvironmentVariable instead of getenv to work
 // reliably even when this is invoked before the C runtime is initialized.
@@ -512,6 +520,13 @@ static char** mi_get_environ(void) {
   return environ;
 }
 #endif
+static int mi_strnicmp(const char* s, const char* t, size_t n) {
+  if (n == 0) return 0;
+  for (; *s != 0 && *t != 0 && n > 0; s++, t++, n--) {
+    if (toupper(*s) != toupper(*t)) break;
+  }
+  return (n == 0 ? 0 : *s - *t);
+}
 static bool mi_getenv(const char* name, char* result, size_t result_size) {
   if (name==NULL) return false;
   const size_t len = strlen(name);
@@ -570,7 +585,7 @@ static void mi_option_init(mi_option_desc_t* desc) {
     found = mi_getenv(buf,s,sizeof(s));
     if (found) {
       _mi_warning_message("environment option \"mimalloc_%s\" is deprecated -- use \"mimalloc_%s\" instead.\n", desc->legacy_name, desc->name );
-    }
+    }    
   }
 
   if (found) {

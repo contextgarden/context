@@ -233,7 +233,7 @@ do
     registerdirect("RuleV",         function() return getdimen("d_rule_v")      * factor end)
     registerdirect("RuleThickness", function() return getdimen("d_rule_line")   * factor end)
     registerdirect("RuleOffset",    function() return getdimen("d_rule_offset") / 65536  end) -- not factor
-    registerdirect("RuleDirection", function() return getmacro("c_rule_direction")       end)
+    registerdirect("RuleDirection", function() return getmacro("m_rule_direction")       end)
     registerdirect("RuleFactor",    function() return getdimen("d_rule_factor") * factor end)
     registerdirect("RuleOption",    function() return getmacro("m_rule_option")          end)
     registerscript("RuleColor",     function() return getmacro("m_rule_color")           end)

@@ -287,7 +287,6 @@ static alignment_state_info lmt_alignment_state = {
 
 static void tex_aux_wipe_row_state(void)
 {
-    delete_attribute_reference(lmt_alignment_state.row_state.attrlist);
     lmt_alignment_state.row_state.attrlist = null;
     lmt_alignment_state.row_state.orientation = 0;
     lmt_alignment_state.row_state.xoffset = 0;
@@ -619,7 +618,7 @@ static void tex_aux_scan_align_spec(quarterword c)
     if (! attrlist) {
         /* this alse sets the reference when not yet set */
         attrlist = tex_current_attribute_list();
-    }
+    } 
     /*tex Now we're referenced. We need to preserve this over the group. */
     add_attribute_reference(attrlist);
     tex_set_saved_record(saved_align_specification, box_spec_save_type, mode, amount);
@@ -693,6 +692,8 @@ static void tex_aux_run_no_align(void)
                             if (eq_value(register_attribute_location(i)) != v) {
                                 if (lmt_alignment_state.row_state.attrlist) {
                                     lmt_alignment_state.row_state.attrlist = tex_patch_attribute_list(lmt_alignment_state.row_state.attrlist, i, v);
+                                } else if (lmt_alignment_state.attr_list) {
+                                    lmt_alignment_state.row_state.attrlist = tex_copy_attribute_list_set(lmt_alignment_state.attr_list, i, v);
                                 } else {
                                     lmt_alignment_state.row_state.attrlist = tex_copy_attribute_list_set(tex_current_attribute_list(), i, v);
                                 }
@@ -802,11 +803,6 @@ static void tex_aux_run_no_align(void)
     }
   DONE:
     lmt_alignment_state.row_state_set = done;
-    if (! lmt_alignment_state.row_state.attrlist) {
-        /* this alse sets the reference when not yet set */
-        lmt_alignment_state.row_state.attrlist = tex_current_attribute_list();
-    }
-    add_attribute_reference(lmt_alignment_state.row_state.attrlist);
     /* */
     if (! brace) {
         tex_scan_left_brace();
@@ -2051,6 +2047,8 @@ void tex_cleanup_alignments(void)
     tex_put_available_token(lmt_alignment_state.omit_template);
     lmt_alignment_state.hold_token_head = null;
     lmt_alignment_state.omit_template = null;
+    delete_attribute_reference(lmt_alignment_state.attr_list);
+    lmt_alignment_state.attr_list = null;
 }
 
 /*tex
