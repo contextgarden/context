@@ -111,7 +111,7 @@ int sa_get_item_1(const sa_tree head, int n)
             }
         }
     }
-    return (int) head->dflt.uchar_value[n%4];
+    return (int) head->dflt.uchar_value[0];
 }
 
 int sa_get_item_2(const sa_tree head, int n)
@@ -125,7 +125,7 @@ int sa_get_item_2(const sa_tree head, int n)
             }
         }
     }
-    return (int) head->dflt.ushort_value[n%2];
+    return (int) head->dflt.ushort_value[0];
 }
 
 int sa_get_item_4(const sa_tree head, int n, sa_tree_item *v)
@@ -289,20 +289,14 @@ void sa_set_item_n(sa_tree head, int n, int v, int gl)
     }
     switch (head->bytes) {
         case 1:
-            {
-                head->tree[h][m][l/4].uchar_value[n%4] = (unsigned char) (v < 0 ? 0 : (v > 0xFF ? 0xFF : v));
-                break;
-            }
+            head->tree[h][m][l/4].uchar_value[n%4] = (unsigned char) (v < 0 ? 0 : (v > 0xFF ? 0xFF : v));
+            break;
         case 2:
-            {
-                head->tree[h][m][l/2].ushort_value[n%2] = (unsigned char) (v < 0 ? 0 : (v > 0xFFFF ? 0xFFFF : v));
-                break;
-            }
+            head->tree[h][m][l/2].ushort_value[n%2] = (unsigned char) (v < 0 ? 0 : (v > 0xFFFF ? 0xFFFF : v));
+            break;
         case 4:
-            {
-                head->tree[h][m][l].int_value = v;
-                break;
-            }
+            head->tree[h][m][l].int_value = v;
+            break;
     }
 }
 
@@ -418,9 +412,8 @@ sa_tree sa_new_tree(int size, int bytes, sa_tree_item dflt)
 void sa_restore_stack(sa_tree head, int gl)
 {
     if (head->stack) {
-        sa_stack_item st;
         while (head->sa_stack_ptr > 0 && abs(head->stack[head->sa_stack_ptr].level) >= gl) {
-            st = head->stack[head->sa_stack_ptr];
+            sa_stack_item st = head->stack[head->sa_stack_ptr];
             if (st.level > 0) {
                 int code = st.code;
                 switch (head->bytes) {
@@ -443,7 +436,7 @@ void sa_restore_stack(sa_tree head, int gl)
                         break;
                     case 8:
                         {
-                            int l = 2*LMT_SA_L_PART(code);
+                            int l = 2 * LMT_SA_L_PART(code);
                             head->tree[LMT_SA_H_PART(code)][LMT_SA_M_PART(code)][l] = st.value_1;
                             head->tree[LMT_SA_H_PART(code)][LMT_SA_M_PART(code)][l+1] = st.value_2;
                         }

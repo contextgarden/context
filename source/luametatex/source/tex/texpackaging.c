@@ -67,7 +67,7 @@
 
 static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword spec_direction, int just_pack, scaled shift, halfword slot)
 {
-    quarterword spec_code = packing_additional;
+    quarterword spec_packing = packing_additional;
     int spec_amount = 0;
     halfword attrlist = null;
     halfword orientation = 0;
@@ -99,7 +99,7 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                         }
                         break;
                     case 'o': case 'O':
-                        spec_code = packing_exactly;
+                        spec_packing = packing_exactly;
                         spec_amount = tex_scan_dimen(0, 0, 0, 0, NULL);
                         break;
                     default:
@@ -111,7 +111,7 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                 switch (tex_scan_character("dntxDNTX", 0, 0, 0)) {
                     case 'd': case 'D':
                         if (tex_scan_mandate_keyword("adapt", 2)) {
-                            spec_code = packing_adapted;
+                            spec_packing = packing_adapted;
                             spec_amount = tex_scan_limited_scale(0);
                         }
                         break;
@@ -164,7 +164,7 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                         break;
                     case 'p': case 'P':
                         if (tex_scan_mandate_keyword("spread", 2)) {
-                            spec_code = packing_additional;
+                            spec_packing = packing_additional;
                             spec_amount = tex_scan_dimen(0, 0, 0, 0, NULL);
                         }
                         break;
@@ -301,7 +301,7 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
     /* */
     tex_set_saved_record(saved_full_spec_item_context, box_context_save_type, slot, context); /* slot fits in a quarterword */
     /*tex Traditionally these two are packed into one record: */
-    tex_set_saved_record(saved_full_spec_item_packaging, box_spec_save_type, spec_code, spec_amount);
+    tex_set_saved_record(saved_full_spec_item_packaging, box_spec_save_type, spec_packing, spec_amount);
     /*tex Adjust |text_dir_ptr| for |scan_spec|: */
     if (spec_direction != direction_unknown) {
         tex_set_saved_record(saved_full_spec_item_direction, box_direction_save_type, spec_direction, lmt_dir_state.text_dir_ptr);
@@ -2368,7 +2368,7 @@ void tex_run_vcenter(void)
     tex_aux_scan_full_spec(direct_box_flag, vcenter_group, direction_l2r, 0, 0, -1);
     tex_normal_paragraph(vcenter_par_context);
     tex_push_nest();
-    cur_list.mode = -vmode;
+    cur_list.mode = internal_vmode;
     cur_list.prev_depth = ignore_depth_criterium_par;
     if (every_vbox_par) {
         tex_begin_token_list(every_vbox_par, every_vbox_text);
@@ -2413,7 +2413,7 @@ void tex_package(singleword nature)
     halfword boxnode = null; /*tex Aka |cur_box|. */
     tex_unsave();
     lmt_save_state.save_stack_data.ptr -= saved_full_spec_n_of_items;
-    slot = saved_level(saved_full_spec_item_context);
+    slot = saved_extra(saved_full_spec_item_context);
     context = saved_value(saved_full_spec_item_context);
     spec = saved_value(saved_full_spec_item_packaging);
     dirptr = saved_value(saved_full_spec_item_direction);
@@ -2429,17 +2429,17 @@ void tex_package(singleword nature)
     mainclass = saved_value(saved_full_spec_item_class);
     state = saved_value(saved_full_spec_item_state);
     retain = saved_value(saved_full_spec_item_retain);
-    if (cur_list.mode == -hmode) {
-        boxnode = tex_filtered_hpack(cur_list.head, cur_list.tail, spec, saved_level(saved_full_spec_item_packaging),
-            grp, saved_level(saved_full_spec_item_direction), justpack, attrlist, state, retain);
+    if (cur_list.mode == restricted_hmode) {
+        boxnode = tex_filtered_hpack(cur_list.head, cur_list.tail, spec, saved_extra(saved_full_spec_item_packaging),
+            grp, saved_extra(saved_full_spec_item_direction), justpack, attrlist, state, retain);
         node_subtype(boxnode) = hbox_list;
         if (saved_value(saved_full_spec_item_reverse)) {
             box_list(boxnode) = tex_reversed_node_list(box_list(boxnode));
         }
         box_package_state(boxnode) = hbox_package_state;
     } else {
-        boxnode = tex_filtered_vpack(node_next(cur_list.head), spec, saved_level(saved_full_spec_item_packaging),
-            maxdepth, grp, saved_level(saved_full_spec_item_direction), justpack, attrlist, state, retain);
+        boxnode = tex_filtered_vpack(node_next(cur_list.head), spec, saved_extra(saved_full_spec_item_packaging),
+            maxdepth, grp, saved_extra(saved_full_spec_item_direction), justpack, attrlist, state, retain);
         tex_aux_set_vnature(boxnode, nature);
     }
     if (dirptr) {
@@ -2540,144 +2540,161 @@ void tex_run_unpackage(void)
                 halfword b = box_register(n);
                 if (! b) {
                     return;
-                } else if ((abs(cur_list.mode) == mmode)
-                       || ((abs(cur_list.mode) == vmode) && (node_type(b) != vlist_node))
-                       || ((abs(cur_list.mode) == hmode) && (node_type(b) != hlist_node))) {
-                    tex_handle_error(
-                        normal_error_type,
-                        "Incompatible list can't be unboxed",
-                        "Sorry, Pandora. (You sneaky devil.) I refuse to unbox an \\hbox in vertical mode\n"
-                        "or vice versa. And I can't open any boxes in math mode."
-                    );
-                    return;
-                } else {
-
-                    /* todo: check head, not needed, always a temp */
-
-                    /*tex Via variables for varmem assignment. */
-                    halfword list = box_list(b);
-                    halfword pre_migrated  = code == unpack_code ? null : box_pre_migrated(b);
-                    halfword post_migrated = code == unpack_code ? null : box_post_migrated(b);
-                //  halfword pre_adjusted  = code == unpack_code || (abs(cur_list.mode) == hmode) ? null : box_pre_adjusted(b);
-                //  halfword post_adjusted = code == unpack_code || (abs(cur_list.mode) == hmode) ? null : box_post_adjusted(b);
-                //  halfword pre_adjusted  = code == unpack_code ? null : box_pre_adjusted(b);
-                //  halfword post_adjusted = code == unpack_code ? null : box_post_adjusted(b);
-                    halfword pre_adjusted  = box_pre_adjusted(b);
-                    halfword post_adjusted = box_post_adjusted(b);
-                    if (pre_adjusted) {
-                        if (code == copy_code) {
-                            pre_adjusted  = tex_copy_node_list(pre_adjusted, null);
-                        } else {
-                            box_pre_adjusted(b) = null;
-                        }
-                        while (pre_adjusted) {
-                            halfword p = pre_adjusted;
-                            halfword h = adjust_list(pre_adjusted);
-                            if (h) {
-                                if (abs(cur_list.mode) == hmode) { 
-                                    halfword n = tex_new_node(adjust_node, pre_adjust_code);
-                                    adjust_list(n) = h;
-                                    h = n;
-                                }
-                                if (! head) {
-                                    head = h;
-                                }
-                                tex_try_couple_nodes(tail, h);
-                                tail = tex_tail_of_node_list(h);
-                                adjust_list(pre_adjusted) = null;
+                } else { 
+                    int bad = 0;
+                    switch (cur_list.mode) {
+                        case vmode: 
+                        case internal_vmode: 
+                            if (node_type(b) != vlist_node) { 
+                                bad = 1;
                             }
-                            pre_adjusted = node_next(pre_adjusted);
-                            tex_flush_node(p);
-                        }
-                    }
-                    if (pre_migrated) {
-                        if (code == copy_code) {
-                            pre_migrated  = tex_copy_node_list(pre_migrated, null);
-                        } else {
-                            box_pre_migrated(b) = null;
-                        }
-                        tex_try_couple_nodes(tail, pre_migrated);
-                        tail = tex_tail_of_node_list(pre_migrated);
-                        if (! head) {
-                            head = pre_migrated;
-                        }
-                    }
-                    if (list) {
-                        if (code == copy_code) {
-                            list = tex_copy_node_list(list, null);
-                        } else {
-                            box_list(b) = null;
-                        }
-                        tex_try_couple_nodes(tail, list);
-                        tail = tex_tail_of_node_list(list);
-                        if (! head) {
-                            head = list;
-                        }
-                    }
-                    if (post_migrated) {
-                        if (code == copy_code) {
-                            post_migrated = tex_copy_node_list(post_migrated, null);
-                        } else {
-                            box_post_migrated(b) = null;
-                        }
-                        tex_try_couple_nodes(tail, post_migrated);
-                        tail = tex_tail_of_node_list(post_migrated);
-                        if (! head) {
-                            head = post_migrated;
-                        }
-                    }
-                    if (post_adjusted) {
-                        if (code == copy_code) {
-                            post_adjusted = tex_copy_node_list(post_adjusted, null);
-                        } else {
-                            box_post_adjusted(b) = null;
-                        }
-                        while (post_adjusted) {
-                            halfword p = post_adjusted;
-                            halfword h = adjust_list(post_adjusted);
-                            if (h) {
-                                if (abs(cur_list.mode) == hmode) { 
-                                    halfword n = tex_new_node(adjust_node, post_adjust_code);
-                                    adjust_list(n) = h;
-                                    h = n;
-                                }
-                                if (! head) {
-                                    head = h;
-                                }
-                                tex_try_couple_nodes(tail, h);
-                                tail = tex_tail_of_node_list(h);
-                                adjust_list(post_adjusted) = null;
+                            break;
+                        case hmode: 
+                        case restricted_hmode: 
+                            if (node_type(b) != hlist_node) { 
+                                bad = 1;
                             }
-                            post_adjusted = node_next(post_adjusted);
-                            tex_flush_node(p);
-                        }
+                            break;
+                        case mmode: 
+                        case inline_mmode: 
+                            bad = 1;
+                            break;
                     }
-                    if (code != copy_code) {
-                        box_register(n) = null;
-                        tex_flush_node(b);
-                    }
-                    if (! head) {
-                        tail = null;
-                    } else if (node_type(b) == hlist_node && normalize_line_mode_permitted(normalize_line_mode_par, remove_margin_kerns_mode)) {
-                        /* only here head is used ... */
-                        tail = head;
-                        while (1) {
-                            halfword next = node_next(tail);
-                            if (next) {
-                                if (tex_is_margin_kern(next)) {
-                                    tex_try_couple_nodes(tail, node_next(next));
-                                    tex_flush_node(next);
-                                } else {
-                                    tail = next;
-                                }
-                            } else {
-                                break;
-                            }
-                        }
+                    if (bad) {
+                        tex_handle_error(
+                            normal_error_type,
+                            "Incompatible list can't be unboxed",
+                            "Sorry, Pandora. (You sneaky devil.) I refuse to unbox an \\hbox in vertical mode\n"
+                            "or vice versa. And I can't open any boxes in math mode."
+                        );
+                        return;
                     } else {
-                        tail = tex_tail_of_node_list(tail);
+                        /*tex Todo: check head, not needed, always a temp. */
+                        /*tex Via variables for varmem assignment. */
+                        halfword list = box_list(b);
+                        halfword pre_migrated  = code == unpack_code ? null : box_pre_migrated(b);
+                        halfword post_migrated = code == unpack_code ? null : box_post_migrated(b);
+                    //  halfword pre_adjusted  = code == (unpack_code || is_h_mode(cur_list.mode)) ? null : box_pre_adjusted(b);
+                    //  halfword post_adjusted = code == (unpack_code || is_h_mode(cur_list.mode)) ? null : box_post_adjusted(b);
+                    //  halfword pre_adjusted  = code == unpack_code ? null : box_pre_adjusted(b);
+                    //  halfword post_adjusted = code == unpack_code ? null : box_post_adjusted(b);
+                        halfword pre_adjusted  = box_pre_adjusted(b);
+                        halfword post_adjusted = box_post_adjusted(b);
+                        if (pre_adjusted) {
+                            if (code == copy_code) {
+                                pre_adjusted  = tex_copy_node_list(pre_adjusted, null);
+                            } else {
+                                box_pre_adjusted(b) = null;
+                            }
+                            while (pre_adjusted) {
+                                halfword p = pre_adjusted;
+                                halfword h = adjust_list(pre_adjusted);
+                                if (h) {
+                                    if (is_h_mode(cur_list.mode)) { 
+                                        halfword n = tex_new_node(adjust_node, pre_adjust_code);
+                                        adjust_list(n) = h;
+                                        h = n;
+                                    }
+                                    if (! head) {
+                                        head = h;
+                                    }
+                                    tex_try_couple_nodes(tail, h);
+                                    tail = tex_tail_of_node_list(h);
+                                    adjust_list(pre_adjusted) = null;
+                                }
+                                pre_adjusted = node_next(pre_adjusted);
+                                tex_flush_node(p);
+                            }
+                        }
+                        if (pre_migrated) {
+                            if (code == copy_code) {
+                                pre_migrated  = tex_copy_node_list(pre_migrated, null);
+                            } else {
+                                box_pre_migrated(b) = null;
+                            }
+                            tex_try_couple_nodes(tail, pre_migrated);
+                            tail = tex_tail_of_node_list(pre_migrated);
+                            if (! head) {
+                                head = pre_migrated;
+                            }
+                        }
+                        if (list) {
+                            if (code == copy_code) {
+                                list = tex_copy_node_list(list, null);
+                            } else {
+                                box_list(b) = null;
+                            }
+                            tex_try_couple_nodes(tail, list);
+                            tail = tex_tail_of_node_list(list);
+                            if (! head) {
+                                head = list;
+                            }
+                        }
+                        if (post_migrated) {
+                            if (code == copy_code) {
+                                post_migrated = tex_copy_node_list(post_migrated, null);
+                            } else {
+                                box_post_migrated(b) = null;
+                            }
+                            tex_try_couple_nodes(tail, post_migrated);
+                            tail = tex_tail_of_node_list(post_migrated);
+                            if (! head) {
+                                head = post_migrated;
+                            }
+                        }
+                        if (post_adjusted) {
+                            if (code == copy_code) {
+                                post_adjusted = tex_copy_node_list(post_adjusted, null);
+                            } else {
+                                box_post_adjusted(b) = null;
+                            }
+                            while (post_adjusted) {
+                                halfword p = post_adjusted;
+                                halfword h = adjust_list(post_adjusted);
+                                if (h) {
+                                    if (is_h_mode(cur_list.mode)) { 
+                                        halfword n = tex_new_node(adjust_node, post_adjust_code);
+                                        adjust_list(n) = h;
+                                        h = n;
+                                    }
+                                    if (! head) {
+                                        head = h;
+                                    }
+                                    tex_try_couple_nodes(tail, h);
+                                    tail = tex_tail_of_node_list(h);
+                                    adjust_list(post_adjusted) = null;
+                                }
+                                post_adjusted = node_next(post_adjusted);
+                                tex_flush_node(p);
+                            }
+                        }
+                        if (code != copy_code) {
+                            box_register(n) = null;
+                            tex_flush_node(b);
+                        }
+                        if (! head) {
+                            tail = null;
+                        } else if (node_type(b) == hlist_node && normalize_line_mode_permitted(normalize_line_mode_par, remove_margin_kerns_mode)) {
+                            /* only here head is used ... */
+                            tail = head;
+                            while (1) {
+                                halfword next = node_next(tail);
+                                if (next) {
+                                    if (tex_is_margin_kern(next)) {
+                                        tex_try_couple_nodes(tail, node_next(next));
+                                        tex_flush_node(next);
+                                    } else {
+                                        tail = next;
+                                    }
+                                } else {
+                                    break;
+                                }
+                            }
+                        } else {
+                            tail = tex_tail_of_node_list(tail);
+                        }
+                        cur_list.tail = tail;
                     }
-                    cur_list.tail = tail;
                     break;
                 }
             }
@@ -2709,7 +2726,7 @@ void tex_run_unpackage(void)
                 if (tex_valid_insert_id(index)) {
                     halfword boxnode = tex_get_insert_content(index); /* also checks for id */
                     if (boxnode) {
-                        if (abs(cur_list.mode) != vmode) {
+                        if (! is_v_mode(cur_list.mode)) {
                             tex_handle_error(
                                 normal_error_type,
                                 "Unpacking an inserts can only happen in vertical mode.",
@@ -3244,7 +3261,7 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot)
                 point to it; otherwise set |boxnode := null|.
             */
             boxnode = null;
-            if (abs(cur_list.mode) == mmode) {
+            if (is_m_mode(cur_list.mode)) {
                 tex_you_cant_error(
                     "Sorry; this \\lastbox will be void."
                 );
@@ -3380,17 +3397,20 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot)
                 int group = vbox_group;
                 int mode = vmode;
                 int adjusted = 0;
-                switch (abs(cur_list.mode)) {
+                switch (cur_list.mode) {
                     case vmode:
+                    case internal_vmode:
                         direction = dir_lefttoright;
                         if (boxcontext == direct_box_flag) {
                             adjusted = 1;
                         }
                         break;
                     case hmode:
+                    case restricted_hmode:
                         direction = (singleword) text_direction_par;
                         break;
                     case mmode:
+                    case inline_mmode:
                         direction = (singleword) math_direction_par;
                         break;
                     default: 

@@ -40,6 +40,8 @@
   {\pushoverloadmode
    \pushcatcodetable
    \setcatcodetable\texcatcodes
+   \pushmacro\meaning
+   \let\meaning\meaningless
    \catcode`\@=11
    \catcode`\|=12
    \catcode`\!=12
@@ -48,6 +50,7 @@
 \permanent\protected\def\stoptikzinput
   {\autoparagraphmode\plusone
    \popcatcodetable
+   \popmacro\meaning
    \popoverloadmode}
 
 \permanent\protected\def\tikzinputfile#1%
@@ -66,16 +69,21 @@
 
 \permanent\protected\def\starttikzsettings
   {\pushoverloadmode
+   \pushmacro\meaning
+   \let\meaning\meaningless
    \autoparagraphmode\zerocount}
 
 \permanent\protected\def\stoptikzsettings
   {\autoparagraphmode\plusone
+   \popmacro\meaning
    \popoverloadmode}
 
 \permanent\protected\def\starttikzpicture
   {\dontleavehmode
    \hcontainer\bgroup
    \autoparagraphmode\zerocount
+   \pushmacro\meaning
+   \let\meaning\meaningless
  % \pushoverloadmode
    \ifdefined\PackageError\else \let\PackageError\tikzerrormessage \fi
    \tikzpicture}
@@ -83,6 +91,7 @@
 \permanent\protected\def\stoptikzpicture
   {\endtikzpicture
  % \popoverloadmode
+   \popmacro\meaning
    \egroup}
 
 \let\pgfdefined    \relax
@@ -124,5 +133,8 @@
 \usepgfmodule[plot]
 \usepgfmodule[matrix]
 \usepgfmodule[decorations]
+
+\definefilesynonym [pgfplots]      [tikz-pgfplots]
+\definefilesynonym [pgfplotstable] [tikz-pgfplotstable]
 
 \stopmodule

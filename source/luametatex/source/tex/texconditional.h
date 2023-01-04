@@ -111,14 +111,14 @@ typedef enum if_test_codes {
 //define last_real_if_test_code  if_bitwise_and_code
 
 typedef struct condition_state_info {
-    halfword  cond_ptr;       /*tex top of the condition stack */
-    int       cur_if;         /*tex type of conditional being worked on */
+    halfword  cond_ptr;   /*tex top of the condition stack */
+    int       cur_if;     /*tex type of conditional being worked on */
     int       cur_unless;
     int       if_step;
     int       if_unless;
-    int       if_limit;       /*tex upper bound on |fi_or_else| codes */
-    int       if_line;        /*tex line where that conditional began */
-    int       skip_line;      /*tex skipping began here */
+    int       if_limit;   /*tex upper bound on |fi_or_else| codes */
+    int       if_line;    /*tex line where that conditional began */
+    int       skip_line;  /*tex skipping began here */
     halfword  chk_num;
     scaled    chk_dim;
     halfword  if_nesting;

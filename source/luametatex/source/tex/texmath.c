@@ -315,7 +315,7 @@ static void tex_aux_unsave_math(void)
 /*tex
 
     Sometimes it is necessary to destroy an mlist. The following subroutine empties the current
-    list, assuming that |abs(mode) = mmode|.
+    list, assuming that |abs(mode) = mmode|  aka |is_m_mode(mode)|.
 
 */
 
@@ -1225,7 +1225,7 @@ static void tex_aux_push_math(quarterword group, int style)
     cur_list.math_end = math_end_class_par;
     cur_list.math_main_style = style;
     tex_push_nest();
-    cur_list.mode = -mmode;
+    cur_list.mode = inline_mmode;
     cur_list.incomplete_noad = null;
     cur_list.math_style = style;
     tex_aux_new_save_level_math(group);
@@ -1938,7 +1938,7 @@ static void tex_aux_append_math_fence(halfword fence, quarterword mathclass)
                 node_subtype(fence) = left_fence_side;
                 node_next(cur_list.head) = fence;
                 cur_list.tail = fence;
-                cur_list.delim = fence;
+                cur_list.delimiter = fence;
             }
             break;
         case close_noad_subtype:
@@ -1962,7 +1962,7 @@ static void tex_aux_append_math_fence(halfword fence, quarterword mathclass)
                 node_subtype(fence) = middle_fence_side;
                 node_next(cur_list.head) = q;
                 cur_list.tail = fence;
-                cur_list.delim = fence;
+                cur_list.delimiter = fence;
             }
             break;
     }
@@ -3047,12 +3047,12 @@ void tex_run_math_choice(void) {
 
 int tex_current_math_style(void)
 {
-    return (abs(cur_list.mode) == mmode) ? cur_list.math_style : -1;
+    return is_m_mode(cur_list.mode) ? cur_list.math_style : -1;
 }
 
 int tex_current_math_main_style(void)
 {
-    return (abs(cur_list.mode) == mmode) ? cur_list.math_main_style : -1;
+    return is_m_mode(cur_list.mode) ? cur_list.math_main_style : -1;
 }
 
 void tex_finish_math_choice(void)
@@ -3740,11 +3740,11 @@ static halfword tex_aux_finish_math_list(halfword p)
         if (p) {
             halfword numerator = fraction_numerator(cur_list.incomplete_noad);
             q = kernel_math_list(numerator);
-            if ((node_type(q) != fence_noad) || (node_subtype(q) != left_fence_side) || (! cur_list.delim)) {
+            if ((node_type(q) != fence_noad) || (node_subtype(q) != left_fence_side) || (! cur_list.delimiter)) {
                 tex_confusion("right fence");
             }
-            kernel_math_list(numerator) = node_next(cur_list.delim);
-            node_next(cur_list.delim) = cur_list.incomplete_noad;
+            kernel_math_list(numerator) = node_next(cur_list.delimiter);
+            node_next(cur_list.delimiter) = cur_list.incomplete_noad;
             node_next(cur_list.incomplete_noad) = p;
         } else {
             q = cur_list.incomplete_noad;
@@ -4171,7 +4171,7 @@ void tex_run_math_fence(void)
                     tex_aux_push_math(math_fence_group, style);
                     node_next(cur_list.head) = fence;
                     cur_list.tail = fence;
-                    cur_list.delim = fence;
+                    cur_list.delimiter = fence;
                     tex_set_saved_record(saved_operator_item_variant, operator_variant_save_type, 0, math_limits_top);
                     lmt_save_state.save_stack_data.ptr += saved_operator_n_of_items;
                     tex_aux_push_math(math_operator_group, tex_math_style_variant(style, math_parameter_superscript_variant));

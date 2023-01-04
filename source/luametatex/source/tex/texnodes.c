@@ -1114,7 +1114,7 @@ halfword tex_copy_node_only(halfword p)
     } \
 } while (0)
 
-halfword tex_copy_node(halfword p)
+halfword tex_copy_node(halfword p) /* how about null */
 {
     /*tex
         We really need a stub for copying because mem might move in the meantime due to resizing!
@@ -2728,10 +2728,10 @@ void tex_show_node_list(halfword p, int threshold, int max)
                         tex_print_format(", yoffset %R", rule_y_offset(p));
                     }
                     if (rule_font(p)) {
-                        if (rule_font(p) < 0 || rule_font(p) >= rule_font_fam_offset) {
-                            tex_print_format(", font %F", rule_font(p));
-                        } else {
+                        if (rule_font(p) >= rule_font_fam_offset) {
                             tex_print_format(", family %i", rule_font(p) - rule_font_fam_offset);
+                        } else {
+                            tex_print_format(", font %F", rule_font(p) < 0 ? 0 : rule_font(p));
                         }
                     }
                     if (rule_character(p)) {
@@ -3365,30 +3365,6 @@ scaled tex_glyph_depth(halfword p) /* not used */
     return d < 0 ? 0 : d;
 }
 
-// scaledwhd tex_glyph_dimensions(halfword p)
-// {
-//     scaledwhd whd = { 0, 0, 0, 0 };
-//     scaled x = glyph_x_offset(p);
-//     scaled y = glyph_y_offset(p);
-//     whd.ht = tex_char_height_from_glyph(p) + glyph_raise(p);
-//     whd.dp = tex_char_depth_from_glyph(p) - glyph_raise(p);
-//     whd.wd = tex_char_width_from_glyph(p) - (glyph_left(p) + glyph_right(p));
-//     if (x && tex_has_glyph_option(p, glyph_option_apply_x_offset)) {
-//         whd.wd += x;
-//     }
-//     if (y && tex_has_glyph_option(p, glyph_option_apply_y_offset)) {
-//         whd.ht += y;
-//         whd.dp -= y;
-//     }
-//     if (whd.ht < 0) {
-//         whd.ht = 0;
-//     }
-//     if (whd.dp < 0) {
-//         whd.dp = 0;
-//     }
-//     return whd;
-// }
-
 scaledwhd tex_glyph_dimensions(halfword p)
 {
     scaledwhd whd = tex_char_whd_from_glyph(p);
@@ -3412,33 +3388,6 @@ scaledwhd tex_glyph_dimensions(halfword p)
     }
     return whd;
 }
-
-// scaledwhd tex_glyph_dimensions_ex(halfword p)
-// {
-//     scaledwhd whd = { 0, 0, 0, 0 };
-//     scaled x = glyph_x_offset(p);
-//     scaled y = glyph_y_offset(p);
-//     whd.ht = tex_char_height_from_glyph(p) + glyph_raise(p);
-//     whd.dp = tex_char_depth_from_glyph(p) - glyph_raise(p);
-//     whd.wd = tex_char_width_from_glyph(p) - (glyph_left(p) + glyph_right(p));
-//     if (x && tex_has_glyph_option(p, glyph_option_apply_x_offset)) {
-//         whd.wd += x;
-//     }
-//     if (y && tex_has_glyph_option(p, glyph_option_apply_y_offset)) {
-//         whd.ht += y;
-//         whd.dp -= y;
-//     }
-//     if (whd.ht < 0) {
-//         whd.ht = 0;
-//     }
-//     if (whd.dp < 0) {
-//         whd.dp = 0;
-//     }
-//     if (whd.wd && glyph_expansion(p)) {
-//         whd.wd = tex_ext_xn_over_d(whd.wd, 1000000 + glyph_expansion(p), 1000000);
-//     }
-//     return whd;
-// }
 
 scaledwhd tex_glyph_dimensions_ex(halfword p)
 {
@@ -3467,37 +3416,10 @@ scaledwhd tex_glyph_dimensions_ex(halfword p)
     return whd;
 }
 
-
 scaled tex_glyph_total(halfword p)
 {
- // scaled ht = tex_char_height_from_glyph(p);
- // scaled dp = tex_char_depth_from_glyph(p);
- // if (ht < 0) {
- //     ht = 0;
- // }
- // if (dp < 0) {
- //     dp = 0;
- // }
- // return ht + dp;
     return tex_char_total_from_glyph(p);
 }
-
-// int tex_glyph_has_dimensions(halfword p)
-// {
-//     scaled offset = glyph_x_offset(p);
-//     scaled amount = tex_char_width_from_glyph(p);
-//     if (offset && tex_has_glyph_option(p, glyph_option_apply_x_offset)) {
-//         amount += offset;
-//     }
-//     amount -= (glyph_left(p) + glyph_right(p));
-//     if (amount) {
-//         return 1;
-//     } else {
-//         amount = tex_char_total_from_glyph(p);
-//         /* here offset and raise just moves */
-//         return amount != 0;
-//     }
-// }
 
 int tex_glyph_has_dimensions(halfword p)
 {
@@ -3880,6 +3802,7 @@ static halfword tex_aux_internal_to_par_code(halfword cmd, halfword index) {
                 case shaping_penalties_mode_code : return par_shaping_penalties_mode_code;
                 case shaping_penalty_code        : return par_shaping_penalty_code;
             }
+            break;
         case internal_dimen_cmd:
             switch (index) {
                 case hsize_code                  : return par_hsize_code;
@@ -3888,6 +3811,7 @@ static halfword tex_aux_internal_to_par_code(halfword cmd, halfword index) {
                 case emergency_stretch_code      : return par_emergency_stretch_code;
                 case line_skip_limit_code        : return par_line_skip_limit_code;
             }
+            break;
         case internal_glue_cmd:
             switch (index) {
                 case left_skip_code              : return par_left_skip_code;
@@ -3899,6 +3823,7 @@ static halfword tex_aux_internal_to_par_code(halfword cmd, halfword index) {
                 case baseline_skip_code          : return par_baseline_skip_code;
                 case line_skip_code              : return par_line_skip_code;
             }
+            break;
         case specification_reference_cmd:
             switch (index) {
                 case par_shape_code              : return par_par_shape_code;
@@ -3908,6 +3833,7 @@ static halfword tex_aux_internal_to_par_code(halfword cmd, halfword index) {
                 case display_widow_penalties_code: return par_display_widow_penalties_code;
                 case orphan_penalties_code       : return par_orphan_penalties_code;
             }
+            break;
     }
     return -1;
 }
@@ -4150,6 +4076,82 @@ void tex_set_par_par(halfword p, halfword what, halfword v, int force)
     }
 }
 
+/* 
+    This is the reference but as it's called often we use an inlined variant with less redudant
+    testing and branching. 
+*/
+
+/*
+    void tex_snapshot_par(halfword p, halfword what)
+    {
+        if (p && lmt_main_state.run_state != initializing_state) {
+            int unset = 0;
+            if (what) {
+                if (what < 0) {
+                    unset = 1;
+                    what = -what;
+                }
+                if (what > par_all_category) {
+                    what = par_all_category;
+                }
+            } else {
+                unset = 1;
+                what = par_all_category;
+            }
+            if (tex_par_to_be_set(what, par_hsize_code))                   { tex_set_par_par(p, par_hsize_code,                   unset ? null : hsize_par,                   1); }
+            if (tex_par_to_be_set(what, par_left_skip_code))               { tex_set_par_par(p, par_left_skip_code,               unset ? null : left_skip_par,               1); }
+            if (tex_par_to_be_set(what, par_right_skip_code))              { tex_set_par_par(p, par_right_skip_code,              unset ? null : right_skip_par,              1); }
+            if (tex_par_to_be_set(what, par_hang_indent_code))             { tex_set_par_par(p, par_hang_indent_code,             unset ? null : hang_indent_par,             1); }
+            if (tex_par_to_be_set(what, par_hang_after_code))              { tex_set_par_par(p, par_hang_after_code,              unset ? null : hang_after_par,              1); }
+            if (tex_par_to_be_set(what, par_par_indent_code))              { tex_set_par_par(p, par_par_indent_code,              unset ? null : par_indent_par,              1); }
+            if (tex_par_to_be_set(what, par_par_fill_left_skip_code))      { tex_set_par_par(p, par_par_fill_left_skip_code,      unset ? null : par_fill_left_skip_par,      1); }
+            if (tex_par_to_be_set(what, par_par_fill_right_skip_code))     { tex_set_par_par(p, par_par_fill_right_skip_code,     unset ? null : par_fill_right_skip_par,     1); }
+            if (tex_par_to_be_set(what, par_par_init_left_skip_code))      { tex_set_par_par(p, par_par_init_left_skip_code,      unset ? null : par_init_left_skip_par,      1); }
+            if (tex_par_to_be_set(what, par_par_init_right_skip_code))     { tex_set_par_par(p, par_par_init_right_skip_code,     unset ? null : par_init_right_skip_par,     1); }
+            if (tex_par_to_be_set(what, par_adjust_spacing_code))          { tex_set_par_par(p, par_adjust_spacing_code,          unset ? null : adjust_spacing_par,          1); }
+            if (tex_par_to_be_set(what, par_protrude_chars_code))          { tex_set_par_par(p, par_protrude_chars_code,          unset ? null : protrude_chars_par,          1); }
+            if (tex_par_to_be_set(what, par_pre_tolerance_code))           { tex_set_par_par(p, par_pre_tolerance_code,           unset ? null : pre_tolerance_par,           1); }
+            if (tex_par_to_be_set(what, par_tolerance_code))               { tex_set_par_par(p, par_tolerance_code,               unset ? null : tolerance_par,               1); }
+            if (tex_par_to_be_set(what, par_emergency_stretch_code))       { tex_set_par_par(p, par_emergency_stretch_code,       unset ? null : emergency_stretch_par,       1); }
+            if (tex_par_to_be_set(what, par_looseness_code))               { tex_set_par_par(p, par_looseness_code,               unset ? null : looseness_par,               1); }
+            if (tex_par_to_be_set(what, par_last_line_fit_code))           { tex_set_par_par(p, par_last_line_fit_code,           unset ? null : last_line_fit_par,           1); }
+            if (tex_par_to_be_set(what, par_line_penalty_code))            { tex_set_par_par(p, par_line_penalty_code,            unset ? null : line_penalty_par,            1); }
+            if (tex_par_to_be_set(what, par_inter_line_penalty_code))      { tex_set_par_par(p, par_inter_line_penalty_code,      unset ? null : inter_line_penalty_par,      1); }
+            if (tex_par_to_be_set(what, par_club_penalty_code))            { tex_set_par_par(p, par_club_penalty_code,            unset ? null : club_penalty_par,            1); }
+            if (tex_par_to_be_set(what, par_widow_penalty_code))           { tex_set_par_par(p, par_widow_penalty_code,           unset ? null : widow_penalty_par,           1); }
+            if (tex_par_to_be_set(what, par_display_widow_penalty_code))   { tex_set_par_par(p, par_display_widow_penalty_code,   unset ? null : display_widow_penalty_par,   1); }
+            if (tex_par_to_be_set(what, par_orphan_penalty_code))          { tex_set_par_par(p, par_orphan_penalty_code,          unset ? null : orphan_penalty_par,          1); }
+            if (tex_par_to_be_set(what, par_broken_penalty_code))          { tex_set_par_par(p, par_broken_penalty_code,          unset ? null : broken_penalty_par,          1); }
+            if (tex_par_to_be_set(what, par_adj_demerits_code))            { tex_set_par_par(p, par_adj_demerits_code,            unset ? null : adj_demerits_par,            1); }
+            if (tex_par_to_be_set(what, par_double_hyphen_demerits_code))  { tex_set_par_par(p, par_double_hyphen_demerits_code,  unset ? null : double_hyphen_demerits_par,  1); }
+            if (tex_par_to_be_set(what, par_final_hyphen_demerits_code))   { tex_set_par_par(p, par_final_hyphen_demerits_code,   unset ? null : final_hyphen_demerits_par,   1); }
+            if (tex_par_to_be_set(what, par_par_shape_code))               { tex_set_par_par(p, par_par_shape_code,               unset ? null : par_shape_par,               1); }
+            if (tex_par_to_be_set(what, par_inter_line_penalties_code))    { tex_set_par_par(p, par_inter_line_penalties_code,    unset ? null : inter_line_penalties_par,    1); }
+            if (tex_par_to_be_set(what, par_club_penalties_code))          { tex_set_par_par(p, par_club_penalties_code,          unset ? null : club_penalties_par,          1); }
+            if (tex_par_to_be_set(what, par_widow_penalties_code))         { tex_set_par_par(p, par_widow_penalties_code,         unset ? null : widow_penalties_par,         1); }
+            if (tex_par_to_be_set(what, par_display_widow_penalties_code)) { tex_set_par_par(p, par_display_widow_penalties_code, unset ? null : display_widow_penalties_par, 1); }
+            if (tex_par_to_be_set(what, par_orphan_penalties_code))        { tex_set_par_par(p, par_orphan_penalties_code,        unset ? null : orphan_penalties_par,        1); }
+            if (tex_par_to_be_set(what, par_baseline_skip_code))           { tex_set_par_par(p, par_baseline_skip_code,           unset ? null : baseline_skip_par,           1); }
+            if (tex_par_to_be_set(what, par_line_skip_code))               { tex_set_par_par(p, par_line_skip_code,               unset ? null : line_skip_par,               1); }
+            if (tex_par_to_be_set(what, par_line_skip_limit_code))         { tex_set_par_par(p, par_line_skip_limit_code,         unset ? null : line_skip_limit_par,         1); }
+            if (tex_par_to_be_set(what, par_adjust_spacing_step_code))     { tex_set_par_par(p, par_adjust_spacing_step_code,     unset ? null : adjust_spacing_step_par,     1); }
+            if (tex_par_to_be_set(what, par_adjust_spacing_shrink_code))   { tex_set_par_par(p, par_adjust_spacing_shrink_code,   unset ? null : adjust_spacing_shrink_par,   1); }
+            if (tex_par_to_be_set(what, par_adjust_spacing_stretch_code))  { tex_set_par_par(p, par_adjust_spacing_stretch_code,  unset ? null : adjust_spacing_stretch_par,  1); }
+            if (tex_par_to_be_set(what, par_hyphenation_mode_code))        { tex_set_par_par(p, par_hyphenation_mode_code,        unset ? null : hyphenation_mode_par,        1); }
+            if (tex_par_to_be_set(what, par_shaping_penalties_mode_code))  { tex_set_par_par(p, par_shaping_penalties_mode_code,  unset ? null : shaping_penalties_mode_par,  1); }
+            if (tex_par_to_be_set(what, par_shaping_penalty_code))         { tex_set_par_par(p, par_shaping_penalty_code,         unset ? null : shaping_penalty_par,         1); }
+    
+            if (what == par_all_category) {
+                par_state(p) = unset ? 0 : par_all_category;
+            } else if (unset) {
+                par_state(p) &= ~(what | par_state(p));
+            } else {
+                par_state(p) |= what;
+            }
+        }
+    }
+*/
+
 void tex_snapshot_par(halfword p, halfword what)
 {
     if (p && lmt_main_state.run_state != initializing_state) {
@@ -4166,49 +4168,189 @@ void tex_snapshot_par(halfword p, halfword what)
             unset = 1;
             what = par_all_category;
         }
-        if (tex_par_to_be_set(what, par_hsize_code))                   { tex_set_par_par(p, par_hsize_code,                   unset ? null : hsize_par,                   1); }
-        if (tex_par_to_be_set(what, par_left_skip_code))               { tex_set_par_par(p, par_left_skip_code,               unset ? null : left_skip_par,               1); }
-        if (tex_par_to_be_set(what, par_right_skip_code))              { tex_set_par_par(p, par_right_skip_code,              unset ? null : right_skip_par,              1); }
-        if (tex_par_to_be_set(what, par_hang_indent_code))             { tex_set_par_par(p, par_hang_indent_code,             unset ? null : hang_indent_par,             1); }
-        if (tex_par_to_be_set(what, par_hang_after_code))              { tex_set_par_par(p, par_hang_after_code,              unset ? null : hang_after_par,              1); }
-        if (tex_par_to_be_set(what, par_par_indent_code))              { tex_set_par_par(p, par_par_indent_code,              unset ? null : par_indent_par,              1); }
-        if (tex_par_to_be_set(what, par_par_fill_left_skip_code))      { tex_set_par_par(p, par_par_fill_left_skip_code,      unset ? null : par_fill_left_skip_par,      1); }
-        if (tex_par_to_be_set(what, par_par_fill_right_skip_code))     { tex_set_par_par(p, par_par_fill_right_skip_code,     unset ? null : par_fill_right_skip_par,     1); }
-        if (tex_par_to_be_set(what, par_par_init_left_skip_code))      { tex_set_par_par(p, par_par_init_left_skip_code,      unset ? null : par_init_left_skip_par,      1); }
-        if (tex_par_to_be_set(what, par_par_init_right_skip_code))     { tex_set_par_par(p, par_par_init_right_skip_code,     unset ? null : par_init_right_skip_par,     1); }
-        if (tex_par_to_be_set(what, par_adjust_spacing_code))          { tex_set_par_par(p, par_adjust_spacing_code,          unset ? null : adjust_spacing_par,          1); }
-        if (tex_par_to_be_set(what, par_protrude_chars_code))          { tex_set_par_par(p, par_protrude_chars_code,          unset ? null : protrude_chars_par,          1); }
-        if (tex_par_to_be_set(what, par_pre_tolerance_code))           { tex_set_par_par(p, par_pre_tolerance_code,           unset ? null : pre_tolerance_par,           1); }
-        if (tex_par_to_be_set(what, par_tolerance_code))               { tex_set_par_par(p, par_tolerance_code,               unset ? null : tolerance_par,               1); }
-        if (tex_par_to_be_set(what, par_emergency_stretch_code))       { tex_set_par_par(p, par_emergency_stretch_code,       unset ? null : emergency_stretch_par,       1); }
-        if (tex_par_to_be_set(what, par_looseness_code))               { tex_set_par_par(p, par_looseness_code,               unset ? null : looseness_par,               1); }
-        if (tex_par_to_be_set(what, par_last_line_fit_code))           { tex_set_par_par(p, par_last_line_fit_code,           unset ? null : last_line_fit_par,           1); }
-        if (tex_par_to_be_set(what, par_line_penalty_code))            { tex_set_par_par(p, par_line_penalty_code,            unset ? null : line_penalty_par,            1); }
-        if (tex_par_to_be_set(what, par_inter_line_penalty_code))      { tex_set_par_par(p, par_inter_line_penalty_code,      unset ? null : inter_line_penalty_par,      1); }
-        if (tex_par_to_be_set(what, par_club_penalty_code))            { tex_set_par_par(p, par_club_penalty_code,            unset ? null : club_penalty_par,            1); }
-        if (tex_par_to_be_set(what, par_widow_penalty_code))           { tex_set_par_par(p, par_widow_penalty_code,           unset ? null : widow_penalty_par,           1); }
-        if (tex_par_to_be_set(what, par_display_widow_penalty_code))   { tex_set_par_par(p, par_display_widow_penalty_code,   unset ? null : display_widow_penalty_par,   1); }
-        if (tex_par_to_be_set(what, par_orphan_penalty_code))          { tex_set_par_par(p, par_orphan_penalty_code,          unset ? null : orphan_penalty_par,          1); }
-        if (tex_par_to_be_set(what, par_broken_penalty_code))          { tex_set_par_par(p, par_broken_penalty_code,          unset ? null : broken_penalty_par,          1); }
-        if (tex_par_to_be_set(what, par_adj_demerits_code))            { tex_set_par_par(p, par_adj_demerits_code,            unset ? null : adj_demerits_par,            1); }
-        if (tex_par_to_be_set(what, par_double_hyphen_demerits_code))  { tex_set_par_par(p, par_double_hyphen_demerits_code,  unset ? null : double_hyphen_demerits_par,  1); }
-        if (tex_par_to_be_set(what, par_final_hyphen_demerits_code))   { tex_set_par_par(p, par_final_hyphen_demerits_code,   unset ? null : final_hyphen_demerits_par,   1); }
-        if (tex_par_to_be_set(what, par_par_shape_code))               { tex_set_par_par(p, par_par_shape_code,               unset ? null : par_shape_par,               1); }
-        if (tex_par_to_be_set(what, par_inter_line_penalties_code))    { tex_set_par_par(p, par_inter_line_penalties_code,    unset ? null : inter_line_penalties_par,    1); }
-        if (tex_par_to_be_set(what, par_club_penalties_code))          { tex_set_par_par(p, par_club_penalties_code,          unset ? null : club_penalties_par,          1); }
-        if (tex_par_to_be_set(what, par_widow_penalties_code))         { tex_set_par_par(p, par_widow_penalties_code,         unset ? null : widow_penalties_par,         1); }
-        if (tex_par_to_be_set(what, par_display_widow_penalties_code)) { tex_set_par_par(p, par_display_widow_penalties_code, unset ? null : display_widow_penalties_par, 1); }
-        if (tex_par_to_be_set(what, par_orphan_penalties_code))        { tex_set_par_par(p, par_orphan_penalties_code,        unset ? null : orphan_penalties_par,        1); }
-        if (tex_par_to_be_set(what, par_baseline_skip_code))           { tex_set_par_par(p, par_baseline_skip_code,           unset ? null : baseline_skip_par,           1); }
-        if (tex_par_to_be_set(what, par_line_skip_code))               { tex_set_par_par(p, par_line_skip_code,               unset ? null : line_skip_par,               1); }
-        if (tex_par_to_be_set(what, par_line_skip_limit_code))         { tex_set_par_par(p, par_line_skip_limit_code,         unset ? null : line_skip_limit_par,         1); }
-        if (tex_par_to_be_set(what, par_adjust_spacing_step_code))     { tex_set_par_par(p, par_adjust_spacing_step_code,     unset ? null : adjust_spacing_step_par,     1); }
-        if (tex_par_to_be_set(what, par_adjust_spacing_shrink_code))   { tex_set_par_par(p, par_adjust_spacing_shrink_code,   unset ? null : adjust_spacing_shrink_par,   1); }
-        if (tex_par_to_be_set(what, par_adjust_spacing_stretch_code))  { tex_set_par_par(p, par_adjust_spacing_stretch_code,  unset ? null : adjust_spacing_stretch_par,  1); }
-        if (tex_par_to_be_set(what, par_hyphenation_mode_code))        { tex_set_par_par(p, par_hyphenation_mode_code,        unset ? null : hyphenation_mode_par,        1); }
-        if (tex_par_to_be_set(what, par_shaping_penalties_mode_code))  { tex_set_par_par(p, par_shaping_penalties_mode_code,  unset ? null : shaping_penalties_mode_par,  1); }
-        if (tex_par_to_be_set(what, par_shaping_penalty_code))         { tex_set_par_par(p, par_shaping_penalty_code,         unset ? null : shaping_penalty_par,         1); }
-
+        if (tex_par_to_be_set(what, par_hsize_code)) { 
+             par_hsize(p) = unset ? null : hsize_par; 
+        }
+        if (tex_par_to_be_set(what, par_left_skip_code)) { 
+            halfword v = unset ? null : left_skip_par;
+            if (par_left_skip(p)) {
+                tex_flush_node(par_left_skip(p));
+            }
+            par_left_skip(p) = v ? tex_copy_node(v) : null;
+        }
+        if (tex_par_to_be_set(what, par_right_skip_code)) { 
+            halfword v = unset ? null : right_skip_par; 
+            if (par_right_skip(p)) {
+                tex_flush_node(par_right_skip(p));
+            }
+            par_right_skip(p) = v ? tex_copy_node(v) : null;
+        }
+        if (tex_par_to_be_set(what, par_hang_indent_code)) { 
+            par_hang_indent(p) = unset ? null : hang_indent_par; 
+        }
+        if (tex_par_to_be_set(what, par_hang_after_code)) { 
+            par_hang_after(p) = unset ? null : hang_after_par; 
+        }
+        if (tex_par_to_be_set(what, par_par_indent_code)) { 
+            par_par_indent(p) = unset ? null : par_indent_par; 
+        }
+        if (tex_par_to_be_set(what, par_par_fill_left_skip_code)) { 
+            halfword v = unset ? null : par_fill_left_skip_par; 
+            if (par_par_fill_left_skip(p)) {
+                tex_flush_node(par_par_fill_left_skip(p));
+            }
+            par_par_fill_left_skip(p) = v ? tex_copy_node(v) : null;
+        }
+        if (tex_par_to_be_set(what, par_par_fill_right_skip_code)) { 
+            halfword v = unset ? null : par_fill_right_skip_par; 
+            if (par_par_fill_right_skip(p)) {
+                tex_flush_node(par_par_fill_right_skip(p));
+            }
+            par_par_fill_right_skip(p) = v ? tex_copy_node(v) : null;
+        }
+        if (tex_par_to_be_set(what, par_par_init_left_skip_code)) { 
+            halfword v = unset ? null : par_init_left_skip_par; 
+            if (par_par_init_left_skip(p)) {
+                tex_flush_node(par_par_init_left_skip(p));
+            }
+            par_par_init_left_skip(p) = v ? tex_copy_node(v) : null;
+        }
+        if (tex_par_to_be_set(what, par_par_init_right_skip_code)) { 
+            halfword v = unset ? null : par_init_right_skip_par; 
+            if (par_par_init_right_skip(p)) {
+                tex_flush_node(par_par_init_right_skip(p));
+            }
+            par_par_init_right_skip(p) = v ? tex_copy_node(v) : null;
+        }
+        if (tex_par_to_be_set(what, par_adjust_spacing_code)) { 
+            par_adjust_spacing(p) = unset ? null : adjust_spacing_par; 
+        }
+        if (tex_par_to_be_set(what, par_protrude_chars_code)) { 
+            par_protrude_chars(p) = unset ? null : protrude_chars_par; 
+        }
+        if (tex_par_to_be_set(what, par_pre_tolerance_code)) { 
+            par_pre_tolerance(p) = unset ? null : pre_tolerance_par; 
+        }
+        if (tex_par_to_be_set(what, par_tolerance_code)) { 
+            par_tolerance(p) = unset ? null : tolerance_par; 
+        }
+        if (tex_par_to_be_set(what, par_emergency_stretch_code)) { 
+            par_emergency_stretch(p) = unset ? null : emergency_stretch_par; 
+        }
+        if (tex_par_to_be_set(what, par_looseness_code)) { 
+            par_looseness(p) = unset ? null : looseness_par; 
+        }
+        if (tex_par_to_be_set(what, par_last_line_fit_code)) { 
+            par_last_line_fit(p) = unset ? null : last_line_fit_par; 
+        }
+        if (tex_par_to_be_set(what, par_line_penalty_code)) { 
+            par_line_penalty(p) = unset ? null : line_penalty_par; 
+        }
+        if (tex_par_to_be_set(what, par_inter_line_penalty_code)) { 
+            par_inter_line_penalty(p) = unset ? null : inter_line_penalty_par; 
+        }
+        if (tex_par_to_be_set(what, par_club_penalty_code)) { 
+            par_club_penalty(p) = unset ? null : club_penalty_par; 
+        }
+        if (tex_par_to_be_set(what, par_widow_penalty_code)) { 
+            par_widow_penalty(p) = unset ? null : widow_penalty_par; 
+        }
+        if (tex_par_to_be_set(what, par_display_widow_penalty_code)) { 
+            par_display_widow_penalty(p) = unset ? null : display_widow_penalty_par; 
+        }
+        if (tex_par_to_be_set(what, par_orphan_penalty_code)) { 
+            par_orphan_penalty(p) = unset ? null : orphan_penalty_par; 
+        }
+        if (tex_par_to_be_set(what, par_broken_penalty_code)) { 
+            par_broken_penalty(p) = unset ? null : broken_penalty_par; 
+        }
+        if (tex_par_to_be_set(what, par_adj_demerits_code)) { 
+            par_adj_demerits(p) = unset ? null : adj_demerits_par; 
+        }
+        if (tex_par_to_be_set(what, par_double_hyphen_demerits_code)){ 
+            par_double_hyphen_demerits(p) = unset ? null : double_hyphen_demerits_par; 
+        }
+        if (tex_par_to_be_set(what, par_final_hyphen_demerits_code)) { 
+            par_final_hyphen_demerits(p) = unset ? null : final_hyphen_demerits_par; 
+        }
+        if (tex_par_to_be_set(what, par_par_shape_code))  { 
+            halfword v = unset ? null : par_shape_par; 
+            if (par_par_shape(p)) {
+                tex_flush_node(par_par_shape(p));
+            }
+            par_par_shape(p) = v ? tex_copy_node(v) : null;
+        }
+        if (tex_par_to_be_set(what, par_inter_line_penalties_code)) { 
+            halfword v = unset ? null : inter_line_penalties_par; 
+            if (par_inter_line_penalties(p)) {
+                tex_flush_node(par_inter_line_penalties(p));
+            }
+            par_inter_line_penalties(p) = v ? tex_copy_node(v) : null;
+        }
+        if (tex_par_to_be_set(what, par_club_penalties_code)) { 
+            halfword v = unset ? null : club_penalties_par; 
+            if (par_club_penalties(p)) {
+                tex_flush_node(par_club_penalties(p));
+            }
+            par_club_penalties(p) = v ? tex_copy_node(v) : null;
+        }
+        if (tex_par_to_be_set(what, par_widow_penalties_code)) { 
+            halfword v = unset ? null : widow_penalties_par; 
+            if (par_widow_penalties(p)) {
+                tex_flush_node(par_widow_penalties(p));
+            }
+            par_widow_penalties(p) = v ? tex_copy_node(v) : null;
+        }
+        if (tex_par_to_be_set(what, par_display_widow_penalties_code)) { 
+            halfword v = unset ? null : display_widow_penalties_par; 
+            if (par_display_widow_penalties(p)) {
+                tex_flush_node(par_display_widow_penalties(p));
+            }
+            par_display_widow_penalties(p) = v ? tex_copy_node(v) : null;
+        }
+        if (tex_par_to_be_set(what, par_orphan_penalties_code)) { 
+            halfword v = unset ? null : orphan_penalties_par; 
+            if (par_orphan_penalties(p)) {
+                tex_flush_node(par_orphan_penalties(p));
+            }
+            par_orphan_penalties(p) = v ? tex_copy_node(v) : null;
+        }
+        if (tex_par_to_be_set(what, par_baseline_skip_code)) { 
+            halfword v = unset ? null : baseline_skip_par; 
+            if (par_baseline_skip(p)) {
+                tex_flush_node(par_baseline_skip(p));
+            }
+            par_baseline_skip(p) = v ? tex_copy_node(v) : null;
+        }
+        if (tex_par_to_be_set(what, par_line_skip_code)) { 
+            halfword v = unset ? null : line_skip_par; 
+            if (par_line_skip(p)) {
+                tex_flush_node(par_line_skip(p));
+            }
+            par_line_skip(p) = v ? tex_copy_node(v) : null;
+        }
+        if (tex_par_to_be_set(what, par_line_skip_limit_code)) { 
+            par_line_skip_limit(p) = unset ? null : line_skip_limit_par; 
+        }
+        if (tex_par_to_be_set(what, par_adjust_spacing_step_code)) { 
+            par_adjust_spacing_step(p) = unset ? null : adjust_spacing_step_par; 
+        }
+        if (tex_par_to_be_set(what, par_adjust_spacing_shrink_code)) { 
+            par_adjust_spacing_shrink(p) = unset ? null : adjust_spacing_shrink_par; 
+        }
+        if (tex_par_to_be_set(what, par_adjust_spacing_stretch_code)) { 
+            par_adjust_spacing_stretch(p) = unset ? null : adjust_spacing_stretch_par; 
+        }
+        if (tex_par_to_be_set(what, par_hyphenation_mode_code)) { 
+            par_hyphenation_mode(p) = unset ? null : hyphenation_mode_par; 
+        }
+        if (tex_par_to_be_set(what, par_shaping_penalties_mode_code)) { 
+            par_shaping_penalties_mode(p) = unset ? null : shaping_penalties_mode_par; 
+        }
+        if (tex_par_to_be_set(what, par_shaping_penalty_code)) { 
+            par_shaping_penalty(p) = unset ? null : shaping_penalty_par; 
+        }
+     // tex_set_par_state(p, what);
         if (what == par_all_category) {
             par_state(p) = unset ? 0 : par_all_category;
         } else if (unset) {
@@ -4360,23 +4502,26 @@ void tex_shift_specification_list(halfword a, int n, int rotate)
                 specification_pointer(a) = b;
             }
         } else {
-            halfword o = 0;
-            halfword m = 0;
-            memoryword *b = NULL;
-            if (n > 0 && c > 0 && n < c) {
-                size_t s = 0;
-                memoryword *p = specification_pointer(a);
-                o = specification_options(a);
-                m = c - n;
-                b = tex_aux_allocate_specification(m, &s);
-                memcpy(b, p + n, s);
+            /* changed: zero check, else we wipe */
+            if (n > 0) { 
+                halfword o = 0;
+                halfword m = 0;
+                memoryword *b = NULL;
+                if (n > 0 && c > 0 && n < c) {
+                    size_t s = 0;
+                    memoryword *p = specification_pointer(a);
+                    o = specification_options(a);
+                    m = c - n;
+                    b = tex_aux_allocate_specification(m, &s);
+                    memcpy(b, p + n, s);
+                }
+                if (c > 0) {
+                    tex_aux_deallocate_specification(specification_pointer(a), c);
+                }
+                specification_pointer(a) = b;
+                specification_count(a) = m;
+                specification_options(a) = o;
             }
-            if (c > 0) {
-                tex_aux_deallocate_specification(specification_pointer(a), c);
-            }
-            specification_pointer(a) = b;
-            specification_count(a) = m;
-            specification_options(a) = o;
         }
     }
 }
@@ -4469,8 +4614,8 @@ halfword tex_flatten_discretionaries(halfword head, int *count, int nest)
                     if (list) {
                         box_list(current) = tex_flatten_discretionaries(list, count, nest);
                     }
-                    break;
                 }
+                break;
         }
         current = next;
     }

@@ -661,7 +661,7 @@
 %
       \pack_layers_bottom_fill}%
    % \edef\currentlayer{#2}% :\the\realpageno}% local .. check \anchor
-   % \edef\p_pack_layers_position{\layerparameter\c!position}% local
+   \edef\p_pack_layers_position{\layerparameter\c!position}% local
    \ifx\p_pack_layers_position\v!yes
      \edef\p_pack_layers_region{\layerparameter\c!region}%
      \ifempty\p_pack_layers_region\else

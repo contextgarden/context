@@ -1673,22 +1673,20 @@ mp->arith_error = 0;
 @ At crucial points the program will say |check_arith|, to test if an arithmetic
 error has been detected.
 
-@d check_arith()
-    if (mp->arith_error) {
-        mp_clear_arith(mp);
-    }
-
 @c
-static void mp_clear_arith (MP mp) {
-    mp_error(
-        mp,
-        "Arithmetic overflow",
-        "Uh, oh. A little while ago one of the quantities that I was computing got too\n"
-        "large, so I'm afraid your answers will be somewhat askew. You'll probably have to\n"
-        "adopt different tactics next time. But I shall try to carry on anyway."
-    );
-    @.Arithmetic overflow@>
-    mp->arith_error = 0;
+static void check_arith (MP mp)
+{
+    if (mp->arith_error) {
+        mp_error(
+            mp,
+            "Arithmetic overflow",
+            "Uh, oh. A little while ago one of the quantities that I was computing got too\n"
+            "large, so I'm afraid your answers will be somewhat askew. You'll probably have to\n"
+            "adopt different tactics next time. But I shall try to carry on anyway."
+        );
+        @.Arithmetic overflow@>
+        mp->arith_error = 0;
+    }
 }
 
 @ The definitions of these are set up by the math initialization. Here
@@ -4755,6 +4753,7 @@ void mp_print_variable_name (MP mp, mp_node p)
             goto FOUND;
         } else if (p->name_type != mp_attribute_operation) {
             mp_confusion(mp, "variable");
+            return;
         } else {
             r = mp_new_symbolic_node(mp);
             /* the hash address */
@@ -6070,7 +6069,7 @@ void mp_make_choices  (MP mp, mp_knot knots)
     mp_knot p, q; /* consecutive breakpoints being processed */
     @<Other local variables for |make_choices|@>
     /* make sure that |arith_error=false| */
-    check_arith();
+    check_arith(mp);
     if (number_positive(internal_value(mp_tracing_choices_internal))) {
         mp_print_path(mp, knots, ", before choices", 1);
     }
@@ -8529,7 +8528,7 @@ static void mp_get_arc_length (MP mp, mp_number *ret, mp_knot h)
     free_number(arg4);
     free_number(arg5);
     free_number(arg6);
-    check_arith();
+    check_arith(mp);
     number_clone(*ret, a_tot);
     free_number(a_tot);
 }
@@ -8574,7 +8573,7 @@ static void mp_get_subarc_length (MP mp, mp_number *ret, mp_knot h, mp_number *f
     free_number(arg4);
     free_number(arg5);
     free_number(arg6);
-    check_arith();
+    check_arith(mp);
     number_clone(*ret, a_tot);
     free_number(a_cnt);
     free_number(a_tot);
@@ -8643,7 +8642,7 @@ static mp_knot mp_get_arc_time(MP mp, mp_number *ret, mp_knot h, mp_number *arc0
             }
             p = q;
         }
-        check_arith();
+        check_arith(mp);
         if (local) {
             number_add(t, two_t);
             number_clone(*ret, t);
@@ -8689,7 +8688,7 @@ if (mp_left_type(h) == mp_endpoint_knot) {
     mp_toss_knot_list(mp, p);
     free_number(neg_arc0);
 }
-check_arith();
+check_arith(mp);
 
 @ @<Update |t_tot| and |arc| to avoid going around the cyclic...@>=
 if (number_positive(arc)) {
@@ -8711,7 +8710,7 @@ if (number_positive(arc)) {
     set_number_from_div(d1, d1, v1);            /* |d1 = EL_GORDO / v1| */
     if (number_greater(t_tot, d1)) {
         mp->arith_error = 1;
-        check_arith();
+        check_arith(mp);
         set_number_to_inf(*ret);
         free_number(n);
         free_number(n1);
@@ -19895,7 +19894,7 @@ void mp_flush_cur_exp (MP mp, mp_value v)
             break;
     }
     mp->cur_exp = v;
-  mp->cur_exp.type = mp_known_type;
+    mp->cur_exp.type = mp_known_type;
 }
 
 @ There's a much more general procedure that is capable of releasing the storage
@@ -20209,7 +20208,7 @@ static void mp_recycle_independent_value (MP mp, mp_node p)
         if (mp->fix_needed) {
             mp_fix_dependencies(mp);
         }
-        check_arith();
+        check_arith(mp);
         free_number(ret);
     }
     free_number(v);
@@ -20339,7 +20338,7 @@ void mp_scan_primary (MP mp)
     mp_command_code my_var_flag = mp->var_flag;
     mp->var_flag = 0;
   RESTART:
-    check_arith();
+    check_arith(mp);
     /* Supply diagnostic information, if requested */
     switch (cur_cmd) {
         case mp_left_delimiter_command:
@@ -20533,7 +20532,7 @@ void mp_scan_primary (MP mp)
                             mp_set_cur_exp_value_number(mp, &ret);
                             free_number(ret);
                         }
-                        check_arith();
+                        check_arith(mp);
                         mp_get_x_next(mp);
                     }
                 }
@@ -21313,16 +21312,16 @@ static void mp_scan_secondary (MP mp)
         }
         mp_get_x_next(mp);
         mp_scan_primary(mp);
-        if (d != mp_primary_def_command) {
-            mp_do_binary(mp, p, c);
-        } else {
+        if (d == mp_primary_def_command) {
             mp_back_input(mp);
             mp_binary_mac(mp, p, cc, mac_name);
             mp_decr_mac_ref(cc);
             mp_get_x_next(mp);
             goto RESTART;
+        } else {
+            mp_do_binary(mp, p, c);
+            goto CONTINUE;
         }
-        goto CONTINUE;
     }
 }
 
@@ -21365,16 +21364,16 @@ static void mp_scan_tertiary (MP mp)
         }
         mp_get_x_next(mp);
         mp_scan_secondary(mp);
-        if (d != mp_secondary_def_command) {
-            mp_do_binary(mp, p, c);
-        } else {
+        if (d == mp_secondary_def_command) {
             mp_back_input(mp);
             mp_binary_mac(mp, p, cc, mac_name);
             mp_decr_mac_ref(cc);
             mp_get_x_next(mp);
             goto RESTART;
+        } else {
+            mp_do_binary(mp, p, c);
+            goto CONTINUE;
         }
-        goto CONTINUE;
     }
 }
 
@@ -22335,7 +22334,7 @@ static void push_of_path_result (MP mp, int what, mp_knot p)
 @<Declare nullary action procedure@>
 static void mp_do_nullary (MP mp, int c)
 {
-    check_arith();
+    check_arith(mp);
     if (number_greater(internal_value(mp_tracing_commands_internal), two_t)) {
         mp_show_cmd_mod(mp, mp_nullary_command, c);
     }
@@ -22385,7 +22384,7 @@ static void mp_do_nullary (MP mp, int c)
             }
             break;
     }
-    check_arith();
+    check_arith(mp);
 }
 
 @ @<Declare nullary action procedure@>=
@@ -22476,7 +22475,7 @@ static int mp_pict_color_type (MP mp, int c);
 
 static void mp_do_unary (MP mp, int c)
 {
-    check_arith();
+    check_arith(mp);
     if (number_greater(internal_value(mp_tracing_commands_internal), two_t)) {
         /* Trace the current unary operation */
         mp_begin_diagnostic(mp);
@@ -23169,7 +23168,7 @@ static void mp_do_unary (MP mp, int c)
             }
             break;
     }
-    check_arith();
+    check_arith(mp);
 }
 
 @ The |nice_pair| function returns |true| if both components of a pair are known.
@@ -24309,7 +24308,7 @@ binary operation has been safely carried out.
 @<Declare binary action procedures@>
 static void mp_finish_binary (MP mp, mp_node old_p, mp_node old_exp)
 {
-    check_arith();
+    check_arith(mp);
     /* Recycle any sidestepped |independent| capsules */
     if (old_p != NULL) {
         mp_recycle_value(mp, old_p);
@@ -24325,7 +24324,7 @@ static void mp_do_binary (MP mp, mp_node p, int c)
 {
     mp_node old_p, old_exp; /* capsules to recycle */
     mp_value new_expr;
-    check_arith();
+    check_arith(mp);
     if (number_greater(internal_value(mp_tracing_commands_internal), two_t)) {
         /* Trace the current binary operation */
         mp_begin_diagnostic(mp);
@@ -24468,7 +24467,7 @@ static void mp_do_binary (MP mp, mp_node p, int c)
         case mp_greater_or_equal_operation:
         case mp_equal_operation:
         case mp_unequal_operation:
-            check_arith();
+            check_arith(mp);
             /* at this point |arith_error| should be |false|? */
             if ((mp->cur_exp.type > mp_pair_type) && (p->type > mp_pair_type)) {
                 /* |cur_exp:=(p)-cur_exp| */
@@ -24842,7 +24841,7 @@ static void mp_do_binary (MP mp, mp_node p, int c)
                 mp_number r;
                 new_number(r);
                 power_of(r, mp_get_value_number(p), cur_exp_value_number);
-                check_arith();
+                check_arith(mp);
                 mp_set_cur_exp_value_number(mp, &r);
                 free_number(r);
             } else
@@ -27398,7 +27397,7 @@ void mp_make_eq (MP mp, mp_node lhs)
             announce_bad_equation(mp, lhs);
             break;
     }
-    check_arith();
+    check_arith(mp);
     mp_recycle_value(mp, lhs);
     free_number(v);
     mp_free_value_node(mp, lhs);
@@ -30120,10 +30119,22 @@ static void mp_ship_out (MP mp, mp_node h);
 
 @<Exported types@>=
 typedef struct mp_color {
-    double a_val; /* r or c */
-    double b_val; /* g or m */
-    double c_val; /* b or y */
-    double d_val; /*      k */
+    union {
+        double red;
+        double cyan;
+    };
+    union {
+        double green;
+        double magenta;
+    };
+    union {
+        double blue;
+        double yellow;
+    };
+    union {
+        double black;
+        double gray;
+    };
 } mp_color;
 
 typedef struct mp_dash_object {
@@ -30206,14 +30217,14 @@ typedef struct mp_edge_object {
 @d gr_type(A)           (A)->type
 @d gr_link(A)           (A)->next
 @d gr_color_model(A)    (A)->color_model
-@d gr_red_val(A)        (A)->color.a_val
-@d gr_green_val(A)      (A)->color.b_val
-@d gr_blue_val(A)       (A)->color.c_val
-@d gr_cyan_val(A)       (A)->color.a_val
-@d gr_magenta_val(A)    (A)->color.b_val
-@d gr_yellow_val(A)     (A)->color.c_val
-@d gr_black_val(A)      (A)->color.d_val
-@d gr_grey_val(A)       (A)->color.d_val
+@d gr_red_val(A)        (A)->color.red
+@d gr_green_val(A)      (A)->color.green
+@d gr_blue_val(A)       (A)->color.blue
+@d gr_cyan_val(A)       (A)->color.cyan
+@d gr_magenta_val(A)    (A)->color.magenta
+@d gr_yellow_val(A)     (A)->color.yellow
+@d gr_black_val(A)      (A)->color.black
+@d gr_grey_val(A)       (A)->color.gray
 @d gr_path_ptr(A)       (A)->path
 @d gr_htap_ptr(A)       (A)->htap
 @d gr_pen_ptr(A)        (A)->pen

@@ -2181,6 +2181,56 @@ The macro \type {drawoptions} provides you a way to set the default attributes.
 drawoptions(dashed evenly withcolor red) ;
 \stoptyping
 
+Dashes are pretty much bound to the backend in the sense that like line width
+they are a property that the \POSTSCRIPT\ (or actually nowadays the \PDF)
+interpreter handles. There is not that much cleverness involved at the \METAPOST\
+end. Take these examples:
+
+\startbuffer
+  pickup pencircle scaled 2mm ; path p ;
+
+  p := (0,0) {dir 25} .. (5cm,0) ;
+  draw p withcolor darkyellow ;
+  draw p dashed dashpattern (on 4mm off 3mm) withcolor darkblue ;
+  drawpoints point 0 of p withcolor white ;
+
+  p := ((0,0) {dir 70} .. {up} (5cm,0) .. cycle) yshifted -1cm ;
+  draw p withcolor darkyellow ;
+  draw p dashed dashpattern (on 4mm off 3mm) withcolor darkblue ;
+  drawpoints point 0 of p withcolor white ;
+\stopbuffer
+
+\typebuffer[a]
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+In both cases the dash is not evenly spread which for the line results in
+different begin and end rendering while the closed shape gets some weird looking
+connection. The next variant uses the \type {withdashes} macro that adapts the
+dashes to fit nicely to the path.
+
+\startbuffer[a]
+  pickup pencircle scaled 2mm ; path p ;
+
+  p := (0,0) {dir 25} .. (5cm,0) ;
+  draw p withcolor darkyellow ;
+  draw p withdashes (4mm,3mm) withcolor darkblue ;
+  drawpoints point 0 of p withcolor white ;
+
+  p := ((0,0) {dir 70} .. {up} (5cm,0) .. cycle) yshifted -1cm ;
+  draw p withcolor darkyellow ;
+  draw p withdashes (4mm,3mm) withcolor darkblue ;
+  drawpoints point 0 of p withcolor white ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
 \stopsection
 
 \startsection[reference=sec:text,title={Text}]
@@ -3164,7 +3214,7 @@ following line:
 
 \startbuffer[b]
 redraw currentpicture withpen pencircle scaled 2pt ;
-draw boundingbox currenpicture withpen pencircle scaled .5mm ;
+draw boundingbox currentpicture withpen pencircle scaled .5mm ;
 \stopbuffer
 
 \typebuffer[b]

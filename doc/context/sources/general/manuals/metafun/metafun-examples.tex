@@ -3515,6 +3515,43 @@ Again we demonstrate the differences with some examples. The result can be seen 
 
 \stopsection
 
+\startsection[title=Hidden beauty]
+
+\index {hiding}
+
+The \type {hide} wraps its (text) argument in a group in such a way that whatever
+happens is not interfering with its surrounding. This is comparable with what
+\type {vardef} does except that there is nothing of value produced.
+
+\startbuffer
+def mfun_curve_to_a = hide(let connect = mfun_curve_to_b ;) enddef ; def mfun_curve_to_b = .. enddef ;
+def mfun_line_to_a  = hide(let connect = mfun_line_to_b  ;) enddef ; def mfun_line_to_b  = -- enddef ;
+
+def forcurve = hide(let connect = mfun_curve_to_a ;) for enddef;
+def forline  = hide(let connect = mfun_line_to_a  ;) for enddef;
+
+draw image (
+  draw forline  i = 0 upto 25 : connect(i,sin(i)) endfor
+    withcolor darkblue
+    withtransparency (1,.5) ;
+  draw forcurve i = 0 upto 25 : connect(i,sin(i)) endfor
+    withcolor darkyellow
+    withtransparency (1,.5) ;
+) xysized (TextWidth, 3cm) ;
+\stopbuffer
+
+\typebuffer
+
+In this example we hide the assignment in the loop and not only define the \type
+{connect} macro but also adept it after its first expansion. Usage is shown \in
+{in } [fig:hide].
+
+\startplacefigure[title=Hiding assignments in a loop,reference=fig:hide]
+    \processMPbuffer
+\stopplacefigure
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent

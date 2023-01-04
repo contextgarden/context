@@ -88,8 +88,8 @@ inline static void tex_aux_expand_after(void)
     if (cur_cmd > max_command_cmd) {
         tex_expand_current_token();
     } else {
-         tex_back_input(t2);
-      /* token_link(t1) = t2; */ /* no gain, rarely happens */
+        tex_back_input(t2);
+       /* token_link(t1) = t2; */ /* no gain, rarely happens */
     }
     tex_back_input(t1);
 }
@@ -980,7 +980,7 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
             } else {
                 /* maybe move the preamble scanner to here */
             }
-            tex_token_show(chr, default_token_show_max);
+            tex_token_show(chr);
         }
         tex_end_diagnostic();
     }
@@ -1355,7 +1355,7 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                     if (tracing) {
                         tex_begin_diagnostic();
                         tex_print_format("%c%c<-", match_visualizer, '0' + nofscanned + (nofscanned > 9 ? gap_match_count : 0));
-                        tex_show_token_list(pstack[nofscanned - 1], null, default_token_show_max, 0);
+                        tex_show_token_list(pstack[nofscanned - 1], 0);
                         tex_end_diagnostic();
                     }
                 } else {
@@ -1449,7 +1449,7 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
             This comes last, after the cleanup and the start of the macro list.
         */
         if (nofscanned) {
-            tex_copy_pstack_to_param_stack(&pstack[0], nofscanned);
+            tex_copy_to_parameter_stack(&pstack[0], nofscanned);
         }
       EXIT:
         lmt_expand_state.arguments = nofarguments;

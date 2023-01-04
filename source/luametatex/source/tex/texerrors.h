@@ -29,22 +29,22 @@ typedef struct error_state_info {
     char        *last_warning_tag;
     char        *last_warning;
     char        *last_error_context;
-    char        *help_text;                    /*tex helps for the next |error| */
-    char         print_buffer[print_buffer_size];
-    int          intercept;                    /*tex intercept error state */
-    int          last_intercept;               /*tex error state number / dimen scanner */
-    int          interaction;                  /*tex current level of interaction */
-    int          default_exit_code;            /*tex the exit code can be overloaded */
+    char        *help_text;         /*tex helps for the next |error| */
+ /* char         print_buffer[print_buffer_size]; */
+    int          intercept;         /*tex intercept error state */
+    int          last_intercept;    /*tex error state number / dimen scanner */
+    int          interaction;       /*tex current level of interaction */
+    int          default_exit_code; /*tex the exit code can be overloaded */
     int          set_box_allowed;
     int          history;
     int          error_count;
-    int          err_old_setting;
+    int          saved_selector;
     int          in_error;
     int          long_help_seen;
     int          context_indent;
     int          padding;
-    limits_data  line_limits;
-    limits_data  half_line_limits;
+    limits_data  line_limits;       /*tex these might go some day */
+    limits_data  half_line_limits;  /*tex these might go some day */
 } error_state_info;
 
 extern error_state_info lmt_error_state;

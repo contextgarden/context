@@ -1648,64 +1648,6 @@ but also nicely abstract ones.
 % p = mp.getpath(name)
 % \stoptyping
 %
-% A is path a table of tables that have six values: the coordinates and the
-% pre- and postcontrol. You can manipulate this table and feed it back into
-% \METAPOST.
-%
-% \startlinecorrection
-% \startMPcode
-% numeric n ; n := lua.mp.newhash() ;
-%
-% for i=1 upto 3 :
-%     lua.mp.tohash(n,i) ;
-% endfor ;
-%
-% fill fullcircle scaled 10mm withcolor
-%     if lua.mp.inhash(n,3) : green else : red fi ;
-%
-% fill fullcircle scaled 5mm withcolor
-%     if lua.mp.inhash(n,4) : green else : red fi ;
-%
-% lua.mp.disposehash(n)
-% \stopMPcode
-% \stoplinecorrection
-%
-% You can also store values with keys and access them later:
-%
-% \startlinecorrection
-% \startMPcode
-% numeric n ; n := lua.mp.newhash() ;
-%
-% for i=1 upto 3 :
-%     lua.mp.tohash(n,i,decimal sqrt(i)) ;
-% endfor ;
-%
-% draw textext(lua.mp.fromhash(n,3))
-%     ysized 1cm
-%     withcolor blue ;
-%
-% lua.mp.disposehash(n)
-% \stopMPcode
-% \stoplinecorrection
-%
-% You can also name your own hash:
-%
-% \startlinecorrection
-% \startMPcode
-% lua.mp.newhash("foo") ;
-%
-% for i=1 upto 3 :
-%     lua.mp.tohash("foo",i,decimal sqrt(i)) ;
-% endfor ;
-%
-% draw textext(lua.mp.fromhash("foo",2))
-%     ysized 1cm
-%     withcolor green ;
-%
-% lua.mp.disposehash("foo")
-% \stopMPcode
-% \stoplinecorrection
-%
 % Although it might look like \METAPOST\ supports arrays the reality is that it
 % doesn't really. There is a concept of suffixes but internally these are just a
 % way to compose macros. The following test is one that is used in one of the

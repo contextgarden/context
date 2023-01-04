@@ -33,6 +33,16 @@
 # define LMT_SA_M_PART(a) (((a)>> 7)&127)
 # define LMT_SA_L_PART(a) ( (a)     &127)
 
+/* 40K less in 2023 */
+
+// # define LMT_SA_HIGHPART 128
+// # define LMT_SA_MIDPART  256
+// # define LMT_SA_LOWPART   64
+// 
+// # define LMT_SA_H_PART(a) (((a)>>14)&127)
+// # define LMT_SA_M_PART(a) (((a)>> 6)&255)
+// # define LMT_SA_L_PART(a) ( (a)      &63)
+
 /*tex
 
     In the early days of \LUATEX\ we had just simple items, all 32 bit values. Then we put the

@@ -1,4 +1,4 @@
-.TH "mtx-server" "1" "01-01-2022" "version 0.10" "Simple Webserver For Helpers"
+.TH "mtx-server" "1" "01-01-2023" "version 0.10" "Simple Webserver For Helpers"
 .SH NAME
  mtx-server - Simple Webserver For Helpers
 .SH SYNOPSIS

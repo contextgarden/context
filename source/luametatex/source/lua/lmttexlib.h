@@ -7,7 +7,7 @@
 
 extern void lmt_cstring_start    (void);
 extern void lmt_cstring_close    (void);
-extern int  lmt_cstring_input    (halfword *n, int *cattable, int *partial, int *finalline);
+extern int  lmt_cstring_input    (halfword *result, int *cattable, int *partial, int *finalline);
 
 extern void lmt_cstring_print    (int cattable, const char *s, int ispartial);
 extern void lmt_tstring_store    (strnumber s, int cattable);

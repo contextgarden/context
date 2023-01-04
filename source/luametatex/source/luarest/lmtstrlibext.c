@@ -564,7 +564,7 @@ static int strlib_format_tounicode16(lua_State *L)
         u = u - 0x10000; /* negative when invalid range */
         u1 = (unsigned) (u >> 10) + 0xD800;
         u2 = (unsigned) (u % 0x400) + 0xDC00;
-        s[3]    = strlib_aux_hexdigit((unsigned char) ((u1 & 0x000F) >>  0));
+        s[3] = strlib_aux_hexdigit((unsigned char) ((u1 & 0x000F) >>  0));
         s[2] = strlib_aux_hexdigit((unsigned char) ((u1 & 0x00F0) >>  4));
         s[1] = strlib_aux_hexdigit((unsigned char) ((u1 & 0x0F00) >>  8));
         s[0] = strlib_aux_hexdigit((unsigned char) ((u1 & 0xF000) >> 12));

@@ -992,7 +992,7 @@ void tex_print_token_list(const char *s, halfword p)
     }
     tex_print_char('{');
     if ((p >= 0) && (p <= (int) lmt_token_memory_state.tokens_data.top)) {
-        tex_show_token_list(p, null, default_token_show_max, 0);
+        tex_show_token_list(p, 0);
     } else {
         tex_print_str(error_string_clobbered(21));
     }

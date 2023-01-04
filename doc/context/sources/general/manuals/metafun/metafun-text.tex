@@ -708,118 +708,118 @@ In the examples, the text is typeset along the path with:
 
 \startbuffer[draw]
 \startuseMPgraphic{followtokens}
-    path RotPath ; RotPath := fullcircle ;
+  path RotPath ; RotPath := fullcircle ;
 \stopuseMPgraphic
 \stopbuffer
 
- \startbuffer
- \typebuffer[draw]
- \startlinecorrection[blank]
- \hbox
-   {\getbuffer[draw,toks]\hskip1cm
-    \getbuffer[trac,draw,toks]}
- \stoplinecorrection
- \stopbuffer
+\startbuffer
+\typebuffer[draw]
+\startlinecorrection[blank]
+\hbox
+  {\getbuffer[draw,toks]\hskip1cm
+   \getbuffer[trac,draw,toks]}
+\stoplinecorrection
+\stopbuffer
 
- \getbuffer
+\getbuffer
 
- \startbuffer[draw]
- \startuseMPgraphic{followtokens}
-   path RotPath ; RotPath := reverse fullcircle ;
- \stopuseMPgraphic
- \stopbuffer
+\startbuffer[draw]
+\startuseMPgraphic{followtokens}
+  path RotPath ; RotPath := reverse fullcircle ;
+\stopuseMPgraphic
+\stopbuffer
 
- \getbuffer
+\getbuffer
 
- \startbuffer[draw]
- \startuseMPgraphic{followtokens}
-   path RotPath ; RotPath := (-3cm,-1cm)--(0,1cm)--(3cm,-1cm) ;
- \stopuseMPgraphic
- \stopbuffer
+\startbuffer[draw]
+\startuseMPgraphic{followtokens}
+  path RotPath ; RotPath := (-3cm,-1cm)--(0,1cm)--(3cm,-1cm) ;
+\stopuseMPgraphic
+\stopbuffer
 
- \getbuffer
+\getbuffer
 
- \startbuffer[draw]
- \startuseMPgraphic{followtokens}
-   path RotPath ; RotPath := (-3cm,0)--(3cm,1cm) ;
- \stopuseMPgraphic
- \stopbuffer
+\startbuffer[draw]
+\startuseMPgraphic{followtokens}
+  path RotPath ; RotPath := (-3cm,0)--(3cm,1cm) ;
+\stopuseMPgraphic
+\stopbuffer
 
- \getbuffer
+\getbuffer
 
- \startbuffer[draw]
- \startuseMPgraphic{followtokens}
-   path RotPath ; RotPath := (-3cm,0)..(-1cm,1cm)..(3cm,0) ;
- \stopuseMPgraphic
- \stopbuffer
+\startbuffer[draw]
+\startuseMPgraphic{followtokens}
+  path RotPath ; RotPath := (-3cm,0)..(-1cm,1cm)..(3cm,0) ;
+\stopuseMPgraphic
+\stopbuffer
 
- \getbuffer
+\getbuffer
 
- \startbuffer[draw]
- \startuseMPgraphic{followtokens}
-   path RotPath ; RotPath := (-3cm,0)..(-1cm,1cm)..(0cm,-2cm)..(3cm,0) ;
- \stopuseMPgraphic
- \stopbuffer
+\startbuffer[draw]
+\startuseMPgraphic{followtokens}
+  path RotPath ; RotPath := (-3cm,0)..(-1cm,1cm)..(0cm,-2cm)..(3cm,0) ;
+\stopuseMPgraphic
+\stopbuffer
 
- \getbuffer
+\getbuffer
 
- When turned on, tracing will produce bounding boxes as well as draw the path.
- Tracing can be turned on by saying:
+When turned on, tracing will produce bounding boxes as well as draw the path.
+Tracing can be turned on by saying:
 
- \typebuffer[trac]
+\typebuffer[trac]
 
- % let's turn it off now
+% let's turn it off now
 
- \startMPinclusions
-   boolean TraceRot ; TraceRot := false ;
- \stopMPinclusions
+\startMPinclusions
+  boolean TraceRot ; TraceRot := false ;
+\stopMPinclusions
 
- The next example is dedicated to Giuseppe Bilotta who wants to handle multiple
- strings and uses a patched version of \type {\followtokens}. To avoid a
- complicated explanation, we will present an alternative here that uses overlays.
- This method also avoids complicated path definitions.
+The next example is dedicated to Giuseppe Bilotta who wants to handle multiple
+strings and uses a patched version of \type {\followtokens}. To avoid a
+complicated explanation, we will present an alternative here that uses overlays.
+This method also avoids complicated path definitions.
 
- \startbuffer
- \startoverlay
-   {\startuseMPgraphic{followtokens}
-      draw fullcircle scaled 5cm .
-        withpen pencircle scaled 1pt withcolor .625yellow ;
-      draw fullsquare scaled 5.25cm
-        withpen pencircle scaled 1pt withcolor .625red ;
-      drawoptions (withcolor .625red) ;
-      path RotPath ; RotPath := halfcircle scaled 5cm ;
-      setbounds currentpicture to boundingbox fullcircle scaled 5.25cm ;
-    \stopuseMPgraphic
-    \followtokens { Met{\`a} superiore }}
-   {\startuseMPgraphic{followtokens}
-      drawoptions (withcolor .625red) ;
-      path RotPath ; RotPath := halfcircle rotated 90 scaled 5cm ;
-      setbounds currentpicture to boundingbox fullcircle scaled 5.25cm ;
-    \stopuseMPgraphic
-    \followtokens { {$\star$} }}
-   {\startuseMPgraphic{followtokens}
-      drawoptions (withcolor .625red) ;
-      path RotPath ; RotPath := halfcircle rotated 180 scaled 5cm ;
-      setbounds currentpicture to boundingbox fullcircle scaled 5.25cm ;
-    \stopuseMPgraphic
-    \followtokens { Met{\`a} inferiore }}
-   {\startuseMPgraphic{followtokens}
-      drawoptions (withcolor .625red) ;
-      path RotPath ; RotPath := halfcircle rotated 270 scaled 5cm ;
-      setbounds currentpicture to boundingbox fullcircle scaled 5.25cm ;
-    \stopuseMPgraphic
-    \followtokens { {$\star$} }}
- \stopoverlay
- \stopbuffer
+\startbuffer
+\startoverlay
+  {\startuseMPgraphic{followtokens}
+     draw fullcircle scaled 5cm .
+       withpen pencircle scaled 1pt withcolor .625yellow ;
+     draw fullsquare scaled 5.25cm
+       withpen pencircle scaled 1pt withcolor .625red ;
+     drawoptions (withcolor .625red) ;
+     path RotPath ; RotPath := halfcircle scaled 5cm ;
+     setbounds currentpicture to boundingbox fullcircle scaled 5.25cm ;
+   \stopuseMPgraphic
+   \followtokens { Met{\`a} superiore }}
+  {\startuseMPgraphic{followtokens}
+     drawoptions (withcolor .625red) ;
+     path RotPath ; RotPath := halfcircle rotated 90 scaled 5cm ;
+     setbounds currentpicture to boundingbox fullcircle scaled 5.25cm ;
+   \stopuseMPgraphic
+   \followtokens { {$\star$} }}
+  {\startuseMPgraphic{followtokens}
+     drawoptions (withcolor .625red) ;
+     path RotPath ; RotPath := halfcircle rotated 180 scaled 5cm ;
+     setbounds currentpicture to boundingbox fullcircle scaled 5.25cm ;
+   \stopuseMPgraphic
+   \followtokens { Met{\`a} inferiore }}
+  {\startuseMPgraphic{followtokens}
+     drawoptions (withcolor .625red) ;
+     path RotPath ; RotPath := halfcircle rotated 270 scaled 5cm ;
+     setbounds currentpicture to boundingbox fullcircle scaled 5.25cm ;
+   \stopuseMPgraphic
+   \followtokens { {$\star$} }}
+\stopoverlay
+\stopbuffer
 
- \typebuffer
+\typebuffer
 
- In order to fool the overlay macro that each graphic has the same size, we force
- a bounding box.
+In order to fool the overlay macro that each graphic has the same size, we force
+a bounding box.
 
- \startlinecorrection[blank]
- \getbuffer
- \stoplinecorrection
+\startlinecorrection[blank]
+\getbuffer
+\stoplinecorrection
 
 \stopsection
 

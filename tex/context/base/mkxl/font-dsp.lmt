@@ -1186,25 +1186,30 @@ local function chainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,nof
             rules  = rules,
         }
     elseif subtype == 3 then
+        -- Maybe this one needs checking. Anyway zero current is bad.
         local before     = readarray(f)
         local current    = readarray(f)
         local after      = readarray(f)
         local noflookups = readushort(f)
-        local lookups    = readlookuparray(f,noflookups,#current)
-        before  = readcoveragearray(f,tableoffset,before,true)
-        current = readcoveragearray(f,tableoffset,current,true)
-        after   = readcoveragearray(f,tableoffset,after,true)
-        return {
-            format = "coverage",
-            rules  = {
-                {
-                    before  = before,
-                    current = current,
-                    after   = after,
-                    lookups = lookups,
+        local lookups    = current and readlookuparray(f,noflookups,#current)
+        if lookups then
+            before  = readcoveragearray(f,tableoffset,before,true)
+            current = readcoveragearray(f,tableoffset,current,true)
+            after   = readcoveragearray(f,tableoffset,after,true)
+            return {
+                format = "coverage",
+                rules  = {
+                    {
+                        before  = before,
+                        current = current,
+                        after   = after,
+                        lookups = lookups,
+                    }
                 }
             }
-        }
+        else
+            report("confusing subtype %a in %a %s",subtype,"chainedcontext",what)
+        end
     else
         report("unsupported subtype %a in %a %s",subtype,"chainedcontext",what)
     end

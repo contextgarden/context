@@ -61,7 +61,7 @@ macro package reading this chapter only makes sense when you use \CONTEXT.
     save pa, pb, pm, pab, na, nb, sa, sb ;
     path pa, pb, pm, pab ; numeric na, nb ; string sa, sb ;
     % the tags
-    sa := texstr("from") ;
+    sa := texstr("from") ; % MPvars
     sb := texstr("to") ;
     % we need to check page crossing so we fetch the page numbers
     na := positionpage(sa) ;
@@ -134,6 +134,7 @@ macro package reading this chapter only makes sense when you use \CONTEXT.
 \startbuffer[box:1:also]
 \startMPpositiongraphic{mpos:box}{fillcolor,linecolor,linewidth}
     path box ; box := positionbox(texstr("self")) ;
+%     path box ; box := positionbox("\MPvar{self}") ;
     box := box enlarged  texvar("filloffset") ;
     fill box
         withcolor texvar("fillcolor") ;
@@ -351,6 +352,7 @@ other tricks with positioning.
 \startbuffer[g-circle]
 \startMPpositiongraphic{mypos:circle}
   path p ; p := positionbox(texstr("self")) ;
+%   path p ; p := positionbox("\MPvar{self}") ;
   p := fullcircle xsized (bbwidth(p)+4pt) shifted center p ;
   pickup pencircle scaled 1pt ;
   fill p withcolor .800white ;
@@ -362,8 +364,8 @@ other tricks with positioning.
 \startbuffer[g-line]
 \startMPpositiongraphic{mypos:line}
   path pa, pb, pab ; numeric na, nb ; string ta, tb ;
-  ta := texstr("from") ;
-  tb := texstr("to") ;
+  ta := texstr("from") ; % "\MPvar{from}"
+  tb := texstr("to") ;   % "\MPvar{to}"
   na := positionpage(ta) ;
   nb := positionpage(tb) ;
   pa := positionbox(ta) ;
@@ -543,6 +545,7 @@ saw in the graphic:
 
 \starttyping
 path p ; p := positionbox(texstr("self")) ;
+% path p ; p := positionbox("\MPvar{self}") ;
 \stoptyping
 
 \type {texstr("self")} will return the current position, which, fed to \type
@@ -805,6 +808,8 @@ typesetting. You may qualify this as desk top publishing without actually using 
 desktop.
 
 \typebuffer
+
+\page
 
 \startbuffer[demo]
 \startbuffer

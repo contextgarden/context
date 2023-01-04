@@ -3390,22 +3390,24 @@ permanent break ;
 % primarydef p xstretched w = (
 %     p if (bbwidth (p)>0) and (w>0) : xscaled (w/bbwidth (p)) fi
 % ) enddef ;
+%
+% primarydef p ystretched h = (
+%     p if (bbheight(p)>0) and (h>0) : yscaled (h/bbheight(p)) fi
+% ) enddef ;
+
 primarydef p xstretched w = (
     begingroup save l, r ; pair r;
     r := xrange p ;
     l := ypart r - xpart r ;
-    p if (l > 0) and (w > 0) : xscaled (w/l (p)) fi
+    p if (l > 0) and (w > 0) : xscaled (w/l) fi
     endgroup
 ) enddef ;
 
-% primarydef p ystretched h = (
-%     p if (bbheight(p)>0) and (h>0) : yscaled (h/bbheight(p)) fi
-% ) enddef ;
 primarydef p ystretched h = (
     begingroup save l, r ; pair r;
     r := yrange p ;
     l := ypart r - xpart r ;
-    p if (l > 0) and (h > 0) : yscaled (h/l (p)) fi
+    p if (l > 0) and (h > 0) : yscaled (h/l) fi
     endgroup
 ) enddef ;
 

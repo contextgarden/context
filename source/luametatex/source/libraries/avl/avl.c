@@ -58,9 +58,7 @@ typedef struct avl_node { /* aligned */
     int              padding;
 } avl_node;
 
-/*
- * avl_tree structure
- */
+/* avl_tree structure */
 
 struct avl_tree_ { /* aligned */
     avl_node              *root;
@@ -99,7 +97,7 @@ struct avl_tree_ { /* aligned */
 
 # define AVL_MIN_DEPTH   0
 
-/* helper structure */
+/* Helper structure. */
 
 typedef enum {
     OP_BACKUP,
@@ -107,7 +105,8 @@ typedef enum {
     OP_FREE
 } whichop_t;
 
-typedef struct ptr_handler { /* swapped and aligned */
+typedef struct ptr_handler { 
+    /* swapped and aligned */
     void      *ptr;
     whichop_t  whichop;
     int        padding;
@@ -121,7 +120,7 @@ static void clear_node(avl_node *a)
     rbal(a) = 4u;
 }
 
-/* Called by 'avl_ins', 'avl_dup', 'node_slice' */
+/* Called by 'avl_ins', 'avl_dup', 'node_slice'. */
 
 static avl_node *new_node(void *item, avl_node *up, avl_tree t)
 {
@@ -144,7 +143,7 @@ static void free_node(avl_node *a, avl_tree t)
     (*t->dealloc)(a);
 }
 
-/* function to detach node [a] from tree [t]  (compiler will inline if needed) */
+/* Function to detach node [a] from tree [t]  (compiler will inline if needed). */
 
 static void detach_node(avl_node *a, avl_tree t, struct ptr_handler *h)
 {
@@ -163,7 +162,7 @@ static void detach_node(avl_node *a, avl_tree t, struct ptr_handler *h)
     t->count--;
 }
 
-/* Tree methods */
+/* Tree methods. */
 
 avl_tree avl_create (
     avl_compare_func       compare,
@@ -190,7 +189,7 @@ avl_tree avl_create (
     return t;
 }
 
-/* Empty the tree, using rotations */
+/* Empty the tree using rotations. */
 
 static void node_empty(avl_tree t)
 {
@@ -215,7 +214,7 @@ static void node_empty(avl_tree t)
     t->root = NULL;
 }
 
-/* [t] is an existing tree handle; this function invokes node_empty() */
+/* [t] is an existing tree handle; this function invokes node_empty(). */
 
 void avl_reset (
     avl_tree              t,
@@ -243,7 +242,7 @@ void avl_empty(avl_tree t)
     }
 }
 
-/* Destroy nodes, free handle */
+/* Destroy nodes and free handle. */
 
 void avl_destroy(avl_tree t)
 {
@@ -308,7 +307,7 @@ avl_tree avl_dup(avl_tree t, void *param)
                             goto recover;
                         }
                     }
-                    /* recovery code     */
+                    /* recovery code */
                   recover:
                     while (1) {
                         s = sub_right(c);
@@ -432,7 +431,7 @@ static avl_size_t get_index(avl_node *a)
     return n;
 }
 
-/* Find item by index */
+/* Find item by index. */
 
 static avl_node *node_find_index(avl_size_t idx, avl_tree t)
 {
@@ -457,7 +456,7 @@ static avl_node *node_find_index(avl_size_t idx, avl_tree t)
     }
 }
 
-/* Rebalance starting from node [a] where a->sub[d_] is deeper post-insertion */
+/* Rebalance starting from node [a] where a->sub[d_] is deeper post-insertion. */
 
 static avl_code_t rebalance_ins(avl_node *a, int dir, avl_tree t)
 {
@@ -478,8 +477,7 @@ static avl_code_t rebalance_ins(avl_node *a, int dir, avl_tree t)
                 }
             }
         }
-        /* Now bal(a) == -1 or +1 */
-        /* Rotate if need be */
+        /* Now bal(a) == -1 or +1. Rotate if needed. */
         if (dir == 0) {
             if (is_rskew(a))
                 unset_rskew(a);
@@ -589,8 +587,7 @@ static avl_code_t rebalance_ins(avl_node *a, int dir, avl_tree t)
             p->up = a;
             *r = a;
         }
-        /* The tree rooted at 'a' is now valid */
-        /* Finish adjusting ranks */
+        /* The tree rooted at 'a' is now valid.  Finish adjusting ranks */
         while ((p = a->up)) {
             incr_rank(p, (rbal_t)(a == sub_left(p)));
             a = p;
@@ -838,10 +835,7 @@ void *avl_find(const void *item, avl_tree t)
     }
 }
 
-/*
-    Return smallest index i in [1:len] s.t. tree[i] matches [item], or zero if
-    not found
-*/
+/* Return smallest index i in [1:len] s.t. tree[i] matches [item], or zero if not found. */
 
 avl_size_t avl_index(const void *item, avl_tree t)
 {
@@ -869,8 +863,8 @@ avl_size_t avl_index(const void *item, avl_tree t)
 }
 
 /*
-    (lo,hi) where lo smallest index s.t. t[lo] >= lo_item, or t->count+1 and hi
-    greatest index s.t. t[hi] <= hi_item, or 0
+    (lo,hi) where lo smallest index s.t. t[lo] >= lo_item, or t->count+1 and hi greatest index s.t. 
+    t[hi] <= hi_item, or 0.
 */
 
 avl_code_t avl_span(const void *lo_item, const void *hi_item, avl_tree t, avl_size_t *lo_idx, avl_size_t *hi_idx)
@@ -915,7 +909,7 @@ avl_code_t avl_span(const void *lo_item, const void *hi_item, avl_tree t, avl_si
     return -1;
 }
 
-/* Find the smallest item in tree [t] that is GEQ the passed item */
+/* Find the smallest item in tree [t] that is GEQ the passed item. */
 
 void *avl_find_atleast(const void *item, avl_tree t)
 {
@@ -938,7 +932,7 @@ void *avl_find_atleast(const void *item, avl_tree t)
     }
 }
 
-/* Find the greatest item in tree [t] that is LEQ the passed item */
+/* Find the greatest item in tree [t] that is LEQ the passed item. */
 
 void *avl_find_atmost(const void *item, avl_tree t)
 {
@@ -961,7 +955,7 @@ void *avl_find_atmost(const void *item, avl_tree t)
     }
 }
 
-/* Retrieve item of index [idx] in tree [t] */
+/* Retrieve item of index [idx] in tree [t]. */
 
 void *avl_find_index(avl_size_t idx, avl_tree t)
 {
@@ -973,9 +967,9 @@ void *avl_find_index(avl_size_t idx, avl_tree t)
     }
 }
 
-/* Iterative insertion */
+/* Iterative insertion. */
 
-avl_code_t avl_ins (void *item, avl_tree t, avl_bool_t allow_duplicates)
+avl_code_t avl_ins(void *item, avl_tree t, avl_bool_t allow_duplicates)
 {
     if (t) {
         avl_compare_func cmp = t->compare;
@@ -1013,7 +1007,7 @@ avl_code_t avl_del(void *item, avl_tree t, void **backup)
     }
 }
 
-/* helper function */
+/* Helper function. */
 
 static avl_code_t node_del_first(avl_tree t, struct ptr_handler *h)
 {
@@ -1221,11 +1215,7 @@ static avl_code_t node_del_last(avl_tree t, struct ptr_handler *h)
     return 1;
 }
 
-/*
-    [p] : juncture node(zeroed out)
-    [n] : rank of [p] in resulting tree
-    [delta] = depth_1 - depth_0
-*/
+/* [p] is juncture node(zeroed out), [n] is rank of [p] in resulting tree, [delta] = depth_1 - depth_0 */
 
 static avl_code_t join_left(avl_node *p, avl_node **r0, avl_node *r1, int delta, int n)
 {
@@ -1329,10 +1319,7 @@ static avl_code_t join_left(avl_node *p, avl_node **r0, avl_node *r1, int delta,
     return 1;
 }
 
-/*
-    [p] : juncture node
-    [n] : rank of [p] in resulting tree
-*/
+/* [p] is juncture node and [n] is rank of [p] in resulting tree. */
 
 static avl_code_t join_right(avl_node *p, avl_node *r0, avl_node **r1, int delta, int n)
 {
@@ -1376,8 +1363,7 @@ static avl_code_t join_right(avl_node *p, avl_node *r0, avl_node **r1, int delta
             a = a->up;
         }
     }
-    /* Rotate if need be */
-    /* No (-2,0) rotation to do */
+    /* Rotate if need be. No (-2,0) rotation to do. */
     if (is_rskew(a)) {
         unset_rskew(a);
     } else {
@@ -1519,7 +1505,7 @@ avl_code_t avl_del_index(avl_size_t idx, avl_tree t, void **backup)
     }
 }
 
-/* Outcome: [t0] handles the concatenation of [t0] and [t1] */
+/* Outcome: [t0] handles the concatenation of [t0] and [t1]. */
 
 void avl_cat(avl_tree t0, avl_tree t1)
 {
@@ -1551,10 +1537,7 @@ void avl_cat(avl_tree t0, avl_tree t1)
     }
 }
 
-/*
-    - [t0] and [t1] are existing handles
-    - See Donald Knuth, TAOCP Vol.3 "Sorting and searching"
-*/
+/* [t0] and [t1] are existing handles; see Donald Knuth, TAOCP Vol.3 "Sorting and searching". */
 
 avl_code_t avl_split(const void *item, avl_tree t, avl_tree t0, avl_tree t1)
 {
@@ -1566,7 +1549,7 @@ avl_code_t avl_split(const void *item, avl_tree t, avl_tree t0, avl_tree t1)
         t1->root = NULL;
         t0->count = 0;
         t1->count = 0;
-        /* invariant: [na]= size of tree rooted at [a] plus one */
+        /* invariant: [na] = size of tree rooted at [a] plus one */
         for (a = t->root, na = (int) (t->count + 1), k = 0;;) {
             int d_ = item_compare(cmp, t, item, get_item(a));
             if (d_) {
@@ -1615,7 +1598,7 @@ avl_code_t avl_split(const void *item, avl_tree t, avl_tree t0, avl_tree t1)
             ha = depth(a);
             h[0] = ha - (is_rskew(a) ? 2 : 1);
             h[1] = ha - (is_lskew(a) ? 2 : 1);
-            n[0] = get_rank(a);           /* size of r[0] plus one */
+            n[0] = get_rank(a);             /* size of r[0] plus one */
             n[1] = (avl_size_t) na - n[0];  /* size of r[1] plus one */
             for (p = a->up, d_ = a != sub_left(p);;) {
                 a = p; /* a: juncture node */
@@ -1681,7 +1664,7 @@ avl_code_t avl_split(const void *item, avl_tree t, avl_tree t0, avl_tree t1)
     }
 }
 
-/* Inorder traversal */
+/* Inorder traversal. */
 
 void avl_walk(avl_tree t, avl_item_func proc, void *param)
 {
@@ -1711,13 +1694,13 @@ void avl_walk(avl_tree t, avl_item_func proc, void *param)
     }
 }
 
-/* recursive helper for 'avl_slice' */
+/* Recursive helper for 'avl_slice'. */
 
 static int node_slice(avl_node **root, avl_node **cur, avl_tree tree, avl_size_t len)
 {
     avl_size_t mid = len / 2;
     if (mid == 0) {
-        if ((*root = new_node ((*cur)->item, /*parent */ NULL, tree)) == NULL) {
+        if ((*root = new_node ((*cur)->item, /* parent */ NULL, tree)) == NULL) {
             return -1;
         } else {
             sub_left(*root) = NULL;
@@ -1726,7 +1709,7 @@ static int node_slice(avl_node **root, avl_node **cur, avl_tree tree, avl_size_t
             *cur = node_next(*cur);
             return 0;
         }
-    } else if ((*root = new_node(NULL, /*parent */ NULL, tree))) {
+    } else if ((*root = new_node(NULL, /* parent */ NULL, tree))) {
         avl_node *p = *root;
         int h0, h1 = -1;
         rbal(p) = (mid + 1) << 2;
@@ -1756,7 +1739,7 @@ static int node_slice(avl_node **root, avl_node **cur, avl_tree tree, avl_size_t
     }
 }
 
-/* Return a slice t[lo,hi) as a new tree */
+/* Return a slice t[lo,hi) as a new tree. */
 
 avl_tree avl_slice(avl_tree t, avl_size_t lo_idx, avl_size_t hi_idx, void *param)
 {
@@ -1792,13 +1775,13 @@ avl_tree avl_slice(avl_tree t, avl_size_t lo_idx, avl_size_t hi_idx, void *param
     }
 }
 
-/* recursive helper for 'avl_xload' */
+/* Recursive helper for 'avl_xload'. */
 
 static int node_load(avl_node **root, avl_itersource cur, void **pres, avl_tree desc, avl_size_t len)
 {
     avl_size_t mid = len / 2;
     if (mid == 0) {
-        if (0 != (*cur->f) (cur, pres) || (*root = new_node (*pres, /*parent */ NULL, desc)) == NULL) {
+        if (0 != (*cur->f) (cur, pres) || (*root = new_node (*pres, /* parent */ NULL, desc)) == NULL) {
             return -1;
         } else {
             sub_left(*root) = NULL;
@@ -1806,7 +1789,7 @@ static int node_load(avl_node **root, avl_itersource cur, void **pres, avl_tree 
             rbal(*root) = 4;
             return 0;
         }
-    } else if ((*root = new_node (NULL, /*parent */ NULL, desc))) {
+    } else if ((*root = new_node (NULL, /* parent */ NULL, desc))) {
         avl_node *p = *root;
         int h0, h1 = -1;
         rbal(p) = (mid + 1) << 2;
@@ -1837,7 +1820,7 @@ static int node_load(avl_node **root, avl_itersource cur, void **pres, avl_tree 
     }
 }
 
-/* Load 'len' items from itersource */
+/* Load 'len' items from itersource. */
 
 avl_tree avl_xload(avl_itersource src, void **pres, avl_size_t len, avl_config conf, void *tree_param)
 {
@@ -1885,8 +1868,8 @@ struct avl_iterator_
 # define set_in_iterator(i)   i->status = AVL_ITERATOR_INTREE
 
 /*
-    Position existing iterator [iter] at node matching [item] in its own tree,
-    if it exists ; otherwise do nothing
+    Position existing iterator [iter] at node matching [item] in its own tree, if it exists; 
+    otherwise do nothing.
 */
 
 void avl_iterator_seek(const void *item, avl_iterator iter)
@@ -1907,7 +1890,7 @@ void avl_iterator_seek_index(avl_size_t idx, avl_iterator iter)
     }
 }
 
-/* Return item pointer at current position */
+/* Return item pointer at current position. */
 
 void *avl_iterator_cur(avl_iterator iter)
 {
@@ -1961,10 +1944,7 @@ avl_iterator avl_iterator_new(avl_tree t, avl_ini_t ini, ...)
     return iter;
 }
 
-/*
-    The following used to write to memory after it was freed. Corrected by: David
-    Turner <novalis@openplans.org>
-*/
+/* The following used to write to memory after it was freed. */
 
 void avl_iterator_kill(avl_iterator iter)
 {
@@ -2022,7 +2002,7 @@ void *avl_iterator_prev(avl_iterator iter)
     }
 }
 
-/* Remove node at current position and move cursor to next position */
+/* Remove node at current position and move cursor to next position. */
 
 avl_code_t avl_iterator_del(avl_iterator iter, void **backup)
 {

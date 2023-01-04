@@ -416,6 +416,18 @@ typedef union memoryword {
     void          *P;
 } memoryword;
 
+typedef union tokenword {
+    union { 
+        halfword info;
+        halfword val;
+        struct  { 
+            int cmd:8; 
+            int chr:24; 
+        };
+    };
+    halfword link; 
+} tokenword;
+
 /*tex
 
     These symbolic names will be used in the definitions of tokens and nodes, the core data
@@ -636,9 +648,10 @@ can be neglected (no differences on the test suite) because the bottleneck in \C
 I occasionally test the variants. The last test showed that mode 1 gives a bit larger binary. There
 is no real difference in performance.
 
-*/
+Well, per end December 2022 we only have the case with modes left but one can always find the old 
+code in the archive. 
 
-# define main_control_mode 1
+*/
 
 /*tex For the moment here. */
 

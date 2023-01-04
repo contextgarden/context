@@ -240,6 +240,7 @@ local flush_character do
                     csy = sy
                 end
                 -- here no current!
+             -- return flushcharacter(false,pos_h,pos_v,pos_r,fnt,chr,nil,csx,csy,factor,sx,sy)
                 return flush_character(false,fnt,chr,factor,nest,pos_h,pos_v,pos_r,csx,csy)
             else
                 return 0

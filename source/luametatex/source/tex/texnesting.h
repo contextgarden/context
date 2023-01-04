@@ -5,32 +5,37 @@
 # ifndef LMT_NESTING_H
 # define LMT_NESTING_H
 
+/* 
+    Todo: make this record 6*4 smaller, not all are halfwords, although padding might then make us
+    end up with the same size. We also end up with plenty of casts elsewhere. 
+*/
+
 typedef struct list_state_record {
-    int      mode;
-    halfword head;
-    halfword tail;
-    int      prev_graf;
-    int      mode_line;
-    halfword prev_depth; // scaled
-    halfword space_factor;
-    halfword direction_stack;
-    int      math_dir;
-    int      math_style;
-    int      math_scale;
-    int      math_main_style;
-    halfword delim;
-    halfword incomplete_noad;
-    halfword math_flatten;
-    halfword math_begin;
-    halfword math_end;
-    halfword math_mode;
+    int      mode;                 // singleword 
+    halfword head;                 
+    halfword tail;                 
+    int      prev_graf;            
+    int      mode_line;            
+    halfword prev_depth;           // scaled
+    halfword space_factor;         
+    halfword direction_stack;      
+    int      math_dir;             // singleword 
+    int      math_style;           // singleword 
+    int      math_scale;           
+    int      math_main_style;      // singleword 
+    halfword delimiter;            // todo: get rid of these and use the stack 
+    halfword incomplete_noad;      // todo: get rid of these and use the stack 
+    halfword math_flatten;         // singleword 
+    halfword math_begin;           // singleword 
+    halfword math_end;             // singleword 
+    halfword math_mode;            // singleword 
 } list_state_record;
 
 typedef struct nest_state_info {
     list_state_record *nest;
     memory_data        nest_data;
-    int                shown_mode;
-    int                math_mode;
+    int                shown_mode; // singleword
+    int                math_mode;  // singleword
 } nest_state_info;
 
 extern nest_state_info lmt_nest_state;

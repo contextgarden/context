@@ -1234,28 +1234,28 @@
   % \inherited\setmathspacing \mathclosecode           \mathradicalcode         \allmathstyles    \zeromuskip
     %
     \inherited\setmathspacing \mathpunctuationcode     \mathordinarycode        \allsplitstyles   \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode     \mathordinarycode        \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathordinarycode        \allunsplitstyles \tinymuskip
     \inherited\setmathspacing \mathpunctuationcode     \mathoperatorcode        \allsplitstyles   \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode     \mathoperatorcode        \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathoperatorcode        \allunsplitstyles \tinymuskip
   % \inherited\setmathspacing \mathpunctuationcode     \mathbinarycode          \allmathstyles    \zeromuskip
     \inherited\setmathspacing \mathpunctuationcode     \mathrelationcode        \allsplitstyles   \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode     \mathrelationcode        \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathrelationcode        \allunsplitstyles \tinymuskip
     \inherited\setmathspacing \mathpunctuationcode     \mathopencode            \allsplitstyles   \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode     \mathopencode            \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathopencode            \allunsplitstyles \tinymuskip
     \inherited\setmathspacing \mathpunctuationcode     \mathmiddlecode          \allsplitstyles   \thickmuskip
-    \inherited\setmathspacing \mathpunctuationcode     \mathmiddlecode          \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathmiddlecode          \allunsplitstyles \tinymuskip
     \inherited\setmathspacing \mathpunctuationcode     \mathclosecode           \allsplitstyles   \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode     \mathclosecode           \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathclosecode           \allunsplitstyles \tinymuskip
     \inherited\setmathspacing \mathpunctuationcode     \mathpunctuationcode     \allsplitstyles   \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode     \mathpunctuationcode     \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathpunctuationcode     \allunsplitstyles \tinymuskip
     \inherited\setmathspacing \mathpunctuationcode     \mathconstructcode       \allsplitstyles   \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode     \mathconstructcode       \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathconstructcode       \allunsplitstyles \tinymuskip
     \inherited\setmathspacing \mathpunctuationcode     \mathellipsiscode        \allsplitstyles   \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode     \mathellipsiscode        \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathellipsiscode        \allunsplitstyles \tinymuskip
     \inherited\setmathspacing \mathpunctuationcode     \mathfractioncode        \allsplitstyles   \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode     \mathfractioncode        \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathfractioncode        \allunsplitstyles \tinymuskip
     \inherited\setmathspacing \mathpunctuationcode     \mathradicalcode         \allsplitstyles   \medmuskip
-    \inherited\setmathspacing \mathpunctuationcode     \mathradicalcode         \allunsplitstyles \thinmuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathradicalcode         \allunsplitstyles \tinymuskip
     %
     \inherited\setmathspacing \mathconstructcode       \mathordinarycode        \allsplitstyles   \thinmuskip
     \inherited\setmathspacing \mathconstructcode       \mathordinarycode        \allunsplitstyles \pettymuskip

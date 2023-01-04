@@ -142,10 +142,22 @@ typedef struct mp_run_data
     struct mp_edge_object *edges;
 } mp_run_data;
 typedef struct mp_color {
-    double a_val;
-    double b_val;
-    double c_val;
-    double d_val;
+    union {
+        double red;
+        double cyan;
+    };
+    union {
+        double green;
+        double magenta;
+    };
+    union {
+        double blue;
+        double yellow;
+    };
+    union {
+        double black;
+        double gray;
+    };
 } mp_color;
 typedef struct mp_dash_object {
     double  offset;

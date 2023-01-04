@@ -21,20 +21,20 @@ typedef struct in_state_record {
     union          { unsigned short index; unsigned short token_type;      }; /*tex: So, no macro but name. */
     union          { halfword       limit; halfword       parameter_start; }; /*tex: So, no macro but name. */
     halfword       name;
-    signed short   cattable;      /*tex The category table used by the current line (see |textoken.c|). */
-    unsigned short partial;       /*tex Is the current line partial (see |textoken.c|)? */
-    int            state_file;  /*tex Here we stack the tag of the current file. */
-    int            state_line;  /*tex Not used. */
+    short          cattable;   /*tex The category table used by the current line (see |textoken.c|). */
+    unsigned short partial;    /*tex Is the current line partial (see |textoken.c|)? */
+    int            state_file; /*tex Here we stack the tag of the current file. */
+    int            state_line; /*tex Not used. */
 } in_state_record;
 
 typedef struct input_stack_record {
-    halfword   input_file_callback_id;
-    halfword   line;
-    halfword   end_of_file_seen;
-    halfword   group;
-    halfword   if_ptr;
-    halfword   padding;
-    char      *full_source_filename;
+    halfword  input_file_callback_id;
+    halfword  line;
+    halfword  end_of_file_seen;
+    halfword  group;
+    halfword  if_ptr;
+    halfword  padding;
+    char     *full_source_filename;
 } input_stack_record;
 
 // todo: better names for in_state_record and input_stack_record ... now mixed up
@@ -421,32 +421,32 @@ typedef enum token_types {
     local_loop_text,
 } token_types;
 
-extern void        tex_initialize_input_state     (void);
-/*     int         tex_room_on_param_stack        (void); */
-/*     int         tex_room_on_in_stack           (void); */
-/*     int         tex_room_on_input_stack        (void); */
-extern void        tex_copy_pstack_to_param_stack (halfword *pstack, int n);
-extern void        tex_show_context               (void);
-extern void        tex_show_validity              (void);
-extern void        tex_set_trick_count            (void);
-extern void        tex_begin_token_list           (halfword t, quarterword kind); /* include some tracing */
-extern void        tex_begin_parameter_list       (halfword t);                   /* less inlining code */
-extern void        tex_begin_backed_up_list       (halfword t);                   /* less inlining code */
-extern void        tex_begin_inserted_list        (halfword t);                   /* less inlining code */
-extern void        tex_begin_macro_list           (halfword t);                   /* less inlining code */
-extern void        tex_end_token_list             (void);
-extern void        tex_cleanup_input_state        (void);
-extern void        tex_back_input                 (halfword t);
-extern void        tex_reinsert_token             (halfword t);
-extern void        tex_insert_input               (halfword h);
-extern void        tex_append_input               (halfword h);
-extern void        tex_begin_file_reading         (void);
-extern void        tex_end_file_reading           (void);
-extern void        tex_initialize_inputstack      (void);
-extern void        tex_lua_string_start           (void);
-extern void        tex_tex_string_start           (int iotype, int cattable);
-extern void        tex_any_string_start           (char *s);
-extern halfword    tex_wrapped_token_list         (halfword h);
-extern const char *tex_current_input_file_name    (void);
+extern void        tex_initialize_input_state  (void);
+/*     int         tex_room_on_parameter_stack (void); */
+/*     int         tex_room_on_in_stack        (void); */
+/*     int         tex_room_on_input_stack     (void); */
+extern void        tex_copy_to_parameter_stack (halfword *pstack, int n);
+extern void        tex_show_context            (void);
+extern void        tex_show_validity           (void);
+extern void        tex_set_trick_count         (void);
+extern void        tex_begin_token_list        (halfword t, quarterword kind); /* include some tracing */
+extern void        tex_begin_parameter_list    (halfword t);                   /* less inlining code */
+extern void        tex_begin_backed_up_list    (halfword t);                   /* less inlining code */
+extern void        tex_begin_inserted_list     (halfword t);                   /* less inlining code */
+extern void        tex_begin_macro_list        (halfword t);                   /* less inlining code */
+extern void        tex_end_token_list          (void);
+extern void        tex_cleanup_input_state     (void);
+extern void        tex_back_input              (halfword t);
+extern void        tex_reinsert_token          (halfword t);
+extern void        tex_insert_input            (halfword h);
+extern void        tex_append_input            (halfword h);
+extern void        tex_begin_file_reading      (void);
+extern void        tex_end_file_reading        (void);
+extern void        tex_initialize_inputstack   (void);
+extern void        tex_lua_string_start        (void);
+extern void        tex_tex_string_start        (int iotype, int cattable);
+extern void        tex_any_string_start        (char *s);
+extern halfword    tex_wrapped_token_list      (halfword h);
+extern const char *tex_current_input_file_name (void);
 
 # endif

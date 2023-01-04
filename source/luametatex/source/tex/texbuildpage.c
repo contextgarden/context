@@ -1130,7 +1130,7 @@ static void tex_aux_fire_up(halfword c)
             lmt_page_builder_state.output_active = 1;
             ++lmt_page_builder_state.dead_cycles;
             tex_push_nest();
-            cur_list.mode = -vmode;
+            cur_list.mode = internal_vmode;
             cur_list.prev_depth = ignore_depth_criterium_par;
             cur_list.mode_line = -lmt_input_state.input_line;
             tex_begin_token_list(output_routine_par, output_text);

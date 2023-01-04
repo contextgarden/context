@@ -174,8 +174,8 @@ static int tex_aux_room_in_hash(void)
     Because we seldom use uppercase we get many misses, multiplying a chr j[k] by k actually gives
     a better spread.
 
-    Making a \CONTEXT\ format takes some 250.000 hash calculations while the \LUAMETATEX\ needs
-    some 1.7 million for just over 250 pages (with an average string length of 15).
+    Making a \CONTEXT\ format takes some 250.000 hash calculations while the \LUAMETATEX\ manual 
+    needs some 1.7 million for just over 250 pages (with an average string length of 15).
 
     The primitive hash lookups are needed when we initialize and when we lookup an internal
     variable.
@@ -205,11 +205,13 @@ halfword tex_prim_lookup(strnumber s)
     /*tex The index in the |hash| array: */
     if (s >= cs_offset_value) {
         unsigned char *j = str_string(s);
-        unsigned l = (unsigned) str_length(s);
+     // unsigned l = (unsigned) str_length(s);
+        halfword l = str_length(s);
         halfword h = tex_aux_compute_prim((char *) j, l);
         /*tex We start searching here; note that |0 <= h < hash_prime|. */
         halfword p = h + 1;
         while (1) {
+         /* When using |halfword text = prim_text(p)| no intelliugense warning for first test in: */
             if (prim_text(p) > 0 && str_length(prim_text(p)) == l && tex_str_eq_str(prim_text(p), s)) {
                 return p;
             } else if (prim_next(p)) {

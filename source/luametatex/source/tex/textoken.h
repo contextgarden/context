@@ -95,7 +95,7 @@ typedef enum catcode_table_presets {
 */
 
 typedef struct token_state_info {
-    halfword  null_list;        /*tex permanently empty list */
+    halfword  null_list;         /*tex permanently empty list */
     int       in_lua_escape;
     int       force_eof;
     int       luacstrings;
@@ -165,20 +165,22 @@ extern token_state_info lmt_token_state;
     yet when we're here. so we can't use for instance |token_val (spacer_cmd, 20)| yet.
 */
 
-# define left_brace_token        token_val( 1, 0) // token_val(left_brace_cmd,0)
-# define right_brace_token       token_val( 2, 0) // token_val(right_brace_cmd,0)
-# define math_shift_token        token_val( 3, 0) // token_val(math_shift_cmd,0)
-# define alignment_token         token_val( 4, 0)
-# define superscript_token       token_val( 7, 0)
-# define subscript_token         token_val( 8, 0)
-# define ignore_token            token_val( 9, 0) // token_val(ignore_cmd,0)
-# define space_token             token_val(10,32) // token_val(spacer_cmd,32)
-# define letter_token            token_val(11, 0) // token_val(letter_cmd,0)
-# define other_token             token_val(12, 0) // token_val(other_char_cmd,0)
-# define active_token            token_val(13, 0)
-
-# define match_token             token_val(19,0)  // token_val(match_cmd,0)
-# define end_match_token         token_val(20,0)  // token_val(end_match_cmd,0)
+# define left_brace_token        token_val( 1, 0) /* token_val(left_brace_cmd,    0) */
+# define right_brace_token       token_val( 2, 0) /* token_val(right_brace_cmd,   0) */
+# define math_shift_token        token_val( 3, 0) /* token_val(math_shift_cmd,    0) */
+# define alignment_token         token_val( 4, 0) /* token_val(alignment_tab_cmd, 0) */
+# define endline_token           token_val( 5, 0) /* token_val(end_line_cmd,      0) */
+# define parameter_token         token_val( 6, 0) /* token_val(parameter_cmd,     0) */
+# define superscript_token       token_val( 7, 0) /* token_val(superscript_cmd,   0) */
+# define subscript_token         token_val( 8, 0) /* token_val(subscript_cmd,     0) */
+# define ignore_token            token_val( 9, 0) /* token_val(ignore_cmd,        0) */
+# define space_token             token_val(10,32) /* token_val(spacer_cmd,       32) */
+# define letter_token            token_val(11, 0) /* token_val(letter_cmd         0) */
+# define other_token             token_val(12, 0) /* token_val(other_char_cmd,    0) */
+# define active_token            token_val(13, 0) /* token_val(active_char_cmd,   0) */
+                                                                                                    
+# define match_token             token_val(19, 0) /* token_val(match_cmd,         0) */
+# define end_match_token         token_val(20, 0) /* token_val(end_match_cmd,     0) */
 
 # define left_brace_limit  right_brace_token
 # define right_brace_limit math_shift_token
@@ -200,13 +202,13 @@ extern token_state_info lmt_token_state;
 # define less_token              (other_token  + '<')
 # define more_token              (other_token  + '>')
 # define exclamation_token_o     (other_token  + '!')
-# define exclamation_token_l     (letter_token + '!')
+# define exclamation_token_l     (letter_token + '!') /* letter */
 # define underscore_token        (other_token  + '_')
 # define underscore_token_o      (other_token  + '_')
-# define underscore_token_l      (letter_token + '_')
+# define underscore_token_l      (letter_token + '_') /* letter */
 # define circumflex_token        (other_token  + '^')
 # define circumflex_token_o      (other_token  + '^')
-# define circumflex_token_l      (letter_token + '^')
+# define circumflex_token_l      (letter_token + '^') /* letter */
 # define escape_token            (other_token  + '\\')
 # define left_parent_token       (other_token  + '(')
 # define right_parent_token      (other_token  + ')')
@@ -214,6 +216,8 @@ extern token_state_info lmt_token_state;
 # define five_token              (other_token  + '5')
 # define seven_token             (other_token  + '7')
 # define nine_token              (other_token  + '9')  /*tex zero, the smallest digit */
+
+# define dollar_token_m          (math_shift_token + '$')
 
 # define a_token_l               (letter_token + 'a')  /*tex the smallest special hex digit */
 # define a_token_o               (other_token  + 'a')
@@ -338,11 +342,11 @@ extern void     tex_increment_token_reference (halfword p, int n);
 
 # define no_expand_flag special_char /* no_expand_relax_code */
 
-/*tex  A few special values: */
+/*tex  A few special values; these are no longer used as we always go for maxima. */
 
 # define default_token_show_min 32
-# define default_token_show_max 2500
-# define extreme_token_show_max 0x3FFFFFFF
+# define default_token_show_max 2500       
+# define extreme_token_show_max 0x3FFFFFFF 
 
 /*tex  All kind of helpers: */
 
@@ -351,11 +355,13 @@ extern void       tex_undump_token_mem            (dumpstream f);
 extern void       tex_print_meaning               (halfword code);
 extern void       tex_flush_token_list            (halfword p);
 extern void       tex_flush_token_list_head_tail  (halfword h, halfword t, int n);
-extern halfword   tex_show_token_list             (halfword p, halfword q, int l, int asis); /* Here |l| will go away. */
-extern void       tex_token_show                  (halfword p, int max);
+extern void       tex_show_token_list_context     (halfword p, halfword q);
+extern void       tex_show_token_list             (halfword p, int asis);
+extern void       tex_token_show                  (halfword p);
 /*     void       tex_add_token_ref               (halfword p); */
 /*     void       tex_delete_token_ref            (halfword p); */
 extern void       tex_get_next                    (void);
+extern void       tex_get_next_non_spacer         (void);
 extern halfword   tex_scan_character              (const char *s, int left_brace, int skip_space, int skip_relax);
 extern int        tex_scan_optional_keyword       (const char *s);
 extern int        tex_scan_mandate_keyword        (const char *s, int offset);

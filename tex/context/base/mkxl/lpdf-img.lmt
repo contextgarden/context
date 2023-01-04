@@ -1181,6 +1181,7 @@ do
             Filter           = filter,
             ColorSpace       = palette or pdfconstant(colorspace),
             Length           = #content,
+-- Decode = pdfarray { 0, .5, 0, .5, 0, .5 } -- darker (test for luatex list)
         } + specification.attr
         if mask then
             local d = pdfdictionary {
@@ -1190,6 +1191,7 @@ do
                 Height           = ysize,
                 BitsPerComponent = palette and 8 or colordepth,
                 ColorSpace       = pdfconstant("DeviceGray"),
+-- Decode = pdfarray { 0, .5, 0, .5, 0, .5 }, -- lighter (test for luatex list)
             }
             xobject.SMask = pdfreference(pdfflushstreamobject(mask,d()))
         end

@@ -1,4 +1,4 @@
-.TH "mtx-check" "1" "01-01-2022" "version 0.10" "Basic ConTeXt Syntax Checking"
+.TH "mtx-check" "1" "01-01-2023" "version 0.10" "Basic ConTeXt Syntax Checking"
 .SH NAME
  mtx-check - Basic ConTeXt Syntax Checking
 .SH SYNOPSIS

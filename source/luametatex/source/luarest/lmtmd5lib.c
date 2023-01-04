@@ -64,7 +64,7 @@ static int md5lib_HEX(lua_State *L)
         size_t size = 0; \
         const char *data = lua_tolstring(L, 1, &size); \
         md5_digest(data, size, (unsigned char *) result, CONVERSION); \
-        lua_pushlstring(L, (const char *)result, RESULT_LENGTH); \
+        lua_pushlstring(L, (const char *) result, RESULT_LENGTH); \
         return 1; \
     } \
     return 0; \

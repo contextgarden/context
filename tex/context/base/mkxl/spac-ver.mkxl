@@ -2420,20 +2420,23 @@
 \tolerant\protected\def\spac_textdisplay_start#1#:[#2]%
   {\par
    \begingroup
+   \whitespace
+   \forgetall
    \edef\currenttextdisplay{#1}%
    \setupcurrenttextdisplay[#2]%
    \textdisplayparameter\c!before
-   \dbox
+   \dpack
    \bgroup
    \strut
    \vskip-\lineheight
-   \vbox
+   \vpack
    \s!yoffset -\textdisplayparameter\c!factor\strutdp
    \bgroup}
 
 \protected\def\spac_textdisplay_stop
   {\egroup
-   \vskip-\lineheight\strut
+   \vskip-\lineheight
+   \strut
    \egroup
    \textdisplayparameter\c!after
    \endgroup

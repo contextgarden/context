@@ -18,7 +18,8 @@ if known metafun_loaded_text : endinput ; fi ;
 newinternal boolean metafun_loaded_text ; metafun_loaded_text := true ; immutable metafun_loaded_text ;
 
 % This is still mostly the same as the one discussed in the good old \METAFUN\
-% example code but modernized abit to suit \LMTX.
+% example code but modernized abit to suit \LMTX. We can actually use \hsplit
+% now!
 
 newscriptindex mfid_setparshapeproperty ; mfid_setparshapeproperty := scriptindex "setparshapeproperty" ;
 
@@ -123,9 +124,9 @@ def lmt_do_parshape = % todo: check and improve this rather oldie
         save a, b; pair a, b ;
         a := pat intersection_point (lin shifted (0,strutheight)) ;
         if intersection_found :
-        a := a shifted (0,-strutheight) ;
+            a := a shifted (0,-strutheight) ;
         else :
-        a := pat intersection_point lin ;
+            a := pat intersection_point lin ;
         fi ;
         b := pat intersection_point (lin shifted (0,-strutdepth)) ;
         if intersection_found :

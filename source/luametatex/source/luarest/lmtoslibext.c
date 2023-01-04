@@ -113,15 +113,17 @@ static int oslib_sleep(lua_State *L)
         DWORD sLength;
         memset(uts, 0, sizeof(*uts));
         osver.dwOSVersionInfoSize = sizeof(osver);
-        GetVersionEx(&osver);
         GetSystemInfo(&sysinfo);
         strcpy(uts->sysname, "Windows");
+        /* When |GetVersionEx| becomes obsolete the version and release fields will be set to "". */
+        GetVersionEx(&osver);
         sprintf(uts->version, "%ld.%02ld", osver.dwMajorVersion, osver.dwMinorVersion);
         if (osver.szCSDVersion[0] != '\0' && (strlen(osver.szCSDVersion) + strlen(uts->version) + 1) < sizeof(uts->version)) {
             strcat(uts->version, " ");
             strcat(uts->version, osver.szCSDVersion);
         }
         sprintf(uts->release, "build %ld", osver.dwBuildNumber & 0xFFFF);
+        /* So far for the fragile and actually not that relevant part of |uts|. */
         switch (sysinfo.wProcessorArchitecture) {
             case PROCESSOR_ARCHITECTURE_AMD64:
                 strcpy(uts->machine, "x86_64");
@@ -281,14 +283,14 @@ static int oslib_execute(lua_State *L)
     static int oslib_getenv(lua_State *L)
     {
         const char *key = luaL_checkstring(L, 1);
-        char* val = NULL;
+        char *val = NULL;
         if (key) {
             size_t wlen = 0;
             LPWSTR wkey = aux_utf8_to_wide(key);
             _wgetenv_s(&wlen, NULL, 0, wkey);
             if (wlen) {
                 LPWSTR wval = (LPWSTR) lmt_memory_malloc(wlen * sizeof(WCHAR));
-                if (!_wgetenv_s(&wlen, wval, wlen, wkey)) {
+                if (! _wgetenv_s(&wlen, wval, wlen, wkey)) {
                     val = aux_utf8_from_wide(wval);
                 }
             }
@@ -305,20 +307,15 @@ static int oslib_execute(lua_State *L)
     {
         const char *key = luaL_optstring(L, 1, NULL);
         if (key) {
-            LPWSTR wkey = aux_utf8_to_wide(key);
             const char *val = luaL_optstring(L, 2, NULL);
-            if (val) {
-                LPWSTR wval = aux_utf8_to_wide(val);
-                if (_wputenv_s(wkey, wval)) {
-                    return luaL_error(L, "unable to change environment");
-                }
-                lmt_memory_free(wval);
-            } else {
-                if (_wputenv_s(wkey, NULL)) {
-                    return luaL_error(L, "unable to change environment");
-                }
-            }
+            LPWSTR wkey = aux_utf8_to_wide(key);
+            LPWSTR wval = aux_utf8_to_wide(val ? val : "");
+            int bad = _wputenv_s(wkey, wval); 
+            lmt_memory_free(wval);
             lmt_memory_free(wkey);
+            if (bad) {
+                return luaL_error(L, "unable to change environment");
+            }
         }
         lua_pushboolean(L, 1);
         return 1;

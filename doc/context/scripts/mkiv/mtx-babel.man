@@ -1,4 +1,4 @@
-.TH "mtx-babel" "1" "01-01-2022" "version 1.20" "Babel Input To UTF Conversion"
+.TH "mtx-babel" "1" "01-01-2023" "version 1.20" "Babel Input To UTF Conversion"
 .SH NAME
  mtx-babel - Babel Input To UTF Conversion
 .SH SYNOPSIS

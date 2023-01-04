@@ -802,8 +802,8 @@ extern void tex_undump_equivalents_mem  (dumpstream f);
 */
 
 typedef struct save_record {
-    quarterword saved_level;
-    quarterword saved_type;  /*tex We need less so we can actually decide to store the offset as check. */
+    union       { quarterword saved_level;  quarterword saved_extra; };
+    quarterword saved_type; 
     halfword    saved_value; /*tex Started out as padding, is now actually used for value. */
     memoryword  saved_word;
 } save_record;
@@ -814,7 +814,7 @@ typedef struct save_state_info {
     quarterword  current_level;        /*tex current nesting level for groups */
     quarterword  current_group;        /*tex current group type */
     int          current_boundary;     /*tex where the current level begins */
-    int          padding;
+ // int          padding;
 } save_state_info;
 
 extern save_state_info lmt_save_state;
@@ -826,22 +826,20 @@ extern save_state_info lmt_save_state;
 /*tex
 
     We use the notation |saved(k)| to stand for an item that appears in location |save_ptr + k| of
-    the save stack.
-
-    The level field is also available for other purposes, so maybe we need an alias that is more
-    generic.
+    the save stack. The level field is also available for other purposes, so we have |extra| as an 
+    more generic alias.
 
 */
 
 # define save_type(A)   lmt_save_state.save_stack[(A)].saved_type  /*tex classifies a |save_stack| entry */
-# define save_extra(A)  lmt_save_state.save_stack[(A)].saved_level /*tex a more generic alias: to be used */
+# define save_extra(A)  lmt_save_state.save_stack[(A)].saved_extra /*tex a more generic alias */
 # define save_level(A)  lmt_save_state.save_stack[(A)].saved_level /*tex saved level for regions 5 and 6, or group code, or ...  */
 # define save_value(A)  lmt_save_state.save_stack[(A)].saved_value /*tex |eqtb| location or token or |save_stack| location or ... */
 # define save_word(A)   lmt_save_state.save_stack[(A)].saved_word  /*tex |eqtb| entry */
 
 # define saved_valid(A) (lmt_save_state.save_stack_data.ptr + (A) >= 0)
 # define saved_type(A)  lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_type
-# define saved_extra(A) lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_level
+# define saved_extra(A) lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_extra
 # define saved_level(A) lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_level
 # define saved_value(A) lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_value
 # define saved_word(A)  lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_word
@@ -1209,26 +1207,50 @@ typedef enum flag_bit {
 # define remove_conditional_flag(a) ((a) & ~conditional_flag_bit)
 # define remove_value_flag(a)       ((a) & ~value_flag_bit)
 
-# define is_frozen(a)               (((a) & frozen_flag_bit)    == frozen_flag_bit)
-# define is_permanent(a)            (((a) & permanent_flag_bit) == permanent_flag_bit)
-# define is_immutable(a)            (((a) & immutable_flag_bit) == immutable_flag_bit)
-# define is_primitive(a)            (((a) & primitive_flag_bit) == primitive_flag_bit)
-# define is_mutable(a)              (((a) & mutable_flag_bit)   == mutable_flag_bit)
-# define is_noaligned(a)            (((a) & noaligned_flag_bit) == noaligned_flag_bit)
-# define is_instance(a)             (((a) & instance_flag_bit)  == instance_flag_bit)
-# define is_untraced(a)             (((a) & untraced_flag_bit)  == untraced_flag_bit)
+// do we really need the == here 
 
-# define is_global(a)               (((a) & global_flag_bit)        == global_flag_bit)
-# define is_tolerant(a)             (((a) & tolerant_flag_bit)      == tolerant_flag_bit)
-# define is_protected(a)            (((a) & protected_flag_bit)     == protected_flag_bit)
-# define is_semiprotected(a)        (((a) & semiprotected_flag_bit) == semiprotected_flag_bit)
-# define is_overloaded(a)           (((a) & overloaded_flag_bit)    == overloaded_flag_bit)
-# define is_aliased(a)              (((a) & aliased_flag_bit)       == aliased_flag_bit)
-# define is_immediate(a)            (((a) & immediate_flag_bit)     == immediate_flag_bit)
-# define is_conditional(a)          (((a) & conditional_flag_bit)   == conditional_flag_bit)
-# define is_value(a)                (((a) & value_flag_bit)         == value_flag_bit)
-# define is_inherited(a)            (((a) & inherited_flag_bit)     == inherited_flag_bit)
-# define is_constant(a)             (((a) & constant_flag_bit)      == constant_flag_bit)
+// # define is_frozen(a)               (((a) & frozen_flag_bit)    == frozen_flag_bit)
+// # define is_permanent(a)            (((a) & permanent_flag_bit) == permanent_flag_bit)
+// # define is_immutable(a)            (((a) & immutable_flag_bit) == immutable_flag_bit)
+// # define is_primitive(a)            (((a) & primitive_flag_bit) == primitive_flag_bit)
+// # define is_mutable(a)              (((a) & mutable_flag_bit)   == mutable_flag_bit)
+// # define is_noaligned(a)            (((a) & noaligned_flag_bit) == noaligned_flag_bit)
+// # define is_instance(a)             (((a) & instance_flag_bit)  == instance_flag_bit)
+// # define is_untraced(a)             (((a) & untraced_flag_bit)  == untraced_flag_bit)
+// 
+// # define is_global(a)               (((a) & global_flag_bit)        == global_flag_bit)
+// # define is_tolerant(a)             (((a) & tolerant_flag_bit)      == tolerant_flag_bit)
+// # define is_protected(a)            (((a) & protected_flag_bit)     == protected_flag_bit)
+// # define is_semiprotected(a)        (((a) & semiprotected_flag_bit) == semiprotected_flag_bit)
+// # define is_overloaded(a)           (((a) & overloaded_flag_bit)    == overloaded_flag_bit)
+// # define is_aliased(a)              (((a) & aliased_flag_bit)       == aliased_flag_bit)
+// # define is_immediate(a)            (((a) & immediate_flag_bit)     == immediate_flag_bit)
+// # define is_conditional(a)          (((a) & conditional_flag_bit)   == conditional_flag_bit)
+// # define is_value(a)                (((a) & value_flag_bit)         == value_flag_bit)
+// # define is_inherited(a)            (((a) & inherited_flag_bit)     == inherited_flag_bit)
+// # define is_constant(a)             (((a) & constant_flag_bit)      == constant_flag_bit)
+
+# define is_frozen(a)               (((a) & frozen_flag_bit))
+# define is_permanent(a)            (((a) & permanent_flag_bit))
+# define is_immutable(a)            (((a) & immutable_flag_bit))
+# define is_primitive(a)            (((a) & primitive_flag_bit))
+# define is_mutable(a)              (((a) & mutable_flag_bit))
+# define is_noaligned(a)            (((a) & noaligned_flag_bit))
+# define is_instance(a)             (((a) & instance_flag_bit))
+# define is_untraced(a)             (((a) & untraced_flag_bit))
+
+# define is_global(a)               (((a) & global_flag_bit))
+# define is_tolerant(a)             (((a) & tolerant_flag_bit))
+# define is_protected(a)            (((a) & protected_flag_bit))
+# define is_semiprotected(a)        (((a) & semiprotected_flag_bit))
+# define is_overloaded(a)           (((a) & overloaded_flag_bit))
+# define is_aliased(a)              (((a) & aliased_flag_bit))
+# define is_immediate(a)            (((a) & immediate_flag_bit))
+# define is_conditional(a)          (((a) & conditional_flag_bit))
+# define is_value(a)                (((a) & value_flag_bit))
+# define is_inherited(a)            (((a) & inherited_flag_bit))
+# define is_constant(a)             (((a) & constant_flag_bit))
+
 
 # define is_expandable(cmd)         (cmd > max_command_cmd)
 

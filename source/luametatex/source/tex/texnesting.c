@@ -48,47 +48,24 @@
     switch} can select the appropriate thing to do by computing the value |abs(mode) + cur_cmd|,
     where |mode| is the current mode and |cur_cmd| is the current command code.
 
+    Per end December 2022 we no longer use the larg emode numbers that also encode the command at 
+    hand. That code is in the archive. 
+
 */
-
-# if main_control_mode == 0
-
-const char *tex_string_mode(int m)
-{
-    if (m > 0) {
-        switch (m / (max_command_cmd + 1)) {
-            case 0: return "vertical mode";
-            case 1: return "horizontal mode";
-            case 2: return "display math mode";
-        }
-    } else if (m == 0) {
-        return "no mode";
-    } else {
-        switch ((-m) / (max_command_cmd + 1)) {
-            case 0: return "internal vertical mode";
-            case 1: return "restricted horizontal mode";
-            case 2: return "math mode";
-        }
-    }
-    return "unknown mode";
-}
-
-# else
 
 const char *tex_string_mode(int m)
 {
     switch (m) {
-        case  nomode: return "no mode";
-        case  vmode : return "vertical mode";
-        case  hmode : return "horizontal mode";
-        case  mmode : return "display math mode";
-        case -vmode : return "internal vertical mode";
-        case -hmode : return "restricted horizontal mode";
-        case -mmode : return "math mode";
-        default     : return "unknown mode";
+        case nomode          : return "no mode";
+        case vmode           : return "vertical mode";
+        case hmode           : return "horizontal mode";
+        case mmode           : return "display math mode";
+        case internal_vmode  : return "internal vertical mode";
+        case restricted_hmode: return "restricted horizontal mode";
+        case inline_mmode    : return "inline math mode";
+        default              : return "unknown mode";
     }
 }
-
-# endif
 
 /*tex
 
@@ -244,7 +221,7 @@ void tex_initialize_nesting(void)
     cur_list.mode = vmode;
     cur_list.head = contribute_head;
     cur_list.tail = contribute_head;
-    cur_list.delim = null;
+    cur_list.delimiter = null;
     cur_list.prev_graf = 0;
     cur_list.mode_line = 0;
     cur_list.prev_depth = ignore_depth; /*tex |ignore_depth_criterium_par| is not yet available! */
@@ -297,7 +274,7 @@ void tex_push_nest(void)
         cur_list.mode = top->mode;
         cur_list.head = tex_new_temp_node();
         cur_list.tail = cur_list.head;
-        cur_list.delim = null;
+        cur_list.delimiter = null;
         cur_list.prev_graf = 0;
         cur_list.mode_line = lmt_input_state.input_line;
         cur_list.prev_depth = top->prev_depth;
@@ -386,8 +363,9 @@ void tex_show_activities(void)
         tex_show_box(node_next(n.head));
         tex_print_format("%l[end list]");
         /*tex Show the auxiliary field, |a|. */
-        switch (abs(n.mode) / (max_command_cmd + 1)) {
-            case 0:
+        switch (n.mode) {
+            case vmode:
+            case internal_vmode:
                 {
                     if (n.prev_depth <= ignore_depth_criterium_par) {
                         tex_print_format("%l[prevdepth ignored");
@@ -400,11 +378,8 @@ void tex_show_activities(void)
                     tex_print_char(']');
                     break;
                 }
-            case 1:
-                {
-                    break;
-                }
-            case 2:
+            case mmode:
+            case inline_mmode:
                 {
                     if (n.incomplete_noad) {
                         tex_print_format("%l[this will be denominator of:]");
@@ -421,7 +396,7 @@ void tex_show_activities(void)
 int tex_vmode_nest_index(void)
 {
     int p = lmt_nest_state.nest_data.ptr; /* index into |nest| */
-    while (abs(lmt_nest_state.nest[p].mode) != vmode) {
+    while (! is_v_mode(lmt_nest_state.nest[p].mode)) {
         --p;
     }
     return p;

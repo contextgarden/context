@@ -1951,7 +1951,7 @@ the point and rotates afterwards. Because each consecutive point on the path is
 rotated an additional 90 degrees, we use the \METAPOST\ macro \type {hide} to
 isolate the assignment. The \type {hide} command executes the hidden command and
 afterwards continues as if it were never there. You must not confuse this with
-grouping, since the hidden commands are visible to its surroundings.
+grouping, since the hidden commands are visible to their surroundings.
 
 \startbuffer[c]
 def qq = q hide(q := q rotated 90) enddef ;

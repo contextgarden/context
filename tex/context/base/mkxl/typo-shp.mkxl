@@ -190,7 +190,7 @@
      \dontcomplain
      \setuptolerance[\v!verytolerant,\v!stretch]% default
    % \setuplayout[\c!grid=\v!yes]% goes wrong, we need a local one
-     \pushparagraphtweak {shift}}
+     \pushparagraphtweak{shift}}
 
 \permanent\protected\def\stopshapetext
   {\popparagraphtweak
@@ -223,7 +223,7 @@
 %    \fi
 %    \egroup}
 
-\pushoverloadmode\permanent\protected\def\getshapetext
+\permanent\protected\def\getshapetext
   {\vbox\bgroup
    \forgetall
    \dontcomplain
@@ -250,6 +250,5 @@
       % what now
    \fi
    \egroup}
-
 
 \protect

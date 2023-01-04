@@ -67,10 +67,10 @@ input_file_state_info input_file_state = {
     are unlikely to overrun.
 */
 
-# define reserved_input_stack_slots  2
-# define reserved_in_stack_slots     2
-//define reserved_param_stack_slots 32                    
-# define reserved_param_stack_slots (2 * max_match_count) 
+# define reserved_input_stack_slots      2
+# define reserved_in_stack_slots         2
+//define reserved_parameter_stack_slots 32                    
+# define reserved_parameter_stack_slots (2 * max_match_count) 
 
 void tex_initialize_input_state(void)
 {
@@ -94,7 +94,7 @@ void tex_initialize_input_state(void)
     }
     {
         int size = lmt_input_state.parameter_stack_data.minimum;
-        lmt_input_state.parameter_stack = aux_allocate_clear_array(sizeof(halfword), size, reserved_param_stack_slots);
+        lmt_input_state.parameter_stack = aux_allocate_clear_array(sizeof(halfword), size, reserved_parameter_stack_slots);
         if (lmt_input_state.parameter_stack) {
             lmt_input_state.parameter_stack_data.allocated = size;
         } else {
@@ -155,7 +155,7 @@ static int tex_aux_room_on_in_stack(void) /* quite similar to save_stack checker
     return 1;
 }
 
-static int tex_aux_room_on_param_stack(void) /* quite similar to save_stack checker so maybe share */
+static int tex_aux_room_on_parameter_stack(void) /* quite similar to save_stack checker so maybe share */
 {
     int top = lmt_input_state.parameter_stack_data.ptr;
     if (top > lmt_input_state.parameter_stack_data.top) {
@@ -168,7 +168,7 @@ static int tex_aux_room_on_param_stack(void) /* quite similar to save_stack chec
             }
             if (top > lmt_input_state.parameter_stack_data.allocated) {
                 lmt_input_state.parameter_stack_data.allocated = top;
-                tmp = aux_reallocate_array(lmt_input_state.parameter_stack, sizeof(halfword), top, reserved_param_stack_slots);
+                tmp = aux_reallocate_array(lmt_input_state.parameter_stack, sizeof(halfword), top, reserved_parameter_stack_slots);
                 lmt_input_state.parameter_stack = tmp;
             }
             lmt_run_memory_callback("parameter", tmp ? 1 : 0);
@@ -181,9 +181,9 @@ static int tex_aux_room_on_param_stack(void) /* quite similar to save_stack chec
     return 1;
 }
 
-void tex_copy_pstack_to_param_stack(halfword *pstack, int n)
+void tex_copy_to_parameter_stack(halfword *pstack, int n)
 {
-    if (tex_aux_room_on_param_stack()) {
+    if (tex_aux_room_on_parameter_stack()) {
         memcpy(&lmt_input_state.parameter_stack[lmt_input_state.parameter_stack_data.ptr], pstack, n * sizeof(halfword));
         lmt_input_state.parameter_stack_data.ptr += n;
     }
@@ -232,7 +232,7 @@ void tex_show_validity(void)
     }
     if (p) {
         tex_print_ln();
-        tex_token_show(p, default_token_show_max > lmt_error_state.line_limits.size - 10 ? lmt_error_state.line_limits.size - 10 : default_token_show_max);
+        tex_token_show(p);
         tex_print_ln();
     }
 }
@@ -266,12 +266,12 @@ void tex_show_runaway(void)
 
 /*tex
 
-    The |param_stack| is an auxiliary array used to hold pointers to the token lists for parameters
+    The |parameter_stack| is an auxiliary array used to hold pointers to the token lists for parameters
     at the current level and subsidiary levels of input. This stack is maintained with convention
     (2), and it grows at a different rate from the others.
 
-    So, the token list pointers for parameters is |param_stack|, the first unused entry in
-    |param_stack| is |param_ptr| which is in the range |0 .. param_size + 9|.
+    So, the token list pointers for parameters is |parameter_stack|, the first unused entry in
+    |parameter_stack| is |parameter_ptr| which is in the range |0 .. parameter_size + 9|.
 
     The input routines must also interact with the processing of |\halign| and |\valign|, since the
     appearance of tab marks and |\cr| in certain places is supposed to trigger the beginning of
@@ -543,7 +543,7 @@ void tex_show_context(void)
                     lmt_print_state.trick_count = 1000000;
                     if (lmt_input_state.cur_input.state == token_list_state) {
                         halfword head = lmt_input_state.cur_input.token_type < macro_text ? lmt_input_state.cur_input.start : token_link(lmt_input_state.cur_input.start);
-                        tex_show_token_list(head, lmt_input_state.cur_input.loc, default_token_show_max, 0);
+                        tex_show_token_list_context(head, lmt_input_state.cur_input.loc);
                     } else if (lmt_input_state.cur_input.name == io_lua_input_code) {
                         skip = 1;
                     } else {
@@ -708,7 +708,7 @@ void tex_begin_token_list(halfword t, quarterword kind)
                     break;
             }
             tex_print_str("->");
-            tex_token_show(t, default_token_show_max);
+            tex_token_show(t);
             tex_end_diagnostic();
         }
     }
@@ -1092,7 +1092,7 @@ void tex_tex_string_start(int iotype, int cattable)
         halfword head = tex_scan_general_text(NULL);
         int saved_selector = lmt_print_state.selector;
         lmt_print_state.selector = new_string_selector_code;
-        tex_show_token_list(head, null, extreme_token_show_max, 0);
+        tex_show_token_list(head, 0);
         lmt_print_state.selector = saved_selector;
         tex_flush_token_list(head);
     }

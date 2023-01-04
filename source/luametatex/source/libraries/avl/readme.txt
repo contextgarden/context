@@ -17,4 +17,7 @@ information mentioned above. The files had some (experimental) code as well as o
 values. As I don't expect updates (the code has been okay for quite a while) I made the tests mandate 
 and removed the experimental code. 
 
+We can strip this library and save some 10K on the binary because we don't need that much of it. That 
+might happen at some point. 
+
 Hans Hagen 

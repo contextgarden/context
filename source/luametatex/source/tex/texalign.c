@@ -199,10 +199,11 @@
     limit that (and redundant boxes and glue are the only things we can do here). It actually
     also saves a bit of runtime. This feature has not been tested yet with |\span| and |\omit|.
 
-*/
+    The |\noalign| command accepts a couple of keywords that specify options to be applied to the 
+    next row. These options are similar to the ones for boxes. 
 
-/*
-    Todo: lefttabskip righttabskip middletabskip
+    Maybe: lefttabskip righttabskip middletabskip
+
 */
 
 typedef struct alignment_row_state { 
@@ -239,8 +240,8 @@ typedef struct alignment_state_info {
     halfword cell_source;           
     halfword wrap_source;           /*tex There's also a field in the row_state. */
     halfword callback;
- // halfword reverse;       // todo 
- // halfword discard_skips; // todo 
+ /* halfword reverse;            */ /* maybe */
+ /* halfword discard_skips;      */ /* maybe */
     halfword row_state_set;
     halfword padding;
     alignment_row_state row_state; 
@@ -267,8 +268,8 @@ static alignment_state_info lmt_alignment_state = {
     .cell_source           = 0,
     .wrap_source           = 0,
     .callback              = 0,
- // .reverse               = 0, 
- // .discard_skips         = 0,
+ /* .reverse               = 0, */
+ /* .discard_skips         = 0, */
     .row_state_set         = 0, 
     .padding               = 0,
     .row_state = { 
@@ -305,9 +306,9 @@ static void tex_aux_wipe_row_state(void)
 typedef enum saved_align_items {
     saved_align_specification,
     saved_align_reverse,
-    saved_align_discard,
-    saved_align_noskips, /*tex Saving is not needed but it doesn't hurt either */
-    saved_align_callback,
+    saved_align_discard, 
+    saved_align_noskips,  /*tex currently fetched from the state (not used anyway) */
+    saved_align_callback, /*tex currently fetched from the state */
     saved_align_n_of_items,
 } saved_align_items;
 
@@ -338,7 +339,7 @@ inline static void tex_aux_change_list_type(halfword n, quarterword type)
     box_d_offset(n) = 0;    /* box_span_count                              */
     box_x_offset(n) = 0;    /*                     align_record_u_part     */
     box_y_offset(n) = 0;    /*                     align_record_v_part     */
- // box_geometry(n) = 0;    /* box_size                                    */
+ /* box_geometry(n) = 0; */ /* box_size                                    */
     box_orientation(n) = 0; /* box_size                                    */
 }
 
@@ -351,6 +352,10 @@ inline static void tex_aux_change_list_type(halfword n, quarterword type)
     then we need to decide if we tag rows or cells or both or come up with |cellattr| and |rowattr|
     and such. But then it even makes sense to have explicit commands (in addition to the seperator)
     to tags individual cells. It's too much hassle for now and the advantages are not that large.
+
+    This code has a history so changing it now is tricky. For instance we could the top of the align 
+    stack instead of the copied values. On the other hand, working with copies makes that we can 
+    mess with these. And the gain would be little anywya, if at all. 
 
 */
 
@@ -623,10 +628,10 @@ static void tex_aux_scan_align_spec(quarterword c)
     add_attribute_reference(attrlist);
     tex_set_saved_record(saved_align_specification, box_spec_save_type, mode, amount);
     /* We save them but could put them in the state as we do for some anyway. */
-    tex_set_saved_record(saved_align_reverse, box_reverse_save_type, reverse, 0);
-    tex_set_saved_record(saved_align_discard, box_discard_save_type, noskips ? 0 : discard, 0);
-    tex_set_saved_record(saved_align_noskips, box_noskips_save_type, noskips, 0);
-    tex_set_saved_record(saved_align_callback, box_callback_save_type, callback, 0);
+    tex_set_saved_record(saved_align_reverse, box_reverse_save_type, 0, reverse);
+    tex_set_saved_record(saved_align_discard, box_discard_save_type, 0, noskips ? 0 : discard);
+    tex_set_saved_record(saved_align_noskips, box_noskips_save_type, 0, noskips);
+    tex_set_saved_record(saved_align_callback, box_callback_save_type, 0, callback);
     lmt_save_state.save_stack_data.ptr += saved_align_n_of_items;
     tex_new_save_level(c);
     if (! brace) {
@@ -810,7 +815,7 @@ static void tex_aux_run_no_align(void)
     tex_new_save_level(no_align_group);
     ++lmt_alignment_state.no_align_level;
     tex_aux_trace_no_align("entering");
-    if (cur_list.mode == -vmode) {
+    if (cur_list.mode == internal_vmode) {
         tex_normal_paragraph(no_align_par_context);
     }
 }
@@ -823,7 +828,7 @@ static int tex_aux_nested_no_align(void)
         tex_new_save_level(no_align_group);
         ++lmt_alignment_state.no_align_level;
         tex_aux_trace_no_align("entering");
-        if (cur_list.mode == -vmode) {
+        if (cur_list.mode == internal_vmode) {
             tex_normal_paragraph(no_align_par_context);
         }
     }
@@ -925,7 +930,7 @@ void tex_run_alignment_initialize(void)
         value that produces the correct baseline calculations.
     */
     if (cur_list.mode == mmode) {
-        cur_list.mode = -vmode;
+        cur_list.mode = internal_vmode;
         cur_list.prev_depth = lmt_nest_state.nest[lmt_nest_state.nest_data.ptr - 2].prev_depth;
     } else if (cur_list.mode > 0) {
         cur_list.mode = -cur_list.mode;
@@ -1060,7 +1065,7 @@ void tex_finish_alignment_group(void)
 static void tex_aux_initialize_span(halfword p)
 {
     tex_push_nest();
-    if (cur_list.mode == -hmode) {
+    if (cur_list.mode == restricted_hmode) {
         cur_list.space_factor = 1000;
     } else {
         cur_list.prev_depth = ignore_depth_criterium_par;
@@ -1082,7 +1087,7 @@ static void tex_aux_initialize_row(void)
 {
     tex_push_nest();
     cur_list.mode = (- hmode - vmode) - cur_list.mode; /* weird code : - 3 - cur_list.mode : so a buogus line */
-    if (cur_list.mode == -hmode) {                     
+    if (cur_list.mode == restricted_hmode) {                     
         cur_list.space_factor = 0;
     } else {
         cur_list.prev_depth = 0;
@@ -1302,7 +1307,7 @@ static int tex_aux_finish_column(void)
                     size = box_size(lmt_alignment_state.cur_align);
                     packing = packing_exactly;
                 }
-                if (cur_list.mode == -hmode) {
+                if (cur_list.mode == restricted_hmode) {
                     lmt_packaging_state.post_adjust_tail = lmt_alignment_state.cur_post_adjust_tail;
                     lmt_packaging_state.pre_adjust_tail = lmt_alignment_state.cur_pre_adjust_tail;
                     lmt_packaging_state.post_migrate_tail = lmt_alignment_state.cur_post_migrate_tail;
@@ -1396,7 +1401,7 @@ static int tex_aux_finish_column(void)
 static void tex_aux_finish_row(void)
 {
     halfword row;
-    if (cur_list.mode == -hmode) {
+    if (cur_list.mode == restricted_hmode) {
         row = tex_filtered_hpack(cur_list.head, cur_list.tail, 0, packing_additional, finish_row_group, direction_unknown, 0, null, 0, 0);
         tex_pop_nest();
         if (lmt_alignment_state.cur_pre_adjust_head != lmt_alignment_state.cur_pre_adjust_tail) {
@@ -1566,6 +1571,11 @@ static void tex_aux_strip_zero_tab_skips(halfword q)
     }
 }
 
+/*tex 
+    We currently have a mix of states but maybe some day we will exposer the save stack and then it
+    is handy to have the state values there. So for now I keep this (as reminder). 
+*/
+
 static void tex_aux_finish_align(void)
 {
     /*tex a shared register for the list operations (others are localized) */
@@ -1574,7 +1584,7 @@ static void tex_aux_finish_align(void)
     scaled offset = 0;
     /*tex something new */
     halfword reverse = 0;
-    halfword callback = lmt_alignment_state.callback;
+    halfword callback = lmt_alignment_state.callback; /* see below for variant */
     halfword discard = normalize_line_mode_permitted(normalize_line_mode_par, discard_zero_tab_skips_mode);
     /*tex The |align_group| was for individual entries: */
     if (cur_group != align_group) {
@@ -1591,8 +1601,9 @@ static void tex_aux_finish_align(void)
     }
     lmt_save_state.save_stack_data.ptr -= saved_align_n_of_items;
     lmt_packaging_state.pack_begin_line = -cur_list.mode_line;
-    reverse = saved_level(saved_align_reverse);            /* we can as well save these in the state */
-    discard = discard || saved_level(saved_align_discard); /* we can as well save these in the state */
+    reverse = saved_value(saved_align_reverse);            /* we can as well save these in the state */
+    discard = discard || saved_value(saved_align_discard); /* we can as well save these in the state */
+ /* callback = saved_value(saved_align_callback); */       /* already fetched from the state */
     /*tex
         All content is available now so this is a perfect spot for some processing. However, we
         cannot mess with the unset boxes (as these can have special properties). The main reason
@@ -1712,7 +1723,7 @@ static void tex_aux_finish_align(void)
         alignment is overfull or underfull.
 
     */
-    if (cur_list.mode == -vmode) {
+    if (cur_list.mode == internal_vmode) {
         halfword rule_save = overfull_rule_par;
         /*tex Prevent the rule from being packaged. */
         overfull_rule_par = 0; 
@@ -1757,7 +1768,7 @@ static void tex_aux_finish_align(void)
                         */
                         halfword preptr;
                         halfword colptr;
-                        if (cur_list.mode == -vmode) {
+                        if (cur_list.mode == internal_vmode) {
                          /* tex_aux_change_list_type(rowptr, hlist_node); */ /* too much */
                             node_type(rowptr) = hlist_node;
                             box_width(rowptr) = box_width(preroll);
@@ -1829,11 +1840,11 @@ static void tex_aux_finish_align(void)
                                 }
                                 preptr = node_next(preptr);
                                 {
-                                    halfword box = tex_new_null_box_node(cur_list.mode == -vmode ? hlist_node : vlist_node, align_cell_list);
+                                    halfword box = tex_new_null_box_node(cur_list.mode == internal_vmode ? hlist_node : vlist_node, align_cell_list);
                                     tex_couple_nodes(tail, box);
                                     tex_attach_attribute_list_attribute(box, lmt_alignment_state.attr_list);
                                     total += box_width(preptr);
-                                    if (cur_list.mode == -vmode) {
+                                    if (cur_list.mode == internal_vmode) {
                                         box_width(box) = box_width(preptr);
                                     } else {
                                         box_height(box) = box_width(preptr);
@@ -1841,7 +1852,7 @@ static void tex_aux_finish_align(void)
                                     tail = box;
                                 }
                             }
-                            if (cur_list.mode == -vmode) {
+                            if (cur_list.mode == internal_vmode) {
                                 /*tex
                                     Make the unset node |r| into an |hlist_node| of width |w|,
                                     setting the glue as if the width were |t|.

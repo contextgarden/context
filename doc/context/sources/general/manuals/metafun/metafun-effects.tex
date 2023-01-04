@@ -232,9 +232,12 @@ path p ; p := fullcircle scaled u shifted (u/4,0);
 % fill p rotated 210 withcolor transparent("\MPvar{a}",.5,xgreen) ;
 % fill p rotated 330 withcolor transparent("\MPvar{a}",.5,xblue) ;
 
-fill p rotated  90 withcolor (0,0,1,0) withtransparency("\MPvar{a}",.5) ;
-fill p rotated 210 withcolor (0,1,0)   withtransparency("\MPvar{a}",.5) ;
-fill p rotated 330 withcolor (0,0,1)   withtransparency("\MPvar{a}",.5) ;
+% fill p rotated  90 withcolor (0,0,1,0) withtransparency("\MPvar{a}",.5) ;
+% fill p rotated 210 withcolor (0,1,0)   withtransparency("\MPvar{a}",.5) ;
+% fill p rotated 330 withcolor (0,0,1)   withtransparency("\MPvar{a}",.5) ;
+fill p rotated  90 withcolor (0,0,1,0) withtransparency(\MPvar{b},.5) ;
+fill p rotated 210 withcolor (0,1,0)   withtransparency(\MPvar{b},.5) ;
+fill p rotated 330 withcolor (0,0,1)   withtransparency(\MPvar{b},.5) ;
 \stopuseMPgraphic
 
 \startplacefigure[location=here,reference=fig:transparencies,title={The 12 transparency alternatives by name.}]
@@ -244,23 +247,22 @@ fill p rotated 330 withcolor (0,0,1)   withtransparency("\MPvar{a}",.5) ;
         \setupcombination[nx=4,ny=4]
     }
     \startcombination
-      {\useMPgraphic{test}{a=normal}}     {\tttf normal}
-    % {\useMPgraphic{test}{a=multiply}}   {\tttf multiply} % here the mu in multiply triggers lookahead in lmtx
-      {\useMPgraphic{test}{a=2}}          {\tttf multiply} % so we go for the numeric value instead (for now)
-      {\useMPgraphic{test}{a=screen}}     {\tttf screen}
-      {\useMPgraphic{test}{a=overlay}}    {\tttf overlay}
-      {\useMPgraphic{test}{a=softlight}}  {\tttf softlight}
-      {\useMPgraphic{test}{a=hardlight}}  {\tttf hardlight}
-      {\useMPgraphic{test}{a=colordodge}} {\tttf colordodge}
-      {\useMPgraphic{test}{a=colorburn}}  {\tttf colorburn}
-      {\useMPgraphic{test}{a=darken}}     {\tttf darken}
-      {\useMPgraphic{test}{a=lighten}}    {\tttf lighten}
-      {\useMPgraphic{test}{a=difference}} {\tttf difference}
-      {\useMPgraphic{test}{a=exclusion}}  {\tttf exclusion}
-      {\useMPgraphic{test}{a=hue}}        {\tttf hue}
-      {\useMPgraphic{test}{a=saturation}} {\tttf saturation}
-      {\useMPgraphic{test}{a=color}}      {\tttf color}
-      {\useMPgraphic{test}{a=luminosity}} {\tttf luminosity}
+      {\useMPgraphic{test}{b=1,a=normal}}      {\tttf normal}
+      {\useMPgraphic{test}{b=2,a=multiply}}    {\tttf multiply} % here the mu in multiply triggers lookahead in lmtx
+      {\useMPgraphic{test}{b=3,a=screen}}      {\tttf screen}
+      {\useMPgraphic{test}{b=4,a=overlay}}     {\tttf overlay}
+      {\useMPgraphic{test}{b=5,a=softlight}}   {\tttf softlight}
+      {\useMPgraphic{test}{b=6,a=hardlight}}   {\tttf hardlight}
+      {\useMPgraphic{test}{b=7,a=colordodge}}  {\tttf colordodge}
+      {\useMPgraphic{test}{b=8,a=colorburn}}   {\tttf colorburn}
+      {\useMPgraphic{test}{b=9,a=darken}}      {\tttf darken}
+      {\useMPgraphic{test}{b=10,a=lighten}}    {\tttf lighten}
+      {\useMPgraphic{test}{b=11,a=difference}} {\tttf difference}
+      {\useMPgraphic{test}{b=12,a=exclusion}}  {\tttf exclusion}
+      {\useMPgraphic{test}{b=13,a=hue}}        {\tttf hue}
+      {\useMPgraphic{test}{b=14,a=saturation}} {\tttf saturation}
+      {\useMPgraphic{test}{b=15,a=color}}      {\tttf color}
+      {\useMPgraphic{test}{b=16,a=luminosity}} {\tttf luminosity}
     \stopcombination
 \stopplacefigure
 
@@ -2024,6 +2026,7 @@ suffix determines the number of arguments and rendering. The \type {r} suffix
 reverses the order: the fill comes over the draw. There is a \type {p} suffix
 that returns just the picture.
 
+
 The next example demonstrates that you can combine \TEX's powerful line breaking
 algorithm with \METAPOST's graphic capabilities.
 
@@ -2114,7 +2117,7 @@ width is half the size specified.
 
 \startbuffer
 draw outlinetext.b
-  ("\mathematics{\left({{\sqrt{1+x}}\over{\sqrt{2+x^2}}}\right)}")
+  ("\mathematics{\left(\frac{\sqrt{1+x}}{\sqrt{2+x^2}}\right)}")
   (withcolor .850white)
   (withcolor .625red
    dashed evenly scaled .1
@@ -2228,7 +2231,7 @@ and one with Dejavu (the Tufte quote).
     \startcombination[1*4]
         \bgroup
             \def|#1|{-}%
-            \definedfont[texgyrepagella-regular.otf*none]%
+            \definedfont[file:texgyrepagella-regular.otf*none]%
             \startMPcode
                 draw outlinetext.b
                     ("\framed[align=normal,width=max]{\input{zapf}}")
@@ -2238,7 +2241,7 @@ and one with Dejavu (the Tufte quote).
         \egroup {pagella / no features}
         \bgroup
             \def|#1|{-}%
-            \definedfont[texgyrepagella-regular.otf*default]%
+            \definedfont[file:texgyrepagella-regular.otf*default]%
             \startMPcode
                 draw outlinetext.b
                     ("\framed[align=normal,width=max]{\input{zapf}}")
@@ -2248,7 +2251,7 @@ and one with Dejavu (the Tufte quote).
         \egroup {pagella / default features}
         \bgroup
             \def|#1|{-}%
-            \definedfont[dejavuserif.ttf*none]%
+            \definedfont[file:dejavuserif.ttf*none]%
             \startMPcode
                 draw outlinetext.b
                     ("\framed[align=normal,width=max]{\input{tufte}}")
@@ -2258,7 +2261,7 @@ and one with Dejavu (the Tufte quote).
         \egroup {dejavu serif / no features}
         \bgroup
             \def|#1|{-}%
-            \definedfont[dejavuserif.ttf*default]%
+            \definedfont[file:dejavuserif.ttf*default]%
             \startMPcode
                 draw outlinetext.b
                     ("\framed[align=normal,width=max]{\input{tufte}}")
@@ -2309,7 +2312,7 @@ We start by defining the font:
    script=hang,
    language=kor]
 
-\definefont[KoreanFont][hanbatanglvt*korean-base]
+\definefont[KoreanFont][file:hanbatanglvt*korean-base]
 \stopbuffer
 
 \typebuffer \getbuffer
@@ -2318,52 +2321,52 @@ Next we define a macro that will draw the outline:
 
 \startbuffer
 \startMPdefinitions
-  string KoreanColors[] ;
+string KoreanColors[] ;
 
-  KoreanColors[1] := "darkred" ;
-  KoreanColors[2] := "darkgreen" ;
-  KoreanColors[3] := "darkblue" ;
-  KoreanColors[4] := "darkyellow" ;
-  KoreanColors[5] := "darkgray" ;
+KoreanColors[1] := "darkred" ;
+KoreanColors[2] := "darkgreen" ;
+KoreanColors[3] := "darkblue" ;
+KoreanColors[4] := "darkyellow" ;
+KoreanColors[5] := "darkgray" ;
 
-  newinternal KoreanSplit ; KoreanSplit := -1 ;
-  newinternal KoreanCode  ; KoreanCode  := -2 ;
-  newinternal KoreanMode  ; KoreanMode  := KoreanSplit ;
+newinternal KoreanSplit ; KoreanSplit := -1 ;
+newinternal KoreanCode  ; KoreanCode  := -2 ;
+newinternal KoreanMode  ; KoreanMode  := KoreanSplit ;
 
-  def KoreanOutline(expr txt) =
-    picture p ; p := outlinetext.p(txt) ;
-    numeric n ; n := 0 ;
-    string old, new ; old := "" ;
-    for i within p :
-      if KoreanMode == KoreanSplit :
-        n := n + 1 ;
-      elseif KoreanMode == KoreanCode :
-        new := prescriptpart i ;
-        if new <> old :
-            old := new ;
-            n := n + 1 ;
-        fi ;
-      else :
-        n := KoreanMode ;
+def KoreanOutline(expr txt) =
+  picture p ; p := outlinetext.p(txt) ;
+  numeric n ; n := 0 ;
+  string old, new ; old := "" ;
+  for i within p :
+    if KoreanMode == KoreanSplit :
+      n := n + 1 ;
+    elseif KoreanMode == KoreanCode :
+      new := prescriptpart i ;
+      if new <> old :
+          old := new ;
+          n := n + 1 ;
       fi ;
-      if unknown KoreanColors[n] :
-        n := 1 ;
-      fi ;
-      draw pathpart i
-        withpen pencircle scaled 1/10
-        withcolor KoreanColors[n] ;
-    endfor ;
-  enddef ;
+    else :
+      n := KoreanMode ;
+    fi ;
+    if unknown KoreanColors[n] :
+      n := 1 ;
+    fi ;
+    draw pathpart i
+      withpen pencircle scaled 1/10
+      withcolor KoreanColors[n] ;
+  endfor ;
+enddef ;
 
-  def KoreanTest(expr txt) =
-    image (
-        KoreanMode  := KoreanSplit ; KoreanOutline(txt) ;
-        currentpicture := currentpicture shifted (- xpart urcorner currentpicture, 0);
-        KoreanMode  := KoreanCode ; KoreanOutline(txt) ;
-        currentpicture := currentpicture shifted (- xpart urcorner currentpicture, 0);
-        KoreanMode  := 3 ; KoreanOutline(txt) ;
-    )
-  enddef ;
+def KoreanTest(expr txt) =
+  image (
+    KoreanMode  := KoreanSplit ; KoreanOutline(txt) ;
+    currentpicture := currentpicture shifted (- xpart urcorner currentpicture, 0);
+    KoreanMode  := KoreanCode ; KoreanOutline(txt) ;
+    currentpicture := currentpicture shifted (- xpart urcorner currentpicture, 0);
+    KoreanMode  := 3 ; KoreanOutline(txt) ;
+  )
+enddef ;
 \stopMPdefinitions
 \stopbuffer
 

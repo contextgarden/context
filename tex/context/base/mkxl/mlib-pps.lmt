@@ -1362,16 +1362,24 @@ end
 local function ps_process(object,prescript,before,after)
     local ps_label = prescript.ps_label
     if ps_label then
-        local op     = object.path
-        local first  = op[1]
-        local third  = op[3]
-        local x      = first.x_coord
-        local y      = first.y_coord
-        local w      = third.x_coord - x
-        local h      = third.y_coord - y
-        local properties = metapost.properties
-        x = x - properties.llx
-        y = properties.ury - y
+        local op    = object.path
+        local first = op[1]
+        local third = op[3]
+        local x, y, w, h
+        if first and third then
+            local properties = metapost.properties
+            x = first.x_coord
+            y = first.y_coord
+            w = third.x_coord - x
+            h = third.y_coord - y
+            x = x - properties.llx
+            y = properties.ury - y
+        else
+            x = 0
+            y = 0
+            w = 0
+            h = 0
+        end
         before[#before+1] = function()
             context.MPLIBpositionwhd(ps_label,x,y,w,h)
         end

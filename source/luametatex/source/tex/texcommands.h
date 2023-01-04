@@ -336,27 +336,31 @@ typedef enum tex_command_code {
 # define is_nodebased_cmd(cmd)      (cmd >= gluespec_cmd && cmd <= fontspec_cmd)
 # define is_constant_cmd(cmd)       (cmd >= integer_cmd && cmd <= gluespec_cmd)
 
-# if (main_control_mode == 1)
-
-/*tex Once these were different numbers, no series: */
+/*tex Once these were different numbers, no series (see archive): */
 
 typedef enum tex_modes {
-    nomode,
-    vmode,
-    hmode,
-    mmode,
+    nomode           =  0,
+    vmode            =  1,
+    hmode            =  2,
+    mmode            =  3,
+    internal_vmode   = -1,
+    restricted_hmode = -2,
+    inline_mmode     = -3,
 } tex_modes;
 
-# else
+inline int is_v_mode(halfword mode) { return mode == vmode || mode == internal_vmode; }
+inline int is_h_mode(halfword mode) { return mode == hmode || mode == restricted_hmode; }
+inline int is_m_mode(halfword mode) { return mode == mmode || mode == inline_mmode; }
 
-typedef enum tex_modes {
-    nomode = 0,
-    vmode  = 1,                           /*tex vertical mode */
-    hmode  = 1 +    max_command_cmd + 1,  /*tex horizontal mode */
-    mmode  = 1 + 2*(max_command_cmd + 1), /*tex math mode */
-} tex_modes;
-
-# endif
+inline int tex_normalized_mode(halfword mode) 
+{
+    switch (mode) { 
+        case internal_vmode  : return vmode;
+        case restricted_hmode: return hmode;
+        case inline_mmode    : return mmode;
+        default              : return mode; 
+    }
+}
 
 typedef enum arithmic_codes {
     advance_code,

@@ -1,4 +1,4 @@
-.TH "mtx-vscode" "1" "01-01-2022" "version 1.00" "vscode extension generator"
+.TH "mtx-vscode" "1" "01-01-2023" "version 1.00" "vscode extension generator"
 .SH NAME
  mtx-vscode - vscode extension generator
 .SH SYNOPSIS

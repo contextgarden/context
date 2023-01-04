@@ -679,8 +679,12 @@
 %D We abuse the settings to pick up some float parameters too which makes it
 %D messy.
 
+%D Do we need a \setuplayout here (kind of costly) in case we mix multi page text
+%D with a side float and less height.
+
 \permanent\tolerant\protected\def\startplacefloat[#tag]#spacer[#settings]#spacer[#userdata]%
   {\flushnotes
+  %\setuplayout
    \page_otr_command_flush_side_floats % here !
    \strc_floats_begin_group
    \strc_floats_set_current_tag{#tag}%

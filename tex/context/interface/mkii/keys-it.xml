@@ -594,6 +594,7 @@
 		<cd:variable name='temporary' value='temporaneo'/>
 		<cd:variable name='test' value='test'/>
 		<cd:variable name='text' value='testo'/>
+		<cd:variable name='textdisplay' value='textdisplay'/>
 		<cd:variable name='textnote' value='textnote'/>
 		<cd:variable name='three' value='tre'/>
 		<cd:variable name='thursday' value='giovedi'/>

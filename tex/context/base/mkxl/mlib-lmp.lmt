@@ -216,14 +216,19 @@ do
         end
     end)
 
-    --
+    -- older:
 
-    local mpprint  = mp.print
-    local mpquoted = mp.quoted
-    local getmacro = tokens.getters.macro
+    registerscript("texvar", function()
+        if not expandtex(unknown_value,"mpcategoryparameter",true,scanstring()) then
+            injectnumeric(0)
+        end
+    end)
 
-    registerscript("texvar", function() mpprint (getmacro(metapost.namespace .. scanstring())) end)
-    registerscript("texstr", function() mpquoted(getmacro(metapost.namespace .. scanstring())) end)
+    registerscript("texstr", function()
+        if not expandtex(string_value,"mpcategoryparameter",true,scanstring()) then
+            injectstring("")
+        end
+    end)
 
 end
 

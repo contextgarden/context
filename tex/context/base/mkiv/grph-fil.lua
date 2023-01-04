@@ -49,12 +49,12 @@ job.register('job.files.collected', tobesaved, initializer)
 local contextrunner = sandbox.registerrunner {
     name     = "hashed context run",
     program  = "context",
-    template = [[%options% %?path: --runpath=%path% ?% %filename%]],
+    template = [[%options% %?path: --path=%path% ?% %?runpath: --runpath=%runpath% ?% %filename%]],
     checkers = {
         options  = "string",
         filename = "readable",
         path     = "string",
-     -- runpath  = "string",
+        runpath  = "string",
     }
 }
 
@@ -73,12 +73,17 @@ function jobfiles.run(action)
     if filename and filename ~= "" then
         local result      = action.result
         local runner      = action.runner or contextrunner
+        local path        = action.path
+if not isfile(filename) and path and path ~= "" then
+    filename = file.join(path,filename)
+end
         local oldchecksum = collected[filename]
         local newchecksum = checksum(filename)
+-- print(filename,oldchecksum,newchecksum)
         local tobedone    = false
         local forcerun    = action.forcerun or jobfiles.forcerun
         if not result then
-            result = replacesuffix(usedname,resultsuffix)
+            result = replacesuffix(filename,resultsuffix)
             action.result = result
         end
         if forcerun then
@@ -144,20 +149,27 @@ local function analyzed(name,options)
     local usedname   = addsuffix(name,inputsuffix)      -- we assume tex if not set
     local resultname = replacesuffix(name,resultsuffix) -- we assume tex if not set
     local pathname   = file.pathpart(usedname)
-    local runpath    = environment.arguments.path -- sic, no runpath
-    if pathname ~= "" then
-        if runpath then
-            runpath = file.join(runpath,pathname)
+    local path       = environment.arguments.path -- sic, no runpath
+    local runpath    = environment.arguments.runpath
+    local resultname = replacesuffix(name,resultsuffix) -- we assume tex if not set
+    if runpath and runpath ~= "" then
+        -- not really needed but probably more robust for local leftovers
+        resultname = file.join(runpath,file.basename(resultname))
+    end
+    if path ~= "" then
+        if path then
+            path = file.join(path,pathname)
         else
-            runpath = pathname
+            path = pathname
         end
         usedname = file.basename(usedname)
     end
     return {
         options  = options,
-        path     = runpath, -- or nil
+        path     = path,
         filename = usedname,
         result   = resultname,
+        runpath  = runpath,
     }
 end
 

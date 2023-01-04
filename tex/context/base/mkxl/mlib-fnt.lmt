@@ -260,41 +260,44 @@ end
 -- right time. It's probably why I like watching https://www.youtube.com/watch?v=c5FqpddnJmc
 -- so much: precisely (and perfectly) timed too.
 
-local texgetbox        = tex.getbox
+local texgetbox          = tex.getbox
 
-local nodecodes        = nodes.nodecodes -- no nuts yet
-local rulecodes        = nodes.rulecodes
+local nodecodes          = nodes.nodecodes -- no nuts yet
+local rulecodes          = nodes.rulecodes
 
-local rule_code        = nodecodes.rule
+local rule_code          = nodecodes.rule
 
-local normalrule_code  = rulecodes.normal
-local outlinerule_code = rulecodes.outline
-local userrule_code    = rulecodes.user
-local emptyrule_code   = rulecodes.empty
+local normalrule_code    = rulecodes.normal
+local outlinerule_code   = rulecodes.outline
+local userrule_code      = rulecodes.user
+local emptyrule_code     = rulecodes.empty
 
-local nuts             = nodes.nuts
-local getwhd           = nuts.getwhd
-local getexpansion     = nuts.getexpansion
-local getscales        = nuts.getscales
-local isglyph          = nuts.isglyph
+local nuts               = nodes.nuts
+----- getwhd             = nuts.getwhd
+local getexpansion       = nuts.getexpansion
+local getscales          = nuts.getscales
+local isglyph            = nuts.isglyph
+local getglyphdimensions = nuts.getglyphdimensions
 
-local fonthashes       = fonts.hashes
-local fontcharacters   = fonthashes.characters
-local fontparameters   = fonthashes.parameters
-local fontshapes       = fonthashes.shapes
-local fontdescriptions = fonthashes.descriptions
+local fonthashes         = fonts.hashes
+local fontcharacters     = fonthashes.characters
+local fontparameters     = fonthashes.parameters
+local fontshapes         = fonthashes.shapes
+local fontdescriptions   = fonthashes.descriptions
 
-local topaths          = metapost.paths
+local topaths            = metapost.paths
 
-local f_text           = formatters["mfun_do_outline_text_flush(%q,%i,%N,%N,%q)(%,t);"]
-local f_rule           = formatters["mfun_do_outline_rule_flush(%q,%N,%N,%N,%N);"]
-local f_bounds         = formatters["checkbounds(%N,%N,%N,%N);"]
-local s_nothing        = "(origin scaled 10)"
+local f_text             = formatters["mfun_do_outline_text_flush(%q,%i,%N,%N,%q)(%,t);"]
+local f_rule             = formatters["mfun_do_outline_rule_flush(%q,%N,%N,%N,%N);"]
+local f_bounds           = formatters["checkbounds(%N,%N,%N,%N);"]
+local s_nothing          = "(origin scaled 10)"
 
-local sc               = 10
-local fc               = number.dimenfactors.bp
+local sc                 = 10
+local fc                 = number.dimenfactors.bp
 
-local function glyph(kind,font,char,advance,shift,ex,s, sx,sy)
+-- handle compact mode here:
+
+local function glyph(kind,font,char,advance,shift,ex,s,sx,sy)
     local character = fontcharacters[font][char]
     if character then
         local index = character.index
@@ -312,9 +315,19 @@ local function glyph(kind,font,char,advance,shift,ex,s, sx,sy)
                     local exfactor = ex or 0
                     local wfactor  = 1
                     local detail   = kind == "p" and tostring(char) or ""
+                    -- what about other effects
+                    local xoffset  = character.xoffset or 0
+                    local yoffset  = character.yoffset or 0 -- todo
+                    --
                     if exfactor ~= 0 then
                         wfactor = (1+(ex/units)/1000)
                         xfactor = xfactor * wfactor
+                    end
+                    if xoffset ~= 0 then
+                        advance = advance + s * sx * xoffset * fc / 1000000
+                    end
+                    if yoffset ~= 0 then
+                        shift = shift + s * sy * yoffset * fc / 1000000
                     end
                     if s then
                         xfactor = (s/1000) * ((sx or 1000)/1000) * xfactor
@@ -342,16 +355,57 @@ local function reset()
 end
 
 local function flushcharacter(current, pos_h, pos_v, pod_r, font, char)
-    local char, font = isglyph(current)
-    local s, sx, sy = getscales(current)
-    local code = glyph(kind,font,char,pos_h*fc,pos_v*fc,getexpansion(current),s,sx,sy)
-    if code then
-        b = b + 1
-        buffer[b] = code
+    if current then
+        local char, font = isglyph(current)
+        local s, sx, sy = getscales(current)
+        local code = glyph(kind,font,char,pos_h*fc,pos_v*fc,getexpansion(current),s,sx,sy)
+        if code then
+            b = b + 1
+            buffer[b] = code
+        end
+    else
+        logs.report("mlib-fnt","check 'flushcharacter', no current")
     end
 end
 
-local function flushrule(current, pos_h, pos_v, pos_r, size_h, size_v, subtype)
+-- Messy ... todo:
+
+-- local function flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,ssx,ssy)
+--     local width, height, depth, sx, sy
+--     if current then
+--         char, font = isglyph(current)
+--         width, height, depth, factor, sx, sy = getglyphdimensions(current)
+--     else
+--         if not data then
+--             data = fontcharacters[font][char] or { }
+--         end
+--         width  = data.width or 0
+--         height = data.height or 0
+--         depth  = data.depth or 0
+--         sx = 1
+--         sy = 1
+--     end
+--     if csx then
+--         sx = sx * csx
+--     end
+--     if csy then
+--         sy = sy * csy
+--     end
+--     if ssx then
+--         sx = sx * ssx
+--     end
+--     if ssy then
+--         sy = sy * ssy
+--     end
+--     local code = glyph(kind,font,char,pos_h*fc,pos_v*fc,factor,s,sx,sy)
+--     if code then
+--         b = b + 1
+--         buffer[b] = code
+--     end
+--     return width, height, depth
+-- end
+
+local function flushrule(current,pos_h,pos_v,pos_r,size_h,size_v,subtype)
     if subtype == normalrule_code then
         b = b + 1
         buffer[b] = f_rule(kind,pos_h*fc,pos_v*fc,size_h*fc,size_v*fc)

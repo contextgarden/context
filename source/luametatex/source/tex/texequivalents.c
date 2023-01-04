@@ -94,7 +94,7 @@ save_state_info lmt_save_state = {
     .current_level    = 0,
     .current_group    = 0,
     .current_boundary = 0,
-    .padding          = 0,
+ // .padding          = 0,
 };
 
 /*tex
@@ -517,7 +517,7 @@ static int tex_aux_saved_box_spec(halfword *packing, halfword *amount)
 {
     int i = tex_aux_found_save_type(box_spec_save_type);
     if (i) {
-        *packing = saved_level(i);
+        *packing = saved_extra(i);
         *amount = saved_value(i);
     } else {
         *packing = 0;
@@ -580,7 +580,7 @@ void tex_show_save_groups(void)
                 break;
             case align_group:
                 if (alignmentstate == 0) {
-                    package = (mode == -vmode) ? "halign" : "valign";
+                    package = (mode == internal_vmode) ? "halign" : "valign";
                     alignmentstate = 1;
                     goto FOUND1;
                 } else {
@@ -675,7 +675,7 @@ void tex_show_save_groups(void)
                 goto FOUND2;
             case math_fence_group:
                 /* kind of ugly ... maybe also save that one */ /* todo: operator */
-                tex_print_str_esc((node_subtype(lmt_nest_state.nest[pointer + 1].delim) == left_fence_side) ? "left" : "middle");
+                tex_print_str_esc((node_subtype(lmt_nest_state.nest[pointer + 1].delimiter) == left_fence_side) ? "left" : "middle");
                 goto FOUND2;
             default:
                 tex_confusion("show groups");
@@ -692,7 +692,7 @@ void tex_show_save_groups(void)
                     scaled shift = tex_aux_save_value(saved_full_spec_item_shift);
                     if (shift != null_flag) { 
                         /*tex We passed the safeguard. */
-                        singleword cmd = (abs(lmt_nest_state.nest[pointer].mode) == vmode) ? hmove_cmd : vmove_cmd;
+                        singleword cmd = is_v_mode(lmt_nest_state.nest[pointer].mode) ? hmove_cmd : vmove_cmd;
                         tex_print_cmd_chr(cmd, (shift > 0) ? move_forward_code : move_backward_code);
                         tex_print_dimension(abs(shift), pt_unit);
                     }
@@ -1011,16 +1011,17 @@ inline static int tex_aux_equal_eq(halfword p, singleword cmd, singleword flag, 
             case register_toks_cmd:
                 /*tex Again we have references. */
                 if (eq_value(p) == chr) {
-            //  if (eq_value(p) == chr && eq_level(p) == cur_level) {
+             // if (eq_value(p) == chr && eq_level(p) == cur_level) {
                     return 1;
                 } else {
                     return 0;
                 }
-         // case dimension_cmd:
-         // case integer_cmd:
-         //     if (eq_type(p) == cmd && eq_value(p) == chr && eq_level(p) == cur_level) {
-         //         return 1;
-         //     }
+            case dimension_cmd:
+            case integer_cmd:
+                if (eq_type(p) == cmd && eq_value(p) == chr) {
+             // if (eq_type(p) == cmd && eq_value(p) == chr && eq_level(p) == cur_level) {
+                    return 1;
+                }
             default:
                 /*tex
                     We can best also check the level because for integer defs etc we run into
@@ -1303,7 +1304,9 @@ void tex_define_swapped(int g, halfword p1, halfword p2, int force)
                goto NOTDONE;
            }
         }
-        {
+        if (v1 == v2)  {
+            return; 
+        } else {
             switch (t1) {
                 case register_int_cmd:
                 case register_attribute_cmd:
@@ -1823,7 +1826,7 @@ void tex_aux_show_eqtb(halfword n)
         tex_print_cmd_chr(eq_type(n), eq_value(n));
         if (eq_type(n) >= call_cmd) {
             tex_print_char(':');
-            tex_token_show(eq_value(n), default_token_show_min);
+            tex_token_show(eq_value(n));
         }
     } else {
         switch (eq_type(n)) {
@@ -1835,7 +1838,7 @@ void tex_aux_show_eqtb(halfword n)
                 tex_print_int(register_toks_number(n));
               TOKS:
                 tex_print_char('=');
-                tex_token_show(eq_value(n), default_token_show_min);
+                tex_token_show(eq_value(n));
                 break;
             case internal_box_reference_cmd:
                 tex_print_cmd_chr(eq_type(n), n);

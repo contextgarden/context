@@ -1512,6 +1512,75 @@ The text and graphics come together in a framed text:
 
 \stopsection
 
+\startsection[title=Hashes]
+
+\index {hashes}
+
+We can store data in a hash and access it later. Storage happens efficiently at the
+\LUA\ end.
+
+\startbuffer
+\startMPcode
+  tohash("foo","bar","gnu") ;
+  tohash("foo","rab","ung") ;
+  fill fullcircle scaled 1cm withcolor "lightgray" ;
+  draw textext(fromhash("foo","bar")) ;
+  draw textext(fromhash("foo","rab")) rotated 90 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+With \type {newhash("foo")} we get back an index but this macro is only needed in
+\MKIV\ where. With \type {disposehash("foo")} a hash get wiped.
+
+\startbuffer
+\startMPcode
+  tohash(4,"bar","gnu") ;
+  tohash(4,"rab","ung") ;
+  fill fullcircle scaled 1cm withcolor "lightgray" ;
+  draw textext(fromhash(4,"bar")) ;
+  draw textext(fromhash(4,"rab")) rotated 90 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+You can also used an indexed hash:
+
+\startbuffer
+\startMPcode
+  tohash("foo",1,"gnu") ;
+  tohash("foo",2,"ung") ;
+  fill fullcircle scaled 1cm withcolor "lightgray" ;
+  for i=1 upto 3 :
+    if inhash("foo",i) :
+      draw textext(fromhash("foo",i))
+        rotated ((i-1) * 90) ;
+    fi ;
+  endfor ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+And even booleans can be used as index:
+
+\startbuffer
+\startMPcode
+  tohash("foo",false,"gnu") ;
+  tohash("foo",true,"ung") ;
+  fill fullcircle scaled 1cm withcolor "lightgray" ;
+  draw textext(fromhash("foo",false)) ;
+  draw textext(fromhash("foo",true)) rotated 90 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent

@@ -42,7 +42,7 @@ error_state_info lmt_error_state = {
     .last_warning       = NULL,
     .last_error_context = NULL,
     .help_text          = NULL,
-    .print_buffer       = "",
+ /* .print_buffer       = "", */
     .intercept          = 0,
     .last_intercept     = 0,
     .interaction        = 0,
@@ -50,7 +50,7 @@ error_state_info lmt_error_state = {
     .set_box_allowed    = 0,
     .history            = 0,
     .error_count        = 0,
-    .err_old_setting    = 0,
+    .saved_selector     = 0,
     .in_error           = 0,
     .long_help_seen     = 0,
     .context_indent     = 4,
@@ -117,7 +117,7 @@ static void tex_aux_set_last_error_context(void)
 static void tex_aux_flush_error(void)
 {
     if (lmt_error_state.in_error) {
-        lmt_print_state.selector = lmt_error_state.err_old_setting;
+        lmt_print_state.selector = lmt_error_state.saved_selector;
         lmt_memory_free(lmt_error_state.last_error);
         lmt_error_state.last_error = tex_take_string(NULL);
         if (lmt_error_state.last_error) {
@@ -141,7 +141,7 @@ static int tex_aux_error_callback_set(void)
 static void tex_aux_start_error(void)
 {
     if (tex_aux_error_callback_set()) {
-        lmt_error_state.err_old_setting = lmt_print_state.selector;
+        lmt_error_state.saved_selector = lmt_print_state.selector;
         lmt_print_state.selector = new_string_selector_code;
         lmt_error_state.in_error = 1 ;
         lmt_memory_free(lmt_error_state.last_error);
@@ -521,10 +521,11 @@ void tex_normal_warning(const char *t, const char *p)
 
 int tex_formatted_error(const char *t, const char *fmt, ...)
 {
+    char print_buffer[print_buffer_size]; 
     va_list args;
     va_start(args, fmt);
-    vsnprintf(lmt_error_state.print_buffer, print_buffer_size, fmt, args);
-    return tex_normal_error(t, lmt_error_state.print_buffer);
+    vsnprintf(print_buffer, print_buffer_size, fmt, args);
+    return tex_normal_error(t, print_buffer);
     /*
     va_end(args);
     return 0;
@@ -533,19 +534,21 @@ int tex_formatted_error(const char *t, const char *fmt, ...)
 
 void tex_formatted_warning(const char *t, const char *fmt, ...)
 {
+    char print_buffer[print_buffer_size]; 
     va_list args;
     va_start(args, fmt);
-    vsnprintf(lmt_error_state.print_buffer, print_buffer_size, fmt, args);
-    tex_normal_warning(t, lmt_error_state.print_buffer);
+    vsnprintf(print_buffer, print_buffer_size, fmt, args);
+    tex_normal_warning(t, print_buffer);
     va_end(args);
 }
 
 void tex_emergency_message(const char *t, const char *fmt, ...)
 {
+    char print_buffer[print_buffer_size]; 
     va_list args;
     va_start(args, fmt);
-    vsnprintf(lmt_error_state.print_buffer, print_buffer_size, fmt, args);
-    fprintf(stdout,"%s : %s\n",t,lmt_error_state.print_buffer);
+    vsnprintf(print_buffer, print_buffer_size, fmt, args);
+    fprintf(stdout,"%s : %s\n", t, print_buffer);
     va_end(args);
 }
 
