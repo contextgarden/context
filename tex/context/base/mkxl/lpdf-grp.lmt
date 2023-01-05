@@ -106,70 +106,155 @@ end
 -- we could derive the colorspace if we strip the data
 -- and divide by x*y
 
-local template = "q BI %s ID %s > EI Q"
-local factor   = 72/300
+-- todo: map onto png
 
-function nodeinjections.injectbitmap(t)
-    -- encoding is ascii hex, no checking here
-    local xresolution, yresolution = t.xresolution or 0, t.yresolution or 0
-    if xresolution == 0 or yresolution == 0 then
-        return -- fatal error
+
+do
+
+    local template = "q BI %s ID %s > EI Q"
+    local factor   = 72/300
+
+    local methods = { }
+
+    methods.hex = function(t)
+        -- encoding is ascii hex, no checking here
+        local xresolution, yresolution = t.xresolution or 0, t.yresolution or 0
+        if xresolution == 0 or yresolution == 0 then
+            return -- fatal error
+        end
+        local colorspace = t.colorspace
+        if colorspace ~= "rgb" and colorspace ~= "cmyk" and colorspace ~= "gray" then
+            -- not that efficient but ok
+            local d = gsub(t.data,"[^0-9a-f]","")
+            local b = round(#d / (xresolution * yresolution))
+            if b == 2 then
+                colorspace = "gray"
+            elseif b == 6 then
+                colorspace = "rgb"
+            elseif b == 8 then
+                colorspace = "cmyk"
+            end
+        end
+        colorspace = lpdf.colorspaceconstants[colorspace]
+        if not colorspace then
+            return -- fatal error
+        end
+        --the original length L is required for pdf 2.0 (4096 max)
+        local d = pdfdictionary {
+            W   = xresolution,
+            H   = yresolution,
+            CS  = colorspace,
+            BPC = 8,
+            F   = pdfconstant("AHx"),
+         -- CS  = nil,
+         -- BPC = 1,
+         -- IM = true,
+        }
+        -- for some reasons it only works well if we take a 1bp boundingbox
+        local urx, ury = 1/basepoints, 1/basepoints
+     -- urx = (xresolution/300)/basepoints
+     -- ury = (yresolution/300)/basepoints
+        local width, height = t.width or 0, t.height or 0
+        if width == 0 and height == 0 then
+            width  = factor * xresolution / basepoints
+            height = factor * yresolution / basepoints
+        elseif width == 0 then
+            width  = height * xresolution / yresolution
+        elseif height == 0 then
+            height = width  * yresolution / xresolution
+        end
+        local a = pdfdictionary {
+            BBox = pdfarray { 0, 0, round(urx * basepoints), round(ury * basepoints) }
+        }
+        local image = createimage {
+            stream = formatters[template](d(),t.data),
+            width  = width,
+            height = height,
+            bbox   = { 0, 0, round(urx), round(ury) },
+            attr   = a(),
+            nobbox = true,
+        }
+        return wrapimage(image)
     end
-    local colorspace = t.colorspace
-    if colorspace ~= "rgb" and colorspace ~= "cmyk" and colorspace ~= "gray" then
-        -- not that efficient but ok
-        local d = gsub(t.data,"[^0-9a-f]","")
-        local b = math.round(#d / (xresolution * yresolution))
-        if b == 2 then
-            colorspace = "gray"
-        elseif b == 6 then
-            colorspace = "rgb"
-        elseif b == 8 then
-            colorspace = "cmyk"
+
+    local zlibcompress  = xzip.compress
+    local lpegmatch     = lpeg.match
+    local compresslevel = 3
+    local pattern       = lpeg.Cs((lpeg.patterns.space/"" + lpeg.patterns.hextobyte)^0)
+
+    methods.png = function(t)
+        -- encoding is ascii hex, no checking here
+        local xresolution = t.xresolution or 0
+        local yresolution = t.yresolution or 0
+        local data        = t.data or ""
+        if xresolution == 0 or yresolution == 0 or data == "" then
+            return -- fatal error
+        end
+        local colorspace = t.colorspace
+        local colordepth = 8
+        local colors     = 1
+        if colorspace ~= "rgb" and colorspace ~= "gray" then
+            -- not that efficient but ok
+            local d = gsub(t.data,"[^0-9a-f]","")
+            local b = round(#d / (xresolution * yresolution))
+            if b == 2 then
+                colorspace = "gray"
+                colors     = 1
+            elseif b == 6 then
+                colorspace = "rgb"
+                colors     = 3
+            elseif b == 8 then
+                return -- for now, todo: convert
+            end
+        end
+        colorspace = lpdf.colorspaceconstants[colorspace]
+        if not colorspace then
+            return -- fatal error
+        end
+        local width  = t.width
+        local height = t.height
+        if width == 0 and height == 0 then
+            width  = factor * xresolution / basepoints
+            height = factor * yresolution / basepoints
+        elseif width == 0 then
+            width  = height * xresolution / yresolution
+        elseif height == 0 then
+            height = width  * yresolution / xresolution
+        end
+        data = zlibcompress(lpegmatch(pattern,data),compresslevel)
+        local xobject = pdfdictionary {
+            Type             = pdfconstant("XObject"),
+            Subtype          = pdfconstant("Image"),
+            Width            = xresolution,
+            Height           = yresolution,
+            BitsPerComponent = 8,
+            ColorSpace       = colorspace,
+            Length           = #data,
+            Filter           = pdfconstant("FlateDecode"),
+        }
+        local image = createimage {
+--             bbox     = { 0, 0, round(width/xresolution), round(height/yresolution) }, -- mandate
+            bbox     = { 0, 0, round(width), round(height) }, -- mandate
+            width    = round(width),
+            height   = round(height),
+            nolength = true,
+            nobbox   = true,
+            notype   = true,
+            stream   = data,
+            attr     = xobject(),
+        }
+        return wrapimage(image)
+    end
+
+    function nodeinjections.injectbitmap(t)
+        if t.colorspace == "cmyk" then
+            return methods.hex(t)
+        else
+            return (methods[t.format or "hex"] or methods.hex)(t)
         end
     end
-    colorspace = lpdf.colorspaceconstants[colorspace]
-    if not colorspace then
-        return -- fatal error
-    end
-    local d = pdfdictionary {
-        W   = xresolution,
-        H   = yresolution,
-        CS  = colorspace,
-        BPC = 8,
-        F   = pdfconstant("AHx"),
-     -- CS  = nil,
-     -- BPC = 1,
-     -- IM = true,
-    }
-    -- for some reasons it only works well if we take a 1bp boundingbox
-    local urx, ury = 1/basepoints, 1/basepoints
- -- urx = (xresolution/300)/basepoints
- -- ury = (yresolution/300)/basepoints
-    local width, height = t.width or 0, t.height or 0
-    if width == 0 and height == 0 then
-        width  = factor * xresolution / basepoints
-        height = factor * yresolution / basepoints
-    elseif width == 0 then
-        width  = height * xresolution / yresolution
-    elseif height == 0 then
-        height = width  * yresolution / xresolution
-    end
-    local a = pdfdictionary {
-        BBox = pdfarray { 0, 0, urx * basepoints, ury * basepoints }
-    }
-    local image = createimage {
-        stream = formatters[template](d(),t.data),
-        width  = width,
-        height = height,
-        bbox   = { 0, 0, urx, ury },
-        attr   = a(),
-        nobbox = true,
-    }
-    return wrapimage(image)
-end
 
--- general graphic helpers
+end
 
 function codeinjections.setfigurealternative(data,figure)
     local request = data.request

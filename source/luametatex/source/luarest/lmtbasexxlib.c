@@ -14,7 +14,7 @@
 
     First I had a mix of own code and LHF code (base64 and base85) but in the end I decided to reuse
     some of pplibs code. Performance is ok, although we can speed up the base16 coders. When needed,
-    we can have a few more bur normally pure \LUA\ is quite ok for our purpose.
+    we can have a few more but normally pure \LUA\ is quite ok for our purpose.
 
 */
 

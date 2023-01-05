@@ -1,0 +1,46 @@
+%D See m-tikz.mkxl for comments.
+
+\startmodule [pgfplots]
+
+\writestatus{loading}{ConTeXt User Module / Pgfplots}
+
+\tikzinputfile{pgfplots.revision.tex}
+
+\usetikzlibrary[plotmarks]
+
+\tikzinputfile{pgfplots.code.tex}
+
+\def\pgfplotsincludegraphics[#1]#2%
+  {\externalfigure[#2][#1]}
+
+\starttikzsettings
+    \pgfkeys{/pgfplots/plot graphics/includegraphics cmd=\pgfplotsincludegraphics}
+\stoptikzsettings
+
+\unprotect
+
+\let\pgfplots@ORIG@tikz@installcommands@before@context\tikz@installcommands
+
+\def\tikz@installcommands{%
+  \pgfplots@ORIG@tikz@installcommands@before@context
+  %
+  \let\startaxis=\pgfplots@environment@axis
+  \let\stopaxis=\endpgfplots@environment@axis
+  %
+  \let\startsemilogxaxis=\pgfplots@environment@semilogxaxis
+  \let\stopsemilogxaxis=\endpgfplots@environment@semilogxaxis
+  %
+  \let\startsemilogyaxis=\pgfplots@environment@semilogyaxis
+  \let\stopsemilogyaxis=\endpgfplots@environment@semilogyaxis
+  %
+  \let\startloglogaxis=\pgfplots@environment@loglogaxis
+  \let\stoploglogaxis=\endpgfplots@environment@loglogaxis
+  %
+  \def\startpgfplotsinterruptdatabb{\pgfplotsinterruptdatabb}%
+  \def\stoppgfplotsinterruptdatabb{\endpgfplotsinterruptdatabb}%
+}
+
+\protect
+
+\stopmodule
+

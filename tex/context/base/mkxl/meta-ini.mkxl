@@ -850,7 +850,7 @@
      \expandafter\startMPoverlaydata_yes
    \fi}
 
-\permanent\protected\def\startMPoverlaydata_nop#0\stopMPoverlaydata
+\permanent\protected\def\startMPoverlaydata_nop#-\stopMPoverlaydata
   {}
 
 \permanent\protected\def\startMPoverlaydata_yes#1\stopMPoverlaydata

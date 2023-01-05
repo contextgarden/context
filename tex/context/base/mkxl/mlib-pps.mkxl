@@ -172,6 +172,23 @@
    \box\MPbox
    \endgroup}
 
+\permanent\protected\def\MPLIBscaledcm#1#2#3#4#5#6#7% 2-7: sx,rx,ry,sy,tx,ty
+  {\begingroup
+% \setbox\MPbox
+   \hpack\bgroup
+     \dotransformnextbox{#2}{#3}{#4}{#5}{#6}{#7}%
+    %\dotransformnextbox{\luaexpr{#2/10}}{\luaexpr{#3/10}}{\luaexpr{#4/10}}{\luaexpr{#5/10}}{\luaexpr{#6/10}}{\luaexpr{#7/10}}%
+     \vpack to \zeropoint\bgroup
+       \vss
+       \hcontainer to \zeropoint \bgroup
+         #1\hss % used for mp bitmaps
+        %\fastsxsy{10}{10}{#1}\hss
+       \egroup
+     \egroup
+   \egroup
+% \smashbox\MPbox\box\MPbox
+   \endgroup}
+
 \permanent\protected\def\MPLIBgraphictext#1% use at mp end
   {\startTEXpage[\c!scale=10000]#1\stopTEXpage}
 

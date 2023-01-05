@@ -2704,12 +2704,11 @@
   {}
 
 \appendtoks
-    \enforced\let\TB\tabl_tabulate_TB_yes
+    \enforced\let\TB\tabl_tabulate_TB_nop
 \to \t_tabl_tabulate_initializers_first
 
-
 \appendtoks
-    \enforced\let\TB\tabl_tabulate_TB_nop
+    \enforced\let\TB\tabl_tabulate_TB_yes
 \to \t_tabl_tabulate_initializers_second
 
 % %D Between alignment lines certain rules apply, and even a simple test can mess

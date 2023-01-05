@@ -1233,7 +1233,7 @@ static void tex_aux_push_math(quarterword group, int style)
     update_tex_math_right_class(unset_noad_class);
 }
 
-static void tex_aux_enter_ordinary_math(int style)
+static void tex_aux_enter_inline_math(int style)
 {
     tex_aux_push_math(math_shift_group, style);
     update_tex_family(0, unused_math_family);
@@ -1264,16 +1264,16 @@ void tex_run_math_initialize(void)
                 tex_aux_enter_display_math(math_shift_cmd);
             } else {
                 tex_back_input(cur_tok);
-                tex_aux_enter_ordinary_math(text_style);
+                tex_aux_enter_inline_math(text_style);
             }
             break;
         case math_shift_cs_cmd:
             if (cur_chr == begin_math_mode_code) {
-                tex_aux_enter_ordinary_math(tex_scan_math_style_identifier(0, 0));
+                tex_aux_enter_inline_math(tex_scan_math_style_identifier(0, 0));
             } else if (cur_chr == begin_display_math_code && cur_list.mode > nomode) {
                 tex_aux_enter_display_math(begin_display_math_code);
             } else if (cur_chr == begin_inline_math_code) {
-                tex_aux_enter_ordinary_math(text_style);
+                tex_aux_enter_inline_math(text_style);
             } else {
                 tex_you_cant_error("math shift 1");
             }
@@ -1298,7 +1298,7 @@ void tex_run_math_equation_number(void) {
         if (cur_group == math_shift_group) {
             tex_set_saved_record(saved_equation_number_item_location, equation_number_location_save_type, 0, cur_chr);
             lmt_save_state.save_stack_data.ptr += saved_equation_number_n_of_items;
-            tex_aux_enter_ordinary_math(text_style);
+            tex_aux_enter_inline_math(text_style);
         } else {
             tex_off_save();
         }
@@ -4285,49 +4285,26 @@ static void tex_aux_resume_after_display(void)
 
 */
 
-inline static void tex_aux_inject_display_skip_before(quarterword param, quarterword subtype)
+static void tex_aux_inject_display_skip(quarterword param, quarterword subtype)
 {
     if (param > 0) {
         switch (display_skip_mode_par) {
             case display_skip_default :
             case display_skip_always :
-                tex_tail_append(tex_new_param_glue_node(param, subtype));
                 break;
             case display_skip_non_zero:
-                if (! tex_glue_is_zero(glue_parameter(param))) {
-                    tex_tail_append(tex_new_param_glue_node(param, subtype));
+                if (tex_glue_is_zero(glue_parameter(param))) {
+                    return;
+                } else {
+                    break;
                 }
-                break;
             case display_skip_ignore:
-                break;
+                return;
             default:
                 /*tex > 3 reserved for future use */
-                tex_tail_append(tex_new_param_glue_node(param, subtype));
                 break;
         }
-    }
-}
-
-inline static void tex_aux_inject_display_skip_after(quarterword param, quarterword subtype)
-{
-    if (param > 0) {
-        switch (display_skip_mode_par) {
-            case display_skip_default :
-            case display_skip_always :
-                tex_tail_append(tex_new_param_glue_node(param, subtype));
-                break;
-            case display_skip_non_zero:
-                if (! tex_glue_is_zero(glue_parameter(param))) {
-                    tex_tail_append(tex_new_param_glue_node(param, subtype));
-                }
-                break;
-            case display_skip_ignore:
-                break;
-            default:
-                /*tex > 3 reserved for future use */
-                tex_tail_append(tex_new_param_glue_node(param, subtype));
-                break;
-        }
+        tex_tail_append(tex_new_param_glue_node(param, subtype));
     }
 }
 
@@ -4478,7 +4455,7 @@ static void tex_aux_finish_displayed_math(int atleft, halfword eqnumber, halfwor
         tex_append_to_vlist(eqnumber, lua_key_index(equation_number), NULL);
         tex_tail_append(tex_new_penalty_node(infinite_penalty, equation_number_penalty_subtype));
     } else {
-        tex_aux_inject_display_skip_before(glue_above, subtype_above);
+        tex_aux_inject_display_skip(glue_above, subtype_above);
     }
     if (number_width != 0) {
         scaled shift = line_width - equation_width - number_width - displacement;
@@ -4542,7 +4519,7 @@ static void tex_aux_finish_displayed_math(int atleft, halfword eqnumber, halfwor
         box_shift_amount(equation_box) = indent + displacement;
     }
     /*tex check for prev: */
-    tex_append_to_vlist(equation_box, lua_key_index(equation), NULL);
+    tex_append_to_vlist(equation_box, lua_key_index(equation), NULL); /* eqbox has the formula */
     if (eqnumber && number_width == 0 && ! atleft) {
         tex_tail_append(tex_new_penalty_node(infinite_penalty, equation_number_penalty_subtype));
      /* if (math_direction_par == dir_lefttoright) { */
@@ -4575,7 +4552,7 @@ static void tex_aux_finish_displayed_math(int atleft, halfword eqnumber, halfwor
         cur_list.tail = pre_migrate_tail;
     }
     tex_tail_append(tex_new_penalty_node(post_display_penalty_par, after_display_penalty_subtype));
-    tex_aux_inject_display_skip_after(glue_below, subtype_below);
+    tex_aux_inject_display_skip(glue_below, subtype_below);
     tex_aux_resume_after_display();
 }
 
@@ -4591,7 +4568,8 @@ static void tex_aux_finish_displayed_math(int atleft, halfword eqnumber, halfwor
 
 */
 
-void tex_run_math_shift(void) {
+void tex_run_math_shift(void) 
+{
     if (cur_group == math_shift_group) {
         /*tex box containing equation number */
         halfword eqnumber = null;
@@ -4613,7 +4591,7 @@ void tex_run_math_shift(void) {
                     break;
             }
         }
-        if (cur_list.mode == -mode) {
+        if (cur_list.mode == -mode) { // todo: symbolic 
             /*tex end of equation number */
           AGAIN:
             switch (cur_cmd) {
@@ -4641,7 +4619,7 @@ void tex_run_math_shift(void) {
                 tex_confusion("after math");
             }
         }
-        if (mode < 0) {
+        if (mode < 0) { // mode == inline_mmode
             /*tex
 
                 The |unsave| is done after everything else here; hence an appearance of |\mathsurround|
@@ -4780,13 +4758,13 @@ void tex_finish_display_alignment(halfword head, halfword tail, halfword prevdep
     }
     tex_pop_nest();
     tex_tail_append(tex_new_penalty_node(pre_display_penalty_par, before_display_penalty_subtype));
-    tex_aux_inject_display_skip_before(above_display_skip_code, above_display_skip_glue);
+    tex_aux_inject_display_skip(above_display_skip_code, above_display_skip_glue);
     node_next(cur_list.tail) = head;
     if (head && tail) {
         cur_list.tail = tail;
     }
     tex_tail_append(tex_new_penalty_node(post_display_penalty_par, after_display_penalty_subtype));
-    tex_aux_inject_display_skip_after(below_display_skip_code, below_display_skip_glue);
+    tex_aux_inject_display_skip(below_display_skip_code, below_display_skip_glue);
     cur_list.prev_depth = prevdepth;
     tex_aux_resume_after_display();
 }

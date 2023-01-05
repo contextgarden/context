@@ -876,9 +876,9 @@
    \popmacro\commalistcommand}
 
 % \let\syst_helpers_process_comma_item_next_a                                                            \syst_helpers_process_comma_item_next
-% \def\syst_helpers_process_comma_item_next_b#0\ignorearguments{\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_a}
-% \def\syst_helpers_process_comma_item_next_c#0\ignorearguments{\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_b}
-% \def\syst_helpers_process_comma_item_gobble#0\ignorearguments{}
+% \def\syst_helpers_process_comma_item_next_b#-\ignorearguments{\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_a}
+% \def\syst_helpers_process_comma_item_next_c#-\ignorearguments{\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_b}
+% \def\syst_helpers_process_comma_item_gobble#-\ignorearguments{}
 
 \let\syst_helpers_process_comma_item_next_a                                                            \syst_helpers_process_comma_item_next
 \def\syst_helpers_process_comma_item_next_b#-\ignorearguments{\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_a}
@@ -1237,7 +1237,7 @@
 %       \fi}%
 %    \normalexpanded{\syst_helpers_do_do_if_not_in_string#1}\s!e_o_t_token\ignorearguments\ignorearguments}
 %
-% \def\syst_helpers_do_if_in_string_else_yes#0\ignorearguments\ignorearguments#2#0{#2}
+% \def\syst_helpers_do_if_in_string_else_yes#0\ignorearguments\ignorearguments#2#0{#2} % of #- and #1
 % \def\syst_helpers_do_if_in_string_else_nop#0\ignorearguments#0#3{#3}
 % \def\syst_helpers_do_if_in_string_yes     #0\ignorearguments\ignorearguments#2{#2}
 % \def\syst_helpers_do_if_in_string_nop     #0\ignorearguments#0{}
@@ -3360,7 +3360,7 @@
   {\normalexpanded{\recurseaction{\recurselevel}{\the\outerrecurse}}%
    \endofloop}
 
-\protected\def\syst_helpers_loop_nop#0%
+\protected\def\syst_helpers_loop_nop#-%
   {\enforced\let\endofloop\syst_helpers_loop
    \globalpopmacro\recurselevel
    \globalpopmacro\recurseaction
@@ -3369,7 +3369,7 @@
 \permanent\protected\def\exitloop                % \exitloop quits at end
   {\enforced\let\endofloop\syst_helpers_loop_nop}
 
-\permanent\protected\def\exitloopnow#0\endofloop % \exitloopnow quits directly
+\permanent\protected\def\exitloopnow#-\endofloop % \exitloopnow quits directly
   {\syst_helpers_loop_nop}
 
 %D The loop is executed at least once, so beware of situations like:
@@ -6854,7 +6854,7 @@
 %D
 %D \typebuffer \startpacked \getbuffer \stoppacked
 
-\def\syst_helpers_wipe_tokens_nop#0^^04{}%
+\def\syst_helpers_wipe_tokens_nop#-^^04{}%
 
 \permanent\def\wipetokens#1#2%
   {\beginlocalcontrol

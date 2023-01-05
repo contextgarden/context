@@ -22,7 +22,8 @@ function figures.bitmapimage(t)
     local xresolution = tonumber(t.xresolution)
     local yresolution = tonumber(t.yresolution)
     if data and xresolution and yresolution then
-        local width, height = t.width or "", t.height or ""
+        local width  = t.width or ""
+        local height = t.height or ""
         local n = backends.nodeinjections.injectbitmap {
             xresolution = xresolution,
             yresolution = yresolution,
@@ -30,9 +31,11 @@ function figures.bitmapimage(t)
             height      = height ~= "" and texsp(height) or nil,
             data        = data,
             colorspace  = t.colorspace,
+            format      = t.format,
         }
         if n then
-            context.hbox(n)
+         -- context.hpack(n)
+            context(nodes.hpack(n))
         else
             report_bitmap("format no supported by backend")
         end

@@ -1,0 +1,139 @@
+% language=us runpath=texruns:manuals/math
+
+\environment math-layout
+
+% goes to oddities
+
+\startcomponent math-notdone
+
+\startchapter[title=Why we don't do this]
+
+The \TEX\ engine has two math modes: inline and display. What exactly happens
+before we do that depends on what mode we are in.
+
+\startitemize
+    \startitem
+        When we are in horizontal mode, single dollar signs makes us go into
+        inline math mode. Double dollars on the other hand trigger display math
+        and one of the first things that does is flush the current vertical list
+        contributions. As we are in horizontal mode it is likely that something
+        shows up.
+    \stopitem
+    \startitem
+        When we are in vertical mode the engine will trigger a new paragraph in
+        the hard way: the initial par state node gets added as well as the
+        indentation and everything that \type {\everypar} likes to inject. Inline
+        math then stays inline but display math starts out with flushing the
+        current paragraph and that happens to be the state, indentation and
+        everything else injected at the beginning. Often nothing is sees, just
+        an empty line sits there.
+    \stopitem
+    \startitem
+        In math mode the engine will check if we ended the right way and then
+        render and inject the formula.
+    \stopitem
+\stopitemize
+
+Especially the second case is tricky. The \quote {empty} line is placed with
+proper \type {\parskip}, \type {\parindent} and whatever. That can end up with a
+lot of supposedly whitespace of which is not really clear (for the user) what
+comes from where: interline space, whitespace, line height, display spacing, etc.
+To that you can add that empty lines are special themselves: in \MKII\ we relax
+\type {\par}, in \MKIV\ we setup {\LUATEX} to accept \type {\par} equivalents and
+\LUAMETATEX\ has no checks at all. \footnote {The same can be told about \type
+{\outer}.}
+
+Before We show some examples of this we have to make clear that \CONTEXT\ users
+don't do this have to worry about all this. We don't follow the (Plain and
+\LATEX) \AMS\ policy of \quotation {no empty lines before display math} and
+\quotation {no empty lines in display math}. We don't even use the display skip
+parameters and we do compensate for these empty line issues. The basics haven't
+changed between \MKII, \MKIV\ and \LMTX\ but it has become leaner and meaner deep
+down. We could actually remove display mode (not to be confused with \type
+{\displaystyle}) from the engine but then we could not show the examples below.
+
+\startbuffer[zero]
+\dorecurse{10}{test #1 }
+\startformula
+    x = \the\mathdisplayskipmode + \the\mathdisplaymode
+\stopformula
+\dorecurse{10}{test #1 }
+\stopbuffer
+
+\startbuffer[one]
+\dorecurse{10}{test #1 }       \par
+$$ x = \the\mathdisplayskipmode + \the\mathdisplaymode $$ \par
+\dorecurse{10}{test #1 }       \par
+\stopbuffer
+
+\startbuffer[two]
+\dorecurse{10}{test #1 }
+$$ x = \the\mathdisplayskipmode + \the\mathdisplaymode $$
+\dorecurse{10}{test #1 }
+\stopbuffer
+
+We use this as example:
+
+\typebuffer[one]
+
+as well as this:
+
+\typebuffer[two]
+
+In \CONTEXT\ one does this:
+
+\typebuffer[zero]
+
+and get:
+
+{\showmakeup[line] \getbuffer[zero]}
+
+% \predisplaysize
+
+For the examples with dollars we use this setup:
+
+\startbuffer[setup]
+\everypar              {!}
+\mathdisplaymode       0
+\normalizelinemode     0
+\parindent             30pt
+\parskip               40pt
+\abovedisplayskip      20pt
+\belowdisplayskip      \abovedisplayskip
+\abovedisplayshortskip \abovedisplayskip
+\belowdisplayshortskip \abovedisplayshortskip
+\stopbuffer
+
+\typebuffer[setup]
+
+We make sure that we get something typeset when we start a paragraph, just in
+order that we don't necessarily get empty lines: there can be many. The two modes
+make sure that we operate in regular \TEX\ mode, the way other macro packages do.
+
+First we show what we get with \typ {\mathdisplayskipmode 1}. This makes the
+engine behave like other engines. We don't show what we get with \typ
+{\mathdisplayskipmode 2} where zero skips are ignored but we don't have these
+here. Last we show what we get with \typ {\mathdisplayskipmode 3}. In this
+example the math specific skips are completely ignored.
+
+In both shown cases you will notice that the \type {\parskip} and \type
+{\baselineskip} interfere which in turn demonstrates why in \CONTEXT\ we always
+did things differently. It is possible to enhance the engine to deal with this
+but because in \CONTEXT\ we don't need it and because it is unlikely that other
+macro packages will use it no time will be wasted on this.
+
+\startbuffer
+\page
+\start
+\showmakeup[line]
+\getbuffer[setup,one,two]
+\stop
+\page
+\stopbuffer
+
+{\mathdisplayskipmode 1 \getbuffer}
+{\mathdisplayskipmode 3 \getbuffer}
+
+\stopchapter
+
+\stopcomponent

@@ -3487,8 +3487,8 @@ static int tex_aux_valid_arithmic(int cmd, int *index, int *level, int *varcmd, 
             *original = eq_value(*index);
             return 1;
         case register_cmd:
-            *index = tex_aux_get_register_index(*level);
             *level = cur_chr;
+            *index = tex_aux_get_register_index(cur_chr);
             *original = eq_value(*index);
             return 1;
         case integer_cmd:
@@ -3603,30 +3603,30 @@ static void tex_aux_arithmic_register(int a, int code)
     halfword original = 0;
     if (tex_aux_valid_arithmic(cmd, &index, &level, &varcmd, &simple, &original)) {
         halfword value = null;
-        lmt_scanner_state.arithmic_error = 0;
+     // lmt_scanner_state.arithmic_error = 0;
         switch (code) {
             case advance_code:
                 tex_scan_optional_keyword("by");
             case advance_by_code:
                 {
-                    value = tex_aux_get_register_value(level, 0);
+                    halfword amount = tex_aux_get_register_value(level, 0);
                     switch (level) {
                         case int_val_level:
                         case attr_val_level:
                         case dimen_val_level:
-                            if (value) {
-                                value += original;
+                            if (amount) {
+                                value = original + amount;
                                 break;
                             } else { 
                                 return;
                             }
                         case glue_val_level:
                         case mu_val_level:
-                            if (tex_glue_is_zero(value)) {
+                            if (tex_glue_is_zero(amount)) {
                                 return;
                             } else {
                                 /* Compute the sum of two glue specs */
-                                halfword newvalue = tex_new_glue_spec_node(value);
+                                halfword newvalue = tex_new_glue_spec_node(amount);
                                 tex_flush_node(value);
                                 glue_amount(newvalue) += glue_amount(original);
                                 if (glue_stretch(newvalue) == 0) {
@@ -3667,9 +3667,11 @@ static void tex_aux_arithmic_register(int a, int code)
             case multiply_by_code:
                 {
                     halfword amount = tex_scan_int(0, NULL);
+                    halfword value = 0;
                     if (amount == 1) {
                         return;
                     } else { 
+                        lmt_scanner_state.arithmic_error = 0;
                         switch (level) {
                             case int_val_level:
                             case attr_val_level:
@@ -3710,6 +3712,7 @@ static void tex_aux_arithmic_register(int a, int code)
                     if (amount == 1) {
                         return;
                     } else { 
+                        lmt_scanner_state.arithmic_error = 0;
                         switch (level) {
                             case int_val_level:
                             case attr_val_level:

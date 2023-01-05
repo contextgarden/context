@@ -1268,8 +1268,8 @@ local flushimage  do
         usedxforms[objnum] = true
         pdf_goto_pagemode()
         calc_pdfpos(pos_h,pos_v)
-        tx = cmtx * bpfactor
-        ty = cmty * bpfactor
+        local tx = cmtx * bpfactor
+        local ty = cmty * bpfactor
         b = b + 1 ; buffer[b] = s_b
      -- b = b + 1 ; buffer[b] = f_cm(rx,0,0,ry,tx,ty)
         b = b + 1 ; buffer[b] = f_cz(rx,    ry,tx,ty)
@@ -1456,7 +1456,6 @@ local flushimage  do
         -- to be sorted out
      -- local ty = pos_v - depth
         local ty = pos_v -- we assume that depth is dealt with in the caller (for now)
-
         usedximages[index] = objnum
 
         pdf_goto_pagemode()

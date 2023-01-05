@@ -193,6 +193,7 @@ local methods = {
     [0x001E] = function(head,current) -- kind of special
         local next = getnext(current)
         if next and getid(next) == glue_code and getsubtype(next) == spaceskip_code then
+            -- remove when no valid character following
             local nextnext = getnext(next)
             if nextnext then
                 local char, font = isglyph(nextnext)
@@ -200,6 +201,14 @@ local methods = {
                     remove_node(head,next,true)
                 end
             end
+        else
+            -- insert when valid character following
+            local char, font = isglyph(next)
+            if char and canhavespace[char] then
+                local p = fontparameters[font]
+                head, current = insertnodebefore(head,current,new_glue(p.space,p.spacestretch,p.spaceshrink))
+            end
+
         end
         return head, current
     end,

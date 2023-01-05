@@ -1371,13 +1371,25 @@ permanent verbatim ;
 
 % New
 
-def bitmapimage(expr xresolution, yresolution, data) =
-    image (
-        addto currentpicture doublepath unitsquare
-            withprescript  "bm_xresolution=" & decimal xresolution
-            withprescript  "bm_yresolution=" & decimal yresolution
-            withpostscript data ;
-    )
+% def bitmapimage(expr xresolution, yresolution, data) =
+%     image (
+%         addto currentpicture doublepath unitsquare
+%             withprescript  "bm_xresolution=" & decimal xresolution
+%             withprescript  "bm_yresolution=" & decimal yresolution
+%             withpostscript data ;
+%     )
+% enddef ;
+
+vardef bitmapimage(expr xresolution, yresolution, data) =
+    save p ; picture p ; p := nullpicture ;
+    addto p doublepath unitsquare
+%         xscaled xresolution
+%         yscaled yresolution
+        withprescript  "bm_xresolution=" & decimal xresolution
+        withprescript  "bm_yresolution=" & decimal yresolution
+        withpostscript data
+    ;
+    p
 enddef ;
 
 permanent bitmapimage ;
