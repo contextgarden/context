@@ -487,6 +487,21 @@ inline static halfword tex_aux_scan_comparison(int code)
     } 
 }
 
+inline static void tex_aux_check_strict(int *result)
+{
+    tex_get_x_token();
+    switch (cur_cmd) { 
+        case relax_cmd:
+        case spacer_cmd: 
+        case if_test_cmd:
+            break;
+        default: 
+            *result = 2;
+            break;
+    }
+    tex_back_input(cur_tok);
+}
+
 void tex_conditional_if(halfword code, int unless)
 {
     /*tex The result or case value. */
@@ -731,11 +746,15 @@ void tex_conditional_if(halfword code, int unless)
             result = 0;
             goto RESULT;
         case if_chk_int_code:
+        case if_chk_integer_code:
             {
                 lmt_error_state.intercept = 1; /* maybe ++ and -- so that we can nest */
                 lmt_error_state.last_intercept = 0;
                 lmt_condition_state.chk_num = tex_scan_int(0, NULL); /* value is ignored */
                 result = lmt_error_state.last_intercept ? 2 : 1;
+                if (result == 1 && code == if_chk_integer_code) { 
+                    tex_aux_check_strict(&result);
+                }
                 lmt_error_state.intercept = 0;
                 lmt_error_state.last_intercept = 0;
                 goto CASE;
@@ -758,11 +777,15 @@ void tex_conditional_if(halfword code, int unless)
                 goto CASE;
             }
         case if_chk_dim_code:
+        case if_chk_dimension_code:
             {
                 lmt_error_state.intercept = 1;
                 lmt_error_state.last_intercept = 0;
                 lmt_condition_state.chk_dim = tex_scan_dimen(0, 0, 0, 0, NULL); /* value is ignored */
                 result = lmt_error_state.last_intercept ? 2 : 1;
+                if (result == 1 && code == if_chk_dimension_code) { 
+                    tex_aux_check_strict(&result);
+                }
                 lmt_error_state.intercept = 0;
                 lmt_error_state.last_intercept = 0;
                 goto CASE;

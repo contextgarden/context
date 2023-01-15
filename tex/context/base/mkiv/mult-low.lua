@@ -191,7 +191,7 @@ return {
         "zerowidthspace", "zerowidthnonjoiner", "zerowidthjoiner", "zwnj", "zwj",
         "optionalspace", "asciispacechar", "softhyphen", "autoinsertedspace",
         --
-        "Ux", "eUx", "Umathaccents",
+        "Ux", "eUx",
         --
         "parfillleftskip", "parfillrightskip",
         --
@@ -501,53 +501,53 @@ return {
         --
         "shiftbox", "vpackbox", "hpackbox", "vpackedbox", "hpackedbox",
         --
-        "ordordspacing", "ordopspacing", "ordbinspacing", "ordrelspacing",
-        "ordopenspacing", "ordclosespacing", "ordpunctspacing", "ordinnerspacing",
-        "ordfracspacing", "ordradspacing", "ordmiddlespacing", "ordaccentspacing",
-        --
-        "opordspacing", "opopspacing", "opbinspacing", "oprelspacing",
-        "opopenspacing", "opclosespacing", "oppunctspacing", "opinnerspacing",
-        "opfracspacing", "opradspacing", "opmiddlespacing", "opaccentspacing",
-        --
-        "binordspacing", "binopspacing", "binbinspacing", "binrelspacing",
-        "binopenspacing", "binclosespacing", "binpunctspacing", "bininnerspacing",
-        "binfracspacing", "binradspacing", "binmiddlespacing", "binaccentspacing",
-        --
-        "relordspacing", "relopspacing", "relbinspacing", "relrelspacing",
-        "relopenspacing", "relclosespacing", "relpunctspacing", "relinnerspacing",
-        "relfracspacing", "relradspacing", "relmiddlespacing", "relaccentspacing",
-        --
-        "openordspacing", "openopspacing", "openbinspacing", "openrelspacing",
-        "openopenspacing", "openclosespacing", "openpunctspacing", "openinnerspacing",
-        "openfracspacing", "openradspacing", "openmiddlespacing", "openaccentspacing",
-        --
-        "closeordspacing", "closeopspacing", "closebinspacing", "closerelspacing",
-        "closeopenspacing", "closeclosespacing", "closepunctspacing", "closeinnerspacing",
-        "closefracspacing", "closeradspacing", "closemiddlespacing", "closeaccentspacing",
-        --
-        "punctordspacing", "punctopspacing", "punctbinspacing", "punctrelspacing",
-        "punctopenspacing", "punctclosespacing", "punctpunctspacing", "punctinnerspacing",
-        "punctfracspacing", "punctradspacing", "punctmiddlespacing", "punctaccentspacing",
-        --
-        "innerordspacing", "inneropspacing", "innerbinspacing", "innerrelspacing",
-        "inneropenspacing", "innerclosespacing", "innerpunctspacing", "innerinnerspacing",
-        "innerfracspacing", "innerradspacing", "innermiddlespacing", "inneraccentspacing",
-        --
-        "fracordspacing", "fracopspacing", "fracbinspacing", "fracrelspacing",
-        "fracopenspacing", "fracclosespacing", "fracpunctspacing", "fracinnerspacing",
-        "fracfracspacing", "fracradspacing", "fracmiddlespacing", "fracaccentspacing",
-        --
-        "radordspacing", "radopspacing", "radbinspacing", "radrelspacing",
-        "radopenspacing", "radclosespacing", "radpunctspacing", "radinnerspacing",
-        "radfracspacing", "radradspacing", "radmiddlespacing", "radaccentspacing",
-        --
-        "middleordspacing", "middleopspacing", "middlebinspacing", "middlerelspacing",
-        "middleopenspacing", "middleclosespacing", "middlepunctspacing", "middleinnerspacing",
-        "middlefracspacing", "middleradspacing", "middlemiddlespacing", "middleaccentspacing",
-        --
-        "accentordspacing", "accentopspacing", "accentbinspacing", "accentrelspacing",
-        "accentopenspacing", "accentclosespacing", "accentpunctspacing", "accentinnerspacing",
-        "accentfracspacing", "accentradspacing", "accentmiddlespacing", "accentaccentspacing",
+     -- "ordordspacing", "ordopspacing", "ordbinspacing", "ordrelspacing",
+     -- "ordopenspacing", "ordclosespacing", "ordpunctspacing", "ordinnerspacing",
+     -- "ordfracspacing", "ordradspacing", "ordmiddlespacing", "ordaccentspacing",
+     -- --
+     -- "opordspacing", "opopspacing", "opbinspacing", "oprelspacing",
+     -- "opopenspacing", "opclosespacing", "oppunctspacing", "opinnerspacing",
+     -- "opfracspacing", "opradspacing", "opmiddlespacing", "opaccentspacing",
+     -- --
+     -- "binordspacing", "binopspacing", "binbinspacing", "binrelspacing",
+     -- "binopenspacing", "binclosespacing", "binpunctspacing", "bininnerspacing",
+     -- "binfracspacing", "binradspacing", "binmiddlespacing", "binaccentspacing",
+     -- --
+     -- "relordspacing", "relopspacing", "relbinspacing", "relrelspacing",
+     -- "relopenspacing", "relclosespacing", "relpunctspacing", "relinnerspacing",
+     -- "relfracspacing", "relradspacing", "relmiddlespacing", "relaccentspacing",
+     -- --
+     -- "openordspacing", "openopspacing", "openbinspacing", "openrelspacing",
+     -- "openopenspacing", "openclosespacing", "openpunctspacing", "openinnerspacing",
+     -- "openfracspacing", "openradspacing", "openmiddlespacing", "openaccentspacing",
+     -- --
+     -- "closeordspacing", "closeopspacing", "closebinspacing", "closerelspacing",
+     -- "closeopenspacing", "closeclosespacing", "closepunctspacing", "closeinnerspacing",
+     -- "closefracspacing", "closeradspacing", "closemiddlespacing", "closeaccentspacing",
+     -- --
+     -- "punctordspacing", "punctopspacing", "punctbinspacing", "punctrelspacing",
+     -- "punctopenspacing", "punctclosespacing", "punctpunctspacing", "punctinnerspacing",
+     -- "punctfracspacing", "punctradspacing", "punctmiddlespacing", "punctaccentspacing",
+     -- --
+     -- "innerordspacing", "inneropspacing", "innerbinspacing", "innerrelspacing",
+     -- "inneropenspacing", "innerclosespacing", "innerpunctspacing", "innerinnerspacing",
+     -- "innerfracspacing", "innerradspacing", "innermiddlespacing", "inneraccentspacing",
+     -- --
+     -- "fracordspacing", "fracopspacing", "fracbinspacing", "fracrelspacing",
+     -- "fracopenspacing", "fracclosespacing", "fracpunctspacing", "fracinnerspacing",
+     -- "fracfracspacing", "fracradspacing", "fracmiddlespacing", "fracaccentspacing",
+     -- --
+     -- "radordspacing", "radopspacing", "radbinspacing", "radrelspacing",
+     -- "radopenspacing", "radclosespacing", "radpunctspacing", "radinnerspacing",
+     -- "radfracspacing", "radradspacing", "radmiddlespacing", "radaccentspacing",
+     -- --
+     -- "middleordspacing", "middleopspacing", "middlebinspacing", "middlerelspacing",
+     -- "middleopenspacing", "middleclosespacing", "middlepunctspacing", "middleinnerspacing",
+     -- "middlefracspacing", "middleradspacing", "middlemiddlespacing", "middleaccentspacing",
+     -- --
+     -- "accentordspacing", "accentopspacing", "accentbinspacing", "accentrelspacing",
+     -- "accentopenspacing", "accentclosespacing", "accentpunctspacing", "accentinnerspacing",
+     -- "accentfracspacing", "accentradspacing", "accentmiddlespacing", "accentaccentspacing",
         --
         "normalreqno",
         --
@@ -596,8 +596,6 @@ return {
         "lastlinewidth",
         --
         "assumelongusagecs",
-        --
-        "Umathbottomaccent", "Umathtopaccent", "Umathbotaccent",
         --
         "righttolefthbox", "lefttorighthbox", "righttoleftvbox", "lefttorightvbox", "righttoleftvtop", "lefttorightvtop",
         "rtlhbox", "ltrhbox", "rtlvbox", "ltrvbox", "rtlvtop", "ltrvtop",

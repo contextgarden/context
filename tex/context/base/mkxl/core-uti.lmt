@@ -18,8 +18,8 @@ saves much runtime but at the cost of more memory usage.</p>
 --ldx]]--
 
 local math = math
+local next, type, tostring, tonumber, setmetatable, load = next, type, tostring, tonumber, setmetatable, load
 local format, match = string.format, string.match
-local next, type, tostring, tonumber, setmetatable = next, type, tostring, tonumber, setmetatable
 local concat = table.concat
 
 local definetable    = utilities.tables.definetable
@@ -280,10 +280,12 @@ job.pack = true
 
 directives.register("job.pack",function(v) job.pack = v end)
 
-local _save_, _load_, _others_ = { }, { }, { } -- registers timing
+local savedfiles  = { }
+local loadedfiles = { } -- for now only timers
+local otherfiles  = { } -- for now only timers
 
 function job.save(filename) -- we could return a table but it can get pretty large
-    statistics.starttiming(_save_)
+    statistics.starttiming(savedfiles)
     local f = io.open(filename,'w')
     if f then
         f:write("local utilitydata = { }\n\n")
@@ -318,7 +320,7 @@ function job.save(filename) -- we could return a table but it can get pretty lar
         f:write("return utilitydata")
         f:close()
     end
-    statistics.stoptiming(_save_)
+    statistics.stoptiming(savedfiles)
 end
 
 local function load(filename)
@@ -350,11 +352,11 @@ local function load(filename)
 end
 
 function job.load(filename)
-    statistics.starttiming(_load_)
+    statistics.starttiming(loadedfiles)
     local utilitydata = load(filename)
     if utilitydata then
         local jobpacker = utilitydata.job.packed
-unpacknumberdata(jobpacker.index)
+        unpacknumberdata(jobpacker.index)
         for i=1,#savelist do
             local list   = savelist[i]
             local target = list[1]
@@ -376,29 +378,43 @@ unpacknumberdata(jobpacker.index)
             initializer(utilitydata and accesstable(list[1],utilitydata) or nil)
         end
     end
-    statistics.stoptiming(_load_)
+    statistics.stoptiming(loadedfiles)
 end
 
-function job.loadother(filename)
-    statistics.starttiming(_load_)
-    _others_[#_others_+1] = file.nameonly(filename)
-    local utilitydata = load(filename)
-    if utilitydata then
-        local jobpacker = utilitydata.job.packed
-        local unpacked = { }
-        for l=1,#savelist do
-            local list   = savelist[l]
-            local target = list[1]
-            local result = accesstable(target,utilitydata)
-            local done = packers.unpack(result,jobpacker,true)
-            if done then
-                migratetable(target,result,unpacked)
+local othercache = { }
+
+function job.loadother(filename,cache)
+    local unpacked = false
+    statistics.starttiming(loadedfiles)
+    filename = file.addsuffix(filename,"tuc")
+    if cache then
+        unpacked = othercache[filename]
+    end
+    if not unpacked then
+        -- so we can register the same name twice(in loading order)
+        otherfiles[#otherfiles+1] = file.nameonly(filename)
+        local utilitydata = load(filename)
+        if utilitydata then
+            local jobpacker = utilitydata.job.packed
+            unpacknumberdata(jobpacker.index)
+            unpacked = { }
+            for l=1,#savelist do
+                local list   = savelist[l]
+                local target = list[1]
+                local result = accesstable(target,utilitydata)
+                local done   = packers.unpack(result,jobpacker,true)
+                if done then
+                    migratetable(target,result,unpacked)
+                end
+            end
+            unpacked.job.packed = nil -- nicer in inspecting
+            if cache then
+                cache[filename] = unpacked
             end
         end
-        unpacked.job.packed = nil -- nicer in inspecting
-        return unpacked
     end
-    statistics.stoptiming(_load_)
+    statistics.stoptiming(loadedfiles)
+    return unpacked
 end
 
 statistics.register("startup time", function()
@@ -407,16 +423,16 @@ end)
 
 statistics.register("jobdata time",function()
     if enabled then
-        if #_others_ > 0 then
-            return format("%s seconds saving, %s seconds loading, other files: %s",statistics.elapsedtime(_save_),statistics.elapsedtime(_load_),concat(_others_," "))
+        if #otherfiles > 0 then
+            return format("%s seconds saving, %s seconds loading, other files: %s",statistics.elapsedtime(savedfiles),statistics.elapsedtime(loadedfiles),concat(otherfiles," "))
         else
-            return format("%s seconds saving, %s seconds loading",statistics.elapsedtime(_save_),statistics.elapsedtime(_load_))
+            return format("%s seconds saving, %s seconds loading",statistics.elapsedtime(savedfiles),statistics.elapsedtime(loadedfiles))
         end
     else
-        if #_others_ > 0 then
-            return format("nothing saved, %s seconds loading, other files: %s",statistics.elapsedtime(_load_),concat(_others_," "))
+        if #otherfiles > 0 then
+            return format("nothing saved, %s seconds loading, other files: %s",statistics.elapsedtime(loadedfiles),concat(otherfiles," "))
         else
-            return format("nothing saved, %s seconds loading",statistics.elapsedtime(_load_))
+            return format("nothing saved, %s seconds loading",statistics.elapsedtime(loadedfiles))
         end
     end
 end)

@@ -918,7 +918,9 @@ make_lua_key(L, mathpostpenalty);\
 make_lua_key(L, mathprepenalty);\
 make_lua_key(L, mathradical);\
 make_lua_key(L, mathshapekern);\
-make_lua_key(L, mathshift);\
+make_lua_key(L, mathinline);\
+make_lua_key(L, mathdisplay);\
+make_lua_key(L, mathnumber);\
 make_lua_key(L, mathsimple);\
 make_lua_key(L, mathskip);\
 make_lua_key(L, mathspec);\

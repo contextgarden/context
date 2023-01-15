@@ -136,7 +136,27 @@
 \definemathoperator [ointc]      [integrals]  [\c!left="2232] %      CLOCKWISE CONTOUR   INTEGRAL
 \definemathoperator [aointc]     [integrals]  [\c!left="2233] % ANTI CLOCKWISE CONTOUR   INTEGRAL
 
-\definemathoperator [sum]        [summations] [\c!left="2211] % N-ARY SUMMATION
+\definemathoperator [sumint]                [integrals]  [\c!left="2A0B] % Integral with sum
+\definemathoperator [barint]                [integrals]  [\c!left="2A0D] % Integral with bar
+\definemathoperator [doublebarint]          [integrals]  [\c!left="2A0E] % Integral with double bar
+\definemathoperator [slashint]              [integrals]  [\c!left="2A0F] % Integral with slash
+\definemathoperator [aodownintc]            [integrals]  [\c!left="2A11] 
+\definemathoperator [rectangularpoleintc]   [integrals]  [\c!left="2A12]
+\definemathoperator [semicirclepoleintc]    [integrals]  [\c!left="2A13] 
+\definemathoperator [circlepoleoutsideintc] [integrals]  [\c!left="2A14]
+\definemathoperator [circlepoleinsideintc]  [integrals]  [\c!left="2A15]
+\definemathoperator [squareintc]            [integrals]  [\c!left="2A16]
+\definemathoperator [hookleftarrowint]      [integrals]  [\c!left="2A17]
+\definemathoperator [timesint]              [integrals]  [\c!left="2A18]
+\definemathoperator [capint]                [integrals]  [\c!left="2A19]
+\definemathoperator [cupint]                [integrals]  [\c!left="2A1A]
+\definemathoperator [upperint]              [integrals]  [\c!left="2A1B]
+\definemathoperator [lowerint]              [integrals]  [\c!left="2A1C]
+
+\definemathoperator [sum]           [summations] [\c!left="2211] % N-ARY SUMMATION
+\definemathoperator [blackboardsum] [summations] [\c!left="2140] % blackboard summation
+\definemathoperator [modtwosum]     [summations] [\c!left="2A0A] % modulo two summation
+
 
 \definemathoperator [prod]       [products]   [\c!left="220F] % N-ARY PRODUCT
 \definemathoperator [coprod]     [products]   [\c!left="2210] % N-ARY COPRODUCT
@@ -155,5 +175,16 @@
 \definemathoperator [bigsqcap]   [operators]  [\c!left="2A05] %  N-ARY SQUARE  INTERSECTION OPERATOR
 \definemathoperator [bigsqcup]   [operators]  [\c!left="2A06] %  N-ARY SQUARE  UNION        OPERATOR
 \definemathoperator [bigtimes]   [operators]  [\c!left="2A09] %  N-ARY         TIMES        OPERATOR
+
+\definemathoperator [leftouterjoin]     [operators]  [\c!left="27D5] % left outer join
+\definemathoperator [rightouterjoin]    [operators]  [\c!left="27D6] % right outer join
+\definemathoperator [fullouterjoin]     [operators]  [\c!left="27D7] % full outer join
+\definemathoperator [bigbottom]         [operators]  [\c!left="27D8] % big bottom
+\definemathoperator [bigtop]            [operators]  [\c!left="27D9] % big top
+\definemathoperator [bigsolidus]        [operators]  [\c!left="29F8] % big solidus
+\definemathoperator [bigreversesolidus] [operators]  [\c!left="29F9] % big reverse solidus
+\definemathoperator [bigdoublewedge]    [operators]  [\c!left="2A07] % big double wedge
+\definemathoperator [bigdoublevee]      [operators]  [\c!left="2A08] % big double vee
+
 
 \protect \endinput

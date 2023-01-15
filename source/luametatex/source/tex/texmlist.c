@@ -6574,12 +6574,13 @@ static void tex_mlist_to_hlist_preroll_dimensions(mliststate *state)
                 state->max_depth = siz.dp;
             }
         }
-      DONE_WITH_NODE:
+//    DONE_WITH_NODE:
         if ((node_type(current) == simple_noad) && noad_new_hlist(current)) { 
             if (has_noad_option_phantom(current) || has_noad_option_void(current)) {
                 noad_new_hlist(current) = tex_aux_make_list_phantom(noad_new_hlist(current), has_noad_option_void(current), get_attribute_list(current));
             }
         } 
+      DONE_WITH_NODE:
         current = node_next(current);
     }
 }

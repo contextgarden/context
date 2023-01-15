@@ -20,7 +20,11 @@
 
 \unprotect
 
-\registerctxluafile{spac-prf}{autosuffix}
+\doiffileelse{spac-prf-new.lmt}{
+    \registerctxluafile{spac-prf-new}{autosuffix}
+} {
+    \registerctxluafile{spac-prf}{autosuffix}
+}
 
 \definesystemattribute[profilemethod][public]
 
@@ -52,13 +56,15 @@
    \c!distance=\zeropoint,
    \c!factor=\plusone]
 
-\defineprofile[halffixed]   [\v!fixed][\c!factor=\plustwo]
-\defineprofile[quarterfixed][\v!fixed][\c!factor=\plusfour]
-\defineprofile[eightsfixed] [\v!fixed][\c!factor=\pluseight]
+\appendtoks
+    \ifcstok{\profileparameter\c!define}\v!yes
+        \frozen\protected\edefcsname\e!start\currentprofile\endcsname{\spac_profile_start{\currentprofile}}%
+        \frozen\protected\defcsname \e!stop \currentprofile\endcsname{\spac_profile_stop}%
+    \fi
+\to \everydefineprofile
 
-\permanent\protected\def\setprofile[#profile]%
-  {\edef\currentprofile{#profile}%
-   \clf_setprofile
+\def\spac_profile_set
+  {\clf_setprofile
       name     {\currentprofile}%
       height   \dimexpr\profileparameter\c!height\relax
       depth    \dimexpr\profileparameter\c!depth\relax
@@ -67,6 +73,36 @@
       lines    \numexpr\profileparameter\c!lines\relax
       method   {\profileparameter\c!method}%
    \relax}
+
+\tolerant\protected\def\spac_profile_start#profile#spacer[#settings]%
+  {\begingroup
+   \ifparameter#settings\or
+     \edef\currentprofile{#profile}%
+     \setupcurrentprofile[#settings]%
+   \orelse\ifhastok={#profile}%
+      \let\currentprofile\v!none
+      \setupcurrentprofile[#profile]%
+   \else
+      \edef\currentprofile{#profile}%
+   \fi
+   \spac_profile_set
+   \par
+   \profileparameter\c!before}
+
+\protected\def\spac_profile_stop
+  {\par % otherwise not applied
+   \profileparameter\c!after
+   \endgroup}
+
+\permanent\protected\def\startprofile[#profile]%
+  {\spac_profile_start{#profile}}
+
+\permanent\protected\def\stopprofile
+  {\spac_profile_stop}
+
+\permanent\protected\def\setprofile[#profile]%
+  {\edef\currentprofile{#profile}%
+   \spac_profile_set}
 
 \permanent\protected\def\resetprofile
   {\c_attr_profilemethod\attributeunsetvalue}
@@ -109,5 +145,9 @@
       method   {\profileparameter\c!method}%
     \relax
     \endgroup}
+
+\defineprofile[halffixed]   [\v!fixed][\c!factor=\plustwo]
+\defineprofile[quarterfixed][\v!fixed][\c!factor=\plusfour]
+\defineprofile[eightsfixed] [\v!fixed][\c!factor=\pluseight]
 
 \protect \endinput

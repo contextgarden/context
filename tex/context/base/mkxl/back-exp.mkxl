@@ -327,6 +327,7 @@
        svgstyle   {\exportparameter\c!svgstyle}%
        cssfile    {\exportparameter\c!cssfile}%
        file       {\exportparameter\c!file}%
+       option     {\exportparameter\c!option}%
        export     {\backendparameter\c!export}%
    \relax}
 

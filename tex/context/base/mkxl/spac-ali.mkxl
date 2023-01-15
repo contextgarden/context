@@ -1253,6 +1253,9 @@
 \letcsname\??alignsimplereverse\v!flushright\endcsname\spac_align_simple_left
 \letcsname\??alignsimplereverse\v!middle    \endcsname\spac_align_simple_middle
 
+\protected\def\spac_align_simple#1%
+  {\begincsname\??alignsimple#1\endcsname}
+
 \permanent\protected\def\simplealignedbox#1#2%
   {\hbox \ifdim#1>\zeropoint to #1
      \ifcsname\??alignsimple#2\endcsname

@@ -49,6 +49,7 @@ local t_sweeps         = 0
 local trialtypesetting = context.trialtypesetting
 
 function nodes.handlers.migrate(head,where)
+    -- is this still needed
     if head and not trialtypesetting() and where == "alignment" then
         if trace_migrations then
             report_nodes("migration sweep %a",where)

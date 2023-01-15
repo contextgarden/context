@@ -9,7 +9,7 @@
 \startchapter[title=Why we don't do this]
 
 The \TEX\ engine has two math modes: inline and display. What exactly happens
-before we do that depends on what mode we are in.
+before we enter math depends on what mode we are in.
 
 \startitemize
     \startitem
@@ -25,7 +25,7 @@ before we do that depends on what mode we are in.
         indentation and everything that \type {\everypar} likes to inject. Inline
         math then stays inline but display math starts out with flushing the
         current paragraph and that happens to be the state, indentation and
-        everything else injected at the beginning. Often nothing is sees, just
+        everything else injected at the beginning. Often nothing is seen, just
         an empty line sits there.
     \stopitem
     \startitem
@@ -35,7 +35,7 @@ before we do that depends on what mode we are in.
 \stopitemize
 
 Especially the second case is tricky. The \quote {empty} line is placed with
-proper \type {\parskip}, \type {\parindent} and whatever. That can end up with a
+proper \typ {\parskip}, \typ {\parindent} and whatever. That can end up with a
 lot of supposedly whitespace of which is not really clear (for the user) what
 comes from where: interline space, whitespace, line height, display spacing, etc.
 To that you can add that empty lines are special themselves: in \MKII\ we relax
@@ -43,8 +43,8 @@ To that you can add that empty lines are special themselves: in \MKII\ we relax
 \LUAMETATEX\ has no checks at all. \footnote {The same can be told about \type
 {\outer}.}
 
-Before We show some examples of this we have to make clear that \CONTEXT\ users
-don't do this have to worry about all this. We don't follow the (Plain and
+Before we show some examples of this we have to make clear that \CONTEXT\ users
+don't have to worry about all this. We don't follow the (Plain and
 \LATEX) \AMS\ policy of \quotation {no empty lines before display math} and
 \quotation {no empty lines in display math}. We don't even use the display skip
 parameters and we do compensate for these empty line issues. The basics haven't
@@ -112,9 +112,9 @@ make sure that we operate in regular \TEX\ mode, the way other macro packages do
 
 First we show what we get with \typ {\mathdisplayskipmode 1}. This makes the
 engine behave like other engines. We don't show what we get with \typ
-{\mathdisplayskipmode 2} where zero skips are ignored but we don't have these
-here. Last we show what we get with \typ {\mathdisplayskipmode 3}. In this
-example the math specific skips are completely ignored.
+{\mathdisplayskipmode 2} where zero skips are ignored but we don't have these.
+Last we show what we get with \typ {\mathdisplayskipmode 3}. Here the math
+specific skips are completely ignored.
 
 In both shown cases you will notice that the \type {\parskip} and \type
 {\baselineskip} interfere which in turn demonstrates why in \CONTEXT\ we always
@@ -133,6 +133,13 @@ macro packages will use it no time will be wasted on this.
 
 {\mathdisplayskipmode 1 \getbuffer}
 {\mathdisplayskipmode 3 \getbuffer}
+
+
+% \mathdisplaymode 0
+% before \par $$             \vadjust {\bf post 1} \vadjust {\bf post 2} x_2 \vadjust pre {\bf pre} $$ \par after \blank[3*line]
+% before \par $$             \vadjust {\bf post 1} \vadjust {\bf post 2} x_2 \vadjust pre {\bf pre} $$ \par after \blank[3*line]
+% before \par $              \vadjust {\bf post 1} \vadjust {\bf post 2} x_3 \vadjust pre {\bf pre} $  \par after \blank[3*line]
+% before \par $\displaystyle \vadjust {\bf post 1} \vadjust {\bf post 2} x_3 \vadjust pre {\bf pre} $  \par after \blank[3*line]
 
 \stopchapter
 

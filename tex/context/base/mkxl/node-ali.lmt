@@ -26,6 +26,7 @@ local getglue            = nuts.getglue
 local setglue            = nuts.setglue
 local getwhd             = nuts.getwhd
 local setwhd             = nuts.setwhd
+local setpenalty         = nuts.setpenalty
 local getlist            = nuts.getlist
 local setlist            = nuts.setlist
 local setattrlist        = nuts.setattrlist
@@ -54,6 +55,7 @@ local nextrecord         = traversers.alignrecord
 local nextunset          = traversers.unset
 local nextglyph          = traversers.glyph
 local nextglue           = traversers.glue
+local nextpenalty        = traversers.penalty
 local nextboundary       = traversers.boundary
 local nextnode           = traversers.node
 local nextlist           = traversers.list
@@ -75,6 +77,7 @@ local fontkern_code      = nodes.kerncodes.fontkern
 local row_code           = nodes.listcodes.alignment -- should be row
 local cell_code          = nodes.listcodes.cell
 local line_code          = nodes.listcodes.line
+local linepenalty_code   = nodes.penaltycodes.linepanalty
 
 -- local preamble_pass <const> = tex.alignmentcontextcodes.preamble
 -- local preroll_pass  <const> = tex.alignmentcontextcodes.preroll
@@ -349,54 +352,79 @@ do
     local a_location        = attributes.system("mathnumberlocation")
     local a_threshold       = attributes.system("mathnumberthreshold")
 
+    local v_first          = interfaces.variables.first
+    local v_last           = interfaces.variables.last
+    local v_both           = interfaces.variables.both
+
     -- Here:
 
     local function openup(specification,head)
-        local inbetween = specification.inbetween or 0
-        local height    = specification.height or 0
-        local depth     = specification.depth or 0
-        local lines     = { }
+        local inbetween   = specification.inbetween or 0
+        local height      = specification.height or 0
+        local depth       = specification.depth or 0
+        local splitmethod = specification.splitmethod or ""
+        local lines       = { }
         for n, id, subtype, list in nextlist, head do
             lines[#lines+1] = { n, subtype, getwhd(n) }
         end
-        local t = #lines
-        if t > 0 then
-            local l = 1
+        local noflines = #lines
+        if noflines > 0 then
+            local currentline = 1
             for n, subtype in nextglue, head do
                 -- one day we can decide what to do with intertext stuff based on the
                 -- subtype but not now ... on our agenda (intertext etc)
                 if subtype == baselineskip_code or subtype == lineskip_code then
+                    local nextline = currentline + 1
                     local amount, stretch, shrink = getglue(n)
-                    local prevdp = lines[l]  [5]
-                    local nextht = lines[l+1][4]
+                    local prevdp = lines[currentline][5]
+                    local nextht = lines[nextline][4]
                     local delta  = 0
                     if prevdp < depth then
-                        setdepth(lines[l][1],depth)
+                        setdepth(lines[currentline][1],depth)
                         delta = delta + (depth - prevdp)
                     end
                     if nextht < height then
-                        setheight(lines[l+1][1],height)
+                        setheight(lines[nextline][1],height)
                         delta = delta + (height - nextht)
                     end
-                    if subtype == lineskip_code then
-                        setglue(n,inbetween,stretch,shrink)
+--                     if subtype == lineskip_code then
+--                         setglue(n,inbetween,stretch,shrink)
                         setsubtype(n,baselineskip_code)
-                    else
+--                     else
                         setglue(n,amount+inbetween-delta,stretch,shrink)
-                    end
-                    l = l + 1
---                     if l > t then
---                         break
 --                     end
+                    curline = nextline
+-- if currentline > noflines then
+--     break
+-- end
+                end
+            end
+            if splitmethod ~= "" then
+                local currentline = 0
+                for n, subtype in nextpenalty, head do
+                    if subtype == linepenalty_code then
+                        if l == 1 then
+                            if splitmethod == v_both or splitmethod == v_first then
+print("FIRST")
+                                setpenalty(n, 10000)
+                            end
+                        elseif l == noflines then
+                            if splitmethod == v_both or splitmethod == v_last then
+print("LAST")
+                                setpenalty(n, 10000)
+                            end
+                        end
+                        curline = currentline
+                    end
                 end
             end
             local firstht = lines[1][4]
-            local lastdp  = lines[t][5]
+            local lastdp  = lines[noflines][5]
             if firstht < height then
                 setheight(lines[1],height)
             end
             if lastdp < depth then
-                setdepth(lines[t],depth)
+                setdepth(lines[noflines],depth)
             end
         end
     end

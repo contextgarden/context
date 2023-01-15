@@ -512,7 +512,25 @@
 \permanent\protected\def\mx {\ifmmode\scaledmathstyle\dimexpression\plusthousand*(\xtextface /\textface)\relax\fi}
 \permanent\protected\def\mxx{\ifmmode\scaledmathstyle\dimexpression\plusthousand*(\xxtextface/\textface)\relax\fi}
 
-\permanent\protected\def\setmscale#1{\ifmmode\scaledmathstyle\numericscale#1\relax\fi}
+% permanent\protected\def\setmscale#1{\ifmmode\scaledmathstyle\numericscale#1\relax\fi}
+
+\installcorenamespace{mscaled}
+
+\mutable\def\mathscalefactor{0.7} % 1/sqrt(2} = 0.70710678118655
+
+\newinteger\c_math_m_scaled \c_math_m_scaled\plusthousand
+
+\permanent\protected\def\setmscale#1%
+  {\ifmmode
+     \iftok{#1}{-}%
+       \c_math_m_scaled\numexpr(\numericscale\mathscalefactor)*\c_math_m_scaled/\plusthousand\relax
+     \orelse\iftok{#1}{=}%
+       \c_math_m_scaled\plusthousand
+     \else
+       \c_math_m_scaled\numericscale#1\relax
+     \fi
+     \scaledmathstyle\c_math_m_scaled
+   \fi}
 
 %D This is nasty, as the engine only stores the last set family parameters (per style) which
 %D in our case can be bold.

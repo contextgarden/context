@@ -7408,6 +7408,12 @@ return {
    ["en"]="alignbottom",
    ["fr"]="alignerbas",
   },
+  ["topalign"]={
+   ["en"]="topalign",
+  },
+  ["bottomalign"]={
+   ["en"]="bottomalign",
+  },
   ["aligncharacter"]={
    ["cs"]="aligncharacter",
    ["de"]="aligncharacter",

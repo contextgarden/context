@@ -154,7 +154,7 @@
 \newinteger \c_math_fence_check
 
 \protected\def\math_fenced_common#1#2#3#4% \Uwhatever class symbol source
-  {\c_math_fenced_class\mathfenceparameter#2\relax
+  {\c_math_fenced_class\math_class_by_parameter\mathfenceparameter#2%
    \math_fenced_check_size_mismatch % we need to catch an unbalanced \F as we are sequential
    \ifconditional\c_math_fenced_sized
    \orelse\ifconditional\c_math_fenced_level_mode
@@ -184,9 +184,9 @@
          \Uvextensible
        \else
          #1% \Uleft \Umiddle \Uleft
-        \ifx#1\Umiddle
-          nooverflow %
-        \fi
+         \ifx#1\Umiddle
+           nooverflow %
+         \fi
        \fi
      \orelse\ifx\p_factor\v!auto
        \ifconditional\c_math_fenced_level_mode
@@ -213,7 +213,7 @@
         \orelse\ifempty\p_mathclass
           \c_math_fenced_class
         \else
-          \p_mathclass
+          \mathcodechecked\p_mathclass
         \fi
      \s!source
         \numexpr\namedboxanchor{\mathfenceparameter#4}\relax
@@ -339,7 +339,7 @@
 % \definemathfence [tupdownarrows] [text] [\c!left="2191,\c!right="2193]
 
 \protected\def\math_fenced_horizontal_common#1#2#3#4% \Uwhatever class symbol source
-  {\c_math_fenced_class\mathfenceparameter#2\relax
+  {\c_math_fenced_class\math_class_by_parameter\mathfenceparameter#2\relax
    \edef\p_fence{#3}%
    #1% \Uleft \Umiddle \Uleft
    \usedcolorparameterattributes{\mathfenceparameter\c!color}%

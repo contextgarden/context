@@ -664,14 +664,13 @@ void tex_show_save_groups(void)
          //     ++pointer;
          //     tex_print_str_esc("beginmathgroup");
          //     goto FOUND2;
-            case math_shift_group:
-                if (mode == mmode) {
-                    tex_print_char('$');
-                } else if (lmt_nest_state.nest[pointer].mode == mmode) {
-                    tex_print_cmd_chr(equation_number_cmd, tex_aux_save_value(saved_equation_number_item_location));
-                    goto FOUND2;
-                }
+            case math_inline_group:
                 tex_print_char('$');
+            case math_display_group:
+                tex_print_char('$');
+                goto FOUND2;
+            case math_number_group:
+                tex_print_cmd_chr(equation_number_cmd, tex_aux_save_value(saved_equation_number_item_location));
                 goto FOUND2;
             case math_fence_group:
                 /* kind of ugly ... maybe also save that one */ /* todo: operator */

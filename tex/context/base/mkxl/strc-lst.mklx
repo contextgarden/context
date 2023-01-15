@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Lists}
 
-\registerctxluafile{strc-lst}{}
+\registerctxluafile{strc-lst}{autosuffix}
 
 % clean up in progress ...
 %
@@ -364,6 +364,9 @@
 
 \def\strc_lists_process_pagenumber#1%
   {\begincsname\??listpagenumber#1\endcsname}
+
+\permanent\def\structurelistexternal
+  {\clf_listexternal\numexpr\currentlistindex\relax}
 
 \permanent\def\structurelistlocation
   {\clf_listlocation\numexpr\currentlistindex\relax}
@@ -1449,12 +1452,53 @@
      \strc_lists_interaction_check_nop
    \fi}
 
+% \def\strc_lists_interaction_check_yes_yes
+%   {\edef\p_interaction_forward{\listparameter\c!interaction}%
+%    \ifcsname\??listinteractions\p_interaction_forward\endcsname
+%     %\expandafter\let\expandafter\p_interaction_forward\csname\??listinteractions\p_interaction_forward\endcsname
+%      \expandafter\let\expandafter\p_interaction_forward\lastnamedcs
+%      \strc_references_get_simple_reference{internal(\currentlistentrylocation)}%
+%      \a_strc_lists_reference\currentreferenceattribute
+%    \else
+%      \a_strc_lists_reference\attributeunsetvalue
+%    \fi
+%    \ifnum\a_strc_lists_reference=\attributeunsetvalue
+%      \let\strc_lists_get_reference_attribute\gobbleoneargument
+%      \let\strc_lists_set_reference_attribute\gobbleoneargument
+%      \let\strc_lists_set_style_color        \strc_lists_set_style_color_normal
+%    \else
+%      \let\strc_lists_get_reference_attribute\strc_lists_get_reference_attribute_indeed
+%      \let\strc_lists_set_reference_attribute\strc_lists_set_reference_attribute_indeed
+%      \let\strc_lists_set_style_color        \strc_lists_set_style_color_special
+%    \fi
+%    \edef\p_interaction_backward{\namedheadparameter\currentlist\c!interaction}% \namedheadparameter !
+%    \ifx\p_interaction_backward\v!list
+%      \strc_references_set_simple_reference{*\currentlistentrylocation}%
+%      \a_strc_lists_destination\currentdestinationattribute
+%    \else
+%      \a_strc_lists_destination\attributeunsetvalue
+%    \fi
+%    \ifnum\a_strc_lists_destination=\attributeunsetvalue
+%      \lettonothing\strc_lists_get_destination_attribute
+%      \lettonothing\strc_lists_set_destination_attribute
+%    \else
+%      \let\strc_lists_get_destination_attribute\strc_lists_get_destination_attribute_indeed
+%      \let\strc_lists_set_destination_attribute\strc_lists_set_destination_attribute_indeed
+%    \fi}
+
 \def\strc_lists_interaction_check_yes_yes
-  {\edef\p_interaction_forward{\listparameter\c!interaction}%
+  {\edef\p_interaction_forward {\listparameter\c!interaction}%
+   \edef\p_interaction_backward{\namedheadparameter\currentlist\c!interaction}% \namedheadparameter !
    \ifcsname\??listinteractions\p_interaction_forward\endcsname
     %\expandafter\let\expandafter\p_interaction_forward\csname\??listinteractions\p_interaction_forward\endcsname
      \expandafter\let\expandafter\p_interaction_forward\lastnamedcs
-     \strc_references_get_simple_reference{internal(\currentlistentrylocation)}%
+     \ifcstok{\structurelistexternal}\emptytoks % luacall
+       \strc_references_get_simple_reference{internal(\currentlistentrylocation)}%
+     \else
+     % \writestatus{FAR OUT LIST}{\structurelistexternal::page(\number\structurelistrealpagenumber)}%
+       \strc_references_get_simple_reference{\structurelistexternal::page(\number\structurelistrealpagenumber)}%
+       \let\p_interaction_backward\empty
+     \fi
      \a_strc_lists_reference\currentreferenceattribute
    \else
      \a_strc_lists_reference\attributeunsetvalue
@@ -1468,7 +1512,6 @@
      \let\strc_lists_set_reference_attribute\strc_lists_set_reference_attribute_indeed
      \let\strc_lists_set_style_color        \strc_lists_set_style_color_special
    \fi
-   \edef\p_interaction_backward{\namedheadparameter\currentlist\c!interaction}% \namedheadparameter !
    \ifx\p_interaction_backward\v!list
      \strc_references_set_simple_reference{*\currentlistentrylocation}%
      \a_strc_lists_destination\currentdestinationattribute

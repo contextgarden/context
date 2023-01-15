@@ -32,6 +32,7 @@
    %\c!margin=,
    %\c!align=,
    %\c!separator=,
+ % \c!splitmethod=\v!both, % first|last|both|<empty>
    \c!snap=\v!no,
    \c!snapstep=\v!medium,
    \c!grid=\v!math,
@@ -1443,10 +1444,10 @@
 
 \def\strc_math_analyze_box
   {\clf_handlemathhang
-     stage      \plusone
-     alignstate \c_strc_math_ragged_status
-     box        \b_strc_math_display
-     distance   \formulaparameter\c!textdistance
+     stage       \plusone
+     alignstate  \c_strc_math_ragged_status
+     box         \b_strc_math_display
+     distance    \formulaparameter\c!textdistance
    \relax
   %\holdingmigrations\zerocount
    \setbox\b_strc_math_display\vbox\bgroup % \vtop
@@ -1482,10 +1483,11 @@
      \edef\v_spac_whitespace_current{\formulaparameter\c!spaceinbetween}%
      \spac_whitespace_setup
      \clf_handlemathhang
-       stage      \plusfour
-       inbetween  1\parskip
-       height     \strutht
-       depth      \strutdp
+       stage       \plusfour
+       inbetween   1\parskip
+       height      \strutht
+       depth       \strutdp
+       splitmethod {\formulaparameter\c!splitmethod}%
      \relax
    \endgroup}
 
@@ -1966,16 +1968,16 @@
 
 \permanent\tolerant\protected\def\placenamedformula[#1]%
   {\ifarguments
-     \expandafter\strc_formulase_place_named_nop
+     \expandafter\strc_formulas_place_named_nop
    \else
-     \expandafter\strc_formulase_place_named_yes
+     \expandafter\strc_formulas_place_named_yes
    \fi[#1]}
 
-\def\strc_formulase_place_named_yes[#1]#2%
+\def\strc_formulas_place_named_yes[#1]#2%
   {\setformulalistentry{#2}%
    \placeformula[#1]}
 
-\def\strc_formulase_place_named_nop[#1]#2%
+\def\strc_formulas_place_named_nop[#1]#2%
   {\setformulalistentry{#2}%
    \placeformula}
 

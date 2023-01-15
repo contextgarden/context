@@ -177,10 +177,12 @@ do
         return wrapimage(image)
     end
 
-    local zlibcompress  = xzip.compress
-    local lpegmatch     = lpeg.match
-    local compresslevel = 3
-    local pattern       = lpeg.Cs((lpeg.patterns.space/"" + lpeg.patterns.hextobyte)^0)
+ -- local lpegmatch     = lpeg.match
+ -- local pattern       = lpeg.Cs((lpeg.patterns.space/"" + lpeg.patterns.hextobyte)^0)
+
+    local zlibcompress    = xzip.compress
+    local hextocharacters = string.hextocharacters
+    local compresslevel   = 3
 
     methods.png = function(t)
         -- encoding is ascii hex, no checking here
@@ -190,20 +192,36 @@ do
         if xresolution == 0 or yresolution == 0 or data == "" then
             return -- fatal error
         end
+        data = hextocharacters(data)
+        if not data then
+            return
+        end
         local colorspace = t.colorspace
         local colordepth = 8
         local colors     = 1
+--         if colorspace ~= "rgb" and colorspace ~= "gray" then
+--             -- not that efficient but ok
+--             local d = gsub(t.data,"[^0-9a-f]","")
+--             local b = round(#d / (xresolution * yresolution))
+--             if b == 2 then
+--                 colorspace = "gray"
+--                 colors     = 1
+--             elseif b == 6 then
+--                 colorspace = "rgb"
+--                 colors     = 3
+--             elseif b == 8 then
+--                 return -- for now, todo: convert
+--             end
+--         end
         if colorspace ~= "rgb" and colorspace ~= "gray" then
-            -- not that efficient but ok
-            local d = gsub(t.data,"[^0-9a-f]","")
-            local b = round(#d / (xresolution * yresolution))
-            if b == 2 then
+            local b = round(#data / (xresolution * yresolution))
+            if b == 1 then
                 colorspace = "gray"
                 colors     = 1
-            elseif b == 6 then
+            elseif b == 3 then
                 colorspace = "rgb"
                 colors     = 3
-            elseif b == 8 then
+            elseif b == 4 then
                 return -- for now, todo: convert
             end
         end
@@ -221,7 +239,8 @@ do
         elseif height == 0 then
             height = width  * yresolution / xresolution
         end
-        data = zlibcompress(lpegmatch(pattern,data),compresslevel)
+     -- data = zlibcompress(lpegmatch(pattern,data),compresslevel)
+        data = zlibcompress(data,compresslevel)
         local xobject = pdfdictionary {
             Type             = pdfconstant("XObject"),
             Subtype          = pdfconstant("Image"),

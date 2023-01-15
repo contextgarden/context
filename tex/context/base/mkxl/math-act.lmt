@@ -2742,9 +2742,21 @@ do
     local nps = fonts.helpers.newprivateslot
 
     local list = {
-        { 0x0302, nps("delimited right hat"),   nps("delimited ghost hat")   },
-        { 0x0303, nps("delimited right tilde"), nps("delimited ghost tilde") },
-        { 0x030C, nps("delimited right check"), nps("delimited ghost check") },
+     -- { 0x0300, nps("delimited right grave"),   nps("delimited ghost grave")   },
+        { 0x0308, nps("delimited right ddot"),    nps("delimited ghost ddot")    },
+        { 0x0304, nps("delimited right bar"),     nps("delimited ghost bar")     },
+     -- { 0x0301, nps("delimited right acute"),   nps("delimited ghost acute")   },
+        { 0x0302, nps("delimited right hat"),     nps("delimited ghost hat")     },
+        { 0x030C, nps("delimited right check"),   nps("delimited ghost check")   },
+        { 0x0306, nps("delimited right breve"),   nps("delimited ghost breve")   },
+        { 0x0307, nps("delimited right dot"),     nps("delimited ghost dot")     },
+        { 0x030A, nps("delimited right ring"),    nps("delimited ghost ring")    },
+        { 0x0303, nps("delimited right tilde"),   nps("delimited ghost tilde")   },
+        { 0x20DB, nps("delimited right dddot"),   nps("delimited ghost dddot")   },
+        { 0x2020, nps("delimited right dagger"),  nps("delimited ghost dagger")  },
+        { 0x2021, nps("delimited right ddagger"), nps("delimited ghost ddagger") },
+        { 0x2217, nps("delimited right ast"),     nps("delimited ghost ast")     },
+        { 0x22C6, nps("delimited right star"),    nps("delimited ghost star")    },
     }
 
     function mathtweaks.addfourier(target,original,parameters)

@@ -594,6 +594,7 @@
 		<cd:variable name='temporary' value='temporary'/>
 		<cd:variable name='test' value='test'/>
 		<cd:variable name='text' value='text'/>
+		<cd:variable name='textdisplay' value='textdisplay'/>
 		<cd:variable name='textnote' value='textnote'/>
 		<cd:variable name='three' value='three'/>
 		<cd:variable name='thursday' value='thursday'/>
@@ -724,6 +725,7 @@
 		<cd:constant name='bookmark' value='bookmark'/>
 		<cd:constant name='bottom' value='bottom'/>
 		<cd:constant name='bottomafter' value='bottomafter'/>
+		<cd:constant name='bottomalign' value='bottomalign'/>
 		<cd:constant name='bottombefore' value='bottombefore'/>
 		<cd:constant name='bottomcolor' value='bottomcolor'/>
 		<cd:constant name='bottomcommand' value='bottomcommand'/>
@@ -1338,6 +1340,7 @@
 		<cd:constant name='toffset' value='toffset'/>
 		<cd:constant name='tolerance' value='tolerance'/>
 		<cd:constant name='top' value='top'/>
+		<cd:constant name='topalign' value='topalign'/>
 		<cd:constant name='topcolor' value='topcolor'/>
 		<cd:constant name='topcommand' value='topcommand'/>
 		<cd:constant name='topdistance' value='topdistance'/>

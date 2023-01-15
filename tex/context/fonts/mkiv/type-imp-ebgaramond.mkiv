@@ -29,16 +29,25 @@
 \definefontfeature
   [eb-garamond-normal]
   [default]
-  [mode=node,ccmp=yes,
-   calt=yes,liga=yes,
-   dlig=yes,hlig=yes,
-   kern=yes,mark=yes,mkmk=yes,
-   onum=yes,pnum=yes,salt=yes,
+  [mode=node,
+   ccmp=yes,
+   calt=yes,
+   dlig=no,
+   hlig=no,
+ % salt=yes,
+ % onum=yes,
+   onum=no,
+   pnum=yes,
    script=latn]
 
 \definefontfeature
   [eb-garamond-smallcaps]
   [eb-garamond-normal]
+  [smcp=yes,c2sc=yes]
+
+\definefontfeature
+  [ysabeau-smallcaps]
+  [default]
   [smcp=yes,c2sc=yes]
 
 % \loadtypescriptfile[ebgaramond]
@@ -67,6 +76,17 @@
         \definefontsynonym [\s!SerifCaps]      [\s!Serif]                     [\s!features=eb-garamond-smallcaps]
     \stoptypescript
 
+
+
+     \starttypescript [\s!sans] [ysabeau]
+         % \setups[font:fallback:sans]
+         \definefontsynonym [\s!Sans]          [\s!file:ysabeau-regular]       [\s!features=\s!default]
+         \definefontsynonym [\s!SansItalic]    [\s!file:ysabeau-italic]        [\s!features=\s!default]
+         \definefontsynonym [\s!SansBold]      [\s!file:ysabeau-bold]          [\s!features=\s!default]
+         \definefontsynonym [\s!SansBoldItalic][\s!file:ysabeau-bolditalic]    [\s!features=\s!default]
+         \definefontsynonym [\s!SansCaps]      [\s!Sans]                       [\s!features=ysabeau-smallcaps]
+     \stoptypescript
+
     \starttypescript [\s!math] [ebgaramond,ebgaramond-nt]
         \checkedmapfontsize[\typescripttwo][\s!script]      [.70]
         \checkedmapfontsize[\typescripttwo][\s!scriptscript][.50]
@@ -84,6 +104,7 @@
 
     \starttypescript[ebgaramond,ebgaramond-nt]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [ebgaramond]     [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [ysabeau]        [\s!default]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default] [\s!rscale=0.8]
       % \definetypeface [\typescriptone] [\s!mm] [\s!math]  [bonum]          [\s!default] [\s!rscale=0.8]
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone] [\s!default]

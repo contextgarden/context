@@ -167,7 +167,16 @@ do
         if data then
             local ndata = #data
             local roottg = root.tg
-            if roottg == "msubsup" then
+            if roottg == "mo" then
+                local s = specifications[root.fulltag]
+                local c = s.class
+                if c == "open" or c == "close" or c == "middle" then
+                    root.attributes = {
+                        maxsize = 1
+                    }
+                end
+
+            elseif roottg == "msubsup" then
                 -- kind of tricky: we have a diufferent order in display mode
                 local nucleus, superscript, subscript
                 if ndata > 3 then
@@ -211,25 +220,33 @@ do
          --     end
             elseif roottg == "mfenced" then
                 local s = specifications[root.fulltag]
-                local l, m, r = s.left, s.middle, s.right
-                if l then
-                    l = utfchar(l)
-                end
-                if m then
-                    local t = { }
-                    for i=1,#m do
-                        t[i] = utfchar(m[i])
+                local o = s.operator
+                if o then
+                    root.skip = "comment"
+                 -- root.content = utfchar(o) -- use embedded for now
+                else
+                    local l = s.left
+                    local m = s.middle
+                    local r = s.right
+                    if l then
+                        l = utfchar(l)
                     end
-                    m = concat(t)
+                    if m then
+                        local t = { }
+                        for i=1,#m do
+                            t[i] = utfchar(m[i])
+                        end
+                        m = concat(t)
+                    end
+                    if r then
+                        r = utfchar(r)
+                    end
+                    root.attributes = {
+                        open       = l,
+                        separators = m,
+                        close      = r,
+                    }
                 end
-                if r then
-                    r = utfchar(r)
-                end
-                root.attributes = {
-                    open       = l,
-                    separators = m,
-                    close      = r,
-                }
             end
             if ndata == 0 then
                 root.skip = "comment" -- get rid of weird artefacts
@@ -628,8 +645,9 @@ do
             local specification = specifications[di.fulltag]
             local mode = specification and specification.mode == "display" and "block" or "inline"
             di.attributes = {
-                ["display"] = mode,
-                ["xmlns:m"] = mathmlns,
+                ["display"]    = mode,
+                ["xmlns:m"]    = mathmlns,
+                ["xmlns:math"] = mathmlns,
             }
             -- can be option if needed:
             if mode == "inline" then

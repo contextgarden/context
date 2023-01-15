@@ -210,7 +210,7 @@
   \fi}
 
 \def\lang_basics_install_indeed#1#2%
-  {\ifcstok{\specificlanguageparameter{#1}\c!command}\v!no\orelse\ifcsname#1\endcsname\else
+  {\ifcstok{\specificlanguageparameter{#1}\c!define}\v!no\orelse\ifcsname#1\endcsname\else
      \frozen\instance\protected\defcsname#1\endcsname{\lang_basics_set_current[#2]}%
    \fi}
 

@@ -1175,7 +1175,8 @@
 % \def\v_font_identifier_class{\??fontinstanceclass\fontclass-\lastfontidentifier-\fontstyle-\fontsize} % no \fontface
 
 \def\font_basics_define_font_without_parameters#identifier#2%
-  {\c_font_feature_inheritance_mode\c_font_feature_inheritance_fontonly
+  {\relax % intercept lookahead, in case we scan for a number
+   \c_font_feature_inheritance_mode\c_font_feature_inheritance_fontonly
    \edef\lastfontidentifier{#identifier}%
    \let\v_font_size_relative\v_font_rscale_default
    \let\v_font_size_absolute\fontbody

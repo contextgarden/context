@@ -224,6 +224,7 @@
 \definesystemconstant {forget}
 \definesystemconstant {format}
 \definesystemconstant {fraktur}
+\definesystemconstant {fraktion}
 \definesystemconstant {full}
 \definesystemconstant {f}
 \definesystemconstant {global}
@@ -419,6 +420,7 @@
 \definesystemconstant {unpack}
 \definesystemconstant {unknown}
 \definesystemconstant {Unicode}
+\definesystemconstant {unroll}
 \definesystemconstant {upright}
 \definesystemconstant {userdata}
 \definesystemconstant {userpage}

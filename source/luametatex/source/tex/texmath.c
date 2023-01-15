@@ -1235,7 +1235,7 @@ static void tex_aux_push_math(quarterword group, int style)
 
 static void tex_aux_enter_inline_math(int style)
 {
-    tex_aux_push_math(math_shift_group, style);
+    tex_aux_push_math(math_inline_group, style);
     update_tex_family(0, unused_math_family);
     if (every_math_par) {
         tex_begin_token_list(every_math_par, every_math_text);
@@ -1294,14 +1294,12 @@ void tex_run_math_initialize(void)
 */
 
 void tex_run_math_equation_number(void) {
-    if (tex_in_privileged_mode()) {
-        if (cur_group == math_shift_group) {
-            tex_set_saved_record(saved_equation_number_item_location, equation_number_location_save_type, 0, cur_chr);
-            lmt_save_state.save_stack_data.ptr += saved_equation_number_n_of_items;
-            tex_aux_enter_inline_math(text_style);
-        } else {
-            tex_off_save();
-        }
+    if (cur_group == math_display_group) {
+        tex_set_saved_record(saved_equation_number_item_location, equation_number_location_save_type, 0, cur_chr);
+        lmt_save_state.save_stack_data.ptr += saved_equation_number_n_of_items;
+        tex_aux_enter_inline_math(text_style);
+    } else {
+        tex_off_save();
     }
 }
 
@@ -1367,8 +1365,9 @@ static int tex_aux_pre_math_par_direction(void)
 static void tex_aux_enter_display_math(halfword cmd)
 {
     if (math_display_mode_par) {
-        tex_aux_push_math(math_shift_group, display_style);
+        tex_aux_push_math(math_inline_group, display_style);
         cur_list.math_mode = cmd; 
+        cur_list.mode = inline_mmode; /* new */
         update_tex_family(0, unused_math_family);
         if (every_display_par) {
             tex_begin_token_list(every_display_par, every_display_text);
@@ -1386,10 +1385,8 @@ static void tex_aux_enter_display_math(halfword cmd)
         if (cur_list.head == cur_list.tail || (node_next(cur_list.head) == cur_list.tail && node_type(cur_list.tail) == par_node && ! node_next(cur_list.tail))) {
             if (node_next(cur_list.head) == cur_list.tail) {
                 /*tex
-
                     |resume_after_display| inserts a |par_node|, but if there is another display
                     immediately following, we have to get rid of that node.
-
                 */
                 tex_flush_node(cur_list.tail);
              /* cur_list.tail = cur_list.head; */ /* probably needed */
@@ -1397,16 +1394,14 @@ static void tex_aux_enter_display_math(halfword cmd)
             tex_pop_nest();
             size = - max_dimen;
         } else {
-            tex_line_break(1, math_shift_group);
+            tex_line_break(1, math_display_group);
          // size = tex_actual_box_width(lmt_linebreak_state.just_box, tex_x_over_n(tex_get_font_em_width(cur_font_par), 1000) * math_pre_display_gap_factor_par);
             size = tex_actual_box_width(lmt_linebreak_state.just_box, scaledround((tex_get_font_em_width(cur_font_par) / 1000.0) * math_pre_display_gap_factor_par));
         }
         /*tex
-
             Now we are in vertical mode, working on the list that will contain the display. A displayed
             equation is considered to be three lines long, so we calculate the length and offset of line
             number |prev_graf + 2|.
-
         */
         if (par_shape_par) {
             /*tex scope of paragraph shape specification */
@@ -1430,7 +1425,7 @@ static void tex_aux_enter_display_math(halfword cmd)
             width = hsize_par;
             indent = 0;
         }
-        tex_aux_push_math(math_shift_group, display_style);
+        tex_aux_push_math(math_display_group, display_style);
         cur_list.mode = mmode;
         update_tex_family(0, unused_math_family);
         update_tex_pre_display_size(size);
@@ -4068,7 +4063,9 @@ void tex_run_math_fence(void)
             switch (cur_group) {
                 case math_fence_group:
                     break;
-                case math_shift_group:
+                case math_inline_group:
+                case math_display_group:
+                case math_number_group:
                     tex_aux_scan_delimiter(null, no_mathcode, unset_noad_class);
                     if (st == middle_fence_side) {
                         tex_handle_error(
@@ -4246,24 +4243,27 @@ static void tex_aux_check_inline_math_end(void)
 
 static void tex_aux_resume_after_display(void)
 {
-    if (cur_group == math_shift_group) {
-        tex_aux_unsave_math();
-        cur_list.prev_graf += 3;
-        tex_push_nest();
-        cur_list.mode = hmode;
-        cur_list.space_factor = 1000;
-        /*tex This needs to be intercepted in the display math start! Todo! */
-        tex_tail_append(tex_new_par_node(penalty_par_subtype));
-        tex_get_x_token();
-        if (cur_cmd != spacer_cmd) {
-            tex_back_input(cur_tok);
-        }
-        if (lmt_nest_state.nest_data.ptr == 1) {
-            lmt_page_filter_callback(after_display_page_context, 0);
-            tex_build_page();
-        }
-    } else {
-        tex_confusion("finishing display math");
+    switch (cur_group) {
+        case math_display_group:
+            tex_aux_unsave_math();
+            cur_list.prev_graf += 3;
+            tex_push_nest();
+            cur_list.mode = hmode;
+            cur_list.space_factor = default_space_factor;
+            /*tex This needs to be intercepted in the display math start! Todo! */
+            tex_tail_append(tex_new_par_node(penalty_par_subtype));
+            tex_get_x_token();
+            if (cur_cmd != spacer_cmd) {
+                tex_back_input(cur_tok);
+            }
+            if (lmt_nest_state.nest_data.ptr == 1) {
+                lmt_page_filter_callback(after_display_page_context, 0);
+                tex_build_page();
+            }
+            break;
+        default:    
+            tex_confusion("finishing display math");
+            break;
     }
 }
 
@@ -4328,10 +4328,6 @@ static void tex_aux_finish_displayed_math(int atleft, halfword eqnumber, halfwor
     quarterword glue_above, glue_below;
     /*tex glue parameter subtypes for before and after */
     quarterword subtype_above, subtype_below;
-    /*tex tail of adjustment lists */
-    halfword post_adjust_tail, pre_adjust_tail;
-    /*tex tail of migration lists */
-    halfword post_migrate_tail, pre_migrate_tail;
     /*tex for equation numbers */
     scaled eqno_width;
     /*tex true if the math and surrounding (par) dirs are different */
@@ -4349,15 +4345,6 @@ static void tex_aux_finish_displayed_math(int atleft, halfword eqnumber, halfwor
     node_subtype(equation_box) = equation_list;
     attach_current_attribute_list(equation_box);
     equation = box_list(equation_box);
-    /* */
-    post_adjust_tail = lmt_packaging_state.post_adjust_tail;
-    pre_adjust_tail = lmt_packaging_state.pre_adjust_tail;
-    post_migrate_tail = lmt_packaging_state.post_migrate_tail;
-    pre_migrate_tail = lmt_packaging_state.pre_migrate_tail;
-    lmt_packaging_state.post_adjust_tail = null;
-    lmt_packaging_state.pre_adjust_tail = null;
-    lmt_packaging_state.post_migrate_tail = null;
-    lmt_packaging_state.pre_migrate_tail = null;
     /* */
     equation_width = box_width(equation_box);
     line_width = display_width_par;
@@ -4518,7 +4505,19 @@ static void tex_aux_finish_displayed_math(int atleft, halfword eqnumber, halfwor
     } else {
         box_shift_amount(equation_box) = indent + displacement;
     }
-    /*tex check for prev: */
+    /* */
+    if (pre_adjust_head != lmt_packaging_state.pre_adjust_tail) {
+        tex_inject_adjust_list(pre_adjust_head, 1, lmt_linebreak_state.just_box, NULL);
+    }
+    lmt_packaging_state.pre_adjust_tail = null;
+    /* Pre-migrate content (callback). */
+    if (pre_migrate_head != lmt_packaging_state.pre_migrate_tail) {
+        tex_append_list(pre_migrate_head, lmt_packaging_state.pre_migrate_tail);
+     // if (! lmt_page_builder_state.output_active) {
+     //     lmt_append_line_filter_callback(pre_migrate_append_line_context, 0);
+     // }
+    }
+    /* */
     tex_append_to_vlist(equation_box, lua_key_index(equation), NULL); /* eqbox has the formula */
     if (eqnumber && number_width == 0 && ! atleft) {
         tex_tail_append(tex_new_penalty_node(infinite_penalty, equation_number_penalty_subtype));
@@ -4529,28 +4528,21 @@ static void tex_aux_finish_displayed_math(int atleft, halfword eqnumber, halfwor
         tex_append_to_vlist(eqnumber, lua_key_index(equation_number), NULL);
         glue_below = 0; /* shouldn't this be an option */
     }
-    /*tex Migrating material comes after equation number: is this ok? */
-    if (post_migrate_tail != post_migrate_head) {
-        node_next(cur_list.tail) = node_next(post_migrate_head);
-        node_prev(lmt_packaging_state.post_migrate_tail) = node_prev(cur_list.tail);
-        cur_list.tail = post_migrate_tail;
+    /* */
+    if (post_migrate_head != lmt_packaging_state.post_migrate_tail) {
+        tex_append_list(post_migrate_head, lmt_packaging_state.post_migrate_tail);
+        // if (! lmt_page_builder_state.output_active) {
+        //     lmt_append_line_filter_callback(post_migrate_append_line_context, 0);
+        // }
     }
-    if (post_adjust_tail != post_adjust_head) {
-        node_next(cur_list.tail) = node_next(post_adjust_head);
-        node_prev(lmt_packaging_state.post_adjust_tail) = node_prev(cur_list.tail);
-        cur_list.tail = post_adjust_tail;
+    lmt_packaging_state.post_migrate_tail = null;
+    if (lmt_packaging_state.post_adjust_tail) {
+        if (post_adjust_head != lmt_packaging_state.post_adjust_tail) {
+            tex_inject_adjust_list(post_adjust_head, 1, null, NULL);
+        }
+        lmt_packaging_state.post_adjust_tail = null;
     }
-    /*tex A weird place: is this ok? */
-    if (pre_adjust_tail != pre_adjust_head) {
-        node_next(cur_list.tail) = node_next(pre_adjust_head);
-        node_prev(lmt_packaging_state.pre_adjust_tail) = node_prev(cur_list.tail);
-        cur_list.tail = pre_adjust_tail;
-    }
-    if (pre_migrate_tail != pre_migrate_head) {
-        node_next(cur_list.tail) = node_next(pre_migrate_head);
-        node_prev(lmt_packaging_state.pre_migrate_tail) = node_prev(cur_list.tail);
-        cur_list.tail = pre_migrate_tail;
-    }
+    /* */
     tex_tail_append(tex_new_penalty_node(post_display_penalty_par, after_display_penalty_subtype));
     tex_aux_inject_display_skip(glue_below, subtype_below);
     tex_aux_resume_after_display();
@@ -4570,166 +4562,174 @@ static void tex_aux_finish_displayed_math(int atleft, halfword eqnumber, halfwor
 
 void tex_run_math_shift(void) 
 {
-    if (cur_group == math_shift_group) {
-        /*tex box containing equation number */
-        halfword eqnumber = null;
-        /*tex Use |\leqno| instead of |\eqno|, we default to right. */
-        int atleft = 0;
-        /*tex |mmode| or |-mmode| */
-        int mode = cur_list.mode;
-        int mathmode = cur_list.math_mode; 
-        /*tex this pops the nest, the formula */
-        halfword p = tex_aux_finish_math_list(null);
-        int mathleft = cur_list.math_begin;
-        int mathright = cur_list.math_end;
-        if (cur_cmd == math_shift_cs_cmd) { 
-            switch (cur_chr) { 
-                case begin_inline_math_code:
-                case begin_display_math_code:
-                case begin_math_mode_code:
-                    tex_you_cant_error(NULL);
-                    break;
-            }
-        }
-        if (cur_list.mode == -mode) { // todo: symbolic 
-            /*tex end of equation number */
-          AGAIN:
-            switch (cur_cmd) {
-                case math_shift_cmd:
-                    tex_aux_check_second_math_shift();
-                    break;
-                case end_paragraph_cmd:
-                    tex_get_x_token();
-                    goto AGAIN;
-                default:
-                    tex_aux_check_display_math_end();
-                    break;
-            }
-            tex_run_mlist_to_hlist(p, 0, text_style, unset_noad_class, unset_noad_class);
-            eqnumber = tex_hpack(node_next(temp_head), 0, packing_additional, direction_unknown, holding_none_option);
-            attach_current_attribute_list(eqnumber);
-            tex_aux_unsave_math();
-            /*tex now |cur_group = math_shift_group| */
-            lmt_save_state.save_stack_data.ptr -= saved_equation_number_n_of_items;
-            if (saved_type(saved_equation_number_item_location) == equation_number_location_save_type) {
-                atleft = saved_value(saved_equation_number_item_location) == left_location_code;
-                mode = cur_list.mode;
-                p = tex_aux_finish_math_list(null);
-            } else {
-                tex_confusion("after math");
-            }
-        }
-        if (mode < 0) { // mode == inline_mmode
-            /*tex
-
-                The |unsave| is done after everything else here; hence an appearance of |\mathsurround|
-                inside of |$...$| affects the spacing at these particular |$|'s. This is consistent
-                with the conventions of |$$ ... $$|, since |\abovedisplayskip| inside a display affects
-                the space above that display.
-
-            */
-            halfword math = tex_new_node(math_node, begin_inline_math);
-            if (mathmode) { 
-                switch (cur_cmd) { 
-                    case math_shift_cs_cmd: 
-                        if (cur_chr != end_display_math_code && cur_chr != end_math_mode_code) {
+    switch (cur_group) {
+        case math_inline_group:
+        case math_display_group:
+        case math_number_group:
+            {
+                /*tex box containing equation number */
+                halfword eqnumber = null;
+                /*tex Use |\leqno| instead of |\eqno|, we default to right. */
+                int atleft = 0;
+                /*tex |mmode| or |-mmode| */
+                int mode = cur_list.mode;
+                int mathmode = cur_list.math_mode; 
+                /*tex this pops the nest, the formula */
+                halfword p = tex_aux_finish_math_list(null);
+                int mathleft = cur_list.math_begin;
+                int mathright = cur_list.math_end;
+                if (cur_cmd == math_shift_cs_cmd) { 
+                    switch (cur_chr) { 
+                        case begin_inline_math_code:
+                        case begin_display_math_code:
+                        case begin_math_mode_code:
+                            tex_you_cant_error(NULL);
+                            break;
+                    }
+                }
+                if (cur_list.mode == -mode) { // todo: symbolic 
+                    /*tex end of equation number */
+                  AGAIN:
+                    switch (cur_cmd) {
+                        case math_shift_cmd:
                             tex_aux_check_second_math_shift();
+                            break;
+                        case end_paragraph_cmd:
+                            tex_get_x_token();
+                            goto AGAIN;
+                        default:
+                            tex_aux_check_display_math_end();
+                            break;
+                    }
+                    tex_run_mlist_to_hlist(p, 0, text_style, unset_noad_class, unset_noad_class);
+                    eqnumber = tex_hpack(node_next(temp_head), 0, packing_additional, direction_unknown, holding_none_option);
+                    attach_current_attribute_list(eqnumber);
+                    tex_aux_unsave_math();
+                    /*tex now |cur_group = math_shift_group| */
+                    lmt_save_state.save_stack_data.ptr -= saved_equation_number_n_of_items;
+                    if (saved_type(saved_equation_number_item_location) == equation_number_location_save_type) {
+                        atleft = saved_value(saved_equation_number_item_location) == left_location_code;
+                        mode = cur_list.mode;
+                        p = tex_aux_finish_math_list(null);
+                    } else {
+                        tex_confusion("after math");
+                    }
+                }
+                if (mode == inline_mmode) { 
+             // if (mode < 0) {
+                    /*tex
+
+                        The |unsave| is done after everything else here; hence an appearance of |\mathsurround|
+                        inside of |$...$| affects the spacing at these particular |$|'s. This is consistent
+                        with the conventions of |$$ ... $$|, since |\abovedisplayskip| inside a display affects
+                        the space above that display.
+
+                    */
+                    halfword math = tex_new_node(math_node, begin_inline_math);
+                    if (mathmode) { 
+                        switch (cur_cmd) { 
+                            case math_shift_cs_cmd: 
+                                if (cur_chr != end_display_math_code && cur_chr != end_math_mode_code) {
+                                    tex_aux_check_second_math_shift();
+                                }
+                                break;
+                            case math_shift_cmd: 
+                                tex_aux_check_second_math_shift();
+                                break;
                         }
-                        break;
-                    case math_shift_cmd: 
-                        tex_aux_check_second_math_shift();
-                        break;
-                }
-            } else if (cur_cmd == math_shift_cs_cmd) {
-                tex_aux_check_inline_math_end();
-            }
-            tex_tail_append(math);
-            math_penalty(math) = pre_inline_penalty_par;
-            /*tex begin mathskip code */
-            switch (math_skip_mode_par) {
-                case math_skip_surround_when_zero:
-                    if (! tex_glue_is_zero(math_skip_par)) {
-                        tex_copy_glue_values(math, math_skip_par);
-                    } else {
-                        math_surround(math) = math_surround_par;
+                    } else if (cur_cmd == math_shift_cs_cmd) {
+                        tex_aux_check_inline_math_end();
                     }
-                    break ;
-                case math_skip_always_left:
-                case math_skip_always_both:
-                case math_skip_only_when_skip:
-                    tex_copy_glue_values(math, math_skip_par);
-                    break ;
-                case math_skip_always_right:
-                case math_skip_ignore:
-                    break ;
-                case math_skip_always_surround:
-                default:
-                    math_surround(math) = math_surround_par;
-                    break;
-            }
-            /*tex end mathskip code */
-            if (cur_list.math_dir) {
-                tex_tail_append(tex_new_dir(normal_dir_subtype, math_direction_par)); 
-            }
-            tex_run_mlist_to_hlist(p, cur_list.mode > nomode, is_valid_math_style(cur_list.math_main_style) ?  cur_list.math_main_style : text_style, cur_list.math_begin, cur_list.math_end);
-            tex_try_couple_nodes(cur_list.tail, node_next(temp_head));
-            cur_list.tail = tex_tail_of_node_list(cur_list.tail);
-            if (cur_list.math_dir) {
-                tex_tail_append(tex_new_dir(cancel_dir_subtype, math_direction_par));
-            }
-            cur_list.math_dir = 0;
-            math = tex_new_node(math_node, end_inline_math);
-            tex_tail_append(math);
-            math_penalty(math) = post_inline_penalty_par;
-            /*tex begin mathskip code */
-            switch (math_skip_mode_par) {
-                case math_skip_surround_when_zero :
-                    if (! tex_glue_is_zero(math_skip_par)) {
-                        tex_copy_glue_values(math, math_skip_par);
-                        math_surround(math) = 0;
-                    } else {
-                        math_surround(math) = math_surround_par;
+                    tex_tail_append(math);
+                    math_penalty(math) = pre_inline_penalty_par;
+                    /*tex begin mathskip code */
+                    switch (math_skip_mode_par) {
+                        case math_skip_surround_when_zero:
+                            if (! tex_glue_is_zero(math_skip_par)) {
+                                tex_copy_glue_values(math, math_skip_par);
+                            } else {
+                                math_surround(math) = math_surround_par;
+                            }
+                            break ;
+                        case math_skip_always_left:
+                        case math_skip_always_both:
+                        case math_skip_only_when_skip:
+                            tex_copy_glue_values(math, math_skip_par);
+                            break ;
+                        case math_skip_always_right:
+                        case math_skip_ignore:
+                            break ;
+                        case math_skip_always_surround:
+                        default:
+                            math_surround(math) = math_surround_par;
+                            break;
                     }
-                    break;
-                case math_skip_always_right:
-                case math_skip_always_both:
-                case math_skip_only_when_skip:
-                    tex_copy_glue_values(math, math_skip_par);
-                    break;
-                case math_skip_always_left:
-                case math_skip_ignore:
-                    break;
-                case math_skip_always_surround:
-                default:
-                    math_surround(math) = math_surround_par;
-                    break;
-            }
-            /*tex end mathskip code */
-            cur_list.space_factor = 1000;
-            mathleft = cur_list.math_begin;
-            mathright = cur_list.math_end;
-            tex_aux_unsave_math();
-        } else {
-            if (! eqnumber) {
-                if (cur_cmd == math_shift_cmd) {
-                    tex_aux_check_second_math_shift();
+                    /*tex end mathskip code */
+                    if (cur_list.math_dir) {
+                        tex_tail_append(tex_new_dir(normal_dir_subtype, math_direction_par)); 
+                    }
+                    tex_run_mlist_to_hlist(p, cur_list.mode > nomode, is_valid_math_style(cur_list.math_main_style) ?  cur_list.math_main_style : text_style, cur_list.math_begin, cur_list.math_end);
+                    tex_try_couple_nodes(cur_list.tail, node_next(temp_head));
+                    cur_list.tail = tex_tail_of_node_list(cur_list.tail);
+                    if (cur_list.math_dir) {
+                        tex_tail_append(tex_new_dir(cancel_dir_subtype, math_direction_par));
+                    }
+                    cur_list.math_dir = 0;
+                    math = tex_new_node(math_node, end_inline_math);
+                    tex_tail_append(math);
+                    math_penalty(math) = post_inline_penalty_par;
+                    /*tex begin mathskip code */
+                    switch (math_skip_mode_par) {
+                        case math_skip_surround_when_zero :
+                            if (! tex_glue_is_zero(math_skip_par)) {
+                                tex_copy_glue_values(math, math_skip_par);
+                                math_surround(math) = 0;
+                            } else {
+                                math_surround(math) = math_surround_par;
+                            }
+                            break;
+                        case math_skip_always_right:
+                        case math_skip_always_both:
+                        case math_skip_only_when_skip:
+                            tex_copy_glue_values(math, math_skip_par);
+                            break;
+                        case math_skip_always_left:
+                        case math_skip_ignore:
+                            break;
+                        case math_skip_always_surround:
+                        default:
+                            math_surround(math) = math_surround_par;
+                            break;
+                    }
+                    /*tex end mathskip code */
+                    cur_list.space_factor = default_space_factor;
+                    mathleft = cur_list.math_begin;
+                    mathright = cur_list.math_end;
+                    tex_aux_unsave_math();
                 } else {
-                    tex_aux_check_display_math_end();
+                    if (! eqnumber) {
+                        if (cur_cmd == math_shift_cmd) {
+                            tex_aux_check_second_math_shift();
+                        } else {
+                            tex_aux_check_display_math_end();
+                        }
+                    }
+                    tex_run_mlist_to_hlist(p, 0, display_style, cur_list.math_begin, cur_list.math_end);
+                    mathleft = cur_list.math_begin;
+                    mathright = cur_list.math_end;
+                    tex_aux_finish_displayed_math(atleft, eqnumber, node_next(temp_head));
                 }
+                /* local */
+                update_tex_math_left_class(mathleft);
+                update_tex_math_right_class(mathright);
+                /* global */
+                lmt_math_state.last_left = mathleft;
+                lmt_math_state.last_right = mathright;
             }
-            tex_run_mlist_to_hlist(p, 0, display_style, cur_list.math_begin, cur_list.math_end);
-            mathleft = cur_list.math_begin;
-            mathright = cur_list.math_end;
-            tex_aux_finish_displayed_math(atleft, eqnumber, node_next(temp_head));
-        }
-        /* local */
-        update_tex_math_left_class(mathleft);
-        update_tex_math_right_class(mathright);
-        /* global */
-        lmt_math_state.last_left = mathleft;
-        lmt_math_state.last_right = mathright;
-    } else {
-        tex_off_save();
+            break;
+        default:
+            tex_off_save();
+            break;
     }
 }
 

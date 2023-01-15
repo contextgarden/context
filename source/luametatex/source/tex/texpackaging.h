@@ -39,7 +39,9 @@ typedef enum box_codes {
     insert_copy_code,
     local_left_box_box_code,
     local_right_box_box_code,
-    local_middle_box_box_code
+    local_middle_box_box_code,
+    page_discards_code,
+    split_discards_code,
 } box_codes;
 
 // typedef enum saved_spec_items {

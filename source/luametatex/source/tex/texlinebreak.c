@@ -3546,3 +3546,22 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
     cur_list.direction_stack = lmt_linebreak_state.dir_ptr;
     lmt_linebreak_state.dir_ptr = null;
 }
+
+halfword tex_wipe_margin_kerns(halfword head)
+{
+    /*tex We assume that head is a temp node or at least can be skipped (for now). */
+    halfword tail = head;
+    while (1) {
+        halfword next = node_next(tail);
+        if (next) {
+            if (node_type(next) == kern_node && (node_subtype(next) == left_margin_kern_subtype || node_subtype(next) == right_margin_kern_subtype)) {
+                tex_try_couple_nodes(tail, node_next(next));
+                tex_flush_node(next);
+            } else {
+                tail = next;
+            }
+        } else {
+            return tail;
+        }
+    }
+}

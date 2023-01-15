@@ -225,7 +225,7 @@ void tex_initialize_nesting(void)
     cur_list.prev_graf = 0;
     cur_list.mode_line = 0;
     cur_list.prev_depth = ignore_depth; /*tex |ignore_depth_criterium_par| is not yet available! */
-    cur_list.space_factor = 1000;
+    cur_list.space_factor = default_space_factor;
     cur_list.incomplete_noad = null;
     cur_list.direction_stack = null;
     cur_list.math_dir = 0;
@@ -407,4 +407,11 @@ void tex_tail_append(halfword p)
     node_next(cur_list.tail) = p;
     node_prev(p) = cur_list.tail;
     cur_list.tail = p;
+}
+
+void tex_tail_append_list(halfword p)
+{
+    node_next(cur_list.tail) = p;
+    node_prev(p) = cur_list.tail;
+    cur_list.tail = tex_tail_of_node_list(p);
 }

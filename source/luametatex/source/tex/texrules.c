@@ -19,8 +19,6 @@ halfword tex_aux_scan_rule_spec(rule_types t, halfword s)
             if (s == strut_rule_code) {
                 rule_width(rule) = 0;
                 node_subtype(rule) = strut_rule_subtype;
-                rule_height(rule) = null_flag;
-                rule_depth(rule) = null_flag;
             } else {
                 rule_width(rule) = default_rule;
             }
@@ -135,7 +133,7 @@ halfword tex_aux_scan_rule_spec(rule_types t, halfword s)
 void tex_aux_run_vrule(void)
 {
     tex_tail_append(tex_aux_scan_rule_spec(v_rule_type, cur_chr));
-    cur_list.space_factor = 1000;
+    cur_list.space_factor = default_space_factor;
 }
 
 void tex_aux_run_hrule(void)

@@ -725,6 +725,7 @@
 		<cd:constant name='bookmark' value='marquepage'/>
 		<cd:constant name='bottom' value='bas'/>
 		<cd:constant name='bottomafter' value='basaprès'/>
+		<cd:constant name='bottomalign' value='bottomalign'/>
 		<cd:constant name='bottombefore' value='basavant'/>
 		<cd:constant name='bottomcolor' value='bottomcolor'/>
 		<cd:constant name='bottomcommand' value='commandebas'/>
@@ -1339,6 +1340,7 @@
 		<cd:constant name='toffset' value='decalaget'/>
 		<cd:constant name='tolerance' value='tolerance'/>
 		<cd:constant name='top' value='haut'/>
+		<cd:constant name='topalign' value='topalign'/>
 		<cd:constant name='topcolor' value='topcolor'/>
 		<cd:constant name='topcommand' value='commandehaut'/>
 		<cd:constant name='topdistance' value='distancehaut'/>

@@ -641,11 +641,6 @@ typedef enum kern_subtypes {
 # define kern_amount(a)       vlink(a,2) /*tex aka |width = vlink(a,2)| */
 # define kern_expansion(a)    vinfo(a,2) /*tex expansion factor (hz) */
 
-inline static int tex_is_margin_kern(halfword n)
-{
-    return (n && node_type(n) == kern_node && (node_subtype(n) == left_margin_kern_subtype || node_subtype(n) == right_margin_kern_subtype));
-}
-
 /*tex
 
     Disc nodes are complicated: they have three embedded nesting nodes to which the |pre_break|,

@@ -930,6 +930,7 @@ typedef enum save_types {
     adjust_attr_list_save_type,
     adjust_depth_before_save_type,
     adjust_depth_after_save_type,
+    adjust_target_save_type,
 } save_types;
 
 /*tex Nota bena: |equiv_value| is the same as |equiv| but sometimes we use that name instead. */
@@ -988,8 +989,10 @@ typedef enum tex_group_codes {
     also_simple_group,   /*tex code for |\begingroup|\unknown|\egroup| */
     semi_simple_group,   /*tex code for |\begingroup|\unknown|\endgroup| */
     math_simple_group,   /*tex code for |\beginmathgroup|\unknown|\endmathgroup| */
-    math_shift_group,    /*tex code for |$|\unknown\|$| */
     math_fence_group,    /*tex code for fences |\left|\unknown|\right| */
+    math_inline_group,   
+    math_display_group,  
+    math_number_group,     
     local_box_group,     /*tex code for |\localleftbox|\unknown|localrightbox| */
     split_off_group,     /*tex box code for the top part of a |\vsplit| */
     split_keep_group,    /*tex box code for the bottom part of a |\vsplit| */

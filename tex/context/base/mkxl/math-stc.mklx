@@ -331,7 +331,7 @@
    \edef\currentmathstackers{#category}%
    \mathstackersparameter\c!left\relax
    \dostarttagged\t!mstacker\currentmathstackers
-   \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
+   \ifmmode\math_atom_by_parameter\mathstackersparameter\else\dontleavehmode\fi
      {\edef\p_offset     {\mathstackersparameter\c!offset}%
       \edef\p_location   {\mathstackersparameter\c!location}%
       \edef\p_strut      {\mathstackersparameter\c!strut}%
@@ -563,7 +563,7 @@
    \fi
    \mathstackersparameter\c!left\relax
    \dostarttagged\t!mstacker\currentmathstackers
-   \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
+   \ifmmode\math_atom_by_parameter\mathstackersparameter\else\dontleavehmode\fi
      {\edef\m_math_stackers_text_middle {#text}%
       %
       \edef\p_offset     {\mathstackersparameter\c!offset}%
@@ -750,7 +750,7 @@
   {\math_stackers_start_group{#category}%
    \mathstackersparameter\c!left\relax
    \dostarttagged\t!mstacker\currentmathstackers
-   \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
+   \ifmmode\math_atom_by_parameter\mathstackersparameter\else\dontleavehmode\fi
      {\edef\currentmathstackers{#category}%
       %
       \edef\p_offset     {\mathstackersparameter\c!offset}%
@@ -1020,8 +1020,8 @@
 % \setupbodyfont[xits]    \getbuffer
 % \setupbodyfont[cambria] \getbuffer
 
-\immutable\protected\def\normaldoublebrace {\Umathaccents \zerocount \zerocount "23DE \zerocount \zerocount "23DF }
-\immutable\protected\def\normaldoubleparent{\Umathaccents \zerocount \zerocount "23DC \zerocount \zerocount "23DD }
+\immutable\protected\def\normaldoublebrace {\Umathaccent \s!both \zerocount \zerocount "23DE \zerocount \zerocount "23DF }
+\immutable\protected\def\normaldoubleparent{\Umathaccent \s!both \zerocount \zerocount "23DC \zerocount \zerocount "23DD }
 
 % let's keep this
 
@@ -1291,7 +1291,7 @@
    \ifempty\p_moffset \else
      \mskip\p_moffset\relax
    \fi
-   \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
+   \ifmmode\math_atom_by_parameter\mathstackersparameter\else\dontleavehmode\fi
      {\usemathstackerscolorparameter\c!color
       \Umathchar\zerocount\zerocount#codepoint}%
    \ifempty\p_moffset \else

@@ -741,13 +741,18 @@ inline static halfword tex_aux_used_order(halfword *total)
 
 */
 
+/*tex 
+    For now we have this here but maybe it makes sense to move the adjust migration to the adjust 
+    module (tracing and such). It's a bit fyzzy code anyway. 
+*/
+
 inline static void tex_aux_promote_pre_migrated(halfword r, halfword p)
 {
-    halfword pm = box_pre_migrated(p);
     halfword pa = box_pre_adjusted(p);
+    halfword pm = box_pre_migrated(p);
     if (pa) {
         if (lmt_packaging_state.pre_adjust_tail) {
-            lmt_packaging_state.pre_adjust_tail = tex_append_adjust_list(pre_adjust_head, lmt_packaging_state.pre_adjust_tail, pa);
+            lmt_packaging_state.pre_adjust_tail = tex_append_adjust_list(pre_adjust_head, lmt_packaging_state.pre_adjust_tail, pa, "promote");
         } else if (box_pre_adjusted(r)) {
             tex_couple_nodes(box_pre_adjusted(r), pa);
         } else {
@@ -773,11 +778,11 @@ inline static void tex_aux_promote_pre_migrated(halfword r, halfword p)
 
 inline static void tex_aux_promote_post_migrated(halfword r, halfword p)
 {
-    halfword pm = box_post_migrated(p);
     halfword pa = box_post_adjusted(p);
+    halfword pm = box_post_migrated(p);
     if (pa) {
         if (lmt_packaging_state.post_adjust_tail) {
-            lmt_packaging_state.post_adjust_tail = tex_append_adjust_list(post_adjust_head, lmt_packaging_state.post_adjust_tail, pa);
+            lmt_packaging_state.post_adjust_tail = tex_append_adjust_list(post_adjust_head, lmt_packaging_state.post_adjust_tail, pa, "promote");
         } else if (box_post_adjusted(r)) {
             tex_couple_nodes(box_post_adjusted(r), pa);
         } else {
@@ -2526,32 +2531,34 @@ void tex_package(singleword nature)
     tex_box_end(context, boxnode, shift, mainclass, slot);
 }
 
+static int local_box_mapping[] = { 
+    [local_left_box_box_code  ] = local_left_box_code,
+    [local_right_box_box_code ] = local_right_box_code,
+    [local_middle_box_box_code] = local_middle_box_code
+};
+
 void tex_run_unpackage(void)
 {
     int code = cur_chr; /*tex should we copy? */
-    halfword head = cur_list.tail;
-    halfword tail = cur_list.tail;
     switch (code) {
         case box_code:
         case copy_code:
         case unpack_code:
             {
-                halfword n = tex_scan_box_register_number();
-                halfword b = box_register(n);
-                if (! b) {
-                    return;
-                } else { 
+                halfword index = tex_scan_box_register_number();
+                halfword box = box_register(index);
+                if (box) {
                     int bad = 0;
                     switch (cur_list.mode) {
                         case vmode: 
                         case internal_vmode: 
-                            if (node_type(b) != vlist_node) { 
+                            if (node_type(box) != vlist_node) { 
                                 bad = 1;
                             }
                             break;
                         case hmode: 
                         case restricted_hmode: 
-                            if (node_type(b) != hlist_node) { 
+                            if (node_type(box) != hlist_node) { 
                                 bad = 1;
                             }
                             break;
@@ -2567,151 +2574,122 @@ void tex_run_unpackage(void)
                             "Sorry, Pandora. (You sneaky devil.) I refuse to unbox an \\hbox in vertical mode\n"
                             "or vice versa. And I can't open any boxes in math mode."
                         );
-                        return;
                     } else {
                         /*tex Todo: check head, not needed, always a temp. */
-                        /*tex Via variables for varmem assignment. */
-                        halfword list = box_list(b);
-                        halfword pre_migrated  = code == unpack_code ? null : box_pre_migrated(b);
-                        halfword post_migrated = code == unpack_code ? null : box_post_migrated(b);
-                    //  halfword pre_adjusted  = code == (unpack_code || is_h_mode(cur_list.mode)) ? null : box_pre_adjusted(b);
-                    //  halfword post_adjusted = code == (unpack_code || is_h_mode(cur_list.mode)) ? null : box_post_adjusted(b);
-                    //  halfword pre_adjusted  = code == unpack_code ? null : box_pre_adjusted(b);
-                    //  halfword post_adjusted = code == unpack_code ? null : box_post_adjusted(b);
-                        halfword pre_adjusted  = box_pre_adjusted(b);
-                        halfword post_adjusted = box_post_adjusted(b);
+                        /*tex We go via variables because we do varmem assignments. Probably not needed */
+                        halfword tail = cur_list.tail;
+                        halfword list = box_list(box);
+                        halfword pre_migrated  = code == unpack_code ? null : box_pre_migrated(box);
+                        halfword post_migrated = code == unpack_code ? null : box_post_migrated(box);
+                        /* probably overkill as we inject vadjust again, maybe it should be an option, 'bind' or so */
+                    //  halfword pre_adjusted  = box_pre_adjusted(box);
+                    //  halfword post_adjusted = box_post_adjusted(box);
+                        halfword pre_adjusted  = code == unpack_code ? null : box_pre_adjusted(box);
+                        halfword post_adjusted = code == unpack_code ? null : box_post_adjusted(box);
+                     // halfword pre_adjusted  = code == (unpack_code || is_h_mode(cur_list.mode)) ? null : box_pre_adjusted(box);
+                     // halfword post_adjusted = code == (unpack_code || is_h_mode(cur_list.mode)) ? null : box_post_adjusted(box);
+                        int prunekerns = list && node_type(box) == hlist_node && normalize_line_mode_permitted(normalize_line_mode_par, remove_margin_kerns_mode);
+                        /*tex 
+                            This topskip move is an ugly catch for wrong usage: when messing with 
+                            vboxes the migrated material can end up outside the unvboxed (pagebody)
+                            content which is not what one wants. The way to prevent is to force 
+                            hmode when unboxing. It makes no sense to complicate this mechanism 
+                            even more by soem fragile hackery. Best just create what gets asked 
+                            and remember that thsi was decided. We need to copy the list earlier 
+                            when we do this! 
+                        */
+                        /*
+                        if (list) { 
+                            if (code == copy_code) {
+                                list = tex_copy_node_list(list, null);
+                            } else {
+                                box_list(box) = null;
+                            }     
+                        }
+                        {
+                            int movetopskip = list && (pre_adjusted || pre_migrated) && node_type(list) == glue_node && node_subtype(list) == top_skip_glue;
+                            if (movetopskip) {
+                                halfword topskip = list; 
+                                list = node_next(list);
+                                node_prev(topskip) = null;
+                                node_next(topskip) = null;
+                                tex_try_couple_nodes(tail, topskip);
+                                tail = topskip;
+                                if (list) { 
+                                    node_prev(list) = null;
+                                }
+                                if (pre_adjusted && tracing_adjusts_par > 1) {
+                                    tex_begin_diagnostic();
+                                    tex_print_format("[adjust: topskip moved]");
+                                    tex_end_diagnostic();
+                                }
+                            }
+                        }
+                        */ 
                         if (pre_adjusted) {
                             if (code == copy_code) {
                                 pre_adjusted  = tex_copy_node_list(pre_adjusted, null);
                             } else {
-                                box_pre_adjusted(b) = null;
+                                box_pre_adjusted(box) = null;
                             }
-                            while (pre_adjusted) {
-                                halfword p = pre_adjusted;
-                                halfword h = adjust_list(pre_adjusted);
-                                if (h) {
-                                    if (is_h_mode(cur_list.mode)) { 
-                                        halfword n = tex_new_node(adjust_node, pre_adjust_code);
-                                        adjust_list(n) = h;
-                                        h = n;
-                                    }
-                                    if (! head) {
-                                        head = h;
-                                    }
-                                    tex_try_couple_nodes(tail, h);
-                                    tail = tex_tail_of_node_list(h);
-                                    adjust_list(pre_adjusted) = null;
-                                }
-                                pre_adjusted = node_next(pre_adjusted);
-                                tex_flush_node(p);
-                            }
+                            tail = tex_flush_adjust_prepend(pre_adjusted, tail);
                         }
                         if (pre_migrated) {
                             if (code == copy_code) {
                                 pre_migrated  = tex_copy_node_list(pre_migrated, null);
                             } else {
-                                box_pre_migrated(b) = null;
+                                box_pre_migrated(box) = null;
                             }
                             tex_try_couple_nodes(tail, pre_migrated);
                             tail = tex_tail_of_node_list(pre_migrated);
-                            if (! head) {
-                                head = pre_migrated;
-                            }
                         }
                         if (list) {
                             if (code == copy_code) {
                                 list = tex_copy_node_list(list, null);
                             } else {
-                                box_list(b) = null;
-                            }
+                                box_list(box) = null;
+                            }     
                             tex_try_couple_nodes(tail, list);
                             tail = tex_tail_of_node_list(list);
-                            if (! head) {
-                                head = list;
-                            }
                         }
                         if (post_migrated) {
                             if (code == copy_code) {
                                 post_migrated = tex_copy_node_list(post_migrated, null);
                             } else {
-                                box_post_migrated(b) = null;
+                                box_post_migrated(box) = null;
                             }
                             tex_try_couple_nodes(tail, post_migrated);
                             tail = tex_tail_of_node_list(post_migrated);
-                            if (! head) {
-                                head = post_migrated;
-                            }
                         }
                         if (post_adjusted) {
                             if (code == copy_code) {
                                 post_adjusted = tex_copy_node_list(post_adjusted, null);
                             } else {
-                                box_post_adjusted(b) = null;
+                                box_post_adjusted(box) = null;
                             }
-                            while (post_adjusted) {
-                                halfword p = post_adjusted;
-                                halfword h = adjust_list(post_adjusted);
-                                if (h) {
-                                    if (is_h_mode(cur_list.mode)) { 
-                                        halfword n = tex_new_node(adjust_node, post_adjust_code);
-                                        adjust_list(n) = h;
-                                        h = n;
-                                    }
-                                    if (! head) {
-                                        head = h;
-                                    }
-                                    tex_try_couple_nodes(tail, h);
-                                    tail = tex_tail_of_node_list(h);
-                                    adjust_list(post_adjusted) = null;
-                                }
-                                post_adjusted = node_next(post_adjusted);
-                                tex_flush_node(p);
-                            }
+                            tail = tex_flush_adjust_append(post_adjusted, tail);
                         }
                         if (code != copy_code) {
-                            box_register(n) = null;
-                            tex_flush_node(b);
+                            box_register(index) = null;
+                            tex_flush_node(box);
                         }
-                        if (! head) {
-                            tail = null;
-                        } else if (node_type(b) == hlist_node && normalize_line_mode_permitted(normalize_line_mode_par, remove_margin_kerns_mode)) {
-                            /* only here head is used ... */
-                            tail = head;
-                            while (1) {
-                                halfword next = node_next(tail);
-                                if (next) {
-                                    if (tex_is_margin_kern(next)) {
-                                        tex_try_couple_nodes(tail, node_next(next));
-                                        tex_flush_node(next);
-                                    } else {
-                                        tail = next;
-                                    }
-                                } else {
-                                    break;
-                                }
-                            }
-                        } else {
-                            tail = tex_tail_of_node_list(tail);
-                        }
-                        cur_list.tail = tail;
+                        cur_list.tail = prunekerns ? tex_wipe_margin_kerns(cur_list.head) : tex_tail_of_node_list(tail);
                     }
-                    break;
                 }
-            }
-        case last_box_code:
-            {
-                tex_try_couple_nodes(tail, lmt_packaging_state.page_discards_head);
-                lmt_packaging_state.page_discards_head = null;
-                cur_list.tail = tex_tail_of_node_list(tail);
                 break;
             }
-        case tsplit_code:
-        case vsplit_code:
-        case dsplit_code:
+        case page_discards_code:
             {
-                tex_try_couple_nodes(tail, lmt_packaging_state.split_discards_head);
+                tex_try_couple_nodes(cur_list.tail, lmt_packaging_state.page_discards_head);
+                cur_list.tail = tex_tail_of_node_list(cur_list.tail);
+                lmt_packaging_state.page_discards_head = null;
+                break;
+            }
+        case split_discards_code:
+            {
+                tex_try_couple_nodes(cur_list.tail, lmt_packaging_state.split_discards_head);
+                cur_list.tail = tex_tail_of_node_list(cur_list.tail);
                 lmt_packaging_state.split_discards_head = null;
-                cur_list.tail = tex_tail_of_node_list(tail);
                 break;
             }
         case insert_box_code:
@@ -2741,7 +2719,7 @@ void tex_run_unpackage(void)
                             if (boxnode) {
                                 halfword list = box_list(boxnode);
                                 if (list) {
-                                    tex_try_couple_nodes(tail, list);
+                                    tex_try_couple_nodes(cur_list.tail, list);
                                     cur_list.tail = tex_tail_of_node_list(list);
                                     box_list(boxnode) = null;
                                 }
@@ -2755,21 +2733,11 @@ void tex_run_unpackage(void)
                 break;
             }
         case local_left_box_box_code:
-            {
-                tex_try_couple_nodes(tail, tex_get_local_boxes(local_left_box_code));
-                cur_list.tail = tex_tail_of_node_list(tail);
-                break;
-            }
         case local_right_box_box_code:
-            {
-                tex_try_couple_nodes(tail, tex_get_local_boxes(local_right_box_code));
-                cur_list.tail = tex_tail_of_node_list(tail);
-                break;
-            }
         case local_middle_box_box_code:
             {
-                tex_try_couple_nodes(tail, tex_get_local_boxes(local_middle_box_code));
-                cur_list.tail = tex_tail_of_node_list(tail);
+                tex_try_couple_nodes(cur_list.tail, tex_get_local_boxes(local_box_mapping[code]));
+                cur_list.tail = tex_tail_of_node_list(cur_list.tail);
                 break;
             }
         default:
@@ -2778,7 +2746,6 @@ void tex_run_unpackage(void)
                 break;
             }
     }
-    /* margin stuff was here */
 }
 
 /*tex
@@ -2839,28 +2806,23 @@ void tex_append_to_vlist(halfword b, int location, const line_break_properties *
                     case vlist_node:
                     case rule_node:
                         {
-                            halfword p = tex_aux_depth_correction(result, properties);
-                            tex_couple_nodes(cur_list.tail, p);
-                            cur_list.tail = p;
+                            halfword glue = tex_aux_depth_correction(result, properties);
+                            tex_tail_append(glue);
                             break;
                         }
                 }
             }
-            while (result) {
-                tex_couple_nodes(cur_list.tail, result);
-                cur_list.tail = result;
-                result = node_next(result);
+            if (result) { 
+                tex_tail_append_list(result);
             }
             return;
         }
     }
     if (cur_list.prev_depth > ignore_depth_criterium_par) {
-        halfword p = tex_aux_depth_correction(b, properties);
-        tex_couple_nodes(cur_list.tail, p);
-        cur_list.tail = p;
+        halfword glue = tex_aux_depth_correction(b, properties);
+        tex_tail_append(glue);
     }
-    tex_couple_nodes(cur_list.tail, b);
-    cur_list.tail = b;
+    tex_tail_append(b);
     cur_list.prev_depth = box_depth(b);
 }
 
@@ -3470,7 +3432,7 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot)
                         tex_begin_token_list(every_vbox_par, every_vbox_text);
                     }
                 } else {
-                    cur_list.space_factor = 1000;
+                    cur_list.space_factor = default_space_factor;
                     if (every_hbox_par) {
                         tex_begin_token_list(every_hbox_par, every_hbox_text);
                     }

@@ -1066,7 +1066,7 @@ static void tex_aux_initialize_span(halfword p)
 {
     tex_push_nest();
     if (cur_list.mode == restricted_hmode) {
-        cur_list.space_factor = 1000;
+        cur_list.space_factor = default_space_factor;
     } else {
         cur_list.prev_depth = ignore_depth_criterium_par;
         tex_normal_paragraph(span_par_context);
@@ -1421,7 +1421,7 @@ static void tex_aux_finish_row(void)
         row = tex_filtered_vpack(node_next(cur_list.head), 0, packing_additional, max_depth_par, finish_row_group, direction_unknown, 0, null, 0, 0);
         tex_pop_nest();
         tex_tail_append(row);
-        cur_list.space_factor = 1000;
+        cur_list.space_factor = default_space_factor;
     }
     /*tex 
         Currently this one can be overloaded by the one set on the row via the noalign trickery
@@ -1769,11 +1769,11 @@ static void tex_aux_finish_align(void)
                         halfword preptr;
                         halfword colptr;
                         if (cur_list.mode == internal_vmode) {
-                         /* tex_aux_change_list_type(rowptr, hlist_node); */ /* too much */
+                         /* tex_aux_change_list_type(rowptr, hlist_node); */ /* too much, needs checking */
                             node_type(rowptr) = hlist_node;
                             box_width(rowptr) = box_width(preroll);
                         } else {
-                         /* tex_aux_change_list_type(rowptr, vlist_node); */ /* too much */
+                         /* tex_aux_change_list_type(rowptr, vlist_node); */ /* too much, needs checking */
                             node_type(rowptr) = vlist_node;
                             box_height(rowptr) = box_height(preroll);
                         }

@@ -419,7 +419,9 @@ void tex_expand_current_token(void)
                 case the_cmd:
                     {
                         halfword h = tex_the_toks(cur_chr, NULL);
-                        tex_begin_inserted_list(h);
+                        if (h) { 
+                            tex_begin_inserted_list(h);
+                        }
                         break;
                     }
                 case lua_call_cmd:

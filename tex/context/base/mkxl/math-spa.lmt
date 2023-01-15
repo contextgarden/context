@@ -34,6 +34,7 @@ local getdepth          = nuts.getdepth
 local getheight         = nuts.getheight
 local getlist           = nuts.getlist
 local setglue           = nuts.setglue
+local setwhd            = nuts.setwhd
 local getdimensions     = nuts.dimensions
 local getnormalizedline = node.direct.getnormalizedline
 local getbox            = nuts.getbox
@@ -159,7 +160,10 @@ end
 stages[3] = stages[2]
 
 stages[4] = function(specification,stage)
-    nuts.openup(specification,getlist(getbox(specification.box)))
+    local box = getbox(specification.box)
+    nuts.openup(specification,getlist(box))
+    local w, h, d = getdimensions(getlist(box),true) -- vertical
+    setwhd(box,w,h,d)
 end
 
 interfaces.implement {
@@ -174,6 +178,7 @@ interfaces.implement {
             { "inbetween", "dimension" },
             { "height", "dimension" },
             { "depth", "dimension" },
+            { "splitmethod" },
         }
     },
     actions   = function(specification)

@@ -72,10 +72,12 @@ typedef enum if_test_codes {
     if_true_code,           /*tex |\iftrue| */
     if_false_code,          /*tex |\iffalse| */
     if_chk_int_code,        /*tex |\ifchknum| */
-    if_val_int_code,        /*tex |\ifcmpnum| */
+    if_chk_integer_code,    /*tex |\ifchknumber| */
+    if_val_int_code,        /*tex |\ifnumval| */
     if_cmp_int_code,        /*tex |\ifcmpnum| */
     if_chk_dim_code,        /*tex |\ifchkdim| */
-    if_val_dim_code,        /*tex |\ifchkdim| */
+    if_chk_dimension_code,  /*tex |\ifchkdimension| */
+    if_val_dim_code,        /*tex |\ifdimval| */
     if_cmp_dim_code,        /*tex |\ifcmpdim| */
     if_case_code,           /*tex |\ifcase| */
     if_def_code,            /*tex |\ifdefined| */

@@ -43,7 +43,9 @@
    \c!rightmargin=\zeropoint]
 
 \appendtoks
-    \frozen\protected\instance\edefcsname\currentmathdelimited\endcsname{\math_delimited_handle{\currentmathdelimited}}
+    \ifcstok{\mathdelimitedparameter\c!rightmargin}\v!no\else
+      \frozen\protected\instance\edefcsname\currentmathdelimited\endcsname{\math_delimited_handle{\currentmathdelimited}}
+    \fi
 \to \everydefinemathdelimited
 
 \mutable\lettonothing\currentmathdelimited
@@ -86,11 +88,108 @@
      {\popcolor#body}%
    \fi}
 
-\integerdef\delimitedrighthatuc   \privatecharactercode{delimited right hat}
-\integerdef\delimitedrighttildeuc \privatecharactercode{delimited right tilde}
-\integerdef\delimitedrightcheckuc \privatecharactercode{delimited right check}
+
+%integerdef\delimitedrightgraveuc    \privatecharactercode{delimited right grave}
+\integerdef\delimitedrightddotuc     \privatecharactercode{delimited right ddot}
+\integerdef\delimitedrightbaruc      \privatecharactercode{delimited right bar}
+%integerdef\delimitedrightacuteuc    \privatecharactercode{delimited right acute}
+\integerdef\delimitedrighthatuc      \privatecharactercode{delimited right hat}
+\integerdef\delimitedrightcheckuc    \privatecharactercode{delimited right check}
+\integerdef\delimitedrightbreveuc    \privatecharactercode{delimited right breve}
+\integerdef\delimitedrightdotuc      \privatecharactercode{delimited right dot}
+\integerdef\delimitedrightringuc     \privatecharactercode{delimited right ring}
+\integerdef\delimitedrighttildeuc    \privatecharactercode{delimited right tilde}
+\integerdef\delimitedrightdddotuc    \privatecharactercode{delimited right dddot}
+\integerdef\delimitedrightdaggeruc   \privatecharactercode{delimited right dagger}
+\integerdef\delimitedrightddaggeruc  \privatecharactercode{delimited right ddagger}
+\integerdef\delimitedrightastuc      \privatecharactercode{delimited right ast}
+\integerdef\delimitedrightstaruc     \privatecharactercode{delimited right star}
+
+% \integerdef\delimitedrighthatuc   \p  rivatecharactercode{delimited right hat}
+% \integerdef\delimitedrighttildeuc \privatecharactercode{delimited right tilde}
+% \integerdef\delimitedrightcheckuc \privatecharactercode{delimited right check}
 
 % todo: some more .. are the offsets okay?
+% breve and acute does not make sense
+
+\definemathdelimited
+  [marked]
+  [\c!command=\v!no,
+   \c!topoffset=.2\exheight]
+
+\definemathdelimited
+  [ddotmarked]
+  [marked]
+  [\c!right=\delimitedrightddotuc]
+
+\definemathdelimited
+  [barmarked]
+  [marked]
+  [\c!right=\delimitedrightbaruc]
+
+\definemathdelimited
+  [hatmarked]
+  [marked]
+  [\c!right=\delimitedrighthatuc]
+
+\definemathdelimited
+  [checkmarked]
+  [marked]
+  [\c!right=\delimitedrightcheckuc]
+
+\definemathdelimited
+  [brevemarked]
+  [marked]
+  [\c!right=\delimitedrightbreveuc]
+
+\definemathdelimited
+  [dotmarked]
+  [marked]
+  [\c!right=\delimitedrightdotuc]
+
+\definemathdelimited
+  [ringmarked]
+  [marked]
+  [\c!right=\delimitedrightringuc]
+
+\definemathdelimited
+  [tildemarked]
+  [marked]
+  [\c!right=\delimitedrighttildeuc]
+
+\definemathdelimited
+  [dddotmarked]
+  [marked]
+  [\c!right=\delimitedrightdddotuc]
+
+% The following ones are
+% not really belonging here,
+% but convenient
+
+\definemathdelimited
+  [daggermarked]
+  [marked]
+  [\c!size=1,
+   \c!right=\delimitedrightdaggeruc]
+
+\definemathdelimited
+  [ddaggermarked]
+  [marked]
+  [\c!size=1,
+   \c!right=\delimitedrightddaggeruc]
+
+\definemathdelimited
+  [astmarked]
+  [\c!size=1,
+   \c!right=\delimitedrightastuc]
+
+\definemathdelimited
+  [starmarked]
+  [marked]
+  [\c!size=1,
+   \c!right=\delimitedrightstaruc]
+
+% More contextual
 
 \definemathdelimited
   [fourier]

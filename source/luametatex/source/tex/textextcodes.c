@@ -54,10 +54,13 @@ void tex_set_cat_code(int h, int n, halfword v, int gl)
 {
     sa_tree_item item = { .uint_value = CATCODEDEFAULTS };
     sa_tree tree = lmt_catcode_state.catcode_heads[h];
-    if (h > lmt_catcode_state.catcode_max) {
-        lmt_catcode_state.catcode_max = h;
-    }
+//    if (h > lmt_catcode_state.catcode_max) {
+//        lmt_catcode_state.catcode_max = h;
+//    }
     if (! tree) {
+if (h > lmt_catcode_state.catcode_max) {
+    lmt_catcode_state.catcode_max = h;
+}
         tree = sa_new_tree(CATCODESTACK, 1, item);
         lmt_catcode_state.catcode_heads[h] = tree;
     }
@@ -68,10 +71,13 @@ halfword tex_get_cat_code(int h, int n)
 {
     sa_tree_item item = { .uint_value = CATCODEDEFAULTS };
     sa_tree tree = lmt_catcode_state.catcode_heads[h];
-    if (h > lmt_catcode_state.catcode_max) {
-        lmt_catcode_state.catcode_max = h;
-    }
+//    if (h > lmt_catcode_state.catcode_max) {
+//        lmt_catcode_state.catcode_max = h;
+//    }
     if (! tree) {
+if (h > lmt_catcode_state.catcode_max) {
+    lmt_catcode_state.catcode_max = h;
+}
         tree = sa_new_tree(CATCODESTACK, 1, item);
         lmt_catcode_state.catcode_heads[h] = tree;
     }

@@ -1274,8 +1274,9 @@ function references.loadpresets(product,component) -- we can consider a special 
     if product and component and product~= "" and component ~= "" and not productdata.product then -- maybe: productdata.filename ~= filename
         productdata.product = product
         productdata.component = component
+        -- todo: use other locator
         local fullname = file.replacesuffix(product,"tuc")
-        if lfs.isfile(fullname) then -- todo: use other locator
+        if lfs.isfile(fullname) then
             local utilitydata = job.loadother(fullname)
             if utilitydata then
                 if trace_importing then
@@ -1311,7 +1312,7 @@ if useproduct then
     implement {
         name      = "useproduct",
         actions   = newuseproduct,
-        arguments = "string",
+        arguments = "optional",
         overload  = true,
     }
 
@@ -2243,7 +2244,13 @@ local function filterreference(name,prefixspec,numberspec) -- number page title 
             local cs = references.analyze() -- normally already analyzed but also sets state
             context(tonumber(cs.realpage) or 0)
         else -- assumes data is table
-            local kind = type(data) == "table" and data.metadata and data.metadata.kind
+            local kind = false
+            if type(data) == "string" then
+                -- todo
+            end
+            if type(data) == "table" then
+                kind = data.metadata and data.metadata.kind
+            end
             if kind then
                 local filter = filters[kind] or genericfilters
                 filter = filter and (filter[name] or filter.unknown or genericfilters[name] or genericfilters.unknown)

@@ -370,7 +370,7 @@
    \relax}
 
 \permanent\tolerant\protected\def\checkpage[#1]#*[#2]%
-  {\relax % needed before \if
+  {\relax % look ahead prevention
    \endgraf
    \triggerpagebuilder
    \relax
@@ -466,14 +466,17 @@
 \definepagechecker[\s!unknown:2][\s!unknown:0][\c!method=2]
 \definepagechecker[\s!unknown:3][\s!unknown:0][\c!method=3]
 
-\permanent\tolerant\protected\def\testpage    [#1]#*[#2]{\normalexpanded{\checkpage[\s!unknown:1][\c!lines=#1,\c!offset=\ifparameter#2\or#2\else\zeropoint\fi]}} %
-\permanent\tolerant\protected\def\testpageonly[#1]#*[#2]{\normalexpanded{\checkpage[\s!unknown:2][\c!lines=#1,\c!offset=\ifparameter#2\or#2\else\zeropoint\fi]}} % no penalties added to the mvl
-\permanent\tolerant\protected\def\testpagesync[#1]#*[#2]{\normalexpanded{\checkpage[\s!unknown:3][\c!lines=#1,\c!offset=\ifparameter#2\or#2\else\zeropoint\fi]}} % force sync
+% the \relax prevents premature expansion in case of lookahead
+
+\permanent\tolerant\protected\def\testpage    [#1]#*[#2]{\relax\normalexpanded{\checkpage[\s!unknown:1][\c!lines=#1,\c!offset=\ifparameter#2\or#2\else\zeropoint\fi]}} %
+\permanent\tolerant\protected\def\testpageonly[#1]#*[#2]{\relax\normalexpanded{\checkpage[\s!unknown:2][\c!lines=#1,\c!offset=\ifparameter#2\or#2\else\zeropoint\fi]}} % no penalties added to the mvl
+\permanent\tolerant\protected\def\testpagesync[#1]#*[#2]{\relax\normalexpanded{\checkpage[\s!unknown:3][\c!lines=#1,\c!offset=\ifparameter#2\or#2\else\zeropoint\fi]}} % force sync
 
 %D Test column breaks.
 
 \permanent\tolerant\protected\def\testcolumn[#1]#*[#2]%
-  {\ifdefined\page_otr_command_test_column
+  {\relax % look ahead prevention
+   \ifdefined\page_otr_command_test_column
      \ifparameter#2\or
         \page_otr_command_test_column[#1][#2]%
      \else

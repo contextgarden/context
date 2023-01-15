@@ -106,7 +106,9 @@ void lmt_initialize_interface(void)
     set_group_code_value(also_simple_group,    alsosimple);
     set_group_code_value(semi_simple_group,    semisimple);
     set_group_code_value(math_simple_group,    mathsimple);
-    set_group_code_value(math_shift_group,     mathshift);
+    set_group_code_value(math_inline_group,    mathinline);
+    set_group_code_value(math_display_group,   mathdisplay);
+    set_group_code_value(math_number_group,    mathnumber);
     set_group_code_value(math_fence_group,     mathfence);
     set_group_code_value(local_box_group,      localbox);
     set_group_code_value(split_off_group,      splitoff);

@@ -621,9 +621,10 @@ typedef enum box_property_codes {
     box_freeze_code,
     /* we actually need set_box_int_cmd, or set_box_property */
     box_attribute_code,
+    box_vadjust_code,
 } box_property_codes;
 
-# define last_box_property_code box_attribute_code
+# define last_box_property_code box_vadjust_code
 
 typedef enum hyphenation_codes {
     hyphenation_code,
@@ -1075,11 +1076,7 @@ typedef enum math_styles {
     cramped_script_style,        /*tex |\crampedscriptstyle| */
     script_script_style,         /*tex |\scriptscriptstyle| */
     cramped_script_script_style, /*tex |\crampedscriptscriptstyle| */
-    /* hidden */
-    yet_unset_math_style,
-    former_choice_math_style,
-    scaled_math_style,
-    /* even more hidden */       /*tex These can be used to emulate the defaults. */
+    /* hidden */                 /*tex These can be used to emulate the defaults. */
     all_display_styles,
     all_text_styles,
     all_script_styles,
@@ -1090,13 +1087,18 @@ typedef enum math_styles {
     all_unsplit_styles,
     all_uncramped_styles,
     all_cramped_styles,
+    /* hidden */
+    yet_unset_math_style,
+    scaled_math_style,
+    former_choice_math_style,
 } math_styles;
 
 # define first_math_style display_style
-# define last_math_style  all_cramped_styles
+# define last_math_style  former_choice_math_style
 
 # define is_valid_math_style(n)   (n >= display_style      && n <= cramped_script_script_style)
 # define are_valid_math_styles(n) (n >= all_display_styles && n <= all_cramped_styles)
+# define visible_math_styles(n)   (n >= display_style      && n <= all_cramped_styles)
 
 inline static halfword tex_math_style_to_size(halfword s)
 {

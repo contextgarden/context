@@ -55,6 +55,30 @@
 \newdimension\mathstrutdp
 \newinteger  \mathnestinglevel
 
+% For now:
+
+%protected\def\Umathaccent_top         {\Umathaccent top          }
+%protected\def\Umathaccent_bottom      {\Umathaccent bottom       }
+%protected\def\Umathaccent_top_fixed   {\Umathaccent top    fixed }
+%protected\def\Umathaccent_bottom_fixed{\Umathaccent bottom fixed }
+
+%permanent\protected\def\defUmathfixedtopaccent   #1#2#3#4{\global\immutable\protected\def#1{\Umathaccent_top_fixed    "#2 "#3 "#4 }}
+%permanent\protected\def\defUmathfixedbottomaccent#1#2#3#4{\global\immutable\protected\def#1{\Umathaccent_bottom_fixed "#2 "#3 "#4 }}
+%permanent\protected\def\defUmathtopaccent        #1#2#3#4{\global\immutable\protected\def#1{\Umathaccent_top          "#2 "#3 "#4 }}
+%permanent\protected\def\defUmathbottomaccent     #1#2#3#4{\global\immutable\protected\def#1{\Umathaccent_bottom       "#2 "#3 "#4 }}
+
+%permanent\protected\def\defUmathchar             #1#2#3#4{\global\immutable\Umathchardef #1                           "#2 "#3 "#4 }
+%permanent\protected\def\defUdelimiter            #1#2#3#4{\global\immutable\protected\def#1{\Udelimiter               "#2 "#3 "#4 }}
+%permanent\protected\def\defUdelimiter            #1#2#3#4{\global\immutable\Umathchardef #1                           "#2 "#3 "#4 }
+
+%permanent\protected\def\defUradical                #1#2#3{\global\immutable\protected\def#1{\Uradical                 "#2 "#3     }}
+%permanent\protected\def\defUroot                   #1#2#3{\global\immutable\protected\def#1{\Uroot                    "#2 "#3     }}
+
+%permanent\protected\def\defUdelimiterover        #1#2#3#4{\global\immutable\protected\def#1{\Udelimiterover           "#2 "#3     }} % radicals
+%permanent\protected\def\defUdelimiterunder       #1#2#3#4{\global\immutable\protected\def#1{\Udelimiterunder          "#2 "#3     }} % radicals
+
+% So:
+
 \registerctxluafile{math-ini}{autosuffix}
 \registerctxluafile{math-dim}{autosuffix}
 %registerctxluafile{math-act}{autosuffix}
@@ -295,164 +319,164 @@
     \untraced\permanent\protected\def\prerelpenalty  {\setmathprepenalty \mathrelationcode}
 \popoverloadmode
 
-%D These verbose commands are obsolete because there are plenty more classes in
-%D \LMTX\ than in \MKIV.
-
-\permanent\protected\def\ordordspacing      {\setmathspacing \mathordinarycode    \mathordinarycode   }
-\permanent\protected\def\ordopspacing       {\setmathspacing \mathordinarycode    \mathoperatorcode   }
-\permanent\protected\def\ordbinspacing      {\setmathspacing \mathordinarycode    \mathbinarycode     }
-\permanent\protected\def\ordrelspacing      {\setmathspacing \mathordinarycode    \mathrelationcode   }
-\permanent\protected\def\ordopenspacing     {\setmathspacing \mathordinarycode    \mathopencode       }
-\permanent\protected\def\ordclosespacing    {\setmathspacing \mathordinarycode    \mathclosecode      }
-\permanent\protected\def\ordpunctspacing    {\setmathspacing \mathordinarycode    \mathpunctuationcode}
-%permanent\protected\def\ordinnerspacing    {\setmathspacing \mathordinarycode    \mathinnercode      }
-%permanent\protected\def\ordfracspacing     {\setmathspacing \mathordinarycode    \mathfractioncode   }
-%permanent\protected\def\ordradspacing      {\setmathspacing \mathordinarycode    \mathradicalcode    }
-\permanent\protected\def\ordmiddlespacing   {\setmathspacing \mathordinarycode    \mathmiddlecode     }
-%permanent\protected\def\ordaccentspacing   {\setmathspacing \mathordinarycode    \mathaccentcode     }
-
-\permanent\protected\def\opordspacing       {\setmathspacing \mathoperatorcode    \mathordinarycode   }
-\permanent\protected\def\opopspacing        {\setmathspacing \mathoperatorcode    \mathoperatorcode   }
-\permanent\protected\def\opbinspacing       {\setmathspacing \mathoperatorcode    \mathbinarycode     }
-\permanent\protected\def\oprelspacing       {\setmathspacing \mathoperatorcode    \mathrelationcode   }
-\permanent\protected\def\opopenspacing      {\setmathspacing \mathoperatorcode    \mathopencode       }
-\permanent\protected\def\opclosespacing     {\setmathspacing \mathoperatorcode    \mathclosecode      }
-\permanent\protected\def\oppunctspacing     {\setmathspacing \mathoperatorcode    \mathpunctuationcode}
-%permanent\protected\def\opinnerspacing     {\setmathspacing \mathoperatorcode    \mathinnercode      }
-%permanent\protected\def\opfracspacing      {\setmathspacing \mathoperatorcode    \mathfractioncode   }
-%permanent\protected\def\opradspacing       {\setmathspacing \mathoperatorcode    \mathradicalcode    }
-\permanent\protected\def\opmiddlespacing    {\setmathspacing \mathoperatorcode    \mathmiddlecode     }
-%permanent\protected\def\opaccentspacing    {\setmathspacing \mathoperatorcode    \mathaccentcode     }
-
-\permanent\protected\def\binordspacing      {\setmathspacing \mathbinarycode      \mathordinarycode   }
-\permanent\protected\def\binopspacing       {\setmathspacing \mathbinarycode      \mathoperatorcode   }
-\permanent\protected\def\binbinspacing      {\setmathspacing \mathbinarycode      \mathbinarycode     }
-\permanent\protected\def\binrelspacing      {\setmathspacing \mathbinarycode      \mathrelationcode   }
-\permanent\protected\def\binopenspacing     {\setmathspacing \mathbinarycode      \mathopencode       }
-\permanent\protected\def\binclosespacing    {\setmathspacing \mathbinarycode      \mathclosecode      }
-\permanent\protected\def\binpunctspacing    {\setmathspacing \mathbinarycode      \mathpunctuationcode}
-%permanent\protected\def\bininnerspacing    {\setmathspacing \mathbinarycode      \mathinnercode      }
-%permanent\protected\def\binfracspacing     {\setmathspacing \mathbinarycode      \mathfractioncode   }
-%permanent\protected\def\binradspacing      {\setmathspacing \mathbinarycode      \mathradicalcode    }
-\permanent\protected\def\binmiddlespacing   {\setmathspacing \mathbinarycode      \mathmiddlecode     }
-%permanent\protected\def\binaccentspacing   {\setmathspacing \mathbinarycode      \mathaccentcode     }
-
-\permanent\protected\def\relordspacing      {\setmathspacing \mathrelationcode    \mathordinarycode   }
-\permanent\protected\def\relopspacing       {\setmathspacing \mathrelationcode    \mathoperatorcode   }
-\permanent\protected\def\relbinspacing      {\setmathspacing \mathrelationcode    \mathbinarycode     }
-\permanent\protected\def\relrelspacing      {\setmathspacing \mathrelationcode    \mathrelationcode   }
-\permanent\protected\def\relopenspacing     {\setmathspacing \mathrelationcode    \mathopencode       }
-\permanent\protected\def\relclosespacing    {\setmathspacing \mathrelationcode    \mathclosecode      }
-\permanent\protected\def\relpunctspacing    {\setmathspacing \mathrelationcode    \mathpunctuationcode}
-%permanent\protected\def\relinnerspacing    {\setmathspacing \mathrelationcode    \mathinnercode      }
-%permanent\protected\def\relfracspacing     {\setmathspacing \mathrelationcode    \mathfractioncode   }
-%permanent\protected\def\relradspacing      {\setmathspacing \mathrelationcode    \mathradicalcode    }
-\permanent\protected\def\relmiddlespacing   {\setmathspacing \mathrelationcode    \mathmiddlecode     }
-%permanent\protected\def\relaccentspacing   {\setmathspacing \mathrelationcode    \mathaccentcode     }
-
-\permanent\protected\def\openordspacing     {\setmathspacing \mathopencode        \mathordinarycode   }
-\permanent\protected\def\openopspacing      {\setmathspacing \mathopencode        \mathoperatorcode   }
-\permanent\protected\def\openbinspacing     {\setmathspacing \mathopencode        \mathbinarycode     }
-\permanent\protected\def\openrelspacing     {\setmathspacing \mathopencode        \mathrelationcode   }
-\permanent\protected\def\openopenspacing    {\setmathspacing \mathopencode        \mathopencode       }
-\permanent\protected\def\openclosespacing   {\setmathspacing \mathopencode        \mathclosecode      }
-\permanent\protected\def\openpunctspacing   {\setmathspacing \mathopencode        \mathpunctuationcode}
-%permanent\protected\def\openinnerspacing   {\setmathspacing \mathopencode        \mathinnercode      }
-%permanent\protected\def\openfracspacing    {\setmathspacing \mathopencode        \mathfractioncode   }
-%permanent\protected\def\openradspacing     {\setmathspacing \mathopencode        \mathradicalcode    }
-\permanent\protected\def\openmiddlespacing  {\setmathspacing \mathopencode        \mathmiddlecode     }
-%permanent\protected\def\openaccentspacing  {\setmathspacing \mathopencode        \mathaccentcode     }
-
-\permanent\protected\def\closeordspacing    {\setmathspacing \mathclosecode       \mathordinarycode   }
-\permanent\protected\def\closeopspacing     {\setmathspacing \mathclosecode       \mathoperatorcode   }
-\permanent\protected\def\closebinspacing    {\setmathspacing \mathclosecode       \mathbinarycode     }
-\permanent\protected\def\closerelspacing    {\setmathspacing \mathclosecode       \mathrelationcode   }
-\permanent\protected\def\closeopenspacing   {\setmathspacing \mathclosecode       \mathopencode       }
-\permanent\protected\def\closeclosespacing  {\setmathspacing \mathclosecode       \mathclosecode      }
-\permanent\protected\def\closepunctspacing  {\setmathspacing \mathclosecode       \mathpunctuationcode}
-%permanent\protected\def\closeinnerspacing  {\setmathspacing \mathclosecode       \mathinnercode      }
-%permanent\protected\def\closefracspacing   {\setmathspacing \mathclosecode       \mathfractioncode   }
-%permanent\protected\def\closeradspacing    {\setmathspacing \mathclosecode       \mathradicalcode    }
-\permanent\protected\def\closemiddlespacing {\setmathspacing \mathclosecode       \mathmiddlecode     }
-%permanent\protected\def\closeaccentspacing {\setmathspacing \mathclosecode       \mathaccentcode     }
-
-\permanent\protected\def\punctordspacing    {\setmathspacing \mathpunctuationcode \mathordinarycode   }
-\permanent\protected\def\punctopspacing     {\setmathspacing \mathpunctuationcode \mathoperatorcode   }
-\permanent\protected\def\punctbinspacing    {\setmathspacing \mathpunctuationcode \mathbinarycode     }
-\permanent\protected\def\punctrelspacing    {\setmathspacing \mathpunctuationcode \mathrelationcode   }
-\permanent\protected\def\punctopenspacing   {\setmathspacing \mathpunctuationcode \mathopencode       }
-\permanent\protected\def\punctclosespacing  {\setmathspacing \mathpunctuationcode \mathclosecode      }
-\permanent\protected\def\punctpunctspacing  {\setmathspacing \mathpunctuationcode \mathpunctuationcode}
-%permanent\protected\def\punctinnerspacing  {\setmathspacing \mathpunctuationcode \mathinnercode      }
-%permanent\protected\def\punctfracspacing   {\setmathspacing \mathpunctuationcode \mathfractioncode   }
-%permanent\protected\def\punctradspacing    {\setmathspacing \mathpunctuationcode \mathradicalcode    }
-\permanent\protected\def\punctmiddlespacing {\setmathspacing \mathpunctuationcode \mathmiddlecode     }
-%permanent\protected\def\punctaccentspacing {\setmathspacing \mathpunctuationcode \mathaccentcode     }
-
-%permanent\protected\def\innerordspacing    {\setmathspacing \mathinnercode       \mathordinarycode   }
-%permanent\protected\def\inneropspacing     {\setmathspacing \mathinnercode       \mathoperatorcode   }
-%permanent\protected\def\innerbinspacing    {\setmathspacing \mathinnercode       \mathbinarycode     }
-%permanent\protected\def\innerrelspacing    {\setmathspacing \mathinnercode       \mathrelationcode   }
-%permanent\protected\def\inneropenspacing   {\setmathspacing \mathinnercode       \mathopencode       }
-%permanent\protected\def\innerclosespacing  {\setmathspacing \mathinnercode       \mathclosecode      }
-%permanent\protected\def\innerpunctspacing  {\setmathspacing \mathinnercode       \mathpunctuationcode}
-%permanent\protected\def\innerinnerspacing  {\setmathspacing \mathinnercode       \mathinnercode      }
-%permanent\protected\def\innerfracspacing   {\setmathspacing \mathinnercode       \mathfractioncode   }
-%permanent\protected\def\innerradspacing    {\setmathspacing \mathinnercode       \mathradicalcode    }
-%permanent\protected\def\innermiddlespacing {\setmathspacing \mathinnercode       \mathmiddlecode     }
-%permanent\protected\def\inneraccentspacing {\setmathspacing \mathinnercode       \mathaccentcode     }
-
-\permanent\protected\def\fracordspacing     {\setmathspacing \mathfractioncode    \mathordinarycode   }
-\permanent\protected\def\fracopspacing      {\setmathspacing \mathfractioncode    \mathoperatorcode   }
-\permanent\protected\def\fracbinspacing     {\setmathspacing \mathfractioncode    \mathbinarycode     }
-\permanent\protected\def\fracrelspacing     {\setmathspacing \mathfractioncode    \mathrelationcode   }
-\permanent\protected\def\fracopenspacing    {\setmathspacing \mathfractioncode    \mathopencode       }
-\permanent\protected\def\fracclosespacing   {\setmathspacing \mathfractioncode    \mathclosecode      }
-\permanent\protected\def\fracpunctspacing   {\setmathspacing \mathfractioncode    \mathpunctuationcode}
-%permanent\protected\def\fracinnerspacing   {\setmathspacing \mathfractioncode    \mathinnercode      }
-%permanent\protected\def\fracfracspacing    {\setmathspacing \mathfractioncode    \mathfractioncode   }
-%permanent\protected\def\fracradspacing     {\setmathspacing \mathfractioncode    \mathradicalcode    }
-\permanent\protected\def\fracmiddlespacing  {\setmathspacing \mathfractioncode    \mathmiddlecode     }
-%permanent\protected\def\fracaccentspacing  {\setmathspacing \mathfractioncode    \mathaccentcode     }
-
-\permanent\protected\def\radordspacing      {\setmathspacing \mathradicalcode     \mathordinarycode   }
-\permanent\protected\def\radopspacing       {\setmathspacing \mathradicalcode     \mathoperatorcode   }
-\permanent\protected\def\radbinspacing      {\setmathspacing \mathradicalcode     \mathbinarycode     }
-\permanent\protected\def\radrelspacing      {\setmathspacing \mathradicalcode     \mathrelationcode   }
-\permanent\protected\def\radopenspacing     {\setmathspacing \mathradicalcode     \mathopencode       }
-\permanent\protected\def\radclosespacing    {\setmathspacing \mathradicalcode     \mathclosecode      }
-\permanent\protected\def\radpunctspacing    {\setmathspacing \mathradicalcode     \mathpunctuationcode}
-%permanent\protected\def\radinnerspacing    {\setmathspacing \mathradicalcode     \mathinnercode      }
-%permanent\protected\def\radfracspacing     {\setmathspacing \mathradicalcode     \mathfractioncode   }
-%permanent\protected\def\radradspacing      {\setmathspacing \mathradicalcode     \mathradicalcode    }
-\permanent\protected\def\radmiddlespacing   {\setmathspacing \mathradicalcode     \mathmiddlecode     }
-%permanent\protected\def\radaccentspacing   {\setmathspacing \mathradicalcode     \mathaccentcode     }
-
-\permanent\protected\def\middleordspacing   {\setmathspacing \mathmiddlecode      \mathordinarycode   }
-\permanent\protected\def\middleopspacing    {\setmathspacing \mathmiddlecode      \mathoperatorcode   }
-\permanent\protected\def\middlebinspacing   {\setmathspacing \mathmiddlecode      \mathbinarycode     }
-\permanent\protected\def\middlerelspacing   {\setmathspacing \mathmiddlecode      \mathrelationcode   }
-\permanent\protected\def\middleopenspacing  {\setmathspacing \mathmiddlecode      \mathopencode       }
-\permanent\protected\def\middleclosespacing {\setmathspacing \mathmiddlecode      \mathclosecode      }
-\permanent\protected\def\middlepunctspacing {\setmathspacing \mathmiddlecode      \mathpunctuationcode}
-%permanent\protected\def\middleinnerspacing {\setmathspacing \mathmiddlecode      \mathinnercode      }
-%permanent\protected\def\middlefracspacing  {\setmathspacing \mathmiddlecode      \mathfractioncode   }
-%permanent\protected\def\middleradspacing   {\setmathspacing \mathmiddlecode      \mathradicalcode    }
-\permanent\protected\def\middlemiddlespacing{\setmathspacing \mathmiddlecode      \mathmiddlecode     }
-%permanent\protected\def\middleaccentspacing{\setmathspacing \mathmiddlecode      \mathaccentcode     }
-
-\permanent\protected\def\accentordspacing   {\setmathspacing \mathaccentcode      \mathordinarycode   }
-\permanent\protected\def\accentopspacing    {\setmathspacing \mathaccentcode      \mathoperatorcode   }
-\permanent\protected\def\accentbinspacing   {\setmathspacing \mathaccentcode      \mathbinarycode     }
-\permanent\protected\def\accentrelspacing   {\setmathspacing \mathaccentcode      \mathrelationcode   }
-\permanent\protected\def\accentopenspacing  {\setmathspacing \mathaccentcode      \mathopencode       }
-\permanent\protected\def\accentclosespacing {\setmathspacing \mathaccentcode      \mathclosecode      }
-\permanent\protected\def\accentpunctspacing {\setmathspacing \mathaccentcode      \mathpunctuationcode}
-%permanent\protected\def\accentinnerspacing {\setmathspacing \mathaccentcode      \mathinnercode      }
-%permanent\protected\def\accentfracspacing  {\setmathspacing \mathaccentcode      \mathfractioncode   }
-%permanent\protected\def\accentradspacing   {\setmathspacing \mathaccentcode      \mathradicalcode    }
-\permanent\protected\def\accentmiddlespacing{\setmathspacing \mathaccentcode      \mathmiddlecode     }
-%permanent\protected\def\accentaccentspacing{\setmathspacing \mathaccentcode      \mathaccentcode     }
+% %D These verbose commands are obsolete because there are plenty more classes in
+% %D \LMTX\ than in \MKIV.
+%
+% \permanent\protected\def\ordordspacing          {\setmathspacing \mathordinarycode    \mathordinarycode   }
+% \permanent\protected\def\ordopspacing           {\setmathspacing \mathordinarycode    \mathoperatorcode   }
+% \permanent\protected\def\ordbinspacing          {\setmathspacing \mathordinarycode    \mathbinarycode     }
+% \permanent\protected\def\ordrelspacing          {\setmathspacing \mathordinarycode    \mathrelationcode   }
+% \permanent\protected\def\ordopenspacing         {\setmathspacing \mathordinarycode    \mathopencode       }
+% \permanent\protected\def\ordclosespacing        {\setmathspacing \mathordinarycode    \mathclosecode      }
+% \permanent\protected\def\ordpunctspacing        {\setmathspacing \mathordinarycode    \mathpunctuationcode}
+% %permanent\protected\def\ordinnerspacing        {\setmathspacing \mathordinarycode    \mathinnercode      }
+% %permanent\protected\def\ordfractionspacing     {\setmathspacing \mathordinarycode    \mathfractioncode   }
+% %permanent\protected\def\ordradicalspacing      {\setmathspacing \mathordinarycode    \mathradicalcode    }
+% \permanent\protected\def\ordmiddlespacing       {\setmathspacing \mathordinarycode    \mathmiddlecode     }
+% %permanent\protected\def\ordaccentspacing       {\setmathspacing \mathordinarycode    \mathaccentcode     }
+%
+% \permanent\protected\def\opordspacing           {\setmathspacing \mathoperatorcode    \mathordinarycode   }
+% \permanent\protected\def\opopspacing            {\setmathspacing \mathoperatorcode    \mathoperatorcode   }
+% \permanent\protected\def\opbinspacing           {\setmathspacing \mathoperatorcode    \mathbinarycode     }
+% \permanent\protected\def\oprelspacing           {\setmathspacing \mathoperatorcode    \mathrelationcode   }
+% \permanent\protected\def\opopenspacing          {\setmathspacing \mathoperatorcode    \mathopencode       }
+% \permanent\protected\def\opclosespacing         {\setmathspacing \mathoperatorcode    \mathclosecode      }
+% \permanent\protected\def\oppunctspacing         {\setmathspacing \mathoperatorcode    \mathpunctuationcode}
+% %permanent\protected\def\opinnerspacing         {\setmathspacing \mathoperatorcode    \mathinnercode      }
+% %permanent\protected\def\opfractionspacing      {\setmathspacing \mathoperatorcode    \mathfractioncode   }
+% %permanent\protected\def\opradicalspacing       {\setmathspacing \mathoperatorcode    \mathradicalcode    }
+% \permanent\protected\def\opmiddlespacing        {\setmathspacing \mathoperatorcode    \mathmiddlecode     }
+% %permanent\protected\def\opaccentspacing        {\setmathspacing \mathoperatorcode    \mathaccentcode     }
+%
+% \permanent\protected\def\binordspacing          {\setmathspacing \mathbinarycode      \mathordinarycode   }
+% \permanent\protected\def\binopspacing           {\setmathspacing \mathbinarycode      \mathoperatorcode   }
+% \permanent\protected\def\binbinspacing          {\setmathspacing \mathbinarycode      \mathbinarycode     }
+% \permanent\protected\def\binrelspacing          {\setmathspacing \mathbinarycode      \mathrelationcode   }
+% \permanent\protected\def\binopenspacing         {\setmathspacing \mathbinarycode      \mathopencode       }
+% \permanent\protected\def\binclosespacing        {\setmathspacing \mathbinarycode      \mathclosecode      }
+% \permanent\protected\def\binpunctspacing        {\setmathspacing \mathbinarycode      \mathpunctuationcode}
+% %permanent\protected\def\bininnerspacing        {\setmathspacing \mathbinarycode      \mathinnercode      }
+% %permanent\protected\def\binfractionspacing     {\setmathspacing \mathbinarycode      \mathfractioncode   }
+% %permanent\protected\def\binradicalspacing      {\setmathspacing \mathbinarycode      \mathradicalcode    }
+% \permanent\protected\def\binmiddlespacing       {\setmathspacing \mathbinarycode      \mathmiddlecode     }
+% %permanent\protected\def\binaccentspacing       {\setmathspacing \mathbinarycode      \mathaccentcode     }
+%
+% \permanent\protected\def\relordspacing          {\setmathspacing \mathrelationcode    \mathordinarycode   }
+% \permanent\protected\def\relopspacing           {\setmathspacing \mathrelationcode    \mathoperatorcode   }
+% \permanent\protected\def\relbinspacing          {\setmathspacing \mathrelationcode    \mathbinarycode     }
+% \permanent\protected\def\relrelspacing          {\setmathspacing \mathrelationcode    \mathrelationcode   }
+% \permanent\protected\def\relopenspacing         {\setmathspacing \mathrelationcode    \mathopencode       }
+% \permanent\protected\def\relclosespacing        {\setmathspacing \mathrelationcode    \mathclosecode      }
+% \permanent\protected\def\relpunctspacing        {\setmathspacing \mathrelationcode    \mathpunctuationcode}
+% %permanent\protected\def\relinnerspacing        {\setmathspacing \mathrelationcode    \mathinnercode      }
+% %permanent\protected\def\relfractionspacing     {\setmathspacing \mathrelationcode    \mathfractioncode   }
+% %permanent\protected\def\relradicalspacing      {\setmathspacing \mathrelationcode    \mathradicalcode    }
+% \permanent\protected\def\relmiddlespacing       {\setmathspacing \mathrelationcode    \mathmiddlecode     }
+% %permanent\protected\def\relaccentspacing       {\setmathspacing \mathrelationcode    \mathaccentcode     }
+%
+% \permanent\protected\def\openordspacing         {\setmathspacing \mathopencode        \mathordinarycode   }
+% \permanent\protected\def\openopspacing          {\setmathspacing \mathopencode        \mathoperatorcode   }
+% \permanent\protected\def\openbinspacing         {\setmathspacing \mathopencode        \mathbinarycode     }
+% \permanent\protected\def\openrelspacing         {\setmathspacing \mathopencode        \mathrelationcode   }
+% \permanent\protected\def\openopenspacing        {\setmathspacing \mathopencode        \mathopencode       }
+% \permanent\protected\def\openclosespacing       {\setmathspacing \mathopencode        \mathclosecode      }
+% \permanent\protected\def\openpunctspacing       {\setmathspacing \mathopencode        \mathpunctuationcode}
+% %permanent\protected\def\openinnerspacing       {\setmathspacing \mathopencode        \mathinnercode      }
+% %permanent\protected\def\openfractionspacing    {\setmathspacing \mathopencode        \mathfractioncode   }
+% %permanent\protected\def\openradicalspacing     {\setmathspacing \mathopencode        \mathradicalcode    }
+% \permanent\protected\def\openmiddlespacing      {\setmathspacing \mathopencode        \mathmiddlecode     }
+% %permanent\protected\def\openaccentspacing      {\setmathspacing \mathopencode        \mathaccentcode     }
+%
+% \permanent\protected\def\closeordspacing        {\setmathspacing \mathclosecode       \mathordinarycode   }
+% \permanent\protected\def\closeopspacing         {\setmathspacing \mathclosecode       \mathoperatorcode   }
+% \permanent\protected\def\closebinspacing        {\setmathspacing \mathclosecode       \mathbinarycode     }
+% \permanent\protected\def\closerelspacing        {\setmathspacing \mathclosecode       \mathrelationcode   }
+% \permanent\protected\def\closeopenspacing       {\setmathspacing \mathclosecode       \mathopencode       }
+% \permanent\protected\def\closeclosespacing      {\setmathspacing \mathclosecode       \mathclosecode      }
+% \permanent\protected\def\closepunctspacing      {\setmathspacing \mathclosecode       \mathpunctuationcode}
+% %permanent\protected\def\closeinnerspacing      {\setmathspacing \mathclosecode       \mathinnercode      }
+% %permanent\protected\def\closefractionspacing   {\setmathspacing \mathclosecode       \mathfractioncode   }
+% %permanent\protected\def\closeradicalspacing    {\setmathspacing \mathclosecode       \mathradicalcode    }
+% \permanent\protected\def\closemiddlespacing     {\setmathspacing \mathclosecode       \mathmiddlecode     }
+% %permanent\protected\def\closeaccentspacing     {\setmathspacing \mathclosecode       \mathaccentcode     }
+%
+% \permanent\protected\def\punctordspacing        {\setmathspacing \mathpunctuationcode \mathordinarycode   }
+% \permanent\protected\def\punctopspacing         {\setmathspacing \mathpunctuationcode \mathoperatorcode   }
+% \permanent\protected\def\punctbinspacing        {\setmathspacing \mathpunctuationcode \mathbinarycode     }
+% \permanent\protected\def\punctrelspacing        {\setmathspacing \mathpunctuationcode \mathrelationcode   }
+% \permanent\protected\def\punctopenspacing       {\setmathspacing \mathpunctuationcode \mathopencode       }
+% \permanent\protected\def\punctclosespacing      {\setmathspacing \mathpunctuationcode \mathclosecode      }
+% \permanent\protected\def\punctpunctspacing      {\setmathspacing \mathpunctuationcode \mathpunctuationcode}
+% %permanent\protected\def\punctinnerspacing      {\setmathspacing \mathpunctuationcode \mathinnercode      }
+% %permanent\protected\def\punctfractionspacing   {\setmathspacing \mathpunctuationcode \mathfractioncode   }
+% %permanent\protected\def\punctradicalspacing    {\setmathspacing \mathpunctuationcode \mathradicalcode    }
+% \permanent\protected\def\punctmiddlespacing     {\setmathspacing \mathpunctuationcode \mathmiddlecode     }
+% %permanent\protected\def\punctaccentspacing     {\setmathspacing \mathpunctuationcode \mathaccentcode     }
+%
+% %permanent\protected\def\innerordspacing        {\setmathspacing \mathinnercode       \mathordinarycode   }
+% %permanent\protected\def\inneropspacing         {\setmathspacing \mathinnercode       \mathoperatorcode   }
+% %permanent\protected\def\innerbinspacing        {\setmathspacing \mathinnercode       \mathbinarycode     }
+% %permanent\protected\def\innerrelspacing        {\setmathspacing \mathinnercode       \mathrelationcode   }
+% %permanent\protected\def\inneropenspacing       {\setmathspacing \mathinnercode       \mathopencode       }
+% %permanent\protected\def\innerclosespacing      {\setmathspacing \mathinnercode       \mathclosecode      }
+% %permanent\protected\def\innerpunctspacing      {\setmathspacing \mathinnercode       \mathpunctuationcode}
+% %permanent\protected\def\innerinnerspacing      {\setmathspacing \mathinnercode       \mathinnercode      }
+% %permanent\protected\def\innerfractionspacing   {\setmathspacing \mathinnercode       \mathfractioncode   }
+% %permanent\protected\def\innerradicalspacing    {\setmathspacing \mathinnercode       \mathradicalcode    }
+% %permanent\protected\def\innermiddlespacing     {\setmathspacing \mathinnercode       \mathmiddlecode     }
+% %permanent\protected\def\inneraccentspacing     {\setmathspacing \mathinnercode       \mathaccentcode     }
+%
+% \permanent\protected\def\fractionordspacing     {\setmathspacing \mathfractioncode    \mathordinarycode   }
+% \permanent\protected\def\fractionopspacing      {\setmathspacing \mathfractioncode    \mathoperatorcode   }
+% \permanent\protected\def\fractionbinspacing     {\setmathspacing \mathfractioncode    \mathbinarycode     }
+% \permanent\protected\def\fractionrelspacing     {\setmathspacing \mathfractioncode    \mathrelationcode   }
+% \permanent\protected\def\fractionopenspacing    {\setmathspacing \mathfractioncode    \mathopencode       }
+% \permanent\protected\def\fractionclosespacing   {\setmathspacing \mathfractioncode    \mathclosecode      }
+% \permanent\protected\def\fractionpunctspacing   {\setmathspacing \mathfractioncode    \mathpunctuationcode}
+% %permanent\protected\def\fractioninnerspacing   {\setmathspacing \mathfractioncode    \mathinnercode      }
+% %permanent\protected\def\fractionfractionspacing{\setmathspacing \mathfractioncode    \mathfractioncode   }
+% %permanent\protected\def\fractionradicalspacing {\setmathspacing \mathfractioncode    \mathradicalcode    }
+% \permanent\protected\def\fractionmiddlespacing  {\setmathspacing \mathfractioncode    \mathmiddlecode     }
+% %permanent\protected\def\fractionaccentspacing  {\setmathspacing \mathfractioncode    \mathaccentcode     }
+%
+% \permanent\protected\def\radicalordspacing      {\setmathspacing \mathradicalcode     \mathordinarycode   }
+% \permanent\protected\def\radicalopspacing       {\setmathspacing \mathradicalcode     \mathoperatorcode   }
+% \permanent\protected\def\radicalbinspacing      {\setmathspacing \mathradicalcode     \mathbinarycode     }
+% \permanent\protected\def\radicalrelspacing      {\setmathspacing \mathradicalcode     \mathrelationcode   }
+% \permanent\protected\def\radicalopenspacing     {\setmathspacing \mathradicalcode     \mathopencode       }
+% \permanent\protected\def\radicalclosespacing    {\setmathspacing \mathradicalcode     \mathclosecode      }
+% \permanent\protected\def\radicalpunctspacing    {\setmathspacing \mathradicalcode     \mathpunctuationcode}
+% %permanent\protected\def\radicalinnerspacing    {\setmathspacing \mathradicalcode     \mathinnercode      }
+% %permanent\protected\def\radicalfractionspacing {\setmathspacing \mathradicalcode     \mathfractioncode   }
+% %permanent\protected\def\radicalradicalspacing  {\setmathspacing \mathradicalcode     \mathradicalcode    }
+% \permanent\protected\def\radicalmiddlespacing   {\setmathspacing \mathradicalcode     \mathmiddlecode     }
+% %permanent\protected\def\radicalaccentspacing   {\setmathspacing \mathradicalcode     \mathaccentcode     }
+%
+% \permanent\protected\def\middleordspacing       {\setmathspacing \mathmiddlecode      \mathordinarycode   }
+% \permanent\protected\def\middleopspacing        {\setmathspacing \mathmiddlecode      \mathoperatorcode   }
+% \permanent\protected\def\middlebinspacing       {\setmathspacing \mathmiddlecode      \mathbinarycode     }
+% \permanent\protected\def\middlerelspacing       {\setmathspacing \mathmiddlecode      \mathrelationcode   }
+% \permanent\protected\def\middleopenspacing      {\setmathspacing \mathmiddlecode      \mathopencode       }
+% \permanent\protected\def\middleclosespacing     {\setmathspacing \mathmiddlecode      \mathclosecode      }
+% \permanent\protected\def\middlepunctspacing     {\setmathspacing \mathmiddlecode      \mathpunctuationcode}
+% %permanent\protected\def\middleinnerspacing     {\setmathspacing \mathmiddlecode      \mathinnercode      }
+% %permanent\protected\def\middlefractionspacing  {\setmathspacing \mathmiddlecode      \mathfractioncode   }
+% %permanent\protected\def\middleradicalspacing   {\setmathspacing \mathmiddlecode      \mathradicalcode    }
+% \permanent\protected\def\middlemiddlespacing    {\setmathspacing \mathmiddlecode      \mathmiddlecode     }
+% %permanent\protected\def\middleaccentspacing    {\setmathspacing \mathmiddlecode      \mathaccentcode     }
+%
+% \permanent\protected\def\accentordspacing       {\setmathspacing \mathaccentcode      \mathordinarycode   }
+% \permanent\protected\def\accentopspacing        {\setmathspacing \mathaccentcode      \mathoperatorcode   }
+% \permanent\protected\def\accentbinspacing       {\setmathspacing \mathaccentcode      \mathbinarycode     }
+% \permanent\protected\def\accentrelspacing       {\setmathspacing \mathaccentcode      \mathrelationcode   }
+% \permanent\protected\def\accentopenspacing      {\setmathspacing \mathaccentcode      \mathopencode       }
+% \permanent\protected\def\accentclosespacing     {\setmathspacing \mathaccentcode      \mathclosecode      }
+% \permanent\protected\def\accentpunctspacing     {\setmathspacing \mathaccentcode      \mathpunctuationcode}
+% %permanent\protected\def\accentinnerspacing     {\setmathspacing \mathaccentcode      \mathinnercode      }
+% %permanent\protected\def\accentfractionspacing  {\setmathspacing \mathaccentcode      \mathfractioncode   }
+% %permanent\protected\def\accentradicalspacing   {\setmathspacing \mathaccentcode      \mathradicalcode    }
+% \permanent\protected\def\accentmiddlespacing    {\setmathspacing \mathaccentcode      \mathmiddlecode     }
+% %permanent\protected\def\accentaccentspacing    {\setmathspacing \mathaccentcode      \mathaccentcode     }
 
 %D In the end Mikael and I prefer this but we need a high level interface:
 
@@ -473,7 +497,7 @@
 %D     $ 1 \color[red]{+} 2$\par
 %D     \mathgroupingmode0
 %D     $ 1 {\red +} 2$\par
-%D     $ 1 \mathbin{\red +} 2$\par
+%D     $ 1 \mathbinary{\red +} 2$\par
 %D     $ 1 \color[red]{+} 2$\par
 %D \stopTEXpage
 %D \stoptyping
@@ -729,14 +753,6 @@
 \appendtoks
     \advanceby\mathnestinglevel\plusone
 \to \everymathematics
-
-%D A few compatibility helpers:
-
-\permanent\def\Umathbottomaccent{\Umathaccent \s!bottom }
-\permanent\def\Umathtopaccent   {\Umathaccent \s!top    }
-\permanent\def\Umathaccents     {\Umathaccent \s!both   } % strange highlighting
-
-\aliased\let\Umathbotaccent\Umathbottomaccent
 
 %D The attributes that we will use (todo: pack some into one but uglier code):
 
@@ -1699,76 +1715,39 @@
 % \permanent\protected\def\mathlimop#1{\mathatom \mathoperatorcode options "C0000 {#1}} % auto "40000 + "80000
 % \permanent\protected\def\mathnolop#1{\mathatom \mathoperatorcode options "80000 {#1}}
 
-\aliased\let\mathnothing\firstofoneunexpanded
-\aliased\let\mathalpha  \firstofoneunexpanded
+% \aliased\let\mathnothing\firstofoneunexpanded
+% \aliased\let\mathalpha  \firstofoneunexpanded
 
-% \installcorenamespace {mathclasses}
-%
-% \letcsname\??mathclasses         ord\endcsname\normalmathord
-% \letcsname\??mathclasses          op\endcsname\normalmathop
-% \letcsname\??mathclasses         rel\endcsname\normalmathrel
-% \letcsname\??mathclasses         bin\endcsname\normalmathbin
-% \letcsname\??mathclasses       punct\endcsname\normalmathpunct
-%
-% \letcsname\??mathclasses            \endcsname\normalmathord
-% \letcsname\??mathclasses       inner\endcsname\normalmathinner
-% \letcsname\??mathclasses    ellipsis\endcsname\normalmathellipsis
-% \letcsname\??mathclasses        open\endcsname\normalmathopen
-% \letcsname\??mathclasses       close\endcsname\normalmathclose
-% \letcsname\??mathclasses    ordinary\endcsname\normalmathord
-% \letcsname\??mathclasses    operator\endcsname\normalmathop
-% \letcsname\??mathclasses    relation\endcsname\normalmathrel
-% \letcsname\??mathclasses      binary\endcsname\normalmathbin
-% \letcsname\??mathclasses punctuation\endcsname\normalmathpunct
-% \letcsname\??mathclasses    fraction\endcsname\normalmathfrac
-% \letcsname\??mathclasses     radical\endcsname\normalmathrad
+\ifdefined\mathop    \else \aliased\let\mathop   \normalmathoperator    \aliased\let\normalmathop   \normalmathoperator    \fi
+\ifdefined\mathord   \else \aliased\let\mathord  \normalmathordinary    \aliased\let\normalmathord  \normalmathordinary    \fi
+\ifdefined\mathbin   \else \aliased\let\mathbin  \normalmathbinary      \aliased\let\normalmathbin  \normalmathbinary      \fi
+\ifdefined\mathrel   \else \aliased\let\mathrel  \normalmathrelation    \aliased\let\normalmathrel  \normalmathrelation    \fi
+\ifdefined\mathpunct \else \aliased\let\mathpunct\normalmathpunctuation \aliased\let\normalmathpunct\normalmathpunctuation \fi
+\ifdefined\underline \else \aliased\let\underline\normalmathunderline   \aliased\let\normalunderline\normalmathunderline   \fi
+\ifdefined\overline  \else \aliased\let\overline \normalmathoverline    \aliased\let\normaloverline \normalmathoverline    \fi
 
-%D We need only a subset because many classes are sort of special.
+\permanent\def\mathcodechecked#1%
+  {\numexpr
+     \iftok{#1}\emptytoks
+       \mathordinarycode
+     \orelse\ifchknum#1\or
+       \lastchknum
+     \orelse\ifchknum\begincsname math#1code\endcsname\or % maybe some day a hash for this
+       \lastchknum
+     \else
+       \mathordinarycode
+     \fi
+   \relax}
 
-\installcorenamespace{mathcodecommand}
+\permanent\def\mathcodenumber#1%
+  {\the\mathcodechecked{#1}}
 
-% short:
+\permanent\protected\def\mathcodecommand#1%
+  {\mathatom \s!class \mathcodechecked{#1}}
 
-\aliased\letcsname\??mathcodecommand         ord\endcsname\mathord
-\aliased\letcsname\??mathcodecommand          op\endcsname\mathop
-\aliased\letcsname\??mathcodecommand         rel\endcsname\mathrel
-\aliased\letcsname\??mathcodecommand         bin\endcsname\mathbin
-\aliased\letcsname\??mathcodecommand       punct\endcsname\mathpunct
-
-% official:
-
-\aliased\letcsname\??mathcodecommand            \endcsname\normalmathord
-\aliased\letcsname\??mathcodecommand       inner\endcsname\normalmathinner
-\aliased\letcsname\??mathcodecommand        open\endcsname\normalmathopen
-\aliased\letcsname\??mathcodecommand       close\endcsname\normalmathclose
-\aliased\letcsname\??mathcodecommand    ordinary\endcsname\normalmathord
-\aliased\letcsname\??mathcodecommand    operator\endcsname\normalmathop
-\aliased\letcsname\??mathcodecommand    relation\endcsname\normalmathrel
-\aliased\letcsname\??mathcodecommand      binary\endcsname\normalmathbin
-\aliased\letcsname\??mathcodecommand punctuation\endcsname\normalmathpunct
-\aliased\letcsname\??mathcodecommand    fraction\endcsname\normalmathfrac
-\aliased\letcsname\??mathcodecommand     radical\endcsname\normalmathrad
-
-% special:
-
-\aliased\letcsname\??mathcodecommand       limop\endcsname\mathlimop
-\aliased\letcsname\??mathcodecommand       nolop\endcsname\mathnolop
-
-% obsolete:
-
-\aliased\letcsname\??mathcodecommand         box\endcsname\mathbox
-%aliased\letcsname\??mathcodecommand      choice\endcsname\mathnothing
-\aliased\letcsname\??mathcodecommand       alpha\endcsname\mathalpha % hm
-\aliased\letcsname\??mathcodecommand     nothing\endcsname\mathnothing
-
-% usage:
-
-\def\math_class_by_parameter       #1{\normalexpanded{\noexpand\math_class_by_parameter_indeed{#1\c!mathclass}}}
-\def\math_class_by_parameter_indeed#1{\csname\??mathcodecommand\ifcsname\??mathcodecommand#1\endcsname#1\fi\endcsname}
-
-\permanent          \def\mathcodenumber #1{\the\csname math#1code\endcsname}
-\permanent\protected\def\mathcodecommand#1{\csname\??mathcodecommand#1\endcsname}
-\permanent          \def\mathcodechecked#1{\ifcsname math#1code\endcsname\lastnamedcs\else#1\fi}
+\def\math_class_by_parameter    #1#2{\normalexpanded{\noexpand\mathcodechecked{#1#2}}}
+\def\math_atom_by_parameter       #1{\normalexpanded{\noexpand\math_atom_by_parameter_indeed{#1\c!mathclass}}}
+\def\math_atom_by_parameter_indeed#1{\mathatom \s!class \mathcodechecked{#1}}
 
 % \startlines
 % $\mathopnolimits{\rm d}x$
@@ -1799,7 +1778,7 @@
    \orelse\ifparameter#2\or
      \frozen\protected\defcsname\??mathcommand#1\endcsname{\mathcodecommand{#2}{#4}}%
    \else
-     \frozen\protected\defcsname\??mathcommand#1\endcsname{\mathcodecommand{nothing}{#4}}%
+     \frozen\protected\defcsname\??mathcommand#1\endcsname{#4}%
    \fi
    \ifparameter#1\or % safeguard
      \letcsname#1\expandafter\endcsname\csname\??mathcommand#1\endcsname

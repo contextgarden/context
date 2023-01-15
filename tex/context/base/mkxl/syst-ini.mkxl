@@ -789,20 +789,6 @@
 % \permanent\protected\def\uedef{\protected\edef}
 % \permanent\protected\def\uxdef{\protected\xdef}
 
-% For now:
-
-\permanent\protected\def\defUmathfixedtopaccent   #1#2#3#4{\global\immutable\protected\def#1{\Umathtopaccent    \s!fixed "#2 "#3 "#4 }}
-\permanent\protected\def\defUmathfixedbottomaccent#1#2#3#4{\global\immutable\protected\def#1{\Umathbottomaccent \s!fixed "#2 "#3 "#4 }}
-\permanent\protected\def\defUmathtopaccent        #1#2#3#4{\global\immutable\protected\def#1{\Umathtopaccent             "#2 "#3 "#4 }}
-\permanent\protected\def\defUmathbottomaccent     #1#2#3#4{\global\immutable\protected\def#1{\Umathbottomaccent          "#2 "#3 "#4 }}
-\permanent\protected\def\defUdelimiterover        #1#2#3#4{\global\immutable\protected\def#1{\Udelimiterover             "#2 "#3     }}
-\permanent\protected\def\defUdelimiterunder       #1#2#3#4{\global\immutable\protected\def#1{\Udelimiterunder            "#2 "#3     }}
-%permanent\protected\def\defUdelimiter            #1#2#3#4{\global\immutable\protected\def#1{\Udelimiter                 "#2 "#3 "#4 }}
-\permanent\protected\def\defUdelimiter            #1#2#3#4{\global\immutable\Umathchardef #1                             "#2 "#3 "#4 }
-\permanent\protected\def\defUradical                #1#2#3{\global\immutable\protected\def#1{\Uradical                   "#2 "#3     }}
-\permanent\protected\def\defUroot                   #1#2#3{\global\immutable\protected\def#1{\Uroot                      "#2 "#3     }}
-\permanent\protected\def\defUmathchar             #1#2#3#4{\global\immutable\Umathchardef #1                             "#2 "#3 "#4 }
-
 %D For a while we keep the following, as systems like tikz need it. Best not use
 %D that one \CONTEXT. It will probably move to the tikz loader.
 
@@ -834,8 +820,7 @@
 % no longer \errorstopmode cf. plain tex 3.141592653
 
 \permanent\protected\def\tracingall
-  {\tracingonline    \plusone
-   \tracingcommands  \plusfour  % > 3: show mode change independent
+  {\tracingcommands  \plusfour  % > 3: show mode change independent
    \tracingmacros    \plusthree % > 2: obey \untraced
    \tracingoutput    \plusone
    \tracingpages     \plusone
@@ -848,7 +833,8 @@
    \tracingmath      \plusone
    \tracingalignments\plustwo   % > 1: also show preamble
    \showboxbreadth   \maxcount
-   \showboxdepth     \maxcount}
+   \showboxdepth     \maxcount
+   \tracingonline    \plusone}
 
 \permanent\protected\def\tracingless
   {\tracingall
@@ -861,7 +847,8 @@
    \tracingonline    \zerocount}
 
 \permanent\protected\def\tracingnone
-  {\showboxdepth     \plusfive % lessboxtracing
+  {\tracingonline    \zerocount
+   \showboxdepth     \plusfive % lessboxtracing
    \showboxbreadth   \plusten
    \tracingalignments\zerocount
    \tracingmath      \zerocount

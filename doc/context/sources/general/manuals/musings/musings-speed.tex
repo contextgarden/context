@@ -1,0 +1,687 @@
+% language=us runpath=texruns:manuals/musings
+
+% musical timestamp: listening to FLUX (jazz trio) in Januari 2023
+
+\startcomponent musings-speed
+
+\environment musings-style
+
+\startchapter[title={Speeding up \TEX}]
+
+\startsection[title={Introduction}]
+
+Recently a couple of cordless phones that I use gave up as soon as I used them
+for a minute or so. The first time that happened I figured that after all these
+years the batteries had gone bad and after some testing I decided to replace
+them. I got some of these high end batteries that discharge slowly and store a
+lot of power. Within a year they were dead too. Then I went for the more regular
+and cheaper ones, again with a lot of capacity. And yes, these also gave up, that
+is: only in the phones that were hardly used. The batteries lasted longer in
+phones that were discharged by usage daily.
+
+When I went out for new batteries I was asked if I needed them for cordless
+phones and, surprise, was given special ones that actually stored less but were
+guaranteed to work for at least 6 years. The package explicitly mentioned use in
+cordless phones. So here performance doesn't come with the most high end ones,
+based on specifications that impress.
+
+This is also true for computers that are used to process \TEX\ documents. More
+cores amount to much accumulated processing power but for a single core \TEX\
+process, a few fast cores are more relevant than plenty slower ones that run in
+parallel. More memory helps but compared to other processes \TEX\ actually
+doesn't use that much memory. And disk speed matters but less so when the
+operating system caches files. What does play a role are cpu caches because \TEX\
+is very memory intense and processing is not concentrated in a few functions. But
+a large cache shared among many (busy) cores makes for a less impressive
+performance.
+
+So what matters really? In the next sections we will explore a few points of
+view. It's not some advertisement for a specific engine, but much more about
+putting it into perspective (as one can run into ridiculous arguments on the
+web). It is not only the hardware and software that matters but also how one uses
+it.
+
+\stopsection
+
+\startsection[title=The engine]
+
+There are various ways to compare engines and each has its own characteristics.
+The \PDFTEX\ engine is closest to the original. It directly produces the output
+which can give it an edge. It is eight bit and therefore uses small fonts and
+internally all that is related to fonts and characters is also small. This means
+that there is little overhead in typesetting a paragraph: hyphenation, ligature
+building and kerning are interwoven and perform well.
+
+The \XETEX\ engine supports wide fonts and \UNICODE\ and therefore can be seen as
+32 bit. I never looked into the code so I can't tell how far that goes but
+performance is definitely less than \PDFTEX. The rendering of text is delegated
+to a library (there were some changes in that along its development) which is
+less efficient than the built in \PDFTEX\ route. But it is also more powerful.
+
+The \LUATEX\ engine is mostly 32 bit and delegates non standard font handling to
+\LUA\ which comes with a performance penalty but also adds a lot of flexibility.
+Also, the fact that one can call out to \LUA\ in many places makes that one can
+not really blame the engine for performance hits. The fact that hyphenation,
+ligature building and kerning is split comes at a small price too. We have larger
+nodes so compared to \PDFTEX\ more memory is used and accessed. Some mechanisms
+are actually more efficient, like font expansion and protrusion.
+
+The \LUAMETATEX\ engine lacks a font loader (but it does have the traditional
+renderer on board) and it has no backend. So even more is delegated to \LUA,
+which in turn makes this the slowest of the lot. And, again more data travels
+with nodes. In some modes of operation much more calculations take place.
+However, because it has an enriched macro processor, additional primitives, and
+plenty deep down \quote {improvements} it can perform better than \LUATEX\ (and
+even \LUAJITTEX, the \LUATEX\ version with a faster but limited \LUA\ virtual
+machine). And as with \LUATEX, there are usage patterns that make it faster than
+\PDFTEX.
+
+So, in general the order of performance is \PDFTEX, \XETEX, \LUAJITTEX\ (kind of
+obsolete), \LUATEX, \LUAMETATEX. But then, how come that \CONTEXT\ users never
+complain about performance? The reasons is simple: performance is quite okay and
+as it is relative to what one does, a user will accept a drop in performance when
+more has to be done. When we moved on from \LUATEX\ to \LUAMETATEX\ there
+definitely was a drop in performance, simply because of the \LUA\ backend.
+Because upgrading happened in small (but continuous) steps, right from the start
+the new engine was good enough to be used in production which is why most users
+switched to \LMTX\ as soon as became clear that this is where the progress is
+made.
+
+There were no real complaints about the upto 15\percent\ initial performance drop
+which indicates that for most users it doesn't matter that much. As the engine
+evolved we could gain some back and now \LUAMETATEX\ ends up between \PDFTEX\ and
+\LUATEX\ and in many modern scenarios even comes out first. The fact that in the
+meantime we can be much faster than \LUATEX\ did get noticed (when asked).
+However, as development takes years updating a machine in the meantime puts
+discussions about performance in a different (causality) perspective anyway.
+
+\stopsection
+
+\startsection[title=The coding]
+
+Performance can increase when native engine features are used instead of complex
+macros that have to work around limitations. It can also decrease when new
+features are used that add complex functionality. And when an engine extends
+existing functionality that is likely to come at a price. So where \LUAMETATEX\
+provides a more rich programming environment, it also had a more complex par
+builder, page builder, insert, mark and adjust handling, plenty of extra
+character, rule and box features and all of that definitely adds some overhead.
+Quite often a gain in simplicity (nicer and more efficient macros) compensate the
+more complex features. That is because on the average the engine doesn't do that
+much (tens of thousands of the same) complex macro expansion and also doesn't
+demand that much complex low level typesetting. A gain here is often compensated
+by a loss there. This is one reason why during the years \LUAMETATEX\ could
+sustain a decent performance. Personally I don't accept a drop in performance
+easily which is why in practice most mechanism, even when extended, probably
+perform better but I'm not going to prove that observation.
+
+One important reason why \CONTEXT\ \LMTX\ with \LUAMETATEX\ is faster than its
+ancestors is that we got rid of some intermediate programming layers. Most users
+have never seen the auxiliary macros or implementation details but plenty were
+used in \MKII\ and \MKIV. Of course we kept them because often they are nicer
+than many lines of primitive code, but only a few (and less in the future) are
+used in the core. Examples are multi step macros (that pick up arguments) that
+became single step and complex if tests that became inline native tests. Because
+\CONTEXT\ always had a high level of abstraction consistency of the interface
+also makes that we don't need many helpers. When some features (like for instance
+box manipulation) got extended one could expect a performance hit due to more
+extensive optional keyword scanning in the engine but that was compensated by
+improved scanners. The same is true for scanning numbers and dimensions. So, more
+functionality doesn't always come at a price.
+
+To summarize this: although the engine went a bit more \quote {cisc} than \type
+{risc} the macro package went more \quote {risc}. It reminds me a bit of the end
+of the previous century when there was much talk of fourth generation languages,
+something on top of the normal languages. In the end it were scripting languages
+that became the fashion while traditional languages like \CCODE\ remained
+relatively stable and unchanged for implementing them (and more). A similar
+observation can be made for \CONTEXT\ itself. Whenever some new feature gets
+added to an existing mechanism I try to not cripple performance and thanks to the
+way \CONTEXT\ is set up it works out okay.
+
+Let's look at an example. In \MKII\ we can compare two \quote {strings} with the
+macro \type {doifelse}. Its definition is as follows:
+
+\starttyping
+\long\def\doifelse#1#2%
+  {\let\donottest\dontprocesstest
+   \edef\!!stringa{#1}%
+   \edef\!!stringb{#2}%
+   \let\donottest\doprocesstest
+   \ifx\!!stringa\!!stringb
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+\stoptyping
+
+This macro takes two arguments that gets expanded inside two helpers that we
+then compare with a primitive \type {\ifx}. Depending on the outcome we
+expand one of the two following arguments but first we get rid of the interfering
+\type {\else} and \type {\fi}. The pushing and popping of \type {\donottest} takes
+care of protection of unwanted expansion in an \type {\edef}. Many functional macros
+are what we call protected: then expand in two steps depending on the embedded
+\type {\donottest} macro. Think of (simplified):
+
+\starttyping
+\def\realfoo{something is done here}
+\def\usedfoo{\donottest\realfoo}
+\stoptyping
+
+Normally \type {\donottest} is doing nothing so \type {\realfoo} gets expanded
+but there are cases where we (for instance) \type {\let} it be \type {\string}
+which then serializes the macro. This is something that happens when writing to
+the multi pass data file. It can also be used for overloading, for instance in
+the backend or when converting something. This protection against expansion has
+always been a \CONTEXT\ feature, which in turn made it pretty robust in multi
+pass scenarios, but it definitely came with performance penalty.
+
+When \PDFTEX\ got the \ETEX\ extensions we could use the \type {\protected}
+prefix to replace this trickery. That means that \MKII\ will use a different
+definition of \type {\doifelse} when that primitive is known:
+
+\starttyping
+\long\def\doifelse#1#2%
+  {\edef\!!stringa{#1}%
+   \edef\!!stringb{#2}%
+   \ifx\!!stringa\!!stringb
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+\stoptyping
+
+This works okay because we now do this:
+
+\starttyping
+\protected\def\usedfoo{something is done here}
+\stoptyping
+
+The \type {\doifelse} helper itself is not protected in \MKII\ (non \ETEX\ mode)
+It would be a performance hit. I won't bore the reader with the tricks needed to
+do the opposite, that is: expand a protected macro. It is seldom needed anyway.
+
+The \MKIV\ definition used with \LUATEX\ is not much different, only the \type
+{\long} prefix is missing. That one is needed when one wants \type {#1} and|/|or
+\type {#2} to be tolerant with respect to embedded \type {\par} equivalents. In
+\LUAMETATEX\ we can disable that check and in \CONTEXT\ all macros are thereby
+\type {\long}. Users won't notice because in \CONTEXT\ most macros were always
+defined the long way; we also suppress \type {\outer} errors.
+
+\starttyping
+\protected\def\doifelse#1#2%
+  {\edef\m_syst_string_one{#1}%
+   \edef\m_syst_string_two{#2}%
+   \ifx\m_syst_string_one\m_syst_string_two
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+\stoptyping
+
+Implementation wise a macro, once scanned and stored, carries the long property
+in its command code so that has overhead. However because \LUATEX\ is compatible
+we cannot make all normal macros long by default when \type {\suppresslongerror}
+is used. Therefore checking for an argument running into a \type {\par} is still
+checked but the message is suppressed based on the setting of the mentioned
+parameter. Performance wise, not using \type {\long} comes a the cost of checking
+a parameter which means an additional memory access and comparison. Unless we
+otherwise gain something in the engine it comes at a cost. In \LUAMETATEX\ the
+\type {\long} and \type {\outer} prefixes are ignored. Even better, protected
+macros are also implemented a bit more efficiently.
+
+In the end the definition of \type {\doifelse} in \LMTX\ looks a bit different:
+
+\starttyping
+\permanent\protected\def\doifelse#1#2%
+  {\iftok{#1}{#2}%
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+\stoptyping
+
+The \typ {\permanent} prefix flags this macro as such. Depending on the value of
+\typ {\overloadmode} a redefinition is permitted, comes with a warning or
+results in a fatal error. Of course this comes at a price when we define macros
+or values of quantities but this is rather well compensated by all kind of
+improvements in handling macros: defining, expansion, saving and restoring, etc.
+
+More interesting is the use of \type {\iftok} here. It saves us defining two
+helper macros. Of course the content still needs to be expanded before comparison
+but we no longer have various macro management overhead. In scenarios where we
+don't need to jump over the \type {\else} or \type {\fi} we can use this test in
+place which saves passing two arguments and grabbing one argument later on.
+Actually, grabbing is also different, compare:
+
+\starttyping
+          \def\firstoftwoarguments #1#2{#1} % MkII and MkIV
+\permanent\def\firstoftwoarguments #1#-{#1} % MkXL aka LMTX
+
+          \def\secondoftwoarguments#1#2{#1} % MkII and MkIV
+\permanent\def\secondoftwoarguments#-#1{#1} % MkXL aka LMTX
+\stoptyping
+
+In the case of \LUAMETATEX\ the \type {#-} makes that we don't even bother to
+store the argument as it is ignored. Where \type {#0} does the same it also
+increments the argument counter which is why here even the second arguments has
+number ~1. Now, if this more efficient? Sure, but how often does it really
+happen? The engine still needs to scan (which comes at a cost) but we save on
+temporary token list storage. Because \TEX\ is so fast already, measuring only
+shows differences when one has many (and here a real lot) iterations. However,
+all these small bits add up which is what we've seen in 2022 in \CONTEXT: it is
+the reason why we are now faster than \MKIV\ with \LUATEX, even with more
+functionality in the engine.
+
+I can probably write hundreds of pages in explaining what was added, changed,
+made more flexible and what side effects it had|/|has on performance but I bet no
+one is really interested in that. In fact, the previous exploration is just a
+side effect of a question that triggered it, so maybe future questions will
+trigger more explanations. It anyhow demonstrates what I meant when I said that
+\LUAMETATEX\ is meant to be leaner and meaner. Of course the code base and binary
+is smaller but that also gets compensated by more functionality. It also means
+that we can make the \CONTEXT\ code base nicer because for me a good looking
+source (which of course is subjective) is pretty important.
+
+\stopsection
+
+\startsection[title=Compatibility]
+
+There are non \CONTEXT\ users who seem to love to stress that successive versions
+of \CONTEXT\ are incompatible. Other claims are that it is developed in a
+commercial setting. While it is true that there are changes and it is also true
+that \CONTEXT\ is used in commercial settings, it is not that different from
+other open source projects. The majority of the code is written without
+compensation and it is offered without advertisements or request for support. It
+is true that when we can render better, it will be done. But the user interfaces
+only change when there is a reason and there are few cases where some
+functionality became obsolete, think of input and font encodings. Most such
+changes directly relate to the engine: in \PDFTEX\ and \MKII\ we emulate \UTF-8\
+wile in \LUATEX\ is comes natively. In \PDFTEX\ eight bit (\TYPEONE) fonts are
+used while \LUATEX\ adds support for \OPENTYPE. Other macro packages support that
+by additional packages while \CONTEXT\ has it integrated. That is why the system
+evolves over time.
+
+Just a users adapt to (yearly) operating system interfaces, mobile phones, all
+kinds of hardware, cars, clothing, media and so on, the \CONTEXT\ users have no
+problem adapting to an evolving \TEX\ ecosystem. I guess claims about changes
+(being a disadvantage) can only point to a lack of development elsewhere. The
+main reason for mentioning this is that when \CONTEXT\ users move on to newer
+engines, the older ones are seldom used. So, few users compare a \LMTX\ run with
+one using \PDFTEX\ or \LUATEX. They naturally expect \LUAMETATEX\ to perform well
+and maybe even to perform better over time. They just don't complain. And unless
+one hacks (overloads) system macros compatibility is not really an issue. What
+can be an issue is that updates and adaptations to a newer engine come with bugs
+but those are solved.
+
+So, the fact that we compare incompatible engines with likely different low level
+macro implementations of otherwise stable features of a macro package makes
+comparison hard. For instance, maybe there are speedups possible in frozen \MKII,
+although it is unlikely, which makes that it might even perform better than
+reported. In a similar fashion, the fact that \OPENTYPE\ is more demanding for
+sure makes that \LUATEX\ rendering is slower than \PDFTEX. It anyhow makes a
+discussion about performance within and between macro packages even more
+ridiculous. Just don't buy those claims and|/|or ask on the \CONTEXT\ mailing
+list for clarification.
+
+\stopsection
+
+\startsection[title=The job]
+
+So, say that we now have an efficient and powerful engine and a matching macro
+package. Does that make all jobs faster? For sure, the ones that I use as
+benchmark run much smoother. The 360 page \LUAMETATEX\ manual runs in less than
+8.4 seconds on a Dell Precision laptop with (mobile) Intel(R) Xeon(R) CPU
+E3-1505M v6 @ 3.00GHz, 2TB fast Samsung pro SSD, and 48 GB of memory, running
+Windows 10. The \METAFUN\ manual with many more pages and thousands of \METAPOST\
+graphics needs a bit more than 12 seconds. So you don't hear me complain. This
+chapter takes 7.5 seconds plus 0.5 is for the runner, not enough time to get
+coffee.
+
+Nowadays I tend to measure performance in terms of pages per second, because in
+the end that is what users experience. For me more important are the gains for my
+colleague who processes documents of 400 pages from hundreds of small \XML\ files
+with multiple graphics per page. Given different output variants a lot of
+processing takes place, so there a gain from 20 pages per second to 25 pages per
+second is welcome. Anyway, here are a few measurements of a {\em simple} test suite
+per January 7, 2023. We use this as test text:
+
+\starttyping
+\def\Knuth{%%
+Thus, I came to the conclusion that the designer of a new system
+must not only be the implementer and first large||scale user; the
+designer should also write the first user manual.
+\par
+The separation of any of these four components would have hurt
+\TeX\ significantly. If I had not participated fully in all these
+activities, literally hundreds of improvements would never have
+been made, because I would never have thought of them or perceived
+why they were important.
+\par
+But a system cannot be successful if it is too strongly influenced
+by a single person. Once the initial design is complete and fairly
+robust, the real test begins as people with many different
+viewpoints undertake their own experiments.
+}
+\stoptyping
+
+Now keep in mind that these are simple examples. On more complex documents the
+\LUAMETATEX\ engine with \LMTX\ is relatively faster: think \XML, plenty
+\METAPOST, complex tables, advanced math, dozens of fonts in combination with the
+new compact font mode.
+
+The tests themselves are simple: we switch fonts (because fonts bring overhead),
+we add some color (because we use different methods), we process some graphics
+(to show what embedding \METAPOST\ brings), we do some tables (because that can
+be stressful). Each sample is run 50, 500 or 1000 times, and each set is run a
+couple of times so that we compensate for caching and fluctuating system load.
+The tests are more about signaling a trend than about absolute numbers. For
+what it's worth, I used a \LUA\ script to run the samples.
+
+When you run an experiment that measures performance, keep in mind that
+performance not only depends on the engine, but also on for instance logging.
+When I run the \CONTEXT\ test suite it takes 1250 seconds if the console takes
+the full screen on a 2560 by 1600 display and 30 seconds more on a 3840 by 2160
+display and it even depends on how large the font is set. On the 1920 by 1200
+monitor I get to 1230. Of course these times change when we add more to the test
+suite so it's always a momentary measurement.
+
+Similar differences can be observed when running in an editor. A good test is
+making a \CONTEXT\ format: 2.2 seconds goes down to below 1.8 when the output is
+piped to a file. On a decent 2023 desktop those times are probably half but I
+don't have one at hand.
+
+\startsubsubject[title={sample 1, number of runs: 2}]
+
+\starttyping
+\starttext
+    \dorecurse {%s} {
+        \Knuth
+        \par
+    }
+\stoptext
+\stoptyping
+
+\starttabulate[||r|r|r|]
+\HL
+\BC engine \BC 50 \BC 500 \BC 1000 \NC \NR
+\HL
+\BC pdftex     \NC 0.63 \NC 0.83 \NC 1.07 \NC \NR
+\BC luatex     \NC 0.95 \NC 1.86 \NC 2.94 \NC \NR
+\BC luametatex \NC 0.61 \NC 1.49 \NC 2.48 \NC \NR
+\HL
+\stoptabulate
+
+\stopsubsubject
+
+\startsubsubject[title={sample 2, number of runs: 2}]
+
+\starttyping
+\starttext
+    \dorecurse {%s} {
+        \tf \Knuth \bf \Knuth
+        \it \Knuth \bs \Knuth
+        \par
+    }
+\stoptext
+\stoptyping
+
+\starttabulate[||r|r|r|]
+\HL
+\BC engine \BC 50 \BC 500 \BC 1000 \NC \NR
+\HL
+\BC pdftex     \NC 0.70 \NC 1.73 \NC 2.80 \NC \NR
+\BC luatex     \NC 1.37 \NC 5.37 \NC 9.92 \NC \NR
+\BC luametatex \NC 1.04 \NC 5.06 \NC 9.73 \NC \NR
+\HL
+\stoptabulate
+
+\stopsubsubject
+
+\startsubsubject[title={sample 3, number of runs: 2}]
+
+\starttyping
+\starttext
+    \dorecurse {%s} {
+        \tf \Knuth \it knuth \bf \Knuth \bs knuth
+        \it \Knuth \tf knuth \bs \Knuth \bf knuth
+        \par
+    }
+\stoptext
+\stoptyping
+
+\starttabulate[||r|r|r|]
+\HL
+\BC engine \BC 50 \BC 500 \BC 1000 \NC \NR
+\HL
+\BC pdftex     \NC 0.71 \NC 1.81 \NC 2.98 \NC \NR
+\BC luatex     \NC 1.41 \NC 5.84 \NC 10.77 \NC \NR
+\BC luametatex \NC 1.05 \NC 5.71 \NC 10.60 \NC \NR
+\HL
+\stoptabulate
+
+\stopsubsubject
+
+\startsubsubject[title={sample 4, number of runs: 2}]
+
+\starttyping
+\setupcolors[state=start]
+\starttext
+    \dorecurse {%s} {
+        {\red \tf \Knuth \green \it knuth}
+        {\red \bf \Knuth \green \bs knuth}
+        {\red \it \Knuth \green \tf knuth}
+        {\red \bs \Knuth \green \bf knuth}
+        \par
+    }
+\stoptext
+\stoptyping
+
+\starttabulate[||r|r|r|]
+\HL
+\BC engine \BC 50 \BC 500 \BC 1000 \NC \NR
+\HL
+\BC pdftex     \NC 0.73 \NC 1.91 \NC 3.64 \NC \NR
+\BC luatex     \NC 1.39 \NC 5.82 \NC 12.58 \NC \NR
+\BC luametatex \NC 1.07 \NC 5.57 \NC 11.85 \NC \NR
+\HL
+\stoptabulate
+
+\stopsubsubject
+
+\startsubsubject[title={sample 5, number of runs: 2}]
+
+\starttyping
+\starttext
+    \dorecurse {%s} {
+        \null \page
+    }
+\stoptext
+\stoptyping
+
+\starttabulate[||r|r|r|]
+\HL
+\BC engine \BC 50 \BC 500 \BC 1000 \NC \NR
+\HL
+\BC pdftex     \NC 0.62 \NC 1.12 \NC 1.68 \NC \NR
+\BC luatex     \NC 0.90 \NC 1.39 \NC 1.98 \NC \NR
+\BC luametatex \NC 0.58 \NC 0.99 \NC 1.46 \NC \NR
+\HL
+\stoptabulate
+
+\stopsubsubject
+
+\startsubsubject[title={sample 6, number of runs: 2}]
+
+\starttyping
+\starttext
+    \dorecurse {%s} {
+        %% nothing
+    }
+\stoptext
+\stoptyping
+
+\starttabulate[||r|r|r|]
+\HL
+\BC engine \BC 50 \BC 500 \BC 1000 \NC \NR
+\HL
+\BC pdftex     \NC 0.55 \NC 0.54 \NC 0.56 \NC \NR
+\BC luatex     \NC 0.79 \NC 0.81 \NC 0.82 \NC \NR
+\BC luametatex \NC 0.54 \NC 0.52 \NC 0.53 \NC \NR
+\HL
+\stoptabulate
+
+\stopsubsubject
+
+\startsubsubject[title={sample 7, number of runs: 2}]
+
+\starttyping
+\starttext
+    \dontleavehmode
+    \dorecurse {%s} {
+        \framed[width=1cm,height=1cm,offset=2mm]{x}
+    }
+\stoptext
+\stoptyping
+
+\starttabulate[||r|r|r|]
+\HL
+\BC engine \BC 50 \BC 500 \BC 1000 \NC \NR
+\HL
+\BC pdftex     \NC 0.58 \NC 0.65 \NC 0.71 \NC \NR
+\BC luatex     \NC 0.84 \NC 0.96 \NC 1.08 \NC \NR
+\BC luametatex \NC 0.54 \NC 0.62 \NC 0.72 \NC \NR
+\HL
+\stoptabulate
+
+\stopsubsubject
+
+\startsubsubject[title={sample 8, number of runs: 2}]
+
+\starttyping
+\starttext
+    \dontleavehmode
+    \dorecurse {%s} {
+        \framed
+          [width=1cm,height=1cm,offset=2mm,
+           foregroundstyle=bold,foregroundcolor=red,
+           background=color,backgroundcolor=green]
+          {x}
+    }
+\stoptext
+\stoptyping
+
+\starttabulate[||r|r|r|]
+\HL
+\BC engine \BC 50 \BC 500 \BC 1000 \NC \NR
+\HL
+\BC pdftex     \NC 0.59 \NC 0.70 \NC 0.83 \NC \NR
+\BC luatex     \NC 0.87 \NC 1.00 \NC 1.17 \NC \NR
+\BC luametatex \NC 0.55 \NC 0.66 \NC 0.78 \NC \NR
+\HL
+\stoptabulate
+
+\stopsubsubject
+
+\startsubsubject[title={sample 9, number of runs: 2}]
+
+\starttyping
+\starttext
+    \ifdefined\permanent\else\def\BC{\NC\bf}\fi
+    \dontleavehmode
+    \dorecurse {%s} {
+        \starttabulate[|||||]
+            \NC test \BC test \NC test \NC test \NC \NR
+            \NC test \BC test \NC test \NC test \NC \NR
+            \NC test \BC test \NC test \NC test \NC \NR
+            \NC test \BC test \NC test \NC test \NC \NR
+        \stoptabulate
+    }
+\stoptext
+\stoptyping
+
+\starttabulate[||r|r|r|]
+\HL
+\BC engine \BC 50 \BC 500 \BC 1000 \NC \NR
+\HL
+\BC pdftex     \NC 0.62 \NC 1.15 \NC 1.71 \NC \NR
+\BC luatex     \NC 0.94 \NC 1.84 \NC 2.86 \NC \NR
+\BC luametatex \NC 0.60 \NC 1.19 \NC 1.88 \NC \NR
+\HL
+\stoptabulate
+
+\stopsubsubject
+
+\startsubsubject[title={sample 10, number of runs: 2}]
+
+\starttyping
+\starttext
+    \dontleavehmode
+    \dorecurse {%s} {
+        \startMPcode
+            fill fullcircle scaled 1cm withcolor red ;
+            fill fullsquare scaled 1cm withcolor green ;
+        \stopMPcode
+        \space
+    }
+\stoptext
+\stoptyping
+
+\starttabulate[||r|r|r|]
+\HL
+\BC engine \BC 50 \BC 500 \BC 1000 \NC \NR
+\HL
+\BC pdftex     \NC 5.73 \NC 50.98 \NC 102.10 \NC \NR
+\BC luatex     \NC 0.93 \NC 1.07 \NC 1.30 \NC \NR
+\BC luametatex \NC 0.57 \NC 0.71 \NC 0.86 \NC \NR
+\HL
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Final words]
+
+Whenever I run into (or get send) remarks of (especially non \CONTEXT) users
+suggesting that \LUATEX\ is much slower than \PDFTEX\ or that \LUAMETATEX\ seems
+much faster than \LUATEX, one really has to keep in mind that this is not always
+true. Among the questions to be asked are \quotation {What engine do you use?},
+\quotation {Which macro package do you use?}, \quotation {How well is your style
+set up?}, \quotation {How complex is the document?}, \quotation {Is your own
+additional code efficient?}, \quotation {Do you use engine and macro package
+features the right way?} and of course \quotation {What do you compare with?},
+\quotation {What do you expect and why?}, \quotation {Do you actually know what
+goes on deep down?}. An embarrassing one can be \quotation {Do you have an idea
+what is involved in fulfilling your request given that we use a flexible adaptive
+macro language?}. Much probably these questions not get answered properly.
+
+Another thing to make clear is that when someone claims for instance that
+\CONTEXT\ \LMTX\ is fast because of \LUAMETATEX, or that \LUAMETATEX\ is much
+faster than \LUATEX, a healthy suspicion should kick in: does that someone really
+knows what happens and matters? The previous numbers do show differences for
+simple cases but we're often not talking of differences that can be used as an
+excuse for insufficient coding. In the end it is all about the experience: does
+performance feel in tune with expectations. Which is not to say that I will make
+\CONTEXT\ and \LUAMETATEX\ faster because after all there are usage scenarios
+where one has to process tens of thousands of documents with a reasonable amount
+of time, on regular infrastructure, and of course with as little as possible
+energy consumption.
+
+If \PDFTEX\ suits your purpose, there is no need to move to \LUATEX. As with
+rechargeable batteries in cordless phones a higher capacity can make things
+worse. If \LUATEX\ fits the bill, don't dream about using \LUAMETATEX\ instead
+because it will half runtime because the adaptations needed in the macro package
+(like adding a backend) might actually slow it down. Moores law doesn't apply to
+\TEX\ engines and macro packages and you might get disappointed. Accept that the
+choice you made for a macro package can come with a price.
+
+Quite often it is rather easy to debunk complaints and claims which makes one
+wonder why claims about perceived or potential are made at all. But then, I'm
+accustomed to weird remarks and conclusions about \CONTEXT\ as a macro package,
+or for that matter \LUATEX\ (as it originates in the \CONTEXT\ community) even by
+people who should know better. Hopefully the above invites to being more careful.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -47,8 +47,6 @@ local getbottom         = nuts.getbottom
 local getchoice         = nuts.getchoice
 
 local getnucleus        = nuts.getnucleus
-local getsub            = nuts.getsub
-local getsup            = nuts.getsup
 
 local setattributes     = nuts.setattributes
 
@@ -76,9 +74,10 @@ local fixedtopaccent_code    = accentcodes.fixedtop
 local fixedbottomaccent_code = accentcodes.fixedbottom
 local fixedbothaccent_code   = accentcodes.fixedboth
 
-local leftfence_code    = fencecodes.left
-local middlefence_code  = fencecodes.middle
-local rightfence_code   = fencecodes.right
+local leftfence_code     = fencecodes.left
+local middlefence_code   = fencecodes.middle
+local rightfence_code    = fencecodes.right
+local operatorfence_code = fencecodes.operator
 
 local kerncodes         = nodes.kerncodes
 
@@ -119,19 +118,31 @@ local report_tags       = logs.reporter("structure","tags")
 
 local process
 
+local function processnucleus(nucleus,prime)
+    if prime then
+        -- This should work wasn't it that browser handling of primes have an issue with
+        -- "big semi raised text" vs "small supposedly superscripted". So let's play safe
+        -- and use a superscript. Even then we get somewhat different positioning for the
+        -- same primed character in q sqrt and (e.g.) a sequential integral.
+     -- start_tagged("mrow", { prime = true })
+        start_tagged("msup", { prime = true })
+        process(nucleus)
+        process(prime)
+        stop_tagged()
+    else
+        process(nucleus)
+    end
+end
+
 local function processsubsup(start)
     -- At some point we might need to add an attribute signaling the
     -- super- and subscripts because TeX and MathML use a different
     -- order. The mrows are needed to keep mn's separated.
-    local nucleus = getnucleus(start)
-    local sup     = getsup(start)
-    local sub     = getsub(start)
+    local nucleus, prime, sup, sub, presup, presub = getnucleus(start,true)
     if sub then
         if sup then
             setattr(start,a_tagged,start_tagged("msubsup"))
-         -- start_tagged("mrow")
-            process(nucleus)
-         -- stop_tagged()
+            processnucleus(nucleus,prime)
             start_tagged("mrow", { subscript = true })
             process(sub)
             stop_tagged()
@@ -141,9 +152,7 @@ local function processsubsup(start)
             stop_tagged()
         else
             setattr(start,a_tagged,start_tagged("msub"))
-         -- start_tagged("mrow")
-            process(nucleus)
-         -- stop_tagged()
+            processnucleus(nucleus,prime)
             start_tagged("mrow")
             process(sub)
             stop_tagged()
@@ -151,15 +160,13 @@ local function processsubsup(start)
         end
     elseif sup then
         setattr(start,a_tagged,start_tagged("msup"))
-     -- start_tagged("mrow")
-        process(nucleus)
-     -- stop_tagged()
+        processnucleus(nucleus,prime)
         start_tagged("mrow")
         process(sup)
         stop_tagged()
         stop_tagged()
     else
-        process(nucleus)
+        processnucleus(nucleus,prime)
     end
 end
 
@@ -216,6 +223,10 @@ end
 -- only focus on structure and let the engine deal with the details. Another reason
 -- to update this is that we can add some tracing (lmtx only).
 
+-- This has been working ok for quite but in 2023 it's tiem to have a look at it
+-- again and see to what extend we need to adapt to new features. Around the time
+-- PG's Panopticom was put on youtube.
+
 process = function(start) -- we cannot use the processor as we have no finalizers (yet)
     local mtexttag = nil
     for start, id, subtype in nextnode, start do -- current
@@ -234,11 +245,12 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             if id == mathchar_code then
                 local char = getchar(start)
                 local code = getmathcodes(char)
+                local ch   = chardata[char]
+                local mc   = ch and ch.mathclass
                 local tag
+                local properties= { class = mc }
                 -- todo: we have way more now
                 if code == ordinary_mathcode then
-                    local ch = chardata[char]
-                    local mc = ch and ch.mathclass
                     if mc == "number" then
                         tag = "mn"
                     elseif mc == "variable" or not mc then -- variable is default
@@ -249,12 +261,19 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 else
                     tag = "mo"
                 end
+--                 if mc == "open" or nc == "close" or  mc == "middle" then
+--                     properties = { maxsize =  1 }
+--                 end
                 local a = getattr(start,a_mathcategory)
                 if a then
-                    setattr(start,a_tagged,start_tagged(tag,{ mathcategory = a }))
-                else
-                    setattr(start,a_tagged,start_tagged(tag)) -- todo: a_mathcategory
+                    -- todo / redo
+                    if properties then
+                        properties.mathcategory = a
+                    else
+                        properties = { mathcategory = a }
+                    end
                 end
+                setattr(start,a_tagged,start_tagged(tag,properties))
                 stop_tagged()
              -- showtag(start,id,false)
                 break -- okay?
@@ -470,7 +489,6 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             elseif id == fence_code then
                 local delimiter = getdelimiter(start)
                 if subtype == leftfence_code then
-                    -- left
                     local properties = { }
                     insert(fencesstack,properties)
                     setattr(start,a_tagged,start_tagged("mfenced",properties)) -- needs checking
@@ -485,7 +503,6 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     end
                     start_tagged("mrow") -- begin of subsequence
                 elseif subtype == middlefence_code then
-                    -- middle
                     if delimiter then
                         start_tagged("ignore")
                         local top = fencesstack[#fencesstack]
@@ -520,8 +537,20 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     end
                     stop_tagged() -- end of subsequence
                     stop_tagged()
-                else
-                    -- can't happen
+                elseif subtype == operatorfence_code then
+                    -- the same as left but different key
+                    local properties = { }
+                    insert(fencesstack,properties)
+                    setattr(start,a_tagged,start_tagged("mfenced",properties)) -- needs checking
+                    if delimiter then
+                        local chr = getchar(delimiter)
+                        if chr ~= 0 then
+                            properties.operator = chr
+                        end
+                        process(delimiter)
+                    end
+                    processsubsup(start)
+                    start_tagged("mrow") -- begin of subsequence
                 end
             elseif id == radical_code then
                 local left   = getleftdelimiter(start)

@@ -897,3 +897,15 @@ that users will find reasons to abuse this effect.
 %
 % test \par \box0 \par \box2 \par test
 
+
+\setbox0\vbox
+{
+    \setbox    \scratchbox      \hbox{XXX}
+    \boxvadjust\scratchbox pre       {BBB}
+    \boxvadjust\scratchbox post      {AAA}
+%     \dontleavehmode % needed
+    \box\scratchbox
+%     \unhbox\scratchbox
+}
+
+111111\par \box0 \par 222222\par

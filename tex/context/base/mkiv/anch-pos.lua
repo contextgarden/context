@@ -986,7 +986,7 @@ local function overlapping(one,two,overlappingmargin) -- hm, strings so this is 
 end
 
 local function onsamepage(list,page)
-    for id in gmatch(list,"(, )") do
+    for id in gmatch(list,"([^,%s]+)") do
         local jpi = collected[id]
         if jpi then
             local p = jpi.p

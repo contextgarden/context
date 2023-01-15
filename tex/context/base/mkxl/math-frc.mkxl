@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% todo : mathclass=\mathnothingcode, % todo also accept string
+
 \writestatus{loading}{ConTeXt Math Macros / Fractions}
 
 \unprotect
@@ -189,10 +191,6 @@
 
 \let\math_fraction_margin_kern\relax
 
-%D Because the fraction nodes uses the superscript and subscript for numerator and
-%D denomerator so we wrap in a \type {\mathfrac}. Because with \type {\over} one
-%D normally wraps the lot it goes unnoticed there.
-%D
 %D \starttyping
 %D $\Uover{2}{3} ^4$ % double script error but no longer because we use the prescripts
 %D ${\over{2}{3}}^4$ % no issue anyway because we wrap in {} (goes unnoticed)
@@ -210,7 +208,7 @@
    %
    \edef\p_math_fraction_fences{\mathfractionparameter\c!fences}%
    %
-   \mathatom \s!class \mathfractionparameter\c!mathclass\bgroup
+   \math_atom_by_parameter\mathfractionparameter\bgroup
    \ifempty\p_math_fraction_fences \else
      \math_fenced_fenced_start\p_math_fraction_fences
    \fi
@@ -326,9 +324,23 @@
    \else
      \dimexpr\p_thickness\relax
    \fi
-   \s!class   \numexpr\mathfractionparameter\c!mathclass\relax
+   \s!class   \math_class_by_parameter\mathfractionparameter\c!mathclass
    \s!vfactor \numexpr\mathfractionparameter\c!vfactor\relax
    \s!source  \number\namedboxanchor{\mathfractionparameter\c!source}}
+
+\installcorenamespace{mathalignsimple}
+
+\defcsname\??mathalignsimple\v!right     \endcsname#1{#1\hfill}
+\defcsname\??mathalignsimple\v!flushleft \endcsname#1{#1\hfill}
+\defcsname\??mathalignsimple\v!left      \endcsname#1{\hfill#1}
+\defcsname\??mathalignsimple\v!flushright\endcsname#1{\hfill#1}
+\defcsname\??mathalignsimple\v!middle    \endcsname#1{\hfill#1\hfill}
+
+\protected\def\math_frac_aligned_top{\begincsname\??mathalignsimple\mathfractionparameter\c!topalign   \endcsname}
+\protected\def\math_frac_aligned_bot{\begincsname\??mathalignsimple\mathfractionparameter\c!bottomalign\endcsname}
+
+% \protected\def\math_frac_aligned_top{\begincsname\??mathalignsimple\mathfractionparameter\c!align\endcsname}
+% \protected\def\math_frac_aligned_bot{\begincsname\??mathalignsimple\mathfractionparameter\c!align\endcsname}
 
 \protected\defcsname\??mathfractionalternative\v!inner\endcsname#1#2%
   {%\beginmathgroup
@@ -336,12 +348,12 @@
      {\dousecolorparameter{\mathfractionparameter\c!topcolor}%
       \math_fraction_margin_kern
       \usemathstyleparameter\mathfractionparameter\c!mathnumeratorstyle
-      \m_fractions_strut_top#1%
+      \m_fractions_strut_top\math_frac_aligned_top{#1}%
       \math_fraction_margin_kern}%
      {\dousecolorparameter{\mathfractionparameter\c!bottomcolor}%
       \math_fraction_margin_kern
       \usemathstyleparameter\mathfractionparameter\c!mathdenominatorstyle
-      \m_fractions_strut_bot#2%
+      \m_fractions_strut_bot\math_frac_aligned_bot{#2}%
       \math_fraction_margin_kern}%
    %\endmathgroup
    \math_frac_wrapup}
@@ -352,11 +364,11 @@
    \math_frac_command_u
      {\dousecolorparameter{\mathfractionparameter\c!topcolor}%
       \math_fraction_margin_kern
-      \m_fractions_strut_top#1%
+      \m_fractions_strut_top\math_frac_aligned_top{#1}%
       \math_fraction_margin_kern}%
      {\dousecolorparameter{\mathfractionparameter\c!bottomcolor}%
       \math_fraction_margin_kern
-      \m_fractions_strut_bot#2%
+      \m_fractions_strut_bot\math_frac_aligned_bot{#2}%
       \math_fraction_margin_kern}%
    \endmathgroup
    \math_frac_wrapup}
@@ -368,12 +380,12 @@
      {\dousecolorparameter{\mathfractionparameter\c!topcolor}%
       \math_fraction_margin_kern
       \usemathstyleparameter\mathfractionparameter\c!mathnumeratorstyle
-      \m_fractions_strut_top#1%
+      \m_fractions_strut_top\math_frac_aligned_top{#1}%
       \math_fraction_margin_kern}%
      {\dousecolorparameter{\mathfractionparameter\c!bottomcolor}%
       \math_fraction_margin_kern
       \usemathstyleparameter\mathfractionparameter\c!mathdenominatorstyle
-      \m_fractions_strut_bot#2%
+      \m_fractions_strut_bot\math_frac_aligned_bot{#2}%
       \math_fraction_margin_kern}%
    \endmathgroup
    \math_frac_wrapup}
@@ -506,7 +518,7 @@
 
 \definemathfraction[d:frac] [\c!alternative=\v!inner,\c!mathstyle=\s!cramped]
 \definemathfraction[d:tfrac][\c!alternative=\v!inner,\c!mathstyle={\s!cramped,\s!script}]
-\definemathfraction[d:sfrac][\c!alternative=\v!both,\c!mathstyle={\s!cramped,\s!scriptscript}]
+\definemathfraction[d:sfrac][\c!alternative=\v!inner,\c!mathstyle={\s!cramped,\s!scriptscript}]
 \definemathfraction[d:dfrac][\c!alternative=\v!both,\c!mathstyle=\s!display]
 
 %D \protected\def\ShowMathFractions#1#2%
@@ -525,32 +537,36 @@
 %D \ShowMathFractions{1}{b}\par
 %D \blank
 
+% % There is no real need to support ams styling so this is now obsolete:
+
 \permanent\protected\def\frac {\csname\inlineordisplaymath id:frac\endcsname}
 \permanent\protected\def\tfrac{\csname\inlineordisplaymath id:tfrac\endcsname}
 \permanent\protected\def\sfrac{\csname\inlineordisplaymath id:sfrac\endcsname}
 \permanent\protected\def\dfrac{\csname\inlineordisplaymath id:dfrac\endcsname}
 
-\definemathfraction[ams]            [\c!strut=\v!no,\c!alternative=\v!outer]
-\definemathfraction[i:ams:frac][ams][\c!mathstyle={\s!cramped,\s!text}]
-\definemathfraction[d:ams:frac][ams][\c!mathstyle={\s!cramped,\s!display}]
+% \definemathfraction[ams]            [\c!strut=\v!no,\c!alternative=\v!outer]
+% \definemathfraction[i:ams:frac][ams][\c!mathstyle={\s!cramped,\s!text}]
+% \definemathfraction[d:ams:frac][ams][\c!mathstyle={\s!cramped,\s!display}]
+%
+% \permanent\protected\def\ctxfrac{\csname\inlineordisplaymath id:frac\endcsname}
+% \permanent\protected\def\amsfrac{\csname\inlineordisplaymath id:ams:frac\endcsname}
+%
+% \appendtoks
+%     \doifelse{\mathematicsparameter\c!fractions}{ams}%
+%       {\enforced\let\frac\amsfrac}%
+%       {\enforced\let\frac\ctxfrac}%
+% \to \everysetupmathematics
 
-\permanent\protected\def\ctxfrac{\csname\inlineordisplaymath id:frac\endcsname}
-\permanent\protected\def\amsfrac{\csname\inlineordisplaymath id:ams:frac\endcsname}
-
-\appendtoks
-    \doifelse{\mathematicsparameter\c!fractions}{ams}%
-      {\enforced\let\frac\amsfrac}%
-      {\enforced\let\frac\ctxfrac}%
-\to \everysetupmathematics
-
+% % Also gone:
+%
 % \definemathfraction[ddfrac][\c!mathstyle=\s!display]
 % \definemathfraction[ttfrac][\c!mathstyle=\s!text]
 % \definemathfraction[ssfrac][\c!mathstyle=\s!script]
-
+%
 % \protected\def\binom #1#2{{\Ustack      {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
 % \protected\def\dbinom#1#2{{\displaystyle{{#1}\normalabovewithdelims()\zeropoint{#2}}}}
 % \protected\def\tbinom#1#2{{\textstyle   {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
-
+%
 % \definemathfraction
 %   [binom]
 %   [\c!alternative=\v!outer,
@@ -622,21 +638,37 @@
 %D
 %D \getbuffer
 
-\permanent\protected\def\cfrac
-  {\doifelsenextoptionalcs\math_cfrac_yes\math_cfrac_nop}
+% % we forget about this ams one ... no one uses it anyway
+%
+% \permanent\protected\def\cfrac
+%   {\doifelsenextoptionalcs\math_cfrac_yes\math_cfrac_nop}
+%
+% \def\math_cfrac_nop    {\math_cfrac_indeed[cc]}
+% \def\math_cfrac_yes[#1]{\math_cfrac_indeed[#1cc]}
+%
+% \def\math_cfrac_indeed[#1#2#3]#4#5%
+%   {{\displaystyle
+%     \frac
+%       {\strut
+%        \ifx r#1\hfill\fi#4\ifx l#1\hfill\fi}%
+%       {\ifx r#2\hfill\fi#5\ifx l#2\hfill\fi}%
+%     \ifzeropt\nulldelimiterspace\else
+%       \kern-\nulldelimiterspace
+%     \fi}}
+%
+% instead we predefine one:
 
-\def\math_cfrac_nop    {\math_cfrac_indeed[cc]}
-\def\math_cfrac_yes[#1]{\math_cfrac_indeed[#1cc]}
+\definemathfraction
+  [cfrac]
+  [\c!mathstyle=\v!text]
 
-\def\math_cfrac_indeed[#1#2#3]#4#5%
-  {{\displaystyle
-    \frac
-      {\strut
-       \ifx r#1\hfill\fi#4\ifx l#1\hfill\fi}%
-      {\ifx r#2\hfill\fi#5\ifx l#2\hfill\fi}%
-    \ifzeropt\nulldelimiterspace\else
-      \kern-\nulldelimiterspace
-    \fi}}
+% so users can do this:
+%
+% \setupmathfraction
+%   [cfrac]
+%   [topalign=flushright]
+%
+% or define an child instance that presets it.
 
 %D \macros
 %D   {splitfrac, splitdfrac}
@@ -660,14 +692,32 @@
 %D \stopbuffer
 %D
 %D \typebuffer \getbuffer
-%D
-%D These macros are based on Michael J.~Downes posting on comp.text.tex on 2001/12/06
-%D but adapted a bit.
-%D
-%D Does anyone actually use this kind of stuff?
 
-\permanent\protected\def\splitfrac #1#2{{\textstyle   {{\textstyle#1\quad\hfill}\normalabove\zeropoint{\textstyle\hfill\quad\mathstrut#2}}}}
-\permanent\protected\def\splitdfrac#1#2{{\displaystyle{{          #1\quad\hfill}\normalabove\zeropoint{          \hfill\quad\mathstrut#2}}}}
+\defcsname\??mathalignsimple\v!split:\v!flushleft\endcsname#1%
+  {#1%
+   \ifchkdim\mathfractionparameter\c!distance\or\hskip\lastchkdim\fi
+   \hfill}
+
+\defcsname\??mathalignsimple\v!split:\v!flushright\endcsname#1%
+  {\hfill
+   \ifchkdim\mathfractionparameter\c!distance\or\hskip\lastchkdim\fi
+   \mathatom \s!class \mathordcode \s!unroll {}% prevents +/- seen as sign, unroll prevents empty box
+   #1}
+
+\definemathfraction
+  [splitfrac]
+  [\c!mathnumeratorstyle=\v!text,
+   \c!mathdenominatorstyle=\v!text,
+   \c!topalign=\v!split:\v!flushleft,
+   \c!bottomalign=\v!split:\v!flushright,
+   \c!distance=\emwidth,
+   \c!rule=\v!no]
+
+\definemathfraction
+  [splitdfrac]
+  [splitfrac]
+  [\c!mathnumeratorstyle=\v!display,
+   \c!mathdenominatorstyle=\v!display]
 
 %D More fracking (for Alan):
 

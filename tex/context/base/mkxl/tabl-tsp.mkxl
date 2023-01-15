@@ -207,7 +207,7 @@
 % todo: keep tail to rest, so we need a lookahead
 
 \newbox        \b_split_content
-\newbox        \b_split_result
+\newbox        \b_split_result    % watch out, semi public, accessed in cs-*
 \newbox        \b_split_head
 \newbox        \b_split_next
 \newbox        \b_split_tail
@@ -230,6 +230,8 @@
 \newconditional\c_tabl_split_full
 
 \newconditional\tabl_split_forced_page
+
+% \permanent\protected\def\lastsplithtdp{\htdp\b_split_result}
 
 \appendtoks
    \c_split_minimum_free_lines\zerocount

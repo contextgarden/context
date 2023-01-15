@@ -49,6 +49,7 @@ extern void        tex_initialize_nesting    (void);
 extern void        tex_push_nest             (void);
 extern void        tex_pop_nest              (void);
 extern void        tex_tail_append           (halfword p);
+extern void        tex_tail_append_list      (halfword p);
 extern halfword    tex_pop_tail              (void);
 extern const char *tex_string_mode           (int m);
 extern void        tex_show_activities       (void);

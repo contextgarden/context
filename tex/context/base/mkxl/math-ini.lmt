@@ -529,66 +529,66 @@ do
         return mset, dset
     end
 
-    local function report(class,engine,family,unicode,name)
+    local function report(class,family,unicode,name)
         local nametype = type(name)
         if nametype == "string" then
-            report_math("class %a, engine %a, family %a, char %C, name %a",class,engine,family,unicode,name)
+            report_math("class %a, family %a, char %C, name %a",class,family,unicode,name)
         elseif nametype == "number" then
-            report_math("class %a, engine %a, family %a, char %C, number %U",class,engine,family,unicode,name)
+            report_math("class %a, family %a, char %C, number %U",class,family,unicode,name)
         else
-            report_math("class %a, engine %a, family %a, char %C",class,engine,family,unicode)
+            report_math("class %a, family %a, char %C",class,family,unicode)
         end
     end
 
-    local f_accent            = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
-    local f_fixedtopaccent    = formatters[ [[\defUmathfixedtopaccent \%s{%X}{%X}{%X}]] ]
-    local f_fixedbottomaccent = formatters[ [[\defUmathfixedbottomaccent \%s{%X}{%X}{%X}]] ]
-    local f_topaccent         = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
-    local f_bottomaccent      = formatters[ [[\defUmathbottomaccent \%s{%X}{%X}{%X}]] ]
-    local f_over              = formatters[ [[\defUdelimiterover \%s{%X}{%X}{%X}]] ]
-    local f_under             = formatters[ [[\defUdelimiterunder\%s{%X}{%X}{%X}]] ]
-    local f_fence             = formatters[ [[\defUdelimiter \%s{%X}{%X}{%X}]] ]
-    local f_delimiter         = formatters[ [[\defUdelimiter \%s{%X}{%X}{%X}]] ]
-    local f_radical           = formatters[ [[\defUradical \%s{%X}{%X}]]     ]
-    local f_root              = formatters[ [[\defUroot \%s{%X}{%X}]]     ]
-    local f_char              = formatters[ [[\defUmathchar \%s{%X}{%X}{%X}]] ]
+ -- local f_accent            = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
+ -- local f_fixedtopaccent    = formatters[ [[\defUmathfixedtopaccent \%s{%X}{%X}{%X}]] ]
+ -- local f_fixedbottomaccent = formatters[ [[\defUmathfixedbottomaccent \%s{%X}{%X}{%X}]] ]
+ -- local f_topaccent         = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
+ -- local f_bottomaccent      = formatters[ [[\defUmathbottomaccent \%s{%X}{%X}{%X}]] ]
+ -- local f_over              = formatters[ [[\defUdelimiterover \%s{%X}{%X}{%X}]] ]
+ -- local f_under             = formatters[ [[\defUdelimiterunder\%s{%X}{%X}{%X}]] ]
+ -- local f_fence             = formatters[ [[\defUdelimiter \%s{%X}{%X}{%X}]] ]
+ -- local f_delimiter         = formatters[ [[\defUdelimiter \%s{%X}{%X}{%X}]] ]
+ -- local f_radical           = formatters[ [[\defUradical \%s{%X}{%X}]]     ]
+ -- local f_root              = formatters[ [[\defUroot \%s{%X}{%X}]]     ]
+ -- local f_char              = formatters[ [[\defUmathchar \%s{%X}{%X}{%X}]] ]
 
     local texmathchardef = tex.mathchardef
 
-    local setmathsymbol = function(name,class,engine,family,slot,stretch,group) -- hex is nicer for tracing
+    local setmathsymbol = function(name,class,family,slot,stretch,group) -- hex is nicer for tracing
         if class == accent_class then
-            ctx_sprint(f_topaccent(name,0,family,slot))
+         -- ctx_sprint(f_accent(name,0,family,slot))
         elseif class == topaccent_class then
-            -- only widegrave widehat widetilde : still needed?
-            ctx_sprint((stretch and f_topaccent or f_fixedtopaccent)(name,0,family,slot))
+         -- ctx_sprint((stretch and f_topaccent or f_fixedtopaccent)(name,0,family,slot))
         elseif class == bottomaccent_class then
-            ctx_sprint((stretch and f_bottomaccent or f_fixedbottomaccent)(name,0,family,slot))
-        elseif class == over_class then
-            ctx_sprint(f_over(name,0,family,slot))
-        elseif class == under_class then
-            ctx_sprint(f_under(name,0,family,slot))
+         -- ctx_sprint((stretch and f_bottomaccent or f_fixedbottomaccent)(name,0,family,slot))
+        elseif class == over_class then  -- only in mkiv
+         -- ctx_sprint(f_over(name,0,family,slot))
+        elseif class == under_class then -- only in mkiv
+         -- ctx_sprint(f_under(name,0,family,slot))
         elseif class == open_class or class == close_class or class == middle_class then
-            setdelcode("global",slot,family,slot,0,0)
-            ctx_sprint(f_fence(name,engine,family,slot))
-        elseif class == delimiter_class then
-            setdelcode("global",slot,family,slot,0,0)
-            ctx_sprint(f_delimiter(name,0,family,slot))
-        elseif class == radical_class then
-            ctx_sprint(f_radical(name,family,slot))
-        elseif class == root_class then
-            ctx_sprint(f_root(name,family,slot))
+            setdelcode("global",slot,family,slot,0,0) -- can go
+         -- ctx_sprint(f_fence(name,class,family,slot))
+         -- ctx_sprint(f_char(name,class,family,slot))
+            texmathchardef(name,class,family,slot,"permanent")
+        elseif class == delimiter_class then -- open close or middle (bars)
+            setdelcode("global",slot,family,slot,0,0) -- can go
+         -- ctx_sprint(f_delimiter(name,0,family,slot))
+         -- ctx_sprint(f_char(name,0,family,slot))
+            texmathchardef(name,0,family,slot,"permanent")
+        elseif class == radical_class then -- only in mkiv
+         -- ctx_sprint(f_radical(name,family,slot))
+        elseif class == root_class then -- only in mkiv
+         -- ctx_sprint(f_root(name,family,slot))
         elseif texmathchardef then
             if group then
                 group = groupnames[group] or 0
                 if group ~= 0 then
-                    texmathchardef(name,engine,family,slot,"permanent",0x1,group,slot)
+                    texmathchardef(name,class,family,slot,"permanent",0x1,group,slot)
                     return
                 end
             end
-            texmathchardef(name,engine,family,slot,"permanent")
-        else
-            -- beware, open/close and other specials should not end up here
-            ctx_sprint(f_char(name,engine,family,slot))
+            texmathchardef(name,class,family,slot,"permanent")
         end
     end
 
@@ -620,7 +620,7 @@ do
                 if class then
                     local engine = toengineclass(class)
                     if trace_defining then
-                        report(class,engine,family,unicode,symbol)
+                        report(engine,family,unicode,symbol)
                     end
                     mset, dset = setmathcharacter(engine,family,unicode,symbol,mset,dset,group)
                 end
@@ -652,7 +652,7 @@ do
                         class = classes[class] or ordinary_class
                         local engine = toengineclass(class)
                         if trace_defining then
-                            report(class,engine,family,unicode)
+                            report(engine,family,unicode)
                         end
                         mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset,group)
                         done = true
@@ -673,13 +673,13 @@ do
                         local engine = toengineclass(class)
                         if name then
                             if trace_defining then
-                                report(class,engine,family,unicode,name)
+                                report(engine,family,unicode,name)
                             end
-                            setmathsymbol(name,class,engine,family,unicode,stretch,group)
+                            setmathsymbol(name,engine,family,unicode,stretch,group)
                         else
                             name = (class == classes.ordinary or class == classes.digit) and character.adobename -- bad
                             if name and trace_defining then
-                                report(class,engine,family,unicode,name)
+                                report(engine,family,unicode,name)
                             end
                         end
                         if not done then
@@ -698,7 +698,7 @@ do
                     local engine = toengineclass(class)
                     if name == false then
                         if trace_defining then
-                            report(class,engine,family,unicode,name)
+                            report(engine,family,unicode,name)
                         end
                         mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset,group)
                     else
@@ -707,12 +707,12 @@ do
                      -- end
                         if name then
                             if trace_defining then
-                                report(class,engine,family,unicode,name)
+                                report(engine,family,unicode,name)
                             end
-                            setmathsymbol(name,class,engine,family,unicode,stretch,group)
+                            setmathsymbol(name,engine,family,unicode,stretch,group)
                         else
                             if trace_defining then
-                                report(class,engine,family,unicode,character.adobename)
+                                report(engine,family,unicode,character.adobename)
                             end
                         end
                         mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset,group)
@@ -720,7 +720,7 @@ do
                 elseif class ~= ordinary_class then
                     local engine = toengineclass(class)
                     if trace_defining then
-                        report(class,engine,family,unicode,character.adobename)
+                        report(engine,family,unicode,character.adobename)
                     end
                     mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset,group)
                 end

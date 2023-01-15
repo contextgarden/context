@@ -142,6 +142,9 @@ extern void tex_do_line_break (
     line_break_properties *properties
 );
 
+extern halfword tex_wipe_margin_kerns(
+    halfword head
+);
 
 /*tex
 

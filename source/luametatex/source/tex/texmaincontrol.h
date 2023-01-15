@@ -64,8 +64,6 @@ extern void     tex_page_boundary_message           (const char *s, halfword bou
 
 extern void     tex_inject_text_or_line_dir         (int d, int check_glue);
 
-extern void     tex_run_prefixed_command            (void);
-
 extern void     tex_handle_assignments              (void); /*tex Used in math. */
 
 extern void     tex_assign_internal_int_value       (int a, halfword p, int val);

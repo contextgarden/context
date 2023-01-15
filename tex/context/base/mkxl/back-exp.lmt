@@ -44,6 +44,7 @@ local formatters = string.formatters
 local todimen = number.todimen
 local replacetemplate = utilities.templates.replace
 local settings_to_array = utilities.parsers.settings_to_array
+local settings_to_hash = utilities.parsers.settings_to_hash
 
 local addsuffix, joinfile, nameonly, basename, filesuffix = file.addsuffix, file.join, file.nameonly, file.basename, file.suffix
 
@@ -1957,7 +1958,18 @@ local cssheadlink = [[
 <link type="text/css" rel="stylesheet" href="%filename%" />
 ]]
 
-    local function allusedstylesheets(cssfiles,files,path)
+-- great, these suggested valuess attributes
+
+local mathmlheadscript = [[
+<script
+    type="text/javascript"
+    id="MathJax-script"
+    async="async"
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/mml-chtml.js">
+</script>
+]]
+
+    local function allusedstylesheets(cssfiles,files,path,extra)
         local done   = { }
         local result = { }
         local extras = { }
@@ -1975,6 +1987,9 @@ local cssheadlink = [[
                 extras[#extras+1] = replacetemplate(cssheadlink, { filename = cssfile })
                 done[cssfile]     = true
             end
+        end
+        if extra then
+            extras[#extras+1] = extra
         end
         return concat(result), concat(extras)
     end
@@ -2278,11 +2293,16 @@ local htmltemplate <const> = [[
             if not c.special then
                 local tg = c.tg
                 local ns = c.ns
+                local at = c.at
                 if ns == "m" then
-                    if false then -- yes or no
+                    -- should happen elsewhere
+                 -- if false then -- yes or no
                         c.ns = ""
-                        c.at["xmlns:m"] = nil
-                    end
+                        at["xmlns:m"] = nil
+                        if tg == "math" then
+                            at["xmlns"]   = mathmlns
+                        end
+                 -- end
              -- elseif tg == "a" then
              --     c.ns = ""
                 else
@@ -2296,7 +2316,6 @@ local htmltemplate <const> = [[
                             comment = c.dt
                         end
                     end
-                    local at    = c.at
                     local class = nil
                     local label = nil
                     if tg == "document" then
@@ -2630,7 +2649,10 @@ local htmltemplate <const> = [[
             end
         end
 
-        local x_styles, h_styles = allusedstylesheets(cssfiles,files,"styles")
+
+        local script = settings_to_hash(finetuning.option or "").mathjax and mathmlheadscript or nil
+
+        local x_styles, h_styles = allusedstylesheets(cssfiles,files,"styles",script)
 
         local attach = backends.nodeinjections.attachfile
 
@@ -2807,6 +2829,7 @@ implement {
             { "svgstyle" },
             { "cssfile" },
             { "file" },
+            { "option" },
             { "export" },
         }
     }
