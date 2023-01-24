@@ -175,9 +175,8 @@ do
                         maxsize = 1
                     }
                 end
-
             elseif roottg == "msubsup" then
-                -- kind of tricky: we have a diufferent order in display mode
+                -- kind of tricky: we have a different order in display mode
                 local nucleus, superscript, subscript
                 if ndata > 3 then
                     -- error
@@ -263,7 +262,7 @@ do
                     local tg = d.tg
                     if automathrows and (roottg == "mrow" or roottg == "mtext") then
                         -- maybe just always ! check spec first
-                        -- or we can have chesks.* for each as we then can flatten
+                        -- or we can have checks.* for each as we then can flatten
                         if no_mrow[tg] then
                             root.skip = "comment"
                         end

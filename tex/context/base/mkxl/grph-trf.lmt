@@ -10,7 +10,18 @@ if not modules then modules = { } end modules ['grph-trf'] = {
 
 local sind, cosd, tand, abs = math.sind, math.cosd, math.tand, math.abs
 
+local isdimen      = tex.isdimen
 local setdimension = tex.setdimensionvalue
+
+local d_grph_rotate_x_size     = isdimen("d_grph_rotate_x_size")
+local d_grph_rotate_y_size     = isdimen("d_grph_rotate_y_size")
+local d_grph_rotate_x_position = isdimen("d_grph_rotate_x_position")
+local d_grph_rotate_y_position = isdimen("d_grph_rotate_y_position")
+local d_grph_rotate_x_offset   = isdimen("d_grph_rotate_x_offset")
+local d_grph_rotate_y_offset   = isdimen("d_grph_rotate_y_offset")
+local d_grph_rotate_new_width  = isdimen("d_grph_rotate_new_width")
+local d_grph_rotate_new_height = isdimen("d_grph_rotate_new_height")
+local d_grph_rotate_new_depth  = isdimen("d_grph_rotate_new_depth")
 
 local function analyzerotate(rotation,width,height,depth,total,notfit,obeydepth)
     --

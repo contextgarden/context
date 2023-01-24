@@ -32,12 +32,12 @@
 
 \writestatus{loading}{ConTeXt Tracing Macros / Visualization}
 
-\registerctxluafile{trac-vis}{autosuffix}
-
 \unprotect
 
 \newconstant\c_syst_visualizers_state
 \newtoks    \t_syst_visualizers_optimize
+
+\registerctxluafile{trac-vis}{autosuffix}
 
 % \definesystemattribute[visual][public,global] % already defined
 

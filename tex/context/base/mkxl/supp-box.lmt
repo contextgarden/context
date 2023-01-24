@@ -101,8 +101,17 @@ local setlistcolor  = nodes.tracers.colors.setlist
 
 local texget        = tex.get
 local texgetbox     = tex.getbox
+local texisdimen    = tex.isdimen
 local texsetdimen   = tex.setdimen
 local texgetnest    = tex.getnest
+
+local d_lastnaturalboxwd = texisdimen("lastnaturalboxwd")
+local d_lastnaturalboxht = texisdimen("lastnaturalboxht")
+local d_lastnaturalboxdp = texisdimen("lastnaturalboxdp")
+
+local d_givenwidth       = texisdimen("givenwidth")
+local d_givenheight      = texisdimen("givenheight")
+local d_givendepth       = texisdimen("givendepth")
 
 local function hyphenatedlist(head,usecolor)
     local current = head and tonut(head)
@@ -409,9 +418,9 @@ do
         if l then
             w, h, d = getdimensions(l)
         end
-        texsetdimen("lastnaturalboxwd",w)
-        texsetdimen("lastnaturalboxht",h)
-        texsetdimen("lastnaturalboxdp",d)
+        texsetdimen(d_lastnaturalboxwd,w)
+        texsetdimen(d_lastnaturalboxht,h)
+        texsetdimen(d_lastnaturalboxdp,d)
         return w, h, d
     end
 
@@ -845,9 +854,9 @@ implement {
         },
     },
     actions   = function(t)
-        texsetdimen("givenwidth", t.width  or 0)
-        texsetdimen("givenheight",t.height or 0)
-        texsetdimen("givendepth", t.depth  or 0)
+        texsetdimen(d_givenwidth, t.width  or 0)
+        texsetdimen(d_givenheight,t.height or 0)
+        texsetdimen(d_givendepth, t.depth  or 0)
     end,
 }
 

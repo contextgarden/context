@@ -26,6 +26,19 @@
 
 \registerctxluafile{grph-trf}{autosuffix}
 
+% See below
+
+\newdimension\d_grph_rotate_x_size
+\newdimension\d_grph_rotate_y_size
+\newdimension\d_grph_rotate_x_offset
+\newdimension\d_grph_rotate_y_offset
+\newdimension\d_grph_rotate_x_position
+\newdimension\d_grph_rotate_y_position
+
+\newdimension\d_grph_rotate_new_width
+\newdimension\d_grph_rotate_new_height
+\newdimension\d_grph_rotate_new_depth
+
 % local:
 
 \newdimension\d_grph_scale_x_size
@@ -758,16 +771,16 @@
 %D register and these are actually kind of constants not used in further
 %D calculations):
 
-\mutable\dimendef\d_grph_rotate_x_size    \zeropoint
-\mutable\dimendef\d_grph_rotate_y_size    \zeropoint
-\mutable\dimendef\d_grph_rotate_x_offset  \zeropoint
-\mutable\dimendef\d_grph_rotate_y_offset  \zeropoint
-\mutable\dimendef\d_grph_rotate_x_position\zeropoint
-\mutable\dimendef\d_grph_rotate_y_position\zeropoint
-
-\mutable\dimendef\d_grph_rotate_new_width \zeropoint
-\mutable\dimendef\d_grph_rotate_new_height\zeropoint
-\mutable\dimendef\d_grph_rotate_new_depth \zeropoint
+% mutable\dimendef\d_grph_rotate_x_size    \zeropoint
+% mutable\dimendef\d_grph_rotate_y_size    \zeropoint
+% mutable\dimendef\d_grph_rotate_x_offset  \zeropoint
+% mutable\dimendef\d_grph_rotate_y_offset  \zeropoint
+% mutable\dimendef\d_grph_rotate_x_position\zeropoint
+% mutable\dimendef\d_grph_rotate_y_position\zeropoint
+%
+% mutable\dimendef\d_grph_rotate_new_width \zeropoint
+% mutable\dimendef\d_grph_rotate_new_height\zeropoint
+% mutable\dimendef\d_grph_rotate_new_depth \zeropoint
 
 %D These aren't:
 

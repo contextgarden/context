@@ -44,6 +44,7 @@ local rulecodes        = nodes.rulecodes
 local boxrule_code     = rulecodes.box
 local imagerule_code   = rulecodes.image
 local emptyrule_code   = rulecodes.empty
+local virtualrule_code = rulecodes.virtual
 
 local container_code   = nodes.listcodes.container
 
@@ -211,7 +212,7 @@ local function process(attribute,head,inheritance,default) -- one attribute
                 setlist(stack,list)
             end
         elseif id == rule_code then
-            check = hasdimensions(stack)
+            check = subtype == virtualrule_code or hasdimensions(stack)
         end
         -- much faster this way than using a check() and nested() function
         if check then
@@ -291,7 +292,7 @@ local function simple(attribute,head)
                 setlist(stack,list)
             end
         elseif id == rule_code then
-            check = hasdimensions(stack)
+            check = subtype == virtualrule_code or hasdimensions(stack)
         end
         if check then
             local c = getattr(stack,attribute)
@@ -386,7 +387,9 @@ local function selective(attribute,head,inheritance,default) -- two attributes
                 setlist(stack,list)
             end
         elseif id == rule_code then
-            if subtype == boxrule_code or subtype == imagerule_code or subtype == emptyrule_code then
+            if subtype == virtualrule_code then
+                check = true
+            elseif subtype == boxrule_code or subtype == imagerule_code or subtype == emptyrule_code then
                 -- so no redundant color stuff (only here, layers for instance should obey)
                 check = false
             else
@@ -494,7 +497,7 @@ local function stacked(attribute,head,default) -- no inheritance, but list-wise
                 end
             end
         elseif id == rule_code then
-            check = hasdimensions(stack)
+            check = subtype == virtualrule_code or hasdimensions(stack)
         end
         if check then
             local a = getattr(stack,attribute)
@@ -576,7 +579,9 @@ local function stacker(attribute,head,default) -- no inheritance, but list-wise
                 end
             end
         elseif id == rule_code then
-            if subtype == boxrule_code or subtype == imagerule_code or subtype == emptyrule_code then
+            if subtype == virtualrule_code then
+                check = true
+            elseif subtype == boxrule_code or subtype == imagerule_code or subtype == emptyrule_code then
                 -- so no redundant color stuff (only here, layers for instance should obey)
                 check = false
             else

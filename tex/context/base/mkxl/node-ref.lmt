@@ -42,6 +42,7 @@ local report_reference     = logs.reporter("backend","references")
 local report_destination   = logs.reporter("backend","destinations")
 local report_area          = logs.reporter("backend","areas")
 
+local texiscount           = tex.iscount
 local texsetcount          = tex.setcount
 ----- texsetattribute      = tex.setattribute
 
@@ -54,6 +55,8 @@ updaters.register("backends.injections.latebindings",function()
     injectdestination = backends.nodeinjections.destination
     prerollreference  = backends.codeinjections.prerollreference
 end)
+
+local c_lastreferenceattribute = texiscount("lastreferenceattribute")
 
 local nuts                 = nodes.nuts
 local nodepool             = nuts.pool
@@ -246,7 +249,7 @@ local inject_areas do
         end
     end
 
-    -- Setting these once and not passign them each nested call is faster and this injector is
+    -- Setting these once and not passing them each nested call is faster and this injector is
     -- actually one of the more costly calls in a run (when we have lots of references to
     -- check) and it's also a bti less code.
 
@@ -313,7 +316,7 @@ local inject_areas do
     local function inject(head,skip,parent,pardir,txtdir)
         local first, last, firstdir, reference
         local current = head
-        while current do
+        while current do -- tod: check with loop
             local id = getid(current)
             if id == hlist_code or id == vlist_code then
                 local r = getattr(current,attribute)
@@ -366,6 +369,7 @@ local inject_areas do
                 end
                 goto NEXT
             elseif id == glue_code then
+                -- local skiptype = ... 0=regular 1=left 2=right
                 local subtype = getsubtype(current)
                 if subtype == leftskip_code or subtype == lefthang_code or subtype == parfillleftskip_code then
                     goto NEXT
@@ -402,8 +406,8 @@ local inject_areas do
 --                         print("!!!!!!!!")
                     end
                 else
-                    -- todo: safeguard when we have a glyph or dics or ... so we might as well
-                    -- then scan for all possibel content nodes
+                    -- todo: safeguard when we have a glyph or disc or ... so we might as well
+                    -- then scan for all possible content nodes
                     reference = r
                     first     = current
                     last      = current
@@ -456,6 +460,7 @@ local colorize, justadd do
                     str   = str .. " "
                     shift = (shift or 2) * exheight
                 end
+                -- todo: virtual rule, zero width hbox, offsets
                 local text = typesetters.tohpack(str,infofont)
                 local rule = new_rule(emwidth/5,4*exheight,3*exheight)
                 setshift(text,shift)
@@ -493,12 +498,12 @@ local colorize, justadd do
             height = 65536/2
             depth  = height
         end
+        -- todo: use virtual rules
         local rule = setcoloring(new_rule(width,height,depth),1,u_color,u_transparency) -- gray color model
         if width < 0 then
             local kern = new_kern(width)
             setwidth(rule,-width)
-            setnext(kern,rule)
-            setprev(rule,kern)
+            setlink(kern,rule)
             return kern
         elseif sr and sr ~= "" then
             local text = addstring(what,sr,shift)
@@ -549,7 +554,7 @@ do
         -- so some part of the backend work is already done here
         stack[topofstack] = { r, h or false, d or false, codeinjections.prerollreference(r) }
      -- texsetattribute(attribute,topofstack) -- todo -> at tex end
-        texsetcount("lastreferenceattribute",topofstack)
+        texsetcount(c_lastreferenceattribute,topofstack)
     end
 
     function references.get(n) -- not public so functionality can change
@@ -761,7 +766,7 @@ do
                 if result then
                     setlink(current,annot)
                 else
-                    result  = annot
+                    result = annot
                 end
                 current = find_node_tail(annot)
             end

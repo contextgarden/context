@@ -121,6 +121,28 @@ local effects = {
     hidden  = 3,
 }
 
+local rules = {
+    "RadicalRuleThickness",
+    "OverbarRuleThickness",
+    "FractionRuleThickness",
+    "UnderbarRuleThickness",
+}
+
+-- radicals are not yet ok
+
+local function setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze,multiplier)
+    -- hm, this was "if delta ~= 0 then" but delta was gone
+    if dy ~= 0 then
+        for i=1,#rules do
+            local name  = rules[i]
+            local value = mathparameters[name]
+            if value then
+                mathparameters[name] = (squeeze or 1) * (value + dy)
+            end
+        end
+    end
+end
+
 local function initializeeffect(tfmdata,value)
     local spec
     if type(value) == "number" then
@@ -170,7 +192,7 @@ local function initializeeffect(tfmdata,value)
         if squeeze then
             initializesqueeze(tfmdata,squeeze)
         end
-        properties.effect = {
+        effect = {
             effect  = effect,
             width   = width,
             factor  = factor,
@@ -184,28 +206,7 @@ local function initializeeffect(tfmdata,value)
             extend  = tfmdata.parameters.extendfactor,
             squeeze = tfmdata.parameters.squeezefactor,
         }
-    end
-end
-
-local rules = {
-    "RadicalRuleThickness",
-    "OverbarRuleThickness",
-    "FractionRuleThickness",
-    "UnderbarRuleThickness",
-}
-
--- radicals are not yet ok
-
-local function setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze,multiplier)
-    -- hm, this was "if delta ~= 0 then" but delta was gone
-    if dy ~= 0 then
-        for i=1,#rules do
-            local name  = rules[i]
-            local value = mathparameters[name]
-            if value then
-               mathparameters[name] = (squeeze or 1) * (value + dy)
-            end
-        end
+        properties.effect = effect
     end
 end
 
@@ -237,6 +238,21 @@ local function manipulateeffect(tfmdata)
         local vfactor        = (1 + effect.vfactor) * vfactor
         parameters.hshift = hshift
         parameters.vshift = vshift
+        --
+        -- For now we assume that the properties of parts wrt advance and such still
+        -- apply and that the extensible piece kicks in if needed. Beware of creating
+        -- virtual extensibles because these could get squeeze twice.
+        --
+        -- local allparts = { }
+        -- for unicode, character in next, characters do
+        --     local parts = character.parts
+        --     if parts then
+        --         for i=1,#parts do
+        --             allparts[parts[i].glyph] = true
+        --         end
+        --     end
+        -- end
+        --
         for unicode, character in next, characters do
             local oldwidth        = character.width
             local oldheight       = character.height

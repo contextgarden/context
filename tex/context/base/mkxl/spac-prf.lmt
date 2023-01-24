@@ -16,7 +16,6 @@ local formatters        = string.formatters
 
 local nodecodes         = nodes.nodecodes
 local gluecodes         = nodes.gluecodes
-local listcodes         = nodes.listcodes
 
 local glyph_code        = nodecodes.glyph
 local disc_code         = nodecodes.disc
@@ -34,10 +33,14 @@ local leaders_code      = gluecodes.leaders
 local lineskip_code     = gluecodes.lineskip
 local baselineskip_code = gluecodes.baselineskip
 
-local linelist_code     = listcodes.line
+local strutrule_code    = nodes.rulecodes.strut
+local linelist_code     = nodes.listcodes.line
 
 local texlists          = tex.lists
 local settexattribute   = tex.setattribute
+local texgetdimen       = tex.getdimen
+
+local newindex          = lua.newindex
 
 local nuts              = nodes.nuts
 local tonut             = nodes.tonut
@@ -46,6 +49,7 @@ local tonode            = nuts.tonode
 local getreplace        = nuts.getreplace
 local getattr           = nuts.getattr
 local getid             = nuts.getid
+local getboth           = nuts.getboth
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
 local getsubtype        = nuts.getsubtype
@@ -59,6 +63,11 @@ local getwidth          = nuts.getwidth
 local getheight         = nuts.getheight
 local getdepth          = nuts.getdepth
 local getboxglue        = nuts.getboxglue
+local effectiveglue     = nuts.effectiveglue
+local findattribute     = nuts.findattribute
+
+local nextnode          = nuts.traversers.node
+local nextglue          = nuts.traversers.glue
 
 local setlink           = nuts.setlink
 local setlist           = nuts.setlist
@@ -76,6 +85,8 @@ local theprop           = nuts.theprop
 
 local floor             = math.floor
 local ceiling           = math.ceil
+local min               = math.min
+local max               = math.max
 
 local new_rule          = nuts.pool.rule
 local new_glue          = nuts.pool.glue
@@ -119,7 +130,7 @@ local function getprofile(line,step)
         return
     end
 
-    local glue_set, glue_order, glue_sign  = getboxglue(line)
+--     local glue_set, glue_order, glue_sign  = getboxglue(line)
 
     local heights  = { }
     local depths   = { }
@@ -140,71 +151,24 @@ local function getprofile(line,step)
 
     -- remember p
 
-    local function progress()
-        position = width
-        width    = position + wd
-            p = floor((position - margin)/step + 0.5)
-            w = floor((width    + margin)/step - 0.5)
-        if p < 0 then
-            p = 0
-        end
-        if w < 0 then
-            w = 0
-        end
-        if p > w then
-            w, p = p, w
-        end
-        if w > max then
-            for i=max+1,w+1 do
-                heights[i] = 0
-                depths [i] = 0
-            end
-            max = w
-        end
-        for i=p,w do
-            if ht > heights[i] then
-                heights[i] = ht
-            end
-            if dp > depths[i] then
-                depths[i] = dp
-            end
-        end
-    end
-
     local function process(current) -- called nested in disc replace
-        while current do
-            local id = getid(current)
+        for current, id, subtype in nextnode, current do
             if id == glyph_code then
                 wd, ht, dp = getwhd(current)
-                progress()
             elseif id == kern_code then
                 wd = getkern(current)
                 ht = 0
                 dp = 0
-                progress()
             elseif id == disc_code then
                 local replace = getreplace(current)
                 if replace then
                     process(replace)
                 end
+                goto done
             elseif id == glue_code then
-                local width, stretch, shrink, stretch_order, shrink_order = getglue(current)
-                if glue_sign == 1 then
-                    if stretch_order == glue_order then
-                        wd = width + stretch * glue_set
-                    else
-                        wd = width
-                    end
-                elseif glue_sign == 2 then
-                    if shrink_order == glue_order then
-                        wd = width - shrink * glue_set
-                    else
-                        wd = width
-                    end
-                else
-                    wd = width
-                end
-                if getsubtype(current) >= leaders_code then
+                wd = effectiveglue(current, line) -- geteffectivewhd
+                -- tricky
+                if subtype >= leaders_code then
                     local leader = getleader(current)
                     local w
                     w, ht, dp = getwhd(leader) -- can become getwhd(current) after 1.003
@@ -212,12 +176,11 @@ local function getprofile(line,step)
                     ht = 0
                     dp = 0
                 end
-                progress()
             elseif id == hlist_code then
+                -- maybe: offsets
                 -- we could do a nested check .. but then we need to push / pop glue
                 local shift = getshift(current)
                 local w, h, d = getwhd(current)
-             -- if getattr(current,a_specialcontent) then
                 if getprop(current,"specialcontent") then
                     -- like a margin note, maybe check for wd
                     wd = w
@@ -228,29 +191,49 @@ local function getprofile(line,step)
                     ht = h - shift
                     dp = d + shift
                 end
-                progress()
             elseif id == vlist_code or id == unset_code then
                 local shift = getshift(current) -- todo
-                wd, ht, dp = getwhd(current)
-                progress()
+                wd, ht, dp = getwhd(current) -- todo: use combined getter
             elseif id == rule_code then
                 wd, ht, dp = getwhd(current)
-                progress()
             elseif id == math_code then
+                -- todo get glue
                 wd = getkern(current) + getwidth(current) -- surround
                 ht = 0
                 dp = 0
-                progress()
-            elseif id == marginkern_code then
-                -- not in lmtx
-                wd = getwidth(current)
-                ht = 0
-                dp = 0
-                progress()
             else
---     print(nodecodes[id])
+                goto done
             end
-            current = getnext(current)
+            -- progress
+            position = width
+            width    = position + wd
+                p = floor((position - margin)/step + 0.5)
+                w = floor((width    + margin)/step - 0.5)
+            if p < 0 then
+                p = 0
+            end
+            if w < 0 then
+                w = 0
+            end
+            if p > w then
+                w, p = p, w
+            end
+            if w > max then
+                for i=max+1,w+1 do
+                    heights[i] = 0
+                    depths [i] = 0
+                end
+                max = w
+            end
+            for i=p,w do
+                if ht > heights[i] then
+                    heights[i] = ht
+                end
+                if dp > depths[i] then
+                    depths[i] = dp
+                end
+            end
+          ::done::
         end
     end
 
@@ -362,6 +345,7 @@ local function addprofile(node,profile,step)
             return
         end
         local what = nil
+        -- beware: basically end of line so we actually need to put it elsewhere
         if lastht == 0 and lastdp == 0 then
             what = new_kern(lastwd)
         else
@@ -470,12 +454,17 @@ end
 -- lineskip | lineskiplimit
 
 local function inject(top,bot,amount) -- todo: look at penalties
-    local glue = new_glue(amount)
-    --
-    setattr(glue,a_profilemethod,0)
-    setattr(glue,a_visual,getattr(top,a_visual))
-    --
-    setlink(top,glue,bot)
+    if amount ~= 0 then
+        local glue = new_glue(amount)
+        --
+        setattr(glue,a_profilemethod,0)
+    --     setattr(glue,a_visual,getattr(top,a_visual))
+        setattr(glue,a_visual,nodes.visualizers.modes.glue)
+        --
+        setlink(top,glue,bot)
+        --
+        report("injected correction %p at page",amount,tex.getcount("realpageno"))
+    end
 end
 
 methods[v_none] = function()
@@ -487,8 +476,8 @@ methods[v_strict] = function(top,bot,t_profile,b_profile,specification)
     local top        = tonut(top)
     local bot        = tonut(bot)
 
-    local strutht    = specification.height or texdimen.strutht
-    local strutdp    = specification.depth  or texdimen.strutdp
+    local strutht    = specification.height or texgetdimen.strutht
+    local strutdp    = specification.depth  or texgetdimen.strutdp
     local lineheight = strutht + strutdp
 
     local depth      = getdepth(top)
@@ -523,8 +512,8 @@ methods[v_fixed] = function(top,bot,t_profile,b_profile,specification)
     local top        = tonut(top)
     local bot        = tonut(bot)
 
-    local strutht    = specification.height or texdimen.strutht
-    local strutdp    = specification.depth  or texdimen.strutdp
+    local strutht    = specification.height or texgetdimen.strutht
+    local strutdp    = specification.depth  or texgetdimen.strutdp
     local lineheight = strutht + strutdp
 
     local depth      = getdepth(top)
@@ -545,7 +534,7 @@ methods[v_fixed] = function(top,bot,t_profile,b_profile,specification)
             return true
         end
 
-        local delta  = getdelta(t_profile,b_profile)
+        local delta = getdelta(t_profile,b_profile)
 
         local dp = strutdp
         while depth > lineheight - strutdp do
@@ -642,8 +631,6 @@ end
 
 local function profilelist(line,mvl)
 
-    local current       = line
-
     local top           = nil
     local bot           = nil
 
@@ -666,11 +653,8 @@ local function profilelist(line,mvl)
         pagehead, pagetail = getpagelist()
 
         if pagetail then
-            local current = pagetail
-            while current do
-                local id = getid(current)
+            for current, id, subtype in nextnode, pagetail do
                 if id == hlist_code then
-                    local subtype = getsubtype(current)
                     if subtype == linelist_code then
                         t_profile = hasprofile(current)
                         if t_profile then
@@ -690,13 +674,12 @@ local function profilelist(line,mvl)
                 else
                     break
                 end
-                current = getnext(current)
             end
         end
 
     end
 
-    while current do
+    for current, id, subtype in nextnode, line do
 
         local attr = getattr(current,a_profilemethod)
 
@@ -709,10 +692,7 @@ local function profilelist(line,mvl)
                 lastattr      = attr
             end
 
-            local id = getid(current)
-
             if id == hlist_code then -- check subtype
-                local subtype = getsubtype(current)
                 if subtype == linelist_code then
                     if top == current then
                         -- skip
@@ -751,7 +731,6 @@ local function profilelist(line,mvl)
                 end
             elseif id == glue_code then
                 if top then
-                    local subtype = getsubtype(current)
                  -- if subtype == lineskip_code or subtype == baselineskip_code then
                         local wd   = getwidth(current)
                         if wd > 0 then
@@ -781,7 +760,6 @@ local function profilelist(line,mvl)
             top = nil
             bot = nil
         end
-        current = getnext(current)
     end
     if top then
         t_profile = setprofile(top)
@@ -794,6 +772,8 @@ end
 profiling.list = profilelist
 
 local enabled = false
+
+-- todo: use attribute storage
 
 function profiling.set(specification)
     if not enabled then
@@ -818,10 +798,8 @@ function profiling.profilebox(specification)
     local action    = method and methods[method] or methods[v_strict]
     local lastglue  = nil
     local distance  = 0
-    while current do
-        local id = getid(current)
+    for current, id, subtype in nextnode, current do
         if id == hlist_code then
-            local subtype = getsubtype(current)
             if subtype == linelist_code then
                 if top then
                     bot       = current
@@ -855,7 +833,6 @@ function profiling.profilebox(specification)
                 bot = nil
             end
         elseif id == glue_code then
-            local subtype = getsubtype(current)
             if subtype == lineskip_code or subtype == baselineskip_code then
                 if top then
                     local wd   = getwidth(current)
@@ -882,7 +859,6 @@ function profiling.profilebox(specification)
             top = nil
             bot = nil
         end
-        current = getnext(current)
     end
 
     if top then
@@ -947,3 +923,367 @@ interfaces.implement {
         }
     }
 }
+
+-- The following is an experiment that I picked up after demoing this already old but never
+-- used feature and in the process it got applied to document of hundreds of pages. Actually
+-- performance is quite okay but this mechanism is not really meant for that scenario. We'll
+-- see where this ends. We could (an d might) integrate it in the above but the next is more
+-- lightweight while the previous was basically some exploration with lots of options.
+
+do
+
+    -- we could share the two arrays if needed
+
+    local a_lineprofile   = attributes.private("lineprofile")
+
+    local registervalue   = attributes.registervalue
+    local getvalue        = attributes.getvalue
+    local texsetattribute = tex.setattribute
+
+    local function getdepthprofile(line,step,margin,max,list)
+
+        local width    = 0
+        local position = 0
+        local profile  = newindex(max+2,0)
+        local wd       = 0
+        local ht       = 0
+        local dp       = 0
+
+        profile[0] = 0
+
+        local function process(current) -- called nested in disc replace
+            for current, id, subtype in nextnode, current do
+                if id == glyph_code then
+                    wd, ht, dp = getwhd(current)
+                elseif id == kern_code then
+                    wd = getkern(current)
+                    dp = 0
+                elseif id == disc_code then
+                    local replace = getreplace(current)
+                    if replace then
+                        process(replace)
+                    end
+                    goto done
+                elseif id == glue_code then
+                    wd = effectiveglue(current, line) -- geteffectivewhd
+                    -- tricky
+                    if subtype >= leaders_code then
+                        local leader = getleader(current)
+                        local w
+                        w, ht, dp = getwhd(leader) -- can become getwhd(current) after 1.003
+                    else
+                        dp = 0
+                    end
+                elseif id == hlist_code then
+                    -- maybe: offsets
+                    -- we could do a nested check .. but then we need to push / pop glue
+                    local shift = getshift(current)
+                    local w, h, d = getwhd(current)
+                    if getprop(current,"specialcontent") then
+                        -- like a margin note, maybe check for wd
+                        wd = w
+                        dp = 0
+                    else
+                        wd = w
+                        dp = d + shift
+                    end
+                elseif id == vlist_code then
+                    local shift = getshift(current) -- todo
+                    wd, ht, dp = getwhd(current) -- todo: use combined getter
+                elseif id == rule_code then
+                    if subtype == strutrule_code then
+                        dp = 0
+                    else
+                        wd, ht, dp = getwhd(current)
+                    end
+                elseif id == math_code then
+                    -- todo get glue
+                    wd = getkern(current) + getwidth(current) -- surround
+                    dp = 0
+                else
+                    goto done
+                end
+                -- progress
+                position = width
+                width    = position + wd
+                    p = floor((position - margin)/step + 0.5)
+                    w = floor((width    + margin)/step - 0.5)
+                if p < 0 then
+                    p = 0
+                end
+                if w < 0 then
+                    w = 0
+                end
+                if p > w then
+                    w, p = p, w
+                end
+                if w > max then
+                    for i=max+1,w+1 do
+                        profile[i] = 0
+                    end
+                    max = w
+                end
+                for i=p,w do
+                    if dp > profile[i] then
+                        profile[i] = dp
+                    end
+                end
+              ::done::
+            end
+        end
+
+        process(list)
+
+        return profile
+
+    end
+
+    local function getheightprofile(line,step,margin,max,list)
+
+        local width    = 0
+        local position = 0
+        local profile  = newindex(max+2,0)
+        local wd       = 0
+        local ht       = 0
+        local dp       = 0
+
+        profile[0] = 0
+
+        local function process(current) -- called nested in disc replace
+            for current, id, subtype in nextnode, current do
+                if id == glyph_code then
+                    wd, ht, dp = getwhd(current)
+                elseif id == kern_code then
+                    wd = getkern(current)
+                    ht = 0
+                elseif id == disc_code then
+                    local replace = getreplace(current)
+                    if replace then
+                        process(replace)
+                    end
+                    goto done
+                elseif id == glue_code then
+                    wd = effectiveglue(current, line) -- geteffectivewhd
+                    -- tricky
+                    if subtype >= leaders_code then
+                        local leader = getleader(current)
+                        local w
+                        w, ht, dp = getwhd(leader) -- can become getwhd(current) after 1.003
+                    else
+                        ht = 0
+                    end
+                elseif id == hlist_code then
+                    -- maybe: offsets
+                    -- we could do a nested check .. but then we need to push / pop glue
+                    local shift = getshift(current)
+                    local w, h, d = getwhd(current)
+                    if getprop(current,"specialcontent") then
+                        -- like a margin note, maybe check for wd
+                        wd = w
+                        ht = 0
+                    else
+                        wd = w
+                        ht = h - shift
+                    end
+                elseif id == vlist_code then
+                    local shift = getshift(current) -- todo
+                    wd, ht, dp = getwhd(current) -- todo: use combined getter
+                elseif id == rule_code then
+                    if subtype == strutrule_code then
+                        ht = 0
+                    else
+                        wd, ht, dp = getwhd(current)
+                    end
+                elseif id == math_code then
+                    -- todo get glue
+                    wd = getkern(current) + getwidth(current) -- surround
+                    ht = 0
+                else
+                    goto done
+                end
+                -- progress
+                position = width
+                width    = position + wd
+                    p = floor((position - margin)/step + 0.5)
+                    w = floor((width    + margin)/step - 0.5)
+                if p < 0 then
+                    p = 0
+                end
+                if w < 0 then
+                    w = 0
+                end
+                if p > w then
+                    w, p = p, w
+                end
+                if w > max then
+                    for i=max+1,w+1 do
+                        profile[i] = 0
+                    end
+                    max = w
+                end
+                for i=p,w do
+                    if ht > profile[i] then
+                        profile[i] = ht
+                    end
+                end
+              ::done::
+            end
+        end
+
+        process(list)
+
+        return profile
+
+    end
+
+    local show_lineprofile = false
+    local show_linedetails = false
+
+    trackers.register("profiling.lines.show", function(v)
+        local visualizers = nodes.visualizers
+        glue_mode = visualizers.modes.glue
+        line_mode = visualizers.modes.line
+        show_lineprofile  = v
+        visualizers.enable()
+    end)
+
+    trackers.register("profiling.lines.details", function(v)
+        show_linedetail = v
+    end)
+
+    local defaultstep   = 65536 * 2 -- 2pt
+    local defaultmethod = "a"
+    local defaultfactor = 1
+
+    -- I played with different methods (like only get depths and then on the fly check with heights
+    -- but there is no gain and it is also fuzzy. So for now we just do the whole scan.
+
+    function profilelines(list)
+
+        if not list then
+            return
+        end
+
+        local _, start = findattribute(list,a_lineprofile)
+        if not start then
+            return
+        end
+
+        -- no height or depth ... skip
+
+        for current, subtype in nextglue, start do
+            if subtype == lineskip_code and not getprop(current,"profiled") then
+                local detail = getattr(current,a_lineprofile)
+                if detail then
+                    --
+                    local amount = getwidth(current)
+                    --
+                    local top, bot = getboth(current)
+                    setprop(current,"profiled",amount) -- original amount
+                    if top then
+                        if getid(top) == penalty_code then
+                            top = getprev(top)
+                        end
+                        if top and bot then
+                            if getid(top) == hlist_code and getsubtype(top) == linelist_code then
+                                if getid(bot) == hlist_code and getsubtype(bot) == linelist_code then
+                                    local toplist = getlist(top)
+                                    local botlist = getlist(bot)
+                                    if toplist and botlist then
+                                        --
+                                        local detail = getvalue(a_lineprofile,detail) or { }
+                                        local step   = detail.step  or defaultstep
+                                        local factor = tonumber(detail.factor) or defaultfactor
+                                        local method = detail.method or defaultmethod
+                                        local margin = step / 4
+                                        --
+                                        if factor > 1 then
+                                            factor = 1
+                                        elseif factor <= 0 then
+                                            factor = 0 -- we could actually go the other way
+                                        end
+                                        --
+                                        local natural   = getdepth(top) + getheight(bot)
+                                        local added     = factor * amount
+                                        local possible  = natural - added
+                                        local overshoot = 0
+                                        local topmax    = ceiling(getwidth(top)/step) + 1
+                                        local botmax    = ceiling(getwidth(bot)/step) + 1
+                                     -- if method == "a" then
+                                            local depths  = getdepthprofile (top,step,margin,topmax,toplist)
+                                            local heights = getheightprofile(bot,step,margin,botmax,botlist)
+                                            local steps   = min(#depths,#heights)
+                                            for i=1,steps do
+                                                local o = heights[i] + depths[i] - possible
+                                                if o > overshoot then
+                                                    -- we can quit when >= added
+                                                    overshoot = o
+-- if overshoot > added then
+--     break
+-- end
+                                                end
+                                            end
+                                     -- end
+                                     -- if overshoot < added / 2 then
+                                     --     overshoot = added / 2
+                                     -- end
+                                        if overshoot ~= amount then -- shouldn't we round
+                                            setwidth(current,overshoot)
+                                            if show_lineprofile then
+                                                setattr(current,a_visual,glue_mode)
+                                                setattr(bot,a_visual,line_mode)
+                                                setattr(top,a_visual,line_mode)
+                                            end
+                                            if show_linedetail then
+                                                report("lineskip changed from %p to %p on page %i",amount,overshoot,tex.getcount("realpageno"))
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    builders.profiling.profilelines = profilelines
+
+    function profiling.boxlinehandler(head)
+        if head then
+            profilelines(head)
+        end
+        return head
+    end
+
+    function profiling.pagelinehandler(head)
+        if head then
+            profilelines(head)
+        end
+        return head
+    end
+
+    function profiling.setlines(specification)
+        if not enabled then
+            enableaction("mvlbuilders",  "builders.profiling.pagelinehandler")
+            enableaction("vboxbuilders", "builders.profiling.boxlinehandler")
+            enabled = true
+        end
+        texsetattribute(a_lineprofile,registervalue(a_lineprofile,specification))
+    end
+
+    interfaces.implement {
+        name      = "setlineprofile",
+        actions   = profiling.setlines,
+        arguments = {
+            {
+                { "name" },
+                { "method" },
+                { "step", "dimension" },
+                { "factor" },
+            }
+        }
+    }
+
+end

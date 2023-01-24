@@ -245,7 +245,8 @@ nodes.specialskipcodes = {
 
 table.setmetatableindex(listcodes,function(t,k)
     -- fully qualified as yet unknown
-    local v = mathematics.classnames[k - 0x100] or listcodes.unknown
+--     local v = mathematics.classnames[k - 0x100] or listcodes.unknown
+    local v = mathematics.classes[k - 0x100] or mathematics.classnames[k - 0x100] or listcodes.unknown
     t[k] = v
     return v
 end)

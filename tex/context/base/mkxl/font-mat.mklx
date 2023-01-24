@@ -384,10 +384,12 @@
 \to \everymathematics
 
 \protected\def\font_helpers_synchronize_math_family_mr
-  {\c_attr_mathfamily\zerocount}
+  {\c_attr_mathfamily\zerocount
+  \font_helpers_synchronize_math_parameters_normal}
 
 \protected\def\font_helpers_synchronize_math_family_mb
-  {\c_attr_mathfamily\ifconditional\c_font_pseudo_bold_math_state\plussix\else\plusthree\fi}
+  {\c_attr_mathfamily\ifconditional\c_font_pseudo_bold_math_state\plussix\else\plusthree\fi
+   \font_helpers_synchronize_math_parameters_bold}
 
 \installcorenamespace{fontmathsynchronizer}
 \installcorenamespace{fontmathstoredstrategy}
@@ -535,15 +537,21 @@
 %D This is nasty, as the engine only stores the last set family parameters (per style) which
 %D in our case can be bold.
 
-\def\font_helpers_synchronize_math_parameters
+\def\font_helpers_synchronize_math_parameters_normal
   {\c_math_last_family_used\mathstylefontid\textstyle\zerocount
-   \textfont        \zerocount\textfont        \zerocount
-   \scriptfont      \zerocount\scriptfont      \zerocount
-   \scriptscriptfont\zerocount\scriptscriptfont\zerocount}
+   \textfont        \c_font_fam_mr\textfont        \c_font_fam_mr
+   \scriptfont      \c_font_fam_mr\scriptfont      \c_font_fam_mr
+   \scriptscriptfont\c_font_fam_mr\scriptscriptfont\c_font_fam_mr}
+
+\def\font_helpers_synchronize_math_parameters_bold
+   {\c_math_last_family_used\mathstylefontid\textstyle\zerocount
+   \textfont        \c_attr_mathfamily\textfont        \c_attr_mathfamily
+   \scriptfont      \c_attr_mathfamily\scriptfont      \c_attr_mathfamily
+   \scriptscriptfont\c_attr_mathfamily\scriptscriptfont\c_attr_mathfamily}
 
 \appendtoks
     \ifnum\c_math_last_family_used=\mathstylefontid\textstyle\zerocount\else
-      \font_helpers_synchronize_math_parameters
+      \font_helpers_synchronize_math_parameters_normal
     \fi
 \to\everybodyfont
 

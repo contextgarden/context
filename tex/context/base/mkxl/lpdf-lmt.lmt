@@ -1124,6 +1124,7 @@ local flushimage  do
     local fractionrule_code = rulecodes.fraction
     local radicalrule_code  = rulecodes.radical
     local outlinerule_code  = rulecodes.outline
+    ----- virtualrule_code  = rulecodes.virtual
 
     local processrule       = nodes.rules.process
 

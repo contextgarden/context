@@ -281,4 +281,9 @@
 \amcode \barasciicode        \othercatcode
 \amcode \tildeasciicode      \othercatcode
 
+% \amcode "002C \activecatcode % comma
+% \amcode "002E \activecatcode % period
+% \amcode "003A \activecatcode % colon
+% \amcode "003B \activecatcode % semicolon
+
 \endinput

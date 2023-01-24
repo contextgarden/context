@@ -38,7 +38,7 @@ function handlers.finalizebox(box)
     actions(getbox(box)) -- nut
 end
 
-function handlers.finalizelist(list)
+function handlers.finalizelist(list) -- beware of export: block it if needed
     actions(list) -- nut
 end
 

@@ -13827,11 +13827,25 @@ static mp_knot mp_path_intersection(MP mp, mp_knot h, mp_knot hh, int path, mp_k
                     number_add(nn, unity_t);
                     ll = pp;
                     pp = mp_next_knot(pp);
+/* begin experiment HH/MS, maybe a loop  */
+if (pp != hh && mp_knotstate(pp) == mp_end_knot) {
+    number_add(nn, unity_t);
+    ll = pp;
+    pp = mp_next_knot(pp);
+}
+/* end experiment HH/MS */
                 } while (pp != hh);
             }
             number_add(n, unity_t);
             l = p;
             p = mp_next_knot(p);
+/* begin experiment HH/MS, maybe a loop  */
+if (p != hh && mp_knotstate(p) == mp_end_knot) {
+    number_add(n, unity_t);
+    l = p;
+    p = mp_next_knot(p);
+}
+/* end experiment HH/MS */
         } while (p != h);
         mp->tol_step = mp->tol_step + 3;
         if (done) {

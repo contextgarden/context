@@ -397,6 +397,8 @@ end
 
 local textlevel = 0 -- inaccessible for user, we need to define counter textlevel at the tex end
 
+local c_textlevel = tex.iscount("textlevel")
+
 local function dummyfunction() end
 
 local function startstoperror()
@@ -414,7 +416,7 @@ local function starttext()
         context.dostarttext()
     end
     textlevel = textlevel + 1
-    texsetcount("global","textlevel",textlevel)
+    texsetcount("global",c_textlevel,textlevel)
 end
 
 local function stoptext()
@@ -424,7 +426,7 @@ local function stoptext()
         elseif textlevel > 0 then
             textlevel = textlevel - 1
         end
-        texsetcount("global","textlevel",textlevel)
+        texsetcount("global",c_textlevel,textlevel)
         if textlevel <= 0 then
             if trace_jobfiles then
                 report_jobfiles("stopping text")

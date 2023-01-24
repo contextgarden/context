@@ -273,32 +273,56 @@
      corner {\p_framed_backgroundcorner}
    \relax}}
 
+% we keep this as reference (should still work when uncommented)
+%
+% \def\pack_framed_stroked_box
+%   {\edef\p_framed_framecorner{\framedparameter\c!framecorner}%
+%    \ifx\p_framed_framecorner\v!rectangular
+%      \pack_framed_stroked_box_normal
+%    \else
+%      \pack_framed_stroked_box_radius
+%    \fi}
+%
+% \def\pack_framed_stroked_box_radius
+%   {\edef\p_framed_frameradius{\framedparameter\c!frameradius}%
+%    \ifzeropt\dimexpr\p_framed_frameradius\relax % just in case of .x\bodyfontsize
+%      \pack_framed_stroked_box_normal
+%    \orelse\ifx\p_framed_frame\v!on
+%      \pack_framed_stroked_box_round
+%    \fi}
+%
+% % \pack_framed_stroked_box_normal % later
+%
+% \def\pack_framed_stroked_box_round
+%   {\raise\d_framed_target_dp\hpack{\frule
+%      width  \d_framed_target_wd
+%      height \d_framed_target_ht
+%      depth  \d_framed_target_dp
+%      line   \d_framed_linewidth
+%      radius \p_framed_frameradius\space
+%      corner {\p_framed_framecorner}
+%    \relax}}
+%
+% corner is the parent of framecorner and backgroundcorner (round value never checked)
+% when 'round' is passed it is not a number and therefore we get four sides
+
 \def\pack_framed_stroked_box
   {\edef\p_framed_framecorner{\framedparameter\c!framecorner}%
    \ifx\p_framed_framecorner\v!rectangular
-     \pack_framed_stroked_box_normal
-   \else
-     \pack_framed_stroked_box_radius
-   \fi}
-
-\def\pack_framed_stroked_box_radius
-  {\edef\p_framed_frameradius{\framedparameter\c!frameradius}%
-   \ifzeropt\dimexpr\p_framed_frameradius\relax % just in case of .x\bodyfontsize
      \pack_framed_stroked_box_normal
    \orelse\ifx\p_framed_frame\v!on
      \pack_framed_stroked_box_round
    \fi}
 
-% \pack_framed_stroked_box_normal % later
-
-\def\pack_framed_stroked_box_round
-  {\raise\d_framed_target_dp\hpack{\frule
-     width  \d_framed_target_wd
-     height \d_framed_target_ht
-     depth  \d_framed_target_dp
-     line   \d_framed_linewidth
-     radius \p_framed_frameradius\space
-     corner {\p_framed_framecorner}
+\def\pack_framed_stroked_box_round % todo: variant without keywords
+  {\raise\d_framed_target_dp
+   \hpack{\clf_roundedoutline % we could access these at the lua end!
+     \d_framed_target_wd
+     \d_framed_target_ht
+     \d_framed_target_dp
+     \d_framed_linewidth
+     \framedparameter\c!frameradius
+     {\p_framed_framecorner}
    \relax}}
 
 % a lot of weird corners

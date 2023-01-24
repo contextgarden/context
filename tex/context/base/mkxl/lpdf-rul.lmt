@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['lpdf-rul'] = {
 -- todo: split backend and pdf
 
 local tonumber, next, type = tonumber, next, type
-local concat = table.concat
+local concat, setmetatableindex = table.concat, table.setmetatableindex
 
 local attributes       = attributes
 local nodes            = nodes
@@ -34,10 +34,19 @@ local getrandom        = utilities.randomizer.get
 local formatters       = string.formatters
 
 local setdimen         = tex.setdimen
-local setcount         = tex.setcount
+local isdimen          = tex.isdimen
 local setmacro         = tokens.setters.macro
 
 local codeinjections   = backends.registered.pdf.codeinjections
+
+local d_rule_width  = isdimen("d_rule_width")
+local d_rule_height = isdimen("d_rule_height")
+local d_rule_depth  = isdimen("d_rule_depth")
+local d_rule_h      = isdimen("d_rule_h")
+local d_rule_v      = isdimen("d_rule_v")
+local d_rule_line   = isdimen("d_rule_line")
+local d_rule_offset = isdimen("d_rule_offset")
+local d_rule_factor = isdimen("d_rule_factor")
 
 -- This is very pdf specific. Maybe move some to lpdf-rul.lua some day.
 
@@ -54,7 +63,7 @@ do
  -- local maxcachesize   = 8*1024
  -- local cachethreshold = 1024/2
 
-    local cache = table.setmetatableindex(function(t,k)
+    local cache = setmetatableindex(function(t,k)
         local v = simplemetapost("rulefun",k) -- w, h, d
         cachesize = cachesize + #v
         if cachesize > maxcachesize then
@@ -178,178 +187,212 @@ do
     -- course one can use mp instead. It could be improved but at the cost of more
     -- code than I'm willing to add for something hardly used.
 
-    local function round(p,kind)
-        local method = tonumber(p.corner) or 0
-        if method < 0 or method > 27 then
-            method = 0
-        end
+    local linemapping = {
+        [interfaces.variables.round] = "ltrb",
+        ["0"] = "ltrb", ["trbl"] = "ltrb", ["rblt"] = "ltrb", ["bltr"] = "ltrb",
+        --
+        ["1"] = "ltrb", ["2"] = "ltrb", ["3"] = "ltrb", ["4"] = "ltrb",
+        ["5"] = "ltrb", ["6"] = "ltrb", ["7"] = "ltrb", ["8"] = "ltrb",
+        --
+        [ "9"] = "lbr", ["rbl"] = "lbr",
+        ["10"] = "tlb", ["blt"] = "tlb",
+        ["11"] = "ltr", ["rtl"] = "lrt",
+        ["12"] = "lbr", ["rbl"] = "lbr",
+        --
+        ["13"] = "rt", ["tr"] = "rt",
+        ["14"] = "rb", ["br"] = "rb",
+        ["15"] = "bl", ["lb"] = "bl",
+        ["16"] = "tl", ["lt"] = "tl",
+        --
+        ["32"] = "lr", ["rl"] = "lr",
+        ["33"] = "tb", ["bt"] = "tb",
+        --
+        ["28"] = "l",
+        ["29"] = "r",
+        ["30"] = "b",
+        ["31"] = "t",
+    }
+
+    local roundmapping = {
+        [interfaces.variables.round] = "ltrb",
+        [ "0"] = "ltrb", ["trbl"] = "ltrb", ["rblt"] = "ltrb", ["bltr"] = "ltrb",
+        --
+        [ "9"] = "lbr", ["rbl"] = "lbr",
+        ["10"] = "tlb", ["blt"] = "tlb",
+        ["11"] = "ltr", ["rtl"] = "lrt",
+        ["12"] = "lbr", ["rbl"] = "lbr",
+        --
+        ["13"] = "rt", ["tr"] = "rt",
+        ["14"] = "rb", ["br"] = "rb",
+        ["15"] = "bl", ["lb"] = "bl",
+        ["16"] = "tl", ["lt"] = "tl",
+        --
+        ["32"] = "lr", ["rl"] = "lr",
+        ["33"] = "tb", ["bt"] = "tb",
+        --
+        ["28"] = "l",
+        ["29"] = "r",
+        ["30"] = "b",
+        ["31"] = "t",
+    }
+
+    setmetatableindex(linemapping,function(t,k)
+        local v = tonumber(k) and k or "ltrb"
+        t[k] = v
+        return v
+    end)
+
+    setmetatableindex(roundmapping,function(t,k)
+        local v = tonumber(k) and k or "ltrb"
+        t[k] = v
+        return v
+    end)
+
+    local function round(p,kind,corner)
         local width  = p.width or 0
         local height = p.height or 0
         local depth  = p.depth or 0
-        local total  = height + depth
         local radius = p.radius or 655360
-        local line   = p.line or 65536
-        local how    = (method > 8 or kind ~= "fill") and "S" or "f"
+        local line   = (p.line or 65536) * bpfactor
         local half   = line / 2
-        local xmin   =            half  * bpfactor
-        local xmax   = ( width  - half) * bpfactor
-        local ymax   = ( height - half) * bpfactor
-        local ymin   = (-depth  + half) * bpfactor
-        local full   = ( radius + half)
-        local xxmin  =            full  * bpfactor
-        local xxmax  = ( width  - full) * bpfactor
-        local yymax  = ( height - full) * bpfactor
-        local yymin  = (-depth  + full) * bpfactor
-              line   =            line  * bpfactor
-        if xxmin <= xxmax and yymin <= yymax then
-            local list = nil
-            if method == 0 then
+        local xxmin  = 0
+        local xxmax  =  width * bpfactor
+        local yymax  = height * bpfactor
+        local yymin  = -depth * bpfactor
+        local xmin   = xxmin + half
+        local xmax   = xxmax - half
+        local ymax   = yymax - half
+        local ymin   = yymin + half
+        local list   = nil
+        if radius == 0 then
+            local method = linemapping[corner]
+            if method == "ltrb" then
                 list = {
-                    "q", line, "w", xxmin, ymin, "m", xxmax, ymin, "l", xmax, ymin, xmax, yymin, "y",
-                    xmax, yymax, "l", xmax, ymax, xxmax, ymax, "y", xxmin, ymax, "l", xmin, ymax,
-                    xmin, yymax, "y", xmin, yymin, "l", xmin, ymin, xxmin, ymin, "y", "h", how, "Q",
+                    "q", line, "w", xmin, ymin, "m", xmax, ymin, "l", xmax, ymax, "l", xmin, ymax,
+                    kind == "fill" and "l h f Q" or "l h S Q"
                 }
-            elseif method == 1 then
-                list = {
-                    "q", line, "w", xxmin, ymin, "m", xxmax, ymin, "l", xmax, ymin, xmax, yymin, "y",
-                    xmax, ymax, "l", xmin, ymax, "l", xmin, yymin, "l", xmin, ymin, xxmin, ymin, "y",
-                    "h", how, "Q",
-                }
-            elseif method == 2 then
-                list = {
-                    "q", line, "w", xxmin, ymin, "m", xmax, ymin, "l", xmax, ymax, "l", xxmin, ymax,
-                    "l", xmin, ymax, xmin, yymax, "y", xmin, yymin, "l", xmin, ymin, xxmin, ymin,
-                    "y", "h", how, "Q",
-                }
-            elseif method == 3 then
-                list = {
-                    "q", line, "w", xmin, ymin, "m", xmax, ymin, "l", xmax, yymax, "l", xmax, ymax,
-                    xxmax, ymax, "y", xxmin, ymax, "l", xmin, ymax, xmin, yymax, "y", xmin, ymin,
-                    "l", "h", how, "Q",
-                }
-
-            elseif method == 4 then
-                list = {
-                    "q", line, "w", xmin, ymin, "m", xxmax, ymin, "l", xmax, ymin, xmax, yymin, "y",
-                    xmax, yymax, "l", xmax, ymax, xxmax, ymax, "y", xmin, ymax, "l", xmin, ymin, "l",
-                    "h", how, "Q",
-                }
-            elseif method == 5 then
-                list = {
-                    "q", line, "w", xmin, ymin, "m", xmax, ymin, "l", xmax, yymax, "l", xmax, ymax,
-                    xxmax, ymax, "y", xmin, ymax, "l", xmin, ymin, "l", "h", how, "Q",
-                }
-            elseif method == 6 then
-                list = {
-                    "q", line, "w", xmin, ymin, "m", xxmax, ymin, "l", xmax, ymin, xmax, yymin, "y",
-                    xmax, ymax, "l", xmin, ymax, "l", xmin, ymin, "l", "h", how, "Q",
-                }
-            elseif method == 7 then
-                list = {
-                    "q", line, "w", xxmin, ymin, "m", xmax, ymin, "l", xmax, ymax, "l", xmin, ymax,
-                    "l", xmin, yymin, "l", xmin, ymin, xxmin, ymin, "y", "h", how, "Q",
-                }
-            elseif method == 8 then
-                list = {
-                    "q", line, "w", xmin, ymin, "m", xmax, ymin, "l", xmax, ymax, "l", xxmin, ymax,
-                    "l", xmin, ymax, xmin, yymax, "y", xmin, ymin, "l", "h", how, "Q",
-                }
-            elseif method == 9 then
-                list = {
-                    "q", line, "w", xmin, ymax, "m", xmin, yymin, "l", xmin, ymin, xxmin, ymin, "y",
-                    xxmax, ymin, "l", xmax, ymin, xmax, yymin, "y", xmax, ymax, "l", how, "Q",
-                }
-            elseif method == 10 then
-                list = {
-                    "q", line, "w", xmax, ymax, "m", xxmin, ymax, "l", xmin, ymax, xmin, yymax, "y",
-                    xmin, yymin, "l", xmin, ymin, xxmin, ymin, "y", xmax, ymin, "l", how, "Q",
-                }
-            elseif method == 11 then
-                list = {
-                    "q", line, "w", xmax, ymin, "m", xmax, yymax, "l", xmax, ymax, xxmax, ymax, "y",
-                    xxmin, ymax, "l", xmin, ymax, xmin, yymax, "y", xmin, ymin, "l", how, "Q",
-                }
-            elseif method == 12 then
-                list = {
-                    "q", line, "w", xmin, ymax, "m", xxmax, ymax, "l", xmax, ymax, xmax, yymax, "y",
-                    xmax, yymin, "l", xmax, ymin, xxmax, ymin, "y", xmin, ymin, "l", how, "Q",
-                }
-            elseif method == 13 then
-                list = {
-                    "q", line, "w", xmin, ymax, "m", xxmax, ymax, "l", xmax, ymax, xmax, yymax, "y",
-                    xmax, ymin, "l", how, "Q",
-                }
-            elseif method == 14 then
-                list = {
-                    "q", line, "w", xmax, ymax, "m", xmax, yymin, "l", xmax, ymin, xxmax, ymin, "y",
-                    xmin, ymin, "l", how, "Q",
-                }
-            elseif method == 15 then
-                list = {
-                    "q", line, "w", xmax, ymin, "m", xxmin, ymin, "l", xmin, ymin, xmin, yymin, "y",
-                    xmin, ymax, "l", how, "Q",
-                }
-            elseif method == 16 then
-                list = {
-                    "q", line, "w", xmin, ymin, "m", xmin, yymax, "l", xmin, ymax, xxmin, ymax, "y",
-                    xmax, ymax, "l", how, "Q",
-                }
-            elseif method == 17 then
-                list = {
-                    "q", line, "w", xxmax, ymax, "m", xmax, ymax, xmax, yymax, "y", how, "Q",
-                }
-            elseif method == 18 then
-                list = {
-                    "q", line, "w", xmax, yymin, "m", xmax, ymin, xxmax, ymin, "y", how, "Q",
-                }
-            elseif method == 19 then
-                list = {
-                    "q", line, "w", xxmin, ymin, "m", xmin, ymin, xmin, yymin, "y", how, "Q",
-                }
-            elseif method == 20 then
-                list = {
-                    "q", line, "w", xmin, yymax, "m", xmin, ymax, xxmin, ymax, "y", how, "Q",
-                }
-            elseif method == 21 then
-                list = {
-                    "q", line, "w", xxmax, ymax, "m", xmax, ymax, xmax, yymax, "y", xmin, yymax, "m",
-                    xmin, ymax, xxmin, ymax, "y", how, "Q",
-                }
-            elseif method == 22 then
-                list = {
-                    "q", line, "w", xxmax, ymax, "m", xmax, ymax, xmax, yymax, "y", xmax, yymin, "m",
-                    xmax, ymin, xxmax, ymin, "y", how, "Q",
-                }
-            elseif method == 23 then
-                list = {
-                    "q", line, "w", xmax, yymin, "m", xmax, ymin, xxmax, ymin, "y", xxmin, ymin, "m",
-                    xmin, ymin, xmin, yymin, "y", how, "Q",
-                }
-            elseif method == 24 then
-                list = {
-                    "q", line, "w", xxmin, ymin, "m", xmin, ymin, xmin, yymin, "y", xmin, yymax, "m",
-                    xmin, ymax, xxmin, ymax, "y", how, "Q",
-                }
-            elseif method == 25 then
-                list = {
-                    "q", line, "w", xxmax, ymax, "m", xmax, ymax, xmax, yymax, "y", xmax, yymin, "m",
-                    xmax, ymin, xxmax, ymin, "y", xxmin, ymin, "m", xmin, ymin, xmin, yymin, "y",
-                    xmin, yymax, "m", xmin, ymax, xxmin, ymax, "y", how, "Q",
-                }
-            elseif method == 26 then
-                list = {
-                    "q", line, "w", xmax, yymin, "m", xmax, ymin, xxmax, ymin, "y", xmin, yymax, "m",
-                    xmin, ymax, xxmin, ymax, "y", how, "Q",
-                }
-
-            elseif method == 27 then
-                list = {
-                    "q", line, "w", xxmax, ymax, "m", xmax, ymax, xmax, yymax, "y", xxmin, ymin, "m",
-                    xmin, ymin, xmin, yymin, "y", how, "Q",
-                }
+            elseif method == "l" then
+                list = { "q", line, "w", xmin, yymin, "m", xmin, yymax, "l S Q" }
+            elseif method == "r" then
+                list = { "q", line, "w", xmax, yymin, "m", xmax, yymax, "l S Q" }
+            elseif method == "b" then
+                list = { "q", line, "w", xxmin, ymin, "m", xxmax, ymin, "l S Q" }
+            elseif method == "t" then
+                list = { "q", line, "w", xxmin, ymax, "m", xxmax, ymax, "l S Q" }
+            elseif method == "lr" then
+                list = { "q", line, "w", xmin, yymin, "m", xmin, yymax, "l", xmax, yymin, "m", xmax, yymax, "l S Q" }
+            elseif method == "tb" then
+                list = { "q", line, "w", xxmin, ymin, "m", xxmax, ymin, "l", xxmin, ymax, "m", xxmax, ymax, "l S Q" }
+            elseif method == "lbr" then
+                list = { "q", line, "w", xmin, yymax, "m", xmin, ymin, "l", xmax, ymin, "l", xmax, yymax, "l S Q" }
+            elseif method == "tlb" then
+                list = { "q", line, "w", xxmax, ymax, "m", xmin, ymax, "l", xmin, ymin, "l", xxmax, ymin, "l S Q" }
+            elseif method == "ltr" then
+                list = { "q", line, "w", xmin, yymin, "m", xmin, ymax, "l", xmax, ymax, "l", xmax, yymin, "l S Q" }
+            elseif method == "lbr" then
+                list = { "q", line, "w", xxmin, ymax, "m", xmax, ymax, "l", xmax, ymin, "l", xxmin, ymin, "l S Q" }
+            elseif method == "rt" then
+                list = { "q", line, "w", xxmin, ymax, "m", xmax, ymax, "l", xmax, yymin, "l S Q" }
+            elseif method == "rb" then
+                list = { "q", line, "w", xmax, yymax, "m", xmax, ymin, "l", xxmin, ymin, "l S Q" }
+            elseif method == "bl" then
+                list = { "q", line, "w", xxmax, ymin, "m", xmin, ymin, "l", xmin, yymax, "l S Q" }
+            elseif method == "tl" then
+                list = { "q", line, "w", xmin, yymin, "m", xmin, ymax, "l", xxmax, ymax, "l S Q" }
+            else
+                return
             end
-            pdfprint("direct",concat(list," "))
+        else
+            local method = roundmapping[corner]
+            local done   = kind ~= "fill" and "h S Q" or "h f Q" -- todo
+            local full   = ( radius + half)
+            local xxxmin =            full  * bpfactor
+            local xxxmax = ( width  - full) * bpfactor
+            local yyymax = ( height - full) * bpfactor
+            local yyymin = (-depth  + full) * bpfactor
+            if xxxmin > xxxmax or yyymin > yyymax then
+                return
+            elseif method == "ltrb" then
+                list = {
+                    "q", line, "w", xxxmin, ymin, "m", xxxmax, ymin, "l", xmax, ymin, xmax, yyymin, "y", xmax, yyymax, "l", xmax, ymax, xxxmax, ymax, "y",
+                    xxxmin, ymax, "l", xmin, ymax, xmin, yyymax, "y", xmin, yyymin, "l", xmin, ymin, xxxmin, ymin, "y", done,
+                }
+            elseif method == "1" then -- ll lr
+                list = { "q", line, "w", xxxmin, ymin, "m", xxxmax, ymin, "l", xmax, ymin, xmax, yyymin, "y", xmax, ymax, "l", xmin, ymax, "l", xmin, yyymin, "l", xmin, ymin, xxxmin, ymin, "y", done }
+            elseif method == "2" then -- ll ul
+                list = { "q", line, "w", xxxmin, ymin, "m", xmax, ymin, "l", xmax, ymax, "l", xxxmin, ymax, "l", xmin, ymax, xmin, yyymax, "y", xmin, yyymin, "l", xmin, ymin, xxxmin, ymin, "y", done }
+            elseif method == "3" then -- ul ur
+                list = { "q", line, "w", xmin, ymin, "m", xmax, ymin, "l", xmax, yyymax, "l", xmax, ymax, xxxmax, ymax, "y", xxxmin, ymax, "l", xmin, ymax, xmin, yyymax, "y", xmin, ymin, "l", done }
+            elseif method == "4" then -- ur lr
+                list = { "q", line, "w", xmin, ymin, "m", xxxmax, ymin, "l", xmax, ymin, xmax, yyymin, "y", xmax, yyymax, "l", xmax, ymax, xxxmax, ymax, "y", xmin, ymax, "l", xmin, ymin, "l", done }
+            elseif method == "5" then -- ur
+                list = { "q", line, "w", xmin, ymin, "m", xmax, ymin, "l", xmax, yyymax, "l", xmax, ymax, xxxmax, ymax, "y", xmin, ymax, "l", xmin, ymin, "l", done }
+            elseif method == "6" then -- lr
+                list = { "q", line, "w", xmin, ymin, "m", xxxmax, ymin, "l", xmax, ymin, xmax, yyymin, "y", xmax, ymax, "l", xmin, ymax, "l", xmin, ymin, "l", done }
+            elseif method == "7" then --
+                list = { "q", line, "w", xxxmin, ymin, "m", xmax, ymin, "l", xmax, ymax, "l", xmin, ymax, "l", xmin, yyymin, "l", xmin, ymin, xxxmin, ymin, "y", done } -- outlier
+            elseif method == "8" then -- ul
+                list = { "q", line, "w", xmin, ymin, "m", xmax, ymin, "l", xmax, ymax, "l", xxxmin, ymax, "l", xmin, ymax, xmin, yyymax, "y", xmin, ymin, "l", done }
+            elseif method == "lbr" then
+                list = { "q", line, "w", xmin, yymax, "m", xmin, yyymin, "l", xmin, ymin, xxxmin, ymin, "y", xxxmax, ymin, "l", xmax, ymin, xmax, yyymin, "y", xmax, yymax, "l S Q" }
+            elseif method == "tlb" then
+                list = { "q", line, "w", xxmax, ymax, "m", xxxmin, ymax, "l", xmin, ymax, xmin, yyymax, "y", xmin, yyymin, "l", xmin, ymin, xxxmin, ymin, "y", xxmax, ymin, "l S Q" }
+            elseif method == "ltr" then
+                list = { "q", line, "w", xmax, yymin, "m", xmax, yyymax, "l", xmax, ymax, xxxmax, ymax, "y", xxxmin, ymax, "l", xmin, ymax, xmin, yyymax, "y", xmin, yymin, "l S Q" }
+            elseif method == "lbr" then
+                list = { "q", line, "w", xxmin, ymax, "m", xxxmax, ymax, "l", xmax, ymax, xmax, yyymax, "y", xmax, yyymin, "l", xmax, ymin, xxxmax, ymin, "y", xxmin, ymin, "l S Q" }
+            elseif method == "lr" then
+                list = { "q", line, "w", xxxmin, ymin, "m", xmin, ymin, xmin, yyymin, "y", xmin, yyymax, "l", xmin, ymax, xxxmin, ymax, "y",
+                                         xxxmax, ymax, "m", xmax, ymax, xmax, yyymax, "y", xmax, yyymin, "l", xmax, ymin, xxxmax, ymin, "y S Q" }
+            elseif method == "tb" then
+                list = { "q", line, "w", xmax, yyymin, "m", xmax, ymin, xxxmax, ymin, "y", xxxmin, ymin, "l", xmin, ymin, xmin, yyymin, "y",
+                                         xmax, yyymax, "m", xmax, ymax, xxxmax, ymax, "y", xxxmin, ymax, "l", xmin, ymax, xmin, yyymax, "y S Q" }
+            elseif method == "rt" then
+                list = { "q", line, "w", xxmin, ymax, "m", xxxmax, ymax, "l", xmax, ymax, xmax, yyymax, "y", xmax, yymin, "l S Q" }
+            elseif method == "rb" then
+                list = { "q", line, "w", xmax, yymax, "m", xmax, yyymin, "l", xmax, ymin, xxxmax, ymin, "y", xxmin, ymin, "l S Q" }
+            elseif method == "bl" then
+                list = { "q", line, "w", xxmax, ymin, "m", xxxmin, ymin, "l", xmin, ymin, xmin, yyymin, "y", xmin, yymax, "l S Q" }
+            elseif method == "tl" then
+                list = { "q", line, "w", xmin, yymin, "m", xmin, yyymax, "l", xmin, ymax, xxxmin, ymax, "y", xxmax, ymax, "l S Q" }
+            elseif method == "17" then -- urx
+                list = { "q", line, "w", xxxmax, ymax, "m", xmax, ymax, xmax, yyymax, "y S Q" }
+            elseif method == "18" then -- lrt
+                list = { "q", line, "w", xmax, yyymin, "m", xmax, ymin, xxxmax, ymin, "y S Q" }
+            elseif method == "19" then -- llx
+                list = { "q", line, "w", xxxmin, ymin, "m", xmin, ymin, xmin, yyymin, "y S Q" }
+            elseif method == "20" then -- urx
+                list = { "q", line, "w", xmin, yyymax, "m", xmin, ymax, xxxmin, ymax, "y S Q" }
+            elseif method == "21" then -- ulx urx
+                list = { "q", line, "w", xmax, yyymax, "m", xmax, ymax, xxxmax, ymax, "y", xxxmin, ymax, "m", xmin, ymax, xmin, yyymax, "y S Q" }
+            elseif method == "22" then -- urt lrt
+                list = { "q", line, "w", xxxmax, ymax, "m", xmax, ymax, xmax, yyymax, "y", xmax, yyymin, "m", xmax, ymin, xxxmax, ymin, "y S Q" }
+            elseif method == "23" then -- llx lrx
+                list = { "q", line, "w", xmax, yyymin, "m", xmax, ymin, xxxmax, ymin, "y", xxxmin, ymin, "m", xmin, ymin, xmin, yyymin, "y S Q" }
+            elseif method == "24" then -- ulx llx
+                list = { "q", line, "w", xxxmin, ymin, "m", xmin, ymin, xmin, yyymin, "y", xmin, yyymax, "m", xmin, ymax, xxxmin, ymax, "y S Q" }
+            elseif method == "25" then -- llx lrx urx ulx
+                list = {
+                    "q", line, "w", xxxmax, ymax, "m", xmax, ymax, xmax, yyymax, "y", xmax, yyymin, "m", xmax, ymin, xxxmax, ymin, "y", xxxmin, ymin, "m",
+                    xmin, ymin, xmin, yyymin, "y", xmin, yyymax, "m", xmin, ymax, xxxmin, ymax, "y S Q",
+                }
+            elseif method == "26" then
+                list = { "q", line, "w", xmax, yyymin, "m", xmax, ymin, xxxmax, ymin, "y", xmin, yyymax, "m", xmin, ymax, xxxmin, ymax, "y S Q" }
+            elseif method == "27" then
+                list = { "q", line, "w", xxxmax, ymax, "m", xmax, ymax, xmax, yyymax, "y", xxxmin, ymin, "m", xmin, ymin, xmin, yyymin, "y S Q" }
+            elseif method == "l" then
+                list = { "q", line, "w", xxxmin, ymin, "m", xmin, ymin, xmin, yyymin, "y", xmin, yyymax, "l", xmin, ymax, xxxmin, ymax, "y S Q" }
+            elseif method == "r" then
+                list = { "q", line, "w", xxxmax, ymax, "m", xmax, ymax, xmax, yyymax, "y", xmax, yyymin, "l", xmax, ymin, xxxmax, ymin, "y S Q" }
+            elseif method == "b" then
+                list = { "q", line, "w", xmax, yyymin, "m", xmax, ymin, xxxmax, ymin, "y", xxxmin, ymin, "l", xmin, ymin, xmin, yyymin, "y S Q" }
+            elseif method == "t" then
+                list = { "q", line, "w", xmax, yyymax, "m", xmax, ymax, xxxmax, ymax, "y", xxxmin, ymax, "l", xmin, ymax, xmin, yyymax, "y S Q" }
+            else
+                return
+            end
         end
+        pdfprint("direct",concat(list," "))
     end
 
     local f_rectangle = formatters["q %.6N w %.6N %.6N %.6N %.6N re %s Q"]
@@ -366,8 +409,9 @@ h %s Q]]
         ]
 
     local rule_any = function(p,h,v,i,n)
-        if p.corner then
-            return round(p,i)
+        local corner = p.corner
+        if corner then
+            return round(p,i,corner)
         else
             local l = (p.line or 65536)*bpfactor
             local r = p and (p.radius or 0)*bpfactor or 0

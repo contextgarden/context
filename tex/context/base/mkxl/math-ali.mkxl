@@ -2112,8 +2112,8 @@
 %D $<\limits^a$
 %D \stoptyping
 
-\permanent\protected\def\overset #1#2{#2\limits\normalsuperscript{#1}}
-\permanent\protected\def\underset#1#2{#2\limits\normalsubscript  {#1}}
+\permanent\protected\def\overset #1#2{\mathrel{#2}\limits\normalsuperscript{#1}}
+\permanent\protected\def\underset#1#2{\mathrel{#2}\limits\normalsubscript  {#1}}
 
 %D The following code comes from \type {math-str.mkiv}.
 %D
@@ -2133,13 +2133,14 @@
 
 \def\strc_math_flush_number_box{\box\b_strc_formulas_number}
 
+% \newdimension  \d_strc_math_display_width
+% \newdimension  \d_strc_math_indent
+% \newconditional\c_strc_math_indent
+
 \newconditional\c_strc_math_display_overflow
 \newconstant   \c_strc_math_number_location
 \newconstant   \c_strc_math_number_variant
-\newdimension  \d_strc_math_display_width
 \newconstant   \c_strc_formulas_frame_mode
-\newdimension  \d_strc_math_indent
-\newconditional\c_strc_math_indent
 \newdimension  \d_strc_math_framed_width
 
 \defcsname\??formulaoption\v!frame\endcsname

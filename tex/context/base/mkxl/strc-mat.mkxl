@@ -1352,13 +1352,6 @@
 
 % a limitation is that this only works in a regular setting, so no shapes
 
-\newinteger  \c_strc_math_n_of_lines
-\newdimension\d_strc_math_max_width
-\newdimension\d_strc_math_first_width
-\newdimension\d_strc_math_last_width
-\newdimension\d_strc_math_first_height
-\newdimension\d_strc_math_last_depth
-
 \appendtoks
     \global\d_strc_math_indent      \zeropoint
     \global\c_strc_math_n_of_lines  \zerocount

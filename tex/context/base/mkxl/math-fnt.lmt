@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['math-fnt'] = {
     license   = "see context related readme files"
 }
 
+local round = math.round
+
 local nuts          = nodes.nuts
 local tonut         = nodes.tonut
 local tonode        = nodes.tonode
@@ -33,7 +35,9 @@ local addcharacters = font.addcharacters
 local function register_extensible(font,char,style,box)
     -- We don't share (yet)!
     local bx = tonut(box)
+    updaters.apply("tagging.state.disable") -- fast enough
     nodes.handlers.finalizelist(bx)
+    updaters.apply("tagging.state.enable")
     local id = getid(bx)
     local al = getattrlst(bx)
     local wd, ht, dp = getwhd(bx)
@@ -49,10 +53,24 @@ local function register_extensible(font,char,style,box)
     --
     local private  = fonts.helpers.setboxdirectly(font,unicode,box)
     -- we saved a scaled glyph stream so we now use an unscaled one ...
-    local g = new_glyph(font,private,al)
-    if fonts.hashes.properties[font].compactmath then
-        nuts.setscales(g,1000,1000,1000)
-    end
+    local p  = fonts.hashes.parameters[font]
+    local g  = new_glyph(font,private,al)
+--     if fonts.hashes.properties[font].compactmath then
+--         nuts.setscales(g,1000,1000,1000)
+--     end
+    -- nasty, testcase: bold math sqrt extensible
+    local sx = round(1000/p.extendfactor)
+    local sy = round(1000/p.squeezefactor)
+    nuts.setscales(g,1000,sx,sy)
+    -- horrible
+if sx ~= 1000 then
+    wd = wd * 7200/7227
+end
+if sy ~= 1000 then
+    ht = ht * 7200/7227
+    dp = dp * 7200/7227
+end
+    --
     local n = new_hlist(g)
     --
     if newcommands then

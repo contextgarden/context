@@ -56,7 +56,7 @@ interfaces.implement {
         { "radius", "dimension" },
         { "corner", "string" },
     } } ,
-    actions = function(t,...)
+    actions = function(t)
         local rule = userrule(t)
         if t.type == "mp" then
             t.ma = getattribute(a_colormodel) or 1
@@ -65,22 +65,23 @@ interfaces.implement {
         else
             setattrlist(rule,true)
         end
-        context(nuts.tonode(rule))
+        context(tonode(rule))
     end
 }
 
 interfaces.implement {
-    name      = "outlinerule",
-    public    = true,
+    name      = "roundedoutline",
     protected = true,
-    arguments = { {
-        { "width",  "dimension" },
-        { "height", "dimension" },
-        { "depth",  "dimension" },
-        { "line",   "dimension" },
-    } } ,
-    actions = function(t)
-        local rule = outlinerule(t.width,t.height,t.depth,t.line)
+    arguments = { "dimension", "dimension", "dimension", "dimension", "dimension", "string" },
+    actions   = function(w,h,d,l,r,c)
+        local rule = userrule {
+            width  = w,
+            height = h,
+            depth  = d,
+            line   = l,
+            radius = r,
+            corner = c,
+        }
         setattrlist(rule,true)
         context(tonode(rule))
     end

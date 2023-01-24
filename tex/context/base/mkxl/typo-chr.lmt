@@ -228,6 +228,8 @@ interfaces.implement {
 
 -- not needed in lmtx ...
 
+local c_syst_last_node_id = tex.iscount("c_syst_last_node_id")
+
 interfaces.implement {
     name    = "lastnodeid",
     actions = function()
@@ -239,7 +241,7 @@ interfaces.implement {
                 okay = tail.id
             end
         end
-        texsetcount("c_syst_last_node_id",okay)
+        texsetcount(c_syst_last_node_id,okay)
     end,
 }
 

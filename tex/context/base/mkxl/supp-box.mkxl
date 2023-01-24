@@ -15,8 +15,6 @@
 
 \unprotect
 
-\registerctxluafile{supp-box}{autosuffix,optimize}
-
 \permanent\integerdef\negatelistsigncode\numexpr
     \negatexlistsigncode
    +\negateylistsigncode
@@ -31,6 +29,12 @@
 \newdimension\givenwidth
 \newdimension\givenheight
 \newdimension\givendepth
+
+\newdimension\lastnaturalboxwd  % maybe alias !
+\newdimension\lastnaturalboxht
+\newdimension\lastnaturalboxdp
+
+\registerctxluafile{supp-box}{autosuffix,optimize}
 
 % \fixupboxesmode\plusone % gone: is now the default
 
@@ -2761,9 +2765,9 @@
 %D \setbox0\hbox to 10cm{foo} \the\naturalwd0
 %D \stoptyping
 
-\newdimension\lastnaturalboxwd
-\newdimension\lastnaturalboxht
-\newdimension\lastnaturalboxdp
+% \newdimension\lastnaturalboxwd
+% \newdimension\lastnaturalboxht
+% \newdimension\lastnaturalboxdp
 
 %D We can define these public in lua:
 

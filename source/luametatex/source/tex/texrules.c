@@ -4,19 +4,19 @@
 
 # include "luametatex.h"
 
-halfword tex_aux_scan_rule_spec(rule_types t, halfword s)
+halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
 {
     /*tex |width|, |depth|, and |height| all equal |null_flag| now */
-    halfword rule = tex_new_rule_node((quarterword) s);
+    halfword rule = tex_new_rule_node((quarterword) code);
     halfword attr = node_attr(rule);
-    switch (t) {
+    switch (type) {
         case h_rule_type:
             rule_height(rule) = default_rule;
             rule_depth(rule) = 0;
             break;
         case v_rule_type:
         case m_rule_type:
-            if (s == strut_rule_code) {
+            if (code == strut_rule_code) {
                 rule_width(rule) = 0;
                 node_subtype(rule) = strut_rule_subtype;
             } else {
@@ -124,8 +124,17 @@ halfword tex_aux_scan_rule_spec(rule_types t, halfword s)
     }
   DONE:
     node_attr(rule) = attr;
-    if (t == v_rule_type && s == strut_rule_code) {
+    if (type == v_rule_type && code == strut_rule_code) {
         tex_aux_check_text_strut_rule(rule, text_style);
+    }
+    if (code == virtual_rule_code) { 
+        rule_data(rule) = rule_width(rule);
+        rule_left(rule) = rule_height(rule);
+        rule_right(rule) = rule_depth(rule);
+        rule_width(rule) = 0;
+        rule_height(rule) = 0;
+        rule_depth(rule) = 0;
+        node_subtype(rule) = virtual_rule_subtype;
     }
     return rule;
 }

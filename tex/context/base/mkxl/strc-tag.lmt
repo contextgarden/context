@@ -182,34 +182,34 @@ local properties     = allocate { -- todo: more "record = true" to improve forma
     margintext            = { pdf = "Span",       nature = "inline"  },
     marginanchor          = { pdf = "Span",       nature = "inline"  },
 
-    math                  = { pdf = "Div",        nature = "inline"  }, -- no display
-    mn                    = { pdf = "Span",       nature = "mixed"   },
-    mi                    = { pdf = "Span",       nature = "mixed"   },
-    mo                    = { pdf = "Span",       nature = "mixed"   },
-    ms                    = { pdf = "Span",       nature = "mixed"   },
-    mrow                  = { pdf = "Span",       nature = "display" },
-    msubsup               = { pdf = "Span",       nature = "display" },
-    msub                  = { pdf = "Span",       nature = "display" },
-    msup                  = { pdf = "Span",       nature = "display" },
-    merror                = { pdf = "Span",       nature = "mixed"   },
-    munderover            = { pdf = "Span",       nature = "display" },
-    munder                = { pdf = "Span",       nature = "display" },
-    mover                 = { pdf = "Span",       nature = "display" },
-    mtext                 = { pdf = "Span",       nature = "mixed"   },
-    mfrac                 = { pdf = "Span",       nature = "display" },
-    mroot                 = { pdf = "Span",       nature = "display" },
-    msqrt                 = { pdf = "Span",       nature = "display" },
-    mfenced               = { pdf = "Span",       nature = "display" },
-    maction               = { pdf = "Span",       nature = "display" },
+    math                  = { pdf = "Div",        nature = "inline",  namespace = "mathml" }, -- no display
+    mn                    = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
+    mi                    = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
+    mo                    = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
+    ms                    = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
+    mrow                  = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    msubsup               = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    msub                  = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    msup                  = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    merror                = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
+    munderover            = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    munder                = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    mover                 = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    mtext                 = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
+    mfrac                 = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    mroot                 = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    msqrt                 = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    mfenced               = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    maction               = { pdf = "Span",       nature = "display", namespace = "mathml" },
 
     mstacker              = { pdf = "Span",       nature = "display" }, -- these are only internally used
     mstackertop           = { pdf = "Span",       nature = "display" }, -- these are only internally used
     mstackerbot           = { pdf = "Span",       nature = "display" }, -- these are only internally used
     mstackermid           = { pdf = "Span",       nature = "display" }, -- these are only internally used
 
-    mtable                = { pdf = "Table",      nature = "display" }, -- might change
-    mtr                   = { pdf = "TR",         nature = "display" }, -- might change
-    mtd                   = { pdf = "TD",         nature = "display" }, -- might change
+    mtable                = { pdf = "Table",      nature = "display", namespace = "mathml" }, -- might change
+    mtr                   = { pdf = "TR",         nature = "display", namespace = "mathml" }, -- might change
+    mtd                   = { pdf = "TD",         nature = "display", namespace = "mathml" }, -- might change
 
     ignore                = { pdf = "Span",       nature = "mixed"   }, -- used internally
     private               = { pdf = "Span",       nature = "mixed"   }, -- for users (like LS) when they need it
@@ -576,7 +576,8 @@ implement {
     public    = true,
     protected = true,
     actions   = tags.setproperty,
-    arguments = { "optional", "'backend'", "optional" },
+--     arguments = { "optional", "'backend'", "optional" },
+    arguments = { "optional", "'pdf'", "optional" },
 }
 
 implement {

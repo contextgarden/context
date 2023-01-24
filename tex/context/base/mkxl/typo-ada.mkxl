@@ -13,8 +13,6 @@
 
 \writestatus{loading}{ConTeXt Typesetting Macros / Adaptive}
 
-\registerctxluafile{typo-ada}{autosuffix}
-
 % Musical timestamp: the postponed by COVID concert of Gazpacho in Zwolle NL: a joy
 % to see dedicated and talented musicians perform their work in perfection and as a
 % well balanced and equiped team.
@@ -35,6 +33,8 @@
 \aliasdimension\usedadaptivedepth \d_adaptive_depth
 \aliasdimension\usedadaptiveline  \d_adaptive_line
 \aliasdimension\usedadaptivehsize \d_adaptive_hsize
+
+\registerctxluafile{typo-ada}{autosuffix}
 
 \aliased\let\usedadaptivebox\b_adaptive_box
 

@@ -526,26 +526,76 @@ end
 
 -- this one will become: return catcode, d (etc)
 
+-- function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: spec table and then also depth
+--     if depth then
+--         depth = levelmap[depth] or tonumber(depth)
+--     end
+--     if not depth or depth == 0 then
+--         depth = data.depth
+--     end
+--     local data = data.status[depth]
+--     local d
+--     if data then
+--         if find(key,".",1,true) then
+--             d = accesstable(key,data)
+--         else
+--             d = data.titledata
+--             d = d and d[key]
+--         end
+--     end
+--     if d and type(d) ~= "table" then
+--         if honorcatcodetable == true or honorcatcodetable == v_auto then
+--             local metadata = data.metadata
+--             local catcodes = metadata and metadata.catcodes
+--             if catcodes then
+--                 ctx_sprint(catcodes,d)
+--             else
+--                 context(d)
+--             end
+--         elseif not honorcatcodetable or honorcatcodetable == "" then
+--             context(d)
+--         else
+--             local catcodes = catcodenumbers[honorcatcodetable]
+--             if catcodes then
+--                 ctx_sprint(catcodes,d)
+--             else
+--                 context(d)
+--             end
+--         end
+--     elseif default then
+--         context(default)
+--     end
+-- end
+
 function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: spec table and then also depth
+    local detail = false
+    if type(depth) == "string" then
+        depth, detail = string.splitup(depth,":")
+    end
     if depth then
         depth = levelmap[depth] or tonumber(depth)
     end
     if not depth or depth == 0 then
         depth = data.depth
     end
-    local data = data.status[depth]
+    local useddata
+    if detail == "+" then
+        useddata = structures.lists.collected[#structures.lists.tobesaved+1]
+    else
+        useddata = data.status[depth]
+    end
     local d
-    if data then
+    if useddata then
         if find(key,".",1,true) then
-            d = accesstable(key,data)
+            d = accesstable(key,useddata)
         else
-            d = data.titledata
+            d = useddata.titledata
             d = d and d[key]
         end
     end
     if d and type(d) ~= "table" then
         if honorcatcodetable == true or honorcatcodetable == v_auto then
-            local metadata = data.metadata
+            local metadata = useddata.metadata
             local catcodes = metadata and metadata.catcodes
             if catcodes then
                 ctx_sprint(catcodes,d)
@@ -567,20 +617,50 @@ function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: sp
     end
 end
 
+-- function sections.userdata(depth,key,default)
+--     if depth then
+--         depth = levelmap[depth] or tonumber(depth)
+--     end
+--     if not depth or depth == 0 then
+--         depth = data.depth
+--     end
+--     if depth > 0 then
+--         local userdata = data.status[depth]
+--         userdata = userdata and userdata.userdata
+--         userdata = (userdata and userdata[key]) or default
+--         if userdata then
+--             context(userdata)
+--         end
+--     end
+-- end
+
 function sections.userdata(depth,key,default)
+    local detail = false
+    if type(depth) == "string" then
+        depth, detail = string.splitup(depth,":")
+    end
     if depth then
-        depth = levelmap[depth] or tonumber(depth)
+        depth = levelmap[depth]
+    end
+    if not depth then
+        depth = tonumber(depth)
     end
     if not depth or depth == 0 then
         depth = data.depth
     end
-    if depth > 0 then
-        local userdata = data.status[depth]
-        userdata = userdata and userdata.userdata
-        userdata = (userdata and userdata[key]) or default
+    local userdata
+    if detail == "+" then
+        userdata = structures.lists.collected[#structures.lists.tobesaved+1]
         if userdata then
-            context(userdata)
+            userdata = userdata.userdata
         end
+    elseif depth > 0 then
+        userdata = data.status[depth]
+        userdata = userdata and userdata.userdata
+    end
+    userdata = (userdata and userdata[key]) or default
+    if userdata then
+        context(userdata)
     end
 end
 

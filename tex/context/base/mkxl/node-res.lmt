@@ -77,7 +77,7 @@ local setleader    = nuts.setleader
 local setclass     = nuts.setclass
 
 local setdata      = nuts.setdata
-local setruledata  = nuts.setruledata
+local setoffsets   = nuts.setoffsets
 local setvalue     = nuts.setvalue
 
 local copy_nut     = nuts.copyonly
@@ -188,6 +188,7 @@ local userrule          = register_nut(new_nut(rule_code,rulecodes.user))    -- 
 local outlinerule       = register_nut(new_nut(rule_code,rulecodes.outline)) -- setdirection(rule, lefttoright_code)
 local imagerule         = register_nut(new_nut(rule_code,rulecodes.image))   -- setdirection(rule, lefttoright_code)
 local boxrule           = register_nut(new_nut(rule_code,rulecodes.box))     -- setdirection(rule, lefttoright_code)
+local virtualrule       = register_nut(new_nut(rule_code,rulecodes.virtual)) -- setdirection(rule, lefttoright_code)
 local hlist             = register_nut(new_nut(nodecodes.hlist))                setdirection(hlist,lefttoright_code)
 local vlist             = register_nut(new_nut(nodecodes.vlist))                setdirection(vlist,lefttoright_code)
 
@@ -382,7 +383,7 @@ function nutpool.outlinerule(width,height,depth,line) -- w/h/d == nil will let t
         setwhd(n,width,height,depth)
     end
     if line then
-        setruledata(n,round(line)) -- has to be an integer
+        setdata(n,round(line)) -- has to be an integer
     end
     return n
 end
@@ -399,6 +400,15 @@ function nutpool.boxrule(width,height,depth) -- w/h/d == nil will let them adapt
     local n = copy_nut(boxrule)
     if width or height or depth then
         setwhd(n,width,height,depth)
+    end
+    return n
+end
+
+function nutpool.virtualrule(width,height,depth) -- w/h/d == nil will let them adapt
+    local n = copy_nut(virtualrule)
+    if width or height or depth then
+        setdata(n,width)
+        setoffsets(n,nil,nil,height,depth)
     end
     return n
 end

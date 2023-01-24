@@ -1326,14 +1326,14 @@ static halfword register_extensible(halfword fnt, halfword chr, int size, halfwo
 {
     int callback_id = lmt_callback_defined(register_extensible_callback);
     if (callback_id > 0) {
-        halfword b = null;
-        lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dddN->N", fnt, chr, size, result, &b);
-        if (b) {
-            switch (node_type(b)) {
+        halfword boxed = null;
+        lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dddN->N", fnt, chr, size, result, &boxed);
+        if (boxed) {
+            switch (node_type(boxed)) {
                 case hlist_node:
                 case vlist_node:
-                    tex_attach_attribute_list_attribute(b, att);
-                    return b;
+                    tex_attach_attribute_list_attribute(boxed, att); /* yes or no */
+                    return boxed;
                 default:
                     tex_formatted_error("fonts", "invalid extensible character %U registered for font %F, [h|v]list expected", chr, fnt);
                     break;
@@ -1425,10 +1425,12 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
                                 goto FOUND;
                             }
                         }
-                        if (tex_char_has_tag_from_font(curfnt, curchr, extensible_tag)) {
-                            fnt = curfnt;
-                            chr = curchr;
-                            do_parts = 1;
+                       if (tex_char_has_tag_from_font(curfnt, curchr, extensible_tag)) {
+                            if (flat ? tex_char_has_tag_from_font(curfnt, curchr, horizontal_tag) : tex_char_has_tag_from_font(curfnt, curchr, vertical_tag)) {
+                                fnt = curfnt;
+                                chr = curchr;
+                                do_parts = 1;
+                            }
                             goto FOUND;
                         } else if (count > 1000) {
                             tex_formatted_warning("fonts", "endless loop in extensible character %U of font %F", curchr, curfnt);
@@ -2142,7 +2144,6 @@ static void tex_aux_make_over(halfword target, halfword style, halfword size, ha
         extensibles. The order is: kern, rule, gap, content.
 
     */
-    halfword result;
     scaled thickness = tex_get_math_y_parameter_checked(style, math_parameter_overbar_rule);
     scaled vgap = tex_get_math_y_parameter_checked(style, math_parameter_overbar_vgap);
     scaled kern = tex_get_math_y_parameter_checked(style, math_parameter_overbar_kern);
@@ -2152,14 +2153,16 @@ static void tex_aux_make_over(halfword target, halfword style, halfword size, ha
             thickness = t;
         }
     }
-    result = tex_aux_overbar(
-        tex_aux_clean_box(noad_nucleus(target), tex_math_style_variant(style, math_parameter_over_line_variant), style, math_nucleus_list, 0, NULL),
-        vgap, thickness, kern,
-        get_attribute_list(noad_nucleus(target)), math_over_rule_subtype, size, fam
-    );
-    node_subtype(result) = math_over_list;
-    kernel_math_list(noad_nucleus(target)) = result;
-    node_type(noad_nucleus(target)) = sub_box_node;
+    {
+        halfword result = tex_aux_overbar(
+            tex_aux_clean_box(noad_nucleus(target), tex_math_style_variant(style, math_parameter_over_line_variant), style, math_nucleus_list, 0, NULL),
+            vgap, thickness, kern,
+            get_attribute_list(noad_nucleus(target)), math_over_rule_subtype, size, fam
+        );
+        node_subtype(result) = math_over_list;
+        kernel_math_list(noad_nucleus(target)) = result;
+        node_type(noad_nucleus(target)) = sub_box_node;
+    }
 }
 
 static void tex_aux_make_under(halfword target, halfword style, halfword size, halfword fam)
@@ -2171,7 +2174,6 @@ static void tex_aux_make_under(halfword target, halfword style, halfword size, h
         rule, kern.
 
     */
-    halfword result;
     scaled thickness = tex_get_math_y_parameter_checked(style, math_parameter_underbar_rule);
     scaled vgap = tex_get_math_y_parameter_checked(style, math_parameter_underbar_vgap);
     scaled kern = tex_get_math_y_parameter_checked(style, math_parameter_underbar_kern);
@@ -2181,14 +2183,16 @@ static void tex_aux_make_under(halfword target, halfword style, halfword size, h
             thickness = t;
         }
     }
-    result = tex_aux_underbar(
-        tex_aux_clean_box(noad_nucleus(target), tex_math_style_variant(style, math_parameter_under_line_variant), style, math_nucleus_list, 0, NULL),
-        vgap, thickness, kern,
-        get_attribute_list(noad_nucleus(target)), math_under_rule_subtype, size, fam
-    );
-    node_subtype(result) = math_over_list;
-    kernel_math_list(noad_nucleus(target)) = result;
-    node_type(noad_nucleus(target)) = sub_box_node;
+    { 
+        halfword result = tex_aux_underbar(
+            tex_aux_clean_box(noad_nucleus(target), tex_math_style_variant(style, math_parameter_under_line_variant), style, math_nucleus_list, 0, NULL),
+            vgap, thickness, kern,
+            get_attribute_list(noad_nucleus(target)), math_under_rule_subtype, size, fam
+        );
+        node_subtype(result) = math_over_list;
+        kernel_math_list(noad_nucleus(target)) = result;
+        node_type(noad_nucleus(target)) = sub_box_node;
+    }
 }
 
 /*tex

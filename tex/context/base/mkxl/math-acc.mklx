@@ -157,6 +157,8 @@
 \definemathtopaccent[\v!top:\v!stretch][widetilde]["0303]
 \definemathtopaccent[\v!top:\v!stretch][widedddot]["20DB]
 
+\definemathtopaccent[\v!top:\v!stretch][vec]      ["20D7] % clumsy notation for vectors
+
 \aliased\let\mathring\ring % for a while
 
 \popoverloadmode

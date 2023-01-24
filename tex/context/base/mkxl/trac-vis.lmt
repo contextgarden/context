@@ -93,6 +93,7 @@ local pt_factor           = number.dimenfactors.pt
 
 local nodepool            = nuts.pool
 local new_rule            = nodepool.rule
+local new_virtual_rule    = nodepool.virtualrule
 local new_kern            = nodepool.kern
 local new_glue            = nodepool.glue
 local new_hlist           = nodepool.hlist
@@ -249,6 +250,12 @@ local function enable()
     tex.setcount("global","c_syst_visualizers_state",1) -- so that we can optimize at the tex end
 end
 
+function visualizers.enable()
+    if not enabled then
+        enable()
+    end
+end
+
 local function setvisual(n,a,what,list) -- this will become more efficient when we have the bit lib linked in
     if not n or n == "reset" then
         return unsetvalue
@@ -400,33 +407,88 @@ directives.register("visualizers.fraction", function(v) fraction = (v and tonumb
 
 -- ... if okay it will replace the current hpack_string in node_typ
 
+-- local function sometext(str,layer,color,textcolor,lap,variant)
+--     local text = hpack_string(str,usedfont)
+--     local size = getwidth(text)
+--     local rule = new_rule(size,2*exheight,exheight/2)
+--     local kern = new_kern(-size)
+--     if color then
+--         setcolor(rule,color)
+--     end
+--     if textcolor then
+--         setlistcolor(getlist(text),textcolor)
+--     end
+--     local info = setlink(rule,kern,text)
+--     setlisttransparency(info,"trace:g")
+--     info = hpack_nodes(info)
+--     local width = getwidth(info)
+--     if variant then
+--         setoffsets(info,0,variant*exheight)
+--     end
+--     if lap then
+--         info = new_hlist(setlink(new_kern(-width),info)) -- use xoffset and set info wd to 0
+--     else
+--         info = new_hlist(info) -- a bit overkill: double wrapped
+--     end
+--     if layer then
+--         setattr(info,a_layer,layer)
+--     end
+--     return info, width
+-- end
+
+-- local function sometext(str,layer,color,textcolor,lap,variant)
+--     local text = hpack_string(str,usedfont)
+--     local size = getwidth(text)
+--     local rule = new_virtual_rule(size,2*exheight,exheight/2)
+--     if color then
+--         setcolor(rule,color)
+--     end
+--     if textcolor then
+--         setlistcolor(getlist(text),textcolor)
+--     end
+--     local info = setlink(rule,text)
+--     setlisttransparency(info,"trace:g")
+--     info = hpack_nodes(info)
+--     if variant then
+--         setoffsets(info,0,variant*exheight)
+--     end
+--     info = new_hlist(info) -- a bit overkill: double wrapped
+--     if lap then
+--         setoffsets(info,-size)
+--     end
+--     if layer then
+--         setattr(info,a_layer,layer)
+--     end
+--     return info, size
+-- end
+
 local function sometext(str,layer,color,textcolor,lap,variant)
     local text = hpack_string(str,usedfont)
     local size = getwidth(text)
-    local rule = new_rule(size,2*exheight,exheight/2)
-    local kern = new_kern(-size)
+    local rule = new_virtual_rule(size,2*exheight,exheight/2)
     if color then
         setcolor(rule,color)
     end
     if textcolor then
         setlistcolor(getlist(text),textcolor)
     end
-    local info = setlink(rule,kern,text)
+    local info = setlink(rule,text)
     setlisttransparency(info,"trace:g")
-    info = hpack_nodes(info)
-    local width = getwidth(info)
-    if variant then
-        setoffsets(info,0,variant*exheight)
-    end
+    info = new_hlist(info)
+    local x, y
     if lap then
-        info = new_hlist(setlink(new_kern(-width),info))
-    else
-        info = new_hlist(info) -- a bit overkill: double wrapped
+        x = -size
+    end
+    if variant then
+        y = variant * exheight
+    end
+    if x or y then
+        setoffsets(info,x,y)
     end
     if layer then
         setattr(info,a_layer,layer)
     end
-    return info, width
+    return info, size
 end
 
 local function someblob(str,layer,color,textcolor,width)

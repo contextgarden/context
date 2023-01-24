@@ -51,33 +51,19 @@
 
 \unprotect
 
-\newdimension\mathstrutht
-\newdimension\mathstrutdp
-\newinteger  \mathnestinglevel
+\newdimension  \mathstrutht
+\newdimension  \mathstrutdp
+\newinteger    \mathnestinglevel
 
-% For now:
-
-%protected\def\Umathaccent_top         {\Umathaccent top          }
-%protected\def\Umathaccent_bottom      {\Umathaccent bottom       }
-%protected\def\Umathaccent_top_fixed   {\Umathaccent top    fixed }
-%protected\def\Umathaccent_bottom_fixed{\Umathaccent bottom fixed }
-
-%permanent\protected\def\defUmathfixedtopaccent   #1#2#3#4{\global\immutable\protected\def#1{\Umathaccent_top_fixed    "#2 "#3 "#4 }}
-%permanent\protected\def\defUmathfixedbottomaccent#1#2#3#4{\global\immutable\protected\def#1{\Umathaccent_bottom_fixed "#2 "#3 "#4 }}
-%permanent\protected\def\defUmathtopaccent        #1#2#3#4{\global\immutable\protected\def#1{\Umathaccent_top          "#2 "#3 "#4 }}
-%permanent\protected\def\defUmathbottomaccent     #1#2#3#4{\global\immutable\protected\def#1{\Umathaccent_bottom       "#2 "#3 "#4 }}
-
-%permanent\protected\def\defUmathchar             #1#2#3#4{\global\immutable\Umathchardef #1                           "#2 "#3 "#4 }
-%permanent\protected\def\defUdelimiter            #1#2#3#4{\global\immutable\protected\def#1{\Udelimiter               "#2 "#3 "#4 }}
-%permanent\protected\def\defUdelimiter            #1#2#3#4{\global\immutable\Umathchardef #1                           "#2 "#3 "#4 }
-
-%permanent\protected\def\defUradical                #1#2#3{\global\immutable\protected\def#1{\Uradical                 "#2 "#3     }}
-%permanent\protected\def\defUroot                   #1#2#3{\global\immutable\protected\def#1{\Uroot                    "#2 "#3     }}
-
-%permanent\protected\def\defUdelimiterover        #1#2#3#4{\global\immutable\protected\def#1{\Udelimiterover           "#2 "#3     }} % radicals
-%permanent\protected\def\defUdelimiterunder       #1#2#3#4{\global\immutable\protected\def#1{\Udelimiterunder          "#2 "#3     }} % radicals
-
-% So:
+\newcount      \c_strc_math_n_of_lines
+\newdimension  \d_strc_math_max_width
+\newdimension  \d_strc_math_first_width
+\newdimension  \d_strc_math_last_width
+\newdimension  \d_strc_math_first_height
+\newdimension  \d_strc_math_last_depth
+\newdimension  \d_strc_math_display_width
+\newdimension  \d_strc_math_indent
+\newconditional\c_strc_math_indent
 
 \registerctxluafile{math-ini}{autosuffix}
 \registerctxluafile{math-dim}{autosuffix}
@@ -2682,6 +2668,15 @@
 
 % todo: use \Umathclass\c_math_comma\mathpunctcode etc for temporary switching
 
+%D This is a dirty trick. In order to prevent a loop due to reinjection, when a
+%D active one is seen, the amcode is set to other. So, afterwards we need to
+%D reactivate. Eventually this feature will be dropped in favor of a more modern
+%D mechanism.
+
+\def\math_activeate_comma    {\amcode\c_math_comma    \activecatcode}
+\def\math_activeate_period   {\amcode\c_math_period   \activecatcode}
+\def\math_activeate_semicolon{\amcode\c_math_semicolon\activecatcode}
+
 \def\math_set_o_comma    {\Umathcode\c_math_comma    \mathordinarycode   \zerocount\c_math_comma}
 \def\math_set_p_comma    {\Umathcode\c_math_comma    \mathpunctuationcode\zerocount\c_math_comma}
 \def\math_set_o_period   {\Umathcode\c_math_period   \mathordinarycode   \zerocount\c_math_period}
@@ -2692,9 +2687,9 @@
 \edef\math_set_o_both {\math_set_o_period\math_set_o_comma}
 \edef\math_set_p_both {\math_set_p_period\math_set_p_comma}
 
-\protected\def\math_punctuation_nop_comma    {\begingroup\math_set_p_comma    ,\endgroup}
-\protected\def\math_punctuation_nop_period   {\begingroup\math_set_o_period   .\endgroup}
-\protected\def\math_punctuation_nop_semicolon{\begingroup\math_set_p_semicolon;\endgroup}
+\protected\def\math_punctuation_nop_comma    {\begingroup\math_set_p_comma    ,\endgroup\math_activeate_comma    }
+\protected\def\math_punctuation_nop_period   {\begingroup\math_set_o_period   .\endgroup\math_activeate_period   }
+\protected\def\math_punctuation_nop_semicolon{\begingroup\math_set_p_semicolon;\endgroup\math_activeate_semicolon}
 
 % todo: use new lookahead stuff
 
@@ -2706,9 +2701,9 @@
           \let\math_punctuation_yes_period   \math_punctuation_nop_period
           \let\math_punctuation_yes_semicolon\math_punctuation_all_semicolon
 
-\def\math_punctuation_comma_next    {\begingroup\Umathcode\c_math_comma    \ifx\nexttoken\blankspace\mathpunctuationcode\else\mathordinarycode\fi\zerocount\c_math_comma    ,\endgroup}
-\def\math_punctuation_period_next   {\begingroup\Umathcode\c_math_period   \ifx\nexttoken\blankspace\mathpunctuationcode\else\mathordinarycode\fi\zerocount\c_math_period   .\endgroup}
-\def\math_punctuation_semicolon_next{\begingroup\Umathcode\c_math_semicolon\ifx\nexttoken\blankspace\mathpunctuationcode\else\mathordinarycode\fi\zerocount\c_math_semicolon;\endgroup}
+\def\math_punctuation_comma_next    {\begingroup\Umathcode\c_math_comma    \ifx\nexttoken\blankspace\mathpunctuationcode\else\mathordinarycode\fi\zerocount\c_math_comma    ,\endgroup\math_activeate_comma    }
+\def\math_punctuation_period_next   {\begingroup\Umathcode\c_math_period   \ifx\nexttoken\blankspace\mathpunctuationcode\else\mathordinarycode\fi\zerocount\c_math_period   .\endgroup\math_activeate_period   }
+\def\math_punctuation_semicolon_next{\begingroup\Umathcode\c_math_semicolon\ifx\nexttoken\blankspace\mathpunctuationcode\else\mathordinarycode\fi\zerocount\c_math_semicolon;\endgroup\math_activeate_semicolon}
 
 \installcorenamespace {mathautopunctuation}
 
@@ -2724,12 +2719,6 @@
       {\let,\math_punctuation_nop_comma
        \let.\math_punctuation_nop_period
        \let;\math_punctuation_nop_semicolon}
-
-  %  more efficient list:
-  %
-  %  \gdefcsname\??mathautopunctuation\v!no\endcsname
-  %    {\Umathcode\c_math_period\mathordcode  \zerocount\c_math_period
-  %     \Umathcode\c_math_comma \mathpunctcode\zerocount\c_math_comma }
 
     \gdefcsname\??mathautopunctuation\v!yes\endcsname
       {\let,\math_punctuation_yes_comma
@@ -2773,10 +2762,17 @@
 % \activatemathcharacter\c_math_period
 % \activatemathcharacter\c_math_semicolon
 
+% \appendtoks
+%     \mathcode\c_math_comma    \c_math_special
+%     \mathcode\c_math_period   \c_math_special
+%     \mathcode\c_math_semicolon\c_math_special
+%     \begincsname\??mathautopunctuation\mathematicsparameter\c!autopunctuation\endcsname
+% \to \everymathematics
+
 \appendtoks
-    \mathcode\c_math_comma    \c_math_special
-    \mathcode\c_math_period   \c_math_special
-    \mathcode\c_math_semicolon\c_math_special
+    \math_activeate_comma
+    \math_activeate_period
+    \math_activeate_semicolon
     \begincsname\??mathautopunctuation\mathematicsparameter\c!autopunctuation\endcsname
 \to \everymathematics
 

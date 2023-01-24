@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['typo-adj'] = {
 }
 
 local setdimen        = tex.setdimen
-local setcount        = tex.setcount
+local isdimen         = tex.isdimen
 local setmacro        = tokens.setters.macro
 local expandmacro     = token.expandmacro
 
@@ -46,7 +46,12 @@ local adaptive        = nodes.adaptive or { }
 nodes.adaptive        = adaptive
 local enabled         = false
 
-local enableaction = nodes.tasks.enableaction
+local enableaction    = nodes.tasks.enableaction
+
+local d_adaptive_width  = isdimen("d_adaptive_width")
+local d_adaptive_height = isdimen("d_adaptive_height")
+local d_adaptive_depth  = isdimen("d_adaptive_depth")
+local d_adaptive_line   = isdimen("d_adaptive_line")
 
 function adaptive.set(settings)
     if not enabled then
@@ -58,10 +63,10 @@ function adaptive.set(settings)
 end
 
 local function setadaptive(w,h,d,l,c)
-    setdimen("d_adaptive_width",w)
-    setdimen("d_adaptive_height",h)
-    setdimen("d_adaptive_depth",d)
-    setdimen("d_adaptive_line",l)
+    setdimen(d_adaptive_width,w)
+    setdimen(d_adaptive_height,h)
+    setdimen(d_adaptive_depth,d)
+    setdimen(d_adaptive_line,l)
     setmacro("m_adaptive_color",c)
 end
 

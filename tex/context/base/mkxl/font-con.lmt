@@ -415,6 +415,7 @@ function constructors.scale(tfmdata,specification)
     if extendfactor ~= 0 and extendfactor ~= 1 then
         hdelta = hdelta * extendfactor
         target.extend = extendfactor * 1000
+-- target.extend = round(target.extend)
     else
         target.extend = 1000 -- extent ?
     end
@@ -423,6 +424,7 @@ function constructors.scale(tfmdata,specification)
     if squeezefactor ~= 0 and squeezefactor ~= 1 then
         vdelta = vdelta * squeezefactor
         target.squeeze = squeezefactor * 1000
+-- target.squeeze = round(target.squeeze)
     else
         target.squeeze = 1000 -- extent ?
     end

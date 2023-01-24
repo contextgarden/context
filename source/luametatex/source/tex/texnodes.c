@@ -204,6 +204,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_rule, math_radical_rule_subtype,  radical)
     set_value_entry_key(subtypes_rule, box_rule_subtype,           box)
     set_value_entry_key(subtypes_rule, image_rule_subtype,         image)
+    set_value_entry_key(subtypes_rule, virtual_rule_subtype,       virtual)
 
     subtypes_glyph = lmt_aux_allocate_value_info(glyph_math_accent_subtype);
 
@@ -212,13 +213,13 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_glyph, glyph_ligature_subtype,         ligature)
     set_value_entry_key(subtypes_glyph, glyph_math_delimiter_subtype,   delimiter);
     set_value_entry_key(subtypes_glyph, glyph_math_extensible_subtype,  extensible);
-    set_value_entry_key(subtypes_glyph, glyph_math_ordinary_subtype,    ord);
-    set_value_entry_key(subtypes_glyph, glyph_math_operator_subtype,    op);
-    set_value_entry_key(subtypes_glyph, glyph_math_binary_subtype,      bin);
-    set_value_entry_key(subtypes_glyph, glyph_math_relation_subtype,    rel);
+    set_value_entry_key(subtypes_glyph, glyph_math_ordinary_subtype,    ordinary);
+    set_value_entry_key(subtypes_glyph, glyph_math_operator_subtype,    operator);
+    set_value_entry_key(subtypes_glyph, glyph_math_binary_subtype,      binary);
+    set_value_entry_key(subtypes_glyph, glyph_math_relation_subtype,    relation);
     set_value_entry_key(subtypes_glyph, glyph_math_open_subtype,        open);
     set_value_entry_key(subtypes_glyph, glyph_math_close_subtype,       close);
-    set_value_entry_key(subtypes_glyph, glyph_math_punctuation_subtype, punct);
+    set_value_entry_key(subtypes_glyph, glyph_math_punctuation_subtype, punctuation);
     set_value_entry_key(subtypes_glyph, glyph_math_variable_subtype,    variable);
     set_value_entry_key(subtypes_glyph, glyph_math_active_subtype,      active);
     set_value_entry_key(subtypes_glyph, glyph_math_inner_subtype,       inner);
@@ -307,13 +308,13 @@ void lmt_nodelib_initialize(void) {
 
     subtypes_noad = lmt_aux_allocate_value_info(vcenter_noad_subtype); // last_noad_subtype
 
-    set_value_entry_key(subtypes_noad, ordinary_noad_subtype,    ord)
-    set_value_entry_key(subtypes_noad, operator_noad_subtype,    op)
-    set_value_entry_key(subtypes_noad, binary_noad_subtype,      bin)
-    set_value_entry_key(subtypes_noad, relation_noad_subtype,    rel)
+    set_value_entry_key(subtypes_noad, ordinary_noad_subtype,    ordinary)
+    set_value_entry_key(subtypes_noad, operator_noad_subtype,    operator)
+    set_value_entry_key(subtypes_noad, binary_noad_subtype,      binary)
+    set_value_entry_key(subtypes_noad, relation_noad_subtype,    relation)
     set_value_entry_key(subtypes_noad, open_noad_subtype,        open)
     set_value_entry_key(subtypes_noad, close_noad_subtype,       close)
-    set_value_entry_key(subtypes_noad, punctuation_noad_subtype, punct)
+    set_value_entry_key(subtypes_noad, punctuation_noad_subtype, punctuation)
     set_value_entry_key(subtypes_noad, variable_noad_subtype,    variable)
     set_value_entry_key(subtypes_noad, active_noad_subtype,      active)
     set_value_entry_key(subtypes_noad, inner_noad_subtype,       inner)

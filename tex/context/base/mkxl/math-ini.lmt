@@ -30,7 +30,6 @@ local context               = context
 local commands              = commands
 local implement             = interfaces.implement
 
-local ctx_sprint            = context.sprint
 local ctx_doifelsesomething = commands.doifelsesomething
 
 local trace_defining        = false  trackers.register("math.defining", function(v) trace_defining = v end)
@@ -287,12 +286,12 @@ local lastengineclass  = 0
 local lastprivateclass = maxengineclass
 
 for k, v in next, nodes.noadcodes do
-    if type(k) == "string"then
+    if type(k) == "string" then
         classes[k] = v
-        local n = classnames[v]
-        if not n or #k < #n then
-            classnames[v] = k
-        end
+--         local n = classnames[v]
+--         if not n or #k < #n then
+--             classnames[v] = k
+--         end
     elseif k > lastengineclass then
         lastengineclass = k
     end
@@ -314,6 +313,8 @@ local over_class        = classes.over
 local fenced_class      = classes.fenced
 local ghost_class       = classes.ghost
 
+-- these will go
+
 classes.ord             = ordinary_class
 classes.op              = operator_class
 classes.bin             = binary_class
@@ -326,6 +327,8 @@ classes.rad             = radical_class
 classes.fen             = fenced_class
 classes.gst             = ghost_class
 
+-- these will go too
+
 classes.limop           = operator_class
 classes.limoperator     = operator_class
 classes.nolop           = operator_class
@@ -333,7 +336,7 @@ classes.nolimoperator   = operator_class
 classes.large           = operator_class
 classes.largeoperator   = operator_class
 
--- special in the engine   : variable active inner vcenter
+-- special in the engine : variable active inner vcenter
 
 local function registerengineclass(name,short)
     local class = classes[name]
@@ -345,10 +348,37 @@ local function registerengineclass(name,short)
         else
             class = ordinary_class
         end
-        classes[name] = class
+    else
+        classnames[class] = short or name
     end
+    classes[class] = name
+    classes[name] = class
     return class
 end
+
+-- predefined classes
+
+registerengineclass("ordinary",    "ord")
+registerengineclass("operator",    "ope")
+registerengineclass("binary",      "bin")
+registerengineclass("relation",    "rel")
+registerengineclass("open",        "ope")
+registerengineclass("close",       "clo")
+registerengineclass("punctuation", "pun")
+registerengineclass("variable",    "var") -- not used
+registerengineclass("active",      "act") -- not used
+registerengineclass("inner",       "inn") -- not used
+registerengineclass("middle",      "mid")
+registerengineclass("accent",      "acc")
+registerengineclass("radical",     "rad")
+registerengineclass("fraction",    "fra")
+registerengineclass("under",       "und")
+registerengineclass("over",        "ove")
+registerengineclass("fenced",      "fen")
+registerengineclass("ghost",       "gho")
+registerengineclass("vcenter",     "vce") -- not used
+
+-- additional classes
 
 registerengineclass("explicit",        "xpl")
 registerengineclass("imaginary",       "img")
@@ -365,19 +395,19 @@ registerengineclass("construct",       "con")
 registerengineclass("dimension",       "dim")
 registerengineclass("unary",           "una")
 registerengineclass("textpunctuation", "tpu")
-registerengineclass("unspaced")
-registerengineclass("experimental")
-registerengineclass("fake")
+registerengineclass("unspaced",        "uns")
+registerengineclass("experimental",    "exp")
+registerengineclass("fake",            "fak")
 registerengineclass("numbergroup",     "ngr")
 
-registerengineclass("maybeordinary")
-registerengineclass("mayberelation")
-registerengineclass("maybebinary")
+registerengineclass("maybeordinary",   "mor")
+registerengineclass("mayberelation",   "mre")
+registerengineclass("maybebinary",     "mbi")
 
 local specialclasses = tex.specialmathclasscodes
 
 classes["all"]   = specialclasses["all"]    classnames[specialclasses["all"]  ] = "all"
-classes["begin"] = specialclasses["begin"]  classnames[specialclasses["begin"]] = "begin"
+classes["begin"] = specialclasses["begin"]  classnames[specialclasses["begin"]] = "beg"
 classes["end"]   = specialclasses["end"]    classnames[specialclasses["end"]  ] = "end"
 
 callback.register("get_noad_class", function(n) return classnames[n] end)
@@ -506,6 +536,16 @@ mathematics.virtualized   = virtualized
 
 do
 
+    local skip = {
+       [accent_class]       = true,
+       [topaccent_class]    = true,
+       [bottomaccent_class] = true,
+       [over_class]         = true,
+       [under_class]        = true,
+       [radical_class]      = true,
+       [root_class]         = true,
+    }
+
     local registercharacter = mathematics.dictionaries.registercharacter
     local groupnames        = mathematics.dictionaries.names
 
@@ -514,10 +554,10 @@ do
             setmathcode("global",slot,class,family,unicode)
             mset = false
         end
-        if dset and (class == open_class or class == close_class or class == middle_class or class == division_class) then
-            setdelcode("global",slot,family,unicode,0,0)
-            dset = false
-        end
+     -- if dset and (class == open_class or class == close_class or class == middle_class or class == division_class) then
+     --     setdelcode("global",slot,family,unicode,0,0)
+     --     dset = false
+     -- end
         if group then
             group = groupnames[group] or 0
             if group ~= 0 then
@@ -540,47 +580,36 @@ do
         end
     end
 
- -- local f_accent            = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
- -- local f_fixedtopaccent    = formatters[ [[\defUmathfixedtopaccent \%s{%X}{%X}{%X}]] ]
- -- local f_fixedbottomaccent = formatters[ [[\defUmathfixedbottomaccent \%s{%X}{%X}{%X}]] ]
- -- local f_topaccent         = formatters[ [[\defUmathtopaccent \%s{%X}{%X}{%X}]] ]
- -- local f_bottomaccent      = formatters[ [[\defUmathbottomaccent \%s{%X}{%X}{%X}]] ]
- -- local f_over              = formatters[ [[\defUdelimiterover \%s{%X}{%X}{%X}]] ]
- -- local f_under             = formatters[ [[\defUdelimiterunder\%s{%X}{%X}{%X}]] ]
- -- local f_fence             = formatters[ [[\defUdelimiter \%s{%X}{%X}{%X}]] ]
- -- local f_delimiter         = formatters[ [[\defUdelimiter \%s{%X}{%X}{%X}]] ]
- -- local f_radical           = formatters[ [[\defUradical \%s{%X}{%X}]]     ]
- -- local f_root              = formatters[ [[\defUroot \%s{%X}{%X}]]     ]
- -- local f_char              = formatters[ [[\defUmathchar \%s{%X}{%X}{%X}]] ]
-
     local texmathchardef = tex.mathchardef
 
+ -- local setmathsymbol = function(name,class,family,slot,stretch,group) -- hex is nicer for tracing
+ --     if skip[class] then
+ --         return -- only in mkiv
+ --     elseif class == open_class or class == close_class or class == middle_class then
+ --         setdelcode("global",slot,family,slot,0,0) -- can go
+ --     elseif class == delimiter_class then -- open close or middle (bars)
+ --         setdelcode("global",slot,family,slot,0,0) -- can go
+ --         class = 0
+ --     else
+ --         if group then
+ --             group = groupnames[group] or 0
+ --             if group ~= 0 then
+ --                 texmathchardef(name,class,family,slot,"permanent",0x1,group,slot)
+ --                 return
+ --             end
+ --         end
+ --     end
+ --     texmathchardef(name,class,family,slot,"permanent")
+ -- end
+
     local setmathsymbol = function(name,class,family,slot,stretch,group) -- hex is nicer for tracing
-        if class == accent_class then
-         -- ctx_sprint(f_accent(name,0,family,slot))
-        elseif class == topaccent_class then
-         -- ctx_sprint((stretch and f_topaccent or f_fixedtopaccent)(name,0,family,slot))
-        elseif class == bottomaccent_class then
-         -- ctx_sprint((stretch and f_bottomaccent or f_fixedbottomaccent)(name,0,family,slot))
-        elseif class == over_class then  -- only in mkiv
-         -- ctx_sprint(f_over(name,0,family,slot))
-        elseif class == under_class then -- only in mkiv
-         -- ctx_sprint(f_under(name,0,family,slot))
-        elseif class == open_class or class == close_class or class == middle_class then
-            setdelcode("global",slot,family,slot,0,0) -- can go
-         -- ctx_sprint(f_fence(name,class,family,slot))
-         -- ctx_sprint(f_char(name,class,family,slot))
-            texmathchardef(name,class,family,slot,"permanent")
-        elseif class == delimiter_class then -- open close or middle (bars)
-            setdelcode("global",slot,family,slot,0,0) -- can go
-         -- ctx_sprint(f_delimiter(name,0,family,slot))
-         -- ctx_sprint(f_char(name,0,family,slot))
-            texmathchardef(name,0,family,slot,"permanent")
-        elseif class == radical_class then -- only in mkiv
-         -- ctx_sprint(f_radical(name,family,slot))
-        elseif class == root_class then -- only in mkiv
-         -- ctx_sprint(f_root(name,family,slot))
-        elseif texmathchardef then
+        if skip[class] then
+            return -- only in mkiv
+     -- elseif class == open_class or class == close_class or class == middle_class then
+        else
+            if class == delimiter_class then -- open close or middle (bars)
+                class = ordinary_class
+            end
             if group then
                 group = groupnames[group] or 0
                 if group ~= 0 then

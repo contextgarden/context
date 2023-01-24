@@ -1227,8 +1227,11 @@
 \def\tabl_tabulate_start_foot_yes[#1]%
   {\processcontent{\e!stop\v!tabulatetail}\m_tabl_tabulate_data{\letcsname\??tabulatefoot#1\endcsname\m_tabl_tabulate_data}}
 
-\def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[\v!tabulate]}
-\def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[\v!tabulate]}
+% \def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[\v!tabulate]}
+% \def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[\v!tabulate]}
+
+\def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[]}
+\def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[]}
 
 \protected\def\tabl_start_defined[#1]%
   {\bgroup
@@ -2100,7 +2103,16 @@
 %    % can we omit the next one in the first run? probably
 %    \noalign{\the\t_tabl_tabulate_every_after_row#2}}
 
-\permanent\tolerant\protected\def\tabl_tabulate_NR_common#1#2#.#3% #. gobbles pars and spaces
+% test case for ignorepar error
+%
+% \starttabulatehead
+%     \NC A \NC B \NC \NR
+% \stoptabulatehead
+% \starttabulate[|l|l|]
+%     \NC 1 \NC 2 \NC \NR
+% \stoptabulate
+
+\permanent\tolerant\protected\def\tabl_tabulate_NR_common#1#2% #. gobbles pars and spaces
   {\global\advanceby\c_tabl_tabulate_noflines\plusone
    \global\setfalse\c_tabl_tabulate_firstflushed
    \global\setfalse\c_tabl_tabulate_equal
@@ -2111,7 +2123,8 @@
    \tabl_tabulate_pheight_reset
    \unskip\unskip\crcr\tabl_tabulate_flush_collected
    % can we omit the next one in the first run? probably
-   \noalign{\the\t_tabl_tabulate_every_after_row#2}#3}
+   % todo: move \ignorepars ourside so no alignment error then
+   \noalign{\the\t_tabl_tabulate_every_after_row#2\ignorepars}}
 
 \def\tabl_tabulate_check_penalties
   {\ifconditional\c_tabl_tabulate_tolerant_break\else

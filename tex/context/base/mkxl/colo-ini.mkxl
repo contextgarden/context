@@ -1300,6 +1300,9 @@
 \permanent\def\colorvalue              #1{\clf_formatcolor\rawcolorattribute{#1}{\colorformatseparator}}
 \permanent\def\grayvalue               #1{\clf_formatgray \rawcolorattribute{#1}{\colorformatseparator}}
 
+\permanent\def\colorluminance          #1{\clf_formatluminance     \rawcolorattribute{#1} }
+\permanent\def\colorluminanceratio   #1#2{\clf_formatluminanceratio\rawcolorattribute{#1} \rawcolorattribute{#2} }
+
 \permanent\def\doifelseblack           #1{\clf_doifelseblack\rawcolorattribute{#1}}
 \permanent\def\doifelsedrawingblack      {\clf_doifelsedrawingblack}
 

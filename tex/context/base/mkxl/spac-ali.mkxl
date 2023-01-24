@@ -827,6 +827,10 @@
 
 \defcsname\??aligncommand\v!always\endcsname{\toksapp\t_spac_align_collected{\bitwiseflip\hyphenationmode\forcecheckhyphenationcode}}
 
+% experiment
+
+\defcsname\??aligncommand\v!profile\endcsname{\toksapp\t_spac_align_collected{\setmainlineprofile}}
+
 \definehspace [\v!final] [\emspaceamount]
 
 \def\spac_align_flush_parfill

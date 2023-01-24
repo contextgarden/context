@@ -117,6 +117,8 @@ local d_globalbodyfontstrutdepth  = tex.isdimen("globalbodyfontstrutdepth")
 ----- d_strutht                   = tex.isdimen("strutht")
 local d_strutdp                   = tex.isdimen("strutdp")
 
+local d_spac_overlay              = tex.isdimen("d_spac_overlay")
+
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 
@@ -1455,7 +1457,7 @@ do
             end
             --
             local delta = n_ht + skips + p_dp
-            texsetdimen("global","d_spac_overlay",-delta) -- for tracing
+            texsetdimen("global",d_spac_overlay,-delta) -- for tracing
             -- we should adapt pagetotal ! (need a hook for that) .. now we have the wrong pagebreak
             local k = new_kern(-delta)
             setvisual(k)

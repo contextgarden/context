@@ -17894,6 +17894,10 @@ return {
    ["pe"]="محصول",
    ["ro"]="produs",
   },
+  ["profile"]={
+   ["en"]="profile",
+   ["fr"]="profil",
+  },
   ["program"]={
    ["cs"]="program",
    ["de"]="programm",

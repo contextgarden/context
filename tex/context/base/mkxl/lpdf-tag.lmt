@@ -134,6 +134,12 @@ end
 
 -- mostly the same as the annotations tree
 
+local usenamespace = false  experiments.register("structures.tags.namespaces", function(v) usenamespace = v end)
+
+local namespaceurls = {
+    mathml = "http://www.w3.org/1998/Math/MathML",
+}
+
 local function finishstructure()
     if root and #structure_kids > 0 then
         local nums   = pdfarray()
@@ -152,11 +158,35 @@ local function finishstructure()
         }
         local idtree = pdfmakenametree(names)
         --
-        local rolemap = pdfdictionary()
+        local rolemaps = usenamespace and { }
+        local rolemap  = pdfdictionary() -- main one
         for k, v in next, usedmapping do
             k = usedlabels[k] or k
             local p = properties[k]
-            rolemap[k] = pdfconstant(p and p.pdf or "Span") -- or "Div"
+            if not p then
+                print("UNDEFINED", k)
+            end
+            local n = p and p.namespace
+            if rolemaps and n then
+                local r = rolemaps[n]
+                if not r then
+                    r = pdfdictionary()
+                    rolemaps[n] = r
+                end
+                r[k] = pdfconstant(k) -- maybe other tag
+            else
+                rolemap[k] = pdfconstant(p and p.pdf or "Span") -- or "Div"
+            end
+        end
+        local namespaces = rolemaps and next(rolemaps) and pdfarray { } or nil
+        if namespaces then
+            for k, v in table.sortedhash(rolemaps) do
+                namespaces[#namespaces+1] = pdfdictionary {
+                    Type      = pdfconstant("Namespace"),
+                    NS        = pdfunicode(namespaceurls[k] or k),
+                    RoleMapNS = v,
+                }
+            end
         end
         local structuretree = pdfdictionary {
             Type       = pdfconstant("StructTreeRoot"),
@@ -164,6 +194,7 @@ local function finishstructure()
             ParentTree = pdfreference(pdfflushobject(parent_ref,parenttree)),
             IDTree     = idtree,
             RoleMap    = rolemap, -- sorted ?
+            Namespaces = namespaces,
         }
         pdfflushobject(structure_ref,structuretree)
         addtocatalog("StructTreeRoot",pdfreference(structure_ref))
@@ -406,15 +437,25 @@ end
 local EMCliteral = nil
 local visualize  = nil
 
+local enabled = true
+
+updaters.register("tagging.state.disable",function() enabled = false end)
+updaters.register("tagging.state.enable", function() enabled = true  end)
+
 function nodeinjections.addtags(head)
+
+    if not enabled then
+        return
+    end
 
     if not EMCliteral then
         EMCliteral = register(setstate("EMC"))
     end
 
-    local last   = nil
-    local ranges = { }
-    local range  = nil
+    local last      = nil
+    local ranges    = { }
+    local range     = nil
+    local nofranges = 0
 
     if not root then
         structure_kids = pdfarray()
@@ -430,12 +471,10 @@ function nodeinjections.addtags(head)
                 -- maybe also disc
                 if getchar(n) ~= 0 then
                     local at = getattr(n,a_tagged) or false -- false: pagebody or so, so artifact
-                 -- if not at then
-                 --     range = nil
-                 -- elseif ...
                     if last ~= at then
                         range = { at, "glyph", n, n, list } -- attr id start stop list
-                        ranges[#ranges+1] = range
+                        nofranges = nofranges + 1
+                        ranges[nofranges] = range
                         last = at
                     elseif range then
                         range[4] = n -- stop
@@ -445,11 +484,8 @@ function nodeinjections.addtags(head)
                 local at = getattr(n,a_image)
                 if at then
                     local at = getattr(n,a_tagged) or false -- false: pagebody or so, so artifact
-                 -- if not at then
-                 --     range = nil
-                 -- else
-                        ranges[#ranges+1] = { at, "image", n, n, list } -- attr id start stop list
-                 -- end
+                    nofranges = nofranges + 1
+                    ranges[nofranges] = { at, "image", n, n, list } -- attr id start stop list
                     last = nil
                 else
                     local list = getlist(n)
@@ -469,7 +505,7 @@ function nodeinjections.addtags(head)
 -- inspect(ranges)
 
     if trace_tags then
-        for i=1,#ranges do
+        for i=1,nofranges do
             local range = ranges[i]
             local attr  = range[1]
             local id    = range[2]
@@ -511,7 +547,12 @@ function nodeinjections.addtags(head)
         end
     end
 
-    for i=1,#ranges do
+--     local function inject(start,stop,list,literal,left,right)
+--         setlink(getprev(start) or list or true,literal,left or true,start)
+--         setlink(stop,right or true,copy_node(EMCliteral),getnext(stop))
+--     end
+
+    for i=1,nofranges do
 
         local range = ranges[i]
         local attr  = range[1]

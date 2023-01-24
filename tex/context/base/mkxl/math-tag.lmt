@@ -26,6 +26,7 @@ local nuts              = nodes.nuts
 local tonut             = nuts.tonut
 
 local getchar           = nuts.getchar
+local getprev           = nuts.getprev
 local getcharspec       = nuts.getcharspec
 local getdata           = nuts.getdata
 local getlist           = nuts.getlist
@@ -105,11 +106,15 @@ local restart_tagged    = tags.restart
 local stop_tagged       = tags.stop
 local taglist           = tags.taglist
 
-local chardata          = characters.data
+----- chardata          = characters.data
 
-local getmathcodes      = tex.getmathcodes
-local mathcodes         = mathematics.codes
-local ordinary_mathcode = mathcodes.ordinary
+local getmathcodes         = tex.getmathcodes
+----- mathcodes            = mathematics.codes
+local mathcodes            = mathematics.classes
+local ordinary_mathcode    = mathcodes.ordinary
+local digit_mathcode       = mathcodes.digit
+local punctuation_mathcode = mathcodes.punctuation
+local active_mathcode      = mathcodes.active
 
 local fromunicode16     = fonts.mappings.fromunicode16
 local fontcharacters    = fonts.hashes.characters
@@ -223,7 +228,7 @@ end
 -- only focus on structure and let the engine deal with the details. Another reason
 -- to update this is that we can add some tracing (lmtx only).
 
--- This has been working ok for quite but in 2023 it's tiem to have a look at it
+-- This has been working ok for quite but in 2023 it's time to have a look at it
 -- again and see to what extend we need to adapt to new features. Around the time
 -- PG's Panopticom was put on youtube.
 
@@ -245,19 +250,32 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             if id == mathchar_code then
                 local char = getchar(start)
                 local code = getmathcodes(char)
-                local ch   = chardata[char]
-                local mc   = ch and ch.mathclass
+--                 local ch   = chardata[char]
+--                 local mc   = ch and ch.mathclass
                 local tag
-                local properties= { class = mc }
+                local properties= { class = code }
+                -- we're a bit early so we can have active here and no rules get applied
+                -- so maybe we have to correct some later on
                 -- todo: we have way more now
+--                 if code == ordinary_mathcode then
+--                     if mc == "number" then
+--                         tag = "mn"
+--                     elseif mc == "variable" or not mc then -- variable is default
+--                         tag = "mi"
+--                     else
+--                         tag = "mo"
+--                     end
+--                 else
+--                     tag = "mo"
+--                 end
+-- print(code,mathematics.classes[code])
+-- print(ordinary_mathcode,digit_mathcode,active_mathcode)
                 if code == ordinary_mathcode then
-                    if mc == "number" then
-                        tag = "mn"
-                    elseif mc == "variable" or not mc then -- variable is default
-                        tag = "mi"
-                    else
-                        tag = "mo"
-                    end
+                    tag = "mi"
+                elseif code == digit_mathcode then
+                    tag = "mn"
+--                 elseif code == punctuation_mathcode or code == active_mathcode then
+--                     tag = "mo"
                 else
                     tag = "mo"
                 end
@@ -316,7 +334,8 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                 process(list)
                             end
                         else
-                            if tag ~= "mstackertop" and tag ~= "mstackermid" and tag ~= "mstackerbot" then
+if tag ~= "mtable" and tag ~= "mstackertop" and tag ~= "mstackermid" and tag ~= "mstackerbot" then
+--                             if tag ~= "mstackertop" and tag ~= "mstackermid" and tag ~= "mstackerbot" then
                                 tag = "mtext"
                             end
                             local text = start_tagged(tag)
@@ -343,12 +362,12 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                  -- local keep = { } -- win case we might need to move keep outside
                                     for n, id, subtype in nextnode, list do
                                         local mth = id == math_code and subtype
-                                        if mth == 0 then -- hm left_code
-                                         -- insert(keep,text)
-                                            keep = text
-                                            text = start_tagged("mrow")
-                                            common = common + 1
-                                        end
+if mth == 0 then -- begin in line
+ -- insert(keep,text)
+    keep = text
+    text = start_tagged("mrow")
+    common = common + 1
+end
                                         local aa = getattr(n,a_tagged)
                                         if aa then
                                             local ac = cache[aa]
@@ -392,12 +411,12 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                                 runner(replace,depth+1)
                                             end
                                         end
-                                        if mth == 1 then
-                                            stop_tagged()
-                                         -- text = remove(keep)
-                                            text = keep
-                                            common = common - 1
-                                        end
+if mth == 1 then -- end in line
+    stop_tagged()
+ -- text = remove(keep)
+    text = keep
+    common = common - 1
+end
                                     end
                                 end
                                 runner(list,0)
@@ -488,6 +507,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 end
             elseif id == fence_code then
                 local delimiter = getdelimiter(start)
+-- print(subtype,fencecodes[subtype],delimiter)
                 if subtype == leftfence_code then
                     local properties = { }
                     insert(fencesstack,properties)
@@ -623,7 +643,8 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 end
                 stop_tagged()
             else
-                setattr(start,a_tagged,start_tagged("merror", { detail = nodecodes[i] }))
+                --rule boundary
+                setattr(start,a_tagged,start_tagged("merror", { detail = nodecodes[id] }))
                 stop_tagged()
             end
         end

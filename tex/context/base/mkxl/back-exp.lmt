@@ -1880,18 +1880,25 @@ local collectresults  do -- too many locals otherwise
         end
     end
 
+    local enabled = true
+
+    updaters.register("tagging.state.disable",function() enabled = false end)
+    updaters.register("tagging.state.enable", function() enabled = true  end)
+
     function nodes.handlers.export(head) -- hooks into the page builder
-        starttiming(treehash)
-        if trace_export then
-            report_export("%w<!-- start flushing page -->",currentdepth)
+        if enabled then
+            starttiming(treehash)
+            if trace_export then
+                report_export("%w<!-- start flushing page -->",currentdepth)
+            end
+         -- continueexport()
+            restart = true
+            collectresults(head)
+            if trace_export then
+                report_export("%w<!-- stop flushing page -->",currentdepth)
+            end
+            stoptiming(treehash)
         end
-     -- continueexport()
-        restart = true
-        collectresults(head)
-        if trace_export then
-            report_export("%w<!-- stop flushing page -->",currentdepth)
-        end
-        stoptiming(treehash)
         return head
     end
 
@@ -1900,13 +1907,15 @@ local collectresults  do -- too many locals otherwise
         return p
     end
 
+    -- needs checking!
+
     function builders.paragraphs.tag(head)
         noftextblocks = noftextblocks + 1
         for n, subtype in nexthlist, head do
             if subtype == linelist_code then
                 setattr(n,a_textblock,noftextblocks)
-            elseif subtype == glue_code or subtype == kern_code then -- no need to set fontkerns
-                setattr(n,a_textblock,0)
+         -- elseif subtype == glue_code or subtype == kern_code then -- weird, no list
+         --     setattr(n,a_textblock,0)
             end
         end
         return false

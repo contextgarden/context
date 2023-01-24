@@ -33,6 +33,7 @@ local context          = context
 local commands         = commands
 local mathematics      = mathematics
 local texsetdimen      = tex.setdimen
+local texisdimen       = tex.isdimen
 local abs              = math.abs
 
 local blocks           = characters.blocks
@@ -54,6 +55,9 @@ local fontchars        = fonts.hashes.characters
 local fontproperties   = fonts.hashes.properties
 
 local mathgaps         = mathematics.gaps
+
+local d_scratchleftoffset  = texisdimen("scratchleftoffset")
+local d_scratchrightoffset = texisdimen("scratchrightoffset")
 
 local use_math_goodies = true   directives.register("math.nogoodies",    function(v) use_math_goodies = not v end)
 local checkitalics     = false  trackers  .register("math.checkitalics", function(v) checkitalics     =     v end)
@@ -136,6 +140,11 @@ local how = {
     AccentBottomOvershoot           = "unscaled",
     AccentSuperscriptPercent        = "unscaled",
     DelimiterPercent                = "unscaled",
+    --
+    RadicalRuleThickness            = "vertical",
+    OverbarRuleThickness            = "vertical",
+    FractionRuleThickness           = "vertical",
+    UnderbarRuleThickness           = "vertical",
 }
 
 local function scaleparameters(mathparameters,parameters)
@@ -149,7 +158,7 @@ local function scaleparameters(mathparameters,parameters)
                 -- kept
             elseif h == "horizontal" then
                 value = value * hfactor
-            elseif h == "vertical"then
+            elseif h == "vertical" then
                 value = value * vfactor
             else
                 value = value * factor
@@ -3744,8 +3753,8 @@ interfaces.implement { -- can be public with two times "integerargument"
     arguments = { "integer", "integer" },
     actions   = function(family,unicode)
         local kind, loffset, roffset = horizontalcode(family,unicode)
-        texsetdimen("scratchleftoffset", loffset)
-        texsetdimen("scratchrightoffset",roffset)
+        texsetdimen(d_scratchleftoffset, loffset)
+        texsetdimen(d_scratchrightoffset,roffset)
         context(kind)
     end
 }

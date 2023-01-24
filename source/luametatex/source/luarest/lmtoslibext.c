@@ -115,15 +115,21 @@ static int oslib_sleep(lua_State *L)
         osver.dwOSVersionInfoSize = sizeof(osver);
         GetSystemInfo(&sysinfo);
         strcpy(uts->sysname, "Windows");
-        /* When |GetVersionEx| becomes obsolete the version and release fields will be set to "". */
-        GetVersionEx(&osver);
-        sprintf(uts->version, "%ld.%02ld", osver.dwMajorVersion, osver.dwMinorVersion);
-        if (osver.szCSDVersion[0] != '\0' && (strlen(osver.szCSDVersion) + strlen(uts->version) + 1) < sizeof(uts->version)) {
-            strcat(uts->version, " ");
-            strcat(uts->version, osver.szCSDVersion);
-        }
-        sprintf(uts->release, "build %ld", osver.dwBuildNumber & 0xFFFF);
-        /* So far for the fragile and actually not that relevant part of |uts|. */
+        /*tex When |GetVersionEx| becomes obsolete the version and release fields will be set to "". */
+     // if (0) {
+     //     GetVersionEx(&osver);
+     //     sprintf(uts->version, "%ld.%02ld", osver.dwMajorVersion, osver.dwMinorVersion);
+     //     if (osver.szCSDVersion[0] != '\0' && (strlen(osver.szCSDVersion) + strlen(uts->version) + 1) < sizeof(uts->version)) {
+     //         strcat(uts->version, " ");
+     //         strcat(uts->version, osver.szCSDVersion);
+     //     }
+     //     sprintf(uts->release, "build %ld", osver.dwBuildNumber & 0xFFFF);
+     // } else { 
+            /*tex I can't motivate myself to figure this out. */
+            strcpy(uts->version, "");
+            strcpy(uts->release, "");
+     // }
+        /*tex So far for the fragile and actually not that relevant part of |uts|. */
         switch (sysinfo.wProcessorArchitecture) {
             case PROCESSOR_ARCHITECTURE_AMD64:
                 strcpy(uts->machine, "x86_64");

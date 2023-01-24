@@ -2902,6 +2902,27 @@ static int nodelib_direct_getlistdimensions(lua_State *L)
     return 0;
 }
 
+static int nodelib_direct_getruledimensions(lua_State *L)
+{
+    halfword n = nodelib_valid_direct_from_index(L, 1);
+    if (n && node_type(n) == rule_node) {
+        if (node_subtype(n) == virtual_rule_subtype) {
+            lua_pushinteger(L, rule_data(n));
+            lua_pushinteger(L, rule_left(n));
+            lua_pushinteger(L, rule_right(n));
+            lua_pushboolean(L, 1);
+        } else {
+            lua_pushinteger(L, rule_width(n));
+            lua_pushinteger(L, rule_height(n));
+            lua_pushinteger(L, rule_depth(n));
+            lua_pushboolean(L, 0);
+        }
+        return 4;
+    } else { 
+        return 0;
+    }
+}
+
 /* node.direct.getlist */
 
 static int nodelib_direct_getlist(lua_State *L)
@@ -3541,32 +3562,45 @@ static int nodelib_direct_setlink(lua_State *L)
             and the nodes themselves can have old values for prev and next, so ... only single nodes
             are looked at!
         */
-        if (lua_type(L, i) == LUA_TNUMBER) {
-            halfword c = nodelib_valid_direct_from_index(L, i); /* current node */
-            if (c) {
-                if (c != t) {
-                    if (t) {
-                        node_next(t) = c;
-                        node_prev(c) = t;
-                    } else if (i > 1) {
-                        /* we assume that the first node is a kind of head */
-                        node_prev(c) = null;
+        switch (lua_type(L, i)) { 
+            case LUA_TNUMBER:
+                {
+                    halfword c = nodelib_valid_direct_from_index(L, i); /* current node */
+                    if (c) {
+                        if (c != t) {
+                            if (t) {
+                                node_next(t) = c;
+                                node_prev(c) = t;
+                            } else if (i > 1) {
+                                /* we assume that the first node is a kind of head */
+                                node_prev(c) = null;
+                            }
+                            t = c;
+                            if (! h) {
+                                h = t;
+                            }
+                        } else {
+                            /* we ignore duplicate nodes which can be tails or the previous */
+                        }
+                    } else {
+                        /* we ignore bad nodes, but we could issue a message */
                     }
-                    t = c;
-                    if (! h) {
-                        h = t;
-                    }
-                } else {
-                    /* we ignore duplicate nodes which can be tails or the previous */
                 }
-            } else {
-                /* we ignore bad nodes, but we could issue a message */
-            }
-        } else if (t) {
-            /* safeguard: a nil in the list can be meant as end so we nil the next of tail */
-            node_next(t) = null;
-        } else {
-            /* we just ignore nil nodes and have no tail yet */
+                break;
+            case LUA_TBOOLEAN:
+                if (lua_toboolean(L, i)) {
+                    /*tex Just skip this one. */
+                    break;
+                } else { 
+                    /* fall through */
+                }
+            default:
+                if (t) {
+                    /* safeguard: a nil in the list can be meant as end so we nil the next of tail */
+                    node_next(t) = null;
+                } else { 
+                    /* we just ignore nil nodes and have no tail yet */
+                }
         }
     }
     nodelib_push_direct_or_nil(L, h);
@@ -9758,7 +9792,8 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "rangedimensions",         nodelib_direct_rangedimensions        }, /* maybe get... */
     { "getglyphdimensions",      nodelib_direct_getglyphdimensions     },
     { "getkerndimension",        nodelib_direct_getkerndimension       },
-    { "getlistdimensions",       nodelib_direct_getlistdimensions       },
+    { "getlistdimensions",       nodelib_direct_getlistdimensions      },
+    { "getruledimensions",       nodelib_direct_getruledimensions      },
     { "patchattributes",         nodelib_direct_patchattributes        },
     { "remove",                  nodelib_direct_remove                 },
     { "removefromlist",          nodelib_direct_remove_from_list       },

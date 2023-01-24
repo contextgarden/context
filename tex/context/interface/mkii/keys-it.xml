@@ -453,6 +453,7 @@
 		<cd:variable name='printable' value='stampabile'/>
 		<cd:variable name='process' value='process'/>
 		<cd:variable name='product' value='prodotto'/>
+		<cd:variable name='profile' value='profile'/>
 		<cd:variable name='program' value='programma'/>
 		<cd:variable name='project' value='progetto'/>
 		<cd:variable name='protected' value='protetto'/>
@@ -725,6 +726,7 @@
 		<cd:constant name='bookmark' value='segnalibro'/>
 		<cd:constant name='bottom' value='fondo'/>
 		<cd:constant name='bottomafter' value='bottomafter'/>
+		<cd:constant name='bottomalign' value='bottomalign'/>
 		<cd:constant name='bottombefore' value='bottombefore'/>
 		<cd:constant name='bottomcolor' value='bottomcolor'/>
 		<cd:constant name='bottomcommand' value='bottomcommand'/>
@@ -1339,6 +1341,7 @@
 		<cd:constant name='toffset' value='toffset'/>
 		<cd:constant name='tolerance' value='tolleranza'/>
 		<cd:constant name='top' value='cima'/>
+		<cd:constant name='topalign' value='topalign'/>
 		<cd:constant name='topcolor' value='topcolor'/>
 		<cd:constant name='topcommand' value='topcommand'/>
 		<cd:constant name='topdistance' value='distanzacima'/>

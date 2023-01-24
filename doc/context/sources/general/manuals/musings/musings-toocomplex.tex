@@ -1,0 +1,389 @@
+% language=us runpath=texruns:manuals/musings
+
+\useMPlibrary[dum]
+
+% Extending Darwin's Revolution – David Sloan Wilson & Robert Sapolsky
+
+\startcomponent musings-toocomplex
+
+\environment musings-style
+
+\startchapter[title={False promises}]
+
+\startsection[title={Introduction}]
+
+\startlines \setupalign[flushright]
+Hans Hagen
+Hasselt NL
+July 2019 (public 2023)
+\stoplines
+
+The \TEX\ typesetting system is pretty powerful, and even more so when you
+combine it with \METAPOST\ and \LUA. Add an \XML\ parser, a whole lot of handy
+macros, provide support for fonts and advanced \PDF\ output and you have a hard
+to beat tool. We're talking \CONTEXT.
+
+Such a system is very well suited for fully automated typesetting. There are
+\TEX\ lovers who claim that \TEX\ can do anything better than the competition but
+that's not true. Automated typesetting is quite doable when you accept the
+constraints. When the input is unpredictable you need to play safe!
+
+Some things are easy: turning complex \XML\ into \PDF\ with adaptive graphics,
+fast data processing, colorful layouts, conditional processing, extensive cross
+referencing, you can safely say that it can be done. But in practice there is
+some design involved and those are often specified by people who manipulate a
+layout on the fly and tweak and cheat in an interactive \WYSIWYG\ program. That is
+however not an option in automated typesetting. Traditional thinking with manual
+intervention has to make place for systematic and consistent solutions.
+Limitations can be compensated by clever designs and getting the maximum out of
+the system used.
+
+Unfortunately in practice some habits are hard to get rid of. Inconsistent use of
+colors, fonts, sectioning, image placements are just a few aspects that come to
+mind. When you typeset educational documents you also have to deal with strong
+opinions about how something should be presented and what students can't~(!)
+handle, like for instance cross references. One of the most dominant demands in
+typesetting such documents are so called side floats. In (for instance)
+scientific publishing references to content typeset elsewhere (formulas,
+graphics) is acceptable but in educational documents this is often not an option
+(don't ask me why).
+
+In the next sections I will mention a few aspects of side floats. I will not
+discuss the options because these are covered in manuals. Here we stick to the
+challenges and the main question that you have to ask yourself is: \quotation
+{How would I solve that if it can be solved at all?}. It might make you a bit
+more tolerant for suboptimal outcome.
+
+\stopsection
+
+\startsection[title={The basics}]
+
+We start with a simple example. The result is shown in \in {figure} [demo-1a]. We
+have figures, put at the left, with enough text alongside so that we don't have a
+problem running into the next figure.
+
+\startbuffer[demo-1a]
+\dorecurse {8} {
+    \useMPlibrary[dum]
+    \setuplayout[middle]
+    \setupbodyfont[plex]
+    \startplacefigure[location=left]
+        \externalfigure[dummy][width=3cm]
+    \stopplacefigure
+    \samplefile{sapolsky}
+    \par
+}
+\stopbuffer
+
+\typebuffer[demo-1a]
+
+\startplacefigure[reference=demo-1a,title={A simple example with enough text in a single paragraph.}]
+    \startcombination
+        {\typesetbuffer[demo-1a][width=5cm,frame=on,page=1]} {}
+        {\typesetbuffer[demo-1a][width=5cm,frame=on,page=2]} {}
+    \stopcombination
+\stopplacefigure
+
+Challenge: Anchor some boxed material to the running text and make sure that the
+text runs around that material. When there is not enough room available on the
+page, enforce a page break and move the lot to the next page.
+
+But more often than not, the following paragraph is not long enough to go around
+the insert. The worst case is of course when we end up with one word below the
+insert, for which the solution is to adapt the text or make the insert wider or
+narrower. Forgetting about this for now, we move to the case where there is not
+enough text: \in {figure} [demo-1b].
+
+\startbuffer[demo-1b]
+\dorecurse {8} {
+    \useMPlibrary[dum]
+    \setuplayout[middle]
+    \setupbodyfont[plex]
+    \startplacefigure[location=left]
+        \externalfigure[dummy][width=3cm]
+    \stopplacefigure
+    \samplefile{ward} \par \samplefile{ward}
+    \par
+}
+\stopbuffer
+
+\typebuffer[demo-1b]
+
+\startplacefigure[reference=demo-1b,title={A simple example with enough text but multiple paragraphs.}]
+    \startcombination
+        {\typesetbuffer[demo-1b][width=5cm,frame=on,page=1]} {}
+        {\typesetbuffer[demo-1b][width=5cm,frame=on,page=2]} {}
+    \stopcombination
+\stopplacefigure
+
+Challenge: At every new paragraph, check if we're still not done with the blob
+we're typesetting around and carry on till we are behind the insert.
+
+\startbuffer[demo-1c]
+\dorecurse {8} {
+    \useMPlibrary[dum]
+    \setuplayout[middle]
+    \setupbodyfont[plex]
+    \startplacefigure[location=left]
+        \externalfigure[dummy][width=3cm]
+    \stopplacefigure
+    \samplefile{ward}
+    \par
+}
+\stopbuffer
+
+The next example, shown in \in {figure} [demo-1c], has less text. However, the
+running text is still alongside the figure, so this means that white space need
+to be added till we're beyond.
+
+\typebuffer[demo-1c]
+
+\startplacefigure[reference=demo-1c,title={A simple example with less text}]
+    \startcombination
+        {\typesetbuffer[demo-1c][width=5cm,frame=on,page=1]} {}
+        {\typesetbuffer[demo-1c][width=5cm,frame=on,page=2]} {}
+    \stopcombination
+\stopplacefigure
+
+Challenge: When there is not enough content, and the next insert is coming, we
+add enough whitespace to go around the insert and then start the new one. This is
+typically something that can also be enforced by an option.
+
+Before we move on to the next challenge, let's explain how we run around the
+insert. When \TEX\ typesets a paragraph, it uses dimensions like \typ {\leftskip}
+and \typ {\rightskip} (margins) and shape directives like \typ {\hangindent} and
+\typ {\hangafter}. There is also the possibility to define a \typ {\parshape} but
+we will leave that for now. The with of the image is reflected in the indent and
+the height gets divided by the line height and becomes the \typ {\hangafter}.
+Whenever a new paragraph is started, these parameters have to be set again.
+\footnote {I still consider playing with a third parameter representing hang
+height and add that to the line break routine, but I have to admit that tweaking
+that is tricky. Do I really understand what is going on there?} In \CONTEXT\
+hanging is also available as basic feature.
+
+\startbuffer
+\starthanging[location=left]
+    {\blackrule[color=maincolor,width=3cm,height=1cm]}
+    \samplefile{carrol}
+\stophanging
+\stopbuffer
+
+\typebuffer {\setupalign[tolerant,stretch]\getbuffer}
+
+\startbuffer
+\starthanging[location=right]
+    {\blackrule[color=maincolor,width=10cm,height=1cm]}
+    \samplefile{jojomayer}
+\stophanging
+\stopbuffer
+
+\typebuffer {\setupalign[tolerant,stretch]\getbuffer}
+
+The hanging floats are not implemented this way but are hooked into the
+paragraph start routines. The original approach was a variant of
+the macros by Daniel Comenetz as published in TUGBoat Volume 14 (1993),
+No.~1: Anchored Figures at Either Margin. In the meantime they are far
+from that, so \CONTEXT\ users can safely blame me for any issues.
+
+\stopsection
+
+\startsection[title={Unpredictable dimensions}]
+
+In an ideal world images will be sort of consistent but in practice the dimension
+will differ, even fonts used in graphics can be different, and they can have
+white space around them. When testing a layout it helps to use mockups with a
+clear border. If these look okay, one can argue that worse looking assemblies
+(more visual whitespace above of below) is a matter of making better images. In
+\in {figure} [demo-2a] we demonstrate how different dimensions influence the space
+below the placement.
+
+\startbuffer[demo-2a]
+\dostepwiserecurse {2} {8} {1} {
+    \useMPlibrary[dum]
+    \setuplayout[middle]
+    \setupbodyfont[plex]
+    \setupalign[tolerant,stretch]
+    \startplacefigure[location=left]
+        \externalfigure[dummy][width=#1cm]
+    \stopplacefigure
+    \samplefile{sapolsky}
+    \par
+}
+\stopbuffer
+
+\typebuffer[demo-2a]
+
+\startplacefigure[reference=demo-2a,title={Spacing relates to dimensions.}]
+    \startcombination[3*1]
+        {\typesetbuffer[demo-2a][width=5cm,frame=on,page=1]} {}
+        {\typesetbuffer[demo-2a][width=5cm,frame=on,page=2]} {}
+        {\typesetbuffer[demo-2a][width=5cm,frame=on,page=3]} {}
+    \stopcombination
+\stopplacefigure
+
+In \CONTEXT\ there are plenty of options to add more space above or below the
+image. You can anchor the image to the first line in different ways and you can
+move it some lines down, either or not with text flowing around it. But here we
+stick to simple cases, we only discuss the challenges.
+
+Challenge: Adapt the wrapping to the right dimensions and make sure that the
+(optional) caption doesn't overlap with the text below.
+
+\stopsection
+
+\startsection[title={Moving forward}]
+
+When the insert doesn't fit it has to move, which is why it's called a float. One
+solution is do take it out of the page stream and turn it into a regular
+placement, normally centered horizontally somewhere on the page, and in this case
+probably at the top of one of the next pages. Because we can cross reference this
+is a quite okay solution. But, in educational documents, where authors refer to
+the graphic (picture) on the left or right, that doesn't work out well. The
+following content is bound to the image.
+
+Calculating the amount of available space is a bit tricky due to the way \TEX\
+works. But let's assume that this can be done, in \CONTEXT\ we have seen several
+strategies for this, we then end up at the top of the next page and there
+different spacing rules apply, like: no spacing at the top at all. In our
+examples no whitespace between paragraphs is present. The final solutions are
+complicated by the fact that we need to take this into account.
+
+Challenge: Make sure that we never run off the page but also that we
+don't end up with weird situations at the top of the next page.
+
+Another possibility is that images so tightly fit a whole number of lines, that a
+next one can come too close to a previous one. Again, this demands some analysis.
+Here we use examples with captions but when there are no captions, there is also
+less visual space (no depth in lines).
+
+Challenge: Make sure that a following insert never runs too close to a previous
+insert.
+
+Solutions can be made better when we use multi|-|pass information. Because in a
+typical \TEX\ run there is only looking back, storing information can actually
+make us look forward. But, as in science fiction: when you act upon the future,
+the past becomes different and therefore also the future (after that particular
+future). This means that you can only go forward. Say you have 10 cases: when
+case 5 changes because of some feedback, then case 6 upto 10 also can change. So,
+you might need more than 10 runs to get things right. In a workflow where users
+are waiting for a result, and a few hundred side floats are used this doesn't
+sell well: processing 400 pages with a 20 page per second rate takes 20 seconds
+per run. Normally one needs a few runs to get the references right. Assuming a
+worst case of 60 seconds, 10 extra runs will bring you close to 15 minutes. No
+deal.
+
+Of course one can argue for some load|-|in|-|memory and optimize in one go, but
+although \TEX\ can do that well for paragraphs, it won't work for complex
+documents. Sure, it's a nice academic exercise to explore limited cases but
+those are not what we encounter.
+
+\stopsection
+
+\startsection[title={Cooperation}]
+
+When discussing (on YouTube) \quotation {Extending Darwin's Revolution} David
+Sloan Wilson and Robert Sapolsky touch on the fact that in some disciplines (like
+economics) evolutionary principles are applied. One can apply for instance the
+concept of a \quote {selfish gene}. However, they argue that when doing that, one
+actually lags behind the now accepted group selection (which goes beyond the
+individual benefits). An example is given where aggressive behavior on the short
+term can turn one in a winner (who takes it all) but which can lead to self
+destructive in the long run: cooperating seems to works better than terminal
+competition.
+
+In \TEX\ we have glues and penalties. The machinery likes to break at a glue but
+a severe penalty can prohibit that. The fact that we have penalties and no
+rewards is interesting: a break can be stimulated by a negative penalty. I've
+forgotten most of what I learned about cognitive psychology but I do remember
+that penalty vs reward discussions could get somewhat out of hand.
+
+So, when we have in the node list a mix of glue (you can break here), penalties
+(better not break here) and rewards (consider breaking here) you can imagine that
+these nodes compete. The optimal solution is not really a group process but
+basically a rather selfish game. Building a system around that kind of
+cooperation is not easy. In \CONTEXT\ a lot of attention always went into
+consistent vertical spacing. In \MKII\ there were some \quote {look back} and
+\quote {control forward} mechanisms in place, and in \MKIV\ we use a model of
+weighted glue: a combination of penalties and skips. Again we look back and again
+we also try to control the future. This works reasonable well but what if we end
+up in a real competition?
+
+A section head should not end up at the bottom of a page. Because when it gets
+typeset it is unknown what follows, it does some checking and then tries to make
+sure that there is no page break following. Of course there needs to be a
+provision for the cases that there are many (sub)heads and of course when there
+are only heads on a page (in a concept for instance) you don't want to run of the
+page.
+
+Similar situations arise with for instance itemized lists and the tabulate
+mechanism. There we have some heuristics that keep content together in a way that
+makes sense given the construct: no single table line at the bottom of a page
+etc. But then comes the side float. The available space is checked. When doing
+that the whitespace following the section head has to collapse with the space
+around the image, but of course at the top of a page spacing is different. So,
+calculations are done, but even a small difference between what is possible and
+what is needed can eventually still trigger an unwanted page break. This is
+because you cannot really ask how much has been accumulated so far: the space
+used is influenced by what comes next (like whitespace, maybe interline space,
+the previous depth correction, etc). That in turn means that you have to (sort
+of) trigger these future space related items to be applied already.
+
+Challenge: Let the side float mechanism nicely cooperate with other mechanisms
+that have their own preferences for crossing pages, adding whitespace and being
+bound to following content.
+
+\stopsection
+
+\startsection[title={Easy bits}]
+
+Of course, once there is such a mechanism in place, user demands will trigger
+more features. Most of these are actually not that hard to deal with: renumbering
+due to moved content, automatic anchoring to the inner or outer margin,
+horizontal placement and shifting into margins, etc. Everything that doesn't
+relate to vertical placement is rather trivial to deal with, especially when the
+whole infrastructure for that is already present (as in \CONTEXT). The problem
+with such extensions is that one can easily forget what is possible because most
+are rarely used.
+
+Challenge: Make sure that all fits into an understandable model and is easy to
+control.
+
+\stopsection
+
+\startsection[title={Conclusion}]
+
+The side float mechanism in \CONTEXT\ is complex, has many low level options, and
+its code doesn't look pretty. It is probably the mechanism that has been
+overhauled and touched most in the code base. It is also the mechanism that
+(still) can behave in ways you don't expect when combined with other mechanisms.
+The way we deal with this (if needed) is to add directives to (in our case) \XML\
+files that tells the engine what to do. Because that is a last resort it is only
+needed when making the final product. So in the end, we're still have the
+benefits of automated typesetting.
+
+Of course we can come up with a different model (basically re|-|implement the
+page builder) but apart from much else falling apart, it will just introduce
+other constraints and side effects. Thinking in terms of selfish nodes, glues and
+penalties, works ok for a specific document where one can also impose usage
+rules. If you know that a section head is always followed by regular text, things
+become easier. But in a system like \CONTEXT\ you need to update your thinking to
+group selection: mechanisms have to work together and that can be pretty
+complicated. Some mechanisms can do that better than others. One outcome can be
+that for instance side floats are not really group players, so eventually they
+might become less popular and fade away. Of course, as often, years later they
+get rediscovered and the cycle starts again. Maybe a string argument can be made
+that in fully automated typesetting concepts like side floats should not be used
+anyway.
+
+If I have to summarize this wrap up, the conclusion is that we should be
+realistic: we're not dealing with an expert system, but with a bunch of
+heuristics. You need an intelligent system to help you out of deadlock and
+oscillating solutions. Given the different preferences you need a multiple
+personality system. You might actually need a system that wraps your expectations
+and solutions and that adapts to changes in those over time. But if there is such
+a system (some day) it probably doesn't need you. In fact, maybe even typesetting
+is not needed any more by then.
+
+\stopsection
+
+\stopchapter

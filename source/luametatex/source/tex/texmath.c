@@ -1691,20 +1691,27 @@ int tex_check_active_math_char(int character)
             case alignment_tab_cmd:              
             case superscript_cmd:                
             case subscript_cmd:                  
-                cur_cmd = code;
-                cur_chr = character;
-                cur_tok = token_val(cur_cmd, cur_chr);
-                if (tracing_commands_par >= 4) {
-                    tex_aux_report_active(4, "control", code, character);
-                }
-                return 1;
             case letter_cmd:                     
             case other_char_cmd:
+            case active_char_cmd:
                 cur_cmd = code;
                 cur_chr = character;
                 cur_tok = token_val(cur_cmd, cur_chr);
                 if (tracing_commands_par >= 4) {
-                    tex_aux_report_active(4, "inject", code, character);
+                    switch (code) {
+                        case alignment_tab_cmd:              
+                        case superscript_cmd:                
+                        case subscript_cmd:                  
+                            tex_aux_report_active(4, "control", code, character);
+                            break;
+                        case letter_cmd:                     
+                        case other_char_cmd:
+                            tex_aux_report_active(4, "inject", code, character);
+                            break;
+                        case active_char_cmd:
+                            tex_aux_report_active(4, "active", code, character);
+                            break;
+                    }
                 }
                 return 1;
             default: 
@@ -1754,6 +1761,21 @@ static int tex_aux_scan_active_math_char(mathcodeval *mval, int where)
                     tex_aux_report_active(where, "inject", code, character);
                 }
                 return 0;
+            case active_char_cmd:
+                /*tex 
+                    We reset the code so that we don't get a loop, whuich means that the macro that 
+                    gets invoked has to set the amcode again if needed. 
+                */
+                tex_set_am_code(character, other_char_cmd, 0);
+                cur_cs = tex_active_to_cs(cur_chr, 1);
+                cur_cmd = eq_type(cur_cs);
+                cur_chr = eq_value(cur_cs);
+                tex_x_token();
+                tex_back_input(cur_tok);
+                if (tracing_commands_par >= 4) {
+                    tex_aux_report_active(where, "active", code, character);
+                }
+                return 1;
             default: 
                 if (tracing_commands_par >= 4) {
                     tex_aux_report_active(where, "ignore", code, character);
@@ -1761,6 +1783,7 @@ static int tex_aux_scan_active_math_char(mathcodeval *mval, int where)
                 return 1;
         }
     } else if (mval->class_value == active_math_class_value) {
+        /*tex We might eventually drop tthis feature in favor of the amcode. */
         cur_cs = tex_active_to_cs(cur_chr, 1);
         cur_cmd = eq_type(cur_cs);
         cur_chr = eq_value(cur_cs);

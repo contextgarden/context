@@ -3438,8 +3438,8 @@ end
         for n, subtype in nexthlist, head do
             if subtype == linelist_code then
                 setattr(n,a_textblock,noftextblocks)
-            elseif subtype == glue_code or subtype == kern_code then -- no need to set fontkerns
-                setattr(n,a_textblock,0)
+--             elseif subtype == glue_code or subtype == kern_code then -- weird, no list
+--                 setattr(n,a_textblock,0)
             end
         end
         return false

@@ -49,10 +49,20 @@ local nextnode          = nuts.traversers.node
 local texgetdimen       = tex.getdimen
 local texsetdimen       = tex.setdimen
 local texsetcount       = tex.setcount
+local texisdimen        = tex.isdimen
+local texiscount        = tex.iscount
 
 local boundary          = tex.boundaries.system("mathalign")
 local stages            = { }
 local initial           = { }
+
+local c_strc_math_n_of_lines   = texiscount("c_strc_math_n_of_lines")
+local d_strc_math_max_width    = texisdimen("d_strc_math_max_width")
+local d_strc_math_first_width  = texisdimen("d_strc_math_first_width")
+local d_strc_math_last_width   = texisdimen("d_strc_math_last_width")
+local d_strc_math_first_height = texisdimen("d_strc_math_first_height")
+local d_strc_math_last_depth   = texisdimen("d_strc_math_last_depth")
+local d_strc_math_indent       = texisdimen("d_strc_math_indent")
 
 stages[1] = function(specification,stage)
     local box      = getbox(specification.box)
@@ -91,7 +101,7 @@ stages[1] = function(specification,stage)
             break
         end
     end
-    texsetdimen("global","d_strc_math_indent",distance)
+    texsetdimen("global",d_strc_math_indent,distance)
     if align == 2 then
         for n in nextglue, head do
             setglue(n,getwidth(n),0,0,0,0)
@@ -149,12 +159,12 @@ stages[2] = function(specification,stage)
             end
         end
     end
-    texsetcount("global","c_strc_math_n_of_lines",cnt)
-    texsetdimen("global","d_strc_math_max_width",maxwidth)
-    texsetdimen("global","d_strc_math_first_width",firstwidth)
-    texsetdimen("global","d_strc_math_last_width",lastwidth)
-    texsetdimen("global","d_strc_math_first_height",firstheight)
-    texsetdimen("global","d_strc_math_last_depth",lastdepth)
+    texsetcount("global",c_strc_math_n_of_lines,cnt)
+    texsetdimen("global",d_strc_math_max_width,maxwidth)
+    texsetdimen("global",d_strc_math_first_width,firstwidth)
+    texsetdimen("global",d_strc_math_last_width,lastwidth)
+    texsetdimen("global",d_strc_math_first_height,firstheight)
+    texsetdimen("global",d_strc_math_last_depth,lastdepth)
 end
 
 stages[3] = stages[2]

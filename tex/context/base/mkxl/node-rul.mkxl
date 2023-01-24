@@ -71,6 +71,20 @@
 %definesystemattribute[ruled]
 %definesystemattribute[shifted]
 
+\newdimension\d_rule_width
+\newdimension\d_rule_height
+\newdimension\d_rule_depth
+\newdimension\d_rule_h
+\newdimension\d_rule_v
+\newdimension\d_rule_line
+\newdimension\d_rule_offset
+\newdimension\d_rule_factor
+
+\mutable\lettonothing\m_rule_direction
+%mutable\lettonothing\m_rule_factor
+\mutable\lettonothing\m_rule_option
+\mutable\lettonothing\m_rule_color
+
 \registerctxluafile{node-rul}{autosuffix,optimize}
 
 \installcorenamespace{bar}
@@ -288,20 +302,6 @@
 %D \stopbuffer
 %D
 %D \typebuffer \getbuffer
-
-\newdimension\d_rule_width
-\newdimension\d_rule_height
-\newdimension\d_rule_depth
-\newdimension\d_rule_h
-\newdimension\d_rule_v
-\newdimension\d_rule_line
-\newdimension\d_rule_offset
-\newdimension\d_rule_factor
-
-\mutable\lettonothing\m_rule_direction
-%mutable\lettonothing\m_rule_factor
-\mutable\lettonothing\m_rule_option
-\mutable\lettonothing\m_rule_color
 
 \startuseMPgraphic{rules:under:random}
     draw

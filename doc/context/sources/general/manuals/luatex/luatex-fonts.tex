@@ -728,13 +728,12 @@ font.setfont(<number> n, <table> f)
 
 Note that at the moment, each access to the \type {font.fonts} or call to \type
 {font.getfont} creates a \LUA\ table for the whole font unless you cached it.
-If you want a copy of the internal data you can use \type {font.copyfont}:
 
 \startfunctioncall
-<table> f = font.copyfont(<number> n)
+<table> f = font.getfont(<number> n)
 \stopfunctioncall
 
-This one will return a table of the parameters as known to \TEX. These can be
+So, this one will return a table of the parameters as known to \TEX. These can be
 different from the ones in the cached table:
 
 \startfunctioncall
@@ -788,7 +787,7 @@ Within reasonable bounds you can extend a font after it has been defined. Becaus
 some properties are best left unchanged this is limited to adding characters.
 
 \startfunctioncall
-font.addcharacters(<number n>, <table> f)
+font.addcharacters(<number> n, <table> f)
 \stopfunctioncall
 
 The table passed can have the fields \type {characters} which is a (sub)table

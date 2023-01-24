@@ -495,10 +495,12 @@ void tex_initialize_commands(void)
 
         tex_primitive(tex_command,    "vrule",                          vrule_cmd,              normal_rule_code,                         0);
         tex_primitive(luatex_command, "novrule",                        vrule_cmd,              empty_rule_code,                          0);
+        tex_primitive(luatex_command, "virtualvrule",                   vrule_cmd,              virtual_rule_code,                        0);
         tex_primitive(luatex_command, "srule",                          vrule_cmd,              strut_rule_code,                          0);
 
         tex_primitive(tex_command,    "hrule",                          hrule_cmd,              normal_rule_code,                         0);
         tex_primitive(luatex_command, "nohrule",                        hrule_cmd,              empty_rule_code,                          0);
+        tex_primitive(luatex_command, "virtualhrule",                   hrule_cmd,              virtual_rule_code,                        0);
 
         tex_primitive(tex_command,    "count",                          register_cmd,           int_val_level,                            0);
         tex_primitive(luatex_command, "attribute",                      register_cmd,           attr_val_level,                           0);

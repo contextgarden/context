@@ -79,6 +79,13 @@
     - radical
     - boundary
 
+    Before we went on with \LUAMETATEX\ already quite a bit was added to \LUATEX\ (granularity in 
+    subtypes, more of them, etc.) but here we add more. Some day I might make a list of difference
+    just for historic reasons. Don't assume equivalence: some in \LUATEX\ was sort of experimental 
+    and improved over time and maybe should not have been added to \LUATEX\ at all and been delayed
+    for \LUAMETATEX\ instead (as it's probably not used), so that core \LUATEX\ stayed closer the 
+    other engines. 
+
 */
 
 typedef enum node_types {
@@ -966,6 +973,7 @@ typedef enum rule_subtypes {
     empty_rule_subtype,
     strut_rule_subtype,
     outline_rule_subtype,
+    virtual_rule_subtype,
     user_rule_subtype,
     math_over_rule_subtype,
     math_under_rule_subtype,
@@ -978,7 +986,8 @@ typedef enum rule_subtypes {
 typedef enum rule_codes {
     normal_rule_code,
     empty_rule_code,
-    strut_rule_code,
+    virtual_rule_code,
+    strut_rule_code
 } rule_codes;
 
 # define last_rule_subtype image_rule_subtype

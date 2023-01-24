@@ -13,10 +13,10 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            FractionRuleThickness             =   55,
-            AccentBaseDepth                   =  250,
-            DelimiterPercent                  =   90,
-            DelimiterShortfall                =  400,
+            FractionRuleThickness             =  55,
+            AccentBaseDepth                   = 250,
+            DelimiterPercent                  =  90,
+            DelimiterShortfall                = 400,
             SuperscriptBottomMaxWithSubscript = 325,
             PrimeShiftUp                      = "1.4*SuperscriptShiftUp",
             PrimeShiftUpCramped               = "1.4*SuperscriptShiftUp",
@@ -32,6 +32,18 @@ return {
                     tweak   = "fixoldschool",
                     version = "Version 1.802",
                 },
+{
+    tweak   = "parameters",
+    feature = "boldmath",
+    list    = {
+--             RadicalRuleThickness  = 55,
+            RadicalRuleThickness  = 60,
+--             RadicalRuleThickness  = "1.09*RadicalRuleThickness",
+--             FractionRuleThickness = 65,
+--             OverRuleThickness     = 65,
+--             UnderRuleThickness    = 65,
+    }
+},
                 {
                     tweak = "addmirrors",
                 },

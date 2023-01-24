@@ -20,11 +20,7 @@
 
 \unprotect
 
-\doiffileelse{spac-prf-new.lmt}{
-    \registerctxluafile{spac-prf-new}{autosuffix}
-} {
-    \registerctxluafile{spac-prf}{autosuffix}
-}
+\registerctxluafile{spac-prf}{autosuffix}
 
 \definesystemattribute[profilemethod][public]
 
@@ -86,7 +82,7 @@
       \edef\currentprofile{#profile}%
    \fi
    \spac_profile_set
-   \par
+
    \profileparameter\c!before}
 
 \protected\def\spac_profile_stop
@@ -149,5 +145,41 @@
 \defineprofile[halffixed]   [\v!fixed][\c!factor=\plustwo]
 \defineprofile[quarterfixed][\v!fixed][\c!factor=\plusfour]
 \defineprofile[eightsfixed] [\v!fixed][\c!factor=\pluseight]
+
+% Finally some follow up on this experiment:
+
+\definesystemattribute[lineprofile]  [public]
+
+\installcorenamespace {lineprofile}
+
+\installcommandhandler \??lineprofile {lineprofile} \??lineprofile
+
+\setuplineprofile
+  [\c!method=\v!a,
+   \c!step=.5\emwidth, % maybe 2pt
+   \c!factor=.125]     % maybe 0.250
+
+\def\spac_line_profile_set
+  {\clf_setlineprofile
+      name     {\currentlineprofile}%
+      step     \dimexpr\lineprofileparameter\c!step\relax
+      factor   {\lineprofileparameter\c!factor}
+      method   {\lineprofileparameter\c!method}%
+   \relax}
+
+\permanent\tolerant\protected\def\setlineprofile[#profile]%
+  {\edef\currentlineprofile{#profile}%
+   \spac_line_profile_set}
+
+\permanent\protected\def\resetlineprofile
+  {\c_attr_lineprofile\attributeunsetvalue}
+
+\permanent\protected\def\setmainlineprofile
+  {\lettonothing\currentlineprofile
+   \clf_setlineprofile}
+
+\appendtoks
+    \c_attr_lineprofile\attributeunsetvalue % or in general resetter
+\to \everyforgetall
 
 \protect \endinput

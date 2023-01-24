@@ -33,6 +33,8 @@
 %D for instance when combining bit and pieces where keeping a state is complex compared
 %D to cleaning up unwanted stuff.
 
+\newinteger\c_syst_last_node_id
+
 \registerctxluafile{typo-chr}{autosuffix}
 
 \definesystemattribute[marked][public]
@@ -77,8 +79,6 @@
 %D test test\lastnodeidstring test
 %D test test\number\lastnodeid test
 %D \stoptyping
-
-\newinteger\c_syst_last_node_id
 
 \permanent\protected\def\doifelselastnode      {\clf_lastnodeequals}                 % can be public implementors
 \permanent\protected\def\doifelseatwordboundary{\clf_atwordboundary}                 % can be public implementors

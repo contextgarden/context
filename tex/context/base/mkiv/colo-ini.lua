@@ -889,7 +889,7 @@ local function formatcolor(ca,separator)
         end
         return concat(c,separator)
     else
-        return format("%0.3f",0)
+        return "0.000" -- format("%0.3f",0)
     end
 end
 
@@ -1365,3 +1365,55 @@ implement {
         context((s < 0 and 0) or (s > 1 and 1) or s)
     end
 }
+
+-- playground for MS and HH
+
+do
+
+    -- https://www.w3.org/TR/WCAG21/#dfn-contrast-ratio
+    -- https://www.w3.org/TR/WCAG21/#dfn-relative-luminance
+
+    local function crap(v)
+        return v <= 0.03928 and v/12.92 or (v+0.055/1.055)^2.4
+    end
+
+    local function luminance(color)
+        color = values[color]
+        if color then
+            return (0.2126 * crap(color[2]) + 0.7152 * crap(color[3]) + 0.0722 * crap(color[4])) + 0.05
+        end
+    end
+
+    local function formatluminance(color)
+        local l = luminance(color)
+        if l then
+            return format("%0.3f",l)
+        end
+    end
+
+    local function formatluminanceratio(one,two)
+        local one = luminance(one)
+        local two = luminance(two)
+        if one and two then
+            return format("%0.3f",one > two and one/two or two/one)
+        end
+    end
+
+    colors.formatluminance      = formatluminance
+    colors.formatluminanceratio = formatluminanceratio
+
+    implement {
+        name      = "formatluminance",
+     -- protected = true,
+        arguments = "integer",
+        actions   = { formatluminance, context },
+    }
+
+    implement {
+        name      = "formatluminanceratio",
+     -- protected = true,
+        arguments = { "integer", "integer" },
+        actions   = { formatluminanceratio, context },
+    }
+
+end

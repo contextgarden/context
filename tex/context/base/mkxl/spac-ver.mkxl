@@ -20,10 +20,11 @@
 \newdimen   \bodyfontstrutdepth
 
 \newgluespec\globalbodyfontlineheight  % why a skip
-\newdimen   \globalbodyfontstrutheight
+\newdimen    \globalbodyfontstrutheight
 \newdimen   \globalbodyfontstrutdepth
 
-\newgluespec\s_spac_vspacing_predefined
+\newgluespec \s_spac_vspacing_predefined
+\newdimension\d_spac_overlay
 
 % \overloaded\let\strutht  \undefined \newdimen\strutht   % already defined
 % \overloaded\let\strutdp  \undefined \newdimen\strutdp
@@ -2019,8 +2020,6 @@
    \relax}
 
 %D used in itemize \unknown\ always test this:
-
-\newdimension\d_spac_overlay
 
 \def\spac_overlay_lines
   {\directcheckedvspacing{\v!back,\v!overlay}% \blank[\v!back,\v!overlay]%

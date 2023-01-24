@@ -49,6 +49,7 @@ local getfont            = nuts.getfont
 local getglyphdimensions = nuts.getglyphdimensions
 local getkerndimension   = nuts.getkerndimension
 local getlistdimensions  = nuts.getlistdimensions
+local getruledimensions  = nuts.getruledimensions
 
 local setdirection       = nuts.setdirection
 local setlink            = nuts.setlink
@@ -84,6 +85,8 @@ local disc_code          = nodecodes.disc
 local math_code          = nodecodes.math
 local rule_code          = nodecodes.rule
 local whatsit_code       = nodecodes.whatsit
+
+local virtualrule_code   = nodes.rulecodes.virtual
 
 local leaders_code       = gluecodes.leaders
 local cleaders_code      = gluecodes.cleaders
@@ -1132,7 +1135,7 @@ local hlist_out, vlist_out  do
                    end
                 end
             elseif id == rule_code then
-                local width, height, depth = getwhd(current)
+                local width, height, depth, virtual = getruledimensions(current)
                 if width > 0 then
                     if height == runningrule then
                         height = boxheight
@@ -1147,18 +1150,22 @@ local hlist_out, vlist_out  do
                             pos_h   = pos_h - width
                             xoffset = - xoffset
                         end
-                        if top ~= 0 then
-                         -- height = height - top
-                            total  = total - top
-                        end
-                        if bottom ~= 0 then
-                            depth = depth - bottom
-                            total = total - bottom
+                        if not virtual then
+                            if top ~= 0 then
+                             -- height = height - top
+                                total  = total - top
+                            end
+                            if bottom ~= 0 then
+                                depth = depth - bottom
+                                total = total - bottom
+                            end
                         end
                         pos_v = pos_v - depth
                         flushrule(current,pos_h + xoffset,pos_v + yoffset,pos_r,width,total,subtype)
                     end
-                    cur_h = cur_h + width
+                    if not virtual then
+                        cur_h = cur_h + width
+                    end
                 end
             elseif id == math_code then
              -- local kern = getkern(current)
@@ -1518,7 +1525,7 @@ local hlist_out, vlist_out  do
             elseif id == kern_code then
                 cur_v = cur_v + getkern(current)
             elseif id == rule_code then
-                local width, height, depth = getwhd(current)
+                local width, height, depth, virtual = getruledimensions(current)
                 local total = height + depth
                 if total > 0 then
                     if width == runningrule then
@@ -1526,19 +1533,23 @@ local hlist_out, vlist_out  do
                     end
                     if width > 0 then
                         local xoffset, yoffset, left, right = getoffsets(current)
-                        if left ~= 0 then
-                            width = width - left
-                            xoffset = left
-                        end
-                        if right ~= 0 then
-                            width = width - right
+                        if not virtual then
+                            if left ~= 0 then
+                                width = width - left
+                                xoffset = left
+                            end
+                            if right ~= 0 then
+                                width = width - right
+                            end
                         end
                         if pos_r == righttoleft_code then
                             xoffset = - xoffset - width
                         end
                         flushrule(current,pos_h + xoffset,pos_v - total - yoffset,pos_r,width,total,subtype)
                     end
-                    cur_v = cur_v + total
+                    if not virtual then
+                        cur_v = cur_v + total
+                    end
                 end
             elseif id == whatsit_code then
                 flushwhatsit[subtype](current,pos_h,pos_v)

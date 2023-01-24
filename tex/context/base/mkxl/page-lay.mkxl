@@ -814,6 +814,9 @@
 \permanent\def\layoutcolumnoffset#1% can travel around so we can't use \lastnamedcs
   {\csname\??layoutcolumn\ifcsname\??layoutcolumn#1\endcsname#1\else0\fi\endcsname}
 
+\permanent\protected\def\layoutlineoffset#1%
+  {\the\dimexpr\topskip-\strutht+#1\lineheight-\lineheight\relax}
+
 \def\page_layouts_synchronize_at_start
   {\ifdim\makeupheight=\layoutlines\lineheight \else % weird check
      \page_layouts_synchronize
