@@ -61,13 +61,13 @@
 
 \def\spac_profile_set
   {\clf_setprofile
-      name     {\currentprofile}%
-      height   \dimexpr\profileparameter\c!height\relax
-      depth    \dimexpr\profileparameter\c!depth\relax
-      distance \dimexpr\profileparameter\c!distance\relax
-      factor   \numexpr\profileparameter\c!factor\relax
-      lines    \numexpr\profileparameter\c!lines\relax
-      method   {\profileparameter\c!method}%
+      name      {\currentprofile}%
+      height    \dimexpr\profileparameter\c!height\relax
+      depth     \dimexpr\profileparameter\c!depth\relax
+      distance  \dimexpr\profileparameter\c!distance\relax
+      factor    \numexpr\profileparameter\c!factor\relax
+      lines     \numexpr\profileparameter\c!lines\relax
+      method    {\profileparameter\c!method}%
    \relax}
 
 \tolerant\protected\def\spac_profile_start#profile#spacer[#settings]%
@@ -157,14 +157,16 @@
 \setuplineprofile
   [\c!method=\v!a,
    \c!step=.5\emwidth, % maybe 2pt
+   \c!paragraph=\v!no,
    \c!factor=.125]     % maybe 0.250
 
 \def\spac_line_profile_set
   {\clf_setlineprofile
-      name     {\currentlineprofile}%
-      step     \dimexpr\lineprofileparameter\c!step\relax
-      factor   {\lineprofileparameter\c!factor}
-      method   {\lineprofileparameter\c!method}%
+      name      {\currentlineprofile}%
+      step      \dimexpr\lineprofileparameter\c!step\relax
+      factor    {\lineprofileparameter\c!factor}%
+      method    {\lineprofileparameter\c!method}%
+      paragraph {\lineprofileparameter\c!paragraph}%
    \relax}
 
 \permanent\tolerant\protected\def\setlineprofile[#profile]%

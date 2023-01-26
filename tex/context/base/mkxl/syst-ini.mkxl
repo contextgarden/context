@@ -142,6 +142,7 @@
 \immutable\integerdef\periodasciicode          46
 \immutable\integerdef\forwardslashasciicode    47 % /
 \immutable\integerdef\colonasciicode           58
+\immutable\integerdef\semicolonasciicode       59
 \immutable\integerdef\lessthanasciicode        60 % < used as alternative verbatim {
 \immutable\integerdef\morethanasciicode        62 % > used as alternative verbatim }
 \immutable\integerdef\questionmarkasciicode    63 % ? used in namespace protection
@@ -1489,5 +1490,9 @@
 %D We don't do this:
 
 % \setdefaultmathcodes % initializes traditional codes
+
+%D Catch
+
+\ifdefined\mathpunctuation \else \let\mathpunctuation\mathpunct \fi % fixed in 2.10.06
 
 \protect \endinput

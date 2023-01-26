@@ -545,7 +545,7 @@ local fontkern, italickern, marginkern, mathkern do
             setshift(text,-5 * exheight)
             info = new_hlist(setlink(rule,text))
             setattr(info,a_layer,layer)
-            f_cache[kern] = info
+            cache[kern] = info
         end
         head = insertnodebefore(head,current,copylist(info))
         return head, current
@@ -583,7 +583,7 @@ local ruledglyphexpansion do
             extra = extra / 1000
             local info = f_cache[extra]
             if not info then
-                local text = hpack_string(round(extra),usedfont)
+                local text = hpack_string(tostring(round(extra)),usedfont)
                 local rule = new_rule(emwidth/fraction,exheight,2*exheight)
                 local list = getlist(text)
                 if extra > 0 then
@@ -594,13 +594,12 @@ local ruledglyphexpansion do
                 setlisttransparency(list,"trace:ds")
                 setcolor(rule,"trace:ds")
                 settransparency(rule,"trace:ds")
-                setshift(text,1.5 * exheight)
+                setshift(text,1.75 * exheight)
                 info = new_hlist(setlink(rule,text))
                 setattr(info,a_layer,l_expansion)
                 f_cache[extra] = info
             end
             head = insertnodebefore(head,current,copylist(info))
-            return head, current
         end
         return head, current
     end
@@ -619,7 +618,7 @@ local kernexpansion do
             extra = extra / 1000
             local info = f_cache[extra]
             if not info then
-                local text = hpack_string(round(extra),usedfont)
+                local text = hpack_string(tostring(round(extra)),usedfont)
                 local rule = new_rule(emwidth/fraction,exheight,4*exheight)
                 local list = getlist(text)
                 if extra > 0 then
@@ -636,7 +635,6 @@ local kernexpansion do
                 f_cache[extra] = info
             end
             head = insertnodebefore(head,current,copylist(info))
-            return head, current
         end
         return head, current
     end

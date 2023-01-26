@@ -98,6 +98,7 @@ appendaction("shipouts",     "wrapup",      "nodes.handlers.export",            
 appendaction("shipouts",     "wrapup",      "luatex.synctex.collect",                           nil, "nut",    "disabled"  )
 
 appendaction("math",         "normalizers", "noads.handlers.showtree",                          nil, "nonut",  "disabled"  )
+appendaction("math",         "normalizers", "noads.handlers.collapse",                          nil, "nonut",  "disabled"  )
 appendaction("math",         "normalizers", "noads.handlers.numbers",                           nil, "nonut",  "disabled"  )
 appendaction("math",         "normalizers", "noads.handlers.spacing",                           nil, "nonut",  "disabled"  )
 appendaction("math",         "normalizers", "noads.handlers.fencing",                           nil, "nonut",  "disabled"  )
@@ -107,7 +108,7 @@ appendaction("math",         "normalizers", "noads.handlers.relocate",          
 appendaction("math",         "normalizers", "noads.handlers.variants",                          nil, "nonut",  "enabled"   )
 appendaction("math",         "normalizers", "noads.handlers.families",                          nil, "nonut",  "enabled"   )
 appendaction("math",         "normalizers", "noads.handlers.render",                            nil, "nonut",  "enabled"   )
-appendaction("math",         "normalizers", "noads.handlers.collapse",                          nil, "nonut",  "disabled"  )
+------------("math",         "normalizers", "noads.handlers.collapse",                          nil, "nonut",  "disabled"  )
 appendaction("math",         "normalizers", "noads.handlers.fixscripts",                        nil, "nonut",  "enabled"   )
 ------------("math",         "normalizers", "noads.handlers.domains",                           nil, "nonut",  "disabled"  )
 appendaction("math",         "normalizers", "noads.handlers.autofences",                        nil, "nonut",  "disabled"  )

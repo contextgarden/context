@@ -664,6 +664,31 @@
 
 \fetchmodulecommand \showcolor \f!colo_run
 
+%D This one shows the luminance ratio conform WCAG:
+%D
+%D \starttyping
+%D \starttabulate[||r|]
+%D     \NC red   \NC \colorluminance{red}   \NC \NR
+%D     \NC green \NC \colorluminance{green} \NC \NR
+%D     \NC black \NC \colorluminance{black} \NC \NR
+%D     \NC white \NC \colorluminance{white} \NC \NR
+%D \stoptabulate
+%D
+%D \starttabulate[||r|]
+%D     \NC red : green \NC \colorluminanceratio{red}{green} \NC \NR
+%D     \NC red : black \NC \colorluminanceratio{red}{black} \NC \NR
+%D     \NC red : white \NC \colorluminanceratio{red}{white} \NC \NR
+%D \stoptabulate
+%D
+%D \usecolors[crayola]
+%D
+%D \compareluminance[Jade]      [Onyx] \par
+%D \compareluminance[Goldenrod] [Onyx] \par
+%D \compareluminance[CobaltBlue][Onyx] \par
+%D \stoptyping
+
+\fetchmodulecommand \compareluminance \f!colo_run
+
 %D It would make sense to put the following code in \type {colo-mps}, but it it
 %D rather low level.
 

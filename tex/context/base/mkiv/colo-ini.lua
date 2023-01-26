@@ -662,7 +662,7 @@ local function definemixcolor(makecolor,name,fractions,cs,global,freeze)
         if not v then
             return
         end
-        values[i] = v
+        colorvalues[i] = v
     end
     if #values > 0 then
         csone = values[1][1]
@@ -1366,7 +1366,14 @@ implement {
     end
 }
 
--- playground for MS and HH
+-- This is a playground for MS and HH:
+--
+-- Required Contrast Ratios for WCAG Conformance (how about small text)
+--
+-- Level AA  Text      4.5:1  for regular text and 3.0:1 for large text (18pt or 14pt/bold)
+-- Level AAA Text      7.0:1  for regular text and 4.5:1 for large text (18pt or 14pt/bold)
+--
+-- Level AA  Non-Text  3.0:1  for user interface components and graphics
 
 do
 
@@ -1378,7 +1385,7 @@ do
     end
 
     local function luminance(color)
-        color = values[color]
+        color = colorvalues[color]
         if color then
             return (0.2126 * crap(color[2]) + 0.7152 * crap(color[3]) + 0.0722 * crap(color[4])) + 0.05
         end

@@ -922,7 +922,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "mathrelation",                   math_component_cmd,     math_component_relation_code,             0);
         tex_primitive(luatex_command, "mathopen",                       math_component_cmd,     math_component_open_code,                 0);
         tex_primitive(luatex_command, "mathclose",                      math_component_cmd,     math_component_close_code,                0);
-        tex_primitive(luatex_command, "mathpunct",                      math_component_cmd,     math_component_punctuation_code,          0);
+        tex_primitive(luatex_command, "mathpunctuation",                math_component_cmd,     math_component_punctuation_code,          0);
         tex_primitive(luatex_command, "mathinner",                      math_component_cmd,     math_component_inner_code,                0);
         tex_primitive(luatex_command, "mathfraction",                   math_component_cmd,     math_component_fraction_code,             0);
         tex_primitive(luatex_command, "mathradical",                    math_component_cmd,     math_component_radical_code,              0);

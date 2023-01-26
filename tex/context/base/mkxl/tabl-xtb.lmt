@@ -120,6 +120,7 @@ local d_tabl_x_distance      = texisdimen("d_tabl_x_distance")
 local d_tabl_x_width         = texisdimen("d_tabl_x_width")
 local d_tabl_x_height        = texisdimen("d_tabl_x_height")
 local d_tabl_x_depth         = texisdimen("d_tabl_x_depth")
+local d_lineheight           = texisdimen("lineheight")
 
 local c_frameddimensionstate = texiscount("frameddimensionstate")
 
@@ -227,7 +228,7 @@ function xtables.create(settings)
     settings.rightmargindistance = tonumber(settings.rightmargindistance) or 0
     settings.options             = globaloptions
     settings.textwidth           = tonumber(settings.textwidth) or texget("hsize")
-    settings.lineheight          = tonumber(settings.lineheight) or texgetdimen("lineheight")
+    settings.lineheight          = tonumber(settings.lineheight) or texgetdimen(d_lineheight)
     settings.maxwidth            = tonumber(settings.maxwidth) or settings.textwidth/8
  -- if #stack > 0 then
  --     settings.textwidth = texget("hsize")
@@ -335,7 +336,7 @@ function xtables.set_reflow_width()
     drc.ht = height
     drc.dp = depth
     --
-    local dimensionstate = texgetcount("frameddimensionstate")
+    local dimensionstate = texgetcount(c_frameddimensionstate)
     local fixedcolumns = data.fixedcolumns
     local fixedrows = data.fixedrows
     if dimensionstate == 1 then

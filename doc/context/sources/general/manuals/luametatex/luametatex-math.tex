@@ -830,8 +830,8 @@ $\Ustack {a \over b}$
 \stoptyping
 
 The \prm {Ustack} command will scan the next brace and start a new math group
-with the correct (numerator) math style. The \prm {ustackstyle} relates to this
-feature.
+with the correct (numerator) math style. The \prm {mathstackstyle} primitive
+relates to this feature.
 
 \stopsubsection
 
@@ -1040,6 +1040,8 @@ undefined will get presets, quite likely zero):
 \NC \prm {Umathflattenedaccentbottomshiftdown} \NC the amount that a wide bottom accent is shifted down \NC \NR
 \NC \prm {Umathdelimiterpercent}               \NC \NC \NR
 \NC \prm {Umathdelimitershortfall}             \NC \NC \NR
+\NC \prm {Umathradicalextensiblebefore}        \NC \NC \NR
+\NC \prm {Umathradicalextensibleafter}         \NC \NC \NR
 \stoptabulate
 
 These relate to the font parameters and in \CONTEXT\ we assign some different
@@ -1557,16 +1559,17 @@ The original \TEX\ engine has primitives like \prm {mathord} and a limited set o
 possible atoms. In \LUAMETATEX\ we have many more built in and you can add more.
 It will take a while before we have documented all the new math features and more
 details can be found in the manuals that come with \CONTEXT\ for which all this
-was implemented. In addition to \prm {mathord}, \prm {mathop}, \prm {mathbin},
-\prm {mathrel}, \prm {mathopen}, \prm {mathclose}, \prm {mathpunct} and \prm
-{mathinner} we have \prm {mathfrac}, \prm {mathrad}, \prm {mathmiddle}, \prm
-{mathaccent}, \prm {mathfenced}. \prm {mathghost} and the existing \prm
-{underline} and \prm {overline} class driven atoms.
+was implemented. In addition to \prm {mathordinary} (aka \prm {mathord}), \prm
+{mathoperator} (aka \prm {mathop}), \prm {mathbinary} (aka \prm {mathbin}), \prm
+{mathrelation} (aka \prm {mathrel}), \prm {mathopen}, \prm {mathclose}, \prm
+{mathpunct} and \prm {mathinner} we have \prm {mathfraction}, \prm {mathradical},
+\prm {mathmiddle}, \prm {mathaccent}, \prm {mathfenced}. \prm {mathghost} and the
+existing \prm {underline} and \prm {overline} class driven atoms.
 
 The \prm {mathatom} primitive is the generic one and it accepts a couple of
 keywords:
 
-\starttabulate[|cT|l|]
+\starttabulate[|lT|l|l|]
 \DB keyword    \BC argument \NC meaning \NC \NR
 \TB
 \NC attr       \NC int int \NC attributes to be applied to this atom \NC \NR
@@ -1842,7 +1845,7 @@ supports two delimiters.
 \topicindex {math+radicals}
 \topicindex {math+delimiters}
 
-This new primitive is like \prm {Rooted} in that it takes two delimiters but it
+This new primitive is like \prm {Urooted} in that it takes two delimiters but it
 takes no degree and no rule is drawn.
 
 \starttyping
@@ -2264,7 +2267,16 @@ get the length of the last line, the following will often work too:
 
 \stopsection
 
-\startsection[title={Math mode}]
+\startsection[title={Math mode and scripts}]
+
+\startsubsection[title={Entering and leaving math mode with \prm {Ustartmathmode}
+and \prm {Ustopmathmode}}]
+
+These commands are variants on the single and double (usually) dollar signs that
+make us enter math mode and later leave it. The start command expects a style
+identifier that determines in what style we end up in.
+
+\stopsubsection
 
 \startsubsection[title={Verbose versions of single|-|character math commands like \prm {Usuperscript}
 and \prm {Usubscript}}]
@@ -2528,6 +2540,17 @@ Watch how the spacing changes:
 \getbuffer
 \stoplines
 
+The \TEX\ engines deal with active characters in math differently as in text.
+When a character has class~8 it will be fed back into the machinery with an
+active catcode which of course assumes that there is some meaning attached.
+
+A variant on this is the use of \prm {amcode}. A character that has that code set
+and that is active when we are in math mode, will be fed back with that code as
+catcode which can be one of alignment tab, superscript, subscript, letter, other
+char, or active. This feature is still experimental. Watch out: when an already
+active character remains active we get a loop. Also, math characters are checked
+for this property too, which can then turn them active.
+
 \stopsubsection
 
 \startsubsection[title={Checking class states}]
@@ -2768,9 +2791,11 @@ probably more qualifies as a feature specific for that usage.
 \DB value \BC meaning \NC \NR
 \TB
 \NC 0x01  \NC obey stretch component \NC \NR
-\NC 0x02  \NC obey shrink component \NC \NR
+\NC 0x02  \NC obey shrink  component \NC \NR
 \LL
 \stoptabulate
+
+\stopsubsection
 
 \stopsection
 
@@ -2894,8 +2919,6 @@ You'll notice that we apply more severe penalties at the edges:
 
 \stopsubsection
 
-\stopsection
-
 \startsubsection[title={\prm {Umathdiscretionary} and \prm {hmcode}}]
 
 \topicindex {math+discretionaries}
@@ -2928,6 +2951,9 @@ So we can say:
 \stoptyping
 
 When the \type {italic} bit is set italic correction is kept at a linebreak.
+\stopsubsection
+
+\stopsection
 
 \stopchapter
 

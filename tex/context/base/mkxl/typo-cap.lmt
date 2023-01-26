@@ -66,8 +66,6 @@ local variables       = interfaces.variables
 local v_reset         = variables.reset
 
 local texsetattribute = tex.setattribute
------ unsetvalue      = attributes.unsetvalue
------ texgetcount     = tex.getcount
 local texgetscales    = tex.getglyphscales
 
 typesetters           = typesetters or { }
@@ -406,7 +404,7 @@ function cases.set(n,id)
             return
         end
     end
-    texsetattribute(a_cases) -- ,unsetvalue)
+    texsetattribute(a_cases)
 end
 
 -- interface

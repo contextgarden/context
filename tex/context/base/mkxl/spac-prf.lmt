@@ -1,4 +1,4 @@
- if not modules then modules = { } end modules ['spac-prf'] = {
+if not modules then modules = { } end modules ['spac-prf'] = {
     version   = 1.001,
     comment   = "companion to spac-prf.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -40,6 +40,9 @@ local texlists          = tex.lists
 local settexattribute   = tex.setattribute
 local texgetdimen       = tex.getdimen
 
+local d_strutht = tex.isdimen("strutht")
+local d_strutdp = tex.isdimen("strutdp")
+
 local newindex          = lua.newindex
 
 local nuts              = nodes.nuts
@@ -65,6 +68,9 @@ local getdepth          = nuts.getdepth
 local getboxglue        = nuts.getboxglue
 local effectiveglue     = nuts.effectiveglue
 local findattribute     = nuts.findattribute
+local getspeciallist    = nuts.getspeciallist
+
+local getlistdimensions = nuts.getlistdimensions
 
 local nextnode          = nuts.traversers.node
 local nextglue          = nuts.traversers.glue
@@ -476,8 +482,8 @@ methods[v_strict] = function(top,bot,t_profile,b_profile,specification)
     local top        = tonut(top)
     local bot        = tonut(bot)
 
-    local strutht    = specification.height or texgetdimen.strutht
-    local strutdp    = specification.depth  or texgetdimen.strutdp
+    local strutht    = specification.height or texgetdimen(d_strutht)
+    local strutdp    = specification.depth  or texgetdimen(d_strutdp)
     local lineheight = strutht + strutdp
 
     local depth      = getdepth(top)
@@ -512,8 +518,8 @@ methods[v_fixed] = function(top,bot,t_profile,b_profile,specification)
     local top        = tonut(top)
     local bot        = tonut(bot)
 
-    local strutht    = specification.height or texgetdimen.strutht
-    local strutdp    = specification.depth  or texgetdimen.strutdp
+    local strutht    = specification.height or texgetdimen(d_strutht)
+    local strutdp    = specification.depth  or texgetdimen(d_strutdp)
     local lineheight = strutht + strutdp
 
     local depth      = getdepth(top)
@@ -970,15 +976,12 @@ do
                     if subtype >= leaders_code then
                         local leader = getleader(current)
                         local w
-                        w, ht, dp = getwhd(leader) -- can become getwhd(current) after 1.003
+                        w, ht, dp = getwhd(leader)
                     else
                         dp = 0
                     end
                 elseif id == hlist_code then
-                    -- maybe: offsets
-                    -- we could do a nested check .. but then we need to push / pop glue
-                    local shift = getshift(current)
-                    local w, h, d = getwhd(current)
+                    local w, h, d, shift = getlistdimensions(current)
                     if getprop(current,"specialcontent") then
                         -- like a margin note, maybe check for wd
                         wd = w
@@ -988,8 +991,9 @@ do
                         dp = d + shift
                     end
                 elseif id == vlist_code then
-                    local shift = getshift(current) -- todo
-                    wd, ht, dp = getwhd(current) -- todo: use combined getter
+                    local shift
+                    wd, ht, dp, shift = getlistdimensions(current)
+                    dp = dp + shift
                 elseif id == rule_code then
                     if subtype == strutrule_code then
                         dp = 0
@@ -1068,15 +1072,12 @@ do
                     if subtype >= leaders_code then
                         local leader = getleader(current)
                         local w
-                        w, ht, dp = getwhd(leader) -- can become getwhd(current) after 1.003
+                        w, ht, dp = getwhd(leader)
                     else
                         ht = 0
                     end
                 elseif id == hlist_code then
-                    -- maybe: offsets
-                    -- we could do a nested check .. but then we need to push / pop glue
-                    local shift = getshift(current)
-                    local w, h, d = getwhd(current)
+                    local w, h, d, shift = getlistdimensions(current)
                     if getprop(current,"specialcontent") then
                         -- like a margin note, maybe check for wd
                         wd = w
@@ -1086,8 +1087,9 @@ do
                         ht = h - shift
                     end
                 elseif id == vlist_code then
-                    local shift = getshift(current) -- todo
-                    wd, ht, dp = getwhd(current) -- todo: use combined getter
+                    local shift
+                    wd, ht, dp, shift = getlistdimensions(current)
+                    ht = ht - shift
                 elseif id == rule_code then
                     if subtype == strutrule_code then
                         ht = 0
@@ -1155,10 +1157,12 @@ do
     local defaultmethod = "a"
     local defaultfactor = 1
 
+    local v_yes = interfaces.variables.yes
+
     -- I played with different methods (like only get depths and then on the fly check with heights
     -- but there is no gain and it is also fuzzy. So for now we just do the whole scan.
 
-    function profilelines(list)
+    function profilelines(list,prev)
 
         if not list then
             return
@@ -1170,72 +1174,75 @@ do
         end
 
         -- no height or depth ... skip
-
         for current, subtype in nextglue, start do
             if subtype == lineskip_code and not getprop(current,"profiled") then
                 local detail = getattr(current,a_lineprofile)
                 if detail then
-                    --
                     local amount = getwidth(current)
-                    --
-                    local top, bot = getboth(current)
-                    setprop(current,"profiled",amount) -- original amount
-                    if top then
-                        if getid(top) == penalty_code then
-                            top = getprev(top)
+                    if amount > 0 then
+                        detail = getvalue(a_lineprofile,detail) or { }
+                        --
+                        local top, bot = getboth(current)
+                        setprop(current,"profiled",amount) -- original amount, maybe move up
+                        if not top and prev and detail.paragraph == v_yes then
+                            top  = prev
                         end
-                        if top and bot then
-                            if getid(top) == hlist_code and getsubtype(top) == linelist_code then
-                                if getid(bot) == hlist_code and getsubtype(bot) == linelist_code then
-                                    local toplist = getlist(top)
-                                    local botlist = getlist(bot)
-                                    if toplist and botlist then
-                                        --
-                                        local detail = getvalue(a_lineprofile,detail) or { }
-                                        local step   = detail.step  or defaultstep
-                                        local factor = tonumber(detail.factor) or defaultfactor
-                                        local method = detail.method or defaultmethod
-                                        local margin = step / 4
-                                        --
-                                        if factor > 1 then
-                                            factor = 1
-                                        elseif factor <= 0 then
-                                            factor = 0 -- we could actually go the other way
-                                        end
-                                        --
-                                        local natural   = getdepth(top) + getheight(bot)
-                                        local added     = factor * amount
-                                        local possible  = natural - added
-                                        local overshoot = 0
-                                        local topmax    = ceiling(getwidth(top)/step) + 1
-                                        local botmax    = ceiling(getwidth(bot)/step) + 1
-                                     -- if method == "a" then
-                                            local depths  = getdepthprofile (top,step,margin,topmax,toplist)
-                                            local heights = getheightprofile(bot,step,margin,botmax,botlist)
-                                            local steps   = min(#depths,#heights)
-                                            for i=1,steps do
-                                                local o = heights[i] + depths[i] - possible
-                                                if o > overshoot then
-                                                    -- we can quit when >= added
-                                                    overshoot = o
--- if overshoot > added then
---     break
--- end
+                        if top then
+                            if getid(top) == penalty_code then
+                                top = getprev(top)
+                            end
+                            if top and bot then
+                                if getid(top) == hlist_code and getsubtype(top) == linelist_code then
+                                    if getid(bot) == hlist_code and getsubtype(bot) == linelist_code then
+                                        local toplist = getlist(top)
+                                        local botlist = getlist(bot)
+                                        if toplist and botlist then
+                                            --
+                                            local step   = detail.step  or defaultstep
+                                            local factor = tonumber(detail.factor) or defaultfactor
+                                            local method = detail.method or defaultmethod
+                                            local margin = step / 4
+                                            --
+                                            if factor > 1 then
+                                                factor = 1
+                                            elseif factor <= 0 then
+                                                factor = 0 -- we could actually go the other way
+                                            end
+                                            --
+                                            local natural   = getdepth(top) + getheight(bot)
+                                            local added     = factor * amount
+                                            local possible  = natural - added
+                                            local overshoot = 0
+                                            local topmax    = ceiling(getwidth(top)/step) + 1
+                                            local botmax    = ceiling(getwidth(bot)/step) + 1
+                                         -- if method == "a" then
+                                                local depths  = getdepthprofile (top,step,margin,topmax,toplist)
+                                                local heights = getheightprofile(bot,step,margin,botmax,botlist)
+                                                local steps   = min(#depths,#heights)
+                                                for i=1,steps do
+                                                    local o = heights[i] + depths[i] - possible
+                                                    if o > overshoot then
+                                                        -- we can quit when >= added
+                                                        overshoot = o
+                                                     -- if overshoot > added then
+                                                     --     break
+                                                     -- end
+                                                    end
                                                 end
-                                            end
-                                     -- end
-                                     -- if overshoot < added / 2 then
-                                     --     overshoot = added / 2
-                                     -- end
-                                        if overshoot ~= amount then -- shouldn't we round
-                                            setwidth(current,overshoot)
-                                            if show_lineprofile then
-                                                setattr(current,a_visual,glue_mode)
-                                                setattr(bot,a_visual,line_mode)
-                                                setattr(top,a_visual,line_mode)
-                                            end
-                                            if show_linedetail then
-                                                report("lineskip changed from %p to %p on page %i",amount,overshoot,tex.getcount("realpageno"))
+                                         -- end
+                                         -- if overshoot < added / 2 then
+                                         --     overshoot = added / 2
+                                         -- end
+                                            if overshoot ~= amount then -- shouldn't we round
+                                                setwidth(current,overshoot)
+                                                if show_lineprofile then
+                                                    setattr(current,a_visual,glue_mode)
+                                                    setattr(bot,a_visual,line_mode)
+                                                    setattr(top,a_visual,line_mode)
+                                                end
+                                                if show_linedetail then
+                                                    report("lineskip changed from %p to %p on page %i",amount,overshoot,tex.getcount("realpageno"))
+                                                end
                                             end
                                         end
                                     end
@@ -1245,6 +1252,7 @@ do
                     end
                 end
             end
+            prev = nil
         end
     end
 
@@ -1257,12 +1265,15 @@ do
         return head
     end
 
-    function profiling.pagelinehandler(head)
+    function profiling.pagelinehandler(head,...)
         if head then
-            profilelines(head)
+            local h, t = getspeciallist("pagehead")
+            profilelines(head,t)
         end
         return head
     end
+
+    -- actually we need a proper callback for this kind of things ...
 
     function profiling.setlines(specification)
         if not enabled then
@@ -1282,8 +1293,23 @@ do
                 { "method" },
                 { "step", "dimension" },
                 { "factor" },
+                { "paragraph" },
             }
         }
+    }
+
+    interfaces.implement {
+        name      = "lineprofilebox",
+        public    = true,
+        protected = true,
+        actions   = function(box)
+            local okay = nuts.getbox(box)
+            local list = getlist(okay)
+            if list then
+                profiling.boxlinehandler(list)
+            end
+        end,
+        arguments = "integer"
     }
 
 end

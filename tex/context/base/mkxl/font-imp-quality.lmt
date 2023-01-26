@@ -147,7 +147,7 @@ local function initialize(tfmdata,value)
                     factor  = factor,
                 }
                 local data = characters and characters.data
-                for i, chr in next, tfmdata.characters do
+                for i, chr in next, tfmdata.characters do -- todo unicode
                     local v = vector[i]
                     if data and not v then -- we could move the data test outside (needed for plain)
                         local d = data[i]

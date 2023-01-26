@@ -237,6 +237,16 @@
          \hss}}}
    \endgraf}
 
+\permanent\tolerant\protected\def\compareluminance[#1]#*[#2]% by MS
+  {\dontleavehmode\hpack\bgroup
+     \unframed
+       [\c!background=\v!color,\c!backgroundcolor=#2,\c!foregroundcolor=#1,\c!loffset=.25\exheight,\c!roffset=.25\exheight]%
+       {#1\enspace#2\quad\colorluminanceratio{#1}{#2}}%
+     \unframed
+       [\c!background=\v!color,\c!backgroundcolor=#1,\c!foregroundcolor=#2,\c!loffset=.25\exheight,\c!roffset=.25\exheight]%
+       {#2\enspace#1\quad\colorluminanceratio{#2}{#1}}%
+   \egroup}
+
 \protect
 
 \continueifinputfile{s-colors-show.mkxl}

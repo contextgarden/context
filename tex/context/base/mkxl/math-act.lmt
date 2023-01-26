@@ -993,6 +993,7 @@ do
                         { "rule", used, 0 },
                     },
                 }
+                basedata.partsorientation = "vertical"
                 basedata.parts = {
                     {
                         advance  = used,
@@ -2064,7 +2065,6 @@ do -- this could be combined with the previous
                     local target = characters[unicode]
                     if source and target then
                         local sequence   = data.sequence
-                        local horizontal = data.horizontal
                         if sequence then
                             local parts = source.parts
                             if parts then
@@ -2095,6 +2095,9 @@ do -- this could be combined with the previous
                                 end
                                 if #p > 0 then
                                     target.parts = p
+                                    if not data.horizontal then
+                                        target.partsorientation = "vertical"
+                                    end
                                 end
                             end
                         end
@@ -2337,6 +2340,7 @@ do
                     { advance = mid, ["end"] = mid/2, glyph = 0x23AE, start = mid/2, extender = 1 },
                     { advance = top, ["end"] = top/3, glyph = 0x2320, start = top/3  },
                 }
+                integral.partsorientation = "vertical"
                 if trace_tweaking then
                     report_tweak("fixing the integral extensible",target,original)
                 end
@@ -2766,6 +2770,11 @@ do
         { 0x2021, nps("delimited right ddagger"), nps("delimited ghost ddagger") },
         { 0x2217, nps("delimited right ast"),     nps("delimited ghost ast")     },
         { 0x22C6, nps("delimited right star"),    nps("delimited ghost star")    },
+
+        { 0x231C, nps("delimited left upper corner"),   nps("delimited ghost upper corner") },
+        { 0x231D, nps("delimited right upper corner"),  nps("delimited ghost upper corner") },
+        { 0x231E, nps("delimited left lower corner"),   nps("delimited ghost lower corner"), true  },
+        { 0x231F, nps("delimited right lower corner"),  nps("delimited ghost lower corner"), true  },
     }
 
     function mathtweaks.addfourier(target,original,parameters)
@@ -2775,45 +2784,41 @@ do
             local basecode    = entry[1]
             local fouriercode = entry[2]
             local movecode    = entry[3]
+            local reverse     = entry[4]
             local basechar    = characters[basecode]
-            local scale       = parameters.scale or 1
-            local variant     = parameters.variant
-            if variant then
-                for i=1,variant do
-                    local okay = basechar.next
-                    if okay then
-                        basecode = okay
-                        basechar = characters[basecode]
-                    else
-                        break
+            if basechar then
+                local scale   = parameters.scale or 1
+                local variant = parameters.variant
+                if variant then
+                    for i=1,variant do
+                        local okay = basechar.next
+                        if okay then
+                            basecode = okay
+                            basechar = characters[basecode]
+                        else
+                            break
+                        end
                     end
                 end
-            end
-            local baseheight  = scale * (basechar.height or 0)
-            local basedepth   = scale * (basechar.depth  or 0)
-            local basewidth   = scale * (basechar.width  or 0)
-            local used        = baseheight/2
-            local total       = baseheight + basedepth
-            characters[movecode] = {
-                width    = basewidth,
-                height   = used,
-                unicode  = basecode,
-    --             callback = "devirtualize",
-                commands = {
-                    downcommand[used],
-                    { "rule", used, 0 },
-                },
-            }
-            characters[fouriercode] = {
-                width    = basewidth,
-                height   = baseheight,
-                depth    = basedepth,
-                unicode  = basecode,
-    --             callback = "devirtualize",
-                commands = {
-                    scale == 1 and charcommand[basecode] or { "slot", 0, basecode, scale, scale },
-                },
-                parts = {
+                local baseheight = scale * (basechar.height or 0)
+                local basedepth  = scale * (basechar.depth  or 0)
+                local basewidth  = scale * (basechar.width  or 0)
+                local used       = baseheight/2
+                local total      = baseheight + basedepth
+if reverse then
+    used = total / 2 -- basedepth / 2
+end
+                characters[movecode] = {
+                    width    = basewidth,
+                    height   = used,
+                    unicode  = basecode,
+        --             callback = "devirtualize",
+                    commands = {
+                        downcommand[used],
+                        { "rule", used, 0 },
+                    },
+                }
+                local parts = {
                     {
                         advance  = used,
                         ["end"]  = used,
@@ -2828,9 +2833,24 @@ do
                         start    = total,
                     },
                 }
-            }
-            if trace_tweaking then
-                report_tweak("fourier %U added using %U",target,original,basecode,fouriercode)
+                if reverse then
+                    parts[1], parts[2] = parts[2], parts[1]
+                end
+                characters[fouriercode] = {
+                    width    = basewidth,
+                    height   = baseheight,
+                    depth    = basedepth,
+                    unicode  = basecode,
+        --             callback = "devirtualize",
+                    commands = {
+                        scale == 1 and charcommand[basecode] or { "slot", 0, basecode, scale, scale },
+                    },
+                    partsorientation = "vertical",
+                    parts = parts,
+                }
+                if trace_tweaking then
+                    report_tweak("fourier %U added using %U",target,original,basecode,fouriercode)
+                end
             end
         end
     end
@@ -2877,13 +2897,15 @@ do
      -- local used       = 0.8*height
         local used       = 1.2*height -- large overlap because no smaller pieces
         local total      = height + depth
-        characters[single].parts = extensible(single,total,used)
+        basechar.parts = extensible(single,total,used)
+        basechar.partsorientation = "vertical"
         characters[double] = {
             unicode  = double,
             width    = 2*width - 1*advance,
             height   = height,
             depth    = depth,
             parts    = extensible(double,total,used),
+            partsorientation = "vertical",
             callback = "devirtualize",
             commands = {
                 charcommand[single],
@@ -2896,7 +2918,8 @@ do
             width    = 3*width - 2*advance,
             height   = height,
             depth    = depth,
-            vparts   = extensible(triple,total,used),
+            parts    = extensible(triple,total,used),
+            partsorientation = "vertical",
             callback = "devirtualize",
             commands = {
                 charcommand[single],

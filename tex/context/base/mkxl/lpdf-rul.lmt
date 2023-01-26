@@ -189,51 +189,51 @@ do
 
     local linemapping = {
         [interfaces.variables.round] = "ltrb",
-        ["0"] = "ltrb", ["trbl"] = "ltrb", ["rblt"] = "ltrb", ["bltr"] = "ltrb",
+        [ "0"] = "ltrb", ["ltrb"] = "ltrb", ["trbl"] = "ltrb", ["rblt"] = "ltrb", ["bltr"] = "ltrb",
         --
         ["1"] = "ltrb", ["2"] = "ltrb", ["3"] = "ltrb", ["4"] = "ltrb",
         ["5"] = "ltrb", ["6"] = "ltrb", ["7"] = "ltrb", ["8"] = "ltrb",
         --
-        [ "9"] = "lbr", ["rbl"] = "lbr",
-        ["10"] = "tlb", ["blt"] = "tlb",
-        ["11"] = "ltr", ["rtl"] = "lrt",
-        ["12"] = "lbr", ["rbl"] = "lbr",
+        [ "9"] = "lbr", ["lbr"] = "lbr", ["rbl"] = "lbr",
+        ["10"] = "tlb", ["tlb"] = "tlb", ["blt"] = "tlb",
+        ["11"] = "ltr", ["ltr"] = "ltr", ["rtl"] = "lrt",
+        ["12"] = "lbr", ["lbr"] = "lbr", ["rbl"] = "lbr",
         --
-        ["13"] = "rt", ["tr"] = "rt",
-        ["14"] = "rb", ["br"] = "rb",
-        ["15"] = "bl", ["lb"] = "bl",
-        ["16"] = "tl", ["lt"] = "tl",
+        ["13"] = "rt", ["rt"] = "rt", ["tr"] = "rt",
+        ["14"] = "rb", ["rb"] = "rb", ["br"] = "rb",
+        ["15"] = "bl", ["bl"] = "bl", ["lb"] = "bl",
+        ["16"] = "tl", ["tl"] = "tl", ["lt"] = "tl",
         --
-        ["32"] = "lr", ["rl"] = "lr",
-        ["33"] = "tb", ["bt"] = "tb",
+        ["32"] = "lr", ["lr"] = "lr", ["rl"] = "lr",
+        ["33"] = "tb", ["tb"] = "tb", ["bt"] = "tb",
         --
-        ["28"] = "l",
-        ["29"] = "r",
-        ["30"] = "b",
-        ["31"] = "t",
+        ["28"] = "l", ["l"] = "l",
+        ["29"] = "r", ["r"] = "r",
+        ["30"] = "b", ["b"] = "b",
+        ["31"] = "t", ["t"] = "t",
     }
 
     local roundmapping = {
         [interfaces.variables.round] = "ltrb",
-        [ "0"] = "ltrb", ["trbl"] = "ltrb", ["rblt"] = "ltrb", ["bltr"] = "ltrb",
+        [ "0"] = "ltrb", ["ltrb"] = "ltrb", ["trbl"] = "ltrb", ["rblt"] = "ltrb", ["bltr"] = "ltrb",
         --
-        [ "9"] = "lbr", ["rbl"] = "lbr",
-        ["10"] = "tlb", ["blt"] = "tlb",
-        ["11"] = "ltr", ["rtl"] = "lrt",
-        ["12"] = "lbr", ["rbl"] = "lbr",
+        [ "9"] = "lbr", ["lbr"] = "lbr", ["rbl"] = "lbr",
+        ["10"] = "tlb", ["tlb"] = "tlb", ["blt"] = "tlb",
+        ["11"] = "ltr", ["ltr"] = "ltr", ["rtl"] = "lrt",
+        ["12"] = "lbr", ["lbr"] = "lbr", ["rbl"] = "lbr",
         --
-        ["13"] = "rt", ["tr"] = "rt",
-        ["14"] = "rb", ["br"] = "rb",
-        ["15"] = "bl", ["lb"] = "bl",
-        ["16"] = "tl", ["lt"] = "tl",
+        ["13"] = "rt", ["rt"] = "rt", ["tr"] = "rt",
+        ["14"] = "rb", ["rb"] = "rb", ["br"] = "rb",
+        ["15"] = "bl", ["bl"] = "bl", ["lb"] = "bl",
+        ["16"] = "tl", ["tl"] = "tl", ["lt"] = "tl",
         --
-        ["32"] = "lr", ["rl"] = "lr",
-        ["33"] = "tb", ["bt"] = "tb",
+        ["32"] = "lr", ["lr"] = "lr", ["rl"] = "lr",
+        ["33"] = "tb", ["tb"] = "tb", ["bt"] = "tb",
         --
-        ["28"] = "l",
-        ["29"] = "r",
-        ["30"] = "b",
-        ["31"] = "t",
+        ["28"] = "l", ["l"] = "l",
+        ["29"] = "r", ["r"] = "r",
+        ["30"] = "b", ["b"] = "b",
+        ["31"] = "t", ["t"] = "t",
     }
 
     setmetatableindex(linemapping,function(t,k)
@@ -329,7 +329,7 @@ do
                 list = { "q", line, "w", xmin, ymin, "m", xmax, ymin, "l", xmax, yyymax, "l", xmax, ymax, xxxmax, ymax, "y", xmin, ymax, "l", xmin, ymin, "l", done }
             elseif method == "6" then -- lr
                 list = { "q", line, "w", xmin, ymin, "m", xxxmax, ymin, "l", xmax, ymin, xmax, yyymin, "y", xmax, ymax, "l", xmin, ymax, "l", xmin, ymin, "l", done }
-            elseif method == "7" then --
+            elseif method == "7" then -- ur
                 list = { "q", line, "w", xxxmin, ymin, "m", xmax, ymin, "l", xmax, ymax, "l", xmin, ymax, "l", xmin, yyymin, "l", xmin, ymin, xxxmin, ymin, "y", done } -- outlier
             elseif method == "8" then -- ul
                 list = { "q", line, "w", xmin, ymin, "m", xmax, ymin, "l", xmax, ymax, "l", xxxmin, ymax, "l", xmin, ymax, xmin, yyymax, "y", xmin, ymin, "l", done }

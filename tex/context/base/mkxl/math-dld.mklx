@@ -105,7 +105,7 @@
 \integerdef\delimitedrightastuc      \privatecharactercode{delimited right ast}
 \integerdef\delimitedrightstaruc     \privatecharactercode{delimited right star}
 
-% \integerdef\delimitedrighthatuc   \p  rivatecharactercode{delimited right hat}
+% \integerdef\delimitedrighthatuc   \privatecharactercode{delimited right hat}
 % \integerdef\delimitedrighttildeuc \privatecharactercode{delimited right tilde}
 % \integerdef\delimitedrightcheckuc \privatecharactercode{delimited right check}
 
@@ -222,5 +222,44 @@
 \definemathdelimited [reverseprimed]       [primed] [\c!right="2035]
 \definemathdelimited [doublereverseprimed] [primed] [\c!right="2036]
 \definemathdelimited [triplereverseprimed] [primed] [\c!right="2037]
+
+%
+
+\integerdef\delimitedleftuppercorner \privatecharactercode{delimited left upper corner}
+\integerdef\delimitedrightuppercorner\privatecharactercode{delimited right upper corner}
+\integerdef\delimitedleftlowercorner \privatecharactercode{delimited left lower corner}
+\integerdef\delimitedrightlowercorner\privatecharactercode{delimited right lower corner}
+
+\definemathdelimited
+  [leftuppermarked]
+  [marked]
+  [\c!left=\delimitedleftuppercorner]
+
+\definemathdelimited
+  [rightuppermarked]
+  [marked]
+  [\c!right=\delimitedrightuppercorner]
+
+\definemathdelimited
+  [uppermarked]
+  [marked]
+  [\c!left=\delimitedleftuppercorner,
+   \c!right=\delimitedrightuppercorner]
+
+\definemathdelimited
+  [leftlowermarked]
+  [marked]
+  [\c!left=\delimitedleftlowercorner]
+
+\definemathdelimited
+  [rightlowermarked]
+  [marked]
+  [\c!right=\delimitedrightlowercorner]
+
+\definemathdelimited
+  [lowermarked]
+  [marked]
+  [\c!left=\delimitedleftlowercorner,
+   \c!right=\delimitedrightlowercorner]
 
 \protect \endinput

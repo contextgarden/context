@@ -228,7 +228,7 @@ static void tex_aux_push_condition_stack(int code, int unless)
 {
     halfword p = tex_get_node(if_node_size);
     node_type(p) = if_node;
-    node_subtype(p) = 0;
+    node_subtype(p) = 0; /* unused */
     node_next(p) = lmt_condition_state.cond_ptr;
     if_limit_type(p) = (quarterword) lmt_condition_state.if_limit;
     if_limit_subtype(p) = (quarterword) lmt_condition_state.cur_if;

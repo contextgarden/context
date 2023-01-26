@@ -12,6 +12,9 @@ if not modules then modules = { } end modules ['layo-ini'] = {
 local texgetcount  = tex.getcount
 local conditionals = tex.conditionals
 
+local c_realpageno  = tex.iscount("realpageno")
+local c_pagenoshift = tex.iscount("pagenoshift")
+
 layouts = {
     status = { },
 }
@@ -26,14 +29,14 @@ function status.leftorrightpageaction(left,right)
         return left, right
     elseif conditionals.layoutissinglesided then
         return left, right
-    elseif texgetcount("pagenoshift") % 2 == 0 then
-        if texgetcount("realpageno") % 2 == 0 then
+    elseif texgetcount(c_pagenoshift) % 2 == 0 then
+        if texgetcount(c_realpageno) % 2 == 0 then
             return right, left
         else
             return left, right
         end
     else
-        if texgetcount("realpageno") % 2 == 0 then
+        if texgetcount(c_realpageno) % 2 == 0 then
             return left, right
         else
             return right, left
@@ -46,10 +49,10 @@ function status.isleftpage(r)
         return false
     elseif conditionals.layoutissinglesided then
         return false
-    elseif texgetcount("pagenoshift") % 2 == 0 then
-        return (r or texgetcount("realpageno")) % 2 == 0
+    elseif texgetcount(c_pagenoshift) % 2 == 0 then
+        return (r or texgetcount(c_realpageno)) % 2 == 0
     else
-        return not (r or texgetcount("realpageno")) % 2 == 0
+        return not (r or texgetcount(c_realpageno)) % 2 == 0
     end
 end
 

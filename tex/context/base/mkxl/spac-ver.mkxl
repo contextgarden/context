@@ -25,6 +25,7 @@
 
 \newgluespec \s_spac_vspacing_predefined
 \newdimension\d_spac_overlay
+\newinteger  \c_spac_vspacing_ignore_parskip
 
 % \overloaded\let\strutht  \undefined \newdimen\strutht   % already defined
 % \overloaded\let\strutdp  \undefined \newdimen\strutdp
@@ -2358,8 +2359,6 @@
      \global\prerolledblank-\scratchskip
    \fi
    \endgroup}
-
-\newinteger\c_spac_vspacing_ignore_parskip
 
 % \setupwhitespace[line]
 % \setuphead[subject][after={\blank[packed]},style=\bfb]

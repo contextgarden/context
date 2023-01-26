@@ -1149,7 +1149,7 @@ The \prm {beginsimplegroup} primitives signals that any end group command, excep
 \prm {endmathgroup} will wrap up the current group. The \prm {endsimplegroup} is
 sort of redundant but fits in anyway.
 
-The also \LUAMETATEX\ specific \prm {mathbegingroup} and \prm {mathendgroup}
+The also \LUAMETATEX\ specific \prm {beginmathgroup} and \prm {endmathgroup}
 commands are like \prm {begingroup} and \prm {endgroup} but restore the mathstyle
 when it has been changed in the group.
 
@@ -1326,6 +1326,11 @@ or more than zero.
 
 The last checked values are available in \prm {lastchknum} and \prm {lastchkdim}.
 These don't obey grouping.
+
+The two primitives \prm {ifchkdimension} and \prm {ifchknumber} are like \prm
+{ifchkdimen} and \prm {ifchknum}but are more rigorous: the short ones quit
+scanning at a match where after the match there can be anything, while the long
+variants don't accept following crap.
 
 \stopsubsection
 

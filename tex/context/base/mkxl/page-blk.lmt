@@ -10,6 +10,8 @@ local context     = context
 local implement   = interfaces.implement
 local texgetcount = tex.getcount
 
+local c_realpageno = tex.iscount("realpageno")
+
 local blocks = { }
 local block  = false
 
@@ -17,7 +19,7 @@ implement {
     name      = "startpageblock",
     arguments = "string",
     actions   = function(s)
-        local p = texgetcount("realpageno")
+        local p = texgetcount(c_realpageno)
         block = { p, p }
         blocks[s] = block
     end,
@@ -26,7 +28,7 @@ implement {
 implement {
     name    = "stoppageblock",
     actions = function()
-        local p = texgetcount("realpageno") - 1
+        local p = texgetcount(c_realpageno) - 1
         block[2] = p
     end,
 }
@@ -76,7 +78,7 @@ implement {
     name      = "startprerollpageblock",
     arguments = "string",
     actions   = function(name)
-        currentrealpage = texgetcount("realpageno")
+        currentrealpage = texgetcount(c_realpageno)
         currentpreroll  = name
     end
 }
@@ -84,7 +86,7 @@ implement {
 implement {
     name    = "stopprerollpageblock",
     actions = function()
-        prerolled[currentpreroll] = texgetcount("realpageno") - currentrealpage
+        prerolled[currentpreroll] = texgetcount(c_realpageno) - currentrealpage
         currentpreroll = false
     end
 }

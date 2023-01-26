@@ -453,6 +453,7 @@
 		<cd:variable name='printable' value='imprimable'/>
 		<cd:variable name='process' value='traiter'/>
 		<cd:variable name='product' value='produit'/>
+		<cd:variable name='profile' value='profil'/>
 		<cd:variable name='program' value='programme'/>
 		<cd:variable name='project' value='projet'/>
 		<cd:variable name='protected' value='protege'/>

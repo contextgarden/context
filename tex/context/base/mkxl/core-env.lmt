@@ -18,7 +18,6 @@ local P, C, S, lpegmatch, patterns = lpeg.P, lpeg.C, lpeg.S, lpeg.match, lpeg.pa
 local context              = context
 local ctxcore              = context.core
 
-local texgetcount          = tex.getcount
 local texgetintegervalue   = token.getinteger -- todo
 
 local allocate             = utilities.storage.allocate
@@ -119,12 +118,10 @@ setmetatablenewindex(texifs,          function(t,k) end)
 -- kind of variable ... maybe we no longer have to cache anyway (in lmtx)
 
 setmetatableindex(texconstants, function(t,k)
- -- return cache[k].command == countcode and texgetcount(k) or 0
     return cache[k].command == integercode and texgetintegervalue(k) or 0
 end)
 
 setmetatableindex(texconditionals, function(t,k) -- 0 == true
- -- return cache[k].command == countcode and texgetcount(k) == 0
     return cache[k].command == integercode and texgetintegervalue(k) == 0
 end)
 

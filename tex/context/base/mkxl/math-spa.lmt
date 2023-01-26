@@ -46,7 +46,6 @@ local nextlist          = nuts.traversers.list
 local nextboundary      = nuts.traversers.boundary
 local nextnode          = nuts.traversers.node
 
-local texgetdimen       = tex.getdimen
 local texsetdimen       = tex.setdimen
 local texsetcount       = tex.setcount
 local texisdimen        = tex.isdimen

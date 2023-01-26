@@ -117,7 +117,7 @@ function alignments.set(n)
             report_realign("enabled")
         end
     end
-    texsetattribute(a_realign,texgetcount("realpageno") * 10 + n)
+    texsetattribute(a_realign,texgetcount(c_realpageno) * 10 + n)
 end
 
 interfaces.implement {

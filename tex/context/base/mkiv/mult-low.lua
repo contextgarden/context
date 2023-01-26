@@ -66,7 +66,7 @@ return {
         "tabasciicode", "newlineasciicode", "formfeedasciicode", "endoflineasciicode", "endoffileasciicode",
         "commaasciicode", "spaceasciicode", "periodasciicode",
         "hashasciicode", "dollarasciicode", "commentasciicode", "ampersandasciicode",
-        "colonasciicode", "backslashasciicode", "circumflexasciicode", "underscoreasciicode",
+        "colonasciicode", "semicolonasciicode", "backslashasciicode", "circumflexasciicode", "underscoreasciicode",
         "leftbraceasciicode", "barasciicode", "rightbraceasciicode", "tildeasciicode", "delasciicode",
         "leftparentasciicode", "rightparentasciicode",
         "lessthanasciicode", "morethanasciicode", "doublecommentsignal",

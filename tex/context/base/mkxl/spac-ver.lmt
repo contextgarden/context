@@ -56,8 +56,6 @@ local texsetcount  = tex.setcount
 local texnest      = tex.nest
 local texgetbox    = tex.getbox
 
-local tg = texgetdimen
-
 local buildpage    = tex.triggerbuildpage
 
 local variables    = interfaces.variables
@@ -116,8 +114,9 @@ local d_globalbodyfontstrutheight = tex.isdimen("globalbodyfontstrutheight")
 local d_globalbodyfontstrutdepth  = tex.isdimen("globalbodyfontstrutdepth")
 ----- d_strutht                   = tex.isdimen("strutht")
 local d_strutdp                   = tex.isdimen("strutdp")
-
 local d_spac_overlay              = tex.isdimen("d_spac_overlay")
+
+local c_spac_vspacing_ignore_parskip = tex.iscount("c_spac_vspacing_ignore_parskip")
 
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
@@ -2248,14 +2247,13 @@ do
                     end
                 elseif subtype == parskip_code then
                     -- if where == new_graf then ... end
-                    if texgetcount("c_spac_vspacing_ignore_parskip") > 0 then
-                     -- texsetcount("c_spac_vspacing_ignore_parskip",0)
+                    if texgetcount(c_spac_vspacing_ignore_parskip) > 0 then
                         setglue(n)
                      -- maybe removenode
                     end
                 end
             end
-            texsetcount("c_spac_vspacing_ignore_parskip",0)
+            texsetcount(c_spac_vspacing_ignore_parskip,0)
 
             if forceflush then
                 forceflush = false

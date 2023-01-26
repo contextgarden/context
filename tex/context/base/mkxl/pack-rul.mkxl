@@ -121,6 +121,32 @@
   {\installsimplecommandhandler{#1}{#2}{#3}%
    \installinheritedframed{#2}}
 
+% corner options (with radius=0pt rectangular):
+%
+%  0 round ltrb trbl rblt bltr
+%  1 2 3 4 5 6 7 8 ltrb
+%  9 lbr rbl / 10 tlb blt / 11 ltr rtl / 12 lbr rbl
+% 13 rt tr / 14 rb br / 15 bl lb / 16 tl lt
+% 32 lr rl / 33 tb bt
+% 28 l / 29 r / 30 b / 31 t
+
+%D \starttyping
+%D \dostepwiserecurse{0}{33}{1}{
+%D     \startTEXpage[offset=1dk]
+%D         \dontleavehmode\ruledhbox{\framed
+%D           [framecolor=red,
+%D            framecorner=#1,
+%D            frameradius=\zeropoint]
+%D           {TEST #1}}
+%D         \ruledhbox{\framed
+%D           [framecolor=red,
+%D            framecorner=#1,
+%D            frameradius=10pt]
+%D           {TEST #1}}
+%D     \stopTEXpage
+%D }
+%D \stoptyping
+
 % for regular framed
 
 \setupframed

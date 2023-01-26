@@ -842,7 +842,7 @@ typedef enum next_line_retval {
     next_line_restart
 } next_line_retval;
 
-static next_line_retval tex_aux_next_line(void);
+static inline next_line_retval tex_aux_next_line(void);
 
 /*tex
 
@@ -1263,7 +1263,7 @@ static int tex_aux_get_next_file(void)
       RESWITCH:
         if (lmt_input_state.cur_input.cattable == no_catcode_table_preset) {
             /* happens seldom: detokenized line */
-            cur_cmd = cur_chr == ' ' ? 10 : 12;
+            cur_cmd = cur_chr == ' ' ? spacer_cmd : other_char_cmd;
         } else {
             cur_cmd = tex_aux_the_cat_code(cur_chr);
         }
@@ -1386,15 +1386,15 @@ static int tex_aux_get_next_file(void)
                 break;
             /*
             case skip_blanks_state + math_shift_cmd:
-            case skip_blanks_state + tab_mark_cmd:
-            case skip_blanks_state + mac_param_cmd:
-            case skip_blanks_state + sub_mark_cmd:
+            case skip_blanks_state + alignment_tab_cmd:
+            case skip_blanks_state + parameter_cmd:
+            case skip_blanks_state + subscript_cmd:
             case skip_blanks_state + letter_cmd:
             case skip_blanks_state + other_char_cmd:
             case new_line_state    + math_shift_cmd:
-            case new_line_state    + tab_mark_cmd:
-            case new_line_state    + mac_param_cmd:
-            case new_line_state    + sub_mark_cmd:
+            case new_line_state    + alignment_tab_cmd:
+            case new_line_state    + parameter_cmd:
+            case new_line_state    + subscript_cmd:
             case new_line_state    + letter_cmd:
             case new_line_state    + other_char_cmd:
             */
@@ -1729,11 +1729,6 @@ static int tex_aux_scan_control_sequence(void)
                         continue;
                     }
                 }
-             // state = cat == spacer_cmd ? skip_blanks_state : mid_line_state;
-             // /*tex If an expanded \unknown */
-             // if (cat == sup_mark_cmd && check_expanded_code(&loc, chr)) {
-             //    continue;
-             // }
             } else {
                 state = skip_blanks_state;
                 do {
@@ -1872,7 +1867,7 @@ static void tex_aux_check_validity(void)
     }
 }
 
-static next_line_retval tex_aux_next_line(void)
+static inline next_line_retval tex_aux_next_line(void)
 {
     if (lmt_input_state.cur_input.name > io_initial_input_code) {
         /*tex Read next line of file into |buffer|, or |goto restart| if the file has ended. */
@@ -1966,7 +1961,7 @@ static next_line_retval tex_aux_next_line(void)
                         break;
                     }
                 case io_tex_macro_code:
-                    /* what */
+                    /* this can't happen and will fail with the next line check */
                 default:
                     if (tex_lua_input_ln()) {
                         /*tex Not end of file, set |ilimit|. */
@@ -2032,6 +2027,7 @@ static next_line_retval tex_aux_next_line(void)
             tex_fatal_error("aborting job");
         }
     }
+    /*tex We're in a loop and restart: */
     return next_line_ok;
 }
 

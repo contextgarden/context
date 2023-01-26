@@ -99,7 +99,6 @@ local new_glue          = nodepool.glue
 
 local righttoleft_code  = nodes.dirvalues.righttoleft
 
-local texgetcount       = tex.getcount
 local setmetatableindex = table.setmetatableindex
 
 local jobpositions      = job.positions

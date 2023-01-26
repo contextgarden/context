@@ -82,6 +82,14 @@ if (NOT MSVC)
     )
 endif (NOT MSVC)
 
+if (CMAKE_HOST_APPLE)
+    target_compile_definitions(lua PUBLIC
+        TARGET_OS_IOS=0
+        TARGET_OS_WATCH=0
+        TARGET_OS_TV=0
+    )
+endif (CMAKE_HOST_APPLE)
+
 # this seems to be ok for mingw default
 #
 # todo: what is the right way to increase the stack (mingw)

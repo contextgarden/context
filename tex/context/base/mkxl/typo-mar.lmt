@@ -284,11 +284,11 @@ function margins.save(t)
         --
         t.leftmargindistance  = leftmargindistance -- todo:layoutstatus table
         t.rightmargindistance = rightmargindistance
-        t.leftedgedistance    = texgetdimen("naturalleftedgedistance")
-                              + texgetdimen("leftmarginwidth")
+        t.leftedgedistance    = texgetdimen("naturalleftedgedistance")  -- can be swapped
+                              + texgetdimen("leftmarginwidth")          -- can be swapped
                               + leftmargindistance
-        t.rightedgedistance   = texgetdimen("naturalrightedgedistance")
-                              + texgetdimen("rightmarginwidth")
+        t.rightedgedistance   = texgetdimen("naturalrightedgedistance") -- can be swapped
+                              + texgetdimen("rightmarginwidth")         -- can be swapped
                               + rightmargindistance
         t.lineheight          = texgetdimen("lineheight")
         --

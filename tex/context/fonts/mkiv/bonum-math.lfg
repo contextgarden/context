@@ -111,6 +111,7 @@ return {
                         --
                         [0x1D465] = { bottomright = -0.05, }, -- italic x (ic is too large)
                         [0x00393] = { bottomright = -0.30, }, -- upright Gamma
+                        [0x1D43F] = { bottomright =  0.01, }, -- upright L
                         ["0x222B.parts.bottom"] = { bottomright = -0.20 }, -- int
                         ["0x222C.parts.bottom"] = { bottomright = -0.15 }, -- iint
                         ["0x222D.parts.bottom"] = { bottomright = -0.10 }, -- iiint
