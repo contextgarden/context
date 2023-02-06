@@ -453,6 +453,7 @@
 		<cd:variable name='printable' value='قابل‌چاپ'/>
 		<cd:variable name='process' value='پردازش'/>
 		<cd:variable name='product' value='محصول'/>
+		<cd:variable name='profile' value='profile'/>
 		<cd:variable name='program' value='برنامه'/>
 		<cd:variable name='project' value='پروژه'/>
 		<cd:variable name='protected' value='حفاظت‌شده'/>
@@ -725,6 +726,7 @@
 		<cd:constant name='bookmark' value='چوبخط'/>
 		<cd:constant name='bottom' value='پایین'/>
 		<cd:constant name='bottomafter' value='bottomafter'/>
+		<cd:constant name='bottomalign' value='bottomalign'/>
 		<cd:constant name='bottombefore' value='bottombefore'/>
 		<cd:constant name='bottomcolor' value='bottomcolor'/>
 		<cd:constant name='bottomcommand' value='bottomcommand'/>
@@ -1339,6 +1341,7 @@
 		<cd:constant name='toffset' value='toffset'/>
 		<cd:constant name='tolerance' value='بردباری'/>
 		<cd:constant name='top' value='بالا'/>
+		<cd:constant name='topalign' value='topalign'/>
 		<cd:constant name='topcolor' value='topcolor'/>
 		<cd:constant name='topcommand' value='topcommand'/>
 		<cd:constant name='topdistance' value='فاصله‌بالا'/>

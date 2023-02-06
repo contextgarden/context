@@ -150,7 +150,9 @@ end
 
 local function flattenedfeatures(t,tt)
     -- first set value dominates
-    local tt = tt or { }
+    if not tt then
+        tt = { }
+    end
     for i=1,#t do
         local ti = t[i]
         local ty = type(ti)

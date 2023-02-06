@@ -66,7 +66,7 @@ end
 Extending the table.
 --ldx]]--
 
-if context then
+if context and CONTEXTLMTXMODE == 0 then
 
     if not characters.private then
 

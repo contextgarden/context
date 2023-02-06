@@ -171,6 +171,8 @@ local function read_from_tfm(specification)
         properties.filename   = specification.filename -- todo: fallback
         properties.format     = tfmdata.format or fonts.formats.tfm -- better than nothing
         properties.usedbitmap = tfmdata.usedbitmap
+        properties.designsize = tfmdata.designsize     -- let's be nice
+        parameters.designsize = tfmdata.designsize     -- needed because of pdf position synchronzing
         --
         if getmapentry and newtfmdata then
             properties.filename = features.pfbfile
@@ -234,11 +236,6 @@ local function read_from_tfm(specification)
             --
             fonts.mappings.addtounicode(tfmdata,filename)
             --
-            -- The tounicode data is passed to the backend that constructs the vectors for us.
-            --
-if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
-           tfmdata.tounicode = 1
-end
             local tounicode = fonts.mappings.tounicode
             for unicode, v in next, tfmdata.characters do
                 local u = v.unicode
@@ -357,7 +354,7 @@ readers.ofm = readers.tfm
 
 -- The reencoding acts upon the 'reencode' feature which can have values 'auto' or
 -- an enc file. You can also specify a 'pfbfile' feature (but it defaults to the
--- tfm filename) and a 'bitmap' feature. When no enc file is givven (auto) we will
+-- tfm filename) and a 'bitmap' feature. When no enc file is given (auto) we will
 -- get the vectors from the pfb file.
 
 do
@@ -463,6 +460,7 @@ do
 
         local backmap = vector and table.swapped(vector)
         local done    = { } -- prevent duplicate
+
         for tfmindex, name in sortedhash(encoding) do -- predictable order
             local original = originals[tfmindex]
             if original then
@@ -495,6 +493,10 @@ do
 
         -- redo kerns and ligatures
 
+-- for k, v in next, characters do
+--     print(k,v.width)
+-- end
+
         for k, v in next, characters do
             local kerns = v.kerns
             if kerns then
@@ -519,24 +521,36 @@ do
                 end
                 v.ligatures = next(t) and t or nil
             end
+            local parts = v.parts
+            if parts then
+                local t = { }
+                for i=1,#parts do
+                    local p = parts[i]
+                    local g = p.glyph
+                    t[i] = {
+                        glyph    = indices[g] or g,
+                        extender = p.extender,
+                    }
+                end
+                v.parts = t
+            end
+            local next = v.next
+            if next then
+                v.next = indices[next]
+            end
         end
 
         -- wrap up
 
-        tfmdata.fonts         = { { id = virtualid } }
-        tfmdata.characters    = characters
-        tfmdata.fullname      = tfmdata.fullname or tfmdata.name
-        tfmdata.psname        = file.nameonly(pfbfile or tfmdata.name)
-        tfmdata.filename      = pfbfile
-     -- tfmdata.format        = bitmap and "type3" or "type1"
-        tfmdata.format        = "type1"
-if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
-        tfmdata.encodingbytes = 2
-        tfmdata.tounicode     = 1
-        tfmdata.embedding     = "subset"
-end
-        tfmdata.usedbitmap    = bitmap and virtualid
-        tfmdata.private       = private
+        tfmdata.fonts      = { { id = virtualid } }
+        tfmdata.characters = characters
+        tfmdata.fullname   = tfmdata.fullname or tfmdata.name
+        tfmdata.psname     = file.nameonly(pfbfile or tfmdata.name)
+        tfmdata.filename   = pfbfile
+     -- tfmdata.format     = bitmap and "type3" or "type1"
+        tfmdata.format     = "type1"
+        tfmdata.usedbitmap = bitmap and virtualid
+        tfmdata.private    = private
 
         return tfmdata
     end

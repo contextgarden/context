@@ -143,6 +143,10 @@ function drivers.getvpos() return round(pos_v) end
 
 -- characters
 
+-- experiment (smaller page stream but might be fragile)
+
+local tospace = false  directives.register("backends.spaces", function(v) tospace = v end)
+
 local flush_character do
 
     local stack   = setmetatableindex("table")
@@ -150,30 +154,65 @@ local flush_character do
     local nesting = 0
     local main    = 0
 
-    -- experiment (smaller page stream but might be fragile)
-
-    local tospace = false  directives.register("backends.spaces", function(v) tospace = v end)
-
     -- todo: cache streams
 
-    local default = 16384 -- * number.dimenfactors.bp -- 65536 // 4
+    local default    =   16384 -- * number.dimenfactors.bp -- 65536 // 4
+    local refactored = 1000000 -- expansion related
 
     local vfinjectors = fonts.helpers.vfinjectors
 
     -- current can go
+
+ -- local alternative = false -- more local, can be an option: vf.commands.local
 
     local function flush_vf_packet(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,sx,sy,vfcommands)
         if nesting > 100 then
             return
         elseif nesting == 0 then
             main = font
+         -- if alternative then
+         --     local s = stack[0]
+         --     s[1] = pos_h
+         --     s[2] = pos_v
+         --     s[3] = pos_r
+         -- end
+        else
+         -- if alternative then
+         --     local s = stack[0]
+         --     pos_h = s[1]
+         --     pos_v = s[2]
+         --     pos_r = s[3]
+         -- end
         end
 
         nesting = nesting + 1
 
+        local savedlevel = level
+
+        local function push()
+            level = level + 1
+            local s = stack[level]
+            s[1] = pos_h
+            s[2] = pos_v
+            s[3] = pos_r
+        end
+
+        local function pop()
+            if level > 0 then
+                local s = stack[level]
+                pos_h = s[1]
+                pos_v = s[2]
+                pos_r = s[3]
+                level = level - 1
+            end
+        end
+
+     -- push() -- or:
+
         local saved_h = pos_h
         local saved_v = pos_v
         local saved_r = pos_r
+
                 pos_r = lefttoright_code
 
         local fdata   = fontdata[font] -- offsets etc
@@ -250,96 +289,118 @@ local flush_character do
             end
         end
 
-        local refactored = 1000000
         for i=1,#vfcommands do
-            local packet  = vfcommands[i]
-            local command = packet[1]
-            if command == "char" then
-                local chr = packet[2]
-                local csx = packet[3]
-                local csy = packet[4] or csx
-                pos_h = pos_h + flushchar(fnt,chr,csx,csy)
-            elseif command == "slot" then
-                local index = packet[2]
-                local chr   = packet[3]
-                local csx   = packet[4]
-                local csy   = packet[5] or csx
-                if index == 0 then
-                    pos_h = pos_h + flushchar(font,chr,csx,csy)
-                else
-                    local okay = fonts and fonts[index]
-                    if okay then
-                        local fnt = okay.id
-                        if fnt then
-                            pos_h = pos_h + flushchar(fnt,chr,csx,csy)
-                        end
-                    else
-                        -- safeguard, we assume the font itself (often index 1)
-                        pos_h = pos_h + flushchar(font,chr,csx,csy)
-                    end
-                end
-            elseif command == "use" then
-                local index = packet[2]
-                if index then
-                    local fnt
+            local packet = vfcommands[i]
+            if packet then
+                local command = packet[1]
+                if command == "char" then
+                    local chr = packet[2]
+                    local csx = packet[3]
+                    local csy = packet[4] or csx
+                    pos_h = pos_h + flushchar(fnt,chr,csx,csy)
+                elseif command == "slot" then
+                    local index = packet[2]
+                    local chr   = packet[3]
+                    local csx   = packet[4]
+                    local csy   = packet[5] or csx
                     if index == 0 then
-                        fnt = font
+                        pos_h = pos_h + flushchar(font,chr,csx,csy)
                     else
                         local okay = fonts and fonts[index]
                         if okay then
-                            fnt = okay.id
+                            local fnt = okay.id
+                            if fnt then
+                                if fnt == 0 then
+                                    fnt = font
+                                end
+                                pos_h = pos_h + flushchar(fnt,chr,csx,csy)
+                            end
+                        else
+                            -- safeguard, we assume the font itself (often index 1)
+                            pos_h = pos_h + flushchar(font,chr,csx,csy)
                         end
                     end
-                    if fnt then
-                        -- not efficient but ok for now as experiment
-                        local d = characters[fnt]
-                        if d then
-                            for i=3,#packet do
-                                local chr = packet[i]
-                                local dat = d[chr]
-                                if dat then
-                                    flushfontchar(fnt,chr,dat)
+                elseif command == "use" then
+                    local index = packet[2]
+                    if index then
+                        local fnt
+                        if index == 0 then
+                            fnt = font
+                        else
+                            local okay = fonts and fonts[index]
+                            if okay then
+                                fnt = okay.id
+                            end
+                        end
+                        if fnt then
+                            -- not efficient but ok for now as experiment
+                            local d = characters[fnt]
+                            if d then
+                                for i=3,#packet do
+                                    local chr = packet[i]
+                                    local dat = d[chr]
+                                    if dat then
+                                        flushfontchar(fnt,chr,dat)
+                                    end
                                 end
                             end
                         end
                     end
-                end
-            elseif command == "right" then
-                local h = packet[2] -- already scaled
-                if h ~= 0 then
-                    if factor ~= 0 then
-                        h = h + h * factor / refactored -- expansion
+                elseif command == "right" then
+                    local h = packet[2] -- already scaled
+                    if h ~= 0 then
+                        if factor ~= 0 then
+                            h = h + h * factor / refactored -- expansion
+                        end
+                        pos_h = pos_h + h * sx
                     end
-                    pos_h = pos_h + h * sx
-                end
-            elseif command == "left" then
-                local h = packet[2] -- already scaled
-                if h ~= 0 then
-                    if factor ~= 0 then
-                        h = h + h * factor / refactored -- expansion
+                elseif command == "left" then
+                    local h = packet[2] -- already scaled
+                    if h ~= 0 then
+                        if factor ~= 0 then
+                            h = h + h * factor / refactored -- expansion
+                        end
+                        pos_h = pos_h - h * sx
                     end
-                    pos_h = pos_h - h * sx
-                end
-            elseif command == "down" then
-                local v = packet[2] -- already scaled
-                if v and v ~= 0 then
-                    pos_v = pos_v - v * sy
-                end
-            elseif command == "up" then
-                local v = packet[2] -- already scaled
-                if v and v ~= 0 then
-                    pos_v = pos_v + v * sy
-                end
-            elseif command == "offset" then
-                local c = packet[4]
-                if c then
-                    local ph  = pos_h
-                    local pv  = pos_v
-                    local csx = packet[5]
-                    local csy = packet[6] or csx
-                    local h   = packet[2]
-                    local v   = packet[3]
-                    if h and h ~= 0 then
+                elseif command == "down" then
+                    local v = packet[2] -- already scaled
+                    if v and v ~= 0 then
+                        pos_v = pos_v - v * sy
+                    end
+                elseif command == "up" then
+                    local v = packet[2] -- already scaled
+                    if v and v ~= 0 then
+                        pos_v = pos_v + v * sy
+                    end
+                elseif command == "offset" then
+                    local c = packet[4]
+                    if c then
+                        local ph  = pos_h
+                        local pv  = pos_v
+                        local csx = packet[5]
+                        local csy = packet[6] or csx
+                        local h   = packet[2]
+                        local v   = packet[3]
+                        if h and h ~= 0 then
+                            if factor ~= 0 then
+                                h = h + h * factor / refactored -- expansion
+                            end
+                            pos_h = pos_h + h * sx
+                        end
+                        if v and v ~= 0 then
+                            pos_v = pos_v + v * sy
+                        end
+                        flushchar(fnt,c,csx,csy)
+                        pos_h = ph
+                        pos_v = pv
+                    end
+                elseif command == "compose" then -- for now idem
+                    local ph = pos_h
+                    local pv = pos_v
+                    local h = packet[2] or 0
+                    local v = packet[3] or 0
+                    local c = packet[4]
+                    if h ~= 0 then
                         if factor ~= 0 then
                             h = h + h * factor / refactored -- expansion
                         end
@@ -348,179 +409,165 @@ local flush_character do
                     if v and v ~= 0 then
                         pos_v = pos_v + v * sy
                     end
-                    flushchar(fnt,c,csx,csy)
-                    pos_h = ph
-                    pos_v = pv
-                end
-            elseif command == "compose" then -- for now idem
-                local ph = pos_h
-                local pv = pos_v
-                local h = packet[2] or 0
-                local v = packet[3] or 0
-                local c = packet[4]
-                if h ~= 0 then
-                    if factor ~= 0 then
-                        h = h + h * factor / refactored -- expansion
+                    if c then
+                        flushchar(fnt,c)
+                        pos_h = ph
+                        pos_v = pv
                     end
-                    pos_h = pos_h + h * sx
-                end
-                if v and v ~= 0 then
-                    pos_v = pos_v + v * sy
-                end
-                if c then
-                    flushchar(fnt,c)
-                    pos_h = ph
-                    pos_v = pv
-                end
-            elseif command == "push" then
-                level = level + 1
-                local s = stack[level]
-                s[1] = pos_h
-                s[2] = pos_v
-            elseif command == "pop" then
-                if level > 0 then
-                    local s = stack[level]
-                    pos_h = s[1]
-                    pos_v = s[2]
-                    level = level - 1
-                end
-            elseif command == "frame" then
-                -- d:width d:height d:depth d:rulethickness b:outline b:advance b:baseline s:color
-                local width  = packet[2]
-                local height = packet[3]
-                local depth  = packet[4]
-                local wd, ht, dp
-                if width == true or height == true or depth == true then
-                    wd, ht, dp = getwhd(current,true)
-                end
-                if width == true then
-                    width = wd
-                elseif not width then
-                    width = 0
-                end
-                if height == true then
-                    height = ht
-                elseif not height then
-                    height = 0
-                end
-                if depth == true then
-                    depth = dp
-                elseif not depth then
-                    depth = 0
-                end
-                local total = height + depth
-                if width > 0 and total > 0 then
-                    if factor ~= 0 then
-                        width = width + width * factor / refactored
+                elseif command == "push" then
+                    push()
+                elseif command == "pop" then
+                    pop()
+                elseif command == "frame" then
+                    -- d:width d:height d:depth d:rulethickness b:outline b:advance b:baseline s:color
+                    local width  = packet[2]
+                    local height = packet[3]
+                    local depth  = packet[4]
+                    local wd, ht, dp
+                    if width == true or height == true or depth == true then
+                        wd, ht, dp = getwhd(current,true)
                     end
-                    if width > 0 then
-                        local line    = packet[5] or default
-                        local outline = packet[6]
-                        local advance = packet[7]
-                        if outline == nil then
-                            outline = true
+                    if width == true then
+                        width = wd
+                    elseif not width then
+                        width = 0
+                    end
+                    if height == true then
+                        height = ht
+                    elseif not height then
+                        height = 0
+                    end
+                    if depth == true then
+                        depth = dp
+                    elseif not depth then
+                        depth = 0
+                    end
+                    local total = height + depth
+                    if width > 0 and total > 0 then
+                        if factor ~= 0 then
+                            width = width + width * factor / refactored
                         end
-                        if advance == nil then
-                            advance = true
-                        end
-                        local baseline = outline and packet[8]
-                        local color    = packet[9] -- no longer needed probably
-                        if color then
-                            vfinjectors.startcolor(pos_h,pos_v,color) -- takes packet or string
-                        end
-                        width  = width  * sx
-                        height = height * sy
-                        depth  = depth  * sy
-                        flushspecialrule(pos_h,pos_v,pos_r,width,height,depth,line,outline,baseline)
-                        if color then
-                            vfinjectors.stopcolor()
-                        end
-                        if advance then
-                            pos_h = pos_h + width
+                        if width > 0 then
+                            local line    = packet[5] or default
+                            local outline = packet[6]
+                            local advance = packet[7]
+                            if outline == nil then
+                                outline = true
+                            end
+                            if advance == nil then
+                                advance = true
+                            end
+                            local baseline = outline and packet[8]
+                            local color    = packet[9] -- no longer needed probably
+                            if color then
+                                vfinjectors.startcolor(pos_h,pos_v,color) -- takes packet or string
+                            end
+                            width  = width  * sx
+                            height = height * sy
+                            depth  = depth  * sy
+                            flushspecialrule(pos_h,pos_v,pos_r,width,height,depth,line,outline,baseline)
+                            if color then
+                                vfinjectors.stopcolor()
+                            end
+                            if advance then
+                                pos_h = pos_h + width
+                            end
                         end
                     end
-                end
-            elseif command == "rule" then
-                local size_v = packet[2]
-                local size_h = packet[3]
-                if size_h > 0 and size_v > 0 then
-                    if factor ~= 0 then
-                        size_h = size_h + size_h * factor / refactored
-                    end
-                    if size_h > 0 then
-                        size_h = size_h * sx
-                        size_v = size_v * sy
-                        flushsimplerule(pos_h,pos_v,pos_r,size_h,size_v)
-                        pos_h = pos_h + size_h
-                    end
-                end
-            elseif command == "line" then
-                local wd = packet[2] or 0
-                local ht = packet[3] or 0
-                local dp = packet[4] or 0
-                if wd > 0 and ht ~= 0 and dp ~= 0 then
-                    if factor ~= 0 then
-                        wd = wd + wd * factor / refactored
-                    end
-                    if wd > 0 then
-                        wd = wd * sx
-                        ht = ht * sy
-                        dp = dp * sy
-                        local color = packet[5] -- no longer needed probably
-                        if color then
-                            vfinjectors.startcolor(pos_h,pos_v,color) -- takes packet or string
+                elseif command == "rule" then
+                    local size_v = packet[2]
+                    local size_h = packet[3]
+                    if size_h > 0 and size_v > 0 then
+                        if factor ~= 0 then
+                            size_h = size_h + size_h * factor / refactored
                         end
-                        flushsimplerule(pos_h,pos_v-dp,pos_r,wd,ht+dp)
-                        if color then
-                            vfinjectors.stopcolor()
+                        if size_h > 0 then
+                            size_h = size_h * sx
+                            size_v = size_v * sy
+                            flushsimplerule(pos_h,pos_v,pos_r,size_h,size_v)
+                            pos_h = pos_h + size_h
                         end
-                        pos_h = pos_h + wd
                     end
-                end
-            elseif command == "font" then
-                local index = packet[2]
-                local okay  = fonts and fonts[index]
-                if okay then
-                    fnt = okay.id or fnt -- or maybe just return
-                end
-            elseif command == "lua" then
-                local code = packet[2]
-                local kind = type(code)
-                if kind ~= "function" then
-                    code = loadstring(code)
-                    kind = type(code)
-                end
-                if kind == "function" then
-                    code(font,char,pos_h,pos_v,sx,sy) -- maybe also packet
-                end
-            elseif command == "node" then
-                local h = packet[2]
-                hlist_out(h,getlist(h))
-         -- elseif command == "pdf" then
-                -- unsupported
-         -- elseif command == "pdfmode" then
-                -- unsupported
-         -- elseif command == "special" then
-                -- unsupported
-         -- elseif command == "nop"     then
-                -- just ignored
-         -- elseif command == "image"   then
-                -- unsupported, use "node"
-            else
-                local injector = vfinjectors[command]
-                if injector then
-                    injector(pos_h,pos_v,packet) -- maybe also sx, sy but then we need to check usage
+                elseif command == "line" then
+                    local wd = packet[2] or 0
+                    local ht = packet[3] or 0
+                    local dp = packet[4] or 0
+                    if wd > 0 and ht ~= 0 and dp ~= 0 then
+                        if factor ~= 0 then
+                            wd = wd + wd * factor / refactored
+                        end
+                        if wd > 0 then
+                            wd = wd * sx
+                            ht = ht * sy
+                            dp = dp * sy
+                            local color = packet[5] -- no longer needed probably
+                            if color then
+                                vfinjectors.startcolor(pos_h,pos_v,color) -- takes packet or string
+                            end
+                            flushsimplerule(pos_h,pos_v-dp,pos_r,wd,ht+dp)
+                            if color then
+                                vfinjectors.stopcolor()
+                            end
+                            pos_h = pos_h + wd
+                        end
+                    end
+                elseif command == "font" then
+                    local index = packet[2]
+                    local okay  = fonts and fonts[index]
+                    if okay then
+                        fnt = okay.id or fnt -- or maybe just return
+                    end
+                elseif command == "lua" then
+                    local code = packet[2]
+                    local kind = type(code)
+                    if kind ~= "function" then
+                        code = loadstring(code)
+                        kind = type(code)
+                    end
+                    if kind == "function" then
+                        code(font,char,pos_h,pos_v,sx,sy) -- maybe also packet
+                    end
+                elseif command == "node" then
+                    local h = packet[2]
+                    hlist_out(h,getlist(h))
+             -- elseif command == "pdf" then
+                    -- unsupported
+             -- elseif command == "pdfmode" then
+                    -- unsupported
+             -- elseif command == "special" then
+                    -- unsupported
+             -- elseif command == "nop"     then
+                    -- just ignored
+             -- elseif command == "image"   then
+                    -- unsupported, use "node"
+                elseif command == "inspect" then
+                    inspect(vfcommands)
+                elseif command == "trace" then
+                    report("virtual state: h=%p v=%p d=%i",pos_h,pos_v,pos_r)
+                else
+                    local injector = vfinjectors[command]
+                    if injector then
+                        injector(pos_h,pos_v,packet) -- maybe also sx, sy but then we need to check usage
+                    end
                 end
             end
         end
 
-        -- hm, never seen outside here
+     -- pop() -- or:
 
         pos_h = saved_h
         pos_v = saved_v
         pos_r = saved_r
 
+        if savedlevel ~= level then
+            report("")
+            report("virtual state: stack is corrupt")
+            report("")
+        end
+        level = savedlevel
+
         nesting = nesting - 1
+
     end
 
     local onetimemessage -- could be defined later (todo: make plug for this)

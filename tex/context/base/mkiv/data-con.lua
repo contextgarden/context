@@ -56,7 +56,7 @@ local mt = {
     __storage__ = true
 }
 
-function containers.define(category, subcategory, version, enabled)
+function containers.define(category, subcategory, version, enabled, reload)
     if category and subcategory then
         local c = allocated[category]
         if not c then
@@ -70,6 +70,7 @@ function containers.define(category, subcategory, version, enabled)
                 subcategory = subcategory,
                 storage     = { },
                 enabled     = enabled,
+                reload      = reload,
                 version     = version or math.pi, -- after all, this is TeX
                 trace       = false,
              -- writable    = getwritablepath  and getwritablepath (category,subcategory) or { "." },
@@ -97,7 +98,8 @@ end
 
 function containers.read(container,name)
     local storage = container.storage
-    local stored = storage[name]
+    local reload  = container.reload
+    local stored  = not reload and storage[name]
     if not stored and container.enabled and caches and containers.usecache then
         stored = loaddatafromcache(container.readables,name,container.writable)
         if stored and stored.cache_version == container.version then

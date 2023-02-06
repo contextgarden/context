@@ -2717,7 +2717,7 @@ local function flushstreamobj(data,n,dict,comp,nolength)
             -- probleem: we need to adapt length!
             b = f_stream_b_d_r(n,dict) -- raw object, already treated
             if encryptstream then
-print("check length")
+                print("check length")
                 data = encryptstream(data)
                 size = #data
             end
@@ -2754,7 +2754,7 @@ print("check length")
     else
         if nolength then
             if encryptstream then
-print("check length")
+                print("check length")
                 data = encryptstream(data)
             end
             data = f_stream_d_r(n,dict,data) -- raw object, already treated

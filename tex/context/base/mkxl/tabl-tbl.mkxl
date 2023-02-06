@@ -15,7 +15,13 @@
 
 \unprotect
 
-\registerctxluafile{tabl-tbl}{} % experiment
+% These are set at the lua end by parser:
+
+\newinteger\c_tabl_tabulate_nofcolumns
+\newinteger\c_tabl_tabulate_has_rule_spec_first
+\newinteger\c_tabl_tabulate_has_rule_spec_last
+
+\registerctxluafile{tabl-tbl}{autosuffix} % experiment
 
 %D I can probably reimplement this using a \LUATEX\ combination but it does not pay
 %D of in development time. If I need something else I will write it from scratch
@@ -175,10 +181,6 @@
 \newinteger      \c_tabl_tabulate_align
 \newinteger      \c_tabl_tabulate_nofrealrows
 \newinteger      \c_tabl_tabulate_autocolor
-
-\newinteger      \c_tabl_tabulate_nofcolumns            % set at the lua end by parser
-\newinteger      \c_tabl_tabulate_has_rule_spec_first   % set at the lua end by parser (for the moment a count)
-\newinteger      \c_tabl_tabulate_has_rule_spec_last    % set at the lua end by parser (for the moment a count)
 
 \newconditional  \c_tabl_tabulate_nopbreak
 \newconditional  \c_tabl_tabulate_firstflushed

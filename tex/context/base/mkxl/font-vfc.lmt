@@ -18,25 +18,35 @@ local setmetatableindex = table.setmetatableindex
 -- Helpers dealing with virtual fonts: beware, these are final values so
 -- don't change the content of tables fetched from here!
 
-local push  = { "push" }
-local pop   = { "pop" }
-local dummy = { "comment" }
+local pushcommand  = { "push" }
+local popcommand   = { "pop" }
+local dummycommand = { "comment" }
+
+local slotcommand = setmetatableindex(function(t,k)
+    local v = setmetatableindex(function(tt,kk)
+        local vv = { "slot", k, kk }
+        tt[kk] = vv
+        return vv
+    end)
+    t[k] = v
+    return v
+end)
 
 function helpers.prependcommands(commands,...)
-    insert(commands,1,push)
+    insert(commands,1,pushcommand)
     for i=select("#",...),1,-1 do
         local s = (select(i,...))
         if s then
             insert(commands,1,s)
         end
     end
-    insert(commands,pop)
+    insert(commands,popcommand)
     return commands
 end
 
 function helpers.appendcommands(commands,...)
-    insert(commands,1,push)
-    insert(commands,pop)
+    insert(commands,1,pushcommand)
+    insert(commands,popcommand)
     for i=1,select("#",...) do
         local s = (select(i,...))
         if s then
@@ -47,20 +57,20 @@ function helpers.appendcommands(commands,...)
 end
 
 function helpers.prependcommandtable(commands,t)
-    insert(commands,1,push)
+    insert(commands,1,pushcommand)
     for i=#t,1,-1 do
         local s = t[i]
         if s then
             insert(commands,1,s)
         end
     end
-    insert(commands,pop)
+    insert(commands,popcommand)
     return commands
 end
 
 function helpers.appendcommandtable(commands,t)
-    insert(commands,1,push)
-    insert(commands,pop)
+    insert(commands,1,pushcommand)
+    insert(commands,popcommand)
     for i=1,#t do
         local s = t[i]
         if s then
@@ -71,14 +81,15 @@ function helpers.appendcommandtable(commands,t)
 end
 
 helpers.commands = utilities.storage.allocate {
-    char  = setmetatableindex(function(t,k) local v = { "slot",  0, k } t[k] = v return v end),
-    right = setmetatableindex(function(t,k) local v = { "right", k    } t[k] = v return v end),
-    left  = setmetatableindex(function(t,k) local v = { "left",  k    } t[k] = v return v end),
-    down  = setmetatableindex(function(t,k) local v = { "down",  k    } t[k] = v return v end),
-    up    = setmetatableindex(function(t,k) local v = { "up",    k    } t[k] = v return v end),
-    push  = push,
-    pop   = pop,
-    dummy = dummy,
+    char  = setmetatableindex(function(t,k) local v = { "char",  k } t[k] = v return v end),
+    right = setmetatableindex(function(t,k) local v = { "right", k } t[k] = v return v end),
+    left  = setmetatableindex(function(t,k) local v = { "left",  k } t[k] = v return v end),
+    down  = setmetatableindex(function(t,k) local v = { "down",  k } t[k] = v return v end),
+    up    = setmetatableindex(function(t,k) local v = { "up",    k } t[k] = v return v end),
+    push  = pushcommand,
+    pop   = popcommand,
+    dummy = dummycommand,
+    slot  = slotcommand,
 }
 
 local codeinjections = backends.codeinjections

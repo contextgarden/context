@@ -3,7 +3,7 @@
 %D        version=2010.06.21,
 %D          title=\CONTEXT\ Typescript Macros,
 %D       subtitle=Iwona,
-%D         author=Mojca Miklavec \& Hans Hagen,
+%D         author=Mojca Miklavec \& Hans Hagen \& Mikael Sundqvist,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
@@ -13,10 +13,10 @@
 
 \starttypescriptcollection[iwona]
 
-    % maybe this will change in Iwona-Math-Letters and Iwona-Math-Letters-Italic
-
-    % These names are a depressing mess. They have changed over time and are
-    % still not consistent. I'd expect Bold-Regular and Bold-Italic.
+    \definefontfeature[virtualmath-iwona]       [virtualmath][virtualweight=iwona]
+    \definefontfeature[virtualmath-iwona-light] [virtualmath][virtualweight=iwona-light]
+    \definefontfeature[virtualmath-iwona-medium][virtualmath][virtualweight=iwona-medium]
+    \definefontfeature[virtualmath-iwona-heavy] [virtualmath][virtualweight=iwona-heavy]
 
     \starttypescript [\s!sans] [iwona-light,iwona,iwona-medium,iwona-heavy,iwona-light-cond,iwona-cond,iwona-medium-cond,iwona-heavy-cond]
 
@@ -31,17 +31,6 @@
         \definefontsynonym [Iwona-Heavy-Regular]         [\s!file:IwonaHeavy-Regular]           [\s!features=\s!default]
         \definefontsynonym [Iwona-Heavy-Italic]          [\s!file:IwonaHeavy-Italic]            [\s!features=\s!default]
 
-        \definefontsynonym [Iwona-CapsRegular]           [\s!file:Iwona-Regular]                [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsItalic]            [\s!file:Iwona-Italic]                 [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsBold]              [\s!file:Iwona-Bold]                   [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsBoldItalic]        [\s!file:Iwona-BoldItalic]             [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsLight]             [\s!file:IwonaLight-Regular]           [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsLight-Italic]      [\s!file:IwonaLight-Italic]            [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsMedium]            [\s!file:IwonaMedium-Regular]          [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsMedium-Italic]     [\s!file:IwonaMedium-Italic]           [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsHeavy]             [\s!file:IwonaHeavy-Regular]           [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsHeavy-Italic]      [\s!file:IwonaHeavy-Italic]            [\s!features=\s!smallcaps]
-
         \definefontsynonym [Iwona-CondRegular]           [\s!file:IwonaCond-Regular]            [\s!features=\s!default]
         \definefontsynonym [Iwona-CondItalic]            [\s!file:IwonaCond-Italic]             [\s!features=\s!default]
         \definefontsynonym [Iwona-CondBold]              [\s!file:IwonaCond-Bold]               [\s!features=\s!default]
@@ -53,29 +42,18 @@
         \definefontsynonym [Iwona-CondHeavy-Regular]     [\s!file:IwonaCondHeavy-Regular]       [\s!features=\s!default]
         \definefontsynonym [Iwona-CondHeavy-Italic]      [\s!file:IwonaCondHeavy-Italic]        [\s!features=\s!default]
 
-        \definefontsynonym [Iwona-CapsCondRegular]       [\s!file:IwonaCond-Regular]            [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsCondItalic]        [\s!file:IwonaCond-Italic]             [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsCondBold]          [\s!file:IwonaCond-Bold]               [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsCondBoldItalic]    [\s!file:IwonaCond-BoldItalic]         [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsCondLight-Regular] [\s!file:IwonaCondLight-Regular]       [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsCondLight-Italic]  [\s!file:IwonaCondLight-Italic]        [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsCondMedium-Regular][\s!file:IwonaCondMedium-Regular]      [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsCondMedium-Italic] [\s!file:IwonaCondMedium-Italic]       [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsCondHeavy-Regular] [\s!file:IwonaCondHeavy-Regular]       [\s!features=\s!smallcaps]
-        \definefontsynonym [Iwona-CapsCondHeavy-Italic]  [\s!file:IwonaCondHeavy-Italic]        [\s!features=\s!smallcaps]
-
     \stoptypescript
 
     % [all] is redundant
 
     \starttypescript [\s!math][iwona][\s!all]
-        \definefontsynonym[\s!MathRoman][iwonamath@iwona-math]
+        \definefontsynonym[\s!MathRoman]    [iwonamath@iwona-math]
     \stoptypescript
     \starttypescript [\s!math][iwona-light][\s!all]
-        \definefontsynonym[\s!MathRoman][iwonalightmath@iwona-light-math]
+        \definefontsynonym[\s!MathRoman]    [iwonalightmath@iwona-light-math]
     \stoptypescript
     \starttypescript [\s!math][iwona-medium][\s!all]
-        \definefontsynonym[\s!MathRoman][iwonamediummath@iwona-medium-math]
+        \definefontsynonym[\s!MathRoman]    [iwonamediummath@iwona-medium-math]
     \stoptypescript
     \starttypescript [\s!math][iwona-heavy][\s!all]
         \definefontsynonym[\s!MathRoman][iwonaheavymath@iwona-heavy-math]
@@ -91,18 +69,6 @@
         \definefontsynonym [\s!SansItalic]      [Iwona-Light-Italic]
         \definefontsynonym [\s!SansBold]        [Iwona-Medium-Regular]
         \definefontsynonym [\s!SansBoldItalic]  [Iwona-Medium-Italic]
-        \definefontsynonym [SansCaps]           [Iwona-CapsLight]
-        \definefontsynonym [SansItalicCaps]     [Iwona-CapsLightItalic]
-        \definefontsynonym [SansBoldCaps]       [Iwona-CapsMedium]
-        \definefontsynonym [SansBoldItalicCaps] [Iwona-CapsMediumItalic]
-    \stoptypescript
-
-    \starttypescript [\s!sans] [iwona-light-caps] [\s!name]
-        \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [Iwona-CapsLight-Regular]
-        \definefontsynonym [\s!SansItalic]     [Iwona-CapsLight-Italic]
-        \definefontsynonym [\s!SansBold]       [Iwona-CapsMedium-Regular]
-        \definefontsynonym [\s!SansBoldItalic] [Iwona-CapsMedium-Italic]
     \stoptypescript
 
     \starttypescript [\s!sans] [iwona] [\s!name]
@@ -111,18 +77,6 @@
         \definefontsynonym [\s!SansItalic]      [Iwona-Italic]
         \definefontsynonym [\s!SansBold]        [Iwona-Bold]
         \definefontsynonym [\s!SansBoldItalic]  [Iwona-BoldItalic]
-        \definefontsynonym [SansCaps]           [Iwona-CapsRegular]
-        \definefontsynonym [SansItalicCaps]     [Iwona-CapsItalic]
-        \definefontsynonym [SansBoldCaps]       [Iwona-CapsBold]
-        \definefontsynonym [SansBoldItalicCaps] [Iwona-CapsBoldItalic]
-    \stoptypescript
-
-    \starttypescript [\s!sans] [iwona-caps] [\s!name]
-        \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [Iwona-CapsRegular]
-        \definefontsynonym [\s!SansItalic]     [Iwona-CapsItalic]
-        \definefontsynonym [\s!SansBold]       [Iwona-CapsBold]
-        \definefontsynonym [\s!SansBoldItalic] [Iwona-CapsBoldItalic]
     \stoptypescript
 
     \starttypescript [\s!sans] [iwona-medium] [\s!name]
@@ -131,18 +85,6 @@
         \definefontsynonym [\s!SansItalic]      [Iwona-Medium-Italic]
         \definefontsynonym [\s!SansBold]        [Iwona-Heavy-Regular]
         \definefontsynonym [\s!SansBoldItalic]  [Iwona-Heavy-Italic]
-        \definefontsynonym [SansCaps]           [Iwona-CapsHeavy-Regular]
-        \definefontsynonym [SansItalicCaps]     [Iwona-CapsMedium-Italic]
-        \definefontsynonym [SansBoldCaps]       [Iwona-CapsHeavy-Regular]
-        \definefontsynonym [SansBoldItalicCaps] [Iwona-CapsHeavy-Italic]
-    \stoptypescript
-
-    \starttypescript [\s!sans] [iwona-medium-caps] [\s!name]
-        \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [Iwona-CapsHeavy-Regular]
-        \definefontsynonym [\s!SansItalic]     [Iwona-CapsMedium-Italic]
-        \definefontsynonym [\s!SansBold]       [Iwona-CapsHeavy-Regular]
-        \definefontsynonym [\s!SansBoldItalic] [Iwona-CapsHeavy-Italic]
     \stoptypescript
 
     \starttypescript [\s!sans] [iwona-heavy] [\s!name]
@@ -151,18 +93,6 @@
         \definefontsynonym [\s!SansItalic]      [Iwona-Heavy-Italic]
         \definefontsynonym [\s!SansBold]        [Iwona-Heavy-Regular]
         \definefontsynonym [\s!SansBoldItalic]  [Iwona-Heavy-Italic]
-        \definefontsynonym [SansCaps]           [Iwona-CapsHeavy-Regular]
-        \definefontsynonym [SansItalicCaps]     [Iwona-CapsHeavy-Italic]
-        \definefontsynonym [SansBoldCaps]       [Iwona-CapsHeavy-Regular]
-        \definefontsynonym [SansBoldItalicCaps] [Iwona-CapsHeavy-Italic]
-    \stoptypescript
-
-    \starttypescript [\s!sans] [iwona-heavy-caps] [\s!name]
-       \setups[\s!font:\s!fallback:\s!sans]
-       \definefontsynonym [SansCaps]           [Iwona-CapsHeavy-Regular]
-       \definefontsynonym [SansItalicCaps]     [Iwona-CapsHeavy-Italic]
-       \definefontsynonym [SansBoldCaps]       [Iwona-CapsHeavy-Regular]
-       \definefontsynonym [SansBoldItalicCaps] [Iwona-CapsHeavy-Italic]
     \stoptypescript
 
     \starttypescript [\s!sans] [iwona-light-cond] [\s!name]
@@ -171,19 +101,8 @@
         \definefontsynonym [\s!SansItalic]      [Iwona-CondLight-Italic]
         \definefontsynonym [\s!SansBold]        [Iwona-CondMedium-Regular]
         \definefontsynonym [\s!SansBoldItalic]  [Iwona-CondMedium-Italic]
-        \definefontsynonym [SansCaps]           [Iwona-CapsCondLight-Regular]
-        \definefontsynonym [SansItalicCaps]     [Iwona-CapsCondLight-Italic]
-        \definefontsynonym [SansBoldCaps]       [Iwona-CapsCondMedium-Regular]
-        \definefontsynonym [SansBoldItalicCaps] [Iwona-CapsCondMedium-Italic]
     \stoptypescript
 
-    \starttypescript [\s!sans] [iwona-light-cond-caps,iwona-light-caps-cond] [\s!name]
-        \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [Iwona-CapsCondLight-Regular]
-        \definefontsynonym [\s!SansItalic]     [Iwona-CapsCondLight-Italic]
-        \definefontsynonym [\s!SansBold]       [Iwona-CapsCondMedium-Regular]
-        \definefontsynonym [\s!SansBoldItalic] [Iwona-CapsCondMedium-Italic]
-    \stoptypescript
 
     \starttypescript [\s!sans] [iwona-cond] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
@@ -191,18 +110,6 @@
         \definefontsynonym [\s!SansItalic]      [Iwona-CondItalic]
         \definefontsynonym [\s!SansBold]        [Iwona-CondBold]
         \definefontsynonym [\s!SansBoldItalic]  [Iwona-CondBoldItalic]
-        \definefontsynonym [SansCaps]           [Iwona-CapsCondRegular]
-        \definefontsynonym [SansItalicCaps]     [Iwona-CapsCondItalic]
-        \definefontsynonym [SansBoldCaps]       [Iwona-CapsCondBold]
-        \definefontsynonym [SansBoldItalicCaps] [Iwona-CapsCondBoldItalic]
-    \stoptypescript
-
-    \starttypescript [\s!sans] [iwona-cond-caps,iwona-caps-cond] [\s!name]
-        \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [Iwona-CapsCondRegular]
-        \definefontsynonym [\s!SansItalic]     [Iwona-CapsCondItalic]
-        \definefontsynonym [\s!SansBold]       [Iwona-CapsCondBold]
-        \definefontsynonym [\s!SansBoldItalic] [Iwona-CapsCondBoldItalic]
     \stoptypescript
 
     \starttypescript [\s!sans] [iwona-medium-cond] [\s!name]
@@ -211,18 +118,6 @@
         \definefontsynonym [\s!SansItalic]      [Iwona-CondMedium-Italic]
         \definefontsynonym [\s!SansBold]        [Iwona-CondHeavy-Regular]
         \definefontsynonym [\s!SansBoldItalic]  [Iwona-CondHeavy-Italic]
-        \definefontsynonym [SansCaps]           [Iwona-CapsCondHeavy-Regular]
-        \definefontsynonym [SansItalicCaps]     [Iwona-CapsCondMedium-Italic]
-        \definefontsynonym [SansBoldCaps]       [Iwona-CapsCondHeavy-Regular]
-        \definefontsynonym [SansBoldItalicCaps] [Iwona-CapsCondHeavy-Italic]
-    \stoptypescript
-
-    \starttypescript [\s!sans] [iwona-medium-cond-caps,iwona-medium-caps-cond] [\s!name]
-        \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [Iwona-CapsCondHeavy-Regular]
-        \definefontsynonym [\s!SansItalic]     [Iwona-CapsCondMedium-Italic]
-        \definefontsynonym [\s!SansBold]       [Iwona-CapsCondHeavy-Regular]
-        \definefontsynonym [\s!SansBoldItalic] [Iwona-CapsCondHeavy-Italic]
     \stoptypescript
 
     \starttypescript [iwona,iwona-light,iwona-heavy,iwona-medium]

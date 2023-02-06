@@ -4829,7 +4829,7 @@ static int texlib_getglyphoptionvalues(lua_State *L)
 
 static int texlib_getnoadoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 32);
+    lua_createtable(L, 2, 34);
     lua_push_key_at_index(L, axis,                   noad_option_axis);
     lua_push_key_at_index(L, noaxis,                 noad_option_no_axis);
     lua_push_key_at_index(L, exact,                  noad_option_exact);
@@ -4865,6 +4865,7 @@ static int texlib_getnoadoptionvalues(lua_State *L)
     lua_push_key_at_index(L, sourceonnucleus,        noad_option_source_on_nucleus);
     lua_push_key_at_index(L, fixedsuperorsubscript,  noad_option_fixed_super_or_sub_script);
     lua_push_key_at_index(L, fixedsuperandsubscript, noad_option_fixed_super_and_sub_script);
+    lua_push_key_at_index(L, autobase,               noad_option_auto_base);
     return 1;
 }
 

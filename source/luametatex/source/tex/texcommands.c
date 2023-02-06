@@ -1056,8 +1056,8 @@ void tex_initialize_commands(void)
         tex_primitive(tex_command,    "unvcopy",                        un_vbox_cmd,            copy_code,                                0);
         tex_primitive(luatex_command, "unvpack",                        un_vbox_cmd,            unpack_code,                              0);
 
-        tex_primitive(etex_command,   "pagediscards",                   un_vbox_cmd,            page_discards_code,                            0);
-        tex_primitive(etex_command,   "splitdiscards",                  un_vbox_cmd,            split_discards_code,                              0);
+        tex_primitive(etex_command,   "pagediscards",                   un_vbox_cmd,            page_discards_code,                       0);
+        tex_primitive(etex_command,   "splitdiscards",                  un_vbox_cmd,            split_discards_code,                      0);
 
         tex_primitive(luatex_command, "insertunbox",                    un_vbox_cmd,            insert_box_code,                          0);
         tex_primitive(luatex_command, "insertuncopy",                   un_vbox_cmd,            insert_copy_code,                         0);

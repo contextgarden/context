@@ -15,7 +15,7 @@ local S, C, P, lpegmatch, lpegtsplitat = lpeg.S, lpeg.C, lpeg.P, lpeg.match, lpe
 local xmath                    = xmath    or math
 local xcomplex                 = xcomplex or { }
 
-local scannext                 = token.scannext
+----- scannext                 = token.scannext
 local scancmdchr               = token.scancmdchrexpanded
 local scantoken                = token.scantoken
 local getcsname                = token.getcsname

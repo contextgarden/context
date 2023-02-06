@@ -10,17 +10,18 @@ if not modules then modules = { } end modules ['math-vfu'] = {
 -- better. If you have problems with math fonts or miss characters report it to the
 -- ConTeXt mailing list. Also thanks to Boguslaw for finding a couple of errors.
 
--- This mechanism will eventually disappear or at least needs to be updated to the
--- way lmtx does virtual fonts.
-
--- 20D6 -> 2190
--- 20D7 -> 2192
+-- Although this mechanism was a candidate for obsolence, the fact that Iwona and
+-- Antykwa are nice fonts (especially for display) I decided to keep it around but
+-- in a bit upgraded way. It is also a test for virtual tfm/pfb fonts that we keep
+-- around but hardly gets tested. However, much is still pretty old code, dating
+-- from when we emulated \UNICODE\ math and \OPENTYPE\ math fonts using traditional
+-- fonts.
 
 local type, next, tonumber = type, next, tonumber
 local max = math.max
-local fastcopy = table.copy
+local fastcopy, sortedhash = table.copy, table.sortedhash
 
-local fonts, nodes, mathematics = fonts, nodes, mathematics
+local fonts, mathematics = fonts, mathematics
 
 local trace_virtual = false  trackers.register("math.virtual", function(v) trace_virtual = v end)
 local trace_timings = false  trackers.register("math.timings", function(v) trace_timings = v end)
@@ -41,211 +42,159 @@ local vfmath            = allocate()
 fonts.handlers.vf.math  = vfmath
 
 local helpers           = fonts.helpers
+
+local addprivate        = helpers.addprivate
 local vfcommands        = helpers.commands
+
 local rightcommand      = vfcommands.right
 local leftcommand       = vfcommands.left
 local downcommand       = vfcommands.down
 local upcommand         = vfcommands.up
 local push              = vfcommands.push
 local pop               = vfcommands.pop
-
-local shared            = { }
-
--- local back = { "slot", 1, 0x2215 }
---
--- local function negate(main,characters,id,size,unicode,basecode)
---     if not characters[unicode] then
---         local basechar = characters[basecode]
---         if basechar then
---             local ht, wd = basechar.height, basechar.width
---             characters[unicode] = {
---                 width    = wd,
---                 height   = ht,
---                 depth    = basechar.depth,
---                 italic   = basechar.italic,
---                 kerns    = basechar.kerns,
---                 commands = {
---                     { "slot", 1, basecode },
---                     push,
---                     downcommand[ht/5],
---                     leftcommand[wd/2],
---                     back,
---                     push,
---                 }
---             }
---         end
---     end
--- end
---
--- \Umathchardef\braceld="0 "1 "FF07A
--- \Umathchardef\bracerd="0 "1 "FF07B
--- \Umathchardef\bracelu="0 "1 "FF07C
--- \Umathchardef\braceru="0 "1 "FF07D
+local slotcommand       = vfcommands.slot
 
 local function brace(main,characters,id,size,unicode,first,rule,left,right,rule,last)
     if not characters[unicode] then
-        characters[unicode] = {
-            parts = {
-                { extender = 0, glyph = first },
-                { extender = 1, glyph = rule  },
-                { extender = 0, glyph = left  },
-                { extender = 0, glyph = right },
-                { extender = 1, glyph = rule  },
-                { extender = 0, glyph = last  },
+        local template = characters[first]
+        if template then
+            if not characters[rule] then
+                local width  = template.width / 4
+                local height = template.height
+                characters[rule] = {
+                    height   = 3*height,
+                    depth    = 2*height,
+                    width    = width,
+                    commands = { push, { "rule", height, width }, pop },
+                }
+            end
+            characters[unicode] = {
+                keepvirtual      = true,
+                partsorientation = "horizontal",
+                parts            = {
+                    { glyph = first },
+                    { glyph = rule, extender = 1 },
+                    { glyph = left  },
+                    { glyph = right },
+                    { glyph = rule, extender = 1 },
+                    { glyph = last  },
+                }
             }
-        }
+        end
     end
 end
 
-local function extension(main,characters,id,size,unicode,first,middle,last)
-    local chr = characters[unicode]
-    if not chr then
-        return -- skip
-    end
-    local fw = characters[first]
-    if not fw then
-        return
-    end
-    local mw = characters[middle]
-    if not mw then
-        return
-    end
-    local lw = characters[last]
-    if not lw then
-        return
-    end
-    fw = fw.width
-    mw = mw.width
-    lw = lw.width
-    if fw == 0 then
-        fw = 1
-    end
-    if lw == 0 then
-        lw = 1
-    end
-    chr.parts = {
-        { extender = 0, glyph = first,  ["end"] = fw/2, start = 0,    advance = fw },
-        { extender = 1, glyph = middle, ["end"] = mw/2, start = mw/2, advance = mw },
-        { extender = 0, glyph = last,   ["end"] = 0,    start = lw/2, advance = lw },
-    }
-end
-
-local function parent(main,characters,id,size,unicode,first,rule,last)
+local function horibar(main,characters,id,size,unicode,rule)
     if not characters[unicode] then
-        characters[unicode] = {
-            parts = {
-                { extender = 0, glyph = first },
-                { extender = 1, glyph = rule  },
-                { extender = 0, glyph = last  },
+        if not characters[rule] then
+            local width  = main.parameters    .quad/4               or 4*65536
+            local height = main.mathparameters.defaultrulethickness or 4*65536/10
+            characters[rule] = {
+                height   = height,
+                width    = width,
+                commands = { push, { "rule", height, width }, pop },
             }
-        }
-    end
-end
-
-local step = 0.2 -- 0.1 is nicer but gives larger files
-
-local function make(main,characters,id,size,n,m)
-    local old = 0xFF000 + n
-    local c   = characters[old]
-    if c then
-        local upslot    = 0xFF100 + n
-        local dnslot    = 0xFF200 + n
-        local uprule    = 0xFF300 + m
-        local dnrule    = 0xFF400 + m
-        local xu        = main.parameters.xheight + 0.3*size
-        local xd        = 0.3*size
-        local w         = c.width or 0
-        local h         = c.height or 0
-        local d         = c.depth or 0
-        local thickness = h - d
-        local rulewidth = step*size -- we could use an overlap
-        local slot      = { "slot", id, old }
-        local rule      = { "rule", thickness, rulewidth  }
-        local up        = upcommand[xu]
-        local dn        = downcommand[xd]
-        local ht        = xu + 3*thickness
-        local dp        = 0
-        if not characters[uprule] then
-            characters[uprule] = {
-                width    = rulewidth,
-                height   = ht,
-                depth    = dp,
-                commands = { push, up, rule, pop },
-            }
-        end
-        characters[upslot] = {
-            width    = w,
-            height   = ht,
-            depth    = dp,
-            commands = { push, up, slot, pop },
-        }
-        local ht = 0
-        local dp = xd + 3*thickness
-        if not characters[dnrule] then
-            characters[dnrule] = {
-                width    = rulewidth,
-                height   = ht,
-                depth    = dp,
-                commands = { push, dn, rule, pop }
-            }
-        end
-        characters[dnslot] = {
-            width    = w,
-            height   = ht,
-            depth    = dp,
-            commands = { push, dn, slot, pop },
-        }
-    end
-end
-
-local function clipped(main,characters,id,size,unicode,original) -- push/pop needed?
-    local minus = characters[original]
-    if minus then
-        local mu    = size/18
-        local step  = 3*mu
-        local width = minus.width
-        if width > step then
-            width = width - step
-            step  = step / 2
-        else
-            width = width / 2
-            step  = width
         end
         characters[unicode] = {
-            width    = width,
-            height   = minus.height,
-            depth    = minus.depth,
-            commands = {
-                push,
-                leftcommand[step],
-                { "slot", id, original },
-                pop,
+            keepvirtual      = true,
+            partsorientation = "horizontal",
+            parts            = {
+                { glyph = rule },
+                { glyph = rule, extender = 1 },
             }
         }
     end
 end
 
-local function raise(main,characters,id,size,unicode,private,n,id_of_smaller) -- this is a real fake mess
-    local raised = fonts.hashes.characters[main.fonts[id_of_smaller].id][private]  -- characters[private]
-    if raised then
-        local up   = 0.85 * main.parameters.xheight
-        local slot = { "slot", id_of_smaller, private }
-        local commands = {
-            push, upcommand[up], slot,
-        }
-        for i=2,n do
-            commands[#commands+1] = slot
+local function parent(main,characters,id,size,unicode,first,rule,last,where)
+    if not characters[unicode] then
+        local template = characters[first]
+        if template then
+            if not characters[rule] then
+                local width  = template.width / 4
+                local height = template.height
+                characters[rule] = {
+                    height   = where == "top" and   height or 3*height,
+                    depth    = where == "top" and 2*height or 0,
+                    width    = width,
+                    commands = { push, { "rule", height, width }, pop },
+                }
+            end
+            characters[unicode] = {
+                keepvirtual      = true,
+                partsorientation = "horizontal",
+                parts            = {
+                    { glyph = first },
+                    { glyph = rule, extender = 1 },
+                    { glyph = last  },
+                }
+            }
         end
-        commands[#commands+1] = pop
-        characters[unicode] = {
-            width    = n * raised.width,
-            height   = (raised.height or 0) + up,
-            depth    = (raised.depth or 0) - up,
-            italic   = raised.italic,
-            commands = commands,
-        }
     end
 end
+
+-- local function extension(main,characters,id,size,unicode,first,middle,last)
+--     local chr = characters[unicode]
+--     if not chr then
+--         return -- skip
+--     end
+--     local fw = characters[first]
+--     if not fw then
+--         return
+--     end
+--     local mw = characters[middle]
+--     if not mw then
+--         return
+--     end
+--     local lw = characters[last]
+--     if not lw then
+--         return
+--     end
+--     fw = fw.width
+--     mw = mw.width
+--     lw = lw.width
+--     if fw == 0 then
+--         fw = 1
+--     end
+--     if lw == 0 then
+--         lw = 1
+--     end
+--     chr.partsorientation = "horizontal"
+--     chr.parts = {
+--         { extender = 0, glyph = first,  ["end"] = fw/2, start = 0,    advance = fw },
+--         { extender = 1, glyph = middle, ["end"] = mw/2, start = mw/2, advance = mw },
+--         { extender = 0, glyph = last,   ["end"] = 0,    start = lw/2, advance = lw },
+--     }
+-- end
+
+-- local step = 0.2 -- 0.1 is nicer but gives larger files
+
+-- local function clipped(main,characters,id,size,unicode,original) -- push/pop needed?
+--     local minus = characters[original]
+--     if minus then
+--         local mu    = size/18
+--         local step  = 3*mu
+--         local width = minus.width
+--         if width > step then
+--             width = width - step
+--             step  = step / 2
+--         else
+--             width = width / 2
+--             step  = width
+--         end
+--         characters[unicode] = {
+--             width    = width,
+--             height   = minus.height,
+--             depth    = minus.depth,
+--             commands = {
+--                 push,
+--                 leftcommand[step],
+--                 slotcommand[id][original],
+--                 pop,
+--             }
+--         }
+--     end
+-- end
 
 local function dots(main,characters,id,size,unicode)
     local c = characters[0x002E]
@@ -260,14 +209,14 @@ local function dots(main,characters,id,size,unicode)
         local up4size   = upcommand[.4*size]
         local up7size   = upcommand[.7*size]
         local right2muw = rightcommand[2*mu + w]
-        local slot      = { "slot", id, 0x002E }
+        local slot      = slotcommand[id][0x002E]
         if unicode == 0x22EF then
             local c = characters[0x022C5]
             if c then
                 local width  = c.width
                 local height = c.height
                 local depth  = c.depth
-                local slot   = { "slot", id, 0x022C5 }
+                local slot   = slotcommand[id][0x022C5]
                 characters[unicode] = {
                     width    = 3*width + 2*3*mu,
                     height   = height,
@@ -278,10 +227,9 @@ local function dots(main,characters,id,size,unicode)
                 }
             end
         elseif unicode == 0x22EE then
-            -- weird height !
             characters[unicode] = {
                 width    = w,
-                height   = h+(1.4)*size,
+                height   = h+0.8*size,
                 depth    = 0,
                 commands = {
                     push, push, slot, pop, up4size, push, slot, pop, up4size, slot, pop,
@@ -290,7 +238,7 @@ local function dots(main,characters,id,size,unicode)
         elseif unicode == 0x22F1 then
             characters[unicode] = {
                 width    = 3*w + 6*size/18,
-                height   = 1.5*size,
+                height   = h+0.7*size,
                 depth    = 0,
                 commands = {
                     push,
@@ -307,7 +255,7 @@ local function dots(main,characters,id,size,unicode)
         elseif unicode == 0x22F0 then
             characters[unicode] = {
                 width    = 3*w + 6*size/18,
-                height   = 1.5*size,
+                height   = h+0.7*size,
                 depth    = 0,
                 commands = {
                     push,
@@ -334,25 +282,25 @@ local function dots(main,characters,id,size,unicode)
     end
 end
 
-local function vertbar(main,characters,id,size,parent,scale,unicode)
-    local cp = characters[parent]
-    if cp then
-        local sc = scale * size
-        local pc = { "slot", id, parent }
-        characters[unicode] = {
-            width    = cp.width,
-            height   = cp.height + sc,
-            depth    = cp.depth + sc,
-            next     = cp.next, -- can be extensible
-            commands = {
-                push, upcommand  [sc], pc, pop,
-                push, downcommand[sc], pc, pop,
-                                       pc,
-            },
-        }
-        cp.next = unicode
-    end
-end
+-- local function vertbar(main,characters,id,size,parent,scale,unicode)
+--     local cp = characters[parent]
+--     if cp then
+--         local sc = scale * size
+--         local pc = slotcommand[id][parent]
+--         characters[unicode] = {
+--             width    = cp.width,
+--             height   = cp.height + sc,
+--             depth    = cp.depth + sc,
+--             next     = cp.next, -- can be extensible
+--             commands = {
+--                 push, upcommand  [sc], pc, pop,
+--                 push, downcommand[sc], pc, pop,
+--                                        pc,
+--             },
+--         }
+--         cp.next = unicode
+--     end
+-- end
 
 local function jointwo(main,characters,id,size,unicode,u1,d12,u2,what)
     local c1 = characters[u1]
@@ -360,15 +308,26 @@ local function jointwo(main,characters,id,size,unicode,u1,d12,u2,what)
     if c1 and c2 then
         local w1 = c1.width
         local w2 = c2.width
-        local mu = size/18
+        local width
+        if d12 == false then
+            d12 = 0
+            width = w2
+        else
+            d12 = d12 * size/18 -- mu
+            width = w1 + w2 - d12
+        end
         characters[unicode] = {
-            width    = w1 + w2 - d12 * mu,
+            width    = width,
             height   = max(c1.height or 0, c2.height or 0),
             depth    = max(c1.depth  or 0, c2.depth  or 0),
             commands = {
-                { "slot", id, u1 },
-                leftcommand[d12*mu],
-                { "slot", id, u2 },
+-- { "inspect" },
+-- { "trace" },
+                slotcommand[id][u1],
+-- { "trace" },
+                d12 ~= 0 and leftcommand[d12] or false,
+                slotcommand[id][u2],
+-- { "trace" },
             },
         }
     end
@@ -382,17 +341,24 @@ local function jointhree(main,characters,id,size,unicode,u1,d12,u2,d23,u3)
         local w1 = c1.width
         local w2 = c2.width
         local w3 = c3.width
-        local mu = size/18
+        d12 = d12 * size/18 -- mu
+        d23 = d23 * size/18 -- mu
         characters[unicode] = {
-            width    = w1 + w2 + w3 - d12*mu - d23*mu,
+            width    = w1 + w2 + w3 - d12 - d23,
             height   = max(c1.height or 0, c2.height or 0, c3.height or 0),
             depth    = max(c1.depth  or 0, c2.depth  or 0, c3.depth  or 0),
             commands = {
-                { "slot", id, u1 },
-                leftcommand[d12*mu],
-                { "slot", id, u2 },
-                leftcommand[d23*mu],
-                { "slot", id, u3 },
+--                 push,
+                slotcommand[id][u1],
+--                 pop,
+                d12 ~= 0 and leftcommand[d12] or false,
+--                 push,
+                slotcommand[id][u2],
+--                 pop,
+                d23 ~= 0 and leftcommand[d23] or false,
+--                 push,
+                slotcommand[id][u3],
+--                 pop,
             }
         }
     end
@@ -416,55 +382,63 @@ local function stack(main,characters,id,size,unicode,u1,d12,u2)
     local mu = size/18
     characters[unicode] = {
         width    = w1,
-        height   = h1 + h2 + d12,
+        height   = h1 + h2 + d12*mu,
         depth    = d1,
         commands = {
-            { "slot", id, u1 },
+            slotcommand[id][u1],
             leftcommand[w1/2 + w2/2],
             downcommand[-h1 + d2 -d12*mu],
-            { "slot", id, u2 },
+            slotcommand[id][u2],
         }
     }
 end
 
-local function repeated(main,characters,id,size,unicode,u,n,private,fraction) -- math-fbk.lua
+local function repeated(main,characters,id,size,unicode,u,n,fraction)
     local c = characters[u]
     if c then
-        local width  = c.width
-        local italic = fraction*width -- c.italic or 0 -- larger ones have funny italics
-        local tc     = { "slot", id, u }
-        local tr     = leftcommand[italic] -- see hack elsewhere
-        local commands = { }
-        for i=1,n-1 do
+        if n == 1 then
+           -- skip this one
+        else
+            local width  = c.width
+            local italic = fraction*width -- c.italic or 0 -- larger ones have funny italics
+            local tc     = slotcommand[id][u]
+            local tr     = leftcommand[italic] -- see hack elsewhere
+            local commands = { }
+            for i=1,n-1 do
+                commands[#commands+1] = tc
+                commands[#commands+1] = tr
+            end
             commands[#commands+1] = tc
-            commands[#commands+1] = tr
+            local next = c.next
+            if next then
+                local p = addprivate(main,formatters["M-R-%H"](next))
+                repeated(main,characters,id,size,p,next,n,fraction)
+                next = p
+            end
+            characters[unicode] = {
+                width       = width + (n-1)*(width-italic),
+                height      = c.height,
+                depth       = c.depth,
+                italic      = italic,
+                commands    = commands,
+                keepvirtual = true,
+                next        = next,
+            }
         end
-        commands[#commands+1] = tc
-        local next = c.next
-        if next then
-            repeated(main,characters,id,size,private,next,n,private+1,fraction)
-            next = private
-        end
-        characters[unicode] = {
-            width    = width + (n-1)*(width-italic),
-            height   = c.height,
-            depth    = c.depth,
-            italic   = italic,
-            commands = commands,
-            next     = next,
-        }
     end
 end
 
-local function cloned(main,characters,id,size,source,target)
-    local data = characters[source]
-    if data then
-        characters[target] = data
-        return true
-    end
-end
+-- local function cloned(main,characters,id,size,source,target)
+--     local data = characters[source]
+--     if data then
+--         characters[target] = data
+--         return true
+--     end
+-- end
 
 -- we use the fact that context defines the smallest sizes first .. a real dirty and ugly hack
+
+-- todo: use privates as we don't need access by number
 
 local data_of_smaller = nil
 local size_of_smaller = 0
@@ -488,114 +462,97 @@ function vfmath.addmissing(main,id,size)
     local variables     = main.goodies.mathematics and main.goodies.mathematics.variables or { }
     local joinrelfactor = variables.joinrelfactor or 3
 
-    for i=0x7A,0x7D do
-        make(main,characters,id,size,i,1)
-    end
+    brace    (main,characters,id,size,0x23DE,0xFE07A,0xFE070,0xFE07D,0xFE07C,0xFE070,0xFE07B)
+    brace    (main,characters,id,size,0x23DF,0xFE07C,0xFE070,0xFE07B,0xFE07A,0xFE070,0xFE07D)
 
-    brace    (main,characters,id,size,0x23DE,0xFF17A,0xFF301,0xFF17D,0xFF17C,0xFF301,0xFF17B)
-    brace    (main,characters,id,size,0x23DF,0xFF27C,0xFF401,0xFF27B,0xFF27A,0xFF401,0xFF27D)
+    parent   (main,characters,id,size,0x23DC,0xFE07A,0xFE071,0xFE07B,"top")
+    parent   (main,characters,id,size,0x23DD,0xFE07C,0xFE072,0xFE07D,"bottom")
 
-    parent   (main,characters,id,size,0x23DC,0xFF17A,0xFF301,0xFF17B)
-    parent   (main,characters,id,size,0x23DD,0xFF27C,0xFF401,0xFF27D)
-
- -- negate   (main,characters,id,size,0x2260,0x003D)
     dots     (main,characters,id,size,0x2026) -- ldots
     dots     (main,characters,id,size,0x22EE) -- vdots
     dots     (main,characters,id,size,0x22EF) -- cdots
     dots     (main,characters,id,size,0x22F1) -- ddots
     dots     (main,characters,id,size,0x22F0) -- udots
 
-    vertbar  (main,characters,id,size,0x0007C,0.10,0xFF601) -- big  : 0.85 bodyfontsize
-    vertbar  (main,characters,id,size,0xFF601,0.30,0xFF602) -- Big  : 1.15 bodyfontsize
-    vertbar  (main,characters,id,size,0xFF602,0.30,0xFF603) -- bigg : 1.45 bodyfontsize
-    vertbar  (main,characters,id,size,0xFF603,0.30,0xFF604) -- Bigg : 1.75 bodyfontsize
-    vertbar  (main,characters,id,size,0x02016,0.10,0xFF605)
-    vertbar  (main,characters,id,size,0xFF605,0.30,0xFF606)
-    vertbar  (main,characters,id,size,0xFF606,0.30,0xFF607)
-    vertbar  (main,characters,id,size,0xFF607,0.30,0xFF608)
+    horibar  (main,characters,id,size,0x203E,0xFE073) -- overbar underbar
 
-    clipped  (main,characters,id,size,0xFF501,0x0002D) -- minus
-    clipped  (main,characters,id,size,0xFF502,0x02190) -- lefthead
-    clipped  (main,characters,id,size,0xFF503,0x02192) -- righthead
-    clipped  (main,characters,id,size,0xFF504,0xFE321) -- mapsto
-    clipped  (main,characters,id,size,0xFF505,0xFE322) -- lhook
-    clipped  (main,characters,id,size,0xFF506,0xFE323) -- rhook
-    clipped  (main,characters,id,size,0xFF507,0xFE324) -- mapsfrom
-    clipped  (main,characters,id,size,0xFF508,0x021D0) -- double lefthead
-    clipped  (main,characters,id,size,0xFF509,0x021D2) -- double righthead
-    clipped  (main,characters,id,size,0xFF50A,0x0003D) -- equal
-    clipped  (main,characters,id,size,0xFF50B,0x0219E) -- lefttwohead
-    clipped  (main,characters,id,size,0xFF50C,0x021A0) -- righttwohead
-    clipped  (main,characters,id,size,0xFF50D,0xFF350) -- lr arrow combi snippet
-    clipped  (main,characters,id,size,0xFF50E,0xFF351) -- lr arrow combi snippet
-    clipped  (main,characters,id,size,0xFF50F,0xFF352) -- lr arrow combi snippet
-    clipped  (main,characters,id,size,0xFF510,0x02261) -- equiv
+ -- vertbar  (main,characters,id,size,0x0007C,0.10,0xFF601) -- big  : 0.85 bodyfontsize
+ -- vertbar  (main,characters,id,size,0xFF601,0.30,0xFF602) -- Big  : 1.15 bodyfontsize
+ -- vertbar  (main,characters,id,size,0xFF602,0.30,0xFF603) -- bigg : 1.45 bodyfontsize
+ -- vertbar  (main,characters,id,size,0xFF603,0.30,0xFF604) -- Bigg : 1.75 bodyfontsize
+ -- vertbar  (main,characters,id,size,0x02016,0.10,0xFF605)
+ -- vertbar  (main,characters,id,size,0xFF605,0.30,0xFF606)
+ -- vertbar  (main,characters,id,size,0xFF606,0.30,0xFF607)
+ -- vertbar  (main,characters,id,size,0xFF607,0.30,0xFF608)
 
-    extension(main,characters,id,size,0x2190,0xFF502,0xFF501,0xFF501)                 -- \leftarrow
-    extension(main,characters,id,size,0x2192,0xFF501,0xFF501,0xFF503)                 -- \rightarrow
+ -- clipped  (main,characters,id,size,0xFF501,0x0002D) -- minus
+ -- clipped  (main,characters,id,size,0xFF502,0x02190) -- lefthead
+ -- clipped  (main,characters,id,size,0xFF503,0x02192) -- righthead
+ -- clipped  (main,characters,id,size,0xFF504,0xFE321) -- mapsto
+ -- clipped  (main,characters,id,size,0xFF505,0xFE322) -- lhook
+ -- clipped  (main,characters,id,size,0xFF506,0xFE323) -- rhook
+ -- clipped  (main,characters,id,size,0xFF507,0xFE324) -- mapsfrom
+ -- clipped  (main,characters,id,size,0xFF508,0x021D0) -- double lefthead
+ -- clipped  (main,characters,id,size,0xFF509,0x021D2) -- double righthead
+ -- clipped  (main,characters,id,size,0xFF50A,0x0003D) -- equal
+ -- clipped  (main,characters,id,size,0xFF50B,0x0219E) -- lefttwohead
+ -- clipped  (main,characters,id,size,0xFF50C,0x021A0) -- righttwohead
+ -- clipped  (main,characters,id,size,0xFF50D,0xFF350) -- lr arrow combi snippet
+ -- clipped  (main,characters,id,size,0xFF50E,0xFF351) -- lr arrow combi snippet
+ -- clipped  (main,characters,id,size,0xFF50F,0xFF352) -- lr arrow combi snippet
+ -- clipped  (main,characters,id,size,0xFF510,0x02261) -- equiv
 
-    extension(main,characters,id,size,0x002D,0xFF501,0xFF501,0xFF501)                 -- \rel
-    extension(main,characters,id,size,0x003D,0xFF50A,0xFF50A,0xFF50A)                 -- \equal
-    extension(main,characters,id,size,0x2261,0xFF510,0xFF510,0xFF510)                 -- \equiv
+ -- extension(main,characters,id,size,0x2190,0xFF502,0xFF501,0xFF501) -- \leftarrow
+ -- extension(main,characters,id,size,0x2192,0xFF501,0xFF501,0xFF503) -- \rightarrow
 
-    jointwo  (main,characters,id,size,0x21A6,0xFE321,0,0x02192)                       -- \mapstochar\rightarrow
-    jointwo  (main,characters,id,size,0x21A9,0x02190,joinrelfactor,0xFE323)           -- \leftarrow\joinrel\rhook
-    jointwo  (main,characters,id,size,0x21AA,0xFE322,joinrelfactor,0x02192)           -- \lhook\joinrel\rightarrow
+ -- extension(main,characters,id,size,0x002D,0xFF501,0xFF501,0xFF501)                 -- \rel
+ -- extension(main,characters,id,size,0x003D,0xFF50A,0xFF50A,0xFF50A)                 -- \equal
+ -- extension(main,characters,id,size,0x2261,0xFF510,0xFF510,0xFF510)                 -- \equiv
+
+ -- jointwo  (main,characters,id,size,0x21A6,0xFE321,0,0x02192)                       -- \mapstochar\rightarrow
+ -- jointwo  (main,characters,id,size,0x21A9,0x02190,joinrelfactor,0xFE323)           -- \leftarrow\joinrel\rhook
+ -- jointwo  (main,characters,id,size,0x21AA,0xFE322,joinrelfactor,0x02192)           -- \lhook\joinrel\rightarrow
     jointwo  (main,characters,id,size,0x27F5,0x02190,joinrelfactor,0x0002D)           -- \leftarrow\joinrel\relbar
     jointwo  (main,characters,id,size,0x27F6,0x0002D,joinrelfactor,0x02192,2)         -- \relbar\joinrel\rightarrow
     jointwo  (main,characters,id,size,0x27F7,0x02190,joinrelfactor,0x02192)           -- \leftarrow\joinrel\rightarrow
     jointwo  (main,characters,id,size,0x27F8,0x021D0,joinrelfactor,0x0003D)           -- \Leftarrow\joinrel\Relbar
     jointwo  (main,characters,id,size,0x27F9,0x0003D,joinrelfactor,0x021D2)           -- \Relbar\joinrel\Rightarrow
     jointwo  (main,characters,id,size,0x27FA,0x021D0,joinrelfactor,0x021D2)           -- \Leftarrow\joinrel\Rightarrow
-    jointhree(main,characters,id,size,0x27FB,0x02190,joinrelfactor,0x0002D,0,0xFE324) -- \leftarrow\joinrel\relbar\mapsfromchar
-    jointhree(main,characters,id,size,0x27FC,0xFE321,0,0x0002D,joinrelfactor,0x02192) -- \mapstochar\relbar\joinrel\rightarrow
+ -- jointhree(main,characters,id,size,0x27FB,0x02190,joinrelfactor,0x0002D,0,0xFE324) -- \leftarrow\joinrel\relbar\mapsfromchar
+ -- jointhree(main,characters,id,size,0x27FC,0xFE321,0,0x0002D,joinrelfactor,0x02192) -- \mapstochar\relbar\joinrel\rightarrow
 
-    extension(main,characters,id,size,0x21A6,0xFF504,0xFF501,0xFF503)                 -- \mapstochar\rightarrow
-    extension(main,characters,id,size,0x21A9,0xFF502,0xFF501,0xFF506)                 -- \leftarrow\joinrel\rhook
-    extension(main,characters,id,size,0x21AA,0xFF505,0xFF501,0xFF503)                 -- \lhook\joinrel\rightarrow
-    extension(main,characters,id,size,0x27F5,0xFF502,0xFF501,0xFF501)                 -- \leftarrow\joinrel\relbar
-    extension(main,characters,id,size,0x27F6,0xFF501,0xFF501,0xFF503)                 -- \relbar\joinrel\rightarrow
-    extension(main,characters,id,size,0x27F7,0xFF502,0xFF501,0xFF503)                 -- \leftarrow\joinrel\rightarrow
-    extension(main,characters,id,size,0x27F8,0xFF508,0xFF50A,0xFF50A)                 -- \Leftarrow\joinrel\Relbar
-    extension(main,characters,id,size,0x27F9,0xFF50A,0xFF50A,0xFF509)                 -- \Relbar\joinrel\Rightarrow
-    extension(main,characters,id,size,0x27FA,0xFF508,0xFF50A,0xFF509)                 -- \Leftarrow\joinrel\Rightarrow
-    extension(main,characters,id,size,0x27FB,0xFF502,0xFF501,0xFF507)                 -- \leftarrow\joinrel\relbar\mapsfromchar
-    extension(main,characters,id,size,0x27FC,0xFF504,0xFF501,0xFF503)                 -- \mapstochar\relbar\joinrel\rightarrow
+ -- extension(main,characters,id,size,0x21A6,0xFF504,0xFF501,0xFF503) -- \mapstochar\rightarrow
+ -- extension(main,characters,id,size,0x21A9,0xFF502,0xFF501,0xFF506) -- \leftarrow\joinrel\rhook
+ -- extension(main,characters,id,size,0x21AA,0xFF505,0xFF501,0xFF503) -- \lhook\joinrel\rightarrow
+ -- extension(main,characters,id,size,0x27F5,0xFF502,0xFF501,0xFF501) -- \leftarrow\joinrel\relbar
+ -- extension(main,characters,id,size,0x27F6,0xFF501,0xFF501,0xFF503) -- \relbar\joinrel\rightarrow
+ -- extension(main,characters,id,size,0x27F7,0xFF502,0xFF501,0xFF503) -- \leftarrow\joinrel\rightarrow
+ -- extension(main,characters,id,size,0x27F8,0xFF508,0xFF50A,0xFF50A) -- \Leftarrow\joinrel\Relbar
+ -- extension(main,characters,id,size,0x27F9,0xFF50A,0xFF50A,0xFF509) -- \Relbar\joinrel\Rightarrow
+ -- extension(main,characters,id,size,0x27FA,0xFF508,0xFF50A,0xFF509) -- \Leftarrow\joinrel\Rightarrow
+ -- extension(main,characters,id,size,0x27FB,0xFF502,0xFF501,0xFF507) -- \leftarrow\joinrel\relbar\mapsfromchar
+ -- extension(main,characters,id,size,0x27FC,0xFF504,0xFF501,0xFF503) -- \mapstochar\relbar\joinrel\rightarrow
 
-    extension(main,characters,id,size,0x219E,0xFF50B,0xFF501,0xFF501)                 -- \twoheadleftarrow\joinrel\relbar
-    extension(main,characters,id,size,0x21A0,0xFF501,0xFF501,0xFF50C)                 -- \relbar\joinrel\twoheadrightarrow
-    extension(main,characters,id,size,0x21C4,0xFF50D,0xFF50E,0xFF50F)                 -- leftoverright
+ -- extension(main,characters,id,size,0x219E,0xFF50B,0xFF501,0xFF501) -- \twoheadleftarrow\joinrel\relbar
+ -- extension(main,characters,id,size,0x21A0,0xFF501,0xFF501,0xFF50C) -- \relbar\joinrel\twoheadrightarrow
+ -- extension(main,characters,id,size,0x21C4,0xFF50D,0xFF50E,0xFF50F) -- leftoverright
 
     -- 21CB leftrightharpoon
     -- 21CC rightleftharpoon
 
-    stack(main,characters,id,size,0x2259,0x0003D,3,0x02227)                       -- \buildrel\wedge\over=
+    stack(main,characters,id,size,0x2259,0x0003D,3,0x02227) -- \buildrel\wedge\over=
 
-    jointwo(main,characters,id,size,0x22C8,0x022B3,joinrelfactor,0x022B2)           -- \mathrel\triangleright\joinrel\mathrel\triangleleft (4 looks better than 3)
-    jointwo(main,characters,id,size,0x22A7,0x0007C,joinrelfactor,0x0003D)           -- \mathrel|\joinrel=
-    jointwo(main,characters,id,size,0x2260,0x00338,0,0x0003D)                       -- \not\equal
-    jointwo(main,characters,id,size,0x2284,0x00338,0,0x02282)                       -- \not\subset
-    jointwo(main,characters,id,size,0x2285,0x00338,0,0x02283)                       -- \not\supset
-    jointwo(main,characters,id,size,0x2209,0x00338,0,0x02208)                       -- \not\in
-    jointwo(main,characters,id,size,0x2254,0x03A,0,0x03D)                           -- := (≔)
+    jointwo(main,characters,id,size,0x22C8,0x022B3,joinrelfactor,0x022B2) -- \mathrel\triangleright\joinrel\mathrel\triangleleft (4 looks better than 3)
+    jointwo(main,characters,id,size,0x22A7,0x0007C,joinrelfactor,0x0003D) -- \mathrel|\joinrel=
+    jointwo(main,characters,id,size,0x2260,0x00338,0,0x0003D)             -- \not\equal
+    jointwo(main,characters,id,size,0x2284,0x00338,false,0x02282)         -- \not\subset
+    jointwo(main,characters,id,size,0x2285,0x00338,false,0x02283)         -- \not\supset
+    jointwo(main,characters,id,size,0x2209,0x00338,false,0x02208)         -- \not\in
+    jointwo(main,characters,id,size,0x2254,0x03A,0,0x03D)                 -- := (≔)
 
-    repeated(main,characters,id,size,0x222C,0x222B,2,0xFF800,1/3)
-    repeated(main,characters,id,size,0x222D,0x222B,3,0xFF810,1/3)
-
-    if cloned(main,characters,id,size,0x2032,0xFE325) then
-        raise(main,characters,id,size,0x2032,0xFE325,1,id_of_smaller) -- prime
-        raise(main,characters,id,size,0x2033,0xFE325,2,id_of_smaller) -- double prime
-        raise(main,characters,id,size,0x2034,0xFE325,3,id_of_smaller) -- triple prime
-        -- to satisfy the prime resolver
-        characters[0xFE932] = characters[0x2032]
-        characters[0xFE933] = characters[0x2033]
-        characters[0xFE934] = characters[0x2034]
-    end
-
-    -- there are more (needs discussion first):
-
- -- characters[0x20D6] = characters[0x2190]
- -- characters[0x20D7] = characters[0x2192]
+    repeated(main,characters,id,size,0x222B,0x222B,1,1/2)
+    repeated(main,characters,id,size,0x222C,0x222B,2,1/2)
+    repeated(main,characters,id,size,0x222D,0x222B,3,1/2)
 
     characters[0x02B9] = characters[0x2032] -- we're nice
 
@@ -622,9 +579,10 @@ setmetatableindex(reverse, function(t,name)
     return r
 end)
 
+-- Used in fallbacks (might move):
+
 local function copy_glyph(main,target,original,unicode,slot)
-    local addprivate = fonts.helpers.addprivate
-    local olddata    = original[unicode]
+    local olddata = original[unicode]
     if olddata then
         local newdata = {
             width     = olddata.width,
@@ -635,7 +593,7 @@ local function copy_glyph(main,target,original,unicode,slot)
             kerns     = olddata.kerns,
             mathkerns = olddata.mathkerns,
             tounicode = olddata.tounicode,
-            commands  = { { "slot", slot, unicode } },
+            commands  = { slotcommand[slot][unicode] },
         }
         local glyphdata = newdata
         local nextglyph = olddata.next
@@ -652,7 +610,7 @@ local function copy_glyph(main,target,original,unicode,slot)
                     mathkerns = olddata.mathkerns,
                     tounicode = olddata.tounicode,
                     smaller   = olddata.smaller,
-                    commands  = { { "slot", slot, nextglyph } },
+                    commands  = { slotcommand[slot][nextglyph] },
                 }
                 local newnextglyph = addprivate(main,formatters["M-N-%H"](nextglyph),newnextdata)
                 newdata.next = newnextglyph
@@ -668,22 +626,24 @@ local function copy_glyph(main,target,original,unicode,slot)
                 break -- safeguard (when testing stuff)
             end
         end
-        local pv = olddata.parts
-        if pv then
-            pv = fastcopy(pv)
-            newdata.parts = pv
-            for i=1,#hp do
-                local pvi = pv[i]
-                local oldglyph = pvi.glyph
-                local olddata = original[oldglyph]
-                local newdata = {
+        local oldparts = olddata.parts
+        if oldparts then
+            newparts = fastcopy(oldparts)
+            newdata.parts            = newparts
+            newdata.partsorientation = olddata.partsorientation
+            newdata.partsitalic      = olddata.partsitalic
+            for i=1,#newparts do
+                local newpart  = newparts[i]
+                local oldglyph = newpart.glyph
+                local olddata  = original[oldglyph]
+                local newdata  = {
                     width     = olddata.width,
                     height    = olddata.height,
                     depth     = olddata.depth,
                     tounicode = olddata.tounicode,
-                    commands  = { { "slot", slot, oldglyph } },
+                    commands  = { slotcommand[slot][oldglyph] },
                 }
-                pvi.glyph = addprivate(main,formatters["M-P-%H"](oldglyph),newdata)
+                newpart.glyph = addprivate(main,formatters["M-P-%H"](oldglyph),newdata)
             end
         end
         local smaller = olddata.smaller
@@ -702,6 +662,66 @@ vfmath.copy_glyph = copy_glyph
 -- route: use the "order" field. I can probably make it a bit leaner but it's not
 -- worth spending much time on now.
 
+local noitalics = true -- false can be used to test the engine
+
+-- revision timestamp 2023: after watching ten times "Over The Mountain (feat.
+-- Sierra Hull)" - Cory Wong (Live @ Brooklyn Steel FEB 2022):
+--
+-- https://www.youtube.com/watch?v=lT-W-UEcsns
+-- https://www.youtube.com/watch?v=TPGbj1gFalA
+
+-- The following code is now only used for iwona and antykwa, so I simplified it a
+-- bit to suit that purpose. It might get even simpler.
+
+local function virtualize(s,uni,fci,skewchar,move,mathparameters,unicode,parameters)
+    local kerns   = fci.kerns
+    local width   = fci.width
+    local height  = fci.height
+    local depth   = fci.depth
+    local italic  = fci.italic
+    local advance = width
+    local bottomright
+    local topanchor
+    local yoffset
+    if kerns and skewchar then
+        local k = kerns[skewchar]
+        if k then
+            topanchor = width/2 + k
+        end
+    end
+    if italic and noitalics then
+        width       = width + italic
+        bottomright = - italic
+        italic      = nil
+    end
+    if move then  -- 0x222B
+        local axis = move * mathparameters.axisheight
+        local half = (height + depth ) / 2
+        yoffset = depth - (half - axis)
+        height = half + axis
+        depth  = half - axis
+    end
+    --
+    return {
+        advance          = advance,
+        width            = width,
+        height           = height,
+        depth            = depth,
+        italic           = italic,
+        bottomright      = bottomright,
+        topanchor        = topanchor,
+        yoffset          = yoffset,
+        commands         = { slotcommand[s][uni] },
+     -- keepvirtual      = true,
+        next             = fci.next,
+        parts            = fci.parts,
+        partsorientation = fci.partsorientation,
+        partsitalic      = fci.partsitalic,
+        unicode          = unicode,
+        name             = fci.name,
+    }
+end
+
 function vfmath.define(specification,set,goodies)
     local name     = specification.name -- symbolic name
     local size     = specification.size -- given size
@@ -712,6 +732,7 @@ function vfmath.define(specification,set,goodies)
     local start    = (trace_virtual or trace_timings) and os.clock()
     local okset    = { }
     local n        = 0
+    local f_extra  = formatters["virtual.extra.%05X"]
     for s=1,#set do
         local ss     = set[s]
         local ssname = ss.name
@@ -735,7 +756,11 @@ function vfmath.define(specification,set,goodies)
                 end
             else
                 f, id = fonts.constructors.readanddefine(ssname,size)
-                names[ssname] = { f = f, id = id }
+                names[ssname] = {
+                    f        = f,
+                    id       = id,
+                    fontname = ssname, -- diagnostics
+                }
             end
             if not f or id == 0 then
                 report_virtual("loading font %a subfont %s with name %a at %p is skipped, not found",name,s,ssname,size)
@@ -743,10 +768,11 @@ function vfmath.define(specification,set,goodies)
                 n = n + 1
                 okset[n] = ss
                 loaded[n] = f
-                fontlist[n] = { id = id, size = size }
-                if not shared[s] then
-                    shared[n] = { }
-                end
+                fontlist[n] = {
+                    id       = id,
+                    size     = size,
+                    fontname = ssname, -- diagnostics
+                }
                 if trace_virtual then
                     report_virtual("loading font %a subfont %s with name %a at %p as id %s using encoding %a",name,s,ssname,size,id,ss.vector)
                 end
@@ -823,16 +849,19 @@ function vfmath.define(specification,set,goodies)
     end
     --
     local already_reported = false
-    local parameters_done = false
+    local parameters_done  = false
+    local offset           = 0 -- 0xFF000 -- todo: -- private
+    --
     for s=1,n do
-        local ss, fs = okset[s], loaded[s]
+        local ss = okset[s]
+        local fs = loaded[s]
         if not fs then
             -- skip, error
         elseif add_optional and ss.optional then
             -- skip, redundant
         else
             local newparameters     = fs.parameters
-            local newmathparameters = fs.mathparameters
+            local newmathparameters = fs.mathparameters and ss.parameters ~= false
             if newmathparameters then
                 if not parameters_done or ss.parameters then
                     mathparameters  = newmathparameters
@@ -870,7 +899,11 @@ function vfmath.define(specification,set,goodies)
                 mathparameters.axisheight = newparameters[22] or 0 -- axisheight : height of fraction lines above the baseline
             --  report_virtual("loading and virtualizing font %a at size %p, setting sy parameters",name,size)
             end
+            -- We no longer care about kerns and ligatures here. We use backmack because we need to know
+            -- the original order and the loader has made a unicode font of it and weird glyph names have
+            -- spoiled that a bit too.
             if ss.overlay then
+                -- This branch / option will go away.
                 local fc    = fs.characters
                 local first = ss.first
                 if first then
@@ -886,29 +919,28 @@ function vfmath.define(specification,set,goodies)
             else
                 local vectorname = ss.vector
                 if vectorname then
-                    local offset      = 0xFF000 -- todo: -- private
                     local vector      = mathencodings[vectorname]
-                    local rotcev      = reverse[vectorname]
                     local isextension = ss.extension
-                    if vector and rotcev then
+                    if vector then
                         local fc       = fs.characters
                         local fd       = fs.descriptions
-                        local si       = shared[s]
+                        local fp       = fs.parameters
                         local fontname = fs.properties.name or "unknown"
                         local skewchar = ss.skewchar
                         local backmap  = ss.backmap
-                        -- we need to know the original order because the loader has made a
-                        -- unicode font of it and weird glyphnames have spoiled that a bit
-                        if backmap then
+                        local badones  = ss.badones
+                        local done     = { }
+                        local extras   = { }
+                        if not backmap then
                             backmap = { }
                             for unicode, character in next, fc do
                                 backmap[character.order or character.index or unicode] = unicode
                             end
+                            ss.backmap  = backmap
                         end
-                        for unicode, i in next, vector do
-                            -- So, here we can have an extra remapping (compared to mkiv).
-                            local index = backmap and backmap[i] or i
-                            local fci = fc[index]
+                        for unicode, index in sortedhash(vector) do
+                            local uni = backmap and backmap[index] or index
+                            local fci = fc[uni]
                             if not fci then
                                 local rf = reported[fontname]
                                 if not rf then rf = { } reported[fontname] = rf end
@@ -930,149 +962,56 @@ function vfmath.define(specification,set,goodies)
                                     rv[unicode] = true
                                 end
                             else
-                                local ref = si[index]
-                                if not ref then
-                                    ref = { { 'slot', s, index } }
-                                    si[index] = ref
-                                end
-                                local kerns  = fci.kerns
-                                local width  = fci.width
-                                local italic = fci.italic
-                                -- if trace_virtual then
-                                --     report_virtual("character %C uses index %H in vector %a for font %a, %s, %s",
-                                --         unicode,index,vectorname,fontname,
-                                --         kerns and "adding kerns" or "no kerns",
-                                --         kerns and "adding italic" or "no italic"
-                                --     )
-                                -- end
-                                if italic and italic > 0 then
-                                    -- int_a^b
-                                    if isextension then
-                                        width = width + italic -- for obscure reasons the integral as a width + italic correction
-                                    end
-                                end
-                                if kerns then
-                                    local krn = { }
-                                    for k, v in next, kerns do -- kerns is sparse
-                                        local rk = rotcev[k]
-                                        if rk then
-                                            krn[rk] = v -- kerns[k]
-                                        end
-                                    end
-                                    if not next(krn) then
-                                        krn = nil
-                                    end
-                                    local t = {
-                                        width    = width,
-                                        height   = fci.height,
-                                        depth    = fci.depth,
-                                        italic   = italic,
-                                        kerns    = krn,
-                                        commands = ref,
-                                    }
-                                    if skewchar then
-                                        local k = kerns[skewchar]
-                                        if k then
-                                            t.topanchor = width/2 + k
-                                        end
-                                    end
-                                    characters[unicode] = t
-                                else
-                                    characters[unicode] = {
-                                        width    = width,
-                                        height   = fci.height,
-                                        depth    = fci.depth,
-                                        italic   = italic,
-                                        commands = ref,
-                                    }
-                                end
+                                local u = mathematics.gaps[unicode] or unicode
+                                local t = virtualize(s,uni,fci,skewchar,tonumber(badones and badones[fci.name or ""]),mathparameters,u,fp)
+                                done[uni] = t
+                                characters[unicode] = t
+                                fci.unicode = u
                             end
                         end
                         if isextension then
-                            -- todo: if multiple ex, then 256 offsets per instance
                             local extension = mathencodings["large-to-small"]
-                            local variants_done = fs.variants_done
-                            for index, fci in next, fc do -- the raw ex file
-                                if type(index) == "number" then
-                                    local ref = si[index]
-                                    if not ref then
-                                        ref = { { 'slot', s, index } }
-                                        si[index] = ref
-                                    end
-                                    local italic = fci.italic
-                                    local t = {
-                                        width    = fci.width,
-                                        height   = fci.height,
-                                        depth    = fci.depth,
-                                        italic   = italic,
-                                        commands = ref,
-                                    }
-                                    local n = fci.next
-                                    if n then
-                                        t.next = offset + n
-                                    elseif variants_done then
-                                        local v = fci.parts
-                                        if v then
-                                            t.parts = v
-                                        end
-                                    else
-                                        local v = fci.parts
-                                        if v then
-                                            for i=1,#v do
-                                                local vi = v[i]
-                                                vi.glyph = vi.glyph + offset
-                                            end
-                                            t.parts = v
-                                        end
-                                    end
-                                    characters[offset + index] = t
+                            for uni, fci in sortedhash(fc) do
+                                if not done[uni] then
+                                    local t = virtualize(s,uni,fci,skewchar,tonumber(badones and badones[fci.name or ""]),mathparameters,nil,fp)
+                                    local o = addprivate(main,f_extra(offset))
+                                    extras[uni] = o
+                                    characters[o] = t
+                                    done[uni] = t
+                                    offset = offset + 1
                                 end
                             end
-                            fs.variants_done = true
-                            for unicode, index in next, extension do
-                                local cu = characters[unicode]
-                                if cu then
-                                    cu.next = offset + index
-                                else
-                                    local fci = fc[index]
-                                    if not fci then
-                                        -- do nothing
-                                    else
-                                        -- probably never entered
-                                        local ref = si[index]
-                                        if not ref then
-                                            ref = { { 'slot', s, index } }
-                                            si[index] = ref
-                                        end
-                                        local kerns = fci.kerns
-                                        if kerns then
-                                            local krn = { }
-                                         -- for k=1,#kerns do
-                                         --     krn[offset + k] = kerns[k]
-                                         -- end
-                                            for k, v in next, kerns do -- is kerns sparse?
-                                                krn[offset + k] = v
-                                            end
-                                            characters[unicode] = {
-                                                width    = fci.width,
-                                                height   = fci.height,
-                                                depth    = fci.depth,
-                                                italic   = fci.italic,
-                                                commands = ref,
-                                                kerns    = krn,
-                                                next     = offset + index,
-                                            }
-                                        else
-                                            characters[unicode] = {
-                                                width    = fci.width,
-                                                height   = fci.height,
-                                                depth    = fci.depth,
-                                                italic   = fci.italic,
-                                                commands = ref,
-                                                next     = offset + index,
-                                            }
-                                        end
+                            for uni, fci in sortedhash(done) do
+                                local next = fci.next
+                                if next then
+                                    fci.next = extras[backmap and backmap[next] or next]
+                                end
+                                local parts = fci.parts
+                                if parts then
+                                    local p = table.copy(parts)
+                                    for i=1,#p do
+                                        local part  = p[i]
+                                        local glyph = part.glyph
+                                        part.glyph  = extras[backmap and backmap[glyph] or glyph] or glyph
                                     end
+                                    fci.keepvirtual      = true
+                                    fci.parts            = p
+                                    fci.partsorientation = "vertical"
+                                    fci.partsitalic      = fci.partsitalic or fci.italic
+                                end
+                            end
+                            for unicode, index in sortedhash(extension) do
+                                local fci = characters[unicode]
+                                if fci then
+                                    fci.next = extras[backmap[index] or index]
+                                end
+                            end
+                            local extension = mathencodings["large-to-small-private"]
+                            for unicode, index in sortedhash(extension) do
+                                if not characters[unicode] then
+                                    local uni = backmap and backmap[index] or index
+                                    local fci = fc[uni]
+                                    characters[unicode] = virtualize(s,uni,fci,skewchar,false,mathparameters,unicode,fp)
                                 end
                             end
                         end
@@ -1081,21 +1020,15 @@ function vfmath.define(specification,set,goodies)
                     end
                 end
             end
-            mathematics.extras.copy(main) --not needed here (yet)
+         -- mathematics.extras.copy(main) -- Not needed here (yet) ... might go.
         end
     end
--- inspect(characters[0x1D465])
--- inspect(fonts.encodings.math["tex-it"])
--- inspect(fontlist)
     --
     main.mathparameters = mathparameters -- still traditional ones
-    -- This should change (some day) as it's the only place where we look forward,
-    -- so better is to also reserve the id already which then involves some more
-    -- management (so not now).
     fontlist[#fontlist+1] = {
-     -- id   = font.nextid(),
-        id   = 0, -- self
-        size = size,
+        id       = 0,
+        size     = size,
+        fontname = name, -- diagnostics
     }
     vfmath.addmissing(main,#fontlist,size)
     --
@@ -1104,16 +1037,15 @@ function vfmath.define(specification,set,goodies)
     main.properties.math_is_scaled = true -- signal
     fonts.constructors.assignmathparameters(main,main)
     --
-    main.mathconstants  = main.mathparameters -- we directly pass it to TeX (bypasses the scaler) so this is needed
+    mathematics.initializeparameters(main,main,"noscale")
+    main.mathconstants = main.mathparameters -- we directly pass it to TeX (bypasses the scaler) so this is needed
+    main.MathConstants = main.mathconstants
+    main.nomath        = false
     --
     if trace_virtual or trace_timings then
         report_virtual("loading and virtualizing font %a at size %p took %0.3f seconds",name,size,os.clock()-start)
     end
     --
-    -- We bypass the scaler so ...
-    --
-    main.MathConstants = main.mathconstants
-    main.nomath = false
     return main
 end
 
@@ -1123,7 +1055,7 @@ function mathematics.makefont(name,set,goodies)
     end
 end
 
--- helpers
+-- helpers (todo: gaps)
 
 function vfmath.setletters(font_encoding, name, uppercase, lowercase)
     local enc = font_encoding[name]

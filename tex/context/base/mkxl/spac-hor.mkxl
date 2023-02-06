@@ -13,6 +13,8 @@
 
 \writestatus{loading}{ConTeXt Spacing Macros / Horizontal}
 
+% document: \enabledirectives[backends.spaces]
+
 \unprotect
 
 \registerctxluafile{spac-hor}{autosuffix}
@@ -395,6 +397,16 @@
      \begincsname\??spacecodemethod#1\endcsname
    \fi
    \updateraggedskips}
+
+% test test\fsp. test % beats frenchspacing
+
+\permanent\protected\def\fsp#1% fixed space puncuation
+  {\begingroup
+   \ifchknum`#1\or
+     \sfcode`#1\plusthousand
+   \fi
+   #1%
+   \endgroup}
 
 %D Here's a tweak .. if needed one can configure it in the configuration
 %D so that initialization happens more efficient.

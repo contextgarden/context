@@ -27,6 +27,7 @@ mathematics.fallbacks   = fallbacks
 
 ----- helpers           = fonts.helpers
 ----- charcommand       = helpers.commands.char
+----- slotcommand       = helpers.commands.slot
 ----- leftcommand       = helpers.commands.left
 ----- rightcommand      = helpers.commands.right
 ----- upcommand         = helpers.commands.up
@@ -409,7 +410,7 @@ end
 
 -- local function reference(index,char)
 --     if index then
---         return { "slot", index, char }
+--         return slotcommand[index][char]
 --     else
 --         return charcommand[char]
 --     end

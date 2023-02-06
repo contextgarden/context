@@ -27,7 +27,7 @@ local mathplus        = { }
 -- todo: store them and skip storage if already stored
 -- todo: make a char-ctx.lua (or is this already side effect of save in format)
 
-local function addextra(unicode)
+function extras.add(unicode)
     local min = mathematics.extrabase
     local max = min + 0xFFF
     if unicode >= min and unicode <= max then
@@ -40,8 +40,6 @@ local function addextra(unicode)
         report_math("extra %U should be in range %U - %U",unicode,min,max)
     end
 end
-
-extras.add = addextra
 
 function extras.copy(target,original)
     local characters = target.characters

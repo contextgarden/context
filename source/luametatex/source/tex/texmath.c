@@ -2876,6 +2876,132 @@ void tex_finish_math_radical(void)
     }
 }
 
+// void tex_run_math_accent(void)
+// {
+//     mathcodeval t = tex_no_math_code();
+//     mathcodeval b = tex_no_math_code();
+//     mathcodeval o = tex_no_math_code();
+//     halfword code = cur_chr;
+//     halfword accent = tex_new_node(accent_noad, bothflexible_accent_subtype);
+//     quarterword subtype = ordinary_noad_subtype;
+//     halfword attrlist = null;
+//     if (cur_cmd == accent_cmd) {
+//         tex_handle_error(
+//             normal_error_type,
+//             "Please use \\mathaccent for accents in math mode",
+//             "I'm changing \\accent to \\mathaccent here; wish me luck. (Accents are not the\n"
+//             "same in formulas as they are in text.)" );
+//     }
+//     tex_tail_append(accent);
+//     switch (code) {
+//         case math_accent_code:
+//             /*tex |\mathaccent| */
+//             t = tex_scan_mathchar(tex_mathcode);
+//             break;
+//         case math_uaccent_code:
+//             /*tex |\Umathaccent| */
+//             while (1) {
+//                 switch (tex_scan_character("abnsfABNSF", 0, 1, 0)) {
+//                     case 'a': case 'A':
+//                         if (tex_scan_mandate_keyword("attr", 1)) {
+//                             attrlist = tex_scan_attribute(attrlist);
+//                         }
+//                         break;
+//                     case 's': case 'S':
+//                         if (tex_scan_mandate_keyword("source", 1)) {
+//                             noad_source(accent) = tex_scan_int(0, NULL);
+//                         }
+//                         break;
+//                     case 'f': case 'F':
+//                         if (tex_scan_mandate_keyword("fraction", 1)) {
+//                             accent_fraction(accent) = tex_scan_int(0, NULL);
+//                         }
+//                         break;
+//                     case 'n': case 'N':
+//                         if (tex_scan_mandate_keyword("nooverflow", 1)) {
+//                             /*tex 
+//                                 Actually there never is an overflow but for consistency we do 
+//                                 accept this key. Mayebe in the future it will be used. 
+//                             */
+//                             noad_options(accent) |= noad_option_no_overflow;
+//                         }
+//                         break;
+//                     case 'b': case 'B':
+//                         if (tex_scan_mandate_keyword("base", 1)) {
+//                             noad_options(accent) |= noad_option_auto_base;
+//                         }
+//                         break;
+//                     default:
+//                         goto DONE;
+//                 }
+//             }
+//           DONE:
+//             /* todo: integrate in the above */
+//             if (tex_scan_keyword("fixed")) {
+//                 /*tex top */
+//                 node_subtype(accent) = fixedtop_accent_subtype;
+//                 t = tex_scan_mathchar(umath_mathcode);
+//             } else if (tex_scan_keyword("both")) {
+//                 /*tex top bottom */
+//                 if (tex_scan_keyword("fixed")) {
+//                     node_subtype(accent) = fixedtop_accent_subtype;
+//                 }
+//                 t = tex_scan_mathchar(umath_mathcode);
+//                 if (tex_scan_keyword("fixed")) {
+//                     node_subtype(accent) = fixedboth_accent_subtype;
+//                 }
+//                 b = tex_scan_mathchar(umath_mathcode);
+//             } else if (tex_scan_keyword("bottom")) {
+//                 /*tex bottom */
+//                 if (tex_scan_keyword("fixed")) {
+//                     node_subtype(accent) = fixedbottom_accent_subtype;
+//                 }
+//                 b = tex_scan_mathchar(umath_mathcode);
+//             } else if (tex_scan_keyword("top")) {
+//                 /*tex top */
+//                 if (tex_scan_keyword("fixed")) {
+//                     node_subtype(accent) = fixedtop_accent_subtype;
+//                 }
+//                 t = tex_scan_mathchar(umath_mathcode);
+//             } else if (tex_scan_keyword("overlay")) {
+//                 /* overlay */
+//                 if (tex_scan_keyword("fixed")) {
+//                     node_subtype(accent) = fixedtop_accent_subtype;
+//                 }
+//                 o = tex_scan_mathchar(umath_mathcode);
+//             } else {
+//                 /*tex top */
+//                 t = tex_scan_mathchar(umath_mathcode);
+//             }
+//             break;
+//         default:
+//             tex_confusion("scan math accent");
+//     }
+//     if (attrlist) {
+//         tex_attach_attribute_list_attribute(accent, attrlist);
+//     }
+//     if (! (t.character_value == 0 && t.family_value == 0)) {
+//         halfword n = tex_new_node(math_char_node, 0);
+//         subtype = tex_aux_set_math_char(n, &t, NULL);
+//         accent_top_character(accent) = n;
+//     }
+//     if (! (b.character_value == 0 && b.family_value == 0)) {
+//         halfword n = tex_new_node(math_char_node, 0);
+//         subtype = tex_aux_set_math_char(n, &b, NULL);
+//         accent_bottom_character(accent) = n;
+//     }
+//     if (! (o.character_value == 0 && o.family_value == 0)) {
+//         halfword n = tex_new_node(math_char_node, 0);
+//         subtype = tex_aux_set_math_char(n, &o, NULL);
+//         accent_middle_character(accent) = n;
+//     }
+//     {
+//         halfword n = tex_new_node(math_char_node, subtype);
+//         noad_nucleus(accent) = n;
+//         tex_aux_scan_math(n, tex_math_style_variant(cur_list.math_style, math_parameter_accent_variant), 0, 0, 0, 0, unset_noad_class, unset_noad_class);
+//     }
+// }
+
 void tex_run_math_accent(void)
 {
     mathcodeval t = tex_no_math_code();
@@ -2901,7 +3027,7 @@ void tex_run_math_accent(void)
         case math_uaccent_code:
             /*tex |\Umathaccent| */
             while (1) {
-                switch (tex_scan_character("ansfASFN", 0, 1, 0)) {
+                switch (tex_scan_character("abnsftoABNSFTO", 0, 1, 0)) {
                     case 'a': case 'A':
                         if (tex_scan_mandate_keyword("attr", 1)) {
                             attrlist = tex_scan_attribute(attrlist);
@@ -2913,10 +3039,23 @@ void tex_run_math_accent(void)
                         }
                         break;
                     case 'f': case 'F':
-                        if (tex_scan_mandate_keyword("fraction", 1)) {
-                            accent_fraction(accent) = tex_scan_int(0, NULL);
+                        switch (tex_scan_character("frFR", 0, 0, 0)) {
+                            case 'r': case 'R':
+                                if (tex_scan_mandate_keyword("fraction", 2)) {
+                                    accent_fraction(accent) = tex_scan_int(0, NULL);
+                                }
+                                break;
+                            case 'f': case 'F':
+                                /*tex fixed <char> */
+                                if (tex_scan_mandate_keyword("fixed", 2)) {
+                                    node_subtype(accent) = fixedtop_accent_subtype;
+                                    t = tex_scan_mathchar(umath_mathcode);
+                                }
+                                goto DONE;
+                            default:
+                                tex_aux_show_keyword_error("fraction|fixed");
+                                goto DONE;
                         }
-                        break;
                     case 'n': case 'N':
                         if (tex_scan_mandate_keyword("nooverflow", 1)) {
                             /*tex 
@@ -2926,52 +3065,79 @@ void tex_run_math_accent(void)
                             noad_options(accent) |= noad_option_no_overflow;
                         }
                         break;
+                    case 'b': case 'B':
+                        switch (tex_scan_character("aoAo", 0, 0, 0)) {
+                            case 'a': case 'A':
+                                if (tex_scan_mandate_keyword("base", 2)) {
+                                    noad_options(accent) |= noad_option_auto_base;
+                                }
+                                break;
+                            case 'o': case 'O':
+                                /*tex bottom [fixed] <char> */
+                                /*tex both [fixed] <char> [fixed] <char> */
+                                if (tex_scan_character("t", 0, 0, 0)) {
+                                     switch (tex_scan_character("thTH", 0, 0, 0)) {
+                                         case 'h': case 'H':
+                                             if (tex_scan_mandate_keyword("both", 4)) {
+                                                  /*tex top bottom */
+                                                  if (tex_scan_keyword("fixed")) {
+                                                      node_subtype(accent) = fixedtop_accent_subtype;
+                                                  }
+                                                  t = tex_scan_mathchar(umath_mathcode);
+                                                  if (tex_scan_keyword("fixed")) {
+                                                      node_subtype(accent) = fixedboth_accent_subtype;
+                                                  }
+                                                  b = tex_scan_mathchar(umath_mathcode);
+                                             }
+                                            goto DONE;
+                                         case 't': case 'T':
+                                             if (tex_scan_mandate_keyword("bottom", 4)) {
+                                                /*tex bottom */
+                                                if (tex_scan_keyword("fixed")) {
+                                                    node_subtype(accent) = fixedbottom_accent_subtype;
+                                                }
+                                                b = tex_scan_mathchar(umath_mathcode);
+                                             }
+                                            goto DONE;
+                                        default:
+                                            tex_aux_show_keyword_error("both|bottom");
+                                            goto DONE;
+                                     }
+                                }
+                                goto DONE;
+                            default:
+                                tex_aux_show_keyword_error("base|both|bottom");
+                                goto DONE;
+                        }
+                        break;
+                    case 't': case 'T':
+                        /*tex top [fixed] <char> */
+                        if (tex_scan_mandate_keyword("top", 1)) {
+                            if (tex_scan_keyword("fixed")) {
+                                node_subtype(accent) = fixedtop_accent_subtype;
+                            }
+                            t = tex_scan_mathchar(umath_mathcode);
+                        }
+                        goto DONE;
+                    case 'o': case 'O':
+                        /*tex overlay [fixed] <char> */
+                        if (tex_scan_mandate_keyword("overlay", 1)) {
+                            if (tex_scan_keyword("fixed")) {
+                                node_subtype(accent) = fixedtop_accent_subtype;
+                            }
+                            o = tex_scan_mathchar(umath_mathcode);
+                        }
+                        goto DONE;
                     default:
+                        /*tex top <char> */
+                        t = tex_scan_mathchar(umath_mathcode);
                         goto DONE;
                 }
             }
-          DONE:
-            /* todo: integrate in the above */
-            if (tex_scan_keyword("fixed")) {
-                /*tex top */
-                node_subtype(accent) = fixedtop_accent_subtype;
-                t = tex_scan_mathchar(umath_mathcode);
-            } else if (tex_scan_keyword("both")) {
-                /*tex top bottom */
-                if (tex_scan_keyword("fixed")) {
-                    node_subtype(accent) = fixedtop_accent_subtype;
-                }
-                t = tex_scan_mathchar(umath_mathcode);
-                if (tex_scan_keyword("fixed")) {
-                    node_subtype(accent) = fixedboth_accent_subtype;
-                }
-                b = tex_scan_mathchar(umath_mathcode);
-            } else if (tex_scan_keyword("bottom")) {
-                /*tex bottom */
-                if (tex_scan_keyword("fixed")) {
-                    node_subtype(accent) = fixedbottom_accent_subtype;
-                }
-                b = tex_scan_mathchar(umath_mathcode);
-            } else if (tex_scan_keyword("top")) {
-                /*tex top */
-                if (tex_scan_keyword("fixed")) {
-                    node_subtype(accent) = fixedtop_accent_subtype;
-                }
-                t = tex_scan_mathchar(umath_mathcode);
-            } else if (tex_scan_keyword("overlay")) {
-                /* overlay */
-                if (tex_scan_keyword("fixed")) {
-                    node_subtype(accent) = fixedtop_accent_subtype;
-                }
-                o = tex_scan_mathchar(umath_mathcode);
-            } else {
-                /*tex top */
-                t = tex_scan_mathchar(umath_mathcode);
-            }
-            break;
         default:
             tex_confusion("scan math accent");
     }
+  DONE:
     if (attrlist) {
         tex_attach_attribute_list_attribute(accent, attrlist);
     }

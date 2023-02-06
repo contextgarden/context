@@ -10,6 +10,8 @@ if not modules then modules = { } end modules ['typo-cln'] = {
 -- this case Dream Theaters' Octavium). Of course extensions will take
 -- more time.
 
+-- This feature is probably never used so we can get rid of it.
+
 local tonumber = tonumber
 local utfbyte = utf.byte
 

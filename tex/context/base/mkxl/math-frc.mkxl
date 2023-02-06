@@ -294,6 +294,11 @@
                                                                      \s!noaxis \space
                                                                      \s!hfactor \numexpr\mathfractionparameter\c!hfactor\relax}
 
+\setupmathfractions % we now inherit !
+  [\c!topcolor=\mathfractionparameter\c!color,
+   \c!bottomcolor=\mathfractionparameter\c!color,
+   \c!rulecolor=\mathfractionparameter\c!color]
+
 \def\math_frac_command_u
   {\edef\p_method   {\mathfractionparameter\c!method}%
    \edef\p_rule     {\mathfractionparameter\c!rule}%
@@ -317,7 +322,7 @@
         \fi
       \fi
    \endcsname \lastnamedcs \else \csname\??fractionmethods\v!vertical\v!auto\endcsname \fi
-   \usedcolorparameterattributes{\mathfractionparameter\c!color}%
+   \usedcolorparameterattributes{\mathfractionparameter\c!rulecolor}% was \c!color so we break compatibility !
    thickness \ifx\p_thickness\v!font
      \zeropoint
      \s!font \space
@@ -480,7 +485,7 @@
    \Umathfractiondelsize\alldisplaystyles\p_threshold\dimexpr\textface\relax}
 
 \setupmathfractions
-  [\c!inlinethreshold=.25,      % no unit but fraction
+  [\c!inlinethreshold=1.2,      % no unit but fraction
    \c!displaythreshold=\v!auto, % no unit but fraction
    \c!threshold=.25\exheight]
 

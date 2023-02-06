@@ -1039,6 +1039,7 @@ local function loadexternalreferences(name,utilitydata)
         local external = struc.references.collected -- direct references
         local lists    = struc.lists.collected      -- indirect references (derived)
         local pages    = struc.pages.collected      -- pagenumber data
+        local sections = struc.sections.collected
         -- a bit weird one, as we don't have the externals in the collected
         for prefix, set in next, external do
             if prefix == "" then
@@ -1073,6 +1074,15 @@ local function loadexternalreferences(name,utilitydata)
                         local prefix = references.prefix or ""
                         if prefix == "" then
                             prefix = name -- this can clash!
+                        end
+                        local section = references.section
+                        if section then
+                            -- we have to make sure that the right section is used, see helpers.prefix
+                            if sections then
+                                references.sectiondata = sections[section]
+                            else
+                                -- warning
+                            end
                         end
                         local target = external[prefix]
                         if not target then

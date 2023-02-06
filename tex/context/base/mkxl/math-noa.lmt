@@ -840,7 +840,7 @@ do
                     local characters = fontcharacters[font]
                     if characters and characters[newchar] then
                         setchar(pointer,newchar)
-                        setattr(pointer,a_exportstatus,char)
+                        setattr(pointer,a_exportstatus,char) -- yes or no
                     end
                 end
             end
@@ -886,22 +886,28 @@ do
                     local chr, fnt, fam = getcharspec(delimiter)
                     if chr > 0 and fnt > 0 then
                         local data = fontdata[fnt]
-                        local char = mathematics.big(data,chr,size,method)
+local chardata = data.characters[chr]
+local template = chardata.varianttemplate
+                        local char = mathematics.big(data,template or chr,size,method)
                         local ht   = getheight(pointer)
                         local dp   = getdepth(pointer)
-                        if ht == 1 or dp == 1 then -- 1 scaled point is a signal
+                        if template or ht == 1 or dp == 1 then -- 1 scaled point is a signal
                             local chardata = data.characters[char]
-                            if ht == 1 then
+                            if template or ht == 1 then
                                 setheight(pointer,chardata.height)
                             end
-                            if dp == 1 then
+                            if template or dp == 1 then
                                 setdepth(pointer,chardata.depth)
                             end
                         end
                         if trace_fences then
                             report_fences("replacing %C by %C using method %a and size %a",chr,char,method,size)
                         end
+if template then
+    setoptions(pointer,0)
+else
                         setchar(delimiter,char)
+end
                     end
                 end
             end
@@ -2103,30 +2109,34 @@ do
 
     local reported = setmetatableindex("table")
 
+    mathlists[39] = { [39] = { [39] = { enforced = 0x2034, [39] = { enforced = 0x2057 } }, enforced = 0x2033 }, enforced = 0x2032 }
+    mathlists[96] = { [96] = { [96] = { enforced = 0x2037                               }, enforced = 0x2036 }, enforced = 0x2035 }
+
     collapse[mathchar_code] = function(pointer,what,n,parent)
         if parent and mathlists[getchar(pointer)] then
             local found, last, lucleus, lsup, lsub, category
             local tree    = mathlists
             local current = parent
             while current and validpair[getsubtype(current)] do
-                local nucleus = getnucleus(current) -- == pointer
-                local sub     = getsub(current)
-                local sup     = getsup(current)
-                local char    = getchar(nucleus)
+                local nucleus, prime, sup, sub = getnucleus(current,true)
+                local char = getchar(nucleus)
                 if char then
                     local match = tree[char]
                     if match then
                         local method = getattr(current,a_mathcollapsing)
                         if method and method > 0 and method <= 3 then
+                            local enforced = match.enforced
                             local specials = match.specials
                             local mathlist = match.mathlist
                             local ligature
-                            if method == 1 then
-                                ligature = specials
+                            if method == 0 then
+                                ligature = enforced
+                            elseif method == 1 then
+                                ligature = enforced or specials
                             elseif method == 2 then
-                                ligature = specials or mathlist
+                                ligature = enforced or specials or mathlist
                             else -- 3
-                                ligature = mathlist or specials
+                                ligature = enforced or mathlist or specials
                             end
                             if ligature then
                                 category = mathlist and "mathlist" or "specials"

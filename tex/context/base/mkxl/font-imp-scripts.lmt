@@ -90,7 +90,7 @@ local function initialize(tfmdata,key,value)
              -- yoffset  = shift,
              -- xscale   = factor,
              -- yscale   = factor,
-             -- commands = { { "slot", 0, other } },
+             -- commands = { { "slot", 0, other } }, -- { slotcommand[0][other] or charcommand[other] }
             }
         end
     end

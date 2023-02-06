@@ -42,11 +42,12 @@
 \definefontsynonym [MonoCaps]           [unknown]
 
 \definefontsynonym [MathRoman]          [unknown]
-\definefontsynonym [MathRomanL2R]       [MathRoman]
-\definefontsynonym [MathRomanR2L]       [MathRoman]
 \definefontsynonym [MathRomanBold]      [MathRoman]
-\definefontsynonym [MathRomanBoldL2R]   [MathRomanBold]
-\definefontsynonym [MathRomanBoldR2L]   [MathRomanBold]
+
+\definefontsynonym [MathRomanL2R]       [MathRoman]     % obsolete
+\definefontsynonym [MathRomanR2L]       [MathRoman]     % obsolete
+\definefontsynonym [MathRomanBoldL2R]   [MathRomanBold] % obsolete
+\definefontsynonym [MathRomanBoldR2L]   [MathRomanBold] % obsolete
 
 \definefontsynonym [Handwriting]        [unknown]
 \definefontsynonym [Calligraphic]       [unknown]

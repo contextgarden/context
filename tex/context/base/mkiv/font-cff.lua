@@ -714,7 +714,7 @@ do
     local y            = 0
     local width        = false
     local lsb          = 0
-local result = { }
+    local result       = { }
     local r            = 0
     local stems        = 0
     local globalbias   = 0
@@ -1731,15 +1731,13 @@ end
         end
         for i=108,1131 do
             local v = 0xF700 + i - 108
---             t[i] = char(band(rshift(v,8),0xFF),band(v,0xFF))
             t[i] = char(extract(v,8,8),extract(v,0,8))
         end
         for i=1132,2048 do
             t[i] = char(28,band(rshift(i,8),0xFF),band(i,0xFF))
         end
-        -- we could inline some ...
         setmetatableindex(encode,function(t,k)
-            -- 16.16-bit signed fixed value
+            -- as we're cff2 we write 16.16-bit signed fixed value
             local r = round(k)
             local v = rawget(t,r)
             if v then
@@ -1844,42 +1842,6 @@ end
 
     -- precompiling and reuse is much slower than redoing the calls
 
- -- local function decode(str)
- --     local a, b, c, d, e = byte(str,1,5)
- --     if a == 28 then
- --         if c then
- --             local n = 0x100 * b + c
- --             if n >= 0x8000 then
- --                 return n - 0x10000
- --             else
- --                 return n
- --             end
- --         end
- --     elseif a < 32 then
- --         return false
- --     elseif a <= 246 then
- --         return  a - 139
- --     elseif a <= 250 then
- --         if b then
- --             return  a*256 - 63124 + b
- --         end
- --     elseif a <= 254 then
- --         if b then
- --             return -a*256 + 64148 - b
- --         end
- --     else
- --         if e then
- --             local n = 0x100 * b + c
- --             if n >= 0x8000 then
- --                 return n - 0x10000 + (0x100 * d + e)/0xFFFF
- --             else
- --                 return n           + (0x100 * d + e)/0xFFFF
- --             end
- --         end
- --     end
- --     return false
- -- end
-
     process = function(tab)
         local i = 1
         local n = #tab
@@ -1903,8 +1865,14 @@ end
                  -- stack[top] = -t*256 + 251*256 - tab[i+1] - 108
                     stack[top] = -t*256 + 64148 - tab[i+1]
                     i = i + 2
+                elseif version == "cff" then
+                    local n = 0x1000000 * tab[i+1] + 0x10000 * tab[i+2] + 0x100 * tab[i+3] + tab[i+4]
+                    if n >= 0x8000000 then
+                        n = n - 0xFFFFFFFF - 1
+                    end
+                    stack[top] = n
+                    i = i + 5
                 else
-                    -- a 16.16 float (used for italic but pretty unreliable)
                     local n1 = 0x100 * tab[i+1] + tab[i+2]
                     local n2 = 0x100 * tab[i+3] + tab[i+4]
                     if n1 >= 0x8000 then
@@ -2167,7 +2135,7 @@ end
         end
     end
 
-    local function processshape(tab,index,hack)
+    local function processshape(glyphs,tab,index,hack)
 
         if not tab then
             glyphs[index] = {
@@ -2233,9 +2201,10 @@ result = nil
          --     report("vdata: %s",stream)
          -- end
             if glyph then
-                glyph.stream  = stream
+                glyph.stream = stream
+                glyph.width  = width
             else
-                glyphs[index] = { stream = stream }
+                glyphs[index] = { stream = stream, width = width }
             end
         elseif glyph then
             glyph.segments    = keepcurve ~= false and result or nil
@@ -2263,7 +2232,6 @@ result = nil
                 name        = charset and charset[index] or nil,
             }
         end
-
         if trace_charstrings then
             report("width      : %s",tostring(width))
             report("boundingbox: % t",boundingbox)
@@ -2326,7 +2294,8 @@ result = nil
         locals    = dictionary.subroutines or { }
         charset   = dictionary.charset
         vsindex   = dictionary.vsindex or 0
-        glyphs    = glphs or { }
+
+        local glyphs = glphs or { }
 
         globalbias,   localbias    = setbias(globals,locals,nobias)
         nominalwidth, defaultwidth = setwidths(dictionary.private)
@@ -2334,7 +2303,7 @@ result = nil
         if charstrings then
             startparsing(fontdata,data,streams)
             for index=1,#charstrings do
-                processshape(charstrings[index],index-1)
+                processshape(glyphs,charstrings[index],index-1)
             end
             if justpass and next(seacs) then
                 -- old type 1 stuff ... seacs
@@ -2350,7 +2319,7 @@ result = nil
                             -- this is a real ugly hack but we seldom enter this branch (e.g. old lbr)
                             local jp = justpass
                             justpass = false
-                            local x, y = processshape(charstrings[bindex+1],bindex,true)
+                            local x, y = processshape(glyphs,charstrings[bindex+1],bindex,true)
                             justpass = jp
                             --
                             local base   = bglyph.stream
@@ -2381,7 +2350,8 @@ result = nil
         locals    = dictionary.subroutines or { }
         charset   = false
         vsindex   = dictionary.vsindex or 0
-        glyphs    = glphs or { }
+
+        local glyphs = glphs or { }
 
         justpass = streams == true
         seacs    = { }
@@ -2389,9 +2359,9 @@ result = nil
         globalbias,   localbias    = setbias(globals,locals,nobias)
         nominalwidth, defaultwidth = setwidths(dictionary.private)
 
-        processshape(tab,index-1)
+        processshape(glyphs,tab,index-1)
 
-     -- return glyphs[index]
+        return glyphs[index]
     end
 
 end

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2023-01-26 18:32
+-- merge date  : 2023-02-06 17:55
 
 do -- begin closure to overcome local limits and interference
 
@@ -4860,7 +4860,7 @@ local mt={
  end,
  __storage__=true
 }
-function containers.define(category,subcategory,version,enabled)
+function containers.define(category,subcategory,version,enabled,reload)
  if category and subcategory then
   local c=allocated[category]
   if not c then
@@ -4874,6 +4874,7 @@ function containers.define(category,subcategory,version,enabled)
     subcategory=subcategory,
     storage={},
     enabled=enabled,
+    reload=reload,
     version=version or math.pi,
     trace=false,
    }
@@ -4896,7 +4897,8 @@ function containers.is_valid(container,name)
 end
 function containers.read(container,name)
  local storage=container.storage
- local stored=storage[name]
+ local reload=container.reload
+ local stored=not reload and storage[name]
  if not stored and container.enabled and caches and containers.usecache then
   stored=loaddatafromcache(container.readables,name,container.writable)
   if stored and stored.cache_version==container.version then
@@ -13683,7 +13685,7 @@ do
  local y=0
  local width=false
  local lsb=0
-local result={}
+ local result={}
  local r=0
  local stems=0
  local globalbias=0
@@ -14701,6 +14703,13 @@ end
     elseif t<=254 then
      stack[top]=-t*256+64148-tab[i+1]
      i=i+2
+    elseif version=="cff" then
+     local n=0x1000000*tab[i+1]+0x10000*tab[i+2]+0x100*tab[i+3]+tab[i+4]
+     if n>=0x8000000 then
+      n=n-0xFFFFFFFF-1
+     end
+     stack[top]=n
+     i=i+5
     else
      local n1=0x100*tab[i+1]+tab[i+2]
      local n2=0x100*tab[i+3]+tab[i+4]
@@ -14893,7 +14902,7 @@ end
     ((l<1240 and 107) or (l<33900 and 1131) or 32768)+1
   end
  end
- local function processshape(tab,index,hack)
+ local function processshape(glyphs,tab,index,hack)
   if not tab then
    glyphs[index]={
     boundingbox={ 0,0,0,0 },
@@ -14948,8 +14957,9 @@ end
 result=nil
    if glyph then
     glyph.stream=stream
+    glyph.width=width
    else
-    glyphs[index]={ stream=stream }
+    glyphs[index]={ stream=stream,width=width }
    end
   elseif glyph then
    glyph.segments=keepcurve~=false and result or nil
@@ -15027,13 +15037,13 @@ result=nil
   locals=dictionary.subroutines or {}
   charset=dictionary.charset
   vsindex=dictionary.vsindex or 0
-  glyphs=glphs or {}
+  local glyphs=glphs or {}
   globalbias,localbias=setbias(globals,locals,nobias)
   nominalwidth,defaultwidth=setwidths(dictionary.private)
   if charstrings then
    startparsing(fontdata,data,streams)
    for index=1,#charstrings do
-    processshape(charstrings[index],index-1)
+    processshape(glyphs,charstrings[index],index-1)
    end
    if justpass and next(seacs) then
     local charset=data.dictionaries[1].charset
@@ -15047,7 +15057,7 @@ result=nil
       if bglyph and aglyph then
        local jp=justpass
        justpass=false
-       local x,y=processshape(charstrings[bindex+1],bindex,true)
+       local x,y=processshape(glyphs,charstrings[bindex+1],bindex,true)
        justpass=jp
        local base=bglyph.stream
        local accent=aglyph.stream
@@ -15072,12 +15082,13 @@ result=nil
   locals=dictionary.subroutines or {}
   charset=false
   vsindex=dictionary.vsindex or 0
-  glyphs=glphs or {}
+  local glyphs=glphs or {}
   justpass=streams==true
   seacs={}
   globalbias,localbias=setbias(globals,locals,nobias)
   nominalwidth,defaultwidth=setwidths(dictionary.private)
-  processshape(tab,index-1)
+  processshape(glyphs,tab,index-1)
+  return glyphs[index]
  end
 end
 local function readglobals(f,data,version)
@@ -21340,7 +21351,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.131 
+otf.version=3.132 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
@@ -37400,7 +37411,8 @@ local function loadstreams(cache,filename,sub,instance)
    if streams then
     local fontbbox=metadata.fontbbox or { 0,0,0,0 }
     for i=0,#streams do
-     streams[i]=streams[i].stream or "\14"
+     local s=streams[i]
+     streams[i]=s.stream or "\14"
     end
     data={
      filename=filename,
@@ -37482,7 +37494,8 @@ local function getstreamhash(fontid)
  local fontdata=identifiers[fontid]
  if fontdata then
   local properties=fontdata.properties
-  return makehash(properties.filename,properties.subfont,properties.instance),fontdata
+  local fonthash=makehash(properties.filename,properties.subfont,properties.instance)
+  return fonthash,fontdata
  end
 end
 local function loadstreamdata(fontdata)

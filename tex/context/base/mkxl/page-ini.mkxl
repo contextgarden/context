@@ -110,8 +110,15 @@
 \installoutputroutine\savepagecontent
   {\global\setbox\b_page_otr_saved\box\normalpagebox}
 
-\permanent\protected\def\flushpagecontent
-  {\ifvoid\b_page_otr_saved\else\unvbox\b_page_otr_saved\fi}
+% \permanent\protected\def\flushpagecontent
+%   {\ifvoid\b_page_otr_saved\else\unvbox\b_page_otr_saved\fi}
+
+\permanent\protected\def\flushpagecontent % used in postponing
+  {\ifvoid\b_page_otr_saved\else
+     \scratchdepth\dp\b_page_otr_saved
+     \unvbox\b_page_otr_saved
+     \prevdepth\scratchdepth
+  \fi}
 
 % Test case: assumes one group level for output routine, todo:
 % a toks.

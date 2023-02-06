@@ -472,6 +472,7 @@ make_lua_key(L, attributelist);\
 make_lua_key(L, auto);\
 make_lua_key(L, automatic);\
 make_lua_key(L, automaticpenalty);\
+make_lua_key(L, autobase);\
 make_lua_key(L, axis);\
 make_lua_key(L, AxisHeight);\
 make_lua_key(L, baselineskip);\

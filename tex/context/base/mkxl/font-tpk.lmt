@@ -44,11 +44,10 @@ if not fonts then fonts = { handlers = { tfm = { } } } end
 local handlers = fonts.handlers
 local tfm      = handlers.tfm or { }
 handlers.tfm   = tfm
+tfm.version    = 1.005
+
 local readers  = tfm.readers or { }
 tfm.readers    = readers
-
-tfm.version      = 1.005
-tfm.cache        = containers.define("fonts", "tfm", tfm.version, true)
 
 -- Performance is no real issue here so I didn't optimize too much. After
 -- all, these files are small and we mostly use opentype or type1 fonts.
@@ -434,8 +433,65 @@ do
     local rightboundary = -2
     local boundarychar  = 65536
 
+    local function toparts(extensible)
+        local top      = extensible.top      or 0
+        local middle   = extensible.middle   or 0
+        local extender = extensible.extender or 0
+        local bottom   = extensible.bottom   or 0
+        local extend   = extender ~= 0 and { glyph = extender, extender = 1 }
+        if bottom == 0 and top == 0 and middle == 0 then
+            if extend then
+                return {
+                    { glyph = extender },
+                    extend,
+                }
+            end
+        else
+            local list = { }
+            local l    = 0
+            if bottom ~= 0 then
+                l = l + 1 ; list[l] = { glyph = bottom }
+            end
+            if extend then
+                l = l + 1 ; list[l] = extend
+            end
+            if middle ~= 0 then
+                l = l + 1 ; list[l] = { glyph = middle }
+                if extend then
+                    l = l + 1 ; list[l] = extend
+                end
+            end
+            if top ~= 0 then
+                l = l + 1 ; list[l] = { glyph = top }
+            end
+            return list
+        end
+    end
+
+    -- We don't cache because we hardly load tfm files multiple times and we need
+    -- to copy them anyway.
+
+    tfm.cache = containers.define("fonts", "tfm", tfm.version, true, true) -- reload: true
+
+    local filecache = tfm.cache
+    local cleanname = fonts.handlers.otf.readers.helpers.cleanname
+
+    local caching   = true -- mainly for MS and HH as they test huge files with many instances
+
     function readers.loadtfm(filename)
         local data
+        --
+        local fileattr   = lfs.attributes(filename)
+        local filesize   = fileattr and fileattr.size or 0
+        local filetime   = fileattr and fileattr.modification or 0
+        local fileformat = "tfm"
+        local filehash   = cleanname(file.basename(filename))
+        --
+        data = caching and containers.read(filecache,filehash)
+        --
+        if data and data.filetime == filetime and data.filesize == filesize and data.fileformat == fileformat then
+            return data
+        end
         --
         local function someerror(m)
             if not data then
@@ -623,13 +679,13 @@ do
         for i=0,ne-1 do
             extensibles[i] = wide and {
                 top      = readcardinal2(s),
-                bottom   = readcardinal2(s),
                 middle   = readcardinal2(s),
+                bottom   = readcardinal2(s),
                 extender = readcardinal2(s),
             } or {
                 top      = readcardinal1(s),
-                bottom   = readcardinal1(s),
                 middle   = readcardinal1(s),
+                bottom   = readcardinal1(s),
                 extender = readcardinal1(s),
             }
         end
@@ -764,7 +820,7 @@ do
                         remainder  = 0
                     end
                 end
-                glyphs[i] = {
+                local glyph = {
                     width      = widths [width],
                     height     = heights[height],
                     depth      = depths [depth],
@@ -775,6 +831,15 @@ do
                     extensible = extensible,
                     next       = nextinsize,
                 }
+                if extensible then
+                    extensible = toparts(extensible)
+                    if extensible then
+                        glyph.parts            = extensible
+                        glyph.partsorientation = "vertical"
+                        glyph.partsitalic      = glyph.italic
+                    end
+                end
+                glyphs[i] = glyph
             end
         end
         for i=bc,ec do
@@ -838,7 +903,7 @@ do
      --     v.remainder = nil
      -- end
         --
-        return {
+        data = {
             name           = file.nameonly(filename),
             fontarea       = file.pathpart(filename),
             glyphs         = glyphs,
@@ -862,14 +927,24 @@ do
          -- width          = 0,
          -- writingmode    = "unknown",
         }
+        --
+        data.filesize   = filesize
+        data.fileformat = fileformat
+        data.filetime   = filetime
+        if caching then
+            containers.write(filecache,filehash,data)
+        end
+        --
+        return data
     end
 
 end
 
 do
 
-    local push = { "push" }
-    local push = { "pop" }
+    local pushcommand = fonts.helpers.commands.push
+    local popcommand  = fonts.helpers.commands.pop
+    local slotcommand = fonts.helpers.commands.slot
 
     local w, x, y, z, f
     local stack
@@ -928,10 +1003,10 @@ do
 
     local actions = {
 
-        [128] = function() r = r + 1 result[r] = { "slot", f or 1, readcardinal1(s) } p = p + 1 end,
-        [129] = function() r = r + 1 result[r] = { "slot", f or 1, readcardinal2(s) } p = p + 2 end,
-        [130] = function() r = r + 1 result[r] = { "slot", f or 1, readcardinal3(s) } p = p + 3 end,
-        [131] = function() r = r + 1 result[r] = { "slot", f or 1, readcardinal4(s) } p = p + 4 end,
+        [128] = function() r = r + 1 result[r] = slotcommand[f or 1][readcardinal1(s)] p = p + 1 end,
+        [129] = function() r = r + 1 result[r] = slotcommand[f or 1][readcardinal2(s)] p = p + 2 end,
+        [130] = function() r = r + 1 result[r] = slotcommand[f or 1][readcardinal3(s)] p = p + 3 end,
+        [131] = function() r = r + 1 result[r] = slotcommand[f or 1][readcardinal4(s)] p = p + 4 end,
 
         [132] = function()
             r = r + 1
@@ -940,34 +1015,34 @@ do
         end,
 
         [133] = function()
-                    r = r + 1 result[r] = push
-                    r = r + 1 result[r] = { "slot", f or 1, readcardinal1(s) }
-                    r = r + 1 result[r] = pop
+                    r = r + 1 result[r] = pushcommand
+                    r = r + 1 result[r] = slotcommand[f or 1][readcardinal1(s)]
+                    r = r + 1 result[r] = popcommand
                     p = p + 1
                 end,
         [134] = function()
-                    r = r + 1 result[r] = push
-                    r = r + 1 result[r] = { "slot", f or 1, readcardinal2(s) }
-                    r = r + 1 result[r] = pop
+                    r = r + 1 result[r] = pushcommand
+                    r = r + 1 result[r] = slotcommand[f or 1][readcardinal2(s)]
+                    r = r + 1 result[r] = popcommand
                     p = p + 2
                 end,
         [135] = function()
-                    r = r + 1 result[r] = push
-                    r = r + 1 result[r] = { "slot", f or 1, readcardinal2(s) }
-                    r = r + 1 result[r] = pop
+                    r = r + 1 result[r] = pushcommand
+                    r = r + 1 result[r] = slotcommand[f or 1][readcardinal3(s)]
+                    r = r + 1 result[r] = popcommand
                     p = p + 3
                 end,
         [136] = function()
-                    r = r + 1 result[r] = push
-                    r = r + 1 result[r] = { "slot", f or 1, readcardinal4(s) }
-                    r = r + 1 result[r] = pop
+                    r = r + 1 result[r] = pushcommand
+                    r = r + 1 result[r] = slotcommand[f or 1][readcardinal4(s)]
+                    r = r + 1 result[r] = popcommand
                     p = p + 4
                 end,
 
         [137] = function()
-                    r = r + 1 result[r] = push
+                    r = r + 1 result[r] = pushcommand
                     r = r + 1 result[r] = { "rule", scaled4(), scaled4() }
-                    r = r + 1 result[r] = pop
+                    r = r + 1 result[r] = popcommand
                     p = p + 8
                 end,
 
@@ -978,14 +1053,14 @@ do
         [141] = function()
                     insert(stack, { w, x, y, z })
                     r = r + 1
-                    result[r] = push
+                    result[r] = pushcommand
                 end,
         [142] = function()
                     local t = remove(stack)
                     if t then
                         w, x, y, z = t[1], t[2], t[3], t[4]
                         r = r + 1
-                        result[r] = pop
+                        result[r] = popcommand
                     end
                 end,
 
@@ -1048,7 +1123,7 @@ do
                 if f == 0 then
                     f = 1
                 end
-                r = r + 1 ; result[r] = { "slot", f, cmd }
+                r = r + 1 ; result[r] = slotcommand[f][cmd]
             end
         elseif cmd >= 171 and cmd <= 234 then
             cmd = cmd - 170

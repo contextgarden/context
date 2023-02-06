@@ -39,6 +39,8 @@ otf.pngenabled    = true
 local report_fonts = logs.reporter("backend","fonts")
 local trace_fonts    trackers.register("backend.fonts",function(v) trace_fonts = v end)
 
+local slotcommand = fonts.helpers.commands.slot
+
 do
 
     -- This is a prelude to something better but I'm still experimenting. We should delay more.
@@ -113,7 +115,7 @@ do
                             end
                             colrshapes[idx] = shape -- so not: description
                             -- todo: prepend
-                            v.commands = { { "slot", slot, idx } }
+                            v.commands = { slotcommand[slot][idx] }
                             -- hack to prevent that type 3 also gets 'use' flags .. todo
                             local c = { commands = false, index = idx, dropin = tfmdrop }
                             local d = { } -- { index = idx, dropin = tfmdrop }
@@ -158,7 +160,7 @@ do
                         end
                         colrshapes[idx] = shape -- so not: description
                         -- todo: prepend
-                        v.commands = { { "slot", slot, idx } }
+                        v.commands = { slotcommand[slot][idx] }
                         -- hack to prevent that type 3 also gets 'use' flags .. todo
                         local c = { commands = false, index = idx, dropin = tfmdrop }
                         local d = { } -- index = idx, dropin = tfmdrop }
@@ -206,7 +208,7 @@ do
                 end
                 colrshapes[idx] = shape.code -- so not: description
                 -- todo: prepend
-                character.commands = { { "slot", slot, idx } }
+                character.commands = { slotcommand[slot][idx] }
                 -- hack to prevent that type 3 also gets 'use' flags .. todo
                 local c = { commands = false, index = idx, dropin = tfmdrop }
 --                 local d = { } -- index = idx, dropin = tfmdrop }
@@ -531,7 +533,7 @@ local initializeoverlay  do
                                     for i=1,#colorlist do
                                         u[i+2] = colorlist[i].slot
                                     end
-                                    v.commands = { u, { "slot", slot, idx } }
+                                    v.commands = { u, slotcommand[slot][idx] }
                                     -- hack to prevent that type 3 also gets 'use' flags .. todo
                                     local c = { commands = false, index = idx, dropin = tfmdata }
                                     local d = { } -- index = idx, dropin = tfmdrop

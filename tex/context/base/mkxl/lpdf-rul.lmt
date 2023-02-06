@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['lpdf-rul'] = {
 
 -- todo: split backend and pdf
 
-local tonumber, next, type = tonumber, next, type
+local tonumber, tostring, next, type = tonumber, tostring, next, type
 local concat, setmetatableindex = table.concat, table.setmetatableindex
 
 local attributes       = attributes
@@ -237,13 +237,23 @@ do
     }
 
     setmetatableindex(linemapping,function(t,k)
-        local v = tonumber(k) and k or "ltrb"
+        local v = tonumber(k)
+        if v then
+            v = tostring(v)
+        else
+            v = "ltrb"
+        end
         t[k] = v
         return v
     end)
 
     setmetatableindex(roundmapping,function(t,k)
-        local v = tonumber(k) and k or "ltrb"
+        local v = tonumber(k)
+        if v then
+            v = tostring(v)
+        else
+            v = "ltrb"
+        end
         t[k] = v
         return v
     end)

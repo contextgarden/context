@@ -275,6 +275,32 @@ return {
                         },
                     }
                 end,
+                pagellaradical = function(parameters)
+                    return {
+                        tweak   = "tweaks",
+                        feature = "pagellaradical",
+                        list    = {
+                            {
+                                tweak = "replacealphabets",
+                                list  = {
+                                    {
+                                        source   = { first = 0x0221A }, -- sqrt
+                                        filename = "texgyrepagella-math.otf",
+                                        inherit  = {
+                                            RadicalRuleThickness = true,
+                                        },
+                                    },
+                                },
+                            },
+                         -- {
+                         --     tweak = "parameters",
+                         --     list  = {
+                         --         RadicalRuleThickness = 122.88, -- 60*2048/1000
+                         --     },
+                         -- },
+                        },
+                    }
+                end,
             },
         },
     },

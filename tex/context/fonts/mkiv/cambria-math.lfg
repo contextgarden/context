@@ -32,6 +32,7 @@ return {
                 presets.moveitalics          { correct = true, letters = true },
                 presets.moveintegrals        { factor = 1.5}, -- needs checking
                 presets.wipeitalics          { },
+                presets.pagellaradical       { },
                 {
                     tweak = "simplifykerns",
                 },
@@ -89,9 +90,9 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {
-                        [0x00302] = { width = 2, anchor = 1.5, xoffset =  .25 }, -- widehat
-                        [0x00303] = { width = 2, anchor = 1.5, xoffset =  .25 }, -- widetilde
-                        [0x00306] = { width = 2, anchor = 1.5, xoffset =  .25 }, -- widebreve
+                        [0x00302] = { width = 2, anchor = 1.5, xoffset = .25 }, -- widehat
+                        [0x00303] = { width = 2, anchor = 1.5, xoffset = .25 }, -- widetilde
+                        [0x00306] = { width = 2, anchor = 1.5, xoffset = .25 }, -- widebreve
                         [0x0030C] = { width = 2, anchor = 1.5, xoffset = .25 }, -- widecheck
                     },
                 },

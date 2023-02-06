@@ -82,7 +82,6 @@
       \edef\currentprofile{#profile}%
    \fi
    \spac_profile_set
-
    \profileparameter\c!before}
 
 \protected\def\spac_profile_stop
@@ -178,7 +177,7 @@
 
 \permanent\protected\def\setmainlineprofile
   {\lettonothing\currentlineprofile
-   \clf_setlineprofile}
+   \spac_line_profile_set}
 
 \appendtoks
     \c_attr_lineprofile\attributeunsetvalue % or in general resetter

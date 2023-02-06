@@ -962,7 +962,10 @@ function lists.process(specification)
             local numberdata = listentry.numberdata
             local references = listentry.references
             local special    = specials and numberdata and specials[zerostrippedconcat(numberdata.numbers,".")] or ""
-            if cheat and references then
+            local view       = usedviews[i]
+         -- if cheat and references then
+         -- -- HH: I still need to test this patch:
+            if cheat and references and view and cheats[view] then
                 -- this permits runs=2 with interactivity
                 local internal = references.internal
                 usedinternals[internal] = true

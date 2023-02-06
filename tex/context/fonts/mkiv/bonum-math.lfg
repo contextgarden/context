@@ -204,6 +204,13 @@ return {
                     },
                 },
                 {
+                    -- The v could have a bit more sidebearing
+                    tweak = "dimensions",
+                    list  = {
+                        ["0x1D463"] = { width = 1.075, }, -- italic v
+                    },
+                },
+                {
                     tweak = "addprivates",
                 },
                 {

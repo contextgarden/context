@@ -56,6 +56,7 @@
 \defcsname\??typingspace\v!stretch   \endcsname{\enforced\let\obeyedspace\specialstretchedspace}
 \letcsname\??typingspace\v!normal    \endcsname\donothing
 \defcsname\??typingspace\v!fixed     \endcsname{\enforced\let\obeyedspace\specialfixedspace}
+\defcsname\??typingspace\v!character \endcsname{\enforced\chardef\obeyedspace\spaceasciicode}
 
 \defcsname\??typingblank\v!standard  \endcsname{\s_spac_whitespace_parskip}
 \defcsname\??typingblank\v!small     \endcsname{\smallskipamount}

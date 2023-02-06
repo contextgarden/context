@@ -9,6 +9,11 @@ if not modules then modules = { } end modules ['math-act'] = {
 -- Here we tweak some font properties (if needed). The commented sections
 -- have been removed (no longer viable) but can be found in the .lua variant.
 
+-- The tweaks here evolved from experiments with, discussions about and upgrades of
+-- the math subsystem, a project that Mikael Sundvist and I started end 2021 and
+-- that is still ongoing in 2023 (and probably beyond as we find new challenges as
+-- we go).
+
 local type, next, tonumber = type, next, tonumber
 local fastcopy, copytable, insert, remove, concat = table.fastcopy, table.copy, table.insert, table.remove, table.concat
 local formatters = string.formatters
@@ -82,10 +87,12 @@ end
 
 local undefined <const> = 0x3FFFFFFF -- maxdimen or undefined_math_parameter
 
-function mathematics.initializeparameters(target,original)
+function mathematics.initializeparameters(target,original,nodimensions)
     local mathparameters = original.mathparameters
     if mathparameters and next(mathparameters) then
-        mathparameters = mathematics.dimensions(mathparameters)
+        if nodimensions ~= "noscale" then
+            mathparameters = mathematics.dimensions(mathparameters)
+        end
         --
      -- if not mathparameters.MinConnectorOverlap               then mathparameters.MinConnectorOverlap               = undefined end
         if not mathparameters.SubscriptShiftDownWithSuperscript then mathparameters.SubscriptShiftDownWithSuperscript = mathparameters.SubscriptShiftDown * 1.5 end
@@ -2867,8 +2874,62 @@ do
     local double <const> = 0x2016
     local triple <const> = 0x2980
 
-    local function extensible(unicode,total,used)
-        return {
+ -- local nps = fonts.helpers.newprivateslot
+ --
+ -- local function variantlist(characters,unicode,chardata,what,total,used)
+ --     local parenthesis = characters[0x28].next
+ --     local width  = chardata.width
+ --     local height = chardata.height
+ --     local depth  = chardata.depth
+ --     local total  = height + depth
+ --     local count  = 1
+ --     while parenthesis do
+ --         local private   = nps(what .. " size " .. count)
+ --         local pardata   = characters[parenthesis]
+ --         local parheight = pardata.height
+ --         local pardepth  = pardata.depth
+ --         local scale     = (parheight+pardepth)/total
+ --         local offset    = - pardepth + scale * depth
+ --         chardata.next   = private
+ --         chardata = {
+ --             unicode  = unicode,
+ --             width    = width,
+ --             height   = parheight,
+ --             depth    = pardepth,
+ --             commands = {
+ --                 { "offset", 0, offset, unicode, 1, scale }
+ --             },
+ --         }
+ --         characters[private] = chardata
+ --         parenthesis = pardata.next
+ --         if paranthesis then
+ --             pardata = characters[parenthesis]
+ --         end
+ --         count = count + 1
+ --     end
+ --     chardata.parts = {
+ --         {
+ --             advance  = total,
+ --             ["end"]  = used,
+ --             glyph    = unicode,
+ --             start    = 0,
+ --          -- start    = used/5,
+ --         },
+ --         {
+ --             advance  = total,
+ --          -- ["end"]  = 0,
+ --             ["end"]  = used/5, -- prevents small gap with inward curved endpoints
+ --             extender = 1,
+ --             glyph    = unicode,
+ --             start    = used,
+ --         },
+ --     }
+ --     chardata.partsorientation = "vertical"
+ -- end
+
+    local function variantlist(unicode,chardata,total,used)
+        chardata.varianttemplate = 0x0028
+        chardata.parts = {
             {
                 advance  = total,
                 ["end"]  = used,
@@ -2885,6 +2946,7 @@ do
                 start    = used,
             },
         }
+        chardata.partsorientation = "vertical"
     end
 
     function mathtweaks.addbars(target,original,parameters)
@@ -2894,18 +2956,17 @@ do
         local height     = basechar.height
         local depth      = basechar.depth
         local advance    = (parameters.advance or 1/10) * width
-     -- local used       = 0.8*height
         local used       = 1.2*height -- large overlap because no smaller pieces
         local total      = height + depth
-        basechar.parts = extensible(single,total,used)
-        basechar.partsorientation = "vertical"
-        characters[double] = {
+        --
+     -- variantlist(characters,single,basechar,"single bar",total,used)
+        variantlist(single,basechar,total,used)
+        --
+        basechar = {
             unicode  = double,
             width    = 2*width - 1*advance,
             height   = height,
             depth    = depth,
-            parts    = extensible(double,total,used),
-            partsorientation = "vertical",
             callback = "devirtualize",
             commands = {
                 charcommand[single],
@@ -2913,13 +2974,15 @@ do
                 charcommand[single],
             },
         }
-        characters[triple] = {
+        characters[double] = basechar
+     -- variantlist(characters,double,basechar,"double bar",total,used)
+        variantlist(double,basechar,total,used)
+        --
+        basechar = {
             unicode  = triple,
             width    = 3*width - 2*advance,
             height   = height,
             depth    = depth,
-            parts    = extensible(triple,total,used),
-            partsorientation = "vertical",
             callback = "devirtualize",
             commands = {
                 charcommand[single],
@@ -2929,8 +2992,12 @@ do
                 charcommand[single],
             },
         }
+        characters[triple] = basechar
+     -- variantlist(characters,triple,basechar,"triple bar",total,used)
+        variantlist(triple,basechar,total,used)
+        --
         if trace_tweaking then
-            report_tweak("triple bars %U added",target,original,triple)
+            report_tweak("single, double and triple bars added",target,original)
         end
     end
 
@@ -3276,7 +3343,7 @@ do
             properties.mathcontrol = newcontrol
             target.mathcontrol = newcontrol
             if trace_tweaking then
-                report_tweak("forcing math font options 0x%08X instead of 0x08X",target,original,newcontrol,oldcontrol)
+                report_tweak("forcing math font options 0x%08X instead of 0x%08X",target,original,newcontrol,oldcontrol)
             end
         end
     end
@@ -3402,6 +3469,21 @@ do
                                         characters[targetunicode] = copiedglyph(target,characters,chars,sourceunicode,index)
                                     end
                                 end
+                                --
+                                local inherit = entry.inherit
+                                if inherit then
+                                    local mathparameters = target.mathparameters
+                                    local dropparameters = fontdata[id].mathparameters
+                                    if dropparameters then
+                                        for name in sortedhash(inherit) do
+                                            local value = dropparameters[name]
+                                            if value then
+                                                mathparameters[name] = value
+                                            end
+                                        end
+                                    end
+                                end
+                                --
                             elseif feature then
                                 for s=firstsource,lastsource do
                                     local t = s + offset
@@ -3474,6 +3556,35 @@ end
 local apply_tweaks   = true  directives.register("math.applytweaks", function(v) apply_tweaks = v end)
 local applied_tweaks = 0
 
+local function tweaklist(target,original,tweaks)
+    if type(tweaks) == "table" then
+        for i=1,#tweaks do
+            local tweak  = tweaks[i]
+            if type(tweak) == "table" then
+                local action = mathtweaks[tweak.tweak or ""]
+                if action then
+                    local feature  = tweak.feature
+                    local features = target.specification.features.normal
+                    if feature == nil or features[feature] then
+                        local version = tweak.version
+                        if version and version ~= target.tweakversion then
+                            report_math("skipping tweak %a version %a",tweak.tweak,version)
+                        elseif original then
+                            action(target,original,tweak)
+                        else
+                            action(target,tweak)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+function mathtweaks.tweaks(target,original,parameters)
+    tweaklist(target,original,parameters.list)
+end
+
 local function applytweaks(when,target,original)
     if apply_tweaks then
         local goodies = original.goodies
@@ -3492,32 +3603,10 @@ local function applytweaks(when,target,original)
                         statistics.starttiming(mathtweaks)
                         applied_tweaks = applied_tweaks + 1
                         tweaks = tweaks[when]
-                        if type(tweaks) == "table" then
-                            if trace_defining then
-                                report_math("tweaking math of %a @ %p (%s: %s)",target.properties.fullname,target.parameters.size,when,"okay")
-                            end
-                            for i=1,#tweaks do
-                                local tweak  = tweaks[i]
-                                local tvalue = type(tweak)
-                                if type(tweak) == "table" then
-                                    local action = mathtweaks[tweak.tweak or ""]
-                                    if action then
-                                        local feature  = tweak.feature
-                                        local features = target.specification.features.normal
-                                        if feature == nil or features[feature] then
-                                            local version = tweak.version
-                                            if version and version ~= target.tweakversion then
-                                                report_math("skipping tweak %a version %a",tweak.tweak,version)
-                                            elseif original then
-                                                action(target,original,tweak)
-                                            else
-                                                action(target,tweak)
-                                            end
-                                        end
-                                    end
-                                end
-                            end
+                        if trace_defining then
+                            report_math("tweaking math of %a @ %p (%s: %s)",target.properties.fullname,target.parameters.size,when,"okay")
                         end
+                        tweaklist(target,original,tweaks)
                     end
                     statistics.stoptiming(mathtweaks)
                 end

@@ -194,9 +194,9 @@ end
 
     widtharray = function(details,indices,maxindex,units,correction)
         local widths = pdfarray()
-        local length = 0
-        local factor = 10000 / (units * correction)
         if maxindex > 0 then
+            local length    = 0
+            local factor    = 10000 / (units * (correction or 1))
             local lastindex = -1
             local sublist   = nil
             for index=1,maxindex do
@@ -204,8 +204,10 @@ end
                 if data then
                     local width = data.width -- hm, is inaccurate for cff, so take from elsewhere
                     if width then
-                     -- width = round(width * 10000 / units) / 10
-                        width = round(width * factor) / 10
+                        if correction then
+                         -- width = round(width * 10000 / units) / 10
+                            width = round(width * factor) / 10
+                        end
                     else
                         width = 0
                     end
@@ -241,7 +243,6 @@ end
         local resolved = { }
 
         setmetatable(used,nil) -- prevent more index allocations
-
         for unicode, data in next, descriptions do
             local index = data.index
             reverse[index or unicode] = data
@@ -1422,27 +1423,81 @@ do
         local descriptions   = details.rawdata.descriptions
         local metadata       = details.rawdata.metadata
         local indices        = details.indices
+        local used           = details.used
+        local usedfonts      = details.usedfonts -- in case of multiple loaded t1 fonts with no common description
         local metabbox       = { fontheader.xmin, fontheader.ymin, fontheader.xmax, fontheader.ymax }
         local correction     = 1
-
-        -- (*) We share code with type1 and when we have old school tfm with
-        -- pfb but without descriptions we're kind of toast.
-
         if not descriptions or not next(descriptions) then
-            -- This is good enough, we only need indices and widths.
-            descriptions = details.fontdata.characters
-            -- This is a hack, we have no basepoints.
-            correction   = details.fontdata.parameters.size / 1000
-            -- And this needs checking.
-            correction   = correction * bpfactor / ptfactor
-            metadata     = { }
+            -- (*) We share code with type1 and when we have old school tfm with pfb shapes
+            -- we don't have descriptions, so we need to construct these. This could be done
+            -- earlier but then we lack info about sharing. Horrible hackery. If Type1 wasn't
+            -- obsolete I'd make a dedicated mainwriter that does the index and width collect
+            -- more efficient but there is no gain now.
+            if true then
+                descriptions = { }
+                setmetatable(indices,nil)
+                setmetatable(used,nil)
+                for u in next, usedfonts do
+                    local param = fonts.hashes.parameters[u]
+                    local chars = fonts.hashes.characters[u]
+                    local units = 1000 -- to be checked (picked up)
+                    correction = param.size / 1000
+                 -- correction = correction * bpfactor / ptfactor
+                    local factor = 1000 / (units * correction)
+                    if false then
+--                     if true then
+                        for k, v in sortedhash(chars) do
+                            if descriptions[k] then
+                                local w1 = descriptions[k].width
+                                local w2 = round((v.advance or v.width or 0) * factor)
+                                if w1 ~= w2 then
+                                    local w = v.advance or v.width or 0
+                                    print(
+                                        u,k,utf.char(k),
+                                        w1,w2,
+                                        ((v.advance or v.width or 0)*param.designsize/param.size) / 1000
+                                    )
+                                end
+                            else
+                                descriptions[k] = {
+                                    index   = v.index,
+                                    width   = round((v.advance or v.width or 0) * factor),
+                                    unicode = v.unicode,
+                                }
+                            end
+                        end
+                    else
+                        for k, v in next, chars do
+                            if descriptions[k] then
+                                -- done
+                            else
+                                local index = v.index
+                                if indices[index] or used[index] then -- play safe
+                                    descriptions[k] = {
+                                        index   = index,
+                                        width   = round((v.advance or v.width or 0) * factor),
+                                        unicode = v.unicode,
+                                    }
+                                end
+                            end
+                        end
+                    end
+                end
+                correction = false
+            else
+                -- This is tricky as it can be the wrong one and incomplete so a first come
+                -- and go issue. The basepoint correction needs checking.
+                descriptions = details.fontdata.characters
+                correction   = details.fontdata.parameters.size / 1000
+                correction   = correction * bpfactor / ptfactor
+            end
+            metadata = { }
         end
         --
         local indices,
               include,
               minindex,
-              maxindex       = collectindices(descriptions,indices,details.used,details.hash)
-
+              maxindex       = collectindices(descriptions,indices,used,details.hash)
         local streamoffset   = 0
         local glyphstreams,
               charmappings   = tablecreators.cff(fontfile)
@@ -1736,7 +1791,7 @@ do
             local xforms     = pdfdictionary()
             local nofglyphs  = 0
             local scale      = 10 * details.parameters.size/details.parameters.designsize
-scale = scale * (7200/7227) -- test on extensibles
+                  scale      = scale * (7200/7227) -- test on extensibles
             local units      = details.parameters.units
             local function boxtopdf(image,data) -- image == glyph
                 nofglyphs    = nofglyphs + 1
@@ -1980,7 +2035,6 @@ scale = scale * (7200/7227) -- test on extensibles
                     -- we're not going to hash this ... could be done if needed (but who mixes different
                     -- color schemes ...)
                     t = concat(t," ")
-                 -- print(t)
                     return t, w / dropunits
                 end
             end
@@ -2173,6 +2227,7 @@ function lpdf.flushfonts()
     -- don't have the id.
 
     -- we can combine the two for loops .. todo
+-- inspect(lpdf.usedcharacters)
 
     for fontid, used in sortedhash(lpdf.usedcharacters) do
 
@@ -2182,13 +2237,13 @@ function lpdf.flushfonts()
         local hash = getstreamhash(fontid)
         if hash then
             local parent = mainfonts[hash]
--- print("before",fontid,hash,parent)
             if not parent then
                 local fontdata   = usedfonts[fontid]
                 local rawdata    = fontdata.shared and fontdata.shared.rawdata
                 local resources  = fontdata.resources
                 local properties = fontdata.properties -- writingmode and type3
                 local parameters = fontdata.parameters -- used in type3
+-- print("before",fontid,hash,parent,rawdata)
                 if not rawdata then
                     -- we have a virtual font that loaded directly ... at some point i will
                     -- sort this out (in readanddefine we need to do a bit more) .. the problem
@@ -2214,6 +2269,7 @@ function lpdf.flushfonts()
                         fontdata     = fontdata,
                         filename     = resources.filename or properties.filename or "unset",
                         indices      = { },
+                        usedfonts    = { [fontid] = true },
                         used         = used,
                         rawdata      = rawdata,
                         properties   = properties, -- we assume consistency
@@ -2229,6 +2285,7 @@ function lpdf.flushfonts()
             end
 -- print("after ",fontid,hash,parent)
             if parent then
+                parent.usedfonts[fontid] = true
                 local indices = parent.indices
                 for k, v in next, used do
                     indices[k] = v

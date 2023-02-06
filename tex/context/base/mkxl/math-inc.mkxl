@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Math Macros / XML inclusion}
 
-\registerctxluafile{math-inc}{}
+\registerctxluafile{math-inc}{autosuffix}
 
 %D I had some doubt about including this in \CONTEXT\ but it might serve some users
 %D anyway. It's always the question to what extent one can be really roundtrip. I

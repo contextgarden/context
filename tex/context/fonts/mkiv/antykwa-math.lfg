@@ -1,5 +1,23 @@
-local msam = { name = "msam10.tfm", vector = "tex-ma" }
-local msbm = { name = "msbm10.tfm", vector = "tex-mb" }
+local badones = {
+    summationtext       = .25,
+    producttext         = .25,
+    integraltext        = .25,
+    uniontext           = .25,
+    intersectiontext    = .25,
+    unionmultitext      = .25,
+    logicalandtext      = .25,
+    logicalortext       = .25,
+    summationdisplay    = .25,
+    productdisplay      = .25,
+    integraldisplay     = .25,
+    uniondisplay        = .25,
+    intersectiondisplay = .25,
+    unionmultidisplay   = .25,
+    logicalanddisplay   = .25,
+    logicalordisplay    = .25,
+    coproducttext       = .25,
+    coproductdisplay    = .25,
+}
 
 return {
     name = "antykwa-math",
@@ -17,40 +35,48 @@ return {
         },
         virtuals = {
             ["antykwa-math"] = {
-                { name = "file:AntykwaTorunska-Regular", features = "virtualmath", main = true },
+                { name = "file:LatinModern-Math", features = "virtualmath-antykwa", main = true, parameters = false },
+                --
+                { name = "rm-anttr.tfm",  vector = "tex-mr", skewchar=0x7F },
                 { name = "mi-anttri.tfm", vector = "tex-mi", skewchar=0x7F },
                 { name = "mi-anttri.tfm", vector = "tex-it", skewchar=0x7F },
-                { name = "sy-anttrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
-                { name = "ex-anttr.tfm", vector = "tex-ex", extension = true } ,
-                msam,
-                msbm,
+                { name = "mi-anttbi.tfm", vector = "tex-bi", skewchar=0x7F },
+                { name = "rm-anttb.tfm",  vector = "tex-bf", skewchar=0x7F },
+                { name = "sy-anttrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "ex-anttr.tfm",  vector = "tex-ex", extension = true, badones = badones },
             },
             ["antykwa-light-math"] = {
-                { name = "file:AntykwaTorunskaLight-Regular", features = "virtualmath", main = true },
+                { name = "file:LatinModern-Math", features = "virtualmath-antykwa-light", main = true, parameters = false },
+                --
+                { name = "rm-anttl.tfm",  vector = "tex-mr", skewchar=0x7F },
                 { name = "mi-anttli.tfm", vector = "tex-mi", skewchar=0x7F },
                 { name = "mi-anttli.tfm", vector = "tex-it", skewchar=0x7F },
-                { name = "sy-anttlz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
-                { name = "ex-anttl.tfm", vector = "tex-ex", extension = true } ,
-                msam,
-                msbm,
+                { name = "mi-anttri.tfm", vector = "tex-bi", skewchar=0x7F },
+                { name = "rm-anttr.tfm",  vector = "tex-bf", skewchar=0x7F },
+                { name = "sy-anttlz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "ex-anttl.tfm",  vector = "tex-ex", extension = true, badones = badones },
             },
             ["antykwa-cond-math"] = {
-                { name = "file:AntykwaTorunskaCond-Regular", features = "virtualmath", main = true },
+                { name = "file:LatinModern-Math", features = "virtualmath-antykwa-cond", main = true, parameters = false },
+                --
+                { name = "rm-anttcr.tfm",  vector = "tex-mr", skewchar=0x7F },
                 { name = "mi-anttcri.tfm", vector = "tex-mi", skewchar=0x7F },
                 { name = "mi-anttcri.tfm", vector = "tex-it", skewchar=0x7F },
-                { name = "sy-anttcrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
-                { name = "ex-anttcr.tfm", vector = "tex-ex", extension = true } ,
-                msam,
-                msbm,
+                { name = "mi-anttcbi.tfm", vector = "tex-bi", skewchar=0x7F },
+                { name = "rm-anttcb.tfm",  vector = "tex-bf", skewchar=0x7F },
+                { name = "sy-anttcrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "ex-anttcr.tfm",  vector = "tex-ex", extension = true, badones = badones },
             },
             ["antykwa-lightcond-math"] = {
-                { name = "file:AntykwaTorunskaCondLight-Regular", features = "virtualmath", main = true },
+                { name = "file:LatinModern-Math", features = "virtualmath-antykwa-lightcond", main = true, parameters = false },
+                --
+                { name = "rm-anttcl.tfm",  vector = "tex-mr", skewchar=0x7F },
                 { name = "mi-anttcli.tfm", vector = "tex-mi", skewchar=0x7F },
                 { name = "mi-anttcli.tfm", vector = "tex-it", skewchar=0x7F },
-                { name = "sy-anttclz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
-                { name = "ex-anttcl.tfm", vector = "tex-ex", extension = true } ,
-                msam,
-                msbm,
+                { name = "mi-anttcri.tfm", vector = "tex-bi", skewchar=0x7F },
+                { name = "rm-anttcr.tfm",  vector = "tex-bf", skewchar=0x7F },
+                { name = "sy-anttclz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "ex-anttcl.tfm",  vector = "tex-ex", extension = true, badones = badones },
             }
         }
     }

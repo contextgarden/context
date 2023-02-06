@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['math-fnt'] = {
 }
 
 local round = math.round
+local setmetatableindex = table.setmetatableindex
 
 local nuts          = nodes.nuts
 local tonut         = nodes.tonut
@@ -32,80 +33,114 @@ local addcharacters = font.addcharacters
 -- not yet ok for compact fonts .. needs checking .. or just make this non-compact only
 -- there's also an inaccuracy creeping in: \sqrt{\quad\blackrule[height=25pt,depth=25pt]}
 
+local cache = setmetatableindex(function(t,width)
+    local v = setmetatableindex(function(t,height)
+        local v = setmetatableindex(function(t,depth)
+            local v = setmetatableindex(function(t,font)
+                local v = setmetatableindex(function(t,char)
+                    t[char] = v
+                    return v
+                end)
+                t[font] = v
+                return v
+            end)
+            t[depth] = v
+            return v
+        end)
+        t[height] = v
+        return v
+    end)
+    t[width] = v
+    return v
+end)
+
+
 local function register_extensible(font,char,style,box)
     -- We don't share (yet)!
-    local bx = tonut(box)
-    updaters.apply("tagging.state.disable") -- fast enough
-    nodes.handlers.finalizelist(bx)
-    updaters.apply("tagging.state.enable")
-    local id = getid(bx)
-    local al = getattrlst(bx)
-    local wd, ht, dp = getwhd(bx)
     local fontdata = chardata[font]
     local oldchar  = fontdata[char]
-    local unicode  = oldchar.unicode or char
-    -- we cannot have self referencing t3 fonts
-    local oldcommands = oldchar.oldcommands
-    local newcommands = oldchar.commands
-    if oldcommands then
-        oldchar.commands = oldcommands
-    end
-    --
-    local private  = fonts.helpers.setboxdirectly(font,unicode,box)
-    -- we saved a scaled glyph stream so we now use an unscaled one ...
-    local p  = fonts.hashes.parameters[font]
-    local g  = new_glyph(font,private,al)
---     if fonts.hashes.properties[font].compactmath then
---         nuts.setscales(g,1000,1000,1000)
---     end
-    -- nasty, testcase: bold math sqrt extensible
-    local sx = round(1000/p.extendfactor)
-    local sy = round(1000/p.squeezefactor)
-    nuts.setscales(g,1000,sx,sy)
-    -- horrible
-if sx ~= 1000 then
-    wd = wd * 7200/7227
-end
-if sy ~= 1000 then
-    ht = ht * 7200/7227
-    dp = dp * 7200/7227
-end
-    --
-    local n = new_hlist(g)
-    --
-    if newcommands then
-        oldchar.commands = newcommands
-    end
-    --
- -- local newchar = {
- --     unicode = unicode,
- --     width   = wd,
- --     height  = ht,
- --     depth  =  dp,
- -- }
- -- local p = oldchar.vparts
- -- if p then
- --     local first = fontdata[p[#p].glyph]
- --     local last  = fontdata[p[ 1].glyph]
- --     if first then
- --         newchar.topleft  = first.topleft
- --         newchar.topright = first.topright
- --     end
- --     if last then
- --         newchar.bottomleft  = last.bottomleft
- --         newchar.bottomright = last.bottomright
- --     end
- -- end
- -- addcharacters(font, { [private] = newchar })
-    -- so the dimensions of the box don't match the glyph scale!
-    setwhd(n,wd,ht,dp)
-    setattrlst(n,al)
-    if id == vlist_code then
-        n = new_vlist(n)
+    if oldchar and oldchar.keepvirtual then
+        -- for now, needed for iwona etc
+        return
+    else
+        local bx = tonut(box)
+        updaters.apply("tagging.state.disable") -- fast enough
+        nodes.handlers.finalizelist(bx)
+        updaters.apply("tagging.state.enable")
+        local id = getid(bx)
+        local al = getattrlst(bx)
+        local wd, ht, dp = getwhd(bx)
+        local unicode  = oldchar.unicode or char
+        -- we cannot have self referencing t3 fonts
+        local oldcommands = oldchar.oldcommands
+        local newcommands = oldchar.commands
+        if oldcommands then
+            oldchar.commands = oldcommands
+        end
+        --
+        local p  = fonts.hashes.parameters[font]
+        local sx = round(1000/p.extendfactor)
+        local sy = round(1000/p.squeezefactor)
+        nuts.setscales(g,1000,sx,sy)
+        -- we saved a scaled glyph stream so we now use an unscaled one ... horrible hack:
+        if sx ~= 1000 then
+            wd = wd * 7200/7227
+        end
+        if sy ~= 1000 then
+            ht = ht * 7200/7227
+            dp = dp * 7200/7227
+        end
+        --
+    --  local private = fonts.helpers.setboxdirectly(font,unicode,box)
+        local private = cache[wd][ht][dp][font][unicode]
+        if not private then
+            private = fonts.helpers.setboxdirectly(font,unicode,box)
+            cache[wd][ht][dp][font][unicode] = private
+        end
+        local glyph = new_glyph(font,private,al)
+        --
+     -- if fonts.hashes.properties[font].compactmath then
+     --     nuts.setscales(g,1000,1000,1000)
+     -- end
+        --
+        -- nasty, testcase: bold math sqrt extensible
+        --
+        local n = new_hlist(glyph)
+        --
+        if newcommands then
+            oldchar.commands = newcommands
+        end
+        --
+     -- local newchar = {
+     --     unicode = unicode,
+     --     width   = wd,
+     --     height  = ht,
+     --     depth  =  dp,
+     -- }
+     -- local p = oldchar.vparts
+     -- if p then
+     --     local first = fontdata[p[#p].glyph]
+     --     local last  = fontdata[p[ 1].glyph]
+     --     if first then
+     --         newchar.topleft  = first.topleft
+     --         newchar.topright = first.topright
+     --     end
+     --     if last then
+     --         newchar.bottomleft  = last.bottomleft
+     --         newchar.bottomright = last.bottomright
+     --     end
+     -- end
+     -- addcharacters(font, { [private] = newchar })
+        -- so the dimensions of the box don't match the glyph scale!
         setwhd(n,wd,ht,dp)
         setattrlst(n,al)
+        if id == vlist_code then
+            n = new_vlist(n)
+            setwhd(n,wd,ht,dp)
+            setattrlst(n,al)
+        end
+        return tonode(n)
     end
-    return tonode(n)
 end
 
 directives.register("math.extensibles", function(v)

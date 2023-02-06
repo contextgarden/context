@@ -1,0 +1,83 @@
+local badones = {
+    summationtext       = .25,
+    producttext         = .25,
+    integraltext        = .25,
+    uniontext           = .25,
+    intersectiontext    = .25,
+    unionmultitext      = .25,
+    logicalandtext      = .25,
+    logicalortext       = .25,
+    summationdisplay    = .25,
+    productdisplay      = .25,
+    integraldisplay     = .25,
+    uniondisplay        = .25,
+    intersectiondisplay = .25,
+    unionmultidisplay   = .25,
+    logicalanddisplay   = .25,
+    logicalordisplay    = .25,
+    coproducttext       = .25,
+    coproductdisplay    = .25,
+}
+
+return {
+    name = "kurier-math",
+    version = "1.00",
+    comment = "Goodies that complement kurier math.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        mapfiles = {
+            "kurier-rm.map",
+            "kurier-mi.map",
+            "kurier-sy.map",
+            "kurier-ex.map",
+            "mkiv-base.map",
+        },
+        virtuals = {
+            ["kurier-math"] = {
+                { name = "file:LatinModern-Math", features = "virtualmath-kurier", main = true, parameters = false },
+                --
+                { name = "rm-kurierr.tfm",  vector = "tex-mr", skewchar=0x7F },
+                { name = "mi-kurierri.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "mi-kurierri.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "mi-kuriermi.tfm", vector = "tex-bi", skewchar=0x7F },
+                { name = "rm-kurierm.tfm",  vector = "tex-bf", skewchar=0x7F },
+                { name = "sy-kurierrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "ex-kurierr.tfm",  vector = "tex-ex", extension = true, badones = badones },
+            },
+            ["kurier-light-math"] = {
+                { name = "file:LatinModern-Math", features = "virtualmath-kurier-light", main = true, parameters = false },
+                --
+                { name = "rm-kurierl.tfm",  vector = "tex-mr", skewchar=0x7F },
+                { name = "mi-kurierli.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "mi-kurierli.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "mi-kurierri.tfm", vector = "tex-bi", skewchar=0x7F },
+                { name = "rm-kurierr.tfm",  vector = "tex-bf", skewchar=0x7F },
+                { name = "sy-kurierlz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "ex-kurierl.tfm",  vector = "tex-ex", extension = true, badones = badones },
+            },
+            ["kurier-medium-math"] = {
+                { name = "file:LatinModern-Math", features = "virtualmath-kurier-medium", main = true, parameters = false },
+                --
+                { name = "rm-kurierm.tfm",  vector = "tex-mr", skewchar=0x7F },
+                { name = "mi-kuriermi.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "mi-kuriermi.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "mi-kurierhi.tfm", vector = "tex-bi", skewchar=0x7F },
+                { name = "rm-kurierh.tfm",  vector = "tex-bf", skewchar=0x7F },
+                { name = "sy-kuriermz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "ex-kurierm.tfm",  vector = "tex-ex", extension = true, badones = badones  },
+            },
+            ["kurier-heavy-math"] = {
+                { name = "file:LatinModern-Math", features = "virtualmath-kurier-heavy", main = true, parameters = false },
+                --
+                { name = "rm-kurierh.tfm",  vector = "tex-mr", skewchar=0x7F },
+                { name = "mi-kurierhi.tfm", vector = "tex-mi", skewchar=0x7F },
+                { name = "mi-kurierhi.tfm", vector = "tex-it", skewchar=0x7F },
+                { name = "mi-kurierhi.tfm", vector = "tex-bi", skewchar=0x7F },
+                { name = "rm-kurierh.tfm",  vector = "tex-bf", skewchar=0x7F },
+                { name = "sy-kurierhz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "ex-kurierh.tfm",  vector = "tex-ex", extension = true, badones = badones },
+            }
+        },
+    }
+}

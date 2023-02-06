@@ -3,7 +3,7 @@
 %D        version=2021.10.24,
 %D          title=\CONTEXT\ Typescript Macros,
 %D       subtitle=Kurier,
-%D         author=Hans Hagen,
+%D         author=Hans Hagen & Mikael Sundqvist,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
@@ -12,6 +12,11 @@
 %C details.
 
 \starttypescriptcollection [kurier]
+
+    \definefontfeature[virtualmath-kurier]       [virtualmath][virtualweight=kurier]
+    \definefontfeature[virtualmath-kurier-light] [virtualmath][virtualweight=kurier-light]
+    \definefontfeature[virtualmath-kurier-medium][virtualmath][virtualweight=kurier-medium]
+    \definefontfeature[virtualmath-kurier-heavy] [virtualmath][virtualweight=kurier-heavy]
 
     \starttypescript [\s!sans] [kurier-light,kurier,kurier-medium]
         \definefontsynonym [Kurier-Light]        [\s!file:kurierlightregular]  [\s!features=\s!default]
@@ -37,6 +42,26 @@
         \definefontsynonym [Kurier-CondBoldItalic]   [\s!file:kuriercondbolditalic]    [\s!features=\s!default]
         \definefontsynonym [Kurier-CondHeavy]        [\s!file:kuriercondheavyregular]  [\s!features=\s!default]
         \definefontsynonym [Kurier-CondHeavyItalic]  [\s!file:kuriercondheavyitalic]   [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!math][kurier][\s!all]
+        \definefontsynonym[\s!MathRoman]    [kuriermath@kurier-math]
+        \definefontsynonym[\s!MathRomanBold][kuriermediummath@kurier-medium-math]
+    \stoptypescript
+    \starttypescript [\s!math][kurier-light][\s!all]
+        \definefontsynonym[\s!MathRoman][kurierlightmath@kurier-light-math]
+        \definefontsynonym[\s!MathRomanBold][kuriermath@kurier-math]
+    \stoptypescript
+    \starttypescript [\s!math][kurier-medium][\s!all]
+        \definefontsynonym[\s!MathRoman]    [kuriermediummath@kurier-medium-math]
+        \definefontsynonym[\s!MathRomanBold][kurierheavymath@kurier-heavy-math]
+    \stoptypescript
+    \starttypescript [\s!math][kurier-heavy][\s!all]
+        \definefontsynonym[\s!MathRoman][kurierheavymath@kurier-heavy-math]
+    \stoptypescript
+
+    \starttypescript [\s!math] [kurier,kurier-light,kurier-medium,kurier-heavy] [\s!all]
+        \loadfontgoodies[kurier-math]
     \stoptypescript
 
     \starttypescript [\s!sans] [kurier-light]
@@ -91,7 +116,7 @@
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern]         [\s!default]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone] [\s!default][text=ss]
         \quittypescriptscanning
     \stoptypescript
 

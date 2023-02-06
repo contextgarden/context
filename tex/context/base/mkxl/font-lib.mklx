@@ -45,9 +45,9 @@
 \registerctxluafile{font-ttf}{optimize}   % cubic outlines
 \registerctxluafile{font-dsp}{autosuffix,optimize}
 \registerctxluafile{font-hsh}{autosuffix} % hashes used by context
-\registerctxluafile{font-vir}{}
 \registerctxluafile{font-vfc}{autosuffix}
 \registerctxluafile{font-prv}{}           % needs hashes
+\registerctxluafile{font-vir}{}
 \registerctxluafile{font-nod}{optimize}
 \registerctxluafile{font-oti}{}           % otf initialization
 \registerctxluafile{font-ott}{}           % otf tables (first)
@@ -71,7 +71,7 @@
 
 % we use otf code for type one
 
-\registerctxluafile{font-onr}{optimize}
+\registerctxluafile{font-onr}{autosuffix,optimize}
 \registerctxluafile{font-one}{autosuffix,optimize}
 \registerctxluafile{font-afk}{}
 
@@ -137,7 +137,7 @@
 
 \registerctxluafile{font-aux}{}
 
-\registerctxluafile{font-lig}{} % only for experiments so try to avoid it
+\registerctxluafile{font-lig}{autosuffix} % only for experiments so try to avoid it
 
 %D Some low level helpers
 %D

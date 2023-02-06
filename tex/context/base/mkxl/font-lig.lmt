@@ -1,0 +1,41 @@
+if not modules then modules = { } end modules ['font-lig'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+-- We keep this for compatibility reasons and demonstration purposes. We delay
+-- definition of the data table in order to save some memory.
+
+-- data['c'] = { 'a', 'b' }
+-- data['d'] = { 'c', 'c' }
+
+local next = next
+local setmetatableindex = table.setmetatableindex
+
+local data = { }
+
+setmetatableindex(data,function(t,k)
+    for first, seconds in next, characters.graphemes do
+        for second, combined in next, seconds do
+            data[combined] = { first, second }
+        end
+    end
+    setmetatableindex(data)
+    return t[k]
+end)
+
+local feature = {
+    name    = "collapse",
+    type    = "ligature",
+    prepend = true,
+    dataset = {
+        { data = data }, -- twice ?
+        { data = data },
+    }
+}
+
+-----.handlers.afm.addfeature(feature)
+fonts.handlers.otf.addfeature(feature)

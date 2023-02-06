@@ -284,10 +284,9 @@ local function dots(main,characters,id,size,unicode)
                 }
             end
         elseif unicode == 0x22EE then
-            -- weird height !
             characters[unicode] = {
                 width    = w,
-                height   = h+(1.4)*size,
+                height   = h+0.8*size,
                 depth    = 0,
                 commands = {
                     push, push, slot, pop, up4size, push, slot, pop, up4size, slot, pop,
@@ -296,7 +295,7 @@ local function dots(main,characters,id,size,unicode)
         elseif unicode == 0x22F1 then
             characters[unicode] = {
                 width    = 3*w + 6*size/18,
-                height   = 1.5*size,
+                height   = 0.7*size,
                 depth    = 0,
                 commands = {
                     push,
@@ -313,7 +312,7 @@ local function dots(main,characters,id,size,unicode)
         elseif unicode == 0x22F0 then
             characters[unicode] = {
                 width    = 3*w + 6*size/18,
-                height   = 1.5*size,
+                height   = 0.7*size,
                 depth    = 0,
                 commands = {
                     push,
@@ -422,7 +421,7 @@ local function stack(main,characters,id,size,unicode,u1,d12,u2)
     local mu = size/18
     characters[unicode] = {
         width    = w1,
-        height   = h1 + h2 + d12,
+        height   = h1 + h2 + d12*mu,
         depth    = d1,
         commands = {
             { "slot", id, u1 },

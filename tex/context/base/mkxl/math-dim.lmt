@@ -211,8 +211,8 @@ function mathematics.dimensions(dimens)  -- beware, dimens get spoiled
             RadicalDegreeBottomRaisePercent             = t . radical_degree_raise         . display_style,
          -- ScriptPercentScaleDown
          -- ScriptScriptPercentScaleDown
-         -- SkewedFractionHorizontalGap
-         -- SkewedFractionVerticalGap
+            SkewedFractionHorizontalGap                 = t . skewed_fraction_hgap         . default,
+            SkewedFractionVerticalGap                   = t . skewed_fraction_vgap         . default,
             SpaceAfterScript                            = t . space_after_script           . text_style,
             StackBottomDisplayStyleShiftDown            = t . stack_denom_down             . display_style,
             StackBottomShiftDown                        = t . stack_denom_down             . text_style,

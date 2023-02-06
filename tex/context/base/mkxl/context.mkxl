@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2023.01.26 18:32}
+\immutable\edef\contextversion{2023.02.06 17:55}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -641,3 +641,211 @@
 \overloadmode\zerocount % for now
 
 \errorstopmode \dump \endinput
+
+% These lua files are (still) shared with mkiv amd some are large and
+% rather generic. However there are some that can be improved in lmtx.
+
+% c:/data/develop/context/sources/attr-eff.lua
+% c:/data/develop/context/sources/attr-mkr.lua
+% c:/data/develop/context/sources/attr-neg.lua
+
+% c:/data/develop/context/sources/buff-imp-default.lua
+% c:/data/develop/context/sources/buff-imp-escaped.lua
+% c:/data/develop/context/sources/buff-imp-lua.lua
+% c:/data/develop/context/sources/buff-imp-mp.lua
+% c:/data/develop/context/sources/buff-imp-nested.lua
+% c:/data/develop/context/sources/buff-imp-parsed-xml.lua
+% c:/data/develop/context/sources/buff-imp-tex.lua
+% c:/data/develop/context/sources/buff-imp-xml.lua
+
+% c:/data/develop/context/sources/buff-par.lua
+% c:/data/develop/context/sources/buff-ver.lua
+
+% c:/data/develop/context/sources/char-cjk.lua
+% c:/data/develop/context/sources/char-def.lua
+% c:/data/develop/context/sources/char-enc.lua
+% c:/data/develop/context/sources/char-ent.lua
+% c:/data/develop/context/sources/char-fio.lua
+% c:/data/develop/context/sources/char-ini.lua
+% c:/data/develop/context/sources/char-map.lua
+% c:/data/develop/context/sources/char-scr.lua
+% c:/data/develop/context/sources/char-utf.lua
+
+% c:/data/develop/context/sources/chem-ini.lua
+% c:/data/develop/context/sources/chem-str.lua
+
+% c:/data/develop/context/sources/cldf-com.lua
+% c:/data/develop/context/sources/cldf-ini.lua
+% c:/data/develop/context/sources/cldf-prs.lua % use in chemistry
+% c:/data/develop/context/sources/cldf-scn.lua
+% c:/data/develop/context/sources/cldf-stp.lua
+% c:/data/develop/context/sources/cldf-ver.lua
+
+% c:/data/develop/context/sources/colo-icc.lua
+% c:/data/develop/context/sources/colo-ini.lua
+
+% c:/data/develop/context/sources/core-con.lua
+% c:/data/develop/context/sources/core-ctx.lua
+% c:/data/develop/context/sources/core-dat.lua
+% c:/data/develop/context/sources/core-two.lua
+
+% c:/data/develop/context/sources/file-ini.lua
+% c:/data/develop/context/sources/file-lib.lua
+% c:/data/develop/context/sources/file-res.lua
+% c:/data/develop/context/sources/file-syn.lua
+
+% c:/data/develop/context/sources/font-afk.lua
+% c:/data/develop/context/sources/font-agl.lua
+% c:/data/develop/context/sources/font-aux.lua
+% c:/data/develop/context/sources/font-cff.lua
+% c:/data/develop/context/sources/font-cid.lua
+% c:/data/develop/context/sources/font-enc.lua
+% c:/data/develop/context/sources/font-log.lua
+% c:/data/develop/context/sources/font-lua.lua % not realy used, more a demo
+% c:/data/develop/context/sources/font-map.lua
+% c:/data/develop/context/sources/font-nod.lua % some trace helpers
+% c:/data/develop/context/sources/font-onr.lua % type one afm/pfb
+% c:/data/develop/context/sources/font-osd.lua
+% c:/data/develop/context/sources/font-otc.lua
+% c:/data/develop/context/sources/font-oth.lua
+% c:/data/develop/context/sources/font-oti.lua
+% c:/data/develop/context/sources/font-oto.lua
+% c:/data/develop/context/sources/font-otr.lua
+% c:/data/develop/context/sources/font-ott.lua % just some tables
+% c:/data/develop/context/sources/font-oup.lua % packing and unpacking
+% c:/data/develop/context/sources/font-pat.lua
+% c:/data/develop/context/sources/font-prv.lua
+% c:/data/develop/context/sources/font-sel.lua
+% c:/data/develop/context/sources/font-shp.lua % shapes, for now shared
+% c:/data/develop/context/sources/font-sol.lua
+% c:/data/develop/context/sources/font-syn.lua % identification code
+% c:/data/develop/context/sources/font-trt.lua
+% c:/data/develop/context/sources/font-ttf.lua
+% c:/data/develop/context/sources/font-web.lua % proof of concept, never used
+
+% c:/data/develop/context/sources/font-imp-combining.lua  % shared, like typescript
+% c:/data/develop/context/sources/font-imp-dimensions.lua % idem
+% c:/data/develop/context/sources/font-imp-italics.lua    % idem
+% c:/data/develop/context/sources/font-imp-notused.lua    % idem
+% c:/data/develop/context/sources/font-imp-properties.lua % idem
+% c:/data/develop/context/sources/font-imp-reorder.lua    % idem
+% c:/data/develop/context/sources/font-imp-spacekerns.lua % idem
+% c:/data/develop/context/sources/font-imp-tex.lua        % idem
+% c:/data/develop/context/sources/font-imp-tweaks.lua     % idem
+% c:/data/develop/context/sources/font-imp-unicode.lua    % idem
+
+% c:/data/develop/context/sources/good-ctx.lua
+% c:/data/develop/context/sources/good-ini.lua
+
+% c:/data/develop/context/sources/grph-bmp.lua
+% c:/data/develop/context/sources/grph-chk.lua
+% c:/data/develop/context/sources/grph-con.lua
+% c:/data/develop/context/sources/grph-fil.lua
+% c:/data/develop/context/sources/grph-img.lua
+% c:/data/develop/context/sources/grph-pat.lua
+% c:/data/develop/context/sources/grph-raw.lua
+% c:/data/develop/context/sources/grph-u3d.lua
+
+% c:/data/develop/context/sources/java-ini.lua
+
+% c:/data/develop/context/sources/lang-cnt.lua
+% c:/data/develop/context/sources/lang-def.lua % these are data files
+% c:/data/develop/context/sources/lang-txt.lua % these are data files
+% c:/data/develop/context/sources/lang-wrd.lua
+
+% c:/data/develop/context/sources/libs-ini.lua % will become lmt
+
+% c:/data/develop/context/sources/luat-exe.lua
+% c:/data/develop/context/sources/luat-iop.lua
+% c:/data/develop/context/sources/luat-mac.lua % will become lmt
+
+% c:/data/develop/context/sources/lxml-aux.lua
+% c:/data/develop/context/sources/lxml-css.lua
+% c:/data/develop/context/sources/lxml-dir.lua
+% c:/data/develop/context/sources/lxml-ent.lua
+% c:/data/develop/context/sources/lxml-ini.lua
+% c:/data/develop/context/sources/lxml-lpt.lua
+% c:/data/develop/context/sources/lxml-mis.lua
+% c:/data/develop/context/sources/lxml-sor.lua
+% c:/data/develop/context/sources/lxml-tab.lua
+% c:/data/develop/context/sources/lxml-tex.lua
+% c:/data/develop/context/sources/lxml-xml.lua
+
+% c:/data/develop/context/sources/meta-blb.lua
+% c:/data/develop/context/sources/meta-fun.lua
+% c:/data/develop/context/sources/meta-lua.lua
+% c:/data/develop/context/sources/meta-nod.lua
+% c:/data/develop/context/sources/meta-pdf.lua
+% c:/data/develop/context/sources/meta-tex.lua
+
+% c:/data/develop/context/sources/mult-aux.lua
+% c:/data/develop/context/sources/mult-fmt.lua
+
+% c:/data/develop/context/sources/page-cst.lua
+% c:/data/develop/context/sources/page-flt.lua
+% c:/data/develop/context/sources/page-inj.lua
+% c:/data/develop/context/sources/page-ins.lua
+% c:/data/develop/context/sources/page-mix.lua
+% c:/data/develop/context/sources/page-pst.lua
+
+% c:/data/develop/context/sources/phys-dim.lua
+
+% c:/data/develop/context/sources/publ-aut.lua
+% c:/data/develop/context/sources/publ-dat.lua
+% c:/data/develop/context/sources/publ-fnd.lua
+% c:/data/develop/context/sources/publ-inc.lua
+% c:/data/develop/context/sources/publ-ini.lua
+% c:/data/develop/context/sources/publ-jrn.lua
+% c:/data/develop/context/sources/publ-oth.lua
+% c:/data/develop/context/sources/publ-reg.lua
+% c:/data/develop/context/sources/publ-sor.lua
+% c:/data/develop/context/sources/publ-tra.lua
+% c:/data/develop/context/sources/publ-usr.lua
+
+% c:/data/develop/context/sources/regi-ini.lua
+
+% c:/data/develop/context/sources/scrn-but.lua
+% c:/data/develop/context/sources/scrn-fld.lua
+% c:/data/develop/context/sources/scrn-hlp.lua
+
+% c:/data/develop/context/sources/scrp-cjk.lua
+% c:/data/develop/context/sources/scrp-eth.lua
+% c:/data/develop/context/sources/scrp-tha.lua
+% c:/data/develop/context/sources/scrp-tib.lua
+
+% c:/data/develop/context/sources/sort-ini.lua
+% c:/data/develop/context/sources/sort-lan.lua
+
+% c:/data/develop/context/sources/strc-bkm.lua
+% c:/data/develop/context/sources/strc-blk.lua
+% c:/data/develop/context/sources/strc-con.lua
+% c:/data/develop/context/sources/strc-doc.lua
+% c:/data/develop/context/sources/strc-flt.lua
+% c:/data/develop/context/sources/strc-ini.lua
+% c:/data/develop/context/sources/strc-itm.lua
+% c:/data/develop/context/sources/strc-lev.lua
+% c:/data/develop/context/sources/strc-mat.lua
+% c:/data/develop/context/sources/strc-num.lua
+% c:/data/develop/context/sources/strc-pag.lua
+% c:/data/develop/context/sources/strc-syn.lua
+% c:/data/develop/context/sources/strc-usr.lua
+
+% c:/data/develop/context/sources/syst-cmp.lua
+% c:/data/develop/context/sources/syst-con.lua
+
+% c:/data/develop/context/sources/trac-ctx.lua
+% c:/data/develop/context/sources/trac-lmx.lua
+% c:/data/develop/context/sources/trac-par.lua
+% c:/data/develop/context/sources/trac-tex.lua
+
+% c:/data/develop/context/sources/typo-cln.lua
+% c:/data/develop/context/sources/typo-dha.lua
+% c:/data/develop/context/sources/typo-fkr.lua
+% c:/data/develop/context/sources/typo-inj.lua
+% c:/data/develop/context/sources/typo-lan.lua
+% c:/data/develop/context/sources/typo-man.lua
+% c:/data/develop/context/sources/typo-pnc.lua
+% c:/data/develop/context/sources/typo-prc.lua
+% c:/data/develop/context/sources/typo-rep.lua
+
+% c:/data/develop/context/sources/unic-ini.lua

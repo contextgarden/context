@@ -68,16 +68,16 @@
 \registerctxluafile{math-ini}{autosuffix}
 \registerctxluafile{math-dim}{autosuffix}
 %registerctxluafile{math-act}{autosuffix}
-\registerctxluafile{math-ext}{}
+\registerctxluafile{math-ext}{autosuffix} % might go
 \registerctxluafile{math-vfu}{autosuffix}
-\registerctxluafile{math-ttv}{}
+\registerctxluafile{math-ttv}{autosuffix}
 \registerctxluafile{math-map}{autosuffix}
 \registerctxluafile{math-act}{autosuffix}
-\registerctxluafile{math-ren}{}
+\registerctxluafile{math-ren}{autosuffix}
 \registerctxluafile{math-noa}{autosuffix}
 \registerctxluafile{math-tag}{autosuffix}
 \registerctxluafile{math-fbk}{autosuffix}
-%registerctxluafile{math-dir}{}
+%registerctxluafile{math-dir}{autosuffix}
 \registerctxluafile{math-spa}{autosuffix}
 \registerctxluafile{math-fnt}{autosuffix}
 \registerctxluafile{math-pre}{autosuffix}
@@ -2453,11 +2453,16 @@
 
 \setnewconstant\c_math_collapsing_attribute\attributeunsetvalue
 
-\letcsname\??mathcollapsing       1\endcsname\plusone              % specials
-\letcsname\??mathcollapsing       2\endcsname\plustwo              % specials + mathlist
-\letcsname\??mathcollapsing       3\endcsname\plusthree            % mathlist + specials
-\letcsname\??mathcollapsing\v!none \endcsname\attributeunsetvalue
-\letcsname\??mathcollapsing\v!reset\endcsname\attributeunsetvalue
+\letcsname\??mathcollapsing         0\endcsname\zerocount            % enforced (primes)
+\letcsname\??mathcollapsing\s!tex    \endcsname\zerocount
+\letcsname\??mathcollapsing         1\endcsname\plusone              % enforced | specials
+\letcsname\??mathcollapsing\v!default\endcsname\plusone
+\letcsname\??mathcollapsing         2\endcsname\plustwo              % enforced | specials | mathlist
+\letcsname\??mathcollapsing\v!all    \endcsname\plustwo
+\letcsname\??mathcollapsing         3\endcsname\plusthree            % enforced | mathlist | specials
+\letcsname\??mathcollapsing\v!list   \endcsname\plusthree
+\letcsname\??mathcollapsing\v!none   \endcsname\attributeunsetvalue
+\letcsname\??mathcollapsing\v!reset  \endcsname\attributeunsetvalue
 
 \def\math_collapsing_initialize
   {\ifnum\c_math_collapsing_attribute=\attributeunsetvalue \else

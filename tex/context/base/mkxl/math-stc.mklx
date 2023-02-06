@@ -94,14 +94,14 @@
      \ifcsname\??mathextensiblefallbacks\number\scratchunicode\endcsname
        \lastnamedcs
      \else
-       \Umathchar \fam \zerocount \scratchunicode
+       \Umathchar\zerocount\zerocount\scratchunicode
      \fi
      \hss}}
 
 \def\math_stackers_regular
   {\mathstylehbox{\usemathstackerscolorparameter\c!color
      \hskip\d_math_stackers_offset_l
-     \Umathaccent\fam\zerocount\scratchunicode
+     \Umathaccent\zerocount\zerocount\scratchunicode
        {\hskip\dimexpr\scratchwidth-\d_math_stackers_offset_l-\d_math_stackers_offset_r}%
      \hskip\d_math_stackers_offset_r
    }}
@@ -109,7 +109,7 @@
 \def\math_stackers_stretch % we don't have that one yet
   {\mathstylehbox{\usemathstackerscolorparameter\c!color
      \hskip\d_math_stackers_offset_l
-     \Umathaccent\fam\zerocount\scratchunicode
+     \Umathaccent\zerocount\zerocount\scratchunicode
        {\hskip\dimexpr\hsize-\d_math_stackers_offset_l-\d_math_stackers_offset_r}%
      \hskip\d_math_stackers_offset_r
    }}

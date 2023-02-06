@@ -1340,7 +1340,6 @@ featureset.hyphenonly   = hyphenonly == v_yes
                     first, current = remove_node(first,current,true)
                 end
             end
-
         end
 
         local function inject(leftchar,rightchar,code,attrnode)

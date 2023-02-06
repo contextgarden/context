@@ -368,7 +368,8 @@ the acceptable range is from 0 to 65535.
 
 \stopsubsection
 
-\startsubsection[title={\prm {hrule}, \prm {vrule}, \prm {srule}, \prm {nohrule} and \prm {novrule}}]
+\startsubsection[title={\prm {hrule}, \prm {vrule}, \prm {srule}, \prm {nohrule}, \prm {novrule},
+\prm {virtualhrule} and \prm {virtualvrule}}]
 
 \topicindex {rules}
 
@@ -473,7 +474,22 @@ combination. This is especially important in math mode where then can adapt to
 \stoplines
 
 Because this kind of rules has a dedicated subtype you can intercept it in the backend
-if needed.
+if needed. The two virtual variants are special in the way that they are like normal
+rules but take no space. Can you figure out how to get this?
+
+\startlinecorrection[blank]
+\dontleavehmode \hbox{%
+    \hbox{\green before}%
+    {\darkblue \virtualvrule width 40pt height -2pt depth 4pt xoffset -20pt\relax}%
+    \hbox{\red after}%
+}
+\stoplinecorrection
+
+% \vskip5pt
+
+% \ruledvbox{\ruledhbox to 10pt{\green x}
+% \virtualhrule width 10pt height 2pt depth 2pt yoffset -2pt \relax
+% \ruledhbox to 10pt{\red x}}
 
 \stopsubsection
 
@@ -601,6 +617,14 @@ Adapting will recalculate the dimensions with a scale factor for the glue:
 \typebuffer
 
 \getbuffer
+
+\stopsubsection
+
+\startsubsection[title={\prm {boxvadjust}}]
+
+This primitive binds a \prm {vadjust} to a box and therefore also accepts the
+\type {pre} and \type {post} keywords which means that you can prepend and append
+as the box itself gets flushed.
 
 \stopsubsection
 

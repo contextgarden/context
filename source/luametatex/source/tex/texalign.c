@@ -971,7 +971,7 @@ void tex_run_alignment_initialize(void)
             token_link(current) = null;
             while (1) {
                 tex_aux_get_preamble_token();
-                if (cur_cmd == parameter_cmd || (cur_cmd == alignment_cmd && cur_chr == align_content_code)) {
+                if ((cur_cmd == alignment_cmd && cur_chr == align_content_code) || cur_cmd == parameter_cmd) {
                     break;
                 } else if ((cur_cmd == alignment_cmd || cur_cmd == alignment_tab_cmd) && (lmt_input_state.align_state == -1000000)) {
                     if ((current == lmt_alignment_state.hold_token_head) && (! lmt_alignment_state.cur_loop) && (cur_cmd == alignment_tab_cmd)) {
@@ -1004,7 +1004,7 @@ void tex_run_alignment_initialize(void)
                 tex_aux_get_preamble_token();
                 if ((cur_cmd == alignment_cmd || cur_cmd == alignment_tab_cmd) && (lmt_input_state.align_state == -1000000)) {
                     break;
-                } else if (cur_cmd == parameter_cmd || (cur_cmd == alignment_cmd && cur_chr == align_content_code)) {
+                } else if ((cur_cmd == alignment_cmd && cur_chr == align_content_code) || cur_cmd == parameter_cmd) {
                     tex_handle_error(
                         normal_error_type,
                         "Only one # is allowed per tab",

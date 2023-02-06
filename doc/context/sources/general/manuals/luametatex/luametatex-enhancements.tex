@@ -969,8 +969,8 @@ An \prm {expandedafter} primitive is also provided as an variant on \prm
 
 \stopsubsection
 
-\startsubsection[title={\prm {semiprotected}, \prm {semiexpanded}, \prm {expand} and
-\prm {semiexpand}}]
+\startsubsection[title={\prm {semiprotected}, \prm {semiexpanded}, \prm {expand},
+\prm {semiexpand} and \prm {expandactive}}]
 
 These primitives can best be explained with a few examples. The semi boils down to
 a bit more controlled usage of \prm {protected} macros.
@@ -1012,6 +1012,23 @@ The effective meanings are given next (we use \prm {meaningasis} for this):
 I admit that is not yet applied much in \CONTEXT\ as we have no real need for it
 and I implemented it more out for nostalgic reasons: the kind of selective
 protect mechanism we have in \MKII.
+
+Assuming that \type {~} is made active:
+
+\starttyping
+\protected\def~{!}
+
+\edef\xxxx{~}
+\edef\xxxx{\expandactive~}
+\stoptyping
+
+In both cases the meaning will show \type {~} so it's kind of subtle because in reality
+they have the following internal representation:
+
+\starttyping
+active    char 126
+protected call ~
+\stoptyping
 
 \stopsubsection
 
@@ -1925,6 +1942,10 @@ is one that should be used with care. The above example could be written as:
 This is slightly more efficient than constructing the string twice (deep down in
 \LUATEX\ this also involves some \UTF8 juggling), but probably more relevant is
 that it saves a few tokens and can make code a bit more readable.
+
+Active characters are stored in the hash with a special prefix sequence prepended
+to the character: \prm {csactive} or the never used \UTF\ representation of \type
+{U+FFFF}.
 
 \stopsubsection
 

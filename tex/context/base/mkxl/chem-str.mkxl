@@ -607,12 +607,15 @@
 \definechemicalsymbol[d:plus]        [\enspace+\enspace]
 \definechemicalsymbol[d:minus]       [\enspace-\enspace]
 \definechemicalsymbol[d:equals]      [\enspace=\enspace]
-\definechemicalsymbol[d:gives]       [\rightarrowfill]          % \chem_arrow_construct\xrightarrow
-\definechemicalsymbol[d:equilibrium] [\rightoverleftarrowfill]  % \chem_arrow_construct\xrightoverleftarrow
-\definechemicalsymbol[d:mesomeric]   [\leftarrowfill]           % \chem_arrow_construct\xleftrightarrow
+%definechemicalsymbol[d:gives]       [\rightarrowfill]          % \chem_arrow_construct\xrightarrow
+%definechemicalsymbol[d:equilibrium] [\rightoverleftarrowfill]  % \chem_arrow_construct\xrightoverleftarrow
+%definechemicalsymbol[d:mesomeric]   [\leftarrowfill]           % \chem_arrow_construct\xleftrightarrow
+\definechemicalsymbol[d:gives]       [\crightarrow]
+\definechemicalsymbol[d:equilibrium] [\cleftarrow]
+\definechemicalsymbol[d:mesomeric]   [\crightoverleftarrow]
 \definechemicalsymbol[d:single]      [\chemicalbondrule]
-\definechemicalsymbol[d:double]      [\hpack{\lower.5ex\chemicalbondrule\hskip-1em\raise.5ex\chemicalbondrule}]
-\definechemicalsymbol[d:triple]      [\hpack{\chemicalbondrule\hskip-1em\lower.5ex\chemicalbondrule\hskip-1em\raise.5ex\chemicalbondrule}]
+\definechemicalsymbol[d:double]      [\hpack{\lower.5\exheight\chemicalbondrule\hskip-\emwidth\raise.5\exheight\chemicalbondrule}]
+\definechemicalsymbol[d:triple]      [\hpack{\chemicalbondrule\hskip-\emwidth\lower.5\exheight\chemicalbondrule\hskip-\emwidth\raise.5\exheight\chemicalbondrule}]
 \definechemicalsymbol[d:opencomplex] [\mathematics{\Bigg[}]     % not yet ok
 \definechemicalsymbol[d:closecomplex][\mathematics{\Bigg]}]     % not yet ok
 

@@ -37,12 +37,17 @@ local report_afm         = logs.reporter("fonts","afm loading")
 local report_pfb         = logs.reporter("fonts","pfb loading")
 
 local handlers           = fonts.handlers
+
 local afm                = handlers.afm or { }
 handlers.afm             = afm
+afm.version              = 1.513 -- incrementing this number one up will force a re-cache
+
+local pfb                = handlers.pfb or { }
+handlers.pfb             = pfb
+pfb.version              = 1.000
+
 local readers            = afm.readers or { }
 afm.readers              = readers
-
-afm.version              = 1.513 -- incrementing this number one up will force a re-cache
 
 --[[ldx--
 <p>We start with the basic reader which we give a name similar to the built in <l n='tfm'/>
@@ -207,16 +212,52 @@ do
           + C("FontName")           * nam
           + C("FontMatrix")         * arr
           + C("FontBBox")           * arr
-        ) ) / function(t,k,v) t[lower(k)] = v end
+        ) ) / function  (t,k,v) t[lower(k)] = v end
       + P(1)
     )^0 * Carg(1)
 
     -- cache this?
 
+    local filecache = containers.define("fonts", "pfb", pfb.version, true)
+    local cleanname = fonts.handlers.otf.readers.helpers.cleanname
+
+    local caching   = true -- mainly for MS and HH as they test huge files with many instances
+
     local function loadpfbvector(filename,shapestoo,streams)
         -- for the moment limited to encoding only
 
-        local data = io.loaddata(resolvers.findfile(filename))
+        local fullname = resolvers.findfile(filename)
+
+        if not fullname or fullname == "" then
+            report_pfb("unknown file %a",filename)
+            return
+        end
+
+        local fileattr   = lfs.attributes(fullname)
+        local filesize   = fileattr and fileattr.size or 0
+        local filetime   = fileattr and fileattr.modification or 0
+        local fileformat = "pfb"
+        local filehash   = cleanname(file.basename(filename))
+
+        local names    = nil
+        local encoding = nil
+        local metadata = nil
+        local glyphs   = { }
+
+        local data = caching and containers.read(filecache,filehash)
+        if data and data.filetime == filetime and data.filesize == filesize and data.fileformat == fileformat then
+            names    = data.names
+            encoding = data.encoding
+            metadata = data.metadata
+        end
+
+        if shapestoo or streams then
+            -- not cached
+        elseif names then
+            return names, encoding, glyphs, metadata
+        end
+
+        local data = io.loaddata(fullname)
 
         if not data then
             report_pfb("no data in %a",filename)
@@ -237,16 +278,18 @@ do
 
         binary = decrypt(binary,55665,4)
 
-        local names    = { }
-        local encoding = lpegmatch(p_filterencoding,ascii)
-        local metadata = lpegmatch(p_filtermetadata,ascii,1,{})
-        local glyphs   = { }
+        encoding = names or lpegmatch(p_filterencoding,ascii)
+        metadata = names or lpegmatch(p_filtermetadata,ascii,1,{})
 
-        routines, vector, chars = { }, { }, { }
+        glyphs   = { }
+        routines = { }
+        vector   = { }
+        chars    = { }
+
         if shapestoo or streams then
          -- io.savedata("foo.txt",binary)
             lpegmatch(p_filterroutines,binary,1,filename)
-            lpegmatch(p_filtershapes,binary,1,filename)
+            lpegmatch(p_filtershapes,  binary,1,filename)
             local data = {
                 dictionaries = {
                     {
@@ -258,20 +301,30 @@ do
             }
             -- only cff 1 in type 1 fonts
             fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,"cff",streams,true)
-        else
+        elseif not names then
             lpegmatch(p_filternames,binary,1,filename)
         end
 
-        names = vector
+        names    = names or vector
+        routines = nil
+        vector   = nil
+        chars    = nil
 
-        routines, vector, chars = nil, nil, nil
+        if caching then
+            containers.write(filecache,filehash,{
+                filesize   = filesize,
+                fileformat = fileformat,
+                filetime   = filetime,
+                names      = names,
+                encoding   = encoding,
+                metadata   = metadata,
+            })
+        end
 
         return names, encoding, glyphs, metadata
 
     end
 
-    local pfb      = handlers.pfb or { }
-    handlers.pfb   = pfb
     pfb.loadvector = loadpfbvector
 
     get_indexes = function(data,pfbname)
