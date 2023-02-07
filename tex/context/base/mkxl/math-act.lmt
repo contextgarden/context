@@ -3452,8 +3452,18 @@ do
                                 }
                                 local chars  = fontchars[id]
                                 local dropin = fontdata[id]
-                                local index  = #fonts + 1
-                                fonts[index] = { id = id, size = size }
+                                local index  = false
+                                for i=1,#fonts do
+                                    local f = fonts[i]
+                                    if f.id == id and f.size == size then
+                                        index = i
+                                        break
+                                    end
+                                end
+                                if not index then
+                                    index = #fonts + 1
+                                    fonts[index] = { id = id, size = size }
+                                end
                                 -- copy characters
                                 for s=firstsource,lastsource do
                                     local t = s + offset

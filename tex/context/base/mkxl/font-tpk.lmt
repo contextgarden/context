@@ -44,7 +44,7 @@ if not fonts then fonts = { handlers = { tfm = { } } } end
 local handlers = fonts.handlers
 local tfm      = handlers.tfm or { }
 handlers.tfm   = tfm
-tfm.version    = 1.005
+tfm.version    = 1.006
 
 local readers  = tfm.readers or { }
 tfm.readers    = readers

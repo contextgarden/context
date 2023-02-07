@@ -54,14 +54,13 @@ local cache = setmetatableindex(function(t,width)
     return v
 end)
 
-
 local function register_extensible(font,char,style,box)
     -- We don't share (yet)!
     local fontdata = chardata[font]
     local oldchar  = fontdata[char]
     if oldchar and oldchar.keepvirtual then
         -- for now, needed for iwona etc
-        return
+        return nil
     else
         local bx = tonut(box)
         updaters.apply("tagging.state.disable") -- fast enough
@@ -81,7 +80,6 @@ local function register_extensible(font,char,style,box)
         local p  = fonts.hashes.parameters[font]
         local sx = round(1000/p.extendfactor)
         local sy = round(1000/p.squeezefactor)
-        nuts.setscales(g,1000,sx,sy)
         -- we saved a scaled glyph stream so we now use an unscaled one ... horrible hack:
         if sx ~= 1000 then
             wd = wd * 7200/7227
@@ -98,6 +96,7 @@ local function register_extensible(font,char,style,box)
             cache[wd][ht][dp][font][unicode] = private
         end
         local glyph = new_glyph(font,private,al)
+        nuts.setscales(glyph,1000,sx,sy)
         --
      -- if fonts.hashes.properties[font].compactmath then
      --     nuts.setscales(g,1000,1000,1000)

@@ -26,7 +26,7 @@ local report_encoding = logs.reporter("fonts","encoding")
 local encodings = fonts.encodings or { }
 fonts.encodings = encodings
 
-encodings.version = 1.03
+encodings.version = 1.04
 encodings.cache   = containers.define("fonts", "enc", fonts.encodings.version, true)
 encodings.known   = allocate { -- sort of obsolete
     texnansi = true,

@@ -44,7 +44,7 @@ afm.version              = 1.513 -- incrementing this number one up will force a
 
 local pfb                = handlers.pfb or { }
 handlers.pfb             = pfb
-pfb.version              = 1.000
+pfb.version              = 1.002
 
 local readers            = afm.readers or { }
 afm.readers              = readers
@@ -212,6 +212,7 @@ do
           + C("FontName")           * nam
           + C("FontMatrix")         * arr
           + C("FontBBox")           * arr
+          + C("FontType")           * num
         ) ) / function  (t,k,v) t[lower(k)] = v end
       + P(1)
     )^0 * Carg(1)
@@ -278,8 +279,12 @@ do
 
         binary = decrypt(binary,55665,4)
 
-        encoding = names or lpegmatch(p_filterencoding,ascii)
-        metadata = names or lpegmatch(p_filtermetadata,ascii,1,{})
+        if not encoding then
+            encoding = lpegmatch(p_filterencoding,ascii)
+        end
+        if not metadata then
+            metadata = lpegmatch(p_filtermetadata,ascii,1,{})
+        end
 
         glyphs   = { }
         routines = { }
@@ -299,8 +304,9 @@ do
                     }
                 },
             }
+            local version = metadata.FontType or 1
             -- only cff 1 in type 1 fonts
-            fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,"cff",streams,true)
+            fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,"cff",streams,true,true)
         elseif not names then
             lpegmatch(p_filternames,binary,1,filename)
         end

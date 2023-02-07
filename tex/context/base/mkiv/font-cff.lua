@@ -1714,7 +1714,8 @@ end
 
     -- todo: round in blend
 
-    local encode = { }
+    local encode  = { }
+    local typeone = false
 
     -- this eventually can become a helper
 
@@ -1865,7 +1866,7 @@ end
                  -- stack[top] = -t*256 + 251*256 - tab[i+1] - 108
                     stack[top] = -t*256 + 64148 - tab[i+1]
                     i = i + 2
-                elseif version == "cff" then
+                elseif typeone then
                     local n = 0x1000000 * tab[i+1] + 0x10000 * tab[i+2] + 0x100 * tab[i+3] + tab[i+4]
                     if n >= 0x8000000 then
                         n = n - 0xFFFFFFFF - 1
@@ -2282,13 +2283,14 @@ result = nil
         return privatedata.nominalwidthx or 0, privatedata.defaultwidthx or 0
     end
 
-    parsecharstrings = function(fontdata,data,glphs,doshapes,tversion,streams,nobias)
+    parsecharstrings = function(fontdata,data,glphs,doshapes,tversion,streams,nobias,istypeone)
 
         local dictionary  = data.dictionaries[1]
         local charstrings = dictionary.charstrings
 
         keepcurve = doshapes
         version   = tversion
+        typeone   = istypeone or false
         strings   = data.strings
         globals   = data.routines or { }
         locals    = dictionary.subroutines or { }
@@ -2526,7 +2528,7 @@ local function readnoselect(f,fontdata,data,glyphs,doshapes,version,streams)
     parseprivates(data,data.dictionaries)
     readlocals(f,data,dictionary,version)
     startparsing(fontdata,data,streams)
-    parsecharstrings(fontdata,data,glyphs,doshapes,version,streams)
+    parsecharstrings(fontdata,data,glyphs,doshapes,version,streams,false)
     stopparsing(fontdata,data)
 end
 
@@ -2746,38 +2748,38 @@ end
 
 -- temporary helper needed for checking backend patches
 
-function readers.cffcheck(filename)
-    local f = io.open(filename,"rb")
-    if f then
-        local fontdata = {
-            glyphs = { },
-        }
-        local header = readheader(f)
-        if header.major ~= 1 then
-            report("only version %s is supported for table %a",1,"cff")
-            return
-        end
-        local names        = readfontnames(f)
-        local dictionaries = readtopdictionaries(f)
-        local strings      = readstrings(f)
-        local glyphs       = { }
-        local data = {
-            header       = header,
-            names        = names,
-            dictionaries = dictionaries,
-            strings      = strings,
-            glyphs       = glyphs,
-            nofglyphs    = 0,
-        }
-        --
-        parsedictionaries(data,dictionaries,"cff")
-        --
-        local cid = data.dictionaries[1].cid
-        if cid and cid.fdselect then
-            readfdselect(f,fontdata,data,glyphs,false)
-        else
-            readnoselect(f,fontdata,data,glyphs,false)
-        end
-        return data
-    end
-end
+-- function readers.cffcheck(filename)
+--     local f = io.open(filename,"rb")
+--     if f then
+--         local fontdata = {
+--             glyphs = { },
+--         }
+--         local header = readheader(f)
+--         if header.major ~= 1 then
+--             report("only version %s is supported for table %a",1,"cff")
+--             return
+--         end
+--         local names        = readfontnames(f)
+--         local dictionaries = readtopdictionaries(f)
+--         local strings      = readstrings(f)
+--         local glyphs       = { }
+--         local data = {
+--             header       = header,
+--             names        = names,
+--             dictionaries = dictionaries,
+--             strings      = strings,
+--             glyphs       = glyphs,
+--             nofglyphs    = 0,
+--         }
+--         --
+--         parsedictionaries(data,dictionaries,"cff")
+--         --
+--         local cid = data.dictionaries[1].cid
+--         if cid and cid.fdselect then
+--             readfdselect(f,fontdata,data,glyphs,false)
+--         else
+--             readnoselect(f,fontdata,data,glyphs,false)
+--         end
+--         return data
+--     end
+-- end

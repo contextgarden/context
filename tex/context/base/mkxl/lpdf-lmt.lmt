@@ -1192,6 +1192,7 @@ local flushimage  do
         local r = boxresources[objnum]
         if r then
             flushlist(l.list)
+            l.list = nil -- added
         end
         boxresources[objnum] = l
         if immediate then
@@ -2130,6 +2131,10 @@ local finalize  do
     local f_image = formatters["Im%d"]
 
     finalize = function(driver,details)
+
+        if not details then
+            report("something is wrong, no details in 'finalize'")
+        end
 
         level = level + 1
 

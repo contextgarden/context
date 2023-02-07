@@ -17,7 +17,7 @@ local pfb          = fonts.handlers.pfb
 local hashes       = fonts.hashes
 local identifiers  = hashes.identifiers
 
-local version      = otf.version or 0.014
+local version      = otf.version or 0.015
 local shapescache  = containers.define("fonts", "shapes",  version, true)
 local streamscache = containers.define("fonts", "streams", version, true)
 

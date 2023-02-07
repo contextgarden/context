@@ -1016,6 +1016,7 @@ presetparameters "chart" [
     originsize      = 1mm,
     trace           = false,
     showlabels      = true,
+    showlegend      = true,
     center          = false,
 
     samples         = { },
@@ -1145,32 +1146,34 @@ vardef lmt_do_chart_text(expr s, i, value) =
 enddef ;
 
 def lmt_do_chart_legend =
-    n := getparametercount "legend" ;
-    if n > 0 :
-        save dx, dy, p, l, w, o, d, ddy ; picture l ;
-        dx := xpart urcorner currentpicture + EmWidth ;
-        dy := ypart urcorner currentpicture ;
-        labelcolor := getparameter "legendcolor" ;
-        labelstyle := getparameter "legendstyle" ;
-        w := 2EmWidth ;
-        o := .25EmWidth ;
-        d := ExHeight ;
-        ddy := .8LineHeight ;
-        for i=1 upto n :
-            dy := dy - ddy ;
-            l := lmt_text [
-                text       = getparameter "legend" i,
-                anchor     = "rt"
-                style      = labelstyle,
-                color      = labelcolor,
-                background = "",
-            ] ;
-            fill leftboundary l rightenlarged w
-                shifted (dx,dy+d)
-                withcolor getparameter "fillcolors" i ;
-            draw l
-                shifted (dx+w+o,dy+d) ;
-        endfor ;
+    if getparameter "showlegend" :
+        n := getparametercount "legend" ;
+        if n > 0 :
+            save dx, dy, p, l, w, o, d, ddy ; picture l ;
+            dx := xpart urcorner currentpicture + EmWidth ;
+            dy := ypart urcorner currentpicture ;
+            labelcolor := getparameter "legendcolor" ;
+            labelstyle := getparameter "legendstyle" ;
+            w := 2EmWidth ;
+            o := .25EmWidth ;
+            d := ExHeight ;
+            ddy := .8LineHeight ;
+            for i=1 upto n :
+                dy := dy - ddy ;
+                l := lmt_text [
+                    text       = getparameter "legend" i,
+                    anchor     = "rt"
+                    style      = labelstyle,
+                    color      = labelcolor,
+                    background = "",
+                ] ;
+                fill leftboundary l rightenlarged w
+                    shifted (dx,dy+d)
+                    withcolor getparameter "fillcolors" i ;
+                draw l
+                    shifted (dx+w+o,dy+d) ;
+            endfor ;
+        fi ;
     fi ;
 enddef ;
 
@@ -1319,14 +1322,14 @@ vardef lmt_do_chart_histogram =
                 endfor ;
             endfor ;
             setbounds currentpicture to unitsquare xyscaled (maxwidth,height) ;
-            for s = 1 upto nofsamplesets :
-                if getparameter "showlabels" :
+            if getparameter "showlabels" :
+                for s = 1 upto nofsamplesets :
                     for i = 1 upto nofsamples :
                         draw lmt_do_chart_text (s,i,getparameter "samples" s i)
                             shifted (nofsamplesets*((i-1)*width)+width/2+(s-1)*width+(i-1)*distance,0) ;
                     endfor ;
-                fi ;
-            endfor ;
+                endfor ;
+            fi ;
             lmt_do_chart_legend ;
         fi ;
         lmt_do_chart_stop ;

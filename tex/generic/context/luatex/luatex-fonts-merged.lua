@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2023-02-06 17:55
+-- merge date  : 2023-02-07 19:02
 
 do -- begin closure to overcome local limits and interference
 
@@ -14578,6 +14578,7 @@ end
  end)
  local c_endchar=chars[14]
  local encode={}
+ local typeone=false
  setmetatableindex(encode,function(t,i)
   for i=-2048,-1130 do
    t[i]=char(28,band(rshift(i,8),0xFF),band(i,0xFF))
@@ -14703,7 +14704,7 @@ end
     elseif t<=254 then
      stack[top]=-t*256+64148-tab[i+1]
      i=i+2
-    elseif version=="cff" then
+    elseif typeone then
      local n=0x1000000*tab[i+1]+0x10000*tab[i+2]+0x100*tab[i+3]+tab[i+4]
      if n>=0x8000000 then
       n=n-0xFFFFFFFF-1
@@ -15027,11 +15028,12 @@ result=nil
   end
   return privatedata.nominalwidthx or 0,privatedata.defaultwidthx or 0
  end
- parsecharstrings=function(fontdata,data,glphs,doshapes,tversion,streams,nobias)
+ parsecharstrings=function(fontdata,data,glphs,doshapes,tversion,streams,nobias,istypeone)
   local dictionary=data.dictionaries[1]
   local charstrings=dictionary.charstrings
   keepcurve=doshapes
   version=tversion
+  typeone=istypeone or false
   strings=data.strings
   globals=data.routines or {}
   locals=dictionary.subroutines or {}
@@ -15236,7 +15238,7 @@ local function readnoselect(f,fontdata,data,glyphs,doshapes,version,streams)
  parseprivates(data,data.dictionaries)
  readlocals(f,data,dictionary,version)
  startparsing(fontdata,data,streams)
- parsecharstrings(fontdata,data,glyphs,doshapes,version,streams)
+ parsecharstrings(fontdata,data,glyphs,doshapes,version,streams,false)
  stopparsing(fontdata,data)
 end
 local function readfdselect(f,fontdata,data,glyphs,doshapes,version,streams)
@@ -15426,39 +15428,6 @@ function readers.cff2(f,fontdata,specification)
    readnoselect(f,fontdata,data,glyphs,all,"cff2",specification.streams)
   end
   cleanup(data,dictionaries)
- end
-end
-function readers.cffcheck(filename)
- local f=io.open(filename,"rb")
- if f then
-  local fontdata={
-   glyphs={},
-  }
-  local header=readheader(f)
-  if header.major~=1 then
-   report("only version %s is supported for table %a",1,"cff")
-   return
-  end
-  local names=readfontnames(f)
-  local dictionaries=readtopdictionaries(f)
-  local strings=readstrings(f)
-  local glyphs={}
-  local data={
-   header=header,
-   names=names,
-   dictionaries=dictionaries,
-   strings=strings,
-   glyphs=glyphs,
-   nofglyphs=0,
-  }
-  parsedictionaries(data,dictionaries,"cff")
-  local cid=data.dictionaries[1].cid
-  if cid and cid.fdselect then
-   readfdselect(f,fontdata,data,glyphs,false)
-  else
-   readnoselect(f,fontdata,data,glyphs,false)
-  end
-  return data
  end
 end
 
@@ -37185,7 +37154,7 @@ local afm=fonts.handlers.afm
 local pfb=fonts.handlers.pfb
 local hashes=fonts.hashes
 local identifiers=hashes.identifiers
-local version=otf.version or 0.014
+local version=otf.version or 0.015
 local shapescache=containers.define("fonts","shapes",version,true)
 local streamscache=containers.define("fonts","streams",version,true)
 local compact_streams=false

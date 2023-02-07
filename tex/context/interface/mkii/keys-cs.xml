@@ -453,6 +453,7 @@
 		<cd:variable name='printable' value='tisknutelne'/>
 		<cd:variable name='process' value='process'/>
 		<cd:variable name='product' value='produkt'/>
+		<cd:variable name='profile' value='profile'/>
 		<cd:variable name='program' value='program'/>
 		<cd:variable name='project' value='projekt'/>
 		<cd:variable name='protected' value='chranene'/>
@@ -594,6 +595,7 @@
 		<cd:variable name='temporary' value='docasne'/>
 		<cd:variable name='test' value='test'/>
 		<cd:variable name='text' value='text'/>
+		<cd:variable name='textdisplay' value='textdisplay'/>
 		<cd:variable name='textnote' value='textnote'/>
 		<cd:variable name='three' value='tri'/>
 		<cd:variable name='thursday' value='ctvrtek'/>
@@ -724,6 +726,7 @@
 		<cd:constant name='bookmark' value='zalozka'/>
 		<cd:constant name='bottom' value='spodek'/>
 		<cd:constant name='bottomafter' value='bottomafter'/>
+		<cd:constant name='bottomalign' value='bottomalign'/>
 		<cd:constant name='bottombefore' value='bottombefore'/>
 		<cd:constant name='bottomcolor' value='bottomcolor'/>
 		<cd:constant name='bottomcommand' value='bottomcommand'/>
@@ -1338,6 +1341,7 @@
 		<cd:constant name='toffset' value='toffset'/>
 		<cd:constant name='tolerance' value='tolerance'/>
 		<cd:constant name='top' value='vrsek'/>
+		<cd:constant name='topalign' value='topalign'/>
 		<cd:constant name='topcolor' value='topcolor'/>
 		<cd:constant name='topcommand' value='topcommand'/>
 		<cd:constant name='topdistance' value='vzdalenostvrsku'/>

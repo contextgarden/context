@@ -17,6 +17,9 @@ if not modules then modules = { } end modules ['math-vfu'] = {
 -- from when we emulated \UNICODE\ math and \OPENTYPE\ math fonts using traditional
 -- fonts.
 
+-- Musical timestamp: Januari 2023 Riverside ID.Entity release date, after all we
+-- only use the following code for ther Polish Iwona, Kurier and Antykwa fonts.
+
 local type, next, tonumber = type, next, tonumber
 local max = math.max
 local fastcopy, sortedhash = table.copy, table.sortedhash
@@ -674,52 +677,56 @@ local noitalics = true -- false can be used to test the engine
 -- bit to suit that purpose. It might get even simpler.
 
 local function virtualize(s,uni,fci,skewchar,move,mathparameters,unicode,parameters)
-    local kerns   = fci.kerns
-    local width   = fci.width
-    local height  = fci.height
-    local depth   = fci.depth
-    local italic  = fci.italic
-    local advance = width
-    local bottomright
-    local topanchor
-    local yoffset
-    if kerns and skewchar then
-        local k = kerns[skewchar]
-        if k then
-            topanchor = width/2 + k
+    if fci then
+        local kerns   = fci.kerns
+        local width   = fci.width
+        local height  = fci.height
+        local depth   = fci.depth
+        local italic  = fci.italic
+        local advance = width
+        local bottomright
+        local topanchor
+        local yoffset
+        if kerns and skewchar then
+            local k = kerns[skewchar]
+            if k then
+                topanchor = width/2 + k
+            end
         end
+        if italic and noitalics then
+            width       = width + italic
+            bottomright = - italic
+            italic      = nil
+        end
+        if move then  -- 0x222B
+            local axis = move * mathparameters.axisheight
+            local half = (height + depth ) / 2
+            yoffset = depth - (half - axis)
+            height = half + axis
+            depth  = half - axis
+        end
+        --
+        return {
+            advance          = advance,
+            width            = width,
+            height           = height,
+            depth            = depth,
+            italic           = italic,
+            bottomright      = bottomright,
+            topanchor        = topanchor,
+            yoffset          = yoffset,
+            commands         = { slotcommand[s][uni] },
+         -- keepvirtual      = true,
+            next             = fci.next,
+            parts            = fci.parts,
+            partsorientation = fci.partsorientation,
+            partsitalic      = fci.partsitalic,
+            unicode          = unicode,
+            name             = fci.name,
+        }
+    else
+        -- error
     end
-    if italic and noitalics then
-        width       = width + italic
-        bottomright = - italic
-        italic      = nil
-    end
-    if move then  -- 0x222B
-        local axis = move * mathparameters.axisheight
-        local half = (height + depth ) / 2
-        yoffset = depth - (half - axis)
-        height = half + axis
-        depth  = half - axis
-    end
-    --
-    return {
-        advance          = advance,
-        width            = width,
-        height           = height,
-        depth            = depth,
-        italic           = italic,
-        bottomright      = bottomright,
-        topanchor        = topanchor,
-        yoffset          = yoffset,
-        commands         = { slotcommand[s][uni] },
-     -- keepvirtual      = true,
-        next             = fci.next,
-        parts            = fci.parts,
-        partsorientation = fci.partsorientation,
-        partsitalic      = fci.partsitalic,
-        unicode          = unicode,
-        name             = fci.name,
-    }
 end
 
 function vfmath.define(specification,set,goodies)
