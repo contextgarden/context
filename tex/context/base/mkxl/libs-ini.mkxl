@@ -11,12 +11,12 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\registerctxluafile{libs-ini}{} % shared with mkiv
+\registerctxluafile{libs-ini}{autosuffix}
 
 % These are used by the graphic converters:
 
-\registerctxluafile{libs-imp-curl}{autosuffix}
-\registerctxluafile{libs-imp-ghostscript}{autosuffix}
+\registerctxluafile{libs-imp-curl}          {autosuffix}
+\registerctxluafile{libs-imp-ghostscript}   {autosuffix}
 \registerctxluafile{libs-imp-graphicsmagick}{autosuffix}
 
 % These are loaded on demand:

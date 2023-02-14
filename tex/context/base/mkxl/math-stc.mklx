@@ -98,19 +98,30 @@
      \fi
      \hss}}
 
+% \def\math_stackers_regular
+%   {\mathstylehbox{\usemathstackerscolorparameter\c!color
+%      \hskip\d_math_stackers_offset_l
+%      \Umathaccent\zerocount\zerocount\scratchunicode
+%        {\hskip\dimexpr\scratchwidth-\d_math_stackers_offset_l-\d_math_stackers_offset_r}%
+%      \hskip\d_math_stackers_offset_r
+%    }}
+
+% \def\math_stackers_stretch % we don't have that one yet
+%   {\mathstylehbox{\usemathstackerscolorparameter\c!color
+%      \hskip\d_math_stackers_offset_l
+%      \Umathaccent\zerocount\zerocount\scratchunicode
+%        {\hskip\dimexpr\hsize-\d_math_stackers_offset_l-\d_math_stackers_offset_r}%
+%      \hskip\d_math_stackers_offset_r
+%    }}
+
 \def\math_stackers_regular
   {\mathstylehbox{\usemathstackerscolorparameter\c!color
      \hskip\d_math_stackers_offset_l
-     \Umathaccent\zerocount\zerocount\scratchunicode
-       {\hskip\dimexpr\scratchwidth-\d_math_stackers_offset_l-\d_math_stackers_offset_r}%
-     \hskip\d_math_stackers_offset_r
-   }}
-
-\def\math_stackers_stretch % we don't have that one yet
-  {\mathstylehbox{\usemathstackerscolorparameter\c!color
-     \hskip\d_math_stackers_offset_l
-     \Umathaccent\zerocount\zerocount\scratchunicode
-       {\hskip\dimexpr\hsize-\d_math_stackers_offset_l-\d_math_stackers_offset_r}%
+     \Uhextensible
+       middle
+       width \dimexpr\scratchwidth-\d_math_stackers_offset_l-\d_math_stackers_offset_r\relax
+       \zerocount\scratchunicode
+     \relax
      \hskip\d_math_stackers_offset_r
    }}
 
@@ -409,6 +420,9 @@
         \dostarttagged\t!mstackermid\empty
         \setbox\scratchboxthree\csname\??mathstackersalternative\p_alternative\endcsname
         \dostoptagged
+      \fi
+      \ifdim\wd\scratchboxthree>\scratchwidth
+        \scratchwidth\wd\scratchboxthree
       \fi
       %
       \ifdim\wd\scratchboxone<\scratchwidth
@@ -1192,8 +1206,6 @@
 \definemathextensible [\v!chemistry] [crightoverleftarrow] ["21C4]
 \definemathextensible [\v!chemistry] [cleftoverrightarrow] ["21C6]
 
-% for the moment:
-
 \def\math_stackers_hacked_fill#1#2#3%
   {\mathematics
      {\begingroup
@@ -1203,35 +1215,37 @@
       \thinmuskip  \zeromuskip
       \tinymuskip  \zeromuskip
       \pettymuskip \zeromuskip
-      #1%
-      \mkern-7\onemuskip
-      \cleaders\mathstylehbox{\mkern-2\onemuskip#2\mkern-2\onemuskip}\hfill
-      \mkern-7\onemuskip
-      #3%
+      \ifrelax#1%
+        \cleaders\mathstylehbox{#2}\hfill
+      \else
+        #1%
+        \mkern-7\onemuskip
+        \cleaders\mathstylehbox{\mkern-2\onemuskip#2\mkern-2\onemuskip}\hfill
+        \mkern-7\onemuskip
+        #3%
+      \fi
       \endgroup}}
 
-% These will become characters defined in math-act.
-
-\immutable\protected\def\rightarrowfill        {\math_stackers_hacked_fill \relbar                   \relbar                      \rightarrow}
-\immutable\protected\def\leftarrowfill         {\math_stackers_hacked_fill \leftarrow                \relbar                      \relbar    }
-\immutable\protected\def\rightoverleftarrowfill{\math_stackers_hacked_fill \ctxdoublearrowfillleftend\ctxdoublearrowfillmiddlepart\ctxdoublearrowfillrightend}
-\immutable\protected\def\leftoverrightarrowfill{\math_stackers_hacked_fill \ctxdoublearrowfillrightend\ctxdoublearrowfillmiddlepart\ctxdoublearrowfillleftend}
-\immutable\protected\def\equalfill             {\math_stackers_hacked_fill \Relbar                   \Relbar                      \Relbar}
-\immutable\protected\def\Rightarrowfill        {\math_stackers_hacked_fill \Relbar                   \Relbar                      \Rightarrow}
-\immutable\protected\def\Leftarrowfill         {\math_stackers_hacked_fill \Leftarrow                \Relbar                      \Relbar}
-\immutable\protected\def\Leftrightarrowfill    {\math_stackers_hacked_fill \Leftarrow                \Relbar                      \Rightarrow}
-\immutable\protected\def\leftrightarrowfill    {\math_stackers_hacked_fill \leftarrow                \relbar                      \rightarrow}
-\immutable\protected\def\mapstofill            {\math_stackers_hacked_fill{\mapstochar\relbar}       \relbar                      \rightarrow}
-\immutable\protected\def\twoheadrightarrowfill {\math_stackers_hacked_fill \relbar                   \relbar                      \twoheadrightarrow}
-\immutable\protected\def\twoheadleftarrowfill  {\math_stackers_hacked_fill \twoheadleftarrow         \relbar                      \relbar}
-\immutable\protected\def\rightharpoondownfill  {\math_stackers_hacked_fill \relbar                   \relbar                      \rightharpoondown}
-\immutable\protected\def\rightharpoonupfill    {\math_stackers_hacked_fill \relbar                   \relbar                      \rightharpoonup}
-\immutable\protected\def\leftharpoondownfill   {\math_stackers_hacked_fill \leftharpoondown          \relbar                      \relbar}
-\immutable\protected\def\leftharpoonupfill     {\math_stackers_hacked_fill \leftharpoonup            \relbar                      \relbar}
-\immutable\protected\def\hookleftfill          {\math_stackers_hacked_fill \leftarrow                \relbar                     {\relbar\joinrel\rhook}}
-\immutable\protected\def\hookrightfill         {\math_stackers_hacked_fill{\lhook\joinrel\relbar}    \relbar                      \rightarrow}
-\immutable\protected\def\relfill               {\math_stackers_hacked_fill \relbar                   \relbar                      \relbar}
-\immutable\protected\def\triplerelfill         {\math_stackers_hacked_fill \equiv                    \equiv                       \equiv}
+\immutable\protected\def\rightarrowfill        {\math_stackers_hacked_fill \relbar               \relbar              \rightarrow}
+\immutable\protected\def\leftarrowfill         {\math_stackers_hacked_fill \leftarrow            \relbar              \relbar}
+\immutable\protected\def\rightoverleftarrowfill{\math_stackers_hacked_fill \relax                \crightoverleftarrow \relax}
+\immutable\protected\def\leftoverrightarrowfill{\math_stackers_hacked_fill \relax                \cleftoverrightarrow \relax}
+\immutable\protected\def\equalfill             {\math_stackers_hacked_fill \Relbar               \Relbar              \Relbar}
+\immutable\protected\def\Rightarrowfill        {\math_stackers_hacked_fill \Relbar               \Relbar              \Rightarrow}
+\immutable\protected\def\Leftarrowfill         {\math_stackers_hacked_fill \Leftarrow            \Relbar              \Relbar}
+\immutable\protected\def\Leftrightarrowfill    {\math_stackers_hacked_fill \Leftarrow            \Relbar              \Rightarrow}
+\immutable\protected\def\leftrightarrowfill    {\math_stackers_hacked_fill \leftarrow            \relbar              \rightarrow}
+\immutable\protected\def\mapstofill            {\math_stackers_hacked_fill{\mapstochar\relbar}   \relbar              \rightarrow}
+\immutable\protected\def\twoheadrightarrowfill {\math_stackers_hacked_fill \relbar               \relbar              \twoheadrightarrow}
+\immutable\protected\def\twoheadleftarrowfill  {\math_stackers_hacked_fill \twoheadleftarrow     \relbar              \relbar}
+\immutable\protected\def\rightharpoondownfill  {\math_stackers_hacked_fill \relbar               \relbar              \rightharpoondown}
+\immutable\protected\def\rightharpoonupfill    {\math_stackers_hacked_fill \relbar               \relbar              \rightharpoonup}
+\immutable\protected\def\leftharpoondownfill   {\math_stackers_hacked_fill \leftharpoondown      \relbar              \relbar}
+\immutable\protected\def\leftharpoonupfill     {\math_stackers_hacked_fill \leftharpoonup        \relbar              \relbar}
+\immutable\protected\def\hookleftfill          {\math_stackers_hacked_fill \leftarrow            \relbar             {\relbar\joinrel\rhook}}
+\immutable\protected\def\hookrightfill         {\math_stackers_hacked_fill{\lhook\joinrel\relbar}\relbar              \rightarrow}
+\immutable\protected\def\relfill               {\math_stackers_hacked_fill \relbar               \relbar              \relbar}
+\immutable\protected\def\triplerelfill         {\math_stackers_hacked_fill \equiv                \equiv               \equiv}
 
 %D For the moment (needs checking):
 

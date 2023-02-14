@@ -853,17 +853,46 @@ filters[v_component] = function(specification)
     return result
 end
 
+-- filters[v_product] = function(specification)
+--     local reference = specification.reference
+--     if reference and reference ~= "" then
+--  -- local utilitydata = job.loadother(reference,true)
+--         local fullname = file.replacesuffix(reference,"tuc")
+--         if lfs.isfile(fullname) then
+--             local utilitydata = job.loadother(fullname)
+--             if utilitydata then
+--                 local collected = utilitydata.structures.lists.collected or { }
+--                 setmetatableindex(collected,{ external = reference })
+--                 return collected
+--             end
+--         end
+--     end
+--     return { }
+-- end
+
 filters[v_product] = function(specification)
     local reference = specification.reference
     if reference and reference ~= "" then
--- local utilitydata = job.loadother(reference,true)
+     -- local utilitydata = job.loadother(reference,true)
         local fullname = file.replacesuffix(reference,"tuc")
         if lfs.isfile(fullname) then
             local utilitydata = job.loadother(fullname)
             if utilitydata then
                 local collected = utilitydata.structures.lists.collected or { }
                 setmetatableindex(collected,{ external = reference })
-                return collected
+                local result    = { }
+                local nofresult = 0
+                local all       = specification.all
+                local names     = specification.names
+                for i=1,#collected do
+                    local v = collected[i]
+                    local m = v.metadata
+                    if m and names[m.name] or all then
+                        nofresult = nofresult + 1
+                        result[nofresult] = v
+                    end
+                end
+                return result
             end
         end
     end

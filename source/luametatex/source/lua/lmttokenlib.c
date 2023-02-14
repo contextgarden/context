@@ -3797,6 +3797,7 @@ int lmt_function_call_by_category(int slot, int property, halfword *value)
                     }
                 case lua_value_integer_code:
                     {
+                        /* expects valid integer, no double */
                         *value = lua_type(L, -1) == LUA_TNUMBER ? lmt_tohalfword(L, -1) : 0;
                         if (*value < - max_integer) {
                             *value = max_integer;
@@ -3807,6 +3808,7 @@ int lmt_function_call_by_category(int slot, int property, halfword *value)
                     }
                 case lua_value_cardinal_code:
                     {
+                        /* expects valid integer, no double */
                         lua_Unsigned u = lua_type(L, -1) == LUA_TNUMBER ? (lua_Unsigned) lua_tointeger(L, -1) : 0;
                         if (u > max_cardinal) {
                             u = max_cardinal;
@@ -3820,7 +3822,8 @@ int lmt_function_call_by_category(int slot, int property, halfword *value)
                     }
                 case lua_value_dimension_code:
                     {
-                        *value = lua_type(L, -1) == LUA_TNUMBER ? lmt_tohalfword(L, -1) : 0;
+                        /* accepts double and rounds it */
+                        *value = lua_type(L, -1) == LUA_TNUMBER ? lmt_roundnumber(L, -1) : 0;
                         if (*value < - max_dimen) {
                             *value = max_dimen;
                         } else if (*value > max_dimen) {

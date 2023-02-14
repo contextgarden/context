@@ -26,7 +26,7 @@ local next, type, tonumber, rawset = next, type, tonumber, rawset
 local match, lower, gsub, strip, find = string.match, string.lower, string.gsub, string.strip, string.find
 local char, byte, sub = string.char, string.byte, string.sub
 local abs = math.abs
-local bxor, rshift = bit32.bxor, bit32.rshift
+----- bxor, rshift = bit32.bxor, bit32.rshift
 local P, S, R, V, Cmt, C, Ct, Cs, Carg, Cf, Cg, Cc = lpeg.P, lpeg.S, lpeg.R, lpeg.V, lpeg.Cmt, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cf, lpeg.Cg, lpeg.Cc
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 
@@ -68,8 +68,10 @@ do
 
         local function step(c)
             local cipher = byte(c)
-            local plain  = bxor(cipher,rshift(r,8))
-            r = ((cipher + r) * c1 + c2) % 65536
+         -- local plain  = bxor(cipher,rshift(r,8))
+            local plain  = (cipher ~ ((r >> 8) & 0xFFFFFFFF))
+         -- r = ((cipher + r) * c1 + c2) % 65536
+            r = ((cipher + r) * c1 + c2) % 0x10000         
             return char(plain)
         end
 

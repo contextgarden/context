@@ -88,12 +88,19 @@ local buffers = buffers
 local cache = { }
 
 local function erase(name)
-    cache[name] = nil
+    if not name or name == "" then
+        cache[""] = false -- nil
+    else
+        local list = settings_to_array(name)
+        for i=1,#list do
+            cache[list[i]] = false -- nil
+        end
+    end
 end
 
 local assign  do
 
-    -- Ther eis no gain in an immediate concatenating lpeg
+    -- There is no gain in an immediate concatenating lpeg
 
     local action  = whitespace^0 * C(P("+")^1 + P("*")) * whitespace^0
     local equal   = whitespace^0 * patterns.equal * whitespace^0
@@ -708,12 +715,17 @@ local function runbuffer(name,encapsulate,runnername,suffixes)
 end
 
 local f_getbuffer = formatters["buffer.%s"]
+local defaultlist = { "" }
 
 local function getbuffer(name)
-    local str = getcontent(name)
-    if str ~= "" then
-     -- characters.showstring(str)
-        ctx_viafile(str,f_getbuffer(validstring(name,"noname")))
+    local list = name and name ~= "" and settings_to_array(name) or defaultlist
+    for i=1,#list do
+        local buf = list[i]
+        local str = getcontent(buf)
+        if str ~= "" then
+         -- characters.showstring(str)
+            ctx_viafile(str,f_getbuffer(validstring(buf,"noname")))
+        end
     end
 end
 
@@ -721,7 +733,7 @@ local function getbuffermkvi(name) -- rather direct !
     ctx_viafile(resolvers.macros.preprocessed(getcontent(name)),formatters["buffer.%s.mkiv"](validstring(name,"noname")))
 end
 
-local function gettexbuffer(name)
+local function getbuffertex(name)
     local buffer = name and cache[name]
     if buffer and buffer.data ~= "" then
         ctx_pushcatcodetable()
@@ -736,15 +748,16 @@ local function gettexbuffer(name)
     end
 end
 
-buffers.get          = getbuffer
-buffers.getmkiv      = getbuffermkiv
-buffers.gettexbuffer = gettexbuffer
-buffers.run          = runbuffer
+buffers.get       = getbuffer
+buffers.getmkvi   = getbuffermkvi
+buffers.gettex    = getbuffertex
+buffers.getctxlua = loadcontent
+buffers.run       = runbuffer
 
-implement { name = "getbufferctxlua", actions = loadcontent,   arguments = "string" }
-implement { name = "getbuffer",       actions = getbuffer,     arguments = "string" }
-implement { name = "getbuffermkvi",   actions = getbuffermkvi, arguments = "string" }
-implement { name = "gettexbuffer",    actions = gettexbuffer,  arguments = "string" }
+implement { name = "getbufferctxlua", actions = loadcontent,   arguments = "argument" }
+implement { name = "getbuffer",       actions = getbuffer,     arguments = "argument" }
+implement { name = "getbuffermkvi",   actions = getbuffermkvi, arguments = "argument" }
+implement { name = "getbuffertex",    actions = getbuffertex,  arguments = "argument" }
 
 interfaces.implement {
     name      = "getbuffercontent",

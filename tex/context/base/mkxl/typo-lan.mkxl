@@ -15,10 +15,10 @@
 
 \unprotect
 
-\registerctxluafile{typo-lan}{}
+\registerctxluafile{typo-lan}{autosuffix}
 
 %D \macros
-%D   {averagecharwidth, charwidthlanguage}
+%D   {languagecharwidth, averagecharwidth, charwidthlanguage}
 %D
 %D This is a more \MKIV-ish variant of lang-frq.mkiv. The methods are gone as one
 %D doesn't need the tables for them. The main macro is \type {\averagecharwidth}
@@ -26,39 +26,41 @@
 %D
 %D I finally decided to reimplement this as I needed it for a manual (which is often
 %D a reason for such a rewrite). With some inspiring Porcupine Tree in the
-%D background it's not the worst thing to do.
+%D background it's not the worst thing to do. The \LMTX\ variant is a bit more
+%D flexible as it can also set, not that someone will notice.
 
 \mutable\def\charwidthlanguage{\currentmainlanguage}
 
-\permanent\def\averagecharwidth   {\dimexpr\clf_averagecharwidth{\charwidthlanguage}\scaledpoint\relax}
-\permanent\def\languagecharwidth#1{\dimexpr\clf_averagecharwidth{#1}\scaledpoint\relax}
+% \languagecharwidth{language} is defined at the lua end
 
-\protect
+\permanent\def\averagecharwidth{\languagecharwidth{\charwidthlanguage}}
 
-\continueifinputfile{typo-lan.mkiv}
+\protect \endinput
 
-\setuplayout[backspace=4cm]
-
-\showframe
-
-\starttext
-
-\startbuffer
-
-\mainlanguage[en] \hsize65\averagecharwidth \normalexpanded{\inleft{\the\hsize}} \input ward \par
-\mainlanguage[de] \hsize65\averagecharwidth \normalexpanded{\inleft{\the\hsize}} \input ward \par
-\mainlanguage[nl] \hsize65\averagecharwidth \normalexpanded{\inleft{\the\hsize}} \input ward \par
-
-\stopbuffer
-
-\getbuffer \blank
-
-\switchtobodyfont[pagella]
-
-\getbuffer \blank
-
-\switchtobodyfont[tt,8pt]
-
-\getbuffer
-
-\stoptext
+% \setuplayout[backspace=4cm]
+%
+% \showframe
+%
+% \starttext
+%
+% \startbuffer
+%
+% \mainlanguage[en] \hsize65\averagecharwidth \normalexpanded{\inleft{\the\hsize}} \input ward \par
+% \mainlanguage[de] \hsize65\averagecharwidth \normalexpanded{\inleft{\the\hsize}} \input ward \par
+% \mainlanguage[nl] \hsize65\averagecharwidth \normalexpanded{\inleft{\the\hsize}} \input ward \par
+%
+% \languagecharwidth{de}=\languagecharwidth{en}
+%
+% \stopbuffer
+%
+% \getbuffer \blank
+%
+% \switchtobodyfont[pagella]
+%
+% \getbuffer \blank
+%
+% \switchtobodyfont[tt,8pt]
+%
+% \getbuffer
+%
+% \stoptext

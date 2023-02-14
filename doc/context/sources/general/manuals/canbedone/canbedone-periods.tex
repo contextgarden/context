@@ -1,0 +1,157 @@
+% language=us runpath=texruns:manuals/canbedone
+
+\environment canbedone-style
+
+% \showframe
+
+\startdocument
+  [title=periods,
+   color=middlered]
+
+\startsectionlevel[title=Introduction]
+
+When the \TEX\ program showed up there were not many fonts that could be used so
+it came with its own fonts and because the number of slots in the encoding was
+limited (first to 127, later to 255) there was no space characters. It was not
+needed anyway because the engine uses a model of glue between words. So, instead
+of fixed spacing, \TEX\ uses flexible spacing. In addition to what is normally
+considered a word space, spacing is also determined by the so called space factor
+of characters preceding spaces. But, especially after abbreviations with periods
+you might want something different depending on the usage of the period. Here we
+discuss how that can be done.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Font related spacing]
+
+Spacing is controlled by the amount specified in the font in the so called
+font dimensions. In \CONTEXT\ these can be accessed via macros:
+
+\starttabulate[||c|c|c|c|]
+\BC                        \NC \tf normal space
+                           \NC \bf bold space
+                           \NC \it italic space
+                           \NC \bi bolditalic space                    \NC \NR
+\NC \tex{interwordspace}   \NC {\tf \expandafter}\the\interwordspace
+                           \NC {\bf \expandafter}\the\interwordspace
+                           \NC {\it \expandafter}\the\interwordspace
+                           \NC {\bi \expandafter}\the\interwordspace   \NC \NR
+\NC \tex{interwordstretch} \NC {\tf \expandafter}\the\interwordstretch
+                           \NC {\bf \expandafter}\the\interwordstretch
+                           \NC {\it \expandafter}\the\interwordstretch
+                           \NC {\bi \expandafter}\the\interwordstretch \NC \NR
+\NC \tex{interwordshrink}  \NC {\tf \expandafter}\the\interwordshrink
+                           \NC {\it \expandafter}\the\interwordshrink
+                           \NC {\bi \expandafter}\the\interwordshrink
+                           \NC {\bf \expandafter}\the\interwordshrink  \NC \NR
+\stoptabulate
+
+The differences in the three components are subtle but often of no concern to the
+user. Stretch and shrink kicks in when we align the left and right edge,
+otherwise they are basically ignored. These spacing properties are very specific
+for \TEX\ fonts, they don't come with for instance \OPENTYPE\ fonts. There we
+derive the stretch and shrink from the regular font space (\UNICODE\ slot U+00020
+or \ASCII\ value 32).
+
+A user can tweak the interword spacing with \type {\spaceskip} and \type
+{\xspaceskip} which works together with the \type {\spacefactor} and (character
+specific)\type {\sfcode} values. And as it is somewhat hard to explain the
+details involved I just refer to Chapter~25 (Spacing) of \TEX\ by Topic.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Spacing after periods]
+
+For this manual it's only important to know that the space factors influence the
+spacing after uppercase letters and punctuation and the later aspect is what this
+is about.
+
+\startbuffer[a]
+\frenchspacing          This is a t.e.s.t. for periods. Does it work?
+\vskip-.8\lineheight
+\nonfrenchspacing \blue This is a t.e.s.t. for periods. Does it work?
+\stopbuffer
+
+\startbuffer[b]
+\frenchspacing           This is a t.e.s.t.\ for periods. Does it work?
+\vskip-.8\lineheight
+\nonfrenchspacing \green This is a t.e.s.t.\ for periods. Does it work?
+\stopbuffer
+
+\startbuffer[c]
+\frenchspacing         This is a t.e.s.t\fsp. for periods. Does it work?
+\vskip-.8\lineheight
+\nonfrenchspacing \red This is a t.e.s.t\fsp. for periods. Does it work?
+\stopbuffer
+
+\startbuffer[d]
+\setperiodkerning[zerospaceperiods]
+\frenchspacing         This is a t.e.s.t. for periods. Does it work?
+\vskip-.8\lineheight
+\nonfrenchspacing \red This is a t.e.s.t. for periods. Does it work?
+\stopbuffer
+
+\typebuffer[a] \start \forgetall \resetperiodkerning \getbuffer[a] \stop
+
+You will notice that the spacing after \type {t.e.s.t.} is as flexible as
+the space after \type {periods.} but what if you don't want that? There are
+several ways to influence the following space:
+
+\typebuffer[b] \start \forgetall \resetperiodkerning \getbuffer[b] \stop
+
+The \type {\fsp} macro looks ahead and adapts the space factor:
+
+\typebuffer[c] \start \forgetall \resetperiodkerning \getbuffer[c] \stop
+
+\stopsectionlevel
+
+\startsectionlevel[title=Automation]
+
+Where the manual (explicit) making sure we get spacing right is quite
+robust and predictable a user might be willing to delegate the task to
+\CONTEXT, and here is the trick:
+
+\typebuffer[d] \start \forgetall \resetperiodkerning \getbuffer[d] \stop
+
+This features has been present from mid 2017 but I admit that till now I never
+used it. Reasons are that it makes no sense to adapt existing documents and when
+a text is for instance meant for a user group journal too, you cannot expect this
+automatic feature to be present in the macro package used for typesetting it. But
+maybe it's time to change that policy. I also admit that I seldom have this
+situation, probably the only few cases are abbreviations like \type {e.g.} (for
+example) and \type {c.q.} (casu quo).
+
+There are a few predefined period kerning variants and you can define more if you
+want:
+
+\starttyping
+\defineperiodkerning [zerospaceperiods]  [factor=0]
+\defineperiodkerning [smallspaceperiods] [factor=.25]
+\defineperiodkerning [halfspaceperiods]  [factor=.5]
+\stoptyping
+
+\startbuffer[e]
+\setperiodkerning[zerospaceperiods]
+\frenchspacing         How about c.q. and e.g. within a sentence?
+\vskip-.8\lineheight
+\nonfrenchspacing \red How about c.q. and e.g. within a sentence?
+\stopbuffer
+
+\typebuffer[e] \start \forgetall \getbuffer[e] \stop
+
+Of course one needs to keep an eye on the results because one never knows if the
+heuristics are flawed. And if needed it can be improved.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Todo]
+
+{\em more spacing related features}
+
+% optionalspace
+% autoinsertspace
+% ~
+
+\stopsectionlevel
+
+\stopdocument

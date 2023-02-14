@@ -176,8 +176,8 @@
 \definefilesynonym [type-imp-kurier-medium.mkiv]          [type-imp-kurier.mkiv]
 \definefilesynonym [type-imp-kurier-heavy.mkiv]           [type-imp-kurier.mkiv]
 
-\definefilesynonym [type-imp-antykwa-torunska-light.mkiv]      [type-imp-antykwa.mkiv]
-\definefilesynonym [type-imp-antykwa-torunska-cond.mkiv]       [type-imp-antykwa.mkiv]
-\definefilesynonym [type-imp-antykwa-torunska-lightcond.mkiv]  [type-imp-antykwa.mkiv]
+\definefilesynonym [type-imp-antykwa-light.mkiv]          [type-imp-antykwa.mkiv]
+\definefilesynonym [type-imp-antykwa-cond.mkiv]           [type-imp-antykwa.mkiv]
+\definefilesynonym [type-imp-antykwa-lightcond.mkiv]      [type-imp-antykwa.mkiv]
 
 \protect \endinput

@@ -85,7 +85,7 @@
 \mutable\lettonothing\m_rule_option
 \mutable\lettonothing\m_rule_color
 
-\registerctxluafile{node-rul}{autosuffix,optimize}
+\registerctxluafile{node-rul}{autosuffix}
 
 \installcorenamespace{bar}
 \installcorenamespace{barstack}

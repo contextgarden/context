@@ -662,7 +662,7 @@ vardef lmt_do_function =
             swap    := getparameter "reverse" ;
             shape   := getparameter "shape" ;
             close   := getparameter "close" ;
-axis   := getparameter "axis" ;
+            axis    := getparameter "axis" ;
             p := image (
                 if (getparametercount "functions") > 0 :
                     for s = 1 upto getparametercount "functions" :
@@ -1017,6 +1017,8 @@ presetparameters "chart" [
     trace           = false,
     showlabels      = true,
     showlegend      = true,
+    showvalues      = false,
+    showaxis        = false,
     center          = false,
 
     samples         = { },
@@ -1035,6 +1037,16 @@ presetparameters "chart" [
   % labeloffset     = 0,
     labelfraction   = 0.8,
     labelcolor      = "",
+
+    axisstyle       = "",
+    axiscolor       = "",
+    axisformat      = "",
+    axislinewidth   = mm/5,
+    axislinecolor   = "",
+
+    valuestyle      = "",
+    valuecolor      = "",
+    valueformat     = "",
 
     backgroundcolor = "",
     drawcolor       = "white",
@@ -1086,30 +1098,59 @@ def lmt_chart_bar       = applyparameters "chart:bar"       "lmt_do_chart_bar"  
 
 def lmt_do_chart_start (expr what) =
     pushparameters what ;
-    save width, height, depth, distance, threshold, linewidth, linegap, labelgap, labelfraction, value, nofsamples, nofsamplesets ;
-    save fillcolor, linecolor, drawcolor, labelcolor, labelstyle, labelformat, labelstrut, labelanchor, colormode ;
-    string fillcolor, linecolor, drawcolor, labelcolor, labelstyle, labelformat, labelstrut, labelanchor, colormode ;
+    save width, height, depth, distance,
+        threshold,
+        linewidth, linegap,
+        value, nofsamples, nofsamplesets,
+        fillcolor, linecolor, drawcolor,
+        labelcolor, labelstyle, labelformat, labelgap, labelfraction, labelstrut, labelanchor,
+        axiscolor, axisstyle, axisformat, axisgap, axislinewidth, axislinecolor,
+        valuecolor, valuestyle, valueformat, valuegap,
+        colormode ;
+    string fillcolor, linecolor, drawcolor,
+        labelcolor, labelstyle, labelformat, labelstrut, labelanchor,
+        axiscolor, axisstyle, axisformat, axislinecolor,
+        valuecolor, valuestyle, valueformat,
+        colormode ;
     if hasparameter "sampleset" :
         setluaparameter what "samples" (getparameter "sampleset") ;
     fi ;
-    threshold := getparameter "threshold" ;
-    linewidth := getparameter "linewidth" ;
-    height := getparameter "height" ;
-    depth := max(getparameter "originsize", (getparameter "innerradius"), 8*linewidth) ;
-    width := getparameter "width" ;
-    distance := getparameter "distance" ;
-    linegap := getparameterdefault "linegap" linewidth ;
-    drawcolor := getparameter "drawcolor" ;
-    colormode :=  getparameter "colormode" ;
-    labelcolor := getparameter "labelcolor" ;
-    labelgap := getparameter "labeloffset" ;
-    labelstyle := getparameter "labelstyle" ;
-    labelformat := getparameter "labelformat" ;
-    labelstrut := getparameter "labelstrut" ;
-    labelanchor := getparameter "labelanchor" ;
+
+    threshold     := getparameter "threshold" ;
+    colormode     := getparameter "colormode" ;
+
+    linewidth     := getparameter "linewidth" ;
+    linegap       := getparameterdefault "linegap" linewidth ;
+
+    height        := getparameter "height" ;
+    depth         := max(getparameter "originsize", (getparameter "innerradius"), 8*linewidth) ;
+    width         := getparameter "width" ;
+    distance      := getparameter "distance" ;
+
+    drawcolor     := getparameter "drawcolor" ;
+
+    labelcolor    := getparameter "labelcolor" ;
+    labelstyle    := getparameter "labelstyle" ;
+    labelformat   := getparameter "labelformat" ;
+    labelgap      := getparameter "labeloffset" ;
+    labelstrut    := getparameter "labelstrut" ;
+    labelanchor   := getparameter "labelanchor" ;
     labelfraction := getparameter "labelfraction" ;
+
+    axiscolor     := getparameter "axiscolor" ;
+    axisstyle     := getparameter "axisstyle" ;
+    axisformat    := getparameter "axisformat" ;
+    axisgap       := getparameter "axisoffset" ;
+    axislinewidth := getparameter "axislinewidth" ;
+    axislinecolor := getparameter "axislinecolor" ;
+
+    valuecolor    := getparameter "valuecolor" ;
+    valuestyle    := getparameter "valuestyle" ;
+    valueformat   := getparameter "valueformat" ;
+    valuegap      := getparameter "valueoffset" ;
+
     nofsamplesets := getparametercount "samples" ;
-    nofsamples := getmaxparametercount "samples" ;
+    nofsamples    := getmaxparametercount "samples" ;
 enddef ;
 
 def lmt_do_chart_stop =

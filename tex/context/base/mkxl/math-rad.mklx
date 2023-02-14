@@ -26,7 +26,7 @@
 % \def\rootradical{\Uroot    0 "221A } % can be done in char-def
 % \def\surdradical{\Uradical 0 "221A } % can be done in char-def
 
-\protected\def\sqrt{\doifelsenextoptionalcs\rootwithdegree\rootwithoutdegree} % will be redefined
+% \protected\def\sqrt{\doifelsenextoptionalcs\rootwithdegree\rootwithoutdegree} % will be redefined
 
 % \permanent\protected\def\styledrootradical#1#2% so that \text works ok ... \rootradical behaves somewhat weird
 %   {\normalexpanded{\math_radical_common
@@ -39,8 +39,8 @@
 % \permanent\protected\def\styledrootradical#1#2% so that \text works ok ... \rootradical behaves somewhat weird
 %   {\Uroot style \normalmathstyle "0 "221A {#1}{#2}}
 
-\permanent\protected\def\rootwithdegree[#1]{\math_radical_common{#1}}
-\permanent\protected\def\rootwithoutdegree {\math_radical_common  {}}
+% \permanent\protected\def\rootwithdegree[#1]{\math_radical_common{#1}}
+% \permanent\protected\def\rootwithoutdegree {\math_radical_common  {}}
 
 %D Even older stuff:
 
@@ -78,6 +78,20 @@
 %D
 %D $ \sqrt[3]{5}  \RR\sqrt[3]{5}  \sqrt[3]{5} $\par
 %D $ \sqrt[3]{5} {\RR\sqrt[3]{5}} \sqrt[3]{5} $\par
+%D \stoptyping
+%D
+%D And:
+%D
+%D \starttyping
+%D \definemathradical[lsqrt][strut=yes]
+%D \definemathradical[msqrt][strut=math]
+%D \definemathradical[xsqrt][height=3ex,depth=2ex]
+%D
+%D $\sqrt[strut=no][3]{y}$
+%D $\sqrt[strut=no,n=5]{y}$
+%D $\sqrt[strut=no,n=5][6]{y}$
+%D $\sqrt[strut=math]{y}$
+%D $\sqrt[3]{y}$
 %D \stoptyping
 
 \installcorenamespace{mathradical}
@@ -117,9 +131,14 @@
 \tolerant\protected\def\math_radical_handle#tag#*[#settings]#*[#degree]#:#body%
   {\begingroup
    \edef\currentmathradical{#tag}%
-   \ifparameter#degree\or
-     \edef\currentmathradicaldegree{#degree}%
+   \ifhastok={#settings}%
+     \lettonothing\currentmathradicaldegree
      \setupcurrentmathradical[#settings]%
+     \ifparameter#degree\or
+        \edef\currentmathradicaldegree{#degree}%
+     \else
+        \edef\currentmathradicaldegree{\mathradicalparameter\c!n}%
+     \fi
    \else
      \edef\currentmathradicaldegree{#settings}%
    \fi
@@ -253,7 +272,12 @@
    \fi
    \endgroup}
 
-\definemathradical[sqrt][mp=minifun::math:radical:default]
+\pushoverloadmode
+
+\definemathradical[root][mp=minifun::math:radical:default]
+\definemathradical[sqrt][root]
+
+\popoverloadmode
 
 % \setupmathradical[sqrt][alternative=normal,color=darkblue]
 % \setupmathradical[sqrt][alternative=mp,color=darkgreen]

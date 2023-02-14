@@ -321,7 +321,7 @@ mathtweaks.subsets = {
     p                = { 0x1D45D },
     dotless          = { 0x00049, 0x0004A, 0x00131, 0x00237, 0x1D6A4, 0x1D6A5 },
     integrals        = { 0x0222B, 0x0222C, 0x0222D, 0x0222E, 0x0222F, 0x02230, 0x02231, 0x02232, 0x02233, 0x02A0B, 0x02A0C, 0x02A0D, 0x02A0E, 0x02A0F, 0x02A10, 0x02A11, 0x02A12, 0x02A13, 0x02A14, 0x02A15, 0x02A16, 0x02A17, 0x02A18, 0x02A19, 0x02A1A, 0x02A1B, 0x02A1C, 0x02320, 0x02321 },
-    horizontalfences = { 0x023B4, 0x023B5, 0x023DC, 0x023DD, 0x023DE, 0x023DF, 0x023E0, 0x023E1 }, -- not really used
+    horizontalfences = { 0x0203E, 0x023B4, 0x023B5, 0x023DC, 0x023DD, 0x023DE, 0x023DF, 0x023E0, 0x023E1 }, -- not really used
 }
 
 local function getalso(target,original)
@@ -1844,7 +1844,8 @@ do
             parts    = {
                 { advance = width, ["end"] = step, glyph = 0x203E, start = 0 },
                 { advance = width, ["end"] = 0,    glyph = 0x203E, start = step, extender = 1 },
-            }
+            },
+            partsorientation = "horizontal",
         }
         --
         characters[0x0332] = characters[0x203E]
@@ -1872,7 +1873,8 @@ do
                     { advance = thickness, glyph = tpiece, ["end"] = 0,    start = half },
                     { advance = width,     glyph = 0x203E, ["end"] = step, start = step, extender = 1 },
                     { advance = thickness, glyph = tpiece, ["end"] = half, start = 0 },
-                }
+                },
+                partsorientation = "horizontal",
             }
         end
         if not characters[0x23B5] then
@@ -1893,7 +1895,8 @@ do
                     { advance = thickness, glyph = bpiece, ["end"] = 0,    start = half },
                     { advance = width,     glyph = 0x203E, ["end"] = step, start = step, extender = 1 },
                     { advance = thickness, glyph = bpiece, ["end"] = half, start = 0 },
-                }
+                },
+                partsorientation = "horizontal",
             }
         end
         --
@@ -1932,7 +1935,8 @@ do
             end
             if chardata and (force or overloads[unicode] == false or not chardata.parts) then
                 if not list then
-                    chardata.parts = nil -- when we test
+                 -- chardata.parts = nil -- when we test
+                    chardata.parts = { { glyph = unicode } }
                 else
                     local overload = overloads[unicode]
                     local parts    = { }
@@ -2030,6 +2034,7 @@ do
             [0x21CB] = centered, -- leftrightharpoons
             [0x21CC] = centered, -- rightleftharpoons
             [0x21C4] = centered, -- rightoverleftarrow
+            [0x21C6] = centered, -- leftoverrightarrow
             [0x21A6] = centered, -- mapsto
             --
             [0x203E] = { slackslack, { left = slack, right = slack, extensible = true } }, -- bar

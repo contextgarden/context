@@ -25,7 +25,7 @@
 \newdimension\framedmaxwidth
 \newdimension\framedaveragewidth
 
-\registerctxluafile{pack-rul}{autosuffix,optimize}
+\registerctxluafile{pack-rul}{autosuffix}
 
 \unprotect
 

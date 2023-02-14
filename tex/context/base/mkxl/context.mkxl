@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2023.02.07 19:02}
+\immutable\edef\contextversion{2023.02.14 17:41}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -642,8 +642,16 @@
 
 \errorstopmode \dump \endinput
 
-% These lua files are (still) shared with mkiv amd some are large and
-% rather generic. However there are some that can be improved in lmtx.
+% Some lua files are (still) shared with mkiv amd some are large and rather
+% generic. However there are some that can be improved in lmtx. At some point
+% we will definitely freeze mkiv and then use lmt files for futher development
+% of lmtx. We also no longer use the macro feature to replace 5.3 compatible
+% function calls by native 5.4 features as lmt files assume 5.4 anyway. This
+% makes format generation a little faster (not that it's that slow). It might \
+% take a while before we dealt with all of them because I'll also clean them
+% up a bit when doing.
+%
+% % luat-bas.mkxl l-macro-imp-optimize % this will go away
 
 % c:/data/develop/context/sources/attr-eff.lua
 % c:/data/develop/context/sources/attr-mkr.lua
@@ -689,6 +697,8 @@
 % c:/data/develop/context/sources/core-dat.lua
 % c:/data/develop/context/sources/core-two.lua
 
+% data...
+
 % c:/data/develop/context/sources/file-ini.lua
 % c:/data/develop/context/sources/file-lib.lua
 % c:/data/develop/context/sources/file-res.lua
@@ -697,14 +707,11 @@
 % c:/data/develop/context/sources/font-afk.lua
 % c:/data/develop/context/sources/font-agl.lua
 % c:/data/develop/context/sources/font-aux.lua
-% c:/data/develop/context/sources/font-cff.lua
 % c:/data/develop/context/sources/font-cid.lua
 % c:/data/develop/context/sources/font-enc.lua
 % c:/data/develop/context/sources/font-log.lua
 % c:/data/develop/context/sources/font-lua.lua % not realy used, more a demo
-% c:/data/develop/context/sources/font-map.lua
 % c:/data/develop/context/sources/font-nod.lua % some trace helpers
-% c:/data/develop/context/sources/font-onr.lua % type one afm/pfb
 % c:/data/develop/context/sources/font-osd.lua
 % c:/data/develop/context/sources/font-otc.lua
 % c:/data/develop/context/sources/font-oth.lua
@@ -720,7 +727,6 @@
 % c:/data/develop/context/sources/font-sol.lua
 % c:/data/develop/context/sources/font-syn.lua % identification code
 % c:/data/develop/context/sources/font-trt.lua
-% c:/data/develop/context/sources/font-ttf.lua
 % c:/data/develop/context/sources/font-web.lua % proof of concept, never used
 
 % c:/data/develop/context/sources/font-imp-combining.lua  % shared, like typescript
@@ -752,8 +758,6 @@
 % c:/data/develop/context/sources/lang-def.lua % these are data files
 % c:/data/develop/context/sources/lang-txt.lua % these are data files
 % c:/data/develop/context/sources/lang-wrd.lua
-
-% c:/data/develop/context/sources/libs-ini.lua % will become lmt
 
 % c:/data/develop/context/sources/luat-exe.lua
 % c:/data/develop/context/sources/luat-iop.lua
@@ -790,7 +794,7 @@
 
 % c:/data/develop/context/sources/phys-dim.lua
 
-% c:/data/develop/context/sources/publ-aut.lua
+% c:/data/develop/context/sources/publ-aut.lua % shared
 % c:/data/develop/context/sources/publ-dat.lua
 % c:/data/develop/context/sources/publ-fnd.lua
 % c:/data/develop/context/sources/publ-inc.lua
@@ -801,8 +805,6 @@
 % c:/data/develop/context/sources/publ-sor.lua
 % c:/data/develop/context/sources/publ-tra.lua
 % c:/data/develop/context/sources/publ-usr.lua
-
-% c:/data/develop/context/sources/regi-ini.lua
 
 % c:/data/develop/context/sources/scrn-but.lua
 % c:/data/develop/context/sources/scrn-fld.lua
@@ -838,13 +840,11 @@
 % c:/data/develop/context/sources/trac-par.lua
 % c:/data/develop/context/sources/trac-tex.lua
 
-% c:/data/develop/context/sources/typo-cln.lua
+% c:/data/develop/context/sources/typo-cln.lua -- wrong name for what it does
 % c:/data/develop/context/sources/typo-dha.lua
 % c:/data/develop/context/sources/typo-fkr.lua
 % c:/data/develop/context/sources/typo-inj.lua
-% c:/data/develop/context/sources/typo-lan.lua
 % c:/data/develop/context/sources/typo-man.lua
-% c:/data/develop/context/sources/typo-pnc.lua
 % c:/data/develop/context/sources/typo-prc.lua
 % c:/data/develop/context/sources/typo-rep.lua
 

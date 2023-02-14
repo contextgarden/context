@@ -19,7 +19,7 @@
 %D variants. Starting at the last day of 2011 both methods are merged into one and
 %D caching has been added, which makes switching twice as fast.
 
-\registerctxluafile{spac-ali}{autosuffix,optimize}
+\registerctxluafile{spac-ali}{autosuffix}
 
 % Used once so ... replace it or use if more frequently ...
 

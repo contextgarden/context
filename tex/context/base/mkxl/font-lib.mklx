@@ -35,30 +35,29 @@
 \registerctxluafile{font-fmp}{autosuffix}
 \registerctxluafile{font-agl}{}           % if needed we can comment this and delay loading
 \registerctxluafile{font-cid}{}           % cid maps
-\registerctxluafile{font-map}{optimize}
+\registerctxluafile{font-map}{}
 
 % helpers
 
-\registerctxluafile{font-otr}{optimize}   % opentype fontloader
+\registerctxluafile{font-otr}{}           % opentype fontloader
 \registerctxluafile{font-web}{}           % opentype fontloader
-\registerctxluafile{font-cff}{optimize}   % quadratic outlines
-\registerctxluafile{font-ttf}{optimize}   % cubic outlines
-\registerctxluafile{font-dsp}{autosuffix,optimize}
+\registerctxluafile{font-cff}{autosuffix} % quadratic outlines
+\registerctxluafile{font-ttf}{autosuffix} % cubic outlines
+\registerctxluafile{font-dsp}{autosuffix}
 \registerctxluafile{font-hsh}{autosuffix} % hashes used by context
 \registerctxluafile{font-vfc}{autosuffix}
 \registerctxluafile{font-prv}{}           % needs hashes
 \registerctxluafile{font-vir}{}
-\registerctxluafile{font-nod}{optimize}
+\registerctxluafile{font-nod}{}
 \registerctxluafile{font-oti}{}           % otf initialization
 \registerctxluafile{font-ott}{}           % otf tables (first)
 \registerctxluafile{font-otl}{autosuffix}
 \registerctxluafile{font-oto}{}
-\registerctxluafile{font-otj}{autosuffix,optimize}
+\registerctxluafile{font-otj}{autosuffix}
 \registerctxluafile{font-oup}{}
 \registerctxluafile{font-ota}{autosuffix}
-%registerctxluafile{font-ots-pre-scale}{autosuffix,optimize}
-\registerctxluafile{font-ots}{autosuffix,optimize}
-\registerctxluafile{font-otd}{autosuffix,optimize}
+\registerctxluafile{font-ots}{autosuffix}
+\registerctxluafile{font-otd}{autosuffix}
 \registerctxluafile{font-otc}{}
 \registerctxluafile{font-oth}{}
 % \doifelsefileexists{font-osd-new.lmt}{
@@ -71,15 +70,15 @@
 
 % we use otf code for type one
 
-\registerctxluafile{font-onr}{autosuffix,optimize}
-\registerctxluafile{font-one}{autosuffix,optimize}
+\registerctxluafile{font-onr}{autosuffix}
+\registerctxluafile{font-one}{autosuffix}
 \registerctxluafile{font-afk}{}
 
 \registerctxluafile{font-txt}{autosuffix}
 
 % tfm
 
-\registerctxluafile{font-tpk}{autosuffix,optimize}
+\registerctxluafile{font-tpk}{autosuffix}
 \registerctxluafile{font-tfm}{autosuffix}
 
 % name database

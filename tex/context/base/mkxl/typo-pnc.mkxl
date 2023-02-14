@@ -19,7 +19,7 @@
 % with "foo e.g.\ bar" so let's see if we can automate that and at the same time
 % inject spaces between the snippets. It gets boring writing this kind of code.
 
-\registerctxluafile{typo-pnc}{}
+\registerctxluafile{typo-pnc}{autosuffix}
 
 \definesystemattribute[periodkern][public,global]
 

@@ -61,7 +61,7 @@
 \registerctxluafile{data-pre}{} % after data-res
 \registerctxluafile{data-bin}{} % before data-tex
 \registerctxluafile{data-tex}{} % after data-pre
-\registerctxluafile{data-vir}{}
+\registerctxluafile{data-vir}{autosuffix}
 \registerctxluafile{data-zip}{}
 \registerctxluafile{data-dec}{}
 \registerctxluafile{data-tar}{}

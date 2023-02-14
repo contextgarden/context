@@ -1,0 +1,29 @@
+% language=us runpath=texruns:manuals/canbedone
+
+\environment canbedone-style
+
+%D This is a bit if a cheat. The can be done manuals are independent but I want an
+%D overview document on the website. Therefore we use sectionlevels in the documents
+%D that we we then overload here (we push the chapter level in front).
+%D
+%D This style is mostly the same as the low level style.
+
+\starttext
+
+    \definesectionlevels
+      [default]
+      [{chapter,title},
+       {section,subject},
+       {subsection,subsubject},
+       {subsubsection,subsubsubject},
+       {subsubsubsection,subsubsubject},
+       {subsubsubsubsection,subsubsubject}]
+
+    \startdocument[title=canbedone,color=middlegray]
+    \stopdocument
+
+    \startsectionlevel[title=Periods] \component [canbedone-periods] \stopsectionlevel
+
+\stoptext
+
+

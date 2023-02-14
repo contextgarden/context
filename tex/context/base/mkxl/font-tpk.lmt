@@ -13,8 +13,8 @@ if not modules then modules = { } end modules ['font-tpk'] = {
 -- luatex. All do things a bit more luaish and errors are of course mine.
 
 local next = next
-local extract, band, lshift, rshift = bit32.extract, bit32.band, bit32.lshift, bit32.rshift
-local idiv = number.idiv
+----- extract, band, lshift, rshift = bit32.extract, bit32.band, bit32.lshift, bit32.rshift
+----- idiv = number.idiv
 local char = string.char
 local concat, insert, remove, copy = table.concat, table.insert, table.remove, table.copy
 local tobitstring = number.tobitstring
@@ -67,20 +67,22 @@ do
             if bitweight == 0 then
                 bitweight = 16
                 inputbyte = readbyte(s)
-                return extract(inputbyte,4,4)
+             -- return extract(inputbyte,4,4)
+                return (inputbyte >> 4) & 0xF
             else
                 bitweight = 0
-                return band(inputbyte,15)
+                return inputbyte & 15
             end
         end
 
         local function getbit() -- can be inlined
-            bitweight = rshift(bitweight,1)
+         -- bitweight = rshift(bitweight,1)
+            bitweight = (bitweight >> 1) & 0xFFFFFFFF
             if bitweight == 0 then -- actually we can check for 1
                 inputbyte = readbyte(s)
                 bitweight = 128
             end
-            return band(inputbyte,bitweight)
+            return inputbyte & bitweight
         end
 
         local function pkpackednum()
@@ -130,8 +132,8 @@ do
 
         local function handlehuge(i,j)
             while i ~= 0 do
-                j = lshift(j,4) + getnyb()
-    --             j = extract(j,8,4) + getnyb()
+             -- j = lshift(j,4) + getnyb()
+                j = ((j << 4) & 0xFFFFFFFF) + getnyb()
                 i = i - 1
             end
             remainder = j - 15 + (13 - dynf) * 16 + dynf
@@ -153,14 +155,14 @@ do
         local ysize      = glyph.ysize
         local word       = 0
         local wordweight = 0
-        local wordwidth  = idiv(xsize + 15,16)
+        local wordwidth  = (xsize + 15) // 16
         local rowsleft   = 0
-        local turnon     = band(flagbyte,8) == 8 and true or false
+        local turnon     = (flagbyte & 8) == 8 and true or false
         local hbit       = 0
         local count      = 0
         --
         realfunc         = pkpackednum
-        dynf             = idiv(flagbyte,16)
+        dynf             = flagbyte // 16
         --
         if dynf == 14 then
             bitweight = 0
@@ -171,7 +173,8 @@ do
                     if getbit() ~= 0 then
                         word = word + wordweight
                     end
-                    wordweight = rshift(wordweight,1)
+                 -- wordweight = rshift(wordweight,1)
+                    wordweight = (wordweight >> 1) & 0xFFFFFFFF
                     if wordweight == 0 then
                         r          = r + 1
                         raster[r]  = word
@@ -247,8 +250,8 @@ do
         local rr     = { }
         local r      = 0
         local s      = 0
-        local cw     = idiv(xsize+ 7, 8)
-        local rw     = idiv(xsize+15,16)
+        local cw     = (xsize+ 7) //  8
+        local rw     = (xsize+15) // 16
         local extra  = 2 * rw == cw
         local b
         for y=1,ysize do
@@ -261,7 +264,8 @@ do
             if extra then
                 r = r + 1 ; rr[r] = tobitstring(b,16,16)
             else
-                r = r + 1 ; rr[r] = tobitstring(extract(b,8+(8-cw),cw),cw,cw)
+             -- r = r + 1 ; rr[r] = tobitstring(extract(b,8+(8-cw),cw),cw,cw)
+                r = r + 1 ; rr[r] = tobitstring((b >> (8+(8-cw))) &~ (-1 << cw),cw,cw)
             end
             result[y] = concat(rr)
         end
@@ -304,20 +308,23 @@ Q]] ]
         local result  = { }
         local r       = 0
         local s       = 0
-        local cw      = idiv(xsize+ 7, 8)
-        local rw      = idiv(xsize+15,16)
+        local cw      = (xsize+ 7) //  8
+        local rw      = (xsize+15) // 16
         local extra   = 2 * rw == cw
         local b
         for y=1,ysize do
             for x=1,rw-1 do
                 s = s + 1 ; b = stream[s]
-                r = r + 1 ; result[r] = char(extract(b,8,8),extract(b,0,8))
+             -- r = r + 1 ; result[r] = char(extract(b,8,8),extract(b,0,8))
+                r = r + 1 ; result[r] = char((b >> 8) & 0xFF,b & 0xFF)
             end
             s = s + 1 ; b = stream[s]
             if extra then
-                r = r + 1 ; result[r] = char(extract(b,8,8),extract(b,0,8))
+             -- r = r + 1 ; result[r] = char(extract(b,8,8),extract(b,0,8))
+                r = r + 1 ; result[r] = char((b >> 8) & 0xFF,b & 0xFF)
             else
-                r = r + 1 ; result[r] = char(extract(b,8,8))
+             -- r = r + 1 ; result[r] = char(extract(b,8,8))
+                r = r + 1 ; result[r] = char((b >> 8) & 0xFF)
             end
         end
         return template(width,llx,lly,urx,ury,xdpi,ydpi,llx,lly,xsize,ysize,result), width
@@ -346,10 +353,10 @@ Q]] ]
         while true do
             local flagbyte = readcardinal1(s)
             if flagbyte < 240 then
-                local c = band(flagbyte,7)
+                local c = flagbyte & 7
                 local length, index, width, pixels, xsize, ysize, xoffset, yoffset
                 if c >= 0 and c <= 3 then
-                    length  = band(flagbyte,7) * 256 + readcardinal1(s) - 3
+                    length  = (flagbyte & 7) * 256 + readcardinal1(s) - 3
                     index   = readcardinal1(s)
                     width   = readinteger3(s)
                     pixels  = readcardinal1(s)
@@ -364,7 +371,7 @@ Q]] ]
                         yoffset = yoffset - 256
                     end
                 elseif c >= 4 and c <= 6 then
-                    length  = band(flagbyte,3) * 65536 + readcardinal1(s) * 256 + readcardinal1(s) - 4
+                    length  = (flagbyte & 3) * 65536 + readcardinal1(s) * 256 + readcardinal1(s) - 4
                     index   = readcardinal1(s)
                     width   = readinteger3(s)
                     pixels  = readcardinal2(s)
@@ -587,8 +594,9 @@ do
         end
         local checksum   = readcardinal4(s)
         local designsize = readcardinal2(s)
-        designsize = designsize * 256 +        readcardinal1(s)
-        designsize = designsize *  16 + rshift(readcardinal1(s),4)
+        designsize = designsize * 256 +  readcardinal1(s)
+     -- designsize = designsize *  16 + rshift(readcardinal1(s),4)
+        designsize = designsize *  16 + (readcardinal1(s) >> 4)
         if designsize < 0xFFFF then
             return someerror("weird designsize")
         end
@@ -596,15 +604,17 @@ do
         local alpha =  16
         local z     = designsize
         while z >= 040000000 do
-            z = rshift(z,1)
+         -- z = rshift(z,1)
+            z = (z >> 1) & 0xFFFFFFFF
             alpha = alpha + alpha
         end
-        local beta = idiv(256,alpha)
+        local beta = 256 // alpha
         alpha = alpha * z
         --
         local function readscaled()
             local a, b, c, d = readbytes(s,4)
-            local n = idiv(rshift(rshift(d*z,8)+c*z,8)+b*z,beta)
+         -- local n = idiv(rshift(rshift(d*z,8)+c*z,8)+b*z,beta)
+            local n = (((((((d * z) >> 8) & 0xFFFFFFFF) + c * z) >> 8) & 0xFFFFFFFF) + b * z) // beta
             if a == 0 then
                 return n
             elseif a == 255 then
@@ -619,7 +629,8 @@ do
             if a > 127 then
                 a = a - 256
             end
-            return a * 0xFFFFF + b * 0xFFF + c * 0xF + rshift(d,4)
+         -- return a * 0xFFFFF + b * 0xFFF + c * 0xF + rshift(d,4)
+            return a * 0xFFFFF + b * 0xFFF + c * 0xF + ((d >> 4) & 0xFFFFFFFF)
         end
         --
         while lh > 2 do -- can be one-liner
@@ -775,11 +786,15 @@ do
             else
                 width     = readcardinal1(s)
                 height    = readcardinal1(s)
-                depth     = extract(height,0,4)
-                height    = extract(height,4,4)
+             -- depth     = extract(height,0,4)
+                depth     = height        & 0xF
+             -- height    = extract(height,4,4)
+                height    = (height >> 4) & 0xF
                 italic    = readcardinal1(s)
-                tag       = extract(italic,0,2)
-                italic    = extract(italic,2,6)
+             -- tag       = extract(italic,0,2)
+                tag       = italic        & 0x03
+             -- italic    = extract(italic,2,6)
+                italic    = (italic >> 2) & 0xFF
                 remainder = readcardinal1(s)
             end
             if width == 0 then
@@ -964,7 +979,7 @@ do
 
     local function scaled2()
         local a, b = readbytes(s,2)
-        local sw = idiv(b*z,beta)
+        local sw = (b*z) // beta
         if a == 0 then
             return sw
         elseif a == 255 then
@@ -976,7 +991,8 @@ do
 
     local function scaled3()
         local a, b, c = readbytes(s,3)
-        local sw = idiv(rshift(c*z,8)+b*z,beta)
+     -- local sw = idiv(rshift(c*z,8)+b*z,beta)
+        local sw = ((((c * z) >> 8) & 0xFFFFFFFF) + b * z) // beta
         if a == 0 then
             return sw
         elseif a == 255 then
@@ -988,7 +1004,8 @@ do
 
     local function scaled4()
         local a, b, c, d = readbytes(s,4)
-        local sw = idiv( rshift(rshift(d*z,8)+(c*z),8)+b*z,beta)
+     -- local sw = idiv( rshift(rshift(d*z,8)+(c*z),8)+b*z,beta)
+        local sw = (((((d * z) >> 8) & 0xFFFFFFFF + (c * z)) >> 8) & 0xFFFFFFFF + b * z) // beta
         if a == 0 then
             return sw
         elseif a == 255 then
@@ -1162,17 +1179,18 @@ do
         end
         local header     = readstring(s,readcardinal1(s))
         local checksum   = readcardinal4(s)
-        local designsize = idiv(readcardinal4(s),16)
+        local designsize = readcardinal4(s) // 16
         local fonts      = data and data.fonts  or { }
         local glyphs     = data and data.glyphs or { }
         --
         alpha =  16
         z     = designsize
         while z >= 040000000 do
-            z = rshift(z,1)
+         -- z = rshift(z,1)
+            z = (z >> 1) & 0xFFFFFFFF
             alpha = alpha + alpha
         end
-        beta  = idiv(256,alpha)
+        beta  = 256 // alpha
         alpha = alpha * z
         --
         cmd = readcardinal1(s)
@@ -1191,7 +1209,7 @@ do
             end
             local checksum   = skipbytes(s,4)
             local size       = scaled4()
-            local designsize = idiv(readcardinal4(s),16)
+            local designsize = readcardinal4(s) // 16
             local pathlen    = readcardinal1(s)
             local namelen    = readcardinal1(s)
             local path       = readstring(s,pathlen)
@@ -1267,7 +1285,7 @@ do
         local vffile  = resolvers.findbinfile(vfname,"ovf")
         if tfmfile and tfmfile ~= "" then
             if size < 0 then
-                size = idiv(65536 * -size,100)
+                size = (65536 * -size) // 100
             end
             local data = readers.loadtfm(tfmfile)
             if data.error then

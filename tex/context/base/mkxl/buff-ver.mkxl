@@ -31,7 +31,6 @@
 
 \installcorenamespace{typinglines}
 \installcorenamespace{typingspace}
-\installcorenamespace{typingblank} % needs checking ... used?
 
 \newtoks\everyinitializeverbatim
 
@@ -57,14 +56,6 @@
 \letcsname\??typingspace\v!normal    \endcsname\donothing
 \defcsname\??typingspace\v!fixed     \endcsname{\enforced\let\obeyedspace\specialfixedspace}
 \defcsname\??typingspace\v!character \endcsname{\enforced\chardef\obeyedspace\spaceasciicode}
-
-\defcsname\??typingblank\v!standard  \endcsname{\s_spac_whitespace_parskip}
-\defcsname\??typingblank\v!small     \endcsname{\smallskipamount}
-\defcsname\??typingblank\v!medium    \endcsname{\medskipamount}
-\defcsname\??typingblank\v!big       \endcsname{\bigskipamount}
-\defcsname\??typingblank\v!halfline  \endcsname{.5\baselineskip}
-\defcsname\??typingblank\v!line      \endcsname{\baselineskip}
-\defcsname\??typingblank\v!none      \endcsname{\zeropoint}
 
 \protected\def\buff_verbatim_obey_hyphens
   {}
@@ -109,12 +100,10 @@
 
 \def\buff_verbatim_initialize_typing_one
   {\usebodyfontparameter\typingparameter
-   \scratchskip\typingparameter\c!oddmargin\relax
-   \ifzeropt\scratchskip \else
+   \ifzerodim\typingparameter\c!oddmargin\else
      \let\buff_verbatim_set_line_margin\buff_verbatim_set_line_margin_indeed
    \fi
-   \scratchskip\typingparameter\c!evenmargin\relax
-   \ifzeropt\scratchskip \else
+   \ifzerodim\typingparameter\c!evenmargin\else
      \let\buff_verbatim_set_line_margin\buff_verbatim_set_line_margin_indeed
    \fi
    \ifrelax\buff_verbatim_set_line_margin
@@ -289,8 +278,8 @@
    \futureexpand\bgroup\buff_verbatim_type_a\buff_verbatim_type_one}
 
 \def\buff_verbatim_type_one
-  {\catcode`<=\othercatcode % old precaution
-   \catcode`>=\othercatcode % old precaution
+  {\catcode\lessthanasciicode\othercatcode % old precaution
+   \catcode\morethanasciicode\othercatcode % old precaution
    \futureexpandis<\buff_verbatim_type_b\buff_verbatim_type_c}
 
 \def\buff_verbatim_type_three
@@ -461,10 +450,10 @@
    \futureexpandis[\buff_verbatim_typing_start_yes\buff_verbatim_typing_start_nop}
 
 \def\buff_verbatim_typing_start_yes[#1]%
-  {\ifcondition\validassignment{#1}%
+  {\ifhastok={#1}%
      \setupcurrenttyping[#1]%
-   \else
-     \doif\v!continue{#1}{\lettypingparameter\c!continue\v!yes}%
+   \orelse\ifcstok{#1}\v!continue
+     \lettypingparameter\c!continue\v!yes
    \fi
    \typingparameter\c!before\relax % moved down
    \startpacked[\v!blank]%         % moved down

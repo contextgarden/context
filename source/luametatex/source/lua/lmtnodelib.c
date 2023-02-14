@@ -5321,15 +5321,19 @@ static int nodelib_direct_patchattributes(lua_State *L)
     return 0;
 }
 
+/* firstnode attributeid [nodetype] */
+
 static int nodelib_direct_findattribute(lua_State *L) /* returns attr value and node */
 {
     halfword c = nodelib_valid_direct_from_index(L, 1);
     if (c) {
         halfword i = lmt_tohalfword(L, 2);
+        halfword t = lmt_optinteger(L, 3, -1);
         while (c) {
-            if (tex_nodetype_has_attributes(node_type(c))) {
+            if ((t < 0 || node_type(c) == t) && tex_nodetype_has_attributes(node_type(c))) {
                 halfword p = node_attr(c);
                 if (p) {
+                    /* we could skip if the previous value is the same and didn't match */
                     p = node_next(p);
                     while (p) {
                         if (attribute_index(p) == i) {
@@ -5756,6 +5760,8 @@ static int nodelib_direct_traversechar(lua_State *L)
         }
     }
 }
+
+/* maybe a variant that checks for an attribute  */
 
 static int nodelib_direct_aux_next_glyph(lua_State *L)
 {

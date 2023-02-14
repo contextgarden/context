@@ -99,11 +99,11 @@
    \the\everystartreadingfile
    \pushcatcodetable       % saveguard
    \setcatcodetable\ctxcatcodes
-   \clf_pushregime}% temporarily this way
+   \pushregime}% temporarily this way
 
 \permanent\protected\def\stopreadingfile
-  {\popcatcodetable      % saveguard
-   \clf_popregime % temporarily this way
+  {\popcatcodetable % saveguard
+   \popregime % temporarily this way
    \the\everystopreadingfile
    \global\advanceby\readingfilelevel\minusone}
 

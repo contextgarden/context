@@ -213,6 +213,7 @@ extern token_state_info lmt_token_state;
 # define left_parent_token       (other_token  + '(')
 # define right_parent_token      (other_token  + ')')
 # define zero_token              (other_token  + '0')  /*tex zero, the smallest digit */
+# define one_token               (other_token  + '1') 
 # define five_token              (other_token  + '5')
 # define seven_token             (other_token  + '7')
 # define nine_token              (other_token  + '9')  /*tex zero, the smallest digit */

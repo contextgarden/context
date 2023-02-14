@@ -20,7 +20,7 @@
 \newdimen   \bodyfontstrutdepth
 
 \newgluespec\globalbodyfontlineheight  % why a skip
-\newdimen    \globalbodyfontstrutheight
+\newdimen   \globalbodyfontstrutheight
 \newdimen   \globalbodyfontstrutdepth
 
 \newgluespec \s_spac_vspacing_predefined
@@ -31,7 +31,7 @@
 % \overloaded\let\strutdp  \undefined \newdimen\strutdp
 % \overloaded\let\struthtdp\undefined \newdimen\struthtdp
 
-\registerctxluafile{spac-ver}{autosuffix,optimize}
+\registerctxluafile{spac-ver}{autosuffix}
 
 % todo: use usernodes ?
 

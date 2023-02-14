@@ -816,7 +816,7 @@ local function getbuffermkvi(name) -- rather direct !
     ctx_viafile(resolvers.macros.preprocessed(getcontent(name)),formatters["buffer.%s.mkiv"](validstring(name,"noname")))
 end
 
-local function gettexbuffer(name)
+local function getbuffertex(name)
     local buffer = name and cache[name]
     if buffer and buffer.data ~= "" then
         ctx_pushcatcodetable()
@@ -831,15 +831,15 @@ local function gettexbuffer(name)
     end
 end
 
-buffers.get          = getbuffer
-buffers.getmkiv      = getbuffermkiv
-buffers.gettexbuffer = gettexbuffer
-buffers.run          = runbuffer
+buffers.get     = getbuffer
+buffers.getmkvi = getbuffermkvi
+buffers.gettex  = getbuffertex
+buffers.run     = runbuffer
 
 implement { name = "getbufferctxlua", actions = loadcontent,   arguments = "string" }
 implement { name = "getbuffer",       actions = getbuffer,     arguments = "string" }
 implement { name = "getbuffermkvi",   actions = getbuffermkvi, arguments = "string" }
-implement { name = "gettexbuffer",    actions = gettexbuffer,  arguments = "string" }
+implement { name = "getbuffertex",    actions = getbuffertex,  arguments = "string" }
 
 interfaces.implement {
     name      = "getbuffercontent",

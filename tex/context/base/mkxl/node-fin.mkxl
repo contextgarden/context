@@ -15,8 +15,8 @@
 
 \unprotect
 
-\registerctxluafile{node-shp}{autosuffix,optimize}
-\registerctxluafile{node-fin}{autosuffix,optimize}
+\registerctxluafile{node-shp}{autosuffix}
+\registerctxluafile{node-fin}{autosuffix}
 
 \permanent\protected\def\finalizeobjectbox #1{\clf_finalizebox#1\relax}
 \permanent\protected\def\finalizeshipoutbox#1{\clf_finalizebox#1\relax}

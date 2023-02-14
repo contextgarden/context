@@ -37,7 +37,7 @@
 
 \registerctxluafile{strc-rsc}{autosuffix}
 \registerctxluafile{strc-ref}{autosuffix}
-\registerctxluafile{node-ref}{autosuffix,optimize}
+\registerctxluafile{node-ref}{autosuffix}
 
 \unprotect
 

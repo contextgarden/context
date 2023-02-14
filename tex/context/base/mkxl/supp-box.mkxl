@@ -34,7 +34,7 @@
 \newdimension\lastnaturalboxht
 \newdimension\lastnaturalboxdp
 
-\registerctxluafile{supp-box}{autosuffix,optimize}
+\registerctxluafile{supp-box}{autosuffix}
 
 % \fixupboxesmode\plusone % gone: is now the default
 

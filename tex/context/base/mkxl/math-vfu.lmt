@@ -936,9 +936,12 @@ function vfmath.define(specification,set,goodies)
                         local skewchar = ss.skewchar
                         local backmap  = ss.backmap
                         local badones  = ss.badones
+                        local ignore   = ss.ignore
                         local done     = { }
                         local extras   = { }
-                        if not backmap then
+                        if backmap == false then
+                         -- backmap = { }
+                        elseif not backmap then
                             backmap = { }
                             for unicode, character in next, fc do
                                 backmap[character.order or character.index or unicode] = unicode
@@ -969,11 +972,16 @@ function vfmath.define(specification,set,goodies)
                                     rv[unicode] = true
                                 end
                             else
-                                local u = mathematics.gaps[unicode] or unicode
-                                local t = virtualize(s,uni,fci,skewchar,tonumber(badones and badones[fci.name or ""]),mathparameters,u,fp)
-                                done[uni] = t
-                                characters[unicode] = t
-                                fci.unicode = u
+                                local name = fci.name or ""
+                                if ignore and ignore[name] then
+                                -- get rid of ugly slanted antykwa { }
+                                else
+                                    local u = mathematics.gaps[unicode] or unicode
+                                    local t = virtualize(s,uni,fci,skewchar,tonumber(badones and badones[name]),mathparameters,u,fp)
+                                    done[uni] = t
+                                    characters[unicode] = t
+                                    fci.unicode = u
+                                end
                             end
                         end
                         if isextension then

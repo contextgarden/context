@@ -6361,7 +6361,7 @@ static void tex_mlist_to_hlist_preroll_radicals(mliststate *state)
                         } else if (radical_height(current) < 0) {
                             box_height(body) += radical_height(current);
                             if (box_height(body) < 0) {
-                                box_height(body) += 0;
+                                box_height(body) = 0;
                             }
                         } else if (radical_height(current)) {
                             box_height(body) = radical_height(current);
@@ -6371,7 +6371,7 @@ static void tex_mlist_to_hlist_preroll_radicals(mliststate *state)
                         } else if (radical_depth(current) < 0) {
                             box_depth(body) += radical_depth(current);
                             if (box_depth(body) < 0) {
-                                box_depth(body) += 0;
+                                box_depth(body) = 0;
                             }
                         } else if (radical_depth(current)) {
                             box_depth(body) = radical_depth(current);

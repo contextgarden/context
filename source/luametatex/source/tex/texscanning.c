@@ -3550,7 +3550,7 @@ static void tex_aux_too_many_parameters_error(void)
 {
     tex_handle_error(
         normal_error_type,
-        "You already have nine parameters",
+        "You already have 15 parameters",
         "I'm going to ignore the # sign you just used, as well the token that followed it.\n"
         /*tex That last bit was added in the TeX 2021 buglet fix round. */
     );
@@ -3607,7 +3607,9 @@ static void tex_aux_illegal_parameter_in_body_error(void)
     \stoptyping
 */
 
-inline static int tex_aux_valid_macro_preamble(halfword *p, int *counter, halfword *hash_brace)
+/* There is no real gain and we get a 1K larger binary: */ /* inline */
+
+static int tex_aux_valid_macro_preamble(halfword *p, int *counter, halfword *hash_brace)
 {
     halfword h = *p;
     while (1) {
@@ -3633,9 +3635,9 @@ inline static int tex_aux_valid_macro_preamble(halfword *p, int *counter, halfwo
                 *p = tex_store_new_token(*p, cur_tok);
                 *p = tex_store_new_token(*p, end_match_token);
                 set_token_preamble(h, 1);
-                set_token_parameters(h, *counter - zero_token);
+                set_token_parameters(h, *counter);
                 return 1;
-            } else if (*counter == F_token_l) {
+            } else if (*counter == 0xF) {
                 tex_aux_too_many_parameters_error();
             } else {
                 switch (cur_tok) {
@@ -3688,17 +3690,21 @@ inline static int tex_aux_valid_macro_preamble(halfword *p, int *counter, halfwo
                         cur_tok = par_command_match_token;
                         break;
                     default:
-                        ++*counter;
-                        if (cur_tok != *counter) {
-                            if (cur_tok >= A_token_l && cur_tok <= F_token_l) {
-                                *counter += gap_match_count;
+                        if (cur_tok >= one_token && cur_tok <= nine_token) {
+                            ++*counter;
+                            if ((cur_tok - other_token - '0') == *counter) {
+                                cur_tok += match_token - other_token ;
+                                break;
+                            }
+                        } else if (cur_tok >= A_token_l && cur_tok <= F_token_l) {
+                            ++*counter;
+                            if ((cur_tok - letter_token - 'A' - gap_match_count) == *counter) {
                                 cur_tok += match_token - letter_token;
                                 break;
-                            } else { 
-                                tex_aux_parameters_order_error();
                             }
                         }
-                        cur_tok += match_token - other_token;
+                        tex_aux_parameters_order_error();
+                        cur_tok = match_token; /* zero */
                         break;
                 }
             }
@@ -3710,7 +3716,7 @@ inline static int tex_aux_valid_macro_preamble(halfword *p, int *counter, halfwo
     if (h != *p) {
         *p = tex_store_new_token(*p, end_match_token);
         set_token_preamble(h, 1);
-        set_token_parameters(h, *counter - zero_token);
+        set_token_parameters(h, *counter);
     }
     if (cur_cmd == right_brace_cmd) {
         ++lmt_input_state.align_state;
@@ -3724,7 +3730,7 @@ inline static int tex_aux_valid_macro_preamble(halfword *p, int *counter, halfwo
 halfword tex_scan_macro_normal(void)
 {
     halfword hash_brace = 0;
-    halfword counter = zero_token;
+    halfword counter = 0;
     halfword result = get_reference_token();
     halfword p = result;
     lmt_input_state.scanner_status = scanner_is_defining;
@@ -3748,16 +3754,22 @@ halfword tex_scan_macro_normal(void)
                 tex_get_token();
                 if (cur_cmd == parameter_cmd) {
                     /*tex Keep the |#|. */
-                } else if (cur_tok <= zero_token || cur_tok > counter) {
-                    if (cur_tok >= A_token_l && cur_tok <= F_token_l) {
-                        cur_tok = token_val(parameter_reference_cmd, cur_chr - '0' - gap_match_count);
+                } else { 
+                    halfword n;
+                    if (cur_tok >= one_token && cur_tok <= nine_token) {
+                        n = cur_chr - '0';
+                    } else if (cur_tok >= A_token_l && cur_tok <= F_token_l) {
+                        n = cur_chr - '0' - gap_match_count; 
+                    } else { 
+                        n = counter + 1; 
+                    }
+                    if (n <= counter) {
+                        cur_tok = token_val(parameter_reference_cmd, n);
                     } else {
                         tex_aux_illegal_parameter_in_body_error();
                         cur_tok = s;
                     }
-                } else {
-                    cur_tok = token_val(parameter_reference_cmd, cur_chr - '0');
-                }
+                } 
             } else if (cur_cmd == prefix_cmd && cur_chr == enforced_code && (! overload_mode_par || lmt_main_state.run_state != production_state)) { /* todo cur_tok == let_aliased_token */
                 cur_tok = token_val(prefix_cmd, always_code);
             }
@@ -3777,7 +3789,7 @@ halfword tex_scan_macro_normal(void)
 halfword tex_scan_macro_expand(void)
 {
     halfword hash_brace = 0;
-    halfword counter = zero_token;
+    halfword counter = 0;
     halfword result = get_reference_token();
     halfword p = result;
     lmt_input_state.scanner_status = scanner_is_defining;
@@ -3830,15 +3842,21 @@ halfword tex_scan_macro_expand(void)
                         tex_get_x_token();
                         if (cur_cmd == parameter_cmd) {
                             /*tex Keep the |#|. */
-                        } else if (cur_tok <= zero_token || cur_tok > counter) {
-                            if (cur_tok >= A_token_l && cur_tok <= F_token_l) {
-                                cur_tok = token_val(parameter_reference_cmd, cur_chr - '0' - gap_match_count);
+                        } else { 
+                            halfword n;
+                            if (cur_tok >= one_token && cur_tok <= nine_token) {
+                                n = cur_chr - '0';
+                            } else if (cur_tok >= A_token_l && cur_tok <= F_token_l) {
+                                n = cur_chr - '0' - gap_match_count; 
+                            } else { 
+                                n = counter + 1; 
+                            }
+                            if (n <= counter) {
+                                cur_tok = token_val(parameter_reference_cmd, n);
                             } else {
                                 tex_aux_illegal_parameter_in_body_error();
                                 cur_tok = s;
                             }
-                        } else {
-                            cur_tok = token_val(parameter_reference_cmd, cur_chr - '0');
                         }
                         goto APPENDTOKEN;
                     }

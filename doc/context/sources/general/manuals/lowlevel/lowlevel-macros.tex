@@ -924,6 +924,17 @@ the hexadecimal numbers makes sense. It is unlikely that the core of \CONTEXT\
 will use this option but sometimes at the user level it can be handy. The penalty
 in terms of performance can be neglected.
 
+\starttyping[option=TEX]
+\tolerant\def\foo#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=%
+  {(#1)(#2)(#3)(#4)(#5)(#6)(#7)(#8)(#9)(#A)(#B)(#C)(#D)(#E)(#F)}
+
+\foo{1}{2}
+\stoptyping
+
+In the previous example we have 15 optional arguments where braces are mandate
+(otherwise we the scanner happily scoops up what follows which for sure gives some
+error).
+
 \stopsectionlevel
 
 \startsectionlevel[title=Constants]

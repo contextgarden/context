@@ -56,11 +56,6 @@ if not modules then modules = { } end modules ['font-dsp'] = {
 -- less code. After all there are often not that many demanding features.
 
 local next, type, tonumber = next, type, tonumber
-local band = bit32.band
-local extract = bit32.extract
-local bor = bit32.bor
-local lshift = bit32.lshift
-local rshift = bit32.rshift
 local gsub = string.gsub
 local lower = string.lower
 local sub = string.sub
@@ -298,7 +293,7 @@ local lookupnames = {
 -- local lookupstate = setmetatableindex(function(t,k)
 --     local v = { }
 --     for kk, vv in next, lookupbits do
---         if band(k,kk) ~= 0 then
+--         if (k & kk) ~= 0 then
 --             v[vv] = true
 --         end
 --     end
@@ -308,10 +303,10 @@ local lookupnames = {
 
 local lookupflags = setmetatableindex(function(t,k)
     local v = {
-        band(k,0x0008) ~= 0 and true or false, -- ignoremarks
-        band(k,0x0004) ~= 0 and true or false, -- ignoreligatures
-        band(k,0x0002) ~= 0 and true or false, -- ignorebaseglyphs
-        band(k,0x0001) ~= 0 and true or false, -- r2l
+        (k & 0x0008) ~= 0 and true or false, -- ignoremarks
+        (k & 0x0004) ~= 0 and true or false, -- ignoreligatures
+        (k & 0x0002) ~= 0 and true or false, -- ignorebaseglyphs
+        (k & 0x0001) ~= 0 and true or false, -- r2l
     }
     t[k] = v
     return v
@@ -751,16 +746,17 @@ local function readposition(f,format,mainoffset,getdelta)
     --     ....
     -- end
     --
-    local x = band(format,0x1) ~= 0 and readshort(f) or 0 -- x placement
-    local y = band(format,0x2) ~= 0 and readshort(f) or 0 -- y placement
-    local h = band(format,0x4) ~= 0 and readshort(f) or 0 -- h advance
-    local v = band(format,0x8) ~= 0 and readshort(f) or 0 -- v advance
+    local x = (format & 0x1) ~= 0 and readshort(f) or 0 -- x placement
+    local y = (format & 0x2) ~= 0 and readshort(f) or 0 -- y placement
+    local h = (format & 0x4) ~= 0 and readshort(f) or 0 -- h advance
+    local v = (format & 0x8) ~= 0 and readshort(f) or 0 -- v advance
     if format >= 0x10 then
-        local X = band(format,0x10) ~= 0 and skipshort(f) or 0
-        local Y = band(format,0x20) ~= 0 and skipshort(f) or 0
-        local H = band(format,0x40) ~= 0 and skipshort(f) or 0
-        local V = band(format,0x80) ~= 0 and skipshort(f) or 0
-        local s = skips[extract(format,4,4)]
+        local X = (format & 0x10) ~= 0 and skipshort(f) or 0
+        local Y = (format & 0x20) ~= 0 and skipshort(f) or 0
+        local H = (format & 0x40) ~= 0 and skipshort(f) or 0
+        local V = (format & 0x80) ~= 0 and skipshort(f) or 0
+     -- local s = skips[extract(format,4,4)]        
+        local s = skips[(format >> 4) & 0xF] 
         if s > 0 then
             skipshort(f,s)
         end
@@ -2159,11 +2155,12 @@ do
                 subtables[j] = offset + readushort(f) -- we can probably put lookupoffset here
             end
             -- which one wins?
-            local markclass = band(flagbits,0x0010) ~= 0 -- usemarkfilteringset
+            local markclass = (flagbits & 0x0010) ~= 0 -- usemarkfilteringset
             if markclass then
                 markclass = readushort(f) -- + 1
             end
-            local markset = rshift(flagbits,8)
+         -- local markset = rshift(flagbits,8)
+            local markset = (flagbits >> 8) & 0xFFFFFFFF
             if markset > 0 then
                 markclass = markset -- + 1
             end
@@ -2607,7 +2604,8 @@ do
                 local length   = readushort(f)
                 local coverage = readushort(f)
                 -- bit 8-15 of coverage: format 0 or 2
-                local format   = rshift(coverage,8) -- is this ok
+             -- local format   = rshift(coverage,8) -- is this ok
+                local format   = (coverage >> 8) & 0xFFFFFFFF -- is this ok
                 if format == 0 then
                     local nofpairs      = readushort(f)
                     local searchrange   = readushort(f)
@@ -3051,7 +3049,7 @@ local function readmathvariants(f,fontdata,offset)
                                 advance = readushort(f),
                             }
                             local flags = readushort(f)
-                            if band(flags,0x0001) ~= 0 then
+                            if (flags & 0x0001) ~= 0 then
                                 p.extender = 1 -- true
                             end
                             parts[i] = p
@@ -4533,16 +4531,19 @@ local function calculate(f,fontdata,specification,offset,field,regions,deltas,no
     setposition(f,offset)
     local format       = readushort(f) -- todo: check
     local mapcount     = readushort(f)
-    local entrysize    = rshift(band(format,0x0030),4) + 1
-    local nofinnerbits = band(format,0x000F) + 1 -- n of inner bits
-    local innermask    = lshift(1,nofinnerbits) - 1
+ -- local entrysize    = rshift(band(format,0x0030),4) + 1
+    local entrysize    = (((format & 0x0030) >> 4) & 0xFFFFFFFF) + 1
+    local nofinnerbits = (format & 0x000F) + 1 -- n of inner bits
+ -- local innermask    = lshift(1,nofinnerbits) - 1
+    local innermask    = (1 << nofinnerbits) - 1
     local readcardinal = read_cardinal[entrysize] -- 1 upto 4 bytes
     local innerindex   = { } -- size is mapcount
     local outerindex   = { } -- size is mapcount
     for i=0,mapcount-1 do
         local mapdata = readcardinal(f)
-        outerindex[i] = rshift(mapdata,nofinnerbits)
-        innerindex[i] = band(mapdata,innermask)
+     -- outerindex[i] = rshift(mapdata,nofinnerbits)
+        outerindex[i] = (mapdata >> nofinnerbits) & 0xFFFFFFFF
+        innerindex[i] = (mapdata & innermask)
     end
     -- use last entry when no match i
     setvariabledata(fontdata,"hvarwidths",true)

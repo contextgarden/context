@@ -107,9 +107,9 @@
 \permanent\tolerant\protected\def\setbuffer[#1]#:#2\endbuffer % seldom used so we just pass #2
   {\clf_assignbuffer{#1}{\detokenize{#2}}\catcodetable\relax}
 
-% beware, never adapt the global buffer settings, actually we might introduce
+% Beware, never adapt the global buffer settings, actually we might introduce
 % a broken parent chain for this purpose but on the other hand it's not that
-% different from framed cum suis
+% different from framed cum suis.
 
 \installcorenamespace{buffer}
 
@@ -143,34 +143,39 @@
 \permanent\def\thebuffernumber #1{\namedbufferparameter{#1}\c!number}
 \permanent\def\thedefinedbuffer#1{def-\namedbufferparameter{#1}\c!number}
 
-\permanent\tolerant\protected\def\getbuffer[#1]% [name]
+\permanent\def\getbufferdata[#1]% expandable
+  {\clf_getbuffer{#1}}
+
+\permanent\tolerant\protected\def\getbuffer[#1]% [namelist]
   {\namedbufferparameter\empty\c!before\relax
-   \doifelsenothing{#1}
-     {\buff_get_stored_indeed\empty}
-     {\processcommalist[#1]\buff_get_stored_indeed}%
+   \clf_getbuffer{#1}%
    \namedbufferparameter\empty\c!after\relax}
 
 \protected\def\buff_get_stored#1#2%
   {\namedbufferparameter{#1}\c!before\relax
-   \buff_get_stored_indeed{#2}%
+   \clf_getbuffer{#2}%
    \namedbufferparameter{#1}\c!after\relax}
 
-\protected\def\buff_get_stored_indeed#1%
-  {\clf_getbuffer{#1}}
+\aliased\let\rawbuffer\clf_getbuffer % expandable
 
 \permanent\protected\def\getdefinedbuffer[#1]%
   {\buff_get_stored{#1}{\thedefinedbuffer{#1}}}%
 
+% We had this:
+%
+% \permanent\tolerant\protected\def\inlinebuffer[#1]% [name]
+%   {\doifelsenothing{#1}
+%      {\buff_get_stored_inline_indeed\empty}
+%      {\processcommalist[#1]\buff_get_stored_inline_indeed}}
+%
+% \protected\def\buff_get_stored_inline_indeed#1%
+%   {\ignorespaces\clf_getbuffer{#1}\removeunwantedspaces}
+%
+% but it makes no sense to ignore spaces in between and we now do the
+% list at the \LUA\ end anyway:
+
 \permanent\tolerant\protected\def\inlinebuffer[#1]% [name]
-  {\doifelsenothing{#1}
-     {\buff_get_stored_inline_indeed\empty}
-     {\processcommalist[#1]\buff_get_stored_inline_indeed}}
-
-\protected\def\buff_get_stored_inline_indeed#1%
   {\ignorespaces\clf_getbuffer{#1}\removeunwantedspaces}
-
-\permanent\def\rawbuffer#1% expandable
-  {\clf_getbuffer{#1}}
 
 \definebuffer
   [\v!hiding]
@@ -180,20 +185,14 @@
   [\c!before=,
    \c!after=]
 
-\permanent\protected\protected\def\processTEXbuffer[#1]% keep case, maybe also lower
-  {\pushcatcodetable
-   \catcodetable\ctxcatcodes % \setcatcodetable
-   \buff_get_stored_indeed{#1}%
-   \popcatcodetable}
-
-% only mkiv:
-%
-% \startbuffer[x]
-% x
-% \stopbuffer
-%
-% \savebuffer[x]      [temp]     % gets name: jobname-temp.tmp
-% \savebufferinfile[x][temp.log] % gets name: temp.log
+%D \starttyping
+%D \startbuffer[x]
+%D x y z
+%D \stopbuffer
+%D
+%D \savebuffer[x]      [temp]     % gets name: jobname-temp.tmp
+%D \savebufferinfile[x][temp.log] % gets name: temp.log
+%D \stoptyping
 
 \installcorenamespace{savebuffer}
 \installcorenamespace{savebuffercounter}
@@ -242,6 +241,9 @@
 %D \stoptext
 %D \stoptyping
 
+% We can keep the counter at the lua end and explicitly reset it when we
+% save.
+
 \appendtoks
     \ifcsname\e!stop\currentsavebuffer\endcsname\else
       \definebuffer[\currentsavebuffer]%
@@ -272,18 +274,21 @@
 %
 % \ctxluabuffer[what] \ctxluabuffer
 
-\permanent\tolerant\protected\def\ctxluabuffer[#1]{\clf_getbufferctxlua{#1}} % todo: use public implementor
-\permanent\tolerant\protected\def\mkvibuffer  [#1]{\clf_getbuffermkvi  {#1}} % todo: use public implementor
+\permanent\tolerant\protected\def\processTEXbuffer[#1]#;#=% keep case, maybe also lower
+  {\pushcatcodetable
+   \catcodetable\ctxcatcodes % \setcatcodetable
+   \clf_getbuffer{#1#2}%
+   \popcatcodetable}
+
+\permanent\tolerant\protected\def\ctxluabuffer[#1]#;#={\clf_getbufferctxlua{#1#2}} % todo: use public implementor
+\permanent\tolerant\protected\def\mkvibuffer  [#1]#;#={\clf_getbuffermkvi  {#1#2}} % todo: use public implementor
+\permanent\tolerant\protected\def\texbuffer   [#1]#;#={\clf_getbuffertex   {#1#2}} % todo: use public implementor
 
 % maybe still used elsewhere
 
 % \aliased\doprocesstexbuffer\mkvibuffer
 
 \aliased\let\dostartbuffer\grabbufferdata % for old times sake, this will go away
-
-% new (expandable):
-
-\permanent\def\getbufferdata[#1]{\buff_get_stored_indeed{#1}}
 
 % low level helper (for math manual):
 

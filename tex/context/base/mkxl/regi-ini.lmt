@@ -12,10 +12,6 @@ if not modules then modules = { } end modules ['regi-ini'] = {
 runtime.</p>
 --ldx]]--
 
--- Todo: use regi-imp*.lua instead
-
-local commands, context = commands, context
-
 local tostring = tostring
 local utfchar = utf.char
 local P, Cs, Cc, lpegmatch = lpeg.P, lpeg.Cs, lpeg.Cc, lpeg.match
@@ -30,9 +26,7 @@ local sequencers        = utilities.sequencers
 local textlineactions   = resolvers.openers.helpers.textlineactions
 local setmetatableindex = table.setmetatableindex
 
---[[ldx--
-<p>We will hook regime handling code into the input methods.</p>
---ldx]]--
+-- We will hook regime handling code into the input methods.
 
 local trace_translating = false  trackers.register("regimes.translating", function(v) trace_translating = v end)
 
@@ -148,7 +142,7 @@ regimes.backmapping = backmapping
 
 local function fromregime(regime,line)
     if line and #line > 0 then
---         local map = mapping[regime and synonyms[regime] or regime or currentregime]
+     -- local map = mapping[regime and synonyms[regime] or regime or currentregime]
         local map = mapping[regime or currentregime]
         if map then
             line = gsub(line,".",map)
@@ -156,28 +150,6 @@ local function fromregime(regime,line)
     end
     return line
 end
-
--- local remappers = { }
---
--- local function toregime(vector,str,default) -- toregime('8859-1',"abcde Ä","?")
---     local t = backmapping[vector]
---     local remapper = remappers[vector]
---     if not remapper then
---         remapper = utf.remapper(t)
---         remappers[t] = remapper
---     end
---     local m = getmetatable(t)
---     setmetatableindex(t, function(t,k)
---         local v = default or "?"
---         t[k] = v
---         return v
---     end)
---     str = remapper(str)
---     setmetatable(t,m)
---     return str
--- end
---
--- -- much faster (but only matters when we have > 10K calls
 
 local cache = { } -- if really needed we can copy vectors and hash defaults
 
@@ -230,8 +202,8 @@ regimes.translate  = function(str,regime) return fromregime(regime,str) end
 regimes.enable     = enable
 regimes.disable    = disable
 
--- The following function can be used when we want to make sure that
--- utf gets passed unharmed. This is needed for modules.
+-- The following function can be used when we want to make sure that utf gets passed
+-- unharmed. This is needed for modules.
 
 local level = 0
 
@@ -280,100 +252,14 @@ function regimes.list()
     return okay
 end
 
-if sequencers then
+sequencers.prependaction(textlineactions,"system","regimes.process")
+sequencers.disableaction(textlineactions,"regimes.process")
 
-    sequencers.prependaction(textlineactions,"system","regimes.process")
-    sequencers.disableaction(textlineactions,"regimes.process")
-
-end
-
--- Next we provide some hacks. Unfortunately we run into crappy encoded
--- (read : mixed) encoded xml files that have these Ã« Ã¤ Ã¶ Ã¼ sequences
--- instead of ë ä ö ü
+-- Next we provide some hacks. Unfortunately we run into crappy encoded (read:
+-- mixed) encoded xml files that have these Ã« Ã¤ Ã¶ Ã¼ sequences instead of ë ä ö ü
+-- etc.
 
 local patterns = { }
-
--- function regimes.cleanup(regime,str)
---     local p = patterns[regime]
---     if p == nil then
---         regime = regime and synonyms[regime] or regime or currentregime
---         local vector = regime ~= "utf" and mapping[regime]
---         if vector then
---             local list = { }
---             for k, uchar in next, vector do
---                 local stream = totable(uchar)
---                 for i=1,#stream do
---                     stream[i] = vector[stream[i]]
---                 end
---                 list[concat(stream)] = uchar
---             end
---             p = lpeg.append(list,nil,true)
---             p = Cs((p+1)^0)
---          -- lpeg.print(p) -- size 1604
---         else
---             p = false
---         end
---         patterns[vector] = p
---     end
---     return p and lpegmatch(p,str) or str
--- end
---
--- twice as fast and much less lpeg bytecode
-
--- function regimes.cleanup(regime,str)
---     if not str or str == "" then
---         return str
---     end
---     local p = patterns[regime]
---     if p == nil then
---         regime = regime and synonyms[regime] or regime or currentregime
---         local vector = regime ~= "utf" and regime ~= "utf-8" and mapping[regime]
---         if vector then
---             local utfchars = { }
---             local firsts = { }
---             for k, uchar in next, vector do
---                 local stream = { }
---                 local split = totable(uchar)
---                 local nofsplits = #split
---                 if nofsplits > 1 then
---                     local first
---                     for i=1,nofsplits do
---                         local u = vector[split[i]]
---                         if not first then
---                             first = firsts[u]
---                             if not first then
---                                 first = { }
---                                 firsts[u] = first
---                             end
---                         end
---                         stream[i] = u
---                     end
---                     local nofstream = #stream
---                     if nofstream > 1 then
---                         first[#first+1] = concat(stream,2,nofstream)
---                         utfchars[concat(stream)] = uchar
---                     end
---                 end
---             end
---             p = P(false)
---             for k, v in next, firsts do
---                 local q = P(false)
---                 for i=1,#v do
---                     q = q + P(v[i])
---                 end
---                 p = p + P(k) * q
---             end
---             p = Cs(((p+1)/utfchars)^1)
---          -- lpeg.print(p) -- size: 1042
---         else
---             p = false
---         end
---         patterns[regime] = p
---     end
---     return p and lpegmatch(p,str) or str
--- end
---
--- 5 times faster:
 
 function regimes.cleanup(regime,str)
     if not str or str == "" then
@@ -420,22 +306,30 @@ if interfaces then
 
     implement {
         name      = "enableregime",
-        arguments = "string",
+        public    = true,
+        protected = true,
+        arguments = "optional",
         actions   = function(regime) setmacro("currentregime",enable(regime)) end
     }
 
     implement {
         name      = "disableregime",
+        public    = true,
+        protected = true,
         actions   = function() setmacro("currentregime",disable()) end
     }
 
     implement {
         name      = "pushregime",
+        public    = true,
+        protected = true,
         actions   = push
     }
 
     implement {
         name      = "popregime",
+        public    = true,
+        protected = true,
         actions   = pop
     }
 
@@ -443,7 +337,9 @@ if interfaces then
 
     implement {
         name      = "startregime",
-        arguments = "string",
+        public    = true,
+        protected = true,
+        arguments = "optional",
         actions   = function(regime)
             insert(stack,currentregime)
             if trace_translating then
@@ -455,6 +351,8 @@ if interfaces then
 
     implement {
         name      = "stopregime",
+        public    = true,
+        protected = true,
         actions   = function()
             if #stack > 0 then
                 local regime = remove(stack)
@@ -467,21 +365,3 @@ if interfaces then
     }
 
 end
-
--- Actually we can have a function returned from the lookup but we don't
--- really use this code so I'm in no hurry.
-
--- if os.getcodepage then
---     local cod, acp, map
---     function os.tocodepage(name)
---         if map == nil then
---             cod, acp = os.getcodepage()
---             map = cod and cod ~= 65001 and regimes.toregime
---         end
---         return map and map(cod,name) or name
---     end
--- else
---     function os.tocodepage(name)
---         return name
---     end
--- end

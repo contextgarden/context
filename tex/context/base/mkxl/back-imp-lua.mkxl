@@ -11,6 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\registerctxluafile{back-imp-lua}{autosuffix,optimize}
+\registerctxluafile{back-imp-lua}{autosuffix}
 
 \endinput

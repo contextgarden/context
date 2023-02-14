@@ -19,6 +19,12 @@ local badones = {
     coproductdisplay    = .25,
 }
 
+local uglyones = {
+    braceleft  = true,
+    braceright = true,
+}
+
+
 return {
     name = "antykwa-math",
     version = "1.00",
@@ -42,7 +48,8 @@ return {
                 { name = "mi-anttri.tfm", vector = "tex-it", skewchar=0x7F },
                 { name = "mi-anttbi.tfm", vector = "tex-bi", skewchar=0x7F },
                 { name = "rm-anttb.tfm",  vector = "tex-bf", skewchar=0x7F },
-                { name = "sy-anttrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "sy-anttrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true, ignore = uglyones },
+                { name = "file:AntykwaTorunska-Regular", vector = "tex-ex-braces", backmap = false },
                 { name = "ex-anttr.tfm",  vector = "tex-ex", extension = true, badones = badones },
             },
             ["antykwa-light-math"] = {
@@ -53,7 +60,8 @@ return {
                 { name = "mi-anttli.tfm", vector = "tex-it", skewchar=0x7F },
                 { name = "mi-anttri.tfm", vector = "tex-bi", skewchar=0x7F },
                 { name = "rm-anttr.tfm",  vector = "tex-bf", skewchar=0x7F },
-                { name = "sy-anttlz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "sy-anttlz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true, ignore = uglyones },
+                { name = "file:AntykwaTorunskaLight-Regular", vector = "tex-ex-braces", backmap = false },
                 { name = "ex-anttl.tfm",  vector = "tex-ex", extension = true, badones = badones },
             },
             ["antykwa-cond-math"] = {
@@ -64,7 +72,8 @@ return {
                 { name = "mi-anttcri.tfm", vector = "tex-it", skewchar=0x7F },
                 { name = "mi-anttcbi.tfm", vector = "tex-bi", skewchar=0x7F },
                 { name = "rm-anttcb.tfm",  vector = "tex-bf", skewchar=0x7F },
-                { name = "sy-anttcrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "sy-anttcrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true, ignore = uglyones },
+                { name = "file:AntykwaTorunskaCond-Regular", vector = "tex-ex-braces", backmap = false },
                 { name = "ex-anttcr.tfm",  vector = "tex-ex", extension = true, badones = badones },
             },
             ["antykwa-lightcond-math"] = {
@@ -75,7 +84,8 @@ return {
                 { name = "mi-anttcli.tfm", vector = "tex-it", skewchar=0x7F },
                 { name = "mi-anttcri.tfm", vector = "tex-bi", skewchar=0x7F },
                 { name = "rm-anttcr.tfm",  vector = "tex-bf", skewchar=0x7F },
-                { name = "sy-anttclz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+                { name = "sy-anttclz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true, ignore = uglyones },
+                { name = "file:AntykwaTorunskaCondLight-Regular", vector = "tex-ex-braces", backmap = false },
                 { name = "ex-anttcl.tfm",  vector = "tex-ex", extension = true, badones = badones },
             }
         }

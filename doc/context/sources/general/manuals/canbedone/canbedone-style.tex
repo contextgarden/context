@@ -1,0 +1,142 @@
+% language=us runpath=texruns:manuals/canbedone
+
+% I started this series in June 2023 when I found for the n\high{th} time that we
+% already had a feature that users requested in the mailing list, but that I had
+% completely forgotten about it being around for about 6 years.
+
+\startenvironment canbedone-style
+
+\usemodule[abbreviations-logos]
+\usemodule[scite]
+
+\setvariables
+  [document]
+  [title=No Title,
+   author=No Author,
+   color=NoColor]
+
+\setupbodyfont
+  [dejavu,11pt]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   backspace=2cm,
+   topspace=15mm]
+
+\setupwhitespace
+  [big]
+
+\setuphead
+  [chapter]
+  [style=\bfc,
+   color=darkgray]
+
+\setuphead
+  [section]
+  [style=\bfb,
+  %page=right,
+   color=darkgray]
+
+\setuphead
+  [subsection]
+  [style=\bfa,
+   color=darkgray]
+
+\setuplist
+  [chapter]
+  [style=bold]
+
+\setupfootertexts
+  [section] % [\documentvariable{title}]
+
+\setupfooter
+  [style=bold,
+   color=darkgray]
+
+\startuseMPgraphic{titlepage}
+    fill Page
+        withcolor "\documentvariable{color}" ;
+
+    numeric d ; d := 2mm ;
+
+    picture p ; p := textext.llft("!") ;
+    p := p
+        rotatedaround(llcorner p, 30) % different from lowlevel
+        xysized (.1PaperWidth-2d,.1PaperHeight-2d)
+        shifted (.1PaperWidth- d,.1PaperHeight -d)
+        shifted (d,-2d) % different from lowlevel
+    ;
+
+    draw image (
+        for i = 0 step .1 PaperWidth until PaperWidth :
+            for j = 0 step .1 PaperHeight until PaperHeight :
+                draw p shifted (i,j) ;
+            endfor ;
+        endfor ;
+    ) withcolor .4resolvedcolor("middlegray") ; % different from lowlevel
+
+    draw textext.d("\strut it can be done")
+        xsized (.8PaperWidth)
+        shifted center topboundary Page
+        shifted -(0,.2PaperHeight)
+        withcolor "white" ;
+  % draw textext.d("\strut YES")
+    draw textext.d("\strut \TeX")
+        xsized (.4PaperWidth)
+        shifted center topboundary Page
+        shifted -(0,.4PaperHeight)
+        withcolor "white" ;
+    draw textext.d("\strut\documentvariable{title}")
+        ysized 3cm
+        shifted center bottomboundary Page
+        shifted (0,.1PaperHeight)
+        withcolor "white" ;
+\stopuseMPgraphic
+
+\definesectionlevels
+  [default]
+  [%{chapter,title},
+   {section,subject},
+   {subsection,subsubject},
+   {subsubsection,subsubsubject},
+   {subsubsubsection,subsubsubject},
+   {subsubsubsubsection,subsubsubject}]
+
+\startsetups document:start
+
+    \startMPpage
+    StartPage;
+        \includeMPgraphic{titlepage} ;
+    StopPage;
+    \stopMPpage
+
+    \page
+
+    \startsubjectlevel[title=Contents]
+        \placelist[chapter,section] [criterium=previous]
+    \stopsubjectlevel
+
+\stopsetups
+
+\startsetups document:stop
+
+\testpage[6]
+
+%startsubjectlevel[title=Colofon]
+\startsectionlevel[title=Colofon,number=no,saveinlist=no]
+
+    \starttabulate
+        \NC Author      \NC Hans Hagen         \NC \NR
+        \NC \CONTEXT    \NC \contextversion    \NC \NR
+        \NC \LUAMETATEX \NC \texengineversion  \NC \NR
+        \NC Support     \NC www.pragma-ade.com \NC \NR
+        \NC             \NC contextgarden.net  \NC \NR
+    \stoptabulate
+
+\stopsectionlevel
+%stopsubjectlevel
+
+\stopsetups
+
+\stopenvironment
