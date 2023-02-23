@@ -24,10 +24,11 @@ local register              = nodepool.register
 
 local whatsit_code          = nodecodes.whatsit
 
-local savewhatsit_code      = whatsitcodes.save
-local restorewhatsit_code   = whatsitcodes.restore
-local setmatrixwhatsit_code = whatsitcodes.setmatrix
-local literalwhatsit_code   = whatsitcodes.literal
+local savewhatsit_code        = whatsitcodes.save
+local restorewhatsit_code     = whatsitcodes.restore
+local setmatrixwhatsit_code   = whatsitcodes.setmatrix
+local literalwhatsit_code     = whatsitcodes.literal
+local lateliteralwhatsit_code = whatsitcodes.lateliteral
 
 local literalvalues         = nodes.literalvalues
 local originliteral_code    = literalvalues.origin
@@ -64,6 +65,22 @@ function nodepool.literal(mode,str)
         setdata(t,mode)
         return t
     end
+end
+
+-- We only define this for testing as we don't need it:
+
+local lateliteralnode = register(new_node(whatsit_code, lateliteralwhatsit_code))
+
+function nodepool.lateliteral(mode,str)
+    local t = copy_node(lateliteralnode)
+    if str then
+        setfield(t,"mode",literals[mode] and mode or pageliteral_code)
+        setdata(t,str)
+    else
+        setfield(t,"mode",pageliteral_code)
+        setdata(t,mode)
+    end
+    return t
 end
 
 local savenode      = register(new_node(whatsit_code, savewhatsit_code))

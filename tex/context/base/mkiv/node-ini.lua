@@ -201,6 +201,7 @@ end
 
 if not whatcodes.literal then
     whatcodes.literal     = whatcodes.pdfliteral
+    whatcodes.lateliteral = whatcodes.pdflateliteral
     whatcodes.save        = whatcodes.pdfsave
     whatcodes.restore     = whatcodes.pdfrestore
     whatcodes.setmatrix   = whatcodes.pdfsetmatrix

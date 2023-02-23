@@ -555,4 +555,29 @@
     \fi
 \to\everybodyfont
 
+%D Something new, see type {type-imp-antykwa} for an example:
+
+% if we get more:
+
+% \installcorenamespace {fractionbar}
+% \installcorenamespace {radicalbar}
+
+% \def\installfractionbar#1#2{\defcsname\??fractionbar#1\endcsname{#2}}
+% \def\installradicalbar #1#2{\defcsname\??radicalbar #1\endcsname{#2}}
+
+% \def\fractionbarunicode{\ifcsname\??fractionbar\fontclass\endcsname\lastnamedcs\else\zerocount\fi}
+% \def\radicalbarunicode {\ifcsname\??radicalbar \fontclass\endcsname\lastnamedcs\else\zerocount\fi}
+
+\mutable\lettonothing\currentmathfontclass
+
+\def\math_synchronize_setup
+  {\let\currentmathfontclass\fontclass
+   \fastsetup\fontclass}
+
+\appendtoks
+    \ifx\fontclass\currentmathfontclass\else
+        \math_synchronize_setup
+    \fi
+\to \everymathematics
+
 \protect \endinput

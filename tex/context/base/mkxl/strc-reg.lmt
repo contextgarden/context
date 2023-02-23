@@ -1403,7 +1403,9 @@ function registers.flush(data,options,prefixspec,pagespec)
                 if nofpages > 0 then -- or 0
                     d = dd
                     for p=1,nofpages do
-                        local first, last = pages[p][1], pages[p][2]
+                        local page  = pages[p]
+                        local first = page[1]
+                        local last  = page[2]
                         if first == last then
                             if first.references.lastrealpage then
                                 pagerange(first,first,true,prefixspec,pagespec)

@@ -990,6 +990,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "overloaded",                     prefix_cmd,             overloaded_code,                          0);
         tex_primitive(luatex_command, "aliased",                        prefix_cmd,             aliased_code,                             0);
         tex_primitive(luatex_command, "immediate",                      prefix_cmd,             immediate_code,                           0);
+        tex_primitive(luatex_command, "deferred",                       prefix_cmd,             deferred_code,                            0);
         tex_primitive(luatex_command, "semiprotected",                  prefix_cmd,             semiprotected_code,                       0);
         tex_primitive(luatex_command, "enforced",                       prefix_cmd,             enforced_code,                            0);
         tex_primitive(luatex_command, "inherited",                      prefix_cmd,             inherited_code,                           0);
@@ -1216,6 +1217,7 @@ void tex_initialize_commands(void)
         /* */
         tex_primitive(luatex_command, "Umathdelimiterpercent",          set_math_parameter_cmd, math_parameter_delimiter_percent,                0);
         tex_primitive(luatex_command, "Umathdelimitershortfall",        set_math_parameter_cmd, math_parameter_delimiter_shortfall,              0);
+        tex_primitive(luatex_command, "Umathdelimiterextendmargin",     set_math_parameter_cmd, math_parameter_delimiter_extend_margin,          0);
         /* */
         tex_primitive(luatex_command, "Umathoverlinevariant",           set_math_parameter_cmd, math_parameter_over_line_variant,                0);
         tex_primitive(luatex_command, "Umathunderlinevariant",          set_math_parameter_cmd, math_parameter_under_line_variant,               0);

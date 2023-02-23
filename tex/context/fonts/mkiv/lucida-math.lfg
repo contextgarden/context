@@ -26,7 +26,7 @@ return {
             aftercopying = {
                 {
                     tweak    = "version",
-                    expected = "Version 1.803",
+                    expected = "Version 1.901",
                 },
                 {
                     tweak   = "fixoldschool",

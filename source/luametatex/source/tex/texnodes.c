@@ -1205,6 +1205,8 @@ halfword tex_copy_node(halfword p) /* how about null */
                         case radical_noad:
                             copy_sub_node(radical_left_delimiter(r), radical_left_delimiter(p)) ;
                             copy_sub_node(radical_right_delimiter(r), radical_right_delimiter(p)) ;
+                            copy_sub_node(radical_top_delimiter(r), radical_top_delimiter(p)) ;
+                            copy_sub_node(radical_bottom_delimiter(r), radical_bottom_delimiter(p)) ;
                             copy_sub_list(radical_degree(r), radical_degree(p)) ;
                             break;
                         case fraction_noad:
@@ -1394,6 +1396,8 @@ void tex_flush_node(halfword p)
                         case radical_noad:
                             tex_aux_free_sub_node(radical_left_delimiter(p));
                             tex_aux_free_sub_node(radical_right_delimiter(p));
+                            tex_aux_free_sub_node(radical_top_delimiter(p));
+                            tex_aux_free_sub_node(radical_bottom_delimiter(p));
                             tex_aux_free_sub_node_list(radical_degree(p));
                             break;
                         case accent_noad:
@@ -1510,6 +1514,8 @@ static void tex_aux_check_node(halfword p)
                     tex_aux_node_range_test(p, radical_degree(p));
                     tex_aux_node_range_test(p, radical_left_delimiter(p));
                     tex_aux_node_range_test(p, radical_right_delimiter(p));
+                    tex_aux_node_range_test(p, radical_top_delimiter(p));
+                    tex_aux_node_range_test(p, radical_bottom_delimiter(p));
                     break;
                 case fraction_noad:
                  // tex_aux_node_range_test(p, fraction_numerator(p));

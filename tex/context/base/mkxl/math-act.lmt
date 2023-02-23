@@ -1666,6 +1666,17 @@ do
     -- local addprivate = fonts.helpers.addprivate
     -- local newnextglyph = addprivate(target,formatters["M-N-%H"](nextglyph),newnextdata)
 
+    local nps = fonts.helpers.newprivateslot
+
+    local umbracepiece = nps("um brace piece") -- will be created
+    local lmbracepiece = nps("lm brace piece") -- will be created
+    local cmbracepiece = nps("cm brace piece") -- will be created : center piece for brace builder hack
+
+    local ulbracepiece = nps("ul brace piece")
+    local urbracepiece = nps("ur brace piece")
+    local llbracepiece = nps("ll brace piece")
+    local lrbracepiece = nps("lr brace piece")
+
     local over  = { factor = "over"   }
     local under = { factor = "under"  }
 
@@ -2201,6 +2212,10 @@ do
     -- mirror
     -- smaller
 
+    local nps = fonts.helpers.newprivateslot
+
+    local radicalbarextender = nps("radical bar extender") -- we reserve it here
+
     local list = {
         0x221A,
     }
@@ -2627,7 +2642,7 @@ do
             width    = 2*width - 1*advance,
             height   = height,
             depth    = depth,
-            callback = "devirtualize",
+--             callback = "devirtualize",
             commands = { char, left, char },
         }
         characters[triple] = {
@@ -2635,7 +2650,7 @@ do
             width    = 3*width - 2*advance,
             height   = height,
             depth    = depth,
-            callback = "devirtualize",
+--             callback = "devirtualize",
             commands = { char, left, char, left, char },
         }
         if trace_tweaking then
@@ -2972,7 +2987,7 @@ do
             width    = 2*width - 1*advance,
             height   = height,
             depth    = depth,
-            callback = "devirtualize",
+--             callback = "devirtualize",
             commands = {
                 charcommand[single],
                 leftcommand[advance],
@@ -2988,7 +3003,7 @@ do
             width    = 3*width - 2*advance,
             height   = height,
             depth    = depth,
-            callback = "devirtualize",
+--             callback = "devirtualize",
             commands = {
                 charcommand[single],
                 leftcommand[advance],

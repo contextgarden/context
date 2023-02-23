@@ -831,6 +831,7 @@ typedef enum prefix_codes {
     overloaded_code,
     aliased_code,
     immediate_code,
+    deferred_code,
  /* conditional_code */
  /* value_code */
     semiprotected_code,

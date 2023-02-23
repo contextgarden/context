@@ -883,31 +883,47 @@ do
                 setattr(pointer,a_mathsize,0)
                 local delimiter = getdelimiter(pointer)
                 if delimiter then
-                    local chr, fnt, fam = getcharspec(delimiter)
-                    if chr > 0 and fnt > 0 then
-                        local data = fontdata[fnt]
-local chardata = data.characters[chr]
-local template = chardata.varianttemplate
-                        local char = mathematics.big(data,template or chr,size,method)
-                        local ht   = getheight(pointer)
-                        local dp   = getdepth(pointer)
-                        if template or ht == 1 or dp == 1 then -- 1 scaled point is a signal
-                            local chardata = data.characters[char]
-                            if template or ht == 1 then
-                                setheight(pointer,chardata.height)
+                    local oldchar, font, fam = getcharspec(delimiter)
+                    if oldchar > 0 and font > 0 then
+                        local ht         = getheight(pointer)
+                        local dp         = getdepth(pointer)
+                        local data       = fontdata[font]
+                        local characters = data.characters
+                        local olddata    = characters[oldchar]
+--                         local oldheight  = olddata.height or 0
+--                         local olddepth   = olddata.depth or 0
+                        local template   = olddata.varianttemplate
+                        local newchar    = mathematics.big(data,template or oldchar,size,method)
+                        local newdata    = characters[newchar]
+                        local newheight  = newdata.height or 0
+                        local newdepth   = newdata.depth or 0
+                        if template then
+--                             local ratio = (newheight + newdepth) / (oldheight + olddepth)
+--                             setheight(pointer,ratio * oldheight)
+--                             setdepth(pointer,ratio * olddepth)
+                            setheight(pointer,newheight)
+                            setdepth(pointer,newdepth)
+                            if not olddata.extensible then
+                                -- check this on bonum and antykwa
+                                setoptions(pointer,0)
                             end
-                            if template or dp == 1 then
-                                setdepth(pointer,chardata.depth)
+                            if trace_fences then
+--                                 report_fences("replacing %C using method %a, size %a, template %C and ratio %.3f",newchar,method,size,template,ratio)
+                                report_fences("replacing %C using method %a, size %a and template %C",newchar,method,size,template)
+                            end
+                        else
+                            -- 1 scaled point is a signal, for now
+                            if ht == 1 then
+                                setheight(pointer,newheight)
+                            end
+                            if dp == 1 then
+                                setdepth(pointer,newdepth)
+                            end
+                            setchar(delimiter,newchar)
+                            if trace_fences then
+                                report_fences("replacing %C by %C using method %a and size %a",oldchar,char,method,size)
                             end
                         end
-                        if trace_fences then
-                            report_fences("replacing %C by %C using method %a and size %a",chr,char,method,size)
-                        end
-if template then
-    setoptions(pointer,0)
-else
-                        setchar(delimiter,char)
-end
                     end
                 end
             end

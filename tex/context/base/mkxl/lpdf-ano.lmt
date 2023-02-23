@@ -10,8 +10,16 @@ if not modules then modules = { } end modules ['lpdf-ano'] = {
 
 -- todo: /AA << WC << ... >> >> : WillClose actions etc
 
--- internal references are indicated by a number (and turned into <autoprefix><number>)
--- we only flush internal destinations that are referred
+-- Internal references are indicated by a number (and turned into <autoprefix><number>)
+-- we only flush internal destinations that are referred.
+
+-- In the end one can wonder if it was worth the effort to keep up with annotations.
+-- Where acrobat at least supports most (can differ per version) other viewers
+-- support partial. For instance sumatra (that I use for testing) can open an
+-- external links but doesn't go to the page. So don't report issues before making
+-- sure that it's not your browser that fails. One cannto complain about what comes
+-- for free (browsers) but one should also not praise non commercial software to
+-- much without looking critical at how it performs.
 
 local next, tostring, tonumber, rawget, type = next, tostring, tonumber, rawget, type
 local rep, format, find = string.rep, string.format, string.find

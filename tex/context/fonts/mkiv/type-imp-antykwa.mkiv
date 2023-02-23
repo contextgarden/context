@@ -13,12 +13,34 @@
 
 \starttypescriptcollection[antykwa-torunska]
 
-    \definefontfeature[virtualmath-antykwa]          [virtualmath][virtualweight=antykwa]
-    \definefontfeature[virtualmath-antykwa-cond]     [virtualmath][virtualweight=antykwa-cond]
-    \definefontfeature[virtualmath-antykwa-light]    [virtualmath][virtualweight=antykwa-light]
-    \definefontfeature[virtualmath-antykwa-lightcond][virtualmath][virtualweight=antykwa-lightcond]
+    \startsetups[antykwa]
+      % \setupmathfraction[\c!rule=\v!symbol,\c!middle="0203E]%
+      % \setupmathradical [\c!rule=\v!symbol,\c!top   ="FE010]%
+      % \setupmathfence   [\c!alternative=1]%
+        \letmathfractionparameter\c!rule\v!symbol
+        \setmathfractionparameter\c!middle{"203E}%
+        \letmathradicalparameter \c!rule\v!symbol
+        \setmathradicalparameter \c!top{\radicalbarextenderuc}%
+        \setmathfenceparameter   \c!alternative{1}%
+    \stopsetups
 
-    \starttypescript [antykwa,antykwa-torunska,antykwa-light,antykwa-torunska-light,antykwa-cond,antykwa-torunska-cond,antykwa-lightcond,antykwa-torunska-lightcond]
+    % cond => -cont as in iwona
+
+    \startsetups[antykwa-light]              \directsetup{antykwa}\stopsetups
+    \startsetups[antykwa-cond]               \directsetup{antykwa}\stopsetups
+    \startsetups[antykwa-light-cond]         \directsetup{antykwa}\stopsetups
+    % these long names are obsolete and will go away
+    \startsetups[antykwa-torunska]           \directsetup{antykwa}\stopsetups
+    \startsetups[antykwa-torunska-light]     \directsetup{antykwa}\stopsetups
+    \startsetups[antykwa-torunska-cond]      \directsetup{antykwa}\stopsetups
+    \startsetups[antykwa-torunska-light-cond]\directsetup{antykwa}\stopsetups
+
+    \definefontfeature[virtualmath-antykwa]           [virtualmath][virtualweight=antykwa]
+    \definefontfeature[virtualmath-antykwa-cond]      [virtualmath][virtualweight=antykwa-cond]
+    \definefontfeature[virtualmath-antykwa-light]     [virtualmath][virtualweight=antykwa-light]
+    \definefontfeature[virtualmath-antykwa-light-cond][virtualmath][virtualweight=antykwa-light-cond]
+
+    \starttypescript [antykwa,antykwa-torunska,antykwa-light,antykwa-torunska-light,antykwa-cond,antykwa-torunska-cond,antykwa-light-cond,antykwa-torunska-light-cond]
         \definetypeface[\typescriptone][\s!rm][\s!serif][\typescriptone] [\s!default]
         \definetypeface[\typescriptone][\s!ss][\s!sans] [modern]         [\s!default] [\s!rscale=1.05]
         \definetypeface[\typescriptone][\s!tt][\s!mono] [modern]         [\s!default] [\s!rscale=1.05]
@@ -26,23 +48,23 @@
         \quittypescriptscanning
     \stoptypescript
 
-    \starttypescript [\s!serif] [antykwa,antykwa-torunska,antykwa-light,antykwa-torunska-light,antykwa-cond,antykwa-torunska-cond,antykwa-lightcond,antykwa-torunska-lightcond]
-        \definefontsynonym [AntykwaTorunska-Regular]           [\s!file:AntykwaTorunska-Regular]          [\s!features=\s!default]
-        \definefontsynonym [AntykwaTorunska-Italic]            [\s!file:AntykwaTorunska-Italic]           [\s!features=\s!default]
-        \definefontsynonym [AntykwaTorunska-Bold]              [\s!file:AntykwaTorunska-Bold]             [\s!features=\s!default]
-        \definefontsynonym [AntykwaTorunska-BoldItalic]        [\s!file:AntykwaTorunska-BoldItalic]       [\s!features=\s!default]
-        \definefontsynonym [AntykwaTorunska-Light]             [\s!file:AntykwaTorunskaLight-Regular]     [\s!features=\s!default]
-        \definefontsynonym [AntykwaTorunska-LightItalic]       [\s!file:AntykwaTorunskaLight-Italic]      [\s!features=\s!default]
-        \definefontsynonym [AntykwaTorunska-Medium]            [\s!file:AntykwaTorunskaMed-Regular]       [\s!features=\s!default]
-        \definefontsynonym [AntykwaTorunska-MediumItalic]      [\s!file:AntykwaTorunskaMed-Italic]        [\s!features=\s!default]
-        \definefontsynonym [AntykwaTorunska-CondRegular]       [\s!file:AntykwaTorunskaCond-Regular]      [\s!features=\s!default]
-        \definefontsynonym [AntykwaTorunska-CondItalic]        [\s!file:AntykwaTorunskaCond-Italic]       [\s!features=\s!default]
-        \definefontsynonym [AntykwaTorunska-CondBold]          [\s!file:AntykwaTorunskaCond-Bold]         [\s!features=\s!default]
-        \definefontsynonym [AntykwaTorunska-CondBoldItalic]    [\s!file:AntykwaTorunskaCond-BoldItalic]   [\s!features=\s!default]
-        \definefontsynonym [AntykwaTorunska-CondLight]         [\s!file:AntykwaTorunskaCondLight-Regular] [\s!features=\s!default]
-        \definefontsynonym [AntykwaTorunska-CondLightItalic]   [\s!file:AntykwaTorunskaCondLight-Italic]  [\s!features=\s!default]
-        \definefontsynonym [AntykwaTorunska-CondMedium]        [\s!file:AntykwaTorunskaCondMed-Regular]   [\s!features=\s!default]
-        \definefontsynonym [AntykwaTorunska-CondMediumItalic]  [\s!file:AntykwaTorunskaCondMed-Italic]    [\s!features=\s!default]
+    \starttypescript [\s!serif] [antykwa,antykwa-torunska,antykwa-light,antykwa-torunska-light,antykwa-cond,antykwa-torunska-cond,antykwa-light-cond,antykwa-torunska-light-cond]
+        \definefontsynonym [AntykwaTorunska-Regular]          [\s!file:AntykwaTorunska-Regular]          [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-Italic]           [\s!file:AntykwaTorunska-Italic]           [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-Bold]             [\s!file:AntykwaTorunska-Bold]             [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-BoldItalic]       [\s!file:AntykwaTorunska-BoldItalic]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-Light]            [\s!file:AntykwaTorunskaLight-Regular]     [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-LightItalic]      [\s!file:AntykwaTorunskaLight-Italic]      [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-Medium]           [\s!file:AntykwaTorunskaMed-Regular]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-MediumItalic]     [\s!file:AntykwaTorunskaMed-Italic]        [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-CondRegular]      [\s!file:AntykwaTorunskaCond-Regular]      [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-CondItalic]       [\s!file:AntykwaTorunskaCond-Italic]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-CondBold]         [\s!file:AntykwaTorunskaCond-Bold]         [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-CondBoldItalic]   [\s!file:AntykwaTorunskaCond-BoldItalic]   [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-CondLight]        [\s!file:AntykwaTorunskaCondLight-Regular] [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-CondLightItalic]  [\s!file:AntykwaTorunskaCondLight-Italic]  [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-CondMedium]       [\s!file:AntykwaTorunskaCondMed-Regular]   [\s!features=\s!default]
+        \definefontsynonym [AntykwaTorunska-CondMediumItalic] [\s!file:AntykwaTorunskaCondMed-Italic]    [\s!features=\s!default]
     \stoptypescript
 
     \starttypescript [\s!math][antykwa,antykwa-torunska][\s!all]
@@ -60,45 +82,41 @@
         \definefontsynonym[\s!MathRoman][antykwacondmath@antykwa-cond-math]
     \stoptypescript
 
-    \starttypescript [\s!math][antykwa-lightcond,antykwa-torunska-lightcond][\s!all]
+    \starttypescript [\s!math][antykwa-light-cond,antykwa-torunska-light-cond][\s!all]
         \loadfontgoodies[antykwa-math]
-        \definefontsynonym[\s!MathRoman][antykwalightcondmath@antykwa-lightcond-math]
+        \definefontsynonym[\s!MathRoman][antykwalightcondmath@antykwa-light-cond-math]
     \stoptypescript
 
     \starttypescript [\s!serif] [antykwa,antykwa-torunska] [\s!name]
-        \definefontsynonym [\s!Serif]            [AntykwaTorunska-Regular]
-        \definefontsynonym [\s!SerifBold]        [AntykwaTorunska-Bold]
-        \definefontsynonym [\s!SerifItalic]      [AntykwaTorunska-Italic]
-        \definefontsynonym [\s!SerifSlanted]     [AntykwaTorunska-Italic]
-        \definefontsynonym [\s!SerifBoldItalic]  [AntykwaTorunska-BoldItalic]
-        \definefontsynonym [\s!SerifBoldSlanted] [AntykwaTorunska-BoldItalic]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [AntykwaTorunska-Regular]
+        \definefontsynonym [\s!SerifBold]       [AntykwaTorunska-Bold]
+        \definefontsynonym [\s!SerifItalic]     [AntykwaTorunska-Italic]
+        \definefontsynonym [\s!SerifBoldItalic] [AntykwaTorunska-BoldItalic]
     \stoptypescript
 
     \starttypescript [\s!serif] [antykwa-light,antykwa-torunska-light] [\s!name]
-        \definefontsynonym [\s!Serif]            [AntykwaTorunska-Light]
-        \definefontsynonym [\s!SerifBold]        [AntykwaTorunska-Medium]
-        \definefontsynonym [\s!SerifItalic]      [AntykwaTorunska-LightItalic]
-        \definefontsynonym [\s!SerifSlanted]     [AntykwaTorunska-LightItalic]
-        \definefontsynonym [\s!SerifBoldItalic]  [AntykwaTorunska-MediumItalic]
-        \definefontsynonym [\s!SerifBoldSlanted] [AntykwaTorunska-MediumItalic]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [AntykwaTorunska-Light]
+        \definefontsynonym [\s!SerifBold]       [AntykwaTorunska-Medium]
+        \definefontsynonym [\s!SerifItalic]     [AntykwaTorunska-LightItalic]
+        \definefontsynonym [\s!SerifBoldItalic] [AntykwaTorunska-MediumItalic]
     \stoptypescript
 
     \starttypescript [\s!serif] [antykwa-cond,antykwa-torunska-cond] [\s!name]
-        \definefontsynonym [\s!Serif]            [AntykwaTorunska-CondRegular]
-        \definefontsynonym [\s!SerifBold]        [AntykwaTorunska-CondBold]
-        \definefontsynonym [\s!SerifItalic]      [AntykwaTorunska-CondItalic]
-        \definefontsynonym [\s!SerifSlanted]     [AntykwaTorunska-CondItalic]
-        \definefontsynonym [\s!SerifBoldItalic]  [AntykwaTorunska-CondBoldItalic]
-        \definefontsynonym [\s!SerifBoldSlanted] [AntykwaTorunska-CondBoldItalic]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [AntykwaTorunska-CondRegular]
+        \definefontsynonym [\s!SerifBold]       [AntykwaTorunska-CondBold]
+        \definefontsynonym [\s!SerifItalic]     [AntykwaTorunska-CondItalic]
+        \definefontsynonym [\s!SerifBoldItalic] [AntykwaTorunska-CondBoldItalic]
     \stoptypescript
 
-    \starttypescript [\s!serif] [antykwa-lightcond,antykwa-torunska-lightcond] [\s!name]
-        \definefontsynonym [\s!Serif]            [AntykwaTorunska-CondLight]
-        \definefontsynonym [\s!SerifBold]        [AntykwaTorunska-CondMedium]
-        \definefontsynonym [\s!SerifItalic]      [AntykwaTorunska-CondLightItalic]
-        \definefontsynonym [\s!SerifSlanted]     [AntykwaTorunska-CondLightItalic]
-        \definefontsynonym [\s!SerifBoldItalic]  [AntykwaTorunska-CondMediumItalic]
-        \definefontsynonym [\s!SerifBoldSlanted] [AntykwaTorunska-CondMediumItalic]
+    \starttypescript [\s!serif] [antykwa-light-cond,antykwa-torunska-light-cond] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [AntykwaTorunska-CondLight]
+        \definefontsynonym [\s!SerifBold]       [AntykwaTorunska-CondMedium]
+        \definefontsynonym [\s!SerifItalic]     [AntykwaTorunska-CondLightItalic]
+        \definefontsynonym [\s!SerifBoldItalic] [AntykwaTorunska-CondMediumItalic]
     \stoptypescript
 
 \stoptypescriptcollection

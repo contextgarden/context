@@ -298,6 +298,7 @@ local flush_character do
                     local csx = packet[3]
                     local csy = packet[4] or csx
                     pos_h = pos_h + flushchar(fnt,chr,csx,csy)
+* sx
                 elseif command == "slot" then
                     local index = packet[2]
                     local chr   = packet[3]
@@ -305,6 +306,7 @@ local flush_character do
                     local csy   = packet[5] or csx
                     if index == 0 then
                         pos_h = pos_h + flushchar(font,chr,csx,csy)
+* sx
                     else
                         local okay = fonts and fonts[index]
                         if okay then
@@ -314,10 +316,12 @@ local flush_character do
                                     fnt = font
                                 end
                                 pos_h = pos_h + flushchar(fnt,chr,csx,csy)
+* sx
                             end
                         else
                             -- safeguard, we assume the font itself (often index 1)
                             pos_h = pos_h + flushchar(font,chr,csx,csy)
+* sx
                         end
                     end
                 elseif command == "use" then
@@ -394,6 +398,11 @@ local flush_character do
                         pos_h = ph
                         pos_v = pv
                     end
+                elseif command == "stay" then
+                    -- we can do a fast one if needed, it's more an experiment
+                    push()
+                    flushchar(font,packet[2],1,1)
+                    pop()
                 elseif command == "compose" then -- for now idem
                     local ph = pos_h
                     local pv = pos_v

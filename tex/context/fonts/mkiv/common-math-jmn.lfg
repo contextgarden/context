@@ -1,0 +1,119 @@
+return {
+    name = "common-math-jmn",
+    version = "1.00",
+    comment = "Goodies that complement the JMN collection.",
+    author = "Hans, Mikael",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        helpers = {
+            addmissing = function(main)
+
+                local builders       = fonts.handlers.vf.math.builders
+                local ps             = fonts.helpers.privateslot
+
+                local characters     = main.characters
+                local variables      = main.goodies.mathematics and main.goodies.mathematics.variables or { }
+                local joinrelfactor  = variables.joinrelfactor or 3
+                local notshiftfactor = variables.notshiftfactor or 0
+
+                local umbracepiece = ps("um brace piece")
+                local lmbracepiece = ps("lm brace piece")
+                local cmbracepiece = ps("cm brace piece")
+
+                local ulbracepiece = ps("ul brace piece")
+                local urbracepiece = ps("ur brace piece")
+                local llbracepiece = ps("ll brace piece")
+                local lrbracepiece = ps("lr brace piece")
+
+                builders.brace(main,0x23DE,ulbracepiece,cmbracepiece,lrbracepiece,llbracepiece,cmbracepiece,urbracepiece)
+                builders.brace(main,0x23DF,llbracepiece,cmbracepiece,urbracepiece,ulbracepiece,cmbracepiece,lrbracepiece)
+
+                builders.parent(main,0x23DC,ulbracepiece,umbracepiece,urbracepiece,"top")
+                builders.parent(main,0x23DD,llbracepiece,lmbracepiece,lrbracepiece,"bottom")
+
+                builders.dots(main,0x2026) -- ldots
+                builders.dots(main,0x22EE) -- vdots
+                builders.dots(main,0x22EF) -- cdots
+                builders.dots(main,0x22F1) -- ddots
+                builders.dots(main,0x22F0) -- udots
+
+                builders.jointwo(main,0x21A6,ps("maps to piece"),.15,0x02192) -- \mapstochar\rightarrow
+
+                local srm = ps("rule middle piece")
+                local srr = ps("rule right piece")
+                local srl = ps("rule left piece")
+
+                local drm = ps("double rule middle piece")
+                local drr = ps("double rule right piece")
+                local drl = ps("double rule left piece")
+
+                local sal = ps("arrow left piece")
+                local sar = ps("arrow right piece")
+
+                local dal = ps("double arrow left piece")
+                local dar = ps("double arrow right piece")
+
+                local rad = ps("radical bar extender")
+
+                if characters[srm] then
+
+                    builders.jointwo(main,0x27F5,sak,joinrelfactor,srr)
+                    builders.jointwo(main,0x27F6,srl,joinrelfactor,sar)
+                    builders.jointwo(main,0x27F7,sak,joinrelfactor,sar)
+                    builders.jointwo(main,0x27F8,dal,joinrelfactor,drr)
+                    builders.jointwo(main,0x27F9,drl,joinrelfactor,dar)
+                    builders.jointwo(main,0x27FA,dal,joinrelfactor,dar)
+
+                    builders.horibar(main,0x203E,srm,srl,srr,0x02212) -- overbar underbar fraction (we take 90/91/92 too!)
+                 -- builders.horibar(main,0x203E,srm,srl,srr,0x0002D) -- overbar underbar fraction (we take 90/91/92 too!)
+
+                    builders.rootbar(main,ps("radical bar extender"),srm,srr,0x02212) -- radical
+
+                else
+
+                    builders.jointwo(main,0x27F5,0x02190,joinrelfactor,0x0002D) -- \leftarrow\joinrel\relbar
+                    builders.jointwo(main,0x27F6,0x0002D,joinrelfactor,0x02192) -- \relbar\joinrel\rightarrow
+                    builders.jointwo(main,0x27F7,0x02190,joinrelfactor,0x02192) -- \leftarrow\joinrel\rightarrow
+                    builders.jointwo(main,0x27F8,0x021D0,joinrelfactor,0x0003D) -- \Leftarrow\joinrel\Relbar
+                    builders.jointwo(main,0x27F9,0x0003D,joinrelfactor,0x021D2) -- \Relbar\joinrel\Rightarrow
+                    builders.jointwo(main,0x27FA,0x021D0,joinrelfactor,0x021D2) -- \Leftarrow\joinrel\Rightarrow
+
+                    builders.horibar(main,0x203E,0xFE073) -- overbar underbar
+
+                end
+
+                builders.jointwo(main,0x2016,0x007C,0.20,0x007C)
+                builders.jointwo(main,0x2980,0x007C,0.20,0x007C,0.20,0x007C)
+
+                characters[0x007C].extensible      = true
+                characters[0x007C].varianttemplate = 0x5B
+                characters[0x2016].extensible      = true
+                characters[0x2016].varianttemplate = 0x5B
+                characters[0x2980].extensible      = true
+                characters[0x2980].varianttemplate = 0x5B
+
+                -- 21CB leftrightharpoon
+                -- 21CC rightleftharpoon
+
+                builders.stack(main,0x2259,0x0003D,3,0x02227) -- \buildrel\wedge\over=
+
+                builders.jointwo(main,0x22C8,0x022B3,joinrelfactor,0x022B2) -- \mathrel\triangleright\joinrel\mathrel\triangleleft (4 looks better than 3)
+                builders.jointwo(main,0x22A7,0x0007C,joinrelfactor,0x0003D) -- \mathrel|\joinrel=
+
+                builders.overlaytwo(main,0x2260,0x00338,notshiftfactor,0x0003D) -- \not\equal
+                builders.overlaytwo(main,0x2284,0x00338,notshiftfactor,0x02282) -- \not\subset
+                builders.overlaytwo(main,0x2285,0x00338,notshiftfactor,0x02283) -- \not\supset
+                builders.overlaytwo(main,0x2209,0x00338,notshiftfactor,0x02208) -- \not\in
+
+                builders.jointwo(main,0x2254,0x03A,0,0x03D) -- := (≔)
+
+                builders.repeated(main,0x222B,0x222B,1,1/2)
+                builders.repeated(main,0x222C,0x222B,2,1/2)
+                builders.repeated(main,0x222D,0x222B,3,1/2)
+
+                characters[0x02B9] = characters[0x2032] -- we're nice
+
+            end
+        }
+    }
+}

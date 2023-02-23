@@ -409,8 +409,33 @@ function job.loadother(filename,cache)
             end
             unpacked.job.packed = nil -- nicer in inspecting
             if cache then
-                cache[filename] = unpacked
+                othercache[filename] = unpacked
             end
+            --
+            local lists    = utilitydata.structures.lists.collected or { }
+            local sections = utilitydata.structures.sections.collected or { }
+            local pages    = utilitydata.structures.pages   .collected or { }
+            for i=1,#lists do
+                local entry      = lists[i]
+                local references = entry.references
+                if references then
+                    local section  = references.section
+                    local realpage = references.realpage
+                    -- maybe entry.* instead:
+                    references.sectiondata = section and sections[section]
+                    references.pagedata    = realpage and pages[realpage]
+                    -- get rid of these, maybe even crash as these are bogus
+                 -- references.internal = nil
+                 -- references.realpage = nil
+                 -- references.section  = nil
+                    references.x        = nil
+                    references.y        = nil
+                end
+            end
+            --
+            -- also do the references here
+            --
+            structures.references.registerfromlist(lists,derived,pages,sections)
         end
     end
     statistics.stoptiming(loadedfiles)

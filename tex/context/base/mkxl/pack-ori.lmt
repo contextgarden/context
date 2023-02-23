@@ -30,8 +30,8 @@ local horizontal = {
     [variables.middle]     = 0x000,
     [variables.flushleft]  = 0x100,
     [variables.flushright] = 0x200,
-    [variables.left]       = 0x300,
-    [variables.right]      = 0x400,
+    [variables.left]       = 0x300, -- why not 0x100
+    [variables.right]      = 0x400, -- why not 0x200
 }
 
 implement {

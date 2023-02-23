@@ -6,8 +6,8 @@ if not modules then modules = { } end modules ['back-imp-pdp'] = {
     license   = "see context related readme files"
 }
 
--- This is temporary ... awaiting a better test .. basically we can
--- always use this: pdf primitives.
+-- We don't support late literals unless it's really needed by some third party
+-- code.
 
 local context = context
 local lpdf    = lpdf

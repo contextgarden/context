@@ -13,34 +13,52 @@
 
 \starttypescriptcollection[iwona]
 
+    \startsetups[iwona]
+      % \setupmathfence   [\c!alternative=1]%
+        \setmathfenceparameter   \c!alternative{1}%
+%         \letmathfractionparameter\c!rule\v!symbol
+%         \setmathfractionparameter\c!middle{"203E}%
+%         \letmathradicalparameter \c!rule\v!symbol
+%         \setmathradicalparameter \c!top{\radicalbarextenderuc}%
+%         \setmathfenceparameter   \c!alternative{1}%
+    \stopsetups
+
+    \startsetups[iwona-light]      \directsetup{antykwa}\stopsetups
+    \startsetups[iwona-medium]     \directsetup{antykwa}\stopsetups
+    \startsetups[iwona-heavy]      \directsetup{antykwa}\stopsetups
+    \startsetups[iwona-cond]       \directsetup{antykwa}\stopsetups
+    \startsetups[iwona-light-cond] \directsetup{antykwa}\stopsetups
+    \startsetups[iwona-medium-cond]\directsetup{antykwa}\stopsetups
+    \startsetups[iwona-heavy-cond] \directsetup{antykwa}\stopsetups
+
     \definefontfeature[virtualmath-iwona]       [virtualmath][virtualweight=iwona]
     \definefontfeature[virtualmath-iwona-light] [virtualmath][virtualweight=iwona-light]
     \definefontfeature[virtualmath-iwona-medium][virtualmath][virtualweight=iwona-medium]
     \definefontfeature[virtualmath-iwona-heavy] [virtualmath][virtualweight=iwona-heavy]
 
-    \starttypescript [\s!sans] [iwona-light,iwona,iwona-medium,iwona-heavy,iwona-light-cond,iwona-cond,iwona-medium-cond,iwona-heavy-cond]
+    \starttypescript [\s!sans] [iwona,iwona-light,iwona-medium,iwona-heavy,iwona-cond,iwona-light-cond,iwona-medium-cond,iwona-heavy-cond]
 
-        \definefontsynonym [Iwona-Regular]               [\s!file:Iwona-Regular]                [\s!features=\s!default]
-        \definefontsynonym [Iwona-Italic]                [\s!file:Iwona-Italic]                 [\s!features=\s!default]
-        \definefontsynonym [Iwona-Bold]                  [\s!file:Iwona-Bold]                   [\s!features=\s!default]
-        \definefontsynonym [Iwona-BoldItalic]            [\s!file:Iwona-BoldItalic]             [\s!features=\s!default]
-        \definefontsynonym [Iwona-Light-Regular]         [\s!file:IwonaLight-Regular]           [\s!features=\s!default]
-        \definefontsynonym [Iwona-Light-Italic]          [\s!file:IwonaLight-Italic]            [\s!features=\s!default]
-        \definefontsynonym [Iwona-Medium-Regular]        [\s!file:IwonaMedium-Regular]          [\s!features=\s!default]
-        \definefontsynonym [Iwona-Medium-Italic]         [\s!file:IwonaMedium-Italic]           [\s!features=\s!default]
-        \definefontsynonym [Iwona-Heavy-Regular]         [\s!file:IwonaHeavy-Regular]           [\s!features=\s!default]
-        \definefontsynonym [Iwona-Heavy-Italic]          [\s!file:IwonaHeavy-Italic]            [\s!features=\s!default]
+        \definefontsynonym [Iwona-Regular]            [\s!file:Iwona-Regular]           [\s!features=\s!default]
+        \definefontsynonym [Iwona-Italic]             [\s!file:Iwona-Italic]            [\s!features=\s!default]
+        \definefontsynonym [Iwona-Bold]               [\s!file:Iwona-Bold]              [\s!features=\s!default]
+        \definefontsynonym [Iwona-BoldItalic]         [\s!file:Iwona-BoldItalic]        [\s!features=\s!default]
+        \definefontsynonym [Iwona-Light-Regular]      [\s!file:IwonaLight-Regular]      [\s!features=\s!default]
+        \definefontsynonym [Iwona-Light-Italic]       [\s!file:IwonaLight-Italic]       [\s!features=\s!default]
+        \definefontsynonym [Iwona-Medium-Regular]     [\s!file:IwonaMedium-Regular]     [\s!features=\s!default]
+        \definefontsynonym [Iwona-Medium-Italic]      [\s!file:IwonaMedium-Italic]      [\s!features=\s!default]
+        \definefontsynonym [Iwona-Heavy-Regular]      [\s!file:IwonaHeavy-Regular]      [\s!features=\s!default]
+        \definefontsynonym [Iwona-Heavy-Italic]       [\s!file:IwonaHeavy-Italic]       [\s!features=\s!default]
 
-        \definefontsynonym [Iwona-CondRegular]           [\s!file:IwonaCond-Regular]            [\s!features=\s!default]
-        \definefontsynonym [Iwona-CondItalic]            [\s!file:IwonaCond-Italic]             [\s!features=\s!default]
-        \definefontsynonym [Iwona-CondBold]              [\s!file:IwonaCond-Bold]               [\s!features=\s!default]
-        \definefontsynonym [Iwona-CondBoldItalic]        [\s!file:IwonaCond-BoldItalic]         [\s!features=\s!default]
-        \definefontsynonym [Iwona-CondLight-Regular]     [\s!file:IwonaCondLight-Regular]       [\s!features=\s!default]
-        \definefontsynonym [Iwona-CondLight-Italic]      [\s!file:IwonaCondLight-Italic]        [\s!features=\s!default]
-        \definefontsynonym [Iwona-CondMedium-Regular]    [\s!file:IwonaCondMedium-Regular]      [\s!features=\s!default]
-        \definefontsynonym [Iwona-CondMedium-Italic]     [\s!file:IwonaCondMedium-Italic]       [\s!features=\s!default]
-        \definefontsynonym [Iwona-CondHeavy-Regular]     [\s!file:IwonaCondHeavy-Regular]       [\s!features=\s!default]
-        \definefontsynonym [Iwona-CondHeavy-Italic]      [\s!file:IwonaCondHeavy-Italic]        [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondRegular]        [\s!file:IwonaCond-Regular]       [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondItalic]         [\s!file:IwonaCond-Italic]        [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondBold]           [\s!file:IwonaCond-Bold]          [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondBoldItalic]     [\s!file:IwonaCond-BoldItalic]    [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondLight-Regular]  [\s!file:IwonaCondLight-Regular]  [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondLight-Italic]   [\s!file:IwonaCondLight-Italic]   [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondMedium-Regular] [\s!file:IwonaCondMedium-Regular] [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondMedium-Italic]  [\s!file:IwonaCondMedium-Italic]  [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondHeavy-Regular]  [\s!file:IwonaCondHeavy-Regular]  [\s!features=\s!default]
+        \definefontsynonym [Iwona-CondHeavy-Italic]   [\s!file:IwonaCondHeavy-Italic]   [\s!features=\s!default]
 
     \stoptypescript
 
@@ -65,59 +83,59 @@
 
     \starttypescript [\s!sans] [iwona-light] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]            [Iwona-Light-Regular]
-        \definefontsynonym [\s!SansItalic]      [Iwona-Light-Italic]
-        \definefontsynonym [\s!SansBold]        [Iwona-Medium-Regular]
-        \definefontsynonym [\s!SansBoldItalic]  [Iwona-Medium-Italic]
+        \definefontsynonym [\s!Sans]           [Iwona-Light-Regular]
+        \definefontsynonym [\s!SansItalic]     [Iwona-Light-Italic]
+        \definefontsynonym [\s!SansBold]       [Iwona-Medium-Regular]
+        \definefontsynonym [\s!SansBoldItalic] [Iwona-Medium-Italic]
     \stoptypescript
 
     \starttypescript [\s!sans] [iwona] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]            [Iwona-Regular]
-        \definefontsynonym [\s!SansItalic]      [Iwona-Italic]
-        \definefontsynonym [\s!SansBold]        [Iwona-Bold]
-        \definefontsynonym [\s!SansBoldItalic]  [Iwona-BoldItalic]
+        \definefontsynonym [\s!Sans]           [Iwona-Regular]
+        \definefontsynonym [\s!SansItalic]     [Iwona-Italic]
+        \definefontsynonym [\s!SansBold]       [Iwona-Bold]
+        \definefontsynonym [\s!SansBoldItalic] [Iwona-BoldItalic]
     \stoptypescript
 
     \starttypescript [\s!sans] [iwona-medium] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]            [Iwona-Medium-Regular]
-        \definefontsynonym [\s!SansItalic]      [Iwona-Medium-Italic]
-        \definefontsynonym [\s!SansBold]        [Iwona-Heavy-Regular]
-        \definefontsynonym [\s!SansBoldItalic]  [Iwona-Heavy-Italic]
+        \definefontsynonym [\s!Sans]           [Iwona-Medium-Regular]
+        \definefontsynonym [\s!SansItalic]     [Iwona-Medium-Italic]
+        \definefontsynonym [\s!SansBold]       [Iwona-Heavy-Regular]
+        \definefontsynonym [\s!SansBoldItalic] [Iwona-Heavy-Italic]
     \stoptypescript
 
     \starttypescript [\s!sans] [iwona-heavy] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]            [Iwona-Heavy-Regular]
-        \definefontsynonym [\s!SansItalic]      [Iwona-Heavy-Italic]
-        \definefontsynonym [\s!SansBold]        [Iwona-Heavy-Regular]
-        \definefontsynonym [\s!SansBoldItalic]  [Iwona-Heavy-Italic]
+        \definefontsynonym [\s!Sans]           [Iwona-Heavy-Regular]
+        \definefontsynonym [\s!SansItalic]     [Iwona-Heavy-Italic]
+        \definefontsynonym [\s!SansBold]       [Iwona-Heavy-Regular]
+        \definefontsynonym [\s!SansBoldItalic] [Iwona-Heavy-Italic]
     \stoptypescript
 
     \starttypescript [\s!sans] [iwona-light-cond] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]            [Iwona-CondLight-Regular]
-        \definefontsynonym [\s!SansItalic]      [Iwona-CondLight-Italic]
-        \definefontsynonym [\s!SansBold]        [Iwona-CondMedium-Regular]
-        \definefontsynonym [\s!SansBoldItalic]  [Iwona-CondMedium-Italic]
+        \definefontsynonym [\s!Sans]           [Iwona-CondLight-Regular]
+        \definefontsynonym [\s!SansItalic]     [Iwona-CondLight-Italic]
+        \definefontsynonym [\s!SansBold]       [Iwona-CondMedium-Regular]
+        \definefontsynonym [\s!SansBoldItalic] [Iwona-CondMedium-Italic]
     \stoptypescript
 
 
     \starttypescript [\s!sans] [iwona-cond] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]            [Iwona-CondRegular]
-        \definefontsynonym [\s!SansItalic]      [Iwona-CondItalic]
-        \definefontsynonym [\s!SansBold]        [Iwona-CondBold]
-        \definefontsynonym [\s!SansBoldItalic]  [Iwona-CondBoldItalic]
+        \definefontsynonym [\s!Sans]           [Iwona-CondRegular]
+        \definefontsynonym [\s!SansItalic]     [Iwona-CondItalic]
+        \definefontsynonym [\s!SansBold]       [Iwona-CondBold]
+        \definefontsynonym [\s!SansBoldItalic] [Iwona-CondBoldItalic]
     \stoptypescript
 
     \starttypescript [\s!sans] [iwona-medium-cond] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]            [Iwona-CondMedium-Regular]
-        \definefontsynonym [\s!SansItalic]      [Iwona-CondMedium-Italic]
-        \definefontsynonym [\s!SansBold]        [Iwona-CondHeavy-Regular]
-        \definefontsynonym [\s!SansBoldItalic]  [Iwona-CondHeavy-Italic]
+        \definefontsynonym [\s!Sans]           [Iwona-CondMedium-Regular]
+        \definefontsynonym [\s!SansItalic]     [Iwona-CondMedium-Italic]
+        \definefontsynonym [\s!SansBold]       [Iwona-CondHeavy-Regular]
+        \definefontsynonym [\s!SansBoldItalic] [Iwona-CondHeavy-Italic]
     \stoptypescript
 
     \starttypescript [iwona,iwona-light,iwona-heavy,iwona-medium]

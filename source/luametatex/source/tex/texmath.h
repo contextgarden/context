@@ -169,6 +169,7 @@ typedef enum math_parameters {
     /* */
     math_parameter_delimiter_percent,
     math_parameter_delimiter_shortfall,
+    math_parameter_delimiter_extend_margin,
     /* */
     math_parameter_over_line_variant,
     math_parameter_under_line_variant,
@@ -514,6 +515,7 @@ typedef enum math_parameter_codes {
     FlattenedAccentBottomShiftDown,           
     DelimiterPercent,                       
     DelimiterShortfall,
+    DelimiterExtendMargin,
     /* done */
     math_parameter_last_code,
 } math_parameter_codes;
@@ -682,6 +684,7 @@ typedef enum math_control_codes {
     math_control_ignore_kern_dimensions      = 0x0400000, /* for bad fonts (like xits fence depths) */
     math_control_ignore_flat_accents         = 0x0800000, 
     math_control_extend_accents              = 0x1000000, 
+    math_control_extend_delimiters           = 0x2000000, 
 } math_control_codes;
 
 /*tex This is what we use for \OPENTYPE\ in \CONTEXT: */

@@ -22,6 +22,7 @@ local tokenscanners     = tokens.scanners
 local scanword          = tokenscanners.word
 local scankeyword       = tokenscanners.keyword
 local scanstring        = tokenscanners.string
+local scantoks          = tokenscanners.toks
 local scaninteger       = tokenscanners.integer
 local scanwhd           = tokenscanners.whd
 
@@ -30,6 +31,7 @@ local report            = logs.reporter("backend")
 
 local nodepool          = nodes.pool
 local newliteral        = nodepool.literal
+local newlateliteral    = nodepool.lateliteral
 local newsave           = nodepool.save
 local newrestore        = nodepool.restore
 local newsetmatrix      = nodepool.setmatrix
@@ -40,8 +42,24 @@ local variables         = interfaces.variables
 
 -- literals
 
+-- local function pdfliteral()
+--     context(newliteral(scanword() or "origin",scanstring()))
+-- end
+
+-- Who knows what will end up in e.g. tikz .. so we now do:
+
 local function pdfliteral()
-    context(newliteral(scanword() or "origin",scanstring()))
+    local word = scanword()
+    local node
+    if word == "shipout" then
+        context(newlateliteral(scanword() or "origin",scantoks()))
+    else
+        context(newliteral(word or "origin",scanstring()))
+    end
+end
+
+local function pdflateliteral()
+    context(newlateliteral(scanword() or "origin",scantoks()))
 end
 
 -- objects
@@ -198,14 +216,15 @@ end
 -- mapfile mapline includechars catalog info names trailer
 
 local extensions = {
-    literal   = pdfliteral,
-    obj       = pdfobj,
-    refobj    = pdfrefobj,
-    dest      = pdfdest,
-    annot     = pdfannot,
-    save      = pdfsave,
-    restore   = pdfrestore,
-    setmatrix = pdfsetmatrix,
+    literal     = pdfliteral,
+    lateliteral = pdflateliteral,
+    obj         = pdfobj,
+    refobj      = pdfrefobj,
+    dest        = pdfdest,
+    annot       = pdfannot,
+    save        = pdfsave,
+    restore     = pdfrestore,
+    setmatrix   = pdfsetmatrix,
 }
 
 local function pdfextension()
@@ -276,12 +295,13 @@ implement { name = "pdfvariable",  actions = pdfvariable }
 
 -- for the moment (tikz)
 
-implement { name = "pdfliteral",    actions = pdfliteral }
-implement { name = "pdfobj",        actions = pdfobj }
-implement { name = "pdflastobj",    actions = pdflastobj }
-implement { name = "pdfrefobj",     actions = pdfrefobj }
---------- { name = "pdfannot",      actions = pdfannot }
---------- { name = "pdfdest",       actions = pdfdest }
---------- { name = "pdfsave",       actions = pdfsave }
---------- { name = "pdfrestore",    actions = pdfrestore }
---------- { name = "pdfsetmatrix",  actions = pdfsetmatrix }
+implement { name = "pdfliteral",     actions = pdfliteral }
+implement { name = "pdflateliteral", actions = pdflateliteral }
+implement { name = "pdfobj",         actions = pdfobj }
+implement { name = "pdflastobj",     actions = pdflastobj }
+implement { name = "pdfrefobj",      actions = pdfrefobj }
+--------- { name = "pdfannot",       actions = pdfannot }
+--------- { name = "pdfdest",        actions = pdfdest }
+--------- { name = "pdfsave",        actions = pdfsave }
+--------- { name = "pdfrestore",     actions = pdfrestore }
+--------- { name = "pdfsetmatrix",   actions = pdfsetmatrix }

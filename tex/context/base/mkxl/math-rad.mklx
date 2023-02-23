@@ -189,14 +189,25 @@
 % as struts are sort of predictable we can now fix all fonts in the lfg file.
 
 \protected\def\math_radical_common#degree%
-  {\Urooted
+  {\scratchcounter\ifcstok{\mathradicalparameter\c!rule}\v!symbol
+     \mathradicalparameter\c!top\relax
+   \else
+     \zerocount
+   \fi
+   \Urooted
      \s!height\dimexpr\mathradicalparameter\c!height\relax
      \s!depth \dimexpr\mathradicalparameter\c!depth\relax
      \s!source\numexpr\namedboxanchor{\mathradicalparameter\c!source}\relax
      \s!style \normalmathstyle
+     \ifzeronum\scratchcounter\else
+       top % \s!top
+     \fi
      \zerocount \mathradicalparameter\c!left
      \zerocount \mathradicalparameter\c!right
-   \relax
+     \ifzeronum\scratchcounter\else
+       \zerocount\scratchcounter
+     \fi
+     \relax
    {\mathstrut#degree}}
 
 \defcsname\??mathradicalalternative\v!default\endcsname %  #body%
@@ -365,6 +376,7 @@
 
 \integerdef\delimitedleftanutityuc  \privatecharactercode{delimited left annuity}
 \integerdef\delimitedrightanutityuc \privatecharactercode{delimited right annuity}
+\integerdef\radicalbarextenderuc    \privatecharactercode{radical bar extender}
 
 \definemathradical
   [rannuity]

@@ -494,7 +494,7 @@ implement {
 
 -- no metatable here .. better be sparse
 
-local function register_from_lists(collected,derived,pages,sections)
+local function register_from_list(collected,derived,pages,sections)
     local derived_g = derived[""] -- global
     local derived_p = nil
     local derived_c = nil
@@ -556,7 +556,11 @@ local function register_from_lists(collected,derived,pages,sections)
     end
 end
 
-references.registerinitializer(function() register_from_lists(lists.collected,derived) end)
+references.registerfromlist = function(collected,pages,sections)
+    register_from_list(collected,derived,pages,sections)
+end
+
+references.registerinitializer(function() register_from_list(lists.collected,derived) end)
 
 -- tracing
 
@@ -1025,13 +1029,26 @@ local function loadexternalreferences(name,utilitydata)
                     report_importing("registering %a reference, kind %a, name %a, prefix %a, reference %a",
                         "external","regular",name,prefix,reference)
                 end
-                local section  = reference.section
-                local realpage = reference.realpage
-                if section then
-                    reference.sectiondata = lists[section]
-                end
-                if realpage then
-                    reference.pagedata = pages[realpage]
+                -- weird code
+             -- local section  = reference.section
+             -- local realpage = reference.realpage
+             -- if section then
+             --     reference.sectiondata = lists[section]
+             -- end
+             -- if realpage then
+             --     reference.pagedata = pages[realpage]
+             -- end
+                -- better?
+                local references = data.references -- hm. plural
+                if references then
+                    local section  = references.section
+                    local realpage = references.realpage
+                    if not references.sectiondata then
+                        references.sectiondata = sections[references.section or false]
+                    end
+                    if not references.pagedata then
+                        references.pagedata = pages[references.realpage or false]
+                    end
                 end
             end
         end
@@ -1046,19 +1063,17 @@ local function loadexternalreferences(name,utilitydata)
                     local kind     = metadata.kind
                     local realpage = references.realpage
                     if kind and realpage then
-                        references.pagedata = pages[realpage]
+                        -- quite likely already done so this might go
+                        if pages and not references.pagedata then
+                            references.pagedata = pages[references.realpage or false]
+                        end
+                        if sections and not references.sectiondata then
+                            references.sectiondata = sections[references.section or false]
+                        end
+                        --
                         local prefix = references.prefix or ""
                         if prefix == "" then
                             prefix = name -- this can clash!
-                        end
-                        local section = references.section
-                        if section then
-                            -- we have to make sure that the right section is used, see helpers.prefix
-                            if sections then
-                                references.sectiondata = sections[section]
-                            else
-                                -- warning
-                            end
                         end
                         local target = external[prefix]
                         if not target then
@@ -1127,8 +1142,9 @@ local function loadproductreferences(productname,componentname,utilitydata)
     local struc = utilitydata.structures
     if struc then
         local productreferences = struc.references.collected -- direct references
-        local lists = struc.lists.collected      -- indirect references (derived)
-        local pages = struc.pages.collected      -- pagenumber data
+        local lists    = struc.lists.collected      -- indirect references (derived)
+        local pages    = struc.pages.collected      -- pagenumber data
+        local sections = struc.sections.collected   -- section number data
         -- we use indirect tables to save room but as they are eventually
         -- just references we resolve them to data here (the mechanisms
         -- that use this data check for indirectness)
@@ -1138,13 +1154,11 @@ local function loadproductreferences(productname,componentname,utilitydata)
                     report_importing("registering %s reference, kind %a, name %a, prefix %a, reference %a",
                         "product","regular",productname,prefix,reference)
                 end
-                local section  = reference.section
-                local realpage = reference.realpage
-                if section then
-                    reference.sectiondata = lists[section]
+                if not reference.sectiondata then
+                    reference.sectiondata = sections[reference.section or false]
                 end
-                if realpage then
-                    reference.pagedata = pages[realpage]
+                if not reference.pagedata then
+                    reference.pagedata = pages[reference.realpage or false]
                 end
             end
         end
@@ -1160,7 +1174,6 @@ local function loadproductreferences(productname,componentname,utilitydata)
                     local kind     = metadata.kind
                     local realpage = references.realpage
                     if kind and realpage then
-                        references.pagedata = pages[realpage]
                         local prefix    = references.prefix or ""
                         local component = references.component
                         local ctarget, ptarget

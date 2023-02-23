@@ -333,7 +333,7 @@
    \s!vfactor \numexpr\mathfractionparameter\c!vfactor\relax
    \s!source  \number\namedboxanchor{\mathfractionparameter\c!source}}
 
-\installcorenamespace{mathalignsimple}
+\installcorenamespace{mathalignsimple} % this should move to math-ali
 
 \defcsname\??mathalignsimple\v!right     \endcsname#1{#1\hfill}
 \defcsname\??mathalignsimple\v!flushleft \endcsname#1{#1\hfill}

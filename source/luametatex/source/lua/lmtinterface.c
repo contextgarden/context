@@ -435,6 +435,7 @@ void lmt_initialize_interface(void)
 
     set_math_parameter_value(math_parameter_delimiter_percent,                  math_int_parameter,    delimiterpercent);
     set_math_parameter_value(math_parameter_delimiter_shortfall,                math_dimen_parameter,  delimitershortfall);
+    set_math_parameter_value(math_parameter_delimiter_extend_margin,            math_dimen_parameter,  delimiterextendmargin);
 
     set_math_parameter_value(math_parameter_over_line_variant,                  math_style_parameter,  overlinevariant);
     set_math_parameter_value(math_parameter_under_line_variant,                 math_style_parameter,  underlinevariant);
@@ -548,4 +549,5 @@ void lmt_initialize_interface(void)
     set_math_font_parameter(FlattenedAccentBottomShiftDown,           math_dimen_parameter);
     set_math_font_parameter(DelimiterPercent,                         math_int_parameter);
     set_math_font_parameter(DelimiterShortfall,                       math_dimen_parameter);
+    set_math_font_parameter(DelimiterExtendMargin,                    math_dimen_parameter);
 }

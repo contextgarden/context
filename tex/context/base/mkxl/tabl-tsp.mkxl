@@ -217,6 +217,7 @@
 \newtoks       \t_split_before
 \newtoks       \t_split_inbetween
 \newtoks       \t_split_after
+\newtoks       \t_split_section
 \newtoks       \everyresettsplit
 
 \newinteger    \c_split_minimum_free_lines
@@ -246,6 +247,7 @@
    \t_split_inbetween         \emptytoks
    \t_split_before            \emptytoks
    \t_split_after             \emptytoks
+   \t_split_section           \emptytoks
    \let\postprocesstsplit     \donothing
 \to \everyresettsplit
 
@@ -301,6 +303,7 @@
    \setbox\b_split_result\vbox
      {\ifdim\ht\b_split_head>\zeropoint
         \unvcopy\b_split_head
+        \the\t_split_section
         \the\t_split_inbetween
       \fi}%
    \ifconditional\c_tabl_split_done \else

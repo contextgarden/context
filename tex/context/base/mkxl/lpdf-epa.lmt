@@ -549,7 +549,7 @@ local function copyF(v,lock) -- todo: bxor 24
 end
 
 -- Speed is not really an issue so we don't optimize this code too much. In the end (after
--- testing we end up with less code that we started with.
+-- testing) we ended up with less code that we started with.
 
 function codeinjections.mergecomments(specification)
     local specification, fullname, document = validdocument(specification)
@@ -865,6 +865,33 @@ function codeinjections.mergefields(specification)
             end
         end
     end
+end
+
+-- The crappy parts of pdf .. too unpredictable.
+
+function codeinjections.mergerenditions(specification)
+--  local specification, fullname, document = validdocument(specification)
+--  if not document then
+--      return ""
+--  end
+--  local pagenumber  = specification.page or 1
+--  local pagedata    = document.pages[pagenumber]
+--  local annotations = pagedata and pagedata.Annots
+--  if annotations and #annotations > 0 then
+--      local llx, lly, urx, ury, width, height, xscale, yscale = getmediasize(specification,pagedata,xscale,yscale)
+--      initializelayer(height,width)
+--      --
+--      for i=1,#annotations do
+--          -- we keep the order
+--          local annotation = annotations[i]
+--          if annotation then
+--              local subtype = annotation.Subtype
+--              if subtype == "Screen" then
+--                  print("not done")
+--              end
+--          end
+--      end
+--  end
 end
 
 -- Beware, bookmarks can be in pdfdoc encoding or in unicode. However, in mkiv we

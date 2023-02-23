@@ -331,13 +331,13 @@
 \letcsname\??naturaltablesqueeze\v!local\endcsname\donetrue
 
 \def\tabl_ntb_let_gal{\gletcsname\??naturaltablegal\m_tabl_tbl_level\endcsname}
-\def\tabl_ntb_get_gal{\csname\??naturaltablegal\m_tabl_tbl_level\endcsname}
+\def\tabl_ntb_get_gal{\csname    \??naturaltablegal\m_tabl_tbl_level\endcsname}
 
 \def\tabl_ntb_let_tal#1{\gletcsname\??naturaltabletal\m_tabl_tbl_level:\number#1\endcsname}
-\def\tabl_ntb_get_tal#1{\csname\??naturaltabletal\m_tabl_tbl_level:\number#1\endcsname}
+\def\tabl_ntb_get_tal#1{\csname    \??naturaltabletal\m_tabl_tbl_level:\number#1\endcsname}
 
 \def\tabl_ntb_set_nob#1{\letcsname\??naturaltablenob\m_tabl_tbl_level:\number#1\endcsname\plusone}
-\def\tabl_ntb_get_nob#1{\ifcsname\??naturaltablenob\m_tabl_tbl_level:\number#1\endcsname\plusone\else\zerocount\fi}
+\def\tabl_ntb_get_nob#1{\ifcsname \??naturaltablenob\m_tabl_tbl_level:\number#1\endcsname\plusone\else\zerocount\fi}
 
 %def\tabl_ntb_set_tag#1#2{\expandafter\integerdef\csname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname}
 \def\tabl_ntb_set_col#1#2{\expandafter\integerdef\csname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname}
@@ -733,9 +733,23 @@
 % \bTR \bTD left \eTD\bTD right \eTD\eTR
 % \eTABLE
 
+% plugin
+
+\let\tabl_ntb_section_mark   \relax
+\let\tabl_ntb_section_checkup\relax
+\let\tabl_ntb_section_split  \relax
+\let\tabl_ntb_section_install\relax
+\let\tabl_ntb_section_setup  \relax
+\let\tabl_ntb_section_wrapup \relax
+
+% till here
+
 \tolerant\protected\def\tabl_ntb_tr[#1]%
   {\c_tabl_ntb_running_col\zerocount
    \c_tabl_ntb_encountered_col\zerocount
+   %
+   \tabl_ntb_section_mark
+   %
    \advanceby\c_tabl_ntb_maximum_row\plusone
    \ifparameter#1\or
      \expandafter\tabl_ntb_tr_yes
@@ -1009,6 +1023,7 @@
    \setupcurrentnaturaltablelocal[\c!align={\v!right,\v!broad,\v!high},#1]%
    %
    \tabl_ntb_anchor_setup
+   \tabl_ntb_section_setup
    %
    \d_tabl_ntb_leftmargindistance \naturaltablelocalparameter\c!leftmargindistance\relax
    \d_tabl_ntb_rightmargindistance\naturaltablelocalparameter\c!rightmargindistance\relax
@@ -1052,6 +1067,7 @@
    \let\currentTABLEcolumn\tabl_ntb_current_column
    \let\nofTABLErows      \tabl_ntb_n_of_rows
    \let\nofTABLEcolumns   \tabl_ntb_n_of_columns
+   %
    \enforced\let\bTR\tabl_ntb_bTR
    \enforced\let\bTD\tabl_ntb_bTD
    \enforced\let\bTH\tabl_ntb_bTH
@@ -1133,6 +1149,7 @@
      %   \vskip-\strutdp
      % \fi
    \fi
+   \tabl_ntb_section_wrapup
    % tracing
    % \iftrue
    %   \blank \tttf
@@ -1375,6 +1392,7 @@
    \ifconditional\c_strc_tags_enabled
      \tabl_ntb_start_tagged
    \fi
+   \tabl_ntb_section_checkup
    \hbox\bgroup
    \kern\dimexpr\d_tabl_ntb_leftmargindistance\relax}
 
@@ -1798,6 +1816,7 @@
    \t_split_after{\m_tabl_ntb_after_split}%
    \t_split_before{\m_tabl_ntb_before_split}% not used (yet)
    \setbox\b_split_content\vbox{\tabl_ntb_flush_content}%
+   \tabl_ntb_section_install % we need content to be set
    \ifmultipleTBLheads
      \localcontrolledloop\plusone\c_tabl_ntb_n_of_head_lines\plusone
        {\setbox\scratchbox\vsplit\b_split_content to \lineheight

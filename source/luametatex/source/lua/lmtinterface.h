@@ -560,6 +560,7 @@ make_lua_key(L, data);\
 make_lua_key(L, deep_frozen_cs_dont_expand);\
 make_lua_key(L, deep_frozen_cs_end_template);\
 make_lua_key(L, def);\
+make_lua_key(L, deferred);\
 make_lua_key(L, define_char_code);\
 make_lua_key(L, define_family);\
 make_lua_key(L, define_font);\
@@ -572,6 +573,8 @@ make_lua_key(L, delimiter);\
 make_lua_key(L, delimiter_number);\
 make_lua_key(L, delimiterover);\
 make_lua_key(L, delimiterovervariant);\
+make_lua_key(L, DelimiterExtendMargin);\
+make_lua_key(L, delimiterextendmargin);\
 make_lua_key(L, DelimiterPercent);\
 make_lua_key(L, delimiterpercent);\
 make_lua_key(L, DelimiterShortfall);\
@@ -749,6 +752,7 @@ make_lua_key(L, indentskip);\
 make_lua_key(L, index);\
 make_lua_key(L, info);\
 make_lua_key(L, Info);\
+make_lua_key(L, inherited);\
 make_lua_key(L, inner);\
 make_lua_key(L, innerlocation);\
 make_lua_key(L, innerxoffset);\
@@ -1126,6 +1130,7 @@ make_lua_key(L, ScriptScriptPercentScaleDown);\
 make_lua_key(L, scriptscriptscale);\
 make_lua_key(L, second);\
 make_lua_key(L, semisimple);\
+make_lua_key(L, semiprotected);\
 make_lua_key(L, set);\
 make_lua_key(L, set_auxiliary);\
 make_lua_key(L, set_box);\

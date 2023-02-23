@@ -739,10 +739,14 @@
   {\c_math_eqalign_column\zerocount
    \rawprocesscommacommand[#1]\math_eqalign_set_columns_step}
 
-\letcsname\??mathalignmentvariant\v!normal\endcsname\zerocount
-\letcsname\??mathalignmentvariant\v!left  \endcsname\plusone
-\letcsname\??mathalignmentvariant\v!right \endcsname\plustwo
-\letcsname\??mathalignmentvariant\v!middle\endcsname\plusthree
+% can't we reuse these numbers ?
+
+\letcsname\??mathalignmentvariant\v!normal    \endcsname\zerocount
+\letcsname\??mathalignmentvariant\v!flushright\endcsname\plusone
+\letcsname\??mathalignmentvariant\v!left      \endcsname\plusone
+\letcsname\??mathalignmentvariant\v!right     \endcsname\plustwo
+\letcsname\??mathalignmentvariant\v!flushleft \endcsname\plustwo
+\letcsname\??mathalignmentvariant\v!middle    \endcsname\plusthree
 
 %D \starttyping
 %D \placeformula[eqn0]\startformula \startalign[n=1] a\NR       \stopalign \stopformula See \in[eqn0]
@@ -2514,8 +2518,12 @@
 
 \defcsname\??mathboxlocation\v!left \endcsname
   {\c_strc_math_number_location\plusone}
+\defcsname\??mathboxlocation\v!flushright\endcsname
+  {\c_strc_math_number_location\plusone}
 
 \defcsname\??mathboxlocation\v!right\endcsname
+  {\c_strc_math_number_location\plustwo}
+\defcsname\??mathboxlocation\v!flushleft\endcsname
   {\c_strc_math_number_location\plustwo}
 
 \defcsname\??mathboxlocation\v!atrightmargin\endcsname

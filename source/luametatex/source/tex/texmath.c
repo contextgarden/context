@@ -1037,7 +1037,7 @@ static void tex_aux_display_simple_noad(halfword n, int threshold, int max)
     tex_aux_display_common_noad(n, threshold, max);
 }
 
-static void tex_aux_display_radical_noad(halfword n, int threshold, int max)
+static void tex_aux_display_radical_noad(halfword n, int threshold, int max) /* todo: more fields */
 {
     if (noad_width(n)) {
         tex_print_format(", width %D", noad_width(n), pt_unit);
@@ -1071,7 +1071,7 @@ static void tex_aux_display_radical_noad(halfword n, int threshold, int max)
     tex_aux_display_common_noad(n, threshold, max);
 }
 
-static void tex_aux_display_accent_noad(halfword n, int threshold, int max)
+static void tex_aux_display_accent_noad(halfword n, int threshold, int max) /* todo: more fields */
 {
     halfword top_char = accent_top_character(n);
     halfword bottom_char = accent_bottom_character(n);
@@ -1129,7 +1129,7 @@ static void tex_aux_display_accent_noad(halfword n, int threshold, int max)
     tex_aux_display_common_noad(n, threshold, max);
 }
 
-static void tex_aux_display_fence_noad(halfword n, int threshold, int max)
+static void tex_aux_display_fence_noad(halfword n, int threshold, int max) /* todo: more fields */
 {
     if (noad_height(n)) {
         tex_print_format(", height %D", noad_height(n), pt_unit);
@@ -1163,7 +1163,7 @@ static void tex_aux_display_fence_noad(halfword n, int threshold, int max)
     tex_print_node_list(fence_delimiter_bottom(n), "bottom", threshold, max);
 }
 
-static void tex_aux_display_fraction_noad(halfword n, int threshold, int max)
+static void tex_aux_display_fraction_noad(halfword n, int threshold, int max) /* todo: more fields */
 {
     halfword leftdelimiter = tex_aux_valid_delimiter(fraction_left_delimiter(n));
     halfword rightdelimiter = tex_aux_valid_delimiter(fraction_right_delimiter(n));
@@ -2660,9 +2660,11 @@ void tex_run_math_radical(void)
     halfword variant = 0; /* quad, harmless */
     halfword attrlist = null;
     tex_tail_append(radical);
+    halfword top = null;
+    halfword bottom = null;
     /* only kewords to UI ones? */
     while (1) {
-        switch (tex_scan_character("abeswlmrhndABESWLMRHDN", 0, 1, 0)) {
+        switch (tex_scan_character("abeswlmrhndtABESWLMRHDNT", 0, 1, 0)) {
             case 0:
                 goto DONE;
             case 'a': case 'A':
@@ -2673,6 +2675,16 @@ void tex_run_math_radical(void)
             case 'e': case 'E':
                 if (tex_scan_mandate_keyword("exact", 1)) {
                     options = options | noad_option_exact;
+                }
+                break;
+            case 'b': case 'B':
+                if (tex_scan_mandate_keyword("bottom", 1)) {
+                    bottom = 1;
+                }
+                break;
+            case 't': case 'T':
+                if (tex_scan_mandate_keyword("top", 1)) {
+                    top = 1;
                 }
                 break;
             case 's': case 'S':
@@ -2823,6 +2835,16 @@ void tex_run_math_radical(void)
             default:
                 tex_confusion("scan math radical");
                 break;
+        }
+        if (top) { 
+            top = tex_new_node(delimiter_node, 0);
+            radical_top_delimiter(radical) = top;
+            tex_aux_scan_delimiter(top, umath_mathcode, unset_noad_class);
+        }
+        if (bottom) { 
+            bottom = tex_new_node(delimiter_node, 0);
+            radical_bottom_delimiter(radical) = bottom;
+            tex_aux_scan_delimiter(bottom, umath_mathcode, unset_noad_class);
         }
     }
     switch (code) {
@@ -5199,6 +5221,7 @@ void tex_fixup_math_parameters(int fam, int size, int f, int level)
     tex_aux_define_all_math_parameters(size, math_parameter_flattened_accent_bottom_shift_down, math_parameter(f, FlattenedAccentBottomShiftDown),  level); /* engine, undefined */
     tex_aux_define_all_math_parameters(size, math_parameter_delimiter_percent,                  math_parameter(f, DelimiterPercent),                level); /* engine, undefined */
     tex_aux_define_all_math_parameters(size, math_parameter_delimiter_shortfall,                math_parameter(f, DelimiterShortfall),              level); /* engine, undefined */
+    tex_aux_define_all_math_parameters(size, math_parameter_delimiter_extend_margin,            math_parameter(f, DelimiterExtendMargin),           level); /* engine, undefined */
 
     tex_aux_define_all_math_parameters(size, math_parameter_radical_extensible_after,           math_parameter(f, RadicalKernAfterExtensible),      level); /* engine, undefined */
     tex_aux_define_all_math_parameters(size, math_parameter_radical_extensible_before,          math_parameter(f, RadicalKernBeforeExtensible),     level); /* engine, undefined */

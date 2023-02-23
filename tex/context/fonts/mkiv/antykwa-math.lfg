@@ -1,35 +1,115 @@
+local common  = fonts.goodies.load("common-math-jmn.lfg")
+local helpers = common.mathematics.helpers
+
+if not fonts.encodings.math["extensible-jmn-private"] then
+
+    local nps = fonts.helpers.newprivateslot
+
+    fonts.encodings.math["extensible-jmn-private"] = {
+        [nps("rule middle piece")]         = 200, -- minusjmn
+        [nps("rule right piece")]          = 201, -- minusrightjmn
+        [nps("rule left piece")]           = 202, -- minusleftjmn
+        [nps("double rule middle piece")]  = 203, -- equaljmn
+        [nps("double rule right piece")]   = 204, -- equalrightjmn
+        [nps("double rule left piece")]    = 205, -- equalleftjmn
+        [nps("arrow left piece")]          = 206, -- arrowleftjmn
+        [nps("arrow right piece")]         = 207, -- arrowrightjmn
+        [nps("double arrow left piece")]   = 208, -- arrowdblleftjmn
+        [nps("double arrow right piece")]  = 209, -- arrowdblrightjmn
+    }
+
+end
+
+local fraction = .25
+
 local badones = {
-    summationtext       = .25,
-    producttext         = .25,
-    integraltext        = .25,
-    uniontext           = .25,
-    intersectiontext    = .25,
-    unionmultitext      = .25,
-    logicalandtext      = .25,
-    logicalortext       = .25,
-    summationdisplay    = .25,
-    productdisplay      = .25,
-    integraldisplay     = .25,
-    uniondisplay        = .25,
-    intersectiondisplay = .25,
-    unionmultidisplay   = .25,
-    logicalanddisplay   = .25,
-    logicalordisplay    = .25,
-    coproducttext       = .25,
-    coproductdisplay    = .25,
+    summationtext         = fraction,
+    producttext           = fraction,
+    integraltext          = fraction,
+    uniontext             = fraction,
+    intersectiontext      = fraction,
+    unionmultitext        = fraction,
+    logicalandtext        = fraction,
+    logicalortext         = fraction,
+    summationdisplay      = fraction,
+    productdisplay        = fraction,
+    integraldisplay       = fraction,
+    uniondisplay          = fraction,
+    intersectiondisplay   = fraction,
+    unionmultidisplay     = fraction,
+    logicalanddisplay     = fraction,
+    logicalordisplay      = fraction,
+    coproducttext         = fraction,
+    coproductdisplay      = fraction,
+
+    braceleftBig          = fraction,
+    braceleftBigg         = fraction,
+    braceleftbig          = fraction,
+    braceleftbigg         = fraction,
+    parenleftBig          = fraction,
+    parenleftBigg         = fraction,
+    parenleftbig          = fraction,
+    parenleftbigg         = fraction,
+    bracketleftBig        = fraction,
+    bracketleftBigg       = fraction,
+    bracketleftbig        = fraction,
+    bracketleftbigg       = fraction,
+    ceilingleftBig        = fraction,
+    ceilingleftBigg       = fraction,
+    ceilingleftbig        = fraction,
+    ceilingleftbigg       = fraction,
+    floorleftBig          = fraction,
+    floorleftBigg         = fraction,
+    floorleftbig          = fraction,
+    floorleftbigg         = fraction,
+    anglebracketleftBig   = fraction,
+    anglebracketleftBigg  = fraction,
+    anglebracketleftbig   = fraction,
+    anglebracketleftbigg  = fraction,
+
+    bracerightBig         = fraction,
+    bracerightBigg        = fraction,
+    bracerightbig         = fraction,
+    bracerightbigg        = fraction,
+    parenrightBig         = fraction,
+    parenrightBigg        = fraction,
+    parenrightbig         = fraction,
+    parenrightbigg        = fraction,
+    bracketrightBig       = fraction,
+    bracketrightBigg      = fraction,
+    bracketrightbig       = fraction,
+    bracketrightbigg      = fraction,
+    ceilingrightBig       = fraction,
+    ceilingrightBigg      = fraction,
+    ceilingrightbig       = fraction,
+    ceilingrightbigg      = fraction,
+    floorrightBig         = fraction,
+    floorrightBigg        = fraction,
+    floorrightbig         = fraction,
+    floorrightbigg        = fraction,
+    anglebracketrightBig  = fraction,
+    anglebracketrightBigg = fraction,
+    anglebracketrightbig  = fraction,
+    anglebracketrightbigg = fraction,
+
+    backslashBig          = fraction,
+    backslashBigg         = fraction,
+    backslashbig          = fraction,
+    backslashbigg         = fraction,
 }
 
 local uglyones = {
-    braceleft  = true,
-    braceright = true,
+    braceleft     = true,
+    braceright    = true,
+    vextendsingle = true,
+    vextenddouble = true,
 }
-
 
 return {
     name = "antykwa-math",
     version = "1.00",
     comment = "Goodies that complement antykwa math.",
-    author = "Hans, Mojca, Aditya",
+    author = "Hans, Mojca, Aditya, Mikael",
     copyright = "ConTeXt development team",
     mathematics = {
         mapfiles = {
@@ -37,7 +117,10 @@ return {
             "antt-mi.map",
             "antt-sy.map",
             "antt-ex.map",
-            "mkiv-base.map",
+         -- "mkiv-base.map",
+        },
+        variables = {
+            notshiftfactor = 0.075,
         },
         virtuals = {
             ["antykwa-math"] = {
@@ -48,9 +131,10 @@ return {
                 { name = "mi-anttri.tfm", vector = "tex-it", skewchar=0x7F },
                 { name = "mi-anttbi.tfm", vector = "tex-bi", skewchar=0x7F },
                 { name = "rm-anttb.tfm",  vector = "tex-bf", skewchar=0x7F },
-                { name = "sy-anttrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true, ignore = uglyones },
+                { name = "sy-anttrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true, ignore = uglyones }, -- jmn = true
+                { name = "sy-anttrz.tfm", vector = "extensible-jmn-private", skewchar=0x30 },
                 { name = "file:AntykwaTorunska-Regular", vector = "tex-ex-braces", backmap = false },
-                { name = "ex-anttr.tfm",  vector = "tex-ex", extension = true, badones = badones },
+                { name = "ex-anttr.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyones },
             },
             ["antykwa-light-math"] = {
                 { name = "file:LatinModern-Math", features = "virtualmath-antykwa-light", main = true, parameters = false },
@@ -60,9 +144,10 @@ return {
                 { name = "mi-anttli.tfm", vector = "tex-it", skewchar=0x7F },
                 { name = "mi-anttri.tfm", vector = "tex-bi", skewchar=0x7F },
                 { name = "rm-anttr.tfm",  vector = "tex-bf", skewchar=0x7F },
-                { name = "sy-anttlz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true, ignore = uglyones },
+                { name = "sy-anttlz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true, ignore = uglyones }, -- jmn = true
+                { name = "sy-anttlz.tfm", vector = "extensible-jmn-private", skewchar=0x30 },
                 { name = "file:AntykwaTorunskaLight-Regular", vector = "tex-ex-braces", backmap = false },
-                { name = "ex-anttl.tfm",  vector = "tex-ex", extension = true, badones = badones },
+                { name = "ex-anttl.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyone },
             },
             ["antykwa-cond-math"] = {
                 { name = "file:LatinModern-Math", features = "virtualmath-antykwa-cond", main = true, parameters = false },
@@ -72,9 +157,10 @@ return {
                 { name = "mi-anttcri.tfm", vector = "tex-it", skewchar=0x7F },
                 { name = "mi-anttcbi.tfm", vector = "tex-bi", skewchar=0x7F },
                 { name = "rm-anttcb.tfm",  vector = "tex-bf", skewchar=0x7F },
-                { name = "sy-anttcrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true, ignore = uglyones },
+                { name = "sy-anttcrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true, ignore = uglyones }, -- jmn = true
+                { name = "sy-anttcrz.tfm", vector = "extensible-jmn-private", skewchar=0x30 },
                 { name = "file:AntykwaTorunskaCond-Regular", vector = "tex-ex-braces", backmap = false },
-                { name = "ex-anttcr.tfm",  vector = "tex-ex", extension = true, badones = badones },
+                { name = "ex-anttcr.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyone },
             },
             ["antykwa-lightcond-math"] = {
                 { name = "file:LatinModern-Math", features = "virtualmath-antykwa-lightcond", main = true, parameters = false },
@@ -84,10 +170,12 @@ return {
                 { name = "mi-anttcli.tfm", vector = "tex-it", skewchar=0x7F },
                 { name = "mi-anttcri.tfm", vector = "tex-bi", skewchar=0x7F },
                 { name = "rm-anttcr.tfm",  vector = "tex-bf", skewchar=0x7F },
-                { name = "sy-anttclz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true, ignore = uglyones },
+                { name = "sy-anttclz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true, ignore = uglyones }, -- jmn = true
+                { name = "sy-anttclz.tfm", vector = "extensible-jmn-private", skewchar=0x30 },
                 { name = "file:AntykwaTorunskaCondLight-Regular", vector = "tex-ex-braces", backmap = false },
-                { name = "ex-anttcl.tfm",  vector = "tex-ex", extension = true, badones = badones },
+                { name = "ex-anttcl.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyone },
             }
-        }
+        },
+        addmissing = helpers.addmissing,
     }
 }

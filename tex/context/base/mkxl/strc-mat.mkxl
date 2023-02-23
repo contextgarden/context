@@ -1326,6 +1326,11 @@
      \lastnamedcs\else\begincsname\??mathtextalign\v!middle:\v!auto\endcsname
    \fi}
 
+\letcsname\??mathtextalign\v!right        \expandafter\endcsname\csname\??mathtextalign\v!flushleft         \endcsname
+\letcsname\??mathtextalign\v!left         \expandafter\endcsname\csname\??mathtextalign\v!flushright        \endcsname
+\letcsname\??mathtextalign\v!right:\v!auto\expandafter\endcsname\csname\??mathtextalign\v!flushleft :\v!auto\endcsname
+\letcsname\??mathtextalign\v!left :\v!auto\expandafter\endcsname\csname\??mathtextalign\v!flushright:\v!auto\endcsname
+
 \startsetups[math:penalties:\v!text]
     \interlinepenalty \plustenthousand
     \shapingpenalty   \plustenthousand

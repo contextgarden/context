@@ -6763,6 +6763,10 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                             nodelib_push_direct_or_node(L, direct, radical_left_delimiter(n));
                                         } else if (lua_key_eq(s, right)) {
                                             nodelib_push_direct_or_node(L, direct, radical_right_delimiter(n));
+                                        } else if (lua_key_eq(s, top)) {
+                                            nodelib_push_direct_or_node(L, direct, radical_top_delimiter(n));
+                                        } else if (lua_key_eq(s, bottom)) {
+                                            nodelib_push_direct_or_node(L, direct, radical_bottom_delimiter(n));
                                         } else if (lua_key_eq(s, degree)) {
                                             nodelib_push_direct_or_node(L, direct, radical_degree(n));
                                         } else if (lua_key_eq(s, width)) {
@@ -7436,6 +7440,10 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                             radical_left_delimiter(n) = nodelib_direct_or_node_from_index(L, direct, 3);
                                         } else if (lua_key_eq(s, right)) {
                                             radical_right_delimiter(n) = nodelib_direct_or_node_from_index(L, direct, 3);
+                                        } else if (lua_key_eq(s, top)) {
+                                            radical_top_delimiter(n) = nodelib_direct_or_node_from_index(L, direct, 3);
+                                        } else if (lua_key_eq(s, bottom)) {
+                                            radical_bottom_delimiter(n) = nodelib_direct_or_node_from_index(L, direct, 3);
                                         } else if (lua_key_eq(s, degree)) {
                                             radical_degree(n) = nodelib_direct_or_node_from_index(L, direct, 3);
                                         } else if (lua_key_eq(s, width)) {

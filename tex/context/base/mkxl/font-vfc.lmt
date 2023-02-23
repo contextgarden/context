@@ -82,6 +82,7 @@ end
 
 helpers.commands = utilities.storage.allocate {
     char  = setmetatableindex(function(t,k) local v = { "char",  k } t[k] = v return v end),
+    stay  = setmetatableindex(function(t,k) local v = { "stay",  k } t[k] = v return v end),
     right = setmetatableindex(function(t,k) local v = { "right", k } t[k] = v return v end),
     left  = setmetatableindex(function(t,k) local v = { "left",  k } t[k] = v return v end),
     down  = setmetatableindex(function(t,k) local v = { "down",  k } t[k] = v return v end),

@@ -1,3 +1,6 @@
+local common  = fonts.goodies.load("common-math-jmn.lfg")
+local helpers = common.mathematics.helpers
+
 local badones = {
     summationtext       = .25,
     producttext         = .25,
@@ -19,6 +22,13 @@ local badones = {
     coproductdisplay    = .25,
 }
 
+local uglyones = {
+ -- braceleft     = true,
+ -- braceright    = true,
+    vextendsingle = true,
+    vextenddouble = true,
+}
+
 return {
     name = "iwona-math",
     version = "1.00",
@@ -31,7 +41,7 @@ return {
             "iwona-mi.map",
             "iwona-sy.map",
             "iwona-ex.map",
-            "mkiv-base.map",
+         -- "mkiv-base.map",
         },
         virtuals = {
             ["iwona-math"] = {
@@ -43,7 +53,7 @@ return {
                 { name = "mi-iwonami.tfm", vector = "tex-bi", skewchar=0x7F },
                 { name = "rm-iwonam.tfm",  vector = "tex-bf", skewchar=0x7F },
                 { name = "sy-iwonarz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
-                { name = "ex-iwonar.tfm",  vector = "tex-ex", extension = true, badones = badones },
+                { name = "ex-iwonar.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyones },
             },
             ["iwona-light-math"] = {
                 { name = "file:LatinModern-Math", features = "virtualmath-iwona-light", main = true, parameters = false },
@@ -54,7 +64,7 @@ return {
                 { name = "mi-iwonari.tfm", vector = "tex-bi", skewchar=0x7F },
                 { name = "rm-iwonar.tfm",  vector = "tex-bf", skewchar=0x7F },
                 { name = "sy-iwonalz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
-                { name = "ex-iwonal.tfm",  vector = "tex-ex", extension = true, badones = badones },
+                { name = "ex-iwonal.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyones },
             },
             ["iwona-medium-math"] = {
                 { name = "file:LatinModern-Math", features = "virtualmath-iwona-medium", main = true, parameters = false },
@@ -65,7 +75,7 @@ return {
                 { name = "mi-iwonabi.tfm", vector = "tex-bi", skewchar=0x7F },
                 { name = "rm-iwonab.tfm",  vector = "tex-bf", skewchar=0x7F },
                 { name = "sy-iwonamz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
-                { name = "ex-iwonam.tfm",  vector = "tex-ex", extension = true, badones = badones  },
+                { name = "ex-iwonam.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyones },
             },
             ["iwona-heavy-math"] = {
                 { name = "file:LatinModern-Math", features = "virtualmath-iwona-heavy", main = true, parameters = false },
@@ -76,8 +86,9 @@ return {
                 { name = "mi-iwonahi.tfm", vector = "tex-bi", skewchar=0x7F },
                 { name = "rm-iwonah.tfm",  vector = "tex-bf", skewchar=0x7F },
                 { name = "sy-iwonahz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
-                { name = "ex-iwonah.tfm",  vector = "tex-ex", extension = true, badones = badones },
+                { name = "ex-iwonah.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyones },
             }
         },
+        addmissing = helpers.addmissing,
     }
 }

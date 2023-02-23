@@ -123,6 +123,7 @@
  % +\ignorekerndimensionsmathcontrolcode    % xits needs this (bad depth of fences)
  % +\ignoreflataccentsmathcontrolcode
    +\extendaccentsmathcontrolcode
+   +\extenddelimitersmathcontrolcode
 \relax
 
 % \mathpenaltiesmode\plusone
