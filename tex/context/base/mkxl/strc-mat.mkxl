@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Math Numbering}
 
-\registerctxluafile{strc-mat}{}
+\registerctxluafile{strc-mat}{autosuffix}
 
 % -- we have potential for captions
 % -- this module will use the commandhandler

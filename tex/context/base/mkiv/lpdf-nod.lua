@@ -69,18 +69,22 @@ end
 
 -- We only define this for testing as we don't need it:
 
-local lateliteralnode = register(new_node(whatsit_code, lateliteralwhatsit_code))
+if lateliteralwhatsit_code then
 
-function nodepool.lateliteral(mode,str)
-    local t = copy_node(lateliteralnode)
-    if str then
-        setfield(t,"mode",literals[mode] and mode or pageliteral_code)
-        setdata(t,str)
-    else
-        setfield(t,"mode",pageliteral_code)
-        setdata(t,mode)
+    local lateliteralnode = register(new_node(whatsit_code, lateliteralwhatsit_code))
+
+    function nodepool.lateliteral(mode,str)
+        local t = copy_node(lateliteralnode)
+        if str then
+            setfield(t,"mode",literals[mode] and mode or pageliteral_code)
+            setdata(t,str)
+        else
+            setfield(t,"mode",pageliteral_code)
+            setdata(t,mode)
+        end
+        return t
     end
-    return t
+
 end
 
 local savenode      = register(new_node(whatsit_code, savewhatsit_code))

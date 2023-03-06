@@ -2130,6 +2130,20 @@ local finalize  do
     local f_group = formatters["Gp%d"]
     local f_image = formatters["Im%d"]
 
+    local function checkedbox(mediabox,otherbox,what)
+        if otherbox and #mediabox == 4 and #otherbox == 4 then
+            local done = false
+            if otherbox[1] < mediabox[1] then done = true ; otherbox[1] = mediabox[1] end
+            if otherbox[2] < mediabox[2] then done = true ; otherbox[2] = mediabox[2] end
+            if otherbox[3] > mediabox[3] then done = true ; otherbox[3] = mediabox[3] end
+            if otherbox[4] > mediabox[4] then done = true ; otherbox[4] = mediabox[4] end
+            if done then
+                report("limiting %a to 'MediaBox'",what)
+            end
+        end
+        return otherbox
+    end
+
     finalize = function(driver,details)
 
         if not details then
@@ -2226,9 +2240,9 @@ else
 
             -- Indirect objects don't work in all viewers.
 
-            if TrimBox  then pageattributes.TrimBox  = pdfsharedobject(TrimBox ) end
-            if CropBox  then pageattributes.CropBox  = pdfsharedobject(CropBox ) end
-            if BleedBox then pageattributes.BleedBox = pdfsharedobject(BleedBox) end
+            if TrimBox  then pageattributes.TrimBox  = pdfsharedobject(checkedbox(bbox,TrimBox,"TrimBox")) end
+            if CropBox  then pageattributes.CropBox  = pdfsharedobject(checkedbox(bbox,CropBox,"CropBox")) end
+            if BleedBox then pageattributes.BleedBox = pdfsharedobject(checkedbox(bbox,BleedBox,"BleedBox")) end
 
 end
 

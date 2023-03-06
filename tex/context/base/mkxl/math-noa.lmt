@@ -2492,6 +2492,8 @@ end
 
 do
 
+    -- do we need this
+
     local traversehlist = nuts.traversers.hlist
 
     local texgetdimen   = tex.getdimen
