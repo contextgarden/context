@@ -141,6 +141,12 @@
 \permanent\protected\defcsname\e!start\v!formula\endcsname{\strc_formulas_start_formula{}}
 \permanent\protected\defcsname\e!stop \v!formula\endcsname{\strc_formulas_stop_formula}
 
+\permanent\protected\def\startnamedformula[#1]%
+  {\strc_formulas_start_formula{#1}}
+
+\permanent\protected\def\stopnamedformula
+  {\strc_formulas_stop_formula}
+
 \let\strc_formulas_start_formula\relax % defined later
 \let\strc_formulas_stop_formula \relax % defined later
 
@@ -975,13 +981,12 @@
 
 \setupformula
 % [\c!split=\v!no,
-  [\c!split=\v!text,  % multi line no page breaks
+  [\c!split=\v!yes,
    \c!numberlocation=,
    \c!textdistance=\zeropoint,
-  %\c!interlinespace=1.5\lineheight,
+   \c!interlinespace=1.125\lineheight, % back again, to be tuned
    \c!textmargin=2\emwidth,
-   \c!numbermethod=\v!down,
-   \c!interlinespace=]
+   \c!numbermethod=\v!down]
 
 % for the moment (when testing) we use a penalty 1
 
@@ -1206,12 +1211,15 @@
      \fi{#2}%
    \fi}
 
+\def\strc_math_break_here_indeed
+  {\strut\break}
+
 \protected\def\strc_math_page_here
   {\ifmmode
      \ifconditional\c_strc_math_trace_hang
        \strc_math_trace_okay{darkyellow}{B P}%
      \fi
-     \break
+     \strc_math_break_here_indeed
      \vadjust pre {\vfill\penalty-100000}%
      \strc_math_pickup_again
    \fi}
@@ -1221,7 +1229,7 @@
      \ifconditional\c_strc_math_trace_hang
        \strc_math_trace_okay{darkyellow}{B S}%
      \fi
-     \break
+     \strc_math_break_here_indeed
      \vadjust pre {\penalty\plustenthousand}%
      \strc_math_pickup_again
    \fi}
@@ -1231,7 +1239,7 @@
      \ifconditional\c_strc_math_trace_hang
        \strc_math_trace_okay{darkgreen}{B}%
      \fi
-     \break
+     \strc_math_break_here_indeed
      \strc_math_pickup_again
    \fi}
 
@@ -1392,7 +1400,10 @@
      \doadaptleftskip\p_margin
      \doadaptrightskip\p_margin
    \fi
-   %
+   % this was lost
+   \edef\p_interlinespace{\formulaparameter\c!interlinespace}%
+   \ifempty\p_interlinespace\else\baselineskip\p_interlinespace\fi
+   % and is now back
    \global\setfalse\c_strc_math_aligned_here
    \hsize\d_strc_formulas_display_width
    \displaywidth\hsize
@@ -1557,7 +1568,8 @@
    \iftrialtypesetting\else
      \global\advanceby\c_strc_formulas_n\plusone
    \fi
-   \def\currentformula{#1}%
+   \edef\currentformula{#1}%
+   \usesetupsparameter\formulaparameter % new
    \dostarttaggedchained\t!formula\currentformula\??formula
    \strc_math_set_options{#2}%
    \strc_math_set_split

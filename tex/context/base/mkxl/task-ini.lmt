@@ -63,6 +63,7 @@ appendaction("processors",   "lists",       "typesetters.rubies.check",         
 appendaction("processors",   "lists",       "typesetters.characteralign.handler",               nil, "nut",    "disabled"  )
 appendaction("processors",   "lists",       "typesetters.spacings.handler",                     nil, "nut",    "disabled"  )
 appendaction("processors",   "lists",       "typesetters.kerns.handler",                        nil, "nut",    "disabled"  )
+appendaction("processors",   "lists",       "typesetters.tighten.handler",                      nil, "nut",    "disabled"  )
 appendaction("processors",   "lists",       "typesetters.digits.handler",                       nil, "nut",    "disabled"  )
 appendaction("processors",   "lists",       "typesetters.italics.handler",                      nil, "nut",    "disabled"  )
 appendaction("processors",   "lists",       "languages.visualizediscretionaries",               nil, "nut",    "disabled"  )

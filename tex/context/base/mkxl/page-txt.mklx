@@ -728,18 +728,31 @@
 
 %D A few more page breakers:
 
+% \installpagebreakmethod \v!empty
+%   {\page_otr_flush_all_floats
+%    \page_otr_command_next_page
+%    \doifnot{\namedlayoutelementparameter\v!header\c!state}\v!stop{\setuplayoutelement[\v!header][\c!state=\v!empty]}%
+%    \doifnot{\namedlayoutelementparameter\v!footer\c!state}\v!stop{\setuplayoutelement[\v!footer][\c!state=\v!empty]}%
+%    \page_otr_insert_dummy_page}
+%
+% \installpagebreakmethod \v!header
+%   {\doifnot{\namedlayoutelementparameter\v!header\c!state}\v!stop{\setuplayoutelement[\v!header][\c!state=\v!empty]}}
+%
+% \installpagebreakmethod \v!footer
+%   {\doifnot{\namedlayoutelementparameter\v!footer\c!state}\v!stop{\setuplayoutelement[\v!footer][\c!state=\v!empty]}}
+
 \installpagebreakmethod \v!empty
   {\page_otr_flush_all_floats
    \page_otr_command_next_page
-   \doifnot{\namedlayoutelementparameter\v!header\c!state}\v!stop{\setuplayoutelement[\v!header][\c!state=\v!empty]}%
-   \doifnot{\namedlayoutelementparameter\v!footer\c!state}\v!stop{\setuplayoutelement[\v!footer][\c!state=\v!empty]}%
+   \ifcstok{\namedlayoutelementparameter\v!header\c!state}\v!stop\else\setuplayoutelement[\v!header][\c!state=\v!empty]\fi
+   \ifcstok{\namedlayoutelementparameter\v!footer\c!state}\v!stop\else\setuplayoutelement[\v!footer][\c!state=\v!empty]\fi
    \page_otr_insert_dummy_page}
 
 \installpagebreakmethod \v!header
-  {\doifnot{\namedlayoutelementparameter\v!header\c!state}\v!stop{\setuplayoutelement[\v!header][\c!state=\v!empty]}}
+  {\ifcstok{\namedlayoutelementparameter\v!header\c!state}\v!stop\else\setuplayoutelement[\v!header][\c!state=\v!empty]\fi}
 
 \installpagebreakmethod \v!footer
-  {\doifnot{\namedlayoutelementparameter\v!footer\c!state}\v!stop{\setuplayoutelement[\v!footer][\c!state=\v!empty]}}
+  {\ifcstok{\namedlayoutelementparameter\v!footer\c!state}\v!stop\else\setuplayoutelement[\v!footer][\c!state=\v!empty]\fi}
 
 %D While the header and footer lines are moved away from the main text, the top and
 %D bottom lines are centered.

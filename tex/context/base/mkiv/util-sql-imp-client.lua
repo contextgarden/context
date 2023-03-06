@@ -23,7 +23,6 @@ local preparetemplate    = helpers.preparetemplate
 local splitdata          = helpers.splitdata
 local replacetemplate    = utilities.templates.replace
 local serialize          = sql.serialize
-local deserialize        = sql.deserialize
 local getserver          = sql.getserver
 
 local osclock            = os.gettimeofday
@@ -264,6 +263,7 @@ end
 local wraptemplate = [[
 local converters    = utilities.sql.converters
 local deserialize   = utilities.sql.deserialize
+local fromjson      = utilities.sql.fromjson
 
 local tostring      = tostring
 local tonumber      = tonumber

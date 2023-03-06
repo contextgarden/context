@@ -78,6 +78,12 @@
   %\c!expansion=,
    \c!limittext=\languageparameter\c!limittext] % not used currently
 
+%D Kind of new:
+
+\permanent\protected\tolerant\def\uselist[#1]#*[#2]#*[#3]% tag file
+  {\doifelsefiledefined{#1}{}{\usefile[#1][#2]}%
+   \clf_uselist{#1}{#2}{#3}}
+
 %D Helpers:
 
 \permanent\protected\def\usenestedliststyleandcolor#style#color% will change

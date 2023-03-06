@@ -19,7 +19,7 @@ do
         local filedata = sections[filename]
         if not filedata then
             filedata = {
-                data = job.loadother(addsuffix(filename,"tuc")) or false,
+                data = job.loadother(filename,"tuc") or false,
                 list = { }
             }
             sections[filename] = filedata

@@ -95,6 +95,7 @@ local v_intro           = variables.intro
 local v_here            = variables.here
 local v_component       = variables.component
 local v_product         = variables.product
+local v_file            = variables.file
 local v_local           = variables["local"]
 local v_default         = variables.default
 
@@ -443,6 +444,42 @@ local listsorters = {
 
 local filters = setmetatableindex(function(t,k) return t[v_default] end)
 
+
+local used = { }
+
+function lists.use(tag,filename,class)
+    used[tag] = {
+        names    = names, -- optional
+        filename = filename,
+        data     = job.loadother(filename),
+    }
+end
+
+implement {
+    name      = "uselist",
+    arguments = "3 strings",
+    actions   = lists.use,
+}
+
+filters.external = function(specification)
+    local collected = specification.collected or { }
+    local result    = { }
+    local nofresult = 0
+    local all       = specification.all
+    local names     = specification.names
+    setmetatableindex(result,{ external = specification.reference }) -- brr, we also have the name in
+    for i=1,#collected do
+        local v = collected[i]
+        local m = v.metadata
+        if m and names[m.name] or all then
+            nofresult = nofresult + 1
+            result[nofresult] = v
+        end
+    end
+    return result
+end
+
+
 local function filtercollected(specification)
     --
     local names     = specification.names     or { }
@@ -453,10 +490,10 @@ local function filtercollected(specification)
     local forced    = specification.forced    or { }
     local nested    = specification.nested    or false
     local sortorder = specification.sortorder or specification.order
-    --
     local numbers   = documents.data.numbers
     local depth     = documents.data.depth
     local block     = false -- all
+    --
     local wantedblock, wantedcriterium = lpegmatch(splitter,criterium) -- block:criterium
     if wantedblock == "" or wantedblock == v_all or wantedblock == v_text then
         criterium = wantedcriterium ~= "" and wantedcriterium or criterium
@@ -473,7 +510,7 @@ local function filtercollected(specification)
         names = settings_to_set(names)
     end
     local all = not next(names) or names[v_all] or false
-    --
+    --    --
     specification.names     = names
     specification.criterium = criterium
     specification.number    = 0 -- obsolete
@@ -853,47 +890,26 @@ filters[v_component] = function(specification)
     return result
 end
 
--- filters[v_product] = function(specification)
---     local reference = specification.reference
---     if reference and reference ~= "" then
---  -- local utilitydata = job.loadother(reference,true)
---         local fullname = file.replacesuffix(reference,"tuc")
---         if lfs.isfile(fullname) then
---             local utilitydata = job.loadother(fullname)
---             if utilitydata then
---                 local collected = utilitydata.structures.lists.collected or { }
---                 setmetatableindex(collected,{ external = reference })
---                 return collected
---             end
---         end
---     end
---     return { }
--- end
-
 filters[v_product] = function(specification)
     local reference = specification.reference
     if reference and reference ~= "" then
-        local utilitydata = job.loadother(reference,true)
---         local fullname = file.replacesuffix(reference,"tuc")
---         if lfs.isfile(fullname) then
---             local utilitydata = job.loadother(fullname)
-            if utilitydata then
-                local collected = utilitydata.structures.lists.collected or { }
-                local result    = { }
-                local nofresult = 0
-                local all       = specification.all
-                local names     = specification.names
+        local utilitydata = job.loadother(reference)
+        if utilitydata then
+            local collected = utilitydata.structures.lists.collected or { }
+            local result    = { }
+            local nofresult = 0
+            local all       = specification.all
+            local names     = specification.names
 setmetatableindex(result,{ external = reference }) -- brr
-                for i=1,#collected do
-                    local v = collected[i]
-                    local m = v.metadata
-                    if m and names[m.name] or all then
-                        nofresult = nofresult + 1
-                        result[nofresult] = v
-                    end
+            for i=1,#collected do
+                local v = collected[i]
+                local m = v.metadata
+                if m and names[m.name] or all then
+                    nofresult = nofresult + 1
+                    result[nofresult] = v
                 end
-                return result
---             end
+            end
+            return result
         end
     end
     return { }
@@ -977,6 +993,14 @@ function lists.getresult(r)
 end
 
 function lists.process(specification)
+    local names    = specification.names
+    local external = used[names or ""]
+    if external then
+        specification.reference = names
+        specification.names     = external.names
+        specification.collected = external.data.structures.lists.collected
+        specification.criterium = "external"
+    end
     local result = filtercollected(specification)
     local total  = #result
     lists.result = result
@@ -1541,4 +1565,42 @@ function lists.reordered(entry)
         end
     end
     return numberdata
+end
+
+-- external data
+
+function lists.integrate(utilitydata)
+    local filename = utilitydata.comment.file
+    if filename then
+        local structures = utilitydata.structures
+        if structures then
+            local lists = structures.lists.collected or { }
+            if lists then
+                local sections = structures.sections.collected or { }
+                local pages    = structures.pages.collected or { }
+                for i=1,#lists do
+                    local entry      = lists[i]
+                    local references = entry.references
+                    if references then
+                        local section  = references.section
+                        local realpage = references.realpage
+                        -- maybe entry.* instead:
+                        references.sectiondata = section  and sections[section]
+                        references.pagedata    = realpage and pages[realpage]
+                        -- get rid of these, maybe even crash as these are bogus
+                     -- references.internal = nil
+                     -- references.realpage = nil
+                     -- references.section  = nil
+                        if references.x then
+                            references.x = nil
+                        end
+                        if references.y then
+                            references.y = nil
+                        end
+                        references.external = filename
+                    end
+                end
+            end
+        end
+    end
 end

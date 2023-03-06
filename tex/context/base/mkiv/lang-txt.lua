@@ -25,7 +25,7 @@ if not modules then modules = { } end modules ['lang-txt'] = {
 -- bg    Bulgarian      Vladislav Hinkin, Aleš Ďurčanský (2019)
 -- ca    Catalan        ...; additions Javier Gambin Monzo + Samuel Conca Coles (2022)
 -- cn    Chinese        Wang Lei, ...
--- cs    Czech          Tom Hudec, Petr Sojka, Richard Gabriel
+-- cs    Czech          Tom Hudec, Petr Sojka, Richard Gabriel; additions Tomáš Hála (2022)
 -- da    Danish         Arne Jorgensen
 -- de    German         Tobias Burnus, ...
 -- en    English        Hans Hagen, ...
@@ -52,7 +52,7 @@ if not modules then modules = { } end modules ['lang-txt'] = {
 -- pt    Portuguese     Pedro F. M. Mendonça
 -- ro    Romanian       Dan Seracu, ...
 -- ru    Russian        Olga Briginets, Alexander Bokovoy, Victor Figurnov, ...
--- sk    Slovak         Tomáš Hála (2012)
+-- sk    Slovak         Tomáš Hála (2012, 2022)
 -- sl    Slovenian      Mojca Miklavec
 -- sr    Serbian        Ivan Pešić (2020)
 -- sr-latn Serbian      Ivan Pešić (2020)
@@ -84,6 +84,7 @@ data.labels={
     ["be"]="У",
     ["bg"]="в",
     ["ca"]="En",
+    ["cs"]={ "In", "V" },
     ["de"]="In",
     ["en"]="In",
     ["eo"]="En",
@@ -92,6 +93,7 @@ data.labels={
     ["fr"]="Dans",
     ["hy"]="Մեջ",
     ["mk"]="во",
+    ["sk"]={ "In", "V" },
     ["sr"]="У",
     ["sr-latn"]="U",
    },
@@ -101,6 +103,7 @@ data.labels={
     ["be"]="Нумар",
     ["bg"]="номер",
     ["ca"]="Nombre",
+    ["cs"]="Číslo",
     ["de"]="Nummer",
     ["en"]="Number",
     ["eo"]="Nombro",
@@ -110,6 +113,7 @@ data.labels={
     ["hy"]="Համար",
     ["mk"]="Број",
     ["nl"]="Nummer",
+    ["sk"]="Číslo",
     ["sr"]="Број",
     ["sr-latn"]="Broj",
    },
@@ -119,6 +123,7 @@ data.labels={
     ["be"]="Гук",
     ["bg"]="обем",
     ["ca"]="Volum",
+    ["cs"]="Svazek",
     ["de"]="Band",
     ["en"]="Volume",
     ["eo"]="Volumo",
@@ -129,6 +134,7 @@ data.labels={
     ["hy"]="Ծավալ",
     ["mk"]="Том",
     ["nl"]="Deel",
+    ["sk"]="Zväzok",
     ["sr"]="Том",
     ["sr-latn"]="Tom",
    },
@@ -138,6 +144,7 @@ data.labels={
     ["be"]="i",
     ["bg"]="a",
     ["ca"]="i",
+    ["cs"]="a",
     ["de"]="und",
     ["en"]="and",
     ["eo"]="kaj",
@@ -149,6 +156,7 @@ data.labels={
     ["it"]="e",
     ["mk"]="и",
     ["nl"]="en",
+    ["sk"]="a",
     ["sr"]="и",
     ["sr-latn"]="i",
    },
@@ -158,6 +166,7 @@ data.labels={
     ["be"]="Выданне",
     ["bg"]="издание",
     ["ca"]="Edició",
+    ["cs"]="Vydání",
     ["de"]="Auflage",
     ["en"]="edition",
     ["eo"]="eldono",
@@ -170,6 +179,7 @@ data.labels={
     ["it"]="edizione",
     ["mk"]="издание",
     ["nl"]="editie",
+    ["sk"]="Vydanie",
     ["sr"]="издање",
     ["sr-latn"]="izdanje",
    },
@@ -179,6 +189,7 @@ data.labels={
     ["be"]="Рэдактар",
     ["bg"]="редактор",
     ["ca"]="Editor",
+    ["cs"]={ "Editor", "Editorka" },
     ["de"]="Herausgeber",
     ["en"]="editor",
     ["eo"]="eldonisto",
@@ -189,6 +200,7 @@ data.labels={
     ["hy"]="խմբագիր",
     ["it"]="a cura di",
     ["mk"]="уредник",
+    ["sk"]={ "Editor", "Editorka" },
     ["sr"]="уредник",
     ["sr-latn"]="urednik",
    },
@@ -198,6 +210,7 @@ data.labels={
     ["be"]="Рэдактары",
     ["bg"]="редактори",
     ["ca"]="Editors",
+    ["cs"]="Editoři",
     ["de"]="Herausgeber",
     ["en"]="editors",
     ["eo"]="eldonistoj",
@@ -207,8 +220,21 @@ data.labels={
     ["hy"]="խմբագիրներ",
     ["it"]="a cura di",
     ["mk"]="уредници",
+    ["sk"]="Editori",
     ["sr"]="уредници",
     ["sr-latn"]="urednici",
+   },
+  },
+  ["editors:f"]={
+   ["labels"]={
+    ["cs"]="Editorky",
+    ["sk"]="Editorky",
+   },
+  },
+  ["editors:m"]={
+   ["labels"]={
+    ["cs"]="Editoři",
+    ["sk"]="Editori",
    },
   },
   ["in"]={
@@ -216,6 +242,7 @@ data.labels={
     ["be"]="у",
     ["bg"]="в",
     ["ca"]="en",
+    ["cs"]="v",
     ["de"]="in",
     ["en"]="in",
     ["eo"]="en",
@@ -224,6 +251,7 @@ data.labels={
     ["fr"]="dans",
     ["hy"]="մեջ",
     ["mk"]="во",
+    ["sk"]="v",
     ["sr"]="у",
     ["sr-latn"]="u",
    },
@@ -233,6 +261,7 @@ data.labels={
     ["be"]="Дыпломная работа",
     ["bg"]="дипломна работа",
     ["ca"]="Tesi de maestria",
+    ["cs"]="Diplomová práce",
     ["de"]="Masterarbeit",
     ["en"]="Master's thesis",
     ["eo"]="Magistreca disertaĵo",
@@ -245,6 +274,7 @@ data.labels={
     ["it"]="Tesi di laurea",
     ["mk"]="Магистерска дисертација",
     ["nl"]="Masterproef",
+    ["sk"]="Diplomová práca",
     ["sr"]="Мастер дисертација",
     ["sr-latn"]="Master disertacija",
    },
@@ -254,6 +284,7 @@ data.labels={
     ["be"]="нумар",
     ["bg"]="номер",
     ["ca"]="nombre",
+    ["cs"]="číslo",
     ["de"]="Nummer",
     ["en"]="number",
     ["eo"]="numero",
@@ -264,6 +295,7 @@ data.labels={
     ["hy"]="համար",
     ["mk"]="број",
     ["nl"]="nummer",
+    ["sk"]="číslo",
     ["sr"]="број",
     ["sr-latn"]="broj",
    },
@@ -273,6 +305,7 @@ data.labels={
     ["be"]="з",
     ["bg"]="на",
     ["ca"]="de",
+    ["cs"]="z",
     ["de"]="von",
     ["en"]="of",
     ["eo"]="de",
@@ -281,6 +314,7 @@ data.labels={
     ["hy"]="-ից",
     ["mk"]="од",
     ["nl"]="van",
+    ["sk"]="z",
     ["sr"]="од",
     ["sr-latn"]="od",
    },
@@ -288,6 +322,7 @@ data.labels={
   ["others"]={
    ["labels"]={
     ["ca"]="et al.",
+    ["cs"]={ "a~kol.", "et al."},
     ["de"]="et al.",
     ["en"]="et al.",
     ["eo"]="aliaj",
@@ -296,6 +331,7 @@ data.labels={
     ["fr"]="et al.",
     ["hy"]="եւ այլն",
     ["mk"]="и др.",
+    ["sk"]={ "a~kol.", "et al."},
     ["sr"]="и др.",
     ["sr-latn"]="i dr.",
    },
@@ -304,6 +340,7 @@ data.labels={
    ["labels"]={
     ["be"]="стар.",
     ["ca"]="p.",
+    ["cs"]="s.",
     ["de"]="S.",
     ["en"]="p.",
     ["eo"]="p.",
@@ -313,6 +350,7 @@ data.labels={
     ["fr"]="p.",
     ["hy"]="էջ",
     ["mk"]="стр.",
+    ["sk"]="s.",
     ["sr"]="стр.",
     ["sr-latn"]="str.",
    },
@@ -322,6 +360,7 @@ data.labels={
     ["be"]="старонка",
     ["bg"]="страни",
     ["ca"]="pagines",
+    ["cs"]="strany",
     ["de"]="Seiten",
     ["en"]="pages",
     ["eo"]="paĝoj",
@@ -333,6 +372,7 @@ data.labels={
     ["hy"]="էջեր",
     ["mk"]="страници",
     ["nl"]="paginas",
+    ["sk"]="strany",
     ["sr"]="страницa",
     ["sr-latn"]="stranica",
    },
@@ -342,6 +382,7 @@ data.labels={
     ["be"]="патэнт",
     ["bg"]="патент",
     ["ca"]="Patent",
+    ["cs"]="Patent",
     ["de"]="Patent",
     ["en"]="Patent",
     ["eo"]="Patento",
@@ -353,6 +394,7 @@ data.labels={
     ["it"]="Brevetto",
     ["mk"]="Патент",
     ["nl"]="Octrooi",
+    ["sk"]="Patent",
     ["sr"]="Патент",
     ["sr-latn"]="Patent",
    },
@@ -362,6 +404,7 @@ data.labels={
     ["be"]="Доктарская дысертацыя",
     ["bg"]="дисертачна работа",
     ["ca"]="Tesi doctoral",
+    ["cs"]="Disertační práce",
     ["de"]="Dissertation",
     ["en"]="PhD thesis",
     ["eo"]="Doktoriĝa disertaĵo",
@@ -373,6 +416,7 @@ data.labels={
     ["it"]="Tesi di dottorato",
     ["mk"]="Докторска дисертација",
     ["nl"]="Proefschrift",
+    ["sk"]="Dizertačná práca",
     ["sr"]="Докторска дисертација",
     ["sr-latn"]="Doktorska disertacija",
    },
@@ -380,6 +424,7 @@ data.labels={
   ["pp"]={
    ["labels"]={
     ["ca"]="pp",
+    ["cs"]="s.",
     ["de"]="S.",
     ["en"]="pp.",
     ["eo"]="pp.",
@@ -388,6 +433,7 @@ data.labels={
     ["fa"]="صص",
     ["hy"]="էջ",
     ["mk"]="стр.",
+    ["sk"]="s.",
     ["sr"]="стр.",
     ["sr-latn"]="str.",
    },
@@ -397,6 +443,7 @@ data.labels={
     ["be"]="Тэхнічны даклад",
     ["bg"]="технически доклад",
     ["ca"]="Report tecnic",
+    ["cs"]="Technická zpráva",
     ["de"]="Technischer Bericht",
     ["en"]="Technical report",
     ["eo"]="Teknika raporto",
@@ -409,6 +456,7 @@ data.labels={
     ["it"]="Relazione tecnica",
     ["mk"]="Технички извештај",
     ["nl"]="Technisch rapport",
+    ["sk"]="Technická zpráva",
     ["sr"]="Технички извештај",
     ["sr-latn"]="Tehnički izveštaj",
    },
@@ -418,6 +466,7 @@ data.labels={
     ["be"]="гучнасць",
     ["bg"]="обем",
     ["ca"]="volum",
+    ["cs"]="svazek",
     ["de"]="Band",
     ["en"]="volume",
     ["eo"]="volumo",
@@ -428,6 +477,7 @@ data.labels={
     ["hy"]="ծավալ",
     ["mk"]="том",
     ["nl"]="deel",
+    ["sk"]="zväzok",
     ["sr"]="том",
     ["sr-latn"]="tom",
    },
@@ -437,6 +487,7 @@ data.labels={
     ["be"]="з",
     ["bg"]="със",
     ["ca"]="en",
+    ["cs"]="s",
     ["de"]="mit",
     ["en"]="with",
     ["eo"]="kun",
@@ -448,6 +499,7 @@ data.labels={
     ["it"]="con",
     ["mk"]="со",
     ["nl"]="met",
+    ["sk"]="s",
     ["sr"]="са",
     ["sr-latn"]="sa",
    },
@@ -500,7 +552,7 @@ data.labels={
     ["sr-latn"]="arccosh",
    },
   },
-  ["arcctg"]={
+  ["arccot"]={
    ["labels"]={
     ["ca"]="arc cot",
     ["cs"]="arccotg",
@@ -666,7 +718,7 @@ data.labels={
     ["sr-latn"]="cosec",
    },
   },
-  ["ctg"]={
+--[[  ["ctg"]={
    ["labels"]={
     ["ca"]="cot",
     ["cs"]="cotg",
@@ -682,6 +734,7 @@ data.labels={
     ["sr-latn"]="ctg",
    },
   },
+--]]
   ["deg"]={
    ["labels"]={
     ["ca"]="gr",
@@ -712,9 +765,11 @@ data.labels={
   ["diff"]={
    ["labels"]={
     ["ca"]="d",
+    ["cs"]="d",
     ["en"]="d",
     ["eo"]="dif",
-    ["hy"]="diff",
+    ["hy"]="d",
+    ["sk"]="d",
    },
   },
   ["dim"]={
@@ -903,7 +958,7 @@ data.labels={
   },
   ["ln"]={
    ["labels"]={
-    ["ca"]="En",
+    ["ca"]="ln",
     ["cs"]="ln",
     ["en"]="ln",
     ["eo"]="ln",
@@ -947,14 +1002,16 @@ data.labels={
   ["median"]={
    ["labels"]={
     ["ca"]="mitjana",
-    ["cs"]="\\tilde",
+ -- ["cs"]="\\tilde", -- won't work
+    ["cs"]="Me",
     ["en"]="median",
     ["eo"]="mediano",
     ["es"]="Mediana",
     ["fi"]="mediaani",
     ["fr"]="médiane",
     ["hy"]="միջին",
-    ["sk"]="\\tilde",
+ -- ["sk"]="\\tilde", -- won't work
+    ["sk"]="Med",
     ["sr"]="median",
     ["sr-latn"]="median",
    },
@@ -1501,6 +1558,7 @@ data.labels={
    ["labels"]={
     ["bg"]="ден",
     ["ca"]="dia",
+    ["cs"]="den", -- {"den", "dne" }
     ["de"]="Tag",
     ["en"]="day",
     ["eo"]="tago",
@@ -1512,6 +1570,7 @@ data.labels={
     ["kr"]="일",
     ["mk"]="ден",
     ["nl"]="dag",
+    ["sk"]="deň", -- {"deň", "dňa" }
     ["sr"]="дан",
     ["sr-latn"]="dan",
    },
@@ -1756,25 +1815,30 @@ data.labels={
   },
   ["following:plural"]={
    ["labels"]={
+    ["cs"]="násl.",
     ["de"]="ff.",
     ["en"]="ff.",
     ["eo"]="sekvv",
     ["fr"]=hairspace .. "sqq",
     ["hy"]="ff.",
+    ["sk"]="násl.",
    },
   },
   ["following:singular"]={
    ["labels"]={
+    ["cs"]="násl.",
     ["de"]="f.",
     ["en"]="f.",
     ["eo"]="sekv",
     ["fr"]=hairspace .. "sq",
     ["hy"]="f.",
+    ["sk"]="násl.",
    },
   },
   ["followingpage"]={
    ["labels"]={
     ["ca"]="en la seguent pagina",
+    ["cs"]="na následující straně",
     ["de"]="auf einer Folgeseite",
     ["en"]="on a following page",
     ["eo"]="je sekvanta paĝo",
@@ -1786,6 +1850,7 @@ data.labels={
     ["hy"]="Հաջորդ էջում",
     ["mk"]="на следната страница",
     ["nl"]="op een volgende bladzijde",
+    ["sk"]="na nasledujúcej strane",
     ["sr"]="на следећој страници",
     ["sr-latn"]="na sledećoj stranici",
    },
@@ -2979,6 +3044,7 @@ data.labels={
   ["precedingpage"]={
    ["labels"]={
     ["ca"]="en una pagina anterior",
+    ["cs"]="na předchozí straně",
     ["de"]="oben", -- "auf der vorigen Seite" ok, but not "auf einer vorigen Seite"
     ["en"]="on a preceding page",
     ["eo"]="sur antaŭa paĝo",
@@ -2990,6 +3056,7 @@ data.labels={
     ["hy"]="նախորդ էջ",
     ["mk"]="на претходната страница",
     ["nl"]="op een voorgaande bladzijde",
+    ["sk"]="na predchádzajúcej strane",
     ["sr"]="на претходној страници",
     ["sr-latn"]="na prethodnoj stranici",
    },
@@ -3678,6 +3745,7 @@ data.labels={
    ["labels"]={
     ["bg"]="година",
     ["ca"]="any",
+    ["cs"]="rok",
     ["de"]="Jahr",
     ["en"]="year",
     ["eo"]="jaro",
@@ -3690,6 +3758,7 @@ data.labels={
     ["kr"]="년",
     ["mk"]="година",
     ["nl"]="jaar",
+    ["sk"]="rok",
     ["sr"]="година",
     ["sr-latn"]="godina",
    },
@@ -3704,7 +3773,7 @@ data.labels={
     ["bg"]="Съкращения",
     ["ca"]="Abreviacions",
     ["cn"]="缩略语",
-    ["cs"]="Zkratky",
+    ["cs"]="Seznam zkratek", --"Zkratky"
     ["da"]="Forkortelser",
     ["de"]="Abkürzungen",
     ["en"]="Abbreviations",
@@ -3731,7 +3800,7 @@ data.labels={
     ["pt"]="Abreviaturas",
     ["ro"]="Abrevieri",
     ["ru"]="Список сокращений",
-    ["sk"]="Skratky",
+    ["sk"]="Zoznam skratiek", -- "Skratky"
     ["sl"]="Kratice",
     ["sr"]="Скраћенице",
     ["sr-latn"]="Skraćenice",
@@ -3914,7 +3983,7 @@ data.labels={
     ["pt"]="Índice",
     ["ro"]="Index",
     ["ru"]="Алфавитный указатель",
-    ["sk"]="Zoznam",
+    ["sk"]="Register",
     ["sl"]="Stvarno kazalo",
     ["sr"]="Индекс појмова",
     ["sr-latn"]="Indeks pojmova",
@@ -4161,6 +4230,8 @@ functions.acosh  = functions.arccosh
 functions.atanh  = functions.arctanh
 
 functions.tg     = functions.tan
+functions.ctg    = functions.cot
 functions.arctg  = functions.arctan
+functions.arcctg = functions.arccot
 functions.arctgh = functions.arctanh
 

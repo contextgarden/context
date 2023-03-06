@@ -88,7 +88,7 @@
 %D \macros
 %D   {assignvalue}
 %D
-%D A variant that does not assume dimenions ios the following:
+%D A variant that does not assume dimenions is the following:
 %D
 %D \starttyping
 %D \assignvalue

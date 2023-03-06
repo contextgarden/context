@@ -169,7 +169,6 @@ local validspecification     = helpers.validspecification
 local querysplitter          = helpers.querysplitter
 local dataprepared           = helpers.preparetemplate
 local serialize              = sql.serialize
-local deserialize            = sql.deserialize
 
 local mysql_open_session     = mysql.mysql_init
 
@@ -564,6 +563,7 @@ local ffi_tostring    = ffi.string
 
 local converters      = utilities.sql.converters
 local deserialize     = utilities.sql.deserialize
+local fromjson        = utilities.sql.fromjson
 
 local tostring        = tostring
 local tonumber        = tonumber

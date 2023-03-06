@@ -37,6 +37,7 @@
 
 # include "../lua/lmtinterface.h"
 # include "../utilities/auxmemory.h"
+# include "../utilities/auxfile.h"
 
 # ifndef R_OK
 # define F_OK 0x0
@@ -107,8 +108,6 @@
 
 # ifdef _WIN32
 
-    # include "../utilities/auxfile.h"
-
     # ifndef S_ISDIR
         # define S_ISDIR(mode) (mode & _S_IFDIR)
     # endif
@@ -173,11 +172,15 @@
         return r;
     }
 
+ // # if defined(__MINGW64__) || defined(__MINGW32__)
+ //     extern int CreateSymbolicLinkW(LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWORD dwFlags);
+ // # endif 
+
     static int mk_symlink(const char *t, const char *f)
     {
         LPWSTR wt = aux_utf8_to_wide(t);
         LPWSTR wf = aux_utf8_to_wide(f);
-        int r = (CreateSymbolicLinkA(t, f, 0x2) != 0);
+        int r = CreateSymbolicLinkW((LPCWSTR) t, (LPCWSTR) f, 0x2) != 0;
         lmt_memory_free(wt);
         lmt_memory_free(wf);
         return r;
@@ -187,7 +190,7 @@
     {
         LPWSTR wt = aux_utf8_to_wide(t);
         LPWSTR wf = aux_utf8_to_wide(f);
-        int r = (CreateSymbolicLinkA(t, f, 0x3) != 0);
+        int r = CreateSymbolicLinkW((LPCWSTR) t, (LPCWSTR) f, 0x3) != 0;
         lmt_memory_free(wt);
         lmt_memory_free(wf);
         return r;
@@ -290,7 +293,7 @@ static int filelib_chdir(lua_State *L) {
                 lua_pushboolean(L, 0);
                 break;
             } else if (_wgetcwd(wpath, size)) {
-                char * path = aux_utf8_from_wide(wpath);
+                char *path = aux_utf8_from_wide(wpath);
                 lua_pushstring(L, path);
                 lmt_memory_free(path);
                 break;
@@ -787,64 +790,16 @@ static int filelib_setexecutable(lua_State *L)
     link("name","target") : targetname
 */
 
-// # ifdef _WIN32
-//
-//     static int filelib_symlinkattributes(lua_State *L)
-//     {
-//         lua_pushnil(L);
-//         return 1;
-//     }
-//
-// # else
-//
-//     static int push_link_target(lua_State *L)
-//     {
-//         const char *file = luaL_checkstring(L, 1);
-//         char *target = NULL;
-//         int tsize, size = 256; /* size = initial buffer capacity */
-//         while (1) {
-//             target = lmt_memory_realloc(target, size);
-//             if (! target) {
-//                 return 0;
-//             }
-//             tsize = readlink(file, target, size);
-//             if (tsize < 0) {
-//                 /* error */
-//                 lmt_memory_free(target);
-//                 return 0;
-//             }
-//             if (tsize < size) {
-//                 break;
-//             }
-//             /* possibly truncated readlink() result, double size and retry */
-//             size *= 2;
-//         }
-//         target[tsize] = '\0';
-//         lua_pushlstring(L, target, tsize);
-//         lmt_memory_free(target);
-//         return 1;
-//     }
-//
-//     static int filelib_symlinkattributes(lua_State *L)
-//     {
-//         if (lua_isstring(L, 2) && (strcmp(lua_tostring(L, 2), "target") == 0)) {
-//             if (! push_link_target(L)) {
-//                 lua_pushnil(L);
-//             }
-//         } else {
-//             int ret = filelib_attributes(L);
-//             if (ret == 1 && lua_type(L, -1) == LUA_TTABLE) {
-//                 if (push_link_target(L)) {
-//                     lua_setfield(L, -2, "target");
-//                 }
-//             } else {
-//                 lua_pushnil(L);
-//             }
-//         }
-//         return 1;
-//     }
-//
-// # endif
+static int filelib_symlinktarget(lua_State *L)
+{
+    const char *file = aux_utf8_readlink(luaL_checkstring(L, 1));
+    if (file) {
+        lua_pushstring(L, file);
+    } else { 
+        lua_pushnil(L);
+    }
+    return 1;
+}
 
 static const struct luaL_Reg filelib_function_list[] = {
     { "attributes",        filelib_attributes        },
@@ -858,7 +813,7 @@ static const struct luaL_Reg filelib_function_list[] = {
     { "link",              filelib_link              },
     { "symlink",           filelib_symlink           },
     { "setexecutable",     filelib_setexecutable     },
- /* { "symlinkattributes", filelib_symlinkattributes }, */
+    { "symlinktarget",     filelib_symlinktarget     }, 
     /* */
     { "isdir",             filelib_isdir             },
     { "isfile",            filelib_isfile            },

@@ -330,6 +330,7 @@
         \tabskip\centeringskip % fails in some cases
         \aligntab
         \span
+\hss % for MS to test this
         \boundary\c_math_align_r_marker
         \math_alignment_lbox{\aligncontent}%
         \tabskip\zeropoint}%
@@ -1593,6 +1594,9 @@
 \newdimension\d_math_matrix_margin_t
 \newdimension\d_math_matrix_margin_b
 
+\newdimension\d_math_matrix_max_left
+\newdimension\d_math_matrix_max_right
+
 \newboundary \c_math_matrix_ornament_l
 \newboundary \c_math_matrix_ornament_r
 \newboundary \c_math_matrix_ornament_t
@@ -1610,7 +1614,7 @@
   {\NC
    \enablematrixornaments
    \global\settrue\c_math_matrix_text
-   \global\settrue#1
+   \global\settrue#1%
    \boundary#2%
    \ignorespaces}
 
@@ -1642,6 +1646,8 @@
    \d_math_matrix_margin_r\mathmatrixparameter\c!rightmargin\relax
    \d_math_matrix_margin_t\strutdp
    \d_math_matrix_margin_b\strutht
+   \global\d_math_matrix_max_left \zeropoint
+   \global\d_math_matrix_max_right\zeropoint
   %\tabskip.5\d_math_eqalign_distance
    \tabskip\zeropoint
    \math_matrix_pickup
@@ -1671,6 +1677,9 @@
    \math_matrix_finish_nextbox
    \mathmatrixright % experimental hook
    \egroup}
+
+\permanent\protected\def\mathmatrixmaxleftwidth {\d_math_matrix_max_left }
+\permanent\protected\def\mathmatrixmaxrightwidth{\d_math_matrix_max_right}
 
 \let\math_matrix_strut    \strut
 \let\math_matrix_set_style\relax
@@ -1752,7 +1761,7 @@
      \normalstopimath
    \egroup
    \ifconditional\c_math_matrix_text
-     \ifcstok{\mathmatrixparameter\c!left\mathmatrixparameter\c!right}\emptytoks\else
+     \ifcstok{\mathmatrixparameter\c!left\mathmatrixparameter\c!right\mathmatrixparameter\c!fences}\emptytoks\else
        \scratchdistance\dimexpr(\wd\scratchbox-\scratchwidth)/\plustwo\relax
        \advanceby\d_math_matrix_margin_l\scratchdistance
        \advanceby\d_math_matrix_margin_r\scratchdistance
@@ -1765,7 +1774,15 @@
    \ifconditional\c_math_matrix_text_t
      \ht\scratchbox\dimexpr\ht\scratchbox+\lineheight\relax
    \fi
-   \box\scratchbox}
+   \edef\p_leftedge {\mathmatrixparameter\c!leftedge }%
+   \edef\p_rightedge{\mathmatrixparameter\c!rightedge}%
+   \ifempty\p_leftedge\else
+     \hskip\dimexpr\d_math_matrix_max_left+\p_leftedge\relax
+   \fi
+   \box\scratchbox
+   \ifempty\p_rightedge\else
+     \hskip\dimexpr\d_math_matrix_max_right+\p_rightedge\relax
+   \fi}
 
 \definemathmatrix[matrix]
 \definemathmatrix[\v!mathmatrix]
@@ -1957,24 +1974,53 @@
 % \definemathmatrix[matrix:bars]       [\c!left={\left|\mskip\thinmuskip},\c!right={\mskip\thinmuskip\right|},\c!align=\v!middle]
 
 \definemathmatrix
+  [matrix:none]
+  [\c!align=\v!middle,
+   \c!simplecommand=matrix]
+
+\definemathmatrix
   [matrix:brackets]
   [\c!fences=bracket,
-   \c!align=\v!middle]
+   \c!align=\v!middle,
+   \c!simplecommand=bmatrix]
 
 \definemathmatrix
   [matrix:parentheses]
   [\c!fences=parenthesis,
-   \c!align=\v!middle]
+   \c!align=\v!middle,
+   \c!simplecommand=pmatrix]
 
 \definemathmatrix
   [matrix:bars]
   [\c!fences=bar,
-   \c!align=\v!middle]
+   \c!align=\v!middle,
+   \c!simplecommand=vmatrix]
+
+\definemathmatrix
+  [matrix:doublebars]
+  [\c!fences=doublebar,
+   \c!align=\v!middle,
+   \c!simplecommand=vvmatrix]
+
+\definemathmatrix
+  [matrix:triplebars]
+  [\c!fences=triplebar,
+   \c!align=\v!middle,
+   \c!simplecommand=vvvmatrix]
+
+\definemathmatrix
+  [matrix:groups]
+  [\c!fences=group,
+   \c!align=\v!middle,
+   \c!simplecommand=gmatrix]
 
 \definemathmatrix
   [matrix:braces]
   [\c!fences=brace,
-   \c!align=\v!middle]
+   \c!align=\v!middle,
+   \c!simplecommand=bracematrix]%Seldom used, bmatrix occupied by brackets
+
+% MPS: Is this one really used? Yes, in the test suite ...
 
 \definemathmatrix
   [thematrix]

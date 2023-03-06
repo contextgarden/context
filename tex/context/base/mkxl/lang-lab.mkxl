@@ -50,10 +50,10 @@
 %D These commands accept all kind of inputs:
 %D
 %D \starttyping
-%D \setuplabeltext [language] [labellabel=text]
-%D \setuplabeltext [language] [labellabel=text,labellabel=text,...]
-%D \setuplabeltext            [labellabel=text]
-%D \setuplabeltext            [labellabel=text,labellabel=text,...]
+%D \setuplabeltext [language] [label1=text]
+%D \setuplabeltext [language] [label1=text,label2=text,...]
+%D \setuplabeltext            [label1=text]
+%D \setuplabeltext            [label1=text,label2=text,...]
 %D \stoptyping
 %D
 %D The last two cases concern the current language.
@@ -141,7 +141,7 @@
         \else
           \enforced\let\thetextprefix\dummytextprefix
         \fi}%
-     \permanent \instance\protected\def#6##1{#3{##1}\expandafter\firstoftwoarguments   \thetextprefix}% \flushleftlabelclass
+     \permanent\instance\protected\def#6##1{#3{##1}\expandafter\firstoftwoarguments   \thetextprefix}% \flushleftlabelclass
      \permanent\instance\protected\def#7##1{#3{##1}\expandafter\secondoftwoarguments  \thetextprefix}% \flushrightlabelclass
      \permanent\instance\protected\def#8##1{#3{##1}\expandafter\lang_labels_flush_both\thetextprefix}% \flushbothlabelclass #2
      \permanent\instance\protected\def#9##1{#3{##1}\expandafter\firstoftwoarguments   \thetextprefix}% \flushleftlabelclass

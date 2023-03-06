@@ -32,8 +32,10 @@ typedef struct environment_state_info {
     char  *ownbase;
     char  *ownname;
     char  *owncore;
+    char  *ownlink;
     char  *input_name;
     int    luatex_lua_offset;
+    int    padding;
 } environment_state_info;
 
 static environment_state_info lmt_environment_state = {
@@ -47,8 +49,10 @@ static environment_state_info lmt_environment_state = {
     .ownbase           = NULL,
     .ownname           = NULL,
     .owncore           = NULL,
+    .ownlink           = NULL,
     .input_name        = NULL,
     .luatex_lua_offset = 0,
+    .padding           = 0,
 };
 
 /*tex todo: make helpers in loslibext which has similar code */
@@ -57,18 +61,21 @@ static void enginelib_splitnames(void)
 {
     char *p = lmt_memory_strdup(lmt_environment_state.ownpath); /*tex We need to make copies! */
     /*
-    printf("ownpath = %s\n",environment_state.ownpath);
-    printf("ownbase = %s\n",environment_state.ownbase);
-    printf("ownname = %s\n",environment_state.ownname);
-    printf("owncore = %s\n",environment_state.owncore);
+        We loose some here but not enough to worry about. Maybe eventually we will use our own
+        |basename| and |dirname| anyway. I need to check if all are set to something we can 
+        indeed free. 
     */
     /*
-        We loose some here but not enough to worry about. Maybe eventually we will use our own
-        |basename| and |dirname| anyway.
+    if (lmt_environment_state.ownbase) { lmt_memory_free(lmt_environment_state.ownbase); }
+    if (lmt_environment_state.ownname) { lmt_memory_free(lmt_environment_state.ownbase); }
+    if (lmt_environment_state.ownpath) { lmt_memory_free(lmt_environment_state.ownbase); }
+    if (lmt_environment_state.ownlink) { lmt_memory_free(lmt_environment_state.ownlink); }
     */
+    /* */
     lmt_environment_state.ownbase = aux_basename(lmt_memory_strdup(p));
     lmt_environment_state.ownname = aux_basename(lmt_memory_strdup(p));
     lmt_environment_state.ownpath = aux_dirname(lmt_memory_strdup(p)); /* We could use p and not free later, but this is cleaner. */
+    lmt_environment_state.ownlink = aux_utf8_readlink(lmt_environment_state.ownpath); 
     /* */
     for (size_t i = 0; i < strlen(lmt_environment_state.ownname); i++) {
         if (lmt_environment_state.ownname[i] == '.') {
@@ -77,12 +84,6 @@ static void enginelib_splitnames(void)
         }
     }
     lmt_environment_state.owncore = lmt_memory_strdup(lmt_environment_state.ownname);
-    /*
-    printf("ownpath = %s\n",environment_state.ownpath);
-    printf("ownbase = %s\n",environment_state.ownbase);
-    printf("ownname = %s\n",environment_state.ownname);
-    printf("owncore = %s\n",environment_state.owncore);
-    */
     lmt_memory_free(p);
 }
 
@@ -221,7 +222,7 @@ static void enginelib_show_version_info(void)
         "\n"
         "Functionality : level " LMT_TOSTRING(luametatex_development_id) "\n"
         "Support       : " luametatex_support_address "\n"
-        "Copyright     : The Lua(Meta)TeX Team(s) (2005-2022+)\n"
+        "Copyright     : The Lua(Meta)TeX Team(s) (2005-2023+)\n"
         "\n"
         "The LuaMetaTeX project is related to ConTeXt development. This macro package\n"
         "tightly integrates TeX and MetaPost in close cooperation with Lua. Updates will\n"
@@ -333,6 +334,11 @@ static void enginelib_show_credits(void)
         "compiler  : " LMT_COMPILER_USED "\n"
 # endif
     );
+    printf("own path  : %s\n", lmt_environment_state.ownpath);
+    printf("own base  : %s\n", lmt_environment_state.ownbase);
+    printf("own name  : %s\n", lmt_environment_state.ownname);
+    printf("own core  : %s\n", lmt_environment_state.owncore);
+    printf("own link  : %s\n", lmt_environment_state.ownlink ? lmt_environment_state.ownlink : "<no link>");
     exit(EXIT_SUCCESS);
 }
 
@@ -357,7 +363,7 @@ static void enginelib_prepare_cmdline(int zero_offset)
     lua_set_string_by_key(L, "selfbin",  lmt_environment_state.argv[0]);
     lua_set_string_by_key(L, "selfpath", lmt_environment_state.ownpath);
     lua_set_string_by_key(L, "selfdir",  lmt_environment_state.ownpath); /* for old times sake */
-    lua_set_string_by_key(L, "selfbase", lmt_environment_state.ownbase);
+    lua_set_string_by_key(L, "selflink", lmt_environment_state.ownlink);
     lua_set_string_by_key(L, "selfname", lmt_environment_state.ownname);
     lua_set_string_by_key(L, "selfcore", lmt_environment_state.owncore);
     lua_createtable(L, lmt_environment_state.argc, 0);
@@ -613,6 +619,7 @@ void tex_engine_initialize(int ac, char **av)
     lmt_engine_state.luatex_banner = lmt_memory_strdup(lmt_version_state.banner);
     /* preparations */
     lmt_environment_state.ownpath = aux_utf8_getownpath(lmt_environment_state.argv[0]);
+    lmt_environment_state.ownlink = aux_utf8_readlink(lmt_environment_state.ownpath);
     enginelib_splitnames();
     aux_set_run_time();
     /*tex

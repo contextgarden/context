@@ -28,6 +28,7 @@ local tonode            = nodes.tonode
 local getid             = nuts.getid
 local getsubtype        = nuts.getsubtype
 local getnext           = nuts.getnext
+local getprev           = nuts.getprev
 local getwidth          = nuts.getwidth
 local getdata           = nuts.getdata
 local getdepth          = nuts.getdepth
@@ -47,6 +48,7 @@ local nextboundary      = nuts.traversers.boundary
 local nextnode          = nuts.traversers.node
 
 local texsetdimen       = tex.setdimen
+local texgetdimen       = tex.getdimen
 local texsetcount       = tex.setcount
 local texisdimen        = tex.isdimen
 local texiscount        = tex.iscount
@@ -63,44 +65,125 @@ local d_strc_math_first_height = texisdimen("d_strc_math_first_height")
 local d_strc_math_last_depth   = texisdimen("d_strc_math_last_depth")
 local d_strc_math_indent       = texisdimen("d_strc_math_indent")
 
+local function moveon(s)
+    for n, id, subtype in nextnode, getnext(s) do
+        s = n
+        if id == kern_code then
+            -- move on (s_2 case)
+        elseif id == glue_code then
+            -- move on
+        elseif id == penalty_code then
+            -- move on (untested)
+        elseif id == hlist_code and subtype == ghost_code then
+            -- move on
+        else
+            break
+        end
+    end
+    return s
+end
+
+-- stages[1] = function(specification,stage)
+--     local box      = getbox(specification.box)
+--     local head     = getlist(box)
+--     local align    = specification.alignstate
+--     local distance = specification.distance
+--     for s in nextboundary, head do
+--         local data = getdata(s)
+--         if data == boundary then
+--             -- todo: skip over ghost, maybe penalty, maybe glues all in one loop
+--             s = moveon(s)
+--             for n, id, subtype in nextnode, getnext(s) do
+--                 s = n
+--                 if id == kern_code then
+--                     -- move on (s_2 case)
+--                 elseif id == glue_code then
+--                     -- move on
+--                 elseif id == penalty_code then
+--                     -- move on (untested)
+--                 elseif id == hlist_code and subtype == ghost_code then
+--                     -- move on
+--                 else
+--                     break
+--                 end
+--             end
+--             distance = distance + getdimensions(head,s)
+--             break
+--         end
+--     end
+--     texsetdimen("global",d_strc_math_indent,distance)
+--     if align == 2 then
+--         for n in nextglue, head do
+--             setglue(n,getwidth(n),0,0,0,0)
+--         end
+--     end
+-- end
+
+-- -- todo: skip over ghost, maybe penalty, maybe glues all in one loop
+--
+-- local n = getnext(s)
+-- if n and getid(n) == kern_code then -- also needed
+--     n = getnext(n)
+-- end
+-- while n and getid(n) == hlist_code and getsubtype(n) == ghost_code do
+--     n = getnext(n)
+-- end
+-- while n and getid(n) == glue_code do
+-- if n and getid(n) == glue_code then
+--     n = getnext(n)
+-- end
+
+local getpenalty = nuts.getpenalty
+
 stages[1] = function(specification,stage)
     local box      = getbox(specification.box)
     local head     = getlist(box)
     local align    = specification.alignstate
     local distance = specification.distance
+    local found    = { }
+    local max      = 0
     for s in nextboundary, head do
-        if getdata(s) == boundary then
-            -- todo: skip over ghost, maybe penalty, maybe glues all in one loop
---             local n = getnext(s)
---             if n and getid(n) == kern_code then -- also needed
---                 n = getnext(n)
---             end
---             while n and getid(n) == hlist_code and getsubtype(n) == ghost_code do
---                 n = getnext(n)
---             end
---          -- while n and getid(n) == glue_code do
---             if n and getid(n) == glue_code then
---                 n = getnext(n)
---             end
-            for n, id, subtype in nextnode, getnext(s) do
-                s = n
-                if id == kern_code then
-                    -- move on (s_2 case)
-                elseif id == glue_code then
-                    -- move on
-                elseif id == penalty_code then
-                    -- move on (untested)
-                elseif id == hlist_code and subtype == ghost_code then
-                    -- move on
-                else
-                    break
-                end
-            end
-            distance = distance + getdimensions(head,s)
-            break
+        local data = getdata(s)
+        if data == boundary then
+            s = moveon(s)
+            found[#found+1] = { s, 0, head }
         end
     end
-    texsetdimen("global",d_strc_math_indent,distance)
+    if #found > 0 then
+        if found[1] then
+            max = distance + getdimensions(head,found[1][1])
+            found[1][2] = max
+        end
+        for i=2,#found do
+            local f = found[i]
+            local n = f[1]
+            local p = n
+            while p do
+                if getid(p) == penalty_code and getpenalty(p) == -10000 then
+                    local d = distance + getdimensions(p,n)
+                    f[2] = d
+                    f[3] = p
+                    if d > max then
+                        max = d
+                    end
+                    break
+                end
+                p = getprev(p)
+            end
+        end
+        -- we use a hangindent so we need to treat the first one
+        local f = found[1]
+        local delta = f[2] - max
+        if delta ~= 0 then
+            nuts.insertafter(head,moveon(head),nuts.pool.kern(-delta))
+        end
+        for i=2,#found do
+            local f = found[i]
+            local delta = f[2] - max
+            nuts.insertafter(head,moveon(f[3]),nuts.pool.kern(-f[2])) -- check head
+        end
+    end
+    texsetdimen("global",d_strc_math_indent,max)
     if align == 2 then
         for n in nextglue, head do
             setglue(n,getwidth(n),0,0,0,0)

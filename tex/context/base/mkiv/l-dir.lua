@@ -197,7 +197,7 @@ local function collectpattern(path,patt,recurse,result)
         if not find(path,"/$") then
             path = path .. '/'
         end
-        for name in scanner, first do -- cna be optimized
+        for name in scanner, first do -- can be optimized
             if name == "." then
                 -- skip
             elseif name == ".." then

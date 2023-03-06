@@ -74,6 +74,11 @@
 \definemathfunction [tan]
 \definemathfunction [diff]
 
+% When [\c!command=] the label kicks in:
+
+\definemathfunction [cs:median] [\c!command=\widetilde]
+\definemathfunction [sk:median] [\c!command=\widetilde]
+
 \aliased\let\normalmatharg\arg % todo: maybe automatically
 
 %D This needs checking:

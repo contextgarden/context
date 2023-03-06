@@ -48,11 +48,36 @@
 \appendtoks \frozen\protected\edefcsname\currentlow \endcsname{\typo_scripts_low [\currentlow ]}\to \everydefinelow
 \appendtoks \frozen\protected\edefcsname\currenthigh\endcsname{\typo_scripts_high[\currenthigh]}\to \everydefinehigh
 
+\def\typo_scripts_distance#1%
+  {\edef\p_distance{#1\c!distance}%
+   \ifx\p_distance\v!tight
+     \tightfitboundary
+   \else
+     \kern\p_distance\relax
+   \fi}
+
+%D \startbuffer
+%D \setuplow [distance=\zeropoint]
+%D \setuphigh[distance=\zeropoint]
+%D
+%D {\showglyphs f\high{x}\quad p\high{x}\quad}
+%D
+%D \setuplow [\c!distance=\v!tight]
+%D \setuphigh[\c!distance=\v!tight]
+%D
+%D {\showglyphs f\high{x}\quad p\high{x}\quad}
+%D \stopbuffer
+%D
+%D \typebuffer {\getbuffer}
+
+% \type{f\kern\tightfitcompensation\high{x}}
+% \type{f\tightfitboundary         \high{x}}
+
 \protected\def\typo_scripts_low[#1]#2%
   {\dontleavehmode
    \begingroup
    \edef\currentlow{#1}%
-   \kern\lowparameter\c!distance\relax
+   \typo_scripts_distance\lowparameter
    \setbox\scratchbox\runninghbox\bgroup
      \lower\lowparameter\c!down\hbox\bgroup
        \ifempty\fontsize
@@ -78,7 +103,7 @@
   {\dontleavehmode
    \begingroup
    \edef\currenthigh{#1}%
-   \kern\highparameter\c!distance\relax
+   \typo_scripts_distance\highparameter
    \setbox\scratchbox\runninghbox\bgroup
      \raise\highparameter\c!up\hbox\bgroup
        \ifempty\fontsize
@@ -131,15 +156,15 @@
    \c!down=.58\exheight]     % values
 
 \appendtoks
-    \frozen\setuevalue\currentlowhigh{\typo_scripts_lowhigh[\currentlowhigh]}%
+    \frozen\edefcsname\currentlowhigh\endcsname{\typo_scripts_lowhigh[\currentlowhigh]}%
 \to \everydefinelowhigh
 
 \tolerant\protected\def\typo_scripts_lowhigh[#1]#*[#2]#:#3#4% todo: align .. [#1] is compatible hack
   {\dontleavehmode
    \runninghbox\bgroup
    \edef\currentlowhigh{#1}%
+   \typo_scripts_distance\lowhighparameter
    \dostarttagged\t!subsup\currentlowhigh
-   \scratchdimen\lowhighparameter\c!distance\relax
    \setbox\plusfour\hpack{\typo_scripts_lowhigh_low_high\lower\c!down\t!sub{#3}}%
    \setbox\plussix \hpack{\typo_scripts_lowhigh_low_high\raise\c!up  \t!sup{#4}}%
    \edef\p_align{#2}%
@@ -163,8 +188,7 @@
    \egroup}
 
 \def\typo_scripts_lowhigh_low_high#1#2#3#4%
-  {\kern\scratchdimen
-   \setbox\scratchbox\hpack\bgroup
+  {\setbox\scratchbox\hpack\bgroup
      #1\lowhighparameter#2\hbox\bgroup
        \ifempty\fontsize
          \ifmmode
@@ -221,7 +245,7 @@
    \c!down=.8\struthtdp]
 
 \appendtoks
-    \frozen\setuevalue\currentlowmidhigh{\typo_scripts_lowmidhigh[\currentlowmidhigh]}%
+    \frozen\edefcsname\currentlowmidhigh\endcsname{\typo_scripts_lowmidhigh[\currentlowmidhigh]}%
 \to \everydefinelowmidhigh
 
 \protected\def\typo_scripts_lowmidhigh[#1]#2#3#4%

@@ -343,6 +343,7 @@ do
     local nextnode          = nuts.traversers.node
 
     local texgetdimen       = tex.getdimen
+    local texsetdimen       = tex.setdimen
     local texgetglue        = tex.getglue
     local texget            = tex.get
 
@@ -405,12 +406,12 @@ do
                     if subtype == linepenalty_code then
                         if l == 1 then
                             if splitmethod == v_both or splitmethod == v_first then
-print("FIRST")
+-- print("FIRST")
                                 setpenalty(n, 10000)
                             end
                         elseif l == noflines then
                             if splitmethod == v_both or splitmethod == v_last then
-print("LAST")
+-- print("LAST")
                                 setpenalty(n, 10000)
                             end
                         end
@@ -772,6 +773,8 @@ end
     local topornament    = tex.boundaries.system("c_math_matrix_ornament_t")
     local bottomornament = tex.boundaries.system("c_math_matrix_ornament_b")
 
+    local verticalline   = tex.boundaries.system("c_math_matrix_vl_boundary")
+
     local left     = 0
     local right    = 0
     local nofcells = 0
@@ -802,7 +805,11 @@ end
                 c = c + 1
                 for bound in nextboundary, list do
                     local ornament = getdata(bound)
-                    if ornament == leftornament then
+                    if ornament == verticalline then
+                        -- this hack is is beyond ugly as we omit and span
+                        c = c + 1
+                        break
+                    elseif ornament == leftornament then
                         if c == 1 then
                             local w = getwidth(cell)
                             if w > left then
@@ -874,6 +881,8 @@ end
             rights  = false
             tops    = false
             bottoms = false
+            texsetdimen("global","d_math_matrix_max_left", left)
+            texsetdimen("global","d_math_matrix_max_right",right)
         end
     end
 

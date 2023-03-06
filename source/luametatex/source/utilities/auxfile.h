@@ -107,6 +107,7 @@
     extern int     aux_utf8_rename     (const char *oldname, const char *newname);
     extern int     aux_utf8_setargv    (char * **av, char **argv, int argc);
     extern char   *aux_utf8_getownpath (const char *file);
+    extern char   *aux_utf8_readlink   (const char *file);
 
 # else
 
@@ -118,6 +119,7 @@
 
     extern int     aux_utf8_setargv    (char * **av, char **argv, int argc);
     extern char   *aux_utf8_getownpath (const char *file);
+    extern char   *aux_utf8_readlink   (const char *file);
 
     # include <libgen.h>
 

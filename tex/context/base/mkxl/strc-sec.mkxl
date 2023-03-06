@@ -125,6 +125,8 @@
 %                      \section{bla 2} \subsection{bla 2 1} \subsection{bla 2 2}
 % }
 
+\mutable\lettonothing\currentstructureextradata
+
 \protected\def\strc_sectioning_register#1#2#3% #1=interfaced-settings, #2=optional user data (not yet supported)
   {\begingroup
    \setupstructure[\c!name={#1},#2]%
@@ -143,6 +145,7 @@
    \xdef\currentstructuresaveinlist     {\structureparameter\c!saveinlist}%
    \xdef\currentstructureincrementnumber{\structureparameter\c!incrementnumber}%
    \xdef\currentstructureplaceholder    {\structureparameter\c!placeholder}%
+   \xdef\currentstructureextradata      {\structureparameter\c!extradata}%
    \ifx\currentstructureexpansion\s!xml
      \xmlstartraw
        \xdef\currentstructuretitle        {\structureparameter\c!title}%
@@ -774,10 +777,6 @@
 
 \newtoks\everyheadsynchronization
 
-% \appendtoks
-%     \currentstructuresynchronize
-% \to \everyheadsynchronization
-
 \aliased\let\currentstructuresynchronize\donothing
 
 \appendtoks
@@ -785,9 +784,15 @@
     \enforced\glet\currentstructuresynchronize\donothing
 \to \everyheadsynchronization
 
+
 \permanent\protected\def\theheadsynchronization % public
   {% no, interferes: \signalcharacter
-   \the\everyheadsynchronization}
+   \the\everyheadsynchronization
+   % new, this might move to a better place, e.g. first in the box
+   \currentstructureextradata
+   \lettonothing\currentstructureextradata
+   % done (can be used for e.g. index entries)
+  }
 
 % BEWARE: \marking[section]{my text} does not work as we use list indices instead
 % so we need a 'keep track of raw set option' (or maybe a funny internal prefix)

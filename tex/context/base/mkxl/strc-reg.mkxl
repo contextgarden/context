@@ -757,6 +757,41 @@
 % todo \index{todo}
 % \stoptext
 
+%D Kind of new:
+
+% % index-1.tex:
+%
+% \setupinteraction[state=start]
+% \starttext
+%     test \index{entry    WB.1} \page empty \page
+%     test \index{another  WB.1} \page empty \page
+%     test \index{onemore  WB.1} \page empty \page
+%     test \index{whatever WB.1} \page empty \page
+%     test \index{common}        \page empty \page
+%     \placeregister[index]
+% \stoptext
+%
+% % index-2.tex:
+%
+% \setupinteraction[state=start]
+% \defineregister[xedni]
+% \useregister[workbook][index-1][index][WB ]
+% \starttext
+%     test \index{onemore TB.1} \page
+%     test \index{another TB.1} \page
+%     test \index{entry   TB.1} \page
+%     test \index{common}       \page
+%     test \xedni{onemore TB.2} \page
+%     test \xedni{another TB.2} \page
+%     test \xedni{entry   TB.2} \page
+%     test \xedni{common}       \page
+%     \placeregister[index,xedni,workbook]
+% \stoptext
+
+\permanent\protected\tolerant\def\useregister[#1]#*[#2]#*[#3]#*[#4]%  tag file class prefix
+  {\doifelsefiledefined{#1}{}{\usefile[#1][#2]}%
+   \clf_useregister{#1}{#2}{#3}{#4}}
+
 %D Character rendering (sections):
 
 \installcorenamespace{registerindicator}
@@ -1070,17 +1105,45 @@
 
 \let\currentregisterrealpage\!!zerocount % todo: more general accessor
 
-\permanent\protected\def\withregisterpagecommand#1#2#3#4%
+% keep as reference
+%
+% \permanent\protected\def\withregisterpagecommand#1#2#3#4%
+%   {\ifcase#3\relax
+%      {\tt [entry\space not\space flushed]}%
+%    \else
+%      \def\currentregisterpageindex{#2}%
+%      \def\currentregisterrealpage{#3}%
+%      \iflocation
+%        \strc_references_goto_internal{\applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}}[internal(#2)]%
+%      \else
+%        \applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}%
+%      \fi
+%    \fi}
+%
+% todo: adapt \strc_references_goto_internal to take an extra argument, the ref
+
+\permanent\protected\def\withregisterpagecommand#1#2#3#4% #1:processor #2:internal #3:realpage #4:page
   {\ifcase#3\relax
      {\tt [entry\space not\space flushed]}%
    \else
      \def\currentregisterpageindex{#2}%
      \def\currentregisterrealpage{#3}%
-     \iflocation
-       \strc_references_goto_internal{\applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}}[internal(#2)]%
+     \ifchknum\currentregisterpageindex\or
+       \lettonothing\currentregisterpageprefix
      \else
-       \applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}%
+       \def\currentregisterpageprefix{\clf_registerprefix{\currentregisterpageindex}}%
      \fi
+     \iflocation
+       \ifempty\currentregisterpageprefix
+         \strc_references_get_simple_reference{internal(\currentregisterpageindex)}%
+       \else
+         \strc_references_get_simple_reference{\currentregisterpageindex::page(\currentregisterrealpage)}%
+       \fi
+       \global\lastsavedreferenceattribute\currentreferenceattribute
+       \c_attr_reference\currentreferenceattribute
+       \setlocationattributes
+     \fi
+     \applyprocessor{#1}{\currentregisterpageprefix\registerparameter\c!pagecommand{#4}}%
    \fi}
 
 \lettonothing\m_current_register
@@ -1151,7 +1214,9 @@
    \iflocation
      \def\currentregisterseeindex{#4}%
      \ifconditional\c_strc_registers_text_interaction
-       \strc_references_goto_internal{\setlocationcolor\doapplyregisterentrycommand{#2}{#5}}[internal(#3)]%
+       \ifchknum\currentregisterpageindex\or
+         \strc_references_goto_internal{\setlocationcolor\doapplyregisterentrycommand{#2}{#5}}[internal(#3)]%
+       \fi
      \else
        \doapplyregisterentrycommand{#2}{#5}%
      \fi
@@ -1179,6 +1244,30 @@
      \applyprocessor{#1}{#2}%
    \fi}
 
+% \permanent\protected\def\defaultregisterseeword#1#2#3#4#5#6#7% class i n #3:processor #4:internal #5:seeindex #6:word
+%   {\pushcurrentregister{#1}%
+%    \ifnum#2=\plusone
+%      \registerpageseparator
+%    \fi
+%    \global\setconstant\c_strc_registers_page_state\plustwo
+%    \def\currentregisterpageindex{#5}%
+%    \dostarttagged\t!registersee\empty
+%    \settrue\c_strc_registers_page_done
+%    \iflocation
+%      \def\currentregisterseeindex{#6}%
+%    \else
+%      \lettonothing\currentregisterseeindex
+%    \fi
+%    \ifnum#2=\plusone
+%      \labeltexts\v!see{\doapplyregisterseecommand{#4}{#7}}%
+%    \orelse\ifnum#2=#3\relax
+%      \labeltexts\v!and{\doapplyregisterseecommand{#4}{#7}}%
+%    \else
+%      ,\space\doapplyregisterseecommand{#4}{#7}%
+%    \fi
+%    \dostoptagged
+%    \popcurrentregister}
+
 \permanent\protected\def\defaultregisterseeword#1#2#3#4#5#6#7% class i n #3:processor #4:internal #5:seeindex #6:word
   {\pushcurrentregister{#1}%
    \ifnum#2=\plusone
@@ -1186,19 +1275,30 @@
    \fi
    \global\setconstant\c_strc_registers_page_state\plustwo
    \def\currentregisterpageindex{#5}%
+   \def\currentregisterseeindex{#6}%
    \dostarttagged\t!registersee\empty
    \settrue\c_strc_registers_page_done
-   \iflocation
-     \def\currentregisterseeindex{#6}%
+   \ifchknum\currentregisterseeindex\or
+     \lettonothing\currentregisterpageprefix
    \else
-     \lettonothing\currentregisterseeindex
+     \def\currentregisterpageprefix{\clf_registerprefix{\currentregisterseeindex}}%
+   \fi
+   \iflocation
+     \ifempty\currentregisterpageprefix
+       \strc_references_get_simple_reference{internal(\currentregisterseeindex)}%
+     \else
+       \strc_references_get_simple_reference{\currentregisterpageindex::page(\currentregisterrealpage)}%
+     \fi
+     \global\lastsavedreferenceattribute\currentreferenceattribute
+     \c_attr_reference\currentreferenceattribute
+     \setlocationattributes
    \fi
    \ifnum#2=\plusone
-     \labeltexts\v!see{\doapplyregisterseecommand{#4}{#7}}%
+     \labeltexts\v!see{\doapplyregisterseecommand{#4}{\currentregisterpageprefix#7}}%
    \orelse\ifnum#2=#3\relax
-     \labeltexts\v!and{\doapplyregisterseecommand{#4}{#7}}%
+     \labeltexts\v!and{\doapplyregisterseecommand{#4}{\currentregisterpageprefix#7}}%
    \else
-     ,\space\doapplyregisterseecommand{#4}{#7}%
+     ,\space\doapplyregisterseecommand{#4}{\currentregisterpageprefix#7}%
    \fi
    \dostoptagged
    \popcurrentregister}

@@ -557,7 +557,7 @@
 %D \NC               \NC $\star$              \NC         \NC\NR
 %D \stoptabulate
 
-\permanent\protected\def\usereferences[#filename]{} % obsolete
+% \permanent\protected\def\usereferences[#filename]{} % defined at the lua end
 
 %D As mentioned we will also use the cross reference mechanism for navigational
 %D purposes. The main reason for this is that we want to treat both categories

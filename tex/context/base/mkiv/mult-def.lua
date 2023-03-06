@@ -8660,6 +8660,10 @@ return {
    ["fr"]="entrees",
    ["nl"]="ingangen",
   },
+  ["extradata"]={
+   ["en"]="extradata",
+   ["nl"]="extragegevens",
+  },
   ["processors"]={
    ["en"]="processors",
   },
@@ -12318,6 +12322,10 @@ return {
    ["nl"]="tekstmethode",
    ["pe"]="روش‌متن",
    ["ro"]="textmethod",
+  },
+  ["lasttextseparator"]={
+    ["en"]="lasttextseparator",
+    ["nl"]="laatstetekstscheider",
   },
   ["textseparator"]={
    ["cs"]="oddelovactextu",

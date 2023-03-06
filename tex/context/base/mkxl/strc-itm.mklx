@@ -1221,7 +1221,16 @@
        % WS: make the distance between items customizable, think about better default values -> see itemize-1.tex
        \strc_itemgroups_set_text_item_distance% HH: moved out and made configurable (sort of)
        \removeunwantedspaces
-       \hskip\m_strc_itemgroups_text_distance\relax
+       \ifnum\numexpr\c_strc_itemgroups_n_of_items+\plusone\relax=\c_strc_itemgroups_max_items
+         \itemgroupparameter\c!lasttextseparator
+       \else
+         \itemgroupparameter\c!textseparator
+       \fi
+       \ifempty\m_strc_itemgroups_text_distance
+         % safeguard
+       \else
+         \hskip\m_strc_itemgroups_text_distance\relax
+       \fi
      \fi
    \else
      \strc_itemgroups_between_command
@@ -1502,7 +1511,9 @@
         \dostoptagged
       \fi
       \box\b_strc_itemgroups
-      \hskip\interwordspace}%
+      \ifzerodim\wd\b_strc_itemgroups\else
+        \hskip\interwordspace % not configureable (yet), could be \c!textdistance
+      \fi}%
    \nobreak}
 
 \def\strc_itemgroups_handle_groups_inline_item
@@ -1659,7 +1670,7 @@
 \protected\def\strc_itemgroups_set_text_item_distance
   {\edef\m_strc_itemgroups_text_distance{\itemgroupparameter\c!textdistance}%
    \ifempty\m_strc_itemgroups_text_distance
-     %
+   % \let\m_strc_itemgroups_text_distance\zeropoint % safeguard elsewhere
    \orelse\ifcsname\??itemgroupdistance\m_strc_itemgroups_text_distance\endcsname
      \lastnamedcs
    \else
@@ -1978,6 +1989,8 @@
    \c!criterium=\v!all, % permits 0 and negative numbers
   %\c!option=,
    \c!textdistance=\v!space, % none big medium small <dimension>
+   \c!lasttextseparator=\itemgroupparameter\c!textseparator,
+  %\c!lasttextseparator=,
    \c!command=\strc_itemgroups_default_command,
    \c!indenting=\v!next,
   %\c!alignsymbol=v!no,

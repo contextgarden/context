@@ -33,6 +33,15 @@ then
     cd       build/mingw-32
     cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=./cmake/mingw-32.cmake ../..
 
+elif [ "$1" = "mingw-64-ucrt" ] || [ "$1" = "mingw64ucrt" ] || [ "$1" = "--mingw64ucrt" ]  || [ "$1" = "ucrt" ] || [ "$1" = "--ucrt" ] 
+then
+
+    PLATFORM="win64"
+    SUFFIX=".exe"
+    mkdir -p build/mingw-64-ucrt
+    cd       build/mingw-64-ucrt
+    cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=./cmake/mingw-64-ucrt.cmake ../..
+
 else
 
     PLATFORM="native"

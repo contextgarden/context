@@ -20,7 +20,7 @@ saves much runtime but at the cost of more memory usage.</p>
 local math = math
 local next, type, tostring, tonumber, setmetatable, load = next, type, tostring, tonumber, setmetatable, load
 local format, match = string.format, string.match
-local concat = table.concat
+local concat, sortedkeys = table.concat, table.sortedkeys
 
 local definetable    = utilities.tables.definetable
 local accesstable    = utilities.tables.accesstable
@@ -282,7 +282,7 @@ directives.register("job.pack",function(v) job.pack = v end)
 
 local savedfiles  = { }
 local loadedfiles = { } -- for now only timers
-local otherfiles  = { } -- for now only timers
+local othercache  = { }
 
 function job.save(filename) -- we could return a table but it can get pretty large
     statistics.starttiming(savedfiles)
@@ -381,18 +381,12 @@ function job.load(filename)
     statistics.stoptiming(loadedfiles)
 end
 
-local othercache = { }
-
-function job.loadother(filename,cache)
-    local unpacked = false
+function job.loadother(filename)
     statistics.starttiming(loadedfiles)
     filename = file.addsuffix(filename,"tuc")
-    if cache then
-        unpacked = othercache[filename]
-    end
+    local unpacked = othercache[filename]
     if not unpacked then
         -- so we can register the same name twice(in loading order)
-        otherfiles[#otherfiles+1] = file.nameonly(filename)
         local utilitydata = load(filename)
         if utilitydata then
             local jobpacker = utilitydata.job.packed
@@ -408,34 +402,12 @@ function job.loadother(filename,cache)
                 end
             end
             unpacked.job.packed = nil -- nicer in inspecting
-            if cache then
-                othercache[filename] = unpacked
-            end
+            othercache[filename] = unpacked
+             --
+            structures.lists     .integrate(utilitydata)
+            structures.registers .integrate(utilitydata)
+            structures.references.integrate(utilitydata)
             --
-            local lists    = utilitydata.structures.lists.collected or { }
-            local sections = utilitydata.structures.sections.collected or { }
-            local pages    = utilitydata.structures.pages   .collected or { }
-            for i=1,#lists do
-                local entry      = lists[i]
-                local references = entry.references
-                if references then
-                    local section  = references.section
-                    local realpage = references.realpage
-                    -- maybe entry.* instead:
-                    references.sectiondata = section and sections[section]
-                    references.pagedata    = realpage and pages[realpage]
-                    -- get rid of these, maybe even crash as these are bogus
-                 -- references.internal = nil
-                 -- references.realpage = nil
-                 -- references.section  = nil
-                    references.x        = nil
-                    references.y        = nil
-                end
-            end
-            --
-            -- also do the references here
-            --
-            structures.references.registerfromlist(lists,derived,pages,sections)
         end
     end
     statistics.stoptiming(loadedfiles)
@@ -447,17 +419,19 @@ statistics.register("startup time", function()
 end)
 
 statistics.register("jobdata time",function()
+    local elapsedsave = statistics.elapsedtime(savedfiles)
+    local elapsedload = statistics.elapsedtime(loadedfiles)
     if enabled then
-        if #otherfiles > 0 then
-            return format("%s seconds saving, %s seconds loading, other files: %s",statistics.elapsedtime(savedfiles),statistics.elapsedtime(loadedfiles),concat(otherfiles," "))
+        if next(othercache) then
+            return format("%s seconds saving, %s seconds loading, other files: %s",elapsedsave,elapsedload,concat(sortedkeys(othercache), ", "))
         else
-            return format("%s seconds saving, %s seconds loading",statistics.elapsedtime(savedfiles),statistics.elapsedtime(loadedfiles))
+            return format("%s seconds saving, %s seconds loading",elapsedsave,elapsedload)
         end
     else
-        if #otherfiles > 0 then
-            return format("nothing saved, %s seconds loading, other files: %s",statistics.elapsedtime(loadedfiles),concat(otherfiles," "))
+        if next(othercache) then
+            return format("nothing saved, %s seconds loading, other files: %s",elapsedload,concat(sortedkeys(othercache), ", "))
         else
-            return format("nothing saved, %s seconds loading",statistics.elapsedtime(loadedfiles))
+            return format("nothing saved, %s seconds loading",elapsedload)
         end
     end
 end)

@@ -737,10 +737,10 @@
    \strc_floats_set_current_tag{#tag}%
    \strc_floats_reset_variables
    % save
-   \edef\m_location    {\floatcaptionparameter\c!location}%
-   \edef\m_topoffset   {\floatcaptionparameter\c!topoffset}%
-   \edef\m_bottomoffset{\floatcaptionparameter\c!bottomoffset}%
-   \edef\m_freeregion  {\floatcaptionparameter\c!freeregion}%
+   \edef\p_location    {\floatcaptionparameter\c!location}%
+   \edef\p_topoffset   {\floatcaptionparameter\c!topoffset}%
+   \edef\p_bottomoffset{\floatcaptionparameter\c!bottomoffset}%
+   \edef\P_freeregion  {\floatcaptionparameter\c!freeregion}%
    % preset
    \resetfloatcaptionparameter      \c!location
    \setexpandedfloatcaptionparameter\c!topoffset   {\floatparameter\c!topoffset}%
@@ -773,10 +773,10 @@
    \setexpandedfloatparameter\c!bottomoffset{\floatcaptionparameter\c!bottomoffset}%
    \setexpandedfloatparameter\c!freeregion  {\floatcaptionparameter\c!freeregion}%
    % restore
-   \letfloatcaptionparameter\c!location    \m_location
-   \letfloatcaptionparameter\c!topoffset   \m_topoffset
-   \letfloatcaptionparameter\c!bottomoffset\m_bottomoffset
-   \letfloatcaptionparameter\c!freeregion  \m_freeregion
+   \letfloatcaptionparameter\c!location    \p_location
+   \letfloatcaptionparameter\c!topoffset   \p_topoffset
+   \letfloatcaptionparameter\c!bottomoffset\p_bottomoffset
+   \letfloatcaptionparameter\c!freeregion  \P_freeregion
    %
    \strc_floats_analyze_location
    \doifelseinset\v!split\floatlocation\strc_floats_place_next_box_split\strc_floats_place_next_box_normal

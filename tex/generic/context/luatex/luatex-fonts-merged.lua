@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2023-02-23 21:23
+-- merge date  : 2023-03-06 14:44
 
 do -- begin closure to overcome local limits and interference
 
@@ -2952,9 +2952,23 @@ function file.withinbase(path)
  end
  return true
 end
-local symlinkattributes=lfs.symlinkattributes
-function lfs.readlink(name)
- return symlinkattributes(name,"target") or nil
+do
+ local symlinktarget=lfs.symlinktarget  
+ local symlinkattributes=lfs.symlinkattributes 
+ if symlinktarget then
+  function lfs.readlink(name)
+   local target=symlinktarget(name)
+   return name~=target and name or nil
+  end
+ elseif symlinkattributes then
+  function lfs.readlink(name)
+   return symlinkattributes(name,"target") or nil
+  end
+ else
+  function lfs.readlink(name)
+   return nil
+  end
+ end
 end
 
 end -- closure

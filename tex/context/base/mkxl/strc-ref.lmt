@@ -18,7 +18,7 @@ local format, gmatch, match, strip = string.format, string.gmatch, string.match,
 local floor = math.floor
 local rawget, tonumber, type, next = rawget, tonumber, type, next
 local lpegmatch = lpeg.match
-local insert, remove, copytable = table.insert, table.remove, table.copy
+local insert, remove, copytable, sortedhash = table.insert, table.remove, table.copy, table.sortedhash
 local formatters = string.formatters
 local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
 
@@ -129,6 +129,9 @@ local c_realpageno               = texiscount("realpageno")
 local c_locationcount            = texiscount("locationcount")
 local c_locationorder            = texiscount("locationorder")
 local c_lastdestinationattribute = texiscount("lastdestinationattribute")
+
+local p_splitter = lpeg.splitat(":")
+local p_lower    = lpeg.patterns.utf8lower
 
 local context                      = context
 
@@ -494,7 +497,7 @@ implement {
 
 -- no metatable here .. better be sparse
 
-local function register_from_list(collected,derived,pages,sections)
+local function register_from_list(collected,derived,external)
     local derived_g = derived[""] -- global
     local derived_p = nil
     local derived_c = nil
@@ -556,11 +559,24 @@ local function register_from_list(collected,derived,pages,sections)
     end
 end
 
-references.registerfromlist = function(collected,pages,sections)
-    register_from_list(collected,derived,pages,sections)
+function references.integrate(utilitydata)
+    local filename = utilitydata.comment.file
+    if filename then
+        -- lists are already internalized
+        local structures = utilitydata.structures
+        if structures then
+            local lists = structures.lists.collected
+            if lists then
+                register_from_list(lists,derived,filename)
+            end
+        end
+    end
 end
 
-references.registerinitializer(function() register_from_list(lists.collected,derived) end)
+references.registerinitializer(function()
+    -- the main document
+    register_from_list(lists.collected,derived)
+end)
 
 -- tracing
 
@@ -953,7 +969,8 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
                 local var = splitreference(ri)
                 if var then
                     var.reference = ri
-                    local vo, vi = var.outer, var.inner
+                    local vo = var.outer
+                    local vi = var.inner
                     -- we catch this here .. it's a way to pass references with commas
                     if vi == "name" then
                         local arguments = var.arguments
@@ -1154,11 +1171,14 @@ local function loadproductreferences(productname,componentname,utilitydata)
                     report_importing("registering %s reference, kind %a, name %a, prefix %a, reference %a",
                         "product","regular",productname,prefix,reference)
                 end
-                if not reference.sectiondata then
-                    reference.sectiondata = sections[reference.section or false]
-                end
-                if not reference.pagedata then
-                    reference.pagedata = pages[reference.realpage or false]
+                local references = data.references
+                if references then
+                    if not references.sectiondata then
+                        references.sectiondata = sections[references.section or false]
+                    end
+                    if not references.pagedata then
+                        references.pagedata = pages[references.realpage or false]
+                    end
                 end
             end
         end
@@ -1296,25 +1316,36 @@ end)
 
 function references.loadpresets(product,component) -- we can consider a special components hash
     if product and component and product~= "" and component ~= "" and not productdata.product then -- maybe: productdata.filename ~= filename
-        productdata.product = product
+        productdata.product   = product
         productdata.component = component
         -- todo: use other locator
-        local fullname = file.replacesuffix(product,"tuc")
-        if lfs.isfile(fullname) then
-            local utilitydata = job.loadother(fullname)
-            if utilitydata then
-                if trace_importing then
-                    report_importing("loading references for component %a of product %a from %a",component,product,fullname)
-                end
-                loadproductvariables (product,component,utilitydata)
-                loadproductreferences(product,component,utilitydata)
-                loadproductcomponents(product,component,utilitydata)
+        local utilitydata = job.loadother(product)
+        if utilitydata then
+            if trace_importing then
+                report_importing("loading references for component %a of product %a",component,product)
             end
+            loadproductvariables (product,component,utilitydata)
+            loadproductcomponents(product,component,utilitydata)
+            loadproductreferences(product,component,utilitydata)
+--             loadproductcomponents(product,component,utilitydata)
         end
     end
 end
 
 references.productdata = productdata
+
+implement {
+    name      = "usereferences",
+    public    = true,
+    protected = true,
+    arguments = "optional",
+    actions   = function(product)
+        local utilitydata = job.loadother(product)
+        if utilitydata then
+            loadexternalreferences(product,utilitydata)
+        end
+    end
+}
 
 local useproduct = commands.useproduct
 
@@ -1390,6 +1421,10 @@ local function report_identify_outer(set,var,i,type)
             report_identifying("type %a, reference %a, index %a, prefix %a, kind %a",type,reference,i,prefix,kind)
         end
     end
+end
+
+local function report_identify_auto(set,var,i,type)
+    report_identifying("type %a, reference %a, using auto outer %a",type,reference,var.outer)
 end
 
 local function identify_special(set,var,i)
@@ -1547,6 +1582,61 @@ local function unprefixed_inner(set,var,prefix,collected,derived,tobesaved)
     return var
 end
 
+local function identify_auto(set,var,i)
+    local inner  = var.inner
+    local prefix = set.prefix or ""
+    if prefix == "" then
+        prefix, inner = lpegmatch(p_splitter,inner)
+        if not inner then
+            inner  = var.inner
+            prefix = false
+        end
+    end
+    local function okay(o,where)
+        var.outer = o
+        if trace_identifying then
+            report_identify_auto(set,var,i,where)
+        end
+        return true
+    end
+    for o, odata in sortedhash(externals) do
+        if o == outer or not odata then
+            -- skip this one
+        elseif prefix and prefix ~= "" then
+            local pdata = odata[prefix]
+            if pdata then
+                local r = pdata[inner]
+                if r then
+                    return okay(o,"2h")
+                end
+            end
+            -- escape from prefix
+--             local pdata = odata[""]
+--             if pdata then
+--                 local r = pdata[inner]
+--                 if r then
+--                     return okay(o,"2h")
+--                 end
+--             end
+        else
+            for p, pdata in sortedhash(odata) do
+                local r = pdata[inner]
+                if r then
+                    return okay(o,"2j")
+                end
+            end
+            local pdata = odata[""]
+            if pdata then
+                r = pdata[inner]
+                if r then
+                    return okay(o,"2k")
+                end
+            end
+        end
+    end
+    return false
+end
+
 local function identify_outer(set,var,i)
     local outer    = var.outer
     local inner    = var.inner
@@ -1587,18 +1677,6 @@ local function identify_outer(set,var,i)
             end
         end
     end
-    local external = productdata.componentreferences[outer]
-    if external then
-        local v = identify_inner(set,var,"",external)
-        if v then
-            v.kind = "outer with inner"
-            set.external = true
-            if trace_identifying then
-                report_identify_outer(set,v,i,"2c")
-            end
-            return v
-        end
-    end
     local external = productdata.productreferences[outer]
     if external then
         local vi = external[inner]
@@ -1610,6 +1688,18 @@ local function identify_outer(set,var,i)
                 report_identify_outer(set,var,i,"2d")
             end
             return var
+        end
+    end
+    local external = productdata.componentreferences[outer]
+    if external then
+        local v = identify_inner(set,var,"",external)
+        if v then
+            v.kind = "outer with inner"
+            set.external = true
+            if trace_identifying then
+                report_identify_outer(set,v,i,"2c")
+            end
+            return v
         end
     end
     -- the rest
@@ -1675,6 +1765,7 @@ end
 local function identify_inner_or_outer(set,var,i)
     -- here we fall back on product data
     local inner = var.inner
+
     if inner and inner ~= "" then
 
         -- first we look up in collected and derived using the current prefix
@@ -1687,6 +1778,10 @@ local function identify_inner_or_outer(set,var,i)
                 report_identify_outer(set,v,i,"4a")
             end
             return v
+        end
+
+        if var.inner == var.reference and identify_auto(set,var,i) and var.outer and var.outer ~= "" then
+            return identify_outer(set,var,i)
         end
 
         -- nest we look at each component (but we can omit the already consulted one
@@ -1861,6 +1956,9 @@ local function identify(prefix,reference)
         elseif spe then
             var = identify_special(set,var,i)
         elseif var.outer then
+            if var.outer == "auto" then
+                identify_auto(set,var,i)
+            end
             var = identify_outer(set,var,i)
         elseif var.arguments then
             var = identify_arguments(set,var,i)
@@ -2836,9 +2934,6 @@ function specials.section(var,actions)
 end
 
 -- experimental:
-
-local p_splitter = lpeg.splitat(":")
-local p_lower    = lpeg.patterns.utf8lower
 
 -- We can cache lowercased titles which saves a lot of time, but then
 -- we can better have a global cache with weak keys.

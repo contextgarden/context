@@ -1037,38 +1037,68 @@ function registers.finalize(data,options) -- maps character to index (order)
     data.result = split
 end
 
--- local function analyzeregister(class,options)
---     local data = collected[class]
---     if data and data.entries then
---         options = options or { }
---         sorters.setlanguage(options.language,options.method,options.numberorder)
---         registers.filter(data,options)   -- filter entries into results (criteria)
---         registers.prepare(data,options)  -- adds split table parallel to list table
---         registers.sort(data,options)     -- sorts results
---         registers.unique(data,options)   -- get rid of duplicates
---         registers.finalize(data,options) -- split result in ranges
---         data.metadata.sorted = true
---         return data.metadata.nofsorted or 0
---     else
---         return 0
---     end
--- end
+local used = { }
+
+function registers.use(tag,filename,class,prefix)
+    used[tag] = {
+        class    = class,
+        filename = filename,
+        data     = job.loadother(filename),
+        prefix   = prefix or class,
+    }
+end
+
+implement {
+    name      = "useregister",
+    arguments = "4 strings",
+    actions   = registers.use,
+}
+
+implement {
+    name      = "registerprefix",
+    arguments = "string",
+    actions   = function(tag)
+        local u = used[tag]
+        if u then
+            context(u.prefix)
+        end
+    end
+}
 
 local function analyzeregister(class,options)
     local data = rawget(collected,class)
     if not data then
-        local list     = utilities.parsers.settings_to_array(class)
-        local entries  = { }
-        local metadata = false
+        local list       = utilities.parsers.settings_to_array(class)
+        local entries    = { }
+        local nofentries = 0
+        local metadata   = false
         for i=1,#list do
             local l = list[i]
+            local u = used[l]
             local d = collected[l]
-            local e = d.entries
-            for i=1,#e do
-                entries[#entries+1] = e[i]
+            if u then
+                local collected = u.data.structures.registers.collected
+                local class     = u.class
+                if collected and class then
+                    d = collected[class]
+                end
             end
-            if not metadata then
-                metadata = d.metadata
+            if d then
+                local e = d.entries
+                local u = u and { u.prefix } or nil
+                for i=1,#e do
+                    local ei = e[i]
+                    nofentries = nofentries + 1
+                    entries[nofentries] = ei
+                    if u then
+                        local eil = ei.list
+                        eil[#eil+1] = u
+                        ei.external = l -- this is the (current) abstract tag, used for prefix
+                    end
+                end
+                if not metadata then
+                    metadata = d.metadata
+                end
             end
         end
         data = {
@@ -1080,11 +1110,11 @@ local function analyzeregister(class,options)
     if data and data.entries then
         options = options or { }
         sorters.setlanguage(options.language,options.method,options.numberorder)
-        registers.filter(data,options)   -- filter entries into results (criteria)
-        registers.prepare(data,options)  -- adds split table parallel to list table
-        registers.sort(data,options)     -- sorts results
-        registers.unique(data,options)   -- get rid of duplicates
-        registers.finalize(data,options) -- split result in ranges
+        registers.filter(data,options)      -- filter entries into results (criteria)
+        registers.prepare(data,options)     -- adds split table parallel to list table
+        registers.sort(data,options)        -- sorts results
+        registers.unique(data,options)      -- get rid of duplicates
+        registers.finalize(data,options)    -- split result in ranges
         data.metadata.sorted = true
         return data.metadata.nofsorted or 0
     else
@@ -1131,12 +1161,12 @@ local function pagerange(f_entry,t_entry,is_last,prefixspec,pagespec)
     ctx_registerpagerange(
         f_entry.metadata.name or "",
         f_entry.processors and f_entry.processors[2] or "",
-        fer.internal or 0,
+        f_entry.external or fer.internal or 0,
         fer.realpage or 0,
         function()
             h_prefixpage(f_entry,prefixspec,pagespec)
         end,
-        ter.internal or 0,
+        t_entry.external or ter.internal or 0,
         ter.lastrealpage or ter.realpage or 0,
         function()
             if is_last then
@@ -1153,7 +1183,7 @@ local function pagenumber(entry,prefixspec,pagespec)
     ctx_registeronepage(
         entry.metadata.name or "",
         entry.processors and entry.processors[2] or "",
-        er.internal or 0,
+        entry.external or er.internal or 0,
         er.realpage or 0,
         function() h_prefixpage(entry,prefixspec,pagespec) end
     )
@@ -1162,9 +1192,10 @@ end
 local function packed(f_entry,t_entry)
     local fer = f_entry.references
     local ter = t_entry.references
+-- todo: make sure we don't end up here with external
     ctx_registerpacked(
-        fer.internal or 0,
-        ter.internal or 0
+        f_entry.external or fer.internal or 0,
+        t_entry.external or ter.internal or 0
     )
 end
 
@@ -1285,6 +1316,10 @@ function registers.flush(data,options,prefixspec,pagespec)
                  -- we have an \seeindex{Foo}{Bar} without Foo being defined anywhere .. somehow this message is wrong
                  -- report_registers("invalid see entry in register %a, reference %a",entry.metadata.name,list[1][1])
                 end
+            end
+            if entry.external then
+                local list = entry.list
+                list[#list] = nil
             end
         end
         -- ok, this is tricky: we use e[i] delayed so we need it to be local
@@ -1497,7 +1532,7 @@ function registers.flush(data,options,prefixspec,pagespec)
                     local seeword   = entry.seeword
                     local seetext   = seeword.text or ""
                     local processor = seeword.processor or (entry.processors and entry.processors[1]) or ""
-                    local seeindex  = entry.references.seeindex or ""
+                    local seeindex  = entry.external or entry.references.seeindex or ""
                     ctx_registerseeword(
                         metadata.name or "",
                         i,
@@ -1696,3 +1731,46 @@ interfaces.implement {
     arguments = { "string", "string", "integer" },
     actions   = { registers.findinternal, context },
 }
+
+-- external data
+
+function registers.integrate(utilitydata)
+    local filename = utilitydata.comment.file
+    if filename then
+        local structures = utilitydata.structures
+        if structures then
+            local registers = structures.registers.collected or { }
+            if registers then
+                local sections = structures.sections.collected or { }
+                local pages    = structures.pages   .collected or { }
+                for class, register in next, registers do
+                    local entries = register.entries
+                    if entries then
+                        for i=1,#entries do
+                            local entry      = entries[i]
+                            local references = entry.references
+                            if references then
+                                local section  = references.section
+                                local realpage = references.realpage
+                                -- maybe entry.* instead:
+                                references.sectiondata = section  and sections[section]
+                                references.pagedata    = realpage and pages[realpage]
+                                -- get rid of these, maybe even crash as these are bogus
+                             -- references.internal = nil -- or 0
+                             -- references.realpage = nil -- or 0
+                             -- references.section  = nil -- or 0
+                                if references.x then
+                                    references.x = nil
+                                end
+                                if references.y then
+                                    references.y = nil
+                                end
+                                references.external = filename -- not really needed
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end

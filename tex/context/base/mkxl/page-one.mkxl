@@ -366,6 +366,10 @@
 
 \protected\def\page_one_command_set_top_insertions
   {\bgroup
+   % a bit strange place but okay
+   \page_one_command_set_always_insertions_top
+   \page_one_command_set_always_insertions_bottom
+   %
    \ifconditional\c_page_floats_some_waiting
      \noffloatinserts\zerocount
      \let\totaltopinserted\!!zeropoint
@@ -756,22 +760,79 @@
         \fi
       \fi}}
 
+% \def\page_one_place_float_otherwise_else
+%   {\doifelseinset\v!always\floatlocationmethod
+%      {\page_otr_command_check_if_float_fits
+%       \ifconditional\c_page_floats_room
+%         \page_one_place_float_auto_top_bottom
+%       \else
+%         \showmessage\m!floatblocks9\empty
+%         \page_floats_resave\s!text
+%       \fi}
+%      {\page_otr_command_check_if_float_fits
+%       \ifconditional\c_page_floats_room
+%         \page_one_place_float_auto_top_bottom
+%       \else
+%         \page_floats_save\s!text
+%         \nonoindentation
+%       \fi}}
+
+% Some new always top/bottom trickery.
+%
+% Musical timestamp: 2023/3/2, listening to / watching Camille Bigeault on YT
+% (ANATMAN, Room 8, and others), a bit late discovery, creative drumming! Gavin
+% Harrison level creativity.
+
 \def\page_one_place_float_otherwise_else
-  {\doifelseinset\v!always\floatlocationmethod
-     {\page_otr_command_check_if_float_fits
-      \ifconditional\c_page_floats_room
-        \page_one_place_float_auto_top_bottom
-      \else
-        \showmessage\m!floatblocks9\empty
-        \page_floats_resave\s!text
-      \fi}
-     {\page_otr_command_check_if_float_fits
-      \ifconditional\c_page_floats_room
-        \page_one_place_float_auto_top_bottom
-      \else
-        \page_floats_save\s!text
-        \nonoindentation
-      \fi}}
+   {\doifelseinset\v!always\floatlocationmethod
+      {\page_otr_command_check_if_float_fits
+       \ifconditional\c_page_floats_room
+         \page_one_place_float_auto_top_bottom
+       \else
+         \showmessage\m!floatblocks9\empty
+         \doifelseinset\v!top\floatlocationmethod
+           {\page_floats_save\s!top}
+           {\doifelseinset\v!bottom\floatlocationmethod
+              {\page_floats_save\s!bottom}
+              {\page_floats_resave\s!text}}%
+       \fi}
+      {\page_otr_command_check_if_float_fits
+       \ifconditional\c_page_floats_room
+         \page_one_place_float_auto_top_bottom
+       \else
+         \page_floats_save\s!text
+         \nonoindentation
+       \fi}}
+
+\protected\def\page_one_command_set_always_insertions_bottom_indeed
+  {\page_floats_flush\s!bottom\plusone
+   \floatingpenalty\zerocount
+   \page_inserts_inject\namedinsertionnumber\s!bottomfloat\bgroup
+     \forgetall
+     \blank[\rootfloatparameter\c!spacebefore]%
+     \page_otr_command_flush_float_box
+   \egroup}
+
+\protected\def\page_one_command_set_always_insertions_bottom % will become an otr command
+  {\ifzero\nofstackedfloatsincategory\s!bottom\else
+     \page_one_command_set_always_insertions_bottom_indeed
+     \expandafter\page_one_command_set_always_insertions_bottom
+   \fi}
+
+\protected\def\page_one_command_set_always_insertions_top_indeed
+  {\page_floats_flush\s!top\plusone
+   \floatingpenalty\zerocount
+   \page_inserts_inject\namedinsertionnumber\s!bottomfloat\bgroup
+     \forgetall
+     \blank[\rootfloatparameter\c!spacebefore]%
+     \page_otr_command_flush_float_box
+   \egroup}
+
+\protected\def\page_one_command_set_always_insertions_top % will become an otr command
+  {\ifzero\nofstackedfloatsincategory\s!top\else
+     \page_one_command_set_always_insertions_top_indeed
+     \expandafter\page_one_command_set_always_insertions_top
+   \fi}
 
 \mutable\def\floatautofactor{.5}
 

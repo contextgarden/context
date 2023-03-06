@@ -14,6 +14,7 @@
     # include <ctype.h>
     # include <io.h>
     # include <shellapi.h>
+    # include <fileapi.h>
 
     LPWSTR aux_utf8_to_wide(const char *utf8str) {
         if (utf8str) {
@@ -123,7 +124,7 @@
         if (file) {
             char *path = NULL;
             char buffer[MAX_PATH];
-            GetModuleFileName(NULL,buffer,sizeof(buffer));
+            GetModuleFileName(NULL, buffer, sizeof(buffer));
             path = lmt_memory_strdup(buffer);
             if (strlen(path) > 0) {
                 for (size_t i = 0; i < strlen(path); i++) {
@@ -135,6 +136,31 @@
             }
         }
         return lmt_memory_strdup(".");
+    }
+
+    /*tex We alwways return a copy so that we're consistent with windows/unix. */
+
+ // # if defined(__MINGW64__) || defined(__MINGW32__)
+ //     extern DWORD GetFinalPathNameByHandleW(HANDLE hFile, LPWSTR lpszFilePath, DWORD cchFilePath, DWORD dwFlags);
+ // # endif 
+
+    char *aux_utf8_readlink(const char *file)
+    {
+        LPWSTR wide = aux_utf8_to_wide(file);
+        HANDLE handle = CreateFileW(wide, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        char *link = NULL;
+        if (handle == INVALID_HANDLE_VALUE) {
+            LPWSTR path = (LPWSTR) lmt_memory_malloc((MAX_PATH+1) * sizeof(WCHAR));
+            DWORD size = GetFinalPathNameByHandleW(handle, path, MAX_PATH, VOLUME_NAME_NT);
+            if (size > 0 && size < MAX_PATH) {
+                path[size] = '\0';
+                link = aux_utf8_from_wide(path);
+            }
+            lmt_memory_free(path);
+        }
+        CloseHandle(handle);
+        lmt_memory_free(wide);
+        return link ? link : lmt_memory_strdup(file);
     }
 
 # else
@@ -207,6 +233,31 @@
                 return lmt_memory_strdup("."); /* ok? */
             }
         }
+    }
+
+    /*tex We alwways return a copy so that we're consistent with windows/unix. */
+
+    char *aux_utf8_readlink(const char *file)
+    {
+        int size = 256;
+        while (1) {
+            char *target = lmt_memory_malloc(size);
+            if (! target) {
+                break;
+            } else {
+                int tsize = readlink(file, target, size);
+                if (tsize <= 0) {
+                    lmt_memory_free(target);
+                    break;
+                } else if (tsize < size) {
+                    target[tsize] = '\0';
+                    return target;
+                } else {
+                    size *= 2;
+                }
+            }
+        }
+        return lmt_memory_strdup(file);
     }
 
 # endif

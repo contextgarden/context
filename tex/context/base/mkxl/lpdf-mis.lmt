@@ -415,14 +415,7 @@ local function documentspecification()
     addtocatalog("Lang",    pdfstring(tokens.getters.macro("currentmainlanguage")))
 end
 
--- temp hack: the mediabox is not under our control and has a precision of 5 digits
-
-local factor  = number.dimenfactors.bp
-local f_value = formatters["%.6N"]
-
-local function boxvalue(n) -- we could share them
-    return pdfverbose(f_value(factor * n))
-end
+local bpfactor = number.dimenfactors.bp
 
 local function pagespecification()
     local canvas      = getcanvas()
@@ -439,10 +432,10 @@ local function pagespecification()
     local function extrabox(WhatBox,offset,always)
         if offset ~= 0 or always then
             addtopageattributes(WhatBox, pdfarray {
-                boxvalue(llx + offset),
-                boxvalue(lly + offset),
-                boxvalue(urx - offset),
-                boxvalue(ury - offset),
+                (llx + offset) * bpfactor,
+                (lly + offset) * bpfactor,
+                (urx - offset) * bpfactor,
+                (ury - offset) * bpfactor,
             })
         end
     end

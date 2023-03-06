@@ -1932,36 +1932,134 @@
 %     \startformula[functionstyle=sans] \sin(x) = 10 \stopformula
 % \stopTEXpage
 
-\protected\def\math_function_handle#1#2#3%
+% \protected\def\math_function_handle#1#2#3%
+%   {\begingroup
+%    \resetdummyparameter\c!mathlimits
+%    \getdummyparameters[#1]%
+%    \edef\p_limits{\dummyparameter\c!mathlimits}%
+%    \mathatom
+%         mathfont
+%         class \mathfunctioncode
+%         \ifx\p_limits\v!no
+%           nolimits
+%         \orelse\ifx\p_limits\v!yes
+%           limits
+%         \orelse\ifx\p_limits\v!auto
+%           nolimits
+%           limits
+%         \fi
+%      \bgroup % textfont
+%        \math_tags_mfunctionlab{#3}\c_apply_function
+%        \usemathematicscolorparameter\c!functioncolor
+%        \edef\p_functionstyle{\mathematicsparameter\c!functionstyle}%
+%        \ifempty\p_functionstyle
+%          \expandafter\math_upright
+%        \orelse\ifcsname\??alternativestyle\p_functionstyle\endcsname
+%          \expandafter\lastnamedcs
+%        \else
+%          \expandafter\p_functionstyle
+%        \fi
+%        #2{#3}%
+%      \egroup
+%    \endgroup}
+
+\installcorenamespace{mathfunction}
+
+\installcommandhandler \??mathfunction {mathfunction} \??mathfunction
+
+\appendtoks
+    \frozen\protected\edefcsname\currentmathfunction\endcsname{\math_function_handle\plusone{\currentmathfunction}{}}% \instance
+\to \everydefinemathfunction
+
+\aliased\let\setupmathfunctions\setupmathfunction
+
+\setupmathfunctions
+  [\c!color=\mathematicsparameter\c!functioncolor,
+   \c!style=\mathematicsparameter\c!functionstyle]
+
+\def\math_function_handle_normal#1#2#3%
   {\begingroup
-   \resetdummyparameter\c!mathlimits
-   \getdummyparameters[#1]%
-   \edef\p_limits{\dummyparameter\c!mathlimits}%
-   \mathatom
-        mathfont
-        class \mathfunctioncode
-        \ifx\p_limits\v!no
-          nolimits
-        \orelse\ifx\p_limits\v!yes
-          limits
-        \orelse\ifx\p_limits\v!auto
-          nolimits
-          limits
-        \fi
-     \bgroup % textfont
-       \math_tags_mfunctionlab{#3}\c_apply_function
-       \usemathematicscolorparameter\c!functioncolor
-       \edef\p_functionstyle{\mathematicsparameter\c!functionstyle}%
-       \ifempty\p_functionstyle
-         \expandafter\math_upright
-       \orelse\ifcsname\??alternativestyle\p_functionstyle\endcsname
-         \expandafter\lastnamedcs
-       \else
-         \expandafter\p_functionstyle
-       \fi
-       #2{#3}%
-     \egroup
+     \edef\currentmathfunction{#2}%
+     \setupcurrentmathfunction[#3]%
+     \edef\p_limits{\mathfunctionparameter\c!mathlimits}%
+     \mathatom
+          mathfont
+          class \mathfunctioncode
+          \ifx\p_limits\v!no
+            nolimits
+          \orelse\ifx\p_limits\v!yes
+            limits
+          \orelse\ifx\p_limits\v!auto
+            nolimits
+            limits
+          \fi
+       \bgroup % textfont
+%
+% for now we reserve command for languages and it completely bypasses
+% the atom!
+%
+% \edef\p_command{\mathfunctionparameter\c!command}%
+% \ifempty\p_command
+         \math_tags_mfunctionlab{#2}\c_apply_function
+         \usemathfunctioncolorparameter\c!color
+         \edef\p_functionstyle{\mathfunctionparameter\c!style}%
+         \ifempty\p_functionstyle
+           \expandafter\math_upright
+         \orelse\ifcsname\??alternativestyle\p_functionstyle\endcsname
+           \expandafter\lastnamedcs
+         \else
+           \expandafter\p_functionstyle
+         \fi
+         \ifcase#1\relax
+           \expandafter\firstofoneargument
+         \or
+           \expandafter\mathlabeltext
+         \fi{#2}%
+% \else
+%     \p_command\relax
+% \fi
+       \egroup
    \endgroup}
+
+\def\math_function_handle_language_indeed#1#2#3%
+  {\edef\currentmathfunction{#2}%
+   \setupcurrentmathfunction[#3]%
+   \edef\p_command{\mathfunctionparameter\c!command}%
+   \ifempty\p_command
+     \endgroup\math_function_handle_normal#1{#2}{#3}%
+   \else
+     \normalexpanded{\endgroup\p_command\expandafter}%
+   \fi}
+
+\def\math_function_handle_language#1#2%
+  {\begingroup
+   \let\math_function_handle\math_function_handle_language_indeed
+   \csname\currentmainlanguage:#2\endcsname}
+
+\tolerant\protected\def\math_function_handle#1#2#3%
+  {\ifcsname\currentmainlanguage:#2\endcsname
+     \expandafter\math_function_handle_language
+   \else
+     \expandafter\math_function_handle_normal
+   \fi#1{#2}{#3}}
+
+\permanent\tolerant\protected\def\mfunctionlabeltext[#1]%
+  {\math_function_handle\plusone{#1}{}}
+
+% \mfunction [settings][name]  [settings]{name}  [name]  {name}
+
+\permanent\tolerant\protected\def\mfunction[#1]%
+  {\ifhastok={#1}%
+     \expandafter\mfunction_yes
+   \orelse\ifparameter#1\or
+     \expandafter\mfunction_nop
+   \else
+     \expandafter\mfunction_yop
+   \fi{#1}}
+
+\permanent\tolerant\protected\def\mfunction_yes#1#*[#2]#;#3{\math_function_handle\zerocount{#2#3}{#1}}
+\permanent\protected\def\mfunction_nop                   #1{\math_function_handle\zerocount{#1}{}}
+\permanent\protected\def\mfunction_yop                 #1#2{\math_function_handle\zerocount{#2}{}}
 
 \appendtoks
     \edef\p_functionstyle{\formulaparameter\c!functionstyle}%
@@ -1973,12 +2071,6 @@
         \letmathematicsparameter\c!functioncolor\p_functioncolor
     \fi
 \to \everybeforedisplayformula
-
-\permanent\tolerant\protected\def\mfunction         [#1]{\math_function_handle{#1}\firstofoneargument}
-\permanent\tolerant\protected\def\mfunctionlabeltext[#1]{\math_function_handle{#1}\mathlabeltext}
-
-\permanent\tolerant\protected\def\definemathfunction[#1]#*[#2]%
-  {\frozen\protected\defcsname#1\endcsname{\math_function_handle{#2}\mathlabeltext{#1}}} % \instance
 
 \let\math_tags_mfunctiontxt\gobbletwoarguments
 \let\math_tags_mfunctionlab\gobbletwoarguments

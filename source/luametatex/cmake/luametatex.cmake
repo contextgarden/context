@@ -25,9 +25,13 @@ target_link_libraries(luametatex
     miniz
 )
 
-target_link_libraries(luametatex
-    ${CMAKE_DL_LIBS}
-)
+if (LUAMETATEX_NOLDL) 
+    # mingw ucrt
+else()
+    target_link_libraries(luametatex
+        ${CMAKE_DL_LIBS}
+    )
+endif()
 
 install(TARGETS luametatex
     EXPORT luametatex

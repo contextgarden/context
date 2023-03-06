@@ -98,6 +98,22 @@ function nodes.takebox(id)
     end
 end
 
+if not nuts.migratebox then -- todo: add to nodes.direct, or maybe getmigrate, setmigrate
+
+    local setpre  = nuts.setpre
+    local setpost = nuts.setpost
+    local getpre  = nuts.getpre
+    local getpost = nuts.getpost
+
+    function nuts.migratebox(source,target)
+        setpre(target,getpre(source))
+        setpost(target,getpost(source))
+        setpre(source)
+        setpost(source)
+    end
+
+end
+
 local splitbox = tex.splitbox
 nodes.splitbox = splitbox
 

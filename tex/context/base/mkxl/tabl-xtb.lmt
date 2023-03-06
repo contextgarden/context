@@ -79,6 +79,7 @@ local copynodelist        = nuts.copylist
 local hpacknodelist       = nuts.hpack
 local flushnodelist       = nuts.flushlist
 local takebox             = nuts.takebox
+local migratebox          = nuts.migratebox
 
 local nodepool            = nuts.pool
 
@@ -562,7 +563,7 @@ end
 local function showwidths(where,widths,autowidths)
     local result = { }
     for i=1,#widths do
-        result[#result+1] = format("%12s%s",points(widths[i]),autowidths[i] and "*" or " ")
+        result[i] = format("%12s%s",points(widths[i]),autowidths[i] and "*" or " ")
     end
     return report_xtable("%s widths: %s",where,concat(result," "))
 end
@@ -872,6 +873,7 @@ function xtables.construct()
              -- setwhd(list,0,0,0)
                 -- faster:
                 local h = new_hlist(list)
+                migratebox(list,h)
                 list = h
                 --
                 if start then

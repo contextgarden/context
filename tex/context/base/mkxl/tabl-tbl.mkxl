@@ -1997,23 +1997,23 @@
      \edef\currenttabulatemove{#1}%
      \setupcurrenttabulatemove[#2]%
    \fi
-   \edef\m_orientation{\theorientation{\tabulatemoveparameter\c!orientation}}%
-   \edef\m_xoffset    {\tabulatemoveparameter\c!xoffset}%
-   \edef\m_yoffset    {\tabulatemoveparameter\c!yoffset}%
+   \edef\p_orientation{\theorientation{\tabulatemoveparameter\c!orientation}}%
+   \edef\p_xoffset    {\tabulatemoveparameter\c!xoffset}%
+   \edef\p_yoffset    {\tabulatemoveparameter\c!yoffset}%
    \scratchyoffset
-     \ifx\m_yoffset\v!depth
+     \ifx\p_yoffset\v!depth
        -\strutdp
-     \orelse\ifx\m_yoffset\v!height
+     \orelse\ifx\p_yoffset\v!height
        -\strutht
      \else
-       \m_yoffset
+       \p_yoffset
      \fi
    \relax
-   \scratchxoffset\m_xoffset\relax
+   \scratchxoffset\p_xoffset\relax
    \xdef\tabl_tabulate_tm
      {\ifzeropt\scratchxoffset\else\s!xmove  \the\scratchxoffset\fi % or move
       \ifzeropt\scratchyoffset\else\s!ymove  \the\scratchyoffset\fi % or move
-      \ifzero  \m_orientation \else\s!orientation\m_orientation \fi
+      \ifzero  \p_orientation \else\s!orientation\p_orientation \fi
      }%
    \endlocalcontrol
    \noalign\tabl_tabulate_tm{}}

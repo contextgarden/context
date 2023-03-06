@@ -27,6 +27,8 @@
 %     \part{second} \chapter{gamma} \section{a} \section{b} \subsection{x} \subsection{y} \chapter{delta}
 % \stoptext
 
+\defineseparatorset  [\v!none] [] []
+
 \defineseparatorset  [\s!default] [] [.]
 \defineconversionset [\s!default] [] [numbers]
 \defineresetset      [\s!default] [] [1] % each level

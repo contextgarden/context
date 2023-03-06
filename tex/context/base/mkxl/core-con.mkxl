@@ -86,14 +86,14 @@
 \permanent\def\Alphabeticnumerals#1{\clf_Alphabetic\numexpr#1\relax{}}
 
 \permanent\def\thainumerals      #1{\clf_alphabetic\numexpr#1\relax{thai}}
-\permanent\def\devanagarinumerals#1{\clf_decimals\numexpr#1\relax{devanagari}}
-\permanent\def\malayalamnumerals #1{\clf_decimals\numexpr#1\relax{malayalam}}
-\permanent\def\tamilnumerals     #1{\clf_decimals\numexpr#1\relax{tamil}}
-\permanent\def\kannadanumerals   #1{\clf_decimals\numexpr#1\relax{kannada}}
-\permanent\def\telugunumerals    #1{\clf_decimals\numexpr#1\relax{telugu}}
-\permanent\def\bengalinumerals   #1{\clf_decimals\numexpr#1\relax{bengali}}
-\permanent\def\gujaratinumerals  #1{\clf_decimals\numexpr#1\relax{gujarati}}
-\permanent\def\gurmurkhinumerals #1{\clf_decimals\numexpr#1\relax{gurmurkhi}}
+\permanent\def\devanagarinumerals#1{\clf_decimals  \numexpr#1\relax{devanagari}}
+\permanent\def\malayalamnumerals #1{\clf_decimals  \numexpr#1\relax{malayalam}}
+\permanent\def\tamilnumerals     #1{\clf_decimals  \numexpr#1\relax{tamil}}
+\permanent\def\kannadanumerals   #1{\clf_decimals  \numexpr#1\relax{kannada}}
+\permanent\def\telugunumerals    #1{\clf_decimals  \numexpr#1\relax{telugu}}
+\permanent\def\bengalinumerals   #1{\clf_decimals  \numexpr#1\relax{bengali}}
+\permanent\def\gujaratinumerals  #1{\clf_decimals  \numexpr#1\relax{gujarati}}
+\permanent\def\gurmurkhinumerals #1{\clf_decimals  \numexpr#1\relax{gurmurkhi}}
 \permanent\def\tibetannumerals   #1{\clf_alphabetic\numexpr#1\relax{tibetan}}
 \permanent\def\greeknumerals     #1{\clf_alphabetic\numexpr#1\relax{greek}}
 \permanent\def\Greeknumerals     #1{\clf_Alphabetic\numexpr#1\relax{greek}}
@@ -101,6 +101,9 @@
 \permanent\def\persiannumerals   #1{\clf_alphabetic\numexpr#1\relax{persian}}
 \permanent\def\arabicdecimals    #1{\clf_decimals  \numexpr#1\relax{arabic}}
 \permanent\def\persiandecimals   #1{\clf_decimals  \numexpr#1\relax{persian}}
+
+\permanent\def\mathgreeknumerals #1{\im{\clf_alphabetic\numexpr#1\relax{greek}}}
+\permanent\def\mathGreeknumerals #1{\im{\clf_Alphabetic\numexpr#1\relax{greek}}}
 
 \aliased  \let\arabicexnumerals     \persiannumerals
 
@@ -711,6 +714,9 @@
 \defineconversion [\v!greek]             [\greeknumerals]
 \defineconversion [\v!Greek]             [\Greeknumerals]
 
+\defineconversion [\s!math:\v!greek]     [\mathgreeknumerals]
+\defineconversion [\s!math:\v!Greek]     [\mathGreeknumerals]
+
 \defineconversion [g]                    [\greeknumerals]
 \defineconversion [G]                    [\Greeknumerals]
 
@@ -744,6 +750,9 @@
 \defineconversion [arabicexnumerals]     [\arabicexnumerals]
 \defineconversion [arabicdecimals]       [\arabicdecimals]
 \defineconversion [persiandecimals]      [\persiandecimals]
+
+\defineconversion [mathgreeknumerals]    [\mathgreeknumerals]
+\defineconversion [mathGreeknumerals]    [\mathGreeknumerals]
 
 \defineconversion [koreannumerals]       [\koreannumerals]
 \defineconversion [koreanparennumerals]  [\koreanparenthesisnumerals] % for old times sake (for a while)

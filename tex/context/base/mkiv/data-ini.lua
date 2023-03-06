@@ -109,6 +109,26 @@ do
     ownbin  = file.collapsepath(ownbin)
     ownpath = file.collapsepath(ownpath)
 
+    -- We need to follow the symlink on osx - texlive. This only works luametatex and
+    -- lmtx so we might as wel forget abnotu luatex/mkiv there. The regular context
+    -- installation doesn't have this link issue.
+
+    local symlinktarget = lfs.symlinktarget
+
+    if symlinktarget then
+        while true do
+            local new = symlinktarget(ownpath) or ownpath
+            if new == ownpath then
+                break
+            else
+                ownpath = new
+            end
+        end
+        ownpath = file.collapsepath(ownpath)
+    else
+        lfs.symlinktarget = function() return nil end -- forget about it, luatex is frozen
+    end
+
     if not ownpath or ownpath == "" or ownpath == "unset" then
         ownpath = args[-1] or arg[-1]
         ownpath = ownpath and filedirname(gsub(ownpath,"\\","/"))

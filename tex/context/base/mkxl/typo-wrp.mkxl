@@ -59,4 +59,17 @@
     \let\spac_crlf\space
 \to \everysimplifycommands
 
+% experiment, triggered by MS:
+%
+% \type{f\kern\tightfitcompensation\high{x}}
+% \type{f\tightfitboundary         \high{x}}
+
+% \tightfitcompensation : defined at the lua end
+
+\newboundary\c_tightfit_boundary
+
+\permanent\protected\def\tightfitboundary
+  {\clf_enabletighten
+   \boundary\c_tightfit_boundary}
+
 \protect \endinput

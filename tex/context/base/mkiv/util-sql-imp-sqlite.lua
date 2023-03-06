@@ -234,6 +234,7 @@ end
 local wraptemplate = [[
 local converters    = utilities.sql.converters
 local deserialize   = utilities.sql.deserialize
+local fromjson      = utilities.sql.fromjson
 
 local tostring      = tostring
 local tonumber      = tonumber

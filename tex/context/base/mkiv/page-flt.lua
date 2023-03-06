@@ -51,6 +51,8 @@ local function initialize()
     return {
         text      = { },
         page      = { },
+        top       = { },
+        bottom    = { },
         leftpage  = { },
         rightpage = { },
         somewhere = { },
@@ -317,11 +319,13 @@ function floats.checkedpagefloat(packed)
 end
 
 function floats.nofstacked(which)
-    return #stacks[which or default] or 0
+    local s = stacks[which or default]
+    return s and #s or 0
 end
 
 function floats.hasstacked(which)
-    return (#stacks[which or default] or 0) > 0
+    local s = stacks[which or default]
+    return (s and #s or 0) > 0
 end
 
 -- todo: check for digits !

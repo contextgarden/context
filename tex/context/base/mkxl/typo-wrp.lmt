@@ -9,7 +9,9 @@ if not modules then modules = { } end modules ['typo-wrp'] = {
 -- begin/end par wrapping stuff ... more to come
 
 local boundary_code     = nodes.nodecodes.boundary
+local glyph_code        = nodes.nodecodes.glyph
 local wordboundary_code = nodes.boundarycodes.word
+local userboundary_code = nodes.boundarycodes.user
 
 local nuts              = nodes.nuts
 
@@ -17,16 +19,25 @@ local findtail          = nuts.tail
 local getprev           = nuts.getprev
 local setnext           = nuts.setnext
 local getid             = nuts.getid
+local getdata           = nuts.getdata
+local isglyph           = nuts.isglyph
 local getsubtype        = nuts.getsubtype
 local getattr           = nuts.getattr
 local flushnodelist     = nuts.flushlist
+local traverse_boundary = nuts.traversers.boundary
+local insertnodebefore  = nuts.insertbefore
+local newkern           = nuts.pool.kern
+
+local fontdata          = fonts.hashes.identifiers
 
 local enableaction      = nodes.tasks.enableaction
+
+local implement         = interfaces.implement
 
 local wrappers          = { }
 typesetters.wrappers    = wrappers
 
-local trace_wrappers    = trackers.register("typesetters.wrappers",function(v) trace_wrappers = v end)
+local trace_wrappers      trackers.register("typesetters.wrappers",function(v) trace_wrappers = v end)
 local report            = logs.reporter("paragraphs","wrappers")
 
 -- In luametatex we don't have the parfilskip attached yet but we can have final glue
@@ -64,18 +75,86 @@ local function remove_dangling_crlf(head,tail)
     return head, tail
 end
 
-function wrappers.handler(head)
-    if head then
-        local tail = findtail(head)
-        head, tail = remove_dangling_crlf(head,tail) -- will be action chain
-    end
-    return head
-end
-
-interfaces.implement {
+implement {
     name     = "enablecrlf",
     onlyonce = true,
     actions  = function()
         enableaction("processors","typesetters.wrappers.handler")
     end
+}
+
+-- Here's a solution for a trivial challenge by MS who got it from the internet
+-- (SE). If needed we can make it a bit more granular.
+
+local tighten       = { }
+typesetters.tighten = tighten
+
+local trace_tighten   trackers.register("typesetters.tighten",function(v) trace_tighten = v end)
+local report        = logs.reporter("typesetters","tighten")
+
+local a_tightfit_boundary = tex.boundaries.system("c_tightfit_boundary") -- private, not defined with \defineboundary
+
+local function bbcompensation(font,char)
+    local tfmdata   = fontdata[font]
+    local character = tfmdata.characters[char]
+    if character then
+        local compensation = character.compensation
+        if not compensation then
+            local description = tfmdata.descriptions[char]
+            if description then
+                local boundingbox  = description.boundingbox
+                return boundingbox and (boundingbox[3] - (description.width or 0)) * tfmdata.parameters.hfactor
+            end
+            character.compensation = compensation
+        end
+    end
+    return 0
+end
+
+function tighten.handler(head)
+    for n, subtype in traverse_boundary, head do
+        if subtype == userboundary_code and getdata(n) == a_tightfit_boundary then
+            local prev = getprev(n)
+            if prev then
+                local char, font = isglyph(prev)
+                if char then
+                    local compensation = bbcompensation(font,char)
+                    if compensation > 0 then
+                        if trace_tighten then
+                            report("compensating %p after %C",compensation,char)
+                        end
+                        insertnodebefore(head,n,newkern(compensation))
+                    end
+                end
+            end
+        end
+    end
+    return head
+end
+
+implement {
+    name     = "enabletighten",
+    onlyonce = true,
+    actions  = function()
+        enableaction("processors","typesetters.tighten.handler")
+    end
+}
+
+local dimension_value = tokens.values.dimension
+local texgetnest      = tex.getnest
+
+implement {
+    name      = "tightfitcompensation",
+    public    = true,
+    protected = true,
+    usage     = "value",
+    actions   = function()
+        local list = texgetnest()
+        if list then
+            list = list.tail
+        end
+        return
+            dimension_value,
+            list and list.id == glyph_code and bbcompensation(list.font,list.char) or 0
+    end,
 }
