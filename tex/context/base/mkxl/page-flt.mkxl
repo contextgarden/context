@@ -167,6 +167,36 @@
         \blank[\rootfloatparameter\c!spaceafter]%
       \fi}}
 
+%D Not the best name for a command:
+%D
+%D \starttyping
+%D \samplefile{tufte}
+%D \placefigure[somewhere:a]{}{\externalfigure[dummy-001]}
+%D \samplefile{tufte}
+%D \placefigure{}{\externalfigure[dummy-002]}
+%D \samplefile{tufte}
+%D \startplacefigure[location={somewhere:b,tight}]
+%D     \externalfigure[dummy-003]
+%D \stopplacefigure
+%D \samplefile{tufte}
+%D \placefigure{}{\externalfigure[dummy-004]}
+%D \page
+%D \placesavedfloat[figure][b][location={none,left}] \samplefile{tufte}
+%D \placesavedfloat[figure][a]
+%D % \placenamedfloat[figure][*]
+%D % \placenamedfloat[figure][b]
+%D \stoptyping
+
+\newbox\b_strc_float_saved
+
+\permanent\tolerant\protected\def\placesavedfloat[#1]#*[#2]#*[#3]% experiment for Alan B
+  {\clf_flushlabeledfloat\s!somewhere{#2}\relax
+  %\def\currentfloat{#1}%
+   \setbox\b_strc_float_saved\vpack{\box\floatbox}%
+   \startplacefloat[#1][\c!location=\v!none,#3]%
+     \box\b_strc_float_saved
+   \stopplacefloat}
+
 % \setupcaption [figure]   [align=flushleft]
 % \setupcaption [figure-1] [align=flushleft,leftmargin=10mm]
 % \setupcaption [figure-2] [align=flushleft,leftmargin=10mm,rightmargin=-10mm,width=\textwidth]

@@ -1,0 +1,143 @@
+if not modules then modules = { } end modules ['tabl-ntb'] = {
+    version   = 1.001,
+    comment   = "companion to tabl-ntb.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local context = context
+
+local a_tablesection = attributes.system("tablesection")
+
+local hlist_code     = nodes.nodecodes.hlist
+
+local nuts           = nodes.nuts
+local tonode         = nuts.tonode
+local getbox         = nuts.getbox
+local getlist        = nuts.getlist
+local getid          = nuts.getid
+local getnext        = nuts.getnext
+local setnext        = nuts.setnext
+local getattr        = nuts.getattr
+local copylist       = nuts.copylist
+local flushlist      = nuts.flushlist
+
+local integer_value  = tokens.values.integer
+
+local implement      = interfaces.implement
+
+local list           = { }
+local sections       = { }
+
+local function check(b)
+    local c = getbox(b)
+    local l = c and getlist(c)
+    local d = false
+    local n = 0
+    while l do
+        if getid(l) == hlist_code then
+            local line = getattr(l,a_tablesection)
+            if line and line ~= d then
+                local s = sections[line]
+                if s then
+                    local count = s[2]
+                    local last = l
+                    local next = getnext(l)
+                    while next and count > 0 do
+                        last  = next
+                        next  = getnext(next)
+                        count = count - 1
+                    end
+                    setnext(last)
+                    list[line] = { l, copylist(l) }
+                    if next then
+                        setnext(last,next)
+                    end
+                    d = line
+                end
+            end
+            n = n + 1
+        end
+        l = getnext(l)
+    end
+end
+
+local function reset(b)
+    for k, v in next, list do
+        flushlist(v[2])
+    end
+    list     = { }
+    sections = { }
+end
+
+local function locate(b)
+    local c = getbox(b)
+    local l = c and getlist(c)
+    while l do
+        if getid(l) == hlist_code then
+            local line = getattr(l,a_tablesection)
+            if line then
+                local v = list[line]
+                if v and v[1] ~= l then
+                    return line
+                end
+            end
+            return 0
+        end
+        l = getnext(l)
+    end
+    return 0
+end
+
+local function fetch(n)
+    local b = list[n]
+    if b then
+        b = copylist(b[2])
+        return tonode(b)
+    end
+end
+
+implement {
+    name      = "tabl_ntb_set_sec",
+    public    = true,
+    arguments = { "integer", "integer", "integer" },
+    actions   = function(n,m,count)
+        sections[n] = { m, count }
+    end,
+}
+
+implement {
+    name      = "tabl_ntb_get_sec",
+    public    = true,
+    arguments = "integer",
+    usage     = "value",
+    actions   = function(n)
+        local s =  sections[n]
+        return integer_value, s and s[1] or 0
+    end,
+}
+
+implement {
+    name      = "ntb_split_section_check",
+    arguments = "integer",
+    actions   = check,
+}
+
+implement {
+    name      = "ntb_split_section_reset",
+    arguments = "integer",
+    actions   = reset,
+}
+
+implement {
+    name      = "ntb_split_section_locate",
+    arguments = "integer",
+    actions   = { locate, context },
+}
+
+implement {
+    name      = "ntb_split_section_fetch",
+    arguments = "integer",
+    actions   = { fetch, context },
+}

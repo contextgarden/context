@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Typesetting Macros / Additional Font Kerning}
 
-\registerctxluafile{typo-fkr}{}
+\registerctxluafile{typo-fkr}{autosuffix}
 
 \definesystemattribute[extrafontkern][public]
 
@@ -25,8 +25,8 @@
 % mixed : mean value across fonts
 % reset : disable
 
-\permanent\protected\def\setextrafontkerns[#1]% % can be public implementor
-  {\clf_setextrafontkerns{#1}}
+% \permanent\protected\def\setextrafontkerns[#1]% defined at the lua end
+%   {\clf_setextrafontkerns{#1}}
 
 \permanent\protected\def\resetextrafontkerns
   {\c_attr_extrafontkern\attributeunsetvalue}

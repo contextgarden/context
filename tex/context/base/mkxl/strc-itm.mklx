@@ -13,7 +13,12 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Itemgroups}
 
-\registerctxluafile{strc-itm}{}
+\unprotect
+
+\newdimension\d_strc_itemgroups_max_width
+\newinteger  \c_strc_itemgroups_max_items
+
+\registerctxluafile{strc-itm}{autosuffix}
 
 %D As we analyze/register widths and such we could as well push and pop the numbers
 %D at the \LUA\ end (which saves a few calls).
@@ -170,8 +175,6 @@
 % \item {test} is this okay?
 % \stopitemize
 
-\unprotect
-
 \newconditional\c_strc_itemgroups_sub
 \newconditional\c_strc_itemgroups_head
 \newconditional\c_strc_itemgroups_intro
@@ -216,8 +219,10 @@
 \newdimension  \d_strc_itemgroups_list_width
 \newdimension  \d_strc_itemgroups_asked_width
 
-\newdimension  \d_strc_itemgroups_max_width      \def\d_strc_itemgroups_max_width_reference{\d_strc_itemgroups_max_width}
-\newinteger    \c_strc_itemgroups_max_items
+%newdimension  \d_strc_itemgroups_max_width % defined already, used at the Lua end
+%newinteger    \c_strc_itemgroups_max_items % idem
+
+\def\d_strc_itemgroups_max_width_reference{\d_strc_itemgroups_max_width} % no alias!
 
 \newinteger    \c_strc_itemgroups_n_of_items
 \newinteger    \c_strc_itemgroups_nesting

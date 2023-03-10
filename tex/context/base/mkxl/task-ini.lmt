@@ -227,3 +227,8 @@ directives.register("nodes.basepass", function(v)
          disableaction("processors", "builders.kernel.kerning")
     end
 end)
+
+-- These are different and currently done in strc-flt.lmt but it might move here:
+--
+-- utilities.sequencers.appendaction ("paragraph","system","builders.checksidefloat")
+-- utilities.sequencers.disableaction("paragraph","builders.checksidefloat")

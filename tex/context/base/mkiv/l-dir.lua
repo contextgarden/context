@@ -596,6 +596,27 @@ do
 
     end
 
+    -- This go there anc check works okay in tricky situation as we encounter
+    -- on osx, where tex installations use rather complex chains of links.
+
+    function dir.expandlink(dir,report)
+        local curdir = currentdir()
+        local trace  = type(report) == "function"
+        if chdir(dir) then
+            local newdir = currentdir()
+            if newdir ~= dir and trace then
+                report("following symlink %a to %a",dir,newdir)
+            end
+            chdir(curdir)
+            return newdir
+        else
+            if trace then
+                report("unable to check path %a",dir)
+            end
+            return dir
+        end
+    end
+
 end
 
 file.expandname = dir.expandname -- for convenience

@@ -24,6 +24,8 @@
 
 \writestatus{loading}{ConTeXt Table Macros / Natural Tables}
 
+\registerctxluafile{tabl-ntb}{autosuffix}
+
 % sometimes this helps (with nc going wild): \setupTABLE[maxwidth=100cm]
 %
 % bug: width 3cm is not honored and column becomes too wide as given width is added
@@ -2294,6 +2296,99 @@
 
 \permanent\protected\def\bTRs[#1]#2\eTRs
   {\normalexpanded{\bTR[\begincsname\??naturaltablesetup#1\endcsname]}#2\eTR}
+
+%D This is new (for Ramkumar, Kb)
+%D
+%D \starttyping
+%D \bTABLE[split=repeat]
+%D     \bTABLEhead
+%D         \bTR \bTH \darkblue header \eTH \bTH \darkblue done \eTH \eTR
+%D     \eTABLEhead
+%D     \dorecurse{12}{
+%D         \bTABLEbody
+%D             \bTABLEsection
+%D                 \bTR \bTD \darkred line #1.1 \eTD \bTD \darkred done \eTD \eTR
+%D                 \bTR \bTD \darkred line #1.2 \eTD \bTD \darkred done \eTD \eTR
+%D             \eTABLEsection
+%D             \bTABLEsection[repeat=2]
+%D                 \bTR[samepage=after] \bTH \darkorange header #1.1 \eTH \bTH \darkorange done \eTH \eTR
+%D                 \bTR[samepage=after] \bTH \darkorange header #1.2 \eTH \bTH \darkorange done \eTH \eTR
+%D                 \bTR                 \bTD \darkgreen  hline  #1.3 \eTD \bTD \darkgreen  done \eTD \eTR
+%D                 \bTR                 \bTD \darkgreen  hline  #1.4 \eTD \bTD \darkgreen  done \eTD \eTR
+%D                 \bTR                 \bTD \darkgreen  hline  #1.5 \eTD \bTD \darkgreen  done \eTD \eTR
+%D             \eTABLEsection
+%D         \eTABLEbody
+%D     }
+%D \eTABLE
+%D \stoptyping
+
+\definesystemattribute[tablesection][public]
+
+\newinteger\c_tabl_ntb_section
+\newinteger\c_tabl_ntb_section_repeat
+
+\def\tabl_ntb_section_mark_indeed
+  {\ifcase\c_tabl_ntb_section_repeat
+     \tabl_ntb_set_sec\c_tabl_ntb_maximum_row\zerocount\zerocount
+   \else
+     \tabl_ntb_set_sec\c_tabl_ntb_maximum_row\c_tabl_ntb_section\c_tabl_ntb_section_repeat
+   \fi}
+
+\def\tabl_ntb_section_checkup_indeed
+  {\scratchcounter\tabl_ntb_get_sec\c_tabl_ntb_row\relax
+   \ifcase\scratchcounter
+     \c_attr_tablesection\attributeunsetvalue
+   \else
+     \c_attr_tablesection\scratchcounter
+   \fi}
+
+\def\tabl_ntb_section_split_indeed
+  {\scratchcounter\clf_ntb_split_section_locate\b_split_content\relax
+   \ifcase\scratchcounter\else
+     \clf_ntb_split_section_fetch\scratchcounter
+   \fi}
+
+\def\tabl_ntb_section_wrapup_indeed
+   {\clf_ntb_split_section_reset\b_split_content
+    \tabl_ntb_section_setup}
+
+\def\tabl_ntb_section_install_indeed
+  {\clf_ntb_split_section_check\b_split_content
+   \t_split_section{\tabl_ntb_section_split}}
+
+\def\tabl_ntb_section_disable
+  {\glet\tabl_ntb_section_mark   \relax
+   \glet\tabl_ntb_section_checkup\relax
+   \glet\tabl_ntb_section_split  \relax
+   \glet\tabl_ntb_section_install\relax
+   \glet\tabl_ntb_section_wrapup \relax}
+
+\def\tabl_ntb_section_enable
+  {\let\tabl_ntb_section_enable  \relax
+   \glet\tabl_ntb_section_mark   \tabl_ntb_section_mark_indeed
+   \glet\tabl_ntb_section_checkup\tabl_ntb_section_checkup_indeed
+   \glet\tabl_ntb_section_split  \tabl_ntb_section_split_indeed
+   \glet\tabl_ntb_section_install\tabl_ntb_section_install_indeed
+   \glet\tabl_ntb_section_wrapup \tabl_ntb_section_wrapup_indeed}
+
+\def\tabl_ntb_section_setup
+  {\global\c_tabl_ntb_section_repeat\zerocount
+   \c_tabl_ntb_section\zerocount
+   \tabl_ntb_section_disable}
+
+\tolerant\permanent\protected\def\bTABLEsection[#1]%
+  {\ifempty{#1}%
+     \global\c_tabl_ntb_section_repeat\zerocount
+   \else
+     \letdummyparameter\c!repeat\zerocount
+     \getdummyparameters[#1]%
+     \global\c_tabl_ntb_section_repeat\dummyparameter\c!repeat\relax
+   \fi
+   \global\advanceby\c_tabl_ntb_section\plusone
+   \tabl_ntb_section_enable}
+
+\permanent\protected\def\eTABLEsection
+  {\global\c_tabl_ntb_section_repeat\zerocount}
 
 \protect \endinput
 

@@ -583,7 +583,7 @@ implement {
 
 implement {
     name      = "uchar",
-    arguments = { "integer", "integer" },
+    arguments = "2 integers",
     actions   = function(h,l)
         context(utfchar(h*256+l))
     end

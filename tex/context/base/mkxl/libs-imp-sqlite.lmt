@@ -100,7 +100,7 @@ local function execute(specification)
                 end
             end
         else
-            db       = open_db(filename)
+            db       = sqlite_open(filename)
             preamble = f_preamble(filename,base,base)
         end
         if not db then

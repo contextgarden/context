@@ -15,6 +15,7 @@ local report_spacing = logs.reporter("typesetting","spacing")
 local nodes, fonts, node = nodes, fonts, node
 
 local fonthashes         = fonts.hashes
+local chardata           = fonthashes.characters
 local quaddata           = fonthashes.quads
 
 local texsetattribute    = tex.setattribute
@@ -92,6 +93,9 @@ function spacings.handler(head)
                             local alternative = map.alternative
                             local quad = quaddata[font]
                             local prev = getprev(start)
+                            if not chardata[font][char] then
+                                report_spacing("missing character %C in font %i",char,font)
+                            end
                             if left and left ~= 0 and prev then
                                 local ok = false
                                 local prevprev = getprev(prev)

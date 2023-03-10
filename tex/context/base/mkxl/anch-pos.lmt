@@ -2280,13 +2280,13 @@ implement {
 
 implement {
     name      = "markregionbox",
-    arguments = { "integer", "integer" },
+    arguments = "2 integers",
     actions   = markregionbox
 }
 
 implement {
     name      = "setregionbox",
-    arguments = { "integer", "integer" },
+    arguments = "2 integers",
     actions   = setregionbox
 }
 

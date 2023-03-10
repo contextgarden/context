@@ -1065,6 +1065,10 @@ implement {
     end
 }
 
+function registers.tweak(data,options)
+    -- Just in case it's needed.
+end
+
 local function analyzeregister(class,options)
     local data = rawget(collected,class)
     if not data then
@@ -1110,11 +1114,12 @@ local function analyzeregister(class,options)
     if data and data.entries then
         options = options or { }
         sorters.setlanguage(options.language,options.method,options.numberorder)
-        registers.filter(data,options)      -- filter entries into results (criteria)
-        registers.prepare(data,options)     -- adds split table parallel to list table
-        registers.sort(data,options)        -- sorts results
-        registers.unique(data,options)      -- get rid of duplicates
-        registers.finalize(data,options)    -- split result in ranges
+        registers.filter(data,options)  -- filter entries into results (criteria)
+        registers.prepare(data,options) -- adds split table parallel to list table
+        registers.sort(data,options)    -- sorts results
+        registers.unique(data,options)  -- get rid of duplicates
+        registers.tweak(data,options)   -- plugin
+        registers.finalize(data,options)-- split result in ranges
         data.metadata.sorted = true
         return data.metadata.nofsorted or 0
     else

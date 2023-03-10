@@ -453,6 +453,7 @@
 		<cd:variable name='printable' value='druckbar'/>
 		<cd:variable name='process' value='process'/>
 		<cd:variable name='product' value='produkt'/>
+		<cd:variable name='profile' value='profile'/>
 		<cd:variable name='program' value='programm'/>
 		<cd:variable name='project' value='projekt'/>
 		<cd:variable name='protected' value='geschuetzt'/>
@@ -594,6 +595,7 @@
 		<cd:variable name='temporary' value='temporaer'/>
 		<cd:variable name='test' value='test'/>
 		<cd:variable name='text' value='text'/>
+		<cd:variable name='textdisplay' value='textdisplay'/>
 		<cd:variable name='textnote' value='textnote'/>
 		<cd:variable name='three' value='drei'/>
 		<cd:variable name='thursday' value='donnerstag'/>
@@ -724,6 +726,7 @@
 		<cd:constant name='bookmark' value='bookmark'/>
 		<cd:constant name='bottom' value='unten'/>
 		<cd:constant name='bottomafter' value='bottomafter'/>
+		<cd:constant name='bottomalign' value='bottomalign'/>
 		<cd:constant name='bottombefore' value='bottombefore'/>
 		<cd:constant name='bottomcolor' value='bottomcolor'/>
 		<cd:constant name='bottomcommand' value='bottomcommand'/>
@@ -835,6 +838,7 @@
 		<cd:constant name='exitoffset' value='exitoffset'/>
 		<cd:constant name='expansion' value='expansion'/>
 		<cd:constant name='export' value='export'/>
+		<cd:constant name='extradata' value='extradata'/>
 		<cd:constant name='extras' value='extras'/>
 		<cd:constant name='factor' value='faktor'/>
 		<cd:constant name='fallback' value='fallback'/>
@@ -958,6 +962,7 @@
 		<cd:constant name='lastpage' value='letzteseite'/>
 		<cd:constant name='lastpagesep' value='lastpagesep'/>
 		<cd:constant name='lastpubsep' value='lastpubsep'/>
+		<cd:constant name='lasttextseparator' value='lasttextseparator'/>
 		<cd:constant name='layout' value='layout'/>
 		<cd:constant name='left' value='links'/>
 		<cd:constant name='leftclass' value='leftclass'/>
@@ -1338,6 +1343,7 @@
 		<cd:constant name='toffset' value='toffset'/>
 		<cd:constant name='tolerance' value='toleranz'/>
 		<cd:constant name='top' value='oben'/>
+		<cd:constant name='topalign' value='topalign'/>
 		<cd:constant name='topcolor' value='topcolor'/>
 		<cd:constant name='topcommand' value='topcommand'/>
 		<cd:constant name='topdistance' value='obenabstand'/>

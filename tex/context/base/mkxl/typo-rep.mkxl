@@ -24,12 +24,12 @@
 
 \unprotect
 
-\registerctxluafile{typo-rep}{}
+\registerctxluafile{typo-rep}{autosuffix}
 
 \definesystemattribute[stripping][public]
 
-\permanent\protected\def\setcharacterstripping[#1]%
-  {\clf_setcharacterstripping{#1}}
+% \permanent\protected\def\setcharacterstripping[#1]% defined at the lua end
+%   {\clf_setcharacterstripping{#1}}
 
 \permanent\protected\def\resetcharacterstripping
   {\c_attr_stripping\attributeunsetvalue}

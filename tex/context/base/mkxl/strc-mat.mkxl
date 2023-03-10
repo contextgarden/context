@@ -2010,6 +2010,19 @@
 %D New:
 %D
 %D \setupformula[snap=yes,snapstep=medium]
+%D
+%D \startbuffer
+%D We test \dorecurse{20}{$x^{#1}$ and $\frac{1}{#1}^x$ and $\sqrt[#1]{x}$ and }that's it.
+%D \stopbuffer
+%D
+%D \startcombination[nx=2,ny=3,location=top]
+%D     {\ruledvbox{\hsize.45\textwidth \setupformula[snap=no]                 \showboxes            \enabletrackers [math.snapping=darkred] \getbuffer}} {}
+%D     {\ruledvbox{\hsize.45\textwidth \setupformula[snap=no]                                       \disabletrackers[math.snapping]         \getbuffer}} {}
+%D     {\ruledvbox{\hsize.45\textwidth \setupformula[snap=yes,snapstep=small] \showboxes \darkgreen \enabletrackers [math.snapping=darkred] \getbuffer}} {}
+%D     {\ruledvbox{\hsize.45\textwidth \setupformula[snap=yes,snapstep=small]            \darkgreen \disabletrackers[math.snapping]         \getbuffer}} {}
+%D     {\ruledvbox{\hsize.45\textwidth \setupformula[snap=yes,snapstep=big]   \showboxes \darkblue  \enabletrackers [math.snapping=darkred] \getbuffer}} {}
+%D     {\ruledvbox{\hsize.45\textwidth \setupformula[snap=yes,snapstep=big]              \darkblue  \disabletrackers[math.snapping]         \getbuffer}} {}
+%D \stopcombination
 
 \definesystemattribute[mathsnap][public]
 

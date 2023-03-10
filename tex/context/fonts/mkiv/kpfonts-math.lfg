@@ -134,7 +134,17 @@ return {
                     tweak = "setoptions",
                     set   = { "ignorekerndimensions" }
                 },
-            },
+-- {
+--     tweak = "inspect",
+--     unicode = 0x2192
+-- },
+-- {
+--     tweak = "inspect",
+--     unicode = 0x20EF
+-- },
+-- {
+            }
+
         },
         alternates = {
          -- italic = { feature = 'ss01', value = 1, comment = "Mathematical Alternative Lowercase Italic" },

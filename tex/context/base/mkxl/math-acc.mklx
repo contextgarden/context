@@ -57,23 +57,35 @@
   [\v!bottom]
   [\v!both]
 
+\setupmathaccents
+  [\v!top]
+  [i=\v!auto]
+
+\setupmathaccents
+  [\v!both]
+  [i=\v!auto]
+
+\setupmathaccents
+  [\v!bottom]
+  [i=]
+
 \permanent\tolerant\protected\def\definemathtopaccent[#1]#*[#2]#*[#3]% class name top
   {\ifparameter#3\or
-     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                        {#1}\plusone{\number#3}\zerocount}%
+     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                       {#1}\plusone{\number#3}\zerocount}%
    \else
      \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_make_double\noexpand\currentmathaccent\plusone{\number#2}\zerocount}%
    \fi}
 
 \permanent\tolerant\protected\def\definemathbottomaccent[#1]#*[#2]#*[#3]% class name bottom
   {\ifparameter#3\or
-     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                        {#1}\plustwo\zerocount{\number#3}}%
+     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                       {#1}\plustwo\zerocount{\number#3}}%
    \else
      \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_make_double\noexpand\currentmathaccent\plustwo\zerocount{\number#2}}%
    \fi}
 
 \permanent\tolerant\protected\def\definemathdoubleaccent[#1]#*[#2]#*[#3]#*[#4]% class name top bottom
   {\ifparameter#4\or
-     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                        {#1}\plusthree{\number#3}{\number#4}}%
+     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                       {#1}\plusthree{\number#3}{\number#4}}%
    \else
      \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_make_double\noexpand\currentmathaccent\plusthree{\number#2}{\number#3}}%
    \fi}
@@ -97,16 +109,16 @@
      \fam\zerocount#bottom
    \or
      both \m_fixed
-     \fam\zerocount#top
      \fam\zerocount#bottom
+     \fam\zerocount#top
    \fi
-   {\ifconditional\c_math_accent_auto_dotless\mathdotless\fi#content}%
+   {\ifcstok{\mathaccentparameter{i}}\v!auto\mathdotless\fi#content}%
    \stopusemathstyleparameter
    \endmathgroup}
 
 %D Relative new:
 
-\newconditional\c_math_accent_auto_dotless \settrue\c_math_accent_auto_dotless % cf opentype math
+% \newconditional\c_math_accent_auto_dotless \settrue\c_math_accent_auto_dotless % cf opentype math
 
 % \aliased\let\normalgrave\grave
 % \aliased\let\normalddot \ddot
@@ -125,39 +137,100 @@
 % These retain the given unicode values ... but can stretch when configured
 % to do so: \setupmathaccent[\v!top][\c!stretch=\v!yes]
 
-\definemathtopaccent[\v!top][grave]["0060] % these are old school
-\definemathtopaccent[\v!top][ddot] ["00A8]
-\definemathtopaccent[\v!top][bar]  ["00AF]
-\definemathtopaccent[\v!top][acute]["00B4]
-\definemathtopaccent[\v!top][hat]  ["02C6]
-\definemathtopaccent[\v!top][check]["02C7]
-\definemathtopaccent[\v!top][breve]["02D8]
-\definemathtopaccent[\v!top][dot]  ["02D9]
-\definemathtopaccent[\v!top][ring] ["02DA]
-\definemathtopaccent[\v!top][tilde]["02DC]
-\definemathtopaccent[\v!top][dddot]["20DB]
+% Extended/modified below
+%
+% \definemathtopaccent[\v!top][grave]["0060] % these are old school
+% \definemathtopaccent[\v!top][ddot] ["00A8]
+% \definemathtopaccent[\v!top][bar]  ["00AF]
+% \definemathtopaccent[\v!top][acute]["00B4]
+% \definemathtopaccent[\v!top][hat]  ["02C6]
+% \definemathtopaccent[\v!top][check]["02C7]
+% \definemathtopaccent[\v!top][breve]["02D8]
+% \definemathtopaccent[\v!top][dot]  ["02D9]
+% \definemathtopaccent[\v!top][ring] ["02DA]
+% \definemathtopaccent[\v!top][tilde]["02DC]
+% \definemathtopaccent[\v!top][dddot]["20DB]
+
+\definemathtopaccent[\v!top][grave]   ["0300]
+\definemathtopaccent[\v!top][acute]   ["0301]
+\definemathtopaccent[\v!top][hat]     ["0302]
+\definemathtopaccent[\v!top][tilde]   ["0303]
+\definemathtopaccent[\v!top][bar]     ["0304]
+%definemathtopaccent[\v!top][overbar] ["0305]% We expect overbar to stretch, so later
+\definemathtopaccent[\v!top][breve]   ["0306]
+\definemathtopaccent[\v!top][dot]     ["0307]
+\definemathtopaccent[\v!top][ddot]    ["0308]
+\definemathtopaccent[\v!top][overhook]["0309]
+\definemathtopaccent[\v!top][ring]    ["030A]
+\definemathtopaccent[\v!top][check]   ["030C]
+
+% Here starts the weird unicode ones
+
+%definemathtopaccent[\v!top][candra]               ["0310]
+%definemathtopaccent[\v!top][overturnedcomma]      ["0312]
+%definemathtopaccent[\v!top][overcommatopright]    ["0315]
+%definemathtopaccent[\v!top][leftangleabove]       ["031A]
+\definemathtopaccent[\v!top][leftharpoonaccent]    ["20D0]
+\definemathtopaccent[\v!top][rightharpoonaccent]   ["20D1]
+%definemathtopaccent[\v!top][verticaloverlayaccent]["20D2]
+%definemathtopaccent[\v!top][vec]                  ["20D7]% We expect vec to stretch, so later
+\definemathtopaccent[\v!top][dddot]                ["20DB]
+\definemathtopaccent[\v!top][ddddot]               ["20DC]
+%definemathtopaccent[\v!top][annuityaccent]        ["20E7]
+%definemathtopaccent[\v!top][overbracketaccent]    ["20E9]
+%definemathtopaccent[\v!top][asterixaccent]        ["20F0]
+
+% Weird ones (why no single and double underdots in unicode?)
+
+%definemathbottomaccent[\v!bottom][underdot]  ["0323]%Conflicting
+%definemathbottomaccent[\v!bottom][underddot] ["0324]
+%definemathbottomaccent[\v!bottom][underdddot]["20E8]
 
 \definemathaccent
   [\v!top:\v!stretch]
   [\v!top]
   [\c!stretch=\v!yes]
 
+\definemathaccent
+  [\v!bottom:\v!stretch]
+  [\v!bottom]
+  [\c!stretch=\v!yes]
+
+\definemathaccent
+  [\v!both:\v!stretch]
+  [\v!both]
+  [\c!stretch=\v!yes]
+
 %D We have a problem. We can use stackers but then we need to adapt the dimensions
 %D which is font dependent. So, for now we keep them as accents.
 
 \definemathtopaccent[\v!top:\v!stretch][widegrave]["0300] % these are generic modern
-\definemathtopaccent[\v!top:\v!stretch][wideddot] ["0308]
-\definemathtopaccent[\v!top:\v!stretch][widebar]  ["0304]
 \definemathtopaccent[\v!top:\v!stretch][wideacute]["0301]
 \definemathtopaccent[\v!top:\v!stretch][widehat]  ["0302]
-\definemathtopaccent[\v!top:\v!stretch][widecheck]["030C]
+\definemathtopaccent[\v!top:\v!stretch][widetilde]["0303]
+\definemathtopaccent[\v!top:\v!stretch][widebar]  ["0305]%or 305
 \definemathtopaccent[\v!top:\v!stretch][widebreve]["0306]
 \definemathtopaccent[\v!top:\v!stretch][widedot]  ["0307]
+\definemathtopaccent[\v!top:\v!stretch][wideddot] ["0308]
 \definemathtopaccent[\v!top:\v!stretch][widering] ["030A]
-\definemathtopaccent[\v!top:\v!stretch][widetilde]["0303]
+\definemathtopaccent[\v!top:\v!stretch][widecheck]["030C]
 \definemathtopaccent[\v!top:\v!stretch][widedddot]["20DB]
 
-\definemathtopaccent[\v!top:\v!stretch][vec]      ["20D7] % clumsy notation for vectors
+\definemathtopaccent[\v!top:\v!stretch][vec]["20D7] % clumsy notation for vectors
+
+\definemathtopaccent[\v!top:\v!stretch][wideoverleftharpoon]   ["20D0]
+\definemathtopaccent[\v!top:\v!stretch][wideoverrightharpoon]  ["20D1]
+\definemathtopaccent[\v!top:\v!stretch][wideoverleftarrow]     ["20D6] 
+\definemathtopaccent[\v!top:\v!stretch][wideoverrightarrow]    ["20D7] 
+\definemathtopaccent[\v!top:\v!stretch][wideoverleftrightarrow]["20E1]
+
+\definemathbottomaccent[\v!bottom:\v!stretch][wideundertilde]["0330]
+\definemathbottomaccent[\v!bottom:\v!stretch][wideunderbar]["0332]
+\definemathbottomaccent[\v!bottom:\v!stretch][wideunderleftrightarrow]["034D]
+\definemathbottomaccent[\v!bottom:\v!stretch][wideunderrightharpoon]["20EC]
+\definemathbottomaccent[\v!bottom:\v!stretch][wideunderleftharpoon]["20ED]
+\definemathbottomaccent[\v!bottom:\v!stretch][wideunderleftarrow]["20EE]
+\definemathbottomaccent[\v!bottom:\v!stretch][wideunderrightarrow]["20EF]
 
 \aliased\let\mathring\ring % for a while
 

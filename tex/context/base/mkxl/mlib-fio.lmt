@@ -69,15 +69,24 @@ local splitlines  = string.splitlines
 
 local suffixlist = { "mpxl", "mpiv", "mp" } -- no "mf"
 
+local remapped = {
+    -- We don't yet have an interface for adding more here but when needed
+    -- there will be one.
+    ["hatching.mp"] = "mp-remapped-hatching.mp",
+    ["boxes.mp"]    = "mp-remapped-boxes.mp",
+    ["hatching"]    = "mp-remapped-hatching.mp",
+    ["boxes"]       = "mp-remapped-boxes.mp",
+}
+
 local function findmpfile(name,ftype)
+    local usedname = remapped[name] or name
     local validtyp = validftype(ftype)
- -- local fullname = findfile(name,validtyp)
-    local fullname = findtexfile(name,validtyp)
+    local fullname = findtexfile(usedname,validtyp)
     if fullname and fullname ~= "" then
         return fullname
-    elseif suffix(name) == "" then
+    elseif suffix(usedname) == "" then
         for i=1,#suffixlist do
-            fullname = findfile(addsuffix(name,suffixlist[i]),validtyp)
+            fullname = findfile(addsuffix(usedname,suffixlist[i]),validtyp)
             if fullname and fullname ~= "" then
                 return fullname
             end

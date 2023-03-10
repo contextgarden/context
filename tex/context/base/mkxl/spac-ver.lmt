@@ -2830,7 +2830,7 @@ do
         name      = "vspacingsnap",
         actions   = vspacing.snapbox,
         scope     = "private",
-        arguments = { "integer", "integer" }
+        arguments = "2 integers",
     }
 
     implement {

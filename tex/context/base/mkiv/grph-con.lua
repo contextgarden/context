@@ -312,7 +312,7 @@ do -- png | jpg | profiles
     -- [[convert %?colorspace: -colorspace "%colorspace%" ?%]]
 
     local rgbprofile  = "srgb_v4_icc_preference.icc" -- srgb.icc
-    local cmykprofile = "isocoated_v2_300_eci.icc"   -- isocoated_v2_eci.icc
+    local cmykprofile = "isocoated_v2_eci.icc"       -- isocoated_v2_300_eci.icc
 
     directives.register("graphics.conversion.rgbprofile", function(v) rgbprofile  = type(v) == "string" and v or rgbprofile  end)
     directives.register("graphics.conversion.cmykprofile",function(v) cmykprofile = type(v) == "string" and v or cmykprofile end)
@@ -320,9 +320,14 @@ do -- png | jpg | profiles
     local jpgconverters = converters.jpg
     local pngconverters = converters.png
 
+    local findfile = resolvers.findfile
+
     local function profiles()
         if not isfile(rgbprofile) then
-            local found = resolvers.findfile(rgbprofile)
+            local found = findfile(rgbprofile)
+            if not found or found == "" then
+                found = findfile("colo-imp-"..rgbprofile)
+            end
             if found and found ~= "" then
                 rgbprofile = found
             else
@@ -331,6 +336,9 @@ do -- png | jpg | profiles
         end
         if not isfile(cmykprofile) then
             local found = resolvers.findfile(cmykprofile)
+            if not found or found == "" then
+                found = findfile("colo-imp-"..cmykprofile)
+            end
             if found and found ~= "" then
                 cmykprofile = found
             else

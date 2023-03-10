@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2023.03.06 23:15}
+\immutable\edef\contextversion{2023.03.10 12:15}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -702,7 +702,6 @@
 % c:/data/develop/context/sources/file-ini.lua
 % c:/data/develop/context/sources/file-lib.lua
 % c:/data/develop/context/sources/file-res.lua
-% c:/data/develop/context/sources/file-syn.lua
 
 % c:/data/develop/context/sources/font-afk.lua
 % c:/data/develop/context/sources/font-agl.lua
@@ -782,7 +781,7 @@
 % c:/data/develop/context/sources/meta-pdf.lua
 % c:/data/develop/context/sources/meta-tex.lua
 
-% c:/data/develop/context/sources/mult-aux.lua
+% c:/data/develop/context/sources/mult-aux.lua % move some to s-system-*
 % c:/data/develop/context/sources/mult-fmt.lua
 
 % c:/data/develop/context/sources/page-cst.lua
@@ -822,17 +821,13 @@
 % c:/data/develop/context/sources/strc-blk.lua
 % c:/data/develop/context/sources/strc-con.lua
 % c:/data/develop/context/sources/strc-doc.lua
-% c:/data/develop/context/sources/strc-flt.lua
 % c:/data/develop/context/sources/strc-ini.lua
-% c:/data/develop/context/sources/strc-itm.lua
 % c:/data/develop/context/sources/strc-lev.lua
-% c:/data/develop/context/sources/strc-mat.lua
 % c:/data/develop/context/sources/strc-num.lua
 % c:/data/develop/context/sources/strc-pag.lua
-% c:/data/develop/context/sources/strc-syn.lua
 % c:/data/develop/context/sources/strc-usr.lua
 
-% c:/data/develop/context/sources/syst-cmp.lua
+% c:/data/develop/context/sources/syst-cmp.lua -- nothing
 % c:/data/develop/context/sources/syst-con.lua
 
 % c:/data/develop/context/sources/trac-ctx.lua
@@ -842,10 +837,5 @@
 
 % c:/data/develop/context/sources/typo-cln.lua -- wrong name for what it does
 % c:/data/develop/context/sources/typo-dha.lua
-% c:/data/develop/context/sources/typo-fkr.lua
-% c:/data/develop/context/sources/typo-inj.lua
-% c:/data/develop/context/sources/typo-man.lua
-% c:/data/develop/context/sources/typo-prc.lua
-% c:/data/develop/context/sources/typo-rep.lua
 
 % c:/data/develop/context/sources/unic-ini.lua

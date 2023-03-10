@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Synonyms and Sorting}
 
-\registerctxluafile{strc-syn}{}
+\registerctxluafile{strc-syn}{autosuffix}
 
 %D Although we could nowadays build this on top of regular lists we keep this
 %D more efficient variant around. Eventually we can add some options to lists
@@ -354,24 +354,37 @@
         }%
      \relax
      \ifx\currentsynonymoption\v!yes
-       \instance\setuxvalue\currentsynonymtag{\strc_synonyms_insert{\currentsynonym}{\currentsynonymtag}}%
+      %\instance\setuxvalue\currentsynonymtag{\strc_synonyms_insert{\currentsynonym}{\currentsynonymtag}}%
+       \protected\instance\xdefcsname\currentsynonymtag\endcsname
+         {\strc_synonyms_insert{\currentsynonym}{\currentsynonymtag}}%
      \fi
    \fi
    \endgroup}
 
 \permanent\tolerant\protected\def\registersynonym  [#1]#*[#2]{\clf_registerusedsynonym{#1}{#2}}
-\permanent         \protected\def\currentsynonymname         {\clf_synonymname{\currentsimplelist}{\currentsynonymtag}}
-\permanent         \protected\def\currentsynonymmeaning      {\clf_synonymmeaning{\currentsimplelist}{\currentsynonymtag}}
-\permanent         \protected\def\doifelsecurrentsynonymused {\clf_doifelsesynonymused{\currentsimplelist}{\currentsynonymtag}}
-\permanent         \protected\def\doifelsecurrentsynonymshown{\clf_doifelsesynonymshown{\currentsimplelist}{\currentsynonymtag}}
+\permanent         \protected\def\currentsynonymname         {\clf_synonymname\currentsimplelist\currentsynonymtag}
+\permanent         \protected\def\currentsynonymmeaning      {\clf_synonymmeaning\currentsimplelist\currentsynonymtag}
+\permanent         \protected\def\currentsynonympages        {\clf_synonympages\currentsimplelist\currentsynonymtag}
+\permanent         \protected\def\doifelsecurrentsynonymused {\clf_doifelsesynonymused\currentsimplelist\currentsynonymtag}
+\permanent         \protected\def\doifelsecurrentsynonymshown{\clf_doifelsesynonymshown\currentsimplelist\currentsynonymtag}
 \permanent         \protected\def\resetusedsynonyms      [#1]{\clf_resetsynonyms{#1}{used}}
 \permanent         \protected\def\resetshownsynonyms     [#1]{\clf_resetsynonyms{#1}{shown}}
 \permanent         \protected\def\resetlistsynonyms      [#1]{\clf_resetsynonyms{#1}{list}}
 \permanent         \protected\def\resetsynonyms          [#1]{\clf_resetsynonyms{#1}{all}}
 \permanent         \protected\def\resetsynonymsprogress  [#1]{\clf_resetsynonyms{#1}{progress}}
 
+\permanent\protected\def\registercurrentsynonympage % \registercurrentsortingpage
+  {\ifcstok{\simplelistparameter\v!page}\v!yes
+     \clf_enhancesynonym\currentsimplelist\currentsortingtag
+   \fi}
+
 \aliased\let\rawsynonymname   \clf_synonymname
 \aliased\let\rawsynonymmeaning\clf_synonymmeaning
+\aliased\let\rawsynonympages  \clf_synonympages
+
+\permanent\protected\def\synonymname   [#1]#*[#2]{\clf_synonymname   {#1}{#2}}
+\permanent\protected\def\synonymmeaning[#1]#*[#2]{\clf_synonymmeaning{#1}{#2}}
+\permanent\protected\def\synonympages  [#1]#*[#2]{\clf_synonympages  {#1}{#2}}
 
 \installcorenamespace{simplelistalternative} % specific ways of rendering a list
 \installcorenamespace{simplelistrenderings}  % a namespace for setups (rather local)
@@ -424,6 +437,7 @@
     \dostarttaggedchained\t!synonym\currentsynonym\??simplelist
     \dotagsynonym
     \usesimpleliststyleandcolor\c!synonymstyle\c!synonymcolor
+    \registercurrentsynonympage
     \simplelistparameter\c!synonymcommand{\currentsynonymname}%
     \dostoptagged
     \endgroup
@@ -523,9 +537,7 @@
 
 \aliased\let\setupsorting\setupsimplelist
 
-% if #3=\relax or \v!none, then no command but still protected
-
-% these  might become private
+% some of these might become private
 
 \mutable\lettonothing\currentsortingoption
 \mutable\lettonothing\currentsortingcoding
@@ -536,10 +548,14 @@
 
 \permanent\tolerant\protected\def\definesorting[#1]#*[#2]#*[#3]%
   {\ifnum\lastarguments=\plusthree
-     \doifnot{#3}\v!none
-       {\ifx#3\relax \else
-          \protected\instance\def#3##1{\strc_sorting_insert{#1}{##1}}%
-        \fi}%
+  %\ifparameter#3\or
+     \ifcstok{#3}\v!none
+       % skip
+     \orelse\ifrelax#3\relax
+       % skip
+     \else
+       \protected\instance\def#3##1{\strc_sorting_insert{#1}{##1}}%
+     \fi
      \frozen\instance\protected\defcsname#1\endcsname{\definesort[\v!no][#1]}%
    \else
      \frozen\instance\protected\defcsname#1\endcsname{\definesort[\v!yes][#1]}%
@@ -600,14 +616,25 @@
         }%
      \relax
      \ifx\currentsortingoption\v!yes
-       \instance\setuxvalue\currentsortingtag{\strc_sorting_insert{\currentsorting}{\currentsortingtag}}%
+      %\instance\setuxvalue\currentsortingtag{\strc_sorting_insert{\currentsorting}{\currentsortingtag}}%
+       \protected\instance\xdefcsname\currentsortingtag\endcsname
+         {\strc_sorting_insert{\currentsorting}{\currentsortingtag}}%
      \fi
    \fi
    \endgroup}
 
-\permanent\protected\def\currentsortingname         {\clf_synonymname         {\currentsimplelist}{\currentsortingtag}}
-\permanent\protected\def\doifelsecurrentsortingused {\clf_doifelsesynonymused {\currentsimplelist}{\currentsortingtag}}
-\permanent\protected\def\resetusedsortings      [#1]{\clf_resetusedsynonyms   {#1}}
+\permanent\protected\def\currentsortingname         {\clf_synonymname\currentsimplelist\currentsortingtag}
+\permanent\protected\def\currentsortingpages        {\clf_synonympages\currentsimplelist\currentsortingtag}
+\permanent\protected\def\doifelsecurrentsortingused {\clf_doifelsesynonymused\currentsimplelist\currentsortingtag}
+\permanent\protected\def\resetusedsortings      [#1]{\clf_resetusedsynonyms{#1}}
+
+\permanent\protected\def\sortingname [#1]#*[#2]{\clf_synonymname {#1}{#2}}
+\permanent\protected\def\sortingpages[#1]#*[#2]{\clf_synonympages{#1}{#2}}
+
+\aliased\let\rawsortingname \clf_synonymname
+\aliased\let\rawsortingpages\clf_synonymmeaning
+
+\aliased\let\registercurrentsortingpage\registercurrentsynonympage
 
 \setupsimplelist
   [\v!sorting]
@@ -641,6 +668,7 @@
     \dostarttaggedchained\t!sorting\currentsorting\??simplelist
     \dotagsorting
     \usesimpleliststyleandcolor\c!style\c!color
+    \registercurrentsortingpage
     \currentsortingname
     \dostoptagged
     \endgroup
@@ -648,6 +676,9 @@
 
 \permanent\tolerant\protected\def\registersort[#1]#*[#2]%
   {\clf_registerusedsynonym{#1}{#2}}
+
+\permanent\tolerant\protected\def\registersortpage[#1]#*[#2]%
+  {\clf_enhancesynonym{#1}{#2}}
 
 % before after
 %

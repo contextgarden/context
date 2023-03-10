@@ -15,9 +15,11 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Float Numbering}
 
-\registerctxluafile{strc-flt}{}
-
 \unprotect
+
+\ifdefined\d_page_sides_vsize \else \newdimension\d_page_sides_vsize \fi
+
+\registerctxluafile{strc-flt}{autosuffix}
 
 % todo: a keyword for this (and then a settings->hash for speed)
 %
@@ -2127,15 +2129,38 @@
      \hpack{\strc_floats_locate_text_float{\box\b_strc_floats_caption}}%
    \fi}
 
+\def\strc_floats_build_box_top_stack_normal_tight
+  {\hpack{\box\b_strc_floats_caption}%
+   \strc_floats_between_stack
+   \hpack{\box\b_strc_floats_content}}
+
+\def\strc_floats_build_box_bottom_stack_normal_tight
+  {\hpack{\box\b_strc_floats_content}%
+   \strc_floats_between_stack
+   \hpack{\box\b_strc_floats_caption}}
+
 \def\strc_floats_build_box_top_stack_normal
   {\doifelseinset\v!overlay{\floatcaptionparameter\c!location}
      \strc_floats_build_box_top_stack_normal_overlay
-     \strc_floats_build_box_top_stack_normal_content}
+  {\doifelseinset\v!tight{\floatlocation}
+     \strc_floats_build_box_top_stack_normal_tight
+     \strc_floats_build_box_top_stack_normal_content}}
 
 \def\strc_floats_build_box_bottom_stack_normal
-  {\doifinset\v!overlay{\floatcaptionparameter\c!location}
+  {\doifelseinset\v!overlay{\floatcaptionparameter\c!location}
      \strc_floats_build_box_bottom_stack_normal_overlay
-     \strc_floats_build_box_bottom_stack_normal_content}
+  {\doifelseinset\v!tight{\floatlocation}
+     \strc_floats_build_box_bottom_stack_normal_tight
+     \strc_floats_build_box_bottom_stack_normal_content}}
+
+% \def\strc_floats_build_box_bottom_stack_normal
+%   {\ifhasxtoks{,\v!overlay,}{,\floatcaptionparameter\c!location,}%
+%      \strc_floats_build_box_bottom_stack_normal_overlay
+%    \orelse\ifhasxtoks{,\v!tight,}{,\floatlocation,}%
+%      \strc_floats_build_box_bottom_stack_normal_tight
+%    \else
+%      \strc_floats_build_box_bottom_stack_normal_content
+%    \fi}
 
 \def\strc_floats_build_box_top_stack_grid
   {\dp\b_strc_floats_caption\strutdepth
@@ -2264,16 +2289,30 @@
 \def\strc_floats_build_box_after
   {\doifelseframed\floatframedparameter\strc_floats_build_box_after_indeed\relax}
 
+% \def\strc_floats_build_box_after_indeed
+%   {\global\setbox\floatbox\hpack
+%      {\edef\m_width{\floatframedparameter\c!width}%
+%       \ifx\m_width\v!fit
+%         \let\m_width\floatwidth
+%       \orelse\ifx\m_width\v!broad
+%         \let\m_width\v!fit
+%       \fi
+%       \letfloatframedparameter\c!strut\v!no
+%       \letfloatframedparameter\c!width\m_width
+%       \inheritedfloatframedframed
+%         {\box\floatbox}}}
+
 \def\strc_floats_build_box_after_indeed
   {\global\setbox\floatbox\hpack
      {\edef\m_width{\floatframedparameter\c!width}%
       \ifx\m_width\v!fit
-        \let\m_width\floatwidth
+        \letfloatframedparameter\c!width\floatwidth
       \orelse\ifx\m_width\v!broad
-        \let\m_width\v!fit
+        \letfloatframedparameter\c!width\v!fit
+      \else
+        \letfloatframedparameter\c!width\m_width % expanded, not really needed
       \fi
       \letfloatframedparameter\c!strut\v!no
-      \letfloatframedparameter\c!width\m_width
       \inheritedfloatframedframed
         {\box\floatbox}}}
 

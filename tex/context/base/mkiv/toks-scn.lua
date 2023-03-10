@@ -347,6 +347,11 @@ local presets = {
     ["2 arguments"] = { "argument", "argument" },
     ["3 arguments"] = { "argument", "argument", "argument" },
     ["4 arguments"] = { "argument", "argument", "argument", "argument" },
+
+    ["1 integer"]  = { "integer" },
+    ["2 integers"] = { "integer", "integer" },
+    ["3 integers"] = { "integer", "integer", "integer" },
+    ["4 integers"] = { "integer", "integer", "integer", "integer" },
 }
 
 tokens.presets = presets

@@ -15,7 +15,7 @@ local implement         = interfaces.implement
 
 local formatters        = string.formatters
 
-typesetters.processors  = typesetters.processors   or { }
+typesetters.processors  = typesetters.processors or { }
 local processors        = typesetters.processors
 
 local trace_processors  = false

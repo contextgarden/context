@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{file-syn}{}
+\registerctxluafile{file-syn}{autosuffix}
 
 %D \macros
 %D   {definefilesynonym,definefilefallback}
@@ -42,8 +42,8 @@
 %D \usemodules[pictex,chemie,unit]
 %D \stoptyping
 
-\permanent\tolerant\def\definefilesynonym     [#name]#spacer[#realname]{\clf_definefilesynonym {#name}{#realname}}
-\permanent\tolerant\def\definefilefallback[#name]#spacer[#alternatives]{\clf_definefilefallback{#name}{#alternatives}}
+% \permanent\tolerant\def\definefilesynonym     [#name]#spacer[#realname]{\clf_definefilesynonym {#name}{#realname}}
+% \permanent\tolerant\def\definefilefallback[#name]#spacer[#alternatives]{\clf_definefilefallback{#name}{#alternatives}}
 
 %D \macros
 %D   {truefilename}
@@ -56,6 +56,6 @@
 %D
 %D The implementation shows that nesting is supported.
 
-\permanent\def\truefilename#1{\clf_truefilename{#1}}
+% \permanent\def\truefilename#1{\clf_truefilename{#1}}
 
 \protect \endinput

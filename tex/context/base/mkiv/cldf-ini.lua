@@ -99,7 +99,7 @@ local tonut             = node.direct.todirect
 local tonode            = node.direct.tonode
 
 local newtoken          = token.new
-local createtoken       = token.create
+----- createtoken       = token.create
 
 local istoken           = token.istoken or token.is_token
 local setluatoken       = token.setlua  or token.set_lua

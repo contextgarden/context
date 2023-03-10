@@ -1,13 +1,16 @@
--- winmerge e:\tex-context\tex\texmf-mine\web2c\contextcnf.lua e:\tex-context\tex\texmf-context\web2c\contextcnf.lua e:\tex-context\tex\texmf\web2c\texmfcnf.lua
+-- todo: come up with an auto-texlive identification (texmf-dist)
+
+---- hiddentexlivepath = ".texlive2023"
 
 return {
 
     type    = "configuration",
-    version = "1.1.2",      -- "1.1.1",
-    date    = "2021-05-12", -- "2011-06-02"
+    version = "1.1.3",
+    date    = "2023-03-10", -- 2021-05-12 2011-06-02
     time    = "14:59:00",
     comment = "ConTeXt MkIV and LMTX configuration file",
     author  = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    target  = "standalone",
 
     content = {
 
@@ -41,7 +44,16 @@ return {
             -- We have only one cache path but there can be more. The first writable one will be taken
             -- but there can be more readable paths.
 
+            -- standalone:
+            
             TEXMFCACHE      = "$SELFAUTOPARENT/texmf-cache",
+            
+            -- texlive
+
+         -- TEXMFVAR        = "home:" .. hiddentexlivepath .. "/texmf-var",
+         -- TEXMFCONFIG     = "home:" .. hiddentexlivepath .. "/texmf-config",
+         -- TEXMFSYSVAR     = "selfautoparent:texmf-var",
+         -- TEXMFCACHE      = "$TEXMFSYSVAR;$TEXMFVAR",
 
             -- I don't like this texmf under home and texmf-home would make more sense. One never knows
             -- what installers put under texmf anywhere and sorting out problems will be a pain. But on
@@ -51,10 +63,21 @@ return {
             -- tex root relocatable.
 
             TEXMFOS         = "selfautodir:",
+            
+            -- standalone: 
+            
             TEXMFSYSTEM     = "selfautoparent:texmf-$SELFAUTOSYSTEM",
             TEXMFMAIN       = "selfautoparent:texmf",
             TEXMFCONTEXT    = "selfautoparent:texmf-context",
             TEXMFMODULES    = "selfautoparent:texmf-modules",
+            
+            -- texlive:
+                        
+         -- TEXMFDIST       = "selfautoparent:texmf-dist",
+         -- TEXMFSYSCONFIG  = "selfautoparent:texmf-config",
+            
+            -- The texmf-local path is only used for (maybe) some additional configuration file.
+            
             TEXMFLOCAL      = "selfautoparent:texmf-local",
             TEXMFFONTS      = "selfautoparent:texmf-fonts",
             TEXMFPROJECT    = "selfautoparent:texmf-project",
@@ -65,7 +88,13 @@ return {
             -- We need texmfos for a few rare files but as I have a few more bin trees a hack is needed.
             -- Maybe other users also have texmf-platform-new trees, but so far I've never heard of it.
 
+            -- standalone:
+
             TEXMF           = "{$TEXMFHOME,!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFMODULES,!!$TEXMFCONTEXT,!!$TEXMFSYSTEM,!!$TEXMFMAIN}",
+            
+            -- texlive:
+            
+         -- TEXMF           = "{$TEXMFCONFIG,$TEXMFHOME,!!$TEXMFSYSCONFIG,!!$TEXMFSYSVAR,!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFDIST}",
 
             TEXFONTMAPS     = ".;$TEXMF/fonts/data//;$TEXMF/fonts/map/{pdftex,dvips}//",
             ENCFONTS        = ".;$TEXMF/fonts/data//;$TEXMF/fonts/enc/{dvips,pdftex}//",
@@ -105,7 +134,14 @@ return {
             -- A few special ones that will change some day.
 
             FONTCONFIG_FILE = "fonts.conf",
+
+            -- standalone
+            
             FONTCONFIG_PATH = "$TEXMFSYSTEM/fonts/conf",
+            
+            --texlive 
+
+         -- FONTCONFIG_PATH = "$TEXMFSYSVAR/fonts/conf",
 
         },
 

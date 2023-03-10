@@ -24,7 +24,7 @@
 
 \unprotect
 
-\registerctxluafile{typo-inj}{}
+\registerctxluafile{typo-inj}{autosuffix}
 
 % todo: no need in trialmode
 

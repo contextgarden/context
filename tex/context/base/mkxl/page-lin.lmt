@@ -414,5 +414,5 @@ end
 implement {
     name      = "addlinenumbers",
     actions   = boxed.addlinenumbers,
-    arguments = { "integer", "integer", "integer" }
+    arguments = "3 integers",
 }

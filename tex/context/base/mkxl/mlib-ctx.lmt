@@ -231,7 +231,7 @@ implement {
 implement {
     name      = "mpsetoutercolor",
     actions   = function(...) metapost.setoutercolor(...) end, -- not yet implemented
-    arguments = { "integer", "integer", "integer", "integer" }
+    arguments = "4 integers",
 }
 
 -- this has to become a codeinjection

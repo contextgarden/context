@@ -3100,17 +3100,15 @@ void tex_run_math_accent(void)
                                 if (tex_scan_character("t", 0, 0, 0)) {
                                      switch (tex_scan_character("thTH", 0, 0, 0)) {
                                          case 'h': case 'H':
-                                             if (tex_scan_mandate_keyword("both", 4)) {
-                                                  /*tex top bottom */
-                                                  if (tex_scan_keyword("fixed")) {
-                                                      node_subtype(accent) = fixedtop_accent_subtype;
-                                                  }
-                                                  t = tex_scan_mathchar(umath_mathcode);
-                                                  if (tex_scan_keyword("fixed")) {
-                                                      node_subtype(accent) = fixedboth_accent_subtype;
-                                                  }
-                                                  b = tex_scan_mathchar(umath_mathcode);
-                                             }
+                                            /*tex top bottom */
+                                            if (tex_scan_keyword("fixed")) {
+                                                node_subtype(accent) = fixedtop_accent_subtype;
+                                            }
+                                            t = tex_scan_mathchar(umath_mathcode);
+                                            if (tex_scan_keyword("fixed")) {
+                                                node_subtype(accent) = fixedboth_accent_subtype;
+                                            }
+                                            b = tex_scan_mathchar(umath_mathcode);
                                             goto DONE;
                                          case 't': case 'T':
                                              if (tex_scan_mandate_keyword("bottom", 4)) {

@@ -67,6 +67,12 @@
 
 \overloadmode\zerocount
 
+\newtoks\everytikzpicture
+
+% \appendtoks
+%     \resetcharacterspacing
+% \to \everytikzpicture
+
 \permanent\protected\def\starttikzsettings
   {\pushoverloadmode
    \pushmacro\meaning
@@ -81,6 +87,7 @@
 \permanent\protected\def\starttikzpicture
   {\dontleavehmode
    \hcontainer\bgroup
+   \the\everytikzpicture
    \autoparagraphmode\zerocount
    \pushmacro\meaning
    \let\meaning\meaningless

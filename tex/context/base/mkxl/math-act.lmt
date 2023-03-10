@@ -2624,6 +2624,20 @@ end
 
 do
 
+    function mathtweaks.inspect(target,original,parameters)
+        local characters = target.characters
+        local slot = parameters.slot or parameters.unicode
+        if slot then
+            -- todo: show unicode
+            report_math(formatters["%C data:"](slot))
+            inspect(characters[slot])
+        end
+    end
+
+end
+
+do
+
     local single <const> = 0x003D
     local double <const> = 0x2A75
     local triple <const> = 0x2A76
@@ -3886,13 +3900,13 @@ mathematics.horizontalcode = horizontalcode
 
 interfaces.implement { -- can be public with two times "integerargument"
     name      = "extensiblecode",
-    arguments = { "integer", "integer" },
+    arguments = "2 integers",
     actions   = { extensiblecode, context }
 }
 
 interfaces.implement { -- can be public with two times "integerargument"
     name      = "horizontalcode",
-    arguments = { "integer", "integer" },
+    arguments = "2 integers",
     actions   = function(family,unicode)
         local kind, loffset, roffset = horizontalcode(family,unicode)
         texsetdimen(d_scratchleftoffset, loffset)
@@ -3939,7 +3953,7 @@ end
 interfaces.implement {
     name      = "mathvariantcode",
     public    = true,
-    arguments = { "integer", "integer" },
+    arguments = "2 integers",
     actions   = { mathematics.variantcode, context },
 }
 

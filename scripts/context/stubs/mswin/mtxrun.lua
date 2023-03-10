@@ -5136,7 +5136,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 18217, stripped down to: 10792
+-- original size: 18893, stripped down to: 11170
 
 if not modules then modules={} end modules ['l-dir']={
  version=1.001,
@@ -5598,6 +5598,23 @@ do
    str=gsub(str,"/%./","/")
    str=gsub(str,"(.)/%.$","%1")
    return str
+  end
+ end
+ function dir.expandlink(dir,report)
+  local curdir=currentdir()
+  local trace=type(report)=="function"
+  if chdir(dir) then
+   local newdir=currentdir()
+   if newdir~=dir and trace then
+    report("following symlink %a to %a",dir,newdir)
+   end
+   chdir(curdir)
+   return newdir
+  else
+   if trace then
+    report("unable to check path %a",dir)
+   end
+   return dir
   end
  end
 end
@@ -20748,7 +20765,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-ini"] = package.loaded["data-ini"] or true
 
--- original size: 11605, stripped down to: 7467
+-- original size: 10636, stripped down to: 7049
 
 if not modules then modules={} end modules ['data-ini']={
  version=1.001,
@@ -20759,9 +20776,11 @@ if not modules then modules={} end modules ['data-ini']={
 }
 local next,type,getmetatable,rawset=next,type,getmetatable,rawset
 local gsub,find,gmatch,char=string.gsub,string.find,string.gmatch,string.char
-local filedirname,filebasename,filejoin=file.dirname,file.basename,file.join
+local filedirname,filebasename,filejoin,replacesuffix=file.dirname,file.basename,file.join,file.replacesuffix
 local ostype,osname,osuname,ossetenv,osgetenv=os.type,os.name,os.uname,os.setenv,os.getenv
 local sortedpairs=table.sortedpairs
+local isfile,currentdir=lfs.isfile,lfs.currentdir
+local expandlink=dir.expandlink
 local P,S,R,C,Cs,Cc,lpegmatch=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.match
 local trace_locating=false  trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local trace_expansions=false  trackers.register("resolvers.expansions",function(v) trace_expansions=v end)
@@ -20811,24 +20830,11 @@ do
  if not environment.ownmain then
   environment.ownmain=status and string.match(string.lower(status.banner),"this is ([%a]+)") or "luatex"
  end
- local ownbin=environment.ownbin  or args[-2] or arg[-2] or args[-1] or arg[-1] or arg[0] or "luatex"
+ local ownbin=environment.ownbin  or os.selfbin or args[-2] or arg[-2] or args[-1] or arg[-1] or arg[0] or "luametatex"
  local ownpath=environment.ownpath or os.selfdir
- ownbin=file.collapsepath(ownbin)
+ ownbin=file.collapsepath(ownbin)   
  ownpath=file.collapsepath(ownpath)
- local symlinktarget=lfs.symlinktarget
- if symlinktarget then
-  while true do
-   local new=symlinktarget(ownpath) or ownpath
-   if new==ownpath then
-    break
-   else
-    ownpath=new
-   end
-  end
-  ownpath=file.collapsepath(ownpath)
- else
-  lfs.symlinktarget=function() return nil end 
- end
+ ownpath=expandlink(ownpath,trace_locating and report_initialization)
  if not ownpath or ownpath=="" or ownpath=="unset" then
   ownpath=args[-1] or arg[-1]
   ownpath=ownpath and filedirname(gsub(ownpath,"\\","/"))
@@ -20842,27 +20848,14 @@ do
   end
   if not ownpath or ownpath=="" then
    if os.binsuffix~="" then
-    binary=file.replacesuffix(binary,os.binsuffix)
+    binary=replacesuffix(binary,os.binsuffix)
    end
    local path=osgetenv("PATH")
    if path then
     for p in gmatch(path,"[^"..io.pathseparator.."]+") do
      local b=filejoin(p,binary)
-     if lfs.isfile(b) then
-      local olddir=lfs.currentdir()
-      if lfs.chdir(p) then
-       local pp=lfs.currentdir()
-       if trace_locating and p~=pp then
-        report_initialization("following symlink %a to %a",p,pp)
-       end
-       ownpath=pp
-       lfs.chdir(olddir)
-      else
-       if trace_locating then
-        report_initialization("unable to check path %a",p)
-       end
-       ownpath=p
-      end
+     if isfile(b) then
+      ownpath=expandlink(p,trace_locating and report_initialization)
       break
      end
     end
@@ -26100,8 +26093,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1036036
--- stripped bytes    : 408397
+-- original bytes    : 1035743
+-- stripped bytes    : 408144
 
 -- end library merge
 

@@ -1,0 +1,53 @@
+if not modules then modules = { } end modules ['strc-flt'] = {
+    version   = 1.001,
+    comment   = "companion to strc-flt.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- nothing
+
+local sequencers         = utilities.sequencers
+local appendaction       = sequencers.appendaction
+local enableaction       = sequencers.enableaction
+local disableaction      = sequencers.disableaction
+
+local texgetdimen        = tex.getdimen
+local texgetoutputactive = tex.getoutputactive
+
+local trace              = trackers.register("structure.sidefloats.pageflush")
+local report             = logs.reporter("structure","floats")
+
+local forcepageflush     = builders.vspacing.forcepageflush
+
+local d_page_sides_vsize = tex.isdimen("d_page_sides_vsize")
+
+function builders.checksidefloat(mode,indented)
+    if not texgetoutputactive() then
+        local s = texgetdimen(d_page_sides_vsize)
+        if s > 0 then
+            if trace then
+                report("force flushing page state, height %p",s)
+            end
+            forcepageflush()
+        end
+    else
+        -- we don't have side floats outside the main vertical list
+    end
+    return indented
+end
+
+-- These two lines might move to task-ini.lmt where we currently only deal
+-- with node handlers:
+
+appendaction ("paragraph","system","builders.checksidefloat")
+disableaction("paragraph","builders.checksidefloat")
+
+interfaces.implement {
+    name     = "enablesidefloatchecker",
+    onlyonce = true,
+    actions  = function()
+        enableaction("paragraph","builders.checksidefloat")
+    end,
+}
