@@ -550,7 +550,8 @@ void tex_expand_current_token(void)
                             /*tex Complain about an undefined macro */
                             tex_handle_error(
                                 normal_error_type,
-                                "Undefined control sequence %m", cur_cs,
+                             // "Undefined control sequence %m", cur_cs,
+                                "Undefined control sequence",
                                 "The control sequence at the end of the top line of your error message was never\n"
                                 "\\def'ed. You can just continue as I'll forget about whatever was undefined."
                             );

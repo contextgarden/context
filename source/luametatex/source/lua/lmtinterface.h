@@ -517,6 +517,7 @@ make_lua_key(L, catalog);\
 make_lua_key(L, catcode_table);\
 make_lua_key(L, category);\
 make_lua_key(L, cell);\
+make_lua_key(L, center);\
 make_lua_key(L, char);\
 make_lua_key(L, char_given);\
 make_lua_key(L, char_number);\

@@ -90,7 +90,7 @@
        % disable reset after shipout
        \global\pageornamentstate\plustwo
      \fi
-     % maybe \ifcstok{#1}\emptytoks
+     % maybe \iftok{#1}\emptytoks
      \ifparameter#1\or
        \page_breaks_handle{#1}%
      \else % so, no pagebreak when \pagebreak[] ! ! !

@@ -1732,6 +1732,9 @@
 \permanent\protected\def\mathcodecommand#1%
   {\mathatom \s!class \mathcodechecked{#1}}
 
+\permanent\protected\def\mathcodeallcommand#1#2%
+  {\mathatom \s!class \mathcodechecked{#1} \s!all \mathcodechecked{#2}}
+
 \def\math_class_by_parameter    #1#2{\normalexpanded{\noexpand\mathcodechecked{#1#2}}}
 \def\math_atom_by_parameter       #1{\normalexpanded{\noexpand\math_atom_by_parameter_indeed{#1\c!mathclass}}}
 \def\math_atom_by_parameter_indeed#1{\mathatom \s!class \mathcodechecked{#1}}
@@ -1750,15 +1753,14 @@
 
 \installcorenamespace{mathcommand}
 
-% todo: define these commands as frozen!
-
 \permanent\tolerant\protected\def\definemathcommand[#1]#*[#2]#*[#3]#:#*#4% command class args meaning
   {\ifparameter#3\or
-     \edef\scratchstringone{#3}% make this one m_arguments
-     \ifx\scratchstringone\v!one
+     \ifcstok{#3}\v!one
        \frozen\protected\defcsname\??mathcommand#1\endcsname##1{\mathcodecommand{#2}{#4{##1}}}%
-     \orelse\ifx\scratchstringone\v!two
+     \orelse\ifcstok{#3}\v!two
        \frozen\protected\defcsname\??mathcommand#1\endcsname##1##2{\mathcodecommand{#2}{#4{##1}{##2}}}%
+     \orelse\ifchknum\mathcodechecked{#3}\or
+       \frozen\protected\defcsname\??mathcommand#1\endcsname{\mathcodeallcommand{#2}{#3}{#4}}%
      \else
        \frozen\protected\defcsname\??mathcommand#1\endcsname{\mathcodecommand{#2}{#4}}%
      \fi

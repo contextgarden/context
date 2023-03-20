@@ -1383,25 +1383,35 @@ do  -- else too many locals
                 local characters = tfmdata.characters
                 local parameters = tfmdata.parameters
                 local properties = tfmdata.properties
-                -- we use char0 as signal; cf the spec pdf can handle this (no char in slot)
-                characters[0] = nil
-                tfmdata.original = specification.specification
-                local id = definefont(tfmdata,properties.id)
-                csnames[id] = specification.cs
-                properties.id = id -- already set
-                definers.register(tfmdata,id) -- to be sure, normally already done
-                texdefinefont(global,cs,id)
-             -- texdefinefont(cs,id,global and "global")
-                constructors.finalize(tfmdata)
-                if trace_defining then
-                    report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a, step %a",
-                        name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,"-")
+                if characters then
+                    -- we use char0 as signal; cf the spec pdf can handle this (no char in slot)
+                    characters[0] = nil
+                    tfmdata.original = specification.specification
+                    local id = definefont(tfmdata,properties.id)
+                    csnames[id] = specification.cs
+                    properties.id = id -- already set
+                    definers.register(tfmdata,id) -- to be sure, normally already done
+                    texdefinefont(global,cs,id)
+                 -- texdefinefont(cs,id,global and "global")
+                    constructors.finalize(tfmdata)
+                    if trace_defining then
+                        report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a, step %a",
+                            name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,"-")
+                    end
+                    -- resolved (when designsize is used):
+                    local size = round(tfmdata.parameters.size or 655360)
+                    setmacro("somefontsize",size.."sp")
+                    texsetcount(c_scaledfontsize,size)
+                    lastfontid = id
+                else
+                    -- case 1: same as **
+                    local nice = nice_cs(cs)
+                    if not reported[name][nice] then
+                        report_defining("unable to define %a as %a",name,nice)
+                    end
+                    lastfontid = -1
+                    texsetcount(c_scaledfontsize,0)
                 end
-                -- resolved (when designsize is used):
-                local size = round(tfmdata.parameters.size or 655360)
-                setmacro("somefontsize",size.."sp")
-                texsetcount(c_scaledfontsize,size)
-                lastfontid = id
             elseif tfmtype == "number" then
                 if trace_defining then
                     report_defining("reusing %s, id %a, target %a, features %a / %a, fallbacks %a / %a, goodies %a / %a, designsize %a / %a",
@@ -1417,6 +1427,7 @@ do  -- else too many locals
                 texsetcount(c_scaledfontsize,size)
                 lastfontid = tfmdata
             else
+                -- case 2: same as **
                 local nice = nice_cs(cs)
                 if not reported[name][nice] then
                     report_defining("unable to define %a as %a",name,nice)

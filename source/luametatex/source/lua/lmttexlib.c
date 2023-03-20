@@ -4829,7 +4829,7 @@ static int texlib_getglyphoptionvalues(lua_State *L)
 
 static int texlib_getnoadoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 34);
+    lua_createtable(L, 2, 36);
     lua_push_key_at_index(L, axis,                   noad_option_axis);
     lua_push_key_at_index(L, noaxis,                 noad_option_no_axis);
     lua_push_key_at_index(L, exact,                  noad_option_exact);
@@ -4866,6 +4866,9 @@ static int texlib_getnoadoptionvalues(lua_State *L)
     lua_push_key_at_index(L, fixedsuperorsubscript,  noad_option_fixed_super_or_sub_script);
     lua_push_key_at_index(L, fixedsuperandsubscript, noad_option_fixed_super_and_sub_script);
     lua_push_key_at_index(L, autobase,               noad_option_auto_base);
+    lua_push_key_at_index(L, shrink,                 noad_option_shrink);
+    lua_push_key_at_index(L, stretch,                noad_option_stretch);
+    lua_push_key_at_index(L, center,                 noad_option_center);
     return 1;
 }
 
@@ -5090,21 +5093,23 @@ static int texlib_getkerneloptionvalues(lua_State *L)
 static int texlib_getcharactertagvalues(lua_State *L)
 {
     lua_createtable(L, 2, 12);
-    lua_set_string_by_index(L, no_tag,          "normal");
-    lua_set_string_by_index(L, ligatures_tag,   "ligatures");
-    lua_set_string_by_index(L, kerns_tag,       "kerns");
-    lua_set_string_by_index(L, list_tag,        "list");
-    lua_set_string_by_index(L, callback_tag,    "callback");
-    lua_set_string_by_index(L, extensible_tag,  "extensible");
-    lua_set_string_by_index(L, horizontal_tag,  "horizontal");
-    lua_set_string_by_index(L, vertical_tag,    "vertical");
-    lua_set_string_by_index(L, extend_last_tag, "extendlast");
-    lua_set_string_by_index(L, inner_left_tag,  "innerleft");
-    lua_set_string_by_index(L, inner_right_tag, "innerright");
-    lua_set_string_by_index(L, italic_tag,      "italic");
-    lua_set_string_by_index(L, n_ary_tag,       "nary");
-    lua_set_string_by_index(L, radical_tag,     "radical");
-    lua_set_string_by_index(L, punctuation_tag, "punctuation");
+    lua_set_string_by_index(L, no_tag,           "normal");
+    lua_set_string_by_index(L, ligatures_tag,    "ligatures");
+    lua_set_string_by_index(L, kerns_tag,        "kerns");
+    lua_set_string_by_index(L, list_tag,         "list");
+    lua_set_string_by_index(L, callback_tag,     "callback");
+    lua_set_string_by_index(L, extensible_tag,   "extensible");
+    lua_set_string_by_index(L, horizontal_tag,   "horizontal");
+    lua_set_string_by_index(L, vertical_tag,     "vertical");
+    lua_set_string_by_index(L, inner_left_tag,   "innerleft");
+    lua_set_string_by_index(L, inner_right_tag,  "innerright");
+    lua_set_string_by_index(L, inner_top_tag,    "innertop");
+    lua_set_string_by_index(L, inner_bottom_tag, "innerbottom");
+    lua_set_string_by_index(L, extend_last_tag,  "extendlast");
+    lua_set_string_by_index(L, italic_tag,       "italic");
+    lua_set_string_by_index(L, n_ary_tag,        "nary");
+    lua_set_string_by_index(L, radical_tag,      "radical");
+    lua_set_string_by_index(L, punctuation_tag,  "punctuation");
     return 1;
 }
 

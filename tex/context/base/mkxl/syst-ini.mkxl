@@ -1308,7 +1308,7 @@
    \endlocalcontrol
    #2}
 
-\permanent\protected\def\suggestedalias#1#2%
+\permanent\protected\def\suggestedalias#1#2% old new
   {\ifflags#2\permanent\permanent\fi % the rest is taken with the copy
    \def#1{\syst_suggested_alias#1#2}}
 

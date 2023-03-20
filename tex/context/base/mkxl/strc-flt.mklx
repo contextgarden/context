@@ -531,9 +531,9 @@
 
 \def\strc_floats_apply_caption_command
   {\setbox\b_strc_floats_caption\hbox\bgroup
-    %\unless\ifcstok{\floatcaptionparameter\c!command}\emptytoks
+    %\unless\iftok{\floatcaptionparameter\c!command}\emptytoks
        \floatcaptionparameter\c!command{\box\b_strc_floats_caption}%
-    %\orunless\ifcstok{\floatcaptionparameter\c!deeptextcommand}\emptytoks
+    %\orunless\iftok{\floatcaptionparameter\c!deeptextcommand}\emptytoks
     %  \floatcaptionparameter\c!deeptextcommand{\unvbox\b_strc_floats_caption}%
     %\else
     %  \box\b_strc_floats_caption

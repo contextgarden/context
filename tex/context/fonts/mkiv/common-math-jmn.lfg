@@ -8,6 +8,10 @@ return {
         helpers = {
             addmissing = function(main)
 
+                local max            = math.max
+                local copytable      = table.copy
+                local slotcommand    = fonts.helpers.commands.slot
+
                 local builders       = fonts.handlers.vf.math.builders
                 local ps             = fonts.helpers.privateslot
 
@@ -25,8 +29,8 @@ return {
                 local llbracepiece = ps("ll brace piece")
                 local lrbracepiece = ps("lr brace piece")
 
-                builders.brace(main,0x23DE,ulbracepiece,cmbracepiece,lrbracepiece,llbracepiece,cmbracepiece,urbracepiece)
-                builders.brace(main,0x23DF,llbracepiece,cmbracepiece,urbracepiece,ulbracepiece,cmbracepiece,lrbracepiece)
+                builders.brace(main,0x23DE,ulbracepiece,cmbracepiece,lrbracepiece,llbracepiece,cmbracepiece,urbracepiece,"top")
+                builders.brace(main,0x23DF,llbracepiece,cmbracepiece,urbracepiece,ulbracepiece,cmbracepiece,lrbracepiece,"bottom")
 
                 builders.parent(main,0x23DC,ulbracepiece,umbracepiece,urbracepiece,"top")
                 builders.parent(main,0x23DD,llbracepiece,lmbracepiece,lrbracepiece,"bottom")
@@ -39,13 +43,21 @@ return {
 
                 builders.jointwo(main,0x21A6,ps("maps to piece"),.15,0x02192) -- \mapstochar\rightarrow
 
+                local srl = ps("rule left piece")
                 local srm = ps("rule middle piece")
                 local srr = ps("rule right piece")
-                local srl = ps("rule left piece")
 
+                local drl = ps("double rule left piece")
                 local drm = ps("double rule middle piece")
                 local drr = ps("double rule right piece")
-                local drl = ps("double rule left piece")
+
+                local sfl = ps("flat rule left piece")
+                local sfm = ps("flat rule middle piece")
+                local sfr = ps("flat rule right piece")
+
+                local dfl = ps("flat double rule left piece")
+                local dfm = ps("flat double rule middle piece")
+                local dfr = ps("flat double rule right piece")
 
                 local sal = ps("arrow left piece")
                 local sar = ps("arrow right piece")
@@ -55,32 +67,90 @@ return {
 
                 local rad = ps("radical bar extender")
 
-                if characters[srm] then
+                local antykwa = characters[srm]
 
-                    builders.jointwo(main,0x27F5,sak,joinrelfactor,srr)
-                    builders.jointwo(main,0x27F6,srl,joinrelfactor,sar)
-                    builders.jointwo(main,0x27F7,sak,joinrelfactor,sar)
-                    builders.jointwo(main,0x27F8,dal,joinrelfactor,drr)
-                    builders.jointwo(main,0x27F9,drl,joinrelfactor,dar)
-                    builders.jointwo(main,0x27FA,dal,joinrelfactor,dar)
+                if not antykwa then
 
-                    builders.horibar(main,0x203E,srm,srl,srr,0x02212) -- overbar underbar fraction (we take 90/91/92 too!)
-                 -- builders.horibar(main,0x203E,srm,srl,srr,0x0002D) -- overbar underbar fraction (we take 90/91/92 too!)
+                    sal = 0x02190  sar = 0x02192
+                    dal = 0x021D0  dar = 0x021D2
 
-                    builders.rootbar(main,ps("radical bar extender"),srm,srr,0x02212) -- radical
+                    srl = 0x0002D  srr = 0x0002D
+                    drl = 0x0003D  drr = 0x0003D
 
-                else
-
-                    builders.jointwo(main,0x27F5,0x02190,joinrelfactor,0x0002D) -- \leftarrow\joinrel\relbar
-                    builders.jointwo(main,0x27F6,0x0002D,joinrelfactor,0x02192) -- \relbar\joinrel\rightarrow
-                    builders.jointwo(main,0x27F7,0x02190,joinrelfactor,0x02192) -- \leftarrow\joinrel\rightarrow
-                    builders.jointwo(main,0x27F8,0x021D0,joinrelfactor,0x0003D) -- \Leftarrow\joinrel\Relbar
-                    builders.jointwo(main,0x27F9,0x0003D,joinrelfactor,0x021D2) -- \Relbar\joinrel\Rightarrow
-                    builders.jointwo(main,0x27FA,0x021D0,joinrelfactor,0x021D2) -- \Leftarrow\joinrel\Rightarrow
-
-                    builders.horibar(main,0x203E,0xFE073) -- overbar underbar
+                    sfl = 0x0002D  srm = 0x0002D
+                    dfl = 0x0003D  drm = 0x0003D
 
                 end
+
+                if not characters[sfm] then
+
+                    local csal = characters[sal]  local sheight = csal.height  local sdepth = csal.depth
+                    local cdal = characters[dal]  local dheight = cdal.height  local ddepth = cdal.depth
+
+                    local csfl = copytable(characters[srl])  characters[sfl] = csfl  csfl.height = sheight  csfl.depth = sdepth csfl.italic = nil
+                    local csfm = copytable(characters[srm])  characters[sfm] = csfm  csfm.height = sheight  csfm.depth = sdepth csfm.italic = nil
+                    local csfr = copytable(characters[srr])  characters[sfr] = csfr  csfr.height = sheight  csfr.depth = sdepth csfr.italic = nil
+                    local cdfl = copytable(characters[drl])  characters[dfl] = cdfl  cdfl.height = dheight  cdfl.depth = ddepth cdfl.italic = nil
+                    local cdfm = copytable(characters[drm])  characters[dfm] = cdfm  cdfm.height = dheight  cdfm.depth = ddepth cdfm.italic = nil
+                    local cdfr = copytable(characters[drr])  characters[dfr] = cdfr  cdfr.height = dheight  cdfr.depth = ddepth cdfr.italic = nil
+
+                end
+
+                builders.jointwo(main,0x27F5,sal,joinrelfactor,srr)
+                builders.jointwo(main,0x27F6,srl,joinrelfactor,sar)
+                builders.jointwo(main,0x27F7,sal,joinrelfactor,sar)
+                builders.jointwo(main,0x27F8,dal,joinrelfactor,drr)
+                builders.jointwo(main,0x27F9,drl,joinrelfactor,dar)
+                builders.jointwo(main,0x27FA,dal,joinrelfactor,dar)
+
+                if antykwa then
+                    builders.horibar(main,0x203E,srm,srl,srr,0x02212) -- overbar underbar fraction (we take 90/91/92 too!)
+                 -- builders.horibar(main,0x203E,srm,srl,srr,0x0002D) -- overbar underbar fraction (we take 90/91/92 too!)
+                    builders.rootbar(main,rad,srm,srr,0x02212) -- radical
+                else
+                    builders.horibar(main,0x203E,0xFE073) -- overbar underbar
+                end
+
+                local ffactor = antykwa and 1 or 1
+                local mfactor = antykwa and 1 or .8
+                local lfactor = antykwa and 1 or .8
+
+                builders.extension(main,0x2190,sal,sfm,sfr,ffactor,mfactor,lfactor) -- \leftarrow
+                builders.extension(main,0x2192,sfl,sfm,sar,ffactor,mfactor,lfactor) -- \rightarrow
+                builders.extension(main,0x27F5,sal,sfm,sfr,ffactor,mfactor,lfactor)
+                builders.extension(main,0x27F6,sfl,sfm,sar,ffactor,mfactor,lfactor)
+                builders.extension(main,0x27F7,sal,sfm,sar,ffactor,mfactor,lfactor)
+                builders.extension(main,0x27F8,dal,dfm,dfr,ffactor,mfactor,lfactor)
+                builders.extension(main,0x27F9,dfl,dfm,dar,ffactor,mfactor,lfactor)
+                builders.extension(main,0x27FA,dal,dfm,dar,ffactor,mfactor,lfactor)
+
+                local tfactor = antykwa and -0.8 or -0.8
+                local bfactor = antykwa and  0.1  or  0.1
+
+                local left  = characters[0x27F5]
+                local right = characters[0x27F6]
+                local both  = characters[0x27F7]
+
+                local height = max(left.height or 0,right.height or 0,both.height or 0)
+                local depth  = max(left.depth  or 0,right.depth  or 0,both.depth  or 0)
+
+                left .height = height  left .depth = depth
+                right.height = height  right.depth = depth
+                both .height = height  both .depth = depth
+
+                local t = copytable(left)  characters[0x20D6] = t t.inneryoffset = tfactor*height t.innerlocation = "top"    t.next = nil t.italic = nil -- over
+                local t = copytable(right) characters[0x20D7] = t t.inneryoffset = tfactor*height t.innerlocation = "top"    t.next = nil t.italic = nil
+                local t = copytable(both)  characters[0x20E1] = t t.inneryoffset = tfactor*height t.innerlocation = "top"    t.next = nil t.italic = nil
+
+                local t = copytable(left)  characters[0x20EE] = t t.inneryoffset = bfactor*height t.innerlocation = "bottom" t.next = nil t.italic = nil -- under
+                local t = copytable(right) characters[0x20EF] = t t.inneryoffset = bfactor*height t.innerlocation = "bottom" t.next = nil t.italic = nil
+                local t = copytable(both)  characters[0x034D] = t t.inneryoffset = bfactor*height t.innerlocation = "bottom" t.next = nil t.italic = nil
+
+                local tfactor = antykwa and -15 or -15
+                local bfactor = antykwa and   1 or   1
+
+                local t = copytable(characters[0x203E]) characters[0x0305] = t t.inneryoffset = tfactor*t.height t.innerlocation = "top"    t.next = nil t.italic = nil
+                local t = copytable(characters[0x203E]) characters[0x0332] = t t.inneryoffset = bfactor*t.height t.innerlocation = "bottom" t.next = nil t.italic = nil
 
                 builders.jointwo(main,0x2016,0x007C,0.20,0x007C)
                 builders.jointwo(main,0x2980,0x007C,0.20,0x007C,0.20,0x007C)
@@ -105,13 +175,20 @@ return {
                 builders.overlaytwo(main,0x2285,0x00338,notshiftfactor,0x02283) -- \not\supset
                 builders.overlaytwo(main,0x2209,0x00338,notshiftfactor,0x02208) -- \not\in
 
-                builders.jointwo(main,0x2254,0x03A,0,0x03D) -- := (≔)
+                -- builders.jointwo  (main,0x2254,0x03A,0,0x03D)         -- :=
+                -- builders.jointhree(main,0x2A74,0x03A,0,0x03A,0,0x03D) -- ::=
+                -- builders.jointwo  (main,0x2A75,0x03D,0,0x03D)         -- ==
 
                 builders.repeated(main,0x222B,0x222B,1,1/2)
                 builders.repeated(main,0x222C,0x222B,2,1/2)
                 builders.repeated(main,0x222D,0x222B,3,1/2)
 
                 characters[0x02B9] = characters[0x2032] -- we're nice
+
+                -- some things are done automatically:
+
+                -- add primes
+                -- add equals and alike
 
             end
         }

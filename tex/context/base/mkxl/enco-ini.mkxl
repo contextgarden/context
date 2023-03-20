@@ -74,6 +74,17 @@
 \immutable\letcsname\??accents\endcsname\empty
 
 %D Because now have this (\type {\chr} issues a one|-|time warning):
+%D
+%D \stopbuffer
+%D \chr {e acute}
+%D \chr {i circumflex}
+%D \^{i} \^i \^{\i}
+%D \^{a} \"{a}
+%D \withcircumflex{a}
+%D \withdiaeresis{a}
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
 
 \permanent\protected\def\dodefinecombine#1#2%
   {\ifcsname\string#1\endcsname\else

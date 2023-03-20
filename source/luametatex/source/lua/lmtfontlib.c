@@ -313,6 +313,10 @@ static void fontlib_aux_font_char_from_lua(lua_State *L, halfword f, int i, int 
                 set_charinfo_tag(co, inner_left_tag);
             } else if (lua_key_eq(starget, right)) {
                 set_charinfo_tag(co, inner_right_tag);
+            } else if (lua_key_eq(starget, top)) {
+                set_charinfo_tag(co, inner_top_tag);
+            } else if (lua_key_eq(starget, bottom)) {
+                set_charinfo_tag(co, inner_bottom_tag);
             } 
             set_numeric_field_by_index(target, innerxoffset, INT_MIN);
             set_charinfo_inner_x_offset(co, target);

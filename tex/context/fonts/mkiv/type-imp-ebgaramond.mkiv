@@ -65,6 +65,14 @@
 
 \starttypescriptcollection[ebgaramond]
 
+    \startsetups[ebgaramond]
+        \letmathfractionparameter\c!rule\v!symbol
+        \setmathfractionparameter\c!middle{"203E}%
+        \letmathradicalparameter \c!rule\v!symbol
+        \setmathradicalparameter \c!top{\radicalbarextenderuc}%
+      % \setmathfenceparameter   \c!alternative{1}%
+    \stopsetups
+
     \doifunknownfontfeature {ebgaramond-math-bold} {\definefontfeature[ebgaramond-math-bold][boldened]}
 
     \starttypescript [\s!serif] [ebgaramond]
@@ -76,15 +84,13 @@
         \definefontsynonym [\s!SerifCaps]      [\s!Serif]                     [\s!features=eb-garamond-smallcaps]
     \stoptypescript
 
-
-
-     \starttypescript [\s!sans] [ysabeau]
-         % \setups[font:fallback:sans]
-         \definefontsynonym [\s!Sans]          [\s!file:ysabeau-regular]       [\s!features=\s!default]
-         \definefontsynonym [\s!SansItalic]    [\s!file:ysabeau-italic]        [\s!features=\s!default]
-         \definefontsynonym [\s!SansBold]      [\s!file:ysabeau-bold]          [\s!features=\s!default]
-         \definefontsynonym [\s!SansBoldItalic][\s!file:ysabeau-bolditalic]    [\s!features=\s!default]
-         \definefontsynonym [\s!SansCaps]      [\s!Sans]                       [\s!features=ysabeau-smallcaps]
+    \starttypescript [\s!sans] [ysabeau]
+        % \setups[font:fallback:sans]
+        \definefontsynonym [\s!Sans]          [\s!file:ysabeau-regular]       [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]    [\s!file:ysabeau-italic]        [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]      [\s!file:ysabeau-bold]          [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic][\s!file:ysabeau-bolditalic]    [\s!features=\s!default]
+        \definefontsynonym [\s!SansCaps]      [\s!Sans]                       [\s!features=ysabeau-smallcaps]
      \stoptypescript
 
     \starttypescript [\s!math] [ebgaramond,ebgaramond-nt]

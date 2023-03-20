@@ -14,7 +14,7 @@ return {
     mathematics = {
         parameters = {
             FractionRuleThickness             =  55,
-            AccentBaseDepth                   = 250,
+         -- AccentBaseDepth                   = 250,
             DelimiterPercent                  =  90,
             DelimiterShortfall                = 400,
             SuperscriptBottomMaxWithSubscript = 325,
@@ -32,18 +32,18 @@ return {
                     tweak   = "fixoldschool",
                     version = "Version 1.802",
                 },
-{
-    tweak   = "parameters",
-    feature = "boldmath",
-    list    = {
---             RadicalRuleThickness  = 55,
-            RadicalRuleThickness  = 60,
---             RadicalRuleThickness  = "1.09*RadicalRuleThickness",
---             FractionRuleThickness = 65,
---             OverRuleThickness     = 65,
---             UnderRuleThickness    = 65,
-    }
-},
+                {
+                    tweak   = "parameters",
+                    feature = "boldmath",
+                    list    = {
+                --             RadicalRuleThickness  = 55,
+                            RadicalRuleThickness  = 60,
+                --             RadicalRuleThickness  = "1.09*RadicalRuleThickness",
+                --             FractionRuleThickness = 65,
+                --             OverRuleThickness     = 65,
+                --             UnderRuleThickness    = 65,
+                    }
+                },
                 {
                     tweak = "addmirrors",
                 },
@@ -58,6 +58,22 @@ return {
                 presets.moveitalics          { correct = true, letters = true },
                 presets.moveintegrals        { factor = 1.5 },
                 presets.wipeitalics          { },
+                {
+                    tweak    = "replacealphabets",
+                    filename = "lucidabrightot.otf",
+                    keep     = true,
+                    list     = {
+                        { source = "latinsupplement" },
+                --         { source = "latinextendeda" },
+                --         { source = "latinextendedadditional" },
+                --         { source = "latinextendedb" },
+                --         { source = "latinextendedc" },
+                --         { source = "latinextendedd" },
+                --         { source = "latinextendede" },
+                --         { source = "latinextendedf" },
+                --         { source = "latinextendedg" },
+                    },
+                },
                 {
                     tweak   = "replacealphabets",
                     list    = {
@@ -140,12 +156,12 @@ return {
                     tweak = "kerns",
                     list  = {
                         [0x002F]                = { topleft  = -0.2,  bottomright = -0.2  },
-                        ["0x7D.parts.top"]      = { topright = -0.15                      }, -- right brace top
-                        ["0x7D.parts.bottom"]   = {                   bottomright = -0.15 }, -- right brace bottom
-                        ["0x7D.variants.*"]     = { topright = -0.15, bottomright = -0.15 }, -- right brace variants
-                        ["0x29.parts.top"]      = { topright = -0.25                      }, -- right parenthesis top
-                        ["0x29.parts.bottom"]   = {                   bottomright = -0.25 }, -- right parenthesis bottom
-                        ["0x29.variants.*"]     = { topright = -0.2,  bottomright = -0.2  }, -- right parenthesis variants
+                        ["0x007D.parts.top"]    = { topright = -0.15                      }, -- right brace top
+                        ["0x007D.parts.bottom"] = {                   bottomright = -0.15 }, -- right brace bottom
+                        ["0x007D.variants.*"]   = { topright = -0.15, bottomright = -0.15 }, -- right brace variants
+                        ["0x0029.parts.top"]    = { topright = -0.25                      }, -- right parenthesis top
+                        ["0x0029.parts.bottom"] = {                   bottomright = -0.25 }, -- right parenthesis bottom
+                        ["0x0029.variants.*"]   = { topright = -0.2,  bottomright = -0.2  }, -- right parenthesis variants
                         ["0x221A.parts.top"]    = { topright = 0.2                        }, -- right radical top
                         ["0x221A.parts.bottom"] = {                   bottomright =  0.2  }, -- right radical bottom
                         ["0x221A.variants.*"]   = { topright = 0.2,   bottomright =  0.2  }, -- right radical variants
@@ -195,6 +211,12 @@ return {
                         [0x219E] = false,
                         [0x21A0] = false,
                     }
+                },
+                -- fix a bug (todo: version)
+                {
+                    tweak       = "sortvariants",
+                    list        = { 0x23DE },
+                    orientation = "horizontal",
                 },
                 -- this is the mkiv section
                 {

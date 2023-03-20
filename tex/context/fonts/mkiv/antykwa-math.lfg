@@ -3,19 +3,19 @@ local helpers = common.mathematics.helpers
 
 if not fonts.encodings.math["extensible-jmn-private"] then
 
-    local nps = fonts.helpers.newprivateslot
+    local ps = fonts.helpers.privateslot
 
     fonts.encodings.math["extensible-jmn-private"] = {
-        [nps("rule middle piece")]         = 200, -- minusjmn
-        [nps("rule right piece")]          = 201, -- minusrightjmn
-        [nps("rule left piece")]           = 202, -- minusleftjmn
-        [nps("double rule middle piece")]  = 203, -- equaljmn
-        [nps("double rule right piece")]   = 204, -- equalrightjmn
-        [nps("double rule left piece")]    = 205, -- equalleftjmn
-        [nps("arrow left piece")]          = 206, -- arrowleftjmn
-        [nps("arrow right piece")]         = 207, -- arrowrightjmn
-        [nps("double arrow left piece")]   = 208, -- arrowdblleftjmn
-        [nps("double arrow right piece")]  = 209, -- arrowdblrightjmn
+        [ps("rule middle piece")]        = 200, -- minusjmn
+        [ps("rule right piece")]         = 201, -- minusrightjmn
+        [ps("rule left piece")]          = 202, -- minusleftjmn
+        [ps("double rule middle piece")] = 203, -- equaljmn
+        [ps("double rule right piece")]  = 204, -- equalrightjmn
+        [ps("double rule left piece")]   = 205, -- equalleftjmn
+        [ps("arrow left piece")]         = 206, -- arrowleftjmn
+        [ps("arrow right piece")]        = 207, -- arrowrightjmn
+        [ps("double arrow left piece")]  = 208, -- arrowdblleftjmn
+        [ps("double arrow right piece")] = 209, -- arrowdblrightjmn
     }
 
 end

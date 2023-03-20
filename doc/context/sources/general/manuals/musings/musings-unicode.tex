@@ -1,0 +1,1584 @@
+% language=us runpath=texruns:manuals/math
+
+\def\unichar#1#2{#1 (U+#2: \char"#2)}
+
+\def\APL{\ss apl}
+
+% \useMPlibrary[dum]
+
+\startcomponent musings-unicode
+
+\environment musings-style
+
+% \usemodule[mathfun]
+
+\startchapter[title=Unicode]
+
+\startsection[title=Introduction]
+
+When working on a \TEX\ macro package for decades one can hardly avoid dealing
+with math; after all \TEX\ is pretty much about math. When this wonderful
+typesetting infrastructure was written it was all about quality and how to make
+your documents look nice. And for sure, Don Knuths documents looks nice, also
+because he pays a lot of attention to the \quotation {fine points of math
+typesetting}.
+
+The constraints of those time (like hardware, compilers, fonts, and for sure also
+time) made \TEX\ into what it is: eight bit character sets, eight bit fonts,
+eight bit hyphenation patterns, efficient memory usage and therefore carrying
+around as little as possible. It all makes sense. But one needs to pay attention.
+\footnote {And that is what Mikael Sundqvist and I have been doing a lot since we
+started upgrading math in \CONTEXT\ in combination with enhancing the math engine
+in \LUAMETATEX. The story here is a byproduct of our explorations and very much a
+combined effort.}
+
+Math typesetting is actually a sort of separated process in the engine:
+unprocessed lists go in and after some juggling a list of assembled boxes,
+glyphs, glues and penalties come out. I will not go into detail about that and
+only mention that in \LUAMETATEX\ we extended all this to be a bit more flexible
+and controllable, something that has been driven by the fact that we need to
+support \UNICODE\ fonts. This is all part of a related effort to move from eight
+bit \quote {everything} to \UNICODE\ \quote {everywhere}.
+
+Now, one can say a lot about \UNICODE\ but the main advantage is that it tries to
+cover \quote {all} characters ever encountered, including scripts (used in
+languages) that are long gone, as well as these little pictures that people like
+to see on the web: emojis. One can safely say that \UNICODE\ simplifies mixing
+languages and scripts, and thereby makes \TEX\ macro packages less complex. On
+the other hand, \UNICODE\ (or more precisely, related wide) fonts makes all kind
+of features possible and thereby add a complication.
+
+So, how about math? When Don Knuth gave us \TEX\ he also gave us fonts and there
+are plenty symbols in these fonts. But, as mathematicians seem to love variations
+on symbols soon more fonts arrived, most noticeably those from the \AMS\ that
+also added some more alphabets: mathematicians also love to render the shapes of
+letters differently. In order to access these glyphs names were invented that
+also sometimes suggested that there was some order in the matter. And, for some
+reason these names got aliases and soon we had a huge list of often obscure and
+inconsistent macro names. It didn't take long for a little mess and confusion to
+creep in.
+
+It has been said that the verbose \TEX\ math \ASCII\ input format is also a way
+for mathematicians to communicate, just because many use the same tool to render
+the formulas. Of course that gets obscured when one starts to add additional
+macros. It gets even more tricky once we start talking \quote {standard} as in
+\quotation {\LATEX\ is the standard}. That has for instance resulted in browsers
+interpreting \TEX\ like input without using \TEX\ (so how about expansion?). It
+has also sort of put \TEX\ into the range of possible word processing systems,
+which in turn leads to these \MSWORD\ versus Google docs versus \LATEX\ debates
+that can get rather nasty and unrealistic when it comes to discussing usage and
+quality. Interestingly, \MSWORD\ now has reasonable math, to some extent
+modelled after \TEX. It has some verbose \TEX\ like (but constrained) input and
+would do well for probably mostly people who occasionally have to inject some
+math. There were also attempts by the people at \MICROSOFT\ to normalize the
+input but we leave that aside now.
+
+However, because we now do have all these symbols and because source code editors
+make them accessible and show them there is a good chance that users will inject
+them, if only by cut and paste, so we do have to deal with that. This
+automatically puts us in the position that we need to deal with different
+meanings for the same symbol, which in turn might demand different spacing,
+penalties and such. In the end it is users that drive all this, not publishers;
+they don't really care and out|-|source typesetting anyway. We're not aware of
+any research and development being done and I suppose we would have noticed
+because after all we're involved in developing \LUATEX. It is one of the engines
+that does \OPENTYPE\ and \UNICODE\ math and no publisher or supplier ever took
+serious interest in it. From our perspective what users do is visible, everything
+else is hidden behind corporate curtains. And this is why nowadays we only need
+to care about users (mainly authors).
+
+Back to typesetting. For a long time all went well: one could typeset documents
+that looked good. Okay, not all looked good because not everyone paid attention to
+details, and the more the web evolved the more patching cut'n'paste of bad
+examples made its way into documents, but let's not start talking quality here.
+But then came \UNICODE\ and a while later people started talking about
+accessibility, cutting and pasting and more. In the meantime there had been
+developments like \MATHML\ and \OPENMATH\ that tried to structure and organize
+formulas in a more symbolic way. \footnote {It probably went unnoticed that
+\CONTEXT\ always supported rendering \MATHML, and as such had to deal with all
+the weird aspects (read: way it was used). Although one is not supposed to
+directly edit \MATHML\ we work with authors who are quite happy to do that simply
+because they code the documents in \XML\ because there is a need for high quality
+\PDF\ as well as \HTML\ output and a \CONTEXT\ based workflow can handle the
+\XML\ well. We're talking of large volumes here (mostly for basically free
+school math).}
+
+In the meantime the \TEX\ community had lost the edge on fonts, and \OPENTYPE\
+math was invented by \MICROSOFT\ and implemented in \MSWORD\ before a substantial
+number of \TEX\ users understood what was happening. They had it coming. To a
+large extend one can say the same about math in \UNICODE. Where a Greek capital
+\quote {A} is seen as different from a Latin capital \quote {A}, even when they
+often have the same shape, a math italic variable \quote {h} was made synonym to
+\quote {Planck constant}, as if the letters used in math had no meaning at all.
+We'll see that a wide hat is an extensible character of zero width combining hat
+accent, which makes for curious handling of the initial character. There is more
+granularity in some symbols, especially popular symbols like slashes and bars,
+than in letters. It is as if the math community didn't care much about how the
+letters (variables) were communicated and perceived but were picky about the
+slope of slashes. It seems more of a visual world, which might actually be the
+reason structured input never really took of. Maybe \TEX ies just love the mix of
+characters, commands, spacing directives. Maybe they just love to reposition and
+space these glyphs to suit all kind of curious non|-|standard math rendering.
+
+All this makes it pretty hard to communicate meaning, and it is just one of the
+examples where the \TEX\ community, for as far involved, failed to make a strong
+case. Our personal opinion is that no one really cared because in the \TEX\
+community it is all about rendering. The fact that we use math to communicate
+only gained attention when accessibility became hot and by then it was too late.
+Efforts like \OPENMATH\ started ambitious and in the end basically failed. Coding
+in \XML\ using \MATHML\ isn't much better and one always had to adapt to the
+latest fashion. Also, once plenty code shows up bugs become features. Browser
+support came and went and came back. Simplified input using for instance
+\ASCIIMATH\ started indeed simple but quickly became a (somewhat inconsistent)
+mess. What we see here is the same as everything web (and computer languages): we
+can do better, we start some project, then move on, and we end up with half|-|way
+abandoned results. The development cycles are short, results have to be achieved
+fast, there is no time (or interest) for iterating and refactoring. The word
+\quote {standard} and mantra \quote {everyone should use this} are quite popular.
+
+So where does that leave us with \TEX ? Well, with a mess. Decades of various
+efforts have not brought us a coherent system of organizing symbols and
+properties, made us end up with inconsistencies, made users revert to hacks,
+didn't make math easily transferable and complicates rendering. Personally we
+find it sort of strange that we spend time on for instance tagging and
+accessibility before we get these math alphabets and shared math specific symbols
+sorted out. If we cannot make good arguments for that (math being a script on its
+own with semantics and such) we waste energy and are pulling a dead horse. What
+puzzles us most is that one would expect mathematicians to be able to come up
+with strong arguments for a structured approach. But maybe it was simply the fact
+that \TEX\ math typesetting was pretty much driven by large commercial publishers
+and those providing services for them: the first category doesn't invest in these
+matters and even less today, and the second category makes money from sorting out
+the mess, so why get rid of it. Who knows. For us, it means that any complain
+about these matters deserves the same answer: the \TEX\ community created this
+mess, so it has to live with it. And the bad thing is: bugs and work|-|arounds
+eventually become features and then one is supposed to conform, even if deep down
+one knows better. It doesn't help that the community is proud of what it can
+render and has built itself a reputation that all is good.
+
+So why this criticism? Why not just abandon \TEX ? The answer is simple: \TEX\ is
+quite okay and cannot be blamed for where we are now. We need to think of
+solutions and in that respect the \CONTEXT\ users are lucky! They have always
+been told not to use this macro package for math because there are other
+standards and because publishers want \LATEX\ (even if they just let the
+manuscripts be recoded). That means that we don't really need to care much about
+the past. Those who use \CONTEXT\ can benefit from the compatibility we have
+anyway but also move forward to more structured and consistent math. It is in
+this perspective that we will discuss some more details next so that eventually
+we can draw some conclusions. The end goal is to have an additional layer of
+grouping math symbols that permits consistent high quality rendering in a mixed
+input environment.
+
+\stopsection
+
+\startsection[title=Molecules]
+
+Before we go into details about some characters, we spend some word on the
+rendering. The building blocks of a formula are atoms and internally the term
+nucleus is used for what we have without scripts. The simple sequence \type {1 +
+x} will result in a linked list of three atoms with three nuclei. In \type {x^2}
+the \type {x} is the nucleus. Atoms can have scripts: prescripts, postscripts and
+a prime. The majority of \UNICODE\ math characters become such atoms (nuclei and
+scripts) and they get a class property that determines their spacing, but that is
+not part of the \UNICODE\ specification. From the upcoming sections it will be
+clear that when we classify we don't get that much help from \MATHML\ or even the
+\TEX\ community either.
+
+In addition to these atoms the \LUAMETATEX\ engine (which builds upon \TEX) has
+what we can call molecules. There are several types: fractions, accents, fences,
+radicals. This distinction is to some extent present in \UNICODE: plenty of
+fraction related slashes, all kind of accents, vertical delimiters that can be
+made from snippets and act as fences, and a radical symbol. In \MATHML\ we see
+similar constructs but there in practice quite often operators need to be
+interpreted in a way that can distinguish between atoms and molecules. That is
+partly a side effect of applications that generate \MATHML. And as usual with
+standards pushed upon the world without years of exploration the confusion became
+part of the norm and will stay.
+
+In the \TEX\ engine over and under delimiters are implemented on top of radicals
+(using the same noad, the wrapper node for yet unprocessed math) but they have
+different code paths. Basically we have vertically fenced material and just like
+fractions have left and right fences as part of the concept (for binominals) the
+radical has a sort of left fence too. You can also wonder why we need accent
+noads while we support other delimiters with radicals. This organization mostly
+relates to subtypes and classes (and likely some limitations of the past) that
+have related spacing properties, but we can think if a generic structure noad and
+meaningful subtypes. However, that is not what we get so let's be more precise:
+
+{\bf Fractions:} these stack two atoms (or molecules) and separate them by a
+visible or phantom rule, or in \LUAMETATEX\ by a delimiter. They can have a left
+and right fence which originates in them also suitable for binominals. You may
+wonder why we don't use regular fences here. One reason we can think of is that
+when you fence something, you have an open and close class at the edges while
+with a fenced fraction the whole still is fraction. In \LUAMETATEX\ we can tweak
+classes at the edges but in regular \TEX\ there are fewer classes, so there
+constructs become ordinary or inner.
+
+{\bf Accents:} these put something on top of or below an atom (or molecule) and
+are driven by characters. The accent related commands take an integer
+(traditional) or three integers (extended) and it is this expected input that
+drives it. However, they are treated like delimiters. In traditional \TEX\ a
+delimiter is defined by two characters: the direct unscaled one, and when not
+found a second one drives the lookup from wider variants and eventually an
+extensible character. Accents just have the second one, which probably relates to
+the fact that the text ones that would be the starting point make no sense. It is
+this \quote {looking} for a single code point that makes that accents are not
+merged with the more general radical command space. Another reason is that
+accents deal a bit different with spacing and italic correction so even if we
+could merge, it would be more confusing in the end.
+
+{\bf Fences:} these come in pairs with optional middle ones. The reason for
+pairing is that they need to get the same size. That means that before we
+construct them the atom or molecule that they fence has to be analyzed. It also
+makes the result a construct of its own, although in \LUAMETATEX\ we can unpack
+that result so that it can be broken across lines. In practice that was never an
+issue because in a running text unscaled fences are used (just atoms with open
+and close classes assigned) but as soon as one goes to multi|-|line displays
+formulas things become more hairy. The related commands expect delimiters (the
+two part character definitions) but in the meantime are also happy with a single
+one because in the end \OPENTYPE\ math has all in one font.
+
+{\bf Radicals:} originally this only concerned roots but because they are
+basically wrappers we also use them for content that gets a delimiter above,
+below or both. In that sense the term radical can also be interpreted as \quote
+{extreme}, more than a carrot looking symbol. The related commands take one or
+more delimiters (or character) because we support left as well as right
+delimiters connected by a rule, so in the end radicals evolved into a construct
+with delimiters of all kind. So, the unique property of radicals is that the
+fences assume a cooperation between one or more glyphs and a rule. In \CONTEXT\
+we support actuarian hooks as radicals that are used for annuity expressions,
+otherwise the \UNICODE\ symbols is useless and the \MATHML\ construct complex.
+
+So, where accents take numbers as delimiter specification, fences, fractions and
+radicals take specific math quantities or just letters. This makes that we will
+not merge these into one scanner and handler even if they all use the same
+(large) noad to store and carry around their properties. Also, it has some charm
+to keep the original \TEX\ distinctions. After all, it's not like \UNICODE,
+\MATHML\ or \OPENTYPE\ math fonts have brought some new insights: in the end they
+all draw from \TEX\ and they way it's done there.
+
+\stopsection
+
+\startsection[title=Symbols]
+
+There are plenty of symbols in \UNICODE. When we try to get an idea how we ended
+up with that set we're surprised that not much seems to be known about it. There
+are references to \ISO\ standards, usage by specific organizations (like those
+dealing with patents), there are references to lists of publishers. In personal
+communications with people involved it becomes clear that the criterion that some
+symbols really has to be used somewhere doesn't apply to these math symbols.
+There are bizarre specimens that we cannot locate anywhere. They are often
+assigned the \quote {relation} property which for \TEX\ is a safe bet because
+binary and relations get similar spacing, but binary makes an exception when it
+sits at the front. The fact that relation spacing is used can even obscure the
+fact that some characters have zero width properties; the results just look
+somewhat bad and one can always blame the font or renderer and adding some thin
+spacing is accepted behavior. So one can make the argument that because \TEX\ was
+the main renderer of math, a safe bet was better than a confusing and
+unproven|-|by|-|usage assignment to some category.
+
+In \TEX\ some symbols have multiple names, even when they have the same class.
+This indicates the wish for meaning at one end but shape at the other, and once a
+name has been assigned it sticks. It would be interesting to know how
+mathematicians see formulas: if one puts \type {\bar}s around a variable does one
+see \quotation {bar x bar} or \quotation {the modulus of x}, and how is translation
+to audio to be performed?
+
+One important aspect of using any symbol in \TEX, or basically any typesetting
+system that deals with math, is that the spacing depends on the meaning. Now, in
+the perspective of \UNICODE\ meaning is somewhat diffuse. A Latin capital \quote
+{A} related to \quote {a} is not the same as a Greek capital \quote {A} that
+relates to \quote {\alpha}. So, from the shape one cannot beforehand deduce what is
+meant, but when copying it the \UNICODE\ will expose the meaning. This is not the
+case in math: although many symbols have one meaning only, there are also plenty
+that can mean different things and the (\TEX) math community has not been able to
+make a strong case for providing different slots. Maybe the reason was that there
+already was a tradition of using commands that then relate a shape to a class
+that then results in appropriate spacing. Maybe it is also assumed that an
+article or book starts by explaining what a specific symbol means in that
+particular context. But that doesn't help much for copying. It also doesn't help
+with direct \UNICODE\ input. The way out for this last problem is that in
+\CONTEXT\ we will add additional properties to characters that then can
+communicate the class and thereby control the spacing. Although we initially did
+that at the \LUA\ end we now use the lightweight dictionary feature of the
+engine: a property, group, slot model. The main reason is that we foresee that at
+some point we might have to add property based rendering to the engine, and this
+opens up that possibility. Ever since we started with \LUATEX\ and \MKIV\ we have
+used the character database (in \LUA\ format) to store most properties so that we
+have all in one place.
+
+For figuring out the properties we can look at how traditionally symbols got
+multiple commands associated, how \MATHML\ looks at it, what \UNICODE\ reveals and
+what we find in fonts. It is a bit of jungle out there so for sure we have to
+make decisions ourselves. We next turn to that exploration.
+
+\stopsection
+
+\startsection[title=Slashes]
+
+The definition on the \WIKIPEDIA\ page [1] of slashes is as follows:
+
+\startquotation
+    The slash is an oblique slanting line punctuation mark /. Once used to mark
+    periods and commas, the slash is now used to represent exclusive or inclusive
+    or, division and fractions, and as a date separator. It is called a solidus
+    in \UNICODE, is also known as an oblique stroke, and has several other
+    historical or technical names including oblique and virgule.
+\stopquotation
+
+The page then has a very detailed description on how slashes are used in text,
+mathematics, computing, currency, dates, numbering, linguistic transcriptions,
+line breaks, abbreviations, proofreading, fiction, libraries, addresses, poetry,
+music, sports, and text messages. It is a pretty good and detailed page which also
+gives a nice summary of usage in math.
+
+In mathematics, we use the slash (a forward leaning bar) for fractions, division,
+and quotient of set. Examples of fractions are $\vfrac {1} {2}$ but also
+$\percent$ sits in this category.
+
+\starttabulate[|T|l|l|]
+\NC U+0002F \NC \switchtobodyfont[stixtwo]$\utfchar{"0002F}$ \NC this is the official solidus    \NC \NR % /
+\NC U+02044 \NC \switchtobodyfont[stixtwo]$\utfchar{"02044}$ \NC the mathematical fraction slash \NC \NR % ⁄
+\NC U+02215 \NC \switchtobodyfont[stixtwo]$\utfchar{"02215}$ \NC the mathematical division slash \NC \NR % ∕
+\NC U+02571 \NC \switchtobodyfont[stixtwo]$\utfchar{"02571}$ \NC a diagonal box drawing line     \NC \NR % ╱
+\NC U+029F8 \NC \switchtobodyfont[stixtwo]$\utfchar{"029F8}$ \NC the mathematical big solidus    \NC \NR % ⧸
+\NC U+0FF0F \NC \switchtobodyfont[stixtwo]$\utfchar{"0FF0F}$ \NC a full width solidus            \NC \NR % ／
+\NC U+1F67C \NC \switchtobodyfont[stixtwo]$\utfchar{"1F67C}$ \NC the very heavy solidus          \NC \NR % 🙼
+\stoptabulate
+
+The \STIX\ fonts have the first five, the rest is not there, so we can safely
+assume that they are not used in math. That brings us to the question that, say
+that the other ones are used, how does the user access them? In the editor they
+often look pretty much the same. For \TEX ies the answer is easy: you use a
+command. But as we already mentioned, there we enter a real fuzzy area: these
+commands either describe a shape or they communicate a meaning, at least, in an
+ideal world. Sometimes wrapping in a macro helps, like \typ {$\vfrac {1} {2}$}.
+
+In the document that explains \UNICODE\ math there is a section \quotation
+{Fraction Slash and Other Diagonals}. Even if we limit ourselves to the forward
+leaning slashes it looks like we need to include
+exotic symbols, as the empty set symbol with an left arrow on top: \type
+{U+29B4} a circle with left pointing arrow on top, that doesn't show up in most
+math fonts but \STIX\ has it {\switchtobodyfont[stixtwo]{$⦴$}}. We quote:
+
+\startquotation
+    \type {U+2044 ⁄} \typ {FRACTION SLASH} is typically used to build up simple
+    skewed fractions in running text. It applies to immediately adjacent
+    sequences of decimal digits, that is, to spans of characters with the General
+    Category property value \type {Nd}. For example, \type {1⁄2} should be
+    displayed as \type {½}. In ordinary plain text, any character other than a
+    digit delimits the numerator or denominator. So \type {5 1⁄2} should be
+    displayed as \type {5½} since a space follows the \type {5}. In general
+    mathematical use, a more versatile method for layout of fractions is needed
+    (see, for example, Section 2.1 of [UnicodeMath]), however parsers of
+    mathematical texts should be prepared to handle \typ {FRACTION SLASH} when it
+    is received from other sources. \type {U+27CB}
+    \typ {MATHEMATICAL RISING DIAGONAL} and \type {U+27CD}
+    \typ {MATHEMATICAL FALLING DIAGONAL} are
+    mathematical symbols for specific uses, to be distinguished from the more
+    widely used solidi and reverse solidi operators as well as from
+    nonmathematical diagonals.
+\stopquotation
+
+In \TEX\ there is no parsing going on: we just get sequences of atoms and the
+inter atom spacing applies. Curly braced arguments are used to communicate units
+that needs to be treated a while. As side note: where for some scripts there are
+special characters that tell where something (state) starts and ends this is not
+available for math, which makes it impossible to mark a sequence of characters as
+being something math. The whole repertoire of pre|-|composed fractions and super-
+and subscripted \UNICODE\ symbols are not to be used in math.
+
+Most documents that somehow relate to or (partially) originate in \TEX\ can
+be rather fuzzy, so we can read here:
+
+\startquotation
+    \type {U+27CB} corresponds to the \LATEX\ entity \type {\diagup} and \type
+    {U+27CD} to \type {\diagdown}. Their glyphs are invariably drawn with 45° and
+    135° slopes, respectively, instead of the more upright slants typical for the
+    solidi operators. The diagonals are also to be distinguished from the two box
+    drawing characters \type {U+2571} and \type {U+2572}. While in some fonts
+    those characters may be drawn with 45° and 135° slopes, respectively, they
+    are not intended to be used as mathematical symbols. One usage recorded for
+    \type {U+27CB} and \type {U+27CD} is in the notation for spaces of double
+    cosets.
+\stopquotation
+
+So, it is the angles that math users should translate into meaning which I guess
+is natural for them. From the above we cannot deduce if we should take them into
+account in a macro package.
+
+The \MATHML\ specification [3] keeps it abstract and talks about division without
+mentioning the rendering. In content \MATHML\ we have:
+
+\starttyping
+divide = element divide { CommonAtt, DefEncAtt, empty}
+\stoptyping
+
+and the suggested rendering (from an example) is a slash.
+
+In the chapter \quotation {Characters, Entities and Fonts} there is mentioning of:
+
+\startquotation
+    There is one more case where combining characters turn up naturally in
+    mathematical markup. Some relations have associated negations, such as \type
+    {U+226F} [\typ {NOT GREATER-THAN}] for the negation of U+003E [\typ
+    {GREATER-THAN SIGN}]. The glyph for U+226F [NOT GREATER-THAN] is usually just
+    that for U+003E [\typ {GREATER-THAN SIGN}] with a slash through it. Thus it
+    could also be expressed by \type {U+003E}|-|\type {U+0338} making use of the
+    combining slash \type {U+0338} [COMBINING LONG SOLIDUS OVERLAY]. That is true
+    of 25 other characters in common enough mathematical use to merit their own
+    \UNICODE\ code points. In the other direction there are 31 character entity
+    names listed in [\typ {Entities}] which are to be expressed using \type
+    {U+0338} [\typ {COMBINING LONG SOLIDUS OVERLAY}].
+\stopquotation
+
+A curious note is this:
+
+\startquotation
+    For special purposes, one may need a symbol which does not have a \UNICODE\
+    representation. In these cases one may use the \type {mglyph} element for
+    direct access to a glyph as an image, or (in some systems) from a font that
+    uses a non|-|\UNICODE\ encoding. All \MATHML\ token elements accept
+    characters in their content and also accept an \type {mglyph} there. Beware,
+    however, that use of \type {mglyph} to access a font is deprecated and the
+    mechanism may not work in all systems. The \type {mglyph} element should
+    always supply a useful alternative representation in its alt attribute.
+\stopquotation
+
+At some point we experimented with very precise positioned \HTML\ from \TEX\
+(read: \CONTEXT) and that worked very well: the rendering was exactly the same as
+\PDF\ but then suddenly it was no longer possible to access glyphs from fonts. The
+assumption had become that one should feed text into the font rendering machinery
+and use \OPENTYPE\ features to access specific shapes, which of course is a
+fragile approach (the libraries and logic keep evolving, and the most robust
+access is simply by index, or by glyph name if present, assuming that one uses
+the font that was meant to be used). So, how the \MATHML\ glyph element is
+supposed to work out well is not clear. Anyway, as we want nicely typeset math we
+don't care that much if features present in \LUAMETATEX\ and \CONTEXT\ are unique
+and cannot be reproduced otherwise.
+
+In \type {mathclass.txt} [4] which is \quotation {{\em not} formally part of the
+\UNICODE\ Character Database at this time} we see a classification:
+
+\starttabulate[|T|l|]
+\NC U+0002F \NC binary \NC \NR
+\NC U+02044 \NC binary \NC \NR
+\NC U+02215 \NC binary \NC \NR
+\NC U+02571 \NC not mentioned \NC \NR
+\NC U+029F8 \NC n-ary or large operator, often takes limits \NC \NR
+\NC U+0FF0F \NC not mentioned \NC \NR
+\NC U+1F67C \NC not mentioned \NC \NR
+\stoptabulate
+
+So, in the end we can focus on the four that are mentioned, and we will do that
+with the above in mind as well as what is common in the \TEX\ world. We will look
+at usage, classification (groups) and classes.
+
+% modern   % ok, both the same
+% cambria  % different, no extensible /
+% bonum    % ok, both the same
+% pagella  % ok, both the same
+% stixtwo  % only / extensible, 2044 useless
+% lucida   % both extensible, 2044 looks bad and more slope
+
+Unfortunately this sort of mess also results in a mess in fonts. For instance
+when we checked out the difference between \type {U+002F} and \type {U+2044} we
+found that in the fonts produced by the \TEX Gyre project both have proper
+dimensions (and look the same), so they can be used stand alone, but also as
+delimiters. In Cambria the dimensions are okay but only \type {U+2044} has
+extensible characters. In \CONTEXT\ we have defined \type {\slash} to use that slot but
+when you test Lucida and \STIX2 the results are disappointing: In Lucida the
+width of \type {U+2044} makes it unusable (it looks bad anyway), and in \STIX2 it
+is a bit wider so in the end it even becomes fuzzy what to recommend as fix:
+quarter width, half width or full width. Defining \type {\slash} as any of them
+gives at some point an issue so in the end we just patch the font in the goodie
+file: we make them the same and make sure they have extensible characters. After all,
+chances are slim that this will ever be fixed. In that respect a newer engine
+doesn't change the problem: we need to handle it in the macro package, but at
+least that can be done a bit more natural. \footnote {In principle, we can support
+the goodies in the generic font handler, but we think it makes no sense because it
+also relates to the way math is handled in general and supporting a wide range of
+different applications can only cripple the code, let along that agreeing on
+matters can be hard.}
+
+% \ctxlua{table.tocontext(characters.data[0x002F],"[0x002F]")}
+% \ctxlua{table.tocontext(characters.data[0x2044],"[0x2044]")}
+% \ctxlua{table.tocontext(characters.data[0x2215],"[0x2215]")}
+% \ctxlua{table.tocontext(characters.data[0x2571],"[0x2571]")}
+% \ctxlua{table.tocontext(characters.data[0x29F8],"[0x29F8]")}
+
+\stopsection
+
+\startsection[title=Bars]
+
+Again we start with the \WIKIPEDIA\ page, this time the one dedicated to bars
+[5]. The page starts with mathematics so that suggests that the (initial) author
+is familiar with usage in that field: if we cut and paste the itemized list we
+even get \TEX\ math (sort of). Examples of usage are: absolute value,
+cardinality, conditional probability, determinant, distance, divisibility,
+function evaluation, length, norm, order, restriction, set|-|builder notation,
+the Sheffer stroke in logic, subtraction, but also \quotation {A vertical bar can
+be used to separate variables from fixed parameters in a function, or in the
+notation for elliptic integrals}.
+
+Among the objectives of our exploration are grouping symbols in sets that
+represent related meanings and usage. Within these groups we can fine tune with
+classes but that is more geared at rendering. Although currently users enter
+specific usage of symbols with the same shape (or even \UNICODE) with commands we
+can imagine them entering the \quote {real} characters and in that case we need
+some automatic class assignment based on a group (or set of groups). The
+\WIKIPEDIA\ page mentions that in physics \quotation {The vertical bar is used in
+bra|–|ket notation in quantum physics}. It then goes on about usage in computing,
+phonetics and literature. This ordering is different from the slashes, but okay.
+
+The page then makes a distinction between solid and broken bars and there is some
+interesting history behind that, which relates to typewriters, terminals and
+printers in the perspective of distinction and indeed we noticed that on our
+keyboard the broken bar is still used, even if the rendering is solid. The
+page ends with the \UNICODE\ bars and entities. We mention most:
+
+\starttabulate[|T|l|l|]
+\NC U+007C \NC \switchtobodyfont[stixtwo]$\utfchar{"007C}$ \NC a single vertical line         \NC \NR % |
+\NC U+00A6 \NC \switchtobodyfont[stixtwo]$\utfchar{"00A6}$ \NC a single broken line          \NC \NR % ¦
+\NC U+2016 \NC \switchtobodyfont[stixtwo]$\utfchar{"2016}$ \NC a double vertical line (norms) \NC \NR % ‖
+\NC U+2223 \NC \switchtobodyfont[stixtwo]$\utfchar{"2223}$ \NC divides                        \NC \NR % ∣
+\NC U+2225 \NC \switchtobodyfont[stixtwo]$\utfchar{"2225}$ \NC parallel lines                 \NC \NR % ∥
+\NC U+2502 \NC \switchtobodyfont[stixtwo]$\utfchar{"2502}$ \NC a vertical box drawing line    \NC \NR % │
+\NC U+FF5C \NC \switchtobodyfont[stixtwo]$\utfchar{"FF5C}$ \NC a fullwidth vertical line      \NC \NR % ｜
+\stoptabulate
+
+Given the mentioned wide range of usage it will be clear bars that can be confusing
+and are pretty overloaded. We're not aware of broken bars being used in math, so
+we ignore these.
+
+The \UNICODE\ math draft talks of \quote {vertical lines} and distinguishes two
+series, delimiters:
+
+\starttabulate[|T|l|l|]
+\NC U+007C \NC \switchtobodyfont[stixtwo]$\utfchar{"007C}$ \NC single vertical lines \NC \NR
+\NC U+2016 \NC \switchtobodyfont[stixtwo]$\utfchar{"2016}$ \NC double vertical lines \NC \NR
+\NC U+2980 \NC \switchtobodyfont[stixtwo]$\utfchar{"2980}$ \NC triple vertical lines \NC \NR
+\stoptabulate
+
+and operators:
+
+\starttabulate[|T|l|l|]
+\NC U+2223 \NC \switchtobodyfont[stixtwo]$\utfchar{"2223}$ \NC divides (single line)           \NC \NR
+\NC U+2225 \NC \switchtobodyfont[stixtwo]$\utfchar{"2225}$ \NC parallel (double lines)         \NC \NR
+\NC U+2AF4 \NC \switchtobodyfont[stixtwo]$\utfchar{"2AF4}$ \NC binary relation (tripple lines) \NC \NR
+\NC U+2AFC \NC \switchtobodyfont[stixtwo]$\utfchar{"2AFC}$ \NC s large triplle operator        \NC \NR
+\stoptabulate
+
+Watch the triples: these are not (yet) in the \WIKIPEDIA\ summary. Rightfully
+there is a remark that the official \UNICODE\ descriptions use \typ {BAR} and
+\typ {LINE} but \TEX ies can't complain about that, can they? After all, they
+also use these terms mixed.
+
+The delimiters sit at the edges but sometimes also in the middle. The operators
+are between other elements and the document states that they also should grow.
+And is it mentioned that spacing depends on usage. The large triple is an n-ary
+operator but as usual with math symbols the user (reader) has to guess what that
+actually means.
+
+It is actually unfortunate that the fences have no left, middle and right
+variant. Even if these render the same it would make life easier and consistency
+with other fences is also worth something. One wonders how it would have looked
+if accessibility demands had kicked in earlier. The \UNICODE\ \type
+{mathclass.txt} [4] provides:
+
+\starttabulate[|T|l|]
+\NC U+007C \NC fence (unpaired delimiter) \NC \NR
+\NC U+2016 \NC fence (unpaired delimiter) \NC \NR
+\NC U+2980 \NC fence (unpaired delimiter) \NC \NR
+\stoptabulate
+
+We assume that the unpaired qualification is actually an indication that usage as
+what in \TEX\ is called \quote {middle} is okay. The operators are classified as:
+
+\starttabulate[|T|l|]
+\NC U+2223 \NC relation    \NC \NR
+\NC U+2225 \NC relation    \NC \NR
+\NC U+2AF4 \NC binary      \NC \NR
+\NC U+2AFC \NC large n-ary \NC \NR
+\stoptabulate
+
+% \ctxlua{table.tocontext(characters.data[0x007C],"[0x007C]")}
+% \ctxlua{table.tocontext(characters.data[0x00A6],"[0x00A6]")}
+% \ctxlua{table.tocontext(characters.data[0x2016],"[0x2016]")}
+% \ctxlua{table.tocontext(characters.data[0x2980],"[0x2980]")}
+% \ctxlua{table.tocontext(characters.data[0x2223],"[0x2223]")}
+% \ctxlua{table.tocontext(characters.data[0x2225],"[0x2225]")}
+% \ctxlua{table.tocontext(characters.data[0x2AF4],"[0x2AF4]")}
+% \ctxlua{table.tocontext(characters.data[0x2AFC],"[0x2AFC]")}
+
+The main problem with bars in \TEX\ is that there is no distinction between a
+left and right bar which makes it impossible to use them directly as fences. On
+can consider this to be an omission to \UNICODE\ math because shape rules over
+meaning. So anyway, this is something that a macro package has to deal with. If
+needed these can get a class on their own in which case we can define atom
+spacing rules that deal with them ending up left or right. In \UNICODE\ there are
+signals that deal with bidirectional text, so we see no reason why there shouldn't
+be similar provisions for math.
+
+\stopsection
+
+\startsection[title=Hyphens and Dashes]
+
+This section applies to text and math as both are riddled with horizontal lines:
+easy to scratch in wood, chisel in stone or draw on paper symbols. We limit
+ourselves to the straight ones, but similar observations can be made for curved
+ones.
+
+\WIKIPEDIA\ distinguishes hyphens, minus, and dashes so there are multiple pages
+dedicated to this. The page about minus mentions that there are three usages
+(somewhat rephrased):
+
+\startitemize[packed]
+    \startitem
+        It is used as subtraction operator and therefore a binary operator
+        that indicates the operation of subtraction.
+    \stopitem
+    \startitem
+        It can be function whose value for any real or complex argument is the
+        additive inverse of that argument.
+    \stopitem
+    \startitem
+        It can serve as a prefix of a numeric constant. When it is placed
+        immediately before an unsigned numeral, the combination names a negative
+        number, the additive inverse of the positive number that the numeral
+        would otherwise name.
+    \stopitem
+\stopitemize
+
+The functional variant is how content \MATHML\ sees it: you apply a minus
+operator to something, singular of multiple. We were surprised to see that there
+is a distinctive rendering suggested, something we have argued for at several
+occasions (mostly \TEX\ meetings):
+
+\startquotation
+    In many contexts, it does not matter whether the second or the third of these
+    usages is intended: \type {−5} is the same number. When it is important to
+    distinguish them, a raised minus sign \type {¯} is sometimes used for negative
+    constants, as in elementary education, the programming language \APL, and some
+    early graphing calculators.
+\stopquotation
+
+Unfortunately that distinction was not recognized by the \TEX\ community at large
+which (we guess) is why we don't see it in \UNICODE, which on the other hand has
+plenty dashes as we will see soon.
+
+The page mentions usage in indicating blood types and music, which is a nice
+detail. It also mentions usage in computing, including regular expressions and in
+physics and chemistry indicating charge. It lists these codes for minus symbols:
+
+\starttabulate[|Tl|l|]
+\NC U+002D \NC hyphen minus            \NC \NR
+\NC U+2212 \NC minus                   \NC \NR
+\NC U+FE63 \NC small hyphen minus      \NC \NR
+\NC U+FF0D \NC full width hyphen minus \NC \NR
+\stoptabulate
+
+The page also mentions the commercial minus \type {⁒} (see also [7]) and division
+sign \type {÷} (see also [8]) and we think these should be supported in math mode
+simply because they can be part of (even simple text style) formulas.
+
+The fact that we use the hyphen as minus and expect it to render as a wider dash
+like shape is something that related to math mode in \TEX\ speak. In text mode we
+expect it to be seen as hyphenation related indicator. We won't go into details
+about automated hyphenation and explicit hyphens in text mode but here are the
+hyphens as mentioned on the hyphen specific \WIKIPEDIA\ page:
+
+\starttabulate[|Tl|l|]
+\NC U+002D \NC hyphen minus \NC \NR
+\NC U+00AD \NC soft hyphen \NC \NR
+\NC U+2010 \NC hyphen \NC \NR
+\NC U+2011 \NC non breaking hyphen \NC \NR
+\stoptabulate
+
+You might wonder why we mention text variants here and one reason is that we
+actually might need to provide a catch for the last two: maybe when a user copies
+these from a document (when rendered at all) we need to treat them as the simple
+hyphen minus and just remap them to the math minus when in math mode. Below, we
+will discuss dashes, and although these are also meant for text, a reason for
+exploring these can be found in the fact that \TEX\ users like to decorate the
+content in unexpected ways and lines (or rules) fit into that. The \WIKIPEDIA\
+pages go into some details about the hyphens being used in compounds and there
+can be some confusion about whether to use endashes or hyphens for that. We're
+pretty sure that typesetting wars have been fought over that. Usage as pre- and
+suffixes definitely is worth noting (and we use them as such in this sentence).
+
+We leave out all the other usages and see what there is to tell about related
+symbols. The \WIKIPEDIA\ page about dashes is an extensive one. It starts out with
+the distinction between \unichar {figure dash} {2012}, \unichar {endash} {2013},
+\unichar {emdash} {2014} and \unichar {horizontal bar} {2015}. Of these a \TEX ie
+will for sure recognize the endash and emdash. The hyphen is not a dash but if
+you look at \TEX\ input that double or triple hyphens get ligatured into en- and
+emdashes! The only certainty one has is that the endash is often half the width
+of an emdash. Also, the width of the emdash is often the same as the font size.
+
+One reason why a language subsystem of a \TEX\ macro package is complex is that
+it has to deal with cultural aspects and the usage as well as spacing around all
+these dashes can differ. When trying to support that a macro writer soon finds
+out that one user of language~X can tell you the rules are done this way, and a
+while later you get a mail from another user who claims that in language~X the
+rules are done that way. Word processing and dominance of English probably adds
+to the confusion. The same is true for quotes, but math doesn't need these, so we
+skip them. Now wait, you will say: does math use these dashes? Users probably
+will mix them in but more important is that the width of these dashes also has
+associated skips: \type {\enspace} and \type {\emspace} or \type {\quad} and
+these one definitely see users mix into math.
+
+The figure dash has the same width as digits which makes them useful in tables. In
+the fonts that come with \TEX\ it is the reverse: the digits have the same width
+and that width matches the endash. There is no habit of using the figuredash, but
+we might need to change that. After all, we now have the fonts! We do need to
+deal with the figure dash because users might mix math and text in tables, and
+although you can find plenty of badly typeset by \TEX\ tables, this is no excuse
+for using a mix of minus and figure dash in inconsistent ways.
+
+The \WIKIPEDIA\ page mentions the usage of the endash: as connector, as compound
+hyphen, and as sentence interrupter. Now the one that needs some attention is the
+second one. In Dutch, we can combine words in many ways and for educational
+purposes adding a compound dash makes sense. However, because the weight of the
+hyphen and endash in \TEX\ fonts is rather incompatible, in \CONTEXT\ we use(d)
+fakes: two overlapping hyphens. Another complication is that one has to wrap that
+in a discretionary node in order to make the hyphenator happy, but that is now
+delegated to the engine that can be configured to see certain characters as valid
+hyphenation points. Although we support discretionaries in math this doesn't
+relate to dashes but to pluses and minuses and such. The engine supports explicit
+discretionaries but can also automatically repeat symbols that are set up as
+repeatable across lines. We're not sure if users actually use en- and emdashes in
+math mode, but one can occasionally run into examples (on the web) where special
+effects are achieved in curious ways. \footnote {The math stream doesn't go
+through the font handler although embedded \type {\hbox}es get that treatment.
+This means that two hyphens in a row are just two atoms and not get collapsed to
+an endash.}
+
+It is worth pointing out that \WIKIPEDIA\ discusses \quotation {Ranges of values}
+and this is something we need to investigate in the perspective of math! Strictly
+spoken that is a text thing, but \unknown\  Among the many observed and suggested
+patterns we note that among \TEX ies using the endash as itemize symbols is
+also popular.
+
+Usage of the emdash is related to the use of parenthesis or colons, so it is more
+a kind of punctuation. It can also be used as an interrupt and again it is a
+candidate for an itemize symbol. There is of course a \TEX\ thing there: lack of
+text symbols made for a rather mixed usage of math and text symbols in
+itemizations. For instance a dotted one uses the well visible math dot instead of
+the often hardly visible text dot that simply was not present in \TEX\ fonts, so
+our eyes got accustomed to the bolder ones. It is one of the reasons why a \TEX\
+macro package load a math font even when no math is used. Over the years in \TEX\
+math and text symbols have been mixed in various ways, also a side effect if the
+limited amount of characters in text fonts and the abundance of them in math
+mode, even if most are only accessible by name. We need to deal with that
+historic mix.
+
+The page rightfully mentions that \TEX\ has no horizontal bar, also known as
+\quote {quotation dash}, used for dialogues in some languages. We should make a
+note then that it might be good to see if we have to reconfigure the
+sub|-|sentence presets to match that expectation. The proposed hack {\red MPS:
+where?} for a missing symbol is somewhat curious:
+
+\starttyping
+x \hbox{---}\kern-.5em--- x
+\stoptyping
+
+\startbuffer[dash-example]
+\uleaders \hbox to 1.5em {---\hskip 0pt minus .5em---} \hskip.125em minus .125em \relax
+\stopbuffer
+
+Why not \type {\hbox {---\kern-.5em---}} or just \type {---\kern-.5em---} to get
+the same effect? This also assumes that the font collapses these three hyphens
+into a dash, then it backtracks the symbol width and does a second one.
+\footnote {Here is some food for thought: for this kind of usage one can argue
+that such a dash should have some stretch. In \LUAMETATEX\ and therefore
+\CONTEXT\ we can do this: \typeinlinebuffer [dash-example] and get: \dorecurse
+{30} {x \getbuffer [dash-example] x}. Boxed material can be stretched and be
+taken into account when creating paragraphs. It is no big deal to wrap that in a
+macro, say \type {\figuredashed}.} Anyway, where figure dashes are related to
+minuses we can probably ignore this super minus resembling horizontal bar.
+\footnote {We can actually issue a warning when it is used in math mode.}
+
+The \WIKIPEDIA\ page ends with a summary of all kind of dashes, including
+underscores, script specific symbols, accents (like macron), modifiers and curly
+ones. Here we only mention the ones that can end up in some source when one cuts
+and pastes. Doing that can result in missing characters (because not all fonts
+provides them) or a change in meaning (for as far as the symbols relates to an
+intention). We show some that fit into this discussion and also mention the
+\UNICODE\ description:
+
+\starttabulate[|T|lb{\ttx}|p|]
+\NC U+002D \NC HYPHEN-MINUS                  \NC the usual hyphen but also used as minus \NC \NR
+\NC U+005F \NC LOW LINE                      \NC aka underscore \NC \NR
+\NC U+00AD \NC SOFT HYPHEN                   \NC valid hyphenation point (invisible) \NC \NR
+\NC U+2010 \NC HYPHEN                        \NC the real hyphen but more work on a keyboard \NC \NR
+\NC U+2011 \NC NON-BREAKING HYPHEN           \NC a hard hyphen, disables following hyphenation \NC \NR
+\NC U+2012 \NC FIGURE DASH                   \NC see discussion above \NC \NR
+\NC U+2013 \NC EN DASH                       \NC see discussion above \NC \NR
+\NC U+2014 \NC EM DASH                       \NC see discussion above \NC \NR
+\NC U+2015 \NC HORIZONTAL BAR                \NC see discussion above \NC \NR
+\NC U+2043 \NC HYPHEN BULLET                 \NC used in itemized lists \NC \NR
+\NC U+207B \NC SUPERSCRIPT MINUS             \NC combined with pre-superscripted characters \NC \NR
+\NC U+208B \NC SUBSCRIPT MINUS               \NC combined with pre-subscripted characters \NC \NR
+\NC U+2212 \NC MINUS SIGN                    \NC the math minus (rendering of hyphen) \NC \NR
+\NC U+23AF \NC HORIZONTAL LINE EXTENSION     \NC build long connected horizontal lines \NC \NR
+\NC U+23E4 \NC STRAIGHTNESS                  \NC represents line straightness in technical context \NC \NR
+\NC U+2500 \NC BOX DRAWINGS LIGHT HORIZONTAL \NC part of the box-drawing repertoire \NC \NR
+\NC U+2796 \NC HEAVY MINUS SIGN              \NC a visual variant with no meaning \NC \NR
+\NC U+2E3A \NC TWO-EM DASH                   \NC a visual variant with no meaning \NC \NR
+\NC U+2E3B \NC THREE-EM DASH                 \NC a visual variant with no meaning \NC \NR
+\NC U+FE58 \NC SMALL EM DASH                 \NC a visual variant with no meaning \NC \NR
+\NC U+FE63 \NC SMALL HYPHEN-MINUS            \NC a visual variant with no meaning \NC \NR
+\NC U+FF0D \NC FULLWIDTH HYPHEN-MINUS        \NC a visual variant with no meaning \NC \NR
+\stoptabulate
+
+The \UNICODE\ math draft only mentions the hyphen: \footnote {When I copy this
+snippet into the document source there are \typ {START OF TEXT} symbols at the
+places where a hyphenation occurs, which is probably a side effect of a bad \type
+{TOUNICODE} entry in the \PDF\ file, but it is kind of interesting in this
+perspective as definitely a hyphen is rendered.}
+
+\startquotation
+    Minus sign. \type {U+2212} [or] \type{−} [known as] \typ {MINUS SIGN} is the
+    preferred representation of the unary and binary minus sign rather than the
+    \ASCII|-|derived \type {U+002D} [or] \type {-} [known as] \typ
+    {HYPHEN-MINUS}, because minus sign is unambiguous and because it is rendered
+    with a more desirable length, usually longer than a hyphen.
+\stopquotation
+
+and elsewhere we can read:
+
+\startquotation
+    The \ASCII\ hyphen minus \type {U+002D} [or] \type {-} is a weakly
+    mathematical character that may be used for the subtraction operator, but
+    \type {U+2212} [or] \type {−} [known as] \typ {MINUS SIGN} is preferred for
+    this purpose and looks better.
+\stopquotation
+
+We are not aware of the concept of weak mathematical characters, so we will not
+take that property too serious when we try to improve the rendering.
+
+This is basically it. There is no mentioning of classes (after all, traditional
+\TEX\ has no unary class) so it is assumed that the renderer does the right
+thing: interpreting the sequence of characters and apply spacing accordingly.
+There are users who like to see a unary minus being rendered differently, just as
+the minus that a student is supposed to key in a calculator and while the
+\WIKIPEDIA\ page mentions this explicitly, it is ignored here. Yes, having two
+distinctive slots for this would have been great. Maybe it is not seen as
+relevant enough by the community that would benefit most, but who knows what had
+happened it the \WIKIPEDIA\ page had been there before!
+
+The minus is mentioned in the somewhat curious section about how shapes should be
+positioned relative to the baseline, where the position of the minus relates to
+what in \TEX\ speak is the math axis. There is also some mentioning of non-mathematical use, like:
+
+\startquotation
+    The concept of mathematical use is deliberately kept broad; therefore the
+    Math property is also given to characters that are used as operators, but are
+    not part of standard mathematical notation, such as \type {U+2052} \typ
+    {COMMERCIAL MINUS}.
+\stopquotation
+
+There should be no confusion with the \typ {SET MINUS} which renders as a
+backslash, a \typ {(NEG\-ATED) MINUS TILDE} or \typ {(NEG\-ATED) SIMILAR MINUS
+SIMILAR} that look more like relations. {\red MPS: overfull hbox, and do you
+intend to hyphenate?}
+
+The \MATHML\ document recognizes the minus as being unary or binary. In content
+\MATHML\ it is easy: when applied to a single atom it is a unary. In presentation
+\MATHML\ minus is an operator that sits at the front of a row (unary) or in the
+middle (binary). Keep in mind that we are limited to \type {mn} for numbers,
+\type {mi} for alphabetic symbols and \type {mo} for operators, not to be
+confused with \TEX's math operators, because in \MATHML\ relations are also
+operators. One can wonder about a minus in \type {mn} elements.
+
+So to summarize: we definitely need to make sure that (whatever renders as)
+hyphens is dealt with in math as minus. We can wonder what to do with
+(especially) en- and emdashes and the other horizontal lines that actually might
+show up as (what we call) middle delimiters in mathematical constructs: if it's
+there, \TEX ies will use it! The lack of specific symbols for unary minus has to
+be compensated at the macro package level.
+
+% \ctxlua{table.tocontext(characters.data[0x002D],"[0x002D]")}
+% \ctxlua{table.tocontext(characters.data[0x2010],"[0x2010]")}
+% \ctxlua{table.tocontext(characters.data[0x2011],"[0x2011]")}
+% \ctxlua{table.tocontext(characters.data[0x2212],"[0x2212]")}
+% \ctxlua{table.tocontext(characters.data[0x2212],"[0x2213]")}
+% \ctxlua{table.tocontext(characters.data[0x2212],"[0x2214]")}
+% \ctxlua{table.tocontext(characters.data[0x2212],"[0x2215]")}
+% \ctxlua{table.tocontext(characters.data[0xFE63],"[0xFE63]")}
+% \ctxlua{table.tocontext(characters.data[0xFF0D],"[0xFF0D]")}
+
+% U+2043 HYPHEN BULLET
+% U+207B SUPERSCRIPT MINUS
+% U+208B SUBSCRIPT MINUS
+
+\stopsection
+
+\startsection[title=Pieces]
+
+In \UNICODE\ one can find all kind of constructors, for instance characters that
+find their origin in those character sets that had lines and corners for drawing
+on a terminal. It is therefore no surprise that there are also some constructors
+that relate to math. An example demonstrates this:
+
+\startbuffer[definition]
+\def\makeweird#1#2#3#4%
+  {\vcenter\bgroup
+     \offinterlineskip
+     \hbox{$\scriptscriptstyle\char"#1$}\par
+     \hbox{$\scriptscriptstyle\char"#2$}\par
+     \hbox{$\scriptscriptstyle\char"#3$}\par
+     \hbox{$\scriptscriptstyle\char"#4$}%
+   \egroup}
+
+\def\lwA{\mathopen {\makeweird{23A7}{23A8}{23A8}{23A9}}}
+\def\rwA{\mathclose{\makeweird{23AB}{23AC}{23AC}{23AD}}}
+\def\lwB{\mathopen {\makeweird{23A7}{23AC}{23AC}{23A9}}}
+\def\rwB{\mathclose{\makeweird{23AB}{23A8}{23A8}{23AD}}}
+\def\lwC{\mathopen {\makeweird{23A7}{23AC}{23A8}{23A9}}}
+\def\rwC{\mathclose{\makeweird{23AB}{23A8}{23AC}{23AD}}}
+\stopbuffer
+
+\startbuffer[demo]
+$\lwA x + 4 + \lwB x^2 + 4^2 + \lwC x^3 + 4^3 \rwC \rwB \rwA$
+\stopbuffer
+
+\typebuffer[definition,demo]
+
+This renders as:
+
+\startlinecorrection
+\getbuffer[definition]
+\scale[width=\textwidth]{\getbuffer[demo]}
+\stoplinecorrection
+
+So, we have official \UNICODE\ characters for constructing large fences. In the
+\UNICODE\ math documents there is some mentioning of this and interesting is that
+there are suggested compositions expressed in 2, 3, 5 etc. stacked \quote {lines}
+which makes one wonder how math is perceived (or supposed to be rendered). But
+what is really weird is that there are plenty of arrows but no snippets defined that
+can be used to create extended ones. Why vertical snippets and no horizontal
+ones? This is clearly an omission and the \TEX\ community did take care of this
+need. So, for horizontal arrows and alike one expects the font to handle it and
+for fences not?
+
+It is not only fences that have snippets, we also find them for integrals. But
+for vertical arrows they are lacking: that is completely up to the font. Now, for
+us that is fine, but again, for consistency they could have been there. It would
+make it possible to filter bits and pieces from fonts using official slots
+instead of private ones. So, to some extent we can best assume there is nothing
+like that and ignore whatever pieces are in \UNICODE\ anyway (like the braces in
+the example). One can even argue that because of this inconsistency a font
+designed can as well only use private slots and not provide snippets at all.
+
+So, how do we get out of this situation? Because no one cared getting it in
+\UNICODE, we can do as we like. Of course, we can define arrow fillers as has
+always been done in \TEX, but because in \LUAMETATEX\ we have a bit more in our
+toolkit, and because we want to support stretch fractions (where the rule is
+replaced by a horizontal delimiter) it was decided to define a tweak that deals
+with this: when the basic arrows have no horizontal parts defined, we just
+assemble them. For those arrows that have a hook or so at the other end, we use
+the space as extender. \footnote {Actually we no longer do that because the
+engine will center the arrow anyway when it's too short.} If we ever end up with
+proper snippets un \UNICODE\ then we also need adapted fonts, and then we can get
+rid of these hacks. That said: because all decent math fonts do have the three
+pairs or fences (brace, parenthesis, bracket) the vertical snippets are rather
+useless, unless one wants to construct assembled weird ones. This would be
+different for horizontal assemblies, because there is more variety in them.
+
+The official name for all related to characters that can stretch is \quote
+{delimiter}. In traditional \TEX\ one can define a command that becomes a
+character. In that case a family, class and slot is assigned. You can also
+directly access a character in which case one will assign these properties
+otherwise (no command is defined). The same is true for these delimiters.
+However, in traditional \TEX\ the larger character usually comes from a so called
+extension font and uses family~3). In \OPENTYPE\ fonts we have all in one font so
+there the large family, class, and slot are not used.
+
+An interesting side effect of the updated math machinery in \LUAMETATEX\ is that
+we no longer really need delimiter specifications when we use \OPENTYPE\ fonts.
+This is because in practice the only two classes that really matter are the open
+and close ones. There are basically two kinds of delimiters: fences and
+singulars. Fences need open and close and only bars have a dual character. So,
+when we don't define it as delimiter, the engine can still use that character and
+take its assigned class when used stand|-|alone, while in the case of fences
+these themselves are of class open and close. And, for instance a left brace can
+get class open because when used stand alone it is an unscaled left fence. In the
+rare case that one really need a different class we are using commands: some
+characters can be binary, ordinary or whatever so then commands relate a name to
+a class|-|character combination. Actually, in \CONTEXT\ we will switch to using
+dictionaries and field specific rendering instead, but that is a different story.
+We can illustrate the arrows with an example:
+
+\startbuffer
+$ x +
+    \left\downarrow a \uparrow \frac{1}{b} \downarrow c \right\uparrow
+= y $
+\stopbuffer
+
+\typebuffer
+
+The stand alone arrows are defines with class relation but when used as fences
+their spacing is driven by the fences themselves.
+
+\startlinecorrection
+\scale[width=\textwidth]{\showmakeup[mathglue]\mathspacingmode1\showglyphs\getbuffer}
+\stoplinecorrection
+
+This means that in \CONTEXT\ \LMTX\ we no longer have delimiter code definitions.
+Of course the engine has to be able to use math characters of any kind (by
+commands, direct or as \UTF) as delimiters, but that was not that hard to
+provide. It also simplifies the code we use for fencing as it can be less
+selective.
+
+Another interesting side effect of once again looking into these stretched
+characters is that the fraction mechanism that already was extended with skewed
+fractions, now supports any stretchable character as alternative for a fraction
+rule.
+
+\startbuffer
+$
+    p \leftarrowtext {a + b + c + d}{x + y} q
+    \quad
+    p \frac {a + b + c + d}{x + y} q
+$
+\stopbuffer
+
+\typebuffer
+
+Watch the difference in spacing: here the class of the used delimiter determines the
+spacing around the (pseudo) fraction:
+
+\startlinecorrection
+\scale[width=\textwidth]{\showmakeup[mathglue]\mathspacingmode1\showglyphs\getbuffer}
+\stoplinecorrection
+
+Again this simplifies some code because normally one ends up with stacking stuff
+using leaders in between.
+
+\stopsection
+
+\startsection[title=Accents]
+
+When we talk about accents, we refer to tiny symbols that anchor themselves onto
+base characters. We limit ourselves to the ones common in Latin scripts because
+they are the ones used in math. Accents in \UNICODE\ are somewhat special. In
+the past, when encoding vectors were limited, accents were entered as part of an
+input sequence and then anchored by the renderer. Nowadays often pre|-|composed
+characters are used. A very cheap way of anchoring is to have accents that just
+overlay, and in practice centering an accent over a base character works sort of
+okay. As an example of an accent we will use the hat:
+
+\starttabulate[|T|c|l|c|]
+\NC U+005E \NC x\char"005E x m\char"005E m\NC \tex {Hat}     \NC \im{x \char"005E x + m\char"005E m} \NC \NR %  94
+\NC U+02C6 \NC x\char"02C6 x m\char"02C6 m\NC \tex {hat}     \NC \im{x \char"02C6 x + m\char"02C6 m} \NC \NR % 710
+\NC U+0302 \NC x\char"0302 x m\char"0302 m\NC \tex {widehat} \NC \im{x \char"0302 x + m\char"0302 m} \NC \NR % 770
+\stoptabulate
+
+Normally the font handler will take care of anchoring \type {U+0302}, but it can
+only be done properly when there are anchors defined for what are called \quote
+{marks}: the official feature description is mark|-|to|-|base (or simply \type
+{mark}).  The last column in the above table shows math and as we input a raw
+character we don't get proper anchoring: the zero width makes it overlap.
+
+% till here
+
+Now wait, you will say, but why does it actually overlap? The reason is that zero
+width is not actually zero width here! The glyph has a bounding box that goes
+into the negative horizontal direction and therefore, when such a shape gets
+injected into the output, the rendering in the viewer will move the left edge to
+the left. But because the \TEX\ engine only handles positive widths and because
+the width is explicitly part of a character specification anyway\footnote {The
+height and depth are not: these we derive from the bounding box.} we don't
+progress (advance) which is why the overlapping sort of works for the $x$ but
+less so for the $m$: in math mode we need to use these \type {\hat} and \type
+{\widehat} commands.
+
+The hat and widehat assignments were those of August 2022. In plain \TEX\ we see
+these definitions:
+
+\starttyping
+\def\hat    {\mathaccent"705E }
+\def\widehat{\mathaccent"0362 }
+\stoptyping
+
+The \type {\mathaccent} primitive takes an integer that encodes the class, family,
+and slot in the 8 bit font encoding. Here we see that the hat comes from family
+0, the upright math font. The widehat comes from extensible family 3. These two
+are independently defined. When you want a hat that spans the nucleus, you need to
+use the widehat. In the math engine spanning actually means that we have a
+delimiter and normally that means: start with a basic shape, when that is too
+narrow, go to the extensible font and follow the chain with increasing sizes and
+when you run out of those apply an extensible recipe. The sequence and extensible
+are both optional and the important part is that we first look at what is called
+the small character and then to the large one(s).
+
+However, the \type {\mathaccent} primitives doesn't take a delimiter! It directly
+starts following a chain if the given character has it (and then the character
+itself is of course the first in that chain). And this is where the problems
+start when we move to \OPENTYPE\ and \UNICODE\ math.
+
+\starttabulate[|T|l|l|]
+\NC U+005E \NC Hat     \NC some useless, often ugly large glyph \NC \NR %  94
+\NC U+02C6 \NC hat     \NC it has width but no extensibles      \NC \NR % 710
+\NC U+0302 \NC widehat \NC it has zero width and extensibles    \NC \NR % 770
+\stoptabulate
+
+Now, if we define \type {\hat} as \type {U+02C6} we don't get the extensibles,
+and it basically is what was always done in \TEX\ macro packages following the
+plain suggestions. If we define \type {\widehat} we start out with a glyph that
+has likely zero width\footnote {Over the many years that \LUATEX\ evolved this
+was not guaranteed, for instance when wide (\UNICODE) fonts were constructed from
+traditional eight bit (\TEX\ encoded) fonts.} And, because \OPENTYPE\ starts with
+the base glyph and {\em then} uses a set of variants of eventually a recipe of
+parts, we suddenly have a different situation with \type {\mathaccent} than we
+normally have, where these are decoupled. Therefore, the definition of \type {\hat}
+and \type {\widehat} determines what an \OPENTYPE\ math engine will do, just as
+in regular \TEX, but we might need them to be defined differently.
+
+A solution would be to let \type {\mathaccent} (or \type {\Umathaccent}) directly
+go to the variants, but that is sort of weird. Because a zero width glyph doesn't
+match the criteria to span a nucleus it is likely to be skipped anyway, although
+there can be a case where the next in size overruns the width of the nucleus in
+which case the zero width one is used which itself is not that nice. We could
+actually derive the width from the boundingbox, but that would be a bit abnormal,
+and it makes no sense to burden the font machinery with that exception. Another
+approach we can follow is to just copy the extensibles from \type {U+0302} to
+\type {02C6} and use that one for \type {\hat} as well as \type {\widehat} and
+then make \type {\widehat} an alias to \type {\hat}. After, all, the main reason
+why we have two commands comes from the fact that \type {\mathaccent} doesn't
+take a delimiter but single character reference (encoded in an integer).
+
+Here is the whole list of accents:
+
+\starttabulate[||T||T|]
+\NC \tex{grave} \NC U+0060 \NC \tex{widegrave} \NC U+0300 \NC \NR
+\NC \tex{ddot}  \NC U+00A8 \NC \tex{wideddot}  \NC U+0308 \NC \NR
+\NC \tex{bar}   \NC U+00AF \NC \tex{widebar}   \NC U+0304 \NC \NR
+\NC \tex{acute} \NC U+00B4 \NC \tex{wideacute} \NC U+0301 \NC \NR
+\NC \tex{hat}   \NC U+02C6 \NC \tex{widehat}   \NC U+0302 \NC \NR
+\NC \tex{check} \NC U+02C7 \NC \tex{widecheck} \NC U+030C \NC \NR
+\NC \tex{breve} \NC U+02D8 \NC \tex{widebreve} \NC U+0306 \NC \NR
+\NC \tex{dot}   \NC U+02D9 \NC \tex{widedot}   \NC U+0307 \NC \NR
+\NC \tex{ring}  \NC U+02DA \NC \tex{widering}  \NC U+030A \NC \NR
+\NC \tex{tilde} \NC U+02DC \NC \tex{widetilde} \NC U+0303 \NC \NR
+\NC \tex{dddot} \NC U+20DB \NC \tex{widedddot} \NC U+20DB \NC \NR
+\stoptabulate
+
+The only accent that is an exception is the last one but is it really used? It
+anyway makes no real sense to assume that users will ever directly input the
+\UTF\ characters conforming the last column, so we can just go for the first one
+and use the extensibles from the second and see where we end up. Neither \MATHML\
+nor \TEX\ related specifications seem to cover this well, so we can just do what
+suits us best.
+
+\startbuffer
+\showglyphs
+\im {\widehat{a} + \widehat         {aa}} =
+\im {\hat    {a} + \hat             {aa}} =
+\im {\hat    {a} + \hat[stretch=yes]{aa}} =
+\setupmathaccent[top][stretch=yes]
+\im {\hat    {a} + \hat             {aa}}
+\stopbuffer
+
+Because all has to fit into the \CONTEXT\ user interface and because we also want
+to be backward compatible (command wise), we end up with something:
+
+\typebuffer
+
+that gives us:
+
+\startpacked \glyphscale = \numexpr2*\glyphscale\relax \getbuffer \stoppacked
+
+Now, one problem, is of course that users can enter these modifiers as \UTF\
+sequence in the input, just like they do with delimiters. Therefore we do support
+the following feature (which is under class control so disabled by default):
+
+\startbuffer
+\Umathcode    "02C6   \mathaccentcode 0 "02C6
+\edef         \HiHatA {\Uchar"02C6}
+\Umathchardef \HiHatB \mathaccentcode 0 "02C6
+
+$ \Uchar"02C6{x} + \HiHatA{xx} + \HiHatB{xx} = \widehat {xxxx} $
+\stopbuffer
+
+\typebuffer
+
+You get this:
+
+\start
+    \pushoverloadmode \getbuffer \popoverloadmode
+\stop
+
+The only cheat here is that normally accents come after the accentee, but we can
+live with that. After all, it's all about convenience.
+
+There is another aspect of accents that we need to mention here. The hat, tilde,
+and check are often used over not only single letters but also small expressions.
+So how come that fonts have only very few variants defined? We can imagine that
+in eight bit fonts the number of available slots plays a role but in \OPENTYPE\
+fonts that is not the case. It therefore can be considered an
+oversight that usage of these wide accents has not be communicated well to the
+font designers.
+
+\def\CrappyHack#1{\im{
+    #1{a}       + #1{a+b}       + #1{a+b+c} +
+    #1{a+b+c+d} + #1{a+b+c+d+e} + #1{a+b+c+d+e+f}
+}\par}
+
+\startpacked
+\CrappyHack\widehat
+\CrappyHack\widetilde
+\CrappyHack\widecheck
+\stoppacked
+
+The previous lines demonstrate that we can actually cheat a little for these
+three top accents: we can just scale the last variant horizontally. It was a few
+lines patch to \LUAMETATEX\ to make this automatic and triggered by setting the
+\type {extensible} field in a character table to \type {true} instead of a
+recipe. The ingredients to get this working were already there, and it works out
+quite well. The only complication was that the \type {flac} feature (that
+provides flat accents for cases where the nucleus is rather high) could interfere,
+but that was trivial to deal with in the code that does the goodies. \footnote
+{When we were testing fonts this got us by surprise when we tested Cambria that
+has these flat overloads for the tilde and check. Because supports this automatic
+(hidden from the user) one doesn't look into that direction when testing
+something.}
+
+When it comes to these delimiters that have no real solution in the font, we can
+consider delegating coming up with a glyph to the macro package at the time it is
+needed, and we can actually do that. However, this is mostly interesting for
+educational usage, where the amount of delimiters is predictable and limited.
+About a decade ago some mechanism was added to the \MKIV\ math machinery that
+support plugins so that we could use \METAFUN\ to generate (most noticeably)
+square root symbols the way we liked. \footnote {This was a fun project of Alan
+and Hans.} The main drawback is that mixing this in means matching to a font, and
+that is not always trivial. But it is this kind of trickery that makes working
+with \TEX\ fun. That said: what we are discussing here is more fundamental in the
+sense that we try to come up with generic engine solutions that just rely on the
+fonts. That way complex math with all reasonable symbols is also served.
+\footnote {These \METAFUN\ plugins are still possible, but we need to adapt some
+to \LMTX\ which will happen as we go.}
+
+Interestingly there are some arrows that act like accents. There are over- and
+under ones as well as combining (often zero width) accents. Fonts are not always
+consistent in how these extends (the wide ones). Often the combining accents are
+smaller and closer to the running text. Traditionally in \TEX\ fonts there are no
+extensible arrows: they are constructed from arrow heads, minus and equal signs
+with some negative spacing in between. One can therefore wonder is the smaller
+combining ones are appreciated by those who want stable math. It definitely means
+that we have to make choices. Even more interesting is that while \UNICODE\ has
+some means to construct braces from predictable \UNICODE\ slots. there is no way
+to do the same with arrows and (indeed) there are fonts out there with shaped
+arrows that demand different middle and end pieces. In fact, the same is true for
+rules that are not simple rectangles and radical extensions that are not flat
+rules either. In all these cases the usage patterns of accents and similar
+constructs has not really been fed back into the way \UNICODE\ and \OPENTYPE\
+fonts support math. \footnote {One can argue that this is not what \UNICODE\ is
+for but if so, then some other bits and pieces also make little sense.}
+
+\stopsection
+
+\startsection[title=Bullets]
+
+In \TEX\ usage bullets are a it special. Because fonts had a limited number of slots
+available, bullets in for instance itemized lists traditionally were taken from
+a math font. The bullet in Computer Modern has a comfortable size and is quite
+useful for that. Bullets in text fonts often were (are) relatively small so even when
+they were available they were not really used. The official \UNICODE\ slot for
+bullet is \type {U+2022} and in this font it shows up as \quote {•}. The \WIKIPEDIA\ page
+on bullets (typography) mentions:
+
+\startquotation
+    A variant, the bullet operator (\type {U+2219} ∙ \typ {BULLET OPERATOR}) is
+    used as a math symbol, akin to the dot operator. Specifically, in logic, $x •
+    y$ means logical conjunction. It is the same as saying \quotation {x and y}
+\stopquotation
+
+The page also mentions that \quotation {glyphs such as {\switchtobodyfont
+[stixtwo]$•$} and {\switchtobodyfont [stixtwo]$◦$}} have \quotation {reversed
+variants {\switchtobodyfont [stixtwo]$◘$} and {\switchtobodyfont [stixtwo]$◙$}}
+although we haven't see the reverse once in \TEX\ documents (yet), like these (we
+use \STIX2\ to show them):
+
+\starttabulate[|Tl|l|l|]
+\NC U+2022 \NC \switchtobodyfont[stixtwo]$•$ \NC BULLET \NC \NR
+\NC U+2023 \NC \switchtobodyfont[stixtwo]$‣$ \NC TRIANGULAR BULLET \NC \NR
+\NC U+2043 \NC \switchtobodyfont[stixtwo]$⁃$\NC HYPHEN BULLET \NC \NR
+\NC U+204C \NC \switchtobodyfont[stixtwo]$⁌$\NC LACK LEFTWARDS BULLET \NC \NR
+\NC U+204D \NC \switchtobodyfont[stixtwo]$⁍$\NC LACK RIGHTWARDS BULLET \NC \NR
+\NC U+2219 \NC \switchtobodyfont[stixtwo]$∙$ \NC BULLET OPERATOR (math) \NC \NR
+\NC U+25CB \NC \switchtobodyfont[stixtwo]$○$ \NC WHITE CIRCLE \NC \NR
+\NC U+25CF \NC \switchtobodyfont[stixtwo]$●$ \NC BLACK CIRCLE \NC \NR
+\NC U+25D8 \NC \switchtobodyfont[stixtwo]$◘$ \NC INVERSE BULLET \NC \NR
+\NC U+25E6 \NC \switchtobodyfont[stixtwo]$◦$ \NC WHITE BULLET \NC \NR
+\NC U+29BE \NC \switchtobodyfont[stixtwo]$⦾$ \NC CIRCLED WHITE BULLET \NC \NR
+\NC U+29BF \NC \switchtobodyfont[stixtwo]$⦿$ \NC CIRCLED BULLET \NC \NR
+\stoptabulate
+
+The reverse ones are not really reverse in \STIX2\ as they have bigger circles.
+There are a few more bullets mentioned but probably only because they have the
+word bullet in their description and they don't really look like bullets. Given
+the already discussed lack of granularity in some math symbols with multiple
+usage it is somewhat surprising that we have a math bullet. The weird looking
+left- and rightward bullets are kind of hard to distinguish. Let's hope that
+mathematicians don't discover these!
+
+This brings us to the more general way of looking at these bullets because among
+the popular math symbols used in text are also the triangles and (\TEX) math
+fonts came with. When we have a few commands for circular shapes like \typ
+{$\bullet \bigcirc \circ$} giving $\bullet \bigcirc \circ$ we have plenty of
+(black) triangles.
+
+For instance, we have \type {\triangledown} and \type {\bigtriangledown} and these
+have corresponding \UNICODE\ slots \type {U+25BD} and \type {U+25BF} but when
+you try these in for instance \STIX2, Pagella and Cambria you got:
+▽ + ▿, ▽ + ? and ? + ?, where the question mark indicates a missing character.
+
+It is for that reason that \type {\triangledown} and \type {\bigtriangledown} are
+both defined as using the large one. This test also demonstrated us that we
+didn't have to waste time looking up what \MATHML\ had to tell about it. A
+typeset version of that specification was never a visual highlight and missing
+glyphs only makes that worse. And, when fonts lack shapes no one uses them
+anyway.
+
+However, it makes sense to think a bit about how to deal with this properly, and
+we will likely add some checking to the goodie files for it, so that when we do
+have them, we use them. \footnote {Most practical is to add this information to
+the character database which is a bit of work}. But even then, most troublesome
+is that the size (and even positioning) of these symbols is rather inconsistent
+across math fonts, but because they are seldom used it doesn't make much sense to
+compensate for that (read: we just wait till users ask for it).
+
+% {\switchtobodyfont[stixtwo]$\char"25BD+\char"25BF$}% +\triangledown+\bigtriangledown$
+% {\switchtobodyfont[pagella]$\char"25BD+\char"25BF$}% +\triangledown+\bigtriangledown$
+% {\switchtobodyfont[cambria]$\char"25BD+\char"25BF$}% +\triangledown+\bigtriangledown$
+
+\stopsection
+
+\startsection[title=Punctuation]
+
+There are quite some punctuation symbols in \UNICODE\ but not for math where the
+main troublemakers are the period, comma, colon and semicolon. The first two can
+be used as separator in numbers, in which case we don't want any spacing, or they
+can be part of a (pseudo) sentence in a formula, or they can separate entries in
+a list (take coordinates).
+
+\starttyping
+1.1 + 1.2
+(1.1, 1.2)
+x + 1.1, x + 1.2
+\stoptyping
+
+When used as separator in a sentence, which is more likely in display math than
+in inline math, the spacing after it can be either regular (as in text) or wide.
+And the symbol can come from the math font or text (and these can actually look
+different). In \CONTEXT\ (also pre \LMTX) we have some special trickery at work
+for spacing comma's and periods but we leave that aside now. What should be noted
+is that out|-|of|-|the|-|box spaces are ignored when math is scanned so we cannot
+take that surrounding into account when dealing with spacing in the engine.
+
+Although the \UNICODE\ specification provides a classification of characters that
+includes punctuation in practice we need to deal with it ourselves. For instance,
+by default a period is not considered punctuation but a command and semi colon
+are, while a colon is a relation!
+
+Take for instance $f.$ (math italic f followed by a period). Italic correction
+and math glyphs have this special relationship and it also shows up in
+punctuation. Imagine that we have a sequence of characters, say $fx$. These are
+actually two ordinary atoms but in $f,$ we have an ordinary atom followed by a
+punctuation atom so here spacing is determined by how these classes are set up.
+But, given the shape if the $f$ we actually don't want italic correction here.
+
+\startbuffer
+$fx + f. +f, + f: + f; + a. +a, + a: + a; + x, +x, + x: + x;$%
+\stopbuffer
+
+\startlinecorrection
+\scale[width=\textwidth]{%
+    \getbuffer
+}
+\blank[halfline]
+\scale[width=\textwidth]{%
+    \showmakeup[mathglue]%
+    \mathspacingmode\plusone
+    \showfontitalics
+    \showfontkerns
+    \showglyphs
+    \getbuffer
+}
+\stoplinecorrection
+
+When you zoom in you can see the subtle spacing differences. We can compensate
+for the semi colon being a bit higher than the period by applying some kern,
+something that we can set up in the goodie file.
+
+Actually, if we assume that periods only occur in numbers we can make it
+punctuation and set it up for digit spacing but then commas etc also get done
+that way. A variant is to have two punctuation classes (or cheat and put the
+period in the digit class). No matter what we do, no help can be expected from
+documents mentioned: it's mostly a visual thing anyway.
+
+Let's end with the visual aspect: in most fonts the two colons \type {0x003A} and
+\type {0x2236} are different: one has more distance between the periods. Which
+one? Well, that depends on the font! Latin Modern has a cramped \type {0x2236}
+while \STIX2 has a cramped \type {0x003A}. Cambria has square dots for the
+{0x003A} and round ones slightly more cramped for \type {0x2236}. Lucida goes
+extreme: it has smaller dots far apart for \type {0x2236}. If the idea is that a
+reader should get from the shape what it's about one can wonder if texts get read
+the way the author intended. Of maybe shapes don't matter. Of course a macro
+package can obscure these inconsistencies by setting the math character code of
+\type {0x003A} to \type {0x2236} but that only obscures the fact that little
+attention has been paid: what one can consider bugs became features.
+
+\stopsection
+
+\startsection[title=Special ones]
+
+There are quite some characters that really depend on a math renderer. Examples
+are wide accents, fences, and arrows. Some constructs, like fractions use rules
+and these don't come from \UNICODE\ nor fonts. A mixed case is radicals: there
+is a \UNICODE\ point and fonts can provide larger variants. Normally one steps up
+a slightly slanted version but when things get large the radical becomes an
+extensible and therefore gets an upright shape. The engine is supposed to add a
+horizontal rule at the right location. Interesting is that there is no provision
+for a right end cap. The reason probably is that \TEX, being the major renderer,
+has no combined horizontal and vertical extenders and \OPENTYPE\ doesn't have
+that either. Some properties are driven by the fonts' math parameters which sort
+of makes the radical rendering a very restricted adventure: it is supposed to be
+used for roots only, either of not with a degree anchored in the right top area.
+It looks like that degree is not really to extend much beyond the left edge of
+the symbol.
+
+In \UNICODE\ there is an actuarian character \type {U+20E7} and support in fonts
+is not that good. We do support it because we ran into in \MATHML. However, it is
+a hack. The symbol as provided by fonts is rather useless.
+
+\startbuffer
+$ \sqrt {x + 1} + \annuity{x + 1} $
+\stopbuffer
+
+\typebuffer
+
+Let's see how it renders:
+
+\startlinecorrection
+\scale[width=.5\textwidth]{\getbuffer}
+\stoplinecorrection
+
+We take the dimensions of a radical as template and when we look at the bare
+glyphs we see this:
+
+\startlinecorrection
+\scale[height=2\lineheight]{$\char"221A \enspace \char"20E7$}
+\stoplinecorrection
+
+Basically we have a right actuarian character like we have a left radical. But In
+this case the rule will go left instead of right. This is implemented on top of
+radicals so and driven by \type {\Udelimited} that takes two delimiters and
+doesn't scan for a degree. For two-sided roots (with degree) we have \type
+{\Urooted}. And like normal radicals the delimited one adapts itself to the
+content:
+
+\startbuffer
+$ \sqrt {x + \frac{1}{x}} + \annuity {x + \frac{1}{x}} $
+\stopbuffer
+
+\typebuffer
+
+So we get:
+
+\startlinecorrection
+\scale[width=.5\textwidth]{\showstruts \getbuffer}
+\stoplinecorrection
+
+For the record: in \CONTEXT\ spacing is also driven by the struts and because we
+use the radicals renderer the gap and distance parameters also apply. It might
+look spacy, but keep in mind that we want radicals to look similar when we have
+more of them in line, and we can configure all. We have also enabled the feature
+that radicals at the same level are normalized in height and depth. Here are some
+variants:
+
+\startbuffer
+$ \lannuity  {x + \frac{1}{x}} +
+  \rannuity  {x + \frac{1}{x}} +
+  \lrannuity {x + \frac{1}{x}} $
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlinecorrection
+\scale[width=.75\textwidth]{\getbuffer}
+\stoplinecorrection
+
+So we can have a mix of left, right and both end radical like symbols that
+encompass the nucleus. We're not aware of more such characters in \UNICODE\ but
+when they show up we are prepared. Only real usage can result in some parameters
+being fine|-|tuned.
+
+\stopsection
+
+% \startsection[title=Summary]
+%
+% Here we give a summary of some of the things that added on top of \UNICODE\ and
+% \OPENTYPE\ math in order to be able to properly render these more complex atoms
+% and molecules.
+%
+% \stopsection
+
+\startsection[title=Final words]
+
+This text was written in 2022 when we were working on math, extending the goodie
+files with new tweaks, checking support in fonts and updating manuals. But, as we
+moved forward, for instance with adapting \TYPEONE\ support of Antykwa and Iwona
+to the new possibilities again we had to go back in time and figure out why
+actually things were done in certain ways. And I have to admit that we had some
+good laughs and quite some fun on seeing how strange and inconsistent the assumed
+structured and logical \TEX\ ecosystem deals with math. A wrapup like is is never
+complete and we can keep adding to it so just consider it to be a momentary
+impression.
+
+Personally I have to admit that I've always overestimated what happened outside
+the \CONTEXT\ bubble, especially given the claims made. Consistency in \UNICODE\
+math is probably not as good as is could have been and the same is true for
+\OPENTYPE\ math support, but maybe I'm naive in expecting consistency and logic
+in math related work. The mere fact that Donald Knuth pays a lot of attention to
+the math in his writing doesn't automatically translate in all \TEX ies doing the
+same. I don't claim that \CONTEXT\ is doing better but I do hope that its users
+keep going for the best outcome.
+
+\stopsection
+
+\startsection[title=Resources]
+
+\starttyping
+[1] https://en.wikipedia.org/wiki/Slash_(punctuation)
+[2] http://www.unicode.org/reports/tr25
+[3] https://www.w3.org/TR/MathML3
+[4] https://www.unicode.org/Public/math/revision-15/MathClass-15.txt
+[5] https://en.wikipedia.org/wiki/Vertical_bar
+[6] https://en.wikipedia.org/wiki/Dash
+[7] https://en.wikipedia.org/wiki/Commercial_minus_sign
+[8] https://en.wikipedia.org/wiki/Division_sign
+[9] https://en.wikipedia.org/wiki/Bullet_(typography)
+\stoptyping
+
+\stopsection
+
+% After reading the \UNICODE\ report about math I don't feel too guilty when people
+% complain about the \CONTEXT\ manuals. It is a curious mix of discussing
+% organization of symbols, rendering, usage, structure, exchange, parsing,
+% confusion, etc. and it is clearly a mix of experiences with the web, word
+% processing and \TEX\ and as such not that useable because it is just not how
+% \TEX\ works with input and fonts and how users perceive matters. But it
+% definitely helps to get an idea why we ended up with the current situation: the
+% unification of math was more a combination of what was there and not a fresh
+% start. Maybe that is not really possible anyway. If we flash forward a couple of
+% pages it will all look the same to us as stone age chiseling in stone.
+
+\stopchapter
+
+\stopcomponent

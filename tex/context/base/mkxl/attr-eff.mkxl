@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Attribute Macros / Effects}
 
-\registerctxluafile{attr-eff}{}
+\registerctxluafile{attr-eff}{autosuffix}
 
 \unprotect
 
@@ -22,7 +22,7 @@
 \installcommandhandler \??effect {effect} \??effect
 
 \setupeffect
-  [\c!method=\v!none,
+  [\c!method=\v!none, % should become command or define or so
    \c!stretch=\zerocount,
    \c!rulethickness=\zeropoint,
    \c!alternative=\v!normal]

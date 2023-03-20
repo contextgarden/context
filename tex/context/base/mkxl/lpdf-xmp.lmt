@@ -346,7 +346,8 @@ local function setupidentity()
             pdfaddtoinfo("ConTeXt.Jobname",jobname)
         end
         --
-        pdfaddtoinfo("ConTeXt.Url","www.pragma-ade.com")
+     -- pdfaddtoinfo("ConTeXt.Url","www.pragma-ade.com")
+        pdfaddtoinfo("ConTeXt.Url","github.com/contextgarden/context")
         pdfaddtoinfo("ConTeXt.Support","contextgarden.net")
         pdfaddtoinfo("TeX.Support","tug.org")
         --

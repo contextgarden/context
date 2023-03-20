@@ -23,6 +23,8 @@ local mark                  = utilities.storage.mark
 local context               = context
 local commands              = commands
 
+if not characters then require("char-ini") require("char-utf")  end
+
 local characters            = characters
 local texcharacters         = { }
 characters.tex              = texcharacters
@@ -401,7 +403,7 @@ if not interfaces then return end
 
 local implement = interfaces.implement
 
-local pattern
+local pattern1, pattern2
 
 local verbosemarks = characters.verbosemarks
 
@@ -417,6 +419,7 @@ else
 
         ["grave"]                = utfchar(0x300),
         ["acute"]                = utfchar(0x301),
+        ["circumflex"]           = utfchar(0x302),
         ["circumflex"]           = utfchar(0x302),
         ["tilde"]                = utfchar(0x303),
         ["macron"]               = utfchar(0x304), ["line"]         = utfchar(0x304),
@@ -442,6 +445,7 @@ else
         ["macron below"]         = utfchar(0x331), ["line below"]   = utfchar(0x331),
 
         ["hook below"]           = utfchar(0x1FA9D),
+
     }
 
     characters.verbosemarks = verbosemarks
@@ -452,48 +456,68 @@ else
 
 end
 
-local function prepare()
-    pattern = Cs((utfchartabletopattern(verbosemarks) / verbosemarks + lpegpatterns.space/"" + lpegpatterns.utf8character)^0)
-    return pattern
+local function prepare1()
+    pattern1 = Cs(
+        (
+P("\\")/"" * (utfchartabletopattern(commandmapping) / commandmapping) * (P(" ")/"")
++            utfchartabletopattern(verbosemarks) / verbosemarks
+          + lpegpatterns.space/""
+          + lpegpatterns.utf8character
+        )^0
+    )
+    return pattern1
+end
+
+local function prepare2()
+    local back = {
+      ["ı"] = "i",
+      ["ȷ"] = "j",
+    }
+    pattern2 = Cs(
+        (
+            utfchartabletopattern(back) / back
+          + lpegpatterns.utf8character
+        )^0
+    )
+    return pattern2
 end
 
 local hash = table.setmetatableindex(function(t,k)
-    local f = ""
-    k = lpegmatch(pattern or prepare(),k) or k
+    local f = k
+    k = lpegmatch(pattern1 or prepare1(),k) or k
+    k = lpegmatch(pattern2 or prepare2(),k) or k
     local v = collapse(k) or k -- char specials
--- print("collapse",k,v)
     if k ~= v then
         goto DONE
     end
     v = combine(k) or k -- with specials
--- print("combine",k,v)
     if k ~= v then
         goto DONE
     end
     v = commandmapping[k] or k
--- print("command",k,v)
     if k ~= v then
-        f = "\\"
+        f = "\\" .. f
         goto DONE
     end
     v = textoutf(k) or k
--- print("utf",k,v)
     if k ~= v then
-        f = "\\"
+        f = "\\" .. f
         goto DONE
     end
   ::DONE::
-    report_defining("instead of old school '%s%s' you can input the utf sequence %s",f,k,v)
+    report_defining("instead of old school '%s' you can input the utf sequence %s",f,v)
     t[k] = v
     return v
 end)
 
 implement {
     name      = "chr",
-    arguments = "argument",
+ -- arguments = "argument", -- not here
+    arguments = "string",
     public    = true,
     actions   = function(str)
-        context(hash[str]) -- expandable
+        local hsh = hash[str]
+        context(hsh) -- expandable
     end
 }
 

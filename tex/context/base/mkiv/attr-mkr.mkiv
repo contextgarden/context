@@ -20,6 +20,7 @@
 \unexpanded\def\definemarker    [#1]{\defineattribute[\s!marker:#1]}
 \unexpanded\def\setmarker [#1]#2[#3]{\dosetattribute{\s!marker:#1}{#3}}
 \unexpanded\def\resetmarker     [#1]{\dogetattribute{\s!marker:#1}}
-           \def\boxmarker       #1#2{attr \numexpr\dogetattributeid{\s!marker:#1}\numexpr \numexpr#2\relax}
+           \def\boxmarker       #1#2{attr \numexpr\dogetattributeid{\s!marker:#1}\relax \numexpr\numexpr#2\relax}
+\unexpanded\def\marker            #1{\numexpr\dogetattributeid{\s!marker:#1}\relax}
 
 \protect \endinput

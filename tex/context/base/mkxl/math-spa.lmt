@@ -47,6 +47,9 @@ local nextlist          = nuts.traversers.list
 local nextboundary      = nuts.traversers.boundary
 local nextnode          = nuts.traversers.node
 
+local insertafter       = nuts.insertafter
+local newkern           = nuts.pool.kern
+
 local texsetdimen       = tex.setdimen
 local texgetdimen       = tex.getdimen
 local texsetcount       = tex.setcount
@@ -82,42 +85,6 @@ local function moveon(s)
     end
     return s
 end
-
--- stages[1] = function(specification,stage)
---     local box      = getbox(specification.box)
---     local head     = getlist(box)
---     local align    = specification.alignstate
---     local distance = specification.distance
---     for s in nextboundary, head do
---         local data = getdata(s)
---         if data == boundary then
---             -- todo: skip over ghost, maybe penalty, maybe glues all in one loop
---             s = moveon(s)
---             for n, id, subtype in nextnode, getnext(s) do
---                 s = n
---                 if id == kern_code then
---                     -- move on (s_2 case)
---                 elseif id == glue_code then
---                     -- move on
---                 elseif id == penalty_code then
---                     -- move on (untested)
---                 elseif id == hlist_code and subtype == ghost_code then
---                     -- move on
---                 else
---                     break
---                 end
---             end
---             distance = distance + getdimensions(head,s)
---             break
---         end
---     end
---     texsetdimen("global",d_strc_math_indent,distance)
---     if align == 2 then
---         for n in nextglue, head do
---             setglue(n,getwidth(n),0,0,0,0)
---         end
---     end
--- end
 
 -- -- todo: skip over ghost, maybe penalty, maybe glues all in one loop
 --
@@ -175,12 +142,11 @@ stages[1] = function(specification,stage)
         local f = found[1]
         local delta = f[2] - max
         if delta ~= 0 then
-            nuts.insertafter(head,moveon(head),nuts.pool.kern(-delta))
+            insertafter(head,moveon(head),newkern(-delta))
         end
         for i=2,#found do
             local f = found[i]
-            local delta = f[2] - max
-            nuts.insertafter(head,moveon(f[3]),nuts.pool.kern(-f[2])) -- check head
+            insertafter(head,moveon(f[3]),newkern(-f[2])) -- check head
         end
     end
     texsetdimen("global",d_strc_math_indent,max)

@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2023.03.10 12:15}
+\immutable\edef\contextversion{2023.03.20 15:42}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -651,11 +651,7 @@
 % take a while before we dealt with all of them because I'll also clean them
 % up a bit when doing.
 %
-% % luat-bas.mkxl l-macro-imp-optimize % this will go away
-
-% c:/data/develop/context/sources/attr-eff.lua
-% c:/data/develop/context/sources/attr-mkr.lua
-% c:/data/develop/context/sources/attr-neg.lua
+% % luat-bas.mkxl l-macro-imp-optimize % this is no longer used
 
 % c:/data/develop/context/sources/buff-imp-default.lua
 % c:/data/develop/context/sources/buff-imp-escaped.lua
@@ -791,8 +787,6 @@
 % c:/data/develop/context/sources/page-mix.lua
 % c:/data/develop/context/sources/page-pst.lua
 
-% c:/data/develop/context/sources/phys-dim.lua
-
 % c:/data/develop/context/sources/publ-aut.lua % shared
 % c:/data/develop/context/sources/publ-dat.lua
 % c:/data/develop/context/sources/publ-fnd.lua
@@ -837,5 +831,3 @@
 
 % c:/data/develop/context/sources/typo-cln.lua -- wrong name for what it does
 % c:/data/develop/context/sources/typo-dha.lua
-
-% c:/data/develop/context/sources/unic-ini.lua

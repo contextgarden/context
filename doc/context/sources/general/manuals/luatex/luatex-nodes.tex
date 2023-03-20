@@ -1722,7 +1722,7 @@ The \type{traverse_char} iterator loops over the \nod {glyph} nodes in a list.
 Only nodes with a subtype less than 256 are seen.
 
 \startfunctioncall
-<node> n, font, char =
+<node> n, char, font =
     node.traverse_char(<node> n)
 \stopfunctioncall
 
@@ -1730,7 +1730,7 @@ The \type{traverse_glyph} iterator loops over a list and returns the list and
 filters all glyphs:
 
 \startfunctioncall
-<node> n, font, char =
+<node> n, char, font =
     node.traverse_glyph(<node> n)
 \stopfunctioncall
 
@@ -2195,8 +2195,8 @@ number often is reported when you print node related information. You go from
 userdata nodes and there numeric references and back with:
 
 \startfunctioncall
-<integer> d = node.todirect(<node> n))
-<node> n = node.tonode(<integer> d))
+<integer> d = node.direct.todirect(<node> n))
+<node> n = node.direct.tonode(<integer> d))
 \stopfunctioncall
 
 The userdata model is rather robust as it is a virtual interface with some
@@ -2437,8 +2437,8 @@ consistency. You can of course always define additional accessors using \type
 \supported {subtypes}                \yes \nop
 \supported {subtype}                 \yes \nop
 \supported {tail}                    \yes \yes
-\supported {todirect}                \yes \yes
-\supported {tonode}                  \yes \yes
+\supported {todirect}                \nop \yes
+\supported {tonode}                  \nop \yes
 \supported {tostring}                \yes \yes
 \supported {traverse_char}           \yes \yes
 \supported {traverse_glyph}          \yes \yes

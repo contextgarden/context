@@ -2377,7 +2377,7 @@
    \tabl_ntb_section_disable}
 
 \tolerant\permanent\protected\def\bTABLEsection[#1]%
-  {\ifempty{#1}%
+  {\iftok{#1}\emptytoks
      \global\c_tabl_ntb_section_repeat\zerocount
    \else
      \letdummyparameter\c!repeat\zerocount

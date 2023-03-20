@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\registerctxluafile{phys-dim}{}
+\registerctxluafile{phys-dim}{autosuffix}
 
 % TAGGING NEEDS CHECKING ... WILL DO WHEN PARSER IS OK
 
@@ -354,7 +354,8 @@
   [\c!alternative=,              % done: text
    \c!separator=\v!normal,       % done: cdot|big|medium|space
    \s!language=\currentlanguage, % done: (no interface yet)
-   \c!order=\v!normal,           % ,. (reverse: .,)
+   \c!order=,                    % reverse
+   \c!option=,                   % keep (case)
    \c!method=0,
   %\c!grid=\v!yes,               % (maybe)
   %\c!style=...,                 % done
@@ -431,7 +432,7 @@
 \to \everyunits
 
 \appendtoks
-    \frozen\instance\setuevalue\currentunit{\phys_units_direct{\currentunit}}
+    \frozen\protected\instance\edefcsname\currentunit\endcsname{\phys_units_direct{\currentunit}}
 \to \everydefineunit
 
 \protected\def\phys_units_direct#1%
@@ -441,9 +442,10 @@
      \settrue\c_phys_units_dospace
      \removelastskip
    \fi
+   \edef\currentunit{#1}%
    \c_phys_digits_method\unitparameter\c!method\relax
    \ifmmode\else\dontleavehmode\fi
-   \edef\currentunit{#1}%
+%    \edef\currentunit{#1}%
    \enforced\edef\unitlanguage{\unitparameter\s!language}%
    \enforced\let\prefixlanguage\unitlanguage
    \enforced\let\operatorlanguage\unitlanguage
@@ -503,9 +505,17 @@
     \let\phys_units_direct\phys_units_direct_nested
 \to \everyunits
 
+% \protected\def\phys_units_indeed#1%
+%   {\edef\p_order{\unitparameter\c!order}%
+%    \ifx\p_order\v!reverse
+%      \expandafter\clf_unit_reverse
+%    \else
+%      \expandafter\clf_unit_normal
+%    \fi
+%    {\detokenize{#1}}}
+
 \protected\def\phys_units_indeed#1%
-  {\edef\p_order{\unitparameter\c!order}%
-   \ifx\p_order\v!reverse\expandafter\clf_unit_reverse\else\expandafter\clf_unit_normal\fi{\detokenize{#1}}}
+  {\clf_unit{\unitparameter\c!order}{\unitparameter\c!option}{\detokenize{#1}}}
 
 \permanent\protected\def\unitsPUS#1#2#3{\phys_units_next\prefixtext{#1}\unittext{#2}\unitsraise{\suffixtext{#3}}\c_phys_units_state\plusone} % suffix
 \permanent\protected\def\unitsPU   #1#2{\phys_units_next\prefixtext{#1}\unittext{#2}\c_phys_units_state\plusthree}                           % unit
@@ -682,7 +692,7 @@
    \setfalse\c_phys_units_dospace
    \phys_units_start}
 
-\permanent\protected\def\unitsTIMES % GP: Does this do anything? HH: yes "times" 
+\permanent\protected\def\unitsTIMES % GP: Does this do anything? HH: yes "times"
   {\ifnum\c_phys_units_state=\plusone % suffix
    \else
      \unitssmallspace
@@ -737,8 +747,44 @@
 %D    cicero=cc]
 %D \stoptyping
 
-\permanent\tolerant\protected\def\registerunit[#1]#*[#2]% todo: public implementer
-  {\clf_registerunit{#1}{#2}}
+\permanent\tolerant\protected\def\registerunit        [#1]#*[#2]{\clf_registerunit        {#1}{#2}}
+\permanent\tolerant\protected\def\registerunitshortcut[#1]#*[#2]{\clf_registerunitshortcut{#1}{#2}}
+
+%D \starttyping
+%D \registerunit
+%D   [unit]
+%D   [Point=PT,
+%D    point=pt,
+%D    Basepoint=BP,
+%D  % basepoint=bp,
+%D    ]
+%D
+%D \registerunitshortcut
+%D   [unit]
+%D   [C=coulomb]
+%D
+%D \startlines
+%D 10 \unit {square meter per second}
+%D 10 \unit {square Meter per Second}
+%D 10 \unit {point}
+%D 10 \unit {Point}
+%D 10 \unit {basepoint}
+%D 10 \unit {Basepoint}
+%D 10 \unit {C}
+%D \stoplines
+%D
+%D \setupunit[unit][option=keep]
+%D
+%D \startlines
+%D 10 \unit {square meter per second}
+%D 10 \unit {square Meter per Second}
+%D 10 \unit {point}
+%D 10 \unit {Point}
+%D 10 \unit {basepoint}
+%D 10 \unit {Basepoint}
+%D 10 \unit {C}
+%D \stoplines
+%D \stoptyping
 
 %D You can generate a list as follows:
 %D

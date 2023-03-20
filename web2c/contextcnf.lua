@@ -45,9 +45,9 @@ return {
             -- but there can be more readable paths.
 
             -- standalone:
-            
+
             TEXMFCACHE      = "$SELFAUTOPARENT/texmf-cache",
-            
+
             -- texlive
 
          -- TEXMFVAR        = "home:" .. hiddentexlivepath .. "/texmf-var",
@@ -63,21 +63,21 @@ return {
             -- tex root relocatable.
 
             TEXMFOS         = "selfautodir:",
-            
-            -- standalone: 
-            
+
+            -- standalone:
+
             TEXMFSYSTEM     = "selfautoparent:texmf-$SELFAUTOSYSTEM",
             TEXMFMAIN       = "selfautoparent:texmf",
             TEXMFCONTEXT    = "selfautoparent:texmf-context",
             TEXMFMODULES    = "selfautoparent:texmf-modules",
-            
+
             -- texlive:
-                        
+
          -- TEXMFDIST       = "selfautoparent:texmf-dist",
          -- TEXMFSYSCONFIG  = "selfautoparent:texmf-config",
-            
+
             -- The texmf-local path is only used for (maybe) some additional configuration file.
-            
+
             TEXMFLOCAL      = "selfautoparent:texmf-local",
             TEXMFFONTS      = "selfautoparent:texmf-fonts",
             TEXMFPROJECT    = "selfautoparent:texmf-project",
@@ -91,9 +91,9 @@ return {
             -- standalone:
 
             TEXMF           = "{$TEXMFHOME,!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFMODULES,!!$TEXMFCONTEXT,!!$TEXMFSYSTEM,!!$TEXMFMAIN}",
-            
+
             -- texlive:
-            
+
          -- TEXMF           = "{$TEXMFCONFIG,$TEXMFHOME,!!$TEXMFSYSCONFIG,!!$TEXMFSYSVAR,!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFDIST}",
 
             TEXFONTMAPS     = ".;$TEXMF/fonts/data//;$TEXMF/fonts/map/{pdftex,dvips}//",
@@ -127,19 +127,23 @@ return {
             BIBINPUTS       = ".;$TEXMF/bibtex/bib//;$TEXMF/tex/context//",
             BSTINPUTS       = ".;$TEXMF/bibtex/bst//;$TEXMF/tex/context//",
 
-            -- Experimental
+            -- standalone
 
             ICCPROFILES     = ".;$TEXMF/colors/icc/{context,profiles}//;$OSCOLORDIR",
+
+            -- texlive
+
+         -- ICCPROFILES     = ".;$TEXMF/tex/context/colors/{icc,profiles}//;$OSCOLORDIR",
 
             -- A few special ones that will change some day.
 
             FONTCONFIG_FILE = "fonts.conf",
 
             -- standalone
-            
+
             FONTCONFIG_PATH = "$TEXMFSYSTEM/fonts/conf",
-            
-            --texlive 
+
+            --texlive
 
          -- FONTCONFIG_PATH = "$TEXMFSYSVAR/fonts/conf",
 

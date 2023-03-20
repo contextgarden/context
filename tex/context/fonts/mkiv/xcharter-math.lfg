@@ -86,6 +86,9 @@ return {
                 {
                     tweak = "addprimed",
                 },
+-- {
+--     tweak = "addarrows",
+-- },
                 {
                     tweak = "addfourier",
                     variant = 2,

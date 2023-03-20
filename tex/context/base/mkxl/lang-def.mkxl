@@ -257,7 +257,7 @@
 
 \installlanguage
   [\s!sl]
-  [\c!command=\v!no,
+  [\c!define=\v!no,
    \c!spacing=\v!packed,
    \c!leftsentence=\hbox{\endash\space},
    \c!rightsentence=\hbox{\space\endash},
@@ -271,7 +271,7 @@
 
 \installlanguage % for now we copy from slovenian
   [\s!sq]
-  [\c!command=\v!no,
+  [\c!define=\v!no,
    \s!lefthyphenmin=2,
    \s!righthyphenmin=2,
    \c!spacing=\v!packed,
@@ -284,12 +284,12 @@
    \c!leftquotation=\rightguillemot,
    \c!rightquotation=\leftguillemot,
    \c!date={\v!day,{.},\space,\v!month,\space,\v!year}]
-   
+
 \installlanguage
   [\s!hy]
   [\c!spacing=\v!packed,
    \c!leftsentence=\endash, % *sentences not confirmed
-   \c!rightsentence=\endash, 
+   \c!rightsentence=\endash,
    \c!leftsubsentence=\endash,
    \c!rightsubsentence=\endash,
    \c!leftquote=\guilsingleleft,
@@ -613,7 +613,7 @@
 
 \installlanguage
   [\s!lt]
-  [\c!command=\v!no,
+  [\c!define=\v!no,
    \c!spacing=\v!packed,
    \c!leftsentence=\emdash,
    \c!rightsentence=\emdash,
@@ -755,7 +755,7 @@
 
 \installlanguage
   [\s!it]
-  [\c!command=\v!no,
+  [\c!define=\v!no,
    \c!spacing=\v!packed,
    \c!leftsentence=\emdash,
    \c!rightsentence=\emdash,

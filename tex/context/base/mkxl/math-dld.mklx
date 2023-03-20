@@ -28,7 +28,8 @@
 \installcommandhandler \??mathdelimited {mathdelimited} \??mathdelimited
 
 \setupmathdelimited
-  [\c!alternative=\v!normal,
+  [\c!define=\v!yes,
+   \c!alternative=\v!normal,
    \c!mpoffset=.25\exheight,
    \c!topoffset=\zeropoint,
    \c!bottomoffset=\zeropoint,
@@ -43,7 +44,7 @@
    \c!rightmargin=\zeropoint]
 
 \appendtoks
-    \ifcstok{\mathdelimitedparameter\c!rightmargin}\v!no\else
+    \ifcstok{\mathdelimitedparameter\c!define}\v!yes
       \frozen\protected\instance\edefcsname\currentmathdelimited\endcsname{\math_delimited_handle{\currentmathdelimited}}
     \fi
 \to \everydefinemathdelimited
@@ -70,7 +71,7 @@
      \s!depth \dimexpr\mathdelimitedparameter\c!depth+\mathdelimitedparameter\c!bottomoffset\relax
      \s!source\numexpr\namedboxanchor{\mathdelimitedparameter\c!source}\relax
      \s!style \normalmathstyle
-     \s!size  \numexpr\namedboxanchor{\mathdelimitedparameter\c!size}\relax
+     \s!size  \numexpr\mathdelimitedparameter\c!size\relax
      \zerocount \mathdelimitedparameter\c!left
      \zerocount \mathdelimitedparameter\c!right
   \relax}
@@ -88,7 +89,6 @@
      {\popcolor#body}%
    \fi}
 
-
 %integerdef\delimitedrightgraveuc    \privatecharactercode{delimited right grave}
 \integerdef\delimitedrightddotuc     \privatecharactercode{delimited right ddot}
 \integerdef\delimitedrightbaruc      \privatecharactercode{delimited right bar}
@@ -100,10 +100,6 @@
 \integerdef\delimitedrightringuc     \privatecharactercode{delimited right ring}
 \integerdef\delimitedrighttildeuc    \privatecharactercode{delimited right tilde}
 \integerdef\delimitedrightdddotuc    \privatecharactercode{delimited right dddot}
-\integerdef\delimitedrightdaggeruc   \privatecharactercode{delimited right dagger}
-\integerdef\delimitedrightddaggeruc  \privatecharactercode{delimited right ddagger}
-\integerdef\delimitedrightastuc      \privatecharactercode{delimited right ast}
-\integerdef\delimitedrightstaruc     \privatecharactercode{delimited right star}
 
 % \integerdef\delimitedrighthatuc   \privatecharactercode{delimited right hat}
 % \integerdef\delimitedrighttildeuc \privatecharactercode{delimited right tilde}
@@ -114,33 +110,38 @@
 
 \definemathdelimited
   [marked]
-  [\c!command=\v!no,
+  [\c!define=\v!no,
    \c!topoffset=.2\exheight]
 
 \definemathdelimited
   [ddotmarked]
   [marked]
-  [\c!right=\delimitedrightddotuc]
+  [\c!define=\v!yes,
+   \c!right=\delimitedrightddotuc]
 
 \definemathdelimited
   [barmarked]
   [marked]
-  [\c!right=\delimitedrightbaruc]
+  [\c!define=\v!yes,
+   \c!right=\delimitedrightbaruc]
 
 \definemathdelimited
   [hatmarked]
   [marked]
-  [\c!right=\delimitedrighthatuc]
+  [\c!define=\v!yes,
+   \c!right=\delimitedrighthatuc]
 
 \definemathdelimited
   [checkmarked]
   [marked]
-  [\c!right=\delimitedrightcheckuc]
+  [\c!define=\v!yes,
+   \c!right=\delimitedrightcheckuc]
 
 \definemathdelimited
   [brevemarked]
   [marked]
-  [\c!right=\delimitedrightbreveuc]
+  [\c!define=\v!yes,
+   \c!right=\delimitedrightbreveuc]
 
 \definemathdelimited
   [dotmarked]
@@ -150,44 +151,78 @@
 \definemathdelimited
   [ringmarked]
   [marked]
-  [\c!right=\delimitedrightringuc]
+  [\c!define=\v!yes,
+   \c!right=\delimitedrightringuc]
 
 \definemathdelimited
   [tildemarked]
   [marked]
-  [\c!right=\delimitedrighttildeuc]
+  [\c!define=\v!yes,
+   \c!right=\delimitedrighttildeuc]
 
 \definemathdelimited
   [dddotmarked]
   [marked]
-  [\c!right=\delimitedrightdddotuc]
+  [\c!define=\v!yes,
+   \c!right=\delimitedrightdddotuc]
 
 % The following ones are
 % not really belonging here,
 % but convenient
 
+% If there are more needed we can have:
+%
+% \c!ight=\privatecharactercode{delimited right dagger \mathdelimitedparameter\c!size}
+%
+% or even:
+%
+% \def\privatedelimitedcode#1{\privatecharactercode{delimited #1 \mathdelimitedparameter\c!size}}
+%
+% \c!right=\privatedelimitedcode{right dagger}
+%
+% with some glyph installer btu let's for now save some bytes in the format.
+
+\integerdef\delimitedrightdaggeruc        \privatecharactercode{delimited right dagger}
+\integerdef\delimitedrightddaggeruc       \privatecharactercode{delimited right ddagger}
+\integerdef\delimitedrightastuc           \privatecharactercode{delimited right ast}
+\integerdef\delimitedrightstaruc          \privatecharactercode{delimited right star}
+
+\integerdef\delimitedscriptrightdaggeruc  \privatecharactercode{delimited right dagger 1}
+\integerdef\delimitedscriptrightddaggeruc \privatecharactercode{delimited right ddagger 1}
+\integerdef\delimitedscriptrightastuc     \privatecharactercode{delimited right ast 1}
+\integerdef\delimitedscriptrightstaruc    \privatecharactercode{delimited right star 1}
+
 \definemathdelimited
   [daggermarked]
   [marked]
-  [\c!size=1,
-   \c!right=\delimitedrightdaggeruc]
+  [\c!define=\v!yes,
+   \c!size=1,
+   \c!right=\delimitedscriptrightdaggeruc]
+  %\c!right=\privatedelimitedcode{right dagger}]
 
 \definemathdelimited
   [ddaggermarked]
   [marked]
-  [\c!size=1,
-   \c!right=\delimitedrightddaggeruc]
+  [\c!define=\v!yes,
+   \c!size=1,
+   \c!right=\delimitedscriptrightddaggeruc]
+  %\c!right=\privatedelimitedcode{right ddagger}]
 
 \definemathdelimited
   [astmarked]
-  [\c!size=1,
-   \c!right=\delimitedrightastuc]
+  [marked]
+  [\c!define=\v!yes,
+   \c!size=1,
+   \c!right=\delimitedscriptrightastuc]
+  %\c!right=\privatedelimitedcode{right ast}]
 
 \definemathdelimited
   [starmarked]
   [marked]
-  [\c!size=1,
-   \c!right=\delimitedrightstaruc]
+  [\c!define=\v!yes,
+   \c!size=1,
+   \c!right=\delimitedscriptrightstaruc]
+  %\c!right=\privatedelimitedcode{right star}]
 
 % More contextual
 

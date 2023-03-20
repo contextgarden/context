@@ -465,21 +465,23 @@ extern int       tex_get_math_char    (halfword f, int c, int size, scaled *scal
 */
 
 typedef enum char_tag_codes {
-    no_tag          = 0x0000, /*tex vanilla character */
-    ligatures_tag   = 0x0001, /*tex character has a ligature program, not used */ 
-    kerns_tag       = 0x0002, /*tex character has a kerning program, not used */ 
-    list_tag        = 0x0004, /*tex character has a successor in a charlist */  
-    callback_tag    = 0x0010,
-    extensible_tag  = 0x0020, /*tex character is extensible, we can unset it in order to block */
-    horizontal_tag  = 0x0040, /*tex horizontal extensible */
-    vertical_tag    = 0x0080, /*tex vertical extensible */
-    extend_last_tag = 0x0100, /*tex auto scale last variant */
-    inner_left_tag  = 0x0200, /*tex anchoring */
-    inner_right_tag = 0x0400, /*tex anchoring */
-    italic_tag      = 0x0800, 
-    n_ary_tag       = 0x1000, 
-    radical_tag     = 0x2000, 
-    punctuation_tag = 0x4000, 
+    no_tag           = 0x00000, /*tex vanilla character */
+    ligatures_tag    = 0x00001, /*tex character has a ligature program, not used */ 
+    kerns_tag        = 0x00002, /*tex character has a kerning program, not used */ 
+    list_tag         = 0x00004, /*tex character has a successor in a charlist */  
+    callback_tag     = 0x00010,
+    extensible_tag   = 0x00020, /*tex character is extensible, we can unset it in order to block */
+    horizontal_tag   = 0x00040, /*tex horizontal extensible */
+    vertical_tag     = 0x00080, /*tex vertical extensible */
+    inner_left_tag   = 0x00100, /*tex anchoring */
+    inner_right_tag  = 0x00200, /*tex anchoring */
+    inner_top_tag    = 0x00400, /*tex anchoring */ 
+    inner_bottom_tag = 0x00800, /*tex anchoring */ 
+    extend_last_tag  = 0x01000, /*tex auto scale last variant */
+    italic_tag       = 0x02000, 
+    n_ary_tag        = 0x04000, 
+    radical_tag      = 0x08000, 
+    punctuation_tag  = 0x10000, 
 } char_tag_codes;
 
 /*tex
@@ -597,8 +599,6 @@ extern scaled    tex_char_top_margin_from_font          (halfword f, halfword c)
 extern scaled    tex_char_bottom_margin_from_font       (halfword f, halfword c);
 extern scaled    tex_char_top_overshoot_from_font       (halfword f, halfword c);
 extern scaled    tex_char_bottom_overshoot_from_font    (halfword f, halfword c);
-extern scaled    tex_char_inner_x_offset_from_font      (halfword f, halfword c);
-extern scaled    tex_char_inner_y_offset_from_font      (halfword f, halfword c);
 extern extinfo  *tex_char_extensible_recipe_from_font   (halfword f, halfword c);
 
 extern halfword  tex_char_unchecked_top_anchor_from_font    (halfword f, halfword c);

@@ -13,16 +13,19 @@
 
 \writestatus{loading}{ConTeXt Attribute Macros / Negation}
 
-\registerctxluafile{attr-neg}{}
+\registerctxluafile{attr-neg}{autosuffix}
 
 \unprotect
 
+%D This feature is kind of useless because only \ACROBAT\ seems to support it and
+%D even rather complete mupdf based viewers seem to ignore it.
+
 % positive and negative are preregistered
 
-\permanent\protected\def\startnegative{\clf_setnegative{\v!negative}}
-\permanent\protected\def\stopnegative {\clf_setnegative{\v!positive}}
+\permanent\protected\def\startnegative{\clf_setnegative\v!negative}
+\permanent\protected\def\stopnegative {\clf_setnegative\v!positive}
 
-\permanent\protected\def\startpositive{\clf_setnegative{\v!positive}}
-\permanent\protected\def\stoppositive {\clf_setnegative{\v!negative}}
+\permanent\protected\def\startpositive{\clf_setnegative\v!positive}
+\permanent\protected\def\stoppositive {\clf_setnegative\v!negative}
 
 \protect \endinput

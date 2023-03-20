@@ -8243,7 +8243,7 @@ static int nodelib_direct_currentattributes(lua_State* L)
 
 /* node.direct.todirect */
 
-static int nodelib_direct_todirect(lua_State* L)
+static int nodelib_shared_todirect(lua_State* L)
 {
     if (lua_type(L, 1) != LUA_TNUMBER) {
         /* assume node, no further testing, used in known situations */
@@ -8271,7 +8271,7 @@ static int nodelib_direct_tovaliddirect(lua_State* L)
 
 /* node.direct.tonode */
 
-static int nodelib_direct_tonode(lua_State* L)
+static int nodelib_shared_tonode(lua_State* L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
@@ -9882,8 +9882,6 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "slide",                   nodelib_direct_slide                  },
     { "startofpar",              nodelib_direct_startofpar             },
     { "tail",                    nodelib_direct_tail                   },
-    { "todirect",                nodelib_direct_todirect               },
-    { "tonode",                  nodelib_direct_tonode                 },
     { "tostring",                nodelib_direct_tostring               },
     { "tovaliddirect",           nodelib_direct_tovaliddirect          },
     { "traverse",                nodelib_direct_traverse               },
@@ -9911,6 +9909,8 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "setspeciallist",          nodelib_direct_setspeciallist         },
     { "isspeciallist",           nodelib_direct_isspeciallist          },
     { "getusedattributes",       nodelib_direct_getusedattributes      },
+    { "show",                    nodelib_direct_show                   },
+    { "serialized",              nodelib_direct_serialized             },
     /* dual node and direct */
     { "type",                    nodelib_hybrid_type                   },
     { "types",                   nodelib_shared_types                  },
@@ -9918,10 +9918,10 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "subtypes",                nodelib_shared_subtypes               },
     { "values",                  nodelib_shared_values                 },
     { "id",                      nodelib_shared_id                     },
-    { "show",                    nodelib_direct_show                   },
-    { "gluetostring",            nodelib_hybrid_gluetostring           },
-    { "serialized",              nodelib_direct_serialized             },
     { "getcachestate",           nodelib_shared_getcachestate          },
+    { "todirect",                nodelib_shared_todirect               },
+    { "tonode",                  nodelib_shared_tonode                 },
+    { "gluetostring",            nodelib_hybrid_gluetostring           },
     { NULL,                      NULL                                  },
 };
 
@@ -9959,6 +9959,8 @@ static const struct luaL_Reg nodelib_function_list[] = {
     { "insertafter",              nodelib_userdata_insertafter          },
     { "insertbefore",             nodelib_userdata_insertbefore         },
     { "remove",                   nodelib_userdata_remove               },
+    { "show",                     nodelib_userdata_show                 },
+    { "serialized",               nodelib_userdata_serialized           },
     /* shared between userdata and direct */
     { "type",                     nodelib_hybrid_type                   },
     { "types",                    nodelib_shared_types                  },
@@ -9966,10 +9968,10 @@ static const struct luaL_Reg nodelib_function_list[] = {
     { "subtypes",                 nodelib_shared_subtypes               },
     { "values",                   nodelib_shared_values                 },
     { "id",                       nodelib_shared_id                     },
-    { "show",                     nodelib_userdata_show                 },
-    { "gluetostring",             nodelib_hybrid_gluetostring           },
-    { "serialized",               nodelib_userdata_serialized           },
     { "getcachestate",            nodelib_shared_getcachestate          },
+    { "todirect",                 nodelib_shared_todirect               },
+    { "tonode",                   nodelib_shared_tonode                 },
+    { "gluetostring",             nodelib_hybrid_gluetostring           },
     { NULL,                       NULL                                  },
 };
 

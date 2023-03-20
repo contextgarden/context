@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Unicode Support / Initialization}
 
-\registerctxluafile{unic-ini}{}
+\registerctxluafile{unic-ini}{autosuffix}
 
 \unprotect
 
@@ -26,7 +26,8 @@
 %D
 %D \typebuffer \getbuffer
 
-\permanent\def\unicodechar#1{\clf_unicodechar{#1}}
+% \permanent\def\unicodechar#1% defined at the lua end
+%   {\clf_unicodechar{#1}}
 
 \permanent\protected\def\unknownchar
   {\dontleavehmode\hpack{\vrule\s!width.5\emwidth\s!height\exheight\s!depth\zeropoint}}

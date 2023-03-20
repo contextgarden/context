@@ -504,7 +504,7 @@
 % Key "M": Displaymath mode.
 
 \newtableformatkey M%
-  {\doreadtableformatkeys \{ b{\normalstartimath\displaystyle} a{\normalstopimath}}
+  {\doreadtableformatkeys \{ b{\normalstartimath\forcedisplaymath} a{\normalstopimath}}
 
 % Key "\m": Template ${}#\hfil$
 

@@ -264,8 +264,13 @@ function parsers.groupedsplitat(symbol,withaction)
     if not pattern then
         local symbols   = S(symbol)
         local separator = space^0 * symbols * space^0
-        local value     = lbrace * C((nobrace + nestedbraces)^0) * rbrace
-                        + C((nestedbraces + (1-(space^0*(symbols+P(-1)))))^0)
+        local value     =
+                        lbrace
+                        * C((nobrace + nestedbraces)^0)
+                     -- * rbrace
+                        * (rbrace * (#symbols + P(-1))) -- new per 2023-03-11
+                        +
+                        C((nestedbraces + (1-(space^0*(symbols+P(-1)))))^0)
         if withaction then
             local withvalue = Carg(1) * value / function(f,s) return f(s) end
             pattern = spaces * withvalue * (separator*withvalue)^0

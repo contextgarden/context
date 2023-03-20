@@ -62,12 +62,13 @@ function adaptive.set(settings)
     texsetattribute(a_adaptive,registervalue(a_adaptive,settings))
 end
 
-local function setadaptive(w,h,d,l,c)
+local function setadaptive(w,h,d,l,c,a)
     setdimen(d_adaptive_width,w)
     setdimen(d_adaptive_height,h)
     setdimen(d_adaptive_depth,d)
     setdimen(d_adaptive_line,l)
     setmacro("m_adaptive_color",c)
+    setmacro("m_adaptive_alternative",a)
 end
 
 local methods = {
@@ -76,7 +77,7 @@ local methods = {
         local setups = settings.setups
         if setups and setups ~= ""  then
             local w, h, d = getwhd(parent)
-            setadaptive(w,h,d,settings.rulethickness,settings.color)
+            setadaptive(w,h,d,settings.rulethickness,settings.color,settings.alternative)
             expandmacro("setup",true,setups)
             local l = takebox("b_adaptive_box")
             if l then
@@ -150,6 +151,7 @@ interfaces.implement {
             { "mp", "string" },
             { "color", "string" },
             { "rulethickness", "dimension" },
+            { "alternative", "string" },
         }
     }
 }

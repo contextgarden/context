@@ -39,6 +39,10 @@
 \aliased\let\usedadaptivebox\b_adaptive_box
 
 \mutable\lettonothing\m_adaptive_color
+\mutable\lettonothing\m_adaptive_alternative
+
+\permanent\def\usedadaptivecolor      {\m_adaptive_color}
+\permanent\def\usedadaptivealternative{\m_adaptive_alternative}
 
 \protected\untraced\def\usedadaptivetotal{\dimexpr\usedadaptiveheight+\usedadaptivedepth\relax}
 
@@ -56,6 +60,7 @@
   [\c!foregroundstyle=,
    \c!foregroundcolor=,
    \c!color=gray,
+   \c!alternative=,
    \c!rulethickness=\linewidth,
    \c!method=1,
    \c!stretch=,
@@ -95,6 +100,7 @@
            method         \adaptiveparameter\c!method
            setups        {\p_setups}%
            color         {\adaptiveparameter\c!color}%
+           alternative   {\adaptiveparameter\c!alternative}%
            rulethickness  \adaptiveparameter\c!rulethickness
          }%
        \fi

@@ -51,7 +51,7 @@
 
 \tolerant\def\typo_adjusters_blank#1[#2]% no need for speed
   {\begingroup
- % \setbox\scratchbox\vbox{\ifcstok{#2}\emptytoks\blank\else\blank[#2]\fi}%
+ % \setbox\scratchbox\vbox{\iftok{#2}\emptytoks\blank\else\blank[#2]\fi}%
    \setbox\scratchbox\vbox{\blank[#2]}%
    \vadjust #1 index \plustwo {\vskip\htdp\scratchbox}%
    \endgroup}

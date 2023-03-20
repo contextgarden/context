@@ -21,7 +21,6 @@ local setnext            = nuts.setnext
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getboth            = nuts.getboth
-local setglue            = nuts.setglue
 local getglue            = nuts.getglue
 local setglue            = nuts.setglue
 local getwhd             = nuts.getwhd
@@ -372,6 +371,7 @@ do
         if noflines > 0 then
             local currentline = 1
             for n, subtype in nextglue, head do
+-- print(currentline,height/65536,depth/65536)
                 -- one day we can decide what to do with intertext stuff based on the
                 -- subtype but not now ... on our agenda (intertext etc)
                 if subtype == baselineskip_code or subtype == lineskip_code then
@@ -383,9 +383,11 @@ do
                     if prevdp < depth then
                         setdepth(lines[currentline][1],depth)
                         delta = delta + (depth - prevdp)
+-- lines[currentline][5] = depth
                     end
                     if nextht < height then
                         setheight(lines[nextline][1],height)
+-- lines[nextline][4] = height
                         delta = delta + (height - nextht)
                     end
 --                     if subtype == lineskip_code then
@@ -394,7 +396,7 @@ do
 --                     else
                         setglue(n,amount+inbetween-delta,stretch,shrink)
 --                     end
-                    curline = nextline
+                    currentline = nextline -- was curline
 -- if currentline > noflines then
 --     break
 -- end

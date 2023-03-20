@@ -1,0 +1,319 @@
+% language=us runpath=texruns:manuals/musings
+
+\startcomponent musings-assumptions
+
+\environment musings-style
+
+\setuptolerance[tolerant,stretch]
+
+\startchapter[title={\CONTEXT\ in \TEXLIVE\ 2023}]
+
+Starting with \TEXLIVE\ 2023 the default \CONTEXT\ distribution is \LMTX, a
+follow up on \MKIV, running on top of the \LUAMETATEX\ engine instead of \LUATEX.
+Already for a long time the \MKII\ version used with \PDFTEX, \XETEX\ and \ALEPH\
+has been frozen and most users moved on from \MKIV\ to \LMTX\ (a more distinctive
+tag for what internally is version \MKXL).
+
+In principle one can argue that we now have three versions of \CONTEXT\ and there
+can be the impression that they are very different. However, although \MKXL\ can
+do more than \MKIV\ which can do more than \MKII, the user interface hasn't
+changed that much and old functionality is available in newer versions. Of course
+some old features make no sense in newer variants, like eight|-|bit font
+encodings in an \OPENTYPE\ font realm and input encodings when one uses \UTF,
+although we still support input encodings a.k.a.\ regimes. When we started using
+the \type {Mk*} suffixes the main reason was that we had to distinguish files and
+the official \TEX\ distribution doesn't permit duplicate file names. Using a
+distinctive suffix also makes it possible to treat files differently.
+
+\starttabulate[|T|c|c|c|Tl|]
+\BC suffix \BC engine                           \BC template \BC arguments \BC main file \NC \NR
+\HL
+\NC MkII   \NC \PDFTEX, \XETEX, \ALEPH          \NC          \NC           \NC context.mkii \NC \NR
+\HL
+\NC MkIV   \NC \LUATEX, \LUAJITTEX, \LUAMETATEX \NC          \NC           \NC context.mkiv \NC \NR
+\NC MkVI   \NC idem                             \NC          \NC   yes     \NC \NC \NR
+\NC MkIX   \NC idem                             \NC   yes    \NC           \NC \NC \NR
+\NC MkXI   \NC idem                             \NC   yes    \NC   yes     \NC \NC \NR
+\HL
+\NC MkXL   \NC \LUAMETATEX                      \NC          \NC           \NC context.mkxl \NC \NR
+\NC MkLX   \NC idem                             \NC          \NC   yes     \NC \NC \NR
+\stoptabulate
+
+In this table \quote {template} files are a mix of \TEX\ and \LUA\ and originate
+in the early days of \MKIV; basically, they are a wink to active server pages.
+With \quote {arguments} we refer to files that accept named macro arguments which
+means that they need to be preprocessed. That started as a proof of concept but
+some core files are defined that way. Users will normally just use a \type {.tex}
+file.
+
+The \LUA\ files in the code base have the suffix \type {lua}, or when meant for
+\LUAMETATEX\ that uses a newer \LUA\ engine they can have the suffix \type {lmt}.
+There can also be \type {lfg} (font goodies) and \type {llg} (language goodies)
+plus byte|-|compiled files with various suffixes but these are normally not seen
+by users. We leave it at that.
+
+So, while \TEXLIVE\ 2022 installed \MKII\ and \MKIV, \TEXLIVE\ 2023 installs
+\MKIV\ and \LMTX. Therefore the most significant upgrade is in the engine that is
+used by default: \LUAMETATEX\ instead of \LUATEX. The \MKII\ files are no longer
+installed so we don't need \PDFTEX.
+
+So how did we end up here? Initially the idea was that, because \LUATEX\ is
+basically frozen, \LUAMETATEX\ would be the engine that we conduct experiments
+with and from which occasionally we could backport code to \LUATEX. However it
+soon became clear that this would not work out well so backporting is off the
+table now. Just for the record: the project started years ago so we're not
+talking about something experimental here. There have been articles in \TUGBOAT\
+about what we've been doing over the years.
+
+One of the first decisions I made when starting with \LUAMETATEX\ was to remove
+the built|-|in backend, which then meant also removing the bitmap image inclusion
+code. That made us get rid of dependencies on external libraries. In fact, a
+proof|-|of|-|concept experimental variant didn't use the built|-|in backend at
+all. The font loading code could be removed as well because that was not used in
+\MKIV\ either. In \MKIV\ we also don't use the \KPSE\ library for managing files
+so that code could be dropped from the engine tool; it can be loaded as
+so|-|called optional library if needed but I'll not discuss that here. If you
+look at what happens with the \LUATEX\ code base, you'll notice that updating
+libraries happens frequently and that is not a burden that we want to impose on
+users, especially because it also can involve updating build|-|related files.
+Another advantage of not using them is that the code base remains small.
+
+A direct consequence of all this was that the build process became much more
+efficient and less complex. A fast compilation (seconds instead of minutes) meant
+that more drastic experiments became possible, like most recently an upgrade of
+the math subsystem. All this, combined with an overhaul of the code base, both
+the \TEX\ and \METAPOST\ part, meant that backporting was no longer reasonable.
+Being freed from the constraint that other macro packages might use \LUAMETATEX\
+in turn resulted in more drastic experiments and adding features that had been on
+our wish list for decades. Another side effect was that we could easily compile
+native \MSWINDOWS\ binaries and immediately support transitions to \ARM|-|based
+hardware.
+
+Instead of \quotation {backporting after experimenting}, a leading motive became
+\quotation {fundamentally move forward} while at the same time tightening the
+relation between \CONTEXT\ and the engine: the engine code became part of the
+distribution so that users can compile themselves, which fits perfectly in the
+paradigm (and demands) of distributing all the source code, even that of the
+engine. There is also less danger that patches on behalf of other usage
+interferes with stable support for \CONTEXT. A specific installation is now more
+or less long|-|term stable by design because it no longer depends on binaries
+and|/|or libraries being provided for a specific platform and operating system
+version. Of course installers and \TEXLIVE\ do provide the binaries, so users
+aren't forced to worry about it, but they can move along with a system update by
+recompiling an old, and for their purpose, frozen \CONTEXT\ code base.
+
+An unofficial objective (or challenge) became that the accumulated source stays
+around 12~\MB\ uncompressed, (compressed a bit over 2~\MB) and the binary around
+3~\MB\ so that we could use the engine as an efficient \LUA\ runner as well as a
+launcher stub, thereby removing yet another dependency. That way the official
+\CONTEXT\ distribution didn't grow much in size. A bonus is that we now use the
+same setup for all operating systems. It also opened up the possibility of a
+exceptionally small installation with all bells and whistles included. Another
+nice side effect, combined with automatic compilation on the compile farm, makes
+that we can provide installations that reflect the latest state of affairs: a
+recent binary combined with the latest \CONTEXT. As a result, most users quickly
+went for \LMTX\ instead of \MKIV.
+
+In the code base we avoid dependencies on specific platforms but there are a few
+cases where the code for \MSWINDOWS\ and \UNIX\ differs. However, the
+functionality should be the same. A good test is that for \MSWINDOWS\ we can
+compile with mingw (cross|-|compilation), \MSVC\ (native) and clang (native);
+that order is also the order of runtime performance. The native \MSVC\ binary is
+the smallest but users probably don't care. In any case, it is nice to have a
+fallback plan in place. The code is all in \CCODE; the \METAPOST\ code is
+converted from \CWEB\ into \CCODE\ using a \LUA\ script but we also ship the
+resulting \CCODE\ code. The code base provides a couple of \CMAKE\ files and
+comes with a trivial build script.
+
+When I say that there are no libraries used, I mean external libraries. We do use
+code from elsewhere: adapted \type {avl} as well as \type {decnumber} (for the
+\METAPOST\ library), adapted \type {hjn} (hyphenation), \type {miniz} (zip
+compression), \type {pplib} (for loading \PDF\ files), \type {libcerf} (to
+complement other math library support, but it might be dropped), and \type
+{mimalloc} for memory management. However all the code is in the \LUAMETATEX\
+code base and only updated after checking what changed. The most important
+library originating elsewhere is of course \LUA: we use the latest and greatest
+(currently) 5.4 release. We kept the \type {socket} library but it might be
+dropped or replaced at some point. In addition there is a subsystem for
+dynamically loading libraries; the main reason for that being that I needed \type
+{zint} for barcodes, interfaces to sql databases, a bunch of compression
+libraries, etc. But all that is tagged {\em optional} and \CONTEXT\ will never
+depend on it. There are no consequences for compilation either because we don't
+need the header files. The glue code is very minimalistic and most work gets
+delegated to \LUA.
+
+Initially, because the backend is written in \LUA, there was a drop in
+performance of some 15\percent\ but that was stepwise compensated by gains in
+performance in the engine and additional or improved functionality. The \CONTEXT\
+code base is rather optimized so there was little to gain there, apart from using
+new features. Existing primitive support could also be done a bit more
+efficiently; it helps if one knows where potential bottlenecks are. Therefore, in
+the meantime an \LMTX\ run can be quite a bit faster than a \MKIV\ run and it can
+even outperform a \LUAJITTEX\ run. In practice, the difference between an
+eight|-|bit \MKII\ run using the eight|-|bit \PDFTEX\ engine and a 32|-|bit
+\LUAMETATEX\ run with \LMTX\ can be neglected, definitely on more complex
+documents. I never get complaints about performance from \CONTEXT\ users, so it
+might be a minor concern.
+
+So what are the main differences in the installation? If you really want to
+experience it you should use the standard installation. Currently the small
+installer is the engine that synchronizes the installation over the net and,
+assuming a reasonable internet connection, that takes little time. The
+installation is relatively small, and many of the bytes used are for the
+documentation. Updates are done by transferring only the changed files. The
+\TEXLIVE\ installation is a bit larger because it shares for instance fonts with
+the main installation and these come with resources used by other macro packages.
+Both installations bring \MKIV\ as well as \LMTX\ and therefore provide \LUATEX\
+as well as \LUAMETATEX. However, a \MKIV\ run is now managed by \LUAMETATEX\
+because we use that engine for the runner. The \MKII\ code is no longer in
+\TEXLIVE\ but is in the repositories and used to test and compare with \PDFTEX.
+It just works.
+
+The number of binaries and stubs is reduced to a minimum:
+
+\starttabulate[|T|T||]
+\BC file                           \BC symlink    \BC \NC \NR
+\NC tex/texmf-platform/luametatex  \NC            \NC combined \TEX, \METAPOST\ and \LUA\ engine \NC \NR
+\NC tex/texmf-platform/mtxrun      \NC luametatex \NC script runner, binary \NC \NR
+\NC tex/texmf-platform/context     \NC luametatex \NC CONTEXT\ runner, binary \NC \NR
+\NC tex/texmf-platform/mtxrun.lua  \NC            \NC script runner, lua code \NC \NR
+\NC tex/texmf-platform/context.lua \NC            \NC loader for \CONTEXT\ runner \NC \NR
+\NC tex/texmf-platform/luatex      \NC            \NC the good old ancestor \NC \NR
+\stoptabulate
+
+All of these programs are in the \CONTEXT\ distribution directory \typ
+{tex/texmf-<platform>/}. In addition, \type {context} and \type {mtxrun} are
+symlinks to the \type {luametatex} binary, where possible.
+
+So, the \type {context} command runs \type {luametatex}, but loads the \LUA\ file
+with the same name which in turn will locate the \CONTEXT\ management script
+(\type {mtx-context}) in the \TEX\ tree and run it. The same is true for \type
+{mtxrun}: it is a binary (link) that loads the script in (this time) the same
+path and then can perform numerous tasks. For instance, identifying the installed
+fonts so that they can be accessed by name is done with:
+
+\starttyping
+mtxrun --script font --reload
+\stoptyping
+
+Where in \MKII\ we had stubs for various utility scripts, already in \MKIV\ we
+went for a generic runner and a bit more keying. It's not like these scripts are
+used a lot and by avoiding shortcuts there is also little danger for a mixup with
+the ever|-|growing list of other scripts in \TEXLIVE\ or commands that the
+operating system provides.
+
+The \LUATEX\ binary is optional and only needed if a user also wants to process
+\MKIV\ files. There are no shell scripts used for launching. The two main calls
+used by users are:
+
+\starttyping
+context foo.tex
+context --luatex foo.tex
+\stoptyping
+
+A user has only to make sure that the binaries are in the path specification.
+When you run from an editor, the next command does the work:
+
+\starttyping
+mtxrun --autogenerate --script context <filename>
+\stoptyping
+
+with \type {<filename>} being an editor|-|specific placeholder. Like other
+engines, \LUAMETATEX\ (and \CONTEXT) needs a file database and format file, and
+although it should generate these automatically you can make them with:
+
+\starttyping
+mtxrun --generate
+context --make
+\stoptyping
+
+The rest of the installation is similar to what we always had and is \TDS\
+compliant. The source code of \LUAMETATEX\ is included in the distribution itself
+(which nicely fulfills the requirements) but can also be found at:
+
+\starttyping
+https://github.com/contextgarden/luametatex
+\stoptyping
+
+There are also some optional libraries there but \CONTEXT\ works fine without
+them. The official latest distribution of \CONTEXT\ itself is:
+
+\starttyping
+https://github.com/contextgarden/context
+https://github.com/contextgarden/context-distribution-fonts
+\stoptyping
+
+We see users grab fonts from the Internet and play with them. They can install
+additional fonts in \typ {tex/texmf-fonts/data/<vendor>}. Project|-|specific
+files can be collected in \typ {tex/texmf-project/tex/context/user/<project>}.
+These directories are not touched by installations and can easily be copied or
+shared between different installations. After adding files to the tree \typ
+{mtxrun --generate} will update the file database.
+
+In the distribution there are plenty of documents that describe how \LUAMETATEX\
+with \LMTX\ differs from \MKIV\ with \LUATEX: new primitives, macro extensions,
+more granular math rendering, improved memory management, new (or extended)
+(rendering) concepts, more \METAPOST\ features; most is covered in one way or
+another, and much is already applied in the \CONTEXT\ source code. After all, it
+took a few years before we arrived here so you can expect substantial refactoring
+of the engine as well as the code base, and therefore eventually there is (and
+will be) more than in \MKIV.
+
+When you compare a \CONTEXT\ installation with what is needed for other macro
+packages you will notice a few differences. One concerns the way \TEX\ is
+launched. An engine starts with a blank slate but can be populated with a
+so|-|called format file that is basically a memory dump of a preloaded macro
+package. So, the original way to process a file is to pass a format filename to
+the engine. In order to avoid that a trick is used: when an engine (or
+symlink|/|stub to it) is launched by its format name, the loading happens
+automatically. So, for instance \type {pdflatex} is actually an equivalent for
+starting \PDFTEX\ with the format file \typ {pdflatex.fmt} while \type {latex} is
+\PDFTEX\ with another format file (\typ {latex.fmt}) starting up in \DVI\ mode.
+And, as there are many engines, a specific macro package can have many such
+combinations of its name and engine.
+
+In \CONTEXT\ we don't do it that way. One reason is that we never distinguished
+between backends: \MKII\ uses an abstract backend layer and load driver files at
+runtime (it was one of the reasons why we could support \ACROBAT\ as soon as it
+showed up, because we already supported the now obsolete but quite nice
+\DVIWINDO\ viewer). And that model hasn't changed much as we moved on. Because we
+use a runner, we also don't need to distinguish between engines: all formats have
+the same name but sit on an engine subpath in the \TEX\ tree. Anyway, this
+already removes quite some formats. On the other hand, \CONTEXT\ can be run with
+different language specific user interfaces which means that instead of just
+\type {context.fmt} we have \type {cont-en.fmt} and possibly more, like \type
+{cont-nl.fmt}. So that can increase the number again but by default only the
+English interface is installed. As a side note: where with \MKII\ we needed to
+generate \METAPOST\ mem files, with its descendants having \MPLIB\ we load the
+(actually quite a bit of) \METAPOST\ code at runtime. \footnote {Occasionally I
+do experiments with loading the \TEX\ format code at runtime, but at this moment
+the difference in startup time of about one second (assuming files are cached) is
+too large and running over networks will be less fun, so the format file will
+stay. The time involved in loading \METAPOST\ can be brought down but for now I
+leave it as it is.}
+
+In addition to a format file, for the \LUATEX\ and \LUAMETATEX\ engine we also
+have a (small) \LUA\ loader alongside the format file. All this is handled by the
+runner, also because we provide extensive command line features, and therefore of
+no concern to users and package maintainers. However, it does make integrating
+\CONTEXT\ in for instance \TEXLIVE\ different from other macro packages and
+thereby puts an extra burden on the \TEXLIVE\ team. Here I want to thank the team
+for making it possible to move forward this way, in spite of this rather
+different approach. Hopefully a \LUAMETATEX\ integration is a bit easier in the
+long run because we no longer have different stubs per platform and at least the
+binary part now has no dependencies and only has a handful of files.
+
+For those new to \CONTEXT\ or those who want to try it in \TEXLIVE\ 2023 there is
+not much difference between the versions. However, \MKIV\ is now frozen and new
+functionality only gets added to \LMTX. Of course we could backport some but with
+most users already having moved on, it makes no sense. Just as we keep \MKII\
+around for testing with \PDFTEX, we also keep \MKIV\ alive for testing with
+\LUATEX. Maybe in a couple of years \MKIV\ will go the same route as \MKII:
+ending up in the archives as an optional installation. \footnote {This text
+appeared in \TUGBOAT\ around the 2023 \TEXLIVE\ release. Thanks to Karl Berry for
+his careful reading and fixing of the text and of course for keeping \TEXLIVE\
+alive.}
+
+\stopchapter
+
+\stopcomponent

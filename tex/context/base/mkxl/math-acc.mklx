@@ -92,15 +92,26 @@
 
 \installlocalcurrenthandler \??mathaccents {mathaccent}
 
+%D \starttyping
+%D \im { \showboxes \showglyphs
+%D     \hat{\tilde{\dot{x}}}
+%D }
+%D \im { \showboxes \showglyphs
+%D     \hat[align=middle]{\tilde[align=middle]{\dot{x}}}
+%D }
+%D \stoptyping
+
 \tolerant\protected\def\math_accent_make_double#class#kind#top#bottom#*[#settings]#:#content%
   {\beginmathgroup
    \setlocalmathaccentcurrent{#class}% \edef\currentmathaccent{#class}%
    \startusemathstyleparameter\mathaccentparameter\c!mathstyle
    \setupcurrentmathaccent[#settings]%
-   \edef\m_fixed{\ifcstok{\mathaccentparameter\c!stretch}\v!yes\else\s!fixed\fi}%
+   \edef\m_fixed {\ifcstok{\mathaccentparameter\c!stretch}\v!yes   \else\s!fixed \space\fi}%
+   \edef\m_center{\ifcstok{\mathaccentparameter\c!align  }\v!middle     \s!center\space\fi}%
    \Umathaccent
      \usedcolorparameterattributes{\mathaccentparameter\c!color}%
    % nooverflow % there is never na overflow anyway but we do accept thekey
+   \m_center
    \ifcase#kind\or
      top \m_fixed
      \fam\zerocount#top
@@ -170,8 +181,8 @@
 %definemathtopaccent[\v!top][overturnedcomma]      ["0312]
 %definemathtopaccent[\v!top][overcommatopright]    ["0315]
 %definemathtopaccent[\v!top][leftangleabove]       ["031A]
-\definemathtopaccent[\v!top][leftharpoonaccent]    ["20D0]
-\definemathtopaccent[\v!top][rightharpoonaccent]   ["20D1]
+\definemathtopaccent[\v!top][overleftharpoon]      ["20D0]
+\definemathtopaccent[\v!top][overrightharpoon]     ["20D1]
 %definemathtopaccent[\v!top][verticaloverlayaccent]["20D2]
 %definemathtopaccent[\v!top][vec]                  ["20D7]% We expect vec to stretch, so later
 \definemathtopaccent[\v!top][dddot]                ["20DB]
@@ -208,7 +219,7 @@
 \definemathtopaccent[\v!top:\v!stretch][wideacute]["0301]
 \definemathtopaccent[\v!top:\v!stretch][widehat]  ["0302]
 \definemathtopaccent[\v!top:\v!stretch][widetilde]["0303]
-\definemathtopaccent[\v!top:\v!stretch][widebar]  ["0305]%or 305
+\definemathtopaccent[\v!top:\v!stretch][widebar]  ["0305]% (not 304, the caret)
 \definemathtopaccent[\v!top:\v!stretch][widebreve]["0306]
 \definemathtopaccent[\v!top:\v!stretch][widedot]  ["0307]
 \definemathtopaccent[\v!top:\v!stretch][wideddot] ["0308]
@@ -220,17 +231,17 @@
 
 \definemathtopaccent[\v!top:\v!stretch][wideoverleftharpoon]   ["20D0]
 \definemathtopaccent[\v!top:\v!stretch][wideoverrightharpoon]  ["20D1]
-\definemathtopaccent[\v!top:\v!stretch][wideoverleftarrow]     ["20D6] 
-\definemathtopaccent[\v!top:\v!stretch][wideoverrightarrow]    ["20D7] 
+\definemathtopaccent[\v!top:\v!stretch][wideoverleftarrow]     ["20D6]
+\definemathtopaccent[\v!top:\v!stretch][wideoverrightarrow]    ["20D7]
 \definemathtopaccent[\v!top:\v!stretch][wideoverleftrightarrow]["20E1]
 
-\definemathbottomaccent[\v!bottom:\v!stretch][wideundertilde]["0330]
-\definemathbottomaccent[\v!bottom:\v!stretch][wideunderbar]["0332]
-\definemathbottomaccent[\v!bottom:\v!stretch][wideunderleftrightarrow]["034D]
-\definemathbottomaccent[\v!bottom:\v!stretch][wideunderrightharpoon]["20EC]
-\definemathbottomaccent[\v!bottom:\v!stretch][wideunderleftharpoon]["20ED]
-\definemathbottomaccent[\v!bottom:\v!stretch][wideunderleftarrow]["20EE]
-\definemathbottomaccent[\v!bottom:\v!stretch][wideunderrightarrow]["20EF]
+\definemathbottomaccent[\v!bottom:\v!stretch][wideundertilde]         ["0330]
+\definemathbottomaccent[\v!bottom:\v!stretch][wideunderbar]           ["0332]
+\definemathbottomaccent[\v!bottom:\v!stretch][wideunderleftrightarrow]["034D] % weird code
+\definemathbottomaccent[\v!bottom:\v!stretch][wideunderrightharpoon]  ["20EC]
+\definemathbottomaccent[\v!bottom:\v!stretch][wideunderleftharpoon]   ["20ED]
+\definemathbottomaccent[\v!bottom:\v!stretch][wideunderleftarrow]     ["20EE]
+\definemathbottomaccent[\v!bottom:\v!stretch][wideunderrightarrow]    ["20EF]
 
 \aliased\let\mathring\ring % for a while
 

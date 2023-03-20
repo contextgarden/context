@@ -127,19 +127,23 @@ return {
             BIBINPUTS       = ".;$TEXMF/bibtex/bib//;$TEXMF/tex/context//",
             BSTINPUTS       = ".;$TEXMF/bibtex/bst//;$TEXMF/tex/context//",
 
-            -- Experimental
+            -- standalone
 
-            ICCPROFILES     = ".;$TEXMF/colors/icc/{context,profiles}//;$OSCOLORDIR",
+         -- ICCPROFILES     = ".;$TEXMF/colors/icc/{context,profiles}//;$OSCOLORDIR",
+
+            -- texlive
+
+            ICCPROFILES     = ".;$TEXMF/tex/context/colors/{icc,profiles}//;$OSCOLORDIR",
 
             -- A few special ones that will change some day.
 
             FONTCONFIG_FILE = "fonts.conf",
 
             -- standalone
-            
+
          -- FONTCONFIG_PATH = "$TEXMFSYSTEM/fonts/conf",
-            
-            --texlive 
+
+            --texlive
 
             FONTCONFIG_PATH = "$TEXMFSYSVAR/fonts/conf",
 

@@ -587,7 +587,7 @@
 % or (test this):
 %
 % \permanent\protected\def\processallactionsinset[#1]%
-%   {\ifcstok{#1}\emptytoks
+%   {\iftok{#1}\emptytoks
 %      \expandafter\processaction
 %    \else
 %      \expandafter\syst_helpers_process_all_actions_in_set_indeed

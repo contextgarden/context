@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=type-imp-erewhon,
+%D   [       file=type-imp-concrete,
 %D        version=2022.30.09, % a bit older
 %D          title=\CONTEXT\ Typescript Macros,
 %D       subtitle=\TEX Gyre Fonts,
@@ -11,9 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%\loadtypescriptfile[texgyre]
-%\resetfontfallback  [concrete-euler-fix]
-%\definefontfallback[concrete-euler-fix][texgyrepagella-math] [0x022EE,0x022F0,0x022F1,0x02661,0x02220][force=yes]
+% lm is already preloaded so we can actually move this to lm
 
 \starttypescriptcollection[concrete]
 
@@ -21,33 +19,35 @@
     %\definefontfeature[none-slanted-concrete]   [none]   [slant=.2]
 
     \doifunknownfontfeature {concrete-math-bold} {\definefontfeature[concrete-math-bold][boldened]}
+    \doifunknownfontfeature {concrete-text-bold} {\definefontfeature[concrete-text-bold][boldened-15]}
 
     \starttypescript [\s!serif] [concrete]
-        \definefontsynonym [\s!Serif]            [\s!file:cmunorm] [\s!features=\s!default]
-        \definefontsynonym [\s!SerifItalic]      [\s!file:cmunoti] [\s!features=\s!default]
-        \definefontsynonym [\s!SerifSlanted]     [\s!file:cmunorm] [\s!features=default-slanted-concrete]
-        \definefontsynonym [\s!SerifBold]        [\s!file:cmunobx] [\s!features=\s!default]
-        \definefontsynonym [\s!SerifBoldItalic]  [\s!file:cmunobi] [\s!features=\s!default]
-        \definefontsynonym [\s!SerifBoldSlanted] [\s!file:cmunobx] [\s!features=default-slanted-concrete]
+        \definefontsynonym [\s!Serif]            [LMTypewriterVarWd-Regular]     [\s!features={\s!default,concrete-text-bold}]
+        \definefontsynonym [\s!SerifBold]        [LMTypewriterVarWd-Dark]        [\s!features={\s!default,concrete-text-bold}]
+        \definefontsynonym [\s!SerifItalic]      [LMTypewriterVarWd-Oblique]     [\s!features={\s!default,concrete-text-bold}]
+        \definefontsynonym [\s!SerifSlanted]     [LMTypewriterVarWd-Oblique]     [\s!features={\s!default,concrete-text-bold}]
+        \definefontsynonym [\s!SerifBoldItalic]  [LMTypewriterVarWd-DarkOblique] [\s!features={\s!default,concrete-text-bold}]
+        \definefontsynonym [\s!SerifBoldSlanted] [LMTypewriterVarWd-DarkOblique] [\s!features={\s!default,concrete-text-bold}]
     \stoptypescript
 
     \starttypescript [\s!sans] [concrete]
-        \definefontsynonym [\s!Sans]            [\s!file:cmunss] [\s!features=\s!default]
-        \definefontsynonym [\s!SansItalic]      [\s!file:cmunsi] [\s!features=\s!default]
-        \definefontsynonym [\s!SansSlanted]     [\s!file:cmunss] [\s!features=default-slanted-concrete]
-        \definefontsynonym [\s!SansBold]        [\s!file:cmunsx] [\s!features=\s!default]
-        \definefontsynonym [\s!SansBoldItalic]  [\s!file:cmunso] [\s!features=\s!default]
-        \definefontsynonym [\s!SansBoldSlanted] [\s!file:cmunsx] [\s!features=default-slanted-concrete]
+        \definefontsynonym [\s!Sans]            [LMTypewriterVarWd-Regular]     [\s!features={\s!default,concrete-text-bold}]
+        \definefontsynonym [\s!SansItalic]      [LMTypewriterVarWd-Dark]        [\s!features={\s!default,concrete-text-bold}]
+        \definefontsynonym [\s!SansSlanted]     [LMTypewriterVarWd-Oblique]     [\s!features={\s!default,concrete-text-bold}]
+        \definefontsynonym [\s!SansBold]        [LMTypewriterVarWd-Oblique]     [\s!features={\s!default,concrete-text-bold}]
+        \definefontsynonym [\s!SansBoldItalic]  [LMTypewriterVarWd-DarkOblique] [\s!features={\s!default,concrete-text-bold}]
+        \definefontsynonym [\s!SansBoldSlanted] [LMTypewriterVarWd-DarkOblique] [\s!features={\s!default,concrete-text-bold}]
     \stoptypescript
 
     \starttypescript [\s!mono] [concrete]
-        \definefontsynonym [\s!Mono]            [\s!file:cmuntt] [\s!features=\s!none]
-        \definefontsynonym [\s!MonoItalic]      [\s!file:cmunit] [\s!features=\s!none]
-        \definefontsynonym [\s!MonoSlanted]     [\s!file:cmunst] [\s!features=\s!none]
-        \definefontsynonym [\s!MonoBold]        [\s!file:cmuntb] [\s!features=\s!none]
-        \definefontsynonym [\s!MonoBoldItalic]  [\s!file:cmuntx] [\s!features=\s!none]
-        \definefontsynonym [\s!MonoBoldSlanted] [\s!file:cmuntb] [\s!features=none-slanted-concrete]
-    \stoptypescript
+        \loadfontgoodies[lm]
+        \definefontsynonym [\s!Mono]            [LMTypewriter-Regular]     [\s!features={\s!none,concrete-text-bold}]
+        \definefontsynonym [\s!MonoBold]        [LMTypewriter-Dark]        [\s!features={\s!none,concrete-text-bold}]
+        \definefontsynonym [\s!MonoItalic]      [LMTypewriter-Italic]      [\s!features={\s!none,concrete-text-bold}]
+        \definefontsynonym [\s!MonoSlanted]     [LMTypewriter-Oblique]     [\s!features={\s!none,concrete-text-bold}]
+        \definefontsynonym [\s!MonoBoldItalic]  [LMTypewriter-DarkOblique] [\s!features={\s!none,concrete-text-bold}]
+        \definefontsynonym [\s!MonoBoldSlanted] [LMTypewriter-DarkOblique] [\s!features={\s!none,concrete-text-bold}]
+   \stoptypescript
 
     \starttypescript [\s!math] [concrete]
         \checkedmapfontsize[\typescripttwo][\s!script]      [.76]

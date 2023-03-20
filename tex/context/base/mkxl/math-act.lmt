@@ -18,6 +18,7 @@ local type, next, tonumber = type, next, tonumber
 local fastcopy, copytable, insert, remove, concat = table.fastcopy, table.copy, table.insert, table.remove, table.concat
 local formatters = string.formatters
 local byte = string.byte
+local max = math.max
 local setmetatableindex, sortedkeys, sortedhash  = table.setmetatableindex, table.sortedkeys, table.sortedhash
 local lpegmatch = lpeg.match
 
@@ -45,12 +46,17 @@ local blocks           = characters.blocks
 local stepper          = utilities.parsers.stepper
 
 local helpers          = fonts.helpers
-local upcommand        = helpers.commands.up
-local downcommand      = helpers.commands.down
-local rightcommand     = helpers.commands.right
-local leftcommand      = helpers.commands.left
-local charcommand      = helpers.commands.char
 local prependcommands  = helpers.prependcommands
+
+local vfcommands       = helpers.commands
+local upcommand        = vfcommands.up
+local downcommand      = vfcommands.down
+local rightcommand     = vfcommands.right
+local leftcommand      = vfcommands.left
+local slotcommand      = vfcommands.slot
+local charcommand      = vfcommands.char
+local push             = vfcommands.push
+local pop              = vfcommands.pop
 
 local sequencers       = utilities.sequencers
 local appendgroup      = sequencers.appendgroup
@@ -1710,7 +1716,7 @@ do
     datasets.accentdimensions = candidates
 
     local function adapt(c,factor,baseheight,basedepth)
---         if not c.tweaked then
+        if not c.tweaked then
             local height  = c.height or 0
             local depth   = c.depth  or 0
             local yoffset = 0
@@ -1736,8 +1742,8 @@ do
             c.yoffset = yoffset ~= 0 and yoffset or nil
             c.height  = height   > 0 and height  or nil
             c.depth   = depth    > 0 and depth   or nil
---             c.tweaked = true
---         end
+            c.tweaked = true
+        end
     end
 
     local function process(target,original,characters,list,baseheight,basedepth)
@@ -1806,46 +1812,18 @@ end
 
 do
 
-    local addprivate  = fonts.helpers.addprivate
-    local privateslot = fonts.helpers.privateslot
-
- -- function mathtweaks.addrules(target,original,parameters)
- --     local characters = target.characters
- --     local height     = target.mathparameters.OverbarRuleThickness
- --     local depth      = target.mathparameters.UnderbarRuleThickness
- --     local width      = target.parameters.emwidth/2
- --     local step       = 0.8 * width
- --     characters[0x203E] = { -- over
- --         width    = width,
- --         height   = height,
- --         depth    = 0,
- --         unicode  = 0x203E,
- --         commands = { { "rule", height, width } },
- --         parts    = {
- --             { advance = width, ["end"] = step, glyph = 0x203E, start = 0 },
- --             { advance = width, ["end"] = 0,    glyph = 0x203E, start = step, extender = 1 },
- --         }
- --     }
- --     characters[0x0332] = { -- under
- --         width    = width,
- --         height   = 0,
- --         depth    = depth,
- --         yoffset  = -depth,
- --         unicode  = 0x0332,
- --         commands = { { "rule", height, width } },
- --         parts    = {
- --             { advance = width, ["end"] = step, glyph = 0x0332, start = 0 },
- --             { advance = width, ["end"] = 0,    glyph = 0x0332, start = step, extender = 1 },
- --         }
- --     }
- -- end
+    local addprivate     = fonts.helpers.addprivate
+    local privateslot    = fonts.helpers.privateslot
+    local newprivateslot = fonts.helpers.newprivateslot
 
     function mathtweaks.addrules(target,original,parameters)
         local characters = target.characters
         local thickness  = target.mathparameters.OverbarRuleThickness
         local width      = target.parameters.emwidth / 2
-        local step       = 0.8 * width
-        characters[0x203E] = { -- over
+        local width      = target.parameters.emwidth / 3
+--         local step       = 0.8 * width
+        local step       = 0.5 * width
+        characters[0x203E] = { -- middle used for all kind
             width    = width,
             height   = thickness / 2,
             depth    = thickness / 2,
@@ -1858,8 +1836,43 @@ do
             },
             partsorientation = "horizontal",
         }
-        --
-        characters[0x0332] = characters[0x203E]
+        local function build(target,leftarrow,rightarrow)
+            if leftarrow and rightarrow then
+                -- actually the same sort of code as we have for antykwa
+                local left  = leftarrow.parts
+                local right = rightarrow.parts
+                if left and right then
+                    local leftline   = right[1].glyph
+                    local rightline  = left [#left].glyph
+                    local leftdata   = characters[leftline]
+                    local rightdata  = characters[rightline]
+                    local leftwidth  = leftdata.width
+                    local rightwidth = rightdata.width
+                    local result     = characters[target] -- copytable(leftdata)
+                    if not result or result.width == 0 then
+                        result = {
+                            height   = leftdata.height,
+                            depth    = leftdata.depth,
+                            width    = 0.9*leftwidth + rightwidth,
+                            unicode  = target,
+                            commands = {
+                                slotcommand[0][leftline],
+                                leftcommand[0.1*leftwidth],
+                                slotcommand[0][rightline],
+                            },
+                        }
+                        characters[target] = result
+                    end
+                    result.parts = {
+                        { advance = leftwidth, glyph = leftline, ["end"] = .9*leftwidth, start = 0 },
+                        { advance = rightwidth, glyph = rightline, ["end"] = .1*leftwidth, start = .9*rightwidth, extender = 1 },
+                    }
+                    result.partsorientation = "horizontal"
+                end
+            end
+        end
+        build(0x305,characters[0x20D6],characters[0x20D7]) -- overbar  accent
+        build(0x332,characters[0x20EE],characters[0x20EF]) -- underbar accent
         --
         -- lucida lacks them ...
         --
@@ -1875,11 +1888,16 @@ do
                 commands = { { "rule", thickness * 2.5, thickness } },
             })
             characters[0x23B4] = { -- over
-                width    = width,
+--                 width    = width,
+                width    = 2*thickness+width,
                 height   = half,
                 depth    = double,
                 unicode  = 0x23B4,
-                commands = { { "rule", thickness, width } },
+                commands = {
+                    slotcommand[0][tpiece],
+                    slotcommand[0][0x203E],
+                    slotcommand[0][tpiece],
+                },
                 parts    = {
                     { advance = thickness, glyph = tpiece, ["end"] = 0,    start = half },
                     { advance = width,     glyph = 0x203E, ["end"] = step, start = step, extender = 1 },
@@ -1896,12 +1914,16 @@ do
                 yoffset  = - half,
                 commands = { { "rule", thickness * 2.5, thickness } },
             })
-            characters[0x23B5] = { -- over
-                width    = width,
+            characters[0x23B5] = { -- under
+                width    = 2*thickness+width,
                 height   = double,
                 depth    = half,
                 unicode  = 0x23B5,
-                commands = { { "rule", thickness, width } },
+                commands = {
+                    slotcommand[0][bpiece],
+                    slotcommand[0][0x203E],
+                    slotcommand[0][bpiece],
+                },
                 parts    = {
                     { advance = thickness, glyph = bpiece, ["end"] = 0,    start = half },
                     { advance = width,     glyph = 0x203E, ["end"] = step, start = step, extender = 1 },
@@ -1911,6 +1933,69 @@ do
             }
         end
         --
+    end
+
+    -- vfmath.builders.extension(target)
+
+    local rbe = newprivateslot("radical bar extender")
+
+    local function useminus(unicode,characters,parameters)
+        local minus   = characters[0x2212]
+        local xoffset = parameters.xoffset or .075
+        local yoffset = parameters.yoffset or .9
+        local xscale  = parameters.xscale or 1
+        local yscale  = parameters.yscale or 1
+        local xwidth  = parameters.width   or (1 - 2*xoffset)
+        local xheight = parameters.height  or (1 - yoffset)
+        local mheight = minus.height
+        local mwidth  = minus.width
+        local height  = xheight*mheight
+        local xshift  = xoffset * mwidth
+        local yshift  = yoffset * mheight
+        local advance = xwidth  * mwidth
+        local step    = mwidth  / 2
+        characters[unicode] = {
+            height   = height,
+            depth    = height,
+            width    = advance,
+            commands = {
+            push,
+                leftcommand[xshift],
+                downcommand[yshift],
+             -- slotcommand[0][0x2212],
+                { "slot", 0, 0x2212, xscale, yscale },
+            pop,
+            },
+            unicode = unicode,
+         -- parts = {
+         --     { extender = 0, glyph = first,  ["end"] = fw/2, start = 0,    advance = fw },
+         --     { extender = 1, glyph = middle, ["end"] = mw/2, start = mw/2, advance = mw },
+         --     { extender = 0, glyph = last,   ["end"] = 0,    start = lw/2, advance = lw },
+         -- },
+            parts   = {
+                { extender = 0, glyph = unicode, ["end"] = step, start = 0,    advance = advance },
+                { extender = 1, glyph = unicode, ["end"] = step, start = step, advance = advance },
+            },
+            partsorientation = "horizontal",
+        }
+    end
+
+    function mathtweaks.replacerules(target,original,parameters)
+        local characters = target.characters
+        local fraction   = parameters.fraction
+        local radical    = parameters.radical
+        if fraction then
+            local template = fraction.template
+            if template == 0x2212 or template == "minus" then
+                useminus(0x203E,characters,fraction)
+            end
+        end
+        if radical then
+            local template = radical.template
+            if template == 0x2212 or template == "minus" then
+                useminus(rbe,characters,radical)
+            end
+        end
     end
 
     local force = false  experiments.register("math.arrows", function(v) force = v end)
@@ -1947,7 +2032,7 @@ do
             if chardata and (force or overloads[unicode] == false or not chardata.parts) then
                 if not list then
                  -- chardata.parts = nil -- when we test
-                    chardata.parts = { { glyph = unicode } }
+--                     chardata.parts = { { glyph = unicode } }
                 else
                     local overload = overloads[unicode]
                     local parts    = { }
@@ -1982,7 +2067,8 @@ do
                         end
                     end
                     if #parts == #list then
-                        chardata.parts = parts
+                        chardata.parts            = parts
+                        chardata.partsorientation = "horizontal"
                     end
                 end
             end
@@ -2259,7 +2345,8 @@ do
     local function fix(target,original,characters,u,l)
         local data = characters[u]
         if data then
-            data.innerlocation = l.location == "right" and 2 or 1
+         -- data.innerlocation = l.location == "right" and 2 or 1
+            data.innerlocation = l.location == "right" and "right" or "left"
             data.innerxoffset  = (l.hfactor or 1) *  (data.width  or 0)
             data.inneryoffset  = (l.vfactor or 1) * ((data.height or 0) + (data.depth or 0))
         end
@@ -2636,40 +2723,119 @@ do
 
 end
 
+-- do
+--
+--     local single <const> = 0x003D
+--     local double <const> = 0x2A75
+--     local triple <const> = 0x2A76
+--
+--     function mathtweaks.addequals(target,original,parameters)
+--         local characters = target.characters
+--         local basechar   = characters[single]
+--         local width      = basechar.width
+--         local height     = basechar.height
+--         local depth      = basechar.depth
+--         local advance    = (parameters.advance or 1/20) * width
+--         local char       = charcommand[single]
+--         local left       = leftcommand[advance]
+--         characters[double] = {
+--             unicode  = double,
+--             width    = 2*width - 1*advance,
+--             height   = height,
+--             depth    = depth,
+--             commands = { char, left, char },
+--         }
+--         characters[triple] = {
+--             unicode  = triple,
+--             width    = 3*width - 2*advance,
+--             height   = height,
+--             depth    = depth,
+--             commands = { char, left, char, left, char },
+--         }
+--         if trace_tweaking then
+--             report_tweak("double %U and triple %U equals added",target,original,double,triple)
+--         end
+--     end
+--
+-- end
+
 do
 
-    local single <const> = 0x003D
-    local double <const> = 0x2A75
-    local triple <const> = 0x2A76
+    local function jointwo(characters,force,unicode,ds,u1,d12,u2)
+        if force or not characters[unicode] then
+            local c1 = characters[u1]
+            local c2 = characters[u2]
+            if c1 and c2 then
+                local w1 = c1.width
+                local w2 = c2.width
+                local width
+                if d12 == false then
+                    d12   = 0
+                    width = w2
+                elseif d12 < 0 then
+                    d12   = d12 * w2
+                    width = w2
+                else
+                    d12   = d12 * ds
+                    width = w1 + w2 - d12
+                end
+                characters[unicode] = {
+                    unicode  = unicode,
+                    width    = width,
+                    height   = max(c1.height or 0, c2.height or 0),
+                    depth    = max(c1.depth  or 0, c2.depth  or 0),
+keepvirtual = true,
+                    commands = {
+                     -- { "inspect" },
+                     -- { "trace" },
+                        slotcommand[0][u1],
+                     -- { "trace" },
+                        d12 ~= 0 and leftcommand[d12] or false,
+                        slotcommand[0][u2],
+                     -- { "trace" },
+                    },
+                }
+            end
+        end
+    end
+
+    local function jointhree(characters,force,unicode,ds,u1,d12,u2,d23,u3)
+        if force or not characters[unicode] then
+            local c1 = characters[u1]
+            local c2 = characters[u2]
+            local c3 = characters[u3]
+            if c1 and c2 and c3 then
+                local w1 = c1.width
+                local w2 = c2.width
+                local w3 = c3.width
+                d12 = d12 * ds
+                d23 = d23 * ds
+                characters[unicode] = {
+                    unicode  = unicode,
+                    width    = w1 + w2 + w3 - d12 - d23,
+                    height   = max(c1.height or 0, c2.height or 0, c3.height or 0),
+                    depth    = max(c1.depth  or 0, c2.depth  or 0, c3.depth  or 0),
+                    commands = {
+                        slotcommand[0][u1],
+                        d12 ~= 0 and leftcommand[d12] or false,
+                        slotcommand[0][u2],
+                        d23 ~= 0 and leftcommand[d23] or false,
+                        slotcommand[0][u3],
+                    }
+                }
+            end
+        end
+    end
 
     function mathtweaks.addequals(target,original,parameters)
         local characters = target.characters
-        local basechar   = characters[single]
-        local width      = basechar.width
-        local height     = basechar.height
-        local depth      = basechar.depth
-        local advance    = (parameters.advance or 1/20) * width
-        local char       = charcommand[single]
-        local left       = leftcommand[advance]
-        characters[double] = {
-            unicode  = double,
-            width    = 2*width - 1*advance,
-            height   = height,
-            depth    = depth,
---             callback = "devirtualize",
-            commands = { char, left, char },
-        }
-        characters[triple] = {
-            unicode  = triple,
-            width    = 3*width - 2*advance,
-            height   = height,
-            depth    = depth,
---             callback = "devirtualize",
-            commands = { char, left, char, left, char },
-        }
-        if trace_tweaking then
-            report_tweak("double %U and triple %U equals added",target,original,double,triple)
-        end
+        local step       = target.parameters.size/18
+        local force      = parameters.force
+force = true
+        jointwo  (characters,force,0x2254,step,0x03A,0,0x03D)         -- :=
+        jointhree(characters,force,0x2A74,step,0x03A,0,0x03A,0,0x03D) -- ::=
+        jointwo  (characters,force,0x2A75,step,0x03D,0,0x03D)         -- ==
+        jointhree(characters,force,0x2A76,step,0x03D,0,0x03D,0,0x03D) -- ===
     end
 
 end
@@ -2807,28 +2973,45 @@ do
         { 0x030A, nps("delimited right ring"),    nps("delimited ghost ring")    },
         { 0x0303, nps("delimited right tilde"),   nps("delimited ghost tilde")   },
         { 0x20DB, nps("delimited right dddot"),   nps("delimited ghost dddot")   },
+
+        { 0x231C, nps("delimited left upper corner"),  nps("delimited ghost upper corner") },
+        { 0x231D, nps("delimited right upper corner"), nps("delimited ghost upper corner") },
+        { 0x231E, nps("delimited left lower corner"),  nps("delimited ghost lower corner"), true  },
+        { 0x231F, nps("delimited right lower corner"), nps("delimited ghost lower corner"), true  },
+
+        -- If needed we can have an installer:
+
         { 0x2020, nps("delimited right dagger"),  nps("delimited ghost dagger")  },
         { 0x2021, nps("delimited right ddagger"), nps("delimited ghost ddagger") },
         { 0x2217, nps("delimited right ast"),     nps("delimited ghost ast")     },
         { 0x22C6, nps("delimited right star"),    nps("delimited ghost star")    },
 
-        { 0x231C, nps("delimited left upper corner"),   nps("delimited ghost upper corner") },
-        { 0x231D, nps("delimited right upper corner"),  nps("delimited ghost upper corner") },
-        { 0x231E, nps("delimited left lower corner"),   nps("delimited ghost lower corner"), true  },
-        { 0x231F, nps("delimited right lower corner"),  nps("delimited ghost lower corner"), true  },
+        { 0x2020, nps("delimited right dagger 1"),  nps("delimited ghost dagger 1"),  false, 1 },
+        { 0x2021, nps("delimited right ddagger 1"), nps("delimited ghost ddagger 1"), false, 1 },
+        { 0x2217, nps("delimited right ast 1"),     nps("delimited ghost ast 1"),     false, 1 },
+        { 0x22C6, nps("delimited right star 1"),    nps("delimited ghost star 1"),    false, 1 },
     }
 
     function mathtweaks.addfourier(target,original,parameters)
         local characters = target.characters
         for i=1,#list do
-            local entry       = list[i]
-            local basecode    = entry[1]
-            local fouriercode = entry[2]
-            local movecode    = entry[3]
-            local reverse     = entry[4]
-            local basechar    = characters[basecode]
+            local entry        = list[i]
+            local basecode     = entry[1]
+            local fouriercode  = entry[2]
+            local movecode     = entry[3]
+            local reverse      = entry[4]
+            local size         = entry[5] or 0
+            local basechar     = characters[basecode]
+            local compactscale = 1
+            if basechar and target.properties.compactmath and size > 0 then
+                compactscale = target.parameters[size > 1 and "scriptscriptscale" or "scriptscale"] / 1000
+                for i=1,size do
+                    basecode = basechar.smaller or basecode
+                    basechar = characters[basecode]
+                end
+            end
             if basechar then
-                local scale   = parameters.scale or 1
+                local scale   = (parameters.scale or 1) * compactscale
                 local variant = parameters.variant
                 if variant then
                     for i=1,variant do
@@ -2846,9 +3029,9 @@ do
                 local basewidth  = scale * (basechar.width  or 0)
                 local used       = baseheight/2
                 local total      = baseheight + basedepth
-if reverse then
-    used = total / 2 -- basedepth / 2
-end
+                if reverse then
+                    used = total / 2 -- basedepth / 2
+                end
                 characters[movecode] = {
                     width    = basewidth,
                     height   = used,
@@ -3126,6 +3309,45 @@ end
 
 do
 
+    function mathtweaks.sortvariants(target,original,parameters)
+        local list = parameters.list
+        if list then
+            local characters = target.characters
+            local horizontal = parameters.orientation == "horizontal"
+            for i=1,#list do
+                local u = list[i]
+                local c = characters[u]
+                if c then
+                    local t = { }
+                    while true do
+                        local n = c.next
+                        if n then
+                            c = characters[n]
+                        end
+                        if c and not c.parts then
+                            if horizontal then
+                                t[c.width or 0] = n
+                            else
+                                t[(c.height or 0) + (c.depth or 0)] = n
+                            end
+                        else
+                            break
+                        end
+                    end
+                    local c = characters[u]
+                    for k, v in sortedhash(t) do
+                        c.next = v
+                        c = characters[v]
+                    end
+                end
+            end
+        end
+    end
+
+end
+
+do
+
     -- We started with the list that xits has in rtlm but most of them can be derived from
     -- the database, and others need to be added.
 
@@ -3251,7 +3473,11 @@ do
             end
             local next = data.next
             if next then
-                add(target,original,characters,next,"next")
+                if next == unicode then
+                    report_tweak("skipping cyclic %U (%s)",target,original,unicode,"next")
+                else
+                    add(target,original,characters,next,"next")
+                end
             end
         end
     end
@@ -3462,6 +3688,7 @@ do
                 local feature   = entry.feature
                 local thesource = entry.source
                 local thetarget = entry.target or thesource
+                local keep      = (entry.keep == true) or (parameters.keep == true)
                 if thesource and thetarget then
                     local sourcerange = type(thesource) == "table" and thesource or blocks[thesource] -- .gaps
                     local targetrange = type(thetarget) == "table" and thetarget or blocks[thetarget] -- .gaps
@@ -3504,13 +3731,17 @@ do
                                     local sourceunicode = mathgaps[s] or s
                                     if chars[sourceunicode] then
                                         local targetunicode = mathgaps[t] or t
-                                        if feature then
-                                            sourceunicode = getsubstitution(dropin,sourceunicode,feature,true,"math","dflt") or sourceunicode
+                                        if keep and characters[targetunicode] then
+                                            -- okay
+                                        else
+                                            if feature then
+                                                sourceunicode = getsubstitution(dropin,sourceunicode,feature,true,"math","dflt") or sourceunicode
+                                            end
+--                                          if trace_tweaking then
+--                                              report_tweak("copying %s %U from file %a to %s %U",target,original,thesource,sourceunicode,filename,thetarget,targetunicode)
+--                                          end
+                                            characters[targetunicode] = copiedglyph(target,characters,chars,sourceunicode,index)
                                         end
---                                         if trace_tweaking then
---                                             report_tweak("copying %s %U from file %a to %s %U",target,original,thesource,sourceunicode,filename,thetarget,targetunicode)
---                                         end
-                                        characters[targetunicode] = copiedglyph(target,characters,chars,sourceunicode,index)
                                     end
                                 end
                                 --

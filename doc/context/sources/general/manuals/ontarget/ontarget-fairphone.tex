@@ -1,0 +1,58 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-fairphone
+
+\environment ontarget-style
+
+\startchapter[title={\LMTX\ on a phone}]
+
+When my FairPhone~2 started to get issues (running hot and then rebooting) and
+some spare parts became hard to get, I moved on to a FairPhone~4. We're talking
+early 2022. The specifications of that little computer, which comes with a 5 year
+warrantee and long term support are quite okay: a 1080x2340 pixel display, a
+Qualcomm SM7225 Snapdragon 750G (Octa|-|core (2x2.2 GHz Kryo 570 & 6x1.8 GHz Kryo
+570), an Adreno 619 GPU, 8GB memory. an 256GB solid state disk, the usual
+phone gadgets like audio, camera, wireless, bluetooth and gps, and an
+USB Type-C 3.0 connector with support for OTG and DisplayPort.
+
+Why do these specification matter? One reason is that in the compile farm we
+generate binaries for ARM processors and this phone has a decent one. The fast
+cores are in the same league as an over|-|clocked RaspberryPi~4 that we use in
+the compile farm for generating 32~bit binaries; the 64~bit binaries are generated
+in a virtual machine on a Mac Mini. So, in 2023, when looking at that phone, I
+wondered if we could run \LMTX\ on it. I installed the UserLand \LINUX\ stub from
+the Android Playstore and got myself an Ubuntu headless installation. After
+downloading the \LMTX\ installer indeed I could install the distribution on the
+little machine.
+
+A next step was trying to connect the phone to the display on my desk and after
+getting the right USB|-|C cable from the local computer shop I managed to get a
+bit larger terminal although Android~12 seems not able to use the whole 4K
+screen. Putting it in developers mode made it possible to enable the Android
+desktop interface in an external monitor. A bluetooth keyboard and mouse
+completed the setup. Later I tried a \LINUX\ desktop but that was quite a
+disappointment so more research is needed there.
+
+A predictable next step was to see if I could compile the \LUAMETATEX\ source
+that is part of the installation. Installing \GCC\ and \CMAKE\ was easy and indeed
+compilation went pretty well after that.
+
+A quick performance test showed that making a format, which includes generating
+the file database, initially takes 10~seconds but less that 4~seconds once files
+are cached. Processing 1000 paragraphs from the \type {tufte} sample file is done
+with a reasonable 55~pages per second. I didn't test more complex documents but
+that might happen later, when the dock that I ordered has arrived, and when I
+have a decent display setup.
+
+Given the fact that I only use a handful of applications on the laptop one can
+wonder when the moment is there that a properly dockable phone can do the job. Of
+course a disadvantage is that batteries are too small so one needs to provide
+power, but one needs a monitor, keyboard and mouse anyway. Wear and tear of the
+\SSD\ can also be an issue but when storage is plenty that should work out all
+right. Of course it also assumes a stable operating system with one's favourite
+editing platform and viewer available.
+
+\stopchapter
+
+\stopcomponent
+

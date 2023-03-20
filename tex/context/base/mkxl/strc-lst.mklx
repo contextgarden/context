@@ -1498,7 +1498,8 @@
    \ifcsname\??listinteractions\p_interaction_forward\endcsname
     %\expandafter\let\expandafter\p_interaction_forward\csname\??listinteractions\p_interaction_forward\endcsname
      \expandafter\let\expandafter\p_interaction_forward\lastnamedcs
-     \ifcstok{\structurelistexternal}\emptytoks % luacall
+    %\ifcstok{\structurelistexternal}\emptytoks % luacall
+     \iftok{\structurelistexternal}\emptytoks % luacall
        \strc_references_get_simple_reference{internal(\currentlistentrylocation)}%
      \else
      % \writestatus{FAR OUT LIST}{\structurelistexternal::page(\number\structurelistrealpagenumber)}%

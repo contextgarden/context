@@ -78,47 +78,35 @@
 % At some point we can consider to use the more natural \LUAMETATEX\ features but the
 % problem is that we lack proper support in fonts and we also have less control.
 
-\installcorenamespace {mathextensiblefallbacks}
+%installcorenamespace {mathextensiblefallbacks}
 
-% currently no italic correction ... problem is that we don't know yet if we have an italic
-% below so we we need to postpone
-
-% \def\math_stackers_fallback
-%   {\hbox to \scratchwidth{\csname\??mathextensiblefallbacks\ifcsname\??mathextensiblefallbacks\number\scratchunicode\endcsname\number\scratchunicode\fi\endcsname}}
-%  %{\csname\??mathextensiblefallbacks\ifcsname\??mathextensiblefallbacks\number\scratchunicode\endcsname\number\scratchunicode\fi\endcsname }
+% In math mode we no longer fallback, simply because only a few fonts implement
+% extensible using minus and equal signs. So either we provide a tweaked one or we
+% simply ignore the lack. Better choose a font that matches expectations that some
+% fragile imperfect hackery.
 
 \def\math_stackers_fallback
   {\mathstylehbox to \scratchwidth{\usemathstackerscolorparameter\c!color
      \hss
      \hskip\mathstackersparameter\c!topoffset\relax % for manual italic correction
-     \ifcsname\??mathextensiblefallbacks\number\scratchunicode\endcsname
-       \lastnamedcs
-     \else
+   % \ifcsname\??mathextensiblefallbacks\number\scratchunicode\endcsname
+   %   \lastnamedcs
+   % \else
        \Umathchar\zerocount\zerocount\scratchunicode
-     \fi
+   % \fi
      \hss}}
-
-% \def\math_stackers_regular
-%   {\mathstylehbox{\usemathstackerscolorparameter\c!color
-%      \hskip\d_math_stackers_offset_l
-%      \Umathaccent\zerocount\zerocount\scratchunicode
-%        {\hskip\dimexpr\scratchwidth-\d_math_stackers_offset_l-\d_math_stackers_offset_r}%
-%      \hskip\d_math_stackers_offset_r
-%    }}
-
-% \def\math_stackers_stretch % we don't have that one yet
-%   {\mathstylehbox{\usemathstackerscolorparameter\c!color
-%      \hskip\d_math_stackers_offset_l
-%      \Umathaccent\zerocount\zerocount\scratchunicode
-%        {\hskip\dimexpr\hsize-\d_math_stackers_offset_l-\d_math_stackers_offset_r}%
-%      \hskip\d_math_stackers_offset_r
-%    }}
 
 \def\math_stackers_regular
   {\mathstylehbox{\usemathstackerscolorparameter\c!color
      \hskip\d_math_stackers_offset_l
      \Uhextensible
        middle
+       \ifcstok{\mathstackersparameter\c!stretch}\v!yes
+         stretch
+       \fi
+       \ifcstok{\mathstackersparameter\c!shrink}\v!yes
+         shrink
+       \fi
        width \dimexpr\scratchwidth-\d_math_stackers_offset_l-\d_math_stackers_offset_r\relax
        \zerocount\scratchunicode
      \relax
@@ -130,18 +118,8 @@
 % $\Umathaccent   0 0 "2190{x}$ \par $\Umathaccent   0 0 "27F8{x}$\par
 % $\Udelimiterunder 0 "2190{x}$ \par $\Udelimiterunder 0 "27F8{x}$\par
 
-\defcsname\??mathextensiblefallbacks\endcsname
-  {\hpack{\vrule\s!width\scratchwidth\s!height.1\mathexheight\s!depth\zeropoint}}
-
-% \def\math_stackers_with_fallback#codepoint%
-%   {\begingroup
-%    \scratchunicode#codepoint\relax
-%    \ifcase\mathextensiblecode\fam\scratchunicode\relax
-%      \math_stackers_fallback
-%    \else
-%      \math_stackers_stretch
-%    \fi
-%    \endgroup}
+% \defcsname\??mathextensiblefallbacks\endcsname
+%   {\hpack{\vrule\s!width\scratchwidth\s!height.1\mathexheight\s!depth\zeropoint}}
 
 %D We don't really need this because we can assume that fonts have the right
 %D extensibles. If needed I will make a general virtual extender for \OPENTYPE\
@@ -337,6 +315,28 @@
      \scratchbottomoffset\zeropoint
    \fi}
 
+\def\math_stackers_get_max_width
+  {\ifdim\wd\scratchboxone>\scratchwidth
+     \scratchwidth\wd\scratchboxone
+   \fi
+   \ifdim\wd\scratchboxtwo>\scratchwidth
+     \scratchwidth\wd\scratchboxtwo
+   \fi
+   \ifdim\wd\scratchboxthree>\scratchwidth
+     \scratchwidth\wd\scratchboxthree
+   \fi}
+
+\def\math_stackers_set_max_width
+  {\ifdim\wd\scratchboxone<\scratchwidth
+     \setbox\scratchboxone\hpack to \scratchwidth{\hss\unhbox\scratchboxone\hss}% unhboxing makes leaders work
+   \fi
+   \ifdim\wd\scratchboxtwo<\scratchwidth
+     \setbox\scratchboxtwo\hpack to \scratchwidth{\hss\unhbox\scratchboxtwo\hss}%
+   \fi
+   \ifdim\wd\scratchboxthree<\scratchwidth
+     \setbox\scratchboxthree\hpack to \scratchwidth{\hss\unhbox\scratchboxthree\hss}%
+   \fi}
+
 \protected\def\math_stackers_triplet#method#category#codepoint#toptext#bottomtext%
   {\begingroup
    \edef\currentmathstackers{#category}%
@@ -395,19 +395,7 @@
         \else
           \setmathtextbox\scratchboxthree\hbox{\math_stackers_middletext}%
         \fi
-        \scratchwidth\wd
-          \ifdim\wd\scratchboxone>\wd\scratchboxtwo
-            \ifdim\wd\scratchboxone>\wd\scratchboxthree
-              \scratchboxone
-            \else
-              \scratchboxthree
-            \fi
-          \orelse\ifdim\wd\scratchboxtwo>\wd\scratchboxthree
-            \scratchboxtwo
-          \else
-            \scratchboxthree
-          \fi
-        \relax
+        \math_stackers_get_max_width
       \fi
       %
       \scratchdimen\mathstackersparameter\c!minwidth\relax
@@ -421,19 +409,11 @@
         \setbox\scratchboxthree\csname\??mathstackersalternative\p_alternative\endcsname
         \dostoptagged
       \fi
-      \ifdim\wd\scratchboxthree>\scratchwidth
-        \scratchwidth\wd\scratchboxthree
-      \fi
+%       \ifdim\wd\scratchboxthree>\scratchwidth
+%         \scratchwidth\wd\scratchboxthree
+%       \fi
       %
-      \ifdim\wd\scratchboxone<\scratchwidth
-        \setbox\scratchboxone\hpack to \scratchwidth{\hss\unhbox\scratchboxone\hss}% unhboxing makes leaders work
-      \fi
-      \ifdim\wd\scratchboxtwo<\scratchwidth
-        \setbox\scratchboxtwo\hpack to \scratchwidth{\hss\unhbox\scratchboxtwo\hss}%
-      \fi
-      \ifdim\wd\scratchboxthree<\scratchwidth
-        \setbox\scratchboxthree\hpack to \scratchwidth{\hss\unhbox\scratchboxthree\hss}%
-      \fi
+      \math_stackers_set_max_width
       %
       \ifcsname\??mathstackerslocation\p_location\endcsname
         \ifcase\csname\??mathstackerslocation\p_location\endcsname\relax
@@ -458,7 +438,6 @@
       \ifzeropt\scratchdistance\else
         \setbox\scratchboxthree\hpack{\lower\scratchdistance\box\scratchboxthree}%
       \fi
-      %
       \math_stackers_normalize_three
       % analysis
       \ifdim\htdp\scratchboxtwo>\zeropoint
@@ -625,6 +604,8 @@
       \fi
       %
       \math_stackers_normalize_three
+      \math_stackers_get_max_width
+      \math_stackers_set_max_width
       % analysis
       \ifcase\c_math_stackers_bottom
         \ifcase\c_math_stackers_top
@@ -654,7 +635,7 @@
             \math_stackers_bottom\bgroup
               \lower\dimexpr
                  \scratchdepth
-                +\ht\scratchboxtwo
+                +\ht\ifcase\c_math_stackers_top\scratchboxtwo\else\scratchboxone\fi
                 +\mathstackersparameter\c!distance % was \c!voffset
               \relax
               \ifcase\c_math_stackers_top
@@ -973,6 +954,7 @@
   [\v!both]
   [\v!mathematics]
   [\c!location=\v!top, % ?
+   \c!mathclass=\s!accent,  % check chemistry
    \c!strut=\v!no,
    \c!middlecommand=\mathematics,
    \c!hoffset=\zeropoint]
@@ -989,7 +971,10 @@
   [\v!vfenced]
   [\v!both]
   [\c!mathclass=\s!ordinary,
-   \c!mathlimits=\v!yes]
+   \c!mathlimits=\v!yes,
+   % only these arrows make sense
+   \c!stretch=\v!yes,
+   \c!shrink=\v!yes]
 
 % these are needed for mathml:
 
@@ -1085,10 +1070,10 @@
 \definemathextensible [\v!mathematics] [mequal]              ["003D]
 \definemathextensible [\v!mathematics] [mleftarrow]          ["2190] % ["27F5]
 \definemathextensible [\v!mathematics] [mrightarrow]         ["2192] % ["27F6]
-\definemathextensible [\v!mathematics] [mleftrightarrow]     ["27F7]
-\definemathextensible [\v!mathematics] [mLeftarrow]          ["27F8]
-\definemathextensible [\v!mathematics] [mRightarrow]         ["27F9]
-\definemathextensible [\v!mathematics] [mLeftrightarrow]     ["27FA]
+\definemathextensible [\v!mathematics] [mleftrightarrow]     ["2194]
+\definemathextensible [\v!mathematics] [mLeftarrow]          ["21D0]
+\definemathextensible [\v!mathematics] [mRightarrow]         ["21D2]
+\definemathextensible [\v!mathematics] [mLeftrightarrow]     ["21D4]
 \definemathextensible [\v!mathematics] [mtwoheadleftarrow]   ["219E]
 \definemathextensible [\v!mathematics] [mtwoheadrightarrow]  ["21A0]
 \definemathextensible [\v!mathematics] [mmapsto]             ["21A6]
@@ -1109,12 +1094,13 @@
 \definemathextensible [\v!text] [tmapsto]             ["21A6]
 \definemathextensible [\v!text] [tleftarrow]          ["2190] % ["27F5]
 \definemathextensible [\v!text] [trightarrow]         ["2192] % ["27F6]
-\definemathextensible [\v!text] [tleftrightarrow]     ["27F7]
-\definemathextensible [\v!text] [tLeftarrow]          ["27F8]
-\definemathextensible [\v!text] [tRightarrow]         ["27F9]
-\definemathextensible [\v!text] [tLeftrightarrow]     ["27FA]
+\definemathextensible [\v!text] [tleftrightarrow]     ["2194]
+\definemathextensible [\v!text] [tLeftarrow]          ["21D0]
+\definemathextensible [\v!text] [tRightarrow]         ["21D2]
+\definemathextensible [\v!text] [tLeftrightarrow]     ["21D4]
 \definemathextensible [\v!text] [ttwoheadleftarrow]   ["219E]
 \definemathextensible [\v!text] [ttwoheadrightarrow]  ["21A0]
+\definemathextensible [\v!text] [tmapsto]             ["21A6]
 \definemathextensible [\v!text] [thookleftarrow]      ["21A9]
 \definemathextensible [\v!text] [thookrightarrow]     ["21AA]
 \definemathextensible [\v!text] [tleftharpoondown]    ["21BD]
@@ -1127,25 +1113,47 @@
 \definemathextensible [\v!text] [trightleftharpoons]  ["21CC]
 \definemathextensible [\v!text] [ttriplerel]          ["2261]
 
-\definemathoverextensible [\v!top] [overleftarrow]         ["2190] % ["27F5]
-\definemathoverextensible [\v!top] [overrightarrow]        ["2192] % ["27F6]
-\definemathoverextensible [\v!top] [overleftrightarrow]    ["27F7]
-\definemathoverextensible [\v!top] [overtwoheadleftarrow]  ["27F8]
-\definemathoverextensible [\v!top] [overtwoheadrightarrow] ["27F9]
-\definemathoverextensible [\v!top] [overleftharpoondown]   ["21BD]
-\definemathoverextensible [\v!top] [overleftharpoonup]     ["21BC]
-\definemathoverextensible [\v!top] [overrightharpoondown]  ["21C1]
-\definemathoverextensible [\v!top] [overrightharpoonup]    ["21C0]
+\definemathoverextensible [\v!top] [overleftarrow]          ["2190] % ["27F5]
+\definemathoverextensible [\v!top] [overrightarrow]         ["2192] % ["27F6]
+\definemathoverextensible [\v!top] [overleftrightarrow]     ["2194] % ["27F7]
+\definemathoverextensible [\v!top] [overtwoheadleftarrow]   ["219E] % ["27F8]
+\definemathoverextensible [\v!top] [overtwoheadrightarrow]  ["21A0] % ["27F9]
+\definemathoverextensible [\v!top] [overlefttailarrow]      ["21A2]
+\definemathoverextensible [\v!top] [overrighttailarrow]     ["21A3]
+\definemathoverextensible [\v!top] [overleftbararrow]       ["21A4]
+\definemathoverextensible [\v!top] [overrightbararrow]      ["21A6]
+\definemathoverextensible [\v!top] [overlefthookarrow]      ["21A9]
+\definemathoverextensible [\v!top] [overrighthookarrow]     ["21AA]
+\definemathoverextensible [\v!top] [overleftharpoondown]    ["21BD]
+\definemathoverextensible [\v!top] [overleftharpoonup]      ["21BC]
+\definemathoverextensible [\v!top] [overrightharpoondown]   ["21C1]
+\definemathoverextensible [\v!top] [overrightharpoonup]     ["21C0]
+\definemathoverextensible [\v!top] [overRightarrow]         ["21D2] % ["27F9]
+\definemathoverextensible [\v!top] [overLeftarrow]          ["21D0] % ["27F8]
+\definemathoverextensible [\v!top] [overLeftrightarrow]     ["21D4] % ["27F8]
+\definemathoverextensible [\v!top] [overLeftbararrow]       ["2906]
+\definemathoverextensible [\v!top] [overRightbararrow]      ["2907]
 
 \definemathunderextensible [\v!bottom] [underleftarrow]         ["2190] % ["27F5]
 \definemathunderextensible [\v!bottom] [underrightarrow]        ["2192] % ["27F6]
-\definemathunderextensible [\v!bottom] [underleftrightarrow]    ["27F7]
-\definemathunderextensible [\v!bottom] [undertwoheadleftarrow]  ["27F8]
-\definemathunderextensible [\v!bottom] [undertwoheadrightarrow] ["27F9]
+\definemathunderextensible [\v!bottom] [underleftrightarrow]    ["2194] % ["27F7]
+\definemathunderextensible [\v!bottom] [undertwoheadleftarrow]  ["219E] % ["27F8]
+\definemathunderextensible [\v!bottom] [undertwoheadrightarrow] ["21A0] % ["27F9]
+\definemathunderextensible [\v!bottom] [underlefttailarrow]     ["21A2]
+\definemathunderextensible [\v!bottom] [underrighttailarrow]    ["21A3]
+\definemathunderextensible [\v!bottom] [underleftbararrow]      ["21A4]
+\definemathunderextensible [\v!bottom] [underrightbararrow]     ["21A6]
+\definemathunderextensible [\v!bottom] [underlefthookarrow]     ["21A9]
+\definemathunderextensible [\v!bottom] [underrighthookarrow]    ["21AA]
 \definemathunderextensible [\v!bottom] [underleftharpoondown]   ["21BD]
 \definemathunderextensible [\v!bottom] [underleftharpoonup]     ["21BC]
 \definemathunderextensible [\v!bottom] [underrightharpoondown]  ["21C1]
 \definemathunderextensible [\v!bottom] [underrightharpoonup]    ["21C0]
+\definemathunderextensible [\v!bottom] [underRightarrow]        ["21D2] % ["27F9]
+\definemathunderextensible [\v!bottom] [underLeftarrow]         ["21D0] % ["27F8]
+\definemathunderextensible [\v!bottom] [underLeftrightarrow]    ["21D4] % ["27F8]
+\definemathunderextensible [\v!bottom] [underLeftbararrow]      ["2906]
+\definemathunderextensible [\v!bottom] [underRightbararrow]     ["2907]
 
 %D We don't use overline and underline. This is one of the overlooked aspects of
 %D unicode cq. opentype math: why treat rules different than e.g. arrows and
@@ -1206,53 +1214,76 @@
 \definemathextensible [\v!chemistry] [crightoverleftarrow] ["21C4]
 \definemathextensible [\v!chemistry] [cleftoverrightarrow] ["21C6]
 
-\def\math_stackers_hacked_fill#1#2#3%
-  {\mathematics
-     {\begingroup
-      \mathsurround\zeropoint
-      \thickmuskip \zeromuskip
-      \medmuskip   \zeromuskip
-      \thinmuskip  \zeromuskip
-      \tinymuskip  \zeromuskip
-      \pettymuskip \zeromuskip
-      \ifrelax#1%
-        \cleaders\mathstylehbox{#2}\hfill
-      \else
-        #1%
-        \mkern-7\onemuskip
-        \cleaders\mathstylehbox{\mkern-2\onemuskip#2\mkern-2\onemuskip}\hfill
-        \mkern-7\onemuskip
-        #3%
-      \fi
-      \endgroup}}
+% \def\math_stackers_hacked_fill#1#2#3%
+%   {\mathematics
+%      {\begingroup
+%       \mathsurround\zeropoint
+%       \thickmuskip \zeromuskip
+%       \medmuskip   \zeromuskip
+%       \thinmuskip  \zeromuskip
+%       \tinymuskip  \zeromuskip
+%       \pettymuskip \zeromuskip
+%       \ifrelax#1%
+%         \cleaders\mathstylehbox{#2}\hfill
+%       \else
+%         #1%
+%         \mkern-7\onemuskip
+%         \cleaders\mathstylehbox{\mkern-2\onemuskip#2\mkern-2\onemuskip}\hfill
+%         \mkern-7\onemuskip
+%         #3%
+%       \fi
+%       \endgroup}}
+%
+% \immutable\protected\def\rightarrowfill        {\math_stackers_hacked_fill \relbar               \relbar              \rightarrow}
+% \immutable\protected\def\leftarrowfill         {\math_stackers_hacked_fill \leftarrow            \relbar              \relbar}
+% \immutable\protected\def\rightoverleftarrowfill{\math_stackers_hacked_fill \relax                \crightoverleftarrow \relax}
+% \immutable\protected\def\leftoverrightarrowfill{\math_stackers_hacked_fill \relax                \cleftoverrightarrow \relax}
+% \immutable\protected\def\equalfill             {\math_stackers_hacked_fill \Relbar               \Relbar              \Relbar}
+% \immutable\protected\def\Rightarrowfill        {\math_stackers_hacked_fill \Relbar               \Relbar              \Rightarrow}
+% \immutable\protected\def\Leftarrowfill         {\math_stackers_hacked_fill \Leftarrow            \Relbar              \Relbar}
+% \immutable\protected\def\Leftrightarrowfill    {\math_stackers_hacked_fill \Leftarrow            \Relbar              \Rightarrow}
+% \immutable\protected\def\leftrightarrowfill    {\math_stackers_hacked_fill \leftarrow            \relbar              \rightarrow}
+% \immutable\protected\def\mapstofill            {\math_stackers_hacked_fill{\mapstochar\relbar}   \relbar              \rightarrow}
+% \immutable\protected\def\twoheadrightarrowfill {\math_stackers_hacked_fill \relbar               \relbar              \twoheadrightarrow}
+% \immutable\protected\def\twoheadleftarrowfill  {\math_stackers_hacked_fill \twoheadleftarrow     \relbar              \relbar}
+% \immutable\protected\def\rightharpoondownfill  {\math_stackers_hacked_fill \relbar               \relbar              \rightharpoondown}
+% \immutable\protected\def\rightharpoonupfill    {\math_stackers_hacked_fill \relbar               \relbar              \rightharpoonup}
+% \immutable\protected\def\leftharpoondownfill   {\math_stackers_hacked_fill \leftharpoondown      \relbar              \relbar}
+% \immutable\protected\def\leftharpoonupfill     {\math_stackers_hacked_fill \leftharpoonup        \relbar              \relbar}
+% \immutable\protected\def\hookleftfill          {\math_stackers_hacked_fill \leftarrow            \relbar             {\relbar\joinrel\rhook}}
+% \immutable\protected\def\hookrightfill         {\math_stackers_hacked_fill{\lhook\joinrel\relbar}\relbar              \rightarrow}
+% \immutable\protected\def\relfill               {\math_stackers_hacked_fill \relbar               \relbar              \relbar}
+% \immutable\protected\def\triplerelfill         {\math_stackers_hacked_fill \equiv                \equiv               \equiv}
+%
+% \permanent\tolerant\protected\def\defineextensiblefiller[#1]#*[#2]%
+%   {\immutable\letcsname\??mathextensiblefallbacks\number#2\expandafter\endcsname\csname#1\endcsname}
 
-\immutable\protected\def\rightarrowfill        {\math_stackers_hacked_fill \relbar               \relbar              \rightarrow}
-\immutable\protected\def\leftarrowfill         {\math_stackers_hacked_fill \leftarrow            \relbar              \relbar}
-\immutable\protected\def\rightoverleftarrowfill{\math_stackers_hacked_fill \relax                \crightoverleftarrow \relax}
-\immutable\protected\def\leftoverrightarrowfill{\math_stackers_hacked_fill \relax                \cleftoverrightarrow \relax}
-\immutable\protected\def\equalfill             {\math_stackers_hacked_fill \Relbar               \Relbar              \Relbar}
-\immutable\protected\def\Rightarrowfill        {\math_stackers_hacked_fill \Relbar               \Relbar              \Rightarrow}
-\immutable\protected\def\Leftarrowfill         {\math_stackers_hacked_fill \Leftarrow            \Relbar              \Relbar}
-\immutable\protected\def\Leftrightarrowfill    {\math_stackers_hacked_fill \Leftarrow            \Relbar              \Rightarrow}
-\immutable\protected\def\leftrightarrowfill    {\math_stackers_hacked_fill \leftarrow            \relbar              \rightarrow}
-\immutable\protected\def\mapstofill            {\math_stackers_hacked_fill{\mapstochar\relbar}   \relbar              \rightarrow}
-\immutable\protected\def\twoheadrightarrowfill {\math_stackers_hacked_fill \relbar               \relbar              \twoheadrightarrow}
-\immutable\protected\def\twoheadleftarrowfill  {\math_stackers_hacked_fill \twoheadleftarrow     \relbar              \relbar}
-\immutable\protected\def\rightharpoondownfill  {\math_stackers_hacked_fill \relbar               \relbar              \rightharpoondown}
-\immutable\protected\def\rightharpoonupfill    {\math_stackers_hacked_fill \relbar               \relbar              \rightharpoonup}
-\immutable\protected\def\leftharpoondownfill   {\math_stackers_hacked_fill \leftharpoondown      \relbar              \relbar}
-\immutable\protected\def\leftharpoonupfill     {\math_stackers_hacked_fill \leftharpoonup        \relbar              \relbar}
-\immutable\protected\def\hookleftfill          {\math_stackers_hacked_fill \leftarrow            \relbar             {\relbar\joinrel\rhook}}
-\immutable\protected\def\hookrightfill         {\math_stackers_hacked_fill{\lhook\joinrel\relbar}\relbar              \rightarrow}
-\immutable\protected\def\relfill               {\math_stackers_hacked_fill \relbar               \relbar              \relbar}
-\immutable\protected\def\triplerelfill         {\math_stackers_hacked_fill \equiv                \equiv               \equiv}
+\installcorenamespace {mathadaptiveextensible}
 
-%D For the moment (needs checking):
+\defineadaptive
+  [mathfiller]
+  [\c!setups=adaptive:mathfiller,
+   \c!stretch=1fill]
+
+\startsetups adaptive:mathfiller
+    \setbox\usedadaptivebox\hbox to \usedadaptivewidth \bgroup
+        \startimath
+            \Uhextensible
+                \s!width  \usedadaptivewidth
+                \s!middle \zerocount \usedadaptivealternative
+            \relax
+        \stopimath
+    \egroup
+\stopsetups
+
+\def\mathfiller#1%
+  {\begingroup
+   \scratchunicode#1\relax
+   \adaptivebox[mathfiller][\c!alternative=#1]{\hss\strut\hss}%
+   \endgroup}
 
 \permanent\tolerant\protected\def\defineextensiblefiller[#1]#*[#2]%
-  {\immutable\letcsname\??mathextensiblefallbacks\number#2\expandafter\endcsname\csname#1\endcsname
-   %\immutable\letcsname#1\expandafter\endcsname\csname#1\endcsname
-   } % huh?
+  {\frozen\instance\edefcsname#1\endcsname{\mathfiller{\number#2}}}
 
 %defineextensiblefiller [barfill]                ["203E] % yet undefined
 \defineextensiblefiller [relfill]                ["002D]
@@ -1302,14 +1333,18 @@
   {\begingroup
    \edef\currentmathstackers{#category}%
    \edef\p_moffset{\mathstackersparameter\c!moffset}%
-   \ifempty\p_moffset \else
-     \mskip\p_moffset\relax
+   \ifconditional\indisplaymath
+     \ifempty\p_moffset \else
+       \ifmmode\mskip\else\hskip\fi\p_moffset\relax
+     \fi
    \fi
    \ifmmode\math_atom_by_parameter\mathstackersparameter\else\dontleavehmode\fi
      {\usemathstackerscolorparameter\c!color
       \Umathchar\zerocount\zerocount#codepoint}%
-   \ifempty\p_moffset \else
-     \mskip\p_moffset\relax
+   \ifconditional\indisplaymath
+     \ifempty\p_moffset \else
+       \ifmmode\mskip\else\hskip\fi\p_moffset\relax
+     \fi
    \fi
    \endgroup}
 
@@ -1319,6 +1354,7 @@
 \definemathunstacked [\v!wide] [impliedby] ["27F8] % \mathrel{\;\Longleftarrow\;}
 \definemathunstacked [\v!wide] [implies]   ["27F9] % \mathrel{\;\Longrightarrow\;}
 \definemathunstacked [\v!wide] [iff]       ["27FA] % \mathrel{\;\Longleftrightarrow\;}
+\definemathunstacked [\v!wide] [impliesby] ["27FA] % \mathrel{\;\Longleftrightarrow\;}
 
 % New (an example of using \mathexheight):
 

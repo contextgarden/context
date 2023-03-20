@@ -1788,13 +1788,16 @@ typedef enum noad_options {
 # define noad_option_fixed_super_or_sub_script  0x0200000000
 # define noad_option_fixed_super_and_sub_script 0x0400000000
 # define noad_option_auto_base                  0x0800000000
+# define noad_option_stretch                    0x1000000000
+# define noad_option_shrink                     0x2000000000
+# define noad_option_center                     0x4000000000
 
 # define has_option(a,b)     (((a) & (b)) == (b))
 # define unset_option(a,b)   ((a) & ~(b))
 
-inline static void tex_add_noad_option    (halfword a, halfword r) { noad_options(a) |= r; }
-inline static void tex_remove_noad_option (halfword a, halfword r) { noad_options(a) &= ~(r | noad_options(a)); }
-inline static int  tex_has_noad_option    (halfword a, halfword r) { return (noad_options(a) & r) == r; }
+inline static void tex_add_noad_option    (halfword a, long long r) { noad_options(a) |= r; }
+inline static void tex_remove_noad_option (halfword a, long long r) { noad_options(a) &= ~(r | noad_options(a)); }
+inline static int  tex_has_noad_option    (halfword a, long long r) { return (noad_options(a) & r) == r; }
 
 inline static int has_noad_no_script_option(halfword n, halfword option)
 {
@@ -1842,6 +1845,7 @@ inline static int has_noad_no_script_option(halfword n, halfword option)
 # define has_noad_option_unrolllist(a)                  (has_option(noad_options(a), noad_option_unroll_list))
 # define has_noad_option_followedbyspace(a)             (has_option(noad_options(a), noad_option_followed_by_space))
 # define has_noad_option_proportional(a)                (has_option(noad_options(a), noad_option_proportional))
+# define has_noad_option_center(a)                      (has_option(noad_options(a), noad_option_center))
 # define has_noad_option_source_on_nucleus(a)           (has_option(noad_options(a), noad_option_source_on_nucleus))
 # define has_noad_option_fixed_super_or_sub_script(a)   (has_option(noad_options(a), noad_option_fixed_super_or_sub_script))
 # define has_noad_option_fixed_super_and_sub_script(a)  (has_option(noad_options(a), noad_option_fixed_super_and_sub_script))

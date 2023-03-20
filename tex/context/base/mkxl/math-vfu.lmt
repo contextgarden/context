@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['math-vfu'] = {
     license   = "see context related readme files"
 }
 
+-- somehow an italic gets passed for 'next'
+
 -- All these math vectors .. thanks to Aditya and Mojca they become better and
 -- better. If you have problems with math fonts or miss characters report it to the
 -- ConTeXt mailing list. Also thanks to Boguslaw for finding a couple of errors.
@@ -62,6 +64,25 @@ local staycommand       = vfcommands.stay
 local nps = fonts.helpers.newprivateslot
 local ps  = fonts.helpers.privateslot
 
+nps("rule middle piece")
+nps("rule right piece")
+nps("rule left piece")
+nps("double rule middle piece")
+nps("double rule right piece")
+nps("double rule left piece")
+nps("arrow left piece")
+nps("arrow right piece")
+nps("double arrow left piece")
+nps("double arrow right piece")
+
+nps("flat rule left piece")
+nps("flat rule middle piece")
+nps("flat rule right piece")
+
+nps("flat double rule left piece")
+nps("flat double rule middle piece")
+nps("flat double rule right piece")
+
 do
 
     local function horibar(main,unicode,rule,left,right,normal)
@@ -89,11 +110,11 @@ do
                 if not characters[p_rule] then
                     p_rule = addprivate(main,f_rule,{
                         height   = height,
-                        width    = mwidth,
-    width    = .95*mwidth,
+                        width    = .95*mwidth,
+-- keepvirtual      = true,
                         commands = {
                             push,
-    leftcommand[.025*mwidth],
+                            leftcommand[.025*mwidth],
                             downcommand[down],
                             slotcommand[0][rule],
                             pop,
@@ -103,11 +124,11 @@ do
                 if not characters[p_left] then
                     p_left = addprivate(main,f_left,{
                         height   = height,
-                        width    = lwidth,
-    width    = .95*lwidth,
+                        width    = .95*lwidth,
+-- keepvirtual      = true,
                         commands = {
                             push,
-    leftcommand[.025*lwidth],
+                            leftcommand[.025*lwidth],
                             downcommand[down],
                             slotcommand[0][left],
                             pop,
@@ -117,11 +138,11 @@ do
                 if not characters[p_right] then
                     p_right = addprivate(main,f_right,{
                         height   = height,
-                        width    = rwidth,
-    width    = .95*rwidth,
+                        width    = .95*rwidth,
+-- keepvirtual      = true,
                         commands = {
                             push,
-    leftcommand[.025*rwidth],
+                            leftcommand[.025*rwidth],
                             downcommand[down],
                             slotcommand[0][right],
                             pop,
@@ -133,6 +154,7 @@ do
                     partsorientation = "horizontal",
                     height           = height,
                     width            = nwidth,
+-- keepvirtual      = true,
                     commands         = {
                         downcommand[down],
                         slotcommand[0][normal]
@@ -149,11 +171,14 @@ do
                     p_rule = addprivate(main,f_rule,{
                         height   = height,
                         width    = width,
+-- keepvirtual      = true,
                         commands = { push, { "rule", height, width }, pop },
                     })
                 end
                 characters[unicode] = {
-                    keepvirtual      = true,
+                    height           = height,
+                    width            = nwidth,
+-- keepvirtual      = true,
                     partsorientation = "horizontal",
                     parts            = {
                         { glyph = p_rule },
@@ -234,25 +259,44 @@ do
         if characters[unicode] then
             local template = characters[first]
             if template then
-                if not characters[rule] then
-                    local xheight = main.mathparameters.xheight
+                local crule   = characters[rule]
+                local xheight = main.mathparameters.xheight
+                local rheight = 0
+                local rdepth  = 0
+--                 if crule then
+--                     rheight = crule.height
+--                     rdepth  = crule.depth
+--                 else
                     local width   = template.width / 4
                     local height  = template.height
                     local depth   = template.depth
-                    local rheight = where == "top" and   height or 3*height
-                    local rdepth  = where == "top" and 2*height or 0
+                    rheight = where == "top" and   height or 3*height
+                    rdepth  = where == "top" and 2*height or 0
                     characters[rule] = {
                         height   = rheight,
                         depth    = rdepth,
                         width    = width,
                         commands = { push, { "rule", height, width }, pop },
                     }
-                    characters[first].depth = rdepth
-                    characters[last] .depth = rdepth
+--                 end
+                characters[first].depth = rdepth
+                characters[last] .depth = rdepth
+                if where == "top" then
                     while true do
                         chardata.height  = chardata.height - xheight
                         chardata.depth   = 0
                         chardata.yoffset = -xheight
+                        local next = chardata.next
+                        if next then
+                            unicode  = next
+                            chardata = characters[unicode]
+                        else
+                            break
+                        end
+                    end
+                else
+                    while true do
+                        chardata.height  = 0
                         local next = chardata.next
                         if next then
                             unicode  = next
@@ -266,40 +310,48 @@ do
                 chardata.partsorientation = "horizontal"
                 chardata.parts            = {
                     { glyph = first },
-                    { glyph = rule, extender = 1 },
+                    { glyph = rule, extender = 1, start = width/2, ["end"] = width/2 },
                     { glyph = last  },
                 }
             end
         end
     end
 
-    local function brace(main,unicode,first,rule,left,right,rule,last)
+    local function brace(main,unicode,first,rule,left,right,rule,last,where)
         local characters = main.characters
         local chardata   = characters[unicode]
         if chardata then
             local template = characters[first]
             if template then
-                if not characters[rule] then
-                    local xheight = main.mathparameters.xheight
-                    local width   = template.width / 4
-                    local height  = template.height
-                    local depth   = template.depth
-                    local rheight = 3*height
-                    local rdepth  = 2*height
-                    characters[rule] = {
-                        height   = rheight,
-                        depth    = rdepth,
-                        width    = width,
-                        commands = { push, { "rule", height, width }, pop },
-                    }
-                    characters[first].depth  = rdepth
-                    characters[last] .depth  = rdepth
-                    characters[left] .height = rheight
-                    characters[right].height = rheight
+                local xheight = main.mathparameters.xheight
+                local width   = template.width / 4
+                local height  = template.height
+                local depth   = template.depth
+                local rheight = 3*height
+                local rdepth  = 2*height
+                characters[rule] = {
+                    height   = rheight,
+                    depth    = rdepth,
+                    width    = width,
+                    commands = { push, { "rule", height, width }, pop },
+                }
+                -- don't change snippets, they serve dual purposes
+                if where == "top" then
                     while true do
                         chardata.height  = chardata.height - xheight
                         chardata.depth   = 0
                         chardata.yoffset = -xheight
+                        local next = chardata.next
+                        if next then
+                            unicode  = next
+                            chardata = characters[unicode]
+                        else
+                            break
+                        end
+                    end
+                else
+                    while true do
+                        chardata.height = 0
                         local next = chardata.next
                         if next then
                             unicode  = next
@@ -313,10 +365,10 @@ do
                 chardata.partsorientation = "horizontal"
                 chardata.parts            = {
                     { glyph = first },
-                    { glyph = rule, extender = 1 },
+                    { glyph = rule, extender = 1, start = width/2, ["end"] = width/2 },
                     { glyph = left  },
                     { glyph = right },
-                    { glyph = rule, extender = 1 },
+                    { glyph = rule, extender = 1, start = width/2, ["end"] = width/2 },
                     { glyph = last  },
                 }
             end
@@ -436,9 +488,11 @@ do
                 width = w1 + w2 - d12
             end
             characters[unicode] = {
+                unicode  = unicode,
                 width    = width,
                 height   = max(c1.height or 0, c2.height or 0),
                 depth    = max(c1.depth  or 0, c2.depth  or 0),
+keepvirtual = true,
                 commands = {
                  -- { "inspect" },
                  -- { "trace" },
@@ -482,10 +536,11 @@ do
             local w1 = c1.width
             local w2 = c2.width
             local w3 = c3.width
-            local mu = main.parameters.size/18
+            local ds = main.parameters.size/18
             d12 = d12 * ds
             d23 = d23 * ds
             characters[unicode] = {
+                unicode  = unicode,
                 width    = w1 + w2 + w3 - d12 - d23,
                 height   = max(c1.height or 0, c2.height or 0, c3.height or 0),
                 depth    = max(c1.depth  or 0, c2.depth  or 0, c3.depth  or 0),
@@ -572,6 +627,40 @@ do
         end
     end
 
+    local function extension(main,unicode,first,middle,last,ffactor,mfactor,lfactor)
+        local characters = main.characters
+        local chardata   = characters[unicode]
+        if chardata then
+            local fw = first  and characters[first]
+            local mw = middle and characters[middle]
+            local lw = last   and characters[last]
+            if fw and lw then
+                fw = fw.width ; if fw == 0 then fw = 1 end
+                lw = lw.width ; if lw == 0 then lw = 1 end
+                if middle == "left" then
+                    chardata.parts = {
+                        { extender = 0, glyph = first,  ["end"] = fw/2, start = 0,    advance = fw },
+                        { extender = 1, glyph = last,   ["end"] = lw/2, start = lw/2, advance = lw },
+                    }
+                elseif middle == "right" then
+                    chardata.parts = {
+                        { extender = 1, glyph = first,  ["end"] = fw/2, start = fw/2, advance = fw },
+                        { extender = 0, glyph = last,   ["end"] = lw/2, start = 0,    advance = lw },
+                    }
+                elseif mw then
+                    mw = mw.width ; if mw == 0 then mw = 1 end
+                    chardata.parts = {
+                        { extender = 0, glyph = first,  ["end"] = fw/2, start = 0,    advance = (ffactor or 1)*fw },
+                        { extender = 1, glyph = middle, ["end"] = mw/2, start = mw/2, advance = (mfactor or 1)*mw },
+                        { extender = 0, glyph = last,   ["end"] = 0,    start = lw/2, advance = (lfactor or 1)*lw },
+                    }
+                end
+                chardata.keepvirtual      = true -- why this issue with nested virtuals
+                chardata.partsorientation = "horizontal"
+            end
+        end
+    end
+
     vfmath.builders = {
         horibar    = horibar,
         rootbar    = rootbar,
@@ -583,6 +672,7 @@ do
         jointhree  = jointhree,
         stack      = stack,
         repeated   = repeated,
+        extension  = extension,
     }
 
     -- todo: move this to the lfg files
@@ -1113,6 +1203,11 @@ function vfmath.define(specification,set,goodies)
        fake   = 0.9, -- replace multiples with this width proportion
     })
     --
+    mathematics.tweaks.addequals(main, main, {
+       tweak = "addequals",
+       force = true,
+    })
+    --
 --     mathematics.tweaks.addbars(main,main,{
 --         tweak   = "addbars",
 --         advance = 0.52,
@@ -1147,40 +1242,6 @@ function vfmath.setdigits(font_encoding, name, digits)
         enc[digits+i] = i + 0x30
     end
 end
-
--- local function extension(main,characters,id,size,unicode,first,middle,last)
---     local chr = characters[unicode]
---     if not chr then
---         return -- skip
---     end
---     local fw = characters[first]
---     if not fw then
---         return
---     end
---     local mw = characters[middle]
---     if not mw then
---         return
---     end
---     local lw = characters[last]
---     if not lw then
---         return
---     end
---     fw = fw.width
---     mw = mw.width
---     lw = lw.width
---     if fw == 0 then
---         fw = 1
---     end
---     if lw == 0 then
---         lw = 1
---     end
---     chr.partsorientation = "horizontal"
---     chr.parts = {
---         { extender = 0, glyph = first,  ["end"] = fw/2, start = 0,    advance = fw },
---         { extender = 1, glyph = middle, ["end"] = mw/2, start = mw/2, advance = mw },
---         { extender = 0, glyph = last,   ["end"] = 0,    start = lw/2, advance = lw },
---     }
--- end
 
 -- local step = 0.2 -- 0.1 is nicer but gives larger files
 

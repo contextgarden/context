@@ -114,6 +114,7 @@
 
 %D For proper \UNICODE\ support we need a few font related constants.
 
+\definesystemconstant {accent}
 \definesystemconstant {action}
 \definesystemconstant {all}
 \definesystemconstant {ampersand}
@@ -164,6 +165,7 @@
 \definesystemconstant {leftclass}
 \definesystemconstant {rightclass}
 \definesystemconstant {calligraphic}
+\definesystemconstant {center}
 \definesystemconstant {clone}
 \definesystemconstant {close}
 \definesystemconstant {cmyk}

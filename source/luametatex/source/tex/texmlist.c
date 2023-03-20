@@ -861,7 +861,7 @@ static halfword tex_aux_underbar(halfword box, scaled gap, scaled height, scaled
 
 */
 
-static halfword tex_aux_char_box(halfword fnt, int chr, halfword att, scaled *ic, quarterword subtype, scaled target, int style)
+static halfword tex_aux_char_box(halfword fnt, int chr, halfword att, scaled *ic, quarterword subtype, scaled target, int style, int shrink, int stretch)
 {
     /*tex The new box and its character node. */
     halfword glyph = tex_aux_new_math_glyph(fnt, chr, subtype);
@@ -876,7 +876,7 @@ static halfword tex_aux_char_box(halfword fnt, int chr, halfword att, scaled *ic
     if (tex_has_glyph_option(glyph, glyph_option_no_italic_correction)) {
         whd.ic = 0;
     }
-    if (whd.ic) {
+    if (! (stretch || shrink) && whd.ic) {
         if (ic) {
             *ic = whd.ic; /* also in open type? needs checking */
         }
@@ -889,12 +889,19 @@ static halfword tex_aux_char_box(halfword fnt, int chr, halfword att, scaled *ic
     } else if (ic) {
         *ic = 0;
     }
-    if (target && whd.wd > 0 && whd.wd < target && tex_aux_math_engine_control(fnt, math_control_extend_accents) && tex_char_has_tag_from_font(fnt, chr, extend_last_tag)) {
-        scaled margin = tex_get_math_x_parameter_default(style, math_parameter_accent_extend_margin, 0);
-        scaled amount = target - 2 * margin;
-        if (amount > 0) { 
-            glyph_x_scale(glyph) = lround((double) glyph_x_scale(glyph) * amount/whd.wd);
-            glyph_x_offset(glyph) = (whd.wd - amount)/2;
+    if (target && whd.wd > 0) {
+        if (whd.wd < target && tex_aux_math_engine_control(fnt, math_control_extend_accents) && tex_char_has_tag_from_font(fnt, chr, extend_last_tag)) {
+            scaled margin = tex_get_math_x_parameter_default(style, math_parameter_accent_extend_margin, 0);
+            scaled amount = target - 2 * margin;
+            if (amount > 0) { 
+                glyph_x_scale(glyph) = lround((double) glyph_x_scale(glyph) * amount/whd.wd);
+                glyph_x_offset(glyph) = (whd.wd - amount)/2;
+            }
+            return box; 
+        }
+        if ((shrink && (whd.wd > target)) || (stretch && (whd.wd < target))) {
+            glyph_x_scale(glyph) = lround((double) glyph_x_scale(glyph) * target/whd.wd);
+            glyph_x_offset(glyph) = (whd.wd - target)/2;
         }
     }
     return box;
@@ -1384,6 +1391,8 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
     /*tex are we trying the large variant? */
     int large_attempt = 0;
     int do_parts = 0;
+    int shrink = flat && tex_has_noad_option(target, noad_option_shrink);
+    int stretch = flat && tex_has_noad_option(target, noad_option_stretch);
     /*tex to save the current attribute list */
     halfword att = null;
     if (extremes) { 
@@ -1448,7 +1457,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
                             if (total >= (targetsize - tolerance)) {
                                 goto FOUND;
                             }
-                        }
+                       }
                        if (tex_char_has_tag_from_font(curfnt, curchr, extensible_tag)) {
                             if (tex_char_has_tag_from_font(curfnt, curchr, horizontal_tag) || tex_char_has_tag_from_font(curfnt, curchr, vertical_tag)) {
                                 /*tex We only check when we are explicit. */
@@ -1498,8 +1507,13 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
         */
         extinfo *ext = do_parts ? tex_char_extensible_recipe_from_font(fnt, chr) : NULL;
         if (ext) {
-            scaled minoverlap = flat ? tex_get_math_x_parameter_default(style, math_parameter_connector_overlap_min, 0) : tex_get_math_y_parameter_default(style, math_parameter_connector_overlap_min, 0);;
+            scaled minoverlap = flat ? tex_get_math_x_parameter_default(style, math_parameter_connector_overlap_min, 0) : tex_get_math_y_parameter_default(style, math_parameter_connector_overlap_min, 0);
             result = tex_aux_get_delimiter_box(fnt, chr, targetsize, minoverlap, flat, att);
+            if (stretch && flat && (box_width(result) > targetsize)) { // threshold nooverflow
+                tex_flush_node_list(result);
+                do_parts = 0;
+                goto HERE;
+            }
             if (delta) {
                 /*tex Not yet done: horizontal italics. */
                 if (tex_aux_math_engine_control(fnt, math_control_apply_vertical_italic_kern)) {
@@ -1529,7 +1543,8 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
                 the traditional width (which is fake width + italic) becomes less and the delta is
                 added. See (**).
             */
-            result = tex_aux_char_box(fnt, chr, att, delta, glyph_math_delimiter_subtype, flat ? targetsize : 0, style);
+          HERE:
+            result = tex_aux_char_box(fnt, chr, att, delta, glyph_math_delimiter_subtype, flat ? targetsize : 0, style, shrink, stretch);
             if (flat) { 
                 /* This will be done when we have a reasonable example. */
             } else {
@@ -2395,12 +2410,20 @@ static void tex_aux_make_root_radical(halfword target, int style, int size, kern
         }
         delimiter = tex_aux_make_delimiter(target, delimiter, size, box_total(nucleus) + clearance + theta, 0, style, 1, NULL, NULL, 0, has_noad_option_nooverflow(target), &extremes, 0);
         if (radical_degree(target)) { 
+            halfword innerf = 0;
+            halfword innerc = 0;
             if (tex_char_has_tag_from_font(extremes.bfont, extremes.bchar, inner_left_tag)) { 
-                innerx = tex_char_inner_x_offset_from_font(extremes.bfont, extremes.bchar);
-                innery = tex_char_inner_y_offset_from_font(extremes.bfont, extremes.bchar);
+                innerf = extremes.bfont;
+                innerc = extremes.bchar;
             } else if (tex_char_has_tag_from_font(extremes.tfont, extremes.tchar, inner_left_tag)) { 
-                innerx = tex_char_inner_x_offset_from_font(extremes.tfont, extremes.tchar);
-                innery = tex_char_inner_y_offset_from_font(extremes.tfont, extremes.tchar);
+                innerf = extremes.tfont;
+                innerc = extremes.tchar;
+            }
+            if (innerc) {
+                innerx = tex_char_inner_x_offset_from_font(innerf, innerc);
+                innery = tex_char_inner_y_offset_from_font(innerf, innerc);
+                innerx = innerx == INT_MIN ? 0 : tex_aux_math_y_size_scaled(innerf, innerx, size);
+                innery = innery == INT_MIN ? 0 : tex_aux_math_y_size_scaled(innerf, innery, size);
             }
         }
         if (companion) {
@@ -2790,7 +2813,7 @@ static void tex_aux_preroll_radical(halfword target, int style, int size)
 
 typedef enum math_accent_location_codes {
     top_accent_code     = 1,
-    bot_accent_code     = 2,
+    bot_accent_code     = 2, // todo : bottom_accent_code 
     overlay_accent_code = 4,
     stretch_accent_code = 8, /* reserved, not yet set */
 } math_accent_location_codes;
@@ -2896,6 +2919,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
     scaled fraction = accent_fraction(target) > 0 ? accent_fraction(target) : 1000;
     scaled skew = 0;
     scaled offset = 0;
+    scaled innery = 0;
     halfword accent = null;
     halfword base = null;
     halfword result = null;
@@ -3008,7 +3032,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
     }
     if (! accent) {
         /*tex Italic gets added to width for traditional fonts (no italic anyway): */
-        accent = tex_aux_char_box(accentfnt, accentchr, attrlist, NULL, glyph_math_accent_subtype, basewidth, style); // usedwidth 
+        accent = tex_aux_char_box(accentfnt, accentchr, attrlist, NULL, glyph_math_accent_subtype, basewidth, style, 0, 0); // usedwidth 
     }
     if (flags & top_accent_code) {
         scaled b = tex_get_math_y_parameter(style, math_parameter_accent_base_height);
@@ -3019,7 +3043,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
                 halfword flatchr = tex_char_flat_accent_from_font(accentfnt, accentchr);
                 if (flatchr != INT_MIN && flatchr != accentchr) {
                     tex_flush_node(accent);
-                    accent = tex_aux_char_box(accentfnt, flatchr, attrlist, NULL, glyph_math_accent_subtype, usedwidth, style);
+                    accent = tex_aux_char_box(accentfnt, flatchr, attrlist, NULL, glyph_math_accent_subtype, usedwidth, style, 0, 0);
                     if (tracing_math_par >= 2) {
                         tex_begin_diagnostic();
                         tex_print_format("[math: flattening accent, old %x, new %x]", accentchr, flatchr);
@@ -3039,6 +3063,10 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
         if (u != undefined_math_parameter) {
             delta -= u;
         }
+        if (tex_char_has_tag_from_font(accentfnt, accentchr, inner_top_tag)) { 
+            innery = tex_char_inner_y_offset_from_font(accentfnt, accentchr);
+            innery = innery == INT_MIN ? 0 : tex_aux_math_y_size_scaled(accentfnt, innery, size);
+        }
     } else if (flags & bot_accent_code) {
      // scaled b = tex_get_math_y_parameter(style, math_parameter_accent_base_depth, 0);
      // scaled f = tex_get_math_y_parameter(style, math_parameter_flattened_accent_base_depth, 0);
@@ -3049,6 +3077,10 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
      // }
         if (l != undefined_math_parameter) {
             delta += l;
+        }
+        if (tex_char_has_tag_from_font(accentfnt, accentchr, inner_bottom_tag)) { 
+            innery = tex_char_inner_y_offset_from_font(accentfnt, accentchr);
+            innery = innery == INT_MIN ? 0 : tex_aux_math_y_size_scaled(accentfnt, innery, size);
         }
     } else { /* if (flags & overlay_accent_code) { */
         /*tex Center the accent vertically around base: */
@@ -3082,11 +3114,11 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
                 anchor = tex_half_scaled(accentwidth);
             } else {
                 anchor = tex_char_unchecked_top_anchor_from_font(accentfnt, accentchr); /* no bot accent key */
-                if (anchor != INT_MIN) {
-                    anchor = tex_aux_math_y_size_scaled(accentfnt, anchor, size); /* why y and not x */
-                } else {
+                if (anchor == INT_MIN || has_noad_option_center(target)) {
                     /*tex just take the center */
                     anchor = tex_half_scaled(accentwidth);
+                } else {
+                    anchor = tex_aux_math_x_size_scaled(accentfnt, anchor, size);
                 }
             }
             if (math_direction_par == dir_righttoleft) {
@@ -3117,6 +3149,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
         accent_bot_overshoot(target) = overshoot;
     }
     if (flags & (top_accent_code | overlay_accent_code)) {
+        delta += innery;
         if (delta) {
             halfword kern = tex_new_kern_node(-delta, vertical_math_kern_subtype);
             tex_attach_attribute_list_copy(kern, target);
@@ -3126,6 +3159,12 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
             tex_couple_nodes(accent, base);
         }
         result = accent;
+    } else if ((flags & bot_accent_code) && innery) {
+        halfword kern = tex_new_kern_node(innery, vertical_math_kern_subtype);
+        tex_attach_attribute_list_copy(kern, target);
+        tex_couple_nodes(base, kern);
+        tex_couple_nodes(kern, accent);
+        result = base;
     } else {
         tex_couple_nodes(base, accent);
         result = base;
@@ -7107,7 +7146,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 tex_couple_nodes(p, box_list(l));
                 box_list(l) = null;
                 tex_flush_node(l);
-            } else if (current_type == simple_noad && current_subtype == math_end_class) {
+            } else if (current_type == simple_noad && (current_subtype == math_end_class) || (current_subtype == math_begin_class)) {
                  if (noad_new_hlist(current)) { 
                       tex_flush_node(noad_new_hlist(current));
                       noad_new_hlist(current) = null;

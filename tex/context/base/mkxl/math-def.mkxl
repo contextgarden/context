@@ -139,35 +139,57 @@
 %D \formula {A \simcoloncolon     B}
 %D \stoplines
 %D
-%D The next macros take care of the space between the colon and the
-%D relation symbol.
+%D The next macros take care of the space between the colon and the relation symbol,
+%D but they are kind of weird and not in \UNICODE. Either we define them virtual or
+%D we just keep these as bonus.
 
 \pushoverloadmode
 
-\definemathcommand [colonsep]                       {\mkern-1.2mu}
-\definemathcommand [doublecolonsep]                 {\mkern-0.9mu}
+\protected\def\math_relation_atom_ordinary{\mathatom \s!class \mathrelationcode \s!all \mathordcode}
 
-\definemathcommand [centercolon]      [\s!relation] {\mathstylevcenteredhbox\colon}
-\definemathcommand [colonminus]       [\s!relation] {\centercolon\colonsep\mathrel{-}}
-%definemathcommand [minuscolon]       [\s!relation] {\mathrel{-}\colonsep\centercolon} % native char
-%definemathcommand [colonequals]      [\s!relation] {\centercolon\colonsep=}           % native char
-%definemathcommand [equalscolon]      [\s!relation] {=\centercolon\colonsep}           % native char
-\definemathcommand [colonapprox]      [\s!relation] {\centercolon\colonsep\approx}
-\definemathcommand [approxcolon]      [\s!relation] {\approx\centercolon\colonsep}
-\definemathcommand [colonsim]         [\s!relation] {\centercolon\colonsep\sim}
-\definemathcommand [simcolon]         [\s!relation] {\sim\centercolon\colonsep}
+\definemathcommand [centercolon]      {\math_relation_atom_ordinary{\colon}}
+\definemathcommand [colonminus]       {\math_relation_atom_ordinary{\colon\minus}}
+\definemathcommand [colonapprox]      {\math_relation_atom_ordinary{\colon\approx}}
+\definemathcommand [approxcolon]      {\math_relation_atom_ordinary{\approx\colon}}
+\definemathcommand [colonsim]         {\math_relation_atom_ordinary{\colon\sim}}
+\definemathcommand [simcolon]         {\math_relation_atom_ordinary{\sim\colon}}
 
-\definemathcommand [coloncolon]       [\s!relation] {\centercolon\doublecolonsep\centercolon}
-\definemathcommand [coloncolonminus]  [\s!relation] {\coloncolon\colonsep\mathrel{-}}
-\definemathcommand [minuscoloncolon]  [\s!relation] {\mathrel{-}\colonsep\coloncolon}
-\definemathcommand [coloncolonequals] [\s!relation] {\coloncolon\colonsep=}            % native char
-\definemathcommand [equalscoloncolon] [\s!relation] {=\coloncolon\colonsep}
-\definemathcommand [coloncolonapprox] [\s!relation] {\coloncolon\colonsep\approx}
-\definemathcommand [approxcoloncolon] [\s!relation] {\approx\coloncolon\colonsep}
-\definemathcommand [coloncolonsim]    [\s!relation] {\coloncolon\colonsep\sim}
-\definemathcommand [simcoloncolon]    [\s!relation] {\sim\coloncolon\colonsep}
+\definemathcommand [coloncolon]       {\math_relation_atom_ordinary{\colon\colon}}
+\definemathcommand [coloncolonminus]  {\math_relation_atom_ordinary{\colon\colon\minus}}
+\definemathcommand [minuscoloncolon]  {\math_relation_atom_ordinary{\minus\colon\colon}}
+\definemathcommand [coloncolonequals] {\math_relation_atom_ordinary{\colon\colon\eq}} % native char
+\definemathcommand [equalscoloncolon] {\math_relation_atom_ordinary{\eq\colon\colon}}
+\definemathcommand [coloncolonapprox] {\math_relation_atom_ordinary{\colon\colon\approx}}
+\definemathcommand [approxcoloncolon] {\math_relation_atom_ordinary{\approx\colon\colon}}
+\definemathcommand [coloncolonsim]    {\math_relation_atom_ordinary{\colon\colon\sim}}
+\definemathcommand [simcoloncolon]    {\math_relation_atom_ordinary{\sim\colon\colon}}
+
+% \definemathcommand [manycolons] [relation] [ordinary] {\colon\colon\colon\colon\colon\colon\colon}
 
 \popoverloadmode
+
+%D \macros
+%D   {amedian}
+%D
+%D Something language specific, the arithmic median:
+%D
+%D \starttyping
+%D                   \im {x + \amedian {x - a} + x}
+%D \mainlanguage[cs] \im {x + \amedian {x - a} + x}
+%D \stoptyping
+
+\defcsname \s!en:amedian\endcsname#1{\widebar  {#1}}
+\defcsname \s!cs:amedian\endcsname#1{\widetilde{#1}}
+\defcsname \s!sk:amedian\endcsname#1{\widetilde{#1}}
+
+\permanent\protected\def\amedian
+  {\csname
+     \ifcsname\currentmainlanguage:amedian\endcsname
+       \currentmainlanguage\else
+       \s!en
+     \fi
+     :amedian%
+   \endcsname}
 
 % \appendtoks
 %     \def\over{\primitive\over}%
