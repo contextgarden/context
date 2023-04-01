@@ -113,7 +113,7 @@ return {
                         ["0x27EB.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
 
                     },
-                },                
+                },
                 {
                     tweak = "checkspacing",
                 },
@@ -128,6 +128,13 @@ return {
                 },
                 {
                     tweak = "addrules",
+                },
+                {
+                    tweak    = "replacerules",
+                 -- minus    = true, -- we have an extensible
+                    fraction = { height = .15, yoffset = .85 },
+                    radical  = { height = .15, yoffset = .85 },
+                    stacker  = { height = .15, yoffset = .85 },
                 },
                 {
                     tweak = "addfourier",

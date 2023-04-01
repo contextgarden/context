@@ -358,9 +358,14 @@ local function list_specifications(t,info)
                     fontweight(entry.fontweight),
                 }
             end
-            table.insert(s,1,{"familyname","weight","style","width","variant","fontname","filename","subfont","fontweight"})
-            table.insert(s,2,{"","","","","","","","",""})
-            utilities.formatters.formatcolumns(s)
+            local h = {
+                {"familyname","weight","style","width","variant","fontname","filename","subfont","fontweight"},
+                {"","","","","","","","",""}
+            }
+            utilities.formatters.formatcolumns(s,false,h)
+            for k=1,#h do
+                write_nl(h[k])
+            end
             for k=1,#s do
                 write_nl(s[k])
             end

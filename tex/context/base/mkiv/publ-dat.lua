@@ -11,12 +11,6 @@ if not modules then modules = { } end modules ['publ-dat'] = {
 -- todo: dataset = datasets[dataset] => current = datasets[dataset]
 -- todo: maybe split this file
 
---[[ldx--
-<p>This is a prelude to integrated bibliography support. This file just loads
-bibtex files and converts them to xml so that the we access the content
-in a convenient way. Actually handling the data takes place elsewhere.</p>
---ldx]]--
-
 if not characters then
     dofile(resolvers.findfile("char-utf.lua"))
     dofile(resolvers.findfile("char-tex.lua"))

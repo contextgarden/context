@@ -18,13 +18,12 @@ local trace_entities = false  trackers.register("xml.entities", function(v) trac
 
 local report_xml = logs and logs.reporter("xml","core") or function(...) print(string.format(...)) end
 
---[[ldx--
-<p>The parser used here is inspired by the variant discussed in the lua book, but
-handles comment and processing instructions, has a different structure, provides
-parent access; a first version used different trickery but was less optimized to we
-went this route. First we had a find based parser, now we have an <l n='lpeg'/> based one.
-The find based parser can be found in l-xml-edu.lua along with other older code.</p>
---ldx]]--
+-- The parser used here is inspired by the variant discussed in the lua book, but
+-- handles comment and processing instructions, has a different structure, provides
+-- parent access; a first version used different trickery but was less optimized to
+-- we went this route. First we had a find based parser, now we have an LPEG based
+-- one. The find based parser can be found in l-xml-edu.lua along with other older
+-- code.
 
 if lpeg.setmaxstack then lpeg.setmaxstack(1000) end -- deeply nested xml files
 
@@ -42,26 +41,19 @@ local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local P, S, R, C, V, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.C, lpeg.Cs
 local formatters = string.formatters
 
---[[ldx--
-<p>First a hack to enable namespace resolving. A namespace is characterized by
-a <l n='url'/>. The following function associates a namespace prefix with a
-pattern. We use <l n='lpeg'/>, which in this case is more than twice as fast as a
-find based solution where we loop over an array of patterns. Less code and
-much cleaner.</p>
---ldx]]--
+-- First a hack to enable namespace resolving. A namespace is characterized by a
+-- URL. The following function associates a namespace prefix with a pattern. We use
+-- LPEG, which in this case is more than twice as fast as a find based solution
+-- where we loop over an array of patterns. Less code and much cleaner.
 
 do -- begin of namespace closure (we ran out of locals)
 
 xml.xmlns = xml.xmlns or { }
 
---[[ldx--
-<p>The next function associates a namespace prefix with an <l n='url'/>. This
-normally happens independent of parsing.</p>
-
-<typing>
-xml.registerns("mml","mathml")
-</typing>
---ldx]]--
+-- The next function associates a namespace prefix with an URL. This normally
+-- happens independent of parsing.
+--
+--   xml.registerns("mml","mathml")
 
 local check = P(false)
 local parse = check
@@ -71,15 +63,11 @@ function xml.registerns(namespace, pattern) -- pattern can be an lpeg
     parse = P { P(check) + 1 * V(1) }
 end
 
---[[ldx--
-<p>The next function also registers a namespace, but this time we map a
-given namespace prefix onto a registered one, using the given
-<l n='url'/>. This used for attributes like <t>xmlns:m</t>.</p>
-
-<typing>
-xml.checkns("m","http://www.w3.org/mathml")
-</typing>
---ldx]]--
+-- The next function also registers a namespace, but this time we map a given
+-- namespace prefix onto a registered one, using the given URL. This used for
+-- attributes like 'xmlns:m'.
+--
+--   xml.checkns("m","http://www.w3.org/mathml")
 
 function xml.checkns(namespace,url)
     local ns = lpegmatch(parse,lower(url))
@@ -88,68 +76,54 @@ function xml.checkns(namespace,url)
     end
 end
 
---[[ldx--
-<p>Next we provide a way to turn an <l n='url'/> into a registered
-namespace. This used for the <t>xmlns</t> attribute.</p>
-
-<typing>
-resolvedns = xml.resolvens("http://www.w3.org/mathml")
-</typing>
-
-This returns <t>mml</t>.
---ldx]]--
+-- Next we provide a way to turn an URL into a registered namespace. This used for
+-- the 'xmlns' attribute.
+--
+--  resolvedns = xml.resolvens("http://www.w3.org/mathml")
+--
+-- This returns MATHML.
 
 function xml.resolvens(url)
      return lpegmatch(parse,lower(url)) or ""
 end
 
---[[ldx--
-<p>A namespace in an element can be remapped onto the registered
-one efficiently by using the <t>xml.xmlns</t> table.</p>
---ldx]]--
+-- A namespace in an element can be remapped onto the registered one efficiently by
+-- using the 'xml.xmlns' table.
 
 end -- end of namespace closure
 
---[[ldx--
-<p>This version uses <l n='lpeg'/>. We follow the same approach as before, stack and top and
-such. This version is about twice as fast which is mostly due to the fact that
-we don't have to prepare the stream for cdata, doctype etc etc. This variant is
-is dedicated to Luigi Scarso, who challenged me with 40 megabyte <l n='xml'/> files that
-took 12.5 seconds to load (1.5 for file io and the rest for tree building). With
-the <l n='lpeg'/> implementation we got that down to less 7.3 seconds. Loading the 14
-<l n='context'/> interface definition files (2.6 meg) went down from 1.05 seconds to 0.55.</p>
-
-<p>Next comes the parser. The rather messy doctype definition comes in many
-disguises so it is no surprice that later on have to dedicate quite some
-<l n='lpeg'/> code to it.</p>
-
-<typing>
-<!DOCTYPE Something PUBLIC "... ..." "..." [ ... ] >
-<!DOCTYPE Something PUBLIC "... ..." "..." >
-<!DOCTYPE Something SYSTEM "... ..." [ ... ] >
-<!DOCTYPE Something SYSTEM "... ..." >
-<!DOCTYPE Something [ ... ] >
-<!DOCTYPE Something >
-</typing>
-
-<p>The code may look a bit complex but this is mostly due to the fact that we
-resolve namespaces and attach metatables. There is only one public function:</p>
-
-<typing>
-local x = xml.convert(somestring)
-</typing>
-
-<p>An optional second boolean argument tells this function not to create a root
-element.</p>
-
-<p>Valid entities are:</p>
-
-<typing>
-<!ENTITY xxxx SYSTEM "yyyy" NDATA zzzz>
-<!ENTITY xxxx PUBLIC "yyyy" >
-<!ENTITY xxxx "yyyy" >
-</typing>
---ldx]]--
+-- This version uses LPEG. We follow the same approach as before, stack and top and
+-- such. This version is about twice as fast which is mostly due to the fact that we
+-- don't have to prepare the stream for cdata, doctype etc etc. This variant is is
+-- dedicated to Luigi Scarso, who challenged me with 40 megabyte XML files that took
+-- 12.5 seconds to load (1.5 for file io and the rest for tree building). With the
+-- LPEG implementation we got that down to less 7.3 seconds. Loading the 14 ConTeXt
+-- interface definition files (2.6 meg) went down from 1.05 seconds to 0.55.
+--
+-- Next comes the parser. The rather messy doctype definition comes in many
+-- disguises so it is no surprice that later on have to dedicate quite some LPEG
+-- code to it.
+--
+--  <!DOCTYPE Something PUBLIC "... ..." "..." [ ... ] >
+--  <!DOCTYPE Something PUBLIC "... ..." "..." >
+--  <!DOCTYPE Something SYSTEM "... ..." [ ... ] >
+--  <!DOCTYPE Something SYSTEM "... ..." >
+--  <!DOCTYPE Something [ ... ] >
+--  <!DOCTYPE Something >
+--
+-- The code may look a bit complex but this is mostly due to the fact that we
+-- resolve namespaces and attach metatables. There is only one public function:
+--
+--   local x = xml.convert(somestring)
+--
+-- An optional second boolean argument tells this function not to create a root
+-- element.
+--
+-- Valid entities are:
+--
+--   <!ENTITY xxxx SYSTEM "yyyy" NDATA zzzz>
+--   <!ENTITY xxxx PUBLIC "yyyy" >
+--   <!ENTITY xxxx "yyyy" >
 
 -- not just one big nested table capture (lpeg overflow)
 
@@ -1332,10 +1306,8 @@ function xml.inheritedconvert(data,xmldata,cleanup) -- xmldata is parent
     return xc
 end
 
---[[ldx--
-<p>Packaging data in an xml like table is done with the following
-function. Maybe it will go away (when not used).</p>
---ldx]]--
+-- Packaging data in an xml like table is done with the following function. Maybe it
+-- will go away (when not used).
 
 function xml.is_valid(root)
     return root and root.dt and root.dt[1] and type(root.dt[1]) == "table" and not root.dt[1].er
@@ -1354,11 +1326,8 @@ end
 
 xml.errorhandler = report_xml
 
---[[ldx--
-<p>We cannot load an <l n='lpeg'/> from a filehandle so we need to load
-the whole file first. The function accepts a string representing
-a filename or a file handle.</p>
---ldx]]--
+-- We cannot load an LPEG from a filehandle so we need to load the whole file first.
+-- The function accepts a string representing a filename or a file handle.
 
 function xml.load(filename,settings)
     local data = ""
@@ -1382,10 +1351,8 @@ function xml.load(filename,settings)
     end
 end
 
---[[ldx--
-<p>When we inject new elements, we need to convert strings to
-valid trees, which is what the next function does.</p>
---ldx]]--
+-- When we inject new elements, we need to convert strings to valid trees, which is
+-- what the next function does.
 
 local no_root = { no_root = true }
 
@@ -1398,11 +1365,9 @@ function xml.toxml(data)
     end
 end
 
---[[ldx--
-<p>For copying a tree we use a dedicated function instead of the
-generic table copier. Since we know what we're dealing with we
-can speed up things a bit. The second argument is not to be used!</p>
---ldx]]--
+-- For copying a tree we use a dedicated function instead of the generic table
+-- copier. Since we know what we're dealing with we can speed up things a bit. The
+-- second argument is not to be used!
 
 -- local function copy(old)
 --     if old then
@@ -1466,13 +1431,10 @@ end
 
 xml.copy = copy
 
---[[ldx--
-<p>In <l n='context'/> serializing the tree or parts of the tree is a major
-actitivity which is why the following function is pretty optimized resulting
-in a few more lines of code than needed. The variant that uses the formatting
-function for all components is about 15% slower than the concatinating
-alternative.</p>
---ldx]]--
+-- In ConTeXt serializing the tree or parts of the tree is a major actitivity which
+-- is why the following function is pretty optimized resulting in a few more lines
+-- of code than needed. The variant that uses the formatting function for all
+-- components is about 15% slower than the concatinating alternative.
 
 -- todo: add <?xml version='1.0' standalone='yes'?> when not present
 
@@ -1490,10 +1452,8 @@ function xml.checkbom(root) -- can be made faster
     end
 end
 
---[[ldx--
-<p>At the cost of some 25% runtime overhead you can first convert the tree to a string
-and then handle the lot.</p>
---ldx]]--
+-- At the cost of some 25% runtime overhead you can first convert the tree to a
+-- string and then handle the lot.
 
 -- new experimental reorganized serialize
 
@@ -1711,21 +1671,18 @@ newhandlers {
     }
 }
 
---[[ldx--
-<p>How you deal with saving data depends on your preferences. For a 40 MB database
-file the timing on a 2.3 Core Duo are as follows (time in seconds):</p>
 
-<lines>
-1.3 : load data from file to string
-6.1 : convert string into tree
-5.3 : saving in file using xmlsave
-6.8 : converting to string using xml.tostring
-3.6 : saving converted string in file
-</lines>
-
-<p>Beware, these were timing with the old routine but measurements will not be that
-much different I guess.</p>
---ldx]]--
+-- How you deal with saving data depends on your preferences. For a 40 MB database
+-- file the timing on a 2.3 Core Duo are as follows (time in seconds):
+--
+-- 1.3 : load data from file to string
+-- 6.1 : convert string into tree
+-- 5.3 : saving in file using xmlsave
+-- 6.8 : converting to string using xml.tostring
+-- 3.6 : saving converted string in file
+--
+-- Beware, these were timing with the old routine but measurements will not be that
+-- much different I guess.
 
 -- maybe this will move to lxml-xml
 
@@ -1827,10 +1784,8 @@ xml.newhandlers     = newhandlers
 xml.serialize       = serialize
 xml.tostring        = xmltostring
 
---[[ldx--
-<p>The next function operated on the content only and needs a handle function
-that accepts a string.</p>
---ldx]]--
+-- The next function operated on the content only and needs a handle function that
+-- accepts a string.
 
 local function xmlstring(e,handle)
     if not handle or (e.special and e.tg ~= "@rt@") then
@@ -1849,9 +1804,7 @@ end
 
 xml.string = xmlstring
 
---[[ldx--
-<p>A few helpers:</p>
---ldx]]--
+-- A few helpers:
 
 --~ xmlsetproperty(root,"settings",settings)
 
@@ -1899,11 +1852,9 @@ function xml.name(root)
     end
 end
 
---[[ldx--
-<p>The next helper erases an element but keeps the table as it is,
-and since empty strings are not serialized (effectively) it does
-not harm. Copying the table would take more time. Usage:</p>
---ldx]]--
+-- The next helper erases an element but keeps the table as it is, and since empty
+-- strings are not serialized (effectively) it does not harm. Copying the table
+-- would take more time.
 
 function xml.erase(dt,k)
     if dt then
@@ -1915,13 +1866,9 @@ function xml.erase(dt,k)
     end
 end
 
---[[ldx--
-<p>The next helper assigns a tree (or string). Usage:</p>
-
-<typing>
-dt[k] = xml.assign(root) or xml.assign(dt,k,root)
-</typing>
---ldx]]--
+-- The next helper assigns a tree (or string). Usage:
+--
+--   dt[k] = xml.assign(root) or xml.assign(dt,k,root)
 
 function xml.assign(dt,k,root)
     if dt and k then
@@ -1932,15 +1879,10 @@ function xml.assign(dt,k,root)
     end
 end
 
--- the following helpers may move
-
---[[ldx--
-<p>The next helper assigns a tree (or string). Usage:</p>
-<typing>
-xml.tocdata(e)
-xml.tocdata(e,"error")
-</typing>
---ldx]]--
+-- The next helper assigns a tree (or string). Usage:
+--
+--   xml.tocdata(e)
+--   xml.tocdata(e,"error")
 
 function xml.tocdata(e,wrapper) -- a few more in the aux module
     local whatever = type(e) == "table" and xmltostring(e.dt) or e or ""

@@ -6,9 +6,8 @@ if not modules then modules = { } end modules ['font-vir'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>This is very experimental code! Not yet adapted to recent changes. This will change.</p>
---ldx]]--
+-- This is very experimental code! Not yet adapted to recent changes. This will
+-- change. Actually we moved on.
 
 -- present in the backend but unspecified:
 --
@@ -25,10 +24,8 @@ local constructors      = fonts.constructors
 local vf                = constructors.handlers.vf
 vf.version              = 1.000 -- same as tfm
 
---[[ldx--
-<p>We overload the <l n='vf'/> reader.</p>
---ldx]]--
-
+-- -- We overload the VF reader.:
+--
 -- general code / already frozen
 --
 -- function vf.find(name)

@@ -296,7 +296,8 @@ do
             local checksum = nil
             local username = file.addsuffix(file.robustname(formatters["%s-btx-%s"](prefix,name)),"lua")
             if userdata and next(userdata) then
-                if job.passes.first then
+                if environment.currentrun == 1 then
+             -- if job.passes.first then
                     local newdata = serialize(userdata)
                     checksum = md5.HEX(newdata)
                     io.savedata(username,newdata)

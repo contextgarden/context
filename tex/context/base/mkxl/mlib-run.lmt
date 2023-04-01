@@ -6,28 +6,16 @@ if not modules then modules = { } end modules ['mlib-run'] = {
     license   = "see context related readme files",
 }
 
--- cmyk       -> done, native
--- spot       -> done, but needs reworking (simpler)
--- multitone  ->
--- shade      -> partly done, todo: cm
--- figure     -> done
--- hyperlink  -> low priority, easy
-
--- new * run
--- or
--- new * execute^1 * finish
-
--- a*[b,c] == b + a * (c-b)
-
---[[ldx--
-<p>The directional helpers and pen analysis are more or less translated from the
-<l n='c'/> code. It really helps that Taco know that source so well. Taco and I spent
-quite some time on speeding up the <l n='lua'/> and <l n='c'/> code. There is not
-much to gain, especially if one keeps in mind that when integrated in <l n='tex'/>
-only a part of the time is spent in <l n='metapost'/>. Of course an integrated
-approach is way faster than an external <l n='metapost'/> and processing time
-nears zero.</p>
---ldx]]--
+-- The directional helpers and pen analysis are more or less translated from the C
+-- code. In LuaTeX we spent quite some time on speeding up the Lua interface as well
+-- as the C code. There is not much to gain, especially if one keeps in mind that
+-- when integrated in TeX only a part of the time is spent in MetaPost. Of course an
+-- integrated approach is way faster than an external MetaPost and processing time
+-- nears zero.
+--
+-- In LuaMetaTeX the MetaPost core has been cleaned up a it and as a result
+-- processing in double mode is now faster than in scaled mode. There are also extra
+-- features and interfaces, so the MkIV and MkXL (LMTX) implementation differ!
 
 local type, tostring, tonumber, next = type, tostring, tonumber, next
 local find, striplines = string.find, utilities.strings.striplines

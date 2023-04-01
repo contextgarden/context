@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['trac-lmx'] = {
     license   = "see context related readme files"
 }
 
--- this one will be adpated to the latest helpers
+-- This one will be adpated to the latest helpers. It might even become a
+-- module instead.
 
 local type, tostring, rawget, loadstring, pcall = type, tostring, rawget, loadstring, pcall
 local format, sub, gsub = string.format, string.sub, string.gsub

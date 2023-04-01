@@ -83,27 +83,37 @@ nps("flat double rule left piece")
 nps("flat double rule middle piece")
 nps("flat double rule right piece")
 
+nps("minus rule left piece")
+nps("minus rule middle piece")
+nps("minus rule right piece")
+
 do
 
-    local function horibar(main,unicode,rule,left,right,normal)
+    -- this overlaps with math-act
+
+    local function horibar(main,unicode,rule,left,right,normal,force,m,l,r)
         local characters = main.characters
-        if not characters[unicode] then
+        local data       = characters[unicode]
+        if force or not data then
             local height = main.mathparameters.defaultrulethickness or 4*65536/10
-            local f_rule = rule  and formatters["M-HORIBAR-RULE-%H"](rule)
-            local p_rule = rule  and hasprivate(main,f_rule)
+            local f_rule = rule and formatters["M-HORIBAR-M-%H"](rule)
+            local p_rule = rule and hasprivate(main,f_rule)
+            local ndata  = normal and characters[normal]
             if rule and left and right and normal then
-                local ldata  = characters[left]
-                local mdata  = characters[rule]
-                local rdata  = characters[right]
-                local ndata  = characters[normal]
+                local ldata  = characters[l or left]
+                local mdata  = characters[m or rule]
+                local rdata  = characters[r or right]
                 local lwidth = ldata.width or 0
                 local mwidth = mdata.width or 0
                 local rwidth = rdata.width or 0
                 local nwidth = ndata.width or 0
                 local down   = (mdata.height / 2) - height
-                --
-                local f_left  = right and formatters["M-HORIBAR-LEFT-%H"](right)
-                local f_right = right and formatters["M-HORIBAR-RIGHT-%H"](right)
+if unicode == normal then
+    height = ndata.height
+    down   = 0
+end                --
+                local f_left  = left  and formatters["M-HORIBAR-L-%H"](left)
+                local f_right = right and formatters["M-HORIBAR-R-%H"](right)
                 local p_left  = left  and hasprivate(main,f_left)
                 local p_right = right and hasprivate(main,f_right)
                 --
@@ -116,7 +126,7 @@ do
                             push,
                             leftcommand[.025*mwidth],
                             downcommand[down],
-                            slotcommand[0][rule],
+                            slotcommand[0][m or rule],
                             pop,
                         },
                     })
@@ -130,7 +140,7 @@ do
                             push,
                             leftcommand[.025*lwidth],
                             downcommand[down],
-                            slotcommand[0][left],
+                            slotcommand[0][l or left],
                             pop,
                         },
                     })
@@ -144,48 +154,72 @@ do
                             push,
                             leftcommand[.025*rwidth],
                             downcommand[down],
-                            slotcommand[0][right],
+                            slotcommand[0][r or right],
                             pop,
                         },
                     })
                 end
-                characters[unicode] = {
-                    keepvirtual      = true,
-                    partsorientation = "horizontal",
-                    height           = height,
-                    width            = nwidth,
--- keepvirtual      = true,
-                    commands         = {
+if unicode ~= normal then
+                data = {
+                    unicode  = unicode,
+                    height   = height,
+                    width    = nwidth,
+                    commands = {
                         downcommand[down],
                         slotcommand[0][normal]
                     },
-                    parts            = {
-                        { glyph = p_left, ["end"] = 0.4*lwidth },
-                        { glyph = p_rule, extender = 1, ["start"] = mwidth, ["end"] = mwidth },
-                        { glyph = p_right, ["start"] = 0.6*rwidth },
-                    }
+                }
+                characters[unicode] = data
+end
+                data.parts = {
+                    { glyph = p_left, ["end"] = 0.4*lwidth },
+                    { glyph = p_rule, extender = 1, ["start"] = mwidth, ["end"] = mwidth },
+                    { glyph = p_right, ["start"] = 0.6*rwidth },
                 }
             else
-                local width = main.parameters.quad/4 or 4*65536
+                local width = main.parameters.quad/2 or 4*65536 -- 3
                 if not characters[p_rule] then
-                    p_rule = addprivate(main,f_rule,{
-                        height   = height,
-                        width    = width,
--- keepvirtual      = true,
-                        commands = { push, { "rule", height, width }, pop },
-                    })
+                    if unicode == normal then
+                        p_rule = addprivate(main,f_rule,{
+                            height   = ndata.height,
+                            width    = width,
+                            commands = {
+                                push,
+                                upcommand[(ndata.height - height)/2],
+                                { "rule", height, width },
+                                pop
+                            },
+                        })
+                    else
+                        p_rule = addprivate(main,f_rule,{
+                            height   = height,
+                            width    = width,
+                            commands = {
+                                push,
+                                { "rule", height, width },
+                                pop
+                            },
+                        })
+                    end
                 end
-                characters[unicode] = {
-                    height           = height,
-                    width            = nwidth,
--- keepvirtual      = true,
-                    partsorientation = "horizontal",
-                    parts            = {
-                        { glyph = p_rule },
-                        { glyph = p_rule, extender = 1, ["start"] = width/2, ["end"] = width/2 },
+if unicode ~= normal then
+                data = {
+                    unicode  = unicode,
+                    height   = height,
+                    width    = width,
+                    commands = {
+                        slotcommand[0][p_rule]
                     }
                 }
+                characters[unicode] = data
+end
+                data.parts = {
+                    { glyph = p_rule, ["start"] = width/2, ["end"] = width/2 },
+                    { glyph = p_rule, extender = 1, ["start"] = width/2, ["end"] = width/2 },
+                }
             end
+            data.keepvirtual = true -- i need to figure this out
+            data.partsorientation = "horizontal"
         end
     end
 
@@ -205,8 +239,8 @@ do
                 local nwidth = ndata.width or 0
                 local down   = (mdata.height / 2) - height
                 --
-                local f_rule  = rule  and formatters["M-ROOTBAR-RULE-%H"](rule)
-                local f_right = right and formatters["M-ROOTBAR-RIGHT-%H"](right)
+                local f_rule  = rule  and formatters["M-ROOTBAR-M-%H"](rule)
+                local f_right = right and formatters["M-ROOTBAR-R-%H"](right)
                 local p_rule  = rule  and hasprivate(main,f_rule)
                 local p_right = right and hasprivate(main,f_right)
                 --

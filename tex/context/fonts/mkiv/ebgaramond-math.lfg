@@ -174,20 +174,23 @@ return {
                 },
                 {
                     tweak    = "replacerules",
+                    minus = {
+                        leftoffset  = .075,
+                        rightoffset = .075,
+                    },
                     fraction = {
-                        template = "minus", -- 0x2212,
-                        xoffset  = 0.075,
-                        yoffset  = 0.9,
-                     -- width    = 0.85,
-                     -- height   = 0.1,
+                        height  = .2,
+                        yoffset = .8,
                     },
                     radical = {
-                        template = "minus", -- 0x2212,
-                        xoffset  = 0.075,
-                        yoffset  = 0.9,
-                        yscale   = 0.975,
-                     -- width    = 0.85,
-                     -- height   = 0.1,
+                        height     = .2,
+                        yoffset    = .8,
+                        leftoffset = .075,
+                        yscale     = .9775,
+                    },
+                    stacker = {
+                        height  = .2,
+                        yoffset = .8,
                     },
                 },
                 {

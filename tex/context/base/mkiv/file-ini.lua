@@ -6,11 +6,8 @@ if not modules then modules = { } end modules ['file-ini'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>It's more convenient to manipulate filenames (paths) in <l n='lua'/> than in
-<l n='tex'/>. These methods have counterparts at the <l n='tex'/> end.</p>
---ldx]]--
-
+-- It's more convenient to manipulate filenames (paths) in Lua than in TeX. These
+-- methods have counterparts at the TeX end.
 
 local implement         = interfaces.implement
 local setmacro          = interfaces.setmacro

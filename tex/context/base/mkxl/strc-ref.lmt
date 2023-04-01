@@ -561,7 +561,7 @@ end
 
 function references.integrate(utilitydata)
     local filename = utilitydata.comment.file
-    if filename then
+    if filename and filename ~= environment.jobname then
         -- lists are already internalized
         local structures = utilitydata.structures
         if structures then

@@ -9,10 +9,8 @@ if not modules then modules = { } end modules ['attr-ini'] = {
 local next, type = next, type
 local osexit = os.exit
 
---[[ldx--
-<p>We start with a registration system for atributes so that we can use the
-symbolic names later on.</p>
---ldx]]--
+-- We start with a registration system for atributes so that we can use the symbolic
+-- names later on.
 
 local nodes             = nodes
 local context           = context
@@ -54,17 +52,13 @@ storage.register("attributes/list",    list,    "attributes.list")
 --     end
 -- end
 
---[[ldx--
-<p>We reserve this one as we really want it to be always set (faster).</p>
---ldx]]--
+-- We reserve this one as we really want it to be always set (faster).
 
 names[0], numbers["fontdynamic"] = "fontdynamic", 0
 
---[[ldx--
-<p>private attributes are used by the system and public ones are for users. We use dedicated
-ranges of numbers for them. Of course a the <l n='context'/> end a private attribute can be
-accessible too, so a private attribute can have a public appearance.</p>
---ldx]]--
+-- Private attributes are used by the system and public ones are for users. We use
+-- dedicated ranges of numbers for them. Of course a the TeX end a private attribute
+-- can be accessible too, so a private attribute can have a public appearance.
 
 sharedstorage.attributes_last_private = sharedstorage.attributes_last_private or   15 -- very private
 sharedstorage.attributes_last_public  = sharedstorage.attributes_last_public  or 1024 -- less private

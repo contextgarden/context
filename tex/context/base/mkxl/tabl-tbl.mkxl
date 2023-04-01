@@ -1608,12 +1608,18 @@
      \tabl_tabulate_vrule_reset_indeed
    \fi}
 
-\def\tabl_tabulate_vrule_reset_indeed
-  {\dofastloopcs\c_tabl_tabulate_max_vrulecolumn\tabl_tabulate_vrule_reset_step
-   \global\c_tabl_tabulate_max_vrulecolumn\zerocount}
+% \def\tabl_tabulate_vrule_reset_indeed
+%   {\gletcsname\??tabulatevrule0\endcsname\undefined
+%    \dofastloopcs\c_tabl_tabulate_max_vrulecolumn\tabl_tabulate_vrule_reset_step
+%    \global\c_tabl_tabulate_max_vrulecolumn\zerocount}
+%
+% \def\tabl_tabulate_vrule_reset_step % undefined or relax
+%   {\gletcsname\??tabulatevrule\the\fastloopindex\endcsname\undefined}
 
-\def\tabl_tabulate_vrule_reset_step % undefined or relax
-  {\gletcsname\??tabulatevrule\the\fastloopindex\endcsname\undefined}
+\def\tabl_tabulate_vrule_reset_indeed
+  {\localcontrolledloop\zerocount\c_tabl_tabulate_max_vrulecolumn\plusone % start at 0
+     {\gletcsname\??tabulatevrule\the\currentloopiterator\endcsname\undefined}%
+   \global\c_tabl_tabulate_max_vrulecolumn\zerocount}
 
 \appendtoks
     \tabl_tabulate_vrule_reset
@@ -1798,11 +1804,16 @@
      \tabl_tabulate_color_reset_indeed
    \fi}
 
-\def\tabl_tabulate_color_reset_indeed
-  {\dofastloopcs\c_tabl_tabulate_max_colorcolumn\tabl_tabulate_color_reset_step}
+% \def\tabl_tabulate_color_reset_indeed
+%   {\dofastloopcs\c_tabl_tabulate_max_colorcolumn\tabl_tabulate_color_reset_step}
+%
+% \def\tabl_tabulate_color_reset_step % undefined or empty?
+%   {\gletcsname\??tabulatecolor\number\fastloopindex\endcsname\undefined}
 
-\def\tabl_tabulate_color_reset_step % undefined or empty?
-  {\gletcsname\??tabulatecolor\number\fastloopindex\endcsname\undefined}
+\def\tabl_tabulate_color_reset_indeed
+  {\localcontrolledloop\zerocount\c_tabl_tabulate_max_colorcolumn\plusone % start at 1
+     {\gletcsname\??tabulatecolor\the\currentloopiterator\endcsname\undefined}%
+   \global\c_tabl_tabulate_max_colorcolumn\zerocount} % why not like vrule?
 
 \appendtoks
     \tabl_tabulate_color_reset
@@ -2201,34 +2212,38 @@
 %   {\glettonothing\tabl_tabulate_flush_collected_indeed
 %    \global\c_tabl_tabulate_column\zerocount
 %    \tabl_tabulate_pbreak_check
+%    \global\setfalse\c_tabl_tabulate_split_done % new 27/12/2022
 %    \dofastloopcs\c_tabl_tabulate_columns\tabl_tabulate_flush_second_step
+%    \ifconditional\c_tabl_tabulate_split_done\else
+%      \glet\tabl_tabulate_tm\s!reset % new 27/12/2022
+%    \fi
 %    \global\settrue\c_tabl_tabulate_firstflushed}
-%
+
 % \protected\def\tabl_tabulate_flush_second_step
-%   {\ifvoid\b_tabl_tabulate_current\fastloopindex\else
+%   {\ifvoid\b_tabl_tabulate_current\fastloopindex
+%    \else
 %      \gdef\tabl_tabulate_flush_collected_indeed{\the\t_tabl_tabulate_dummy}%
+%      \ifvoid\b_tabl_tabulate_current\fastloopindex \else
+%        \global\settrue\c_tabl_tabulate_split_done % new 27/12/2022
+%      \fi
 %    \fi}
-%
-% \def\tabl_tabulate_flush_second
-%   {\noalign{\tabl_tabulate_flush_second_indeed}%
-%    \tabl_tabulate_flush_collected_indeed}
 
 \protected\def\tabl_tabulate_flush_second_indeed
   {\glettonothing\tabl_tabulate_flush_collected_indeed
    \global\c_tabl_tabulate_column\zerocount
    \tabl_tabulate_pbreak_check
    \global\setfalse\c_tabl_tabulate_split_done % new 27/12/2022
-   \dofastloopcs\c_tabl_tabulate_columns\tabl_tabulate_flush_second_step
+   \localcontrolledloop\plusone\c_tabl_tabulate_columns\plusone{\tabl_tabulate_flush_second_step}%
    \ifconditional\c_tabl_tabulate_split_done\else
      \glet\tabl_tabulate_tm\s!reset % new 27/12/2022
    \fi
    \global\settrue\c_tabl_tabulate_firstflushed}
 
 \protected\def\tabl_tabulate_flush_second_step
-  {\ifvoid\b_tabl_tabulate_current\fastloopindex
+  {\ifvoid\b_tabl_tabulate_current\currentloopiterator
    \else
      \gdef\tabl_tabulate_flush_collected_indeed{\the\t_tabl_tabulate_dummy}%
-     \ifvoid\b_tabl_tabulate_current\fastloopindex \else
+     \ifvoid\b_tabl_tabulate_current\currentloopiterator \else
        \global\settrue\c_tabl_tabulate_split_done % new 27/12/2022
      \fi
    \fi}
@@ -3262,7 +3277,7 @@
 %\letcsname\??tabulatespana r\endcsname\relax
 
 \noaligned\tolerant\def\tabl_tabulate_NS[#1]#*[#2]%
-  {\NC\loopcs{#1}\tabl_tabulate_span
+  {\NC\loopcs{#1}\tabl_tabulate_span % use localloop and quit
    \gdef\tabl_tabulate_kooh
      {\begincsname\??tabulatespana#2\endcsname
       \glet\tabl_tabulate_kooh\relax}%

@@ -576,6 +576,47 @@ typedef union tokenword {
 # define stp_language_size         250
 
 /*tex
+    Units. At some point these will be used in texscanning and lmtexlib. 
+*/
+
+
+# define bp_numerator   7227  // base point
+# define bp_denonimator 7200
+
+# define cc_numerator  14856  // cicero
+# define cc_denonimator 1157
+
+# define cm_numerator   7227  // centimeter
+# define cm_denonimator  254
+
+# define dd_numerator   1238  // didot
+# define dd_denonimator 1157
+
+# define dk_numerator  49838  // knuth
+# define dk_denonimator 7739
+
+# define es_numerator   9176  // edith
+# define es_denonimator  129
+
+# define in_numerator   7227  // inch
+# define in_denonimator  100
+
+# define mm_numerator   7227  // millimeter
+# define mm_denonimator 2540
+
+# define pc_numerator     12  // pica
+# define pc_denonimator    1
+
+# define pt_numerator      1  // point
+# define pt_denonimator    1
+
+# define sp_numerator      1  // scaled point
+# define sp_denonimator    1
+
+# define ts_numerator   4588  // tove
+# define ts_denonimator  645
+
+/*tex
 
     These are used in the code, so when we want them to adapt, which is needed when we make them
     configurable, we need to change this.

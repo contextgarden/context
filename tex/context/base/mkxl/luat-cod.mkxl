@@ -42,7 +42,7 @@
 \toksapp \everydump {%
    \permanent\let\ctxlatelua       \latelua
    \permanent\def\ctxlatecommand#1{\latelua{commands.#1}}%
-    \aliased\let\lateluacode       \ctxlatelua
+     \aliased\let\lateluacode       \ctxlatelua
 } % no \appendtoks yet
 
 \protect \endinput

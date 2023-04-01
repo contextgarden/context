@@ -6,20 +6,28 @@ if not modules then modules = { } end modules ['strc-itm'] = {
     license   = "see context related readme files"
 }
 
-local structures  = structures
-local itemgroups  = structures.itemgroups
-local jobpasses   = job.passes
-
+local allocate    = utilities.storage.allocate
 local implement   = interfaces.implement
-
-local setvariable = jobpasses.save
-local getvariable = jobpasses.getfield
 
 local texsetcount = tex.setcount
 local texsetdimen = tex.setdimen
 
-local f_stamp     = string.formatters["itemgroup:%s:%s"]
-local counts      = table.setmetatableindex("number")
+local itemgroups = structures.itemgroups
+
+local collected = allocate()
+local tobesaved = allocate()
+
+itemgroups.collected = collected
+itemgroups.tobesaved = tobesaved
+
+local function initializer()
+    collected = itemgroups.collected
+    tobesaved = itemgroups.tobesaved
+end
+
+if job then
+    job.register("structures.itemgroups.collected", tobesaved, initializer)
+end
 
 local c_strc_itemgroups_max_items = tex.iscount("c_strc_itemgroups_max_items")
 local d_strc_itemgroups_max_width = tex.isdimen("d_strc_itemgroups_max_width")
@@ -27,6 +35,8 @@ local d_strc_itemgroups_max_width = tex.isdimen("d_strc_itemgroups_max_width")
 -- We keep the counter at the Lua end so we can group the items within
 -- an itemgroup which in turn makes for less passes when one itemgroup
 -- entry is added or removed.
+
+local counts = table.setmetatableindex("number")
 
 local trialtypesetting = context.trialtypesetting
 
@@ -36,16 +46,37 @@ local function analyzeitemgroup(name,level)
         n = n + 1
         counts[name] = n
     end
-    local stamp = f_stamp(name,n)
-    texsetcount(c_strc_itemgroups_max_items,getvariable(stamp,level,1,0))
-    texsetdimen(d_strc_itemgroups_max_width,getvariable(stamp,level,2,0))
+    local items = 0
+    local width = 0
+    local itemgroup = collected[name]
+    if itemgroup then
+        local entry = itemgroup[n]
+        if entry then
+            local l = entry[level]
+            if l then
+                items = l[1] or 0
+                width = l[2] or 0
+            end
+        end
+    end
+    texsetcount(c_strc_itemgroups_max_items,items)
+    texsetdimen(d_strc_itemgroups_max_width,width)
 end
 
 local function registeritemgroup(name,level,nofitems,maxwidth)
     local n = counts[name]
     if not trialtypesetting() then
-        -- no trialtypsetting
-        setvariable(f_stamp(name,n), { nofitems, maxwidth }, level)
+        local itemgroup = tobesaved[name]
+        if not itemgroup then
+            itemgroup       = { }
+            tobesaved[name] = itemgroup
+        end
+        local entry = itemgroup[n]
+        if not entry then
+            entry        = { }
+            itemgroup[n] = entry
+        end
+        entry[level] = { nofitems, maxwidth }
     elseif level == 1 then
         counts[name] = n - 1
     end

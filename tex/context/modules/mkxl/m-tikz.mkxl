@@ -45,6 +45,7 @@
    \catcode`\@=11
    \catcode`\|=12
    \catcode`\!=12
+   \catcode`\~=13
    \autoparagraphmode\zerocount}
 
 \permanent\protected\def\stoptikzinput

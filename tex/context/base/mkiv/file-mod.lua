@@ -6,17 +6,11 @@ if not modules then modules = { } end modules ['file-mod'] = {
     license   = "see context related readme files"
 }
 
--- This module will be redone! For instance, the prefixes will move to data-*
--- as they arr sort of generic along with home:// etc/.
-
--- context is not defined yet! todo! (we need to load tupp-fil after cld)
--- todo: move startreadingfile to lua and push regime there
-
---[[ldx--
-<p>It's more convenient to manipulate filenames (paths) in
-<l n='lua'/> than in <l n='tex'/>. These methods have counterparts
-at the <l n='tex'/> side.</p>
---ldx]]--
+-- This module will be redone! For instance, the prefixes will move to data-* as
+-- they are sort of generic along with home:// etc/.
+--
+-- It is more convenient to manipulate filenames (paths) in Lua than in TeX. The
+-- methods below have counterparts at the TeX end.
 
 local format, find, concat, tonumber = string.format, string.find, table.concat, tonumber
 local sortedhash = table.sortedhash

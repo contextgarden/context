@@ -1403,9 +1403,41 @@
    \c!toffset=.25\exheight,
    \c!boffset=\mathmatrixparameter\c!toffset]
 
-\noaligned\permanent\tolerant\protected\def\math_matrix_HL[#1]#*%
+% \noaligned\permanent\tolerant\protected\def\math_matrix_HL[#1]#*%
+%   {\noalign\bgroup
+%      \math_matrix_check_rule[#1]%
+%      \divideby\scratchdimen\plustwo
+%      \ifdim\scratchdimen>\zeropoint
+%      % \autorule\s!height\scratchdimen\s!depth\scratchdimen\relax
+%        \scratchdistance\mathmatrixparameter\c!toffset\relax
+%        \ifdim\scratchdistance>\zeropoint
+%          \nohrule
+%              \s!attr  \mathalignmentvruleattribute\plustwo
+%              \s!height\scratchdistance
+%              \s!depth \zeropoint
+%          \relax
+%        \fi
+%        \hrule
+%            \s!attr  \mathalignmentvruleattribute\plusthree
+%            \s!height\scratchdimen
+%            \s!depth \scratchdimen
+%        \relax
+%        \scratchdistance\mathmatrixparameter\c!boffset\relax
+%        \ifdim\scratchdistance>\zeropoint
+%          \nohrule
+%              \s!attr  \mathalignmentvruleattribute\plusfour
+%              \s!height\zeropoint
+%              \s!depth \scratchdistance
+%          \relax
+%        \fi
+%      \else
+%         % zero dimensions disable the rule
+%      \fi
+%    \egroup}
+
+\def\math_matrix_HL_indeed#1#2%
   {\noalign\bgroup
-     \math_matrix_check_rule[#1]%
+     \math_matrix_check_rule[#2]%
      \divideby\scratchdimen\plustwo
      \ifdim\scratchdimen>\zeropoint
      % \autorule\s!height\scratchdimen\s!depth\scratchdimen\relax
@@ -1422,6 +1454,17 @@
            \s!height\scratchdimen
            \s!depth \scratchdimen
        \relax
+       \ifnum#1>\plusone
+         \localcontrolledloop\plustwo#1\plusone
+            {\kern.125\d_math_eqalign_distance % hskip
+             \hrule
+                 \s!attr  \mathalignmentvruleattribute\plusthree
+                 \s!height\scratchdimen
+                 \s!depth \scratchdimen
+              \relax}%
+         \kern-2\scratchdimen
+         \kern-.125\d_math_eqalign_distance % hskip
+       \fi
        \scratchdistance\mathmatrixparameter\c!boffset\relax
        \ifdim\scratchdistance>\zeropoint
          \nohrule
@@ -1434,6 +1477,9 @@
         % zero dimensions disable the rule
      \fi
    \egroup}
+
+\permanent\tolerant\noaligned\protected\def\math_matrix_HL  [#1]#*{\math_matrix_HL_indeed\plusone{#1}}
+\permanent\tolerant\noaligned\protected\def\math_matrix_HLHL[#1]#*{\math_matrix_HL_indeed\plustwo{#1}}
 
 \protected\def\math_matrix_vertical_rule_indeed#1#2%
   {\math_matrix_check_rule[#2]%
@@ -1514,18 +1560,37 @@
    %boundary\c_math_matrix_sl_boundary
    \enforced\let\NR\math_matrix_NL_NR}
 
-\permanent\tolerant\protected\def\math_matrix_VL[#1]#*%
+% \permanent\tolerant\protected\def\math_matrix_VL[#1]#*%
+%   {\span\omit
+%    \ifconditional\c_math_matrix_first\else
+%      \kern.5\d_math_eqalign_distance % hskip
+%    \fi
+%    \math_matrix_vertical_rule_yes{#1}%
+%    \kern.5\d_math_eqalign_distance % hskip
+%    \global\setfalse\c_math_matrix_first
+%    \aligntab
+%    \boundary\c_math_matrix_vl_boundary
+%    \enforced\let\NR\math_matrix_NL_NR
+%    }
+
+\def\math_matrix_VL_indeed#1#2%%
   {\span\omit
    \ifconditional\c_math_matrix_first\else
      \kern.5\d_math_eqalign_distance % hskip
    \fi
-   \math_matrix_vertical_rule_yes{#1}%
-   \kern.5\d_math_eqalign_distance % hskip
+   \math_matrix_vertical_rule_yes{#2}%
+   \localcontrolledloop\plustwo#1\plusone
+     {\kern.125\d_math_eqalign_distance % hskip
+      \math_matrix_vertical_rule_yes{#2}}%
+   \kern.5\d_math_eqalign_distance
    \global\setfalse\c_math_matrix_first
    \aligntab
    \boundary\c_math_matrix_vl_boundary
    \enforced\let\NR\math_matrix_NL_NR
    }
+
+\permanent\tolerant\protected\def\math_matrix_VL  [#1]#*{\math_matrix_VL_indeed\plusone{#1}}
+\permanent\tolerant\protected\def\math_matrix_VLVL[#1]#*{\math_matrix_VL_indeed\plustwo{#1}}
 
 \permanent\tolerant\protected\def\math_matrix_NL[#1]#*%
   {\span\omit
@@ -1585,6 +1650,9 @@
    \enforced\let\VC\math_matrix_VC % bonus, extra column
    \enforced\let\VT\math_matrix_VT % bonus, idem but tight
    \enforced\let\TB\math_common_TB
+   % just because it's easy:
+   \enforced\let\VLVL\math_matrix_VLVL
+   \enforced\let\HLHL\math_matrix_HLHL
 \to \everymathmatrix
 
 \definesystemattribute[mathmatrixornament][public]

@@ -6,11 +6,9 @@ if not modules then modules = { } end modules ['luat-ini'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>We cannot load anything yet. However what we will do us reserve a few tables.
-These can be used for runtime user data or third party modules and will not be
-cluttered by macro package code.</p>
---ldx]]--
+-- We cannot load anything yet. However what we will do us reserve a few tables.
+-- These can be used for runtime user data or third party modules and will not be
+-- cluttered by macro package code.
 
 userdata      = userdata      or { } -- for users (e.g. functions etc)
 thirddata     = thirddata     or { } -- only for third party modules

@@ -324,6 +324,13 @@ return {
                     tweak = "addrules",
                 },
                 {
+                    tweak    = "replacerules",
+                 -- minus    = true, -- we have an extensible
+                    fraction = { height = .15, yoffset = .85 },
+                    radical  = { height = .15, yoffset = .85 },
+                    stacker  = { height = .15, yoffset = .85 },
+                },
+                {
                     tweak   = "addbars",
                     advance = 0.52,
                 },
@@ -346,6 +353,8 @@ return {
                     feature = "emulatelmtx",
                     comment = "this is for mkiv",
                 },
+-- { tweak = "inspect", slot = 0x2212 },
+-- { tweak = "inspect", slot = 0x003D },
             },
         },
         bigslots = {

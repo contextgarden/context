@@ -10,10 +10,7 @@
 % copyright : Public domain
 % patched   : Hans Hagen
 %
-% The code is the same but I've added a boxes_ namespace for some so that we don't
-% clash with metafun.
-
-% The code is the same but I've added s boxes_ namespace for soem so that we don't
+% The code is the same but I've added s boxes_ namespace for somd so that we don't
 % clash with metafun. Loading and initialization is now under metafun control.
 
 if known metafun_loaded_xbox : endinput ; fi ;

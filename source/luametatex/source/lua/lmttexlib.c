@@ -1037,6 +1037,16 @@ static const char *texlib_aux_scan_dimen_part(lua_State * L, const char *ss, int
         numerator = 49838;
         denominator = 7739;
         goto CONVERSION;
+    } else if (strncmp(str, "es", 2) == 0) {
+        str += 2;
+        numerator = 9176;
+        denominator = 129;
+        goto CONVERSION;
+    } else if (strncmp(str, "ts", 2) == 0) {
+        str += 2;
+        numerator = 4588;
+        denominator = 645;
+        goto CONVERSION;
     } else if (strncmp(str, "em", 2) == 0) {
         str += 2;
         special = tex_get_font_em_width(cur_font_par);
@@ -1045,6 +1055,11 @@ static const char *texlib_aux_scan_dimen_part(lua_State * L, const char *ss, int
         str += 2;
         special = tex_get_font_ex_height(cur_font_par);
         goto SPECIAL;
+    } else if (strncmp(str, "eu", 2) == 0) {
+        str += 2;
+        numerator = 9176 * eu_factor_par;
+        denominator = 129 * 10;
+        goto CONVERSION;
     } else if (strncmp(str, "px", 2) == 0) {
         str += 2;
         special = px_dimen_par;

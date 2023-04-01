@@ -1,0 +1,76 @@
+%D \module
+%D   [       file=meta-imp-newmath,
+%D        version=2023.04.01,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=New Math Symbols,
+%D         author=Mikael Sundqvist & Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D In this file we will collect solutions for special math symbols. When such symbols
+%D are used in publications the CMS will contact the Unicode Consortium to suggest that
+%D they get a slot, because then we have proof of usage. We also consider old obsolete
+%D symbols because they can be treated like some ancient out|-|of|-|use script and fit
+%D into the \type {ancient math script}.
+
+\startMPextensions
+    vardef math_ornament_hat(expr w,h,d,o,l) =
+        image ( path p ; p :=
+            (w/2,h + 10l) --
+            (o + w,h + o) --
+            (w/2,h + 7l) --
+            (-o,h + o) --
+            cycle ;
+            fill p randomized o ;
+            setbounds currentpicture to (-o,0) -- (w+o,0) -- (w+o,h+2o) -- (-o,h+2o) -- cycle ;
+        )
+    enddef ;
+\stopMPextensions
+
+\startuniqueMPgraphic{math:ornament:hat}
+    draw
+        math_ornament_hat(
+            OverlayWidth,
+            OverlayHeight,
+            OverlayDepth,
+            OverlayOffset,
+            OverlayLineWidth
+        )
+    withpen
+        pencircle
+            xscaled (2OverlayLineWidth)
+            yscaled (3OverlayLineWidth/4)
+            rotated 30
+    withcolor
+        OverlayLineColor ;
+%         draw boundingbox currentpicture;
+\stopuniqueMPgraphic
+
+\definemathornament [widerandomhat] [mp=math:ornament:hat]
+
+\continueifinputfile{meta-imp-newnmath.mkxl}
+
+\starttext
+
+This symbol was designed for one of Mikaels students working on a thesis on
+probability. This student needed to typeset the characteristic function of a
+random variable \im {X} with density function \im {f_{X}}, and it was insisted to
+use another notation than the (wide) hat, that was already used for something
+else. For this reason the \tex {widerandomhat} was introduced,
+
+\startformula
+    E[\ee^{\ii tX}] = \widerandomhat{f_{X}}(t)\mtp{,}
+    E[\ee^{\ii t(X_1+X_2)}] = \widerandomhat{f_{X_1} \ast f_{X_2}}(t)\mtp{.}
+\stopformula
+
+Naturally, it is automatically scaled, just like the ordinary wide hat
+
+\startformula
+    \widehat{a+b+c+d+e+f} \neq \widerandomhat{a+b+c+d+e+f}
+\stopformula
+
+\stoptext

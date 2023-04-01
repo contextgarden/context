@@ -1,0 +1,68 @@
+%D \module
+%D   [       file=core-pag,
+%D        version=2023.03.23, % moved from core-dat
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Multipass Pagestate,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / Multipass Pagestate}
+
+\unprotect
+
+\newinteger\realpagestateno
+
+\registerctxluafile{core-pag}{autosuffix}
+
+\installcorenamespace{pagestate}
+\installcorenamespace{pagestatecounter}
+
+\installcommandhandler \??pagestate {pagestate} \??pagestate
+
+\def\syst_pagestates_allocate
+  {\expandafter\newinteger\csname\??pagestatecounter\currentpagestate\endcsname}
+
+\appendtoks
+    \syst_pagestates_allocate
+\to \everydefinepagestate
+
+\setuppagestate
+  [\c!delay=\v!yes]
+
+\permanent\tolerant\protected\def\setpagestate[#1]#*[#2]%
+  {\begingroup
+   \edef\currentpagestate{#1}%
+   \ifcsname\??pagestatecounter\currentpagestate\endcsname
+     \scratchcounter\lastnamedcs
+     \advanceby\scratchcounter\plusone
+   \else
+     \scratchcounter\plusone
+     \syst_pagestates_allocate
+   \fi
+   \global\csname\??pagestatecounter\currentpagestate\endcsname\scratchcounter
+   \clf_setpagestate
+      name  {\currentpagestate}%
+      tag   {\ifparameter#2\or#2\else\number\scratchcounter\fi}%
+      delay {\pagestateparameter\c!delay}%
+   \relax
+   \endgroup}
+
+\permanent\protected\def\autosetpagestate#1%
+  {\setpagestate[#1]\relax}
+
+\permanent\def\autopagestatenumber#1{\begincsname\??pagestatecounter#1\endcsname}
+
+\permanent\def\pagestaterealpage     #1#2{\clf_pagestaterealpage     {#1}{#2}}
+\permanent\def\setpagestaterealpageno#1#2{\clf_setpagestaterealpageno{#1}{#2}}
+\permanent\def\pagestaterealpageorder#1#2{\clf_pagestaterealpageorder{#1}#2\relax}
+
+\permanent\def\autopagestaterealpage     #1{\clf_pagestaterealpage     {#1}{\number\autopagestatenumber{#1}}}
+\permanent\def\setautopagestaterealpageno#1{\clf_setpagestaterealpageno{#1}{\number\autopagestatenumber{#1}}}
+\permanent\def\autopagestaterealpageorder#1{\clf_pagestaterealpageorder{#1}\numexpr\autopagestatenumber{#1}\relax}
+
+\protect

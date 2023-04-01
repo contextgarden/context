@@ -42,8 +42,6 @@ interactions.linkedlists = linkedlists
 
 local texsetbox          = tex.setbox
 
-local jobpasses          = job.passes
-
 local texgetcount        = tex.getcount
 
 local codeinjections     = backends.codeinjections
@@ -277,7 +275,24 @@ implement {
     }
 }
 
--- Linkedlists (only a context interface)
+-- Linkedlists (only a context interface) .. untested, just adapted from old code.
+
+local collected = allocate()
+local tobesaved = allocate()
+
+local linkedlists = {
+    collected = collected,
+    tobesaved = tobesaved,
+}
+
+job.linkedlists = linkedlists
+
+local function initializer()
+    collected = linkedlists.collected
+    tobesaved = linkedlists.tobesaved
+end
+
+job.register("job.linkedlists.collected", tobesaved, initializer, nil)
 
 implement {
     name      = "definelinkedlist",
@@ -291,10 +306,12 @@ implement {
     name      = "enhancelinkedlist",
     arguments = { "string", "integer" },
     actions   = function(tag,n)
-                    local ll = jobpasses.gettobesaved(tag)
-                    if ll then
-                        ll[n] = texgetcount("realpageno")
+                    local linkedlist = tobesaved[tag]
+                    if not linkedlist then
+                        linkedlist     = { }
+                        tobesaved[tag] = linkedlist
                     end
+                    linkedlist[n] = texgetcount("realpageno")
                 end
 }
 
@@ -302,15 +319,18 @@ implement {
     name      = "addlinklistelement",
     arguments = "string",
     actions   = function(tag)
-                    local tobesaved   = jobpasses.gettobesaved(tag)
-                    local collected   = jobpasses.getcollected(tag) or { }
+                    local tobesaved   = tobesaved[tag] or { }
+                    local collected   = collected[tag] or { }
                     local currentlink = #tobesaved + 1
                     local noflinks    = #collected
-                    tobesaved[currentlink] = 0
+                    --
+                    tobesaved[currentlink] = 0 -- needs checking
+                    --
                     local f = collected[1] or 0
                     local l = collected[noflinks] or 0
                     local p = collected[currentlink-1] or f
                     local n = collected[currentlink+1] or l
+                    --
                     context.setlinkedlistproperties(currentlink,noflinks,f,p,n,l)
                  -- context.ctxlatelua(function() commands.enhancelinkedlist(tag,currentlink) end)
                 end

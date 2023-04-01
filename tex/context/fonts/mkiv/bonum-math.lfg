@@ -233,6 +233,13 @@ return {
                     tweak = "addrules",
                 },
                 {
+                    tweak    = "replacerules",
+                 -- minus    = true, -- we have an extensible
+                    fraction = { height = .244, yoffset = .757 },
+                    radical  = { height = .244, yoffset = .754 },
+                    stacker  = { height = .244, yoffset = .757 },
+                },
+                {
                     -- This tweak is only needed for the funny arrows and these now get properly
                     -- centered. (Could actually be done in the engine).
                     tweak = "addarrows",

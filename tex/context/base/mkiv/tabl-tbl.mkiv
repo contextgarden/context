@@ -1551,7 +1551,8 @@
    \fi}
 
 \def\tabl_tabulate_vrule_reset_indeed
-  {\dofastloopcs\c_tabl_tabulate_max_vrulecolumn\tabl_tabulate_vrule_reset_step
+  {\gletcsname\??tabulatevrule0\endcsname\undefined
+   \dofastloopcs\c_tabl_tabulate_max_vrulecolumn\tabl_tabulate_vrule_reset_step
    \global\c_tabl_tabulate_max_vrulecolumn\zerocount}
 
 \def\tabl_tabulate_vrule_reset_step % undefined or relax

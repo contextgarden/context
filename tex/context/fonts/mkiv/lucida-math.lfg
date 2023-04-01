@@ -64,14 +64,14 @@ return {
                     keep     = true,
                     list     = {
                         { source = "latinsupplement" },
-                --         { source = "latinextendeda" },
-                --         { source = "latinextendedadditional" },
-                --         { source = "latinextendedb" },
-                --         { source = "latinextendedc" },
-                --         { source = "latinextendedd" },
-                --         { source = "latinextendede" },
-                --         { source = "latinextendedf" },
-                --         { source = "latinextendedg" },
+                     -- { source = "latinextendeda" },
+                     -- { source = "latinextendedadditional" },
+                     -- { source = "latinextendedb" },
+                     -- { source = "latinextendedc" },
+                     -- { source = "latinextendedd" },
+                     -- { source = "latinextendede" },
+                     -- { source = "latinextendedf" },
+                     -- { source = "latinextendedg" },
                     },
                 },
                 {
@@ -187,6 +187,27 @@ return {
                 },
                 {
                     tweak = "addrules",
+                },
+                {
+                    tweak    = "replacerules",
+                    minus    = {
+                        leftoffset  = .2,
+                        rightoffset = .2,
+                    },
+                    fraction = {
+                        height  = .2,
+                        yoffset = .825,
+                    },
+                    radical  = {
+                        height     = .2,
+                        yoffset    = .825,
+                        leftoffset = .075,
+                        yscale     = .940,
+                    },
+                    stacker  = {
+                        height  = .2,
+                        yoffset = .825,
+                    },
                 },
                 {
                     tweak = "addactuarian",

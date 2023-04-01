@@ -6,20 +6,15 @@ if not modules then modules = { } end modules ['data-tmp'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>This module deals with caching data. It sets up the paths and implements
-loaders and savers for tables. Best is to set the following variable. When not
-set, the usual paths will be checked. Personally I prefer the (users) temporary
-path.</p>
-
-</code>
-TEXMFCACHE=$TMP;$TEMP;$TMPDIR;$TEMPDIR;$HOME;$TEXMFVAR;$VARTEXMF;.
-</code>
-
-<p>Currently we do no locking when we write files. This is no real problem
-because most caching involves fonts and the chance of them being written at the
-same time is small. We also need to extend luatools with a recache feature.</p>
---ldx]]--
+-- This module deals with caching data. It sets up the paths and implements loaders
+-- and savers for tables. Best is to set the following variable. When not set, the
+-- usual paths will be checked. Personally I prefer the (users) temporary path.
+--
+--   TEXMFCACHE=$TMP;$TEMP;$TMPDIR;$TEMPDIR;$HOME;$TEXMFVAR;$VARTEXMF;.
+--
+-- Currently we do no locking when we write files. This is no real problem because
+-- most caching involves fonts and the chance of them being written at the same time
+-- is small. We also need to extend luatools with a recache feature.
 
 local next, type = next, type
 local pcall, loadfile, collectgarbage = pcall, loadfile, collectgarbage

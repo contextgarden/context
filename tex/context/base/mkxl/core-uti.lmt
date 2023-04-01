@@ -6,16 +6,13 @@ if not modules then modules = { } end modules ['core-uti'] = {
     license   = "see context related readme files"
 }
 
--- todo: keep track of changes here (hm, track access, and only true when
--- accessed and changed)
-
---[[ldx--
-<p>A utility file has always been part of <l n='context'/> and with
-the move to <l n='luatex'/> we also moved a lot of multi-pass info
-to a <l n='lua'/> table. Instead of loading a <l n='tex'/> based
-utility file under different setups, we now load a table once. This
-saves much runtime but at the cost of more memory usage.</p>
---ldx]]--
+-- A utility file has always been part of ConTeXt and with the move to LuaTeX we
+-- also moved a lot of multi-pass info to a Lua table. Instead of loading a TeX
+-- based utility file under different setups, we now load a table once. This saves
+-- much runtime but at the cost of more memory usage.
+--
+-- In the meantime the overhead is a bit more due to the amount of data being saved
+-- and more agressive compacting.
 
 local math = math
 local next, type, tostring, tonumber, setmetatable, load = next, type, tostring, tonumber, setmetatable, load
@@ -46,14 +43,9 @@ local job            = job
 job.version          = 1.33
 job.packversion      = 1.02
 
--- some day we will implement loading of other jobs and then we need
--- job.jobs
-
---[[ldx--
-<p>Variables are saved using in the previously defined table and passed
-onto <l n='tex'/> using the following method. Of course one can also
-directly access the variable using a <l n='lua'/> call.</p>
---ldx]]--
+-- Variables are saved using in the previously defined table and passed onto TeX
+-- using the following method. Of course one can also directly access the variable
+-- using a Lua call.
 
 local savelist, comment = { }, { }
 
@@ -382,6 +374,12 @@ function job.load(filename)
 end
 
 function job.loadother(filename)
+    local jobname = environment.jobname
+    if filename == jobname then
+        return
+    else
+        report_passes("integrating list %a into %a",filename,jobname)
+    end
     statistics.starttiming(loadedfiles)
     filename = file.addsuffix(filename,"tuc")
     local unpacked = othercache[filename]

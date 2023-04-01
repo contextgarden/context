@@ -6,19 +6,14 @@ if not modules then modules = { } end modules ['luatex-mplib'] = {
     license   = "public domain",
 }
 
---[[ldx--
-<p>This module is a stripped down version of libraries that are used
-by <l n='context'/>. It can be used in other macro packages and/or
-serve as an example. Embedding in a macro package is upto others and
-normally boils down to inputting <t>supp-mpl.tex</t>.</p>
---ldx]]--
+-- This module is a stripped down version of libraries that are used by ConTeXt. It
+-- can be used in other macro packages and/or serve as an example. Embedding in a
+-- macro package is upto others and normally boils down to inputting 'supp-mpl.tex'.
 
 if metapost and metapost.version then
 
-    --[[ldx--
-    <p>Let's silently quit and make sure that no one loads it
-    manually in <l n='context'/>.</p>
-    --ldx]]--
+    -- Let's silently quit and make sure that no one loads it manually in
+    -- ConTeXt.
 
 else
 
@@ -29,27 +24,25 @@ else
     local mplib = require ('mplib')
     local kpse  = require ('kpse')
 
-    --[[ldx--
-    <p>We create a namespace and some variables to it. If a namespace is
-    already defined it wil not be initialized. This permits hooking
-    in code beforehand.</p>
+    -- We create a namespace and some variables to it. If a namespace is already
+    -- defined it wil not be initialized. This permits hooking in code beforehand.
 
-    <p>We don't make a format automatically. After all, distributions
-    might have their own preferences and normally a format (mem) file will
-    have some special place in the <l n='tex'/> tree. Also, there can already
-    be format files, different memort settings and other nasty pitfalls that
-    we don't want to interfere with. If you want, you can define a function
-    <t>metapost.make(name,mem_name) that does the job.</t></p>
-    --ldx]]--
+    -- We don't make a format automatically. After all, distributions might have
+    -- their own preferences and normally a format (mem) file will have some
+    -- special place in the TeX tree. Also, there can already be format files,
+    -- different memort settings and other nasty pitfalls that we don't want to
+    -- interfere with. If you want, you can define a function
+    --
+    --   metapost.make (name,mem_name)
+    --
+    -- that does the job.
 
     metapost          = metapost or { }
     metapost.version  = 1.00
     metapost.showlog  = metapost.showlog or false
     metapost.lastlog  = ""
 
-    --[[ldx--
-    <p>A few helpers, taken from <t>l-file.lua</t>.</p>
-    --ldx]]--
+    -- A few helpers, taken from 'l-file.lua'.
 
     local file = file or { }
 
@@ -61,10 +54,7 @@ else
         return (string.gsub(filename,"%.[%a%d]+$",""))
     end
 
-    --[[ldx--
-    <p>We use the <l n='kpse'/> library unless a finder is already
-    defined.</p>
-    --ldx]]--
+    -- We use the KPSE library unless a finder is already defined.
 
     local mpkpse = kpse.new("luatex","mpost")
 
@@ -76,10 +66,9 @@ else
         end
     end
 
-    --[[ldx--
-    <p>You can use your own reported if needed, as long as it handles multiple
-    arguments and formatted strings.</p>
-    --ldx]]--
+    -- You can use your own reported if needed, as long as it handles multiple
+    -- arguments and formatted strings.
+
 
     metapost.report = metapost.report or function(...)
         if logs.report then
@@ -89,11 +78,9 @@ else
         end
     end
 
-    --[[ldx--
-    <p>The rest of this module is not documented. More info can be found in the
-    <l n='luatex'/> manual, articles in user group journals and the files that
-    ship with <l n='context'/>.</p>
-    --ldx]]--
+    -- The rest of this module is not documented. More info can be found in the
+    -- LuaTeX manual, articles in user group journals and the files that ship
+    -- with ConTeXt.
 
     function metapost.resetlastlog()
         metapost.lastlog = ""
@@ -329,9 +316,8 @@ else
         return true -- done
     end
 
-    --[[ldx--
-    <p>We removed some message and tracing code. We might even remove the flusher</p>
-    --ldx]]--
+    -- We removed some message and tracing code. We might even remove the
+    -- flusher.
 
     local function pdf_startfigure(n,llx,lly,urx,ury)
         tex.sprint(format("\\startMPLIBtoPDF{%s}{%s}{%s}{%s}",llx,lly,urx,ury))
@@ -443,9 +429,7 @@ else
         return t
     end
 
-    --[[ldx--
-    <p>Support for specials has been removed.</p>
-    --ldx]]--
+    -- Support for specials has been removed.
 
     function metapost.flush(result,flusher)
         if result then

@@ -1043,7 +1043,7 @@
 \definemathstackers [\v!medium] [\v!mathematics] [\c!hoffset=1.5\mathemwidth]
 \definemathstackers [\v!big]    [\v!mathematics] [\c!hoffset=2\mathemwidth]
 
-\definemathextensible [\v!reverse] [xrel]                ["002D]
+\definemathextensible [\v!reverse] [xrel]                ["2212] % ["002D]
 \definemathextensible [\v!reverse] [xequal]              ["003D]
 \definemathextensible [\v!reverse] [xleftarrow]          ["2190] % ["27F5]
 \definemathextensible [\v!reverse] [xrightarrow]         ["2192] % ["27F6]
@@ -1066,7 +1066,7 @@
 \definemathextensible [\v!reverse] [xrightleftharpoons]  ["21CC]
 \definemathextensible [\v!reverse] [xtriplerel]          ["2261]
 
-\definemathextensible [\v!mathematics] [mrel]                ["002D]
+\definemathextensible [\v!mathematics] [mrel]                ["2212] % ["002D]
 \definemathextensible [\v!mathematics] [mequal]              ["003D]
 \definemathextensible [\v!mathematics] [mleftarrow]          ["2190] % ["27F5]
 \definemathextensible [\v!mathematics] [mrightarrow]         ["2192] % ["27F6]
@@ -1089,7 +1089,7 @@
 \definemathextensible [\v!mathematics] [mrightleftharpoons]  ["21CC]
 \definemathextensible [\v!mathematics] [mtriplerel]          ["2261]
 
-\definemathextensible [\v!text] [trel]                ["002D]
+\definemathextensible [\v!text] [trel]                ["2212] % ["002D]
 \definemathextensible [\v!text] [tequal]              ["003D]
 \definemathextensible [\v!text] [tmapsto]             ["21A6]
 \definemathextensible [\v!text] [tleftarrow]          ["2190] % ["27F5]
@@ -1168,9 +1168,9 @@
 %D in the backend (okay, we still need to deal with some cut and paste issues but at
 %D least we now know what we deal with.
 
-\definemathoverextensible   [\v!vfenced] [overbar]       ["203E]
-\definemathunderextensible  [\v!vfenced] [underbar]              ["203E] % ["0332]
-\definemathdoubleextensible [\v!vfenced] [doublebar]     ["203E] ["203E] % ["0332]
+\definemathoverextensible   [\v!vfenced] [overbar]       ["203E]         % todo: private
+\definemathunderextensible  [\v!vfenced] [underbar]              ["203E] % todo: private
+\definemathdoubleextensible [\v!vfenced] [doublebar]     ["203E] ["203E] % todo: private
 
 \definemathoverextensible   [\v!vfenced] [overbrace]     ["23DE]
 \definemathunderextensible  [\v!vfenced] [underbrace]            ["23DF]
@@ -1186,13 +1186,13 @@
 
 %D For mathml:
 
-\definemathdoubleextensible    [\v!both]     [overbarunderbar]         ["203E] ["203E]
+\definemathdoubleextensible    [\v!both]     [overbarunderbar]         ["203E] ["203E] % todo: private
 \definemathdoubleextensible    [\v!both]     [overbraceunderbrace]     ["23DE] ["23DF]
 \definemathdoubleextensible    [\v!both]     [overparentunderparent]   ["23DC] ["23DD]
 \definemathdoubleextensible    [\v!both]     [overbracketunderbracket] ["23B4] ["23B5]
 
-\definemathovertextextensible  [\v!bothtext] [overbartext]             ["203E]
-\definemathundertextextensible [\v!bothtext] [underbartext]                    ["203E]
+\definemathovertextextensible  [\v!bothtext] [overbartext]             ["203E]         % todo: private
+\definemathundertextextensible [\v!bothtext] [underbartext]                    ["203E] % todo: private
 \definemathovertextextensible  [\v!bothtext] [overbracetext]           ["23DE]
 \definemathundertextextensible [\v!bothtext] [underbracetext]                  ["23DF]
 \definemathovertextextensible  [\v!bothtext] [overparenttext]          ["23DC]
@@ -1285,8 +1285,8 @@
 \permanent\tolerant\protected\def\defineextensiblefiller[#1]#*[#2]%
   {\frozen\instance\edefcsname#1\endcsname{\mathfiller{\number#2}}}
 
-%defineextensiblefiller [barfill]                ["203E] % yet undefined
-\defineextensiblefiller [relfill]                ["002D]
+%defineextensiblefiller [barfill]                ["203E] % % todo: private
+\defineextensiblefiller [relfill]                ["2212] % ["002D]
 \defineextensiblefiller [equalfill]              ["003D]
 \defineextensiblefiller [leftarrowfill]          ["2190]
 \defineextensiblefiller [rightarrowfill]         ["2192]

@@ -10,10 +10,6 @@ local cos, tan, rad, format = math.cos, math.tan, math.rad, string.format
 local utfbyte, utfchar = utf.byte, utf.char
 local next = next
 
---[[ldx--
-<p>This is very experimental code!</p>
---ldx]]--
-
 local trace_visualize    = false  trackers.register("fonts.composing.visualize", function(v) trace_visualize = v end)
 local trace_define       = false  trackers.register("fonts.composing.define",    function(v) trace_define    = v end)
 

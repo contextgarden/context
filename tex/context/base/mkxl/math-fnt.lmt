@@ -63,9 +63,11 @@ local function register_extensible(font,char,style,box)
         return nil
     else
         local bx = tonut(box)
-        updaters.apply("tagging.state.disable") -- fast enough
-        nodes.handlers.finalizelist(bx)
-        updaters.apply("tagging.state.enable")
+        -- actually we don't want colors and such so if we do finalize we
+        -- should be more selctive:
+--         updaters.apply("tagging.state.disable")
+--         nodes.handlers.finalizelist(bx)
+--         updaters.apply("tagging.state.enable")
         local id = getid(bx)
         local al = getattrlst(bx)
         local wd, ht, dp = getwhd(bx)

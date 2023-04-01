@@ -1,0 +1,160 @@
+if not modules then modules = { } end modules ['core-dat'] = {
+    version   = 1.001,
+    comment   = "companion to core-dat.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- This module provides a (multipass) container for arbitrary data. It replaces the
+-- twopass data mechanism.
+
+local tonumber = tonumber
+
+local context           = context
+local ctx_latelua       = context.latelua
+
+local trace_pagestates  = false  trackers.register("job.pagestates", function(v) trace_pagestates = v end)
+
+local report_pagestate  = logs.reporter("pagestate")
+
+local allocate          = utilities.storage.allocate
+
+local texgetcount       = tex.getcount
+local texsetcount       = tex.setcount
+
+local new_latelua       = nodes.pool.latelua
+
+local implement         = interfaces.implement
+local getnamespace      = interfaces.getnamespace
+
+local c_realpageno      = tex.iscount("realpageno")
+local c_realpagestateno = tex.iscount("realpagestateno")
+
+local collected = allocate()
+local tobesaved = allocate()
+
+local pagestates = {
+    collected = collected,
+    tobesaved = tobesaved,
+}
+
+job.pagestates = pagestates
+
+local function initializer()
+    collected = pagestates.collected
+    tobesaved = pagestates.tobesaved
+end
+
+job.register("job.pagestates.collected", tobesaved, initializer, nil)
+
+table.setmetatableindex(tobesaved, "table")
+
+local function setstate(settings)
+    local name = settings.name
+    local tag  = settings.tag
+    local list = tobesaved[name]
+    if not tag then
+        tag = #list + 1
+    else
+        tag = tonumber(tag) or tag -- autonumber saves keys
+    end
+    local realpage = texgetcount(c_realpageno)
+    local data = realpage
+    list[tag] = data
+    if trace_pagestates then
+        report_pagestate("action %a, name %a, tag %a, preset %a","set",name,tag,realpage)
+    end
+    return name, tag, data
+end
+
+local function extend(name,tag)
+    local realpage = texgetcount(c_realpageno)
+    if trace_pagestates then
+        report_pagestate("action %a, name %a, tag %a, preset %a","synchronize",name,tag,realpage)
+    end
+    tobesaved[name][tag] = realpage
+end
+
+local function realpage(name,tag,default)
+    local t = collected[name]
+    if t then
+        t = t[tag] or t[tonumber(tag)]
+        if t then
+            return tonumber(t or default)
+        elseif trace_pagestates then
+            report_pagestate("error: unknown dataset, name %a, tag %a",name,tag)
+        end
+    elseif trace_pagestates then
+        report_pagestate("error: unknown dataset, name %a, tag %a",name) -- nil
+    end
+    return default
+end
+
+local function realpageorder(name,tag)
+    local t = collected[name]
+    if t then
+        local p = t[tag]
+        if p then
+            local n = 1
+            for i=tag-1,1,-1 do
+                if t[i] == p then
+                    n = n  +1
+                end
+            end
+            return n
+        end
+    end
+    return 0
+end
+
+pagestates.setstate      = setstate
+pagestates.extend        = extend
+pagestates.realpage      = realpage
+pagestates.realpageorder = realpageorder
+
+function pagestates.countervalue(name)
+    return name and texgetcount(getnamespace("pagestatecounter") .. name) or 0
+end
+
+local function setpagestate(settings)
+    local name, tag = setstate(settings)
+ -- context(new_latelua(function() extend(name,tag) end))
+    ctx_latelua(function() extend(name,tag) end)
+end
+
+local function setpagestaterealpageno(name,tag)
+    local t = collected[name]
+    t = t and (t[tag] or t[tonumber(tag)])
+    texsetcount("realpagestateno",t or texgetcount(c_realpageno))
+end
+
+implement {
+    name      = "setpagestate",
+    actions   = setpagestate,
+    arguments = {
+        {
+            { "name" },
+            { "tag" },
+            { "delay" },
+        }
+    }
+}
+
+implement {
+    name      = "pagestaterealpage",
+    actions   = { realpage, context },
+    arguments = "2 strings",
+}
+
+implement {
+    name      = "setpagestaterealpageno",
+    actions   = setpagestaterealpageno,
+    arguments = "2 strings",
+}
+
+implement {
+    name      = "pagestaterealpageorder",
+    actions   = { realpageorder, context },
+    arguments = { "string", "integer" }
+}

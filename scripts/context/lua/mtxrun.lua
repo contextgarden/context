@@ -5136,7 +5136,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 18893, stripped down to: 11170
+-- original size: 19139, stripped down to: 11345
 
 if not modules then modules={} end modules ['l-dir']={
  version=1.001,
@@ -5154,7 +5154,7 @@ dir=dir or {}
 local dir=dir
 local lfs=lfs
 local attributes=lfs.attributes
-local walkdir=lfs.dir
+local scandir=lfs.dir
 local isdir=lfs.isdir  
 local isfile=lfs.isfile 
 local currentdir=lfs.currentdir
@@ -5185,6 +5185,15 @@ else
  lfs.isdir=isdir
  lfs.isfile=isfile
 end
+local isreadable=file.isreadable
+local walkdir=function(p,...)
+ if isreadable(p.."/.") then
+  return scandir(p,...)
+ else
+  return function() end
+ end
+end
+lfs.walkdir=walkdir
 function dir.current()
  return (gsub(currentdir(),"\\","/"))
 end
@@ -9942,7 +9951,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fmt"] = package.loaded["util-fmt"] or true
 
--- original size: 2541, stripped down to: 1624
+-- original size: 3379, stripped down to: 2273
 
 if not modules then modules={} end modules ['util-fmt']={
  version=1.001,
@@ -9955,19 +9964,21 @@ utilities=utilities or {}
 utilities.formatters=utilities.formatters or {}
 local formatters=utilities.formatters
 local concat,format=table.concat,string.format
-local tostring,type=tostring,type
+local tostring,type,unpack=tostring,type,unpack
 local strip=string.strip
 local lpegmatch=lpeg.match
 local stripper=lpeg.patterns.stripzeros
 function formatters.stripzeros(str)
  return lpegmatch(stripper,str)
 end
-function formatters.formatcolumns(result,between)
+function formatters.formatcolumns(result,between,header)
  if result and #result>0 then
-  between=between or "   "
-  local widths,numbers={},{}
+  local widths={}
+  local numbers={}
+  local templates={}
   local first=result[1]
   local n=#first
+     between=between or "   "
   for i=1,n do
    widths[i]=0
   end
@@ -9989,31 +10000,61 @@ function formatters.formatcolumns(result,between)
     end
    end
   end
+  if header then
+   for i=1,#header do
+    local h=header[i]
+    for j=1,n do
+     local hj=tostring(h[j])
+     h[j]=hj
+     local w=#hj
+     if w>widths[j] then
+      widths[j]=w
+     end
+    end
+   end
+  end
   for i=1,n do
    local w=widths[i]
    if numbers[i] then
     if w>80 then
-     widths[i]="%s"..between
-     else
-     widths[i]="%0"..w.."i"..between
+     templates[i]="%s"..between
+    else
+     templates[i]="% "..w.."i"..between
     end
    else
     if w>80 then
-     widths[i]="%s"..between
-     elseif w>0 then
-     widths[i]="%-"..w.."s"..between
+     templates[i]="%s"..between
+    elseif w>0 then
+     templates[i]="%-"..w.."s"..between
     else
-     widths[i]="%s"
+     templates[i]="%s"
     end
    end
   end
-  local template=strip(concat(widths))
+  local template=strip(concat(templates))
   for i=1,#result do
    local str=format(template,unpack(result[i]))
    result[i]=strip(str)
   end
+  if header then
+   for i=1,n do
+    local w=widths[i]
+    if w>80 then
+     templates[i]="%s"..between
+    elseif w>0 then
+     templates[i]="%-"..w.."s"..between
+    else
+     templates[i]="%s"
+    end
+   end
+   local template=strip(concat(templates))
+   for i=1,#header do
+    local str=format(template,unpack(header[i]))
+    header[i]=strip(str)
+   end
+  end
  end
- return result
+ return result,header
 end
 
 
@@ -16397,7 +16438,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 62810, stripped down to: 36225
+-- original size: 62221, stripped down to: 36225
 
 if not modules then modules={} end modules ['lxml-tab']={
  version=1.001,
@@ -17878,7 +17919,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 54733, stripped down to: 31258
+-- original size: 54589, stripped down to: 31258
 
 if not modules then modules={} end modules ['lxml-lpt']={
  version=1.001,
@@ -19129,7 +19170,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-mis"] = package.loaded["lxml-mis"] or true
 
--- original size: 3574, stripped down to: 1808
+-- original size: 3542, stripped down to: 1808
 
 if not modules then modules={} end modules ['lxml-mis']={
  version=1.001,
@@ -19198,7 +19239,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 34661, stripped down to: 21511
+-- original size: 34522, stripped down to: 21511
 
 if not modules then modules={} end modules ['lxml-aux']={
  version=1.001,
@@ -21705,7 +21746,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 16456, stripped down to: 11636
+-- original size: 16433, stripped down to: 11636
 
 if not modules then modules={} end modules ['data-tmp']={
  version=1.100,
@@ -22240,7 +22281,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 69576, stripped down to: 44470
+-- original size: 70711, stripped down to: 44839
 
 if not modules then modules={} end modules ['data-res']={
  version=1.001,
@@ -22308,13 +22349,15 @@ local criticalvars={
 if environment.default_texmfcnf then
  resolvers.luacnfspec="home:texmf/web2c;"..environment.default_texmfcnf 
 else
- resolvers.luacnfspec=concat ({
-  "home:texmf/web2c",
-  "selfautoparent:/texmf-local/web2c",
-  "selfautoparent:/texmf-context/web2c",
-  "selfautoparent:/texmf-dist/web2c",
-  "selfautoparent:/texmf/web2c",
- },";")
+ local texroot=environment.texroot
+ resolvers.luacnfspec="home:texmf/web2c;selfautoparent:/texmf-local/web2c;selfautoparent:/texmf-context/web2c;selfautoparent:/texmf/web2c"
+ if texroot and isdir(texroot.."/texmf-context") then
+ elseif texroot and isdir(texroot.."/texmf-dist") then
+  resolvers.luacnfspec="home:texmf/web2c;selfautoparent:/texmf-local/web2c;selfautoparent:/texmf-dist/web2c;selfautoparent:/texmf/web2c"
+ elseif ostype~="windows" and isdir("/etc/texmf/web2c") then
+  resolvers.luacnfspec="home:texmf/web2c;/etc/texmf/web2c;selfautodir:/share/texmf/web2c"
+ else
+ end
 end
 local unset_variable="unset"
 local formats=resolvers.formats
@@ -24249,7 +24292,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-con"] = package.loaded["data-con"] or true
 
--- original size: 5487, stripped down to: 3757
+-- original size: 5477, stripped down to: 3757
 
 if not modules then modules={} end modules ['data-con']={
  version=1.100,
@@ -24467,7 +24510,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-zip"] = package.loaded["data-zip"] or true
 
--- original size: 10805, stripped down to: 7951
+-- original size: 10789, stripped down to: 7951
 
 if not modules then modules={} end modules ['data-zip']={
  version=1.001,
@@ -26095,8 +26138,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1035917
--- stripped bytes    : 408296
+-- original bytes    : 1037183
+-- stripped bytes    : 408369
 
 -- end library merge
 

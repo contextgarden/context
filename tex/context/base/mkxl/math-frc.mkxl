@@ -104,6 +104,14 @@
    \c!vfactor=\plusthousand,
    \c!rule=\v!auto]
 
+%D We now default to nice bars:
+
+\integerdef\fractionbarextenderuc \privatecharactercode{fraction bar extender}
+
+\setupmathfractions
+  [\c!rule=\v!symbol,
+   \c!middle=\fractionbarextenderuc]
+
 \appendtoks
     \instance\frozen\protected\edefcsname\currentmathfraction\endcsname{\math_frac{\currentmathfraction}}%
 \to \everydefinemathfraction

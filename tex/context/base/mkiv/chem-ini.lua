@@ -19,11 +19,9 @@ local cpatterns = patterns.context
 chemistry       = chemistry or { }
 local chemistry = chemistry
 
---[[
-<p>The next code started out as adaptation of code from Wolfgang Schuster as
-posted on the mailing list. The current version supports nested braces and
-unbraced integers as scripts.</p>
-]]--
+-- The next code started out as adaptation of code from Wolfgang Schuster as posted
+-- on the mailing list. The current version supports nested braces and unbraced
+-- integers as scripts.
 
 local moleculeparser     = cpatterns.scripted
 chemistry.moleculeparser = moleculeparser

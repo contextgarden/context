@@ -12,14 +12,10 @@ local trace_locating = false  trackers.register("resolvers.locating", function(v
 
 local report_tar = logs.reporter("resolvers","tar")
 
---[[ldx--
-<p>We use a url syntax for accessing the tar file itself and file in it:</p>
-
-<typing>
-tar:///oeps.tar?name=bla/bla.tex
-tar:///oeps.tar?tree=tex/texmf-local
-</typing>
---ldx]]--
+-- We use a url syntax for accessing the tar file itself and file in it:
+--
+--   tar:///oeps.tar?name=bla/bla.tex
+--   tar:///oeps.tar?tree=tex/texmf-local
 
 local resolvers    = resolvers
 local findfile     = resolvers.findfile

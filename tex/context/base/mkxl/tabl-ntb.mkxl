@@ -1634,13 +1634,22 @@
 
 % enabled per 2018-02-22
 
-\def\tabl_ntb_table_get_max_width_step
-  {\advanceby\scratchdimen\tabl_ntb_get_wid\fastloopindex
-   \advanceby\scratchdimen\tabl_ntb_get_dis\fastloopindex}
+% \def\tabl_ntb_table_get_max_width_step
+%   {\advanceby\scratchdimen\tabl_ntb_get_wid\fastloopindex
+%    \advanceby\scratchdimen\tabl_ntb_get_dis\fastloopindex}
+%
+% \def\tabl_ntb_table_get_max_width
+%   {\scratchdimen\zeropoint
+%    \dofastloopcs\c_tabl_ntb_maximum_col\tabl_ntb_table_get_max_width_step
+%    \ifdim\scratchdimen<\wd\scratchbox\relax
+%      \scratchdimen\wd\scratchbox\relax
+%    \fi}
 
 \def\tabl_ntb_table_get_max_width
   {\scratchdimen\zeropoint
-   \dofastloopcs\c_tabl_ntb_maximum_col\tabl_ntb_table_get_max_width_step
+   \localcontrolledloop\zerocount\c_tabl_ntb_maximum_col\plusone
+     {\advanceby\scratchdimen\tabl_ntb_get_wid\currentloopiterator
+      \advanceby\scratchdimen\tabl_ntb_get_dis\currentloopiterator}%
    \ifdim\scratchdimen<\wd\scratchbox\relax
      \scratchdimen\wd\scratchbox\relax
    \fi}

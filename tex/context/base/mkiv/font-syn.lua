@@ -56,10 +56,8 @@ local trace_rejections     = false  trackers.register("fonts.rejections",     fu
 
 local report_names         = logs.reporter("fonts","names")
 
---[[ldx--
-<p>This module implements a name to filename resolver. Names are resolved
-using a table that has keys filtered from the font related files.</p>
---ldx]]--
+-- This module implements a name to filename resolver. Names are resolved using a
+-- table that has keys filtered from the font related files.
 
 fonts                      = fonts or { } -- also used elsewhere
 
@@ -87,10 +85,6 @@ local autoreload           = true
 
 directives.register("fonts.autoreload",     function(v) autoreload     = toboolean(v) end)
 directives.register("fonts.usesystemfonts", function(v) usesystemfonts = toboolean(v) end)
-
---[[ldx--
-<p>A few helpers.</p>
---ldx]]--
 
 -- -- what to do with these -- --
 --
@@ -305,10 +299,8 @@ local function analyzespec(somename)
     end
 end
 
---[[ldx--
-<p>It would make sense to implement the filters in the related modules,
-but to keep the overview, we define them here.</p>
---ldx]]--
+-- It would make sense to implement the filters in the related modules, but to keep
+-- the overview, we define them here.
 
 filters.afm = fonts.handlers.afm.readers.getinfo
 filters.otf = fonts.handlers.otf.readers.getinfo
@@ -412,11 +404,9 @@ filters.ttc = filters.otf
 --     end
 -- end
 
---[[ldx--
-<p>The scanner loops over the filters using the information stored in
-the file databases. Watch how we check not only for the names, but also
-for combination with the weight of a font.</p>
---ldx]]--
+-- The scanner loops over the filters using the information stored in the file
+-- databases. Watch how we check not only for the names, but also for combination
+-- with the weight of a font.
 
 filters.list = {
     "otf", "ttf", "ttc", "afm", -- no longer dfont support (for now)
@@ -1402,11 +1392,8 @@ local function is_reloaded()
     end
 end
 
---[[ldx--
-<p>The resolver also checks if the cached names are loaded. Being clever
-here is for testing purposes only (it deals with names prefixed by an
-encoding name).</p>
---ldx]]--
+-- The resolver also checks if the cached names are loaded. Being clever here is for
+-- testing purposes only (it deals with names prefixed by an encoding name).
 
 local function fuzzy(mapping,sorted,name,sub) -- no need for reverse sorted here
     local condensed = gsub(name,"[^%a%d]","")

@@ -145,6 +145,13 @@ return {
                     tweak = "addrules",
                 },
                 {
+                    tweak    = "replacerules",
+                 -- minus    = true, -- we have an extensible
+                    fraction = { height = .254, yoffset = .746 },
+                    radical  = { height = .254, yoffset = .746, yscale = .912 },
+                    stacker  = { height = .254, yoffset = .746 },
+                },
+                {
                     tweak = "wipecues",
                 },
                 {

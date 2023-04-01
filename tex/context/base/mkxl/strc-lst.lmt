@@ -1571,7 +1571,7 @@ end
 
 function lists.integrate(utilitydata)
     local filename = utilitydata.comment.file
-    if filename then
+    if filename and filename ~= environment.jobname then
         local structures = utilitydata.structures
         if structures then
             local lists = structures.lists.collected or { }

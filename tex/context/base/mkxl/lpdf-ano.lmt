@@ -725,6 +725,7 @@ lpdf.action = pdfaction
 
 function codeinjections.prerollreference(actions) -- share can become option
     if actions then
+-- inspect(actions)
         local main, n = pdfaction(actions)
         if main then
             local bs, bc = pdfborder()

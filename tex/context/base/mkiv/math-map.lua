@@ -7,31 +7,13 @@ if not modules then modules = { } end modules ['math-map'] = {
     license   = "see context related readme files"
 }
 
--- todo: make sparse .. if self
-
---[[ldx--
-<p>Remapping mathematics alphabets.</p>
---ldx]]--
-
--- oldstyle: not really mathematics but happened to be part of
--- the mathematics fonts in cmr
---
--- persian: we will also provide mappers for other
--- scripts
-
--- todo: alphabets namespace
--- maybe: script/scriptscript dynamic,
-
--- superscripped primes get unscripted !
-
--- to be looked into once the fonts are ready (will become font
--- goodie):
---
--- (U+2202,U+1D715) : upright
--- (U+2202,U+1D715) : italic
--- (U+2202,U+1D715) : upright
---
--- plus add them to the regular vectors below so that they honor \it etc
+-- persian: we will also provide mappers for other scripts
+-- todo   : alphabets namespace
+-- maybe  : script/scriptscript dynamic,
+-- check  : (U+2202,U+1D715) : upright
+--          (U+2202,U+1D715) : italic
+--          (U+2202,U+1D715) : upright
+--          add them to the regular vectors below so that they honor \it etc
 
 local type, next = type, next
 local merged, sortedhash = table.merged, table.sortedhash

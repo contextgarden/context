@@ -36,20 +36,16 @@ local trace_defining        = false  trackers.register("characters.defining", fu
 
 local report_defining       = logs.reporter("characters")
 
---[[ldx--
-<p>This module implements some methods and creates additional datastructured
-from the big character table that we use for all kind of purposes:
-<type>char-def.lua</type>.</p>
-
-<p>We assume that at this point <type>characters.data</type> is already
-loaded!</p>
---ldx]]--
-
+-- This module implements some methods and creates additional datastructured from
+-- the big character table that we use for all kind of purposes: 'char-def.lua'.
+--
+-- We assume that at this point 'characters.data' is already populated!
+--
 -- todo: in 'char-def.lua' assume defaults:
 --
--- directions = l
--- cjkwd      = a
--- linebreak  = al
+--   directions = l
+--   cjkwd      = a
+--   linebreak  = al
 
 characters       = characters or { }
 local characters = characters
@@ -62,9 +58,7 @@ else
     os.exit()
 end
 
---[[ldx--
-Extending the table.
---ldx]]--
+-- Extending the table.
 
 if context and CONTEXTLMTXMODE == 0 then
 
@@ -84,9 +78,7 @@ if context and CONTEXTLMTXMODE == 0 then
 
 end
 
---[[ldx--
-<p>This converts a string (if given) into a number.</p>
---ldx]]--
+-- This converts a string (if given) into a number.
 
 local pattern = (P("0x") + P("U+")) * ((R("09","AF")^1 * P(-1)) / function(s) return tonumber(s,16) end)
 
@@ -957,10 +949,8 @@ characters.bidi = allocate {
     on  = "Other Neutrals",
 }
 
---[[ldx--
-<p>At this point we assume that the big data table is loaded. From this
-table we derive a few more.</p>
---ldx]]--
+-- At this point we assume that the big data table is loaded. From this table we
+-- derive a few more.
 
 if not characters.fallbacks then
 
@@ -1037,10 +1027,8 @@ setmetatableindex(characters.textclasses,function(t,k)
     return false
 end)
 
---[[ldx--
-<p>Next comes a whole series of helper methods. These are (will be) part
-of the official <l n='api'/>.</p>
---ldx]]--
+-- Next comes a whole series of helper methods. These are (will be) part of the
+-- official API.
 
 -- we could make them virtual: characters.contextnames[n]
 
@@ -1433,9 +1421,7 @@ function characters.lettered(str,spacing)
     return concat(new)
 end
 
---[[ldx--
-<p>Requesting lower and uppercase codes:</p>
---ldx]]--
+-- Requesting lower and uppercase codes:
 
 function characters.uccode(n) return uccodes[n] end -- obsolete
 function characters.lccode(n) return lccodes[n] end -- obsolete

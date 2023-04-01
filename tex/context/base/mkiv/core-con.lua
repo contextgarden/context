@@ -8,13 +8,9 @@ if not modules then modules = { } end modules ['core-con'] = {
 
 -- todo: split into lang-con.lua and core-con.lua
 
---[[ldx--
-<p>This module implements a bunch of conversions. Some are more
-efficient than their <l n='tex'/> counterpart, some are even
-slower but look nicer this way.</p>
-
-<p>Some code may move to a module in the language namespace.</p>
---ldx]]--
+-- This module implements a bunch of conversions. Some are more efficient than their
+-- TeX counterpart, some are even slower but look nicer this way. Some code may move
+-- to a module in the language namespace.
 
 local floor = math.floor
 local osdate, ostime, ostimezone = os.date, os.time, os.timezone

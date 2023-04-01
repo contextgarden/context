@@ -17,13 +17,10 @@ local P, S, R, C, V, Cc, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, l
 lpegpatterns.xml  = lpegpatterns.xml or { }
 local xmlpatterns = lpegpatterns.xml
 
---[[ldx--
-<p>The following helper functions best belong to the <t>lxml-ini</t>
-module. Some are here because we need then in the <t>mk</t>
-document and other manuals, others came up when playing with
-this module. Since this module is also used in <l n='mtxrun'/> we've
-put them here instead of loading mode modules there then needed.</p>
---ldx]]--
+-- The following helper functions best belong to the 'lxml-ini' module. Some are
+-- here because we need then in the 'mk' document and other manuals, others came up
+-- when playing with this module. Since this module is also used in 'mtxrun' we've
+-- put them here instead of loading mode modules there then needed.
 
 local function xmlgsub(t,old,new) -- will be replaced
     local dt = t.dt

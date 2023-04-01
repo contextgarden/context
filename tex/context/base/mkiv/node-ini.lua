@@ -6,50 +6,38 @@ if not modules then modules = { } end modules ['node-ini'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>Most of the code that had accumulated here is now separated in modules.</p>
---ldx]]--
-
--- I need to clean up this module as it's a bit of a mess now. The latest luatex
--- has most tables but we have a few more in luametatex. Also, some are different
--- between these engines. We started out with hardcoded tables, that then ended
--- up as comments and are now gone (as they differ per engine anyway).
+-- Most of the code that had accumulated here is now separated in modules.
 
 local next, type, tostring = next, type, tostring
 local gsub = string.gsub
 local concat, remove = table.concat, table.remove
 local sortedhash, sortedkeys, swapped = table.sortedhash, table.sortedkeys, table.swapped
 
---[[ldx--
-<p>Access to nodes is what gives <l n='luatex'/> its power. Here we implement a
-few helper functions. These functions are rather optimized.</p>
---ldx]]--
+-- Access to nodes is what gives LuaTeX its power. Here we implement a few helper
+-- functions. These functions are rather optimized.
+--
+-- When manipulating node lists in ConTeXt, we will remove nodes and insert new
+-- ones. While node access was implemented, we did quite some experiments in order
+-- to find out if manipulating nodes in Lua was feasible from the perspective of
+-- performance.
+--
+-- First of all, we noticed that the bottleneck is more with excessive callbacks
+-- (some gets called very often) and the conversion from and to TeX's
+-- datastructures. However, at the Lua end, we found that inserting and deleting
+-- nodes in a table could become a bottleneck.
+--
+-- This resulted in two special situations in passing nodes back to TeX: a table
+-- entry with value 'false' is ignored, and when instead of a table 'true' is
+-- returned, the original table is used.
+--
+-- Insertion is handled (at least in ConTeXt as follows. When we need to insert a
+-- node at a certain position, we change the node at that position by a dummy node,
+-- tagged 'inline' which itself has_attribute the original node and one or more new
+-- nodes. Before we pass back the list we collapse the list. Of course collapsing
+-- could be built into the TeX engine, but this is a not so natural extension.
 
---[[ldx--
-<p>When manipulating node lists in <l n='context'/>, we will remove nodes and
-insert new ones. While node access was implemented, we did quite some experiments
-in order to find out if manipulating nodes in <l n='lua'/> was feasible from the
-perspective of performance.</p>
-
-<p>First of all, we noticed that the bottleneck is more with excessive callbacks
-(some gets called very often) and the conversion from and to <l n='tex'/>'s
-datastructures. However, at the <l n='lua'/> end, we found that inserting and
-deleting nodes in a table could become a bottleneck.</p>
-
-<p>This resulted in two special situations in passing nodes back to <l n='tex'/>:
-a table entry with value <type>false</type> is ignored, and when instead of a
-table <type>true</type> is returned, the original table is used.</p>
-
-<p>Insertion is handled (at least in <l n='context'/> as follows. When we need to
-insert a node at a certain position, we change the node at that position by a
-dummy node, tagged <type>inline</type> which itself has_attribute the original
-node and one or more new nodes. Before we pass back the list we collapse the
-list. Of course collapsing could be built into the <l n='tex'/> engine, but this
-is a not so natural extension.</p>
-
-<p>When we collapse (something that we only do when really needed), we also
-ignore the empty nodes. [This is obsolete!]</p>
---ldx]]--
+-- When we collapse (something that we only do when really needed), we also ignore
+-- the empty nodes. [This is obsolete!]
 
 -- local gf = node.direct.getfield
 -- local n = table.setmetatableindex("number")

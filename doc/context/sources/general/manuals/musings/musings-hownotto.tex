@@ -1,0 +1,76 @@
+% language=us runpath=texruns:manuals/musings
+
+\startcomponent musings-hownotto
+
+\environment musings-style
+
+\startchapter[title={How not to install \CONTEXT}]
+
+\startalign[flushleft]
+
+Installing LuaMetaTeX can be a complex process that requires some technical
+expertise, but the following steps should give you a general idea of what is
+involved:
+
+\startitemize[n]
+
+\startitem
+    First, you need to ensure that you have a recent version of the Lua
+    programming language installed on your system. You can download the latest
+    version of Lua from the official website at http://www.lua.org/download.html.
+    \footnote {The \LUA\ code needed is part of the source tree that can be
+    downloaded from GitHub or websites.}
+\stopitem
+
+\startitem
+    Next, you need to download the latest version of the MetaTeX distribution,
+    which includes the LuaMetaTeX engine, from the official ConTeXt Garden
+    website at https://wiki.contextgarden.net/ConTeXt_Standalone. \footnote
+    {There is no \METATEX, although we sometimes joke about it.}
+\stopitem
+
+\startitem
+    Once you have downloaded the MetaTeX distribution, extract the files to a
+    directory on your system. \footnote {So here one is stuck.}
+\stopitem
+
+\startitem
+    You can then run the LuaMetaTeX engine by opening a command prompt or
+    terminal window and navigating to the directory where you extracted the
+    MetaTeX files. From there, you can run the command "luametatex" followed by
+    the name of the TeX file you want to process. \footnote {Shouldn't it be
+    compiled first? And even then it needs some format, so one needs \type
+    {context} and \type {mtxrun}.}
+\stopitem
+
+\startitem
+    To make it easier to use LuaMetaTeX with your favorite text editor, you may
+    also want to install a TeX distribution such as TeX Live or MiKTeX, which
+    includes support for LuaMetaTeX. These distributions typically include a
+    graphical user interface that makes it easier to manage your TeX installation
+    and configure your system for use with LuaMetaTeX. \footnote {Indeed
+    installing \TEXLIVE\ is easier, as is installing the smaller reference
+    installation which uses \LUAMETATEX\ as its own installer. As far as we know,
+    \MIKTEX\ doesn't include \LMTX. And yes, consulting the documentation might
+    be best.}
+\stopitem
+
+\stopitemize
+
+It's worth noting that the exact steps for installing LuaMetaTeX may vary
+depending on your operating system and the specific TeX distribution you are
+using. For more detailed instructions, you may want to consult the official
+documentation for LuaMetaTeX and the TeX distribution you are using. \footnote
+{So here is the way out of the proposed mess.}
+
+\start \blank
+\bf by ChatGPT
+\footnote {Queried by Mikael Sundqvist.}
+\footnote {Which (at least here) is more about well formed sentences than about
+verified content. We can only hope that new \TEX\ users are able to recognize
+a fake.}
+\stop
+
+\stopalign
+
+\stoptext

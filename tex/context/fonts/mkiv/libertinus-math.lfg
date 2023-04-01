@@ -139,6 +139,29 @@ return {
                     advance = 0.5,
                 },
                 {
+                    tweak    = "replacerules",
+                    minus    = {
+                        height      = .176,
+                        yoffset     = .825,
+                        leftoffset  = .065,
+                        rightoffset = .065,
+                    },
+                    fraction = {
+                        height  = .176,
+                        yoffset = .825,
+                    },
+                    radical  = {
+                        height     = .140,
+                        yoffset    = .800,
+                        leftoffset = .075,
+                        yscale     = .950,
+                    },
+                    stacker  = {
+                        height  = .176,
+                        yoffset = .825,
+                    },
+                },
+                {
                     tweak = "addactuarian",
                 },
                 {

@@ -16,7 +16,6 @@
 \unprotect
 
 \newif      \ifpagestatemismatch
-\newinteger \realpagestateno
 \newconstant\frozenpagestate
 
 \permanent\protected\def\dotrackpagestate#1#2%

@@ -1045,6 +1045,7 @@ function registers.use(tag,filename,class,prefix)
         filename = filename,
         data     = job.loadother(filename),
         prefix   = prefix or class,
+        label    = prefix or class,
     }
 end
 
@@ -1054,13 +1055,43 @@ implement {
     actions   = registers.use,
 }
 
+-- function registers.use(tag,specification)
+--     local class    = specification.class
+--     local filename = specification.filename
+--     local prefix   = specification.prefix or class
+--     local label    = specification.label  or prefix
+--     if class and filename then
+--         used[tag] = {
+--             class      = class,
+--             filename   = filename,
+--             data       = job.loadother(filename),
+--             prefix     = prefix,
+--             label      = label,
+--         }
+--     end
+-- end
+
+-- implement {
+--     name      = "useregister",
+--     actions   = registers.use,
+--     arguments = {
+--         "string",
+--         {
+--             { "filename" },
+--             { "class" },
+--             { "prefix" },
+--             { "label" },
+--         },
+--     }
+-- }
+
 implement {
-    name      = "registerprefix",
+    name      = "registerlabel",
     arguments = "string",
     actions   = function(tag)
         local u = used[tag]
         if u then
-            context(u.prefix)
+            context(u.label)
         end
     end
 }
@@ -1075,7 +1106,13 @@ local function analyzeregister(class,options)
         local list       = utilities.parsers.settings_to_array(class)
         local entries    = { }
         local nofentries = 0
-        local metadata   = false
+        local multiple   = false
+        for i=1,#list do
+            if used[list[i]] then
+                multiple = true
+                break
+            end
+        end
         for i=1,#list do
             local l = list[i]
             local u = used[l]
@@ -1089,9 +1126,14 @@ local function analyzeregister(class,options)
             end
             if d then
                 local e = d.entries
-                local u = u and { u.prefix } or nil
+--                 local u = u and { u.prefix } or nil
+local u = multiple and { string.formatters["%03i"](i) } or nil -- maybe prefix but then how about main
                 for i=1,#e do
                     local ei = e[i]
+if multiple and ei.metadata.kind == "see" then
+    -- skip see, can become an option
+else
+
                     nofentries = nofentries + 1
                     entries[nofentries] = ei
                     if u then
@@ -1099,6 +1141,7 @@ local function analyzeregister(class,options)
                         eil[#eil+1] = u
                         ei.external = l -- this is the (current) abstract tag, used for prefix
                     end
+end
                 end
                 if not metadata then
                     metadata = d.metadata
@@ -1107,9 +1150,11 @@ local function analyzeregister(class,options)
         end
         data = {
             metadata = metadata or { },
+            multiple = multiple,
             entries  = entries,
         }
         collected[class] = data
+        options.multiple = multiple
     end
     if data and data.entries then
         options = options or { }
@@ -1322,7 +1367,9 @@ function registers.flush(data,options,prefixspec,pagespec)
                  -- report_registers("invalid see entry in register %a, reference %a",entry.metadata.name,list[1][1])
                 end
             end
-            if entry.external then
+-- move up ?
+--             if entry.external then
+            if options.multiple or entry.external then
                 local list = entry.list
                 list[#list] = nil
             end
@@ -1741,7 +1788,7 @@ interfaces.implement {
 
 function registers.integrate(utilitydata)
     local filename = utilitydata.comment.file
-    if filename then
+    if filename and filename ~= environment.jobname then
         local structures = utilitydata.structures
         if structures then
             local registers = structures.registers.collected or { }

@@ -20,10 +20,9 @@ local implement  = interfaces.implement
 
 local formatters = string.formatters
 
---[[ldx--
-<p>For raw 8 bit characters, the offset is 0x110000 (bottom of plane 18) at
-the top of <l n='luatex'/>'s char range but outside the unicode range.</p>
---ldx]]--
+-- For raw 8 bit characters, the offset is 0x110000 (bottom of plane 18) at the top
+-- of LuaTeX's char range but outside the unicode range. This is no longer the case
+-- in LuaMetaTeX.
 
 function converters.hexstringtonumber(n) tonumber(n,16) end
 function converters.octstringtonumber(n) tonumber(n, 8) end

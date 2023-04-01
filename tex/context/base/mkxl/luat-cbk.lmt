@@ -12,20 +12,16 @@ local collectgarbage, type, next = collectgarbage, type, next
 local round = math.round
 local sortedhash, sortedkeys, tohash = table.sortedhash, table.sortedkeys, table.tohash
 
---[[ldx--
-<p>Callbacks are the real asset of <l n='luatex'/>. They permit you to hook
-your own code into the <l n='tex'/> engine. Here we implement a few handy
-auxiliary functions.</p>
---ldx]]--
+-- Callbacks are the real asset of LuaTeX. They permit you to hook your own code
+-- into the TeX engine. Here we implement a few handy auxiliary functions. Watch
+-- out, there are diferences between LuateX and LuaMetaTeX.
 
 callbacks       = callbacks or { }
 local callbacks = callbacks
 
---[[ldx--
-<p>When you (temporarily) want to install a callback function, and after a
-while wants to revert to the original one, you can use the following two
-functions. This only works for non-frozen ones.</p>
---ldx]]--
+-- When you (temporarily) want to install a callback function, and after a while
+-- wants to revert to the original one, you can use the following two functions.
+-- This only works for non-frozen ones.
 
 local trace_callbacks   = false  trackers.register("system.callbacks", function(v) trace_callbacks = v end)
 local trace_calls       = false  -- only used when analyzing performance and initializations
@@ -47,13 +43,12 @@ local list              = callbacks.list
 local permit_overloads  = false
 local block_overloads   = false
 
---[[ldx--
-<p>By now most callbacks are frozen and most provide a way to plug in your own code. For instance
-all node list handlers provide before/after namespaces and the file handling code can be extended
-by adding schemes and if needed I can add more hooks. So there is no real need to overload a core
-callback function. It might be ok for quick and dirty testing but anyway you're on your own if
-you permanently overload callback functions.</p>
---ldx]]--
+-- By now most callbacks are frozen and most provide a way to plug in your own code.
+-- For instance all node list handlers provide before/after namespaces and the file
+-- handling code can be extended by adding schemes and if needed I can add more
+-- hooks. So there is no real need to overload a core callback function. It might be
+-- ok for quick and dirty testing but anyway you're on your own if you permanently
+-- overload callback functions.
 
 -- This might become a configuration file only option when it gets abused too much.
 

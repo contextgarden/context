@@ -1,0 +1,225 @@
+if not modules then modules = { } end modules ['core-dat'] = {
+    version   = 1.001,
+    comment   = "companion to core-dat.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- This module provides a (multipass) container for arbitrary data. It replaces the
+-- twopass data mechanism.
+
+local tonumber, tostring, type = tonumber, tostring, type
+
+local context           = context
+
+local trace_datasets    = false  trackers.register("job.datasets" ,  function(v) trace_datasets   = v end)
+
+local report_dataset    = logs.reporter("dataset")
+
+local allocate          = utilities.storage.allocate
+local settings_to_hash  = utilities.parsers.settings_to_hash
+
+local texgetcount       = tex.getcount
+local texsetcount       = tex.setcount
+
+local v_yes             = interfaces.variables.yes
+
+local new_latelua       = nodes.pool.latelua
+
+local implement         = interfaces.implement
+
+local c_realpageno      = tex.iscount("realpageno")
+
+local collected = allocate()
+local tobesaved = allocate()
+
+local datasets = {
+    collected = collected,
+    tobesaved = tobesaved,
+}
+
+job.datasets = datasets
+
+local function initializer()
+    collected = datasets.collected
+    tobesaved = datasets.tobesaved
+end
+
+job.register('job.datasets.collected', tobesaved, initializer, nil)
+
+local sets = { }
+
+table.setmetatableindex(tobesaved, function(t,k)
+    local v = { }
+    t[k] = v
+    return v
+end)
+
+table.setmetatableindex(sets, function(t,k)
+    local v = {
+        index = 0,
+        order = 0,
+    }
+    t[k] = v
+    return v
+end)
+
+local function setdata(settings)
+    local name = settings.name
+    local tag  = settings.tag
+    local data = settings.data
+    local list = tobesaved[name]
+    if settings.convert and type(data) == "string" then
+        data = settings_to_hash(data)
+    end
+    if type(data) ~= "table" then
+        data = { data = data }
+    end
+    if not tag then
+        tag = #list + 1
+    else
+        tag = tonumber(tag) or tag -- autonumber saves keys
+    end
+    list[tag] = data
+    if settings.delay == v_yes then
+        local set = sets[name]
+        local index = set.index + 1
+        set.index = index
+        data.index = index
+        data.order = index
+        data.realpage = texgetcount(c_realpageno)
+        if trace_datasets then
+            report_dataset("action %a, name %a, tag %a, index %a","assign delayed",name,tag,index)
+        end
+    elseif trace_datasets then
+        report_dataset("action %a, name %a, tag %a","assign immediate",name,tag)
+    end
+    return name, tag, data
+end
+
+datasets.setdata = setdata
+
+function datasets.extend(name,tag)
+    if type(name) == "table" then
+        name, tag = name.name, name.tag
+    end
+    local set = sets[name]
+    local order = set.order + 1
+    local realpage = texgetcount(c_realpageno)
+    set.order = order
+    local t = tobesaved[name][tag]
+    t.realpage = realpage
+    t.order = order
+    if trace_datasets then
+        report_dataset("action %a, name %a, tag %a, page %a, index %a","flush by order",name,tag,t.index or 0,order,realpage)
+    end
+end
+
+function datasets.getdata(name,tag,key,default)
+    local t = collected[name]
+    if t == nil then
+        if trace_datasets then
+            report_dataset("error: unknown dataset, name %a",name)
+        end
+    elseif type(t) ~= "table" then
+        return t
+    else
+        t = t[tag] or t[tonumber(tag)]
+        if not t then
+            if trace_datasets then
+                report_dataset("error: unknown dataset, name %a, tag %a",name,tag)
+            end
+        elseif key then
+            return t[key] or default
+        else
+            return t
+        end
+    end
+    return default
+end
+
+local function setdataset(settings)
+    settings.convert = true
+    local name, tag = setdata(settings)
+    if settings.delay ~= v_yes then
+        --
+    else
+        context(new_latelua { action = job.datasets.extend, name = name, tag = tag })
+    end
+end
+
+local cache = table.setmetatableindex(function(t,k)
+    local v = table.load(k..".tuc")
+    if v then
+        v = v.job
+        if v then
+            v = v.datasets
+            if v then
+                v = v.collected
+            end
+        end
+    end
+    if not v then
+        v = { }
+        if trace_datasets then
+            report_dataset("error: unknown dataset job %a",k)
+        end
+    end
+    t[k] = v
+    return v
+end)
+
+local function datasetvariable(name,tag,key,cache)
+    local t = (cache or collected)[name]
+    if t == nil then
+        if trace_datasets then
+            report_dataset("error: unknown dataset, name %a, tag %a, not passed to tex",name) -- no tag
+        end
+    elseif type(t) ~= "table" then
+        context(tostring(t))
+    else
+        t = t and (t[tag] or t[tonumber(tag)])
+        if not t then
+            if trace_datasets then
+                report_dataset("error: unknown dataset, name %a, tag %a, not passed to tex",name,tag)
+            end
+        elseif type(t) == "table" then
+            local s = t[key]
+            if type(s) ~= "table" then
+                context(tostring(s))
+            elseif trace_datasets then
+                report_dataset("error: unknown dataset, name %a, tag %a, not passed to tex",name,tag)
+            end
+        end
+    end
+end
+
+local function datasetvariablefromjob(jobnname,name,tag,key)
+    datasetvariable(name,tag,key,cache[jobnname])
+end
+
+implement {
+    name      = "setdataset",
+    actions   = setdataset,
+    arguments = {
+        {
+            { "name" },
+            { "tag" },
+            { "delay" },
+            { "data" },
+        }
+    }
+}
+
+implement {
+    name      = "datasetvariable",
+    actions   = datasetvariable,
+    arguments = "3 strings",
+}
+
+implement {
+    name      = "datasetvariablefromjob",
+    arguments = { "string", "string", "string", "string" },
+    actions   = datasetvariablefromjob
+}

@@ -10,14 +10,10 @@ local next = next
 local byte, format = string.byte, string.format
 local setmetatableindex = table.setmetatableindex
 
---[[ldx--
-<p>We provide (at least here) two entity handlers. The more extensive
-resolver consults a hash first, tries to convert to <l n='utf'/> next,
-and finaly calls a handler when defines. When this all fails, the
-original entity is returned.</p>
-
-<p>We do things different now but it's still somewhat experimental</p>
---ldx]]--
+-- We provide (at least here) two entity handlers. The more extensive resolver
+-- consults a hash first, tries to convert to UTF next, and finaly calls a handler
+-- when defines. When this all fails, the original entity is returned. We do things
+-- different now but it's still somewhat experimental.
 
 local trace_entities = false  trackers.register("xml.entities", function(v) trace_entities = v end)
 

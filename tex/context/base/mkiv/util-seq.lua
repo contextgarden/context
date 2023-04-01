@@ -6,15 +6,13 @@ if not modules then modules = { } end modules ['util-seq'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>Here we implement a mechanism for chaining the special functions
-that we use in <l n="context"> to deal with mode list processing. We
-assume that namespaces for the functions are used, but for speed we
-use locals to refer to them when compiling the chain.</p>
---ldx]]--
-
+-- Here we implement a mechanism for chaining the special functions that we use in
+-- ConteXt to deal with mode list processing. We assume that namespaces for the
+-- functions are used, but for speed we use locals to refer to them when compiling
+-- the chain.
+--
 -- todo: delayed: i.e. we register them in the right order already but delay usage
-
+--
 -- todo: protect groups (as in tasks)
 
 local gsub, gmatch = string.gsub, string.gmatch

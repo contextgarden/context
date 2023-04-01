@@ -1,23 +1,25 @@
 include("source/libraries/mimalloc/cmake/mimalloc-config-version.cmake")
 
 set(mimalloc_sources
-
-    source/libraries/mimalloc/src/stats.c
-    source/libraries/mimalloc/src/random.c
-    source/libraries/mimalloc/src/os.c
-    source/libraries/mimalloc/src/bitmap.c
-    source/libraries/mimalloc/src/arena.c
- #  source/libraries/mimalloc/src/region.c
-    source/libraries/mimalloc/src/segment-cache.c
-    source/libraries/mimalloc/src/segment.c
-    source/libraries/mimalloc/src/page.c
     source/libraries/mimalloc/src/alloc.c
     source/libraries/mimalloc/src/alloc-aligned.c
     source/libraries/mimalloc/src/alloc-posix.c
+    source/libraries/mimalloc/src/arena.c
+    source/libraries/mimalloc/src/bitmap.c
     source/libraries/mimalloc/src/heap.c
-    source/libraries/mimalloc/src/options.c
     source/libraries/mimalloc/src/init.c
+    source/libraries/mimalloc/src/options.c
+    source/libraries/mimalloc/src/os.c
+    source/libraries/mimalloc/src/page.c
+    source/libraries/mimalloc/src/random.c
+    source/libraries/mimalloc/src/segment.c
+    source/libraries/mimalloc/src/segment-cache.c
+    source/libraries/mimalloc/src/stats.c
+    source/libraries/mimalloc/src/prim/prim.c
 )
+
+set(mi_cflags "")
+set(mi_libraries "")
 
 add_library(mimalloc STATIC ${mimalloc_sources})
 
@@ -27,6 +29,7 @@ add_library(mimalloc STATIC ${mimalloc_sources})
 target_include_directories(mimalloc PRIVATE
     source/libraries/mimalloc
     source/libraries/mimalloc/src
+    source/libraries/mimalloc/prim
     source/libraries/mimalloc/include
 )
 

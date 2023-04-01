@@ -755,6 +755,16 @@
 
 \immutable\dimensiondef\d_font_default_size 10pt
 
+%lettonothing\m_font_class_direction   % no longer used
+\lettonothing\m_font_class_features
+\lettonothing\m_font_class_fallbacks
+\lettonothing\m_font_class_goodies
+
+\lettonothing\m_font_direction
+\lettonothing\m_font_features
+\lettonothing\m_font_fallbacks
+\lettonothing\m_font_goodies
+
 \protected\def\font_helpers_low_level_define
   {\ifconditional\c_font_compact
      \expandafter\font_helpers_low_level_define_compact

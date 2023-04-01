@@ -12,20 +12,16 @@ local collectgarbage, type, next = collectgarbage, type, next
 local round = math.round
 local sortedhash, sortedkeys, tohash = table.sortedhash, table.sortedkeys, table.tohash
 
---[[ldx--
-<p>Callbacks are the real asset of <l n='luatex'/>. They permit you to hook
-your own code into the <l n='tex'/> engine. Here we implement a few handy
-auxiliary functions.</p>
---ldx]]--
+-- Callbacks are the real asset of LuaTeX. They permit you to hook your own code
+-- into the TeX engine. Here we implement a few handy auxiliary functions. Watch
+-- out, there are diferences between LuateX and LuaMetaTeX.
 
 callbacks       = callbacks or { }
 local callbacks = callbacks
 
---[[ldx--
-<p>When you (temporarily) want to install a callback function, and after a
-while wants to revert to the original one, you can use the following two
-functions. This only works for non-frozen ones.</p>
---ldx]]--
+-- When you (temporarily) want to install a callback function, and after a while
+-- wants to revert to the original one, you can use the following two functions.
+-- This only works for non-frozen ones.
 
 local trace_callbacks   = false  trackers.register("system.callbacks", function(v) trace_callbacks = v end)
 local trace_calls       = false  -- only used when analyzing performance and initializations
@@ -47,13 +43,12 @@ local list              = callbacks.list
 local permit_overloads  = false
 local block_overloads   = false
 
---[[ldx--
-<p>By now most callbacks are frozen and most provide a way to plug in your own code. For instance
-all node list handlers provide before/after namespaces and the file handling code can be extended
-by adding schemes and if needed I can add more hooks. So there is no real need to overload a core
-callback function. It might be ok for quick and dirty testing but anyway you're on your own if
-you permanently overload callback functions.</p>
---ldx]]--
+-- By now most callbacks are frozen and most provide a way to plug in your own code.
+-- For instance all node list handlers provide before/after namespaces and the file
+-- handling code can be extended by adding schemes and if needed I can add more
+-- hooks. So there is no real need to overload a core callback function. It might be
+-- ok for quick and dirty testing but anyway you're on your own if you permanently
+-- overload callback functions.
 
 -- This might become a configuration file only option when it gets abused too much.
 
@@ -279,65 +274,50 @@ end)
 -- callbacks.freeze("read_.*_file","reading file")
 -- callbacks.freeze("open_.*_file","opening file")
 
---[[ldx--
-<p>The simple case is to remove the callback:</p>
-
-<code>
-callbacks.push('linebreak_filter')
-... some actions ...
-callbacks.pop('linebreak_filter')
-</code>
-
-<p>Often, in such case, another callback or a macro call will pop
-the original.</p>
-
-<p>In practice one will install a new handler, like in:</p>
-
-<code>
-callbacks.push('linebreak_filter', function(...)
-    return something_done(...)
-end)
-</code>
-
-<p>Even more interesting is:</p>
-
-<code>
-callbacks.push('linebreak_filter', function(...)
-    callbacks.pop('linebreak_filter')
-    return something_done(...)
-end)
-</code>
-
-<p>This does a one-shot.</p>
---ldx]]--
-
---[[ldx--
-<p>Callbacks may result in <l n='lua'/> doing some hard work
-which takes time and above all resourses. Sometimes it makes
-sense to disable or tune the garbage collector in order to
-keep the use of resources acceptable.</p>
-
-<p>At some point in the development we did some tests with counting
-nodes (in this case 121049).</p>
-
-<table>
-<tr><td>setstepmul</td><td>seconds</td><td>megabytes</td></tr>
-<tr><td>200</td><td>24.0</td><td>80.5</td></tr>
-<tr><td>175</td><td>21.0</td><td>78.2</td></tr>
-<tr><td>150</td><td>22.0</td><td>74.6</td></tr>
-<tr><td>160</td><td>22.0</td><td>74.6</td></tr>
-<tr><td>165</td><td>21.0</td><td>77.6</td></tr>
-<tr><td>125</td><td>21.5</td><td>89.2</td></tr>
-<tr><td>100</td><td>21.5</td><td>88.4</td></tr>
-</table>
-
-<p>The following code is kind of experimental. In the documents
-that describe the development of <l n='luatex'/> we report
-on speed tests. One observation is that it sometimes helps to
-restart the collector. Okay, experimental code has been removed,
-because messing aroudn with the gc is too unpredictable.</p>
---ldx]]--
-
+-- The simple case is to remove the callback:
+--
+--   callbacks.push('linebreak_filter')
+--   ... some actions ...
+--   callbacks.pop('linebreak_filter')
+--
+-- Often, in such case, another callback or a macro call will pop the original.
+--
+-- In practice one will install a new handler, like in:
+--
+--   callbacks.push('linebreak_filter', function(...)
+--       return something_done(...)
+--   end)
+--
+-- Even more interesting is:
+--
+--  callbacks.push('linebreak_filter', function(...)
+--      callbacks.pop('linebreak_filter')
+--      return something_done(...)
+--  end)
+--
+-- This does a one-shot.
+--
+-- Callbacks may result in Lua doing some hard work which takes time and above all
+-- resourses. Sometimes it makes sense to disable or tune the garbage collector in
+-- order to keep the use of resources acceptable.
+--
+-- At some point in the development we did some tests with counting nodes (in this
+-- case 121049).
+--
+--   setstepmul  seconds  megabytes
+--      200       24.0      80.5
+--      175       21.0      78.2
+--      150       22.0      74.6
+--      160       22.0      74.6
+--      165       21.0      77.6
+--      125       21.5      89.2
+--      100       21.5      88.4
+--
+-- The following code is kind of experimental. In the documents that describe the
+-- development of LuaTeX we report on speed tests. One observation is that it
+-- sometimes helps to restart the collector. Okay, experimental code has been
+-- removed, because messing around with the gc is too unpredictable.
+--
 -- For the moment we keep this here and not in util-gbc.lua or so.
 
 utilities                  = utilities or { }

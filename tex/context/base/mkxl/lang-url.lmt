@@ -23,12 +23,10 @@ local v_after   = variables.after
 
 local is_letter = characters.is_letter
 
---[[
-<p>Hyphenating <l n='url'/>'s is somewhat tricky and a matter of taste. I did
-consider using a dedicated hyphenation pattern or dealing with it by node
-parsing, but the following solution suits as well. After all, we're mostly
-dealing with <l n='ascii'/> characters.</p>
-]]--
+-- Hyphenating URL's is somewhat tricky and a matter of taste. I did consider using
+-- a dedicated hyphenation pattern or dealing with it by node parsing, but the
+-- following solution suits as well. After all, we're mostly dealing with ASCII
+-- characters.
 
 local urls     = { }
 languages.urls = urls

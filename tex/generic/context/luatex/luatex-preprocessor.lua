@@ -6,11 +6,9 @@ if not modules then modules = { } end modules ['luatex-preprocessor'] = {
     license   = "see context related readme files"
 }
 
---[[ldx
-<p>This is a stripped down version of the preprocessor. In
-<l n='context'/> we have a bit more, use a different logger, and
-use a few optimizations. A few examples are shown at the end.</p>
---ldx]]
+-- This is a stripped down version of the preprocessor. In ConTeXt we have a bit
+-- more, use a different logger, and use a few optimizations. A few examples are
+-- shown at the end.
 
 local rep, sub, gmatch = string.rep, string.sub, string.gmatch
 local insert, remove = table.insert, table.remove
@@ -98,10 +96,6 @@ local parser = lpeg.Cs { "converter",
                 * (rightbrace + lpeg.Cmt(always,matcherror)),
     converter   = (lpeg.V("definition") + anything)^1,
 }
-
---[[ldx
-<p>We provide a few commands.</p>
---ldx]]
 
 -- local texkpse
 

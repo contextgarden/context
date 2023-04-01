@@ -337,15 +337,17 @@
 %D 0 while in rl mode 0 is a copy of 1. There is no real overhead involved in this.
 %D This also permits different font definitions for normal and mixed.
 
-\lettonothing\m_font_class_direction
-\lettonothing\m_font_class_features
-\lettonothing\m_font_class_fallbacks
-\lettonothing\m_font_class_goodies
-
-\lettonothing\m_font_direction
-\lettonothing\m_font_features
-\lettonothing\m_font_fallbacks
-\lettonothing\m_font_goodies
+% moved to ini
+%
+% \lettonothing\m_font_class_direction
+% \lettonothing\m_font_class_features
+% \lettonothing\m_font_class_fallbacks
+% \lettonothing\m_font_class_goodies
+%
+% \lettonothing\m_font_direction
+% \lettonothing\m_font_features
+% \lettonothing\m_font_fallbacks
+% \lettonothing\m_font_goodies
 
 \appendtoks
     \font_helpers_set_math_family\c_font_fam_mr\s!mr

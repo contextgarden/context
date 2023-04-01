@@ -6,11 +6,8 @@ if not modules then modules = { } end modules ['regi-ini'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>Regimes take care of converting the input characters into
-<l n='utf'/> sequences. The conversion tables are loaded at
-runtime.</p>
---ldx]]--
+-- Regimes take care of converting the input characters into UTF sequences. The
+-- conversion tables are loaded at runtime.
 
 local tostring = tostring
 local utfchar = utf.char

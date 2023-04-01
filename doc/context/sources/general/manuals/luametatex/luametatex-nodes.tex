@@ -1381,14 +1381,14 @@ The \type {traversechar} iterator loops over the \nod {glyph} nodes in a list.
 Only nodes with a subtype less than 256 are seen.
 
 \startfunctioncall
-<direct> n, font, char = node.direct.traversechar(<direct> n)
+<direct> n, char, font = node.direct.traversechar(<direct> n)
 \stopfunctioncall
 
 The \type{traverseglyph} iterator loops over a list and returns the list and
 filters all glyphs:
 
 \startfunctioncall
-<direct> n, font, char = node.traverseglyph(<direct> n)
+<direct> n, char, font = node.traverseglyph(<direct> n)
 \stopfunctioncall
 
 These functions are only available for direct nodes.

@@ -9,11 +9,6 @@ if not modules then modules = { } end modules ['node-res'] = {
 local type, next = type, next
 local gmatch, format = string.gmatch, string.format
 
---[[ldx--
-<p>The next function is not that much needed but in <l n='context'/> we use
-for debugging <l n='luatex'/> node management.</p>
---ldx]]--
-
 local nodes, node = nodes, node
 
 local report_nodes   = logs.reporter("nodes","housekeeping")

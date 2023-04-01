@@ -7,11 +7,6 @@ if not modules then modules = { } end modules ['font-nod'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>This is rather experimental. We need more control and some of this
-might become a runtime module instead. This module will be cleaned up!</p>
---ldx]]--
-
 local utfchar = utf.char
 local concat, fastcopy = table.concat, table.fastcopy
 local match, rep = string.match, string.rep

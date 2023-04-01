@@ -14,17 +14,13 @@ local trace_locating = false  trackers.register("resolvers.locating", function(v
 
 local report_zip = logs.reporter("resolvers","zip")
 
---[[ldx--
-<p>We use a url syntax for accessing the zip file itself and file in it:</p>
-
-<typing>
-zip:///oeps.zip?name=bla/bla.tex
-zip:///oeps.zip?tree=tex/texmf-local
-zip:///texmf.zip?tree=/tex/texmf
-zip:///texmf.zip?tree=/tex/texmf-local
-zip:///texmf-mine.zip?tree=/tex/texmf-projects
-</typing>
---ldx]]--
+-- We use a url syntax for accessing the zip file itself and file in it:
+--
+--   zip:///oeps.zip?name=bla/bla.tex
+--   zip:///oeps.zip?tree=tex/texmf-local
+--   zip:///texmf.zip?tree=/tex/texmf
+--   zip:///texmf.zip?tree=/tex/texmf-local
+--   zip:///texmf-mine.zip?tree=/tex/texmf-projects
 
 local resolvers    = resolvers
 local findfile     = resolvers.findfile

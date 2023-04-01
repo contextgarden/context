@@ -1946,7 +1946,7 @@ do
                     head, current = ruledkern(head,current,vertical)
                 end
             end
-            goto next;
+            goto next
             ::list::
             if id == hlist_code then
                 local content = getlist(current)

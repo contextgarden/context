@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['mtx-pdf'] = {
 local tonumber = tonumber
 local format, gmatch, gsub, match, find = string.format, string.gmatch, string.gsub, string.match, string.find
 local utfchar = utf.char
-local concat = table.concat
+local concat, insert, swapped = table.concat, table.insert, table.swapped
 local setmetatableindex, sortedhash, sortedkeys = table.setmetatableindex, table.sortedhash, table.sortedkeys
 
 local helpinfo = [[
@@ -28,6 +28,7 @@ local helpinfo = [[
     <flag name="pretty"><short>replace newlines in metadata</short></flag>
     <flag name="fonts"><short>show used fonts (<ref name="detail)"/></short></flag>
     <flag name="object"><short>show object"/></short></flag>
+    <flag name="linkjs"><short>show links"/></short></flag>
    </subcategory>
    <subcategory>
     <example><command>mtxrun --script pdf --info foo.pdf</command></example>
@@ -365,6 +366,110 @@ function scripts.pdf.object(filename,n)
     end
 end
 
+function scripts.pdf.links(filename,asked)
+    local pdffile = loadpdffile(filename)
+    if pdffile then
+
+        local pages    = pdffile.pages
+        local nofpages = pdffile.nofpages
+
+        if asked and (asked < 1 or asked > nofpages) then
+            report("")
+            report("no page %i, last page %i",asked,nofpages)
+            report("")
+            return
+        end
+
+        local reverse = swapped(pages)
+
+        local function show(pagenumber)
+            local page   = pages[pagenumber]
+            local annots = page.Annots
+            if annots then
+                report("")
+                report("annotations @ page %i",pagenumber)
+                report("")
+                for i=1,#annots do
+                    local annot = annots[i]
+                    if annot.Subtype == "Link" then
+                        local A = annot.A
+                        if A then
+                            local S = A.S
+                            local D = A.D
+                            if S == "GoTo" then
+                                if D then
+                                    local D1 = D[1]
+                                    local R1 = reverse[D1]
+                                    if tonumber(R1) then
+                                        report("intern, page % 4i",R1 or 0)
+                                    else
+                                        report("intern, name %s",tostring(D1))
+                                    end
+                                end
+                            elseif S == "GoToR" then
+                                if D then
+                                    local F = A.F
+                                    if F then
+                                        local D1 = D[1]
+                                        if tonumber(D1) then
+                                            report("extern, page % 4i, file %s",D1 + 1,F)
+                                        else
+                                            report("extern, page % 4i, file %s, name %s",0,F,D[1])
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        if asked then
+            show(asked)
+        else
+            for pagenumber=1,nofpages do
+                show(pagenumber)
+            end
+        end
+
+        local destinations = pdffile.destinations
+        if destinations then
+            if asked then
+                report("")
+                report("destinations to page %i",asked)
+                report("")
+                for k, v in sortedhash(destinations) do
+                    local D = v.D
+                    if D then
+                        local p = reverse[D[1]] or 0
+                        if p == asked then
+                            report(k)
+                        end
+                    end
+                end
+            else
+                report("")
+                report("destinations")
+                report("")
+                local list = setmetatableindex("table")
+                for k, v in sortedhash(destinations) do
+                    local D = v.D
+                    if D then
+                        local p = reverse[D[1]]
+                        report("tag %s, page % 4i",k,p)
+                        insert(list[p],k)
+                    end
+                end
+                for k, v in sortedhash(list) do
+                    report("")
+                    report("page %i, names % t",k,v)
+                end
+            end
+        end
+    end
+end
+
 -- scripts.pdf.info("e:/tmp/oeps.pdf")
 -- scripts.pdf.metadata("e:/tmp/oeps.pdf")
 -- scripts.pdf.fonts("e:/tmp/oeps.pdf")
@@ -382,6 +487,8 @@ elseif environment.argument("fonts") then
     scripts.pdf.fonts(filename)
 elseif environment.argument("object") then
     scripts.pdf.object(filename,tonumber(environment.argument("object")))
+elseif environment.argument("links") then
+    scripts.pdf.links(filename,tonumber(environment.argument("page")))
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),filename)
 else

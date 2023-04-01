@@ -12,11 +12,9 @@ local cleanfilename = fonts.names.cleanfilename
 local splitbase     = file.splitbase
 local lower         = string.lower
 
---[[ldx--
-<p>We provide a simple treatment mechanism (mostly because I want to demonstrate
-something in a manual). It's one of the few places where an lfg file gets loaded
-outside the goodies manager.</p>
---ldx]]--
+-- We provide a simple treatment mechanism (mostly because I want to demonstrate
+-- something in a manual). It's one of the few places where an lfg file gets loaded
+-- outside the goodies manager.
 
 local treatments       = fonts.treatments or { }
 fonts.treatments       = treatments

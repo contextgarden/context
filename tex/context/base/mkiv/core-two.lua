@@ -6,14 +6,13 @@ if not modules then modules = { } end modules ['core-two'] = {
     license   = "see context related readme files"
 }
 
+-- This is actually one of the oldest MkIV files and basically a port of MkII but
+-- the old usage has long be phased out. Also, the public part is now handled by
+-- datasets which makes this a more private store.
+
 local next = next
 local remove, concat = table.remove, table.concat
 local allocate = utilities.storage.allocate
-
---[[ldx--
-<p>We save multi-pass information in the main utility table. This is a
-bit of a mess because we support old and new methods.</p>
---ldx]]--
 
 local collected = allocate()
 local tobesaved = allocate()

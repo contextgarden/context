@@ -55,6 +55,10 @@ return {
                 local sfm = ps("flat rule middle piece")
                 local sfr = ps("flat rule right piece")
 
+                local mrl = ps("minus rule left piece")
+                local mrm = ps("minus rule middle piece")
+                local mrr = ps("minus rule right piece")
+
                 local dfl = ps("flat double rule left piece")
                 local dfm = ps("flat double rule middle piece")
                 local dfr = ps("flat double rule right piece")
@@ -66,6 +70,7 @@ return {
                 local dar = ps("double arrow right piece")
 
                 local rad = ps("radical bar extender")
+                local frc = ps("fraction bar extender")
 
                 local antykwa = characters[srm]
 
@@ -104,11 +109,13 @@ return {
                 builders.jointwo(main,0x27FA,dal,joinrelfactor,dar)
 
                 if antykwa then
-                    builders.horibar(main,0x203E,srm,srl,srr,0x02212) -- overbar underbar fraction (we take 90/91/92 too!)
-                 -- builders.horibar(main,0x203E,srm,srl,srr,0x0002D) -- overbar underbar fraction (we take 90/91/92 too!)
-                    builders.rootbar(main,rad,srm,srr,0x02212) -- radical
+                    builders.horibar(main,0x2212,mrm,mrl,mrr,0x2212,true,srm,srl,srr) -- minus
+                    builders.horibar(main,0x203E,srm,srl,srr,0x2212) -- overbar underbar fraction (we take 90/91/92 too!)
+                    builders.horibar(main,frc,srm,srl,srr,0x2212)    -- fraction
+                    builders.rootbar(main,rad,srm,srr,0x2212)        -- radical
                 else
-                    builders.horibar(main,0x203E,0xFE073) -- overbar underbar
+                    builders.horibar(main,0x2212,false,false,false,0x2212,true) -- minus
+                    builders.horibar(main,0x203E,false,false,false,0x02212)
                 end
 
                 local ffactor = antykwa and 1 or 1

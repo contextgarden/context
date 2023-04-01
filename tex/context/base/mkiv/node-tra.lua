@@ -6,10 +6,8 @@ if not modules then modules = { } end modules ['node-tra'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>This is rather experimental. We need more control and some of this
-might become a runtime module instead. This module will be cleaned up!</p>
---ldx]]--
+-- Some of the code here might become a runtime module instead. This old module will
+-- be cleaned up anyway!
 
 local next = next
 local utfchar = utf.char

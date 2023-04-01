@@ -578,6 +578,7 @@ typedef enum int_codes {
         compatible anyway. Lesson learned.
     */
     variable_family_code,
+    eu_factor_code,
     /* those below these are not interfaced via primitives */
     internal_par_state_code,
     internal_dir_state_code,
@@ -607,7 +608,7 @@ typedef enum int_codes {
 } int_codes;
 
 # define first_int_code pre_tolerance_code
-# define last_int_code  variable_family_code
+# define last_int_code  eu_factor_code
 
 typedef enum dimen_codes {
     par_indent_code,           /*tex indentation of paragraphs */
@@ -1372,6 +1373,7 @@ extern void tex_forced_word_define (int g, halfword p, singleword flag, halfword
 
 # define cur_fam_par                     count_parameter(family_code)
 # define variable_family_par             count_parameter(variable_family_code)
+# define eu_factor_par                   count_parameter(eu_factor_code)
 # define pre_display_direction_par       count_parameter(pre_display_direction_code)
 # define pre_display_penalty_par         count_parameter(pre_display_penalty_code)
 # define post_display_penalty_par        count_parameter(post_display_penalty_code)

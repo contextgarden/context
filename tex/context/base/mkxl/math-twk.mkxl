@@ -95,5 +95,12 @@
 \permanent\protected\def\minute{\iffontchar\font\textminute\textminute\else\mathminute\fi}
 \permanent\protected\def\second{\iffontchar\font\textsecond\textsecond\else\mathsecond\fi}
 
+% \startsetups[math:rules]
+%     \letmathfractionparameter\c!rule\v!symbol
+%     \setmathfractionparameter\c!middle{"203E}%
+%     \letmathradicalparameter \c!rule\v!symbol
+%     \setmathradicalparameter \c!top{\radicalbarextenderuc}%
+%     \setmathfenceparameter   \c!alternative{1}%
+% \stopsetups
 
 \protect

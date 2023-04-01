@@ -631,6 +631,31 @@ static void tex_aux_fake_delimiter(halfword result)
 }
 
 /*tex 
+    A few helpers: 
+*/
+
+inline static int tex_aux_has_delimiter(halfword delimiter, halfword size) 
+{
+    return (
+        delimiter && (
+            (tex_fam_fnt(delimiter_small_family(delimiter), size) && delimiter_small_character(delimiter)) ||
+            (tex_fam_fnt(delimiter_large_family(delimiter), size) && delimiter_large_character(delimiter))
+        )
+    );
+}
+
+static inline int tex_aux_has_extensible(halfword delimiter, halfword size)
+{
+    if (delimiter && delimiter_small_character(delimiter)) {
+        halfword curfnt = tex_fam_fnt(delimiter_small_family(delimiter), size);
+        if (curfnt != null_font) {
+            return tex_char_extensible_recipe_front_last(curfnt, delimiter_small_character(delimiter)) ? 1 : 0;
+        }
+    }
+    return 0;
+}
+
+/*tex 
     A variant on a suggestion on the list based on analysis by Ulrik Vieth it in the mean 
     adapted. We keep these 500 and 2 because then we can use similar values. 
 */
@@ -772,7 +797,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
 
 static halfword tex_aux_overbar(halfword box, scaled gap, scaled height, scaled krn, halfword att, quarterword index, halfword size, halfword fam, halfword topdelimiter, halfword style)
 {
-    halfword rule = topdelimiter 
+    halfword rule = (topdelimiter && tex_aux_has_extensible(topdelimiter, size))
         ? tex_aux_make_delimiter(null, topdelimiter, size, box_width(box), 1, style, 0, NULL, NULL, 0, 0, NULL, 0)
         : tex_aux_fraction_rule(box_width(box), height, att, index, size, fam);
     /*tex Safeguard: */
@@ -801,9 +826,11 @@ static halfword tex_aux_overbar(halfword box, scaled gap, scaled height, scaled 
     return rule;
 }
 
-static halfword tex_aux_underbar(halfword box, scaled gap, scaled height, scaled krn, halfword att, quarterword index, halfword size, halfword fam)
+static halfword tex_aux_underbar(halfword box, scaled gap, scaled height, scaled krn, halfword att, quarterword index, halfword size, halfword fam, halfword botdelimiter, halfword style)
 {
-    halfword rule = tex_aux_fraction_rule(box_width(box), height, att, index, size, fam);
+    halfword rule = (botdelimiter && tex_aux_has_extensible(botdelimiter, size))
+        ? tex_aux_make_delimiter(null, botdelimiter, size, box_width(box), 1, style, 0, NULL, NULL, 0, 0, NULL, 0)
+        : tex_aux_fraction_rule(box_width(box), height, att, index, size, fam);
     if (gap) {
         halfword kern = tex_new_kern_node(gap, vertical_math_kern_subtype);
         tex_attach_attribute_list_attribute(kern, att);
@@ -1403,8 +1430,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
         extremes->height = 0;
         extremes->depth = 0;
     }
-    if (delimiter && ! delimiter_small_family(delimiter) && ! delimiter_small_character(delimiter)
-                  && ! delimiter_large_family(delimiter) && ! delimiter_large_character(delimiter)) {
+    if (! tex_aux_has_delimiter(delimiter, size)) {
         halfword result = tex_new_null_box_node(hlist_node, math_v_delimiter_list);
         tex_attach_attribute_list_copy(result, delimiter);
         if (! flat) {
@@ -2248,7 +2274,8 @@ static void tex_aux_make_under(halfword target, halfword style, halfword size, h
         halfword result = tex_aux_underbar(
             tex_aux_clean_box(noad_nucleus(target), tex_math_style_variant(style, math_parameter_under_line_variant), style, math_nucleus_list, 0, NULL),
             vgap, thickness, kern,
-            get_attribute_list(noad_nucleus(target)), math_under_rule_subtype, size, fam
+            get_attribute_list(noad_nucleus(target)), math_under_rule_subtype, size, fam,
+            null, style
         );
         node_subtype(result) = math_over_list;
         kernel_math_list(noad_nucleus(target)) = result;
@@ -3566,42 +3593,6 @@ static halfword tex_aux_make_skewed_fraction(halfword target, int style, int siz
     return fraction;
 }
 
-static halfword tex_aux_make_stretched_fraction(halfword target, int style, int size, kernset *kerns)
-{
-    halfword middle = null;
-    halfword numerator = null;
-    halfword denominator = null;
-    scaled shift_up = 0;
-    scaled shift_down = 0;
-    scaled delta = 0;
-    halfword middle_delimiter = fraction_middle_delimiter(target);
-    halfword thickness = tex_aux_check_fraction_rule(target, style, size, stretched_fraction_subtype, NULL);
-    halfword fraction = tex_new_null_box_node(vlist_node, math_fraction_list);
-    (void) kerns;
-    tex_attach_attribute_list_copy(fraction, target);
-    tex_aux_wrap_fraction_parts(target, style, size, &numerator, &denominator, 1);
-    tex_aux_calculate_fraction_shifts_normal(target, style, size, numerator, denominator, &shift_up, &shift_down, &delta);
-    tex_aux_apply_fraction_shifts(fraction, numerator, denominator, shift_up, shift_down);
-    middle = tex_aux_make_delimiter(target, middle_delimiter, size, box_width(fraction), 1, style, 0, NULL, NULL, 0, 0, NULL, 0);
-    if (box_width(middle) < box_width(fraction)) {
-        /*tex It's always in the details: */
-        scaled delta = (box_width(fraction) - box_width(middle)) / 2;
-        tex_aux_prepend_hkern_to_box_list(middle, delta, horizontal_math_kern_subtype, "narrow delimiter");
-        tex_aux_append_hkern_to_box_list(middle, delta, horizontal_math_kern_subtype, "narrow delimiter");
-        box_width(middle) = box_width(fraction);
-    } else if (box_width(middle) > box_width(fraction)) {
-        scaled delta = (box_width(middle) - box_width(fraction)) / 2;
-        tex_aux_prepend_hkern_to_box_list(numerator, delta, horizontal_math_kern_subtype, "wide delimiter");
-        tex_aux_append_hkern_to_box_list(numerator, delta, horizontal_math_kern_subtype, "wide delimiter");
-        tex_aux_prepend_hkern_to_box_list(denominator, delta, horizontal_math_kern_subtype, "wide delimiter");
-        tex_aux_append_hkern_to_box_list(denominator, delta, horizontal_math_kern_subtype, "wide delimiter");
-        box_width(fraction) = box_width(middle);
-    }
-    tex_aux_compensate_fraction_rule(target, fraction, middle, thickness);
-    box_list(fraction) = tex_aux_assemble_fraction(target, style, size, numerator, denominator, middle, delta, shift_up, shift_down);
-    return fraction;
-}
-
 static halfword tex_aux_make_ruled_fraction(halfword target, int style, int size, kernset *kerns, int fractiontype)
 {
     halfword numerator = null;
@@ -3628,6 +3619,46 @@ static halfword tex_aux_make_ruled_fraction(halfword target, int style, int size
     }
     box_list(fraction) = tex_aux_assemble_fraction(target, style, size, numerator, denominator, rule, delta, shift_up, shift_down);
     return fraction;
+}
+
+static halfword tex_aux_make_stretched_fraction(halfword target, int style, int size, kernset *kerns)
+{
+    halfword middle_delimiter = fraction_middle_delimiter(target);
+    if (tex_aux_has_extensible(middle_delimiter, size)) {
+        halfword middle = null;
+        halfword numerator = null;
+        halfword denominator = null;
+        scaled shift_up = 0;
+        scaled shift_down = 0;
+        scaled delta = 0;
+        halfword thickness = tex_aux_check_fraction_rule(target, style, size, stretched_fraction_subtype, NULL);
+        halfword fraction = tex_new_null_box_node(vlist_node, math_fraction_list);
+        (void) kerns;
+        tex_attach_attribute_list_copy(fraction, target);
+        tex_aux_wrap_fraction_parts(target, style, size, &numerator, &denominator, 1);
+        tex_aux_calculate_fraction_shifts_normal(target, style, size, numerator, denominator, &shift_up, &shift_down, &delta);
+        tex_aux_apply_fraction_shifts(fraction, numerator, denominator, shift_up, shift_down);
+        middle = tex_aux_make_delimiter(target, middle_delimiter, size, box_width(fraction), 1, style, 0, NULL, NULL, 0, 0, NULL, 0);
+        if (box_width(middle) < box_width(fraction)) {
+            /*tex It's always in the details: */
+            scaled delta = (box_width(fraction) - box_width(middle)) / 2;
+            tex_aux_prepend_hkern_to_box_list(middle, delta, horizontal_math_kern_subtype, "narrow delimiter");
+            tex_aux_append_hkern_to_box_list(middle, delta, horizontal_math_kern_subtype, "narrow delimiter");
+            box_width(middle) = box_width(fraction);
+        } else if (box_width(middle) > box_width(fraction)) {
+            scaled delta = (box_width(middle) - box_width(fraction)) / 2;
+            tex_aux_prepend_hkern_to_box_list(numerator, delta, horizontal_math_kern_subtype, "wide delimiter");
+            tex_aux_append_hkern_to_box_list(numerator, delta, horizontal_math_kern_subtype, "wide delimiter");
+            tex_aux_prepend_hkern_to_box_list(denominator, delta, horizontal_math_kern_subtype, "wide delimiter");
+            tex_aux_append_hkern_to_box_list(denominator, delta, horizontal_math_kern_subtype, "wide delimiter");
+            box_width(fraction) = box_width(middle);
+        }
+        tex_aux_compensate_fraction_rule(target, fraction, middle, thickness);
+        box_list(fraction) = tex_aux_assemble_fraction(target, style, size, numerator, denominator, middle, delta, shift_up, shift_down);
+        return fraction;
+    } else { 
+        return tex_aux_make_ruled_fraction(target, style, size, kerns, over_fraction_subtype);
+    }
 }
 
 /*tex 
@@ -7146,7 +7177,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 tex_couple_nodes(p, box_list(l));
                 box_list(l) = null;
                 tex_flush_node(l);
-            } else if (current_type == simple_noad && (current_subtype == math_end_class) || (current_subtype == math_begin_class)) {
+            } else if (current_type == simple_noad && (current_subtype == math_end_class || current_subtype == math_begin_class)) {
                  if (noad_new_hlist(current)) { 
                       tex_flush_node(noad_new_hlist(current));
                       noad_new_hlist(current) = null;

@@ -131,6 +131,26 @@ return {
                     tweak = "addrules",
                 },
                 {
+                    tweak    = "replacerules",
+                    minus = {
+                        leftoffset  = .0925,
+                        rightoffset = .0925,
+                    },
+                    fraction = {
+                        height  = .204,
+                        yoffset = .796,
+                    },
+                    radical  = {
+                        height     = .204,
+                        yoffset    = .796,
+                     -- leftoffset = .075,
+                    },
+                    stacker  = {
+                        height  = .204,
+                        yoffset = .796,
+                    },
+                },
+                {
                     tweak = "wipecues",
                 },
                 {

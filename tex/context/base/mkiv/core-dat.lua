@@ -6,10 +6,8 @@ if not modules then modules = { } end modules ['core-dat'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>This module provides a (multipass) container for arbitrary data. It
-replaces the twopass data mechanism.</p>
---ldx]]--
+-- This module provides a (multipass) container for arbitrary data. It replaces the
+-- twopass data mechanism.
 
 local tonumber, tostring, type = tonumber, tostring, type
 
@@ -231,9 +229,7 @@ implement {
     actions   = datasetvariablefromjob
 }
 
---[[ldx--
-<p>We also provide an efficient variant for page states.</p>
---ldx]]--
+-- We also provide an efficient variant for page states.
 
 local collected = allocate()
 local tobesaved = allocate()
@@ -250,13 +246,9 @@ local function initializer()
     tobesaved = pagestates.tobesaved
 end
 
-job.register('job.pagestates.collected', tobesaved, initializer, nil)
+job.register("job.pagestates.collected", tobesaved, initializer, nil)
 
-table.setmetatableindex(tobesaved, function(t,k)
-    local v = { }
-    t[k] = v
-    return v
-end)
+table.setmetatableindex(tobesaved, "table")
 
 local function setstate(settings)
     local name = settings.name

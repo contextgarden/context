@@ -42,17 +42,14 @@ local trace_defining        = false  trackers.register("characters.defining", fu
 
 local report_defining       = logs.reporter("characters")
 
---[[ldx--
-<p>In order to deal with 8-bit output, we need to find a way to go from <l n='utf'/> to
-8-bit. This is handled in the <l n='luatex'/> engine itself.</p>
-
-<p>This leaves us problems with characters that are specific to <l n='tex'/> like
-<type>{}</type>, <type>$</type> and alike. We can remap some chars that tex input files
-are sensitive for to a private area (while writing to a utility file) and revert then
-to their original slot when we read in such a file. Instead of reverting, we can (when
-we resolve characters to glyphs) map them to their right glyph there. For this purpose
-we can use the private planes 0x0F0000 and 0x100000.</p>
---ldx]]--
+-- In order to deal with 8-bit output, we need to find a way to go from UTF to
+-- 8-bit. This is handled in the 32 bit engine itself. This leaves us problems with
+-- characters that are specific to TeX, like curly braces and dollars. We can remap
+-- some chars that tex input files are sensitive for to a private area (while
+-- writing to a utility file) and revert then to their original slot when we read in
+-- such a file. Instead of reverting, we can (when we resolve characters to glyphs)
+-- map them to their right glyph there. For this purpose we can use the private
+-- planes 0x0F0000 and 0x100000.
 
 local low     = allocate()
 local high    = allocate()
@@ -101,21 +98,6 @@ end
 private.escape  = utf.remapper(escapes) -- maybe: ,"dynamic"
 private.replace = utf.remapper(low)     -- maybe: ,"dynamic"
 private.revert  = utf.remapper(high)    -- maybe: ,"dynamic"
-
---[[ldx--
-<p>We get a more efficient variant of this when we integrate
-replacements in collapser. This more or less renders the previous
-private code redundant. The following code is equivalent but the
-first snippet uses the relocated dollars.</p>
-
-<typing>
-[󰀤x󰀤] [$x$]
-</typing>
---ldx]]--
-
--- using the tree-lpeg-mapper would be nice but we also need to deal with end-of-string
--- cases: "\"\i" and don't want "\relax" to be seen as \r e lax" (for which we need to mess
--- with spaces
 
 local accentmapping = allocate {
     ['"'] = { [""] = "¨",
@@ -452,10 +434,8 @@ implement { -- a waste of scanner but consistent
     actions = texcharacters.defineaccents
 }
 
---[[ldx--
-<p>Instead of using a <l n='tex'/> file to define the named glyphs, we
-use the table. After all, we have this information available anyway.</p>
---ldx]]--
+-- Instead of using a TeX file to define the named glyphs, we use the table. After
+-- all, we have this information available anyway.
 
 function commands.makeactive(n,name) -- not used
     contextsprint(ctxcatcodes,format("\\catcode%s=13\\unexpanded\\def %s{\\%s}",n,utfchar(n),name))
@@ -747,9 +727,7 @@ function characters.setactivecatcodes(cct)
     tex.catcodetable = saved
 end
 
---[[ldx--
-<p>Setting the lccodes is also done in a loop over the data table.</p>
---ldx]]--
+-- -- Setting the lccodes is also done in a loop over the data table.
 
 -- function characters.setcodes() -- we could loop over csletters
 --     if trace_defining then

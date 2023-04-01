@@ -11,7 +11,7 @@ utilities.formatters = utilities.formatters or { }
 local formatters     = utilities.formatters
 
 local concat, format = table.concat, string.format
-local tostring, type = tostring, type
+local tostring, type, unpack = tostring, type, unpack
 local strip = string.strip
 
 local lpegmatch = lpeg.match
@@ -21,12 +21,15 @@ function formatters.stripzeros(str)
     return lpegmatch(stripper,str)
 end
 
-function formatters.formatcolumns(result,between)
+function formatters.formatcolumns(result,between,header)
     if result and #result > 0 then
-        between = between or "   "
-        local widths, numbers = { }, { }
-        local first = result[1]
-        local n = #first
+        local widths    = { }
+        local numbers   = { }
+        local templates = { }
+        local first     = result[1]
+        local n         = #first
+              between   = between or "   "
+        --
         for i=1,n do
             widths[i] = 0
         end
@@ -35,13 +38,6 @@ function formatters.formatcolumns(result,between)
             for j=1,n do
                 local rj = r[j]
                 local tj = type(rj)
---                 if tj == "number" then
---                     numbers[j] = true
---                 end
---                 if tj ~= "string" then
---                     rj = tostring(rj)
---                     r[j] = rj
---                 end
                 if tj == "number" then
                     numbers[j] = true
                     rj = tostring(rj)
@@ -55,29 +51,59 @@ function formatters.formatcolumns(result,between)
                 end
             end
         end
+        if header then
+            for i=1,#header do
+                local h = header[i]
+                for j=1,n do
+                    local hj = tostring(h[j])
+                    h[j] = hj
+                    local w = #hj
+                    if w > widths[j] then
+                        widths[j] = w
+                    end
+                end
+            end
+        end
         for i=1,n do
             local w = widths[i]
             if numbers[i] then
                 if w > 80 then
-                    widths[i] = "%s" .. between
-                 else
-                    widths[i] = "%0" .. w .. "i" .. between
+                    templates[i] = "%s" .. between
+                else
+                    templates[i] = "% " .. w .. "i" .. between
                 end
             else
                 if w > 80 then
-                    widths[i] = "%s" .. between
-                 elseif w > 0 then
-                    widths[i] = "%-" .. w .. "s" .. between
+                    templates[i] = "%s" .. between
+                elseif w > 0 then
+                    templates[i] = "%-" .. w .. "s" .. between
                 else
-                    widths[i] = "%s"
+                    templates[i] = "%s"
                 end
             end
         end
-        local template = strip(concat(widths))
+        local template = strip(concat(templates))
         for i=1,#result do
             local str = format(template,unpack(result[i]))
             result[i] = strip(str)
         end
+        if header then
+            for i=1,n do
+                local w = widths[i]
+                if w > 80 then
+                    templates[i] = "%s" .. between
+                elseif w > 0 then
+                    templates[i] = "%-" .. w .. "s" .. between
+                else
+                    templates[i] = "%s"
+                end
+            end
+            local template = strip(concat(templates))
+            for i=1,#header do
+                local str = format(template,unpack(header[i]))
+                header[i] = strip(str)
+            end
+        end
     end
-    return result
+    return result, header
 end

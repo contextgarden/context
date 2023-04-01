@@ -13,15 +13,18 @@ local format, load, type = string.format, load, type
 local context    = context
 local metapost   = metapost
 
-metapost.metafun = metapost.metafun or { }
-local metafun    = metapost.metafun
+local metafun    = metapost.metafun or { }
+metapost.metafun = metafun
 
 function metafun.topath(t,connector)
     context("(")
     if #t > 0 then
+        if not connector then
+            connector = ".."
+        end
         for i=1,#t do
             if i > 1 then
-                context(connector or "..")
+                context(connector)
             end
             local ti = t[i]
             if type(ti) == "string" then
@@ -39,12 +42,15 @@ end
 function metafun.interpolate(f,b,e,s,c)
     local done = false
     context("(")
-    for i=b,e,(e-b)/s do
-        local d = load(format("return function(x) return %s end",f))
-        if d then
-            d = d()
+    local d = load(format("return function(x) return %s end",f))
+    if d then
+        d = d()
+        if not c then
+            c = "..."
+        end
+        for i=b,e,(e-b)/s do
             if done then
-                context(c or "...")
+                context(c)
             else
                 done = true
             end

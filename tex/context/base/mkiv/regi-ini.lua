@@ -6,11 +6,8 @@ if not modules then modules = { } end modules ['regi-ini'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>Regimes take care of converting the input characters into
-<l n='utf'/> sequences. The conversion tables are loaded at
-runtime.</p>
---ldx]]--
+-- Regimes take care of converting the input characters into UTF sequences. The
+-- conversion tables are loaded at runtime.
 
 -- Todo: use regi-imp*.lua instead
 
@@ -30,9 +27,7 @@ local sequencers        = utilities.sequencers
 local textlineactions   = resolvers.openers.helpers.textlineactions
 local setmetatableindex = table.setmetatableindex
 
---[[ldx--
-<p>We will hook regime handling code into the input methods.</p>
---ldx]]--
+-- We will hook regime handling code into the input methods.
 
 local trace_translating = false  trackers.register("regimes.translating", function(v) trace_translating = v end)
 

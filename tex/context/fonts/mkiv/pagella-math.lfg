@@ -154,7 +154,7 @@ return {
                         [0x27EB]                = { topright = -0.2,  bottomright = -0.2  },
                         ["0x27EB.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
                         --
-                        [0x00393] = { bottomright = -0.20, }, -- upright Gamma
+                        [0x0393]                = { bottomright = -0.20, }, -- upright Gamma
                         --
                         ["0x222B.parts.bottom"] = { bottomright = -0.20 }, -- int
                         ["0x222C.parts.bottom"] = { bottomright = -0.15 }, -- iint
@@ -183,6 +183,13 @@ return {
                 {
                     tweak   = "addbars",
                     advance = 0.2,
+                },
+                {
+                    tweak    = "replacerules",
+                    minus    = { rightoffset = .045 },
+                    fraction = { height = .2, yoffset = .8, rightoffset = .04 },
+                    radical  = { height = .2, yoffset = .8, rightoffset = .04 },
+                    stacker  = { height = .2, yoffset = .8, rightoffset = .04 },
                 },
                 {
                     tweak = "addactuarian",

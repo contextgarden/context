@@ -186,7 +186,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_kern, italic_kern_subtype,          italiccorrection)
     set_value_entry_key(subtypes_kern, left_margin_kern_subtype,     leftmarginkern)
     set_value_entry_key(subtypes_kern, right_margin_kern_subtype,    rightmarginkern)
-    set_value_entry_key(subtypes_kern, explicit_math_kern_subtype,   mathkerns)
+    set_value_entry_key(subtypes_kern, explicit_math_kern_subtype,   mathkern)
     set_value_entry_key(subtypes_kern, math_shape_kern_subtype,      mathshapekern)
     set_value_entry_key(subtypes_kern, horizontal_math_kern_subtype, horizontalmathkern)
     set_value_entry_key(subtypes_kern, vertical_math_kern_subtype,   verticalmathkern)

@@ -294,7 +294,7 @@
 % pre-expansion.
 
 \def\font_helpers_update_font_class_parameters
-  {\edef\m_font_class_direction {\begincsname\??fontclass\fontclass\fontstyle\s!direction \endcsname}%
+  {%edef\m_font_class_direction {\begincsname\??fontclass\fontclass\fontstyle\s!direction \endcsname}%
    \edef\m_font_class_features  {\begincsname\??fontclass\fontclass\fontstyle\s!features  \endcsname}%
    \edef\m_font_class_fallbacks {\begincsname\??fontclass\fontclass\fontstyle\s!fallbacks \endcsname}%
    \edef\m_font_class_goodies   {\begincsname\??fontclass\fontclass\fontstyle\s!goodies   \endcsname}%

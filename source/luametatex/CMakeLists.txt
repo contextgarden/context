@@ -145,6 +145,7 @@ if (MSVC)
         -Wcast-qual
 
         -Wno-unknown-pragmas
+        -Wno-unused-result
         -fno-strict-aliasing
     )
 

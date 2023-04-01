@@ -704,6 +704,8 @@ function scripts.context.run(ctxdata,filename)
     --
     a_batchmode = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or (a_scrollmode and "scrollmode") or nil
     --
+    local changed = { }
+    --
     for i=1,#filelist do
         --
         local filename = filelist[i]
@@ -730,6 +732,10 @@ function scripts.context.run(ctxdata,filename)
         local jobname  = removesuffix(basename)
      -- local jobname  = removesuffix(filename)
         local ctxname  = ctxdata and ctxdata.ctxname
+        --
+        if changed[jobname] == nil then
+            changed[jobname] = false
+        end
         --
         local analysis = preamble_analyze(filename)
         --
@@ -962,6 +968,7 @@ function scripts.context.run(ctxdata,filename)
                         if not multipass_forcedruns then
                             newhash = multipass_hashfiles(jobname)
                             if multipass_changed(oldhash,newhash) then
+                                changed[jobname] = true
                                 oldhash = newhash
                             else
                                 break
@@ -1096,6 +1103,21 @@ function scripts.context.run(ctxdata,filename)
         end
     end
     --
+    if #filelist > 1 then
+        local done = false
+        for k, v in sortedhash(changed) do
+            if v then
+                if not done then
+                    report()
+                    done = true
+                end
+                report("file %a was changed",k)
+            end
+        end
+        if done then
+            report()
+        end
+    end
 end
 
 function scripts.context.pipe() -- still used?

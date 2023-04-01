@@ -533,7 +533,7 @@ do
         k = mathgaps[k] or k
         local character = targetcharacters[k]
         if character then
---             if not character.tweaked then -- todo: add a force
+         -- if not character.tweaked then -- todo: add a force
                 local t = type(v)
                 if t == "number" then
                     v = list[v]
@@ -666,7 +666,7 @@ do
                 else
                     report_mathtweak("invalid dimension entry %U",k)
                 end
--- character.tweaked = true
+             -- character.tweaked = true
                 if v.all then
                     local nxt = character.next
                     if nxt then
@@ -680,7 +680,7 @@ do
                         end
                     end
                 end
---             end
+         -- end
         else
             report_tweak("no character %U",target,original,k)
         end
@@ -1938,63 +1938,178 @@ do
     -- vfmath.builders.extension(target)
 
     local rbe = newprivateslot("radical bar extender")
+    local fbe = newprivateslot("fraction bar extender")
 
-    local function useminus(unicode,characters,parameters)
+    local frp = {
+        newprivateslot("flat rule left piece"),
+        newprivateslot("flat rule middle piece"),
+        newprivateslot("flat rule right piece"),
+    }
+
+    local rrp = {
+        newprivateslot("radical rule middle piece"),
+        newprivateslot("radical rule right piece"),
+    }
+
+    local mrp = {
+        newprivateslot("minus rule left piece"),
+        newprivateslot("minus rule middle piece"),
+        newprivateslot("minus rule right piece"),
+    }
+
+    local function useminus(target,unicode,characters,parameters,skipfirst,what)
         local minus   = characters[0x2212]
-        local xoffset = parameters.xoffset or .075
-        local yoffset = parameters.yoffset or .9
-        local xscale  = parameters.xscale or 1
-        local yscale  = parameters.yscale or 1
-        local xwidth  = parameters.width   or (1 - 2*xoffset)
-        local xheight = parameters.height  or (1 - yoffset)
-        local mheight = minus.height
-        local mwidth  = minus.width
-        local height  = xheight*mheight
-        local xshift  = xoffset * mwidth
-        local yshift  = yoffset * mheight
-        local advance = xwidth  * mwidth
-        local step    = mwidth  / 2
-        characters[unicode] = {
-            height   = height,
-            depth    = height,
-            width    = advance,
-            commands = {
-            push,
-                leftcommand[xshift],
-                downcommand[yshift],
-             -- slotcommand[0][0x2212],
-                { "slot", 0, 0x2212, xscale, yscale },
-            pop,
-            },
-            unicode = unicode,
-         -- parts = {
-         --     { extender = 0, glyph = first,  ["end"] = fw/2, start = 0,    advance = fw },
-         --     { extender = 1, glyph = middle, ["end"] = mw/2, start = mw/2, advance = mw },
-         --     { extender = 0, glyph = last,   ["end"] = 0,    start = lw/2, advance = lw },
-         -- },
-            parts   = {
-                { extender = 0, glyph = unicode, ["end"] = step, start = 0,    advance = advance },
-                { extender = 1, glyph = unicode, ["end"] = step, start = step, advance = advance },
-            },
-            partsorientation = "horizontal",
-        }
+        local parts   = minus.parts
+        if parameters == true then
+            parameters = { }
+        end
+        if parts then
+            parts  = copytable(parts)
+            local xscale  = parameters.xscale  or 1
+            local yscale  = parameters.yscale  or 1
+            local mheight = minus.height
+            local height = (parameters.height  or 1) * mheight
+            local yshift = (parameters.yoffset or 0) * mheight
+            if skipfirst then
+                table.remove(parts,1)
+            end
+            height = height / 2
+            yshift = yshift + height
+            for i=1,#parts do
+                local part   = parts[i]
+                local glyph  = part.glyph
+                local gdata  = characters[glyph]
+                local width  = gdata.width
+                local xshift = 0
+                if i == 1 and parameters.leftoffset then
+                    xshift = (parameters.leftoffset) * width
+                    width  = width - xshift
+                elseif i == #parts and parameters.rightoffset then
+                    width  = (1 + parameters.rightoffset) * width
+                end
+                characters[what[i]] = {
+                    height   = height,
+                    depth    = height,
+                    width    = width,
+                    commands = {
+                        leftcommand[xshift],
+                        downcommand[yshift],
+--                         slotcommand[0][glyph],
+                    { "slot", 0, glyph, xscale, yscale },
+                    },
+                }
+                part.glyph   = what[i]
+                part.advance = width
+            end
+            characters[unicode] = {
+                height   = height,
+                depth    = height,
+                width    = advance,
+                commands = {
+                    downcommand[yshift],
+--                     slotcommand[0][0x2212],
+                    { "slot", 0, 0x2212, xscale, yscale },
+                },
+                unicode          = unicode,
+                parts            = parts,
+                partsorientation = "horizontal",
+            }
+        end
+    end
+
+    -- add minus parts of not there and create clipped clone
+
+    local function checkminus(target,unicode,characters,parameters,skipfirst,what)
+        local minus = characters[unicode]
+        local parts = minus.parts
+        if parameters == true then
+            parameters = { }
+        end
+        local p_normal = 0
+        local p_flat   = 0
+        local mwidth   = minus.width
+        local height   = minus.height
+        local depth    = minus.depth
+        local loffset  = parameters.leftoffset  or 0
+        local roffset  = parameters.rightoffset or 0
+        local lshift   = mwidth * loffset
+        local rshift   = mwidth * roffset
+        local width    = mwidth - lshift - rshift
+        if parts then
+         -- print("minus has parts")
+            if lshift ~= 0 or width ~= mwidth then
+                parts = copytable(parts)
+                for i=1,#parts do
+                    local part    = parts[i]
+                    local glyph   = part.glyph
+                    local gdata   = characters[glyph]
+                    local width   = gdata.width
+                    local advance = part.advance
+                    local lshift = 0
+                    if i == 1 and left ~= 0 then
+                        lshift  = loffset * width
+                        width   = width - lshift
+                        advance = advance - lshift
+                    elseif i == #parts and roffset ~= 0 then
+                        width   = width - rshift
+                        advance = advance - rshift
+                    end
+                    characters[what[i]] = {
+                        height   = height,
+                        depth    = depth,
+                        width    = width,
+                        commands = {
+                            leftcommand[lshift],
+                            slotcommand[0][glyph],
+                        },
+                    }
+                    part.glyph   = what[i]
+                    part.advance = advance
+                end
+                minus.parts = parts
+                minus.partsorientation = "horizontal"
+
+            end
+        else
+            local f_normal = formatters["M-NORMAL-%H"](unicode)
+         -- local p_normal = hasprivate(main,f_normal)
+            p_normal = addprivate(target,f_normal,{
+                height   = height,
+                width    = width,
+                commands = {
+                    push,
+                    leftcommand[lshift],
+                    slotcommand[0][unicode],
+                    pop,
+                },
+            })
+            local step = width/2
+            minus.parts = {
+                { extender = 0, glyph = p_normal, ["end"] = step, start = 0,    advance = width },
+                { extender = 1, glyph = p_normal, ["end"] = step, start = step, advance = width },
+                { extender = 0, glyph = p_normal, ["end"] = 0,    start = step, advance = width },
+            }
+            minus.partsorientation = "horizontal"
+        end
     end
 
     function mathtweaks.replacerules(target,original,parameters)
         local characters = target.characters
+        local minus      = parameters.minus
         local fraction   = parameters.fraction
         local radical    = parameters.radical
+        local stacker    = parameters.stacker
+        if minus then
+            checkminus(target,0x2212,characters,minus,false,mrp)
+        end
         if fraction then
-            local template = fraction.template
-            if template == 0x2212 or template == "minus" then
-                useminus(0x203E,characters,fraction)
-            end
+            useminus(target,fbe,characters,fraction,false,frp)
         end
         if radical then
-            local template = radical.template
-            if template == 0x2212 or template == "minus" then
-                useminus(rbe,characters,radical)
-            end
+            useminus(target,rbe,characters,radical,true,rrp)
+        end
+        if stacker then
+            useminus(target,0x203E,characters,stacker,false,frp)
         end
     end
 
@@ -2110,6 +2225,7 @@ do
         return {
             --
             [0x002D] = { { left = slack, right = slack, glyph = 0x2212 }, single }, -- rel
+-- [0x2212] = { { left = slack, right = slack, glyph = 0x2212 }, single }, -- rel
             --
             [0x2190] = leftsingle, -- leftarrow
             [0x219E] = leftsingle, -- twoheadleftarrow
@@ -3090,59 +3206,6 @@ do
     local single <const> = 0x007C
     local double <const> = 0x2016
     local triple <const> = 0x2980
-
- -- local nps = fonts.helpers.newprivateslot
- --
- -- local function variantlist(characters,unicode,chardata,what,total,used)
- --     local parenthesis = characters[0x28].next
- --     local width  = chardata.width
- --     local height = chardata.height
- --     local depth  = chardata.depth
- --     local total  = height + depth
- --     local count  = 1
- --     while parenthesis do
- --         local private   = nps(what .. " size " .. count)
- --         local pardata   = characters[parenthesis]
- --         local parheight = pardata.height
- --         local pardepth  = pardata.depth
- --         local scale     = (parheight+pardepth)/total
- --         local offset    = - pardepth + scale * depth
- --         chardata.next   = private
- --         chardata = {
- --             unicode  = unicode,
- --             width    = width,
- --             height   = parheight,
- --             depth    = pardepth,
- --             commands = {
- --                 { "offset", 0, offset, unicode, 1, scale }
- --             },
- --         }
- --         characters[private] = chardata
- --         parenthesis = pardata.next
- --         if paranthesis then
- --             pardata = characters[parenthesis]
- --         end
- --         count = count + 1
- --     end
- --     chardata.parts = {
- --         {
- --             advance  = total,
- --             ["end"]  = used,
- --             glyph    = unicode,
- --             start    = 0,
- --          -- start    = used/5,
- --         },
- --         {
- --             advance  = total,
- --          -- ["end"]  = 0,
- --             ["end"]  = used/5, -- prevents small gap with inward curved endpoints
- --             extender = 1,
- --             glyph    = unicode,
- --             start    = used,
- --         },
- --     }
- --     chardata.partsorientation = "vertical"
- -- end
 
     local function variantlist(unicode,chardata,total,used)
         chardata.varianttemplate = 0x0028

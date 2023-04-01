@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2023.03.20 15:42}
+\immutable\edef\contextversion{2023.04.01 09:28}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -215,8 +215,9 @@
 
 \loadmkxlfile{unic-ini}
 
-\loadmkxlfile{core-two}
+%loadmkxlfile{core-two} % retired, not in testsuite, not on garden, not in styles
 \loadmkxlfile{core-dat}
+\loadmkxlfile{core-pag}
 
 \loadmkxlfile{colo-ini}
 \loadmkxlfile{colo-nod}
@@ -647,26 +648,26 @@
 % we will definitely freeze mkiv and then use lmt files for futher development
 % of lmtx. We also no longer use the macro feature to replace 5.3 compatible
 % function calls by native 5.4 features as lmt files assume 5.4 anyway. This
-% makes format generation a little faster (not that it's that slow). It might \
+% makes format generation a little faster (not that it's that slow). It might
 % take a while before we dealt with all of them because I'll also clean them
-% up a bit when doing.
+% up a bit when doing. Some will probably always be shared, like char-def.lua.
 %
 % % luat-bas.mkxl l-macro-imp-optimize % this is no longer used
 
-% c:/data/develop/context/sources/buff-imp-default.lua
-% c:/data/develop/context/sources/buff-imp-escaped.lua
-% c:/data/develop/context/sources/buff-imp-lua.lua
-% c:/data/develop/context/sources/buff-imp-mp.lua
-% c:/data/develop/context/sources/buff-imp-nested.lua
-% c:/data/develop/context/sources/buff-imp-parsed-xml.lua
-% c:/data/develop/context/sources/buff-imp-tex.lua
-% c:/data/develop/context/sources/buff-imp-xml.lua
-
 % c:/data/develop/context/sources/buff-par.lua
 % c:/data/develop/context/sources/buff-ver.lua
+%
+% c:/data/develop/context/sources/buff-imp-default.lua    % shared
+% c:/data/develop/context/sources/buff-imp-escaped.lua    % shared
+% c:/data/develop/context/sources/buff-imp-lua.lua        % shared
+% c:/data/develop/context/sources/buff-imp-mp.lua         % shared
+% c:/data/develop/context/sources/buff-imp-nested.lua     % shared
+% c:/data/develop/context/sources/buff-imp-parsed-xml.lua % shared
+% c:/data/develop/context/sources/buff-imp-tex.lua        % shared
+% c:/data/develop/context/sources/buff-imp-xml.lua        % shared
 
 % c:/data/develop/context/sources/char-cjk.lua
-% c:/data/develop/context/sources/char-def.lua
+% c:/data/develop/context/sources/char-def.lua % shared data file, a real big one
 % c:/data/develop/context/sources/char-enc.lua
 % c:/data/develop/context/sources/char-ent.lua
 % c:/data/develop/context/sources/char-fio.lua
@@ -680,7 +681,7 @@
 
 % c:/data/develop/context/sources/cldf-com.lua
 % c:/data/develop/context/sources/cldf-ini.lua
-% c:/data/develop/context/sources/cldf-prs.lua % use in chemistry
+% c:/data/develop/context/sources/cldf-prs.lua % used in chemistry
 % c:/data/develop/context/sources/cldf-scn.lua
 % c:/data/develop/context/sources/cldf-stp.lua
 % c:/data/develop/context/sources/cldf-ver.lua
@@ -690,8 +691,6 @@
 
 % c:/data/develop/context/sources/core-con.lua
 % c:/data/develop/context/sources/core-ctx.lua
-% c:/data/develop/context/sources/core-dat.lua
-% c:/data/develop/context/sources/core-two.lua
 
 % data...
 
@@ -700,7 +699,7 @@
 % c:/data/develop/context/sources/file-res.lua
 
 % c:/data/develop/context/sources/font-afk.lua
-% c:/data/develop/context/sources/font-agl.lua
+% c:/data/develop/context/sources/font-agl.lua % shared data file
 % c:/data/develop/context/sources/font-aux.lua
 % c:/data/develop/context/sources/font-cid.lua
 % c:/data/develop/context/sources/font-enc.lua
@@ -724,16 +723,16 @@
 % c:/data/develop/context/sources/font-trt.lua
 % c:/data/develop/context/sources/font-web.lua % proof of concept, never used
 
-% c:/data/develop/context/sources/font-imp-combining.lua  % shared, like typescript
-% c:/data/develop/context/sources/font-imp-dimensions.lua % idem
-% c:/data/develop/context/sources/font-imp-italics.lua    % idem
-% c:/data/develop/context/sources/font-imp-notused.lua    % idem
-% c:/data/develop/context/sources/font-imp-properties.lua % idem
-% c:/data/develop/context/sources/font-imp-reorder.lua    % idem
-% c:/data/develop/context/sources/font-imp-spacekerns.lua % idem
-% c:/data/develop/context/sources/font-imp-tex.lua        % idem
-% c:/data/develop/context/sources/font-imp-tweaks.lua     % idem
-% c:/data/develop/context/sources/font-imp-unicode.lua    % idem
+% c:/data/develop/context/sources/font-imp-combining.lua  % shared
+% c:/data/develop/context/sources/font-imp-dimensions.lua % shared
+% c:/data/develop/context/sources/font-imp-italics.lua    % shared
+% c:/data/develop/context/sources/font-imp-notused.lua    % shared
+% c:/data/develop/context/sources/font-imp-properties.lua % shared
+% c:/data/develop/context/sources/font-imp-reorder.lua    % shared
+% c:/data/develop/context/sources/font-imp-spacekerns.lua % shared
+% c:/data/develop/context/sources/font-imp-tex.lua        % shared
+% c:/data/develop/context/sources/font-imp-tweaks.lua     % shared
+% c:/data/develop/context/sources/font-imp-unicode.lua    % shared
 
 % c:/data/develop/context/sources/good-ctx.lua
 % c:/data/develop/context/sources/good-ini.lua
@@ -749,26 +748,26 @@
 
 % c:/data/develop/context/sources/java-ini.lua
 
-% c:/data/develop/context/sources/lang-cnt.lua
-% c:/data/develop/context/sources/lang-def.lua % these are data files
-% c:/data/develop/context/sources/lang-txt.lua % these are data files
+% c:/data/develop/context/sources/lang-cnt.lua % shared data file
+% c:/data/develop/context/sources/lang-def.lua % shared data file
+% c:/data/develop/context/sources/lang-txt.lua % shared data file
 % c:/data/develop/context/sources/lang-wrd.lua
 
 % c:/data/develop/context/sources/luat-exe.lua
 % c:/data/develop/context/sources/luat-iop.lua
 % c:/data/develop/context/sources/luat-mac.lua % will become lmt
 
-% c:/data/develop/context/sources/lxml-aux.lua
-% c:/data/develop/context/sources/lxml-css.lua
-% c:/data/develop/context/sources/lxml-dir.lua
-% c:/data/develop/context/sources/lxml-ent.lua
-% c:/data/develop/context/sources/lxml-ini.lua
-% c:/data/develop/context/sources/lxml-lpt.lua
-% c:/data/develop/context/sources/lxml-mis.lua
-% c:/data/develop/context/sources/lxml-sor.lua
-% c:/data/develop/context/sources/lxml-tab.lua
-% c:/data/develop/context/sources/lxml-tex.lua
-% c:/data/develop/context/sources/lxml-xml.lua
+% c:/data/develop/context/sources/lxml-aux.lua % the xml interfcace is rather stable
+% c:/data/develop/context/sources/lxml-css.lua % and is also provided/used in lua so
+% c:/data/develop/context/sources/lxml-dir.lua % might as well share these because they
+% c:/data/develop/context/sources/lxml-ent.lua % are unlikely to change
+% c:/data/develop/context/sources/lxml-ini.lua %
+% c:/data/develop/context/sources/lxml-lpt.lua %
+% c:/data/develop/context/sources/lxml-mis.lua %
+% c:/data/develop/context/sources/lxml-sor.lua %
+% c:/data/develop/context/sources/lxml-tab.lua %
+% c:/data/develop/context/sources/lxml-tex.lua %
+% c:/data/develop/context/sources/lxml-xml.lua %
 
 % c:/data/develop/context/sources/meta-blb.lua
 % c:/data/develop/context/sources/meta-fun.lua
@@ -788,16 +787,16 @@
 % c:/data/develop/context/sources/page-pst.lua
 
 % c:/data/develop/context/sources/publ-aut.lua % shared
-% c:/data/develop/context/sources/publ-dat.lua
-% c:/data/develop/context/sources/publ-fnd.lua
-% c:/data/develop/context/sources/publ-inc.lua
-% c:/data/develop/context/sources/publ-ini.lua
-% c:/data/develop/context/sources/publ-jrn.lua
-% c:/data/develop/context/sources/publ-oth.lua
-% c:/data/develop/context/sources/publ-reg.lua
-% c:/data/develop/context/sources/publ-sor.lua
-% c:/data/develop/context/sources/publ-tra.lua
-% c:/data/develop/context/sources/publ-usr.lua
+% c:/data/develop/context/sources/publ-dat.lua % shared
+% c:/data/develop/context/sources/publ-fnd.lua % shared
+% c:/data/develop/context/sources/publ-inc.lua % shared
+% c:/data/develop/context/sources/publ-ini.lua % shared
+% c:/data/develop/context/sources/publ-jrn.lua % shared
+% c:/data/develop/context/sources/publ-oth.lua % shared
+% c:/data/develop/context/sources/publ-reg.lua % shared
+% c:/data/develop/context/sources/publ-sor.lua % shared
+% c:/data/develop/context/sources/publ-tra.lua % shared
+% c:/data/develop/context/sources/publ-usr.lua % shared
 
 % c:/data/develop/context/sources/scrn-but.lua
 % c:/data/develop/context/sources/scrn-fld.lua
@@ -828,6 +827,3 @@
 % c:/data/develop/context/sources/trac-lmx.lua
 % c:/data/develop/context/sources/trac-par.lua
 % c:/data/develop/context/sources/trac-tex.lua
-
-% c:/data/develop/context/sources/typo-cln.lua -- wrong name for what it does
-% c:/data/develop/context/sources/typo-dha.lua

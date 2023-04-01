@@ -1399,6 +1399,10 @@
     % \im{1\unit{hour} 20 \unit{minute} 56 \unit{second}}
     %
     \inherited\setmathspacing \mathdimensioncode       \mathdigitcode           \allmathstyles    \thickmuskip
+    \inherited\setmathspacing \mathdimensioncode       \mathbinarycode          \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathdimensioncode       \mathbinarycode          \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathdimensioncode       \mathrelationcode        \allsplitstyles   \thickmuskip
+    \inherited\setmathspacing \mathdimensioncode       \mathrelationcode        \allunsplitstyles \pettymuskip
     %
     \inherited\setmathspacing \mathfakecode            \mathallcode             \allmathstyles    \tinymuskip
     \inherited\setmathspacing \mathallcode             \mathfakecode            \allmathstyles    \tinymuskip
@@ -2814,50 +2818,83 @@
 
 \installcorenamespace {mathautopunctuation}
 
-\bgroup
+% \bgroup
+%
+%     \catcode\commaasciicode    \activecatcode
+%     \catcode\periodasciicode   \activecatcode
+%     \catcode\semicolonasciicode\activecatcode
+%
+%     \gdefcsname\??mathautopunctuation\v!no\endcsname
+%       {\let,\math_punctuation_nop_comma
+%        \let.\math_punctuation_nop_period
+%        \let;\math_punctuation_nop_semicolon}
+%
+%     \gdefcsname\??mathautopunctuation\v!yes\endcsname
+%       {\let,\math_punctuation_yes_comma
+%        \let.\math_punctuation_yes_period
+%        \let;\math_punctuation_nop_semicolon}
+%
+%     \gdefcsname\??mathautopunctuation\v!all\endcsname
+%       {\let,\math_punctuation_all_comma
+%        \let.\math_punctuation_all_period
+%        \let;\math_punctuation_nop_semicolon}
+%
+%     \gdefcsname\??mathautopunctuation comma\endcsname
+%       {\let,\math_punctuation_yes_comma
+%        \let.\math_punctuation_yes_period
+%        \let;\math_punctuation_nop_semicolon}
+%
+%     \gdefcsname\??mathautopunctuation\v!yes\string,semicolon\endcsname
+%       {\let,\math_punctuation_yes_comma
+%        \let.\math_punctuation_yes_period
+%        \let;\math_punctuation_yes_semicolon}
+%
+%     \gdefcsname\??mathautopunctuation comma\string,semicolon\endcsname
+%       {\let,\math_punctuation_yes_comma
+%        \let.\math_punctuation_yes_period
+%        \let;\math_punctuation_yes_semicolon}
+%
+%     \gdefcsname\??mathautopunctuation\v!all\string,semicolon\endcsname
+%       {\let,\math_punctuation_all_comma
+%        \let.\math_punctuation_all_period
+%        \let;\math_punctuation_all_semicolon}
+%
+% \egroup
 
-    % This can and will be replaced by classes:
+\defcsname\??mathautopunctuation\v!no\endcsname
+  {\letcharcode\commaasciicode    \math_punctuation_nop_comma
+   \letcharcode\periodasciicode   \math_punctuation_nop_period
+   \letcharcode\semicolonasciicode\math_punctuation_nop_semicolon}
 
-    \catcode\commaasciicode    \activecatcode
-    \catcode\periodasciicode   \activecatcode
-    \catcode\semicolonasciicode\activecatcode
+\defcsname\??mathautopunctuation\v!yes\endcsname
+  {\letcharcode\commaasciicode    \math_punctuation_yes_comma
+   \letcharcode\periodasciicode   \math_punctuation_yes_period
+   \letcharcode\semicolonasciicode\math_punctuation_nop_semicolon}
 
-    \gdefcsname\??mathautopunctuation\v!no\endcsname
-      {\let,\math_punctuation_nop_comma
-       \let.\math_punctuation_nop_period
-       \let;\math_punctuation_nop_semicolon}
+\defcsname\??mathautopunctuation\v!all\endcsname
+  {\letcharcode\commaasciicode    \math_punctuation_all_comma
+   \letcharcode\periodasciicode   \math_punctuation_all_period
+   \letcharcode\semicolonasciicode\math_punctuation_nop_semicolon}
 
-    \gdefcsname\??mathautopunctuation\v!yes\endcsname
-      {\let,\math_punctuation_yes_comma
-       \let.\math_punctuation_yes_period
-       \let;\math_punctuation_nop_semicolon}
+\defcsname\??mathautopunctuation comma\endcsname
+  {\letcharcode\commaasciicode    \math_punctuation_yes_comma
+   \letcharcode\periodasciicode   \math_punctuation_yes_period
+   \letcharcode\semicolonasciicode\math_punctuation_nop_semicolon}
 
-    \gdefcsname\??mathautopunctuation\v!all\endcsname
-      {\let,\math_punctuation_all_comma
-       \let.\math_punctuation_all_period
-       \let;\math_punctuation_nop_semicolon}
+\defcsname\??mathautopunctuation\v!yes\string,semicolon\endcsname
+  {\letcharcode\commaasciicode    \math_punctuation_yes_comma
+   \letcharcode\periodasciicode   \math_punctuation_yes_period
+   \letcharcode\semicolonasciicode\math_punctuation_yes_semicolon}
 
-    \gdefcsname\??mathautopunctuation comma\endcsname
-      {\let,\math_punctuation_yes_comma
-       \let.\math_punctuation_yes_period
-       \let;\math_punctuation_nop_semicolon}
+\defcsname\??mathautopunctuation comma\string,semicolon\endcsname
+  {\letcharcode\commaasciicode    \math_punctuation_yes_comma
+   \letcharcode\periodasciicode   \math_punctuation_yes_period
+   \letcharcode\semicolonasciicode\math_punctuation_yes_semicolon}
 
-    \gdefcsname\??mathautopunctuation\v!yes\string,semicolon\endcsname
-      {\let,\math_punctuation_yes_comma
-       \let.\math_punctuation_yes_period
-       \let;\math_punctuation_yes_semicolon}
-
-    \gdefcsname\??mathautopunctuation comma\string,semicolon\endcsname
-      {\let,\math_punctuation_yes_comma
-       \let.\math_punctuation_yes_period
-       \let;\math_punctuation_yes_semicolon}
-
-    \gdefcsname\??mathautopunctuation\v!all\string,semicolon\endcsname
-      {\let,\math_punctuation_all_comma
-       \let.\math_punctuation_all_period
-       \let;\math_punctuation_all_semicolon}
-
-\egroup
+\defcsname\??mathautopunctuation\v!all\string,semicolon\endcsname
+  {\letcharcode\commaasciicode    \math_punctuation_all_comma
+   \letcharcode\periodasciicode   \math_punctuation_all_period
+   \letcharcode\semicolonasciicode\math_punctuation_all_semicolon}
 
 % \appendtoks
 %     \global\mathcode\commaasciicode    \c_math_special

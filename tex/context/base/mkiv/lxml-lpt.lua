@@ -20,28 +20,21 @@ local formatters = string.formatters -- no need (yet) as paths are cached anyway
 -- beware, this is not xpath ... e.g. position is different (currently) and
 -- we have reverse-sibling as reversed preceding sibling
 
---[[ldx--
-<p>This module can be used stand alone but also inside <l n='mkiv'/> in
-which case it hooks into the tracker code. Therefore we provide a few
-functions that set the tracers. Here we overload a previously defined
-function.</p>
-<p>If I can get in the mood I will make a variant that is XSLT compliant
-but I wonder if it makes sense.</P>
---ldx]]--
-
---[[ldx--
-<p>Expecially the lpath code is experimental, we will support some of xpath, but
-only things that make sense for us; as compensation it is possible to hook in your
-own functions. Apart from preprocessing content for <l n='context'/> we also need
-this module for process management, like handling <l n='ctx'/> and <l n='rlx'/>
-files.</p>
-
-<typing>
-a/b/c /*/c
-a/b/c/first() a/b/c/last() a/b/c/index(n) a/b/c/index(-n)
-a/b/c/text() a/b/c/text(1) a/b/c/text(-1) a/b/c/text(n)
-</typing>
---ldx]]--
+-- This module can be used stand alone but also inside ConTeXt in which case it
+-- hooks into the tracker code. Therefore we provide a few functions that set the
+-- tracers. Here we overload a previously defined function.
+--
+-- If I can get in the mood I will make a variant that is XSLT compliant but I
+-- wonder if it makes sense.
+--
+-- Expecially the lpath code is experimental, we will support some of xpath, but
+-- only things that make sense for us; as compensation it is possible to hook in
+-- your own functions. Apart from preprocessing content for ConTeXt we also need
+-- this module for process management, like handling CTX and RLX files.
+--
+--   a/b/c /*/c
+--   a/b/c/first() a/b/c/last() a/b/c/index(n) a/b/c/index(-n)
+--   a/b/c/text() a/b/c/text(1) a/b/c/text(-1) a/b/c/text(n)
 
 local trace_lpath    = false
 local trace_lparse   = false
@@ -62,11 +55,9 @@ if trackers then
     end)
 end
 
---[[ldx--
-<p>We've now arrived at an interesting part: accessing the tree using a subset
-of <l n='xpath'/> and since we're not compatible we call it <l n='lpath'/>. We
-will explain more about its usage in other documents.</p>
---ldx]]--
+-- We've now arrived at an interesting part: accessing the tree using a subset of
+-- XPATH and since we're not compatible we call it LPATH. We will explain more about
+-- its usage in other documents.
 
 local xml = xml
 
@@ -1273,9 +1264,8 @@ do
 end
 
 local applylpath = xml.applylpath
---[[ldx--
-<p>This is the main filter function. It returns whatever is asked for.</p>
---ldx]]--
+
+-- This is the main filter function. It returns whatever is asked for.
 
 function xml.filter(root,pattern) -- no longer funny attribute handling here
     return applylpath(root,pattern)
@@ -1525,21 +1515,16 @@ expressions.tag = function(e,n) -- only tg
     end
 end
 
---[[ldx--
-<p>Often using an iterators looks nicer in the code than passing handler
-functions. The <l n='lua'/> book describes how to use coroutines for that
-purpose (<url href='http://www.lua.org/pil/9.3.html'/>). This permits
-code like:</p>
-
-<typing>
-for r, d, k in xml.elements(xml.load('text.xml'),"title") do
-    print(d[k]) -- old method
-end
-for e in xml.collected(xml.load('text.xml'),"title") do
-    print(e) -- new one
-end
-</typing>
---ldx]]--
+-- Often using an iterators looks nicer in the code than passing handler functions.
+-- The LUA book describes how to use coroutines for that purpose
+-- 'href="http://www.lua.org/pil/9.3.html"'. This permits code like:
+--
+--   for r, d, k in xml.elements(xml.load('text.xml'),"title") do
+--       print(d[k]) -- old method
+--   end
+--   for e in xml.collected(xml.load('text.xml'),"title") do
+--       print(e) -- new one
+--   end
 
 -- local wrap, yield = coroutine.wrap, coroutine.yield
 -- local dummy = function() end

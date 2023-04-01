@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{typo-cln}{}
+\registerctxluafile{typo-cln}{autosuffix}
 
 \definesystemattribute[cleaner][public]
 

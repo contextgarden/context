@@ -92,7 +92,7 @@
 # define luametatex_version          210
 # define luametatex_revision         8
 # define luametatex_version_string   "2.10.08"
-# define luametatex_development_id   20230320
+# define luametatex_development_id   20230331
 
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"

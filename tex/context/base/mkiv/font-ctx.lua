@@ -528,26 +528,19 @@ do
 
 end
 
---[[ldx--
-<p>So far we haven't really dealt with features (or whatever we want
-to pass along with the font definition. We distinguish the following
-situations:</p>
-situations:</p>
-
-<code>
-name:xetex like specs
-name@virtual font spec
-name*context specification
-</code>
---ldx]]--
-
--- currently fonts are scaled while constructing the font, so we
--- have to do scaling of commands in the vf at that point using e.g.
--- "local scale = g.parameters.factor or 1" after all, we need to
--- work with copies anyway and scaling needs to be done at some point;
--- however, when virtual tricks are used as feature (makes more
--- sense) we scale the commands in fonts.constructors.scale (and set the
--- factor there)
+-- So far we haven't really dealt with features (or whatever we want to pass along
+-- with the font definition. We distinguish the following situations:
+--
+--   name:xetex like specs
+--   name@virtual font spec
+--   name*context specification
+--
+-- Currently fonts are scaled while constructing the font, so we have to do scaling
+-- of commands in the vf at that point using e.g. "local scale = g.parameters.factor
+-- or 1" after all, we need to work with copies anyway and scaling needs to be done
+-- at some point; however, when virtual tricks are used as feature (makes more
+-- sense) we scale the commands in fonts.constructors.scale (and set the factor
+-- there).
 
 local loadfont = definers.loadfont
 
@@ -2385,10 +2378,8 @@ dimenfactors.em   = nil
 dimenfactors["%"] = nil
 dimenfactors.pct  = nil
 
---[[ldx--
-<p>Before a font is passed to <l n='tex'/> we scale it. Here we also need
-to scale virtual characters.</p>
---ldx]]--
+-- Before a font is passed to TeX we scale it. Here we also need to scale virtual
+-- characters.
 
 do
 

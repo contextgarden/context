@@ -54,8 +54,18 @@ local function validftype(ftype)
     end
 end
 
+local remapped = {
+    -- We don't yet have an interface for adding more here but when needed
+    -- there will be one.
+    ["hatching.mp"] = "mp-remapped-hatching.mp",
+    ["boxes.mp"]    = "mp-remapped-boxes.mp",
+    ["hatching"]    = "mp-remapped-hatching.mp",
+    ["boxes"]       = "mp-remapped-boxes.mp",
+}
+
 finders.file = function(specification,name,mode,ftype)
-    return resolvers.findfile(name,validftype(ftype))
+    local usedname = remapped[name] or name
+    return resolvers.findfile(usedname,validftype(ftype))
 end
 
 local function i_finder(name,mode,ftype) -- fake message for mpost.map and metafun.mpvi

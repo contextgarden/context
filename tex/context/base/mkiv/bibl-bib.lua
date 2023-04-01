@@ -6,11 +6,9 @@ if not modules then modules = { } end modules ['bibl-bib'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>This is a prelude to integrated bibliography support. This file just loads
-bibtex files and converts them to xml so that the we access the content
-in a convenient way. Actually handling the data takes place elsewhere.</p>
---ldx]]--
+-- This is a prelude to integrated bibliography support. This file just loads bibtex
+-- files and converts them to xml so that the we access the content in a convenient
+-- way. Actually handling the data takes place elsewhere.
 
 local lower, format, gsub, concat = string.lower, string.format, string.gsub, table.concat
 local next = next

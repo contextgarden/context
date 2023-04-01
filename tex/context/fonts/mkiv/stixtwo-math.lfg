@@ -168,6 +168,29 @@ return {
                     advance = 0.4,
                 },
                 {
+                    tweak    = "replacerules",
+                    minus    = {
+                        height      = .233,
+                        yoffset     = .768,
+                     -- leftoffset  = .2,
+                     -- rightoffset = .2,
+                    },
+                    fraction = {
+                        height  = .233,
+                        yoffset = .768,
+                    },
+                    radical  = {
+                        height      = .233,
+                        yoffset     = .768,
+                        leftoffset  = .05,
+                        rightoffset = .05,
+                    },
+                    stacker  = {
+                        height  = .233,
+                        yoffset = .768,
+                    },
+                },
+                {
                     tweak = "addactuarian",
                 },
                 {

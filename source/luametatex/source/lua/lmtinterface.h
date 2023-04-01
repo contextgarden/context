@@ -405,7 +405,13 @@ extern lmt_interface_info lmt_interface;
 # define lmt_name_of_math_indirect(n)       lmt_interface.math_indirect_values      [n].name
 # define lmt_name_of_field_type(n)          lmt_interface.field_type_values         [n].name
 
-/*tex This list will be made smaller because not all values need the boost. */
+/*tex 
+    This list will be made smaller because not all values need the boost. Before we define the 
+    lot we undefine some possibly conflicting snippets. Actually, we don't really define the 
+    key's here but assemble more complex references to registry indices and variables. 
+*/
+
+# undef quad /* CYGWIN */
 
 # define declare_shared_lua_keys(L) \
 /* */\
@@ -872,6 +878,7 @@ make_lua_key(L, mathcontrol);\
 make_lua_key(L, mathdir);\
 make_lua_key(L, mathfence);\
 make_lua_key(L, mathfraction);\
+make_lua_key(L, mathkern);\
 make_lua_key(L, mathkerns);\
 make_lua_key(L, MathLeading);\
 make_lua_key(L, mathoperator);\

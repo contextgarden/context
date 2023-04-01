@@ -6,49 +6,45 @@ if not modules then modules = { } end modules ['sort-ini'] = {
     license   = "see context related readme files"
 }
 
--- It took a while to get there, but with Fleetwood Mac's "Don't Stop"
--- playing in the background we sort of got it done.
-
---[[<p>The code here evolved from the rather old mkii approach. There
-we concatinate the key and (raw) entry into a new string. Numbers and
-special characters get some treatment so that they sort ok. In
-addition some normalization (lowercasing, accent stripping) takes
-place and again data is appended ror prepended. Eventually these
-strings are sorted using a regular string sorter. The relative order
-of character is dealt with by weighting them. It took a while to
-figure this all out but eventually it worked ok for most languages,
-given that the right datatables were provided.</p>
-
-<p>Here we do follow a similar approach but this time we don't append
-the manipulated keys and entries but create tables for each of them
-with entries being tables themselves having different properties. In
-these tables characters are represented by numbers and sorting takes
-place using these numbers. Strings are simplified using lowercasing
-as well as shape codes. Numbers are filtered and after getting an offset
-they end up at the right end of the spectrum (more clever parser will
-be added some day). There are definitely more solutions to the problem
-and it is a nice puzzle to solve.</p>
-
-<p>In the future more methods can be added, as there is practically no
-limit to what goes into the tables. For that we will provide hooks.</p>
-
-<p>Todo: decomposition with specific order of accents, this is
-relatively easy to do.</p>
-
-<p>Todo: investigate what standards and conventions there are and see
-how they map onto this mechanism. I've learned that users can come up
-with any demand so nothing here is frozen.</p>
-
-<p>Todo: I ran into the Unicode Collation document and noticed that
-there are some similarities (like the weights) but using that method
-would still demand extra code for language specifics. One option is
-to use the allkeys.txt file for the uc vectors but then we would also
-use the collapsed key (sq, code is now commented). In fact, we could
-just hook those into the replacer code that we reun beforehand.</p>
-
-<p>In the future index entries will become more clever, i.e. they will
-have language etc properties that then can be used.</p>
-]]--
+-- It took a while to get there, but with Fleetwood Mac's "Don't Stop" playing in
+-- the background we sort of got it done.
+--
+-- The code here evolved from the rather old mkii approach. There we concatinate the
+-- key and (raw) entry into a new string. Numbers and special characters get some
+-- treatment so that they sort ok. In addition some normalization (lowercasing,
+-- accent stripping) takes place and again data is appended ror prepended.
+-- Eventually these strings are sorted using a regular string sorter. The relative
+-- order of character is dealt with by weighting them. It took a while to figure
+-- this all out but eventually it worked ok for most languages, given that the right
+-- datatables were provided.
+--
+-- Here we do follow a similar approach but this time we don't append the
+-- manipulated keys and entries but create tables for each of them with entries
+-- being tables themselves having different properties. In these tables characters
+-- are represented by numbers and sorting takes place using these numbers. Strings
+-- are simplified using lowercasing as well as shape codes. Numbers are filtered and
+-- after getting an offset they end up at the right end of the spectrum (more clever
+-- parser will be added some day). There are definitely more solutions to the
+-- problem and it is a nice puzzle to solve.
+--
+-- In the future more methods can be added, as there is practically no limit to what
+-- goes into the tables. For that we will provide hooks.
+--
+-- Todo: decomposition with specific order of accents, this is relatively easy to
+-- do.
+--
+-- Todo: investigate what standards and conventions there are and see how they map
+-- onto this mechanism. I've learned that users can come up with any demand so
+-- nothing here is frozen.
+--
+-- Todo: I ran into the Unicode Collation document and noticed that there are some
+-- similarities (like the weights) but using that method would still demand extra
+-- code for language specifics. One option is to use the allkeys.txt file for the uc
+-- vectors but then we would also use the collapsed key (sq, code is now commented).
+-- In fact, we could just hook those into the replacer code that we reun beforehand.
+--
+-- In the future index entries will become more clever, i.e. they will have language
+-- etc properties that then can be used.
 
 local gsub, find, rep, sub, sort, concat, tohash, format = string.gsub, string.find, string.rep, string.sub, table.sort, table.concat, table.tohash, string.format
 local utfbyte, utfchar, utfcharacters = utf.byte, utf.char, utf.characters

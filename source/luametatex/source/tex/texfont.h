@@ -600,6 +600,7 @@ extern scaled    tex_char_bottom_margin_from_font       (halfword f, halfword c)
 extern scaled    tex_char_top_overshoot_from_font       (halfword f, halfword c);
 extern scaled    tex_char_bottom_overshoot_from_font    (halfword f, halfword c);
 extern extinfo  *tex_char_extensible_recipe_from_font   (halfword f, halfword c);
+extern extinfo  *tex_char_extensible_recipe_front_last  (halfword f, halfword c);
 
 extern halfword  tex_char_unchecked_top_anchor_from_font    (halfword f, halfword c);
 extern halfword  tex_char_unchecked_bottom_anchor_from_font (halfword f, halfword c);

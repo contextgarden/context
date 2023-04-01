@@ -2339,7 +2339,7 @@ typedef enum scanned_unit {
 
 static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, halfword *order)
 {
-  AGAIN: /* only for true */
+//AGAIN: /* only for true */
     do {
         tex_get_x_token();
     } while (cur_cmd == spacer_cmd);
@@ -2436,15 +2436,21 @@ static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, ha
                 }
                 break;
             case 't': case 'T':
-                if (order) {
-                    switch (chrtwo) {
-                        case 'r': case 'R':
-                            if (tex_scan_mandate_keyword("true", 2)) {
-                                /*tex This is now a bogus prefix that might get dropped! */
-                                goto AGAIN;
-                            }
-                    }
+                switch (chrtwo) {
+                    case 's': case 'S':
+                        *num = 4588;
+                        *denom = 645;
+                        return normal_unit_scanned;
                 }
+             // if (order) {
+             //     switch (chrtwo) {
+             //         case 'r': case 'R':
+             //             if (tex_scan_mandate_keyword("true", 2)) {
+             //                 /*tex This is now a bogus prefix that might get dropped! */
+             //                 goto AGAIN;
+             //             }
+             //     }
+             // }
                 break;
             case 'e': case 'E':
                 switch (chrtwo) {
@@ -2454,6 +2460,14 @@ static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, ha
                     case 'x': case 'X':
                         *value = tex_get_scaled_ex_height(cur_font_par);
                         return relative_unit_scanned;
+                    case 's': case 'S':
+                        *num = 9176;
+                        *denom = 129;
+                        return normal_unit_scanned;
+                    case 'u': case 'U':
+                        *num = 9176 * eu_factor_par;
+                        *denom = 129 * 10;
+                        return normal_unit_scanned;
                 }
                 break;
             case 'f': case 'F':
@@ -2486,7 +2500,7 @@ static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, ha
 
 /*tex
     When we drop |true| support we can use the next variant which is a bit more efficient
-    and also handles optional units. LAter we will see a more limited variant that also
+    and also handles optional units. Later we will see a more limited variant that also
     includes the scaler.
 */
 
@@ -2557,6 +2571,17 @@ static int tex_aux_scan_unit_new(halfword *num, halfword *denom, halfword *value
                     }
                 }
                 break;
+            case 't': case 'T':
+                tex_get_x_token();
+                if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
+                    switch (cur_chr) {
+                        case 's': case 'S':
+                            *num = 4588;
+                            *denom = 645;
+                            return normal_unit_scanned;
+                    }
+                }
+                break;
             case 'b': case 'B':
                 tex_get_x_token();
                 if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
@@ -2600,6 +2625,14 @@ static int tex_aux_scan_unit_new(halfword *num, halfword *denom, halfword *value
                         case 'x': case 'X':
                             *value = tex_get_scaled_ex_height(cur_font_par);
                             return relative_unit_scanned;
+                        case 's': case 'S':
+                            *num = 9176;
+                            *denom = 129;
+                            return normal_unit_scanned;
+                        case 'u': case 'U':
+                            *num = 9176 * eu_factor_par;
+                            *denom = 129 * 10;
+                            return normal_unit_scanned;
                     }
                 }
                 break;
@@ -4801,6 +4834,17 @@ static halfword tex_aux_scan_unit_applied(halfword value, halfword fraction, int
                     }
                 }
                 break;
+            case 't': case 'T':
+                tex_get_x_token();
+                if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
+                    switch (cur_chr) {
+                        case 's': case 'S':
+                            num = 4588;
+                            denom = 645;
+                            goto NORMALUNIT;
+                    }
+                }
+                break;
             case 'b': case 'B':
                 tex_get_x_token();
                 if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
@@ -4842,6 +4886,14 @@ static halfword tex_aux_scan_unit_applied(halfword value, halfword fraction, int
                             return tex_get_scaled_em_width(cur_font_par);
                         case 'x': case 'X':
                             return tex_get_scaled_ex_height(cur_font_par);
+                        case 's': case 'S':
+                            num = 9176;
+                            denom = 129;
+                            goto NORMALUNIT;
+                        case 'u': case 'U':
+                            num = 9176 * eu_factor_par;
+                            denom = 129 * 10;
+                            goto NORMALUNIT;
                     }
                 }
                 break;

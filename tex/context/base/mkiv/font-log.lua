@@ -19,12 +19,9 @@ fonts.loggers     = loggers
 local usedfonts   = utilities.storage.allocate()
 ----- loadedfonts = utilities.storage.allocate()
 
---[[ldx--
-<p>The following functions are used for reporting about the fonts
-used. The message itself is not that useful in regular runs but since
-we now have several readers it may be handy to know what reader is
-used for which font.</p>
---ldx]]--
+-- The following functions are used for reporting about the fonts used. The message
+-- itself is not that useful in regular runs but since we now have several readers
+-- it may be handy to know what reader is used for which font.
 
 function loggers.onetimemessage(font,char,message,reporter)
     local tfmdata = fonts.hashes.identifiers[font]

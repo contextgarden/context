@@ -378,6 +378,12 @@
 \integerdef\delimitedrightanutityuc \privatecharactercode{delimited right annuity}
 \integerdef\radicalbarextenderuc    \privatecharactercode{radical bar extender}
 
+%D We now default to nice bars:
+
+\setupmathradical
+  [\c!rule=\v!symbol,
+   \c!top=\radicalbarextenderuc]
+
 \definemathradical
   [rannuity]
   [\c!left=\zerocount,

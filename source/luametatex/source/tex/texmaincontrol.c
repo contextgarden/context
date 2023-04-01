@@ -5938,6 +5938,14 @@ void tex_assign_internal_int_value(int a, halfword p, int val)
             }
             goto DEFINE;
         */
+        case eu_factor_code:
+            if (val < 1) {
+                val = 1;
+            } else if (val > 50) { 
+                val = 50;
+            }
+            tex_word_define(a, p, val);
+            break;
         default:
           DEFINE:
             tex_word_define(a, p, val);
@@ -6576,6 +6584,7 @@ void tex_initialize_variables(void)
         math_font_control_par = assumed_math_control; 
         math_eqno_gap_step_par = default_eqno_gap_step;
         px_dimen_par = one_bp;
+        eu_factor_par = 1000;
         show_node_details_par = 2; /*tex $>1$: |[subtype]| $>2$: |[attributes]| */
         ex_hyphen_char_par = '-';
         escape_char_par = '\\';

@@ -123,6 +123,13 @@ return {
                     tweak = "addrules",
                 },
                 {
+                    tweak    = "replacerules",
+                 -- minus    = true, -- we have an extensible
+                    fraction = { height = .2, yoffset = .8 },
+                    radical  = { height = .2, yoffset = .8 },
+                    stacker  = { height = .2, yoffset = .8 },
+                },
+                {
                     tweak   = "addbars",
                     advance = 0.3,
                 },

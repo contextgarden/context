@@ -15,6 +15,9 @@
 # mtxrun.lua       (latest version)
 # context.lua      (latest version)
 
+# This test is not yet okay but I have no time (or motivation) to look into it now, so for now we don't 
+# use ninja (not that critical).  
+
 #NINJA=$(which ninja); 
 #if (NINJA) then
 #    NINJA="-G Ninja"
@@ -48,6 +51,15 @@ then
     mkdir -p build/mingw-64-ucrt
     cd       build/mingw-64-ucrt
     cmake $NINJA -DCMAKE_TOOLCHAIN_FILE=./cmake/mingw-64-ucrt.cmake ../..
+
+
+elif [ "$1" = "cygwin" ] || [ "$1" = "--cygwin" ]
+then
+    PLATFORM="cygwin"
+    SUFFIX=".exe"
+    mkdir -p build/cygwin
+    cd       build/cygwin
+    cmake $NINJA ../..
 
 else
 

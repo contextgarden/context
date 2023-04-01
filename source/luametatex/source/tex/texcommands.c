@@ -277,7 +277,8 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "alignmentwrapsource",            internal_int_cmd,       alignment_wrap_source_code,               internal_int_base);
      /* tex_primitive(luatex_command, "pageboundarypenalty",            internal_int_cmd,       page_boundary_penalty_code,               internal_int_base); */ 
         tex_primitive(luatex_command, "linebreakcriterium",             internal_int_cmd,       line_break_criterium_code,                internal_int_base);
-
+        tex_primitive(luatex_command, "eufactor",                       internal_int_cmd,       eu_factor_code,                           internal_int_base);
+        
         /*tex dimensions */
 
         tex_primitive(tex_command,    "boxmaxdepth",                    internal_dimen_cmd,     box_max_depth_code,                       internal_dimen_base);

@@ -6,10 +6,8 @@ if not modules then modules = { } end modules ['pack-obj'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>We save object references in the main utility table. jobobjects are
-reusable components.</p>
---ldx]]--
+-- We save object references in the main utility table; job objects are reusable
+-- components.
 
 local context         = context
 local codeinjections  = backends.codeinjections

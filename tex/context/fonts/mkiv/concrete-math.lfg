@@ -87,6 +87,13 @@ return {
                     advance = 0.6,
                 },
                 {
+                    tweak    = "replacerules",
+                    minus    = true,
+                    fraction = { height = .2, yoffset = .8 },
+                    radical  = { height = .2, yoffset = .8, leftoffset = .2 },
+                    stacker  = { height = .2, yoffset = .8 },
+                },
+                {
                     tweak = "addactuarian",
                 },
                 {

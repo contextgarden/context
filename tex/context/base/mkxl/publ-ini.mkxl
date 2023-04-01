@@ -342,7 +342,7 @@
 \newtoks\t_btx_cmd
 \newbox \b_btx_cmd
 
-\t_btx_cmd{\global\setbox\b_btx_cmd\hpack{\clf_btxcmdstring}}
+\t_btx_cmd{\global\setbox\b_btx_cmd\hbox{\clf_btxcmdstring}} % no \hpack, otherwise prerolling --- doesn't work
 
 \aliased\let\btxcmd\btxcommand
 

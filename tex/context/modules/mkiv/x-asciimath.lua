@@ -6,15 +6,14 @@ if not modules then modules = { } end modules ['x-asciimath'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>Some backgrounds are discussed in <t>x-asciimath.mkiv</t>. This is a third version. I first
-tried a to make a proper expression parser but it's not that easy. First we have to avoid left
-recursion, which is not that trivial (maybe a future version of lpeg will provide that), and
-second there is not really a syntax but a mix of expressions and sequences with some fuzzy logic
-applied. Most problematic are fractions and we also need to handle incomplete expressions. So,
-instead we (sort of) tokenize the string and then do some passes over the result. Yes, it's real
-ugly and unsatisfying code mess down here. Don't take this as an example.</p>
---ldx]]--
+-- Some backgrounds are discussed in 'x-asciimath.mkiv'. This is a third version. I
+-- first tried a to make a proper expression parser but it's not that easy. First we
+-- have to avoid left recursion, which is not that trivial (maybe a future version
+-- of lpeg will provide that), and second there is not really a syntax but a mix of
+-- expressions and sequences with some fuzzy logic applied. Most problematic are
+-- fractions and we also need to handle incomplete expressions. So, instead we (sort
+-- of) tokenize the string and then do some passes over the result. Yes, it's real
+-- ugly and unsatisfying code mess down here. Don't take this as an example.
 
 -- todo: spaces around all elements in cleanup?
 -- todo: filter from files listed in tuc file

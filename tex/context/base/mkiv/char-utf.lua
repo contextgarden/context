@@ -6,21 +6,19 @@ if not modules then modules = { } end modules ['char-utf'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>When a sequence of <l n='utf'/> characters enters the application, it may be
-neccessary to collapse subsequences into their composed variant.</p>
-
-<p>This module implements methods for collapsing and expanding <l n='utf'/>
-sequences. We also provide means to deal with characters that are special to
-<l n='tex'/> as well as 8-bit characters that need to end up in special kinds
-of output (for instance <l n='pdf'/>).</p>
-
-<p>We implement these manipulations as filters. One can run multiple filters
-over a string.</p>
-
-<p>The old code has now been moved to char-obs.lua which we keep around for
-educational purposes.</p>
---ldx]]--
+-- When a sequence of UTF characters enters the application, it may be
+-- neccessary to collapse subsequences into their composed variant.
+--
+-- This module implements methods for collapsing and expanding UTF sequences. We
+-- also provide means to deal with characters that are special to TeX as well as
+-- 8-bit characters that need to end up in special kinds of output (for instance
+-- PDF).
+--
+-- We implement these manipulations as filters. One can run multiple filters over a
+-- string.
+--
+-- The old code has now been moved to char-obs.lua which we keep around for
+-- educational purposes.
 
 local next, type = next, type
 local gsub, find = string.gsub, string.find
@@ -55,10 +53,8 @@ characters.filters.utf      = utffilters
 
 local data                  = characters.data
 
---[[ldx--
-<p>It only makes sense to collapse at runtime, since we don't expect source code
-to depend on collapsing.</p>
---ldx]]--
+-- It only makes sense to collapse at runtime, since we don't expect source code to
+-- depend on collapsing.
 
 -- for the moment, will be entries in char-def.lua .. this is just a subset that for
 -- typographic (font) reasons we want to have split ... if we decompose all, we get

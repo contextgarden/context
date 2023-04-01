@@ -135,16 +135,35 @@ local criticalvars = {
 -- we also report weird ones, with weird being: (1) duplicate /texmf or (2) no /web2c in
 -- the names.
 
+-- if environment.default_texmfcnf then
+--     resolvers.luacnfspec = "home:texmf/web2c;" .. environment.default_texmfcnf -- texlive + home: for taco etc
+-- else
+--     resolvers.luacnfspec = concat ( {
+--         "home:texmf/web2c",
+--         "selfautoparent:/texmf-local/web2c",
+--         "selfautoparent:/texmf-context/web2c",
+--         "selfautoparent:/texmf-dist/web2c",
+--         "selfautoparent:/texmf/web2c",
+--     }, ";")
+-- end
+
 if environment.default_texmfcnf then
+    -- this will go away (but then also no more checking in mtxrun.lua itself)
     resolvers.luacnfspec = "home:texmf/web2c;" .. environment.default_texmfcnf -- texlive + home: for taco etc
 else
-    resolvers.luacnfspec = concat ( {
-        "home:texmf/web2c",
-        "selfautoparent:/texmf-local/web2c",
-        "selfautoparent:/texmf-context/web2c",
-        "selfautoparent:/texmf-dist/web2c",
-        "selfautoparent:/texmf/web2c",
-    }, ";")
+    local texroot = environment.texroot
+    resolvers.luacnfspec = "home:texmf/web2c;selfautoparent:/texmf-local/web2c;selfautoparent:/texmf-context/web2c;selfautoparent:/texmf/web2c"
+    if texroot and isdir(texroot .. "/texmf-context") then
+        -- we're okay and run the lean and mean installation
+    elseif texroot and isdir(texroot .. "/texmf-dist") then
+        -- we're in texlive where texmf-dist is leading
+        resolvers.luacnfspec = "home:texmf/web2c;selfautoparent:/texmf-local/web2c;selfautoparent:/texmf-dist/web2c;selfautoparent:/texmf/web2c"
+    elseif ostype ~= "windows" and isdir("/etc/texmf/web2c") then
+        -- we have some linux distribution that does it its own way
+        resolvers.luacnfspec = "home:texmf/web2c;/etc/texmf/web2c;selfautodir:/share/texmf/web2c"
+    else
+        -- we stick to the reference specification
+    end
 end
 
 local unset_variable = "unset"

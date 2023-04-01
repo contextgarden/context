@@ -67,7 +67,6 @@ local lpdf              = lpdf
 local lpdf_epdf         = { }
       lpdf.epdf         = lpdf_epdf
 
-local pdfopen           = pdfe.open
 local pdfopenfile       = pdfe.openfile
 local pdfnew            = pdfe.new
 local pdfclose          = pdfe.close
@@ -540,10 +539,9 @@ function lpdf_epdf.load(filename,userpassword,ownerpassword,fromstring)
         local __file__
         if fromstring then
             __data__ = pdfnew(filename,#filename)
-        elseif pdfopenfile then
-            __data__ = pdfopenfile(ioopen(filename,"rb"))
         else
-            __data__ = pdfopen(filename)
+            local f = ioopen(filename,"rb")
+            __data__ = f and pdfopenfile(f)
         end
         if __data__ then
             if userpassword and getstatus(__data__) < 0 then

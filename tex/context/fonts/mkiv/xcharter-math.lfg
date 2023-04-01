@@ -77,6 +77,28 @@ return {
                 {
                     tweak = "addrules",
                 },
+{
+    tweak    = "replacerules",
+    -- minus = {
+    --     height      = 0.188,
+    --     yoffset     = 0.812,
+    --     leftoffset  = 0.2,
+        -- rightoffset = 0.2,
+    -- },
+    fraction = {
+        height  = .188,
+        yoffset = .812,
+    },
+    radical = {
+        height     = .188,
+        yoffset    = .812,
+        leftoffset = 0.2,-- no effect?
+    },
+    stacker = {
+        height  = .188,
+        yoffset = .812,
+    },
+},
                 {
                     tweak = "addactuarian",
                 },

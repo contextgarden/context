@@ -1763,10 +1763,10 @@ static int tex_aux_scan_active_math_char(mathcodeval *mval, int where)
                 return 0;
             case active_char_cmd:
                 /*tex 
-                    We reset the code so that we don't get a loop, whuich means that the macro that 
+                    We reset the code so that we don't get a loop, which means that the macro that 
                     gets invoked has to set the amcode again if needed. 
                 */
-                tex_set_am_code(character, other_char_cmd, 0);
+                tex_set_am_code(character, other_char_cmd, cur_level);
                 cur_cs = tex_active_to_cs(cur_chr, 1);
                 cur_cmd = eq_type(cur_cs);
                 cur_chr = eq_value(cur_cs);
@@ -1783,7 +1783,7 @@ static int tex_aux_scan_active_math_char(mathcodeval *mval, int where)
                 return 1;
         }
     } else if (mval->class_value == active_math_class_value) {
-        /*tex We might eventually drop tthis feature in favor of the amcode. */
+        /*tex We might eventually drop this feature in favor of the amcode. */
         cur_cs = tex_active_to_cs(cur_chr, 1);
         cur_cmd = eq_type(cur_cs);
         cur_chr = eq_value(cur_cs);

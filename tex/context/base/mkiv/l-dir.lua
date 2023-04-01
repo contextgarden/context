@@ -21,7 +21,8 @@ local dir = dir
 local lfs = lfs
 
 local attributes = lfs.attributes
-local walkdir    = lfs.dir
+----- walkdir    = lfs.dir
+local scandir    = lfs.dir
 local isdir      = lfs.isdir  -- not robust, will be overloaded anyway
 local isfile     = lfs.isfile -- not robust, will be overloaded anyway
 local currentdir = lfs.currentdir
@@ -68,6 +69,20 @@ else
     lfs.isfile = isfile
 
 end
+
+-- safeguard
+
+local isreadable = file.isreadable
+
+local walkdir = function(p,...)
+    if isreadable(p.."/.") then
+        return scandir(p,...)
+    else
+        return function() end
+    end
+end
+
+lfs.walkdir = walkdir
 
 -- handy
 

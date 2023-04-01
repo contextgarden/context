@@ -1887,6 +1887,20 @@ extinfo *tex_char_extensible_recipe_from_font(halfword f, halfword c)
     return ci->math ? ci->math->extensible_recipe : NULL;
 }
 
+extinfo *tex_char_extensible_recipe_front_last(halfword f, halfword c)
+{
+    charinfo *ci = tex_aux_char_info(f, c);
+    while (ci) { 
+        halfword next = ci->math ? ci->math->next : -1;
+        if (next > 0) { // no zero 
+            ci = tex_aux_char_info(f, c);
+        } else { 
+            return ci->math ? ci->math->extensible_recipe : NULL;
+        }
+    }
+    return NULL;
+}
+
 scaled tex_char_left_margin_from_font(halfword f, halfword c)
 {
     charinfo *ci = tex_aux_char_info(f, c);

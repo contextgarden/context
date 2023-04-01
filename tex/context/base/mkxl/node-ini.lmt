@@ -6,19 +6,13 @@ if not modules then modules = { } end modules ['node-ini'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>Most of the code that had accumulated here is now separated in modules.</p>
---ldx]]--
-
 local next, type, tostring = next, type, tostring
 local gsub = string.gsub
 local concat, remove = table.concat, table.remove
 local sortedhash, sortedkeys, swapped = table.sortedhash, table.sortedkeys, table.swapped
 
---[[ldx--
-<p>Access to nodes is what gives <l n='luatex'/> its power. Here we implement a
-few helper functions. These functions are rather optimized.</p>
---ldx]]--
+-- Access to nodes is what gives LuaTeX its power. Here we implement a few helper
+-- functions. These functions are rather optimized.
 
 nodes                = nodes or { }
 local nodes          = nodes

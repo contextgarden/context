@@ -134,6 +134,16 @@
         applied toy the times. I couldn't figure it out and don't want to waste more time on it.
     */
 
+    /* 
+        A windows path should not end with a / so maybe we should check for that and remove it when
+        we have one. Even better is to add a period. 
+
+        size_t l = wcslen(w) - 1;
+        if (w[l] == L'/') {
+            w[l] == L'\0');
+        }
+    */
+
     typedef struct dir_data {
         intptr_t handle;
         int      closed;

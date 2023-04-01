@@ -7,92 +7,90 @@ if not modules then modules = { } end modules ['font-ots'] = { -- sequences
     license   = "see context related readme files",
 }
 
---[[ldx--
-<p>I need to check the description at the microsoft site ... it has been improved
-so maybe there are some interesting details there. Most below is based on old and
-incomplete documentation and involved quite a bit of guesswork (checking with the
-abstract uniscribe of those days. But changing things is tricky!</p>
-
-<p>This module is a bit more split up that I'd like but since we also want to test
-with plain <l n='tex'/> it has to be so. This module is part of <l n='context'/>
-and discussion about improvements and functionality mostly happens on the
-<l n='context'/> mailing list.</p>
-
-<p>The specification of OpenType is (or at least decades ago was) kind of vague.
-Apart from a lack of a proper free specifications there's also the problem that
-Microsoft and Adobe may have their own interpretation of how and in what order to
-apply features. In general the Microsoft website has more detailed specifications
-and is a better reference. There is also some information in the FontForge help
-files. In the end we rely most on the Microsoft specification.</p>
-
-<p>Because there is so much possible, fonts might contain bugs and/or be made to
-work with certain rederers. These may evolve over time which may have the side
-effect that suddenly fonts behave differently. We don't want to catch all font
-issues.</p>
-
-<p>After a lot of experiments (mostly by Taco, me and Idris) the first implementation
-was already quite useful. When it did most of what we wanted, a more optimized version
-evolved. Of course all errors are mine and of course the code can be improved. There
-are quite some optimizations going on here and processing speed is currently quite
-acceptable and has been improved over time. Many complex scripts are not yet supported
-yet, but I will look into them as soon as <l n='context'/> users ask for it.</p>
-
-<p>The specification leaves room for interpretation. In case of doubt the Microsoft
-implementation is the reference as it is the most complete one. As they deal with
-lots of scripts and fonts, Kai and Ivo did a lot of testing of the generic code and
-their suggestions help improve the code. I'm aware that not all border cases can be
-taken care of, unless we accept excessive runtime, and even then the interference
-with other mechanisms (like hyphenation) are not trivial.</p>
-
-<p>Especially discretionary handling has been improved much by Kai Eigner who uses complex
-(latin) fonts. The current implementation is a compromis between his patches and my code
-and in the meantime performance is quite ok. We cannot check all border cases without
-compromising speed but so far we're okay. Given good test cases we can probably improve
-it here and there. Especially chain lookups are non trivial with discretionaries but
-things got much better over time thanks to Kai.</p>
-
-<p>Glyphs are indexed not by unicode but in their own way. This is because there is no
-relationship with unicode at all, apart from the fact that a font might cover certain
-ranges of characters. One character can have multiple shapes. However, at the
-<l n='tex'/> end we use unicode so and all extra glyphs are mapped into a private
-space. This is needed because we need to access them and <l n='tex'/> has to include
-then in the output eventually.</p>
-
-<p>The initial data table is rather close to the open type specification and also not
-that different from the one produced by <l n='fontforge'/> but we uses hashes instead.
-In <l n='context'/> that table is packed (similar tables are shared) and cached on disk
-so that successive runs can use the optimized table (after loading the table is
-unpacked).</p>
-
-<p>This module is sparsely documented because it is has been a moving target. The
-table format of the reader changed a bit over time and we experiment a lot with
-different methods for supporting features. By now the structures are quite stable</p>
-
-<p>Incrementing the version number will force a re-cache. We jump the number by one
-when there's a fix in the reader or processing code that can result in different
-results.</p>
-
-<p>This code is also used outside context but in context it has to work with other
-mechanisms. Both put some constraints on the code here.</p>
-
---ldx]]--
-
--- Remark: We assume that cursives don't cross discretionaries which is okay because it
--- is only used in semitic scripts.
+-- I need to check the description at the microsoft site ... it has been improved so
+-- maybe there are some interesting details there. Most below is based on old and
+-- incomplete documentation and involved quite a bit of guesswork (checking with the
+-- abstract uniscribe of those days. But changing things is tricky!
+--
+-- This module is a bit more split up that I'd like but since we also want to test
+-- with plain TeX it has to be so. This module is part of ConTeXt and discussion
+-- about improvements and functionality mostly happens on the ConTeXt mailing list.
+--
+-- The specification of OpenType is (or at least decades ago was) kind of vague.
+-- Apart from a lack of a proper free specifications there's also the problem that
+-- Microsoft and Adobe may have their own interpretation of how and in what order to
+-- apply features. In general the Microsoft website has more detailed specifications
+-- and is a better reference. There is also some information in the FontForge help
+-- files. In the end we rely most on the Microsoft specification.
+--
+-- Because there is so much possible, fonts might contain bugs and/or be made to
+-- work with certain rederers. These may evolve over time which may have the side
+-- effect that suddenly fonts behave differently. We don't want to catch all font
+-- issues.
+--
+-- After a lot of experiments (mostly by Taco, me and Idris) the first
+-- implementation was already quite useful. When it did most of what we wanted, a
+-- more optimized version evolved. Of course all errors are mine and of course the
+-- code can be improved. There are quite some optimizations going on here and
+-- processing speed is currently quite acceptable and has been improved over time.
+-- Many complex scripts are not yet supported yet, but I will look into them as soon
+-- as ConTeXt users ask for it.
+--
+-- The specification leaves room for interpretation. In case of doubt the Microsoft
+-- implementation is the reference as it is the most complete one. As they deal with
+-- lots of scripts and fonts, Kai and Ivo did a lot of testing of the generic code
+-- and their suggestions help improve the code. I'm aware that not all border cases
+-- can be taken care of, unless we accept excessive runtime, and even then the
+-- interference with other mechanisms (like hyphenation) are not trivial.
+--
+-- Especially discretionary handling has been improved much by Kai Eigner who uses
+-- complex (latin) fonts. The current implementation is a compromis between his
+-- patches and my code and in the meantime performance is quite ok. We cannot check
+-- all border cases without compromising speed but so far we're okay. Given good
+-- test cases we can probably improve it here and there. Especially chain lookups
+-- are non trivial with discretionaries but things got much better over time thanks
+-- to Kai.
+--
+-- Glyphs are indexed not by unicode but in their own way. This is because there is
+-- no relationship with unicode at all, apart from the fact that a font might cover
+-- certain ranges of characters. One character can have multiple shapes. However, at
+-- the TeX end we use unicode so and all extra glyphs are mapped into a private
+-- space. This is needed because we need to access them and TeX has to include then
+-- in the output eventually.
+--
+-- The initial data table is rather close to the open type specification and also
+-- not that different from the one produced by Fontforge but we uses hashes instead.
+-- In ConTeXt that table is packed (similar tables are shared) and cached on disk so
+-- that successive runs can use the optimized table (after loading the table is
+-- unpacked).
+--
+-- This module is sparsely documented because it is has been a moving target. The
+-- table format of the reader changed a bit over time and we experiment a lot with
+-- different methods for supporting features. By now the structures are quite stable
+--
+-- Incrementing the version number will force a re-cache. We jump the number by one
+-- when there's a fix in the reader or processing code that can result in different
+-- results.
+--
+-- This code is also used outside ConTeXt but in ConTeXt it has to work with other
+-- mechanisms. Both put some constraints on the code here.
+--
+-- Remark: We assume that cursives don't cross discretionaries which is okay because
+-- it is only used in semitic scripts.
 --
 -- Remark: We assume that marks precede base characters.
 --
--- Remark: When complex ligatures extend into discs nodes we can get side effects. Normally
--- this doesn't happen; ff\d{l}{l}{l} in lm works but ff\d{f}{f}{f}.
+-- Remark: When complex ligatures extend into discs nodes we can get side effects.
+-- Normally this doesn't happen; ff\d{l}{l}{l} in lm works but ff\d{f}{f}{f}.
 --
 -- Todo: check if we copy attributes to disc nodes if needed.
 --
--- Todo: it would be nice if we could get rid of components. In other places we can use
--- the unicode properties. We can just keep a lua table.
+-- Todo: it would be nice if we could get rid of components. In other places we can
+-- use the unicode properties. We can just keep a lua table.
 --
--- Remark: We do some disc juggling where we need to keep in mind that the pre, post and
--- replace fields can have prev pointers to a nesting node ... I wonder if that is still
--- needed.
+-- Remark: We do some disc juggling where we need to keep in mind that the pre, post
+-- and replace fields can have prev pointers to a nesting node ... I wonder if that
+-- is still needed.
 --
 -- Remark: This is not possible:
 --
@@ -1092,10 +1090,8 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,skiphash,st
     end
 end
 
---[[ldx--
-<p>We get hits on a mark, but we're not sure if the it has to be applied so
-we need to explicitly test for basechar, baselig and basemark entries.</p>
---ldx]]--
+-- We get hits on a mark, but we're not sure if the it has to be applied so we need
+-- to explicitly test for basechar, baselig and basemark entries.
 
 function handlers.gpos_mark2base(head,start,dataset,sequence,markanchors,rlmode,skiphash)
     local markchar = getchar(start)
@@ -1292,10 +1288,8 @@ function handlers.gpos_cursive(head,start,dataset,sequence,exitanchors,rlmode,sk
     return head, start, false
 end
 
---[[ldx--
-<p>I will implement multiple chain replacements once I run into a font that uses
-it. It's not that complex to handle.</p>
---ldx]]--
+-- I will implement multiple chain replacements once I run into a font that uses it.
+-- It's not that complex to handle.
 
 local chainprocs = { }
 
@@ -1348,29 +1342,22 @@ end
 
 chainprocs.reversesub = reversesub
 
---[[ldx--
-<p>This chain stuff is somewhat tricky since we can have a sequence of actions to be
-applied: single, alternate, multiple or ligature where ligature can be an invalid
-one in the sense that it will replace multiple by one but not neccessary one that
-looks like the combination (i.e. it is the counterpart of multiple then). For
-example, the following is valid:</p>
-
-<typing>
-<line>xxxabcdexxx [single a->A][multiple b->BCD][ligature cde->E] xxxABCDExxx</line>
-</typing>
-
-<p>Therefore we we don't really do the replacement here already unless we have the
-single lookup case. The efficiency of the replacements can be improved by deleting
-as less as needed but that would also make the code even more messy.</p>
---ldx]]--
-
---[[ldx--
-<p>Here we replace start by a single variant.</p>
---ldx]]--
-
--- To be done (example needed): what if > 1 steps
-
--- this is messy: do we need this disc checking also in alternates?
+-- This chain stuff is somewhat tricky since we can have a sequence of actions to be
+-- applied: single, alternate, multiple or ligature where ligature can be an invalid
+-- one in the sense that it will replace multiple by one but not neccessary one that
+-- looks like the combination (i.e. it is the counterpart of multiple then). For
+-- example, the following is valid:
+--
+--   xxxabcdexxx [single a->A][multiple b->BCD][ligature cde->E] xxxABCDExxx
+--
+-- Therefore we we don't really do the replacement here already unless we have the
+-- single lookup case. The efficiency of the replacements can be improved by
+-- deleting as less as needed but that would also make the code even more messy.
+--
+-- Here we replace start by a single variant.
+--
+-- To be done   : what if > 1 steps (example needed)
+-- This is messy: do we need this disc checking also in alternates?
 
 local function reportzerosteps(dataset,sequence)
     logwarning("%s: no steps",cref(dataset,sequence))
@@ -1446,9 +1433,7 @@ function chainprocs.gsub_single(head,start,stop,dataset,sequence,currentlookup,r
     return head, start, false
 end
 
---[[ldx--
-<p>Here we replace start by new glyph. First we delete the rest of the match.</p>
---ldx]]--
+-- Here we replace start by new glyph. First we delete the rest of the match.
 
 -- char_1 mark_1 -> char_x mark_1 (ignore marks)
 -- char_1 mark_1 -> char_x
@@ -1500,9 +1485,7 @@ function chainprocs.gsub_alternate(head,start,stop,dataset,sequence,currentlooku
     return head, start, false
 end
 
---[[ldx--
-<p>Here we replace start by a sequence of new glyphs.</p>
---ldx]]--
+-- Here we replace start by a sequence of new glyphs.
 
 function chainprocs.gsub_multiple(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
     local mapping = currentlookup.mapping
@@ -1526,11 +1509,9 @@ function chainprocs.gsub_multiple(head,start,stop,dataset,sequence,currentlookup
     return head, start, false
 end
 
---[[ldx--
-<p>When we replace ligatures we use a helper that handles the marks. I might change
-this function (move code inline and handle the marks by a separate function). We
-assume rather stupid ligatures (no complex disc nodes).</p>
---ldx]]--
+-- When we replace ligatures we use a helper that handles the marks. I might change
+-- this function (move code inline and handle the marks by a separate function). We
+-- assume rather stupid ligatures (no complex disc nodes).
 
 -- compare to handlers.gsub_ligature which is more complex ... why
 

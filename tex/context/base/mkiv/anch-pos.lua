@@ -6,12 +6,9 @@ if not modules then modules = { } end modules ['anch-pos'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>We save positional information in the main utility table. Not only
-can we store much more information in <l n='lua'/> but it's also
-more efficient.</p>
---ldx]]--
-
+-- We save positional information in the main utility table. Not only can we store
+-- much more information in Lua but it's also more efficient.
+--
 -- plus (extra) is obsolete but we will keep it for a while
 --
 -- maybe replace texsp by our own converter (stay at the lua end)

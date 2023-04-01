@@ -7,10 +7,6 @@ if not modules then modules = { } end modules ['pack-rul'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>An explanation is given in the history document <t>mk</t>.</p>
---ldx]]--
-
 -- we need to be careful with display math as it uses shifts
 
 -- \framed[align={lohi,middle}]{$x$}

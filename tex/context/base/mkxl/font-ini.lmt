@@ -6,10 +6,6 @@ if not modules then modules = { } end modules ['font-ini'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>Not much is happening here.</p>
---ldx]]--
-
 local sortedhash, setmetatableindex = table.sortedhash, table.setmetatableindex
 local allocate = utilities.storage.allocate
 

@@ -16,10 +16,8 @@ local setmetatableindex = table.setmetatableindex
 local allocate          = utilities.storage.allocate
 local mark              = utilities.storage.mark
 
---[[ldx--
-<p>Because encodings are going to disappear, we don't bother defining
-them in tables. But we may do so some day, for consistency.</p>
---ldx]]--
+-- Because encodings are going to disappear, we don't bother defining them in
+-- tables. But we may do so some day, for consistency.
 
 local report_encoding = logs.reporter("fonts","encoding")
 
@@ -43,24 +41,19 @@ function encodings.is_known(encoding)
     return containers.is_valid(encodings.cache,encoding)
 end
 
---[[ldx--
-<p>An encoding file looks like this:</p>
-
-<typing>
-/TeXnANSIEncoding [
-/.notdef
-/Euro
-...
-/ydieresis
-] def
-</typing>
-
-<p>Beware! The generic encoding files don't always apply to the ones that
-ship with fonts. This has to do with the fact that names follow (slightly)
-different standards. However, the fonts where this applies to (for instance
-Latin Modern or <l n='tex'> Gyre) come in OpenType variants too, so these
-will be used.</p>
---ldx]]--
+-- An encoding file looks like this:
+--
+--   /TeXnANSIEncoding [
+--   /.notdef
+--   /Euro
+--   ...
+--   /ydieresis
+--   ] def
+--
+-- Beware! The generic encoding files don't always apply to the ones that ship with
+-- fonts. This has to do with the fact that names follow (slightly) different
+-- standards. However, the fonts where this applies to (for instance Latin Modern or
+-- TeXGyre come in OpenType variants too, so these will be used.
 
 local enccodes = characters.enccodes or { }
 
@@ -120,10 +113,7 @@ function encodings.load(filename)
     return containers.write(encodings.cache, name, data)
 end
 
---[[ldx--
-<p>There is no unicode encoding but for practical purposes we define
-one.</p>
---ldx]]--
+-- There is no unicode encoding but for practical purposes we define one.
 
 -- maybe make this a function:
 

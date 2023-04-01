@@ -50,21 +50,18 @@ constructors.resolvevirtualtoo = false -- wil be set in font-ctx.lua
 fonts.formats.tfm              = "type1" -- we need to have at least a value here
 fonts.formats.ofm              = "type1" -- we need to have at least a value here
 
---[[ldx--
-<p>The next function encapsulates the standard <l n='tfm'/> loader as
-supplied by <l n='luatex'/>.</p>
---ldx]]--
-
--- this might change: not scaling and then apply features and do scaling in the
--- usual way with dummy descriptions but on the other hand .. we no longer use
--- tfm so why bother
-
--- ofm directive blocks local path search unless set; btw, in context we
--- don't support ofm files anyway as this format is obsolete
-
--- we need to deal with nested virtual fonts, but because we load in the
--- frontend we also need to make sure we don't nest too deep (esp when sizes
--- get large)
+-- The next function encapsulates the standard TFM loader as supplied by LuaTeX.
+--
+-- This might change: not scaling and then apply features and do scaling in the
+-- usual way with dummy descriptions but on the other hand. However, we no longer
+-- use TFM (except for the JMN math fonts) so why bother.
+--
+-- The ofm directive blocks a local path search unless set. Actually, in ConTeXt we
+-- never had to deal with OFM files anyway as this format is obsolete (there are
+-- hardly any fonts in that format that are of use).
+--
+-- We need to deal with nested virtual fonts, but because we load in the frontend we
+-- also need to make sure we don't nest too deep (esp when sizes get large)
 --
 -- (VTITLE Example of a recursion)
 -- (MAPFONT D 0 (FONTNAME recurse)(FONTAT D 2))
@@ -72,7 +69,7 @@ supplied by <l n='luatex'/>.</p>
 -- (CHARACTER C B (CHARWD D 2)(CHARHT D 2)(MAP (SETCHAR C A)))
 -- (CHARACTER C C (CHARWD D 4)(CHARHT D 4)(MAP (SETCHAR C B)))
 --
--- we added the same checks as below to the luatex engine
+-- We added the same checks as below to the LuaTeX engine.
 
 function tfm.setfeatures(tfmdata,features)
     local okay = constructors.initializefeatures("tfm",tfmdata,features,trace_features,report_tfm)

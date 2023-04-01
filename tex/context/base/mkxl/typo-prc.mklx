@@ -54,6 +54,8 @@
 
 \installcommandhandler \??processor {processor} \??processor
 
+\mutable\let\currentprocessor\empty % weird that this is needed
+
 \appendtoks
     \letcsname\??processorcheck\currentprocessor\endcsname\relax
     \clf_registerstructureprocessor{\currentprocessor}% global, but it permits using processor that are yet undefined
