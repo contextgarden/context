@@ -174,7 +174,7 @@ local cleader           = register_nut(copy_nut(glue)) setsubtype(cleader,glueco
 
 -- the dir field needs to be set otherwise crash:
 
-local lefttoright_code  = nodes.dirvalues.lefttoright
+local lefttoright_code  = tex.directioncodes.lefttoright
 
 local rule              = register_nut(new_nut(rule_code))                   -- setdirection(rule, lefttoright_code)
 local emptyrule         = register_nut(new_nut(rule_code,rulecodes.empty))   -- setdirection(rule, lefttoright_code)

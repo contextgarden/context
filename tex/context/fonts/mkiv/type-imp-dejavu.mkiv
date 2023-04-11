@@ -16,16 +16,16 @@
 
 \definefontfeature[dejavu-condensed-mono][extend=.8]
 
-\starttypescriptcollection[xxdejavu]
+\starttypescriptcollection[dejavu]
 
     \doifunknownfontfeature {dejavu-math-bold} {\definefontfeature[dejavu-math-bold][boldened]}
 
     \starttypescript [\s!serif] [dejavu] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
-        \definefontsynonym [\s!Serif]           [\s!name:dejavuserif]           [\s!features=\s!default,\s!fallbacks=\s!Serif]
-        \definefontsynonym [\s!SerifBold]       [\s!name:dejavuserifbold]       [\s!features=\s!default,\s!fallbacks=\s!SerifBold]
-        \definefontsynonym [\s!SerifItalic]     [\s!name:dejavuserifitalic]     [\s!features=\s!default,\s!fallbacks=\s!SerifItalic]
-        \definefontsynonym [\s!SerifBoldItalic] [\s!name:dejavuserifbolditalic] [\s!features=\s!default,\s!fallbacks=\s!SerifBoldItalic]
+        \definefontsynonym [\s!Serif]           [\s!name:dejavuserif]           [\s!features=\s!default,\s!fallbacks=\s!Serif,\s!goodies=dejavu-text]
+        \definefontsynonym [\s!SerifBold]       [\s!name:dejavuserifbold]       [\s!features=\s!default,\s!fallbacks=\s!SerifBold,\s!goodies=dejavu-text]
+        \definefontsynonym [\s!SerifItalic]     [\s!name:dejavuserifitalic]     [\s!features=\s!default,\s!fallbacks=\s!SerifItalic,\s!goodies=dejavu-text]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!name:dejavuserifbolditalic] [\s!features=\s!default,\s!fallbacks=\s!SerifBoldItalic,\s!goodies=dejavu-text]
     \stoptypescript
 
     \starttypescript [\s!sans] [dejavu] [\s!name]

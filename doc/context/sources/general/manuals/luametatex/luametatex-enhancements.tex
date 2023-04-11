@@ -248,7 +248,7 @@ input that would have generated an error when processed by older \TEX|-|based
 engines. The affected commands with an altered initial (left of the equal sign)
 or secondary (right of the equal sign) value are: \prm {char}, \prm {lccode},
 \prm {uccode}, \prm {hjcode}, \prm {catcode}, \prm {sfcode}, \prm {efcode}, \prm
-{lpcode}, \prm {rpcode}, \prm {chardef}.
+{cfcode}, \prm {lpcode}, \prm {rpcode}, \prm {chardef}.
 
 As far as the core engine is concerned, all input and output to text files is
 \UTF-8 encoded. Input files can be pre|-|processed using the \type {reader}
@@ -1914,6 +1914,16 @@ by the engine for the same reasons: less code and less tracing clutter.
 
 \stopsubsection
 
+\startsubsection[title={\prm{cdef}, \prm {cdefcsname} and \prm {constant}}]
+
+These primitives are like \prm {edef} and \prm {edefcsname} but tag the macro as
+being kind of simple, which means that in some scenarios they are serialized in a
+fast way, not going through the expansion machinery. This is actually an
+experiment but it will stay. The \prm {constant} prefix can be used with other
+definition primitives instead.
+
+\stopsubsection
+
 \startsubsection[title={\prm {csstring}, \prm {begincsname} and \prm {lastnamedcs}}]
 
 These are somewhat special. The \prm {csstring} primitive is like
@@ -1999,6 +2009,21 @@ The timings for one million times defining each of these definitions are 0.277,
 laptop with mobile E3-1505M v6 processor), so there is a little gain here, but of
 course in practice no one will notice that because not that many such macros are
 defined (or used).
+
+\stopsubsection
+
+\startsubsection[title=Prefixes]
+
+Quite some primitive usage can be preceded by a prefix. For instance assignments
+can be \prm {global} and macros can be defined \prm {protected}. In \LUAMETATEX\
+we have more prefixes, like \prm {tolerant} that signals a different way of
+interpreting macro arguments and \type {permanent} that flags a definition in
+away that, when overload protection is enabled, will prevent redefinition.
+Prefixes like \prm {immediate} and its counterpart \prm {deferred} are backend
+related and, as we don't have one in the engine, are not doing much. They are
+just intercepted and passed to e.g.\ some \LUA\ function called so that one can
+use them to construct additional (\LUA\ based) pseudo primitives. Various
+prefixes are discussed elsewhere.
 
 \stopsubsection
 
@@ -2418,6 +2443,45 @@ This time trailing zeros (and a trailing period) will be dropped:
 
 The \prm {thewithoutunit} primitive is like \prm {the} on a dimension but it
 omits the unit.
+
+\stopsubsection
+
+\startsubsection[title={Units}]
+
+The familiar \TEX\ units like \type {pt} and \type {cm} are supported but since
+the 2021 \CONTEXT\ meeting we also support the Knuthian Potrzebie, cf.\ \typ
+{en.wikipedia.org/wiki/Potrzebie}. The two character acronym is \type {dk}. One
+\type {dk} is 6.43985pt. This unit is particularly suited for offsets in framed
+examples.
+
+In 2023 we added the Edith (\type {es}) and Tove (\type {ts}) as metric
+replacements for the inch (\type {in}). As with the \type {dk} more background
+information can be found in documents that come with \CONTEXT\ and user group
+journals. The \type {eu} unit starts out as one \type {es} but can be scaled with
+\prm {eufactor}.
+
+\startbuffer
+\localcontrolledloop -5 55 5 {
+    \eufactor=\currentloopiterator
+    \dontleavehmode\strut
+    \vrule height .1es depth .25ts width 1dk\relax\quad
+    \vrule height .1es depth .25ts width 1eu\relax\quad
+    \the\currentloopiterator
+    \par
+}
+\stopbuffer
+
+\typebuffer
+
+This example code shows all four new units. Watch how \prm {eufactor} is clipped
+to a value in the range $1-50$. The default factor of $10$ makes the European
+Unit equivalent to ten Toves or one Edith.
+
+\startpacked
+\startcolor[darkgray]
+\getbuffer
+\stopcolor
+\stoppacked
 
 \stopsubsection
 

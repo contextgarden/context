@@ -1,3 +1,5 @@
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
 -- In order to be able to use beta math fonts, we use our own file name and
 -- always remap. As this font is experimental we don't spend too much time
 -- on it now. Even then, we migth stick to design sizes only.
@@ -66,10 +68,12 @@ return {
                 end
                 return o * target.parameters.factor
             end,
-            NoLimitSupFactor         =   0,
-            NoLimitSubFactor         = 1200,
-            DelimiterPercent         =   90,
-            DelimiterShortfall       =  400,
+            NoLimitSupFactor                     =   0,
+            NoLimitSubFactor                     = 1200,
+            DelimiterPercent                     =   90,
+            DelimiterShortfall                   =  400,
+            AccentTopShiftUp                     = -60,
+            FlattenedAccentTopShiftUp            = -60,
             SubscriptBaselineDropMin             =  50, -- 200 in font (multiplied by 0.59999/2.39868)
             SubscriptShiftDown                   =  150, -- 247 in font (multiplied to be consistent with cm)
             SubscriptShiftDownWithSuperscript    =  247, -- relates to the previous one (see math-act)
@@ -91,6 +95,18 @@ return {
                     smaller = true,
                     fake    = 0.6,
                 },
+                presets.scripttocalligraphic { },
+                presets.rsfstoscript         { },
+                presets.rsfsuprighttoscript  { },
+                presets.moderntocalligraphic { },
+                presets.eulertocalligraphic  { },
+                presets.xitsarabic           { rscale  = 0.80 },
+                presets.fallbacks            { },
+                presets.moveitalics          { correct = true },
+                presets.moveitalics          { correct = true, letters = true },
+                presets.moveintegrals        { factor = 1.4, icfactor = 0.8 }, -- the icfactor is due to the very slanted integral.
+                presets.wipeanchors          { },
+                presets.wipeitalics          { },
                 {
                     tweak = "kerns",
                     list  = {
@@ -113,6 +129,9 @@ return {
                         ["0x27EB.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
 
                     },
+                },
+                {
+                    tweak = "flattenaccents",
                 },
                 {
                     tweak = "checkspacing",

@@ -26,7 +26,7 @@ show used fonts (--detail)
 .B --object
 show object"/>
 .TP
-.B --linkjs
+.B --links
 show links"/>
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:

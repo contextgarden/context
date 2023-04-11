@@ -745,6 +745,7 @@ local function copy_glyph(main,target,original,unicode,slot)
             kerns     = olddata.kerns,
             mathkerns = olddata.mathkerns,
             tounicode = olddata.tounicode,
+-- smaller   = olddata.smaller,
             commands  = { slotcommand[slot][unicode] },
         }
         local glyphdata = newdata
@@ -1058,7 +1059,7 @@ function vfmath.define(specification,set,goodies)
                 mathparameters.axisheight = newparameters[22] or 0 -- axisheight : height of fraction lines above the baseline
             --  report_virtual("loading and virtualizing font %a at size %p, setting sy parameters",name,size)
             end
-            -- We no longer care about kerns and ligatures here. We use backmack because we need to know
+            -- We no longer care about kerns and ligatures here. We use backmap because we need to know
             -- the original order and the loader has made a unicode font of it and weird glyph names have
             -- spoiled that a bit too.
             if ss.overlay then

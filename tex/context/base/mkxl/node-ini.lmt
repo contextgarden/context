@@ -23,7 +23,7 @@ local allocate       = utilities.storage.allocate
 local formatcolumns  = utilities.formatters.formatcolumns
 
 local getsubtypes    = node.subtypes
-local getvalues      = node.values
+----- getvalues      = node.values
 
 local listcodes      = mark(getsubtypes("list"))
 local rulecodes      = mark(getsubtypes("rule"))
@@ -45,10 +45,6 @@ local choicecodes    = mark(getsubtypes("choice"))
 local parcodes       = mark(getsubtypes("par"))
 local attributecodes = mark(getsubtypes("attribute"))
 
-local fillvalues     = mark(getvalues("fill"))
-local dirvalues      = mark(getvalues("dir"))
-local mathvalues     = mark(getvalues("math"))
-
 local function simplified(t)
     local r = { }
     for k, v in next, t do
@@ -57,17 +53,17 @@ local function simplified(t)
     return r
 end
 
-local noadoptions = allocate {
-    set      =        0x08,
-    unused_1 = 0x00 + 0x08,
-    unused_2 = 0x01 + 0x08,
-    axis     = 0x02 + 0x08,
-    no_axis  = 0x04 + 0x08,
-    exact    = 0x10 + 0x08,
-    left     = 0x11 + 0x08,
-    middle   = 0x12 + 0x08,
-    right    = 0x14 + 0x08,
-}
+-- local noadoptions = allocate {
+--     set      =        0x08,
+--     unused_1 = 0x00 + 0x08,
+--     unused_2 = 0x01 + 0x08,
+--     axis     = 0x02 + 0x08,
+--     no_axis  = 0x04 + 0x08,
+--     exact    = 0x10 + 0x08,
+--     left     = 0x11 + 0x08,
+--     middle   = 0x12 + 0x08,
+--     right    = 0x14 + 0x08,
+-- }
 
 local nodecodes = simplified(node.types())
 
@@ -90,11 +86,6 @@ choicecodes    = allocate(swapped(choicecodes,choicecodes))
 parcodes       = allocate(swapped(parcodes,parcodes))
 attributecodes = allocate(swapped(attributecodes,attributecodes))
 rulecodes      = allocate(swapped(rulecodes,rulecodes))
-noadoptions    = allocate(swapped(noadoptions,noadoptions))
-
-dirvalues      = allocate(swapped(dirvalues,dirvalues))
-fillvalues     = allocate(swapped(fillvalues,fillvalues))
-mathvalues     = allocate(swapped(mathvalues,mathvalues))
 
 nodes.gluecodes      = gluecodes
 nodes.dircodes       = dircodes
@@ -115,24 +106,26 @@ nodes.parcodes       = parcodes
 nodes.attributecodes = attributecodes
 nodes.rulecodes      = rulecodes
 
-nodes.noadoptions   = noadoptions
-nodes.fillvalues    = fillvalues
-nodes.fillcodes     = fillvalues -- for now
-nodes.dirvalues     = dirvalues
-nodes.mathvalues    = mathvalues
+nodes.nodecodes      = nodecodes
 
-nodes.nodecodes     = nodecodes
+-- these are now in tex namespace but we keep them for old times sake
+
+nodes.fillvalues      = tex.fillcodes
+nodes.fillcodes       = tex.fillcodes
+nodes.dirvalues       = tex.directioncodes
+nodes.directionvalues = tex.directioncodes
+nodes.mathvalues      = tex.mathparametercodes
 
 -- we will transition to more verbose subtypes (after other math is done)
 
-noadcodes.ord       = noadcodes.ord   or noadcodes.ordinary
-noadcodes.operator  = noadcodes.op    or noadcodes.operator
-noadcodes.bin       = noadcodes.bin   or noadcodes.binary
-noadcodes.rel       = noadcodes.rel   or noadcodes.relation
-noadcodes.punct     = noadcodes.punct or noadcodes.punctuation
-noadcodes.rad       = noadcodes.rad   or noadcodes.radical
-noadcodes.frac      = noadcodes.frac  or noadcodes.fraction
-noadcodes.acc       = noadcodes.acc   or noadcodes.accent
+noadcodes.ord      = noadcodes.ord   or noadcodes.ordinary
+noadcodes.operator = noadcodes.op    or noadcodes.operator
+noadcodes.bin      = noadcodes.bin   or noadcodes.binary
+noadcodes.rel      = noadcodes.rel   or noadcodes.relation
+noadcodes.punct    = noadcodes.punct or noadcodes.punctuation
+noadcodes.rad      = noadcodes.rad   or noadcodes.radical
+noadcodes.frac     = noadcodes.frac  or noadcodes.fraction
+noadcodes.acc      = noadcodes.acc   or noadcodes.accent
 
 -- so for now:
 
@@ -188,8 +181,6 @@ nodes.skipcodes            = gluecodes
 nodes.directioncodes       = dircodes
 nodes.discretionarycodes   = disccodes
 
-nodes.directionvalues      = dirvalues
-
 glyphcodes.glyph           = glyphcodes.character
 
 gluecodes.parfillrightskip = gluecodes.parfillrightskip or gluecodes.parfillskip
@@ -200,18 +191,6 @@ listcodes.column           = listcodes.alignment
 
 kerncodes.kerning          = kerncodes.fontkern
 kerncodes.italiccorrection = kerncodes.italiccorrection or 1 -- new
-
-nodes.noadoptions = {
-    set      =        0x08,
-    unused_1 = 0x00 + 0x08,
-    unused_2 = 0x01 + 0x08,
-    axis     = 0x02 + 0x08,
-    no_axis  = 0x04 + 0x08,
-    exact    = 0x10 + 0x08,
-    left     = 0x11 + 0x08,
-    middle   = 0x12 + 0x08,
-    right    = 0x14 + 0x08,
-}
 
 -- We use the real node code numbers.
 

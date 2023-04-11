@@ -40,10 +40,10 @@ local dirdimensions      = nuts.dirdimensions
 
 local nodecodes          = nodes.nodecodes
 local whatsitcodes       = nodes.whatsitcodes
-local dirvalues          = nodes.dirvalues
 
-local lefttoright_code   = dirvalues.lefttoright
-local righttoleft_code   = dirvalues.righttoleft
+local directioncodes     = tex.directioncodes
+local lefttoright_code   = directioncodes.lefttoright
+local righttoleft_code   = directioncodes.righttoleft
 
 local glyph_code         = nodecodes.glyph
 local kern_code          = nodecodes.kern

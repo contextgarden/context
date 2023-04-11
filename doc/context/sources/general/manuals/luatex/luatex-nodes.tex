@@ -1321,8 +1321,8 @@ creates a node at the \TEX\ level.
 \libindex{flush_node}
 \libindex{flush_list}
 
-The next one the node \type {n} from \TEX's memory. Be careful: no checks are
-done on whether this node is still pointed to from a register or some \type
+The next one removes the node \type {n} from \TEX's memory. Be careful: no checks
+are done on whether this node is still pointed to from a register or some \type
 {next} field: it is up to you to make sure that the internal data structures
 remain correct.
 
@@ -2490,9 +2490,9 @@ number, for a glue, kern, hlist, vlist, rule and math nodes as well as glyph
 nodes (although this last one is not used in native \SYNCTEX).
 
 \startfunctioncall
-node.set_synctex_fields(<integer> f, <integer> l)
+node.direct.set_synctex_fields(<integer> f, <integer> l)
 <integer> f, <integer> l =
-    node.get_synctex_fields(<node> n)
+    node.direct.get_synctex_fields(<node> n)
 \stopfunctioncall
 
 Of course you need to know what you're doing as no checking on sane values takes

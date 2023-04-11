@@ -42,10 +42,11 @@
    \setcatcodetable\texcatcodes
    \pushmacro\meaning
    \let\meaning\meaningless
-   \catcode`\@=11
-   \catcode`\|=12
-   \catcode`\!=12
-   \catcode`\~=13
+   \catcode`\@=11\relax
+   \catcode`\|=13\relax % was 12 < texlive 2023
+   \catcode`\!=12\relax
+   \catcode`\~=13\relax % needed >= texlive 2023
+ % \catcode`\$= 3\relax
    \autoparagraphmode\zerocount}
 
 \permanent\protected\def\stoptikzinput

@@ -111,7 +111,7 @@ local whatsit_code       = nodecodes.whatsit
 
 local fontkern_code      = kerncodes.fontkern
 
-local righttoleft_code   = nodes.dirvalues.righttoleft
+local righttoleft_code   = (tex.directioncodes and tex.directioncodes.righttoleft) or nodes.dirvalues.righttoleft -- LMTX
 
 local userdefinedwhatsit_code = whatsitcodes.userdefined
 

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2023-04-01 09:28
+-- merge date  : 2023-04-11 22:45
 
 do -- begin closure to overcome local limits and interference
 
@@ -21334,7 +21334,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.132 
+otf.version=3.133 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
@@ -31740,7 +31740,11 @@ local function addfeature(data,feature,specifications,prepareonly)
      local list=askedsteps[i]
      local coverage=nil
      local format=nil
-     if featuretype=="substitution" then
+if type(list)=="function" then
+ list=list(data,specification,list,i)
+end
+     if not list then
+     elseif featuretype=="substitution" then
       category="gsub"
       coverage=(mapping and list) or prepare_substitution(list,featuretype,nocheck)
      elseif featuretype=="ligature" then

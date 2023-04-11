@@ -533,7 +533,12 @@
      \else
        \c_math_m_scaled\numericscale#1\relax
      \fi
-     \scaledmathstyle\c_math_m_scaled
+     \scaledmathstyle
+       \ifnum\glyphscale=\plusthousand
+         \c_math_m_scaled
+       \else
+         \numexpr(\c_math_m_scaled*\glyphscale)/\plusthousand\relax
+       \fi
    \fi}
 
 %D This is nasty, as the engine only stores the last set family parameters (per style) which

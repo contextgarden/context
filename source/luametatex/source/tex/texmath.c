@@ -4132,8 +4132,20 @@ void tex_run_math_fence(void)
                 }
                 break;
             case 's': case 'S':
-                if (tex_scan_mandate_keyword("source", 1)) {
-                    source = tex_scan_int(0, NULL);
+                switch (tex_scan_character("coCO", 0, 0, 0)) {
+                    case 'c': case 'C':
+                        if (tex_scan_mandate_keyword("scale", 2)) {
+                            options |= noad_option_scale;
+                        }
+                        break;
+                    case 'o': case 'O':
+                        if (tex_scan_mandate_keyword("source", 2)) {
+                            source = tex_scan_int(0, NULL);
+                        }
+                        break;
+                    default:
+                        tex_aux_show_keyword_error("scale|source");
+                        goto CHECK_PAIRING;
                 }
                 break;
             case 't': case 'T':

@@ -760,16 +760,16 @@ end
 
 local ruleddir, ruledpar do
 
-    local dircodes     = nodes.dircodes
-    local dirvalues    = nodes.dirvalues
+    local dircodes       = nodes.dircodes
+    local directioncodes = tex.directioncodes -- nodes.dirvalues
 
-    local cancel_code  = dircodes.cancel
-    local l2r_code     = dirvalues.l2r
-    local r2l_code     = dirvalues.r2l
+    local cancel_code    = dircodes.cancel
+    local l2r_code       = directioncodes.l2r
+    local r2l_code       = directioncodes.r2l
 
-    local d_cache      = caches["dir"]
+    local d_cache        = caches["dir"]
 
-    local getdirection = nuts.getdirection
+    local getdirection   = nuts.getdirection
 
     local tags = {
         l2r    = "L2R",
@@ -1295,7 +1295,7 @@ local ruledglue, ruledmathglue do
 
     -- we sometimes pass previous as we can have issues in math (not watertight for all)
 
-    local mathvalues = nodes.mathvalues
+    local mathvalues = tex.mathparametercodes -- nodes.mathvalues
 
     mathvalues[-1] = "left"
     mathvalues[-2] = "right"

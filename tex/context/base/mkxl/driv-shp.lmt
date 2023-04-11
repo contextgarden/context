@@ -69,11 +69,11 @@ local parameters         = fonthashes.parameters
 local nodecodes          = nodes.nodecodes
 local whatsitcodes       = nodes.whatsitcodes
 local gluecodes          = nodes.gluecodes
-local dirvalues          = nodes.dirvalues
 local subtypes           = nodes.subtypes
 
-local lefttoright_code   = dirvalues.lefttoright
-local righttoleft_code   = dirvalues.righttoleft
+local directioncodes     = tex.directioncodes
+local lefttoright_code   = directioncodes.lefttoright
+local righttoleft_code   = directioncodes.righttoleft
 
 local glyph_code         = nodecodes.glyph
 local kern_code          = nodecodes.kern

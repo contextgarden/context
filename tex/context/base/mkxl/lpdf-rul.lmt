@@ -21,7 +21,7 @@ local ruleactions      = nuts.rules.ruleactions
 
 local getwhd           = nuts.getwhd
 
-local lefttoright_code = nodes.dirvalues.lefttoright
+local lefttoright_code = tex.directioncodes.lefttoright
 
 local mpcolor          = attributes.colors.mpcolor
 

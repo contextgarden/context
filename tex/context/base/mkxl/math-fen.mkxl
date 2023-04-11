@@ -981,7 +981,11 @@
 
 \protected\def\math_choosemathbig_math#1#2% so we accept \big{||} as well
   {\math_fenced_force_size\bigmathdelimitervariant{#1}\relax
-   \Uvextensible#2\relax
+   \Uvextensible
+     \s!axis
+     \s!exact
+     #2%
+   \relax
    \c_attr_mathsize\attributeunsetvalue}
 
 \protected\def\math_choosemathbig_text#1#2% so we accept \big{||} as well
@@ -996,7 +1000,11 @@
 \permanent\protected\def\mathdelimiterstep#1#2% not used, only in example
   {\begingroup
    \math_fenced_force_size\plusone{#1}%
-   \Uvextensible#2\relax
+   \Uvextensible
+     \s!axis
+     \s!exact
+     #2%
+   \relax
    \endgroup}
 
 \definemathcommand [big]  {\choosemathbig1}

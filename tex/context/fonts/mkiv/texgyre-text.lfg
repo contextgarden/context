@@ -1,0 +1,185 @@
+return {
+    name = "texgyre-text",
+    version = "1.00",
+    comment = "Goodies that complement the texgyre fonts.",
+    author = "Mikael Sundqvist & Hans Hagen",
+    copyright = "ConTeXt development team",
+    extensions = {
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            -- we have three optional methods for filtering:
+            fonts  = {
+                "TeXGyreBonum-Regular",
+                "TeXGyreBonum-Bold",
+            },
+         -- fonts  = {
+         --     ["TeXGyreBonum-Regular"] = true,
+         -- },
+         -- fonts  = "TeXGyreBonum-*",
+            data   = {
+                ["f"] = {
+                    [")"]  = 100,
+                    ["}"]  = 100,
+                    ["]"]  = 100,
+                    ["|"]  = 100,
+                    ["\\"] = 120,
+                    ["!"]  = 100,
+                    ["?"]  = 100,
+                },
+            }
+        },
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "TeXGyreBonum-Italic",
+                "TeXGyreBonum-BoldItalic",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 140,
+                    ["}"]  = 140,
+                    ["]"]  = 140,
+                    ["|"]  = 100,
+                    ["\\"] = 150,
+                    ["!"]  = 100,
+                    ["?"]  = 100,
+                },
+                ["("] = {
+                    ["f"]  = 190,
+                },
+                ["{"] = {
+                    ["f"]  = 190,
+                },
+                ["["] = {
+                    ["f"]  = 190,
+                },
+            }
+        },
+        {
+            name   = "kern",
+            type   = "kern",
+            fonts  = {
+                "TeXGyreTermes-Regular",
+                "TeXGyreTermes-Bold",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 75,
+                    ["}"]  = 75,
+                    ["]"]  = 75,
+                    ["|"]  = 75,
+                    ["\\"] = 110,
+                    ["!"]  = 75,
+                    ["?"]  = 75,
+                },
+            }
+        },
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "TeXGyreTermes-Italic",
+                "TeXGyreTermes-BoldItalic",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 75,
+                    ["}"]  = 75,
+                    ["]"]  = 75,
+                    ["|"]  = 75,
+                    ["\\"] = 200,
+                    ["!"]  = 75,
+                    ["?"]  = 75,
+                },
+                ["("] = {
+                    ["f"]  = 75,
+                },
+                ["{"] = {
+                    ["f"]  = 75,
+                },
+                ["["] = {
+                    ["f"]  = 75,
+                },
+                ["|"] = {
+                    ["f"]  = 150,
+                },
+            }
+        },
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "TeXGyrePagella-Italic",
+                "TeXGyrePagella-BoldItalic",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 120,
+                    ["}"]  = 120,
+                    ["]"]  = 120,
+                    ["|"]  = 120,
+                    ["\\"] = 120,
+                    ["!"]  = 75,
+                    ["?"]  = 75,
+                    ["*"]  = 120,
+                },
+                ["("] = {
+                    ["f"]  = 120,
+                },
+                ["{"] = {
+                    ["f"]  = 120,
+                },
+                ["["] = {
+                    ["f"]  = 120,
+                },
+                ["|"] = {
+                    ["f"]  = 120,
+                },
+            }
+        },
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "TeXGyreSchola-Regular",
+                "TeXGyreSchola-Bold",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 120,
+                    ["}"]  = 120,
+                    ["]"]  = 120,
+                    -- ["|"]  = 50,
+                    ["\\"] = 100,
+                    ["!"]  = 100,
+                    ["?"]  = 100,
+                    ["*"]  = 75,
+                    ["@"]  = 75,
+                },
+            }
+        },
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "TeXGyreSchola-Italic",
+                "TeXGyreSchola-BoldItalic",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 120,
+                    ["}"]  = 120,
+                    ["]"]  = 120,
+                    ["|"]  = 120,
+                    ["\\"] = 120,
+                    ["!"]  = 75,
+                    ["?"]  = 75,
+                    ["*"]  = 120,
+                    ["@"]  = 75,
+                },
+            }
+        },
+    }
+}

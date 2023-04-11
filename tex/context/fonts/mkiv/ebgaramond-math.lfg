@@ -13,6 +13,7 @@ return {
             OverbarRuleThickness              =  60,
             UnderbarRuleThickness             =  60,
             AccentTopShiftUp                  = -25, -- was 075
+            FlattenedAccentBaseHeight         = 620, -- 420 in font (maybe some misunderstanding in the font regarding accents and heights)
             FlattenedAccentTopShiftUp         = -25, -- was 075
             AccentBaseDepth                   =  75,
             DelimiterPercent                  =  90,
@@ -146,8 +147,11 @@ return {
                     tweak = "extendaccents",
                 },
                 {
-                    tweak   = "radicaldegreeanchors",
-                    list = {
+                    tweak = "flattenaccents",
+                },
+                {
+                    tweak = "radicaldegreeanchors",
+                    list  = {
                         ["0x221A.parts.bottom"] = { location = "left", hfactor  = .0, vfactor  = 1.0 },
                     }
                 },

@@ -32,6 +32,35 @@
 %D Older implementations are kept in the \MKII\ and \MKIV\ modules for educational
 %D purposes.
 
+%D Only very few fonts provide flat accents but we emulate them for those that don't
+%D have them. We also need to fix the related font parameter for a few fonts like
+%D Lucida and Garamond.
+
+% \startbuffer
+% \im{
+%     \dostepwiserecurse{`A}{`Z}{1}{
+%         \blackrule[height=\the\Umathflattenedaccentbaseheight\textstyle,depth=0pt,width=0.05ts]
+%         \hat{\char#1}
+%     }
+% }
+% \stopbuffer
+%
+% \start % TEXpage[offset=1ts]
+%     \showglyphs
+%     \switchtobodyfont[modern]     \getbuffer\par
+%     \switchtobodyfont[erewhon]    \getbuffer\par
+%     \switchtobodyfont[concrete]   \getbuffer\par
+%     \switchtobodyfont[libertinus] \getbuffer\par
+%     \switchtobodyfont[stixtwo]    \getbuffer\par
+%     \switchtobodyfont[kpfonts]    \getbuffer\par
+%     \switchtobodyfont[minion]     \getbuffer\par
+%     \switchtobodyfont[schola]     \getbuffer\par
+%     \switchtobodyfont[lucida]     \getbuffer\par
+%     \switchtobodyfont[xcharter]   \getbuffer\par
+%     \switchtobodyfont[libertinus] \getbuffer\par
+%     \switchtobodyfont[termes]     \getbuffer\par
+% \stop %TEXpage
+
 \installcorenamespace{mathaccents}
 
 \installcommandhandler \??mathaccents {mathaccent} \??mathaccents
@@ -166,7 +195,7 @@
 \definemathtopaccent[\v!top][acute]   ["0301]
 \definemathtopaccent[\v!top][hat]     ["0302]
 \definemathtopaccent[\v!top][tilde]   ["0303]
-\definemathtopaccent[\v!top][bar]     ["0304]
+\definemathtopaccent[\v!top][bar]     ["0305]
 %definemathtopaccent[\v!top][overbar] ["0305]% We expect overbar to stretch, so later
 \definemathtopaccent[\v!top][breve]   ["0306]
 \definemathtopaccent[\v!top][dot]     ["0307]

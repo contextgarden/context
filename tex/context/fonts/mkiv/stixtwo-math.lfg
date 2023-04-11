@@ -13,7 +13,11 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         alternates = {
-            calligraphic = { feature = 'ss01', value = 1, comment = "Mathematical Alternative Calligraphic Characters" },
+            lambdabar    = { feature = 'cv01', value = 1, comment = "Mathematical Alternative Lambda Bar" },
+            ramshorn     = { feature = 'cv02', value = 1, comment = "Mathematical Alternative Rams Horn" },
+            emptyset     = { feature = 'cv03', value = 1, comment = "Mathematical Alternative Empty Set" },
+            setminus     = { feature = 'cv04', value = 1, comment = "Mathematical Alternative Setminus" },
+            calligraphic = { feature = 'ss01', value = 1, comment = "Mathematical Alternative Calligraphic Characters" }, -- We do this differently
             italic       = { feature = 'ss02', value = 1, comment = "Mathematical Alternative Lowercase Italic" },
             barred       = { feature = 'ss03', value = 1, comment = "Mathematical Alternative Barred Characters" }, -- hbar, lambdabar etc
             primes       = { feature = 'ss04', value = 1, comment = "Mathematical Alternative Primes" },            -- larger/lower primes, minute etc
@@ -23,9 +27,26 @@ return {
             upright      = { feature = 'ss08', value = 1, comment = "Mathematical Alternative Upright Symbols" },   -- upright integrals etc.
             negated      = { feature = 'ss09', value = 1, comment = "Mathematical Alternative Negated Symbols" },
             relation     = { feature = 'ss10', value = 1, comment = "Mathematical Alternative Relations" },
-            negatedset   = { feature = 'ss09', value = 1, comment = "Mathematical Alternative Negated Set Symbols" },
-         -- todo         = { feature = 'ss14', value = 1, comment = "" },
+            negatedset   = { feature = 'ss11', value = 1, comment = "Mathematical Alternative Negated Set Symbols" },
+            propfrown    = { feature = 'ss12', value = 1, comment = "Mathematical Alternative Proportional and Frown" },
+            negsine      = { feature = 'ss13', value = 1, comment = "Mathematical Alternative Negated Sine Wave" },
+            intprod      = { feature = 'ss14', value = 1, comment = "Mathematical Alternative Interior Products" },
+            capcup       = { feature = 'ss15', value = 1, comment = "Mathematical Alternative Intersection and Union with serif" },
             circled      = { feature = 'ss16', value = 1, comment = "Mathematical Alternative Circled Operators" },
+            simvar       = { feature = 'ss20', value = 1, comment = "Mathematical Alternative Similar and some more unrelated" },
+            -- demo features:
+            negated8774      = {
+                feature = 'ss09',
+                value   = 1,
+                comment = "Mathematical Alternative Negated 8774",
+                list    = { [8774] = true },
+            },
+            negated8775   = {
+                feature = 'ss09',
+                value   = 1,
+                comment = "Mathematical Alternative Negated 8775",
+                list    = { [8775] = true },
+            },
         },
         parameters = {
             AccentBaseDepth           =   30,
@@ -115,7 +136,9 @@ return {
                         ["0x221A.parts.bottom"] = { location = "left", hfactor  = 0.05, vfactor  = 1.00 },
                     }
                 },
-
+                {
+                    tweak = "flattenaccents",
+                },
                 {
                     tweak = "fixaccents",
                 },

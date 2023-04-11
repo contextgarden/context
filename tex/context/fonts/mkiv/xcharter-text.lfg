@@ -1,0 +1,62 @@
+return {
+    name = "xcharter-text",
+    version = "1.00",
+    comment = "Goodies that complement Xcharter.",
+    author = "Mikael Sundqvist & Hans Hagen",
+    copyright = "ConTeXt development team",
+    extensions = {
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "XCharter-Roman",
+                "XCharter-Bold",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 125,
+                    ["}"]  = 125,
+                    ["]"]  = 125,
+                    -- ["|"]  = 100,
+                    ["\\"]  = 50,
+                    ["*"]  = 50,
+                    ["?"]  = 50,
+                    ["!"]  = 50,
+                    ["\\"]  = 125,
+                },
+            }
+        },
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "XCharter-Italic",
+                "XCharter-BoldItalic",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 150,
+                    ["}"]  = 150,
+                    ["]"]  = 150,
+                    ["\\"] = 125,
+                    ["!"]  = 100,
+                    ["?"]  = 100,
+                    ["*"]  = 100,
+                    ["@"]  = 100,
+                },
+                ["("] = {
+                    ["f"]  = 100,
+                },
+                ["{"] = {
+                    ["f"]  = 150,
+                },
+                ["["] = {
+                    ["f"]  = 100,
+                },
+                ["|"] = {
+                    ["f"]  = 130,
+                },
+            }
+        },
+    }
+}

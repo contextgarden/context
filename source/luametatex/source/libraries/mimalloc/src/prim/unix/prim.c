@@ -79,9 +79,9 @@ static int mi_prim_access(const char *fpath, int mode) {
 #elif !defined(__APPLE__)  // avoid unused warnings
 
 static int mi_prim_open(const char* fpath, int open_flags) {
-  return open(fpath,open_flags,0);
+  return open(fpath,open_flags);
 }
-static mi_ssize_t mi_prim_read(int fd, void* buf, size_t bufsize) {
+static ssize_t mi_prim_read(int fd, void* buf, size_t bufsize) {
   return read(fd,buf,bufsize);
 }
 static int mi_prim_close(int fd) {
@@ -169,7 +169,7 @@ static void* unix_mmap_prim(void* addr, size_t size, size_t try_alignment, int p
       p = mmap(addr, size, protect_flags, flags | MAP_ALIGNED(n), fd, 0);
       if (p==MAP_FAILED || !_mi_is_aligned(p,try_alignment)) { 
         int err = errno;
-        _mi_warning_message("unable to directly request aligned OS memory (error: %d (0x%x), size: 0x%zx bytes, alignment: 0x%zx, hint address: %p)\n", err, err, size, try_alignment, hint);
+        _mi_warning_message("unable to directly request aligned OS memory (error: %d (0x%x), size: 0x%zx bytes, alignment: 0x%zx)\n", err, err, size, try_alignment);
       }
       if (p!=MAP_FAILED) return p;
       // fall back to regular mmap      
@@ -391,7 +391,7 @@ int _mi_prim_reset(void* start, size_t size) {
     err = unix_madvise(start, size, MADV_DONTNEED);
   }
   #else
-  int err = unix_madvise(start, csize, MADV_DONTNEED);
+  int err = unix_madvise(start, size, MADV_DONTNEED);
   #endif
   return err;
 }

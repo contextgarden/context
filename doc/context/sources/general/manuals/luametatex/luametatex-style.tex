@@ -84,13 +84,14 @@
         end
     end
 
-    function document.functions.showvalues(l)
+    function document.functions.showvalues(l,hex)
         if l then
             local n = table.count(l)
             local i = 0
+            local f = hex and "%s{\\tttf %s} (0x%02X)" or "%s{\\tttf %s} (%i)"
             for k, v in table.sortedhash(l) do
                 i = i + 1
-                context("%s{\\tttf %s} (%i)", (i == 1 and "") or (i == n and " and ") or ", ", v,k)
+                context(f, (i == 1 and "") or (i == n and " and ") or ", ", v,k)
             end
         end
     end
@@ -120,10 +121,10 @@
 \protected\def\showfields   #1{\ctxlua{document.functions.showfields("#1")}}
 \protected\def\showid       #1{\ctxlua{document.functions.showid("#1")}}
 \protected\def\showsubtypes #1{\ctxlua{document.functions.showsubtypes("#1")}}
-\protected\def\showvalues   #1{\ctxlua{document.functions.showvalues(node.values("#1"))}}
+\protected\def\showvalues   #1{\ctxlua{document.functions.showvalues(tex.get#1values())}}
+\protected\def\showhexvalues#1{\ctxlua{document.functions.showvalues(tex.get#1values(),true)}}
 \protected\def\showtypes      {\ctxlua{document.functions.showvalues(node.types())}}
 \protected\def\showvaluelist#1{\ctxlua{document.functions.showvalues(#1)}}
-
 
 \definecolor[blue]      [b=.5]
 \definecolor[red]       [r=.5]

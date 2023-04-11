@@ -1422,20 +1422,20 @@
     \inherited\setmathspacing \mathtextpunctuationcode \mathdifferentialcode    \allmathstyles    \mathinterwordmuskip
     \inherited\setmathspacing \mathtextpunctuationcode \mathpunctuationcode     \allmathstyles    \mathinterwordmuskip
     %
-    \inherited\setmathspacing \mathordinarycode        \mathtextpunctuationcode \allmathstyles    \tinymuskip
-    \inherited\setmathspacing \mathoperatorcode        \mathtextpunctuationcode \allmathstyles    \tinymuskip
-    \inherited\setmathspacing \mathbinarycode          \mathtextpunctuationcode \allmathstyles    \tinymuskip
-    \inherited\setmathspacing \mathrelationcode        \mathtextpunctuationcode \allmathstyles    \tinymuskip
-    \inherited\setmathspacing \mathopencode            \mathtextpunctuationcode \allmathstyles    \tinymuskip
-    \inherited\setmathspacing \mathmiddlecode          \mathtextpunctuationcode \allmathstyles    \tinymuskip
-    \inherited\setmathspacing \mathclosecode           \mathtextpunctuationcode \allmathstyles    \tinymuskip
-    \inherited\setmathspacing \mathpunctuationcode     \mathtextpunctuationcode \allmathstyles    \tinymuskip
-    \inherited\setmathspacing \mathconstructcode       \mathtextpunctuationcode \allmathstyles    \tinymuskip
-    \inherited\setmathspacing \mathellipsiscode        \mathtextpunctuationcode \allmathstyles    \tinymuskip
-    \inherited\setmathspacing \mathfractioncode        \mathtextpunctuationcode \allmathstyles    \tinymuskip
-    \inherited\setmathspacing \mathradicalcode         \mathtextpunctuationcode \allmathstyles    \tinymuskip
-    \inherited\setmathspacing \mathdifferentialcode    \mathtextpunctuationcode \allmathstyles    \tinymuskip
-    \inherited\setmathspacing \mathpunctuationcode     \mathtextpunctuationcode \allmathstyles    \tinymuskip
+    \inherited\setmathspacing \mathordinarycode        \mathtextpunctuationcode \allmathstyles    \pettymuskip
+    \inherited\setmathspacing \mathoperatorcode        \mathtextpunctuationcode \allmathstyles    \pettymuskip
+    \inherited\setmathspacing \mathbinarycode          \mathtextpunctuationcode \allmathstyles    \pettymuskip
+    \inherited\setmathspacing \mathrelationcode        \mathtextpunctuationcode \allmathstyles    \pettymuskip
+    \inherited\setmathspacing \mathopencode            \mathtextpunctuationcode \allmathstyles    \pettymuskip
+    \inherited\setmathspacing \mathmiddlecode          \mathtextpunctuationcode \allmathstyles    \pettymuskip
+    \inherited\setmathspacing \mathclosecode           \mathtextpunctuationcode \allmathstyles    \pettymuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathtextpunctuationcode \allmathstyles    \pettymuskip
+    \inherited\setmathspacing \mathconstructcode       \mathtextpunctuationcode \allmathstyles    \pettymuskip
+    \inherited\setmathspacing \mathellipsiscode        \mathtextpunctuationcode \allmathstyles    \pettymuskip
+    \inherited\setmathspacing \mathfractioncode        \mathtextpunctuationcode \allmathstyles    \pettymuskip
+    \inherited\setmathspacing \mathradicalcode         \mathtextpunctuationcode \allmathstyles    \pettymuskip
+    \inherited\setmathspacing \mathdifferentialcode    \mathtextpunctuationcode \allmathstyles    \pettymuskip
+    \inherited\setmathspacing \mathpunctuationcode     \mathtextpunctuationcode \allmathstyles    \pettymuskip
 \stopsetups
 
 \directsetup{math:spacing:default}

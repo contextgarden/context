@@ -1,0 +1,112 @@
+%D \module
+%D   [      file=s-math-tests.mkxl,
+%D        version=2023.04.03,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Some Math Tests,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\continueifinputfile{s-math-tests.mkxl}
+
+%D Here we collect some tests that later will become proper macros.
+
+\starttext
+
+\startbuffer
+    \ruledhbox \bgroup \im {
+        \dostepwiserecurse{`A}{`Z}{1}{
+            \blackrule[color=darkgray,height=\the\Umathflattenedaccentbaseheight\textstyle,depth=0pt,width=0.05ts]
+            \hat{\char#1}
+        }
+    }\egroup
+\stopbuffer
+
+\startTEXpage[offset=1ts]
+    \showglyphs
+%     \switchtobodyfont[modern]     \getbuffer\par
+%     \blank
+%     \switchtobodyfont[pagella]    \getbuffer\par
+%     \switchtobodyfont[termes]     \getbuffer\par
+%     \switchtobodyfont[schola]     \getbuffer\par
+%     \blank
+%     \switchtobodyfont[ebgaramon-nt]\getbuffer\par
+%     \switchtobodyfont[ebgaramond]  \getbuffer\par
+%     \blank
+%     \switchtobodyfont[erewhon]    \getbuffer\par
+%     \switchtobodyfont[kpfonts]    \getbuffer\par
+%     \switchtobodyfont[xcharter]   \getbuffer\par
+%     \switchtobodyfont[concrete]   \getbuffer\par
+%     \switchtobodyfont[libertinus] \getbuffer\par
+%     \switchtobodyfont[stixtwo]    \getbuffer\par
+%     \switchtobodyfont[lucida-nt]   \getbuffer\par
+    \switchtobodyfont[lucida]
+    % 8.67123pt default
+    \bgroup
+        \bitwiseflip\mathfontcontrol\ignoreflataccentsmathcontrolcode
+        \appendtoks
+            \Umathflattenedaccentbaseheight\textstyle8.67123pt
+        \to\everymathematics
+        \getbuffer\par
+    \egroup
+    \bgroup
+        \appendtoks
+            \Umathflattenedaccentbaseheight\textstyle8.67123pt
+        \to\everymathematics
+        \getbuffer\par
+    \egroup
+    % 8.51532pt fixed
+    \bgroup
+        \appendtoks
+            \Umathflattenedaccentbaseheight\textstyle8.51532pt
+        \to\everymathematics
+        \getbuffer\par
+    \egroup
+%     \switchtobodyfont[libertinus] \getbuffer\par
+\stopTEXpage
+
+\startTEXpage[offset=1ts]
+
+    \definefontfeature[mathextra][]
+%     \definefontfeature[mathextra][ss10=yes,ss06=yes]
+
+    \setupbodyfont[ebgaramond]
+
+    \bgroup
+        \setupmathematics[stylealternative=]
+        \im{\hbar^{\hbar^{\hbar}}}
+    \egroup
+    \bgroup
+        \setupmathematics[stylealternative={hbar}]
+        \im{\hbar^{\hbar^{\hbar}}}
+    \egroup
+    \bgroup
+        \setupmathematics[stylealternative={hbar,outbendingh}]
+        \im{\hbar^{\hbar^{\hbar}}}
+    \egroup
+    \bgroup
+        \setupmathematics[stylealternative={outbendingh}]
+        \im{\hbar^{\hbar^{\hbar}}}
+    \egroup
+
+    \definefontfeature[mathextra][]
+%     \definefontfeature[mathextra][cv03=yes]
+
+    \setupbodyfont[stixtwo]
+
+    \bgroup
+        \setupmathematics[stylealternative=]
+        \im{\emptyset^{\emptyset^{\emptyset}}}
+    \egroup
+    \bgroup
+        \setupmathematics[stylealternative={emptyset}]
+        \im{\emptyset^{\emptyset^{\emptyset}}}
+    \egroup
+
+\stopTEXpage
+
+\stoptext

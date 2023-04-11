@@ -576,7 +576,7 @@ typedef union tokenword {
 # define stp_language_size         250
 
 /*tex
-    Units. At some point these will be used in texscanning and lmtexlib. 
+    Units. At some point these will be used in texscanning and lmtexlib (3 times replacement).
 */
 
 
@@ -615,6 +615,10 @@ typedef union tokenword {
 
 # define ts_numerator   4588  // tove
 # define ts_denonimator  645
+
+# define eu_min_factor     1
+# define eu_max_factor    50
+# define eu_def_factor    10
 
 /*tex
 

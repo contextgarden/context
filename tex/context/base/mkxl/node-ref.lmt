@@ -96,9 +96,9 @@ local nodecodes            = nodes.nodecodes
 local gluecodes            = nodes.gluecodes
 local listcodes            = nodes.listcodes
 
-local dirvalues            = nodes.dirvalues
-local lefttoright_code     = dirvalues.lefttoright
-local righttoleft_code     = dirvalues.righttoleft
+local directioncodes       = tex.directioncodes
+local lefttoright_code     = directioncodes.lefttoright
+local righttoleft_code     = directioncodes.righttoleft
 
 local hlist_code           = nodecodes.hlist
 local vlist_code           = nodecodes.vlist
@@ -689,7 +689,8 @@ do
 
     local function setdestination(n,h,d,name,view) -- n = grouplevel, name == table
         topofstack = topofstack + 1
-        stack[topofstack] = { n, h, d, name, view }
+     -- stack[topofstack] = { n, h, d, name, view }
+        stack[topofstack] = { n, h or false, d or false, name, view }
         return topofstack
     end
 

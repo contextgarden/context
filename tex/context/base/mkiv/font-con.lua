@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['font-con'] = {
     license   = "see context related readme files"
 }
 
+-- Todo: Enable fixes from the lmt to here. Also in font-oto.lua wrt the changed
+-- assignments. (Around texlive 2024 in order not to disturb generic.)
+
 -- some names of table entries will be changed (no _)
 
 local next, tostring, tonumber, rawget = next, tostring, tonumber, rawget
@@ -648,6 +651,14 @@ function constructors.scale(tfmdata,specification)
         if changed then
             local c = changed[unicode]
             if c and c ~= unicode then
+             -- local cc = changed[c]
+             -- if cc then
+             --     while cc do
+             --         c = cc
+             --         cc = changed[c]
+             --     end
+             -- end
+                -- check not needed:
                 if c then
                     description = descriptions[c] or descriptions[unicode] or character
                     character   = characters[c] or character

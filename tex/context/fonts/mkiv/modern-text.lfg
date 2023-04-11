@@ -1,0 +1,62 @@
+return {
+    name = "modern-text",
+    version = "1.00",
+    comment = "Goodies that complement latin modern.",
+    author = "Mikael Sundqvist & Hans Hagen",
+    copyright = "ConTeXt development team",
+    extensions = {
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                -- "LMRoman-Regular",
+                "LMRoman10-Regular",
+                "LMRoman10-Bold",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 50,
+                    ["}"]  = 50,
+                    ["]"]  = 50,
+                    ["|"]  = 100,
+                    ["\\"]  = 50,
+                    ["?"]  = 50,
+                    ["*"]  = 50,
+                },
+            }
+        },
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "LMRoman-Italic",
+                "LMRoman-BoldItalic",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 50,
+                    ["}"]  = 50,
+                    ["]"]  = 50,
+                    ["|"]  = 125,
+                    ["\\"] = 125,
+                    ["!"]  = 100,
+                    ["?"]  = 100,
+                    ["*"]  = 100,
+                    ["@"]  = 100,
+                },
+                ["("] = {
+                    ["f"]  = 100,
+                },
+                ["{"] = {
+                    ["f"]  = 100,
+                },
+                ["["] = {
+                    ["f"]  = 100,
+                },
+                ["|"] = {
+                    ["f"]  = 130,
+                },
+            }
+        },
+    }
+}

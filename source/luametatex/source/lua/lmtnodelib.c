@@ -4871,32 +4871,33 @@ static int nodelib_shared_fields(lua_State *L)
 
 /* These should move to texlib ... which might happen.  */
 
-static int nodelib_shared_values(lua_State *L)
-{
-    if (lua_type(L, 1) == LUA_TSTRING) {
-        /*
-            delimiter options (bit set)
-            delimiter modes   (bit set)
-        */
-        const char *s = lua_tostring(L, 1);
-        if (lua_key_eq(s, glue) || lua_key_eq(s, fill)) {
-            return lmt_push_info_values(L, lmt_interface.node_fill_values);
-        } else if (lua_key_eq(s, dir)) {
-            return lmt_push_info_values(L, lmt_interface.direction_values);
-        } else if (lua_key_eq(s, math)) {
-            /*tex A bit strange place, so moved to lmttexlib. */
-            return lmt_push_info_keys(L, lmt_interface.math_parameter_values);
-        } else if (lua_key_eq(s, style)) {
-            /*tex A bit strange place, so moved to lmttexlib. */
-            return lmt_push_info_values(L, lmt_interface.math_style_values);
-        } else if (lua_key_eq(s, page)) {
-            /*tex These are never used, whatsit related. */
-            return lmt_push_info_values(L, lmt_interface.page_contribute_values);
-        }
-    }
-    lua_pushnil(L);
-    return 1;
-}
+// static int nodelib_shared_values(lua_State *L)
+// {
+//     if (lua_type(L, 1) == LUA_TSTRING) {
+//         /*
+//             delimiter options (bit set)
+//             delimiter modes   (bit set)
+//         */
+//         const char *s = lua_tostring(L, 1);
+//         if (lua_key_eq(s, glue) || lua_key_eq(s, fill)) {
+//             return lmt_push_info_values(L, lmt_interface.node_fill_values);
+//         } else if (lua_key_eq(s, dir)) {
+//             /* moved to lmttexlib */
+//             return lmt_push_info_values(L, lmt_interface.direction_values);
+//         } else if (lua_key_eq(s, math)) {
+//             /* moved to lmttexlib */
+//             return lmt_push_info_keys(L, lmt_interface.math_parameter_values);
+//         } else if (lua_key_eq(s, style)) {
+//             /* moved to lmttexlib */
+//             return lmt_push_info_values(L, lmt_interface.math_style_values);
+//         } else if (lua_key_eq(s, page)) {
+//             /*tex These are never used, whatsit related. */
+//             return lmt_push_info_values(L, lmt_interface.page_contribute_values);
+//         }
+//     }
+//     lua_pushnil(L);
+//     return 1;
+// }
 
 static int nodelib_shared_subtypes(lua_State *L)
 {
@@ -9916,7 +9917,7 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "types",                   nodelib_shared_types                  },
     { "fields",                  nodelib_shared_fields                 },
     { "subtypes",                nodelib_shared_subtypes               },
-    { "values",                  nodelib_shared_values                 },
+ /* { "values",                  nodelib_shared_values                 }, */ /* finally all are now in tex. */
     { "id",                      nodelib_shared_id                     },
     { "getcachestate",           nodelib_shared_getcachestate          },
     { "todirect",                nodelib_shared_todirect               },
@@ -9966,7 +9967,7 @@ static const struct luaL_Reg nodelib_function_list[] = {
     { "types",                    nodelib_shared_types                  },
     { "fields",                   nodelib_shared_fields                 },
     { "subtypes",                 nodelib_shared_subtypes               },
-    { "values",                   nodelib_shared_values                 },
+ /* { "values",                   nodelib_shared_values                 }, */ /* finally all are now in tex. */
     { "id",                       nodelib_shared_id                     },
     { "getcachestate",            nodelib_shared_getcachestate          },
     { "todirect",                 nodelib_shared_todirect               },

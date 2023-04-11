@@ -78,6 +78,9 @@ return {
         -- add the accent fixes
         -- fixslashes?
                 {
+                    tweak = "flattenaccents",
+                },
+                {
                     tweak = "checkspacing",
                 },
                 {

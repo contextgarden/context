@@ -377,16 +377,15 @@ function job.loadother(filename)
     local jobname = environment.jobname
     if filename == jobname then
         return
-    else
-        report_passes("integrating list %a into %a",filename,jobname)
     end
-    statistics.starttiming(loadedfiles)
     filename = file.addsuffix(filename,"tuc")
     local unpacked = othercache[filename]
     if not unpacked then
-        -- so we can register the same name twice(in loading order)
+        -- so we can register the same name twice (in loading order) ... needs checking if we want this
+        statistics.starttiming(loadedfiles)
         local utilitydata = load(filename)
         if utilitydata then
+            report_passes("integrating list %a into %a",filename,jobname)
             local jobpacker = utilitydata.job.packed
             unpacknumberdata(jobpacker.index)
             unpacked = { }
@@ -401,14 +400,15 @@ function job.loadother(filename)
             end
             unpacked.job.packed = nil -- nicer in inspecting
             othercache[filename] = unpacked
-             --
+            --
+            utilitydata.components, utilitydata.namestack = collectstructure(utilitydata.job.structure.collected)
+            --
             structures.lists     .integrate(utilitydata)
             structures.registers .integrate(utilitydata)
             structures.references.integrate(utilitydata)
-            --
         end
+        statistics.stoptiming(loadedfiles)
     end
-    statistics.stoptiming(loadedfiles)
     return unpacked
 end
 

@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['s-fonts-tables'] = {
     license   = "see context related readme files"
 }
 
+-- Thsi file needs to be updated to LMTX!
+
 moduledata.fonts          = moduledata.fonts        or { }
 moduledata.fonts.tables   = moduledata.fonts.tables or { }
 
@@ -29,7 +31,7 @@ local setlink             = nodes.setlink
 local hpack               = nodes.hpack
 local applyvisuals        = nodes.applyvisuals
 
-local lefttoright_code    = nodes.dirvalues.lefttoright
+local lefttoright_code    = (tex.directioncodes and tex.directioncodes.lefttoright) or nodes.dirvalues.lefttoright -- LMTX
 
 local handle_positions    = fonts.handlers.otf.datasetpositionprocessor
 local handle_injections   = nodes.injections.handler

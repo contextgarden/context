@@ -15,6 +15,7 @@ return {
         parameters = {
             FractionRuleThickness             =  55,
          -- AccentBaseDepth                   = 250,
+            FlattenedAccentBaseHeight         = 710,-- not present in font, set too small by 1.
             DelimiterPercent                  =  90,
             DelimiterShortfall                = 400,
             SuperscriptBottomMaxWithSubscript = 325,
@@ -126,15 +127,18 @@ return {
                     tweak = "extendaccents",
                 },
                 {
-                    tweak   = "radicaldegreeanchors",
-                    list = {
+                    tweak = "flattenaccents",
+                },
+                {
+                    tweak = "fixaccents",
+                },
+                {
+                    tweak = "radicaldegreeanchors",
+                    list  = {
                         ["0x221A.variants.3"]   = { location = "left", hfactor = 0,    vfactor = .55  },
                         ["0x221A.variants.4"]   = { location = "left", hfactor = 0,    vfactor = .50  },
                         ["0x221A.parts.bottom"] = { location = "left", hfactor = 0,    vfactor = .85  },
                     }
-                },
-                {
-                    tweak = "fixaccents",
                 },
                 -- First we set the dimensions of the initial accent which started out as zero but we want
                 -- a proper width. Not in lucida

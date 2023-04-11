@@ -147,7 +147,7 @@ return {
                 { name = "sy-anttlz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true, ignore = uglyones }, -- jmn = true
                 { name = "sy-anttlz.tfm", vector = "extensible-jmn-private", skewchar=0x30 },
                 { name = "file:AntykwaTorunskaLight-Regular", vector = "tex-ex-braces", backmap = false },
-                { name = "ex-anttl.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyone },
+                { name = "ex-anttl.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyones },
             },
             ["antykwa-cond-math"] = {
                 { name = "file:LatinModern-Math", features = "virtualmath-antykwa-cond", main = true, parameters = false },
@@ -160,9 +160,9 @@ return {
                 { name = "sy-anttcrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true, ignore = uglyones }, -- jmn = true
                 { name = "sy-anttcrz.tfm", vector = "extensible-jmn-private", skewchar=0x30 },
                 { name = "file:AntykwaTorunskaCond-Regular", vector = "tex-ex-braces", backmap = false },
-                { name = "ex-anttcr.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyone },
+                { name = "ex-anttcr.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyones },
             },
-            ["antykwa-lightcond-math"] = {
+            ["antykwa-light-cond-math"] = {
                 { name = "file:LatinModern-Math", features = "virtualmath-antykwa-lightcond", main = true, parameters = false },
                 --
                 { name = "rm-anttcl.tfm",  vector = "tex-mr", skewchar=0x7F },
@@ -173,7 +173,7 @@ return {
                 { name = "sy-anttclz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true, ignore = uglyones }, -- jmn = true
                 { name = "sy-anttclz.tfm", vector = "extensible-jmn-private", skewchar=0x30 },
                 { name = "file:AntykwaTorunskaCondLight-Regular", vector = "tex-ex-braces", backmap = false },
-                { name = "ex-anttcl.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyone },
+                { name = "ex-anttcl.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyones },
             }
         },
         addmissing = helpers.addmissing,

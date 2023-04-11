@@ -97,7 +97,7 @@ local new_hlist         = nodepool.hlist
 local new_rule          = nodepool.rule
 local new_glue          = nodepool.glue
 
-local righttoleft_code  = nodes.dirvalues.righttoleft
+local righttoleft_code  = tex.directioncodes.righttoleft
 
 local setmetatableindex = table.setmetatableindex
 

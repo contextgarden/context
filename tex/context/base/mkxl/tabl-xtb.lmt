@@ -87,7 +87,7 @@ local new_glue            = nodepool.glue
 local new_kern            = nodepool.kern
 local new_hlist           = nodepool.hlist
 
-local lefttoright_code    = nodes.dirvalues.lefttoright
+local lefttoright_code    = tex.directioncodes.lefttoright
 
 local v_stretch           = variables.stretch
 local v_normal            = variables.normal

@@ -81,11 +81,11 @@ local glue_code          = nodecodes.glue
 local dir_code           = nodecodes.dir
 local par_code           = nodecodes.par
 
-local dirvalues          = nodes.dirvalues
-local lefttoright_code   = dirvalues.lefttoright
-local righttoleft_code   = dirvalues.righttoleft
-
 local parfillskip_code   = gluecodes.parfillskip
+
+local directioncodes     = tex.directioncodes
+local lefttoright_code   = directioncodes.lefttoright
+local righttoleft_code   = directioncodes.righttoleft
 
 local new_direction      = nodepool.direction
 

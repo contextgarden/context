@@ -65,7 +65,7 @@ local new_rule        = nutpool.rule
 
 local nodecodes       = nodes.nodecodes
 local whatsitcodes    = nodes.whatsitcodes
-local fillcodes       = nodes.fillcodes
+local fillcodes       = tex.fillcodes
 
 local subtypes        = nodes.subtypes
 

@@ -45,6 +45,7 @@
 # define TEX_METATABLE_UCCODE    "tex.uccode"
 # define TEX_METATABLE_HCCODE    "tex.hccode"
 # define TEX_METATABLE_HMCODE    "tex.hmcode"
+# define TEX_METATABLE_AMCODE    "tex.amcode"
 # define TEX_METATABLE_CATCODE   "tex.catcode"
 # define TEX_METATABLE_MATHCODE  "tex.mathcode"
 # define TEX_METATABLE_DELCODE   "tex.delcode"
@@ -2107,6 +2108,23 @@ static int texlib_sethmcode(lua_State *L)
     return 0;
 }
 
+static int texlib_setamcode(lua_State *L)
+{
+    int top = lua_gettop(L);
+    if (top >= 2) {
+        quarterword level;
+        int slot = lmt_check_for_level(L, 1, &level, cur_level);
+        int ch = lmt_checkinteger(L, slot++);
+        if (character_in_range(ch)) {
+            halfword val = lmt_checkhalfword(L, slot);
+            tex_set_am_code(ch, val, level);
+        } else {
+            texlib_aux_show_character_error(L, ch);
+        }
+    }
+    return 0;
+}
+
 static int texlib_getlccode(lua_State *L)
 {
     int ch = lmt_checkinteger(L, 1);
@@ -2160,6 +2178,18 @@ static int texlib_gethmcode(lua_State *L)
     int ch = lmt_checkinteger(L, 1);
     if (character_in_range(ch)) {
         lua_pushinteger(L, tex_get_hm_code(ch));
+    } else {
+        texlib_aux_show_character_error(L, ch);
+        lua_pushinteger(L, 0);
+    }
+    return 1;
+}
+
+static int texlib_getamcode(lua_State *L)
+{
+    int ch = lmt_checkinteger(L, 1);
+    if (character_in_range(ch)) {
+        lua_pushinteger(L, tex_get_am_code(ch));
     } else {
         texlib_aux_show_character_error(L, ch);
         lua_pushinteger(L, 0);
@@ -4884,6 +4914,7 @@ static int texlib_getnoadoptionvalues(lua_State *L)
     lua_push_key_at_index(L, shrink,                 noad_option_shrink);
     lua_push_key_at_index(L, stretch,                noad_option_stretch);
     lua_push_key_at_index(L, center,                 noad_option_center);
+    lua_push_key_at_index(L, scale,                  noad_option_scale);
     return 1;
 }
 
@@ -4924,7 +4955,7 @@ static int texlib_getlistsignvalues(lua_State *L)
     return 1;
 }
 
-static int texlib_getlistgeometryalues(lua_State *L)
+static int texlib_getlistgeometryvalues(lua_State *L)
 {
     lua_createtable(L, 3, 0);
     lua_set_string_by_index(L, offset_geometry,      "offset");
@@ -5107,7 +5138,7 @@ static int texlib_getkerneloptionvalues(lua_State *L)
 
 static int texlib_getcharactertagvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 12);
+    lua_createtable(L, 2, 15);
     lua_set_string_by_index(L, no_tag,           "normal");
     lua_set_string_by_index(L, ligatures_tag,    "ligatures");
     lua_set_string_by_index(L, kerns_tag,        "kerns");
@@ -5305,6 +5336,16 @@ static int texlib_gettextcontrolvalues(lua_State *L)
     return 1;
 }
 
+static int texlib_getfillvalues(lua_State *L)
+{
+    return lmt_push_info_values(L, lmt_interface.node_fill_values);
+}
+
+static int texlib_getdirectionvalues(lua_State *L)
+{
+    return lmt_push_info_values(L, lmt_interface.direction_values);
+}
+
 /* relatively new */
 
 static int texlib_getinsertdistance(lua_State *L)
@@ -5482,6 +5523,8 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "gethccode",                  texlib_gethccode                  },
     { "sethmcode",                  texlib_sethmcode                  },
     { "gethmcode",                  texlib_gethmcode                  },
+    { "setamcode",                  texlib_setamcode                  },
+    { "getamcode",                  texlib_getamcode                  },
     { "setlccode",                  texlib_setlccode                  },
     { "getlccode",                  texlib_getlccode                  },
     { "setmathcode",                texlib_setmathcode                },
@@ -5567,7 +5610,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getdiscoptionvalues",        texlib_getdiscoptionvalues        },
     { "getlistanchorvalues",        texlib_getlistanchorvalues        },
     { "getlistsignvalues",          texlib_getlistsignvalues          },
-    { "getlistgeometryvalues",      texlib_getlistgeometryalues       },
+    { "getlistgeometryvalues",      texlib_getlistgeometryvalues      },
     { "getdiscstatevalues",         texlib_getdiscstatevalues         },
     { "getmathparametervalues",     texlib_getmathparametervalues     },
     { "getmathstylenamevalues",     texlib_getmathstylenamevalues     },
@@ -5589,6 +5632,8 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getmathclassoptionvalues",   texlib_getmathclassoptionvalues   },
     { "getnormalizelinevalues",     texlib_getnormalizelinevalues     },
     { "getnormalizeparvalues",      texlib_getnormalizeparvalues      },
+    { "getdirectionvalues",         texlib_getdirectionvalues         },
+    { "getfillvalues",              texlib_getfillvalues              },
     { "geterrorvalues",             texlib_geterrorvalues             },
     { "getiovalues",                texlib_getiovalues                },
     { "getprimitiveorigins",        texlib_getprimitiveorigins        },
@@ -5642,6 +5687,7 @@ defineindexers(lccode)
 defineindexers(uccode)
 defineindexers(hccode)
 defineindexers(hmcode)
+defineindexers(amcode)
 defineindexers(catcode)
 defineindexers(mathcode)
 defineindexers(delcode)
@@ -5673,6 +5719,7 @@ int luaopen_tex(lua_State *L)
     lmt_make_table(L, "uccode",    TEX_METATABLE_UCCODE,    texlib_index_uccode,    texlib_newindex_uccode);
     lmt_make_table(L, "hccode",    TEX_METATABLE_HCCODE,    texlib_index_hccode,    texlib_newindex_hccode);
     lmt_make_table(L, "hmcode",    TEX_METATABLE_HMCODE,    texlib_index_hmcode,    texlib_newindex_hmcode);
+    lmt_make_table(L, "amcode",    TEX_METATABLE_AMCODE,    texlib_index_amcode,    texlib_newindex_amcode);
     lmt_make_table(L, "catcode",   TEX_METATABLE_CATCODE,   texlib_index_catcode,   texlib_newindex_catcode);
     lmt_make_table(L, "mathcode",  TEX_METATABLE_MATHCODE,  texlib_index_mathcode,  texlib_newindex_mathcode);
     lmt_make_table(L, "delcode",   TEX_METATABLE_DELCODE,   texlib_index_delcode,   texlib_newindex_delcode);

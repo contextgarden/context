@@ -304,6 +304,9 @@ local registered = false
 local enabled    = false
 local finished   = false
 
+local status = status -- needed for --sandbox
+local mplib  = mplib  -- needed for --sandbox
+
 function statistics.showusage(when)
     if finished and when == "finish" then
         return

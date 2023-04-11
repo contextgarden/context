@@ -125,10 +125,10 @@ return {
                     tweak = "extendaccents",
                 },
                 {
-                    tweak   = "flattenaccents",
-                    squeeze = 0.8,
-                    height  = 0.9,
-                    offset  = 0.1,
+                    tweak = "flattenaccents",
+                },
+                {
+                    tweak = "fixaccents", -- after flatten (zero width intefrerence)
                 },
                 {
                     tweak   = "radicaldegreeanchors",
@@ -149,10 +149,9 @@ return {
                         -- ["0x7C.parts.bottom"]   = {                   bottomright = -0.15 }, -- vertical bar
                     },
                 },
-
-                {
-                    tweak = "fixaccents",
-                },
+--                 {
+--                     tweak = "fixaccents",
+--                 },
                 -- First we set the dimensions of the initial accent which started out as zero but we want
                 -- a proper width.
                 {

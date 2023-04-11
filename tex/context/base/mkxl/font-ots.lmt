@@ -252,8 +252,8 @@ local math_code          = nodecodes.math
 local dir_code           = nodecodes.dir
 local par_code           = nodecodes.par
 
-local lefttoright_code   = nodes.dirvalues.lefttoright
-local righttoleft_code   = nodes.dirvalues.righttoleft
+local lefttoright_code   = tex.directioncodes.lefttoright
+local righttoleft_code   = tex.directioncodes.righttoleft
 
 local discretionarydisc_code = nodes.disccodes.discretionary
 

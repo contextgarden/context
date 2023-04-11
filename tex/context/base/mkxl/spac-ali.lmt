@@ -22,7 +22,8 @@ local takeattr         = nuts.takeattr
 local getwidth         = nuts.getwidth
 local findtail         = nuts.tail
 
-local righttoleft_code = nodes.dirvalues.righttoleft
+local righttoleft_code = tex.directioncodes.righttoleft
+
 local linelist_code    = nodes.listcodes.line
 
 local hpack_nodes      = nuts.hpack

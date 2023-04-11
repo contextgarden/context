@@ -40,9 +40,26 @@ return {
                     feature  = "euleroverpagella",
                     filename = "euler-math.otf",
                     list     = {
-                        { source = { first = 0x02100, last = 0x02BFF } },
-                        { source = { first = 0x1D400, last = 0x1D7FF } },
-                        { source = { first = 0x1D538, last = 0x1D550 } },
+                        { source = "lowercasenormal",      target = "lowercaseitalic" },
+                        { source = "lowercasebold",        target = "lowercasebolditalic" },
+                        { source = "lowercasegreeknormal", target = "lowercasegreekitalic" },
+                        { source = "lowercasegreekbold",   target = "lowercasegreekbolditalic" },
+                        { source = "uppercasenormal",      target = "uppercaseitalic" },
+                        { source = "uppercasebold",        target = "uppercasebolditalic" },
+                        { source = "uppercasegreeknormal", target = "uppercasegreekitalic" },
+                        { source = "uppercasegreekbold",   target = "uppercasegreekbolditalic" },
+                        { source = "lowercasenormal",      target = "lowercasenormal" },
+                        { source = "lowercasebold",        target = "lowercasebold" },
+                        { source = "lowercasegreeknormal", target = "lowercasegreeknormal" },
+                        { source = "lowercasegreekbold",   target = "lowercasegreekbold" },
+                        { source = "uppercasenormal",      target = "uppercasenormal" },
+                        { source = "uppercasebold",        target = "uppercasebold" },
+                        { source = "uppercasegreeknormal", target = "uppercasegreeknormal" },
+                        { source = "uppercasegreekbold",   target = "uppercasegreekbold" },
+                        { source = "digitsnormal",         target = "digitsnormal" },
+                        --
+                        { source = { first = 0x02100, last = 0x02BFF } }, -- symbols
+                        { source = { first = 0x1D400, last = 0x1D7FF } }, -- various alphabets
                     },
                 },
                 {
@@ -94,10 +111,13 @@ return {
                     tweak = "extendaccents",
                 },
                 {
-                    tweak   = "radicaldegreeanchors",
-                    list = {
+                    tweak = "radicaldegreeanchors",
+                    list  = {
                         ["0x221A.parts.bottom"] = { location = "left", hfactor  = 0.0, vfactor  = 1.1 },
                     }
+                },
+                {
+                    tweak = "flattenaccents",
                 },
                 {
                     tweak = "fixaccents",

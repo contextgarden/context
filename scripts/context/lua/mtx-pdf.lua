@@ -28,7 +28,7 @@ local helpinfo = [[
     <flag name="pretty"><short>replace newlines in metadata</short></flag>
     <flag name="fonts"><short>show used fonts (<ref name="detail)"/></short></flag>
     <flag name="object"><short>show object"/></short></flag>
-    <flag name="linkjs"><short>show links"/></short></flag>
+    <flag name="links"><short>show links"/></short></flag>
    </subcategory>
    <subcategory>
     <example><command>mtxrun --script pdf --info foo.pdf</command></example>

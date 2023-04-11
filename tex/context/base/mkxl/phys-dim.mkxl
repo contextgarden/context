@@ -706,9 +706,16 @@
    \fi
    :}
 
+% \permanent\protected\def\unitsSOLIDUS
+%   {\ifnum\c_phys_units_state=\plusone % suffix
+%      \unitsbackspace
+%    \fi
+%    {/}%
+%    }%\unitsbackspace}
+
 \permanent\protected\def\unitsSOLIDUS
   {\ifnum\c_phys_units_state=\plusone % suffix
-     \unitsbackspace
+    \ifmmode\else\unitsbackspace\fi % we have advanced solidus handling in math
    \fi
    {/}%
    }%\unitsbackspace}

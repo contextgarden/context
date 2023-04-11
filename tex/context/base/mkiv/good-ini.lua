@@ -9,12 +9,14 @@ if not modules then modules = { } end modules ['good-ini'] = {
 -- depends on ctx
 
 local type, next = type, next
-local gmatch = string.gmatch
-local sortedhash, insert = table.sortedhash, table.insert
+local gmatch, find, topattern = string.gmatch, string.find, string.topattern
+local sortedhash, insert, contains = table.sortedhash, table.insert, table.contains
 
 local fonts              = fonts
 
-local trace_goodies      = false  trackers.register("fonts.goodies", function(v) trace_goodies = v end)
+local trace_goodies      = false  trackers.register("fonts.goodies",            function(v) trace_goodies    = v end)
+local trace_extensions   = false  trackers.register("fonts.goodies.extensions", function(v) trace_extensions = v end)
+
 local report_goodies     = logs.reporter("fonts","goodies")
 
 local allocate           = utilities.storage.allocate
@@ -324,15 +326,43 @@ end
 local function setextensions(tfmdata)
     local goodies = tfmdata.goodies
     if goodies then
+        local shared   = tfmdata.shared
+        local metadata = shared and shared.rawdata and shared.rawdata.metadata
         for i=1,#goodies do
             local g = goodies[i]
             local e = g.extensions
             if e then
-                local goodie = g.name or "unknown"
+                local goodie   = g.name or "unknown"
+                local fontname = metadata and metadata.fontname
+                if trace_extensions then
+                    report_goodies("checking extensions for font %a",fontname or "unknown")
+                end
                 for i=1,#e do
-                    local name = "extension-" .. i
-                 -- report_goodies("adding extension %s from %s",name,goodie)
-                    otf.enhancers.addfeature(tfmdata.shared.rawdata,name,e[i])
+                    local entry  = e[i]
+                    local fnames = entry.fonts
+                    local tnames = type(fnames)
+                    local valid  = false
+                    if not fontname then
+                        valid = true
+                    elseif tnames == "table" then
+                        if fnames[fontname] then
+                            valid = true
+                        elseif #fnames > 0 and contains(fnames,fontname) then
+                            valid = true
+                        end
+                    elseif tnames == "string" then
+                        fnames = topattern(fnames)
+                        valid  = find(fontname,fnames) and true
+                    else
+                        valid = true
+                    end
+                    if valid then
+                        local name = "extension-" .. i
+                        if trace_extensions then
+                            report_goodies("adding extension %a from %a for font %a",name,goodie,fontname or "unknown")
+                        end
+                        otf.enhancers.addfeature(tfmdata.shared.rawdata,name,entry)
+                    end
                 end
             end
         end

@@ -481,9 +481,9 @@ local doifelse = commands.doifelse
 
 do
 
-    local dirvalues        = nodes.dirvalues
-    local lefttoright_code = dirvalues.lefttoright
-    local righttoleft_code = dirvalues.righttoleft
+    local directioncodes   = tex.directioncodes
+    local lefttoright_code = directioncodes.lefttoright
+    local righttoleft_code = directioncodes.righttoleft
 
     local function firstdirinbox(n)
         local b = getbox(n)

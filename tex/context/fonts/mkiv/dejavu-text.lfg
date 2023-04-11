@@ -1,0 +1,58 @@
+return {
+    name = "dejavu-text",
+    version = "1.00",
+    comment = "Goodies that complement dejavu.",
+    author = "Mikael Sundqvist & Hans Hagen",
+    copyright = "ConTeXt development team",
+    extensions = {
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "DejaVuSerif",
+                "DejaVuSerif-Bold",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 100,
+                    ["}"]  = 100,
+                    ["]"]  = 100,
+                    ["|"]  = 150,
+                    ["\\"] = 175,
+                    ["!"]  = 100,
+                    ["?"]  = 100,
+                    ["*"]  = 100,
+                },
+            }
+        },
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "DejaVuSerif-Italic",
+                "DejaVuSerif-BoldItalic",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 140,
+                    ["}"]  = 140,
+                    ["]"]  = 140,
+                    ["|"]  = 100,
+                    ["\\"] = 200,
+                    ["!"]  = 100,
+                    ["?"]  = 100,
+                    ["*"]  = 250,
+                },
+                ["("] = {
+                    ["f"]  = 100,
+                },
+                ["{"] = {
+                    ["f"]  = 100,
+                },
+                ["["] = {
+                    ["f"]  = 100,
+                },
+            }
+        },
+    }
+}

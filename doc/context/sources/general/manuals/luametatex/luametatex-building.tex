@@ -792,6 +792,60 @@ we can freeze them.
 {everybeforepar}, \prm {snapshotpar}, \prm {wrapuppar}, etc. For the moment the
 manuals that come with \CONTEXT\ have to do.}
 
+% The concept of paragraph in \TEX\ can be a bit confusing, and what follows here
+% is even more so. In \LUAMETATEX\ we distinguish three different cases:
+%
+% \startitemize[packed]
+% \starthead {normal}
+%     This state is entered when we have an explicit \type {\par}.
+% \stophead
+% \starthead {inserted}
+%     This state is entered when \TEX\ forces a new paragraph which can happen when
+%     we automatically change to horizontal mode.
+% \stophead
+% \starthead{newline}
+%     This state is entered when an empty line is encoduntered.
+% \stophead
+% \stopitemize
+%
+% When defining macros, a \type {\par} can be a delimiter and an empty line is then
+% equivalent to that. With \type {\autoparagraphmode} we can change this behaviour.
+% The bits set in this variable determines how \type {\par} tokens are interpreted
+% and processed in different situations. It is good to know that this experimental
+% feature is pretty much \CONTEXT\ specific. Here are a few characteristics:
+%
+% \startitemize[packed]
+%     \startitem
+%         When any bit is set, a par token is appended when with property inserted.
+%         The reason behind different properties (mentioned above) is that we can
+%         intercept them with callbacks.
+%     \stopitem
+%     \startitem
+%         When bit~1 (text) is set, \type {\par} will be appended to a string when
+%         a token list is serialized.
+%     \stopitem
+%     \startitem
+%         When bit~2 (macro) is set when a macro is defined there is an explicit
+%         check for a par token when \type {\par} is part of the preamble.
+%     \stopitem
+%     \startitem
+%         When bit~4 (go on) is not set we enter the same state as a new line.
+%         After that when bit~1 (text) is set, a regular par token command is
+%         injected (with an associated newline state), otherwise the meaning of
+%         \type {\par} kicks in (users can have redefined \type {\par}).
+%     \stopitem
+% \stopitemize
+%
+% In \CONTEXT\ we currently default to one, because we still have a few \type {\par}
+% delimited macros but these will go and then we will set the mode to two. This
+% means that in \CONTEXT\ such macro expects an explicit \type {\par} and not an
+% empty line which in turn encourages users to use the proper alternatives. We
+% anyway don't support redefined \type {\par} tokens. Therefore, when we load for
+% instance tikz, we set the mode to zero (normal \TEX) and afterwards back to one.
+% This is still an experimental feature that we occasionally review so don't bother
+% us with questions about it (just don't set the mode).
+
+
 \stopsubsection
 
 \startsubsection[title=Penalties]

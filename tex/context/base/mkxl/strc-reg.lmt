@@ -585,8 +585,10 @@ local function storeregister(rawdata) -- metadata, references, entries
         rawdata.userdata = touserdata(userdata)
     end
     --
-    references.section = currentid()
-    metadata.level     = currentlevel()
+    references.block     = structures.sections.currentblock()
+    references.structure = resolvers.jobs.currentstructure()
+    references.section   = currentid()
+    metadata.level       = currentlevel()
     --
     local data     = notsaved and collected[name] or tobesaved[name]
     local entries  = data.entries

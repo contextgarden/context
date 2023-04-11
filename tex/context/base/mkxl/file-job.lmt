@@ -13,7 +13,7 @@ local next, rawget, tostring, tonumber = next, rawget, tostring, tonumber
 local gsub, match, gmatch, ind = string.gsub, string.match, string.gmatch, string.find
 local insert, remove, concat, unique, imerged = table.insert, table.remove, table.concat, table.unique, table.imerged
 local validstring, formatters = string.valid, string.formatters
-local sortedhash = table.sortedhash
+local sortedhash, copytable = table.sortedhash, table.copy
 local setmetatableindex, setmetatablenewindex = table.setmetatableindex, table.setmetatablenewindex
 
 local commands          = commands
@@ -24,10 +24,12 @@ local ctx_doifelse      = commands.doifelse
 
 local implement         = interfaces.implement
 
-local trace_jobfiles    = false  trackers.register("system.jobfiles", function(v) trace_jobfiles = v end)
+local trace_jobfiles    = false  trackers.register("system.jobfiles",  function(v) trace_jobfiles  = v end)
+local trace_structure   = false  trackers.register("system.structure", function(v) trace_structure = v end)
 
 local report            = logs.reporter("system")
 local report_jobfiles   = logs.reporter("system", "jobfiles")
+local report_structure  = logs.reporter("system", "structure")
 local report_functions  = logs.reporter("system", "functions")
 
 local texsetcount       = tex.setcount
@@ -68,6 +70,12 @@ local v_environment     = variables.environment
 local v_product         = variables.product
 local v_component       = variables.component
 local v_yes             = variables.yes
+
+local v_local           = variables["local"]
+local v_global          = variables["global"]
+
+local e_start           = elements.start
+local e_stop            = elements.stop
 
 -- main code .. there is some overlap .. here we have loc://
 
@@ -402,7 +410,7 @@ local c_textlevel = tex.iscount("textlevel")
 local function dummyfunction() end
 
 local function startstoperror()
-    report("invalid \\%s%s ... \\%s%s structure",elements.start,v_text,elements.stop,v_text)
+    report("invalid \\%s%s ... \\%s%s structure",e_start,v_text,e_stop,v_text)
     startstoperror = dummyfunction
 end
 
@@ -528,6 +536,10 @@ local tree               = { type = "text", name = "", branches = { } }
 local treestack          = { }
 local top                = tree.branches
 local root               = tree
+local namestack          = { }
+local namelist           = { }
+local namehash           = { }
+local nametop            = false
 
 local project_stack      = { }
 local product_stack      = { }
@@ -550,10 +562,26 @@ local function pushtree(what,name)
     top = t
 end
 
+local function pushcurrent(what,name)
+    if what == v_product or what == v_component or what == v_text then
+        insert(namestack,name)
+        nametop = copytable(namestack)
+        namelist[#namelist+1] = nametop
+        insert(namehash,#namelist)
+    end
+end
+
 local function poptree()
     top = remove(treestack)
     if #top[#top].branches == 0 then
         top[#top].branches = nil -- saves space in tuc
+    end
+end
+
+local function popcurrent(what)
+    if what == v_product or what == v_component then
+        remove(namestack)
+        remove(namehash)
     end
 end
 
@@ -600,22 +628,75 @@ job.structure           = jobstructure
 jobstructure.collected  = jobstructure.collected or { }
 jobstructure.tobesaved  = root
 jobstructure.components = { }
+jobstructure.namestack  = { }
 
-local function initialize()
-    local function collect(root,result)
+function collectstructure(collected)
+    local namestack = { }
+    local n         = 0
+    local function collect(root,result,stack)
         local branches = root.branches
         if branches then
+            local s = copytable(stack)
+            local m = #s + 1
             for i=1,#branches do
                 local branch = branches[i]
-                if branch.type == "component" then
+                local what   = branch.type
+                if what == v_component then
                     result[#result+1] = branch.name
                 end
-                collect(branch,result)
+                s[m] = branch.name
+                if what == v_product or what == v_component then
+                    n = n + 1
+                    namestack[n] = copytable(s)
+                end
+                collect(branch,result,s)
             end
         end
         return result
     end
-    jobstructure.components = collect(jobstructure.collected,{})
+    local components = collect(collected,{},{})
+--     inspect(namestack)
+    return components, namestack
+end
+
+local function initialize()
+    jobstructure.components, jobstructure.namestack = collectstructure(jobstructure.collected)
+end
+
+function jobresolvers.collectstructure(collected)
+    return collectstructure(collected or jobstructure.collected)
+end
+
+do
+    local reported = { }
+
+    function jobresolvers.currentstructure()
+-- inspect(namehash)
+        local n = namehash[#namehash]
+        if trace_structure and not reported[n] then
+            local namestack = jobstructure.namestack
+            local new = namelist [n]
+            local old = namestack[n]
+            new = new and concat(new," ") or ""
+            old = old and concat(old," ") or ""
+            if old == new then
+                report_structure("%02i : %a",n,old)
+            else
+                report_structure("%02i : %a <> %a",n,old,new)
+            end
+            reported[n] = true
+        end
+        return n, namelist[n]
+    end
+
+end
+
+function jobresolvers.namelist(n,utilitydata)
+    if utilitydata then
+        return utilitydata.namestack[n]
+    else
+        return namelist[n] or jobstructure.namestack[n]
+    end
 end
 
 job.register('job.structure.collected',root,initialize)
@@ -836,36 +917,32 @@ implement { name = "usecomponent",   public = true, protected = true, actions = 
 --     [v_environment] = context.stopenvironmentindeed,
 -- }
 
-local start = {
-    [v_project]     = "startprojectindeed",
-    [v_product]     = "startproductindeed",
-    [v_component]   = "startcomponentindeed",
-    [v_environment] = "startenvironmentindeed",
-}
+-- local start = {
+--     [v_project]     = "startprojectindeed",
+--     [v_product]     = "startproductindeed",
+--     [v_component]   = "startcomponentindeed",
+--     [v_environment] = "startenvironmentindeed",
+-- }
 
-local stop = {
-    [v_project]     = "stopprojectindeed",
-    [v_product]     = "stopproductindeed",
-    [v_component]   = "stopcomponentindeed",
-    [v_environment] = "stopenvironmentindeed",
-}
+-- local stop = {
+--     [v_project]     = "stopprojectindeed",
+--     [v_product]     = "stopproductindeed",
+--     [v_component]   = "stopcomponentindeed",
+--     [v_environment] = "stopenvironmentindeed",
+-- }
 
-local function gotonextlevel(what,name) -- todo: something with suffix name
+local function gotonextlevel(what,how,name) -- todo: something with suffix name
     insert(stacks[what],name)
     insert(typestack,currenttype)
     currenttype = what
     pushtree(what,name)
-    if start[what] then
-     -- start[what]()
-        token.expandmacro(start[what])
-    end
+    pushcurrent(what,name)
+    token.expandmacro(e_start..":"..what..":"..how)
 end
 
-local function gotopreviouslevel(what)
-    if stop[what] then
-        token.expandmacro(stop[what])
-     -- stop[what]() -- not immediate
-    end
+local function gotopreviouslevel(what,how)
+    token.expandmacro(e_stop..":"..what..":"..how)
+    popcurrent(what)
     poptree()
     currenttype = remove(typestack) or v_text
     remove(stacks[what]) -- not currenttype ... weak recovery
@@ -881,20 +958,22 @@ local function autoname()
     return name
 end
 
-implement { name = "startproject",       public = true, protected = true, actions = function() gotonextlevel(v_project,    autoname()) end }
-implement { name = "startproduct",       public = true, protected = true, actions = function() gotonextlevel(v_product,    autoname()) end }
-implement { name = "startcomponent",     public = true, protected = true, actions = function() gotonextlevel(v_component,  autoname()) end }
-implement { name = "startenvironment",   public = true, protected = true, actions = function() gotonextlevel(v_environment,autoname()) end }
+implement { name = "startproject",        public = true, protected = true, actions = function() gotonextlevel(v_project,     v_global, autoname()) end }
+implement { name = "startproduct",        public = true, protected = true, actions = function() gotonextlevel(v_product,     v_global, autoname()) end }
+implement { name = "startcomponent",      public = true, protected = true, actions = function() gotonextlevel(v_component,   v_global, autoname()) end }
+implement { name = "startlocalcomponent", public = true, protected = true, actions = function() gotonextlevel(v_component,   v_local,  autoname()) end }
+implement { name = "startenvironment",    public = true, protected = true, actions = function() gotonextlevel(v_environment, v_global, autoname()) end }
 
-implement { name = "stopproject",        public = true, protected = true, actions = function() gotopreviouslevel(v_project    ) end }
-implement { name = "stopproduct",        public = true, protected = true, actions = function() gotopreviouslevel(v_product    ) end }
-implement { name = "stopcomponent",      public = true, protected = true, actions = function() gotopreviouslevel(v_component  ) end }
-implement { name = "stopenvironment",    public = true, protected = true, actions = function() gotopreviouslevel(v_environment) end }
+implement { name = "stopproject",         public = true, protected = true, actions = function() gotopreviouslevel(v_project,     v_global) end }
+implement { name = "stopproduct",         public = true, protected = true, actions = function() gotopreviouslevel(v_product,     v_global) end }
+implement { name = "stopcomponent",       public = true, protected = true, actions = function() gotopreviouslevel(v_component,   v_global) end }
+implement { name = "stoplocalcomponent",  public = true, protected = true, actions = function() gotopreviouslevel(v_component,   v_local ) end }
+implement { name = "stopenvironment",     public = true, protected = true, actions = function() gotopreviouslevel(v_environment, v_global) end }
 
-implement { name = "currentproject",     public = true, actions = function() context(topofstack(v_project    )) end }
-implement { name = "currentproduct",     public = true, actions = function() context(topofstack(v_product    )) end }
-implement { name = "currentcomponent",   public = true, actions = function() context(topofstack(v_component  )) end }
-implement { name = "currentenvironment", public = true, actions = function() context(topofstack(v_environment)) end }
+implement { name = "currentproject",      public = true, actions = function() context(topofstack(v_project    )) end }
+implement { name = "currentproduct",      public = true, actions = function() context(topofstack(v_product    )) end }
+implement { name = "currentcomponent",    public = true, actions = function() context(topofstack(v_component  )) end }
+implement { name = "currentenvironment",  public = true, actions = function() context(topofstack(v_environment)) end }
 
 -- -- -- this will move -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 --

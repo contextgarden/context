@@ -146,7 +146,7 @@ return {
         "startallmodes", "stopallmodes", "startnotallmodes", "stopnotallmodes",
         "doifallmodes", "doifelseallmodes", "doifallmodeselse", "doifnotallmodes",
         "startenvironment", "stopenvironment", "environment",
-        "startcomponent", "stopcomponent", "component",
+        "startcomponent", "stopcomponent", "component", "startlocalcomponent", "stoplocalcomponent",
         "startproduct", "stopproduct", "product",
         "startproject", "stopproject", "project",
         "starttext", "stoptext", "startnotext", "stopnotext",

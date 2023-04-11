@@ -24,21 +24,63 @@ such a user data object is represented as \syntax {<node>}.
 \blank
 
 You can ask for a list of fields with \type {node.fields} and for valid subtypes
-with \type {node.subtypes}. The \type {node.values} function reports some used
-values. Valid arguments are \type {glue}, \type {style} and \type {math}. Keep in
-mind that the setters normally expect a number, but this helper gives you a list
-of what numbers matter. For practical reason the \type {pagestate} values are
-also reported with this helper, but they are backend specific.
+with \type {node.subtypes}. There are plenty specific field values and you can
+some idea about them by calling \type {tex.get*values()} which returns a table if
+numbers (exclusive numbers or bits):
 
-\def\ShowValues#1{
+\starttexdefinition ShowTeXValues #1
     \blank
     \dontleavehmode
-    {\bf The return values of \type {node.values("#1")} are:}
+%     {\bf The return values of \type {tex.get#1values()} are:}\space
+    {\bf #1:}\space
     \showvalues{#1}
+%     \showhexvalues{#1}
     \blank
-}
+\stoptexdefinition
 
-\ShowValues{glue} \ShowValues{style} \ShowValues{math} \ShowValues{pagestate}
+\ShowTeXValues{fill}
+\ShowTeXValues{alignmentcontext}
+\ShowTeXValues{appendlinecontext}
+% \ShowTeXValues{automigration}
+\ShowTeXValues{charactertag}
+\ShowTeXValues{direction}
+\ShowTeXValues{discoption}
+\ShowTeXValues{discstate}
+% \ShowTeXValues{error}
+% \ShowTeXValues{flag}
+% \ShowTeXValues{frozenpar}
+\ShowTeXValues{glyphoption}
+\ShowTeXValues{group}
+\ShowTeXValues{hyphenation}
+\ShowTeXValues{io}
+\ShowTeXValues{kerneloption}
+\ShowTeXValues{listanchor}
+\ShowTeXValues{listgeometry}
+\ShowTeXValues{listsign}
+\ShowTeXValues{mathclassoption}
+\ShowTeXValues{mathcontrol}
+\ShowTeXValues{mathparameter}
+\ShowTeXValues{mathstylename}
+\ShowTeXValues{mathstyle}
+% \ShowTeXValues{mathvariant}
+% \ShowTeXValues{mode}
+\ShowTeXValues{noadoption}
+\ShowTeXValues{normalizeline}
+\ShowTeXValues{normalizepar}
+\ShowTeXValues{packtype}
+\ShowTeXValues{pagecontext}
+\ShowTeXValues{parbegin}
+\ShowTeXValues{parcontext}
+\ShowTeXValues{parmode}
+% \ShowTeXValues{runstate}
+% \ShowTeXValues{shapingpenalties}
+% \ShowTeXValues{specialmathclass}
+% \ShowTeXValues{textcontrol}
+
+There are a lot of helpers, especially for direct nodes. When possible they adapt
+to the kind of node they get passed. Often multiple values are returned which
+lessens the number of additional calls. It will take a while before all gets
+documented (which is no big deal as the main usage for them is in \CONTEXT).
 
 \stopsection
 
@@ -753,8 +795,6 @@ but don't rely on that for the future. Fields are: \showfields {style}.
 \NC \type{style} \NC string \NC contains the style \NC \NR
 \LL
 \stoptabulate
-
-Valid styles are: \showvalues{style}.
 
 \stopsubsubsection
 
@@ -2398,9 +2438,9 @@ number, for a glue, kern, hlist, vlist, rule and math nodes as well as glyph
 nodes (although this last one is not used in native \SYNCTEX).
 
 \startfunctioncall
-node.setsynctexfields(<integer> f, <integer> l)
+node.direct.setsynctexfields(<integer> f, <integer> l)
 <integer> f, <integer> l =
-    node.getsynctexfields(<node> n)
+    node.direct.getsynctexfields(<node> n)
 \stopfunctioncall
 
 Of course you need to know what you're doing as no checking on sane values takes

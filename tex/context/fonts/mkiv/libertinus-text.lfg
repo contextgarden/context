@@ -1,0 +1,59 @@
+return {
+    name = "libertinus-text",
+    version = "1.00",
+    comment = "Goodies that complement libertinus.",
+    author = "Mikael Sundqvist & Hans Hagen",
+    copyright = "ConTeXt development team",
+    extensions = {
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "LibertinusSerif-Regular",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 50,
+                    ["}"]  = 50,
+                    ["]"]  = 50,
+                    ["|"]  = 100,
+                    ["\\"]  = 50,
+                    ["*"]  = 50,
+                },
+            }
+        },
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "LibertinusSerif-Italic",
+                "LibertinusSerif-BoldItalic",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 50,
+                    ["}"]  = 50,
+                    ["]"]  = 50,
+                    ["|"]  = 125,
+                    ["\\"] = 125,
+                    ["!"]  = 100,
+                    ["?"]  = 100,
+                    ["*"]  = 100,
+                    ["@"]  = 100,
+                },
+                ["("] = {
+                    ["f"]  = 100,
+                },
+                ["{"] = {
+                    ["f"]  = 100,
+                },
+                ["["] = {
+                    ["f"]  = 100,
+                },
+                ["|"] = {
+                    ["f"]  = 130,
+                },
+            }
+        },
+    }
+}

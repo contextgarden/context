@@ -180,6 +180,6 @@
 
 \definefilesynonym [type-imp-antykwa-light.mkiv]          [type-imp-antykwa.mkiv]
 \definefilesynonym [type-imp-antykwa-cond.mkiv]           [type-imp-antykwa.mkiv]
-\definefilesynonym [type-imp-antykwa-lightcond.mkiv]      [type-imp-antykwa.mkiv]
+\definefilesynonym [type-imp-antykwa-light-cond.mkiv]     [type-imp-antykwa.mkiv]
 
 \protect \endinput

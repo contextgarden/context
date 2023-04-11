@@ -1,0 +1,60 @@
+return {
+    name = "stixtwo-text",
+    version = "1.00",
+    comment = "Goodies that complement stix two.",
+    author = "Mikael Sundqvist & Hans Hagen",
+    copyright = "ConTeXt development team",
+    extensions = {
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "STIXTwoText-Regular",
+                "STIXTwoText-Bold",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 50,
+                    ["}"]  = 50,
+                    ["]"]  = 50,
+                    ["|"]  = 100,
+                    ["\\"]  = 100,
+                    ["*"]  = 50,
+                },
+            }
+        },
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "STIXTwoText-Italic",
+                "STIXTwoText-BoldItalic",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 50,
+                    ["}"]  = 50,
+                    ["]"]  = 50,
+                    ["|"]  = 125,
+                    ["\\"] = 125,
+                    ["!"]  = 100,
+                    ["?"]  = 100,
+                    ["*"]  = 100,
+                    ["@"]  = 100,
+                },
+                ["("] = {
+                    ["f"]  = 100,
+                },
+                ["{"] = {
+                    ["f"]  = 100,
+                },
+                ["["] = {
+                    ["f"]  = 100,
+                },
+                ["|"] = {
+                    ["f"]  = 130,
+                },
+            }
+        },
+    }
+}

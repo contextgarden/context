@@ -14,7 +14,8 @@ local hlist_code        = nodecodes.hlist
 local vlist_code        = nodecodes.vlist
 local normaldir_code    = nodes.dircodes.normal
 local line_code         = nodes.listcodes.line
-local lefttoright_code  = nodes.dirvalues.lefttoright
+
+local lefttoright_code  = tex.directioncodes.lefttoright
 
 local getnext           = nuts.getnext
 local getlist           = nuts.getlist

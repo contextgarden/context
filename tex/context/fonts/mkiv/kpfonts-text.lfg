@@ -1,0 +1,57 @@
+return {
+    name = "kpfonts-text",
+    version = "1.00",
+    comment = "Goodies that complement kpfonts.",
+    author = "Mikael Sundqvist & Hans Hagen",
+    copyright = "ConTeXt development team",
+    extensions = {
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "KpRoman-Regular",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 50,
+                    ["}"]  = 50,
+                    ["]"]  = 50,
+                    ["*"]  = 50,
+                },
+            }
+        },
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "KpRoman-Italic",
+                "KpRoman-SemiboldItalic",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 150,
+                    ["}"]  = 50,
+                    ["]"]  = 50,
+                    ["|"]  = 125,
+                    ["\\"] = 125,
+                    ["!"]  = 100,
+                    ["?"]  = 100,
+                    ["*"]  = 100,
+                    ["@"]  = 100,
+                },
+                ["("] = {
+                    ["f"]  = 100,
+                },
+                ["{"] = {
+                    ["f"]  = 100,
+                },
+                ["["] = {
+                    ["f"]  = 100,
+                },
+                ["|"] = {
+                    ["f"]  = 130,
+                },
+            }
+        },
+    }
+}

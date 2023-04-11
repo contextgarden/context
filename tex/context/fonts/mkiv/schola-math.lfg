@@ -78,10 +78,13 @@ return {
                     tweak = "extendaccents",
                 },
                 {
-                    tweak   = "radicaldegreeanchors",
-                    list = {
+                    tweak = "radicaldegreeanchors",
+                    list  = {
                         ["0x221A.parts.bottom"] = { location = "left", hfactor  = 0.05, vfactor  = 1.1 },
                     }
+                },
+                {
+                    tweak = "flattenaccents",
                 },
                 {
                     tweak = "fixaccents",

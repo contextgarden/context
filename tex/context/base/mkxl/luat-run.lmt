@@ -211,6 +211,14 @@ function luatex.currentfile()
     return stack[#stack] or tex.jobname
 end
 
+function luatex.currentlevel()
+    return level
+end
+
+function luatex.currenttotal()
+    return total
+end
+
 local function report_start(name,rest)
     if rest then
         -- luatex

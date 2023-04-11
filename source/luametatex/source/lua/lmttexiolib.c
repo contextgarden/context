@@ -252,6 +252,18 @@ static int texiolib_closeinput(lua_State *L)
     return 0 ;
 }
 
+static int texiolib_getinputindex(lua_State *L)
+{
+    lua_pushinteger(L, lmt_input_state.cur_input.index);
+    return 1;
+}
+
+static int texiolib_getsourcefilename(lua_State *L)
+{
+    lua_pushstring(L, lmt_input_state.in_stack[lmt_input_state.in_stack_data.ptr].full_source_filename);
+    return 1;
+}
+
 /*tex
     This is a private hack, handy for testing runtime math font patches in lfg files with a bit of
     low level tracing. Setting the logfile is already handles by a callback so we don't support
@@ -278,16 +290,25 @@ static int texiolib_setlogfile(lua_State *L)
     return 0;
 }
 
+static int texiolib_forceendoffile(lua_State *L)
+{
+    lmt_token_state.force_eof = 1;
+    return 0;
+}
+
 static const struct luaL_Reg texiolib_function_list[] = {
-    { "write",           texiolib_write             },
-    { "writenl",         texiolib_write_nl          },
-    { "write_nl",        texiolib_write_nl          }, /* depricated */
-    { "writeselector",   texiolib_write_selector    },
-    { "writeselectornl", texiolib_write_selector_nl },
-    { "writeselectorlf", texiolib_write_selector_lf },
-    { "closeinput",      texiolib_closeinput        },
-    { "setlogfile",      texiolib_setlogfile        },
-    { NULL,              NULL                       },
+    { "write",             texiolib_write             },
+    { "writenl",           texiolib_write_nl          },
+    { "write_nl",          texiolib_write_nl          }, /* depricated */
+    { "writeselector",     texiolib_write_selector    },
+    { "writeselectornl",   texiolib_write_selector_nl },
+    { "writeselectorlf",   texiolib_write_selector_lf },
+    { "closeinput",        texiolib_closeinput        },
+    { "setlogfile",        texiolib_setlogfile        },
+    { "getinputindex",     texiolib_getinputindex     }, /*tex temporary, testing only */
+    { "getsourcefilename", texiolib_getsourcefilename }, /*tex temporary, testing only */
+    { "forceendoffile",    texiolib_forceendoffile    }, /*tex temporary, testing only */
+    { NULL,                NULL                       },
 };
 
 static const struct luaL_Reg texiolib_function_list_only[] = {

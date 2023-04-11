@@ -881,52 +881,49 @@ do
                 local method = div(a,100)
                 local size   = a % 100
                 setattr(pointer,a_mathsize,0)
-                local delimiter = getdelimiter(pointer)
-                if delimiter then
-                    local oldchar, font, fam = getcharspec(delimiter)
-                    if oldchar > 0 and font > 0 then
-                        local ht         = getheight(pointer)
-                        local dp         = getdepth(pointer)
-                        local data       = fontdata[font]
-                        local characters = data.characters
-                        local olddata    = characters[oldchar]
-                        if olddata then
---                          local oldheight  = olddata.height or 0
---                          local olddepth   = olddata.depth or 0
-                            local template   = olddata.varianttemplate
-                            local newchar    = mathematics.big(data,template or oldchar,size,method)
-                            local newdata    = characters[newchar]
-                            local newheight  = newdata.height or 0
-                            local newdepth   = newdata.depth or 0
-                            if template then
---                              local ratio = (newheight + newdepth) / (oldheight + olddepth)
---                              setheight(pointer,ratio * oldheight)
---                              setdepth(pointer,ratio * olddepth)
-                                setheight(pointer,newheight)
-                                setdepth(pointer,newdepth)
-                                if not olddata.extensible then
-                                    -- check this on bonum and antykwa
-                                    setoptions(pointer,0)
-                                end
-                                if trace_fences then
---                                  report_fences("replacing %C using method %a, size %a, template %C and ratio %.3f",newchar,method,size,template,ratio)
-                                    report_fences("replacing %C using method %a, size %a and template %C",newchar,method,size,template)
-                                end
-                            else
-                                -- 1 scaled point is a signal, for now
-                                if ht == 1 then
+                if size ~= 0 then
+                    local delimiter = getdelimiter(pointer)
+                    if delimiter then
+                        local oldchar, font, fam = getcharspec(delimiter)
+                        if oldchar > 0 and font > 0 then
+                            local ht         = getheight(pointer)
+                            local dp         = getdepth(pointer)
+                            local data       = fontdata[font]
+                            local characters = data.characters
+                            local olddata    = characters[oldchar]
+                            if olddata then
+                                local template  = olddata.varianttemplate
+                                local newchar   = mathematics.big(data,template or oldchar,size,method)
+                                local newdata   = characters[newchar]
+                                local newheight = newdata.height or 0
+                                local newdepth  = newdata.depth or 0
+                                if template then
                                     setheight(pointer,newheight)
-                                end
-                                if dp == 1 then
                                     setdepth(pointer,newdepth)
+                                    if not olddata.extensible then
+                                        -- check this on bonum and antykwa
+                                        setoptions(pointer,0)
+                                    end
+                                    setoptions(pointer,getoptions(pointer)| tex.noadoptioncodes.scale                        )
+                                    if trace_fences then
+                                        report_fences("replacing %C using method %a, size %a and template %C",newchar,method,size,template)
+                                    end
+                                else
+                                    -- 1 scaled point is a signal, for now
+                                    if ht == 1 then
+                                        setheight(pointer,newheight)
+                                    end
+                                    if dp == 1 then
+                                        setdepth(pointer,newdepth)
+                                    end
+                                    setchar(delimiter,newchar)
+                                    if trace_fences then
+                                        report_fences("replacing %C by %C using method %a and size %a",oldchar,char,method,size)
+                                    end
                                 end
-                                setchar(delimiter,newchar)
-                                if trace_fences then
-                                    report_fences("replacing %C by %C using method %a and size %a",oldchar,char,method,size)
-                                end
+                            elseif trace_fences then
+                                report_fences("not replacing %C using method %a and size %a",oldchar,method,size)
                             end
-                        elseif trace_fences then
-                            report_fences("not replacing %C using method %a and size %a",oldchar,method,size)
                         end
                     end
                 end
@@ -1556,18 +1553,22 @@ do
                     local attributes = mathalternates.attributes
                     local registered = mathalternates.registered
                     local hashes     = mathalternates.hashes
+                    local newchar    = nil
                     for i=1,#registered do
                         local r = registered[i]
                         if (a & r) ~= 0 then
-                            local char = getchar(pointer)
+                            local char = newchar or getchar(pointer)
                             local alt  = hashes[i][char]
                             if alt == nil then
                                 local what = attributes[r]
+local list = what.list
+if not list or list[char] then
                                 alt = otf.getalternate(fontdata[fontid],char,what.feature,what.value) or false
                                 if alt == char then
                                     alt = false
                                 end
                                 hashes[i][char] = alt
+end
                             end
                             if alt then
                                 if trace_alternates then
@@ -1575,10 +1576,14 @@ do
                                     report_alternates("alternate %a, value %a, replacing glyph %U by glyph %U",
                                         tostring(what.feature),tostring(what.value),char,alt)
                                 end
-                                setchar(pointer,alt)
-                                break
+                             -- setchar(pointer,alt)
+                             -- break
+                                newchar = alt
                             end
                         end
+                    end
+                    if newchar then
+                        setchar(pointer,newchar)
                     end
                 end
             end

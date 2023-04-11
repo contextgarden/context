@@ -122,7 +122,7 @@ local math_code        = nodecodes.math
 local dir_code         = nodecodes.dir
 local par_code         = nodecodes.par
 
-local righttoleft_code = nodes.dirvalues.righttoleft
+local righttoleft_code = tex.directioncodes.righttoleft
 
 local txtdirstate      = otf.helpers.txtdirstate
 local pardirstate      = otf.helpers.pardirstate

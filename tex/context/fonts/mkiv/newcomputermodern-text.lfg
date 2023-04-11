@@ -1,0 +1,63 @@
+return {
+    name = "newcomputermodern-text",
+    version = "1.00",
+    comment = "Goodies that complement newcomputermodern.",
+    author = "Mikael Sundqvist & Hans Hagen",
+    copyright = "ConTeXt development team",
+    extensions = {
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "NewCM10-Book",
+                "NewCM10",
+                "NewCM10-Bold",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 50,
+                    ["}"]  = 50,
+                    ["]"]  = 50,
+                    ["|"]  = 100,
+                    ["\\"]  = 75,
+                    ["?"]  = 50,
+                    ["*"]  = 50,
+                },
+            }
+        },
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "NewCM10-BookItalic",
+                "NewCM10-BoldItalic",
+                "NewCM10-Italic",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 50,
+                    ["}"]  = 50,
+                    ["]"]  = 50,
+                    ["|"]  = 125,
+                    ["\\"] = 100,
+                    ["!"]  = 100,
+                    ["?"]  = 100,
+                    ["*"]  = 50,
+                    ["@"]  = 100,
+                },
+                ["("] = {
+                    ["f"]  = 100,
+                },
+                ["{"] = {
+                    ["f"]  = 100,
+                },
+                ["["] = {
+                    ["f"]  = 100,
+                },
+                ["|"] = {
+                    ["f"]  = 130,
+                },
+            }
+        },
+    }
+}

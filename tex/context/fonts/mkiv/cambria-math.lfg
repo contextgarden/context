@@ -70,6 +70,9 @@ return {
                     tweak = "extendaccents",
                 },
                 {
+                    tweak = "fixaccents",
+                },
+                {
                     tweak   = "radicaldegreeanchors",
                     list = {
                         [0x221A]                = { location = "left", hfactor  = -0.15, vfactor  = .75 },
@@ -81,9 +84,6 @@ return {
                         ["0x221A.variants.5"]   = { location = "left", hfactor  = -0.1, vfactor  = .175 },
                         ["0x221A.parts.bottom"] = { location = "left", hfactor  = -0.1, vfactor  = 0.95 },
                     }
-                },
-                {
-                    tweak = "fixaccents",
                 },
                 -- First we set the dimensions of the initial accent which started out as zero but we want
                 -- a proper width.

@@ -1,0 +1,69 @@
+return {
+    name = "lucida-text",
+    version = "1.00",
+    comment = "Goodies that complement lucida.",
+    author = "Mikael Sundqvist & Hans Hagen",
+    copyright = "ConTeXt development team",
+    extensions = {
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "LucidaBrightOT",
+            },
+            data   = {
+                ["f"] = {
+                  [")"]  = 70,
+                  ["}"]  = 70,
+                  ["]"]  = 70,
+                  ["\\"] = 100,
+                },
+            }
+        },
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "LucidaBrightOT-Demibold",
+            },
+            data   = {
+                ["f"] = {
+                  [")"]  = 70,
+                  ["}"]  = 70,
+                  ["]"]  = 70,
+                  ["\\"] = 100,
+                },
+            }
+        },
+        {
+            name   = "kern",
+            type   = "kern",
+            fonts  = {
+                "LucidaBrightOT-Italic",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 70,
+                    ["}"]  = 20,
+                    ["]"]  = 70,
+                    ["\\"] = 100,
+                },
+            }
+        },
+        {
+            name   = "kern",
+            type   = "kern",
+            fonts  = {
+                "LucidaBrightOT-DemiboldItalic",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 70,
+                    ["}"]  = 40,
+                    ["]"]  = 70,
+                    ["\\"] = 100,
+                },
+            }
+        },
+    }
+}

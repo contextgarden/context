@@ -87,6 +87,9 @@ return {
                     tweak = "extendaccents",
                 },
                 {
+                    tweak = "flattenaccents",
+                },
+                {
                     tweak = "fixaccents",
                 },
                 -- First we set the dimensions of the initial accent which started out as zero but we want

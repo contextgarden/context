@@ -1,0 +1,81 @@
+return {
+    name = "erewhon-text",
+    version = "1.00",
+    comment = "Goodies that complement erewhon.",
+    author = "Mikael Sundqvist & Hans Hagen",
+    copyright = "ConTeXt development team",
+    extensions = {
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "Erewhon-Regular",
+                -- "Erewhon-Bold",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 100,
+                    ["}"]  = 100,
+                    ["]"]  = 100,
+                    ["|"]  = 100,
+                    ["\\"] = 75,
+                    ["!"]  = 100,
+                    ["?"]  = 100,
+                    ["*"]  = 100,
+                },
+            }
+        },
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "Erewhon-Bold",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 25,
+                    ["}"]  = 50,
+                    ["]"]  = 25,
+                    ["|"]  = 50,
+                    ["\\"] = 75,
+                    ["!"]  = 50,
+                    ["?"]  = 50,
+                    ["*"]  = 50,
+                },
+            }
+        },
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "Erewhon-Italic",
+                "Erewhon-BoldItalic",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 50,
+                    ["}"]  = 50,
+                    ["]"]  = 50,
+                    ["|"]  = 125,
+                    ["\\"] = 125,
+                    ["!"]  = 100,
+                    ["?"]  = 100,
+                    ["*"]  = 100,
+                    ["@"]  = 100,
+                },
+                ["("] = {
+                    ["f"]  = 100,
+                },
+                ["{"] = {
+                    ["f"]  = 100,
+                },
+                ["["] = {
+                    ["f"]  = 100,
+                },
+                ["|"] = {
+                    ["f"]  = 130,
+                },
+            }
+        },
+    }
+}

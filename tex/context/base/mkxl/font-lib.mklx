@@ -52,7 +52,7 @@
 \registerctxluafile{font-oti}{}           % otf initialization
 \registerctxluafile{font-ott}{}           % otf tables (first)
 \registerctxluafile{font-otl}{autosuffix}
-\registerctxluafile{font-oto}{}
+\registerctxluafile{font-oto}{autosuffix}
 \registerctxluafile{font-otj}{autosuffix}
 \registerctxluafile{font-oup}{}
 \registerctxluafile{font-ota}{autosuffix}

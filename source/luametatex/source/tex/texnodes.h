@@ -1791,6 +1791,7 @@ typedef enum noad_options {
 # define noad_option_stretch                    0x1000000000
 # define noad_option_shrink                     0x2000000000
 # define noad_option_center                     0x4000000000
+# define noad_option_scale                      0x8000000000
 
 # define has_option(a,b)     (((a) & (b)) == (b))
 # define unset_option(a,b)   ((a) & ~(b))
@@ -1849,7 +1850,11 @@ inline static int has_noad_no_script_option(halfword n, halfword option)
 # define has_noad_option_source_on_nucleus(a)           (has_option(noad_options(a), noad_option_source_on_nucleus))
 # define has_noad_option_fixed_super_or_sub_script(a)   (has_option(noad_options(a), noad_option_fixed_super_or_sub_script))
 # define has_noad_option_fixed_super_and_sub_script(a)  (has_option(noad_options(a), noad_option_fixed_super_and_sub_script))
+# define has_noad_option_stretch(a)                     (has_option(noad_options(a), noad_option_stretch))
+# define has_noad_option_shrink(a)                      (has_option(noad_options(a), noad_option_shrink))
 # define has_noad_option_auto_base(a)                   (has_option(noad_options(a), noad_option_auto_base))
+# define has_noad_option_center(a)                      (has_option(noad_options(a), noad_option_center))
+# define has_noad_option_scale(a)                       (has_option(noad_options(a), noad_option_scale))
 
 /*tex
     In the meantime the codes and subtypes are in sync. The variable component does not really

@@ -26,11 +26,12 @@ local rep, format, find = string.rep, string.format, string.find
 local min = math.min
 local lpegmatch = lpeg.match
 local formatters = string.formatters
-local sortedkeys, concat = table.sortedkeys, table.concat
+local sortedkeys, concat, swapped = table.sortedkeys, table.concat, table.swapped
 
 local trace_references        = false  trackers.register("references.references",   function(v) trace_references   = v end)
 local trace_destinations      = false  trackers.register("references.destinations", function(v) trace_destinations = v end)
 local trace_bookmarks         = false  trackers.register("references.bookmarks",    function(v) trace_bookmarks    = v end)
+local trace_externals         = false  trackers.register("references.externals",    function(v) trace_externals    = v end)
 
 local log_destinations        = false  directives.register("destinations.log",     function(v) log_destinations = v end)
 local untex_urls              = true   directives.register("references.untexurls", function(v) untex_urls       = v end)
@@ -510,59 +511,65 @@ function nodeinjections.destination(width,height,depth,names,view)
     if method == v_page then
         for n=1,#names do
             local name = names[n]
-            local used = usedviews[name]
-            if used and used ~= true then
-                -- already done, maybe a warning
-            elseif type(name) == "number" then
-             -- if noview then
-             --     usedviews[name] = view
-             --     names[n] = false
-             -- else
+            if name then
+                local used = usedviews[name]
+                if used and used ~= true then
+                    -- already done, maybe a warning
+                elseif type(name) == "number" then
+                 -- if noview then
+                 --     usedviews[name] = view
+                 --     names[n] = false
+                 -- else
+                        usedviews[name] = view
+                        names[n] = false
+                 -- end
+                else
                     usedviews[name] = view
-                    names[n] = false
-             -- end
-            else
-                usedviews[name] = view
+                end
             end
         end
     elseif method == v_name then
         for n=1,#names do
             local name = names[n]
-            local used = usedviews[name]
-            if used and used ~= true then
-                -- already done, maybe a warning
-            elseif type(name) == "number" then
-                local used = usedinternals[name]
-                usedviews[name] = view
-                names[n] = registerautoprefix(name)
-                doview = true
-            else
-                usedviews[name] = view
-                doview = true
+            if name then
+                local used = usedviews[name]
+                if used and used ~= true then
+                    -- already done, maybe a warning
+                elseif type(name) == "number" then
+                    local used = usedinternals[name]
+                    usedviews[name] = view
+                    names[n] = registerautoprefix(name)
+                    doview = true
+                else
+                    usedviews[name] = view
+                    doview = true
+                end
             end
         end
     else
         for n=1,#names do
             local name = names[n]
-            if usedviews[name] then
-                -- already done, maybe a warning
-            elseif type(name) == "number" then
-                if noview then
-                    usedviews[name] = view
-                    names[n] = false
-                else
-                    local used = usedinternals[name]
-                    if used and used ~= defaultview then
+            if name then
+                if usedviews[name] then
+                    -- already done, maybe a warning
+                elseif type(name) == "number" then
+                    if noview then
                         usedviews[name] = view
-                        names[n] = registerautoprefix(name)
-                        doview = true
-                    else
                         names[n] = false
+                    else
+                        local used = usedinternals[name]
+                        if used and used ~= defaultview then
+                            usedviews[name] = view
+                            names[n] = registerautoprefix(name)
+                            doview = true
+                        else
+                            names[n] = false
+                        end
                     end
+                else
+                    usedviews[name] = view
+                    doview = true
                 end
-            else
-                usedviews[name] = view
-                doview = true
             end
         end
     end
@@ -634,20 +641,95 @@ end
 
 -- annotations
 
-local function pdffilelink(filename,destination,page,actions)
-    if not filename or filename == "" or file.basename(filename) == tex.jobname then
-        return false
+local pdffilelink  do
+
+    local valid = table.setmetatableindex(function(t,filename)
+        local found = false
+        if lfs.isfile(filename) then
+            report_destinations("loading destinations from file %a",filename)
+            local pdffile = lpdf.epdf.load(filename)
+            if pdffile then
+                local pages        = pdffile.pages
+                local nofpages     = pdffile.nofpages
+                local destinations = pdffile.destinations
+                if pages and nofpages > 0 and destinations then
+                    local reverse = swapped(pages)
+                    local total   = 0
+                          found   = { }
+                    for k, v in next, destinations do
+                        local D = v.D
+                        if D then
+                            found[k] = reverse[D[1]]
+                            total    = total + 1
+                        end
+                    end
+                    t[filename] = found
+                    report_destinations("%i destinations on %i pages found",total,nofpages)
+                end
+            end
+        end
+        return found
+    end)
+
+    local pagefromhash = structures.references.pagefromhash
+
+    pdffilelink = function(filename,destination,page,actions)
+        if not filename or filename == "" or file.basename(filename) == tex.jobname then
+            return false
+        end
+        filename = file.addsuffix(filename,"pdf")
+        -- page auto name
+        local forcepage = false
+        if not destination or destination == "" then
+            forcepage = true
+        elseif references.outermethod == v_page then
+            if not page then
+                local hash = valid[filename]
+                page = hash and hash[destination]
+                if not page or trace_externals then
+                    report_destinations("no %s destination %a in file %a","page",destination,filename)
+                end
+            end
+            forcepage = true
+        else -- name or auto, maybe only check with auto
+            local hash = valid[filename]
+            if hash then
+                local p = nil
+                p, destination = pagefromhash(hash,destination,page,actions)
+                if p then
+                    if references.outermethod == v_name then
+                        -- keep destination string
+                    elseif page then
+                        if p ~= page then
+                            report_destinations("page %i for destination %a in %a conflicts, %i expected",page,destination,filename,p)
+                            page = p
+                        end
+                        forcepage = true
+                    elseif p then
+                        page = p
+                        forcepage = true
+                    end
+                else
+                    if not page or trace_externals then
+                        report_destinations("no %s destination %a in file %a","name",destination,filename)
+                    end
+                    forcepage = true
+                end
+         -- else
+                -- keep destination string
+            end
+        end
+        if forcepage then
+            destination = pdfarray { (page or 1) - 1, pdf_fit }
+        end
+        return pdfdictionary {
+            S         = pdf_gotor, -- can also be pdf_launch
+            F         = filename,
+            D         = destination or defaultdestination,
+            NewWindow = actions.newwindow and true or nil,
+        }
     end
-    filename = file.addsuffix(filename,"pdf")
-    if (not destination or destination == "") or (references.outermethod == v_page) then
-        destination = pdfarray { (page or 1) - 1, pdf_fit }
-    end
-    return pdfdictionary {
-        S         = pdf_gotor, -- can also be pdf_launch
-        F         = filename,
-        D         = destination or defaultdestination,
-        NewWindow = actions.newwindow and true or nil,
-    }
+
 end
 
 local untex = references.urls.untex
@@ -981,6 +1063,9 @@ runners["outer"] = function(var,actions)
 end
 
 runners["outer with inner"] = function(var,actions)
+    if var.r then
+        actions.realpage = var.r
+    end
     return pdffilelink(references.checkedfile(var.outer),var.inner,var.r,actions)
 end
 

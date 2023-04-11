@@ -184,43 +184,54 @@
 \newsystemmode\v!component
 \newsystemmode\v!environment
 
-\permanent\protected\def\startprojectindeed
+\permanent\protected\defcsname\e!start:\v!project:\v!global\endcsname
   {%starttext
    \pushsystemmode\v!project
    \setsystemmode\v!project}
 
-\permanent\protected\def\stopprojectindeed
+\permanent\protected\defcsname\e!stop:\v!project:\v!global\endcsname
   {\popsystemmode\v!project
    %stoptext
    \endinput}
 
-\permanent\protected\def\startproductindeed
+\permanent\protected\defcsname\e!start:\v!product:\v!global\endcsname
   {\starttext
    \pushsystemmode\v!product
    \setsystemmode\v!product}
 
-\permanent\protected\def\stopproductindeed
+\permanent\protected\defcsname\e!stop:\v!product:\v!global\endcsname
   {\popsystemmode\v!product
    \stoptext
    \endinput}
 
-\permanent\protected\def\startcomponentindeed
+\permanent\protected\defcsname\e!start:\v!component:\v!global\endcsname
   {\starttext
    \pushreferenceprefix\currentcomponent
    \pushsystemmode\v!component
    \setsystemmode\v!component}
 
-\permanent\protected\def\stopcomponentindeed
+\permanent\protected\defcsname\e!stop:\v!component:\v!global\endcsname
   {\popsystemmode\v!component
    \popreferenceprefix
    \stoptext
    \endinput}
 
-\permanent\protected\def\startenvironmentindeed
+\permanent\protected\defcsname\e!start:\v!component:\v!local\endcsname
+  {\starttext
+   \pushreferenceprefix\currentcomponent
+   \pushsystemmode\v!component
+   \setsystemmode\v!component}
+
+\permanent\protected\defcsname\e!stop:\v!component:\v!local\endcsname
+  {\popsystemmode\v!component
+   \popreferenceprefix
+   \stoptext}
+
+\permanent\protected\defcsname\e!start:\v!environment:\v!global\endcsname
   {\pushsystemmode\v!environment
    \setsystemmode\v!environment}
 
-\permanent\protected\def\stopenvironmentindeed
+\permanent\protected\defcsname\e!stop:\v!environment:\v!global\endcsname
   {\popsystemmode\v!environment
    \endinput}
 
