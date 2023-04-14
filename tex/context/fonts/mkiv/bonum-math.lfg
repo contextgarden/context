@@ -71,6 +71,9 @@ return {
                 presets.wipeanchors          { },
                 presets.wipeitalics          { },
                 {
+                    tweak = "checkaccents",
+                },
+                {
                     -- We need to check these, are the tweaks necessary or not?
                     tweak = "dimensions",
                     list  = {

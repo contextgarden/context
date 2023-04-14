@@ -935,10 +935,12 @@ static halfword tex_aux_char_box(halfword fnt, int chr, halfword att, scaled *ic
             }
             return box; 
         }
-        if ((shrink && (whd.wd > target)) || (stretch && (whd.wd < target))) {
-            glyph_x_scale(glyph) = lround((double) glyph_x_scale(glyph) * target/whd.wd);
-            glyph_x_offset(glyph) = (whd.wd - target)/2;
-        }
+         if ((shrink && (whd.wd > target)) || (stretch && (whd.wd < target))) { // we need to keep an eye on it 
+             glyph_x_scale(glyph) = lround((double) glyph_x_scale(glyph) * target/whd.wd);
+          // glyph_x_offset(glyph) = (whd.wd - target)/2;
+             whd = tex_char_whd_from_glyph(glyph);
+             box_width(box) = whd.wd;
+         }
     }
     return box;
 }
@@ -1578,7 +1580,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
                 the traditional width (which is fake width + italic) becomes less and the delta is
                 added. See (**).
             */
-          HERE:
+        HERE:
             result = tex_aux_char_box(fnt, chr, att, delta, glyph_math_delimiter_subtype, flat ? targetsize : 0, style, shrink, stretch);
             if (flat) { 
                 /* This will be done when we have a reasonable example. */
@@ -2873,7 +2875,11 @@ static int tex_aux_compute_accent_skew(halfword target, int flags, scaled *skew,
                         There is no bot_accent so let's assume that the shift also applies
                         to bottom and overlay accents.
                     */
-                    *skew = tex_char_unchecked_top_anchor_from_font(fnt, chr);
+                    if (flags & bot_accent_code) {
+                        *skew = tex_char_unchecked_bottom_anchor_from_font(fnt, chr);
+                    } else {
+                        *skew = tex_char_unchecked_top_anchor_from_font(fnt, chr);
+                    }
                     if (*skew != INT_MIN) {
                         *skew = tex_aux_math_x_size_scaled(fnt, *skew, size);
                         absolute = 1;
@@ -3073,8 +3079,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
     }
     if (! accent) {
         /*tex Italic gets added to width for traditional fonts (no italic anyway): */
-//        accent = tex_aux_char_box(accentfnt, accentchr, attrlist, NULL, glyph_math_accent_subtype, basewidth, style, 0, 0); // usedwidth 
-        accent = tex_aux_char_box(accentfnt, accentchr, attrlist, NULL, glyph_math_accent_subtype, usedwidth, style, 0, 0); // usedwidth 
+        accent = tex_aux_char_box(accentfnt, accentchr, attrlist, NULL, glyph_math_accent_subtype, usedwidth, style, has_noad_option_stretch(target), has_noad_option_shrink(target)); // basewidth 
         found = 1; 
     }
     if (flags & top_accent_code) {
@@ -3156,7 +3161,13 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
                 /*tex If the accent is extensible just take the center. */
                 anchor = tex_half_scaled(accentwidth);
             } else {
-                anchor = tex_char_unchecked_top_anchor_from_font(accentfnt, accentchr); /* no bot accent key */
+                if (flags & top_accent_code) {
+                    anchor = tex_char_unchecked_top_anchor_from_font(accentfnt, accentchr); /* no bot accent key */
+                } else if (flags & bot_accent_code) {
+                    anchor = tex_char_unchecked_bottom_anchor_from_font(accentfnt, accentchr); /* no bot accent key */
+                } else { 
+                    anchor = INT_MIN;
+                }
                 if (anchor == INT_MIN || has_noad_option_center(target)) {
                     /*tex just take the center */
                     anchor = tex_half_scaled(accentwidth);

@@ -99,6 +99,19 @@ return {
                 presets.moveintegrals         { },
                 presets.wipeitalics           { },
                 {
+                    tweak = "checkaccents",
+                },
+                -- Extensibles use .s1 (variant 1), so we cannot wipe all
+                {
+                    tweak = "wipevariants",
+                    list = {
+                        [0x20D6] = 3,
+                        [0x20D7] = 3,
+                        [0x20EE] = 3,
+                        [0x20EF] = 3,
+                    },
+                },
+                {
                     tweak = "simplifykerns",
                 },
                 {

@@ -56,6 +56,9 @@ return {
                 presets.wipeanchors          { },
                 presets.wipeitalics          { },
                 {
+                    tweak = "checkaccents",
+                },
+                {
                     tweak = "dimensions",
                     list  = {
                         [0x1D487] = { anchor = 0.9  }, -- bold italic f

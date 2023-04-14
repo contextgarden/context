@@ -1309,6 +1309,7 @@ do
                             else
                                 c.width = width
                             end
+c.bottomanchor = width/2 -- maybe optional
                         end
                         if italic then
                             c.italic = nil
@@ -1349,8 +1350,9 @@ do
                     end
                 end
             end
-            return
-        elseif not list or list == "all" or list == true or parameters.all then
+            goto done
+        end
+        if not list or list == "all" or list == true or parameters.all then
             list = sortedkeys(targetcharacters)
         elseif type(list) == "string" then
             list = { list }
@@ -1377,6 +1379,7 @@ do
                 end
             end
         end
+       ::done::
         feedback_tweak(whatever,target,original,done)
     end
 
@@ -1958,7 +1961,7 @@ do
         newprivateslot("minus rule right piece"),
     }
 
-    local function useminus(target,unicode,characters,parameters,skipfirst,what)
+    local function useminus(target,unicode,characters,parameters,skipfirst,what,tounicode)
         local minus   = characters[0x2212]
         local parts   = minus.parts
         if parameters == true then
@@ -1996,7 +1999,7 @@ do
                         leftcommand[xshift],
                         downcommand[yshift],
 --                         slotcommand[0][glyph],
-                    { "slot", 0, glyph, xscale, yscale },
+                        { "slot", 0, glyph, xscale, yscale },
                     },
                 }
                 part.glyph   = what[i]
@@ -2011,7 +2014,7 @@ do
 --                     slotcommand[0][0x2212],
                     { "slot", 0, 0x2212, xscale, yscale },
                 },
-                unicode          = unicode,
+                unicode          = tounicode or unicode,
                 parts            = parts,
                 partsorientation = "horizontal",
             }
@@ -2020,7 +2023,7 @@ do
 
     -- add minus parts of not there and create clipped clone
 
-    local function checkminus(target,unicode,characters,parameters,skipfirst,what)
+    local function checkminus(target,unicode,characters,parameters,skipfirst,what,tounicode)
         local minus = characters[unicode]
         local parts = minus.parts
         if parameters == true then
@@ -2092,6 +2095,7 @@ do
             }
             minus.partsorientation = "horizontal"
         end
+        minus.unicode = tounicode or unicode
     end
 
     function mathtweaks.replacerules(target,original,parameters)
@@ -2104,10 +2108,10 @@ do
             checkminus(target,0x2212,characters,minus,false,mrp)
         end
         if fraction then
-            useminus(target,fbe,characters,fraction,false,frp)
+            useminus(target,fbe,characters,fraction,false,frp,0x2044) -- division slash
         end
         if radical then
-            useminus(target,rbe,characters,radical,true,rrp)
+            useminus(target,rbe,characters,radical,true,rrp,0x2061)   -- apply function
         end
         if stacker then
             useminus(target,0x203E,characters,stacker,false,frp)
@@ -2666,12 +2670,25 @@ do -- see pagella for an extensive example
         [0x030A] = { 0x02DA, false },
         [0x0303] = { 0x02DC, true  },
         [0x20DB] = { 0x20DB, false },
+-- [0x20EF] = { 0x20EF, false },
     }
 
     datasets.fixaccents     = mapping
     datasets.extendaccents  = mapping
     datasets.flattenaccents = mapping
     datasets.copyaccents    = mapping
+
+    -- local flat = stretchingdata.flataccent
+    -- if flat then
+    --     -- Nasty! xoffset needed. Check this when we patch vf.
+    --     local flatdata = characters[flat]
+    --     flatdata.width     = width
+    --     flatdata.advance   = 0
+    --     flatdata.topanchor = topanchor
+    --     flatdata.xoffset   = width + topanchor
+    -- end
+
+local cdata = characters.data
 
     function mathtweaks.fixaccents(target,original,parameters)
         local characters = target.characters
@@ -2680,22 +2697,27 @@ do -- see pagella for an extensive example
             local alias  = entry[1]
             local stretchingdata = characters[stretching]
             if stretchingdata and stretchingdata.width == 0 then
+if false then
+    local b = target.descriptions[stretching].boundingbox
+    if b then
+        local llx = b[1] * target.parameters.hfactor
+        local urx = b[3] * target.parameters.hfactor
+        width = urx - llx
+        stretchingdata.width        = width
+        stretchingdata.xoffset      = - llx
+        stretchingdata.advance      = urx
+        stretchingdata.topanchor    = width/2
+        stretchingdata.bottomanchor = width/2
+    end
+else
                 local topanchor = stretchingdata.topanchor or 0
                 local width     = -topanchor
-                      topanchor = width/2
+                topanchor = width/2
                 stretchingdata.width     = width
                 stretchingdata.advance   = 0
                 stretchingdata.topanchor = topanchor
                 stretchingdata.commands  = { rightcommand[width + topanchor], charcommand[stretching] }
--- local flat = stretchingdata.flataccent
--- if flat then
---     -- Nasty! xoffset needed. Check this when we patch vf.
---     local flatdata = characters[flat]
---     flatdata.width     = width
---     flatdata.advance   = 0
---     flatdata.topanchor = topanchor
---     flatdata.xoffset   = width + topanchor
--- end
+end
                 if not trace_tweaking then
                     done = true
                 elseif done then
@@ -2706,6 +2728,40 @@ do -- see pagella for an extensive example
             end
         end
         feedback_tweak("fixaccents",target,original,done)
+    end
+
+    function mathtweaks.checkaccents(target,original,parameters)
+        local characters = target.characters
+        local done       = false
+        local factor     = target.parameters.hfactor
+        for unicode, data in sortedhash(characters) do
+            local width = data.width
+            if width == 0 then
+                local d = chardata[data.unicode or unicode]
+                local c = d and d.category
+                if c == "mn" then
+                    local b = target.descriptions[unicode].boundingbox
+                    if b then
+                        local llx = b[1] * factor
+                        local urx = b[3] * factor
+                        width = urx - llx
+                        data.width        = width
+                        data.xoffset      = - llx
+                        data.advance      = urx
+                        data.topanchor    = width/2
+                        data.bottomanchor = width/2
+                    end
+                    if not trace_tweaking then
+                        done = true
+                    elseif done then
+                        done[unicode] = true
+                    else
+                        done = { [unicode] = true }
+                    end
+                end
+            end
+        end
+        feedback_tweak("checkaccents",target,original,done)
     end
 
     -- all  true|number  false

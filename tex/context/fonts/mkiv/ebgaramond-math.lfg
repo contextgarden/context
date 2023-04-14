@@ -51,6 +51,9 @@ return {
                 presets.moveintegrals        { factor  = 1.5  },
                 presets.wipeitalics          { },
                 {
+                    tweak = "checkaccents",
+                },
+                {
                     tweak = "simplifykerns",
                 },
                 {

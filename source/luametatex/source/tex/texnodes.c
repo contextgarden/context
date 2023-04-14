@@ -779,9 +779,11 @@ void lmt_nodelib_initialize(void) {
     properties, we create a new table and give it the original one as a metatable. After some
     experiments (that also included timing) with these scenarios I decided that a deep copy made no
     sense, nor did nilling. In the end both the shallow copy and the metatable variant were both
-    ok, although the second ons is slower. The most important aspect to keep in mind is that
-    references to other nodes in properties no longer can be valid for that copy. We could use two
-    tables (one unique and one shared) or metatables but that only complicates matters.
+    okay, although the metatables at that time performed a bit less. The most important aspect to 
+    keep in mind is that references to other nodes in properties no longer can be valid for that 
+    copy. We could use two tables (one unique and one shared) or metatables but that only 
+    complicates matters. Maybe some day I will remove the method that not used in \CONTEXT, just 
+    because switching methods during a run will for sure break things. 
 
     When defining a new node, we could already allocate a table but it is rather easy to do that at
     the lua end e.g. using a metatable __index method. That way it is under macro package control.

@@ -83,6 +83,9 @@ return {
                 presets.wipeanchors          { },
                 presets.wipeitalics          { },
                 {
+                    tweak = "checkaccents",
+                },
+                {
                     tweak   = "parameters",
                     feature = "euleroverpagella",
                     list    = {

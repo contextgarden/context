@@ -26,6 +26,9 @@ return {
                     expected = "Version 0.40",
                 },
                 {
+                    tweak = "checkaccents",
+                },
+                {
                     tweak = "dimensions",
                     list  = {
                         [0x2A3F] = { factor = 0.84625 }

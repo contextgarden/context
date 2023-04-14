@@ -1,3 +1,15 @@
+local nps = fonts.helpers.newprivateslot
+
+local fake20D6 = nps("arrow fake 0x20D6")
+local fake20D7 = nps("arrow fake 0x20D7")
+local fake20E1 = nps("arrow fake 0x20E1")
+
+local fake20EE = nps("arrow fake 0x20EE")
+local fake20EF = nps("arrow fake 0x20EF")
+local fake034D = nps("arrow fake 0x034D")
+
+local real034D = nps("arrow real 0x034D")
+
 return {
     name = "common-math-jmn",
     version = "1.00",
@@ -118,7 +130,7 @@ return {
                     builders.horibar(main,0x203E,false,false,false,0x02212)
                 end
 
-                local ffactor = antykwa and 1 or 1
+                local ffactor = antykwa and 1 or 1   -- check MS
                 local mfactor = antykwa and 1 or .8
                 local lfactor = antykwa and 1 or .8
 
@@ -131,8 +143,11 @@ return {
                 builders.extension(main,0x27F9,dfl,dfm,dar,ffactor,mfactor,lfactor)
                 builders.extension(main,0x27FA,dal,dfm,dar,ffactor,mfactor,lfactor)
 
-                local tfactor = antykwa and -0.8 or -0.8
-                local bfactor = antykwa and  0.1  or  0.1
+                local tfactor = antykwa and -0.8 or -1.1  -- move up check MS
+                local bfactor = antykwa and  0.1 or  0.2
+
+local tfactor = antykwa and -0.6 or -.6  -- move up check MS
+local bfactor = antykwa and  0.1 or  0.2
 
                 local left  = characters[0x27F5]
                 local right = characters[0x27F6]
@@ -141,17 +156,82 @@ return {
                 local height = max(left.height or 0,right.height or 0,both.height or 0)
                 local depth  = max(left.depth  or 0,right.depth  or 0,both.depth  or 0)
 
-                left .height = height  left .depth = depth
-                right.height = height  right.depth = depth
-                both .height = height  both .depth = depth
+                left .height = height ; left .depth = depth
+                right.height = height ; right.depth = depth
+                both .height = height ; both .depth = depth
 
-                local t = copytable(left)  characters[0x20D6] = t t.inneryoffset = tfactor*height t.innerlocation = "top"    t.next = nil t.italic = nil -- over
-                local t = copytable(right) characters[0x20D7] = t t.inneryoffset = tfactor*height t.innerlocation = "top"    t.next = nil t.italic = nil
-                local t = copytable(both)  characters[0x20E1] = t t.inneryoffset = tfactor*height t.innerlocation = "top"    t.next = nil t.italic = nil
+                -- top and bottom arrows : a real mess but now we're drawn into patching it; why are these
+                -- small ones shifted in the bbox; we could do a better job on top and bottom anchors; we
+                -- also could use the bbox as in opentype (\wideoverleftarrow etc)
 
-                local t = copytable(left)  characters[0x20EE] = t t.inneryoffset = bfactor*height t.innerlocation = "bottom" t.next = nil t.italic = nil -- under
-                local t = copytable(right) characters[0x20EF] = t t.inneryoffset = bfactor*height t.innerlocation = "bottom" t.next = nil t.italic = nil
-                local t = copytable(both)  characters[0x034D] = t t.inneryoffset = bfactor*height t.innerlocation = "bottom" t.next = nil t.italic = nil
+                local rightarrow  = characters[0x20D7]
+                local leftarrow   = copytable(rightarrow)
+                local doublearrow = copytable(rightarrow)
+                local width       = rightarrow.width
+                local height      = rightarrow.height
+
+                -- top
+
+                characters[0x20D6] = leftarrow
+                characters[0x20E1] = doublearrow
+
+                rightarrow.xoffset = -.2*width
+                leftarrow.commands = {
+                    { "offset", width, 0, 0x20D7, -1, 1 }
+                }
+                doublearrow.commands = {
+                    { "offset", antykwa and .9*width or width, 0, 0x20D7, -1, 1 },
+                    { "offset", antykwa and .1*width or     0, 0, 0x20D7,  1, 1 }
+                }
+
+                -- bottom
+
+                local rightarrow  = copytable(rightarrow)
+                local leftarrow   = copytable(leftarrow)
+                local doublearrow = copytable(doublearrow)
+
+                characters[0x20EE] = leftarrow
+                characters[0x20EF] = rightarrow
+                characters[0x034D] = doublearrow
+
+                local bheight =  .40*height -- can be tuned to match top
+                local yoffset = -.65*height -- can be tuned to match top
+
+                leftarrow  .height = bheight
+                rightarrow .height = bheight
+                doublearrow.height = bheight
+
+                rightarrow .yoffset = yoffset
+                leftarrow  .yoffset = yoffset
+                doublearrow.yoffset = yoffset
+
+                leftarrow.commands = {
+                    { "offset", width, 0, 0x20D7, -1, 1 }
+                }
+                doublearrow.commands = {
+                    { "offset", antykwa and .9*width or width, 0, 0x20D7, -1, 1 },
+                    { "offset", antykwa and .1*width or     0, 0, 0x20D7,  1, 1 }
+                }
+
+                -- extensibles
+
+                local tl = copytable(left)  ; characters[fake20D6] = tl ; characters[0x20D6].next = fake20D6 -- over
+                local tm = copytable(right) ; characters[fake20D7] = tm ; characters[0x20D7].next = fake20D7
+                local tr = copytable(both)  ; characters[fake20E1] = tr ; characters[0x20E1].next = fake20E1
+
+                tl.inneryoffset = tfactor*height ; tl.innerlocation = "top" ; tl.next = nil ; tl.italic = nil
+                tm.inneryoffset = tfactor*height ; tm.innerlocation = "top" ; tm.next = nil ; tm.italic = nil
+                tr.inneryoffset = tfactor*height ; tr.innerlocation = "top" ; tr.next = nil ; tr.italic = nil
+
+                local bl = copytable(left)  ; characters[fake20EE] = bl ; characters[0x20EE].next = fake20EE -- under
+                local bm = copytable(right) ; characters[fake20EF] = bm ; characters[0x20EF].next = fake20EF
+                local br = copytable(both)  ; characters[fake034D] = br ; characters[0x034D].next = fake034D
+
+                bl.inneryoffset = bfactor*height bl.innerlocation = "bottom" ; bl.next = nil ; bl.italic = nil
+                bm.inneryoffset = bfactor*height bm.innerlocation = "bottom" ; bm.next = nil ; bm.italic = nil
+                br.inneryoffset = bfactor*height br.innerlocation = "bottom" ; br.next = nil ; br.italic = nil
+
+                --
 
                 local tfactor = antykwa and -15 or -15
                 local bfactor = antykwa and   1 or   1

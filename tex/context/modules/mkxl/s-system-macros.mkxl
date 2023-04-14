@@ -48,6 +48,8 @@
   [A4,landscape]
   [A4,landscape]
 
+\bitwiseflip \normalizelinemode \discardzerotabskipsnormalizecode
+
 \starttext
 
 \startluacode
@@ -137,7 +139,7 @@
 
         local function show(visible, check)
          -- context.starttabulate { "|l|l|l|lj2|l|l|l|l|l|l|l|l|" }
-            context.starttabulate { "|l|l|l|lj2|l|l|l|l|l|l|l|l|" }
+            context.starttabulate { "|l|l|l|lj2|l|l|l|l|l|l|l|l|l|" }
             for i=1,#list do
                 local k = list[i]
                 if check(k) then
@@ -148,6 +150,7 @@
                     local permanent  = v.permanent  and "permanent"
                     local primitive  = v.primitive  and "primitive"
                     local instance   = v.instance   and "instance"
+                    local constant   = v.constant   and "constant"
                     local dealtwith  = mutable or immutable or mutable or frozen or permanent or primitive -- beware: we can have combinations
                     local whatever   = find(k,"^[a-z][a-z][a-z]+_")
                     local cscommand  = gsub(v.cmdname or "","_"," ")
@@ -165,7 +168,7 @@
                         ctx_NC() if primitive  then ctx_bold(csname)    else
                                                     ctx_verb(csname)    end
                         ctx_NC() if parameters then context(parameters > 0 and parameters or "-") end
-                        ctx_NC() if undefined  then context.red(false) end
+                        ctx_NC() if undefined  then context.red(false)  end
                                                     context(cscommand)
                         ctx_NC() if primitive  then context(primitive)  end
                         ctx_NC() if permanent  then context(permanent)  end
@@ -174,6 +177,7 @@
                         ctx_NC() if mutable    then context(mutable)    end
                         ctx_NC() if instance   then context(instance)   end
                         ctx_NC() if noaligned  then context(noaligned)  end
+                        ctx_NC() if constant   then context(constant)   end
                         ctx_NC() if filename   then context(hashnames[filename]) end
                         ctx_NC() ctx_NR()
                     end

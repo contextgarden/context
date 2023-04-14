@@ -53,6 +53,9 @@ return {
                 presets.moveintegrals        { factor = 1.5 },
                 presets.wipeitalics          { },
                 {
+                    tweak = "checkaccents",
+                },
+                {
                     tweak = "kerns",
                     list  = {
                         [0x002F]                = { topleft  = -0.15, bottomright = -0.15 },

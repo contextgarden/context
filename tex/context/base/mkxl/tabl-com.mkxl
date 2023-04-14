@@ -49,6 +49,7 @@
 \permanent\protected\lettonothing\BH
 \permanent\protected\lettonothing\BL
 \permanent\protected\lettonothing\BR
+\permanent\protected\lettonothing\BT
 \permanent\protected\lettonothing\CC
 \permanent\protected\lettonothing\CL
 \permanent\protected\lettonothing\CM
@@ -68,6 +69,8 @@
 \permanent\protected\lettonothing\HL
 \permanent\protected\lettonothing\HQ
 \permanent\protected\lettonothing\HR
+\permanent\protected\lettonothing\HF
+\permanent\protected\lettonothing\HLHL
 \permanent\protected\lettonothing\LB
 \permanent\protected\lettonothing\LC
 \permanent\protected\lettonothing\LT
@@ -94,9 +97,13 @@
 \permanent\protected\lettonothing\SM
 \permanent\protected\lettonothing\SR
 \permanent\protected\lettonothing\TB
+\permanent\protected\lettonothing\TC
 \permanent\protected\lettonothing\TL
+\permanent\protected\lettonothing\TM
 \permanent\protected\lettonothing\TR
+\permanent\protected\lettonothing\TT
 \permanent\protected\lettonothing\VL
+\permanent\protected\lettonothing\VLVL
 \permanent\protected\lettonothing\VC
 \permanent\protected\lettonothing\VD
 \permanent\protected\lettonothing\VN

@@ -6309,7 +6309,8 @@ static void tex_aux_run_show_whatever(void)
 
     When we have version 2.10 released I might move the mode tests to the runners so that we get a
     smaller case cq. jump table and we might also go for mode 1 permanently. A side effect will be
-    that some commands codes will be collapsed (move and such).
+    that some commands codes will be collapsed (move and such). See older source for the two 
+    intermediate variants that were tested for a few years. 
 
 */
 

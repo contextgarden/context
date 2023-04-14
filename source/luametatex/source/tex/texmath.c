@@ -2952,8 +2952,25 @@ void tex_run_math_accent(void)
                         }
                         break;
                     case 's': case 'S':
-                        if (tex_scan_mandate_keyword("source", 1)) {
-                            noad_source(accent) = tex_scan_int(0, NULL);
+                        switch (tex_scan_character("othOTH", 0, 0, 0)) {
+                            case 'o': case 'O':
+                                if (tex_scan_mandate_keyword("source", 2)) {
+                                    noad_source(accent) = tex_scan_int(0, NULL);
+                                }
+                                break;
+                            case 't': case 'T':
+                                if (tex_scan_mandate_keyword("stretch", 2)) {
+                                    noad_options(accent) |= noad_option_stretch;
+                                }
+                                break;
+                            case 'h': case 'H':
+                                if (tex_scan_mandate_keyword("shrink", 2)) {
+                                    noad_options(accent) |= noad_option_shrink;
+                                }
+                                break;
+                            default:
+                                tex_aux_show_keyword_error("source|stretch|shrink");
+                                goto DONE;
                         }
                         break;
                     case 'f': case 'F':

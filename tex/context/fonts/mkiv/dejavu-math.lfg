@@ -57,6 +57,9 @@ return {
                 -- because once the advance is set the move is blocked and the ic stil wiped. So,
                 -- we kern. Actually the upright (ascii) f has italic correction.
                 {
+                    tweak = "checkaccents",
+                },
+                {
                     tweak = "kerns",
                     list  = {
                         [0x1D453] = { bottomright = -.2 },
