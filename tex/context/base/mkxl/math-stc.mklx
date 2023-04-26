@@ -1022,7 +1022,7 @@
 \immutable\protected\def\normaldoublebrace {\Umathaccent \s!both \zerocount \zerocount "23DE \zerocount \zerocount "23DF }
 \immutable\protected\def\normaldoubleparent{\Umathaccent \s!both \zerocount \zerocount "23DC \zerocount \zerocount "23DD }
 
-% let's keep this
+% let's keep this .. some are not defined so there's nothing normal
 
 \aliased\let\normaloverbrace      \overbrace
 \aliased\let\normalunderbrace     \underbrace
@@ -1030,10 +1030,11 @@
 \aliased\let\normalunderparent    \underparent
 \aliased\let\normaloverbracket    \overbracket
 \aliased\let\normalunderbracket   \underbracket
-\aliased\let\normalunderleftarrow \underleftarrow
-\aliased\let\normaloverleftarrow  \overleftarrow
-\aliased\let\normalunderrightarrow\underrightarrow
-\aliased\let\normaloverrightarrow \overrightarrow
+
+%aliased\let\normalunderleftarrow \underleftarrow
+%aliased\let\normaloverleftarrow  \overleftarrow
+%aliased\let\normalunderrightarrow\underrightarrow
+%aliased\let\normaloverrightarrow \overrightarrow
 
 %D Here come the new ones:
 

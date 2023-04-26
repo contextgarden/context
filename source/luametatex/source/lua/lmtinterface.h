@@ -94,6 +94,8 @@ extern int  luaextend_io        (lua_State *L);
 extern int  luaextend_string    (lua_State *L);
 extern int  luaextend_xcomplex  (lua_State *L);
 
+extern int  luaopen_posit       (lua_State *L);
+
 /*tex
 
     We finetune the string hasher. When playing with \LUAJIT\ we found that its hashes was pretty
@@ -784,6 +786,8 @@ make_lua_key(L, internal_int);\
 make_lua_key(L, internal_int_reference);\
 make_lua_key(L, internal_mu_glue);\
 make_lua_key(L, internal_mu_glue_reference);\
+make_lua_key(L, internal_posit);\
+make_lua_key(L, internal_posit_reference);\
 make_lua_key(L, internal_toks);\
 make_lua_key(L, internal_toks_reference);\
 make_lua_key(L, internaldimension);\
@@ -795,6 +799,7 @@ make_lua_key(L, italic);\
 make_lua_key(L, italic_correction);\
 make_lua_key(L, italiccorrection);\
 make_lua_key(L, iterator_value);\
+make_lua_key(L, keepbase);\
 make_lua_key(L, kern);\
 make_lua_key(L, kerns);\
 make_lua_key(L, language);\
@@ -1008,6 +1013,7 @@ make_lua_key(L, permitall);\
 make_lua_key(L, permitglue);\
 make_lua_key(L, permitmathreplace);\
 make_lua_key(L, phantom);\
+make_lua_key(L, posit);\
 make_lua_key(L, post);\
 make_lua_key(L, post_linebreak);\
 make_lua_key(L, postadjust);\
@@ -1093,6 +1099,8 @@ make_lua_key(L, register_int);\
 make_lua_key(L, register_int_reference);\
 make_lua_key(L, register_mu_glue);\
 make_lua_key(L, register_mu_glue_reference);\
+make_lua_key(L, register_posit);\
+make_lua_key(L, register_posit_reference);\
 make_lua_key(L, register_toks);\
 make_lua_key(L, register_toks_reference);\
 make_lua_key(L, registerdimension);\
@@ -1577,15 +1585,21 @@ inline static int lmt_roundnumber(lua_State *L, int i)
     return n == 0.0 ? 0 : lround(n);
 }
 
+inline static unsigned int lmt_uroundnumber(lua_State *L, int i)
+{
+    double n = lua_tonumber(L, i);
+    return n == 0.0 ? 0 : (unsigned int) lround(n);
+}
+
 inline static int lmt_optroundnumber(lua_State *L, int i, int dflt)
 {
     double n = luaL_optnumber(L, i, dflt);
     return n == 0.0 ? 0 : lround(n);
 }
 
-inline static unsigned int lmt_uroundnumber(lua_State *L, int i)
+inline static int lmt_opturoundnumber(lua_State *L, int i, int dflt)
 {
-    double n = lua_tonumber(L, i);
+    double n = luaL_optnumber(L, i, dflt);
     return n == 0.0 ? 0 : (unsigned int) lround(n);
 }
 
@@ -1609,7 +1623,7 @@ inline static void lua_set_string_by_key(lua_State *L, const char *a, const char
     lua_setfield(L, -2, a);
 }
 
-inline static void lua_set_string_by_index(lua_State *L, int a, const char *b)
+inline static void lua_set_string_by_index(lua_State *L, lua_Integer a, const char *b)
 {
     lua_pushstring(L, b ? b : "");
     lua_rawseti(L, -2, a);

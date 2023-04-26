@@ -880,7 +880,7 @@ local function virtualize(s,uni,fci,skewchar,move,mathparameters,unicode,paramet
     end
 end
 
-function vfmath.define(specification,set,goodies)
+function vfmath.define(specification,virtual,goodies)
     local name     = specification.name -- symbolic name
     local size     = specification.size -- given size
     local loaded   = { }
@@ -891,8 +891,9 @@ function vfmath.define(specification,set,goodies)
     local okset    = { }
     local n        = 0
     local f_extra  = formatters["virtual.extra.%05X"]
-    for s=1,#set do
-        local ss     = set[s]
+    local setlist  = virtual.recipe or virtual
+    for s=1,#setlist do
+        local ss     = setlist[s]
         local ssname = ss.name
         if add_optional and ss.optional then
             if trace_virtual then
@@ -906,6 +907,8 @@ function vfmath.define(specification,set,goodies)
                 main = s
             end
             local alreadyloaded = names[ssname] -- for px we load one twice (saves .04 sec)
+-- local sshash = name .. ":" .. ssname
+-- local alreadyloaded = names[sshash] -- for px we load one twice (saves .04 sec)
             local f, id
             if alreadyloaded then
                 f, id = alreadyloaded.f, alreadyloaded.id
@@ -915,6 +918,7 @@ function vfmath.define(specification,set,goodies)
             else
                 f, id = fonts.constructors.readanddefine(ssname,size)
                 names[ssname] = {
+-- names[sshash] = {
                     f        = f,
                     id       = id,
                     fontname = ssname, -- diagnostics
@@ -1212,9 +1216,32 @@ function vfmath.define(specification,set,goodies)
         fontname = name, -- diagnostics
     }
     --
-    local addmissing = goodies.mathematics.addmissing
-    if type(addmissing) == "function" then
-        addmissing(main)
+    local virtualtweaks = virtual.tweaks
+    if virtualtweaks then
+        --
+        local mathtweaks  = mathematics.tweaks
+        local knowntweaks = {
+            addmissing = function(main,specification)
+                local action = specification.action
+                if action then
+                    action(main,specification) -- source == target
+                end
+            end
+        }
+        --
+        for i=1,#virtualtweaks do
+            local specification = virtualtweaks[i]
+            local tweak         = specification.tweak
+            local action        = knowntweaks[tweak]
+            if action then
+                action(main,specification)
+            else
+                action = mathtweaks[tweak]
+                if action then
+                    action(main,main,specification)
+                end
+            end
+        end
     end
     --
     mathematics.addfallbacks(main)
@@ -1226,27 +1253,6 @@ function vfmath.define(specification,set,goodies)
     main.mathconstants = main.mathparameters -- we directly pass it to TeX (bypasses the scaler) so this is needed
     main.MathConstants = main.mathconstants
     main.nomath        = false
-    --
-    mathematics.tweaks.setoptions(main,main,{
-        tweak = "setoptions",
-        set   = { "ignorekerndimensions" }
-    }) -- we have dp > ht fences
-    --
-    mathematics.tweaks.fixprimes(main, main, {
-       tweak  = "fixprimes",
-       factor = 1, -- accent base height
-       fake   = 0.9, -- replace multiples with this width proportion
-    })
-    --
-    mathematics.tweaks.addequals(main, main, {
-       tweak = "addequals",
-       force = true,
-    })
-    --
---     mathematics.tweaks.addbars(main,main,{
---         tweak   = "addbars",
---         advance = 0.52,
---     })
     --
     if trace_virtual or trace_timings then
         report_virtual("loading and virtualizing font %a at size %p took %0.3f seconds",name,size,os.clock()-start)

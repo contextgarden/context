@@ -109,7 +109,7 @@ implement {
 }
 
 implement {
-    name      = "getsynchronizedmarking",
+    name      = "getsynchronizemarking",
     arguments = { "integer", "string", "string" },
     actions   = function(class,category,what)
         local category, n = lpegmatch(pattern,category)
@@ -136,7 +136,7 @@ implement {
 }
 
 implement {
-    name      = "resetsynchronizedmarking",
+    name      = "resetsynchronizemarking",
     arguments = "argument",
     actions   = function(category)
         local category, n = lpegmatch(pattern,category)

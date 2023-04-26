@@ -202,6 +202,8 @@ typedef enum tex_command_code {
     register_int_cmd,                 /*tex user-defined integers */
     internal_attribute_cmd,           /*tex */
     register_attribute_cmd,           /*tex user-defined attributes */
+    internal_posit_cmd,    
+    register_posit_cmd,    
     internal_dimen_cmd,               /*tex length (|\hsize|, etc.) */
     register_dimen_cmd,               /*tex user-defined dimensions */
     internal_glue_cmd,                /*tex glue (|\baselineskip|, etc.) */
@@ -221,6 +223,7 @@ typedef enum tex_command_code {
     set_font_cmd,                     /*tex set current font (font identifiers) */
     define_font_cmd,                  /*tex define a font file (|\font|) */
     integer_cmd,                      /*tex the equivalent is a halfword number */
+    posit_cmd,                        
     dimension_cmd,                    /*tex the equivalent is a halfword number representing a dimension */
     gluespec_cmd,                     /*tex the equivalent is a halfword reference to glue */
     mugluespec_cmd,                   /*tex the equivalent is a halfword reference to glue with math units */
@@ -305,6 +308,8 @@ typedef enum tex_command_code {
     register_int_reference_cmd,
     internal_attribute_reference_cmd,
     register_attribute_reference_cmd,
+    internal_posit_reference_cmd,
+    register_posit_reference_cmd,
     internal_dimen_reference_cmd,
     register_dimen_reference_cmd,
     /*tex
@@ -456,9 +461,11 @@ typedef enum convert_codes {
     detokenized_code,         /*tex command code for |\detokenized| */
     roman_numeral_code,       /*tex command code for |\romannumeral| */
     meaning_code,             /*tex command code for |\meaning| */
-    meaning_full_code,        /*tex command code for |\meaningfull| */
+    meaning_full_code,        /*tex command code for |\meaningfull| */ 
     meaning_less_code,        /*tex command code for |\meaningless| */
     meaning_asis_code,        /*tex command code for |\meaningasis| */
+    meaning_ful_code,         /*tex command code for |\meaningful| */
+    meaning_les_code,         /*tex command code for |\meaningles| */
     uchar_code,               /*tex command code for |\Uchar| */
     lua_escape_string_code,   /*tex command code for |\luaescapestring| */
  /* lua_token_string_code, */ /*tex command code for |\luatokenstring| */
@@ -517,6 +524,7 @@ typedef enum some_item_codes {
     font_char_dp_code,          /*tex |\fontchardp| */
     font_char_ic_code,          /*tex |\fontcharic| */
     font_char_ta_code,          /*tex |\fontcharta| */
+    font_char_ba_code,          /*tex |\fontcharba| */
     font_spec_id_code,          /*tex |\fontspecid| */
     font_spec_scale_code,       /*tex |\fontspecscale| */
     font_spec_xscale_code,      /*tex |\fontspecxscale| */
@@ -553,6 +561,7 @@ typedef enum some_item_codes {
     mu_to_glue_code,            /*tex |\mutoglue| */
     glue_to_mu_code,            /*tex |\gluetomu| */
     numexpr_code,               /*tex |\numexpr| */
+    posexpr_code,               
  /* attrexpr_code, */           /*tex not used */
     dimexpr_code,               /*tex |\dimexpr| */
     glueexpr_code,              /*tex |\glueexpr| */
@@ -686,6 +695,7 @@ typedef enum shorthand_def_codes {
     math_char_def_code,   /*tex |\mathchardef| */
     math_xchar_def_code,  /*tex |\Umathchardef| */
     math_dchar_def_code,  /*tex |\Umathdictdef| */
+    float_def_code,  
     count_def_code,       /*tex |\countdef| */
     attribute_def_code,   /*tex |\attributedef| */
     dimen_def_code,       /*tex |\dimendef| */
@@ -695,6 +705,7 @@ typedef enum shorthand_def_codes {
  /* string_def_code, */
     lua_def_code,         /*tex |\luadef| */
     integer_def_code,
+    posit_def_code,
     dimension_def_code,
     gluespec_def_code,
     mugluespec_def_code,

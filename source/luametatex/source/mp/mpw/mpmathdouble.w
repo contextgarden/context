@@ -71,7 +71,6 @@ First, here are some very important constants.
 @ Here are the functions that are static as they are not used elsewhere.
 
 @<Declarations@>=
-static int    mp_ab_vs_cd                        (mp_number *a, mp_number *b, mp_number *c, mp_number *d);
 static void   mp_allocate_abs                    (MP mp, mp_number *n, mp_number_type t, mp_number *v);
 static void   mp_allocate_clone                  (MP mp, mp_number *n, mp_number_type t, mp_number *v);
 static void   mp_allocate_double                 (MP mp, mp_number *n, double v);
@@ -306,7 +305,7 @@ math_data *mp_initialize_double_math(MP mp)
     math->md_print                    = mp_double_print_number;
     math->md_tostring                 = mp_double_number_tostring;
     math->md_modulo                   = mp_number_modulo;
-    math->md_ab_vs_cd                 = mp_ab_vs_cd;
+    math->md_ab_vs_cd                 = mp_double_ab_vs_cd;
     math->md_crossing_point           = mp_double_crossing_point;
     math->md_scan_numeric             = mp_double_scan_numeric_token;
     math->md_scan_fractional          = mp_double_scan_fractional_token;
@@ -353,7 +352,7 @@ void mp_free_double_math (MP mp)
 
 @ Creating an destroying |mp_number| objects
 
-@ @c
+@c
 void mp_allocate_number (MP mp, mp_number *n, mp_number_type t)
 {
     (void) mp;
@@ -361,7 +360,6 @@ void mp_allocate_number (MP mp, mp_number *n, mp_number_type t)
     n->type = t;
 }
 
-@ @c
 void mp_allocate_clone (MP mp, mp_number *n, mp_number_type t, mp_number *v)
 {
     (void) mp;
@@ -369,7 +367,6 @@ void mp_allocate_clone (MP mp, mp_number *n, mp_number_type t, mp_number *v)
     n->data.dval = v->data.dval;
 }
 
-@ @c
 void mp_allocate_abs (MP mp, mp_number *n, mp_number_type t, mp_number *v)
 {
     (void) mp;
@@ -377,7 +374,6 @@ void mp_allocate_abs (MP mp, mp_number *n, mp_number_type t, mp_number *v)
     n->data.dval = fabs(v->data.dval);
 }
 
-@ @c
 void mp_allocate_double (MP mp, mp_number *n, double v)
 {
     (void) mp;
@@ -385,7 +381,6 @@ void mp_allocate_double (MP mp, mp_number *n, double v)
     n->data.dval = v;
 }
 
-@ @c
 void mp_free_number (MP mp, mp_number *n)
 {
     (void) mp;
@@ -901,46 +896,16 @@ quick decision is reached. The result is $+1$, 0, or~$-1$ in the three respectiv
 cases.
 
 @c
-int mp_ab_vs_cd (mp_number *a_orig, mp_number *b_orig, mp_number *c_orig, mp_number *d_orig)
+int mp_double_ab_vs_cd (mp_number *a_orig, mp_number *b_orig, mp_number *c_orig, mp_number *d_orig)
 {
-    return mp_double_ab_vs_cd(a_orig, b_orig, c_orig, d_orig);
-}
-
-@ @<Reduce to the case that |a...@>=
-if (a < 0) {
-    a = -a;
-    b = -b;
-}
-if (c < 0) {
-    c = -c;
-    d = -d;
-}
-if (d <= 0) {
-    if (b >= 0) {
-        if ((a == 0 || b == 0) && (c == 0 || d == 0)) {
-            ret->data.dval = 0;
-        } else {
-            ret->data.dval = 1;
-        }
-        goto RETURN;
-    } if (d == 0) {
-        ret->data.dval = (a == 0 ? 0 : -1);
-        goto RETURN;
-    } else
-        q = a;
-        a = c;
-        c = q;
-        q = -b;
-        b = -d;
-        d = q;
-    }
-} else if (b <= 0) {
-    if (b < 0 && a > 0) {
-        ret->data.dval  = -1;
-        return;
-    } else
-        ret->data.dval = (c == 0 ? 0 : -1);
-        goto RETURN;
+    double ab = a_orig->data.dval * b_orig->data.dval;
+    double cd = c_orig->data.dval * d_orig->data.dval;
+    if (ab > cd) {
+        return 1;
+    } else if (ab < cd) {
+        return -1;
+    } else {
+        return 0;
     }
 }
 
@@ -1210,8 +1175,9 @@ void mp_double_n_arg (MP mp, mp_number *ret, mp_number *x_orig, mp_number *y_ori
     } else {
         ret->type = mp_angle_type;
         ret->data.dval = atan2(y_orig->data.dval, x_orig->data.dval) * (180.0 / PI)  * angle_multiplier;
-        if (ret->data.dval == -0.0)
-        ret->data.dval = 0.0;
+        if (ret->data.dval == -0.0) {
+            ret->data.dval = 0.0;
+        }
     }
 }
 
@@ -1249,7 +1215,8 @@ void mp_double_sin_cos (MP mp, mp_number *z_orig, mp_number *n_cos, mp_number *n
 }
 
 @ This is the http://www-cs-faculty.stanford.edu/~uno/programs/rng.c with small
-cosmetic modifications.
+cosmetic modifications. The code only documented here as the other non scaled
+number models use the same method.
 
 @c
 # define KK            100                /* the long lag  */
@@ -1352,8 +1319,6 @@ static void mp_double_aux_ran_start(long seed)
     mp_double_random_data.ptr = &mp_double_random_data.started;
 }
 
-# define mp_double_aux_ran_arr_next() (*mp_double_random_data.ptr>=0? *mp_double_random_data.ptr++: mp_double_aux_ran_arr_cycle())
-
 static long mp_double_aux_ran_arr_cycle(void)
 {
     if (mp_double_random_data.ptr == &mp_double_random_data.dummy) {
@@ -1394,16 +1359,6 @@ void mp_init_randoms (MP mp, int seed)
 }
 
 @ Here |frac| contains what's beyond the |.|.  @c
-/*
-static double modulus(double left, double right)
-{
-    double quota = left / right;
-    double tmp;
-    double frac = modf(quota, &tmp);
-    frac *= right;
-    return frac;
-}
-*/
 
 void mp_number_modulo(mp_number *a, mp_number *b)
 {
@@ -1417,7 +1372,7 @@ say |next_unif_random|.
 @c
 static void mp_next_unif_random (MP mp, mp_number *ret)
 {
-    unsigned long int op = (unsigned) mp_double_aux_ran_arr_next();
+    unsigned long int op = (unsigned) (*mp_double_random_data.ptr>=0? *mp_double_random_data.ptr++: mp_double_aux_ran_arr_cycle());
     double a = op / (MM * 1.0);
     (void) mp;
     ret->data.dval = a;
@@ -1437,11 +1392,10 @@ static void mp_next_random (MP mp, mp_number *ret)
 }
 
 @ To produce a uniform random number in the range |0<=u<x| or |0>=u>x| or
-|0=u=x|, given a |scaled| value~|x|, we proceed as shown here.
-
-Note that the call of |take_fraction| will produce the values 0 and~|x| with
-about half the probability that it will produce any other particular values
-between 0 and~|x|, because it rounds its answers.
+|0=u=x|, given a |scaled| value~|x|, we proceed as shown here. Note that the
+call of |take_fraction| will produce the values 0 and~|x| with about half
+the probability that it will produce any other particular values between 0
+and~|x|, because it rounds its answers.
 
 @c
 static void mp_double_m_unif_rand (MP mp, mp_number *ret, mp_number *x_orig)
@@ -1504,20 +1458,40 @@ static void mp_double_m_norm_rand (MP mp, mp_number *ret)
     mp_free_number(mp, &u);
 }
 
-@ The following subroutine is used only in |norm_rand| and tests if $ab$ is
-greater than, equal to, or less than~$cd$. The result is $+1$, 0, or~$-1$ in the
-three respective cases.
-
-@c
-int mp_double_ab_vs_cd (mp_number *a_orig, mp_number *b_orig, mp_number *c_orig, mp_number *d_orig)
-{
-    double ab = a_orig->data.dval * b_orig->data.dval;
-    double cd = c_orig->data.dval * d_orig->data.dval;
-    if (ab > cd) {
-        return 1;
-    } else if (ab < cd) {
-        return -1;
-    } else {
-        return 0;
+@ @<Reduce to the case that |a...@>=
+if (a < 0) {
+    a = -a;
+    b = -b;
+}
+if (c < 0) {
+    c = -c;
+    d = -d;
+}
+if (d <= 0) {
+    if (b >= 0) {
+        if ((a == 0 || b == 0) && (c == 0 || d == 0)) {
+            ret->data.dval = 0;
+        } else {
+            ret->data.dval = 1;
+        }
+        goto RETURN;
+    } if (d == 0) {
+        ret->data.dval = (a == 0 ? 0 : -1);
+        goto RETURN;
+    } else
+        q = a;
+        a = c;
+        c = q;
+        q = -b;
+        b = -d;
+        d = q;
+    }
+} else if (b <= 0) {
+    if (b < 0 && a > 0) {
+        ret->data.dval  = -1;
+        return;
+    } else
+        ret->data.dval = (c == 0 ? 0 : -1);
+        goto RETURN;
     }
 }

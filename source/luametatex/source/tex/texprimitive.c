@@ -818,6 +818,13 @@ void tex_print_cmd_chr(singleword cmd, halfword chr)
             tex_print_str_esc("attribute");
             tex_print_int(register_attribute_number(chr));
             break;
+        case register_posit_cmd:
+            tex_print_str_esc("posit");
+            tex_print_int(register_posit_number(chr));
+            break;
+        case internal_posit_cmd:
+            tex_aux_prim_cmd_chr(cmd, chr);
+            break;
         case internal_dimen_cmd:
             tex_aux_prim_cmd_chr(cmd, chr);
             break;
@@ -850,6 +857,10 @@ void tex_print_cmd_chr(singleword cmd, halfword chr)
         case dimension_cmd:
             tex_print_str("dimension ");
             tex_print_dimension(chr, pt_unit);
+            break;
+        case posit_cmd:
+            tex_print_str("posit ");
+            tex_print_posit(chr);
             break;
         case gluespec_cmd:
             tex_print_str("gluespec ");

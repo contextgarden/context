@@ -14,19 +14,9 @@
 \unprotect
 
 \starttexdefinition mutable protected btx:cite:inject #content
-    \ifconditional\btxinteractive
-        \ifx\currentbtxinternal\empty
-            #content
-        \else
-            \goto {
-                #content
-            } [
-                \s!internal(\currentbtxinternal)
-            ]
-        \fi
-    \else
+    \texdefinition{btx:format:gotointernal} {
         #content
-    \fi
+    }
 \stoptexdefinition
 
 \starttexdefinition mutable protected btx:cite:checkconcat
@@ -252,33 +242,27 @@
 \startsetups btx:cite:url
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
-    \else\ifconditional\btxinteractive
-        \goto {
+    \else
+        \texdefinition {btx:format:goto} {
+            url(\currentbtxfirst)
+        } {
             \btxcitereference
             \hyphenatedurl{\currentbtxfirst}
-        } [
-            url(\currentbtxfirst)
-        ]
-    \else
-        \btxcitereference
-        \hyphenatedurl{\currentbtxfirst}
-    \fi\fi
+        }
+    \fi
 \stopsetups
 
 \startsetups btx:cite:doi
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
-    \else\ifconditional\btxinteractive
-        \goto {
+    \else
+        \texdefinition {btx:format:goto} {
+            url(http://dx.doi.org/\currentbtxfirst)
+        } {
             \btxcitereference
             \hyphenatedurl{doi:\currentbtxfirst}
-        } [
-            url(http://dx.doi.org/\currentbtxfirst)
-        ]
-    \else
-        \btxcitereference
-        \hyphenatedurl{doi:\currentbtxfirst}
-    \fi\fi
+        }
+    \fi
 \stopsetups
 
 \protect

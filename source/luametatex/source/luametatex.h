@@ -92,7 +92,7 @@
 # define luametatex_version          210
 # define luametatex_revision         8
 # define luametatex_version_string   "2.10.08"
-# define luametatex_development_id   20230407
+# define luametatex_development_id   20230426
 
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"
@@ -259,6 +259,7 @@ extern version_state_info lmt_version_state;
 
 # include "utilities/auxarithmetic.h"
 # include "utilities/auxmemory.h"
+# include "utilities/auxposit.h"
 # include "utilities/auxzlib.h"
 
 # include "tex/texmainbody.h"

@@ -1,0 +1,137 @@
+if not modules then modules = { } end modules ['cldf-pos'] = {
+    version   = 1.001,
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- https://cse512-19s.github.io/FP-Well-Rounded/
+
+local tostring, load, type, tonumber  = tostring, load, type, tonumber
+local lpegmatch = lpeg.match
+local context = context
+
+local setmetatableindex = table.setmetatableindex
+
+local implement         = interfaces.implement
+
+local fromposit         = posit.fromposit
+local toposit           = posit.toposit
+local posittonumber     = posit.tonumber
+
+local values            = tokens.values
+local boolean_code      = values.boolean
+
+do
+
+    local scanners          = tokens.scanners
+    local scanfloat         = scanners.float
+    local scaninteger       = scanners.integer
+    local scancsname        = scanners.csname
+
+    local codes             = tex.codes
+
+    local global_code       = tex.flagcodes.global
+
+    local savelua           = token.savelua
+    ----- isdefined         = token.isdefined
+
+    local newsparse         = sparse.new
+    local setsparse         = sparse.set
+    ----- wipesparse        = sparse.wipe
+    local restoresparse     = sparse.restore
+
+    local registerfunction  = context.functions.register
+
+    implement {
+        name      = "positunumdef",
+        public    = true,
+        untraced  = true,
+        protected = true,
+        actions   = function(what)
+            local name    = scancsname(true)
+            local code    = newsparse()
+            local restore = registerfunction(function() restoresparse(code) end)
+            implement {
+                name      = name,
+                public    = true,
+                protected = true,
+                usage     = "value",
+                actions   = function(what)
+                    local n = scaninteger()
+                    if what == "value" then
+                        local v = fromposit(code[n])
+                     -- return float_code, v
+                        context("%.99g",v)
+                    else
+                        local v = toposit(scanfloat())
+                        if what and (tonumber(what) & global_code) then
+                            setsparse(code,"global",n,v)
+                        else
+                            savelua(restore,true) -- only once
+                            setsparse(code,n,v)
+                        end
+                    end
+                end,
+            }
+            codes[name] = code
+        end,
+    }
+
+end
+
+do
+
+    local p_number = lpeg.patterns.number
+    local p = lpeg.Cs(
+        lpeg.Cc("local new = new ; return ")
+      * (
+            lpeg.C(p_number) / function(s)
+                 return "new(" .. s .. ")"
+            end
+            + lpeg.P(1)
+        )^0
+    )
+
+    local t = setmetatableindex({ new = posit.new }, posit)
+
+    local function calculate(s)
+        local new = lpegmatch(p,s)
+        new = load(new,nil,nil,t)
+        if new then
+            new = new()
+            if new then
+                return new
+            end
+        end
+        return old
+    end
+
+    implement {
+        name      = "positunum",
+        public    = true,
+        arguments = "string",
+        actions   = function(s)
+            local r = calculate(s)
+            local t = type(r)
+            if t == "boolean" then
+                context(tostring(r))
+            elseif t == "string" then
+                context(r)
+            else
+                context("%N",posittonumber(r))
+            end
+        end
+    }
+
+    implement {
+        name      = "ifpositunum",
+        public    = true,
+        usage     = "condition",
+        arguments = "string",
+        actions   = function(s)
+            return boolean_code, calculate(s) and true or false
+        end,
+    }
+
+end

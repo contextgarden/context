@@ -578,6 +578,36 @@ void tex_conditional_if(halfword code, int unless)
         case if_zero_int_code:
             result = tex_scan_int(0, NULL) == 0;
             goto RESULT;
+        case if_abs_posit_code:
+        case if_posit_code:
+            {
+                halfword n1 = tex_scan_posit(0);
+                halfword cp = tex_aux_scan_comparison(code);
+                halfword n2 = tex_scan_posit(0);
+                if (code == if_abs_posit_code) {
+                    tex_posit zero = tex_integer_to_posit(0);
+                    if (tex_posit_lt(n1,zero.v)) {
+                        n1 = tex_posit_neg(n1);
+                    }
+                    if (tex_posit_lt(n2,zero.v)) {
+                        n2 = tex_posit_neg(n2);
+                    }
+                }
+                switch (cp) {
+                    case 0: result = tex_posit_eq(n1,n2); break;
+                    case 1: result = tex_posit_lt(n1,n2); break;
+                    case 2: result = tex_posit_gt(n1,n2); break;
+                    case 3: result = tex_posit_ne(n1,n2); break;
+                    case 4: result = tex_posit_gt(n1,n2); break;
+                    case 5: result = tex_posit_lt(n1,n2); break;
+                    case 6: result = tex_posit_eq(tex_integer_to_posit(tex_posit_to_integer(n1) & tex_posit_to_integer(n2)).v,n1); break;
+                    case 7: result = tex_posit_ne(tex_integer_to_posit(tex_posit_to_integer(n1) & tex_posit_to_integer(n2)).v,n1); break;
+                }
+            }
+            goto RESULT;
+        case if_zero_posit_code:
+            result = tex_posit_eq_zero(tex_scan_posit(0));
+            goto RESULT;
         case if_abs_dim_code:
         case if_dim_code:
             {

@@ -1017,6 +1017,7 @@ inline static int tex_aux_equal_eq(halfword p, singleword cmd, singleword flag, 
                 }
             case dimension_cmd:
             case integer_cmd:
+            case posit_cmd:
                 if (eq_type(p) == cmd && eq_value(p) == chr) {
              // if (eq_type(p) == cmd && eq_value(p) == chr && eq_level(p) == cur_level) {
                     return 1;
@@ -1307,6 +1308,7 @@ void tex_define_swapped(int g, halfword p1, halfword p2, int force)
             return; 
         } else {
             switch (t1) {
+                case register_posit_cmd:
                 case register_int_cmd:
                 case register_attribute_cmd:
                 case register_dimen_cmd:
@@ -1315,6 +1317,7 @@ void tex_define_swapped(int g, halfword p1, halfword p2, int force)
                 case internal_mu_glue_cmd: /* unchecked */
                 case integer_cmd:
                 case dimension_cmd:
+                case posit_cmd:
                     tex_aux_just_define(g, p1, v2);
                     tex_aux_just_define(g, p2, v1);
                     return;
@@ -1334,6 +1337,10 @@ void tex_define_swapped(int g, halfword p1, halfword p2, int force)
                 case internal_attribute_cmd:
                     tex_assign_internal_attribute_value(g, p1, v2);
                     tex_assign_internal_attribute_value(g, p2, v1);
+                    return;
+                case internal_posit_cmd:
+                    tex_assign_internal_posit_value(g, p1, v2);
+                    tex_assign_internal_posit_value(g, p2, v1);
                     return;
                 case internal_dimen_cmd:
                     tex_assign_internal_dimen_value(g, p1, v2);
@@ -1900,6 +1907,16 @@ void tex_aux_show_eqtb(halfword n)
                 tex_print_char('=');
                 tex_print_int(eq_value(n));
                 break;
+            case internal_posit_reference_cmd:
+                tex_print_cmd_chr(internal_posit_cmd, n);
+                goto POSIT;
+            case register_posit_reference_cmd:
+                tex_print_str_esc("posit");
+                tex_print_int(register_posit_number(n));
+              POSIT:
+                tex_print_char('=');
+                tex_print_posit(eq_value(n));
+                break;
             case internal_dimen_reference_cmd:
                 tex_print_cmd_chr(internal_dimen_cmd, n);
                 goto DIMEN;
@@ -1991,6 +2008,8 @@ void tex_initialize_equivalents(void)
     tex_aux_set_eq(register_int_base,           level_one,  register_int_reference_cmd,       0,                      max_int_register_index);
     tex_aux_set_eq(internal_attribute_base,     level_one,  internal_attribute_reference_cmd, unused_attribute_value, number_attribute_pars);
     tex_aux_set_eq(register_attribute_base,     level_one,  register_attribute_reference_cmd, unused_attribute_value, max_attribute_register_index);
+    tex_aux_set_eq(internal_posit_base,         level_one,  internal_posit_reference_cmd,     0,                      number_posit_pars);
+    tex_aux_set_eq(register_posit_base,         level_one,  register_posit_reference_cmd,     0,                      max_posit_register_index);
     tex_aux_set_eq(internal_dimen_base,         level_one,  internal_dimen_reference_cmd,     0,                      number_dimen_pars);
     tex_aux_set_eq(register_dimen_base,         level_one,  register_dimen_reference_cmd,     0,                      max_dimen_register_index);
     tex_aux_set_eq(internal_specification_base, level_one,  specification_reference_cmd,      null,                   number_specification_pars);

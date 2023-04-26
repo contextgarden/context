@@ -186,10 +186,10 @@ fonts.handlers.otf.features.register {
 -- fonts.helpers.registerboxglyph { category = "demo", unicode = 105 }
 -- fonts.helpers.registerboxglyph { category = "demo", unicode = 106 }
 
-local callbacks      = fonts.callbacks or { }
-fonts.callbacks      = callbacks
+local fontcallbacks = fonts.callbacks or { }
+fonts.callbacks     = fontcallbacks
 
-function callbacks.devirtualize(chardata,f,c)
+function fontcallbacks.devirtualize(chardata,f,c)
     if chardata.commands then
         local h = node.hpack(nodes.pool.glyph(f,c))
         local p = setboxdirectly(f,c,h)
@@ -205,7 +205,7 @@ local function processcallback(f,c)
     if chardata then
         local callback = chardata.callback
         if callback then
-            local action = type(callback) == "function" and callback or callbacks[callback]
+            local action = type(callback) == "function" and callback or fontcallbacks[callback]
             if action then
                 action(chardata,f,c)
             end
@@ -213,6 +213,6 @@ local function processcallback(f,c)
     end
 end
 
-callback.register("process_character",processcallback)
+callbacks.register("process_character",processcallback,"apply an action to a character in a font")
 
-callbacks.callback = processcallback
+fontcallbacks.callback = processcallback

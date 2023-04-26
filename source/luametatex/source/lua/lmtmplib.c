@@ -49,6 +49,7 @@ static const char *mplib_math_options[] = {
     "double",
     "binary",  /* not available in luatex */
     "decimal",
+    "posit",
     NULL
 };
 

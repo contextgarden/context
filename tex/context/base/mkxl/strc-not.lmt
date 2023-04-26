@@ -520,11 +520,13 @@ notes.check_spacing = check_spacing
 
 -- only notes, kind of hardcoded .. bah
 
-callback.register("build_page_insert", function(index,slot)
+local function action(index,slot)
     local state = notes.numbers[index]
     if state then
         return tonode(newgluespec(check_spacing(index,slot)))
     else
         return tonode(newgluespec())
     end
-end)
+end
+
+callbacks.register("build_page_insert",action,"check spacing around inserts")

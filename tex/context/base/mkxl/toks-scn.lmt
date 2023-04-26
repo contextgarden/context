@@ -262,6 +262,7 @@ local shortcuts = {
     toboolean           = toboolean,
     inspect             = inspect,
     report              = report_scan,
+    posit               = posit,
 }
 
 tokens.shortcuts = shortcuts

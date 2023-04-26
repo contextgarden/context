@@ -87,15 +87,15 @@ return {
                 },
                 -- First we set the dimensions of the initial accent which started out as zero but we want
                 -- a proper width.
-                {
-                    tweak = "dimensions",
-                    list  = {
-                        [0x00302] = { width = 2, anchor = 1.5, xoffset = .25 }, -- widehat
-                        [0x00303] = { width = 2, anchor = 1.5, xoffset = .25 }, -- widetilde
-                        [0x00306] = { width = 2, anchor = 1.5, xoffset = .25 }, -- widebreve
-                        [0x0030C] = { width = 2, anchor = 1.5, xoffset = .25 }, -- widecheck
-                    },
-                },
+                -- {
+                --     tweak = "dimensions",
+                --     list  = {
+                --         [0x00302] = { width = 2, anchor = 1.5, xoffset = .25 }, -- widehat
+                --         [0x00303] = { width = 2, anchor = 1.5, xoffset = .25 }, -- widetilde
+                --         [0x00306] = { width = 2, anchor = 1.5, xoffset = .25 }, -- widebreve
+                --         [0x0030C] = { width = 2, anchor = 1.5, xoffset = .25 }, -- widecheck
+                --     },
+                -- },
                 -- Then we deal with all offsets and heights in one go. So we treat the initial accent
                 -- as well as the variants here.
                 {
@@ -143,7 +143,8 @@ return {
                     radical  = {
                         height     = .204,
                         yoffset    = .796,
-                     -- leftoffset = .075,
+                        leftoffset  = .0925,
+                        rightoffset = .0925,
                     },
                     stacker  = {
                         height  = .204,

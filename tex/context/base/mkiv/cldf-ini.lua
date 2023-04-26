@@ -455,11 +455,11 @@ end
 
 if CONTEXTLMTXMODE > 0 then
 
-    callback.register("show_lua_call", function(what, slot)
+    callbacks.register("show_lua_call", function(what, slot)
         local name = namesofscanners[slot]
      -- return name and formatters["%s: \\%s, slot: %i"](what,name,slot) or ""
         return name and formatters["%s \\%s"](what,name) or ""
-    end)
+    end, "provide lua call details")
 
 end
 

@@ -166,12 +166,15 @@ function callbacks.known(name)
 end
 
 function callbacks.report()
+    local usage = list_callbacks()
     for name, _ in sortedhash(list) do
         local str = frozen[name]
+        local sta = state(name)
+        local use = usage[name] and "+" or "-"
         if str then
-            report_callbacks("%s: %s -> %s",state(name),name,str)
+            report_callbacks("%-9s : %s : %-22s -> %s",sta,use,name,str)
         else
-            report_callbacks("%s: %s",state(name),name)
+            report_callbacks("%-9s : %s : %-22s",      sta,use,name)
         end
     end
 end

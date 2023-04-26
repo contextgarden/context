@@ -28,20 +28,27 @@
     \startsetups[antykwa-torunska-cond]      \directsetup{antykwa}\stopsetups
     \startsetups[antykwa-torunska-light-cond]\directsetup{antykwa}\stopsetups
 
-    \definefontfeature[virtualmath-antykwa]           [virtualmath][virtualweight=antykwa]
-    \definefontfeature[virtualmath-antykwa-cond]      [virtualmath][virtualweight=antykwa-cond]
-    \definefontfeature[virtualmath-antykwa-light]     [virtualmath][virtualweight=antykwa-light]
-    \definefontfeature[virtualmath-antykwa-light-cond][virtualmath][virtualweight=antykwa-light-cond]
+    % these fetaures make the loaded base font unique:
 
-    \starttypescript [antykwa,antykwa-torunska,antykwa-light,antykwa-torunska-light,antykwa-cond,antykwa-torunska-cond,antykwa-light-cond,antykwa-torunska-light-cond]
-        \definetypeface[\typescriptone][\s!rm][\s!serif][\typescriptone] [\s!default]
-        \definetypeface[\typescriptone][\s!ss][\s!sans] [modern]         [\s!default] [\s!rscale=1.05]
-        \definetypeface[\typescriptone][\s!tt][\s!mono] [modern]         [\s!default] [\s!rscale=1.05]
-        \definetypeface[\typescriptone][\s!mm][\s!math] [\typescriptone] [\s!default]
+    \definefontfeature[virtualmath-antykwa]              [virtualmath][virtualweight=antykwa]
+    \definefontfeature[virtualmath-antykwa-cond]         [virtualmath][virtualweight=antykwa-cond]
+    \definefontfeature[virtualmath-antykwa-light]        [virtualmath][virtualweight=antykwa-light]
+    \definefontfeature[virtualmath-antykwa-light-cond]   [virtualmath][virtualweight=antykwa-light-cond]
+
+    \definefontfeature[virtualmath-antykwa-nt]           [virtualmath][virtualweight=antykwa-nt]
+    \definefontfeature[virtualmath-antykwa-cond-nt]      [virtualmath][virtualweight=antykwa-cond-nt]
+    \definefontfeature[virtualmath-antykwa-light-nt]     [virtualmath][virtualweight=antykwa-light-nt]
+    \definefontfeature[virtualmath-antykwa-light-cond-nt][virtualmath][virtualweight=antykwa-light-cond-nt]
+
+    \starttypescript [antykwa,antykwa-nt,antykwa-torunska,antykwa-light,antykwa-light-nt,antykwa-torunska-light,antykwa-cond,antykwa-cond-nt,antykwa-torunska-cond,antykwa-light-cond,antykwa-light-cond-nt,antykwa-torunska-light-cond]
+        \definetypeface[\typescriptone][\s!rm][\s!serif][\typescriptone][\s!default]
+        \definetypeface[\typescriptone][\s!ss][\s!sans] [modern]        [\s!default][\s!rscale=1.05]
+        \definetypeface[\typescriptone][\s!tt][\s!mono] [modern]        [\s!default][\s!rscale=1.05]
+        \definetypeface[\typescriptone][\s!mm][\s!math] [\typescriptone][\s!default]
         \quittypescriptscanning
     \stoptypescript
 
-    \starttypescript [\s!serif] [antykwa,antykwa-torunska,antykwa-light,antykwa-torunska-light,antykwa-cond,antykwa-torunska-cond,antykwa-light-cond,antykwa-torunska-light-cond]
+    \starttypescript [\s!serif] [antykwa,antykwa-nt,antykwa-torunska,antykwa-light,antykwa-light-nt,antykwa-torunska-light,antykwa-cond,antykwa-cond-nt,antykwa-torunska-cond,antykwa-light-cond,antykwa-light-cond-nt,antykwa-torunska-light-cond]
         \definefontsynonym [AntykwaTorunska-Regular]          [\s!file:AntykwaTorunska-Regular]          [\s!features=\s!default]
         \definefontsynonym [AntykwaTorunska-Italic]           [\s!file:AntykwaTorunska-Italic]           [\s!features=\s!default]
         \definefontsynonym [AntykwaTorunska-Bold]             [\s!file:AntykwaTorunska-Bold]             [\s!features=\s!default]
@@ -64,23 +71,37 @@
         \loadfontgoodies[antykwa-math]
         \definefontsynonym[\s!MathRoman][antykwamath@antykwa-math]
     \stoptypescript
-
     \starttypescript [\s!math][antykwa-light,antykwa-torunska-light][\s!all]
         \loadfontgoodies[antykwa-math]
         \definefontsynonym[\s!MathRoman][antykwalightmath@antykwa-light-math]
     \stoptypescript
-
     \starttypescript [\s!math][antykwa-cond,antykwa-torunska-cond][\s!all]
         \loadfontgoodies[antykwa-math]
         \definefontsynonym[\s!MathRoman][antykwacondmath@antykwa-cond-math]
     \stoptypescript
-
     \starttypescript [\s!math][antykwa-light-cond,antykwa-torunska-light-cond][\s!all]
         \loadfontgoodies[antykwa-math]
         \definefontsynonym[\s!MathRoman][antykwalightcondmath@antykwa-light-cond-math]
     \stoptypescript
 
-    \starttypescript [\s!serif] [antykwa,antykwa-torunska] [\s!name]
+    \starttypescript [\s!math][antykwa-nt][\s!all]
+        \loadfontgoodies[antykwa-math]
+        \definefontsynonym[\s!MathRoman][antykwamathnt@antykwa-math-nt]
+    \stoptypescript
+    \starttypescript [\s!math][antykwa-light-nt][\s!all]
+        \loadfontgoodies[antykwa-math]
+        \definefontsynonym[\s!MathRoman][antykwalightmathnt@antykwa-light-math-nt]
+    \stoptypescript
+    \starttypescript [\s!math][antykwa-cond-nt][\s!all]
+        \loadfontgoodies[antykwa-math]
+        \definefontsynonym[\s!MathRoman][antykwacondmathnt@antykwa-cond-math-nt]
+    \stoptypescript
+    \starttypescript [\s!math][antykwa-light-cond-nt][\s!all]
+        \loadfontgoodies[antykwa-math]
+        \definefontsynonym[\s!MathRoman][antykwacondmathnt@antykwa-light-cond-math-nt]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [antykwa,antykwa-nt,antykwa-torunska] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
         \definefontsynonym [\s!Serif]           [AntykwaTorunska-Regular]
         \definefontsynonym [\s!SerifBold]       [AntykwaTorunska-Bold]
@@ -88,7 +109,7 @@
         \definefontsynonym [\s!SerifBoldItalic] [AntykwaTorunska-BoldItalic]
     \stoptypescript
 
-    \starttypescript [\s!serif] [antykwa-light,antykwa-torunska-light] [\s!name]
+    \starttypescript [\s!serif] [antykwa-light,antykwa-light-nt,antykwa-torunska-light] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
         \definefontsynonym [\s!Serif]           [AntykwaTorunska-Light]
         \definefontsynonym [\s!SerifBold]       [AntykwaTorunska-Medium]
@@ -96,7 +117,7 @@
         \definefontsynonym [\s!SerifBoldItalic] [AntykwaTorunska-MediumItalic]
     \stoptypescript
 
-    \starttypescript [\s!serif] [antykwa-cond,antykwa-torunska-cond] [\s!name]
+    \starttypescript [\s!serif] [antykwa-cond,antykwa-cond-nt,antykwa-torunska-cond] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
         \definefontsynonym [\s!Serif]           [AntykwaTorunska-CondRegular]
         \definefontsynonym [\s!SerifBold]       [AntykwaTorunska-CondBold]
@@ -104,7 +125,7 @@
         \definefontsynonym [\s!SerifBoldItalic] [AntykwaTorunska-CondBoldItalic]
     \stoptypescript
 
-    \starttypescript [\s!serif] [antykwa-light-cond,antykwa-torunska-light-cond] [\s!name]
+    \starttypescript [\s!serif] [antykwa-light-cond,antykwa-light-cond-nt,antykwa-torunska-light-cond] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
         \definefontsynonym [\s!Serif]           [AntykwaTorunska-CondLight]
         \definefontsynonym [\s!SerifBold]       [AntykwaTorunska-CondMedium]

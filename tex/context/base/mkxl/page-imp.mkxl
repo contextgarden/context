@@ -1264,7 +1264,7 @@
 %
 % \starttext \dorecurse{30}{test \recurselevel \page} \stoptext
 
-\permanent\protected\protected\def\pusharrangedpageXY#1%
+\permanent\protected\def\pusharrangedpageXY#1%
   {\advancearrangedpageN
    \global\advanceby\arrangedpageM\plusone
    \reportarrangedpage\arrangedpageN
@@ -1300,7 +1300,7 @@
       \poparrangedpages
     \fi}
 
-\permanent\protected\protected\def\poparrangedpagesXY
+\permanent\protected\def\poparrangedpagesXY
   {\ifnum\arrangedpageN>\zerocount
      \paperwidth \arrangedpageX\paperwidth
      \paperheight\arrangedpageY\paperheight

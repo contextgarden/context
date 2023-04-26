@@ -266,6 +266,7 @@
 \mutable\lettonothing\currentsynonym
 \mutable\lettonothing\currentsynonymtag
 \mutable\lettonothing\currentsynonymtext
+\mutable\lettonothing\currentsynonymsortkey
 
 \permanent\tolerant\protected\def\definesynonyms[#1]#*[#2]#*[#3]#*[#4]% name plural \meaning \use
   {\ifnum\lastarguments=\plusfour
@@ -626,7 +627,6 @@
 \permanent\protected\def\currentsortingname         {\clf_synonymname\currentsimplelist\currentsortingtag}
 \permanent\protected\def\currentsortingpages        {\clf_synonympages\currentsimplelist\currentsortingtag}
 \permanent\protected\def\doifelsecurrentsortingused {\clf_doifelsesynonymused\currentsimplelist\currentsortingtag}
-\permanent\protected\def\resetusedsortings      [#1]{\clf_resetusedsynonyms{#1}}
 
 \permanent\protected\def\sortingname [#1]#*[#2]{\clf_synonymname {#1}{#2}}
 \permanent\protected\def\sortingpages[#1]#*[#2]{\clf_synonympages{#1}{#2}}

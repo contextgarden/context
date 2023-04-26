@@ -412,10 +412,10 @@
   {\begingroup
    \typo_delimited_push{#1}{#2}%
    \dostarttaggedchained\t!delimitedblock\currentdelimitedtext\??delimitedtext
-   \edef\p_delimited_method{\delimitedtextparameter\c!method}%
-   \ifx\p_delimited_method\v!font
+   \edef\p_method{\delimitedtextparameter\c!method}%
+   \ifx\p_method\v!font
      \expandafter\typo_delimited_start_font
-   \orelse\ifx\p_delimited_method\v!paragraph
+   \orelse\ifx\p_method\v!paragraph
      \expandafter\typo_delimited_start_font
    \else
      \expandafter\typo_delimited_start_other
@@ -485,12 +485,14 @@
    \endgroup
    \dostoptagged}
 
+\lettonothing\p_delimited_left
+\lettonothing\p_delimited_right
+\lettonothing\p_delimited_nextleft
+\lettonothing\p_delimited_nextright
+
 \tolerant\def\typo_delimited_start_par[#1]%
   {\let\typo_delimited_stop\typo_delimited_stop_par
-   \edef\p_delimited_spacebefore{\delimitedtextparameter\c!spacebefore}%
-   \ifempty\p_delimited_spacebefore \else
-     \blank[\p_delimited_spacebefore]%
-   \fi
+   \checkedblank[\delimitedtextparameter\c!spacebefore]%
    \delimitedtextparameter\c!before
    \edef\m_delimited_argument{#1}%
    \ifempty\m_delimited_argument
@@ -538,10 +540,7 @@
    \pop_macro_checkindentation
    \typo_delimited_stop_par_indeed
    \delimitedtextparameter\c!after
-   \edef\p_delimited_spaceafter{\delimitedtextparameter\c!spaceafter}%
-   \ifempty\p_delimited_spaceafter \else
-     \blank[\p_delimited_spaceafter]%
-   \fi
+   \checkedblank[\delimitedtextparameter\c!spaceafter]%
    \useindentnextparameter\delimitedtextparameter
    \aftergroup\dorechecknextindentation}% AM: This was missing!
 
@@ -566,10 +565,10 @@
 \permanent\tolerant\protected\def\delimitedtext[#1]#*[#2]%
   {\dontleavehmode % following ones can be omited
    \typo_delimited_push{#1}{#2}%
-   \edef\p_delimited_method{\delimitedtextparameter\c!method}%
-   \ifx\p_delimited_method\v!font
+   \edef\p_method{\delimitedtextparameter\c!method}%
+   \ifx\p_method\v!font
      \expandafter\typo_delimited_fontdriven
-   \orelse\ifx\p_delimited_method\v!text
+   \orelse\ifx\p_method\v!text
      \expandafter\typo_delimited_fontdriven
    \else
      \expandafter\typo_delimited_other

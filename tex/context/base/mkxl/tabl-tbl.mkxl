@@ -791,6 +791,7 @@
 \defcsname\??tabulatewidth\v!auto\endcsname
   {\c_tabl_tabulate_modus\plusthree\settrue\c_tabl_tabulate_reshape}
 
+\lettonothing\tabl_tabulate_hook_box
 \lettonothing\tabl_tabulate_hook_box_begin
 \lettonothing\tabl_tabulate_hook_box_end
 
@@ -2228,6 +2229,8 @@
 %      \fi
 %    \fi}
 
+\newconditional\c_tabl_tabulate_split_done
+
 \protected\def\tabl_tabulate_flush_second_indeed
   {\glettonothing\tabl_tabulate_flush_collected_indeed
    \global\c_tabl_tabulate_column\zerocount
@@ -3031,7 +3034,7 @@
 \lettonothing\m_table_current_row_background
 \lettonothing\m_table_current_row_background_default
 \lettonothing\m_table_current_row_background_filler
-\lettonothing\m_table_current_row_background_defaultfiller
+\lettonothing\m_table_current_row_background_default_filler
 \lettonothing\m_table_current_row_background_auto
 
 \protected\def\tabl_register_row_background#1%

@@ -289,15 +289,15 @@ end
 directives.register("system.errorcontext", function(v)
     local register = callback.register
     if v then
-        register('show_error_message',   nop)
-        register('show_warning_message', function()         processwarning(v)   end)
-        register('intercept_lua_error',  function()         processerror(v)     end)
-        register('intercept_tex_error',  function(mode,eof) processerror(v,eof) return mode end)
+        register("show_error_message",   nop)
+        register("show_warning_message", function()         processwarning(v)   end)
+        register("intercept_lua_error",  function()         processerror(v)     end)
+        register("intercept_tex_error",  function(mode,eof) processerror(v,eof) return mode end)
     else
-        register('show_error_message',   nil)
-        register('show_warning_message', nil)
-        register('intercept_lua_error',  nil)
-        register('intercept_tex_error',  nil)
+        register("show_error_message",   nil)
+        register("show_warning_message", nil)
+        register("intercept_lua_error",  nil)
+        register("intercept_tex_error",  nil)
     end
 end)
 

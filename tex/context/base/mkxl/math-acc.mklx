@@ -61,6 +61,20 @@
 %     \switchtobodyfont[termes]     \getbuffer\par
 % \stop %TEXpage
 
+% scale:
+%
+%   no   : only use base
+%   yes  : use base, variants and extensible, stretch and shrink when set
+%   keep : use base, variants and extensible, stretch and shrink when set, but keep base
+%
+% alignsymbol:
+%
+%   center when accent is wider than base
+%
+% stretch|shrink:
+%
+%   scale accent to fit (base and variants depending on 'scale' value)
+
 \installcorenamespace{mathaccents}
 
 \installcommandhandler \??mathaccents {mathaccent} \??mathaccents
@@ -72,7 +86,10 @@
    \c!bottom=,
    \c!mathstyle=,
    \c!color=,
-   \c!stretch=\v!no,
+   \c!scale=\v!no,
+   \c!alignsymbol=\v!yes,
+  %\c!stretch=\v!no,
+  %\c!shrink=\v!no,
    \c!define=\v!yes] % not used
 
 \definemathaccent
@@ -135,20 +152,37 @@
    \setlocalmathaccentcurrent{#class}% \edef\currentmathaccent{#class}%
    \startusemathstyleparameter\mathaccentparameter\c!mathstyle
    \setupcurrentmathaccent[#settings]%
-   \edef\m_fixed {\ifcstok{\mathaccentparameter\c!stretch}\v!yes   \else\s!fixed \space\fi}%
-   \edef\m_center{\ifcstok{\mathaccentparameter\c!align  }\v!middle     \s!center\space\fi}%
+   \edef\p_scale{\mathaccentparameter\c!scale}%
+   \ifx\p_scale\v!keep
+     \lettonothing\m_fixed
+   \orelse\ifx\p_scale\v!yes
+     \lettonothing\m_fixed
+   \else
+     \let\m_fixed\s!fixed
+   \fi
    \Umathaccent
      \usedcolorparameterattributes{\mathaccentparameter\c!color}%
-   % nooverflow % there is never na overflow anyway but we do accept thekey
-   \m_center
+ % nooverflow % there is never na overflow anyway but we do accept the key
+   \ifcstok{\mathaccentparameter\c!align  }\v!middle\s!center \space\fi
+   \ifcstok{\mathaccentparameter\c!stretch}\v!yes   \s!stretch\space\fi
+   \ifcstok{\mathaccentparameter\c!shrink }\v!yes   \s!shrink \space\fi
+   \ifx\p_scale\v!keep
+     \s!keepbase\space
+   \fi
+   \ifcstok{\mathaccentparameter\c!alignsymbol}\v!yes
+     \s!nooverflow\space
+   \fi
    \ifcase#kind\or
-     top \m_fixed
+     \s!top\space
+     \m_fixed
      \fam\zerocount#top
    \or
-     bottom \m_fixed
+     \s!bottom\space
+     \m_fixed
      \fam\zerocount#bottom
    \or
-     both \m_fixed
+     \s!both\space
+     \m_fixed
      \fam\zerocount#bottom
      \fam\zerocount#top
    \fi
@@ -175,7 +209,7 @@
 \pushoverloadmode
 
 % These retain the given unicode values ... but can stretch when configured
-% to do so: \setupmathaccent[\v!top][\c!stretch=\v!yes]
+% to do so: \setupmathaccent[\v!top][\c!scale=\v!yes]
 
 % Extended/modified below
 %
@@ -229,17 +263,17 @@
 \definemathaccent
   [\v!top:\v!stretch]
   [\v!top]
-  [\c!stretch=\v!yes]
+  [\c!scale=\v!keep,\c!stretch=\v!yes,\c!shrink=\v!yes]
 
 \definemathaccent
   [\v!bottom:\v!stretch]
   [\v!bottom]
-  [\c!stretch=\v!yes]
+  [\c!scale=\v!keep,\c!stretch=\v!yes,\c!shrink=\v!yes]
 
 \definemathaccent
   [\v!both:\v!stretch]
   [\v!both]
-  [\c!stretch=\v!yes]
+  [\c!scale=\v!keep,\c!stretch=\v!yes,\c!shrink=\v!yes]
 
 %D We have a problem. We can use stackers but then we need to adapt the dimensions
 %D which is font dependent. So, for now we keep them as accents.

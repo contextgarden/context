@@ -322,6 +322,7 @@
 \permanent\countdef\c_syst_max_allocated_toks      = 216 \c_syst_max_allocated_toks      = \directlua{tex.write(tex.magicconstants.max_toks_register_index)}      % idem
 \permanent\countdef\c_syst_max_allocated_read      = 217 \c_syst_max_allocated_read      = \c_syst_max_allocated_iohandle
 \permanent\countdef\c_syst_max_allocated_write     = 218 \c_syst_max_allocated_write     = \c_syst_max_allocated_iohandle
+\permanent\countdef\c_syst_max_allocated_float     = 220 \c_syst_max_allocated_float     = \directlua{tex.write(tex.magicconstants.max_float_register_index or 0)}     % idem
 
 \permanent\countdef\c_syst_last_allocated_count    = 221 \c_syst_last_allocated_count    = \c_syst_min_allocated_register
 \permanent\countdef\c_syst_last_allocated_dimen    = 222 \c_syst_last_allocated_dimen    = \c_syst_min_allocated_register
@@ -332,6 +333,7 @@
 \permanent\countdef\c_syst_last_allocated_read     = 227 \c_syst_last_allocated_read     = \c_syst_min_allocated_iohandle
 \permanent\countdef\c_syst_last_allocated_write    = 228 \c_syst_last_allocated_write    = \c_syst_min_allocated_iohandle
 \permanent\countdef\c_syst_last_allocated_marks    = 229 \c_syst_last_allocated_marks    = \c_syst_min_allocated_mark
+\permanent\countdef\c_syst_last_allocated_float    = 230 \c_syst_last_allocated_float    = \c_syst_min_allocated_register
 
 \permanent\countdef\c_syst_min_counter_value       = 253 \c_syst_min_counter_value       = -"7FFFFFFF
 \permanent\countdef\c_syst_max_counter_value       = 254 \c_syst_max_counter_value       =  "7FFFFFFF
@@ -358,6 +360,7 @@
 \permanent\protected\def\newdimension #1{\dimensiondef #1\zeropoint}
 \permanent\protected\def\newgluespec  #1{\gluespecdef  #1\zeropoint}
 \permanent\protected\def\newmugluespec#1{\mugluespecdef#1\zeropoint}
+\permanent\protected\def\newposit     #1{\positdef     #1\zerocount}
 
 %D The aliasing here is tricky: we need to make sure the alias is not let to the
 %D current value but behaves dynamic. Instead we can use just \newcount, unless of
@@ -366,6 +369,7 @@
 
 \protected\def\aliasinteger  #1#2{\untraced\protected\def#1{#2}}% name parent
 \protected\def\aliasdimension#1#2{\untraced\protected\def#1{#2}}% name parent
+\protected\def\aliasposit    #1#2{\untraced\protected\def#1{#2}}% name parent
 
 %D So, effectively we start allocating from 256 and upwards. The inserts sit in the
 %D range 128 upto 254. Page numbers use the counters 0 upto 9 and the pagebox is
@@ -386,6 +390,7 @@
 \permanent\protected\def\newread  {\syst_basics_allocate\c_syst_last_allocated_read  \read  \integerdef\c_syst_max_allocated_read}
 \permanent\protected\def\newwrite {\syst_basics_allocate\c_syst_last_allocated_write \write \integerdef\c_syst_max_allocated_write}
 \permanent\protected\def\newmarks {\syst_basics_allocate\c_syst_last_allocated_marks \marks \integerdef\c_syst_max_allocated_mark}
+\permanent\protected\def\newfloat {\syst_basics_allocate\c_syst_last_allocated_float \float \floatdef  \c_syst_max_allocated_float}
 
 \firstvalidlanguage \plusone % so zero is ignored in hyphenation, this might become the default
 

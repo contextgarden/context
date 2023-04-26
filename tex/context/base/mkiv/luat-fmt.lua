@@ -15,6 +15,11 @@ if not modules then modules = { } end modules ['luat-fmt'] = {
 -- I'll strip the code here because something generic will never take of and we
 -- moved on to luametatex anyway.
 
+-- Per 2023-04-25 we need to explicitly pass --socket and --shell-escape because
+-- other macro packages need these libraries to be disabled due to lack of control.
+-- So a quite drastic break of downward compatibility (context could not generate a
+-- format otherwise). Yet another reason to move on to luametatex.
+
 local format = string.format
 local concat = table.concat
 local quoted = string.quoted
@@ -64,7 +69,7 @@ end
 -- The silent option is for Taco. It's a bit of a hack because we cannot yet mess
 -- with directives. In fact, I could probably clean up the maker a bit by now.
 
-local template = [[--ini %primaryflags% --lua=%luafile% %texfile% %secondaryflags% %redirect%]]
+local template = [[--ini %primaryflags% --socket --shell-escape --lua=%luafile% %texfile% %secondaryflags% %redirect%]]
 
 local checkers = {
     primaryflags   = "verbose",  -- "flags"
@@ -225,7 +230,7 @@ function environment.make_format(formatname)
     lfs.chdir(startupdir)
 end
 
-local template = [[%primaryflags% --fmt=%fmtfile% --lua=%luafile% %texfile% %secondaryflags%]]
+local template = [[%primaryflags% --socket --shell-escape --fmt=%fmtfile% --lua=%luafile% %texfile% %secondaryflags%]]
 
 local checkers = {
     primaryflags   = "verbose",

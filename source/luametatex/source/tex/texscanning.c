@@ -155,6 +155,62 @@ scanner_state_info lmt_scanner_state = {
 
 */
 
+// inline static void tex_aux_downgrade_cur_val(int level, int succeeded, int negative)
+// {
+//     switch (cur_val_level) {
+//         case tok_val_level:
+//         case font_val_level:
+//         case mathspec_val_level:
+//         case fontspec_val_level:
+//             /*tex
+//                 This test pays back as this actually happens, but we also need it for the
+//                 |none_lua_function| handling. We end up here in |ident_val_level| and |tok_val_level|
+//                 and they don't downgrade, nor negate which saves a little testing.
+//             */
+//             break;
+//       case int_val_level:
+//       case attr_val_level:
+//       case dimen_val_level:
+//       case posit_val_level:
+//           while (cur_val_level > level) {
+//               --cur_val_level;
+//           }
+//           if (negative) {
+//               cur_val = -cur_val;
+//           }
+//           break;
+//        default:
+//            /*tex There is no real need for it being a loop, a test would do. */
+//            while (cur_val_level > level) {
+//                /*tex Convert |cur_val| to a lower level. */
+//                switch (cur_val_level) {
+//                    case glue_val_level:
+//                    case mu_val_level :
+//                        cur_val = glue_amount(cur_val);
+//                        break;
+//                 // case mu_val_level :
+//                 //     tex_aux_mu_error(1);
+//                 //     break;
+//                }
+//                --cur_val_level;
+//            }
+//            if (cur_val_level == glue_val_level || cur_val_level == mu_val_level) {
+//                if (succeeded == 1) {
+//                    cur_val = tex_new_glue_spec_node(cur_val);
+//                }
+//                if (negative) {
+//                    glue_amount(cur_val) = -glue_amount(cur_val);
+//                    glue_stretch(cur_val) = -glue_stretch(cur_val);
+//                    glue_shrink(cur_val) = -glue_shrink(cur_val);
+//                }
+//            } else if (negative) {
+//                cur_val = -cur_val;
+//            }
+//            break;
+//     }
+// }
+
+
 inline static void tex_aux_downgrade_cur_val(int level, int succeeded, int negative)
 {
     switch (cur_val_level) {
@@ -168,55 +224,103 @@ inline static void tex_aux_downgrade_cur_val(int level, int succeeded, int negat
                 and they don't downgrade, nor negate which saves a little testing.
             */
             break;
-      case int_val_level:
-      case attr_val_level:
-      case dimen_val_level:
-          while (cur_val_level > level) {
-              --cur_val_level;
-          }
-          if (negative) {
-              cur_val = -cur_val;
-          }
-          break;
-       default:
-           /*tex There is no real need for it being a loop, a test would do. */
-           while (cur_val_level > level) {
-               /*tex Convert |cur_val| to a lower level. */
-               switch (cur_val_level) {
-                   case glue_val_level:
-                   case mu_val_level :
-                       cur_val = glue_amount(cur_val);
-                       break;
-                // case mu_val_level :
-                //     tex_aux_mu_error(1);
-                //     break;
-               }
-               --cur_val_level;
-           }
-           if (cur_val_level == glue_val_level || cur_val_level == mu_val_level) {
-               if (succeeded == 1) {
-                   cur_val = tex_new_glue_spec_node(cur_val);
-               }
-               if (negative) {
-                   glue_amount(cur_val) = -glue_amount(cur_val);
-                   glue_stretch(cur_val) = -glue_stretch(cur_val);
-                   glue_shrink(cur_val) = -glue_shrink(cur_val);
-               }
-           } else if (negative) {
-               cur_val = -cur_val;
-           }
-           break;
-    }
+        case int_val_level:
+//            while (cur_val_level > level) {
+//                --cur_val_level;
+//            }
+while (cur_val_level > level) {
+       cur_val_level = level;
+}
+            if (negative) {
+                cur_val = -cur_val;
+            }
+            if (level == posit_val_level) { 
+                cur_val = tex_integer_to_posit(cur_val).v;
+            }
+            break;
+        case attr_val_level:
+//            while (cur_val_level > level) {
+//                --cur_val_level;
+//            }
+while (cur_val_level > level) {
+       cur_val_level = level;
+}
+            if (negative) {
+                cur_val = -cur_val;
+            }
+            if (level == posit_val_level) { 
+                cur_val = tex_integer_to_posit(cur_val).v;
+            }
+            break;
+        case dimen_val_level:
+//            while (cur_val_level > level) {
+//                --cur_val_level;
+//            }
+while (cur_val_level > level) {
+       cur_val_level = level;
+}
+            if (negative) {
+                cur_val = -cur_val;
+            }
+            if (level == posit_val_level) { 
+                cur_val = tex_dimension_to_posit(cur_val).v;
+            }
+            break;
+        case posit_val_level:
+            switch (cur_val_level) { 
+                case dimen_val_level:
+                    cur_val = tex_dimension_to_posit(cur_val).v;
+                    break;
+                case int_val_level:
+                case attr_val_level:
+                    cur_val = tex_integer_to_posit(cur_val).v;
+                    break;
+            }
+//            while (cur_val_level > level) {
+//                --cur_val_level;
+//            }
+while (cur_val_level > level) {
+       cur_val_level = level;
+}
+            if (negative) {
+                cur_val = tex_posit_neg(cur_val);
+            }
+            break;
+        default:
+            /*tex There is no real need for it being a loop, a test would do. */
+            while (cur_val_level > level) {
+                /*tex Convert |cur_val| to a lower level. */
+                switch (cur_val_level) {
+                    case glue_val_level:
+                    case mu_val_level :
+                        cur_val = glue_amount(cur_val);
+                        break;
+                 // case mu_val_level :
+                 //     tex_aux_mu_error(1);
+                 //     break;
+                }
+                --cur_val_level;
+            }
+            if (cur_val_level == glue_val_level || cur_val_level == mu_val_level) {
+                if (succeeded == 1) {
+                    cur_val = tex_new_glue_spec_node(cur_val);
+                }
+                if (negative) {
+                    glue_amount(cur_val) = -glue_amount(cur_val);
+                    glue_stretch(cur_val) = -glue_stretch(cur_val);
+                    glue_shrink(cur_val) = -glue_shrink(cur_val);
+                }
+            } else if (negative) {
+                cur_val = -cur_val;
+            }
+            break;
+     }
 }
 
 /*tex
 
     Some of the internal items can be fetched both routines, and these have been split off into the
     next routine, that returns true if the command code was understood.
-
-*/
-
-/*tex
 
     The |last_item_cmd| branch has been flattened a bit because we don't need to treat \ETEX\
     specific thingies special any longer.
@@ -571,6 +675,7 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
         case font_char_dp_code:
         case font_char_ic_code:
         case font_char_ta_code:
+        case font_char_ba_code:
             {
                 halfword fnt = tex_scan_font_identifier(NULL);
                 halfword chr = tex_scan_char_number(0);
@@ -590,6 +695,9 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
                             break;
                         case font_char_ta_code:
                             cur_val = tex_char_top_anchor_from_font(fnt, chr);
+                            break;
+                        case font_char_ba_code:
+                            cur_val = tex_char_bottom_anchor_from_font(fnt, chr);
                             break;
                     }
                 } else {
@@ -802,6 +910,9 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
         case numexpr_code:
      /* case attrexpr_code: */
             tex_aux_scan_expr(int_val_level);
+            return 1;
+        case posexpr_code:
+            tex_aux_scan_expr(posit_val_level);
             return 1;
         case dimexpr_code:
             tex_aux_scan_expr(dimen_val_level);
@@ -1148,6 +1259,11 @@ void tex_scan_something_simple(halfword cmd, halfword chr)
             cur_val = eq_value(chr);
             cur_val_level = int_val_level;
             break;
+        case internal_posit_cmd:
+        case register_posit_cmd:
+            cur_val = eq_value(chr);
+            cur_val_level = posit_val_level;
+            break;
         case internal_dimen_cmd:
         case register_dimen_cmd:
             cur_val = eq_value(chr);
@@ -1300,11 +1416,22 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
         case register_attribute_cmd:
             cur_val = eq_value(chr);
             cur_val_level = int_val_level;
+            if (level == posit_val_level) {
+                cur_val = tex_posit_to_integer(cur_val);
+            }
+            break;
+        case internal_posit_cmd:
+        case register_posit_cmd:
+            cur_val = eq_value(chr);
+            cur_val_level = posit_val_level;
             break;
         case internal_dimen_cmd:
         case register_dimen_cmd:
             cur_val = eq_value(chr);
             cur_val_level = dimen_val_level;
+            if (level == posit_val_level) {
+                cur_val = tex_posit_to_dimension(cur_val);
+            }
             break;
         case internal_glue_cmd:
         case register_glue_cmd:
@@ -1656,6 +1783,12 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
                             cur_val = attribute_register(n);
                             break;
                         }
+                    case posit_val_level:
+                        {
+                            halfword n = tex_scan_posit_register_number();
+                            cur_val = posit_register(n);
+                            break;
+                        }
                     case dimen_val_level:
                         {
                             scaled n = tex_scan_dimen_register_number();
@@ -1700,6 +1833,10 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
         case dimension_cmd:
             cur_val = chr;
             cur_val_level = dimen_val_level;
+            break;
+        case posit_cmd:
+            cur_val = chr;
+            cur_val_level = posit_val_level;
             break;
         case gluespec_cmd:
             cur_val = chr;
@@ -1829,6 +1966,7 @@ inline static halfword tex_aux_scan_limited_int(int optional_equal, int min, int
 halfword   tex_scan_int_register_number       (void)               { return tex_aux_scan_limited_int(0, 0, max_int_register_index, "Integer register index"); }
 halfword   tex_scan_dimen_register_number     (void)               { return tex_aux_scan_limited_int(0, 0, max_dimen_register_index, "Dimension register index"); }
 halfword   tex_scan_attribute_register_number (void)               { return tex_aux_scan_limited_int(0, 0, max_attribute_register_index, "Attribute register index"); }
+halfword   tex_scan_posit_register_number     (void)               { return tex_aux_scan_limited_int(0, 0, max_posit_register_index, "Posit register index"); }
 halfword   tex_scan_glue_register_number      (void)               { return tex_aux_scan_limited_int(0, 0, max_glue_register_index, "Glue register index"); }
 halfword   tex_scan_mu_glue_register_number   (void)               { return tex_aux_scan_limited_int(0, 0, max_mu_glue_register_index, "Mu glue register index"); }
 halfword   tex_scan_toks_register_number      (void)               { return tex_aux_scan_limited_int(0, 0, max_toks_register_index, "Toks register index"); }
@@ -2120,12 +2258,22 @@ halfword tex_scan_int(int optional_equal, int *radix)
     return cur_val;
 }
 
-int tex_scan_cardinal(unsigned *value, int dontbark)
+int tex_scan_cardinal(int optional_equal, unsigned *value, int dontbark)
 {
     long long result = 0;
-    do {
+ // do {
+ //     tex_get_x_token();
+ // } while (cur_cmd == spacer_cmd);
+    while (1) {
         tex_get_x_token();
-    } while (cur_cmd == spacer_cmd);
+        if (cur_cmd != spacer_cmd) {
+            if (optional_equal && (cur_tok == equal_token)) {
+                optional_equal = 0;
+            } else {
+                break;
+            }
+        }
+    }
     if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
         result = tex_aux_scan_something_internal(cur_cmd, cur_chr, int_val_level, 0, 0);
     } else {
@@ -2711,6 +2859,9 @@ halfword tex_scan_dimen(int mu, int inf, int shortcut, int optional_equal, halfw
                 }
             } else if (cur_val_level == dimen_val_level) {
                 goto ATTACH_SIGN;
+            } else if (cur_val_level == posit_val_level) {
+                cur_val = tex_posit_to_dimension(cur_val);
+                goto ATTACH_SIGN;
             }
         } else {
             int has_fraction = tex_token_is_seperator(cur_tok);
@@ -3031,6 +3182,14 @@ halfword tex_the_value_toks(int code, halfword *tail, halfword property) /* mayb
                 pop_selector;
                 return tex_cur_str_toks(tail);
             }
+        case posit_val_level:
+            {
+                int saved_selector;
+                push_selector;
+                tex_print_posit(cur_val);
+                pop_selector;
+                return tex_cur_str_toks(tail);
+            }
         case dimen_val_level:
             {
                 int saved_selector;
@@ -3165,6 +3324,9 @@ strnumber tex_the_scanned_result(void)
         case int_val_level:
         case attr_val_level:
             tex_print_int(cur_val);
+            break;
+        case posit_val_level:
+            tex_print_posit(cur_val);
             break;
         case dimen_val_level:
             tex_print_dimension(cur_val, pt_unit);
@@ -3360,10 +3522,10 @@ halfword tex_scan_font_identifier(halfword *spec)
             }
         default:
             {
-                /*tex We abuse |scan_cardinal| here btu we have to push back.  */
+                /*tex We abuse |scan_cardinal| here but we have to push back.  */
                 unsigned fnt = null_font;
                 tex_back_input(cur_tok);
-                if (tex_scan_cardinal(&fnt, 1)) {
+                if (tex_scan_cardinal(0, &fnt, 1)) {
                     if (tex_is_valid_font((halfword) fnt)) {
                         return (halfword) fnt;
                     }
@@ -3731,7 +3893,7 @@ static int tex_aux_valid_macro_preamble(halfword *p, int *counter, halfword *has
                             }
                         } else if (cur_tok >= A_token_l && cur_tok <= F_token_l) {
                             ++*counter;
-                            if ((cur_tok - letter_token - 'A' - gap_match_count) == *counter) {
+                            if ((cur_tok - A_token_l + 10) == *counter) {
                                 cur_tok += match_token - letter_token;
                                 break;
                             }
@@ -4227,7 +4389,8 @@ static void tex_aux_scan_expr(halfword level)
     int error_b = 0;
     /*tex top of expression stack */
     halfword top = null;
-int braced = 0;
+    int braced = 0;
+    int nonelevel = level == posit_val_level ? posit_val_level : int_val_level; 
     /*tex Scan and evaluate an expression |e| of type |l|. */
     cur_val_level = level; /* for now */
     lmt_scanner_state.expression_depth++;
@@ -4241,7 +4404,8 @@ int braced = 0;
     term = 0;
     numerator = 0;
   CONTINUE:
-    operation = state == expression_none ? level : int_val_level; /* we abuse operation */
+//    operation = state == expression_none ? level : int_val_level; /* we abuse operation */
+    operation = state == expression_none ? level : nonelevel; /* we abuse operation */
     /*tex
         Scan a factor |f| of type |o| or start a subexpression. Get the next non-blank non-call
         token.
@@ -4282,6 +4446,9 @@ int braced = 0;
         case int_val_level:
         case attr_val_level:
             factor = tex_scan_int(0, NULL);
+            break;
+        case posit_val_level:
+            factor = tex_scan_posit(0);
             break;
         case dimen_val_level:
             factor = tex_scan_dimen(0, 0, 0, 0, NULL);
@@ -4348,6 +4515,12 @@ int braced = 0;
                 factor = 0;
             }
             break;
+        case posit_val_level:
+            if ((factor > max_cardinal) || (factor < min_cardinal)) {
+                lmt_scanner_state.arithmic_error = 1;
+                factor = 0;
+            }
+            break;
         case dimen_val_level:
             if (abs(factor) > max_dimen) {
                 lmt_scanner_state.arithmic_error = 1;
@@ -4398,6 +4571,9 @@ int braced = 0;
                     case attr_val_level:
                         term = tex_multiply_integers(term, factor);
                         break;
+                    case posit_val_level:
+                        term = tex_posit_mul(term, factor);
+                        break;
                     case dimen_val_level:
                         term = tex_nx_plus_y(term, factor, 0);
                         break;
@@ -4425,6 +4601,9 @@ int braced = 0;
                 case int_val_level:
                 case attr_val_level:
                     term = tex_fract(term, numerator, factor, max_integer);
+                    break;
+                case posit_val_level:
+                    term = tex_posit_div(tex_posit_mul(term, factor), numerator);
                     break;
                 case dimen_val_level:
                     term = tex_fract(term, numerator, factor, max_dimen);
@@ -4462,6 +4641,16 @@ int braced = 0;
                 case int_val_level:
                 case attr_val_level:
                     expression = tex_aux_add_or_sub(expression, term, max_integer, result);
+                    break;
+                case posit_val_level:
+                    switch (result) {
+                        case expression_subtract:
+                            expression = tex_posit_sub(expression, term);
+                            break;
+                        case expression_add:
+                            expression = tex_posit_add(expression, term);
+                            break;
+                    }
                     break;
                 case dimen_val_level:
                     expression = tex_aux_add_or_sub(expression, term, max_dimen, result);
@@ -5174,7 +5363,7 @@ static void tex_aux_trace_expression(stack_info stack, halfword level, halfword 
     tex_end_diagnostic();
 }
 
-/* This one is not yet okay ... work in progress. */
+/* This one is not yet okay ... work in progress. We might go for posits here. */
 
 static void tex_aux_scan_expression(int level)
 {
@@ -5799,6 +5988,202 @@ halfword tex_scan_scale(int optional_equal)
      // scan_dimen_out_of_range_error();
         cur_val = max_dimen;
         lmt_scanner_state.arithmic_error = 0;
+    }
+    return cur_val;
+}
+
+/* todo: share with lmttokenlib.scan_float */
+
+# define max_posit_size 60 
+
+halfword tex_scan_posit(int optional_equal)
+{
+    int hexadecimal = 1;
+    int exponent = 1;
+    int negative = 0;
+    int b = 0;
+    char buffer[max_posit_size+4] = { 0 };
+    do {
+        while (1) {
+            tex_get_x_token();
+            if (cur_cmd != spacer_cmd) {
+                if (optional_equal && (cur_tok == equal_token)) {
+                    optional_equal = 0;
+                } else {
+                    break;
+                }
+            }
+        }
+        if (cur_tok == minus_token) {
+            negative = ! negative;
+            cur_tok = plus_token;
+        }
+    } while (cur_tok == plus_token);
+    if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
+        cur_val = tex_aux_scan_something_internal(cur_cmd, cur_chr, posit_val_level, 0, 0);
+    } else {
+        if (negative) {
+            buffer[b++] = '-';
+        }
+        /*tex we accept |[.,]digits| */
+        if (hexadecimal && (cur_tok == zero_token)) {
+            buffer[b++] = '0';
+            tex_get_x_token();
+            if (tex_token_is_hexadecimal(cur_tok)) {
+                buffer[b++] = 'x';
+                goto SCANHEXADECIMAL;
+            } else {
+                goto PICKUPDECIMAL;
+            }
+        } else {
+            goto SCANDECIMAL;
+        }
+      SCANDECIMAL:
+        if (tex_token_is_seperator(cur_tok)) {
+            buffer[b++] = '.';
+            while (1) {
+                tex_get_x_token();
+                if (tex_token_is_digit(cur_tok)) {
+                    buffer[b++] = (unsigned char) cur_chr;
+                } else if (exponent) {
+                    goto DECIMALEXPONENT;
+                } else {
+                    tex_back_input(cur_tok);
+                    goto DONE;
+                }
+                if (b >= 60) {
+                    goto TOOBIG;
+                }
+            }
+        } else {
+            goto PICKUPDECIMAL;
+        }
+        while (1) {
+            tex_get_x_token();
+          PICKUPDECIMAL:
+            if (tex_token_is_digit(cur_tok)) {
+                buffer[b++] = (unsigned char) cur_chr;
+            } else if (tex_token_is_seperator(cur_tok)) {
+                buffer[b++] = '.';
+                while (1) {
+                    tex_get_x_token();
+                    if (tex_token_is_digit(cur_tok)) {
+                        buffer[b++] = (unsigned char) cur_chr;
+                    } else {
+                        tex_back_input(cur_tok);
+                        break;
+                    }
+                }
+            } else if (exponent) {
+                goto DECIMALEXPONENT;
+            } else {
+                tex_back_input(cur_tok);
+                goto DONE;
+            }
+                if (b >= max_posit_size) {
+                    goto TOOBIG;
+                }
+        }
+      DECIMALEXPONENT:
+        if (tex_token_is_exponent(cur_tok)) {
+            buffer[b++] = (unsigned char) cur_chr;
+            tex_get_x_token();
+            if (tex_token_is_sign(cur_tok)) {
+                buffer[b++] = (unsigned char) cur_chr;
+            } else if (tex_token_is_digit(cur_tok)) {
+                buffer[b++] = (unsigned char) cur_chr;
+            }
+            while (1) {
+                tex_get_x_token();
+                if (tex_token_is_digit(cur_tok)) {
+                    buffer[b++] = (unsigned char) cur_chr;
+                } else {
+                    break;
+                }
+                if (b >= max_posit_size) {
+                    goto TOOBIG;
+                }
+            }
+        }
+        tex_back_input(cur_tok);
+        goto DONE;
+      SCANHEXADECIMAL:
+        tex_get_x_token();
+        if (tex_token_is_seperator(cur_tok)) {
+            buffer[b++] = '.';
+            while (1) {
+                tex_get_x_token();
+                if (tex_token_is_xdigit(cur_tok)) {
+                    buffer[b++] = (unsigned char) cur_chr;
+                } else if (exponent) {
+                    goto HEXADECIMALEXPONENT;
+                } else {
+                    tex_back_input(cur_tok);
+                    goto DONE;
+                }
+                if (b >= max_posit_size) {
+                    goto TOOBIG;
+                }
+            }
+        } else {
+            /* hm, we could avoid this pushback */
+            tex_back_input(cur_tok);
+            while (1) {
+                tex_get_x_token();
+                if (tex_token_is_xdigit(cur_tok)) {
+                    buffer[b++] = (unsigned char) cur_chr;
+                } else if (tex_token_is_seperator(cur_tok)) {
+                    buffer[b++] = '.';
+                    while (1) {
+                        tex_get_x_token();
+                        if (tex_token_is_xdigit(cur_tok)) {
+                            buffer[b++] = (unsigned char) cur_chr;
+                        } else {
+                            tex_back_input(cur_tok);
+                            break;
+                        }
+                    }
+                } else if (exponent) {
+                    goto HEXADECIMALEXPONENT;
+                } else {
+                    tex_back_input(cur_tok);
+                    goto DONE;
+                }
+                if (b >= max_posit_size) {
+                    goto TOOBIG;
+                }
+            }
+        }
+      HEXADECIMALEXPONENT:
+        if (tex_token_is_xexponent(cur_tok)) {
+            buffer[b++] = (unsigned char) cur_chr;
+            tex_get_x_token();
+            if (tex_token_is_sign(cur_tok)) {
+                buffer[b++] = (unsigned char) cur_chr;
+            } else if (tex_token_is_xdigit(cur_tok)) {
+                buffer[b++] = (unsigned char) cur_chr;
+            }
+            while (1) {
+                tex_get_x_token();
+                if (tex_token_is_xdigit(cur_tok)) {
+                    buffer[b++] = (unsigned char) cur_chr;
+                } else {
+                    break;
+                }
+                if (b >= max_posit_size) {
+                    goto TOOBIG;
+                }
+            }
+        }
+        tex_back_input(cur_tok);
+      DONE:
+        {
+            double d = strtof(buffer, NULL);
+            cur_val = tex_double_to_posit(d).v;
+            return cur_val;
+        }
+      TOOBIG:
+        cur_val = tex_integer_to_posit(0).v;
     }
     return cur_val;
 }

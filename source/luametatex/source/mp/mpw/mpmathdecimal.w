@@ -227,6 +227,8 @@ mp_decimal_info mp_decimal_data = {
     .initialized           = 0,
 };
 
+@ See mpmathdouble for documentation. @c
+
 static void checkZero(decNumber *ret)
 {
     if (decNumberIsZero(ret) && decNumberIsNegative(ret)) {
@@ -277,21 +279,26 @@ static double decNumberToDouble(decNumber *A)
     }
 }
 
-@ Borrowed code from libdfp:
+/*tex
 
-$$ \arctan(x) = x - \frac {x^3}{3} + \frac {x^5{5} - \frac {x^7}{7} + \ldots$$
+    \startformula
+    \arctan(x) = x - \frac {x^3}{3} + \frac {x^5{5} - \frac {x^7}{7} + \ldots
+    \stopformula
 
-This power series works well, if $x$ is close to zero ($|x|<0.5$). If x is
-larger, the series converges too slowly, so in order to get a smaller x, we apply
-the identity
+    This power series works well, if $x$ is close to zero ($|x|<0.5$). If x is
+    larger, the series converges too slowly, so in order to get a smaller x, we apply
+    the identity
 
-$$ \arctan(x) = 2 \arctan \left (\frac {\sqrt{1 + x^2}-1} {x} \right) $$
+    \startformula
+    \arctan(x) = 2 \arctan \left (\frac {\sqrt{1 + x^2}-1} {x} \right)
+    \stopformula
 
-twice. The first application gives us a new $x$ with $x < 1$. The second
-application gives us a new x with $x < 0.4142136$. For that $x$, we use the power
-series and multiply the result by four.
+    twice. The first application gives us a new $x$ with $x < 1$. The second
+    application gives us a new x with $x < 0.4142136$. For that $x$, we use the power
+    series and multiply the result by four.
 
-@c
+*/
+
 static void decNumberAtan(decNumber *result, decNumber *x_orig, decContext *localset)
 {
     decNumber x;
@@ -373,7 +380,6 @@ static void decNumberAtan2(decNumber *result, decNumber *y, decNumber *x, decCon
     }
 }
 
-@ @c
 math_data *mp_initialize_decimal_math (MP mp)
 {
     math_data *math = (math_data *) mp_memory_allocate(sizeof(math_data));
@@ -613,10 +619,6 @@ void mp_free_decimal_math (MP mp)
     mp_memory_free(mp->math);
 }
 
-@ Creating and destruction of |mp_number| objects. Let's hope that mimalloc keeps
-a pool for these.
-
-@ @c
 void mp_allocate_number (MP mp, mp_number *n, mp_number_type t)
 {
     (void) mp;
@@ -625,7 +627,6 @@ void mp_allocate_number (MP mp, mp_number *n, mp_number_type t)
     decNumberZero(n->data.num);
 }
 
-@ @c
 void mp_allocate_clone (MP mp, mp_number *n, mp_number_type t, mp_number *v)
 {
     (void) mp;
@@ -635,7 +636,6 @@ void mp_allocate_clone (MP mp, mp_number *n, mp_number_type t, mp_number *v)
     decNumberCopy(n->data.num, v->data.num);
 }
 
-@ @c
 void mp_allocate_abs (MP mp, mp_number *n, mp_number_type t, mp_number *v)
 {
     (void) mp;
@@ -654,7 +654,6 @@ void mp_allocate_double (MP mp, mp_number *n, double v)
     decNumberFromDouble(n->data.num, v);
 }
 
-@ @c
 void mp_free_number (MP mp, mp_number *n)
 {
     (void) mp;
@@ -857,13 +856,6 @@ void mp_number_scaled_to_angle(mp_number *A)
     decNumberMultiply(A->data.num, A->data.num, &mp_decimal_data.angle_multiplier_decNumber, &mp_decimal_data.set);
 }
 
-@* Query functions.
-
-@ Convert a number to a scaled value. |decNumberToInt32| is not able to make this
-conversion properly, so instead we are using |decNumberToDouble| and a typecast.
-Bad!
-
-@c
 int mp_number_to_scaled(mp_number *A)
 {
     int result;
@@ -958,26 +950,6 @@ int mp_number_nonequalabs(mp_number *A, mp_number *B)
     return ! decNumberIsZero(&res);
 }
 
-@ Fixed-point arithmetic is done on {\sl scaled integers} that are multiples of
-$2^{-16}$. In other words, a binary point is assumed to be sixteen bit positions
-from the right end of a binary computer word.
-
-@ One of \MP's most common operations is the calculation of
-$\lfloor{a+b\over2}\rfloor$, the midpoint of two given integers |a| and~|b|. The
-most decent way to do this is to write |(a+b)/2|; but on many machines it is
-more efficient to calculate |(a+b)>>1|.
-
-Therefore the midpoint operation will always be denoted by |half(a+b)| in this
-program. If \MP\ is being implemented with languages that permit binary shifting,
-the |half| macro should be changed to make this operation as efficient as
-possible. Since some systems have shift operators that can only be trusted to
-work on positive numbers, there is also a macro |halfp| that is used only when
-the quantity being halved is known to be positive or zero.
-
-@ Here is a procedure analogous to |print_int|. The current version is fairly
-stupid, and it is not round-trip safe, but this is good enough for a beta test.
-
-@c
 char *mp_decnumber_tostring(decNumber *n)
 {
     decNumber corrected;
@@ -994,7 +966,6 @@ char *mp_decimal_number_tostring (MP mp, mp_number *n)
     return mp_decnumber_tostring(n->data.num);
 }
 
-@ @c
 void mp_decimal_print_number (MP mp, mp_number *n)
 {
     char *str = mp_decnumber_tostring(n->data.num);
@@ -1002,51 +973,12 @@ void mp_decimal_print_number (MP mp, mp_number *n)
     mp_memory_free(str);
 }
 
-@ Addition is not always checked to make sure that it doesn't overflow, but in
-places where overflow isn't too unlikely the |slow_add| routine is used.
-
-@c
 void mp_decimal_slow_add (MP mp, mp_number *ret, mp_number *A, mp_number *B)
 {
     (void) mp;
     decNumberAdd(ret->data.num, A->data.num, B->data.num, &mp_decimal_data.set);
 }
 
-@ The |make_fraction| routine produces the |fraction| equivalent of |p/q|, given
-integers |p| and~|q|; it computes the integer
-$f=\lfloor2^{28}p/q+{1\over2}\rfloor$, when $p$ and $q$ are positive. If |p| and
-|q| are both of the same scaled type |t|, the \quote {type relation}
-|make_fraction(t,t)=fraction| is valid; and it's also possible to use the
-subroutine \quote {backwards,} using the relation |make_fraction(t,fraction)=t|
-between scaled types.
-
-If the result would have magnitude $2^{31}$ or more, |make_fraction| sets
-|arith_error:=true|. Most of \MP's internal computations have been designed to
-avoid this sort of error.
-
-If this subroutine were programmed in assembly language on a typical machine, we
-could simply compute |(@t$2^{28}$@>*p)div q|, since a double-precision product
-can often be input to a fixed-point division instruction. But when we are
-restricted to int-eger arithmetic it is necessary either to resort to
-multiple-precision maneuvering or to use a simple but slow iteration. The
-multiple-precision technique would be about three times faster than the code
-adopted here, but it would be comparatively long and tricky, involving about
-sixteen additional multiplications and divisions.
-
-This operation is part of \MP's \quote {inner loop}; indeed, it will consume nearly
-10\pct! of the running time (exclusive of input and output) if the code below is
-left unchanged. A machine-dependent recoding will therefore make \MP\ run faster.
-The present implementation is highly portable, but slow; it avoids multiplication
-and division except in the initial stage. System wizards should be careful to
-replace it with a routine that is guaranteed to produce identical results in all
-cases. @^system dependencies@>
-
-As noted below, a few more routines should also be replaced by machine-dependent
-code, for efficiency. But when a procedure is not part of the \quote {inner loop,}
-such changes aren't advisable; simplicity and robustness are preferable to
-trickery, unless the cost is too high. @^inner loop@>
-
-@c
 void mp_decimal_make_fraction (MP mp, decNumber *ret, decNumber *p, decNumber *q)
 {
     decNumberDivide(ret, p, q, &mp_decimal_data.set);
@@ -1059,16 +991,6 @@ void mp_decimal_number_make_fraction (MP mp, mp_number *ret, mp_number *p, mp_nu
     mp_decimal_make_fraction(mp, ret->data.num, p->data.num, q->data.num);
 }
 
-@ The dual of |make_fraction| is |take_fraction|, which multiplies a given
-integer~|q| by a fraction~|f|. When the operands are positive, it computes
-$p=\lfloor qf/2^{28}+{1\over2}\rfloor$, a symmetric function of |q| and~|f|.
-
-This routine is even more \quote {inner loopy} than |make_fraction|; the present
-implementation consumes almost 20\pct! of \MP's computation time during typical
-jobs, so a machine-language substitute is advisable. @^inner loop@> @^system
-dependencies@>
-
-@c
 void mp_decimal_take_fraction (MP mp, decNumber *ret, decNumber *p, decNumber *q)
 {
     (void) mp;
@@ -1081,39 +1003,18 @@ void mp_decimal_number_take_fraction (MP mp, mp_number *ret, mp_number *p, mp_nu
     mp_decimal_take_fraction(mp, ret->data.num, p->data.num, q->data.num);
 }
 
-@ When we want to multiply something by a |scaled| quantity, we use a scheme
-analogous to |take_fraction| but with a different scaling. Given positive
-operands, |take_scaled| computes the quantity $p=\lfloor
-qf/2^{16}+{1\over2}\rfloor$.
-
-Once again it is a good idea to use a machine-language replacement if possible;
-otherwise |take_scaled| will use more than 2\pct! of the running time when the
-Computer Modern fonts are being generated. @^inner loop@>
-
-@c
 void mp_decimal_number_take_scaled (MP mp, mp_number *ret, mp_number *p_orig, mp_number *q_orig)
 {
     (void) mp;
     decNumberMultiply(ret->data.num, p_orig->data.num, q_orig->data.num, &mp_decimal_data.set);
 }
 
-@ For completeness, there's also |make_scaled|, which computes a quotient as a
-|scaled| number instead of as a |fraction|. In other words, the result is
-$\lfloor2^{16}p/q+{1\over2}\rfloor$, if the operands are positive. \ (This
-procedure is not used especially often, so it is not part of \MP's inner loop.)
-
-@c
 void mp_decimal_number_make_scaled (MP mp, mp_number *ret, mp_number *p_orig, mp_number *q_orig)
 {
     decNumberDivide(ret->data.num, p_orig->data.num, q_orig->data.num, &mp_decimal_data.set);
     mp_decnumber_check(mp, ret->data.num, &mp_decimal_data.set);
 }
 
-@ @* Scanning numbers in the input.
-
-The definitions below are temporarily here
-
-@ @c
 void mp_wrapup_numeric_token (MP mp, unsigned char *start, unsigned char *stop)
 {
     decNumber result;
@@ -1161,7 +1062,6 @@ void mp_wrapup_numeric_token (MP mp, unsigned char *start, unsigned char *stop)
     set_cur_cmd((mp_variable_type) mp_numeric_command);
 }
 
-@ @c
 static void find_exponent (MP mp)
 {
     if (mp->buffer[mp->cur_input.loc_field] == 'e'
@@ -1196,9 +1096,6 @@ void mp_decimal_scan_fractional_token (MP mp, int n)
     mp_wrapup_numeric_token(mp, start, stop);
 }
 
-@ We just have to collect bytes.
-
-@c
 void mp_decimal_scan_numeric_token (MP mp, int n)
 {
     unsigned char *start = &mp->buffer[mp->cur_input.loc_field -1];
@@ -1218,32 +1115,6 @@ void mp_decimal_scan_numeric_token (MP mp, int n)
     mp_wrapup_numeric_token(mp, start, stop);
 }
 
-@ The |scaled| quantities in \MP\ programs are generally supposed to be less than
-$2^{12}$ in absolute value, so \MP\ does much of its internal arithmetic with
-28~significant bits of precision. A |fraction| denotes a scaled integer whose
-binary point is assumed to be 28 bit positions from the right.
-
-@ Here is a typical example of how the routines above can be used. It computes
-the function $${1\over3\tau}f(\theta,\phi)=
-{\tau^{-1}\bigl(2+\sqrt2\,(\sin\theta-{1\over16}\sin\phi)
-(\sin\phi-{1\over16}\sin\theta)(\cos\theta-\cos\phi)\bigr)\over
-3\,\bigl(1+{1\over2}(\sqrt5-1)\cos\theta+{1\over2}(3-\sqrt5\,)\cos\phi\bigr)},$$
-where $\tau$ is a |scaled| \quote {tension} parameter. This is \MP's magic fudge
-factor for placing the first control point of a curve that starts at an angle
-$\theta$ and ends at an angle $\phi$ from the straight path. (Actually, if the
-stated quantity exceeds 4, \MP\ reduces it to~4.)
-
-The trigonometric quantity to be multiplied by $\sqrt2$ is less than $\sqrt2$.
-(It's a sum of eight terms whose absolute values can be bounded using relations
-such as $\sin\theta\cos\theta|1\over2|$.) Thus the numerator is positive; and
-since the tension $\tau$ is constrained to be at least $3\over4$, the numerator
-is less than $16\over3$. The denominator is nonnegative and at most~6.
-
-The angles $\theta$ and $\phi$ are given implicitly in terms of |fraction|
-arguments |st|, |ct|, |sf|, and |cf|, representing $\sin\theta$, $\cos\theta$,
-$\sin\phi$, and $\cos\phi$, respectively.
-
-@c
 void mp_decimal_velocity (MP mp, mp_number *ret, mp_number *st, mp_number *ct, mp_number *sf, mp_number *cf, mp_number *t)
 {
     decNumber acc, num, denom; /* registers for intermediate calculations */
@@ -1300,12 +1171,6 @@ void mp_decimal_velocity (MP mp, mp_number *ret, mp_number *st, mp_number *ct, m
     mp_decnumber_check(mp, ret->data.num, &mp_decimal_data.set);
 }
 
-@ The following somewhat different subroutine tests rigorously if $ab$ is greater
-than, equal to, or less than~$cd$, given integers $(a,b,c,d)$. In most cases a
-quick decision is reached. The result is $+1$, 0, or~$-1$ in the three respective
-cases.
-
-@c
 int mp_ab_vs_cd (mp_number *a_orig, mp_number *b_orig, mp_number *c_orig, mp_number *d_orig)
 {
     decNumber a, b, c, d;
@@ -1325,33 +1190,6 @@ int mp_ab_vs_cd (mp_number *a_orig, mp_number *b_orig, mp_number *c_orig, mp_num
     }
 }
 
-@ Now here's a subroutine that's handy for all sorts of path computations: Given
-a quadratic polynomial $B(a,b,c;t)$, the |crossing_point| function returns the
-unique |fraction| value |t| between 0 and~1 at which $B(a,b,c;t)$ changes from
-positive to negative, or returns |t=fraction_one+1| if no such value exists. If
-|a<0| (so that $B(a,b,c;t)$ is already negative at |t=0|), |crossing_point|
-returns the value zero.
-
-The general bisection method is quite simple when $n=2$, hence |crossing_point|
-does not take much time. At each stage in the recursion we have a subinterval
-defined by |l| and~|j| such that $B(a,b,c;2^{-l}(j+t))=B(x_0,x_1,x_2;t)$, and we
-want to \quote {zero in} on the subinterval where $x_0\G0$ and $\min(x_1,x_2)<0$.
-
-It is convenient for purposes of calculation to combine the values of |l| and~|j|
-in a single variable $d=2^l+j$, because the operation of bisection then
-corresponds simply to doubling $d$ and possibly adding~1. Furthermore it proves
-to be convenient to modify our previous conventions for bisection slightly,
-maintaining the variables $X_0=2^lx_0$, $X_1=2^l(x_0-x_1)$, and
-$X_2=2^l(x_1-x_2)$. With these variables the conditions $x_0\ge0$ and
-$\min(x_1,x_2)<0$ are equivalent to $\max(X_1,X_1+X_2)>X_0\ge0$.
-
-The following code maintains the invariant relations
-$0\L|x0|<\max(|x1|,|x1|+|x2|)$, $\vert|x1|\vert<2^{30}$, $\vert|x2|\vert<2^{30}$;
-it has been constructed in such a way that no arithmetic overflow will occur if
-the inputs satisfy $a<2^{30}$, $\vert a-b\vert<2^{30}$, and $\vert
-b-c\vert<2^{30}$.
-
-@c
 static void mp_decimal_crossing_point (MP mp, mp_number *ret, mp_number *aa, mp_number *bb, mp_number *cc)
 {
     decNumber a, b, c;
@@ -1426,20 +1264,11 @@ static void mp_decimal_crossing_point (MP mp, mp_number *ret, mp_number *aa, mp_
     mp_decnumber_check(mp, ret->data.num, &mp_decimal_data.set);
 }
 
-@ We conclude this set of elementary routines with some simple rounding and
-truncation operations.
-
-@ |round_unscaled| rounds a |scaled| and converts it to |int|
-
-@c
 int mp_round_unscaled(mp_number *x_orig)
 {
     return (int) lround(mp_number_to_double(x_orig));
 }
 
-@ |number_floor| floors a number
-
-@c
 void mp_number_floor(mp_number *i)
 {
     int round = mp_decimal_data.set.round;
@@ -1448,20 +1277,12 @@ void mp_number_floor(mp_number *i)
     mp_decimal_data.set.round = round;
 }
 
-@ |fraction_to_scaled| rounds a |fraction| and converts it to |scaled|
-
-@c
 void mp_decimal_fraction_to_round_scaled(mp_number *x_orig)
 {
     x_orig->type = mp_scaled_type;
     decNumberDivide(x_orig->data.num, x_orig->data.num, &mp_decimal_data.fraction_multiplier_decNumber, &mp_decimal_data.set);
 }
 
-@* Algebraic and transcendental functions. \MP\ computes all of the necessary
-special functions from scratch, without relying on |real| arithmetic or system
-subroutines for sines, cosines, etc.
-
-@ @c
 void mp_decimal_square_rt (MP mp, mp_number *ret, mp_number *x_orig)
 {
     decNumber x;
@@ -1487,9 +1308,6 @@ void mp_decimal_square_rt (MP mp, mp_number *ret, mp_number *x_orig)
     mp_decnumber_check(mp, ret->data.num, &mp_decimal_data.set);
 }
 
-@ Pythagorean addition $\psqrt{a^2+b^2}$ is implemented by a quick hack
-
-@c
 void mp_decimal_pyth_add (MP mp, mp_number *ret, mp_number *a_orig, mp_number *b_orig)
 {
     decNumber a, b;
@@ -1509,9 +1327,6 @@ void mp_decimal_pyth_add (MP mp, mp_number *ret, mp_number *a_orig, mp_number *b
     mp_decnumber_check(mp, ret->data.num, &mp_decimal_data.set);
 }
 
-@ Here is a similar algorithm for $\psqrt{a^2-b^2}$. Same quick hack, also.
-
-@c
 void mp_decimal_pyth_sub (MP mp, mp_number *ret, mp_number *a_orig, mp_number *b_orig)
 {
     decNumber a, b;
@@ -1545,19 +1360,12 @@ void mp_decimal_pyth_sub (MP mp, mp_number *ret, mp_number *a_orig, mp_number *b
     mp_decnumber_check(mp, ret->data.num, &mp_decimal_data.set);
 }
 
-@ Power $a^b}$:
-
-@c
 void mp_decimal_power_of (MP mp, mp_number *ret, mp_number *a_orig, mp_number *b_orig)
 {
     decNumberPower(ret->data.num, a_orig->data.num, b_orig->data.num, &mp_decimal_data.set);
     mp_decnumber_check(mp, ret->data.num, &mp_decimal_data.set);
 }
 
-@ Here is the routine that calculates $2^8$ times the natural logarithm of a
-|scaled| quantity;
-
-@c
 void mp_decimal_m_log (MP mp, mp_number *ret, mp_number *x_orig)
 {
     if (! decNumberIsPositive((decNumber *) x_orig->data.num)) {
@@ -1583,10 +1391,6 @@ void mp_decimal_m_log (MP mp, mp_number *ret, mp_number *x_orig)
     mp_decnumber_check(mp, ret->data.num, &mp_decimal_data.set);
 }
 
-@ Conversely, the exponential routine calculates $\exp(x/2^8)$, when |x| is
-|scaled|.
-
-@c
 void mp_decimal_m_exp (MP mp, mp_number *ret, mp_number *x_orig)
 {
     decNumber temp, twofivesix;
@@ -1606,10 +1410,6 @@ void mp_decimal_m_exp (MP mp, mp_number *ret, mp_number *x_orig)
     mp_decimal_data.limitedset.status = 0;
 }
 
-@ Given integers |x| and |y|, not both zero, the |n_arg| function returns the
-|angle| whose tangent points in the direction $(x,y)$.
-
-@c
 void mp_decimal_n_arg (MP mp, mp_number *ret, mp_number *x_orig, mp_number *y_orig)
 {
     if (decNumberIsZero((decNumber *) x_orig->data.num) && decNumberIsZero((decNumber *) y_orig->data.num)) {
@@ -1635,14 +1435,6 @@ void mp_decimal_n_arg (MP mp, mp_number *ret, mp_number *x_orig, mp_number *y_or
     mp_decnumber_check(mp, ret->data.num, &mp_decimal_data.set);
 }
 
-@ Conversely, the |n_sin_cos| routine takes an |angle| and produces the sine and
-cosine of that angle. The results of this routine are stored in global integer
-variables |n_sin| and |n_cos|.
-
-First, we need a decNumber function that calculates sines and cosines using the
-Taylor series. This function is fairly optimized.
-
-@c
 static void sinecosine(decNumber *theangle, decNumber *c, decNumber *s)
 {
     int prec = mp_decimal_data.set.digits/2;
@@ -1688,9 +1480,6 @@ static void sinecosine(decNumber *theangle, decNumber *c, decNumber *s)
     }
 }
 
-@ Calculate sines and cosines.
-
-@c
 void mp_decimal_sin_cos (MP mp, mp_number *z_orig, mp_number *n_cos, mp_number *n_sin)
 {
     decNumber rad;
@@ -1717,9 +1506,6 @@ void mp_decimal_sin_cos (MP mp, mp_number *z_orig, mp_number *n_cos, mp_number *
     mp_decnumber_check(mp, n_sin->data.num, &mp_decimal_data.set);
 }
 
-@ This is the {\tt http://www-cs-faculty.stanford.edu/~uno/programs/rng.c}
-with  small cosmetic modifications.
-
 @c
 # define KK            100                /* the long lag  */
 # define LL            37                 /* the short lag */
@@ -1743,10 +1529,6 @@ static mp_decimal_random_info mp_decimal_random_data = {
     .ptr     = &mp_decimal_random_data.dummy
 };
 
-/* put n new random numbers in aa */
-/* long aa[] destination */
-/* int n     array length (must be at least KK) */
-
 static void ran_array(long aa[],int n)
 {
     int i, j;
@@ -1763,14 +1545,6 @@ static void ran_array(long aa[],int n)
         mp_decimal_random_data.x[i] = mod_diff(aa[j - KK], mp_decimal_random_data.x[i - LL]);
     }
 }
-
-/*
-    the following routines are from exercise 3.6--15L after calling |ran_start|,
-    get new randoms by, e.g., "|x=ran_arr_next()|"
-
-    Do this before using |ran_array|, |long seed| selector for different
-    streams.
-*/
 
 static void ran_start(long seed)
 {
@@ -1826,8 +1600,6 @@ static void ran_start(long seed)
     mp_decimal_random_data.ptr = &mp_decimal_random_data.started;
 }
 
-# define ran_arr_next() (*mp_decimal_random_data.ptr>=0? *mp_decimal_random_data.ptr++: ran_arr_cycle())
-
 static long ran_arr_cycle(void)
 {
     if (mp_decimal_random_data.ptr == &mp_decimal_random_data.dummy) {
@@ -1840,9 +1612,6 @@ static long ran_arr_cycle(void)
     return mp_decimal_random_data.buf[0];
 }
 
-@ To initialize the |randoms| table, we call the following routine.
-
-@c
 void mp_init_randoms (MP mp, int seed)
 {
     int k = 1; /* more or less random integers */
@@ -1866,21 +1635,16 @@ void mp_init_randoms (MP mp, int seed)
     ran_start((unsigned long) seed);
 }
 
-@ @c
 void mp_decimal_number_modulo(mp_number *a, mp_number *b)
 {
     decNumberRemainder(a->data.num, a->data.num, b->data.num, &mp_decimal_data.set);
 }
 
-@ To consume a random integer for the uniform generator, the program below will
-say |next_unif_random|.
-
-@c
 static void mp_next_unif_random (MP mp, mp_number *ret)
 {
     decNumber a;
     decNumber b;
-    unsigned long int op = (unsigned)ran_arr_next();
+    unsigned long int op = (unsigned) (*mp_decimal_random_data.ptr>=0? *mp_decimal_random_data.ptr++: ran_arr_cycle());
     (void) mp;
     decNumberFromInt32(&a, op);
     decNumberFromInt32(&b, MM);
@@ -1889,9 +1653,6 @@ static void mp_next_unif_random (MP mp, mp_number *ret)
     mp_decnumber_check(mp, ret->data.num, &mp_decimal_data.set);
 }
 
-@ To consume a random fraction, the program below will say |next_random|.
-
-@c
 static void mp_next_random (MP mp, mp_number *ret)
 {
     if (mp->j_random == 0) {
@@ -1902,14 +1663,6 @@ static void mp_next_random (MP mp, mp_number *ret)
     mp_number_clone(ret, &(mp->randoms[mp->j_random]));
 }
 
-@ To produce a uniform random number in the range |0<=u<x| or |0>=u>x| or
-|0=u=x|, given a |scaled| value~|x|, we proceed as shown here.
-
-Note that the call of |take_fraction| will produce the values 0 and~|x| with
-about half the probability that it will produce any other particular values
-between 0 and~|x|, because it rounds its answers.
-
-@c
 static void mp_decimal_m_unif_rand (MP mp, mp_number *ret, mp_number *x_orig)
 {
     mp_number x, abs_x, u, y; /* |y| is trial value */
@@ -1932,11 +1685,6 @@ static void mp_decimal_m_unif_rand (MP mp, mp_number *ret, mp_number *x_orig)
     mp_free_number(mp, &u);
 }
 
-@ Finally, a normal deviate with mean zero and unit standard deviation can
-readily be obtained with the ratio method (Algorithm 3.4.1R in {\sl The Art of
-Computer Programming}).
-
-@c
 static void mp_decimal_m_norm_rand (MP mp, mp_number *ret)
 {
     mp_number abs_x, u, r, la, xa;

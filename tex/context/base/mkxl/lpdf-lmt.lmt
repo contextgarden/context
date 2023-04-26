@@ -38,6 +38,7 @@ local formatters, splitupstring = string.formatters, string.splitup
 local concat, sortedhash = table.concat, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 local loaddata = io.loaddata
+local ceil = math.ceil
 
 local bpfactor       <const> = number.dimenfactors.bp
 
@@ -2272,11 +2273,16 @@ end
                 }
             end
             if xformtype == 0 or xformtype == 1 or xformtype == 3 then
+--                 wrapper.BBox = pdfarray {
+--                     -margin * bpfactor,
+--                     -margin * bpfactor,
+--                     (boundingbox[3] + margin) * bpfactor,
+--                     (boundingbox[4] + margin) * bpfactor,
                 wrapper.BBox = pdfarray {
-                    -margin * bpfactor,
-                    -margin * bpfactor,
-                    (boundingbox[3] + margin) * bpfactor,
-                    (boundingbox[4] + margin) * bpfactor,
+                    -ceil(                  margin  * bpfactor),
+                    -ceil(                  margin  * bpfactor),
+                     ceil((boundingbox[3] + margin) * bpfactor),
+                     ceil((boundingbox[4] + margin) * bpfactor),
                 }
             end
             if xformtype == 0 or xformtype == 2 or xformtype == 3 then

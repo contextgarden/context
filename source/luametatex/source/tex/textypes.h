@@ -147,6 +147,8 @@ extern halfword tex_badness(
 # define min_cardinal                               0
 # define max_integer                       0x7FFFFFFF /*tex aka |infinity| */
 # define min_integer                      -0x7FFFFFFF /*tex aka |min_infinity| */
+# define max_posit                       max_cardinal 
+# define min_posit                       min_cardinal 
 # define max_dimen                         0x3FFFFFFF
 # define min_dimen                        -0x3FFFFFFF
 # define min_data_value                             0
@@ -236,6 +238,7 @@ extern halfword tex_badness(
     # define max_box_register_index       0xFFFF /* 0xFFFF 0xFFFF 0x7FFF */ /* 64 64 32 */
     # define max_int_register_index       0xFFFF /* 0xFFFF 0xFFFF 0x3FFF */ /* 64 64 16 */
     # define max_dimen_register_index     0xFFFF /* 0xFFFF 0xFFFF 0x3FFF */ /* 64 64 16 */
+    # define max_posit_register_index     0xFFFF /* 0xFFFF 0x7FFF 0x1FFF */ /* 64 32  8 */
     # define max_attribute_register_index 0xFFFF /* 0xFFFF 0x7FFF 0x1FFF */ /* 64 32  8 */
     # define max_glue_register_index      0xFFFF /* 0xFFFF 0x7FFF 0x1FFF */ /* 64 32  8 */
     # define max_mu_glue_register_index   0xFFFF /* 0xFFFF 0x3FFF 0x1FFF */ /* 64 16  8 */
@@ -246,6 +249,7 @@ extern halfword tex_badness(
     # define max_box_register_index       0x7FFF
     # define max_int_register_index       0x1FFF
     # define max_dimen_register_index     0x1FFF
+    # define max_posit_register_index     0x1FFF
     # define max_attribute_register_index 0x1FFF
     # define max_glue_register_index      0x1FFF
     # define max_mu_glue_register_index   0x1FFF
@@ -257,6 +261,7 @@ extern halfword tex_badness(
 # define max_n_of_int_registers       (max_int_register_index       + 1)
 # define max_n_of_dimen_registers     (max_dimen_register_index     + 1)
 # define max_n_of_attribute_registers (max_attribute_register_index + 1)
+# define max_n_of_posit_registers     (max_posit_register_index     + 1)
 # define max_n_of_glue_registers      (max_glue_register_index      + 1)
 # define max_n_of_mu_glue_registers   (max_mu_glue_register_index   + 1)
 

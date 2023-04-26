@@ -453,8 +453,9 @@ void tex_print_meaning(halfword code)
         switch (code) {
             case meaning_code:
             case meaning_full_code:
+            case meaning_ful_code:
             case meaning_asis_code:
-                tex_print_cmd_flags(cur_cs, cur_cmd, (code == meaning_full_code || code == meaning_asis_code), code == meaning_asis_code);
+                tex_print_cmd_flags(cur_cs, cur_cmd, (code != meaning_code), code == meaning_asis_code);
                 break;
         }
     }
@@ -473,11 +474,16 @@ void tex_print_meaning(halfword code)
                 switch (code) {
                     case meaning_code:
                     case meaning_full_code:
+                    case meaning_ful_code:
                         if (constant) {
                             tex_print_str("constant ");
                         }
                         tex_print_str("macro");
-                        goto FOLLOWUP;
+                        if (code == meaning_ful_code) { 
+                            return; 
+                        } else { 
+                            goto FOLLOWUP;
+                        }
                     case meaning_asis_code:
                         if (constant) {
                             tex_print_str_esc("constant ");
@@ -489,6 +495,11 @@ void tex_print_meaning(halfword code)
                         tex_print_char(' ');
                         if (cur_chr && token_link(cur_chr)) {
                             tex_show_token_list(token_link(cur_chr), get_token_preamble(cur_chr));
+                        }
+                        return;
+                    case meaning_les_code:
+                        if (cur_chr && token_link(cur_chr)) {
+                            tex_show_token_list(token_link(cur_chr), 2);
                         }
                         return;
                 }
@@ -644,10 +655,17 @@ void tex_show_token_list(halfword p, int asis)
                             break;
                         }
                     case end_match_cmd:
-                        if (asis) {
-                            tex_print_char('{');
-                        } else if (chr == 0) {
-                            tex_print_str("->");
+                        switch (asis) { 
+                            case 1:
+                                tex_print_char('{');
+                                break;
+                            case 2:
+                                return;
+                            default: 
+                                if (chr == 0) {
+                                    tex_print_str("->");
+                                }
+                                break;
                         }
                         break;
                     case ignore_something_cmd:
@@ -668,7 +686,7 @@ void tex_show_token_list(halfword p, int asis)
             }
             p = token_link(p);
         }
-        if (asis) {
+        if (asis == 1) {
             tex_print_char('}');
         }
     }
@@ -2950,6 +2968,8 @@ void tex_run_convert_tokens(halfword code)
         case meaning_code:
         case meaning_full_code:
         case meaning_less_code:
+        case meaning_ful_code:
+        case meaning_les_code:
         case meaning_asis_code:
             {
                 int saved_selector;
@@ -3274,7 +3294,7 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
                 lmt_token_state.bufmax = default_buffer_size;
             }
             lmt_token_state.bufloc = 0;
-            if (skippreamble) {
+            if (skippreamble == 1) {
                 skip = get_token_preamble(pp);
             }
             while (p) {
@@ -3338,19 +3358,21 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
                                     ++n;
                                 }
                                 if (! skip) {
-                                 // tex_aux_append_char_to_buffer(chr ? chr : '0');
-                                    if (chr <= 9) {
-                                        tex_aux_append_char_to_buffer(chr + '0');
-                                    } else if (chr <= max_match_count) {
-                                        tex_aux_append_char_to_buffer(chr + '0' + gap_match_count);
-                                    }
+                                    tex_aux_append_char_to_buffer(chr ? chr : '0');
+                                 // if (chr <= 9) {
+                                 //     tex_aux_append_char_to_buffer(chr + '0');
+                                 // } else if (chr <= max_match_count) {
+                                 //     tex_aux_append_char_to_buffer(chr + '0' + gap_match_count);
+                                 // }
                                 }
                                 if (n > max_match_count) {
                                     goto EXIT;
                                 }
                                 break;
                             case end_match_cmd:
-                                if (chr == 0) {
+                                if (skippreamble ==2) {
+                                    goto EXIT;
+                                } else if (chr == 0) {
                                     if (! skip) {
                                         tex_aux_append_char_to_buffer('-');
                                         tex_aux_append_char_to_buffer('>');
@@ -3468,6 +3490,7 @@ halfword tex_get_tex_dimen_register     (int j, int internal) { return internal 
 halfword tex_get_tex_skip_register      (int j, int internal) { return internal ? glue_parameter(j) : skip_register(j) ; }
 halfword tex_get_tex_mu_skip_register   (int j, int internal) { return internal ? mu_glue_parameter(j) : mu_skip_register(j); }
 halfword tex_get_tex_count_register     (int j, int internal) { return internal ? count_parameter(j) : count_register(j)  ; }
+halfword tex_get_tex_posit_register     (int j, int internal) { return internal ? posit_parameter(j) : posit_register(j)  ; }
 halfword tex_get_tex_attribute_register (int j, int internal) { return internal ? attribute_parameter(j) : attribute_register(j) ; }
 halfword tex_get_tex_box_register       (int j, int internal) { return internal ? box_parameter(j) : box_register(j) ; }
 
@@ -3514,6 +3537,18 @@ void tex_set_tex_count_register(int j, halfword v, int flags, int internal)
         tex_word_define(flags, register_int_location(j), v);
     }
 }
+void tex_set_tex_posit_register(int j, halfword v, int flags, int internal)
+{
+    if (global_defs_par) {
+        flags = add_global_flag(flags);
+    }
+    if (internal) {
+        tex_assign_internal_posit_value(flags, internal_posit_location(j), v);
+    } else {
+        tex_word_define(flags, register_posit_location(j), v);
+    }
+}
+
 
 void tex_set_tex_attribute_register(int j, halfword v, int flags, int internal)
 {

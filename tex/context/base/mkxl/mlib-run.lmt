@@ -152,6 +152,7 @@ local methods = {
  -- binary  = "binary",
     binary  = "double",
     decimal = "decimal",
+    posit   = "posit",
     default = "scaled",
 }
 

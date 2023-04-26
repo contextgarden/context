@@ -183,7 +183,7 @@ implement {
 }
 
 implement {
-    name      = "doiffieldsetelse",
+    name      = "doifelsefieldset",
     arguments = "string",
     actions   = function(name)
         ctx_doifelse(codeinjections.validfieldset(name))

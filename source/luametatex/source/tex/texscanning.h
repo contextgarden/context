@@ -6,6 +6,7 @@
 # define LMT_SCANNING_H
 
 typedef enum value_level_code {
+    posit_val_level,
     int_val_level,           /*tex integer values */
     attr_val_level,          /*tex integer values */
     dimen_val_level,         /*tex dimension values */
@@ -77,9 +78,10 @@ inline static void tex_unsave_full_scanner_status(full_scanner_status a)
 extern void        tex_scan_something_simple          (halfword cmd, halfword code);
 extern void        tex_scan_left_brace                (void);
 extern void        tex_scan_optional_equals           (void);
-extern int         tex_scan_cardinal                  (unsigned *value, int dontbark);
+extern int         tex_scan_cardinal                  (int optional_equal, unsigned *value, int dontbark);
 extern halfword    tex_scan_int                       (int optional_equal, int *radix);
 extern halfword    tex_scan_scale                     (int optional_equal);
+extern halfword    tex_scan_posit                     (int optional_equal);
 extern halfword    tex_scan_dimen                     (int mu, int inf, int shortcut, int optional_equal, halfword *order);
 extern halfword    tex_scan_glue                      (int level, int optional_equal);
 extern halfword    tex_scan_font                      (int optional_equal);
@@ -107,6 +109,7 @@ extern int         tex_scanned_expression             (int level);
 extern halfword    tex_scan_int_register_number       (void);
 extern halfword    tex_scan_dimen_register_number     (void);
 extern halfword    tex_scan_attribute_register_number (void);
+extern halfword    tex_scan_posit_register_number     (void);
 extern halfword    tex_scan_glue_register_number      (void);
 extern halfword    tex_scan_mu_glue_register_number   (void);
 extern halfword    tex_scan_toks_register_number      (void);

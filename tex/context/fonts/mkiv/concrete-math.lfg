@@ -97,9 +97,16 @@ return {
                 },
                 {
                     tweak    = "replacerules",
+                    -- minus = {
+                    --     leftoffset  = 0,
+                    --     rightoffset = 0,
+                    -- },
                     minus    = true,
                     fraction = { height = .2, yoffset = .8 },
-                    radical  = { height = .2, yoffset = .8, leftoffset = .2 },
+                    -- Hans, add option not to cut off first piece
+                    -- Hans, check height.
+                    radical  = { height = .2, yoffset = .585, leftoffset = .085, rightoffset = .085, leftoverlap = 0.03, yscale = 0.8 },
+                    -- radical  = { height = .2, yoffset = .75, leftoffset = .085, rightoffset = .085, leftoverlap = 0.039 },
                     stacker  = { height = .2, yoffset = .8 },
                 },
                 {

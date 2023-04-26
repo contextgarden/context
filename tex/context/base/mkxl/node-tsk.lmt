@@ -1016,6 +1016,56 @@ nonut = [[
 --     }
 -- }
 
+tasks.new {
+    name      = "pagebuilders",
+    processor = nodeprocessor,
+    sequence  = {
+        "before",      -- for users
+        "normalizers",
+        "after",       -- for users
+    },
+    templates = {
+
+default = [[
+return function(head)
+    return head
+end
+]],
+
+process = [[
+local tonut  = nodes.tonut
+local tonode = nodes.nuts.tonode
+
+%localize%
+
+return function(head,groupcode,size,packtype,maxdepth,direction)
+    local nuthead = tonut(head)
+
+%actions%
+    return tonode(nuthead)
+end
+]],
+
+step = [[
+    nuthead = tonut((%action%(tonode(nuthead),groupcode,size,packtype,maxdepth,direction)))
+]],
+
+nut  = [[
+    nuthead = %action%(nuthead,groupcode,size,packtype,maxdepth,direction)
+]],
+
+nohead = [[
+    %action%(tonode(nuthead),groupcode,size,packtype,maxdepth,direction)
+]],
+
+nonut = [[
+    %action%(nuthead,groupcode,size,packtype,maxdepth,direction)
+]],
+
+    }
+
+}
+
 -- for now quite useless (too fuzzy)
 --
 -- tasks.new {
@@ -1131,6 +1181,109 @@ nohead = [[
 
 nonut = [[
     %action%(nutline,nutleftbox,nutrightbox,nutmiddlebox,...)
+]],
+
+    }
+}
+
+-- -- quality -- --
+
+tasks.new {
+    name      = "hquality",
+    processor = nodeprocessor,
+    sequence  = {
+        "before",      -- for users
+        "system",
+        "after",       -- for users
+    },
+    templates = {
+
+default = [[
+return function(how,detail,nod,first,last,filename)
+    -- nil
+end
+]],
+
+process = [[
+local tonut  = nodes.tonut
+local tonode = nodes.nuts.tonode
+
+%localize%
+
+return function(how,detail,nod,first,last,filename)
+    local nut = tonut(nod)
+    local rul = nil
+
+%actions%
+
+    return rul and tonode(rul)
+end
+]],
+
+step = [[
+    rul = tonut((%action%(how,detail,nod,first,last,filename,rul and tonode(rul))))
+]],
+
+nut  = [[
+    rul = %action%(how,detail,nut,first,last,filename,rul)
+]],
+
+nohead = [[
+    %action%(how,detail,nod,first,last,filename,rul and tonode(rul))
+]],
+
+nonut = [[
+    %action%(how,detail,nut,first,last,filename,rul)
+]],
+
+    }
+}
+
+tasks.new {
+    name      = "vquality",
+    processor = nodeprocessor,
+    sequence  = {
+        "before",      -- for users
+        "system",
+        "after",       -- for users
+    },
+    templates = {
+
+default = [[
+return function(how,detail,nod,first,last,filename)
+    -- nil
+end
+]],
+
+process = [[
+local tonut  = nodes.tonut
+local tonode = nodes.nuts.tonode
+
+%localize%
+
+return function(how,detail,nod,first,last,filename)
+    local nut = tonut(nod)
+    local rul = nil
+
+%actions%
+    return rul and tonode(rul)
+end
+]],
+
+step = [[
+    rul = tonut((%action%(how,detail,nod,first,last,filename,tonode(rul))))
+]],
+
+nut  = [[
+    rul = %action%(how,detail,nut,first,last,filename,rul)
+]],
+
+nohead = [[
+    %action%(how,detail,nod,first,last,filename,rul and tonode(rul))
+]],
+
+nonut = [[
+    %action%(how,detail,nut,first,last,filename,rul)
 ]],
 
     }

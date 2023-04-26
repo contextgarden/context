@@ -7,6 +7,7 @@
 # include "mpmathdouble.h"
 # include "mpmathbinary.h"
 # include "mpmathdecimal.h"
+# include "mpmathposit.h"
 # include "mpstrings.h"
 
 
@@ -1071,6 +1072,9 @@ MP mp_initialize (MP_options * opt)
         case mp_math_binary_mode:
             mp->math = mp_initialize_binary_math(mp);
             break;
+        case mp_math_posit_mode:
+            mp->math = mp_initialize_posit_math(mp);
+            break;
         default:
             mp->math = mp_initialize_double_math(mp);
             break;
@@ -1151,6 +1155,9 @@ MP mp_initialize (MP_options * opt)
             break;
         case mp_math_decimal_mode:
             set_internal_string(mp_number_system_internal, mp_intern(mp, "decimal"));
+            break;
+        case mp_math_posit_mode:
+            set_internal_string(mp_number_system_internal, mp_intern(mp, "posit"));
             break;
         case mp_math_binary_mode:
             set_internal_string(mp_number_system_internal, mp_intern(mp, "binary"));

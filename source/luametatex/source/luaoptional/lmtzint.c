@@ -103,6 +103,46 @@ typedef struct {
     struct zint_vector    *vector;
 } zint_symbol_211;
 
+typedef struct {
+    int                    symbology;
+    float                  height;
+    float                  scale;
+    int                    whitespace_width;
+    int                    whitespace_height;
+    int                    border_width;
+    int                    output_options;
+    char                   fgcolour[10];
+    char                   bgcolour[10];
+    char                  *fgcolor;
+    char                  *bgcolor;
+    char                   outfile[256];
+    char                   primary[128];
+    int                    option_1;
+    int                    option_2;
+    int                    option_3;
+    int                    show_hrt;
+    int                    fontsize;
+    int                    input_mode;
+    float                  dpmm;
+    int                    eci;
+    float                  dot_size;
+    float                  guard_descent;
+    struct zint_structapp  structapp;
+    int                    warn_level;
+    int                    debug;
+    unsigned char          text[128];
+    int                    rows;
+    int                    width;
+    unsigned char          encoded_data[200][144];
+    float                  row_height[200];
+    char                   errtxt[100];
+    unsigned char         *bitmap;
+    int                    bitmap_width;
+    int                    bitmap_height;
+    unsigned char         *alphamap;
+    unsigned int           bitmap_byte_length;
+    struct zint_vector    *vector;
+} zint_symbol_212;
 
 typedef struct zint_rectangle zint_rectangle;
 
@@ -163,6 +203,26 @@ static void lmt_zint_get_circle_210
 }
 
 static void lmt_zint_get_circle_211
+(
+    zint_circle     *zint_,
+    lmt_zint_circle *lmt
+)
+{
+    struct {
+        float         x;
+        float         y;
+        float         diameter;
+        float         width;
+        int           colour;
+        zint_circle  *next;
+    } *zint   = (void*) zint_;
+    lmt->x    = (double) zint->x;
+    lmt->y    = (double) zint->y;
+    lmt->d    = (double) zint->diameter;
+    lmt->next = zint->next;
+}
+
+static void lmt_zint_get_circle_212
 (
     zint_circle     *zint_,
     lmt_zint_circle *lmt
@@ -263,6 +323,12 @@ static zint_vector *lmt_zint_vector_211(zint_symbol *symbol_)
     return symbol->vector;
 }
 
+static zint_vector *lmt_zint_vector_212(zint_symbol *symbol_)
+{
+    zint_symbol_212 *symbol = (void*) symbol_;
+    return symbol->vector;
+}
+
 static void lmt_zint_symbol_set_options_210(zint_symbol *symbol_, int symbology, int input_mode, int output_options, int square)
 {
     zint_symbol_210 *symbol = (void*) symbol_;
@@ -276,6 +342,17 @@ static void lmt_zint_symbol_set_options_210(zint_symbol *symbol_, int symbology,
 static void lmt_zint_symbol_set_options_211(zint_symbol *symbol_, int symbology, int input_mode, int output_options, int square)
 {
     zint_symbol_211 *symbol = (void*) symbol_;
+    symbol->symbology = symbology;
+    symbol->input_mode = input_mode;
+    symbol->output_options = output_options;
+    if (square) {
+        symbol->option_3 = ZINT_DM_SQUARE;
+    }
+}
+
+static void lmt_zint_symbol_set_options_212(zint_symbol *symbol_, int symbology, int input_mode, int output_options, int square)
+{
+    zint_symbol_212 *symbol = (void*) symbol_;
     symbol->symbology = symbology;
     symbol->input_mode = input_mode;
     symbol->output_options = output_options;
@@ -363,10 +440,14 @@ static int zintlib_initialize(lua_State * L)
                 lmt_zint_get_circle         = lmt_zint_get_circle_210;
                 lmt_zint_vector             = lmt_zint_vector_210;
                 lmt_zint_symbol_set_options = lmt_zint_symbol_set_options_210;
-            } else {
+            } else if (zintlib_state.version < 212) {
                 lmt_zint_get_circle         = lmt_zint_get_circle_211;
                 lmt_zint_vector             = lmt_zint_vector_211;
                 lmt_zint_symbol_set_options = lmt_zint_symbol_set_options_211;
+            } else {
+                lmt_zint_get_circle         = lmt_zint_get_circle_212;
+                lmt_zint_vector             = lmt_zint_vector_212;
+                lmt_zint_symbol_set_options = lmt_zint_symbol_set_options_212;
             }
         }
     }

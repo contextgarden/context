@@ -157,15 +157,15 @@ return {
                 },
                 -- First we set the dimensions of the initial accent which started out as zero but we want
                 -- a proper width.
-                {
-                    tweak = "dimensions",
-                    list  = {
-                        [0x00302] = { width = 1.2, anchor = 1.10, xoffset = .05 }, -- widehat
-                        [0x00303] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widetilde
-                        [0x00306] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widebreve
-                        [0x0030C] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widecheck
-                    },
-                },
+                -- {
+                --     tweak = "dimensions",
+                --     list  = {
+                --         [0x00302] = { width = 1.2, anchor = 1.10, xoffset = .05 }, -- widehat
+                --         [0x00303] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widetilde
+                --         [0x00306] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widebreve
+                --         [0x0030C] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widecheck
+                --     },
+                -- },
                 -- Then we deal with all offsets and heights in one go. So we treat the initial accent
                 -- as well as the variants here.
                 {
@@ -208,8 +208,8 @@ return {
                     minus    = {
                         height      = .233,
                         yoffset     = .768,
-                     -- leftoffset  = .2,
-                     -- rightoffset = .2,
+                        leftoffset  = .08,
+                        rightoffset = .08,
                     },
                     fraction = {
                         height  = .233,
@@ -218,8 +218,8 @@ return {
                     radical  = {
                         height      = .233,
                         yoffset     = .768,
-                        leftoffset  = .05,
-                        rightoffset = .05,
+                        leftoffset  = .08,
+                        rightoffset = .08,
                     },
                     stacker  = {
                         height  = .233,

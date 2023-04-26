@@ -42,7 +42,6 @@
 # define  set_cur_cmd(A)          mp->cur_mod_->command = (A)
 # define  set_cur_mod(A)          mp->cur_mod_->data.n.data.dval = (A)
 
-static int    mp_ab_vs_cd                        (mp_number *a, mp_number *b, mp_number *c, mp_number *d);
 static void   mp_allocate_abs                    (MP mp, mp_number *n, mp_number_type t, mp_number *v);
 static void   mp_allocate_clone                  (MP mp, mp_number *n, mp_number_type t, mp_number *v);
 static void   mp_allocate_double                 (MP mp, mp_number *n, double v);
@@ -266,7 +265,7 @@ math_data *mp_initialize_double_math(MP mp)
     math->md_print                    = mp_double_print_number;
     math->md_tostring                 = mp_double_number_tostring;
     math->md_modulo                   = mp_number_modulo;
-    math->md_ab_vs_cd                 = mp_ab_vs_cd;
+    math->md_ab_vs_cd                 = mp_double_ab_vs_cd;
     math->md_crossing_point           = mp_double_crossing_point;
     math->md_scan_numeric             = mp_double_scan_numeric_token;
     math->md_scan_fractional          = mp_double_scan_fractional_token;
@@ -719,9 +718,17 @@ void mp_double_velocity (MP mp, mp_number *ret, mp_number *st, mp_number *ct, mp
     }
 }
 
-int mp_ab_vs_cd (mp_number *a_orig, mp_number *b_orig, mp_number *c_orig, mp_number *d_orig)
+int mp_double_ab_vs_cd (mp_number *a_orig, mp_number *b_orig, mp_number *c_orig, mp_number *d_orig)
 {
-    return mp_double_ab_vs_cd(a_orig, b_orig, c_orig, d_orig);
+    double ab = a_orig->data.dval * b_orig->data.dval;
+    double cd = c_orig->data.dval * d_orig->data.dval;
+    if (ab > cd) {
+        return 1;
+    } else if (ab < cd) {
+        return -1;
+    } else {
+        return 0;
+    }
 }
 
 static void mp_double_crossing_point (MP mp, mp_number *ret, mp_number *aa, mp_number *bb, mp_number *cc)
@@ -918,8 +925,9 @@ void mp_double_n_arg (MP mp, mp_number *ret, mp_number *x_orig, mp_number *y_ori
     } else {
         ret->type = mp_angle_type;
         ret->data.dval = atan2(y_orig->data.dval, x_orig->data.dval) * (180.0 / PI)  * angle_multiplier;
-        if (ret->data.dval == -0.0)
-        ret->data.dval = 0.0;
+        if (ret->data.dval == -0.0) {
+            ret->data.dval = 0.0;
+        }
     }
 }
 
@@ -1031,8 +1039,6 @@ static void mp_double_aux_ran_start(long seed)
     mp_double_random_data.ptr = &mp_double_random_data.started;
 }
 
-# define mp_double_aux_ran_arr_next() (*mp_double_random_data.ptr>=0? *mp_double_random_data.ptr++: mp_double_aux_ran_arr_cycle())
-
 static long mp_double_aux_ran_arr_cycle(void)
 {
     if (mp_double_random_data.ptr == &mp_double_random_data.dummy) {
@@ -1075,7 +1081,7 @@ void mp_number_modulo(mp_number *a, mp_number *b)
 
 static void mp_next_unif_random (MP mp, mp_number *ret)
 {
-    unsigned long int op = (unsigned) mp_double_aux_ran_arr_next();
+    unsigned long int op = (unsigned) (*mp_double_random_data.ptr>=0? *mp_double_random_data.ptr++: mp_double_aux_ran_arr_cycle());
     double a = op / (MM * 1.0);
     (void) mp;
     ret->data.dval = a;
@@ -1146,15 +1152,3 @@ static void mp_double_m_norm_rand (MP mp, mp_number *ret)
     mp_free_number(mp, &u);
 }
 
-int mp_double_ab_vs_cd (mp_number *a_orig, mp_number *b_orig, mp_number *c_orig, mp_number *d_orig)
-{
-    double ab = a_orig->data.dval * b_orig->data.dval;
-    double cd = c_orig->data.dval * d_orig->data.dval;
-    if (ab > cd) {
-        return 1;
-    } else if (ab < cd) {
-        return -1;
-    } else {
-        return 0;
-    }
-}

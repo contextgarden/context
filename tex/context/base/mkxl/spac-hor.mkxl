@@ -269,9 +269,15 @@
 
 \aliased\let\dorechecknextindentation\relax % public (in macros)
 
-\permanent\protected\protected\def\spac_indentation_check_next_indentation
+% \permanent\protected\def\spac_indentation_check_next_indentation
+%   {\global\enforced\let\dorechecknextindentation\relax
+%    \doifelsenextchar\par\donothing\spac_indentation_variant_no} % messy check as next is seldom \par
+
+\permanent\protected\def\spac_indentation_check_next_indentation
   {\global\enforced\let\dorechecknextindentation\relax
-   \doifelsenextchar\par\donothing\spac_indentation_variant_no} % messy check as next is seldom \par
+   \begingroup
+   \autoparagraphmode\zerocount
+   \doifelsenextchar\par\endgroup{\endgroup\spac_indentation_variant_no}} % messy check as next is seldom \par
 
 \def\spac_indentation_variant_auto
   {\global\enforced\let\dorechecknextindentation\spac_indentation_check_next_indentation}

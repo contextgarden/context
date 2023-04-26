@@ -1165,6 +1165,8 @@
    \fi
    \endgroup}
 
+\mutable\lettonothing\currentanchorbox
+
 \permanent\tolerant\protected\def\setanchorbox[#1]#*[#2]%
   {\begingroup
    \dowithnextbox

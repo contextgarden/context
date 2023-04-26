@@ -96,9 +96,12 @@ return {
         yoffset = .812,
     },
     radical = {
-        height     = .188,
-        yoffset    = .812,
-        leftoffset = 0.2,-- no effect?
+        height      = .188,
+        yoffset     = .812,
+        leftoffset  = 0.95,
+        rightoffset = 0.95,
+        -- leftoverlap = 0.1, -- Daniel will fix(!)
+        -- yscale      = 0.8, -- no scaling
     },
     stacker = {
         height  = .188,

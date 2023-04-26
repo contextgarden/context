@@ -29,6 +29,82 @@ local uglyones = {
     vextenddouble = true,
 }
 
+local recipes = {
+    ["kurier-math"] = {
+        { name = "file:LatinModern-Math", features = "virtualmath-kurier", main = true, parameters = false },
+        --
+        { name = "rm-kurierr.tfm",  vector = "tex-mr", skewchar=0x7F },
+        { name = "mi-kurierri.tfm", vector = "tex-mi", skewchar=0x7F },
+        { name = "mi-kurierri.tfm", vector = "tex-it", skewchar=0x7F },
+        { name = "mi-kuriermi.tfm", vector = "tex-bi", skewchar=0x7F },
+        { name = "rm-kurierm.tfm",  vector = "tex-bf", skewchar=0x7F },
+        { name = "sy-kurierrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+        { name = "ex-kurierr.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyones },
+    },
+    ["kurier-light-math"] = {
+        { name = "file:LatinModern-Math", features = "virtualmath-kurier-light", main = true, parameters = false },
+        --
+        { name = "rm-kurierl.tfm",  vector = "tex-mr", skewchar=0x7F },
+        { name = "mi-kurierli.tfm", vector = "tex-mi", skewchar=0x7F },
+        { name = "mi-kurierli.tfm", vector = "tex-it", skewchar=0x7F },
+        { name = "mi-kurierri.tfm", vector = "tex-bi", skewchar=0x7F },
+        { name = "rm-kurierr.tfm",  vector = "tex-bf", skewchar=0x7F },
+        { name = "sy-kurierlz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+        { name = "ex-kurierl.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyones },
+    },
+    ["kurier-medium-math"] = {
+        { name = "file:LatinModern-Math", features = "virtualmath-kurier-medium", main = true, parameters = false },
+        --
+        { name = "rm-kurierm.tfm",  vector = "tex-mr", skewchar=0x7F },
+        { name = "mi-kuriermi.tfm", vector = "tex-mi", skewchar=0x7F },
+        { name = "mi-kuriermi.tfm", vector = "tex-it", skewchar=0x7F },
+        { name = "mi-kurierhi.tfm", vector = "tex-bi", skewchar=0x7F },
+        { name = "rm-kurierh.tfm",  vector = "tex-bf", skewchar=0x7F },
+        { name = "sy-kuriermz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+        { name = "ex-kurierm.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyones },
+    },
+    ["kurier-heavy-math"] = {
+        { name = "file:LatinModern-Math", features = "virtualmath-kurier-heavy", main = true, parameters = false },
+        --
+        { name = "rm-kurierh.tfm",  vector = "tex-mr", skewchar=0x7F },
+        { name = "mi-kurierhi.tfm", vector = "tex-mi", skewchar=0x7F },
+        { name = "mi-kurierhi.tfm", vector = "tex-it", skewchar=0x7F },
+        { name = "mi-kurierhi.tfm", vector = "tex-bi", skewchar=0x7F },
+        { name = "rm-kurierh.tfm",  vector = "tex-bf", skewchar=0x7F },
+        { name = "sy-kurierhz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
+        { name = "ex-kurierh.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyones },
+    }
+}
+
+local tweaks = nil
+local common = fonts.goodies.load("common-math-jmn.lfg")
+
+if common then
+
+    tweaks = {
+        {
+            tweak  = "addmissing",
+            action = common.mathematics.helpers.addmissing,
+        },
+        {
+            tweak = "setoptions",
+            set   = { "ignorekerndimensions" }
+        }, -- we have dp > ht fences
+        {
+            tweak  = "fixprimes",
+            factor = 1.0, -- accent base height
+            fake   = 0.9, -- replace multiples with this width proportion
+        },
+        {
+            tweak = "addequals",
+            force = true,
+        },
+    }
+
+    common.mathematics.helpers.copyrecipes(recipes)
+
+end
+
 return {
     name = "kurier-math",
     version = "1.00",
@@ -44,51 +120,15 @@ return {
          -- "mkiv-base.map",
         },
         virtuals = {
-            ["kurier-math"] = {
-                { name = "file:LatinModern-Math", features = "virtualmath-kurier", main = true, parameters = false },
-                --
-                { name = "rm-kurierr.tfm",  vector = "tex-mr", skewchar=0x7F },
-                { name = "mi-kurierri.tfm", vector = "tex-mi", skewchar=0x7F },
-                { name = "mi-kurierri.tfm", vector = "tex-it", skewchar=0x7F },
-                { name = "mi-kuriermi.tfm", vector = "tex-bi", skewchar=0x7F },
-                { name = "rm-kurierm.tfm",  vector = "tex-bf", skewchar=0x7F },
-                { name = "sy-kurierrz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
-                { name = "ex-kurierr.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyones },
-            },
-            ["kurier-light-math"] = {
-                { name = "file:LatinModern-Math", features = "virtualmath-kurier-light", main = true, parameters = false },
-                --
-                { name = "rm-kurierl.tfm",  vector = "tex-mr", skewchar=0x7F },
-                { name = "mi-kurierli.tfm", vector = "tex-mi", skewchar=0x7F },
-                { name = "mi-kurierli.tfm", vector = "tex-it", skewchar=0x7F },
-                { name = "mi-kurierri.tfm", vector = "tex-bi", skewchar=0x7F },
-                { name = "rm-kurierr.tfm",  vector = "tex-bf", skewchar=0x7F },
-                { name = "sy-kurierlz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
-                { name = "ex-kurierl.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyones },
-            },
-            ["kurier-medium-math"] = {
-                { name = "file:LatinModern-Math", features = "virtualmath-kurier-medium", main = true, parameters = false },
-                --
-                { name = "rm-kurierm.tfm",  vector = "tex-mr", skewchar=0x7F },
-                { name = "mi-kuriermi.tfm", vector = "tex-mi", skewchar=0x7F },
-                { name = "mi-kuriermi.tfm", vector = "tex-it", skewchar=0x7F },
-                { name = "mi-kurierhi.tfm", vector = "tex-bi", skewchar=0x7F },
-                { name = "rm-kurierh.tfm",  vector = "tex-bf", skewchar=0x7F },
-                { name = "sy-kuriermz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
-                { name = "ex-kurierm.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyones },
-            },
-            ["kurier-heavy-math"] = {
-                { name = "file:LatinModern-Math", features = "virtualmath-kurier-heavy", main = true, parameters = false },
-                --
-                { name = "rm-kurierh.tfm",  vector = "tex-mr", skewchar=0x7F },
-                { name = "mi-kurierhi.tfm", vector = "tex-mi", skewchar=0x7F },
-                { name = "mi-kurierhi.tfm", vector = "tex-it", skewchar=0x7F },
-                { name = "mi-kurierhi.tfm", vector = "tex-bi", skewchar=0x7F },
-                { name = "rm-kurierh.tfm",  vector = "tex-bf", skewchar=0x7F },
-                { name = "sy-kurierhz.tfm", vector = "tex-sy", skewchar=0x30, parameters = true },
-                { name = "ex-kurierh.tfm",  vector = "tex-ex", extension = true, badones = badones, ignore = uglyones },
-            }
+            ["kurier-math"]           = { recipe = recipes["kurier-math"],        tweaks = tweaks },
+            ["kurier-light-math"]     = { recipe = recipes["kurier-light-math"],  tweaks = tweaks },
+            ["kurier-medium-math"]    = { recipe = recipes["kurier-medium-math"], tweaks = tweaks },
+            ["kurier-heavy-math"]     = { recipe = recipes["kurier-heavy-math"],  tweaks = tweaks },
+
+            ["kurier-math-nt"]        = { recipe = common and recipes["kurier-math-nt"]        or nil },
+            ["kurier-light-math-nt"]  = { recipe = common and recipes["kurier-light-math-nt"]  or nil },
+            ["kurier-medium-math-nt"] = { recipe = common and recipes["kurier-medium-math-nt"] or nil },
+            ["kurier-heavy-math-nt"]  = { recipe = common and recipes["kurier-heavy-math-nt"]  or nil },
         },
-        addmissing = helpers.addmissing,
-    }
+    },
 }

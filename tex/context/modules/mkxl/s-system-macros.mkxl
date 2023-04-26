@@ -27,6 +27,8 @@
 % todo: and how about metapost ... i need a mp.hashtokens in order to do that and I also
 % need to think about protection there (tricky as we use an avl hash there)
 %
+% todo:  when possible replace \p_whatever_key by \p_key
+%
 % public undefined : SmallCaps scitebuffer sciteinlinebuffer
 % single todos     : \ \- \\ \_
 
@@ -56,14 +58,16 @@
 
     if tex.modes.texmacros then
 
-        local context  = context
-        local ctx_NC   = context.NC
-        local ctx_NR   = context.NR
-        local ctx_bold = context.bold
-        local ctx_verb = context.verbatim
+        local context     = context
+        local ctx_NC      = context.NC
+        local ctx_NR      = context.NR
+        local ctx_bold    = context.bold
+        local ctx_verb    = context.verbatim
+        local ctx_escaped = context.escaped
 
         local find     = string.find
         local gsub     = string.gsub
+        local gmatch   = string.gmatch
         local create   = tokens.create
 
         local crap     = "[$>%|%&%#" .. string.char(0xEF) .. "]"
@@ -111,25 +115,81 @@
         local data       = scripts.interface.editor("data")
         local files      = data and data.common and data.common.filenames or { }
         local macros     = { }
+        local registers  = { }
+        local implements = { }
         local flagged    = 0
         local total      = 0
         local list       = tex.hashtokens()
         local all        = not tex.modes.notmarked
         local everything = tex.modes.everything
+        local getmacro   = token.getmacro
 
         local fmtname = resolvers.locateformat("cont-en.fmt")
         if fmtname then
             local logname = file.replacesuffix(fmtname,"log")
-            for filename in string.gmatch(io.loaddata(logname),"fullname=(%S+)") do
+            for filename in gmatch(io.loaddata(logname),"fullname=(%S+)") do
                 local s = file.suffix(filename)
                 local b = file.basename(filename)
                 if s ~= "lua" and s ~= "lmt" then
                     local d = io.loaddata(filename)
-                    for m in string.gmatch(d,"\n[\\a-z]*[exg]*def\\([a-zA-Z_]+)") do
+                    -- we could make a nice lpeg
+                    for m in gmatch(d,"\n[\\a-z]*[exg]*def\\([a-zA-Z_]+)") do
                         macros[m] = b
                     end
-                    for m in string.gmatch(d,"\n[\\a-z]*[g]*let\\([a-zA-Z_]+)") do
+                    for m in gmatch(d,"\n[\\a-z]*[g]*let\\([a-zA-Z_]+)") do
                         macros[m] = b
+                    end
+                    for m in gmatch(d,"\n\\lettonothing\\([a-zA-Z_]+)") do
+                        macros[m] = b
+                    end
+                    for m in gmatch(d,"\n\\integerdef\\([a-zA-Z_]+)") do
+                        macros[m] = b
+                    end
+                    for m in gmatch(d,"\n\\dimensiondef\\([a-zA-Z_]+)") do
+                        macros[m] = b
+                    end
+                    for m in gmatch(d,"\n\\gluespecdef\\([a-zA-Z_]+)") do
+                        macros[m] = b
+                    end
+                    for m in gmatch(d,"\n\\mugluespecdef\\([a-zA-Z_]+)") do
+                        macros[m] = b
+                    end
+                    for m in gmatch(d,"\n\\newinteger\\([a-zA-Z_]+)") do
+                        registers[m] = b
+                    end
+                    for m in gmatch(d,"\n\\newdimension\\([a-zA-Z_]+)") do
+                        registers[m] = b
+                    end
+                    for m in gmatch(d,"\n\\newgluespec\\([a-zA-Z_]+)") do
+                        registers[m] = b
+                    end
+                    for m in gmatch(d,"\n\\newmugluespec\\([a-zA-Z_]+)") do
+                        registers[m] = b
+                    end
+                    for m in gmatch(d,"\n\\newconditional\\([a-zA-Z_]+)") do
+                        registers[m] = b
+                    end
+                    for m in gmatch(d,"\n\\newtoks\\([a-zA-Z_]+)") do
+                        registers[m] = b
+                    end
+                    for m in gmatch(d,"\n\\newcount\\([a-zA-Z_]+)") do
+                        registers[m] = b
+                    end
+                    for m in gmatch(d,"\n\\newdimen\\([a-zA-Z_]+)") do
+                        registers[m] = b
+                    end
+                    for m in gmatch(d,"\n\\newskip\\([a-zA-Z_]+)") do
+                        registers[m] = b
+                    end
+                    for m in gmatch(d,"\n\\newmuskip\\([a-zA-Z_]+)") do
+                        registers[m] = b
+                    end
+                elseif b ~= "char-def.lua" then
+                    local d = io.loaddata(filename)
+                    -- maybe inside implement { }
+                    -- maybe get file from debug interface
+                    for m in gmatch(d,'\n +name += +"([a-zA-Z_]+)",') do
+                        implements[m] = b
                     end
                 end
             end
@@ -138,8 +198,7 @@
         table.sort(list)
 
         local function show(visible, check)
-         -- context.starttabulate { "|l|l|l|lj2|l|l|l|l|l|l|l|l|" }
-            context.starttabulate { "|l|l|l|lj2|l|l|l|l|l|l|l|l|l|" }
+            context.starttabulate { "|l|l|l|lj2|l|l|l|l|l|l|l|l|l|l|l|" }
             for i=1,#list do
                 local k = list[i]
                 if check(k) then
@@ -151,6 +210,7 @@
                     local primitive  = v.primitive  and "primitive"
                     local instance   = v.instance   and "instance"
                     local constant   = v.constant   and "constant"
+                    local untraced   = v.untraced   and "untraced"
                     local dealtwith  = mutable or immutable or mutable or frozen or permanent or primitive -- beware: we can have combinations
                     local whatever   = find(k,"^[a-z][a-z][a-z]+_")
                     local cscommand  = gsub(v.cmdname or "","_"," ")
@@ -159,7 +219,7 @@
                     if everything or ((all or not marked) and not find(k,"^[pvm]_") and not find(k,"^![tT]")) then
                         local parameters = v.parameters
                         local noaligned  = v.noaligned  and "noaligned"
-                        local filename   = files[k] or macros[k]
+                        local filename   = files[k] or macros[k] or implements[k] or registers[k] or implements[gsub(k,"^clf_","")]
                         local csname     = context.escape(k)
                         if undefined then
                             marked = "?"
@@ -178,7 +238,9 @@
                         ctx_NC() if instance   then context(instance)   end
                         ctx_NC() if noaligned  then context(noaligned)  end
                         ctx_NC() if constant   then context(constant)   end
+                        ctx_NC() if untraced   then context(untraced)   end
                         ctx_NC() if filename   then context(hashnames[filename]) end
+                        ctx_NC() if parameters then if parameters > 0 then ctx_escaped(getmacro(csname,false,true)) end end
                         ctx_NC() ctx_NR()
                     end
                     if visible then

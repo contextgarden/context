@@ -1035,6 +1035,28 @@
      \boundary\c_bndr_mathalign
    \fi}
 
+% \tolerant\protected\def\strc_math_skip_here[#1]%
+%   {% no strut as it will influence fences
+%    \ifconditional\c_strc_math_trace_hang
+%      \strc_math_trace_okay{darkblue}{S #1}%
+%    \fi
+%    \scratchdimen\dimexpr\formulaparameter\c!textmargin\relax
+%    \ifchkdim#1\or
+%      \d_strc_math_hang_state#1%
+%    \orelse\ifchknum#1\or
+%      \d_strc_math_hang_state#1\scratchdimen
+%    \orelse\iftok{#1}{+}%
+%      \advanceby\d_strc_math_hang_state\scratchdimen
+%    \orelse\iftok{#1}{-}%
+%      \advanceby\d_strc_math_hang_state-\scratchdimen
+%    \else
+%      \d_strc_math_hang_state\scratchdimen
+%    \fi
+%    \kern\d_strc_math_hang_state
+%    \strc_math_pickup_again}
+
+\newboundary\c_bndr_skiphere
+
 \tolerant\protected\def\strc_math_skip_here[#1]%
   {% no strut as it will influence fences
    \ifconditional\c_strc_math_trace_hang
@@ -1052,6 +1074,7 @@
    \else
      \d_strc_math_hang_state\scratchdimen
    \fi
+   \boundary\c_bndr_skiphere
    \kern\d_strc_math_hang_state
    \strc_math_pickup_again}
 

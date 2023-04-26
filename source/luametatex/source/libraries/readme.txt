@@ -24,4 +24,14 @@ In decNumber.c this got added:
 # define malloc lmt_memory_malloc
 # define free   lmt_memory_free
 
+In softposit/source/include/softposit_types.h we have to comment the initializations in the unions
+bcause the compiler complains about it (we're not using c++). So: 
+
+uint32_t ui;    // =0;                  // patched by HH because the compilers don't like this 
+uint64_t ui[2]; // ={0,0};              // idem 
+uint64_t ui[8]; // ={0,0,0,0, 0,0,0,0}; // idme 
+uint64_t ui[8]; // ={0,0,0,0, 0,0,0,0}; // idem
+uint64_t ui[8]; // ={0,0,0,0, 0,0,0,0}; // idem 
+
+
 Hans

@@ -1597,7 +1597,7 @@ do  -- else too many locals
         return (define { name = name, size = size } or 0)
     end
 
-    callbacks.register('define_font', read, "definition of fonts (tfmdata preparation)")
+    callbacks.register("define_font",read,"define and/or load a font")
 
     -- here
 

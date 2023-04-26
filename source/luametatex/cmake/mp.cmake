@@ -6,6 +6,7 @@ set(mp_sources
     source/mp/mpc/mpmathdouble.c
     source/mp/mpc/mpmathbinary.c
     source/mp/mpc/mpmathdecimal.c
+    source/mp/mpc/mpmathposit.c
 
     source/libraries/decnumber/decContext.c
     source/libraries/decnumber/decNumber.c
@@ -29,6 +30,7 @@ target_include_directories(mp PRIVATE
     source/libraries/decnumber
     source/utilities
     source/libraries/mimalloc/include
+    source/libraries/softposit/source/include
 )
 
 target_compile_definitions(mp PUBLIC

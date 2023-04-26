@@ -6,6 +6,7 @@
 
 # include "avl.h"
 # include "auxmemory.h"
+# include "auxposit.h"
 # include <string.h>
 # include <setjmp.h>
 
@@ -19,12 +20,14 @@ typedef enum mp_number_type {
     mp_angle_type,
     mp_double_type,
     mp_binary_type,
-    mp_decimal_type
+    mp_decimal_type,
+    mp_posit_type
 } mp_number_type;
 typedef union mp_number_store {
     void   *num;
     double  dval;
     int     val;
+    posit_t pval;
 } mp_number_store;
 typedef struct mp_number_data {
     mp_number_store data;
@@ -76,7 +79,8 @@ typedef enum mp_math_mode {
     mp_math_scaled_mode,
     mp_math_double_mode,
     mp_math_binary_mode,
-    mp_math_decimal_mode
+    mp_math_decimal_mode,
+    mp_math_posit_mode
 } mp_math_mode;
 typedef struct mp_knot_data *mp_knot;
 typedef struct mp_knot_data {

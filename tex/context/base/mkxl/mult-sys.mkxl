@@ -257,6 +257,7 @@
 \definesystemconstant {italic}
 %definesystemconstant {it}
 \definesystemconstant {itemgroupcolumns}
+\definesystemconstant {keepbase}
 \definesystemconstant {kernpairs}
 \definesystemconstant {language}
 \definesystemconstant {lcgreek}
@@ -312,6 +313,7 @@
 \definesystemconstant {noheight}
 \definesystemconstant {nomath}
 \definesystemconstant {none}
+\definesystemconstant {nooverflow}
 \definesystemconstant {noskips}
 \definesystemconstant {normal}
 \definesystemconstant {Normal}
@@ -333,6 +335,7 @@
 \definesystemconstant {pickup}
 \definesystemconstant {plural}
 \definesystemconstant {plus}
+\definesystemconstant {posit}
 %definesystemconstant {pt}
 \definesystemconstant {realpage}
 \definesystemconstant {register}
@@ -375,6 +378,7 @@
 \definesystemconstant {setup}
 \definesystemconstant {set}
 \definesystemconstant {themaintextcolor}
+\definesystemconstant {shrink}
 \definesystemconstant {simple}
 \definesystemconstant {Simple}
 \definesystemconstant {single}
@@ -395,6 +399,7 @@
 \definesystemconstant {ss}
 \definesystemconstant {start}
 \definesystemconstant {stop}
+\definesystemconstant {stretch}
 \definesystemconstant {subpage}
 \definesystemconstant {subtype}
 \definesystemconstant {sub}

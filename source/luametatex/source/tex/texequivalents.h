@@ -650,6 +650,11 @@ typedef enum attribute_codes {
     number_attribute_pars,
 } attribute_codes;
 
+typedef enum posit_codes {
+    /*tex total number of posit parameters */
+    number_posit_pars,
+} posit_codes;
+
 // typedef enum special_sequence_codes {
 //  // current_font_sequence_code,
 //     undefined_control_sequence_code,
@@ -717,7 +722,14 @@ typedef enum attribute_codes {
 # define internal_dimen_number(a)       ((a) - internal_dimen_base)
 # define register_dimen_number(a)       ((a) - register_dimen_base)
 
-# define internal_specification_base        (register_dimen_base + max_n_of_dimen_registers)
+# define internal_posit_base            (register_dimen_base  + max_n_of_dimen_registers)
+# define register_posit_base            (internal_posit_base + number_posit_pars + 1)
+# define internal_posit_location(a)     (internal_posit_base + (a))
+# define register_posit_location(a)     (register_posit_base + (a))
+# define internal_posit_number(a)       ((a) - internal_posit_base)
+# define register_posit_number(a)       ((a) - register_posit_base)
+
+# define internal_specification_base        (register_posit_base + max_n_of_posit_registers)
 # define internal_specification_location(a) (internal_specification_base + (a))
 # define internal_specification_number(a)   ((a) - internal_specification_base)
 
@@ -940,6 +952,7 @@ typedef enum save_types {
 
 # define int_parameter(A)           eq_value(internal_int_location(A))
 # define count_parameter(A)         eq_value(internal_int_location(A))
+# define posit_parameter(A)         eq_value(internal_posit_location(A))
 # define attribute_parameter(A)     eq_value(internal_attribute_location(A))
 # define dimen_parameter(A)         eq_value(internal_dimen_location(A))
 # define toks_parameter(A)          eq_value(internal_toks_location(A))
@@ -1671,6 +1684,7 @@ typedef enum auto_migration_mode_bits {
 # define auto_migrating_mode_permitted(what,flag) ((what & flag) == flag)
 
 # define attribute_register(j) eq_value(register_attribute_location(j))
+# define posit_register(j)     eq_value(register_posit_location(j))
 # define box_register(j)       eq_value(register_box_location(j))
 # define count_register(j)     eq_value(register_int_location(j))
 # define dimen_register(j)     eq_value(register_dimen_location(j))

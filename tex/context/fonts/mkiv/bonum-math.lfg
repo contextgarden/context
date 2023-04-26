@@ -59,6 +59,7 @@ return {
                         },
                     },
                 },
+                presets.smalldigits          { factor  = 0.95 },
                 presets.scripttocalligraphic { },
                 presets.rsfstoscript         { rscale  = 0.98 },
                 presets.rsfsuprighttoscript  { rscale  = 0.98 },
@@ -93,8 +94,8 @@ return {
                 {
                     tweak = "kerns",
                     list  = {
-                        [0x002F]                = { topleft  = -0.2,  bottomright = -0.2 },
-                        ["0x002F.variants.*"]   = { topleft  = -0.2,  bottomright = -0.2 },
+                        [0x002F]                = { topleft  = -0.2,  bottomright = -0.2  },
+                        ["0x002F.variants.*"]   = { topleft  = -0.2,  bottomright = -0.2  },
                         [0x007D]                = { topright = -0.05, bottomright = -0.05 }, -- right brace variants
                         ["0x7D.variants.*"]     = { topright = -0.05, bottomright = -0.05 }, -- right brace variants
                         ["0x7D.parts.top"]      = { topright = -0.15,                     }, -- right brace top
@@ -112,9 +113,9 @@ return {
                         [0x27EB]                = { topright = -0.1,  bottomright = -0.1  },
                         ["0x27EB.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
                         --
-                        [0x1D465] = { bottomright = -0.05, }, -- italic x (ic is too large)
-                        [0x00393] = { bottomright = -0.30, }, -- upright Gamma
-                        [0x1D43F] = { bottomright =  0.01, }, -- upright L
+                        [0x1D465]               = { bottomright = -0.05 }, -- italic x (ic is too large)
+                        [0x00393]               = { bottomright = -0.30 }, -- upright Gamma
+                        [0x1D43F]               = { bottomright =  0.01 }, -- upright L
                         ["0x222B.parts.bottom"] = { bottomright = -0.20 }, -- int
                         ["0x222C.parts.bottom"] = { bottomright = -0.15 }, -- iint
                         ["0x222D.parts.bottom"] = { bottomright = -0.10 }, -- iiint
@@ -145,27 +146,23 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {
-                        -- [0x007D]                = { topright = -0.05, bottomright = -0.05 }, -- right brace variants
-                        ["0x7C"]                = { width = 1.4, xoffset=0.2 }, -- vertical bar
-                        -- ["0x7C.variants.*"]     = { width = 1, extend = 2.4 }, -- vertical bar
-                        -- ["0x7C.parts.top"]      = { ,                     }, -- vertical bar
-                        -- ["0x7C.parts.bottom"]   = {                   bottomright = -0.15 }, -- vertical bar
+                     -- [0x007D]              = { topright = -0.05, bottomright = -0.05 }, -- right brace variants
+                        ["0x7C"]              = { width = 1.4, xoffset=0.2 },              -- vertical bar (just looks better tis way)
+                     -- ["0x7C.variants.*"]   = { width = 1, extend = 2.4 },
+                     -- ["0x7C.parts.top"]    = { },
+                     -- ["0x7C.parts.bottom"] = { bottomright = -0.15 },
                     },
                 },
---                 {
---                     tweak = "fixaccents",
---                 },
                 -- First we set the dimensions of the initial accent which started out as zero but we want
-                -- a proper width.
-                {
-                    tweak = "dimensions",
-                    list  = {
-                        [0x00302] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widehat
-                        [0x00303] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widetilde
-                        [0x00306] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widebreve
-                        [0x0030C] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widecheck
-                    },
-                },
+                -- a proper width. Thjis is no longer needed because we tweak the dimensions automatically,
+                -- so this is just some documented history.
+             -- {
+             --     tweak = "dimensions",
+             --     list  = {
+             --         [0x00302]              = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widehat
+             --         ["0x00302.flataccent"] = { width = 1.4, anchor = 1.20 },                -- no offset, because we copy
+             --     },
+             -- },
                 -- Then we deal with all offsets and heights in one go. So we treat the initial accent
                 -- as well as the variants here. But none for Bonum.
                 -- We now copy these to the not wide slots so that we can set these to stretch as well,
@@ -236,10 +233,9 @@ return {
                 },
                 {
                     tweak    = "replacerules",
-                 -- minus    = true, -- we have an extensible
-                    fraction = { height = .244, yoffset = .757 },
-                    radical  = { height = .244, yoffset = .754 },
-                    stacker  = { height = .244, yoffset = .757 },
+                    fraction = { height = .244, yoffset = .758 },
+                    radical  = { height = .244, yoffset = .758, leftoffset = .1, rightoffset = .1 },
+                    stacker  = { height = .244, yoffset = .758 },
                 },
                 {
                     -- This tweak is only needed for the funny arrows and these now get properly

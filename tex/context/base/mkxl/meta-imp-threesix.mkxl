@@ -56,6 +56,15 @@
         ["X"] = [[1111001110 1111000110 0001101000 0000110000 0000110000 0001011000 0110001111 0111001111]],
         ["Y"] = [[111100011 111100011 011000010 001110100 000111000 000011000 001111110 001111110]],
         ["Z"] = [[11111111 10000111 00001110 00011100 00111000 01110000 11100001 11111111]],
+
+        [","] = [[0000 0000 0000 0000 0000 0011 0111 0111]],
+        [";"] = [[0011 0011 0011 0000 0000 0011 0111 0111]],
+        ["."] = [[0000 0000 0000 0000 0000 0111 0111 0111]],
+        [":"] = [[0111 0111 0111 0000 0000 0111 0111 0111]],
+        ["!"] = [[0111 0111 0111 0111 0111 0000 0111 0111]],
+        ["?"] = [[11111 10111 00111 01110 01110 00000 01110 01110]],
+
+        [utf.char(0xAD)] = [[00000 00000 00000 11111 11111 00000 00000 00000]], -- hyphen
     }
 
     local f_code  = string.formatters["ThreeSix(%s);"]
@@ -206,41 +215,24 @@
   [metapost={category=fontthreesix,shape=diamond,color=random,pen=fancy,spread=.1,random=yes}]
 
 \definefont[DEKFontA][Serif*fontthreesix-color @ 200pt]
-\definefont[DEKFontB][Serif*fontthreesix-color @  60pt]
+\definefont[DEKFontB][Serif*fontthreesix-color @  12pt]
 
 % Or course:
 
-\startTEXpage
+\startTEXpage[offset=1dk]
     \DEKFontA TEX
 \stopTEXpage
 
-\startTEXpage
+\startTEXpage[offset=1dk]
     \DEKFontA T\kern-0.05em\lower.75\exheight\hbox{E}\kern-.05emX
 \stopTEXpage
 
-% One of the \CONTEXT\ 2020 posters (inspired by NewYork State AC's press
-% conferences as these keywords apply quite well to the audience of the
-% meeting):
+% We only have uppercase characters! But I added a few punctuation symbols so that
+% we can do the following. Actually we can consider lowercase to be just smaller and
+% another shape.
 
-% \startTEXpage[align={lohi,middle,nothyphenated},offset=20pt]
-%     \offinterlineskip                                             \vskip10pt
-%     \DEKFontA T\kern-0.05em\lower.75\exheight\hbox{E}\kern-.05emX \vskip60pt
-%     \DEKFontB TOUGH                                               \vskip20pt
-%               SMART                                               \vskip20pt
-%               UNITED                                              \vskip20pt
-%               DISCIPLINED                                         \vskip20pt
-%               LOVING                                              \vskip10pt
-% \stopTEXpage
-
-\startpagemakeup
-    \setupalign[middle,nothyphenated]
-    \offinterlineskip                                             \vfil\vfil
-    \DEKFontA T\kern-0.05em\lower.75\exheight\hbox{E}\kern-.05emX \vfil\vfil\vfil
-    \DEKFontB TOUGH                                               \vfil
-              SMART                                               \vfil
-              UNITED                                              \vfil
-              DISCIPLINED                                         \vfil
-              LOVING                                              \vfil
-\stoppagemakeup
+\startTEXpage[offset=1dk,align=flushleft,foregroundstyle=\DEKFontB]
+    \WORD{\input{knuth}}
+\stopTEXpage
 
 \stoptext

@@ -32,6 +32,12 @@
 \let\page_boxes_flush_before\clf_flushpageinjectionsbefore
 \let\page_boxes_flush_after \clf_flushpageinjectionsafter
 
+\lettonothing\p_page_injections_delay
+\lettonothing\p_page_injections_n
+\lettonothing\p_page_injections_page
+\lettonothing\p_page_injections_pagestate
+\lettonothing\p_page_injections_state
+
 \def\page_injections_flush_indeed
   {\begingroup
    \setbox\scratchbox\normalhpack

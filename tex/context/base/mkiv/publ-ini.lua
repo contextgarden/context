@@ -1804,10 +1804,14 @@ do
 
     -- todo: names = { "btx" }
 
+    local function collectresult(rendering)
+        return structures.lists.filter(rendering.specifications) or { }
+    end
+
     methods[v_force] = function (dataset,rendering,keyword)
         -- only for checking, can have duplicates, todo: collapse page numbers, although
         -- we then also needs deferred writes
-        local result  = structures.lists.filter(rendering.specifications) or { }
+        local result  = collectresult(rendering)
         local list    = rendering.list
         local current = datasets[dataset]
         local luadata = current.luadata
@@ -1832,7 +1836,7 @@ do
     -- global : if tag and not alldone[tag] and done[tag] ~= section then ...
 
     methods[v_local] = function(dataset,rendering,keyword)
-        local result    = structures.lists.filter(rendering.specifications) or { }
+        local result    = collectresult(rendering)
         local section   = sections.currentid()
         local list      = rendering.list
         local repeated  = rendering.repeated == v_yes
@@ -1904,7 +1908,7 @@ do
         if not dataset then
             return
         end
-        local rendering  = renderings[dataset]
+        local rendering = renderings[dataset]
         if not rendering then
             return
         end
@@ -1920,6 +1924,7 @@ do
         rendering.repeated       = specification.repeated or v_no
         rendering.group          = specification.group or ""
         rendering.specifications = specification
+        rendering.collected      = false
         local filtermethod       = methods[method]
         if not filtermethod then
             report_list("invalid method %a",method or "")
@@ -1932,6 +1937,16 @@ do
             keyword = settings_to_set(keyword)
         else
             keyword = nil
+        end
+        local filename = specification.filename
+        if filename and filename ~= "" then
+            local utilitydata = job.loadother(filename)
+            local lists = utilitydata and utilitydata.structures.lists
+            if lists then
+                rendering.collected = lists.collected
+            else
+                return
+            end
         end
         filtermethod(dataset,rendering,keyword)
         local list = rendering.list
@@ -2095,15 +2110,20 @@ do
             flush()
         end
         local nofranges = #ranges
+local interactive = not rendering.collected
         for i=1,nofranges do
             local r = ranges[i]
             ctx_btxsetconcat(concatstate(i,nofranges))
             local first = r[1]
             local last  = r[2]
+if interactive then
             ctx_btxsetfirstinternal(first[2].internal)
+end
             ctx_btxsetfirstpage(first[1])
             if last then
+if interactive then
                 ctx_btxsetlastinternal(last[2].internal)
+end
                 ctx_btxsetlastpage(last[1])
             end
             if trace_details then
@@ -2262,14 +2282,16 @@ do
         local list      = rendering.list
         local li        = list[i]
         if li then
-            local data      = datasets[dataset]
-            local luadata   = data.luadata
-            local details   = data.details
-            local tag       = li[1]
-            local listindex = li[2]
-            local n         = li[3]
-            local entry     = luadata[tag]
-            local detail    = details[tag]
+            local data        = datasets[dataset]
+            local luadata     = data.luadata
+            local details     = data.details
+            local tag         = li[1]
+            local listindex   = li[2]
+            local n           = li[3]
+            local entry       = luadata[tag]
+            local detail      = details[tag]
+            --
+            local interactive = not rendering.collected
             --
             ctx_btxstartlistentry()
             ctx_btxsetcurrentlistentry(i) -- redundant
@@ -2283,6 +2305,7 @@ do
             ctx_btxsettag(tag)
             ctx_btxsetnumber(n)
             --
+if interactive then
             local citation = citetolist[n]
             if citation then
                 local references = citation.references
@@ -2292,6 +2315,7 @@ do
                         ctx_btxsetinternal(internal)
                     end
                 end
+end
             end
             --
             if language then
@@ -2385,6 +2409,7 @@ do
                 { "ignored" },
                 { "group" },
                 { "filter" },
+                { "filename" },
             }
         }
     }
@@ -2806,6 +2831,7 @@ do
                         -- we refer to a previous list entry
                         bl = entry.internal
                     end
+                    -- no check for external (yet)
                     ctx_btxsetinternal(bl and bl > 0 and bl or "")
                 end
                 local language = entry.language
@@ -3256,7 +3282,7 @@ do
                     ctx_btxsettag(tag)
                     ctx_btxsetbacklink(currentcitation)
                     local bl = listtocite[currentcitation]
-                    ctx_btxsetinternal(bl and bl.references.internal or "")
+--                     ctx_btxsetinternal(bl and bl.references.internal or "")
                     if first then
                         ctx_btxsetfirst(first[key] or "") -- f_missing(first.tag))
                         local suffix = entry.suffix

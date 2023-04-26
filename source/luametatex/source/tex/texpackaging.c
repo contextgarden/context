@@ -1454,7 +1454,7 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
                             tex_current_input_file_name(),
                             &rule
                         );
-                        if (rule) {
+                        if (rule && rule != r) {
                             tex_aux_append_diagnostic_rule(r, rule);
                         }
                     }
@@ -1511,7 +1511,7 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
                     rule = tex_new_rule_node(normal_rule_subtype);
                     rule_width(rule) = overfull_rule_par;
                 }
-                if (rule) {
+                if (rule && rule != r) {
                     tex_aux_append_diagnostic_rule(r, rule);
                 }
                 if (callback_id == 0) {
@@ -1536,7 +1536,7 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
                             lmt_input_state.input_line,
                             tex_current_input_file_name(),
                             &rule);
-                        if (rule) {
+                        if (rule && rule != r) {
                             tex_aux_append_diagnostic_rule(r, rule);
                         }
                     } else {

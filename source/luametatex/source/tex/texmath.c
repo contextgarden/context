@@ -506,6 +506,11 @@ scaled tex_get_math_parameter(int style, int param, halfword *type)
                     *type = dimen_val_level;
                 }
                 return eq_value(value);
+            } else if (eq_type(value) == posit_cmd) {
+                if (type) {
+                    *type = dimen_val_level;
+                }
+                return tex_posit_to_dimension(eq_value(value));
             } else {
                 goto MISMATCH;
             }
@@ -2940,7 +2945,7 @@ void tex_run_math_accent(void)
         case math_uaccent_code:
             /*tex |\Umathaccent| */
             while (1) {
-                switch (tex_scan_character("abcnsftoABCNSFTO", 0, 1, 0)) {
+                switch (tex_scan_character("abcnsftokABCNSFTOK", 0, 1, 0)) {
                     case 'a': case 'A':
                         if (tex_scan_mandate_keyword("attr", 1)) {
                             attrlist = tex_scan_attribute(attrlist);
@@ -2991,6 +2996,11 @@ void tex_run_math_accent(void)
                                 tex_aux_show_keyword_error("fraction|fixed");
                                 goto DONE;
                         }
+                    case 'k': case 'K':
+                        if (tex_scan_mandate_keyword("keepbase", 1)) {
+                            noad_options(accent) |= noad_option_keep_base;
+                        }
+                        break;
                     case 'n': case 'N':
                         if (tex_scan_mandate_keyword("nooverflow", 1)) {
                             /*tex 

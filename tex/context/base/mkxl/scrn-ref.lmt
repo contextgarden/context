@@ -51,7 +51,26 @@ function references.setclosepageaction(close)
     end
 end
 
-implement { name = "setopendocumentaction",  arguments = "string", actions = references.setopendocumentaction }
-implement { name = "setclosedocumentaction", arguments = "string", actions = references.setclosedocumentaction }
-implement { name = "setopenpageaction",      arguments = "string", actions = references.setopenpageaction }
-implement { name = "setclosepageaction",     arguments = "string", actions = references.setclosepageaction }
+implement {
+    name      = "setopendocumentaction",
+    arguments = "string",
+    actions   = references.setopendocumentaction
+}
+
+implement {
+    name      = "setclosedocumentaction",
+    arguments = "string",
+    actions   = references.setclosedocumentaction
+}
+
+implement {
+    name      = "setopenpageaction",
+    arguments = "string",
+    actions   = references.setopenpageaction
+}
+
+implement {
+    name      = "setclosepageaction",
+    arguments = "string",
+    actions   = references.setclosepageaction
+}

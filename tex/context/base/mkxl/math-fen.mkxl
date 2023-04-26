@@ -305,6 +305,9 @@
     \directsetup{math:fence:set:bar}
 \stopsetups
 
+\mutable\lettonothing\suchthat
+% \fastsetup{math:fence:set}
+
 \protected\def\math_fenced_middle_common
   {\math_fenced_middle} % redefined inside atom
 
@@ -717,6 +720,10 @@
 % \im { \left\{      \frac{1}{2} \right\}      }
 % \im { \left\lbrace \frac{1}{2} \right\rbrace }
 
+\lettonothing\math_fenced_x_p_left
+\lettonothing\math_fenced_x_p_right
+\lettonothing\math_fenced_x_p_middle
+
 \def\math_fenced_x_left
   {\advanceby\c_math_fence_nesting\plusone
    \ifx\math_fenced_x_p_left\bgroup\let\math_fenced_x_p_left\letterleftbrace\fi
@@ -1046,7 +1053,7 @@
 \let\math_fences_normal_left  \left
 \let\math_fences_normal_right \right
 \let\math_fences_normal_middle\middle
-\let\math_fences_normal_both  \leftorright
+\let\math_fences_normal_both  \relax  % undefined
 
 \protected\def\math_fences_auto_left  #1{\c_attr_mathautofence\plusone  #1\c_attr_mathautofence\attributeunsetvalue}
 \protected\def\math_fences_auto_right #1{\c_attr_mathautofence\plustwo  #1\c_attr_mathautofence\attributeunsetvalue}
@@ -1218,6 +1225,8 @@
    {math.fencenesting}
    {\let\math_fenced_trace\math_fenced_trace_indeed}
    {\let\math_fenced_trace\donothing}
+
+\mutable\integerdef\c_math_fence_level\minusone
 
 \appendtoks
     \integerdef\c_math_fence_level\minusone

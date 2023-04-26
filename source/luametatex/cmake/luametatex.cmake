@@ -23,6 +23,7 @@ target_link_libraries(luametatex
 
     pplib
     miniz
+    softposit
 )
 
 if (LUAMETATEX_NOLDL) 

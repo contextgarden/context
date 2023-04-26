@@ -482,6 +482,7 @@ typedef enum char_tag_codes {
     n_ary_tag        = 0x04000, 
     radical_tag      = 0x08000, 
     punctuation_tag  = 0x10000, 
+    keep_base_tag    = 0x20000, 
 } char_tag_codes;
 
 /*tex

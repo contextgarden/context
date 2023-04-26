@@ -386,12 +386,12 @@ references.currentorder    = currentorder
 references.setstructure    = resolvers.jobs.currentstructure -- yes or no here
 ----------.setcomponent    = setcomponent
 
--- implement {
---     name      = "setnextreferenceorder",
---     actions   = setnextorder,
---     arguments = "2 strings",
--- }
---
+implement {
+    name      = "setnextreferenceorder", -- used in strc-enu
+    actions   = setnextorder,
+    arguments = "2 strings",
+}
+
 -- implement {
 --     name      = "currentreferenceorder",
 --     actions = { currentorder, context },
@@ -2484,6 +2484,7 @@ local function filterreference(name,prefixspec,numberspec) -- number page title 
     if data then
         if name == "realpage" then
             local cs = references.analyze() -- normally already analyzed but also sets state
+            -- or just get from references.realpage when present
             context(tonumber(cs.realpage) or 0)
         else -- assumes data is table
             local kind = false
@@ -2519,6 +2520,26 @@ local function filterreferencedefault()
     return filterreference("default",getcurrentprefixspec("default"))
 end
 
+local function getreferencesectionnumber(reference)
+    if references.valid("",reference,{},false) then
+        local data = currentreference and currentreference.i
+        if type(data) == "table" then
+            local metadata = data.metadata
+            if metadata and metadata.kind == "section" then
+                local numberdata = data.numberdata
+                if numberdata then
+                    numberdata = numberdata.numbers
+                    context(numberdata[#numberdata] or 0)
+                    return
+                end
+            end
+        elseif trace_referencing then
+            report_references("name %a, no reference",reference)
+        end
+    end
+    context(0)
+end
+
 references.filter        = filterreference
 references.filterdefault = filterreferencedefault
 
@@ -2536,6 +2557,13 @@ implement {
         { { "*" } }, -- prefixspec
         { { "*" } }, -- numberspec
     }
+}
+
+implement {
+    name      = "getreferencesectionnumber",
+    actions   = getreferencesectionnumber,
+    arguments = "string",
+    public    = true,
 }
 
 function genericfilters.title(data)

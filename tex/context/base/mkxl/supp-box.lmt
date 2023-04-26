@@ -1395,6 +1395,8 @@ do
         actions = boxlinecount,
     }
 
+    -- todoL: just inline so that s-system-macros can find them
+
     define_one("boxline",     "get")
     define_one("setboxline",  "set")
     define_one("copyboxline", "copy")

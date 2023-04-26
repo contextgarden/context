@@ -433,6 +433,8 @@ local detail  do
                                     return nxt
                                 end
                             end
+                        elseif list == "flataccent" then
+                            return c.flataccent
                         end
                     end
                 end
@@ -1951,6 +1953,7 @@ do
     }
 
     local rrp = {
+        newprivateslot("radical rule left piece"),
         newprivateslot("radical rule middle piece"),
         newprivateslot("radical rule right piece"),
     }
@@ -1968,14 +1971,21 @@ do
             parameters = { }
         end
         if parts then
+            what   = copytable(what)
             parts  = copytable(parts)
-            local xscale  = parameters.xscale  or 1
-            local yscale  = parameters.yscale  or 1
-            local mheight = minus.height
-            local height = (parameters.height  or 1) * mheight
-            local yshift = (parameters.yoffset or 0) * mheight
+            local xscale   = parameters.xscale  or 1 -- why not applied to width ?
+            local yscale   = parameters.yscale  or 1
+            local mwidth   = minus.width
+            local mheight  = minus.height
+            local height   = (parameters.height  or 1) * mheight
+            local yshift   = (parameters.yoffset or 0) * mheight
+            local loverlap = parameters.leftoverlap  or 0
+            local roverlap = parameters.rightoverlap or 0
+            local loffset  = parameters.leftoffset   or 0
+            local roffset  = parameters.rightoffset  or 0
             if skipfirst then
-                table.remove(parts,1)
+                remove(parts,1)
+                remove(what,1)
             end
             height = height / 2
             yshift = yshift + height
@@ -1985,36 +1995,46 @@ do
                 local gdata  = characters[glyph]
                 local width  = gdata.width
                 local xshift = 0
-                if i == 1 and parameters.leftoffset then
-                    xshift = (parameters.leftoffset) * width
+                if i == 1 and loverlap ~= 0 then
+                    xshift = loverlap * width
                     width  = width - xshift
-                elseif i == #parts and parameters.rightoffset then
-                    width  = (1 + parameters.rightoffset) * width
+                elseif i == #parts and roverlap ~= 0 then
+                    width  = width + roverlap * width
                 end
                 characters[what[i]] = {
                     height   = height,
                     depth    = height,
                     width    = width,
+                    advance  = gdata.width,
                     commands = {
                         leftcommand[xshift],
                         downcommand[yshift],
---                         slotcommand[0][glyph],
                         { "slot", 0, glyph, xscale, yscale },
                     },
                 }
+if part["start"] >= width then
+    part["start"] = width
+end
+if part["end"] >= width then
+    part["end"] = width
+end
+part.advance = width
                 part.glyph   = what[i]
-                part.advance = width
             end
+            xshift = loffset * mwidth + loverlap * mwidth
+            width  = mwidth - xshift - roffset * mwidth - roverlap * mwidth
             characters[unicode] = {
+                -- base character
                 height   = height,
                 depth    = height,
-                width    = advance,
+                width    = width,
                 commands = {
+                    leftcommand[xshift],
                     downcommand[yshift],
---                     slotcommand[0][0x2212],
                     { "slot", 0, 0x2212, xscale, yscale },
                 },
                 unicode          = tounicode or unicode,
+                -- extensibles
                 parts            = parts,
                 partsorientation = "horizontal",
             }
@@ -2065,6 +2085,7 @@ do
                         commands = {
                             leftcommand[lshift],
                             slotcommand[0][glyph],
+-- { "offset", lshift, 0, glyph },
                         },
                     }
                     part.glyph   = what[i]
@@ -2085,9 +2106,11 @@ do
                     leftcommand[lshift],
                     slotcommand[0][unicode],
                     pop,
+-- { "offset", lshift, 0, unicode },
                 },
             })
-            local step = width/2
+--             local step = width/2
+            local step = .8*width
             minus.parts = {
                 { extender = 0, glyph = p_normal, ["end"] = step, start = 0,    advance = width },
                 { extender = 1, glyph = p_normal, ["end"] = step, start = step, advance = width },
@@ -2111,7 +2134,13 @@ do
             useminus(target,fbe,characters,fraction,false,frp,0x2044) -- division slash
         end
         if radical then
-            useminus(target,rbe,characters,radical,true,rrp,0x2061)   -- apply function
+if not characters[rbe] then
+            local skipfirst = true
+            if radical.skipfirst == false then -- explicit
+                skipfirst = false
+            end
+            useminus(target,rbe,characters,radical,skipfirst,rrp,0x2061)   -- apply function
+end
         end
         if stacker then
             useminus(target,0x203E,characters,stacker,false,frp)
@@ -2739,15 +2768,31 @@ end
             if width == 0 then
                 local d = chardata[data.unicode or unicode]
                 local c = d and d.category
-                if c == "mn" then
+                if c == "mn" or c == "sk" or c == "lm" then -- we can probably can go
                     local b = target.descriptions[unicode].boundingbox
                     if b then
-                        local llx = b[1] * factor
-                        local urx = b[3] * factor
-                        width = urx - llx
+                        local topanchor = data.topanchor or 0
+                        local llx       = b[1] * factor
+                        local urx       = b[3] * factor
+-- if topanchor < 0 then
+if true then
+                     -- width         = - topanchor
+                        width = 2 * (topanchor - llx)
+--                         data.commands = {
+--                          -- rightcommand[width+width/2],
+--                             rightcommand[-llx],
+--                             slotcommand[0][unicode]
+--                         }
+data.xoffset = -llx
+else
+                        width         = urx - llx
+                     -- data.advance  = urx
+                        data.commands = {
+                            leftcommand[llx],
+                            slotcommand[0][unicode]
+                        }
+end
                         data.width        = width
-                        data.xoffset      = - llx
-                        data.advance      = urx
                         data.topanchor    = width/2
                         data.bottomanchor = width/2
                     end
@@ -2826,20 +2871,33 @@ end
         local force   = parameters.force
         local squeeze = parameters.squeeze or 0.85
         local ofactor = parameters.offset  or (squeeze/8.5)
-        local hfactor = parameters.height  or (1 - ofactor)
+        local hfactor = parameters.height  or 0.95 -- (1 - ofactor)
         local done    = false
         for stretching, entry in sortedhash(mapping) do
-            local code = stretching
-            local last = characters[stretching]
+            local code  = stretching
+            local last  = characters[stretching]
             while last do
                 if force or not last.flataccent then
                     local slot   = nps(f_flat(code))
-                    local data   = copytable(last)
-                    local height = data.height or 0
-                    data.effect  = { squeeze = squeeze }
-                    data.height  = hfactor * height
-                    data.yoffset = ofactor * height
-                    characters[slot] = data
+                    local height = last.height or 0
+-- print(last.width/65536,code,slot)
+--                     data.effect  = { squeeze = squeeze }
+characters[slot] = {
+    width        = last.width,
+    depth        = last.depth,
+    height       = last.height * hfactor,
+    topanchor    = last.topanchor,
+    bottomanchor = last.bottomanchor,
+    commands     = { { "offset", 0, ofactor * height, code, 1, squeeze } },
+-- commands     = { slotcommand[0][code] },
+-- effect = { squeeze = squeeze },
+--     next         = last.next,
+    unicode      = last.unicode,
+}
+-- if code == 770 then
+--     inspect(last)
+-- end
+
                     last.flataccent  = slot
                     if not trace_tweaking then
                         done = true
@@ -2874,7 +2932,8 @@ end
                         height    = stretchingdata.height,
                         depth     = stretchingdata.depth,
                         next      = stretchingdata.next,
-                        commands  = { charcommand[stretching] },
+--                         commands  = { charcommand[stretching] },
+                        commands  = stretchingdata.commands or { charcommand[stretching] },
                         topanchor = stretchingdata.topanchor,
                      -- unicode   = stretching,  -- when we alias to combiners
                         unicode   = alias, -- when we keep the original
@@ -2890,6 +2949,34 @@ end
             end
         end
         feedback_tweak("copyaccents",target,original,done)
+    end
+
+    function mathtweaks.keepbases(target,original,parameters)
+        local characters = target.characters
+        local done       = false
+        local list       = parameters.list
+        if list == "default" then
+            list = sortedkeys(mapping)
+        end
+        if list and #list > 0 then
+            for i=1,#list do -- assumes sorting
+                local unicode  = list[i]
+                local chardata = characters[unicode]
+                if chardata then
+                    chardata.keepbase = true
+                    if not trace_tweaking then
+                        done = true
+                    elseif done then
+                        done[unicode] = true
+                    else
+                        done = { [unicode] = true }
+                    end
+                end
+            end
+        else
+            -- maybe also hash
+        end
+        feedback_tweak("keepbases",target,original,done)
     end
 
 end
@@ -3782,7 +3869,7 @@ do
         end
     end
 
-    -- there is no real need for thios but let's play nice with memory anyway
+    -- there is no real need for this but let's play nice with memory anyway
 
     local efindex = 0
     local effects = setmetatableindex (function (t,k)

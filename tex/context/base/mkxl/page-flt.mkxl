@@ -297,7 +297,31 @@
 
 \newtoks\everybeforeflushedpagefloat
 
-\def\page_floats_flush_page_floats_indeed#1% future releases can do more clever things
+\let\m_page_otr_checked_page_float\relax
+
+\newconditional\c_page_floats_flushed
+
+% \def\page_floats_flush_page_floats_indeed#1% future releases can do more clever things
+%   {\page_floats_flush{#1}\plusone
+%    \edef\floatspecification{\clf_getfloatvariable{specification}}% Is this okay?
+%    \the\everybeforeflushedpagefloat
+%    \vpack to \textheight
+%      {\doifnotinset\v!high\floatspecification\vfill
+%       \box\floatbox
+%       \doifnotinset\v!low\floatspecification\vfill}%
+%    \page_otr_fill_and_eject_page}
+
+% \protected\def\page_floats_flush_page_floats % used in postpone
+%   {\edef\m_page_otr_checked_page_float{\clf_checkedpagefloat}%
+%    \ifempty\m_page_otr_checked_page_float
+%      % nothing
+%    \orelse\ifx\m_page_otr_checked_page_float\v!empty
+%       \emptyhbox \page_otr_fill_and_eject_page % why not dummy_page
+%    \else
+%       \page_floats_flush_page_floats_indeed\m_page_otr_checked_page_float
+%    \fi}
+
+\def\page_floats_flush_page_floats_inject#1% future releases can do more clever things
   {\page_floats_flush{#1}\plusone
    \edef\floatspecification{\clf_getfloatvariable{specification}}% Is this okay?
    \the\everybeforeflushedpagefloat
@@ -305,18 +329,26 @@
      {\doifnotinset\v!high\floatspecification\vfill
       \box\floatbox
       \doifnotinset\v!low\floatspecification\vfill}%
-   \page_otr_fill_and_eject_page}
-
-\let\m_page_otr_checked_page_float\relax
+ % \page_otr_fill_and_eject_page
+   \global\settrue\c_page_floats_flushed}
 
 \protected\def\page_floats_flush_page_floats % used in postpone
+  {\global\setfalse\c_page_floats_flushed
+   \page_floats_flush_page_floats_indeed
+   \ifconditional\c_page_floats_flushed
+     \page_otr_fill_and_eject_page
+   \fi}
+
+\protected\def\page_floats_flush_page_floats_indeed % used in postpone
   {\edef\m_page_otr_checked_page_float{\clf_checkedpagefloat}%
    \ifempty\m_page_otr_checked_page_float
      % nothing
    \orelse\ifx\m_page_otr_checked_page_float\v!empty
       \emptyhbox \page_otr_fill_and_eject_page % why not dummy_page
+      \expandafter\page_floats_flush_page_floats
    \else
-      \page_floats_flush_page_floats_indeed\m_page_otr_checked_page_float
+      \page_floats_flush_page_floats_inject\m_page_otr_checked_page_float
+      \expandafter\page_floats_flush_page_floats
    \fi}
 
 % temp hack, needed to prevent floatbox being forgotten during

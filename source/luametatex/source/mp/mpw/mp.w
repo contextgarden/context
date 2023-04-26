@@ -200,6 +200,7 @@ abstraction.
 
 # include "avl.h"
 # include "auxmemory.h"
+# include "auxposit.h"
 # include <string.h>
 # include <setjmp.h>
 
@@ -231,6 +232,7 @@ typedef struct MP_instance {
 # include "mpmathdouble.h"
 # include "mpmathbinary.h"
 # include "mpmathdecimal.h"
+# include "mpmathposit.h"
 # include "mpstrings.h"
 
 @h @<Declarations@>
@@ -293,13 +295,15 @@ typedef enum mp_number_type {
     mp_angle_type,
     mp_double_type,
     mp_binary_type,
-    mp_decimal_type
+    mp_decimal_type,
+    mp_posit_type
 } mp_number_type;
 
 typedef union mp_number_store {
     void   *num;
     double  dval;
     int     val;
+    posit_t pval;
 } mp_number_store;
 
 typedef struct mp_number_data {
@@ -568,6 +572,9 @@ MP mp_initialize (MP_options * opt)
         case mp_math_binary_mode:
             mp->math = mp_initialize_binary_math(mp);
             break;
+        case mp_math_posit_mode:
+            mp->math = mp_initialize_posit_math(mp);
+            break;
         default:
             mp->math = mp_initialize_double_math(mp);
             break;
@@ -585,6 +592,9 @@ MP mp_initialize (MP_options * opt)
             break;
         case mp_math_decimal_mode:
             set_internal_string(mp_number_system_internal, mp_intern(mp, "decimal"));
+            break;
+        case mp_math_posit_mode:
+            set_internal_string(mp_number_system_internal, mp_intern(mp, "posit"));
             break;
         case mp_math_binary_mode:
             set_internal_string(mp_number_system_internal, mp_intern(mp, "binary"));
@@ -1868,7 +1878,8 @@ typedef enum mp_math_mode {
     mp_math_scaled_mode,
     mp_math_double_mode,
     mp_math_binary_mode,
-    mp_math_decimal_mode
+    mp_math_decimal_mode,
+    mp_math_posit_mode
 } mp_math_mode;
 
 @ @<Option variables@>=
@@ -22558,7 +22569,7 @@ static void mp_do_unary (MP mp, int c)
         case mp_cos_d_operation:
             /*
                This is rather inefficient, esp decimal, to calculate both each time. We could
-               pass NULL as signal to do only one.
+               pass NULL as signal to do only one, or just have n_sin and n_cos.
             */
             if (mp->cur_exp.type != mp_known_type) {
                 mp_bad_unary(mp, c);
@@ -22569,7 +22580,7 @@ static void mp_do_unary (MP mp, int c)
                 new_fraction(n_sin);
                 new_fraction(n_cos);
                 number_clone(arg1, cur_exp_value_number);
-                number_clone(arg2, unity_t);
+                number_clone(arg2, unity_t); /* maybe dp360 */
                 number_multiply_int(arg2, 360);
                 number_modulo(arg1, arg2);
                 convert_scaled_to_angle(arg1);

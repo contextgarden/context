@@ -501,17 +501,24 @@
 \def\pack_combinations_caption_second
   {\ifx\nexttoken\egroup
      % the caption is empty
-   \orelse\ifx\nexttoken\stopcaption
+   \orelse\ifx\nexttoken\stopcaption % language
      % the caption is empty (new per 2014-05-24)
+   \orelse\ifx\nexttoken\pack_combinations_float_hack_b
+     % make sure we honor empty captions (new per 2023-04-20)
    \else
      % todo: \p_pack_combinations_alternative\v!none: no style, strut etc
      \hsize\wd\b_pack_combinations_content
      \usealignparameter\combinationparameter
      \usecombinationstyleandcolor\c!style\c!color
      \bgroup
-     \aftergroup\endstrut
-     \aftergroup\egroup
-     \begstrut
+     \ifcstok{\combinationparameter\c!strut}\v!no
+       % make sure we have empty captions (new per 2023-04-20)
+       \aftergroup\egroup
+     \else
+       \aftergroup\endstrut
+       \aftergroup\egroup
+       \begstrut
+     \fi
    \fi}
 
 \def\pack_combinations_pickup_package_pair % we need to store the caption row
@@ -624,6 +631,10 @@
 %D
 %D \typebuffer \getbuffer
 
+\definecombination
+  [\v!float]
+% [\c!strut=\v!no] % not needed, we intercept anyway
+
 \protected\def\pack_combinations_float_hack_a#1%
   {\strc_floats_build_box_separate_split{#1}%
    \box\b_strc_floats_separate_content}
@@ -657,7 +668,8 @@
         {\pack_combinations_float_hack_b{\recurselevel}}%
       \to\scratchtoks}% brrr
    \let\pack_combinations_check_x_y\pack_combinations_float_check_x_y
-   \normalexpanded{\startcombination[#1]\the\scratchtoks}\stopcombination
+ % \normalexpanded{\startcombination[#1]\the\scratchtoks}\stopcombination
+   \normalexpanded{\startcombination[\v!float][#1]\the\scratchtoks}\stopcombination
    \resetlocalfloats
    \egroup}
 

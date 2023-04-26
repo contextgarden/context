@@ -68,6 +68,7 @@ extern void     tex_handle_assignments              (void); /*tex Used in math. 
 
 extern void     tex_assign_internal_int_value       (int a, halfword p, int val);
 extern void     tex_assign_internal_attribute_value (int a, halfword p, int val);
+extern void     tex_assign_internal_posit_value     (int a, halfword p, int val);
 extern void     tex_assign_internal_dimen_value     (int a, halfword p, int val);
 extern void     tex_assign_internal_skip_value      (int a, halfword p, int val);
 

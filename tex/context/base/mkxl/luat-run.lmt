@@ -156,10 +156,10 @@ appendaction(wrapupactions,"system",synctex.wrapup)
 
 -- this can be done later
 
-callbacks.register('start_run',  start_run,        "actions performed at the beginning of a run")
-callbacks.register('stop_run',   stop_run,         "actions performed at the end of a run")
+callbacks.register("start_run",  start_run,        "actions performed at the beginning of a run")
+callbacks.register("stop_run",   stop_run,         "actions performed at the end of a run")
 callbacks.register("pre_dump",   pre_dump_actions, "lua related finalizers called before we dump the format") -- comes after \everydump
-callbacks.register('wrapup_run', wrapup_run,       "actions performed after closing files")
+callbacks.register("wrapup_run", wrapup_run,       "actions performed after closing files")
 
 -- an example:
 
@@ -201,8 +201,6 @@ local report_open  = logs.reporter("open source")
 local report_close = logs.reporter("close source")
 local report_load  = logs.reporter("load resource")
 
-local register     = callbacks.register
-
 local level = 0
 local total = 0
 local stack = { }
@@ -219,56 +217,49 @@ function luatex.currenttotal()
     return total
 end
 
-local function report_start(name,rest)
-    if rest then
-        -- luatex
-        if name ~= 1 then
-            insert(stack,false)
-            return
-        end
-        name = rest
-    end
-    if find(name,"virtual://",1,true) then
-        insert(stack,false)
-    else
-        insert(stack,name)
-        total = total + 1
-        level = level + 1
-     -- report_open("%i > %i > %s",level,total,name or "?")
-        report_open("level %i, order %i, name %a",level,total,name or "?")
-        synctex.setfilename(name)
-    end
-end
+local enabled = true  directives.register("system.reportfiles", function(v) enabled = v end)
 
-local function report_stop()
-    local name = remove(stack)
-    if name then
-     -- report_close("%i > %i > %s",level,total,name or "?")
-        report_close("level %i, order %i, name %a",level,total,name or "?")
-        level = level - 1
-        name  = stack[#stack]
---      synctex.setfilename(stack[#stack] or tex.jobname)
-        if name then
+local function report_start(name,rest)
+    if enabled then
+        if rest then
+            -- luatex
+            if name ~= 1 then
+                insert(stack,false)
+                return
+            end
+            name = rest
+        end
+        if find(name,"virtual://",1,true) then
+            insert(stack,false)
+        else
+            insert(stack,name)
+            total = total + 1
+            level = level + 1
+         -- report_open("%i > %i > %s",level,total,name or "?")
+            report_open("level %i, order %i, name %a",level,total,name or "?")
             synctex.setfilename(name)
         end
     end
 end
 
-local function report_none()
+local function report_stop()
+    if enabled then
+        local name = remove(stack)
+        if name then
+         -- report_close("%i > %i > %s",level,total,name or "?")
+            report_close("level %i, order %i, name %a",level,total,name or "?")
+            level = level - 1
+            name  = stack[#stack]
+    --      synctex.setfilename(stack[#stack] or tex.jobname)
+            if name then
+                synctex.setfilename(name)
+            end
+        end
+    end
 end
 
-register("start_file",report_start)
-register("stop_file", report_stop)
-
-directives.register("system.reportfiles", function(v)
-    if v then
-        register("start_file",report_start)
-        register("stop_file", report_stop)
-    else
-        register("start_file",report_none)
-        register("stop_file", report_none)
-    end
-end)
+callbacks.register("start_file",report_start,"report opening of a file")
+callbacks.register("stop_file", report_stop, "report closing of a file")
 
 -- start_run doesn't work
 
@@ -281,7 +272,7 @@ end)
 local report   = logs.reporter("csname overload")
 local reported = { }
 
-callback.register("handle_overload", function(fatal,overload,csname,flags)
+callbacks.register("handle_overload", function(fatal,overload,csname,flags)
     if not reported[csname] then
         logs.newline()
         local readstate  = status.readstate
@@ -303,7 +294,7 @@ callback.register("handle_overload", function(fatal,overload,csname,flags)
             osexit(1)
         end
     end
-end)
+end,"handle primitive and macro overload protection")
 
 -- bonus
 

@@ -155,7 +155,7 @@ return {
                     tweak    = "replacerules",
                  -- minus    = true, -- we have an extensible
                     fraction = { height = .15, yoffset = .85 },
-                    radical  = { height = .15, yoffset = .85 },
+                    radical  = { height = .15, yoffset = .823, leftoffset = .065, rightoffset = .065, leftoverlap = 0.03 },
                     stacker  = { height = .15, yoffset = .85 },
                 },
                 {

@@ -37,6 +37,7 @@
 # define TEX_METATABLE_MUSKIP    "tex.muskip"
 # define TEX_METATABLE_MUGLUE    "tex.muglue"
 # define TEX_METATABLE_DIMEN     "tex.dimen"
+# define TEX_METATABLE_FLOAT     "tex.float"
 # define TEX_METATABLE_COUNT     "tex.count"
 # define TEX_METATABLE_TOKS      "tex.toks"
 # define TEX_METATABLE_BOX       "tex.box"
@@ -1709,6 +1710,39 @@ static int texlib_getcount(lua_State *L)
     return 1;
 }
 
+static int texlib_isfloat(lua_State *L)
+{
+    return texlib_aux_checked_register(L, register_posit_cmd, register_posit_base, max_posit_register_index, posit_cmd);
+}
+
+static int texlib_setfloat(lua_State *L)
+{
+    int flags = 0;
+    int index = 0;
+    int slot = lmt_check_for_flags(L, 1, &flags, 1, 0);
+    int state = texlib_aux_check_for_index(L, slot++, "float", &index, internal_posit_cmd, register_posit_cmd, internal_posit_base, register_posit_base, max_posit_register_index, posit_cmd);
+    if (state >= 0) {
+        halfword value = tex_double_to_posit(luaL_optnumber(L, slot++, 0)).v;
+        if (state == 2) {
+            tex_define(flags, index, posit_cmd, value);
+        } else {
+            tex_set_tex_count_register(index, value, flags, state);
+            if (state == 1 && lua_toboolean(L, slot)) {
+                tex_update_par_par(internal_posit_cmd, index);
+            }
+        }
+    }
+    return 0;
+}
+
+static int texlib_getfloat(lua_State *L)
+{
+    int index;
+    int state = texlib_aux_check_for_index(L, 1, "float", &index, internal_posit_cmd, register_posit_cmd, internal_posit_base, register_posit_base, max_posit_register_index, posit_cmd);
+    lua_pushnumber(L, tex_posit_to_double(state >= 0 ? (state == 2 ? eq_value(index) : tex_get_tex_posit_register(index, state)) : 0));
+    return 1;
+}
+
 static int texlib_isattribute(lua_State *L)
 {
     return texlib_aux_checked_register(L, register_attribute_cmd, register_attribute_base, max_attribute_register_index, -1);
@@ -2561,6 +2595,29 @@ static int texlib_set_item(lua_State* L, int index, int prefixes)
                             break;
                     }
                     return 1;
+                case internal_posit_cmd:
+                case register_posit_cmd: /* ? */
+                    switch (lua_type(L, slot)) {
+                        case LUA_TNUMBER:
+                            {
+                                int n = tex_double_to_posit(lua_tonumber(L, slot++)).v;
+                                if (cmd == register_posit_cmd) {
+                                    tex_word_define(flags, eq_value(cs), n);
+                                } else {
+                                    tex_assign_internal_posit_value(lua_toboolean(L, slot) ? add_frozen_flag(flags) : flags, eq_value(cs), n);
+                                }
+                                break;
+                            }
+                     // case userdata:
+                     //     {
+                     //         /* todo */
+                     //         break;
+                     //     }
+                        default:
+                            luaL_error(L, "number expected");
+                            break;
+                    }
+                    return 1;
                 case internal_dimen_cmd:
                 case register_dimen_cmd:
                     {
@@ -2781,6 +2838,9 @@ static int texlib_aux_scan_internal(lua_State *L, int cmd, int code, int values)
         case attr_val_level:
             lua_pushinteger(L, cur_val);
             break;
+        case posit_val_level:
+            lua_pushnumber(L, tex_posit_to_double(cur_val));
+            break;
         case glue_val_level:
         case mu_val_level:
             switch (values) {
@@ -2874,6 +2934,7 @@ static int texlib_aux_someitem(lua_State *L, int code)
         case font_char_dp_code:
         case font_char_ic_code:
         case font_char_ta_code:
+        case font_char_ba_code:
             /* these read a char, todo */
             break;
         case font_size_code:
@@ -3126,6 +3187,8 @@ static int texlib_get_internal(lua_State *L, int index, int all)
                     case register_int_cmd:
                     case internal_attribute_cmd:
                     case register_attribute_cmd:
+                    case internal_posit_cmd:
+                    case register_posit_cmd:
                     case internal_dimen_cmd:
                     case register_dimen_cmd:
                     case lua_value_cmd:
@@ -3134,6 +3197,7 @@ static int texlib_get_internal(lua_State *L, int index, int all)
                     case set_page_property_cmd:
                     case char_given_cmd:
                     case integer_cmd:
+                    case posit_cmd:
                     case dimension_cmd:
                     case gluespec_cmd:
                     case mugluespec_cmd:
@@ -4695,6 +4759,46 @@ static int texlib_setintegervalue(lua_State *L)
     return 0;
 }
 
+static int texlib_setfloatvalue(lua_State *L)
+{
+    size_t len;
+    const char *str = lua_tolstring(L, 1, &len);
+    if (len > 0) {
+        int cs = tex_string_locate(str, len, 1);
+        int flags = 0;
+        lmt_check_for_flags(L, 3, &flags, 1, 0);
+        if (tex_define_permitted(cs, flags)) {
+            unsigned value = tex_double_to_posit(luaL_optnumber(L, 2, 0)).v;
+            if (value >= min_posit && value <= max_posit) {
+                tex_define(flags, cs, (quarterword) posit_cmd, value);
+            } else {
+                tex_formatted_error("lua", "posit only accepts values in the range %i-%i", min_posit, max_posit);
+            }
+        }
+    }
+    return 0;
+}
+
+static int texlib_setcardinalvalue(lua_State *L)
+{
+    size_t len;
+    const char *str = lua_tolstring(L, 1, &len);
+    if (len > 0) {
+        int cs = tex_string_locate(str, len, 1);
+        int flags = 0;
+        lmt_check_for_flags(L, 3, &flags, 1, 0);
+        if (tex_define_permitted(cs, flags)) {
+            unsigned value = lmt_opturoundnumber(L, 2, 0);
+            if (value >= min_cardinal && value <= max_cardinal) {
+                tex_define(flags, cs, (quarterword) integer_cmd, value);
+            } else {
+                tex_formatted_error("lua", "cardinal only accepts values in the range %d-%d", min_cardinal, max_cardinal);
+            }
+        }
+    }
+    return 0;
+}
+
 static int texlib_setdimensionvalue(lua_State *L)
 {
     size_t len;
@@ -4727,7 +4831,11 @@ static int texlib_aux_getvalue(lua_State *L, halfword level, halfword cs)
         halfword value = 0;
         tex_begin_inserted_list(tex_get_available_token(cs_token_flag + cs));
         if (tex_scan_tex_value(level, &value)) {
-            lua_pushinteger(L, value);
+            if (level == posit_val_level) {
+                lua_pushnumber(L, tex_posit_to_double(value));
+            } else { 
+                lua_pushinteger(L, value);
+            }
             return 1;
         }
     }
@@ -4760,6 +4868,31 @@ static int texlib_getintegervalue(lua_State *L) /* todo, now has duplicate in to
     return 1;
 }
 
+static int texlib_getfloatvalue(lua_State *L) /* todo, now has duplicate in tokenlib */
+{
+    if (lua_type(L, 1) == LUA_TSTRING) {
+        size_t len;
+        const char *str = lua_tolstring(L, 1, &len);
+        if (len > 0) {
+            int cs = tex_string_locate(str, len, 0);
+            switch (eq_type(cs)) {
+                case posit_cmd:
+                    lua_pushnumber(L, tex_posit_to_double(eq_value(cs)));
+                    return 1;
+                case call_cmd:
+                case protected_call_cmd:
+                case semi_protected_call_cmd:
+                    return texlib_aux_getvalue(L, posit_val_level, cs);
+                default:
+                    /* twice a lookup but fast enough for now */
+                    return texlib_getfloat(L);
+            }
+        }
+    }
+    lua_pushnil(L);
+    return 1;
+}
+
 static int texlib_getdimensionvalue(lua_State *L) /* todo, now has duplicate in tokenlib */
 {
     if (lua_type(L, 1) == LUA_TSTRING) {
@@ -4770,6 +4903,9 @@ static int texlib_getdimensionvalue(lua_State *L) /* todo, now has duplicate in 
             switch (eq_type(cs)) {
                 case dimension_cmd:
                     lua_pushinteger(L, eq_value(cs));
+                    return 1;
+                case posit_cmd:
+                    lua_pushinteger(L, tex_posit_to_dimension(eq_value(cs)));
                     return 1;
                 case call_cmd:
                 case protected_call_cmd:
@@ -4830,6 +4966,12 @@ static int texlib_setrunstate(lua_State *L)
     }
     return 0;
 }
+
+/*tex 
+    todo: Some of these keywords can be removed from the interface keys, saves bytes and never accessed 
+    as key. 
+*/
+
 
 static int texlib_gethyphenationvalues(lua_State *L)
 {
@@ -4915,6 +5057,9 @@ static int texlib_getnoadoptionvalues(lua_State *L)
     lua_push_key_at_index(L, stretch,                noad_option_stretch);
     lua_push_key_at_index(L, center,                 noad_option_center);
     lua_push_key_at_index(L, scale,                  noad_option_scale);
+    lua_push_key_at_index(L, keepbase,               noad_option_keep_base);
+
+ // lua_set_string_by_index(L, noad_option_keep_base, "keepbase");
     return 1;
 }
 
@@ -5483,6 +5628,9 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "isdimen",                    texlib_isdimen                    },
     { "setdimen",                   texlib_setdimen                   },
     { "getdimen",                   texlib_getdimen                   },
+    { "isfloat",                    texlib_isfloat                    },
+    { "setfloat",                   texlib_setfloat                   },
+    { "getfloat",                   texlib_getfloat                   },
     { "isskip",                     texlib_isskip                     },
     { "setskip",                    texlib_setskip                    },
     { "getskip",                    texlib_getskip                    },
@@ -5597,6 +5745,11 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "integerdef",                 texlib_setintegervalue            },
     { "setintegervalue",            texlib_setintegervalue            },
     { "getintegervalue",            texlib_getintegervalue            },
+    { "positdef",                   texlib_setfloatvalue              },
+    { "setpositvalue",              texlib_setfloatvalue              },
+    { "getpositvalue",              texlib_getfloatvalue              },
+    { "setcardinalvalue",           texlib_setcardinalvalue           },
+    { "getcardinalvalue",           texlib_getintegervalue            },
     { "dimensiondef",               texlib_setdimensionvalue          },
     { "setdimensionvalue",          texlib_setdimensionvalue          },
     { "getdimensionvalue",          texlib_getdimensionvalue          },
@@ -5680,6 +5833,7 @@ defineindexers(muskip)
 defineindexers(muglue)
 defineindexers(dimen)
 defineindexers(count)
+defineindexers(float)
 defineindexers(toks)
 defineindexers(box)
 defineindexers(sfcode)
@@ -5712,6 +5866,7 @@ int luaopen_tex(lua_State *L)
     lmt_make_table(L, "muglue",    TEX_METATABLE_MUGLUE,    texlib_index_muglue,    texlib_newindex_muglue);
     lmt_make_table(L, "dimen",     TEX_METATABLE_DIMEN,     texlib_index_dimen,     texlib_newindex_dimen);
     lmt_make_table(L, "count",     TEX_METATABLE_COUNT,     texlib_index_count,     texlib_newindex_count);
+    lmt_make_table(L, "posit",     TEX_METATABLE_FLOAT,     texlib_index_float,     texlib_newindex_float);
     lmt_make_table(L, "toks",      TEX_METATABLE_TOKS,      texlib_index_toks,      texlib_newindex_toks);
     lmt_make_table(L, "box",       TEX_METATABLE_BOX,       texlib_index_box,       texlib_newindex_box);
     lmt_make_table(L, "sfcode",    TEX_METATABLE_SFCODE,    texlib_index_sfcode,    texlib_newindex_sfcode);

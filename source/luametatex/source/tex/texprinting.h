@@ -69,6 +69,7 @@ extern void        tex_print_cs               (halfword p);                    /
 extern void        tex_print_cs_name          (halfword p);                    /*tex Only prints known ones. */
 extern void        tex_print_str              (const char *s);
 extern void        tex_print_str_esc          (const char *s);
+extern void        tex_print_posit            (halfword d); 
 extern void        tex_print_dimension        (scaled d, int unit);            /*tex prints a dimension with pt */
 extern void        tex_print_sparse_dimension (scaled d, int unit);            /*tex prints a dimension with pt */
 extern void        tex_print_unit             (int unit);                      /*tex prints a glue component */

@@ -236,8 +236,10 @@
   %\letcsname\Uchar"FFFF\Uchar\expandafter`\string#1\endcsname\m_active
    \letcsname\csactive#1\endcsname\m_active}
 
+\mutable\integerdef\c_active_char_code\zerocount
+
 \permanent\protected\def\pushactivecharcode{\afterassignment\syst_active_push\integerdef\c_active_char_code}
-\permanent\protected\def\popactivecharcode {\afterassignment\syst_active_pop\integerdef \c_active_char_code}
+\permanent\protected\def\popactivecharcode {\afterassignment\syst_active_pop \integerdef\c_active_char_code}
 
 \permanent\protected\def\syst_active_push
   {\expandafter\let\expandafter\m_active\csname\csactive\Uchar\c_active_char_code\endcsname

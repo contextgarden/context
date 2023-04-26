@@ -104,6 +104,11 @@
   {\letcsname\??fontfile\fontclass\m_font_name\endcsname\m_font_file
    \normalexpanded{\font_basics_define_font_synonym_yes_opt[#spec]}}
 
+\let\p_features  \undefined
+\let\p_fallbacks \undefined
+\let\p_goodies   \undefined
+\let\p_designsize\undefined
+
 \protected\def\font_basics_define_font_synonym_nop_opt[#specification]%
   {\let\p_features  \undefined
    \let\p_fallbacks \undefined

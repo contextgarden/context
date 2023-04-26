@@ -46,6 +46,9 @@
 \definemathfunction [deg]
 \definemathfunction [det]     [\c!mathlimits=\v!yes]
 \definemathfunction [dim]
+\definemathfunction [erf]
+\definemathfunction [erfc]
+\definemathfunction [erfi]
 \definemathfunction [exp]
 \definemathfunction [gcd]     [\c!mathlimits=\v!yes]
 \definemathfunction [hom]
@@ -185,8 +188,7 @@
 \permanent\protected\def\amedian
   {\csname
      \ifcsname\currentmainlanguage:amedian\endcsname
-       \currentmainlanguage\else
-       \s!en
+       \currentmainlanguage\else\s!en
      \fi
      :amedian%
    \endcsname}

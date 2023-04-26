@@ -6,6 +6,7 @@ set(tex_sources
     source/utilities/auxsystem.c
     source/utilities/auxunistring.c
     source/utilities/auxfile.c
+    source/utilities/auxposit.c
 
     source/libraries/hnj/hnjhyphen.c
 
@@ -39,6 +40,7 @@ set(tex_sources
     source/luarest/lmtxcomplexlib.c
     source/luarest/lmtziplib.c
     source/luarest/lmtsparselib.c
+    source/luarest/lmtposit.c
 
     source/tex/texalign.c
     source/tex/texarithmetic.c
@@ -96,4 +98,5 @@ target_include_directories(tex PRIVATE
     source/libraries/pplib/util
     source/luacore/lua54/src
     source/libraries/mimalloc/include
+    source/libraries/softposit/source/include
 )

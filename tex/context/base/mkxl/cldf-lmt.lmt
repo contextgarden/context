@@ -1008,6 +1008,7 @@ do
                             return integer_code, code[n]
                         else
                             local v = scaninteger(true)
+                         -- local v = scancardinal(true)
                          -- if isglobal(what) then
                             if what and (tonumber(what) & global_code) then
                                 setsparse(code,"global",n,v)

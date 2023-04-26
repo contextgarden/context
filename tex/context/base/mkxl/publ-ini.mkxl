@@ -876,6 +876,7 @@
        ignored   {\btxrenderingparameter\c!ignore}%
        group     {\btxrenderingparameter\c!group}%
        filter    {\btxrenderingparameter\c!filter}%
+       filename  {\btxrenderingparameter\c!file}% for now
    \relax
    \ifnum\nofbtxlistentries>\zerocount
      \clf_btxpreparelistentries{\currentbtxdataset}% could be put in collect
@@ -1155,7 +1156,7 @@
   {\the\t_btx_reference_inject
    \strc_lists_inject_direct % todo: make like \btx_list_reference_inject_now with { }
       [\s!btx]%
-      [\c!type=\s!btx]% \c!location=\v!none
+      [\c!type=\s!btx,\c!location=\v!here]%
       [\ifx\currentbtxdataset\v!default\else\s!btxset=\currentbtxdataset,\fi%
        \s!btxref=\currentbtxtag,%
       %\ifempty\currentbtxcombis  \else\s!btxcom={\currentbtxcombis},\fi%

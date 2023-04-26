@@ -938,12 +938,17 @@
 \def\math_cases_NC_two
   {\ifmmode\stopimath\fi}
 
-\def\math_cases_TC_zero
+\def\math_cases_TC_zero % needs checking
+ %{\ifmmode\else\startimath\fi}
   {}
 
 \def\math_cases_TC_one
   {\ifmmode\stopimath\fi
    \aligntab}
+
+\def\math_cases_TC_two
+ %{\ifmmode\stopimath\fi} % needs checking
+  {}
 
 \permanent\protected\def\math_cases_NC
   {\ifcase\c_math_cases_nc
@@ -1268,6 +1273,7 @@
 
 \newconditional\c_math_matrix_first
 \newconstant   \c_math_matrix_anchor_mode
+\newconditional\c_math_matrix_sl_seen
 
 % enabled    : 1
 % left/both  : 2
@@ -1502,7 +1508,7 @@
 \protected\def\math_matrix_horizontal_rule_indeed#1#2%
   {\math_matrix_check_rule[#2]%
    \global\setfalse\c_math_matrix_first
-   \global\settrue\c_math_matrix_sl_seen
+   \global\settrue \c_math_matrix_sl_seen
    \enablematrixrules
    \leaders#1%
       \s!attr   \mathalignmenthruleattribute\plusone
@@ -2885,6 +2891,8 @@
 \noaligned\tolerant\permanent\protected\def\math_simplealign_NR[#1]#*[#2]%
   {\unskip
    \strc_formulas_place_number_nested{#1}{#2}\crcr}
+
+\aliased\let\math_align_strut\relax
 
 \permanent\tolerant\protected\def\math_simplealign_start[#1]#*[#2]%
   {\begingroup

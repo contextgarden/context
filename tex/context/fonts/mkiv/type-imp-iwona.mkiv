@@ -25,12 +25,17 @@
     \startsetups[iwona-medium-cond]\directsetup{antykwa}\stopsetups
     \startsetups[iwona-heavy-cond] \directsetup{antykwa}\stopsetups
 
-    \definefontfeature[virtualmath-iwona]       [virtualmath][virtualweight=iwona]
-    \definefontfeature[virtualmath-iwona-light] [virtualmath][virtualweight=iwona-light]
-    \definefontfeature[virtualmath-iwona-medium][virtualmath][virtualweight=iwona-medium]
-    \definefontfeature[virtualmath-iwona-heavy] [virtualmath][virtualweight=iwona-heavy]
+    \definefontfeature[virtualmath-iwona]          [virtualmath][virtualweight=iwona]
+    \definefontfeature[virtualmath-iwona-light]    [virtualmath][virtualweight=iwona-light]
+    \definefontfeature[virtualmath-iwona-medium]   [virtualmath][virtualweight=iwona-medium]
+    \definefontfeature[virtualmath-iwona-heavy]    [virtualmath][virtualweight=iwona-heavy]
 
-    \starttypescript [\s!sans] [iwona,iwona-light,iwona-medium,iwona-heavy,iwona-cond,iwona-light-cond,iwona-medium-cond,iwona-heavy-cond]
+    \definefontfeature[virtualmath-iwona-nt]       [virtualmath][virtualweight=iwona-nt]
+    \definefontfeature[virtualmath-iwona-light-nt] [virtualmath][virtualweight=iwona-light-nt]
+    \definefontfeature[virtualmath-iwona-medium-nt][virtualmath][virtualweight=iwona-medium-nt]
+    \definefontfeature[virtualmath-iwona-heavy-nt] [virtualmath][virtualweight=iwona-heavy-nt]
+
+    \starttypescript [\s!sans] [iwona,iwona-light,iwona-medium,iwona-heavy,iwona-cond,iwona-light-cond,iwona-medium-cond,iwona-heavy-cond,iwona,iwona-light-nt,iwona-medium-nt,iwona-heavy-nt,iwona-cond-nt,iwona-light-cond-nt,iwona-medium-cond-nt,iwona-heavy-cond-nt]
 
         \definefontsynonym [Iwona-Regular]            [\s!file:Iwona-Regular]           [\s!features=\s!default]
         \definefontsynonym [Iwona-Italic]             [\s!file:Iwona-Italic]            [\s!features=\s!default]
@@ -74,11 +79,27 @@
         \definefontsynonym[\s!MathRoman][iwonaheavymath@iwona-heavy-math]
     \stoptypescript
 
-    \starttypescript [\s!math] [iwona,iwona-light,iwona-medium,iwona-heavy] [\s!all]
+    \starttypescript [\s!math][iwona-nt][\s!all]
+        \definefontsynonym[\s!MathRoman]    [iwonamathnt@iwona-math-nt]
+        \definefontsynonym[\s!MathRomanBold][iwonamediummathnt@iwona-medium-math-nt]
+    \stoptypescript
+    \starttypescript [\s!math][iwona-light-nt][\s!all]
+        \definefontsynonym[\s!MathRoman]    [iwonalightmathnt@iwona-light-math-nt]
+        \definefontsynonym[\s!MathRomanBold][iwonamathnt@kurier-medium-math-nt]
+    \stoptypescript
+    \starttypescript [\s!math][iwona-medium-nt][\s!all]
+        \definefontsynonym[\s!MathRoman]    [iwonamediummathnt@iwona-medium-math-nt]
+        \definefontsynonym[\s!MathRomanBold][kurierheavymathnt@kurier-heavy-math-nt]
+    \stoptypescript
+    \starttypescript [\s!math][iwona-heavy-nt][\s!all]
+        \definefontsynonym[\s!MathRoman][iwonaheavymathnt@iwona-heavy-math-nt]
+    \stoptypescript
+
+    \starttypescript [\s!math] [iwona,iwona-light,iwona-medium,iwona-heavy-nt,iwona-nt,iwona-light-nt,iwona-medium-nt,iwona-heavy-nt] [\s!all]
         \loadfontgoodies[iwona-math]
     \stoptypescript
 
-    \starttypescript [\s!sans] [iwona-light] [\s!name]
+    \starttypescript [\s!sans] [iwona-light,iwona-light-nt] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
         \definefontsynonym [\s!Sans]           [Iwona-Light-Regular]
         \definefontsynonym [\s!SansItalic]     [Iwona-Light-Italic]
@@ -86,7 +107,7 @@
         \definefontsynonym [\s!SansBoldItalic] [Iwona-Medium-Italic]
     \stoptypescript
 
-    \starttypescript [\s!sans] [iwona] [\s!name]
+    \starttypescript [\s!sans] [iwona,iwona-nt] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
         \definefontsynonym [\s!Sans]           [Iwona-Regular]
         \definefontsynonym [\s!SansItalic]     [Iwona-Italic]
@@ -94,7 +115,7 @@
         \definefontsynonym [\s!SansBoldItalic] [Iwona-BoldItalic]
     \stoptypescript
 
-    \starttypescript [\s!sans] [iwona-medium] [\s!name]
+    \starttypescript [\s!sans] [iwona-medium,iwona-medium-nt] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
         \definefontsynonym [\s!Sans]           [Iwona-Medium-Regular]
         \definefontsynonym [\s!SansItalic]     [Iwona-Medium-Italic]
@@ -102,7 +123,7 @@
         \definefontsynonym [\s!SansBoldItalic] [Iwona-Heavy-Italic]
     \stoptypescript
 
-    \starttypescript [\s!sans] [iwona-heavy] [\s!name]
+    \starttypescript [\s!sans] [iwona-heavy,iwona-heavy-nt] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
         \definefontsynonym [\s!Sans]           [Iwona-Heavy-Regular]
         \definefontsynonym [\s!SansItalic]     [Iwona-Heavy-Italic]
@@ -110,7 +131,7 @@
         \definefontsynonym [\s!SansBoldItalic] [Iwona-Heavy-Italic]
     \stoptypescript
 
-    \starttypescript [\s!sans] [iwona-light-cond] [\s!name]
+    \starttypescript [\s!sans] [iwona-light-cond,iwona-light-cond-nt] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
         \definefontsynonym [\s!Sans]           [Iwona-CondLight-Regular]
         \definefontsynonym [\s!SansItalic]     [Iwona-CondLight-Italic]
@@ -119,7 +140,7 @@
     \stoptypescript
 
 
-    \starttypescript [\s!sans] [iwona-cond] [\s!name]
+    \starttypescript [\s!sans] [iwona-cond,iwona-cond-nt] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
         \definefontsynonym [\s!Sans]           [Iwona-CondRegular]
         \definefontsynonym [\s!SansItalic]     [Iwona-CondItalic]
@@ -127,7 +148,7 @@
         \definefontsynonym [\s!SansBoldItalic] [Iwona-CondBoldItalic]
     \stoptypescript
 
-    \starttypescript [\s!sans] [iwona-medium-cond] [\s!name]
+    \starttypescript [\s!sans] [iwona-medium-cond,iwona-medium-cond-nt] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
         \definefontsynonym [\s!Sans]           [Iwona-CondMedium-Regular]
         \definefontsynonym [\s!SansItalic]     [Iwona-CondMedium-Italic]
@@ -135,7 +156,7 @@
         \definefontsynonym [\s!SansBoldItalic] [Iwona-CondHeavy-Italic]
     \stoptypescript
 
-    \starttypescript [iwona,iwona-light,iwona-heavy,iwona-medium]
+    \starttypescript [iwona,iwona-light,iwona-heavy,iwona-medium,iwona-nt,iwona-light-nt,iwona-heavy-nt,iwona-medium-nt]
         \definetypeface[\typescriptone][\s!ss][\s!sans] [\typescriptone] [\s!default]
         \definetypeface[\typescriptone][\s!rm][\s!serif][modern]         [\s!default]
         \definetypeface[\typescriptone][\s!tt][\s!mono] [modern]         [\s!default]

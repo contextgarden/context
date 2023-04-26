@@ -110,7 +110,7 @@
 
 \setupmathfractions
   [\c!rule=\v!symbol,
-   \c!middle=\fractionbarextenderuc]
+   \c!symbol=\fractionbarextenderuc]
 
 \appendtoks
     \instance\frozen\protected\edefcsname\currentmathfraction\endcsname{\math_frac{\currentmathfraction}}%
@@ -311,15 +311,23 @@
   {\edef\p_method   {\mathfractionparameter\c!method}%
    \edef\p_rule     {\mathfractionparameter\c!rule}%
    \edef\p_thickness{\mathfractionparameter\c!rulethickness}%
-   \scratchcounterone          \mathfractionparameter\c!left         \relax
-   \scratchcountertwo          \mathfractionparameter\c!right        \relax
-   \scratchcounterthree        \mathfractionparameter\c!middle       \relax
+   \scratchcounterone  \mathfractionparameter\c!left  \relax
+   \scratchcountertwo  \mathfractionparameter\c!right \relax
+   \scratchcounterthree
+      \ifx\p_method\v!horizontal
+        \mathfractionparameter\c!middle
+      \orelse\ifx\p_method\v!line
+        \mathfractionparameter\c!middle
+      \else
+        \mathfractionparameter\c!symbol
+      \fi
+   \relax
    \ifcsname
       \??fractionmethods
       \p_method
       \ifx\p_method\v!horizontal
       \orelse\ifx\p_method\v!line
-      \orelse\ifcsname\??fractionmethods\p_method\p_rule\endcsname
+      \orelse\ifcsname\??fractionmethods\p_method\p_rule\endcsname % \v!vertical
         \p_rule
       \else
         \v!auto

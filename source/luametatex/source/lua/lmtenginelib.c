@@ -313,6 +313,7 @@ static void enginelib_show_credits(void)
         "  decnumber  : Mike Cowlishaw from IBM (one of the number models in MP)\n"
         "  avl        : Richard (adapted a bit to fit in)\n"
         "  hjn        : Raph Levien (derived from TeX's hyphenator, but adapted again)\n"
+        "  softposit  : S. H. Leong (Cerlane)\n"
         "\n"
         "The code base contains more names and references. Some libraries are partially adapted or\n"
         "have been replaced. The MetaPost library has additional functionality, some of which is\n"
@@ -899,6 +900,7 @@ static const luaL_Reg lmt_libs_extra_function_list[] = {
     { "xmath",    luaopen_xmath    },
     { "xcomplex", luaopen_xcomplex },
     { "xdecimal", luaopen_xdecimal },
+    { "posit",    luaopen_posit    },
     { NULL,       NULL             },
 };
 

@@ -1325,4 +1325,17 @@
 
 \permanent\protected\def\spaceorpar{\endgraf\ifhmode\space\fi}
 
+%D Kind of documenting:
+%D
+%D \starttyping
+%D \disabletrackers[builders.hpack.quality] % enabled by default
+%D \enabletrackers[builders.hpack.collect]
+%D \enabletrackers[builders.hpack.overflow]
+%D
+%D \starttext
+%D     {\hsize 4cm \input tufte \par} \page
+%D     {\hsize 8cm \input tufte \par} \page
+%D \stoptext
+%D \stoptyping
+
 \protect \endinput

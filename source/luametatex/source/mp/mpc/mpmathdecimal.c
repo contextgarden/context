@@ -152,50 +152,6 @@ mp_decimal_info mp_decimal_data = {
     .last_cached_factorial = 0,
     .initialized           = 0,
 };
-static void checkZero(decNumber *ret)
-{
-    if (decNumberIsZero(ret) && decNumberIsNegative(ret)) {
-        decNumberZero(ret);
-    }
-}
-static int decNumberLess(decNumber *a, decNumber *b)
-{
-    decNumber comp;
-    decNumberCompare(&comp, a, b, &mp_decimal_data.set);
-    return decNumberIsNegative(&comp);
-}
-static int decNumberGreater(decNumber *a, decNumber *b)
-{
-    decNumber comp;
-    decNumberCompare(&comp, a, b, &mp_decimal_data.set);
-    return decNumberIsPositive(&comp);
-}
-static void decNumberFromDouble(decNumber *A, double B)
-{
-    char buffer[1000];
-    char *c = buffer;
-    snprintf(buffer, 1000, "%-650.325lf", B);
-    while (*c++) {
-        if (*c == ' ') {
-            *c = '\0';
-            break;
-        }
-    }
-    decNumberFromString(A, buffer, &mp_decimal_data.set);
-}
-static double decNumberToDouble(decNumber *A)
-{
-    char *buffer = mp_memory_allocate(A->digits + 14);
-    double res = 0.0;
-    decNumberToString(A, buffer);
-    if (sscanf(buffer, "%lf", &res)) {
-        mp_memory_free(buffer);
-        return res;
-    } else {
-        mp_memory_free(buffer);
-        return 0.0;
-    }
-}
 
 void mp_decnumber_check(MP mp, decNumber *dec, decContext *context)
 {
@@ -231,6 +187,56 @@ void mp_decnumber_check(MP mp, decNumber *dec, decContext *context)
     }
     mp->arith_error = test;
 }
+
+static void checkZero(decNumber *ret)
+{
+    if (decNumberIsZero(ret) && decNumberIsNegative(ret)) {
+        decNumberZero(ret);
+    }
+}
+
+static int decNumberLess(decNumber *a, decNumber *b)
+{
+    decNumber comp;
+    decNumberCompare(&comp, a, b, &mp_decimal_data.set);
+    return decNumberIsNegative(&comp);
+}
+
+static int decNumberGreater(decNumber *a, decNumber *b)
+{
+    decNumber comp;
+    decNumberCompare(&comp, a, b, &mp_decimal_data.set);
+    return decNumberIsPositive(&comp);
+}
+
+static void decNumberFromDouble(decNumber *A, double B)
+{
+    char buffer[1000];
+    char *c = buffer;
+    snprintf(buffer, 1000, "%-650.325lf", B);
+    while (*c++) {
+        if (*c == ' ') {
+            *c = '\0';
+            break;
+        }
+    }
+    decNumberFromString(A, buffer, &mp_decimal_data.set);
+}
+
+static double decNumberToDouble(decNumber *A)
+{
+    char *buffer = mp_memory_allocate(A->digits + 14);
+    double res = 0.0;
+    decNumberToString(A, buffer);
+    if (sscanf(buffer, "%lf", &res)) {
+        mp_memory_free(buffer);
+        return res;
+    } else {
+        mp_memory_free(buffer);
+        return 0.0;
+    }
+}
+
 
 static void decNumberAtan(decNumber *result, decNumber *x_orig, decContext *localset)
 {
@@ -1436,7 +1442,6 @@ static void ran_array(long aa[],int n)
     }
 }
 
-
 static void ran_start(long seed)
 {
     int t, j;
@@ -1484,8 +1489,6 @@ static void ran_start(long seed)
     mp_decimal_random_data.ptr = &mp_decimal_random_data.started;
 }
 
-# define ran_arr_next() (*mp_decimal_random_data.ptr>=0? *mp_decimal_random_data.ptr++: ran_arr_cycle())
-
 static long ran_arr_cycle(void)
 {
     if (mp_decimal_random_data.ptr == &mp_decimal_random_data.dummy) {
@@ -1528,7 +1531,7 @@ static void mp_next_unif_random (MP mp, mp_number *ret)
 {
     decNumber a;
     decNumber b;
-    unsigned long int op = (unsigned)ran_arr_next();
+    unsigned long int op = (unsigned) (*mp_decimal_random_data.ptr>=0? *mp_decimal_random_data.ptr++: ran_arr_cycle());
     (void) mp;
     decNumberFromInt32(&a, op);
     decNumberFromInt32(&b, MM);

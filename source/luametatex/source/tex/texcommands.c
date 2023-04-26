@@ -509,6 +509,7 @@ void tex_initialize_commands(void)
         tex_primitive(tex_command,    "skip",                           register_cmd,           glue_val_level,                           0);
         tex_primitive(tex_command,    "muskip",                         register_cmd,           mu_val_level,                             0);
         tex_primitive(tex_command,    "toks",                           register_cmd,           tok_val_level,                            0);
+        tex_primitive(luatex_command, "float",                          register_cmd,           posit_val_level,                          0);
 
         tex_primitive(tex_command,    "spacefactor",                    set_auxiliary_cmd,      space_factor_code,                        0);
         tex_primitive(tex_command,    "prevdepth",                      set_auxiliary_cmd,      prev_depth_code,                          0);
@@ -590,6 +591,7 @@ void tex_initialize_commands(void)
         tex_primitive(etex_command,   "fontchardp",                     some_item_cmd,          font_char_dp_code,                        0);
         tex_primitive(etex_command,   "fontcharic",                     some_item_cmd,          font_char_ic_code,                        0);
         tex_primitive(luatex_command, "fontcharta",                     some_item_cmd,          font_char_ta_code,                        0);
+        tex_primitive(luatex_command, "fontcharba",                     some_item_cmd,          font_char_ba_code,                        0);
         tex_primitive(luatex_command, "fontspecid",                     some_item_cmd,          font_spec_id_code,                        0);
         tex_primitive(luatex_command, "fontspecscale",                  some_item_cmd,          font_spec_scale_code,                     0);
         tex_primitive(luatex_command, "fontspecxscale",                 some_item_cmd,          font_spec_xscale_code,                    0);
@@ -619,6 +621,7 @@ void tex_initialize_commands(void)
         tex_primitive(etex_command,   "mutoglue",                       some_item_cmd,          mu_to_glue_code,                          0);
         tex_primitive(etex_command,   "gluetomu",                       some_item_cmd,          glue_to_mu_code,                          0);
         tex_primitive(etex_command,   "numexpr",                        some_item_cmd,          numexpr_code,                             0);
+        tex_primitive(luatex_command, "posexpr",                        some_item_cmd,          posexpr_code,                             0);
         tex_primitive(etex_command,   "dimexpr",                        some_item_cmd,          dimexpr_code,                             0);
         tex_primitive(etex_command,   "glueexpr",                       some_item_cmd,          glueexpr_code,                            0);
         tex_primitive(etex_command,   "muexpr",                         some_item_cmd,          muexpr_code,                              0);
@@ -651,9 +654,11 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "fontspecifiedname",              convert_cmd,            font_specification_code,                  0);
         tex_primitive(tex_command,    "jobname",                        convert_cmd,            job_name_code,                            0);
         tex_primitive(tex_command,    "meaning",                        convert_cmd,            meaning_code,                             0);
-        tex_primitive(luatex_command, "meaningfull",                    convert_cmd,            meaning_full_code,                        0);
-        tex_primitive(luatex_command, "meaningless",                    convert_cmd,            meaning_less_code,                        0);
+        tex_primitive(luatex_command, "meaningfull",                    convert_cmd,            meaning_full_code,                        0); /* full as in fill, maybe some day meaninfulll  */
+        tex_primitive(luatex_command, "meaningless",                    convert_cmd,            meaning_less_code,                        0); /* less as in fill */
         tex_primitive(luatex_command, "meaningasis",                    convert_cmd,            meaning_asis_code,                        0); /* for manuals and articles */
+        tex_primitive(luatex_command, "meaningful",                     convert_cmd,            meaning_ful_code,                         0); /* full as in fil */
+        tex_primitive(luatex_command, "meaningles",                     convert_cmd,            meaning_les_code,                         0); /* less as in fil, can't be less than this */
         /*tex Maybe some day also |meaningonly| (no macro: in front). */
         tex_primitive(tex_command,    "number",                         convert_cmd,            number_code,                              0);
         tex_primitive(luatex_command, "tointeger",                      convert_cmd,            to_integer_code,                          0);
@@ -708,8 +713,11 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "ifincsname",                     if_test_cmd,            if_in_csname_code,                        0); /* This is obsolete and might be dropped. */
         tex_primitive(luatex_command, "ifabsnum",                       if_test_cmd,            if_abs_int_code,                          0);
         tex_primitive(luatex_command, "ifabsdim",                       if_test_cmd,            if_abs_dim_code,                          0);
+        tex_primitive(luatex_command, "iffloat",                        if_test_cmd,            if_posit_code,                            0);
+        tex_primitive(luatex_command, "ifabsfloat",                     if_test_cmd,            if_abs_posit_code,                        0);
         tex_primitive(luatex_command, "ifzeronum",                      if_test_cmd,            if_zero_int_code,                         0);
         tex_primitive(luatex_command, "ifzerodim",                      if_test_cmd,            if_zero_dim_code,                         0);
+        tex_primitive(luatex_command, "ifzerofloat",                    if_test_cmd,            if_zero_posit_code,                       0);
         tex_primitive(luatex_command, "ifchknum",                       if_test_cmd,            if_chk_int_code,                          0);
         tex_primitive(luatex_command, "ifchknumber",                    if_test_cmd,            if_chk_integer_code,                      0);
         tex_primitive(luatex_command, "ifchkdim",                       if_test_cmd,            if_chk_dim_code,                          0);
@@ -1013,6 +1021,7 @@ void tex_initialize_commands(void)
         tex_primitive(tex_command,    "chardef",                        shorthand_def_cmd,      char_def_code,                            0);
         tex_primitive(tex_command,    "countdef",                       shorthand_def_cmd,      count_def_code,                           0);
         tex_primitive(tex_command,    "dimendef",                       shorthand_def_cmd,      dimen_def_code,                           0);
+        tex_primitive(luatex_command, "floatdef",                       shorthand_def_cmd,      float_def_code,                           0);
         tex_primitive(tex_command,    "mathchardef",                    shorthand_def_cmd,      math_char_def_code,                       0);
         tex_primitive(tex_command,    "muskipdef",                      shorthand_def_cmd,      mu_skip_def_code,                         0);
         tex_primitive(tex_command,    "skipdef",                        shorthand_def_cmd,      skip_def_code,                            0);
@@ -1023,6 +1032,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "attributedef",                   shorthand_def_cmd,      attribute_def_code,                       0);
         tex_primitive(luatex_command, "luadef",                         shorthand_def_cmd,      lua_def_code,                             0);
         tex_primitive(luatex_command, "integerdef",                     shorthand_def_cmd,      integer_def_code,                         0);
+        tex_primitive(luatex_command, "positdef",                       shorthand_def_cmd,      posit_def_code,                           0);
         tex_primitive(luatex_command, "dimensiondef",                   shorthand_def_cmd,      dimension_def_code,                       0);
         tex_primitive(luatex_command, "gluespecdef",                    shorthand_def_cmd,      gluespec_def_code,                        0);
         tex_primitive(luatex_command, "mugluespecdef",                  shorthand_def_cmd,      mugluespec_def_code,                      0);

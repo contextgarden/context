@@ -32,6 +32,11 @@
    linecolor=\namedboxanchorcontentparameter{#1}{\c!rulecolor},
    #2}
 
+\mutable\lettonothing\boxanchorone
+\mutable\lettonothing\boxanchortwo
+\mutable\lettonothing\boxanchorposone
+\mutable\lettonothing\boxanchorpostwo
+
 \tolerant\permanent\protected\def\connectboxanchors[#1]#*[#2]#*[#3]#*[#4]#*#:#5#6%
   {\begingroup
    %

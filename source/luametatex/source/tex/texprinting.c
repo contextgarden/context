@@ -585,6 +585,17 @@ void tex_print_sparse_dimension(scaled s, int unit)
     }
 }
 
+/*tex 
+    Good enough.
+*/
+
+void tex_print_posit(halfword s)
+{
+    char b[32];
+    sprintf(b, "%.20g", tex_posit_to_double(s));
+    tex_print_str(b);
+}
+
 /*tex
 
     Hexadecimal printing of nonnegative integers is accomplished by |print_hex|. We have a few 

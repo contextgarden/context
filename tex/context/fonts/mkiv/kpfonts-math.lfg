@@ -130,9 +130,10 @@ return {
         yoffset = .818,
     },
     radical = {
-        height     = .1818,
-        yoffset    = .818,
-        leftoffset = 0.075,
+        height      = .1818,
+        yoffset     = .818,
+        leftoffset  = 0.08,
+        rightoffset = 0.08,
     },
     stacker = {
         height  = .1818,

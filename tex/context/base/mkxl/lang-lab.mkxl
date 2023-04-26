@@ -375,4 +375,27 @@
 
 \permanent\protected\def\LABELTEXT#1{\WORD{\labeltext{#1}}} % only for simple cases!
 
+%D For publications we have gender specific ones (one could use the main one for a
+%D gender neutral one).
+%D
+%D \startbuffer
+%D \startlines
+%D     (\labeltext     {demo-texts})
+%D     (\labeltexts    {demo-texts}{ TEST })
+%D     (\leftlabeltext {demo-texts})
+%D     (\rightlabeltext{demo-texts})
+%D \stoplines
+%D
+%D \startlines \mainlanguage[cs]
+%D     test \btxlabeltext{editor}   \par
+%D     test \btxlabeltext{editor:f} \par
+%D     test \btxlabeltext{editor:m} \par
+%D     test \btxlabeltext{editors}   \par
+%D     test \btxlabeltext{editors:f} \par
+%D     test \btxlabeltext{editors:m} \par
+%D \stoplines
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
 \protect \endinput

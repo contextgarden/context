@@ -75,12 +75,16 @@
 
 \setfalse\c_page_margin_blocks_enabled
 
+\let\page_margin_blocks_stop_block\relax
+
 \permanent\tolerant\protected\def\startmarginblock[#tag]%
   {\begingroup
    \edef\currentmarginblock{#tag}%
-   \doifelse{\marginblockparameter\c!state}\v!start
-     \page_margin_blocks_start_block_yes
-     \page_margin_blocks_start_block_nop}
+   \ifcstok{\marginblockparameter\c!state}\v!start
+     \expandafter\page_margin_blocks_start_block_yes
+   \else
+     \expandafter\page_margin_blocks_start_block_nop
+   \fi}
 
 \permanent\protected\def\stopmarginblock
   {\page_margin_blocks_stop_block

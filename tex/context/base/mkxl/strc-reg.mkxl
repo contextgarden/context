@@ -155,16 +155,17 @@
 \mutable\lettonothing\currentregisternumber
 \mutable\lettonothing\currentregisterownnumber
 \mutable\lettonothing\currentregisterpageindex
+\mutable\lettonothing\currentregisterpageprefix
 \mutable\lettonothing\currentregisterpagesymbol
+\mutable\lettonothing\currentregisterprocessors
+\mutable\lettonothing\currentregisterprocessorsa
+\mutable\lettonothing\currentregisterprocessorsb
+\mutable\lettonothing\currentregisterprocessorsc
 \mutable\lettonothing\currentregistersectionindex
 \mutable\lettonothing\currentregisterseeindex
 \mutable\lettonothing\currentregisterseeword
 \mutable\lettonothing\currentregistersynchronize
 \mutable\lettonothing\currentregisterxmlsetup
-\mutable\lettonothing\currentregisterprocessors
-\mutable\lettonothing\currentregisterprocessorsa
-\mutable\lettonothing\currentregisterprocessorsb
-\mutable\lettonothing\currentregisterprocessorsc
 
 \newconditional\c_strc_registers_defining
 \setnewconstant\c_strc_registers_maxlevel \plusfive
@@ -993,6 +994,8 @@
     \doifelse{\registerparameter\c!textalternative}\v!horizontal
       \setfalse\settrue\c_strc_registers_vertical
 \to \everysetupregister
+
+\mutable\lettonothing\currentnestedregister
 
 \permanent\protected\def\usenestedregisterstyleandcolor#1#2% will change
   {\useregisterstyleandcolor#1#2%

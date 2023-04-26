@@ -114,12 +114,6 @@ return {
                     tweak = "extendaccents",
                 },
                 {
-                    tweak = "radicaldegreeanchors",
-                    list  = {
-                        ["0x221A.parts.bottom"] = { location = "left", hfactor  = 0.0, vfactor  = 1.1 },
-                    }
-                },
-                {
                     tweak = "flattenaccents",
                 },
                 {
@@ -127,18 +121,18 @@ return {
                 },
                 -- First we set the dimensions of the initial accent which started out as zero but we want
                 -- a proper width.
-                {
-                    tweak = "dimensions",
-                    list  = {
-                        [0x00300] = { width = 0.9 }, -- widegrave
-                        [0x00301] = { width = 0.9 }, -- wideacute
-                        [0x00302] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widehat
-                        [0x00303] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widetilde
-                        [0x00306] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widebreve
-                        [0x0030A] = { width = 0.9, xoffset = -.0 }, -- widering -- weird this one
-                        [0x0030C] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widecheck
-                    },
-                },
+--                 {
+--                     tweak = "dimensions",
+--                     list  = {
+--                         [0x00300] = { width = 0.9 }, -- widegrave
+--                         [0x00301] = { width = 0.9 }, -- wideacute
+--                         [0x00302] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widehat
+--                         [0x00303] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widetilde
+--                         [0x00306] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widebreve
+--                         [0x0030A] = { width = 0.9, xoffset = -.0 }, -- widering -- weird this one
+--                         [0x0030C] = { width = 1.4, anchor = 1.20, xoffset = .10 }, -- widecheck
+--                     },
+--                 },
                 -- Then we deal with all offsets and heights in one go. So we treat the initial accent
                 -- as well as the variants here.
                 {
@@ -154,6 +148,12 @@ return {
                     tweak = "copyaccents",
                 },
                 -- So far for the accents.
+                {
+                    tweak = "radicaldegreeanchors",
+                    list  = {
+                        ["0x221A.parts.bottom"] = { location = "left", hfactor  = 0.0, vfactor  = 1.1 },
+                    }
+                },
                 {
                     tweak = "fixslashes",
                 },
@@ -209,10 +209,17 @@ return {
                 },
                 {
                     tweak    = "replacerules",
-                    minus    = { rightoffset = .045 },
-                    fraction = { height = .2, yoffset = .8, rightoffset = .04 },
-                    radical  = { height = .2, yoffset = .8, rightoffset = .04 },
-                    stacker  = { height = .2, yoffset = .8, rightoffset = .04 },
+                    fraction = { height = .215, yoffset = .785 },
+                    radical  = { height = .215, yoffset = .785, leftoffset = .1, rightoffset = .1 },
+                    stacker  = { height = .215, yoffset = .785 },
+                },
+                -- on the radical we adapt the offset and give some extra height (prevent clipping)
+                {
+                    tweak    = "replacerules",
+                    feature  = "euleroverpagella",
+                    fraction = { height = .15, yoffset = .85 },
+                    radical  = { height = .22, yoffset = .8, leftoffset = .05, rightoffset = .05, leftoverlap = .01 },
+                    stacker  = { height = .15, yoffset = .85 },
                 },
                 {
                     tweak = "addactuarian",

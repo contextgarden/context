@@ -189,7 +189,7 @@ data.labels={
     ["be"]="Рэдактар",
     ["bg"]="редактор",
     ["ca"]="Editor",
-    ["cs"]={ "Editor", "Editorka" },
+    ["cs"]="Editor",
     ["de"]="Herausgeber",
     ["en"]="editor",
     ["eo"]="eldonisto",
@@ -200,9 +200,21 @@ data.labels={
     ["hy"]="խմբագիր",
     ["it"]="a cura di",
     ["mk"]="уредник",
-    ["sk"]={ "Editor", "Editorka" },
+    ["sk"]="Editor",
     ["sr"]="уредник",
     ["sr-latn"]="urednik",
+   },
+  },
+  ["editor:f"]={
+   ["labels"]={
+    ["cs"]="Editorka",
+    ["sk"]="Editorka",
+   },
+  },
+  ["editor:m"]={
+   ["labels"]={
+    ["cs"]="Editor",
+    ["sk"]="Editor",
    },
   },
   ["editors"]={
@@ -1146,6 +1158,11 @@ data.labels={
   },
  },
  ["texts"]={
+  ["demo-texts"]={
+   ["labels"]={
+    ["en"]={ "demo-1", "demo-2" },
+   },
+  },
   ["and"]={
    ["labels"]={
     ["af"]="",

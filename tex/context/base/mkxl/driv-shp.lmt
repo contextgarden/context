@@ -1804,7 +1804,7 @@ do
         literal = showdetails,
     }
 
-    callback.register("show_whatsit",function(n,what,l,tlp,l1,l2)
+    callbacks.register("show_whatsit",function(n,what,l,tlp,l1,l2)
         local s = nodes.whatsitcodes[n.subtype]
         if what == 1 then
             return s or "unknown"
@@ -1815,12 +1815,10 @@ do
                 w(n,l,tlp,l1,l2)
             end
         end
-    end)
+    end,"provide whatsit details")
 
-    local names = attributes.names
+    local names = attributes.names  -- we show the name and number
 
-    callback.register("get_attribute",function(k,v)
-        return attributes.names[k], nil -- we show the name and number
-    end)
+    callbacks.register("get_attribute",function(k,v) return attributes.names[k], nil end,"provide verbose attrbute name")
 
 end

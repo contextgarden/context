@@ -531,10 +531,10 @@
 \permanent\protected\def\unitsR    #1#2{% todo: tagging
                                         \ifmmode
                                           #2%
-                                        \orelse\ifnum#1=\plusone
+                                        \orelse\ifnum#1=\plusone % why this test if we do the same in both cases
                                           \digitstextbinop{#2}% before and after
                                         \else
-                                          \digitstextbinnop{#2}% after
+                                          \digitstextbinop{#2}% after
                                         \fi
                                         \c_phys_units_state\zerocount
                                         \setfalse\c_phys_units_dospace

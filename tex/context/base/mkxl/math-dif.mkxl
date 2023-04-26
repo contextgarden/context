@@ -19,8 +19,8 @@
 
     % For new times sake:
 
-    \let\normal_math_dd\dd
-    \let\normal_math_DD\DD
+    \ifdefined\dd \aliased\let\normal_math_dd\dd \else \lettonothing\normal_math_dd \fi
+    \ifdefined\DD \aliased\let\normal_math_DD\DD \else \lettonothing\normal_math_DD \fi
 
     \def\c!differentiald{differentiald} % for now
 

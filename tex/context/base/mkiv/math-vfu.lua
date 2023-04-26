@@ -620,8 +620,10 @@ setmetatableindex(reverse, function(t,name)
     end
     local m = mathencodings[name]
     local r = { }
-    for u, i in next, m do
-        r[i] = u
+    if type(m) == "table" then
+        for u, i in next, m do
+            r[i] = u
+        end
     end
     reverse[name] = r
     return r
@@ -714,8 +716,9 @@ function vfmath.define(specification,set,goodies)
     local start    = (trace_virtual or trace_timings) and os.clock()
     local okset    = { }
     local n        = 0
-    for s=1,#set do
-        local ss     = set[s]
+    local setlist  = set.recipe or set
+    for s=1,#setlist do
+        local ss     = setlist[s]
         local ssname = ss.name
         if add_optional and ss.optional then
             if trace_virtual then

@@ -14,19 +14,9 @@
 \unprotect
 
 \starttexdefinition mutable protected btx:list:inject:text #content
-    \ifconditional\btxinteractivetext
-        \ifx\currentbtxinternal\empty
-            #content
-        \else
-            \goto {
-                #content
-            } [
-                \s!internal(\currentbtxinternal)
-            ]
-        \fi
-    \else
+    \texdefinition{btx:format:gotointernal} {
         #content
-    \fi
+    }
 \stoptexdefinition
 
 \startsetups \s!btx:\s!list:text
@@ -40,19 +30,9 @@
 \stopsetups
 
 \starttexdefinition mutable protected btx:list:inject:number #content
-    \ifconditional\btxinteractivenumber
-        \ifx\currentbtxinternal\empty
-            #content
-        \else
-            \goto {
-                #content
-            } [
-                \s!internal(\currentbtxinternal)
-            ]
-        \fi
-    \else
+    \texdefinition{btx:format:gotointernal} {
         #content
-    \fi
+    }
 \stoptexdefinition
 
 \starttexdefinition mutable protected btx:list:helpers:concat

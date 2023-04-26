@@ -83,7 +83,7 @@
 \immutable\def\xmltempbuffername{xml-temp}
 
 \permanent\protected\def\prettyprintbuffer#1#2% only used here
-  {\ifdefined\scitebuffer
+  {\ifdefined\scitebuffer % we could predefine to relax
      \scitebuffer[#2][#1]%
    \else
      \typebuffer[#1][\c!option=#2]%

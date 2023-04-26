@@ -237,30 +237,34 @@
 %newdimen    \d_framed_linewidth  \aliased\let   \ruledlinewidth\d_framed_linewidth % needed at lua end
 \newdimension\d_framed_linewidth  \aliasdimension\ruledlinewidth\d_framed_linewidth % needed at lua end
 
-\lettonothing\p_framed_frame            % \framedparameter\c!frame
-\lettonothing\p_framed_backgroundoffset
-\lettonothing\p_framed_foregroundstyle
-\lettonothing\p_framed_autostrut
-\lettonothing\p_framed_location
-\lettonothing\p_framed_orientation
+\lettonothing\p_frame
+\lettonothing\p_framed_adaptive
 \lettonothing\p_framed_anchoring
-\lettonothing\p_framed_synchronize
+\lettonothing\p_framed_autostrut
 \lettonothing\p_framed_autowidth
-\lettonothing\p_framed_franalyze
+\lettonothing\p_framed_background
+\lettonothing\p_framed_backgroundcolor
 \lettonothing\p_framed_backgroundcorner
+\lettonothing\p_framed_backgroundoffset
 \lettonothing\p_framed_backgroundradius
+\lettonothing\p_framed_component
+\lettonothing\p_framed_empty
+\lettonothing\p_framed_foregroundcolor
+\lettonothing\p_framed_foregroundstyle
+\lettonothing\p_framed_frame            % \framedparameter\c!frame
+\lettonothing\p_framed_framecolor
 \lettonothing\p_framed_framecorner
 \lettonothing\p_framed_frameradius
+\lettonothing\p_framed_franalyze
 \lettonothing\p_framed_lines
-\lettonothing\p_framed_empty
-\lettonothing\p_framed_backgroundcolor
-\lettonothing\p_framed_framecolor
-\lettonothing\p_framed_component
-\lettonothing\p_framed_background
+\lettonothing\p_framed_location
+\lettonothing\p_framed_minheight
+\lettonothing\p_framed_orientation
 \lettonothing\p_framed_rulethickness
-\lettonothing\p_framed_foregroundcolor
 \lettonothing\p_framed_setups
 \lettonothing\p_framed_synchronize
+\lettonothing\p_framed_text_depthcorrection
+\lettonothing\p_framed_text_strut
 
 %D We don't have to stick to a \TEX\ drawn rule, but also can use rounded
 %D or even fancier shapes, as we will see later on.

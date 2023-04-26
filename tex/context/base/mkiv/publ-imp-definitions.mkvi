@@ -27,36 +27,50 @@
     \btxfield{short}
 \stopxmlsetups
 
-\starttexdefinition mutable protected btx:format:inject #link #content
+\starttexdefinition mutable protected btx:format:gotointernal #content
     \ifx\currentbtxinternal\empty
         #content
+    \else\ifnum\currentbtxinternal=\zerocount
+        #content
     \else\ifconditional\btxinteractive
+        \goto {#content} [\s!internal(\currentbtxinternal)]
+    \else
+        #content
+    \fi\fi\fi
+\stoptexdefinition
+
+\starttexdefinition mutable protected btx:format:goto #link #content
+    \ifconditional\btxinteractive
         \goto {#content} [#link]
     \else
         #content
-    \fi\fi
+    \fi
 \stoptexdefinition
 
 \startxmlsetups btx:format:doi
     \edef\currentbtxfielddoi{\btxfield{doi}}
     \ifx\currentbtxfielddoi\empty
         {\tttf no-doi}
-    \else\ifconditional\btxinteractive
-        \goto{\hyphenatedurl{\currentbtxfielddoi}}[url(http://dx.doi.org/\currentbtxfielddoi)]
     \else
-        \hyphenatedurl{\currentbtxfielddoi}
-    \fi\fi
+        \texdefinition {btx:format:goto} {
+            url(http://dx.doi.org/\currentbtxfielddoi)
+        } {
+            \hyphenatedurl{\currentbtxfielddoi}
+        }
+    \fi
 \stopxmlsetups
 
 \startxmlsetups btx:format:url
     \edef\currentbtxfieldurl{\btxfield{url}}
     \ifx\currentbtxfieldurl\empty
         {\tttf no-url}
-    \else\ifconditional\btxinteractive
-        \goto{\hyphenatedurl{\currentbtxfieldurl}}[url(\currentbtxfieldurl)]
     \else
-        \hyphenatedurl{\currentbtxfieldurl}
-    \fi\fi
+        \texdefinition {btx:format:goto} {
+            url(\currentbtxfieldurl)
+        } {
+            \hyphenatedurl{\currentbtxfieldurl}
+        }
+    \fi
 \stopxmlsetups
 
 \startxmlsetups btx:format:year

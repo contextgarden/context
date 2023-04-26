@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['symb-emj'] = {
     license   = "see context related readme files"
 }
 
--- processors.hpack_filter does it all
-
 local symbols         = fonts.symbols
 
 local resolvedemoji   = characters.emoji.resolve

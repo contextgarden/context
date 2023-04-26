@@ -274,7 +274,7 @@
 
 %D A few testing macros (expandable for historic reasons):
 
-\permanent\def\doifelsefieldbody    #tag{\clf_doifelsefield{#tag}}
+\permanent\def\doifelsefieldbody    #tag{\clf_doifelsefieldset{#tag}}
 \permanent\def\doifelsefieldcategory#tag{\clf_doifelsefieldcategory{#tag}}
 
 \aliased\let\doiffieldbodyelse    \doifelsefieldbody

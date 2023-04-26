@@ -897,7 +897,7 @@ static halfword tex_aux_underbar(halfword box, scaled gap, scaled height, scaled
 
 */
 
-static halfword tex_aux_char_box(halfword fnt, int chr, halfword att, scaled *ic, quarterword subtype, scaled target, int style, int shrink, int stretch)
+static halfword tex_aux_char_box(halfword fnt, int chr, halfword att, scaled *ic, quarterword subtype, scaled target, int style, int shrink, int stretch, int *isscaled)
 {
     /*tex The new box and its character node. */
     halfword glyph = tex_aux_new_math_glyph(fnt, chr, subtype);
@@ -909,6 +909,9 @@ static halfword tex_aux_char_box(halfword fnt, int chr, halfword att, scaled *ic
     box_height(box) = whd.ht;
     box_depth(box) = whd.dp;
     box_list(box) = glyph;
+    if (isscaled) { 
+        *isscaled = 0;
+    }
     if (tex_has_glyph_option(glyph, glyph_option_no_italic_correction)) {
         whd.ic = 0;
     }
@@ -932,15 +935,21 @@ static halfword tex_aux_char_box(halfword fnt, int chr, halfword att, scaled *ic
             if (amount > 0) { 
                 glyph_x_scale(glyph) = lround((double) glyph_x_scale(glyph) * amount/whd.wd);
                 glyph_x_offset(glyph) = (whd.wd - amount)/2;
+                if (isscaled) { 
+                    *isscaled = 1;
+                }
             }
             return box; 
         }
-         if ((shrink && (whd.wd > target)) || (stretch && (whd.wd < target))) { // we need to keep an eye on it 
-             glyph_x_scale(glyph) = lround((double) glyph_x_scale(glyph) * target/whd.wd);
-          // glyph_x_offset(glyph) = (whd.wd - target)/2;
-             whd = tex_char_whd_from_glyph(glyph);
-             box_width(box) = whd.wd;
-         }
+        if ((shrink && (whd.wd > target)) || (stretch && (whd.wd < target))) { // we need to keep an eye on it 
+            glyph_x_scale(glyph) = lround((double) glyph_x_scale(glyph) * target/whd.wd);
+         // glyph_x_offset(glyph) = (whd.wd - target)/2;
+            whd = tex_char_whd_from_glyph(glyph);
+            box_width(box) = whd.wd;
+            if (isscaled) { 
+                *isscaled = 1;
+            }
+        }
     }
     return box;
 }
@@ -1429,6 +1438,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
     /*tex are we trying the large variant? */
     int large_attempt = 0;
     int do_parts = 0;
+    int isscaled = 0;
     int shrink = flat && has_noad_option_shrink(target);  
     int stretch = flat && has_noad_option_stretch(target);
     /*tex to save the current attribute list */
@@ -1581,7 +1591,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
                 added. See (**).
             */
         HERE:
-            result = tex_aux_char_box(fnt, chr, att, delta, glyph_math_delimiter_subtype, flat ? targetsize : 0, style, shrink, stretch);
+            result = tex_aux_char_box(fnt, chr, att, delta, glyph_math_delimiter_subtype, flat ? targetsize : 0, style, shrink, stretch, &isscaled);
             if (flat) { 
                 /* This will be done when we have a reasonable example. */
             } else {
@@ -2393,20 +2403,16 @@ static void tex_aux_set_radical_kerns(delimiterextremes *extremes, kernset *kern
 {
     if (kerns && extremes->tfont) { 
         if (tex_math_has_class_option(radical_noad_subtype, carry_over_left_top_kern_class_option)) {  
-//            kerns->topleft = tex_char_top_left_kern_from_font(extremes->tfont, extremes->tchar);
-kerns->topleft = tex_aux_math_x_size_scaled(extremes->tfont, tex_char_top_left_kern_from_font(extremes->tfont, extremes->tchar), size);
+            kerns->topleft = tex_aux_math_x_size_scaled(extremes->tfont, tex_char_top_left_kern_from_font(extremes->tfont, extremes->tchar), size);
         }
         if (tex_math_has_class_option(radical_noad_subtype, carry_over_left_bottom_kern_class_option)) {  
-//            kerns->bottomleft = tex_char_bottom_left_kern_from_font(extremes->bfont, extremes->bchar);
-kerns->bottomleft = tex_aux_math_x_size_scaled(extremes->bfont, tex_char_bottom_left_kern_from_font(extremes->bfont, extremes->bchar), size);
+            kerns->bottomleft = tex_aux_math_x_size_scaled(extremes->bfont, tex_char_bottom_left_kern_from_font(extremes->bfont, extremes->bchar), size);
         }
         if (tex_math_has_class_option(radical_noad_subtype, carry_over_right_top_kern_class_option)) {  
-//            kerns->topright = tex_char_top_right_kern_from_font(extremes->tfont, extremes->tchar);
-kerns->topright = tex_aux_math_x_size_scaled(extremes->tfont, tex_char_top_right_kern_from_font(extremes->tfont, extremes->tchar), size);
+            kerns->topright = tex_aux_math_x_size_scaled(extremes->tfont, tex_char_top_right_kern_from_font(extremes->tfont, extremes->tchar), size);
         }
         if (tex_math_has_class_option(radical_noad_subtype, carry_over_right_bottom_kern_class_option)) {  
-//            kerns->bottomright = tex_char_bottom_right_kern_from_font(extremes->bfont, extremes->bchar);
-kerns->bottomright = tex_aux_math_x_size_scaled(extremes->bfont, tex_char_bottom_right_kern_from_font(extremes->bfont, extremes->bchar), size);
+            kerns->bottomright = tex_aux_math_x_size_scaled(extremes->bfont, tex_char_bottom_right_kern_from_font(extremes->bfont, extremes->bchar), size);
         }
         if (tex_math_has_class_option(radical_noad_subtype, prefer_delimiter_dimensions_class_option)) {  
             kerns->height = extremes->height;
@@ -2973,10 +2979,14 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
     halfword stretch = (flags & stretch_accent_code) == stretch_accent_code;
     halfword basefnt = null_font;
     halfword basechr = 0;
+    halfword accentbasefnt = accentfnt;
+    halfword accentbasechr = accentchr;
     int found = 0;
+    int isscaled = 0;
+    int keep = 0;
     /*tex
         Compute the amount of skew, or set |skew| to an alignment point. This will be true if a
-        top-accent has been determined.
+        top-accent has been determined. This concerns the base! 
     */
     int absolute = tex_aux_compute_accent_skew(target, flags, &skew, size);
     {
@@ -2995,6 +3005,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
      // basedepth = box_depth(base);
     }
     if (base) {
+        /*tex We always have a base anyway. */
         halfword list = box_list(base);
         if (list && node_type(list) == glyph_node) {
             basefnt = glyph_font(list);
@@ -3073,25 +3084,36 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
                 accentchr = next;
             }
         }
-        /*tex
-            So here we then need to package the offsets.
-        */
+
     }
-    if (! accent) {
-        /*tex Italic gets added to width for traditional fonts (no italic anyway): */
-        accent = tex_aux_char_box(accentfnt, accentchr, attrlist, NULL, glyph_math_accent_subtype, usedwidth, style, has_noad_option_stretch(target), has_noad_option_shrink(target)); // basewidth 
+    keep = (accentfnt == accentbasefnt) && (accentchr == accentbasechr) && (has_noad_option_keep_base(target) || tex_char_has_tag_from_font(accentfnt, accentchr, keep_base_tag));
+    if (accent) {
+        /*tex
+            We have an extensible that already has been boxed
+        */
+    } else { 
+        /*tex 
+            We have a base char or a variant. For traditional fonts the italic correction gets 
+            added to width (not that we have these in \CONTEXT).  
+        */
+        accent = tex_aux_char_box(accentfnt, accentchr, attrlist, NULL, glyph_math_accent_subtype, usedwidth, style, keep ? 0 : has_noad_option_shrink(target), keep ? 0 : has_noad_option_stretch(target), &isscaled); // basewidth 
         found = 1; 
     }
     if (flags & top_accent_code) {
         scaled b = tex_get_math_y_parameter(style, math_parameter_accent_base_height);
-        scaled u = found ? tex_get_math_y_parameter(style, stretch ? math_parameter_flattened_accent_top_shift_up : math_parameter_accent_top_shift_up) : undefined_math_parameter;
+        scaled u = tex_get_math_y_parameter(style, math_parameter_accent_top_shift_up);
         if (found && ! tex_aux_math_engine_control(accentfnt, math_control_ignore_flat_accents)) {
             scaled f = tex_get_math_y_parameter(style, math_parameter_flattened_accent_base_height);
             if (f != undefined_math_parameter && baseheight > f) {
+                int keep = (accentfnt == accentbasefnt) && (accentchr == accentbasechr) && (has_noad_option_keep_base(target) || tex_char_has_tag_from_font(accentfnt, accentchr, keep_base_tag));
                 halfword flatchr = tex_char_flat_accent_from_font(accentfnt, accentchr);
-                if (flatchr != INT_MIN && flatchr != accentchr) {
+                if (flatchr && flatchr != INT_MIN && flatchr != accentchr) {
+                    scaled uf = tex_get_math_y_parameter(style, math_parameter_flattened_accent_top_shift_up);
+                    if (uf != undefined_math_parameter) {
+                        u = uf; 
+                    }
                     tex_flush_node(accent);
-                    accent = tex_aux_char_box(accentfnt, flatchr, attrlist, NULL, glyph_math_accent_subtype, usedwidth, style, 0, 0);
+                    accent = tex_aux_char_box(accentfnt, flatchr, attrlist, NULL, glyph_math_accent_subtype, usedwidth, style, keep ? 0 : has_noad_option_shrink(target), keep ? 0 : has_noad_option_stretch(target), &isscaled);
                     if (tracing_math_par >= 2) {
                         tex_begin_diagnostic();
                         tex_print_format("[math: flattening accent, old %x, new %x]", accentchr, flatchr);
@@ -3155,45 +3177,63 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
     /*tex The top accents of both characters are aligned. */
     {
         halfword accentwidth = box_width(accent);
-        if (absolute) {
-            scaled anchor = 0;
-            if (extended) {
-                /*tex If the accent is extensible just take the center. */
-                anchor = tex_half_scaled(accentwidth);
-            } else {
-                if (flags & top_accent_code) {
-                    anchor = tex_char_unchecked_top_anchor_from_font(accentfnt, accentchr); /* no bot accent key */
-                } else if (flags & bot_accent_code) {
-                    anchor = tex_char_unchecked_bottom_anchor_from_font(accentfnt, accentchr); /* no bot accent key */
-                } else { 
-                    anchor = INT_MIN;
-                }
-                if (anchor == INT_MIN || has_noad_option_center(target)) {
-                    /*tex just take the center */
+        if (accentwidth > basewidth && has_noad_option_nooverflow(target)) { 
+            /*tex 
+                This likely only happens with (too wide base) rules so centering is quite okay then and a
+                bit like scaling. But it could be an accent option (weren't it that we ran out of bits). 
+                In that case a topaccent is also unlikely. 
+            */
+            scaled leftkern = tex_half_scaled(accentwidth - basewidth);
+            if (leftkern > 0) {
+                halfword kern = tex_new_kern_node(leftkern, horizontal_math_kern_subtype);
+                tex_attach_attribute_list_copy(kern, target);
+                tex_try_couple_nodes(kern, base);
+                base = tex_hpack(kern, 0, packing_additional, direction_unknown, holding_none_option);
+                basewidth = accentwidth;
+                box_width(base) = accentwidth;
+            }
+        } else {
+            if (absolute) {
+                scaled anchor = 0; /* maybe: INT_MIN */
+                if (extended || isscaled) {
+                    /*tex If the accent is extensible just take the center. */
                     anchor = tex_half_scaled(accentwidth);
                 } else {
-                    anchor = tex_aux_math_x_size_scaled(accentfnt, anchor, size);
+                    /*tex When we scale we center. */
+                    if (flags & top_accent_code) {
+                        anchor = tex_char_unchecked_top_anchor_from_font(accentfnt, accentchr); /* no bot accent key */
+                    } else if (flags & bot_accent_code) {
+                        anchor = tex_char_unchecked_bottom_anchor_from_font(accentfnt, accentchr); /* no bot accent key */
+                    } else { 
+                        anchor = INT_MIN;
+                    }
+                    if (anchor == INT_MIN || has_noad_option_center(target)) {
+                        /*tex just take the center */
+                        anchor = tex_half_scaled(accentwidth);
+                    } else {
+                        anchor = tex_aux_math_x_size_scaled(accentfnt, anchor, size);
+                    }
                 }
-            }
-            if (math_direction_par == dir_righttoleft) {
-               skew += anchor - accentwidth;
+                if (math_direction_par == dir_righttoleft) {
+                   skew += anchor - accentwidth;
+                } else {
+                   skew -= anchor;
+                }
+            } else if (accentwidth == 0) {
+                skew += basewidth;
+            } else if (math_direction_par == dir_righttoleft) {
+                skew += accentwidth; /* ok? */
             } else {
-               skew -= anchor;
+                skew += tex_half_scaled(basewidth - accentwidth);
             }
-        } else if (accentwidth == 0) {
-            skew += basewidth;
-        } else if (math_direction_par == dir_righttoleft) {
-            skew += accentwidth; /* ok? */
-        } else {
-            skew += tex_half_scaled(basewidth - accentwidth);
-        }
-        box_shift_amount(accent) = skew;
-        box_width(accent) = 0; /* in gyre zero anyway */
-        if (accentwidth) { 
-            overshoot = accentwidth + skew - basewidth;
-        }
-        if (overshoot < 0) {
-            overshoot = 0;
+            box_shift_amount(accent) = skew;
+            box_width(accent) = 0; /* in gyre zero anyway */
+            if (accentwidth) { 
+                overshoot = accentwidth + skew - basewidth;
+            }
+            if (overshoot < 0) {
+                overshoot = 0;
+            }
         }
     }
     if (flags & (top_accent_code)) {
@@ -3354,20 +3394,16 @@ static void tex_aux_wrap_fraction_result(halfword target, int style, int size, h
         right = tex_aux_make_delimiter(target, right_delimiter, size, delta, 0, style, 1, NULL, NULL, 0, has_noad_option_nooverflow(target), &extremes, 0);
         if (kerns && extremes.tfont) { 
             if (tex_math_has_class_option(fraction_noad_subtype, carry_over_left_top_kern_class_option)) {  
-//                kerns->topleft = tex_char_top_left_kern_from_font(extremes.tfont, extremes.tchar);
-kerns->topleft = tex_aux_math_x_size_scaled(extremes.tfont, tex_char_top_left_kern_from_font(extremes.tfont, extremes.tchar), size);
+                kerns->topleft = tex_aux_math_x_size_scaled(extremes.tfont, tex_char_top_left_kern_from_font(extremes.tfont, extremes.tchar), size);
             }
             if (tex_math_has_class_option(fraction_noad_subtype, carry_over_left_bottom_kern_class_option)) {  
-//                kerns->bottomleft = tex_char_bottom_left_kern_from_font(extremes.bfont, extremes.bchar);
-kerns->bottomleft = tex_aux_math_x_size_scaled(extremes.bfont, tex_char_bottom_left_kern_from_font(extremes.bfont, extremes.bchar), size);
+                kerns->bottomleft = tex_aux_math_x_size_scaled(extremes.bfont, tex_char_bottom_left_kern_from_font(extremes.bfont, extremes.bchar), size);
             }
             if (tex_math_has_class_option(fraction_noad_subtype, carry_over_right_top_kern_class_option)) {  
-//                kerns->topright = tex_char_top_right_kern_from_font(extremes.tfont, extremes.tchar);
-kerns->topright = tex_aux_math_x_size_scaled(extremes.tfont, tex_char_top_right_kern_from_font(extremes.tfont, extremes.tchar), size);
+                kerns->topright = tex_aux_math_x_size_scaled(extremes.tfont, tex_char_top_right_kern_from_font(extremes.tfont, extremes.tchar), size);
             }
             if (tex_math_has_class_option(fraction_noad_subtype, carry_over_right_bottom_kern_class_option)) {  
-//                kerns->bottomright = tex_char_bottom_right_kern_from_font(extremes.bfont, extremes.bchar);
-kerns->bottomright = tex_aux_math_x_size_scaled(extremes.bfont, tex_char_bottom_right_kern_from_font(extremes.bfont, extremes.bchar), size);
+                kerns->bottomright = tex_aux_math_x_size_scaled(extremes.bfont, tex_char_bottom_right_kern_from_font(extremes.bfont, extremes.bchar), size);
             }
             if (tex_math_has_class_option(fraction_noad_subtype, prefer_delimiter_dimensions_class_option)) {  
                 kerns->height = extremes.height;
@@ -3600,14 +3636,15 @@ static halfword tex_aux_make_skewed_fraction(halfword target, int style, int siz
     box_depth(fraction) = box_depth(middle) > maxdepth ? box_depth(middle) : maxdepth;
     ngap = hgap; 
     dgap = hgap; 
-    if (tex_math_has_class_option(fraction_noad_subtype, carry_over_left_top_kern_class_option)) {  
-//        ngap += tex_char_top_left_kern_from_font(extremes.tfont, extremes.tchar);
-ngap += tex_aux_math_x_size_scaled(extremes.tfont, tex_char_top_left_kern_from_font(extremes.tfont, extremes.tchar), size);
-    }
-    if (tex_math_has_class_option(fraction_noad_subtype, carry_over_right_bottom_kern_class_option)) {  
-//        dgap += tex_char_bottom_right_kern_from_font(extremes.bfont, extremes.bchar);
-dgap += tex_aux_math_x_size_scaled(extremes.bfont, tex_char_bottom_right_kern_from_font(extremes.bfont, extremes.bchar), size);
-    }
+    /*tex Better not do this, as we now have factors to control it and can fix the parameters. */
+    /*
+        if (tex_math_has_class_option(fraction_noad_subtype, carry_over_left_top_kern_class_option)) {  
+            ngap += tex_aux_math_x_size_scaled(extremes.tfont, tex_char_top_left_kern_from_font(extremes.tfont, extremes.tchar), size);
+        }
+        if (tex_math_has_class_option(fraction_noad_subtype, carry_over_right_bottom_kern_class_option)) {  
+            dgap += tex_aux_math_x_size_scaled(extremes.bfont, tex_char_bottom_right_kern_from_font(extremes.bfont, extremes.bchar), size);
+        }
+    */
     if (ngap || dgap) {
         // todo: only add when non zero 
         halfword nkern = tex_new_kern_node(ngap, horizontal_math_kern_subtype);
@@ -5646,12 +5683,10 @@ static halfword tex_aux_make_left_right(halfword target, int style, scaled max_d
         /* maybe elsewhere as the above case */
         if (extremes && extremes->tfont) { 
             if (tex_math_has_class_option(fenced_noad_subtype, carry_over_right_top_kern_class_option)) {  
-//                kerns.topright = tex_char_top_right_kern_from_font(extremes->tfont, extremes->tchar);
-kerns.topright = tex_aux_math_x_size_scaled(extremes->tfont, tex_char_top_right_kern_from_font(extremes->tfont, extremes->tchar), size);
+                kerns.topright = tex_aux_math_x_size_scaled(extremes->tfont, tex_char_top_right_kern_from_font(extremes->tfont, extremes->tchar), size);
             }
             if (tex_math_has_class_option(fenced_noad_subtype, carry_over_right_bottom_kern_class_option)) {  
-//                kerns.bottomright = tex_char_bottom_right_kern_from_font(extremes->bfont, extremes->bchar);
-kerns.bottomright = tex_aux_math_x_size_scaled(extremes->bfont, tex_char_bottom_right_kern_from_font(extremes->bfont, extremes->bchar), size);
+                kerns.bottomright = tex_aux_math_x_size_scaled(extremes->bfont, tex_char_bottom_right_kern_from_font(extremes->bfont, extremes->bchar), size);
             }
             if (tex_math_has_class_option(fenced_noad_subtype, prefer_delimiter_dimensions_class_option)) {  
                 kerns.height = extremes->height;
@@ -6217,12 +6252,10 @@ static void tex_aux_finish_fenced(halfword current, halfword main_style, scaled 
             case left_fence_side:
             case extended_left_fence_side:
                 if (tex_math_has_class_option(fenced_noad_subtype, carry_over_left_top_kern_class_option)) {  
- //                   kerns->topleft = tex_char_top_left_kern_from_font(extremes.tfont, extremes.tchar);
- kerns->topleft = tex_aux_math_x_size_scaled(extremes.tfont, tex_char_top_left_kern_from_font(extremes.tfont, extremes.tchar), main_style);
+                     kerns->topleft = tex_aux_math_x_size_scaled(extremes.tfont, tex_char_top_left_kern_from_font(extremes.tfont, extremes.tchar), main_style);
                 }
                 if (tex_math_has_class_option(fenced_noad_subtype, carry_over_left_bottom_kern_class_option)) {  
- //                   kerns->bottomleft = tex_char_bottom_left_kern_from_font(extremes.bfont, extremes.bchar);
- kerns->bottomleft = tex_aux_math_x_size_scaled(extremes.bfont, tex_char_bottom_left_kern_from_font(extremes.bfont, extremes.bchar), main_style);
+                     kerns->bottomleft = tex_aux_math_x_size_scaled(extremes.bfont, tex_char_bottom_left_kern_from_font(extremes.bfont, extremes.bchar), main_style);
                 }
                 if (tex_math_has_class_option(fenced_noad_subtype, prefer_delimiter_dimensions_class_option)) {  
                     kerns->height = extremes.height;
@@ -6236,12 +6269,10 @@ static void tex_aux_finish_fenced(halfword current, halfword main_style, scaled 
             case left_operator_side:
             case no_fence_side:
                 if (tex_math_has_class_option(fenced_noad_subtype, carry_over_right_top_kern_class_option)) {  
-//                    kerns->topright = tex_char_top_right_kern_from_font(extremes.tfont, extremes.tchar);
-kerns->topright = tex_aux_math_x_size_scaled(extremes.tfont, tex_char_top_right_kern_from_font(extremes.tfont, extremes.tchar), main_style);
+                    kerns->topright = tex_aux_math_x_size_scaled(extremes.tfont, tex_char_top_right_kern_from_font(extremes.tfont, extremes.tchar), main_style);
                 }
                 if (tex_math_has_class_option(fenced_noad_subtype, carry_over_right_bottom_kern_class_option)) {  
-//                    kerns->bottomright = tex_char_bottom_right_kern_from_font(extremes.bfont, extremes.bchar);
-kerns->bottomright = tex_aux_math_x_size_scaled(extremes.bfont, tex_char_bottom_right_kern_from_font(extremes.bfont, extremes.bchar), main_style);
+                    kerns->bottomright = tex_aux_math_x_size_scaled(extremes.bfont, tex_char_bottom_right_kern_from_font(extremes.bfont, extremes.bchar), main_style);
                 }
                 if (tex_math_has_class_option(fenced_noad_subtype, prefer_delimiter_dimensions_class_option)) {  
                     kerns->height = extremes.height;

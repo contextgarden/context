@@ -1250,7 +1250,7 @@ This converts a single type name to its internal numeric representation.
 \libindex {type}
 \libindex {subtype}
 
-If the argument is a number, then the next function converts an internal
+If the argument is a number, then the next function converts an internal numeric
 numeric representation to an external string representation. Otherwise, it will
 return the string \type {node} if the object represents a node, and \type {nil}
 otherwise.
@@ -1877,7 +1877,7 @@ word boundaries are possible).
 
 \startfunctioncall
 node.unprotect_glyph(<node> n)
-node.unprotect_glyphs(<node> n,[<node> n])
+node.unprotect_glyphs(<node> n,[<node> ,m])
 \stopfunctioncall
 
 Subtracts 256 from all glyph node subtypes. This and the next function are
@@ -1891,7 +1891,7 @@ processing. The second argument is optional and indicates the end of a range.
 
 \startfunctioncall
 node.protect_glyph(<node> n)
-node.protect_glyphs(<node> n,[<node> n])
+node.protect_glyphs(<node> n,[<node> m])
 \stopfunctioncall
 
 Adds 256 to all glyph node subtypes in the node list starting at \type {n},
@@ -2334,21 +2334,26 @@ consistency. You can of course always define additional accessors using \type
 \supported {fields}                  \yes \nop
 \supported {find_attribute}          \yes \yes
 \supported {first_glyph}             \yes \yes
+\supported {fix_node_lists}          \yes \nop
 \supported {flatten_discretionaries} \yes \yes
 \supported {flush_list}              \yes \yes
 \supported {flush_node}              \yes \yes
+\supported {flush_properties_table}  \yes \yes
 \supported {free}                    \yes \yes
 \supported {get_attribute}           \yes \yes
+\supported {get_properties_table}    \yes \yes
 \supported {get_synctex_fields}      \nop \yes
 \supported {getattributelist}        \nop \yes
 \supported {getboth}                 \yes \yes
 \supported {getbox}                  \nop \yes
 \supported {getchar}                 \yes \yes
 \supported {getcomponents}           \nop \yes
+\supported {getdata}                 \nop \yes
 \supported {getdepth}                \nop \yes
 \supported {getdirection}            \nop \yes
 \supported {getdir}                  \nop \yes
 \supported {getdisc}                 \yes \yes
+\supported {getexpansion}            \nop \yes
 \supported {getfam}                  \nop \yes
 \supported {getfield}                \yes \yes
 \supported {getfont}                 \yes \yes
@@ -2369,13 +2374,13 @@ consistency. You can of course always define additional accessors using \type
 \supported {getsubtype}              \yes \yes
 \supported {getsub}                  \nop \yes
 \supported {getsup}                  \nop \yes
-\supported {getdata}                 \nop \yes
 \supported {getwhd}                  \yes \yes
 \supported {getwidth}                \nop \yes
 \supported {has_attribute}           \yes \yes
 \supported {has_field}               \yes \yes
 \supported {has_glyph}               \yes \yes
 \supported {hpack}                   \yes \yes
+\supported {hyphenating}             \nop \yes
 \supported {id}                      \yes \nop
 \supported {insert_after}            \yes \yes
 \supported {insert_before}           \yes \yes
@@ -2388,6 +2393,7 @@ consistency. You can of course always define additional accessors using \type
 \supported {last_node}               \yes \yes
 \supported {length}                  \yes \yes
 \supported {ligaturing}              \yes \yes
+\supported {make_extensible}         \yes \nop
 \supported {mlist_to_hlist}          \yes \nop
 \supported {new}                     \yes \yes
 \supported {next}                    \yes \nop
@@ -2399,20 +2405,22 @@ consistency. You can of course always define additional accessors using \type
 \supported {rangedimensions}         \yes \yes
 \supported {remove}                  \yes \yes
 \supported {set_attribute}           \yes \yes
+\supported {set_properties_mode}     \yes \yes
 \supported {set_synctex_fields}      \nop \yes
 \supported {setattributelist}        \nop \yes
 \supported {setboth}                 \nop \yes
 \supported {setbox}                  \nop \yes
 \supported {setchar}                 \nop \yes
 \supported {setcomponents}           \nop \yes
+\supported {setdata}                 \nop \yes
 \supported {setdepth}                \nop \yes
 \supported {setdirection}            \nop \yes
 \supported {setdir}                  \nop \yes
 \supported {setdisc}                 \nop \yes
+\supported {setexpansion}            \nop \yes
 \supported {setfam}                  \nop \yes
 \supported {setfield}                \yes \yes
 \supported {setfont}                 \nop \yes
-\supported {setexpansion}            \nop \yes
 \supported {setglue}                 \yes \yes
 \supported {setheight}               \nop \yes
 \supported {setkern}                 \nop \yes
@@ -2443,6 +2451,7 @@ consistency. You can of course always define additional accessors using \type
 \supported {traverse_char}           \yes \yes
 \supported {traverse_glyph}          \yes \yes
 \supported {traverse_id}             \yes \yes
+\supported {traverse_list}           \nop \yes
 \supported {traverse}                \yes \yes
 \supported {types}                   \yes \nop
 \supported {type}                    \yes \nop
@@ -2451,6 +2460,7 @@ consistency. You can of course always define additional accessors using \type
 \supported {unset_attribute}         \yes \yes
 \supported {usedlist}                \yes \yes
 \supported {uses_font}               \yes \yes
+\supported {values}                  \yes \nop
 \supported {vpack}                   \yes \yes
 \supported {whatsits}                \yes \nop
 \supported {write}                   \yes \yes
@@ -2490,9 +2500,9 @@ number, for a glue, kern, hlist, vlist, rule and math nodes as well as glyph
 nodes (although this last one is not used in native \SYNCTEX).
 
 \startfunctioncall
-node.direct.set_synctex_fields(<integer> f, <integer> l)
+node.direct.set_synctex_fields(<integer> n, <integer> f, <integer> l)
 <integer> f, <integer> l =
-    node.direct.get_synctex_fields(<node> n)
+    node.direct.get_synctex_fields(<integer> n)
 \stopfunctioncall
 
 Of course you need to know what you're doing as no checking on sane values takes

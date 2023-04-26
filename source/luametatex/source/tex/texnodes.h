@@ -1784,21 +1784,22 @@ typedef enum noad_options {
 
 /*tex The Microsoft compiler truncates to int, so: */
 
-# define noad_option_source_on_nucleus          0x0100000000
-# define noad_option_fixed_super_or_sub_script  0x0200000000
-# define noad_option_fixed_super_and_sub_script 0x0400000000
-# define noad_option_auto_base                  0x0800000000
-# define noad_option_stretch                    0x1000000000
-# define noad_option_shrink                     0x2000000000
-# define noad_option_center                     0x4000000000
-# define noad_option_scale                      0x8000000000
+# define noad_option_source_on_nucleus          (uint64_t) 0x00100000000
+# define noad_option_fixed_super_or_sub_script  (uint64_t) 0x00200000000
+# define noad_option_fixed_super_and_sub_script (uint64_t) 0x00400000000
+# define noad_option_auto_base                  (uint64_t) 0x00800000000
+# define noad_option_stretch                    (uint64_t) 0x01000000000
+# define noad_option_shrink                     (uint64_t) 0x02000000000
+# define noad_option_center                     (uint64_t) 0x04000000000
+# define noad_option_scale                      (uint64_t) 0x08000000000
+# define noad_option_keep_base                  (uint64_t) 0x10000000000
 
 # define has_option(a,b)     (((a) & (b)) == (b))
 # define unset_option(a,b)   ((a) & ~(b))
 
-inline static void tex_add_noad_option    (halfword a, long long r) { noad_options(a) |= r; }
-inline static void tex_remove_noad_option (halfword a, long long r) { noad_options(a) &= ~(r | noad_options(a)); }
-inline static int  tex_has_noad_option    (halfword a, long long r) { return (noad_options(a) & r) == r; }
+inline static void tex_add_noad_option    (halfword a, uint64_t r) { noad_options(a) |= r; }
+inline static void tex_remove_noad_option (halfword a, uint64_t r) { noad_options(a) &= ~(r | noad_options(a)); }
+inline static int  tex_has_noad_option    (halfword a, uint64_t r) { return (noad_options(a) & r) == r; }
 
 inline static int has_noad_no_script_option(halfword n, halfword option)
 {
@@ -1853,8 +1854,8 @@ inline static int has_noad_no_script_option(halfword n, halfword option)
 # define has_noad_option_stretch(a)                     (has_option(noad_options(a), noad_option_stretch))
 # define has_noad_option_shrink(a)                      (has_option(noad_options(a), noad_option_shrink))
 # define has_noad_option_auto_base(a)                   (has_option(noad_options(a), noad_option_auto_base))
-# define has_noad_option_center(a)                      (has_option(noad_options(a), noad_option_center))
 # define has_noad_option_scale(a)                       (has_option(noad_options(a), noad_option_scale))
+# define has_noad_option_keep_base(a)                   (has_option(noad_options(a), noad_option_keep_base))
 
 /*tex
     In the meantime the codes and subtypes are in sync. The variable component does not really

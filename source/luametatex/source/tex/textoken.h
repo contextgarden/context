@@ -387,6 +387,7 @@ extern halfword   tex_get_tex_dimen_register      (int j, int internal);
 extern halfword   tex_get_tex_skip_register       (int j, int internal);
 extern halfword   tex_get_tex_mu_skip_register    (int j, int internal);
 extern halfword   tex_get_tex_count_register      (int j, int internal);
+extern halfword   tex_get_tex_posit_register      (int j, int internal);
 extern halfword   tex_get_tex_attribute_register  (int j, int internal);
 extern halfword   tex_get_tex_box_register        (int j, int internal);
 extern halfword   tex_get_tex_toks_register       (int j, int internal);
@@ -395,6 +396,7 @@ extern void       tex_set_tex_dimen_register      (int j, halfword v, int flags,
 extern void       tex_set_tex_skip_register       (int j, halfword v, int flags, int internal);
 extern void       tex_set_tex_mu_skip_register    (int j, halfword v, int flags, int internal);
 extern void       tex_set_tex_count_register      (int j, halfword v, int flags, int internal);
+extern void       tex_set_tex_posit_register      (int j, halfword v, int flags, int internal);
 extern void       tex_set_tex_attribute_register  (int j, halfword v, int flags, int internal);
 extern void       tex_set_tex_box_register        (int j, halfword v, int flags, int internal);
 

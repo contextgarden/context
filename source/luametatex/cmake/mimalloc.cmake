@@ -13,7 +13,7 @@ set(mimalloc_sources
     source/libraries/mimalloc/src/page.c
     source/libraries/mimalloc/src/random.c
     source/libraries/mimalloc/src/segment.c
-    source/libraries/mimalloc/src/segment-cache.c
+    source/libraries/mimalloc/src/segment-map.c
     source/libraries/mimalloc/src/stats.c
     source/libraries/mimalloc/src/prim/prim.c
 )

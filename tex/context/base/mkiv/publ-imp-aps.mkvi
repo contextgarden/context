@@ -807,6 +807,7 @@
 \stoptexdefinition
 
 \starttexdefinition mutable protected btx:aps:doi-url #text
+    % no: \texdefinition {btx:format:goto} because different test
     \ifconditional\btxinteractive
         \btxdoifelse {doi} {
             \goto {#text} [url(http://dx.doi.org/\btxflush{doi})]

@@ -6854,6 +6854,8 @@
 %D
 %D \typebuffer \startpacked \getbuffer \stoppacked
 
+\lettonothing\syst_helpers_wipe_tokens_yes
+
 \def\syst_helpers_wipe_tokens_nop#-^^04{}%
 
 \permanent\def\wipetokens#1#2%

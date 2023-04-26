@@ -169,12 +169,11 @@ do
 
     local fontchardata = fonts.hashes.characters
     local f_dictionary = false
-    local register     = callback.register
     local whatdetail   = "all"
 
     local function trace(n,properties,group,index,font,char)
      -- local properties, group, index, font, char = nodes.nuts.getchardict(nodes.nuts.tonut(n))
-        if properties ~= 0 or group ~= 0 or index ~= 0 then
+        if whatdetail and (properties ~= 0 or group ~= 0 or index ~= 0) then
             local char = fontchardata[font][char]
             if char or whatdetail == "all" then
                 local unicode = char and char.unicode
@@ -199,16 +198,9 @@ do
         end
     end
 
-    trackers.register("math.dictionaries",function(v)
-        whatdetail = v
-        if whatdetail then
-            register("get_math_dictionary",trace)
-        else
-            register("get_math_dictionary")
-        end
-    end)
+    trackers.register("math.dictionaries",function(v) whatdetail = v end)
 
-    register("get_math_dictionary",trace)
+    callbacks.register("get_math_dictionary",trace,"provide math dictionary details")
 
     -- This is experimental and a prelude to the long pending "relate math rendering to
     -- some field" wish. In TeX characters and symbols are grouped by class but that is
@@ -410,7 +402,7 @@ classes["all"]   = specialclasses["all"]    classnames[specialclasses["all"]  ] 
 classes["begin"] = specialclasses["begin"]  classnames[specialclasses["begin"]] = "beg"
 classes["end"]   = specialclasses["end"]    classnames[specialclasses["end"]  ] = "end"
 
-callback.register("get_noad_class", function(n) return classnames[n] end)
+callbacks.register("get_noad_class", function(n) return classnames[n] end,"provide math class name")
 
 local function registerprivateclass(name,parent)
     local class = parent and classes[parent] or classes[name]

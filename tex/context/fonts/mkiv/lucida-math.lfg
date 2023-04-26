@@ -15,7 +15,7 @@ return {
         parameters = {
             FractionRuleThickness             =  55,
          -- AccentBaseDepth                   = 250,
-            FlattenedAccentBaseHeight         = 710,-- not present in font, set too small by 1.
+            FlattenedAccentBaseHeight         = 710,-- slightly too large in the font
             DelimiterPercent                  =  90,
             DelimiterShortfall                = 400,
             SuperscriptBottomMaxWithSubscript = 325,
@@ -37,18 +37,18 @@ return {
                     tweak   = "parameters",
                     feature = "boldmath",
                     list    = {
-                --             RadicalRuleThickness  = 55,
-                            RadicalRuleThickness  = 60,
-                --             RadicalRuleThickness  = "1.09*RadicalRuleThickness",
-                --             FractionRuleThickness = 65,
-                --             OverRuleThickness     = 65,
-                --             UnderRuleThickness    = 65,
+                        RadicalRuleThickness  = 60,
+                     -- RadicalRuleThickness  = "1.09*RadicalRuleThickness",
+                     -- FractionRuleThickness = 65,
+                     -- OverRuleThickness     = 65,
+                     -- UnderRuleThickness    = 65,
                     }
                 },
                 {
                     tweak = "addmirrors",
                 },
-                presets.scripttocalligraphic {                },
+                presets.smalldigits          { factor  = 0.90 },
+                presets.scripttocalligraphic { },
                 presets.rsfstoscript         { rscale  = 1    },
                 presets.rsfsuprighttoscript  { rscale  = 1    },
                 presets.moderntocalligraphic { rscale  = 1    },
@@ -124,6 +124,9 @@ return {
                 -- and then need to tweak the width (which is auto set because it was zero with a large
                 -- accent anchor offset). First we copy and fix.
                 {
+                    tweak = "checkaccents",
+                },
+                {
                     tweak = "extendaccents",
                 },
                 {
@@ -132,6 +135,10 @@ return {
                 {
                     tweak = "fixaccents",
                 },
+{
+    tweak = "keepbases",
+    list  = { 0x302 }
+},
                 {
                     tweak = "radicaldegreeanchors",
                     list  = {
@@ -166,9 +173,9 @@ return {
                         ["0x0029.parts.top"]    = { topright = -0.25                      }, -- right parenthesis top
                         ["0x0029.parts.bottom"] = {                   bottomright = -0.25 }, -- right parenthesis bottom
                         ["0x0029.variants.*"]   = { topright = -0.2,  bottomright = -0.2  }, -- right parenthesis variants
-                        ["0x221A.parts.top"]    = { topright = 0.2                        }, -- right radical top
+                        ["0x221A.parts.top"]    = { topright =  0.2                       }, -- right radical top
                         ["0x221A.parts.bottom"] = {                   bottomright =  0.2  }, -- right radical bottom
-                        ["0x221A.variants.*"]   = { topright = 0.2,   bottomright =  0.2  }, -- right radical variants
+                        ["0x221A.variants.*"]   = { topright =  0.2,  bottomright =  0.2  }, -- right radical variants
                         [0x27E9]                = { topright = -0.2,  bottomright = -0.2  }, -- angle
                         ["0x27E9.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
                         [0x27EB]                = { topright = -0.2,  bottomright = -0.2  },
@@ -195,18 +202,19 @@ return {
                 {
                     tweak    = "replacerules",
                     minus    = {
-                        leftoffset  = .2,
-                        rightoffset = .2,
+                        leftoffset  = .12,
+                        rightoffset = .12,
                     },
                     fraction = {
                         height  = .2,
                         yoffset = .825,
                     },
                     radical  = {
-                        height     = .2,
-                        yoffset    = .825,
-                        leftoffset = .075,
-                        yscale     = .940,
+                        height      = .13,
+                        yoffset     = .825,
+                        leftoffset  = .124,
+                        rightoffset = .124,
+                        yscale      = .940,
                     },
                     stacker  = {
                         height  = .2,

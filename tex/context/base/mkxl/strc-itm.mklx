@@ -1325,7 +1325,7 @@
      \strc_itemgroups_stop_head_indeed
      \strc_itemgroups_head_body_indeed}
 
-\protected\permanent\def\stopitemgrouphead
+\permanent\protected\def\stopitemgrouphead
   {\dostoptagged
    \stopitemgroupitem}
 

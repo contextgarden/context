@@ -301,6 +301,17 @@ return {
                         },
                     }
                 end,
+                smalldigits = function(parameters)
+                    return {
+                        tweak   = "dimensions",
+                        feature = "smalldigits",
+                        list    = {
+                            ["digitsnormal"] = {
+                                factor = parameters.factor or 0.9,
+                            },
+                        },
+                    }
+                end,
             },
         },
     },

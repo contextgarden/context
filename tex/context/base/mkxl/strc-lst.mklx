@@ -1257,8 +1257,8 @@
     \noindent % otherwise annotations are mirrored up
     \typo_injectors_mark_list
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
-        \letlistparameter   \c!depth\zeropoint
-        \resettlistparameter\c!color
+        \letlistparameter  \c!depth\zeropoint
+        \resetlistparameter\c!color
         \inheritedlistframed {
             \letinteractionparameter\c!strut\v!no % still needed?
             \strc_lists_set_style_color\c!style\c!color\v!all

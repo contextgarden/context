@@ -169,7 +169,7 @@
        \ifcstok{#2}\v!page
          \markingcommand{#1}{\csname\??markingfilter#3\endcsname{#1}}%
        \else
-         \markingcommand{#1}{\clf_getsynchronizedmarking\begincsname\??markingclass#1\endcsname{#2}{#3}}%
+         \markingcommand{#1}{\clf_getsynchronizemarking\begincsname\??markingclass#1\endcsname{#2}{#3}}%
        \fi
      \orelse\ifparameter#2\or
        \markingcommand{#1}{\csname\??markingfilter#2\endcsname{#1}}%
@@ -208,7 +208,7 @@
        \ifcstok{#2}\v!page
          \markingcommand{#1}{\begincsname\??markingfilter#3\endcsname{#1}}%
        \else
-         \markingcommand{#1}{\clf_getsynchronizedmarking{#1}{#2}}%
+         \markingcommand{#1}{\clf_getsynchronizemarking{#1}{#2}}%
        \fi
      \fi
    \fi}
@@ -221,9 +221,9 @@
          \markingseparator{#1}%
          \markingcommand{#1}{\begincsname\??markingfilter\v!last\endcsname{#1}}%
        \else
-         \markingcommand{#1}{\clf_getsynchronizedmarking{#1}\v!first}%
+         \markingcommand{#1}{\clf_getsynchronizemarking{#1}\v!first}%
          \markingseparator{#1}%
-         \markingcommand{#1}{\clf_getsynchronizedmarking{#1}\v!last}%
+         \markingcommand{#1}{\clf_getsynchronizemarking{#1}\v!last}%
        \fi
      \fi
    \fi}
@@ -240,9 +240,9 @@
        \else
         %\markingcommand{#1}{\begincsname\??markclass:\v!previous\endcsname{#1}}%
         %\markingseparator{#1}%
-         \markingcommand{#1}{\clf_getsynchronizedmarking{#1}\v!first}%
+         \markingcommand{#1}{\clf_getsynchronizemarking{#1}\v!first}%
          \markingseparator{#1}%
-         \markingcommand{#1}{\clf_getsynchronizedmarking{#1}\v!last}%
+         \markingcommand{#1}{\clf_getsynchronizemarking{#1}\v!last}%
        \fi
      \fi
   \fi}

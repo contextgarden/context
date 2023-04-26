@@ -176,11 +176,20 @@ appendaction("alignments",   "normalizers", "nodes.handlers.mathmatrixrules",   
 
 appendaction("localboxes",   "lists",       "typesetters.localboxes.handler",                   nil, "nut",    "enabled"   )
 
+appendaction("hquality",     "system",      "builders.hpack.report",                            nil, "nonut",  "enabled"   )
+appendaction("hquality",     "system",      "builders.hpack.show",                              nil, "nut",    "enabled"   )
+appendaction("vquality",     "system",      "builders.vpack.report",                            nil, "nonut",  "enabled"   )
+------------("vquality",     "system",      "builders.vpack.show",                              nil, "nut",    "enabled"   )
+
 -- some protection
 
-freezecallbacks("find_.*_file", "find file using resolver")
-freezecallbacks("read_.*_file", "read file at once")
-freezecallbacks("open_.*_file", "open file for reading")
+freezecallbacks("find_log_file",    "provide the log file name")
+freezecallbacks("find_format_file", "locate the format file")
+freezecallbacks("open_data_file",   "open the given file for reading")
+freezecallbacks("process_jobname",  "manipulate jobname")
+freezecallbacks("trace_memory",     "show memory usage details")
+
+freezecallbacks("hpack_filter",     "hlist processing (not used, replaced)") -- no need to add more overhead
 
 -- experimental (needs to be updated):
 
@@ -197,6 +206,9 @@ freezegroup("finalizers",   "lists")
 freezegroup("math",         "normalizers")
 freezegroup("math",         "builders")
 
+freezegroup("hquality",     "system")
+freezegroup("vquality",     "system")
+
 freezegroup("shipouts",     "normalizers")
 freezegroup("shipouts",     "finishers")
 freezegroup("shipouts",     "wrapup")
@@ -204,8 +216,8 @@ freezegroup("shipouts",     "wrapup")
 freezegroup("mvlbuilders",  "normalizers")
 freezegroup("vboxbuilders", "normalizers")
 
------------("parbuilders",  "lists")
------------("pagebuilders", "lists")
+-----------("parbuilders",  "normalizers")
+freezegroup("pagebuilders", "normalizers")
 
 freezegroup("math",         "normalizers")
 freezegroup("math",         "builders")

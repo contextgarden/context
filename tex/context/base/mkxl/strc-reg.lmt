@@ -536,7 +536,13 @@ local function preprocessentries(rawdata)
     end
     local seeword = rawdata.seeword
     if seeword then
-        seeword.processor, seeword.text = splitprocessor(seeword.text or "")
+        local text = seeword.text or ""
+        local sp, st = splitprocessor(text)
+        seeword.text = text
+     -- seeword.list = lpegmatch(coding == "xml" and entrysplitter_xml or entrysplitter_tex,st)
+        if sp then
+            seeword.processor = sp
+        end
     end
 end
 
@@ -1131,9 +1137,11 @@ local function analyzeregister(class,options)
 --                 local u = u and { u.prefix } or nil
 local u = multiple and { string.formatters["%03i"](i) } or nil -- maybe prefix but then how about main
                 for i=1,#e do
+                    -- see has no pagedata
                     local ei = e[i]
-if multiple and ei.metadata.kind == "see" then
-    -- skip see, can become an option
+                    local external = ei.external
+if multiple and ei.metadata.kind == "see" and external then
+    -- too messy, could be an option but useless
 else
 
                     nofentries = nofentries + 1
@@ -1141,7 +1149,9 @@ else
                     if u then
                         local eil = ei.list
                         eil[#eil+1] = u
+if external then
                         ei.external = l -- this is the (current) abstract tag, used for prefix
+end
                     end
 end
                 end
@@ -1587,6 +1597,10 @@ function registers.flush(data,options,prefixspec,pagespec)
                     local seetext   = seeword.text or ""
                     local processor = seeword.processor or (entry.processors and entry.processors[1]) or ""
                     local seeindex  = entry.external or entry.references.seeindex or ""
+                    local seelist   = lpegmatch(coding == "xml" and entrysplitter_xml or entrysplitter_tex,seetext)
+                    if #seelist > 1 then
+                        seetext = concat(seelist,", ")
+                    end
                     ctx_registerseeword(
                         metadata.name or "",
                         i,
@@ -1821,6 +1835,7 @@ function registers.integrate(utilitydata)
                                 end
                                 references.external = filename -- not really needed
                             end
+                            entry.external = true
                         end
                     end
                 end

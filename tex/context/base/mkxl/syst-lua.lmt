@@ -58,6 +58,9 @@ local ctx_secondoftwoarguments = context.secondoftwoarguments
 local ctx_firstofoneargument   = context.firstofoneargument
 local ctx_gobbleoneargument    = context.gobbleoneargument
 
+local values                   = tokens.values
+local boolean_code             = values.boolean
+
 implement { -- will be overloaded later
     name      = "writestatus",
     arguments = "2 arguments",
@@ -303,6 +306,21 @@ do
         public  = true,
         name    = "expression",
         actions = expression,
+    }
+
+end
+
+do
+
+    interfaces.implement {
+        name      = "iflua",
+        public    = true,
+        usage     = "condition",
+        arguments = "string",
+        actions   = function(s)
+            local c = load("return(" .. s .. ")")
+            return boolean_code, (c and c()) and true or false
+        end,
     }
 
 end

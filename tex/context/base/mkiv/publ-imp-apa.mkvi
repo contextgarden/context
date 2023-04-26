@@ -888,7 +888,7 @@
     \setmode{btx:apa:title-placed}
     % we make the title active, opening "file"
     \btxdoifelse {file} {
-        \texdefinition{btx:format:inject}
+        \texdefinition{btx:format:goto}
             {url(file:\btxflush{file})}
             {
                 \texdefinition{btx:apa:composed-title}{title}
@@ -1050,8 +1050,7 @@
 
 \starttexdefinition mutable protected btx:apa:authoryear
     % we make the authoryear active, pointing to the citation
-    \texdefinition{btx:format:inject}
-        {internal(\currentbtxinternal)}
+    \texdefinition{btx:format:gotointernal}
         {
             \doifelsesetups{apa:list:sameauthor} {
                 \btxdoifelsesameasprevious {author} {
@@ -1261,15 +1260,11 @@
 \starttexdefinition mutable protected btx:apa:url
     \begingroup
         \setbreakpoints[doi]
-        \ifconditional\btxinteractive
-            \goto {
-                \hyphenatedurl{\btxflush{url}}
-            } [
-                url(\btxflush{url})
-            ]
-        \else
+        \texdefinition {btx:format:goto} {
+            url(\btxflush{url})
+        } {
             \hyphenatedurl{\btxflush{url}}
-        \fi
+        }
     \endgroup
 \stoptexdefinition
 
@@ -1278,15 +1273,11 @@
 \starttexdefinition mutable protected btx:apa:doi
     \begingroup
         \setbreakpoints[doi]
-        \ifconditional\btxinteractive
-            \goto {
-                \hyphenatedurl{doi:\btxflush{doi}}
-            } [
-                url(http://dx.doi.org/\btxflush{doi})
-            ]
-        \else
+        \texdefinition {btx:format:goto} {
+            url(http://dx.doi.org/\btxflush{doi})
+        } {
             \hyphenatedurl{doi:\btxflush{doi}}
-        \fi
+        }
     \endgroup
 \stoptexdefinition
 

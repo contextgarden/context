@@ -19,6 +19,12 @@ local parbuilders        = builders.paragraphs
 parbuilders.constructors = parbuilders.constructors or { }
 local       constructors = parbuilders.constructors
 
+builders.hpack           = builders.hpack or { }
+builders.vpack           = builders.vpack or { }
+
+local hpackbuilders      = builders.hpack
+local vpackbuilders      = builders.vpack
+
 constructors.names       = constructors.names or { }
 local names              = constructors.names
 
@@ -52,6 +58,7 @@ local nuts               = nodes.nuts
 local tonode             = nodes.tonode
 local tonut              = nodes.tonut
 local getattr            = nuts.getattr
+local flush              = nuts.flush
 
 local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
@@ -200,13 +207,12 @@ local builders = nodes.builders
 local vpackactions = nodes.tasks.actions("vboxbuilders")
 
 function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
-    local done = false
     if head then
         starttiming(builders)
-        head, done = vpackactions(head,groupcode)
+        head = vpackactions(head,groupcode)
         stoptiming(builders)
     end
-    return head, done
+    return head
 end
 
 -- This one is special in the sense that it has no head and we operate on the mlv. Also,
@@ -244,8 +250,8 @@ function builders.buildpage_filter(pagecontext)
     end
 end
 
-registercallback('vpack_filter',     builders.vpack_filter,     "vertical spacing etc")
-registercallback('buildpage_filter', builders.buildpage_filter, "vertical spacing etc (mvl)")
+registercallback("vpack_filter",     builders.vpack_filter,     "vertical spacing etc")
+registercallback("buildpage_filter", builders.buildpage_filter, "vertical spacing etc (mvl)")
 
 local vboxactions = nodes.tasks.actions("vboxhandlers")
 
@@ -258,7 +264,7 @@ function builders.vbox_filter(head,groupcode)
     return head
 end
 
-registercallback('packed_vbox_filter', builders.vbox_filter, "packed vbox treatments")
+registercallback("packed_vbox_filter", builders.vbox_filter, "packed vbox treatments")
 
 statistics.register("v-node processing time", function()
     return statistics.elapsedseconds(builders)
@@ -297,37 +303,51 @@ local report_quality = logs.reporter("pack quality")
 
 -- overflow|badness w h d dir
 
-local function vpack_quality(how,n,detail,first,last,filename)
-    if last <= 0 then
-        report_quality("%s vbox",how)
-    elseif first > 0 and first < last then
-        report_quality("%s vbox at line %i - %i in file %a",how,first,last,filename or "?")
-    else
-        report_quality("%s vbox at line %i in file %a",how,filename or "?",last)
+local report  = true   trackers.register("builders.vpack.quality", function(v) report  = v end)
+local collect = false  trackers.register("builders.vpack.collect", function(v) collect = v end)
+----  show    = false  trackers.register("builders.vpack.overflow",function(v) show    = v end)
+
+function vpackbuilders.report(how,detail,n,first,last,filename) -- no return value
+    if report then
+        if last <= 0 then
+            report_quality("%s vbox",how)
+        elseif first > 0 and first < last then
+            report_quality("%s vbox at line %i - %i in file %a",how,first,last,filename or "?")
+        else
+            report_quality("%s vbox at line %i in file %a",how,last,filename or "?")
+        end
     end
-    list[#list+1] = { "hbox", how, filename, first, last, how }
+    if collect then
+        list[#list+1] = { "hbox", how, filename, first, last, how, detail }
+    end
 end
 
-trackers.register("builders.vpack.quality",function(v)
-    registercallback("vpack_quality",v and vpack_quality or nil,"check vpack quality")
-end)
+-- function builders.vpack.show(how,detail,n,first,last,filename) -- return value
+--     if show then
+--     end
+-- end
 
-local report = false
-local show   = false
+local report  = true   trackers.register("builders.hpack.quality", function(v) report  = v end)
+local collect = false  trackers.register("builders.hpack.collect", function(v) collect = v end)
+local show    = false  trackers.register("builders.hpack.overflow",function(v) show    = v end)
 
-local function hpack_quality(how,detail,n,first,last,filename)
-    n = tonut(n)
+function hpackbuilders.report(how,detail,n,first,last,filename) -- no return value
+    local str = (report or collect) and listtoutf(getlist(n),"",true,nil,true)
     if report then
-        local str = listtoutf(getlist(n),"",true,nil,true)
         if last <= 0 then
-            report_quality("%s hbox: %s",how,str)
+            report_quality("%s hbox: %s (%p)",how,str,detail)
         elseif first > 0 and first < last then
-            report_quality("%s hbox at line %i - %i in file %a: %s",how,first,last,filename or "?",str)
+            report_quality("%s hbox at line %i - %i in file %a: %s (%p)",how,first,last,filename or "?",str,detail)
         else
-            report_quality("%s hbox at line %i in file %a: %s",how,last,filename or "?",str)
+            report_quality("%s hbox at line %i in file %a: %s (%p)",how,last,filename or "?",str,detail)
         end
-        list[#list+1] = { "hbox", how, filename, first, last, str }
     end
+    if collect then
+        list[#list+1] = { "hbox", how, filename, first, last, str, detail }
+    end
+end
+
+function hpackbuilders.show(how,detail,n,first,last,filename,rule) -- return value
     if show then
         local width     = 2*65536
         local height    = getheight(n)
@@ -339,7 +359,10 @@ local function hpack_quality(how,detail,n,first,last,filename)
         if depth < 2*65526 then
             depth = 2*65526
         end
-        local rule = new_rule(width,height,depth)
+        if rule then
+            flush(rule)
+        end
+        rule = new_rule(width,height,depth)
         setdirection(rule,direction)
         if how == "overfull" then
             setcolor(rule,"red")
@@ -356,19 +379,40 @@ local function hpack_quality(how,detail,n,first,last,filename)
         rule = hpack(rule)
         setwidth(rule,0) -- maybe better whd all zero
         setdirection(rule,direction)
-        return tonode(rule) -- can be a nut
+    else
+        local width = texget("overfullrule")
+        if width > 0 then
+            rule = new_rule(width)
+        end
     end
+    return rule
 end
 
-trackers.register("builders.hpack.quality",function(v)
-    report = v
-    registercallback("hpack_quality",(report or show) and hpack_quality or nil,"check hpack quality")
-end)
+--
 
-trackers.register("builders.hpack.overflow",function(v)
-    show = v
-    registercallback("hpack_quality",(report or show) and hpack_quality or nil,"check hpack quality")
-end)
+local hqualityactions = nodes.tasks.actions("hquality")
+local vqualityactions = nodes.tasks.actions("vquality")
+
+function hpackbuilders.qualityactions(how,detail,n,first,last,filename)
+    local rul = nil
+ -- starttiming(builders)
+    rul = hqualityactions(how,detail,n,first,last,filename)
+ -- stoptiming(builders)
+    return rul
+end
+function vpackbuilders.qualityactions(how,detail,n,first,last,filename)
+    local rul = nil
+ -- starttiming(builders)
+    rul = vqualityactions(how,detail,n,first,last,filename)
+ -- stoptiming(builders)
+    return rul
+end
+
+registercallback("hpack_quality", hpackbuilders.qualityactions, "report horizontal packing quality")
+registercallback("vpack_quality", vpackbuilders.qualityactions, "report vertical packing quality")
+
+
+--
 
 statistics.register("quality reports", function()
     local n = #list
@@ -390,7 +434,7 @@ statistics.register("quality reports", function()
         logs.startfilelogging(report_quality)
         for i=1,n do
             local l = list[i]
-            report_quality("%-" .. fw .. "s [%04i - %04i] : %-" .. hw .. "s %s : %s",file.basename(l[3]),l[4],l[5],l[2],l[1],l[6])
+            report_quality("%-" .. fw .. "s [%04i - %04i] : %-" .. hw .. "s %s : %s (%p)",file.basename(l[3]),l[4],l[5],l[2],l[1],l[6],l[7])
         end
         logs.stopfilelogging()
         report_quality()

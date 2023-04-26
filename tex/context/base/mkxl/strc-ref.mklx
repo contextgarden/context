@@ -994,6 +994,8 @@
     \aliased\let\from \strc_references_from
 \to \everydump
 
+% can be defined visible at lua end
+
 \permanent          \def\filterreference  #key{\clf_filterreference{#key}} % no checking, expandable
 \permanent\protected\def\getreferenceentry#key{\clf_filterreference{#key}} % no checking, not expandable
 
@@ -1005,7 +1007,6 @@
 \permanent\def\currentreferencerealpage{\clf_filterreference{realpage}}
 \aliased  \let\currentreferenceorder    \getinternalorderreference
 
-
 %D The most straightforward way of retrieving references is using \type {\ref}.
 
 \permanent\tolerant\protected\def\getreference[#key]#spacer[#label]% #key = number page title text default realpage ...
@@ -1016,6 +1017,25 @@
    \fi}
 
 \aliased\let\ref\getreference
+
+% setnumber-001.tex
+%
+% \starttext
+%     \chapter[one]{One} see setnumber-002
+%     \chapter[two]{Two} see setnumber-002
+% \stoptext
+%
+% setnumber-002.tex
+%
+% \setupreferencing[autofile=yes]
+% \useexternaldocument[foo] [setnumber-001] [{TEST 1}]
+% \setupheadnumber[chapter][\getreferencesectionnumber{foo::two}]
+% \starttext
+%     \chapter[three]{Three} from setnumber-001, one: \getreferencesectionnumber{foo::one}\par
+%     \chapter[four] {Four}  from setnumber-001, two: \getreferencesectionnumber{foo::two}\par
+% \stoptext
+%
+% \getreferencesectionnumber{reference} : defined at the lua end
 
 %D Special cases:
 

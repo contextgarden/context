@@ -54,100 +54,100 @@ local cache = setmetatableindex(function(t,width)
     return v
 end)
 
+local enabled = "vertical"  directives.register("math.extensibles", function(v) enabled = v end) -- default per 2022-08-25
+
 local function register_extensible(font,char,style,box)
-    -- We don't share (yet)!
-    local fontdata = chardata[font]
-    local oldchar  = fontdata[char]
-    if oldchar and oldchar.keepvirtual then
-        -- for now, needed for iwona etc
-        return nil
-    else
-        local bx = tonut(box)
-        -- actually we don't want colors and such so if we do finalize we
-        -- should be more selctive:
---         updaters.apply("tagging.state.disable")
---         nodes.handlers.finalizelist(bx)
---         updaters.apply("tagging.state.enable")
-        local id = getid(bx)
-        local al = getattrlst(bx)
-        local wd, ht, dp = getwhd(bx)
-        local unicode  = oldchar.unicode or char
-        -- we cannot have self referencing t3 fonts
-        local oldcommands = oldchar.oldcommands
-        local newcommands = oldchar.commands
-        if oldcommands then
-            oldchar.commands = oldcommands
-        end
-        --
-        local p  = fonts.hashes.parameters[font]
-        local sx = round(1000/p.extendfactor)
-        local sy = round(1000/p.squeezefactor)
-        -- we saved a scaled glyph stream so we now use an unscaled one ... horrible hack:
-        if sx ~= 1000 then
-            wd = wd * 7200/7227
-        end
-        if sy ~= 1000 then
-            ht = ht * 7200/7227
-            dp = dp * 7200/7227
-        end
-        --
-    --  local private = fonts.helpers.setboxdirectly(font,unicode,box)
-        local private = cache[wd][ht][dp][font][unicode]
-        if not private then
-            private = fonts.helpers.setboxdirectly(font,unicode,box)
-            cache[wd][ht][dp][font][unicode] = private
-        end
-        local glyph = new_glyph(font,private,al)
-        nuts.setscales(glyph,1000,sx,sy)
-        --
-     -- if fonts.hashes.properties[font].compactmath then
-     --     nuts.setscales(g,1000,1000,1000)
-     -- end
-        --
-        -- nasty, testcase: bold math sqrt extensible
-        --
-        local n = new_hlist(glyph)
-        --
-        if newcommands then
-            oldchar.commands = newcommands
-        end
-        --
-     -- local newchar = {
-     --     unicode = unicode,
-     --     width   = wd,
-     --     height  = ht,
-     --     depth  =  dp,
-     -- }
-     -- local p = oldchar.vparts
-     -- if p then
-     --     local first = fontdata[p[#p].glyph]
-     --     local last  = fontdata[p[ 1].glyph]
-     --     if first then
-     --         newchar.topleft  = first.topleft
-     --         newchar.topright = first.topright
-     --     end
-     --     if last then
-     --         newchar.bottomleft  = last.bottomleft
-     --         newchar.bottomright = last.bottomright
-     --     end
-     -- end
-     -- addcharacters(font, { [private] = newchar })
-        -- so the dimensions of the box don't match the glyph scale!
-        setwhd(n,wd,ht,dp)
-        setattrlst(n,al)
-        if id == vlist_code then
-            n = new_vlist(n)
+    if enabled then
+        -- We don't share (yet)!
+        local fontdata = chardata[font]
+        local oldchar  = fontdata[char]
+        if oldchar and not oldchar.keepvirtual then
+if enabled == true or enabled == "both" or oldchar.partsorientation == enabled then
+    -- we're okay
+else
+    return
+end
+            local bx = tonut(box)
+            -- actually we don't want colors and such so if we do finalize we
+            -- should be more selctive:
+    --         updaters.apply("tagging.state.disable")
+    --         nodes.handlers.finalizelist(bx)
+    --         updaters.apply("tagging.state.enable")
+            local id = getid(bx)
+            local al = getattrlst(bx)
+            local wd, ht, dp = getwhd(bx)
+            local unicode  = oldchar.unicode or char
+            -- we cannot have self referencing t3 fonts
+            local oldcommands = oldchar.oldcommands
+            local newcommands = oldchar.commands
+            if oldcommands then
+                oldchar.commands = oldcommands
+            end
+            --
+            local p  = fonts.hashes.parameters[font]
+            local sx = round(1000/p.extendfactor)
+            local sy = round(1000/p.squeezefactor)
+            -- we saved a scaled glyph stream so we now use an unscaled one ... horrible hack:
+            if sx ~= 1000 then
+                wd = wd * 7200/7227
+            end
+            if sy ~= 1000 then
+                ht = ht * 7200/7227
+                dp = dp * 7200/7227
+            end
+            --
+        --  local private = fonts.helpers.setboxdirectly(font,unicode,box)
+            local private = cache[wd][ht][dp][font][unicode]
+            if not private then
+                private = fonts.helpers.setboxdirectly(font,unicode,box)
+                cache[wd][ht][dp][font][unicode] = private
+            end
+            local glyph = new_glyph(font,private,al)
+            nuts.setscales(glyph,1000,sx,sy)
+            --
+         -- if fonts.hashes.properties[font].compactmath then
+         --     nuts.setscales(g,1000,1000,1000)
+         -- end
+            --
+            -- nasty, testcase: bold math sqrt extensible
+            --
+            local n = new_hlist(glyph)
+            --
+            if newcommands then
+                oldchar.commands = newcommands
+            end
+            --
+         -- local newchar = {
+         --     unicode = unicode,
+         --     width   = wd,
+         --     height  = ht,
+         --     depth  =  dp,
+         -- }
+         -- local p = oldchar.vparts
+         -- if p then
+         --     local first = fontdata[p[#p].glyph]
+         --     local last  = fontdata[p[ 1].glyph]
+         --     if first then
+         --         newchar.topleft  = first.topleft
+         --         newchar.topright = first.topright
+         --     end
+         --     if last then
+         --         newchar.bottomleft  = last.bottomleft
+         --         newchar.bottomright = last.bottomright
+         --     end
+         -- end
+         -- addcharacters(font, { [private] = newchar })
+            -- so the dimensions of the box don't match the glyph scale!
             setwhd(n,wd,ht,dp)
             setattrlst(n,al)
+            if id == vlist_code then
+                n = new_vlist(n)
+                setwhd(n,wd,ht,dp)
+                setattrlst(n,al)
+            end
+            return tonode(n)
         end
-        return tonode(n)
     end
 end
 
-directives.register("math.extensibles", function(v)
-    callback.register("register_extensible", v and register_extensible or nil)
-end)
-
--- Default per 2022-08-25
-
-callback.register("register_extensible", register_extensible)
+callbacks.register("register_extensible",register_extensible,"register math extensible construct")

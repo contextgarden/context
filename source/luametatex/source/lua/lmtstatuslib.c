@@ -329,6 +329,7 @@ static int statslib_getconstants(lua_State *L)
     lua_set_integer_by_key(L, "max_toks_register_index",      max_toks_register_index);
     lua_set_integer_by_key(L, "max_box_register_index",       max_box_register_index);
     lua_set_integer_by_key(L, "max_int_register_index",       max_int_register_index);
+    lua_set_integer_by_key(L, "max_float_register_index",     max_posit_register_index);
     lua_set_integer_by_key(L, "max_dimen_register_index",     max_dimen_register_index);
     lua_set_integer_by_key(L, "max_attribute_register_index", max_attribute_register_index);
     lua_set_integer_by_key(L, "max_glue_register_index",      max_glue_register_index);

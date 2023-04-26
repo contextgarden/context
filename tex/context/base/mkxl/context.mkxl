@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2023.04.15 00:19}
+\immutable\edef\contextversion{2023.04.26 23:28}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -104,6 +104,7 @@
 
 \loadmkxlfile{luat-ini}
 \loadmkxlfile{toks-scn}
+\loadmkxlfile{cldf-pos}
 
 \loadmkxlfile{syst-aux}
 \loadmkxlfile{syst-lua}
@@ -162,7 +163,7 @@
 
 \loadmkxlfile{node-fin}
 \loadmkxlfile{node-mig}
-%loadmkxlfile{node-pag}
+\loadmkxlfile{node-pag}
 
 \loadmkxlfile{driv-ini} % after node-ini (ext)
 

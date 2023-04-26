@@ -25,6 +25,17 @@
     \fastsetup{\s!btx:\s!list:\s!page:concat}
     \fastsetup{\s!btx:\currentbtxspecification:\s!list:page-or-pages}
     \ifconditional\btxinteractivepage
+        \ifx\currentbtxfirstinternal\empty
+            \donefalse
+        \else\ifnum\currentbtxfirstinternal=\zerocount
+            \donefalse
+        \else
+            \donetrue
+        \fi\fi
+    \else
+        \donefalse
+    \fi
+    \ifdone
         \goto {
             \currentbtxfirstpage
         } [
