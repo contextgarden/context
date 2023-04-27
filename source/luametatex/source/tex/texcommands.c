@@ -621,7 +621,7 @@ void tex_initialize_commands(void)
         tex_primitive(etex_command,   "mutoglue",                       some_item_cmd,          mu_to_glue_code,                          0);
         tex_primitive(etex_command,   "gluetomu",                       some_item_cmd,          glue_to_mu_code,                          0);
         tex_primitive(etex_command,   "numexpr",                        some_item_cmd,          numexpr_code,                             0);
-        tex_primitive(luatex_command, "posexpr",                        some_item_cmd,          posexpr_code,                             0);
+        tex_primitive(luatex_command, "floatexpr",                      some_item_cmd,          posexpr_code,                             0);
         tex_primitive(etex_command,   "dimexpr",                        some_item_cmd,          dimexpr_code,                             0);
         tex_primitive(etex_command,   "glueexpr",                       some_item_cmd,          glueexpr_code,                            0);
         tex_primitive(etex_command,   "muexpr",                         some_item_cmd,          muexpr_code,                              0);

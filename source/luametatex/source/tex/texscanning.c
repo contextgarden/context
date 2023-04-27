@@ -354,8 +354,7 @@ static void tex_aux_set_cur_val_by_lua_value_cmd(halfword index, halfword proper
             cur_val_level = int_val_level;
             break;
         case lua_value_float_code:
-            /*tex We assume a proper print back. */
-            cur_val_level = tok_val_level;
+            cur_val_level = posit_val_level;
             break;
         case lua_value_string_code:
             cur_val_level = no_val_level;

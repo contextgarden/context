@@ -60,7 +60,7 @@ function texconfig.init()
             -- not in luametatex
             "unicode", "utf", "gzip",  "zip", "zlib",
             -- in luametatex
-            "xzip", "xmath", "xcomplex", "xdecimal", "basexx",
+            "xzip", "xmath", "xcomplex", "xdecimal", "basexx", "posit",
             -- maybe some day in luametatex
             "lz4", "lzo",
             -- always (mime can go)

@@ -13,8 +13,24 @@
 
 \writestatus{loading}{ConTeXt Posit Numbers / Initialization}
 
-% \newcount\trialtypesettingstate % gets aliased at the Lua end
-
 \registerctxluafile{cldf-pos}{autosuffix}
+
+\newposit\pfpi    \pfpi    3.1415926535897932384626433832795028841971
+\newposit\pftwopi \pftwopi \floatexpr \pfpi * 2 \relax
+
+% \newfloat\fooA
+%
+% \scratchdimen=123.456pt\relax        [\type{dim:} \the\scratchdimen==123.456pt]\par
+% \fooA        =123.456\relax          [\type{pos:} \the\fooA        ==123.456]  \par
+% \fooA        =\scratchdimen\relax    [\type{pos:} \the\fooA        ==123.456]  \par
+% \scratchdimen=\fooA\relax            [\type{dim:} \the\scratchdimen==123.456pt]\par
+% \scratchdimen\dimexpr\fooA+10pt\relax[\type{dim:} \the\scratchdimen==133.456pt]\par
+%
+% \fooA\pfsin \pfpi   [\the\fooA]\par
+% \fooA\pfcos \pfpi   [\the\fooA]\par
+% \fooA\pfsqrt\pfpi   [\the\fooA]\par
+% \fooA\pfexp \pfpi   [\the\fooA]\par
+% \fooA\pflog \pfpi   [\the\fooA]\par
+% \fooA\pfpow \pfpi 2 [\the\fooA]\par
 
 \endinput

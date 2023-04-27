@@ -1291,6 +1291,21 @@ static int tokenlib_scan_dimen(lua_State *L)
     }
 }
 
+static int tokenlib_scan_posit(lua_State *L)
+{
+    saved_tex_scanner texstate = tokenlib_aux_save_tex_scanner();
+    int eq = lua_toboolean(L, 1);
+    int fl = lua_toboolean(L, 1);
+    halfword val = tex_scan_posit(eq);
+    if (fl) { 
+        lua_pushnumber(L, tex_posit_to_double(val));
+    } else { 
+        lua_pushinteger(L, val);
+    }
+    tokenlib_aux_unsave_tex_scanner(texstate);
+    return 1;
+}
+
 static int tokenlib_gobble_dimen(lua_State *L)
 {
     saved_tex_scanner texstate = tokenlib_aux_save_tex_scanner();
@@ -3597,6 +3612,7 @@ static const struct luaL_Reg tokenlib_function_list[] = {
     { "scanluacardinal",     tokenlib_scan_luacardinal      },
     { "scanscale",           tokenlib_scan_scale            },
     { "scandimen",           tokenlib_scan_dimen            },
+    { "scanposit",           tokenlib_scan_posit            },
     { "scanskip",            tokenlib_scan_skip             },
     { "scanglue",            tokenlib_scan_glue             },
     { "scantoks",            tokenlib_scan_toks             },
@@ -3867,6 +3883,10 @@ int lmt_function_call_by_category(int slot, int property, halfword *value)
                         break;
                     }
                 case lua_value_float_code:
+                    {
+                        *value = tex_double_to_posit(lua_tonumber(L, -1)).v;
+                        break;
+                    }
                 case lua_value_string_code:
                     {
                         category = lua_value_none_code;

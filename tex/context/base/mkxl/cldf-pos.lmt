@@ -21,13 +21,15 @@ local posittonumber     = posit.tonumber
 
 local values            = tokens.values
 local boolean_code      = values.boolean
+local float_code        = values.float
 
-do
+local scanners          = tokens.scanners
+local scanposit         = scanners.posit
+local scanfloat         = scanners.float
+local scaninteger       = scanners.integer
+local scancsname        = scanners.csname
 
-    local scanners          = tokens.scanners
-    local scanfloat         = scanners.float
-    local scaninteger       = scanners.integer
-    local scancsname        = scanners.csname
+do -- these are only for testing and might go to a module eventually
 
     local codes             = tex.codes
 
@@ -78,60 +80,108 @@ do
         end,
     }
 
+    do
+
+        local p_number = lpeg.patterns.number
+        local p = lpeg.Cs(
+            lpeg.Cc("local new = new ; return ")
+        * (
+                lpeg.C(p_number) / function(s)
+                    return "new(" .. s .. ")"
+                end
+                + lpeg.P(1)
+            )^0
+        )
+
+        local t = setmetatableindex({ new = posit.new }, posit)
+
+        local function calculate(s)
+            local new = lpegmatch(p,s)
+            new = load(new,nil,nil,t)
+            if new then
+                new = new()
+                if new then
+                    return new
+                end
+            end
+            return old
+        end
+
+        implement {
+            name      = "positunum",
+            public    = true,
+            arguments = "string",
+            actions   = function(s)
+                local r = calculate(s)
+                local t = type(r)
+                if t == "boolean" then
+                    context(tostring(r))
+                elseif t == "string" then
+                    context(r)
+                else
+                    context("%N",posittonumber(r))
+                end
+            end
+        }
+
+        implement {
+            name      = "ifpositunum",
+            public    = true,
+            usage     = "condition",
+            arguments = "string",
+            actions   = function(s)
+                return boolean_code, calculate(s) and true or false
+            end,
+        }
+
+    end
+
 end
 
 do
 
-    local p_number = lpeg.patterns.number
-    local p = lpeg.Cs(
-        lpeg.Cc("local new = new ; return ")
-      * (
-            lpeg.C(p_number) / function(s)
-                 return "new(" .. s .. ")"
-            end
-            + lpeg.P(1)
-        )^0
-    )
+    local xsin = xmath.sin local xasin = xmath.asin local xsinh  = xmath.sinh local xasinh = xmath.asinh
+    local xcos = xmath.cos local xacos = xmath.acos local xcosh  = xmath.cosh local xacosh = xmath.acosh
+    local xtan = xmath.tan local xatan = xmath.atan local xtanh  = xmath.tanh local xatanh = xmath.atanh
 
-    local t = setmetatableindex({ new = posit.new }, posit)
+    local xsqrt  = xmath.sqrt
+    local xlog   = xmath.log
+    local xexp   = xmath.exp
+    local xpow   = xmath.pow
+    local xceil  = xmath.ceil
+    local xfloor = xmath.floor
+    local xround = xmath.round
+    local xabs   = xmath.fabs
+    local xmod   = xmath.fmod
+    local xrem   = xmath.remainder
+    local xrad   = xmath.rad
+    local xdeg   = xmath.deg
+    local xatan2 = xmath.atan2
 
-    local function calculate(s)
-        local new = lpegmatch(p,s)
-        new = load(new,nil,nil,t)
-        if new then
-            new = new()
-            if new then
-                return new
-            end
-        end
-        return old
-    end
-
-    implement {
-        name      = "positunum",
-        public    = true,
-        arguments = "string",
-        actions   = function(s)
-            local r = calculate(s)
-            local t = type(r)
-            if t == "boolean" then
-                context(tostring(r))
-            elseif t == "string" then
-                context(r)
-            else
-                context("%N",posittonumber(r))
-            end
-        end
-    }
-
-    implement {
-        name      = "ifpositunum",
-        public    = true,
-        usage     = "condition",
-        arguments = "string",
-        actions   = function(s)
-            return boolean_code, calculate(s) and true or false
-        end,
-    }
+    implement { name = "pfsin",     public = true, usage = "value", actions = function() return float_code, xsin  (scanposit(true)) end }
+    implement { name = "pfcos",     public = true, usage = "value", actions = function() return float_code, xcos  (scanposit(true)) end }
+    implement { name = "pftan",     public = true, usage = "value", actions = function() return float_code, xtan  (scanposit(true)) end }
+    implement { name = "pfasin",    public = true, usage = "value", actions = function() return float_code, xasin (scanposit(true)) end }
+    implement { name = "pfacos",    public = true, usage = "value", actions = function() return float_code, xacos (scanposit(true)) end }
+    implement { name = "pfatan",    public = true, usage = "value", actions = function() return float_code, xatan (scanposit(true)) end }
+    implement { name = "pfsinh",    public = true, usage = "value", actions = function() return float_code, xsinh (scanposit(true)) end }
+    implement { name = "pfcosh",    public = true, usage = "value", actions = function() return float_code, xcosh (scanposit(true)) end }
+    implement { name = "pftanh",    public = true, usage = "value", actions = function() return float_code, xtanh (scanposit(true)) end }
+    implement { name = "pfasinh",   public = true, usage = "value", actions = function() return float_code, xasinh(scanposit(true)) end }
+    implement { name = "pfacosh",   public = true, usage = "value", actions = function() return float_code, xacosh(scanposit(true)) end }
+    implement { name = "pfatanh",   public = true, usage = "value", actions = function() return float_code, xatanh(scanposit(true)) end }
+    implement { name = "pfsqrt",    public = true, usage = "value", actions = function() return float_code, xsqrt (scanposit(true)) end }
+    implement { name = "pflog",     public = true, usage = "value", actions = function() return float_code, xlog  (scanposit(true)) end }
+    implement { name = "pfexp",     public = true, usage = "value", actions = function() return float_code, xexp  (scanposit(true)) end }
+    implement { name = "pfceil",    public = true, usage = "value", actions = function() return float_code, xceil (scanposit(true)) end }
+    implement { name = "pffloor",   public = true, usage = "value", actions = function() return float_code, xfloor(scanposit(true)) end }
+    implement { name = "pfround",   public = true, usage = "value", actions = function() return float_code, xround(scanposit(true)) end }
+    implement { name = "pfabs",     public = true, usage = "value", actions = function() return float_code, xabs  (scanposit(true)) end }
+    implement { name = "pfrad",     public = true, usage = "value", actions = function() return float_code, xrad  (scanposit(true)) end }
+    implement { name = "pfdeg",     public = true, usage = "value", actions = function() return float_code, xdeg  (scanposit(true)) end }
+    implement { name = "pfatantwo", public = true, usage = "value", actions = function() return float_code, xatan2(scanposit(true),scanposit(true)) end }
+    implement { name = "pfpow",     public = true, usage = "value", actions = function() return float_code, xpow  (scanposit(true),scanposit(true)) end }
+    implement { name = "pfmod",     public = true, usage = "value", actions = function() return float_code, xmod  (scanposit(true),scanposit(true)) end }
+    implement { name = "pfrem",     public = true, usage = "value", actions = function() return float_code, xrem  (scanposit(true),scanposit(true)) end }
 
 end
