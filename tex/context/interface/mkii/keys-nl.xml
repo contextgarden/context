@@ -838,6 +838,7 @@
 		<cd:constant name='exitoffset' value='exitoffset'/>
 		<cd:constant name='expansion' value='expansie'/>
 		<cd:constant name='export' value='exporteer'/>
+		<cd:constant name='extradata' value='extragegevens'/>
 		<cd:constant name='extras' value='extras'/>
 		<cd:constant name='factor' value='factor'/>
 		<cd:constant name='fallback' value='terugval'/>
@@ -961,6 +962,7 @@
 		<cd:constant name='lastpage' value='laatstepagina'/>
 		<cd:constant name='lastpagesep' value='lastpagesep'/>
 		<cd:constant name='lastpubsep' value='lastpubsep'/>
+		<cd:constant name='lasttextseparator' value='laatstetekstscheider'/>
 		<cd:constant name='layout' value='layout'/>
 		<cd:constant name='left' value='links'/>
 		<cd:constant name='leftclass' value='leftclass'/>
