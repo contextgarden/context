@@ -3,7 +3,7 @@ About luasocket and luasec:
 Till mid 2021 we had the luasec code in the source tree but it was not used yet. It requires
 openssl which is pretty large and we need a bunch of header files. In order to compile luasec
 we need openssl headers and unfortunately there are a few included files that one need to
-make. This create a depedency unless we make a few simple ones; after all we only need it for
+make. This create a dependency unless we make a few simple ones; after all we only need it for
 a few platforms. I couldn't locate a neutral header set so it never came to compilation (I
 started making a set myself but could not motivate myself to finish it). We could use it as
 optional library (which then demands a bit different interface). But, no matter what we

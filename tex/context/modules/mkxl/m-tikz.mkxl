@@ -36,17 +36,36 @@
     \protect
 \fi
 
+\newcatcodetable \tikzcatcodes
+
+\startcatcodetable \tikzcatcodes
+    \catcode\tabasciicode             \spacecatcode
+    \catcode\endoflineasciicode       \endoflinecatcode
+    \catcode\formfeedasciicode        \endoflinecatcode
+    \catcode\spaceasciicode           \spacecatcode
+    \catcode\endoffileasciicode       \ignorecatcode
+    \catcode\circumflexasciicode      \superscriptcatcode
+    \catcode\underscoreasciicode      \subscriptcatcode
+    \catcode\ampersandasciicode       \alignmentcatcode
+    \catcode\backslashasciicode       \escapecatcode
+    \catcode\leftbraceasciicode       \begingroupcatcode
+    \catcode\rightbraceasciicode      \endgroupcatcode
+    \catcode\dollarasciicode          \mathshiftcatcode
+    \catcode\hashasciicode            \parametercatcode
+    \catcode\commentasciicode         \commentcatcode
+    \catcode\atsignasciicode          \lettercatcode
+    \catcode\exclamationmarkasciicode \othercatcode
+    \catcode\questionmarkasciicode    \lettercatcode
+    \catcode\tildeasciicode           \activecatcode
+    \catcode\barasciicode             \othercatcode
+\stopcatcodetable
+
 \permanent\protected\def\starttikzinput
   {\pushoverloadmode
    \pushcatcodetable
-   \setcatcodetable\texcatcodes
+   \setcatcodetable\tikzcatcodes
    \pushmacro\meaning
    \let\meaning\meaningless
-   \catcode`\@=11\relax
-   \catcode`\|=13\relax % was 12 < texlive 2023
-   \catcode`\!=12\relax
-   \catcode`\~=13\relax % needed >= texlive 2023
- % \catcode`\$= 3\relax
    \autoparagraphmode\zerocount}
 
 \permanent\protected\def\stoptikzinput
@@ -89,6 +108,7 @@
 \permanent\protected\def\starttikzpicture
   {\dontleavehmode
    \hcontainer\bgroup
+   \setcatcodetable\tikzcatcodes
    \the\everytikzpicture
    \autoparagraphmode\zerocount
    \pushmacro\meaning
@@ -125,8 +145,9 @@
 \let\startpgfinterruptpicture    \pgfinterruptpicture     \let\stoppgfinterruptpicture   \endpgfinterruptpicture
 \let\startpgfinterruptboundingbox\pgfinterruptboundinbox  \let\stoppgfinterruptboudingbox\endpgfinterruptboundingbox
 
-\let\normalusepgfmodule\usepgfmodule
-\let\normalusepgflibrary\usepgflibrary
+\let\normalusepgfmodule  \usepgfmodule
+\let\normalusepgflibrary \usepgflibrary
+\let\normalusetikzlibrary\usetikzlibrary
 
 \tolerant\protected\def\usepgfmodule[#1]#;#2% somehow both variants are used
   {\starttikzinput
@@ -136,6 +157,11 @@
 \tolerant\protected\def\usepgflibrary[#1]#;#2% somehow both variants are used
   {\starttikzinput
    \normalusepgflibrary[#1#2]%
+   \stoptikzinput}
+
+\tolerant\protected\def\usetikzlibrary[#1]#;#2% somehow both variants are used
+  {\starttikzinput
+   \normalusetikzlibrary[#1#2]%
    \stoptikzinput}
 
 \usepgfmodule[shapes]

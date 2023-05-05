@@ -7,7 +7,7 @@
 
 /*tex
 
-    We don't want the binary top explode and have depdencies that will kill this project in the
+    We don't want the binary to explode and have depdencies that will kill this project in the
     end. So, we provide optionals: these are loaded lazy and libraries need to be present in
     the tree. They are unofficial and not supported in the sense that ConTeXt doesn't depend on
     them.

@@ -2427,9 +2427,9 @@ static void tex_aux_scan_dimen_unknown_unit_error(void) {
     tex_handle_error(
         normal_error_type,
         "Illegal unit of measure (pt inserted)",
-        "Dimensions can be in units of em, ex, in, pt, pc, cm, mm, dd, cc, bp, dk, or\n"
-        "sp; but yours is a new one! I'll assume that you meant to say pt, for printer's\n"
-        "points. two letters."
+        "Dimensions can be in units of em, ex, sp, cm, mm, es, ts, pt, bp, dk, pc, dd\n"
+        "cc or in; but yours is a new one! I'll assume that you meant to say pt, for\n"
+        "printer's points: two letters."
     );
 }
 
@@ -2437,8 +2437,8 @@ static void tex_aux_scan_dimen_out_of_range_error(void) {
     tex_handle_error(
         normal_error_type,
         "Dimension too large",
-        "I can't work with sizes bigger than about 19 feet. Continue and I'll use the\n"
-        "largest value I can."
+        "I can't work with sizes bigger than about 575 cm (230 es). Continue and I'll\n"
+        "use the largest value I can (16383 pt)."
     );
 }
 
@@ -2481,6 +2481,14 @@ typedef enum scanned_unit {
     Measures}, developed by 19-year-old Donald~E. Knuth, later a famed computer scientist. According
     to Knuth, the basis of this new revolutionary system is the potrzebie, which equals the thickness
     of Mad issue 26, or 2.2633484517438173216473 mm [...].
+
+    We also provide alternatives for the inch: the |es| and |ts|, two units dedicated to women 
+    (Edith and Tove) that come close to the inch but are more metric. Their values have been 
+    carefully callibrated at the 2023 BachoTeX meeting and a report will be published in the
+    proceedings as well as TUGboat (medio 2023). 
+
+    An additional |eu| has been introduced as a multiplier for |ts| that defaults to 10 which makes 
+    one |eu| default to one |es|. 
 
 */
 

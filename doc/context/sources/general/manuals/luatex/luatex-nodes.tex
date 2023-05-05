@@ -962,7 +962,7 @@ what you generate.
 \NC \type{width}  \NC number \NC the width (not used in calculations) \NC \NR
 \NC \type{height} \NC number \NC the height (not used in calculations) \NC \NR
 \NC \type{depth}  \NC number \NC the depth (not used in calculations) \NC \NR
-\NC \type{objnum} \NC number \NC the referenced \PDF\ (structure) object number \NC \NR
+\NC \type{objnum} \NC number \NC the referenced \PDF\ object number \NC \NR
 \NC \type{data}   \NC string \NC the annotation data \NC \NR
 \LL
 \stoptabulate
@@ -1005,7 +1005,7 @@ what you generate.
 \NC                    \NC string   \NC the destination name \NC \NR
 \NC \type{dest_type}   \NC number   \NC type of destination \NC \NR
 \NC \type{xyz_zoom}    \NC number   \NC the zoom factor (times 1000) \NC \NR
-\NC \type{objnum}      \NC number   \NC the \PDF\ object number \NC \NR
+\NC \type{objnum}      \NC number   \NC the \PDF\ object number; for structure references the \PDF\ object number of the linked structure element \NC \NR
 \LL
 \stoptabulate
 
@@ -1251,8 +1251,8 @@ This converts a single type name to its internal numeric representation.
 \libindex {subtype}
 
 If the argument is a number, then the next function converts an internal numeric
-numeric representation to an external string representation. Otherwise, it will
-return the string \type {node} if the object represents a node, and \type {nil}
+representation to an external string representation. Otherwise, it will return
+the string \type {node} if the object represents a node, and \type {nil}
 otherwise.
 
 \startfunctioncall
@@ -1321,8 +1321,8 @@ creates a node at the \TEX\ level.
 \libindex{flush_node}
 \libindex{flush_list}
 
-The next one removes the node \type {n} from \TEX's memory. Be careful: no checks
-are done on whether this node is still pointed to from a register or some \type
+The next one removes the node \type {n} from \TEX's memory. Be careful: no checks are
+done on whether this node is still pointed to from a register or some \type
 {next} field: it is up to you to make sure that the internal data structures
 remain correct.
 

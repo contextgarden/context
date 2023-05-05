@@ -464,13 +464,15 @@ local short_units = { -- I'm not sure about casing
     s  = "second",
     g  = "gram",
     n  = "newton",
-    v  = "volt",
+    V  = "volt",
     t  = "tonne",
     l  = "liter",
  -- w  = "watt",
     W  = "watt",
  -- a  = "ampere",
     A  = "ampere",
+
+    Ω  = "ohm",
 
 --  C  = "coulomb", -- needs checking with (c)enti
 --  K  = "kelvin",  -- needs checking with (k)ilo

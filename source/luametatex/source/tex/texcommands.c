@@ -313,16 +313,16 @@ void tex_initialize_commands(void)
 
         tex_primitive(tex_command,    "accent",                         accent_cmd,             normal_code,                              0);
 
-        /*tex These three can go in one cmd: */
+        /*tex These three times two can go in one cmd: */
 
         tex_primitive(tex_command,    "advance",                        arithmic_cmd,           advance_code,                             0);
         tex_primitive(tex_command,    "divide",                         arithmic_cmd,           divide_code,                              0);
         tex_primitive(tex_command,    "multiply",                       arithmic_cmd,           multiply_code,                            0);
-        tex_primitive(tex_command,    "advanceby",                      arithmic_cmd,           advance_by_code,                          0);
-        tex_primitive(tex_command,    "divideby",                       arithmic_cmd,           divide_by_code,                           0);
-        tex_primitive(tex_command,    "multiplyby",                     arithmic_cmd,           multiply_by_code,                         0);
-     /* tex_primitive(tex_command,    "advancebyplusone",               arithmic_cmd,           advance_by_plus_one_code,                 0); */
-     /* tex_primitive(tex_command,    "advancebyminusone",              arithmic_cmd,           advance_by_minus_one_code,                0); */
+        tex_primitive(luatex_command, "advanceby",                      arithmic_cmd,           advance_by_code,                          0);
+        tex_primitive(luatex_command, "divideby",                       arithmic_cmd,           divide_by_code,                           0);
+        tex_primitive(luatex_command, "multiplyby",                     arithmic_cmd,           multiply_by_code,                         0);
+     /* tex_primitive(luatex_command, "advancebyplusone",               arithmic_cmd,           advance_by_plus_one_code,                 0); */
+     /* tex_primitive(luatex_command, "advancebyminusone",              arithmic_cmd,           advance_by_minus_one_code,                0); */
 
         /*tex We combined the after thingies into one category:*/
 

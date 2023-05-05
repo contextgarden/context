@@ -20,26 +20,42 @@ local savers    = resolvers.savers
 local cleaners  = resolvers.cleaners
 
 local data        = { }
+local keep        = { }
 local n           = 0 -- hm, number can be query
 local f_virtual_n = formatters["virtual://%s.%s"]
 local f_virtual_y = formatters["virtual://%s-%s.%s"]
 
-function savers.virtual(specification,content,suffix)
+local function virtualname(specification,suffix)
     n = n + 1 -- one number for all namespaces
     local path = type(specification) == "table" and specification.path or specification
     if type(path) ~= "string" or path == "" then
         path = "virtualfile"
     end
-    local filename = suffix and f_virtual_y(path,n,suffix) or f_virtual_n(path,n)
-    if trace_virtual then
-        report_virtual("saver: file %a saved",filename)
+    return suffix and f_virtual_y(path,n,suffix) or f_virtual_n(path,n)
+end
+
+local function directvirtual(filename,content,persistent)
+    if not content then
+        content = ""
     end
-    data[filename] = content
+    if trace_virtual then
+        report_virtual("saver: file %a saved, size %i",filename,#content)
+    end
+    data[filename] = content or ""
+    keep[filename] = persistent
     return filename
 end
 
+function savers.virtual(specification,content,suffix)
+    return directvirtual(virtualname(specification,suffix),content)
+end
+
+savers.virtualname   = virtualname
+savers.directvirtual = directvirtual
+
 function cleaners.virtual(filename)
     data[filename] = nil
+    keep[filename] = nil
 end
 
 local finders  = resolvers.finders
@@ -94,7 +110,10 @@ function loaders.virtual(specification)
         if trace_virtual then
             report_virtual("loader: file %a loaded",original)
         end
-        data[original] = nil
+        if not keep[original] then
+            data[original] = nil
+            keep[original] = nil
+        end
         return true, d, #d
     end
     if trace_virtual then

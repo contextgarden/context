@@ -8666,7 +8666,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sac"] = package.loaded["util-sac"] or true
 
--- original size: 14071, stripped down to: 10417
+-- original size: 14107, stripped down to: 10453
 
 if not modules then modules={} end modules ['util-sac']={
  version=1.001,
@@ -9145,13 +9145,13 @@ if bit32 and not streams.tocardinal1 then
  local extract=bit32.extract
  local char=string.char
     streams.tocardinal1=char
- function streams.tocardinal2(n)   return char(extract(8,8),extract(0,8)) end
- function streams.tocardinal3(n)   return char(extract(16,8),extract(8,8),extract(0,8)) end
- function streams.tocardinal4(n)   return char(extract(24,8),extract(16,8),extract(8,8),extract(0,8)) end
+ function streams.tocardinal2(n)   return char(extract(n,8,8),extract(n,0,8)) end
+ function streams.tocardinal3(n)   return char(extract(n,16,8),extract(n,8,8),extract(n,0,8)) end
+ function streams.tocardinal4(n)   return char(extract(n,24,8),extract(n,16,8),extract(n,8,8),extract(n,0,8)) end
     streams.tocardinal1le=char
- function streams.tocardinal2le(n) return char(extract(0,8),extract(8,8)) end
- function streams.tocardinal3le(n) return char(extract(0,8),extract(8,8),extract(16,8)) end
- function streams.tocardinal4le(n) return char(extract(0,8),extract(8,8),extract(16,8),extract(24,8)) end
+ function streams.tocardinal2le(n) return char(extract(n,0,8),extract(n,8,8)) end
+ function streams.tocardinal3le(n) return char(extract(n,0,8),extract(n,8,8),extract(n,16,8)) end
+ function streams.tocardinal4le(n) return char(extract(n,0,8),extract(n,8,8),extract(n,16,8),extract(n,24,8)) end
 end
 if not streams.readcstring then
  local readchar=streams.readchar
@@ -14803,7 +14803,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sbx"] = package.loaded["util-sbx"] or true
 
--- original size: 21145, stripped down to: 13271
+-- original size: 21146, stripped down to: 13272
 
 if not modules then modules={} end modules ['util-sbx']={
  version=1.001,
@@ -15113,7 +15113,7 @@ local runners={
    if trace then
     report("resultof: %s",command)
    end
-   local handle=iopopen(command,"r") 
+   local handle=iopopen(command,"rb") 
    if handle then
     local result=handle:read("*all") or ""
     handle:close()
@@ -26138,7 +26138,7 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1037548
+-- original bytes    : 1037585
 -- stripped bytes    : 408686
 
 -- end library merge

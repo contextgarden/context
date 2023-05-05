@@ -67,12 +67,15 @@ local zlibcompress         = xzip.compress
 local zlibdecompress       = xzip.decompress
 
 local trace                = false
+local cleanvirtual         = resolvers.cleaners.virtual -- false -- for now
 
 local report_jpg           = logs.reporter("graphics","jpg")
 local report_jp2           = logs.reporter("graphics","jp2")
 local report_png           = logs.reporter("graphics","png")
 
 trackers.register("graphics.backend", function(v) trace = v end)
+
+directives.register("graphics.cleanvirtuals", function(v) cleanvirtual = v and resolvers.cleaners.virtual or false end)
 
 local injectors = { }
 lpdf.injectors  = injectors
@@ -158,6 +161,9 @@ do
         if trace then
             report_jpg("%s: width %i, height %i, colordepth %i, size %i",filename,xsize,ysize,colordepth,#content)
         end
+        if cleanvirtual then
+            cleanvirtual(filename)
+        end
         return createimage {
             bbox      = { 0, 0, specification.width/xsize, specification.height/ysize }, -- mandate
             transform = specification.transform,
@@ -196,6 +202,9 @@ do
         } + specification.attr
         if trace then
             report_jp2("%s: width %i, height %i, size %i",filename,xsize,ysize,#content)
+        end
+        if cleanvirtual then
+            cleanvirtual(filename)
         end
         return createimage {
             bbox      = { 0, 0, specification.width/xsize, specification.height/ysize }, -- mandate
@@ -1211,6 +1220,9 @@ do
         end
         local width  = specification.width  or xsize * 65536
         local height = specification.height or ysize * 65536
+        if cleanvirtual then
+            cleanvirtual(filename)
+        end
         return createimage {
             bbox      = { 0, 0, width/xsize, height/ysize }, -- mandate
             transform = specification.transform,

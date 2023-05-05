@@ -95,14 +95,11 @@ categories.article = {
         "year",
         "subtitle", "type", "file",
         "journal", "volume", "number", "pages",
-        "doi", "note",
+        "doi", "issn", "note",
      -- APA ignores this: 
      -- 
      -- "month",
      -- 
-     -- fields defined in jabref but presently ignored:
-     -- 
-     -- "issn",
     },
 }
 
@@ -120,7 +117,7 @@ categories.magazine = {
         "subtitle", "type", "file",
         "number",
         "month", "day",
-        "doi", "note",
+        "doi", "issn", "note",
     },
 }
 
@@ -142,7 +139,7 @@ categories.periodical = {
         "subtitle", "file",
         "series", "volume", "number", "month",
         "organization",
-        "doi", "note",
+        "doi", "issn", "note",
     },
 }
 
@@ -157,7 +154,7 @@ categories.standard = {
         "author",
         "year",
         "title", "subtitle",
-        "doi", "note",
+        "doi", "isbn", "note",
     },
     optional = {
         "withauthor", "translator",
@@ -181,7 +178,7 @@ categories.book = {
         "subtitle", "type",  "file",
         "editionset", "series",
         "address",
-        "doi", "note",
+        "doi", "isbn", "note",
         "abstract",
     },
 }
@@ -208,7 +205,7 @@ categories.inbook = {
         "editionset", "series",
         "month",
         "address",
-        "doi", "note",
+        "doi", "isbn", "note",
     },
 }
 
@@ -236,7 +233,7 @@ categories.incollection = {
         -- APA ignores this: "chapter",
         "month",
         "address",
-        "doi", "note",
+        "doi", "isbn", "note",
     },
 }
 
@@ -257,7 +254,7 @@ categories.booklet = {
         "year", "month",
         "subtitle", "type", "file",
         "address",
-        "doi", "note",
+        "doi", "isbn", "note",
      },
 }
 
@@ -281,7 +278,7 @@ categories.proceedings = {
         "editionset", "series",
         "month",
         "address",
-        "doi", "note",
+        "doi", "isbn", "note",
     },
 }
 
@@ -296,7 +293,7 @@ categories.inproceedings = {
         "month",
         "edition", "series",
         "address", "organization",
-        "doi", "note",
+        "doi", "isbn", "note",
     },
 }
 
@@ -320,7 +317,7 @@ categories.thesis = {
         "subtitle", "file",
         "month",
         "address",
-        "doi", "note",
+        "doi", "isbn", "note",
     },
 }
 
@@ -338,7 +335,7 @@ categories.mastersthesis = {
         "subtitle", "file",
         "month",
         "address",
-        "doi", "note",
+        "doi", "isbn", "note",
     },
 }
 categories.phdthesis = categories.mastersthesis
@@ -365,7 +362,7 @@ categories.techreport = {
         "subtitle", "file",
         "editionset",
         "month",
-        "doi", "note",
+        "doi", "isbn", "note",
     },
 }
 
@@ -387,7 +384,7 @@ categories.manual = {
         "address",
         "subtitle", "file",
         "editionset", "month", "year",
-        "doi", "note",
+        "doi", "isbn", "note",
 --         "abstract",
     },
 }
@@ -515,7 +512,7 @@ categories.misc = {
         "title", "subtitle", "file",
         "year", "month",
         "howpublished",
-        "doi", "note",
+        "doi", "isbn", "note",
     },
 }
 
@@ -533,7 +530,7 @@ categories.other = {
     optional = {
         "withauthor", "translator",
         "subtitle", "file",
-        "doi", "note",
+        "doi", "isbn", "note",
     },
 }
 

@@ -798,7 +798,7 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!date={\v!year,\space,\v!month,\space,\v!day}]
+   \c!date={\v!day,\space,\v!month,\space,\v!year}]
 
 \installlanguage[\s!pt-br][\c!default=\s!pt]    % Brazil
 \installlanguage[\s!es-es][\c!default=\s!es]    % Spain

@@ -1,0 +1,540 @@
+% language=us runpath=texruns:manuals/lowlevel
+
+\environment lowlevel-style
+
+\usemodule[system-tokens]
+
+\startdocument
+  [title=tokens,
+   color=middleblue]
+
+\startsectionlevel[title=Introduction]
+
+Most users don't need to know anything about tokens but it happens that when \TEX
+ies meet in person (users group meetings), or online (support platforms) there
+always seem to pop up folks who love token speak. When you try to explain
+something to a user it makes sense to talk in terms of characters but then those
+token speakers can jump in and start correcting you. In the past I have been
+puzzled by this because, when one can write a decent macro that does the job
+well, it really doesn't matter if one knows about tokens. Of course one should
+never make the assumption that token speakers really know \TEX\ that well or can
+come up with better solutions than users but that is another matter. \footnote
+{Talking about fashion: it would be more impressive to talk about \TEX\ and
+friends as a software stack than calling it a distribution. Today, it's all about
+marketing.}
+
+That said, because in documents about \TEX\ the word \quote {token} does pop up I
+will try to give a little insight here. But for using \TEX\ it's mostly
+irrelevant. The descriptions below for sure won't match the proper token speak
+criteria which is why at a presentation for the 2020 user meeting I used the
+title \quotation {Tokens as I see them.}
+
+\stopsectionlevel
+
+\startsectionlevel[title=What are tokens]
+
+Both the words \quote {node} and \quote {token} are quite common in programming
+and also rather old which is proven by the fact that they also are used in the
+\TEX\ source. A node is a storage container that is part of a linked list. When
+you input the characters \type {tex} the three characters become part of the
+current linked list. They become \quote {character} nodes (or in \LUATEX\ speak
+\quote {glyph} nodes) with properties like the font and the character referred
+to. But before that happens, the three characters in the input \type {t}, \type
+{e} and \type {x}, are interpreted as in this case being just that: characters.
+When you enter \type {\TeX} the input processors first sees a backslash and
+because that has a special meaning in \TEX\ it will read following characters and
+when done does a lookup in it's internal hash table to see what it actually is: a
+macro that assembled the word \TEX\ in uppercase with special kerning and a
+shifted (therefore boxed) \quote {E}. When you enter \type {$} \TEX\ will look
+ahead for a second one in order to determine display math, push back the found
+token when there is no match and then enter inline math mode.
+
+A token is internally just a 32 bit number that encodes what \TEX\ has seen. It
+is the assembled token that travels through the system, get stored, interpreted
+and often discarded afterwards. So, the character \quote {e} in our example gets
+tagged as such and encoded in this number in a way that the intention can be
+derived later on.
+
+Now, the way \TEX\ looks at these tokens can differ. In some cases it will just
+look at this (32 bit) number, for instance when checking for a specific token,
+which is fast, but sometimes it needs to know some detail. The mentioned integer
+actually encodes a command (opcode) and a so called char code (operand). The
+second name is somewhat confusing because in many cases that code is not
+representing a character but that is not that relevant here. When you look at the
+source code of a \TEX\ engine it is enough to know that a char can also be a sub
+command.
+
+\startlinecorrection[blank]
+    \setupTABLE[each][align=middle]
+    \setupTABLE[c][1][width=44mm]
+    \setupTABLE[c][2][width=4em]
+    \setupTABLE[c][3][width=11mm]
+    \setupTABLE[c][4][width=33mm]
+    \bTABLE
+        \bTR
+            \bTD token \eTD
+            \bTD[frame=off] = \eTD
+            \bTD cmd   \eTD
+            \bTD chr   \eTD
+        \eTR
+    \eTABLE
+\stoplinecorrection
+
+Back to the three characters: these become tokens where the command code
+indicates that it is a letter and the char code stores what letter we have at
+hand and in the case of \LUATEX\ and \LUAMETATEX\ these are \UNICODE\ values.
+Contrary to the traditional 8 bit \TEX\ engine, in the \UNICODE\ engines an \UTF\
+sequence is read, but these multiple bytes still become one number that will be
+encoded in the token number. In order to determine that something is a letter the
+engine has to be told (which is what a macro package does when it sets up the
+engine). For instance, digits are so called other characters and the backslash is
+called escape. Every \TEX\ user knows that curly braces are special and so are
+dollar symbols and hashes. If this rings a bell, and you relate this to catcodes,
+you can indeed assume that the command codes of these tokens have the same
+numbers as the catcodes. Given that \UNICODE\ has plenty of characters slots you
+can imagine that combining 16 catcode commands with all the possible \UNICODE\
+values makes a large repertoire of tokens.
+
+There are more commands than the 16 basic characters related ones, in
+\LUAMETATEX\ we have just over 150 command codes (\LUATEX\ has a few more but
+they are also organized differently). Each of these codes can have a sub
+command, For instance the primitives \type {\vbox} and \type {\hbox} are both a
+\type {make_box_cmd} (we use the symbolic name here) and in \LUAMETATEX\ the
+first one has sub command code 9 (\type {vbox_code}) and the second one has code
+10 (\type {hbox_code}). There are twelve primitives that are in the same
+category. The many primitives that make up the core of the engine are grouped in
+a way that permits processing similar ones with one function and also makes it
+possible to distinguish between the way commands are handled, for instance with
+respect to expansion.
+
+Now, before we move on it is important to know that al these codes are in fact
+abstract numbers. Although it is quite likely that engines that are derived from
+each other have similar numbers (just more) this is not the case for \LUAMETATEX.
+Because the internals have been opened up (even more than in \LUATEX) the command
+and char codes have been reorganized in a such a way that exposure is consistent.
+We could not use some of the reuse and remap tricks that the other engines use
+because it would simply be too confusing (and demand real in depth knowledge of
+the internals). This is also the reason why development took some time. You
+probably won't notice it from the current source but it was a very stepwise
+process. We not only had to make sure that all kept working (\CONTEXT\ \LMTX\ and
+\LUAMETATEX\ were pretty useable during the process), but also had to
+(re)consider intermediate choices.
+
+So, input is converted into tokens, in most cases one|-|by|-|one. When a token is
+assembled, it either gets stored (deliberately or as part of some look ahead
+scanning), or it immediately gets (what is called:) expanded. Depending on what
+the command is, some action is triggered. For instance, a character gets appended
+to the node list immediately. An \type {\hbox} command will start assembling a
+box which its own node list that then gets some treatment: if this primitive was a
+follow up on \type {\setbox} it will get stored, otherwise it might end up in the
+current node list as so called hlist node. Commands that relate to registers have
+\type {0xFFFF} char codes because that is how many registers we have per category.
+
+When a token gets stored for later processing it becomes part of a larger data
+structure, a so called memory word. These memory words are taken from a large
+pool of words and they store a token and additional properties. The info field
+contains the token value, the mentioned command and char. When there is no linked
+list, the link can actually be used to store a value, something that in
+\LUAMETATEX\ we actually do.
+
+\startlinecorrection[blank]
+    \setupTABLE[each][align=middle]
+    \setupTABLE[c][1][width=8mm]
+    \setupTABLE[c][2][width=64mm]
+    \setupTABLE[c][3][width=64mm]
+    \bTABLE
+        \bTR \bTD 1 \eTD \bTD info \eTD \bTD link \eTD \eTR
+        \bTR \bTD 2 \eTD \bTD info \eTD \bTD link \eTD \eTR
+        \bTR \bTD 3 \eTD \bTD info \eTD \bTD link \eTD \eTR
+        \bTR \bTD n \eTD \bTD info \eTD \bTD link \eTD \eTR
+    \eTABLE
+\stoplinecorrection
+
+When for instance we say \typ {\toks 0 {tex}} the scanner sees an escape,
+followed by 4 letters (\type {toks}) and the escape triggers a lookup of the
+primitive (or macro or \unknown) with that name, in this case a primitive
+assignment command. The found primitive (its property gets stored in the token)
+triggers scanning for a number and when that is successful scanning of a brace
+delimited token list starts. The three characters become three letter tokens and
+these are a linked list of the mentioned memory words. This list then gets stored
+in token register zero. The input sequence \typ {\the \toks 0} will push back a
+copy of this list into the input.
+
+In addition to the token memory pool, there is also a table of equivalents. That
+one is part of a larger table of memory words where \TEX\ stores all it needs to
+store. The 16 groups of character commands are virtual, storing these makes no
+sense, so the first real entries are all these registers (count, dimension, skip,
+box, etc). The rest is taken up by possible hash entries.
+
+\startlinecorrection[blank]
+    \bTABLE
+        \bTR \bTD[ny=4] main hash \eTD \bTD null control sequence              \eTD \eTR
+        \bTR                           \bTD 128K hash entries                  \eTD \eTR
+        \bTR                           \bTD frozen control sequences           \eTD \eTR
+        \bTR                           \bTD special sequences (undefined)      \eTD \eTR
+        \bTR \bTD[ny=7] registers \eTD \bTD  17 internal & 64K user glues      \eTD \eTR
+        \bTR                           \bTD   4 internal & 64K user mu glues   \eTD \eTR
+        \bTR                           \bTD  12 internal & 64K user tokens     \eTD \eTR
+        \bTR                           \bTD   2 internal & 64K user boxes      \eTD \eTR
+        \bTR                           \bTD 116 internal & 64K user integers   \eTD \eTR
+        \bTR                           \bTD   0 internal & 64K user attribute  \eTD \eTR
+        \bTR                           \bTD  22 internal & 64K user dimensions \eTD \eTR
+        \bTR \bTD specifications  \eTD \bTD   5 internal &   0 user            \eTD \eTR
+        \bTR \bTD extra hash      \eTD \bTD additional entries (grows dynamic) \eTD \eTR
+    \eTABLE
+\stoplinecorrection
+
+So, a letter token \type {t} is just that, a token. A token referring to a register
+is again just a number, but its char code points to a slot in the equivalents table.
+A macro, which we haven't discussed yet, is actually just a token list. When a name
+lookup happens the hash table is consulted and that one runs in parallel to part of the
+table of equivalents. When there is a match, the corresponding entry in the equivalents
+table points to a token list.
+
+\startlinecorrection[blank]
+    \setupTABLE[each][align=middle]
+    \setupTABLE[c][1][width=16mm]
+    \setupTABLE[c][2][width=64mm]
+    \setupTABLE[c][3][width=64mm]
+    \bTABLE
+        \bTR \bTD 1     \eTD \bTD string index \eTD \bTD equivalents or (next > n) index \eTD \eTR
+        \bTR \bTD 2     \eTD \bTD string index \eTD \bTD equivalents or (next > n) index \eTD \eTR
+        \bTR \bTD n     \eTD \bTD string index \eTD \bTD equivalents or (next > n) index \eTD \eTR
+        \bTR \bTD n + 1 \eTD \bTD string index \eTD \bTD equivalents or (next > n) index \eTD \eTR
+        \bTR \bTD n + 2 \eTD \bTD string index \eTD \bTD equivalents or (next > n) index \eTD \eTR
+        \bTR \bTD n + m \eTD \bTD string index \eTD \bTD equivalents or (next > n) index \eTD \eTR
+    \eTABLE
+\stoplinecorrection
+
+It sounds complex and it actually also is somewhat complex. It is not made easier
+by the fact that we also track information related to grouping (saving and
+restoring), need reference counts for copies of macros and token lists, sometimes
+store information directly instead of via links to token lists, etc. And again
+one cannot compare \LUAMETATEX\ with the other engines. Because we did away with
+some of the limitations of the traditional engine we not only could save some
+memory but in the end also simplify matters (we're 32/64 bit after all). On the one
+hand some traditional speedups were removed but these have been compensated by
+improvements elsewhere, so overall processing is more efficient.
+
+\startlinecorrection[blank]
+    \setupTABLE[each][align=middle]
+    \setupTABLE[c][1][width=8mm]
+    \setupTABLE[c][2][width=32mm]
+    \setupTABLE[c][3][width=16mm]
+    \setupTABLE[c][4][width=16mm]
+    \setupTABLE[c][5][width=64mm]
+    \bTABLE
+        \bTR \bTD 1 \eTD \bTD level \eTD \bTD type \eTD \bTD flag \eTD \bTD value \eTD \eTR
+        \bTR \bTD 2 \eTD \bTD level \eTD \bTD type \eTD \bTD flag \eTD \bTD value \eTD \eTR
+        \bTR \bTD 3 \eTD \bTD level \eTD \bTD type \eTD \bTD flag \eTD \bTD value \eTD \eTR
+        \bTR \bTD n \eTD \bTD level \eTD \bTD type \eTD \bTD flag \eTD \bTD value \eTD \eTR
+    \eTABLE
+\stoplinecorrection
+
+So, here \LUAMETATEX\ differs from other engines because it combines two tables,
+which is possible because we have at least 32 bits. There are at most \type
+{0xFFFF} levels but we need at most \type {0xFF} types. in \LUAMETATEX\ macros
+can have extra properties (flags) and these also need one byte. Contrary to the
+other engines, \type {\protected} macros are native and have their own command
+code, but \type {\tolerant} macros duplicate that (so we have four distinct macro
+commands). All other properties, like the \type {\permanent} ones are stored in
+the flags.
+
+Because a macro starts with a reference count we have some room in the info field
+to store information about it having arguments or not. It is these details that
+make \LUAMETATEX\ a bit more efficient in terms of memory usage and performance
+than its ancestor \LUATEX. But as with the other changes, it was a very stepwise
+process in order to keep the system compatible and working.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Some implementation details]
+
+Sometimes there is a special head token at the start. This makes for easier
+appending of extra tokens. In traditional \TEX\ node lists are forward linked, in
+\LUATEX\ they are double linked \footnote {On the agenda of \LUAMETATEX\ is to
+use this property in the underlying code, that doesn't yet profit from this and
+therefore keep previous pointers in store.}. Token lists are always forward
+linked. Shared token lists use the head node for a reference count.
+
+For various reasons original \TEX\ uses global variables temporary lists. This is
+for instance needed when we expand (nested) and need to report issues. But in
+\LUATEX\ we often just serialize lists and using local variables makes more
+sense. One of the first things done in \LUAMETATEX\ was to group all global
+variables in (still global) structures but well isolated. That also made it
+possible to actually get rid of some globals.
+
+Because \TEX\ had to run on machines that we nowadays consider rather limited, it
+had to be sparse and efficient. There are quite some optimizations to limit code
+and memory consumption. The engine also does its own memory management. Freed
+token memory words are collected in a cache and reused but they can get scattered
+which is not that bad, apart from maybe cache hits. In \LUAMETATEX\ we stay as
+close to original \TEX\ as possible but there have been some improvements. The
+\LUA\ interfaces force us to occasionally divert from the original, and that in
+fact might lead to some retrofit but the original documentation still mostly
+applies. However, keep in mind that in \LUATEX\ we store much more in nodes (each
+has a prev pointer and an attribute list pointer and for instance glyph nodes
+have some 20 extra fields compared to traditional \TEX\ character nodes).
+
+\stopsectionlevel
+
+\startsectionlevel[title=Other data management]
+
+There is plenty going on in \TEX\ when it processes your input, just to mention a
+few:
+
+\startitemize[packed]
+\startitem Grouping is handled by a nesting stack. \stopitem
+\startitem Nested conditionals (\type {\if...}) have their own stack. \stopitem
+\startitem The values before assignments are saved on the save stack. \stopitem
+\startitem Also other local changes (housekeeping) ends up in the save stack. \stopitem
+\startitem Token lists and macro aliases have references pointers (reuse). \stopitem
+\startitem Attributes, being linked node lists, have their own management. \stopitem
+\stopitemize
+
+In all these subsystems tokens or references to tokens can play a role. Reading a
+single character from the input can trigger a lot of action. A curly brace tagged
+as begin group command will push the grouping level and from then on registers
+and some other quantities that are changed will be stored on the save stack
+so that after the group ends they can be restored. When primitives take keywords,
+and no match happens, tokens are pushed back into the input which introduces a
+new input level (also some stack). When numbers are read a token that represents
+no digit is pushed back too and macro packages use numbers and dimensions a lot.
+It is a surprise that \TEX\ is so fast.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Macros]
+
+There is a distinction between primitives, the build in commands, and macros, the
+commands defined by users. A primitive relates to a command code and char code
+but macros are, unless they are made an alias to something else, like a \type
+{\countdef} or \type {\let} does, basically pointers to a token list. There is
+some additional data stored that makes it possible to parse and grab arguments.
+
+When we have a control sequence (macro) \type {\controlsequence} the name is
+looked up in the hash table. When found its value will point to the table of
+equivalents. As mentioned, that table keeps track of the cmd and points to a
+token list (the meaning). We saw that this table also stores the current level
+of grouping and flags.
+
+If we say, in the input, \typ {\hbox to 10pt {x\hss}}, the box is assembled as we
+go and when it is appended to the current node list there are no tokens left.
+When scanning this, the engine literally sees a backslash and the four letters
+\type {hbox}. However when we have this:
+
+\starttyping[option=TEX]
+\def\MyMacro{\hbox to 10pt {x\hss}}
+\stoptyping
+
+the \type {\hbox} has become one memory word which has a token representing the
+\type {\hbox} primitive plus a link to the next token. The space after a control
+sequence is gobbled so the next two tokens, again stored in a linked memory word,
+are letter tokens, followed by two other and two letter tokens for the
+dimensions. Then we have a space, a brace, a letter, a primitive and a brace. The
+about 20 characters in the input became a dozen memory words each two times four
+bytes, so in terms of memory usage we end up with quite a bit more. However, when
+\TEX\ runs over that list it only has to interpret the token values because the
+scanning and conversion already happened. So, the space that a macro takes is
+more than compensated by efficient reprocessing.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Looking at tokens]
+
+When you say \type {\tracingall} you will see what the engine does: read input,
+expand primitives and macros, typesetting etc.\ You might need to set \type
+{\tracingonline} to get a bit more output on the console. One way to look at
+macros is to use the \type {\meaning} command, so if we have:
+
+\startbuffer[definition]
+\permanent\protected\def\MyMacro#1#2{Do #1 or #2!}
+\stopbuffer
+
+\startbuffer[meaning]
+\meaning    \MyMacro
+\meaningless\MyMacro
+\meaningfull\MyMacro
+\stopbuffer
+
+\typebuffer[definition][option=TEX]
+
+we can say this:
+
+\typebuffer[meaning][option=TEX]
+
+and get:
+
+{\getbuffer[definition]\startlines\tttf \getbuffer[meaning]\stoplines}
+
+You get less when you ask for the meaning of a primitive, just its name. The
+\type {\meaningfull} primitive gives the most information. In \LUAMETATEX\
+protected macros are first class commands: they have their own command code. In
+the other engines they are just regular macros with an initial token indicating
+that they are protected. There are specific command codes for \type {\outer} and
+\type {\long} macros but we dropped that in \LUAMETATEX . Instead we have \type
+{\tolerant} macros but that's another story. The flags that were mentioned can
+mark macros in a way that permits overload protection as well as some special
+treatment in otherwise tricky cases (like alignments). The overload related flags
+permits a rather granular way to prevent users from redefining macros and such.
+They are set via prefixes, and add to that repertoire: we have 14 prefixes but
+only some eight deal with flags (we can add more if really needed). The probably
+most wel known prefix is \type {\global} and that one will not become a flag: it
+has immediate effect.
+
+For the above definition, the \type {\showluatokens} command will show a meaning
+on the console.
+
+\starttyping[option=TEX]
+\showluatokens\MyMacro
+\stoptyping
+
+% {\getbuffer[definition]\getbuffer}
+
+This gives the next list, where the first column is the address of the token, the
+second one the command code, and the third one the char code. When there are
+arguments involved, the list of what needs to get matched is shown.
+
+\starttyping
+permanent protected control sequence: MyMacro
+501263  19   49  match                argument 1
+501087  19   50  match                argument 2
+385528  20    0  end match
+--------------
+501090  11   68  letter               D (U+00044)
+ 30833  11  111  letter               o (U+0006F)
+500776  10   32  spacer
+385540  21    1  parameter reference
+112057  10   32  spacer
+431886  11  111  letter               o (U+0006F)
+ 30830  11  114  letter               r (U+00072)
+ 30805  10   32  spacer
+500787  21    2  parameter reference
+213412  12   33  other char           ! (U+00021)
+\stoptyping
+
+In the next subsections I will give some examples. This time we use
+helper defined in a module:
+
+\starttyping[option=TEX]
+\usemodule[system-tokens]
+\stoptyping
+
+\startsectionlevel[title=Example 1: in the input]
+
+\startbuffer
+\luatokentable{1 \bf{2} 3\what {!}}
+\stopbuffer
+
+\typebuffer[option=TEX] \blank[line] {\switchtobodyfont[8pt] \getbuffer}
+
+\stopsectionlevel
+
+\startsectionlevel[title=Example 2: in the input]
+
+\startbuffer
+\luatokentable{a \the\scratchcounter b \the\parindent \hbox to 10pt{x}}
+\stopbuffer
+
+\typebuffer[option=TEX] \blank[line] {\switchtobodyfont[8pt] \getbuffer}
+
+\stopsectionlevel
+
+\startsectionlevel[title=Example 3: user registers]
+
+\startbuffer
+\scratchtoks{foo \framed{\red 123}456}
+
+\luatokentable\scratchtoks
+\stopbuffer
+
+\typebuffer[option=TEX] \blank[line] {\switchtobodyfont[8pt] \getbuffer}
+
+\stopsectionlevel
+
+\startsectionlevel[title=Example 4: internal variables]
+
+\startbuffer
+\luatokentable\everypar
+\stopbuffer
+
+\typebuffer[option=TEX] \blank[line] {\switchtobodyfont[8pt] \getbuffer}
+
+\stopsectionlevel
+
+\startsectionlevel[title=Example 5: macro definitions]
+
+\startbuffer
+\protected\def\whatever#1[#2](#3)\relax
+  {oeps #1 and #2 & #3 done ## error}
+
+\luatokentable\whatever
+\stopbuffer
+
+\typebuffer[option=TEX] \blank[line] {\switchtobodyfont[8pt] \getbuffer}
+
+\stopsectionlevel
+
+\startsectionlevel[title=Example 6: commands]
+
+\startbuffer
+\luatokentable\startitemize
+\luatokentable\stopitemize
+\stopbuffer
+
+\typebuffer[option=TEX] \blank[line] {\switchtobodyfont[8pt] \getbuffer}
+
+\stopsectionlevel
+
+\startsectionlevel[title=Example 7: commands]
+
+\startbuffer
+\luatokentable\doifelse
+\stopbuffer
+
+\typebuffer[option=TEX] \blank[line] {\switchtobodyfont[8pt] \getbuffer }
+
+\stopsectionlevel
+
+\startsectionlevel[title=Example 8: nothing]
+
+\startbuffer
+\luatokentable\relax
+\stopbuffer
+
+\typebuffer[option=TEX] \blank[line] {\switchtobodyfont[8pt] \getbuffer }
+
+\stopsectionlevel
+
+\startsectionlevel[title=Example 9: hashes]
+
+\startbuffer
+\edef\foo#1#2{(#1)(\letterhash)(#2)}  \luatokentable\foo
+\stopbuffer
+
+\typebuffer[option=TEX] \blank[line] {\switchtobodyfont[8pt] \getbuffer }
+
+\stopsectionlevel
+
+\startsectionlevel[title=Example 10: nesting]
+
+\startbuffer
+\def\foo#1{\def\foo##1{(#1)(##1)}}  \luatokentable\foo
+\stopbuffer
+
+\typebuffer[option=TEX] \blank[line] {\switchtobodyfont[8pt] \getbuffer }
+
+\stopsectionlevel
+
+\startsectionlevel[title=Remark]
+
+In all these examples the numbers are to be seen as abstractions. Some command
+codes and sub command codes might change as the engine evolves. This is why the
+\LUAMETATEX\ engine has lots of \LUA\ functions that provide information about
+what number represents what command.
+
+\stopsectionlevel
+
+\stopsectionlevel
+
+\stopdocument

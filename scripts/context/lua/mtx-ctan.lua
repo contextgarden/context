@@ -34,9 +34,9 @@ local helpinfo = [[
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="packages"><short>list available packages</short></flag>
-    <flag name="topics"><short>list available topics</short></flag>
-    <flag name="detail"><short>show details about package</short></flag>
+    <flag name="packages"><short>list available packages [--field=key|name|caption]</short></flag>
+    <flag name="topics"><short>list available topics [--field=key|name|details]</short></flag>
+    <flag name="details"><short>show details about package</short></flag>
     <flag name="pattern" value="string"><short>use this pattern, otherwise first argument</short></flag>
    </subcategory>
   </category>
@@ -71,7 +71,7 @@ local shaped    = characters and characters.shaped or lower
 -- what is the url to fetch a zip
 
 -- We cannot use the socket library because we don't compile that massive amount of
--- ssl code into lua(meta)tex. aybe some day one fo these small embedded libraries
+-- ssl code into lua(meta)tex. Maybe some day one fo these small embedded libraries
 -- makes sense but there are so many changes in all that security stuff that it
 -- defeats long term stability of the ecosystem anyway ... just like some of my old
 -- devices suddenly are no longer accessible with modern browsers I expect it to
@@ -185,7 +185,7 @@ scripts.ctan.details = json and
              -- report("key     : %s",data.key or "-")
                 report("name    : %s",data.name or "-")
                 report("caption : %s",data.caption or "-")
-                report("path    : %s",data.ctan.path or "-")
+                report("path    : %s",data.ctan and data.ctan.path or "-")
                 report("")
             end
         end
@@ -207,7 +207,7 @@ or
 
 scripts.ctan.packages = json and
 
-    function(pattern)
+    function(pattern,field)
         local data = validdata(fetched("packages"))
         if data then
             local found = {
@@ -216,9 +216,26 @@ scripts.ctan.packages = json and
             }
             pattern = checkedpattern(pattern)
             for i=1,#data do
-                local entry = data[i]
-                if strfound(pattern,entry.caption) then
-                    found[#found+1] = { entry.key, entry.name, entry.caption }
+                local entry   = data[i]
+                local key     = entry.key
+                local name    = entry.name
+                local caption = entry.caption
+                local where
+                if field == "name" then
+                    where = name
+                elseif field == "caption" then
+                    where = caption
+                elseif field == "key" then
+                    where = key
+                end
+                if where then
+                    if strfound(pattern,where) then
+                        found[#found+1] = { key, name, caption }
+                    end
+                else
+                    if strfound(pattern,name) or strfound(pattern,caption) then
+                        found[#found+1] = { key, name, caption }
+                    end
                 end
             end
             showresult(found)
@@ -256,9 +273,27 @@ scripts.ctan.topics = json and
             }
             pattern = checkedpattern(pattern)
             for i=1,#data do
-                local entry = data[i]
-                if strfound(pattern,entry.details) then
-                    found[#found+1] = { entry.key or entry.name, entry.details } -- inconsistency between json and xml
+                -- inconsistency between json and xml
+                local entry   = data[i]
+                local key     = entry.key
+                local name    = entry.name
+                local details = entry.details
+                local where
+                if field == "name" then
+                    where = name or key
+                elseif field == "details" then
+                    where = details
+                elseif field == "key" then
+                    where = key or name
+                end
+                if where then
+                    if strfound(pattern,where) then
+                        found[#found+1] = { key or name, details }
+                    end
+                else
+                    if strfound(pattern,name) or strfound(pattern,details) then
+                        found[#found+1] = { key or name, details }
+                    end
                 end
             end
             showresult(found)
@@ -292,9 +327,20 @@ local function whatever()
     report("")
 end
 
+-- scripts.ctan.packages(environment.argument("pattern") or environment.files[1])
+-- scripts.ctan.packages("font")
+-- scripts.ctan.details("tex")
+-- scripts.ctan.details("ipaex")
+
+-- scripts.ctan.packages("Półtawskiego")
+-- scripts.ctan.packages("Poltawskiego")
+
+-- scripts.ctan.topics("font")
+-- scripts.ctan.topics()
+
 if environment.argument("packages") then
     whatever()
-    scripts.ctan.packages(environment.argument("pattern") or environment.files[1])
+    scripts.ctan.packages(environment.argument("pattern") or environment.files[1], environment.argument("field"))
 elseif environment.argument("topics") then
     whatever()
     scripts.ctan.topics(environment.argument("pattern") or environment.files[1])
@@ -306,14 +352,3 @@ elseif environment.argument("exporthelp") then
 else
     application.help()
 end
-
--- scripts.ctan.packages(environment.argument("pattern") or environment.files[1])
--- scripts.ctan.packages("font")
--- scripts.ctan.details("tex")
--- scripts.ctan.details("ipaex")
-
--- scripts.ctan.packages("Półtawskiego")
--- scripts.ctan.packages("Poltawskiego")
-
--- scripts.ctan.topics("font")
--- scripts.ctan.topics()

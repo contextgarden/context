@@ -4587,8 +4587,8 @@
 
 \def\math_axis_inject_indeed#1%
   {\srule
-     \s!height \dimexpr\scratchdimentwo+\scratchdimenone\relax
-     \s!depth -\dimexpr\scratchdimentwo-\scratchdimenone\relax
+     \s!height \dimexpr(\scratchdimentwo+\scratchdimenone)*\c_math_m_scaled/\plusthousand\relax
+     \s!depth -\dimexpr(\scratchdimentwo-\scratchdimenone)*\c_math_m_scaled/\plusthousand\relax
      \s!attr \mathaxisattribute#1%
    \relax}
 

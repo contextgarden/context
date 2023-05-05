@@ -1,6 +1,4 @@
 % Converted from PostScript(TM) to MetaPost by pstoedit
-%
-% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
 
 % MetaPost backend contributed by Scott Pakin <pakin@uiuc.edu>
 % pstoedit is Copyright (C) 1993 - 1999 Wolfgang Glunz <wglunz@geocities.com>

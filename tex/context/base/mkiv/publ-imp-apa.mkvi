@@ -113,6 +113,14 @@
   [apa:\s!list]
 
 \definebtx
+  [apa:\s!list:isbn]
+  [apa:\s!list]
+
+\definebtx
+  [apa:\s!list:issn]
+  [apa:\s!list]
+
+\definebtx
   [apa:\s!list:\s!page]
   [apa:\s!list]
   [\c!separator:2={\btxcomma},
@@ -521,6 +529,14 @@
   [apa:\s!cite:url]
 
 \definebtx
+  [apa:\s!cite:isbn]
+  [apa:\s!cite]
+
+\definebtx
+  [apa:\s!cite:issn]
+  [apa:\s!cite]
+
+\definebtx
   [apa:\s!cite:num]
   [apa:\s!cite]
   [\c!left={[},
@@ -879,6 +895,11 @@
         \endgroup
         % which namespace?
         %\doif{\btxparameter{translate}}\v!yes {
+        %
+        % An option is unnecessary because the translated title
+        % only gets placed if the user includes a title:xx field
+        % for the entry - not standard for bibtex...
+        %
             \texdefinition{btx:apa:translated-title}{#title}
         %}
     \btxstopstyleandcolor
@@ -888,7 +909,7 @@
     \setmode{btx:apa:title-placed}
     % we make the title active, opening "file"
     \btxdoifelse {file} {
-        \texdefinition{btx:format:goto}
+        \texdefinition{btx:format:inject}
             {url(file:\btxflush{file})}
             {
                 \texdefinition{btx:apa:composed-title}{title}
@@ -1050,7 +1071,8 @@
 
 \starttexdefinition mutable protected btx:apa:authoryear
     % we make the authoryear active, pointing to the citation
-    \texdefinition{btx:format:gotointernal}
+    \texdefinition{btx:format:inject}
+        {internal(\currentbtxinternal)}
         {
             \doifelsesetups{apa:list:sameauthor} {
                 \btxdoifelsesameasprevious {author} {
@@ -1139,7 +1161,12 @@
     }
     \btxdoif {edition} {
         \texdefinition{btx:apa:leftparenthesis-or-comma}
-        \btxflush{edition}
+        % the edition= field is often language-dependent
+        % (i.e. second, 2nd, revised, etc.)
+        % so we handle an optional edition:xx= field:
+        \btxdoifelse  {edition:\mainbtxlanguage}
+            {\btxflush{edition:\mainbtxlanguage}}
+            {\btxflush{edition}}
         \btxspace
         \btxlabeltext{apa:edition}
     }
@@ -1260,11 +1287,15 @@
 \starttexdefinition mutable protected btx:apa:url
     \begingroup
         \setbreakpoints[doi]
-        \texdefinition {btx:format:goto} {
-            url(\btxflush{url})
-        } {
+        \ifconditional\btxinteractive
+            \goto {
+                \hyphenatedurl{\btxflush{url}}
+            } [
+                url(\btxflush{url})
+            ]
+        \else
             \hyphenatedurl{\btxflush{url}}
-        }
+        \fi
     \endgroup
 \stoptexdefinition
 
@@ -1273,11 +1304,15 @@
 \starttexdefinition mutable protected btx:apa:doi
     \begingroup
         \setbreakpoints[doi]
-        \texdefinition {btx:format:goto} {
-            url(http://dx.doi.org/\btxflush{doi})
-        } {
+        \ifconditional\btxinteractive
+            \goto {
+                \hyphenatedurl{doi:\btxflush{doi}}
+            } [
+                url(http://dx.doi.org/\btxflush{doi})
+            ]
+        \else
             \hyphenatedurl{doi:\btxflush{doi}}
-        }
+        \fi
     \endgroup
 \stoptexdefinition
 
@@ -1299,6 +1334,14 @@
     \doif {\btxfoundname{doi}} {doi} {
         \btxspace
         \texdefinition{btx:apa:doi}
+    }
+    \btxdoif {issn} {
+        \btxspace
+        issn\colon\btxflush{issn}
+    }
+    \btxdoif {isbn} {
+        \btxspace
+        isbn\colon\btxflush{isbn}
     }
     \texdefinition{btx:apa:note}
     \removeunwantedspaces

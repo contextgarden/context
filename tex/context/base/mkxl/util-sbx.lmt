@@ -6,9 +6,11 @@ if not modules then modules = { } end modules ['util-sbx'] = {
     license   = "see context related readme files"
 }
 
--- Note: we use expandname and collapsepath and these use chdir
--- which is overloaded so we need to use originals there. Just
--- something to keep in mind.
+-- Note: we use expandname and collapsepath and these use chdir which is overloaded
+-- so we need to use originals there. Just something to keep in mind. This is old
+-- code that I might need to upgrade to fit lmtx better. I'll stepwise also try to
+-- integrate e.g. curl and graphicmagick a bit more natural. Some code below can
+-- be simplified because we don't share any longer with luatex.
 
 if not sandbox then require("l-sandbox") end -- for testing
 
@@ -64,9 +66,6 @@ local function registerroot(root,what) -- what == read|write
         end
         if type(root) == "string" and root ~= "" then
             root = collapsepath(expandname(root))
-         -- if platform == "windows" then
-         --     root = lower(root) -- we assume ascii names
-         -- end
             if what == "r" or what == "ro" or what == "readable" then
                 what = "read"
             elseif what == "w" or what == "wo" or what == "writable" then
@@ -465,11 +464,22 @@ function sandbox.registerrunner(specification)
     local method   = specification.method   or "execute"
     local checkers = specification.checkers or { }
     local defaults = specification.defaults or { }
+    local internal = specification.internal
     local runner   = runners[method]
     if runner then
-        local finalized = finalized -- so, the current situation is frozen
+        local finalized    = finalized -- so, the current situation is frozen
+        local internalized = false
         local wrapped = function(variables)
-            return runner(name,program,template,checkers,defaults,variables,specification.reporter,finalized)
+            if internal and not internalized then
+                -- So internal returns a function but can also just return false in which
+                -- case we fallback in the runner; this permits optional library support.
+                internal = internal(specification)
+                if type(internal) ~= "function" then
+                    internal = false
+                end
+                internalized = true
+            end
+            return (internal or runner)(name,program,template,checkers,defaults,variables,specification.reporter,finalized)
         end
         validrunners[name] = wrapped
         return wrapped
@@ -515,46 +525,6 @@ local function binaryrunner(action,command,...)
     return action(command,...)
 end
 
--- local function binaryrunner(action,command,...)
---     local original = command
---     if validbinaries == false then
---         -- nothing permitted
---         report("no binaries permitted, ignoring command: %s",command)
---         return
---     end
---     local program
---     if type(command) == "table" then
---         program = command[0]
---         if program then
---             command = concat(command," ",0)
---         else
---             program = command[1]
---             if program then
---                 command = concat(command," ")
---             end
---         end
---     elseif type(command) = "string" then
---         program = lpegmatch(p_split,command)
---     else
---         report("command should be a string or table")
---         return
---     end
---     if not program or program == "" then
---         report("unable to filter binary from command: %s",command)
---         return
---     end
---     if validbinaries == true then
---         -- everything permitted
---     elseif not validbinaries[program] then
---         report("binary not permitted, ignoring command: %s",command)
---         return
---     elseif find(command,"[/\\]") or find(command,"%.%.") then
---         report("/ \\ or .. found, ignoring command (use sandbox.registerrunner): %s",command)
---         return
---     end
---     return action(original,...)
--- end
-
 local function dummyrunner(action,command,...)
     if type(command) == "table" then
         command = concat(command," ",command[0] and 0 or 1)
@@ -566,50 +536,62 @@ sandbox.filehandlerone = filehandlerone
 sandbox.filehandlertwo = filehandlertwo
 sandbox.iohandler      = iohandler
 
-function sandbox.disablerunners()
-    validbinaries = false
-end
+do
 
-function sandbox.disablelibraries()
-    validlibraries = false
-end
+    local library     = optional.library
+    local foreign     = optional.foreign
+    local reported    = { }
+    local libraryload = library.load
+    local foreignload = foreign.load
 
-if FFISUPPORTED and ffi then
+    function library.load(name,...)
+        if validlibraries == false then
+            -- all blocked
+        elseif validlibraries == true then
+            -- all permitted
+            return libraryload(name,...)
+        elseif validlibraries[nameonly(name)] then
+            -- 'name' permitted
+            return libraryload(name,...)
+        else
+            -- 'name' not permitted
+        end
+        if not reported[name] then
+            report("using library %a is not permitted",name)
+            reported[name] = true
+        end
+        return nil
+    end
+
+    function foreign.load(name,...)
+        if validlibraries == false then
+            -- all blocked
+        elseif validlibraries == true then
+            -- all permitted
+            return foreignload(name,...)
+        elseif validlibraries[nameonly(name)] then
+            -- 'name' permitted
+            return foreignload(name,...)
+        else
+            -- 'name' not permitted
+        end
+        if not reported[name] then
+            report("using foreign %a is not permitted",name)
+            reported[name] = true
+        end
+        return nil
+    end
+
+ -- we can do this in the engine: a one time flag
 
     function sandbox.disablelibraries()
         validlibraries = false
-        for k, v in next, ffi do
-            if k ~= "gc" then
-                ffi[k] = nil
-            end
-        end
+        library.load = function() end
+        foreign.load = function() end
     end
 
-    local fiiload = ffi.load
-
-    if fiiload then
-
-        local reported = { }
-
-        function ffi.load(name,...)
-            if validlibraries == false then
-                -- all blocked
-            elseif validlibraries == true then
-                -- all permitted
-                return fiiload(name,...)
-            elseif validlibraries[nameonly(name)] then
-                -- 'name' permitted
-                return fiiload(name,...)
-            else
-                -- 'name' not permitted
-            end
-            if not reported[name] then
-                report("using library %a is not permitted",name)
-                reported[name] = true
-            end
-            return nil
-        end
-
+    function sandbox.disablerunners()
+        validbinaries = false
     end
 
 end
