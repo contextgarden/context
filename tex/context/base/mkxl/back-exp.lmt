@@ -1576,9 +1576,9 @@ local collectresults  do -- too many locals otherwise
                     if s then
                         c = s
                     end
-                    if c == 0 then
+                    if c == 0 or c == 0xFFFD then
                         if trace_export then
-                            report_export("%w<!-- skipping last glyph -->",currentdepth)
+                            report_export("%w<!-- skipping glyph %U -->",currentdepth,c)
                         end
                     elseif c == 0x20 then
                         local a = getattr(n,a_characters)

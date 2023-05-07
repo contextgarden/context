@@ -922,16 +922,14 @@ end
 
 do
 
-    local nps = fonts.helpers.newprivateslot
-
     local list = {
-        { 0x2032, nps("delimited ghost 0x2032"), 1 },
-        { 0x2033, nps("delimited ghost 0x2033"), 2, 0x2032 },
-        { 0x2034, nps("delimited ghost 0x2034"), 3, 0x2032 },
-        { 0x2057, nps("delimited ghost 0x2057"), 4, 0x2032 },
-        { 0x2035, nps("delimited ghost 0x2035"), 1 },
-        { 0x2036, nps("delimited ghost 0x2036"), 2, 0x2035 },
-        { 0x2037, nps("delimited ghost 0x2037"), 3, 0x2035 },
+        { 0x2032, 1 },
+        { 0x2033, 2, 0x2032 },
+        { 0x2034, 3, 0x2032 },
+        { 0x2057, 4, 0x2032 },
+        { 0x2035, 1 },
+        { 0x2036, 2, 0x2035 },
+        { 0x2037, 3, 0x2035 },
     }
 
     datasets.fixprimes = list
@@ -943,7 +941,7 @@ do
         for i=1,#list do
             local entry   = list[i]
             local unicode = entry[1]
-            local count   = entry[3]
+            local count   = entry[2]
             local used    = fonts.handlers.otf.getsubstitution(target,unicode,"ssty",true,"math","dflt") or unicode
             local data    = targetcharacters[used]
             if data then
@@ -960,10 +958,10 @@ do
         if fake then
             for i=1,#list do
                 local entry = list[i]
-                local count = entry[3]
+                local count = entry[2]
                 if count > 1 then
                     local unicode  = entry[1]
-                    local original = entry[4]
+                    local original = entry[3]
                     local data     = targetcharacters[original]
                     if data then
                         local oldwidth = data.width
@@ -981,51 +979,6 @@ do
                             },
                         }
                     end
-                end
-            end
-        end
-    end
-
-    function mathtweaks.addprimed(target,original,parameters)
-        local characters = target.characters
-        for i=1,#list do
-            local entry    = list[i]
-            local basecode = entry[1]
-            local movecode = entry[2]
-            local basedata = characters[basecode]
-            if basedata then
-                local baseheight = basedata.height or 0
-                local basewidth  = basedata.width  or 0
-                local used       = baseheight
-                local total      = baseheight
-                characters[movecode] = { -- todo:share
-                    width    = basewidth,
-                    height   = used,
-                    unicode  = basecode, -- 0xFFFD or space or so
-        --             callback = "devirtualize",
-                    commands = {
-                        downcommand[used],
-                        { "rule", used, 0 },
-                    },
-                }
-                basedata.partsorientation = "vertical"
-                basedata.parts = {
-                    {
-                        advance  = used,
-                        ["end"]  = used,
-                        extender = 1,
-                        glyph    = movecode,
-                        start    = used,
-                    },
-                    {
-                        advance  = total,
-                        ["end"]  = 0,
-                        glyph    = basecode,
-                        start    = total,
-                    },
-                }
-                if trace_tweaking then
-                    report_tweak("primed %U added",target,original,basecode)
                 end
             end
         end
@@ -3246,6 +3199,14 @@ do
         { 0x0303, nps("delimited right tilde"),   nps("delimited ghost tilde")   },
         { 0x20DB, nps("delimited right dddot"),   nps("delimited ghost dddot")   },
 
+        { 0x2032, nps("delimited right prime"),   nps("delimited ghost prime"),   false, 1 },
+        { 0x2033, nps("delimited right dprime"),  nps("delimited ghost dprime"),  false, 1 },
+        { 0x2034, nps("delimited right tprime"),  nps("delimited ghost tprime"),  false, 1 },
+        { 0x2057, nps("delimited right qprime"),  nps("delimited ghost qprime"),  false, 1 },
+        { 0x2035, nps("delimited right rprime"),  nps("delimited ghost rprime"),  false, 1 },
+        { 0x2036, nps("delimited right drprime"), nps("delimited ghost rdprime"), false, 1 },
+        { 0x2037, nps("delimited right dtprime"), nps("delimited ghost rtprime"), false, 1 },
+
         { 0x231C, nps("delimited left upper corner"),  nps("delimited ghost upper corner") },
         { 0x231D, nps("delimited right upper corner"), nps("delimited ghost upper corner") },
         { 0x231E, nps("delimited left lower corner"),  nps("delimited ghost lower corner"), true  },
@@ -3307,8 +3268,7 @@ do
                 characters[movecode] = {
                     width    = basewidth,
                     height   = used,
-                    unicode  = basecode,
-        --             callback = "devirtualize",
+                    unicode  = 0xFFFD,
                     commands = {
                         downcommand[used],
                         { "rule", used, 0 },
@@ -3319,13 +3279,13 @@ do
                         advance  = used,
                         ["end"]  = used,
                         extender = 1,
-                        glyph    = movecode,
+                        glyph    = movecode, -- bottom
                         start    = used,
                     },
                     {
                         advance  = total,
                         ["end"]  = 0,
-                        glyph    = fouriercode,
+                        glyph    = fouriercode, -- top
                         start    = total,
                     },
                 }
@@ -3334,15 +3294,16 @@ do
                 end
                 characters[fouriercode] = {
                     width    = basewidth,
-                    height   = baseheight,
+                    height   = baseheight, -- somehow no \primed antykwa (unless we double the height)
                     depth    = basedepth,
                     unicode  = basecode,
-        --             callback = "devirtualize",
                     commands = {
                         scale == 1 and charcommand[basecode] or { "slot", 0, basecode, scale, scale },
                     },
                     partsorientation = "vertical",
-                    parts = parts,
+                    parts            = parts,
+--                     keepvirtual      = basechar.commands and true or false,
+        --             callback = "devirtualize",
                 }
                 if trace_tweaking then
                     report_tweak("fourier %U added using %U",target,original,basecode,fouriercode)

@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['math-fnt'] = {
     license   = "see context related readme files"
 }
 
+-- It is a pitty that we don't have a unicode character that can be used but that never
+-- gets copied when we cut and paste. Not all pdf viewers ignore 0xFFFD for instance.
+
 local round = math.round
 local setmetatableindex = table.setmetatableindex
 
@@ -62,11 +65,11 @@ local function register_extensible(font,char,style,box)
         local fontdata = chardata[font]
         local oldchar  = fontdata[char]
         if oldchar and not oldchar.keepvirtual then
-if enabled == true or enabled == "both" or oldchar.partsorientation == enabled then
-    -- we're okay
-else
-    return
-end
+            if enabled == true or enabled == "both" or oldchar.partsorientation == enabled then
+                -- we're okay
+            else
+                return
+            end
             local bx = tonut(box)
             -- actually we don't want colors and such so if we do finalize we
             -- should be more selctive:
@@ -76,8 +79,8 @@ end
             local id = getid(bx)
             local al = getattrlst(bx)
             local wd, ht, dp = getwhd(bx)
-            local unicode  = oldchar.unicode or char
-            -- we cannot have self referencing t3 fonts
+            local unicode = oldchar.unicode or char
+            -- we cannot have self referencing t3 fonts .. see devirtualize code
             local oldcommands = oldchar.oldcommands
             local newcommands = oldchar.commands
             if oldcommands then
@@ -123,7 +126,7 @@ end
          --     height  = ht,
          --     depth  =  dp,
          -- }
-         -- local p = oldchar.vparts
+         -- local p = oldchar.parts
          -- if p then
          --     local first = fontdata[p[#p].glyph]
          --     local last  = fontdata[p[ 1].glyph]

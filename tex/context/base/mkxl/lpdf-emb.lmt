@@ -2173,8 +2173,6 @@ local noffonts  = 0
 local getstreamhash  = fonts.handlers.otf.getstreamhash
 local loadstreamdata = fonts.handlers.otf.loadstreamdata
 
--- we can actually now number upwards (so not use fontid in /F)
-
 local objects = setmetatableindex(lpdf.usedfontobjects,function(t,k) -- defined in lpdf-lmt.lmt
     local v
     if type(k) == "number" then
@@ -2227,13 +2225,13 @@ function lpdf.flushfonts()
     -- don't have the id.
 
     -- we can combine the two for loops .. todo
+
 -- inspect(lpdf.usedcharacters)
 
     for fontid, used in sortedhash(lpdf.usedcharacters) do
 
      -- for a bitmap we need a different hash unless we stick to a fixed high
      -- resolution which makes much sense
-
         local hash = getstreamhash(fontid)
         if hash then
             local parent = mainfonts[hash]
@@ -2263,7 +2261,7 @@ function lpdf.flushfonts()
                         end
                     end
                 end
-                if rawdata then
+--                 if rawdata then -- we don't have these when we nest vf's (as in antykwa)
                     parent = {
                         hash         = hash,
                         fontdata     = fontdata,
@@ -2281,7 +2279,7 @@ function lpdf.flushfonts()
                     }
                     mainfonts[hash] = parent
                     noffonts = noffonts + 1
-                end
+--                 end
             end
 -- print("after ",fontid,hash,parent)
             if parent then
@@ -2297,6 +2295,7 @@ function lpdf.flushfonts()
     -- this is no not yet ok for tfm / type 1 .. we need to move the nested blobs ourside the loop
 
     for hash, details in sortedhash(mainfonts) do
+        -- the filename can be somewhat weird if we have a virtual font that starts out with some
         local filename = details.filename
         if next(details.indices) then
             local properties = details.properties

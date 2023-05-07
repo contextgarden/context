@@ -96,6 +96,9 @@ if common then
             fake   = 0.9, -- replace multiples with this width proportion
         },
         {
+            tweak = "addfourier",
+        },
+        {
             tweak = "addequals",
             force = true,
         },

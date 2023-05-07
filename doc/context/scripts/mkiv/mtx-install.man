@@ -1,0 +1,54 @@
+.TH "mtx-install" "1" "01-01-2023" "version 2.01" "ConTeXt Installer"
+.SH NAME
+ mtx-install - ConTeXt Installer
+.SH SYNOPSIS
+.B mtxrun --script install [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B ConTeXt Installer
+.SH OPTIONS
+.TP
+.B --platform=string
+platform
+.TP
+.B --server=string
+repository url (rsync://contextgarden.net)
+.TP
+.B --modules=string
+extra modules (can be list or 'all')
+.TP
+.B --fonts=string
+additional fonts (can be list or 'all')
+.TP
+.B --goodies=string
+extra binaries (like scite and texworks)
+.TP
+.B --install
+install context
+.TP
+.B --update
+update context
+.TP
+.B --erase
+wipe the cache
+.TP
+.B --identify
+create list of files
+.TP
+.B --secure
+use curl for https
+.SH AUTHOR
+More information about ConTeXt and the tools that come with it can be found at:
+
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

@@ -250,13 +250,29 @@
 
 % $ \autofences \fourier{(z+\frac12)} + \courier{(z+\frac12)} + \xourier{(z+\frac12)} $
 
-\definemathdelimited [primed]                       [\c!right="2032,\c!size=1,\c!topoffset=.2\exheight]
-\definemathdelimited [doubleprimed]        [primed] [\c!right="2033]
-\definemathdelimited [tripleprimed]        [primed] [\c!right="2034]
-\definemathdelimited [quadrupleprimed]     [primed] [\c!right="2057]
-\definemathdelimited [reverseprimed]       [primed] [\c!right="2035]
-\definemathdelimited [doublereverseprimed] [primed] [\c!right="2036]
-\definemathdelimited [triplereverseprimed] [primed] [\c!right="2037]
+\integerdef\delimitedrightprimeuc   \privatecharactercode{delimited right prime}
+\integerdef\delimitedrightdprimeuc  \privatecharactercode{delimited right dprime}
+\integerdef\delimitedrighttprimeuc  \privatecharactercode{delimited right tprime}
+\integerdef\delimitedrightqprimeuc  \privatecharactercode{delimited right qprime}
+\integerdef\delimitedrightrprimeuc  \privatecharactercode{delimited right rprime}
+\integerdef\delimitedrightrdprimeuc \privatecharactercode{delimited right rdprime}
+\integerdef\delimitedrightrtprimeuc \privatecharactercode{delimited right rtprime}
+
+%definemathdelimited [primed]                       [\c!right="2032,\c!size=1,\c!topoffset=.2\exheight]
+%definemathdelimited [doubleprimed]        [primed] [\c!right="2033]
+%definemathdelimited [tripleprimed]        [primed] [\c!right="2034]
+%definemathdelimited [quadrupleprimed]     [primed] [\c!right="2057]
+%definemathdelimited [reverseprimed]       [primed] [\c!right="2035]
+%definemathdelimited [doublereverseprimed] [primed] [\c!right="2036]
+%definemathdelimited [triplereverseprimed] [primed] [\c!right="2037]
+
+\definemathdelimited [primed]                       [\c!right=\delimitedrightprimeuc,\c!topoffset=.2\exheight,\c!size=1]
+\definemathdelimited [doubleprimed]        [primed] [\c!right=\delimitedrightdprimeuc]
+\definemathdelimited [tripleprimed]        [primed] [\c!right=\delimitedrighttprimeuc]
+\definemathdelimited [quadrupleprimed]     [primed] [\c!right=\delimitedrightqprimeuc]
+\definemathdelimited [reverseprimed]       [primed] [\c!right=\delimitedrightrprimeuc]
+\definemathdelimited [doublereverseprimed] [primed] [\c!right=\delimitedrightrdprimeuc]
+\definemathdelimited [triplereverseprimed] [primed] [\c!right=\delimitedrightrtprimeuc]
 
 %
 

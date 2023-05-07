@@ -198,6 +198,42 @@ images it might make sense to have a final run with a higher compress level. The
 
 \stopsection
 
+\startsection[title=Remote]
+
+You can include images from a remote location using a \URL\ specification.
+
+\starttyping
+\externalfigure[https://www.pragma-ade.com/logo-ade.png] % via curl
+\externalfigure[http://www.pragma-ade.com/logo-ade.png]  % via socket
+\stoptyping
+
+Normally the socket library will be used for \type {http} and Curl for \type
+{https}. Images are cached and there is some threshold that makes sure that we
+don't keep fetching. You can set the threshold to zero seconds to avoid that:
+
+\starttyping
+\enabledirectives[schemes.threshold=0]
+\stoptyping
+
+In \LMTX\ there are some more options:
+
+\starttyping
+\enabledirectives[schemes.inmemory]
+\enabledirectives[schemes.uselibrary]
+\stoptyping
+
+The first option avoid storing an image in a file and therefore consumes a bit
+more memory and the second one tries to use the Curl library instead of calling
+the program. If you want ot see what is going on you can use:
+
+\starttyping
+\enabletrackers[resolvers.schemes]
+\enabletrackers[graphics.locating]
+\enabletrackers[resolvers.virtual]
+\stoptyping
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent

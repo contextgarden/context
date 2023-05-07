@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-install</entry>
+  <entry name="detail">ConTeXt Installer</entry>
+  <entry name="version">2.01</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="list"><short>list modules</short></flag>
+    <flag name="install"><short>install modules</short></flag>
+    <flag name="module"><short>install (zip) file(s)</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Examples</title>
+   <subcategory>
+    <example><command>mtxrun --script install-modules --list</command></example>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script install-modules --install filter letter</command></example>
+    <example><command>mtxrun --script install-modules --install tikz</command></example>
+    <example><command>mtxrun --script install-modules --install --all</command></example>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script install-modules --install --module t-letter.zip</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>

@@ -164,11 +164,14 @@ if common then
             force = true,
         },
         {
+            tweak = "addfourier",
+        },
+        {
             tweak = "keepbases",
 --             list  = { 0x302 }
             list  = "default"
         },
-}
+    }
 
     common.mathematics.helpers.copyrecipes(recipes)
 

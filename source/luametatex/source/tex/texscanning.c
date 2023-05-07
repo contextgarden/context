@@ -2433,12 +2433,20 @@ static void tex_aux_scan_dimen_unknown_unit_error(void) {
     );
 }
 
+/*tex 
+    The Edith and Tove were introduced at BachoTeX 2023 and because the error message 
+    was still in feet we decided to adapt it accordingly so now in addition it reports 
+    different values, including Theodores little feet measured by Arthur as being roughly 
+    five Ediths. 
+*/
+
 static void tex_aux_scan_dimen_out_of_range_error(void) {
     tex_handle_error(
         normal_error_type,
         "Dimension too large",
-        "I can't work with sizes bigger than about 575 cm (230 es). Continue and I'll\n"
-        "use the largest value I can (16383 pt)."
+        "I can't work with sizes bigger than about 19 feet (45 Theodores as of 2023),\n"
+        "575 centimeters, 2300 Toves, 230 Ediths or 16383 points. Continue and I'll use\n"
+        "the largest value I can."
     );
 }
 

@@ -141,6 +141,7 @@ end
 
 local function checkedpattern(pattern)
     if pattern then
+        pattern = string.topattern(pattern,true)
         return lower(shaped(pattern))
     end
 end
@@ -291,7 +292,7 @@ scripts.ctan.topics = json and
                         found[#found+1] = { key or name, details }
                     end
                 else
-                    if strfound(pattern,name) or strfound(pattern,details) then
+                    if strfound(pattern,key or name) or strfound(pattern,details) then
                         found[#found+1] = { key or name, details }
                     end
                 end

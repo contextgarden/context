@@ -438,6 +438,7 @@
 \permanent\protected\def\btxrightbracket          {\removeunwantedspaces]\space}
 \permanent\protected\def\btxrightbracketperiod    {\removeunwantedspaces].\space}
 \permanent\protected\def\btxrightbracketcomma     {\removeunwantedspaces],\space}
+\permanent\protected\def\btxhyphen                {\removeunwantedspaces-}
 
 %D Variables:
 
@@ -1995,6 +1996,7 @@
    \c!separator:juniors={\btxspace},
    \c!separator:vons={\btxspace},
    \c!separator:initials={\btxspace},
+   \c!connector:initials={\btxhyphen},
    \c!stopper:initials={.},
   %\c!surnamesep={\btxcomma}, % is this used anywhere?
    \c!separator:invertedinitials={\btxcomma},

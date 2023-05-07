@@ -231,9 +231,9 @@ return {
                     tweak   = "addfourier",
                     variant = 1,
                 },
-                {
-                    tweak   = "addprimed",
-                },
+--                 {
+--                     tweak   = "addprimed",
+--                 },
                 {
                     tweak = "kernpairs",
                     list = {

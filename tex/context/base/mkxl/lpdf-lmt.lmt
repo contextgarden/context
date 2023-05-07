@@ -243,6 +243,7 @@ local threshold      = 655360
 local tjfactor       = 100 / 65536
 
 function flushers.updatefontstate(font)
+    -- virtual t3 fonts have negative font index
     fontcharacters   = characters[font]
  -- fontdescriptions = descriptions[font]
     fontparameters   = parameters[font]
@@ -2227,25 +2228,25 @@ local finalize  do
 
             -- resources can be indirect
 
-if state == "ignore" or state == false then
+            if state == "ignore" or state == false then
 
-else
+            else
 
-            registerpage(pageattributes)
+                registerpage(pageattributes)
 
-            lpdf.finalizepage(true)
+                lpdf.finalizepage(true)
 
-            local TrimBox  = pageattributes.TrimBox
-            local CropBox  = pageattributes.CropBox
-            local BleedBox = pageattributes.BleedBox
+                local TrimBox  = pageattributes.TrimBox
+                local CropBox  = pageattributes.CropBox
+                local BleedBox = pageattributes.BleedBox
 
-            -- Indirect objects don't work in all viewers.
+                -- Indirect objects don't work in all viewers.
 
-            if TrimBox  then pageattributes.TrimBox  = pdfsharedobject(checkedbox(bbox,TrimBox,"TrimBox")) end
-            if CropBox  then pageattributes.CropBox  = pdfsharedobject(checkedbox(bbox,CropBox,"CropBox")) end
-            if BleedBox then pageattributes.BleedBox = pdfsharedobject(checkedbox(bbox,BleedBox,"BleedBox")) end
+                if TrimBox  then pageattributes.TrimBox  = pdfsharedobject(checkedbox(bbox,TrimBox,"TrimBox")) end
+                if CropBox  then pageattributes.CropBox  = pdfsharedobject(checkedbox(bbox,CropBox,"CropBox")) end
+                if BleedBox then pageattributes.BleedBox = pdfsharedobject(checkedbox(bbox,BleedBox,"BleedBox")) end
 
-end
+            end
 
         else
 

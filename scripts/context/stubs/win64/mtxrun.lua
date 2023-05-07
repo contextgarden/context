@@ -15876,7 +15876,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-zip"] = package.loaded["util-zip"] or true
 
--- original size: 23730, stripped down to: 14293
+-- original size: 32353, stripped down to: 16001
 
 if not modules then modules={} end modules ['util-zip']={
  version=1.001,
@@ -15902,11 +15902,13 @@ end
 local files=utilities.files
 local openfile=files.open
 local closefile=files.close
+local getsize=files.size
 local readstring=files.readstring
 local readcardinal2=files.readcardinal2le
 local readcardinal4=files.readcardinal4le
 local setposition=files.setposition
 local getposition=files.getposition
+local skipbytes=files.skip
 local band=bit32.band
 local rshift=bit32.rshift
 local lshift=bit32.lshift
@@ -15929,6 +15931,55 @@ local openzipfile,closezipfile,unzipfile,foundzipfile,getziphash,getziplist  do
    handle=openfile(name,0),
   }
  end
+ local function update(handle,data)
+  position=data.offset
+  setposition(handle,position)
+  local signature=readstring(handle,4)
+  if signature=="PK\3\4" then
+   local version=readcardinal2(handle)
+   local flag=readcardinal2(handle)
+   local method=readcardinal2(handle)
+          skipbytes(handle,4)
+   local crc32=readcardinal4(handle)
+   local compressed=readcardinal4(handle)
+   local uncompressed=readcardinal4(handle)
+   local namelength=readcardinal2(handle)
+   local extralength=readcardinal2(handle)
+   local filename=readstring(handle,namelength)
+   local descriptor=band(flag,8)~=0
+   local encrypted=band(flag,1)~=0
+   local acceptable=method==0 or method==8
+   local skipped=0
+   local size=0
+   if encrypted then
+    size=readcardinal2(handle)
+    skipbytes(handle,size)
+    skipped=skipped+size+2
+    skipbytes(8)
+    skipped=skipped+8
+    size=readcardinal2(handle)
+    skipbytes(handle,size)
+    skipped=skipped+size+2
+    size=readcardinal4(handle)
+    skipbytes(handle,size)
+    skipped=skipped+size+4
+    size=readcardinal2(handle)
+    skipbytes(handle,size)
+    skipped=skipped+size+2
+   end
+   if acceptable then
+     if        filename~=data.filename  then
+    else
+     position=position+30+namelength+extralength+skipped
+     data.position=position
+     return position
+    end
+   else
+   end
+  end
+  data.position=false
+  return false
+ end
  local function collect(z)
   if not z.list then
    local list={}
@@ -15936,72 +15987,68 @@ local openzipfile,closezipfile,unzipfile,foundzipfile,getziphash,getziplist  do
    local position=0
    local index=0
    local handle=z.handle
-   while true do
-    setposition(handle,position)
-    local signature=readstring(handle,4)
-    if signature=="PK\3\4" then
-     local version=readcardinal2(handle)
-     local flag=readcardinal2(handle)
-     local method=readcardinal2(handle)
-     local filetime=readcardinal2(handle)
-     local filedate=readcardinal2(handle)
-     local crc32=readcardinal4(handle)
-     local compressed=readcardinal4(handle)
-     local uncompressed=readcardinal4(handle)
-     local namelength=readcardinal2(handle)
-     local extralength=readcardinal2(handle)
-     local filename=readstring(handle,namelength)
-     local descriptor=band(flag,8)~=0
-     local encrypted=band(flag,1)~=0
-     local acceptable=method==0 or method==8
-     local skipped=0
-     local size=0
-     if encrypted then
-      size=readcardinal2(handle)
-      skipbytes(size)
-      skipped=skipped+size+2
-      skipbytes(8)
-      skipped=skipped+8
-      size=readcardinal2(handle)
-      skipbytes(size)
-      skipped=skipped+size+2
-      size=readcardinal4(handle)
-      skipbytes(size)
-      skipped=skipped+size+4
-      size=readcardinal2(handle)
-      skipbytes(size)
-      skipped=skipped+size+2
+   local size=getsize(handle)
+   for i=size-4,size-64*1024,-1 do
+    setposition(handle,i)
+    local enddirsignature=readcardinal4(handle)
+    if enddirsignature==0x06054B50 then
+     local thisdisknumber=readcardinal2(handle)
+     local centraldisknumber=readcardinal2(handle)
+     local thisnofentries=readcardinal2(handle)
+     local totalnofentries=readcardinal2(handle)
+     local centralsize=readcardinal4(handle)
+     local centraloffset=readcardinal4(handle)
+     local commentlength=readcardinal2(handle)
+     local comment=readstring(handle,length)
+     if size-i>=22 then
+      if thisdisknumber==centraldisknumber then
+       setposition(handle,centraloffset)
+       while true do
+        if readcardinal4(handle)==0x02014B50 then
+                skipbytes(handle,4)
+         local flag=readcardinal2(handle)
+         local method=readcardinal2(handle)
+                skipbytes(handle,4)
+         local crc32=readcardinal4(handle)
+         local compressed=readcardinal4(handle)
+         local uncompressed=readcardinal4(handle)
+         local namelength=readcardinal2(handle)
+         local extralength=readcardinal2(handle)
+         local commentlength=readcardinal2(handle)
+                skipbytes(handle,8)
+         local headeroffset=readcardinal4(handle)
+         local filename=readstring(handle,namelength)
+                skipbytes(handle,extralength+commentlength)
+         local descriptor=band(flag,8)~=0
+         local encrypted=band(flag,1)~=0
+         local acceptable=method==0 or method==8
+         if acceptable then
+          index=index+1
+          local data={
+           filename=filename,
+           index=index,
+           position=nil,
+           method=method,
+           compressed=compressed,
+           uncompressed=uncompressed,
+           crc32=crc32,
+           encrypted=encrypted,
+           offset=headeroffset,
+          }
+          hash[filename]=data
+          list[index]=data
+         end
+        else
+         break
+        end
+       end
+      end
+      break
      end
-     position=position+30+namelength+extralength+skipped
-     if descriptor then
-      setposition(handle,position+compressed)
-      crc32=readcardinal4(handle)
-      compressed=readcardinal4(handle)
-      uncompressed=readcardinal4(handle)
-     end
-     if acceptable then
-      index=index+1
-      local data={
-       filename=filename,
-       index=index,
-       position=position,
-       method=method,
-       compressed=compressed,
-       uncompressed=uncompressed,
-       crc32=crc32,
-       encrypted=encrypted,
-      }
-      hash[filename]=data
-      list[index]=data
-     else
-     end
-     position=position+compressed
-    else
-     break
     end
-    z.list=list
-    z.hash=hash
    end
+   z.list=list
+   z.hash=hash
   end
  end
  function getziplist(z)
@@ -16040,7 +16087,10 @@ local openzipfile,closezipfile,unzipfile,foundzipfile,getziphash,getziplist  do
    local handle=z.handle
    local position=data.position
    local compressed=data.compressed
-   if compressed>0 then
+   if position==nil then
+    position=update(handle,data)
+   end
+   if position and compressed>0 then
     setposition(handle,position)
     local result=readstring(handle,compressed)
     if data.method==8 then
@@ -26138,8 +26188,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1037585
--- stripped bytes    : 408686
+-- original bytes    : 1046208
+-- stripped bytes    : 415601
 
 -- end library merge
 

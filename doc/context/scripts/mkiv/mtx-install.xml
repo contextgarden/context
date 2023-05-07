@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-install</entry>
+  <entry name="detail">ConTeXt Installer</entry>
+  <entry name="version">2.01</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="platform" value="string"><short>platform</short></flag>
+    <flag name="server" value="string"><short>repository url (rsync://contextgarden.net)</short></flag>
+    <flag name="modules" value="string"><short>extra modules (can be list or 'all')</short></flag>
+    <flag name="fonts" value="string"><short>additional fonts (can be list or 'all')</short></flag>
+    <flag name="goodies" value="string"><short>extra binaries (like scite and texworks)</short></flag>
+    <flag name="install"><short>install context</short></flag>
+    <flag name="update"><short>update context</short></flag>
+    <flag name="erase"><short>wipe the cache</short></flag>
+    <flag name="identify"><short>create list of files</short></flag>
+    <flag name="secure"><short>use curl for https</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

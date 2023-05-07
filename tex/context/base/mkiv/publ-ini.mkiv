@@ -1143,7 +1143,7 @@
   {\the\t_btx_reference_inject
    \strc_lists_inject_direct % todo: make like \btx_list_reference_inject_now with { }
       [\s!btx]%
-      [\c!type=\s!btx,\c!location=\v!here]%
+      [\c!type=\s!btx]% \c!location=\v!none
       [\ifx\currentbtxdataset\v!default\else\s!btxset=\currentbtxdataset,\fi%
        \s!btxref=\currentbtxtag,%
       %\ifx\currentbtxcombis  \empty\else\s!btxcom={\currentbtxcombis},\fi%
@@ -1997,6 +1997,7 @@
    \c!separator:juniors={\btxspace},
    \c!separator:vons={\btxspace},
    \c!separator:initials={\btxspace},
+   \c!connector:initials={-},
    \c!stopper:initials={.},
   %\c!surnamesep={\btxcomma}, % is this used anywhere?
    \c!separator:invertedinitials={\btxcomma},
