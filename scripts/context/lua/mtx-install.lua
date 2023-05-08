@@ -636,6 +636,18 @@ function install.update()
     report("update, done")
 end
 
+function install.modules()
+    report("--modules in not yet implemented")
+end
+
+function install.fonts()
+    report("--fonts in not yet implemented")
+end
+
+function install.goodies()
+    report("--goodies in not yet implemented")
+end
+
 if environment.argument("secure") then
     usecurl = checkcurl()
     if not usecurl then
@@ -650,6 +662,12 @@ elseif environment.argument("install") then
     install.update()
 elseif environment.argument("update") then
     install.update()
+elseif environment.argument("modules") then
+    install.modules()
+elseif environment.argument("fonts") then
+    install.fonts()
+elseif environment.argument("goodies") then
+    install.goodies()
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),environment.files[1])
 else
@@ -657,3 +675,4 @@ else
     report("")
     disclaimer()
 end
+

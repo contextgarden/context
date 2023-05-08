@@ -2238,7 +2238,7 @@ function lpdf.flushfonts()
             if not parent then
                 local fontdata   = usedfonts[fontid]
                 local rawdata    = fontdata.shared and fontdata.shared.rawdata
-                local resources  = fontdata.resources
+                local resources  = fontdata.resources  -- not always there, nullfont
                 local properties = fontdata.properties -- writingmode and type3
                 local parameters = fontdata.parameters -- used in type3
 -- print("before",fontid,hash,parent,rawdata)
@@ -2265,7 +2265,7 @@ function lpdf.flushfonts()
                     parent = {
                         hash         = hash,
                         fontdata     = fontdata,
-                        filename     = resources.filename or properties.filename or "unset",
+                        filename     = (resources and resources.filename) or properties.filename or "unset",
                         indices      = { },
                         usedfonts    = { [fontid] = true },
                         used         = used,

@@ -113,7 +113,10 @@ typedef posit32_t tex_posit;
 # define tex_posit_mul(p,q)             (halfword) posit_mul((tex_posit) { .v = (uint32_t) p }, (tex_posit) { .v = (uint32_t) q }).v
 # define tex_posit_div(p,q)             (halfword) posit_div((tex_posit) { .v = (uint32_t) p }, (tex_posit) { .v = (uint32_t) q }).v
 # define tex_posit_sqrt(p)              (halfword) posit_sqrt((tex_posit) { .v = (uint32_t) p }.v
-                                     
+
+# define tex_posit_mul_by(p,q)          (halfword) posit_mul((tex_posit) { .v = (uint32_t) p }, tex_integer_to_posit(q)).v
+# define tex_posit_div_by(p,q)          (halfword) posit_div((tex_posit) { .v = (uint32_t) p }, tex_integer_to_posit(q)).v
+
 # define tex_posit_is_NaR(p)            posit_is_NaR((tex_posit) { .v = (uint32_t) p })         
 
 # define tex_posit_eq_zero(p)           posit_eq_zero((tex_posit) { .v = (uint32_t) p })        

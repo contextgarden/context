@@ -6095,9 +6095,9 @@ halfword tex_scan_posit(int optional_equal)
                 tex_back_input(cur_tok);
                 goto DONE;
             }
-                if (b >= max_posit_size) {
-                    goto TOOBIG;
-                }
+            if (b >= max_posit_size) {
+                goto TOOBIG;
+            }
         }
       DECIMALEXPONENT:
         if (tex_token_is_exponent(cur_tok)) {
@@ -6192,10 +6192,12 @@ halfword tex_scan_posit(int optional_equal)
         }
         tex_back_input(cur_tok);
       DONE:
-        {
+        if (b) { 
             double d = strtof(buffer, NULL);
             cur_val = tex_double_to_posit(d).v;
             return cur_val;
+        } else { 
+            tex_aux_missing_number_error();
         }
       TOOBIG:
         cur_val = tex_integer_to_posit(0).v;

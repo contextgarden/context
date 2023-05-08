@@ -100,11 +100,7 @@ static posit_t *positlib_get(lua_State *L, int i)
         case LUA_TNUMBER:
             {
                 posit p = positlib_push(L);
-                if (lua_isinteger(L, i)) {
-                    *p = i64_to_posit(lua_tointeger(L, 1));
-                } else {
-                    *p = double_to_posit(lua_tonumber(L, i));
-                }
+                *p = lua_isinteger(L, i) ? integer_to_posit(lua_tointeger(L, i)) : double_to_posit(lua_tonumber(L, i));
                 lua_replace(L, i);
                 return p;
             }

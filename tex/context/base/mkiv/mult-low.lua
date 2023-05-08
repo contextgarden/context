@@ -323,6 +323,7 @@ return {
         --
         "scratchstring", "scratchstringone", "scratchstringtwo", "tempstring",
         "scratchcounter", "globalscratchcounter", "privatescratchcounter",
+        "scratchfloat", "globalscratchfloat", "privatescratchfloat",
         "scratchdimen", "globalscratchdimen", "privatescratchdimen",
         "scratchskip", "globalscratchskip", "privatescratchskip",
         "scratchmuskip", "globalscratchmuskip", "privatescratchmuskip",
@@ -360,6 +361,7 @@ return {
         "scratchtopoffset", "scratchbottomoffset", "scratchleftoffset", "scratchrightoffset",
         --
         "scratchcounterone", "scratchcountertwo", "scratchcounterthree", "scratchcounterfour", "scratchcounterfive", "scratchcountersix",
+        "scratchfloatone", "scratchfloattwo", "scratchfloatthree", "scratchfloatfour", "scratchfloatfive", "scratchfloatsix",
         "scratchdimenone", "scratchdimentwo", "scratchdimenthree", "scratchdimenfour", "scratchdimenfive", "scratchdimensix",
         "scratchskipone", "scratchskiptwo", "scratchskipthree", "scratchskipfour", "scratchskipfive", "scratchskipsix",
         "scratchmuskipone", "scratchmuskiptwo", "scratchmuskipthree", "scratchmuskipfour", "scratchmuskipfive", "scratchmuskipsix",
@@ -368,6 +370,9 @@ return {
         "scratchnx", "scratchny", "scratchmx", "scratchmy",
         "scratchunicode",
         "scratchmin", "scratchmax",
+        --
+        "pfsin", "pfcos", "pftan", "pfasin", "pfacos", "pfatan", "pfsinh", "pfcosh", "pftanh", "pfasinh", "pfacosh", "pfatanh",
+        "pfsqrt", "pflog", "pfexp", "pfceil", "pffloor", "pfround", "pfabs", "pfrad", "pfdeg", "pfatantwo", "pfpow", "pfmod", "pfrem",
         --
         "scratchleftskip", "scratchrightskip", "scratchtopskip", "scratchbottomskip",
         --

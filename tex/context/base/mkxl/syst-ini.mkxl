@@ -494,6 +494,7 @@
 %D intrude on normal scratch ones.
 
 \newinteger  \scratchcounter    \newinteger  \globalscratchcounter \newinteger  \privatescratchcounter
+\newposit    \scratchfloat      \newposit    \globalscratchfloat   \newposit    \privatescratchfloat
 \newdimension\scratchdimen      \newdimension\globalscratchdimen   \newdimension\privatescratchdimen
 \newgluespec \scratchskip       \newgluespec \globalscratchskip    \newgluespec \privatescratchskip
 \newmuskip   \scratchmuskip     \newmuskip   \globalscratchmuskip  \newmuskip   \privatescratchmuskip
@@ -501,6 +502,7 @@
 \newbox      \scratchbox        \newbox      \globalscratchbox     \newbox      \privatescratchbox
 
 \newinteger  \scratchcounterone \newinteger  \scratchcountertwo    \newinteger  \scratchcounterthree
+\newposit    \scratchfloatone   \newposit    \scratchfloattwo      \newposit    \scratchfloatthree
 \newdimension\scratchdimenone   \newdimension\scratchdimentwo      \newdimension\scratchdimenthree
 \newgluespec \scratchskipone    \newgluespec \scratchskiptwo       \newgluespec \scratchskipthree
 \newmuskip   \scratchmuskipone  \newmuskip   \scratchmuskiptwo     \newmuskip   \scratchmuskipthree
@@ -508,6 +510,7 @@
 \newbox      \scratchboxone     \newbox      \scratchboxtwo        \newbox      \scratchboxthree
 
 \newinteger  \scratchcounterfour\newinteger  \scratchcounterfive   \newinteger  \scratchcountersix
+\newposit    \scratchfloatfour  \newposit    \scratchfloatfive     \newposit    \scratchfloatsix
 \newdimension\scratchdimenfour  \newdimension\scratchdimenfive     \newdimension\scratchdimensix
 \newgluespec \scratchskipfour   \newgluespec \scratchskipfive      \newgluespec \scratchskipsix
 \newmuskip   \scratchmuskipfour \newmuskip   \scratchmuskipfive    \newmuskip   \scratchmuskipsix

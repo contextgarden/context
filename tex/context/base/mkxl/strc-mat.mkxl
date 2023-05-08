@@ -1152,18 +1152,18 @@
 \installcorenamespace{mathbreakhere}
 
 \def\strc_math_text_here_right#1%
-  {\localbox[\v!righttext]{\llap{#1}}}
+  {\localbox[\v!righttext]{\llap{#1\kern\leftskip}}}
 
 \def\strc_math_text_here_left#1%
-  {\localbox[\v!lefttext]{\rlap{#1}}}
+  {\localbox[\v!lefttext]{\rlap{\kern\rightskip#1}}}
 
 \def\strc_math_text_here_before#1%
   {\vadjust pre \bgroup
      \hbox to \displaywidth \bgroup
         \strut
-        \hskip\leftskip
+        \kern\leftskip
          #1\hss
-        \hskip\rightskip
+        \kern\rightskip
         \strut
      \egroup
    \egroup}
@@ -1172,9 +1172,9 @@
   {\vadjust \bgroup
      \hbox to \displaywidth \bgroup
         \strut
-        \hskip\leftskip
+        \kern\leftskip
         #1\hss
-        \hskip\rightskip
+        \kern\rightskip
         \strut
      \egroup
    \egroup}

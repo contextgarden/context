@@ -3737,7 +3737,7 @@ static void tex_aux_arithmic_register(int a, int code)
                                 value = tex_multiply_integers(original, amount);
                                 break;
                             case posit_val_level:
-                                value = tex_posit_mul(original, amount);
+                                value = tex_posit_mul_by(original, amount);
                                 break;
                             case dimen_val_level:
                                 value = tex_nx_plus_y(original, amount, 0);
@@ -3782,7 +3782,7 @@ static void tex_aux_arithmic_register(int a, int code)
                                 value = tex_x_over_n(original, amount);
                                 break;
                             case posit_val_level:
-                                value = tex_posit_div(original, amount);
+                                value = tex_posit_div_by(original, amount);
                                 break;
                             case glue_val_level:
                             case mu_val_level:
