@@ -98,7 +98,7 @@
    \c!step=.25\lineheight, % needs some experimenting
   %\c!splitmethod=\v!fixed, % will be default
    \c!direction=\v!normal, % new (also todo in the new columnsets)
-   \c!notes=\v!yes,
+ % \c!notes=\v!yes, % needs an update because now we flush weirdly inside the columns
    \c!define=\v!yes,
    \c!method=\ifinner\s!box\else\s!otr\fi] % automatic as suggested by WS
 
@@ -568,6 +568,8 @@
 
 %D The common initialization:
 
+%D !!! todo: notes \automigrationmode\zerocount as well as notes=yes
+
 \def\page_mix_initialize_columns
   {\page_mix_enable_grid_snapping
    %
@@ -584,7 +586,11 @@
    \leftskip \zeropoint
    \rightskip\zeropoint
    %
-   \doifelse{\mixedcolumnsparameter\c!notes}\v!yes\settrue\setfalse\c_page_mix_process_notes
+   \ifcstok{\mixedcolumnsparameter\c!notes}\v!yes
+     \settrue \c_page_mix_process_notes
+   \else
+     \setfalse\c_page_mix_process_notes
+   \fi
    \ifconditional\c_page_mix_process_notes \else
      \startpostponingnotes
    \fi
@@ -606,7 +612,7 @@
    \useblankparameter  \mixedcolumnsparameter
    \useprofileparameter\mixedcolumnsparameter % new
    %
-   \automigrationmode\zerocount % for now
+   \automigrationmode\zerocount % for now (see notes=yes)
    %
    \nofcolumns\c_page_mix_n_of_columns} % public
 

@@ -1478,9 +1478,9 @@
    \dostoptagged}
 
 \protected\def\tabl_ntb_span#1%
-  {\hskip\tabl_ntb_get_dis\c_tabl_ntb_col
+  {\hkern\tabl_ntb_get_dis\c_tabl_ntb_col
    \localcontrolledloop\plusone#1\plusone
-     {\hskip\tabl_ntb_get_wid\c_tabl_ntb_col\relax
+     {\hkern\tabl_ntb_get_wid\c_tabl_ntb_col\relax
       \global\advanceby\c_tabl_ntb_col\plusone}}
 
 \protected\def\tabl_ntb_skip#1%
@@ -2168,7 +2168,7 @@
    \tabl_ntb_anchor_start{#1}{#2}%
    \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop}%
    \tabl_ntb_anchor_stop
-   \hskip\tabl_ntb_get_dis{#2}%
+   \hkern\tabl_ntb_get_dis{#2}%
    \endgroup}
 
 \newtoks\everyresetTABLEyes

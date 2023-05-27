@@ -295,19 +295,23 @@ void tex_set_local_right_width(halfword p, scaled width)
 halfword tex_get_local_interline_penalty(halfword p)
 {
     return par_penalty_interline(p);
+ // return par_inter_line_penalty(p);
 }
 
 halfword tex_get_local_broken_penalty(halfword p)
 {
     return par_penalty_broken(p);
+ // return par_broken_penalty(p);
 }
 
 void tex_set_local_interline_penalty(halfword p, halfword penalty)
 {
     par_penalty_interline(p) = penalty;
+ // par_inter_line_penalty(p) = penalty;
 }
 
 void tex_set_local_broken_penalty(halfword p, halfword penalty)
 {
     par_penalty_broken(p) = penalty;
+ // par_broken_penalty(p) = penalty;
 }

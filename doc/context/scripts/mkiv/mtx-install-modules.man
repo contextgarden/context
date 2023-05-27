@@ -14,8 +14,14 @@
 .B --list
 list modules
 .TP
+.B --installed
+list installed modules
+.TP
 .B --install
 install modules
+.TP
+.B --uninstall
+uninstall modules
 .TP
 .B --module
 install (zip) file(s)

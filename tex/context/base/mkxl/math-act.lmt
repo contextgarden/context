@@ -73,6 +73,17 @@ local d_scratchrightoffset = texisdimen("scratchrightoffset")
 local use_math_goodies = true   directives.register("math.nogoodies",    function(v) use_math_goodies = not v end)
 local checkitalics     = false  trackers  .register("math.checkitalics", function(v) checkitalics     =     v end)
 
+local function registerdone(done,unicode)
+    if not trace_tweaking then
+        done = true
+    elseif done then
+        done[unicode] = true
+    else
+        done = { [unicode] = true }
+    end
+    return done
+end
+
 local mathfontparameteractions = sequencers.new {
     name      = "mathparameters",
     arguments = "target,original",
@@ -789,13 +800,7 @@ do
                         end
                         ori.parts = prt
                     end
-                    if not trace_tweaking then
-                        done = true
-                    elseif done then
-                        done[k] = true
-                    else
-                        done = { [k] = true }
-                    end
+                    done = registerdone(done,k)
                 end
             end
             feedback_tweak("wipevariants",target,original,done)
@@ -875,13 +880,7 @@ do
                                 local t = mathgaps[nn] or nn
                                 if t then
                                     kerns[t] = vv * width
-                                    if not trace_tweaking then
-                                        done = true
-                                    elseif done then
-                                        done[t] = true
-                                    else
-                                        done = { [t] = true }
-                                    end
+                                    done = registerdone(done,t)
                                 end
                             end)
                         end
@@ -1108,13 +1107,7 @@ end
 --                 if a and a > 0 then
 --                     v.topanchor = a * factor
 --                     count = count + 1
---                     if not trace_tweaking then
---                         done = true
---                     elseif done then
---                         done[u] = true
---                     else
---                         done = { [u] = true }
---                     end
+--                     done = registerdone(done,u)
 --                 end
 --             end
 --         end
@@ -1189,13 +1182,7 @@ do
                     end
                 end
                 v.mathkerns = nil
-                if not trace_tweaking then
-                    done = true
-                elseif done then
-                    done[u] = true
-                else
-                    done = { [u] = true }
-                end
+                done = registerdone(done,u)
             end
         end
         feedback_tweak("simplifykerns",target,original,done)
@@ -1271,13 +1258,7 @@ c.bottomanchor = width/2 -- maybe optional
                             okay = true
                         end
                         if okay then
-                            if not trace_tweaking then
-                                done = true
-                            elseif done then
-                                done[u] = true
-                            else
-                                done = { [u] = true }
-                            end
+                            done = registerdone(done,u)
                         else
                             goto smaller
                         end
@@ -1371,16 +1352,7 @@ do
                     local w = c.width
                     if w and w ~= 0 then
                         c.topanchor = v * w
-                        if trace_tweaking then
-                            -- todo
-                        end
-                        if not trace_tweaking then
-                            done = true
-                        elseif done then
-                            done[u] = true
-                        else
-                            done = { [u] = true }
-                        end
+                        done = registerdone(done,u)
                     end
                 end
             end
@@ -1489,13 +1461,7 @@ do
                         local k = data.topright    ; if k and k ~= 0 then chardata.topright    = k * width end
                         local k = data.bottomleft  ; if k and k ~= 0 then chardata.bottomleft  = k * width end
                         local k = data.bottomright ; if k and k ~= 0 then chardata.bottomright = k * width end
-                        if not trace_tweaking then
-                            done = true
-                        elseif done then
-                            done[unicode] = true
-                        else
-                            done = { [unicode] = true }
-                        end
+                        done = registerdone(done,unicode)
                     end
                 end
                 local unicode  = detail(characters,uc)
@@ -1534,13 +1500,7 @@ do
                     local k = data.right  ; if k and k ~= 0 then chardata.rightmargin  = k * width end
                     local k = data.top    ; if k and k ~= 0 then chardata.topmargin    = k * total end
                     local k = data.bottom ; if k and k ~= 0 then chardata.bottommargin = k * total end
-                    if not trace_tweaking then
-                        done = true
-                    elseif done then
-                        done[unicode] = true
-                    else
-                        done = { [unicode] = true }
-                    end
+                    done = registerdone(done,unicode)
                 end
             end
             for unicode, data in next, margins do
@@ -1778,15 +1738,17 @@ do
     function mathtweaks.addrules(target,original,parameters)
         local characters = target.characters
         local thickness  = target.mathparameters.OverbarRuleThickness
-        local width      = target.parameters.emwidth / 2
         local width      = target.parameters.emwidth / 3
---         local step       = 0.8 * width
-        local step       = 0.5 * width
+        local step       = width / 2
+        local quarter    = thickness / 4
+        local half       = thickness / 2
+        local double     = thickness * 2
+        local done       = false
         characters[0x203E] = { -- middle used for all kind
             width    = width,
-            height   = thickness / 2,
-            depth    = thickness / 2,
-            yoffset  = - thickness / 2,
+            height   = half,
+            depth    = half,
+            yoffset  = - half,
             unicode  = 0x203E,
             commands = { { "rule", thickness, width } },
             parts    = {
@@ -1802,7 +1764,7 @@ do
                 local right = rightarrow.parts
                 if left and right then
                     local leftline   = right[1].glyph
-                    local rightline  = left [#left].glyph
+                    local rightline  = left[#left].glyph
                     local leftdata   = characters[leftline]
                     local rightdata  = characters[rightline]
                     local leftwidth  = leftdata.width
@@ -1827,6 +1789,7 @@ do
                         { advance = rightwidth, glyph = rightline, ["end"] = .1*leftwidth, start = .9*rightwidth, extender = 1 },
                     }
                     result.partsorientation = "horizontal"
+                    done = registerdone(done,target)
                 end
             end
         end
@@ -1835,63 +1798,79 @@ do
         --
         -- lucida lacks them ...
         --
-        local half   = thickness / 2
-        local double = thickness * 2
-        --
         if not characters[0x23B4] then
+            local depth  = 0
+            local height = 5 * thickness
             local tpiece = addprivate(target,"bracket-piece-top",{
                 width    = thickness,
-                height   = half,
-                depth    = double,
-                yoffset  = - double,
-                commands = { { "rule", thickness * 2.5, thickness } },
+                height   = height,
+                depth    = depth,
+                commands = { upcommand[thickness], { "rule", 4 * thickness, thickness } },
+            })
+            local mpiece = addprivate(target,"bracket-piece-top-middle",{
+                width    = width,
+                height   = height,
+                depth    = depth,
+                commands = { upcommand[4*thickness], { "rule", thickness, width } },
             })
             characters[0x23B4] = { -- over
---                 width    = width,
-                width    = 2*thickness+width,
-                height   = half,
-                depth    = double,
+                width    = double + width,
+                height   = height,
+                depth    = depth,
                 unicode  = 0x23B4,
+extensible = false,
                 commands = {
                     slotcommand[0][tpiece],
-                    slotcommand[0][0x203E],
+                    slotcommand[0][mpiece],
                     slotcommand[0][tpiece],
                 },
                 parts    = {
-                    { advance = thickness, glyph = tpiece, ["end"] = 0,    start = half },
-                    { advance = width,     glyph = 0x203E, ["end"] = step, start = step, extender = 1 },
+                    { advance = thickness, glyph = tpiece, ["end"] = 0, start = half },
+                    { advance = width,     glyph = mpiece, ["end"] = step, start = step, extender = 1 },
                     { advance = thickness, glyph = tpiece, ["end"] = half, start = 0 },
                 },
                 partsorientation = "horizontal",
             }
+            done = registerdone(done,0x23B4)
         end
         if not characters[0x23B5] then
+            local depth  = 0
+            local height = 5 * thickness
             local bpiece = addprivate(target,"bracket-piece-bottom",{
                 width    = thickness,
-                height   = double,
-                depth    = half,
-                yoffset  = - half,
-                commands = { { "rule", thickness * 2.5, thickness } },
+                height   = height,
+                depth    = depth,
+                yoffset  = depth,
+                commands = { { "rule", 4 * thickness, thickness } },
+            })
+            local mpiece = addprivate(target,"bracket-piece-bottom-middle",{
+                width    = width,
+                height   = height,
+                depth    = depth,
+                commands = { { "rule", thickness, width } },
             })
             characters[0x23B5] = { -- under
-                width    = 2*thickness+width,
-                height   = double,
-                depth    = half,
+                width    = double + width,
+                height   = height,
+                depth    = depth,
                 unicode  = 0x23B5,
+extensible = false,
                 commands = {
                     slotcommand[0][bpiece],
-                    slotcommand[0][0x203E],
+                    slotcommand[0][mpiece],
                     slotcommand[0][bpiece],
                 },
                 parts    = {
-                    { advance = thickness, glyph = bpiece, ["end"] = 0,    start = half },
-                    { advance = width,     glyph = 0x203E, ["end"] = step, start = step, extender = 1 },
+                    { advance = thickness, glyph = bpiece, ["end"] = 0, start = half },
+                    { advance = width,     glyph = mpiece, ["end"] = step, start = step, extender = 1 },
                     { advance = thickness, glyph = bpiece, ["end"] = half, start = 0 },
                 },
                 partsorientation = "horizontal",
             }
+            done = registerdone(done,0x23B5)
         end
         --
+        feedback_tweak("rules",target,original,done)
     end
 
     -- vfmath.builders.extension(target)
@@ -2587,13 +2566,7 @@ do
                 depth   = 0,
                 unicode = unicode,
             }
-            if not trace_tweaking then
-                done = true
-            elseif done then
-                done[unicode] = true
-            else
-                done = { [unicode] = true }
-            end
+            done = registerdone(done,unicode)
         end
         feedback_tweak("wipecues",target,original,done)
     end
@@ -2616,13 +2589,7 @@ do
             local weirdone   = characters[weird]
             if normalone and weirdone and not normalone.next then
                 normalone.next = weirdone.next
-             -- if not trace_tweaking then
-             --     done = true
-             -- elseif done then
-             --     done[normal] = true
-             -- else
-             --     done = { [normal] = true }
-             -- end
+             -- done = registerdone(done,normal)
             end
             weirdone = copytable(normalone)
             characters[weird] = weirdone
@@ -2700,13 +2667,7 @@ else
                 stretchingdata.topanchor = topanchor
                 stretchingdata.commands  = { rightcommand[width + topanchor], charcommand[stretching] }
 end
-                if not trace_tweaking then
-                    done = true
-                elseif done then
-                    done[stretching] = true
-                else
-                    done = { [stretching] = true }
-                end
+                done = registerdone(done,stretching)
             end
         end
         feedback_tweak("fixaccents",target,original,done)
@@ -2728,6 +2689,7 @@ end
                         local llx       = b[1] * factor
                         local urx       = b[3] * factor
 -- if topanchor < 0 then
+data.advance = data.width
 if true then
                      -- width         = - topanchor
                         width = 2 * (topanchor - llx)
@@ -2739,7 +2701,6 @@ if true then
 data.xoffset = -llx
 else
                         width         = urx - llx
-                     -- data.advance  = urx
                         data.commands = {
                             leftcommand[llx],
                             slotcommand[0][unicode]
@@ -2749,13 +2710,7 @@ end
                         data.topanchor    = width/2
                         data.bottomanchor = width/2
                     end
-                    if not trace_tweaking then
-                        done = true
-                    elseif done then
-                        done[unicode] = true
-                    else
-                        done = { [unicode] = true }
-                    end
+                    done = registerdone(done,unicode)
                 end
             end
         end
@@ -2799,13 +2754,7 @@ end
                     cnt = cnt + 1
                 end
                 if okay then
-                    if not trace_tweaking then
-                        done = true
-                    elseif done then
-                        done[stretching] = true
-                    else
-                        done = { [stretching] = true }
-                    end
+                    done = registerdone(done,stretching)
                 end
             end
         end
@@ -2852,13 +2801,7 @@ characters[slot] = {
 -- end
 
                     last.flataccent  = slot
-                    if not trace_tweaking then
-                        done = true
-                    elseif done then
-                        done[stretching] = true
-                    else
-                        done = { [stretching] = true }
-                    end
+                    done = registerdone(done,stretching)
                 end
                 code = last.next
                 if code then
@@ -2891,13 +2834,7 @@ characters[slot] = {
                      -- unicode   = stretching,  -- when we alias to combiners
                         unicode   = alias, -- when we keep the original
                     }
-                    if not trace_tweaking then
-                        done = true
-                    elseif done then
-                        done[stretching] = true
-                    else
-                        done = { [stretching] = true }
-                    end
+                    done = registerdone(done,stretching)
                 end
             end
         end
@@ -2917,13 +2854,7 @@ characters[slot] = {
                 local chardata = characters[unicode]
                 if chardata then
                     chardata.keepbase = true
-                    if not trace_tweaking then
-                        done = true
-                    elseif done then
-                        done[unicode] = true
-                    else
-                        done = { [unicode] = true }
-                    end
+                    done = registerdone(done,unicode)
                 end
             end
         else
@@ -3814,13 +3745,7 @@ do
                             local data = characters[unicode]
                             if data then
                                 data.topovershoot = top * (quad or data.width or 0)
-                                if not trace_tweaking then
-                                    done = true
-                                elseif done then
-                                    done[r] = true
-                                else
-                                    done = { [r] = true }
-                                end
+                                done = registerdone(done,r)
                             end
                         end
                     end

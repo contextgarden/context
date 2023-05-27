@@ -272,10 +272,12 @@ typedef enum math_class_options {
     auto_inject_class_option                  = 0x0100000,
     remove_italic_correction_class_option     = 0x0200000,
     operator_italic_correction_class_option   = 0x0400000,
+    short_inline_class_option                 = 0x0800000,
     no_class_options                          = 0xF000000,
 } math_class_options;
 
 extern int tex_math_has_class_option(halfword cls, int option);
+extern int tex_math_has_class_parent(halfword cls);
 
 typedef enum math_atom_font_options {
     math_atom_no_font_option   = 0,

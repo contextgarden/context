@@ -1169,11 +1169,11 @@
 
 %D Sometimes kerns make more sense than glue but we need to be in the right mode:
 
-\permanent\protected\def\vkern   {\ifhmode\par           \fi\kern}
-\permanent\protected\def\hkern   {\ifvmode\dontleavehmode\fi\kern}
+\ifdefined\vkern    \else \permanent\protected\def\vkern   {\ifhmode\par           \fi\kern}    \fi
+\ifdefined\hkern    \else \permanent\protected\def\hkern   {\ifvmode\dontleavehmode\fi\kern}    \fi
 
-\permanent\protected\def\vpenalty{\ifhmode\par           \fi\penalty}
-\permanent\protected\def\hpenalty{\ifvmode\dontleavehmode\fi\penalty}
+\ifdefined\vpenalty \else \permanent\protected\def\vpenalty{\ifhmode\par           \fi\penalty} \fi
+\ifdefined\hpenalty \else \permanent\protected\def\hpenalty{\ifvmode\dontleavehmode\fi\penalty} \fi
 
 %D Again a few kind-of-extensions the core. These come from plain \TEX\ but are
 %D probably not used in \CONTEXT.

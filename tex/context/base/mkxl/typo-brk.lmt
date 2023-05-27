@@ -406,7 +406,7 @@ local enabled = false
 function breakpoints.define(name)
     local data = numbers[name]
     if data then
-        -- error
+        report_breakpoints("there is already a breakpoints class %a",name)
     else
         local number = #mapping + 1
         local data = {
@@ -439,6 +439,8 @@ function breakpoints.setreplacement(name,char,language,settings)
             middle = middle ~= "" and middle   or nil,
             skip   = settings.range == v_yes,
         } -- was { type or 1, before or 1, after or 1 }
+    else
+        report_breakpoints("there is no breakpoints class %a",name)
     end
 end
 

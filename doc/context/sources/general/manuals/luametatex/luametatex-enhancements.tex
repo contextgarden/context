@@ -1767,6 +1767,30 @@ else \quote {last} has been seen.
 
 \stopsection
 
+\startsection[title=Kerns and penalties]
+
+\startsubsection[title=\prm {hkern} and \prm {vkern}]
+
+\topicindex {kerns}
+
+These two primitives complement \prm {hskip} and \prm {vskip} and force the right
+mode when issued. Contrary to the skips, internally we still have a common kern
+command code but that is not something the user has to worry about.
+
+\stopsubsection
+
+\startsubsection[title=\prm {hpenalty} and \prm {vpenalty}]
+
+\topicindex {penalties}
+
+As the kern and skip related primitives mentioned in the in the previous section
+these two primitives are there fort consistency: they force the right (related)
+mode. (Sometimes being a bit more explicit is cleaner.)
+
+\stopsubsection
+
+\stopsection
+
 \startsection[title=Scanning]
 
 \startsubsection[title=Keywords]

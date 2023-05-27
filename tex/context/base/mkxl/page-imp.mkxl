@@ -459,7 +459,7 @@
      {\setbox\scratchbox\vpack to \arrangedpageY\paperheight
         {\offinterlineskip
          \vskip#4\paperheight
-         \hskip#3\paperwidth
+         \hkern#3\paperwidth
          \dorotatebox{\ifcase#2 0\else180\fi}\hpack{\box#1}%
          \vfill}%
       \wd\scratchbox\zeropoint
@@ -1272,10 +1272,10 @@
       {\ifvoid\arrangedpageB\else
          \unhbox\arrangedpageB
          \ifdim\v_page_target_dx>\zeropoint
-           \hskip\v_page_target_dx
+           \hkern\v_page_target_dx
          \else
            \hss
-           \hskip\v_page_target_dx
+           \hkern\v_page_target_dx
            \hss
          \fi
        \fi
@@ -1412,7 +1412,7 @@
    \setbox#1\vpack
      {\offinterlineskip
       \vskip\d_page_boxes_v_shifts
-      \hskip\d_page_boxes_h_shifts
+      \hkern\d_page_boxes_h_shifts
       \box#1}%
    \next}
 

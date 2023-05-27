@@ -355,7 +355,7 @@
 %    \fi
 %    \lastnamedcs}
 
-\permanent\protected\def\samplefile#1{\clf_samplefile{#1}}
+% \permanent\protected\def\samplefile#1{\clf_samplefile{#1}} % defined at the lua end
 
 % \adddefaultsuffix[foo,{},crap]
 % \adddefaultsuffix[{}]

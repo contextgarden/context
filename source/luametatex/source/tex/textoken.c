@@ -2942,6 +2942,7 @@ void tex_run_convert_tokens(halfword code)
             break;
         */
         case detokenized_code:
+            /*tex Sort of like |\meaningles| but without the explanationart text. */
             {
                 int saved_selector;
                 int saved_scanner_status = lmt_input_state.scanner_status;
@@ -2954,6 +2955,60 @@ void tex_run_convert_tokens(halfword code)
                 tex_show_token_list(t, 0);
                 tex_put_available_token(t);
                 pop_selector;
+                break;
+            }
+        case detokened_code:
+            /*tex Takes a control sequence or token list. Probably a bad name but so be it. */
+            {
+                int saved_selector;
+                int saved_scanner_status = lmt_input_state.scanner_status;
+                halfword list = null;
+                lmt_input_state.scanner_status = scanner_is_normal;
+                tex_get_token();
+                lmt_input_state.scanner_status = saved_scanner_status;
+                switch (cur_cmd) {
+                    case call_cmd:                        
+                    case protected_call_cmd:              
+                    case semi_protected_call_cmd:
+                    case tolerant_call_cmd:               
+                    case tolerant_protected_call_cmd:     
+                    case tolerant_semi_protected_call_cmd:
+                       if (cur_chr) {
+                           /* We only serialize macros with no arguments. */
+                           list = token_link(cur_chr);
+                           break;
+                       } else {
+                           goto WHATEVER;
+                       }
+                    case internal_toks_cmd:
+                    case register_toks_cmd:
+                        list = token_link(eq_value(cur_chr));
+                        break;
+                    case register_cmd:
+                        if (cur_chr == tok_val_level) {
+                            halfword n = tex_scan_toks_register_number();
+                            list = token_link(toks_register(n));
+                            break;
+                        } else { 
+                            goto WHATEVER;
+                        }
+                        break;
+                    default:             
+                      WHATEVER:
+                        {
+                            halfword t = tex_get_available_token(cur_tok);
+                            push_selector;
+                            tex_show_token_list(t, 0);
+                            pop_selector;
+                            tex_put_available_token(t);
+                        }
+                        break;
+                }
+                if (list) {
+                    push_selector;
+                    tex_show_token_list(list, 2);
+                    pop_selector;
+                }
                 break;
             }
         case roman_numeral_code:
@@ -3304,7 +3359,7 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
                 } else {
                     int infop = token_info(p);
                     if (infop < 0) {
-                        /* unlikely, will go after checking  */
+                        /*tex Unlikely, will go after checking (maybe \LUA\ user mess up). */
                         tex_aux_append_str_to_buffer(error_string_bad(32));
                     } else if (infop < cs_token_flag) {
                         /*tex We nearly always end up here because otherwise we have an error. */
@@ -3370,7 +3425,7 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
                                 }
                                 break;
                             case end_match_cmd:
-                                if (skippreamble ==2) {
+                                if (skippreamble == 2) {
                                     goto EXIT;
                                 } else if (chr == 0) {
                                     if (! skip) {
@@ -3380,15 +3435,6 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
                                     skip = 0 ;
                                 }
                                 break;
-                            /*
-                            case string_cmd:
-                                c = c + cs_offset_value;
-                                do_make_room((int) str_length(c));
-                                for (int i = 0; i < str_length(c); i++) {
-                                    token_state.buffer[token_state.bufloc++] = str_string(c)[i];
-                                }
-                                break;
-                            */
                             case end_paragraph_cmd:
                                 if (! inhibit_par && (auto_paragraph_mode(auto_paragraph_text))) {
                                     tex_aux_append_esc_to_buffer("par");

@@ -655,7 +655,7 @@
    \dontleavehmode
    \edef\p_delimited_margin{\delimitedtextparameter\c!location}%
    \ifx\p_delimited_margin\v!margin
-      \hskip-\wd\scratchbox
+      \kern-\wd\scratchbox
    \fi
    \box\scratchbox
    \dostoptagged}

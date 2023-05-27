@@ -53,6 +53,13 @@ local function simplified(t)
     return r
 end
 
+-- if environment.initex then
+--     local texintegerdef = tex.integerdef
+--     for i=1,#nodecodes do
+--         texintegerdef(nodecodes[i] .. "nodecode",i,"immutable")
+--     end
+-- end
+
 -- local noadoptions = allocate {
 --     set      =        0x08,
 --     unused_1 = 0x00 + 0x08,

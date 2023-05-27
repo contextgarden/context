@@ -28,7 +28,7 @@ return {
          -- SuperscriptBottomMaxWithSubscript    = 344, -- 344 in font .8 exheight
          -- SuperscriptBottomMin                 = 108, -- 108 in font .25 exheight
             SuperscriptShiftUp                   = 413, -- 363 in font (multiplied with 4.9547/4.3536, got 413)
-            SuperscriptShiftUpCramped            = 413, -- 289 in font (no distinction, old TeX)
+            SuperscriptShiftUpCramped            = 329, -- 289 in font (no distinction, old TeX)
             PrimeShiftUp                         = "1.1*SuperscriptShiftUp",
             PrimeShiftUpCramped                  = "1.1*SuperscriptShiftUp",
          -- PrimeRaisePercent                    =   0, -- set to 0 in math-act

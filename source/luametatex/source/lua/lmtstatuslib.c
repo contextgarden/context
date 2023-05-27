@@ -356,6 +356,8 @@ static int statslib_getconstants(lua_State *L)
     lua_set_integer_by_key(L, "assumed_math_control",         assumed_math_control);
     
     lua_set_integer_by_key(L, "undefined_math_parameter",     undefined_math_parameter);
+
+    lua_set_integer_by_key(L, "max_calculated_badness",       max_calculated_badness);
     return 1;
 }
 

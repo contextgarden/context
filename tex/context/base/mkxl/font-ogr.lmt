@@ -531,7 +531,12 @@ local initializeoverlay  do
                                     -- todo: use extender
                                     local u = { "use", 0 }
                                     for i=1,#colorlist do
-                                        u[i+2] = colorlist[i].slot
+                                        local c = colorlist[i]
+                                        if c then
+                                            u[i+2] = c.slot
+                                        else
+                                            -- some error
+                                        end
                                     end
                                     v.commands = { u, slotcommand[slot][idx] }
                                     -- hack to prevent that type 3 also gets 'use' flags .. todo

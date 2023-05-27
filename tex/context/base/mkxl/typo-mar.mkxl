@@ -469,7 +469,7 @@
     \executeifdefined{\headalternativeparameter\c!margintext}\margintext {
         \ifconditional\headshownumber
             \headnumbercontent
-            \hskip\headnumberdistance
+            \hkern\headnumberdistance
         \fi
         \headtextcontent
     }

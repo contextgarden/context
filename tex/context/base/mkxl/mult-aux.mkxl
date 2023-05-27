@@ -65,10 +65,6 @@
 %
 % There can be less {} in the following definitions if we assume \??aa and \c!somecs
 %
-% todo: \def\detokenized...parameter#1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2\endcsname}} % always root
-%
-% it might be more efficient to do this at the lua and
-%
 % watch the push/pop and predefinition of current .. this is needed for nested
 % definitions and overloaded defines using the predefined one
 
@@ -274,14 +270,15 @@
 %D pre-expansion can be a bit faster but handly any effect on a normal run so let's
 %D go for saving some memory.
 
-\def\mult_interfaces_detokenize{\expandafter\expandafter\expandafter\detokenize\expandafter\expandafter\expandafter}
+%def\mult_interfaces_detokenize{\expandafter\expandafter\expandafter\detokenize\expandafter\expandafter\expandafter}
 
 \protected\def\mult_interfaces_install_parameter_handler#1#2#3#4#5#6#7#8#9%
   {\frozen\def#3##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
    \frozen\def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
    \frozen\edef#5##1##2{\noexpand\ifrelax##1\??empty\noexpand\else\noexpand#4##1{##2}\noexpand\fi}% is {} needed around ##1 ?
    \frozen\def#6##1##2{\csname\ifcsname#1##1:##2\endcsname#1##1:##2\else\expandafter#5\csname#1##1:\s!parent\endcsname{##2}\fi\endcsname}%
-   \frozen\def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
+  %\frozen\def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
+   \frozen\def#7##1{\expandafter\detokened\csname#1#2:##1\endcsname}% always root, no backtrack
    \frozen\def#8##1{\begincsname#1#2:##1\endcsname}%
    % TODO
    \frozen\def#9##1##2{\expandafter\let\expandafter##1\csname\ifcsname#1#2:##2\endcsname#1#2:##2\else\expandafter#5\csname#1#2:\s!parent\endcsname{##2}\fi\endcsname}}
@@ -301,7 +298,8 @@
         \expandafter\noexpand\csname letfrom#2parameter\endcsname}} % strict#2parameter is gone
 
 \protected\def\mult_interfaces_install_root_parameter_handler#1#2#3%
-  {\frozen\def#2##1{\detokenize\expandafter\expandafter\expandafter{\csname#1:##1\endcsname}}% always root
+ %{\frozen\def#2##1{\detokenize\expandafter\expandafter\expandafter{\csname#1:##1\endcsname}}% always root
+  {\frozen\def#2##1{\expandafter\detokened\csname#1:##1\endcsname}% always root
    \frozen\def#3##1{\begincsname#1:##1\endcsname}}
 
 \permanent\protected\def\installrootparameterhandler#1#2%
@@ -672,7 +670,8 @@
 
 \protected\def\mult_interfaces_install_direct_parameter_handler#1#2#3#4#5%
   {\frozen\def#3##1{\begincsname#1##1\endcsname}%
-   \frozen\def#4##1{\detokenize\expandafter\expandafter\expandafter{\csname#1##1\endcsname}}%
+  %\frozen\def#4##1{\detokenize\expandafter\expandafter\expandafter{\csname#1##1\endcsname}}%
+   \frozen\def#4##1{\expandafter\detokened\csname#1##1\endcsname}%
    \frozen\def#5##1{\begincsname#1##1\endcsname}}
 
 \permanent\protected\def\installdirectparameterhandler#1#2%

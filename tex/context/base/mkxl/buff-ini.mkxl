@@ -96,7 +96,7 @@
    % \expandafter\relax\string} % dirty trick
      \scratchcounterone
      % better than \string but still a dirty trick to avoid \par mess in blocks
-     \expandafter\scratchcountertwo\detokenized}
+     \expandafter\scratchcountertwo\detokenized} % the bare token (so not \detokened !)
 
 \protected\def\buff_stop#1%
   {\endgroup % (3 & 4 & 5 & 6)

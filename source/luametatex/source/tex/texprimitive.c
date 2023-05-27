@@ -899,12 +899,6 @@ void tex_print_cmd_chr(singleword cmd, halfword chr)
             /*tex Kind of special. */
             tex_print_str_esc("notexpanded");
             break;
-        /*
-        case string_cmd:
-            print_str("string:->");
-            print(cs_offset_value + chr);
-            break;
-        */
         case internal_box_reference_cmd:
             tex_print_str_esc("hiddenlocalbox");
             break;

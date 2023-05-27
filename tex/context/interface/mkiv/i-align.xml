@@ -61,6 +61,8 @@
                 <cd:constant type="more"/>
                 <cd:constant type="1*more"/>
                 <cd:constant type="2*more"/>
+                <cd:constant type="fit"/>
+                <cd:constant type="profile"/>
                 <!--
                     <cd:constant type="cd:name"/>
                 -->

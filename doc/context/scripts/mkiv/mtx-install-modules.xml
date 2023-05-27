@@ -9,7 +9,9 @@
   <category name="basic">
    <subcategory>
     <flag name="list"><short>list modules</short></flag>
+    <flag name="installed"><short>list installed modules</short></flag>
     <flag name="install"><short>install modules</short></flag>
+    <flag name="uninstall"><short>uninstall modules</short></flag>
     <flag name="module"><short>install (zip) file(s)</short></flag>
    </subcategory>
   </category>
@@ -26,7 +28,11 @@
     <example><command>mtxrun --script install-modules --install --all</command></example>
    </subcategory>
    <subcategory>
-    <example><command>mtxrun --script install-modules --install --module t-letter.zip</command></example>
+    <example><command>mtxrun --script install-modules --install   --module t-letter.zip</command></example>
+    <example><command>mtxrun --script install-modules --uninstall --module t-letter.zip</command></example>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script install-modules --installed</command></example>
    </subcategory>
   </category>
  </examples>

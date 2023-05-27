@@ -40,6 +40,7 @@ typedef enum callback_callback_types {
     show_warning_message_callback,
     hpack_quality_callback,
     vpack_quality_callback,
+    show_break_callback,
     insert_par_callback,
     append_line_filter_callback,
     build_page_insert_callback,
@@ -80,7 +81,8 @@ typedef enum callback_keys {
     callback_lstring_key   = 'L', /*tex a \LUA\ string (struct) */
     callback_node_key      = 'N', /*tex a \TEX\ node (halfword) */
     callback_string_key    = 'S', /*tex a \CCODE\ string */
-    callback_result_key    = 'R', /*tex a string (return value) but nil is also okay */
+    callback_result_s_key  = 'R', /*tex a string (return value) but nil is also okay */
+    callback_result_i_key  = 'r', /*tex a number (return value) but nil is also okay */
 } callback_keys;
 
 inline static int  lmt_callback_defined         (int a)                               { return lmt_callback_state.values[a]; }

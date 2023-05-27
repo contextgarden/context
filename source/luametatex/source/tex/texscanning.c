@@ -1513,12 +1513,21 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
                     case math_parameter_set_atom_rule:
                     case math_parameter_let_atom_rule:
                     case math_parameter_copy_atom_rule:
-                    case math_parameter_let_parent:
+                 // case math_parameter_let_parent:
                     case math_parameter_copy_parent:
                     case math_parameter_set_defaults:
                         {
                          // cur_val = 0;
                          // cur_val_level = int_val_level;
+                            break;
+                        }
+                    case math_parameter_let_parent:
+                        {
+                            halfword mathclass = tex_scan_math_class_number(0);
+                            if (valid_math_class_code(mathclass)) {
+                                cur_val = tex_math_has_class_parent(mathclass);
+                                cur_val_level = int_val_level;
+                            }
                             break;
                         }
                     case math_parameter_set_pre_penalty:
@@ -1892,16 +1901,6 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
                     goto DEFAULT;
             }
             break;
-        /*
-        case string_cmd:
-            {
-                halfword head = str_toks(str_lstring(cs_offset_value + chr), NULL);
-                begin_inserted_list(head);
-                cur_val = 0;
-                cur_val_level = no_val_level;
-                break;
-            }
-        */
         /*
         case special_box_cmd:
             switch (chr) {
@@ -3290,6 +3289,14 @@ halfword tex_the_value_toks(int code, halfword *tail, halfword property) /* mayb
             }
     }
     return null;
+}
+
+void tex_detokenize_list(halfword head)
+{
+    int saved_selector;
+    push_selector;
+    tex_show_token_list(head, 0);
+    pop_selector;
 }
 
 halfword tex_the_detokenized_toks(halfword *tail)

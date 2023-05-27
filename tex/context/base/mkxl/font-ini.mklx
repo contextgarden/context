@@ -608,7 +608,7 @@
 
 \def\font_basics_define_fontstyle_indeed#style#command%
   {\defcsname\??fontshortstyle#command\endcsname{#style}%
-   \defcsname\??fontstyle     #command\endcsname{\csname#style\endcsname}}
+   \defcsname\??fontstyle     #command\endcsname{\csname#style\endcsname}} % we could pre-expand
 
 \permanent\protected\def\definefontsize[#size]%
   {\ifcsname\??fontsizeknown#size\endcsname \else

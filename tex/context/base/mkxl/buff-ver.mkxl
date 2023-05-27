@@ -15,7 +15,7 @@
 
 \writestatus{loading}{ConTeXt Buffer Macros / Verbatim}
 
-\registerctxluafile{buff-ver}{}
+\registerctxluafile{buff-ver}{autosuffix}
 
 \unprotect
 
@@ -310,6 +310,7 @@
    \dostarttaggedchained\t!verbatim\currenttype\??type
    \clf_type
      data    {\detokenize{#1}}%
+%      data    {#1}%
      tab     {\typeparameter\c!tab}%
      method  {\p_buff_option}%
      compact {\typeparameter\c!compact}% % none | all | last (all needed in tabulate etc for manuals)

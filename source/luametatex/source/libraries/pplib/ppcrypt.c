@@ -137,7 +137,7 @@ static int ppcrypt_password_encoding (uint8_t *password, size_t *passwordlength)
 {
   uint8_t *p, newpassword[PPCRYPT_MAX_PASSWORD], *n;
   const uint8_t *e;
-  uint32_t unicode;
+  uint32_t unicode = 0;
 
   for (n = &newpassword[0], p = &password[0], e = p + *passwordlength; p < e; ++n)
   {
@@ -398,7 +398,10 @@ static ppcrypt_status ppcrypt_authenticate_permissions (ppcrypt *crypt, ppstring
   aes_decode_data(perms->data, perms->size, permsdata, crypt->filekey, crypt->filekeylength, nulliv, AES_NULL_PADDING);
 
   if (permsdata[9] != 'a' || permsdata[10] != 'd' || permsdata[11] != 'b')
-    return PPCRYPT_FAIL;
+  { /* if we get here, the password hash is correct, we don't need to fail because of unreadable perms (found such docs) */
+    crypt->flags |= PPCRYPT_UNREADABLE_PERMISSIONS;
+    return PPCRYPT_DONE;
+  }
 
   /* do not check/update permissions flags here; they might be different inside crypt string */
   if (0)

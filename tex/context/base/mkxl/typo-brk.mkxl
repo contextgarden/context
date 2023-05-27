@@ -27,6 +27,14 @@
 
 % see below: \exhyphenchar \minusone % we use a different order than base tex, so we really need this
 
+% \definebreakpoints [test]
+%
+% \definebreakpoint [test][:][nleft=3,nright=3,type=1]
+% \definebreakpoint [test][/][nleft=3,nright=3,type=1]
+%
+% {\setbreakpoints[test]\hsize1mm\nohyphens x boundary:boundary/boundary\par}
+% {\setbreakpoints[test]\hsize1mm x boundary:boundary/boundary\par} % still hyphenated
+
 \permanent\tolerant\protected\def\definebreakpoints[#1]%
   {\clf_definebreakpoints{#1}} % todo: public implementor
 
@@ -82,7 +90,7 @@
 % \stop
 
 % \mainlanguage[czech]
-% \definebreakpoint [compound] [\number`-] [language=cs,nleft=3,nright=3,type=4]
+% \definebreakpoint [compound] [-] [language=cs,nleft=3,nright=3,type=4]
 % \setbreakpoints[compound]
 % \start \hsize 1mm test-test \par \stop
 

@@ -193,7 +193,7 @@ return {
         --
         "Ux", "eUx",
         --
-        "parfillleftskip", "parfillrightskip",
+     -- "parfillleftskip", "parfillrightskip",
         --
         "startlmtxmode", "stoplmtxmode", "startmkivmode", "stopmkivmode",
         --
@@ -209,7 +209,7 @@ return {
         "breakafterdirnormalizecode", "removemarginkernsnormalizecode", "clipwidthnormalizecode", "flattendiscretionariesnormalizecode",
         "discardzerotabskipsnormalizecode", "flattenhleadersnormalizecode",
         --
-        "normalizeparnormalizeparcode", "flattenvleadersnormalizeparcode",
+        "normalizeparnormalizeparcode", "flattenvleadersnormalizeparcode", "limitprevgrafnormalizeparcode",
         --
         "nopreslackclassoptioncode", "nopostslackclassoptioncode",
         "lefttopkernclassoptioncode", "righttopkernclassoptioncode", "leftbottomkernclassoptioncode", "rightbottomkernclassoptioncode",
@@ -219,7 +219,7 @@ return {
         "flattenclassoptioncode", "omitpenaltyclassoptioncode", "unpackclassoptioncode", "raiseprimeclassoptioncode",
         "carryoverlefttopkernclassoptioncode", "carryoverleftbottomkernclassoptioncode", "carryoverrighttopkernclassoptioncode", "carryoverrightbottomkernclassoptioncode",
         "preferdelimiterdimensionsclassoptioncode", "autoinjectclassoptioncode", "removeitaliccorrectionclassoptioncode",
-        "operatoritaliccorrectionclassoptioncode",
+        "operatoritaliccorrectionclassoptioncode", "shortinlineclassoptioncode",
         --
         "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noleftligatureglyphoptioncode",
         "noleftkernglyphoptioncode", "norightligatureglyphoptioncode", "norightkernglyphoptioncode",
@@ -270,6 +270,8 @@ return {
         --
         "autorule",
         --
+        "tobits", "tohexa",
+        --
         "strippedcsname","checkedstrippedcsname",
         --
         "nofarguments",
@@ -281,7 +283,7 @@ return {
         "sixthargumentfalse", "sixthargumenttrue",
         "seventhargumentfalse", "seventhargumenttrue",
         --
-        "vkern", "hkern", "vpenalty", "hpenalty",
+     -- "vkern", "hkern", "vpenalty", "hpenalty", -- native in mkxl
         --
         "doglobal", "dodoglobal", "redoglobal", "resetglobal",
         --

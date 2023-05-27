@@ -941,8 +941,6 @@
                 \btxlabeltext{apa:Translator}
             \btxrightparenthesis
         }
-        \btxperiod
-        % TODO: this period may NOT be wanted, as in: Title (2nd ed.).
     }
 \stoptexdefinition
 
@@ -951,7 +949,7 @@
         \resetmode{btx:apa:title-placed}
     } {
         \btxdoif {title} {
-            \btxspace
+            \btxperiod
             \texdefinition {btx:apa:title}
         }
     }
@@ -1087,7 +1085,6 @@
             \btxrightparenthesis
         }
     % outside of interaction
-    \btxperiod
     \doif {\btxfoundname{author}} {title} {
         \setmode{btx:apa:title-placed}
     }
@@ -1095,6 +1092,7 @@
 
 \starttexdefinition mutable protected btx:apa:editor-in
     \btxdoif {booktitle} {
+        \btxperiod
         \btxlabeltext{In}
         \btxspace
         \doifnot {\btxfoundname{author}} {editor} {
@@ -1104,7 +1102,6 @@
             }
         }
         \texdefinition{btx:apa:composed-title}{booktitle}
-        \btxperiod
     }
 \stoptexdefinition
 
@@ -1117,9 +1114,6 @@
         }
     }
 \stoptexdefinition
-
-% TODO: The title is terminated with period. However,
-% we probably don't want this before the parenthesis.
 
 \starttexdefinition mutable protected btx:apa:leftparenthesis-or-comma
     \doifelsemode {btx:apa:editionset-is-empty} {
@@ -1180,8 +1174,9 @@
         \btxflush{pages}
     }
     \doifnotmode {btx:apa:editionset-is-empty} {
-        \btxrightparenthesisperiod
+        \btxrightparenthesis
     }
+    \btxperiod   
 \stoptexdefinition
 
 \starttexdefinition mutable protected btx:apa:journal
@@ -1275,36 +1270,26 @@
     \btxperiod
 \stoptexdefinition
 
-\definebreakpoints[doi]
-\definebreakpoint [doi][:][nleft=3,type=1]
-\definebreakpoint [doi][/][nleft=3,type=1]
-\definebreakpoint [doi][-][nleft=3,type=1]
-\definebreakpoint [doi][.][nleft=3,type=1]
-
 % use \btxentry here?
 
+\sethyphenatedurlafter{:./-_} % question of taste
+
 \starttexdefinition mutable protected btx:apa:url
-    \begingroup
-        \setbreakpoints[doi]
-        \texdefinition {btx:format:goto} {
-            url(\btxflush{url})
-        } {
-            \hyphenatedurl{\btxflush{url}}
-        }
-    \endgroup
+    \texdefinition {btx:format:goto} {
+        url(\btxflush{url})
+    } {
+        \hyphenatedurl{\btxflush{url}}
+    }
 \stoptexdefinition
 
 % use \btxentry here?
 
 \starttexdefinition mutable protected btx:apa:doi
-    \begingroup
-        \setbreakpoints[doi]
-        \texdefinition {btx:format:goto} {
-            url(http://dx.doi.org/\btxflush{doi})
-        } {
-            \hyphenatedurl{doi:\btxflush{doi}}
-        }
-    \endgroup
+    \texdefinition {btx:format:goto} {
+        url(http://dx.doi.org/\btxflush{doi})
+    } {
+       \hyphenatedurl{doi:\btxflush{doi}}
+    }
 \stoptexdefinition
 
 \starttexdefinition mutable protected btx:apa:note
@@ -1326,13 +1311,14 @@
         \btxspace
         \texdefinition{btx:apa:doi}
     }
+    % should the following be hyperlinks? To where?
     \btxdoif {issn} {
         \btxspace
-        issn\colon\btxflush{issn}
+        \hyphenatedurl{issn:\btxflush{issn}}
     }
     \btxdoif {isbn} {
         \btxspace
-        isbn\colon\btxflush{isbn}
+        \hyphenatedurl{isbn:\btxflush{isbn}}
     }
     \texdefinition{btx:apa:note}
     \removeunwantedspaces
@@ -1342,7 +1328,7 @@
     \btxdoif {type} {
         \btxleftbracket
         \btxflush{type}
-        \btxrightbracketperiod
+        \btxrightbracket
     }
 \stoptexdefinition
 
@@ -1357,6 +1343,7 @@
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}
     \texdefinition{btx:apa:type}
+    \btxperiod
     \texdefinition{btx:apa:journal-volume-number-pages}
     \texdefinition{btx:apa:url-doi-note}
 \stopsetups
@@ -1394,6 +1381,7 @@
 \startsetups btx:apa:list:standard
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}
+    \btxperiod
     \texdefinition{btx:apa:url-doi-note}
 \stopsetups
 
@@ -1636,10 +1624,10 @@
     }
     \doifnot {\btxfoundname{title}} {album} {
         \btxdoif {album} {
+            \btxperiod
             \btxlabeltext{In}
             \btxspace
             \btxflush{album}
-            \btxperiod
         }
     }
     \texdefinition{btx:apa:type}
@@ -1662,6 +1650,7 @@
 \startsetups btx:apa:list:misc
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}
+    \btxperiod
     \btxdoif {howpublished} {
         \btxspace
         \btxflush{howpublished}

@@ -2782,6 +2782,7 @@ static int texlib_aux_convert(lua_State *L, int cur_code)
         case cs_active_code:           /* arg token */
      /* case cs_lastname_code:      */ /* arg token */
         case detokenized_code:         /* arg token */
+        case detokened_code:           /* arg cs or {} */
         case meaning_code:             /* arg token */
         case to_mathstyle_code:
             break;
@@ -5016,7 +5017,7 @@ static int texlib_getglyphoptionvalues(lua_State *L)
 
 static int texlib_getnoadoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 36);
+    lua_createtable(L, 2, 37);
     lua_push_key_at_index(L, axis,                   noad_option_axis);
     lua_push_key_at_index(L, noaxis,                 noad_option_no_axis);
     lua_push_key_at_index(L, exact,                  noad_option_exact);
@@ -5058,6 +5059,7 @@ static int texlib_getnoadoptionvalues(lua_State *L)
     lua_push_key_at_index(L, center,                 noad_option_center);
     lua_push_key_at_index(L, scale,                  noad_option_scale);
     lua_push_key_at_index(L, keepbase,               noad_option_keep_base);
+    lua_push_key_at_index(L, single,                 noad_option_single);
 
  // lua_set_string_by_index(L, noad_option_keep_base, "keepbase");
     return 1;
@@ -5158,7 +5160,7 @@ static int texlib_getspecialmathclassvalues(lua_State *L)
 
 static int texlib_getmathclassoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 19);
+    lua_createtable(L, 2, 20);
     lua_set_string_by_index(L, no_pre_slack_class_option,                 "nopreslack");
     lua_set_string_by_index(L, no_post_slack_class_option,                "nopostslack");
     lua_set_string_by_index(L, left_top_kern_class_option,                "lefttopkern");
@@ -5185,6 +5187,7 @@ static int texlib_getmathclassoptionvalues(lua_State *L)
     lua_set_string_by_index(L, auto_inject_class_option,                  "autoinject");
     lua_set_string_by_index(L, remove_italic_correction_class_option,     "removeitaliccorrection");
     lua_set_string_by_index(L, operator_italic_correction_class_option,   "operatoritaliccorrection");
+    lua_set_string_by_index(L, short_inline_class_option,                 "shortinline");
     return 1;
 }
 
@@ -5209,6 +5212,7 @@ static int texlib_getnormalizeparvalues(lua_State *L)
     lua_createtable(L, 2, 0);
     lua_set_string_by_index(L, normalize_par_mode,     "normalizepar");
     lua_set_string_by_index(L, flatten_v_leaders_mode, "flattenvleaders");
+    lua_set_string_by_index(L, limit_prev_graf_mode,   "limitprevgraf");
     return 1;
 }
 
@@ -5397,6 +5401,11 @@ static int texlib_getalignmentcontextvalues(lua_State *L)
     return lmt_push_info_values(L, lmt_interface.alignment_context_values);
 }
 
+static int texlib_getbreakcontextvalues(lua_State *L)
+{
+    return lmt_push_info_values(L, lmt_interface.break_context_values);
+}
+
 static int texlib_getparbeginvalues(lua_State *L)
 {
     return lmt_push_info_values(L, lmt_interface.par_begin_values);
@@ -5478,6 +5487,18 @@ static int texlib_gettextcontrolvalues(lua_State *L)
     lua_set_string_by_index(L, text_control_base_ligaturing,  "baseligaturing");
     lua_set_string_by_index(L, text_control_base_kerning,     "basekerning");
     lua_set_string_by_index(L, text_control_none_protected,   "noneprotected");
+    return 1;
+}
+
+static int texlib_getfitnessvalues(lua_State *L)
+{
+    lua_createtable(L, 5, 1);
+    lua_set_string_by_index(L, very_loose_fit, "veryloose");
+    lua_set_string_by_index(L, loose_fit,      "loose");
+    lua_set_string_by_index(L, semi_loose_fit, "semiloose");
+    lua_set_string_by_index(L, decent_fit,     "decent");
+    lua_set_string_by_index(L, semi_tight_fit, "semitight");
+    lua_set_string_by_index(L, tight_fit,      "tight");
     return 1;
 }
 
@@ -5772,12 +5793,14 @@ static const struct luaL_Reg texlib_function_list[] = {
  /* {"getmathflattenvalues",        texlib_getmathflattenvalues       }, */
     { "getmathcontrolvalues",       texlib_getmathcontrolvalues       },
     { "gettextcontrolvalues",       texlib_gettextcontrolvalues       },
+    { "getfitnessvalues",           texlib_getfitnessvalues           },
     { "getpacktypevalues",          texlib_getpacktypevalues          },
     { "getgroupvalues",             texlib_getgroupvalues             },
     { "getparcontextvalues",        texlib_getparcontextvalues        },
     { "getpagecontextvalues",       texlib_getpagecontextvalues       },
     { "getappendlinecontextvalues", texlib_getappendlinecontextvalues },
     { "getalignmentcontextvalues",  texlib_getalignmentcontextvalues  },
+    { "getbreakcontextvalues",      texlib_getbreakcontextvalues      },
     { "getparbeginvalues",          texlib_getparbeginvalues          },
     { "getparmodevalues",           texlib_getparmodevalues           },
     { "getautomigrationvalues",     texlib_getautomigrationvalues     },

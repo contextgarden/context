@@ -213,7 +213,6 @@ void lmt_tokenlib_initialize(void)
     lmt_interface.command_names[convert_cmd]                      = (command_item) { .id = convert_cmd,                        .lua = lua_key_index(convert),                      .name = lua_key(convert),                      .kind = regular_command_item,   .min = 0,                         .max = last_convert_code,            .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[the_cmd]                          = (command_item) { .id = the_cmd,                            .lua = lua_key_index(the),                          .name = lua_key(the),                          .kind = regular_command_item,   .min = 0,                         .max = last_the_code,                .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[get_mark_cmd]                     = (command_item) { .id = get_mark_cmd,                       .lua = lua_key_index(get_mark),                     .name = lua_key(get_mark),                     .kind = regular_command_item,   .min = 0,                         .max = last_get_mark_code,           .base = 0,                       .fixedvalue = 0            };
- /* lmt_interface.command_names[string_cmd]                       = (command_item) { .id = string_cmd,                         .lua = lua_key_index(string),                       .name = lua_key(string),                       .kind = regular_command_item,   .min = ignore_entry,              .max = max_integer,                  .base = 0,                       .fixedvalue = 0            }; */
     lmt_interface.command_names[call_cmd]                         = (command_item) { .id = call_cmd,                           .lua = lua_key_index(call),                         .name = lua_key(call),                         .kind = token_command_item,     .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[protected_call_cmd]               = (command_item) { .id = protected_call_cmd,                 .lua = lua_key_index(protected_call),               .name = lua_key(protected_call),               .kind = token_command_item,     .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[semi_protected_call_cmd]          = (command_item) { .id = semi_protected_call_cmd,            .lua = lua_key_index(semi_protected_call),          .name = lua_key(protected_call),               .kind = token_command_item,     .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
@@ -1428,6 +1427,54 @@ static int tokenlib_scan_tokenlist(lua_State *L)
     tokenlib_aux_push_token(L, result);
     tokenlib_aux_unsave_tex_scanner(texstate);
     lmt_input_state.def_ref = defref;
+    return 1;
+}
+
+static int tokenlib_scan_detokened(lua_State *L)
+{
+    saved_tex_scanner texstate = tokenlib_aux_save_tex_scanner();
+    int expand = lua_toboolean(L, 1);
+    halfword defref = lmt_input_state.def_ref;
+    halfword result = null;
+    int macro = 0;
+    tokenlib_aux_goto_first_candidate(); /*tex We don't expand the next token! */
+    switch (cur_cmd) {
+        case left_brace_cmd:
+            result = expand ? tex_scan_toks_expand(1, NULL, 0) : tex_scan_toks_normal(1, NULL);
+            break;
+        case call_cmd:
+        case protected_call_cmd:
+        case semi_protected_call_cmd:
+        case tolerant_call_cmd:
+        case tolerant_protected_call_cmd:
+        case tolerant_semi_protected_call_cmd:
+            result = cur_chr;
+            macro = 1;
+            break;
+        default:
+            tex_back_input(cur_tok);
+            break;
+    }
+    tokenlib_aux_unsave_tex_scanner(texstate);
+    lmt_input_state.def_ref = defref;
+    if (result) { 
+        if (token_link(result)) {
+            tex_detokenize_list(token_link(result));
+            if (lmt_string_pool_state.string_temp && lmt_string_pool_state.string_temp_top) {
+                lua_pushlstring(L, (char *) lmt_string_pool_state.string_temp, lmt_string_pool_state.string_temp_top);
+            } else {
+                lua_pushliteral(L,"");
+            }
+            tex_reset_cur_string();
+        } else {
+            lua_pushliteral(L,"");
+        }
+        if (! macro) {
+            tex_flush_token_list(result);
+        }
+    } else { 
+        lua_pushnil(L);
+    }
     return 1;
 }
 
@@ -3630,6 +3677,7 @@ static const struct luaL_Reg tokenlib_function_list[] = {
     { "scancsname",          tokenlib_scan_csname           },
     { "scantoken",           tokenlib_scan_token            }, /* expands next token if needed */
     { "scanbox",             tokenlib_scan_box              },
+    { "scandetokened",       tokenlib_scan_detokened        }, 
     { "isnextchar",          tokenlib_is_next_char          },
     /* writers */
     { "putnext",             tokenlib_put_next              },

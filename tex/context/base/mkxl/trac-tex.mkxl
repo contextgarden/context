@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Tracking Macros / TeX}
 
-\registerctxluafile{trac-tex}{}
+\registerctxluafile{trac-tex}{autosuffix}
 
 %D All tracing flags at the \TEX\ end will be redone this way so
 %D that we have a similar mechanism for \TEX\ and \LUA. Also, the
@@ -40,31 +40,26 @@
 
 \permanent\protected\def\nomkivstatistics{\enabledirectives[system.nostatistics]}
 
-%D This is not really a tracker but for decades it lived in my \type {cont-loc}
-%D file. I moved it here because I wanted someone else to use it. This macro is not
-%D really useful for users. I kept the \LUA\ variant in \type {cont-loc.mkiv}.
+%D Finally this one got moved from cont-exp to here (replacing the old one):
 
-\installcorenamespace{profilemacrocount}
-\installcorenamespace{profilemacromacro}
-
-\newtoks\t_syst_profile
-
-\appendtoks
-    \the\t_syst_profile
-\to \everystoptext
+\installcorenamespace{profilemacro}
 
 \permanent\protected\def\profilemacro#1% an oldie, but modernized a bit
   {\edef\p_name{\csstring#1}%
-   \ifcsname\??profilemacrocount\p_name\endcsname \else
-     \expandafter\newinteger\csname\??profilemacrocount\p_name\endcsname
-     \letcsname\??profilemacromacro\p_name\endcsname#1%
-     \xtoksapp\t_syst_profile
-       {\writestatus
-          {profile}%
-          {\string#1: \noexpand\the\csname\??profilemacrocount\p_name\endcsname}}%
-     \enforced\protected\xdef#1%
-       {\global\advanceby\csname\??profilemacrocount\p_name\endcsname\plusone
-        \expandafter\noexpand\csname\??profilemacromacro\p_name\endcsname}%
+   \ifcsname\??profilemacro\p_name\endcsname \else
+     \aliased\letcsname\??profilemacro\p_name\endcsname#1%
+   % \enforced\protected\xdef#1%
+     \untraced\enforced\ifflags#1\protected\protected\fi\xdef#1%
+       {\noexpand\clf_profilemacro\noexpand#1%
+        \expandafter\noexpand\csname\??profilemacro\p_name\endcsname}%
    \fi}
+
+% \appendtoks
+%     {\appendtoks\showprofiledmacros\to\everystoptext}%
+% \to \everydump
+
+\appendtoks
+    \showprofiledmacros
+\to \everystoptext
 
 \protect \endinput

@@ -1601,13 +1601,14 @@ do  -- else too many locals
 
     -- here
 
-    local infofont = 0
+    local infofont = table.setmetatableindex(function(t,k)
+        local v = define { name = "dejavusansmono", size = texsp("6pt") }
+        t[k] = v
+        return v
+    end)
 
-    function fonts.infofont()
-        if infofont == 0 then
-            infofont = define { name = "dejavusansmono", size = texsp("6pt") }
-        end
-        return infofont
+    function fonts.infofont(small)
+        return infofont[small == true and "3pt" or "6pt"]
     end
 
     -- abstract interfacing : we could actually do a runmacro or so

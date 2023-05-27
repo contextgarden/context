@@ -161,7 +161,7 @@ void tex_run_vadjust(void)
 
 void tex_finish_vadjust_group(void)
 {
-    if (! tex_wrapped_up_paragraph(vadjust_par_context)) {
+    if (! tex_wrapped_up_paragraph(vadjust_par_context, 0)) {
         halfword box, adjust, target; /*tex for short-term use */
         tex_end_paragraph(vadjust_group, vadjust_par_context);
         tex_unsave();

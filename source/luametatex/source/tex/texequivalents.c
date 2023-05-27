@@ -1542,9 +1542,7 @@ void tex_unsave(void)
         }
         tex_local_control(1);
     }
-
     unsave_attribute_state_before();
-
     tex_unsave_math_codes(cur_level);
     tex_unsave_cat_codes(cat_code_table_par, cur_level);
     tex_unsave_text_codes(cur_level);

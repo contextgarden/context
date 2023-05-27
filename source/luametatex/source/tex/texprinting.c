@@ -223,6 +223,8 @@ void tex_print_char(int s)
 
 */
 
+/* no_print terminal | logfile | terminal_and_logfile | pseudo | new_string | luabuffer */ 
+
 static void tex_aux_uprint(int s)
 {
     /*tex We're not sure about this so it's disabled for now! */
@@ -235,7 +237,6 @@ static void tex_aux_uprint(int s)
     */
     if (s == new_line_char_par && lmt_print_state.selector < pseudo_selector_code) {
         tex_print_ln();
-        return;
     } else if (s <= 0x7F) {
         tex_print_char(s);
     } else if (s <= 0x7FF) {

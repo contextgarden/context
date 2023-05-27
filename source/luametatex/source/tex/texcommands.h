@@ -55,6 +55,7 @@
 */
 
 /*tex
+
     Some commands are shared, for instance |car_ret_cmd| is never seen in a token list so it can be
     used for signaling a parameter: |out_param_cmd| in a macro body. These constants relate to the
     21 bit shifting in token properties!
@@ -89,6 +90,8 @@
     easier to extend alignments when we're at it because it brings some code and logic together (of
     course the principles are the same, but there can be slight differences in the way errors are
     reported).
+
+    Comment: experimental |string_cmd| has been removed, as we now have |\constant| flagged macros. 
 */
 
 
@@ -230,7 +233,6 @@ typedef enum tex_command_code {
     mathspec_cmd,
     fontspec_cmd,
     register_cmd,                     /*tex internal register (|\count|, |\dimen|, etc.) */
- /* string_cmd, */                    /*tex discarded experiment but maybe ... */
     combine_toks_cmd,                 /*tex the |toksapp| and similar token (list) combiners */
     /*tex
         That was the last command that could follow |\the|.
@@ -260,7 +262,6 @@ typedef enum tex_command_code {
     convert_cmd,                      /*tex convert to text (|\number|, |\string|, etc.) */
     the_cmd,                          /*tex expand an internal quantity (|\the| or |\unexpanded|, |\detokenize|) */
     get_mark_cmd,                     /*tex inserted mark (|\topmark|, etc.) */
- /* string_cmd, */
     /*tex
         These refer to macros. We might at some point promote the tolerant ones to have their own
         cmd codes. Protected macros were done with an initial token signaling that property but
@@ -459,6 +460,7 @@ typedef enum convert_codes {
     cs_active_code,           /*tex command code for |\csactive| */
  /* cs_lastname_code,      */ /*tex command code for |\cslastname| */
     detokenized_code,         /*tex command code for |\detokenized| */
+    detokened_code,           /*tex command code for |\detokened| */
     roman_numeral_code,       /*tex command code for |\romannumeral| */
     meaning_code,             /*tex command code for |\meaning| */
     meaning_full_code,        /*tex command code for |\meaningfull| */ 
@@ -702,7 +704,6 @@ typedef enum shorthand_def_codes {
     skip_def_code,        /*tex |\skipdef| */
     mu_skip_def_code,     /*tex |\muskipdef| */
     toks_def_code,        /*tex |\toksdef| */
- /* string_def_code, */
     lua_def_code,         /*tex |\luadef| */
     integer_def_code,
     posit_def_code,
@@ -1199,12 +1200,20 @@ typedef enum remove_item_codes {
 
 typedef enum kern_codes {
     normal_kern_code,
-    h_kern_code,              /* maybe */
-    v_kern_code,              /* maybe */
+    h_kern_code,            
+    v_kern_code,            
     non_zero_width_kern_code, /* maybe */
 } kern_codes;
 
 # define last_kern_code normal_kern_code
+
+typedef enum penalty_codes {
+    normal_penalty_code,
+    h_penalty_code,            
+    v_penalty_code,            
+} penalty_codes;
+
+# define last_penalty_code normal_penalty_code
 
 typedef enum tex_mskip_codes {
     normal_mskip_code,

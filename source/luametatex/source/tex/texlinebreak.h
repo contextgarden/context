@@ -79,10 +79,10 @@ typedef struct linebreak_state_info {
     halfword pass_number;
  /* int      auto_breaking; */ /* is gone */
  /* int      math_level;    */ /* was never used */
-    scaled   active_width[10];
-    scaled   background[10];
-    scaled   break_width[10];
-    scaled   disc_width[10];
+    scaled   active_width[n_of_glue_amounts];
+    scaled   background[n_of_glue_amounts];
+    scaled   break_width[n_of_glue_amounts];
+    scaled   disc_width[n_of_glue_amounts];
     scaled   fill_width[4];
     halfword internal_penalty_interline;
     halfword internal_penalty_broken;

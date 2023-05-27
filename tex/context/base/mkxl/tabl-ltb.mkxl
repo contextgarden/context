@@ -301,7 +301,7 @@
          \c!height=\ifempty\p_height\ht\scratchbox\else\p_height\fi,
           \c!depth=\ifempty\p_depth \dp\scratchbox\else\p_depth \fi,
           \c!width=\wd\scratchbox]%
-      \hskip-\wd\scratchbox\box\scratchbox}}
+      \hkern-\wd\scratchbox\box\scratchbox}}
 
 \def\tabl_lines_wrap_up_auto_r
   {\hpack
@@ -313,7 +313,7 @@
          \c!height=\ht\scratchbox,
           \c!depth=\dp\scratchbox,
           \c!width=\wd\scratchbox]%
-      \hskip-\wd\scratchbox\box\scratchbox}}
+      \hkern-\wd\scratchbox\box\scratchbox}}
 
 \def\tabl_lines_wrap_up_line
   {\backgroundline[\linetablecparameter\c!backgroundcolor]{\box\scratchbox}}

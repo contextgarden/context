@@ -10,9 +10,7 @@ if not modules then modules = { } end modules ['math-map'] = {
 -- persian: we will also provide mappers for other scripts
 -- todo   : alphabets namespace
 -- maybe  : script/scriptscript dynamic,
--- check  : (U+2202,U+1D715) : upright
---          (U+2202,U+1D715) : italic
---          (U+2202,U+1D715) : upright
+-- check  : (U+2202,U+1D715) : upright / italic
 --          add them to the regular vectors below so that they honor \it etc
 
 local type, next = type, next

@@ -266,7 +266,7 @@ local function replace(head,first,last,final,hasspace,overload)
                 current = getnext(current)
             end
         end
-        current = getnext(final)
+     -- current = getnext(final) -- some left over? no next!
     elseif oldlength < newlength then
         for i=1,newlength-oldlength do
             local n = copy_node(current)

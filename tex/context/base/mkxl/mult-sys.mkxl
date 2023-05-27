@@ -326,6 +326,7 @@
 \definesystemconstant {ordinary}
 \definesystemconstant {orientation}
 \definesystemconstant {otr}
+\definesystemconstant {overlay}
 \definesystemconstant {pagefloat}
 \definesystemconstant {page}
 \definesystemconstant {paragraph}
@@ -625,6 +626,7 @@
 \definefileconstant {page_run} {s-layout-show}
 \definefileconstant {symb_run} {s-symbols-show}
 \definefileconstant {publ_tra} {s-publications-show}
+\definefileconstant {math_run} {s-math-show}
 
 %D For figure inclusion we need(ed):
 

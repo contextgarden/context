@@ -716,12 +716,12 @@
 
 \defcsname\??mathalignsimple\v!split:\v!flushleft\endcsname#1%
   {#1%
-   \ifchkdim\mathfractionparameter\c!distance\or\hskip\lastchkdim\fi
+   \ifchkdim\mathfractionparameter\c!distance\or\hkern\lastchkdim\fi
    \hfill}
 
 \defcsname\??mathalignsimple\v!split:\v!flushright\endcsname#1%
   {\hfill
-   \ifchkdim\mathfractionparameter\c!distance\or\hskip\lastchkdim\fi
+   \ifchkdim\mathfractionparameter\c!distance\or\hkern\lastchkdim\fi
    \mathatom \s!class \mathordcode \s!unroll {}% prevents +/- seen as sign, unroll prevents empty box
    #1}
 
@@ -860,7 +860,7 @@
 %     \raise
 %         \Umathskewedfractionvgap\textstyle
 %         \hbox\bgroup
-%             $\scriptstyle#1\hskip\dimexpr\Umathskewedfractionhgap\scriptstyle/2\relax$%
+%             $\scriptstyle#1\hkern\dimexpr\Umathskewedfractionhgap\scriptstyle/2\relax$%
 %         \egroup
 %         \hbox to \zeropoint\bgroup
 %             \hss$\textstyle/$\hss
@@ -868,7 +868,7 @@
 %     \lower
 %         \Umathskewedfractionvgap\textstyle
 %         \hbox\bgroup
-%             $\hskip\dimexpr\Umathskewedfractionhgap\scriptstyle/2\relax\scriptstyle#2$%
+%             $\hkern\dimexpr\Umathskewedfractionhgap\scriptstyle/2\relax\scriptstyle#2$%
 %         \egroup
 % }
 %
@@ -876,7 +876,7 @@
 %     \raise
 %         \Umathskewedfractionvgap\textstyle
 %         \hbox\bgroup
-%             $\scriptstyle#1\hskip\dimexpr\Umathskewedfractionhgap\textstyle/2\relax$%
+%             $\scriptstyle#1\hkern\dimexpr\Umathskewedfractionhgap\textstyle/2\relax$%
 %         \egroup
 %         \hbox to \zeropoint\bgroup
 %             \hss$\textstyle/$\hss
@@ -884,7 +884,7 @@
 %     \lower
 %         \Umathskewedfractionvgapskewedfractionvgap\textstyle
 %         \hbox\bgroup
-%             $\hskip\dimexpr\Umathskewedfractionhgap\textstyle/2\relax\scriptstyle#2$%
+%             $\hkern\dimexpr\Umathskewedfractionhgap\textstyle/2\relax\scriptstyle#2$%
 %         \egroup
 % }
 %

@@ -18,8 +18,8 @@ local glue_code         = nodes.nodecodes.glue
 local line_code         = nodes.listcodes.line
 local ghost_code        = nodes.listcodes.ghost
 local middle_code       = nodes.listcodes.middle
-local leftskip_code     = nodes.gluecodes.leftskip
-local rightskip_code    = nodes.gluecodes.rightskip
+----- leftskip_code     = nodes.gluecodes.leftskip
+----- rightskip_code    = nodes.gluecodes.rightskip
 
 local nuts              = nodes.nuts
 local tonut             = nodes.tonut
@@ -64,16 +64,19 @@ local stages            = { }
 local initial           = { }
 
 local c_strc_math_n_of_lines   = texiscount("c_strc_math_n_of_lines")
-local d_strc_math_max_width    = texisdimen("d_strc_math_max_width")
-local d_strc_math_first_width  = texisdimen("d_strc_math_first_width")
-local d_strc_math_last_width   = texisdimen("d_strc_math_last_width")
+local d_strc_math_max_right    = texisdimen("d_strc_math_max_right")
+local d_strc_math_first_right  = texisdimen("d_strc_math_first_right")
+local d_strc_math_last_right   = texisdimen("d_strc_math_last_right")
+local d_strc_math_max_left     = texisdimen("d_strc_math_max_left")
+local d_strc_math_first_left   = texisdimen("d_strc_math_first_left")
+local d_strc_math_last_left    = texisdimen("d_strc_math_last_left")
 local d_strc_math_first_height = texisdimen("d_strc_math_first_height")
 local d_strc_math_last_depth   = texisdimen("d_strc_math_last_depth")
 local d_strc_math_indent       = texisdimen("d_strc_math_indent")
 
 local report = logs.reporter("mathalign")
 
-local trace  = false  trackers.register("mathalign",function(v) trace = v end )
+local trace  = false  trackers.register("math.align",function(v) trace = v end )
 
 local function moveon(s)
     for n, id, subtype in nextnode, getnext(s) do
@@ -134,7 +137,8 @@ stages[1] = function(specification,stage)
             local p = n
             while p do
                 if getid(p) == penalty_code and getpenalty(p) == -10000 then
-                    local d = distance + getdimensions(p,n)
+                    local w = getdimensions(p,n)
+                    local d = distance + w
                     f[2] = d
                     f[3] = p
                     if d > max then
@@ -150,7 +154,7 @@ stages[1] = function(specification,stage)
             local w = f[2]
             local d = i == 1 and (max-w) or -w
             local k = newkern(d)
-            local r = newstrutrule(0,2*65536,2*65536)
+            local r = newstrutrule(0,2*65536,2*65536) -- hm, this adds height and depth !
             local s = moveon(f[3])
             if trace then
                 report("row %i, width %p, delta %p",i,w,d)
@@ -185,15 +189,49 @@ end
 stages[2] = function(specification,stage)
     local head        = getlist(getbox(specification.box))
     local align       = specification.alignstate
-    local maxwidth    = false
     local cnt         = 0
-    local lastwidth   = 0
+local maxwidth    = false
+local firstwidth  = 0
+local lastwidth   = 0
+    local maxright    = false
+    local firstright  = false
+    local lastright   = false
+    local maxleft     = false
+    local firstleft   = false
+    local lastleft    = false
     local firstheight = 0
     local lastdepth   = 0
+    local linenumber  = 0
+    local rightmargin = specification.rightmargin
+    if trace then
+        report("stage 2")
+    end
     for n, id, subtype, list in nextlist, head do
         if subtype == line_code then
             local t = getnormalizedline(n)
-            local m = t.rightskip + t.parfillrightskip
+         -- local m = t.rightskip + t.parfillrightskip
+            local l = t.leftskip  + t.lefthangskip  + t.parinitleftskip  + t.parfillleftskip  + t.indent
+            local r = t.rightskip + t.righthangskip + t.parinitrightskip + t.parfillrightskip
+            local w = getwidth(n)
+            local m = r
+            linenumber = linenumber + 1
+            if trace then
+                report("line %i, width %p, left %p, right %p, used %p",linenumber,w,l,r,w-l-r)
+            end
+            if not maxleft or m > maxleft then
+                maxleft = l
+            end
+            if not maxright or m > maxright then
+                maxright = r
+            end
+            if not firstleft then
+                firstleft = l
+            end
+            if not firstright then
+                firstright = r
+            end
+            lastleft  = l
+            lastright = r
             if not maxwidth then
                 maxwidth    = m
                 firstheight = getheight(n)
@@ -206,25 +244,43 @@ stages[2] = function(specification,stage)
             lastdepth = getdepth(n)
         end
     end
-    if stage == 2 and (align == 2 or align == 3) then
-        for n, id, subtype, list in nextlist, head do
-            if subtype == line_code then
-                if align == 1 then -- flushleft
-                    -- todo
-                elseif align == 2 then -- middle
-                    reposition(n,maxwidth/2)
-                elseif align == 3 then -- flushright
-                    reposition(n,maxwidth)
-                end
-            end
+    local position = 0
+    if align == 1 then -- flushleft
+        if trace then
+            report("reposition %p, %s",0, "flush left")
+            -- todo
+        end
+    elseif align == 2 then -- middle
+        position = (maxwidth-rightmargin)/2
+        if trace then
+            report("reposition %p, %s",position, "center")
+        end
+    elseif align == 3 then -- flushright
+        position = maxwidth
+        if trace then
+            report("reposition %p, %s",maxwidth, "flush right")
         end
     end
+    if stage == 2 and position ~= 0 then
+        for n, id, subtype, list in nextlist, head do
+            reposition(n,position)
+        end
+        firstleft  = firstleft  + position
+        lastleft   = lastleft   + position
+        maxleft    = maxleft    + position
+        firstright = firstright - position
+        lastright  = lastright  - position
+        maxright   = maxright   - position
+    end
     texsetcount("global",c_strc_math_n_of_lines,cnt)
-    texsetdimen("global",d_strc_math_max_width,maxwidth)
-    texsetdimen("global",d_strc_math_first_width,firstwidth)
-    texsetdimen("global",d_strc_math_last_width,lastwidth)
     texsetdimen("global",d_strc_math_first_height,firstheight)
     texsetdimen("global",d_strc_math_last_depth,lastdepth)
+    texsetdimen("global",d_strc_math_first_left,firstleft)
+    texsetdimen("global",d_strc_math_first_right,firstright)
+    texsetdimen("global",d_strc_math_last_left,lastleft)
+    texsetdimen("global",d_strc_math_last_right,lastright)
+    texsetdimen("global",d_strc_math_max_left,maxleft)
+    texsetdimen("global",d_strc_math_max_right,maxright)
 end
 
 stages[3] = stages[2]
@@ -249,6 +305,8 @@ interfaces.implement {
             { "height", "dimension" },
             { "depth", "dimension" },
             { "splitmethod" },
+            { "leftmargin", "dimension" },
+            { "rightmargin", "dimension" },
         }
     },
     actions   = function(specification)

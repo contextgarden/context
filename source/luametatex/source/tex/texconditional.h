@@ -55,12 +55,15 @@ typedef enum if_test_codes {
     if_int_code,            /*tex |\ifnum| */
     if_abs_int_code,        /*tex |\ifabsnum| */ 
     if_zero_int_code,       /*tex |\ifzeronum|*/
+    if_interval_int_code,
     if_posit_code,    
     if_abs_posit_code,
     if_zero_posit_code,
+    if_interval_posit_code,
     if_dim_code,            /*tex |\ifdim| */
     if_abs_dim_code,        /*tex |\ifabsdim| */
     if_zero_dim_code,       /*tex |\ifzerodim| */
+    if_interval_dim_code,
     if_odd_code,            /*tex |\ifodd| */
     if_vmode_code,          /*tex |\ifvmode| */
     if_hmode_code,          /*tex |\ifhmode| */

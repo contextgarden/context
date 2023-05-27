@@ -341,6 +341,7 @@ typedef struct lmt_interface_info {
     value_info    *page_context_values;
     value_info    *append_line_context_values;
     value_info    *alignment_context_values;
+    value_info    *break_context_values;
     value_info    *par_begin_values;
     value_info    *par_mode_values;
     value_info    *math_style_name_values;
@@ -540,6 +541,7 @@ make_lua_key(L, clubpenalty);\
 make_lua_key(L, cmd);\
 make_lua_key(L, cmdname);\
 make_lua_key(L, collapse);\
+make_lua_key(L, collect);\
 make_lua_key(L, combine_toks);\
 make_lua_key(L, command);\
 make_lua_key(L, comment);\
@@ -576,6 +578,7 @@ make_lua_key(L, define_font);\
 make_lua_key(L, define_lua_call);\
 make_lua_key(L, degree);\
 make_lua_key(L, degreevariant);\
+make_lua_key(L, delete);\
 make_lua_key(L, delimited);\
 make_lua_key(L, DelimitedSubFormulaMinHeight);\
 make_lua_key(L, delimiter);\
@@ -762,6 +765,7 @@ make_lua_key(L, index);\
 make_lua_key(L, info);\
 make_lua_key(L, Info);\
 make_lua_key(L, inherited);\
+make_lua_key(L, initialize);\
 make_lua_key(L, inner);\
 make_lua_key(L, innerlocation);\
 make_lua_key(L, innerxoffset);\
@@ -1113,6 +1117,7 @@ make_lua_key(L, relax);\
 make_lua_key(L, remove_item);\
 make_lua_key(L, repeat);\
 make_lua_key(L, replace);\
+make_lua_key(L, report);\
 make_lua_key(L, reserved);\
 make_lua_key(L, reset);\
 make_lua_key(L, rhmin);\
@@ -1170,6 +1175,7 @@ make_lua_key(L, shrink);\
 make_lua_key(L, shrinkorder);\
 make_lua_key(L, simple);\
 make_lua_key(L, size);\
+make_lua_key(L, single);\
 make_lua_key(L, skewchar);\
 make_lua_key(L, SkewedDelimiterTolerance);\
 make_lua_key(L, skeweddelimitertolerance);\
@@ -1222,6 +1228,7 @@ make_lua_key(L, stackvgap);\
 make_lua_key(L, start);\
 make_lua_key(L, state);\
 make_lua_key(L, step);\
+make_lua_key(L, stop);\
 make_lua_key(L, stretch);\
 make_lua_key(L, stretchorder);\
 make_lua_key(L, StretchStackBottomShiftDown);\

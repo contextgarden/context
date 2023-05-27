@@ -1,0 +1,138 @@
+%D \module
+%D   [       file=math-run,
+%D        version=2023.05.18,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Runtime loaded commands,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\permanent\tolerant\protected\gdef\showmathmargins[#1]%
+  {\bgroup
+     \par
+     \c_attr_visual\attributeunsetvalue
+     \ruledhbox to \hsize \bgroup
+       \setbox\scratchbox\hbox to \hsize\bgroup
+         \scratchheight2\lineheight
+         \scratchwidth \onepoint
+         \infofont
+         \ifcstok{#1}\v!all
+           \llap\bgroup
+             \setupinterlinespace
+             \vbox yoffset -\lineheight\bgroup
+               \forgetall
+               \setstrut
+             % \llap{\the      \c_strc_math_n_of_lines \enspace \#l}\par
+               \llap{\withoutpt\d_strc_math_first_left \enspace fl}\par
+               \llap{\withoutpt\d_strc_math_last_left  \enspace ll}\par
+               \llap{\withoutpt\d_strc_math_max_left   \enspace ml}\par
+               \llap{\withoutpt\d_strc_formulas_number \enspace wd}\par
+             \egroup
+             \quad
+           \egroup
+         \fi
+         \ifzeropt\s_strc_formulas_margin_left\else
+           \bgroup\darkred
+             \srule \s!width \scratchwidth \s!height \scratchheight
+             \kern-\scratchwidth
+             \vrule \s!width \s_strc_formulas_margin_left
+             \kern-\scratchwidth
+             \srule \s!width \scratchwidth \s!height \scratchheight
+           \egroup
+         \fi
+         \ifdim\d_math_strc_hangindent>\zeropoint
+           \bgroup\darkred
+             \vrule \s!width \d_math_strc_hangindent \s!depth 2\exheight \s!height-\exheight
+             \kern-\d_math_strc_hangindent
+           \egroup
+         \fi
+         \bgroup\darkgray
+           \leaders\vrule\hfill
+         \egroup
+         \bgroup\darkgreen
+           \srule \s!width \scratchwidth \s!height \scratchheight
+         \egroup
+         \bgroup\darkgray
+           \leaders\vrule\hfill
+         \egroup
+         \ifdim\d_math_strc_hangindent<\zeropoint
+           \bgroup\darkblue
+             \kern\d_math_strc_hangindent
+             \vrule \s!width -\d_math_strc_hangindent \s!depth 2\exheight \s!height-\exheight
+           \egroup
+         \fi
+         \ifzeropt\s_strc_formulas_margin_right\else
+           \bgroup\darkblue
+             \srule \s!width \scratchwidth \s!height \scratchheight
+             \kern-\scratchwidth
+             \vrule \s!width \s_strc_formulas_margin_right
+             \kern-\scratchwidth
+             \srule \s!width \scratchwidth \s!height \scratchheight
+           \egroup
+         \fi
+         \ifcstok{#1}\v!all
+           \rlap\bgroup
+             \setupinterlinespace
+             \quad
+             \vbox yoffset -\lineheight\bgroup
+               \forgetall
+               \setstrut
+               \rlap{fr\enspace\withoutpt\d_strc_math_first_right}\par
+               \rlap{lr\enspace\withoutpt\d_strc_math_last_right }\par
+               \rlap{mr\enspace\withoutpt\d_strc_math_max_right  }\par
+               \rlap
+                 {\formulaparameter\c!location:\enspace
+                  p=\the\c_strc_math_positioning\enspace
+                  a=\the\c_strc_math_ragged_status\enspace
+                  l=\the\c_strc_math_number_location\enspace
+                  v=\the\c_strc_math_number_variant}\par
+             \egroup
+           \egroup
+         \fi
+         \global\c_strc_math_positioning\zerocount
+       \egroup
+       \ht\scratchbox1.2\exheight
+       \dp\scratchbox0.4\exheight
+       \strut
+       \box\scratchbox
+       \kern-\hsize
+       \hbox to \hsize \bgroup
+         \white
+         \infofont
+         \kern\s_strc_formulas_margin_left
+         \quad
+         [\the\s_strc_formulas_margin_left]%
+         \hss
+         [\c!split=\iftok{\formulaparameter\c!split}\emptytoks\v!yes   \else\formulaparameter\c!split\fi]%
+         \quad
+         [\c!align=\iftok{\formulaparameter\c!align}\emptytoks\v!middle\else\formulaparameter\c!align\fi]%
+         \ifcstok{#1}\v!all\else
+           \quad
+           [\c!location=\formulaparameter\c!location]%
+         \fi
+         \hss
+         [\the\s_strc_formulas_margin_right]%
+         \quad
+         \kern\s_strc_formulas_margin_right
+       \egroup
+     \egroup
+   \par
+   \egroup}
+
+\protect
+
+\continueifinputfile{s-math-show.mkxl}
+
+\starttext
+
+\startformula
+    a + b = c
+\stopformula
+
+\stoptext

@@ -548,7 +548,7 @@ static int nodelib_direct_setfont(lua_State *L)
             case rule_node:
                 tex_set_rule_font(n, lmt_tohalfword(L, 2));
                 if (lua_type(L, 3) == LUA_TNUMBER) {
-                    rule_character(n) = lmt_tohalfword(L, 3);
+                    rule_strut_character(n) = lmt_tohalfword(L, 3);
                 }
                 break;
             case glue_node:
@@ -617,7 +617,7 @@ static int nodelib_direct_getchar(lua_State *L)
                 lua_pushinteger(L, glyph_character(n));
                 break;
             case rule_node:
-                lua_pushinteger(L, rule_character(n));
+                lua_pushinteger(L, rule_strut_character(n));
                 break;
             case math_char_node:
             case math_text_char_node:
@@ -646,7 +646,7 @@ static int nodelib_direct_setchar(lua_State *L)
                 glyph_character(n) = lmt_tohalfword(L, 2);
                 break;
             case rule_node:
-                rule_character(n) = lmt_tohalfword(L, 2);
+                rule_strut_character(n) = lmt_tohalfword(L, 2);
                 break;
             case math_char_node:
             case math_text_char_node:
@@ -674,7 +674,7 @@ static int nodelib_direct_getcharspec(lua_State *L)
                 lua_pushinteger(L, glyph_font(n));
                 return 2;
             case rule_node:
-                lua_pushinteger(L, rule_character(n));
+                lua_pushinteger(L, rule_strut_character(n));
                 lua_pushinteger(L, tex_get_rule_font(n, text_style));
                 break;
             case simple_noad: 
@@ -1489,8 +1489,8 @@ static int nodelib_direct_getoffsets(lua_State *L)
             case rule_node:
                 lua_pushinteger(L, rule_x_offset(n));
                 lua_pushinteger(L, rule_y_offset(n));
-                lua_pushinteger(L, rule_left(n));
-                lua_pushinteger(L, rule_right(n));
+                lua_pushinteger(L, tex_get_rule_left(n));
+                lua_pushinteger(L, tex_get_rule_right(n));
                 return 4;
         }
     }
@@ -1537,10 +1537,10 @@ static int nodelib_direct_setoffsets(lua_State *L)
                     rule_y_offset(n) = (halfword) lmt_roundnumber(L, 3);
                 }
                 if (lua_type(L, 4) == LUA_TNUMBER) {
-                    rule_left(n) = (halfword) lmt_roundnumber(L, 4);
+                    tex_set_rule_left(n,  (halfword) lmt_roundnumber(L, 4));
                 }
                 if (lua_type(L, 5) == LUA_TNUMBER) {
-                    rule_right(n) = (halfword) lmt_roundnumber(L, 5);
+                    tex_set_rule_right(n, (halfword) lmt_roundnumber(L, 5));
                 }
                 break;
         }
@@ -1610,10 +1610,10 @@ static int nodelib_direct_addmargins(lua_State *L)
                 break;
             case rule_node:
                 if (lua_type(L, 2) == LUA_TNUMBER) {
-                    rule_left(n) += (halfword) lmt_roundnumber(L, 2);
+                    tex_set_rule_left(n, tex_get_rule_left(n) + (halfword) lmt_roundnumber(L, 2));
                 }
                 if (lua_type(L, 3) == LUA_TNUMBER) {
-                    rule_right(n) += (halfword) lmt_roundnumber(L, 3);
+                    tex_set_rule_right(n, tex_get_rule_right(n) + (halfword) lmt_roundnumber(L, 3));
                 }
                 break;
         }
@@ -2907,9 +2907,9 @@ static int nodelib_direct_getruledimensions(lua_State *L)
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n && node_type(n) == rule_node) {
         if (node_subtype(n) == virtual_rule_subtype) {
-            lua_pushinteger(L, rule_data(n));
-            lua_pushinteger(L, rule_left(n));
-            lua_pushinteger(L, rule_right(n));
+            lua_pushinteger(L, rule_virtual_width(n));
+            lua_pushinteger(L, rule_virtual_height(n));
+            lua_pushinteger(L, rule_virtual_depth(n));
             lua_pushboolean(L, 1);
         } else {
             lua_pushinteger(L, rule_width(n));
@@ -2921,6 +2921,32 @@ static int nodelib_direct_getruledimensions(lua_State *L)
     } else { 
         return 0;
     }
+}
+
+static int nodelib_direct_setruledimensions(lua_State *L)
+{
+    halfword n = nodelib_valid_direct_from_index(L, 1);
+    if (n && node_type(n) == rule_node) {
+        scaled wd = (scaled) lmt_roundnumber(L, 2);
+        scaled ht = (scaled) lmt_roundnumber(L, 3);
+        scaled dp = (scaled) lmt_roundnumber(L, 4);
+        if (node_subtype(n) == virtual_rule_subtype) {
+            rule_virtual_width(n) = wd;
+            rule_virtual_height(n) = ht;
+            rule_virtual_depth(n) = dp;
+            rule_width(n) = 0;
+            rule_height(n) = 0;
+            rule_depth(n) = 0;
+        } else {
+            rule_width(n) = wd;
+            rule_height(n) = ht;
+            rule_depth(n) = dp;
+        }
+        if (lua_type(L, 5) == LUA_TNUMBER) {
+            rule_data(n) = (halfword) lmt_roundnumber(L, 5);
+        }
+    }
+    return 0;
 }
 
 /* node.direct.getlist */
@@ -6577,21 +6603,21 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, total)) {
                                 lua_pushinteger(L, rule_total(n));
                             } else if (lua_key_eq(s, xoffset)) {
-                                lua_pushinteger(L,rule_x_offset(n));
+                                lua_pushinteger(L, rule_x_offset(n));
                             } else if (lua_key_eq(s, yoffset)) {
-                                lua_pushinteger(L,rule_y_offset(n));
+                                lua_pushinteger(L, rule_y_offset(n));
                             } else if (lua_key_eq(s, left)) {
-                                lua_pushinteger(L,rule_left(n));
+                                lua_pushinteger(L, tex_get_rule_left(n));
                             } else if (lua_key_eq(s, right)) {
-                                lua_pushinteger(L,rule_right(n));
+                                lua_pushinteger(L, tex_get_rule_right(n));
                             } else if (lua_key_eq(s, data)) {
-                                lua_pushinteger(L,rule_data(n));
+                                lua_pushinteger(L, rule_data(n));
                             } else if (lua_key_eq(s, font)) {
                                 lua_pushinteger(L, tex_get_rule_font(n, text_style));
                             } else if (lua_key_eq(s, fam)) {
                                 lua_pushinteger(L, tex_get_rule_font(n, text_style));
                             } else if (lua_key_eq(s, char)) {
-                                lua_pushinteger(L, rule_character(n));
+                                lua_pushinteger(L, rule_strut_character(n));
                             } else {
                                 lua_pushnil(L);
                             }
@@ -7262,9 +7288,9 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, yoffset)) {
                                 rule_y_offset(n) = (halfword) lmt_roundnumber(L, 3);
                             } else if (lua_key_eq(s, left)) {
-                                rule_left(n) = (halfword) lmt_roundnumber(L, 3);
+                                tex_set_rule_left(n, (halfword) lmt_roundnumber(L, 3));
                             } else if (lua_key_eq(s, right)) {
-                                rule_right(n) = (halfword) lmt_roundnumber(L, 3);
+                                tex_set_rule_right(n, (halfword) lmt_roundnumber(L, 3));
                             } else if (lua_key_eq(s, data)) {
                                 rule_data(n) = lmt_tohalfword(L, 3);
                             } else if (lua_key_eq(s, font)) {
@@ -7272,7 +7298,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, fam)) {
                                 tex_set_rule_family(n, lmt_tohalfword(L, 3));
                             } else if (lua_key_eq(s, char)) {
-                                rule_character(n) = lmt_tohalfword(L, 3);
+                                rule_strut_character(n) = lmt_tohalfword(L, 3);
                             } else {
                                 goto CANTSET;
                             }
@@ -9809,6 +9835,7 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "getkerndimension",        nodelib_direct_getkerndimension       },
     { "getlistdimensions",       nodelib_direct_getlistdimensions      },
     { "getruledimensions",       nodelib_direct_getruledimensions      },
+    { "setruledimensions",       nodelib_direct_setruledimensions      },
     { "patchattributes",         nodelib_direct_patchattributes        },
     { "remove",                  nodelib_direct_remove                 },
     { "removefromlist",          nodelib_direct_remove_from_list       },

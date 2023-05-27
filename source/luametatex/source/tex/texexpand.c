@@ -535,14 +535,6 @@ void tex_expand_current_token(void)
                         }
                         break;
                     }
-                /*
-                case string_cmd:
-                    {
-                        halfword head = str_toks(str_lstring(cs_offset_value + cur_chr), NULL);
-                        begin_inserted_list(head);
-                        break;
-                    }
-                */
                 default:
                     /* Maybe ... or maybe an option */
                  // if (lmt_expand_state.cs_name_level == 0) {
@@ -636,21 +628,13 @@ static int tex_aux_collect_cs_tokens(halfword *p, int *n)
             case spacer_cmd:
             case letter_cmd:
             case other_char_cmd:
-            case active_char_cmd: /* new */
-              // cur_tok = token_val(cur_cmd, cur_chr);
-              // *p = tex_store_new_token(*p, cur_tok);
+            case active_char_cmd: /* new, here we don't expand */
                  *p = tex_store_new_token(*p, token_val(cur_cmd, cur_chr));
                  *n += 1;
                  break;
          /* case comment_cmd: */
          /* case invalid_char_cmd: */
-            /*
-            case string_cmd:
-                cur_tok = token_val(cur_cmd, cur_chr);
-                *p = store_new_token(*p, cur_tok);
-                *n += str_length(cs_offset_value + cur_chr);
-                break;
-            */
+         /*      break; */
             case call_cmd:
             case tolerant_call_cmd:
                 if (get_token_reference(cur_chr) == max_token_reference) { // ! get_token_parameters(cur_chr)) {

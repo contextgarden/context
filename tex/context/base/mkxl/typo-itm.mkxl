@@ -235,7 +235,7 @@
    \typo_items_construct_items_boxes{#1}%
    \noindent\hbox\bgroup
      \ifvoid\b_typo_items_symbols \else
-       \llap{\box\b_typo_items_symbols\hskip\d_typo_items_distance}%
+       \llap{\box\b_typo_items_symbols\kern\d_typo_items_distance}%
      \fi
      \box\b_typo_items_texts
    \egroup}

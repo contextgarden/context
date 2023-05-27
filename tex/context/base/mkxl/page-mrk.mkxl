@@ -73,7 +73,7 @@
         l=\pagecutmarklength,o=\pagecutmarkoffset}%
    \egroup
    \wd\scratchbox\scratchwidth\ht\scratchbox\scratchheight\dp\scratchbox\scratchdepth
-   \hskip-\scratchwidth\box\scratchbox}
+   \hkern-\scratchwidth\box\scratchbox}
 
 \def\page_marks_add_marking
   {\setlayoutcomponentattribute{\v!print:\v!marking}%
@@ -84,7 +84,7 @@
         l=\pagecutmarklength,o=\pagecutmarkoffset}%
    \egroup
    \wd\scratchbox\scratchwidth\ht\scratchbox\scratchheight\dp\scratchbox\scratchdepth
-   \hskip-\scratchwidth\box\scratchbox}
+   \hkern-\scratchwidth\box\scratchbox}
 
 \def\page_marks_add_lines
   {\setlayoutcomponentattribute{\v!print:\v!lines}%
@@ -96,7 +96,7 @@
         x=\the\c_page_marks_nx,y=\the\c_page_marks_ny}%
    \egroup
    \wd\scratchbox\scratchwidth\ht\scratchbox\scratchheight\dp\scratchbox\scratchdepth
-   \hskip-\scratchwidth\box\scratchbox}
+   \hkern-\scratchwidth\box\scratchbox}
 
 \def\page_marks_add_number
   {\setlayoutcomponentattribute{\v!print:\v!number}%
@@ -108,7 +108,7 @@
         n=\number\ifcase\arrangeno\realpageno\else\arrangeno\fi}%
    \egroup
    \wd\scratchbox\scratchwidth\ht\scratchbox\scratchheight\dp\scratchbox\scratchdepth
-   \hskip-\scratchwidth\box\scratchbox}
+   \hkern-\scratchwidth\box\scratchbox}
 
 \def\page_marks_add_page_indeed#1%
   {\setbox#1\hpack\bgroup

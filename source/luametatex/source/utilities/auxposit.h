@@ -47,6 +47,11 @@ typedef posit32_t *posit;
 # define posit_is_NaR           isNaRP32UI
 
 # define posit_eq_zero(a) (a.v == 0)         
+# define posit_le_zero(a) (a.v <= 0)         
+# define posit_lt_zero(a) (a.v <  0)         
+# define posit_gt_zero(a) (a.v >  0)         
+# define posit_ge_zero(a) (a.v >= 0)         
+# define posit_ne_zero(a) (a.v != 0)         
 
 inline static posit_t posit_neg(posit_t a) { posit_t p ; p.v = -a.v & 0xFFFFFFFF; return p; } 
 inline static posit_t posit_abs(posit_t a) { posit_t p ; int mask = a.v >> 31; p.v = ((a.v + mask) ^ mask) & 0xFFFFFFFF; return p; }
@@ -119,7 +124,12 @@ typedef posit32_t tex_posit;
 
 # define tex_posit_is_NaR(p)            posit_is_NaR((tex_posit) { .v = (uint32_t) p })         
 
-# define tex_posit_eq_zero(p)           posit_eq_zero((tex_posit) { .v = (uint32_t) p })        
+# define tex_posit_eq_zero(p)           posit_eq_zero((tex_posit) { .v = (uint32_t) p })
+# define tex_posit_le_zero(p)           posit_le_zero((tex_posit) { .v = (uint32_t) p })
+# define tex_posit_lt_zero(p)           posit_lt_zero((tex_posit) { .v = (uint32_t) p })
+# define tex_posit_gt_zero(p)           posit_gt_zero((tex_posit) { .v = (uint32_t) p })
+# define tex_posit_ge_zero(p)           posit_ge_zero((tex_posit) { .v = (uint32_t) p })
+# define tex_posit_ne_zero(p)           posit_ne_zero((tex_posit) { .v = (uint32_t) p })
 
 inline static halfword tex_posit_neg(halfword a) 
 { 

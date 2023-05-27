@@ -157,12 +157,14 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_glue, g_leaders,                     gleaders)
     set_value_entry_key(subtypes_glue, u_leaders,                     uleaders)
 
-    subtypes_boundary = lmt_aux_allocate_value_info(word_boundary);
+    subtypes_boundary = lmt_aux_allocate_value_info(par_boundary);
 
     set_value_entry_key(subtypes_boundary, cancel_boundary,     cancel)
     set_value_entry_key(subtypes_boundary, user_boundary,       user)
     set_value_entry_key(subtypes_boundary, protrusion_boundary, protrusion)
     set_value_entry_key(subtypes_boundary, word_boundary,       word)
+    set_value_entry_key(subtypes_boundary, page_boundary,       page)
+    set_value_entry_key(subtypes_boundary, par_boundary,        par)
 
     subtypes_penalty = lmt_aux_allocate_value_info(equation_number_penalty_subtype);
 
@@ -2724,11 +2726,38 @@ void tex_show_node_list(halfword p, int threshold, int max)
                     if (rule_depth(p)) {
                         tex_print_format(", depth %R", rule_depth(p));
                     }
-                    if (rule_left(p)) {
-                        tex_print_format(", left / top %R", rule_left(p));
-                    }
-                    if (rule_right(p)) {
-                        tex_print_format(", right / bottom %R", rule_right(p));
+                    switch (node_subtype(p)) { 
+                        case virtual_rule_subtype:
+                            if (rule_virtual_width(p)) {
+                                tex_print_format(", virtual width %R", rule_virtual_width(p));
+                            }
+                            if (rule_virtual_height(p)) {
+                                tex_print_format(", virtual height %R", rule_virtual_height(p));
+                            }
+                            if (rule_virtual_depth(p)) {
+                                tex_print_format(", virtual depth %R", rule_virtual_depth(p));
+                            }
+                            break;
+                        case strut_rule_subtype:
+                            if (rule_strut_font(p)) {
+                                if (rule_strut_font(p) >= rule_font_fam_offset) {
+                                    tex_print_format(", family %i", rule_strut_font(p) - rule_font_fam_offset);
+                                } else {
+                                    tex_print_format(", font %F", rule_strut_font(p) < 0 ? 0 : rule_strut_font(p));
+                                }
+                            }
+                            if (rule_strut_character(p)) {
+                                tex_print_format(", character %U", rule_strut_character(p));
+                            }
+                            /* fall through */
+                        default: 
+                            if (rule_left(p)) {
+                                tex_print_format(", left / top %R", rule_left(p));
+                            }
+                            if (rule_right(p)) {
+                                tex_print_format(", right / bottom %R", rule_right(p));
+                            }
+                            break;
                     }
                     if (rule_x_offset(p)) {
                         tex_print_format(", xoffset %R", rule_x_offset(p));
@@ -2736,15 +2765,8 @@ void tex_show_node_list(halfword p, int threshold, int max)
                     if (rule_y_offset(p)) {
                         tex_print_format(", yoffset %R", rule_y_offset(p));
                     }
-                    if (rule_font(p)) {
-                        if (rule_font(p) >= rule_font_fam_offset) {
-                            tex_print_format(", family %i", rule_font(p) - rule_font_fam_offset);
-                        } else {
-                            tex_print_format(", font %F", rule_font(p) < 0 ? 0 : rule_font(p));
-                        }
-                    }
-                    if (rule_character(p)) {
-                        tex_print_format(", character %U", rule_character(p));
+                    if (rule_data(p)) {
+                        tex_print_format(", data %R", rule_data(p));
                     }
                     break;
                 case insert_node:

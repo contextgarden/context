@@ -273,11 +273,11 @@
    \setbox\scratchboxthree\hpack to \d_chem_width{\strut\hss\hbox{\strut\m_chem_bot_text}\hss}%
    \setbox\b_chem_result\hpack \bgroup
      \box\b_chem_result
-     \hskip-\d_chem_width
+     \kern-\d_chem_width
      \raise\d_chem_height\hpack{\lower\ht\scratchboxtwo\box\scratchboxtwo}%
-     \hskip-\d_chem_width
+     \kern-\d_chem_width
      \lower.5\dimexpr\ht\scratchboxone-\dp\scratchboxone\relax\box\scratchboxone
-     \hskip-\d_chem_width
+     \kern-\d_chem_width
      \lower\d_chem_depth\hpack{\raise\dp\scratchboxthree\box\scratchboxthree}%
      \hss
    \egroup} % text on top of chemicals
@@ -544,8 +544,8 @@
 \definechemicalsymbol[i:equilibrium] [\enspace\mathematics{\xrightoverleftarrow{}{}}\enspace]
 \definechemicalsymbol[i:mesomeric]   [\enspace\mathematics{\xleftrightarrow{}{}}\enspace]
 \definechemicalsymbol[i:single]      [\chemicalbondrule]
-\definechemicalsymbol[i:double]      [\hpack{\lower.5ex\chemicalbondrule\hskip-1em\raise.5ex\chemicalbondrule}]
-\definechemicalsymbol[i:triple]      [\hpack{\chemicalbondrule\hskip-1em\lower.5ex\chemicalbondrule\hskip-1em\raise.5ex\chemicalbondrule}]
+\definechemicalsymbol[i:double]      [\hpack{\lower.5ex\chemicalbondrule\kern-\emwidth\raise.5\exheight\chemicalbondrule}]
+\definechemicalsymbol[i:triple]      [\hpack{\chemicalbondrule\kern-\emwidth\lower.5\exheight\chemicalbondrule\kern-\emwidth\raise.5\exheight\chemicalbondrule}]
 
 \permanent\protected\def\chemicalsinglebond {\chemicalsymbol[i:single]}
 \permanent\protected\def\chemicaldoublebond {\chemicalsymbol[i:double]}
@@ -614,8 +614,8 @@
 \definechemicalsymbol[d:equilibrium] [\cleftarrow]
 \definechemicalsymbol[d:mesomeric]   [\crightoverleftarrow]
 \definechemicalsymbol[d:single]      [\chemicalbondrule]
-\definechemicalsymbol[d:double]      [\hpack{\lower.5\exheight\chemicalbondrule\hskip-\emwidth\raise.5\exheight\chemicalbondrule}]
-\definechemicalsymbol[d:triple]      [\hpack{\chemicalbondrule\hskip-\emwidth\lower.5\exheight\chemicalbondrule\hskip-\emwidth\raise.5\exheight\chemicalbondrule}]
+\definechemicalsymbol[d:double]      [\hpack{\lower.5\exheight\chemicalbondrule\kern-\emwidth\raise.5\exheight\chemicalbondrule}]
+\definechemicalsymbol[d:triple]      [\hpack{\chemicalbondrule\kern-\emwidth\lower.5\exheight\chemicalbondrule\kern-\emwidth\raise.5\exheight\chemicalbondrule}]
 \definechemicalsymbol[d:opencomplex] [\mathematics{\Bigg[}]     % not yet ok
 \definechemicalsymbol[d:closecomplex][\mathematics{\Bigg]}]     % not yet ok
 

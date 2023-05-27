@@ -70,10 +70,11 @@ local setwidth     = nuts.setwidth
 local setsubtype   = nuts.setsubtype
 local setleader    = nuts.setleader
 local setclass     = nuts.setclass
-
 local setdata      = nuts.setdata
 local setoffsets   = nuts.setoffsets
 local setvalue     = nuts.setvalue
+
+local setruledimensions = nuts.setruledimensions
 
 local copy_nut     = nuts.copyonly
 local new_nut      = nuts.new
@@ -356,6 +357,8 @@ function nutpool.emptyrule(width,height,depth) -- w/h/d == nil will let them ada
     return n
 end
 
+-- data left right
+
 function nutpool.strutrule(width,height,depth) -- w/h/d == nil will let them adapt
     local n = copy_nut(strutrule)
     if width or height or depth then
@@ -399,11 +402,10 @@ function nutpool.boxrule(width,height,depth) -- w/h/d == nil will let them adapt
     return n
 end
 
-function nutpool.virtualrule(width,height,depth) -- w/h/d == nil will let them adapt
+function nutpool.virtualrule(width,height,depth,data)
     local n = copy_nut(virtualrule)
-    if width or height or depth then
-        setdata(n,width)
-        setoffsets(n,nil,nil,height,depth)
+    if width or height or depth or data then
+        setruledimensions(n,width,height,depth,data)
     end
     return n
 end

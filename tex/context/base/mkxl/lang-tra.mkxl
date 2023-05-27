@@ -87,53 +87,163 @@
 
 \protect \endinput
 
+% \starttext
+%
+%     \switchtobodyfont[shobhika]
+%
+%     \usetransliteration[indic]
+%
+%     \definetransliteration
+%         [MyDeva]
+%         [color=blue,
+%          vector={iast to deva}]
+%
+%     \definetransliteration
+%         [MyDevaB]
+%         [MyDeva]
+%         [color=green]
+%
+%     \transliterationexception[iast to deva]{kauśika}{whoever}
+%     \transliterationexception[MyDeva]      {kauśika}{hans}
+%     \transliterationexception[MyDevaB]     {kauśika}{knuth}
+%
+%     \starttransliteration[MyDeva]
+%         idaṁ adbhutam kauśika tisraḥ garuḍavāhanan%
+%     \stoptransliteration
+%
+%     \starttransliteration[MyDevaB]
+%         idaṁ adbhutam kauśika tisraḥ garuḍavāhanan%
+%     \stoptransliteration
+%
+% \stoptext
+%
 % \setupbodyfont[dejavu]
 %
-% \input lang-tra.mkiv
-%
-% \definetransliteration[serbian][serbian to latin]
+% \setupalign[tolerant,stretch]
 %
 % \starttext
 %
-% \settransliteration[serbian to latin]
+% % \enabletrackers[languages.transliteration]
 %
-% \startchapter[title={АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ}]
-%     АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ
-%     \start
-%         \settransliteration[serbian to latin]
-%         АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ
-%     \stop
-%     АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ
-% \stopchapter
+% \usetransliteration[serbian] %at some point we can preload
 %
-% \resettransliteration
+% \definetransliteration
+%   [MySerbian]
+%   [color=red,
+%    language=en,
+%    vector={serbian to latin}]
 %
-% \startchapter[title={АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ}]
-%     АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ
-%     \start
-%         \settransliteration[serbian to latin]
-%         АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ
-%     \stop
-%     АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ
-% \stopchapter
+% \definetransliteration
+%   [MySerbianX]
+%   [MySerbian]
+%   [color=blue]
 %
-% \definehead[ChapterA][chapter]
-% \definehead[ChapterB][chapter]
-%
-% \startsetups s-to-l
+% АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ
+% \start
 %     \settransliteration[serbian to latin]
-%     \red
-% \stopsetups
+%     АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ
+% \stop
+% \starttransliteration[MySerbian]%
+%     АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ
+% \stoptransliteration
+% АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ
+% \transliteration[MySerbianX]{АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ}
+% АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ
+% \starttransliteration[MySerbian][color=green]%
+%     АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ
+% \stoptransliteration
+% АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ
 %
-% % maybe we need a setups key for this
-% % hm, \definesetups [xxx] [aa,bb,cc]
+% \switchtobodyfont[rachana]
 %
-% \setuphead[ChapterB][commandbefore=\setups{s-to-l}]
+% \usetransliteration[indic]
 %
-% \startChapterA[title={АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ}]
-% \stopChapterA
+% \definebuffer[passage]
+% \startbuffer[passage]
+% तिस्रः खलु विधेर्विधाः – अपूर्वविधिः नियमविधिः परिसङ्ख्याविधिश्च इति। तत्र
+% कालत्रयेऽपि कथमप्यप्राप्तस्य प्राप्तिफलको विधिराद्यः। यथा ‘व्रीहीन् प्रोक्षति’
+% ...
+% तदनुनिष्पादिन्या अविधेयगतत्वेन विप्रकृष्टाया इतरनिवृत्तेः सन्निकृष्टफलसम्भवे
+% फलत्वानौचित्यात् ।
+% \stopbuffer
 %
-% \startChapterB[title={АБВ ГДЕ ЖЗИЙ КЛМНОП РСТУ ФХЦЧ ШЩЪЬ ЮЯ}]
-% \stopChapterB
+% \language[sa]
+%
+% \definedfont[file:arialuni.ttf*devanagari-two at 12pt]
+%
+% \definedfont[file:shobhika-regular.otf*devanagari-two at 12pt]
+%
+% \getbuffer[passage]
+%
+% % \page
+% % {\settransliteration[deva to mlym]\getbuffer[passage]}
+%
+% \page
+%
+% \startlines
+% \transliterate[deva to iast]{आनन्दः}
+% \transliterate[deva to iast]{अक्षयं}
+% \transliterate[deva to iast]{अवप्लुतं}
+% \transliterate[deva to iast]{त्रैयी}
+% \transliterate[deva to iast]{वार्त्तां}
+% \transliterate[deva to iast]{सान्द्रानन्दावबोधात्मकं}
+% \transliterate[deva to iast]{गरुडवाहनन्}
+% \stoplines
+%
+% \page
+%
+% \startlines
+% \transliterate[iast to deva]{ānandaḥ}
+% \transliterate[iast to deva]{ati}
+% \transliterate[iast to deva]{ānandaḥ}
+% \transliterate[iast to deva]{ati}
+% \transliterate[iast to deva]{krauñca}
+% \transliterate[iast to deva]{krodhaṁ}
+% \transliterate[iast to deva]{kruddhaṁ}
+% \transliterate[iast to deva]{upahvarāyi}
+% \transliterate[iast to deva]{hārdika}
+% \transliterate[iast to deva]{śaunaśśepaḥ}
+% \transliterate[iast to deva]{tiśṣitaḥ}
+% \transliterate[iast to deva]{agryīṁ}
+% \transliterate[iast to deva]{saṅkulam}
+% \transliterate[iast to deva]{śrīrāman}
+% \transliterate[iast to deva]{niścitavantaḥ}
+% \transliterate[iast to deva]{idam adbhutama ai kr}
+% \transliterate[iast to deva]{kr saṁdhi}
+% \transliterate[iast to deva]{a}
+% \transliterate[iast to deva]{akr}
+% \transliterate[iast to deva]{āhriyate iast}
+% \transliterate[iast to deva]{utkaṁpita  iast}
+% \transliterate[iast to deva]{śagdhyūṣū}
+% \transliterate[iast to deva]{tretā}
+% \transliterate[iast to deva]{ati}
+% \transliterate[iast to deva]{"ai"}
+% \transliterate[iast to deva]{dhavaḻa}
+% \transliterate[iast to deva]{śrīrāman}
+% \transliterate[iast to deva]{ś}
+% \transliterate[iast to deva]{śra}
+% \transliterate[iast to deva]{​arkau}
+% \transliterate[iast to deva]{kāvikrato}
+% \transliterate[iast to deva]{saṅkulam}
+% \transliterate[iast to deva]{sundaraṁ}
+% \transliterate[iast to deva]{bhirarkiṇaḥ}
+% \transliterate[iast to deva]{bhirarkkiṇaḥ}
+% \transliterate[iast to deva]{karkki khārkki}
+% \transliterate[iast to deva]{cacchā}
+% \transliterate[iast to deva]{karkki khakhārkki "kr"}
+% \transliterate[iast to deva]{i‍​ast śrotṝn}
+% \transliterate[iast to deva]{test ati krarkkṛ au}
+% \stoplines
+%
+% सङ्कुलम्​ श्रीरामन् निश्चितवन्तः इदम् अद्भुतम् ऐ
+%
+% \transliterate [deva to iast] {सौन्दर्य सुन्दर सुंदर सौंदर्य आनन्दः कर्तृत्त्व
+% सिद्धम् सिद्धं बद्धैः भकार शब्दः बभ्रूवाहन गरुडवाहनन् सान्द्रानन्दावबोधात्मकं।
+% auṣadhi madhumattamaḥ इअस्त षट्त्रिंशत् तीर्थास्पदं शिवविरिञ्चिनुतं शरण्यं
+% ऐन्द्र पर्व अभ्यर्च्चैर चँद्रम् सदाऽत्मा, "तेस्त"
+%
+% अ॒ग्निमी᳚ळे पुरोहि॑तम्
+% खखार्क्कि क्रर्क्कृ
+% }
 %
 % \stoptext

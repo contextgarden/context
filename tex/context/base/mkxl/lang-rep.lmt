@@ -111,28 +111,48 @@ lists[v_reset].attribute = unsetvalue -- so we discard 0
 -- todo: glue kern attr
 
 local function add(root,word,replacement)
-    local processor, replacement = splitprocessor(replacement,true) -- no check
-    replacement = lpegmatch(stripper,replacement) or replacement
-    local list = utfsplit(word) -- ,true)
-    local size = #list
-    for i=1,size do
-        local l = utfbyte(list[i])
-        if not root[l] then
-            root[l] = { }
+    if type(replacement) == "function" then
+        local list = utfsplit(word) -- ,true)
+        local size = #list
+        for i=1,size do
+            local l = utfbyte(list[i])
+            if not root[l] then
+                root[l] = { }
+            end
+            if i == size then
+                root[l].final = {
+                    word      = word,
+                    replacer  = replacement,
+                    processor = processor,
+                    oldlength = size,
+                }
+            end
+            root = root[l]
         end
-        if i == size then
-            local special = find(replacement,"{",1,true)
-            local newlist = lpegmatch(splitter,replacement)
-            root[l].final = {
-                word        = word,
-                replacement = replacement,
-                processor   = processor,
-                oldlength   = size,
-                newcodes    = newlist,
-                special     = special,
-            }
+    else
+        local processor, replacement = splitprocessor(replacement,true) -- no check
+        replacement = lpegmatch(stripper,replacement) or replacement
+        local list = utfsplit(word) -- ,true)
+        local size = #list
+        for i=1,size do
+            local l = utfbyte(list[i])
+            if not root[l] then
+                root[l] = { }
+            end
+            if i == size then
+                local special = find(replacement,"{",1,true)
+                local newlist = lpegmatch(splitter,replacement)
+                root[l].final = {
+                    word        = word,
+                    replacement = replacement,
+                    processor   = processor,
+                    oldlength   = size,
+                    newcodes    = newlist,
+                    special     = special,
+                }
+            end
+            root = root[l]
         end
-        root = root[l]
     end
 end
 
@@ -192,16 +212,29 @@ local ispunctuation = characters.is_punctuation
 -- for punctuation was added.
 
 local function replace(head,first,last,final,hasspace,overload)
-    local current   = first
-    local prefirst  = getprev(first) or head
-    local postlast  = getnext(last)
-    local oldlength = final.oldlength
-    local newcodes  = final.newcodes
+    local current     = first
+    local prefirst    = getprev(first) or head
+    local postlast    = getnext(last)
+    local oldlength   = final.oldlength
+    local newcodes    = final.newcodes
+    local word        = final.word
+    local replacement = final.replacement
+    local replacer    = final.replacer
+    local special     = final.special
+    if type(replacer) == "function" then
+        replacement = replacer(word)
+        if type(replacement) == "string" then
+            special  = find(replacement,"{",1,true)
+            newcodes = lpegmatch(splitter,replacement)
+        else
+            return
+        end
+    end
     local newlength = newcodes and #newcodes or 0
     if trace_replacements then
-        report_replacement("replacing word %a by %a",final.word,final.replacement)
+        report_replacement("replacing word %a by %a",word,replacement)
     end
-    if hasspace or final.special then
+    if hasspace or special then
         -- It's easier to delete and insert so we do just that. On the todo list is
         -- turn injected spaces into glue but easier might be to let the char break
         -- handler do that ...
@@ -271,13 +304,13 @@ local function replace(head,first,last,final,hasspace,overload)
     elseif newlength == 0 then
         -- we overload
     elseif oldlength == newlength then
-        if final.word ~= final.replacement then
+        if word ~= replacement then
             for i=1,newlength do
                 setchar(current,newcodes[i])
                 current = getnext(current)
             end
         end
-        current = getnext(final)
+     -- current = getnext(final) -- some left over? no next!
     elseif oldlength < newlength then
         for i=1,newlength-oldlength do
             local n = copy_node(current)

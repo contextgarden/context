@@ -435,6 +435,8 @@ typedef enum int_codes {
     post_display_penalty_code,          /*tex penalty for breaking just after a displayed formula */
     pre_inline_penalty_code,            /*tex penalty for breaking just before an inlined formula */
     post_inline_penalty_code,           /*tex penalty for breaking just after an inlined formula */
+    pre_short_inline_penalty_code,      /*tex penalty for breaking just before a single character inlined formula */
+    post_short_inline_penalty_code,     /*tex penalty for breaking just after a single character inlined formula */
     inter_line_penalty_code,            /*tex additional penalty between lines */
     double_hyphen_demerits_code,        /*tex demerits for double hyphen break */
     final_hyphen_demerits_code,         /*tex demerits for final hyphen break */
@@ -1050,6 +1052,19 @@ typedef enum tex_alignment_context_codes {
     wrapup_pass_alignment_context,
 } tex_alignment_context_codes;
 
+
+typedef enum tex_breaks_context_codes {
+    initialize_show_breaks_context,
+    start_show_breaks_context,
+    list_show_breaks_context,
+    stop_show_breaks_context,
+    collect_show_breaks_context,
+    line_show_breaks_context,
+    delete_show_breaks_context,
+    report_show_breaks_context,
+    wrapup_show_breaks_context,
+} tex_breaks_context_codes;
+
 typedef enum tex_page_context_codes {
     box_page_context,
     end_page_context,
@@ -1392,6 +1407,8 @@ extern void tex_forced_word_define (int g, halfword p, singleword flag, halfword
 # define post_display_penalty_par        count_parameter(post_display_penalty_code)
 # define pre_inline_penalty_par          count_parameter(pre_inline_penalty_code)
 # define post_inline_penalty_par         count_parameter(post_inline_penalty_code)
+# define pre_short_inline_penalty_par    count_parameter(pre_short_inline_penalty_code)
+# define post_short_inline_penalty_par   count_parameter(post_short_inline_penalty_code)
 
 # define local_interline_penalty_par     count_parameter(local_interline_penalty_code)
 # define local_broken_penalty_par        count_parameter(local_broken_penalty_code)
@@ -1664,6 +1681,7 @@ typedef enum normalize_line_mode_bits {
 typedef enum normalize_par_mode_bits {
     normalize_par_mode     = 0x0001,
     flatten_v_leaders_mode = 0x0002, /* used to be 0x200 */
+    limit_prev_graf_mode   = 0x0004,
 } normalize_par_mode_bits;
 
 # define normalize_line_mode_permitted(a,b) ((a & b) == b)

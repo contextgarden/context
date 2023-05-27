@@ -16,8 +16,6 @@
 % TODO: s! vs v! for default and neutral key/values
 % todo: too many refs in list
 
-% TODO A.-B. Foo (dash as connector, see JMH)
-
 % todo: no need for all these %'s
 
 % todo: tagging
@@ -428,6 +426,7 @@
 \permanent\protected\def\btxcommabreak            {\removeunwantedspaces,\hskip\zeropoint plus .5\emwidth\relax}
 \permanent\protected\def\btxcolon                 {\removeunwantedspaces:\space}
 \permanent\protected\def\btxsemicolon             {\removeunwantedspaces;\space}
+\permanent\protected\def\btxhyphen                {\removeunwantedspaces-}
 \permanent\protected\def\btxlparent               {\removeunwantedspaces\space(} % obsolete
 \permanent\protected\def\btxrparent               {\removeunwantedspaces)\space} % obsolete
 \permanent\protected\def\btxleftparenthesis       {\removeunwantedspaces\space(}
@@ -438,7 +437,6 @@
 \permanent\protected\def\btxrightbracket          {\removeunwantedspaces]\space}
 \permanent\protected\def\btxrightbracketperiod    {\removeunwantedspaces].\space}
 \permanent\protected\def\btxrightbracketcomma     {\removeunwantedspaces],\space}
-\permanent\protected\def\btxhyphen                {\removeunwantedspaces-}
 
 %D Variables:
 
@@ -1994,7 +1992,7 @@
    \c!otherstext={\btxspace et al.},
    \c!separator:firstnames={\btxspace},
    \c!separator:juniors={\btxspace},
-   \c!separator:vons={\btxspace},
+   \c!separator:vons={\btxnobreakspace},
    \c!separator:initials={\btxspace},
    \c!connector:initials={\btxhyphen},
    \c!stopper:initials={.},

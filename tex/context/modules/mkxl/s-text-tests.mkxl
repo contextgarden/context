@@ -15,6 +15,28 @@
 
 %D Here we collect some tests that later will become proper macros.
 
+\starttext
+    \setuppapersize[S4]
+    \showmakeup[line]
+    \def\Test#1{\start\setupheadertexts[\string#1]#1\samplefile{ward}\page\stop}
+
+    \Test\notragged
+    \Test\raggedleft
+    \Test\raggedcenter
+    \Test\raggedright
+    \Test\veryraggedleft
+    \Test\veryraggedcenter
+    \Test\veryraggedright
+    \Test\raggedwidecenter
+    \Test\centeredlastline
+    \Test\flushedrightlastline
+    \Test\ttraggedright
+    \Test\forgetragged
+    \Test\raggedslanted
+\stoptext
+
+% fonts
+
 \usebodyfont[bonum]
 \usebodyfont[cambria]
 \usebodyfont[concrete]

@@ -29,6 +29,8 @@ if not modules then modules = { } end modules ['mtx-install-modules'] = {
 -- Maybe some day we can get the modules from ctan but then we need a consistent
 -- names and such.
 
+local find = string.find
+
 local helpinfo = [[
 <?xml version="1.0"?>
 <application>
@@ -41,7 +43,9 @@ local helpinfo = [[
   <category name="basic">
    <subcategory>
     <flag name="list"><short>list modules</short></flag>
+    <flag name="installed"><short>list installed modules</short></flag>
     <flag name="install"><short>install modules</short></flag>
+    <flag name="uninstall"><short>uninstall modules</short></flag>
     <flag name="module"><short>install (zip) file(s)</short></flag>
    </subcategory>
   </category>
@@ -58,13 +62,16 @@ local helpinfo = [[
     <example><command>mtxrun --script install-modules --install --all</command></example>
    </subcategory>
    <subcategory>
-    <example><command>mtxrun --script install-modules --install --module t-letter.zip</command></example>
+    <example><command>mtxrun --script install-modules --install   --module t-letter.zip</command></example>
+    <example><command>mtxrun --script install-modules --uninstall --module t-letter.zip</command></example>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script install-modules --installed</command></example>
    </subcategory>
   </category>
  </examples>
 </application>
 ]]
-
 
 local application = logs.application {
     name     = "mtx-install-modules",
@@ -97,10 +104,21 @@ end or function(str)
     return data
 end
 
+-- We use some abstraction:
+
 local urls = {
     ctan    = "https://mirrors.ctan.org/install",
     modules = "https://modules.contextgarden.net/dl"
 }
+
+-- Some package this in the root which is asking for conflicts.
+
+-- local badones = {
+--  -- "LICENSE",
+--  -- "README",
+--  -- "README.md",
+--  -- "VERSION",
+-- }
 
 local tmpzipfile = "temp.zip"
 local checkdir   = "texmf-context"
@@ -149,35 +167,69 @@ local function loadlists()
         else
             report("base file %a is not found",basefile)
         end
+        report()
     end
-    report()
 end
 
-local function install(list)
-    if type(list) ~= "table"then
+local function validate(n)
+    return not (
+           find(n,"latex")
+     -- or find(n,"lualatex")
+        or find(n,"plain")
+        or find(n,"optex")
+        or find(n,"luatex")
+        or find(n,"pdftex")
+    )
+end
+
+local function install(list,wipe)
+    if type(list) ~= "table" then
         report("unknown specification")
     end
-    local zips   = list.zips
-    local wipes  = list.wipes
+    local zips  = list.zips
+    local wipes = list.wipes
     if type(zips) ~= "table" then
         report("incomplete specification")
     else
-        report("installing into %a",targetdir)
+     -- report("installing into %a",targetdir)
         for i=1,#zips do
-            local where = urls[list.url] .. "/" .. zips[i]
-            local data  = fetched(where)
-            if string.find(data,"^PK") then
-                io.savedata(tmpzipfile,data)
-                report("from %a",where)
-                report("into %a",targetdir)
-                utilities.zipfiles.unzipdir {
-                    zipname = tmpzipfile,
-                    path    = ".",
-                    verbose = "steps",
-                }
-                os.remove(tmpzipfile)
-            else
-                report("unknown %a",where)
+            local remote = list.url
+            local where  = zips[i]
+            local hash = file.addsuffix(sha2.HASH256(where),"tma")
+            local data = table.load(hash)
+            if data then
+                local name = data.name
+                local list = data.list
+                if name and list then
+                    report()
+                    report("removing %i old files for %a",#list,name)
+                    report()
+                    for i=1,#list do
+                        os.remove(list[i])
+                    end
+                end
+            end
+            if not wipe then
+                if remote then
+                    where = (urls[remote] or remote) .. "/" .. where
+                end
+                local data  = fetched(where)
+                if string.find(data,"^PK") then
+                    io.savedata(tmpzipfile,data)
+                    report("from %a",where)
+                    report("into %a",targetdir)
+                    local done = utilities.zipfiles.unzipdir {
+                        zipname  = tmpzipfile,
+                        path     = ".",
+                        verbose  = "steps",
+                        collect  = true,
+                        validate = validate,
+                    }
+                    table.save(hash,{ name = where, list = done })
+                    os.remove(tmpzipfile)
+                else
+                    report("unknown %a",where)
+                end
             end
         end
 
@@ -209,7 +261,23 @@ function scripts.modules.list()
     end
 end
 
-function scripts.modules.install()
+function scripts.modules.installed()
+    local files = dir.glob(targetdir .. "/*.tma")
+    if files then
+        for i=1,#files do
+            local data = table.load(files[i])
+            if data then
+                local name = data.name
+                local list = data.list
+                if name and list then
+                    report("%4i : %s",#list,name)
+                end
+            end
+        end
+    end
+end
+
+function scripts.modules.install(wipe)
     local curdir = dir.current()
     local done   = false
     if not lfs.isdir(checkdir) then
@@ -219,14 +287,18 @@ function scripts.modules.install()
     elseif not lfs.chdir(targetdir) then
         report("unable to go into %a",targetdir)
     elseif environment.argument("module") or environment.argument("modules") then
-        loadlists()
         local files = environment.files
         if #files == 0 then
             report("no archive names provided")
         else
             for i=1,#files do
                 local name = files[i]
-                install { url = "modules", zips = { file.addsuffix(name,"zip") } }
+                if url.hasscheme(name) then
+                    install({ url = false, zips = { file.addsuffix(name,"zip") } }, wipe)
+                else
+                    loadlists()
+                    install({ url = "modules", zips = { file.addsuffix(name,"zip") } }, wipe)
+                end
             end
             done = files
         end
@@ -237,15 +309,36 @@ function scripts.modules.install()
             report("no module names provided")
         else
             for i=1,#files do
-                local list = lists[files[i]]
+                local name = files[i]
+                local list = lists[name]
                 if list then
-                    install(list)
+                    install(list,wipe)
                 end
             end
             done = files
         end
     end
     if done then
+        --
+     -- for i=1,#badones do
+     --     os.remove(badones[i])
+     -- end
+        local okay = false
+        local files = dir.glob("*")
+        for i=1,#files do
+            local name = files[i]
+            if file.suffix(name) == "tma" then
+                -- keep it
+            else
+                if not okay then
+                    report()
+                    okay = true
+                end
+                report("removed %a",name)
+                os.remove(name)
+            end
+        end
+        --
         report()
         report("renewing file database")
         report()
@@ -258,10 +351,18 @@ function scripts.modules.install()
     lfs.chdir(curdir)
 end
 
+function scripts.modules.uninstall()
+    scripts.modules.install(true)
+end
+
 if environment.argument("list") then
     scripts.modules.list()
+elseif environment.argument("installed") then
+    scripts.modules.installed()
 elseif environment.argument("install") then
     scripts.modules.install()
+elseif environment.argument("uninstall") then
+    scripts.modules.uninstall()
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),environment.files[1])
 else

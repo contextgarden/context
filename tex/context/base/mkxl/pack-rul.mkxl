@@ -1982,6 +1982,14 @@
    \dp\b_framed_normal\d_framed_locator_dp
    \hpack{\box\b_framed_normal}} %  why do we pack .. danger of loosing?
 
+\installframedlocator \v!inline
+  {}
+  {\scratchoffset\dimexpr\strutdp+\d_framed_applied_offset\relax
+   \boxyoffset\b_framed_normal\dimexpr\boxyoffset\b_framed_normal-\scratchoffset\relax
+   \ht\b_framed_normal\dimexpr\ht\b_framed_normal-\scratchoffset\relax
+   \dp\b_framed_normal\dimexpr\strutdp+\d_framed_applied_offset\relax
+   \box\b_framed_normal}
+
 % also used in fastlocalframed
 
 \newdimension\d_framed_original_wd
@@ -2759,7 +2767,7 @@
   {\setupframedtexts[\currentframedtext][#2]%
    \doifsomething{#1}{\setframedtextparameter\c!location{#1}}% does not listen to #3
    \setfalse\c_framed_text_location_none
-   \csname\??framedtextlocation\framedtextparameter\c!location\endcsname
+   \begincsname\??framedtextlocation\framedtextparameter\c!location\endcsname
    \resetframedtextparameter\c!location
    \pack_framed_text_check
    \setbox\b_framed_normal\vbox % \vpack

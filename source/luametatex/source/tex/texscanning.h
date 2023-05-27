@@ -131,7 +131,8 @@ extern halfword    tex_scan_bytecode_reference        (int optional_equal);
 
 extern halfword    tex_the_value_toks                 (int unit, halfword *tail, halfword property); /* returns head */
 extern halfword    tex_the_toks                       (int code, halfword *tail); /* returns head */
-extern halfword    tex_the_detokenized_toks           (halfword *head);
+extern halfword    tex_the_detokenized_toks           (halfword *tail);
+extern void        tex_detokenize_list                (halfword head);
 extern strnumber   tex_the_scanned_result             (void);
 
 extern void        tex_set_font_dimen                 (void);

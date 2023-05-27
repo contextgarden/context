@@ -450,7 +450,7 @@ local colorize, justadd do
             local typesetters = nuts.typesetters
             if typesetters then
                 local hashes   = fonts.hashes
-                local infofont = fonts.infofont()
+                local infofont = fonts.infofont(true) -- small
                 local emwidth  = hashes.emwidths [infofont]
                 local exheight = hashes.exheights[infofont]
                 if what == "reference" then

@@ -96,11 +96,12 @@
          \scratchskip \ifempty\cutmarkhoffset\cutmarkoffset\scratchdimen\else\cutmarkhoffset\fi
          \vss
          \hbox to \d_pack_cutmarks_width
-           {\llap{\copy\scratchbox\hskip\scratchskip}%
-            \hskip\scratchdimen\hss
+           {\llap{\copy\scratchbox\kern\scratchskip}%
+            \kern\scratchdimen\hss
             \infofont#1%
-            \hss\hskip\scratchdimen
-            \rlap{\hskip\scratchskip\copy\scratchbox}}%
+            \hss
+            \kern\scratchdimen
+            \rlap{\kern\scratchskip\copy\scratchbox}}%
          \vss}%
       \hss}}
 
@@ -122,18 +123,18 @@
          \hpack to \d_pack_cutmarks_width
            {\scratchskip\ifempty\cutmarkhoffset\cutmarkoffset\scratchdimen\else\cutmarkhoffset\fi
             \setbox\scratchbox\hpack{\verticalcuts}%
-            \llap{\copy\scratchbox\hskip\scratchskip}%
+            \llap{\copy\scratchbox\kern\scratchskip}%
             \ifzeropt\d_pack_cutmarks_depth
               \hfill
             \else
               \bgroup
               \setbox\scratchbox\hpack{\baselinecuts}%
-              \llap{\copy\scratchbox\hskip\scratchskip}%
+              \llap{\copy\scratchbox\kern\scratchskip}%
               \hfill
-              \rlap{\hskip\scratchskip\copy\scratchbox}%
+              \rlap{\kern\scratchskip\copy\scratchbox}%
               \egroup
             \fi
-            \rlap{\hskip\scratchskip\copy\scratchbox}}%
+            \rlap{\kern\scratchskip\copy\scratchbox}}%
          \blap{\vskip\scratchskip\copy\scratchbox}}%
       \ht\scratchbox\d_pack_cutmarks_height
       \dp\scratchbox\d_pack_cutmarks_depth

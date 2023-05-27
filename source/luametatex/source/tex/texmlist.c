@@ -542,12 +542,10 @@ inline static int tex_aux_checked_left_kern_fnt_chr(halfword fnt, halfword chr, 
     halfword hastop = (state & prime_script_state) || (state & post_super_script_state);
     halfword hasbot = state & post_sub_script_state;
     if (hastop && tex_math_has_class_option(subtype, left_top_kern_class_option)) {
-//        top = tex_char_top_left_kern_from_font(fnt, chr);
-top = tex_aux_math_x_size_scaled(fnt, tex_char_top_left_kern_from_font(fnt, chr), size);
+        top = tex_aux_math_x_size_scaled(fnt, tex_char_top_left_kern_from_font(fnt, chr), size);
     }
     if (hasbot && tex_math_has_class_option(subtype, left_bottom_kern_class_option)) {
-//        bot = tex_char_bottom_left_kern_from_font(fnt, chr);
-bot = tex_aux_math_x_size_scaled(fnt, tex_char_bottom_left_kern_from_font(fnt, chr), size);
+        bot = tex_aux_math_x_size_scaled(fnt, tex_char_bottom_left_kern_from_font(fnt, chr), size);
     }
     if (hastop && hasbot) {
         return top > bot ? top : bot;
@@ -574,12 +572,10 @@ inline static int tex_aux_checked_right_kern_fnt_chr(halfword fnt, halfword chr,
     halfword hastop = state & pre_super_script_state;
     halfword hasbot = state & pre_sub_script_state;
     if (hastop && tex_math_has_class_option(subtype, right_top_kern_class_option)) {
-//        top = tex_char_top_right_kern_from_font(fnt, chr);
-top = tex_aux_math_x_size_scaled(fnt, tex_char_top_right_kern_from_font(fnt, chr), size);
+        top = tex_aux_math_x_size_scaled(fnt, tex_char_top_right_kern_from_font(fnt, chr), size);
     }
     if (hasbot && tex_math_has_class_option(subtype, right_bottom_kern_class_option)) {
-//        bot = tex_char_bottom_right_kern_from_font(fnt, chr);
-bot = tex_aux_math_x_size_scaled(fnt, tex_char_bottom_right_kern_from_font(fnt, chr), size);
+        bot = tex_aux_math_x_size_scaled(fnt, tex_char_bottom_right_kern_from_font(fnt, chr), size);
     }
     if (hastop && hasbot) {
         return top < bot ? bot : top;
@@ -783,7 +779,7 @@ static halfword tex_aux_fraction_rule(scaled width, scaled height, halfword att,
     if (! rule) {
         if (math_rules_mode_par) {
             rule = tex_new_rule_node(ruletype);
-            rule_data(rule) = tex_fam_fnt(fam, size);
+            rule_data(rule) = tex_fam_fnt(fam, size); // we have font/fam/chr fields, why not use these  
         } else {
             rule = tex_new_rule_node(normal_rule_subtype);
         }
@@ -3154,7 +3150,14 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
         }
     } else { /* if (flags & overlay_accent_code) { */
         /*tex Center the accent vertically around base: */
-        delta = tex_half_scaled(box_total(accent) + box_total(base));
+        if (has_noad_option_exact(target)) {
+            delta = box_height(base) + box_depth(accent);
+        } else { 
+            delta = tex_half_scaled(box_total(accent) + box_total(base));
+        }
+     // if (has_noad_option_axis(target)) {
+     //     delta -= tex_aux_math_axis(size);
+     // }
     }
     if (accenttotal) {
         *accenttotal = box_total(accent);
@@ -3175,7 +3178,11 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
         baseheight = box_height(base);
     }
     /*tex The top accents of both characters are aligned. */
-    {
+    if (flags & overlay_accent_code) {
+        /* We ignore overshoot here, at leats for now. */
+        box_shift_amount(accent) = tex_half_scaled(basewidth - box_width(accent));
+        box_width(accent) = 0; /* in gyre zero anyway */
+    } else {
         halfword accentwidth = box_width(accent);
         if (accentwidth > basewidth && has_noad_option_nooverflow(target)) { 
             /*tex 
@@ -3201,9 +3208,9 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
                 } else {
                     /*tex When we scale we center. */
                     if (flags & top_accent_code) {
-                        anchor = tex_char_unchecked_top_anchor_from_font(accentfnt, accentchr); /* no bot accent key */
+                        anchor = tex_char_unchecked_top_anchor_from_font(accentfnt, accentchr); 
                     } else if (flags & bot_accent_code) {
-                        anchor = tex_char_unchecked_bottom_anchor_from_font(accentfnt, accentchr); /* no bot accent key */
+                        anchor = tex_char_unchecked_bottom_anchor_from_font(accentfnt, accentchr); 
                     } else { 
                         anchor = INT_MIN;
                     }
@@ -5070,12 +5077,18 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
             shift_down = 0;
             break;            
         default:
-            /*tex Used for optimizing accents. */
-            kernelsize.ht -= supdrop; 
-            /*tex These parameters are only applied in an assembly (and often some 0.5 .. 1.5 pt on 12pt). */
-            prime_up = kernelsize.ht - tex_get_math_y_parameter_default(style, math_parameter_prime_shift_drop, 0);
-            shift_up = kernelsize.ht - tex_get_math_y_parameter_checked(style, math_parameter_superscript_shift_drop);
-            shift_down = kernelsize.dp + tex_get_math_y_parameter_checked(style, math_parameter_subscript_shift_drop);
+            if (has_noad_option_single(target)) {
+                prime_up = 0; 
+                shift_up = 0; 
+                shift_down = 0;
+            } else { 
+                /*tex Used for optimizing accents. */
+                kernelsize.ht -= supdrop; 
+                /*tex These parameters are only applied in an assembly (and often some 0.5 .. 1.5 pt on 12pt). */
+                prime_up = kernelsize.ht - tex_get_math_y_parameter_default(style, math_parameter_prime_shift_drop, 0);
+                shift_up = kernelsize.ht - tex_get_math_y_parameter_checked(style, math_parameter_superscript_shift_drop);
+                shift_down = kernelsize.dp + tex_get_math_y_parameter_checked(style, math_parameter_subscript_shift_drop);
+            }
             break;
     }
     /*tex
@@ -6965,7 +6978,8 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 break;
             case accent_noad:
                 current_type = simple_noad; /*tex Same kind of fields. */
-                current_subtype = accent_noad_subtype;
+             // current_subtype = accent_noad_subtype;
+                current_subtype = get_noad_main_class(current);
                 current_left_slack = noad_left_slack(current);
                 current_right_slack = noad_right_slack(current);
                 break;

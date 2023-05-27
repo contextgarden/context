@@ -79,7 +79,7 @@ return {
             SubscriptShiftDownWithSuperscript    =  247, -- relates to the previous one (see math-act)
             SuperscriptBaselineDropMax           =  386, -- 250 in font (multiplied by 4.6333/2.99 (values in cm/values in lm))
             SuperscriptShiftUp                   =  413, -- 363 in font (multiplied with 4.9547/4.3536, got 413)
-            SuperscriptShiftUpCramped            =  413, -- 289 in font (no distinction, old TeX)
+            SuperscriptShiftUpCramped            =  329, -- 289 in font (same factor as uncramped one (no distinction, old TeX)
             PrimeShiftUp                         = "1.1*SuperscriptShiftUp",
             PrimeShiftUpCramped                  = "1.1*SuperscriptShiftUp",
         },

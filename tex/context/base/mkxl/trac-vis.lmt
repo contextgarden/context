@@ -180,11 +180,20 @@ local userrule    -- bah, not yet defined: todo, delayed(nuts.rules,"userrule")
 local outlinerule -- bah, not yet defined: todo, delayed(nuts.rules,"userrule")
 local emptyrule   -- bah, not yet defined: todo, delayed(nuts.rules,"userrule")
 
-local function initialize()
-    --
+local function getusedfont()
     if not usedfont then
         -- we use a narrow monospaced font -- infofont ?
         visualizers.setfont(fonts.definers.define { name = "lmmonoltcond10regular", size = tex.sp("4pt") })
+    end
+    return usedfont
+end
+
+visualizers.getusedfont = getusedfont
+
+local function initialize()
+    --
+    if not usedfont then
+        getusedfont()
     end
     --
     for mode, value in next, modes do
@@ -903,11 +912,8 @@ end
             rest = emptyrule(wd,ht,dp) -- we accept some overhead
         elseif what == "_D_" then
             -- also the other line
-            local up = nil
             local list = getlist(current)
-            if list then
-                up = getheight(list)
-            end
+            local up   = list and getheight(list) or 0
             rest = userrule {
                 width  = wd,
                 height = ht,
@@ -1861,6 +1867,8 @@ do
                 local saved = current
                 if trace_math then
                     head, current = ruledmath(head,current)
+                elseif trace_penalty then
+                    head, current = ruledpenalty(head,current,false,true)
                 end
             elseif id == dir_code then
                 if trace_dir then

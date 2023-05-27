@@ -174,6 +174,20 @@ void lmt_initialize_interface(void)
     set_alignment_context_value(package_pass_alignment_context,  package);
     set_alignment_context_value(wrapup_pass_alignment_context,   wrapup);
 
+    lmt_interface.break_context_values = lmt_aux_allocate_value_info(wrapup_show_breaks_context);
+
+    # define set_break_context_value(n,k) lmt_interface.break_context_values[n] = (value_info) { .lua = lua_key_index(k), .name = lua_key(k), .id = n }
+
+    set_break_context_value(initialize_show_breaks_context, initialize);
+    set_break_context_value(start_show_breaks_context,      start);
+    set_break_context_value(list_show_breaks_context,       list); 
+    set_break_context_value(stop_show_breaks_context,       stop);
+    set_break_context_value(collect_show_breaks_context,    collect);
+    set_break_context_value(line_show_breaks_context,       line);
+    set_break_context_value(delete_show_breaks_context,     delete);
+    set_break_context_value(report_show_breaks_context,     report); 
+    set_break_context_value(wrapup_show_breaks_context,     wrapup);
+
     lmt_interface.par_begin_values = lmt_aux_allocate_value_info(vrule_char_par_begin);
 
     # define set_par_begin_value(n,k) lmt_interface.par_begin_values[n] = (value_info) { .lua = lua_key_index(k), .name = lua_key(k), .id = n }

@@ -87,13 +87,14 @@ local converters = {
 --     end,
     ["mapping"] = function(m)
         local t_mapping = m.mapping
+--         inspect(t_mapping)
         if t_mapping then
             local t_exceptions = m.exceptions
             local p = Cs ( (
                 utfchartabletopattern(t_mapping) / t_mapping
               + C(utfcharacterpattern)
             )^0 )
-         -- lpeg.print(p)
+--          lpeg.print(p)
             return function(s,e)
                 return (e and e[s]) or t_exceptions[s] or lpegmatch(p,s) or s
             end
@@ -114,7 +115,7 @@ function transliteration.use(library)
     if lib == nil then
         -- todo: use library loader
         local data = require("lang-imp-" .. library)
-        if data then
+        if type(data) == "table" then
             local transliterations = data.transliterations
             if transliterations then
                 for name, d in table.sortedhash(transliterations) do

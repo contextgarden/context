@@ -837,7 +837,7 @@ static int tex_aux_nested_no_align(void)
 
 void tex_finish_no_alignment_group(void)
 {
-    if (! tex_wrapped_up_paragraph(no_align_par_context)) { /* needs testing */
+    if (! tex_wrapped_up_paragraph(no_align_par_context, 0)) { /* needs testing */
         tex_end_paragraph(no_align_group, no_align_par_context);
         tex_aux_trace_no_align("leaving");
         --lmt_alignment_state.no_align_level;
@@ -2091,7 +2091,7 @@ void tex_run_alignment_end_template(void)
     } else if (lmt_input_state.input_stack[lmt_input_state.base_ptr].state != token_list_state) {
         tex_alignment_interwoven_error(4);
     } else if (cur_group == align_group) {
-        if (! tex_wrapped_up_paragraph(align_par_context)) { /* needs testing */
+        if (! tex_wrapped_up_paragraph(align_par_context, 0)) { /* needs testing */
             tex_end_paragraph(align_group, align_par_context);
             if (tex_aux_finish_column()) {
                 tex_aux_finish_row();

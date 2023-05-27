@@ -1161,9 +1161,9 @@ static void tex_aux_run_par_boundary(void) {
             {   
                 halfword n = tex_scan_int(0, NULL);
                 if (lmt_nest_state.nest_data.ptr == 0 && ! lmt_page_builder_state.output_active) {
-                    halfword n = tex_new_node(boundary_node, (quarterword) cur_chr);
-                    boundary_data(n) = n;
-                    tex_tail_append(n);
+                    halfword boundary = tex_new_node(boundary_node, page_boundary);
+                    boundary_data(boundary) = n;
+                    tex_tail_append(boundary);
                     if (cur_list.mode == vmode) {
                         if (! lmt_page_builder_state.output_active) {
                             tex_page_boundary_message("callback triggered", n);
@@ -1182,9 +1182,9 @@ static void tex_aux_run_par_boundary(void) {
         /*tex Not yet, first I need a proper use case. */ /*
         case par_boundary:
             {
-                halfword n = tex_new_node(boundary_node, (quarterword) cur_chr);
-                boundary_data(n) = tex_scan_int(0, NULL);
-                tex_tail_append(n);
+                halfword boundary = tex_new_node(boundary_node, par_boundary);
+                boundary_data(boundary) = tex_scan_int(0, NULL);
+                tex_tail_append(boundary);
                 break;
             }
         */
@@ -1196,20 +1196,20 @@ static void tex_aux_run_par_boundary(void) {
 }
 
 static void tex_aux_run_text_boundary(void) {
-    halfword n = tex_new_node(boundary_node, (quarterword) cur_chr);
+    halfword boundary = tex_new_node(boundary_node, (quarterword) cur_chr);
     switch (cur_chr) {
         case user_boundary:
         case protrusion_boundary:
-            boundary_data(n) = tex_scan_int(0, NULL);
+            boundary_data(boundary) = tex_scan_int(0, NULL);
             break;
         case page_boundary:
-            /* or maybe force vmode */
+            /*tex Maybe we should force vmode? For now we just ignore the value. */
             tex_scan_int(0, NULL);
             break;
         default:
             break;
     }
-    tex_tail_append(n);
+    tex_tail_append(boundary);
 }
 
 static void tex_aux_run_math_boundary(void) {
@@ -1223,6 +1223,7 @@ static void tex_aux_run_math_boundary(void) {
             }
         case protrusion_boundary:
         case page_boundary:
+            /*tex We just ignore the values. */
             tex_scan_int(0, NULL);
             break;
     }
@@ -1248,7 +1249,7 @@ static void tex_aux_run_paragraph_end_vmode(void) {
 
 /*tex We could pass the group and context here if needed and set some parameter. */
 
-int tex_wrapped_up_paragraph(int context) {
+int tex_wrapped_up_paragraph(int context, int final) {
     halfword par = tex_find_par_par(cur_list.head);
     lmt_main_control_state.last_par_context = context;
     if (par) {
@@ -1263,14 +1264,14 @@ int tex_wrapped_up_paragraph(int context) {
             tex_delete_token_reference(eop);
             done = 1;
         }
-     // if (end_of_par_par) {
-     //     if (! done) {
-     //         back_input(cur_tok);
-     //     }
-     //     begin_token_list(end_of_par_par, end_paragraph_text);
-     //     update_tex_end_of_par(null);
-     //     done = 1;
-     // }
+        if (final && end_of_group_par) {
+            if (! done) {
+                tex_back_input(cur_tok);
+            }
+            tex_begin_token_list(end_of_group_par, end_paragraph_text);
+            update_tex_end_of_group(null);
+            done = 1;
+        }
         return done;
     } else {
         return 0;
@@ -1278,7 +1279,7 @@ int tex_wrapped_up_paragraph(int context) {
 }
 
 static void tex_aux_run_paragraph_end_hmode(void) {
-    if (! tex_wrapped_up_paragraph(normal_par_context)) {
+    if (! tex_wrapped_up_paragraph(normal_par_context, 0)) {
         if (lmt_input_state.align_state < 0) {
             /*tex This tries to recover from an alignment that didn't end properly. */
             tex_off_save();
@@ -1585,7 +1586,7 @@ int tex_main_control(void)
                 return lmt_main_state.run_state == initializing_state && cur_chr == dump_code;
         }
         /*tex
-            Give diagnostic information, if requested When a new token has just been fetched at
+            Give diagnostic information, if requested. When a new token has just been fetched at
             |big_switch|, we have an ideal place to monitor \TEX's activity.
         */
         if (tracing_commands_par > 0) {
@@ -2499,7 +2500,8 @@ inline static void tex_aux_finish_adjusted_hbox(void)
 
 inline static void tex_aux_finish_vbox(void)
 {
-    if (! tex_wrapped_up_paragraph(vbox_par_context)) {
+
+    if (! tex_wrapped_up_paragraph(vbox_par_context, 1)) {
         tex_end_paragraph(vbox_group, vbox_par_context);
         tex_package(vbox_code);
     }
@@ -2507,7 +2509,7 @@ inline static void tex_aux_finish_vbox(void)
 
 inline static void tex_aux_finish_vtop(void)
 {
-    if (! tex_wrapped_up_paragraph(vtop_par_context)) {
+    if (! tex_wrapped_up_paragraph(vtop_par_context, 1)) {
         tex_end_paragraph(vtop_group, vtop_par_context);
         tex_package(vtop_code);
     }
@@ -2515,7 +2517,7 @@ inline static void tex_aux_finish_vtop(void)
 
 inline static void tex_aux_finish_dbox(void)
 {
-    if (! tex_wrapped_up_paragraph(dbox_par_context)) {
+    if (! tex_wrapped_up_paragraph(dbox_par_context, 1)) {
         tex_end_paragraph(dbox_group, dbox_par_context);
         tex_package(dbox_code);
     }
@@ -2975,7 +2977,7 @@ static void tex_aux_run_kern(void)
 {
     halfword code = cur_chr;
     switch (code) {
-        /* not yet enabled and maybe it never will be */
+        /*tex Finally enabled: */
         case h_kern_code:
             if (cur_mode == vmode) {
                 tex_back_input(token_val(kern_cmd, normal_kern_code));
@@ -3072,13 +3074,35 @@ void tex_end_paragraph(int group, int context)
 
 static void tex_aux_run_penalty(void)
 {
-    halfword value = tex_scan_int(0, NULL);
-    tex_tail_append(tex_new_penalty_node(value, user_penalty_subtype));
-    if (cur_list.mode == vmode) {
-        if (! lmt_page_builder_state.output_active) {
-            lmt_page_filter_callback(penalty_page_context, 0);
+    halfword code = cur_chr;
+    switch (code) {
+        /*tex Finally enabled: */
+        case h_penalty_code:
+            if (cur_mode == vmode) {
+                tex_back_input(token_val(penalty_cmd, normal_penalty_code));
+                tex_back_input(token_val(begin_paragraph_cmd, quitvmode_par_code));
+                return;
+            } else { 
+                break;
+            }
+        case v_penalty_code:
+            if (cur_mode == hmode) {
+                tex_back_input(token_val(penalty_cmd, normal_penalty_code));
+                tex_back_input(token_val(end_paragraph_cmd, normal_end_paragraph_code));
+                return;
+            } else { 
+                break;
+            }
+    }
+    {
+        halfword value = tex_scan_int(0, NULL);
+        tex_tail_append(tex_new_penalty_node(value, user_penalty_subtype));
+        if (cur_list.mode == vmode) {
+            if (! lmt_page_builder_state.output_active) {
+                lmt_page_filter_callback(penalty_page_context, 0);
+            }
+            tex_build_page();
         }
-        tex_build_page();
     }
 }
 
@@ -4259,7 +4283,7 @@ static void tex_aux_set_shorthand_def(int a, int force)
         switch (code) {
             case char_def_code:
                 {
-                    halfword chr = tex_scan_char_number(0); /* maybe 1 */
+                    halfword chr = tex_scan_char_number(0);
                     tex_define_again(a, p, char_given_cmd, chr);
                     break;
                 }
@@ -4377,16 +4401,6 @@ static void tex_aux_set_shorthand_def(int a, int force)
                     tex_define(a, p, fontspec_cmd, v);
                 }
                 break;
-            /*
-            case string_def_code:
-                {
-                    halfword t = scan_toks_expand(0, NULL);
-                    halfword s = tokens_to_string(t);
-                    define(a, p, string_cmd, s - cs_offset_value);
-                    flush_list(t);
-                    break;
-                }
-            */
             default:
                 tex_confusion("shorthand definition");
                 break;
@@ -6403,8 +6417,8 @@ inline static void tex_aux_big_switch(int mode, int cmd)
     switch (cmd) {
 
         case arithmic_cmd: 
-        case internal_int_cmd : 
-        case register_int_cmd : 
+        case internal_int_cmd: 
+        case register_int_cmd: 
         case internal_attribute_cmd: 
         case register_attribute_cmd: 
         case internal_posit_cmd: 
@@ -6692,6 +6706,10 @@ void tex_initialize_variables(void)
         math_end_class_par = math_end_class;
         math_left_class_par = unset_noad_class;
         math_right_class_par = unset_noad_class;
+        pre_inline_penalty_par = max_integer;
+        post_inline_penalty_par = max_integer;
+        pre_short_inline_penalty_par = max_integer;
+        post_short_inline_penalty_par = max_integer;
         variable_family_par = -1, 
         ignore_depth_criterium_par = ignore_depth;
         aux_get_date_and_time(&time_par, &day_par, &month_par, &year_par, &lmt_engine_state.utc_time);

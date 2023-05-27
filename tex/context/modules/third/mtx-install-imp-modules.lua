@@ -1,5 +1,7 @@
 -- from the context garden
 
+-- incorrectly packaged: metaducks, sudoku, aquamints
+
 return {
     name = "mtx-install-imp-modules",
     version = "1.00",
@@ -7,19 +9,19 @@ return {
     author = "Hans Hagen & others",
     copyright = "ConTeXt development team",
     lists = {
-        ["pocketdiary"]       = { url = "modules", zips = { "Collection-of-calendars-based-on-PocketDiary-module.zip" } },
+        ["pocketdiary"]       = { url = "modules", zips = { "PocketDiary-V2.zip", "Environment-for-collating-marks.zip", "Collection-of-calendars-based-on-PocketDiary-module.zip" } },
         ["collating"]         = { url = "modules", zips = { "Environment-for-collating-marks.zip" } },
         ["account"]           = { url = "modules", zips = { "t-account.zip" } },
         ["algorithmic"]       = { url = "modules", zips = { "t-algorithmic.zip" } },
         ["animation"]         = { url = "modules", zips = { "t-animation.zip" } },
         ["annotation"]        = { url = "modules", zips = { "t-annotation.zip" } },
-        ["aquamints"]         = { url = "modules", zips = { "aquamints.zip" } },
+     -- ["aquamints"]         = { url = "modules", zips = { "aquamints.zip" } },         -- has top level files
         ["bibmod-doc"]        = { url = "modules", zips = { "bibmod-doc.zip" } },
      -- ["bnf-0.3"]           = { url = "modules", zips = { "t-bnf-0.3.zip" } },
         ["bnf"]               = { url = "modules", zips = { "t-bnf.zip" } },
         ["chromato"]          = { url = "modules", zips = { "t-chromato.zip" } },
-        ["cmscbf"]            = { url = "modules", zips = { "t-cmscbf.zip" } },
-        ["cmttbf"]            = { url = "modules", zips = { "t-cmttbf.zip" } },
+     -- ["cmscbf"]            = { url = "modules", zips = { "t-cmscbf.zip" } },          -- obsolete
+     -- ["cmttbf"]            = { url = "modules", zips = { "t-cmttbf.zip" } },          -- obsolete
         ["crossref"]          = { url = "modules", zips = { "t-crossref.zip" } },
         ["cyrillicnumbers"]   = { url = "modules", zips = { "t-cyrillicnumbers.zip" } },
         ["degrade"]           = { url = "modules", zips = { "t-degrade.zip" } },
@@ -42,9 +44,9 @@ return {
         ["letter"]            = { url = "modules", zips = { "t-letter.zip" } },
         ["letterspace"]       = { url = "modules", zips = { "t-letterspace.mkiv.zip" } },
         ["lettrine"]          = { url = "modules", zips = { "t-lettrine.zip" } },
-        ["lua-widow-control"] = { url = "modules", zips = { "lua-widow-control.zip" } },
+        ["lua-widow-control"] = { url = "modules", zips = { "lua-widow-control.zip" } }, -- we wipe the non context stuff
         ["mathsets"]          = { url = "modules", zips = { "t-mathsets.zip" } },
-        ["metaducks"]         = { url = "modules", zips = { "metaducks.zip" } },
+     -- ["metaducks"]         = { url = "modules", zips = { "metaducks.zip" } },         -- has top level files
         ["pret-c.lua"]        = { url = "modules", zips = { "pret-c.lua.zip" } },
         ["rst"]               = { url = "modules", zips = { "t-rst.zip" } },
         ["rsteps"]            = { url = "modules", zips = { "t-rsteps.zip" } },
@@ -52,9 +54,9 @@ return {
         ["simplefonts"]       = { url = "modules", zips = { "t-simplefonts.zip" } },
         ["simpleslides"]      = { url = "modules", zips = { "t-simpleslides.zip" } },
         ["stormfontsupport"]  = { url = "modules", zips = { "stormfontsupport.zip" } },
-        ["sudoku"]            = { url = "modules", zips = { "sudoku.zip" } },
+     -- ["sudoku"]            = { url = "modules", zips = { "sudoku.zip" } },            -- has top level files
         ["taspresent"]        = { url = "modules", zips = { "t-taspresent.zip" } },
-        ["texshow"]           = { url = "modules", zips = { "u-texshow.zip" } },
+     -- ["texshow"]           = { url = "modules", zips = { "u-texshow.zip" } },
         ["title"]             = { url = "modules", zips = { "t-title.zip" } },
         ["transliterator"]    = { url = "modules", zips = { "t-transliterator.zip" } },
         ["typearea"]          = { url = "modules", zips = { "t-typearea.zip" } },

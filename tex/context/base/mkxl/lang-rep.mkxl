@@ -23,6 +23,7 @@
 
 \definesystemattribute[replacements][public,global]
 
+%D \starttyping
 %D \startluacode
 %D
 %D     -- todo: other nodes (prelude to more experiments with auto dropped caps)
@@ -43,11 +44,26 @@
 %D \replaceword[more][---][—]
 %D \replaceword[basics][special][veryspe{>>>}{<<<}{=}cial]
 %D
-%D \starttyping
 %D \start \setreplacements[basics] What the heck, it's now or never, isn't it new? \par \stop
 %D \start \setreplacements[more]   Do we --- {\it really} --- need this kind of crap? \par \stop
 %D \start \setreplacements[basics] All kinds of special thingies! \par \stop
 %D \start \setreplacements[basics] \hsize1mm special \par \stop
+%D \stoptyping
+%D
+%D Only in \LUA, functions:
+%D
+%D \startluacode
+%D     languages.replacements.add("basics", {
+%D         ["one"]   = "cool",
+%D         ["two"]   = function(s)
+%D             return "warm"
+%D         end
+%D     })
+%D \stopluacode
+%D
+%D \starttyping
+%D \start \setreplacements[basics] It's one in here! \stop \par
+%D \start \setreplacements[basics] It's two in here! \stop \par
 %D \stoptyping
 
 \permanent\protected\def\setreplacements[#1]%

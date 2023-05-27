@@ -578,6 +578,15 @@ void tex_conditional_if(halfword code, int unless)
         case if_zero_int_code:
             result = tex_scan_int(0, NULL) == 0;
             goto RESULT;
+        case if_interval_int_code:
+            {
+                scaled n0 = tex_scan_int(0, NULL);
+                scaled n1 = tex_scan_int(0, NULL);
+                scaled n2 = tex_scan_int(0, NULL);
+                result = n1 - n2;
+                result = result == 0 ? 1 : (result > 0 ? result <= n0 : -result <= n0);
+            }
+            goto RESULT;
         case if_abs_posit_code:
         case if_posit_code:
             {
@@ -608,6 +617,15 @@ void tex_conditional_if(halfword code, int unless)
         case if_zero_posit_code:
             result = tex_posit_eq_zero(tex_scan_posit(0));
             goto RESULT;
+        case if_interval_posit_code:
+            {
+                halfword n0 = tex_scan_posit(0);
+                halfword n1 = tex_scan_posit(0);
+                halfword n2 = tex_scan_posit(0);
+                result = tex_posit_sub(n1, n2);
+                result = tex_posit_eq_zero(result) ? 1 : (tex_posit_gt_zero(result) ? tex_posit_le(result, n0) : tex_posit_le(tex_posit_neg(result), n0));
+            }
+            goto RESULT;
         case if_abs_dim_code:
         case if_dim_code:
             {
@@ -637,6 +655,15 @@ void tex_conditional_if(halfword code, int unless)
             goto RESULT;
         case if_zero_dim_code:
             result = tex_scan_dimen(0, 0, 0, 0, NULL) == 0;
+            goto RESULT;
+        case if_interval_dim_code:
+            {
+                scaled n0 = tex_scan_dimen(0, 0, 0, 0, NULL);
+                scaled n1 = tex_scan_dimen(0, 0, 0, 0, NULL);
+                scaled n2 = tex_scan_dimen(0, 0, 0, 0, NULL);
+                result = n1 - n2;
+                result = result == 0 ? 1 : (result > 0 ? result <= n0 : -result <= n0);
+            }
             goto RESULT;
         case if_odd_code:
             result = odd(tex_scan_int(0, NULL));

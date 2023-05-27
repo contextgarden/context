@@ -5,7 +5,7 @@
 # include "mpmath.h"
 # include "mpstrings.h"
 
-# define  coef_bound               04525252525
+# define  coef_bound               0x25555555
 # define  fraction_threshold       2685
 # define  half_fraction_threshold  1342
 # define  scaled_threshold         8
@@ -18,9 +18,9 @@
 # define  three                    (3*unity)
 # define  half_unit                (unity/2)
 # define  three_quarter_unit       (3*(unity/4))
-# define  EL_GORDO                 0x7fffffff
+# define  EL_GORDO                 0x7FFFFFFF
 # define  negative_EL_GORDO        (-EL_GORDO)
-# define  one_third_EL_GORDO       05252525252
+# define  one_third_EL_GORDO       0x2AAAAAAA
 # define  TWEXP31                  2147483648.0
 # define  TWEXP28                  268435456.0
 # define  TWEXP16                  65536.0
@@ -602,7 +602,7 @@ static char *mp_string_scaled (MP mp, int s)
         scaled_string[i++] = '.';
         do {
             if (delta > unity) {
-                s = s + 0100000 - (delta / 2);
+                s = s + 0x8000 - (delta / 2);
             }
             scaled_string[i++] = '0' + (s / unity);
             s = 10 * (s % unity);
@@ -646,7 +646,7 @@ static int mp_make_fraction (MP mp, int p, int q)
                 return EL_GORDO;
             } else {
                 int i = (int) d;
-                if (d == (double) i && (((q > 0 ? -q : q) & 077777) * (((i & 037777) << 1) - 1) & 04000) != 0) {
+                if (d == (double) i && (((q > 0 ? -q : q) & 0x7FFF) * (((i & 0x3FFF) << 1) - 1) & 0x800) != 0) {
                     --i;
                 }
                 return i;
@@ -658,7 +658,7 @@ static int mp_make_fraction (MP mp, int p, int q)
                 return -negative_EL_GORDO;
             } else {
                 int i = (int) d;
-                if (d == (double) i && (((q > 0 ? q : -q) & 077777) * (((i & 037777) << 1) + 1) & 04000) != 0) {
+                if (d == (double) i && (((q > 0 ? q : -q) & 0x7FFF) * (((i & 0x3FFF) << 1) + 1) & 0x800) != 0) {
                     ++i;
                 }
                 return i;
@@ -678,13 +678,13 @@ int mp_take_fraction (MP mp, int p, int q)
     if ((p ^ q) >= 0) {
         d += 0.5;
         if (d >= TWEXP31) {
-            if (d != TWEXP31 || (((p & 077777) * (q & 077777)) & 040000) == 0) {
+            if (d != TWEXP31 || (((p & 0x7FFF) * (q & 0x7FFF)) & 040000) == 0) {
                 mp->arith_error = 1;
             }
             return EL_GORDO;
         } else {
             int i = (int) d;
-            if (d == (double) i && (((p & 077777) * (q & 077777)) & 040000) != 0) {
+            if (d == (double) i && (((p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) != 0) {
                 --i;
             }
             return i;
@@ -692,13 +692,13 @@ int mp_take_fraction (MP mp, int p, int q)
     } else {
         d -= 0.5;
         if (d <= -TWEXP31) {
-            if (d != -TWEXP31 || ((-(p & 077777) * (q & 077777)) & 040000) == 0) {
+            if (d != -TWEXP31 || ((-(p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) == 0) {
                 mp->arith_error = 1;
             }
             return -negative_EL_GORDO;
         } else {
             int i = (int) d;
-            if (d == (double) i && ((-(p & 077777) * (q & 077777)) & 040000) != 0) {
+            if (d == (double) i && ((-(p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) != 0) {
                 ++i;
             }
             return i;
@@ -717,13 +717,13 @@ static int mp_take_scaled (MP mp, int p, int q)
     if ((p ^ q) >= 0) {
         d += 0.5;
         if (d >= TWEXP31) {
-            if (d != TWEXP31 || (((p & 077777) * (q & 077777)) & 040000) == 0) {
+            if (d != TWEXP31 || (((p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) == 0) {
                 mp->arith_error = 1;
             }
             return EL_GORDO;
         } else {
             int i = (int) d;
-            if (d == (double) i && (((p & 077777) * (q & 077777)) & 040000) != 0) {
+            if (d == (double) i && (((p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) != 0) {
                 --i;
             }
             return i;
@@ -731,13 +731,13 @@ static int mp_take_scaled (MP mp, int p, int q)
     } else {
         d -= 0.5;
         if (d <= -TWEXP31) {
-            if (d != -TWEXP31 || ((-(p & 077777) * (q & 077777)) & 040000) == 0) {
+            if (d != -TWEXP31 || ((-(p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) == 0) {
                 mp->arith_error = 1;
             }
             return -negative_EL_GORDO;
         } else {
             int i = (int) d;
-            if (d == (double) i && ((-(p & 077777) * (q & 077777)) & 040000) != 0) {
+            if (d == (double) i && ((-(p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) != 0) {
                 ++i;
             }
             return i;
@@ -764,7 +764,7 @@ int mp_make_scaled (MP mp, int p, int q)
                 return EL_GORDO;
             } else {
                 int i = (int) d;
-                if (d == (double) i && (((q > 0 ? -q : q) & 077777) * (((i & 037777) << 1) - 1) & 04000) != 0) {
+                if (d == (double) i && (((q > 0 ? -q : q) & 0x7FFF) * (((i & 0x3FFF) << 1) - 1) & 0x800) != 0) {
                     --i;
                 }
                 return i;
@@ -776,7 +776,7 @@ int mp_make_scaled (MP mp, int p, int q)
                 return -negative_EL_GORDO;
             } else {
                 int i = (int) d;
-                if (d == (double) i && (((q > 0 ? q : -q) & 077777) * (((i & 037777) << 1) + 1) & 04000) != 0) {
+                if (d == (double) i && (((q > 0 ? q : -q) & 0x7FFF) * (((i & 0x3FFF) << 1) + 1) & 0x800) != 0) {
                     ++i;
                 }
                 return i;
@@ -1239,7 +1239,7 @@ void mp_m_exp (MP mp, mp_number *ret, mp_number *x_orig)
     } else {
         if (x <= 0) {
             z = -8 * x;
-            y = 04000000;
+            y = 0x100000;
         } else {
             if (x <= 127919879) {
                 z = 1023359037 - 8 * x;

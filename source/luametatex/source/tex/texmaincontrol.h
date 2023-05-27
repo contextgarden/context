@@ -42,7 +42,7 @@ extern int      tex_main_control                    (void);
 extern void     tex_normal_paragraph                (int context);
 extern void     tex_begin_paragraph                 (int doindent, int context);
 extern void     tex_end_paragraph                   (int group, int context);
-extern int      tex_wrapped_up_paragraph            (int context);
+extern int      tex_wrapped_up_paragraph            (int context, int final);
 
 extern void     tex_insert_paragraph_token          (void);
 

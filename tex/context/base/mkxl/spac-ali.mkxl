@@ -312,7 +312,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillskip      \s_zero_plus_one_fil % new
+   \parfillrightskip \s_zero_plus_one_fil % new
    \setfalse         \raggedonelinerstate % now here
    \enforced\aliased\let\updateraggedskips\relax}          % no need for adaption
 
@@ -327,7 +327,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillskip      \s_zero_plus_zero
+   \parfillrightskip \zeropoint % \s_zero_plus_zero
    \parindent        \zeropoint
    \relax}
 
@@ -342,7 +342,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillskip      \s_zero_plus_zero
+   \parfillrightskip \zeropoint % \s_zero_plus_zero
    \parindent        \zeropoint
    \relax}
 
@@ -357,7 +357,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillskip      \s_zero_plus_one_fil
+   \parfillrightskip \zeropoint % \s_zero_plus_one_fil
   %\parindent        \parindent
    \relax}
 
@@ -371,7 +371,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillskip      \s_zero_plus_zero
+   \parfillrightskip \zeropoint % \s_zero_plus_zero
    \parindent        \zeropoint
    \relax}
 
@@ -385,7 +385,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillskip      \s_zero_plus_zero
+   \parfillrightskip \zeropoint % \s_zero_plus_zero
    \parindent        \zeropoint
    \relax}
 
@@ -399,7 +399,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillskip      \s_zero_plus_zero
+   \parfillrightskip \zeropoint % \s_zero_plus_zero
   %\parindent        \parindent
    \relax}
 
@@ -414,7 +414,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillskip      \s_zero_plus_zero
+   \parfillrightskip \zeropoint % \s_zero_plus_zero
    \parindent        \zeropoint
    \relax}
 
@@ -428,7 +428,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillskip      \zeropoint\s!plus\v_spac_align_fill_amount_double\relax
+   \parfillrightskip \zeropoint\s!plus\v_spac_align_fill_amount_double\relax
    \parindent        \zeropoint
    \relax}
 
@@ -441,8 +441,8 @@
    \xspaceskip       \zeropoint
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
-   \parfillskip      \zeropoint
    \parfillleftskip  \zeropoint\s!plus\v_spac_align_fill_amount_extreme\relax
+   \parfillrightskip \zeropoint
    \parindent        \zeropoint
    \relax}
 
@@ -457,7 +457,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillskip      \s_zero_plus_zero
+   \parfillrightskip \s_zero_plus_zero
   %\parindent        \parindent
    \relax}
 
@@ -472,7 +472,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint\s!plus\v_spac_align_fill_amount_extreme\relax
    \parfillleftskip  \zeropoint\s!plus\v_spac_align_fill_amount_extreme\relax
-   \parfillskip      \zeropoint
+   \parfillrightskip \zeropoint
    \parindent        \zeropoint
    \relax}
 
@@ -525,7 +525,8 @@
      \else
        \spac_align_set_horizontal_very_right
      \fi
-     \parfillskip\zeropoint
+    %\parfillleftskip\zeropoint
+     \parfillrightskip\zeropoint
    \or
      % 7 centered last line
      \spac_align_set_horizontal_centered_last_line
@@ -534,7 +535,8 @@
      \spac_align_set_horizontal_flushedright_last_line
    \or
      % 9 paragraph
-     \parfillskip\zeropoint
+    %\parfillleftskip\zeropoint
+     \parfillrightskip\zeropoint
    \or
      % 10 slanted
      \spac_align_set_horizontal_slanted
@@ -610,6 +612,7 @@
    \c_spac_align_state_direction \zerocount % what is default ?
    \c_spac_align_state_page      \zerocount
    \c_spac_align_state_par_fill  \zerocount
+   \lastlinefit\zerocount
    \ifcsname\??aligncommand\m_spac_align_named\endcsname
      \lastnamedcs
    \else
@@ -815,6 +818,8 @@
 \defcsname\??aligncommand        1*\v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plusone}}
 \defcsname\??aligncommand        2*\v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plustwo}}
 
+\defcsname\??aligncommand          \v!fit\endcsname{\toksapp\t_spac_align_collected{\lastlinefit\plusone}}
+
 %defcsname\??aligncommand ...\endcsname{\toksapp\t_spac_align_collected{\nopenalties}}
 %defcsname\??aligncommand ...\endcsname{\toksapp\t_spac_align_collected{\setdefaultpenalties}}
 
@@ -839,7 +844,7 @@
    \fi}
 
 \protected\def\spac_align_flush_parfill_indeed#1%
-  {\parfillskip
+  {\parfillrightskip
      #1\directhspaceamount\v!final
    % plus \dimexpr\availablehsize-#1\directhspaceamount\v!final\relax
      plus 1fill
@@ -956,8 +961,8 @@
 \defcsname\??alignhorizontal\v!flushright\endcsname{\enforced\let\raggedbox\spac_align_horizontal_flushright}
 \defcsname\??alignhorizontal\v!center    \endcsname{\enforced\let\raggedbox\spac_align_horizontal_center}
 
-% The next one can be in use so we keep it around but one should
-% be aware of possible interference.
+% The next one can be in use so we keep it around but one should be aware of
+% possible interference. But it will be removed at some point!
 
 \permanent\protected\def\setraggedskips#1#2#3#4#5#6#7% never change this name (todo: inline this one .. less tracingall)
   {\enforced\permanent\protected\def\updateraggedskips{\dosetraggedskips{#1}{#2}{#3}{#4}{#5}{#6}{#7}}%
@@ -994,7 +999,7 @@
        \hsize     \vsize
        \leftskip  \rightskip
        \spaceskip \xspaceskip
-       \parindent \parfillskip
+       \parindent \parfillrightskip
        \hyphenpenalty \exhyphenpenalty \automatichyphenpenalty \explicithyphenpenalty
        \displaywidowpenalty \widowpenalty \clubpenalty \brokenpenalty
        \doublehyphendemerits \finalhyphendemerits \adjdemerits
@@ -1168,7 +1173,7 @@
 %   {\registerparwrapper
 %      {\v!word:\v!right}
 %      {\begingroup
-%       \frozen\parfillskip        \zeropoint
+%       \frozen\parfillrightskip   \zeropoint
 %       \frozen\finalhyphendemerits\zerocount
 %       \endgroup}
 %      {\doifelseparwrapper{\v!word:\v!right}%
@@ -1190,8 +1195,8 @@
   {\registerparwrapper
      {\v!word:\v!right}
      {\begingroup
-      \frozen\parfillskip        \zeropoint
-      \frozen\finalhyphendemerits\zerocount
+      \frozen\parfillrightskip   \zeropoint % frozen ?
+      \frozen\finalhyphendemerits\zerocount % frozen ?
       \endgroup}
      {\doifelseparwrapper{\v!word:\v!right}{\unregisterparwrapper{\v!word:\v!right}}\donothing
       \removeunwantedspaces

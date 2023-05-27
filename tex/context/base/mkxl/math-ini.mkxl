@@ -55,12 +55,22 @@
 \newdimension  \mathstrutdp
 \newinteger    \mathnestinglevel
 
+\newcount      \c_math_strc_hangafter
+\newdimen      \d_math_strc_hangindent
+
 \newcount      \c_strc_math_n_of_lines
-\newdimension  \d_strc_math_max_width
-\newdimension  \d_strc_math_first_width
-\newdimension  \d_strc_math_last_width
+
+\newdimension  \d_strc_math_max_right
+\newdimension  \d_strc_math_first_right
+\newdimension  \d_strc_math_last_right
+
+\newdimension  \d_strc_math_max_left
+\newdimension  \d_strc_math_first_left
+\newdimension  \d_strc_math_last_left
+
 \newdimension  \d_strc_math_first_height
 \newdimension  \d_strc_math_last_depth
+
 \newdimension  \d_strc_math_display_width
 \newdimension  \d_strc_math_indent
 \newconditional\c_strc_math_indent
@@ -519,11 +529,17 @@
  % +\preferdelimiterdimensionsclassoptioncode
 \relax
 
+% \showmakeup[penalty]
+%
+% \preinlinepenalty       23 \postinlinepenalty      56 x$xx$x\par x$x$x\par x$x^2$x\par x$!$x\par
+% \preshortinlinepenalty 123 \postshortinlinepenalty456 x$xx$x\par x$x$x\par x$x^2$x\par x$!$x\par
+
 \setmathoptions\mathordinarycode\numexpr
     \noitaliccorrectionclassoptioncode
  % +\checkligatureclassoptioncode
    +\checkkernpairclassoptioncode
  % +\flattenclassoptioncode
+   +\shortinlineclassoptioncode
 \relax
 
 \setmathoptions\mathoperatorcode\numexpr
@@ -669,6 +685,24 @@
    +\carryoverrighttopkernclassoptioncode
    +\carryoverrightbottomkernclassoptioncode
    +\preferdelimiterdimensionsclassoptioncode
+\relax
+
+% MS will check
+
+\setmathoptions\mathexponentialcode\numexpr
+   \shortinlineclassoptioncode
+\relax
+
+\setmathoptions\mathimaginarycode\numexpr
+   \shortinlineclassoptioncode
+\relax
+
+\setmathoptions\mathdifferentialcode\numexpr
+   \shortinlineclassoptioncode
+\relax
+
+\setmathoptions\mathdigitcode\numexpr
+   \shortinlineclassoptioncode
 \relax
 
 % test case for \lefttopkernclassoptioncode and \leftbottomkernclassoptioncode in cambria close:
@@ -1990,6 +2024,7 @@
      \edef\p_limits{\mathfunctionparameter\c!mathlimits}%
      \mathatom
           mathfont
+          single % behave like a character
           class \mathfunctioncode
           \ifx\p_limits\v!no
             nolimits

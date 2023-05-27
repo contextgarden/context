@@ -1,0 +1,304 @@
+% language=us runpath=texruns:manuals/lowlevel
+
+\environment lowlevel-style
+
+\startdocument
+  [title=accuracy,
+   color=darkgray]
+
+\startsectionlevel[title=Introduction]
+
+When you look at \TEX\ and \METAPOST\ output the accuracy of the rendering stands
+out, unless of course you do a sloppy job on design and interfere badly with the
+system. Much has to do with the fact that calculations are very precise,
+especially given the time when \TEX\ was written. Because \TEX\ doesn't rely on
+(at that time non|-|portable) floating point calculations, it does all with 32
+bit integers, except in the backend where glue calculations are used for
+finalizing the glue values. It all changed a bit when we added \LUA\ because
+there we mix integers and doubles but in practice it works out okay.
+
+When looking at floating point (and posits) one can end up in discussions about
+which one is better, what the flaws fo each are, etc. Here we're only interested
+in the fact that posits are more accurate in the ranges where \TEX\ and
+\METAPOST\ operate, as well as the fact that we only have 32 bits for floats in
+\TEX, unless we patch more heavily. So, it is also very much about storage.
+
+When you work with dimensions like points, they get converted to an integer
+number (the \type {sp} unit) and from that it's just integer calculations. The
+maximum dimension is \the\maxdimen, which already shows a rounding issue. Of
+course when one goes precise for sure there is some loss, but on the average
+we're okay. So, in the next example the two last rows are equivalent:
+
+\starttabulate[|Tr|r|r|]
+\NC .1pt        \NC \the\dimexpr.1pt     \relax  \NC \number\dimexpr.1pt     \relax sp \NC \NR
+\NC .2pt        \NC \the\dimexpr.2pt     \relax  \NC \number\dimexpr.2pt     \relax sp \NC \NR
+\NC .3pt        \NC \the\dimexpr.3pt     \relax  \NC \number\dimexpr.3pt     \relax sp \NC \NR
+\NC .1pt + .2pt \NC \the\dimexpr.1pt+.2pt\relax  \NC \number\dimexpr.1pt+.2pt\relax sp \NC \NR
+\stoptabulate
+
+When we're at the \LUA\ end things are different, there numbers are mapped onto
+64 bit floating point variables (doubles) and not all numbers map well. This is
+what we get when we work with doubles in \LUA:
+
+\starttabulate[|Tr|r|]
+\NC .1      \NC \luaexpr{.1   }  \NC \NR
+\NC .2      \NC \luaexpr{.2   }  \NC \NR
+\NC .3      \NC \luaexpr{.3   }  \NC \NR
+\NC .1 + .2 \NC \luaexpr{.1+.2}  \NC \NR
+\stoptabulate
+
+The serialization looks as if all is okay but when we test for equality there
+is a problem:
+
+\starttabulate[|Tr|l|]
+\NC      .3 == .3 \NC \luaexpr{tostring(     .3 == .3)} \NC \NR
+\NC .1 + .2 == .3 \NC \luaexpr{tostring(.1 + .2 == .3)} \NC \NR
+\stoptabulate
+
+This means that a test like this can give false positives or negatives unless one
+tests the difference against the accuracy (in \METAPOST\ we have the {eps}
+variable for that). In \TEX\ clipping of the decimal fraction influences equality.
+
+\starttabulate[|Tr|l|]
+\NC \type{\iflua {      .3 == .3 } Y\else N\fi} \NC \iflua{     .3 == .3} equal\else different\fi \NC \NR
+\NC \type{\iflua { .1 + .2 == .3 } Y\else N\fi} \NC \iflua{.1 + .2 == .3} equal\else different\fi \NC \NR
+\stoptabulate
+
+The serialization above misguides us because the number of digits displayed is
+limited. Actually, when we would compare serialized strings the equality holds,
+definitely within the accuracy of \TEX. But here is reality:
+
+\startluacode
+    local a = 0.1
+    local b = 0.2
+    local c = 0.3
+    local d = a + b
+    local NC, NR = context.NC, context.NR
+    local function show(f)
+        context.NC() context(context.escaped(f))
+        context.NC() context(f,c)
+        context.NC() context(f,d)
+        context.NC() context.NR()
+    end
+    context.starttabulate { "|T|l|l|" }
+        context.NC()
+        context.NC() context(".3")
+        context.NC() context(".1 + .2")
+        context.NC() context.NR()
+     -- show("%0.05g",c)
+        show("%0.10g",c)
+        show("%0.17g",c)
+        show("%0.20g",c)
+        show("%0.25g",c)
+    context.stoptabulate()
+\stopluacode
+
+The above examples use $0.1$, $0.2$ and $0.3$ and on a 32 bit float that actually
+works out okay, but \LUAMETATEX\ is 64 bit. Is this really important in practice?
+There are indeed cases where we are bitten by this. At the \LUA\ end we seldom
+test for equality on calculated values but it might impact check for less or
+greater then. At the \TEX\ end there are a few cases where we have issues but
+these also relate to the limited precision. It is not uncommon to loose a few
+scaled points so that has to be taken into account then. So how can we deal with
+this? In the next section(s) an alternative approach is discussed. It is not so
+much the solution for all problems but who knows.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Posits]
+
+% TODO: don't check for sign (1+2)
+
+The next table shows the same as what we started with but with a different
+serialization.
+
+\starttabulate[|Tr|r|]
+\NC .1      \NC \positunum{.1     }  \NC \NR
+\NC .2      \NC \positunum{.2     }  \NC \NR
+\NC .3      \NC \positunum{.3     }  \NC \NR
+\NC .1 + .2 \NC \positunum{.1 + .2}  \NC \NR
+\stoptabulate
+
+And here we get equality in both cases:
+
+\starttabulate[|Tr|l|]
+\NC      .3 == .3 \NC \positunum{     .3 == .3} \NC \NR
+\NC .1 + .2 == .3 \NC \positunum{.1 + .2 == .3} \NC \NR
+\stoptabulate
+
+The next table shows what we actually are dealing with. The \type {\if}|-|test is
+not a primitive but provided by \CONTEXT.
+
+\starttabulate[|Tr|l|]
+\NC \type{\ifpositunum {      .3 == .3 } Y\else N\fi} \NC \ifpositunum{     .3 == .3} equal\else different\fi \NC \NR
+\NC \type{\ifpositunum { .1 + .2 == .3 } Y\else N\fi} \NC \ifpositunum{.1 + .2 == .3} equal\else different\fi \NC \NR
+\stoptabulate
+
+And what happens when we do more complex calculations:
+
+\starttabulate[|Tr|l|]
+\NC \type {math .sin(0.1 + 0.2) == math .sin(0.3)} \NC \luaexpr{tostring(math.sin(0.1 + 0.2) == math.sin(0.3))} \NC \NR
+\NC \type {posit.sin(0.1 + 0.2) == posit.sin(0.3)} \NC             \positunum{sin(0.1 + 0.2) == sin(0.3)}       \NC \NR
+\stoptabulate
+
+Of course other numbers might work out differently! I just took the simple tests
+that came to mind.
+
+So what are these posits? Here it's enough to know that they are a different way
+to store numbers with fractions. They still can loose precision but a bit less on
+smaller values and often we have relative small values in \TEX. Here are some links:
+
+\starttyping
+https://www.johngustafson.net/pdfs/BeatingFloatingPoint.pdf
+https://posithub.org/conga/2019/docs/14/1130-FlorentDeDinechin.pdf
+\stoptyping
+
+There are better explanations out there than I can provide (if at all). When I
+first read about these unums (a review of the 2015 book \quotation {The End of
+Error Unum Computing}) I was intrigued and when in 2023 I read something about it
+in relation to RISCV I decided to just add this playground for the users. After
+all we also have decimal support. And interval based solutions might actually be
+good for \METAPOST, so that is why we have it as extra number model. There we
+need to keep in mind that \METAPOST\ in non scaled models also apply some of the
+range checking and clipping that happens in scaled (these magick 4096 tricks).
+
+For now it is enough to know that it's an alternative for floats that {\em could}
+work better in some cases but not all. The presentation mentioned above gives
+some examples of physics constants where 32 posits are not good enough for
+encoding the extremely large or small constants, but for $\pi$ it's all fine.
+\footnote {Are 64 bit posits actually being worked on in softposit? There are
+some commented sections. We also need to patch some unions to make it compile as
+C.} In double mode we actually have quite good precision compared to 32 bit
+posits but with 32 bit floats we gain some. Very small numbers and very large
+numbers are less precise, but around 1 we gain: the next value after 1 is
+1.0000001 for a float and 1.000000008 for a posit (both 32 bit). So, currently
+for \METAPOST\ there is no real gain but if we'd add posits to \TEX\ we could
+gain some because there a halfword (used for storing data) is 32 bit.
+
+But how about \TEX ? Per April 2023 the \LUAMETATEX\ engine has native support
+for floats (this in addition to \LUA\ based floats that we already had in
+\CONTEXT). How that works can be demonstrated with some examples. The float
+related commands are similar to those for numbers and dimensions: \typ
+{\floatdef}, \typ {\float}, \typ {\floatexpr}, \typ {\iffloat}, \typ
+{\ifzerofloat} and \typ {\ifintervalfloat}. That means that we also have them as
+registers. The \typ {\positdef} primitive is similar to \typ {\dimensiondef}.
+When a float (posit) is seen in a dimension context it will be interpreted as
+points, and in an integer context it will be a rounded number. As with other
+registers we have a \typ {\newfloat} macro. The \typ {\advance}, \typ
+{\multiply} and \typ {\divide} primitives accept floats.
+
+\startbuffer[reset]
+\scratchdimen=1.23456pt
+\scratchfloat=1.23456
+\stopbuffer
+
+\typebuffer[reset] \getbuffer[reset]
+
+We now use these two variables in an example:
+
+\startbuffer[dimensions]
+\setbox0\hbox to \scratchdimen {x}\the\wd0
+\scratchdimen \dimexpr \scratchdimen * 2\relax
+\setbox0\hbox to \scratchdimen {x}\the\wd0
+\advance \scratchdimen \scratchdimen
+\setbox0\hbox to \scratchdimen {x}\the\wd0
+\multiply\scratchdimen by 2
+\setbox0\hbox to \scratchdimen {x}\the\wd0
+\stopbuffer
+
+\typebuffer[dimensions] \startlines\darkblue\tttf\getbuffer[reset,dimensions]\stoplines
+
+When we use floats we get this:
+
+\startbuffer[floats]
+\setbox0\hbox to \scratchfloat {x}\the\wd0
+\scratchfloat \floatexpr \scratchfloat * 2\relax
+\setbox0\hbox to \scratchfloat {x}\the\wd0
+\advance \scratchfloat \scratchfloat
+\setbox0\hbox to \scratchfloat {x}\the\wd0
+\multiply\scratchfloat by 2
+\setbox0\hbox to \scratchfloat {x}\the\wd0
+\stopbuffer
+
+\typebuffer[floats] \startlines\darkblue\tttf\getbuffer[reset,floats]\stoplines
+
+So which approach is more accurate? At first sight you might think that the
+dimensions are better because in the last two lines they indeed duplicate.
+However, the next example shows that with dimensions we lost some between steps.
+
+\startbuffer[noboxes]
+                                                 \the\scratchfloat
+\scratchfloat \floatexpr \scratchfloat * 2\relax \the\scratchfloat
+\advance \scratchfloat \scratchfloat             \the\scratchfloat
+\multiply\scratchfloat by 2                      \the\scratchfloat
+\stopbuffer
+
+\typebuffer[noboxes] \startlines\darkblue\tttf\getbuffer[reset,noboxes]\stoplines
+
+One problem with accuracy is that it can build up. So when one eventually does
+some comparison the expectations can be wrong.
+
+\startbuffer
+\dimen0=1.2345pt
+\dimen2=1.2345pt
+
+\ifdim           \dimen0=\dimen2 S\else D\fi \space +0sp: [dim]
+\ifintervaldim0sp\dimen0 \dimen2 O\else D\fi \space +0sp: [0sp]
+
+\advance\dimen2 1sp
+
+\ifdim             \dimen0=\dimen2 S\else D\fi \space +1sp: [dim]
+\ifintervaldim 1sp \dimen0 \dimen2 O\else D\fi \space +1sp: [1sp]
+\ifintervaldim 1sp \dimen2 \dimen0 O\else D\fi \space +1sp: [1sp]
+\ifintervaldim 2sp \dimen0 \dimen2 O\else D\fi \space +1sp: [2sp]
+\ifintervaldim 2sp \dimen2 \dimen0 O\else D\fi \space +1sp: [2sp]
+
+\advance\dimen2 1sp
+
+\ifintervaldim 1sp \dimen0\dimen2 O\else D\fi \space +2sp: [1sp]
+\ifintervaldim 1sp \dimen2\dimen0 O\else D\fi \space +2sp: [1sp]
+\ifintervaldim 5sp \dimen0\dimen2 O\else D\fi \space +2sp: [5sp]
+\ifintervaldim 5sp \dimen2\dimen0 O\else D\fi \space +2sp: [5sp]
+\stopbuffer
+
+\typebuffer
+
+Here we show a test for overlap in values, the same can be done with integer
+numbers (counts) and floats. This interval checking is an experiment and we'll
+see it if gets used.
+
+\startpacked\darkblue \tttf \getbuffer \stoppacked
+
+There are also \typ {\ifintervalfloat} and \typ{\ifintervalnum}. Because I have
+worked around these few scaled point rounding issues for decades, it might
+actually take some time before we see the interval tests being used in \CONTEXT.
+After all, there is no reason to touch somewhat tricky mechanism without reason
+(read: users complaining).
+
+To come back to posits, just to be clear, we use 32 bit posits and not 32 bit
+floats, which we could have but that way we gain some accuracy because less bits
+are used by default for the exponential.
+
+In \CONTEXT\ we also provide a bunch of pseudo primitives. These take one float:
+\type {\pfsin}, \type {\pfcos}, \type {\pftan}, \type {\pfasin}, \type {\pfacos},
+\type {\pfatan}, \type {\pfsinh}, \type {\pfcosh}, \type {\pftanh}, \type
+{\pfasinh}, \type {\pfacosh}, \type {\pfatanh}, \type {\pfsqrt}, \type {\pflog},
+\type {\pfexp}, \type {\pfceil}, \type {\pffloor}, \type {\pfround}, \type
+{\pfabs}, \type {\pfrad} and \type {\pfdeg}, whiel these expect two floats: \type
+{\pfatantwo}, \type {\pfpow}, \type {\pfmod} and \type {\pfrem}.
+
+% \pageextragoal = 5sp
+
+\stopsectionlevel
+
+\startsectionlevel[title=\METAPOST]
+
+In addition to the instances \typ {metafun} (double in \LMTX), \typ {scaledfun},
+\typ {doublefun}, \typ {decimalfun} we now also have \typ {positfun}. Because we
+currently use 32 bit posits in the new number system there is no real gain over
+the already present 64 bit doubles. When 64 bit posits show up we might move on
+to that.
+
+\stopsectionlevel
+
+\stopdocument

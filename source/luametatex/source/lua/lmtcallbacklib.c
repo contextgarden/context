@@ -54,6 +54,7 @@ static const char *callbacklib_names[total_callbacks] = {
     "show_warning_message",
     "hpack_quality",
     "vpack_quality",
+    "show_break",
     "insert_par",
     "append_line_filter",
     "build_page_insert",
@@ -307,7 +308,7 @@ static int callbacklib_aux_run(lua_State *L, int id, int special, const char *va
                         return tex_formatted_error("callback", "string expected, not: %s\n", lua_typename(L, t));
                 }
                 break;
-            case callback_result_key:
+            case callback_result_s_key:
                 switch (t) {
                     case LUA_TNIL:
                         *va_arg(vl, int *) = 0;
@@ -340,6 +341,16 @@ static int callbacklib_aux_run(lua_State *L, int id, int special, const char *va
                         break;
                     default:
                         return tex_formatted_error("callback", "string, false or nil expected, not: %s\n", lua_typename(L, t));
+                }
+                break;
+            case callback_result_i_key:
+                switch (t) {
+                    case LUA_TNUMBER:
+                        *va_arg(vl, int *) = lmt_tointeger(L, nres);
+                        break;
+                    default:
+                     /* *va_arg(vl, int *) = 0; */ /*tex We keep the value! */
+                        break;
                 }
                 break;
             default:

@@ -420,6 +420,7 @@
 \unexpanded\def\btxcommabreak            {\removeunwantedspaces,\hskip\zeropoint plus .5\emwidth\relax}
 \unexpanded\def\btxcolon                 {\removeunwantedspaces:\space}
 \unexpanded\def\btxsemicolon             {\removeunwantedspaces;\space}
+\unexpanded\def\btxhyphen                {\removeunwantedspaces-}
 \unexpanded\def\btxlparent               {\removeunwantedspaces\space(} % obsolete
 \unexpanded\def\btxrparent               {\removeunwantedspaces)\space} % obsolete
 \unexpanded\def\btxleftparenthesis       {\removeunwantedspaces\space(}
@@ -1995,9 +1996,9 @@
    \c!otherstext={\btxspace et al.},
    \c!separator:firstnames={\btxspace},
    \c!separator:juniors={\btxspace},
-   \c!separator:vons={\btxspace},
+   \c!separator:vons={\btxnobreakspace},
    \c!separator:initials={\btxspace},
-   \c!connector:initials={-},
+   \c!connector:initials={\btxhyphen},
    \c!stopper:initials={.},
   %\c!surnamesep={\btxcomma}, % is this used anywhere?
    \c!separator:invertedinitials={\btxcomma},

@@ -1654,6 +1654,9 @@ local function identify_inner(set,var,prefix,collected,derived)
         end
         --
         local n, list = resolvers.jobs.currentstructure()
+-- print(prefix)
+-- inspect(set)
+-- inspect(list)
         if list then
             for i=#list,1,-1 do
                 local l = list[i]
@@ -1661,8 +1664,9 @@ local function identify_inner(set,var,prefix,collected,derived)
                 if i then
                     i = i[inner]
                     if i then
-                     -- return finish_inner(set,var,"",i)
-                        return finish_inner(set,var,l,i)
+local p = i.references.prefix or l -- which is what we use in the destination
+--                         return finish_inner(set,var,l,i)
+                        return finish_inner(set,var,p,i)
                     end
                 end
             end

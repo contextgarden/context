@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2023-05-08 17:36
+-- merge date  : 2023-05-27 12:11
 
 do -- begin closure to overcome local limits and interference
 
@@ -24852,7 +24852,9 @@ local function unifyglyphs(fontdata,usenames)
    if colors then
     for i=1,#colors do
      local c=colors[i]
-     c.slot=indices[c.slot]
+     if c then 
+      c.slot=indices[c.slot]
+     end
     end
    end
   end

@@ -139,6 +139,7 @@ local nuts = {
     getrightdelimiter       = direct.getrightdelimiter,
     getruledata             = direct.getdata, -- obsolete when we have the split
     getruledimensions       = direct.getruledimensions,
+    setruledimensions       = direct.setruledimensions,
     getscale                = direct.getscale,
     getscales               = direct.getscales,
     getscript               = direct.getscript,

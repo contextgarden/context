@@ -392,7 +392,6 @@ local flush_character do
                         if v and v ~= 0 then
                             pos_v = pos_v + v * sy
                         end
-print("6>",fnt)
                         flushchar(fnt,c,csx,csy)
                         pos_h = ph
                         pos_v = pv
@@ -524,7 +523,6 @@ print("6>",fnt)
                     local okay  = fonts and fonts[index]
                     if okay then
                         fnt = okay.id or fnt -- or maybe just return
-print("7>",fnt)
                     end
                 elseif command == "lua" then
                     local code = packet[2]

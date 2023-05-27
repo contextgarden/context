@@ -19,7 +19,7 @@
 
 \registerctxluafile{spac-hor}{autosuffix}
 
-\aliased\let\parfillrightskip\parfillskip
+\ifdefined\parfillrightskip\else \aliased\let\parfillrightskip\parfillskip \fi
 
 \bitwiseflip \normalizelinemode \normalizelinenormalizecode
 \bitwiseflip \normalizelinemode \parindentskipnormalizecode

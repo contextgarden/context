@@ -41,13 +41,6 @@
 \permanent\def\hexstringtonumber#1{\clf_hexstringtonumber\numexpr#1\relax}
 \permanent\def\octstringtonumber#1{\clf_octstringtonumber\numexpr#1\relax}
 
-%D \macros{rawcharacter}
-%D
-%D This macro can be used to produce proper 8 bit characters that we sometimes need
-%D in backends and round||trips.
-
-\permanent\def\rawcharacter#1{\clf_rawcharacter\numexpr#1\relax}
-
 %D \macros{twodigits, threedigits}
 %D
 %D These macros provides two or three digits always:
@@ -84,5 +77,13 @@
 \permanent\protected\def\format   #1{\ctxcommand{format(#1)}} % not clf
 
 %D The \type {\modulatednumber} and \type {\realnumber} macros have been removed.
+
+%D \macros{tobits}
+%D
+%D Thso macro expects a number of bits, chunk size and the number.
+%D
+%D \starttyping
+%D \tobits 32 4 "00000003
+%D \stoptyping
 
 \protect \endinput

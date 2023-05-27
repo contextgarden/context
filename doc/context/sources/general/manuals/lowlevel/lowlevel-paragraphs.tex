@@ -1247,7 +1247,7 @@ that a negative depth of more than 1000 point made no sense at all. The last
 depth on a vertical list is registered in the \type {\prevdepth} variable. This
 is basically a reference into the current list. In order to illustrate some
 interesting side effects of setting this \type {\prevdepth} and especially when
-we set it to -1000pt. In order to illustrate this this special value can be set
+we set it to $\tf -1000pt$. In order to illustrate this this special value can be set
 to a different value in \LUAMETATEX. However, as dealing with the property is
 somewhat special in the engine you should not set it unless you know that the
 macro package is ware of it.
@@ -1307,21 +1307,23 @@ coded dimension. We now give a more extensive example:
 \egroup
 \stopbuffer
 
-In this example we set \type {\ignoredepthcriterium} to $\tf-50.0pt$ instead of the
+\typebuffer[example][option=TEX]
+
+In this example we set \type {\ignoredepthcriterium} to $\tf -50.0pt$ instead of the
 normal $\tf -1000pt$. The helper is defined as:
 
-\typebuffer[option=TEX][definitions-1]
+\typebuffer[definition-1][option=TEX]
 
 or
 
-\typebuffer[option=TEX][definitions-2]
+\typebuffer[definition-2][option=TEX]
 
-The result of the following example is shown in \in {figures} [fig:prevdepth-1]
-\in {and} [fig:prevdepth-2]. The first case is what we normally have in text and
-we haven't set \type {prevdepth} explicitly between lines so \TEX\ will just look
-at the depth of the lines. In the second case the depth is ignored when less than
-the criterium which is why, when we set the depth of the box to a negative value
-we get somewhat interesting skips.
+The result is shown in \in {figures} [fig:prevdepth-1] \in {and}
+[fig:prevdepth-2]. The first case is what we normally have in text and we haven't
+set \type {prevdepth} explicitly between lines so \TEX\ will just look at the
+depth of the lines. In the second case the depth is ignored when less than the
+criterium which is why, when we set the depth of the box to a negative value we
+get somewhat interesting skips.
 
 \startplacefigure[reference=fig:prevdepth-1]
     \showmakeup[line]
@@ -1354,6 +1356,8 @@ we get with positive values:
     \PrevTest{80.0pt}%
 \egroup
 \stopbuffer
+
+\typebuffer[example][option=TEX]
 
 \startplacefigure[reference=fig:prevdepth-3]
     \showmakeup[line]

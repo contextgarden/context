@@ -192,6 +192,7 @@ tex.normalizeparcodes     = getthem(tex.getnormalizeparvalues,     "normalizepar
 tex.automigrationcodes    = getthem(tex.getautomigrationvalues,    "automigrationcode")
 tex.parcontextcodes       = getthem(tex.getparcontextvalues,       "parcontextcode")
 tex.textcontrolcodes      = getthem(tex.gettextcontrolvalues       ) -- only at lua end
+tex.fitnesscodes          = getthem(tex.getfitnessvalues           ) -- only at lua end
 tex.listanchorcodes       = getthem(tex.getlistanchorvalues,       "listanchorcode")
 tex.listsigncodes         = getthem(tex.getlistsignvalues,         "listsigncode")
 tex.classoptioncodes      = getthem(tex.getmathclassoptionvalues,  "classoptioncode")

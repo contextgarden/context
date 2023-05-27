@@ -107,7 +107,7 @@ static char   *mp_number_tostring                 (MP mp, mp_number *n);
 static char   *mp_string_scaled                   (MP mp, int s);
 
 @
-@d coef_bound               04525252525 /* |fraction| approximation to 7/3 */
+@d coef_bound               0x25555555  /* |fraction| approximation to 7/3 */ /* 04525252525 */
 @d fraction_threshold       2685        /* a |fraction| coefficient less than this is zeroed */
 @d half_fraction_threshold  1342        /* half of |fraction_threshold| */
 @d scaled_threshold         8           /* a |scaled| coefficient less than this is zeroed */
@@ -125,9 +125,9 @@ from the right end of a binary computer word.
 @d three                    (3*unity)     /* $2^{17}+2^{16}$, represents 3.00000 */
 @d half_unit                (unity/2)     /* $2^{15}$, represents 0.50000 */
 @d three_quarter_unit       (3*(unity/4)) /* $3\cdot2^{14}$, represents 0.75000 */
-@d EL_GORDO                 0x7fffffff    /* $2^{31}-1$, the largest value that \MP\ likes */
+@d EL_GORDO                 0x7FFFFFFF    /* $2^{31}-1$, the largest value that \MP\ likes */
 @d negative_EL_GORDO        (-EL_GORDO)
-@d one_third_EL_GORDO       05252525252
+@d one_third_EL_GORDO       0x2AAAAAAA    /* 05252525252 */
 
 @ We need these preprocessor values
 
@@ -685,7 +685,7 @@ static char *mp_string_scaled (MP mp, int s)
         do {
             /* round the final digit */
             if (delta > unity) {
-                s = s + 0100000 - (delta / 2);
+                s = s + 0x8000 - (delta / 2);
             }
             scaled_string[i++] = '0' + (s / unity);
             s = 10 * (s % unity);
@@ -769,7 +769,7 @@ static int mp_make_fraction (MP mp, int p, int q)
                 return EL_GORDO;
             } else {
                 int i = (int) d;
-                if (d == (double) i && (((q > 0 ? -q : q) & 077777) * (((i & 037777) << 1) - 1) & 04000) != 0) {
+                if (d == (double) i && (((q > 0 ? -q : q) & 0x7FFF) * (((i & 0x3FFF) << 1) - 1) & 0x800) != 0) {
                     --i;
                 }
                 return i;
@@ -781,7 +781,7 @@ static int mp_make_fraction (MP mp, int p, int q)
                 return -negative_EL_GORDO;
             } else {
                 int i = (int) d;
-                if (d == (double) i && (((q > 0 ? q : -q) & 077777) * (((i & 037777) << 1) + 1) & 04000) != 0) {
+                if (d == (double) i && (((q > 0 ? q : -q) & 0x7FFF) * (((i & 0x3FFF) << 1) + 1) & 0x800) != 0) {
                     ++i;
                 }
                 return i;
@@ -811,13 +811,13 @@ int mp_take_fraction (MP mp, int p, int q)
     if ((p ^ q) >= 0) {
         d += 0.5;
         if (d >= TWEXP31) {
-            if (d != TWEXP31 || (((p & 077777) * (q & 077777)) & 040000) == 0) {
+            if (d != TWEXP31 || (((p & 0x7FFF) * (q & 0x7FFF)) & 040000) == 0) {
                 mp->arith_error = 1;
             }
             return EL_GORDO;
         } else {
             int i = (int) d;
-            if (d == (double) i && (((p & 077777) * (q & 077777)) & 040000) != 0) {
+            if (d == (double) i && (((p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) != 0) {
                 --i;
             }
             return i;
@@ -825,13 +825,13 @@ int mp_take_fraction (MP mp, int p, int q)
     } else {
         d -= 0.5;
         if (d <= -TWEXP31) {
-            if (d != -TWEXP31 || ((-(p & 077777) * (q & 077777)) & 040000) == 0) {
+            if (d != -TWEXP31 || ((-(p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) == 0) {
                 mp->arith_error = 1;
             }
             return -negative_EL_GORDO;
         } else {
             int i = (int) d;
-            if (d == (double) i && ((-(p & 077777) * (q & 077777)) & 040000) != 0) {
+            if (d == (double) i && ((-(p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) != 0) {
                 ++i;
             }
             return i;
@@ -860,13 +860,13 @@ static int mp_take_scaled (MP mp, int p, int q)
     if ((p ^ q) >= 0) {
         d += 0.5;
         if (d >= TWEXP31) {
-            if (d != TWEXP31 || (((p & 077777) * (q & 077777)) & 040000) == 0) {
+            if (d != TWEXP31 || (((p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) == 0) {
                 mp->arith_error = 1;
             }
             return EL_GORDO;
         } else {
             int i = (int) d;
-            if (d == (double) i && (((p & 077777) * (q & 077777)) & 040000) != 0) {
+            if (d == (double) i && (((p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) != 0) {
                 --i;
             }
             return i;
@@ -874,13 +874,13 @@ static int mp_take_scaled (MP mp, int p, int q)
     } else {
         d -= 0.5;
         if (d <= -TWEXP31) {
-            if (d != -TWEXP31 || ((-(p & 077777) * (q & 077777)) & 040000) == 0) {
+            if (d != -TWEXP31 || ((-(p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) == 0) {
                 mp->arith_error = 1;
             }
             return -negative_EL_GORDO;
         } else {
             int i = (int) d;
-            if (d == (double) i && ((-(p & 077777) * (q & 077777)) & 040000) != 0) {
+            if (d == (double) i && ((-(p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) != 0) {
                 ++i;
             }
             return i;
@@ -914,7 +914,7 @@ int mp_make_scaled (MP mp, int p, int q)
                 return EL_GORDO;
             } else {
                 int i = (int) d;
-                if (d == (double) i && (((q > 0 ? -q : q) & 077777) * (((i & 037777) << 1) - 1) & 04000) != 0) {
+                if (d == (double) i && (((q > 0 ? -q : q) & 0x7FFF) * (((i & 0x3FFF) << 1) - 1) & 0x800) != 0) {
                     --i;
                 }
                 return i;
@@ -926,7 +926,7 @@ int mp_make_scaled (MP mp, int p, int q)
                 return -negative_EL_GORDO;
             } else {
                 int i = (int) d;
-                if (d == (double) i && (((q > 0 ? q : -q) & 077777) * (((i & 037777) << 1) + 1) & 04000) != 0) {
+                if (d == (double) i && (((q > 0 ? q : -q) & 0x7FFF) * (((i & 0x3FFF) << 1) + 1) & 0x800) != 0) {
                     ++i;
                 }
                 return i;
@@ -1575,7 +1575,7 @@ void mp_m_exp (MP mp, mp_number *ret, mp_number *x_orig)
     } else {
         if (x <= 0) {
             z = -8 * x;
-            y = 04000000; /* $y=2^{20}$ */
+            y = 0x100000; /* $y=2^{20}$ */
         } else {
             if (x <= 127919879) {
                 z = 1023359037 - 8 * x;

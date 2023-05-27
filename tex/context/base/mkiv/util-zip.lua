@@ -619,11 +619,13 @@ if xzip then -- flate then do
         end
     end
 
-    local function unzipdir(zipname,path,verbose)
+    local function unzipdir(zipname,path,verbose,collect,validate)
         if type(zipname) == "table" then
-            verbose = zipname.verbose
-            path    = zipname.path
-            zipname = zipname.zipname
+            validate = zipname.validate
+            collect  = zipname.collect
+            verbose  = zipname.verbose
+            path     = zipname.path
+            zipname  = zipname.zipname
         end
         if not zipname or zipname == "" then
             return
@@ -641,34 +643,49 @@ if xzip then -- flate then do
                 local done  = 0
                 local steps = verbose == "steps"
                 local time  = steps and osclock()
+             -- local skip  = 0
+                if collect then
+                    collect = { }
+                else
+                    collect = false
+                end
                 for i=1,count do
                     local l = list[i]
                     local n = l.filename
-                    local d = unzipfile(z,n) -- true for check
-                    if d then
-                        local p = filejoin(path,n)
-                        if mkdirs(dirname(p)) then
-                            if steps then
-                                total = total + #d
-                                done = done + 1
-                                if done >= step then
-                                    done = 0
-                                    logwriter(format("%4i files of %4i done, %10i bytes, %0.3f seconds",i,count,total,osclock()-time))
+                    if not validate or validate(n) then
+                        local d = unzipfile(z,n) -- true for check
+                        if d then
+                            local p = filejoin(path,n)
+                            if mkdirs(dirname(p)) then
+                                if steps then
+                                    total = total + #d
+                                    done = done + 1
+                                    if done >= step then
+                                        done = 0
+                                        logwriter(format("%4i files of %4i done, %10i bytes, %0.3f seconds",i,count,total,osclock()-time))
+                                    end
+                                elseif verbose then
+                                    logwriter(n)
                                 end
-                            elseif verbose then
-                                logwriter(n)
+                                savedata(p,d)
+                                if collect then
+                                    collect[#collect+1] = p
+                                end
                             end
-                            savedata(p,d)
+                        else
+                            logwriter(format("problem with file %s",n))
                         end
                     else
-                        logwriter(format("problem with file %s",n))
+                     -- skip = skip + 1
                     end
                 end
                 if steps then
                     logwriter(format("%4i files of %4i done, %10i bytes, %0.3f seconds",count,count,total,osclock()-time))
                 end
                 closezipfile(z)
-                return true
+                if collect then
+                    return collect
+                end
             else
                 closezipfile(z)
             end

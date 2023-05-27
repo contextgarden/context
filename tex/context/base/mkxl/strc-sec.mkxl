@@ -225,6 +225,12 @@
         titledata {
             label     {\detokenize\expandafter{\currentstructurelabel}}
             title     {\detokenize\expandafter{\currentstructuretitle}}
+% alternative 1:
+%             label     {\detokened\currentstructurelabel}
+%             title     {\detokened\currentstructuretitle}
+% alternative 2, detokened scanner:
+%             label     \currentstructurelabel
+%             title     \currentstructuretitle
         \ifx\currentstructurebookmark\currentstructuretitle \else
             bookmark  {\detokenize\expandafter{\currentstructurebookmark}}
         \fi

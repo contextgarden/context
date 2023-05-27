@@ -1782,12 +1782,12 @@
             \hskip-.5\lineheight\relax
             \ifcase\gridboxlinenomode\or
               \rlap
-                {\hskip\dimexpr.2\bodyfontsize+\scratchdimen\relax
+                {\kern\dimexpr.2\bodyfontsize+\scratchdimen\relax
                  \infofont\hbox to \emwidth{\hss\recurselevel}}%
             \or
               \llap
                 {\infofont\hbox to \emwidth{\hss\recurselevel}%
-                 \hskip.2\bodyfontsize}%
+                 \kern.2\bodyfontsize}%
             \fi
             \vrule
               \s!height \gridboxwidth
@@ -2225,10 +2225,10 @@
    \scratchwidth\dimexpr\wd\nextbox+\scratchdistance\relax
    \ifx\m_spac_hanging_location\v!right
      \frozen\hangindent\ifconditional\displaylefttoright-\fi\scratchwidth
-     \rlap{\hskip\dimexpr\hsize-\leftskip-\wd\nextbox\relax\box\nextbox}% \leftskip is new
+     \rlap{\kern\dimexpr\hsize-\leftskip-\wd\nextbox\relax\box\nextbox}% \leftskip is new
    \else
      \frozen\hangindent\ifconditional\displaylefttoright\else-\fi\scratchwidth
-     \llap{\box\nextbox\hskip\scratchdistance}%
+     \llap{\box\nextbox\kern\scratchdistance}%
    \fi
    \ignorespaces}
 

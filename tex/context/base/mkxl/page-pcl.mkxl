@@ -377,7 +377,7 @@
    \global\setfalse\c_page_floats_flushing}
 
 \def\page_floats_show_pack_state_indeed#1%
-  {\llap{\smash{\backgroundline[black]{\strut\smallinfofont\white#1\space\the\nofcollectedfloats\space of\space\the\savednoffloats:\the\hsize}}\hskip.25\emwidth}}
+  {\llap{\smash{\backgroundline[black]{\strut\smallinfofont\white#1\space\the\nofcollectedfloats\space of\space\the\savednoffloats:\the\hsize}}\hkern.25\emwidth}}
 
 \installtextracker
   {floats.collecting}

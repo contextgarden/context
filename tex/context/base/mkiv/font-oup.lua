@@ -945,7 +945,9 @@ local function unifyglyphs(fontdata,usenames)
             if colors then
                 for i=1,#colors do
                     local c = colors[i]
-                    c.slot = indices[c.slot]
+                    if c then -- safeguard
+                        c.slot = indices[c.slot]
+                    end
                 end
             end
         end

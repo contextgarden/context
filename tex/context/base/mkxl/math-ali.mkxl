@@ -44,6 +44,8 @@
      \else
        \displaywidth
      \fi
+      -\leftskip
+      -\rightskip
    \relax}
 
 \permanent\def\maximizeddisplaywidth % larger than zero but within hsize
@@ -55,6 +57,8 @@
      \else
        \displaywidth
      \fi
+      -\leftskip
+      -\rightskip
    \relax}
 
 %D \macros
@@ -698,21 +702,21 @@
 \newconditional\c_math_alignment_local_number % not used but when true puts in front (todo)
 
 \def\math_number_right_of_eqalign
-  {\ifcase\wd\b_strc_formulas_number\else
+  {\ifcase\d_strc_formulas_number\else
      \ifconditional\c_math_alignment_local_number
        \ifcase\c_strc_math_number_location\or\or
-         \box\b_strc_formulas_number
+         \strc_math_flush_number_box
        \fi
      \else
-       \box\b_strc_formulas_number
+       \strc_math_flush_number_box
      \fi
    \fi}
 
 \def\math_number_left_of_eqalign
-  {\ifcase\wd\b_strc_formulas_number\else
+  {\ifcase\d_strc_formulas_number\else
      \ifconditional\c_math_alignment_local_number
        \ifcase\c_strc_math_number_location\or
-         \box\b_strc_formulas_number
+         \strc_math_flush_number_box
        \fi
      \fi
    \fi}
@@ -1021,12 +1025,12 @@
      \ifmmode\stopimath\fi
      \hfil
      \aligntab
-     \kern\mathcasesparameter\c!distance\relax % hskip
+     \kern\mathcasesparameter\c!distance\relax
      \math_cases_strut % looks better
      \aligncontent
      \hfil
      \aligntab
-     \kern\mathcasesparameter\c!numberdistance\relax % hskip
+     \kern\mathcasesparameter\c!numberdistance\relax
      \span\math_text_in_eqalign{\aligncontent}%
      \crcr} % todo: number
 
@@ -1323,7 +1327,7 @@
    \aligntab
    \aligntab
    \math_matrix_anchor
-   \kern.5\d_math_eqalign_distance % hskip
+   \kern.5\d_math_eqalign_distance
    \aligncontent
    \aligntab
    \global\advanceby\c_math_eqalign_column\plusone
@@ -1462,14 +1466,14 @@
        \relax
        \ifnum#1>\plusone
          \localcontrolledloop\plustwo#1\plusone
-            {\kern.125\d_math_eqalign_distance % hskip
+            {\kern.125\d_math_eqalign_distance
              \hrule
                  \s!attr  \mathalignmentvruleattribute\plusthree
                  \s!height\scratchdimen
                  \s!depth \scratchdimen
               \relax}%
          \kern-2\scratchdimen
-         \kern-.125\d_math_eqalign_distance % hskip
+         \kern-.125\d_math_eqalign_distance
        \fi
        \scratchdistance\mathmatrixparameter\c!boffset\relax
        \ifdim\scratchdistance>\zeropoint
@@ -1569,10 +1573,10 @@
 % \permanent\tolerant\protected\def\math_matrix_VL[#1]#*%
 %   {\span\omit
 %    \ifconditional\c_math_matrix_first\else
-%      \kern.5\d_math_eqalign_distance % hskip
+%      \kern.5\d_math_eqalign_distance
 %    \fi
 %    \math_matrix_vertical_rule_yes{#1}%
-%    \kern.5\d_math_eqalign_distance % hskip
+%    \kern.5\d_math_eqalign_distance
 %    \global\setfalse\c_math_matrix_first
 %    \aligntab
 %    \boundary\c_math_matrix_vl_boundary
@@ -1582,11 +1586,11 @@
 \def\math_matrix_VL_indeed#1#2%%
   {\span\omit
    \ifconditional\c_math_matrix_first\else
-     \kern.5\d_math_eqalign_distance % hskip
+     \kern.5\d_math_eqalign_distance
    \fi
    \math_matrix_vertical_rule_yes{#2}%
    \localcontrolledloop\plustwo#1\plusone
-     {\kern.125\d_math_eqalign_distance % hskip
+     {\kern.125\d_math_eqalign_distance
       \math_matrix_vertical_rule_yes{#2}}%
    \kern.5\d_math_eqalign_distance
    \global\setfalse\c_math_matrix_first
@@ -1601,10 +1605,10 @@
 \permanent\tolerant\protected\def\math_matrix_NL[#1]#*%
   {\span\omit
    \ifconditional\c_math_matrix_first\else
-     \kern.5\d_math_eqalign_distance % hskip
+     \kern.5\d_math_eqalign_distance
    \fi
    \math_matrix_vertical_rule_nop{#1}%
-   \kern.5\d_math_eqalign_distance % hskip
+   \kern.5\d_math_eqalign_distance
    \global\setfalse\c_math_matrix_first
    \aligntab
    \boundary\c_math_matrix_vl_boundary
@@ -1613,9 +1617,9 @@
 \permanent\protected\def\math_matrix_NL_NR
   {\ifnum\lastboundary=\c_math_matrix_vl_boundary
      \ifconditional \c_math_matrix_sl_seen
-       \kern-1.5\d_math_eqalign_distance % hskip
+       \kern-1.5\d_math_eqalign_distance
      \else
-       \kern-.5\d_math_eqalign_distance % hskip
+       \kern-.5\d_math_eqalign_distance
      \fi
    \fi
    \math_matrix_anchor_last
@@ -2255,7 +2259,10 @@
   {\defcsname\??mathinnerstart#1\endcsname{#2}%
    \defcsname\??mathinnerstop #1\endcsname{#3}}
 
-\def\strc_math_flush_number_box{\box\b_strc_formulas_number}
+\def\strc_math_flush_number_box_normal{\box\b_strc_formulas_number}
+\def\strc_math_flush_number_box_visual{\ruledhbox{\box\b_strc_formulas_number}}
+
+\let\strc_math_flush_number_box\strc_math_flush_number_box_normal
 
 % \newdimension  \d_strc_math_display_width
 % \newdimension  \d_strc_math_indent
@@ -2283,7 +2290,7 @@
 \def\strc_math_flush_aligned_boxed_direct_yes
   {\dontleavehmode
    \box\b_strc_math_display
-   \llap{\box\b_strc_formulas_number}}
+   \llap{\strc_math_flush_number_box}}
 
 \def\strc_math_flush_aligned_boxed_direct_nop
   {\dontleavehmode
@@ -2291,119 +2298,217 @@
 
 \def\strc_math_flush_aligned_left_number_indeed
   {\ifvoid\b_strc_formulas_number\else
-     \scratchwidth\wd\b_strc_formulas_number
-     \setbox\b_strc_formulas_number\hbox to \displaywidth{\hss\hbox{\box\b_strc_formulas_number}}%
+     \setbox\b_strc_formulas_number\hbox to \displaywidth\bgroup
+       \hss
+       \hbox{\strc_math_flush_number_box}%
+     \egroup
      \ifcase\c_strc_math_number_location\or
-       \boxxoffset\b_strc_formulas_number\dimexpr-\displaywidth+\scratchwidth\relax
+       \boxxoffset\b_strc_formulas_number\dimexpr-\displaywidth+\d_strc_formulas_number+\s_strc_formulas_margin_left\relax % brrrrr
        \boxyoffset\b_strc_formulas_number-\d_strc_math_first_height
        \htdp\b_strc_formulas_number\zeropoint
-       \box\b_strc_formulas_number % left
+       \strc_math_flush_number_box % left
      \fi
    \fi}
 
 \def\strc_math_flush_aligned_right_number_indeed
   {\ifvoid\b_strc_formulas_number\else
-     \scratchwidth\wd\b_strc_formulas_number
-     \setbox\b_strc_formulas_number\hbox to \displaywidth{\hss\hbox{\box\b_strc_formulas_number}}%
+     \setbox\b_strc_formulas_number\hbox to \displaywidth\bgroup
+       \hss
+       \hbox{\strc_math_flush_number_box}%
+     \egroup
      \ifcase\c_strc_math_number_location\or\else
+       \boxxoffset\b_strc_formulas_number\dimexpr-\s_strc_formulas_margin_right\relax % brrrrr
        \boxyoffset\b_strc_formulas_number\d_strc_math_last_depth
        \htdp\b_strc_formulas_number\zeropoint
-       \box\b_strc_formulas_number % right
+       \strc_math_flush_number_box % right
      \fi
    \fi}
 
-\protected\def\strc_math_flush_aligned_indeed
-  {\ifcase\c_strc_math_ragged_status
-     % align: error
-     \strc_math_flush_aligned_boxed_direct_yes
-   \or
-     % align: flushleft, number right
-     \strc_math_flush_aligned_boxed_direct_yes
-   \or
-     % align: middle
-     \ifnum\c_strc_math_split_mode=\c_strc_math_line_mode
-       \leftskip \zeropoint
-       \rightskip\zeropoint
-       \strc_math_flush_aligned_boxed_direct_yes
-     \orelse\ifnum\c_strc_math_split_mode=\c_strc_math_wrap_mode
-       \dontleavehmode
-       \vbox\bgroup
-       \strc_math_flush_aligned_left_number_indeed
-       \unvbox\b_strc_math_display
-       \strc_math_flush_aligned_right_number_indeed
-       \egroup
-     \orelse\ifhmode
-       % untested
-       \dontleavehmode
-       \strc_math_flush_aligned_left_number_indeed
-       \box\b_strc_math_display
-       \strc_math_flush_aligned_right_number_indeed
-     \orelse\ifvbox\b_strc_math_display
-       \strc_math_flush_aligned_left_number_indeed
-       \unvbox\b_strc_math_display
-       \strc_math_flush_aligned_right_number_indeed
-     \else
-       % untested
-       \dontleavehmode
-       \strc_math_flush_aligned_left_number_indeed
-       \box\b_strc_math_display
-       \strc_math_flush_aligned_right_number_indeed
-     \fi
-   \or
-     % align: flushright
-     % packaged, number (kind of ugly as we now stick in the margin)
-     \ifcase\c_strc_math_n_of_lines\or
-       \dontleavehmode
-       \kern-\wd\b_strc_formulas_number
-       \box\b_strc_math_display
-       \ifcase\c_strc_math_n_of_lines\or
-         \box\b_strc_formulas_number
-       \else
-         \llap{\box\b_strc_formulas_number}%
-       \fi
-     \orelse\iftrue % can become option
-       \ifdim\d_strc_math_last_width>\wd\b_strc_formulas_number
-         \ifdim\d_strc_math_max_width<\d_strc_math_last_width
-           \strc_math_flush_aligned_boxed_direct_yes
-         \else
-           \dontleavehmode
-           \kern-\wd\b_strc_formulas_number
-           \box\b_strc_math_display
-           \box\b_strc_formulas_number
-         \fi
-       \else
-         % delay number till later
-         \strc_math_flush_aligned_boxed_direct_nop
-       \fi
-     \else
-       % delay number till later
-       \strc_math_flush_aligned_boxed_direct_nop
-     \fi
-   \fi
-   \ifvmode
-      \nointerlineskip
-   \fi}
+% \settrue\c_strc_math_ignore_number
 
-\protected\def\strc_math_flush_aligned_simple
+% cleanup timestamp: tales of time, joe bonamassa (live blu-ray in loop mode, 2023)
+
+\dimensiondef\d_strc_math_number_eps 5\scaledpoint
+
+% line mode
+
+\def\strc_math_flush_line_mode
   {\ifcase\c_strc_math_ragged_status\or\or\hfill\or\hfill\fi
    \box\b_strc_math_display
    \ifcase\c_strc_math_ragged_status\or\hfill\or\hfill\or\fi}
 
+% wrap mode
+
+\def\strc_math_flush_wrap_mode
+  {\strc_math_setup_align_auto
+   \bgroup
+     \leftskip \zeropoint\relax
+     \rightskip\zeropoint\relax
+     \global\c_strc_math_positioning\plustwo
+     \dontleavehmode
+     \vbox\bgroup
+       \strc_math_flush_aligned_left_number_indeed
+       \unvbox\b_strc_math_display
+       \strc_math_flush_aligned_right_number_indeed
+     \egroup
+   \egroup
+   \ifvmode
+     \nointerlineskip
+   \fi}
+
+% flow mode
+
+\def\strc_math_flush_v_box_bottom
+  {\ifdone
+     \global\c_strc_math_positioning\number\plusfour2\relax
+     \unvbox\b_strc_math_display
+     \strc_math_flush_number_box
+   \else
+     \global\c_strc_math_positioning\number\plusfour3\relax
+     \unvbox\b_strc_math_display
+     \nointerlineskip
+     \ht\b_strc_formulas_number\zeropoint
+     \dp\b_strc_formulas_number\zeropoint
+     \boxyoffset\b_strc_formulas_number\d_strc_math_last_depth
+     \strc_math_flush_number_box % right
+     \prevdepth\d_strc_math_last_depth
+   \fi}
+
+\def\strc_math_flush_v_box_top
+  {\ifdone
+     \global\c_strc_math_positioning\number\plusfour5\relax
+     \dontleavehmode
+     \strc_math_flush_number_box
+     \unvbox\b_strc_math_display
+   \else
+     \scratchdepth\dp\b_strc_formulas_number
+     \global\c_strc_math_positioning\number\plusfour6\relax
+     \ht\b_strc_formulas_number\strutht
+     \dp\b_strc_formulas_number\strutdp
+     \dontleavehmode
+     \strc_math_flush_number_box % left
+     \vkern-\dimexpr\d_strc_math_first_height+\scratchdepth\relax
+     \unvbox\b_strc_math_display
+   \fi}
+
+\def\strc_math_flush_v_box_right
+  {\ifconditional\c_strc_math_ignore_number
+     \d_strc_formulas_number\zeropoint
+   \fi
+   \strc_formulas_start_side_box
+   \ifzeropt\d_strc_formulas_number
+     \global\c_strc_math_positioning\number\plusfour1\relax
+     \unvbox\b_strc_math_display
+   \else
+     % better verbose than compact so some overlap in code here
+     \ifcase\c_strc_math_number_variant\or
+       \s_strc_formulas_margin_right\zeropoint
+     \fi
+     \setbox\b_strc_formulas_number\hbox to \displaywidth\bgroup
+       \hss
+       \strc_math_flush_number_box
+       \kern\s_strc_formulas_margin_right
+     \egroup
+     \ifcstok{\formulaparameter\c!order}\v!reverse
+       \ifdim\dimexpr\d_strc_math_first_right-\s_strc_formulas_margin_right\relax<\dimexpr\d_strc_formulas_number-\d_strc_math_number_eps\relax
+         \donetrue
+       \else
+         \donefalse
+       \fi
+       \strc_math_flush_v_box_top
+     \else
+       \ifdim\dimexpr\d_strc_math_last_right-\s_strc_formulas_margin_right\relax<\dimexpr\d_strc_formulas_number-\d_strc_math_number_eps\relax
+         \donetrue
+       \else
+         \donefalse
+       \fi
+       \strc_math_flush_v_box_bottom
+     \fi
+   \fi
+   \strc_formulas_stop_side_box}
+
+\def\strc_math_flush_v_box_left
+  {\ifconditional\c_strc_math_ignore_number
+     \d_strc_formulas_number\zeropoint
+   \fi
+   \strc_formulas_start_side_box
+   \ifzeropt\d_strc_formulas_number
+     \global\c_strc_math_positioning\number\plusfour4\relax
+     \unvbox\b_strc_math_display
+   \else
+     % better verbose than compact so some overlap in code here
+     \ifcase\c_strc_math_number_variant\or
+       \s_strc_formulas_margin_left\zeropoint
+     \fi
+     \setbox\b_strc_formulas_number\hbox to \displaywidth\bgroup
+       \kern\s_strc_formulas_margin_left
+       \strc_math_flush_number_box
+       \hss
+     \egroup
+     \ifcstok{\formulaparameter\c!order}\v!reverse
+       \ifdim\dimexpr\d_strc_math_last_left-\s_strc_formulas_margin_left\relax<\dimexpr\d_strc_formulas_number-\d_strc_math_number_eps\relax
+         \donetrue
+       \else
+         \donefalse
+       \fi
+       \strc_math_flush_v_box_bottom
+     \else
+       \ifdim\dimexpr\d_strc_math_first_left-\s_strc_formulas_margin_left\relax<\dimexpr\d_strc_formulas_number-\d_strc_math_number_eps\relax
+         \donetrue
+       \else
+         \donefalse
+       \fi
+       \strc_math_flush_v_box_top
+     \fi
+   \fi
+   \strc_formulas_stop_side_box}
+
+\def\strc_math_flush_h_mode
+  {\global\c_strc_math_positioning\plusthree
+   \dontleavehmode
+   \strc_math_flush_aligned_left_number_indeed
+   \box\b_strc_math_display
+   \strc_math_flush_aligned_right_number_indeed}
+
+\def\strc_math_flush_h_box
+  {\global\c_strc_math_positioning\plusfive
+   \dontleavehmode
+   \strc_math_flush_aligned_left_number_indeed
+   \box\b_strc_math_display
+   \strc_math_flush_aligned_right_number_indeed}
+
+\def\strc_math_flush_text_mode
+  {\strc_math_setup_align_auto
+   \bgroup
+     \leftskip \zeropoint\relax
+     \rightskip\zeropoint\relax
+     \ifhmode
+       % nil the tracing
+       \strc_math_flush_h_mode
+     \orelse\ifvbox\b_strc_math_display
+       \ifnum\c_strc_math_number_location=\plusone
+         \strc_math_flush_v_box_left
+       \else
+         \strc_math_flush_v_box_right
+       \fi
+     \else
+       % nil the tracing, might never happen
+       \strc_math_flush_h_box
+     \fi
+   \egroup
+   \ifvmode
+     \nointerlineskip
+   \fi}
+
+% all modes:
+
 \protected\def\strc_math_flush_aligned
   {\ifnum\c_strc_math_split_mode=\c_strc_math_line_mode
-     \strc_math_flush_aligned_simple
-   \orelse\ifconditional\c_strc_math_indent
-     % in this case the already set text align is overloaded
-     \strc_math_setup_align_auto
-     \strc_math_flush_aligned_indeed
+     \strc_math_flush_line_mode
+   \orelse\ifnum\c_strc_math_split_mode=\c_strc_math_wrap_mode
+     \strc_math_flush_wrap_mode
    \else
-     % normally we don't end up here
-     \strc_math_setup_spacing_aligned\mathalignmentparameter
-     \begingroup
-       \forgetall
-       \unhbox\b_strc_math_display
-       \par
-     \endgroup
+     \strc_math_flush_text_mode
    \fi}
 
 \def\strc_math_flush_box_normal
@@ -2566,9 +2671,9 @@
 
 \protected\def\d_strc_math_total_display_width
   {\dimexpr
-     \d_strc_math_display_width+\wd\b_strc_formulas_number
+     \d_strc_math_display_width+\d_strc_formulas_number
      \ifconditional\c_strc_formulas_overlay_number
-        \ifcase\c_strc_math_ragged_status\or\or+\wd\b_strc_formulas_number\or\fi
+        \ifcase\c_strc_math_ragged_status\or\or+\d_strc_formulas_number\or\fi
      \fi
    \relax}
 
@@ -2598,9 +2703,9 @@
    \fi
    % still ok?
    \ifnum\c_strc_math_ragged_status=\plustwo
-     \d_strc_math_framed_width\dimexpr\displaywidth-2\wd\b_strc_formulas_number\relax
+     \d_strc_math_framed_width\dimexpr\displaywidth-2\d_strc_formulas_number\relax
    \else
-     \d_strc_math_framed_width\dimexpr\displaywidth- \wd\b_strc_formulas_number\relax
+     \d_strc_math_framed_width\dimexpr\displaywidth- \d_strc_formulas_number\relax
    \fi}
 
 \let\strc_math_number_check_inside\strc_math_number_check_outside
@@ -2638,17 +2743,27 @@
 
 \defcsname\??mathboxlocation\v!left \endcsname
   {\c_strc_math_number_location\plusone}
-\defcsname\??mathboxlocation\v!flushright\endcsname
-  {\c_strc_math_number_location\plusone}
 
 \defcsname\??mathboxlocation\v!right\endcsname
   {\c_strc_math_number_location\plustwo}
-\defcsname\??mathboxlocation\v!flushleft\endcsname
-  {\c_strc_math_number_location\plustwo}
+
+\defcsname\??mathboxlocation\v!atleftmargin\endcsname
+  {\c_strc_math_number_location\plusone
+   \ifzeropt\s_strc_formulas_margin_left
+     % this can be a helper as now mixed in math-ali
+     \parinitleftskip\zeropoint
+   \else
+     \c_strc_math_number_variant \plusone
+   \fi}
 
 \defcsname\??mathboxlocation\v!atrightmargin\endcsname
   {\c_strc_math_number_location\plustwo
-   \c_strc_math_number_variant \plusone}
+   \ifzeropt\s_strc_formulas_margin_right
+     % this can be a helper as now mixed in math-ali
+     \parfillrightskip\zeropoint
+   \else
+     \c_strc_math_number_variant \plusone
+   \fi}
 
 \protected\def\strc_math_box_start#1%
   {\c_strc_math_ragged_status#1\relax % already set
@@ -2687,24 +2802,28 @@
      \hbox to \displaywidth \bgroup
    \else
      \bgroup
-     \strc_math_show_margins
    \fi
    \ifcase\c_strc_math_number_location
      \strc_math_flush_box
    \or % number left
-     \ifzeropt\wd\b_strc_formulas_number
+     \ifzeropt\d_strc_formulas_number
        \strc_math_flush_number_no
      \else
        \strc_math_flush_number_left
      \fi
    \else % number right
-     \ifzeropt\wd\b_strc_formulas_number
+     \ifzeropt\d_strc_formulas_number
        \strc_math_flush_number_no
      \else
        \strc_math_flush_number_right
      \fi
    \fi
-   \egroup}
+   \egroup
+   \ifnum\c_strc_math_split_mode=\c_strc_math_flow_mode
+     \ifhmode \else
+       \strc_math_show_margins
+     \fi
+   \fi}
 
 \defineinnermathhandler\v!left      {\strc_math_box_start\plusthree}{\strc_math_box_stop}
 \defineinnermathhandler\v!flushright{\strc_math_box_start\plusthree}{\strc_math_box_stop}
@@ -2762,7 +2881,7 @@
        \fi
      \fi
    \else
-   % \box\b_strc_formulas_number
+   % \strc_math_flush_number_box
    % \hfill
      \strc_math_flush_aligned % we flush in here, otherwise wrong positioning of number (we need to unvbox)
    \fi}
@@ -2789,7 +2908,7 @@
    \else
      \strc_math_flush_aligned
    % \hfill
-   % \box\b_strc_formulas_number % we flush in here
+   % \strc_math_flush_number_box % we flush in here
    \fi}
 
 %D Some inline math tweak.
@@ -2821,8 +2940,8 @@
 \setupmathematics
   [\c!textdistance=\zeropoint]
 
-%D This is an experiment. No fancy spacing and alignments here. If we ever
-%D go that route it might result in incompatible rendering.
+%D This is an experiment. No fancy spacing and alignments here. If we ever go that
+%D route it might result in incompatible rendering.
 
 \permanent\protected\def\startsplitformula
   {\ifhmode
@@ -2972,7 +3091,7 @@
    \ifzeropt\scratchdimen\else\kern\scratchdimen\fi
    \setbox\scratchbox\hbox{\mathsimplealignparameter\c!text}%
    \ifvoid\scratchbox\else
-     \kern\mathsimplealignparameter\c!textdistance % hskip
+     \kern\mathsimplealignparameter\c!textdistance
      \vcenter{\box\scratchbox}%
    \fi
    \egroup

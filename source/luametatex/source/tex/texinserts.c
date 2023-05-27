@@ -456,7 +456,7 @@ void tex_run_insert(void)
 
 void tex_finish_insert_group(void)
 {
-    if (! tex_wrapped_up_paragraph(insert_par_context)) {
+    if (! tex_wrapped_up_paragraph(insert_par_context, 0)) {
         halfword p, q; /*tex for short-term use */
         scaled d;      /*tex holds |split_max_depth| in |insert_group| */
         halfword f;    /*tex holds |floating_penalty| in |insert_group| */

@@ -755,8 +755,8 @@ local function readposition(f,format,mainoffset,getdelta)
         local Y = (format & 0x20) ~= 0 and skipshort(f) or 0
         local H = (format & 0x40) ~= 0 and skipshort(f) or 0
         local V = (format & 0x80) ~= 0 and skipshort(f) or 0
-     -- local s = skips[extract(format,4,4)]        
-        local s = skips[(format >> 4) & 0xF] 
+     -- local s = skips[extract(format,4,4)]
+        local s = skips[(format >> 4) & 0xF]
         if s > 0 then
             skipshort(f,s)
         end
@@ -3145,9 +3145,18 @@ do
     local linesdata  -- for the moment verbose, will be just indexed
     local affinedata -- for the moment verbose, will be just indexed
 
+local layerlistoffset
+local layeroffset
+
+local paintindex
+
     local function getpaintoffset(f,offset)
-        offset = offset + readuoffset(f)
-        return paintdata[offset] and offset or nil
+        local o = readuoffset(f)
+        if o == 0 then
+            --
+        else
+            return paintdata[offset+o] -- and offset or nil
+        end
     end
 
     local function getlinesoffset(f,offset,var)
@@ -3166,138 +3175,138 @@ do
         return offset
     end
 
-    paintreaders = {
+    local paintreaders = {
         -- uint8    numLayers           Number of offsets to paint tables to read from LayerList.
         -- uint32   firstLayerIndex     Index (base 0) into the LayerList.
-        [1] = function(f,format)
-            return {
-                format = format,
-                name   = "PaintColrLayers",
-                count  = readuinteger(f),
-                index  = readulong(f),
-                list   = false,
-            }
-        end,
-        -- uint16   paletteIndex        Index for a CPAL palette entry.
-        -- F2DOT14  alpha               Alpha value.
-        [2] = function(f,format)
-            return {
-                format  = format,
-                name    = "Paintsolid",
-                palette = readushort(f),
-                alpha   = read2dot14(f),
-            }
-        end,
-        -- uint16   paletteIndex        Index for a CPAL palette entry.
-        -- F2DOT14  alpha               Alpha value. For variation, use varIndexBase + 0.
-        -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
-        [3] = function(f,format)
-            return {
-                format  = format,
-                name    = "Paintsolid",
-                palette = readushort(f),
-                alpha   = read2dot14(f),
-                varbase = readulong(f),
-            }
-        end,
-        -- Offset24 colorLineOffset     Offset to VarColorLine table.
-        -- FWORD    x0                  Start point (p₀) x coordinate. For variation, use varIndexBase + 0.
-        -- FWORD    y0                  Start point (p₀) y coordinate. For variation, use varIndexBase + 1.
-        -- FWORD    x1                  End point (p₁) x coordinate. For variation, use varIndexBase + 2.
-        -- FWORD    y1                  End point (p₁) y coordinate. For variation, use varIndexBase + 3.
-        -- FWORD    x2                  Rotation point (p₂) x coordinate. For variation, use varIndexBase + 4.
-        -- FWORD    y2                  Rotation point (p₂) y coordinate. For variation, use varIndexBase + 5.
-        -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
-        [4] = function(f,format,offset)
-            return {
-                format = format,
-                name   = "PaintLinearGradient",
-                color  = getlinesoffset(f,offset,false),
-                x0     = readfword(f),
-                y0     = readfword(f),
-                x1     = readfword(f),
-                y1     = readfword(f),
-                x2     = readfword(f),
-                y2     = readfword(f),
-            }
-        end,
-        [5] = function(f,format,offset)
-            return {
-                format  = format,
-                name    = "PaintLinearGradient",
-                color   = getlinesoffset(f,offset,true),
-                x0      = readfword(f),
-                y0      = readfword(f),
-                x1      = readfword(f),
-                y1      = readfword(f),
-                x2      = readfword(f),
-                y2      = readfword(f),
-                varbase = readulong(f),
-            }
-        end,
-        -- Offset24 colorLineOffset     Offset to VarColorLine table.
-        -- FWORD    x0                  Start circle center x coordinate. For variation, use varIndexBase + 0.
-        -- FWORD    y0                  Start circle center y coordinate. For variation, use varIndexBase + 1.
-        -- UFWORD   radius0             Start circle radius. For variation, use varIndexBase + 2.
-        -- FWORD    x1                  End circle center x coordinate. For variation, use varIndexBase + 3.
-        -- FWORD    y1                  End circle center y coordinate. For variation, use varIndexBase + 4.
-        -- UFWORD   radius1             End circle radius. For variation, use varIndexBase + 5.
-        -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
-        [6] = function(f,format)
-            return {
-                format  = format,
-                name    = "PaintRadialGradient",
-                color   = getlinesoffset(f,offset,false),
-                x0      = readfword(f),
-                y0      = readfword(f),
-                radius0 = readfword(f),
-                x1      = readfword(f),
-                y1      = readfword(f),
-                radius1 = readfword(f),
-            }
-        end,
-        [7] = function(f,format)
-            return {
-                format  = format,
-                name    = "PaintRadialGradient",
-                color   = getlinesoffset(f,offset,true),
-                x0      = readfword(f),
-                y0      = readfword(f),
-                radius0 = readfword(f),
-                x1      = readfword(f),
-                y1      = readfword(f),
-                radius1 = readfword(f),
-                varbase = readulong(f),
-            }
-        end,
-        -- Offset24 colorLineOffset     Offset to VarColorLine table.
-        -- FWORD    centerX             Center x coordinate. For variation, use varIndexBase + 0.
-        -- FWORD    centerY             Center y coordinate. For variation, use varIndexBase + 1.
-        -- F2DOT14  startAngle          Start of the angular range of the gradient, 180° in counter-clockwise degrees per 1.0 of value. For variation, use varIndexBase + 2.
-        -- F2DOT14  endAngle            End of the angular range of the gradient, 180° in counter-clockwise degrees per 1.0 of value. For variation, use varIndexBase + 3.
-        -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
-        [8] = function(f,format)
-            return {
-                format     = format,
-                name       = "PaintSweepGradient",
-                color      = getlinesoffset(f,offset,false),
-                centerx    = readfword(f),
-                centery    = readfword(f),
-                startangle = read2dot14(f),
-                endangle   = read2dot14(f),
-            }
-        end,
-        [9] = function(f,format)
-            return {
-                format     = format,
-                name       = "PaintSweepGradient",
-                color      = getlinesoffset(f,offset,true),
-                centerx    = readfword(f),
-                centery    = readfword(f),
-                startangle = read2dot14(f),
-                endangle   = read2dot14(f),
-                varbase    = readulong(f),
-            }
+       [1] = function(f,format)
+           return {
+               format = format,
+               name   = "PaintColrLayers",
+               count  = readuinteger(f),
+               index  = readulong(f),
+               list   = false,
+           }
+       end,
+       -- uint16   paletteIndex        Index for a CPAL palette entry.
+       -- F2DOT14  alpha               Alpha value.
+       [2] = function(f,format)
+           return {
+               format  = format,
+               name    = "Paintsolid",
+               palette = readushort(f),
+               alpha   = read2dot14(f),
+           }
+       end,
+       -- uint16   paletteIndex        Index for a CPAL palette entry.
+       -- F2DOT14  alpha               Alpha value. For variation, use varIndexBase + 0.
+       -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
+       [3] = function(f,format)
+           return {
+               format  = format,
+               name    = "Paintsolid",
+               palette = readushort(f),
+               alpha   = read2dot14(f),
+               varbase = readulong(f),
+           }
+       end,
+       -- Offset24 colorLineOffset     Offset to VarColorLine table.
+       -- FWORD    x0                  Start point (p₀) x coordinate. For variation, use varIndexBase + 0.
+       -- FWORD    y0                  Start point (p₀) y coordinate. For variation, use varIndexBase + 1.
+       -- FWORD    x1                  End point (p₁) x coordinate. For variation, use varIndexBase + 2.
+       -- FWORD    y1                  End point (p₁) y coordinate. For variation, use varIndexBase + 3.
+       -- FWORD    x2                  Rotation point (p₂) x coordinate. For variation, use varIndexBase + 4.
+       -- FWORD    y2                  Rotation point (p₂) y coordinate. For variation, use varIndexBase + 5.
+       -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
+       [4] = function(f,format,offset)
+           return {
+               format = format,
+               name   = "PaintLinearGradient",
+               color  = getlinesoffset(f,offset,false),
+               x0     = readfword(f),
+               y0     = readfword(f),
+               x1     = readfword(f),
+               y1     = readfword(f),
+               x2     = readfword(f),
+               y2     = readfword(f),
+           }
+       end,
+       [5] = function(f,format,offset)
+           return {
+               format  = format,
+               name    = "PaintLinearGradient",
+               color   = getlinesoffset(f,offset,true),
+               x0      = readfword(f),
+               y0      = readfword(f),
+               x1      = readfword(f),
+               y1      = readfword(f),
+               x2      = readfword(f),
+               y2      = readfword(f),
+               varbase = readulong(f),
+           }
+       end,
+       -- Offset24 colorLineOffset     Offset to VarColorLine table.
+       -- FWORD    x0                  Start circle center x coordinate. For variation, use varIndexBase + 0.
+       -- FWORD    y0                  Start circle center y coordinate. For variation, use varIndexBase + 1.
+       -- UFWORD   radius0             Start circle radius. For variation, use varIndexBase + 2.
+       -- FWORD    x1                  End circle center x coordinate. For variation, use varIndexBase + 3.
+       -- FWORD    y1                  End circle center y coordinate. For variation, use varIndexBase + 4.
+       -- UFWORD   radius1             End circle radius. For variation, use varIndexBase + 5.
+       -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
+       [6] = function(f,format,offset)
+           return {
+               format  = format,
+               name    = "PaintRadialGradient",
+               color   = getlinesoffset(f,offset,false),
+               x0      = readfword(f),
+               y0      = readfword(f),
+               radius0 = readfword(f),
+               x1      = readfword(f),
+               y1      = readfword(f),
+               radius1 = readfword(f),
+           }
+       end,
+       [7] = function(f,format,offset)
+           return {
+               format  = format,
+               name    = "PaintRadialGradient",
+               color   = getlinesoffset(f,offset,true),
+               x0      = readfword(f),
+               y0      = readfword(f),
+               radius0 = readfword(f),
+               x1      = readfword(f),
+               y1      = readfword(f),
+               radius1 = readfword(f),
+               varbase = readulong(f),
+           }
+       end,
+       -- Offset24 colorLineOffset     Offset to VarColorLine table.
+       -- FWORD    centerX             Center x coordinate. For variation, use varIndexBase + 0.
+       -- FWORD    centerY             Center y coordinate. For variation, use varIndexBase + 1.
+       -- F2DOT14  startAngle          Start of the angular range of the gradient, 180° in counter-clockwise degrees per 1.0 of value. For variation, use varIndexBase + 2.
+       -- F2DOT14  endAngle            End of the angular range of the gradient, 180° in counter-clockwise degrees per 1.0 of value. For variation, use varIndexBase + 3.
+       -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
+       [8] = function(f,format,offset)
+           return {
+               format     = format,
+               name       = "PaintSweepGradient",
+               color      = getlinesoffset(f,offset,false),
+               centerx    = readfword(f),
+               centery    = readfword(f),
+               startangle = read2dot14(f),
+               endangle   = read2dot14(f),
+           }
+       end,
+       [9] = function(f,format,offset)
+           return {
+               format     = format,
+               name       = "PaintSweepGradient",
+               color      = getlinesoffset(f,offset,true),
+               centerx    = readfword(f),
+               centery    = readfword(f),
+               startangle = read2dot14(f),
+               endangle   = read2dot14(f),
+               varbase    = readulong(f),
+           }
         end,
         -- Offset24 paintOffset         Offset to a Paint table.
         -- uint16   glyphID             Glyph ID for the source outline.
@@ -3310,269 +3319,273 @@ do
             }
         end,
         -- uint16   glyphID             Glyph ID for a BaseGlyphList base glyph.
-        [11] = function(f,format)
-            return {
-                format = format,
-                name   = "PaintColrGlyph",
-                glyph  = readushort(f),
-            }
-        end,
-        -- Offset24 paintOffset         Offset to a Paint subtable.
-        -- Offset24 transformOffset     Offset to an (Var)Affine2x3 table.
-        [12] = function(f,format,offset)
-            return {
-                format = format,
-                name   = "PaintTransform",
-                affine = getaffineoffset(f,offset,false),
-                paint  = getpaintoffset(f,offset),
-            }
-        end,
-        [13] = function(f,format,offset)
-            return {
-                format = format,
-                name   = "PaintTransform",
-                affine = getaffineoffset(f,offset,true),
-                paint  = getpaintoffset(f,offset),
-            }
-        end,
-        -- Offset24 paintOffset         Offset to a Paint subtable.
-        -- FWORD    dx                  Translation in x direction. For variation, use varIndexBase + 0.
-        -- FWORD    dy                  Translation in y direction. For variation, use varIndexBase + 1.
-        -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
-        [14] = function(f,format,offset)
-            return {
-                format = format,
-                name   = "PaintTranslate",
-                paint  = getpaintoffset(f,offset),
-                dx     = readfword(f),
-                dy     = readfword(f),
-            }
-        end,
-        [15] = function(f,format,offset)
-            return {
-                format  = format,
-                name    = "PaintTranslate",
-                paint   = getpaintoffset(f,offset),
-                dx      = readfword(f),
-                dy      = readfword(f),
-                varbase = readulong(f),
-            }
-        end,
-        -- Offset24 paintOffset         Offset to a Paint subtable.
-        -- F2DOT14  scaleX              Scale factor in x direction. For variation, use varIndexBase + 0.
-        -- F2DOT14  scaleY              Scale factor in y direction. For variation, use varIndexBase + 1.
-        -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
-        [16] = function(f,format,offset)
-            return {
-                format = format,
-                name   = "PaintScale",
-                paint  = getpaintoffset(f,offset),
-                scalex = read2dot14(f),
-                scaley = read2dot14(f),
-            }
-        end,
-        [17] = function(f,format,offset)
-            return {
-                format  = format,
-                name    = "PaintScale",
-                paint   = getpaintoffset(f,offset),
-                scalex  = read2dot14(f),
-                scaley  = read2dot14(f),
-                varbase = readulong(f),
-            }
-        end,
-        -- Offset24 paintOffset         Offset to a Paint subtable.
-        -- F2DOT14  scaleX              Scale factor in x direction. For variation, use varIndexBase + 0.
-        -- F2DOT14  scaleY              Scale factor in y direction. For variation, use varIndexBase + 1.
-        -- FWORD    centerX             x coordinate for the center of scaling. For variation, use varIndexBase + 2.
-        -- FWORD    centerY             y coordinate for the center of scaling. For variation, use varIndexBase + 3.
-        -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
-        [18] = function(f,format,offset)
-            return {
-                format  = format,
-                name    = "PaintScale",
-                paint   = getpaintoffset(f,offset),
-                scalex  = read2dot14(f),
-                scaley  = read2dot14(f),
-                centerx = readfword(f),
-                centery = readfword(f),
-            }
-        end,
-        [19] = function(f,format,offset)
-            return {
-                format  = format,
-                name    = "PaintScale",
-                paint   = getpaintoffset(f,offset),
-                scalex  = read2dot14(f),
-                scaley  = read2dot14(f),
-                centerx = readfword(f),
-                centery = readfword(f),
-                varbase = readulong(f),
-            }
-        end,
-        -- Offset24 paintOffset         Offset to a Paint subtable.
-        -- F2DOT14  scale               Scale factor in x and y directions. For variation, use varIndexBase + 0.
-        -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
-        [20] = function(f,format,offset)
-            return {
-                format = format,
-                name   = "PaintScale",
-                paint  = getpaintoffset(f,offset),
-                scale  = read2dot14(f),
-            }
-        end,
-        [21] = function(f,format,offset)
-            return {
-                format  = format,
-                name    = "PaintScale",
-                paint   = getpaintoffset(f,offset),
-                scale   = read2dot14(f),
-                varbase = readulong(f),
-            }
-        end,
-        -- Offset24 paintOffset         Offset to a Paint subtable.
-        -- F2DOT14  scale               Scale factor in x and y directions. For variation, use varIndexBase + 0.
-        -- FWORD    centerX             x coordinate for the center of scaling. For variation, use varIndexBase + 1.
-        -- FWORD    centerY             y coordinate for the center of scaling. For variation, use varIndexBase + 2.
-        -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
-        [22] = function(f,format,offset)
-            return {
-                format  = format,
-                name    = "PaintScale",
-                paint   = getpaintoffset(f,offset),
-                scale   = read2dot14(f),
-                centerx = readfword(f),
-                centery = readfword(f),
-            }
-        end,
-        [23] = function(f,format,offset)
-            return {
-                format  = format,
-                name    = "PaintScale",
-                paint   = getpaintoffset(f,offset),
-                scale   = read2dot14(f),
-                centerx = readfword(f),
-                centery = readfword(f),
-                varbase = readulong(f),
-            }
-        end,
-        -- Offset24 paintOffset         Offset to a Paint subtable.
-        -- F2DOT14  angle               Rotation angle, 180° in counter-clockwise degrees per 1.0 of value. For variation, use varIndexBase + 0.
-        -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
-        [24] = function(f,format,offset)
-            return {
-                format = format,
-                angle  = read2dot14(f),
-                paint  = getpaintoffset(f,offset),
-                name   = "PaintRotate",
-            }
-        end,
-        [25] = function(f,format,offset)
-            return {
-                format  = format,
-                name    = "PaintRotate",
-                paint   = getpaintoffset(f,offset),
-                angle   = read2dot14(f),
-                varbase = readulong(f),
-            }
-        end,
-        -- Offset24 paintOffset         Offset to a Paint subtable.
-        -- F2DOT14  angle               Rotation angle, 180° in counter-clockwise degrees per 1.0 of value. For variation, use varIndexBase + 0.
-        -- FWORD    centerX             x coordinate for the center of rotation. For variation, use varIndexBase + 1.
-        -- FWORD    centerY             y coordinate for the center of rotation. For variation, use varIndexBase + 2.
-        -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
-        [26] = function(f,format,offset)
-            return {
-                format  = format,
-                name    = "PaintRotate",
-                paint   = getpaintoffset(f,offset),
-                centerx = readfword(f),
-                centery = readfword(f),
-            }
-        end,
-        [27] = function(f,format,offset)
-            return {
-                format  = format,
-                name    = "PaintRotate",
-                paint   = getpaintoffset(f,offset),
-                centerx = read2dot14(f),
-                centery = read2dot14(f),
-                varbase = readulong(f),
-            }
-        end,
-        -- Offset24 paintOffset         Offset to a Paint subtable.
-        -- F2DOT14  xSkewAngle          Angle of skew in the direction of the x-axis, 180° in counter-clockwise degrees per 1.0 of value. For variation, use varIndexBase + 0.
-        -- F2DOT14  ySkewAngle          Angle of skew in the direction of the y-axis, 180° in counter-clockwise degrees per 1.0 of value. For variation, use varIndexBase + 1.
-        -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
-        [28] = function(f,format,offset)
-            return {
-                format = format,
-                name   = "PaintSkew",
-                paint  = getpaintoffset(f,offset),
-                xangle = read2dot14(f),
-                yangle = read2dot14(f),
-            }
-        end,
-        [29] = function(f,format,offset)
-            return {
-                format  = format,
-                name    = "PaintSkew",
-                paint   = getpaintoffset(f,offset),
-                xangle  = read2dot14(f),
-                yangle  = read2dot14(f),
-                varbase = readulong(f),
-            }
-        end,
-        -- Offset24 paintOffset         Offset to a Paint subtable.
-        -- F2DOT14  xSkewAngle          Angle of skew in the direction of the x-axis, 180° in counter-clockwise degrees per 1.0 of value. For variation, use varIndexBase + 0.
-        -- F2DOT14  ySkewAngle          Angle of skew in the direction of the y-axis, 180° in counter-clockwise degrees per 1.0 of value. For variation, use varIndexBase + 1.
-        -- FWORD    centerX             x coordinate for the center of rotation. For variation, use varIndexBase + 2.
-        -- FWORD    centerY             y coordinate for the center of rotation. For variation, use varIndexBase + 3.
-        -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
-        [30] = function(f,format,offset)
-            return {
-                format  = format,
-                name    = "PaintSkew",
-                paint   = getpaintoffset(f,offset),
-                xangle  = read2dot14(f),
-                yangle  = read2dot14(f),
-                centerx = readfword(f),
-                centery = readfword(f),
-            }
-        end,
-        [31] = function(f,format,offset)
-            return {
-                format  = format,
-                name    = "PaintSkew",
-                paint   = getpaintoffset(f,offset),
-                xangle  = read2dot14(f),
-                yangle  = read2dot14(f),
-                centerx = readfword(f),
-                centery = readfword(f),
-                varbase = readulong(f),
-            }
-        end,
-        -- Offset24 sourcePaintOffset   Offset to a source Paint table.
-        -- uint8    compositeMode       A CompositeMode enumeration value.
-        -- Offset24 backdropaintOffset Offset to a backdrop Paint table.
-        [32] = function(f,format,offset)
-            return {
-                format   = format,
-                name     = "PaintComposite",
-                source   = getpaintoffset(f,offset),
-                mode     = readuinteger(f),
-                backdrop = getpaintoffset(f,offset),
-            }
-        end,
+       [11] = function(f,format)
+           return {
+               format = format,
+               name   = "PaintColrGlyph",
+               glyph  = readushort(f),
+           }
+       end,
+       -- Offset24 paintOffset         Offset to a Paint subtable.
+       -- Offset24 transformOffset     Offset to an (Var)Affine2x3 table.
+       [12] = function(f,format,offset)
+           return {
+               format = format,
+               name   = "PaintTransform",
+               affine = getaffineoffset(f,offset,false),
+               paint  = getpaintoffset(f,offset),
+           }
+       end,
+       [13] = function(f,format,offset)
+           return {
+               format = format,
+               name   = "PaintTransform",
+               affine = getaffineoffset(f,offset,true),
+               paint  = getpaintoffset(f,offset),
+           }
+       end,
+       -- Offset24 paintOffset         Offset to a Paint subtable.
+       -- FWORD    dx                  Translation in x direction. For variation, use varIndexBase + 0.
+       -- FWORD    dy                  Translation in y direction. For variation, use varIndexBase + 1.
+       -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
+       [14] = function(f,format,offset)
+           return {
+               format = format,
+               name   = "PaintTranslate",
+               paint  = getpaintoffset(f,offset),
+               dx     = readfword(f),
+               dy     = readfword(f),
+           }
+       end,
+       [15] = function(f,format,offset)
+           return {
+               format  = format,
+               name    = "PaintTranslate",
+               paint   = getpaintoffset(f,offset),
+               dx      = readfword(f),
+               dy      = readfword(f),
+               varbase = readulong(f),
+           }
+       end,
+       -- Offset24 paintOffset         Offset to a Paint subtable.
+       -- F2DOT14  scaleX              Scale factor in x direction. For variation, use varIndexBase + 0.
+       -- F2DOT14  scaleY              Scale factor in y direction. For variation, use varIndexBase + 1.
+       -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
+       [16] = function(f,format,offset)
+           return {
+               format = format,
+               name   = "PaintScale",
+               paint  = getpaintoffset(f,offset),
+               scalex = read2dot14(f),
+               scaley = read2dot14(f),
+           }
+       end,
+       [17] = function(f,format,offset)
+           return {
+               format  = format,
+               name    = "PaintScale",
+               paint   = getpaintoffset(f,offset),
+               scalex  = read2dot14(f),
+               scaley  = read2dot14(f),
+               varbase = readulong(f),
+           }
+       end,
+       -- Offset24 paintOffset         Offset to a Paint subtable.
+       -- F2DOT14  scaleX              Scale factor in x direction. For variation, use varIndexBase + 0.
+       -- F2DOT14  scaleY              Scale factor in y direction. For variation, use varIndexBase + 1.
+       -- FWORD    centerX             x coordinate for the center of scaling. For variation, use varIndexBase + 2.
+       -- FWORD    centerY             y coordinate for the center of scaling. For variation, use varIndexBase + 3.
+       -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
+       [18] = function(f,format,offset)
+           return {
+               format  = format,
+               name    = "PaintScale",
+               paint   = getpaintoffset(f,offset),
+               scalex  = read2dot14(f),
+               scaley  = read2dot14(f),
+               centerx = readfword(f),
+               centery = readfword(f),
+           }
+       end,
+       [19] = function(f,format,offset)
+           return {
+               format  = format,
+               name    = "PaintScale",
+               paint   = getpaintoffset(f,offset),
+               scalex  = read2dot14(f),
+               scaley  = read2dot14(f),
+               centerx = readfword(f),
+               centery = readfword(f),
+               varbase = readulong(f),
+           }
+       end,
+       -- Offset24 paintOffset         Offset to a Paint subtable.
+       -- F2DOT14  scale               Scale factor in x and y directions. For variation, use varIndexBase + 0.
+       -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
+       [20] = function(f,format,offset)
+           return {
+               format = format,
+               name   = "PaintScale",
+               paint  = getpaintoffset(f,offset),
+               scale  = read2dot14(f),
+           }
+       end,
+       [21] = function(f,format,offset)
+           return {
+               format  = format,
+               name    = "PaintScale",
+               paint   = getpaintoffset(f,offset),
+               scale   = read2dot14(f),
+               varbase = readulong(f),
+           }
+       end,
+       -- Offset24 paintOffset         Offset to a Paint subtable.
+       -- F2DOT14  scale               Scale factor in x and y directions. For variation, use varIndexBase + 0.
+       -- FWORD    centerX             x coordinate for the center of scaling. For variation, use varIndexBase + 1.
+       -- FWORD    centerY             y coordinate for the center of scaling. For variation, use varIndexBase + 2.
+       -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
+       [22] = function(f,format,offset)
+           return {
+               format  = format,
+               name    = "PaintScale",
+               paint   = getpaintoffset(f,offset),
+               scale   = read2dot14(f),
+               centerx = readfword(f),
+               centery = readfword(f),
+           }
+       end,
+       [23] = function(f,format,offset)
+           return {
+               format  = format,
+               name    = "PaintScale",
+               paint   = getpaintoffset(f,offset),
+               scale   = read2dot14(f),
+               centerx = readfword(f),
+               centery = readfword(f),
+               varbase = readulong(f),
+           }
+       end,
+       -- Offset24 paintOffset         Offset to a Paint subtable.
+       -- F2DOT14  angle               Rotation angle, 180° in counter-clockwise degrees per 1.0 of value. For variation, use varIndexBase + 0.
+       -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
+       [24] = function(f,format,offset)
+           return {
+               format = format,
+               angle  = read2dot14(f),
+               paint  = getpaintoffset(f,offset),
+               name   = "PaintRotate",
+           }
+       end,
+       [25] = function(f,format,offset)
+           return {
+               format  = format,
+               name    = "PaintRotate",
+               paint   = getpaintoffset(f,offset),
+               angle   = read2dot14(f),
+               varbase = readulong(f),
+           }
+       end,
+       -- Offset24 paintOffset         Offset to a Paint subtable.
+       -- F2DOT14  angle               Rotation angle, 180° in counter-clockwise degrees per 1.0 of value. For variation, use varIndexBase + 0.
+       -- FWORD    centerX             x coordinate for the center of rotation. For variation, use varIndexBase + 1.
+       -- FWORD    centerY             y coordinate for the center of rotation. For variation, use varIndexBase + 2.
+       -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
+       [26] = function(f,format,offset)
+           return {
+               format  = format,
+               name    = "PaintRotate",
+               paint   = getpaintoffset(f,offset),
+               centerx = readfword(f),
+               centery = readfword(f),
+           }
+       end,
+       [27] = function(f,format,offset)
+           return {
+               format  = format,
+               name    = "PaintRotate",
+               paint   = getpaintoffset(f,offset),
+               centerx = read2dot14(f),
+               centery = read2dot14(f),
+               varbase = readulong(f),
+           }
+       end,
+       -- Offset24 paintOffset         Offset to a Paint subtable.
+       -- F2DOT14  xSkewAngle          Angle of skew in the direction of the x-axis, 180° in counter-clockwise degrees per 1.0 of value. For variation, use varIndexBase + 0.
+       -- F2DOT14  ySkewAngle          Angle of skew in the direction of the y-axis, 180° in counter-clockwise degrees per 1.0 of value. For variation, use varIndexBase + 1.
+       -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
+       [28] = function(f,format,offset)
+           return {
+               format = format,
+               name   = "PaintSkew",
+               paint  = getpaintoffset(f,offset),
+               xangle = read2dot14(f),
+               yangle = read2dot14(f),
+           }
+       end,
+       [29] = function(f,format,offset)
+           return {
+               format  = format,
+               name    = "PaintSkew",
+               paint   = getpaintoffset(f,offset),
+               xangle  = read2dot14(f),
+               yangle  = read2dot14(f),
+               varbase = readulong(f),
+           }
+       end,
+       -- Offset24 paintOffset         Offset to a Paint subtable.
+       -- F2DOT14  xSkewAngle          Angle of skew in the direction of the x-axis, 180° in counter-clockwise degrees per 1.0 of value. For variation, use varIndexBase + 0.
+       -- F2DOT14  ySkewAngle          Angle of skew in the direction of the y-axis, 180° in counter-clockwise degrees per 1.0 of value. For variation, use varIndexBase + 1.
+       -- FWORD    centerX             x coordinate for the center of rotation. For variation, use varIndexBase + 2.
+       -- FWORD    centerY             y coordinate for the center of rotation. For variation, use varIndexBase + 3.
+       -- uint32   varIndexBase        Base index into DeltaSetIndexMap.
+       [30] = function(f,format,offset)
+           return {
+               format  = format,
+               name    = "PaintSkew",
+               paint   = getpaintoffset(f,offset),
+               xangle  = read2dot14(f),
+               yangle  = read2dot14(f),
+               centerx = readfword(f),
+               centery = readfword(f),
+           }
+       end,
+       [31] = function(f,format,offset)
+           return {
+               format  = format,
+               name    = "PaintSkew",
+               paint   = getpaintoffset(f,offset),
+               xangle  = read2dot14(f),
+               yangle  = read2dot14(f),
+               centerx = readfword(f),
+               centery = readfword(f),
+               varbase = readulong(f),
+           }
+       end,
+       -- Offset24 sourcePaintOffset   Offset to a source Paint table.
+       -- uint8    compositeMode       A CompositeMode enumeration value.
+       -- Offset24 backdropaintOffset Offset to a backdrop Paint table.
+       [32] = function(f,format,offset)
+           return {
+               format   = format,
+               name     = "PaintComposite",
+               source   = getpaintoffset(f,offset),
+               mode     = readuinteger(f),
+               backdrop = getpaintoffset(f,offset),
+           }
+       end,
     }
 
     local unsupported = function()
-        return nil
+        return false
     end
 
     setmetatableindex(paintreaders,function(t,format)
-        report("unsupported colr type 2 paint format %i",format)
-        t[format] = unsupported
+        if format then
+            report("unsupported colr type 2 paint format %S",format)
+            t[format] = unsupported -- problem: we don't know what to skip, so maybe best is to quit
+        else
+            report("possible error reading colr type 2 paint format")
+        end
         return unsupported
     end)
 
@@ -3595,10 +3608,12 @@ do
             local glyphs            = fontdata.glyphs
             local nofglyphs         = readushort(f)
             local baseoffset        = readulong(f)
-            local layeroffset       = readulong(f)
+--             local layeroffset       = readulong(f)
+layeroffset       = readulong(f)
             local noflayers         = readushort(f)
             local glyphlistoffset   = 0
-            local layerlistoffset   = 0
+--             local layerlistoffset   = 0
+layerlistoffset   = 0
             local cliplistoffset    = 0
             local varindexmapoffset = 0
             local variationoffset   = 0
@@ -3614,7 +3629,7 @@ do
             -- The special value 0xFFFF is foreground (but we index from 1). It
             -- more looks like indices into a palette so 'class' is a better name
             -- than 'palette'.
-            if layeroffset > 0 then
+            if layeroffset > 0 and noflayers > 0 then
                 setposition(f,tableoffset + layeroffset)
                 for i=1,noflayers do
                     local slot  = readushort(f)
@@ -3632,7 +3647,7 @@ do
                 end
             end
             fontdata.maxcolorclass = maxclass
-            if baseoffset > 0 then
+            if baseoffset > 0 and nofglyphs > 0 then
                 setposition(f,tableoffset + baseoffset)
                 for i=0,nofglyphs-1 do
                     local glyphindex = readushort(f)
@@ -3645,66 +3660,84 @@ do
                     glyphs[glyphindex].colors = t
                 end
             end
-if next(layerrecords) then
-    report("table version %a of %a is %s supported for font %s",version,"colr","partially",fontdata.filename)
-    return
-end
+            if next(layerrecords) then
+                report("table version %a of %a is %s supported for font %s",version,"colr","partially",fontdata.filename)
+                return
+            end
          -- if not (CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0) then
          --     return
          -- end
             if layerlistoffset > 0 and glyphlistoffset > 0 then
                 local layers = { }
                 local paints = { }
-                local count, offset
-                --
-                setposition(f,tableoffset + layerlistoffset)
-                count = readulong(f)
-             -- layers = readcardinaltable(f,count,uoffset)
-                for i=1,count do -- zero ?
+layeroffset = tableoffset + layerlistoffset
+                setposition(f,layeroffset)
+                local layercount = readulong(f)
+             -- layers = readcardinaltable(f,layercount,uoffset)
+                for i=1,layercount do -- zero ?
                     layers[i] = readulong(f) -- offsets to painttable
                 end
                 --
-                offset = tableoffset + glyphlistoffset
-                setposition(f,offset)
-                count = readulong(f)
-                for i=1,count do
+                glyphoffset = tableoffset + glyphlistoffset
+                setposition(f,glyphoffset)
+                local glyphcount = readulong(f)
+                for i=1,glyphcount do
                     -- glyph index -> paintrecord
                     paints[readushort(f)] = readulong(f) -- paintrecord offset (32 formats)
                 end
                 paintdata = setmetatableindex(function(t,k)
+                    local p = getposition(f)
                     setposition(f,k)
                     local format = readuinteger(f)
                     local v = paintreaders[format](f,format,k)
+                    setposition(f,p)
                     t[k] = v
                     return v
                 end)
                 linesdata  = { }
                 affinedata = { }
+                for i=1,layercount do -- zero ?
+                    local o = layeroffset + layers[i]
+                    local l = paintdata[o]
+                    if not l then
+                        report("color table in font %a has an invalid layer entry %i, offset %i",i,layers[i])
+                    end
+                    layers[i] = l
+                end
+-- io.savedata("e:/tmp/oeps.lua",table.serialize({ root = paintdata }))
+-- io.savedata("e:/tmp/oeps.lua",table.serialize(layers))
                 for k, v in next, paints do
-                    local o = offset + v
+                    local o = glyphoffset + v - layeroffset
                     if paintdata[o] then
                         paints[k] = o -- first paint
                     end
                 end
                 -- expand format 1
-                offset = tableoffset + layerlistoffset
                 for k, v in next, paints do
                     v = paintdata[v]
-                    local format = v.format
-                    if format == 1 then
-                        -- name
-                        local count = v.count
-                        local index = v.index
-                        local list  = { }
-                        v.count = nil
-                        v.index = nil
-                        v.list  = list
-                        for i=1,count do
-                            local o = offset + layers[index+i]
-                            if paintdata[o] then
-                                list[i] = o
+                    if v then
+                        local format = v.format
+                        if format == 1 then
+                            -- name
+                            local count = v.count
+                            if count then
+                                local index = v.index + 1
+                                local list  = { }
+                                v.count = nil
+                                v.index = nil
+                                v.list  = list
+                                for i=1,count do
+--                                     local o = layeroffset + layers[index+i]
+--                                     if paintdata[o] then
+                                    list[i] = layers[index]
+                                    index = index + 1
+                                end
+                            else
+                                -- already done
                             end
                         end
+                    else
+                        -- missing
                     end
                 end
                 --
@@ -3732,18 +3765,27 @@ end
                     local extend = readuinteger(f)
                     local count  = readushort(f)
                     local stops  = { }
-                    for i=1,count do
-                        stops[i] = {
-                            stop     = read2dot14(f),
-                            pallette = readushort(f),
-                            alpha    = read2dot14(f),
-                            varbase  = v and readulong(f) or nil,
+                    if count then
+                        for i=1,count do
+                            stops[i] = {
+                                stop     = read2dot14(f),
+                                pallette = readushort(f),
+                                alpha    = read2dot14(f),
+                                varbase  = v and readulong(f) or nil,
+                            }
+                        end
+                        linesdata[k] = {
+                            extend = readuinteger(f),
+                            stops  = stops,
                         }
+                    else
+                        report("running out of linedata in colr reading")
+                        linesdata[k] = {
+                            extend = 0,
+                            stops  = stops,
+                        }
+                        break
                     end
-                    linesdata[k] = {
-                        extend = readuinteger(f),
-                        stops  = stops,
-                    }
                 end
                 --
                 for k, v in next, affinedata do
@@ -3775,6 +3817,9 @@ end
                     local lhash, ldata = rehash(linesdata)
                     local ahash, adata = rehash(affinedata)
                     for k, v in next, paintdata do
+if not v then
+    print("todo",k,v)
+else
                         local c = v.color
                         if c then
                             v.color = lhash[c]
@@ -3801,6 +3846,7 @@ end
                             v.backdrop = phash[v.backdrop]
                          -- goto done
                         end
+end
                       ::done::
                     end
                     paintdata = pdata
@@ -3815,16 +3861,21 @@ end
                         local paint  = paintdata[v]
                         local format = paint.format
                         if format == 1 then
-                            local list = paint.list
-                            local done = { }
+                            local list  = paint.list
+                            local done  = { }
+                            local count = 0
                             for i=1,#list do
                                 local p = paintdata[list[i]]
                                 local f = p.format
                                 if f == 10 or f == 11 then
-                                    done[i] = {
+                                    count = count + 1
+                                    done[count] = {
                                         slot  = p.glyph,
                                         class = i,
                                     }
+                                else
+                                    -- print(f)
+                                    -- missing
                                 end
                             end
                             glyphs[k].colors = done
@@ -3837,6 +3888,7 @@ end
 --                 fontdata.coloraffinedata = affinedata
             end
         end
+      ::done::
         fontdata.hascolor = true
     end
 

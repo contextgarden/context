@@ -363,6 +363,7 @@ void tex_build_page(void)
         do {
             halfword current = node_next(contribute_head);
             halfword type = node_type(current);
+            halfword subtype = node_subtype(current);
             /*tex Update the values of |last_glue|, |last_penalty|, and |last_kern|. */
             if (lmt_page_builder_state.last_glue != max_halfword) {
                 tex_flush_node(lmt_page_builder_state.last_glue);
@@ -372,7 +373,7 @@ void tex_build_page(void)
             lmt_page_builder_state.last_kern = 0;
             lmt_page_builder_state.last_boundary = 0;
             lmt_page_builder_state.last_node_type = type;
-            lmt_page_builder_state.last_node_subtype = node_subtype(current);
+            lmt_page_builder_state.last_node_subtype = subtype;
             lmt_page_builder_state.last_extra_used = 0;
             switch (type) {
                 case glue_node:
@@ -385,7 +386,9 @@ void tex_build_page(void)
                     lmt_page_builder_state.last_kern = kern_amount(current);
                     break;
                 case boundary_node:
-                    lmt_page_builder_state.last_boundary = boundary_data(current);
+                    if (subtype == page_boundary) {
+                        lmt_page_builder_state.last_boundary = boundary_data(current);
+                    }
                     break;
             }
             /*tex
@@ -725,9 +728,9 @@ void tex_build_page(void)
                     }
                 }
                 if (badness >= awful_bad) {
-                    criterium = badness;
+                    criterium = badness; /* trigger fireup */
                 } else if (penalty <= eject_penalty) {
-                    criterium = penalty;
+                    criterium = penalty; /* trigger fireup */
                 } else if (badness < infinite_bad) {
                     criterium = badness + penalty + lmt_page_builder_state.insert_penalties;
                 } else {

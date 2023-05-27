@@ -641,7 +641,7 @@ scaled tex_right_marginkern(halfword p)
 /*tex
 
     Character protrusion is something we inherited from \PDFTEX\ and the next helper calculates
-    the extend.
+    the extend. Is this |last_*_char| logic still valid?
 
 */
 
@@ -1488,40 +1488,40 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
             box_glue_sign(r) = normal_glue_sign;
             box_glue_set(r) = 0.0;
         }
-        if ((lmt_packaging_state.total_shrink[o] < -x) && (o == normal_glue_order) && (box_list(r))) {
-            int overshoot = -x - lmt_packaging_state.total_shrink[normal_glue_order];
-            lmt_packaging_state.last_badness = 1000000;
-            lmt_packaging_state.last_overshoot = overshoot;
-            /*tex Use the maximum shrinkage */
-            box_glue_set(r) = 1.0;
-            /*tex Report an overfull hbox and |goto common_ending|, if this box is sufficiently bad. */
-            if ((overshoot > hfuzz_par) || (hbadness_par < 100)) {
-                int callback_id = lmt_callback_defined(hpack_quality_callback);
-                halfword rule = null;
-                if (callback_id > 0) {
-                    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "SdNddS->N",
-                        "overfull",
-                        overshoot,
-                        r,
-                        abs(lmt_packaging_state.pack_begin_line),
-                        lmt_input_state.input_line,
-                        tex_current_input_file_name(),
-                        &rule);
-                } else if (q && overfull_rule_par > 0) {
-                    rule = tex_new_rule_node(normal_rule_subtype);
-                    rule_width(rule) = overfull_rule_par;
+        if (o == normal_glue_order && box_list(r)) {
+            if (lmt_packaging_state.total_shrink[o] < -x) {
+                int overshoot = -x - lmt_packaging_state.total_shrink[normal_glue_order];
+                lmt_packaging_state.last_badness = 1000000;
+                lmt_packaging_state.last_overshoot = overshoot;
+                /*tex Use the maximum shrinkage */
+                box_glue_set(r) = 1.0;
+                /*tex Report an overfull hbox and |goto common_ending|, if this box is sufficiently bad. */
+                if ((overshoot > hfuzz_par) || (hbadness_par < 100)) {
+                    int callback_id = lmt_callback_defined(hpack_quality_callback);
+                    halfword rule = null;
+                    if (callback_id > 0) {
+                        lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "SdNddS->N",
+                            "overfull",
+                            overshoot,
+                            r,
+                            abs(lmt_packaging_state.pack_begin_line),
+                            lmt_input_state.input_line,
+                            tex_current_input_file_name(),
+                            &rule);
+                    } else if (q && overfull_rule_par > 0) {
+                        rule = tex_new_rule_node(normal_rule_subtype);
+                        rule_width(rule) = overfull_rule_par;
+                    }
+                    if (rule && rule != r) {
+                        tex_aux_append_diagnostic_rule(r, rule);
+                    }
+                    if (callback_id == 0) {
+                        tex_print_nlp();
+                        tex_print_format("%l[package: overfull \\hbox (%D too wide)", overshoot, pt_unit);
+                        goto COMMON_ENDING;
+                    }
                 }
-                if (rule && rule != r) {
-                    tex_aux_append_diagnostic_rule(r, rule);
-                }
-                if (callback_id == 0) {
-                    tex_print_nlp();
-                    tex_print_format("%l[package: overfull \\hbox (%D too wide)", overshoot, pt_unit);
-                    goto COMMON_ENDING;
-                }
-            }
-        } else if (o == normal_glue_order) {
-            if (box_list(r)) {
+            } else {
                 /*tex Report a tight hbox and |goto common_ending|, if this box is sufficiently bad. */
                 lmt_packaging_state.last_badness = tex_badness(-x, lmt_packaging_state.total_shrink[normal_glue_order]);
                 if (lmt_packaging_state.last_badness > hbadness_par) {
@@ -2232,33 +2232,33 @@ halfword tex_vpack(halfword p, scaled h, int m, scaled l, singleword pack_direct
             box_glue_sign(r) = normal_glue_sign;
             box_glue_set(r) = 0.0;
         }
-        if ((lmt_packaging_state.total_shrink[o] < -x) && (o == normal_glue_order) && (box_list(r))) {
-            int overshoot = -x - lmt_packaging_state.total_shrink[normal_glue_order];
-            lmt_packaging_state.last_badness = 1000000;
-            lmt_packaging_state.last_overshoot = overshoot;
-            /*tex Use the maximum shrinkage */
-            box_glue_set(r)  = 1.0;
-            /*tex Report an overfull vbox and |goto common_ending|, if this box is sufficiently bad. */
-            if ((overshoot > vfuzz_par) || (vbadness_par < 100)) {
-                int callback_id = lmt_callback_defined(vpack_quality_callback);
-                if (callback_id > 0) {
-                    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "SdNddS->",
-                        "overfull",
-                        overshoot,
-                        r,
-                        abs(lmt_packaging_state.pack_begin_line),
-                        lmt_input_state.input_line,
-                        tex_current_input_file_name()
-                    );
-                    goto EXIT;
-                } else {
-                    tex_print_nlp();
-                    tex_print_format("%l[package: overfull \\vbox (%D too high)", - x - lmt_packaging_state.total_shrink[normal_glue_order], pt_unit);
-                    goto COMMON_ENDING;
+        if (o == normal_glue_order && box_list(r)) {
+            if (lmt_packaging_state.total_shrink[o] < -x) {
+                int overshoot = -x - lmt_packaging_state.total_shrink[normal_glue_order];
+                lmt_packaging_state.last_badness = 1000000;
+                lmt_packaging_state.last_overshoot = overshoot;
+                /*tex Use the maximum shrinkage */
+                box_glue_set(r)  = 1.0;
+                /*tex Report an overfull vbox and |goto common_ending|, if this box is sufficiently bad. */
+                if ((overshoot > vfuzz_par) || (vbadness_par < 100)) {
+                    int callback_id = lmt_callback_defined(vpack_quality_callback);
+                    if (callback_id > 0) {
+                        lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "SdNddS->",
+                            "overfull",
+                            overshoot,
+                            r,
+                            abs(lmt_packaging_state.pack_begin_line),
+                            lmt_input_state.input_line,
+                            tex_current_input_file_name()
+                        );
+                        goto EXIT;
+                    } else {
+                        tex_print_nlp();
+                        tex_print_format("%l[package: overfull \\vbox (%D too high)", - x - lmt_packaging_state.total_shrink[normal_glue_order], pt_unit);
+                        goto COMMON_ENDING;
+                    }
                 }
-            }
-        } else if (o == normal_glue_order) {
-            if (box_list(r)) {
+            } else {
                 /*tex Report a tight vbox and |goto common_ending|, if this box is sufficiently bad. */
                 lmt_packaging_state.last_badness = tex_badness(-x, lmt_packaging_state.total_shrink[normal_glue_order]);
                 if (lmt_packaging_state.last_badness > vbadness_par) {
@@ -2382,7 +2382,7 @@ void tex_run_vcenter(void)
 
 void tex_finish_vcenter_group(void)
 {
-    if (! tex_wrapped_up_paragraph(vcenter_par_context)) {
+    if (! tex_wrapped_up_paragraph(vcenter_par_context, 1)) {
         halfword p;
         tex_end_paragraph(vcenter_group, vcenter_par_context);
         tex_package(vbox_code); /* todo: vcenter_code */

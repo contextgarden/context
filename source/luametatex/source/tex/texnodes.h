@@ -140,7 +140,9 @@ typedef enum node_types {
     /*tex These two are active nodes. */
     unhyphenated_node, 
     hyphenated_node,   
+    /*tex This one can also be in the active list. */
     delta_node,
+    /*tex While this is an indirect one carrying data. */
     passive_node,
 } node_types;
 
@@ -631,9 +633,9 @@ inline static int tex_is_par_init_glue(halfword n)
 
 typedef enum kern_subtypes {
     font_kern_subtype,
-    explicit_kern_subtype,      /*tex |subtype| of kern nodes from |\kern| and |\/| */
+    explicit_kern_subtype,      /*tex |subtype| of kern nodes from |\kern| */
     accent_kern_subtype,        /*tex |subtype| of kern nodes from accents */
-    italic_kern_subtype,
+    italic_kern_subtype,        /*tex |subtype| of kern nodes from |\/| */
     left_margin_kern_subtype,
     right_margin_kern_subtype,
     explicit_math_kern_subtype,
@@ -1001,10 +1003,18 @@ typedef enum rule_codes {
 # define rule_y_offset(a)  vinfo(a,3)
 # define rule_height(a)    vlink(a,4)
 # define rule_data(a)      vinfo(a,4)
-# define rule_left(a)      vinfo(a,5)
-# define rule_right(a)     vlink(a,5)
-# define rule_font(a)      vinfo(a,6)
-# define rule_character(a) vlink(a,6)
+# define rule_left(a)      vinfo(a,5) /* depends on subtype */ 
+# define rule_right(a)     vlink(a,5) /* depends on subtype */ 
+# define rule_extra_1(a)   vinfo(a,6) /* depends on subtype */ 
+# define rule_extra_2(a)   vlink(a,6) /* depends on subtype */ 
+
+# define rule_strut_font      rule_extra_1
+# define rule_strut_character rule_extra_2
+
+# define rule_virtual_width   rule_left
+# define rule_virtual_height  rule_right
+# define rule_virtual_depth   rule_extra_1
+# define rule_virtual_unused  rule_extra_2
 
 # define rule_total(a) (rule_height(a) + rule_depth(a))
 
@@ -1160,6 +1170,8 @@ typedef enum glyph_subtypes {
     glyph_math_accent_subtype,
     glyph_math_fenced_subtype,
     glyph_math_ghost_subtype,
+    /* bogus subtype */
+    glyph_math_vcenter_subtype,
     /* extra math, user classes, set but anonymous */
     glyph_math_extra_subtype = 31,
 } glyph_subtypes;
@@ -1793,6 +1805,7 @@ typedef enum noad_options {
 # define noad_option_center                     (uint64_t) 0x04000000000
 # define noad_option_scale                      (uint64_t) 0x08000000000
 # define noad_option_keep_base                  (uint64_t) 0x10000000000
+# define noad_option_single                     (uint64_t) 0x20000000000
 
 # define has_option(a,b)     (((a) & (b)) == (b))
 # define unset_option(a,b)   ((a) & ~(b))
@@ -1856,6 +1869,7 @@ inline static int has_noad_no_script_option(halfword n, halfword option)
 # define has_noad_option_auto_base(a)                   (has_option(noad_options(a), noad_option_auto_base))
 # define has_noad_option_scale(a)                       (has_option(noad_options(a), noad_option_scale))
 # define has_noad_option_keep_base(a)                   (has_option(noad_options(a), noad_option_keep_base))
+# define has_noad_option_single(a)                      (has_option(noad_options(a), noad_option_single))
 
 /*tex
     In the meantime the codes and subtypes are in sync. The variable component does not really
@@ -2118,7 +2132,7 @@ typedef enum math_kernel_options {
 typedef enum boundary_subtypes {
     cancel_boundary,
     user_boundary,
-    protrusion_boundary,
+    protrusion_boundary, /* 1=left, 2=right, 3=both */
     word_boundary,
     page_boundary,
     par_boundary,
@@ -2283,7 +2297,7 @@ static int par_category_to_codes[] = {
 /*tex
     Todo: make the fields 6+ into a par_state node so that local box ones can be
     small. Also, penalty and broken fields now are duplicate. Do we need to keep
-    these?
+    these? 
 */
 
 # define par_node_size                  28
@@ -2312,12 +2326,12 @@ static int par_category_to_codes[] = {
 # define par_looseness(a)               vinfo(a,13)
 # define par_last_line_fit(a)           vlink(a,13)
 # define par_line_penalty(a)            vinfo(a,14)
-# define par_inter_line_penalty(a)      vlink(a,14)
+# define par_inter_line_penalty(a)      vlink(a,14) /* */
 # define par_club_penalty(a)            vinfo(a,15)
 # define par_widow_penalty(a)           vlink(a,15)
 # define par_display_widow_penalty(a)   vinfo(a,16)
 # define par_orphan_penalty(a)          vlink(a,16)
-# define par_broken_penalty(a)          vinfo(a,17)
+# define par_broken_penalty(a)          vinfo(a,17) /* */
 # define par_adj_demerits(a)            vlink(a,17)
 # define par_double_hyphen_demerits(a)  vinfo(a,18)
 # define par_final_hyphen_demerits(a)   vlink(a,18)
@@ -2338,7 +2352,15 @@ static int par_category_to_codes[] = {
 # define par_shaping_penalties_mode(a)  vinfo(a,26)
 # define par_shaping_penalty(a)         vlink(a,26)
 # define par_par_init_left_skip(a)      vlink(a,27)
-# define par_par_init_right_skip(a)     vinfo(a,27)
+# define par_par_init_right_skip(a)     vinfo(a,27) 
+
+/*
+    At some point we will have this (array with double values), depends on the outcome of an  
+    experiment but I want to reserve this. We then also patch |texlocalboxes.c| line 295+. 
+*/
+
+// define par_lousyness(a)              vinfo(a,2) /* par_penalty_interline */
+// define par_reserved(a)               vlink(a,2) /* par_penalty_broken */
 
 typedef enum par_subtypes {
     vmode_par_par_subtype,
@@ -2403,15 +2425,19 @@ inline static int  tex_par_to_be_set        (halfword state, halfword what) { re
     spot.
 */
 
-/* is vinfo(a,2) used? it not we can have fitness there and hyphenated/unyphenates as subtype */
+/*tex 
+    We can use vinfo(a,2) for fitness instead the subtype field.  But then we also need to set 
+    it explicitly because now that happens in the allocator.
+*/
 
 # define active_node_size                  4            /*tex |hyphenated_node| or |unhyphenated_node| */
 # define active_fitness                    node_subtype /*tex |very_loose_fit..tight_fit| on final line for this break */
 # define active_break_node(a)              vlink(a,1)   /*tex pointer to the corresponding passive node */
 # define active_line_number(a)             vinfo(a,1)   /*tex line that begins at this breakpoint */
 # define active_total_demerits(a)          vlink(a,2)   /*tex the quantity that \TEX\ minimizes */
-# define active_short(a)                   vinfo(a,3)   /*tex |shortfall| of this line */
+# define active_reserved(a)                vinfo(a,2)
 # define active_glue(a)                    vlink(a,3)   /*tex corresponding glue stretch or shrink */
+# define active_short(a)                   vinfo(a,3)   /*tex |shortfall| of this line */
 
 # define passive_node_size                 7
 # define passive_cur_break(a)              vlink(a,1)   /*tex in passive node, points to position of this breakpoint */
@@ -2670,6 +2696,11 @@ typedef enum glue_amounts {
     total_shrink_amount  = 7, // 2 //
     font_stretch_amount  = 8, // 8 //
     font_shrink_amount   = 9, // 9 //
+    /* */
+    max_height_amount    = 10,
+    max_depth_amount     = 11,
+    /* */
+    n_of_glue_amounts    = 12,
 } glue_amounts;
 
 # define min_glue_order normal_glue_order
