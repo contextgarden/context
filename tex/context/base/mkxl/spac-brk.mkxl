@@ -1,0 +1,43 @@
+%D \module
+%D   [       file=spac-brk,
+%D        version=2023.05.23,
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Breaking lines,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\ifdefined\tracinglousiness \endinput \fi
+
+\writestatus{loading}{ConTeXt Spacing Macros / Breakpoints}
+
+\newcount\tracinglousiness
+
+\registerctxluafile{spac-brk}{}
+
+%D This is a very experimental feature and a by product of improving inline math
+%D crossing lines. As it might evolve: use with care.
+
+% \setuplayout[width=8cm]
+% \starttext
+%     \setupalign[verytolerant]
+%     \tracinglousiness1
+%   % \tracinglousiness2
+%     \samplefile{ward} \blank
+%   % \ctxlua{typesetters.breakpoints.show("11=0")}     \samplefile{ward} \blank
+%   % \ctxlua{typesetters.breakpoints.show{ [11] = 0 }} \samplefile{ward} \blank
+%     \lousiness 1 11 0                                 \samplefile{ward} \blank
+%     \silliness 11                                     \samplefile{ward} \blank
+%     {\tt \the\lousiness}
+% \stoptext
+
+
+\unprotect
+
+% nothing hereyet
+
+\protect \endinput

@@ -236,7 +236,7 @@ void tex_aux_check_text_strut_rule(halfword rule, halfword style)
 
 halfword tex_get_rule_font(halfword n, halfword style)
 {
-    if (node_subtype(n) == virtual_rule_subtype) {
+    if (node_subtype(n) != virtual_rule_subtype) {
         halfword fnt = rule_strut_font(n);
         if (fnt >= rule_font_fam_offset) {
             halfword fam = fnt - rule_font_fam_offset;
@@ -256,7 +256,7 @@ halfword tex_get_rule_font(halfword n, halfword style)
 
 halfword tex_get_rule_family(halfword n)
 {
-    if (node_subtype(n) == virtual_rule_subtype) {
+    if (node_subtype(n) != virtual_rule_subtype) {
         halfword fnt = rule_strut_font(n);
         if (fnt >= rule_font_fam_offset) {
             halfword fam = fnt - rule_font_fam_offset;
@@ -270,7 +270,7 @@ halfword tex_get_rule_family(halfword n)
 
 void tex_set_rule_font(halfword n, halfword fnt)
 {
-    if (node_subtype(n) == virtual_rule_subtype) {
+    if (node_subtype(n) != virtual_rule_subtype) {
         if (fnt < 0 || fnt >= rule_font_fam_offset) {
             rule_strut_font(n) = 0;
         } else {
@@ -281,7 +281,7 @@ void tex_set_rule_font(halfword n, halfword fnt)
 
 void tex_set_rule_family(halfword n, halfword fam)
 {
-    if (node_subtype(n) == virtual_rule_subtype) {
+    if (node_subtype(n) != virtual_rule_subtype) {
         if (fam < 0 || fam >= max_n_of_math_families) {
             rule_strut_font(n) = rule_font_fam_offset;
         } else {

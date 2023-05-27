@@ -197,10 +197,11 @@ tex.listanchorcodes       = getthem(tex.getlistanchorvalues,       "listanchorco
 tex.listsigncodes         = getthem(tex.getlistsignvalues,         "listsigncode")
 tex.classoptioncodes      = getthem(tex.getmathclassoptionvalues,  "classoptioncode")
 ---.alignmentcontextcodes = getthem(tex.getalignmentcontextvalues  ) -- only at lua end
-tex.specialmathclasscodes = getthem(tex.getspecialmathclassvalues  ) -- only at lua end
-tex.directioncodes        = getthem(tex.getdirectionvalues         ) -- only at lua end (todo tex)
-tex.fillcodes             = getthem(tex.getfillvalues              ) -- only at lua end (todo tex)
-tex.mathparametercodes    = getthem(tex.getmathparametervalues     ) -- only at lua end (todo tex)
+tex.specialmathclasscodes = getthem(tex.getspecialmathclassvalues  ) -- idem
+tex.directioncodes        = getthem(tex.getdirectionvalues         ) -- idem
+tex.fillcodes             = getthem(tex.getfillvalues              ) -- idem
+tex.mathparametercodes    = getthem(tex.getmathparametervalues     ) -- idem
+tex.breakcodes            = getthem(tex.getbreakcontextvalues      ) -- idem
 
 function tex.stringtocodesbitmap(str,codes)
     local bitmap = 0

@@ -247,8 +247,8 @@ typedef enum tex_command_code {
     set_interaction_cmd,              /*tex define level of interaction (|\batchmode|, etc.) */
     /*tex
         Here ends the section that is part of the big switch.  What follows are commands that are
-        intercepted when expanding tokens. The strint one came from a todo list and moved to a
-        maybe list.
+        intercepted when expanding tokens. The |string_cmd| came from a todo list and moved to a
+        maybe list and finally became obsolete.
     */
     undefined_cs_cmd,                 /*tex initial state of most |eq_type| fields */
     expand_after_cmd,                 /*tex special expansion (|\expandafter|) */
