@@ -4761,26 +4761,91 @@ static void tex_aux_finish_displayed_math(int atleft, halfword eqnumber, halfwor
 
 */
 
+/* make propper mappers (see 5967 in texmlist) */
+
 static inline int tex_aux_class_from_glyph(halfword n) {
     return node_subtype(n) - (node_subtype(n) > glyph_math_extra_subtype  ? glyph_math_extra_subtype : glyph_math_ordinary_subtype);
+}
+
+static inline int tex_aux_class_from_list(halfword n) {
+    switch (node_subtype(n)) { 
+        case math_fraction_list: 
+            return fraction_noad_subtype;
+        case math_accent_list: 
+            return accent_noad_subtype;
+        case math_radical_list: 
+            return radical_noad_subtype;
+        default: 
+            return 0;
+    }
 }
 
 static int tex_aux_short_math(halfword m)
 {
  // tex_show_node_list(m,10000,10000);
     if (m) { 
-        /* kern[] glyph[subtype -> class] vlist[scripts] kern[] */
-        if (node_type(m) == kern_node) {
-            m = node_next(m);
+        /*tex 
+            These are the cases we catch, the class option drives succes. 
+
+            \starttyping
+            kern[] glyph[subtype -> class] vlist[scripts] kern[] 
+                   hlist[subtype -> class] 
+                   vlist[subtype -> class] 
+            \stoptyping
+            
+        */
+        switch (node_type(m)) { 
+            case kern_node:
+                /*tex Do we need to test for some size here? */
+                m = node_next(m); 
+                break;
+            case hlist_node:
+            case vlist_node:
+                /*tex 
+                    These are actually more extensive constructs that we don't want to analyze any 
+                    further (for being single characters). 
+                */
+                if (! node_next(m) && tex_math_has_class_option(tex_aux_class_from_list(m), short_inline_class_option)) {
+                    scaled threshold = short_inline_math_threshold_par;
+                    if (threshold > 0 && box_width(m) <= threshold) {
+                        return 1;
+                    }
+                }
+                return 0;
         } 
-        if (m && node_type(m) == glyph_node && tex_math_has_class_option(tex_aux_class_from_glyph(m), short_inline_class_option)) {
-            m = node_next(m);
+        /*tex We don't have a list so we check for a list now. */
+        if (m) { 
+            switch (node_type(m)) { 
+                case glyph_node: 
+                    if (tex_math_has_class_option(tex_aux_class_from_glyph(m), short_inline_class_option)) {
+                        m = node_next(m);
+                        break;
+                    } else { 
+                        return 0;
+                    }
+                default: 
+                    return 0;
+                }
         } else { 
             return 0;
         }
-        if (m && node_type(m) == vlist_node && node_subtype(m) == math_scripts_list) {
-            m = node_next(m);
+        /*tex We accept optional sub, super or combined scripts. */
+        if (m) { 
+            switch (node_type(m)) { 
+                case vlist_node:
+                case hlist_node:
+                    switch (node_subtype(m)) { 
+                        case math_sup_list:        /* in hlist */
+                        case math_sub_list:        /* in hlist */ 
+                        case math_pre_post_list:   /* in vlist */
+                        case math_scripts_list:    /* in vlist */
+                           m = node_next(m);
+                           break;
+                    }
+                /* default */
+            }
         } 
+        /*tex We ignore trailing kerns (for now). We could test for size. */
         if (m && node_type(m) == kern_node) {
             m = node_next(m);
         } 

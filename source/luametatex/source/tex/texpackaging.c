@@ -1617,7 +1617,7 @@ halfword tex_filtered_hpack(halfword p, halfword qt, scaled w, int m, int grp, h
 
 scaledwhd tex_natural_hsizes(halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order)
 {
-    scaledwhd siz = { 0, 0, 0, 0 };
+    scaledwhd siz = { .wd = 0, .ht = 0, .dp = 0, .ns = 0 };
     scaled gp = 0;
     scaled gm = 0;
     while (p && p != pp) {
@@ -1758,6 +1758,7 @@ scaledwhd tex_natural_hsizes(halfword p, halfword pp, glueratio g_mult, int g_si
         }
         p = node_next(p);
     }
+    siz.ns = siz.wd;
     switch (g_sign) {
         case stretching_glue_sign:
             siz.wd += glueround((glueratio)(g_mult) * (glueratio)(gp));
@@ -1771,7 +1772,7 @@ scaledwhd tex_natural_hsizes(halfword p, halfword pp, glueratio g_mult, int g_si
 
 scaledwhd tex_natural_vsizes(halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order)
 {
-    scaledwhd siz = { 0, 0, 0, 0 };
+    scaledwhd siz = { .wd = 0, .ht = 0, .dp = 0, .ns = 0 };
     scaled gp = 0;
     scaled gm = 0;
     while (p && p != pp) {
@@ -1851,6 +1852,7 @@ scaledwhd tex_natural_vsizes(halfword p, halfword pp, glueratio g_mult, int g_si
         }
         p = node_next(p);
     }
+    siz.ns = siz.ht;
     switch (g_sign) {
         case stretching_glue_sign:
             siz.ht += glueround((glueratio)(g_mult) * (glueratio)(gp));
@@ -1988,7 +1990,7 @@ halfword tex_natural_hsize(halfword p, halfword *correction)
 
 halfword tex_natural_vsize(halfword p)
 {
-    scaledwhd siz = { 0, 0, 0, 0 };
+    scaledwhd siz = { .wd = 0, .ht = 0, .dp = 0, .ns = 0 };
     while (p) {
         switch (node_type(p)) {
             case hlist_node:

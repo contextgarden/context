@@ -1,13 +1,16 @@
-{\bf 15.} (This procedure maintains four integers $(A, B, C, D)$ with the invariant meaning
-that \quotation{our remaining job is to output the continued fraction for $(Ay + B)/(Cy + D)$,
-where $y$ is the input yet to come.}) Initially set $j \leftarrow k \leftarrow 0$, $(A, B, C, D) \leftarrow (a, b, c, d)$;
-then input $x_j$ and set $(A, B, C, D) \leftarrow (Ax_j + B, A, Cx_j + D, C)$, $j \leftarrow j + 1$, one or
-more times until $C + D$ has the same sign as $C$. (When $j > 1$ and the input has not
-terminated, we know that $1 < y < \infty$; and when $C + D$ has the same sign as $C$ we
-know therefore that $(Ay + B)/(Cy + D)$ lies between $(A + B)/(C + D)$ and $A/C$.)
-Now comes the general step: If no integer lies strictly between $(A + B)/(C + D)$
-and $A/C$, output $X_k \leftarrow \lfloor A/C \rfloor$, and set $(A, B, C, D) \leftarrow (C, D, A - X_ k C, B - X_k D)$,
-$k \leftarrow k + 1$; otherwise input $x_j$ and set $(A, B,C, D) \leftarrow (Ax_j + B, A, Cx_j + D,C)$,
-$j \leftarrow j + 1$. The general step is repeated ad infinitum. However, if at any time the
-\emph{final} $x_j$ is input, the algorithm immediately switches gears: It outputs the continued
-fraction for $(Ax_j + B)/(Cx_j + D)$, using Euclid's algorithm, and terminates.
+{\bf 15.} (This procedure maintains four integers $(A, B, C, D)$ with the
+invariant meaning that \quotation{our remaining job is to output the continued
+fraction for $(Ay + B)/(Cy + D)$, where $y$ is the input yet to come.}) Initially
+set $j \leftarrow k \leftarrow 0$, $(A, B, C, D) \leftarrow (a, b, c, d)$; then
+input $x_j$ and set $(A, B, C, D) \leftarrow (Ax_j + B, A, Cx_j + D, C)$, $j
+\leftarrow j + 1$, one or more times until $C + D$ has the same sign as $C$.
+(When $j > 1$ and the input has not terminated, we know that $1 < y < \infty$;
+and when $C + D$ has the same sign as $C$ we know therefore that $(Ay + B)/(Cy +
+D)$ lies between $(A + B)/(C + D)$ and $A/C$.) Now comes the general step: If no
+integer lies strictly between $(A + B)/(C + D)$ and $A/C$, output $X_k \leftarrow
+\lfloor A/C \rfloor$, and set $(A, B, C, D) \leftarrow (C, D, A - X_ k C, B - X_k
+D)$, $k \leftarrow k + 1$; otherwise input $x_j$ and set $(A, B,C, D) \leftarrow
+(Ax_j + B, A, Cx_j + D,C)$, $j \leftarrow j + 1$. The general step is repeated ad
+infinitum. However, if at any time the \emph{final} $x_j$ is input, the algorithm
+immediately switches gears: It outputs the continued fraction for $(Ax_j +
+B)/(Cx_j + D)$, using Euclid's algorithm, and terminates.

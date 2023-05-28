@@ -1190,6 +1190,21 @@ do
 
 end
 
+
+-- In TeX The Program we find in section 543 a remark about the second use of math
+-- italic: it is always added to the width except with respect to the position of
+-- the subscript. That paragraph also mentions that the number of different widths
+-- is normally small so they can be shared (there is an eight bit index into a width
+-- array). Actually the limits of at most 16 heights and depths has as side effect
+-- that we get some snapping of sizes. Now, because many math characters have an
+-- italic correction, the saving on shared widths is negated by the amount of (at
+-- most 64) italics. So in practice there is no gain and the italic correction could
+-- have served as bottom kern. We think that the following approach (that we actualy
+-- came to by a different reasonsing: inconsistent open type fonts) is quite valid
+-- and robust. It's just that the opentype math fonts should never have gone that
+-- TeX italic route. Italic usage is more clear from section 543 than from the math
+-- rendering code.
+
 do
 
      local function wipe(whatever,target,original,parameters,field,move,integrals)

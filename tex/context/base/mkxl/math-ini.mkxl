@@ -534,6 +534,14 @@
 % \preinlinepenalty       23 \postinlinepenalty      56 x$xx$x\par x$x$x\par x$x^2$x\par x$!$x\par
 % \preshortinlinepenalty 123 \postshortinlinepenalty456 x$xx$x\par x$x$x\par x$x^2$x\par x$!$x\par
 
+% \immutable\integerdef\defaultpreshortinlinepenalty  150
+
+\preshortinlinepenalty 150
+
+\appendtoks
+    \shortinlinemaththreshold\emwidth
+\to \everybodyfont
+
 \setmathoptions\mathordinarycode\numexpr
     \noitaliccorrectionclassoptioncode
  % +\checkligatureclassoptioncode
@@ -638,6 +646,7 @@
    +\carryoverrighttopkernclassoptioncode
    +\carryoverrightbottomkernclassoptioncode
    +\preferdelimiterdimensionsclassoptioncode
+   +\shortinlineclassoptioncode
 \relax
 
 \setmathoptions\mathradicalcode\numexpr
@@ -648,11 +657,13 @@
    +\carryoverrighttopkernclassoptioncode
    +\carryoverrightbottomkernclassoptioncode
    +\preferdelimiterdimensionsclassoptioncode
+   +\shortinlineclassoptioncode
 \relax
 
 \setmathoptions\mathaccentcode\numexpr
     \defaultmathclassoptions
    +\autoinjectclassoptioncode
+   +\shortinlineclassoptioncode
 \relax
 
 % ord spacing but with support for \m{m^2/x__3}

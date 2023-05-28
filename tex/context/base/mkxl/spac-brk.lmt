@@ -37,6 +37,7 @@ local nodecodes          = nodes.nodecodes
 local penalty_code       = nodecodes.penalty
 local glue_code          = nodecodes.glue
 local disc_code          = nodecodes.disc
+local kern_code          = nodecodes.kern
 local math_code          = nodecodes.math
 
 local breakcodes         = tex.breakcodes

@@ -4623,7 +4623,7 @@ static int nodelib_direct_dimensions(lua_State *L)
 {
     int top = lua_gettop(L);
     if (top > 0) {
-        scaledwhd siz = { 0, 0, 0, 0 };
+        scaledwhd siz = { .wd = 0, .ht = 0, .dp = 0, .ns = 0 };
         glueratio g_mult = normal_glue_multiplier;
         int vertical = 0;
         int g_sign = normal_glue_sign;
@@ -4654,7 +4654,8 @@ static int nodelib_direct_dimensions(lua_State *L)
         lua_pushinteger(L, siz.wd);
         lua_pushinteger(L, siz.ht);
         lua_pushinteger(L, siz.dp);
-        return 3;
+        lua_pushinteger(L, siz.ns);
+        return 4;
     } else {
         return luaL_error(L, "missing argument to 'dimensions' (direct node expected)");
     }
@@ -4664,7 +4665,7 @@ static int nodelib_direct_rangedimensions(lua_State *L) /* parent, first, last *
 {
     int top = lua_gettop(L);
     if (top > 1) {
-        scaledwhd siz = { 0, 0, 0, 0 };
+        scaledwhd siz = { .wd = 0, .ht = 0, .dp = 0, .ns = 0 };
         int vertical = 0;
         halfword l = nodelib_valid_direct_from_index(L, 1); /* parent */
         halfword n = nodelib_valid_direct_from_index(L, 2); /* first  */
@@ -4685,7 +4686,8 @@ static int nodelib_direct_rangedimensions(lua_State *L) /* parent, first, last *
         lua_pushinteger(L, siz.wd);
         lua_pushinteger(L, siz.ht);
         lua_pushinteger(L, siz.dp);
-        return 3;
+        lua_pushinteger(L, siz.ns);
+        return 4;
     } else {
         return luaL_error(L, "missing argument to 'rangedimensions' (2 or more direct nodes expected)");
     }
@@ -9049,9 +9051,9 @@ static int nodelib_direct_isvalid(lua_State *L)
 
 /* getlinestuff : LS RS LH RH ID PF FIRST LAST */
 
-inline static halfword set_effective_width(halfword source, halfword sign, halfword order, double glue)
+inline static scaled set_effective_width(halfword source, halfword sign, halfword order, double glue)
 {
-    halfword amount = glue_amount(source);
+    scaled amount = glue_amount(source);
     switch (sign) {
         case stretching_glue_sign:
             if (glue_stretch_order(source) == order) {
@@ -9075,18 +9077,19 @@ static int nodelib_direct_getnormalizedline(lua_State *L)
     if (n && node_type(n) == hlist_node && node_subtype(n) == line_list) {
         halfword head = box_list(n);
         halfword tail = head;
-        halfword first = head;
-        halfword last = tail;
+        halfword first = head;    /* the first special glue before the content */
+        halfword last = tail;     /* the first special glue after the content */
         halfword current = head;
-        halfword ls = 0;
-        halfword rs = 0;
-        halfword is = 0;
-        halfword pr = 0;
-        halfword pl = 0;
-        halfword ir = 0;
-        halfword il = 0;
-        halfword lh = 0;
-        halfword rh = 0;
+        scaled ls = 0;
+        scaled rs = 0;
+        scaled is = 0;
+        scaled pr = 0;
+        scaled pl = 0;
+        scaled ir = 0;
+        scaled il = 0;
+        scaled lh = 0;
+        scaled rh = 0;
+        scaled cs = 0;
         halfword sign = box_glue_sign(n);
         halfword order = box_glue_order(n);
         double glue = box_glue_set(n);
@@ -9094,19 +9097,21 @@ static int nodelib_direct_getnormalizedline(lua_State *L)
             tail = current ;
             if (node_type(current) == glue_node) {
                 switch (node_subtype(current)) {
-                    case left_skip_glue           : ls = set_effective_width(current, sign, order, glue); break;
-                    case right_skip_glue          : rs = set_effective_width(current, sign, order, glue); break;
-                    case par_fill_left_skip_glue  : pl = set_effective_width(current, sign, order, glue); break;
-                    case par_fill_right_skip_glue : pr = set_effective_width(current, sign, order, glue); break;
-                    case par_init_left_skip_glue  : il = set_effective_width(current, sign, order, glue); break;
-                    case par_init_right_skip_glue : ir = set_effective_width(current, sign, order, glue); break;
-                    case indent_skip_glue         : is = set_effective_width(current, sign, order, glue); break;
-                    case left_hang_skip_glue      : lh = set_effective_width(current, sign, order, glue); break;
-                    case right_hang_skip_glue     : rh = set_effective_width(current, sign, order, glue); break;
+                    case left_skip_glue           : ls = set_effective_width(current, sign, order, glue); break; // first = current; break;
+                    case right_skip_glue          : rs = set_effective_width(current, sign, order, glue); break; // if (last == tail) { last = current; } break;
+                    case par_fill_left_skip_glue  : pl = set_effective_width(current, sign, order, glue); break; // first = current; break;
+                    case par_fill_right_skip_glue : pr = set_effective_width(current, sign, order, glue); break; // if (last == tail) { last = current; } break;
+                    case par_init_left_skip_glue  : il = set_effective_width(current, sign, order, glue); break; // first = current; break;
+                    case par_init_right_skip_glue : ir = set_effective_width(current, sign, order, glue); break; // if (last == tail) { last = current; } break;
+                    case indent_skip_glue         : is = set_effective_width(current, sign, order, glue); break; // first = current; break;
+                    case left_hang_skip_glue      : lh = set_effective_width(current, sign, order, glue); break; // first = current; break;
+                    case right_hang_skip_glue     : rh = set_effective_width(current, sign, order, glue); break; // if (last == tail) { last = current; } break;
+                    case correction_skip_glue     : cs = set_effective_width(current, sign, order, glue); break; // break;
                 }
             }
             current = node_next(current);
         }
+        /* The next two loops can be integrated in the above but for now we keep this . */
         current = head;
         while (current) {
             if (node_type(current) == glue_node) {
@@ -9156,6 +9161,7 @@ static int nodelib_direct_getnormalizedline(lua_State *L)
         lua_push_integer_at_key(L, parfillrightskip, pr);
         lua_push_integer_at_key(L, parinitleftskip, il);
         lua_push_integer_at_key(L, parinitrightskip, ir);
+        lua_push_integer_at_key(L, correctionskip, cs);
         lua_push_integer_at_key(L, first, first); /* points to a skip */
         lua_push_integer_at_key(L, last, last);   /* points to a skip */
         lua_push_integer_at_key(L, head, head);

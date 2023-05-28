@@ -5964,6 +5964,7 @@ static halfword tex_aux_check_nucleus_complexity(halfword target, scaled *italic
                         /*tex We make a math glyph from an ordinary one. */
                         halfword glyph;
                         quarterword subtype = 0;
+                        /* todo: make this a mapper */
                         switch (node_subtype(nucleus)) {
                             case ordinary_noad_subtype:    subtype = glyph_math_ordinary_subtype;    break;
                             case operator_noad_subtype:    subtype = glyph_math_operator_subtype;    break;

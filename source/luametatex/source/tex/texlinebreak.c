@@ -2573,9 +2573,10 @@ void tex_do_line_break(line_break_properties *properties)
                             case explicit_kern_subtype:
                             case italic_kern_subtype:
                                 { 
-                                    /* there used to a ! is_char_node(node_next(cur_p)) test */
+                                    /*tex There used to be a |! is_char_node(node_next(cur_p))| test here. */
+                                    /*tex We catch |\emph{test} $\hat{x}$| aka |test\kern5pt\hskip10pt$\hat{x}$|. */
                                     halfword nxt = node_next(cur_p);
-                                    if (nxt && node_type(nxt) == glue_node && ! tex_has_glue_option(nxt, glue_option_no_auto_break)) {
+                                    if (nxt && node_type(nxt) == glue_node && ! tex_aux_upcoming_penalty(nxt) && ! tex_has_glue_option(nxt, glue_option_no_auto_break)) {
                                         tex_aux_try_break(properties, 0, unhyphenated_node, first_p, cur_p, callback_id, pass);
                                     }
                                 }

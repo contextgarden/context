@@ -121,7 +121,10 @@ typedef struct scaledwhd {
     scaled wd;
     scaled ht;
     scaled dp;
-    scaled ic; /* padding anyway */
+    union { 
+        scaled ic; /* padding anyway */
+        scaled ns; /* natural size */
+    };
 } scaledwhd;
 
 extern halfword tex_badness(

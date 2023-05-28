@@ -19,25 +19,21 @@
 
 \registerctxluafile{spac-brk}{}
 
+\unprotect
+
 %D This is a very experimental feature and a by product of improving inline math
 %D crossing lines. As it might evolve: use with care.
 
-% \setuplayout[width=8cm]
 % \starttext
 %     \setupalign[verytolerant]
 %     \tracinglousiness1
 %   % \tracinglousiness2
-%     \samplefile{ward} \blank
-%   % \ctxlua{typesetters.breakpoints.show("11=0")}     \samplefile{ward} \blank
-%   % \ctxlua{typesetters.breakpoints.show{ [11] = 0 }} \samplefile{ward} \blank
-%     \lousiness 1 11 0                                 \samplefile{ward} \blank
-%     \silliness 11                                     \samplefile{ward} \blank
-%     {\tt \the\lousiness}
+%     \hsize8cm \lousiness 0      \samplefile{ward} \blank
+%     {\tt \the\lousiness} \blank
+%     \hsize8cm \lousiness 1 11 0 \samplefile{ward} \blank
+%     \hsize8cm \silliness   11   \samplefile{ward} \blank
 % \stoptext
 
-
-\unprotect
-
-% nothing hereyet
+%D These macros are defined a the \LUA\ end.
 
 \protect \endinput

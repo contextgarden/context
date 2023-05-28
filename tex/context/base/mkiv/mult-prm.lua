@@ -659,6 +659,7 @@ return {
   "setmathspacing",
   "shapingpenaltiesmode",
   "shapingpenalty",
+  "shortinlinemaththreshold",
   "snapshotpar",
   "srule",
   "supmarkmode",

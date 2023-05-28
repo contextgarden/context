@@ -3485,11 +3485,11 @@ halfword tex_kern_dimension_ex(halfword p)
 
 scaledwhd tex_pack_dimensions(halfword p)
 {
-    scaledwhd whd = { 0, 0, 0, 0 };
-    whd.ht = box_height(p);
-    whd.dp = box_depth(p);
-    whd.wd = box_width(p);
-    return whd;
+    scaledwhd siz = { .wd = 0, .ht = 0, .dp = 0, .ns = 0 };
+    siz.ht = box_height(p);
+    siz.dp = box_depth(p);
+    siz.wd = box_width(p);
+    return siz;
 }
 
 /*tex
