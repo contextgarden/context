@@ -51,7 +51,7 @@ typedef struct lua_token_package {
 
     It must be noticed that the codebase is now rather different from \LUATEX. Of course we still
     have most of the original commands but new ones have been added, experimental one have been
-    dropped, some have been combined. One criterium for grouping commands is that such a group gets
+    dropped, some have been combined. One criterion for grouping commands is that such a group gets
     a unique treatment in reading a follow up, serialization, expansion, the main loop, the
     registers and variables it refers to, etc. There is some logic behind it!
 

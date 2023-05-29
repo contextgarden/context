@@ -6711,7 +6711,7 @@ void tex_initialize_variables(void)
         pre_short_inline_penalty_par = max_integer;
         post_short_inline_penalty_par = max_integer;
         variable_family_par = -1, 
-        ignore_depth_criterium_par = ignore_depth;
+        ignore_depth_criterion_par = ignore_depth;
         aux_get_date_and_time(&time_par, &day_par, &month_par, &year_par, &lmt_engine_state.utc_time);
     }
 }

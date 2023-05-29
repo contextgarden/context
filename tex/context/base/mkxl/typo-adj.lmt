@@ -40,7 +40,7 @@ end
 
 local function block_baselineskip(head,tail)
  -- tex.prevdepth = -1000 * 65536 -- ignoredepth
-    tex.prevdepth = texgetdimen("ignoredepthcriterium")
+    tex.prevdepth = texgetdimen("ignoredepthcriterion")
     return head
 end
 

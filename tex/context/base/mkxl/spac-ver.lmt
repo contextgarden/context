@@ -2360,7 +2360,7 @@ do
     end)
 
     local function ignoredepth()
-        return texgetdimen("ignoredepthcriterium") -- -65536000
+        return texgetdimen("ignoredepthcriterion") -- -65536000
     end
 
     -- A previous version analyzed the number of lines moved to the next page in

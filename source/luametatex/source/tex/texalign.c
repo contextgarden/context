@@ -1068,7 +1068,7 @@ static void tex_aux_initialize_span(halfword p)
     if (cur_list.mode == restricted_hmode) {
         cur_list.space_factor = default_space_factor;
     } else {
-        cur_list.prev_depth = ignore_depth_criterium_par;
+        cur_list.prev_depth = ignore_depth_criterion_par;
         tex_normal_paragraph(span_par_context);
     }
     lmt_alignment_state.cur_span = p;

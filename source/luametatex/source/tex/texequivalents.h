@@ -223,7 +223,7 @@
     590023 => down to 1024 * 512 == 524288 ==> 85% = 445644 => prime 445633/445649
 
     will make a much larger format and we gain nothing. Actually, because we have extra hash
-    anyway, this whole 85\% criterium is irrelevant: we only need to make sure that we have
+    anyway, this whole 85\% criterion is irrelevant: we only need to make sure that we have
     enough room for the frozen sequences (assuming we stay within the concept).
 
     primes:
@@ -573,7 +573,7 @@ typedef enum int_codes {
     alignment_cell_source_code,
     alignment_wrap_source_code,
  /* page_boundary_penalty_code, */
-    line_break_criterium_code,
+    line_break_criterion_code,
     /* 
         This one was added as experiment to \LUATEX\ (answer to a forwarded question) but as it 
         didn't get tested it will go away. \CONTEXT\ doesn't need it and we don't need to be 
@@ -639,7 +639,7 @@ typedef enum dimen_codes {
     px_dimen_code,
     tab_size_code,
     page_extra_goal_code,
-    ignore_depth_criterium_code,
+    ignore_depth_criterion_code,
     short_inline_math_threshold_code,
     /*tex total number of dimension parameters */
     number_dimen_pars,
@@ -1380,7 +1380,7 @@ extern void tex_forced_word_define (int g, halfword p, singleword flag, halfword
 # define display_widow_penalty_par       count_parameter(display_widow_penalty_code)
 # define orphan_penalty_par              count_parameter(orphan_penalty_code)
 /*define page_boundary_penalty_par       count_parameter(page_boundary_penalty_code) */ /* now in |\pageboundary| */
-# define line_break_criterium_par        count_parameter(line_break_criterium_code)
+# define line_break_criterion_par        count_parameter(line_break_criterion_code)
 # define broken_penalty_par              count_parameter(broken_penalty_code)
 # define line_skip_limit_par             dimen_parameter(line_skip_limit_code)
 
@@ -1395,7 +1395,7 @@ extern void tex_forced_word_define (int g, halfword p, singleword flag, halfword
 # define split_max_depth_par             dimen_parameter(split_max_depth_code)
 # define overfull_rule_par               dimen_parameter(overfull_rule_code)
 # define box_max_depth_par               dimen_parameter(box_max_depth_code)
-# define ignore_depth_criterium_par      dimen_parameter(ignore_depth_criterium_code)
+# define ignore_depth_criterion_par      dimen_parameter(ignore_depth_criterion_code)
 # define short_inline_math_threshold_par dimen_parameter(short_inline_math_threshold_code)
 
 # define top_skip_par                    glue_parameter(top_skip_code)

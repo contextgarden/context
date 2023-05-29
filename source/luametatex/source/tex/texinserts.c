@@ -451,7 +451,7 @@ void tex_run_insert(void)
     tex_normal_paragraph(insert_par_context);
     tex_push_nest();
     cur_list.mode = internal_vmode;
-    cur_list.prev_depth = ignore_depth_criterium_par;
+    cur_list.prev_depth = ignore_depth_criterion_par;
 }
 
 void tex_finish_insert_group(void)

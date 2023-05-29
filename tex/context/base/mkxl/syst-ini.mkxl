@@ -1503,4 +1503,9 @@
 
 \ifdefined\mathpunctuation \else \let\mathpunctuation\mathpunct \fi % fixed in 2.10.06
 
+%D We keep this for a while (suggested correction by KB):
+
+\ifdefined\linebreakcriterion   \aliased\let\linebreakcriterium  \linebreakcriterion   \fi
+\ifdefined\ignoredepthcriterion \aliased\let\ignoredepthcriterium\ignoredepthcriterion \fi
+
 \protect \endinput

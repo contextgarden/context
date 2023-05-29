@@ -1407,7 +1407,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
     A core aspect of the linebreak algorithm is the calculation of badness. The formula currently 
     used has evolved with the tex versions before Don Knuth settled on this approach. And I (HH) 
     admit that I see no real reason to change something here. The only possible extension could
-    be changing the hardcoded |loose_criterium| of 99 and |decent_criterium| of 12. These could
+    be changing the hardcoded |loose_criterion| of 99 and |decent_criterion| of 12. These could
     become parameters instead. When looking at the code you will notice a loop that runs from 
     |very_loose_fit| to |tight_fit| with the following four steps:
 
@@ -1427,11 +1427,12 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
     experiment. However, the result is not that spectacular: I'm pretty sure that users will 
     not be able to choose consistently what result looks better, but who knows. For the moment 
     I keep it, if only to be able to discuss it as useless extension. Configuring the value s
-    is done with |\linebreakcriterium| which gets split into 4 parts (2 bytes per criterium). 
+    is done with |\linebreakcriterion| which gets split into 4 parts (2 bytes per criterion). 
 
     It is probably hard to explain to users what a different setting does and although one can 
     force different output in narrow raggedright text it would probbably enough to just make 
-    the |decent_criterium| configureable. Anyway, because we're talking heuristics and pretty 
+
+    the |decent_criterion| configureable. Anyway, because we're talking heuristics and pretty 
     good estimates from Don Knuth here, it would be pretentious to suggest that I really did 
     research this fuzzy topic (if it was worth the effort at all). 
 
@@ -1485,22 +1486,22 @@ halfword tex_badness(scaled t, scaled s)
     }
 }
 
-inline static void tex_split_line_break_criterium(halfword criterium, halfword *semi_tight, halfword *decent, halfword *semi_loose, halfword *loose) {
-    *semi_tight = (criterium >> 24) & 0x7F;
-    *decent = (criterium >> 16) & 0x7F;
-    *semi_loose = (criterium >> 8) & 0x7F;
-    *loose = criterium & 0x7F;
+inline static void tex_split_line_break_criterion(halfword criterion, halfword *semi_tight, halfword *decent, halfword *semi_loose, halfword *loose) {
+    *semi_tight = (criterion >> 24) & 0x7F;
+    *decent = (criterion >> 16) & 0x7F;
+    *semi_loose = (criterion >> 8) & 0x7F;
+    *loose = criterion & 0x7F;
     if (! *semi_tight) { 
-        *semi_tight = semi_tight_criterium;
+        *semi_tight = semi_tight_criterion;
     }
     if (! *decent) { 
-        *decent = decent_criterium;
+        *decent = decent_criterion;
     }
     if (! *semi_loose) { 
-        *semi_loose = semi_loose_criterium;
+        *semi_loose = semi_loose_criterion;
     }
     if (! *loose) { 
-        *loose = loose_criterium;
+        *loose = loose_criterion;
     }
 }
 
@@ -1629,7 +1630,7 @@ static void tex_aux_try_break(
     */
     halfword semi_tight, decent, semi_loose, loose;
     /*tex in par node */
-    tex_split_line_break_criterium(line_break_criterium_par, &semi_tight, &decent, &semi_loose, &loose);
+    tex_split_line_break_criterion(line_break_criterion_par, &semi_tight, &decent, &semi_loose, &loose);
     /*tex Make sure that |pi| is in the proper range; */
     if (penalty >= infinite_penalty) {
         /*tex this breakpoint is inhibited by infinite penalty */

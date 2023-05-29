@@ -1197,14 +1197,14 @@
 \pushoverloadmode
 
 \overloaded\permanent\protected\def\offinterlineskip % later we will overload this with a push pop
-  {\baselineskip \ignoredepthcriterium % -\thousandpoint
+  {\baselineskip \ignoredepthcriterion % -\thousandpoint
    \lineskip     \zeropoint
    \lineskiplimit\maxdimen
    % We also need this here now; thanks to taco for figuring that out!
    \let\minimumlinedistance\zeropoint}
 
 \overloaded\permanent\protected\def\nointerlineskip
-  {\prevdepth\ignoredepthcriterium}% -\thousandpoint
+  {\prevdepth\ignoredepthcriterion}% -\thousandpoint
 
 \aliased\let\normaloffinterlineskip\offinterlineskip % knuth's original
 

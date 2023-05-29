@@ -377,6 +377,7 @@ trequest = function(originalrequest)
     local code, status = connection:receivestatusline()
     if not code then
         connection:receive09body(status, request.sink, request.step)
+        connection:close()
         return 1, 200
     end
     while code == 100 do

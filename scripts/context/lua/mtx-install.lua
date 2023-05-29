@@ -63,7 +63,11 @@ local function fetch(url)
         data, detail = httprequest(url)
     end
     if type(data) ~= "string" then
-        data = false
+        data   = false
+        detail = "download failed"
+    elseif #data == 0 then
+        data   = false
+        detail = "download failed, zero length"
     elseif #data < 2048 then
         local n, t = find(data,"<head>%s*<title>%s*(%d+)%s(.-)</title>")
         if tonumber(n) then
@@ -557,8 +561,8 @@ function install.update()
     local cdir = currentdir()
     local pdir = pushdir(binpath)
 
-    report("current  : %S",cdir)
-    report("target   : %S",pdir)
+    report("current  : %S",cdir or "<unable to check the curent path>")
+    report("target   : %S",pdir or "<unable to change to the binary path>")
 
     if pdir ~= cdir then
 

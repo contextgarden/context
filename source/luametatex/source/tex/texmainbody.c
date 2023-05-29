@@ -375,11 +375,11 @@ void tex_main_body(void)
     }
 
     /*tex 
-        We assume that |ignore_depth_criterium_par| is unchanged. If needed we can always do 
+        We assume that |ignore_depth_criterion_par| is unchanged. If needed we can always do 
         this: 
     */
 
- /* cur_list.prev_depth = ignore_depth_criterium_par; */
+ /* cur_list.prev_depth = ignore_depth_criterion_par; */
 
     /*tex Ready to go, so come to life. */
 

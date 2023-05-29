@@ -151,7 +151,7 @@ void tex_set_vadjust(halfword target)
     tex_normal_paragraph(vadjust_par_context);
     tex_push_nest();
     cur_list.mode = internal_vmode;
-    cur_list.prev_depth = ignore_depth_criterium_par;
+    cur_list.prev_depth = ignore_depth_criterion_par;
 }
 
 void tex_run_vadjust(void)

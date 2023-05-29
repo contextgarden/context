@@ -704,7 +704,7 @@ void tex_build_page(void)
                     Compute the badness, |b|, of the current page, using |awful_bad| if the box is
                     too full. The |c| variable holds the costs.
                 */
-                halfword badness, criterium;
+                halfword badness, criterion;
                 /*tex
                     This could actually be a callback but not now. First we will experiment a lot
                     with this yet undocumented trick.
@@ -728,29 +728,29 @@ void tex_build_page(void)
                     }
                 }
                 if (badness >= awful_bad) {
-                    criterium = badness; /* trigger fireup */
+                    criterion = badness; /* trigger fireup */
                 } else if (penalty <= eject_penalty) {
-                    criterium = penalty; /* trigger fireup */
+                    criterion = penalty; /* trigger fireup */
                 } else if (badness < infinite_bad) {
-                    criterium = badness + penalty + lmt_page_builder_state.insert_penalties;
+                    criterion = badness + penalty + lmt_page_builder_state.insert_penalties;
                 } else {
-                    criterium = deplorable;
+                    criterion = deplorable;
                 }
                 if (lmt_page_builder_state.insert_penalties >= 10000) {
-                    criterium = awful_bad;
+                    criterion = awful_bad;
                 }
                 {
-                    int moveon = criterium <= lmt_page_builder_state.least_cost;
-                    int fireup = criterium == awful_bad || penalty <= eject_penalty;
+                    int moveon = criterion <= lmt_page_builder_state.least_cost;
+                    int fireup = criterion == awful_bad || penalty <= eject_penalty;
                     if (tracing_pages_par > 0) {
-                        tex_aux_display_page_break_cost(badness, penalty, criterium, moveon, fireup);
+                        tex_aux_display_page_break_cost(badness, penalty, criterion, moveon, fireup);
                     }
                     if (moveon) {
                         halfword insert = node_next(page_insert_head);
                         lmt_page_builder_state.best_break = current;
                         lmt_page_builder_state.best_size = page_goal;
                         lmt_page_builder_state.insert_penalties = 0;
-                        lmt_page_builder_state.least_cost = criterium;
+                        lmt_page_builder_state.least_cost = criterion;
                         while (insert != page_insert_head) {
                             split_best_insert(insert) = split_last_insert(insert);
                             insert = node_next(insert);
@@ -1146,7 +1146,7 @@ static void tex_aux_fire_up(halfword c)
             ++lmt_page_builder_state.dead_cycles;
             tex_push_nest();
             cur_list.mode = internal_vmode;
-            cur_list.prev_depth = ignore_depth_criterium_par;
+            cur_list.prev_depth = ignore_depth_criterion_par;
             cur_list.mode_line = -lmt_input_state.input_line;
             tex_begin_token_list(output_routine_par, output_text);
             tex_new_save_level(output_group);

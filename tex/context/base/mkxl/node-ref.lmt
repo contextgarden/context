@@ -141,6 +141,9 @@ local implement            = interfaces.implement
 
 local inject_areas do
 
+    -- This one is sensitive for the fourth argument (ns) so I need to add it as option
+    -- instead.
+
     local function hlist_dimensions(start,stop,parent)
         local last = stop and getnext(stop)
         if parent then

@@ -277,8 +277,8 @@ static int statslib_getconstants(lua_State *L)
     lua_set_integer_by_key(L, "deplorable",                   deplorable);
     lua_set_integer_by_key(L, "large_width_excess",           large_width_excess);
     lua_set_integer_by_key(L, "small_stretchability",         small_stretchability);
-    lua_set_integer_by_key(L, "decent_criterium",             decent_criterium);
-    lua_set_integer_by_key(L, "loose_criterium",              loose_criterium);
+    lua_set_integer_by_key(L, "decent_criterion",             decent_criterion);
+    lua_set_integer_by_key(L, "loose_criterion",              loose_criterion);
 
     lua_set_integer_by_key(L, "default_rule",                 default_rule);
     lua_set_integer_by_key(L, "ignore_depth",                 ignore_depth);

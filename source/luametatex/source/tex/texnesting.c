@@ -224,7 +224,7 @@ void tex_initialize_nesting(void)
     cur_list.delimiter = null;
     cur_list.prev_graf = 0;
     cur_list.mode_line = 0;
-    cur_list.prev_depth = ignore_depth; /*tex |ignore_depth_criterium_par| is not yet available! */
+    cur_list.prev_depth = ignore_depth; /*tex |ignore_depth_criterion_par| is not yet available! */
     cur_list.space_factor = default_space_factor;
     cur_list.incomplete_noad = null;
     cur_list.direction_stack = null;
@@ -367,7 +367,7 @@ void tex_show_activities(void)
             case vmode:
             case internal_vmode:
                 {
-                    if (n.prev_depth <= ignore_depth_criterium_par) {
+                    if (n.prev_depth <= ignore_depth_criterion_par) {
                         tex_print_format("%l[prevdepth ignored");
                     } else {
                         tex_print_format("%l[prevdepth %D", n.prev_depth, pt_unit);
