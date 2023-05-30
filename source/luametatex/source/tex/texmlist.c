@@ -1981,7 +1981,7 @@ void tex_run_mlist_to_hlist(halfword mlist, halfword penalties, halfword style, 
              node_next(temp_head) = null;
         }
         if (penalties) { // && tex_in_main_math_style(style)  
-            /*tex This makes no sense in display math not in script styles. */
+            /*tex This makes no sense in display math nor in script styles. */
             switch (style) {
                 case text_style:        
                 case cramped_text_style:        
@@ -1992,8 +1992,8 @@ void tex_run_mlist_to_hlist(halfword mlist, halfword penalties, halfword style, 
                             halfword i = 1;
                             while (h && i <= n) {
                                 if (tex_aux_is_math_penalty(h)) {
-                                    penalty_amount(h) += tex_get_specification_penalty(math_forward_penalties_par, i);
-                                    ++i;
+                                    penalty_amount(h) += tex_get_specification_penalty(math_forward_penalties_par, i++);
+                                    tex_add_penalty_option(h, penalty_option_math_forward);
                                 }
                                 h = node_next(h);
                             }
@@ -2006,8 +2006,8 @@ void tex_run_mlist_to_hlist(halfword mlist, halfword penalties, halfword style, 
                             halfword i = 1;
                             while (t && i <= n) {
                                 if (tex_aux_is_math_penalty(t)) {
-                                    penalty_amount(t) += tex_get_specification_penalty(math_backward_penalties_par, i);
-                                    ++i;
+                                    penalty_amount(t) += tex_get_specification_penalty(math_backward_penalties_par, i++);
+                                    tex_add_penalty_option(t, penalty_option_math_backward);
                                 }
                                 t = node_prev(t);
                             }
@@ -7304,13 +7304,13 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
             recent_subtype = node_subtype(recent);
             /* todo: maybe also check the mainclass of the recent  */
             if ((recent_type != penalty_node) && ! (recent_type == simple_noad && tex_math_has_class_option(recent_subtype, omit_penalty_class_option))) {
-                halfword z = tex_new_penalty_node(post_penalty, math_post_penalty_subtype);
-                tex_attach_attribute_list_copy(z, current);
-                tex_couple_nodes(p, z);
-                p = z;
+                halfword penalty = tex_new_penalty_node(post_penalty, math_post_penalty_subtype);
+                tex_attach_attribute_list_copy(penalty, current);
+                tex_couple_nodes(p, penalty);
+                p = penalty;
                 if (tracing_math_par >= 2) {
                     tex_begin_diagnostic();
-                    tex_print_format("[math: post penalty, left %n, right %n, amount %i]", recent_subtype, current_subtype, penalty_amount(z));
+                    tex_print_format("[math: post penalty, left %n, right %n, amount %i]", recent_subtype, current_subtype, penalty_amount(penalty));
                     tex_end_diagnostic();
                 }
             }
@@ -7330,11 +7330,11 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
         recent_plus_glyph = current_plus_glyph;
         // if (first && recent_left_slack) {
         if (p == temp_head && recent_left_slack) {
-            halfword k = tex_new_kern_node(-recent_left_slack, horizontal_math_kern_subtype);
-            halfword h = node_next(temp_head);
-            tex_attach_attribute_list_copy(k, p);
-            tex_couple_nodes(k, h);
-            node_next(temp_head) = k;
+            halfword kern = tex_new_kern_node(-recent_left_slack, horizontal_math_kern_subtype);
+            halfword head = node_next(temp_head);
+            tex_attach_attribute_list_copy(kern, p);
+            tex_couple_nodes(kern, head);
+            node_next(temp_head) = kern;
             if (tracing_math_par >= 2) {
                 tex_begin_diagnostic();
                 tex_print_format("[math: nilling recent left slack %p]", recent_left_slack);
@@ -7344,10 +7344,10 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
         recent = current;
         current = node_next(current);
         if (! current && recent_right_slack) {
-            halfword k = tex_new_kern_node(-recent_right_slack, horizontal_math_kern_subtype);
-            tex_attach_attribute_list_copy(k, p);
-            tex_couple_nodes(p, k);
-            p = k;
+            halfword kern = tex_new_kern_node(-recent_right_slack, horizontal_math_kern_subtype);
+            tex_attach_attribute_list_copy(kern, p);
+            tex_couple_nodes(p, kern);
+            p = kern;
             if (tracing_math_par >= 2) {
                 tex_begin_diagnostic();
                 tex_print_format("[math: nilling recent right slack %p]", recent_right_slack);

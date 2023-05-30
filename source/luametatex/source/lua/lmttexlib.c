@@ -5015,6 +5015,24 @@ static int texlib_getglyphoptionvalues(lua_State *L)
     return 1;
 }
 
+static int texlib_getglueoptionvalues(lua_State *L)
+{
+    lua_createtable(L, 3, 0);
+    lua_set_string_by_index(L, glue_option_normal,        "normal");
+    lua_set_string_by_index(L, glue_option_no_auto_break, "noautobreak");
+    lua_set_string_by_index(L, glue_option_short_math,    "shortmath");
+    return 1;
+}
+
+static int texlib_getpenaltyoptionvalues(lua_State *L)
+{
+    lua_createtable(L, 3, 0);
+    lua_set_string_by_index(L, penalty_option_normal,        "normal");
+    lua_set_string_by_index(L, penalty_option_math_forward,  "mathforward");;
+    lua_set_string_by_index(L, penalty_option_math_backward, "mathbackward");
+    return 1;
+}
+
 static int texlib_getnoadoptionvalues(lua_State *L)
 {
     lua_createtable(L, 2, 37);
@@ -5780,6 +5798,9 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "setrunstate",                texlib_setrunstate                },
     { "gethyphenationvalues",       texlib_gethyphenationvalues       },
     { "getglyphoptionvalues",       texlib_getglyphoptionvalues       },
+    { "getglueoptionvalues",        texlib_getglueoptionvalues        },
+    { "getmathoptionvalues",        texlib_getglueoptionvalues        },
+    { "getpenaltyoptionvalues",     texlib_getpenaltyoptionvalues     },
     { "getnoadoptionvalues",        texlib_getnoadoptionvalues        },
     { "getdiscoptionvalues",        texlib_getdiscoptionvalues        },
     { "getlistanchorvalues",        texlib_getlistanchorvalues        },

@@ -5010,6 +5010,8 @@ void tex_run_math_shift(void)
                         if (post_short_inline_penalty_par != max_integer) {
                             math_penalty(endmath) = post_short_inline_penalty_par;
                         }
+                        tex_add_math_option(beginmath, glue_option_short_math);
+                        tex_add_math_option(endmath, glue_option_short_math);
                     }
                     cur_list.space_factor = default_space_factor;
                     mathleft = cur_list.math_begin;

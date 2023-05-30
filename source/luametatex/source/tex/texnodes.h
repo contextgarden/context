@@ -422,8 +422,19 @@ typedef enum attribute_subtypes {
     with arguments.
 */
 
-# define penalty_node_size 3
-# define penalty_amount(a) vlink(a,2)
+# define penalty_node_size  3
+# define penalty_amount(a)  vlink(a,2)
+# define penalty_options(a) vinfo(a,2)
+
+inline static void tex_add_penalty_option    (halfword a, halfword r) { penalty_options(a) |= r; }
+inline static void tex_remove_penalty_option (halfword a, halfword r) { penalty_options(a) &= ~(r | penalty_options(a)); }
+inline static int  tex_has_penalty_option    (halfword a, halfword r) { return (penalty_options(a) & r) == r; }
+
+typedef enum penalty_option_codes {
+    penalty_option_normal        = 0x0000,
+    penalty_option_math_forward  = 0x0001,
+    penalty_option_math_backward = 0x0002,
+} penalty_option_codes; 
 
 typedef enum penalty_subtypes {
     user_penalty_subtype,
@@ -522,6 +533,7 @@ typedef enum glue_option_codes {
  // glue_force_auto_break     = 0x0001,
  // glue_originates_in_math   = 0x0002,
     glue_option_no_auto_break = 0x0001,
+    glue_option_short_math    = 0x0002,
 } glue_option_codes; 
 
 typedef enum math_subtypes {

@@ -2647,6 +2647,15 @@ static int nodelib_direct_getoptions(lua_State *L)
             case disc_node:
                 lua_pushinteger(L, disc_options(n));
                 return 1;
+            case glue_node:
+                lua_pushinteger(L, glue_options(n));
+                return 1;
+            case math_node:
+                lua_pushinteger(L, math_options(n));
+                return 1;
+            case penalty_node:
+                lua_pushinteger(L, penalty_options(n));
+                return 1;
             case simple_noad:
             case radical_noad:
             case fraction_noad:
@@ -2674,6 +2683,15 @@ static int nodelib_direct_setoptions(lua_State *L)
             case disc_node:
                 set_disc_options(n, lmt_tohalfword(L, 2));
                 break;
+            case glue_node:
+                tex_add_glue_option(n, lmt_tohalfword(L, 2));
+                return 1;
+            case math_node:
+                tex_add_math_option(n, lmt_tohalfword(L, 2));
+                return 1;
+            case penalty_node:
+                tex_add_penalty_option(n, lmt_tohalfword(L, 2));
+                return 1;
             case simple_noad:
             case radical_noad:
             case fraction_noad:

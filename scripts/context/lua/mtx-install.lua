@@ -40,14 +40,15 @@ local gsub, find, escapedpattern = string.gsub, string.find, string.escapedpatte
 local round = math.round
 local savetable, loadtable, sortedhash = table.save, table.load, table.sortedhash
 local copyfile, joinfile, filesize, dirname, addsuffix, basename = file.copy, file.join, file.size, file.dirname, file.addsuffix, file.basename
-local isdir, isfile, walkdir, pushdir, popdir, currentdir = lfs.isdir, lfs.isfile, lfs.dir, lfs.chdir, dir.push, dir.pop, currentdir
+local isdir, isfile, walkdir, pushdir, popdir, currentdir = lfs.isdir, lfs.isfile, lfs.dir, dir.push, dir.pop, dir.current
 local mkdirs, globdir = dir.mkdirs, dir.glob
 local osremove, osexecute, ostype, resultof = os.remove, os.execute, os.type, os.resultof
-local savedata = io.savedata
+local savedata, loaddata = io.savedata, io.loaddata
 local formatters = string.formatters
 local httprequest = socket.http.request
 
-local usecurl = false
+local usecurl  = false
+local protocol = "http"
 
 local function checkcurl()
     local s = resultof("curl --version")
@@ -191,7 +192,7 @@ function install.identify()
                 local name  = files[i]
                 local size  = filesize(name)
                 local base  = gsub(name,pattern,"")
-                local data  = io.loaddata(name)
+                local data  = loaddata(name)
                 if data and #data > 0 then
                     local stamp = hashdata(data)
                     details[i]  = { base, size, stamp }
@@ -222,6 +223,8 @@ function install.identify()
         date    = os.date("%Y-%m-%d"),
     })
 
+    os.exit()
+
 end
 
 local function disclaimer()
@@ -249,15 +252,15 @@ function install.update()
         return ok
     end
 
-    local function download(what,url,target,total,done,oldhash)
+    local function download(what,url,target,total,done,hash)
         local data = fetch(url .. "/" .. target)
-        if data then
+        if type(data) == "string" and #data > 0  then
             if total and done then
                 report("%-8s : %3i %% : %8i : %s",what,round(100*done/total),#data,target)
             else
                 report("%-8s : %8i : %s",what,#data,target)
             end
-            if oldhash and oldhash ~= hashdata(data) then
+            if hash and hash ~= hashdata(data) then
                 return "different hash value"
             elseif not validdir(dirname(target)) then
                 return "wrong target directory"
@@ -340,8 +343,9 @@ function install.update()
                 report("fetching %a",zipurl)
                 local zipdata = fetch(zipurl)
                 if zipdata then
-                    io.savedata(zipfile,zipdata)
+                    savedata(zipfile,zipdata)
                 else
+                    osremove(zipfile)
                     zipfile = false
                 end
             end
@@ -357,6 +361,7 @@ function install.update()
                     path    = ".",
                  -- verbose = true,
                     verbose = "steps",
+                    collect = true, -- sort of a check
                 }
 
                 if utilities.zipfiles.unzipdir(specification) then
@@ -365,7 +370,6 @@ function install.update()
                 else
                     osremove(zipfile)
                 end
-
             end
 
             count = #new
@@ -383,7 +387,10 @@ function install.update()
                 local target = joinfile(tree,name)
                 done = done + size
                 if not skiplist or not skiplist[basename(name)] then
-                    download("new",url,target,total,done)
+                    local message = download("new",url,target,total,done)
+                    if message then
+                        report("%s",message)
+                    end
                 else
                     report("skipping %s",target)
                 end
@@ -494,7 +501,7 @@ function install.update()
 
     for i=1,#list do
         local host = list[i]
-        local data, status, detail = fetch("http://" .. host .. "/" .. instance .. "/tex/status.tma")
+        local data, status, detail = fetch(protocol .. "://" .. host .. "/" .. instance .. "/tex/status.tma")
         if status == 200 and type(data) == "string" then
             local t = loadstring(data)
             if type(t) == "function" then
@@ -512,7 +519,7 @@ function install.update()
         return
     end
 
-    local url = "http://" .. server .. "/" .. instance .. "/"
+    local url = protocol .. "://" .. server .. "/" .. instance .. "/"
 
     local texmfplatform = "texmf-" .. platform
 
@@ -638,6 +645,7 @@ function install.update()
     report("")
 
     report("update, done")
+
 end
 
 function install.modules()
@@ -654,11 +662,15 @@ end
 
 if environment.argument("secure") then
     usecurl = checkcurl()
-    if not usecurl then
+    if usecurl then
+        protocol = "https"
+    else
         report("no curl installed, quitting")
         os.exit()
     end
 end
+
+io.output():setvbuf("no")
 
 if environment.argument("identify") then
     install.identify()

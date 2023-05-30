@@ -2781,7 +2781,7 @@ static halfword tex_aux_depth_correction(halfword b, const line_break_properties
             p = tex_new_param_glue_node(line_skip_code, line_skip_glue);
         } else {
             p = tex_new_param_glue_node(baseline_skip_code, baseline_skip_glue);
-            glue_amount(p) = d;
+            glue_amount(p) = d; /* we keep the stretch and shrink */
         }
     }
     return p;

@@ -1564,9 +1564,14 @@ end
 
 local ruledpenalty do
 
-    local p_cache_v = caches["vpenalty"]
-    local p_cache_h = caches["hpenalty"]
-    local p_cache_m = caches["mpenalty"]
+    local cachehash = {
+        ["MP=%s"] = caches["MP=%s"],
+        ["MP>%s"] = caches["MP>%s"],
+        ["MP<%s"] = caches["MP<%s"],
+        ["MP:%s"] = caches["MP:%s"],
+        ["VP:%s"] = caches["VP:%s"],
+        ["HP:%s"] = caches["HP:%s"],
+    }
 
     local raisepenalties = false
 
@@ -1576,15 +1581,41 @@ local ruledpenalty do
 
     directives.register("visualizers.raisepenalties",function(v) raisepenalties = v end)
 
+    local getoptions   = nuts.getoptions
+
+    local mathforward  = tex.penaltyoptioncodes.mathforward
+    local mathbackward = tex.penaltyoptioncodes.mathbackward
+
     ruledpenalty = function(head,current,vertical,subtype)
         local penalty = getpenalty(current)
         local ismath  = subtype == pre_penalty_code or subtype == post_penalty_code or subtype == true
-        local cache   = (ismath and p_cache_m) or (vertical and p_cache_v) or p_cache_h
-        local info    = cache[penalty]
+        local amount
+        if ismath then
+            local options  = getoptions(current)
+            local forward  = (options & mathforward) ~= 0
+            local backward = (options & mathbackward) ~= 0
+            if forward then
+                if backward then
+                    amount = "MP=%s"
+                else
+                    amount = "MP>%s"
+                end
+            elseif backward then
+                amount = "MP<%s"
+            else
+                amount = "MP:%s"
+            end
+        elseif vertical then
+            amount = "VP:%s"
+        else
+            amount = "HP:%s"
+        end
+        local cache = cachehash[amount]
+        local info  = cache[penalty]
         if info then
             -- print("penalty hit")
         else
-            local amount = formatters["%s:%s"]((ismath and "MP") or (vertical and "VP") or "HP",penalty)
+            amount = formatters[amount](penalty)
             if ismath then
                 info = sometext(amount,l_penalty,"trace:s")
             elseif penalty > 0 then
@@ -1613,32 +1644,43 @@ end
 local ruledmath do
 
     local mathcodes = nodes.mathcodes
-    local m_cache   = {
-        beginmath = caches["bmath"],
-        endmath   = caches["emath"],
-    }
     local tags      = {
-        beginmath = "B",
-        endmath   = "E",
+        [true] = {
+            math      = { "SM:?", caches["SM:?"] },
+            beginmath = { "SM:B", caches["SM:B"] },
+            endmath   = { "SM:E", caches["SM:E"] },
+        },
+        [false] = {
+            math      = { "M:?", caches["M:?"] },
+            beginmath = { "M:B", caches["M:B"] },
+            endmath   = { "M:E", caches["M:E"] },
+        },
     }
 
+    local getoptions = nuts.getoptions
+    local shortmath  = tex.mathoptioncodes.shortmath
+
     ruledmath = function(head,current)
-        local what = getsubtype(current)
-        local tag  = mathcodes[what]
-        local skip = getkern(current) + getwidth(current) -- surround
-        local info = m_cache[tag][skip]
+        local what  = getsubtype(current)
+        local mtag  = mathcodes[what]
+        local skip  = getkern(current) + getwidth(current) -- surround
+        local short = (getoptions(current) & shortmath) ~= 0
+        local htag  = tags[short][mtag or "math"] or tags[false].math
+        local ttag  = htag[1]
+        local cache = htag[2]
+        local info  = cache[skip]
         if info then
             -- print("hit math")
         else
-            local text, width = sometext(formatters["M:%s"](tag and tags[tag] or what),usedfont,nil,"trace:dr")
+            local text, width = sometext(ttag,usedfont,nil,"trace:dr")
             local rule = new_rule(skip,-655360/fraction,2*655360/fraction)
-            local dist = tag == "beginmath" and width or skip
+            local dist = mtag == "beginmath" and width or skip
             setcolor(rule,"trace:dr")
             settransparency(rule,"trace:dr")
             setattr(rule,a_layer,l_math)
             info = new_hlist(setlink(new_glue(-skip),rule,new_glue(-dist),text))
             setattr(info,a_layer,l_math)
-            m_cache[tag][skip] = info
+            cache[skip] = info
         end
         local saved = current
         head, current = insertnodeafter(head,current,copylist(info))

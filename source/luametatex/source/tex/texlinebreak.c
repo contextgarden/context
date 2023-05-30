@@ -2051,7 +2051,7 @@ static void tex_aux_try_break(
             } else {
                 demerits = demerits * demerits;
             }
-            if (penalty != 0) {
+            if (penalty) {
                 if (penalty > 0) {
                     demerits += (penalty * penalty);
                 } else if (penalty > eject_penalty) {
@@ -2198,6 +2198,30 @@ inline static halfword tex_aux_upcoming_penalty(halfword p) {
 
 # define max_prev_graf (max_integer/2)
 
+static inline int tex_aux_short_math(halfword m) {
+    return m && node_subtype(m) == begin_inline_math && math_penalty(m) > 0 && tex_has_math_option(m, glue_option_short_math);
+}
+
+static inline void tex_aux_adapt_short_math_penalty(halfword m, halfword p1, halfword p2) {
+    if (p1 > math_penalty(m)) {
+        math_penalty(m) = p1;
+    }
+    if (p2 > math_penalty(m)) {
+        math_penalty(m) = p2;
+    }
+}
+
+static inline halfword tex_aux_backtrack_over_math(halfword m) 
+{
+    if (node_subtype(m) == end_inline_math) { 
+        do { 
+            m = node_prev(m);
+        } while (m && node_type(m) != math_node);
+    }
+    return m;
+}
+
+
 void tex_do_line_break(line_break_properties *properties)
 {
     /*tex Miscellaneous nodes of temporary interest. */
@@ -2256,7 +2280,7 @@ void tex_do_line_break(line_break_properties *properties)
         also skip a penalty in the list.
 
     */
-    if (properties->orphan_penalties || properties->orphan_penalty) {
+    if (properties->orphan_penalties || properties->orphan_penalty || short_inline_orphan_penalty_par) {
         halfword current = node_prev(properties->parfill_right_skip);
         if (current) {
             /*tex Skip over trailing glue and penalties. */
@@ -2272,37 +2296,119 @@ void tex_do_line_break(line_break_properties *properties)
             }
           INJECT:
             if (properties->orphan_penalties) {
-                /*tex Inject specified penalties before spaces. */
+                /*tex 
+                    Inject specified penalties before spaces. When wwe see a math node with a penalty
+                    set then we take the max and jump over a (preceding) skip. Maybe at some point 
+                    the |short_inline_orphan_penalty_par| value will also move into the par state.
+                */
                 int n = specification_count(properties->orphan_penalties);
                 if (n > 0) {
+                    int skip = 0;
                     halfword i = 0;
                     while (current) {
-                        if (node_type(current) == glue_node) {
-                            switch (node_subtype(current)) {
-                                case space_skip_glue:
-                                case xspace_skip_glue:
-                                case zero_space_skip_glue:
-                                    current = tex_aux_inject_orphan_penalty(current, tex_get_specification_penalty(properties->orphan_penalties, ++i));
+                        switch (node_type(current)) { 
+                            case glue_node:
+                                switch (node_subtype(current)) {
+                                    case space_skip_glue:
+                                    case xspace_skip_glue:
+                                    case zero_space_skip_glue:
+                                        if (skip) { 
+                                            skip = 0;
+                                        } else {
+                                            current = tex_aux_inject_orphan_penalty(current, tex_get_specification_penalty(properties->orphan_penalties, ++i));
+                                        }
+                                        if (i == n) {
+                                            goto ALLDONE;
+                                        } else {
+                                            break;
+                                        }
+                                }
+                                break;
+                            case math_node:
+                                current = tex_aux_backtrack_over_math(current); 
+                                if (tex_aux_short_math(current)) { 
+                                    halfword p = tex_get_specification_penalty(properties->orphan_penalties, ++i);
+                                    tex_aux_adapt_short_math_penalty(current, short_inline_orphan_penalty_par, p);
                                     if (i == n) {
                                         goto ALLDONE;
                                     } else {
-                                        break;
+                                        skip = 1;
                                     }
-                            }
+                                } else { 
+                                    goto ALLDONE;
+                                }
+                                break;
+                            default: 
+                                skip = 0;
+                                break;
                         }
                         current = node_prev(current);
                     }
                 }
-            } else {
+            } else if (properties->orphan_penalty) {
+                /*tex
+                    We inject a penalty before the space but we need to intercept the math penalty
+                    that actually is set on the math mode.  If no math orphan penalty is set of when 
+                    we have wider math then we assume it's okay. We don't want interference in math
+                    penalties. 
+                    
+                */
                 while (current) {
-                    if (node_type(current) == glue_node) {
-                        switch (node_subtype(current)) {
-                            case space_skip_glue:
-                            case xspace_skip_glue:
-                            case zero_space_skip_glue:
-                                tex_aux_inject_orphan_penalty(current, properties->orphan_penalty);
-                                goto ALLDONE;
-                        }
+                    switch (node_type(current)) { 
+                        case glue_node:
+                            switch (node_subtype(current)) {
+                                case space_skip_glue:
+                                case xspace_skip_glue:
+                                case zero_space_skip_glue:
+                                    tex_aux_inject_orphan_penalty(current, properties->orphan_penalty);
+                                    goto ALLDONE;
+                                default: 
+                                    /* maybe we should always quit here */
+                                    break;
+                            }
+                            break;
+                        case math_node:
+                            current = tex_aux_backtrack_over_math(current); 
+                            if (tex_aux_short_math(current)) { 
+                                tex_aux_adapt_short_math_penalty(current, short_inline_orphan_penalty_par, properties->orphan_penalty);
+                            }
+                            goto ALLDONE;
+                        case disc_node: 
+                            /*
+                                This is (or has been) actually an old \CONTEXT\ feature doen in \LUA,
+                                so what should we do here: set the penalty and quit or maybe run till we 
+                                hit a non glyph, disc or font kern? Hyphens already get penalties. So,
+                                we do nothong.
+                            */
+                            break;
+                    }
+                    current = node_prev(current);
+                }
+            } else if (short_inline_orphan_penalty_par) {
+                /*tex
+                    Short formulas at the end of a line are normally not followed by something other 
+                    than punctuation. In practice one can set this penalty to e.g. a relatively low 
+                    200 to get the desired effect. We definitely quit on a space and take for granted 
+                    what comes before we see the formula. 
+                    
+                */
+                while (current) {
+                    switch (node_type(current)) { 
+                        case glue_node:
+                            switch (node_subtype(current)) {
+                                case space_skip_glue:
+                                case xspace_skip_glue:
+                                case zero_space_skip_glue:
+                                    goto ALLDONE;
+                            }
+                            break;
+                        case math_node:
+                            current = tex_aux_backtrack_over_math(current); 
+                            if (tex_aux_short_math(current)) { 
+                                tex_aux_adapt_short_math_penalty(current, short_inline_orphan_penalty_par, 0);
+                            }
+                            goto ALLDONE;
+                            
                     }
                     current = node_prev(current);
                 }

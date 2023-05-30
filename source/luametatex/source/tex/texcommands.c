@@ -167,6 +167,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "preinlinepenalty",               internal_int_cmd,       pre_inline_penalty_code,                  internal_int_base);
         tex_primitive(luatex_command, "postshortinlinepenalty",         internal_int_cmd,       post_short_inline_penalty_code,           internal_int_base);
         tex_primitive(luatex_command, "preshortinlinepenalty",          internal_int_cmd,       pre_short_inline_penalty_code,            internal_int_base);
+        tex_primitive(luatex_command, "shortinlineorphanpenalty",       internal_int_cmd,       short_inline_orphan_penalty_code,         internal_int_base);
         tex_primitive(tex_command,    "pretolerance",                   internal_int_cmd,       pre_tolerance_code,                       internal_int_base);
         tex_primitive(tex_command,    "relpenalty",                     internal_int_cmd,       post_relation_penalty_code,               internal_int_base); /*tex For old times sake. */
         tex_primitive(tex_command,    "righthyphenmin",                 internal_int_cmd,       right_hyphen_min_code,                    internal_int_base);

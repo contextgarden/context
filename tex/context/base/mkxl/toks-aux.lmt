@@ -178,30 +178,35 @@ local function getthem(getter,post)
     return utilities.storage.allocate(table.swapped(codes,codes))
 end
 
+-- Not all of these make sense at the tex end (can't be set).
+
+tex.glyphoptioncodes      = getthem(tex.getglyphoptionvalues,      "glyphoptioncode")
 tex.discoptioncodes       = getthem(tex.getdiscoptionvalues,       "discoptioncode")
+tex.glueoptioncodes       = getthem(tex.getglueoptionvalues        )
+tex.mathoptioncodes       = getthem(tex.getmathoptionvalues        )
+tex.penaltyoptioncodes    = getthem(tex.getpenaltyoptionvalues     )
 tex.flagcodes             = getthem(tex.getflagvalues,             "flagcode" )
 tex.frozenparcodes        = getthem(tex.getfrozenparvalues,        "frozenparcode")
-tex.glyphoptioncodes      = getthem(tex.getglyphoptionvalues,      "glyphoptioncode")
 tex.groupcodes            = getthem(tex.getgroupvalues,            "groupcode")
 tex.hyphenationcodes      = getthem(tex.gethyphenationvalues,      "hyphenationcode")
 tex.mathcontrolcodes      = getthem(tex.getmathcontrolvalues,      "mathcontrolcode")
 ---.mathflattencodes      = getthem(tex.getmathflattenvalues,      "mathflattencode")
-tex.noadoptioncodes       = getthem(tex.getnoadoptionvalues        ) -- only at lua end
+tex.noadoptioncodes       = getthem(tex.getnoadoptionvalues        )
 tex.normalizelinecodes    = getthem(tex.getnormalizelinevalues,    "normalizecode")     -- we keep the short name
 tex.normalizeparcodes     = getthem(tex.getnormalizeparvalues,     "normalizeparcode")
 tex.automigrationcodes    = getthem(tex.getautomigrationvalues,    "automigrationcode")
 tex.parcontextcodes       = getthem(tex.getparcontextvalues,       "parcontextcode")
-tex.textcontrolcodes      = getthem(tex.gettextcontrolvalues       ) -- only at lua end
-tex.fitnesscodes          = getthem(tex.getfitnessvalues           ) -- only at lua end
+tex.textcontrolcodes      = getthem(tex.gettextcontrolvalues       )
+tex.fitnesscodes          = getthem(tex.getfitnessvalues           )
 tex.listanchorcodes       = getthem(tex.getlistanchorvalues,       "listanchorcode")
 tex.listsigncodes         = getthem(tex.getlistsignvalues,         "listsigncode")
 tex.classoptioncodes      = getthem(tex.getmathclassoptionvalues,  "classoptioncode")
----.alignmentcontextcodes = getthem(tex.getalignmentcontextvalues  ) -- only at lua end
-tex.specialmathclasscodes = getthem(tex.getspecialmathclassvalues  ) -- idem
-tex.directioncodes        = getthem(tex.getdirectionvalues         ) -- idem
-tex.fillcodes             = getthem(tex.getfillvalues              ) -- idem
-tex.mathparametercodes    = getthem(tex.getmathparametervalues     ) -- idem
-tex.breakcodes            = getthem(tex.getbreakcontextvalues      ) -- idem
+---.alignmentcontextcodes = getthem(tex.getalignmentcontextvalues  )
+tex.specialmathclasscodes = getthem(tex.getspecialmathclassvalues  )
+tex.directioncodes        = getthem(tex.getdirectionvalues         )
+tex.fillcodes             = getthem(tex.getfillvalues              )
+tex.mathparametercodes    = getthem(tex.getmathparametervalues     )
+tex.breakcodes            = getthem(tex.getbreakcontextvalues      )
 
 function tex.stringtocodesbitmap(str,codes)
     local bitmap = 0

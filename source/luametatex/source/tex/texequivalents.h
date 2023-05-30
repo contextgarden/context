@@ -437,6 +437,7 @@ typedef enum int_codes {
     post_inline_penalty_code,           /*tex penalty for breaking just after an inlined formula */
     pre_short_inline_penalty_code,      /*tex penalty for breaking just before a single character inlined formula */
     post_short_inline_penalty_code,     /*tex penalty for breaking just after a single character inlined formula */
+    short_inline_orphan_penalty_code,
     inter_line_penalty_code,            /*tex additional penalty between lines */
     double_hyphen_demerits_code,        /*tex demerits for double hyphen break */
     final_hyphen_demerits_code,         /*tex demerits for final hyphen break */
@@ -1411,6 +1412,7 @@ extern void tex_forced_word_define (int g, halfword p, singleword flag, halfword
 # define post_inline_penalty_par         count_parameter(post_inline_penalty_code)
 # define pre_short_inline_penalty_par    count_parameter(pre_short_inline_penalty_code)
 # define post_short_inline_penalty_par   count_parameter(post_short_inline_penalty_code)
+# define short_inline_orphan_penalty_par count_parameter(short_inline_orphan_penalty_code)
 
 # define local_interline_penalty_par     count_parameter(local_interline_penalty_code)
 # define local_broken_penalty_par        count_parameter(local_broken_penalty_code)
