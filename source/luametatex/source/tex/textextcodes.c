@@ -216,7 +216,7 @@ static void tex_aux_free_catcodes(void)
 # define UCCODEDEFAULT    0
 
 # define SFCODESTACK      8
-# define SFCODEDEFAULT 1000
+# define SFCODEDEFAULT    scaling_factor
 
 # define HCCODESTACK      8
 # define HCCODEDEFAULT    0

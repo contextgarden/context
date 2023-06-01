@@ -1535,6 +1535,10 @@ void tex_save_for_after_group(halfword t)
 void tex_unsave(void)
 {
     if (end_of_group_par) {
+        /*tex 
+            This is not yet always ok, and looks like we can get weird commands (in some group 
+            ending situations)! But I need a better example of a failure. (low priority) 
+        */
         tex_begin_inserted_list(tex_get_available_token(token_val(end_local_cmd, 0)));
         tex_begin_token_list(end_of_group_par, end_of_group_text);
         if (tracing_nesting_par > 2) {

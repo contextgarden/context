@@ -337,7 +337,7 @@ void tex_show_activities(void)
                     while (r != page_insert_head) {
                         halfword index = insert_index(r);
                         halfword multiplier = tex_get_insert_multiplier(index);
-                        halfword size = multiplier == 1000 ? insert_total_height(r) : tex_x_over_n(insert_total_height(r), 1000) * multiplier;
+                        halfword size = multiplier == scaling_factor ? insert_total_height(r) : tex_x_over_n(insert_total_height(r), scaling_factor) * multiplier;
                         if (node_type(r) == split_node && node_subtype(r) == insert_split_subtype) {
                             halfword q = page_head;
                             halfword n = 0;

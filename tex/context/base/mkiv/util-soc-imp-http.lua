@@ -200,6 +200,15 @@ function methods.receiveheaders(self)
     return self.try(receiveheaders(self.c))
 end
 
+-- part of request:
+--
+-- Accept-Encoding: gzip
+
+-- part if body:
+--
+-- Content-Encoding: gzip
+-- Vary: Accept-Encoding
+
 function methods.receivebody(self, headers, sink, step)
     if not sink then
         sink = sinknull()

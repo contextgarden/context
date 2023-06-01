@@ -120,7 +120,7 @@ math_state_info lmt_math_state = {
     .last_left  = 0,
     .last_right = 0,
     .last_atom  = 0,
-    .scale      = 1000,
+    .scale      = scaling_factor,
 };
 
 static int      tex_aux_scan_math           (halfword p, halfword style, int usetextfont, halfword toks, halfword toks_text, int nocomponent, halfword cls, halfword all);
@@ -1410,8 +1410,8 @@ static void tex_aux_enter_display_math(halfword cmd)
             size = - max_dimen;
         } else {
             tex_line_break(1, math_display_group);
-         // size = tex_actual_box_width(lmt_linebreak_state.just_box, tex_x_over_n(tex_get_font_em_width(cur_font_par), 1000) * math_pre_display_gap_factor_par);
-            size = tex_actual_box_width(lmt_linebreak_state.just_box, scaledround((tex_get_font_em_width(cur_font_par) / 1000.0) * math_pre_display_gap_factor_par));
+         // size = tex_actual_box_width(lmt_linebreak_state.just_box, tex_x_over_n(tex_get_font_em_width(cur_font_par), scaling_factor) * math_pre_display_gap_factor_par);
+            size = tex_actual_box_width(lmt_linebreak_state.just_box, scaledround((tex_get_font_em_width(cur_font_par) / scaling_factor_double) * math_pre_display_gap_factor_par));
         }
         /*tex
             Now we are in vertical mode, working on the list that will contain the display. A displayed
@@ -3655,8 +3655,8 @@ void tex_run_math_fraction(void)
         halfword mathclass = fraction_noad_subtype;
         halfword rulethickness = preset_rule_thickness;
         int ruledone = 0;
-        fraction_h_factor(fraction) = 1000;
-        fraction_v_factor(fraction) = 1000;
+        fraction_h_factor(fraction) = scaling_factor;
+        fraction_v_factor(fraction) = scaling_factor;
         switch (code) {
             case math_above_code:
             case math_above_delimited_code:
@@ -4553,7 +4553,7 @@ static void tex_aux_finish_displayed_math(int atleft, halfword eqnumber, halfwor
     if (eqnumber) {
         number_width = box_width(eqnumber);
         eqno_width = number_width;
-        number_plus_gap_width = number_width + tex_round_xn_over_d(math_eqno_gap_step_par, tex_get_math_quad_style(text_style), 1000);
+        number_plus_gap_width = number_width + tex_round_xn_over_d(math_eqno_gap_step_par, tex_get_math_quad_style(text_style), scaling_factor);
         node_subtype(eqnumber) = equation_number_list;
         /*tex attach_current_attribute_list(eqno_box); */
     } else {
@@ -5200,14 +5200,14 @@ static void tex_aux_define_all_math_parameters(int size, int param, scaled value
 # define big_operator_spacing5(A)  mathex(A,13) /*tex padding above and below displayed limits */
 
 /*tex
-    Somehow a scale > 1000 results in extreme values.
+    Somehow a scale > scaling_factor results in extreme values.
 */
 
 /*
 inline static int tex_aux_get_font_math_parameter(scaled scale, halfword f, int id)
 {
     scaled v = get_font_math_par(f, id);
-//  return scale == 1000 ? v : round_xn_over_d(v, scale, 1000);
+//  return scale == scaling_factor ? v : round_xn_over_d(v, scale, scaling_factor);
     if (v) {
         double d = 0.001 * scale * v;
         return (d < 0.0) ? (int) (d - 0.5) : (int) (d + 0.5);
@@ -5218,7 +5218,7 @@ inline static int tex_aux_get_font_math_parameter(scaled scale, halfword f, int 
 
 inline static int tex_aux_get_font_math_quantity(scaled scale, halfword v)
 {
-//   return scale == 1000 ? v : round_xn_over_d(v, scale, 1000);
+//   return scale == scaling_factor ? v : round_xn_over_d(v, scale, scaling_factor);
     if (v) {
         double d = 0.001 * scale * v;
         return (d < 0.0) ? (int) (d - 0.5) : (int) (d + 0.5);
@@ -5328,8 +5328,8 @@ void tex_fixup_math_parameters(int fam, int size, int f, int level)
 
     /*tex Not all are official \OPENTYPE: */
 
-    tex_aux_define_all_math_parameters(size, math_parameter_x_scale, 1000, level);
-    tex_aux_define_all_math_parameters(size, math_parameter_y_scale, 1000, level);
+    tex_aux_define_all_math_parameters(size, math_parameter_x_scale, scaling_factor, level);
+    tex_aux_define_all_math_parameters(size, math_parameter_y_scale, scaling_factor, level);
 
     /*tex Most are zero and have to be set at by the macro package (if at all):. */
 
@@ -5508,16 +5508,26 @@ static void tex_aux_set_math_atom_rule(halfword left, halfword right, halfword n
     tex_set_all_styles(math_parameter_rules_pair(left, right), (newleft << 16) + newright, level_one, indirect_math_regular);
 }
 
+/*tex
+
+    Originally a penalty of 10000 signaled that no penalty has to be included but because we want 
+    to control penalties in nested sequences (like open and close bound sequences) we need to be 
+    able to go up (multiply by a factor) or down (divide by a factor). Therefore we need to be able
+    to set a penalty to 10000 as a start. so that it will be ignored unless we apply a factor. For 
+    that reason we now use 10001 instead. 
+
+*/
+
 void tex_initialize_math_spacing(void)
 {
 
     for (int mathclass = 0; mathclass <= max_math_class_code; mathclass++) {
         tex_set_math_class_default(mathclass, mathclass, no_class_options);
         /*tex We do this here as there is no real need for yet another initializer. */
-        tex_word_define(0, internal_int_location(first_math_pre_penalty_code  + mathclass), infinite_penalty);
-        tex_word_define(0, internal_int_location(first_math_post_penalty_code + mathclass), infinite_penalty);
-        tex_word_define(0, internal_int_location(first_math_display_pre_penalty_code  + mathclass), infinite_penalty);
-        tex_word_define(0, internal_int_location(first_math_display_post_penalty_code + mathclass), infinite_penalty);
+        tex_word_define(0, internal_int_location(first_math_pre_penalty_code  + mathclass), math_default_penalty);
+        tex_word_define(0, internal_int_location(first_math_post_penalty_code + mathclass), math_default_penalty);
+        tex_word_define(0, internal_int_location(first_math_display_pre_penalty_code  + mathclass), math_default_penalty);
+        tex_word_define(0, internal_int_location(first_math_display_post_penalty_code + mathclass), math_default_penalty);
     }
 
     tex_reset_all_styles(level_one);
@@ -5658,8 +5668,8 @@ void tex_initialize_math_spacing(void)
 
     /* */
 
-    tex_set_all_styles   (math_parameter_x_scale, 1000, level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_y_scale, 1000, level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_x_scale, scaling_factor, level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_y_scale, scaling_factor, level_one, indirect_math_regular);
 
     /* could be initialize_math_defaults */
 
@@ -5734,8 +5744,8 @@ static void tex_aux_math_parameter_error(int style, int param, const char *name)
 inline static scaled tex_aux_max_scale(int style, int param)
 {
     scaled scale = tex_get_math_parameter(style, param, NULL);
-    if (scale > 5000) {
-        return 5000;
+    if (scale > max_math_scaling_factor) {
+        return max_math_scaling_factor;
     } else if (scale < 0) {
         return 0;
     } else {

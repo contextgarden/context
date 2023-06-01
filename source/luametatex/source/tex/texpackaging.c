@@ -425,7 +425,7 @@ scaled tex_char_stretch(halfword p) /* todo: move this to texfont.c and make it 
             if (e > 0) {
                 scaled dw = tex_calculated_glyph_width(p, m) - tex_char_width_from_glyph(p);
                 if (dw > 0) {
-                    return tex_round_xn_over_d(dw, e, 1000);
+                    return tex_round_xn_over_d(dw, e, scaling_factor);
                 }
             }
         }
@@ -444,7 +444,7 @@ scaled tex_char_shrink(halfword p) /* todo: move this to texfont.c and make it m
             if (e > 0) {
                 scaled dw = tex_char_width_from_glyph(p) - tex_calculated_glyph_width(p, -m);
                 if (dw > 0) {
-                    return tex_round_xn_over_d(dw, e, 1000);
+                    return tex_round_xn_over_d(dw, e, scaling_factor);
                 }
             }
         }
@@ -462,9 +462,9 @@ scaled tex_kern_stretch(halfword p)
             if (m > 0) {
                 scaled e = tex_char_ef_from_font(glyph_font(l), glyph_character(l));
                 if (e > 0) {
-                    scaled dw = w - tex_round_xn_over_d(w, 1000 + m, 1000);
+                    scaled dw = w - tex_round_xn_over_d(w, scaling_factor + m, scaling_factor);
                     if (dw > 0) {
-                        return tex_round_xn_over_d(dw, e, 1000);
+                        return tex_round_xn_over_d(dw, e, scaling_factor);
                     }
                 }
             }
@@ -483,9 +483,9 @@ scaled tex_kern_shrink(halfword p)
             if (m > 0) {
                 scaled e = tex_char_cf_from_font(glyph_font(l), glyph_character(l));
                 if (e > 0) {
-                    scaled dw = tex_round_xn_over_d(w, 1000 - m, 1000) - w;
+                    scaled dw = tex_round_xn_over_d(w, scaling_factor - m, scaling_factor) - w;
                     if (dw > 0) {
-                        return tex_round_xn_over_d(dw, e, 1000);
+                        return tex_round_xn_over_d(dw, e, scaling_factor);
                     }
                 }
             }
@@ -507,8 +507,8 @@ static void tex_aux_set_kern_expansion(halfword p, halfword ex_ratio)
                 if (e > 0) { 
                     halfword m = font_max_stretch(f);
                     if (m > 0) {
-                        e = tex_ext_xn_over_d(ex_ratio * e, m, 1000000);
-                        kern_expansion(p) = tex_fix_expand_value(f, e) * 1000;
+                        e = tex_ext_xn_over_d(ex_ratio * e, m, scaling_factor_squared);
+                        kern_expansion(p) = tex_fix_expand_value(f, e) * scaling_factor;
                     }
                 }
             } else if (ex_ratio < 0) {
@@ -516,8 +516,8 @@ static void tex_aux_set_kern_expansion(halfword p, halfword ex_ratio)
                 if (e > 0) { 
                     halfword m = font_max_shrink(f);
                     if (m > 0) {
-                        e = tex_ext_xn_over_d(ex_ratio * e, m, 1000000);
-                        kern_expansion(p) = tex_fix_expand_value(f, e) * 1000;
+                        e = tex_ext_xn_over_d(ex_ratio * e, m, scaling_factor_squared);
+                        kern_expansion(p) = tex_fix_expand_value(f, e) * scaling_factor;
                     }
                 }
             }
@@ -537,8 +537,8 @@ static void tex_aux_set_glyph_expansion(halfword p, int ex_ratio)
                     if (e > 0) { 
                         halfword m = font_max_stretch(f);
                         if (m > 0) {
-                            e = tex_ext_xn_over_d(ex_ratio * e, m, 1000000);
-                            glyph_expansion(p) = tex_fix_expand_value(f, e) * 1000;
+                            e = tex_ext_xn_over_d(ex_ratio * e, m, scaling_factor_squared);
+                            glyph_expansion(p) = tex_fix_expand_value(f, e) * scaling_factor;
                         }
                     }
                 } else if (ex_ratio < 0) {
@@ -548,8 +548,8 @@ static void tex_aux_set_glyph_expansion(halfword p, int ex_ratio)
                     if (e > 0) { 
                         halfword m = font_max_shrink(f);
                         if (m > 0) {
-                            e = tex_ext_xn_over_d(ex_ratio * e, m, 1000000);
-                            glyph_expansion(p) = tex_fix_expand_value(f, e) * 1000;
+                            e = tex_ext_xn_over_d(ex_ratio * e, m, scaling_factor_squared);
+                            glyph_expansion(p) = tex_fix_expand_value(f, e) * scaling_factor;
                         }
                     }
                 }
@@ -1100,10 +1100,10 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
         /*tex Why not always: */
         lmt_packaging_state.previous_char_ptr = null;
     } else if (m == packing_adapted) { 
-        if (w > 1000) { 
-            w = 1000;
-        } else if (w  < -1000) { 
-            w = -1000;
+        if (w > scaling_factor) { 
+            w = scaling_factor;
+        } else if (w  < -scaling_factor) { 
+            w = -scaling_factor;
         }
     }
     for (int i = normal_glue_order; i <= filll_glue_order; i++) {
@@ -1423,7 +1423,7 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
         */
         halfword o = tex_aux_used_order(lmt_packaging_state.total_stretch);
         if ((m == packing_expanded) && (o == normal_glue_order) && (font_stretch > 0)) {
-            lmt_packaging_state.font_expansion_ratio = tex_divide_scaled_n(x, font_stretch, 1000.0);
+            lmt_packaging_state.font_expansion_ratio = tex_divide_scaled_n(x, font_stretch, scaling_factor_double);
             goto EXIT;
         }
         box_glue_order(r) = o;
@@ -1476,7 +1476,7 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
         */
         halfword o = tex_aux_used_order(lmt_packaging_state.total_shrink);
         if ((m == packing_expanded) && (o == normal_glue_order) && (font_shrink > 0)) {
-            lmt_packaging_state.font_expansion_ratio = tex_divide_scaled_n(x, font_shrink, 1000.0);
+            lmt_packaging_state.font_expansion_ratio = tex_divide_scaled_n(x, font_shrink, scaling_factor_double);
             goto EXIT;
         }
         box_glue_order(r) = o;
@@ -1491,7 +1491,7 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
         if (o == normal_glue_order && box_list(r)) {
             if (lmt_packaging_state.total_shrink[o] < -x) {
                 int overshoot = -x - lmt_packaging_state.total_shrink[normal_glue_order];
-                lmt_packaging_state.last_badness = 1000000;
+                lmt_packaging_state.last_badness = scaling_factor_squared;
                 lmt_packaging_state.last_overshoot = overshoot;
                 /*tex Use the maximum shrinkage */
                 box_glue_set(r) = 1.0;
@@ -1574,7 +1574,7 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
     }
   EXIT:
     if ((m == packing_expanded) && (lmt_packaging_state.font_expansion_ratio != 0)) {
-        lmt_packaging_state.font_expansion_ratio = fix_int(lmt_packaging_state.font_expansion_ratio, -1000, 1000);
+        lmt_packaging_state.font_expansion_ratio = fix_int(lmt_packaging_state.font_expansion_ratio, -scaling_factor, scaling_factor);
         q = box_list(r);
         box_list(r) = null;
         tex_flush_node(r);
@@ -2237,7 +2237,7 @@ halfword tex_vpack(halfword p, scaled h, int m, scaled l, singleword pack_direct
         if (o == normal_glue_order && box_list(r)) {
             if (lmt_packaging_state.total_shrink[o] < -x) {
                 int overshoot = -x - lmt_packaging_state.total_shrink[normal_glue_order];
-                lmt_packaging_state.last_badness = 1000000;
+                lmt_packaging_state.last_badness = scaling_factor_squared;
                 lmt_packaging_state.last_overshoot = overshoot;
                 /*tex Use the maximum shrinkage */
                 box_glue_set(r)  = 1.0;

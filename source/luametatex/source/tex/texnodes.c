@@ -157,14 +157,15 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_glue, g_leaders,                     gleaders)
     set_value_entry_key(subtypes_glue, u_leaders,                     uleaders)
 
-    subtypes_boundary = lmt_aux_allocate_value_info(par_boundary);
+    subtypes_boundary = lmt_aux_allocate_value_info(math_boundary);
 
     set_value_entry_key(subtypes_boundary, cancel_boundary,     cancel)
     set_value_entry_key(subtypes_boundary, user_boundary,       user)
     set_value_entry_key(subtypes_boundary, protrusion_boundary, protrusion)
     set_value_entry_key(subtypes_boundary, word_boundary,       word)
     set_value_entry_key(subtypes_boundary, page_boundary,       page)
-    set_value_entry_key(subtypes_boundary, par_boundary,        par)
+    set_value_entry_key(subtypes_boundary, math_boundary,       math)
+ /* set_value_entry_key(subtypes_boundary, par_boundary,        par) */
 
     subtypes_penalty = lmt_aux_allocate_value_info(equation_number_penalty_subtype);
 
@@ -2595,13 +2596,13 @@ void tex_show_node_list(halfword p, int threshold, int max)
                         if (glyph_expansion(p)) {
                             tex_print_format(", expansion %i", glyph_expansion(p));
                         }
-                        if (glyph_scale(p) && glyph_scale(p) != 1000) {
+                        if (glyph_scale(p) && glyph_scale(p) != scaling_factor) {
                             tex_print_format(", scale %i", glyph_scale(p));
                         }
-                        if (glyph_x_scale(p) && glyph_x_scale(p) != 1000) {
+                        if (glyph_x_scale(p) && glyph_x_scale(p) != scaling_factor) {
                             tex_print_format(", xscale %i", glyph_x_scale(p));
                         }
-                        if (glyph_y_scale(p) && glyph_y_scale(p) != 1000) {
+                        if (glyph_y_scale(p) && glyph_y_scale(p) != scaling_factor) {
                             tex_print_format(", yscale %i", glyph_y_scale(p));
                         }
                         if (glyph_data(p)) {
@@ -3371,7 +3372,7 @@ scaled tex_glyph_width_ex(halfword p)
     }
     w -= (glyph_left(p) + glyph_right(p));
     if (glyph_expansion(p)) {
-        w = w + tex_ext_xn_over_d(w, 1000000 + glyph_expansion(p), 1000000);
+        w = w + tex_ext_xn_over_d(w, scaling_factor_squared + glyph_expansion(p), scaling_factor_squared);
     }
     return w;
 }
@@ -3442,7 +3443,7 @@ scaledwhd tex_glyph_dimensions_ex(halfword p)
         whd.dp = 0;
     }
     if (whd.wd && glyph_expansion(p)) {
-        whd.wd = tex_ext_xn_over_d(whd.wd, 1000000 + glyph_expansion(p), 1000000);
+        whd.wd = tex_ext_xn_over_d(whd.wd, scaling_factor_squared + glyph_expansion(p), scaling_factor_squared);
     }
     return whd;
 }
@@ -3478,7 +3479,7 @@ halfword tex_kern_dimension_ex(halfword p)
 {
     halfword k = kern_amount(p);
     if (k && kern_expansion(p)) {
-        k = tex_ext_xn_over_d(k, 1000000 + kern_expansion(p), 1000000);
+        k = tex_ext_xn_over_d(k, scaling_factor_squared + kern_expansion(p), scaling_factor_squared);
     }
     return k;
 }

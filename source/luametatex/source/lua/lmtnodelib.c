@@ -1704,19 +1704,19 @@ static int nodelib_direct_setscales(lua_State *L)
         if (lua_type(L, 2) == LUA_TNUMBER) {
             glyph_scale(n) = (halfword) lmt_roundnumber(L, 2);
             if (! glyph_scale(n)) {
-                glyph_scale(n) = 1000;
+                glyph_scale(n) = scaling_factor;
             }
         }
         if (lua_type(L, 3) == LUA_TNUMBER) {
             glyph_x_scale(n) = (halfword) lmt_roundnumber(L, 3);
             if (! glyph_x_scale(n)) {
-                glyph_x_scale(n) = 1000;
+                glyph_x_scale(n) = scaling_factor;
             }
         }
         if (lua_type(L, 4) == LUA_TNUMBER) {
             glyph_y_scale(n) = (halfword) lmt_roundnumber(L, 4);
             if (! glyph_y_scale(n)) {
-                glyph_y_scale(n) = 1000;
+                glyph_y_scale(n) = scaling_factor;
             }
         }
     }
@@ -7134,17 +7134,17 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, scale)) {
                                  glyph_scale(n) = (halfword) lmt_roundnumber(L, 3);
                                  if (! glyph_scale(n)) {
-                                     glyph_scale(n) = 1000;
+                                     glyph_scale(n) = scaling_factor;
                                  }
                             } else if (lua_key_eq(s, xscale)) {
                                  glyph_x_scale(n) = (halfword) lmt_roundnumber(L, 3);
                                  if (! glyph_x_scale(n)) {
-                                     glyph_x_scale(n) = 1000;
+                                     glyph_x_scale(n) = scaling_factor;
                                  }
                             } else if (lua_key_eq(s, yscale)) {
                                  glyph_y_scale(n) = (halfword) lmt_roundnumber(L, 3);
                                  if (! glyph_y_scale(n)) {
-                                     glyph_y_scale(n) = 1000;
+                                     glyph_y_scale(n) = scaling_factor;
                                  }
                             } else if (lua_key_eq(s, data)) {
                                 glyph_data(n) = lmt_opthalfword(L, 3, unused_attribute_value);

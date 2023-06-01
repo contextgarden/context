@@ -1077,21 +1077,21 @@ static const char *texlib_aux_scan_dimen_part(lua_State * L, const char *ss, int
         goto ATTACH_FRACTION;
     }
   SPECIAL:
-    result = tex_nx_plus_y(result, special, tex_xn_over_d_r(special, fraction, 0200000, &remainder));
+    result = tex_nx_plus_y(result, special, tex_xn_over_d_r(special, fraction, 0x10000, &remainder));
     goto DONE;
   CONVERSION:
     result = tex_xn_over_d_r(result, numerator, denominator, &remainder);
-    fraction = (numerator * fraction + 0200000 * remainder) / denominator;
-    result = result + (fraction / 0200000);
-    fraction = fraction % 0200000;
+    fraction = (numerator * fraction + 0x10000 * remainder) / denominator;
+    result = result + (fraction / 0x10000);
+    fraction = fraction % 0x10000;
   ATTACH_FRACTION:
-    if (result >= 040000) {
+    if (result >= 0x4000) {
         lmt_scanner_state.arithmic_error = 1;
     } else {
-        result = result * 65536 + fraction;
+        result = result * 0x10000 + fraction;
     }
   DONE:
-    if (lmt_scanner_state.arithmic_error || (abs(result) >= 010000000000)) {
+    if (lmt_scanner_state.arithmic_error || (abs(result) >= 0x40000000)) {
         result = max_dimen;
         luaL_error(L, "dimension too large");
     }
@@ -3855,15 +3855,15 @@ static int texlib_preparelinebreak(lua_State *L)
             halfword parinit_right_skip_glue = null;
             halfword parfill_left_skip_glue = null;
             halfword parfill_right_skip_glue = null;
-            halfword final_penalty = null;
-            tex_line_break_prepare(par, &tail, &parinit_left_skip_glue, &parinit_right_skip_glue, &parfill_left_skip_glue, &parfill_right_skip_glue, &final_penalty);
+            halfword final_line_penalty = null;
+            tex_line_break_prepare(par, &tail, &parinit_left_skip_glue, &parinit_right_skip_glue, &parfill_left_skip_glue, &parfill_right_skip_glue, &final_line_penalty);
             lmt_push_directornode(L, par, direct);
             lmt_push_directornode(L, tail, direct);
             lmt_push_directornode(L, parinit_left_skip_glue, direct);
             lmt_push_directornode(L, parinit_right_skip_glue, direct);
             lmt_push_directornode(L, parfill_left_skip_glue , direct);
             lmt_push_directornode(L, parfill_right_skip_glue, direct);
-         /* lmt_push_directornode(L, final_penalty, direct); */ /*tex Not that relevant to know. */
+         /* lmt_push_directornode(L, final_line_penalty, direct); */ /*tex Not that relevant to know. */
             return 6;
         }
     }
@@ -4021,7 +4021,7 @@ static int texlib_linebreak(lua_State *L)
         get_penalties_par(properties.orphan_penalties,       orphanpenalties,      tex_get_par_par(par, par_orphan_penalties_code), orphan_penalties_code);
         if (! prepared) {
             halfword attr_template = tail;
-            halfword final_penalty = tex_new_penalty_node(infinite_penalty, line_penalty_subtype);
+            halfword final_line_penalty = tex_new_penalty_node(infinite_penalty, line_penalty_subtype);
             /* */
             get_glue_par(properties.parfill_left_skip,  parfillleftskip,  tex_get_par_par(par, par_par_fill_left_skip_code));
             get_glue_par(properties.parfill_right_skip, parfillrightskip, tex_get_par_par(par, par_par_fill_right_skip_code));
@@ -4030,11 +4030,11 @@ static int texlib_linebreak(lua_State *L)
             /* */
             properties.parfill_left_skip = tex_new_glue_node(properties.parfill_left_skip, par_fill_left_skip_glue);
             properties.parfill_right_skip = tex_new_glue_node(properties.parfill_right_skip, par_fill_right_skip_glue);
-            tex_attach_attribute_list_copy(final_penalty, attr_template);
+            tex_attach_attribute_list_copy(final_line_penalty, attr_template);
             tex_attach_attribute_list_copy(properties.parfill_left_skip, attr_template); 
             tex_attach_attribute_list_copy(properties.parfill_right_skip, attr_template); 
-            tex_couple_nodes(tail, final_penalty);
-            tex_couple_nodes(final_penalty, properties.parfill_left_skip);
+            tex_couple_nodes(tail, final_line_penalty);
+            tex_couple_nodes(final_line_penalty, properties.parfill_left_skip);
             tex_couple_nodes(properties.parfill_left_skip, properties.parfill_right_skip);
             if (node_next(par)) { /* test can go, also elsewhere */
                  halfword n = node_next(par);
@@ -5178,7 +5178,7 @@ static int texlib_getspecialmathclassvalues(lua_State *L)
 
 static int texlib_getmathclassoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 20);
+    lua_createtable(L, 2, 25);
     lua_set_string_by_index(L, no_pre_slack_class_option,                 "nopreslack");
     lua_set_string_by_index(L, no_post_slack_class_option,                "nopostslack");
     lua_set_string_by_index(L, left_top_kern_class_option,                "lefttopkern");
@@ -5206,6 +5206,9 @@ static int texlib_getmathclassoptionvalues(lua_State *L)
     lua_set_string_by_index(L, remove_italic_correction_class_option,     "removeitaliccorrection");
     lua_set_string_by_index(L, operator_italic_correction_class_option,   "operatoritaliccorrection");
     lua_set_string_by_index(L, short_inline_class_option,                 "shortinline");
+    lua_set_string_by_index(L, push_nesting_class_option,                 "pushnesting");
+    lua_set_string_by_index(L, pop_nesting_class_option,                  "popnesting");
+    lua_set_string_by_index(L, obey_nesting_class_option,                 "obeynesting");
     return 1;
 }
 

@@ -600,10 +600,10 @@ void tex_build_page(void)
                                 box_height(location) = 0;
                             }
                             split_best_insert(location) = null;
-                            if (multiplier == 1000) {
+                            if (multiplier == scaling_factor) {
                                 advance = box_height(location);
                             } else {
-                                advance = tex_x_over_n(box_height(location), 1000) * multiplier;
+                                advance = tex_x_over_n(box_height(location), scaling_factor) * multiplier;
                             }
                             advance += glue_amount(distance);
                             update_page_goal(index, 0, advance); /*tex Here gets no height added! */
@@ -633,9 +633,9 @@ void tex_build_page(void)
                             scaled needed = insert_total_height(current);
                             split_last_insert(location) = current;
                             /*tex This much room is left if we shrink the maximum. */
-                            if (multiplier != 1000) {
+                            if (multiplier != scaling_factor) {
                                 /*tex This much room is needed. */
-                                needed = tex_x_over_n(needed, 1000) * multiplier;
+                                needed = tex_x_over_n(needed, scaling_factor) * multiplier;
                             }
                             if ((needed <= 0 || needed <= delta) && (insert_total_height(current) + box_height(location) <= limit)) {
                                 update_page_goal(index, insert_total_height(current), needed);
@@ -665,8 +665,8 @@ void tex_build_page(void)
                                     height = max_dimen;
                                 } else {
                                     height = page_goal - page_total - page_depth;
-                                    if (multiplier != 1000) {
-                                        height = tex_x_over_n(height, multiplier) * 1000;
+                                    if (multiplier != scaling_factor) {
+                                        height = tex_x_over_n(height, multiplier) * scaling_factor;
                                     }
                                 }
                                 if (height > limit - box_height(location)) {
@@ -678,8 +678,8 @@ void tex_build_page(void)
                                 if (tracing_pages_par > 0) {
                                     tex_aux_display_insertion_split_cost(index, height, penalty);
                                 }
-                                if (multiplier != 1000) {
-                                    lmt_packaging_state.best_height_plus_depth = tex_x_over_n(lmt_packaging_state.best_height_plus_depth, 1000) * multiplier;
+                                if (multiplier != scaling_factor) {
+                                    lmt_packaging_state.best_height_plus_depth = tex_x_over_n(lmt_packaging_state.best_height_plus_depth, scaling_factor) * multiplier;
                                 }
                                 update_page_goal(index, lmt_packaging_state.best_height_plus_depth, lmt_packaging_state.best_height_plus_depth);
                                 node_subtype(location) = insert_split_subtype;
@@ -736,7 +736,7 @@ void tex_build_page(void)
                 } else {
                     criterion = deplorable;
                 }
-                if (lmt_page_builder_state.insert_penalties >= 10000) {
+                if (lmt_page_builder_state.insert_penalties >= infinite_penalty) {
                     criterion = awful_bad;
                 }
                 {

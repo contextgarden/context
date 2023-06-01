@@ -251,113 +251,121 @@ static int statslib_getconstants(lua_State *L)
 {
     lua_createtable(L, 0, 100);
 
-    lua_set_integer_by_key(L, "no_catcode_table",             no_catcode_table_preset);
-    lua_set_integer_by_key(L, "default_catcode_table",        default_catcode_table_preset);
+    lua_set_integer_by_key(L, "no_catcode_table",               no_catcode_table_preset);
+    lua_set_integer_by_key(L, "default_catcode_table",          default_catcode_table_preset);
+                                                                
+    lua_set_cardinal_by_key(L,"max_cardinal",                   max_cardinal);
+    lua_set_cardinal_by_key(L,"min_cardinal",                   min_cardinal);
+    lua_set_integer_by_key(L, "max_integer",                    max_integer);
+    lua_set_integer_by_key(L, "min_integer",                    min_integer);
+    lua_set_integer_by_key(L, "max_dimen",                      max_dimen);
+    lua_set_integer_by_key(L, "min_dimen",                      min_dimen);
+    lua_set_integer_by_key(L, "min_data_value",                 min_data_value);
+    lua_set_integer_by_key(L, "max_data_value",                 max_data_value);
+    lua_set_integer_by_key(L, "max_half_value",                 max_half_value);
+                                                                
+    lua_set_integer_by_key(L, "max_limited_scale",              max_limited_scale);
+                                                                
+    lua_set_integer_by_key(L, "one_bp",                         one_bp);
+                                                                
+    lua_set_integer_by_key(L, "infinity",                       max_infinity);
+    lua_set_integer_by_key(L, "min_infinity",                   min_infinity);
+    lua_set_integer_by_key(L, "awful_bad",                      awful_bad);
+    lua_set_integer_by_key(L, "infinite_bad",                   infinite_bad);
+    lua_set_integer_by_key(L, "infinite_penalty",               infinite_penalty);
+    lua_set_integer_by_key(L, "eject_penalty",                  eject_penalty);
+    lua_set_integer_by_key(L, "deplorable",                     deplorable);
+    lua_set_integer_by_key(L, "large_width_excess",             large_width_excess);
+    lua_set_integer_by_key(L, "small_stretchability",           small_stretchability);
+    lua_set_integer_by_key(L, "decent_criterion",               decent_criterion);
+    lua_set_integer_by_key(L, "loose_criterion",                loose_criterion);
+                                                                
+    lua_set_integer_by_key(L, "default_rule",                   default_rule);
+    lua_set_integer_by_key(L, "ignore_depth",                   ignore_depth);
+                                                                
+    lua_set_integer_by_key(L, "min_quarterword",                min_quarterword);
+    lua_set_integer_by_key(L, "max_quarterword",                max_quarterword);
+                                                                
+    lua_set_integer_by_key(L, "min_halfword",                   min_halfword);
+    lua_set_integer_by_key(L, "max_halfword",                   max_halfword);
+                                                                
+    lua_set_integer_by_key(L, "null_flag",                      null_flag);
+    lua_set_integer_by_key(L, "zero_glue",                      zero_glue);
+    lua_set_integer_by_key(L, "unity",                          unity);
+    lua_set_integer_by_key(L, "two",                            two);
+    lua_set_integer_by_key(L, "null",                           null);
+    lua_set_integer_by_key(L, "null_font",                      null_font);
+                                                                
+    lua_set_integer_by_key(L, "unused_attribute_value",         unused_attribute_value);
+    lua_set_integer_by_key(L, "unused_state_value",             unused_state_value);
+    lua_set_integer_by_key(L, "unused_script_value",            unused_script_value);
+                                                                
+    lua_set_integer_by_key(L, "preset_rule_thickness",          preset_rule_thickness);
+    lua_set_integer_by_key(L, "running_rule",                   null_flag);
+                                                                
+    lua_set_integer_by_key(L, "max_char_code",                  max_char_code);
+    lua_set_integer_by_key(L, "min_space_factor",               min_space_factor);
+    lua_set_integer_by_key(L, "max_space_factor",               max_space_factor);
+    lua_set_integer_by_key(L, "default_space_factor",           default_space_factor);
+    lua_set_integer_by_key(L, "default_tolerance",              default_tolerance);
+    lua_set_integer_by_key(L, "default_hangafter",              default_hangafter);
+    lua_set_integer_by_key(L, "default_deadcycles",             default_deadcycles);
+    lua_set_integer_by_key(L, "default_pre_display_gap",        default_pre_display_gap);
+    lua_set_integer_by_key(L, "default_eqno_gap_step",          default_eqno_gap_step);
+                                                                
+    lua_set_integer_by_key(L, "default_output_box",             default_output_box);
+                                                                
+    lua_set_integer_by_key(L, "max_n_of_fonts",                 max_n_of_fonts);
+    lua_set_integer_by_key(L, "max_n_of_bytecodes",             max_n_of_bytecodes);
+    lua_set_integer_by_key(L, "max_n_of_math_families",         max_n_of_math_families);
+    lua_set_integer_by_key(L, "max_n_of_languages",             max_n_of_languages);
+    lua_set_integer_by_key(L, "max_n_of_catcode_tables",        max_n_of_catcode_tables);
+ /* lua_set_integer_by_key(L, "max_n_of_hjcode_tables",         max_n_of_hjcode_tables); */ /* meaningless */
+    lua_set_integer_by_key(L, "max_n_of_marks",                 max_n_of_marks);
+                                                                
+    lua_set_integer_by_key(L, "max_character_code",             max_character_code);
+    lua_set_integer_by_key(L, "max_mark_index",                 max_mark_index);
+                                                                
+    lua_set_integer_by_key(L, "max_toks_register_index",        max_toks_register_index);
+    lua_set_integer_by_key(L, "max_box_register_index",         max_box_register_index);
+    lua_set_integer_by_key(L, "max_int_register_index",         max_int_register_index);
+    lua_set_integer_by_key(L, "max_float_register_index",       max_posit_register_index);
+    lua_set_integer_by_key(L, "max_dimen_register_index",       max_dimen_register_index);
+    lua_set_integer_by_key(L, "max_attribute_register_index",   max_attribute_register_index);
+    lua_set_integer_by_key(L, "max_glue_register_index",        max_glue_register_index);
+    lua_set_integer_by_key(L, "max_mu_glue_register_index",     max_mu_glue_register_index);
+                                                                
+    lua_set_integer_by_key(L, "max_bytecode_index",             max_bytecode_index);
+    lua_set_integer_by_key(L, "max_math_family_index",          max_math_family_index);
+    lua_set_integer_by_key(L, "max_math_class_code",            max_math_class_code);
+    lua_set_integer_by_key(L, "max_function_reference",         max_function_reference);
+    lua_set_integer_by_key(L, "max_category_code",              max_category_code);
+                                                                
+    lua_set_integer_by_key(L, "max_newline_character",          max_newline_character);
+                                                                
+    lua_set_integer_by_key(L, "max_size_of_word",               max_size_of_word);
+                                                                
+    lua_set_integer_by_key(L, "tex_hash_size",                  hash_size);
+    lua_set_integer_by_key(L, "tex_hash_prime",                 hash_prime);
+    lua_set_integer_by_key(L, "tex_eqtb_size",                  eqtb_size);
+                                                                
+    lua_set_integer_by_key(L, "math_begin_class",               math_begin_class);
+    lua_set_integer_by_key(L, "math_end_class",                 math_end_class);
+    lua_set_integer_by_key(L, "unused_math_family",             unused_math_family);
+    lua_set_integer_by_key(L, "unused_math_style",              unused_math_style);
+    lua_set_integer_by_key(L, "assumed_math_control",           assumed_math_control);
+                                                                
+    lua_set_integer_by_key(L, "undefined_math_parameter",       undefined_math_parameter);
+                                                                
+    lua_set_integer_by_key(L, "max_calculated_badness",         max_calculated_badness);
+                                                                
+    lua_set_integer_by_key(L, "max_math_scaling_factor",        max_math_scaling_factor);   
+    lua_set_integer_by_key(L, "math_default_penalty",           math_default_penalty);   
 
-    lua_set_cardinal_by_key(L,"max_cardinal",                 max_cardinal);
-    lua_set_cardinal_by_key(L,"min_cardinal",                 min_cardinal);
-    lua_set_integer_by_key(L, "max_integer",                  max_integer);
-    lua_set_integer_by_key(L, "min_integer",                  min_integer);
-    lua_set_integer_by_key(L, "max_dimen",                    max_dimen);
-    lua_set_integer_by_key(L, "min_dimen",                    min_dimen);
-    lua_set_integer_by_key(L, "min_data_value",               min_data_value);
-    lua_set_integer_by_key(L, "max_data_value",               max_data_value);
-    lua_set_integer_by_key(L, "max_half_value",               max_half_value);
+    lua_set_integer_by_key(L, "max_font_adjust_step",           max_font_adjust_step);            
+    lua_set_integer_by_key(L, "max_font_adjust_stretch_factor", max_font_adjust_stretch_factor);
+    lua_set_integer_by_key(L, "max_font_adjust_shrink_factor",  max_font_adjust_shrink_factor);
 
-    lua_set_integer_by_key(L, "max_limited_scale",            max_limited_scale);
-
-    lua_set_integer_by_key(L, "one_bp",                       one_bp);
-
-    lua_set_integer_by_key(L, "infinity",                     max_infinity);
-    lua_set_integer_by_key(L, "min_infinity",                 min_infinity);
-    lua_set_integer_by_key(L, "awful_bad",                    awful_bad);
-    lua_set_integer_by_key(L, "infinite_bad",                 infinite_bad);
-    lua_set_integer_by_key(L, "infinite_penalty",             infinite_penalty);
-    lua_set_integer_by_key(L, "eject_penalty",                eject_penalty);
-    lua_set_integer_by_key(L, "deplorable",                   deplorable);
-    lua_set_integer_by_key(L, "large_width_excess",           large_width_excess);
-    lua_set_integer_by_key(L, "small_stretchability",         small_stretchability);
-    lua_set_integer_by_key(L, "decent_criterion",             decent_criterion);
-    lua_set_integer_by_key(L, "loose_criterion",              loose_criterion);
-
-    lua_set_integer_by_key(L, "default_rule",                 default_rule);
-    lua_set_integer_by_key(L, "ignore_depth",                 ignore_depth);
-
-    lua_set_integer_by_key(L, "min_quarterword",              min_quarterword);
-    lua_set_integer_by_key(L, "max_quarterword",              max_quarterword);
-
-    lua_set_integer_by_key(L, "min_halfword",                 min_halfword);
-    lua_set_integer_by_key(L, "max_halfword",                 max_halfword);
-
-    lua_set_integer_by_key(L, "null_flag",                    null_flag);
-    lua_set_integer_by_key(L, "zero_glue",                    zero_glue);
-    lua_set_integer_by_key(L, "unity",                        unity);
-    lua_set_integer_by_key(L, "two",                          two);
-    lua_set_integer_by_key(L, "null",                         null);
-    lua_set_integer_by_key(L, "null_font",                    null_font);
-
-    lua_set_integer_by_key(L, "unused_attribute_value",       unused_attribute_value);
-    lua_set_integer_by_key(L, "unused_state_value",           unused_state_value);
-    lua_set_integer_by_key(L, "unused_script_value",          unused_script_value);
-
-    lua_set_integer_by_key(L, "preset_rule_thickness",        preset_rule_thickness);
-    lua_set_integer_by_key(L, "running_rule",                 null_flag);
-
-    lua_set_integer_by_key(L, "max_char_code",                max_char_code);
-    lua_set_integer_by_key(L, "min_space_factor",             min_space_factor);
-    lua_set_integer_by_key(L, "max_space_factor",             max_space_factor);
-    lua_set_integer_by_key(L, "default_space_factor",         default_space_factor);
-    lua_set_integer_by_key(L, "default_tolerance",            default_tolerance);
-    lua_set_integer_by_key(L, "default_hangafter",            default_hangafter);
-    lua_set_integer_by_key(L, "default_deadcycles",           default_deadcycles);
-    lua_set_integer_by_key(L, "default_pre_display_gap",      default_pre_display_gap);
-    lua_set_integer_by_key(L, "default_eqno_gap_step",        default_eqno_gap_step);
-
-    lua_set_integer_by_key(L, "default_output_box",           default_output_box);
-
-    lua_set_integer_by_key(L, "max_n_of_fonts",               max_n_of_fonts);
-    lua_set_integer_by_key(L, "max_n_of_bytecodes",           max_n_of_bytecodes);
-    lua_set_integer_by_key(L, "max_n_of_math_families",       max_n_of_math_families);
-    lua_set_integer_by_key(L, "max_n_of_languages",           max_n_of_languages);
-    lua_set_integer_by_key(L, "max_n_of_catcode_tables",      max_n_of_catcode_tables);
- /* lua_set_integer_by_key(L, "max_n_of_hjcode_tables",       max_n_of_hjcode_tables); */ /* meaningless */
-    lua_set_integer_by_key(L, "max_n_of_marks",               max_n_of_marks);
-
-    lua_set_integer_by_key(L, "max_character_code",           max_character_code);
-    lua_set_integer_by_key(L, "max_mark_index",               max_mark_index);
-
-    lua_set_integer_by_key(L, "max_toks_register_index",      max_toks_register_index);
-    lua_set_integer_by_key(L, "max_box_register_index",       max_box_register_index);
-    lua_set_integer_by_key(L, "max_int_register_index",       max_int_register_index);
-    lua_set_integer_by_key(L, "max_float_register_index",     max_posit_register_index);
-    lua_set_integer_by_key(L, "max_dimen_register_index",     max_dimen_register_index);
-    lua_set_integer_by_key(L, "max_attribute_register_index", max_attribute_register_index);
-    lua_set_integer_by_key(L, "max_glue_register_index",      max_glue_register_index);
-    lua_set_integer_by_key(L, "max_mu_glue_register_index",   max_mu_glue_register_index);
-
-    lua_set_integer_by_key(L, "max_bytecode_index",           max_bytecode_index);
-    lua_set_integer_by_key(L, "max_math_family_index",        max_math_family_index);
-    lua_set_integer_by_key(L, "max_math_class_code",          max_math_class_code);
-    lua_set_integer_by_key(L, "max_function_reference",       max_function_reference);
-    lua_set_integer_by_key(L, "max_category_code",            max_category_code);
-
-    lua_set_integer_by_key(L, "max_newline_character",        max_newline_character);
-
-    lua_set_integer_by_key(L, "max_size_of_word",             max_size_of_word);
-
-    lua_set_integer_by_key(L, "tex_hash_size",                hash_size);
-    lua_set_integer_by_key(L, "tex_hash_prime",               hash_prime);
-    lua_set_integer_by_key(L, "tex_eqtb_size",                eqtb_size);
-
-    lua_set_integer_by_key(L, "math_begin_class",             math_begin_class);
-    lua_set_integer_by_key(L, "math_end_class",               math_end_class);
-    lua_set_integer_by_key(L, "unused_math_family",           unused_math_family);
-    lua_set_integer_by_key(L, "unused_math_style",            unused_math_style);
-    lua_set_integer_by_key(L, "assumed_math_control",         assumed_math_control);
-    
-    lua_set_integer_by_key(L, "undefined_math_parameter",     undefined_math_parameter);
-
-    lua_set_integer_by_key(L, "max_calculated_badness",       max_calculated_badness);
     return 1;
 }
 

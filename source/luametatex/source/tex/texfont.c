@@ -342,7 +342,7 @@ charinfo *tex_get_charinfo(halfword f, int c)
             if (tglyph >= lmt_font_state.fonts[f]->chardata_size) {
                 tex_font_malloc_charinfo(f, 256);
             }
-            lmt_font_state.fonts[f]->chardata[tglyph].expansion = 1000;
+            lmt_font_state.fonts[f]->chardata[tglyph].expansion = scaling_factor;
             sa_value.int_value = tglyph;
             /*tex 1 means global */
             sa_set_item_4(lmt_font_state.fonts[f]->characters, c, sa_value, 1);
@@ -495,7 +495,7 @@ int tex_get_math_char(halfword f, int c, int size, scaled *scale, int direction)
     if (scale) {
         *scale = tex_get_math_font_scale(f, size);
         if (! *scale) {
-            *scale = 1000;
+            *scale = scaling_factor;
         }
     }
     return c;
@@ -826,18 +826,18 @@ halfword tex_checked_font_adjust(halfword adjust_spacing, halfword adjust_spacin
             lmt_font_state.adjust_step = adjust_spacing_step;
             lmt_font_state.adjust_shrink = adjust_spacing_shrink;
             lmt_font_state.adjust_stretch = adjust_spacing_stretch;
-            if (lmt_font_state.adjust_step > 100) {
-                lmt_font_state.adjust_step = 100;
+            if (lmt_font_state.adjust_step > max_font_adjust_step) {
+                lmt_font_state.adjust_step = max_font_adjust_step;
             }
             if (lmt_font_state.adjust_shrink < 0) {
                 lmt_font_state.adjust_shrink = 0;
-            } else if (lmt_font_state.adjust_shrink > 500) {
-                lmt_font_state.adjust_shrink = 500;
+            } else if (lmt_font_state.adjust_shrink > max_font_adjust_shrink_factor) {
+                lmt_font_state.adjust_shrink = max_font_adjust_shrink_factor;
             }
             if (lmt_font_state.adjust_stretch < 0) {
                 lmt_font_state.adjust_stretch = 0;
-            } else if (lmt_font_state.adjust_stretch > 1000) {
-                lmt_font_state.adjust_stretch = 1000;
+            } else if (lmt_font_state.adjust_stretch > max_font_adjust_stretch_factor) {
+                lmt_font_state.adjust_stretch = max_font_adjust_stretch_factor;
             }
             return adjust_spacing;
         }
@@ -1651,7 +1651,7 @@ int tex_tex_def_font(int a)
         /*tex This runs through existing fonts. */
         halfword f;
         /*tex Stated 'at' size, or negative of scaled magnification. */
-        scaled s = -1000;
+        scaled s = -scaling_factor;
         char *fn;
         /*tex Here |a| determines if we define global or not. */
         if (is_global(a)) {
@@ -1665,7 +1665,7 @@ int tex_tex_def_font(int a)
         if (tex_scan_keyword("at")) {
             /*tex Put the positive 'at' size into |s|. */
             s = tex_scan_dimen(0, 0, 0, 0, NULL);
-            if ((s <= 0) || (s >= 01000000000)) {
+            if ((s <= 0) || (s >= 0x8000000)) { 
                 tex_handle_error(
                     normal_error_type,
                     "Improper 'at' size (%D), replaced by 10pt",
@@ -1678,14 +1678,14 @@ int tex_tex_def_font(int a)
             }
         } else if (tex_scan_keyword("scaled")) {
             s = tex_scan_int(0, NULL);
-            if ((s <= 0) || (s > 32768)) {
+            if ((s <= 0) || (s > 0x8000)) {
                 tex_handle_error(
                     normal_error_type,
                     "Illegal magnification has been changed to 1000 (%i)",
                     s,
                     "The magnification ratio must be between 1 and 32768."
                 );
-                s = -1000;
+                s = -scaling_factor;
             } else {
                 s = -s;
             }
@@ -2021,14 +2021,14 @@ scaled tex_char_width_italic_from_glyph(halfword g)
 scaled tex_calculated_char_width(halfword f, halfword c, halfword ex)
 {
     scaled wd = tex_aux_char_info(f, c)->width;
-    return ex ? tex_round_xn_over_d(wd, 1000 + ex, 1000) : wd;
+    return ex ? tex_round_xn_over_d(wd, scaling_factor + ex, scaling_factor) : wd;
 }
 
 scaled tex_calculated_glyph_width(halfword g, halfword ex)
 {
     charinfo *ci = tex_aux_char_info(glyph_font(g), glyph_character(g));
     scaled wd = tex_aux_glyph_x_scaled(g, ci->width);
-    return ex ? tex_round_xn_over_d(wd, 1000 + ex, 1000) : wd;
+    return ex ? tex_round_xn_over_d(wd, scaling_factor + ex, scaling_factor) : wd;
 }
 
 /* Checkers: */
@@ -2101,13 +2101,13 @@ void tex_set_font_original(halfword f, const char *s)
 
 scaled tex_get_math_font_scale(halfword f, halfword size)
 {
-    scaled scale = 1000;
+    scaled scale = scaling_factor;
     switch (size) {
         case 2: scale = lmt_font_state.fonts[f]->mathscales[2] ? lmt_font_state.fonts[f]->mathscales[2] : glyph_scriptscript_scale_par; break;
         case 1: scale = lmt_font_state.fonts[f]->mathscales[1] ? lmt_font_state.fonts[f]->mathscales[1] : glyph_script_scale_par;       break;
         case 0: scale = lmt_font_state.fonts[f]->mathscales[0] ? lmt_font_state.fonts[f]->mathscales[0] : glyph_text_scale_par;         break;
     }
-    return scale ? scale : 1000;
+    return scale ? scale : scaling_factor;
 }
 
 /*tex

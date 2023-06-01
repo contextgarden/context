@@ -162,11 +162,13 @@ extern halfword tex_badness(
 
 # define max_infinity                      0x7FFFFFFF /*tex the largest positive value that \TEX\ knows */
 # define min_infinity                     -0x7FFFFFFF
-# define awful_bad                        07777777777 /*tex more than a billion demerits |0x3FFFFFFF| */ 
+ # define awful_bad                        0x3FFFFFFF /*tex more than a billion demerits |07777777777| */ 
 # define infinite_bad                           10000 /*tex infinitely bad value */
 # define infinite_penalty                infinite_bad /*tex infinite penalty value */
 # define eject_penalty              -infinite_penalty /*tex negatively infinite penalty value */
+# define final_penalty                    -0x40000000 /*tex in the output routine */
 # define deplorable                            100000 /*tex more than |inf_bad|, but less than |awful_bad| */
+# define extremely_deplorable               100000000
 # define large_width_excess                   7230584
 # define small_stretchability                 1663497
 # define loose_criterion                           99 
@@ -212,6 +214,19 @@ extern halfword tex_badness(
 # define default_eqno_gap_step                   1000
 
 # define default_output_box                       255
+
+# define scaling_factor                          1000
+# define scaling_factor_squared               1000000
+# define scaling_factor_double                   1000.0
+//define scaling_multiplier_double               0.001
+
+# define max_math_scaling_factor                 5000
+
+# define max_font_adjust_step                     100
+# define max_font_adjust_stretch_factor          1000
+# define max_font_adjust_shrink_factor            500
+
+# define math_default_penalty    (infinite_penalty+1)
 
 /*tex
 

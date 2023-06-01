@@ -327,7 +327,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillrightskip \zeropoint % \s_zero_plus_zero
+   \parfillrightskip \s_zero_plus_zero
    \parindent        \zeropoint
    \relax}
 
@@ -342,7 +342,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillrightskip \zeropoint % \s_zero_plus_zero
+   \parfillrightskip \s_zero_plus_zero
    \parindent        \zeropoint
    \relax}
 
@@ -357,7 +357,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillrightskip \zeropoint % \s_zero_plus_one_fil
+   \parfillrightskip \s_zero_plus_one_fil
   %\parindent        \parindent
    \relax}
 
@@ -371,7 +371,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillrightskip \zeropoint % \s_zero_plus_zero
+   \parfillrightskip \s_zero_plus_zero
    \parindent        \zeropoint
    \relax}
 
@@ -385,7 +385,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillrightskip \zeropoint % \s_zero_plus_zero
+   \parfillrightskip \s_zero_plus_zero
    \parindent        \zeropoint
    \relax}
 
@@ -399,7 +399,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillrightskip \zeropoint % \s_zero_plus_zero
+   \parfillrightskip \s_zero_plus_zero
   %\parindent        \parindent
    \relax}
 
@@ -414,7 +414,7 @@
    \parinitleftskip  \zeropoint
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
-   \parfillrightskip \zeropoint % \s_zero_plus_zero
+   \parfillrightskip \s_zero_plus_zero
    \parindent        \zeropoint
    \relax}
 
@@ -818,7 +818,7 @@
 \defcsname\??aligncommand        1*\v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plusone}}
 \defcsname\??aligncommand        2*\v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plustwo}}
 
-\defcsname\??aligncommand          \v!fit\endcsname{\toksapp\t_spac_align_collected{\lastlinefit\plusone}}
+\defcsname\??aligncommand          \v!fit\endcsname{\toksapp\t_spac_align_collected{\lastlinefit\plusthousand}}
 
 %defcsname\??aligncommand ...\endcsname{\toksapp\t_spac_align_collected{\nopenalties}}
 %defcsname\??aligncommand ...\endcsname{\toksapp\t_spac_align_collected{\setdefaultpenalties}}

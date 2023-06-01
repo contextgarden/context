@@ -577,6 +577,7 @@
  % +\checkligatureclassoptioncode
    +\checkkernpairclassoptioncode
  % +\flattenclassoptioncode
+   +\obeynestingclassoptioncode
 \relax
 
 \setmathoptions\mathrelationcode\numexpr
@@ -586,6 +587,7 @@
    +\checkkernpairclassoptioncode
  % +\flattenclassoptioncode
  % +\omitpenaltyclassoptioncode
+   +\obeynestingclassoptioncode
 \relax
 
 \setmathoptions\mathopencode\numexpr
@@ -594,6 +596,7 @@
  % +\openfenceclassoptioncode
  % +\checkligatureclassoptioncode
    +\checkkernpairclassoptioncode
+   +\pushnestingclassoptioncode
 \relax
 
 \setmathoptions\mathclosecode\numexpr
@@ -603,6 +606,7 @@
  % +\checkligatureclassoptioncode
    +\checkkernpairclassoptioncode
    +\raiseprimeclassoptioncode
+   +\popnestingclassoptioncode
 \relax
 
 \setmathoptions\mathpunctuationcode\numexpr
@@ -612,6 +616,7 @@
  % +\flattenclassoptioncode
    +\checkkernpairclassoptioncode
    +\removeitaliccorrectionclassoptioncode
+   +\obeynestingclassoptioncode
 \relax
 
 \setmathoptions\mathvariablecode\numexpr
@@ -4665,6 +4670,42 @@
 \permanent\protected\def\mathaxisontop  {\math_axis_inject\plusone\plustwo}
 \permanent\protected\def\mathscriptbelow{\math_axis_inject\plustwo\plusone}
 \permanent\protected\def\mathscriptontop{\math_axis_inject\plustwo\plustwo}
+
+%D \macros{kt}
+%D
+%D Bonus (keep together):
+%D
+%D \startbuffer
+%D test $a + b + c +                    d + x + x + e + f  + g = h$ test
+%D test $a + b + c + \keeptogether{\red d + x + x + e + f} + g = h$ test
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \startlines \getbuffer \stoplines
+
+\mathinlinepenaltyfactor  = 1500 % a reasonable default
+\mathdisplaypenaltyfactor = 1000
+
+\permanent\tolerant\protected\def\definemathnesting[#1]#*[#2]#*[#3]%
+  {\frozen\protected\edefcsname#1\endcsname{\math_nesting{#2}{#3}}}
+
+\protected\def\math_nesting#1#2%
+  {\groupedcommand
+     {\mathboundary\plustwo
+        \ifconditional\indisplaymath
+          \ifchknum#2\or#2\else\mathdisplaypenaltyfactor\fi
+        \else
+          \ifchknum#1\or#1\else\mathinlinepenaltyfactor\fi
+        \fi
+        \relax}%
+     {\mathboundary\plusone}}
+
+\permanent\tolerant\protected\def\mathnesting[#1]#*[#2]%
+  {\math_nesting{#1}{#2}}
+
+\definemathnesting[mathtogether][1500][1000]
+\definemathnesting[mathloose]    [500][1000]
 
 \protect \endinput
 

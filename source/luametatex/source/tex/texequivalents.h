@@ -561,6 +561,8 @@ typedef enum int_codes {
     math_end_class_code,
     math_left_class_code,
     math_right_class_code,
+    math_inline_penalty_factor_code,
+    math_display_penalty_factor_code,
     sup_mark_mode_code,
     par_direction_code,
     text_direction_code,
@@ -1659,6 +1661,8 @@ typedef enum hyphenation_mode_bits {
 # define math_left_class_par             count_parameter(math_left_class_code)
 # define math_right_class_par            count_parameter(math_right_class_code)
 # define sup_mark_mode_par               count_parameter(sup_mark_mode_code)
+# define math_display_penalty_factor_par count_parameter(math_display_penalty_factor_code)
+# define math_inline_penalty_factor_par  count_parameter(math_inline_penalty_factor_code)
 
 # define glyph_data_par                  count_parameter(glyph_data_code)
 # define glyph_state_par                 count_parameter(glyph_state_code)

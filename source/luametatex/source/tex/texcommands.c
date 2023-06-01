@@ -270,6 +270,8 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "mathendclass",                   internal_int_cmd,       math_end_class_code,                      internal_int_base);
         tex_primitive(luatex_command, "mathleftclass",                  internal_int_cmd,       math_left_class_code,                     internal_int_base);
         tex_primitive(luatex_command, "mathrightclass",                 internal_int_cmd,       math_right_class_code,                    internal_int_base);
+        tex_primitive(luatex_command, "mathdisplaypenaltyfactor",       internal_int_cmd,       math_display_penalty_factor_code,         internal_int_base);
+        tex_primitive(luatex_command, "mathinlinepenaltyfactor",        internal_int_cmd,       math_inline_penalty_factor_code,          internal_int_base);
         tex_primitive(luatex_command, "supmarkmode",                    internal_int_cmd,       sup_mark_mode_code,                       internal_int_base);
         tex_primitive(luatex_command, "overloadmode",                   internal_int_cmd,       overload_mode_code,                       internal_int_base);
         tex_primitive(luatex_command, "autoparagraphmode",              internal_int_cmd,       auto_paragraph_mode_code,                 internal_int_base);
@@ -347,6 +349,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "protrusionboundary",             boundary_cmd,           protrusion_boundary,                      0);
         tex_primitive(luatex_command, "wordboundary",                   boundary_cmd,           word_boundary,                            0);
         tex_primitive(luatex_command, "pageboundary",                   boundary_cmd,           page_boundary,                            0);
+        tex_primitive(luatex_command, "mathboundary",                   boundary_cmd,           math_boundary,                            0); 
      /* tex_primitive(luatex_command, "parboundary",                    boundary_cmd,           par_boundary,                             0); */
 
         tex_primitive(tex_command,    "penalty",                        penalty_cmd,            normal_penalty_code,                      0);

@@ -429,8 +429,8 @@ static void tex_aux_run_space(void) {
                         if (cur_list.space_factor >= 2000) {
                             glue_amount(p) += tex_get_scaled_extra_space(cur_font);
                         }
-                        glue_stretch(p) = tex_xn_over_d(glue_stretch(p), cur_list.space_factor, 1000);
-                        glue_shrink(p) = tex_xn_over_d(glue_shrink(p), 1000, cur_list.space_factor);
+                        glue_stretch(p) = tex_xn_over_d(glue_stretch(p), cur_list.space_factor, scaling_factor);
+                        glue_shrink(p) = tex_xn_over_d(glue_shrink(p), scaling_factor, cur_list.space_factor);
                     }
                 } else if (tex_glue_is_zero(space_skip_par)) {
                     /*tex Find the glue specification for text spaces in the current font. */
@@ -1216,8 +1216,24 @@ static void tex_aux_run_math_boundary(void) {
     switch (cur_chr) {
         case user_boundary:
             {
-                halfword n = tex_new_node(boundary_node, user_boundary);
+                halfword n = tex_new_node(boundary_node, cur_chr);
                 boundary_data(n) = tex_scan_int(0, NULL);
+                tex_tail_append(n);
+                break;
+            }
+        case math_boundary:
+            {
+                halfword n = tex_new_node(boundary_node, cur_chr);
+                boundary_data(n) = tex_scan_int(0, NULL);
+                switch (boundary_data(n)) {
+                    case 0: case 1: 
+                        /* valid */
+                        break;
+                    case 2: case 3:
+                        /* valid, penalty to add */
+                        boundary_reserved(n) = tex_scan_int(0, NULL);
+                        break;
+                }
                 tex_tail_append(n);
                 break;
             }
@@ -2006,17 +2022,19 @@ static void tex_aux_run_end_job(void) {
         if ((page_head == lmt_page_builder_state.page_tail)
          && (cur_list.head == cur_list.tail)
          && (lmt_page_builder_state.dead_cycles == 0)) {
-            /*tex this is the only way out */
+            /*tex This is the only way out. */
             lmt_main_control_state.control_state = goto_return_state;
         } else {
-            /*tex we will try to end again after ejecting residual material */
+            /*tex 
+                We will try to end again after ejecting residual material and append |\hbox to \hsize
+                {}\vfill\penalty-'10000000000|.
+            */
             tex_back_input(cur_tok);
             tex_tail_append(tex_new_null_box_node(hlist_node, unknown_list));
             box_width(cur_list.tail) = hsize_par;
             tex_tail_append(tex_new_glue_node(fill_glue, user_skip_glue)); /* todo: subtype, final_skip_glue? */
-            tex_tail_append(tex_new_penalty_node(-010000000000, final_penalty_subtype)); /* -0x40000000 */
+            tex_tail_append(tex_new_penalty_node(final_penalty, final_penalty_subtype));
             lmt_page_filter_callback(end_page_context, 0);
-            /*tex append |\hbox to \hsize{}\vfill\penalty-'10000000000| */
             tex_build_page();
         }
     }
@@ -6697,15 +6715,17 @@ void tex_initialize_variables(void)
         math_double_script_mode_par = -1, 
         math_glue_mode_par = default_math_glue_mode; 
         hyphenation_mode_par = default_hyphenation_mode;
-        glyph_scale_par = 1000;
-        glyph_x_scale_par = 1000;
-        glyph_y_scale_par = 1000;
+        glyph_scale_par = scaling_factor;
+        glyph_x_scale_par = scaling_factor;
+        glyph_y_scale_par = scaling_factor;
         glyph_x_offset_par = 0;
         glyph_y_offset_par = 0;
         math_begin_class_par = math_begin_class;
         math_end_class_par = math_end_class;
         math_left_class_par = unset_noad_class;
         math_right_class_par = unset_noad_class;
+        math_display_penalty_factor_par = scaling_factor;
+        math_inline_penalty_factor_par = scaling_factor;
         pre_inline_penalty_par = max_integer;
         post_inline_penalty_par = max_integer;
         pre_short_inline_penalty_par = max_integer;

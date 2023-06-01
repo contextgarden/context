@@ -529,8 +529,8 @@ void tex_print_dimension(scaled s, int unit)
         s = 10 * (s % unity) + 5;
         do {
             if (delta > unity) {
-                /*tex Round the last digit. */
-                s = s + 0100000 - 50000;
+                /*tex Round the last digit, so: |s + 32768 - 50000| it is. */
+                s = s + 0x8000 - 50000;
             }
             buffer[i++] = (unsigned char) ('0' + (s / unity));
             s = 10 * (s % unity);

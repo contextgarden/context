@@ -220,6 +220,7 @@ return {
         "carryoverlefttopkernclassoptioncode", "carryoverleftbottomkernclassoptioncode", "carryoverrighttopkernclassoptioncode", "carryoverrightbottomkernclassoptioncode",
         "preferdelimiterdimensionsclassoptioncode", "autoinjectclassoptioncode", "removeitaliccorrectionclassoptioncode",
         "operatoritaliccorrectionclassoptioncode", "shortinlineclassoptioncode",
+        "pushnestingclassoptioncode", "popnestingclassoptioncode", "obeynestingclassoptioncode",
         --
         "noligaturingglyphoptioncode", "nokerningglyphoptioncode", "noleftligatureglyphoptioncode",
         "noleftkernglyphoptioncode", "norightligatureglyphoptioncode", "norightkernglyphoptioncode",

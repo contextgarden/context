@@ -196,13 +196,13 @@ scaled tex_xn_over_d_r(scaled x, int n, int d, int *remainder)
         }
         xx = (unsigned int) x;
         dd = (unsigned int) d;
-        t = ((xx % 0100000) * (unsigned int) n);
-        u = ((xx / 0100000) * (unsigned int) n + (t / 0100000));
-        v = (u % dd) * 0100000 + (t % 0100000);
-        if (u / dd >= 0100000) {
+        t = ((xx % 0x8000) * (unsigned int) n);
+        u = ((xx / 0x8000) * (unsigned int) n + (t / 0x8000));
+        v = (u % dd) * 0x8000 + (t % 0x8000);
+        if (u / dd >= 0x8000) {
             lmt_scanner_state.arithmic_error = 1;
         } else {
-            u = 0100000 * (u / dd) + (v / dd);
+            u = 0x8000 * (u / dd) + (v / dd);
         }
         if (positive) {
             if (remainder) {
@@ -245,13 +245,13 @@ scaled tex_xn_over_d(scaled x, int n, int d)
         }
         xx = (unsigned int) x;
         dd = (unsigned int) d;
-        t = ((xx % 0100000) * (unsigned int) n);
-        u = ((xx / 0100000) * (unsigned int) n + (t / 0100000));
-        v = (u % dd) * 0100000 + (t % 0100000);
-        if (u / dd >= 0100000) {
+        t = ((xx % 0x8000) * (unsigned int) n);
+        u = ((xx / 0x8000) * (unsigned int) n + (t / 0x8000));
+        v = (u % dd) * 0x8000 + (t % 0x8000);
+        if (u / dd >= 0x8000) {
             lmt_scanner_state.arithmic_error = 1;
         } else {
-            u = 0100000 * (u / dd) + (v / dd);
+            u = 0x8000 * (u / dd) + (v / dd);
         }
         if (positive) {
             return (scaled) u;
@@ -306,13 +306,13 @@ scaled tex_round_xn_over_d(scaled x, int n, unsigned int d)
             positive = ! positive;
             n = -n;
         }
-        t = (unsigned) ((x % 0100000) * n);
-        u = (unsigned) (((unsigned) (x) / 0100000) * (unsigned) n + (t / 0100000));
-        v = (u % d) * 0100000 + (t % 0100000);
-        if (u / d >= 0100000) {
+        t = (unsigned) ((x % 0x8000) * n);
+        u = (unsigned) (((unsigned) (x) / 0x8000) * (unsigned) n + (t / 0x8000));
+        v = (u % d) * 0x8000 + (t % 0x8000);
+        if (u / d >= 0x8000) {
             scanner_state.arithmic_error = 1;
         } else {
-            u = 0100000 * (u / d) + (v / d);
+            u = 0x8000 * (u / d) + (v / d);
         }
         v = v % d;
         if (2 * v >= d) {

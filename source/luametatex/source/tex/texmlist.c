@@ -2,6 +2,52 @@
     See license.txt in the root of this project.
 */
 
+
+/*tex 
+
+    Before we get to the code is is good to notice that what we have here is an extension of the 
+    math rendering as implemented in \TEX. There are several reason for additions and changes. One 
+    is that we need to support \OPENTYPE\ fonts and after more than a decade struggling with the
+    fact that many fonts are a mix between what the \OPENTYPE\ specification describes (its 
+    accuracy evolved a bit over time) and what traditional \TEX\ fonts do. Think of the role that 
+    italic correction plays in \TEX\ and kerns in \OPENTYPE\ math. 
+
+    In \LUATEX\ this has resulted in a way to control various elements of the engine so that one 
+    can adapt to the font. Here even more properties can be controlled. However, in the end we 
+    decided that fonts are too inconsistent and unlikely to be fixed, so in \CONTEXT\ we settled 
+    on a combination of engine control and patching fonts runtime (aka goodie tweaks). This does
+    actually mean that in principle we can remove most of the code related to italic correction 
+    and simplify kerning, which makes for cleaner code. We can then also ditch many control 
+    options. It could also make some of the resulting constructs les scomplex (this is something
+    that might happen eventually anyway).
+
+    In addition to this, the machinery below also has opened up atoms, fractions, accents, fences, 
+    radicals and more beyond what \LUATEX\ already added. We have more classes (including user 
+    ones), more spacing and penalty control, positioning features, etc. Most of that is not 
+    described here but in documents that come with \CONTEXT\ and articles in user group journals. 
+
+    It is unlikely that users will set up the engine beyond what a macro package provides, which 
+    should be reasonable defaults. Keep in mind that the math machinery has never be part of 
+    discussing extensions to \TEX\ and that the math subengine was never touched. So, while 
+    \CONTEXT\ users sort of expect this upgrade path, this is not true for other macro packages, 
+    especially when they are considered standard and provide standard behaviour. This means that 
+    we can go a bit further in setting up the engine (by options and parametsrs) in ways that 
+    provide better output. This means that even with the same input, the output that \CONTEXT\
+    produces will look different and hopefully somewhat better. 
+
+    One can of course wonder why we think the rendering can be improved and part of the answer is 
+    in the fact that we have double linked node lists. This means that we can go back and forward 
+    over the result. Another apects is that we have less constraints in memory and processor 
+    capabilities, so we can carry around more information and spend more time on analysing and 
+    calculations. Nodes are way bigger and the font system is more dynamic, which comes at a 
+    price not possible when original \TEX\ showed up. One can therefore only admire even more 
+    what Don Knuth came up with, which still performs very well, and what is the robust core of 
+    what we see below!
+
+    HH & MS 
+
+*/
+
 /*tex
 
     The code here has to deal with traditional \TEX\ fonts as well as the more modern \OPENTYPE\
@@ -474,7 +520,7 @@ halfword tex_math_font_char_dp(halfword fnt, halfword chr, halfword style)
 }
 
 inline static halfword tex_aux_new_math_glyph(halfword fnt, halfword chr, quarterword subtype) {
-    halfword scale = 1000;
+    halfword scale = scaling_factor;
     halfword glyph = tex_new_glyph_node(subtype, fnt, tex_get_math_char(fnt, chr, lmt_math_state.size, &scale, math_direction_par), null); /* todo: data */;
     set_glyph_options(glyph, glyph_options_par);
     glyph_scale(glyph) = tex_aux_math_glyph_scale(scale);
@@ -1511,7 +1557,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
                                 }
                             }
                             goto FOUND;
-                        } else if (count > 1000) {
+                        } else if (count > scaling_factor) {
                             tex_formatted_warning("fonts", "endless loop in extensible character %U of font %F", curchr, curfnt);
                             goto FOUND;
                         } else if (tex_char_has_tag_from_font(curfnt, curchr, list_tag)) {
@@ -2964,7 +3010,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
     scaled overshoot = 0;
     extinfo *extended = NULL;
     halfword attrlist = node_attr(target);
-    scaled fraction = accent_fraction(target) > 0 ? accent_fraction(target) : 1000;
+    scaled fraction = accent_fraction(target) > 0 ? accent_fraction(target) : scaling_factor;
     scaled skew = 0;
     scaled offset = 0;
     scaled innery = 0;
@@ -3047,7 +3093,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
             }
         }
         if (fraction > 0) {
-            target = tex_xn_over_d(target, fraction, 1000);
+            target = tex_xn_over_d(target, fraction, scaling_factor);
         }
         while (1) {
             if (tex_char_has_tag_from_font(accentfnt, accentchr, extensible_tag)) {
@@ -3448,8 +3494,8 @@ static void tex_aux_calculate_fraction_shifts(halfword target, int style, int si
     (void) size;
     *shift_up = tex_get_math_y_parameter_checked(style, up);
     *shift_down = tex_get_math_y_parameter_checked(style, down);
-    *shift_up = tex_round_xn_over_d(*shift_up, fraction_v_factor(target), 1000);
-    *shift_down = tex_round_xn_over_d(*shift_down, fraction_v_factor(target), 1000);
+    *shift_up = tex_round_xn_over_d(*shift_up, fraction_v_factor(target), scaling_factor);
+    *shift_down = tex_round_xn_over_d(*shift_down, fraction_v_factor(target), scaling_factor);
 }
 
 static void tex_aux_calculate_fraction_shifts_stack(halfword target, int style, int size, halfword numerator, halfword denominator, scaled *shift_up, scaled *shift_down, scaled *delta)
@@ -3584,7 +3630,7 @@ static halfword tex_aux_make_skewed_fraction(halfword target, int style, int siz
     delimiterextremes extremes = { .tfont = null_font, .tchar = 0, .bfont = null_font, .bchar = 0, .height = 0, .depth = 0 };
     scaled tolerance = tex_get_math_y_parameter_default(style, math_parameter_skewed_delimiter_tolerance, 0);
     scaled shift_up = tex_get_math_y_parameter_checked(style, math_parameter_skewed_fraction_vgap);
-    scaled shift_down = tex_round_xn_over_d(shift_up, fraction_v_factor(target), 1000);
+    scaled shift_down = tex_round_xn_over_d(shift_up, fraction_v_factor(target), scaling_factor);
     (void) kerns;
     shift_up = shift_down; /*tex The |shift_up| value might change later. */
     tex_aux_wrap_fraction_parts(target, style, size, &numerator, &denominator, 0);
@@ -3598,7 +3644,7 @@ static halfword tex_aux_make_skewed_fraction(halfword target, int style, int siz
         Construct a hlist box for the fraction, according to |hgap| and |vgap|.
     */
     hgap = tex_get_math_x_parameter_checked(style, math_parameter_skewed_fraction_hgap);
-    hgap = tex_round_xn_over_d(hgap, fraction_h_factor(target), 1000);
+    hgap = tex_round_xn_over_d(hgap, fraction_h_factor(target), scaling_factor);
     {
         scaled ht = box_height(numerator) + shift_up;
         scaled dp = box_depth(numerator) - shift_up;
@@ -3828,8 +3874,8 @@ static void tex_aux_get_shifts(int mode, int style, scaled delta, scaled *top, s
             break;
         case 1:
             /*tex |MathConstants| driven */
-            *top =  tex_round_xn_over_d(delta, tex_get_math_parameter_default(style, math_parameter_nolimit_sup_factor, 0), 1000);
-            *bot = -tex_round_xn_over_d(delta, tex_get_math_parameter_default(style, math_parameter_nolimit_sub_factor, 0), 1000);
+            *top =  tex_round_xn_over_d(delta, tex_get_math_parameter_default(style, math_parameter_nolimit_sup_factor, 0), scaling_factor);
+            *bot = -tex_round_xn_over_d(delta, tex_get_math_parameter_default(style, math_parameter_nolimit_sub_factor, 0), scaling_factor);
             break ;
         case 2:
             /*tex no correction */
@@ -3849,7 +3895,7 @@ static void tex_aux_get_shifts(int mode, int style, scaled delta, scaled *top, s
         default :
             /*tex above 15: for quickly testing values */
             *top =  0;
-            *bot = (mode > 15) ? -tex_round_xn_over_d(delta, mode, 1000) : 0;
+            *bot = (mode > 15) ? -tex_round_xn_over_d(delta, mode, scaling_factor) : 0;
             break;
     }
 }
@@ -6831,6 +6877,11 @@ static void tex_mlist_to_hlist_size_fences(mliststate *state)
     }
 }
 
+/*tex 
+    The mathboundary feature, where 0/2 push, 1/3 pop, 2/3 take an penalty delta, is only there for 
+    special testing by MS and me, so don't depend on that for now. 
+*/
+
 static void tex_mlist_to_hlist_finalize_list(mliststate *state)
 {
     halfword recent = null; /*tex Watch out: can be wiped, so more a signal! */
@@ -6848,6 +6899,10 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
     halfword current = state->mlist;
     halfword p = temp_head;
     halfword ghost = null;
+    int boundarylevel = 0;
+    int boundaryfactor = scaling_factor;
+    int nestinglevel = 0;
+    int nestingfactor = scaling_factor;
     node_next(p) = null;
     tex_aux_set_current_math_size(current_style);
     tex_aux_set_current_math_scale(state->scale);
@@ -7019,10 +7074,38 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                     default:
                         break;
                 }
+            case boundary_node:
+                if (node_subtype(current) == math_boundary) {
+                    halfword l = boundary_data(current);
+                    switch(l) {
+                        case 0: 
+                        case 2: 
+                            boundarylevel++;
+                            if (l == 2) { 
+                                boundaryfactor = boundary_reserved(current) ? boundary_reserved(current) : scaling_factor;
+                            }
+                            break;
+                        case 1: 
+                        case 3: 
+                            if (boundarylevel > 0) {
+                                boundarylevel--;
+                                if (l == 2) { 
+                                    boundaryfactor = boundary_reserved(current) ? boundary_reserved(current) : scaling_factor;
+                                }
+                            } else { 
+                                tex_formatted_warning("math", "invalid math boundary %i nesting", l);
+                            }
+                            break;
+                        default:
+                            tex_formatted_warning("math", "invalid math boundary value");
+                            /* error */
+                            break;
+                    }
+                }
+                goto PICKUP;
             // case glyph_node:
             case disc_node:
             case hlist_node:
-            case boundary_node:
             case whatsit_node:
             case penalty_node:
             case rule_node:
@@ -7031,6 +7114,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
             case mark_node:
             case par_node:
             case kern_node:
+              PICKUP:
                 tex_couple_nodes(p, current);
                 p = current;
                 current = node_next(current);
@@ -7201,16 +7285,40 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
             /*tex
                 Do we still want this check in infinite. 
             */
-            if (state->penalties && pre_penalty < infinite_penalty && node_type(last) != penalty_node) {
-                /*tex no checking of prev node type */
-                halfword penalty = tex_new_penalty_node(pre_penalty, math_pre_penalty_subtype);
-                tex_attach_attribute_list_copy(penalty, current);
-                tex_couple_nodes(p, penalty);
-                p = penalty;
-                if (tracing_math_par >= 2) {
-                    tex_begin_diagnostic();
-                    tex_print_format("[math: pre penalty, left %n, right %n, amount %i]", recent_subtype, current_subtype, penalty_amount(penalty));
-                    tex_end_diagnostic();
+            if (tex_math_has_class_option(current_subtype, push_nesting_class_option)) {
+                nestinglevel++;
+                switch (current_style) { 
+                    case display_style:
+                    case cramped_display_style:
+                        nestingfactor = math_display_penalty_factor_par ? math_display_penalty_factor_par : scaling_factor;
+                        break;
+                    default:
+                        nestingfactor = math_inline_penalty_factor_par ? math_inline_penalty_factor_par : scaling_factor;
+                        break;
+                }
+            } else if (tex_math_has_class_option(current_subtype, pop_nesting_class_option) && nestinglevel > 0) {
+                nestinglevel--;
+                if (nestinglevel == 0) {
+                    nestingfactor = scaling_factor;
+                }
+            } 
+            if (state->penalties && node_type(last) != penalty_node && pre_penalty <= infinite_penalty && (! boundarylevel || (boundaryfactor != scaling_factor || nestingfactor != scaling_factor))) {
+                if (boundaryfactor != scaling_factor) {
+                    pre_penalty = tex_xn_over_d(pre_penalty, boundaryfactor, scaling_factor);
+                } else if (nestingfactor != scaling_factor && tex_math_has_class_option(current_subtype, obey_nesting_class_option)) {
+                    pre_penalty = tex_xn_over_d(pre_penalty, nestingfactor, scaling_factor);
+                }
+                if (pre_penalty < infinite_penalty) {
+                    /*tex no checking of prev node type */
+                    halfword penalty = tex_new_penalty_node(pre_penalty, math_pre_penalty_subtype);
+                    tex_attach_attribute_list_copy(penalty, current);
+                    tex_couple_nodes(p, penalty);
+                    p = penalty;
+                    if (tracing_math_par >= 2) {
+                        tex_begin_diagnostic();
+                        tex_print_format("[math: pre penalty, left %n, right %n, amount %i]", recent_subtype, current_subtype, penalty_amount(penalty));
+                        tex_end_diagnostic();
+                    }
                 }
             }
             if (tex_math_has_class_option(current_subtype, remove_italic_correction_class_option)) {
@@ -7298,20 +7406,27 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
 
             We can actually drop the omit check because we pair by class. 
         */
-        if (state->penalties && node_next(current) && post_penalty < infinite_penalty) {
-            halfword recent = node_next(current);
-            recent_type = node_type(recent);
-            recent_subtype = node_subtype(recent);
-            /* todo: maybe also check the mainclass of the recent  */
-            if ((recent_type != penalty_node) && ! (recent_type == simple_noad && tex_math_has_class_option(recent_subtype, omit_penalty_class_option))) {
-                halfword penalty = tex_new_penalty_node(post_penalty, math_post_penalty_subtype);
-                tex_attach_attribute_list_copy(penalty, current);
-                tex_couple_nodes(p, penalty);
-                p = penalty;
-                if (tracing_math_par >= 2) {
-                    tex_begin_diagnostic();
-                    tex_print_format("[math: post penalty, left %n, right %n, amount %i]", recent_subtype, current_subtype, penalty_amount(penalty));
-                    tex_end_diagnostic();
+        if (state->penalties && node_next(current) && post_penalty <= infinite_penalty && (! boundarylevel || (boundaryfactor != scaling_factor || nestingfactor != scaling_factor))) {
+            if (boundaryfactor != scaling_factor) {
+                post_penalty = tex_xn_over_d(post_penalty, boundaryfactor, scaling_factor);
+            } else if (nestingfactor != scaling_factor && tex_math_has_class_option(current_subtype, obey_nesting_class_option)) {
+                post_penalty = tex_xn_over_d(post_penalty, nestingfactor, scaling_factor);
+            }
+            if (post_penalty < infinite_penalty) {
+                halfword recent = node_next(current);
+                recent_type = node_type(recent);
+                recent_subtype = node_subtype(recent);
+                /* todo: maybe also check the mainclass of the recent  */
+                if ((recent_type != penalty_node) && ! (recent_type == simple_noad && tex_math_has_class_option(recent_subtype, omit_penalty_class_option))) {
+                    halfword penalty = tex_new_penalty_node(post_penalty, math_post_penalty_subtype);
+                    tex_attach_attribute_list_copy(penalty, current);
+                    tex_couple_nodes(p, penalty);
+                    p = penalty;
+                    if (tracing_math_par >= 2) {
+                        tex_begin_diagnostic();
+                        tex_print_format("[math: post penalty, left %n, right %n, amount %i]", recent_subtype, current_subtype, penalty_amount(penalty));
+                        tex_end_diagnostic();
+                    }
                 }
             }
         }

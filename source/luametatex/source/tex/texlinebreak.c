@@ -147,7 +147,7 @@ void tex_line_break_prepare(
     halfword *parinit_right_skip_glue,
     halfword *parfill_left_skip_glue,
     halfword *parfill_right_skip_glue,
-    halfword *final_penalty
+    halfword *final_line_penalty
 )
 {
     /* too much testing of next */
@@ -159,7 +159,7 @@ void tex_line_break_prepare(
             tex_end_diagnostic();
         }
         *tail = *tail ? *tail : tex_tail_of_node_list(par);
-        *final_penalty = tex_new_penalty_node(infinite_penalty, line_penalty_subtype);
+        *final_line_penalty = tex_new_penalty_node(infinite_penalty, line_penalty_subtype);
         *parfill_left_skip_glue = tex_new_glue_node(tex_get_par_par(par, par_par_fill_left_skip_code), par_fill_left_skip_glue);
         *parfill_right_skip_glue = tex_new_glue_node(tex_get_par_par(par, par_par_fill_right_skip_code), par_fill_right_skip_glue);
         *parinit_left_skip_glue = null;
@@ -170,11 +170,11 @@ void tex_line_break_prepare(
             tex_flush_node(*tail);
             *tail = prev;
         }
-        tex_attach_attribute_list_copy(*final_penalty, par);
+        tex_attach_attribute_list_copy(*final_line_penalty, par);
         tex_attach_attribute_list_copy(*parfill_left_skip_glue, par);
         tex_attach_attribute_list_copy(*parfill_right_skip_glue, par);
-        tex_try_couple_nodes(*tail, *final_penalty);
-        tex_try_couple_nodes(*final_penalty, *parfill_left_skip_glue);
+        tex_try_couple_nodes(*tail, *final_line_penalty);
+        tex_try_couple_nodes(*final_line_penalty, *parfill_left_skip_glue);
         tex_try_couple_nodes(*parfill_left_skip_glue, *parfill_right_skip_glue);
         *tail = *parfill_right_skip_glue;
         if (node_next(par)) {
@@ -247,8 +247,8 @@ void tex_line_break(int d, int line_break_context)
             halfword parinit_right_skip_glue = null;
             halfword parfill_left_skip_glue = null;
             halfword parfill_right_skip_glue = null;
-            halfword final_penalty = null;
-            tex_line_break_prepare(par, &tail, &parinit_left_skip_glue, &parinit_right_skip_glue, &parfill_left_skip_glue, &parfill_right_skip_glue, &final_penalty);
+            halfword final_line_penalty = null;
+            tex_line_break_prepare(par, &tail, &parinit_left_skip_glue, &parinit_right_skip_glue, &parfill_left_skip_glue, &parfill_right_skip_glue, &final_line_penalty);
             cur_list.tail = tail;
             /*tex 
                 We start with a prepared list. If you mess with that the linebreak routine might not 
@@ -1479,9 +1479,9 @@ halfword tex_badness(scaled t, scaled s)
         } else {
             /*tex 297*297*297 == 26198073 / 100 => 261981 */
             /*tex This is $t^3 / 2^{18}$, rounded to the nearest integer */ 
-            return (t * t * t + 0400000) / 01000000; /* 0400000/01000000 == 1/2 */
+         // return (t * t * t + 0400000) / 01000000; /* 0400000/01000000 == 1/2 */
          // return (t * t * t + 0x20000) /  0x40000;
-         // return (t * t * t +  131072) /   262144;
+            return (t * t * t +  131072) /   262144;
         }
     }
 }
@@ -2046,8 +2046,8 @@ static void tex_aux_try_break(
         } else {
             /*tex Compute the demerits, |d|, from |r| to |cur_p|. */
             demerits = properties->line_penalty + badness;
-            if (abs(demerits) >= 10000) {
-                demerits = 100000000;
+            if (abs(demerits) >= infinite_bad) {
+                demerits = extremely_deplorable;
             } else {
                 demerits = demerits * demerits;
             }

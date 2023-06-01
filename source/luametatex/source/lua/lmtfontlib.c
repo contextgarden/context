@@ -263,7 +263,7 @@ static void fontlib_aux_font_char_from_lua(lua_State *L, halfword f, int i, int 
         set_charinfo_depth(co, target);
         set_numeric_field_by_index(target, italic, 0);
         set_charinfo_italic(co, target);
-        set_numeric_field_by_index(target, expansion, 1000);
+        set_numeric_field_by_index(target, expansion, scaling_factor);
         set_charinfo_expansion(co, target);
         set_numeric_field_by_index(target, compression, target);
         set_charinfo_compression(co, target);
@@ -631,15 +631,15 @@ static int lmt_font_from_lua(lua_State *L, int f)
                 if (fstep > 0) {
                     int fstretch = 0;
                     int fshrink = 0;
-                    if (fstep > 100) {
-                        fstep = 100;
+                    if (fstep > max_font_adjust_step) {
+                        fstep = max_font_adjust_step;
                     }
                     set_numeric_field_by_index(fshrink, shrink, 0);
                     set_numeric_field_by_index(fstretch, stretch, 0);
                     if (fshrink < 0) {
                         fshrink = 0;
-                    } else if (fshrink > 500) {
-                        fshrink = 500;
+                    } else if (fshrink > max_font_adjust_shrink_factor) {
+                        fshrink = max_font_adjust_shrink_factor;
                     }
                     fshrink -= (fshrink % fstep);
                     if (fshrink < 0) {
@@ -647,8 +647,8 @@ static int lmt_font_from_lua(lua_State *L, int f)
                     }
                     if (fstretch < 0) {
                         fstretch = 0;
-                    } else if (fstretch > 1000) {
-                        fstretch = 1000;
+                    } else if (fstretch > max_font_adjust_stretch_factor) {
+                        fstretch = max_font_adjust_stretch_factor;
                     }
                     fstretch -= (fstretch % fstep);
                     if (fstretch < 0) {

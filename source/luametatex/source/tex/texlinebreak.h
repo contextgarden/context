@@ -121,7 +121,7 @@ void tex_line_break_prepare (
     halfword *parinit_right_skip_glue,
     halfword *parfill_left_skip_glue,
     halfword *parfill_right_skip_glue,
-    halfword *final_penalty
+    halfword *final_line_penalty
 );
 
 extern void tex_line_break (
