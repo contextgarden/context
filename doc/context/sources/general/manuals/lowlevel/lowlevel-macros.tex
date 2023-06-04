@@ -991,6 +991,57 @@ in turn only needs incrementing a reference counter.
 
 \stopsectionlevel
 
+\startsectionlevel[title=Passing parameters]
+
+When you define a macro, the \type {#1} and more parameters are embedded as a
+reference to a parameter that is passed. When we have four parameters, the
+parameter stack has four entries and when an entry is eventually accessed a new
+input level is pushed and tokens are fetched from that list. This has some side
+effects when we check a parameter. This can happen multiple times, depending on
+how often we access a parameter. Take the following:
+
+\startbuffer
+\def\oof#1{#1}
+
+\tolerant\def\foo[#1]#*[#2]%
+  {1:\ifparameter#1\or Y\else N\fi\quad
+   2:\ifparameter#2\or Y\else N\fi\quad
+   \oof{3:\ifparameter #1\or Y\else N\fi\quad
+        4:\ifparameter #2\or Y\else N\fi\quad}%
+   \par}
+
+\foo \foo[] \foo[][] \foo[A] \foo[A][B]
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startpacked \tttf
+\inlinebuffer
+\stoppacked
+
+as you probably expect. However the first two checks
+are different from the embedded checks because they can check against the
+parameter reference. When we expand \type {\oof} its argument gets passed to the
+macro as a list and when the scanner collects the next token it will then push
+the parameter content on the input stack. So, then, instead of a reference we get
+the referenced parameter list. Internally that means that in 3 and 4 we check for
+a token and not for the length of the list (as in case 1 & 2). This means that
+
+\starttyping
+\iftok{#1}\emptytoks Y\else N\fi
+\ifparameter#1\or    Y\else N\fi
+\stoptyping
+
+are different. In the first case we have a proper token list and nested
+conditionals in that list are okay. In the second case we just look ahead to see
+if there is an \type {\or}, \type {\else} or other condition related command and
+if so we decide that there is no parameter. So, if \type {\ifparameter} is a
+suitable check for empty depends on the need for expansion.
+
+\stopsectionlevel
+
 \stopdocument
 
 % freezing pitfalls:

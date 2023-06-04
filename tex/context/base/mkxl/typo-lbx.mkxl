@@ -89,7 +89,7 @@
 
 \permanent\protected\def\localboxcommand
   {\ifcsname\??localboxesnamespace\number\localboxindex\endcsname
-    %\edef\currentlocalboxes{\lastnamedcs}%
+    %\cdef\currentlocalboxes{\lastnamedcs}%
      \expandafter\let\expandafter\currentlocalboxes\lastnamedcs
      \setbox\localboxcontentbox\hbox
        {\uselocalboxesstyleandcolor\c!style\c!color % sometimes redundant
@@ -114,7 +114,7 @@
 \def\typo_localboxes_zero#1#2#3%
   {\ifcsname\??localboxesattribute#2\endcsname
      \c_typo_localboxes_index\lastnamedcs
-     \edef\currentlocalboxes{#2}%
+     \cdef\currentlocalboxes{#2}%
      \edef\currentlocalboxeslocation{#1}%
      \typo_localboxes_localbox
         index \c_typo_localboxes_index
@@ -135,7 +135,7 @@
 \def\typo_localboxes_asis#1#2#3%
   {\ifcsname\??localboxesattribute#2\endcsname
      \c_typo_localboxes_index\lastnamedcs
-     \edef\currentlocalboxes{#2}%
+     \cdef\currentlocalboxes{#2}%
      \edef\currentlocalboxeslocation{#1}%
      \typo_localboxes_localbox
         index \c_typo_localboxes_index
@@ -167,7 +167,7 @@
 \permanent\tolerant\protected\def\resetlocalbox[#1]%
   {\ifcsname\??localboxesattribute#1\endcsname
      \c_typo_localboxes_index\lastnamedcs
-     \edef\currentlocalboxes{#1}%
+     \cdef\currentlocalboxes{#1}%
      \ifcsname\??localboxesresetters\localboxesparameter\c!location\endcsname
        \edef\currentlocalboxeslocation{\lastnamedcs}%
        \typo_localboxes_localbox index \c_typo_localboxes_index {}%
@@ -176,7 +176,7 @@
 
 \def\typo_localboxes_box#1%
   {\dowithnextboxcontent
-     {\edef\currentlocalboxes{#1}%
+     {\cdef\currentlocalboxes{#1}%
       \uselocalboxesstyleandcolor\c!style\c!color}
      {\ifcsname\??localboxeslocations\namedlocalboxesparameter{#1}\c!location\endcsname
         \expandafter\lastnamedcs
@@ -196,7 +196,7 @@
          \csname\??localboxeslocations\v!left\expandafter\endcsname
        \fi{#1}{\unhbox\nextbox}}%
      \hbox\bgroup
-     \edef\currentlocalboxes{#1}%
+     \cdef\currentlocalboxes{#1}%
      \uselocalboxesstyleandcolor\c!style\c!color
      \enforced\def\stoplocalbox{\removeunwantedspaces\egroup}%
      \ignorespaces}
@@ -267,7 +267,7 @@
   {\dontleavehmode
    \ifcsname\??localboxesattribute#1\endcsname
      \c_typo_localboxes_index\lastnamedcs
-     \edef\currentlocalboxes{#1}%
+     \cdef\currentlocalboxes{#1}%
      \edef\currentlocalboxeslocation{\localboxesparameter\c!location}%
      \ifx\currentlocalboxeslocation\v!right\localrightbox\orelse\ifx\currentlocalboxeslocation\v!left\localleftbox\else\localmiddlebox\fi
         index \c_typo_localboxes_index

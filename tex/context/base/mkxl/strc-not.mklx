@@ -249,7 +249,7 @@
 
 \tolerant\protected\def\strc_notations_command[#1]#*[#2]%
   {\begingroup
-   \edef\currentnote{#1}%
+   \cdef\currentnote{#1}%
    \strc_constructions_initialize{#1}%
    \strc_notes_synchronize
    \edef\p_next{\noteparameter\c!anchor}%
@@ -295,7 +295,7 @@
 
 \tolerant\protected\def\strc_notations_start_indeed#1#*[#2]#*[#3]%
   {\begingroup
-   \edef\currentnote{#2}%
+   \cdef\currentnote{#2}%
    \strc_constructions_initialize{#2}%
    \strc_notes_synchronize
    \ifnotesenabled
@@ -842,7 +842,7 @@
 \let\strc_notes_process_list\gobbleoneargument
 
 \protected\def\strc_notes_process#action% argument is a \macro that uses \currentnote
-  {\def\strc_notes_process_list##1{\edef\currentnote{##1}\let\currentdescription\currentnote#action}%
+  {\def\strc_notes_process_list##1{\cdef\currentnote{##1}\let\currentdescription\currentnote#action}%
    \the\t_strc_notes}
 
 \newtoks\everychecknote       % just before a note is typeset
@@ -1260,7 +1260,7 @@
 
 \permanent\protected\def\handlenoteinsert#tag#id%
   {\begingroup
-   \edef\currentnote{#tag}%
+   \cdef\currentnote{#tag}%
    \strc_constructions_initialize{#tag}%
    \strc_notes_synchronize
    \the\everybeforenoteinsert
@@ -1282,12 +1282,12 @@
    \endgroup}
 
 \permanent\protected\def\betweennoteitself#tag% used ?
-  {\edef\currentnote{#tag}%
+  {\cdef\currentnote{#tag}%
    \doif{\noteparameter\c!paragraph}\v!yes{\noteparameter\c!inbetween}}
 
 \permanent\protected\def\handlenoteitself#tag#id%
   {\edef\currentnotenumber{#id}%
-   \edef\currentnote{#tag}%
+   \cdef\currentnote{#tag}%
    \strc_constructions_initialize{#tag}%
    \strc_notes_synchronize
    \edef\currentconstructionlistentry{\clf_notelistindex{\currentnote}#id}% index in list cache
@@ -1662,7 +1662,7 @@
 
 \def\strc_notes_local_place_indeed#settings#tag%
   {\begingroup
-   \edef\currentnote{#tag}% is already set?
+   \cdef\currentnote{#tag}% is already set?
    \the\everyplacelocalnotes
    % beware, we cannot trust setting \currentnote here
    \setupcurrentnote[#settings]% later we set height etc for framed
@@ -1712,7 +1712,7 @@
   {\processcommalist[#list]{\strc_notes_place_indeed{#settings}}}
 
 \def\strc_notes_place_indeed#settings#tag% settings note
-  {\edef\currentnote{#tag}% grouping ?
+  {\cdef\currentnote{#tag}% grouping ?
    \doifelse{\clf_getnotestate{#tag}}{store}
      \strc_notes_local_place_indeed
      \strc_notes_global_place_indeed
@@ -1979,7 +1979,7 @@
   {\ifnotesenabled
      \dontleavehmode
      \begingroup
-     \edef\currentnote{#tag}%
+     \cdef\currentnote{#tag}%
      \usenotestyleandcolor\c!textstyle\c!textcolor
      \iftok{#reference}\emptytoks
        \noteparameter\c!textcommand\lastnotesymbol % check if command double

@@ -2071,6 +2071,10 @@ static void tex_aux_run_glue(void)
                 halfword v = tex_scan_glue(glue_val_level, 0);
                 halfword g = tex_new_glue_node(v, user_skip_glue);
              /* glue_data(g) = glue_data_par; */
+                if (cur_mode == mmode) {
+                   /*tex This could be an option. */
+                   glue_options(g) |= glue_option_no_auto_break;
+                }
                 tex_tail_append(g);
                 tex_flush_node(v);
                 break;
@@ -4638,12 +4642,6 @@ static void tex_aux_set_def(int a, int force)
     if (force || tex_define_permitted(cur_cs, a)) {
         halfword p = cur_cs;
         halfword t = expand == 2 ? tex_scan_toks_expand(0, null, 1) : (expand ? tex_scan_macro_expand() : tex_scan_macro_normal());
-        if (is_constant(a)) {
-            /* todo: check if already defined or just accept a leak */
-            set_token_reference(t, max_token_reference);
-     // } else if (! token_link(t)) { 
-     //     t = lmt_token_state.empty; /* leaks */
-        }
         tex_define(a, p, tex_flags_to_cmd(a), t);
     }
 }

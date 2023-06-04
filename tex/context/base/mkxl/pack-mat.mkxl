@@ -105,7 +105,7 @@
    %
    \scratchdimen\Umathaxis\Ustyle\mathstyle
    %
-   \edef\currentframed{#1}%
+   \cdef\currentframed{#1}%
    \setbox\scratchbox\hbox{\localframedwithsettings[#1][#2]%
      {\strut\global\dimensiondef\d_math_framed_offset\dimexpr
          \framedoffset/2
@@ -297,7 +297,7 @@
 
 \tolerant\protected\def\pack_framed_mathframed[#1]#*[#2]#:#3% needs testing !
   {\begingroup
-   \edef\currentmathframed{#1}%
+   \cdef\currentmathframed{#1}%
    \setupcurrentmathframed[#2]%
    \c_framed_mstyle\normalmathstyle
    \edef\m_framed_location{\mathframedparameter\c!location}%

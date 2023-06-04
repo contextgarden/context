@@ -789,7 +789,7 @@ void tex_end_token_list(void)
         case parameter_text:
             break;
         case template_pre_text:
-            if (lmt_input_state.align_state > 500000) {
+            if (lmt_input_state.align_state > interwoven_alignment_threshold) {
                 lmt_input_state.align_state = 0;
             } else {
                 tex_alignment_interwoven_error(7);
@@ -840,7 +840,7 @@ void tex_cleanup_input_state(void)
             case parameter_text:
                 break;
             case template_pre_text:
-                if (lmt_input_state.align_state > 500000) {
+                if (lmt_input_state.align_state > interwoven_alignment_threshold) {
                     lmt_input_state.align_state = 0;
                 } else {
                     tex_alignment_interwoven_error(7);
@@ -1083,7 +1083,7 @@ void tex_initialize_inputstack(void)
     lmt_token_state.luacstrings = 0;
     lmt_input_state.cur_input.cattable = default_catcode_table_preset;
     lmt_input_state.cur_input.partial = 0;
-    lmt_input_state.align_state = 1000000;
+    lmt_input_state.align_state = busy_alignment_state;
 }
 
 /*tex 

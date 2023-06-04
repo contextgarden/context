@@ -51,7 +51,7 @@
 \aliased\let\doifpositionactionelse\doifelsepositionaction
 
 \permanent\protected\def\dopositionaction#1%
-  {\edef\currentpositionaction{#1}%
+  {\cdef\currentpositionaction{#1}%
    \ifcsname\??positionaction\currentpositionaction\endcsname
      \anch_positions_action_indeed
    \fi}
@@ -102,7 +102,7 @@
 
 \permanent\protected\def\handlepositionaction#1\with#2\on#3% ugly, will change
   {\begingroup
-   \edef\currentpositionanchor{\ifempty\currentpositionoverlay#3\else\currentpositionoverlay::\MPanchoridentifier\fi}%
+   \cdef\currentpositionanchor{\ifempty\currentpositionoverlay#3\else\currentpositionoverlay::\MPanchoridentifier\fi}%
    \normalexpanded{\anch_positions_set_action{\currentpositionanchor}{\noexpand\csname\??positioncleanup\currentpositionanchor\endcsname}}%
    \let#1\relax
    \ifcsname\??positioncleanup\currentpositionanchor\endcsname
@@ -225,7 +225,7 @@
 
 \def\anch_positions_overlay_indeed#1%
   {\begingroup
-   \edef\currentpositionoverlay{#1}%
+   \cdef\currentpositionoverlay{#1}%
    \ifcsname\??positionaction\currentpositionoverlay::\MPanchoridentifier\endcsname
      \anch_positions_overlay_compose
    \fi
@@ -260,8 +260,8 @@
 
 \def\anch_positions_region_overlay_indeed#1#2%
   {\begingroup
-   \edef\currentpositionregion {#1}%
-   \edef\currentpositionoverlay{#2}%
+   \cdef\currentpositionregion {#1}%
+   \cdef\currentpositionoverlay{#2}%
    \ifcsname\??positionaction\currentpositionoverlay::\MPanchoridentifier\endcsname
      \anch_positions_region_overlay_compose
    \fi
@@ -298,7 +298,7 @@
 
 \def\anch_positions_overlay_start_yes#1%
   {\checkpositionoverlays
-   \edef\currentpositionoverlay{#1}}
+   \cdef\currentpositionoverlay{#1}}
 
 \permanent\protected\def\stoppositionoverlay
   {\lettonothing\currentpositionoverlay}
@@ -327,7 +327,7 @@
 
 \def\anch_positions_meta_graphic_use#1#2#3%
   {\begingroup
-   \edef\currentmpcategory{#1}%
+   \cdef\currentmpcategory{#1}%
    \anch_positions_meta_graphic_prepare
    \startMPcode#3\stopMPcode
    \endgroup}
@@ -346,7 +346,7 @@
 
 \def\anch_positions_meta_graphic_direct#1#2#3% what tag setups
   {\begingroup
-   \edef\currentmpcategory{#2}%
+   \cdef\currentmpcategory{#2}%
    \setupcurrentmpcategory[#3]%
    \anch_positions_meta_graphic_prepare
    \obeyMPboxorigin % do we also set the size ? when needed this must be done in mp ... might change
@@ -360,7 +360,7 @@
 
 \def\anch_positions_meta_graphic_nested#1#2#3% nesting used in prikkels / pascal (might go away)
   {\begingroup
-   \edef\currentmpcategory{#2}%
+   \cdef\currentmpcategory{#2}%
    \setupcurrentmpcategory[#1,#3]%
    \anch_positions_meta_graphic_prepare
    \begincsname\??positiongraphic#2\endcsname

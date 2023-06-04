@@ -790,7 +790,7 @@
    \doifelseassignment{#1}%
      {\lettonothing\currentpagecolumns
       \setuppagecolumns[#1]}%
-     {\edef\currentpagecolumns{#1}}%
+     {\cdef\currentpagecolumns{#1}}%
    \edef\p_page{\pagecolumnsparameter\c!page}%
    \ifempty\p_page
      \setfalse\c_page_col_page

@@ -42,8 +42,8 @@
 \installcommandhandler \??makeup {makeup} \??makeup
 
 \appendtoks
-   \frozen\instance\setuevalue{\e!start\currentmakeup\e!makeup}{\startmakeup[\currentmakeup]}%
-   \frozen\instance\setuevalue{\e!stop \currentmakeup\e!makeup}{\stopmakeup}%
+   \frozen\protected\instance\edefcsname\e!start\currentmakeup\e!makeup\endcsname{\startmakeup[\currentmakeup]}%
+   \frozen\protected\instance\edefcsname\e!stop \currentmakeup\e!makeup\endcsname{\stopmakeup}%
    \doifelselayoutdefined\currentmakeup\donothing{\definelayout[\currentmakeup]}% new
 \to \everydefinemakeup
 
@@ -108,7 +108,7 @@
   {% the next grouping hack is somewhat messy:
    \begingroup
    % we need to figure out the current layout
-   \xdef\m_page_makeup_name{#name}%
+   \global\cdef\m_page_makeup_name{#name}%
    \let\currentmakeup\m_page_makeup_name
    \let\currentlayout\m_page_makeup_name
    \xdef\m_page_makeup_layout_parent{\layoutparameter\s!parent}%

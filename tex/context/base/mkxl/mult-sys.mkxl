@@ -209,6 +209,7 @@
 \definesystemconstant {external}
 \definesystemconstant {ex}
 \definesystemconstant {e}
+\definesystemconstant {factor}
 \definesystemconstant {fallbacks}
 \definesystemconstant {fallback}
 \definesystemconstant {false}

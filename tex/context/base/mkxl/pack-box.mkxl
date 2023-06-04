@@ -1170,7 +1170,7 @@
 \permanent\tolerant\protected\def\setanchorbox[#1]#*[#2]%
   {\begingroup
    \dowithnextbox
-     {\def\currentanchorbox{#1}%
+     {\cdef\currentanchorbox{#1}%
       \setupboxanchor[#2]%
       \scratchcounterone\csname\??boxanchorbox#1\endcsname\relax
       \scratchxoffset\boxanchorparameter\c!xoffset\relax
@@ -1296,7 +1296,7 @@
      {\ifhastok={#2}%
         \setupcurrentboxanchorcontent[#2]%
       \else
-        \def\currentboxanchorcontent{#2}%
+        \cdef\currentboxanchorcontent{#2}%
         \setupcurrentboxanchorcontent[#3]%
       \fi
       \scratchxoffset\boxanchorcontentparameter\c!xoffset

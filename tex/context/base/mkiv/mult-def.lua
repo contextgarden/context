@@ -8536,6 +8536,9 @@ return {
    ["en"]="displaythreshold",
    ["fr"]="seuilaffichage",
   },
+  ["displayfactor"]={
+   ["en"]="displayfactor",
+  },
   ["distance"]={
    ["cs"]="vzdalenost",
    ["de"]="abstand",
@@ -9449,6 +9452,9 @@ return {
   ["inlinethreshold"]={
    ["en"]="inlinethreshold",
    ["fr"]="seuilenligne",
+  },
+  ["inlinefactor"]={
+   ["en"]="inlinefactor",
   },
   ["inner"]={
    ["cs"]="vnitrni",

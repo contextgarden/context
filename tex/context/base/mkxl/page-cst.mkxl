@@ -137,7 +137,7 @@
        \def\currentpagegrid{#1}%
      \fi
    \or
-     \edef\currentpagegrid{#1}%
+     \cdef\currentpagegrid{#1}%
      \setupcurrentpagegrid[#2]%
    \fi
    \usepageparameter\pagegridparameter
@@ -309,7 +309,7 @@
      \page_lines_add_numbers_to_box\b_page_grd_column\privatescratchcounter\c_page_grd_n_of_left\plustwo
    \fi
    \begingroup
-   \edef\currentpagegrid{\currentpagegrid:#1}%
+   \cdef\currentpagegrid{\currentpagegrid:#1}%
    \inheritedpagegridframedbox\box\b_page_grd_column
    \endgroup}
 
@@ -641,7 +641,7 @@
    \synchronizepagegrid
    \bgroup
    \forgetall
-   \edef\currentpagegridspan{#1}%
+   \cdef\currentpagegridspan{#1}%
    \clf_sethsizecolumnspan{\currentpagegrid}\pagegridspanparameter\c!n\relax
    \setbox\scratchbox\hbox\bgroup\inheritedpagegridspanframed\bgroup
      \def\page_grd_span_stop{\page_grd_span_stop_indeed{#2}}%
@@ -718,7 +718,7 @@
 \to \everydefinepagegridarea
 
 \permanent\tolerant\protected\def\setuppagegridareatext[#1]#*[#2]%
-  {\edef\currentpagegridarea{#1}%
+  {\cdef\currentpagegridarea{#1}%
    \setpagegridareaparameter\c!text{#2}}
 
 % maybe move the left/right correction to the tex end or the offset to lua
@@ -727,7 +727,7 @@
 
 \permanent\protected\def\setpagegridarea#1#2#3#4#5#6#7#8% can be optimized
   {\begingroup
-   \edef\currentpagegridarea{#2}%
+   \cdef\currentpagegridarea{#2}%
    \setpagegridareaparameter\c!width {#5\scaledpoint}%
    \setpagegridareaparameter\c!height{#6\scaledpoint}%
    \setbox\nextbox\hpack\bgroup\inheritedpagegridareaframed\bgroup

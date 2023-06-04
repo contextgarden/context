@@ -179,7 +179,7 @@
 \installcorenamespace{constructionnotehandler}
 
 \protected\def\strc_constructions_initialize#1% class instance
-  {\edef\currentconstruction{#1}%
+  {\cdef\currentconstruction{#1}%
    \enforced\let\currentconstructionhash\??construction
    \let\currentconstructionlistentry\!!zerocount
    \enforced\expandafter\let\expandafter\currentconstructionmain   \csname\??constructionmain \currentconstruction\endcsname

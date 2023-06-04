@@ -126,7 +126,7 @@
 
 \permanent\protected\def\transparent[#1]%
   {\beginsimplegroup
-   \edef\scratchstringone{#1}%
+   \cdef\scratchstringone{#1}%
    % the \relax catches a non existent csname
    \ifx\scratchstringone\v!reset
      \c_attr_transparency\attributeunsetvalue
@@ -137,7 +137,7 @@
 
 \permanent\protected\def\starttransparent[#1]%$
   {\begingroup
-   \edef\scratchstringone{#1}%
+   \cdef\scratchstringone{#1}%
    \ifx\scratchstringone\v!reset
      \c_attr_transparency\attributeunsetvalue
    \else
@@ -151,7 +151,7 @@
 
 \permanent\protected\def\coloronly[#1]%
   {\beginsimplegroup
-   \edef\currentcolorname{#1}%
+   \cdef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
      \colo_helpers_activate_nop_only
    \else
@@ -161,7 +161,7 @@
 
 \permanent\protected\def\startcoloronly[#1]%$
   {\begingroup
-   \edef\currentcolorname{#1}%
+   \cdef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
      \colo_helpers_activate_nop_only
    \else
@@ -175,7 +175,7 @@
 
 \permanent\protected\def\color[#1]%
   {\beginsimplegroup
-   \edef\currentcolorname{#1}%
+   \cdef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
      \colo_helpers_activate_nop
    \else
@@ -190,7 +190,7 @@
 
 \permanent\protected\def\startcolor[#1]%$
   {\begingroup
-   \edef\currentcolorname{#1}%
+   \cdef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
      \colo_helpers_activate_nop
    \else
@@ -216,7 +216,7 @@
 
 \permanent\protected\def\fastcolor[#1]#2%
   {\begingroup % is this command still needed?
-   \edef\currentcolorname{#1}%
+   \cdef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
      \colo_helpers_activate_nop
    \else
@@ -226,7 +226,7 @@
    \endgroup}
 
 \permanent\protected\def\directcolor[#1]%
-  {\edef\currentcolorname{#1}%
+  {\cdef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
      \colo_helpers_activate_nop
    \else
@@ -586,13 +586,13 @@
 % \newtoks\t_colo_prefix % used in mp interface
 
 \permanent\tolerant\protected\def\setuppalet[#1]%
-  {\edef\currentcolorpalet{#1}%
+  {\cdef\currentcolorpalet{#1}%
    \ifempty\currentcolorpalet
      % seems to be a reset
      \lettonothing\currentcolorprefix
     %\t_colo_prefix\emptytoks
    \orelse\ifcsname\??paletlist\currentcolorpalet\endcsname
-     \edef\currentcolorprefix{#1:}%
+     \cdef\currentcolorprefix{#1:}%
     %\t_colo_prefix\expandafter{\currentcolorprefix}%
    \else
      \colo_helpers_show_message\m!colors7\currentcolorpalet
@@ -737,7 +737,7 @@
   {\colo_helpers_set_model{#1}}  % only for local usage
 
 \def\colo_helpers_set_model#1% direct
-  {\edef\currentcolormodel{#1}%
+  {\cdef\currentcolormodel{#1}%
    \clf_setcolormodel{\currentcolormodel}{\m_colo_weight_gray}} % sets attribute at lua end
 
 \colo_helpers_set_model\s!all
@@ -813,7 +813,7 @@
 % so far
 
 \permanent\protected\def\colo_helpers_activate#1% two-step is not that much faster but less tracing
-  {\edef\currentcolorname{#1}%
+  {\cdef\currentcolorname{#1}%
    \ifempty\currentcolorprefix
      \colo_helpers_activate_nop
    \else

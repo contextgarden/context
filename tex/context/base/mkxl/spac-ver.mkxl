@@ -190,7 +190,7 @@
    \else
      \settrue\interlinespaceisset
      \ifcsname\namedinterlinespacehash{#1}\s!parent\endcsname
-        \edef\currentinterlinespace{#1}%
+        \cdef\currentinterlinespace{#1}%
         \spac_linespacing_setup_specified_interline_space
        %\dosetupspecifiedinterlinespaceindeed
      \else

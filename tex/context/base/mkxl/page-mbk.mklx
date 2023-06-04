@@ -79,7 +79,7 @@
 
 \permanent\tolerant\protected\def\startmarginblock[#tag]%
   {\begingroup
-   \edef\currentmarginblock{#tag}%
+   \cdef\currentmarginblock{#tag}%
    \ifcstok{\marginblockparameter\c!state}\v!start
      \expandafter\page_margin_blocks_start_block_yes
    \else

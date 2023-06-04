@@ -107,7 +107,7 @@
 
 \permanent\tolerant\protected\def\spac_lines_start[#1]%
   {\bgroup
-   \edef\currentlines{#1}%
+   \cdef\currentlines{#1}%
    \obeylines
    \spac_lines_start_indeed}
 

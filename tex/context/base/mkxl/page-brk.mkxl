@@ -376,7 +376,7 @@
    \relax
    \ifconditional\c_page_breaks_enabled
      \begingroup
-     \edef\currentpagechecker{#1}%
+     \cdef\currentpagechecker{#1}%
      \setupcurrentpagechecker[#2]%
      \csname\??pagecheckermethod\pagecheckerparameter\c!method\endcsname
      \endgroup

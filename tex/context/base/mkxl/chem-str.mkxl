@@ -89,7 +89,7 @@
 
 \permanent\protected\tolerant\overloaded\def\definechemical[#1]#:#2% is global (so we don't use the commandhandler)
   {\startnointerference
-   \edef\currentdefinedchemical{#1}%
+   \cdef\currentdefinedchemical{#1}%
    \enforced\let\chemical\chem_chemical_nested
    \clf_undefinechemical{#1}%
    #2% flush
@@ -146,14 +146,14 @@
      \ifhastok={#1}%
        \setupcurrentchemical[#1]% same as \currentchemical
      \else
-       \edef\currentchemical{#1}%
+       \cdef\currentchemical{#1}%
        \setupcurrentchemical[#2]%
      \fi
    \orelse\ifparameter#1\or
      \ifhastok={#1}%
        \setupcurrentchemical[#1]% same as \currentchemical
      \else
-       \edef\currentchemical{#1}%
+       \cdef\currentchemical{#1}%
      \fi
    \fi
    \the\everystructurechemical

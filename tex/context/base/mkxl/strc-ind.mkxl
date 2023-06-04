@@ -60,18 +60,18 @@
 \newdimension\d_strc_indentedtexts_distance
 
 \appendtoks
-   \frozen\instance\setuevalue    {\e!start\currentindentedtext}{\strc_indentedtexts_start{\currentindentedtext}\c_strc_indentedtexts_nesting}%
-   \frozen\instance\setuevalue    {\e!stop \currentindentedtext}{\strc_indentedtexts_stop}%
+   \frozen\instance\protected\edefcsname\e!start\currentindentedtext\endcsname{\strc_indentedtexts_start{\currentindentedtext}\c_strc_indentedtexts_nesting}%
+   \frozen\instance\protected\edefcsname\e!stop \currentindentedtext\endcsname{\strc_indentedtexts_stop}%
    % to be avoided ... might go away
-   \frozen\instance\setuevalue            {\currentindentedtext}{\strc_indentedtexts_direct{\currentindentedtext}{0}}%
-   \frozen\instance\setuevalue      {\v!sub\currentindentedtext}{\strc_indentedtexts_direct{\currentindentedtext}{1}}%
-   \frozen\instance\setuevalue{\v!sub\v!sub\currentindentedtext}{\strc_indentedtexts_direct{\currentindentedtext}{2}}%
+   \frozen\instance\protected\edefcsname            \currentindentedtext\endcsname{\strc_indentedtexts_direct{\currentindentedtext}{0}}%
+   \frozen\instance\protected\edefcsname      \v!sub\currentindentedtext\endcsname{\strc_indentedtexts_direct{\currentindentedtext}{1}}%
+   \frozen\instance\protected\edefcsname\v!sub\v!sub\currentindentedtext\endcsname{\strc_indentedtexts_direct{\currentindentedtext}{2}}%
 \to \everydefineindentedtext
 
 \protected\def\strc_indentedtexts_start#1#2% we need to get rid of \spr
   {\par
    \begingroup
-   \edef\currentindentedtext{#1}%
+   \cdef\currentindentedtext{#1}%
    \c_strc_indentedtexts_nesting#2\relax
    \indentedtextparameter\c!before
    \d_strc_indentedtexts_distance\indentedtextparameter\c!distance\relax

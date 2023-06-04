@@ -83,10 +83,8 @@
   {\spaceskip.5\emwidth\relax
    \enforced\let\obeyedspace\specialobeyedspace
    \enforced\let\controlspace\specialcontrolspace
-   \edef\p_buff_lines{\typeparameter\c!lines}%
-   \begincsname\??typinglines\p_buff_lines\endcsname
-   \edef\p_buff_space{\typeparameter\c!space}%
-   \begincsname\??typingspace\p_buff_space\endcsname
+   \begincsname\??typinglines\typeparameter\c!lines\endcsname
+   \begincsname\??typingspace\typeparameter\c!space\endcsname
    \relax\the\everyinitializeverbatim\relax}
 
 \permanent\protected\def\doinitializeverbatim % for use elsewhere .. temp hack (see lxml-ini)
@@ -123,10 +121,8 @@
   {\spaceskip.5\emwidth\relax
    \enforced\let\obeyedspace\specialobeyedspace
    \enforced\let\controlspace\specialcontrolspace
-   \edef\p_buff_lines{\typingparameter\c!lines}%
-   \begincsname\??typinglines\p_buff_lines\endcsname
-   \edef\p_buff_space{\typingparameter\c!space}%
-   \begincsname\??typingspace\p_buff_space\endcsname
+   \begincsname\??typinglines\typingparameter\c!lines\endcsname
+   \begincsname\??typingspace\typingparameter\c!space\endcsname
    \relax\the\everyinitializeverbatim\relax}
 
 %D \macros
@@ -261,13 +257,13 @@
 \protected\def\buff_verbatim_type#1%
   {\dontleavehmode
    \bgroup
-   \edef\currenttype{#1}%
+   \cdef\currenttype{#1}%
    \buff_verbatim_type_indeed}
 
 \def\buff_verbatim_typ#1%
   {\dontleavehmode
    \bgroup
-   \edef\currenttype{#1}%
+   \cdef\currenttype{#1}%
    \lettypeparameter\c!lines\v!hyphenated
    \enforced\let\specialobeyedspace\specialstretchedspace
    \buff_verbatim_type_indeed}
@@ -445,7 +441,7 @@
 
 \protected\def\buff_verbatim_typing_start#1#2% tricky non standard lookahead
   {\begingroup
-   \edef\currenttyping       {#1}%
+   \cdef\currenttyping       {#1}%
    \edef\currenttypingwrapper{#2}%
    \obeylines
    \futureexpandis[\buff_verbatim_typing_start_yes\buff_verbatim_typing_start_nop}
@@ -617,7 +613,7 @@
 \aliased\let\doiftypingfileelse\doifelsetypingfile
 
 \def\buff_verbatim_type_file_indeed#1#2% category name
-  {\edef\currenttyping{#1}%
+  {\cdef\currenttyping{#1}%
    \typingparameter\c!before\relax
    \startpacked[\v!blank]
    \buff_verbatim_setup_line_numbering
@@ -794,7 +790,7 @@
 
 \protected\def\buff_verbatim_type_buffer_class#1%
   {\begingroup
-   \edef\currenttyping{#1}%
+   \cdef\currenttyping{#1}%
    \buff_verbatim_type_buffer}
 
 \tolerant\protected\def\buff_verbatim_type_defined_buffer[#1]#*[#2]#*[#3]% category name settings
@@ -808,7 +804,7 @@
    \dorechecknextindentation}
 
 \protected\def\buff_verbatim_type_buffer_indeed#1#2% category name
-  {\edef\currenttyping{#1}%
+  {\cdef\currenttyping{#1}%
    \typingparameter\c!before\relax
    \startpacked[\v!blank]
    \buff_verbatim_setup_line_numbering
@@ -823,6 +819,7 @@
      range  {\typingparameter\c!range}%
      regime {\currentregime}%
      tab    {\typingparameter\c!tab}%
+     par    {\typingparameter\c!paragraph}%
      method {\p_buff_option}%
      escape {\typingparameter\c!escape}%
      nature {display}%
@@ -854,7 +851,7 @@
    \endgroup}
 
 \protected\def\buff_verbatim_type_buffer_indeed_inline#1#2% category name
-  {\edef\currenttype{#1}%
+  {\cdef\currenttype{#1}%
    \buff_verbatim_initialize_type_one
    \dostarttaggedchained\t!verbatim\currenttype\??type
    \clf_typebuffer
@@ -893,7 +890,7 @@
    \endgroup}
 
 \def\buff_verbatim_process_indeed#1#2%
-  {\edef\currenttyping{#1}%
+  {\cdef\currenttyping{#1}%
    \clf_processbuffer
      name   {#2}%
      strip  {\typingparameter\c!strip}%

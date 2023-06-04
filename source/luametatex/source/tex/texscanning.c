@@ -3703,8 +3703,18 @@ halfword tex_scan_toks_expand(int left_brace_found, halfword *tail, int expandco
         switch (cur_cmd) {
             case call_cmd:
             case tolerant_call_cmd:
+//          case constant_call_cmd:
                 tex_expand_current_token();
                 goto PICKUP;
+            case constant_call_cmd:
+                {
+                    halfword h = token_link(cur_chr);
+                    while (h) { 
+                        p = tex_store_new_token(p, token_info(h));
+                        h = token_link(h);
+                    }
+                    goto PICKUP;
+                }
             case protected_call_cmd:
             case tolerant_protected_call_cmd:
                 cur_tok = cs_token_flag + cur_cs;
@@ -4020,8 +4030,18 @@ halfword tex_scan_macro_expand(void)
             switch (cur_cmd) {
                 case call_cmd:
                 case tolerant_call_cmd:
+             // case constant_call_cmd:
                     tex_expand_current_token();
                     goto PICKUP;
+                case constant_call_cmd:
+                    {
+                        halfword h = token_link(cur_chr);
+                        while (h) { 
+                            p = tex_store_new_token(p, token_info(h));
+                            h = token_link(h);
+                        }
+                        goto PICKUP;
+                    }
                 case protected_call_cmd:
                 case semi_protected_call_cmd:
                 case tolerant_protected_call_cmd:

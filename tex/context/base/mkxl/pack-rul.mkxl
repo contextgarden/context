@@ -908,7 +908,7 @@
   {\bgroup
    \advanceby\c_pack_framed_nesting\plusone
    \letcsname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
-   \edef\currentframed{>\the\c_pack_framed_nesting}%
+   \cdef\currentframed{>\the\c_pack_framed_nesting}%
    \pack_framed_initialize
    \bgroup
    \setupcurrentframed[#1]% here !, seldom no argument so no need to optimize
@@ -923,17 +923,17 @@
      \ifhastok={#1}%
        \advanceby\c_pack_framed_nesting\plusone
        \letcsname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
-       \edef\currentframed{>\the\c_pack_framed_nesting}%
+       \cdef\currentframed{>\the\c_pack_framed_nesting}%
        \pack_framed_initialize
        \bgroup
        \setupcurrentframed[#1]% here !
      \else
-       \edef\currentframed{#1}%
+       \cdef\currentframed{#1}%
        \pack_framed_initialize
        \bgroup
      \fi
    \else
-     \edef\currentframed{#1}%
+     \cdef\currentframed{#1}%
      \pack_framed_initialize
      \bgroup
      \setupcurrentframed[#2]% here !
@@ -953,7 +953,7 @@
    \advanceby\c_pack_framed_nesting\plusone
    \letcsname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
    \bgroup
-   \edef\currentframed{>\the\c_pack_framed_nesting}%
+   \cdef\currentframed{>\the\c_pack_framed_nesting}%
    \pack_framed_initialize
    \setupcurrentframed[#1]%
    \pack_framed_process_indeed}
@@ -992,7 +992,7 @@
 
 \permanent\protected\def\fastlocalframed[#1]#*[#2]#3%
   {\bgroup
-   \edef\currentframed{#1}%
+   \cdef\currentframed{#1}%
    \pack_framed_initialize
    \setbox\b_framed_normal\hbox{#3}%
    \iftrialtypesetting \else
@@ -1075,7 +1075,7 @@
 
 \permanent\protected\def\localbackgroundframed#1% namespace component box
   {\bgroup
-   \edef\currentframed{#1}%
+   \cdef\currentframed{#1}%
    \pack_framed_initialize
    \pack_framed_process_box_indeed} % group ends here
 
@@ -1141,7 +1141,7 @@
 \permanent\tolerant\protected\def\localframed[#1]#*[#2]%
   {\bgroup
    \bgroup
-   \edef\currentframed{#1}%
+   \cdef\currentframed{#1}%
    \pack_framed_initialize
    \setupcurrentframed[#2]% here !
    \pack_framed_process_indeed}
@@ -1149,7 +1149,7 @@
 \permanent\protected\def\directlocalframed[#1]% no optional
   {\bgroup
    \bgroup
-   \edef\currentframed{#1}%
+   \cdef\currentframed{#1}%
    \pack_framed_initialize
    \pack_framed_process_indeed}
 
@@ -2756,7 +2756,7 @@
 
 \tolerant\protected\def\pack_framed_text_start[#1]#*[#2]#*[#3]% or #1#*[#2]#*[#3]% and pass {#1}
   {\bgroup
-   \edef\currentframedtext{#1}%
+   \cdef\currentframedtext{#1}%
    \doifelseassignment{#2}
      {\pack_framed_text_start_indeed\empty{#2}}
      {\pack_framed_text_start_indeed{#2}{#3}}}
@@ -2889,7 +2889,7 @@
 
 \tolerant\protected\def\pack_framed_text_direct[#1]#*[#2]%
   {\bgroup
-   \edef\currentframedtext{#1}%
+   \cdef\currentframedtext{#1}%
    \usebodyfontparameter\framedtextparameter
    \setupcurrentframedtext[#2]%
    \edef\p_framed_text_strut{\framedtextparameter\c!strut}%
@@ -2956,7 +2956,7 @@
 %    \advanceby\c_pack_framed_temp\plusone
 %    \defcsname\??framed#1>\the\c_pack_framed_temp:\s!parent\endcsname{\??framed#1}% \inheritlocalframed
 %    \bgroup
-%    \edef\currentframed{#1>\the\c_pack_framed_temp}%
+%    \cdef\currentframed{#1>\the\c_pack_framed_temp}%
 %    \pack_framed_initialize
 %    \setupcurrentframed[#2]% here !
 %    \pack_framed_process_indeed}
@@ -2972,7 +2972,7 @@
    \advanceby\scratchcounter\plusone
    \defcsname\??framed#1>\the\scratchcounter:\s!parent\endcsname{\??framed#1}% \inheritlocalframed
    \bgroup
-   \edef\currentframed{#1>\the\scratchcounter}%
+   \cdef\currentframed{#1>\the\scratchcounter}%
    \pack_framed_initialize
    \setupcurrentframed[#2]% here !
    \pack_framed_process_indeed}
@@ -3044,7 +3044,7 @@
 
 \permanent\tolerant\protected\def\startframedcontent[#1]%
   {\bgroup
-   \edef\currentframedcontent{#1}%
+   \cdef\currentframedcontent{#1}%
    \ifx\currentframedcontent\v!off
      \enforced\let\stopframedcontent\egroup
    \else

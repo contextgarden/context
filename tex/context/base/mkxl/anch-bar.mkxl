@@ -90,7 +90,7 @@
    \global\advanceby\c_anch_sidebars_n\plusone
    \c_anch_sidebars_current\c_anch_sidebars_n\relax % relax needed
    \ifhastok={#1}%
-     \edef\currentsidebar{\the\c_anch_sidebars_level}%
+     \cdef\currentsidebar{\the\c_anch_sidebars_level}%
      \checksidebarparent
      \setupcurrentsidebar[#1]%
    \else

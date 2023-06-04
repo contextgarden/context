@@ -1502,7 +1502,7 @@
    \iftrialtypesetting\else
      \global\advanceby\c_strc_formulas_n\plusone
    \fi
-   \edef\currentformula{#1}%
+   \cdef\currentformula{#1}%
    \usesetupsparameter\formulaparameter % new
    \dostarttaggedchained\t!formula\currentformula\??formula
    \strc_math_set_options{#2}%

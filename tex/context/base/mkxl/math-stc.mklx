@@ -339,7 +339,7 @@
 
 \protected\def\math_stackers_triplet#method#category#codepoint#toptext#bottomtext%
   {\begingroup
-   \edef\currentmathstackers{#category}%
+   \cdef\currentmathstackers{#category}%
    \mathstackersparameter\c!left\relax
    \dostarttagged\t!mstacker\currentmathstackers
    \ifmmode\math_atom_by_parameter\mathstackersparameter\else\dontleavehmode\fi
@@ -498,7 +498,7 @@
 \tolerant\protected\def\math_stackers_auto_normal#1#2#*[#3]#:#=#*#=%
   {\begingroup
    \scratchcounter#2\relax
-   \edef\currentmathstackers{\ifparameter#3\or#3\else#1\fi}%
+   \cdef\currentmathstackers{\ifparameter#3\or#3\else#1\fi}%
    \math_stackers_triplet\zerocount\currentmathstackers\scratchcounter{#4}{#5}%
    \endgroup}
 
@@ -526,7 +526,7 @@
 
 \protected\def\math_stackers_start_group#category%
   {\begingroup
-   \edef\currentmathstackers{#category}%
+   \cdef\currentmathstackers{#category}%
    \edef\p_limits{\mathstackersparameter\c!mathlimits}%
    \ifx\p_limits\v!yes
      \def\math_stackers_stop_group{\egroup\endgroup\ordlimits}%
@@ -697,7 +697,7 @@
 
 \permanent\tolerant\protected\def\mathover[#category]#spacer[#settings]#:#topcode#text%
   {\begingroup
-   \edef\currentmathstackers{\ifparameter#category\or#category\else\v!top\fi}%
+   \cdef\currentmathstackers{\ifparameter#category\or#category\else\v!top\fi}%
    \ifparameter#settings\or
       \setupcurrentmathstackers[#settings]%
    \fi
@@ -710,7 +710,7 @@
 
 \permanent\tolerant\protected\def\mathunder[#category]#spacer[#settings]#:#bottomcode#text%
   {\begingroup
-   \edef\currentmathstackers{\ifparameter#category\or#category\else\v!bottom\fi}%
+   \cdef\currentmathstackers{\ifparameter#category\or#category\else\v!bottom\fi}%
    \ifparameter#settings\or
       \setupcurrentmathstackers[#settings]%
    \fi
@@ -723,7 +723,7 @@
 
 \permanent\tolerant\protected\def\mathdouble[#category]#spacer[#settings]#:#topcode#bottomcode#text%
   {\begingroup
-   \edef\currentmathstackers{\ifparameter#category\or#category\else\v!both\fi}%
+   \cdef\currentmathstackers{\ifparameter#category\or#category\else\v!both\fi}%
    \ifparameter#settings\or
       \setupcurrentmathstackers[#settings]%
    \fi
@@ -746,7 +746,7 @@
    \mathstackersparameter\c!left\relax
    \dostarttagged\t!mstacker\currentmathstackers
    \ifmmode\math_atom_by_parameter\mathstackersparameter\else\dontleavehmode\fi
-     {\edef\currentmathstackers{#category}%
+     {\cdef\currentmathstackers{#category}%
       %
       \edef\p_offset     {\mathstackersparameter\c!offset}%
       \edef\p_location   {\mathstackersparameter\c!location}%
@@ -913,16 +913,16 @@
 
 \tolerant\protected\def\math_stackers_auto_triplet_yes[#1][#2]#*[#3]#:#=#*#=% [#2]% #2 gobble spaces
   {\begingroup
-   \edef\currentmathstackers{#1}%
+   \cdef\currentmathstackers{#1}%
    \def \m_math_stackers_text_middle{#2}%
-   \ifarguments#3\or\edef\currentmathstackers{#3}\fi
+   \ifarguments#3\or\cdef\currentmathstackers{#3}\fi
    \math_stackers_triplet\plusone\currentmathstackers\m_math_stackers_text_middle{#4}{#5}%
    \endgroup}
 
 \tolerant\protected\def\math_stackers_auto_triplet_nop[#1]#*[#2]#:#=#*#=#*#=% [#2]% #2 gobble spaces%
   {\begingroup
-   \edef\currentmathstackers{#1}%
-   \ifarguments#2\or\edef\currentmathstackers{#2}\fi
+   \cdef\currentmathstackers{#1}%
+   \ifarguments#2\or\cdef\currentmathstackers{#2}\fi
    \math_stackers_triplet\plusone\currentmathstackers{#3}{#4}{#5}%
    \endgroup}
 
@@ -1332,7 +1332,7 @@
 
 \protected\def\math_stackers_unstacked_normal#category#codepoint%
   {\begingroup
-   \edef\currentmathstackers{#category}%
+   \cdef\currentmathstackers{#category}%
    \edef\p_moffset{\mathstackersparameter\c!moffset}%
    \ifconditional\indisplaymath
      \ifempty\p_moffset \else

@@ -278,7 +278,7 @@
    \ifparameter#3\or
      \frozen\instance\protected\def#3##1{\strc_synonyms_insert_meaning{#1}{##1}}% \meaning
    \fi
-   \edef\currentsynonym{#1}%
+   \cdef\currentsynonym{#1}%
    %
   %\checksynonymparent
   %\setupcurrentsynonym[\s!single={#1},\s!multi={#2}]%
@@ -305,7 +305,7 @@
 \permanent\tolerant\protected\def\definesynonym[#1]#*[#2]#*[#3]#*[#4]% [yes][abbreviation][FOO]{foo}{foo me}
   {\begingroup
    \edef\currentsynonymoption{#1}%
-   \edef\currentsynonym{#2}%
+   \cdef\currentsynonym{#2}%
    \edef\currentsynonymtag{#3}%
    \edef\currentsynonymsortkey{#4}%
    \strc_synonyms_define_entry}
@@ -317,7 +317,7 @@
 % \permanent\tolerant\protected\def\setsynonym[#1]#*[#2]%
 %   {\begingroup
 %    \setupsynonymentry[#2]%
-%    \edef\currentsynonym       {#1}%
+%    \cdef\currentsynonym       {#1}%
 %    \edef\currentsynonymoption {\synonymentryparameter\c!option}%
 %    \edef\currentsynonymtag    {\synonymentryparameter\c!tag}%
 %    \edef\currentsynonymsortkey{\synonymentryparameter\c!sortkey}%
@@ -399,7 +399,7 @@
 \protected\def\strc_synonyms_insert_meaning#1#2% name tag
   {\dontleavehmode % otherwise we don't get it right at the beginning of a par
    \begingroup
-   \def\currentsimplelist{#1}%
+   \cdef\currentsimplelist{#1}%
    \def\currentsynonymtag{#2}%
    \fastsetup{\??simplelistrenderings::\v!text}%
    \endgroup}
@@ -407,7 +407,7 @@
 \protected\def\strc_synonyms_insert#1#2% name tag
   {\dontleavehmode % otherwise we don't get it right at the beginning of a par
    \begingroup
-   \edef\currentsimplelist{#1}%
+   \cdef\currentsimplelist{#1}%
    \let\currentsynonym\currentsimplelist % for a while
    \def\currentsynonymtag{#2}%
    \edef\currentsimplelistalternative{\simplelistparameter\c!alternative}%
@@ -482,7 +482,7 @@
 
 \permanent\tolerant\protected\def\placelistofsynonyms[#1]#*[#2]%
   {\begingroup
-   \edef\currentsimplelist{#1}%
+   \cdef\currentsimplelist{#1}%
    \doifelsecommandhandler\??simplelist\currentsimplelist
      {\strc_constructions_initialize{#1}%
       \setupcurrentsimplelist[#2]%
@@ -504,7 +504,7 @@
 
 \permanent\tolerant\protected\def\completelistofsynonyms[#1]#*[#2]%
   {\begingroup
-   \edef\currentsimplelist{#1}%
+   \cdef\currentsimplelist{#1}%
    \doifelsecommandhandler\??simplelist\currentsimplelist
      {\normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\simplelistparameter\s!multi}},\c!reference=#1]}%
         \placelistofsynonyms[#1][#2]%
@@ -561,7 +561,7 @@
    \else
      \frozen\instance\protected\defcsname#1\endcsname{\definesort[\v!yes][#1]}%
    \fi
-   \edef\currentsorting{#1}%
+   \cdef\currentsorting{#1}%
    \setfalse\c_strc_constructions_define_commands
    \definesimplelist
      [\currentsorting]%
@@ -586,12 +586,12 @@
 \permanent\tolerant\protected\def\definesort[#1]#*[#2]#*[#3]%
   {\begingroup
    \edef\currentsortingoption{#1}%
-   \edef\currentsorting{#2}%
+   \cdef\currentsorting{#2}%
    \edef\currentsortingtag{#3}%
    \strc_sorting_define_entry}
 
 \def\strc_sorting_define_entry#1%
-  {\let\currentsimplelist\currentsimplelist
+  {%\let\currentsimplelist\currentsimplelist
    \ifempty\currentsortingtag
      \edef\currentsortingtag{#1}%
    \fi
@@ -644,7 +644,7 @@
   {\dontleavehmode % otherwise we don't get it right at the beginning of a par
    \begingroup
    % no kap currently, of .. we need to map cap onto WORD
-   \edef\currentsorting{#1}%
+   \cdef\currentsorting{#1}%
    \edef\currentsortingtag{#2}%
    \let\currentsimplelist\currentsorting
    \edef\currentsimplelistalternative{\simplelistparameter\c!alternative}%
@@ -686,7 +686,7 @@
 
 \permanent\tolerant\protected\def\placelistofsorts[#1]#*[#2]%
   {\begingroup
-   \edef\currentsimplelist{#1}%
+   \cdef\currentsimplelist{#1}%
    \strc_constructions_initialize{#1}%
    \setupcurrentsimplelist[#2]%
    \edef\p_simplelist_command{\simplelistparameter\c!command}%
@@ -710,7 +710,7 @@
 
 \permanent\tolerant\protected\def\completelistofsorts[#1]#*[#2]%
   {\begingroup
-   \edef\currentsimplelist{#1}%
+   \cdef\currentsimplelist{#1}%
    \normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\simplelistparameter\s!multi}},\c!reference=#1]}%
    \placelistofsorts[#1][#2]%
    \page

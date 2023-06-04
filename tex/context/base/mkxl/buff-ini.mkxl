@@ -127,7 +127,7 @@
 \appendtoks
     \global\advanceby\c_buff_n_of_defined\plusone
     \setexpandedbufferparameter\c!number{\number\c_buff_n_of_defined}%
-    \edef\currentdefinedbuffer{def-\number\c_buff_n_of_defined}%
+    \cdef\currentdefinedbuffer{def-\number\c_buff_n_of_defined}%
     \ifcstok{\bufferparameter\c!define}\v!yes
       \frozen\instance\protected\edefcsname\e!start\currentbuffer\endcsname
         {\buff_start_defined{\currentbuffer}{\currentdefinedbuffer}{\e!start\currentbuffer}{\e!stop\currentbuffer}}%
@@ -254,7 +254,7 @@
 \to \everydefinesavebuffer
 
 \protected\def\buff_stop_save_buffer#1%
-  {\edef\currentsavebuffer{#1}%
+  {\cdef\currentsavebuffer{#1}%
    \global\advanceby\csname\??savebuffercounter\currentsavebuffer\endcsname\plusone
    \clf_savebuffer % will become key/value
      {\thedefinedbuffer{\currentsavebuffer}}%

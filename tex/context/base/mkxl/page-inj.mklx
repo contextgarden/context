@@ -51,7 +51,7 @@
 
 \def\page_injections_flush_saved#name#parameters%
   {\begingroup
-   \edef\currentpageinjection{#name}%
+   \cdef\currentpageinjection{#name}%
    \getdummyparameters[#parameters]%
    \edef\currentpageinjectionalternative          {\pageinjectionparameter           \c!alternative   }%
    \edef\p_page_injectionalternative_rederingsetup{\pageinjectionalternativeparameter\c!renderingsetup}%
@@ -87,12 +87,12 @@
    \page_injections_direct_indeed}
 
 \def\page_injections_direct_name_parameters#name% #parameters%
-  {\edef\currentpageinjection{#name}%
+  {\cdef\currentpageinjection{#name}%
    \checkpageinjectionparent
    \page_injections_direct_indeed}
 
 \def\page_injections_direct_name#name%
-  {\edef\currentpageinjection{#name}%
+  {\cdef\currentpageinjection{#name}%
    \checkpageinjectionparent
    \page_injections_direct_indeed{}}
 

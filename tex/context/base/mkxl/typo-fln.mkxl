@@ -74,7 +74,7 @@
 \protected\def\typo_firstline_handle_indeed#1%
   {\dontleavehmode
    \begingroup
-   \edef\currentfirstline{#1}%
+   \cdef\currentfirstline{#1}%
    \usefirstlinestyleandcolor\c!style\c!color
    \clf_setfirstline
         alternative {\firstlineparameter\c!alternative}%

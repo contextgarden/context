@@ -874,7 +874,7 @@
 
 \def\strc_itemgroups_calculate_list_width#level%
   {\let\m_strc_itemgroups_saved\currentitemgroup
-   \edef\currentitemgroup{\currentparentitemgroup:\number#level}%
+   \cdef\currentitemgroup{\currentparentitemgroup:\number#level}%
    \ifdim\d_strc_itemgroups_max_width>\zeropoint
      \d_strc_itemgroups_list_width\d_strc_itemgroups_max_width
    \orelse\ifnum\itemgroupparameter\c!factor>\zerocount
@@ -899,7 +899,7 @@
    \global\advanceby\c_strc_itemgroups_nesting\plusone
    \def\currentitemlevel{\number\c_strc_itemgroups_nesting}%
    \normalexpanded{\chaintocurrentitemgroup{\currentparentitemgroup:\currentitemlevel}}%
-   \edef\currentitemgroup{\currentparentitemgroup:\currentitemlevel}%
+   \cdef\currentitemgroup{\currentparentitemgroup:\currentitemlevel}%
    %
    \edef\p_itemgroups_options{\itemgroupparameter\c!option}%
    \lettonothing\p_itemgroups_extra_options

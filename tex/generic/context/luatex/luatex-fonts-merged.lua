@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2023-06-01 09:35
+-- merge date  : 2023-06-04 18:54
 
 do -- begin closure to overcome local limits and interference
 
@@ -3331,6 +3331,7 @@ local p_prune_intospace=Cs (noleading*(notrailing+intospace+1     )^0 )
 local p_retain_normal=Cs ((normalline+normalempty )^0 )
 local p_retain_collapse=Cs ((normalline+doubleempty )^0 )
 local p_retain_noempty=Cs ((normalline+singleempty )^0 )
+local p_collapse_all=Cs (stripstart*(stripend+((whitespace+newline)^1/" ")+1)^0 )
 local striplinepatterns={
  ["prune"]=p_prune_normal,
  ["prune and collapse"]=p_prune_collapse,
@@ -3339,6 +3340,7 @@ local striplinepatterns={
  ["retain"]=p_retain_normal,
  ["retain and collapse"]=p_retain_collapse,
  ["retain and no empty"]=p_retain_noempty,
+ ["collapse all"]=p_collapse_all,
  ["collapse"]=patterns.collapser,
 }
 setmetatable(striplinepatterns,{ __index=function(t,k) return p_prune_collapse end })

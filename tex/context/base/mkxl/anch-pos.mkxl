@@ -144,7 +144,7 @@
 
 \def\anch_positions_set_only_indeed#1%
   {\anch_positions_initialize
-   \edef\currentposition{#1}%
+   \cdef\currentposition{#1}%
    \dosetposition\currentposition}
 
 \permanent\protected\def\setposition
@@ -156,7 +156,7 @@
 
 \def\anch_positions_set_indeed#1%
   {\anch_positions_initialize
-   \edef\currentposition{#1}%
+   \cdef\currentposition{#1}%
    \dosetposition\currentposition
    \anch_positions_trace_left
    \dopositionaction\currentposition}
@@ -171,7 +171,7 @@
 \def\anch_positions_set_data_indeed#1#2#3#4%
   {\anch_positions_initialize
    \hbox % \hpack
-     {\edef\currentposition{#1}%
+     {\cdef\currentposition{#1}%
       \dosetpositionwhd\currentposition{#2}{#3}{#4}%
       \anch_positions_trace_left
       \dopositionaction\currentposition
@@ -194,7 +194,7 @@
   {\anch_positions_initialize
   %\hbox to \wd\nextbox
    \hpack to \wd\nextbox
-     {\edef\currentposition{#1}%
+     {\cdef\currentposition{#1}%
       \dosetpositionbox\currentposition\nextbox
       \anch_positions_trace_left
       \setbox\b_anch_position\box\nextbox
@@ -215,7 +215,7 @@
 \def\anch_positions_set_strut_yes#1%
   {\anch_positions_initialize
    \hbox to \zeropoint % \hpack
-     {\edef\currentposition{#1}%
+     {\cdef\currentposition{#1}%
       \dosetpositionstrut\currentposition
       \anch_positions_trace_left
       \dopositionaction\currentposition
@@ -232,7 +232,7 @@
 \def\anch_positions_set_strut_kind_yes#1#2%
   {\anch_positions_initialize
    \hbox to \zeropoint % \hpack
-     {\edef\currentposition{#1}%
+     {\cdef\currentposition{#1}%
       \dosetpositionstrutkind\currentposition{#2}%
       \anch_positions_trace_left
       \dopositionaction\currentposition
@@ -252,7 +252,7 @@
 \def\anch_positions_set_plus_indeed#1#2#3#4#5%
   {\anch_positions_initialize
    \hbox % \hpack
-     {\edef\currentposition{#1}%
+     {\cdef\currentposition{#1}%
       \dosetpositionplus\currentposition{#2}{#3}{#4}{#5}%
       \anch_positions_trace_right
       \dopositionaction\currentposition
@@ -274,7 +274,7 @@
 \def\anch_positions_set_plus_yes_finish#1#2%
   {\anch_positions_initialize
    \hbox to \nextboxwd % \hpack
-     {\edef\currentposition{#1}%
+     {\cdef\currentposition{#1}%
       \dosetpositionplus\currentposition{\wd\nextbox}{\ht\nextbox}{\dp\nextbox}{#2}%
       \anch_positions_trace_right
       \setbox\b_anch_position\flushnextbox

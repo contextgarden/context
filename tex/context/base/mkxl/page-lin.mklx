@@ -247,7 +247,7 @@
    \page_lines_start_followup}
 
 \def\page_lines_start_two[#1][#2]% [tag][continue|<number>|settings]
-  {\edef\currentlinenumbering{#1}%
+  {\cdef\currentlinenumbering{#1}%
    \edef\m_argument{#2}%
    \ifx\m_argument\v!continue
      \c_page_lines_mode\zerocount
@@ -364,7 +364,7 @@
 
 \def\page_lines_make_number#tag#linenumber#width#dir% with hang and parindent and skips we have to compensate for \hsize
   {\setbox\scratchbox\naturalhbox to \zeropoint \bgroup
-     \edef\currentlinenumbering{#tag}%
+     \cdef\currentlinenumbering{#tag}%
      \def\linenumber{#linenumber}% unsafe
      \d_page_lines_line_width#width\scaledpoint\relax
      \d_page_lines_distance\linenumberingparameter\c!distance\relax

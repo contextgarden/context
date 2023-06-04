@@ -833,7 +833,7 @@ void lmt_nodelib_initialize(void) {
 
 inline static void lmt_properties_push(lua_State * L)
 {
-    lmt_node_memory_state.lua_properties_level++ ;
+    lmt_node_memory_state.lua_properties_level++;
     if (lmt_node_memory_state.lua_properties_level == 1) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_node_memory_state.node_properties_id);
     }
@@ -844,7 +844,7 @@ inline static void lmt_properties_pop(lua_State * L)
     if (lmt_node_memory_state.lua_properties_level == 1) {
         lua_pop(L, 1);
     }
-    lmt_node_memory_state.lua_properties_level-- ;
+    lmt_node_memory_state.lua_properties_level--;
 }
 
 /*tex Resetting boils down to nilling. */
@@ -1114,7 +1114,7 @@ halfword tex_copy_node_only(halfword p)
 # define copy_sub_node(target,source) do { \
     if (source) { \
         halfword copy_stub = tex_copy_node(source); \
-        target = copy_stub ; \
+        target = copy_stub; \
     } else { \
         target = null; \
     } \
@@ -1181,7 +1181,7 @@ halfword tex_copy_node(halfword p) /* how about null */
                     }
                     break;
                 case insert_node:
-                    copy_sub_list(insert_list(r), insert_list(p)) ;
+                    copy_sub_list(insert_list(r), insert_list(p));
                     break;
                 case mark_node:
                     tex_add_token_reference(mark_ptr(p));
@@ -1190,53 +1190,53 @@ halfword tex_copy_node(halfword p) /* how about null */
                     copy_sub_list(adjust_list(r), adjust_list(p));
                     break;
                 case choice_node:
-                    copy_sub_list(choice_display_mlist(r), choice_display_mlist(p)) ;
-                    copy_sub_list(choice_text_mlist(r), choice_text_mlist(p)) ;
-                    copy_sub_list(choice_script_mlist(r), choice_script_mlist(p)) ;
-                    copy_sub_list(choice_script_script_mlist(r), choice_script_script_mlist(p)) ;
+                    copy_sub_list(choice_display_mlist(r), choice_display_mlist(p));
+                    copy_sub_list(choice_text_mlist(r), choice_text_mlist(p));
+                    copy_sub_list(choice_script_mlist(r), choice_script_mlist(p));
+                    copy_sub_list(choice_script_script_mlist(r), choice_script_script_mlist(p));
                     break;
                 case simple_noad:
                 case radical_noad:
                 case fraction_noad:
                 case accent_noad:
-                    copy_sub_list(noad_nucleus(r), noad_nucleus(p)) ;
-                    copy_sub_list(noad_subscr(r), noad_subscr(p)) ;
-                    copy_sub_list(noad_supscr(r), noad_supscr(p)) ;
-                    copy_sub_list(noad_subprescr(r), noad_subprescr(p)) ;
-                    copy_sub_list(noad_supprescr(r), noad_supprescr(p)) ;
-                    copy_sub_list(noad_prime(r), noad_prime(p)) ;
-                 // copy_sub_list(noad_state(r), noad_state(p)) ;
+                    copy_sub_list(noad_nucleus(r), noad_nucleus(p));
+                    copy_sub_list(noad_subscr(r), noad_subscr(p));
+                    copy_sub_list(noad_supscr(r), noad_supscr(p));
+                    copy_sub_list(noad_subprescr(r), noad_subprescr(p));
+                    copy_sub_list(noad_supprescr(r), noad_supprescr(p));
+                    copy_sub_list(noad_prime(r), noad_prime(p));
+                 // copy_sub_list(noad_state(r), noad_state(p));
                     switch (t) {
                         case radical_noad:
-                            copy_sub_node(radical_left_delimiter(r), radical_left_delimiter(p)) ;
-                            copy_sub_node(radical_right_delimiter(r), radical_right_delimiter(p)) ;
-                            copy_sub_node(radical_top_delimiter(r), radical_top_delimiter(p)) ;
-                            copy_sub_node(radical_bottom_delimiter(r), radical_bottom_delimiter(p)) ;
-                            copy_sub_list(radical_degree(r), radical_degree(p)) ;
+                            copy_sub_node(radical_left_delimiter(r), radical_left_delimiter(p));
+                            copy_sub_node(radical_right_delimiter(r), radical_right_delimiter(p));
+                            copy_sub_node(radical_top_delimiter(r), radical_top_delimiter(p));
+                            copy_sub_node(radical_bottom_delimiter(r), radical_bottom_delimiter(p));
+                            copy_sub_list(radical_degree(r), radical_degree(p));
                             break;
                         case fraction_noad:
-                         // copy_sub_list(fraction_numerator(r), fraction_numerator(p)) ;
-                         // copy_sub_list(fraction_denominator(r), fraction_denominator(p)) ;
-                            copy_sub_node(fraction_left_delimiter(r), fraction_left_delimiter(p)) ;
-                            copy_sub_node(fraction_right_delimiter(r), fraction_right_delimiter(p)) ;
-                            copy_sub_node(fraction_middle_delimiter(r), fraction_middle_delimiter(p)) ;
+                         // copy_sub_list(fraction_numerator(r), fraction_numerator(p));
+                         // copy_sub_list(fraction_denominator(r), fraction_denominator(p);
+                            copy_sub_node(fraction_left_delimiter(r), fraction_left_delimiter(p));
+                            copy_sub_node(fraction_right_delimiter(r), fraction_right_delimiter(p));
+                            copy_sub_node(fraction_middle_delimiter(r), fraction_middle_delimiter(p));
                             break;
                         case accent_noad:
-                            copy_sub_list(accent_top_character(r), accent_top_character(p)) ;
-                            copy_sub_list(accent_bottom_character(r), accent_bottom_character(p)) ;
-                            copy_sub_list(accent_middle_character(r), accent_middle_character(p)) ;
+                            copy_sub_list(accent_top_character(r), accent_top_character(p));
+                            copy_sub_list(accent_bottom_character(r), accent_bottom_character(p));
+                            copy_sub_list(accent_middle_character(r), accent_middle_character(p));
                             break;
                     }
                     break;
                 case fence_noad:
                     /* in principle also scripts */
-                    copy_sub_node(fence_delimiter_list(r), fence_delimiter_list(p)) ;
-                    copy_sub_node(fence_delimiter_top(r), fence_delimiter_top(p)) ;
-                    copy_sub_node(fence_delimiter_bottom(r), fence_delimiter_bottom(p)) ;
+                    copy_sub_node(fence_delimiter_list(r), fence_delimiter_list(p));
+                    copy_sub_node(fence_delimiter_top(r), fence_delimiter_top(p));
+                    copy_sub_node(fence_delimiter_bottom(r), fence_delimiter_bottom(p));
                     break;
                 case sub_box_node:
                 case sub_mlist_node:
-                    copy_sub_list(kernel_math_list(r), kernel_math_list(p)) ;
+                    copy_sub_list(kernel_math_list(r), kernel_math_list(p));
                     break;
                 case par_node:
                     /* can also be copy_sub_node */
@@ -1960,7 +1960,7 @@ halfword tex_current_attribute_list(void)
         }
         return current_attribute_state;
     } else {
-        return null ;
+        return null;
     }
 }
 
@@ -4417,7 +4417,7 @@ halfword tex_reversed_node_list(halfword list)
                 halfword next = node_next(list);
                 tex_couple_nodes(list, prev);
                 if (node_type(list) == dir_node) {
-                    node_subtype(list) = node_subtype(list) == cancel_dir_subtype ? normal_dir_subtype : cancel_dir_subtype ;
+                    node_subtype(list) = node_subtype(list) == cancel_dir_subtype ? normal_dir_subtype : cancel_dir_subtype;
                 }
                 if (next) {
                     prev = list;
@@ -4569,7 +4569,7 @@ void tex_set_disc_field(halfword target, halfword location, halfword source)
     }
     node_prev(source) = null; /* don't expose this one! */
     if (source) {
-        node_head(target) = source ;
+        node_head(target) = source;
         node_tail(target) = tex_tail_of_node_list(source);
     } else {
         node_head(target) = null;
@@ -4627,7 +4627,7 @@ halfword tex_flatten_discretionaries(halfword head, int *count, int nest)
                         } else {
                             tex_try_couple_nodes(node_prev(current), h);
                         }
-                        disc_no_break_head(d) = null ;
+                        disc_no_break_head(d) = null;
                     } else if (current == head) {
                         head = next;
                     } else {

@@ -159,12 +159,12 @@
 % here we keep the \groupedcommand
 
 \def\typo_capitals_set_fake#1%
-  {\edef\currentcapitals{#1}%
+  {\cdef\currentcapitals{#1}%
    \clf_setcharactercasing\currentcapitals
    \usecapitalsstyleparameter\c!style}
 
 \def\typo_capitals_set_real#1%
-  {\edef\currentcapitals{#1}%
+  {\cdef\currentcapitals{#1}%
    \sc % \smallcaps
    \clf_setcharactercasing\currentcapitals}
 

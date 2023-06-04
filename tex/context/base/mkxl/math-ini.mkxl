@@ -934,7 +934,7 @@
 
 \permanent\protected\tolerant\def\startmathematics[#1]% no grouping, if ever then also an optional second
   {\push_macro_currentmathematics
-   \edef\currentmathematics{#1}% check for valid
+   \cdef\currentmathematics{#1}% check for valid
    \the\everyswitchmathematics}
 
 \permanent\protected\def\stopmathematics
@@ -969,7 +969,7 @@
    \ifcondition\validassignment{#1}%
      \setupcurrentmathematics[#1]%
    \else
-     \edef\currentmathematics{#1}% check for valid
+     \cdef\currentmathematics{#1}% check for valid
    \fi
    \edef\p_openup{\mathematicsparameter\c!openup}%
    \ifx\p_openup\v!yes
@@ -2035,7 +2035,7 @@
 
 \def\math_function_handle_normal#1#2#3%
   {\begingroup
-     \edef\currentmathfunction{#2}%
+     \cdef\currentmathfunction{#2}%
      \setupcurrentmathfunction[#3]%
      \edef\p_limits{\mathfunctionparameter\c!mathlimits}%
      \mathatom
@@ -2079,7 +2079,7 @@
    \endgroup}
 
 \def\math_function_handle_language_indeed#1#2#3%
-  {\edef\currentmathfunction{#2}%
+  {\cdef\currentmathfunction{#2}%
    \setupcurrentmathfunction[#3]%
    \edef\p_command{\mathfunctionparameter\c!command}%
    \ifempty\p_command
@@ -3847,7 +3847,7 @@
 
 \tolerant\protected\def\math_text_handle_indeed#1#*[#2]#:#3#%
   {\begingroup
-   \edef\currentmathtext{#1}%
+   \cdef\currentmathtext{#1}%
    \setupcurrentmathtext[#2]%
    \normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
    \ifcstok{\mathtextparameter\c!alternative}\v!split
@@ -4687,25 +4687,48 @@
 \mathinlinepenaltyfactor  = 1500 % a reasonable default
 \mathdisplaypenaltyfactor = 1000
 
-\permanent\tolerant\protected\def\definemathnesting[#1]#*[#2]#*[#3]%
-  {\frozen\protected\edefcsname#1\endcsname{\math_nesting{#2}{#3}}}
+\setmathpostpenalty\mathpunctuationcode\plustenthousand
 
-\protected\def\math_nesting#1#2%
+\installcorenamespace{mathnesting}
+
+\installcommandhandler \??mathnesting {mathnesting} \??mathnesting
+
+\appendtoks
+    \frozen\protected\instance\edefcsname\currentmathnesting\endcsname{\math_nesting[\currentmathnesting]}%
+\to \everydefinemathnesting
+
+\newconstant\c_math_boundary_old
+\newconstant\c_math_boundary_new
+
+\protected\tolerant\def\math_nesting[#1]#*[#2]%
   {\groupedcommand
-     {\mathboundary\plustwo
+     {\cdef\currentmathnesting{#1}%
+      \setupcurrentmathnesting[#2]% \ifparameter#2\or...\fi can't work here due to nesting
+      \mathnestingparameter\c!left
+      \c_math_boundary_old\c_math_boundary_new
+      \c_math_boundary_new
         \ifconditional\indisplaymath
-          \ifchknum#2\or#2\else\mathdisplaypenaltyfactor\fi
+          \ifchknum\mathnestingparameter\c!displayfactor\or\lastnamedcs\else\mathdisplaypenaltyfactor\fi
         \else
-          \ifchknum#1\or#1\else\mathinlinepenaltyfactor\fi
+          \ifchknum\mathnestingparameter\c!inlinefactor \or\lastnamedcs\else\mathinlinepenaltyfactor \fi
         \fi
-        \relax}%
-     {\mathboundary\plusone}}
+        \relax
+      \mathboundary\plustwo  \c_math_boundary_new}%
+     {\mathboundary\plusthree\c_math_boundary_old
+      \mathnestingparameter\c!right}}
 
-\permanent\tolerant\protected\def\mathnesting[#1]#*[#2]%
-  {\math_nesting{#1}{#2}}
+\permanent\tolerant\protected\def\mathnesting[#1]%
+  {\groupedcommand
+     {\c_math_boundary_old\c_math_boundary_new
+      \c_math_boundary_new\ifchknum#1\or#1\orelse\ifconditional\indisplaymath\mathdisplaypenaltyfactor\else\mathinlinepenaltyfactor\fi\relax
+      \mathboundary\plustwo  \c_math_boundary_new}%
+     {\mathboundary\plusthree\c_math_boundary_old}}
 
-\definemathnesting[mathtogether][1500][1000]
-\definemathnesting[mathloose]    [500][1000]
+% \definemathnesting[triplet][left=(,right=),inlinefactor=500]
+% $ (a,b,c) + \triplet{1,2,3} + (p,q,r) $
+
+\definemathnesting[mathtogether][\c!inlinefactor=1500]
+\definemathnesting[mathloose]   [\c!inlinefactor=0500]
 
 \protect \endinput
 

@@ -119,7 +119,7 @@
    \fi}
 
 \permanent\protected\def\setusedlanguage#1%
-  {\edef\currentusedlanguage{\reallanguagetag{#1}}%
+  {\cdef\currentusedlanguage{\reallanguagetag{#1}}%
    \ifempty\currentusedlanguage
      \let\currentusedlanguage  \currentlanguage
      \enforced\let\usedlanguageparameter\languageparameter
@@ -200,7 +200,7 @@
        {\defcsname\??languagelinked#1\endcsname{#1}%
         \getparameters[\??language#1][\c!state=\v!start,#2]%
         \lang_basics_install_indeed{#1}{#1}}%
-     \edef\currentsetuplanguage{#1}%
+     \cdef\currentsetuplanguage{#1}%
      \clf_definelanguage{#1}{\specificlanguageparameter{#1}\s!default}%
      \the\everysetuplanguage
    \else
@@ -253,7 +253,7 @@
      \the\everysetuplanguage
    \or
      \push_macro_currentlanguage % can be default
-     \edef\currentsetuplanguage{\reallanguagetag{#1}}%
+     \cdef\currentsetuplanguage{\reallanguagetag{#1}}%
      \getparameters[\??language\currentsetuplanguage][#2]%
      \the\everysetuplanguage
      \pop_macro_currentlanguage

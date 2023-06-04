@@ -105,8 +105,15 @@ interfaces.implement {
     public    = true,
     protected = true,
     actions   = function(cs)
+        local n = 0
+        local m = 0
         for k, v in table.sortedhash(profiled) do
             logs.report("profiled", "%s : %i",k,v)
+            n = n + v
+            m = m + 1
+        end
+        if m > 0 and n > 0 then
+            logs.report("profiled", "%i profiled : %i",m,n)
         end
     end,
 }

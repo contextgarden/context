@@ -2512,6 +2512,38 @@ Unit equivalent to ten Toves or one Edith.
 
 \stopsection
 
+\startsection[title=Registers]
+
+
+\startsubsection[title={32 bit floats}]
+
+The engine has native float registers which means that we have a similar set of
+primitives as for dimensions and integers: \prm {float}, \prm {floatdef}, \prm
+{floatexpr} and \prm {iffloat}. In the context if an integer a rounded value is
+used, in the context of a dimensions the floating point number is interpreted as
+points. Internally floats are stored as so called posits, which gives more accuracy
+for smaller values.
+
+\stopsubsection
+
+\startsubsection[title={32 bit posits}]
+
+{\em This is a playground. It will stay but might evolve.}
+
+\stopsubsection
+
+\startsubsection[title={Extra features}]
+
+There are \prm {ifabsnum}, \prm {ifabsdim} and \prm {ifabsfloat} that compare
+absolute values of quantities. The primitives \prm{ifzeronum}, \prm{ifzerodim},
+\prm{ifzerofloat} do a fast test for zero. The \prm {ifintervalnum}, \prm
+{ifintervaldim} and \prm {ifintervalfloat} primitives take a delta and two values
+and check if these values overlap within the ranges dedicated by the delta.
+
+\stopsubsection
+
+\stopsection
+
 \startsection[title=Expressions]
 
 \startsubsection[title={Rounding and scaling}]

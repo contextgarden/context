@@ -65,7 +65,7 @@
 %D Maybe some day we will move settings here.
 
 \permanent\protected\def\setcurrentinsertion#1%
-  {\edef\currentinsertion{#1}%
+  {\cdef\currentinsertion{#1}%
    \currentinsertionnumber\csname\??insertionnumber\currentinsertion\endcsname}
 
 \permanent\def\namedinsertionnumber#1{\csname\??insertionnumber#1\endcsname}
@@ -80,7 +80,7 @@
 \to \everysetupinsertion
 
 \protected\def\page_inserts_process#1% beware, this adapts currentinsertion !
-  {\edef\currentinsertion{#1}%
+  {\cdef\currentinsertion{#1}%
    \currentinsertionnumber\csname\??insertionnumber\currentinsertion\endcsname
    \doprocessinsert\currentinsertionnumber} % old method
 

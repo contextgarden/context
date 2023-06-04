@@ -28,7 +28,7 @@
 \installcommandhandler \??periodkerning {periodkerning} \??periodkerning
 
 \permanent\protected\def\setperiodkerning[#1]%
-  {\edef\currentperiodkerning{#1}%
+  {\cdef\currentperiodkerning{#1}%
    \ifx\currentperiodkerning\s!reset
      \resetperiodkerning
    \else

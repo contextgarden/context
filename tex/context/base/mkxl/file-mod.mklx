@@ -57,21 +57,21 @@
      \lettonothing\currentmodule
    \or
      \lettonothing\currentmodulecategory
-     \edef\currentmodule{#category}%
+     \cdef\currentmodule{#category}%
      \lettonothing\currentmoduleparameters
    \or
      \ifhastok={#name}%
        \lettonothing\currentmodulecategory
-       \edef\currentmodule{#category}%
+       \cdef\currentmodule{#category}%
        \edef\currentmoduleparameters{#name}%
      \else
        \edef\currentmodulecategory{#category}%
-       \edef\currentmodule{#name}%
+       \cdef\currentmodule{#name}%
        \lettonothing\currentmoduleparameters
      \fi
    \or
      \edef\currentmodulecategory  {#category}%
-     \edef\currentmodule          {#name}%
+     \cdef\currentmodule          {#name}%
      \def \currentmoduleparameters{#parameters}%
    \fi
    \processcommacommand[\currentmodule]{\strc_modules_use\currentmodulecategory}%

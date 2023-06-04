@@ -353,7 +353,7 @@
 \def\typo_delimited_push#1#2%
   {\push_macro_currentdelimitedtext     % can we combine these two
    \push_macro_currentdelimitedlanguage % the language used for hyphenation
-   \edef\currentdelimitedtext{#1}%
+   \cdef\currentdelimitedtext{#1}%
    \edef\m_delimited_argument{#2}%
    \ifempty\m_delimited_argument
      \typo_delimited_set_language_nop
@@ -364,7 +364,7 @@
    \global\advanceby\c_typo_delimited_nesting\plusone
    \edef\delimitedtextlevel{\number\c_typo_delimited_nesting}%
    \normalexpanded{\chaintocurrentdelimitedtext{\currentparentdelimitedtext:\delimitedtextlevel}}%
-   \edef\currentdelimitedtext{\currentparentdelimitedtext:\delimitedtextlevel}}
+   \cdef\currentdelimitedtext{\currentparentdelimitedtext:\delimitedtextlevel}}
 
 \def\typo_delimited_pop
   {\global\advanceby\c_typo_delimited_nesting\minusone

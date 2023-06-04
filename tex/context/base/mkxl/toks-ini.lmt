@@ -18,8 +18,8 @@ local printtable = table.print
 local concat     = table.concat
 local format     = string.format
 
-local commands  = token.getcommandvalues()
-local values    = token.getfunctionvalues()
+local commands  = token.getcommandvalues()  -- tex.functioncode
+local values    = token.getfunctionvalues() -- tex.functioncode
 values.dimen    = values.dimension
 values.count    = values.integer
 tokens.values   = utilities.storage.allocate(table.swapped(values, values))

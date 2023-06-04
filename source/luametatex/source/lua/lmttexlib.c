@@ -557,7 +557,7 @@ static int texlib_mprint(lua_State *L)
     if (lua_type(L, 1) == LUA_TSTRING) {
         size_t lname = 0;
         const char *name = lua_tolstring(L, 1, &lname);
-        int cs = tex_string_locate(name, lname, 0);
+        int cs = tex_string_locate_only(name, lname);
         int cmd = eq_type(cs);
         if (is_call_cmd(cmd)) {
             texlib_aux_store_token(cs_token_flag + cs, partial_line_mode, default_catcode_table_preset);
@@ -1185,7 +1185,7 @@ inline static int texlib_aux_valid_register_index(lua_State *L, int slot, int cm
             {
                 size_t len;
                 const char *str = lua_tolstring(L, 1, &len);
-                int cs = tex_string_locate(str, len, 0);
+                int cs = tex_string_locate_only(str, len);
                 if (eq_type(cs) == cmd) {
                     index = eq_value(cs) - base;
                 } else if (eq_type(cs) == constant_cmd) {
@@ -1213,7 +1213,7 @@ static int texlib_get_register_index(lua_State *L)
 {
     size_t len;
     const char *str = lua_tolstring(L, 1, &len);
-    int cs = tex_string_locate(str, len, 0);
+    int cs = tex_string_locate_only(str, len);
     int index = -1;
     switch (eq_type(cs)) {
         case register_toks_cmd      : index = eq_value(cs) - register_toks_base;      break;
@@ -1348,7 +1348,7 @@ static int texlib_aux_check_for_index(
             {
                 size_t len;
                 const char *str = lua_tolstring(L, slot, &len);
-                int cs = tex_string_locate(str, len, 0);
+                int cs = tex_string_locate_only(str, len);
                 if (eq_type(cs) == internal_cmd) {
                     *index = eq_value(cs) - internal_base;
                     return 1;
@@ -1903,7 +1903,7 @@ int lmt_get_box_id(lua_State *L, int i, int report)
             {
                 size_t len = 0;
                 const char *str = lua_tolstring(L, i, &len);
-                int cs = tex_string_locate(str, len, 0);
+                int cs = tex_string_locate_only(str, len);
                 int cmd = eq_type(cs);
                 switch (cmd) {
                     case char_given_cmd:
@@ -2573,7 +2573,7 @@ static int texlib_set_item(lua_State* L, int index, int prefixes)
     size_t sl;
     const char *st = lua_tolstring(L, slot++, &sl);
     if (sl > 0) {
-        int cs = tex_string_locate(st, sl, 0);
+        int cs = tex_string_locate_only(st, sl);
         if (cs != undefined_control_sequence && has_eq_flag_bits(cs, primitive_flag_bit)) {
             int cmd = eq_type(cs);
             switch (cmd) {
@@ -3173,7 +3173,7 @@ static int texlib_get_internal(lua_State *L, int index, int all)
                 int cmd = get_prim_eq_type(cs);
                 int code = get_prim_equiv(cs);
             */
-            int cs = tex_string_locate(s, l, 0);
+            int cs = tex_string_locate_only(s, l);
             if (cs != undefined_control_sequence && has_eq_flag_bits(cs, primitive_flag_bit)) {
                 int cmd = eq_type(cs);
                 int code = eq_value(cs);
@@ -4280,7 +4280,7 @@ static int texlib_runlocal(lua_State *L)
             {
                 size_t lname = 0;
                 const char *name = lua_tolstring(L, 1, &lname);
-                int cs = tex_string_locate(name, lname, 0);
+                int cs = tex_string_locate_only(name, lname);
                 int cmd = eq_type(cs);
                 if (cmd < call_cmd) { // is_call_cmd
                     // todo: use the better register helpers and range checkers
@@ -4850,7 +4850,7 @@ static int texlib_getintegervalue(lua_State *L) /* todo, now has duplicate in to
         size_t len;
         const char *str = lua_tolstring(L, 1, &len);
         if (len > 0) {
-            int cs = tex_string_locate(str, len, 0);
+            int cs = tex_string_locate_only(str, len);
             switch (eq_type(cs)) {
                 case integer_cmd:
                     lua_pushinteger(L, eq_value(cs));
@@ -4858,6 +4858,7 @@ static int texlib_getintegervalue(lua_State *L) /* todo, now has duplicate in to
                 case call_cmd:
                 case protected_call_cmd:
                 case semi_protected_call_cmd:
+                case constant_call_cmd:
                     return texlib_aux_getvalue(L, int_val_level, cs);
                 default:
                     /* twice a lookup but fast enough for now */
@@ -4875,7 +4876,7 @@ static int texlib_getfloatvalue(lua_State *L) /* todo, now has duplicate in toke
         size_t len;
         const char *str = lua_tolstring(L, 1, &len);
         if (len > 0) {
-            int cs = tex_string_locate(str, len, 0);
+            int cs = tex_string_locate_only(str, len);
             switch (eq_type(cs)) {
                 case posit_cmd:
                     lua_pushnumber(L, tex_posit_to_double(eq_value(cs)));
@@ -4883,6 +4884,7 @@ static int texlib_getfloatvalue(lua_State *L) /* todo, now has duplicate in toke
                 case call_cmd:
                 case protected_call_cmd:
                 case semi_protected_call_cmd:
+                case constant_call_cmd:
                     return texlib_aux_getvalue(L, posit_val_level, cs);
                 default:
                     /* twice a lookup but fast enough for now */
@@ -4900,7 +4902,7 @@ static int texlib_getdimensionvalue(lua_State *L) /* todo, now has duplicate in 
         size_t len;
         const char *str = lua_tolstring(L, 1, &len);
         if (len > 0) {
-            int cs = tex_string_locate(str, len, 0);
+            int cs = tex_string_locate_only(str, len);
             switch (eq_type(cs)) {
                 case dimension_cmd:
                     lua_pushinteger(L, eq_value(cs));
@@ -4911,6 +4913,7 @@ static int texlib_getdimensionvalue(lua_State *L) /* todo, now has duplicate in 
                 case call_cmd:
                 case protected_call_cmd:
                 case semi_protected_call_cmd:
+                case constant_call_cmd:
                     return texlib_aux_getvalue(L, dimen_val_level, cs);
                 default:
                     /* twice a lookup but fast enough for now */

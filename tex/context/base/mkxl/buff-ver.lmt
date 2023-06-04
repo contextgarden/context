@@ -733,13 +733,17 @@ end
 local tablength = 7
 
 local function dotabs(content,settings)
-    local tab = settings.tab
-    tab = tab and (tab == v_yes and tablength or tonumber(tab))
-    if tab then
-        return tabtospace(content,tab)
+    local par = settings.par
+    if par == v_yes then
+        return utilities.strings.striplines(content,"collapse all")
     else
-        return content
+        local tab = settings.tab
+        tab = tab and (tab == v_yes and tablength or tonumber(tab))
+        if tab then
+            return tabtospace(content,tab)
+        end
     end
+    return content
 end
 
 local function filter(lines,settings) -- todo: inline or display in settings
@@ -857,6 +861,7 @@ implement {
             { "data" },
 --             { "data", "detokened" },
             { "tab"     },
+            { "par"     },
             { "method"  },
             { "compact" },
             { "nature"  },
@@ -917,6 +922,7 @@ implement {
              { "name" },
              { "strip" },
              { "tab" },
+             { "par" },
              { "method" },
              { "nature" },
         }
@@ -933,6 +939,7 @@ implement {
              { "range" },
              { "regime" },
              { "tab" },
+             { "par" },
              { "method" },
              { "escape" },
              { "nature" },

@@ -135,7 +135,7 @@
 \newinteger\c_node_rules_down
 
 \permanent\protected\def\node_rules_set#1%
-  {\edef\currentbar{#1}%
+  {\cdef\currentbar{#1}%
    \advanceby\c_node_rules_level\plusone
    \usebarstyleandcolor\c!foregroundstyle\c!foregroundcolor
    \edef\p_node_color {\barparameter\c!color}% todo

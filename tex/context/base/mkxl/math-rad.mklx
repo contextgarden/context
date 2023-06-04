@@ -130,7 +130,7 @@
 
 \tolerant\protected\def\math_radical_handle#tag#*[#settings]#*[#degree]#:#body%
   {\begingroup
-   \edef\currentmathradical{#tag}%
+   \cdef\currentmathradical{#tag}%
    \ifhastok={#settings}%
      \lettonothing\currentmathradicaldegree
      \setupcurrentmathradical[#settings]%
@@ -313,7 +313,7 @@
 
 \protected\def\math_ornament_handle#tag#body%
   {\begingroup
-   \edef\currentmathornament{#tag}%
+   \cdef\currentmathornament{#tag}%
    \csname\??mathornamentalternative\mathornamentparameter\c!alternative\endcsname{#body}%
    \endgroup}
 

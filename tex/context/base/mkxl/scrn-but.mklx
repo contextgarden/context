@@ -50,12 +50,12 @@
 \aliased\let\setupbuttons\setupbutton
 
 \appendtoks
-    \frozen\instance\setuevalue\currentbutton{\scrn_button_direct{\currentbutton}}%
+    \frozen\protected\instance\edefcsname\currentbutton\endcsname{\scrn_button_direct{\currentbutton}}%
 \to \everydefinebutton
 
 \protected\def\scrn_button_direct#tag%
   {\begingroup
-   \edef\currentbutton{#tag}%
+   \cdef\currentbutton{#tag}%
    \iflocation
      \expandafter\scrn_button_direct_status
    \else
@@ -542,7 +542,7 @@
 
 \protected\def\scrn_menu_package_indeed#tag% one menu
   {\begingroup
-   \edef\currentinteractionmenu{#tag}%
+   \cdef\currentinteractionmenu{#tag}%
    \edef\currentinteractionmenustate{\interactionmenuparameter\c!state}%
    \ifx\currentinteractionmenustate\v!start
      \scrn_menu_packager
@@ -799,7 +799,7 @@
 
 \permanent\protected\def\includemenu[#tag]%
   {\begingroup
-   \edef\currentinteractionmenu{#tag}%
+   \cdef\currentinteractionmenu{#tag}%
    \doif{\interactionmenuparameter\c!state}\v!local
      {\letinteractionmenuparameter\c!state\v!start
       \directinteractionmenuparameter\c!menu}%
@@ -809,7 +809,7 @@
 
 \permanent\tolerant\protected\def\interactionmenu[#tag]#spacer[#settings]%
   {\begingroup
-   \edef\currentinteractionmenu{#tag}%
+   \cdef\currentinteractionmenu{#tag}%
    \setupcurrentinteractionmenu[#settings]%
    \scrn_menu_insert{#tag}%
    \endgroup}
@@ -992,7 +992,7 @@
 
 \def\scrn_menu_menu_button_a#tag#settings#text#action%
   {\dontleavehmode \begingroup
-     \edef\currentinteractionmenu{#tag}%
+     \cdef\currentinteractionmenu{#tag}%
      \setupcurrentinteractionmenu[#settings]%
      \scrn_button_make
        \interactionmenuparameter
@@ -1018,7 +1018,7 @@
 
 \def\scrn_menu_menu_button_c#tag#dummy#text#action%
   {\dontleavehmode \begingroup
-     \edef\currentinteractionmenu{#tag}%
+     \cdef\currentinteractionmenu{#tag}%
      \scrn_button_make
        \interactionmenuparameter
        \inheritedinteractionmenuframed

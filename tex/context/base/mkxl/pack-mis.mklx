@@ -45,7 +45,7 @@
 
 \protected\def\pack_placement#tag%
   {\bgroup
-   \edef\currentplacement{#tag}%
+   \cdef\currentplacement{#tag}%
    \doifelsenextoptionalcs\pack_placement_yes\pack_placement_nop}
 
 \def\pack_placement_yes[#settings]%

@@ -73,13 +73,13 @@
 \tolerant\protected\def\spac_profile_start#profile#spacer[#settings]%
   {\begingroup
    \ifparameter#settings\or
-     \edef\currentprofile{#profile}%
+     \cdef\currentprofile{#profile}%
      \setupcurrentprofile[#settings]%
    \orelse\ifhastok={#profile}%
       \let\currentprofile\v!none
       \setupcurrentprofile[#profile]%
    \else
-      \edef\currentprofile{#profile}%
+      \cdef\currentprofile{#profile}%
    \fi
    \spac_profile_set
    \profileparameter\c!before}
@@ -96,7 +96,7 @@
   {\spac_profile_stop}
 
 \permanent\protected\def\setprofile[#profile]%
-  {\edef\currentprofile{#profile}%
+  {\cdef\currentprofile{#profile}%
    \spac_profile_set}
 
 \permanent\protected\def\resetprofile
@@ -113,13 +113,13 @@
 \permanent\tolerant\protected\def\profiledbox[#profile]#spacer[#settings]%
   {\vbox\bgroup
    \ifparameter#settings\or
-     \edef\currentprofile{#profile}%
+     \cdef\currentprofile{#profile}%
      \setupcurrentprofile[#settings]%
    \orelse\ifhastok={#profile}%
       \let\currentprofile\v!none
       \setupcurrentprofile[#profile]%
    \else
-      \edef\currentprofile{#profile}%
+      \cdef\currentprofile{#profile}%
    \fi
    \dowithnextbox
      {\profilegivenbox\currentprofile\nextbox
@@ -129,7 +129,7 @@
 
 \permanent\protected\def\profilegivenbox#profile#box%
   {\begingroup
-   \edef\currentprofile{#profile}%
+   \cdef\currentprofile{#profile}%
    \clf_profilebox
       box      \numexpr#box\relax
       height   \dimexpr\profileparameter\c!height\relax
@@ -169,7 +169,7 @@
    \relax}
 
 \permanent\tolerant\protected\def\setlineprofile[#profile]%
-  {\edef\currentlineprofile{#profile}%
+  {\cdef\currentlineprofile{#profile}%
    \spac_line_profile_set}
 
 \permanent\protected\def\resetlineprofile

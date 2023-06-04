@@ -329,7 +329,7 @@
      {\doifnotinset\v!high\floatspecification\vfill
       \box\floatbox
       \doifnotinset\v!low\floatspecification\vfill}%
- % \page_otr_fill_and_eject_page
+   \page_otr_fill_and_eject_page % needed
    \global\settrue\c_page_floats_flushed}
 
 \protected\def\page_floats_flush_page_floats % used in postpone

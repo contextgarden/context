@@ -192,7 +192,7 @@
 
 \def\strc_floats_facing_flush_indeed#1%
   {\begingroup
-   \edef\currentfacingfloat{#1}%
+   \cdef\currentfacingfloat{#1}%
    \glet\page_check_weird_page\page_check_weird_page_indeed % for now only when facing floats
    \scratchcounterone  \realpageno
    \scratchcounterthree\getboxcountfromcache{\currentfacingfloat:\v!left }\relax
@@ -251,7 +251,7 @@
   {\processcommalist[#1]\strc_floats_facing_flush_indeed}
 
 \protected\def\strc_floats_facing_setup
-  {\edef\currentfacingfloat{\currentfacingfloat:\m_strc_floats_state}%
+  {\cdef\currentfacingfloat{\currentfacingfloat:\m_strc_floats_state}%
    \usefacingfloatstyleandcolor\c!style\v!color}
 
 \protected\def\strc_floats_facing_collect
@@ -298,7 +298,7 @@
 
 \permanent\protected\def\startfacingfloat[#1]%
   {\begingroup
-   \edef\currentfacingfloat{#1}%
+   \cdef\currentfacingfloat{#1}%
    \edef\p_width{\facingfloatparameter\c!width}%
    \letfacingfloatparameter\c!width\v!fit
    \ifx\p_width\v!frame
@@ -345,7 +345,7 @@
    \else
      \begingroup
      \setbox\scratchboxone\hpack\bgroup
-       \edef\currentfacingfloat{\currentfacingfloat:#2}%
+       \cdef\currentfacingfloat{\currentfacingfloat:#2}%
        \inheritedfacingfloatframed{\strut}%
      \egroup
      \scratchdimenone\dimexpr\textheight-\htdp\scratchboxone+\lineheight\relax
@@ -354,7 +354,7 @@
      \setbox\scratchbox\vsplit#1 upto \scratchdimenone
      \setsplitlisthtdp\scratchbox\strutht\strutdp
      \setbox\scratchbox\hpack\bgroup
-       \edef\currentfacingfloat{\currentfacingfloat:#2}%
+       \cdef\currentfacingfloat{\currentfacingfloat:#2}%
        \inheritedfacingfloatframed{\box\scratchbox}%
      \egroup
      \setbox\scratchbox\vbox

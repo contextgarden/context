@@ -36,7 +36,7 @@
 
 \permanent\tolerant\protected\def\setpagestate[#1]#*[#2]%
   {\begingroup
-   \edef\currentpagestate{#1}%
+   \cdef\currentpagestate{#1}%
    \ifcsname\??pagestatecounter\currentpagestate\endcsname
      \scratchcounter\lastnamedcs
      \advanceby\scratchcounter\plusone

@@ -95,7 +95,7 @@
 
 \permanent\tolerant\protected\def\startMPdefinitions#=#:#2\stopMPdefinitions
   {\let\m_meta_saved_instance\currentMPinstance
-   \edef\currentMPinstance{#1}%
+   \cdef\currentMPinstance{#1}%
    \ifempty\currentMPinstance
      \let\currentMPinstance\defaultMPinstance
    \fi
@@ -116,7 +116,7 @@
 
 \permanent\tolerant\protected\def\startMPinclusions[#1]#*#=#:#3\stopMPinclusions
   {\let\m_meta_saved_instance\currentMPinstance % \pushmacro
-   \edef\currentMPinstance{#2}%
+   \cdef\currentMPinstance{#2}%
    \ifempty\currentMPinstance
      \let\currentMPinstance\defaultMPinstance
    \fi
@@ -136,7 +136,7 @@
      \global\t_meta_inclusions\emptytoks
    \fi
    \ifparameter#3\or
-     \edef\currentMPinstance{#2}%
+     \cdef\currentMPinstance{#2}%
      \ifempty\currentMPinstance
        \let\currentMPinstance\defaultMPinstance
      \fi
@@ -187,16 +187,16 @@
   {\let\meta_show_properties\donothing}
 
 \protected\def\meta_analyze_graphicname_indeed[#1::#2::#3]% instance ::
-  {\edef\currentMPgraphicname{#2}%
+  {\cdef\currentMPgraphicname{#2}%
    \ifempty\currentMPgraphicname
-     \edef\currentMPgraphicname{#1}%
+     \cdef\currentMPgraphicname{#1}%
      \let\currentMPinstance\defaultMPinstance
    \orelse\ifcsname\??mpdefinitions#1\endcsname
-     \edef\currentMPinstance{#1}%
+     \cdef\currentMPinstance{#1}%
    \else
      \let\currentMPinstance\defaultMPinstance
    \fi
-   \edef\currentMPformat{\MPinstanceparameter\s!format}%
+   \cdef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_show_properties}
 
 \mutable\def\currentMPgraphicname{\s!unknown}
@@ -285,12 +285,12 @@
    \popMPboundingbox}
 
 \protected\def\meta_process_graphic_instance#1#2% used in startMPpage
-  {\edef\currentMPinstance{#1}%
+  {\cdef\currentMPinstance{#1}%
    \ifempty\currentMPinstance
      \let\currentMPinstance\defaultMPinstance
    \fi
    \setmpcategoryparameter\c!stacking{#2}%
-   \edef\currentMPformat{\MPinstanceparameter\s!format}%
+   \cdef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_process_graphic}
 
 \protected\def\meta_process_graphic#1% todo: extensions and inclusions outside beginfig
@@ -424,7 +424,7 @@
    \d_overlay_height#3\relax
    \edef\width {\the\d_overlay_width \space}% obsolete
    \edef\height{\the\d_overlay_height\space}% obsolete
-   \edef\currentMPclip{#1}%
+   \cdef\currentMPclip{#1}%
    \ifcsname\??mpclip\currentMPclip\endcsname
      \meta_grab_clip_path_yes
    \else
@@ -684,7 +684,7 @@
   {% ugly code but we run on top of older code
    \resetdummyparameter\c!instance
    \getdummyparameters[#1]%
-   \edef\currentMPinstance{\dummyparameter\c!instance}%
+   \cdef\currentMPinstance{\dummyparameter\c!instance}%
    % here we feed the instance into the analyzer
    \meta_begin_graphic_group{\ifempty\currentMPinstance\else\currentMPinstance::\fi#1}%
    \checkmpcategoryparent
@@ -754,7 +754,7 @@
 % \permanent\tolerant\protected\def\useMPgraphic#=#*#=%
 %   {\meta_begin_graphic_group{#1}%
 %    \ifcsname\??mpgraphic#1\endcsname
-%      \edef\currentmpcategory{#1}%
+%      \cdef\currentmpcategory{#1}%
 %    \orelse\ifcsname\??mpgraphic\currentMPgraphicname\endcsname
 %      \let\currentmpcategory\currentMPgraphicname
 %    \else
@@ -776,11 +776,11 @@
   {% ugly code but we run on top of older code
    \resetdummyparameter\c!instance
    \getdummyparameters[#1]%
-   \edef\currentMPinstance{\dummyparameter\c!instance}%
+   \cdef\currentMPinstance{\dummyparameter\c!instance}%
    % here we feed the instance into the analyzer
    \meta_begin_graphic_group{\ifempty\currentMPinstance\else\currentMPinstance::\fi#2}%
    \ifcsname\??mpgraphic#2\endcsname
-     \edef\currentmpcategory{#2}%
+     \cdef\currentmpcategory{#2}%
    \orelse\ifcsname\??mpgraphic\currentMPgraphicname\endcsname
      \let\currentmpcategory\currentMPgraphicname
    \else
@@ -798,7 +798,7 @@
 \tolerant\def\meta_usempgraphic_nop#=#*#=%
   {\meta_begin_graphic_group{#1}%
    \ifcsname\??mpgraphic#1\endcsname
-     \edef\currentmpcategory{#1}%
+     \cdef\currentmpcategory{#1}%
    \orelse\ifcsname\??mpgraphic\currentMPgraphicname\endcsname
      \let\currentmpcategory\currentMPgraphicname
    \else
@@ -834,7 +834,7 @@
 
 \def\meta_handle_overlay_graphic#1#2#3%
   {\begingroup
-   \edef\currentmpcategory{#1}%
+   \cdef\currentmpcategory{#1}%
    \meta_process_graphic{#3;BoundToOverlayBox;}%
    \endgroup}
 
@@ -970,12 +970,12 @@
 
 % \permanent\tolerant\protected\def\startMPcode#=#:#2\stopMPcode
 %   {\begingroup
-%    \edef\currentMPinstance{#1}%
+%    \cdef\currentMPinstance{#1}%
 %    \ifempty\currentMPinstance
 %      \let\currentMPinstance\defaultMPinstance
 %    \fi
 %    \lettonothing\currentMPgraphicname
-%    \edef\currentMPformat{\MPinstanceparameter\s!format}%
+%    \cdef\currentMPformat{\MPinstanceparameter\s!format}%
 %    \meta_enable_include
 %    \meta_process_graphic{#2}%
 %    \endgroup}
@@ -985,12 +985,12 @@
 
 \tolerant\def\meta_start_mpcode_nop#:#=#:#2\stopMPcode
   {\begingroup
-   \edef\currentMPinstance{#1}%
+   \cdef\currentMPinstance{#1}%
    \ifempty\currentMPinstance
      \let\currentMPinstance\defaultMPinstance
    \fi
    \lettonothing\currentMPgraphicname
-   \edef\currentMPformat{\MPinstanceparameter\s!format}%
+   \cdef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_enable_include
    \meta_process_graphic{#2}%
    \endgroup}
@@ -1000,13 +1000,13 @@
    \resetdummyparameter\c!instance
    \resetdummyparameter\c!stacking
    \getdummyparameters[#1]%
-   \edef\currentMPinstance{\dummyparameter\c!instance}%
+   \cdef\currentMPinstance{\dummyparameter\c!instance}%
    \setmpcategoryparameter\c!stacking{\dummyparameter\c!stacking}%
    \ifempty\currentMPinstance
      \let\currentMPinstance\defaultMPinstance
    \fi
    \lettonothing\currentMPgraphicname
-   \edef\currentMPformat{\MPinstanceparameter\s!format}%
+   \cdef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_enable_include
    \meta_process_graphic{#2}%
    \endgroup}
@@ -1364,12 +1364,12 @@
 \permanent\tolerant\protected\def\startMPcalculation#=#:#2\stopMPcalculation
   {\begingroup
    \setbox\nextbox\hpack\bgroup
-   \edef\currentMPinstance{#1}%
+   \cdef\currentMPinstance{#1}%
    \ifempty\currentMPinstance
      \let\currentMPinstance\defaultMPinstance
    \fi
    \lettonothing\currentMPgraphicname
-   \edef\currentMPformat{\MPinstanceparameter\s!format}%
+   \cdef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_enable_include
    \meta_process_graphic{#2;draw origin}%
    \egroup

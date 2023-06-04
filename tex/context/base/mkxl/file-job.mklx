@@ -304,10 +304,10 @@
        \lettonothing\currentdocument
        \setupcurrentdocument[#namespace]%
      \else
-       \edef\currentdocument{#namespace}%
+       \cdef\currentdocument{#namespace}%
      \fi
    \or
-     \edef\currentdocument{#namespace}%
+     \cdef\currentdocument{#namespace}%
      \setupcurrentdocument[#settings]%
    \fi
    \ifempty\currentdocument\else\setmode\currentdocument\fi
@@ -340,7 +340,7 @@
        \setupcurrentdocument[#namespace]%
      \fi
    \or
-     \edef\currentdocument{#namespace}%
+     \cdef\currentdocument{#namespace}%
      \setupcurrentdocument[#settings]%
    \fi
    \popmacro\currentdocument}

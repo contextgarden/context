@@ -279,6 +279,7 @@ typedef enum tex_command_code {
     call_cmd,                         /*tex regular control sequence */
     protected_call_cmd,               /*tex idem but doesn't expand in edef like situations */
     semi_protected_call_cmd,
+    constant_call_cmd,
     tolerant_call_cmd,                /*tex control sequence with tolerant arguments */
     tolerant_protected_call_cmd,      /*tex idem but doesn't expand in edef like situations */
     tolerant_semi_protected_call_cmd,
@@ -287,6 +288,7 @@ typedef enum tex_command_code {
     */
     deep_frozen_end_template_cmd,     /*tex end of an alignment template */
     deep_frozen_dont_expand_cmd,      /*tex the following token was marked by |\noexpand|) */
+    deep_frozen_keep_constant_cmd,
     /*tex
         The next bunch is never seen directly as they are shortcuts to registers and special data
         strutures. They  are the internal register (pseudo) commands and are also needed for

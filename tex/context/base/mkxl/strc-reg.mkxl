@@ -268,7 +268,7 @@
 
 \def\strc_registers_register_page_entry_indeed#1#2#3% register data userdata
   {\begingroup
-   \edef\currentregister{#1}%
+   \cdef\currentregister{#1}%
    %\setupcurrentregister[\c!entries=,\c!label=,\c!keys=,\c!alternative=,#2]%
    \setupcurrentregister[#2]%
    \edef\currentregisterlabel     {\registerparameter\c!label}%
@@ -380,7 +380,7 @@
 
 \permanent\protected\def\dosetfastregisterentry#1#2#3#4#5% register entry key processor processor
   {\begingroup
-   \edef\currentregister{#1}%
+   \cdef\currentregister{#1}%
    \setnextinternalreference
    \glet\currentregistername\currentregister
    \xdef\currentregisternumber{\clf_storeregister
@@ -485,7 +485,7 @@
 
 \def\strc_registers_finish_entry_indeed#1#2#3% register data userdata
   {\begingroup
-   \edef\currentregister{#1}%
+   \cdef\currentregister{#1}%
   %\setupcurrentregister[\c!entries=,\c!label=,\c!keys=,\c!alternative=,#2]% todo: fast setter
    \resetregisterparameter\c!entries
    \resetregisterparameter\c!label
@@ -577,7 +577,7 @@
 
 \def\strc_registers_insert_see_indeed#1#2#3#4% register key entry seeword
   {\begingroup
-   \edef\currentregister{#1}%
+   \cdef\currentregister{#1}%
    \edef\currentregisterexpansion{\registerparameter\c!expansion}%
    \ifx\currentregisterexpansion\s!xml
      \xmlstartraw
@@ -635,7 +635,7 @@
 \permanent\tolerant\protected\def\determineregistercharacteristics[#1]#*[#2]%
   {\begingroup
    \setupregister[#1][#2]%
-   \edef\currentregister{\firstinset{#1}}%
+   \cdef\currentregister{\firstinset{#1}}%
    \normalexpanded{\endgroup\noexpand\xdef\noexpand\listlength{\clf_analyzeregister
      {\currentregister}%
      {%
@@ -667,7 +667,7 @@
      \begingroup
     %\forgetall
      \setupregister[#1][#2]% can be a list
-     \edef\currentregister{\firstinset{#1}}%
+     \cdef\currentregister{\firstinset{#1}}%
      \the\everyplaceregister
      \ifnum\namedmixedcolumnsparameter\currentregister\c!n>\plusone
        \startmixedcolumns[\currentregister]%
@@ -731,7 +731,7 @@
 \permanent\tolerant\protected\def\completeregister[#1]#*[#2]%
   {\ifarguments\or
      \begingroup
-     \edef\currentregister{\firstinset{#1}}%
+     \cdef\currentregister{\firstinset{#1}}%
      \normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\currentregister}},reference=\currentregister]}%
      \placeregister[#1][#2]%
      \page[\v!yes]%
@@ -950,7 +950,7 @@
 %    \dostarttagged\t!registerentries\empty
 %  % \let\savedcurrentregister\currentregister
 %    \pushmacro\currentregister
-%    \edef\currentregister{\currentregister:\number\c_strc_register_level}%
+%    \cdef\currentregister{\currentregister:\number\c_strc_register_level}%
 %    \usenestedregisterstyleandcolor\c!textstyle\c!textcolor
 %    \ifnum\c_strc_register_level>\plusone
 %      \advanceby\leftskip\d_strc_registers_distance\relax
@@ -1015,7 +1015,7 @@
    \c_strc_register_level\ifnum#1>\c_strc_registers_maxlevel\c_strc_registers_maxlevel\else#1\fi\relax
    \dostarttagged\t!registerentries\empty
    \pushmacro\currentregister % bah
-   \edef\currentregister{\currentregister:\number\c_strc_register_level}%
+   \cdef\currentregister{\currentregister:\number\c_strc_register_level}%
    \let\currentnestedregister\currentregister
    \usenestedregisterstyleandcolor\c!textstyle\c!textcolor
    \ifnum\c_strc_register_level>\plusone
@@ -1174,7 +1174,7 @@
 
 \permanent\protected\def\pushcurrentregister#1%
   {\let\m_current_register\currentregister
-   \edef\currentregister{#1}}
+   \cdef\currentregister{#1}}
 
 \permanent\protected\def\popcurrentregister
   {\let\currentregister\m_current_register}
@@ -1598,7 +1598,7 @@
 %
 % \def\strc_registers_register_page_entry_indeed#1#2#3% register data userdata
 %   {\begingroup
-%    \edef\currentregister{#1}%
+%    \cdef\currentregister{#1}%
 %    %\setupcurrentregister[\c!entries=,\c!label=,\c!keys=,\c!alternative=,#2]%
 %    \setupcurrentregister[#2]%
 %    \edef\currentregisterlabel     {\registerparameter\c!label}%

@@ -28,7 +28,7 @@
 \installcommandhandler \??characterkerning {characterkerning} \??characterkerning
 
 \permanent\protected\def\setcharacterkerning[#1]%
-  {\edef\currentcharacterkerning{#1}%
+  {\cdef\currentcharacterkerning{#1}%
    \ifx\currentcharacterkerning\s!reset
      \resetcharacterkerning
    \else
@@ -75,12 +75,12 @@
   {\groupedcommand{\typo_kerning_apply_nop_indeed{#1}}\donothing}
 
 \def\typo_kerning_apply_yes_indeed#1#2%
-  {\edef\currentcharacterkerning{#1}%
+  {\cdef\currentcharacterkerning{#1}%
    \setupcurrentcharacterkerning[\c!factor=#2]%
    \typo_kerning_set}
 
 \def\typo_kerning_apply_nop_indeed#1%
-  {\edef\currentcharacterkerning{#1}%
+  {\cdef\currentcharacterkerning{#1}%
    \typo_kerning_set}
 
 \definecharacterkerning [\v!kerncharacters] [\c!factor=.125]

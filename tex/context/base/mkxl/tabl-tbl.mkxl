@@ -1238,7 +1238,7 @@
 
 \protected\def\tabl_start_defined[#1]%
   {\bgroup
-   \edef\currenttabulationparent{#1}%
+   \cdef\currenttabulationparent{#1}%
    \let\currenttabulation\currenttabulationparent
    \ifcstok{\tabulationparameter\c!format}\v!none
      % this is special case: we need to define the generic english
@@ -1254,10 +1254,10 @@
      \ifhastok={#1}%
        \setuptabulation[\currenttabulation][#1]%
      \else
-       \edef\currenttabulation{\currenttabulation:#1}%
+       \cdef\currenttabulation{\currenttabulation:#1}%
      \fi
    \else
-     \edef\currenttabulation{\currenttabulation:#1}%
+     \cdef\currenttabulation{\currenttabulation:#1}%
      \setuptabulation[\currenttabulation][#2]%
    \fi
    \tabl_tabulate_start_building}
@@ -2006,7 +2006,7 @@
    \ifhastok={#1}%
      \setupcurrenttabulatemove[#1]%
    \else
-     \edef\currenttabulatemove{#1}%
+     \cdef\currenttabulatemove{#1}%
      \setupcurrenttabulatemove[#2]%
    \fi
    \edef\p_orientation{\theorientation{\tabulatemoveparameter\c!orientation}}%
@@ -2459,7 +2459,7 @@
 \def\tabl_tabulate_anchor_setup % a bit of a cheat but good enough for a lightweight experiment
   {\edef\p_synchronize{\tabulationparameter\c!synchronize}%
    \ifx\p_synchronize\v!background
-     \edef\currentframedcontent{\tabulationparameter\c!frame}%
+     \cdef\currentframedcontent{\tabulationparameter\c!frame}%
      \ifx\currentframedcontent\v!off
        \resettabulationparameter\c!frame
        \lettonothing\currentframedcontent

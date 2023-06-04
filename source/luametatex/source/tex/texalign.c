@@ -532,6 +532,7 @@ static void tex_aux_get_preamble_token(void)
         case call_cmd:
         case protected_call_cmd:
         case semi_protected_call_cmd:
+        case constant_call_cmd:
         case tolerant_call_cmd:
         case tolerant_protected_call_cmd:
         case tolerant_semi_protected_call_cmd:
@@ -851,7 +852,7 @@ void tex_finish_no_alignment_group(void)
 static void tex_aux_align_peek(void)
 {
   RESTART:
-    lmt_input_state.align_state = 1000000;
+    lmt_input_state.align_state = busy_alignment_state;
   AGAIN:
     tex_get_x_or_protected();
     switch (cur_cmd) {
@@ -863,6 +864,7 @@ static void tex_aux_align_peek(void)
         case call_cmd:
         case protected_call_cmd:
         case semi_protected_call_cmd:
+        case constant_call_cmd:
         case tolerant_call_cmd:
         case tolerant_protected_call_cmd:
         case tolerant_semi_protected_call_cmd:
@@ -907,7 +909,7 @@ void tex_run_alignment_initialize(void)
 {
     halfword saved_cs = cur_cs;
     tex_aux_push_alignment();
-    lmt_input_state.align_state = -1000000;
+    lmt_input_state.align_state = initial_alignment_state;
     /*tex
         When |\halign| is used as a displayed formula, there should be no other pieces of mlists
         present.
@@ -947,7 +949,7 @@ void tex_run_alignment_initialize(void)
     lmt_alignment_state.cur_loop = null;
     lmt_input_state.scanner_status = scanner_is_aligning;
     lmt_input_state.warning_index = saved_cs;
-    lmt_input_state.align_state = -1000000;
+    lmt_input_state.align_state = initial_alignment_state;
     /*tex At this point, |cur_cmd = left_brace|. */
     while (1) {
         /*tex Append the current tabskip glue to the preamble list. */
@@ -973,7 +975,7 @@ void tex_run_alignment_initialize(void)
                 tex_aux_get_preamble_token();
                 if ((cur_cmd == alignment_cmd && cur_chr == align_content_code) || cur_cmd == parameter_cmd) {
                     break;
-                } else if ((cur_cmd == alignment_cmd || cur_cmd == alignment_tab_cmd) && (lmt_input_state.align_state == -1000000)) {
+                } else if ((cur_cmd == alignment_cmd || cur_cmd == alignment_tab_cmd) && (lmt_input_state.align_state == initial_alignment_state)) {
                     if ((current == lmt_alignment_state.hold_token_head) && (! lmt_alignment_state.cur_loop) && (cur_cmd == alignment_tab_cmd)) {
                         lmt_alignment_state.cur_loop = lmt_alignment_state.cur_align;
                     } else {
@@ -1002,7 +1004,7 @@ void tex_run_alignment_initialize(void)
             token_link(current) = null;
             while (1) {
                 tex_aux_get_preamble_token();
-                if ((cur_cmd == alignment_cmd || cur_cmd == alignment_tab_cmd) && (lmt_input_state.align_state == -1000000)) {
+                if ((cur_cmd == alignment_cmd || cur_cmd == alignment_tab_cmd) && (lmt_input_state.align_state == initial_alignment_state)) {
                     break;
                 } else if ((cur_cmd == alignment_cmd && cur_chr == align_content_code) || cur_cmd == parameter_cmd) {
                     tex_handle_error(
@@ -1157,7 +1159,7 @@ void tex_insert_alignment_template(void)
         align_record_cmd(lmt_alignment_state.cur_align) = cur_cmd;
         align_record_chr(lmt_alignment_state.cur_align) = cur_chr;
         tex_begin_token_list(tok, template_post_text);
-        lmt_input_state.align_state = 1000000;
+        lmt_input_state.align_state = busy_alignment_state;
         lmt_alignment_state.cell_source = alignment_cell_source_par;
         if (alignment_wrap_source_par) {
             lmt_alignment_state.wrap_source = alignment_wrap_source_par;
@@ -1226,7 +1228,7 @@ static int tex_aux_finish_column(void)
         halfword q = node_next(lmt_alignment_state.cur_align);
         if (! q) {
             tex_confusion("end template, case 2");
-        } else if (lmt_input_state.align_state < 500000) {
+        } else if (lmt_input_state.align_state < interwoven_alignment_threshold) {
             tex_alignment_interwoven_error(1);
         } else {
             /*tex A few state variables. */
@@ -1379,7 +1381,7 @@ static int tex_aux_finish_column(void)
                     tex_aux_initialize_span(record);
                 }
             }
-            lmt_input_state.align_state = 1000000;
+            lmt_input_state.align_state = busy_alignment_state;
             do {
                 tex_get_x_or_protected();
             } while (cur_cmd == spacer_cmd);

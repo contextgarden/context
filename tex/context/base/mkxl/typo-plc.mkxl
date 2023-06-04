@@ -21,7 +21,7 @@
 
 \permanent\protected\def\placeholder[#1]%
   {\begingroup
-   \edef\currentplaceholder{#1}%
+   \cdef\currentplaceholder{#1}%
    \placeholderparameter\c!before
    \useplaceholderstyleandcolor\c!style\c!color
    \placeholderparameter\c!text

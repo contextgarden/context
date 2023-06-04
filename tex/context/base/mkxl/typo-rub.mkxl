@@ -43,7 +43,7 @@
   {\dontleavehmode
    \begingroup
    \enforced\let\ruby\noruby
-   \edef\currentruby{#1}%
+   \cdef\currentruby{#1}%
    \edef\p_location{\rubyparameter\c!location}%
  % \enforced\let|\relax
    \enforced\letcharcode\barasciicode\relax
@@ -111,7 +111,7 @@
   {\dontleavehmode
    \begingroup
    \enforced\aliased\startruby\begingroup
-   \edef\currentruby{#1}%
+   \cdef\currentruby{#1}%
    \clf_startruby
         align   {\rubyparameter\c!align}%
         stretch {\rubyparameter\c!stretch}%

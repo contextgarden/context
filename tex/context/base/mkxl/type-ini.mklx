@@ -421,13 +421,13 @@
   {\ifconditional\autotypescripts
      \usetypescript[#typeface]%
      \ifcsname\??fontclassyes#typeface\endcsname
-       \edef\fontclass{#typeface}%
+       \cdef\fontclass{#typeface}%
      \else
        \iftracetypescripts\writestatus\m!fonts{auto load typescript file 1: [#typeface]}\fi
        \usetypescriptfile[#typeface]%
        \usetypescript[#typeface]%
        \ifcsname\??fontclassyes#typeface\endcsname
-         \edef\fontclass{#typeface}%
+         \cdef\fontclass{#typeface}%
        \else
          % todo: message
          \letcsname\??fontclassnop#typeface\endcsname\empty

@@ -370,7 +370,7 @@
      % we need at least a category and title
      \dontleavehmode
      \bgroup
-     \edef\currentfloat{#category}%
+     \cdef\currentfloat{#category}%
      \let\currentfloatcaption\currentfloat
      \resetfloatcaptionparameter\c!reference
      \resetfloatcaptionparameter\c!title
@@ -640,7 +640,7 @@
 \aliased\lettonothing\lastplacedfloat
 
 \def\strc_floats_set_current_tag#tag%
-  {\edef\currentfloat{#tag}%
+  {\cdef\currentfloat{#tag}%
    \ifempty\currentfloat
      \let\currentfloat\v!figure % a bit of a hack
    \fi

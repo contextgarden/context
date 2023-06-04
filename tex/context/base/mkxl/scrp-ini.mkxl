@@ -62,7 +62,7 @@
 % \to \everydefinescript
 
 \permanent\protected\def\setlocalscript[#1]%
-  {\edef\currentscript{#1}%
+  {\cdef\currentscript{#1}%
    \clf_setscript{\currentscript}{\scriptparameter\c!method}{\scriptparameter\c!preset}}
 
 \permanent\protected\def\setglobalscript[#1]%

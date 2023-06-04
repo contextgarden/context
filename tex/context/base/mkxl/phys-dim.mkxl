@@ -442,10 +442,10 @@
      \settrue\c_phys_units_dospace
      \removelastskip
    \fi
-   \edef\currentunit{#1}%
+   \cdef\currentunit{#1}%
    \c_phys_digits_method\unitparameter\c!method\relax
    \ifmmode\else\dontleavehmode\fi
-%    \edef\currentunit{#1}%
+%    \cdef\currentunit{#1}%
    \enforced\edef\unitlanguage{\unitparameter\s!language}%
    \enforced\let\prefixlanguage\unitlanguage
    \enforced\let\operatorlanguage\unitlanguage

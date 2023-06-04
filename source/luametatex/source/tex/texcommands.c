@@ -1360,6 +1360,10 @@ void tex_initialize_commands(void)
         set_eq_type(deep_frozen_cs_dont_expand_code, deep_frozen_dont_expand_cmd);
         set_eq_flag(deep_frozen_cs_dont_expand_code, 0);
 
+        cs_text(deep_frozen_cs_keep_constant_code) = tex_maketexstring("keepconstant");
+        set_eq_type(deep_frozen_cs_keep_constant_code, deep_frozen_keep_constant_cmd);
+        set_eq_flag(deep_frozen_cs_keep_constant_code, 0);
+
         cs_text(deep_frozen_cs_protection_code) = tex_maketexstring("inaccessible");
 
         cs_text(deep_frozen_cs_end_write_code) = tex_maketexstring("endwrite");

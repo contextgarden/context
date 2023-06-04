@@ -387,7 +387,7 @@
 % \definepapersize[name][settings]
 
 \permanent\tolerant\protected\def\definepapersize[#1]#*[#2]#*[#3]%
-  {\edef\currentlayouttarget{#1}%
+  {\cdef\currentlayouttarget{#1}%
    \ifempty\currentlayouttarget
      % invalid target
    \orelse\ifhastok={#2}%
@@ -558,7 +558,7 @@
 
 \protected\def\page_paper_identify_target#1%
   {\ifcsname\??layoutcurrent#1\endcsname
-     \edef\currentlayouttarget{#1}%
+     \cdef\currentlayouttarget{#1}%
    \fi}
 
 \newdimension\d_page_minimum_paper_size \d_page_minimum_paper_size\luaexpr{math.pi}\onebasepoint

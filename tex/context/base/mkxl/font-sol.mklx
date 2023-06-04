@@ -97,7 +97,7 @@
 \to \everydefinefontsolution
 
 \permanent\protected\def\setfontsolution[#solution]% just one
-  {\edef\currentfontsolution{#solution}%
+  {\cdef\currentfontsolution{#solution}%
    \clf_setfontsolution
      {\currentfontsolution}%
      {%

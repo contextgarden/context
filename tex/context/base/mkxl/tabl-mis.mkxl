@@ -143,10 +143,10 @@
    \fi}
 
 \appendtoks
-    \frozen\instance\letcsname\e!next \currentparagraphs\endcsname\nextparagraphs
+    \frozen\instance\letcsname\e!next\currentparagraphs\endcsname\nextparagraphs
     \frozen\instance\letcsname\currentparagraphs\endcsname\nextparagraphs
     \frozen\instance\protected\edefcsname\e!start\currentparagraphs\endcsname{\startparagraphs[\currentparagraphs]}%
-    \frozen\instance\letcsname\e!stop \currentparagraphs\endcsname\stopparagraphs
+    \frozen\instance\letcsname\e!stop\currentparagraphs\endcsname\stopparagraphs
     %frozen\instance\setuevalue{\e!setup\currentparagraph\e!endsetup}{\typo_paragraphs_setup_saved[\currentparagraphs]}%
     \dorecurse{\paragraphsparameter\c!n}%
       {\normalexpanded{\typo_paragraphs_setup_saved[\currentparagraphs:\recurselevel][\c!width=,\s!parent=\??paragraphs\currentparagraphs]}}%
@@ -163,7 +163,7 @@
 
 \permanent\protected\def\startparagraphs[#1]% quite slow
   {\bgroup % (1)
-   \edef\currentparagraphs{#1}%
+   \cdef\currentparagraphs{#1}%
  % \paragraphsparameter\c!before
    \edef\p_width{\paragraphsparameter\c!width}%
    \ifempty\p_width
@@ -241,7 +241,7 @@
   {\begingroup
    \let\typo_paragraphs_start_cell\relax
    \let\typo_paragraphs_stop_cell\typo_paragraphs_stop_cell_indeed
-   \edef\currentparagraphs{\currentparagraphs:\the\c_typo_paragraphs_n}%
+   \cdef\currentparagraphs{\currentparagraphs:\the\c_typo_paragraphs_n}%
    \ifnum\c_typo_paragraphs_n>\plusone
      \typo_paragraphs_separator
    \fi

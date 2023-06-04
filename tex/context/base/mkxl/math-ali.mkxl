@@ -540,7 +540,7 @@
 
 \permanent\tolerant\protected\def\math_alignment_start[#1]#*[#2]%
   {\begingroup
-   \edef\currentmathalignment{#1}%
+   \cdef\currentmathalignment{#1}%
    \ifarguments\or\or
      \setupmathalignment[#1][#2]%
    \fi
@@ -913,7 +913,7 @@
 
 \permanent\tolerant\protected\def\math_cases_simple[#1]#*[#2]#:#3%
   {\begingroup
-   \edef\currentmathcases{#1}%
+   \cdef\currentmathcases{#1}%
    \setupcurrentmathcases[#2]%
    \math_cases_start[\currentmathcases]%
    \clf_simplecases{\mathcasesparameter\c!action}{#3}%
@@ -989,7 +989,7 @@
 
 \permanent\tolerant\protected\def\math_cases_start[#1]#*[#2]%
   {\begingroup
-   \edef\currentmathcases{#1}%
+   \cdef\currentmathcases{#1}%
    \ifarguments\or\or
      \setupcurrentmathcases[#2]%
    \fi
@@ -1788,7 +1788,7 @@
    \c_math_eqalign_column_saved\c_math_eqalign_column
    \c_math_eqalign_row_saved\c_math_eqalign_row
    \globalpushmacro\c_math_eqalign_first
-   \edef\currentmathmatrix{#1}%
+   \cdef\currentmathmatrix{#1}%
    \setupcurrentmathmatrix[#2]%
    \math_matrix_check_settings
    \math_eqalign_set_defaults
@@ -1994,7 +1994,7 @@
 
 \permanent\tolerant\protected\def\startnamedmatrix[#1]#*[#2]%
   {\begingroup
-   \edef\currentmathmatrix{#1}%
+   \cdef\currentmathmatrix{#1}%
    \setupcurrentmathmatrix[#2]%
    \math_matrix_start[\currentmathmatrix]}
 
@@ -2029,7 +2029,7 @@
 
 \permanent\tolerant\protected\def\math_matrix_simple[#1]#*[#2]#:#3%
   {\begingroup
-   \edef\currentmathmatrix{#1}%
+   \cdef\currentmathmatrix{#1}%
    \setupcurrentmathmatrix[#2]%
    \math_matrix_start[\currentmathmatrix]%
    \clf_simplematrix{\mathmatrixparameter\c!action}{#3}%
@@ -3015,7 +3015,7 @@
 
 \permanent\tolerant\protected\def\math_simplealign_start[#1]#*[#2]%
   {\begingroup
-   \edef\currentmathsimplealign{#1}%
+   \cdef\currentmathsimplealign{#1}%
    \ifarguments\or\or
      \setupcurrentmathsimplealign[#2]%
    \fi
@@ -3147,7 +3147,7 @@
 
 \permanent\tolerant\protected\def\math_align_simple[#1]#*[#2]#:#3%
   {\begingroup
-   \edef\currentmathsimplealign{#1}%
+   \cdef\currentmathsimplealign{#1}%
    \setupcurrentmathsimplealign[#2]%
    \math_simplealign_start[\currentmathsimplealign]%
    \clf_simplealign{\mathsimplealignparameter\c!alternative}{\mathsimplealignparameter\c!action}{#3}%

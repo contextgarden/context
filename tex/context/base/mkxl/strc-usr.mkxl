@@ -112,13 +112,13 @@
    \userdata_start_indeed}
 
 \def\userdata_start_delayed_name[#1]%
-  {\edef\currentuserdata{#1}%
+  {\cdef\currentuserdata{#1}%
    \checkuserdataparent
    \doifelsenextoptionalcs\userdata_start_delayed_parameters\userdata_start_indeed}
 
 \protected\tolerant\def\userdata_start_instance#1#*[#2]%
   {\begingroup
-   \edef\currentuserdata{#1}%
+   \cdef\currentuserdata{#1}%
    \setupcurrentuserdata[#2]%
    \grabbufferdatadirect
    % {\s!userdata:\currentuserdata}%

@@ -36,14 +36,18 @@ extern hash_state_info lmt_hash_state;
     We use no defines as a |hash| macro will clash with lua hash. Most hash accessors are in a few
     places where it makes sense to be explicit anyway.
 
+    The only reason why we have a dedicated primitive hash is because we can selectively enable 
+    them but at some point we might just always do that. There is never a runtiem lookup (asuming 
+    a format). It also gives is access to some primitive metadata. 
+
 */
 
 # define cs_next(a) lmt_hash_state.hash[(a)].half0 /*tex link for coalesced lists */
 # define cs_text(a) lmt_hash_state.hash[(a)].half1 /*tex string number for control sequence name */
 
 # define undefined_primitive    0
-# define prim_size           2100 /*tex (can be 1000) maximum number of primitives (quite a bit more than needed) */
-# define prim_prime          1777 /*tex (can be  853) about 85 percent of |primitive_size| */
+# define prim_size           2100 /*tex maximum number of primitives (quite a bit more than needed) */
+# define prim_prime          1777 /*tex about 85 percent of |primitive_size| */
 
 typedef struct primitive_info {
     halfword   subids; /*tex number of name entries */
@@ -87,9 +91,11 @@ extern void     tex_dump_hashtable        (dumpstream f);
 extern void     tex_undump_hashtable      (dumpstream f);
 /*     halfword tex_string_lookup         (const char *s, size_t l); */
 extern halfword tex_string_locate         (const char *s, size_t l, int create);
+extern halfword tex_string_locate_only    (const char *s, size_t l);
 extern halfword tex_located_string        (const char *s);
 /*     halfword tex_id_lookup             (int j, int l); */
 extern halfword tex_id_locate             (int j, int l, int create);
+extern halfword tex_id_locate_only        (int j, int l);
 extern void     tex_print_cmd_flags       (halfword cs, halfword cmd, int flags, int escape);
 
 # endif

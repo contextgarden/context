@@ -77,11 +77,11 @@
 % \to \everydefineinteraction
 %
 % \protected\def\scrn_interaction_direct#1%
-%   {\edef\currentinteraction{#1}}
+%   {\cdef\currentinteraction{#1}}
 %
 % \protected\def\scrn_interaction_start#1%
 %   {\pushmacro\currentinteraction
-%    \edef\currentinteraction{#1}}
+%    \cdef\currentinteraction{#1}}
 %
 % \protected\def\scrn_interaction_stop
 %   {\popmacro\currentinteraction}
@@ -93,7 +93,7 @@
 
 \permanent\protected\def\startinteraction[#1]%
   {\pushmacro\currentinteraction
-   \edef\currentinteraction{#1}}
+   \cdef\currentinteraction{#1}}
 
 \permanent\protected\def\stopinteraction
   {\popmacro\currentinteraction}

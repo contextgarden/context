@@ -176,7 +176,7 @@
 
 \aliased\let\checkindentation\relax
 
-\installmacrostack\checkindentation
+\installmacrostack\checkindentation % used?
 
 %D Actually we can forget about indent and let everypar insert a kern or so,
 %D but on the other hand it's kind of consistent to keep it and make the
@@ -737,7 +737,7 @@
 
 \permanent\overloaded\tolerant\protected\def\spac_narrower_start[#1]#*[#2]%
   {\begingroup
-   \edef\currentnarrower{#1}%
+   \cdef\currentnarrower{#1}%
    \ifparameter#2\or
      \spac_narrower_start_apply{#2}%
    \else
@@ -811,7 +811,7 @@
    \spac_narrower_start_apply{\narrowerparameter\v!default}}
 
 \def\spac_narrower_start_named_one_nop[#1][#2]% [tag] []
-  {\edef\currentnarrower{#1}%
+  {\cdef\currentnarrower{#1}%
    \spac_narrower_start_apply{\narrowerparameter\v!default}}
 
 \def\spac_narrower_start_named_two[#1]%
@@ -825,12 +825,12 @@
   {\doifelseassignment{#2}\spac_narrower_start_named_tag_settings\spac_narrower_start_named_tag_how[#1][#2]}
 
 \def\spac_narrower_start_named_tag_settings[#1][#2]% [tag] [settings]
-  {\edef\currentnarrower{#1}%
+  {\cdef\currentnarrower{#1}%
    \setupcurrentnarrower[#2]%
    \spac_narrower_start_apply{\narrowerparameter\v!default}}
 
 \def\spac_narrower_start_named_tag_how[#1][#2]% [tag] [how]
-  {\edef\currentnarrower{#1}%
+  {\cdef\currentnarrower{#1}%
    \spac_narrower_start_apply{#2}}
 
 \aliased\let\stopnarrow\spac_narrower_stop

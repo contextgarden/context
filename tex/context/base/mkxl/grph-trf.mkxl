@@ -123,10 +123,10 @@
        \lettonothing\currentscale
        \setupcurrentscale[#1]%
      \else
-       \edef\currentscale{#1}%
+       \cdef\currentscale{#1}%
      \fi
    \or
-     \edef\currentscale{#1}%
+     \cdef\currentscale{#1}%
      \setupcurrentscale[#2]%
    \fi
    %

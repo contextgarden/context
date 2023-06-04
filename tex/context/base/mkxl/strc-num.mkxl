@@ -269,7 +269,7 @@
 
 \permanent\tolerant\protected\def\convertedcounter[#1]#*[#2]%
   {\begingroup
-   \edef\currentcounter{#1}%
+   \cdef\currentcounter{#1}%
    \ifparameter#2\or\setupcurrentcounter[#2]\fi
    \clf_prefixedconverted
      {\counterparameter\s!name}
@@ -399,7 +399,7 @@
    \ifempty\currentname
      \edef\currentname{#1}%
    \fi
-   \edef\currentcounter{#3\s!counter}%
+   \cdef\currentcounter{#3\s!counter}%
    \ifempty\currentcounter
      \let\currentcounter\currentname
    \fi
@@ -599,7 +599,7 @@
      \c!numbersegments     =#2\c!numbersegments]}
 
 \protected\def\strc_counter_setup_using_parameter#1#2% name \someparameter
-  {\edef\currentcounter{#1}%
+  {\cdef\currentcounter{#1}%
    %
    \setcounterparameter              \c!start{#2\c!start}%
    \setcounterparameter              \c!state{#2\c!state}% % beware, "" == start

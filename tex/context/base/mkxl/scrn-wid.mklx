@@ -128,7 +128,7 @@
 \permanent\tolerant\protected\def\scrn_attachment_direct[#tag]#spacer[#registered]#spacer[#settings]%
   {\iflocation
      \bgroup
-     \edef\currentattachment{#tag}%
+     \cdef\currentattachment{#tag}%
      \ifcstok{\attachmentparameter\c!state}\v!start
        \iftok{#registered}\emptytoks
          \scrn_attachment_inject[\v!auto][]%
@@ -142,7 +142,7 @@
    \fi}
 
 \tolerant\protected\def\scrn_attachment_start[#tag]#spacer[#registered]#spacer[#settings]%
-  {\edef\currentattachment{#tag}%
+  {\cdef\currentattachment{#tag}%
    \unless\iflocation
      \expandafter\scrn_attachment_start_ignore
    \orelse\ifcstok{\attachmentparameter\c!state}\v!start
@@ -416,7 +416,7 @@
 
 \tolerant\protected\def\scrn_comment_argument[#category]#spacer[#title]#spacer[#settings]#:#text%%
   {\iflocation
-     \def\currentcomment{#category}%
+     \cdef\currentcomment{#category}%
      \ifcstok{\commentparameter\c!state}\v!start
        \ifhastok={#title}
          \setupcurrentcomment[#title]%
@@ -430,7 +430,7 @@
    \ignorespaces}
 
 \tolerant\protected\def\scrn_comment_start[#category]#spacer[#title]#spacer[#settings]%
-  {\def\currentcomment{#category}%
+  {\cdef\currentcomment{#category}%
    \unless\iflocation
      \expandafter\scrn_comment_start_ignore
    \orelse\ifcstok{\commentparameter\c!state}\v!start

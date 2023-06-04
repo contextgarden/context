@@ -1187,7 +1187,7 @@
 \def\font_basics_define_font_without_parameters#identifier#2%
   {\relax % intercept lookahead, in case we scan for a number
    \c_font_feature_inheritance_mode\c_font_feature_inheritance_fontonly
-   \edef\lastfontidentifier{#identifier}%
+   \cdef\lastfontidentifier{#identifier}%
    \let\v_font_size_relative\v_font_rscale_default
    \let\v_font_size_absolute\fontbody
    \font_helpers_low_level_define{#2}\v_font_identifier_basic
@@ -1198,7 +1198,7 @@
    \let\v_font_identifier_basic\v_font_identifier_basic_saved}
 
 \protected\def\font_helpers_trigger#identifier% make a traced variant
-  {\edef\lastfontidentifier{#identifier}%
+  {\cdef\lastfontidentifier{#identifier}%
    \ifcsname\v_font_identifier_class\endcsname
      % \writestatus{fonts}{trigger: reusing \v_font_identifier_class}%
      \expandafter\font_helpers_trigger_reuse
@@ -1488,7 +1488,7 @@
      % environment and size already defined
    \orelse\ifproductionrun
      \push_macro_fontclass
-     \edef\fontclass{#class}%
+     \cdef\fontclass{#class}%
      \font_helpers_register_environment{#class}{#normalizedbody}%
      \settrue\c_font_defining_environment_state
      \font_helpers_define_unknown_font{#normalizedbody}% current class
@@ -1618,7 +1618,7 @@
   {\push_macro_fontclass
    \doifelse{#4}\s!default
      {\lettonothing\fontclass}
-     {\def\fontclass{#4}}%
+     {\cdef\fontclass{#4}}%
    \definebodyfont[#1][#2][#3]%
    \pop_macro_fontclass}
 
@@ -1875,7 +1875,7 @@
 \protected\def\font_basics_switch_style#style%
   {\ifcsname\??fontstyle#style\endcsname
      \lastnamedcs
-     \edef\fontstyle{#style}%
+     \cdef\fontstyle{#style}%
      \ifmmode\mr\fi % in order to be compatible with \rm in math mode
      % \the\everybodyfont % cleaner, in setting size as well as style
    \else
@@ -1964,7 +1964,7 @@
 
 \permanent\def\setcurrentfontclass#class%
   {\ifcsname\??fontclassyes#class\endcsname
-     \edef\fontclass{#class}%
+     \cdef\fontclass{#class}%
    \orelse\ifcsname\??fontclassnop#class\endcsname
      % already tried
    \else   % too messy: \ifcase\currentgrouplevel % (unpredictable)
@@ -1981,15 +1981,15 @@
 %D So far for synchronisation. (We can inline the following macros.)
 
 \permanent\protected\def\setcurrentfont#body#style#alternative#size% not used
-  {\edef\fontbody       {#body}%
-   \edef\fontstyle      {#style}%
-   \edef\fontalternative{#alternative}%
-   \edef\fontsize       {#size}%
+  {\cdef\fontbody       {#body}%
+   \cdef\fontstyle      {#style}%
+   \cdef\fontalternative{#alternative}%
+   \cdef\fontsize       {#size}%
    \font_helpers_check_big_math_synchronization
    \font_helpers_synchronize_font}
 
 \permanent\protected\def\setcurrentfontbody#body% % not used
-  {\edef\fontbody{#body}%
+  {\cdef\fontbody{#body}%
    \font_helpers_synchronize_font}
 
 % For Taco: optional fall backs:
@@ -1999,46 +1999,46 @@
 \fi
 
 \protected\def\font_helpers_set_current_font_style#style%
-  {\edef\fontstyle{#style}%
+  {\cdef\fontstyle{#style}%
    \font_typescripts_inherit_check\fontstyle
    \ifmmode\mr\fi % otherwise \rm not downward compatible ... not adapted yet
    \font_helpers_synchronize_font}
 
 \protected\def\font_helpers_set_current_xsize_alternative#xsize#alternative%
-  {\edef\fontface{#xsize}%
-   \edef\fontalternative{#alternative}%
+  {\cdef\fontface{#xsize}%
+   \cdef\fontalternative{#alternative}%
    \font_helpers_synchronize_font}
 
 \protected\def\font_helpers_set_current_font_alternative#alternative%
-  {\edef\fontalternative{#alternative}%
+  {\cdef\fontalternative{#alternative}%
    \font_helpers_synchronize_font}
 
 \protected\def\font_helpers_set_current_font_size#size%
-  {\edef\fontsize{#size}%
+  {\cdef\fontsize{#size}%
    \font_helpers_check_big_math_synchronization % double? better in everymath?
    \font_helpers_synchronize_font}
 
 \protected\def\font_helpers_set_current_font_style_alternative#style#alternative% \rmsl
-  {\edef\fontstyle      {#style}%
-   \edef\fontalternative{#alternative}%
+  {\cdef\fontstyle      {#style}%
+   \cdef\fontalternative{#alternative}%
    \font_helpers_synchronize_font}
 
 \protected\def\font_helpers_set_current_font_style_size#style#size% \rma
-  {\edef\fontstyle{#style}%
-   \edef\fontsize {#size}%
+  {\cdef\fontstyle{#style}%
+   \cdef\fontsize {#size}%
    \font_helpers_check_big_math_synchronization % double? better in everymath?
    \font_helpers_synchronize_font}
 
 \protected\def\font_helpers_set_current_font_alternative_size#alternative#size% \sla
-  {\edef\fontalternative{#alternative}%
-   \edef\fontsize       {#size}%
+  {\cdef\fontalternative{#alternative}%
+   \cdef\fontsize       {#size}%
    \font_helpers_check_big_math_synchronization % double? better in everymath?
    \font_helpers_synchronize_font}
 
 \protected\def\font_helpers_set_current_font_style_alternative_size#style#alternative#size% \rmsla
-  {\edef\fontstyle      {#style}%
-   \edef\fontalternative{#alternative}%
-   \edef\fontsize       {#size}%
+  {\cdef\fontstyle      {#style}%
+   \cdef\fontalternative{#alternative}%
+   \cdef\fontsize       {#size}%
    \font_helpers_check_big_math_synchronization % double? better in everymath?
    \font_helpers_synchronize_font}
 

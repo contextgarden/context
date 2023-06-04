@@ -100,7 +100,7 @@
 
 \permanent\protected\def\starttextflow[#1]%
   {\begingroup
-   \edef\currenttextflow{#1}%
+   \cdef\currenttextflow{#1}%
    \ifcsname\??textflowbox\currenttextflow\endcsname
      \b_page_textflow_box\csname\??textflowbox\currenttextflow\endcsname
      \global\setbox\b_page_textflow_box\vbox
@@ -120,7 +120,7 @@
 
 \permanent\protected\def\flushtextflow#1%
   {\begingroup
-   \edef\currenttextflow{#1}%
+   \cdef\currenttextflow{#1}%
    \ifcsname\??textflowbox\currenttextflow\endcsname
      \b_page_textflow_box\csname\??textflowbox\currenttextflow\endcsname
      \ifvoid\b_page_textflow_box

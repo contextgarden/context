@@ -40,7 +40,7 @@
    \the\everytransliterations}
 
 \permanent\tolerant\protected\def\settransliteration[#1]#;#2%
-  {\edef\currenttransliteration{#1#2}%
+  {\cdef\currenttransliteration{#1#2}%
    \lang_transliteration_common}
 
 \permanent\protected\def\transliterationexception[#1]#2#3%
@@ -48,7 +48,7 @@
 
 \permanent\tolerant\protected\def\starttransliteration[#1]#*[#2]%
   {\begingroup
-   \edef\currenttransliteration{#1}%
+   \cdef\currenttransliteration{#1}%
    \ifparameter#2\or
       \setupcurrenttransliteration[#2]%
    \fi
@@ -61,7 +61,7 @@
 
 \permanent\tolerant\protected\def\transliteration[#1]#;#2%
   {\groupedcommand
-     {\edef\currenttransliteration{#1#2}%
+     {\cdef\currenttransliteration{#1#2}%
       \lang_transliteration_common
       \transliterationparameter\c!left\relax}
      {\transliterationparameter\c!right\relax}}

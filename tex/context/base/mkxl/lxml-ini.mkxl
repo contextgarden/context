@@ -261,11 +261,11 @@
 
 \permanent\tolerant\protected\def\startxmldisplayverbatim[#1]%
   {\startpacked
-   \edef\currenttyping{#1}%
+   \cdef\currenttyping{#1}%
    \ifempty\currenttyping
      \let\currenttyping\v!typing
    \else % maybe test for existence
-     \edef\currenttyping{xml:\currenttyping}%
+     \cdef\currenttyping{xml:\currenttyping}%
    \fi
    \enforced\protected\def\stopxmldisplayverbatim
      {\endofverbatimlines
@@ -277,11 +277,11 @@
 
 \permanent\tolerant\protected\def\startxmlinlineverbatim[#1]%
   {\begingroup
-   \edef\currenttype{#1}%
+   \cdef\currenttype{#1}%
    \ifempty\currenttype
      \let\currenttype\v!type
    \else % maybe test for existence
-     \edef\currenttype{xml:\currenttype}%
+     \cdef\currenttype{xml:\currenttype}%
    \fi
    \enforced\let\stopxmlinlineverbatim\endgroup
    \doinitializeverbatim}

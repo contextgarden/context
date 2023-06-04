@@ -22,7 +22,7 @@ local defaults = {
 
     "source/latex/**",
     "source/plain/**",
-    "source/generic/**",
+ -- "source/generic/**",
 }
 
 return {

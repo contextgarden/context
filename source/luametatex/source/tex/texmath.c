@@ -4066,6 +4066,7 @@ void tex_run_math_fence(void)
     halfword leftclass = unset_noad_class;
     halfword rightclass = unset_noad_class;
     halfword source = 0;
+    halfword factor = scaling_factor;
     halfword attrlist = null;
     quarterword st = (quarterword) cur_chr;
     halfword style = cur_list.math_style;
@@ -4090,7 +4091,7 @@ void tex_run_math_fence(void)
     }
     while (1) {
            /* todo: break down  */
-        switch (tex_scan_character("hdanlevpcrsutbHDANLEVPCRSUTB", 0, 1, 0)) {
+        switch (tex_scan_character("hdanlevpcrsutbfHDANLEVPCRSUTBF", 0, 1, 0)) {
             case 0:
                 goto CHECK_PAIRING;
             case 'a': case 'A':
@@ -4123,6 +4124,11 @@ void tex_run_math_fence(void)
             case 'd': case 'D':
                 if (tex_scan_mandate_keyword("depth", 1)) {
                     dp = tex_scan_dimen(0, 0, 0, 0, NULL);
+                }
+                break;
+            case 'f': case 'F':
+                if (tex_scan_mandate_keyword("factor", 1)) {
+                    factor = tex_scan_int(0, NULL);
                 }
                 break;
             case 'h': case 'H':
@@ -4353,12 +4359,14 @@ void tex_run_math_fence(void)
         switch (st) {
             case left_fence_side:
                 tex_aux_append_math_fence(fence, open_noad_subtype);
+                fence_nesting_factor(fence) = factor;
                 break;
             case middle_fence_side:
                 tex_aux_append_math_fence(fence, middle_noad_subtype);
                 break;
             case right_fence_side:
                 tex_aux_append_math_fence(fence, close_noad_subtype);
+                fence_nesting_factor(fence) = factor;
                 break;
             case left_operator_side:
                 {

@@ -210,7 +210,7 @@
   {\bgroup
    \nofarguments\lastarguments
    \checkpositionoverlays % otherwise funny regions
-   \edef\currentlayer{#1}%
+   \cdef\currentlayer{#1}%
    \edef\p_pack_layers_state{\layerparameter\c!state}%
    \ifx\p_pack_layers_state\v!stop
      \dowithnextboxcs\egroup\hbox % no pack ?
@@ -509,7 +509,7 @@
 \permanent\protected\def\flushlayer[#1]% quite core, so optimized (todo: check for void)
   {\begingroup
    \forgetall
-   \edef\currentlayer{#1}%
+   \cdef\currentlayer{#1}%
    \edef\p_pack_layers_state{\layerparameter\c!state}%
    \ifx\p_pack_layers_state\v!stop
      % nothing
@@ -660,7 +660,7 @@
       \box\nextbox
 %
       \pack_layers_bottom_fill}%
-   % \edef\currentlayer{#2}% :\the\realpageno}% local .. check \anchor
+ % \cdef\currentlayer{#2}% :\the\realpageno}% local .. check \anchor
    \edef\p_pack_layers_position{\layerparameter\c!position}% local
    \ifx\p_pack_layers_position\v!yes
      \edef\p_pack_layers_region{\layerparameter\c!region}%

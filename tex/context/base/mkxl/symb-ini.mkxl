@@ -304,7 +304,7 @@
   {\popmacro\m_symb_current_set}
 
 \permanent\protected\def\setupsymbolset[#1]%
-  {\edef\currentsymbolset{#1}%
+  {\cdef\currentsymbolset{#1}%
    \ifcsname\??symbolsets\currentsymbolset\endcsname \else
      \symb_setup_symbol_set
    \fi}

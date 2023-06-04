@@ -50,7 +50,7 @@
 
 \permanent\tolerant\protected\def\setdataset[#1]#*[#2]#*[#3]%
   {\begingroup
-   \edef\currentdataset{#1}%
+   \cdef\currentdataset{#1}%
    \ifparameters\or\or
      \clf_setdataset
         name  {\currentdataset}%
@@ -58,7 +58,7 @@
         data  {#2}%
      \relax
    \or
-     \edef\currentdataset{#1}%
+     \cdef\currentdataset{#1}%
      \clf_setdataset
         name  {\currentdataset}%
         tag   {#2}%

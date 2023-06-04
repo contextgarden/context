@@ -407,6 +407,7 @@ inline static halfword tex_aux_grab_toks(int expand, int expandlist, int *head)
         case call_cmd:
         case protected_call_cmd:
         case semi_protected_call_cmd:
+        case constant_call_cmd:
         case tolerant_call_cmd:
         case tolerant_protected_call_cmd:
         case tolerant_semi_protected_call_cmd:
@@ -756,11 +757,15 @@ void tex_conditional_if(halfword code, int unless)
                 p = cur_cmd;
                 q = cur_chr;
                 tex_get_next();
-                if (cur_cmd != p) {
+                if ((p == constant_call_cmd && cur_cmd == call_cmd) || (p == call_cmd && cur_cmd == constant_call_cmd)) {
+                    /*tex This is a somewhat special case. */
+                    goto SOMECALLCMD;
+                } else if (cur_cmd != p) {
                     result = 0;
                 } else if (cur_cmd < call_cmd) {
                     result = cur_chr == q;
                 } else {
+                    SOMECALLCMD:
                     /*tex
                         Test if two macro texts match. Note also that |\ifx| decides that macros
                         |\a| and |\b| are different in examples like this:
@@ -769,6 +774,9 @@ void tex_conditional_if(halfword code, int unless)
                         \def\a{\c}  \def\c{}
                         \def\b{\d}  \def\d{}
                         \stoptyping
+
+                        We acctually have commands beyond valid call commands but they are never 
+                        seen here. 
                     */
                     p = token_link(cur_chr);
                     /*tex Omit reference counts. */
@@ -951,6 +959,7 @@ void tex_conditional_if(halfword code, int unless)
               EMPTY_CHECK_AGAIN:
                 switch (cur_cmd) {
                     case call_cmd:
+                    case constant_call_cmd:
                         result = ! token_link(cur_chr);
                         break;
                     case internal_toks_reference_cmd:
@@ -1047,10 +1056,17 @@ void tex_conditional_if(halfword code, int unless)
                 */
                 if (lmt_input_state.cur_input.loc) {
                     halfword t = token_info(lmt_input_state.cur_input.loc);
-                    lmt_input_state.cur_input.loc = token_link(lmt_input_state.cur_input.loc);
                     if (t < cs_token_flag && token_cmd(t) == parameter_reference_cmd) {
+                        lmt_input_state.cur_input.loc = token_link(lmt_input_state.cur_input.loc);
                         result = lmt_input_state.parameter_stack[lmt_input_state.cur_input.parameter_start + token_chr(t) - 1] != null ? 1 : 2;
-                    }
+                    } else {
+                        /*tex 
+                            We have a replacement text so we check and backtrack. This is somewhat
+                            tricky because a parameter can be a condition but we assume sane usage. 
+                        */
+                        tex_get_token();
+                        result = cur_cmd == if_test_cmd ? 2 : 1;
+                    }          
                 }
                 goto CASE;
             }

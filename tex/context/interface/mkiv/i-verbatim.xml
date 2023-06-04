@@ -201,6 +201,10 @@
                     <cd:constant type="no"/>
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
+                <cd:parameter name="paragraph">
+                    <cd:constant type="yes" default="no"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
                 <cd:parameter name="escape">
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>

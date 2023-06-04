@@ -53,7 +53,7 @@
 
 \tolerant\protected\def\math_delimited_handle#tag#*[#settings]#:#body%
   {\begingroup
-   \edef\currentmathdelimited{#tag}%
+   \cdef\currentmathdelimited{#tag}%
    \setupcurrentmathdelimited[#settings]%
    \math_delimited_alternative{%
      \begincsname\??mathwhateverstrut\mathdelimitedparameter\c!strut\endcsname

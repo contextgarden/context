@@ -66,9 +66,9 @@
      \ifhastok={#tag}%
        \lettonothing\currentinteractionbar
        \setupcurrentinteractionbar[#tag]%
-       \edef\currentinteractionbar{\interactionbarparameter\c!alternative}%
+       \cdef\currentinteractionbar{\interactionbarparameter\c!alternative}%
      \else
-       \edef\currentinteractionbar{#tag}%
+       \cdef\currentinteractionbar{#tag}%
        \setupcurrentinteractionbar[#settings]%
      \fi
      \doif{\interactionbarparameter\c!state}\v!start

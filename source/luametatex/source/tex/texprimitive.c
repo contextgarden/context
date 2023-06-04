@@ -170,6 +170,7 @@ static int tex_aux_room_in_hash(void)
     231--258.]
 
     https://en.wikipedia.org/wiki/Coalesced_hashing
+    https://programming.guide/coalesced-hashing.html
 
     Because we seldom use uppercase we get many misses, multiplying a chr j[k] by k actually gives
     a better spread.
@@ -211,7 +212,7 @@ halfword tex_prim_lookup(strnumber s)
         /*tex We start searching here; note that |0 <= h < hash_prime|. */
         halfword p = h + 1;
         while (1) {
-         /* When using |halfword text = prim_text(p)| no intelliugense warning for first test in: */
+         /* When using |halfword text = prim_text(p)| no intellisense warning for first test in: */
             if (prim_text(p) > 0 && str_length(prim_text(p)) == l && tex_str_eq_str(prim_text(p), s)) {
                 return p;
             } else if (prim_next(p)) {
@@ -506,15 +507,14 @@ static halfword tex_aux_insert_id(halfword p, const unsigned char *j, unsigned i
 halfword tex_id_locate(int j, int l, int create)
 {
     /*tex The index in |hash| array: */
-    halfword h = tex_aux_compute_hash((char *) (lmt_fileio_state.io_buffer + j), (unsigned) l);
+    halfword p = tex_aux_compute_hash((char *) (lmt_fileio_state.io_buffer + j), (unsigned) l) + hash_base;
     /*tex We start searching here. Note that |0 <= h < hash_prime|: */
-    halfword p = h + hash_base;
-    /*tex The next one in a list: */
     while (1) {
         strnumber s = cs_text(p);
         if ((s > 0) && (str_length(s) == (unsigned) l) && tex_str_eq_buf(s, j, l)) {
             return p;
         } else {
+            /*tex The next one in a chain: */
             halfword n = cs_next(p);
             if (n) {
                 p = n;
@@ -523,6 +523,20 @@ halfword tex_id_locate(int j, int l, int create)
             } else {
                 break;
             }
+        }
+    }
+    return undefined_control_sequence;
+}
+
+halfword tex_id_locate_only(int j, int l)
+{
+    halfword p = tex_aux_compute_hash((char *) (lmt_fileio_state.io_buffer + j), (unsigned) l) + hash_base;
+    while (p) {
+        strnumber s = cs_text(p);
+        if ((s > 0) && (str_length(s) == (unsigned) l) && tex_str_eq_buf(s, j, l)) {
+            return p;
+        } else {
+            p = cs_next(p);
         }
     }
     return undefined_control_sequence;
@@ -558,10 +572,22 @@ halfword tex_string_locate(const char *s, size_t l, int create)
     return undefined_control_sequence;
 }
 
+halfword tex_string_locate_only(const char *s, size_t l)
+{
+    halfword p = tex_aux_compute_hash(s, (unsigned) l) + hash_base;
+    while (p) {
+        if (cs_text(p) > 0 && tex_str_eq_cstr(cs_text(p), s, (int) l)) {
+            return p;
+        } else {
+            p = cs_next(p);
+        }
+    }
+    return undefined_control_sequence;
+}
+
 halfword tex_located_string(const char *s)
 {
-    size_t l = strlen(s);
-    return tex_string_locate(s, l, 0);
+    return tex_string_locate_only(s, strlen(s));
 }
 
 /*tex
@@ -704,6 +730,9 @@ void tex_print_cmd_flags(halfword cs, halfword cmd, int flags, int escaped)
         if (is_instance (flags)) { (escaped ? tex_print_str_esc : tex_print_str)("instance " ); }
         if (is_untraced (flags)) { (escaped ? tex_print_str_esc : tex_print_str)("untraced " ); }
     }
+    if (is_constant_cmd(cmd)) {
+        (escaped ? tex_print_str_esc : tex_print_str)("constant " );
+    }
     if (is_tolerant_cmd(cmd)) {
         (escaped ? tex_print_str_esc : tex_print_str)("tolerant " );
     }
@@ -791,6 +820,7 @@ void tex_print_cmd_chr(singleword cmd, halfword chr)
         case call_cmd:
         case protected_call_cmd:
         case semi_protected_call_cmd:
+        case constant_call_cmd:
         case tolerant_call_cmd:
         case tolerant_protected_call_cmd:
         case tolerant_semi_protected_call_cmd:
@@ -898,6 +928,10 @@ void tex_print_cmd_chr(singleword cmd, halfword chr)
         case deep_frozen_dont_expand_cmd:
             /*tex Kind of special. */
             tex_print_str_esc("notexpanded");
+            break;
+        case deep_frozen_keep_constant_cmd:
+            /*tex Kind of special. */
+            tex_print_str_esc("keepconstant");
             break;
         case internal_box_reference_cmd:
             tex_print_str_esc("hiddenlocalbox");

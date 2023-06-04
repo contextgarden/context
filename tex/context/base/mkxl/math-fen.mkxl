@@ -151,6 +151,10 @@
 \newconstant\c_math_fenced_class
 \newinteger \c_math_fence_check
 
+\integerdef\c_math_factor_fenced\zerocount
+
+\installglobalmacrostack\c_math_factor_fenced
+
 \protected\def\math_fenced_common#1#2#3#4% \Uwhatever class symbol source
   {\c_math_fenced_class\math_class_by_parameter\mathfenceparameter#2%
    \math_fenced_check_size_mismatch % we need to catch an unbalanced \F as we are sequential
@@ -173,6 +177,15 @@
      \edef\p_factor   {\mathfenceparameter\c!factor}%
      \edef\p_size     {\mathfenceparameter\c!size}%
      \edef\p_mathclass{\mathfenceparameter\c!mathclass}%
+\edef\p_inline_factor{\ifconditional\indisplaymath\mathfenceparameter\c!displayfactor\else\mathfenceparameter\c!inlinefactor\fi}%
+\ifempty\p_inline_factor
+  % nothing
+\orelse\ifx#1\Uleft
+  \push_macro_c_math_factor_fenced
+  \integerdef\c_math_factor_fenced\p_inline_factor\relax
+\orelse\ifx#1\Uright
+  \pop_macro_c_math_factor_fenced
+\fi
      \ifnum\c_math_fenced_level>\zerocount
        \math_fenced_common_factor_fixed
      \orelse\ifconditional\c_math_fenced_sized
@@ -218,6 +231,10 @@
      %
      \s!top    \mathfenceparameter\c!topspace
      \s!bottom \mathfenceparameter\c!bottomspace
+     %
+\ifzero\c_math_factor_fenced\else
+    \s!factor  \c_math_factor_fenced
+\fi
      %
      \math_fenced_trace
      \ifx\p_fence\v!none
@@ -319,12 +336,12 @@
 \protected\def\math_fenced_fenced_start#1%
   {\begingroup
  %{\beginmathgroup
-   \edef\currentmathfence{#1}%
+   \cdef\currentmathfence{#1}%
    \math_fenced_fenced_common
    \math_fenced_left}
 
 \protected\def\math_fenced_fenced_stop#1%
-  {\edef\currentmathfence{#1}%
+  {\cdef\currentmathfence{#1}%
    \math_fenced_right
    \stopusemathstyleparameter
    \endgroup}
@@ -366,7 +383,7 @@
 \tolerant\protected\def\math_fenced_horizontal#1#*[#2]#:#*#3#4%
   {% \csname math\mathfenceparameter\c!mathclass\endcsname
    \mathord \bgroup % class here
-     \setlocalmathfencecurrent{#1}% \edef\currentmathfence{#1}%
+     \setlocalmathfencecurrent{#1}% \cdef\currentmathfence{#1}%
      \setupcurrentmathfence[#2]%
    % \usemathstyleparameter\mathfenceparameter\c!mathstyle
      \setmathsmalltextbox\scratchboxone\hbox{\usemathfencestyleandcolor\c!leftstyle \c!leftcolor #3}%
@@ -407,7 +424,7 @@
 \tolerant\protected\def\math_fenced_vertical#1#*[#2]%
   {\begingroup
  %{\beginmathgroup
-   \setlocalmathfencecurrent{#1}% \edef\currentmathfence{#1}%
+   \setlocalmathfencecurrent{#1}% \cdef\currentmathfence{#1}%
    % under test:
    \setfalse\c_math_fenced_level_mode
    \c_attr_mathsize\attributeunsetvalue

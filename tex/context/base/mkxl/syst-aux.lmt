@@ -1,4 +1,4 @@
-    if not modules then modules = { } end modules ['syst-aux'] = {
+if not modules then modules = { } end modules ['syst-aux'] = {
     version   = 1.001,
     comment   = "companion to syst-aux.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

@@ -102,7 +102,7 @@
 \protected\def\typo_initial_handle_indeed#1#2%
   {\dontleavehmode
    \begingroup
-   \edef\currentinitial{#1}%
+   \cdef\currentinitial{#1}%
    \setupcurrentinitial[#2]%
    \resetfontfeature % might be needed in more places
    \doifelsenothing{\initialparameter\c!style}

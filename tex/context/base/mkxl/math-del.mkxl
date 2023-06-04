@@ -92,7 +92,7 @@
 
 \permanent\tolerant\protected\def\mathdelimiter[#1]#*[#2]% so not really used (for now)
   {\mathop
-     {\edef\currentmathdelimiter{#1}%
+     {\cdef\currentmathdelimiter{#1}%
       \iftok{#2}\emptytoks
         \edef\p_factor{\mathdelimiterparameter\c!factor}%
       \orelse\ifhastok={#2}%

@@ -393,10 +393,10 @@ void tex_expand_current_token(void)
                             |scanner_status| temporarily.
                         */
                         halfword t;
-                        halfword save_scanner_status = lmt_input_state.scanner_status;
-                        lmt_input_state.scanner_status = scanner_is_normal;
+//                        halfword save_scanner_status = lmt_input_state.scanner_status;
+//                        lmt_input_state.scanner_status = scanner_is_normal;
                         t = tex_get_token();
-                        lmt_input_state.scanner_status = save_scanner_status;
+//                        lmt_input_state.scanner_status = save_scanner_status;
                         tex_back_input(t);
                         /*tex Now |start| and |loc| point to the backed-up token |t|. */
                         if (t >= cs_token_flag) {
@@ -637,16 +637,24 @@ static int tex_aux_collect_cs_tokens(halfword *p, int *n)
          /*      break; */
             case call_cmd:
             case tolerant_call_cmd:
-                if (get_token_reference(cur_chr) == max_token_reference) { // ! get_token_parameters(cur_chr)) {
-                    /* we avoid the macro stack and expansion and we don't trace either */
-                    halfword h = token_link(cur_chr);
-                    while (h) {
-                        *p = tex_store_new_token(*p, token_info(h));
-                        *n += 1;
-                        h = token_link(h);
-                    }
-                } else {
-                    tex_aux_macro_call(cur_cs, cur_cmd, cur_chr);
+                tex_aux_macro_call(cur_cs, cur_cmd, cur_chr);
+                break;
+            case constant_call_cmd:
+                {
+                  halfword h = token_link(cur_chr);
+                  if (h) { 
+                      if (token_link(h)) { 
+                          *p = tex_store_new_token(*p, token_val(deep_frozen_keep_constant_cmd, cur_chr));
+                      } else { 
+                          *p = tex_store_new_token(*p, token_info(h));
+                      }
+                      *n += 1;
+                  }
+              //  while (h) {
+              //      *p = tex_store_new_token(*p, token_info(h));
+              //      *n += 1;
+              //      h = token_link(h);
+              //  }
                 }
                 break;
             case end_cs_name_cmd:
@@ -695,10 +703,18 @@ int tex_is_valid_csname(void)
             int m = f;
             halfword l = token_link(h);
             while (l) {
-                m = tex_aux_uni_to_buffer(lmt_fileio_state.io_buffer, m, token_chr(token_info(l)));
+                if (token_cmd(token_info(l)) == deep_frozen_keep_constant_cmd) {
+                    halfword h = token_link(token_chr(token_info(l)));
+                    while (h) {
+                        m = tex_aux_uni_to_buffer(lmt_fileio_state.io_buffer, m, token_chr(token_info(h)));
+                        h = token_link(h);
+                    }
+                } else {
+                    m = tex_aux_uni_to_buffer(lmt_fileio_state.io_buffer, m, token_chr(token_info(l)));
+                }
                 l = token_link(l);
             }
-            cs = tex_id_locate(f, m - f, 0); /*tex Don't create a new cs! */
+            cs = tex_id_locate_only(f, m - f); 
             b = (cs != undefined_control_sequence) && (eq_type(cs) != undefined_cs_cmd);
         }
     }

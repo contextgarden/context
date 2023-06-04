@@ -553,6 +553,7 @@ make_lua_key(L, conditional);\
 make_lua_key(L, conditionalmathskip);\
 make_lua_key(L, connectoroverlapmin);\
 make_lua_key(L, constant);\
+make_lua_key(L, constant_call);\
 make_lua_key(L, container);\
 make_lua_key(L, contributehead);\
 make_lua_key(L, convert);\
@@ -568,8 +569,9 @@ make_lua_key(L, cs_name);\
 make_lua_key(L, csname);\
 make_lua_key(L, current);\
 make_lua_key(L, data);\
-make_lua_key(L, deep_frozen_cs_dont_expand);\
-make_lua_key(L, deep_frozen_cs_end_template);\
+make_lua_key(L, deep_frozen_dont_expand);\
+make_lua_key(L, deep_frozen_end_template);\
+make_lua_key(L, deep_frozen_keep_constant);\
 make_lua_key(L, def);\
 make_lua_key(L, deferred);\
 make_lua_key(L, define_char_code);\

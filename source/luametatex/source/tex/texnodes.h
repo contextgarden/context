@@ -1987,6 +1987,7 @@ typedef enum math_accent_subtypes {
 
 # define fence_noad_size        noad_size
 # define fence_delimiter_list   noad_extra_1    // not really a list
+# define fence_nesting_factor   noad_extra_2
 # define fence_delimiter_top    noad_extra_3
 # define fence_delimiter_bottom noad_extra_4
 # define fence_top_overshoot    noad_extra_5

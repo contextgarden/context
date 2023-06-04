@@ -851,6 +851,7 @@ static void tex_aux_eq_destroy(memoryword w)
         case call_cmd:
         case protected_call_cmd:
         case semi_protected_call_cmd:
+        case constant_call_cmd:
         case tolerant_call_cmd:
         case tolerant_protected_call_cmd:
         case tolerant_semi_protected_call_cmd:
@@ -975,6 +976,7 @@ inline static int tex_aux_equal_eq(halfword p, singleword cmd, singleword flag, 
             case call_cmd:
             case protected_call_cmd:
             case semi_protected_call_cmd:
+            case constant_call_cmd:
             case tolerant_call_cmd:
             case tolerant_protected_call_cmd:
             case tolerant_semi_protected_call_cmd:

@@ -183,7 +183,7 @@
 \mutable\lettonothing\currentdetokenizedstyleparameter
 
 \permanent\protected\def\dousestyleparameter#value%
-  {\edef\currentstyleparameter{#value}%
+  {\cdef\currentstyleparameter{#value}%
    \ifempty\currentstyleparameter\else
      \expandafter\dousecurrentstyleparameter
    \fi}
@@ -194,7 +194,7 @@
    \fi}
 
 \permanent\protected\def\dousecurrentstyleparameter % empty check outside here
-  {\edef\currentdetokenizedstyleparameter{\detokenize\expandafter{\currentstyleparameter}}%
+  {\cdef\currentdetokenizedstyleparameter{\detokenize\expandafter{\currentstyleparameter}}%
    \settrue\fontattributeisset % reset is done elsewhere
    \ifcsname\??alternativestyle\currentdetokenizedstyleparameter\endcsname
      \lastnamedcs
@@ -254,7 +254,7 @@
    \let\nexttoken}
 
 \protected\def\font_styles_use_defined#name%
-  {\edef\currentstyle{#name}%
+  {\cdef\currentstyle{#name}%
    \usestylestyleandcolor\c!style\c!color}
 
 \protected\def\font_styles_use_generic#specification%

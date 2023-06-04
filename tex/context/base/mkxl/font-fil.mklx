@@ -45,7 +45,7 @@
   {\push_macro_fontclass
    \doifelse{#class}\v!each
      {\lettonothing\fontclass}
-     {\doifsomething{#class}{\def\fontclass{#class}}}}
+     {\doifsomething{#class}{\cdef\fontclass{#class}}}}
 
 \permanent\protected\def\stopfontclass
   {\pop_macro_fontclass}

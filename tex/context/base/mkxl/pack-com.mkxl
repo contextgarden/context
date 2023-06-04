@@ -230,7 +230,7 @@
 % \permanent\tolerant\protected\def\startcombination[#1]#*[#2]% can be simplified
 %   {\bgroup % so we can grab a group
 %    \pack_combinations_push
-%    \edef\currentcombination{#1}%
+%    \cdef\currentcombination{#1}%
 %    \edef\p_nx_ny{#2}%
 %    %
 %    \ifempty\p_nx_ny
@@ -322,7 +322,7 @@
 \permanent\tolerant\protected\def\startcombination[#1]#*[#2]% can be simplified
   {\bgroup % so we can grab a group
    \pack_combinations_push
-   \edef\currentcombination{#1}%
+   \cdef\currentcombination{#1}%
    \edef\p_nx_ny{#2}%
    %
    \ifempty\p_nx_ny
@@ -832,7 +832,7 @@
 
 \permanent\tolerant\protected\def\startplacepairedbox[#1]#*[#2]%
   {\bgroup
-   \edef\currentpairedbox{#1}%
+   \cdef\currentpairedbox{#1}%
    \setupcurrentpairedbox[#2]%
    \pairedboxparameter\c!before
    \bgroup

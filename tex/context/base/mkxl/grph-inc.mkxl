@@ -211,7 +211,7 @@
    \fi}
 
 \def\grph_include_use_indeed#1#2#3#4%
-  {\dodoglobal\defcsname\??externalfigureinstance#1\endcsname{\grph_include_setup{#2}{#3}{#4}}%
+  {\gdefcsname\??externalfigureinstance#1\endcsname{\grph_include_setup{#2}{#3}{#4}}%
    \grph_include_analyze_collection[#2][#4]}
 
 % inclusion
@@ -226,8 +226,8 @@
 % todo: chain them
 
 \def\grph_include_setup#1#2#3% name parent settings
-  {\edef\m_grph_include_name  {#1}%
-   \edef\m_grph_include_parent{#2}%
+  {\cdef\m_grph_include_name  {#1}%
+   \cdef\m_grph_include_parent{#2}%
    \ifempty\m_grph_include_name \else
      \let\p_grph_include_name\m_grph_include_name
    \fi
@@ -275,7 +275,7 @@
 \def\grph_include_place[#1][#2][#3]% [label][file][settings] | [file][settings] | [file][parent][settings]
   {\bgroup
    \advanceby\c_grph_include_nesting\plusone
-   \edef\currentexternalfigure{\the\c_grph_include_nesting}%
+   \cdef\currentexternalfigure{\the\c_grph_include_nesting}%
    \checkexternalfigureparent % each inherits from the root
    %
    \the\everyexternalfigureresets
@@ -810,7 +810,7 @@
 
 \permanent\protected\def\startexternalfigurecollection[#1]%
   {\begingroup
-   \def\currentexternalfigurecollection{#1}%
+   \cdef\currentexternalfigurecollection{#1}%
    \settrue\c_grph_include_in_collection
    \d_grph_include_collection_minwidth \maxdimen
    \d_grph_include_collection_maxwidth \zeropoint

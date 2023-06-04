@@ -394,10 +394,10 @@
        \lettonothing\currentparagraph
        \setupcurrentparagraph[#1]
      \else
-       \edef\currentparagraph{#1}%
+       \cdef\currentparagraph{#1}%
      \fi
    \or
-     \edef\currentparagraph{#1}%
+     \cdef\currentparagraph{#1}%
      \setupcurrentparagraph[#2]%
    \fi
    \useparagraphstyleandcolor\c!style\c!color

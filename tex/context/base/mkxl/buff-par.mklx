@@ -102,7 +102,7 @@
 
 \protected\def\buff_parallel_start#name%
   {\pushmacro\currentparallel
-   \edef\currentparallel{#name}%
+   \cdef\currentparallel{#name}%
    \clf_nextparallel{\currentparallel}}
 
 \protected\def\buff_parallel_stop
@@ -117,7 +117,7 @@
 
 \permanent\tolerant\protected\def\placeparallel[#name]#spacer[#instance]#spacer[#settings]%
   {\begingroup
-   \edef\currentparallel{#name}%
+   \cdef\currentparallel{#name}%
    \setupcurrentparallel[#settings]%
    \clf_placeparallel
      {\currentparallel}%

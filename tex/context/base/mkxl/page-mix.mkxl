@@ -428,7 +428,7 @@
    \fi}
 
 \def\page_mix_start_columns_a[#1]% [#2]%
-  {\edef\currentmixedcolumns{#1}%
+  {\cdef\currentmixedcolumns{#1}%
    \page_mix_start_columns_checked
      \page_mix_start_columns_a_yes
      \page_mix_start_columns_a_nop}
@@ -452,7 +452,7 @@
      \page_mix_error_b
      \page_mix_start_columns_checked\page_mix_start_columns_b_yes\page_mix_start_columns_b_nop[#1]%
    \else
-     \edef\currentmixedcolumns{#1}%
+     \cdef\currentmixedcolumns{#1}%
      \page_mix_start_columns_checked\page_mix_start_columns_b_yes\page_mix_start_columns_b_nop[#2]%
    \fi}
 
@@ -493,7 +493,7 @@
 \protected\def\page_mix_fast_columns_start#1%
   {\push_macro_currentmixedcolumns
    \push_macro_currentmixedcolumnsmethod
-   \edef\currentmixedcolumns{#1}%
+   \cdef\currentmixedcolumns{#1}%
    \edef\currentmixedcolumnsmethod{\mixedcolumnsparameter\c!method}%
    \mixedcolumnsparameter\c!before\relax % so, it doesn't listen to local settings !
    \begincsname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax

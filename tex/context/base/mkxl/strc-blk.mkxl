@@ -123,7 +123,7 @@
    \endgroup}
 
 \def\strc_start_block#1#2%
-  {\edef\currentblock{#2}%
+  {\cdef\currentblock{#2}%
    \c_strc_blocks_index#1\relax
    \strc_blocks_setup
    \let\strc_blocks_setup\relax

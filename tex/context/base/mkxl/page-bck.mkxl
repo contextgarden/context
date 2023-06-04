@@ -145,7 +145,7 @@
 \def\page_backgrounds_set_nop{\letcsname\currentotrbackground\endcsname\undefined}
 
 \protected\def\page_backgrounds_check#1%
-  {\edef\currentotrbackground{\??layoutbackgrounds#1}%
+  {\cdef\currentotrbackground{\??layoutbackgrounds#1}%
    \page_backgrounds_check_background}
 
 \permanent\def\doifelsesomebackground#1%
@@ -532,7 +532,7 @@
    \the\everybackgroundssetup}
 
 \protected\def\page_backgrounds_setup_and_check#1#2% tag settings
-  {\edef\currentotrbackground{\??layoutbackgrounds#1}%
+  {\cdef\currentotrbackground{\??layoutbackgrounds#1}%
    \setupframed[\currentotrbackground][#2]%
    \page_backgrounds_check_background}
 
@@ -648,7 +648,7 @@
 
 \permanent\protected\def\pushbackground[#1]%
   {\pushmacro\popbackground
-   \edef\currentotrbackground{\??layoutbackgrounds#1}%
+   \cdef\currentotrbackground{\??layoutbackgrounds#1}%
    \enforced\permanent\protected\edef\popbackground
      {\setupframed
         [\currentotrbackground]

@@ -78,7 +78,7 @@
 \mutable\lettonothing\currenthelpname
 
 \protected\def\scrn_help_argument#category%
-  {\def\currenthelp{#category}%
+  {\cdef\currenthelp{#category}%
    \global\advanceby\c_scrn_help_n\plusone
    \edef\currenthelpname{help:\number\c_scrn_help_n}%
    \doifelselocation\scrn_help_argument_indeed\scrn_help_argument_ignore}
@@ -99,7 +99,7 @@
 
 \tolerant\protected\def\scrn_help_start#category#spacer[#reference]%
   {\global\advanceby\c_scrn_help_n\plusone
-   \edef\currenthelp{#category}%
+   \cdef\currenthelp{#category}%
    \edef\currenthelpreference{#reference}%
    \edef\currenthelpname{help:\number\c_scrn_help_n}%
    \grabbufferdatadirect\currenthelp{\e!start\currenthelp}{\e!stop\currenthelp}}

@@ -240,13 +240,19 @@
     n= 65496 cs=46426 indirect=14512
     \stoptyping
 
+    We don't use the 85% prime (and we % the accumulated hash. Somehow this also performs better, 
+    but of course I migbe be wrong. 
+
 */
 
-// # define hash_size  65536
-// # define hash_prime 65497
+//define hash_size  65536
+//define hash_prime 65497
 
 # define hash_size  131072                               /*tex 128K */
-# define hash_prime 131041                               /*tex Plenty of room for the frozen. */
+# define hash_prime 131041                               /*tex not the 85% prime */
+
+//define hash_size  262144                               /*tex 256K */
+//define hash_prime 262103                               /*tex not the 85% prime */
 
 # define null_cs                 1                       /*tex equivalent of |\csname\| |\endcsname| */
 # define hash_base               (null_cs   + 1)         /*tex beginning of region 2, for the hash table */
@@ -265,6 +271,7 @@ typedef enum deep_frozen_cs_codes {
     deep_frozen_cs_relax_code,                                /*tex permanent |\relax| */
     deep_frozen_cs_end_write_code,                            /*tex permanent |\endwrite| */
     deep_frozen_cs_dont_expand_code,                          /*tex permanent |\notexpanded:| */
+    deep_frozen_cs_keep_constant_code,                        /*tex permanent |\notexpanded:| */
     deep_frozen_cs_null_font_code,                            /*tex permanent |\nullfont| */
     deep_frozen_cs_undefined_code,
 } deep_frozen_cs_codes;
@@ -1282,7 +1289,9 @@ typedef enum flag_bit {
 
 inline static singleword tex_flags_to_cmd(int flags)
 {
-    if (is_tolerant(flags)) {
+    if (is_constant(flags)) {
+        return constant_call_cmd;
+    } else if (is_tolerant(flags)) {
         return is_protected    (flags) ? tolerant_protected_call_cmd :
               (is_semiprotected(flags) ? tolerant_semi_protected_call_cmd : tolerant_call_cmd);
     } else {

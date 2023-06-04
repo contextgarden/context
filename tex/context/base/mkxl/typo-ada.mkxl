@@ -80,7 +80,7 @@
       \lettonothing\currentadaptive
       \setupcurrentadaptive[#2]%
     \else
-      \edef\currentadaptive{#2}%
+      \cdef\currentadaptive{#2}%
       \setupcurrentadaptive[#3]%
     \fi
     \edef\p_setups{\adaptiveparameter\c!setups}%

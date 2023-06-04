@@ -228,6 +228,10 @@ extern halfword tex_badness(
 
 # define math_default_penalty    (infinite_penalty+1)
 
+# define initial_alignment_state             -1000000
+# define busy_alignment_state                 1000000
+# define interwoven_alignment_threshold        500000
+
 /*tex
 
     For practical reasons all these registers were max'd to 64K but that really makes no sense for

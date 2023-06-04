@@ -62,10 +62,10 @@
        \lettonothing\currentpositioning
        \setupcurrentpositioning[#1]%
      \else
-       \edef\currentpositioning{#1}%
+       \cdef\currentpositioning{#1}%
      \fi
    \or
-     \edef\currentpositioning{#1}%
+     \cdef\currentpositioning{#1}%
      \setupcurrentpositioning[#2]%
    \fi
    \d_pack_positioning_x_position \zeropoint

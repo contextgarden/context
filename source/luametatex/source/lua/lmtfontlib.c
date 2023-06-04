@@ -825,7 +825,7 @@ static int fontlib_id(lua_State *L)
     if (lua_type(L, 1) == LUA_TSTRING) {
         size_t l;
         const char *s = lua_tolstring(L, 1, &l);
-        int cs = tex_string_locate(s, l, 0);
+        int cs = tex_string_locate_only(s, l);
         int f = -1;
         if (cs == undefined_control_sequence || cs == undefined_cs_cmd || eq_type(cs) != set_font_cmd) {
             lua_pushliteral(L, "not a valid font csname");
@@ -903,7 +903,7 @@ static int fontlib_getmathspec(lua_State *L)
     if (lua_type(L, 1) == LUA_TSTRING) {
         size_t lname = 0;
         const char *name = lua_tolstring(L, 1, &lname);
-        halfword cs = tex_string_locate(name, lname, 0);
+        halfword cs = tex_string_locate_only(name, lname);
         if (eq_type(cs) == mathspec_cmd) {
             halfword ms = eq_value(cs);
             if (ms) {
@@ -923,7 +923,7 @@ static int fontlib_getfontspec(lua_State *L)
     if (lua_type(L, 1) == LUA_TSTRING) {
         size_t lname = 0;
         const char *name = lua_tolstring(L, 1, &lname);
-        halfword cs = tex_string_locate(name, lname, 0);
+        halfword cs = tex_string_locate_only(name, lname);
         if (eq_type(cs) == fontspec_cmd) {
             halfword fs = eq_value(cs);
             if (fs) {

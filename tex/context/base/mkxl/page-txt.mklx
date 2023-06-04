@@ -1,4 +1,5 @@
 % macros=mkvi
+% macros=mkvi
 
 %D \module
 %D   [       file=page-txt, % copied from main-001,
@@ -103,7 +104,7 @@
 
 \def\page_layouts_synchronize_element#vertical%
   {\xdef\previoustextstate{\csname\??layouttextssynchronize#vertical\endcsname}% can be a let
-   \edef\currenttextstate {\namedlayoutelementparameter{#vertical}\c!state}%
+   \cdef\currenttextstate {\namedlayoutelementparameter{#vertical}\c!state}%
   %\writestatus{>>}{[#vertical:\currenttextstate/\previoustextstate]}%
    \ifx\currenttextstate\previoustextstate \else
      \page_layouts_synchronize_element_indeed{#vertical}%
@@ -181,37 +182,37 @@
   {\ifarguments
      % there is always one
    \or
-     \edef\currentlayoutelement{#vertical:\v!text}%
+     \cdef\currentlayoutelement{#vertical:\v!text}%
      \resetlayoutelementparameter\c!lefttext
      \resetlayoutelementparameter\c!righttext
      \resetlayoutelementparameter\c!middletext
-     \edef\currentlayoutelement{#vertical:\v!margin}%
+     \cdef\currentlayoutelement{#vertical:\v!margin}%
      \resetlayoutelementparameter\c!lefttext
      \resetlayoutelementparameter\c!righttext
      \resetlayoutelementparameter\c!middletext
-     \edef\currentlayoutelement{#vertical:\v!edge}%
+     \cdef\currentlayoutelement{#vertical:\v!edge}%
      \resetlayoutelementparameter\c!lefttext
      \resetlayoutelementparameter\c!righttext
      \resetlayoutelementparameter\c!middletext
    \or
-     \edef\currentlayoutelement{#vertical:\v!text}%
+     \cdef\currentlayoutelement{#vertical:\v!text}%
      \resetlayoutelementparameter\c!lefttext
      \resetlayoutelementparameter\c!righttext
      \setlayoutelementparameter  \c!middletext{\page_layouts_process_element_single{#horizontal}}%
    \or
-     \edef\currentlayoutelement{#vertical:\v!text}%
+     \cdef\currentlayoutelement{#vertical:\v!text}%
      \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_single{#horizontal}}%
      \setlayoutelementparameter\c!righttext{\page_layouts_process_element_single{#a}}%
    \or
-     \edef\currentlayoutelement{#vertical:#horizontal}%
+     \cdef\currentlayoutelement{#vertical:#horizontal}%
      \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_single{#a}}%
      \setlayoutelementparameter\c!righttext{\page_layouts_process_element_single{#b}}%
    \or
-     \edef\currentlayoutelement{#vertical:\v!text}%
+     \cdef\currentlayoutelement{#vertical:\v!text}%
      \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_double{#horizontal}{#c}}%
      \setlayoutelementparameter\c!righttext{\page_layouts_process_element_double{#a}{#b}}%
    \or
-     \edef\currentlayoutelement{#vertical:#horizontal}%
+     \cdef\currentlayoutelement{#vertical:#horizontal}%
      \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_double{#a}{#d}}%
      \setlayoutelementparameter\c!righttext{\page_layouts_process_element_double{#b}{#c}}%
    \fi}
@@ -297,7 +298,7 @@
    \fi#vertical}
 
 \permanent\protected\def\doifelselayouttextline#vertical% shown or not
-  {\edef\currentlayoutelementstate{\namedlayoutelementparameter{#vertical}\c!state}%
+  {\cdef\currentlayoutelementstate{\namedlayoutelementparameter{#vertical}\c!state}%
    \ifx\currentlayoutelementstate\v!normal
      \expandafter\firstoftwoarguments
    \orelse\ifx\currentlayoutelementstate\v!start
@@ -307,7 +308,7 @@
    \fi}
 
 \permanent\protected\def\doifelselayoutsomeline#vertical% present or not
-  {\edef\currentlayoutelementstate{\namedlayoutelementparameter{#vertical}\c!state}%
+  {\cdef\currentlayoutelementstate{\namedlayoutelementparameter{#vertical}\c!state}%
    \ifx\currentlayoutelementstate\v!none
      \expandafter\secondoftwoarguments
    \orelse\ifx\currentlayoutelementstate\v!high
@@ -406,12 +407,12 @@
 
 \permanent\tolerant\protected\def\resettextcontent[#vertical]#spacer[#horizontal]#spacer[#tag]% header text middle
   {\ifarguments\or\or % 2
-     \edef\currentlayoutelement{#vertical:#horizontal}%
+     \cdef\currentlayoutelement{#vertical:#horizontal}%
      \resetlayoutelementparameter\c!lefttext
      \resetlayoutelementparameter\c!middletext
      \resetlayoutelementparameter\c!righttext
    \or % 3
-%      \edef\currentlayoutelement{#vertical:#horizontal}%
+%      \cdef\currentlayoutelement{#vertical:#horizontal}%
 %      \letcsname\layoutelementhash\begincsname\??layouttextcontent\v!text:#tag\endcsname\c!middletext\endcsname\empty
      \letcsname\namedlayoutelementhash{#vertical:#horizontal}\begincsname\??layouttextcontent\v!text:#tag\endcsname\c!middletext\endcsname\empty
    \fi}
@@ -502,7 +503,7 @@
    \fi}
 
 \def\page_layouts_left_edge_element#text#style#color#width%
-  {\edef\currentlayoutelement{\currentlayouttextline:\v!edge}%
+  {\cdef\currentlayoutelement{\currentlayouttextline:\v!edge}%
    \page_layouts_place_element_indeed\leftedgewidth
      {\page_layouts_left_edge_element_indeed#text#style#color#width}%
    \kern\leftedgedistance}
@@ -519,7 +520,7 @@
    \fi}
 
 \def\page_layouts_right_edge_element#text#style#color#width%
-  {\edef\currentlayoutelement{\currentlayouttextline:\v!edge}%
+  {\cdef\currentlayoutelement{\currentlayouttextline:\v!edge}%
    \kern\rightedgedistance
    \page_layouts_place_element_indeed\rightedgewidth
      {\page_layouts_right_edge_element_indeed#text#style#color#width}}
@@ -551,7 +552,7 @@
    \fi}
 
 \def\page_layouts_left_margin_element#text#style#color#width#margintoo%
-  {\edef\currentlayoutelement{\currentlayouttextline:\v!margin}%
+  {\cdef\currentlayoutelement{\currentlayouttextline:\v!margin}%
    \page_layouts_place_element_indeed\leftmarginwidth
      {\page_layouts_left_margin_element_indeed#text#style#color#width#margintoo}%
    \kern\leftmargindistance}
@@ -578,7 +579,7 @@
    \fi}
 
 \def\page_layouts_right_margin_element#text#style#color#width#margintoo%
-  {\edef\currentlayoutelement{\currentlayouttextline:\v!margin}%
+  {\cdef\currentlayoutelement{\currentlayouttextline:\v!margin}%
    \kern\rightmargindistance
    \page_layouts_place_element_indeed\rightmarginwidth
      {\page_layouts_right_margin_element_indeed#text#style#color#width#margintoo}}
@@ -657,11 +658,11 @@
    \fi}
 
 \def\page_layouts_text_body_element_l_m_r_e
-  {\edef\currentlayoutelement{\currentlayouttextline:\v!text}%
+  {\cdef\currentlayoutelement{\currentlayouttextline:\v!text}%
    \page_layouts_place_element_indeed\makeupwidth\page_layouts_text_body_element_indeed_l_m_r_e}
 
 \def\page_layouts_text_body_element_e_r_m_l
-  {\edef\currentlayoutelement{\currentlayouttextline:\v!text}%
+  {\cdef\currentlayoutelement{\currentlayouttextline:\v!text}%
    \page_layouts_place_element_indeed\makeupwidth\page_layouts_text_body_element_indeed_e_r_m_l}
 
 \def\page_layouts_place_element_indeed#width#content%
@@ -780,14 +781,14 @@
 \def\page_layouts_reset_page_number_location
   {\ifrelax\m_page_layouts_page_number_location_v\else
      % this can be done better now, no meaning hackery needed
-     \edef\currentlayoutelement{\m_page_layouts_page_number_location_v:\m_page_layouts_page_number_location_h}%
+     \cdef\currentlayoutelement{\m_page_layouts_page_number_location_v:\m_page_layouts_page_number_location_h}%
      \edef\tempstring{\detokenizedlayoutelementparameter\m_page_layouts_page_number_location_x}%
      \doif{\normalmeaningless\tempstring}{\normalmeaningless\page_layouts_place_page_number}
        {\resetlayoutelementparameter\m_page_layouts_page_number_location_x}%
    \fi}
 
 \def\page_layouts_set_page_number_location
-  {\edef\currentlayoutelement{\m_page_layouts_page_number_location_v:\m_page_layouts_page_number_location_h}%
+  {\cdef\currentlayoutelement{\m_page_layouts_page_number_location_v:\m_page_layouts_page_number_location_h}%
    \letlayoutelementparameter\m_page_layouts_page_number_location_x\page_layouts_place_page_number
    \ifx\m_page_layouts_page_number_location_x\c!marginedgetext
      \let\page_layouts_place_extra_text_left \page_layouts_place_page_number_left

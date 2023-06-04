@@ -7047,6 +7047,26 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 /*tex Here we have a left, right, middle */
                 current_type = simple_noad; /*tex Same kind of fields. */
                 current_subtype = noad_analyzed(current);
+                if (fence_nesting_factor(current) && fence_nesting_factor(current) != scaling_factor) { 
+                    switch(current_subtype) { 
+                        case open_noad_subtype:
+                            boundarylevel++;
+                            boundaryfactor = fence_nesting_factor(current);
+                            break;
+                        case close_noad_subtype:
+                            if (boundarylevel > 0) {
+                                boundarylevel--;
+                                if (boundarylevel == 0) { 
+                                    boundaryfactor = scaling_factor;
+                                } else { 
+                                    boundaryfactor = fence_nesting_factor(current);
+                                }
+                            } else { 
+                                boundaryfactor = scaling_factor;
+                            }
+                            break;
+                    }
+                }
                 packedfence = current;
                 break;
             case style_node:
@@ -7089,7 +7109,9 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                         case 3: 
                             if (boundarylevel > 0) {
                                 boundarylevel--;
-                                if (l == 2) { 
+                                if (boundarylevel == 0) { 
+                                    boundaryfactor = scaling_factor;
+                                } else if (l == 2) { 
                                     boundaryfactor = boundary_reserved(current) ? boundary_reserved(current) : scaling_factor;
                                 }
                             } else { 

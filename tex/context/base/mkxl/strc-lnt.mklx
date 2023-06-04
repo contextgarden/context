@@ -45,7 +45,7 @@
        \definenote[#1][#2][#3]%
      \fi
      \pushmacro\currentnote
-     \edef\currentnote{#1}
+     \cdef\currentnote{#1}
      \letcsname\??linenote\currentnote\expandafter\endcsname\csname\currentnote\endcsname % use copy command
      \frozen\instance\setuevalue        {\currentnote}{\strc_linenotes_direct{\currentnote}}%
      \frozen\instance\setuevalue{\e!start\currentnote}{\strc_linenotes_start {\currentnote}}%
@@ -143,7 +143,7 @@
 \protected\def\strc_linenotes_indeed#1#2#3%
   {\begingroup
    % we keep things local so we can use it as regular note too
-   \edef\currentnotation{#1}%
+   \cdef\currentnotation{#1}%
    \edef\currentlinenotereference{#2}%
    \xdef\m_page_lines_previous_from{\begincsname\??linenotespreviousfrom\currentnotation\endcsname}%
    \xdef\m_page_lines_previous_to  {\begincsname\??linenotespreviousto  \currentnotation\endcsname}%
